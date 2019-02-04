@@ -48,6 +48,7 @@ import org.junit.rules.TemporaryFolder;
 import org.springframework.tooling.jdt.ls.commons.Logger.TestLogger;
 import org.springframework.tooling.jdt.ls.commons.classpath.Classpath;
 import org.springframework.tooling.jdt.ls.commons.classpath.Classpath.CPE;
+import org.springframework.tooling.jdt.ls.commons.classpath.ClasspathUtil;
 import org.springframework.tooling.jdt.ls.commons.test.ClasspathListenerHandlerTest.MockClientCommandExecutor;
 import org.springframework.tooling.jdt.ls.commons.classpath.ClientCommandExecutor;
 import org.springframework.tooling.jdt.ls.commons.classpath.ReusableClasspathListenerHandler;
@@ -157,6 +158,7 @@ public class ClasspathListenerHandlerTest {
 
 	@Test public void sourceJar() throws Exception {
 		String projectName = "maven-with-jar-dependency";
+		ClasspathUtil.enableDownloadSources();
 		IProject project = createTestProject(projectName);
 		File loc = project.getLocation().toFile();
 

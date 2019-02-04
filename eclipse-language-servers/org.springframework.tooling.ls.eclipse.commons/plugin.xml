@@ -80,4 +80,41 @@
          </enabledWhen>
       </codeMiningProvider>
    </extension>
+   <extension
+         point="org.eclipse.ui.handlers">
+      <handler
+            class="org.springframework.tooling.ls.eclipse.commons.commands.OpenJavaElementInEditor"
+            commandId="org.springframework.tooling.ls.eclipse.commons.commands.OpenJavaElementInEditor">
+      </handler>
+      <handler
+            class="org.springframework.tooling.ls.eclipse.commons.commands.OpenResourceInEditor"
+            commandId="org.springframework.tooling.ls.eclipse.commons.commands.OpenResourceInEditor">
+      </handler>
+   </extension>
+   <extension
+         point="org.eclipse.ui.commands">
+      <command
+            id="org.springframework.tooling.ls.eclipse.commons.commands.OpenJavaElementInEditor"
+            name="Open Java Element in Editor">
+         <commandParameter
+               id="bindingKey"
+               name="bindingKey"
+               optional="false">
+         </commandParameter>
+         <commandParameter
+               id="projectName"
+               name="projectName"
+               optional="false">
+         </commandParameter>
+      </command>
+      <command
+            id="org.springframework.tooling.ls.eclipse.commons.commands.OpenResourceInEditor"
+            name="Open File in Editor">
+         <commandParameter
+               id="path"
+               name="path"
+               optional="false">
+         </commandParameter>
+      </command>
+   </extension>
 </plugin>

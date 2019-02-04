@@ -60,6 +60,9 @@ public class DefaultJavaElementLocationProvider implements JavaElementLocationPr
 						URI uri = url.get().toURI();
 						Range r = cuCache.withCompilationUnit(project, uri, (cu) -> {
 							AtomicReference<Range> range = new AtomicReference<>(null);
+							if (cu == null) {
+								return new Range(new Position(0, 0), new Position(0, 0));
+							}
 							cu.accept(new ASTVisitor() {
 
 								private Range nameRange(SimpleName nameNode) {

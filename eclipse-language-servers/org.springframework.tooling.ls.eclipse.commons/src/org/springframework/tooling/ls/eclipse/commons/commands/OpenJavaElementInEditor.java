@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Pivotal, Inc.
+ * Copyright (c) 2018, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -8,7 +8,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.tooling.boot.ls.commands;
+package org.springframework.tooling.ls.eclipse.commons.commands;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
@@ -23,17 +23,17 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.ui.JavaUI;
 import org.eclipse.ui.PartInitException;
-import org.springframework.tooling.boot.ls.BootLanguageServerPlugin;
+import org.springframework.tooling.ls.eclipse.commons.LanguageServerCommonsActivator;
 import org.springframework.tooling.ls.eclipse.commons.Utils;
 
 /**
  * Command for opening Java type given by its fully qualified name in an editor
- * 
+ *
  * @author Alex Boyko
  *
  */
 public class OpenJavaElementInEditor extends AbstractHandler {
-	
+
 	private static final String BINDING_KEY = "bindingKey";
 	private static final String PROJECT_NAME = "projectName";
 
@@ -41,15 +41,16 @@ public class OpenJavaElementInEditor extends AbstractHandler {
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		String bindingKey = event.getParameter(BINDING_KEY);
 		String projectName = event.getParameter(PROJECT_NAME);
-		
+
 		IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(projectName);
-		
+
 			if (project != null && bindingKey != null) {
 				IJavaProject javaProject = JavaCore.create(project);
 				if (javaProject != null) {
 					IJavaElement element = Utils.findElement(javaProject, bindingKey);
 					if (element == null) {
-						BootLanguageServerPlugin.getDefault().getLog().log(new Status(IStatus.WARNING, BootLanguageServerPlugin.ID, "Cannot find element: " + bindingKey));
+						LanguageServerCommonsActivator.getInstance().getLog().log(new Status(IStatus.WARNING,
+								LanguageServerCommonsActivator.PLUGIN_ID, "Cannot find element: " + bindingKey));
 					} else {
 						try {
 							JavaUI.openInEditor(element);
@@ -58,11 +59,12 @@ public class OpenJavaElementInEditor extends AbstractHandler {
 						}
 					}
 				} else {
-					BootLanguageServerPlugin.getDefault().getLog().log(new Status(IStatus.WARNING, BootLanguageServerPlugin.ID, "Cannot find project: " + projectName));
+					LanguageServerCommonsActivator.getInstance().getLog().log(new Status(IStatus.WARNING,
+							LanguageServerCommonsActivator.PLUGIN_ID, "Cannot find project: " + projectName));
 				}
 			}
 
 		return null;
 	}
-	
+
 }

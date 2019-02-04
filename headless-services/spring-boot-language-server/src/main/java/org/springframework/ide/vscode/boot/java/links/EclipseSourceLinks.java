@@ -37,11 +37,11 @@ public class EclipseSourceLinks implements SourceLinks {
 	private static final String PARAMETERS_START = "(";
 	private static final String PARAMETERS_END = ")";
 
-	private static final String JAVA_ELEMENT_COMMAND = "org.springframework.tooling.boot.ls.OpenJavaElement";
+	private static final String JAVA_ELEMENT_COMMAND = "org.springframework.tooling.ls.eclipse.commons.commands.OpenJavaElementInEditor";
 	private static final String BINDING_KEY_PARAMETER_ID = "bindingKey";
 	private static final String PROJECT_NAME_PARAMETER_ID = "projectName";
 
-	private static final String RESOURCE_COMMAND = "org.springframework.tooling.boot.ls.OpenResourceInEditor";
+	private static final String RESOURCE_COMMAND = "org.springframework.tooling.ls.eclipse.commons.commands.OpenResourceInEditor";
 	private static final String PATH = "path";
 
 	private static final Logger log = LoggerFactory.getLogger(EclipseSourceLinks.class);

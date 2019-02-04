@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -12,6 +12,7 @@ package org.springframework.tooling.ls.eclipse.commons;
 
 import java.util.concurrent.CompletableFuture;
 
+import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.jsonrpc.services.JsonNotification;
 import org.eclipse.lsp4j.jsonrpc.services.JsonRequest;
 import org.eclipse.lsp4j.services.LanguageClient;
@@ -50,5 +51,8 @@ public interface STS4LanguageClient extends LanguageClient {
 
 	@JsonRequest("sts/javadocHoverLink")
 	CompletableFuture<JavadocHoverLinkResponse> javadocHoverLink(JavaDataParams params);
+
+	@JsonRequest("sts/javaLocation")
+	CompletableFuture<Location> javaLocation(JavaDataParams params);
 
 }

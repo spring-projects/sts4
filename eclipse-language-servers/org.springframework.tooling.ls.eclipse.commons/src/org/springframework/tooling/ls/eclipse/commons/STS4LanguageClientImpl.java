@@ -23,6 +23,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.internal.ui.javaeditor.JavaSourceViewer;
 import org.eclipse.jdt.internal.ui.viewsupport.JavaElementLinks;
 import org.eclipse.jface.action.IStatusLineManager;
@@ -42,6 +43,7 @@ import org.eclipse.jface.text.source.ISourceViewerExtension5;
 import org.eclipse.lsp4e.LSPEclipseUtils;
 import org.eclipse.lsp4e.LanguageClientImpl;
 import org.eclipse.lsp4j.CodeLens;
+import org.eclipse.lsp4j.Location;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
@@ -63,6 +65,7 @@ import org.springframework.tooling.jdt.ls.commons.java.JavaTypeResponse;
 import org.springframework.tooling.jdt.ls.commons.java.JavadocHoverLinkResponse;
 import org.springframework.tooling.jdt.ls.commons.javadoc.JavadocResponse;
 import org.springframework.tooling.jdt.ls.commons.javadoc.JavadocUtils;
+import org.springframework.tooling.jdt.ls.commons.resources.ResourceUtils;
 import org.springframework.tooling.ls.eclipse.commons.javadoc.JavaDoc2MarkdownConverter;
 import org.springframework.tooling.ls.eclipse.commons.preferences.PreferenceConstants;
 
@@ -365,6 +368,25 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 			LanguageServerCommonsActivator.logError(e, "Failed to find java element for key " + params.getBindingKey());
 		}
 		return CompletableFuture.completedFuture(response);
+	}
+
+	@Override
+	public CompletableFuture<Location> javaLocation(JavaDataParams params) {
+		return CompletableFuture.supplyAsync(() -> {
+			try {
+				URI projectUri = params.getProjectUri() == null ? null : URI.create(params.getProjectUri());
+				IJavaElement element = JavaData.findElement(projectUri, params.getBindingKey(), JavaDataParams.isLookInOtherProjects(params));
+				if (element != null ) {
+					IJavaProject project = element.getJavaProject() == null ? ResourceUtils.getJavaProject(projectUri) : element.getJavaProject();
+					if (project != null) {
+						return new Location(Utils.eclipseIntroUri(project.getElementName(), params.getBindingKey()).toString(), null);
+					}
+				}
+			} catch (Exception e) {
+				LanguageServerCommonsActivator.logError(e, "Failed to find java element for key " + params.getBindingKey());
+			}
+			return null;
+		});
 	}
 
 }

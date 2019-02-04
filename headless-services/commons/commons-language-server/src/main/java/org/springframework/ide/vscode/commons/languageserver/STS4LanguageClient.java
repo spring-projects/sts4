@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.commons.languageserver;
 
 import java.util.concurrent.CompletableFuture;
 
+import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.jsonrpc.services.JsonNotification;
 import org.eclipse.lsp4j.jsonrpc.services.JsonRequest;
 import org.eclipse.lsp4j.services.LanguageClient;
@@ -53,5 +54,8 @@ public interface STS4LanguageClient extends LanguageClient {
 
 	@JsonRequest("sts/javadocHoverLink")
 	CompletableFuture<JavadocHoverLinkResponse> javadocHoverLink(JavaDataParams params);
+
+	@JsonRequest("sts/javaLocation")
+	CompletableFuture<Location> javaLocation(JavaDataParams params);
 
 }

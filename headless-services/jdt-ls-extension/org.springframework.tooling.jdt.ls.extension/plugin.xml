@@ -24,6 +24,12 @@
                id="sts.java.javadocHoverLink">
          </command>
       </delegateCommandHandler>
+      <delegateCommandHandler
+            class="org.springframework.tooling.jdt.ls.extension.JavaLocationHandler">
+         <command
+               id="sts.java.location">
+         </command>
+      </delegateCommandHandler>
    </extension>
 </plugin>
  

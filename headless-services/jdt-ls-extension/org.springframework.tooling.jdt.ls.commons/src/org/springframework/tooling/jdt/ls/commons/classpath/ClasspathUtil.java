@@ -71,8 +71,6 @@ public class ClasspathUtil {
 
 	public static Classpath resolve(IJavaProject javaProject, Logger logger) throws Exception {
 		//log("resolving classpath " + javaProject.getElementName() +" ...");
-		enableDownloadSources();
-
 		List<CPE> cpEntries = new ArrayList<>();
 		
 		IClasspathEntry[] entries = javaProject.getResolvedClasspath(true);
@@ -98,7 +96,7 @@ public class ClasspathUtil {
 		return createCpes(getSystemLibraryPaths(javaProject), javaProject, entry);
 	}
 	
-	private static void enableDownloadSources() {
+	public static void enableDownloadSources() {
 		if (!enabledDownloadSources.getAndSet(true)) {
 			IEclipsePreferences m2eprefs = InstanceScope.INSTANCE.getNode("org.eclipse.m2e.core");
 			m2eprefs.putBoolean("eclipse.m2.downloadSources", true);

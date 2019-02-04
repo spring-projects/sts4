@@ -13,6 +13,11 @@ export function registerJavaDataService(client : LanguageClient) : void {
         <any> await VSCode.commands.executeCommand("java.execute.workspaceCommand", "sts.java.javadocHoverLink", params)
     );
 
+    const javaLocationRequest = new RequestType<JavaDataParams, any, void, void>("sts/javaLocation");
+    client.onRequest(javaLocationRequest, async (params: JavaDataParams) =>
+        <any> await VSCode.commands.executeCommand("java.execute.workspaceCommand", "sts.java.location", params)
+    );
+
     const javadocRequest = new RequestType<JavaDataParams, any, void, void>("sts/javadoc");
     client.onRequest(javadocRequest, async (params: JavaDataParams) =>
         <any> await VSCode.commands.executeCommand("java.execute.workspaceCommand", "sts.java.javadoc", params)
