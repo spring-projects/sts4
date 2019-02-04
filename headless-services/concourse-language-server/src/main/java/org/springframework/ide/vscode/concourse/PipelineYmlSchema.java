@@ -183,7 +183,7 @@ public class PipelineYmlSchema implements YamlSchema {
 					return "The '"+parseString+"' Resource Type does not exist. Existing types: "+validValues;
 				},
 				(DynamicSchemaContext dc) -> {
-					return PartialCollection.compute(() -> models.getResourceTypeNameHints(dc));
+					return PartialCollection.compute(() -> models.getResourceTypeNameHints(dc, true));
 				}
 		);
 

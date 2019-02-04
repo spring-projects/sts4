@@ -733,6 +733,42 @@ public class ConcourseEditorTest {
 	}
 
 	@Test
+	public void reconcileDuplicateResourceTypeNames_exempt_Builtins() throws Exception {
+		//See https://github.com/spring-projects/sts4/issues/196
+		Editor editor;
+
+		//Redefintion of built-in resource-type: no errors!
+		editor = harness.newEditor(
+				"resource_types:\n" +
+				"- name: docker-image\n" +
+				"  privileged: true\n" +
+				"  type: docker-image\n" +
+				"  source:\n" +
+				"    repository: concourse/docker-image-resource"
+		);
+		editor.assertProblems(/*None*/);
+
+		//... unless they are redefined twice...
+		editor = harness.newEditor(
+				"resource_types:\n" +
+				"- name: docker-image\n" +
+				"  privileged: true\n" +
+				"  type: docker-image\n" +
+				"  source:\n" +
+				"    repository: concourse/docker-image-resource\n" +
+				"- name: docker-image\n" +
+				"  privileged: true\n" +
+				"  type: docker-image\n" +
+				"  source:\n" +
+				"    repository: concourse/docker-image-resource"
+		);
+		editor.assertProblems(
+				"docker-image|Duplicate",
+				"docker-image|Duplicate"
+		);
+	}
+
+	@Test
 	public void violatedPropertyConstraintsAreWarnings() throws Exception {
 		Editor editor;
 

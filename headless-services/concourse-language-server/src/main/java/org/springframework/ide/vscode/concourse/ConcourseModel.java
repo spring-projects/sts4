@@ -372,25 +372,27 @@ public class ConcourseModel {
 		});
 	}
 
-	public Multiset<String> getResourceTypeNames(DynamicSchemaContext dc) {
-		Collection<YValueHint> hints = getResourceTypeNameHints(dc);
+	public Multiset<String> getResourceTypeNames(DynamicSchemaContext dc, boolean includeBuiltin) {
+		Collection<YValueHint> hints = getResourceTypeNameHints(dc, includeBuiltin);
 		if (hints!=null) {
 			return ImmutableMultiset.copyOf(YTypeFactory.values(hints));
 		}
 		return null;
 	}
 
-	public Collection<YValueHint> getResourceTypeNameHints(DynamicSchemaContext dc) {
+	public Collection<YValueHint> getResourceTypeNameHints(DynamicSchemaContext dc, boolean includeBuiltin) {
 		IDocument doc = dc.getDocument();
 		Multiset<String> userDefined = getStringsFromAst(doc, RESOURCE_TYPE_NAMES_PATH);
 		if (userDefined!=null) {
 			Builder<YValueHint> builder = ImmutableMultiset.builder();
 			builder.addAll(YTypeFactory.hints(userDefined));
-			builder.addAll(
-					Arrays.stream(PipelineYmlSchema.BUILT_IN_RESOURCE_TYPES)
-					.map(h -> addExtraInsertion(h, dc))
-					.collect(Collectors.toList())
-			);
+			if (includeBuiltin) {
+				builder.addAll(
+						Arrays.stream(PipelineYmlSchema.BUILT_IN_RESOURCE_TYPES)
+						.map(h -> addExtraInsertion(h, dc))
+						.collect(Collectors.toList())
+				);
+			}
 			return builder.build();
 		}
 		return null;

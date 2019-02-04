@@ -49,7 +49,7 @@ public class ConcourseValueParsers {
 	}
 
 	public static SchemaContextAware<ValueParser> resourceTypeNameDef(ConcourseModel models) {
-		return acceptOnlyUniqueNames(models::getResourceTypeNames, "resource-type name");
+		return acceptOnlyUniqueNames(dc -> models.getResourceTypeNames(dc, false), "resource-type name");
 	}
 
 	public static SchemaContextAware<ValueParser> acceptOnlyUniqueNames(
