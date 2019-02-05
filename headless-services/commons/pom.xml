@@ -79,7 +79,6 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<yaml-version>1.17</yaml-version>
 		<junit-version>4.12</junit-version>
 		<assertj-version>3.5.2</assertj-version>
 		<slf4j-version>1.7.25</slf4j-version>

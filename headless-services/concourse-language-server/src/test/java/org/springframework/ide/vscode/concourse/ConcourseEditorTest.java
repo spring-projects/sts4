@@ -732,6 +732,7 @@ public class ConcourseEditorTest {
 		);
 	}
 
+
 	@Test
 	public void reconcileDuplicateResourceTypeNames_exempt_Builtins() throws Exception {
 		//See https://github.com/spring-projects/sts4/issues/196
@@ -4880,6 +4881,223 @@ public class ConcourseEditorTest {
 		);
 		editor.assertProblems("non-bool|boolean");
 		editor.assertHoverContains("optional", "If `true`, then the input is not required by the task");
+	}
+
+	@Test
+	public void anchorNodeSuppressesUnknownPropertyError() throws Exception {
+		Editor editor = harness.newEditor(
+				"pool-template: &pool-template\n" +
+				"  uri: ((pool-git-backing-store-uri))\n" +
+				"  branch: master\n" +
+				"  pool: OVERRIDEME\n" +
+				"  private_key: ((pool-git-backing-store-private-key))\n"
+		);
+		editor.assertProblems(/*none*/);
+	}
+
+	@Test
+	public void referencedAnchorNodesReconciled() throws Exception {
+		Editor editor = harness.newEditor(
+				"repo-dflts: &repo-dflts\n" +
+				"  bogus: bar\n" +
+				"resources:\n" +
+				"- name: foo\n" +
+				"  type: git\n" +
+				"  source: *repo-dflts\n"
+		);
+		editor.assertProblems(
+				"bogus|Unknown",
+				"foo|Unused"
+		);
+	}
+
+	@Test
+	public void mergedAnchorNodesReconciled() throws Exception {
+		Editor editor = harness.newEditor(
+				"repo-dflts: &repo-dflts\n" +
+				"  bogus: bar\n" +
+				"resources:\n" +
+				"- name: foo\n" +
+				"  type: git\n" +
+				"  source:\n" +
+				"    <<: *repo-dflts\n"
+		);
+		editor.assertProblems(
+				"bogus|Unknown",
+				"foo|Unused"
+		);
+	}
+
+	@Test
+	public void anchorsAndReferenceSample_1() throws Exception {
+		Editor editor = harness.newEditor(
+				"pool-template: &pool-template\n" +
+				"  uri: ((pool-git-backing-store-uri))\n" +
+				"  branch: master\n" +
+				"  pool: OVERRIDEME\n" +
+				"  private_key: ((pool-git-backing-store-private-key))\n" +
+				"\n" +
+				"sleep: &sleep\n" +
+				"  config:\n" +
+				"    platform: linux\n" +
+				"    image_resource:\n" +
+				"      type: docker-image\n" +
+				"      source:\n" +
+				"        repository: alpine\n" +
+				"        tag: latest\n" +
+				"    run:\n" +
+				"      path: sh\n" +
+				"      args:\n" +
+				"      - -exc\n" +
+				"      - sleep 60\n" +
+				"\n" +
+				"##########\n" +
+				"\n" +
+				"resource_types:\n" +
+				"\n" +
+				"- name: pool\n" +
+				"  type: docker-image\n" +
+				"  source:\n" +
+				"    repository: ((pool-resource-docker-repo))\n" +
+				"    tag: ((pool-resource-tag))\n" +
+				"\n" +
+				"##########\n" +
+				"\n" +
+				"resources:\n" +
+				"\n" +
+				"- name: acquire-pool\n" +
+				"  type: pool\n" +
+				"  source:\n" +
+				"    <<: *pool-template\n" +
+				"    pool: acquire-pool\n" +
+				"\n" +
+				"- name: claim-pool\n" +
+				"  type: pool\n" +
+				"  source:\n" +
+				"    <<: *pool-template\n" +
+				"    pool: claim-pool\n" +
+				"\n" +
+				"##########\n" +
+				"\n" +
+				"jobs:\n" +
+				"\n" +
+				"- name: acquire-1\n" +
+				"  plan:\n" +
+				"    - put: acquire-pool\n" +
+				"      params: {acquire: true}\n" +
+				"    - task: sleep\n" +
+				"      <<: *sleep\n" +
+				"  ensure:\n" +
+				"    put: acquire-pool\n" +
+				"    params: {release: acquire-pool}\n" +
+				"\n" +
+				"- name: claim-1\n" +
+				"  plan:\n" +
+				"    - put: claim-pool\n" +
+				"      params: {claim: slot-1}\n" +
+				"    - task: sleep\n" +
+				"      <<: *sleep\n" +
+				"  ensure:\n" +
+				"    put: claim-pool\n" +
+				"    params: {release: claim-pool}\n"
+		);
+
+		System.out.println("============================");
+		System.out.println(editor.getRawText());
+		System.out.println("============================");
+		editor.assertProblems(/*none*/);
+	}
+
+	@Test
+	public void anchorsAndReferenceSample_2() throws Exception {
+		Editor editor = harness.newEditor(
+			"dcind: &dcind\n" +
+			"  type: docker-image\n" +
+			"  source:\n" +
+			"    repository: kiwiops/stuff-mem-dcind\n" +
+			"    tag: latest\n" +
+			"jobs:\n" +
+			"- name: job-well-done\n" +
+			"  plan:\n" +
+			"  - task: deploy-ssp-devint\n" +
+			"    privileged: true\n" +
+			"    config:\n" +
+			"      platform: linux\n" +
+			"      image_resource: \n" +
+			"        <<: *dcind\n" +
+			"      inputs:\n" +
+			"      - name: kms\n" +
+			"      run:\n" +
+			"        path: ls\n" +
+			"        args:\n" +
+			"        - '-la'"
+		);
+		editor.assertProblems(/*None*/);
+	}
+
+	@Test
+	public void anchorsAndReferenceSample_3() throws Exception {
+		Editor editor = harness.newEditor(
+			"resources:\n" +
+			"  - name: hello_hapi\n" +
+			"    type: git\n" +
+			"    source: &repo-source\n" +
+			"      uri: https://somewhere.com/your_github_user/hello_hapi.git\n" +
+			"      branch: master\n" +
+			"  - name: dependency-cache\n" +
+			"    type: npm-cache\n" +
+			"    source:\n" +
+			"      <<: *repo-source\n" +
+			"      paths:\n" +
+			"        - package.json\n"
+		);
+		editor.assertProblems(
+				"hello_hapi|Unused",
+				"dependency-cache|Unused",
+				"npm-cache|not exist"
+		);
+	}
+
+	@Test
+	public void anchorsAndReferenceSample_4() throws Exception {
+		Editor editor = harness.newEditor(
+			"resource_types:\n" +
+			"  - name: npm-cache\n" +
+			"    type: docker-image\n" +
+			"    source:\n" +
+			"      repository: ymedlop/npm-cache-resource\n" +
+			"      tag: latest\n" +
+			"\n" +
+			"resources:\n" +
+			"  - name: hello_hapi\n" +
+			"    type: git\n" +
+			"    source: &repo-source\n" +
+			"      uri: https://somehost.com/your_github_user/hello_hapi.git\n" +
+			"      branch: master\n" +
+			"  - name: dependency-cache\n" +
+			"    type: npm-cache\n" +
+			"    source:\n" +
+			"      <<: *repo-source\n" +
+			"      paths:\n" +
+			"        - package.json\n" +
+			"\n" +
+			"jobs:\n" +
+			"  - name: Install dependencies\n" +
+			"    plan:\n" +
+			"      - get: hello_hapi\n" +
+			"        trigger: true\n" +
+			"      - get: dependency-cache\n" +
+			"  - name: Run tests\n" +
+			"    plan:\n" +
+			"      - get: hello_hapi\n" +
+			"        trigger: true\n" +
+			"        passed: [Install dependencies]\n" +
+			"      - get: dependency-cache\n" +
+			"        passed: [Install dependencies]\n" +
+			"      - task: run the test suite\n" +
+			"        file: hello_hapi/ci/tasks/run_tests.yml\n"
+		);
+		editor.assertProblems(/*None*/);
 	}
 
 	//////////////////////////////////////////////////////////////////////////////

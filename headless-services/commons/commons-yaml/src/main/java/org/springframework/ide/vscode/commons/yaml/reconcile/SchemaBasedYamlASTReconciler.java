@@ -40,6 +40,7 @@ import org.springframework.ide.vscode.commons.util.ValueParseException;
 import org.springframework.ide.vscode.commons.util.ValueParser;
 import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
+import org.springframework.ide.vscode.commons.yaml.ast.NodeMergeSupport;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeUtil;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
@@ -69,6 +70,7 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 	private final YTypeUtil typeUtil;
 	private final ITypeCollector typeCollector;
 	private final YamlQuickfixes quickfixes;
+	private final NodeMergeSupport nodeMerger;
 
 	private List<Runnable> delayedConstraints = new ArrayList<>();
 		// keeps track of dynamic constraints discovered during reconciler walk
@@ -84,6 +86,7 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 		this.typeCollector = typeCollector;
 		this.typeUtil = schema.getTypeUtil();
 		this.quickfixes = quickfixes;
+		this.nodeMerger = new NodeMergeSupport(problems);
 	}
 
 	@Override
@@ -138,7 +141,6 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 	}
 
 	private void reconcile(YamlFileAST ast, YamlPath path, Node parent, Node node, YType _type) {
-//		IDocument doc = ast.getDocument();
 		if (_type!=null && !skipReconciling(node)) {
 			DynamicSchemaContext schemaContext = new ASTDynamicSchemaContext(ast, path, node);
 			YType type = typeUtil.inferMoreSpecificType(_type, schemaContext);
@@ -149,6 +151,7 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 			switch (getNodeId(node)) {
 			case mapping:
 				MappingNode map = (MappingNode) node;
+				nodeMerger.flattenMapping(map);
 				checkForDuplicateKeys(map);
 				if (typeUtil.isMap(type)) {
 					for (NodeTuple entry : map.getValue()) {
@@ -167,7 +170,9 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 						} else {
 							YTypedProperty prop = beanProperties.get(key);
 							if (prop==null) {
-								unknownBeanProperty(keyNode, type, key);
+								if (!isAnchored(entry)) {
+									unknownBeanProperty(keyNode, type, key);
+								}
 							} else {
 								if (prop.isDeprecated()) {
 									String msg = prop.getDeprecationMessage();
@@ -221,6 +226,28 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 				// other stuff we don't check
 			}
 		}
+	}
+
+	/**
+	 * Detects whether a given map key-value pair is anchored. I.e. corresponds to
+	 * a bit of yaml like this example:
+	 *
+	 * <pre>
+	 * some-key: &some-anchor
+	 *   blah: blah
+	 *   more: blah
+	 * </pre>
+	 *
+	 * @param entry
+	 * @return
+	 */
+	private boolean isAnchored(NodeTuple entry) {
+		if (entry!=null) {
+			Node v = entry.getValueNode();
+			String a = v.getAnchor();
+			return a!=null;
+		}
+		return false;
 	}
 
 	private void parse(YamlFileAST ast, Node node, YType type, ValueParser parser) {
