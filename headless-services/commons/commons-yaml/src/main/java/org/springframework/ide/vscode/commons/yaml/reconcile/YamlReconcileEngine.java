@@ -19,7 +19,9 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.Reconcile
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlASTProvider;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST;
+import org.yaml.snakeyaml.composer.ComposerException;
 import org.yaml.snakeyaml.error.Mark;
+import org.yaml.snakeyaml.error.MarkedYAMLException;
 import org.yaml.snakeyaml.parser.ParserException;
 import org.yaml.snakeyaml.scanner.ScannerException;
 
@@ -45,11 +47,7 @@ public abstract class YamlReconcileEngine implements IReconcileEngine {
 			if (reconciler!=null) {
 				reconciler.reconcile(ast);
 			}
-		} catch (ParserException e) {
-			String msg = e.getProblem();
-			Mark mark = e.getProblemMark();
-			problemCollector.accept(syntaxError(msg, mark.getIndex(), 1));
-		} catch (ScannerException e) {
+		} catch (MarkedYAMLException e) {
 			String msg = e.getProblem();
 			Mark mark = e.getProblemMark();
 			problemCollector.accept(syntaxError(msg, mark.getIndex(), 1));

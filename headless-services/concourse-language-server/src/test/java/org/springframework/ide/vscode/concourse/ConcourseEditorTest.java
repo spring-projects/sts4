@@ -4929,6 +4929,22 @@ public class ConcourseEditorTest {
 	}
 
 	@Test
+	public void referenceToMissingAnchor() throws Exception {
+		Editor editor = harness.newEditor(
+				"repo-dflts: &repo-dflts\n" +
+				"  bogus: bar\n" +
+				"resources:\n" +
+				"- name: foo\n" +
+				"  type: git\n" +
+				"  source:\n" +
+				"    <<: *TYPO\n"
+		);
+		editor.assertProblems(
+				"*|undefined alias TYPO"
+		);
+	}
+
+	@Test
 	public void anchorsAndReferenceSample_1() throws Exception {
 		Editor editor = harness.newEditor(
 				"pool-template: &pool-template\n" +
