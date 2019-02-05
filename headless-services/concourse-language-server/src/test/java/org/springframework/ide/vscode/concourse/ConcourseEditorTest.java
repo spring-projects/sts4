@@ -4945,6 +4945,39 @@ public class ConcourseEditorTest {
 	}
 
 	@Test
+	public void reconcileMalformedMergeNode() throws Exception {
+		Editor editor = harness.newEditor(
+				"resources:\n" +
+				"- name: foo\n" +
+				"  type: git\n" +
+				"  source:\n" +
+				"    <<: scalar\n"
+		);
+		editor.assertProblems(
+				"foo|Unused",
+				"source|'uri' is required",
+				"scalar|Expected a mapping or list of mappings"
+		);
+	}
+
+	@Test
+	public void reconcileMalformedMergeNodeList() throws Exception {
+		Editor editor = harness.newEditor(
+				"resources:\n" +
+				"- name: foo\n" +
+				"  type: git\n" +
+				"  source:\n" +
+				"    <<:\n" +
+				"    - scalar\n"
+		);
+		editor.assertProblems(
+				"foo|Unused",
+				"source|'uri' is required",
+				"scalar|Expected a mapping for merging"
+		);
+	}
+
+	@Test
 	public void anchorsAndReferenceSample_1() throws Exception {
 		Editor editor = harness.newEditor(
 				"pool-template: &pool-template\n" +
