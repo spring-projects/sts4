@@ -17,6 +17,7 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
+import static org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment.*;
 import java.util.ArrayList;
 import java.util.regex.Pattern;
 
@@ -610,20 +611,20 @@ public class YamlStructureParserTest {
 				"    moonstone\n"
 		);
 		assertParseOneDoc(editor, ////////////////
-				"DOC(0): ", 
-				"  KEY(0): world:", 
-				"    KEY(2): europe:", 
-				"      KEY(4): france:", 
-				"        RAW(6): cheese", 
-				"      KEY(4): belgium:", 
-				"        RAW(2): beer", 
-				"    KEY(2): canada:", 
-				"      KEY(4): montreal: poutine", 
-				"      KEY(4): vancouver:", 
-				"        RAW(6): salmon", 
-				"  KEY(0): moon:", 
-				"    KEY(2): moonbase-alfa:", 
-				"      RAW(4): moonstone", 
+				"DOC(0): ",
+				"  KEY(0): world:",
+				"    KEY(2): europe:",
+				"      KEY(4): france:",
+				"        RAW(6): cheese",
+				"      KEY(4): belgium:",
+				"        RAW(2): beer",
+				"    KEY(2): canada:",
+				"      KEY(4): montreal: poutine",
+				"      KEY(4): vancouver:",
+				"        RAW(6): salmon",
+				"  KEY(0): moon:",
+				"    KEY(2): moonbase-alfa:",
+				"      RAW(4): moonstone",
 				"      RAW(-1):"
 		);
 	}
@@ -833,6 +834,61 @@ public class YamlStructureParserTest {
 				"    belgium:\n" +
 				"    beer");
 		assertValueRange(editor, root, "foo:", null);
+	}
+
+	@Test public void testEmptyLines() throws Exception {
+		//Attempt to pin down issue in YamlStructureParser related to
+		//https://www.pivotaltracker.com/story/show/163752179
+		String[] insertion = {
+				"",
+				"\n"
+		};
+
+		YamlPath expect = new YamlPath(
+				valueAt(0), //document index
+				valueAt("jobs"),
+				valueAt(0),
+				valueAt("plan"),
+				valueAt(1),
+				valueAt("params")
+		);
+
+		for (String maybeEmptyLine : insertion) {
+			MockYamlEditor editor = new MockYamlEditor(
+//					"resources:\n" +
+//					"\n" +
+//					"- name: banana-img.git\n" +
+//					"  type: docker-image\n" +
+//					"  source:\n" +
+//					"    repository: repo/banana-scratch-build\n" +
+//					"\n" +
+//					"- name: repo.git\n" +
+//					"  type: git\n" +
+//					"  source:\n" +
+//					"    uri: https://example.com/repo.git\n" +
+//					"\n" +
+					"jobs:\n" +
+					"- name: work-img\n" +
+					"  plan:\n" +
+					maybeEmptyLine +
+					"  - get: repo.git\n" +
+					"  - put: banana-img.git\n" +
+					"    params:\n" +
+					"      "
+			);
+
+			int cursor = editor.getRawText().length()-1;
+			SRootNode root = editor.parseStructure();
+			SNode node = root.find(cursor);
+			System.out.println("node = "+node);
+			YamlPath path = node.getPath();
+			System.out.println("path = "+path);
+			assertEquals(expect.toString(), path.toString());
+
+			SNode traversed = path.traverse(root);
+			//Note: We might expact path of a node should lead to that node, but actually it doesn't for historic reasons.
+			assertEquals(node.getParent(), traversed);
+		}
 	}
 
 	private void assertValueRange(MockYamlEditor editor, SRootNode root, String nodeText, String expectedValue) throws Exception {

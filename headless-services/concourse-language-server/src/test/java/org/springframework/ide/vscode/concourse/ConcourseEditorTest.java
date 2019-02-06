@@ -5159,6 +5159,41 @@ public class ConcourseEditorTest {
 		editor.assertProblems(/*None*/);
 	}
 
+	@Test
+	public void PT_163752179_completions_confused_by_empty_lines() throws Exception {
+		//See: https://www.pivotaltracker.com/story/show/163752179
+		String[] insertion = {
+				"",
+				"\n"
+		};
+
+		for (String maybeEmptyLine : insertion) {
+			Editor editor = harness.newEditor(
+					"resources:\n" +
+					"\n" +
+					"- name: banana-img.git\n" +
+					"  type: docker-image\n" +
+					"  source:\n" +
+					"    repository: repo/banana-scratch-build\n" +
+					"\n" +
+					"- name: repo.git\n" +
+					"  type: git\n" +
+					"  source:\n" +
+					"    uri: https://example.com/repo.git\n" +
+					"\n" +
+					"jobs:\n" +
+					"- name: work-img\n" +
+					"  plan:\n" +
+					maybeEmptyLine +
+					"  - get: repo.git\n" +
+					"  - put: banana-img.git\n" +
+					"    params:\n" +
+					"      <*>"
+			);
+			editor.assertCompletionLabels(c -> c.getLabel().startsWith("cache"), "cache", "cache_from", "cache_tag");
+		}
+	}
+
 	//////////////////////////////////////////////////////////////////////////////
 
 	private void assertContextualCompletions(String conText, String textBefore, String... textAfter) throws Exception {

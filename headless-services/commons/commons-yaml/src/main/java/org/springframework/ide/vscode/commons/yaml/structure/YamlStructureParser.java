@@ -443,7 +443,8 @@ public class YamlStructureParser {
 
 	public abstract class SChildBearingNode extends SNode {
 		private List<SNode> children = null;
-		private Multimap<String, SNode> keyMap = null; //lazily constructed index of children.
+		private Multimap<Object, SNode> keyMap = null; //lazily constructed index of children.
+		private int seqChildren = 0; //Keeps a tally of number of children of type Seq
 
 		public SChildBearingNode(SChildBearingNode parent, YamlDocument doc, int indent, int start, int end) {
 			super(parent, doc, indent, start, end);
@@ -460,6 +461,9 @@ public class YamlStructureParser {
 				children = new ArrayList<SNode>();
 			}
 			children.add(c);
+			if (c instanceof SSeqNode) {
+				seqChildren++;
+			}
 		}
 		public SNode getLastChild() {
 			List<SNode> cs = getChildren();
@@ -519,9 +523,9 @@ public class YamlStructureParser {
 
 		private SSeqNode getSeqChildWithIndex(int index) {
 			if (index>=0) {
-				List<SNode> children = getChildren();
-				if (index<children.size()) {
-					SNode child = children.get(index);
+				Collection<SNode> children = keyMap().get(index);
+				if (!children.isEmpty()) {
+					SNode child = children.iterator().next();
 					if (child instanceof SSeqNode) {
 						return (SSeqNode) child;
 					}
@@ -555,15 +559,19 @@ public class YamlStructureParser {
 			return (SKeyNode)getChildrenWithKey(key).findFirst().orElse(null);
 		}
 
-		private Multimap<String, SNode> keyMap() {
+		private Multimap<Object, SNode> keyMap() {
 			if (keyMap==null) {
-				ListMultimap<String, SNode> index = MultimapBuilder.hashKeys().arrayListValues().build();
+				ListMultimap<Object, SNode> index = MultimapBuilder.hashKeys().arrayListValues().build();
 				for (SNode node: getChildren()) {
 					try {
 						if (node.getNodeType()==SNodeType.KEY) {
 							SKeyNode keyNode = (SKeyNode)node;
-							String key = ((SKeyNode)node).getKey();
+							String key = keyNode.getKey();
 							index.put(key, keyNode);
+						} else if (node.getNodeType()==SNodeType.SEQ) {
+							SSeqNode seqNode = (SSeqNode) node;
+							int key = seqNode.index;
+							index.put(key, seqNode);
 						}
 					} catch (Exception e) {
 						Log.log(e);
@@ -590,6 +598,10 @@ public class YamlStructureParser {
 				}
 			}
 			return null;
+		}
+
+		public int seqChildrenCount() {
+			return seqChildren;
 		}
 
 	}
@@ -729,7 +741,7 @@ public class YamlStructureParser {
 
 		public SSeqNode(SChildBearingNode parent, YamlDocument doc, int indent, int start, int end) throws Exception {
 			super(parent, doc, indent, start, end);
-			this.index = parent.getChildren().size()-1;
+			this.index = parent.seqChildrenCount() - 1;
 		}
 
 		public int getIndex() {
