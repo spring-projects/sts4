@@ -515,6 +515,8 @@ public class PipelineYmlSchema implements YamlSchema {
 			addProp(put, "cache_tag", t_ne_string);
 			addProp(put, "dockerfile", t_ne_string);
 			addProp(put, "import_file", t_ne_string);
+			addProp(put, "labels", t_string_params);
+			addProp(put, "labels_file", t_ne_string);
 			addProp(put, "load", t_ne_string);
 			addProp(put, "load_base", t_ne_string);
 			addProp(put, "load_bases", t_strings);
@@ -523,7 +525,9 @@ public class PipelineYmlSchema implements YamlSchema {
 			addProp(put, "load_tag", t_ne_string);
 			addProp(put, "pull_repository", t_ne_string).isDeprecated(true);
 			addProp(put, "pull_tag", t_ne_string).isDeprecated(true);
-			addProp(put, "tag", t_ne_string);
+			addProp(put, "tag", t_ne_string).isDeprecated(true);
+			addProp(put, "tag_file", t_ne_string);
+
 			addProp(put, "tag_as_latest", t_boolean);
 			addProp(put, "tag_prefix", t_ne_string);
 			addProp(put, "target_name", t_ne_string);

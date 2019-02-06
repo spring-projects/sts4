@@ -1819,9 +1819,12 @@ public class ConcourseEditorTest {
 				"      load_repository: some-repo\n" +
 				"      load_tag: some-tag\n" +
 				"      import_file: path/to/file-to-import\n" +
+				"      labels: labels-map\n" +
+				"      labels_file: path/to/file-with-labels\n" +
 				"      pull_repository: path/to/repository-to-pull\n" +
 				"      pull_tag: tag-to-pull\n" +
 				"      tag: path/to/file-containing-tag\n" +
+				"      tag_file: path/to/file-containing-tag\n" +
 				"      tag_prefix: v\n" +
 				"      tag_as_latest: tag-latest\n" +
 				"      build_args: the-build-args\n" +
@@ -1837,8 +1840,11 @@ public class ConcourseEditorTest {
 				"cache-it|'boolean'",
 				"cache-from-value|Expecting a 'Sequence'",
 				"load-bases-value|Expecting a 'Sequence'",
+				"labels-map|Expecting a 'Map",
+
 				"pull_repository|Deprecated",
 				"pull_tag|Deprecated",
+				"tag|Deprecated",
 				"tag-latest|'boolean'",
 				"the-build-args|Expecting a 'Map'",
 
@@ -1848,6 +1854,7 @@ public class ConcourseEditorTest {
 		);
 		assertEquals(DiagnosticSeverity.Warning, editor.assertProblem("pull_repository").getSeverity());
 		assertEquals(DiagnosticSeverity.Warning, editor.assertProblem("pull_tag").getSeverity());
+		assertEquals(DiagnosticSeverity.Warning, editor.assertProblem("tag").getSeverity());
 
 		editor.assertHoverContains("build", "directory containing a `Dockerfile`");
 		editor.assertHoverContains("load", "directory containing an image");
@@ -1859,12 +1866,15 @@ public class ConcourseEditorTest {
 		editor.assertHoverContains("load_repository", "repository of the image loaded from `load_file`");
 		editor.assertHoverContains("load_tag", "tag of image loaded from `load_file`");
 		editor.assertHoverContains("import_file", "file to `docker import`");
-		editor.assertHoverContains("pull_repository", "repository to pull down");
-		editor.assertHoverContains("pull_tag", "tag of the repository to pull down");
-		editor.assertHoverContains(" tag:", "a path to a file containing the name"); // The word 'tag' occurs many times in editor so add use " tag: " to be precise
-		editor.assertHoverContains("tag_prefix", "prepended with this string");
+		editor.assertHoverContains("labels", "map of labels that will be added to the image");
+		editor.assertHoverContains("labels_file", "Path to a JSON file containing the image labels");
+		editor.assertHoverContains("pull_repository", "DEPRECATED");
+		editor.assertHoverContains("pull_tag", "DEPRECATED");
+		editor.assertHoverContains(" tag:", "DEPRECATED - Use `tag_file` instead"); // The word 'tag' occurs many times in editor so use " tag: " to be precise
+		editor.assertHoverContains("tag_file", "path to a file containing the name");
 		editor.assertHoverContains("tag_as_latest", "tagged as `latest`");
-		editor.assertHoverContains("build_args", "map of Docker build arguments");
+		editor.assertHoverContains("tag_prefix", "prepended with this string");
+		editor.assertHoverContains("build_args", "map of Docker build-time variables");
 		editor.assertHoverContains("build_args_file", "JSON file containing");
 		editor.assertHoverContains("save", "docker save");
 		editor.assertHoverContains("rootfs", "a `.tar` file of the image");
