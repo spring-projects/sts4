@@ -19,9 +19,11 @@ import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.SymbolKind;
 import org.eclipse.lsp4xml.dom.DOMAttr;
 import org.eclipse.lsp4xml.dom.DOMNode;
+import org.springframework.ide.vscode.boot.java.beans.BeanUtils;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
+import org.springframework.lang.NonNull;
 
 /**
  * @author Martin Lippert
@@ -38,8 +40,8 @@ public class SpringIndexerXMLNamespaceHandlerBeans implements SpringIndexerXMLNa
 
 	private void createBeanSymbol(DOMNode node, IJavaProject project, String docURI, TextDocument document, SymbolHandler symbolHandler) throws Exception {
 		String beanID = null;
-		int beanIDStart = 0;
-		int beanIDEnd = 0;
+		int symbolStart = 0;
+		int symbolEnd = 0;
 
 		String beanClass = null;
 
@@ -49,21 +51,27 @@ public class SpringIndexerXMLNamespaceHandlerBeans implements SpringIndexerXMLNa
 			String name = attribute.getName();
 			if (name != null && name.equals("id")) {
 				beanID = attribute.getValue();
-				beanIDStart = attribute.getStart();
-				beanIDEnd = attribute.getEnd();
+
+				symbolStart = attribute.getStart();
+				symbolEnd = attribute.getEnd();
 			}
 			else if (name != null && name.equals("class")) {
 				String value = attribute.getValue();
 				beanClass = value.substring(value.lastIndexOf(".") + 1);
+
+				if (symbolStart == 0 && symbolEnd == 0) {
+					symbolStart = attribute.getStart();
+					symbolEnd = attribute.getEnd();
+				}
 			}
 		}
 
-		if (beanID != null && beanClass != null) {
-			int lineStart = document.getLineOfOffset(beanIDStart);
-			int lineEnd = document.getLineOfOffset(beanIDEnd);
+		if (beanClass != null) {
+			int lineStart = document.getLineOfOffset(symbolStart);
+			int lineEnd = document.getLineOfOffset(symbolEnd);
 
-			int startInLine = beanIDStart - document.getLineOffset(lineStart);
-			int endInLine = beanIDEnd - document.getLineOffset(lineEnd);
+			int startInLine = symbolStart - document.getLineOffset(lineStart);
+			int endInLine = symbolEnd - document.getLineOffset(lineEnd);
 
 			Range range = new Range();
 			range.setStart(new Position(lineStart + 1, startInLine));
@@ -73,11 +81,19 @@ public class SpringIndexerXMLNamespaceHandlerBeans implements SpringIndexerXMLNa
 			location.setUri(docURI);
 			location.setRange(range);
 
+			if (beanID == null) {
+				beanID = deriveBeanIDFromClass(beanClass);
+			}
+
 			SymbolInformation symbol = new SymbolInformation("@+ '" + beanID + "' " + beanClass, SymbolKind.Interface, new Location(docURI, range));
 
 			EnhancedSymbolInformation fullSymbol = new EnhancedSymbolInformation(symbol, null);
 			symbolHandler.addSymbol(project, docURI, fullSymbol);
 		}
+	}
+
+	private String deriveBeanIDFromClass(@NonNull String beanClass) {
+		return BeanUtils.getBeanNameFromType(beanClass);
 	}
 
 }
