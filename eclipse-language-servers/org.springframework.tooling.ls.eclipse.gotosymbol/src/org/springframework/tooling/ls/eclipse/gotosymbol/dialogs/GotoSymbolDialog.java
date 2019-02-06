@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016. 2017 Rogue Wave Software Inc. and others.
+ * Copyright (c) 2016, 2019 Rogue Wave Software Inc. and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -43,6 +43,7 @@ import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
 import org.eclipse.swt.graphics.Color;
@@ -423,9 +424,16 @@ public class GotoSymbolDialog extends PopupDialog {
 //		});
 		installWidgetListeners(pattern, viewer);
 		
-		Label statusLabel = new Label(dialogArea, SWT.NONE);
+		StyledText statusLabel = new StyledText(dialogArea, SWT.NONE);
+		// Allow for some extra space for highlight fonts
+		statusLabel.setLeftMargin(3);
+		statusLabel.setBottomMargin(2);
 		statusLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
-		SwtConnect.connect(statusLabel, model.getStatus(), Duration.ofMillis(500));
+		
+		Stylers stylers = new Stylers(dialogArea.getFont());
+		disposables.add(stylers);
+		
+		SwtConnect.connectHighlighted(stylers.bold(), statusLabel, model.getStatus(), Duration.ofMillis(500));
 		
 		viewer.setInput(model);
 		return dialogArea;

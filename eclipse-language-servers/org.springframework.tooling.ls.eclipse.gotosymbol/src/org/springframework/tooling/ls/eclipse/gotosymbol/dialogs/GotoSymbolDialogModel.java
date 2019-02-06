@@ -28,6 +28,7 @@ import org.springsource.ide.eclipse.commons.livexp.core.AsyncLiveExpression.Asyn
 import org.springsource.ide.eclipse.commons.livexp.core.LiveExpression;
 import org.springsource.ide.eclipse.commons.livexp.core.LiveVariable;
 import org.springsource.ide.eclipse.commons.livexp.core.ObservableSet;
+import org.springsource.ide.eclipse.commons.livexp.core.HighlightedText;
 import org.springsource.ide.eclipse.commons.livexp.util.ExceptionUtil;
 
 import com.google.common.collect.ImmutableList;
@@ -78,7 +79,7 @@ public class GotoSymbolDialogModel {
 	private static final OKHandler DEFAULT_OK_HANDLER = (selection) -> true;
 
 	private SymbolsProvider[] symbolsProviders;
-	private final LiveVariable<String> status = new LiveVariable<>();
+	private final LiveVariable<HighlightedText> status = new LiveVariable<>();
 	private int currentSymbolsProviderIndex;
 	private final LiveVariable<SymbolsProvider> currentSymbolsProvider = new LiveVariable<>(null);
 	private final LiveVariable<String> searchBox = new LiveVariable<>("");
@@ -92,7 +93,7 @@ public class GotoSymbolDialogModel {
 		
 		@Override
 		protected ImmutableSet<Either<SymbolInformation, DocumentSymbol>> compute() {
-			status.setValue("Fetching symbols...");
+			status.setValue(HighlightedText.plain("Fetching symbols..."));
 			try {
 				SymbolsProvider sp = currentSymbolsProvider.getValue();
 				if (sp!=null) {
@@ -102,17 +103,23 @@ public class GotoSymbolDialogModel {
 					debug("Fetching symbols... from symbol provider, for '"+query+"'");
 					Collection<Either<SymbolInformation, DocumentSymbol>> fetched = sp.fetchFor(query);
 					if (keyBindings==null) {
-						status.setValue(currentProviderName);
+						status.setValue(HighlightedText.plain(currentProviderName));
 					} else {
-						status.setValue("Showing "+ currentProviderName + ". Press [" + keyBindings + "] for " + nextSymbolsProvider().getName());
+						status.setValue(HighlightedText
+									.create()
+									.appendHighlight("Showing ")
+									.appendHighlight(currentProviderName)
+									.appendPlain(". Press [" + keyBindings + "] for ")
+									.appendPlain(nextSymbolsProvider().getName())
+								);
 					}
 					return ImmutableSet.copyOf(fetched);
 				} else {
-					status.setValue("No symbol provider");
+					status.setValue(HighlightedText.plain("No symbol provider"));
 				}
 			} catch (Exception e) {
 				GotoSymbolPlugin.getInstance().getLog().log(ExceptionUtil.status(e));
-				status.setValue(ExceptionUtil.getMessage(e));
+				status.setValue(HighlightedText.plain(ExceptionUtil.getMessage(e)));
 			}
 			return ImmutableSet.of();
 		}
@@ -191,7 +198,7 @@ public class GotoSymbolDialogModel {
 		return SEARCH_BOX_HINT_MESSAGE;
 	}
 
-	public LiveExpression<String> getStatus() {
+	public LiveExpression<HighlightedText> getStatus() {
 		return status;
 	}
 	
