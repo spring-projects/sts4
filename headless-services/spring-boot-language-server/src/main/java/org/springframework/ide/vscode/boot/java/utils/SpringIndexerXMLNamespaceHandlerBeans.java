@@ -10,18 +10,18 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.utils;
 
-import java.util.Iterator;
-
-import javax.xml.stream.events.Attribute;
-import javax.xml.stream.events.StartElement;
+import java.util.List;
 
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.SymbolKind;
+import org.eclipse.lsp4xml.dom.DOMAttr;
+import org.eclipse.lsp4xml.dom.DOMNode;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 /**
  * @author Martin Lippert
@@ -29,24 +29,28 @@ import org.springframework.ide.vscode.commons.java.IJavaProject;
 public class SpringIndexerXMLNamespaceHandlerBeans implements SpringIndexerXMLNamespaceHandler {
 
 	@Override
-	public void processStartElement(IJavaProject project, String docURI, StartElement startElement, SymbolHandler handler) {
-		String localPart = startElement.getName().getLocalPart();
-		if (localPart != null && "bean".equals(localPart)) {
-			createBeanSymbol(project, docURI, startElement, handler);
+	public void processNode(DOMNode node, IJavaProject project, String docURI, TextDocument document, SymbolHandler symbolHandler) throws Exception {
+		String localName = node.getLocalName();
+		if (localName != null && "bean".equals(localName)) {
+			createBeanSymbol(node, project, docURI, document, symbolHandler);
 		}
 	}
 
-	private void createBeanSymbol(IJavaProject project, String docURI, StartElement startElement, SymbolHandler handler) {
+	private void createBeanSymbol(DOMNode node, IJavaProject project, String docURI, TextDocument document, SymbolHandler symbolHandler) throws Exception {
 		String beanID = null;
+		int beanIDStart = 0;
+		int beanIDEnd = 0;
+
 		String beanClass = null;
 
-		Iterator<?> attributes = startElement.getAttributes();
-		while (attributes.hasNext()) {
-			Attribute attribute = (Attribute) attributes.next();
+		List<DOMAttr> attributes = node.getAttributeNodes();
+		for (DOMAttr attribute : attributes) {
 
-			String name = attribute.getName().getLocalPart();
+			String name = attribute.getName();
 			if (name != null && name.equals("id")) {
 				beanID = attribute.getValue();
+				beanIDStart = attribute.getStart();
+				beanIDEnd = attribute.getEnd();
 			}
 			else if (name != null && name.equals("class")) {
 				String value = attribute.getValue();
@@ -55,9 +59,15 @@ public class SpringIndexerXMLNamespaceHandlerBeans implements SpringIndexerXMLNa
 		}
 
 		if (beanID != null && beanClass != null) {
+			int lineStart = document.getLineOfOffset(beanIDStart);
+			int lineEnd = document.getLineOfOffset(beanIDEnd);
+
+			int startInLine = beanIDStart - document.getLineOffset(lineStart);
+			int endInLine = beanIDEnd - document.getLineOffset(lineEnd);
+
 			Range range = new Range();
-			range.setStart(new Position(startElement.getLocation().getLineNumber(), startElement.getLocation().getColumnNumber()));
-			range.setEnd(new Position(startElement.getLocation().getLineNumber(), startElement.getLocation().getColumnNumber() + 1));
+			range.setStart(new Position(lineStart + 1, startInLine));
+			range.setEnd(new Position(lineEnd + 1, endInLine));
 
 			Location location = new Location();
 			location.setUri(docURI);
@@ -66,7 +76,7 @@ public class SpringIndexerXMLNamespaceHandlerBeans implements SpringIndexerXMLNa
 			SymbolInformation symbol = new SymbolInformation("@+ '" + beanID + "' " + beanClass, SymbolKind.Interface, new Location(docURI, range));
 
 			EnhancedSymbolInformation fullSymbol = new EnhancedSymbolInformation(symbol, null);
-			handler.addSymbol(project, docURI, fullSymbol);
+			symbolHandler.addSymbol(project, docURI, fullSymbol);
 		}
 	}
 

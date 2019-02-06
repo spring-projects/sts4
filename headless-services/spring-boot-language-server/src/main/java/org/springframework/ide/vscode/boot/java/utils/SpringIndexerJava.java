@@ -11,9 +11,7 @@
 package org.springframework.ide.vscode.boot.java.utils;
 
 import java.io.File;
-import java.net.URI;
 import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.List;
@@ -46,7 +44,6 @@ import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.util.UriUtil;
-import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 /**
@@ -222,7 +219,7 @@ public class SpringIndexerJava implements SpringIndexer {
 	private void extractSymbolInformation(IJavaProject project, TypeDeclaration typeDeclaration, String docURI, AtomicReference<TextDocument> docRef, String content) throws Exception {
 		Collection<SymbolProvider> providers = symbolProviders.getAll();
 		if (!providers.isEmpty()) {
-			TextDocument doc = getTempTextDocument(docURI, docRef, content);
+			TextDocument doc = DocumentUtils.getTempTextDocument(docURI, docRef, content);
 			for (SymbolProvider provider : providers) {
 				Collection<EnhancedSymbolInformation> sbls = provider.getSymbols(typeDeclaration, doc);
 				if (sbls != null) {
@@ -237,7 +234,7 @@ public class SpringIndexerJava implements SpringIndexer {
 	private void extractSymbolInformation(IJavaProject project, MethodDeclaration methodDeclaration, String docURI, AtomicReference<TextDocument> docRef, String content) throws Exception {
 		Collection<SymbolProvider> providers = symbolProviders.getAll();
 		if (!providers.isEmpty()) {
-			TextDocument doc = getTempTextDocument(docURI, docRef, content);
+			TextDocument doc = DocumentUtils.getTempTextDocument(docURI, docRef, content);
 			for (SymbolProvider provider : providers) {
 				Collection<EnhancedSymbolInformation> sbls = provider.getSymbols(methodDeclaration, doc);
 				if (sbls != null) {
@@ -256,7 +253,7 @@ public class SpringIndexerJava implements SpringIndexer {
 			Collection<SymbolProvider> providers = symbolProviders.get(typeBinding);
 			Collection<ITypeBinding> metaAnnotations = AnnotationHierarchies.getMetaAnnotations(typeBinding, symbolProviders::containsKey);
 			if (!providers.isEmpty()) {
-				TextDocument doc = getTempTextDocument(docURI, docRef, content);
+				TextDocument doc = DocumentUtils.getTempTextDocument(docURI, docRef, content);
 				for (SymbolProvider provider : providers) {
 					Collection<EnhancedSymbolInformation> sbls = provider.getSymbols(node, typeBinding, metaAnnotations, doc);
 					if (sbls != null) {
@@ -280,7 +277,7 @@ public class SpringIndexerJava implements SpringIndexer {
 			if (type != null) {
 				String qualifiedName = type.getQualifiedName();
 				if (qualifiedName != null && qualifiedName.startsWith("org.springframework")) {
-					TextDocument doc = getTempTextDocument(docURI, docRef, content);
+					TextDocument doc = DocumentUtils.getTempTextDocument(docURI, docRef, content);
 					return DefaultSymbolProvider.provideDefaultSymbol(node, doc);
 				}
 			}
@@ -299,25 +296,6 @@ public class SpringIndexerJava implements SpringIndexer {
 				.filter(file -> file.exists())
 				.map(file -> file.getAbsolutePath())
 				.toArray(String[]::new);
-	}
-
-	private TextDocument getTempTextDocument(String docURI, AtomicReference<TextDocument> docRef, String content) throws Exception {
-		TextDocument doc = docRef.get();
-		if (doc == null) {
-			doc = createTempTextDocument(docURI, content);
-			docRef.set(doc);
-		}
-		return doc;
-	}
-
-	private TextDocument createTempTextDocument(String docURI, String content) throws Exception {
-		if (content == null) {
-			Path path = Paths.get(new URI(docURI));
-			content = new String(Files.readAllBytes(path));
-		}
-
-		TextDocument doc = new TextDocument(docURI, LanguageId.PLAINTEXT, 0, content);
-		return doc;
 	}
 
 }

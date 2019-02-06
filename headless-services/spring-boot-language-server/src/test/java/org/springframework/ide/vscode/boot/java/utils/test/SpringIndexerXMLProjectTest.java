@@ -73,9 +73,9 @@ public class SpringIndexerXMLProjectTest {
 		assertEquals(3, allSymbols.size());
 
 		String docUri = directory.toPath().resolve("config/simple-spring-config.xml").toUri().toString();
-		assertTrue(containsSymbol(allSymbols, "@+ 'transactionManager' DataSourceTransactionManager", docUri, 7, 143, 7, 144));
-		assertTrue(containsSymbol(allSymbols, "@+ 'jdbcTemplate' JdbcTemplate", docUri, 9, 84, 9, 85));
-		assertTrue(containsSymbol(allSymbols, "@+ 'namedParameterJdbcTemplate' NamedParameterJdbcTemplate", docUri, 14, 91, 14, 92));
+		assertTrue(containsSymbol(allSymbols, "@+ 'transactionManager' DataSourceTransactionManager", docUri, 7, 14, 7, 37));
+		assertTrue(containsSymbol(allSymbols, "@+ 'jdbcTemplate' JdbcTemplate", docUri, 9, 14, 9, 31));
+		assertTrue(containsSymbol(allSymbols, "@+ 'namedParameterJdbcTemplate' NamedParameterJdbcTemplate", docUri, 13, 14, 13, 45));
 	}
 
 	private boolean containsSymbol(List<? extends SymbolInformation> symbols, String name, String uri, int startLine, int startCHaracter, int endLine, int endCharacter) {

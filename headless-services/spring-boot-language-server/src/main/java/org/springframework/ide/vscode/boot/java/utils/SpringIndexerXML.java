@@ -10,27 +10,23 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.utils;
 
-import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
-import javax.xml.stream.XMLEventReader;
-import javax.xml.stream.XMLInputFactory;
-import javax.xml.stream.events.Characters;
-import javax.xml.stream.events.EndElement;
-import javax.xml.stream.events.StartElement;
-import javax.xml.stream.events.XMLEvent;
-
+import org.apache.commons.io.FileUtils;
+import org.eclipse.lsp4xml.dom.DOMDocument;
+import org.eclipse.lsp4xml.dom.DOMNode;
+import org.eclipse.lsp4xml.dom.DOMParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.util.UriUtil;
+import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 /**
  * @author Martin Lippert
@@ -39,11 +35,11 @@ public class SpringIndexerXML implements SpringIndexer {
 
 	private static final Logger log = LoggerFactory.getLogger(SpringIndexerJava.class);
 
-	private final SymbolHandler handler;
+	private final SymbolHandler symbolHandler;
 	private final Map<String, SpringIndexerXMLNamespaceHandler> namespaceHandler;
 
 	public SpringIndexerXML(SymbolHandler handler, Map<String, SpringIndexerXMLNamespaceHandler> namespaceHandler) {
-		this.handler = handler;
+		this.symbolHandler = handler;
 		this.namespaceHandler = namespaceHandler;
 	}
 
@@ -70,7 +66,7 @@ public class SpringIndexerXML implements SpringIndexer {
 
 	@Override
 	public void updateFile(IJavaProject project, String docURI, String content) throws Exception {
-		scanFile(project, new ByteArrayInputStream(content.getBytes()), docURI);
+		scanFile(project, content, docURI);
 	}
 
 	private void scanProject(IJavaProject project, String[] files) {
@@ -79,52 +75,55 @@ public class SpringIndexerXML implements SpringIndexer {
 		}
 	}
 
-	private void scanFile(IJavaProject project, String file) {
-		log.debug("starting to parse XML file for Spring symbol indexing: ", file);
+	private void scanFile(IJavaProject project, String fileName) {
+		log.debug("starting to parse XML file for Spring symbol indexing: ", fileName);
 
 		try {
-			String docURI = UriUtil.toUri(new File(file)).toString();
+			File file = new File(fileName);
 
-			InputStream xmlInputStream = new FileInputStream(file);
-	        scanFile(project, xmlInputStream, docURI);
+			String docURI = UriUtil.toUri(file).toString();
+			String fileContent = FileUtils.readFileToString(file);
+
+	        scanFile(project, fileContent, docURI);
 		}
 		catch (Exception e) {
 			log.error("error parsing XML file: ", e);
 		}
 	}
 
-	private void scanFile(IJavaProject project, InputStream xmlInput, String docURI) throws Exception {
-		XMLInputFactory inputFactory = XMLInputFactory.newInstance();
-		XMLEventReader eventReader = inputFactory.createXMLEventReader(xmlInput);
+	private void scanFile(IJavaProject project, String fileContent, String docURI) throws Exception {
+		DOMParser parser = DOMParser.getInstance();
+		DOMDocument document = parser.parse(fileContent, "", null);
 
-		while (eventReader.hasNext()) {
-			XMLEvent event = eventReader.nextEvent();
-			switch (event.getEventType()) {
-
-			case XMLEvent.START_ELEMENT:
-				StartElement startElement = event.asStartElement();
-
-				String namespaceURI = startElement.getName().getNamespaceURI();
-				if (namespaceURI != null && this.namespaceHandler.containsKey(namespaceURI)) {
-					SpringIndexerXMLNamespaceHandler namespaceHandler = this.namespaceHandler.get(namespaceURI);
-					namespaceHandler.processStartElement(project, docURI, startElement, this.handler);
-				}
-
-				break;
-
-			case XMLEvent.CHARACTERS:
-				Characters characters = event.asCharacters();
-				log.debug(characters.getData());
-				break;
-			case XMLEvent.END_ELEMENT:
-				EndElement endElement = event.asEndElement();
-				log.debug("</" + endElement.getName().toString() + ">");
-				break;
-			default:
-				// do nothing
-				break;
-			}
-		}
+		AtomicReference<TextDocument> docRef = new AtomicReference<>();
+		scanNode(document, project, docURI, docRef, fileContent);
 	}
 
+	private void scanNode(DOMNode node, IJavaProject project, String docURI, AtomicReference<TextDocument> docRef, String content) throws Exception {
+		String namespaceURI = node.getNamespaceURI();
+
+		if (namespaceURI != null && this.namespaceHandler.containsKey(namespaceURI)) {
+			SpringIndexerXMLNamespaceHandler namespaceHandler = this.namespaceHandler.get(namespaceURI);
+
+			TextDocument document = DocumentUtils.getTempTextDocument(docURI, docRef, content);
+			namespaceHandler.processNode(node, project, docURI, document, this.symbolHandler);
+		}
+
+
+//		if ("http://www.springframework.org/schema/beans".equals(namespaceURI)) {
+//			List<DOMAttr> attributeNodes = node.getAttributeNodes();
+//			if (attributeNodes != null) {
+//				for (DOMAttr attribute : attributeNodes) {
+//					System.out.println(attribute.getName() + " - " + attribute.getValue());
+//				}
+//			}
+//		}
+
+		List<DOMNode> children = node.getChildren();
+		for (DOMNode child : children) {
+			scanNode(child, project, docURI, docRef, content);
+		}
+
+
+	}
 }
