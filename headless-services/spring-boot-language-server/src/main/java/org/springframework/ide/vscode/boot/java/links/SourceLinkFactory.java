@@ -54,9 +54,8 @@ public final class SourceLinkFactory {
 	public static SourceLinks createSourceLinks(SimpleLanguageServer server, CompilationUnitCache cuCache, JavaProjectFinder projectFinder) {
 		switch (LspClient.currentClient()) {
 		case VSCODE:
-			return /*new VSCodeSourceLinks(cuCache);*/server == null ? new VSCodeSourceLinks(cuCache, projectFinder) :new  JavaServerSourceLinks(server, projectFinder);
 		case THEIA:
-			return new VSCodeSourceLinks(cuCache, projectFinder);
+			return /*new VSCodeSourceLinks(cuCache);*/server == null ? new VSCodeSourceLinks(cuCache, projectFinder) :new  JavaServerSourceLinks(server, projectFinder);
 		case ECLIPSE:
 			return /*new EclipseSourceLinks();*/server == null ? new EclipseSourceLinks(projectFinder) : new JavaServerSourceLinks(server, projectFinder);
 		case ATOM:

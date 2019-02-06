@@ -1,6 +1,6 @@
 {
   "name": "@pivotal-tools/theia-languageclient",
-  "version": "0.0.6",
+  "version": "0.0.7",
   "description": "Theia IDE language client for STS4 language servers",
   "repository": "https://github.com/spring-projects/sts4",
   "license": "MIT",

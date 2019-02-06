@@ -50,59 +50,53 @@ export abstract class StsLanguageServerContribution extends BaseLanguageServerCo
         }
     }
 
-    start(clientConnection: IConnection): void {
+    async start(clientConnection: IConnection) {
         const jarPath = this.getJarPath();
-        this.findJvm()
-            .catch(error => {
-                throw new Error('Error trying to find JVM');
-            })
-            .then(jvm => {
-                this.validate(jvm);
-                this.startSocketServer().then(server => {
-                    const socket = this.accept(server);
+        const jvm = await this.findJvm();
 
-                    const env = Object.create(process.env);
-                    const addressInfo = server.address();
-                    if (typeof addressInfo === 'string') {
-                        throw new Error(`Address info was string ${addressInfo}`);
-                    }
-                    env.CLIENT_HOST = addressInfo.address;
-                    env.CLIENT_PORT = addressInfo.port;
+        this.validate(jvm);
 
-                    const command = jvm.getJavaExecutable();
-                    const args = [
-                        '-Dsts.lsp.client=theia',
-                        '-Dlsp.completions.indentation.enable=true',
-                        '-Dlsp.yaml.completions.errors.disable=true',
-                        `-Dserver.port=${env.CLIENT_PORT}`
-                    ];
+        const server = await this.startSocketServer();
+        const socket = this.accept(server);
+        const env = Object.create(process.env);
+        const addressInfo = server.address();
+        if (typeof addressInfo === 'string') {
+            throw new Error(`Address info was string ${addressInfo}`);
+        }
 
-                    let toolsJar = jvm.getToolsJar();
-                    if (toolsJar) {
-                        args.push("-Dloader.path="+toolsJar);
-                    }
+        env.CLIENT_HOST = addressInfo.address;
+        env.CLIENT_PORT = addressInfo.port;
 
-                    args.push(...this.jvmArguments);
+        const command = jvm.getJavaExecutable();
+        const args = [
+            '-Dsts.lsp.client=theia',
+            '-Dlsp.completions.indentation.enable=true',
+            '-Dlsp.yaml.completions.errors.disable=true',
+            `-Dserver.port=${env.CLIENT_PORT}`
+        ];
 
-                    if (DEBUG_MODE) {
-                        args.push(
-                            '-Xdebug',
-                            '-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=7999',
-                            '-Dlog.level=ALL'
-                        );
-                    }
+        let toolsJar = jvm.getToolsJar();
+        if (toolsJar) {
+            args.push("-Dloader.path="+toolsJar);
+        }
 
-                    args.push(
-                        '-jar', jarPath,
-                    );
+        args.push(...this.jvmArguments);
 
-                    this.createProcessSocketConnection(socket, socket, command, args, { env })
-                        .then(serverConnection => this.forward(clientConnection, serverConnection));
+        if (DEBUG_MODE) {
+            args.push(
+                '-Xdebug',
+                '-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=7999',
+                '-Dlog.level=ALL'
+            );
+        }
 
-                });
+        args.push(
+            '-jar',
+            jarPath
+        );
 
-            });
-
+        const serverConnection = await this.createProcessSocketConnection(socket, socket, command, args, { env });
+        this.forward(clientConnection, serverConnection);
     }
 
 }

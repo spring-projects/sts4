@@ -19,6 +19,7 @@ import { LanguageGrammarDefinitionContribution } from '@theia/monaco/lib/browser
 import { BootPropertiesGrammarContribution } from './boot-properties-grammar-contribution';
 import { BootYamlGrammarContribution } from './boot-yaml-grammar-contribution';
 import { ClasspathService } from './classpath-service';
+import {JavaDataService} from './java-data';
 
 export default new ContainerModule(bind => {
     // add your contribution bindings here
@@ -29,4 +30,5 @@ export default new ContainerModule(bind => {
     bind(HighlightService).toSelf().inSingletonScope();
     bind(HighlightCodeLensService).toSelf().inSingletonScope();
     bind(ClasspathService).toSelf().inSingletonScope();
+    bind(JavaDataService).toSelf().inRequestScope();
 });

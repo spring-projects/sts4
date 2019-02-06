@@ -125,10 +125,10 @@
   resolved "https://registry.yarnpkg.com/@pivotal-tools/jvm-launch-utils/-/jvm-launch-utils-0.0.11.tgz#11e8cc4850aa16a91c7579a8e3ed2a071acc36ba"
   integrity sha512-PSBzegFv+m1AaAlHBtWzfxdxZG3RFJaTNk0ognOjDV+URrPnMWkD2DBt4pgEGynpnnK8G5WZZGVu5flcIsKGyQ==
 
-"@pivotal-tools/theia-languageclient@0.0.6":
-  version "0.0.6"
-  resolved "https://registry.yarnpkg.com/@pivotal-tools/theia-languageclient/-/theia-languageclient-0.0.6.tgz#58a28dfc4b02faae4ff100c037e8bbe0d9f38b17"
-  integrity sha512-cmsFulaixIrtTzlaBe+S7zKjrPnrulyBefnzl+9nyya/ja4yYog7BL40CI6JEZV/56rdnsBynRyqFRWDfHZV+A==
+"@pivotal-tools/theia-languageclient@0.0.7":
+  version "0.0.7"
+  resolved "https://registry.yarnpkg.com/@pivotal-tools/theia-languageclient/-/theia-languageclient-0.0.7.tgz#d02d7ce308eb6abe4eddd7adc9f26eebcb64935b"
+  integrity sha512-sM7HJpIn0SbQWsqif8XbhdMZKS97e/0853A3M8jeLH6Y7uliA/wKBOJltoqpZz7MKl0PiHydQXrXay6AFuhNvA==
   dependencies:
     "@pivotal-tools/jvm-launch-utils" "0.0.11"
     "@theia/core" latest

@@ -27,6 +27,7 @@ import {Disposable} from '@theia/core';
 import {OpenerService} from '@theia/core/lib/browser';
 import URI from '@theia/core/lib/common/uri';
 import {JavaClientContribution} from '@theia/java/lib/browser';
+import {JavaDataService} from './java-data';
 
 const HIGHLIGHTS_NOTIFICATION_TYPE = 'sts/highlight';
 
@@ -47,7 +48,8 @@ export class SpringBootClientContribution extends StsLanguageClientContribution<
         @inject(ClasspathService) protected readonly classpathService: ClasspathService,
         @inject(BootPreferences) protected readonly preferences: BootPreferences,
         @inject(OpenerService) private readonly openerService: OpenerService,
-        @inject(JavaClientContribution) private readonly javaClientContribution: JavaClientContribution
+        @inject(JavaClientContribution) private readonly javaClientContribution: JavaClientContribution,
+        @inject(JavaDataService) private readonly  javaDataService: JavaDataService
     ) {
         super(workspace, languages, languageClientFactory);
     }
@@ -62,6 +64,7 @@ export class SpringBootClientContribution extends StsLanguageClientContribution<
                 }
             });
             this.classpathService.attach(client);
+            this.javaDataService.attach(client);
 
             this.preferences.onPreferenceChanged(event => {
                 if (event.preferenceName === CODELENS_PREF_NAME
