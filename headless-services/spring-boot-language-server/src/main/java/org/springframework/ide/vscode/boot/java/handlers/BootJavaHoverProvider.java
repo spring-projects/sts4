@@ -99,13 +99,11 @@ public class BootJavaHoverProvider implements HoverHandler {
 		return SimpleTextDocumentService.NO_HOVER;
 	}
 
-	public CodeLens[] getLiveHoverHints(final TextDocument document, final SpringBootApp[] runningBootApps) {
+	public CodeLens[] getLiveHoverHints(final TextDocument document, IJavaProject project, final SpringBootApp[] runningBootApps) {
 		if (runningBootApps.length == 0) return new CodeLens[0];
+		if (project == null) return new CodeLens[0];
 
-		Optional<IJavaProject> project = getProject(document);
-		if (!project.isPresent()) return new CodeLens[0];
-
-		if (!hasActuatorDependency(project.get())) {
+		if (!hasActuatorDependency(project)) {
 			// double check the running apps in case there is a non-boot app running with live beans enabled
 			boolean nonBootLiveBeansAround = false;
 			boolean onAppsClasspath = false;
@@ -115,7 +113,7 @@ public class BootJavaHoverProvider implements HoverHandler {
 					break;
 				} else {
 					try {
-						List<File> binaryRoots = IClasspathUtil.getBinaryRoots(project.get().getClasspath(), Classpath::isSource);
+						List<File> binaryRoots = IClasspathUtil.getBinaryRoots(project.getClasspath(), Classpath::isSource);
 						for (String path : bootApp.getClasspath()) {
 							File file = new File(path);
 							if (binaryRoots.contains(file)) {
@@ -134,7 +132,7 @@ public class BootJavaHoverProvider implements HoverHandler {
 			}
 		}
 
-		return server.getCompilationUnitCache().withCompilationUnit(project.get(), URI.create(document.getUri()), cu -> {
+		return server.getCompilationUnitCache().withCompilationUnit(project, URI.create(document.getUri()), cu -> {
 			Collection<CodeLens> result = new LinkedHashSet<>();
 			try {
 				if (cu != null) {
@@ -143,7 +141,7 @@ public class BootJavaHoverProvider implements HoverHandler {
 						@Override
 						public boolean visit(TypeDeclaration node) {
 							try {
-								extractLiveHintsForType(node, document, project.get(), runningBootApps, result);
+								extractLiveHintsForType(node, document, project, runningBootApps, result);
 							}
 							catch (Exception e) {
 								logger.error("error extracting live hint information for docURI '" + document.getUri() + "' - on node: " + node.toString(), e);
@@ -154,7 +152,7 @@ public class BootJavaHoverProvider implements HoverHandler {
 						@Override
 						public boolean visit(SingleMemberAnnotation node) {
 							try {
-								extractLiveHintsForAnnotation(node, document, project.get(), runningBootApps, result);
+								extractLiveHintsForAnnotation(node, document, project, runningBootApps, result);
 							} catch (Exception e) {
 								logger.error("error extracting live hint information for docURI '" + document.getUri() + "' - on node: " + node.toString(), e);
 							}
@@ -165,7 +163,7 @@ public class BootJavaHoverProvider implements HoverHandler {
 						@Override
 						public boolean visit(NormalAnnotation node) {
 							try {
-								extractLiveHintsForAnnotation(node, document, project.get(), runningBootApps, result);
+								extractLiveHintsForAnnotation(node, document, project, runningBootApps, result);
 							} catch (Exception e) {
 								logger.error("error extracting live hint information for docURI '" + document.getUri() + "' - on node: " + node.toString(), e);
 							}
@@ -176,7 +174,7 @@ public class BootJavaHoverProvider implements HoverHandler {
 						@Override
 						public boolean visit(MarkerAnnotation node) {
 							try {
-								extractLiveHintsForAnnotation(node, document, project.get(), runningBootApps, result);
+								extractLiveHintsForAnnotation(node, document, project, runningBootApps, result);
 							} catch (Exception e) {
 								logger.error("error extracting live hint information for docURI '" + document.getUri() + "' - on node: " + node.toString(), e);
 							}
@@ -187,7 +185,7 @@ public class BootJavaHoverProvider implements HoverHandler {
 						@Override
 						public boolean visit(MethodDeclaration node) {
 							try {
-								extractLiveHintsForMethod(node, document, project.get(), runningBootApps, result);
+								extractLiveHintsForMethod(node, document, project, runningBootApps, result);
 							} catch (Exception e) {
 								logger.error("error extracting live hint information for docURI '" + document.getUri() + "' - on node: " + node.toString(), e);
 							}

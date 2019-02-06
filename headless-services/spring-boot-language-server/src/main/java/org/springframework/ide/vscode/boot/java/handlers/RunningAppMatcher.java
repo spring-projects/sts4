@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Pivotal, Inc.
+ * Copyright (c) 2018, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -58,7 +58,7 @@ public class RunningAppMatcher  {
 	public static boolean doesProjectNameMatch(SpringBootApp app, IJavaProject project) {
 		try {
 			String projectName = app.getSystemProperty("spring.boot.project.name");
-			return projectName != null && projectName.equals(project.getElementName());
+			return projectName != null && project != null && projectName.equals(project.getElementName());
 		}
 		catch (Exception e) {
 			return false;

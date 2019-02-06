@@ -156,7 +156,7 @@ public class SpringLiveHoverWatchdog {
 		try {
 			IJavaProject project = getCachedProject(docURI);
 			SpringBootApp[] runningBootApps = RunningAppMatcher.getAllMatchingApps(runningAppProvider.getAllRunningSpringApps(), project).toArray(new SpringBootApp[0]);
-			update(docURI, runningBootApps);
+			update(docURI, project, runningBootApps);
 		}
 		catch (Exception e) {
 			logger.error("", e);
@@ -173,7 +173,7 @@ public class SpringLiveHoverWatchdog {
 				for (String docURI : watchedDocs.keySet()) {
 					IJavaProject project = getCachedProject(docURI);
 					SpringBootApp[] matchingApps = RunningAppMatcher.getAllMatchingApps(cachedApps, project).toArray(new SpringBootApp[0]);
-					update(docURI, matchingApps);
+					update(docURI, project, matchingApps);
 				}
 
 				this.hoverProvider.setRunningSpringApps(cachedApps);
@@ -185,14 +185,14 @@ public class SpringLiveHoverWatchdog {
 	}
 
 	// internal method, need to run on the scheduled executor pool, do not call outside of that
-	protected void update(String docURI, SpringBootApp[] runningBootApps) {
+	protected void update(String docURI, IJavaProject project, SpringBootApp[] runningBootApps) {
 		if (highlightsEnabled) {
 			try {
 				boolean hasCurrentRunningBootApps = runningBootApps != null && runningBootApps.length > 0;
 				if (hasCurrentRunningBootApps) {
 					TextDocument doc = this.server.getTextDocumentService().get(docURI);
 					if (doc != null) {
-						CodeLens[] infos = this.hoverProvider.getLiveHoverHints(doc, runningBootApps);
+						CodeLens[] infos = this.hoverProvider.getLiveHoverHints(doc, project, runningBootApps);
 						publishLiveHints(docURI, infos);
 					}
 				}
