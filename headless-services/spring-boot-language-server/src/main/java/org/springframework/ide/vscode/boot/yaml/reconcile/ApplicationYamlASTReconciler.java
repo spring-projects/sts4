@@ -11,7 +11,7 @@
 
 package org.springframework.ide.vscode.boot.yaml.reconcile;
 
-import static org.springframework.ide.vscode.boot.yaml.reconcile.ApplicationYamlProblemType.YAML_DEPRECATED;
+import static org.springframework.ide.vscode.boot.yaml.reconcile.ApplicationYamlProblemType.*;
 import static org.springframework.ide.vscode.boot.yaml.reconcile.ApplicationYamlProblemType.YAML_DUPLICATE_KEY;
 import static org.springframework.ide.vscode.commons.yaml.ast.NodeUtil.asScalar;
 import static org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST.getChildren;
@@ -25,6 +25,7 @@ import java.util.regex.Pattern;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
+import org.springframework.ide.vscode.boot.configurationmetadata.Deprecation.Level;
 import org.springframework.ide.vscode.boot.metadata.IndexNavigator;
 import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
 import org.springframework.ide.vscode.boot.metadata.types.Type;
@@ -389,7 +390,7 @@ public class ApplicationYamlASTReconciler implements YamlASTReconciler {
 
 	private void deprecatedProperty(String docUri, PropertyInfo property, Node keyNode, QuickfixType fixType) {
 		SpringPropertyProblem problem = deprecatedPropertyProblem(docUri, property.getId(), null, keyNode,
-				property.getDeprecationReplacement(), property.getDeprecationReason(), fixType);
+				property.getDeprecationReplacement(), property.getDeprecationReason(), property.getDeprecationLevel(), fixType);
 		problem.setMetadata(property);
 		//problem.setProblemFixer(ReplaceDeprecatedYamlQuickfix.FIXER);
 		problems.accept(problem);
@@ -397,18 +398,20 @@ public class ApplicationYamlASTReconciler implements YamlASTReconciler {
 
 	private void deprecatedProperty(String docUri, Type contextType, TypedProperty property, Node keyNode, QuickfixType fixType) {
 		SpringPropertyProblem problem = deprecatedPropertyProblem(docUri, property.getName(), typeUtil.niceTypeName(contextType),
-				keyNode, property.getDeprecationReplacement(), property.getDeprecationReason(), fixType);
+				keyNode, property.getDeprecationReplacement(), property.getDeprecationReason(), property.getDeprecationLevel(), fixType);
 		problems.accept(problem);
 	}
 
 	protected SpringPropertyProblem deprecatedPropertyProblem(String docUri, String name, String contextType, Node keyNode,
-			String replace, String reason, QuickfixType fixType) {
-		SpringPropertyProblem problem = problem(YAML_DEPRECATED, keyNode, TypeUtil.deprecatedPropertyMessage(name, contextType, replace, reason));
+			String replace, String reason, Level level, QuickfixType fixType) {
+		ApplicationYamlProblemType problemType = level==Level.ERROR ? YAML_DEPRECATED_ERROR : YAML_DEPRECATED_WARNING;
+		SpringPropertyProblem problem = problem(problemType, keyNode, TypeUtil.deprecatedPropertyMessage(name, contextType, replace, reason));
 		problem.setPropertyName(name);
 		Range range = new Range(new Position(keyNode.getStartMark().getLine(), keyNode.getStartMark().getColumn()),
 				new Position(keyNode.getEndMark().getLine(), keyNode.getEndMark().getColumn()));
-
-		problem.addQuickfix(new QuickfixData<>(fixType, new DeprecatedPropertyData(docUri, range, replace), "Replace with `" + replace + "`"));
+		if (StringUtil.hasText(replace)) {
+			problem.addQuickfix(new QuickfixData<>(fixType, new DeprecatedPropertyData(docUri, range, replace), "Replace with `" + replace + "`"));
+		}
 		return problem;
 	}
 

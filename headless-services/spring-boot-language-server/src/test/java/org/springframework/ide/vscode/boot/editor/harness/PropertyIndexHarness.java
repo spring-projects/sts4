@@ -21,6 +21,7 @@ import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.gradle.internal.impldep.com.google.common.collect.ImmutableList;
 import org.springframework.ide.vscode.boot.configurationmetadata.ConfigurationMetadataProperty;
 import org.springframework.ide.vscode.boot.configurationmetadata.Deprecation;
+import org.springframework.ide.vscode.boot.configurationmetadata.Deprecation.Level;
 import org.springframework.ide.vscode.boot.configurationmetadata.ValueHint;
 import org.springframework.ide.vscode.boot.configurationmetadata.ValueProvider;
 import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
@@ -145,6 +146,16 @@ public class PropertyIndexHarness {
 			hint.setValue(value);
 			hints.add(hint);
 		}
+	}
+
+	public synchronized void deprecate(String key, String replacedBy, String reason, Level level) {
+		index = null;
+		ConfigurationMetadataProperty info = datas.get(key);
+		Deprecation d = new Deprecation();
+		d.setReplacement(replacedBy);
+		d.setReason(reason);
+		d.setLevel(level);
+		info.setDeprecation(d);
 	}
 
 	public synchronized void deprecate(String key, String replacedBy, String reason) {

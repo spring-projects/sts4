@@ -12,6 +12,7 @@
 package org.springframework.ide.vscode.boot.metadata.types;
 
 import org.springframework.ide.vscode.boot.configurationmetadata.Deprecation;
+import org.springframework.ide.vscode.boot.configurationmetadata.Deprecation.Level;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypedProperty;
@@ -51,10 +52,12 @@ public class TypedProperty implements YTypedProperty {
 		this.deprecation = deprecation;
 	}
 
+	@Override
 	public String getName() {
 		return name;
 	}
 
+	@Override
 	public Type getType() {
 		return type;
 	}
@@ -82,6 +85,7 @@ public class TypedProperty implements YTypedProperty {
 		return null;
 	}
 
+	@Override
 	public boolean isDeprecated() {
 		return deprecation!=null;
 	}
@@ -100,8 +104,12 @@ public class TypedProperty implements YTypedProperty {
 		return null;
 	}
 
+	public Level getDeprecationLevel() {
+		return deprecation == null ? null : deprecation.getLevel();
+	}
+
 	public Deprecation getDeprecation() {
 		return deprecation;
 	}
-	
+
 }

@@ -28,6 +28,7 @@ import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.junit.Before;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ide.vscode.boot.app.BootLanguageServerInitializer;
+import org.springframework.ide.vscode.boot.configurationmetadata.Deprecation.Level;
 import org.springframework.ide.vscode.boot.editor.harness.PropertyIndexHarness.ItemConfigurer;
 import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
@@ -257,6 +258,10 @@ public abstract class AbstractPropsEditorTest {
 			}
 			fail("Missing elements: \n"+missing);
 		}
+	}
+
+	public void deprecate(String key, String replacedBy, String reason, Level level) {
+		md.deprecate(key, replacedBy, reason, level);
 	}
 
 	public void deprecate(String key, String replacedBy, String reason) {

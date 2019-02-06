@@ -17,6 +17,7 @@ import java.util.List;
 import org.springframework.ide.vscode.boot.configurationmetadata.ConfigurationMetadataProperty;
 import org.springframework.ide.vscode.boot.configurationmetadata.ConfigurationMetadataSource;
 import org.springframework.ide.vscode.boot.configurationmetadata.Deprecation;
+import org.springframework.ide.vscode.boot.configurationmetadata.Deprecation.Level;
 import org.springframework.ide.vscode.boot.configurationmetadata.ValueHint;
 import org.springframework.ide.vscode.boot.configurationmetadata.ValueProvider;
 import org.springframework.ide.vscode.boot.metadata.ValueProviderRegistry.ValueProviderStrategy;
@@ -206,6 +207,11 @@ public class PropertyInfo {
 	public String getDeprecationReplacement() {
 		return deprecation == null ? null : deprecation.getReplacement();
 	}
+
+	public Level getDeprecationLevel() {
+		return deprecation == null ? null : deprecation.getLevel();
+	}
+
 
 	public void addValueHints(List<ValueHint> hints) {
 		Builder<ValueHint> builder = ImmutableList.builder();

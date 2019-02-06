@@ -858,6 +858,18 @@ public class Editor {
 		return actions.get(0);
 	}
 
+	public void assertNoCodeAction(Diagnostic problem) throws Exception {
+		List<CodeAction> actions = getCodeActions(problem);
+		if (actions!=null && !actions.isEmpty()) {
+			StringBuilder found = new StringBuilder();
+			for (CodeAction codeAction : actions) {
+				found.append("\n"+codeAction.getLabel());
+			}
+			fail("Expected no code actions but found:"+found);
+		}
+	}
+
+
 	public String getUri() {
 		return doc.getUri();
 	}
@@ -896,4 +908,5 @@ public class Editor {
 	public void setCursor(Position position) {
 		this.selectionStart = this.selectionEnd = doc.toOffset(position);
 	}
+
 }

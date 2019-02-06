@@ -21,6 +21,7 @@ import java.time.Duration;
 import java.util.Optional;
 
 import org.eclipse.lsp4j.Diagnostic;
+import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -30,6 +31,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
 import org.springframework.ide.vscode.boot.bootiful.PropertyEditorTestConf;
+import org.springframework.ide.vscode.boot.configurationmetadata.Deprecation.Level;
 import org.springframework.ide.vscode.boot.editor.harness.AbstractPropsEditorTest;
 import org.springframework.ide.vscode.boot.metadata.CachingValueProvider;
 import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
@@ -4015,6 +4017,28 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		editor.assertContextualCompletions("B<*>", "BLUE<*>");
 	}
 
+	@Test public void test_NoQuickfixForDeprecatedProperty() throws Exception {
+		//See: https://www.pivotaltracker.com/story/show/163720976
+		//Summary: if a deprecated property metadata does *not*
+		// provide a 'replace with' hint then it should not create
+		// a 'Replace with' quickfix.
+
+		data("spring.devtools.remote.debug.local-port", "java.lang.Integer",
+				8000,  "Local remote debug server port."
+		);
+		deprecate("spring.devtools.remote.debug.local-port", null, "No longer supported", Level.ERROR);
+
+		Editor editor = harness.newEditor(
+				"spring:\n" +
+				"  devtools:\n" +
+				"    remote:\n" +
+				"      debug:\n" +
+				"        local-port: 8888"
+		);
+		Diagnostic problem = editor.assertProblems("local-port|Deprecated").get(0);
+		editor.assertNoCodeAction(problem);
+		assertEquals(DiagnosticSeverity.Error, problem.getSeverity());
+	}
 
 	///////////////// cruft ////////////////////////////////////////////////////////
 

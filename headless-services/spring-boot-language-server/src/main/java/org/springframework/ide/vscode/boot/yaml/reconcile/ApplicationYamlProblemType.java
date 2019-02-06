@@ -30,7 +30,8 @@ public enum ApplicationYamlProblemType implements ProblemType {
 	YAML_EXPECT_MAPPING("Expecting a 'mapping' node but found something else"),
 	YAML_EXPECT_BEAN_PROPERTY_NAME("Expecting a 'bean property' name but found something more complex"),
 	YAML_INVALID_BEAN_PROPERTY("Accessing a named property in a type that doesn't provide a property accessor with that name"),
-	YAML_DEPRECATED(WARNING, "Property is marked as Deprecated"),
+	YAML_DEPRECATED_ERROR(ERROR, "Property is marked as Deprecated(Error)"),
+	YAML_DEPRECATED_WARNING(WARNING, "Property is marked as Deprecated(Warning)"),
 	YAML_DUPLICATE_KEY("A mapping node contains multiple entries for the same key");
 
 	private final ProblemSeverity defaultSeverity;
@@ -51,6 +52,7 @@ public enum ApplicationYamlProblemType implements ProblemType {
 		this(ERROR, description);
 	}
 
+	@Override
 	public ProblemSeverity getDefaultSeverity() {
 		return defaultSeverity;
 	}

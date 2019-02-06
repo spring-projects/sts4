@@ -36,4 +36,9 @@ public class SpringPropertyProblem extends ReconcileProblemImpl {
 		propertyName = name;
 	}
 
+	@Override
+	public String toString() {
+		return "SpringPropertyProblem("+propertyName+", "+this.getMessage()+")";
+	}
+
 }
