@@ -13,10 +13,11 @@ package org.springframework.ide.vscode.boot.java.utils;
 import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Set;
-import java.util.concurrent.ConcurrentSkipListSet;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -50,16 +51,15 @@ public class SpringLiveHoverWatchdog {
 	Logger logger = LoggerFactory.getLogger(SpringLiveHoverWatchdog.class);
 
 	private final long POLLING_INTERVAL_MILLISECONDS;
-	private final Set<String> watchedDocs;
+
 	private final SimpleLanguageServer server;
 	private final BootJavaHoverProvider hoverProvider;
 	private final RunningAppProvider runningAppProvider;
 
 	private boolean highlightsEnabled = true;
-
 	private ScheduledThreadPoolExecutor timer;
-
 	private JavaProjectFinder projectFinder;
+	private final Map<String, AtomicReference<IJavaProject>> watchedDocs;
 
 
 	public SpringLiveHoverWatchdog(
@@ -75,7 +75,8 @@ public class SpringLiveHoverWatchdog {
 		this.hoverProvider = hoverProvider;
 		this.runningAppProvider = runningAppProvider;
 		this.projectFinder = projectFinder;
-		this.watchedDocs = new ConcurrentSkipListSet<>();
+		this.watchedDocs = new ConcurrentHashMap<>();
+
 		projectChanges.addListener(new ProjectObserver.Listener() {
 
 			@Override
@@ -122,12 +123,12 @@ public class SpringLiveHoverWatchdog {
 			logger.info("Shutting down SpringLiveHoverWatchdog");
 			timer.shutdown();
 			timer = null;
-			watchedDocs.forEach(uri -> cleanupLiveHints(uri));
+			watchedDocs.keySet().forEach(uri -> cleanupLiveHints(uri));
 		}
 	}
 
 	public synchronized void watchDocument(String docURI) {
-		this.watchedDocs.add(docURI);
+		this.watchedDocs.putIfAbsent(docURI, new AtomicReference<IJavaProject>());
 		refreshEnablement();
 	}
 
@@ -153,9 +154,8 @@ public class SpringLiveHoverWatchdog {
 	// internal method, need to run on the scheduled executor pool, do not call outside of that
 	protected void updateDoc(String docURI) {
 		try {
-			IJavaProject project = identifyProject(docURI);
+			IJavaProject project = getCachedProject(docURI);
 			SpringBootApp[] runningBootApps = RunningAppMatcher.getAllMatchingApps(runningAppProvider.getAllRunningSpringApps(), project).toArray(new SpringBootApp[0]);
-
 			update(docURI, runningBootApps);
 		}
 		catch (Exception e) {
@@ -170,8 +170,8 @@ public class SpringLiveHoverWatchdog {
 				Collection<SpringBootApp> runningBootApps = runningAppProvider.getAllRunningSpringApps();
 				Collection<SpringBootApp> cachedApps = createAppCaches(runningBootApps);
 
-				for (String docURI : watchedDocs) {
-					IJavaProject project = identifyProject(docURI);
+				for (String docURI : watchedDocs.keySet()) {
+					IJavaProject project = getCachedProject(docURI);
 					SpringBootApp[] matchingApps = RunningAppMatcher.getAllMatchingApps(cachedApps, project).toArray(new SpringBootApp[0]);
 					update(docURI, matchingApps);
 				}
@@ -222,7 +222,7 @@ public class SpringLiveHoverWatchdog {
 	}
 
 	private void refreshEnablement() {
-		boolean shouldEnable = highlightsEnabled && hasInterestingProject(watchedDocs.stream());
+		boolean shouldEnable = highlightsEnabled && hasInterestingProject(watchedDocs.keySet().stream());
 		if (shouldEnable) {
 			start();
 		} else {
@@ -232,6 +232,18 @@ public class SpringLiveHoverWatchdog {
 
 	private boolean hasInterestingProject(Stream<String> uris) {
 		return uris.anyMatch(uri -> projectFinder.find(new TextDocumentIdentifier(uri)).isPresent());
+	}
+
+	private IJavaProject getCachedProject(String docURI) {
+		AtomicReference<IJavaProject> reference = this.watchedDocs.get(docURI);
+		IJavaProject project = reference.get();
+		if (project == null) {
+			project = identifyProject(docURI);
+			if (!reference.compareAndSet(null, project)) {
+				return reference.get();
+			}
+		}
+		return project;
 	}
 
 	private IJavaProject identifyProject(String docURI) {
