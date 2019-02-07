@@ -15,6 +15,9 @@ import { ILanguageClient } from '@theia/languages/lib/browser';
 export const ADD_LISTENER_REQUEST_TYPE = 'sts/addClasspathListener';
 export const REMOVE_LISTENER_REQUEST_TYPE ='sts/removeClasspathListener';
 
+const TIMEOUT = 5000;
+const WAIT_PERIOD = 500;
+
 @injectable()
 export class ClasspathService {
 
@@ -28,11 +31,27 @@ export class ClasspathService {
     }
 
     private async addListener(params: ClasspathListenerParams) {
-        this.commands.executeCommand(/*'java.execute.workspaceCommand',*/ 'sts.java.addClasspathListener', params.callbackCommandId);
+        await this.waitForJdtCommands();
+        this.commands.executeCommand('sts.java.addClasspathListener', params.callbackCommandId);
     }
 
     private async removeListener(params: ClasspathListenerParams) {
-        this.commands.executeCommand(/*'java.execute.workspaceCommand',*/ 'sts.java.removeClasspathListener', params.callbackCommandId);
+        this.commands.executeCommand('sts.java.removeClasspathListener', params.callbackCommandId);
+    }
+
+    private async waitForJdtCommands() {
+        for (let t = 0; t < TIMEOUT; t+=WAIT_PERIOD) {
+            if (this.commands.getCommand('sts.java.addClasspathListener')) {
+                return Promise.resolve();
+            }
+            await ClasspathService.wait(WAIT_PERIOD);
+        }
+    }
+
+    static async wait(ms) {
+        return new Promise(resolve => {
+            setTimeout(resolve, ms);
+        });
     }
 }
 
