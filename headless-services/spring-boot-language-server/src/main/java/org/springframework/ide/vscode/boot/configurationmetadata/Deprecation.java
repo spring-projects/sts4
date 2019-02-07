@@ -28,11 +28,9 @@ import java.io.Serializable;
 @SuppressWarnings("serial")
 public class Deprecation implements Serializable {
 
-	private Level level = Level.warning;
+	private Level level = Level.WARNING;
 
 	private String reason;
-
-	private String shortReason;
 
 	private String replacement;
 
@@ -62,20 +60,6 @@ public class Deprecation implements Serializable {
 	}
 
 	/**
-	 * A single-line, single-sentence reason why the related property is deprecated, if
-	 * any.
-	 * @return the short deprecation reason
-	 * @see #getReason()
-	 */
-	public String getShortReason() {
-		return this.shortReason;
-	}
-
-	public void setShortReason(String shortReason) {
-		this.shortReason = shortReason;
-	}
-
-	/**
 	 * The full name of the property that replaces the related deprecated property, if
 	 * any.
 	 * @return the replacement property name
@@ -102,12 +86,12 @@ public class Deprecation implements Serializable {
 		/**
 		 * The property is still bound.
 		 */
-		warning,
+		WARNING,
 
 		/**
 		 * The property has been removed and is no longer bound.
 		 */
-		error
+		ERROR
 
 	}
 }

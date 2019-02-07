@@ -23,6 +23,7 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Locale;
 
 import org.springframework.ide.eclipse.org.json.JSONArray;
 import org.springframework.ide.eclipse.org.json.JSONObject;
@@ -156,12 +157,26 @@ class JsonReader {
 		if (object.has("deprecation")) {
 			JSONObject deprecationJsonObject = object.getJSONObject("deprecation");
 			Deprecation deprecation = new Deprecation();
+			deprecation.setLevel(parseDeprecationLevel(
+					deprecationJsonObject.optString("level", null)));
 			deprecation.setReason(deprecationJsonObject.optString("reason", null));
 			deprecation
 					.setReplacement(deprecationJsonObject.optString("replacement", null));
 			return deprecation;
 		}
 		return (object.optBoolean("deprecated") ? new Deprecation() : null);
+	}
+
+	private Deprecation.Level parseDeprecationLevel(String value) {
+		if (value != null) {
+			try {
+				return Deprecation.Level.valueOf(value.toUpperCase(Locale.ENGLISH));
+			}
+			catch (IllegalArgumentException ex) {
+				// let's use the default
+			}
+		}
+		return Deprecation.Level.WARNING;
 	}
 
 	private Object readItemValue(Object value) {
