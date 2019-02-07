@@ -4026,7 +4026,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		data("spring.devtools.remote.debug.local-port", "java.lang.Integer",
 				8000,  "Local remote debug server port."
 		);
-		deprecate("spring.devtools.remote.debug.local-port", null, "No longer supported", Level.ERROR);
+		deprecate("spring.devtools.remote.debug.local-port", null, "No longer supported", Level.error);
 
 		Editor editor = harness.newEditor(
 				"spring:\n" +

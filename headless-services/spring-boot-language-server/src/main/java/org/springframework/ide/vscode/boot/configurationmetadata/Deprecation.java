@@ -28,7 +28,7 @@ import java.io.Serializable;
 @SuppressWarnings("serial")
 public class Deprecation implements Serializable {
 
-	private Level level = Level.WARNING;
+	private Level level = Level.warning;
 
 	private String reason;
 
@@ -102,12 +102,12 @@ public class Deprecation implements Serializable {
 		/**
 		 * The property is still bound.
 		 */
-		WARNING,
+		warning,
 
 		/**
 		 * The property has been removed and is no longer bound.
 		 */
-		ERROR
+		error
 
 	}
 }
