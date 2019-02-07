@@ -404,7 +404,7 @@ public class ApplicationYamlASTReconciler implements YamlASTReconciler {
 
 	protected SpringPropertyProblem deprecatedPropertyProblem(String docUri, String name, String contextType, Node keyNode,
 			String replace, String reason, Level level, QuickfixType fixType) {
-		ApplicationYamlProblemType problemType = level==Level.ERROR ? YAML_DEPRECATED_ERROR : YAML_DEPRECATED_WARNING;
+		ApplicationYamlProblemType problemType = level==Level.error ? YAML_DEPRECATED_ERROR : YAML_DEPRECATED_WARNING;
 		SpringPropertyProblem problem = problem(problemType, keyNode, TypeUtil.deprecatedPropertyMessage(name, contextType, replace, reason));
 		problem.setPropertyName(name);
 		Range range = new Range(new Position(keyNode.getStartMark().getLine(), keyNode.getStartMark().getColumn()),
