@@ -74,8 +74,8 @@ public class SpringIndexerXMLNamespaceHandlerBeans implements SpringIndexerXMLNa
 			int endInLine = symbolEnd - document.getLineOffset(lineEnd);
 
 			Range range = new Range();
-			range.setStart(new Position(lineStart + 1, startInLine));
-			range.setEnd(new Position(lineEnd + 1, endInLine));
+			range.setStart(new Position(lineStart, startInLine));
+			range.setEnd(new Position(lineEnd, endInLine));
 
 			Location location = new Location();
 			location.setUri(docURI);
