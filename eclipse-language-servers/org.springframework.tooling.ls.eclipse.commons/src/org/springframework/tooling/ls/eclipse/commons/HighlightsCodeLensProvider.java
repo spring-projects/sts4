@@ -74,7 +74,7 @@ public class HighlightsCodeLensProvider extends AbstractCodeMiningProvider {
 			IDocument document = viewer.getDocument();
 
 			return CompletableFuture.supplyAsync(() -> {
-				List<LSPDocumentInfo> docInfos = LanguageServiceAccessor.getLSPDocumentInfosFor(document, null);
+				List<LSPDocumentInfo> docInfos = LanguageServiceAccessor.getLSPDocumentInfosFor(document, (x) -> true);
 				if (!docInfos.isEmpty()) {
 					LSPDocumentInfo info = docInfos.get(0);
 					HighlightParams highlights = STS4LanguageClientImpl.currentHighlights.get(info.getFileUri().toString());
