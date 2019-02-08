@@ -53,7 +53,7 @@ public class ActiveProfilesProvider implements HoverProvider {
 			int offset,
 			TextDocument doc, IJavaProject project, SpringBootApp[] runningApps
 	) {
-		if (runningApps.length>0) {
+		if (runningApps.length > 0) {
 			StringBuilder markdown = new StringBuilder();
 			markdown.append("**Active Profiles**\n\n");
 			boolean hasInterestingApp = false;
@@ -94,9 +94,12 @@ public class ActiveProfilesProvider implements HoverProvider {
 	public Collection<CodeLens> getLiveHintCodeLenses(IJavaProject project, Annotation annotation, TextDocument doc, SpringBootApp[] runningApps) {
 		if (runningApps.length > 0) {
 			Builder<CodeLens> codeLenses = ImmutableList.builder();
-			nameRange(doc, annotation).map(CodeLens::new).ifPresent(codeLenses::add);
 
 			Set<String> allActiveProfiles = getAllActiveProfiles(runningApps);
+			if (allActiveProfiles != null && allActiveProfiles.size() > 0) {
+				nameRange(doc, annotation).map(CodeLens::new).ifPresent(codeLenses::add);
+			}
+
 			annotation.accept(new ASTVisitor() {
 				@Override
 				public boolean visit(StringLiteral node) {
