@@ -79,7 +79,7 @@ public class ConcourseLanguageServerInitializer implements InitializingBean {
 			reconcileEngine.setTypeCollector(models.getAstTypeCache());
 
 			this.symbolHandler = CollectionUtil.hasElements(definitionTypes)
-					? new TypeBasedYamlSymbolHandler(server.getTextDocumentService(), models.getAstTypeCache(), definitionTypes)
+					? new TypeBasedYamlSymbolHandler(server.getTextDocumentService(), models.getAstTypeCache(), definitionTypes, server::hasHierarchicalDocumentSymbolSupport)
 					: DocumentSymbolHandler.NO_SYMBOLS;
 		}
 

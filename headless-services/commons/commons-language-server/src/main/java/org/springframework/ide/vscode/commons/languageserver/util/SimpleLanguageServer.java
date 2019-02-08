@@ -14,7 +14,6 @@ import java.lang.management.ManagementFactory;
 import java.net.URI;
 import java.nio.file.Paths;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -133,10 +132,9 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 	private LanguageServerTestListener testListener;
 
 	private boolean hasCompletionSnippetSupport;
-
 	private boolean hasExecuteCommandSupport;
-
 	private boolean hasFileWatcherRegistrationSupport;
+	private boolean hasHierarchicalDocumentSymbolSupport;
 
 	private Consumer<InitializeParams> initializeHandler;
 	private CompletableFuture<Void> initialized = new CompletableFuture<Void>();
@@ -156,6 +154,7 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 	private Optional<CompletionFilter> completionFilter = Optional.empty();
 
 	private String completionTriggerCharacters = null;
+
 
 	@Override
 	public void connect(LanguageClient _client) {
@@ -260,6 +259,7 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 		this.hasCompletionSnippetSupport = safeGet(false, () -> params.getCapabilities().getTextDocument().getCompletion().getCompletionItem().getSnippetSupport());
 		this.hasExecuteCommandSupport = safeGet(false, () -> params.getCapabilities().getWorkspace().getExecuteCommand()!=null);
 		this.hasFileWatcherRegistrationSupport = safeGet(false, () -> params.getCapabilities().getWorkspace().getDidChangeWatchedFiles().getDynamicRegistration());
+		this.hasHierarchicalDocumentSymbolSupport = safeGet(false, () -> params.getCapabilities().getTextDocument().getDocumentSymbol().getHierarchicalDocumentSymbolSupport());
 		log.debug("workspaceRoots = "+getWorkspaceService().getWorkspaceRoots());
 		log.debug("hasCompletionSnippetSupport = "+hasCompletionSnippetSupport);
 		log.debug("hasExecuteCommandSupport = "+hasExecuteCommandSupport);
@@ -425,6 +425,9 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 	public final boolean hasLazyCompletionResolver() {
 		return completionResolver!=null;
 	}
+	public boolean hasHierarchicalDocumentSymbolSupport() {
+		return hasHierarchicalDocumentSymbolSupport;
+	}
 
 	private boolean hasDocumentSymbolHandler() {
 		return getTextDocumentService().hasDocumentSymbolHandler();
@@ -478,25 +481,6 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 	public Collection<WorkspaceFolder> getWorkspaceRoots() {
 		return getWorkspaceService().getWorkspaceRoots();
 	}
-
-//	/**
-//	 * Deprecated, shouldn't use and should be removed. Anyone calling this
-//	 * will have problems handling multi-root workspaces.
-//	 * <p>
-//	 * Use getWorkspaceRoots instead.
-//	 */
-//	@Deprecated
-//	public Path getWorkspaceRoot() {
-//		try {
-//			Optional<WorkspaceFolder> firstRoot = getWorkspaceRoots().stream().findFirst();
-//			if (firstRoot.isPresent()) {
-//				return new File(new URI(firstRoot.get().getUri())).toPath();
-//			}
-//		} catch (Exception e) {
-//			Log.log(e);
-//		}
-//		return null;
-//	}
 
 	@Override
 	public synchronized SimpleTextDocumentService getTextDocumentService() {
@@ -728,4 +712,5 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 	public void setCompletionTriggerCharacters(String completionTriggerCharacters) {
 		this.completionTriggerCharacters = completionTriggerCharacters;
 	}
+
 }

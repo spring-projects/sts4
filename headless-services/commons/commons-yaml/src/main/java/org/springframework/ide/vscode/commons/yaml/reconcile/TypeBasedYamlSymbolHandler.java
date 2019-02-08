@@ -15,10 +15,15 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import javax.inject.Provider;
+
+import org.eclipse.lsp4j.DocumentSymbol;
 import org.eclipse.lsp4j.DocumentSymbolParams;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.SymbolKind;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentSymbolHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.util.Assert;
@@ -30,6 +35,7 @@ import org.springframework.ide.vscode.commons.yaml.ast.NodeUtil;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.yaml.snakeyaml.nodes.Node;
 
+import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableSet;
@@ -44,15 +50,19 @@ import com.google.common.collect.ImmutableSet;
  */
 public class TypeBasedYamlSymbolHandler implements DocumentSymbolHandler {
 
+	final static Logger logger = LoggerFactory.getLogger(TypeBasedYamlSymbolHandler.class);
+
 	private ASTTypeCache astTypeCache;
 	private Set<YType> definitionTypes;
 	private SimpleTextDocumentService documents;
+	private Supplier<Boolean> hiearchicalSymbolSupport;
 
-	public TypeBasedYamlSymbolHandler(SimpleTextDocumentService documents, ASTTypeCache astTypeCache, Collection<YType> definitionTypes) {
+	public TypeBasedYamlSymbolHandler(SimpleTextDocumentService documents, ASTTypeCache astTypeCache, Collection<YType> definitionTypes, Supplier<Boolean> hasHierarchicalSymbolSupport) {
 		Assert.isTrue(!definitionTypes.isEmpty()); // If there's no interesting types then you are better of using DocumentSymbolHandler.NO_SYMBOLS
 		this.documents = documents;
 		this.astTypeCache = astTypeCache;
 		this.definitionTypes = ImmutableSet.copyOf(definitionTypes);
+		this.hiearchicalSymbolSupport = hasHierarchicalSymbolSupport;
 		for (YType yType : definitionTypes) {
 			astTypeCache.addInterestingType(yType);
 		}
@@ -67,7 +77,7 @@ public class TypeBasedYamlSymbolHandler implements DocumentSymbolHandler {
 				try {
 					builder.add(createSymbol(doc, entry.getKey(), entry.getValue()));
 				} catch (Exception e) {
-					Log.log(e);
+					logger.error("", e);
 				}
 			}
 		}

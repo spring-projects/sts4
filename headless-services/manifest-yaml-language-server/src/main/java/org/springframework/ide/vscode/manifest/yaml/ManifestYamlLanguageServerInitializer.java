@@ -93,7 +93,7 @@ public class ManifestYamlLanguageServerInitializer implements InitializingBean {
 
 		ASTTypeCache astTypeCache = new ASTTypeCache();
 		engine.setTypeCollector(astTypeCache);
-		documents.onDocumentSymbol(new TypeBasedYamlSymbolHandler(documents, astTypeCache, schema.getDefinitionTypes()));
+		documents.onDocumentSymbol(new TypeBasedYamlSymbolHandler(documents, astTypeCache, schema.getDefinitionTypes(), server::hasHierarchicalDocumentSymbolSupport));
 
 		documents.onDidChangeContent(params -> {
 			validateOnDocumentChange(engine, params.getDocument());
