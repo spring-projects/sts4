@@ -22,6 +22,7 @@ import com.google.common.collect.ImmutableMap;
 import com.sun.tools.attach.VirtualMachine;
 import com.sun.tools.attach.VirtualMachineDescriptor;
 
+@SuppressWarnings("restriction")
 public class LocalSpringBootAppCache {
 
 	private static final Duration EXPIRE_AFTER = Duration.ofMillis(500); //Limits rate at which we refresh list of apps

@@ -10,11 +10,9 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.handlers;
 
-import java.io.File;
 import java.net.URI;
 import java.util.Collection;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Optional;
 
 import org.eclipse.jdt.core.dom.ASTNode;
@@ -44,7 +42,6 @@ import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
-import org.springframework.ide.vscode.commons.languageserver.java.ls.Classpath;
 import org.springframework.ide.vscode.commons.languageserver.util.HoverHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
@@ -102,35 +99,6 @@ public class BootJavaHoverProvider implements HoverHandler {
 	public CodeLens[] getLiveHoverHints(final TextDocument document, IJavaProject project, final SpringBootApp[] runningBootApps) {
 		if (runningBootApps.length == 0) return new CodeLens[0];
 		if (project == null) return new CodeLens[0];
-
-		if (!hasActuatorDependency(project)) {
-			// double check the running apps in case there is a non-boot app running with live beans enabled
-			boolean nonBootLiveBeansAround = false;
-			boolean onAppsClasspath = false;
-			for (SpringBootApp bootApp : runningBootApps) {
-				if (bootApp.providesNonBootLiveBeans()) {
-					nonBootLiveBeansAround = true;
-					break;
-				} else {
-					try {
-						List<File> binaryRoots = IClasspathUtil.getBinaryRoots(project.getClasspath(), Classpath::isSource);
-						for (String path : bootApp.getClasspath()) {
-							File file = new File(path);
-							if (binaryRoots.contains(file)) {
-								onAppsClasspath = true;
-								break;
-							}
-						}
-					} catch (Exception e) {
-						logger.error("", e);
-					}
-				}
-			}
-
-			if (!nonBootLiveBeansAround && !onAppsClasspath) {
-				return new CodeLens[0];
-			}
-		}
 
 		return server.getCompilationUnitCache().withCompilationUnit(project, URI.create(document.getUri()), cu -> {
 			Collection<CodeLens> result = new LinkedHashSet<>();
@@ -318,18 +286,19 @@ public class BootJavaHoverProvider implements HoverHandler {
 
 				for (HoverProvider provider : this.hoverProviders.get(type)) {
 					Hover hover = provider.provideHover(exactNode, annotation, type, offset, doc, project, runningApps);
-					if (hover!=null) {
+					if (hover != null) {
 						logger.debug("Hover found: "+hover);
 						//TODO: compose multiple hovers somehow instead of just returning the first one?
 						return hover;
 					}
 					logger.debug("NO Hover!");
 				}
+
 				//Only reaching here if we didn't get a hover.
 				if (!hasActuatorDependency(project)) {
 					DocumentRegion region = ASTUtils.nameRegion(doc, annotation);
 					if (region.containsOffset(offset)) {
-						return actuatorWarning(project);
+						return liveHoverWarning(project);
 					}
 				}
 			}
@@ -353,12 +322,12 @@ public class BootJavaHoverProvider implements HoverHandler {
 		return null;
 	}
 
-	private Hover actuatorWarning(IJavaProject project) {
+	private Hover liveHoverWarning(IJavaProject project) {
 		String hoverText =
 				"**No live hover information available**.\n"+
 				"\n" +
-				"Live hover providers use various `spring-boot-actuator` endpoints to retrieve information. "+
-				"Consider adding `spring-boot-actuator` as a dependency to your project `"+project.getElementName()+"`";
+				"Live hover providers use either `spring-boot-actuator` endpoints to retrieve information or the Spring live beans option. "+
+				"Consider adding `spring-boot-actuator` as a dependency to your project `"+project.getElementName()+"` or enable the live beans option in your launch configuration.";
 		return new Hover(ImmutableList.of(Either.forLeft(hoverText)));
 	}
 
