@@ -78,6 +78,8 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 	private String jmxMbeanActuatorDomain;
 
 	private Set<ObjectName> nonBootLiveMBeanNames;
+	private Boolean hasJmxBeans;
+	private int retryCount;
 
 	private LiveBeansModel cachedBeansModel;
 	private String cachedBeansModelMD5;
@@ -104,12 +106,6 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 
 	@Override
 	public abstract String getProcessName() throws Exception;
-
-	@Override
-	public abstract boolean isSpringBootApp();
-
-	@Override
-	public abstract boolean isSpringApp();
 
 
 	private final MemoizingDisposableSupplier<JMXConnector> jmxConnector = new MemoizingDisposableSupplier<JMXConnector>(
@@ -156,6 +152,11 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 	@Override
 	public void dispose() {
 		jmxConnector.dispose();
+	}
+
+	public boolean containsSystemProperty(Object key) throws Exception {
+		Properties props = getSystemProperties();
+		return props.containsKey(key);
 	}
 
 	@Override
@@ -228,7 +229,63 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 	}
 
 	@Override
-	public boolean providesNonBootLiveBeans() {
+	public boolean hasUsefulJmxBeans() {
+		if (hasJmxBeans == null) {
+			try {
+				if (containsSystemProperty("sts4.languageserver.name")) {
+					logger.info("language server process found -- " + this.getProcessID() + " = " + getProcessName());
+					hasJmxBeans = Boolean.FALSE;
+				}
+				else {
+					logger.info("check for spring jmx beans (retry no. " + retryCount + ") -- " + this.getProcessID() + " = " + getProcessName());
+
+					boolean jmxBeansFound = containsSpringJmxBeans();
+					if (jmxBeansFound) {
+						hasJmxBeans = Boolean.TRUE;
+						logger.info("spring jmx beans found -- " + this.getProcessID() + " = " + getProcessName());
+					}
+					else if (retryCount == 3) {
+						hasJmxBeans = Boolean.FALSE;
+						logger.info("no spring jmx beans found after trying 4 times -- " + this.getProcessID() + " = " + getProcessName());
+					}
+					else {
+						retryCount++;
+					}
+				}
+			}
+			catch (Exception e) {
+				if (retryCount == 3) {
+					hasJmxBeans = Boolean.FALSE;
+
+					try {
+						logger.info("no spring jmx beans found after trying 4 times -- " + this.getProcessID() + " = " + getProcessName());
+					} catch (Exception e1) {
+						logger.info("no spring jmx beans found after trying 4 times -- " + this.getProcessID() + " = (process name unknown)");
+					}
+				}
+				else {
+					retryCount++;
+				}
+			}
+		}
+
+		return hasJmxBeans != null ? hasJmxBeans : false;
+	}
+
+	private boolean containsSpringJmxBeans() throws Exception {
+		return withTimeout(() -> withJmxConnector(jmxConnector -> {
+			MBeanServerConnection connection = jmxConnector.getMBeanServerConnection();
+
+			QueryExp queryExp = Query.or(Query.or(Query.isInstanceOf(Query.value("org.springframework.boot.actuate.endpoint.jmx.EndpointMBean")),
+					Query.isInstanceOf(Query.value("org.springframework.boot.actuate.endpoint.jmx.DataEndpointMBean"))),
+					Query.isInstanceOf(Query.value("org.springframework.context.support.LiveBeansView")));
+
+			Set<ObjectName> names = connection.queryNames(null, queryExp);
+			return names != null && names.size() > 0;
+		}));
+	}
+
+	protected boolean providesNonBootLiveBeans() {
 		return getNonBootSpringLiveMBeans().size() > 0;
 	}
 

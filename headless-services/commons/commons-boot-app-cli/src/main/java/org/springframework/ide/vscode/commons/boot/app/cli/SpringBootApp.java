@@ -30,14 +30,12 @@ public interface SpringBootApp extends Disposable {
 	String getPort() throws Exception;
 	String getContextPath() throws Exception;
 
-	boolean isSpringBootApp();
-	boolean isSpringApp();
+	boolean hasUsefulJmxBeans();
 
 	String getEnvironment() throws Exception;
 	Collection<RequestMapping> getRequestMappings() throws Exception;
 
 	LiveBeansModel getBeans();
-	boolean providesNonBootLiveBeans();
 
 	List<String> getActiveProfiles();
 	Optional<List<LiveConditional>> getLiveConditionals() throws Exception;

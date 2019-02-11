@@ -37,9 +37,6 @@ public class LocalSpringBootApp extends AbstractSpringBootApp {
 
 	private static final String LOCAL_CONNECTOR_ADDRESS = "com.sun.management.jmxremote.localConnectorAddress";
 
-	private Boolean isSpringBootApp;
-	private Boolean isSpringApp;
-
 	private static LocalSpringBootAppCache cache = new LocalSpringBootAppCache();
 
 	public static Collection<SpringBootApp> getAllRunningJavaApps() throws Exception {
@@ -47,7 +44,7 @@ public class LocalSpringBootApp extends AbstractSpringBootApp {
 	}
 
 	public static Collection<SpringBootApp> getAllRunningSpringApps() throws Exception {
-		return getAllRunningJavaApps().stream().filter(app -> app.isSpringBootApp() || app.isSpringApp()).collect(CollectorUtil.toImmutableList());
+		return getAllRunningJavaApps().parallelStream().filter(app -> app.hasUsefulJmxBeans()).collect(CollectorUtil.toImmutableList());
 	}
 
 	public LocalSpringBootApp(VirtualMachineDescriptor vmd) throws AttachNotSupportedException, IOException {
@@ -93,57 +90,6 @@ public class LocalSpringBootApp extends AbstractSpringBootApp {
 	}
 
 	@Override
-	public boolean isSpringApp() {
-		if (isSpringApp == null) {
-			try {
-				isSpringApp = !containsSystemProperty("sts4.languageserver.name")
-					&& (
-							isSpringAppClasspath() ||
-							providesNonBootLiveBeans()
-					);
-			} catch (Exception e) {
-				//Couldn't determine if the VM is a spring boot app. Could be it already died. Or could be its not accessible (yet).
-				// We will ignore the exception, pretend its not a boot app (most likely isn't) but DO NOT CACHE this result
-				// so it will be retried again on the next polling loop.
-				return false;
-			}
-		}
-		return isSpringApp;
-	}
-
-	private boolean isSpringAppClasspath() throws Exception {
-		return contains(getClasspath(), "spring-core");
-	}
-
-	@Override
-	public boolean isSpringBootApp() {
-		if (isSpringBootApp == null) {
-			try {
-				isSpringBootApp = !containsSystemProperty("sts4.languageserver.name")
-					&& (
-							isSpringBootAppClasspath() ||
-							isSpringBootAppSysprops()
-					);
-			} catch (Exception e) {
-				//Couldn't determine if the VM is a spring boot app. Could be it already died. Or could be its not accessible (yet).
-				// We will ignore the exception, pretend its not a boot app (most likely isn't) but DO NOT CACHE this result
-				// so it will be retried again on the next polling loop.
-				return false;
-			}
-		}
-		return isSpringBootApp;
-	}
-
-	private boolean isSpringBootAppSysprops() throws Exception {
-		Properties sysprops = getSystemProperties();
-		return "org.springframework.boot.loader".equals(sysprops.getProperty("java.protocol.handler.pkgs"));
-	}
-
-	private boolean isSpringBootAppClasspath() throws Exception {
-		return contains(getClasspath(), "spring-boot");
-	}
-
-	@Override
 	public Properties getSystemProperties() throws Exception {
 		try {
 			return withTimeout(() -> vm.getSystemProperties());
@@ -151,11 +97,6 @@ public class LocalSpringBootApp extends AbstractSpringBootApp {
 			logger.error("Fetching systemprops from local app failed: {}", ExceptionUtil.getMessage(e));
 			throw e;
 		}
-	}
-
-	public boolean containsSystemProperty(Object key) throws Exception {
-		Properties props = getSystemProperties();
-		return props.containsKey(key);
 	}
 
 	protected boolean contains(String[] cpElements, String element) {
