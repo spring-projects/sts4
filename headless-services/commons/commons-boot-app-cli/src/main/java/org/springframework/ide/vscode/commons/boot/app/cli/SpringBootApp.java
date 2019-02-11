@@ -16,6 +16,7 @@ import java.util.Optional;
 import java.util.Properties;
 
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansModel;
+import org.springframework.ide.vscode.commons.boot.app.cli.liveproperties.LiveProperties;
 import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.RequestMapping;
 
 import reactor.core.Disposable;
@@ -40,6 +41,8 @@ public interface SpringBootApp extends Disposable {
 	List<String> getActiveProfiles();
 	Optional<List<LiveConditional>> getLiveConditionals() throws Exception;
 	Properties getSystemProperties() throws Exception;
+
+	LiveProperties getLiveProperties() throws Exception;
 
 	default String getSystemProperty(String string) throws Exception {
 		Object r = getSystemProperties().get(string);

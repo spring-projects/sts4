@@ -43,6 +43,8 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansModel;
+import org.springframework.ide.vscode.commons.boot.app.cli.liveproperties.LiveEnvJsonParser;
+import org.springframework.ide.vscode.commons.boot.app.cli.liveproperties.LiveProperties;
 import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.Boot1xRequestMapping;
 import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.RequestMapping;
 import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.RequestMappingsParser20;
@@ -621,6 +623,20 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 			port = getPortViaTomcatBean(connection);
 			return port;
 		});
+	}
+
+	@Override
+	public LiveProperties getLiveProperties() throws Exception {
+
+		try {
+			String envJson = getEnvironment();
+			if (envJson != null) {
+				return LiveEnvJsonParser.parseProperties(envJson);
+			}
+		} catch (Exception e) {
+			logger.error("error resolving live properties from environment endpoint", e);
+		}
+		return null;
 	}
 
 	protected String getPortViaAdmin(MBeanServerConnection connection) throws Exception {

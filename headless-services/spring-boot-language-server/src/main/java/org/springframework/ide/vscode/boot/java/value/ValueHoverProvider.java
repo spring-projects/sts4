@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2018 Pivotal, Inc.
+ * Copyright (c) 2017, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,7 +11,7 @@
 package org.springframework.ide.vscode.boot.java.value;
 
 import java.util.HashMap;
-import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.jdt.core.dom.ASTNode;
@@ -24,10 +24,11 @@ import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
-import org.json.JSONObject;
 import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
 import org.springframework.ide.vscode.boot.java.livehover.LiveHoverUtils;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
+import org.springframework.ide.vscode.commons.boot.app.cli.liveproperties.LiveProperties;
+import org.springframework.ide.vscode.commons.boot.app.cli.liveproperties.LiveProperty;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
@@ -74,26 +75,19 @@ public class ValueHoverProvider implements HoverProvider {
 				String propertyKey = value.substring(range.getStart(), range.getEnd());
 
 				if (propertyKey != null) {
-					Map<SpringBootApp, JSONObject> allProperties = getPropertiesFromProcesses(runningApps);
+					Map<SpringBootApp, LiveProperties> allProperties = getPropertiesFromProcesses(runningApps);
 
 					StringBuilder hover = new StringBuilder();
 
 					for (SpringBootApp app : allProperties.keySet()) {
-						JSONObject properties = allProperties.get(app);
-						Iterator<?> keys = properties.keys();
-						while (keys.hasNext()) {
-							String key = (String) keys.next();
-							if (properties.get(key) instanceof JSONObject) {
-								JSONObject props = properties.getJSONObject(key);
-
-								if (props.has(propertyKey)) {
-									String propertyValue = props.getString(propertyKey);
-
-									hover.append(propertyKey + " : " + propertyValue);
-									hover.append(" (from: " + key + ")\n\n");
-									hover.append(LiveHoverUtils.niceAppName(app));
-									hover.append("\n\n");
-								}
+						LiveProperties properties = allProperties.get(app);
+						List<LiveProperty> foundProperties = properties.getProperties(propertyKey);
+						if (foundProperties != null) {
+							for (LiveProperty liveProp : foundProperties) {
+								hover.append(propertyKey + " : " + liveProp.getValue());
+								hover.append(" (from: " + liveProp.getSource() + ")\n\n");
+								hover.append(LiveHoverUtils.niceAppName(app));
+								hover.append("\n\n");
 							}
 						}
 					}
@@ -115,17 +109,14 @@ public class ValueHoverProvider implements HoverProvider {
 		return null;
 	}
 
-	public Map<SpringBootApp, JSONObject> getPropertiesFromProcesses(SpringBootApp[] runningApps) {
-		Map<SpringBootApp, JSONObject> result = new HashMap<>();
+	public Map<SpringBootApp, LiveProperties> getPropertiesFromProcesses(SpringBootApp[] runningApps) {
+		Map<SpringBootApp, LiveProperties> result = new HashMap<>();
 
 		try {
 			for (SpringBootApp app : runningApps) {
-				String environment = app.getEnvironment();
-				if (environment != null) {
-					JSONObject env = new JSONObject(environment);
-					if (env != null) {
-						result.put(app, env);
-					}
+				LiveProperties liveProperties = app.getLiveProperties();
+				if (liveProperties != null) {
+					result.put(app, liveProperties);
 				}
 			}
 		}
