@@ -76,13 +76,13 @@ public class ConcourseModel {
 	 * that same type of something).
 	 */
 	public Constraint isUsed(YType refType, String entityTypeName) {
-		getAstTypeCache().addInterestingType(refType); //ensure the type is tracked in the type-cache
+		astTypeCache.addInterestingType(refType); //ensure the type is tracked in the type-cache
 		return new Constraint() {
 			@Override
 			public void verify(DynamicSchemaContext dc, Node parent, Node node, YType type, IProblemCollector problems) {
 				String defName = NodeUtil.asScalar(node);
 				if (StringUtil.hasText(defName)) { //Avoid silly 'not used' errors for empty names (will have an other error already).
-					NodeTypes nodeTypes = getAstTypeCache().getNodeTypes(dc.getDocument().getUri());
+					NodeTypes nodeTypes = astTypeCache.getNodeTypes(dc.getDocument().getUri());
 					if (nodeTypes!=null) {
 						Optional<Node> reference = nodeTypes.getNodes(refType).stream()
 							.filter(refNode -> defName.equals(NodeUtil.asScalar(refNode)))
@@ -286,8 +286,9 @@ public class ConcourseModel {
 		valueAt("name")
 	);
 
+	private final ASTTypeCache astTypeCache;
+
 	private final YamlAstCache asts = new YamlAstCache();
-	private final ASTTypeCache astTypes = new ASTTypeCache();
 
 	private ResourceTypeRegistry resourceTypes;
 
@@ -295,7 +296,8 @@ public class ConcourseModel {
 
 	private YBeanUnionType stepType;
 
-	public ConcourseModel(SimpleLanguageServer languageServer) {
+	public ConcourseModel(SimpleLanguageServer languageServer, ASTTypeCache astTypeCache) {
+		this.astTypeCache = astTypeCache;
 		this.snippetBuilderFactory = languageServer::createSnippetBuilder;
 	}
 
@@ -447,10 +449,6 @@ public class ConcourseModel {
 		return null;
 	}
 
-
-	public ASTTypeCache getAstTypeCache() {
-		return astTypes;
-	}
 
 	public void setResourceTypeRegistry(ResourceTypeRegistry resourceTypes) {
 		this.resourceTypes = resourceTypes;

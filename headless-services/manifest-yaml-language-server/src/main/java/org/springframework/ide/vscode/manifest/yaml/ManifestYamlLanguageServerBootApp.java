@@ -16,6 +16,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter.CompletionFilter;
 import org.springframework.ide.vscode.commons.util.LogRedirect;
 import org.springframework.ide.vscode.commons.util.Unicodes;
+import org.springframework.ide.vscode.commons.yaml.reconcile.ASTTypeCache;
 
 @SpringBootApplication
 public class ManifestYamlLanguageServerBootApp {
@@ -43,5 +44,9 @@ public class ManifestYamlLanguageServerBootApp {
 			}
 			return true;
 		};
+	}
+
+	@Bean ASTTypeCache astTypeCache() {
+		return new ASTTypeCache();
 	}
 }

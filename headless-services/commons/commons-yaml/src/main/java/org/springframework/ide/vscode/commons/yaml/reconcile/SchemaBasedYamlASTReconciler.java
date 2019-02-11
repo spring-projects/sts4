@@ -145,7 +145,7 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 			DynamicSchemaContext schemaContext = new ASTDynamicSchemaContext(ast, path, node);
 			YType type = typeUtil.inferMoreSpecificType(_type, schemaContext);
 			if (typeCollector!=null) {
-				typeCollector.accept(node, type);
+				typeCollector.accept(node, type, path);
 			}
 			checkConstraints(parent, node, type, schemaContext);
 			switch (getNodeId(node)) {

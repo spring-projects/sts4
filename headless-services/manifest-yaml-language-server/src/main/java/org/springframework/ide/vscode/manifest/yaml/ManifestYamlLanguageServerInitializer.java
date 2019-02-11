@@ -13,12 +13,12 @@ package org.springframework.ide.vscode.manifest.yaml;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
 import java.util.concurrent.Callable;
 import java.util.stream.Collectors;
 
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.ClientTimeouts;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CloudFoundryClientFactory;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTargetCache;
@@ -29,7 +29,6 @@ import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.Clien
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.NoTargetsException;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.v2.DefaultCloudFoundryClientFactoryV2;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
-import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter.CompletionFilter;
 import org.springframework.ide.vscode.commons.languageserver.hover.HoverInfoProvider;
 import org.springframework.ide.vscode.commons.languageserver.hover.VscodeHoverEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
@@ -69,7 +68,9 @@ public class ManifestYamlLanguageServerInitializer implements InitializingBean {
 	private CloudFoundryClientFactory cfClientFactory;
 	ClientParamsProvider defaultClientParamsProvider;
 
+	@Autowired private ApplicationContext appContext;
 	@Autowired private SimpleLanguageServer server;
+	@Autowired private ASTTypeCache astTypeCache;
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
@@ -89,11 +90,9 @@ public class ManifestYamlLanguageServerInitializer implements InitializingBean {
 		HoverInfoProvider infoProvider = new YamlHoverInfoProvider(parser, structureProvider, contextProvider);
 		HoverHandler hoverEngine = new VscodeHoverEngineAdapter(server, infoProvider);
 		YamlQuickfixes quickfixes = new YamlQuickfixes(server.getQuickfixRegistry(), server.getTextDocumentService(), structureProvider);
-		YamlSchemaBasedReconcileEngine engine = new YamlSchemaBasedReconcileEngine(parser, schema, quickfixes);
+		YamlSchemaBasedReconcileEngine engine = new YamlSchemaBasedReconcileEngine(parser, schema, quickfixes, appContext);
 
-		ASTTypeCache astTypeCache = new ASTTypeCache();
-		engine.setTypeCollector(astTypeCache);
-		documents.onDocumentSymbol(new TypeBasedYamlSymbolHandler(documents, astTypeCache, schema.getDefinitionTypes(), server::hasHierarchicalDocumentSymbolSupport));
+		documents.onDocumentSymbol(new TypeBasedYamlSymbolHandler(documents, astTypeCache, schema.getDefinitionTypes()));
 
 		documents.onDidChangeContent(params -> {
 			validateOnDocumentChange(engine, params.getDocument());

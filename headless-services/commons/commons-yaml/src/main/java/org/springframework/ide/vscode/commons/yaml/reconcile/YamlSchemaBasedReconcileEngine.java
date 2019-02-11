@@ -11,12 +11,22 @@
 
 package org.springframework.ide.vscode.commons.yaml.reconcile;
 
+import java.util.Collection;
+
+import org.springframework.context.ApplicationContext;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblem;
+import org.springframework.ide.vscode.commons.util.CollectionUtil;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlASTProvider;
+import org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST;
+import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
 import org.springframework.ide.vscode.commons.yaml.quickfix.YamlQuickfixes;
+import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.springframework.ide.vscode.commons.yaml.schema.YamlSchema;
+import org.yaml.snakeyaml.nodes.Node;
+
+import com.google.common.collect.ImmutableList;
 
 /**
  * @author Kris De Volder
@@ -24,18 +34,15 @@ import org.springframework.ide.vscode.commons.yaml.schema.YamlSchema;
 public final class YamlSchemaBasedReconcileEngine extends YamlReconcileEngine {
 	private final YamlSchema schema;
 
-	/**
-	 * An optional type collector can be added. It will notified about all the types
-	 * the reconciler infers when reconciling an AST.
-	 */
-	private ITypeCollector typeCollector;
-
 	private YamlQuickfixes quickfixes;
 
-	public YamlSchemaBasedReconcileEngine(YamlASTProvider parser, YamlSchema schema, YamlQuickfixes quickfixes) {
+	private ApplicationContext appContext;
+
+	public YamlSchemaBasedReconcileEngine(YamlASTProvider parser, YamlSchema schema, YamlQuickfixes quickfixes, ApplicationContext appContext) {
 		super(parser);
 		this.schema = schema;
 		this.quickfixes = quickfixes;
+		this.appContext = appContext;
 	}
 
 	@Override
@@ -45,14 +52,34 @@ public final class YamlSchemaBasedReconcileEngine extends YamlReconcileEngine {
 
 	@Override
 	protected YamlASTReconciler getASTReconciler(IDocument doc, IProblemCollector problems) {
+		Collection<ITypeCollector> typeCollectors = appContext.getBeansOfType(ITypeCollector.class).values();
+		ITypeCollector typeCollector = null;
+		if (CollectionUtil.hasElements(typeCollectors)) {
+			typeCollector = new ITypeCollector() {
+
+				@Override
+				public void endCollecting(YamlFileAST ast) {
+					for (ITypeCollector c : typeCollectors) {
+						c.endCollecting(ast);
+					}
+				}
+
+				@Override
+				public void beginCollecting(YamlFileAST ast) {
+					for (ITypeCollector c : typeCollectors) {
+						c.beginCollecting(ast);
+					}
+				}
+
+				@Override
+				public void accept(Node node, YType type, YamlPath path) {
+					for (ITypeCollector c : typeCollectors) {
+						c.accept(node, type, path);
+					}
+				}
+			};
+		}
 		return new SchemaBasedYamlASTReconciler(problems, schema, typeCollector, quickfixes);
 	}
 
-	public ITypeCollector getTypeCollector() {
-		return typeCollector;
-	}
-
-	public void setTypeCollector(ITypeCollector typeCollector) {
-		this.typeCollector = typeCollector;
-	}
 }

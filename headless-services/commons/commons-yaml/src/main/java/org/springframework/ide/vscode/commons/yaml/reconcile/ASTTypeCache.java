@@ -22,6 +22,7 @@ import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeUtil;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST;
+import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
 import org.springframework.ide.vscode.commons.yaml.schema.DynamicSchemaContext;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.yaml.snakeyaml.nodes.Node;
@@ -52,10 +53,10 @@ public class ASTTypeCache implements ITypeCollector {
 	 */
 	private static class NodeTypesImpl implements NodeTypes {
 
-		private ImmutableMap<Node, YType> node2type;
+		private final ImmutableMap<Node, YType> node2type;
 		private Multimap<YType, Node> type2node = null; //lazy initialized when used.
 
-		public NodeTypesImpl(ImmutableMap<Node, YType> node2type) {
+		public NodeTypesImpl(YamlFileAST ast, ImmutableMap<Node, YType> node2type) {
 			this.node2type = node2type;
 		}
 
@@ -82,6 +83,8 @@ public class ASTTypeCache implements ITypeCollector {
 	 */
 	private YamlFileAST currentAst = null;
 
+	public ASTTypeCache() {}
+
 	/**
 	 * Collects types for the current session.
 	 */
@@ -101,14 +104,15 @@ public class ASTTypeCache implements ITypeCollector {
 	public synchronized void endCollecting(YamlFileAST ast) {
 		Assert.isLegal(currentAst==ast);
 		String uri = ast.getDocument().getUri();
-		typeIndex.put(uri, new NodeTypesImpl(currentTypes.build()));
+		typeIndex.put(uri, new NodeTypesImpl(currentAst, currentTypes.build()));
 		this.currentAst = null;
 		this.currentTypes = null;
 	}
 
 	@Override
-	public void accept(Node node, YType type) {
+	public void accept(Node node, YType type, YamlPath path) {
 		if (interestingTypes.contains(type)) {
+			System.out.println(path.toPropString() + " = " +NodeUtil.asScalar(node) +" :: "+type);
 			currentTypes.put(node, type);
 		}
 	}

@@ -44,9 +44,9 @@ public class ConcourseDefinitionFinder extends SimpleDefinitionFinder<SimpleLang
 	private Map<YType, Handler> handlers = new HashMap<>();
 	private final YamlAstCache asts;
 
-	public ConcourseDefinitionFinder(SimpleLanguageServer server, ConcourseModel models, PipelineYmlSchema schema) {
+	public ConcourseDefinitionFinder(SimpleLanguageServer server, ConcourseModel models, PipelineYmlSchema schema, ASTTypeCache astTypeCache) {
 		super(server);
-		this.astTypes = models.getAstTypeCache();
+		this.astTypes = astTypeCache;
 		this.asts = models.getAstCache();
 		findByPath(schema.t_resource_name, ConcourseModel.RESOURCE_NAMES_PATH);
 		findByPath(schema.t_maybe_resource_name, ConcourseModel.RESOURCE_NAMES_PATH);

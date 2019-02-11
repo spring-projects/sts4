@@ -61,6 +61,30 @@ import com.google.common.collect.ImmutableList;
  */
 public class PipelineYmlSchema implements YamlSchema {
 
+	public static class HierarchicalDefType {
+		/**
+		 * A yaml node of this type constitutes a definion. This should identify the 'whole' definition not just the
+		 * part of the node that contains the name of the defined entity.
+		 */
+		public final YType defType;
+
+		/**
+		 * A yaml path that points to the part of the node where the defined entity's name can be found.
+		 */
+		public final YamlPath nameNode;
+
+		public HierarchicalDefType(YType defType, YamlPath nameNode) {
+			super();
+			this.defType = defType;
+			this.nameNode = nameNode;
+		}
+		@Override
+		public String toString() {
+			return "HierarchicalDefType [defType=" + defType + ", nameNode=" + nameNode + "]";
+		}
+
+	}
+
 	//TODO: the infos for composing this should probably be integrated somehow in the ResourceTypeRegistry so
 	// we only have a list of built-in resource types in a single place.
 	public static final YValueHint[] BUILT_IN_RESOURCE_TYPES = {
@@ -807,4 +831,10 @@ public class PipelineYmlSchema implements YamlSchema {
 	public List<YType> getDefinitionTypes() {
 		return definitionTypes;
 	}
+
+	public List<HierarchicalDefType> getHierarchicalDefinitionTypes() {
+		// TODO Auto-generated method stub
+		return null;
+	}
+
 }

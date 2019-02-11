@@ -425,9 +425,6 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 	public final boolean hasLazyCompletionResolver() {
 		return completionResolver!=null;
 	}
-	public boolean hasHierarchicalDocumentSymbolSupport() {
-		return hasHierarchicalDocumentSymbolSupport;
-	}
 
 	private boolean hasDocumentSymbolHandler() {
 		return getTextDocumentService().hasDocumentSymbolHandler();
@@ -713,4 +710,7 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 		this.completionTriggerCharacters = completionTriggerCharacters;
 	}
 
+	public boolean hasHierarchicalDocumentSymbolSupport() {
+		return hasHierarchicalDocumentSymbolSupport;
+	}
 }

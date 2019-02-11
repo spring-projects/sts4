@@ -84,6 +84,7 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 	private HoverHandler hoverHandler = null;
 	private DefinitionHandler definitionHandler;
 	private ReferencesHandler referencesHandler;
+
 	private DocumentSymbolHandler documentSymbolHandler;
 	private DocumentHighlightHandler documentHighlightHandler;
 
@@ -92,6 +93,7 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 
 	private List<Consumer<TextDocumentSaveChange>> documentSaveListeners = ImmutableList.of();
 	private AsyncRunner async;
+
 
 	public SimpleTextDocumentService(SimpleLanguageServer server) {
 		this.server = server;
@@ -349,18 +351,28 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 
 	@Override
 	public CompletableFuture<List<Either<SymbolInformation, DocumentSymbol>>> documentSymbol(DocumentSymbolParams params) {
-	  return async.invoke(() -> {
-		DocumentSymbolHandler documentSymbolHandler = this.documentSymbolHandler;
-		if (documentSymbolHandler==null) {
+		return async.invoke(() -> {
+			DocumentSymbolHandler h = this.documentSymbolHandler;
+			if (h!=null) {
+				server.waitForReconcile();
+				if (server.hasHierarchicalDocumentSymbolSupport() && h instanceof HierarchicalDocumentSymbolHandler) {
+					List<? extends DocumentSymbol> r = ((HierarchicalDocumentSymbolHandler)h).handleHierarchic(params);
+					//handle it when symbolHandler is sloppy and returns null instead of empty list.
+					return r == null
+							? ImmutableList.of()
+							: r.stream().map(symbolInfo -> Either.<SymbolInformation, DocumentSymbol>forRight(symbolInfo))
+										.collect(Collectors.toList());
+				} else {
+					List<? extends SymbolInformation> r = h.handle(params);
+					//handle it when symbolHandler is sloppy and returns null instead of empty list.
+					return r == null
+							? ImmutableList.of()
+							: r.stream().map(symbolInfo -> Either.<SymbolInformation, DocumentSymbol>forLeft(symbolInfo))
+										.collect(Collectors.toList());
+				}
+			}
 			return ImmutableList.of();
-		}
-		server.waitForReconcile();
-		List<? extends SymbolInformation> r = documentSymbolHandler.handle(params);
-		//handle it when symbolHandler is sloppy and returns null instead of empty list.
-			return r == null ? ImmutableList.of()
-					: r.stream().map(symbolInfo -> Either.<SymbolInformation, DocumentSymbol>forLeft(symbolInfo))
-							.collect(Collectors.toList());
-		  });
+		});
 	}
 
 	@Override

@@ -26,11 +26,12 @@ import org.springframework.ide.vscode.commons.languageserver.config.LanguageServ
 import org.springframework.ide.vscode.commons.languageserver.config.LanguageServerProperties;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.DiagnosticSeverityProvider;
 import org.springframework.ide.vscode.commons.languageserver.util.DefinitionHandler;
+import org.springframework.ide.vscode.commons.languageserver.util.DocumentSymbolHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.LanguageSpecific;
 import org.springframework.ide.vscode.commons.languageserver.util.LspClient;
+import org.springframework.ide.vscode.commons.languageserver.util.LspClient.Client;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
-import org.springframework.ide.vscode.commons.languageserver.util.LspClient.Client;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import org.springframework.util.Assert;
@@ -98,6 +99,14 @@ public class LanguageServerAutoConf {
 				return ImmutableList.of();
  			});
 		}
+	}
+	
+	@ConditionalOnBean(DocumentSymbolHandler.class)
+	@Bean
+	InitializingBean registerDocumentSymbolHandler(SimpleTextDocumentService documents, DocumentSymbolHandler handler) {
+		return () -> {
+			documents.onDocumentSymbol(handler);
+		};
 	}
 	
 }

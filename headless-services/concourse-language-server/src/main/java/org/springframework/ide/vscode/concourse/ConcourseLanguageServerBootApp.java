@@ -13,7 +13,11 @@ package org.springframework.ide.vscode.concourse;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
+import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.util.LogRedirect;
+import org.springframework.ide.vscode.commons.yaml.reconcile.ASTTypeCache;
+import org.springframework.ide.vscode.commons.yaml.reconcile.TypeBasedYamlSymbolHandler;
 import org.springframework.ide.vscode.concourse.github.DefaultGithubInfoProvider;
 import org.springframework.ide.vscode.concourse.github.GithubInfoProvider;
 
@@ -33,5 +37,21 @@ public class ConcourseLanguageServerBootApp {
 
 	@Bean GithubInfoProvider github() {
 		return new DefaultGithubInfoProvider();
+	}
+
+	@Bean ConcourseModel concourseModel(SimpleLanguageServer server, ASTTypeCache astTypeCache) {
+		return new ConcourseModel(server, astTypeCache);
+	}
+
+	@Bean ASTTypeCache astTypeCache() {
+		return new ASTTypeCache();
+	}
+
+	@Bean TypeBasedYamlSymbolHandler documentSymbolHandler(SimpleTextDocumentService documents, ASTTypeCache astTypeCache, PipelineYmlSchema schema) {
+		return new TypeBasedYamlSymbolHandler(documents, astTypeCache, schema.getDefinitionTypes());
+	}
+
+	@Bean PipelineYmlSchema pipelineYmlSchema(ConcourseModel models, GithubInfoProvider github) {
+		return new PipelineYmlSchema(models, github);
 	}
 }

@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.commons.yaml.reconcile;
 
 import org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST;
+import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.yaml.snakeyaml.nodes.Node;
 
@@ -23,6 +24,6 @@ import org.yaml.snakeyaml.nodes.Node;
  */
 public interface ITypeCollector {
 	void beginCollecting(YamlFileAST ast);
-	void accept(Node node, YType type);
+	void accept(Node node, YType type, YamlPath path);
 	void endCollecting(YamlFileAST ast);
 }

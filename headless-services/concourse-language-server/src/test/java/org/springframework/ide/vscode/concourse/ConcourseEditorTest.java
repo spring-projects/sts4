@@ -3684,7 +3684,7 @@ public class ConcourseEditorTest {
 				"- name: group-two\n"
 		);
 
-			editor.assertDocumentSymbols(
+		editor.assertDocumentSymbols(
 				"some-resource-type|ResourceType",
 				"foo-resource|Resource",
 				"bar-resource|Resource",

@@ -12,9 +12,12 @@ package org.springframework.ide.vscode.concourse;
 
 import java.util.List;
 
+import javax.annotation.PostConstruct;
+
 import org.eclipse.lsp4j.CompletionList;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.hover.HoverInfoProvider;
 import org.springframework.ide.vscode.commons.languageserver.hover.VscodeHoverEngineAdapter;
@@ -31,12 +34,14 @@ import org.springframework.ide.vscode.commons.yaml.completion.YamlCompletionEngi
 import org.springframework.ide.vscode.commons.yaml.completion.YamlCompletionEngineOptions;
 import org.springframework.ide.vscode.commons.yaml.hover.YamlHoverInfoProvider;
 import org.springframework.ide.vscode.commons.yaml.quickfix.YamlQuickfixes;
+import org.springframework.ide.vscode.commons.yaml.reconcile.ASTTypeCache;
 import org.springframework.ide.vscode.commons.yaml.reconcile.TypeBasedYamlSymbolHandler;
 import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaBasedReconcileEngine;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.springframework.ide.vscode.commons.yaml.schema.YamlSchema;
 import org.springframework.ide.vscode.commons.yaml.snippet.SchemaBasedSnippetGenerator;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureProvider;
+import org.springframework.ide.vscode.concourse.PipelineYmlSchema.HierarchicalDefType;
 import org.springframework.ide.vscode.concourse.github.GithubInfoProvider;
 import org.springframework.stereotype.Component;
 
@@ -45,12 +50,11 @@ import com.google.common.collect.ImmutableList;
 import reactor.core.publisher.Mono;
 
 @Component
-public class ConcourseLanguageServerInitializer implements InitializingBean {
+public class ConcourseLanguageServerInitializer {
 
 	private final YamlCompletionEngineOptions COMPLETION_OPTIONS = YamlCompletionEngineOptions.DEFAULT;
 	private final YamlStructureProvider structureProvider = YamlStructureProvider.DEFAULT;
 
-	private ConcourseModel models;
 
 	private SchemaSpecificPieces forPipelines;
 	private SchemaSpecificPieces forTasks;
@@ -59,15 +63,19 @@ public class ConcourseLanguageServerInitializer implements InitializingBean {
 
 	@Autowired private SimpleLanguageServer server;
 	@Autowired private GithubInfoProvider github;
+	@Autowired private ASTTypeCache astTypeCache;
+	@Autowired private ApplicationContext appContext;
+	@Autowired private ConcourseModel models;
+	@Autowired private PipelineYmlSchema pipelineSchema;
 
 	private class SchemaSpecificPieces {
 
 		final VscodeCompletionEngineAdapter completionEngine;
 		final VscodeHoverEngineAdapter hoverEngine;
 		final YamlSchemaBasedReconcileEngine reconcileEngine;
-		final DocumentSymbolHandler symbolHandler;
+//		final DocumentSymbolHandler symbolHandler;
 
-		SchemaSpecificPieces(YamlSchema schema, List<YType> definitionTypes) {
+		SchemaSpecificPieces(YamlSchema schema, List<YType> definitionTypes, List<HierarchicalDefType> hierarchicalDefinitions) {
 			SchemaBasedYamlAssistContextProvider contextProvider = new SchemaBasedYamlAssistContextProvider(schema);
 			YamlCompletionEngine yamlCompletionEngine = new YamlCompletionEngine(structureProvider, contextProvider, COMPLETION_OPTIONS);
 			this.completionEngine = server.createCompletionEngineAdapter(yamlCompletionEngine);
@@ -75,12 +83,11 @@ public class ConcourseLanguageServerInitializer implements InitializingBean {
 			HoverInfoProvider infoProvider = new YamlHoverInfoProvider(currentAsts, structureProvider, contextProvider);
 			this.hoverEngine = new VscodeHoverEngineAdapter(server, infoProvider);
 
-			this.reconcileEngine = new YamlSchemaBasedReconcileEngine(currentAsts, schema, yamlQuickfixes);
-			reconcileEngine.setTypeCollector(models.getAstTypeCache());
+			this.reconcileEngine = new YamlSchemaBasedReconcileEngine(currentAsts, schema, yamlQuickfixes, appContext);
 
-			this.symbolHandler = CollectionUtil.hasElements(definitionTypes)
-					? new TypeBasedYamlSymbolHandler(server.getTextDocumentService(), models.getAstTypeCache(), definitionTypes, server::hasHierarchicalDocumentSymbolSupport)
-					: DocumentSymbolHandler.NO_SYMBOLS;
+//			this.symbolHandler = CollectionUtil.hasElements(definitionTypes)
+//					? new TypeBasedYamlSymbolHandler(server.getTextDocumentService(), astTypeCache, definitionTypes)
+//					: DocumentSymbolHandler.NO_SYMBOLS;
 		}
 
 		public void setMaxCompletions(int max) {
@@ -89,6 +96,7 @@ public class ConcourseLanguageServerInitializer implements InitializingBean {
 	}
 
 	public void enableSnippets(PipelineYmlSchema schema, boolean enable) {
+		//TODO: move to where schema bean is defined?
 		if (enable) {
 			schema.f.setSnippetProvider(new SchemaBasedSnippetGenerator(schema.getTypeUtil(), server::createSnippetBuilder));
 		} else {
@@ -96,18 +104,16 @@ public class ConcourseLanguageServerInitializer implements InitializingBean {
 		}
 	}
 
-	@Override
+	@PostConstruct
 	public void afterPropertiesSet() throws Exception {
-		this.models = new ConcourseModel(server);
 		this.currentAsts = models.getAstCache().getAstProvider(false);
-		PipelineYmlSchema pipelineSchema = new PipelineYmlSchema(models, github);
 		enableSnippets(pipelineSchema, true);
 		SimpleTextDocumentService documents = server.getTextDocumentService();
 		this.yamlQuickfixes = new YamlQuickfixes(server.getQuickfixRegistry(), documents, structureProvider);
 
-		this.forPipelines = new SchemaSpecificPieces(pipelineSchema, pipelineSchema.getDefinitionTypes());
-		this.forTasks = new SchemaSpecificPieces(pipelineSchema.getTaskSchema(), null);
-		ConcourseDefinitionFinder definitionFinder = new ConcourseDefinitionFinder(server, models, pipelineSchema);
+		this.forPipelines = new SchemaSpecificPieces(pipelineSchema, pipelineSchema.getDefinitionTypes(), pipelineSchema.getHierarchicalDefinitionTypes());
+		this.forTasks = new SchemaSpecificPieces(pipelineSchema.getTaskSchema(), null, null);
+		ConcourseDefinitionFinder definitionFinder = new ConcourseDefinitionFinder(server, models, pipelineSchema, astTypeCache);
 
 //		SimpleWorkspaceService workspace = getWorkspaceService();
 		documents.onDidChangeContent(params -> {
@@ -159,18 +165,18 @@ public class ConcourseLanguageServerInitializer implements InitializingBean {
 			return SimpleTextDocumentService.NO_HOVER;
 		});
 		documents.onDefinition(definitionFinder);
-		documents.onDocumentSymbol((params) -> {
-			DocumentSymbolHandler handler = DocumentSymbolHandler.NO_SYMBOLS;
-			TextDocument doc = documents.getDocument(params.getTextDocument().getUri());
-			if (doc!=null) {
-				if (LanguageId.CONCOURSE_PIPELINE.equals(doc.getLanguageId())) {
-					handler = forPipelines.symbolHandler;
-				} else if (LanguageId.CONCOURSE_TASK.equals(doc.getLanguageId())) {
-					handler = forTasks.symbolHandler;
-				}
-			}
-			return handler.handle(params);
-		});
+//		documents.onDocumentSymbol((params) -> {
+//			DocumentSymbolHandler handler = DocumentSymbolHandler.NO_SYMBOLS;
+//			TextDocument doc = documents.getDocument(params.getTextDocument().getUri());
+//			if (doc!=null) {
+//				if (LanguageId.CONCOURSE_PIPELINE.equals(doc.getLanguageId())) {
+//					handler = forPipelines.symbolHandler;
+//				} else if (LanguageId.CONCOURSE_TASK.equals(doc.getLanguageId())) {
+//					handler = forTasks.symbolHandler;
+//				}
+//			}
+//			return handler.handle(params);
+//		});
 	}
 
 //	@Override
