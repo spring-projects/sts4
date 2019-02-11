@@ -24,6 +24,8 @@ import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
 import org.springframework.ide.vscode.boot.java.livehover.LiveHoverUtils;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
@@ -38,6 +40,8 @@ import com.google.common.collect.ImmutableList;
  * @author Martin Lippert
  */
 public class ValueHoverProvider implements HoverProvider {
+
+	protected static Logger logger = LoggerFactory.getLogger(ValueHoverProvider.class);
 
 	@Override
 	public Hover provideHover(ASTNode node, Annotation annotation, ITypeBinding type, int offset,
@@ -61,7 +65,7 @@ public class ValueHoverProvider implements HoverProvider {
 			}
 		}
 		catch (Exception e) {
-			e.printStackTrace();
+			logger.error("Error while generating live hovers for @Value", e);
 		}
 
 		return null;
@@ -103,7 +107,7 @@ public class ValueHoverProvider implements HoverProvider {
 			}
 		}
 		catch (Exception e) {
-			e.printStackTrace();
+			logger.error("Error while generating live hovers for @Value", e);
 		}
 
 		return null;
@@ -121,7 +125,7 @@ public class ValueHoverProvider implements HoverProvider {
 			}
 		}
 		catch (Exception e) {
-			e.printStackTrace();
+			logger.error("", e);
 		}
 
 		return result;
