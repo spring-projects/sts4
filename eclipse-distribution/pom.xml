@@ -297,6 +297,11 @@
 					<url>http://download.eclipse.org/staging/2019-03/</url>
 				</repository>
 				<repository>
+					<id>2019-03-i-builds</id>
+					<layout>p2</layout>
+					<url>https://download.eclipse.org/eclipse/updates/4.11-I-builds/</url>
+				</repository>
+				<repository>
 					<id>orbit</id>
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/tools/orbit/downloads/drops/S20190108164448/repository</url>
