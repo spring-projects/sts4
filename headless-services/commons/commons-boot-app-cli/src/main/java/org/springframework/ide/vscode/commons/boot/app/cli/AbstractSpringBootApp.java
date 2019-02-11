@@ -43,7 +43,7 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansModel;
-import org.springframework.ide.vscode.commons.boot.app.cli.liveproperties.LiveEnvJsonParser;
+import org.springframework.ide.vscode.commons.boot.app.cli.liveproperties.LivePropertiesJsonParser;
 import org.springframework.ide.vscode.commons.boot.app.cli.liveproperties.LiveProperties;
 import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.Boot1xRequestMapping;
 import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.RequestMapping;
@@ -631,7 +631,7 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 		try {
 			String envJson = getEnvironment();
 			if (envJson != null) {
-				return LiveEnvJsonParser.parseProperties(envJson);
+				return LivePropertiesJsonParser.parseProperties(envJson);
 			}
 		} catch (Exception e) {
 			logger.error("error resolving live properties from environment endpoint", e);

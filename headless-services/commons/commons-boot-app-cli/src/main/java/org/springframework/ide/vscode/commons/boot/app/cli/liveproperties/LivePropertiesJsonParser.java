@@ -15,7 +15,7 @@ import java.util.List;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-public abstract class LiveEnvJsonParser {
+public abstract class LivePropertiesJsonParser {
 
 	/**
 	 * Parse live properties from the given JSON input. Returns null if no live
@@ -44,10 +44,10 @@ public abstract class LiveEnvJsonParser {
 	protected abstract List<LivePropertySource> readProperties(JSONObject envObj) throws Exception;
 
 	public static LiveProperties parseProperties(String jsonInput) throws Exception {
-		LiveEnvJsonParser2x boot2x = new LiveEnvJsonParser2x();
+		LivePropertiesJsonParser2x boot2x = new LivePropertiesJsonParser2x();
 		LiveProperties properties = boot2x.parse(jsonInput);
 		if (properties == null) {
-			LiveEnvJsonParser1x boot1x = new LiveEnvJsonParser1x();
+			LivePropertiesJsonParser1x boot1x = new LivePropertiesJsonParser1x();
 			properties = boot1x.parse(jsonInput);
 		}
 		return properties;

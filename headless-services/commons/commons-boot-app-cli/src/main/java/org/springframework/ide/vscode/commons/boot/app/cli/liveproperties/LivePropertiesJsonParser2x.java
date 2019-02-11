@@ -19,9 +19,9 @@ import org.json.JSONObject;
 
 import com.google.common.collect.ImmutableList;
 
-public class LiveEnvJsonParser2x extends LiveEnvJsonParser {
+public class LivePropertiesJsonParser2x extends LivePropertiesJsonParser {
 
-	public LiveEnvJsonParser2x() {
+	public LivePropertiesJsonParser2x() {
 
 	}
 
