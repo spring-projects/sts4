@@ -13,7 +13,7 @@
          </command>
       </delegateCommandHandler>
       <delegateCommandHandler
-            class="org.springframework.tooling.jdt.ls.extension.JavaTypeHanlder">
+            class="org.springframework.tooling.jdt.ls.extension.JavaTypeHandler">
          <command
                id="sts.java.type">
          </command>
@@ -28,6 +28,24 @@
             class="org.springframework.tooling.jdt.ls.extension.JavaLocationHandler">
          <command
                id="sts.java.location">
+         </command>
+      </delegateCommandHandler>
+      <delegateCommandHandler
+            class="org.springframework.tooling.jdt.ls.extension.SearchHandler">
+         <command
+               id="sts.java.search.types">
+         </command>
+         <command
+               id="sts.java.search.packages">
+         </command>
+      </delegateCommandHandler>
+      <delegateCommandHandler
+            class="org.springframework.tooling.jdt.ls.extension.HierarchyHandler">
+         <command
+               id="sts.java.hierarchy.subtypes">
+         </command>
+         <command
+               id="sts.java.hierarchy.supertypes">
          </command>
       </delegateCommandHandler>
    </extension>

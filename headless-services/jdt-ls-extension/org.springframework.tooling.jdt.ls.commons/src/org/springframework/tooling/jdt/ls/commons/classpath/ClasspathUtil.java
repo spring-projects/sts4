@@ -10,8 +10,8 @@
  *******************************************************************************/
 package org.springframework.tooling.jdt.ls.commons.classpath;
 
-import static org.springframework.tooling.jdt.ls.commons.classpath.Classpath.ENTRY_KIND_BINARY;
-import static org.springframework.tooling.jdt.ls.commons.classpath.Classpath.ENTRY_KIND_SOURCE;
+import static org.springframework.ide.vscode.commons.protocol.java.Classpath.ENTRY_KIND_BINARY;
+import static org.springframework.ide.vscode.commons.protocol.java.Classpath.ENTRY_KIND_SOURCE;
 
 import java.net.MalformedURLException;
 import java.util.ArrayList;
@@ -32,8 +32,9 @@ import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.core.JavaProject;
+import org.springframework.ide.vscode.commons.protocol.java.Classpath;
+import org.springframework.ide.vscode.commons.protocol.java.Classpath.CPE;
 import org.springframework.tooling.jdt.ls.commons.Logger;
-import org.springframework.tooling.jdt.ls.commons.classpath.Classpath.CPE;
 
 public class ClasspathUtil {
 

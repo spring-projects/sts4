@@ -1,0 +1,69 @@
+{
+  "fqName": "org.test.NestedRouter3",
+  "bindingKey": "Lorg/test/NestedRouter3;",
+  "clazz": true,
+  "annotation": false,
+  "interfaze": false,
+  "enam": false,
+  "superInterfaceNames": [],
+  "fields": [],
+  "methods": [
+    {
+      "bindingKey": "Lorg/test/NestedRouter3;.routingFunction()Lorg/springframework/web/reactive/function/server/RouterFunction\u003cLorg/springframework/web/reactive/function/server/ServerResponse;\u003e;",
+      "constructor": false,
+      "returnType": {
+        "kind": "PARAMETERIZED",
+        "name": "Lorg/springframework/web/reactive/function/server/RouterFunction\u003cLorg/springframework/web/reactive/function/server/ServerResponse;\u003e;",
+        "extras": {
+          "owner": {
+            "kind": "CLASS",
+            "name": "Lorg/springframework/web/reactive/function/server/RouterFunction;"
+          },
+          "arguments": [
+            {
+              "kind": "CLASS",
+              "name": "Lorg/springframework/web/reactive/function/server/ServerResponse;"
+            }
+          ]
+        }
+      },
+      "parameters": [],
+      "annotations": [
+        {
+          "fqName": "org.springframework.context.annotation.Bean",
+          "valuePairs": {},
+          "name": "Bean",
+          "handleIdentifier": "\u003dtest-webflux-project/src\\/main\\/java\u003corg.test{NestedRouter3.java[NestedRouter3~routingFunction}Bean",
+          "label": "Bean"
+        }
+      ],
+      "declaringType": "Lorg/test/NestedRouter3;",
+      "flags": 1,
+      "name": "routingFunction",
+      "handleIdentifier": "\u003dtest-webflux-project/src\\/main\\/java\u003corg.test{NestedRouter3.java[NestedRouter3~routingFunction",
+      "label": "RouterFunction\u003cServerResponse\u003e org.test.NestedRouter3.routingFunction()"
+    }
+  ],
+  "annotations": [
+    {
+      "fqName": "org.springframework.context.annotation.Configuration",
+      "valuePairs": {},
+      "name": "Configuration",
+      "handleIdentifier": "\u003dtest-webflux-project/src\\/main\\/java\u003corg.test{NestedRouter3.java[NestedRouter3}Configuration",
+      "label": "Configuration"
+    }
+  ],
+  "classpathEntry": {
+    "cpe": {
+      "kind": "source",
+      "path": "/Users/aboyko/Documents/junit-workspace/test-webflux-project/src/main/java",
+      "outputFolder": "/Users/aboyko/Documents/junit-workspace/test-webflux-project/target/classes",
+      "isSystem": false,
+      "isOwn": true
+    }
+  },
+  "flags": 1,
+  "name": "NestedRouter3",
+  "handleIdentifier": "\u003dtest-webflux-project/src\\/main\\/java\u003corg.test{NestedRouter3.java[NestedRouter3",
+  "label": "org.test.NestedRouter3"
+}

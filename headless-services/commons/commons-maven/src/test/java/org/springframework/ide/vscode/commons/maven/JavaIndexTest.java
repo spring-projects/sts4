@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2018 Pivotal, Inc.
+ * Copyright (c) 2016, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -62,7 +62,7 @@ public class JavaIndexTest {
 	@Test
 	public void fuzzySearchNoFilter() throws Exception {
 		MavenJavaProject project = mavenProjectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file");
-		List<Tuple2<IType, Double>> results = project.getIndex().fuzzySearchTypes("util.Map", null)
+		List<Tuple2<IType, Double>> results = project.getIndex().fuzzySearchTypes("util.Map", true, true, null)
 				.collectSortedList((o1, o2) -> o2.getT2().compareTo(o1.getT2()))
 				.block();
 		assertTrue(results.size() > 10);
@@ -75,7 +75,7 @@ public class JavaIndexTest {
 	public void fuzzySearchWithFilter() throws Exception {
 		MavenJavaProject project = mavenProjectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file");
 		List<Tuple2<IType, Double>> results =  project.getIndex()
-				.fuzzySearchTypes("util.Map", (type) -> Flags.isPrivate(type.getFlags()))
+				.fuzzySearchTypes("util.Map", true, true, (type) -> Flags.isPrivate(type.getFlags()))
 				.collectSortedList((o1, o2) -> o2.getT2().compareTo(o1.getT2()))
 				.block();
 		assertTrue(results.size() > 10);
@@ -88,7 +88,7 @@ public class JavaIndexTest {
 	public void fuzzySearchPackage() throws Exception {
 		MavenJavaProject project = mavenProjectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file");
 		List<Tuple2<String, Double>> results = project.getIndex()
-				.fuzzySearchPackages("util")
+				.fuzzySearchPackages("util", true, true)
 				.collectSortedList((o1, o2) -> o2.getT2().compareTo(o1.getT2()))
 				.block();
 		assertTrue(results.size() > 10);
@@ -98,14 +98,14 @@ public class JavaIndexTest {
 	@Test
 	public void findClassInJar() throws Exception {
 		MavenJavaProject project = mavenProjectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file");
-		IType type = project.findType("org.springframework.test.web.client.ExpectedCount");
+		IType type = project.getIndex().findType("org.springframework.test.web.client.ExpectedCount");
 		assertNotNull(type);
 	}
 
 //	@Test
 //	public void findStringStripMethodinJDK() throws Exception {
 //		MavenJavaProject project = mavenProjectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file");
-//		IType type = project.findType("java.lang.String");
+//		IType type = project.getIndex().findType("java.lang.String");
 //		assertNotNull(type);
 //		IMethod method = type.getMethod("strip", Stream.empty());
 //		assertNotNull(method);
@@ -114,21 +114,21 @@ public class JavaIndexTest {
 	@Test
 	public void findClassInOutputFolder() throws Exception {
 		MavenJavaProject project = mavenProjectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file");
-		IType type = project.findType("hello.Greeting");
+		IType type = project.getIndex().findType("hello.Greeting");
 		assertNotNull(type);
 	}
 
 	@Test
 	public void classNotFound() throws Exception {
 		MavenJavaProject project = mavenProjectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file");
-		IType type = project.findType("hello.NonExistentClass");
+		IType type = project.getIndex().findType("hello.NonExistentClass");
 		assertNull(type);
 	}
 
 	@Test
 	public void voidMethodNoParams() throws Exception {
 		MavenJavaProject project = mavenProjectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file");
-		IType type = project.findType("java.util.ArrayList");
+		IType type = project.getIndex().findType("java.util.ArrayList");
 		assertNotNull(type);
 		IMethod m = type.getMethod("clear", Stream.empty());
 		System.out.println("Method clear: " + m.getBindingKey());
@@ -140,7 +140,7 @@ public class JavaIndexTest {
 	@Test
 	public void voidConstructor() throws Exception {
 		MavenJavaProject project = mavenProjectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file");
-		IType type = project.findType("java.util.ArrayList");
+		IType type = project.getIndex().findType("java.util.ArrayList");
 		assertNotNull(type);
 		IMethod m = type.getMethod("<init>", Stream.empty());
 		assertEquals(type.getElementName(), m.getElementName());
@@ -151,7 +151,7 @@ public class JavaIndexTest {
 	@Test
 	public void constructorMethodWithParams() throws Exception {
 		MavenJavaProject project = mavenProjectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file");
-		IType type = project.findType("java.util.ArrayList");
+		IType type = project.getIndex().findType("java.util.ArrayList");
 		assertNotNull(type);
 		IMethod m = type.getMethod("<init>", Stream.of(IPrimitiveType.INT));
 		assertEquals(m.getDeclaringType().getElementName(), m.getElementName());
@@ -162,7 +162,7 @@ public class JavaIndexTest {
 	@Test
 	public void testFindJarResource() throws Exception {
 		MavenJavaProject project = mavenProjectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file");
-		IJavaModuleData module = project.findClasspathResourceContainer("org.springframework.boot.autoconfigure.SpringBootApplication");
+		IJavaModuleData module = project.getIndex().findClasspathResourceContainer("org.springframework.boot.autoconfigure.SpringBootApplication");
 		assertNotNull(module);
 		assertEquals("spring-boot-autoconfigure-1.4.1.RELEASE.jar", module.getContainer().getName());
 	}
@@ -170,7 +170,7 @@ public class JavaIndexTest {
 	@Test
 	public void testFindJavaResource() throws Exception {
 		MavenJavaProject project = mavenProjectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file");
-		IJavaModuleData module = project.findClasspathResourceContainer("hello.GreetingController");
+		IJavaModuleData module = project.getIndex().findClasspathResourceContainer("hello.GreetingController");
 		assertNotNull(module);
 		assertTrue(module.getContainer().exists());
 		assertEquals(getOutputFolder(project).toString(), module.getContainer().toString());
@@ -179,9 +179,9 @@ public class JavaIndexTest {
 	@Test
 	public void testFindAllSuperTypes() throws Exception {
 		MavenJavaProject project = mavenProjectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file");
-		IType type = project.findType("java.util.ArrayList");
+		IType type = project.getIndex().findType("java.util.ArrayList");
 		assertNotNull(type);
-		Set<String> actual = project.allSuperTypesOf(type).map(t -> t.getFullyQualifiedName()).collect(Collectors.toSet()).block();
+		Set<String> actual = project.getIndex().allSuperTypesOf(type).map(t -> t.getFullyQualifiedName()).collect(Collectors.toSet()).block();
 		Set<String> expected = new HashSet<>(Arrays.asList(
 				"java.util.List",
 				"java.util.RandomAccess",

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016 Pivotal, Inc.
+ * Copyright (c) 2016, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -42,7 +42,7 @@ public class DeprecationUtil {
 	 * Extract {@link Deprecation} info from annotations on a {@link IJavaElement}
 	 */
 	private static Optional<Deprecation> extract(IAnnotatable m) {
-		return m.getAnnotations().filter(a -> DEPRECATED_ANOT_NAMES.contains(a.getElementName())).map(a -> {
+		return m.getAnnotations().filter(a -> DEPRECATED_ANOT_NAMES.contains(a.fqName())).map(a -> {
 			Deprecation d = new Deprecation();
 			a.getMemberValuePairs().forEach(pair -> {
 				String name = pair.getMemberName();

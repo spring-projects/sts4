@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Pivotal, Inc.
+ * Copyright (c) 2018, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -67,7 +67,7 @@ public class PropertiesDefinitionCalculator {
 			for (PropertySource source : sources) {
 				String typeName = source.getSourceType();
 				if (typeName!=null) {
-					IType type = project.findType(typeName);
+					IType type = project.getIndex().findType(typeName);
 					IMethod method = null;
 					if (type!=null) {
 						String methodSig = source.getSourceMethod();
@@ -198,7 +198,7 @@ public class PropertiesDefinitionCalculator {
 	}
 
 	private static List<Location> getEnumValueDefinitionLocation(JavaElementLocationProvider javaElementLocationProvider, IJavaProject project, Type type, String value) {
-		IType javaType = project.findType(type.getErasure());
+		IType javaType = project.getIndex().findType(type.getErasure());
 		if (javaType != null) {
 			IField field = getEnumField(javaType, value);
 			if (field != null) {
@@ -212,7 +212,7 @@ public class PropertiesDefinitionCalculator {
 	}
 
 	private static List<Location> getClassValueDefinitionLocation(JavaElementLocationProvider javaElementLocationProvider, IJavaProject project, String value) {
-		IType javaType = project.findType(value);
+		IType javaType = project.getIndex().findType(value);
 		if (javaType != null) {
 			Location location = javaElementLocationProvider.findLocation(project, javaType);
 			if (location != null) {

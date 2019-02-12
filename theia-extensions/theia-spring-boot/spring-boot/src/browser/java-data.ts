@@ -16,6 +16,10 @@ export const JAVA_TYPE_REQUEST_TYPE = 'sts/javaType';
 export const JAVADOC_HOVER_LINK_REQUEST_TYPE = 'sts/javadocHoverLink';
 export const JAVA_LOCATION_REQUEST_TYPE = 'sts/javaLocation';
 export const JAVADOC_REQUEST_TYPE = 'sts/javadoc';
+export const SEARCH_TYPES_REQUEST_TYPE = 'sts/searchJavaTypes';
+export const SEACH_PACKAGES_REQUEST_TYPE = 'sts/searchJavaPackages';
+export const SUBTYPES_REQUEST_TYPE = 'sts/javaSubTypes';
+export const SUPERTYPES_REQUEST_TYPE = 'sts/javaSuperTypes';
 
 @injectable()
 export class JavaDataService {
@@ -30,6 +34,10 @@ export class JavaDataService {
         client.onRequest(JAVADOC_HOVER_LINK_REQUEST_TYPE, (params: JavaDataParams) => this.commands.executeCommand('sts.java.javadocHoverLink', params));
         client.onRequest(JAVA_LOCATION_REQUEST_TYPE, (params: JavaDataParams) => this.commands.executeCommand('sts.java.location', params));
         client.onRequest(JAVADOC_REQUEST_TYPE, (params: JavaDataParams) => this.commands.executeCommand('sts.java.javadoc', params));
+        client.onRequest(SEARCH_TYPES_REQUEST_TYPE, (params: JavaSearchParams) => this.commands.executeCommand('sts.java.search.types', params));
+        client.onRequest(SEACH_PACKAGES_REQUEST_TYPE, (params: JavaSearchParams) => this.commands.executeCommand('sts.java.search.packages', params));
+        client.onRequest(SUBTYPES_REQUEST_TYPE, (params: JavaTypeHierarchyParams) => this.commands.executeCommand('sts.java.hierarchy.subtypes', params));
+        client.onRequest(SUPERTYPES_REQUEST_TYPE, (params: JavaTypeHierarchyParams) => this.commands.executeCommand('sts.java.hierarchy.supertypes', params));
     }
 
 }
@@ -38,4 +46,16 @@ interface JavaDataParams {
     projectUri?: string;
     bindingKey: string;
     lookInOtherProjects?: boolean
+}
+
+interface JavaSearchParams {
+    projectUri: string;
+    term: string;
+    includeBinaries: boolean;
+    includeSystemLibs: boolean;
+}
+
+interface JavaTypeHierarchyParams {
+    projectUri?: string;
+    fqName: string;
 }

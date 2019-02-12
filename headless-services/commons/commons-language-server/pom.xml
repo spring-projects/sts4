@@ -22,6 +22,11 @@
 			<artifactId>commons-util</artifactId>
 			<version>${project.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.springframework.ide.vscode</groupId>
+			<artifactId>commons-lsp-extensions</artifactId>
+			<version>${project.version}</version>
+		</dependency>
 		<!-- JSON -->
 		<dependency>
 			<groupId>io.projectreactor</groupId>

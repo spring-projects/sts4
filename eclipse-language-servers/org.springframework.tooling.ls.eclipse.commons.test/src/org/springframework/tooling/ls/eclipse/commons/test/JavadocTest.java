@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Pivotal, Inc.
+ * Copyright (c) 2018, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -19,10 +19,10 @@ import org.eclipse.jdt.core.IField;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IMethod;
 import org.eclipse.jdt.core.IType;
+import org.eclipse.lsp4j.MarkupContent;
 import org.junit.After;
 import org.junit.Test;
-import org.springframework.tooling.jdt.ls.commons.java.JavaDataParams;
-import org.springframework.tooling.jdt.ls.commons.javadoc.JavadocResponse;
+import org.springframework.ide.vscode.commons.protocol.java.JavaDataParams;
 import org.springframework.tooling.ls.eclipse.commons.STS4LanguageClientImpl;
 
 public class JavadocTest {
@@ -44,9 +44,9 @@ public class JavadocTest {
 		String expectedBindingKey = "Lcom/sample/SampleJavadoc;";
 		assertEquals(expectedBindingKey, type.getKey());
 		
-		JavaDataParams params = new JavaDataParams(project.getProject().getLocation().toFile().toURI().toString(), expectedBindingKey);
-		JavadocResponse response = client.javadoc(params).get(1, TimeUnit.SECONDS);
-		assertEquals("**Sample class**", response.getContent());
+		JavaDataParams params = new JavaDataParams(project.getProject().getLocation().toFile().toURI().toString(), expectedBindingKey, false);
+		MarkupContent response = client.javadoc(params).get(1, TimeUnit.SECONDS);
+		assertEquals("**Sample class**", response.getValue());
 	}
 	
 	@Test
@@ -61,9 +61,9 @@ public class JavadocTest {
 		String expectedBindingKey = "Lcom/sample/SampleJavadoc;.number";
 		assertEquals(expectedBindingKey, field.getKey());
 		
-		JavaDataParams params = new JavaDataParams(project.getProject().getLocation().toFile().toURI().toString(), expectedBindingKey);
-		JavadocResponse response = client.javadoc(params).get(1, TimeUnit.SECONDS);
-		assertEquals("**Sample field**", response.getContent());
+		JavaDataParams params = new JavaDataParams(project.getProject().getLocation().toFile().toURI().toString(), expectedBindingKey, false);
+		MarkupContent response = client.javadoc(params).get(1, TimeUnit.SECONDS);
+		assertEquals("**Sample field**", response.getValue());
 	}
 
 	@Test
@@ -78,9 +78,9 @@ public class JavadocTest {
 		String expectedBindingKey = "Lcom/sample/SampleJavadoc;.getNumber()V";
 		assertEquals(expectedBindingKey, method.getKey());
 		
-		JavaDataParams params = new JavaDataParams(project.getProject().getLocation().toFile().toURI().toString(), expectedBindingKey);
-		JavadocResponse response = client.javadoc(params).get(1, TimeUnit.SECONDS);
-		assertEquals("**Sample getter**", response.getContent());
+		JavaDataParams params = new JavaDataParams(project.getProject().getLocation().toFile().toURI().toString(), expectedBindingKey, false);
+		MarkupContent response = client.javadoc(params).get(1, TimeUnit.SECONDS);
+		assertEquals("**Sample getter**", response.getValue());
 	}
 	
 }

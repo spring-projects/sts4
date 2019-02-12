@@ -14,6 +14,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import org.eclipse.lsp4j.MarkupContent;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.java.IAnnotation;
@@ -22,9 +23,8 @@ import org.springframework.ide.vscode.commons.java.IJavaElement;
 import org.springframework.ide.vscode.commons.java.IJavadocProvider;
 import org.springframework.ide.vscode.commons.java.IMethod;
 import org.springframework.ide.vscode.commons.java.IType;
-import org.springframework.ide.vscode.commons.languageserver.STS4LanguageClient;
-import org.springframework.ide.vscode.commons.languageserver.java.ls.JavaDataParams;
-import org.springframework.ide.vscode.commons.languageserver.java.ls.JavadocResponse;
+import org.springframework.ide.vscode.commons.protocol.STS4LanguageClient;
+import org.springframework.ide.vscode.commons.protocol.java.JavaDataParams;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
 
@@ -41,8 +41,7 @@ public class JdtLsJavadocProvider implements IJavadocProvider {
 		this.projectUri = projectUri;
 	}
 
-	private IJavadoc produceJavadocFromMd(JavadocResponse response) {
-		String md = response.getContent();
+	private IJavadoc produceJavadocFromMd(String md) {
 		if (md != null) {
 			final Renderable renderableDoc = Renderables.mdBlob(md);
 			return new IJavadoc() {
@@ -61,9 +60,9 @@ public class JdtLsJavadocProvider implements IJavadocProvider {
 		long start = System.currentTimeMillis();
 		try {
 			log.info("Fetching javadoc {}", element.getBindingKey());
-			JavadocResponse response = client.javadoc(new JavaDataParams(projectUri, element.getBindingKey(), false)).get(10, TimeUnit.SECONDS);
+			MarkupContent md = client.javadoc(new JavaDataParams(projectUri, element.getBindingKey(), false)).get(10, TimeUnit.SECONDS);
 			log.info("Fetching javadoc {} took {} ms", element.getBindingKey(), System.currentTimeMillis()-start);
-			return produceJavadocFromMd(response);
+			return produceJavadocFromMd(md == null ? null : md.getValue());
 		} catch (InterruptedException | ExecutionException | TimeoutException e) {
 			log.error("Fetching javadoc {} failed", element.getBindingKey(), e);
 			return null;

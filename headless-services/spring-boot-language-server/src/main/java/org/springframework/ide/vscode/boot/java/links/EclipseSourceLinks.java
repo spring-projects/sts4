@@ -58,12 +58,12 @@ public class EclipseSourceLinks implements SourceLinks {
 	}
 
 	private Optional<IJavaProject> findProjectForFQName(IJavaProject project, String fqName) {
-		if (project != null && project.findType(fqName) != null) {
+		if (project != null && project.getIndex().findType(fqName) != null) {
 			return Optional.of(project);
 		} else {
 			for (IJavaProject jp : projectFinder.all()) {
 				if (jp != project) {
-					if (jp.findType(fqName) != null) {
+					if (jp.getIndex().findType(fqName) != null) {
 						return Optional.of(jp);
 					}
 				}
@@ -103,7 +103,7 @@ public class EclipseSourceLinks implements SourceLinks {
 	}
 
 	public static URI eclipseIntroUri(IJavaProject project, String fqName) {
-		IType type = project.findType(fqName);
+		IType type = project.getIndex().findType(fqName);
 		return type == null ? null : eclipseIntroUri(project, type);
 	}
 

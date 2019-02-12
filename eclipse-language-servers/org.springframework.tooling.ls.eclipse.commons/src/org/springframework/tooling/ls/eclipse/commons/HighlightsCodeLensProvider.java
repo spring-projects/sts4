@@ -36,6 +36,7 @@ import org.eclipse.lsp4j.Command;
 import org.eclipse.swt.events.MouseEvent;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
+import org.springframework.ide.vscode.commons.protocol.HighlightParams;
 import org.springframework.tooling.ls.eclipse.commons.preferences.PreferenceConstants;
 
 import com.google.gson.JsonPrimitive;

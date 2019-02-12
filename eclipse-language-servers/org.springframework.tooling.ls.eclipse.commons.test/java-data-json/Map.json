@@ -1,0 +1,720 @@
+{
+  "fqName": "java.util.Map",
+  "bindingKey": "Ljava/util/Map;",
+  "clazz": false,
+  "annotation": false,
+  "interfaze": true,
+  "enam": false,
+  "superClassName": "java.lang.Object",
+  "superInterfaceNames": [],
+  "fields": [],
+  "methods": [
+    {
+      "bindingKey": "Ljava/util/Map;.size()I",
+      "constructor": false,
+      "returnType": {
+        "kind": "INT",
+        "name": "I"
+      },
+      "parameters": [],
+      "annotations": [],
+      "declaringType": "Ljava/util/Map;",
+      "flags": 1025,
+      "name": "size",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003cjava.util(Map.class[Map~size",
+      "label": "int java.util.Map.size()"
+    },
+    {
+      "bindingKey": "Ljava/util/Map;.isEmpty()Z",
+      "constructor": false,
+      "returnType": {
+        "kind": "BOOLEAN",
+        "name": "Z"
+      },
+      "parameters": [],
+      "annotations": [],
+      "declaringType": "Ljava/util/Map;",
+      "flags": 1025,
+      "name": "isEmpty",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003cjava.util(Map.class[Map~isEmpty",
+      "label": "boolean java.util.Map.isEmpty()"
+    },
+    {
+      "bindingKey": "Ljava/util/Map;.containsKey(Ljava/lang/Object;)Z",
+      "constructor": false,
+      "returnType": {
+        "kind": "BOOLEAN",
+        "name": "Z"
+      },
+      "parameters": [
+        {
+          "kind": "CLASS",
+          "name": "Ljava.lang.Object;"
+        }
+      ],
+      "annotations": [],
+      "declaringType": "Ljava/util/Map;",
+      "flags": 1025,
+      "name": "containsKey",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003cjava.util(Map.class[Map~containsKey~Ljava.lang.Object;",
+      "label": "boolean java.util.Map.containsKey(Object key)"
+    },
+    {
+      "bindingKey": "Ljava/util/Map;.containsValue(Ljava/lang/Object;)Z",
+      "constructor": false,
+      "returnType": {
+        "kind": "BOOLEAN",
+        "name": "Z"
+      },
+      "parameters": [
+        {
+          "kind": "CLASS",
+          "name": "Ljava.lang.Object;"
+        }
+      ],
+      "annotations": [],
+      "declaringType": "Ljava/util/Map;",
+      "flags": 1025,
+      "name": "containsValue",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003cjava.util(Map.class[Map~containsValue~Ljava.lang.Object;",
+      "label": "boolean java.util.Map.containsValue(Object value)"
+    },
+    {
+      "bindingKey": "Ljava/util/Map;.get(Ljava/lang/Object;)TV;",
+      "constructor": false,
+      "returnType": {
+        "kind": "TYPE_VARIABLE",
+        "name": "TV;"
+      },
+      "parameters": [
+        {
+          "kind": "CLASS",
+          "name": "Ljava.lang.Object;"
+        }
+      ],
+      "annotations": [],
+      "declaringType": "Ljava/util/Map;",
+      "flags": 1025,
+      "name": "get",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003cjava.util(Map.class[Map~get~Ljava.lang.Object;",
+      "label": "V java.util.Map.get(Object key)"
+    },
+    {
+      "bindingKey": "Ljava/util/Map;.put(TK;TV;)TV;",
+      "constructor": false,
+      "returnType": {
+        "kind": "TYPE_VARIABLE",
+        "name": "TV;"
+      },
+      "parameters": [
+        {
+          "kind": "TYPE_VARIABLE",
+          "name": "TK;"
+        },
+        {
+          "kind": "TYPE_VARIABLE",
+          "name": "TV;"
+        }
+      ],
+      "annotations": [],
+      "declaringType": "Ljava/util/Map;",
+      "flags": 1025,
+      "name": "put",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003cjava.util(Map.class[Map~put~TK;~TV;",
+      "label": "V java.util.Map.put(K key, V value)"
+    },
+    {
+      "bindingKey": "Ljava/util/Map;.remove(Ljava/lang/Object;)TV;",
+      "constructor": false,
+      "returnType": {
+        "kind": "TYPE_VARIABLE",
+        "name": "TV;"
+      },
+      "parameters": [
+        {
+          "kind": "CLASS",
+          "name": "Ljava.lang.Object;"
+        }
+      ],
+      "annotations": [],
+      "declaringType": "Ljava/util/Map;",
+      "flags": 1025,
+      "name": "remove",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003cjava.util(Map.class[Map~remove~Ljava.lang.Object;",
+      "label": "V java.util.Map.remove(Object key)"
+    },
+    {
+      "bindingKey": "Ljava/util/Map;.putAll(Ljava/util/Map\u003c+TK;+TV;\u003e;)V",
+      "constructor": false,
+      "returnType": {
+        "kind": "VOID",
+        "name": "V"
+      },
+      "parameters": [
+        {
+          "kind": "PARAMETERIZED",
+          "name": "Ljava.util.Map\u003c+TK;+TV;\u003e;",
+          "extras": {
+            "owner": {
+              "kind": "CLASS",
+              "name": "Ljava.util.Map;"
+            },
+            "arguments": [
+              {
+                "kind": "WILDCARD",
+                "name": "+TK;"
+              },
+              {
+                "kind": "WILDCARD",
+                "name": "+TV;"
+              }
+            ]
+          }
+        }
+      ],
+      "annotations": [],
+      "declaringType": "Ljava/util/Map;",
+      "flags": 1025,
+      "name": "putAll",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003cjava.util(Map.class[Map~putAll~Ljava.util.Map\\\u003c+TK;+TV;\u003e;",
+      "label": "void java.util.Map.putAll(Map\u003c? extends K, ? extends V\u003e m)"
+    },
+    {
+      "bindingKey": "Ljava/util/Map;.clear()V",
+      "constructor": false,
+      "returnType": {
+        "kind": "VOID",
+        "name": "V"
+      },
+      "parameters": [],
+      "annotations": [],
+      "declaringType": "Ljava/util/Map;",
+      "flags": 1025,
+      "name": "clear",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003cjava.util(Map.class[Map~clear",
+      "label": "void java.util.Map.clear()"
+    },
+    {
+      "bindingKey": "Ljava/util/Map;.keySet()Ljava.util.Set\u003cTK;\u003e;",
+      "constructor": false,
+      "returnType": {
+        "kind": "PARAMETERIZED",
+        "name": "Ljava.util.Set\u003cTK;\u003e;",
+        "extras": {
+          "owner": {
+            "kind": "CLASS",
+            "name": "Ljava.util.Set;"
+          },
+          "arguments": [
+            {
+              "kind": "TYPE_VARIABLE",
+              "name": "TK;"
+            }
+          ]
+        }
+      },
+      "parameters": [],
+      "annotations": [],
+      "declaringType": "Ljava/util/Map;",
+      "flags": 1025,
+      "name": "keySet",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003cjava.util(Map.class[Map~keySet",
+      "label": "Set\u003cK\u003e java.util.Map.keySet()"
+    },
+    {
+      "bindingKey": "Ljava/util/Map;.values()Ljava.util.Collection\u003cTV;\u003e;",
+      "constructor": false,
+      "returnType": {
+        "kind": "PARAMETERIZED",
+        "name": "Ljava.util.Collection\u003cTV;\u003e;",
+        "extras": {
+          "owner": {
+            "kind": "CLASS",
+            "name": "Ljava.util.Collection;"
+          },
+          "arguments": [
+            {
+              "kind": "TYPE_VARIABLE",
+              "name": "TV;"
+            }
+          ]
+        }
+      },
+      "parameters": [],
+      "annotations": [],
+      "declaringType": "Ljava/util/Map;",
+      "flags": 1025,
+      "name": "values",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003cjava.util(Map.class[Map~values",
+      "label": "Collection\u003cV\u003e java.util.Map.values()"
+    },
+    {
+      "bindingKey": "Ljava/util/Map;.entrySet()Ljava.util.Set\u003cLjava.util.Map$Entry\u003cTK;TV;\u003e;\u003e;",
+      "constructor": false,
+      "returnType": {
+        "kind": "PARAMETERIZED",
+        "name": "Ljava.util.Set\u003cLjava.util.Map$Entry\u003cTK;TV;\u003e;\u003e;",
+        "extras": {
+          "owner": {
+            "kind": "CLASS",
+            "name": "Ljava.util.Set;"
+          },
+          "arguments": [
+            {
+              "kind": "PARAMETERIZED",
+              "name": "Ljava.util.Map$Entry\u003cTK;TV;\u003e;",
+              "extras": {
+                "owner": {
+                  "kind": "CLASS",
+                  "name": "Ljava.util.Map$Entry;"
+                },
+                "arguments": [
+                  {
+                    "kind": "TYPE_VARIABLE",
+                    "name": "TK;"
+                  },
+                  {
+                    "kind": "TYPE_VARIABLE",
+                    "name": "TV;"
+                  }
+                ]
+              }
+            }
+          ]
+        }
+      },
+      "parameters": [],
+      "annotations": [],
+      "declaringType": "Ljava/util/Map;",
+      "flags": 1025,
+      "name": "entrySet",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003cjava.util(Map.class[Map~entrySet",
+      "label": "Set\u003cEntry\u003cK, V\u003e\u003e java.util.Map.entrySet()"
+    },
+    {
+      "bindingKey": "Ljava/util/Map;.equals(Ljava/lang/Object;)Z",
+      "constructor": false,
+      "returnType": {
+        "kind": "BOOLEAN",
+        "name": "Z"
+      },
+      "parameters": [
+        {
+          "kind": "CLASS",
+          "name": "Ljava.lang.Object;"
+        }
+      ],
+      "annotations": [],
+      "declaringType": "Ljava/util/Map;",
+      "flags": 1025,
+      "name": "equals",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003cjava.util(Map.class[Map~equals~Ljava.lang.Object;",
+      "label": "boolean java.util.Map.equals(Object o)"
+    },
+    {
+      "bindingKey": "Ljava/util/Map;.hashCode()I",
+      "constructor": false,
+      "returnType": {
+        "kind": "INT",
+        "name": "I"
+      },
+      "parameters": [],
+      "annotations": [],
+      "declaringType": "Ljava/util/Map;",
+      "flags": 1025,
+      "name": "hashCode",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003cjava.util(Map.class[Map~hashCode",
+      "label": "int java.util.Map.hashCode()"
+    },
+    {
+      "bindingKey": "Ljava/util/Map;.getOrDefault(Ljava/lang/Object;TV;)TV;",
+      "constructor": false,
+      "returnType": {
+        "kind": "TYPE_VARIABLE",
+        "name": "TV;"
+      },
+      "parameters": [
+        {
+          "kind": "CLASS",
+          "name": "Ljava.lang.Object;"
+        },
+        {
+          "kind": "TYPE_VARIABLE",
+          "name": "TV;"
+        }
+      ],
+      "annotations": [],
+      "declaringType": "Ljava/util/Map;",
+      "flags": 65537,
+      "name": "getOrDefault",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003cjava.util(Map.class[Map~getOrDefault~Ljava.lang.Object;~TV;",
+      "label": "V java.util.Map.getOrDefault(Object key, V defaultValue)"
+    },
+    {
+      "bindingKey": "Ljava/util/Map;.forEach(Ljava/util/function/BiConsumer\u003c-TK;-TV;\u003e;)V",
+      "constructor": false,
+      "returnType": {
+        "kind": "VOID",
+        "name": "V"
+      },
+      "parameters": [
+        {
+          "kind": "PARAMETERIZED",
+          "name": "Ljava.util.function.BiConsumer\u003c-TK;-TV;\u003e;",
+          "extras": {
+            "owner": {
+              "kind": "CLASS",
+              "name": "Ljava.util.function.BiConsumer;"
+            },
+            "arguments": [
+              {
+                "kind": "WILDCARD",
+                "name": "-TK;"
+              },
+              {
+                "kind": "WILDCARD",
+                "name": "-TV;"
+              }
+            ]
+          }
+        }
+      ],
+      "annotations": [],
+      "declaringType": "Ljava/util/Map;",
+      "flags": 65537,
+      "name": "forEach",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003cjava.util(Map.class[Map~forEach~Ljava.util.function.BiConsumer\\\u003c-TK;-TV;\u003e;",
+      "label": "void java.util.Map.forEach(BiConsumer\u003c? super K, ? super V\u003e action)"
+    },
+    {
+      "bindingKey": "Ljava/util/Map;.replaceAll(Ljava/util/function/BiFunction\u003c-TK;-TV;+TV;\u003e;)V",
+      "constructor": false,
+      "returnType": {
+        "kind": "VOID",
+        "name": "V"
+      },
+      "parameters": [
+        {
+          "kind": "PARAMETERIZED",
+          "name": "Ljava.util.function.BiFunction\u003c-TK;-TV;+TV;\u003e;",
+          "extras": {
+            "owner": {
+              "kind": "CLASS",
+              "name": "Ljava.util.function.BiFunction;"
+            },
+            "arguments": [
+              {
+                "kind": "WILDCARD",
+                "name": "-TK;"
+              },
+              {
+                "kind": "WILDCARD",
+                "name": "-TV;"
+              },
+              {
+                "kind": "WILDCARD",
+                "name": "+TV;"
+              }
+            ]
+          }
+        }
+      ],
+      "annotations": [],
+      "declaringType": "Ljava/util/Map;",
+      "flags": 65537,
+      "name": "replaceAll",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003cjava.util(Map.class[Map~replaceAll~Ljava.util.function.BiFunction\\\u003c-TK;-TV;+TV;\u003e;",
+      "label": "void java.util.Map.replaceAll(BiFunction\u003c? super K, ? super V, ? extends V\u003e function)"
+    },
+    {
+      "bindingKey": "Ljava/util/Map;.putIfAbsent(TK;TV;)TV;",
+      "constructor": false,
+      "returnType": {
+        "kind": "TYPE_VARIABLE",
+        "name": "TV;"
+      },
+      "parameters": [
+        {
+          "kind": "TYPE_VARIABLE",
+          "name": "TK;"
+        },
+        {
+          "kind": "TYPE_VARIABLE",
+          "name": "TV;"
+        }
+      ],
+      "annotations": [],
+      "declaringType": "Ljava/util/Map;",
+      "flags": 65537,
+      "name": "putIfAbsent",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003cjava.util(Map.class[Map~putIfAbsent~TK;~TV;",
+      "label": "V java.util.Map.putIfAbsent(K key, V value)"
+    },
+    {
+      "bindingKey": "Ljava/util/Map;.remove(Ljava/lang/Object;Ljava/lang/Object;)Z",
+      "constructor": false,
+      "returnType": {
+        "kind": "BOOLEAN",
+        "name": "Z"
+      },
+      "parameters": [
+        {
+          "kind": "CLASS",
+          "name": "Ljava.lang.Object;"
+        },
+        {
+          "kind": "CLASS",
+          "name": "Ljava.lang.Object;"
+        }
+      ],
+      "annotations": [],
+      "declaringType": "Ljava/util/Map;",
+      "flags": 65537,
+      "name": "remove",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003cjava.util(Map.class[Map~remove~Ljava.lang.Object;~Ljava.lang.Object;",
+      "label": "boolean java.util.Map.remove(Object key, Object value)"
+    },
+    {
+      "bindingKey": "Ljava/util/Map;.replace(TK;TV;TV;)Z",
+      "constructor": false,
+      "returnType": {
+        "kind": "BOOLEAN",
+        "name": "Z"
+      },
+      "parameters": [
+        {
+          "kind": "TYPE_VARIABLE",
+          "name": "TK;"
+        },
+        {
+          "kind": "TYPE_VARIABLE",
+          "name": "TV;"
+        },
+        {
+          "kind": "TYPE_VARIABLE",
+          "name": "TV;"
+        }
+      ],
+      "annotations": [],
+      "declaringType": "Ljava/util/Map;",
+      "flags": 65537,
+      "name": "replace",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003cjava.util(Map.class[Map~replace~TK;~TV;~TV;",
+      "label": "boolean java.util.Map.replace(K key, V oldValue, V newValue)"
+    },
+    {
+      "bindingKey": "Ljava/util/Map;.replace(TK;TV;)TV;",
+      "constructor": false,
+      "returnType": {
+        "kind": "TYPE_VARIABLE",
+        "name": "TV;"
+      },
+      "parameters": [
+        {
+          "kind": "TYPE_VARIABLE",
+          "name": "TK;"
+        },
+        {
+          "kind": "TYPE_VARIABLE",
+          "name": "TV;"
+        }
+      ],
+      "annotations": [],
+      "declaringType": "Ljava/util/Map;",
+      "flags": 65537,
+      "name": "replace",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003cjava.util(Map.class[Map~replace~TK;~TV;",
+      "label": "V java.util.Map.replace(K key, V value)"
+    },
+    {
+      "bindingKey": "Ljava/util/Map;.computeIfAbsent(TK;Ljava/util/function/Function\u003c-TK;+TV;\u003e;)TV;",
+      "constructor": false,
+      "returnType": {
+        "kind": "TYPE_VARIABLE",
+        "name": "TV;"
+      },
+      "parameters": [
+        {
+          "kind": "TYPE_VARIABLE",
+          "name": "TK;"
+        },
+        {
+          "kind": "PARAMETERIZED",
+          "name": "Ljava.util.function.Function\u003c-TK;+TV;\u003e;",
+          "extras": {
+            "owner": {
+              "kind": "CLASS",
+              "name": "Ljava.util.function.Function;"
+            },
+            "arguments": [
+              {
+                "kind": "WILDCARD",
+                "name": "-TK;"
+              },
+              {
+                "kind": "WILDCARD",
+                "name": "+TV;"
+              }
+            ]
+          }
+        }
+      ],
+      "annotations": [],
+      "declaringType": "Ljava/util/Map;",
+      "flags": 65537,
+      "name": "computeIfAbsent",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003cjava.util(Map.class[Map~computeIfAbsent~TK;~Ljava.util.function.Function\\\u003c-TK;+TV;\u003e;",
+      "label": "V java.util.Map.computeIfAbsent(K key, Function\u003c? super K, ? extends V\u003e mappingFunction)"
+    },
+    {
+      "bindingKey": "Ljava/util/Map;.computeIfPresent(TK;Ljava/util/function/BiFunction\u003c-TK;-TV;+TV;\u003e;)TV;",
+      "constructor": false,
+      "returnType": {
+        "kind": "TYPE_VARIABLE",
+        "name": "TV;"
+      },
+      "parameters": [
+        {
+          "kind": "TYPE_VARIABLE",
+          "name": "TK;"
+        },
+        {
+          "kind": "PARAMETERIZED",
+          "name": "Ljava.util.function.BiFunction\u003c-TK;-TV;+TV;\u003e;",
+          "extras": {
+            "owner": {
+              "kind": "CLASS",
+              "name": "Ljava.util.function.BiFunction;"
+            },
+            "arguments": [
+              {
+                "kind": "WILDCARD",
+                "name": "-TK;"
+              },
+              {
+                "kind": "WILDCARD",
+                "name": "-TV;"
+              },
+              {
+                "kind": "WILDCARD",
+                "name": "+TV;"
+              }
+            ]
+          }
+        }
+      ],
+      "annotations": [],
+      "declaringType": "Ljava/util/Map;",
+      "flags": 65537,
+      "name": "computeIfPresent",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003cjava.util(Map.class[Map~computeIfPresent~TK;~Ljava.util.function.BiFunction\\\u003c-TK;-TV;+TV;\u003e;",
+      "label": "V java.util.Map.computeIfPresent(K key, BiFunction\u003c? super K, ? super V, ? extends V\u003e remappingFunction)"
+    },
+    {
+      "bindingKey": "Ljava/util/Map;.compute(TK;Ljava/util/function/BiFunction\u003c-TK;-TV;+TV;\u003e;)TV;",
+      "constructor": false,
+      "returnType": {
+        "kind": "TYPE_VARIABLE",
+        "name": "TV;"
+      },
+      "parameters": [
+        {
+          "kind": "TYPE_VARIABLE",
+          "name": "TK;"
+        },
+        {
+          "kind": "PARAMETERIZED",
+          "name": "Ljava.util.function.BiFunction\u003c-TK;-TV;+TV;\u003e;",
+          "extras": {
+            "owner": {
+              "kind": "CLASS",
+              "name": "Ljava.util.function.BiFunction;"
+            },
+            "arguments": [
+              {
+                "kind": "WILDCARD",
+                "name": "-TK;"
+              },
+              {
+                "kind": "WILDCARD",
+                "name": "-TV;"
+              },
+              {
+                "kind": "WILDCARD",
+                "name": "+TV;"
+              }
+            ]
+          }
+        }
+      ],
+      "annotations": [],
+      "declaringType": "Ljava/util/Map;",
+      "flags": 65537,
+      "name": "compute",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003cjava.util(Map.class[Map~compute~TK;~Ljava.util.function.BiFunction\\\u003c-TK;-TV;+TV;\u003e;",
+      "label": "V java.util.Map.compute(K key, BiFunction\u003c? super K, ? super V, ? extends V\u003e remappingFunction)"
+    },
+    {
+      "bindingKey": "Ljava/util/Map;.merge(TK;TV;Ljava/util/function/BiFunction\u003c-TV;-TV;+TV;\u003e;)TV;",
+      "constructor": false,
+      "returnType": {
+        "kind": "TYPE_VARIABLE",
+        "name": "TV;"
+      },
+      "parameters": [
+        {
+          "kind": "TYPE_VARIABLE",
+          "name": "TK;"
+        },
+        {
+          "kind": "TYPE_VARIABLE",
+          "name": "TV;"
+        },
+        {
+          "kind": "PARAMETERIZED",
+          "name": "Ljava.util.function.BiFunction\u003c-TV;-TV;+TV;\u003e;",
+          "extras": {
+            "owner": {
+              "kind": "CLASS",
+              "name": "Ljava.util.function.BiFunction;"
+            },
+            "arguments": [
+              {
+                "kind": "WILDCARD",
+                "name": "-TV;"
+              },
+              {
+                "kind": "WILDCARD",
+                "name": "-TV;"
+              },
+              {
+                "kind": "WILDCARD",
+                "name": "+TV;"
+              }
+            ]
+          }
+        }
+      ],
+      "annotations": [],
+      "declaringType": "Ljava/util/Map;",
+      "flags": 65537,
+      "name": "merge",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003cjava.util(Map.class[Map~merge~TK;~TV;~Ljava.util.function.BiFunction\\\u003c-TV;-TV;+TV;\u003e;",
+      "label": "V java.util.Map.merge(K key, V value, BiFunction\u003c? super V, ? super V, ? extends V\u003e remappingFunction)"
+    }
+  ],
+  "annotations": [],
+  "classpathEntry": {
+    "cpe": {
+      "kind": "binary",
+      "path": "/Library/Java/JavaVirtualMachines/jdk1.8.0_151.jdk/Contents/Home/jre/lib/rt.jar",
+      "sourceContainerUrl": "file:/Library/Java/JavaVirtualMachines/jdk1.8.0_151.jdk/Contents/Home/src.zip",
+      "isSystem": true,
+      "isOwn": false
+    }
+  },
+  "flags": 1537,
+  "name": "Map",
+  "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003cjava.util(Map.class[Map",
+  "label": "java.util.Map\u003cK, V\u003e"
+}

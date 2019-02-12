@@ -272,10 +272,10 @@ public class AutowiredHoverProvider implements HoverProvider {
 			if (liveBeanTypeFQName.replace('$', '.').equals(bindingQualifiedName)) {
 				return true;
 			} else {
-				IType type = jp.findType(liveBeanTypeFQName);
+				IType type = jp.getIndex().findType(liveBeanTypeFQName);
 				String fqTypeName = bindingQualifiedName;
 				if (type != null) {
-					return jp.allSuperTypesOf(type).map(IType::getFullyQualifiedName)
+					return jp.getIndex().allSuperTypesOf(type).map(IType::getFullyQualifiedName)
 							.filter(fqn -> fqTypeName.equals(fqn.replace('$', '.'))).blockFirst() != null;
 				}
 			}
