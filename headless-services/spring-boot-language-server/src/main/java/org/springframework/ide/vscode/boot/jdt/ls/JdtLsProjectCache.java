@@ -67,6 +67,7 @@ public class JdtLsProjectCache implements InitializableJavaProjectsService {
 	public void addListener(Listener listener) {
 		synchronized (listeners) {
 			listeners.add(listener);
+			log.info("added listener - now listeners registered: " + listeners.size());
 		}
 	}
 
@@ -74,14 +75,23 @@ public class JdtLsProjectCache implements InitializableJavaProjectsService {
 	public void removeListener(Listener listener) {
 		synchronized (listeners) {
 			listeners.remove(listener);
+			log.info("removed listener - now listeners registered: " + listeners.size());
 		}
 	}
 
 	private void notifyCreated(JavaProject newProject) {
 		logEvent("Created", newProject);
+
 		synchronized (listeners) {
+			log.info("listeners registered: " + listeners.size());
+
 			for (Listener listener : listeners) {
-				listener.created(newProject);
+				try {
+					listener.created(newProject);
+				}
+				catch (Exception e) {
+					log.info("listener caused exception: " + e);
+				}
 			}
 		}
 	}

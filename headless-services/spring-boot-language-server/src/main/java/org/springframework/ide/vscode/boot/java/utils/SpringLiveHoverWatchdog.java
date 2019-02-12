@@ -81,16 +81,19 @@ public class SpringLiveHoverWatchdog {
 
 			@Override
 			public void deleted(IJavaProject project) {
+				logger.info("project deleted event: {}", project.getElementName());
 				refreshEnablement();
 			}
 
 			@Override
 			public void created(IJavaProject project) {
+				logger.info("project created event: {}", project.getElementName());
 				refreshEnablement();
 			}
 
 			@Override
 			public void changed(IJavaProject project) {
+				logger.info("project changed event: {}", project.getElementName());
 				refreshEnablement();
 			}
 		});
