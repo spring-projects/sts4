@@ -15,6 +15,7 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Test;
 import org.springframework.ide.vscode.bosh.models.BoshModels;
 import org.springframework.ide.vscode.commons.languageserver.util.SnippetBuilder;
+import org.springframework.ide.vscode.commons.yaml.reconcile.ASTTypeCache;
 import org.springframework.ide.vscode.commons.yaml.schema.DynamicSchemaContext;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeUtil;
@@ -22,7 +23,7 @@ import org.springframework.ide.vscode.commons.yaml.snippet.SchemaBasedSnippetGen
 
 public class SchemaBasedSnippetGeneratorTest {
 
-	private BoshDeploymentManifestSchema schema = new BoshSchemas(new BoshModels((dc) -> null, (dc) -> null, (dc) -> null)).getDeploymentSchema();
+	private BoshDeploymentManifestSchema schema = new BoshSchemas(new BoshModels((dc) -> null, (dc) -> null, (dc) -> null, new ASTTypeCache())).getDeploymentSchema();
 	private YTypeUtil typeUtil = schema.getTypeUtil();
 	private SchemaBasedSnippetGenerator generator = new SchemaBasedSnippetGenerator(typeUtil, SnippetBuilder::new);
 

@@ -18,6 +18,7 @@ import org.springframework.ide.vscode.bosh.models.BoshCommandCloudConfigProvider
 import org.springframework.ide.vscode.bosh.models.BoshCommandReleasesProvider;
 import org.springframework.ide.vscode.bosh.models.BoshCommandStemcellsProvider;
 import org.springframework.ide.vscode.commons.util.LogRedirect;
+import org.springframework.ide.vscode.commons.yaml.reconcile.ASTTypeCache;
 
 @SpringBootApplication
 public class BoshLanguageServerBootApp {
@@ -27,6 +28,10 @@ public class BoshLanguageServerBootApp {
 	public static void main(String[] args) throws Exception {
 		LogRedirect.bootRedirectToFile(SERVER_NAME); //TODO: use boot (or logback realy) to configure logging instead.
 		SpringApplication.run(BoshLanguageServerBootApp.class, args);
+	}
+
+	@Bean public ASTTypeCache astTypeCache() {
+		return new ASTTypeCache();
 	}
 
 	@Bean public String serverName() {

@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.bosh;
 
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.ide.vscode.bosh.models.BoshModels;
 import org.springframework.ide.vscode.bosh.models.CloudConfigModel;
 import org.springframework.ide.vscode.bosh.models.DynamicModelProvider;
@@ -49,6 +50,8 @@ public class BoshLanguageServerInitializer implements InitializingBean {
 	private DynamicModelProvider<ReleasesModel> releasesProvider;
 
 	@Autowired private SimpleLanguageServer server;
+	@Autowired private ApplicationContext appContext;
+	@Autowired private ASTTypeCache astTypeCache;
 
 	private BoshSchemas schema;
 	private VscodeCompletionEngineAdapter completionEngine;
@@ -66,11 +69,10 @@ public class BoshLanguageServerInitializer implements InitializingBean {
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		BoshModels models = new BoshModels(cloudConfigProvider, stemcellsProvider, releasesProvider);
+		BoshModels models = new BoshModels(cloudConfigProvider, stemcellsProvider, releasesProvider, astTypeCache);
 		SimpleTextDocumentService documents = server.getTextDocumentService();
 		schema = new BoshSchemas(models);
 		YamlAstCache asts = models.asts;
-		ASTTypeCache astTypeCache = models.astTypes;
 
 		YamlStructureProvider structureProvider = YamlStructureProvider.DEFAULT;
 		YamlAssistContextProvider contextProvider = new SchemaBasedYamlAssistContextProvider(schema);
@@ -80,8 +82,7 @@ public class BoshLanguageServerInitializer implements InitializingBean {
 		HoverInfoProvider infoProvider = new YamlHoverInfoProvider(asts.getAstProvider(true), structureProvider, contextProvider);
 		VscodeHoverEngineAdapter hoverEngine = new VscodeHoverEngineAdapter(server, infoProvider);
 		YamlQuickfixes quickfixes = new YamlQuickfixes(server.getQuickfixRegistry(), server.getTextDocumentService(), structureProvider);
-		YamlSchemaBasedReconcileEngine engine = new YamlSchemaBasedReconcileEngine(asts.getAstProvider(false), schema, quickfixes);
-		engine.setTypeCollector(astTypeCache);
+		YamlSchemaBasedReconcileEngine engine = new YamlSchemaBasedReconcileEngine(asts.getAstProvider(false), schema, quickfixes, appContext);
 		documents.onDocumentSymbol(new TypeBasedYamlSymbolHandler(documents, astTypeCache, schema.getDefinitionTypes()));
 
 		documents.onDidChangeContent(params -> {

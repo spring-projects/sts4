@@ -66,7 +66,6 @@ public class ConcourseEditorTest {
 
 	@Before public void setup() throws Exception {
 		serverInitializer.setMaxCompletions(100);
-		harness.intialize(null);
 	}
 
 	@Test public void addSingleRequiredPropertiesQuickfix() throws Exception {
@@ -3670,6 +3669,33 @@ public class ConcourseEditorTest {
 	}
 
 	@Test public void gotoSymbolInPipeline() throws Exception {
+		Editor editor = harness.newEditor(
+				"resource_types:\n" +
+				"- name: some-resource-type\n" +
+				"resources:\n" +
+				"- name: foo-resource\n" +
+				"- name: bar-resource\n" +
+				"jobs:\n" +
+				"- name: do-some-stuff\n" +
+				"- name: do-more-stuff\n" +
+				"groups:\n" +
+				"- name: group-one\n" +
+				"- name: group-two\n"
+		);
+
+		editor.assertDocumentSymbols(
+				"some-resource-type|ResourceType",
+				"foo-resource|Resource",
+				"bar-resource|Resource",
+				"do-some-stuff|Job",
+				"do-more-stuff|Job",
+				"group-one|Group",
+				"group-two|Group"
+		);
+	}
+
+	@Test public void hiearhicalDocumentSymbolsInPipeline() throws Exception {
+
 		Editor editor = harness.newEditor(
 				"resource_types:\n" +
 				"- name: some-resource-type\n" +

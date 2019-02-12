@@ -226,6 +226,12 @@ public class LanguageServerHarness {
 		}
 	}
 
+	public void ensureInitialized() throws Exception {
+		if (initResult==null) {
+			intialize(null);
+		}
+	}
+
 	public InitializeResult intialize(File workspaceRoot) throws Exception {
 		int parentPid = random.nextInt(40000)+1000;
 		InitializeParams initParams = new InitializeParams();
@@ -552,7 +558,6 @@ public class LanguageServerHarness {
 	}
 
 	public Hover getHover(TextDocumentInfo document, Position cursor) throws Exception {
-
 		TextDocumentPositionParams params = new TextDocumentPositionParams();
 		params.setPosition(cursor);
 		params.setTextDocument(document.getId());
@@ -587,16 +592,19 @@ public class LanguageServerHarness {
 	 * Create editor with 'default' language id.
 	 */
 	public Editor newEditor(String contents) throws Exception {
+		ensureInitialized();
 		return newEditor(getDefaultLanguageId(), contents);
 	}
 
 	public synchronized Editor newEditorWithExt(LanguageId languageId, String extension, String contents) throws Exception {
+		ensureInitialized();
 		Editor editor = new Editor(this, contents, languageId, extension);
 		activeEditors.add(editor);
 		return editor;
 	}
 
 	public synchronized Editor newEditor(LanguageId languageId, String contents) throws Exception {
+		ensureInitialized();
 		Editor editor = new Editor(this, contents, languageId);
 		activeEditors.add(editor);
 		return editor;
@@ -604,6 +612,7 @@ public class LanguageServerHarness {
 
 
 	public synchronized Editor newEditor(LanguageId languageId, String contents, String resourceUri) throws Exception {
+		ensureInitialized();
 		TextDocumentInfo doc = docFromResource(contents, resourceUri, languageId);
 		Editor editor = new Editor(this, doc, contents, languageId);
 		activeEditors.add(editor);

@@ -18,17 +18,20 @@ import org.springframework.ide.vscode.commons.yaml.schema.DynamicSchemaContext;
 
 public class BoshModels {
 	public final YamlAstCache asts = new YamlAstCache();
-	public final ASTTypeCache astTypes = new ASTTypeCache();
+	public final ASTTypeCache astTypes;
 	public final DynamicModelProvider<CloudConfigModel> cloudConfigProvider;
 	public final DynamicModelProvider<StemcellsModel> stemcellsProvider;
 	public final DynamicModelProvider<ReleasesModel> releasesProvider;
 
 	public BoshModels(DynamicModelProvider<CloudConfigModel> cloudConfigProvider,
 			DynamicModelProvider<StemcellsModel> stemcellsProvider,
-			DynamicModelProvider<ReleasesModel> releasesProvider) {
+			DynamicModelProvider<ReleasesModel> releasesProvider,
+			ASTTypeCache astTypes
+	) {
 			this.cloudConfigProvider = cloudConfigProvider;
 			this.stemcellsProvider = stemcellsProvider;
 			this.releasesProvider = releasesProvider;
+			this.astTypes = astTypes;
 	}
 
 	public String getTypeTag(DynamicSchemaContext dc) {
