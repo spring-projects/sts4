@@ -3669,6 +3669,7 @@ public class ConcourseEditorTest {
 	}
 
 	@Test public void gotoSymbolInPipeline() throws Exception {
+		harness.enableHierarchicalDocumentSymbols(false);
 		Editor editor = harness.newEditor(
 				"resource_types:\n" +
 				"- name: some-resource-type\n" +
@@ -3695,7 +3696,7 @@ public class ConcourseEditorTest {
 	}
 
 	@Test public void hiearhicalDocumentSymbolsInPipeline() throws Exception {
-
+		harness.enableHierarchicalDocumentSymbols(true);
 		Editor editor = harness.newEditor(
 				"resource_types:\n" +
 				"- name: some-resource-type\n" +
@@ -3710,14 +3711,18 @@ public class ConcourseEditorTest {
 				"- name: group-two\n"
 		);
 
-		editor.assertDocumentSymbols(
-				"some-resource-type|ResourceType",
-				"foo-resource|Resource",
-				"bar-resource|Resource",
-				"do-some-stuff|Job",
-				"do-more-stuff|Job",
-				"group-one|Group",
-				"group-two|Group"
+		editor.assertHierarchicalDocumentSymbols(
+				"resource_types::Resource Types\n" +
+				"  some-resource-type::Resource Type\n" +
+				"resources::Resources\n" +
+				"  foo-resource::Resource\n" +
+				"  bar-resource::Resource\n" +
+				"jobs::Jobs\n" +
+				"  do-some-stuff::Job\n" +
+				"  do-more-stuff::Job\n" +
+				"groups::Groups\n" +
+				"  group-one::Groups\n" +
+				"  group-two::Groups\n"
 		);
 	}
 

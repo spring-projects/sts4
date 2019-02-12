@@ -36,6 +36,7 @@ import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.CompletionList;
 import org.eclipse.lsp4j.Diagnostic;
+import org.eclipse.lsp4j.DocumentSymbol;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.MarkedString;
@@ -899,6 +900,38 @@ public class Editor {
 			actual.append(string+"\n");
 		}
 		assertEquals(expected.toString(), actual.toString());
+	}
+
+	public void assertHierarchicalDocumentSymbols(String expectedSymbolDump) throws Exception {
+		StringBuilder symbolDump = new StringBuilder();
+		List<? extends DocumentSymbol> rootSymbols = getHierarchicalDocumentSymbols();
+		dumpSymbols(rootSymbols, 0, symbolDump);
+		assertEquals(expectedSymbolDump, symbolDump.toString());
+	}
+
+	private void dumpSymbols(List<? extends DocumentSymbol> syms, int indent, StringBuilder symbolDump) {
+		for (DocumentSymbol s : syms) {
+			dumpSymbol(s, indent, symbolDump);
+		}
+	}
+
+	private void dumpSymbol(DocumentSymbol s, int indent, StringBuilder symbolDump) {
+		for (int i = 0; i < indent; i++) {
+			symbolDump.append("  ");
+		}
+		symbolDump.append(s.getName());
+		symbolDump.append("::");
+		symbolDump.append(s.getDetail());
+		symbolDump.append("\n");
+		assertEquals(s.getName(), getText(s.getSelectionRange()));
+		List<DocumentSymbol> children = s.getChildren();
+		if (children!=null) {
+			dumpSymbols(children, indent+1, symbolDump);
+		}
+	}
+
+	private List<? extends DocumentSymbol> getHierarchicalDocumentSymbols() throws Exception {
+		return harness.getHierarchicalDocumentSymbols(this.doc);
 	}
 
 	private List<? extends SymbolInformation> getDocumentSymbols() throws Exception {

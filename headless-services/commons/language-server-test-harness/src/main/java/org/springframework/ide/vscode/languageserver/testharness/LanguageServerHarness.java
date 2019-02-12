@@ -62,6 +62,8 @@ import org.eclipse.lsp4j.DidChangeTextDocumentParams;
 import org.eclipse.lsp4j.DidChangeWatchedFilesParams;
 import org.eclipse.lsp4j.DidCloseTextDocumentParams;
 import org.eclipse.lsp4j.DidOpenTextDocumentParams;
+import org.eclipse.lsp4j.DocumentSymbol;
+import org.eclipse.lsp4j.DocumentSymbolCapabilities;
 import org.eclipse.lsp4j.DocumentSymbolParams;
 import org.eclipse.lsp4j.ExecuteCommandCapabilities;
 import org.eclipse.lsp4j.ExecuteCommandParams;
@@ -83,6 +85,7 @@ import org.eclipse.lsp4j.ResourceOperation;
 import org.eclipse.lsp4j.ResourceOperationKind;
 import org.eclipse.lsp4j.ShowMessageRequestParams;
 import org.eclipse.lsp4j.SymbolInformation;
+import org.eclipse.lsp4j.SymbolKindCapabilities;
 import org.eclipse.lsp4j.TextDocumentClientCapabilities;
 import org.eclipse.lsp4j.TextDocumentContentChangeEvent;
 import org.eclipse.lsp4j.TextDocumentEdit;
@@ -142,6 +145,8 @@ public class LanguageServerHarness {
 	private Map<String, PublishDiagnosticsParams> diagnostics = new HashMap<>();
 	private List<Editor> activeEditors = new ArrayList<>();
 	private Gson gson = new Gson();
+
+	private boolean enableHierarchicalDocumentSymbols = false;
 
 
 	public LanguageServerHarness(SimpleLanguageServer server, LanguageId defaultLanguageId) {
@@ -242,6 +247,9 @@ public class LanguageServerHarness {
 		initParams.setProcessId(parentPid);
 		ClientCapabilities clientCap = new ClientCapabilities();
 		TextDocumentClientCapabilities textCap = new TextDocumentClientCapabilities();
+		DocumentSymbolCapabilities documentSymbolCap = new DocumentSymbolCapabilities();
+		documentSymbolCap.setHierarchicalDocumentSymbolSupport(enableHierarchicalDocumentSymbols);
+		textCap.setDocumentSymbol(documentSymbolCap);
 		CompletionCapabilities completionCap = new CompletionCapabilities(new CompletionItemCapabilities(true));
 		textCap.setCompletion(completionCap);
 		clientCap.setTextDocument(textCap);
@@ -837,6 +845,12 @@ public class LanguageServerHarness {
 				.collect(Collectors.toList());
 	}
 
+	public List<? extends DocumentSymbol> getHierarchicalDocumentSymbols(TextDocumentInfo document) throws Exception {
+		waitForReconcile(); //TODO: if the server works properly this shouldn't be needed it should do that internally itself somehow.
+		DocumentSymbolParams params = new DocumentSymbolParams(document.getId());
+		return getServer().getTextDocumentService().documentSymbol(params).get().stream().map(e -> e.getRight()).collect(Collectors.toList());
+	}
+
 	public List<? extends SymbolInformation> getDocumentSymbols(TextDocumentInfo document) throws Exception {
 		waitForReconcile(); //TODO: if the server works properly this shouldn't be needed it should do that internally itself somehow.
 		DocumentSymbolParams params = new DocumentSymbolParams(document.getId());
@@ -903,5 +917,9 @@ public class LanguageServerHarness {
 
 	public SimpleLanguageServer getServer() {
 		return server==null ? null : server.getServer();
+	}
+
+	public void enableHierarchicalDocumentSymbols(boolean b) {
+		this.enableHierarchicalDocumentSymbols = b;
 	}
 }
