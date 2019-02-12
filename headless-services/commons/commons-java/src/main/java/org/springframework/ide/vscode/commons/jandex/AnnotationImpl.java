@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016-2017 Pivotal, Inc.
+ * Copyright (c) 2016, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -31,7 +31,7 @@ public class AnnotationImpl implements IAnnotation {
 
 	@Override
 	public String getElementName() {
-		return annotation.name().toString();
+		return fqName();
 	}
 
 	@Override
@@ -72,6 +72,11 @@ public class AnnotationImpl implements IAnnotation {
 	@Override
 	public String getBindingKey() {
 		return BindingKeyUtils.getBindingKey(annotation);
+	}
+
+	@Override
+	public String fqName() {
+		return annotation.name().toString();
 	}
 
 }

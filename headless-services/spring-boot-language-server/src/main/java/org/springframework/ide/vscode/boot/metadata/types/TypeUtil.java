@@ -587,7 +587,7 @@ public class TypeUtil {
 				 * has '.' as the separator. Replace '.' with '$' to find inner type
 				 */
 				String fqName = switchInnerTypeSeparator(typeName);
-				return javaProject.findType(fqName);
+				return javaProject.getIndex().findType(fqName);
 			}
 		} catch (Exception e) {
 			log.error("", e);

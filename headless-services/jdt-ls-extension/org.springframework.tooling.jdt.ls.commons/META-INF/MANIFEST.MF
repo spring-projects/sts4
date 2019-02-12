@@ -11,9 +11,15 @@ Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.resources,
  com.google.guava,
  org.eclipse.m2e.jdt,
- org.eclipse.m2e.core
-Export-Package: org.springframework.tooling.jdt.ls.commons,
+ org.eclipse.m2e.core,
+ org.eclipse.lsp4j,
+ org.eclipse.lsp4j.jsonrpc
+Export-Package: org.springframework.ide.vscode.commons.protocol,
+ org.springframework.ide.vscode.commons.protocol.java,
+ org.springframework.tooling.jdt.ls.commons,
  org.springframework.tooling.jdt.ls.commons.classpath,
  org.springframework.tooling.jdt.ls.commons.java,
  org.springframework.tooling.jdt.ls.commons.javadoc,
  org.springframework.tooling.jdt.ls.commons.resources
+Bundle-ClassPath: ., 
+ lib/commons-lsp-extensions.jar

@@ -267,7 +267,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 
 	@Test public void testPredefinedProject() throws Exception {
 		IJavaProject p = createPredefinedMavenProject("tricky-getters-boot-1.3.1-app");
-		IType type = p.findType("demo.DemoApplication");
+		IType type = p.getIndex().findType("demo.DemoApplication");
 		assertNotNull(type);
 	}
 
@@ -340,7 +340,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		IJavaProject p = createPredefinedMavenProject("boot-1.2.1-app-properties-list-of-pojo");
 
 		useProject(p);
-		assertNotNull(p.findType("demo.Foo"));
+		assertNotNull(p.getIndex().findType("demo.Foo"));
 
 		Editor editor = newEditor(
 				"token.bad.guy=problem\n"+
@@ -365,7 +365,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		IJavaProject p = createPredefinedMavenProject("boot-1.2.1-app-properties-list-of-pojo");
 
 		useProject(p);
-		assertNotNull(p.findType("demo.Foo"));
+		assertNotNull(p.getIndex().findType("demo.Foo"));
 
 		assertCompletionsVariations("volder.foo.l<*>", "volder.foo.list[<*>");
 		assertCompletionsDisplayStringAndDetail("volder.foo.list[0].<*>",
@@ -514,7 +514,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		IJavaProject p = createPredefinedMavenProject("enums-boot-1.3.2-app");
 
 		useProject(p);
-		assertNotNull(p.findType("demo.Color"));
+		assertNotNull(p.getIndex().findType("demo.Color"));
 
 		data("foo.colors", "java.util.List<demo.Color>", null, "A foonky list");
 
@@ -537,7 +537,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		IJavaProject p = createPredefinedMavenProject("enums-boot-1.3.2-app");
 
 		useProject(p);
-		assertNotNull(p.findType("demo.Color"));
+		assertNotNull(p.getIndex().findType("demo.Color"));
 
 		data("foo.color", "demo.Color", null, "A foonky colour");
 
@@ -556,7 +556,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		IJavaProject p = createPredefinedMavenProject("enums-boot-1.3.2-app");
 
 		useProject(p);
-		assertNotNull(p.findType("demo.Color"));
+		assertNotNull(p.getIndex().findType("demo.Color"));
 
 		data("foo.color", "demo.Color", null, "A foonky colour");
 		Editor editor = newEditor(
@@ -579,7 +579,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		IJavaProject p = createPredefinedMavenProject("enums-boot-1.3.2-app");
 
 		useProject(p);
-		assertNotNull(p.findType("demo.Color"));
+		assertNotNull(p.getIndex().findType("demo.Color"));
 
 		assertCompletionsVariations("foo.nam<*>",
 				"foo.name-colors.<*>",
@@ -598,7 +598,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		useProject(p);
 		data("foo.name-colors", "java.util.Map<java.lang.String,demo.Color>", null, "Map with colors in its values");
 
-		assertNotNull(p.findType("demo.Color"));
+		assertNotNull(p.getIndex().findType("demo.Color"));
 
 		Editor editor = newEditor(
 				"foo.name-colors.jacket=BLUE\n" +
@@ -617,8 +617,8 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		useProject(p);
 		data("foo.color-names", "java.util.Map<demo.Color,java.lang.String>", null, "Map with colors in its keys");
 		data("foo.color-data", "java.util.Map<demo.Color,demo.ColorData>", null, "Map with colors in its keys, and pojo in values");
-		assertNotNull(p.findType("demo.Color"));
-		assertNotNull(p.findType("demo.ColorData"));
+		assertNotNull(p.getIndex().findType("demo.Color"));
+		assertNotNull(p.getIndex().findType("demo.ColorData"));
 
 		//Map Enum -> String:
 		assertCompletionsVariations("foo.colnam<*>", "foo.color-names.<*>");
@@ -657,8 +657,8 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		IJavaProject p = createPredefinedMavenProject("enums-boot-1.3.2-app");
 
 		useProject(p);
-		assertNotNull(p.findType("demo.Color"));
-		assertNotNull(p.findType("demo.ColorData"));
+		assertNotNull(p.getIndex().findType("demo.Color"));
+		assertNotNull(p.getIndex().findType("demo.ColorData"));
 
 		Editor editor = newEditor(
 				"foo.color-names.RED=Rood\n"+
@@ -677,8 +677,8 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		IJavaProject p = createPredefinedMavenProject("enums-boot-1.3.2-app");
 
 		useProject(p);
-		assertNotNull(p.findType("demo.Color"));
-		assertNotNull(p.findType("demo.ColorData"));
+		assertNotNull(p.getIndex().findType("demo.Color"));
+		assertNotNull(p.getIndex().findType("demo.ColorData"));
 
 		assertCompletion("foo.dat<*>", "foo.data.<*>");
 
@@ -712,8 +712,8 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		IJavaProject p = createPredefinedMavenProject("enums-boot-1.3.2-app");
 
 		useProject(p);
-		assertNotNull(p.findType("demo.Color"));
-		assertNotNull(p.findType("demo.ColorData"));
+		assertNotNull(p.getIndex().findType("demo.Color"));
+		assertNotNull(p.getIndex().findType("demo.ColorData"));
 
 		Editor editor = newEditor(
 			"foo.data.bogus=Something\n" +
@@ -747,8 +747,8 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		IJavaProject p = createPredefinedMavenProject("enums-boot-1.3.2-app");
 
 		useProject(p);
-		assertNotNull(p.findType("demo.Color"));
-		assertNotNull(p.findType("demo.ColorData"));
+		assertNotNull(p.getIndex().findType("demo.Color"));
+		assertNotNull(p.getIndex().findType("demo.ColorData"));
 
 		data("atommap", "java.util.Map<java.lang.String,java.lang.Integer>", null, "map of atomic data");
 		data("objectmap", "java.util.Map<java.lang.String,java.lang.Object>", null, "map of atomic object (recursive map)");
@@ -787,8 +787,8 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		IJavaProject p = createPredefinedMavenProject("enums-boot-1.3.2-app");
 
 		useProject(p);
-		assertNotNull(p.findType("demo.Color"));
-		assertNotNull(p.findType("demo.ColorData"));
+		assertNotNull(p.getIndex().findType("demo.Color"));
+		assertNotNull(p.getIndex().findType("demo.ColorData"));
 
 		Editor editor = newEditor(
 				"foo.color-names.BLUE.dot=Blauw\n"+
@@ -813,7 +813,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		IJavaProject p = createPredefinedMavenProject("enums-boot-1.3.2-app");
 
 		useProject(p);
-		assertNotNull(p.findType("demo.ClothingSize"));
+		assertNotNull(p.getIndex().findType("demo.ClothingSize"));
 
 		data("simple.pants.size", "demo.ClothingSize", null, "The simple pant's size");
 
@@ -857,7 +857,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		IJavaProject p = createPredefinedMavenProject("enums-boot-1.3.2-app");
 
 		useProject(p);
-		assertNotNull(p.findType("demo.ClothingSize"));
+		assertNotNull(p.getIndex().findType("demo.ClothingSize"));
 
 		data("simple.pants.size", "demo.ClothingSize", null, "The simple pant's size");
 
@@ -1573,7 +1573,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		IJavaProject p = createPredefinedMavenProject("enums-boot-1.3.2-app");
 
 		useProject(p);
-		assertNotNull(p.findType("demo.Color"));
+		assertNotNull(p.getIndex().findType("demo.Color"));
 
 		data("my.colors", collectionType+"<demo.Color>", null, "Ooh! nice colors!");
 

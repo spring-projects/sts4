@@ -15,6 +15,13 @@ curl https://raw.githubusercontent.com/textmate/java.tmbundle/master/Syntaxes/Ja
 rm -fr ${workdir}/jars
 mkdir -p ${workdir}/jars
 
+# Use maven to build commons-lsp-extensions - jdt extension depend on that jar
+cd ../../headless-services/
+./mvnw -pl :commons-parent clean install -DskipTests
+./mvnw -pl :commons-lsp-extensions clean install
+
+cd ${workdir}
+
 # Use maven to build jdt ls extension
 cd ../../headless-services/jdt-ls-extension
 if command -v xvfb-run ; then

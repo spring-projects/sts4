@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Pivotal, Inc.
+ * Copyright (c) 2018, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -37,19 +37,17 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.preferences.IEclipsePreferences;
-import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jdt.core.JavaCore;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
+import org.springframework.ide.vscode.commons.protocol.java.Classpath;
+import org.springframework.ide.vscode.commons.protocol.java.Classpath.CPE;
 import org.springframework.tooling.jdt.ls.commons.Logger.TestLogger;
-import org.springframework.tooling.jdt.ls.commons.classpath.Classpath;
-import org.springframework.tooling.jdt.ls.commons.classpath.Classpath.CPE;
 import org.springframework.tooling.jdt.ls.commons.classpath.ClasspathUtil;
-import org.springframework.tooling.jdt.ls.commons.test.ClasspathListenerHandlerTest.MockClientCommandExecutor;
 import org.springframework.tooling.jdt.ls.commons.classpath.ClientCommandExecutor;
 import org.springframework.tooling.jdt.ls.commons.classpath.ReusableClasspathListenerHandler;
 import org.springsource.ide.eclipse.commons.frameworks.test.util.ACondition;
@@ -57,7 +55,6 @@ import org.springsource.ide.eclipse.commons.frameworks.test.util.Asserter;
 
 import com.google.common.collect.ImmutableList;
 
-import junit.framework.Assert;
 import junit.framework.AssertionFailedError;
 
 public class ClasspathListenerHandlerTest {

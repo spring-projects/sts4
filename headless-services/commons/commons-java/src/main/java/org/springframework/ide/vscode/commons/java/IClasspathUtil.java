@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Pivotal, Inc.
+ * Copyright (c) 2018, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -12,15 +12,19 @@ package org.springframework.ide.vscode.commons.java;
 
 import java.io.File;
 import java.io.IOException;
+import java.net.URL;
+import java.nio.file.Files;
 import java.util.List;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ide.vscode.commons.languageserver.java.ls.Classpath;
-import org.springframework.ide.vscode.commons.languageserver.java.ls.Classpath.CPE;
+import org.springframework.ide.vscode.commons.protocol.java.Classpath;
+import org.springframework.ide.vscode.commons.protocol.java.Classpath.CPE;
+import org.springframework.ide.vscode.commons.util.CollectorUtil;
 
 import com.google.common.collect.ImmutableList;
 
@@ -117,4 +121,32 @@ public class IClasspathUtil {
 		}
 		return Stream.empty();
 	}
+
+	public static Optional<URL> sourceContainer(IClasspath classpath, File binaryClasspathRoot) {
+		CPE cpe = IClasspathUtil.findEntryForBinaryRoot(classpath, binaryClasspathRoot);
+		return cpe == null ? Optional.empty() : Optional.ofNullable(cpe.getSourceContainerUrl());
+	}
+
+	/**
+	 * Classpath resources paths relative to the source folder path
+	 * @return classpath resource relative paths
+	 */
+	public static ImmutableList<String> getClasspathResources(IClasspath classpath) {
+		return IClasspathUtil.getSourceFolders(classpath)
+		.flatMap(folder -> {
+			try {
+				return Files.walk(folder.toPath())
+						.filter(path -> Files.isRegularFile(path))
+						.map(path -> folder.toPath().relativize(path))
+						.map(relativePath -> relativePath.toString())
+						.filter(pathString -> !pathString.endsWith(".java") && !pathString.endsWith(".class"));
+			} catch (IOException e) {
+				return Stream.empty();
+			}
+		})
+		.collect(CollectorUtil.toImmutableList());
+	}
+
+
+
 }

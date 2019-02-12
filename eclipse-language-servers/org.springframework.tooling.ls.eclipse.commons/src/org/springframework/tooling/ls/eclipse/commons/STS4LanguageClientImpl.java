@@ -14,18 +14,22 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.ILocalVariable;
 import org.eclipse.jdt.internal.ui.javaeditor.JavaSourceViewer;
 import org.eclipse.jdt.internal.ui.viewsupport.JavaElementLinks;
+import org.eclipse.jdt.ui.JavaElementLabels;
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
@@ -44,6 +48,8 @@ import org.eclipse.lsp4e.LSPEclipseUtils;
 import org.eclipse.lsp4e.LanguageClientImpl;
 import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.Location;
+import org.eclipse.lsp4j.MarkupContent;
+import org.eclipse.lsp4j.MarkupKind;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
@@ -57,13 +63,20 @@ import org.eclipse.ui.progress.UIJob;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditor;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.eclipse.ui.texteditor.SourceViewerDecorationSupport;
+import org.springframework.ide.vscode.commons.protocol.CursorMovement;
+import org.springframework.ide.vscode.commons.protocol.HighlightParams;
+import org.springframework.ide.vscode.commons.protocol.ProgressParams;
+import org.springframework.ide.vscode.commons.protocol.STS4LanguageClient;
+import org.springframework.ide.vscode.commons.protocol.java.ClasspathListenerParams;
+import org.springframework.ide.vscode.commons.protocol.java.JavaDataParams;
+import org.springframework.ide.vscode.commons.protocol.java.JavaSearchParams;
+import org.springframework.ide.vscode.commons.protocol.java.JavaTypeHierarchyParams;
+import org.springframework.ide.vscode.commons.protocol.java.TypeData;
 import org.springframework.tooling.jdt.ls.commons.Logger;
 import org.springframework.tooling.jdt.ls.commons.classpath.ReusableClasspathListenerHandler;
 import org.springframework.tooling.jdt.ls.commons.java.JavaData;
-import org.springframework.tooling.jdt.ls.commons.java.JavaDataParams;
-import org.springframework.tooling.jdt.ls.commons.java.JavaTypeResponse;
-import org.springframework.tooling.jdt.ls.commons.java.JavadocHoverLinkResponse;
-import org.springframework.tooling.jdt.ls.commons.javadoc.JavadocResponse;
+import org.springframework.tooling.jdt.ls.commons.java.JavaSearch;
+import org.springframework.tooling.jdt.ls.commons.java.TypeHierarchy;
 import org.springframework.tooling.jdt.ls.commons.javadoc.JavadocUtils;
 import org.springframework.tooling.jdt.ls.commons.resources.ResourceUtils;
 import org.springframework.tooling.ls.eclipse.commons.javadoc.JavaDoc2MarkdownConverter;
@@ -81,7 +94,41 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 			() -> new ProjectSorter()
 	);
 
-	private static JavaData JAVA_DATA = new JavaData(Logger.forEclipsePlugin(LanguageServerCommonsActivator::getInstance));
+	private static final long LABEL_FLAGS=
+			JavaElementLabels.ALL_FULLY_QUALIFIED
+			| JavaElementLabels.M_PRE_RETURNTYPE
+			| JavaElementLabels.M_PARAMETER_ANNOTATIONS
+			| JavaElementLabels.M_PARAMETER_TYPES
+			| JavaElementLabels.M_PARAMETER_NAMES
+			| JavaElementLabels.M_EXCEPTIONS
+			| JavaElementLabels.F_PRE_TYPE_SIGNATURE
+			| JavaElementLabels.M_PRE_TYPE_PARAMETERS
+			| JavaElementLabels.T_TYPE_PARAMETERS
+			| JavaElementLabels.USE_RESOLVED;
+
+	private static final long LOCAL_VARIABLE_FLAGS= LABEL_FLAGS & ~JavaElementLabels.F_FULLY_QUALIFIED | JavaElementLabels.F_POST_QUALIFIED;
+
+	private static final long COMMON_SIGNATURE_FLAGS = LABEL_FLAGS & ~JavaElementLabels.ALL_FULLY_QUALIFIED
+			| JavaElementLabels.T_FULLY_QUALIFIED | JavaElementLabels.M_FULLY_QUALIFIED;
+
+
+	private static String label(IJavaElement element) {
+		try {
+			if (element instanceof ILocalVariable) {
+				return JavaElementLabels.getElementLabel(element,LOCAL_VARIABLE_FLAGS);
+			} else {
+				return JavaElementLabels.getElementLabel(element,COMMON_SIGNATURE_FLAGS);
+			}
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
+	final private JavaData javaData = new JavaData(STS4LanguageClientImpl::label , Logger.forEclipsePlugin(LanguageServerCommonsActivator::getInstance));
+
+	final private JavaSearch javaSearch = new JavaSearch(Logger.forEclipsePlugin(LanguageServerCommonsActivator::getInstance), javaData);
+
+	final private TypeHierarchy typeHierarchy = new TypeHierarchy(Logger.forEclipsePlugin(LanguageServerCommonsActivator::getInstance), javaData);
 
 	private static final String ANNOTION_TYPE_ID = "org.springframework.tooling.bootinfo";
 
@@ -312,16 +359,19 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 	}
 
 	@Override
-	public CompletableFuture<JavadocResponse> javadoc(JavaDataParams params) {
-		JavadocResponse response = new JavadocResponse();
-		try {
-			String content = JavadocUtils.javadoc(JavaDoc2MarkdownConverter::getMarkdownContentReader,
-					URI.create(params.getProjectUri()), params.getBindingKey(), JavaDataParams.isLookInOtherProjects(params));
-			response.setContent(content);
-		} catch (Exception e) {
-			LanguageServerCommonsActivator.logError(e, "Failed getting javadoc for " + params.toString());
-		}
-		return CompletableFuture.completedFuture(response);
+	public CompletableFuture<MarkupContent> javadoc(JavaDataParams params) {
+		return CompletableFuture.supplyAsync(() -> {
+			try {
+				MarkupContent mc = new MarkupContent();
+				mc.setKind(MarkupKind.MARKDOWN);
+				mc.setValue(JavadocUtils.javadoc(JavaDoc2MarkdownConverter::getMarkdownContentReader,
+						URI.create(params.getProjectUri()), params.getBindingKey(), JavaDataParams.isLookInOtherProjects(params)));
+				return mc;
+			} catch (Exception e) {
+				LanguageServerCommonsActivator.logError(e, "Failed getting javadoc for " + params.toString());
+			}
+			return null;
+		});
 	}
 
 	@Override
@@ -350,24 +400,24 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 	}
 
 	@Override
-	public CompletableFuture<JavaTypeResponse> javaType(JavaDataParams params) {
-		JavaTypeResponse response = new JavaTypeResponse(JAVA_DATA.typeData(params.getProjectUri(), params.getBindingKey(), JavaDataParams.isLookInOtherProjects(params)));
-		return CompletableFuture.completedFuture(response);
+	public CompletableFuture<TypeData> javaType(JavaDataParams params) {
+		return CompletableFuture.supplyAsync(() -> javaData.typeData(params.getProjectUri(), params.getBindingKey(), JavaDataParams.isLookInOtherProjects(params)));
 	}
 
 	@Override
-	public CompletableFuture<JavadocHoverLinkResponse> javadocHoverLink(JavaDataParams params) {
-		JavadocHoverLinkResponse response = new JavadocHoverLinkResponse(null);
-		try {
-			URI projectUri = params.getProjectUri() == null ? null : URI.create(params.getProjectUri());
-			IJavaElement element = JavaData.findElement(projectUri, params.getBindingKey(), JavaDataParams.isLookInOtherProjects(params));
-			if (element != null) {
-				response.setLink(JavaElementLinks.createURI(JavaElementLinks.OPEN_LINK_SCHEME, element));
+	public CompletableFuture<String> javadocHoverLink(JavaDataParams params) {
+		return CompletableFuture.supplyAsync(() -> {
+			try {
+				URI projectUri = params.getProjectUri() == null ? null : URI.create(params.getProjectUri());
+				IJavaElement element = JavaData.findElement(projectUri, params.getBindingKey(), JavaDataParams.isLookInOtherProjects(params));
+				if (element != null) {
+					return JavaElementLinks.createURI(JavaElementLinks.OPEN_LINK_SCHEME, element);
+				}
+			} catch (Exception e) {
+				LanguageServerCommonsActivator.logError(e, "Failed to find java element for key " + params.getBindingKey());
 			}
-		} catch (Exception e) {
-			LanguageServerCommonsActivator.logError(e, "Failed to find java element for key " + params.getBindingKey());
-		}
-		return CompletableFuture.completedFuture(response);
+			return null;
+		});
 	}
 
 	@Override
@@ -387,6 +437,47 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 			}
 			return null;
 		});
+	}
+
+	@Override
+	public CompletableFuture<List<TypeData>> javaSearchTypes(JavaSearchParams params) {
+		return CompletableFuture.supplyAsync(() -> {
+			try {
+				return javaSearch.fuzzySearchTypes(URI.create(params.getProjectUri()), params.getTerm(),
+						params.isIncludeBinaries(), params.isIncludeSystemLibs()).collect(Collectors.toList());
+			} catch (Exception e) {
+				LanguageServerCommonsActivator.logError(e,
+						"Failed to search type with term '" + params.getTerm() + "' in project " + params.getProjectUri());
+				return Collections.emptyList();
+			}
+		});
+	}
+
+	@Override
+	public CompletableFuture<List<String>> javaSearchPackages(JavaSearchParams params) {
+		return CompletableFuture.supplyAsync(() -> {
+			try {
+				return javaSearch.fuzzySearchPackages(URI.create(params.getProjectUri()), params.getTerm(),
+						params.isIncludeBinaries(), params.isIncludeSystemLibs()).collect(Collectors.toList());
+			} catch (Exception e) {
+				LanguageServerCommonsActivator.logError(e, "Failed to search package with term '" + params.getTerm() +"' in project " + params.getProjectUri());
+				return Collections.emptyList();
+			}
+		});
+	}
+
+	@Override
+	public CompletableFuture<List<TypeData>> javaSubTypes(JavaTypeHierarchyParams params) {
+		return CompletableFuture.supplyAsync(() ->
+			typeHierarchy.subTypes(params.getProjectUri() == null ? null : URI.create(params.getProjectUri()), params.getFqName()).collect(Collectors.toList())
+		);
+	}
+
+	@Override
+	public CompletableFuture<List<TypeData>> javaSuperTypes(JavaTypeHierarchyParams params) {
+		return CompletableFuture.supplyAsync(() ->
+			typeHierarchy.superTypes(params.getProjectUri() == null ? null : URI.create(params.getProjectUri()), params.getFqName()).collect(Collectors.toList())
+		);
 	}
 
 }

@@ -23,8 +23,8 @@ import org.gradle.tooling.model.eclipse.EclipseProjectDependency;
 import org.gradle.tooling.model.eclipse.EclipseSourceDirectory;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.JavaUtils;
-import org.springframework.ide.vscode.commons.languageserver.java.ls.Classpath;
-import org.springframework.ide.vscode.commons.languageserver.java.ls.Classpath.CPE;
+import org.springframework.ide.vscode.commons.protocol.java.Classpath;
+import org.springframework.ide.vscode.commons.protocol.java.Classpath.CPE;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;

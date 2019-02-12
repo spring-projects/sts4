@@ -31,8 +31,8 @@ import org.springframework.ide.vscode.commons.java.IJavaModuleData;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.javadoc.TypeUrlProviderFromContainerUrl;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
-import org.springframework.ide.vscode.commons.languageserver.java.ls.Classpath;
-import org.springframework.ide.vscode.commons.languageserver.java.ls.Classpath.CPE;
+import org.springframework.ide.vscode.commons.protocol.java.Classpath;
+import org.springframework.ide.vscode.commons.protocol.java.Classpath.CPE;
 
 /**
  * Instance is able to provide client specific URL links to navigate to a
@@ -82,9 +82,9 @@ public interface SourceLinks {
 
 	public static Optional<URL> source(IJavaProject project, String fqName) {
 		// Try to find in a source JAR
-		IJavaModuleData classpathResourceContainer = project.findClasspathResourceContainer(fqName);
+		IJavaModuleData classpathResourceContainer = project.getIndex().findClasspathResourceContainer(fqName);
 		if (classpathResourceContainer != null) {
-			Optional<URL> url = project.sourceContainer(classpathResourceContainer.getContainer()).map(file -> {
+			Optional<URL> url = IClasspathUtil.sourceContainer(project.getClasspath(), classpathResourceContainer.getContainer()).map(file -> {
 				try {
 					return TypeUrlProviderFromContainerUrl.JAR_SOURCE_URL_PROVIDER.url(file, fqName, classpathResourceContainer.getModule());
 				} catch (Exception e) {

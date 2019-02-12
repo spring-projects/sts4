@@ -81,10 +81,10 @@ public class LoggerNameProvider extends CachingValueProvider {
 				.map(loggerName -> Tuples.of(StsValueHint.create(loggerName), FuzzyMatcher.matchScore(query, loggerName)))
 				.filter(t -> t.getT2()!=0.0),
 			javaProject.getIndex()
-				.fuzzySearchPackages(query)
+				.fuzzySearchPackages(query, true, false)
 				.map(t -> Tuples.of(StsValueHint.create(t.getT1()), t.getT2())),
 			javaProject.getIndex()
-				.fuzzySearchTypes(query, null)
+				.fuzzySearchTypes(query, true, false, null)
 				.map(t -> Tuples.of(StsValueHint.create(sourceLinks, javaProject, t.getT1()), t.getT2()))
 			)
 		.collectSortedList((o1, o2) -> o2.getT2().compareTo(o1.getT2()))

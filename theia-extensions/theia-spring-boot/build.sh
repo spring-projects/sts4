@@ -9,6 +9,12 @@ cd ${workdir}
 rm -fr ${workdir}/jars
 mkdir -p ${workdir}/jars
 
+# Use maven to build common-lsp-extensions - jdt extension depend on that jar
+cd ../../../headless-services/
+./mvnw -pl :commons-parent clean install -DskipTests
+./mvnw -pl :commons-lsp-extensions clean install
+cd ${workdir}
+
 # Use maven to build jdt ls extension
 cd ../../../headless-services/jdt-ls-extension
 if command -v xvfb-run ; then

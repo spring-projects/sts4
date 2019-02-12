@@ -1,0 +1,274 @@
+{
+  "fqName": "org.test.Quote",
+  "bindingKey": "Lorg/test/Quote;",
+  "clazz": true,
+  "annotation": false,
+  "interfaze": false,
+  "enam": false,
+  "superInterfaceNames": [],
+  "fields": [
+    {
+      "bindingKey": "Lorg/test/Quote;.MATH_CONTEXT",
+      "type": {
+        "kind": "CLASS",
+        "name": "Ljava/math/MathContext;"
+      },
+      "enumConstant": false,
+      "annotations": [],
+      "declaringType": "Lorg/test/Quote;",
+      "flags": 26,
+      "name": "MATH_CONTEXT",
+      "handleIdentifier": "\u003dtest-webflux-project/src\\/main\\/java\u003corg.test{Quote.java[Quote^MATH_CONTEXT",
+      "label": "MathContext MATH_CONTEXT"
+    },
+    {
+      "bindingKey": "Lorg/test/Quote;.ticker",
+      "type": {
+        "kind": "CLASS",
+        "name": "Ljava/lang/String;"
+      },
+      "enumConstant": false,
+      "annotations": [],
+      "declaringType": "Lorg/test/Quote;",
+      "flags": 2,
+      "name": "ticker",
+      "handleIdentifier": "\u003dtest-webflux-project/src\\/main\\/java\u003corg.test{Quote.java[Quote^ticker",
+      "label": "String ticker"
+    },
+    {
+      "bindingKey": "Lorg/test/Quote;.price",
+      "type": {
+        "kind": "CLASS",
+        "name": "Ljava/math/BigDecimal;"
+      },
+      "enumConstant": false,
+      "annotations": [],
+      "declaringType": "Lorg/test/Quote;",
+      "flags": 2,
+      "name": "price",
+      "handleIdentifier": "\u003dtest-webflux-project/src\\/main\\/java\u003corg.test{Quote.java[Quote^price",
+      "label": "BigDecimal price"
+    },
+    {
+      "bindingKey": "Lorg/test/Quote;.instant",
+      "type": {
+        "kind": "CLASS",
+        "name": "Ljava/time/Instant;"
+      },
+      "enumConstant": false,
+      "annotations": [],
+      "declaringType": "Lorg/test/Quote;",
+      "flags": 2,
+      "name": "instant",
+      "handleIdentifier": "\u003dtest-webflux-project/src\\/main\\/java\u003corg.test{Quote.java[Quote^instant",
+      "label": "Instant instant"
+    }
+  ],
+  "methods": [
+    {
+      "bindingKey": "Lorg/test/Quote;.()V",
+      "constructor": true,
+      "returnType": {
+        "kind": "VOID",
+        "name": "V"
+      },
+      "parameters": [],
+      "annotations": [],
+      "declaringType": "Lorg/test/Quote;",
+      "flags": 1,
+      "name": "Quote",
+      "handleIdentifier": "\u003dtest-webflux-project/src\\/main\\/java\u003corg.test{Quote.java[Quote~Quote",
+      "label": "org.test.Quote.Quote()"
+    },
+    {
+      "bindingKey": "Lorg/test/Quote;.(Ljava/lang/String;Ljava/math/BigDecimal;)V",
+      "constructor": true,
+      "returnType": {
+        "kind": "VOID",
+        "name": "V"
+      },
+      "parameters": [
+        {
+          "kind": "CLASS",
+          "name": "Ljava/lang/String;"
+        },
+        {
+          "kind": "CLASS",
+          "name": "Ljava/math/BigDecimal;"
+        }
+      ],
+      "annotations": [],
+      "declaringType": "Lorg/test/Quote;",
+      "flags": 1,
+      "name": "Quote",
+      "handleIdentifier": "\u003dtest-webflux-project/src\\/main\\/java\u003corg.test{Quote.java[Quote~Quote~QString;~QBigDecimal;",
+      "label": "org.test.Quote.Quote(String ticker, BigDecimal price)"
+    },
+    {
+      "bindingKey": "Lorg/test/Quote;.(Ljava/lang/String;Ljava/lang/Double;)V",
+      "constructor": true,
+      "returnType": {
+        "kind": "VOID",
+        "name": "V"
+      },
+      "parameters": [
+        {
+          "kind": "CLASS",
+          "name": "Ljava/lang/String;"
+        },
+        {
+          "kind": "CLASS",
+          "name": "Ljava/lang/Double;"
+        }
+      ],
+      "annotations": [],
+      "declaringType": "Lorg/test/Quote;",
+      "flags": 1,
+      "name": "Quote",
+      "handleIdentifier": "\u003dtest-webflux-project/src\\/main\\/java\u003corg.test{Quote.java[Quote~Quote~QString;~QDouble;",
+      "label": "org.test.Quote.Quote(String ticker, Double price)"
+    },
+    {
+      "bindingKey": "Lorg/test/Quote;.getTicker()Ljava/lang/String;",
+      "constructor": false,
+      "returnType": {
+        "kind": "CLASS",
+        "name": "Ljava/lang/String;"
+      },
+      "parameters": [],
+      "annotations": [],
+      "declaringType": "Lorg/test/Quote;",
+      "flags": 1,
+      "name": "getTicker",
+      "handleIdentifier": "\u003dtest-webflux-project/src\\/main\\/java\u003corg.test{Quote.java[Quote~getTicker",
+      "label": "String org.test.Quote.getTicker()"
+    },
+    {
+      "bindingKey": "Lorg/test/Quote;.setTicker(Ljava/lang/String;)V",
+      "constructor": false,
+      "returnType": {
+        "kind": "VOID",
+        "name": "V"
+      },
+      "parameters": [
+        {
+          "kind": "CLASS",
+          "name": "Ljava/lang/String;"
+        }
+      ],
+      "annotations": [],
+      "declaringType": "Lorg/test/Quote;",
+      "flags": 1,
+      "name": "setTicker",
+      "handleIdentifier": "\u003dtest-webflux-project/src\\/main\\/java\u003corg.test{Quote.java[Quote~setTicker~QString;",
+      "label": "void org.test.Quote.setTicker(String ticker)"
+    },
+    {
+      "bindingKey": "Lorg/test/Quote;.getPrice()Ljava/math/BigDecimal;",
+      "constructor": false,
+      "returnType": {
+        "kind": "CLASS",
+        "name": "Ljava/math/BigDecimal;"
+      },
+      "parameters": [],
+      "annotations": [],
+      "declaringType": "Lorg/test/Quote;",
+      "flags": 1,
+      "name": "getPrice",
+      "handleIdentifier": "\u003dtest-webflux-project/src\\/main\\/java\u003corg.test{Quote.java[Quote~getPrice",
+      "label": "BigDecimal org.test.Quote.getPrice()"
+    },
+    {
+      "bindingKey": "Lorg/test/Quote;.setPrice(Ljava/math/BigDecimal;)V",
+      "constructor": false,
+      "returnType": {
+        "kind": "VOID",
+        "name": "V"
+      },
+      "parameters": [
+        {
+          "kind": "CLASS",
+          "name": "Ljava/math/BigDecimal;"
+        }
+      ],
+      "annotations": [],
+      "declaringType": "Lorg/test/Quote;",
+      "flags": 1,
+      "name": "setPrice",
+      "handleIdentifier": "\u003dtest-webflux-project/src\\/main\\/java\u003corg.test{Quote.java[Quote~setPrice~QBigDecimal;",
+      "label": "void org.test.Quote.setPrice(BigDecimal price)"
+    },
+    {
+      "bindingKey": "Lorg/test/Quote;.getInstant()Ljava/time/Instant;",
+      "constructor": false,
+      "returnType": {
+        "kind": "CLASS",
+        "name": "Ljava/time/Instant;"
+      },
+      "parameters": [],
+      "annotations": [],
+      "declaringType": "Lorg/test/Quote;",
+      "flags": 1,
+      "name": "getInstant",
+      "handleIdentifier": "\u003dtest-webflux-project/src\\/main\\/java\u003corg.test{Quote.java[Quote~getInstant",
+      "label": "Instant org.test.Quote.getInstant()"
+    },
+    {
+      "bindingKey": "Lorg/test/Quote;.setInstant(Ljava/time/Instant;)V",
+      "constructor": false,
+      "returnType": {
+        "kind": "VOID",
+        "name": "V"
+      },
+      "parameters": [
+        {
+          "kind": "CLASS",
+          "name": "Ljava/time/Instant;"
+        }
+      ],
+      "annotations": [],
+      "declaringType": "Lorg/test/Quote;",
+      "flags": 1,
+      "name": "setInstant",
+      "handleIdentifier": "\u003dtest-webflux-project/src\\/main\\/java\u003corg.test{Quote.java[Quote~setInstant~QInstant;",
+      "label": "void org.test.Quote.setInstant(Instant instant)"
+    },
+    {
+      "bindingKey": "Lorg/test/Quote;.toString()Ljava/lang/String;",
+      "constructor": false,
+      "returnType": {
+        "kind": "CLASS",
+        "name": "Ljava/lang/String;"
+      },
+      "parameters": [],
+      "annotations": [
+        {
+          "fqName": "java.lang.Override",
+          "valuePairs": {},
+          "name": "Override",
+          "handleIdentifier": "\u003dtest-webflux-project/src\\/main\\/java\u003corg.test{Quote.java[Quote~toString}Override",
+          "label": "Override"
+        }
+      ],
+      "declaringType": "Lorg/test/Quote;",
+      "flags": 1,
+      "name": "toString",
+      "handleIdentifier": "\u003dtest-webflux-project/src\\/main\\/java\u003corg.test{Quote.java[Quote~toString",
+      "label": "String org.test.Quote.toString()"
+    }
+  ],
+  "annotations": [],
+  "classpathEntry": {
+    "cpe": {
+      "kind": "source",
+      "path": "/Users/aboyko/Documents/junit-workspace/test-webflux-project/src/main/java",
+      "outputFolder": "/Users/aboyko/Documents/junit-workspace/test-webflux-project/target/classes",
+      "isSystem": false,
+      "isOwn": true
+    }
+  },
+  "flags": 1,
+  "name": "Quote",
+  "handleIdentifier": "\u003dtest-webflux-project/src\\/main\\/java\u003corg.test{Quote.java[Quote",
+  "label": "org.test.Quote"
+}

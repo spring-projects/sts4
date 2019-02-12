@@ -17,9 +17,9 @@ import java.util.Map;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.ls.core.internal.IDelegateCommandHandler;
 import org.eclipse.jdt.ls.core.internal.javadoc.JavadocContentAccess2;
-import org.springframework.tooling.jdt.ls.commons.Logger;
-import org.springframework.tooling.jdt.ls.commons.java.JavaDataParams;
-import org.springframework.tooling.jdt.ls.commons.javadoc.JavadocResponse;
+import org.eclipse.lsp4j.MarkupContent;
+import org.eclipse.lsp4j.MarkupKind;
+import org.springframework.ide.vscode.commons.protocol.java.JavaDataParams;
 import org.springframework.tooling.jdt.ls.commons.javadoc.JavadocUtils;
 
 public class JavadocHandler implements IDelegateCommandHandler {
@@ -33,9 +33,14 @@ public class JavadocHandler implements IDelegateCommandHandler {
 		Boolean lookInOtherProjects = (Boolean) obj.get("lookInOtherProjects");
 		String content = JavadocUtils.javadoc(JavadocContentAccess2::getMarkdownContentReader, projectUri, bindingKey,
 				JavaDataParams.isLookInOtherProjects(uri, lookInOtherProjects));
-		JavadocResponse response = new JavadocResponse();
-		response.setContent(content);
-		return response;
+		if (content == null) {
+			return null;
+		} else {
+			MarkupContent mc = new MarkupContent();
+			mc.setKind(MarkupKind.MARKDOWN);
+			mc.setValue(content);
+			return mc;
+		}
 	}
 
 }

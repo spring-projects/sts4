@@ -20,7 +20,6 @@ import org.eclipse.jdt.ls.core.internal.IDelegateCommandHandler;
 import org.eclipse.jdt.ls.core.internal.javadoc.JavaElementLinks;
 import org.springframework.tooling.jdt.ls.commons.Logger;
 import org.springframework.tooling.jdt.ls.commons.java.JavaData;
-import org.springframework.tooling.jdt.ls.commons.java.JavadocHoverLinkResponse;
 
 public class JavadocHoverLinkHandler implements IDelegateCommandHandler {
 	
@@ -33,18 +32,17 @@ public class JavadocHoverLinkHandler implements IDelegateCommandHandler {
 		String bindingKey = (String) obj.get("bindingKey");
 		Boolean lookInOtherProjectsObj = (Boolean) obj.get("lookInOtherProjects");
 		boolean lookInOtherProjects = uri == null ? true : lookInOtherProjectsObj == null ? false : lookInOtherProjectsObj.booleanValue();
-		JavadocHoverLinkResponse response = new JavadocHoverLinkResponse(null);
 		try {
 			IJavaElement element = JavaData.findElement(uri == null ? null : URI.create(uri), bindingKey, lookInOtherProjects);
 			if (element != null) {
 				// Bug in JDT server one '(' not encoded while everything else in the query is
 				// encoded
-				response.setLink(JavaElementLinks.createURI(null, element).replace("(", "%28"));
+				return JavaElementLinks.createURI(null, element).replace("(", "%28");
 			}
 		} catch (Exception e) {
 			logger.log(e);
 		}
-		return response;
+		return null;
 	}
 
 }

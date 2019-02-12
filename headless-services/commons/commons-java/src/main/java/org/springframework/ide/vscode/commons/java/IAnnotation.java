@@ -1,13 +1,12 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2013, 2016 IBM Corporation and others.
+ * Copyright (c) 2018, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     IBM Corporation - initial API and implementation
- *     Pivotal Inc - copied and modified
+ *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.java;
 
@@ -24,5 +23,7 @@ public interface IAnnotation extends IJavaElement {
 	 * @return the member-value pairs of this annotation
 	 */
 	Stream<IMemberValuePair> getMemberValuePairs();
+
+	String fqName();
 
 }

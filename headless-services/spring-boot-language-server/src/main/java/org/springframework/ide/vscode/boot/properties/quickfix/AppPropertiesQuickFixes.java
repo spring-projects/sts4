@@ -16,9 +16,9 @@ import org.eclipse.lsp4j.WorkspaceEdit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixEdit;
-import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixEdit.CursorMovement;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixRegistry;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixType;
+import org.springframework.ide.vscode.commons.protocol.CursorMovement;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;

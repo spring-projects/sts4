@@ -406,7 +406,7 @@ public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistCon
 					String keyValue = contextPath.getLastSegment().toPropString();
 					return PropertiesDefinitionCalculator.getValueDefinitionLocations(javaElementLocationProvider, typeUtil, keyType, keyValue);
 				} else {
-					IType javaType = javaProject.findType(parentType.getErasure());
+					IType javaType = javaProject.getIndex().findType(parentType.getErasure());
 					if (javaType != null) {
 						IMethod method = PropertiesDefinitionCalculator.getPropertyMethod(javaType, propName);
 						if (method != null) {
