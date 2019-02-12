@@ -44,30 +44,40 @@ public class ValueHoverProvider implements HoverProvider {
 	protected static Logger logger = LoggerFactory.getLogger(ValueHoverProvider.class);
 
 	@Override
-	public Hover provideHover(ASTNode node, Annotation annotation, ITypeBinding type, int offset,
-			TextDocument doc, IJavaProject project, SpringBootApp[] runningApps) {
+	public Hover provideHover(ASTNode node, Annotation annotation, ITypeBinding type, int offset, TextDocument doc,
+			IJavaProject project, SpringBootApp[] runningApps) {
 
 		try {
-			ASTNode exactNode = NodeFinder.perform(node, offset, 0);
+			ASTNode exactNode = getExactNode(node, offset);
 
-			// case: @Value("prefix<*>")
-			if (exactNode != null && exactNode instanceof StringLiteral && exactNode.getParent() instanceof Annotation) {
-				if (exactNode.toString().startsWith("\"") && exactNode.toString().endsWith("\"")) {
-					return provideHover(exactNode.toString(), offset - exactNode.getStartPosition(), exactNode.getStartPosition(), doc, runningApps);
-				}
+			if (exactNode != null) {
+				return provideHover(exactNode.toString(), offset - exactNode.getStartPosition(),
+						exactNode.getStartPosition(), doc, runningApps);
 			}
-			// case: @Value(value="prefix<*>")
-			else if (exactNode != null && exactNode instanceof StringLiteral && exactNode.getParent() instanceof MemberValuePair
-					&& "value".equals(((MemberValuePair)exactNode.getParent()).getName().toString())) {
-				if (exactNode.toString().startsWith("\"") && exactNode.toString().endsWith("\"")) {
-					return provideHover(exactNode.toString(), offset - exactNode.getStartPosition(), exactNode.getStartPosition(), doc, runningApps);
-				}
-			}
-		}
-		catch (Exception e) {
+		} catch (Exception e) {
 			logger.error("Error while generating live hovers for @Value", e);
 		}
 
+		return null;
+	}
+
+	private ASTNode getExactNode(ASTNode node, int offset) {
+		ASTNode exactNode = NodeFinder.perform(node, offset, 0);
+		if (exactNode != null) {
+			// case: @Value("prefix<*>")
+			if (exactNode instanceof StringLiteral && exactNode.getParent() instanceof Annotation) {
+				if (exactNode.toString().startsWith("\"") && exactNode.toString().endsWith("\"")) {
+					return exactNode;
+				}
+			}
+			// case: @Value(value="prefix<*>")
+			else if (exactNode instanceof StringLiteral && exactNode.getParent() instanceof MemberValuePair
+					&& "value".equals(((MemberValuePair) exactNode.getParent()).getName().toString())) {
+				if (exactNode.toString().startsWith("\"") && exactNode.toString().endsWith("\"")) {
+					return exactNode;
+				}
+			}
+		}
 		return null;
 	}
 
