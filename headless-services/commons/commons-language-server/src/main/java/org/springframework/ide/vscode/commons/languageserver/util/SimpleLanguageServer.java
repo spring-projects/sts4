@@ -147,7 +147,7 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 	private Map<String, ExecuteCommandHandler> commands = new HashMap<>();
 
 	private AsyncRunner async = new AsyncRunner(Schedulers.newSingle(runable -> {
-		Thread t = new Thread(runable, "SimpleLanguaserver main thread");
+		Thread t = new Thread(runable, "Simple-Language-Server main thread");
 		t.setDaemon(true);
 		return t;
 	}));
