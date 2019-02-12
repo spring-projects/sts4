@@ -231,7 +231,6 @@ public abstract class YamlPathSegment extends AbstractYamlTraversal {
 		protected char getTypeCode() {
 			return '&';
 		}
-
 	}
 
 	@Override

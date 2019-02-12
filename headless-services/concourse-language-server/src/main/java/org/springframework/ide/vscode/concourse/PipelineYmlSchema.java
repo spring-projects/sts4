@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+import org.eclipse.lsp4j.SymbolKind;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.util.MimeTypes;
 import org.springframework.ide.vscode.commons.util.PartialCollection;
@@ -32,6 +33,7 @@ import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment;
 import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems;
 import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaValueParsers;
+import org.springframework.ide.vscode.commons.yaml.reconcile.TypeBasedYamlHierarchicalSymbolHandler.HierarchicalDefType;
 import org.springframework.ide.vscode.commons.yaml.schema.BasicYValueHint;
 import org.springframework.ide.vscode.commons.yaml.schema.DynamicSchemaContext;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
@@ -40,6 +42,7 @@ import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.AbstractT
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YAtomicType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YBeanType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YBeanUnionType;
+import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YSeqType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YTypedPropertyImpl;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeUtil;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypedProperty;
@@ -60,30 +63,6 @@ import com.google.common.collect.ImmutableList;
  * @author Kris De Volder
  */
 public class PipelineYmlSchema implements YamlSchema {
-
-	public static class HierarchicalDefType {
-		/**
-		 * A yaml node of this type constitutes a definion. This should identify the 'whole' definition not just the
-		 * part of the node that contains the name of the defined entity.
-		 */
-		public final YType defType;
-
-		/**
-		 * A yaml path that points to the part of the node where the defined entity's name can be found.
-		 */
-		public final YamlPath nameNode;
-
-		public HierarchicalDefType(YType defType, YamlPath nameNode) {
-			super();
-			this.defType = defType;
-			this.nameNode = nameNode;
-		}
-		@Override
-		public String toString() {
-			return "HierarchicalDefType [defType=" + defType + ", nameNode=" + nameNode + "]";
-		}
-
-	}
 
 	//TODO: the infos for composing this should probably be integrated somehow in the ResourceTypeRegistry so
 	// we only have a list of built-in resource types in a single place.
@@ -189,6 +168,7 @@ public class PipelineYmlSchema implements YamlSchema {
 	);
 
 	private List<YType> definitionTypes = new ArrayList<>();
+	private List<HierarchicalDefType> hierarchicDefinitions;
 
 	private GithubInfoProvider github;
 
@@ -436,16 +416,33 @@ public class PipelineYmlSchema implements YamlSchema {
 		addProp(group, "resources", f.yseq(t_resource_name));
 		addProp(group, "jobs", f.yseq(t_job_name));
 
-		addProp(TOPLEVEL_TYPE, "resources", f.yseq(t_resource));
-		addProp(TOPLEVEL_TYPE, "jobs", f.yseq(job));
-		addProp(TOPLEVEL_TYPE, "resource_types", f.yseq(resourceType));
-		addProp(TOPLEVEL_TYPE, "groups", f.yseq(group).require(models::jobAssignmentIsComplete));
+		YSeqType t_resources = f.yseq(t_resource);
+		YSeqType t_jobs = f.yseq(job);
+		YSeqType t_resourceTypes = f.yseq(resourceType);
+		AbstractType t_groups = f.yseq(group).require(models::jobAssignmentIsComplete);
+		addProp(TOPLEVEL_TYPE, "resources", t_resources);
+		addProp(TOPLEVEL_TYPE, "jobs", t_jobs);
+		addProp(TOPLEVEL_TYPE, "resource_types", t_resourceTypes);
+		addProp(TOPLEVEL_TYPE, "groups", t_groups);
 
 		definitionTypes = ImmutableList.of(
 				jobNameDef,
 				resourceTypeNameDef,
 				t_resource_name_def,
 				t_group_name_def
+		);
+		hierarchicDefinitions = ImmutableList.of(
+				new HierarchicalDefType(t_resources, null, SymbolKind.File, "Resources"),
+				new HierarchicalDefType(t_resource, YamlPath.fromSimpleProperty("name"), SymbolKind.File, "Resource"),
+
+				new HierarchicalDefType(t_jobs, null, SymbolKind.Method, "Jobs"),
+				new HierarchicalDefType(job, YamlPath.fromSimpleProperty("name"), SymbolKind.Method, "Job"),
+
+				new HierarchicalDefType(t_resourceTypes, null, SymbolKind.Interface, "Resource Types"),
+				new HierarchicalDefType(resourceType, YamlPath.fromSimpleProperty("name"), SymbolKind.Interface, "Resource Type"),
+
+				new HierarchicalDefType(t_groups, null, SymbolKind.Package, "Groups"),
+				new HierarchicalDefType(group, YamlPath.fromSimpleProperty("name"), SymbolKind.Package, "Groups")
 		);
 
 		initializeDefaultResourceTypes();
@@ -833,8 +830,7 @@ public class PipelineYmlSchema implements YamlSchema {
 	}
 
 	public List<HierarchicalDefType> getHierarchicalDefinitionTypes() {
-		// TODO Auto-generated method stub
-		return null;
+		return hierarchicDefinitions;
 	}
 
 }

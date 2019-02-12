@@ -310,4 +310,34 @@ public class YamlPath extends AbstractYamlTraversal {
 		return isEmpty();
 	}
 
+	public boolean startsWith(YamlPath prefix) {
+		if (this.size()>=prefix.size()) {
+			YamlPath chopped = this.dropLast(this.size() - prefix.size());
+			return chopped.equals(prefix);
+		}
+		return false;
+	}
+
+	@Override
+	public int hashCode() {
+		final int prime = 31;
+		int result = 1;
+		result = prime * result + Arrays.hashCode(segments);
+		return result;
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		YamlPath other = (YamlPath) obj;
+		if (!Arrays.equals(segments, other.segments))
+			return false;
+		return true;
+	}
+
 }

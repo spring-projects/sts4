@@ -144,4 +144,8 @@ public class NodeUtil {
 		return new DocumentRegion(doc, node.getStartMark().getIndex(), node.getEndMark().getIndex());
 	}
 
+	public static DocumentRegion region(IDocument doc, NodeTuple tup) {
+		return new DocumentRegion(doc, tup.getKeyNode().getStartMark().getIndex(), tup.getValueNode().getEndMark().getIndex());
+	}
+
 }
