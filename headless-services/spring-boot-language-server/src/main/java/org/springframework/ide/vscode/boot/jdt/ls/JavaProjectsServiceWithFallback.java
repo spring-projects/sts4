@@ -10,7 +10,9 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.jdt.ls;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
@@ -33,20 +35,52 @@ public class JavaProjectsServiceWithFallback implements JavaProjectsService {
 
 	private Logger log = LoggerFactory.getLogger(JavaProjectsServiceWithFallback.class);
 
-	final private CompletableFuture<Disposable> mainServiceInitialized;
+	private final CompletableFuture<Disposable> mainServiceInitialized;
 
-	final private SimpleLanguageServer server;
-	private Supplier<JavaProjectsService> fallback;
-	final private InitializableJavaProjectsService main;
+	private final SimpleLanguageServer server;
+	private final Supplier<JavaProjectsService> fallback;
+	private final InitializableJavaProjectsService main;
+
+	private final Listener listenerDelegate;
+	private final List<Listener> listeners;
 
 	public JavaProjectsServiceWithFallback(SimpleLanguageServer server, InitializableJavaProjectsService main, Supplier<JavaProjectsService> fallback) {
 		Assert.isNotNull(fallback);
 		this.main = main;
-		this.fallback = Suppliers.memoize(fallback);
+		this.fallback = Suppliers.memoize(new Supplier<JavaProjectsService>() {
+			@Override
+			public JavaProjectsService get() {
+				JavaProjectsService fallbackService = fallback.get();
+				fallbackService.addListener(listenerDelegate);
+				return fallbackService;
+			}
+		});
+
 		this.server = server;
+		this.listeners = new ArrayList<>();
+
+		this.listenerDelegate = new Listener() {
+			@Override
+			public void deleted(IJavaProject project) {
+				notifyDelete(project);
+			}
+
+			@Override
+			public void created(IJavaProject project) {
+				notifyCreated(project);
+			}
+
+			@Override
+			public void changed(IJavaProject project) {
+				notifyChanged(project);
+			}
+		};
+		this.main.addListener(this.listenerDelegate);
+
 		this.mainServiceInitialized = this.server
 				.onInitialized(main.initialize())
 				.toFuture();
+
 		this.server.onShutdown(() -> {
 			try {
 				if (!mainServiceInitialized.isCompletedExceptionally()) {
@@ -63,6 +97,50 @@ public class JavaProjectsServiceWithFallback implements JavaProjectsService {
 	}
 
 	@Override
+	public void addListener(Listener listener) {
+		synchronized (listeners) {
+			listeners.add(listener);
+			log.info("added listener - now listeners registered: " + listeners.size());
+		}
+	}
+
+	@Override
+	public void removeListener(Listener listener) {
+		synchronized (listeners) {
+			listeners.remove(listener);
+			log.info("removed listener - now listeners registered: " + listeners.size());
+		}
+	}
+
+	private void notifyCreated(IJavaProject newProject) {
+		log.info("Project created: " + newProject.getLocationUri());
+
+		synchronized (listeners) {
+			for (Listener listener : listeners) {
+				listener.created(newProject);
+			}
+		}
+	}
+
+	private void notifyDelete(IJavaProject deleted) {
+		log.info("Project deleted: " + deleted.getLocationUri());
+		synchronized (listeners) {
+			for (Listener listener : listeners) {
+				listener.deleted(deleted);
+			}
+		}
+	}
+
+	private void notifyChanged(IJavaProject project) {
+		log.info("Project changed: " + project.getLocationUri());
+		synchronized (listeners) {
+			for (Listener listener : listeners) {
+				listener.changed(project);
+			}
+		}
+	}
+
+	@Override
 	public Optional<IJavaProject> find(TextDocumentIdentifier doc) {
 		if (mainServiceInitialized.isDone()) {
 			if (mainServiceInitialized.isCompletedExceptionally()) {
@@ -75,30 +153,6 @@ public class JavaProjectsServiceWithFallback implements JavaProjectsService {
 		}
 		log.debug("NOT FOUND {} ", doc.getUri());
 		return Optional.empty();
-	}
-
-	@Override
-	public void addListener(Listener listener) {
-		mainServiceInitialized.handle((success, failed) -> {
-			if (failed!=null) {
-				fallback.get().addListener(listener);
-			} else {
-				main.addListener(listener);
-			}
-			return null;
-		});
-	}
-
-	@Override
-	public void removeListener(Listener listener) {
-		mainServiceInitialized.handle((success, failed) -> {
-			if (failed!=null) {
-				fallback.get().removeListener(listener);
-			} else {
-				main.removeListener(listener);
-			}
-			return null;
-		});
 	}
 
 	@Override

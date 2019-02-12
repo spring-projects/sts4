@@ -79,19 +79,19 @@ public class SpringSymbolIndex {
 	private final Listener projectListener = new Listener() {
 		@Override
 		public void created(IJavaProject project) {
-			log.debug("project created event: {}", project.getElementName());
+			log.info("project created event: {}", project.getElementName());
 			initializeProject(project);
 		}
 
 		@Override
 		public void changed(IJavaProject project) {
-			log.debug("project changed event: {}", project.getElementName());
+			log.info("project changed event: {}", project.getElementName());
 			initializeProject(project);
 		}
 
 		@Override
 		public void deleted(IJavaProject project) {
-			log.debug("project deleted event: {}", project.getElementName());
+			log.info("project deleted event: {}", project.getElementName());
 			deleteProject(project);
 		}
 	};
@@ -146,6 +146,7 @@ public class SpringSymbolIndex {
 
 		if (getProjectObserver() != null) {
 			getProjectObserver().addListener(projectListener);
+			log.info("project listener registered");
 		}
 	}
 
