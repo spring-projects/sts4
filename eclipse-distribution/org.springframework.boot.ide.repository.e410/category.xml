@@ -171,6 +171,12 @@
 		<category name="Uncategorized"/>
 	</bundle>
 
+    <bundle id="org.bouncycastle.bcpg" version="0.0.0">
+		<category name="Uncategorized"/>
+	</bundle>
+    <bundle id="org.bouncycastle.bcpg.source" version="0.0.0">
+		<category name="Uncategorized"/>
+	</bundle>
     <bundle id="org.bouncycastle.bcpkix" version="0.0.0">
 		<category name="Uncategorized"/>
 	</bundle>
