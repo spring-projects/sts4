@@ -171,16 +171,16 @@
 		<category name="Uncategorized"/>
 	</bundle>
 
-    <bundle id="bcpkix" version="0.0.0">
+    <bundle id="org.bouncycastle.bcpkix" version="0.0.0">
 		<category name="Uncategorized"/>
 	</bundle>
-    <bundle id="bcpkix.source" version="0.0.0">
+    <bundle id="org.bouncycastle.bcpkix.source" version="0.0.0">
 		<category name="Uncategorized"/>
 	</bundle>
-    <bundle id="bcprov" version="0.0.0">
+    <bundle id="org.bouncycastle.bcprov" version="0.0.0">
 		<category name="Uncategorized"/>
 	</bundle>
-    <bundle id="bcprov.source" version="0.0.0">
+    <bundle id="org.bouncycastle.bcprov.source" version="0.0.0">
 		<category name="Uncategorized"/>
 	</bundle>
     <bundle id="com.hierynomus.sshj" version="0.0.0">
