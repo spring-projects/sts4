@@ -17,12 +17,17 @@ import java.io.File;
 import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collection;
 import java.util.Optional;
 
+import org.eclipse.lsp4j.TextDocumentIdentifier;
+import org.gradle.internal.impldep.com.google.common.collect.ImmutableList;
 import org.junit.Test;
 import org.springframework.ide.vscode.boot.java.links.VSCodeSourceLinks;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
+import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.javadoc.JavaDocProviders;
+import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.maven.MavenBuilder;
 import org.springframework.ide.vscode.commons.maven.MavenCore;
 import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
@@ -57,6 +62,35 @@ public class VSCodeSourceLinksTest {
 	public void testJavaSourceUrl() throws Exception {
 		MavenJavaProject project = mavenProjectsCache.get("empty-boot-15-web-app");
 		Optional<String> url = new VSCodeSourceLinks(new CompilationUnitCache(null, null, null), null).sourceLinkUrlForFQName(project, "com.example.EmptyBoot15WebAppApplication");
+		assertTrue(url.isPresent());
+		Path projectPath = Paths.get(project.pom().getParent());
+		URI uri = URI.create(url.get());
+
+		// Use File to get rid of the fragment parts of the URL. The URL may have fragments that indicate line and column numbers
+		uri = new File(uri.getPath()).toURI();
+
+		Path relativePath = projectPath.relativize(Paths.get(uri));
+		assertEquals(Paths.get("src/main/java/com/example/EmptyBoot15WebAppApplication.java"), relativePath);
+		String positionPart = url.get().substring(url.get().lastIndexOf('#'));
+		assertEquals("#7,14", positionPart);
+	}
+
+	@Test
+	public void testClasspathResourceOnTomcatUrl() throws Exception {
+		MavenJavaProject project = mavenProjectsCache.get("empty-boot-15-web-app");
+		Optional<String> url = new VSCodeSourceLinks(new CompilationUnitCache(null, null, null), new JavaProjectFinder() {
+
+			@Override
+			public Optional<IJavaProject> find(TextDocumentIdentifier doc) {
+				return Optional.of(project);
+			}
+
+			@Override
+			public Collection<? extends IJavaProject> all() {
+				return ImmutableList.of(project);
+			}
+		})
+			.sourceLinkUrlForClasspathResource("Users/aboyko/pivotal-tc-server/instances/base/wtpwebapps/empty-boot-15-web-app/WEB-INF/classes/com/example/EmptyBoot15WebAppApplication.class");
 		assertTrue(url.isPresent());
 		Path projectPath = Paths.get(project.pom().getParent());
 		URI uri = URI.create(url.get());

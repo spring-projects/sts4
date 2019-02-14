@@ -45,6 +45,8 @@ import org.springframework.ide.vscode.commons.languageserver.java.ls.Classpath.C
  */
 public interface SourceLinks {
 
+	static final String WEB_INF_CLASSES = "/WEB-INF/classes/";
+
 	static final Logger log = LoggerFactory.getLogger(SourceLinks.class);
 
 	static final String JAR = ".jar";
@@ -107,10 +109,26 @@ public interface SourceLinks {
 		return Optional.empty();
 	}
 
+	static Optional<String> sourceLinkUrlForClasspathResourceOnTomcat(SourceLinks sourceLinks, JavaProjectFinder projectFinder, String path) {
+		int indexOfWenInfClasses = path.indexOf(WEB_INF_CLASSES);
+		String projectName = Paths.get(path.substring(0, indexOfWenInfClasses)).getFileName().toString();
+		String fqName = path.substring(0, path.lastIndexOf(CLASS)).substring(indexOfWenInfClasses + WEB_INF_CLASSES.length()).replace('/', '.');
+		for (IJavaProject p : projectFinder.all()) {
+			if (projectName.equals(p.getElementName())) {
+				return sourceLinks.sourceLinkUrlForFQName(p, fqName);
+			}
+		}
+		return sourceLinks.sourceLinkUrlForFQName(null, fqName);
+	}
+
 	public static Optional<String> sourceLinkUrlForClasspathResource(SourceLinks sourceLinks, JavaProjectFinder projectFinder, String path) {
 		if (projectFinder != null) {
 			int idx = path.lastIndexOf(CLASS);
 			if (idx >= 0) {
+				int web_inf_index = path.indexOf(WEB_INF_CLASSES);
+				if (web_inf_index >= 0) {
+					return sourceLinkUrlForClasspathResourceOnTomcat(sourceLinks, projectFinder, path);
+				}
 				Path filePath = Paths.get(path.substring(0, idx));
 				IJavaProject project = projectFinder.find(new TextDocumentIdentifier(filePath.toUri().toString())).orElse(null);
 				if (project == null) {
