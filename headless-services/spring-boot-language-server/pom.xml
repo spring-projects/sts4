@@ -167,6 +167,86 @@
 					</excludes>
 				</configuration>
 			</plugin>
+
+			<!-- generate and package license information for included dependencies -->
+	        <plugin>
+	          <groupId>org.codehaus.mojo</groupId>
+	          <artifactId>license-maven-plugin</artifactId>
+	          <version>1.17</version>
+	          <executions>
+	            <execution>
+	              <id>download-licenses</id>
+	              <phase>process-classes</phase>
+	              <goals>
+	                <goal>download-licenses</goal>
+	              </goals>
+	            </execution>
+	          </executions>
+	        </plugin>
+			
+	        <plugin>
+	           <groupId>org.codehaus.mojo</groupId>
+	           <artifactId>xml-maven-plugin</artifactId>
+	           <executions>
+	             <execution>
+   	              <phase>process-classes</phase>
+	               <goals>
+	                 <goal>transform</goal>
+	               </goals>
+	             </execution>
+	           </executions>
+	           <configuration>
+	             <transformationSets>
+	               <transformationSet>
+	                 <dir>${basedir}/target/generated-resources/</dir>
+					 <includes>*.xml</includes>
+	                 <stylesheet>${basedir}/license-format-stylesheet.xsl</stylesheet>
+					 <outputDir>${project.build.directory}/generated-license-information</outputDir>
+	               </transformationSet>
+	             </transformationSets>
+	           </configuration>
+	         </plugin>
+
+	        <plugin>
+	          <artifactId>maven-resources-plugin</artifactId>
+	          <version>3.0.2</version>
+	          <executions>
+	            <execution>
+	              <id>copy-license-summary</id>
+	              <phase>process-classes</phase>
+	              <goals>
+	                <goal>copy-resources</goal>
+	              </goals>
+	              <configuration>
+	                <outputDirectory>${project.build.outputDirectory}/META-INF/</outputDirectory>
+	                <resources>          
+	                  <resource>
+	                    <directory>${basedir}/target/generated-license-information/</directory>
+	                    <filtering>false</filtering>
+	                  </resource>
+	                </resources>              
+	              </configuration>            
+	            </execution>
+
+	            <execution>
+	              <id>copy-license-files</id>
+	              <phase>process-classes</phase>
+	              <goals>
+	                <goal>copy-resources</goal>
+	              </goals>
+	              <configuration>
+	                <outputDirectory>${project.build.outputDirectory}/META-INF/licenses/</outputDirectory>
+	                <resources>          
+	                  <resource>
+	                    <directory>${basedir}/target/generated-resources/licenses</directory>
+	                    <filtering>false</filtering>
+	                  </resource>
+	                </resources>              
+	              </configuration>            
+	            </execution>
+	          </executions>
+	        </plugin>
+
 		</plugins>
 	</build>
 </project>
