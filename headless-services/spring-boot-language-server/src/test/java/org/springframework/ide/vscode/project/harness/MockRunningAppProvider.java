@@ -22,6 +22,7 @@ import org.springframework.ide.vscode.commons.boot.app.cli.ContextPath;
 import org.springframework.ide.vscode.commons.boot.app.cli.LocalSpringBootApp;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansModel;
+import org.springframework.ide.vscode.commons.boot.app.cli.liveproperties.LivePropertiesJsonParser;
 import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.RequestMapping;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 
@@ -126,6 +127,11 @@ public class MockRunningAppProvider {
 
 		public MockAppBuilder liveConditionalsJson(String rawJson) throws Exception{
 			when(app.getLiveConditionals()).thenReturn(LocalSpringBootApp.getLiveConditionals(rawJson, processId, processName));
+			return this;
+		}
+
+		public MockAppBuilder livePropertiesJson(String envJson) throws Exception{
+			when(app.getLiveProperties()).thenReturn(LivePropertiesJsonParser.parseProperties(envJson));
 			return this;
 		}
 
