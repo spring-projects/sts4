@@ -133,7 +133,9 @@ public interface SourceLinks {
 				IJavaProject project = projectFinder.find(new TextDocumentIdentifier(filePath.toUri().toString())).orElse(null);
 				if (project == null) {
 					try {
-						URL url = filePath.toUri().toURL();
+						// URL for CF resources looks like jar:file:/home/vcap/app/lib/gs-rest-service-complete.jar!/hello/MyService.class
+						// The above doesn't wotk with "filePath.toUri().toURL()"
+						URL url = new URL(path.substring(0, idx));
 						if (url.getProtocol().equals("jar")) {
 							URLConnection connection = url.openConnection();
 							if (connection instanceof JarURLConnection) {
