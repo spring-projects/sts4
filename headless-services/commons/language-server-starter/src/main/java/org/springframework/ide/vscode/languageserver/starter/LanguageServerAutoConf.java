@@ -50,10 +50,7 @@ public class LanguageServerAutoConf {
 			Optional<CompletionFilter> completionFilter
 	) throws Exception {
 		SimpleLanguageServer server = new SimpleLanguageServer(props.getExtensionId());
-		if (LspClient.currentClient()!=Client.VSCODE) {
-			//Vscode excluded. See https://github.com/spring-projects/sts4/issues/193
-			server.setCompletionTriggerCharacters(props.getCompletionTriggerCharacters());
-		}
+		server.setCompletionTriggerCharacters(props.getCompletionTriggerCharacters());
 		server.setCompletionFilter(completionFilter);
 		severities.ifPresent(server::setDiagnosticSeverityProvider);
 		return server;
