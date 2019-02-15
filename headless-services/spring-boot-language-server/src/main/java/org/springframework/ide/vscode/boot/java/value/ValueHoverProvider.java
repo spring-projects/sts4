@@ -15,6 +15,8 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
@@ -36,6 +38,7 @@ import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.boot.app.cli.liveproperties.LiveProperties;
 import org.springframework.ide.vscode.commons.boot.app.cli.liveproperties.LiveProperty;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.common.collect.ImmutableList;
@@ -46,6 +49,12 @@ import com.google.common.collect.ImmutableList;
 public class ValueHoverProvider implements HoverProvider {
 
 	protected static Logger logger = LoggerFactory.getLogger(ValueHoverProvider.class);
+	// Match pattern: matches ${} OR {}. For '$' cases, it also handles whitespaces
+	// between the '$' and '{' as this is still valid place holder in Spring Boot, so
+	// example: $   {a.prop}. It won't match something like this ${{} or ${$} , but will match
+	// nested cases: ${${a.prop}}
+	private static Pattern PROPERTY_PLACEHOLDER = Pattern.compile("\\$?\\{([^\\}^\\{^\\$]+)\\}");
+
 
 	@Override
 	public Hover provideHover(ASTNode node, Annotation annotation, ITypeBinding type, int offset, TextDocument doc,
@@ -144,37 +153,50 @@ public class ValueHoverProvider implements HoverProvider {
 		ASTNode exactNode = getExactNode(node);
 
 		if (exactNode != null) {
-			try {
-				String propFromValue = null;
-				LocalRange propRange = null;
+			Map<String, List<LocalRange>> propertiesWithRanges = new HashMap<>();
 
-				// Get the escaped value that INCLUDES the quotes as we want to compute
-				// the hint range in the editor of the property and need to take into account
-				// all characters in the node value.
-				// For example: @Value(value = "${a.prop}")
-				// to highlight a.prop we need to take into account the starting '"' after the '='
-				// to get the correct range of a.prop
-				String nodeValue = node.getEscapedValue();
-				if (nodeValue != null) {
-					// Get actual range and property from the node, as to highlight it
-					propRange = parseProperty(nodeValue);
-					if (propRange != null) {
-						propFromValue = nodeValue.substring(propRange.getStart(), propRange.getEnd());
-					}
-				}
+			// Get the escaped value that INCLUDES the quotes as we want to compute
+			// the hint range in the editor of the property and need to take into account
+			// all characters in the node value.
+			// For example: @Value(value = "${a.prop}")
+			// to highlight a.prop we need to take into account the starting '"' after the
+			// '='
+			// to get the correct range of a.prop
+			String nodeValue = node.getEscapedValue();
+			if (nodeValue != null) {
+				// Get property names with ranges highlight
+				propertiesWithRanges = parseProperties(nodeValue);
+			}
 
-				// Now find live information for the property. If found, highlight that property via a Code Lens
-				if (propFromValue != null && propRange != null) {
-					List<LiveProperty> matchingLiveProperties = findMatchingLiveProperties(runningApps, propFromValue);
+			// Now find live information for the properties. If found, highlight that property
+			// via a Code Lens
+			if (propertiesWithRanges != null && !propertiesWithRanges.isEmpty()) {
 
+				List<CodeLens> lenses = new ArrayList<>();
+				// Just find one of the errors to log
+				final Exception[] error = new Exception[1];
+				propertiesWithRanges.entrySet().stream().forEach(entry -> {
+					String parsedProp = entry.getKey();
+					List<LocalRange> propRanges = entry.getValue();
+
+					List<LiveProperty> matchingLiveProperties = findMatchingLiveProperties(runningApps, parsedProp);
 					if (matchingLiveProperties != null && !matchingLiveProperties.isEmpty()) {
-						Range hoverRange = doc.toRange(exactNode.getStartPosition() + propRange.getStart(),
-								propRange.getEnd() - propRange.getStart());
-						return ImmutableList.of(new CodeLens(hoverRange));
+
+						propRanges.stream().forEach(propRange -> {
+							try {
+								Range hoverRange = doc.toRange(exactNode.getStartPosition() + propRange.getStart(),
+										propRange.getEnd() - propRange.getStart());
+								lenses.add(new CodeLens(hoverRange));
+							} catch (BadLocationException e) {
+								error[0] = e;
+							}
+						});
 					}
+				});
+				if (error[0] != null) {
+					logger.error("Error while generating hints for properties in @Value", error[0]);
 				}
-			} catch (Exception e) {
-				logger.error("Error while generating highlight hints for properties in @Value", e);
+				return lenses;
 			}
 		}
 		return ImmutableList.of();
@@ -259,26 +281,55 @@ public class ValueHoverProvider implements HoverProvider {
 		return null;
 	}
 
-	private LocalRange parseProperty(String value) {
+	private Map<String, List<LocalRange>> parseProperties(String literalExpression) {
+		Matcher matcher = PROPERTY_PLACEHOLDER.matcher(literalExpression);
+
+		Map<String, List<LocalRange>> propsWithRanges = new HashMap<>();
+		// Matches each ${} placeholder encountered. Extract property name for each one.
+		// Beware that same property name may appear more than once in the expression,
+		// and
+		// therefore will have multiple ranges. Example: @Value("${a.prop} ${b.prop}
+		// ${a.prop}")
+
+		while (matcher.find()) {
+
+			// Found the next ${} placeholder. Now find the range IN the literal expression
+			// of the property name WITHIN that placeholder
+			// (so excluding the '$', '{', '}' chars)
+			LocalRange propRange = findPropRangeInPlaceholder(literalExpression, matcher.start(), matcher.end());
+			if (propRange != null) {
+				String propName = literalExpression.substring(propRange.getStart(), propRange.getEnd());
+				List<LocalRange> ranges = propsWithRanges.get(propName);
+				if (ranges == null) {
+					ranges = new ArrayList<>();
+					propsWithRanges.put(propName, ranges);
+				}
+				ranges.add(propRange);
+			}
+		}
+
+		return propsWithRanges;
+	}
+
+	private LocalRange findPropRangeInPlaceholder(String literalExpression, int placeHolderStart,
+			int placeHolderOffset) {
 		int start = -1;
 		int end = -1;
 
-		for (int i = value.length() - 1; i >= 0; i--) {
-			if (value.charAt(i) == '{') {
+		if (placeHolderStart < 0 || placeHolderStart >= literalExpression.length()
+				|| placeHolderOffset <= placeHolderStart || placeHolderOffset > literalExpression.length()) {
+			return null;
+		}
+
+		for (int i = placeHolderStart; i < placeHolderOffset; i++) {
+			if (literalExpression.charAt(i) == '{') {
 				start = i + 1;
-				break;
-			}
-		}
-
-		for(int i = 0; i < value.length(); i++) {
-
-			if (value.charAt(i) == '}') {
+			} else if (literalExpression.charAt(i) == '}') {
 				end = i;
-				break;
 			}
 		}
-
-		if (start > 0 && start < value.length() && end > 0 && end <= value.length() && start < end) {
+		if (start > 0 && start < literalExpression.length() && end > 0 && end <= literalExpression.length()
+				&& start < end) {
 			return new LocalRange(start, end);
 		}
 
