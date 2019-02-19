@@ -43,8 +43,8 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansModel;
-import org.springframework.ide.vscode.commons.boot.app.cli.liveproperties.LivePropertiesJsonParser;
 import org.springframework.ide.vscode.commons.boot.app.cli.liveproperties.LiveProperties;
+import org.springframework.ide.vscode.commons.boot.app.cli.liveproperties.LivePropertiesJsonParser;
 import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.Boot1xRequestMapping;
 import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.RequestMapping;
 import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.RequestMappingsParser20;
@@ -69,11 +69,10 @@ import reactor.core.scheduler.Schedulers;
  */
 public abstract class AbstractSpringBootApp implements SpringBootApp {
 
-	protected static AsyncRunner async = new AsyncRunner(Schedulers.elastic());
 	private static final Duration TIMEOUT = Duration.ofMillis(1000);
-	protected static <T> T withTimeout(Callable<T> doit) throws Exception {
-		return async.invoke(TIMEOUT, doit).get();
-	}
+	private static final Duration TIMEOUT_CHECKFORSPRINGAPPS = Duration.ofSeconds(3);
+
+	protected static AsyncRunner async = new AsyncRunner(Schedulers.elastic());
 	private static final String SPRINGFRAMEWORK_BOOT_DOMAIN = "org.springframework.boot";
 	protected static Logger logger = LoggerFactory.getLogger(SpringBootApp.class);
 
@@ -109,6 +108,14 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 	@Override
 	public abstract String getProcessName() throws Exception;
 
+
+	protected static <T> T withTimeout(Callable<T> doit) throws Exception {
+		return withTimeout(TIMEOUT, doit);
+	}
+
+	protected static <T> T withTimeout(Duration timeout, Callable<T> doit) throws Exception {
+		return async.invoke(timeout, doit).get();
+	}
 
 	private final MemoizingDisposableSupplier<JMXConnector> jmxConnector = new MemoizingDisposableSupplier<JMXConnector>(
 		//creating jmx connector:
@@ -235,20 +242,20 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 		if (hasJmxBeans == null) {
 			try {
 				if (containsSystemProperty("sts4.languageserver.name")) {
-					logger.info("language server process found -- " + this.getProcessID() + " = " + getProcessName());
+					logger.info("language server process found -- " + this.toString());
 					hasJmxBeans = Boolean.FALSE;
 				}
 				else {
-					logger.info("check for spring jmx beans (retry no. " + retryCount + ") -- " + this.getProcessID() + " = " + getProcessName());
+					logger.info("check for spring jmx beans (retry no. " + retryCount + ") -- " + this.toString());
 
 					boolean jmxBeansFound = containsSpringJmxBeans();
 					if (jmxBeansFound) {
 						hasJmxBeans = Boolean.TRUE;
-						logger.info("spring jmx beans found -- " + this.getProcessID() + " = " + getProcessName());
+						logger.info("spring jmx beans found -- " + this.toString());
 					}
 					else if (retryCount == 3) {
 						hasJmxBeans = Boolean.FALSE;
-						logger.info("no spring jmx beans found after trying 4 times -- " + this.getProcessID() + " = " + getProcessName());
+						logger.info("no spring jmx beans found after trying 4 times -- " + this.toString());
 					}
 					else {
 						retryCount++;
@@ -260,9 +267,9 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 					hasJmxBeans = Boolean.FALSE;
 
 					try {
-						logger.info("no spring jmx beans found after trying 4 times -- " + this.getProcessID() + " = " + getProcessName());
+						logger.info("no spring jmx beans found after trying 4 times -- " + this.toString());
 					} catch (Exception e1) {
-						logger.info("no spring jmx beans found after trying 4 times -- " + this.getProcessID() + " = (process name unknown)");
+						logger.info("no spring jmx beans found after trying 4 times -- " + this.toString());
 					}
 				}
 				else {
@@ -275,7 +282,7 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 	}
 
 	private boolean containsSpringJmxBeans() throws Exception {
-		return withTimeout(() -> withJmxConnector(jmxConnector -> {
+		return withTimeout(TIMEOUT_CHECKFORSPRINGAPPS, () -> withJmxConnector(jmxConnector -> {
 			MBeanServerConnection connection = jmxConnector.getMBeanServerConnection();
 
 			QueryExp queryExp = Query.or(Query.or(Query.isInstanceOf(Query.value("org.springframework.boot.actuate.endpoint.jmx.EndpointMBean")),
@@ -326,6 +333,7 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 		try {
 			return beansModelCache.get("liveBeans", () -> {
 				Object json = null;
+
 				try {
 					String domain = getDomainForActuator();
 					json = getBeansFromActuator(domain);
