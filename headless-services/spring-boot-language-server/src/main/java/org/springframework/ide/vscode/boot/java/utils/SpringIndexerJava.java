@@ -104,7 +104,7 @@ public class SpringIndexerJava implements SpringIndexer {
 	private void scanFile(IJavaProject project, String docURI, String content, String[] classpathEntries) throws Exception {
 		ASTParser parser = ASTParser.newParser(AST.JLS11);
 		Map<String, String> options = JavaCore.getOptions();
-		JavaCore.setComplianceOptions(JavaCore.VERSION_10, options);
+		JavaCore.setComplianceOptions(JavaCore.VERSION_11, options);
 		parser.setCompilerOptions(options);
 		parser.setKind(ASTParser.K_COMPILATION_UNIT);
 		parser.setStatementsRecovery(true);
@@ -130,7 +130,7 @@ public class SpringIndexerJava implements SpringIndexer {
 	private void scanFiles(IJavaProject project, ASTParser parser, String[] javaFiles, String[] classpathEntries) throws Exception {
 
 		Map<String, String> options = JavaCore.getOptions();
-		JavaCore.setComplianceOptions(JavaCore.VERSION_10, options);
+		JavaCore.setComplianceOptions(JavaCore.VERSION_11, options);
 		parser.setCompilerOptions(options);
 		parser.setKind(ASTParser.K_COMPILATION_UNIT);
 		parser.setStatementsRecovery(true);
