@@ -100,7 +100,6 @@ public class JavaProjectsServiceWithFallback implements JavaProjectsService {
 	public void addListener(Listener listener) {
 		synchronized (listeners) {
 			listeners.add(listener);
-			log.info("added listener - now listeners registered: " + listeners.size());
 		}
 	}
 
@@ -108,7 +107,6 @@ public class JavaProjectsServiceWithFallback implements JavaProjectsService {
 	public void removeListener(Listener listener) {
 		synchronized (listeners) {
 			listeners.remove(listener);
-			log.info("removed listener - now listeners registered: " + listeners.size());
 		}
 	}
 
@@ -124,6 +122,7 @@ public class JavaProjectsServiceWithFallback implements JavaProjectsService {
 
 	private void notifyDelete(IJavaProject deleted) {
 		log.info("Project deleted: " + deleted.getLocationUri());
+
 		synchronized (listeners) {
 			for (Listener listener : listeners) {
 				listener.deleted(deleted);
@@ -133,6 +132,7 @@ public class JavaProjectsServiceWithFallback implements JavaProjectsService {
 
 	private void notifyChanged(IJavaProject project) {
 		log.info("Project changed: " + project.getLocationUri());
+
 		synchronized (listeners) {
 			for (Listener listener : listeners) {
 				listener.changed(project);
