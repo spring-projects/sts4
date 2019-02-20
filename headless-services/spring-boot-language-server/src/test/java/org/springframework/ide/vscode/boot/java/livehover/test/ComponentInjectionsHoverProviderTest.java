@@ -664,10 +664,15 @@ public class ComponentInjectionsHoverProviderTest {
 	}
 
 	@Test
-	public void componentFromInnerClass() throws Exception {
+	public void componentFromStaticInnerClass() throws Exception {
 		LiveBeansModel beans = LiveBeansModel.builder()
 				.add(LiveBean.builder()
 						.id("com.example.DemoApplication$InnerClass")
+						.type("com.example.DemoApplication$InnerClass")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("demoApplication.InnerClass")
 						.type("com.example.DemoApplication$InnerClass")
 						.build()
 				)
@@ -700,16 +705,74 @@ public class ComponentInjectionsHoverProviderTest {
 		);
 		editor.assertHighlights("@SpringBootApplication");
 		editor.assertHoverContains("@SpringBootApplication",
-				"Bean id: `com.example.DemoApplication$InnerClass`  \n" +
+				"Bean id: `demoApplication.InnerClass`  \n" +
 				"Process [PID=111, name=`the-app`]"
 		);
 	}
 
 	@Test
-	public void componentFromInnerInnerClass() throws Exception {
+	public void componentFromNestedClass() throws Exception {
+		LiveBeansModel beans = LiveBeansModel.builder()
+				.add(LiveBean.builder()
+						.id("com.example.Example$Inner")
+						.type("com.example.Example$Inner")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("example.Inner")
+						.type("com.example.Example$Inner")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("example")
+						.type("com.example.Example")
+						.build()
+				)
+				.build();
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.processId("111")
+			.processName("the-app")
+			.beans(beans)
+			.build();
+
+		Editor editor = harness.newEditor(LanguageId.JAVA,
+				"package com.example;\n" +
+				"\n" +
+				"import org.springframework.beans.factory.annotation.Autowired;\n" +
+				"import org.springframework.stereotype.Component;\n" +
+				"\n" +
+				"@Component\n" +
+				"public class Example {	\n" +
+				"	@Component\n" +
+				"	public class Inner {\n" +
+				"		@Autowired\n" +
+				"		public Inner() {\n" +
+				"		}\n" +
+				"	}\n" +
+				"}\n"
+		);
+		editor.assertHighlights("@Component", "@Component");
+		editor.assertHoverContains("@Component", 1,
+				"Bean id: `example`  \n" +
+				"Process [PID=111, name=`the-app`]"
+		);
+		editor.assertHoverContains("@Component", 2,
+				"Bean id: `com.example.Example$Inner`  \n" +
+				"Process [PID=111, name=`the-app`]"
+		);
+	}
+
+	@Test
+	public void componentFromStaticInnerInnerClass() throws Exception {
 		LiveBeansModel beans = LiveBeansModel.builder()
 				.add(LiveBean.builder()
 						.id("com.example.DemoApplication$InnerClass$InnerInnerClass")
+						.type("com.example.DemoApplication$InnerClass$InnerInnerClass")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("demoApplication.InnerClass.InnerInnerClass")
 						.type("com.example.DemoApplication$InnerClass$InnerInnerClass")
 						.build()
 				)
@@ -745,7 +808,7 @@ public class ComponentInjectionsHoverProviderTest {
 		);
 		editor.assertHighlights("@SpringBootApplication");
 		editor.assertHoverContains("@SpringBootApplication",
-				"Bean id: `com.example.DemoApplication$InnerClass$InnerInnerClass`  \n" +
+				"Bean id: `demoApplication.InnerClass.InnerInnerClass`  \n" +
 				"Process [PID=111, name=`the-app`]"
 		);
 	}

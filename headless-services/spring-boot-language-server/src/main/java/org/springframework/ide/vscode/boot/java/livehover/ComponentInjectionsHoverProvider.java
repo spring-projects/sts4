@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2018 Pivotal, Inc.
+ * Copyright (c) 2017, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -17,6 +17,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Stream;
 
+import org.eclipse.jdt.core.Flags;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.ITypeBinding;
@@ -64,7 +65,7 @@ public class ComponentInjectionsHoverProvider extends AbstractInjectedIntoHoverP
 		if (declaringType != null) {
 			ITypeBinding beanType = declaringType.resolveBinding();
 			if (beanType != null) {
-				String id = getBeanId(annotation, beanType);
+				String id = getBeanId(annotation, beanType, Flags.isStatic(declaringType.getModifiers()));
 				if (StringUtil.hasText(id)) {
 					return LiveBean.builder().id(id).type(getBeanType(beanType).toString()).build();
 				}
@@ -73,30 +74,31 @@ public class ComponentInjectionsHoverProvider extends AbstractInjectedIntoHoverP
 		return null;
 	}
 
-	private static String getBeanId(Annotation annotation, ITypeBinding beanType) {
-		return ASTUtils.getAttribute(annotation, "value").flatMap(ASTUtils::getFirstString)
-		.orElseGet(() ->  {
-			String typeName = beanType.getName();
-
+	private static String getBeanId(Annotation annotation, ITypeBinding beanType, boolean isStatic) {
+		return ASTUtils.getAttribute(annotation, "value").flatMap(ASTUtils::getFirstString).orElseGet(() -> {
 			ITypeBinding declaringClass = beanType.getDeclaringClass();
-			if (declaringClass != null) {
-				return getBeanType(beanType).toString();
+			if (declaringClass == null) {
+				return BeanUtils.getBeanNameFromType(beanType.getName());
+			} else {
+				if (isStatic) {
+					// Static inner class case id `outerClass.InnerClass`
+					String typeName = beanType.getBinaryName();
+					// Trim package prefix and replace $ with . inner class separator
+					int idx = typeName.lastIndexOf('.');
+					if (idx >= 0) {
+						typeName = typeName.substring(idx + 1).replace('$', '.');
+					}
+					return BeanUtils.getBeanNameFromType(typeName);
+				} else {
+					// Non-static inner class id case is binary type name
+					return getBeanType(beanType).toString();
+				}
 			}
-
-			return BeanUtils.getBeanNameFromType(typeName);
 		});
 	}
 
-	private static StringBuilder getBeanType(ITypeBinding beanType) {
-		ITypeBinding declaringClass = beanType.getDeclaringClass();
-		if (declaringClass == null) {
-			return new StringBuilder(beanType.getQualifiedName());
-		} else {
-			StringBuilder sb = getBeanType(declaringClass);
-			sb.append('$');
-			sb.append(beanType.getName());
-			return sb;
-		}
+	private static String getBeanType(ITypeBinding beanType) {
+		return beanType.getBinaryName();
 	}
 
 	@Override
