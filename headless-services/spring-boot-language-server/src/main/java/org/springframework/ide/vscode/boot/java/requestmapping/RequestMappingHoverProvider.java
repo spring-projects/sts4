@@ -25,7 +25,6 @@ import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.Hover;
-import org.eclipse.lsp4j.MarkedString;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.slf4j.Logger;
@@ -154,18 +153,12 @@ public class RequestMappingHoverProvider implements HoverProvider {
 	private Hover provideHover(Annotation annotation, TextDocument doc, SpringBootApp[] runningApps) {
 
 		try {
-			List<Either<String, MarkedString>> hoverContent = new ArrayList<>();
-
 			List<Tuple2<RequestMapping, SpringBootApp>> val = getRequestMappingMethodFromRunningApp(annotation, runningApps);
 
 			if (!val.isEmpty()) {
-				addHoverContent(val, hoverContent);
+				Hover hover = createHoverWithContent(val);
 				Range hoverRange = doc.toRange(annotation.getStartPosition(), annotation.getLength());
-				Hover hover = new Hover();
-
-				hover.setContents(hoverContent);
 				hover.setRange(hoverRange);
-
 				return hover;
 			} else {
 				return null;
@@ -255,7 +248,9 @@ public class RequestMappingHoverProvider implements HoverProvider {
 		return urls;
 	}
 
-	private void addHoverContent(List<Tuple2<RequestMapping, SpringBootApp>> mappingMethods, List<Either<String, MarkedString>> hoverContent) throws Exception {
+	private Hover createHoverWithContent(List<Tuple2<RequestMapping, SpringBootApp>> mappingMethods) throws Exception {
+
+		StringBuilder contentVal = new StringBuilder();
 		for (int i = 0; i < mappingMethods.size(); i++) {
 			Tuple2<RequestMapping, SpringBootApp> mappingMethod = mappingMethods.get(i);
 
@@ -279,12 +274,25 @@ public class RequestMappingHoverProvider implements HoverProvider {
 			.collect(Collectors.toList());
 
 			Renderable urlRenderables = Renderables.concat(renderableUrls);
-			hoverContent.add(Either.forLeft(Renderables.concat(
+			Renderable processSection = Renderables.concat(
 					urlRenderables,
 					Renderables.lineBreak(),
 					Renderables.mdBlob(LiveHoverUtils.niceAppName(app))
-			).toMarkdown()));
+			);
+
+			if (i < mappingMethods.size() - 1) {
+				processSection = Renderables.concat(
+						processSection,
+						Renderables.text("\n\n")
+				);
+			}
+
+			String markdown = processSection.toMarkdown();
+			contentVal.append(markdown);
 		}
+		// PT 163470104 - Add content at hover construction to avoid separators
+		// being added between the content itself
+		return new Hover(ImmutableList.of(Either.forLeft(contentVal.toString())));
 	}
 
 	private CodeLens createCodeLensForRequestMapping(Range range, String content) {
