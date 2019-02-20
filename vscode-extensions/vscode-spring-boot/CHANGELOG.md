@@ -1,3 +1,18 @@
+## 2019-02-21 (4.1.2 RELEASE)
+
+* _(Spring Boot)_ new: live hover information for bean wirings now supports war-packaged boot apps running in a local server installation
+* _(Spring Boot)_ new: live hover information for `@Value` annotations ([#177](https://github.com/spring-projects/sts4/issues/177))
+* _(Spring Boot)_ new: property completion now works for `.yaml` files as well ([#191](https://github.com/spring-projects/sts4/issues/191))
+* _(Spring Boot)_ new: bean symbols from XML config files now include exact location information
+* _(Spring Boot)_ new: bean symbols from XML config files now generated for beans without a bean ID, too
+* _(Spring Boot)_ fixed: navigate to resource in live hovers for apps running on CF works again
+* _(Spring Boot)_ fixed: ConcurrentModificationException while retrieving symbols from language server
+* _(Spring Boot)_ fixed: race condition that sometimes caused initial project to be not indexed for symbols
+* _(Spring Boot)_ fixed: search for symbols in project now happens on the server side to avoid no project-related symbols showing up on the client side before you start typing in a query
+* _(Spring Boot)_ performance: improvement to further reduce the CPU load when checking processes for live hovers ([#140](https://github.com/spring-projects/sts4/issues/140))
+* _(Spring Boot)_ performance: the language server doesn't trigger a full source and javadoc download for Maven projects anymore
+* _(VSCode)_ fixed: "class" snippet is not available ([#192](https://github.com/spring-projects/sts4/issues/192))
+
 ## 2019-01-24 (4.1.1 RELEASE)
 
 * (Spring Boot) quick navigation via symbols now available for non-Boot Spring projects

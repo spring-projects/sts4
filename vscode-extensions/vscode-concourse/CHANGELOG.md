@@ -1,3 +1,12 @@
+## 2019-02-21 (4.1.2 RELEASE)
+
+* _(Concourse)_ new: support for hierarchical symbols in file added, produces nice outline view information now
+* _(Concourse)_ new: support for YAML anchors, references, extend added ([#58](https://github.com/spring-projects/sts4/issues/58))
+* _(Concourse)_ fixed: Concourse extension doesn't know about tag_file for docker-image resource ([#197](https://github.com/spring-projects/sts4/issues/197))
+* _(Concourse)_ fixed: Concourse extension confused by docker-image resource type ([#196](https://github.com/spring-projects/sts4/issues/196))
+* _(Concourse)_ fixed: valid uri's are flagged as errors in git resource ([#194](https://github.com/spring-projects/sts4/issues/194))
+* _(Concourse)_ fixed: content-assist can't deal with empty lines
+
 ## 2019-01-24 (4.1.1 RELEASE)
 
 * no major changes
