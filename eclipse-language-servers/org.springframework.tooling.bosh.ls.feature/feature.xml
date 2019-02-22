@@ -2,7 +2,7 @@
 <feature
 	id="org.springframework.tooling.bosh.ls.feature"
 	label="BOSH Language Server Feature"
-	version="4.1.2.qualifier"
+	version="4.2.0.qualifier"
 	provider-name="Pivotal, Inc.">
 
     <description>
