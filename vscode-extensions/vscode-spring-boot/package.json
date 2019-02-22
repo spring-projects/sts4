@@ -3,7 +3,7 @@
   "displayName": "Spring Boot Tools",
   "description": "Provides validation and content assist for Spring Boot `application.properties`, `application.yml` properties files. As well as Boot-specific support for `.java` files.",
   "icon": "spring-boot-logo.png",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "publisher": "Pivotal",
   "repository": {
     "type": "git",
@@ -42,8 +42,10 @@
           "Spring Boot Properties Yaml"
         ],
         "filenamePatterns": [
-          "application*.yml", "application*.yaml",
-          "bootstrap*.yml", "bootstrap*.yaml"
+          "application*.yml",
+          "application*.yaml",
+          "bootstrap*.yml",
+          "bootstrap*.yaml"
         ],
         "configuration": "./yaml-support/language-configuration.json"
       },
