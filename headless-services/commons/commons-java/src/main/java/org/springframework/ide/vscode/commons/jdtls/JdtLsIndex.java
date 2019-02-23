@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.commons.jdtls;
 
 import java.net.URI;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -31,6 +32,8 @@ import org.springframework.ide.vscode.commons.protocol.java.TypeData;
 import org.springframework.ide.vscode.commons.util.FuzzyMatcher;
 
 import com.google.common.base.Suppliers;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -45,6 +48,8 @@ public class JdtLsIndex implements ClasspathIndex {
 	private final STS4LanguageClient client;
 	private final URI projectUri;
 	private final JdtLsJavadocProvider javadocProvider;
+
+	private Cache<String, Optional<IType>> cache = CacheBuilder.newBuilder().expireAfterAccess(10, TimeUnit.SECONDS).build();
 
 	public JdtLsIndex(STS4LanguageClient client, URI projectUri) {
 		this.client = client;
@@ -64,16 +69,23 @@ public class JdtLsIndex implements ClasspathIndex {
 
 	@Override
 	public IType findType(String fqName) {
-		JavaDataParams params = new JavaDataParams(projectUri.toString(), "L" + fqName.replace('.', '/') + ";", false);
 		try {
-			TypeData data = client.javaType(params).get(500, TimeUnit.MILLISECONDS);
-			if (data != null) {
-				return toType(data);
-			}
-		} catch (InterruptedException | ExecutionException | TimeoutException e) {
-			log.error("", e);
+			return cache.get(fqName, () -> {
+				JavaDataParams params = new JavaDataParams(projectUri.toString(), "L" + fqName.replace('.', '/') + ";", false);
+				try {
+					TypeData data = client.javaType(params).get(500, TimeUnit.MILLISECONDS);
+					if (data != null) {
+						return Optional.ofNullable(toType(data));
+					}
+				} catch (InterruptedException | ExecutionException | TimeoutException e) {
+					log.error("", e);
+				}
+				return Optional.empty();
+			}).orElse(null);
+		} catch (ExecutionException e) {
+			log.error("{}", e);
+			return null;
 		}
-		return null;
 	}
 
 	@Override

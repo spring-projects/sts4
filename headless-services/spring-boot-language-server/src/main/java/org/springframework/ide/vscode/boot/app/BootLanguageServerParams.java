@@ -87,11 +87,11 @@ public class BootLanguageServerParams {
 		this.watchDogInterval = watchDogInterval;
 	}
 
-	public static BootLanguageServerParams createDefault(SimpleLanguageServer server, ValueProviderRegistry valueProviders) {
+	public static BootLanguageServerParams createDefault(SimpleLanguageServer server, ValueProviderRegistry valueProviders, boolean isJandexIndex) {
 		// Initialize project finders, project caches and project observers
 		JavaProjectsService jdtProjectCache = new JavaProjectsServiceWithFallback(
 				server,
-				new JdtLsProjectCache(server),
+				new JdtLsProjectCache(server, isJandexIndex),
 				() -> createFallbackProjectCache(server)
 		);
 

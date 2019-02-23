@@ -43,15 +43,16 @@ import reactor.core.publisher.Mono;
 
 public class JdtLsProjectCache implements InitializableJavaProjectsService {
 
-	private static final boolean IS_JANDEX_INDEX = Boolean.getBoolean("sts.lsp.jandex.index");
+	private final boolean IS_JANDEX_INDEX;
 
 	private SimpleLanguageServer server;
 	private Map<String, IJavaProject> table = new HashMap<String, IJavaProject>();
 	private Logger log = LoggerFactory.getLogger(JdtLsProjectCache.class);
 	private List<Listener> listeners = new ArrayList<>();
 
-	public JdtLsProjectCache(SimpleLanguageServer server) {
+	public JdtLsProjectCache(SimpleLanguageServer server, boolean isJandexIndex) {
 		this.server = server;
+		this.IS_JANDEX_INDEX = isJandexIndex;
 	}
 
 	private FileObserver getFileObserver() {
