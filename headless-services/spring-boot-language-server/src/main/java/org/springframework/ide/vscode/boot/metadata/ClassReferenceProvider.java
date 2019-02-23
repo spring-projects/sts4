@@ -26,12 +26,14 @@ import org.springframework.ide.vscode.boot.metadata.hints.StsValueHint;
 import org.springframework.ide.vscode.commons.java.Flags;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.IType;
+import org.springframework.ide.vscode.commons.util.FuzzyMatcher;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
 import reactor.core.publisher.Flux;
+import reactor.util.function.Tuples;
 
 /**
  * Provides the algorithm for 'class-reference' valueProvider.
@@ -147,8 +149,8 @@ public class ClassReferenceProvider extends CachingValueProvider {
 		if (allSubclasses.isEmpty()) {
 			return Flux.empty();
 		} else {
-			return javaProject.getIndex()
-					.fuzzySearchTypes(query, true, false, type -> allSubclasses.contains(type))
+			return Flux.fromIterable(allSubclasses)
+					.map(type -> Tuples.of(type, FuzzyMatcher.matchScore(query, type.getFullyQualifiedName())))
 					.collectSortedList((o1, o2) -> o2.getT2().compareTo(o1.getT2()))
 					.flatMapIterable(l -> l)
 					.map(t -> StsValueHint.create(sourceLinks, javaProject, t.getT1()));

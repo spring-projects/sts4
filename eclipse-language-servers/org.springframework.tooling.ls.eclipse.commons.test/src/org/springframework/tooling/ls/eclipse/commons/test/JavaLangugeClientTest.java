@@ -111,6 +111,15 @@ public class JavaLangugeClientTest {
 	}
 	
 	@Test
+	public void fuzzyFindAllTypesExcludingSysLibs() throws Exception {
+		List<TypeData> data = client
+				.javaSearchTypes(new JavaSearchParams(project.getLocationURI().toString(), "", true, false))
+				.get(1000, TimeUnit.SECONDS);
+		assertNotNull(data);
+		assertTrue(data.size() > 10000);
+	}
+	
+	@Test
 	public void searchPackagesIncludingSysLibs() throws Exception {
 		List<String> packages = client.javaSearchPackages(new JavaSearchParams(project.getLocationURI().toString(), "java.lang", true, true)).get(30, TimeUnit.SECONDS);
 		assertTrue(packages.size() > 15 && packages.size() < 25);
@@ -124,6 +133,12 @@ public class JavaLangugeClientTest {
 		assertTrue(packages.contains("org.test"));
 	}
 
+	@Test
+	public void searchAllPackagesExcludingSysLibs() throws Exception {
+		List<String> packages = client.javaSearchPackages(new JavaSearchParams(project.getLocationURI().toString(), "", true, false)).get(30, TimeUnit.SECONDS);
+		assertTrue(packages.size() > 1000);
+	}
+	
 	@Test
 	public void map_Subtypes() throws Exception {
 		List<TypeData> data = client
