@@ -1,0 +1,632 @@
+{
+  "fqName": "org.springframework.boot.autoconfigure.web.ServerProperties",
+  "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;",
+  "clazz": true,
+  "annotation": false,
+  "interfaze": false,
+  "enam": false,
+  "superClassName": "java.lang.Object",
+  "superInterfaceNames": [],
+  "fields": [
+    {
+      "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.port",
+      "type": {
+        "kind": "CLASS",
+        "name": "Ljava.lang.Integer;"
+      },
+      "enumConstant": false,
+      "annotations": [],
+      "declaringType": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;",
+      "flags": 2,
+      "name": "port",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Users\\/aboyko\\/.m2\\/repository\\/org\\/springframework\\/boot\\/spring-boot-autoconfigure\\/2.0.0.RELEASE\\/spring-boot-autoconfigure-2.0.0.RELEASE.jar\u003corg.springframework.boot.autoconfigure.web(ServerProperties.class[ServerProperties^port",
+      "label": "Integer port"
+    },
+    {
+      "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.address",
+      "type": {
+        "kind": "CLASS",
+        "name": "Ljava.net.InetAddress;"
+      },
+      "enumConstant": false,
+      "annotations": [],
+      "declaringType": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;",
+      "flags": 2,
+      "name": "address",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Users\\/aboyko\\/.m2\\/repository\\/org\\/springframework\\/boot\\/spring-boot-autoconfigure\\/2.0.0.RELEASE\\/spring-boot-autoconfigure-2.0.0.RELEASE.jar\u003corg.springframework.boot.autoconfigure.web(ServerProperties.class[ServerProperties^address",
+      "label": "InetAddress address"
+    },
+    {
+      "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.error",
+      "type": {
+        "kind": "CLASS",
+        "name": "Lorg.springframework.boot.autoconfigure.web.ErrorProperties;"
+      },
+      "enumConstant": false,
+      "annotations": [
+        {
+          "fqName": "org.springframework.boot.context.properties.NestedConfigurationProperty",
+          "valuePairs": {},
+          "name": "org.springframework.boot.context.properties.NestedConfigurationProperty",
+          "handleIdentifier": "\u003dtest-webflux-project/\\/Users\\/aboyko\\/.m2\\/repository\\/org\\/springframework\\/boot\\/spring-boot-autoconfigure\\/2.0.0.RELEASE\\/spring-boot-autoconfigure-2.0.0.RELEASE.jar\u003corg.springframework.boot.autoconfigure.web(ServerProperties.class[ServerProperties^error}org.springframework.boot.context.properties.NestedConfigurationProperty",
+          "label": "org.springframework.boot.context.properties.NestedConfigurationProperty"
+        }
+      ],
+      "declaringType": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;",
+      "flags": 18,
+      "name": "error",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Users\\/aboyko\\/.m2\\/repository\\/org\\/springframework\\/boot\\/spring-boot-autoconfigure\\/2.0.0.RELEASE\\/spring-boot-autoconfigure-2.0.0.RELEASE.jar\u003corg.springframework.boot.autoconfigure.web(ServerProperties.class[ServerProperties^error",
+      "label": "ErrorProperties error"
+    },
+    {
+      "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.useForwardHeaders",
+      "type": {
+        "kind": "CLASS",
+        "name": "Ljava.lang.Boolean;"
+      },
+      "enumConstant": false,
+      "annotations": [],
+      "declaringType": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;",
+      "flags": 2,
+      "name": "useForwardHeaders",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Users\\/aboyko\\/.m2\\/repository\\/org\\/springframework\\/boot\\/spring-boot-autoconfigure\\/2.0.0.RELEASE\\/spring-boot-autoconfigure-2.0.0.RELEASE.jar\u003corg.springframework.boot.autoconfigure.web(ServerProperties.class[ServerProperties^useForwardHeaders",
+      "label": "Boolean useForwardHeaders"
+    },
+    {
+      "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.serverHeader",
+      "type": {
+        "kind": "CLASS",
+        "name": "Ljava.lang.String;"
+      },
+      "enumConstant": false,
+      "annotations": [],
+      "declaringType": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;",
+      "flags": 2,
+      "name": "serverHeader",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Users\\/aboyko\\/.m2\\/repository\\/org\\/springframework\\/boot\\/spring-boot-autoconfigure\\/2.0.0.RELEASE\\/spring-boot-autoconfigure-2.0.0.RELEASE.jar\u003corg.springframework.boot.autoconfigure.web(ServerProperties.class[ServerProperties^serverHeader",
+      "label": "String serverHeader"
+    },
+    {
+      "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.maxHttpHeaderSize",
+      "type": {
+        "kind": "INT",
+        "name": "I"
+      },
+      "enumConstant": false,
+      "annotations": [],
+      "declaringType": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;",
+      "flags": 2,
+      "name": "maxHttpHeaderSize",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Users\\/aboyko\\/.m2\\/repository\\/org\\/springframework\\/boot\\/spring-boot-autoconfigure\\/2.0.0.RELEASE\\/spring-boot-autoconfigure-2.0.0.RELEASE.jar\u003corg.springframework.boot.autoconfigure.web(ServerProperties.class[ServerProperties^maxHttpHeaderSize",
+      "label": "int maxHttpHeaderSize"
+    },
+    {
+      "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.connectionTimeout",
+      "type": {
+        "kind": "CLASS",
+        "name": "Ljava.time.Duration;"
+      },
+      "enumConstant": false,
+      "annotations": [],
+      "declaringType": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;",
+      "flags": 2,
+      "name": "connectionTimeout",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Users\\/aboyko\\/.m2\\/repository\\/org\\/springframework\\/boot\\/spring-boot-autoconfigure\\/2.0.0.RELEASE\\/spring-boot-autoconfigure-2.0.0.RELEASE.jar\u003corg.springframework.boot.autoconfigure.web(ServerProperties.class[ServerProperties^connectionTimeout",
+      "label": "Duration connectionTimeout"
+    },
+    {
+      "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.ssl",
+      "type": {
+        "kind": "CLASS",
+        "name": "Lorg.springframework.boot.web.server.Ssl;"
+      },
+      "enumConstant": false,
+      "annotations": [
+        {
+          "fqName": "org.springframework.boot.context.properties.NestedConfigurationProperty",
+          "valuePairs": {},
+          "name": "org.springframework.boot.context.properties.NestedConfigurationProperty",
+          "handleIdentifier": "\u003dtest-webflux-project/\\/Users\\/aboyko\\/.m2\\/repository\\/org\\/springframework\\/boot\\/spring-boot-autoconfigure\\/2.0.0.RELEASE\\/spring-boot-autoconfigure-2.0.0.RELEASE.jar\u003corg.springframework.boot.autoconfigure.web(ServerProperties.class[ServerProperties^ssl}org.springframework.boot.context.properties.NestedConfigurationProperty",
+          "label": "org.springframework.boot.context.properties.NestedConfigurationProperty"
+        }
+      ],
+      "declaringType": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;",
+      "flags": 2,
+      "name": "ssl",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Users\\/aboyko\\/.m2\\/repository\\/org\\/springframework\\/boot\\/spring-boot-autoconfigure\\/2.0.0.RELEASE\\/spring-boot-autoconfigure-2.0.0.RELEASE.jar\u003corg.springframework.boot.autoconfigure.web(ServerProperties.class[ServerProperties^ssl",
+      "label": "Ssl ssl"
+    },
+    {
+      "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.compression",
+      "type": {
+        "kind": "CLASS",
+        "name": "Lorg.springframework.boot.web.server.Compression;"
+      },
+      "enumConstant": false,
+      "annotations": [
+        {
+          "fqName": "org.springframework.boot.context.properties.NestedConfigurationProperty",
+          "valuePairs": {},
+          "name": "org.springframework.boot.context.properties.NestedConfigurationProperty",
+          "handleIdentifier": "\u003dtest-webflux-project/\\/Users\\/aboyko\\/.m2\\/repository\\/org\\/springframework\\/boot\\/spring-boot-autoconfigure\\/2.0.0.RELEASE\\/spring-boot-autoconfigure-2.0.0.RELEASE.jar\u003corg.springframework.boot.autoconfigure.web(ServerProperties.class[ServerProperties^compression}org.springframework.boot.context.properties.NestedConfigurationProperty",
+          "label": "org.springframework.boot.context.properties.NestedConfigurationProperty"
+        }
+      ],
+      "declaringType": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;",
+      "flags": 18,
+      "name": "compression",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Users\\/aboyko\\/.m2\\/repository\\/org\\/springframework\\/boot\\/spring-boot-autoconfigure\\/2.0.0.RELEASE\\/spring-boot-autoconfigure-2.0.0.RELEASE.jar\u003corg.springframework.boot.autoconfigure.web(ServerProperties.class[ServerProperties^compression",
+      "label": "Compression compression"
+    },
+    {
+      "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.http2",
+      "type": {
+        "kind": "CLASS",
+        "name": "Lorg.springframework.boot.web.server.Http2;"
+      },
+      "enumConstant": false,
+      "annotations": [
+        {
+          "fqName": "org.springframework.boot.context.properties.NestedConfigurationProperty",
+          "valuePairs": {},
+          "name": "org.springframework.boot.context.properties.NestedConfigurationProperty",
+          "handleIdentifier": "\u003dtest-webflux-project/\\/Users\\/aboyko\\/.m2\\/repository\\/org\\/springframework\\/boot\\/spring-boot-autoconfigure\\/2.0.0.RELEASE\\/spring-boot-autoconfigure-2.0.0.RELEASE.jar\u003corg.springframework.boot.autoconfigure.web(ServerProperties.class[ServerProperties^http2}org.springframework.boot.context.properties.NestedConfigurationProperty",
+          "label": "org.springframework.boot.context.properties.NestedConfigurationProperty"
+        }
+      ],
+      "declaringType": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;",
+      "flags": 18,
+      "name": "http2",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Users\\/aboyko\\/.m2\\/repository\\/org\\/springframework\\/boot\\/spring-boot-autoconfigure\\/2.0.0.RELEASE\\/spring-boot-autoconfigure-2.0.0.RELEASE.jar\u003corg.springframework.boot.autoconfigure.web(ServerProperties.class[ServerProperties^http2",
+      "label": "Http2 http2"
+    },
+    {
+      "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.servlet",
+      "type": {
+        "kind": "CLASS",
+        "name": "Lorg.springframework.boot.autoconfigure.web.ServerProperties$Servlet;"
+      },
+      "enumConstant": false,
+      "annotations": [],
+      "declaringType": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;",
+      "flags": 18,
+      "name": "servlet",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Users\\/aboyko\\/.m2\\/repository\\/org\\/springframework\\/boot\\/spring-boot-autoconfigure\\/2.0.0.RELEASE\\/spring-boot-autoconfigure-2.0.0.RELEASE.jar\u003corg.springframework.boot.autoconfigure.web(ServerProperties.class[ServerProperties^servlet",
+      "label": "Servlet servlet"
+    },
+    {
+      "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.tomcat",
+      "type": {
+        "kind": "CLASS",
+        "name": "Lorg.springframework.boot.autoconfigure.web.ServerProperties$Tomcat;"
+      },
+      "enumConstant": false,
+      "annotations": [],
+      "declaringType": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;",
+      "flags": 18,
+      "name": "tomcat",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Users\\/aboyko\\/.m2\\/repository\\/org\\/springframework\\/boot\\/spring-boot-autoconfigure\\/2.0.0.RELEASE\\/spring-boot-autoconfigure-2.0.0.RELEASE.jar\u003corg.springframework.boot.autoconfigure.web(ServerProperties.class[ServerProperties^tomcat",
+      "label": "Tomcat tomcat"
+    },
+    {
+      "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.jetty",
+      "type": {
+        "kind": "CLASS",
+        "name": "Lorg.springframework.boot.autoconfigure.web.ServerProperties$Jetty;"
+      },
+      "enumConstant": false,
+      "annotations": [],
+      "declaringType": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;",
+      "flags": 18,
+      "name": "jetty",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Users\\/aboyko\\/.m2\\/repository\\/org\\/springframework\\/boot\\/spring-boot-autoconfigure\\/2.0.0.RELEASE\\/spring-boot-autoconfigure-2.0.0.RELEASE.jar\u003corg.springframework.boot.autoconfigure.web(ServerProperties.class[ServerProperties^jetty",
+      "label": "Jetty jetty"
+    },
+    {
+      "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.undertow",
+      "type": {
+        "kind": "CLASS",
+        "name": "Lorg.springframework.boot.autoconfigure.web.ServerProperties$Undertow;"
+      },
+      "enumConstant": false,
+      "annotations": [],
+      "declaringType": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;",
+      "flags": 18,
+      "name": "undertow",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Users\\/aboyko\\/.m2\\/repository\\/org\\/springframework\\/boot\\/spring-boot-autoconfigure\\/2.0.0.RELEASE\\/spring-boot-autoconfigure-2.0.0.RELEASE.jar\u003corg.springframework.boot.autoconfigure.web(ServerProperties.class[ServerProperties^undertow",
+      "label": "Undertow undertow"
+    }
+  ],
+  "methods": [
+    {
+      "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.()V",
+      "constructor": true,
+      "returnType": {
+        "kind": "VOID",
+        "name": "V"
+      },
+      "parameters": [],
+      "annotations": [],
+      "declaringType": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;",
+      "flags": 1,
+      "name": "ServerProperties",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Users\\/aboyko\\/.m2\\/repository\\/org\\/springframework\\/boot\\/spring-boot-autoconfigure\\/2.0.0.RELEASE\\/spring-boot-autoconfigure-2.0.0.RELEASE.jar\u003corg.springframework.boot.autoconfigure.web(ServerProperties.class[ServerProperties~ServerProperties",
+      "label": "org.springframework.boot.autoconfigure.web.ServerProperties.ServerProperties()"
+    },
+    {
+      "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.getPort()Ljava.lang.Integer;",
+      "constructor": false,
+      "returnType": {
+        "kind": "CLASS",
+        "name": "Ljava.lang.Integer;"
+      },
+      "parameters": [],
+      "annotations": [],
+      "declaringType": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;",
+      "flags": 1,
+      "name": "getPort",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Users\\/aboyko\\/.m2\\/repository\\/org\\/springframework\\/boot\\/spring-boot-autoconfigure\\/2.0.0.RELEASE\\/spring-boot-autoconfigure-2.0.0.RELEASE.jar\u003corg.springframework.boot.autoconfigure.web(ServerProperties.class[ServerProperties~getPort",
+      "label": "Integer org.springframework.boot.autoconfigure.web.ServerProperties.getPort()"
+    },
+    {
+      "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.setPort(Ljava/lang/Integer;)V",
+      "constructor": false,
+      "returnType": {
+        "kind": "VOID",
+        "name": "V"
+      },
+      "parameters": [
+        {
+          "kind": "CLASS",
+          "name": "Ljava.lang.Integer;"
+        }
+      ],
+      "annotations": [],
+      "declaringType": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;",
+      "flags": 1,
+      "name": "setPort",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Users\\/aboyko\\/.m2\\/repository\\/org\\/springframework\\/boot\\/spring-boot-autoconfigure\\/2.0.0.RELEASE\\/spring-boot-autoconfigure-2.0.0.RELEASE.jar\u003corg.springframework.boot.autoconfigure.web(ServerProperties.class[ServerProperties~setPort~Ljava.lang.Integer;",
+      "label": "void org.springframework.boot.autoconfigure.web.ServerProperties.setPort(Integer port)"
+    },
+    {
+      "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.getAddress()Ljava.net.InetAddress;",
+      "constructor": false,
+      "returnType": {
+        "kind": "CLASS",
+        "name": "Ljava.net.InetAddress;"
+      },
+      "parameters": [],
+      "annotations": [],
+      "declaringType": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;",
+      "flags": 1,
+      "name": "getAddress",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Users\\/aboyko\\/.m2\\/repository\\/org\\/springframework\\/boot\\/spring-boot-autoconfigure\\/2.0.0.RELEASE\\/spring-boot-autoconfigure-2.0.0.RELEASE.jar\u003corg.springframework.boot.autoconfigure.web(ServerProperties.class[ServerProperties~getAddress",
+      "label": "InetAddress org.springframework.boot.autoconfigure.web.ServerProperties.getAddress()"
+    },
+    {
+      "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.setAddress(Ljava/net/InetAddress;)V",
+      "constructor": false,
+      "returnType": {
+        "kind": "VOID",
+        "name": "V"
+      },
+      "parameters": [
+        {
+          "kind": "CLASS",
+          "name": "Ljava.net.InetAddress;"
+        }
+      ],
+      "annotations": [],
+      "declaringType": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;",
+      "flags": 1,
+      "name": "setAddress",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Users\\/aboyko\\/.m2\\/repository\\/org\\/springframework\\/boot\\/spring-boot-autoconfigure\\/2.0.0.RELEASE\\/spring-boot-autoconfigure-2.0.0.RELEASE.jar\u003corg.springframework.boot.autoconfigure.web(ServerProperties.class[ServerProperties~setAddress~Ljava.net.InetAddress;",
+      "label": "void org.springframework.boot.autoconfigure.web.ServerProperties.setAddress(InetAddress address)"
+    },
+    {
+      "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.isUseForwardHeaders()Ljava.lang.Boolean;",
+      "constructor": false,
+      "returnType": {
+        "kind": "CLASS",
+        "name": "Ljava.lang.Boolean;"
+      },
+      "parameters": [],
+      "annotations": [],
+      "declaringType": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;",
+      "flags": 1,
+      "name": "isUseForwardHeaders",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Users\\/aboyko\\/.m2\\/repository\\/org\\/springframework\\/boot\\/spring-boot-autoconfigure\\/2.0.0.RELEASE\\/spring-boot-autoconfigure-2.0.0.RELEASE.jar\u003corg.springframework.boot.autoconfigure.web(ServerProperties.class[ServerProperties~isUseForwardHeaders",
+      "label": "Boolean org.springframework.boot.autoconfigure.web.ServerProperties.isUseForwardHeaders()"
+    },
+    {
+      "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.setUseForwardHeaders(Ljava/lang/Boolean;)V",
+      "constructor": false,
+      "returnType": {
+        "kind": "VOID",
+        "name": "V"
+      },
+      "parameters": [
+        {
+          "kind": "CLASS",
+          "name": "Ljava.lang.Boolean;"
+        }
+      ],
+      "annotations": [],
+      "declaringType": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;",
+      "flags": 1,
+      "name": "setUseForwardHeaders",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Users\\/aboyko\\/.m2\\/repository\\/org\\/springframework\\/boot\\/spring-boot-autoconfigure\\/2.0.0.RELEASE\\/spring-boot-autoconfigure-2.0.0.RELEASE.jar\u003corg.springframework.boot.autoconfigure.web(ServerProperties.class[ServerProperties~setUseForwardHeaders~Ljava.lang.Boolean;",
+      "label": "void org.springframework.boot.autoconfigure.web.ServerProperties.setUseForwardHeaders(Boolean useForwardHeaders)"
+    },
+    {
+      "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.getServerHeader()Ljava.lang.String;",
+      "constructor": false,
+      "returnType": {
+        "kind": "CLASS",
+        "name": "Ljava.lang.String;"
+      },
+      "parameters": [],
+      "annotations": [],
+      "declaringType": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;",
+      "flags": 1,
+      "name": "getServerHeader",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Users\\/aboyko\\/.m2\\/repository\\/org\\/springframework\\/boot\\/spring-boot-autoconfigure\\/2.0.0.RELEASE\\/spring-boot-autoconfigure-2.0.0.RELEASE.jar\u003corg.springframework.boot.autoconfigure.web(ServerProperties.class[ServerProperties~getServerHeader",
+      "label": "String org.springframework.boot.autoconfigure.web.ServerProperties.getServerHeader()"
+    },
+    {
+      "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.setServerHeader(Ljava/lang/String;)V",
+      "constructor": false,
+      "returnType": {
+        "kind": "VOID",
+        "name": "V"
+      },
+      "parameters": [
+        {
+          "kind": "CLASS",
+          "name": "Ljava.lang.String;"
+        }
+      ],
+      "annotations": [],
+      "declaringType": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;",
+      "flags": 1,
+      "name": "setServerHeader",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Users\\/aboyko\\/.m2\\/repository\\/org\\/springframework\\/boot\\/spring-boot-autoconfigure\\/2.0.0.RELEASE\\/spring-boot-autoconfigure-2.0.0.RELEASE.jar\u003corg.springframework.boot.autoconfigure.web(ServerProperties.class[ServerProperties~setServerHeader~Ljava.lang.String;",
+      "label": "void org.springframework.boot.autoconfigure.web.ServerProperties.setServerHeader(String serverHeader)"
+    },
+    {
+      "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.getMaxHttpHeaderSize()I",
+      "constructor": false,
+      "returnType": {
+        "kind": "INT",
+        "name": "I"
+      },
+      "parameters": [],
+      "annotations": [],
+      "declaringType": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;",
+      "flags": 1,
+      "name": "getMaxHttpHeaderSize",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Users\\/aboyko\\/.m2\\/repository\\/org\\/springframework\\/boot\\/spring-boot-autoconfigure\\/2.0.0.RELEASE\\/spring-boot-autoconfigure-2.0.0.RELEASE.jar\u003corg.springframework.boot.autoconfigure.web(ServerProperties.class[ServerProperties~getMaxHttpHeaderSize",
+      "label": "int org.springframework.boot.autoconfigure.web.ServerProperties.getMaxHttpHeaderSize()"
+    },
+    {
+      "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.setMaxHttpHeaderSize(I)V",
+      "constructor": false,
+      "returnType": {
+        "kind": "VOID",
+        "name": "V"
+      },
+      "parameters": [
+        {
+          "kind": "INT",
+          "name": "I"
+        }
+      ],
+      "annotations": [],
+      "declaringType": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;",
+      "flags": 1,
+      "name": "setMaxHttpHeaderSize",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Users\\/aboyko\\/.m2\\/repository\\/org\\/springframework\\/boot\\/spring-boot-autoconfigure\\/2.0.0.RELEASE\\/spring-boot-autoconfigure-2.0.0.RELEASE.jar\u003corg.springframework.boot.autoconfigure.web(ServerProperties.class[ServerProperties~setMaxHttpHeaderSize~I",
+      "label": "void org.springframework.boot.autoconfigure.web.ServerProperties.setMaxHttpHeaderSize(int maxHttpHeaderSize)"
+    },
+    {
+      "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.getConnectionTimeout()Ljava.time.Duration;",
+      "constructor": false,
+      "returnType": {
+        "kind": "CLASS",
+        "name": "Ljava.time.Duration;"
+      },
+      "parameters": [],
+      "annotations": [],
+      "declaringType": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;",
+      "flags": 1,
+      "name": "getConnectionTimeout",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Users\\/aboyko\\/.m2\\/repository\\/org\\/springframework\\/boot\\/spring-boot-autoconfigure\\/2.0.0.RELEASE\\/spring-boot-autoconfigure-2.0.0.RELEASE.jar\u003corg.springframework.boot.autoconfigure.web(ServerProperties.class[ServerProperties~getConnectionTimeout",
+      "label": "Duration org.springframework.boot.autoconfigure.web.ServerProperties.getConnectionTimeout()"
+    },
+    {
+      "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.setConnectionTimeout(Ljava/time/Duration;)V",
+      "constructor": false,
+      "returnType": {
+        "kind": "VOID",
+        "name": "V"
+      },
+      "parameters": [
+        {
+          "kind": "CLASS",
+          "name": "Ljava.time.Duration;"
+        }
+      ],
+      "annotations": [],
+      "declaringType": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;",
+      "flags": 1,
+      "name": "setConnectionTimeout",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Users\\/aboyko\\/.m2\\/repository\\/org\\/springframework\\/boot\\/spring-boot-autoconfigure\\/2.0.0.RELEASE\\/spring-boot-autoconfigure-2.0.0.RELEASE.jar\u003corg.springframework.boot.autoconfigure.web(ServerProperties.class[ServerProperties~setConnectionTimeout~Ljava.time.Duration;",
+      "label": "void org.springframework.boot.autoconfigure.web.ServerProperties.setConnectionTimeout(Duration connectionTimeout)"
+    },
+    {
+      "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.getError()Lorg.springframework.boot.autoconfigure.web.ErrorProperties;",
+      "constructor": false,
+      "returnType": {
+        "kind": "CLASS",
+        "name": "Lorg.springframework.boot.autoconfigure.web.ErrorProperties;"
+      },
+      "parameters": [],
+      "annotations": [],
+      "declaringType": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;",
+      "flags": 1,
+      "name": "getError",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Users\\/aboyko\\/.m2\\/repository\\/org\\/springframework\\/boot\\/spring-boot-autoconfigure\\/2.0.0.RELEASE\\/spring-boot-autoconfigure-2.0.0.RELEASE.jar\u003corg.springframework.boot.autoconfigure.web(ServerProperties.class[ServerProperties~getError",
+      "label": "ErrorProperties org.springframework.boot.autoconfigure.web.ServerProperties.getError()"
+    },
+    {
+      "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.getSsl()Lorg.springframework.boot.web.server.Ssl;",
+      "constructor": false,
+      "returnType": {
+        "kind": "CLASS",
+        "name": "Lorg.springframework.boot.web.server.Ssl;"
+      },
+      "parameters": [],
+      "annotations": [],
+      "declaringType": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;",
+      "flags": 1,
+      "name": "getSsl",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Users\\/aboyko\\/.m2\\/repository\\/org\\/springframework\\/boot\\/spring-boot-autoconfigure\\/2.0.0.RELEASE\\/spring-boot-autoconfigure-2.0.0.RELEASE.jar\u003corg.springframework.boot.autoconfigure.web(ServerProperties.class[ServerProperties~getSsl",
+      "label": "Ssl org.springframework.boot.autoconfigure.web.ServerProperties.getSsl()"
+    },
+    {
+      "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.setSsl(Lorg/springframework/boot/web/server/Ssl;)V",
+      "constructor": false,
+      "returnType": {
+        "kind": "VOID",
+        "name": "V"
+      },
+      "parameters": [
+        {
+          "kind": "CLASS",
+          "name": "Lorg.springframework.boot.web.server.Ssl;"
+        }
+      ],
+      "annotations": [],
+      "declaringType": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;",
+      "flags": 1,
+      "name": "setSsl",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Users\\/aboyko\\/.m2\\/repository\\/org\\/springframework\\/boot\\/spring-boot-autoconfigure\\/2.0.0.RELEASE\\/spring-boot-autoconfigure-2.0.0.RELEASE.jar\u003corg.springframework.boot.autoconfigure.web(ServerProperties.class[ServerProperties~setSsl~Lorg.springframework.boot.web.server.Ssl;",
+      "label": "void org.springframework.boot.autoconfigure.web.ServerProperties.setSsl(Ssl ssl)"
+    },
+    {
+      "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.getCompression()Lorg.springframework.boot.web.server.Compression;",
+      "constructor": false,
+      "returnType": {
+        "kind": "CLASS",
+        "name": "Lorg.springframework.boot.web.server.Compression;"
+      },
+      "parameters": [],
+      "annotations": [],
+      "declaringType": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;",
+      "flags": 1,
+      "name": "getCompression",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Users\\/aboyko\\/.m2\\/repository\\/org\\/springframework\\/boot\\/spring-boot-autoconfigure\\/2.0.0.RELEASE\\/spring-boot-autoconfigure-2.0.0.RELEASE.jar\u003corg.springframework.boot.autoconfigure.web(ServerProperties.class[ServerProperties~getCompression",
+      "label": "Compression org.springframework.boot.autoconfigure.web.ServerProperties.getCompression()"
+    },
+    {
+      "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.getHttp2()Lorg.springframework.boot.web.server.Http2;",
+      "constructor": false,
+      "returnType": {
+        "kind": "CLASS",
+        "name": "Lorg.springframework.boot.web.server.Http2;"
+      },
+      "parameters": [],
+      "annotations": [],
+      "declaringType": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;",
+      "flags": 1,
+      "name": "getHttp2",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Users\\/aboyko\\/.m2\\/repository\\/org\\/springframework\\/boot\\/spring-boot-autoconfigure\\/2.0.0.RELEASE\\/spring-boot-autoconfigure-2.0.0.RELEASE.jar\u003corg.springframework.boot.autoconfigure.web(ServerProperties.class[ServerProperties~getHttp2",
+      "label": "Http2 org.springframework.boot.autoconfigure.web.ServerProperties.getHttp2()"
+    },
+    {
+      "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.getServlet()Lorg.springframework.boot.autoconfigure.web.ServerProperties$Servlet;",
+      "constructor": false,
+      "returnType": {
+        "kind": "CLASS",
+        "name": "Lorg.springframework.boot.autoconfigure.web.ServerProperties$Servlet;"
+      },
+      "parameters": [],
+      "annotations": [],
+      "declaringType": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;",
+      "flags": 1,
+      "name": "getServlet",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Users\\/aboyko\\/.m2\\/repository\\/org\\/springframework\\/boot\\/spring-boot-autoconfigure\\/2.0.0.RELEASE\\/spring-boot-autoconfigure-2.0.0.RELEASE.jar\u003corg.springframework.boot.autoconfigure.web(ServerProperties.class[ServerProperties~getServlet",
+      "label": "Servlet org.springframework.boot.autoconfigure.web.ServerProperties.getServlet()"
+    },
+    {
+      "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.getTomcat()Lorg.springframework.boot.autoconfigure.web.ServerProperties$Tomcat;",
+      "constructor": false,
+      "returnType": {
+        "kind": "CLASS",
+        "name": "Lorg.springframework.boot.autoconfigure.web.ServerProperties$Tomcat;"
+      },
+      "parameters": [],
+      "annotations": [],
+      "declaringType": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;",
+      "flags": 1,
+      "name": "getTomcat",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Users\\/aboyko\\/.m2\\/repository\\/org\\/springframework\\/boot\\/spring-boot-autoconfigure\\/2.0.0.RELEASE\\/spring-boot-autoconfigure-2.0.0.RELEASE.jar\u003corg.springframework.boot.autoconfigure.web(ServerProperties.class[ServerProperties~getTomcat",
+      "label": "Tomcat org.springframework.boot.autoconfigure.web.ServerProperties.getTomcat()"
+    },
+    {
+      "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.getJetty()Lorg.springframework.boot.autoconfigure.web.ServerProperties$Jetty;",
+      "constructor": false,
+      "returnType": {
+        "kind": "CLASS",
+        "name": "Lorg.springframework.boot.autoconfigure.web.ServerProperties$Jetty;"
+      },
+      "parameters": [],
+      "annotations": [],
+      "declaringType": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;",
+      "flags": 1,
+      "name": "getJetty",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Users\\/aboyko\\/.m2\\/repository\\/org\\/springframework\\/boot\\/spring-boot-autoconfigure\\/2.0.0.RELEASE\\/spring-boot-autoconfigure-2.0.0.RELEASE.jar\u003corg.springframework.boot.autoconfigure.web(ServerProperties.class[ServerProperties~getJetty",
+      "label": "Jetty org.springframework.boot.autoconfigure.web.ServerProperties.getJetty()"
+    },
+    {
+      "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.getUndertow()Lorg.springframework.boot.autoconfigure.web.ServerProperties$Undertow;",
+      "constructor": false,
+      "returnType": {
+        "kind": "CLASS",
+        "name": "Lorg.springframework.boot.autoconfigure.web.ServerProperties$Undertow;"
+      },
+      "parameters": [],
+      "annotations": [],
+      "declaringType": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;",
+      "flags": 1,
+      "name": "getUndertow",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Users\\/aboyko\\/.m2\\/repository\\/org\\/springframework\\/boot\\/spring-boot-autoconfigure\\/2.0.0.RELEASE\\/spring-boot-autoconfigure-2.0.0.RELEASE.jar\u003corg.springframework.boot.autoconfigure.web(ServerProperties.class[ServerProperties~getUndertow",
+      "label": "Undertow org.springframework.boot.autoconfigure.web.ServerProperties.getUndertow()"
+    }
+  ],
+  "annotations": [
+    {
+      "fqName": "org.springframework.boot.context.properties.ConfigurationProperties",
+      "valuePairs": {
+        "ignoreUnknownFields": true,
+        "prefix": "server"
+      },
+      "name": "org.springframework.boot.context.properties.ConfigurationProperties",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Users\\/aboyko\\/.m2\\/repository\\/org\\/springframework\\/boot\\/spring-boot-autoconfigure\\/2.0.0.RELEASE\\/spring-boot-autoconfigure-2.0.0.RELEASE.jar\u003corg.springframework.boot.autoconfigure.web(ServerProperties.class[ServerProperties}org.springframework.boot.context.properties.ConfigurationProperties",
+      "label": "org.springframework.boot.context.properties.ConfigurationProperties"
+    }
+  ],
+  "classpathEntry": {
+    "cpe": {
+      "kind": "binary",
+      "path": "/Users/aboyko/.m2/repository/org/springframework/boot/spring-boot-autoconfigure/2.0.0.RELEASE/spring-boot-autoconfigure-2.0.0.RELEASE.jar",
+      "sourceContainerUrl": "file:/Users/aboyko/.m2/repository/org/springframework/boot/spring-boot-autoconfigure/2.0.0.RELEASE/spring-boot-autoconfigure-2.0.0.RELEASE-sources.jar",
+      "isSystem": false,
+      "isOwn": false
+    }
+  },
+  "flags": 1,
+  "name": "ServerProperties",
+  "handleIdentifier": "\u003dtest-webflux-project/\\/Users\\/aboyko\\/.m2\\/repository\\/org\\/springframework\\/boot\\/spring-boot-autoconfigure\\/2.0.0.RELEASE\\/spring-boot-autoconfigure-2.0.0.RELEASE.jar\u003corg.springframework.boot.autoconfigure.web(ServerProperties.class[ServerProperties",
+  "label": "org.springframework.boot.autoconfigure.web.ServerProperties"
+}

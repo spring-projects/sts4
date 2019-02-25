@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 Pivotal, Inc.
+ * Copyright (c) 2015, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -123,7 +123,7 @@ public class Type implements YType {
 //		}
 //		return null;
 //	}
-	
+
 	public static Type fromJavaType(IJavaType javaType) {
 		if (javaType instanceof IPrimitiveType || javaType instanceof IVoidType) {
 			Type type = TYPE_FROM_SIG.get(javaType.name());
@@ -131,11 +131,12 @@ public class Type implements YType {
 				return type;
 			}
 		} else if (javaType instanceof IClassType) {
-			return new Type(javaType.name(), null);
+			return new Type(((IClassType)javaType).getFQName(), null);
 		} else if (javaType instanceof IParameterizedType) {
 			IParameterizedType parameterizedType = (IParameterizedType) javaType;
 			List<Type> arguments = parameterizedType.arguments().map(Type::fromJavaType).collect(Collectors.toList());
-			return new Type(parameterizedType.name(), arguments.toArray(new Type[arguments.size()]));
+			Type owner = fromJavaType(parameterizedType.owner());
+			return new Type(owner.getErasure(), arguments.toArray(new Type[arguments.size()]));
 		} else if (javaType instanceof IArrayType) {
 			IArrayType arrayType = (IArrayType) javaType;
 			Type elementType = fromJavaType(arrayType.component());
@@ -143,10 +144,10 @@ public class Type implements YType {
 				return elementType.asArray(arrayType.dimensions());
 			}
 		}
-		
+
 		return null;
 	}
-	
+
 	public Type asArray(int arrayCount) {
 		Assert.isLegal(arrayCount>0);
 		StringBuilder arrayErasure = new StringBuilder(erasure);
@@ -205,7 +206,7 @@ public class Type implements YType {
 	private static void sig2type(String sig, Class<?> cls) {
 		TYPE_FROM_SIG.put(sig, TypeParser.parse(cls.getName()));
 	}
-	
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;

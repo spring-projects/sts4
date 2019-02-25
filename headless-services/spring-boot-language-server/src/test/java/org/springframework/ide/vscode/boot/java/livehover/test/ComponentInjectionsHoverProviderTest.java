@@ -68,7 +68,7 @@ public class ComponentInjectionsHoverProviderTest {
 	@Before
 	public void setup() throws Exception {
 		MavenJavaProject jp =  projects.mavenProject("empty-boot-15-web-app", EXTRA_TYPES);
-		assertTrue(jp.findType("com.example.Foo").exists());
+		assertTrue(jp.getIndex().findType("com.example.Foo").exists());
 		harness.useProject(jp);
 		harness.intialize(null);
 	}

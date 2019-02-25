@@ -29,10 +29,11 @@ import org.springframework.ide.vscode.commons.java.ClasspathData;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.IJavadocProvider;
 import org.springframework.ide.vscode.commons.java.JavaProject;
+import org.springframework.ide.vscode.commons.java.JdtLsJavaProject;
 import org.springframework.ide.vscode.commons.javadoc.JdtLsJavadocProvider;
-import org.springframework.ide.vscode.commons.languageserver.java.ls.Classpath.CPE;
 import org.springframework.ide.vscode.commons.languageserver.java.ls.ClasspathListener;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
+import org.springframework.ide.vscode.commons.protocol.java.Classpath.CPE;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 import org.springframework.ide.vscode.commons.util.FileObserver;
 import org.springframework.ide.vscode.commons.util.UriUtil;
@@ -42,13 +43,16 @@ import reactor.core.publisher.Mono;
 
 public class JdtLsProjectCache implements InitializableJavaProjectsService {
 
+	private final boolean IS_JANDEX_INDEX;
+
 	private SimpleLanguageServer server;
-	private Map<String, JavaProject> table = new HashMap<String, JavaProject>();
+	private Map<String, IJavaProject> table = new HashMap<String, IJavaProject>();
 	private Logger log = LoggerFactory.getLogger(JdtLsProjectCache.class);
 	private List<Listener> listeners = new ArrayList<>();
 
-	public JdtLsProjectCache(SimpleLanguageServer server) {
+	public JdtLsProjectCache(SimpleLanguageServer server, boolean isJandexIndex) {
 		this.server = server;
+		this.IS_JANDEX_INDEX = isJandexIndex;
 	}
 
 	private FileObserver getFileObserver() {
@@ -79,7 +83,7 @@ public class JdtLsProjectCache implements InitializableJavaProjectsService {
 		}
 	}
 
-	private void notifyCreated(JavaProject newProject) {
+	private void notifyCreated(IJavaProject newProject) {
 		logEvent("Created", newProject);
 
 		synchronized (listeners) {
@@ -96,17 +100,19 @@ public class JdtLsProjectCache implements InitializableJavaProjectsService {
 		}
 	}
 
-	private void notifyDelete(JavaProject deleted) {
+	private void notifyDelete(IJavaProject deleted) {
 		logEvent("Deleted", deleted);
 		synchronized (listeners) {
 			for (Listener listener : listeners) {
 				listener.deleted(deleted);
 			}
 		}
-		deleted.dispose();
+		if (deleted instanceof Disposable) {
+			((Disposable)deleted).dispose();
+		}
 	}
 
-	private void notifyChanged(JavaProject newProject) {
+	private void notifyChanged(IJavaProject newProject) {
 		logEvent("Changed", newProject);
 		synchronized (listeners) {
 			for (Listener listener : listeners) {
@@ -115,7 +121,7 @@ public class JdtLsProjectCache implements InitializableJavaProjectsService {
 		}
 	}
 
-	private void logEvent(String type, JavaProject project) {
+	private void logEvent(String type, IJavaProject project) {
 		try {
 			log.info("Project "+type+": " + project.getLocationUri());
 			log.info("Classpath has "+project.getClasspath().getClasspathEntries().size()+" entries "
@@ -147,7 +153,7 @@ public class JdtLsProjectCache implements InitializableJavaProjectsService {
 		synchronized (table) {
 			String foundUri = null;
 			IJavaProject foundProject = null;
-			for (Entry<String, JavaProject> e : table.entrySet()) {
+			for (Entry<String, IJavaProject> e : table.entrySet()) {
 				String projectUri = e.getKey();
 				log.debug("projectUri = '{}'", projectUri);
 				if (UriUtil.contains(projectUri, uri)) {
@@ -187,7 +193,7 @@ public class JdtLsProjectCache implements InitializableJavaProjectsService {
 							log.debug("uri = {}", uri);
 							if (event.deleted) {
 								log.debug("event.deleted = true");
-								JavaProject deleted = table.remove(uri);
+								IJavaProject deleted = table.remove(uri);
 								if (deleted!=null) {
 									log.debug("removed from table = true");
 									notifyDelete(deleted);
@@ -196,8 +202,13 @@ public class JdtLsProjectCache implements InitializableJavaProjectsService {
 								}
 							} else {
 								log.debug("deleted = false");
-								JavaProject newProject = new JavaProject(getFileObserver(), new URI(uri), new ClasspathData(event.name, event.classpath.getEntries()), JdtLsProjectCache.this);
-								JavaProject oldProject = table.put(uri, newProject);
+								URI projectUri = new URI(uri);
+								ClasspathData classpath = new ClasspathData(event.name, event.classpath.getEntries());
+								IJavaProject newProject = IS_JANDEX_INDEX
+										? new JavaProject(getFileObserver(), projectUri, classpath,
+												JdtLsProjectCache.this)
+										: new JdtLsJavaProject(server.getClient(), projectUri, classpath);
+								IJavaProject oldProject = table.put(uri, newProject);
 								if (oldProject != null) {
 									notifyChanged(newProject);
 								} else {

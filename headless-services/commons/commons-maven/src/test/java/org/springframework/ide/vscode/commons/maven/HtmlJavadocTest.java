@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2018 Pivotal, Inc.
+ * Copyright (c) 2016, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -56,7 +56,7 @@ public class HtmlJavadocTest {
 
 		MavenJavaProject project = projectSupplier.get();
 
-		IType type = project.findType("java.util.Map");
+		IType type = project.getIndex().findType("java.util.Map");
 		assertNotNull(type);
 		String expected = String.join("\n",
 				"<div class=\"block\">An object that maps keys to values.  A map cannot contain duplicate keys;",
@@ -72,7 +72,7 @@ public class HtmlJavadocTest {
 		Assume.assumeTrue(javaVersionHigherThan(6));
 		MavenJavaProject project = projectSupplier.get();
 
-		IType type = project.findType("java.util.ArrayList");
+		IType type = project.getIndex().findType("java.util.ArrayList");
 		assertNotNull(type);
 		IMethod method = type.getMethod("<init>", Stream.empty());
 		assertNotNull(method);
@@ -90,7 +90,7 @@ public class HtmlJavadocTest {
 	public void html_testEmptyJavadocClass() throws Exception {
 		MavenJavaProject project = projectSupplier.get();
 
-		IType type = project.findType("hello.Application");
+		IType type = project.getIndex().findType("hello.Application");
 		assertNotNull(type);
 		assertNull(type.getJavaDoc());
 	}
@@ -99,7 +99,7 @@ public class HtmlJavadocTest {
 	public void html_testFieldAndMethodJavadocForJar() throws Exception {
 		MavenJavaProject project = projectSupplier.get();
 
-		IType type = project.findType("org.springframework.boot.SpringApplication");
+		IType type = project.getIndex().findType("org.springframework.boot.SpringApplication");
 		assertNotNull(type);
 
 		IField field = type.getField("BANNER_LOCATION_PROPERTY_VALUE");
@@ -139,7 +139,7 @@ public class HtmlJavadocTest {
 	public void html_testInnerClassJavadocForOutputFolder() throws Exception {
 		MavenJavaProject project = projectSupplier.get();
 
-		IType type = project.findType("hello.Greeting$TestInnerClass");
+		IType type = project.getIndex().findType("hello.Greeting$TestInnerClass");
 		assertNotNull(type);
 		IJavadoc javaDoc = type.getJavaDoc();
 		assertNotNull(javaDoc);
@@ -172,7 +172,7 @@ public class HtmlJavadocTest {
 	public void html_testInnerClassLevel2_JavadocForOutputFolder() throws Exception {
 		MavenJavaProject project = projectSupplier.get();
 
-		IType type = project.findType("hello.Greeting$TestInnerClass$TestInnerClassLevel2");
+		IType type = project.getIndex().findType("hello.Greeting$TestInnerClass$TestInnerClassLevel2");
 		assertNotNull(type);
 		IJavadoc javaDoc = type.getJavaDoc();
 		assertNotNull(javaDoc);
@@ -204,7 +204,7 @@ public class HtmlJavadocTest {
 	@Test
 	public void html_testJavadocOutputFolder() throws Exception {
 		MavenJavaProject project = projectSupplier.get();
-		IType type = project.findType("hello.Greeting");
+		IType type = project.getIndex().findType("hello.Greeting");
 
 		assertNotNull(type);
 		String expected = "<div class=\"block\">Comment for Greeting class</div>";
@@ -241,7 +241,7 @@ public class HtmlJavadocTest {
 
 		MavenJavaProject project = projectSupplier.get();
 
-		IType type = project.findType("java.util.ArrayList");
+		IType type = project.getIndex().findType("java.util.ArrayList");
 		assertNotNull(type);
 		IMethod method = type.getMethod("size", Stream.empty());
 		assertNotNull(method);
@@ -262,7 +262,7 @@ public class HtmlJavadocTest {
 
 		MavenJavaProject project = projectSupplier.get();
 
-		IType type = project.findType("java.util.Map$Entry");
+		IType type = project.getIndex().findType("java.util.Map$Entry");
 		assertNotNull(type);
 		String expected = String.join("\n",
 				"<div class=\"block\">A map entry (key-value pair).  The <tt>Map.entrySet</tt> method returns",
@@ -276,7 +276,7 @@ public class HtmlJavadocTest {
 	public void html_testNoJavadocClass() throws Exception {
 		MavenJavaProject project = projectSupplier.get();;
 
-		IType type = project.findType("hello.GreetingController");
+		IType type = project.getIndex().findType("hello.GreetingController");
 		assertNotNull(type);
 		assertNull(type.getJavaDoc());
 	}
@@ -285,7 +285,7 @@ public class HtmlJavadocTest {
 	public void html_testNoJavadocField() throws Exception {
 		MavenJavaProject project = projectSupplier.get();
 
-		IType type = project.findType("hello.GreetingController");
+		IType type = project.getIndex().findType("hello.GreetingController");
 		assertNotNull(type);
 		IField field = type.getField("template");
 		assertNotNull(field);
@@ -306,7 +306,7 @@ public class HtmlJavadocTest {
 	public void html_testNoJavadocMethod() throws Exception {
 		MavenJavaProject project = projectSupplier.get();
 
-		IType type = project.findType("hello.Application");
+		IType type = project.getIndex().findType("hello.Application");
 		assertNotNull(type);
 		IMethod method = type.getMethod("corsConfigurer", Stream.empty());
 		assertNotNull(method);

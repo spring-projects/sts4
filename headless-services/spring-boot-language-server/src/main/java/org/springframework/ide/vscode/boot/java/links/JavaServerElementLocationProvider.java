@@ -19,8 +19,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.IMember;
-import org.springframework.ide.vscode.commons.languageserver.java.ls.JavaDataParams;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
+import org.springframework.ide.vscode.commons.protocol.java.JavaDataParams;
 
 public class JavaServerElementLocationProvider implements JavaElementLocationProvider {
 

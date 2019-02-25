@@ -23,9 +23,41 @@ export function registerJavaDataService(client : LanguageClient) : void {
         <any> await VSCode.commands.executeCommand("java.execute.workspaceCommand", "sts.java.javadoc", params)
     );
 
+    const javaSearchTypes = new RequestType<JavaSearchParams, any, void, void>("sts/javaSearchTypes");
+    client.onRequest(javaSearchTypes, async (params: JavaSearchParams) =>
+        <any> await VSCode.commands.executeCommand("java.execute.workspaceCommand", "sts.java.search.types", params)
+    );
+
+    const javaSearchPackages = new RequestType<JavaSearchParams, any, void, void>("sts/javaSearchPackages");
+    client.onRequest(javaSearchPackages, async (params: JavaSearchParams) =>
+        <any> await VSCode.commands.executeCommand("java.execute.workspaceCommand", "sts.java.search.packages", params)
+    );
+
+    const javaSubTypes = new RequestType<JavaTypeHierarchyParams, any, void, void>("sts/javaSubTypes");
+    client.onRequest(javaSubTypes, async (params: JavaTypeHierarchyParams) =>
+        <any> await VSCode.commands.executeCommand("java.execute.workspaceCommand", "sts.java.hierarchy.subtypes", params)
+    );
+
+    const javaSuperTypes = new RequestType<JavaTypeHierarchyParams, any, void, void>("sts/javaSuperTypes");
+    client.onRequest(javaSuperTypes, async (params: JavaTypeHierarchyParams) =>
+        <any> await VSCode.commands.executeCommand("java.execute.workspaceCommand", "sts.java.hierarchy.supertypes", params)
+    );
 }
 
 interface JavaDataParams {
     projectUri: string;
     bindingKey: string;
+    lookInOtherProjects?: boolean;
+}
+
+interface JavaSearchParams {
+    projectUri: string;
+    term: string;
+    includeBinaries: boolean;
+    includeSystemLibs: boolean;
+}
+
+interface JavaTypeHierarchyParams {
+    projectUri?: string;
+    fqName: string;
 }

@@ -13,8 +13,10 @@ package org.springframework.tooling.jdt.ls.commons.java;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jdt.core.IAnnotation;
@@ -30,13 +32,19 @@ import org.eclipse.jdt.core.IParent;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.ITypeRoot;
 import org.eclipse.jdt.core.JavaModelException;
+import org.eclipse.jdt.core.Signature;
+import org.springframework.ide.vscode.commons.protocol.java.Classpath.CPE;
+import org.springframework.ide.vscode.commons.protocol.java.JavaElementData;
+import org.springframework.ide.vscode.commons.protocol.java.JavaTypeData;
+import org.springframework.ide.vscode.commons.protocol.java.JavaTypeData.JavaTypeKind;
+import org.springframework.ide.vscode.commons.protocol.java.MemberData;
+import org.springframework.ide.vscode.commons.protocol.java.TypeData;
+import org.springframework.ide.vscode.commons.protocol.java.TypeData.AnnotationData;
+import org.springframework.ide.vscode.commons.protocol.java.TypeData.ClasspathEntryData;
+import org.springframework.ide.vscode.commons.protocol.java.TypeData.FieldData;
+import org.springframework.ide.vscode.commons.protocol.java.TypeData.MethodData;
 import org.springframework.tooling.jdt.ls.commons.Logger;
-import org.springframework.tooling.jdt.ls.commons.classpath.Classpath.CPE;
 import org.springframework.tooling.jdt.ls.commons.classpath.ClasspathUtil;
-import org.springframework.tooling.jdt.ls.commons.java.TypeData.AnnotationData;
-import org.springframework.tooling.jdt.ls.commons.java.TypeData.ClasspathEntryData;
-import org.springframework.tooling.jdt.ls.commons.java.TypeData.FieldData;
-import org.springframework.tooling.jdt.ls.commons.java.TypeData.MethodData;
 import org.springframework.tooling.jdt.ls.commons.javadoc.JavadocUtils;
 import org.springframework.tooling.jdt.ls.commons.resources.ResourceUtils;
 
@@ -46,7 +54,10 @@ public class JavaData {
 	
 	private Logger logger;
 	
-	public JavaData(Logger logger) {
+	private Function<IJavaElement, String> labelProvider;
+	
+	public JavaData(Function<IJavaElement, String> labelProvider, Logger logger) {
+		this.labelProvider = labelProvider;
 		this.logger = logger;
 	}
 	
@@ -172,17 +183,22 @@ public class JavaData {
 	private void fillJavaElementData(IJavaElement element, JavaElementData data) {
 		data.setName(element.getElementName());
 		data.setHandleIdentifier(element.getHandleIdentifier());
+		if (labelProvider != null) {
+			data.setLabel(labelProvider.apply(element));
+		}
 	}
 	
-	private FieldData createFieldData(IField field) {
+	private FieldData createFieldData(IType type, IField field) {
 		FieldData data = new FieldData();
 		fillMemberData(field, data);
 		data.setBindingKey(field.getKey());
 		ImmutableList.Builder<AnnotationData> annotationsBuilder = ImmutableList.builder();
 		try {
 			for (IAnnotation annotation : field.getAnnotations()) {
-				annotationsBuilder.add(createAnnotationData(annotation));
+				annotationsBuilder.add(createAnnotationData(type, annotation));
 			}
+			data.setType(createFromSignature(type, field.getTypeSignature()));
+			data.setEnumConstant(field.isEnumConstant());
 		} catch (JavaModelException e) {
 			logger.log(e);
 		}
@@ -203,24 +219,38 @@ public class JavaData {
 		}
 	}
 	
-	private MethodData createMethodData(IMethod method) {
+	private MethodData createMethodData(IType type, IMethod method) {
 		MethodData data = new MethodData();
 		fillMemberData(method, data);
 		data.setBindingKey(method.getKey());
 		ImmutableList.Builder<AnnotationData> annotationsBuilder = ImmutableList.builder();
+		ImmutableList.Builder<JavaTypeData> parametersBuilder = ImmutableList.builder();
 		try {
 			data.setConstructor(method.isConstructor());
+			data.setReturnType(createFromSignature(type, method.getReturnType()));
+			// Replace 'V' return type at the end with resolved return type
+			if (data.getBindingKey().endsWith(")V") && !"V".equals(data.getReturnType().getName())) {
+				String key = data.getBindingKey();
+				data.setBindingKey(key.substring(0, key.length() - 1) + data.getReturnType().getName());
+			}
 			for (IAnnotation annotation : method.getAnnotations()) {
-				annotationsBuilder.add(createAnnotationData(annotation));
+				annotationsBuilder.add(createAnnotationData(type, annotation));
+			}
+			for (String parameter : method.getParameterTypes()) {
+				JavaTypeData parameterData = createFromSignature(type, parameter);
+				parametersBuilder.add(parameterData);
+				// Replace unresolved parameters with resolved ones in the binding
+				data.setBindingKey(data.getBindingKey().replace(parameter, parameterData.getName()));
 			}
 		} catch (JavaModelException e) {
 			logger.log(e);
 		}
 		data.setAnnotations(annotationsBuilder.build());
+		data.setParameters(parametersBuilder.build());
 		return data;
 	}
 
-	private TypeData createTypeData(IType type) {
+	public TypeData createTypeData(IType type) {
 		TypeData data = new TypeData();
 		fillTypeData(type, data);
 		return data;
@@ -238,13 +268,13 @@ public class JavaData {
 		ImmutableList.Builder<AnnotationData> annotationsBuilder = ImmutableList.builder();
 		try {
 			for (IField field : type.getFields()) {
-				fieldsBuilder.add(createFieldData(field));
+				fieldsBuilder.add(createFieldData(type, field));
 			}
 			for (IMethod method : type.getMethods()) {
-				methodsBuilder.add(createMethodData(method));
+				methodsBuilder.add(createMethodData(type, method));
 			}
 			for (IAnnotation annotation : type.getAnnotations()) {
-				annotationsBuilder.add(createAnnotationData(annotation));
+				annotationsBuilder.add(createAnnotationData(type, annotation));
 			}
 			data.setAnnotation(type.isAnnotation());
 			data.setClass(type.isClass());
@@ -268,7 +298,7 @@ public class JavaData {
 		IPackageFragmentRoot packageFragmentRoot = (IPackageFragmentRoot) member.getAncestor(IJavaElement.PACKAGE_FRAGMENT_ROOT);
 		if (packageFragmentRoot != null) {
 			try {
-				IClasspathEntry entry = packageFragmentRoot.getRawClasspathEntry();
+				IClasspathEntry entry = packageFragmentRoot.getResolvedClasspathEntry();
 				if (entry != null) {
 					List<CPE> cpes = ClasspathUtil.createCpes(packageFragmentRoot.getJavaProject(), entry);
 					Assert.isTrue(cpes.size() < 2);
@@ -293,16 +323,17 @@ public class JavaData {
 		return data;
 	}
 	
-	private AnnotationData createAnnotationData(IAnnotation annotation) {
+	private AnnotationData createAnnotationData(IType type, IAnnotation annotation) {
 		AnnotationData data = new AnnotationData();
-		fillAnnotationData(annotation, data);
+		fillAnnotationData(type, annotation, data);
 		return data;
 	}
 	
-	private void fillAnnotationData(IAnnotation annotation, AnnotationData data) {
+	private void fillAnnotationData(IType type, IAnnotation annotation, AnnotationData data) {
 		fillJavaElementData(annotation, data);
 		Map<String, Object> pairs = new HashMap<>();
 		try {
+			data.setFqName(resolveFQName(type, annotation.getElementName()));
 			for (IMemberValuePair pair : annotation.getMemberValuePairs()) {
 				pairs.put(pair.getMemberName(), pair.getValue());
 			}
@@ -310,6 +341,135 @@ public class JavaData {
 			logger.log(e);
 		}
 		data.setValuePairs(pairs);
+	}
+	
+	private JavaTypeData createFromSignature(IType type, String signature) {
+		JavaTypeData data = new JavaTypeData();
+		data.setName(signature);
+
+		char[] typeSignature = signature.toCharArray();
+
+		String[] typeArguments = Signature.getTypeArguments(signature);
+		if (typeArguments != null && typeArguments.length > 0) {
+			JavaTypeData[] javaTypeArguments = new JavaTypeData[typeArguments.length];
+			for (int i = 0; i < typeArguments.length; i++) {
+				javaTypeArguments[i] = createFromSignature(type, typeArguments[i]);
+				// In case binding key is unresolved replace each argument with resolved one.
+				data.setName(data.getName().replace(typeArguments[i], javaTypeArguments[i].getName()));
+			}
+			data.setKind(JavaTypeKind.PARAMETERIZED);
+			LinkedHashMap<String, Object> extras = new LinkedHashMap<>();
+			String typeErasure = Signature.getTypeErasure(signature);
+			JavaTypeData owner = createFromSignature(type, typeErasure);
+			extras.put("owner", owner);
+			extras.put("arguments", javaTypeArguments);
+			data.setExtras(extras);
+			// In case binding key is unresolved replace owner. Trim trailing ; from type erasure string and from the replacement
+			data.setName(data.getName().replace(typeErasure.substring(0, typeErasure.length() - 1), owner.getName().substring(0, owner.getName().length() - 1)));
+			
+		} else {
+			// need a minimum 1 char
+			if (typeSignature.length < 1) {
+				throw new IllegalArgumentException();
+			}
+			char c = typeSignature[0];
+			if (c == Signature.C_GENERIC_START) {
+				int count = 1;
+				for (int i = 1, length = typeSignature.length; i < length; i++) {
+					switch (typeSignature[i]) {
+						case 	Signature.C_GENERIC_START:
+							count++;
+							break;
+						case Signature.C_GENERIC_END:
+							count--;
+							break;
+					}
+					if (count == 0) {
+						if (i+1 < length)
+							c = typeSignature[i+1];
+						break;
+					}
+				}
+			}
+			switch (c) {
+				case Signature.C_ARRAY :
+					data.setKind(JavaTypeKind.ARRAY);
+					LinkedHashMap<String, Object> extras = new LinkedHashMap<>();
+					extras.put("component", createFromSignature(type, Signature.getElementType(signature)));
+					extras.put("dimensions", Signature.getArrayCount(typeSignature));
+					data.setExtras(extras);
+					break;
+				case Signature.C_RESOLVED :
+					data.setKind(JavaTypeKind.CLASS);
+					break;
+				case Signature.C_TYPE_VARIABLE :
+					data.setKind(JavaTypeKind.TYPE_VARIABLE);
+					break;
+				case Signature.C_BOOLEAN :
+					data.setKind(JavaTypeKind.BOOLEAN);
+					break;
+				case Signature.C_BYTE :
+					data.setKind(JavaTypeKind.BYTE);
+					break;
+				case Signature.C_CHAR :
+					data.setKind(JavaTypeKind.CHAR);
+					break;
+				case Signature.C_DOUBLE :
+					data.setKind(JavaTypeKind.DOUBLE);
+					break;
+				case Signature.C_FLOAT :
+					data.setKind(JavaTypeKind.FLOAT);
+					break;
+				case Signature.C_INT :
+					data.setKind(JavaTypeKind.INT);
+					break;
+				case Signature.C_LONG :
+					data.setKind(JavaTypeKind.LONG);
+					break;
+				case Signature.C_SHORT :
+					data.setKind(JavaTypeKind.SHORT);
+					break;
+				case Signature.C_VOID :
+					data.setKind(JavaTypeKind.VOID);
+					break;
+				case Signature.C_STAR :
+				case Signature.C_SUPER :
+				case Signature.C_EXTENDS :
+					data.setKind(JavaTypeKind.WILDCARD);
+					break;
+				case Signature.C_UNRESOLVED:
+					if (type != null) {
+						// Attempt to resolve type. For some reason JDT has them unresolved for type members
+						try {
+							String signatureSimpleName = Signature.getSignatureSimpleName(signature);
+							String resolvedType = resolveFQName(type, signatureSimpleName);
+							if (resolvedType != null) {
+								data.setKind(JavaTypeKind.CLASS);
+								data.setName("L" + resolvedType.replace('.', '/') + ";");
+								break;
+							}
+						} catch (JavaModelException e) {
+							data.setKind(JavaTypeKind.UNRESOLVED);
+						}
+					}
+				case Signature.C_CAPTURE :
+				case Signature.C_INTERSECTION :
+				case Signature.C_UNION :
+				default :
+					data.setKind(JavaTypeKind.UNRESOLVED);
+					break;
+			}
+		}
+
+		return data;
+	}
+	
+	private String resolveFQName(IType type, String name) throws JavaModelException {
+		String[][] resolution = type.resolveType(name);
+		if (resolution != null && resolution.length > 0 && resolution[0].length > 1) {
+			return resolution[0][0] + "." + resolution[0][1].replace('.', '$');
+		}
+		return name;
 	}
 
 }

@@ -19,8 +19,8 @@ import java.util.concurrent.TimeoutException;
 
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
-import org.springframework.ide.vscode.commons.languageserver.java.ls.JavaDataParams;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
+import org.springframework.ide.vscode.commons.protocol.java.JavaDataParams;
 
 public class JavaServerSourceLinks implements SourceLinks {
 
@@ -40,7 +40,7 @@ public class JavaServerSourceLinks implements SourceLinks {
 		bindingKey.append(';');
 		String projectUri = project == null ? null : project.getLocationUri().toString();
 		CompletableFuture<Optional<String>> link = server.getClient().javadocHoverLink(new JavaDataParams(projectUri, bindingKey.toString(), true))
-				.thenApply(response -> Optional.ofNullable(response.getLink()));
+				.thenApply(l -> Optional.ofNullable(l));
 		try {
 			return link.get(10, TimeUnit.SECONDS);
 		} catch (InterruptedException | ExecutionException | TimeoutException e) {

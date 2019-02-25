@@ -44,6 +44,11 @@
 		</dependency>
 		<!-- other -->
 		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-configuration-processor</artifactId>
+			<optional>true</optional>
+		</dependency>
+		<dependency>
 			<!-- Local modified JSON lib packaged to support order in maps -->
 			<groupId>org.springframework.ide.eclipse</groupId>
 			<artifactId>org.json</artifactId>

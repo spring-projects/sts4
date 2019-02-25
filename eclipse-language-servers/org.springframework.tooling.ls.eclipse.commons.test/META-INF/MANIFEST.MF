@@ -11,4 +11,10 @@ Require-Bundle: org.junit,
  org.springframework.tooling.ls.eclipse.commons,
  org.eclipse.jdt.core,
  org.apache.commons.io,
- org.springframework.tooling.jdt.ls.commons
+ org.springframework.tooling.jdt.ls.commons,
+ org.eclipse.lsp4j,
+ org.eclipse.m2e.core,
+ org.eclipse.m2e.maven.runtime,
+ org.eclipse.m2e.core.ui,
+ com.google.gson,
+ org.eclipse.lsp4j.jsonrpc

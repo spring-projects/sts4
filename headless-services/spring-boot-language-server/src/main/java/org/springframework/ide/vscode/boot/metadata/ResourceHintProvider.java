@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2018 Pivotal, Inc.
+ * Copyright (c) 2016, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -16,6 +16,7 @@ import java.util.stream.Collectors;
 
 import org.springframework.ide.vscode.boot.metadata.ValueProviderRegistry.ValueProviderStrategy;
 import org.springframework.ide.vscode.boot.metadata.hints.StsValueHint;
+import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 
 import com.google.common.collect.ImmutableList;
@@ -64,7 +65,7 @@ public class ResourceHintProvider implements ValueProviderStrategy {
 		@Override
 		protected Flux<StsValueHint> getValuesAsync(IJavaProject javaProject, String query) {
 			return Flux.fromStream(
-				javaProject.getClasspathResources().stream()
+				IClasspathUtil.getClasspathResources(javaProject.getClasspath()).stream()
 				.distinct().map(r -> r.replaceAll("\\\\", "/"))
 				.map(StsValueHint::create)
 			);

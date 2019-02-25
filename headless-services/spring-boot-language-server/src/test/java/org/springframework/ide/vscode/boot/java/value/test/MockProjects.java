@@ -34,8 +34,8 @@ import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver.Listener;
-import org.springframework.ide.vscode.commons.languageserver.java.ls.Classpath;
-import org.springframework.ide.vscode.commons.languageserver.java.ls.Classpath.CPE;
+import org.springframework.ide.vscode.commons.protocol.java.Classpath;
+import org.springframework.ide.vscode.commons.protocol.java.Classpath.CPE;
 import org.springframework.ide.vscode.commons.util.FileObserver;
 import org.springframework.ide.vscode.commons.util.IOUtil;
 
@@ -90,7 +90,9 @@ public class MockProjects {
 			public Collection<CPE> getClasspathEntries() throws Exception {
 				List<CPE> cp = new ArrayList<>();
 				for (File sf : sourceFolders) {
-					cp.add(new CPE(Classpath.ENTRY_KIND_SOURCE, sf.getAbsolutePath()).setOutputFolder(defaultOutputFolder.getAbsolutePath()));
+					CPE cpe = new CPE(Classpath.ENTRY_KIND_SOURCE, sf.getAbsolutePath());
+					cpe.setOutputFolder(defaultOutputFolder.getAbsolutePath());
+					cp.add(cpe);
 				}
 				return cp;
 			}

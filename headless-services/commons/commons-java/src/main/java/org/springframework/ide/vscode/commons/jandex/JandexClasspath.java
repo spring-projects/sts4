@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2018 Pivotal, Inc.
+ * Copyright (c) 2017, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,18 +11,13 @@
 package org.springframework.ide.vscode.commons.jandex;
 
 import java.io.File;
-import java.io.IOException;
-import java.net.URL;
-import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
-import java.util.Optional;
 import java.util.Queue;
 import java.util.Set;
 import java.util.function.Predicate;
-import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,14 +27,11 @@ import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaModuleData;
 import org.springframework.ide.vscode.commons.java.IType;
-import org.springframework.ide.vscode.commons.languageserver.java.ls.Classpath;
-import org.springframework.ide.vscode.commons.languageserver.java.ls.Classpath.CPE;
-import org.springframework.ide.vscode.commons.util.CollectorUtil;
+import org.springframework.ide.vscode.commons.protocol.java.Classpath;
 import org.springframework.ide.vscode.commons.util.FileObserver;
 
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
-import com.google.common.collect.ImmutableList;
 
 import reactor.core.Disposable;
 import reactor.core.Disposables;
@@ -104,23 +96,17 @@ public final class JandexClasspath implements ClasspathIndex {
 	}
 
 	@Override
-	public Optional<URL> sourceContainer(File binaryClasspathRoot) {
-		CPE cpe = IClasspathUtil.findEntryForBinaryRoot(classpath, binaryClasspathRoot);
-		return cpe == null ? Optional.empty() : Optional.ofNullable(cpe.getSourceContainerUrl());
-	}
-
-	@Override
 	public IType findType(String fqName) {
 		return javaIndex.get().findType(fqName);
 	}
 
 	@Override
-	public Flux<Tuple2<IType, Double>> fuzzySearchTypes(String searchTerm, Predicate<IType> typeFilter) {
+	public Flux<Tuple2<IType, Double>> fuzzySearchTypes(String searchTerm, boolean includeBinaries, boolean includeSystemLibs, Predicate<IType> typeFilter) {
 		return javaIndex.get().fuzzySearchTypes(searchTerm, typeFilter);
 	}
 
 	@Override
-	public Flux<Tuple2<String, Double>> fuzzySearchPackages(String searchTerm) {
+	public Flux<Tuple2<String, Double>> fuzzySearchPackages(String searchTerm, boolean includeBinaries, boolean includeSystemLibs) {
 		return javaIndex.get().fuzzySearchPackages(searchTerm);
 	}
 
@@ -149,23 +135,6 @@ public final class JandexClasspath implements ClasspathIndex {
 	private void reindex() {
 		log.info("Clearing JandexIndex for "+classpath.getName());
 		this.javaIndex = Suppliers.synchronizedSupplier(Suppliers.memoize(() -> createIndex()));
-	}
-
-	@Override
-	public ImmutableList<String> getClasspathResources() {
-		return IClasspathUtil.getSourceFolders(classpath)
-		.flatMap(folder -> {
-			try {
-				return Files.walk(folder.toPath())
-						.filter(path -> Files.isRegularFile(path))
-						.map(path -> folder.toPath().relativize(path))
-						.map(relativePath -> relativePath.toString())
-						.filter(pathString -> !pathString.endsWith(".java") && !pathString.endsWith(".class"));
-			} catch (IOException e) {
-				return Stream.empty();
-			}
-		})
-		.collect(CollectorUtil.toImmutableList());
 	}
 
 	private static void updateQueue(Queue<String> queue, Set<String> exclusion, IType type) {

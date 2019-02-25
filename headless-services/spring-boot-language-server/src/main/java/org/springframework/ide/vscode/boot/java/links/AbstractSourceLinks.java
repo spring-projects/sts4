@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.commons.java.IClasspath;
+import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaModuleData;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.javadoc.TypeUrlProviderFromContainerUrl;
@@ -117,7 +118,7 @@ public abstract class AbstractSourceLinks implements SourceLinks {
 	}
 
 	private Optional<CompilationUnit> findCUForFQNameFromJar(IJavaProject project, IJavaModuleData jarModuleData, String fqName) {
-		return project.sourceContainer(jarModuleData.getContainer()).map(url -> {
+		return IClasspathUtil.sourceContainer(project.getClasspath(), jarModuleData.getContainer()).map(url -> {
 			try {
 				return TypeUrlProviderFromContainerUrl.JAR_SOURCE_URL_PROVIDER.url(url, fqName, jarModuleData.getModule());
 			} catch (Exception e) {

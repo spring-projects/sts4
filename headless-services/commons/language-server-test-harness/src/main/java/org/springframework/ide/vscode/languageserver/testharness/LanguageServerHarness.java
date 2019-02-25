@@ -101,19 +101,19 @@ import org.eclipse.lsp4j.WorkspaceEdit;
 import org.eclipse.lsp4j.WorkspaceEditCapabilities;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.LanguageClientAware;
-import org.springframework.ide.vscode.commons.languageserver.HighlightParams;
-import org.springframework.ide.vscode.commons.languageserver.ProgressParams;
-import org.springframework.ide.vscode.commons.languageserver.STS4LanguageClient;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
-import org.springframework.ide.vscode.commons.languageserver.java.ls.ClasspathListenerParams;
-import org.springframework.ide.vscode.commons.languageserver.java.ls.JavaDataParams;
-import org.springframework.ide.vscode.commons.languageserver.java.ls.JavaTypeResponse;
-import org.springframework.ide.vscode.commons.languageserver.java.ls.JavadocHoverLinkResponse;
-import org.springframework.ide.vscode.commons.languageserver.java.ls.JavadocResponse;
-import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixEdit.CursorMovement;
 import org.springframework.ide.vscode.commons.languageserver.util.LanguageServerTestListener;
 import org.springframework.ide.vscode.commons.languageserver.util.Settings;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
+import org.springframework.ide.vscode.commons.protocol.CursorMovement;
+import org.springframework.ide.vscode.commons.protocol.HighlightParams;
+import org.springframework.ide.vscode.commons.protocol.ProgressParams;
+import org.springframework.ide.vscode.commons.protocol.STS4LanguageClient;
+import org.springframework.ide.vscode.commons.protocol.java.ClasspathListenerParams;
+import org.springframework.ide.vscode.commons.protocol.java.JavaDataParams;
+import org.springframework.ide.vscode.commons.protocol.java.JavaSearchParams;
+import org.springframework.ide.vscode.commons.protocol.java.JavaTypeHierarchyParams;
+import org.springframework.ide.vscode.commons.protocol.java.TypeData;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 import org.springframework.ide.vscode.commons.util.IOUtil;
 import org.springframework.ide.vscode.commons.util.UriUtil;
@@ -343,23 +343,43 @@ public class LanguageServerHarness {
 				}
 
 				@Override
-				public CompletableFuture<JavadocResponse> javadoc(JavaDataParams params) {
-					return CompletableFuture.completedFuture(new JavadocResponse());
+				public CompletableFuture<MarkupContent> javadoc(JavaDataParams params) {
+					return CompletableFuture.completedFuture(null);
 				}
 
 				@Override
-				public CompletableFuture<JavaTypeResponse> javaType(JavaDataParams params) {
-					return CompletableFuture.completedFuture(new JavaTypeResponse(null));
+				public CompletableFuture<TypeData> javaType(JavaDataParams params) {
+					return CompletableFuture.completedFuture(null);
 				}
 
 				@Override
-				public CompletableFuture<JavadocHoverLinkResponse> javadocHoverLink(JavaDataParams params) {
-					return CompletableFuture.completedFuture(new JavadocHoverLinkResponse(null));
+				public CompletableFuture<String> javadocHoverLink(JavaDataParams params) {
+					return CompletableFuture.completedFuture(null);
 				}
 
 				@Override
 				public CompletableFuture<Location> javaLocation(JavaDataParams params) {
 					return CompletableFuture.completedFuture(null);
+				}
+
+				@Override
+				public CompletableFuture<List<TypeData>> javaSearchTypes(JavaSearchParams params) {
+					return CompletableFuture.completedFuture(Collections.emptyList());
+				}
+
+				@Override
+				public CompletableFuture<List<String>> javaSearchPackages(JavaSearchParams params) {
+					return CompletableFuture.completedFuture(Collections.emptyList());
+				}
+
+				@Override
+				public CompletableFuture<List<TypeData>> javaSubTypes(JavaTypeHierarchyParams params) {
+					return CompletableFuture.completedFuture(Collections.emptyList());
+				}
+
+				@Override
+				public CompletableFuture<List<TypeData>> javaSuperTypes(JavaTypeHierarchyParams params) {
+					return CompletableFuture.completedFuture(Collections.emptyList());
 				}
 
 			});

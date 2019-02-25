@@ -40,11 +40,11 @@ import org.springframework.ide.vscode.commons.languageserver.java.CompositeProje
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.JavadocService;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
-import org.springframework.ide.vscode.commons.languageserver.java.ls.Classpath.CPE;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.maven.MavenCore;
 import org.springframework.ide.vscode.commons.maven.java.MavenProjectCache;
 import org.springframework.ide.vscode.commons.maven.java.MavenProjectFinder;
+import org.springframework.ide.vscode.commons.protocol.java.Classpath.CPE;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.FileObserver;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
@@ -87,11 +87,11 @@ public class BootLanguageServerParams {
 		this.watchDogInterval = watchDogInterval;
 	}
 
-	public static BootLanguageServerParams createDefault(SimpleLanguageServer server, ValueProviderRegistry valueProviders) {
+	public static BootLanguageServerParams createDefault(SimpleLanguageServer server, ValueProviderRegistry valueProviders, boolean isJandexIndex) {
 		// Initialize project finders, project caches and project observers
 		JavaProjectsService jdtProjectCache = new JavaProjectsServiceWithFallback(
 				server,
-				new JdtLsProjectCache(server),
+				new JdtLsProjectCache(server, isJandexIndex),
 				() -> createFallbackProjectCache(server)
 		);
 

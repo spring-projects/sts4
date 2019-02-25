@@ -18,6 +18,7 @@
 
 	<modules>
 		<module>commons-language-server</module>
+		<module>commons-lsp-extensions</module>
 		<module>language-server-test-harness</module>
 		<module>commons-yaml</module>
 		<module>commons-util</module>

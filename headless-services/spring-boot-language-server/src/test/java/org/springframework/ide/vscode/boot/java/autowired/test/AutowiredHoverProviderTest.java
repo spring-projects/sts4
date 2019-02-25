@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2018 Pivotal, Inc.
+ * Copyright (c) 2017, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -142,7 +142,7 @@ public class AutowiredHoverProviderTest {
 	@Before
 	public void setup() throws Exception {
 		MavenJavaProject jp =  projects.mavenProject("empty-boot-15-web-app", FOO_INTERFACE);
-		assertTrue(jp.findType("com.example.Foo").exists());
+		assertTrue(jp.getIndex().findType("com.example.Foo").exists());
 		harness.useProject(jp);
 		harness.intialize(null);
 	}

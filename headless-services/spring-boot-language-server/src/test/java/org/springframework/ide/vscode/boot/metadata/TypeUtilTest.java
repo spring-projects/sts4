@@ -68,8 +68,8 @@ public class TypeUtilTest {
 	@Test
 	public void testGetProperties() throws Exception {
 		useProject("enums-boot-1.3.2-app");
-		assertNotNull(project.findType("demo.Color"));
-		assertNotNull(project.findType("demo.ColorData"));
+		assertNotNull(project.getIndex().findType("demo.Color"));
+		assertNotNull(project.getIndex().findType("demo.ColorData"));
 
 
 		Type data = TypeParser.parse("demo.ColorData");
