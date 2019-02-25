@@ -15,6 +15,7 @@
 		<module>concourse-language-server</module>
 		<module>spring-boot-language-server</module>
 		<module>bosh-language-server</module>
+		<module>jdt-ls-extension</module>
 	</modules>
 
 </project>
