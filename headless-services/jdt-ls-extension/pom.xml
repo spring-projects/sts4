@@ -1,7 +1,7 @@
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
-                             http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="https://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="https://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="https://maven.apache.org/POM/4.0.0
+                             https://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>org.springframework.tooling</groupId>
@@ -9,6 +9,40 @@
 	<packaging>pom</packaging>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>jdt-ls-extension-parent</name>
+
+	<organization>
+		<name>Pivotal Software, Inc.</name>
+		<url>https://spring.io</url>
+	</organization>
+	<url>https://spring.io/tools</url>
+	<inceptionYear>2007</inceptionYear>
+
+	<prerequisites>
+		<maven>3.0</maven>
+	</prerequisites>
+
+	<licenses>
+		<license>
+			<name>Eclipse Public License v1.0</name>
+			<url>https://www.eclipse.org/legal/epl-v10.html</url>
+		</license>
+	</licenses>
+
+	<scm>
+		<connection>https://github.com/spring-projects/sts4.git</connection>
+		<tag>HEAD</tag>
+		<url>https://github.com/spring-projects/sts4/</url>
+	</scm>
+
+	<issueManagement>
+		<url>https://github.com/spring-projects/sts4/issues</url>
+		<system>GitHub</system>
+	</issueManagement>
+
+	<ciManagement>
+		<url>https://build.spring.io/browse/IDE</url>
+		<system>BAMBOO</system>
+	</ciManagement>
 
 	<modules>
 		<module>org.springframework.tooling.jdt.ls.extension</module>
@@ -39,19 +73,19 @@
 		<repository>
 			<id>eclipse-photon</id>
 			<layout>p2</layout>
-			<url>http://download.eclipse.org/releases/photon</url>
+			<url>https://download.eclipse.org/releases/photon</url>
 		</repository>
 		<repository>
 			<id>JDT.LS</id>
 			<layout>p2</layout>
 			<!-- <url>${jdt.ls.updatesite}</url> -->
-			<url>http://download.eclipse.org/jdtls/snapshots/repository/latest/</url>
+			<url>https://download.eclipse.org/jdtls/snapshots/repository/latest/</url>
 		</repository>
 		<repository>
 			<id>jboss-apt</id>
 			<layout>p2</layout>
 			<!--URL copied from jdt.ls target platform file, needed to satisfy some of its dependencies -->
-			<url>http://download.jboss.org/jbosstools/updates/m2e-extensions/m2e-apt/1.5.0-2018-08-14_20-24-39-H12/</url>
+			<url>https://download.jboss.org/jbosstools/updates/m2e-extensions/m2e-apt/1.5.0-2018-08-14_20-24-39-H12/</url>
 		</repository>
 	</repositories>
 	<build>
