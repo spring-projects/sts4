@@ -22,16 +22,16 @@ echo "vscode_bosh=$vscode_bosh"
 envsubst > "$target/vscode-extensions-snippet.html" << XXXXXX
 <ul>
    <li>Spring Boot Language Server: 
-       <a href="http://s3-test.spring.io/sts4/vscode-extensions/${dist_type}s/${vscode_spring_boot}">${vscode_spring_boot}</a> 
+       <a href="https://s3-us-west-1.amazonaws.com/s3-test.spring.io/sts4/vscode-extensions/${dist_type}s/${vscode_spring_boot}">${vscode_spring_boot}</a> 
    </li>
    <li>Cloud Foundry Manifest Language Server: 
-       <a href="http://s3-test.spring.io/sts4/vscode-extensions/${dist_type}s/${vscode_manifest_yaml}">${vscode_manifest_yaml}</a> 
+       <a href="https://s3-us-west-1.amazonaws.com/s3-test.spring.io/sts4/vscode-extensions/${dist_type}s/${vscode_manifest_yaml}">${vscode_manifest_yaml}</a> 
    </li>
    <li>Concourse CI Language Server: 
-       <a href="http://s3-test.spring.io/sts4/vscode-extensions/${dist_type}s/${vscode_concourse}">${vscode_concourse}</a> 
+       <a href="https://s3-us-west-1.amazonaws.com/s3-test.spring.io/sts4/vscode-extensions/${dist_type}s/${vscode_concourse}">${vscode_concourse}</a> 
    </li>
    <li>Bosh Language Server: 
-       <a href="http://s3-test.spring.io/sts4/vscode-extensions/${dist_type}s/${vscode_bosh}">${vscode_bosh}</a> 
+       <a href="https://s3-us-west-1.amazonaws.com/s3-test.spring.io/sts4/vscode-extensions/${dist_type}s/${vscode_bosh}">${vscode_bosh}</a> 
    </li>
 </ul>
 XXXXXX
