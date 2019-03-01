@@ -22,13 +22,11 @@
 			<id>${project.name}-repo</id>
 			<url>file://${project.basedir}/repo</url>
 		</repository>
- 
+
 		<repository>
 			<id>oss-jfrog-snapshots</id>
 			<url>https://oss.jfrog.org/artifactory/libs-snapshot</url>
-<!--			<releases>
-				<enabled>false</enabled>
-			</releases> -->
+			<!-- <releases> <enabled>false</enabled> </releases> -->
 			<snapshots>
 				<enabled>true</enabled>
 			</snapshots>
@@ -172,82 +170,107 @@
 			</plugin>
 
 			<!-- generate and package license information for included dependencies -->
-	        <plugin>
-	          <groupId>org.codehaus.mojo</groupId>
-	          <artifactId>license-maven-plugin</artifactId>
-	          <version>1.17</version>
-	          <executions>
-	            <execution>
-	              <id>download-licenses</id>
-	              <phase>process-classes</phase>
-	              <goals>
-	                <goal>download-licenses</goal>
-	              </goals>
-	            </execution>
-	          </executions>
-	        </plugin>
-			
-	        <plugin>
-	           <groupId>org.codehaus.mojo</groupId>
-	           <artifactId>xml-maven-plugin</artifactId>
-	           <executions>
-	             <execution>
-   	              <phase>process-classes</phase>
-	               <goals>
-	                 <goal>transform</goal>
-	               </goals>
-	             </execution>
-	           </executions>
-	           <configuration>
-	             <transformationSets>
-	               <transformationSet>
-	                 <dir>${basedir}/target/generated-resources/</dir>
-					 <includes>*.xml</includes>
-	                 <stylesheet>${basedir}/license-format-stylesheet.xsl</stylesheet>
-					 <outputDir>${project.build.directory}/generated-license-information</outputDir>
-	               </transformationSet>
-	             </transformationSets>
-	           </configuration>
-	         </plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>license-maven-plugin</artifactId>
+				<version>1.17</version>
+				<executions>
+					<execution>
+						<id>download-licenses</id>
+						<phase>process-classes</phase>
+						<goals>
+							<goal>download-licenses</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 
-	        <plugin>
-	          <artifactId>maven-resources-plugin</artifactId>
-	          <executions>
-	            <execution>
-	              <id>copy-license-summary</id>
-	              <phase>process-classes</phase>
-	              <goals>
-	                <goal>copy-resources</goal>
-	              </goals>
-	              <configuration>
-	                <outputDirectory>${project.build.outputDirectory}/META-INF/</outputDirectory>
-	                <resources>          
-	                  <resource>
-	                    <directory>${basedir}/target/generated-license-information/</directory>
-	                    <filtering>false</filtering>
-	                  </resource>
-	                </resources>              
-	              </configuration>            
-	            </execution>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>xml-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<phase>process-classes</phase>
+						<goals>
+							<goal>transform</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<transformationSets>
+						<transformationSet>
+							<dir>${basedir}/target/generated-resources/</dir>
+							<includes>*.xml</includes>
+							<stylesheet>${basedir}/license-format-stylesheet.xsl</stylesheet>
+							<outputDir>${project.build.directory}/generated-license-information</outputDir>
+						</transformationSet>
+					</transformationSets>
+				</configuration>
+			</plugin>
 
-	            <execution>
-	              <id>copy-license-files</id>
-	              <phase>process-classes</phase>
-	              <goals>
-	                <goal>copy-resources</goal>
-	              </goals>
-	              <configuration>
-	                <outputDirectory>${project.build.outputDirectory}/META-INF/licenses/</outputDirectory>
-	                <resources>          
-	                  <resource>
-	                    <directory>${basedir}/target/generated-resources/licenses</directory>
-	                    <filtering>false</filtering>
-	                  </resource>
-	                </resources>              
-	              </configuration>            
-	            </execution>
-	          </executions>
-	        </plugin>
+			<plugin>
+				<artifactId>maven-resources-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy-own-license</id>
+						<phase>process-classes</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.outputDirectory}</outputDirectory>
+							<resources>
+								<resource>
+									<directory>${basedir}</directory>
+									<filtering>true</filtering>
+									<include>LICENSE</include>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>com.coderplus.maven.plugins</groupId>
+				<artifactId>copy-rename-maven-plugin</artifactId>
+				<version>1.0</version>
+				<executions>
+					<execution>
+						<id>copy-and-rename-license-summary</id>
+						<phase>process-classes</phase>
+						<goals>
+							<goal>copy</goal>
+						</goals>
+						<configuration>
+							<sourceFile>${project.build.directory}/generated-license-information/licenses.xml</sourceFile>
+							<destinationFile>${project.build.outputDirectory}/META-INF/third-party-open-source-licenses.txt</destinationFile>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<artifactId>maven-resources-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy-license-files</id>
+						<phase>process-classes</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.outputDirectory}/META-INF/third-party-open-source-licenses/</outputDirectory>
+							<resources>
+								<resource>
+									<directory>${project.build.directory}/generated-resources/licenses</directory>
+									<filtering>false</filtering>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
 
 		</plugins>
 	</build>

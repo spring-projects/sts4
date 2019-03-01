@@ -1,6 +1,6 @@
 
 The content of this package is provided under the EPL v1.0 license (see below).
-For a detailed overview of embedded third-party components and their OSS licenses, please take a look at: https://github.com/spring-projects/sts4/blob/master/headless-services/spring-boot-language-server/open-source-licenses.txt
+For a detailed overview of embedded third-party components and their OSS licenses, please take a look at META-INF/third-party-open-source-licenses.txt for a list of libraries and META-INF/third-party-open-source-licenses/ for the licenses themselves.
 
 ===
 
