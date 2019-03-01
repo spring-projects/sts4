@@ -55,6 +55,25 @@
 							<overWriteSnapshots>true</overWriteSnapshots>
 						</configuration>
 					</execution>
+					
+					<execution>
+						<id>unpack</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>unpack</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>org.springframework.ide.vscode</groupId>
+									<artifactId>concourse-language-server</artifactId>
+									<!-- <includes>META-INF/third-party-open-source-licenses*</includes> -->
+								</artifactItem>
+							</artifactItems>
+							<includes>META-INF/third-party-open-source-licenses.txt,META-INF/third-party-open-source-licenses/**.*</includes>
+							<outputDirectory>${project.build.directory}/../</outputDirectory>
+						</configuration>
+					</execution>
 				</executions>
 			</plugin>
 		</plugins>

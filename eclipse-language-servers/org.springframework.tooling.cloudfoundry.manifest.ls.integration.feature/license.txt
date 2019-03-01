@@ -1,5 +1,4 @@
 The content of this package is provided under the EPL v1.0 license (see below).
-For a detailed overview of embedded third-party components and their OSS licenses, please take a look at: https://github.com/spring-projects/sts4/blob/master/headless-services/manifest-yaml-language-server/open-source-licenses.txt
 
 ===
 

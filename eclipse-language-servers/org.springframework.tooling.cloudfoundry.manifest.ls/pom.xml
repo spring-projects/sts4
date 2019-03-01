@@ -28,7 +28,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
-				<version>2.10</version>
+				<version>3.1.1</version>
 				<executions>
 					<execution>
 						<id>copy</id>
@@ -47,6 +47,25 @@
 							</artifactItems>
 							<overWriteReleases>true</overWriteReleases>
 							<overWriteSnapshots>true</overWriteSnapshots>
+						</configuration>
+					</execution>
+
+					<execution>
+						<id>unpack</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>unpack</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>org.springframework.ide.vscode</groupId>
+									<artifactId>manifest-yaml-language-server</artifactId>
+									<!-- <includes>META-INF/third-party-open-source-licenses*</includes> -->
+								</artifactItem>
+							</artifactItems>
+							<includes>META-INF/third-party-open-source-licenses.txt,META-INF/third-party-open-source-licenses/**.*</includes>
+							<outputDirectory>${project.build.directory}/../</outputDirectory>
 						</configuration>
 					</execution>
 				</executions>
