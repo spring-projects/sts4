@@ -19,6 +19,7 @@ import java.util.stream.Stream;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.ArrayInitializer;
+import org.eclipse.jdt.core.dom.BooleanLiteral;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MemberValuePair;
@@ -176,9 +177,17 @@ public class ASTUtils {
 		}
 	}
 
+	public static String getLiteralValue(BooleanLiteral node) {
+		synchronized (node.getAST()) {
+			return Boolean.toString(node.booleanValue());
+		}
+	}
+
 	public static String getExpressionValueAsString(Expression exp) {
 		if (exp instanceof StringLiteral) {
 			return getLiteralValue((StringLiteral) exp);
+		} else if (exp instanceof BooleanLiteral) {
+			return getLiteralValue((BooleanLiteral) exp);
 		} else if (exp instanceof QualifiedName) {
 			return getExpressionValueAsString(((QualifiedName) exp).getName());
 		} else if (exp instanceof SimpleName) {

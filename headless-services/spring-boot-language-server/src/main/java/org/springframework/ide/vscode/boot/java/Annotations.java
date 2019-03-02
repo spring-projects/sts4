@@ -25,6 +25,7 @@ public class Annotations {
 
 	public static final String AUTOWIRED = "org.springframework.beans.factory.annotation.Autowired";
 	public static final String INJECT = "javax.inject.Inject";
+	public static final String RESOURCE = "javax.annotation.Resource";
 
 	public static final String QUALIFIER = "org.springframework.beans.factory.annotation.Qualifier";
 
