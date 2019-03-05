@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Pivotal, Inc.
+ * Copyright (c) 2018, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -19,12 +19,13 @@ import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.SymbolKind;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.beans.BeanUtils;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
-import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
@@ -38,6 +39,8 @@ import reactor.util.function.Tuples;
  */
 public class DataRepositorySymbolProvider implements SymbolProvider {
 
+	private static final Logger log = LoggerFactory.getLogger(DataRepositorySymbolProvider.class);
+
 	@Override
 	public Collection<EnhancedSymbolInformation> getSymbols(TypeDeclaration typeDeclaration, TextDocument doc) {
 		// this checks spring data repository beans that are defined as extensions of the repository interface
@@ -50,7 +53,7 @@ public class DataRepositorySymbolProvider implements SymbolProvider {
 						new Location(doc.getUri(), doc.toRange(repositoryBean.getT4())));
 				return ImmutableList.of(new EnhancedSymbolInformation(symbol, null));
 			} catch (BadLocationException e) {
-				Log.log(e);
+				log.error("error creating data repository symbol for a specific range", e);
 			}
 		}
 		return ImmutableList.of();
