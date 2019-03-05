@@ -55,7 +55,6 @@ import org.springframework.ide.vscode.commons.util.StringUtil;
 public class SpringSymbolIndex {
 
 	private static final String QUERY_PARAM_LOCATION_PREFIX = "locationPrefix:";
-
 	private static final int MAX_NUMBER_OF_SYMBOLS_IN_RESPONSE = 50;
 
 	private final SimpleLanguageServer server;
@@ -73,6 +72,7 @@ public class SpringSymbolIndex {
 
 	private final ExecutorService updateQueue;
 	private SpringIndexer[] indexer;
+	private SymbolCache cache;
 
 	private static final Logger log = LoggerFactory.getLogger(SpringSymbolIndex.class);
 
@@ -124,6 +124,19 @@ public class SpringSymbolIndex {
 		this.addonInformationByDoc = new ConcurrentHashMap<>();
 		this.addonInformationByProject = new ConcurrentHashMap<>();
 
+		if ("true".equals(System.getProperty("boot.ls.symbolCache.enabled", "true"))) {
+			try {
+				this.cache = new SymbolCacheOnDisc();
+			}
+			catch (Exception e) {
+				log.warn("symbol cache directory could not be created, no cache enabled");
+			}
+		}
+
+		if (this.cache == null) {
+			this.cache = new SymbolCacheVoid();
+		}
+
 		SymbolHandler handler = new SymbolHandler() {
 			@Override
 			public void addSymbol(IJavaProject project, String docURI, EnhancedSymbolInformation enhancedSymbol) {
@@ -133,8 +146,8 @@ public class SpringSymbolIndex {
 
 		Map<String, SpringIndexerXMLNamespaceHandler> namespaceHandler = new HashMap<>();
 		namespaceHandler.put("http://www.springframework.org/schema/beans", new SpringIndexerXMLNamespaceHandlerBeans());
-		springIndexerXML = new SpringIndexerXML(handler, namespaceHandler);
-		springIndexerJava = new SpringIndexerJava(handler, specificProviders);
+		springIndexerXML = new SpringIndexerXML(handler, namespaceHandler, this.cache);
+		springIndexerJava = new SpringIndexerJava(handler, specificProviders, this.cache);
 
 		this.indexer = new SpringIndexer[] {springIndexerJava};
 
@@ -248,7 +261,7 @@ public class SpringSymbolIndex {
 				log.debug("Project with NULL name is being removed");
 				return CompletableFuture.completedFuture(null);
 			} else {
-				DeleteProject initializeItem = new DeleteProject(project);
+				DeleteProject initializeItem = new DeleteProject(project, this.indexer);
 				return CompletableFuture.runAsync(initializeItem, this.updateQueue);
 			}
 		} catch (Throwable  e) {
@@ -267,8 +280,11 @@ public class SpringSymbolIndex {
 
 					if (maybeProject.isPresent()) {
 						try {
-							String content = FileUtils.readFileToString(new File(new URI(docURI)));
-							UpdateItem updateItem = new UpdateItem(maybeProject.get(), docURI, content, indexer);
+							File file = new File(new URI(docURI));
+							long lastModified = file.lastModified();
+							String content = FileUtils.readFileToString(file);
+
+							UpdateItem updateItem = new UpdateItem(maybeProject.get(), docURI, lastModified, content, indexer);
 							futures.add(CompletableFuture.runAsync(updateItem, this.updateQueue));
 						}
 						catch (Exception e) {
@@ -292,11 +308,14 @@ public class SpringSymbolIndex {
 					Optional<IJavaProject> maybeProject = projectFinder.find(new TextDocumentIdentifier(docURI));
 					if (maybeProject.isPresent()) {
 						try {
+							File file = new File(new URI(docURI));
+							long lastModified = file.lastModified();
+
 							if (content == null) {
-								content = FileUtils.readFileToString(new File(new URI(docURI)));
+								content = FileUtils.readFileToString(file);
 							}
 
-							UpdateItem updateItem = new UpdateItem(maybeProject.get(), docURI, content, indexer);
+							UpdateItem updateItem = new UpdateItem(maybeProject.get(), docURI, lastModified, content, indexer);
 							futures.add(CompletableFuture.runAsync(updateItem, this.updateQueue));
 						}
 						catch (Exception e) {
@@ -314,7 +333,7 @@ public class SpringSymbolIndex {
 			try {
 				Optional<IJavaProject> maybeProject = projectFinder.find(new TextDocumentIdentifier(deletedDocURI));
 				if (maybeProject.isPresent()) {
-					DeleteItem deleteItem = new DeleteItem(maybeProject.get(), deletedDocURI);
+					DeleteItem deleteItem = new DeleteItem(maybeProject.get(), deletedDocURI, this.indexer);
 					return CompletableFuture.runAsync(deleteItem, this.updateQueue);
 				}
 			}
@@ -459,10 +478,12 @@ public class SpringSymbolIndex {
 		private final String content;
 		private final IJavaProject project;
 		private final SpringIndexer indexer;
+		private final long lastModified;
 
-		public UpdateItem(IJavaProject project, String docURI, String content, SpringIndexer indexer) {
+		public UpdateItem(IJavaProject project, String docURI, long lastModified, String content, SpringIndexer indexer) {
 			this.project = project;
 			this.docURI = docURI;
+			this.lastModified = lastModified;
 			this.content = content;
 			this.indexer = indexer;
 		}
@@ -471,7 +492,7 @@ public class SpringSymbolIndex {
 		public void run() {
 			try {
 				removeSymbolsByDoc(project, docURI);
-				indexer.updateFile(project, docURI, content);
+				indexer.updateFile(project, docURI, lastModified, content);
 			} catch (Exception e) {
 				log.error("{}", e);
 			}
@@ -481,17 +502,22 @@ public class SpringSymbolIndex {
 	private class DeleteItem implements Runnable {
 
 		private final String docURI;
-		private IJavaProject project;
+		private final IJavaProject project;
+		private final SpringIndexer[] indexer;
 
-		public DeleteItem(IJavaProject project, String docURI) {
+		public DeleteItem(IJavaProject project, String docURI, SpringIndexer[] indexer) {
 			this.project = project;
 			this.docURI = docURI;
+			this.indexer = indexer;
 		}
 
 		@Override
 		public void run() {
 			try {
 				removeSymbolsByDoc(project, docURI);
+				for (SpringIndexer index : this.indexer) {
+					index.removeFile(project, docURI);
+				}
 			} catch (Exception e) {
 				log.error("{}", e);
 			}
@@ -501,9 +527,11 @@ public class SpringSymbolIndex {
 	private class DeleteProject implements Runnable {
 
 		private final IJavaProject project;
+		private final SpringIndexer[] indexer;
 
-		public DeleteProject(IJavaProject project) {
+		public DeleteProject(IJavaProject project, SpringIndexer[] indexer) {
 			this.project = project;
+			this.indexer = indexer;
 			log.debug("{} created ", this);
 		}
 
@@ -512,6 +540,9 @@ public class SpringSymbolIndex {
 			log.debug("{} starting...", this);
 			try {
 				removeSymbolsByProject(project);
+				for (SpringIndexer index : this.indexer) {
+					index.removeProject(project);
+				}
 				log.debug("{} completed", this);
 			} catch (Throwable e) {
 				log.error("{} threw exception", this, e);

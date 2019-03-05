@@ -1,0 +1,39 @@
+/*******************************************************************************
+ * Copyright (c) 2019 Pivotal, Inc.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     Pivotal, Inc. - initial API and implementation
+ *******************************************************************************/
+package org.springframework.ide.vscode.boot.java.utils;
+
+import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
+
+public class CachedSymbol {
+
+	private final String docURI;
+	private final long lastModified;
+	private final EnhancedSymbolInformation enhancedSymbol;
+
+	public CachedSymbol(String docURI, long lastModified, EnhancedSymbolInformation enhancedSymbol) {
+		this.docURI = docURI;
+		this.lastModified = lastModified;
+		this.enhancedSymbol = enhancedSymbol;
+	}
+
+	public EnhancedSymbolInformation getEnhancedSymbol() {
+		return enhancedSymbol;
+	}
+
+	public String getDocURI() {
+		return docURI;
+	}
+
+	public long getLastModified() {
+		return lastModified;
+	}
+
+}

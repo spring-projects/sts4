@@ -3,28 +3,26 @@
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-v10.html
+ * http://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.utils;
 
-import org.springframework.ide.vscode.commons.java.IJavaProject;
+import java.util.List;
 
 /**
  * @author Martin Lippert
  */
-public interface SpringIndexer {
+public interface SymbolCache {
 
-	String[] getFileWatchPatterns();
-	boolean isInterestedIn(String docURI);
+	void store(SymbolCacheKey cacheKey, String[] files, List<CachedSymbol> generatedSymbols);
+	CachedSymbol[] retrieve(SymbolCacheKey cacheKey, String[] files);
 
-	void initializeProject(IJavaProject project) throws Exception;
-	void removeProject(IJavaProject project) throws Exception;
+	void update(SymbolCacheKey cacheKey, String file, long lastModified, List<CachedSymbol> generatedSymbols);
 
-	void updateFile(IJavaProject project, String docURI, long lastModified, String content) throws Exception;
-	void removeFile(IJavaProject project, String docURI) throws Exception;
-
+	void remove(SymbolCacheKey cacheKey);
+	void removeFile(SymbolCacheKey symbolCacheKey, String file);
 
 }
