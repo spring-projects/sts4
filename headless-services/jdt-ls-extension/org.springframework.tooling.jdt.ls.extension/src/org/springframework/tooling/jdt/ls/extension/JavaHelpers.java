@@ -13,7 +13,7 @@ package org.springframework.tooling.jdt.ls.extension;
 import org.eclipse.jdt.ls.core.internal.HoverInfoProvider;
 import org.springframework.tooling.jdt.ls.commons.Logger;
 import org.springframework.tooling.jdt.ls.commons.java.JavaData;
-import org.springframework.tooling.jdt.ls.commons.java.JavaSearch;
+import org.springframework.tooling.jdt.ls.commons.java.JavaFluxSearch;
 import org.springframework.tooling.jdt.ls.commons.java.TypeHierarchy;
 
 import com.google.common.base.Supplier;
@@ -26,7 +26,7 @@ public class JavaHelpers {
 	
 	final public static Supplier<JavaData> DATA = Suppliers.memoize(() -> new JavaData(element -> HoverInfoProvider.computeSignature(element).getValue(), logger));
 	
-	final public static Supplier<JavaSearch> SEARCH = Suppliers.memoize(() -> new JavaSearch(logger));
+	final public static Supplier<JavaFluxSearch> SEARCH = Suppliers.memoize(() -> new JavaFluxSearch(logger));
 	
 	final public static Supplier<TypeHierarchy> HIERARCHY = Suppliers.memoize(() -> new TypeHierarchy(logger, DATA.get()));
 

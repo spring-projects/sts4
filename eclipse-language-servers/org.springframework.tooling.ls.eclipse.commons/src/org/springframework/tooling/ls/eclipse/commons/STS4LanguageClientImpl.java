@@ -75,7 +75,7 @@ import org.springframework.ide.vscode.commons.protocol.java.TypeData;
 import org.springframework.tooling.jdt.ls.commons.Logger;
 import org.springframework.tooling.jdt.ls.commons.classpath.ReusableClasspathListenerHandler;
 import org.springframework.tooling.jdt.ls.commons.java.JavaData;
-import org.springframework.tooling.jdt.ls.commons.java.JavaSearch;
+import org.springframework.tooling.jdt.ls.commons.java.JavaFluxSearch;
 import org.springframework.tooling.jdt.ls.commons.java.TypeHierarchy;
 import org.springframework.tooling.jdt.ls.commons.javadoc.JavadocUtils;
 import org.springframework.tooling.jdt.ls.commons.resources.ResourceUtils;
@@ -126,7 +126,7 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 
 	final private JavaData javaData = new JavaData(STS4LanguageClientImpl::label , Logger.forEclipsePlugin(LanguageServerCommonsActivator::getInstance));
 
-	final private JavaSearch javaSearch = new JavaSearch(Logger.forEclipsePlugin(LanguageServerCommonsActivator::getInstance));
+	final private JavaFluxSearch javaFluxSearch = new JavaFluxSearch(Logger.forEclipsePlugin(LanguageServerCommonsActivator::getInstance));
 
 	final private TypeHierarchy typeHierarchy = new TypeHierarchy(Logger.forEclipsePlugin(LanguageServerCommonsActivator::getInstance), javaData);
 
@@ -443,11 +443,11 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 	public CompletableFuture<List<String>> javaSearchTypes(JavaSearchParams params) {
 		return CompletableFuture.supplyAsync(() -> {
 			try {
-				return javaSearch.fuzzySearchTypes(URI.create(params.getProjectUri()), params.getTerm(),
-						params.isIncludeBinaries(), params.isIncludeSystemLibs()).collect(Collectors.toList());
+				List<String> types = javaFluxSearch.fuzzySearchTypes(params);
+				return types;
 			} catch (Exception e) {
-				LanguageServerCommonsActivator.logError(e,
-						"Failed to search type with term '" + params.getTerm() + "' in project " + params.getProjectUri());
+				LanguageServerCommonsActivator.logError(e, "Failed to search type with term '" + params.getTerm()
+						+ "' in project " + params.getProjectUri());
 				return Collections.emptyList();
 			}
 		});
@@ -457,10 +457,10 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 	public CompletableFuture<List<String>> javaSearchPackages(JavaSearchParams params) {
 		return CompletableFuture.supplyAsync(() -> {
 			try {
-				return javaSearch.fuzzySearchPackages(URI.create(params.getProjectUri()), params.getTerm(),
-						params.isIncludeBinaries(), params.isIncludeSystemLibs()).collect(Collectors.toList());
+				return javaFluxSearch.fuzzySearchPackages(params);
 			} catch (Exception e) {
-				LanguageServerCommonsActivator.logError(e, "Failed to search package with term '" + params.getTerm() +"' in project " + params.getProjectUri());
+				LanguageServerCommonsActivator.logError(e, "Failed to search package with term '" + params.getTerm()
+						+ "' in project " + params.getProjectUri());
 				return Collections.emptyList();
 			}
 		});

@@ -10,30 +10,27 @@
  *******************************************************************************/
 package org.springframework.tooling.jdt.ls.extension;
 
-import java.net.URI;
 import java.util.List;
-import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.ls.core.internal.IDelegateCommandHandler;
+import org.springframework.ide.vscode.commons.protocol.java.JavaSearchParams;
+
+import com.google.gson.Gson;
 
 @SuppressWarnings("restriction")
 public class SearchHandler implements IDelegateCommandHandler {
+	
+	private Gson gson = new Gson();
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public Object executeCommand(String commandId, List<Object> arguments, IProgressMonitor monitor) throws Exception {
-		Map<String, Object> obj = (Map<String, Object>) arguments.get(0);
-		String projectUri = (String) obj.get("projectUri");
-		String term = (String) obj.get("term");
-		Boolean includeBinaries = (Boolean) obj.get("includeBinaries"); 
-		Boolean includeSystemLibs = (Boolean) obj.get("includeSystemLibs");
+		JavaSearchParams params = gson.fromJson(gson.toJson(arguments.get(0)), JavaSearchParams.class);
 		switch (commandId) {
 		case "sts.java.search.types":
-			return JavaHelpers.SEARCH.get().fuzzySearchTypes(URI.create(projectUri), term, includeBinaries, includeSystemLibs).collect(Collectors.toList());
+			return JavaHelpers.SEARCH.get().fuzzySearchTypes(params);
 		case "sts.java.search.packages":
-			return JavaHelpers.SEARCH.get().fuzzySearchPackages(URI.create(projectUri), term, includeBinaries, includeSystemLibs).collect(Collectors.toList());
+			return JavaHelpers.SEARCH.get().fuzzySearchPackages(params);
 		default:
 			return null;
 		}

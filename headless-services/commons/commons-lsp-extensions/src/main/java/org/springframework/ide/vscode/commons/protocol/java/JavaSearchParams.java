@@ -16,19 +16,25 @@ public class JavaSearchParams {
 	private String term;
 	private boolean includeBinaries;
 	private boolean includeSystemLibs;
+	private long timeLimit = -1;
 	
 	public JavaSearchParams(String projectUri, String term) {
 		this(projectUri, term, true, false);
 	}
 
-	public JavaSearchParams(String projectUri, String term, boolean includeBinaries, boolean includeSystemLibs) {
+	public JavaSearchParams(String projectUri, String term, boolean includeBinaries, boolean includeSystemLibs, long timeLimit) {
 		super();
 		this.projectUri = projectUri;
 		this.term = term;
 		this.includeBinaries = includeBinaries;
 		this.includeSystemLibs = includeSystemLibs;
+		this.setTimeLimit(timeLimit);
 	}
 
+	public JavaSearchParams(String projectUri, String term, boolean includeBinaries, boolean includeSystemLibs) {
+		this(projectUri, term, includeBinaries, includeSystemLibs, -1);
+	}
+	
 	public String getProjectUri() {
 		return projectUri;
 	}
@@ -61,5 +67,12 @@ public class JavaSearchParams {
 		this.includeSystemLibs = includeSystemLibs;
 	}
 
-	
+	public long getTimeLimit() {
+		return timeLimit;
+	}
+
+	public void setTimeLimit(long timeLimit) {
+		this.timeLimit = timeLimit;
+	}
+
 }

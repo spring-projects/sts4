@@ -32,6 +32,8 @@
   ],
   "contributes": {
     "javaExtensions": [
+      "./jars/io.projectreactor.reactor-core.jar",
+      "./jars/org.reactivestreams.reactive-streams.jar",
       "./jars/jdt-ls-commons.jar",
       "./jars/jdt-ls-extension.jar"
     ],

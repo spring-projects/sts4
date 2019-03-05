@@ -43,6 +43,8 @@ import reactor.util.function.Tuples;
 
 public class JdtLsIndex implements ClasspathIndex {
 
+	private static final long SEARCH_TIMEOUT = 700;
+
 	private static final Logger log = LoggerFactory.getLogger(JdtLsIndex.class);
 
 	private final STS4LanguageClient client;
@@ -90,7 +92,7 @@ public class JdtLsIndex implements ClasspathIndex {
 
 	@Override
 	public Flux<Tuple2<String, Double>> fuzzySearchTypes(String searchTerm, boolean includeBinaries, boolean includeSystemLibs) {
-		JavaSearchParams searchParams = new JavaSearchParams(projectUri.toString(), searchTerm, includeBinaries, includeSystemLibs);
+		JavaSearchParams searchParams = new JavaSearchParams(projectUri.toString(), searchTerm, includeBinaries, includeSystemLibs, SEARCH_TIMEOUT);
 		return Mono.fromFuture(client.javaSearchTypes(searchParams))
 				.flatMapMany(results -> Flux.fromIterable(results).publishOn(Schedulers.parallel()))
 				.filter(Objects::nonNull)
@@ -100,7 +102,7 @@ public class JdtLsIndex implements ClasspathIndex {
 
 	@Override
 	public Flux<Tuple2<String, Double>> fuzzySearchPackages(String searchTerm, boolean includeBinaries, boolean includeSystemLibs) {
-		JavaSearchParams searchParams = new JavaSearchParams(projectUri.toString(), searchTerm, includeBinaries, includeSystemLibs);
+		JavaSearchParams searchParams = new JavaSearchParams(projectUri.toString(), searchTerm, includeBinaries, includeSystemLibs, SEARCH_TIMEOUT);
 		return Mono.fromFuture(client.javaSearchPackages(searchParams))
 				.flatMapMany(results -> Flux.fromIterable(results).publishOn(Schedulers.parallel()))
 				.filter(Objects::nonNull)

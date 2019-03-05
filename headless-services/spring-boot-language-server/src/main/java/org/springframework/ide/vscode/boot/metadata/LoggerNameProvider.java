@@ -37,7 +37,7 @@ import reactor.util.function.Tuples;
  * @author Kris De Volder
  * @author Alex Boyko
  */
-public class LoggerNameProvider extends CachingValueProvider {
+public class LoggerNameProvider implements ValueProviderStrategy {
 
 	private static final String LOGGING_GROUPS_PREFIX = "logging.group.";
 	private final ProjectBasedPropertyIndexProvider adhocProperties;
@@ -54,6 +54,11 @@ public class LoggerNameProvider extends CachingValueProvider {
 		return (params) -> {
 			return new LoggerNameProvider(adhocProperties, (boolean) params.getOrDefault("group", true), sourceLinks);
 		};
+	}
+
+	@Override
+	public Flux<StsValueHint> getValues(IJavaProject javaProject, String query) {
+		return getValuesAsync(javaProject, query);
 	}
 
 	Collection<String> loggerGroupNames(IJavaProject jp) {
@@ -75,8 +80,7 @@ public class LoggerNameProvider extends CachingValueProvider {
 		return builder.build();
 	}
 
-	@Override
-	protected Flux<StsValueHint> getValuesAsync(IJavaProject javaProject, String query) {
+	private Flux<StsValueHint> getValuesAsync(IJavaProject javaProject, String query) {
 		return Flux.concat(
 			Flux.fromIterable(loggerGroupNames(javaProject))
 				.map(loggerName -> Tuples.of(StsValueHint.create(loggerName), FuzzyMatcher.matchScore(query, loggerName)))

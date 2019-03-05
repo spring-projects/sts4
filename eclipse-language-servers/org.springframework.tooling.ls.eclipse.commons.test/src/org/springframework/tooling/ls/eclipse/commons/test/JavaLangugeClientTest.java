@@ -91,7 +91,7 @@ public class JavaLangugeClientTest {
 				.javaSearchTypes(new JavaSearchParams(project.getLocationURI().toString(), "util.Map", true, true))
 				.get(100, TimeUnit.SECONDS);
 		assertNotNull(data);
-		assertTrue(data.size() > 500);
+		assertEquals(500, data.size());
 		List<String> closeMatches = data.stream().filter(t -> t.contains("util.Map")).collect(Collectors.toList());
 		assertEquals(2, closeMatches.size());
 		assertNotNull(closeMatches.stream().filter(t -> "java.util.Map".equals(t)).findFirst().orElse(null));
@@ -116,9 +116,9 @@ public class JavaLangugeClientTest {
 				.javaSearchTypes(new JavaSearchParams(project.getLocationURI().toString(), "", true, false))
 				.get(1000, TimeUnit.SECONDS);
 		assertNotNull(data);
-		assertTrue(data.size() > 10000);
+		assertEquals(500, data.size());
 	}
-	
+
 	@Test
 	public void searchPackagesIncludingSysLibs() throws Exception {
 		List<String> packages = client.javaSearchPackages(new JavaSearchParams(project.getLocationURI().toString(), "java.lang", true, true)).get(30, TimeUnit.SECONDS);
@@ -136,7 +136,7 @@ public class JavaLangugeClientTest {
 	@Test
 	public void searchAllPackagesExcludingSysLibs() throws Exception {
 		List<String> packages = client.javaSearchPackages(new JavaSearchParams(project.getLocationURI().toString(), "", true, false)).get(30, TimeUnit.SECONDS);
-		assertTrue(packages.size() > 1000);
+		assertEquals(500, packages.size());
 	}
 	
 	@Test

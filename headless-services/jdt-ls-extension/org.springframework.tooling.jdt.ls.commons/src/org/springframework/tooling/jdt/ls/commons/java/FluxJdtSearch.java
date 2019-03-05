@@ -12,20 +12,21 @@ package org.springframework.tooling.jdt.ls.commons.java;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Stream;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.OperationCanceledException;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
-import org.eclipse.jdt.core.search.IJavaSearchConstants;
 import org.eclipse.jdt.core.search.IJavaSearchScope;
 import org.eclipse.jdt.core.search.SearchEngine;
 import org.eclipse.jdt.core.search.SearchMatch;
@@ -33,6 +34,10 @@ import org.eclipse.jdt.core.search.SearchParticipant;
 import org.eclipse.jdt.core.search.SearchPattern;
 import org.eclipse.jdt.core.search.SearchRequestor;
 import org.springframework.tooling.jdt.ls.commons.Logger;
+
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.ReplayProcessor;
+import reactor.util.concurrent.Queues;
 
 /**
  * Helper class to perform a search using Eclipse JDT search engine returning
@@ -53,7 +58,7 @@ import org.springframework.tooling.jdt.ls.commons.Logger;
  *
  * @author Kris De Volder
  */
-public class StreamJdtSearch {
+public class FluxJdtSearch {
 
 	private static final boolean DEBUG = (""+Platform.getLocation()).contains("kdvolder");
 
@@ -67,23 +72,31 @@ public class StreamJdtSearch {
 	private IJavaSearchScope scope = SearchEngine.createWorkspaceScope();
 	private SearchPattern pattern = null;
 	private SearchParticipant[] participants = new SearchParticipant[] {SearchEngine.getDefaultSearchParticipant()};
+	private int bufferSize = Queues.SMALL_BUFFER_SIZE;
+	private boolean useSystemJob = false;
+	private int jobPriority = Job.INTERACTIVE;
 	private Logger logger;
-	
-	public StreamJdtSearch(Logger logger) {
+
+	public FluxJdtSearch(Logger logger) {
 		this.logger = logger;
 	}
 
-	public StreamJdtSearch engine(SearchEngine engine) {
+	public FluxJdtSearch engine(SearchEngine engine) {
 		this.engine = engine;
 		return this;
 	}
 
-	public StreamJdtSearch scope(IJavaSearchScope scope) {
+	public FluxJdtSearch scope(IJavaSearchScope scope) {
 		this.scope = scope;
 		return this;
 	}
 
-	public StreamJdtSearch pattern(SearchPattern pattern) {
+	public FluxJdtSearch bufferSize(int bufferSize) {
+		this.bufferSize = bufferSize;
+		return this;
+	}
+
+	public FluxJdtSearch pattern(SearchPattern pattern) {
 		this.pattern = pattern;
 		return this;
 	}
@@ -104,13 +117,20 @@ public class StreamJdtSearch {
 		return SearchEngine.createJavaSearchScope(new IJavaElement[] {javaProject}, includeMask);
 	}
 
-	class Requestor extends SearchRequestor {
+	/**
+	 * Implementation of {@link SearchRequestor} that emits search results to an {@link ReplayProcessor}
+	 * with replay capability.
+	 *
+	 * @author Kris De Volder
+	 */
+	class FluxSearchRequestor extends SearchRequestor {
 
 		private boolean isCanceled = false;
-		private Stream.Builder<SearchMatch> results = Stream.builder();
+		private ReplayProcessor<SearchMatch> emitter = ReplayProcessor.<SearchMatch>create(bufferSize);
+		private Flux<SearchMatch> flux = emitter.doOnCancel(() -> isCanceled=true);
 
-		public Stream<SearchMatch> asStream() {
-			return results.build();
+		public Flux<SearchMatch> asFlux() {
+			return flux;
 		}
 
 		@Override
@@ -120,13 +140,16 @@ public class StreamJdtSearch {
 				//Stop searching
 				throw new OperationCanceledException();
 			}
-			results.add(match);
+			emitter.onNext(match);
 		}
 
 		public void cancel() {
 			isCanceled = true;
 		}
 
+		public void done() {
+			emitter.onComplete();
+		}
 	}
 
 	protected SearchEngine searchEngine() {
@@ -137,24 +160,34 @@ public class StreamJdtSearch {
 		return new SearchParticipant[] {SearchEngine.getDefaultSearchParticipant()};
 	}
 
-	public Stream<SearchMatch> search() {
+	public Flux<SearchMatch> search() {
 		validate();
 		if (scope==null) {
-			return Stream.of();
+			return Flux.empty();
 		}
-		final Requestor requestor = new Requestor();
-		long start = System.currentTimeMillis();
-		debug("Starting search for '" + pattern + "'");
-		try {
-			searchEngine().search(pattern, participants, scope, requestor, new NullProgressMonitor());
-		} catch (Exception e) {
-			debug("Canceled search for: " + pattern);
-			debug("          exception: " + e.getMessage());
-			long duration = System.currentTimeMillis() - start;
-			debug("          duration: " + duration + " ms");
-			requestor.cancel();
-		}
-		return requestor.asStream();
+		final FluxSearchRequestor requestor = new FluxSearchRequestor();
+		Job job = new Job("Search for "+pattern) {
+			@Override
+			protected IStatus run(IProgressMonitor monitor) {
+				long start = System.currentTimeMillis();
+				debug("Starting search for '"+pattern+"'");
+				try {
+					searchEngine().search(pattern, participants, scope, requestor, monitor);
+					requestor.done();
+				} catch (Exception e) {
+					debug("Canceled search for: "+pattern);
+					debug("          exception: "+e.getMessage());
+					long duration = System.currentTimeMillis() - start;
+					debug("          duration: "+duration+" ms");
+					requestor.cancel();
+				}
+				return Status.OK_STATUS;
+			}
+		};
+		job.setSystem(useSystemJob);
+		job.setPriority(jobPriority);
+		job.schedule();
+		return requestor.asFlux();
 	}
 
 	private void validate() {
@@ -164,6 +197,7 @@ public class StreamJdtSearch {
 		//		Assert.isNotNull(scope, "scope");
 		Assert.isNotNull(pattern, "pattern");
 		Assert.isNotNull(participants, "participants");
+		Assert.isLegal(bufferSize > 0);
 	}
 
 	public IJavaSearchScope workspaceScope(boolean includeBinaries) {
@@ -186,44 +220,4 @@ public class StreamJdtSearch {
 		}
 	}
 
-	public static String toWildCardPattern(String query) {
-		StringBuilder builder = new StringBuilder("*");
-		for (char c : query.toCharArray()) {
-			builder.append(c);
-			builder.append('*');
-		}
-		return builder.toString();
-	}
-
-	public static SearchPattern toPackagePattern(String wildCardedQuery) {
-		int searchFor = IJavaSearchConstants.PACKAGE;
-		int limitTo = IJavaSearchConstants.DECLARATIONS;
-		int matchRule = SearchPattern.R_PATTERN_MATCH;
-		return SearchPattern.createPattern(wildCardedQuery, searchFor, limitTo, matchRule);
-	}
-
-	public static SearchPattern toClassPattern(String wildCardedQuery) {
-		int searchFor = IJavaSearchConstants.CLASS;
-		int limitTo = IJavaSearchConstants.DECLARATIONS;
-		int matchRule = SearchPattern.R_PATTERN_MATCH;
-		return SearchPattern.createPattern(wildCardedQuery, searchFor, limitTo, matchRule);
-	}
-
-	public static SearchPattern toTypePattern(String wildCardedQuery) {
-		int searchFor = IJavaSearchConstants.TYPE;
-		int limitTo = IJavaSearchConstants.DECLARATIONS;
-		int matchRule = SearchPattern.R_PATTERN_MATCH;
-		return SearchPattern.createPattern(wildCardedQuery, searchFor, limitTo, matchRule);
-	}
-	
-	public static String toProperTypeQuery(String query) {
-		int idx = query.lastIndexOf('.');
-		if (idx > 0 && idx < query.length() - 1 && Character.isLowerCase(query.charAt(idx + 1))) {
-			return query + '.';
-		} else {
-			return query;
-		}
-	}
-
-	
 }

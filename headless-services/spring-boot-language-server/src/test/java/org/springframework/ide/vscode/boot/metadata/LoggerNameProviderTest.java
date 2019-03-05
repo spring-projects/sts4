@@ -105,7 +105,7 @@ public class LoggerNameProviderTest {
 	public void incrementalResults() throws Exception {
 		String fullQuery = "jboss";
 
-		CachingValueProvider p = create();
+		LoggerNameProvider p = create();
 		for (int i = 0; i <= fullQuery.length(); i++) {
 			String query = fullQuery.substring(0, i);
 			List<String> results = getResults(p, query);
@@ -154,7 +154,7 @@ public class LoggerNameProviderTest {
 		return buf.toString();
 	}
 
-	private List<String> getResults(CachingValueProvider p, String query) {
+	private List<String> getResults(LoggerNameProvider p, String query) {
 		return p.getValues(project, query).toStream()
 		.map((h) -> h.getValue().toString())
 		.collect(Collectors.toList());

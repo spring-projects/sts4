@@ -18,6 +18,8 @@ export class BootJavaExtension implements JavaExtensionContribution {
     getExtensionBundles() {
         const jarFolderPath = path.resolve(__dirname, '../../jars');
         return [
+            path.resolve(jarFolderPath, 'io.projectreactor.reactor-core.jar'),
+            path.resolve(jarFolderPath, 'org.reactivestreams.reactive-streams.jar'),
             path.resolve(jarFolderPath, 'jdt-ls-commons.jar'),
             path.resolve(jarFolderPath, 'jdt-ls-extension.jar')
         ];

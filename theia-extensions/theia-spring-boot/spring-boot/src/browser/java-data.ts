@@ -16,8 +16,8 @@ export const JAVA_TYPE_REQUEST_TYPE = 'sts/javaType';
 export const JAVADOC_HOVER_LINK_REQUEST_TYPE = 'sts/javadocHoverLink';
 export const JAVA_LOCATION_REQUEST_TYPE = 'sts/javaLocation';
 export const JAVADOC_REQUEST_TYPE = 'sts/javadoc';
-export const SEARCH_TYPES_REQUEST_TYPE = 'sts/searchJavaTypes';
-export const SEACH_PACKAGES_REQUEST_TYPE = 'sts/searchJavaPackages';
+export const SEARCH_TYPES_REQUEST_TYPE = 'sts/javaSearchTypes';
+export const SEACH_PACKAGES_REQUEST_TYPE = 'sts/javaSearchPackages';
 export const SUBTYPES_REQUEST_TYPE = 'sts/javaSubTypes';
 export const SUPERTYPES_REQUEST_TYPE = 'sts/javaSuperTypes';
 
