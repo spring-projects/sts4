@@ -87,32 +87,32 @@ public class JavaLangugeClientTest {
 
 	@Test
 	public void fuzzyFindTypesIncludingSysLibs() throws Exception {
-		List<TypeData> data = client
+		List<String> data = client
 				.javaSearchTypes(new JavaSearchParams(project.getLocationURI().toString(), "util.Map", true, true))
 				.get(100, TimeUnit.SECONDS);
 		assertNotNull(data);
 		assertTrue(data.size() > 500);
-		List<TypeData> closeMatches = data.stream().filter(t -> t.getFqName().contains("util.Map")).collect(Collectors.toList());
+		List<String> closeMatches = data.stream().filter(t -> t.contains("util.Map")).collect(Collectors.toList());
 		assertEquals(2, closeMatches.size());
-		assertNotNull(closeMatches.stream().filter(t -> "java.util.Map".equals(t.getFqName())).findFirst().orElse(null));
+		assertNotNull(closeMatches.stream().filter(t -> "java.util.Map".equals(t)).findFirst().orElse(null));
 	}
 	
 	@Test
 	public void fuzzyFindTypesExcludingSysLibs() throws Exception {
-		List<TypeData> data = client
+		List<String> data = client
 				.javaSearchTypes(new JavaSearchParams(project.getLocationURI().toString(), "util.Map", true, false))
 				.get(10, TimeUnit.SECONDS);
 		assertNotNull(data);
 		assertEquals(186, data.size());
-		TestUtils.saveJsonData("search-util-map.json", data);
-		List<TypeData> closeMatches = data.stream().filter(t -> t.getFqName().contains("util.Map")).collect(Collectors.toList());
+//		TestUtils.saveJsonData("search-util-map.json", data);
+		List<String> closeMatches = data.stream().filter(t -> t.contains("util.Map")).collect(Collectors.toList());
 		assertEquals(1, closeMatches.size());
-		assertEquals("io.netty.util.Mapping", closeMatches.get(0).getFqName());
+		assertEquals("io.netty.util.Mapping", closeMatches.get(0));
 	}
 	
 	@Test
 	public void fuzzyFindAllTypesExcludingSysLibs() throws Exception {
-		List<TypeData> data = client
+		List<String> data = client
 				.javaSearchTypes(new JavaSearchParams(project.getLocationURI().toString(), "", true, false))
 				.get(1000, TimeUnit.SECONDS);
 		assertNotNull(data);

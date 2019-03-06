@@ -17,7 +17,6 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
-import java.util.function.Predicate;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,6 +36,7 @@ import reactor.core.Disposable;
 import reactor.core.Disposables;
 import reactor.core.publisher.Flux;
 import reactor.util.function.Tuple2;
+import reactor.util.function.Tuples;
 
 /**
  * Classpath with Jandex Java index for searching types
@@ -101,8 +101,8 @@ public final class JandexClasspath implements ClasspathIndex {
 	}
 
 	@Override
-	public Flux<Tuple2<IType, Double>> fuzzySearchTypes(String searchTerm, boolean includeBinaries, boolean includeSystemLibs, Predicate<IType> typeFilter) {
-		return javaIndex.get().fuzzySearchTypes(searchTerm, typeFilter);
+	public Flux<Tuple2<String, Double>> fuzzySearchTypes(String searchTerm, boolean includeBinaries, boolean includeSystemLibs) {
+		return javaIndex.get().fuzzySearchTypes(searchTerm).map(m -> Tuples.of(m.getT2().name().toString(), m.getT3()));
 	}
 
 	@Override

@@ -126,7 +126,7 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 
 	final private JavaData javaData = new JavaData(STS4LanguageClientImpl::label , Logger.forEclipsePlugin(LanguageServerCommonsActivator::getInstance));
 
-	final private JavaSearch javaSearch = new JavaSearch(Logger.forEclipsePlugin(LanguageServerCommonsActivator::getInstance), javaData);
+	final private JavaSearch javaSearch = new JavaSearch(Logger.forEclipsePlugin(LanguageServerCommonsActivator::getInstance));
 
 	final private TypeHierarchy typeHierarchy = new TypeHierarchy(Logger.forEclipsePlugin(LanguageServerCommonsActivator::getInstance), javaData);
 
@@ -440,7 +440,7 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 	}
 
 	@Override
-	public CompletableFuture<List<TypeData>> javaSearchTypes(JavaSearchParams params) {
+	public CompletableFuture<List<String>> javaSearchTypes(JavaSearchParams params) {
 		return CompletableFuture.supplyAsync(() -> {
 			try {
 				return javaSearch.fuzzySearchTypes(URI.create(params.getProjectUri()), params.getTerm(),

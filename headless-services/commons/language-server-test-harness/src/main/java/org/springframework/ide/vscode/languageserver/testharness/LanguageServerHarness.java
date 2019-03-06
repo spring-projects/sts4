@@ -85,7 +85,6 @@ import org.eclipse.lsp4j.ResourceOperation;
 import org.eclipse.lsp4j.ResourceOperationKind;
 import org.eclipse.lsp4j.ShowMessageRequestParams;
 import org.eclipse.lsp4j.SymbolInformation;
-import org.eclipse.lsp4j.SymbolKindCapabilities;
 import org.eclipse.lsp4j.TextDocumentClientCapabilities;
 import org.eclipse.lsp4j.TextDocumentContentChangeEvent;
 import org.eclipse.lsp4j.TextDocumentEdit;
@@ -363,7 +362,7 @@ public class LanguageServerHarness {
 				}
 
 				@Override
-				public CompletableFuture<List<TypeData>> javaSearchTypes(JavaSearchParams params) {
+				public CompletableFuture<List<String>> javaSearchTypes(JavaSearchParams params) {
 					return CompletableFuture.completedFuture(Collections.emptyList());
 				}
 

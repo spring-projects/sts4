@@ -27,6 +27,9 @@ import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
+
 /**
  * Sts version of {@link ValueHint} contains similar data, but accomoates
  * a html snippet to be computed lazyly for the description.
@@ -43,7 +46,7 @@ public class StsValueHint {
 
 	private final String value;
 	private final Renderable description;
-	private final Deprecation deprecation;
+	private final Supplier<Deprecation> deprecation;
 
 	/**
 	 * Create a hint with a textual description.
@@ -51,7 +54,7 @@ public class StsValueHint {
 	 * This constructor is private. Use one of the provided
 	 * static 'create' methods instead.
 	 */
-	private StsValueHint(String value, Renderable description, Deprecation deprecation) {
+	private StsValueHint(String value, Renderable description, Supplier<Deprecation> deprecation) {
 		this.value = value==null?"null":value.toString();
 		Assert.isLegal(!this.value.startsWith("StsValueHint"));
 		this.description = description;
@@ -62,10 +65,22 @@ public class StsValueHint {
 	 * Creates a hint out of an IJavaElement.
 	 */
 	public static StsValueHint create(SourceLinks sourceLinks, String value, IJavaProject project, IJavaElement javaElement) {
-		return new StsValueHint(value, javaDocSnippet(sourceLinks, project, javaElement), DeprecationUtil.extract(javaElement)) {
+		return new StsValueHint(value, javaDocSnippet(sourceLinks, project, () -> javaElement), () -> DeprecationUtil.extract(javaElement)) {
 			@Override
 			public IJavaElement getJavaElement() {
 				return javaElement;
+			}
+		};
+	}
+
+	/**
+	 * Creates a hint out of an Supplier<IJavaElement>.
+	 */
+	public static StsValueHint create(SourceLinks sourceLinks, String value, IJavaProject project, Supplier<IJavaElement> elementSupplier) {
+		return new StsValueHint(value, javaDocSnippet(sourceLinks, project, elementSupplier), Suppliers.memoize(() -> DeprecationUtil.extract(elementSupplier.get()))) {
+			@Override
+			public IJavaElement getJavaElement() {
+				return elementSupplier.get();
 			}
 		};
 	}
@@ -94,7 +109,7 @@ public class StsValueHint {
 	}
 
 	public static StsValueHint create(SourceLinks sourceLinks, IJavaProject project, IType klass) {
-		return new StsValueHint(klass.getFullyQualifiedName(), javaDocSnippet(sourceLinks, project, klass), DeprecationUtil.extract(klass)) {
+		return new StsValueHint(klass.getFullyQualifiedName(), javaDocSnippet(sourceLinks, project, () -> klass), Suppliers.memoize(() -> DeprecationUtil.extract(klass))) {
 			@Override
 			public IJavaElement getJavaElement() {
 				return klass;
@@ -120,9 +135,9 @@ public class StsValueHint {
 		return description;
 	}
 
-	private static Renderable javaDocSnippet(SourceLinks sourceLinks, IJavaProject project, IJavaElement je) {
+	private static Renderable javaDocSnippet(SourceLinks sourceLinks, IJavaProject project, Supplier<IJavaElement> je) {
 		return Renderables.lazy(() -> {
-			return PropertyDocUtils.documentJavaElement(sourceLinks, project, je);
+			return PropertyDocUtils.documentJavaElement(sourceLinks, project, je.get());
 		});
 	}
 
@@ -132,7 +147,7 @@ public class StsValueHint {
 	}
 
 	public Deprecation getDeprecation() {
-		return deprecation;
+		return deprecation.get();
 	}
 
 	public IJavaElement getJavaElement() {

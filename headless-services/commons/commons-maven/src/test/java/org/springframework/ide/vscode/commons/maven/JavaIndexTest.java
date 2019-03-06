@@ -28,7 +28,6 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.junit.Test;
-import org.springframework.ide.vscode.commons.java.Flags;
 import org.springframework.ide.vscode.commons.java.IJavaModuleData;
 import org.springframework.ide.vscode.commons.java.IMethod;
 import org.springframework.ide.vscode.commons.java.IPrimitiveType;
@@ -62,26 +61,12 @@ public class JavaIndexTest {
 	@Test
 	public void fuzzySearchNoFilter() throws Exception {
 		MavenJavaProject project = mavenProjectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file");
-		List<Tuple2<IType, Double>> results = project.getIndex().fuzzySearchTypes("util.Map", true, true, null)
+		List<Tuple2<String, Double>> results = project.getIndex().fuzzySearchTypes("util.Map", true, true)
 				.collectSortedList((o1, o2) -> o2.getT2().compareTo(o1.getT2()))
 				.block();
 		assertTrue(results.size() > 10);
-		IType type = results.get(0).getT1();
-		System.out.println(type.getFullyQualifiedName() + ": " + type.getBindingKey());
-		assertEquals("java.util.Map", type.getFullyQualifiedName());
-	}
-
-	@Test
-	public void fuzzySearchWithFilter() throws Exception {
-		MavenJavaProject project = mavenProjectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file");
-		List<Tuple2<IType, Double>> results =  project.getIndex()
-				.fuzzySearchTypes("util.Map", true, true, (type) -> Flags.isPrivate(type.getFlags()))
-				.collectSortedList((o1, o2) -> o2.getT2().compareTo(o1.getT2()))
-				.block();
-		assertTrue(results.size() > 10);
-		IType type = results.get(0).getT1();
-		System.out.println(type.getFullyQualifiedName() + ": " + type.getBindingKey());
-		assertEquals("java.util.EnumMap$KeySet", type.getFullyQualifiedName());
+		String type = results.get(0).getT1();
+		assertEquals("java.util.Map", type);
 	}
 
 	@Test

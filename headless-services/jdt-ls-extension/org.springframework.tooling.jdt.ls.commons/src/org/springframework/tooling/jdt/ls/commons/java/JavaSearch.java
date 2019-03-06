@@ -16,7 +16,6 @@ import java.util.stream.Stream;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.IType;
-import org.springframework.ide.vscode.commons.protocol.java.TypeData;
 import org.springframework.tooling.jdt.ls.commons.Logger;
 import org.springframework.tooling.jdt.ls.commons.resources.ResourceUtils;
 
@@ -24,12 +23,9 @@ public class JavaSearch {
 	
 	private Logger logger;
 	
-	private JavaData javaData;
-
-	public JavaSearch(Logger logger, JavaData javaData) {
+	public JavaSearch(Logger logger) {
 		super();
 		this.logger = logger;
-		this.javaData = javaData;
 	}
 	
 	public Stream<String> fuzzySearchPackages(URI projectUri, String searchTerm, boolean includeBinaries, boolean includeSystemLibs) throws Exception {
@@ -44,16 +40,16 @@ public class JavaSearch {
 			.map(p -> ((IPackageFragment)p).getElementName());
 	}
 	
-	public Stream<TypeData> fuzzySearchTypes(URI projectUri, String searchTerm, boolean includeBinaries, boolean includeSystemLibs) throws Exception {
+	public Stream<String> fuzzySearchTypes(URI projectUri, String searchTerm, boolean includeBinaries, boolean includeSystemLibs) throws Exception {
 		IJavaProject javaProject = projectUri == null ? null : ResourceUtils.getJavaProject(projectUri);
 		return new StreamJdtSearch(logger)
 			.scope(StreamJdtSearch.searchScope(javaProject, includeBinaries, includeSystemLibs))
-			.pattern(StreamJdtSearch.toTypePattern(StreamJdtSearch.toWildCardPattern(searchTerm)))
+			.pattern(StreamJdtSearch.toTypePattern(StreamJdtSearch.toWildCardPattern(StreamJdtSearch.toProperTypeQuery(searchTerm))))
 			.search()
 			.parallel()
 			.map(match -> match.getElement())
 			.filter(o -> o instanceof IType)
-			.map(e -> javaData.createTypeData((IType) e));
+			.map(e -> ((IType) e).getFullyQualifiedName());
 	}
-
+	
 }

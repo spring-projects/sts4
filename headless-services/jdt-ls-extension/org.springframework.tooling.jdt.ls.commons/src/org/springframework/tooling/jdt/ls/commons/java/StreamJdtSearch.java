@@ -215,6 +215,15 @@ public class StreamJdtSearch {
 		int matchRule = SearchPattern.R_PATTERN_MATCH;
 		return SearchPattern.createPattern(wildCardedQuery, searchFor, limitTo, matchRule);
 	}
+	
+	public static String toProperTypeQuery(String query) {
+		int idx = query.lastIndexOf('.');
+		if (idx > 0 && idx < query.length() - 1 && Character.isLowerCase(query.charAt(idx + 1))) {
+			return query + '.';
+		} else {
+			return query;
+		}
+	}
 
 	
 }

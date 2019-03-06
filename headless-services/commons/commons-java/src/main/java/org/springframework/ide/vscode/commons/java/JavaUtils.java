@@ -123,4 +123,8 @@ public class JavaUtils {
 		return null;
 	}
 
+	public static String typeBindingKeyToFqName(String bindingKey) {
+		return bindingKey == null ? null : bindingKey.substring(1, bindingKey.length() - 1).replace('/', '.');
+	}
+
 }

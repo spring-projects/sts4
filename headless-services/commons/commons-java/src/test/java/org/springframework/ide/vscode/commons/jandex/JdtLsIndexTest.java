@@ -51,9 +51,9 @@ public class JdtLsIndexTest {
 		return gson.fromJson(new FileReader(jsonFile), TypeData.class);
 	}
 
-	private List<TypeData> loadJsonSearchTypeResults(String fileName) throws Exception {
+	private List<String> loadJsonSearchTypeResults(String fileName) throws Exception {
 		File jsonFile = new File(JdtLsIndexTest.class.getResource("/java-data-json/" + fileName).toURI());
-		Type listType = new TypeToken<List<TypeData>>(){}.getType();
+		Type listType = new TypeToken<List<String>>(){}.getType();
 		return gson.fromJson(new FileReader(jsonFile), listType);
 	}
 
@@ -138,9 +138,9 @@ public class JdtLsIndexTest {
 		}));
 		// Some valid URI necessary for URI#toString() to succeed
 		JdtLsIndex index = new JdtLsIndex(client, URI.create(System.getProperty("java.io.tmpdir")));
-		List<Tuple2<IType, Double>> results = index.fuzzySearchTypes("util.Map", true, false, null).collectSortedList((o1, o2) -> o2.getT2().compareTo(o1.getT2())).block();
-		IType type = results.get(0).getT1();
-		assertEquals("io.netty.util.Mapping", type.getFullyQualifiedName());
+		List<Tuple2<String, Double>> results = index.fuzzySearchTypes("util.Map", true, false).collectSortedList((o1, o2) -> o2.getT2().compareTo(o1.getT2())).block();
+		String type = results.get(0).getT1();
+		assertEquals("io.netty.util.Mapping", type);
 	}
 
 	@Test

@@ -16,13 +16,13 @@ import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.function.Predicate;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.java.ClasspathIndex;
 import org.springframework.ide.vscode.commons.java.IJavaModuleData;
 import org.springframework.ide.vscode.commons.java.IType;
+import org.springframework.ide.vscode.commons.java.JavaUtils;
 import org.springframework.ide.vscode.commons.javadoc.JdtLsJavadocProvider;
 import org.springframework.ide.vscode.commons.protocol.STS4LanguageClient;
 import org.springframework.ide.vscode.commons.protocol.java.JavaDataParams;
@@ -63,7 +63,7 @@ public class JdtLsIndex implements ClasspathIndex {
 
 	private IType toType(TypeData data) {
 		String declaringTypeBindingKey = data.getDeclaringType();
-		String declaringTypeFqName = declaringTypeBindingKey == null ? null : declaringTypeBindingKey.substring(1, declaringTypeBindingKey.length() - 1).replace('/', '.');
+		String declaringTypeFqName = JavaUtils.typeBindingKeyToFqName(declaringTypeBindingKey);
 		return Wrappers.wrap(data, Suppliers.memoize(() -> declaringTypeFqName == null ? null : findType(declaringTypeFqName)), javadocProvider);
 	}
 
@@ -89,14 +89,12 @@ public class JdtLsIndex implements ClasspathIndex {
 	}
 
 	@Override
-	public Flux<Tuple2<IType, Double>> fuzzySearchTypes(String searchTerm, boolean includeBinaries, boolean includeSystemLibs, Predicate<IType> typeFilter) {
+	public Flux<Tuple2<String, Double>> fuzzySearchTypes(String searchTerm, boolean includeBinaries, boolean includeSystemLibs) {
 		JavaSearchParams searchParams = new JavaSearchParams(projectUri.toString(), searchTerm, includeBinaries, includeSystemLibs);
 		return Mono.fromFuture(client.javaSearchTypes(searchParams))
 				.flatMapMany(results -> Flux.fromIterable(results).publishOn(Schedulers.parallel()))
 				.filter(Objects::nonNull)
-				.map(this::toType)
-				.filter(t -> typeFilter == null || typeFilter.test(t))
-				.map(type -> Tuples.of(type,  FuzzyMatcher.matchScore(searchTerm, type.getFullyQualifiedName())))
+				.map(type -> Tuples.of(type,  FuzzyMatcher.matchScore(searchTerm, type)))
 				.filter(tuple -> tuple.getT2() != 0.0);
 	}
 

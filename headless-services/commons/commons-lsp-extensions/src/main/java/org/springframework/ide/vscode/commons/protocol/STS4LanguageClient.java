@@ -59,7 +59,7 @@ public interface STS4LanguageClient extends LanguageClient {
 	CompletableFuture<Location> javaLocation(JavaDataParams params);
 	
 	@JsonRequest("sts/javaSearchTypes")
-	CompletableFuture<List<TypeData>> javaSearchTypes(JavaSearchParams params);
+	CompletableFuture<List<String>> javaSearchTypes(JavaSearchParams params);
 	
 	@JsonRequest("sts/javaSearchPackages")
 	CompletableFuture<List<String>> javaSearchPackages(JavaSearchParams params);

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2018 Pivotal, Inc.
+ * Copyright (c) 2016, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,7 +13,6 @@ package org.springframework.ide.vscode.commons.jandex;
 
 import java.io.File;
 import java.util.concurrent.ExecutionException;
-import java.util.function.Predicate;
 
 import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.DotName;
@@ -29,7 +28,6 @@ import com.google.common.cache.CacheBuilder;
 
 import reactor.core.publisher.Flux;
 import reactor.util.function.Tuple2;
-import reactor.util.function.Tuples;
 
 public class JandexIndex extends BasicJandexIndex {
 
@@ -81,12 +79,6 @@ public class JandexIndex extends BasicJandexIndex {
 			log.error("Failed to retrieve javadoc provider for resource " + classpathResource, e);
 		}
 		return Wrappers.wrap(this, match.getT1(), match.getT2(), javadocProvider);
-	}
-
-	public Flux<Tuple2<IType, Double>> fuzzySearchTypes(String searchTerm, Predicate<IType> typeFilter) {
-		return fuzzySearchTypes(searchTerm)
-				.map(match -> Tuples.of(createType(Tuples.of(match.getT1(), match.getT2())), match.getT3()))
-				.filter(t -> typeFilter == null || typeFilter.test(t.getT1()));
 	}
 
 	public Flux<IType> allSubtypesOf(IType type) {
