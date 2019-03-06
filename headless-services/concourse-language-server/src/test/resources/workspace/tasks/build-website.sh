@@ -17,10 +17,10 @@ echo "vscode_boot_properties=$vscode_boot_properties"
 envsubst > "$target/vscode-extensions-snippet.html" << XXXXXX
 <ul>
    <li>Spring Boot Property Language Server: 
-       <a href="http://s3-test.spring.io/sts4/vscode-extensions/${vscode_boot_properties}">${vscode_boot_properties}</a> 
+       <a href="https://s3-us-west-1.amazonaws.com/s3-test.spring.io/sts4/vscode-extensions/${vscode_boot_properties}">${vscode_boot_properties}</a> 
    </li>
    <li>Cloud Foundry Manifest Language Server: 
-       <a href="http://s3-test.spring.io/sts4/vscode-extensions/${vscode_manifest_yaml}">${vscode_manifest_yaml}</a> 
+       <a href="https://s3-us-west-1.amazonaws.com/s3-test.spring.io/sts4/vscode-extensions/${vscode_manifest_yaml}">${vscode_manifest_yaml}</a> 
    </li>
 </ul>
 XXXXXX
