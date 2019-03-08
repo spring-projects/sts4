@@ -22,7 +22,6 @@ import org.springframework.ide.vscode.boot.metadata.hints.StsValueHint;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.util.FuzzyMatcher;
 
-import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
 
@@ -90,7 +89,7 @@ public class LoggerNameProvider implements ValueProviderStrategy {
 				.map(t -> Tuples.of(StsValueHint.create(t.getT1()), t.getT2())),
 			javaProject.getIndex()
 				.fuzzySearchTypes(query, true, false)
-				.map(t -> Tuples.of(StsValueHint.create(sourceLinks, t.getT1(), javaProject, Suppliers.memoize(() -> javaProject.getIndex().findType(t.getT1()))), t.getT2()))
+				.map(t -> Tuples.of(StsValueHint.create(sourceLinks, javaProject, t.getT1()), t.getT2()))
 			)
 		.collectSortedList((o1, o2) -> o2.getT2().compareTo(o1.getT2()))
 		.flatMapIterable(l -> l)

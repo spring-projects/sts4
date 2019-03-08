@@ -127,4 +127,11 @@ public class JavaUtils {
 		return bindingKey == null ? null : bindingKey.substring(1, bindingKey.length() - 1).replace('/', '.');
 	}
 
+	public static String typeFqNametoBindingKey(String fqName) {
+		StringBuilder sb = new StringBuilder('L');
+		sb.append(fqName.replace('.', '/'));
+		sb.append(';');
+		return sb.toString();
+	}
+
 }

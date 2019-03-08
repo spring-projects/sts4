@@ -113,6 +113,7 @@ import org.springframework.ide.vscode.commons.protocol.java.JavaDataParams;
 import org.springframework.ide.vscode.commons.protocol.java.JavaSearchParams;
 import org.springframework.ide.vscode.commons.protocol.java.JavaTypeHierarchyParams;
 import org.springframework.ide.vscode.commons.protocol.java.TypeData;
+import org.springframework.ide.vscode.commons.protocol.java.TypeDescriptorData;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 import org.springframework.ide.vscode.commons.util.IOUtil;
 import org.springframework.ide.vscode.commons.util.UriUtil;
@@ -362,7 +363,7 @@ public class LanguageServerHarness {
 				}
 
 				@Override
-				public CompletableFuture<List<String>> javaSearchTypes(JavaSearchParams params) {
+				public CompletableFuture<List<TypeDescriptorData>> javaSearchTypes(JavaSearchParams params) {
 					return CompletableFuture.completedFuture(Collections.emptyList());
 				}
 
@@ -372,12 +373,12 @@ public class LanguageServerHarness {
 				}
 
 				@Override
-				public CompletableFuture<List<TypeData>> javaSubTypes(JavaTypeHierarchyParams params) {
+				public CompletableFuture<List<TypeDescriptorData>> javaSubTypes(JavaTypeHierarchyParams params) {
 					return CompletableFuture.completedFuture(Collections.emptyList());
 				}
 
 				@Override
-				public CompletableFuture<List<TypeData>> javaSuperTypes(JavaTypeHierarchyParams params) {
+				public CompletableFuture<List<TypeDescriptorData>> javaSuperTypes(JavaTypeHierarchyParams params) {
 					return CompletableFuture.completedFuture(Collections.emptyList());
 				}
 

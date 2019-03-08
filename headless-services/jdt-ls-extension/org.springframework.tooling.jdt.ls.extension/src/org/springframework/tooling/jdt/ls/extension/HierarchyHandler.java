@@ -10,28 +10,28 @@
  *******************************************************************************/
 package org.springframework.tooling.jdt.ls.extension;
 
-import java.net.URI;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.ls.core.internal.IDelegateCommandHandler;
+import org.springframework.ide.vscode.commons.protocol.java.JavaTypeHierarchyParams;
+
+import com.google.gson.Gson;
 
 @SuppressWarnings("restriction")
 public class HierarchyHandler implements IDelegateCommandHandler {
+	
+	private Gson gson = new Gson();
 
-	@SuppressWarnings("unchecked")
 	@Override
 	public Object executeCommand(String commandId, List<Object> arguments, IProgressMonitor monitor) throws Exception {
-		Map<String, Object> obj = (Map<String, Object>) arguments.get(0);
-		String projectUri = (String) obj.get("projectUri");
-		String fqName = (String) obj.get("fqName");
+		JavaTypeHierarchyParams params = gson.fromJson(gson.toJson(arguments.get(0)), JavaTypeHierarchyParams.class);
 		switch (commandId) {
 		case "sts.java.hierarchy.subtypes":
-			return JavaHelpers.HIERARCHY.get().subTypes(URI.create(projectUri), fqName).collect(Collectors.toList());
+			return JavaHelpers.HIERARCHY.get().subTypes(params).collect(Collectors.toList());
 		case "sts.java.hierarchy.supertypes":
-			return JavaHelpers.HIERARCHY.get().superTypes(URI.create(projectUri), fqName).collect(Collectors.toList());
+			return JavaHelpers.HIERARCHY.get().superTypes(params).collect(Collectors.toList());
 		default:
 			return null;
 		}

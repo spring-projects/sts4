@@ -1,12 +1,5 @@
 {
-  "fqName": "org.springframework.boot.autoconfigure.web.ServerProperties",
   "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;",
-  "clazz": true,
-  "annotation": false,
-  "interfaze": false,
-  "enam": false,
-  "superClassName": "java.lang.Object",
-  "superInterfaceNames": [],
   "fields": [
     {
       "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.port",
@@ -625,6 +618,13 @@
       "isOwn": false
     }
   },
+  "fqName": "org.springframework.boot.autoconfigure.web.ServerProperties",
+  "clazz": true,
+  "annotation": false,
+  "interfaze": false,
+  "enam": false,
+  "superClassName": "java.lang.Object",
+  "superInterfaceNames": [],
   "flags": 1,
   "name": "ServerProperties",
   "handleIdentifier": "\u003dtest-webflux-project/\\/Users\\/aboyko\\/.m2\\/repository\\/org\\/springframework\\/boot\\/spring-boot-autoconfigure\\/2.0.0.RELEASE\\/spring-boot-autoconfigure-2.0.0.RELEASE.jar\u003corg.springframework.boot.autoconfigure.web(ServerProperties.class[ServerProperties",

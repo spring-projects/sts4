@@ -15,6 +15,7 @@ import java.util.List;
 
 import org.eclipse.jdt.core.IJavaProject;
 import org.springframework.ide.vscode.commons.protocol.java.JavaSearchParams;
+import org.springframework.ide.vscode.commons.protocol.java.TypeDescriptorData;
 import org.springframework.tooling.jdt.ls.commons.Logger;
 import org.springframework.tooling.jdt.ls.commons.resources.ResourceUtils;
 
@@ -27,12 +28,14 @@ import reactor.util.function.Tuples;
 public class JavaFluxSearch {
 	
 	final private Logger logger;
+	final private JavaData javaData;
 	final private Cache<Tuple2<Boolean, Boolean>, PackageFluxSearch> packageSearchCache = CacheBuilder.newBuilder().build();
 	final private Cache<Tuple2<Boolean, Boolean>, TypeFluxSearch> typeSearchCache = CacheBuilder.newBuilder().build();
 
-	public JavaFluxSearch(Logger logger) {
+	public JavaFluxSearch(Logger logger, JavaData javaData) {
 		super();
 		this.logger = logger;
+		this.javaData = javaData;
 	}
 
 	public List<String> fuzzySearchPackages(JavaSearchParams params) throws Exception {
@@ -44,11 +47,11 @@ public class JavaFluxSearch {
 		return fluxPackageSearch.searchWithLimits(javaProject, params.getTerm(), params.getTimeLimit());
 	}
 
-	public List<String> fuzzySearchTypes(JavaSearchParams params) throws Exception {
+	public List<TypeDescriptorData> fuzzySearchTypes(JavaSearchParams params) throws Exception {
 		URI projectUri = params.getProjectUri() == null ? null : URI.create(params.getProjectUri());
 		IJavaProject javaProject = projectUri == null ? null : ResourceUtils.getJavaProject(projectUri);
 		TypeFluxSearch fluxTypeSearch = typeSearchCache.get(
-				Tuples.of(params.isIncludeBinaries(), params.isIncludeSystemLibs()), () -> new TypeFluxSearch(logger, params.isIncludeBinaries(), params.isIncludeSystemLibs())
+				Tuples.of(params.isIncludeBinaries(), params.isIncludeSystemLibs()), () -> new TypeFluxSearch(logger, javaData, params.isIncludeBinaries(), params.isIncludeSystemLibs())
 		);
 		return fluxTypeSearch.searchWithLimits(javaProject, params.getTerm(), params.getTimeLimit());
 	}

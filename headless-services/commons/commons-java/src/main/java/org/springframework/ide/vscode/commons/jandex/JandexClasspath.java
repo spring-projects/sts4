@@ -17,6 +17,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,7 +37,6 @@ import reactor.core.Disposable;
 import reactor.core.Disposables;
 import reactor.core.publisher.Flux;
 import reactor.util.function.Tuple2;
-import reactor.util.function.Tuples;
 
 /**
  * Classpath with Jandex Java index for searching types
@@ -101,8 +101,8 @@ public final class JandexClasspath implements ClasspathIndex {
 	}
 
 	@Override
-	public Flux<Tuple2<String, Double>> fuzzySearchTypes(String searchTerm, boolean includeBinaries, boolean includeSystemLibs) {
-		return javaIndex.get().fuzzySearchTypes(searchTerm).map(m -> Tuples.of(m.getT2().name().toString(), m.getT3()));
+	public Flux<Tuple2<IType, Double>> fuzzySearchTypes(String searchTerm, boolean includeBinaries, boolean includeSystemLibs) {
+		return javaIndex.get().fuzzySearchITypes(searchTerm);
 	}
 
 	@Override
@@ -111,8 +111,13 @@ public final class JandexClasspath implements ClasspathIndex {
 	}
 
 	@Override
-	public Flux<IType> allSubtypesOf(IType type) {
-		return javaIndex.get().allSubtypesOf(type);
+	public Flux<IType> allSubtypesOf(String fqName, boolean includeFocusType) {
+		IType type = javaIndex.get().findType(fqName);
+		if (type == null) {
+			return Flux.empty();
+		} else {
+			return Flux.concat(includeFocusType ? Flux.fromStream(Stream.of(type)) : Flux.empty(), javaIndex.get().allSubtypesOf(type));
+		}
 	}
 
 	private File findIndexFile(File jarFile) {
@@ -152,25 +157,25 @@ public final class JandexClasspath implements ClasspathIndex {
 	}
 
 	@Override
-	public Flux<IType> allSuperTypesOf(IType type) {
+	public Flux<IType> allSuperTypesOf(String fqName, boolean includeFocusType) {
 		Queue<String> queue = new LinkedList<>();
 		HashSet<String> visited = new HashSet<>();
-		updateQueue(queue, visited, type);
-		return Flux.generate(() -> queue, (state, sink) -> {
-			IType nextType = null;
-			while (nextType == null && state.peek() != null) {
+		queue.add(fqName);
+		visited.add(fqName);
+		Flux<IType> typesFlux = Flux.generate(() -> queue, (state, sink) -> {
+			if (state.peek() == null) {
+				sink.complete();
+			} else {
 				String typeName = state.poll();
-				nextType = findType(typeName);
+				IType nextType = findType(typeName);
 				if (nextType != null) {
 					sink.next(nextType);
 					updateQueue(state, visited, nextType);
 				}
 			}
-			if (state.peek() == null) {
-				sink.complete();
-			}
 			return state;
 		});
+		return includeFocusType ? typesFlux : typesFlux.skip(1);
 	}
 
 }

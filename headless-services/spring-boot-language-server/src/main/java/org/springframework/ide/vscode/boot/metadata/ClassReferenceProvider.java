@@ -12,11 +12,9 @@
 package org.springframework.ide.vscode.boot.metadata;
 
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +31,7 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
 import reactor.core.publisher.Flux;
+import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 
 /**
@@ -137,24 +136,17 @@ public class ClassReferenceProvider extends CachingValueProvider {
 
 	@Override
 	protected Flux<StsValueHint> getValuesAsync(IJavaProject javaProject, String query) {
-		IType targetType = target == null || target.isEmpty() ? javaProject.getIndex().findType("java.lang.Object") : javaProject.getIndex().findType(target);
-		if (targetType == null) {
-			return Flux.empty();
-		}
-		Set<IType> allSubclasses = javaProject.getIndex()
-				.allSubtypesOf(targetType)
-				.filter(t -> Flags.isPublic(t.getFlags()) && !concrete || !isAbstract(t))
-				.collect(Collectors.toSet())
-				.block();
-		if (allSubclasses.isEmpty()) {
-			return Flux.empty();
+		Flux<Tuple2<IType, Double>> typesWithScoresFlux = Flux.empty();
+
+		if (target == null) {
+			typesWithScoresFlux = javaProject.getIndex().fuzzySearchTypes(query, true, false);
 		} else {
-			return Flux.fromIterable(allSubclasses)
-					.map(type -> Tuples.of(type, FuzzyMatcher.matchScore(query, type.getFullyQualifiedName())))
-					.collectSortedList((o1, o2) -> o2.getT2().compareTo(o1.getT2()))
-					.flatMapIterable(l -> l)
-					.map(t -> StsValueHint.create(sourceLinks, javaProject, t.getT1()));
+			typesWithScoresFlux = javaProject.getIndex().allSubtypesOf(target, true)
+					.filter(t -> Flags.isPublic(t.getFlags()) && !concrete || !isAbstract(t))
+					.map(type -> Tuples.of(type, FuzzyMatcher.matchScore(query, type.getFullyQualifiedName())));
 		}
+		return typesWithScoresFlux.collectSortedList((o1, o2) -> o2.getT2().compareTo(o1.getT2()))
+				.flatMapIterable(l -> l).map(t -> StsValueHint.create(sourceLinks, javaProject, t.getT1()));
 	}
 
 }

@@ -61,12 +61,12 @@ public class JavaIndexTest {
 	@Test
 	public void fuzzySearchNoFilter() throws Exception {
 		MavenJavaProject project = mavenProjectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file");
-		List<Tuple2<String, Double>> results = project.getIndex().fuzzySearchTypes("util.Map", true, true)
+		List<Tuple2<IType, Double>> results = project.getIndex().fuzzySearchTypes("util.Map", true, true)
 				.collectSortedList((o1, o2) -> o2.getT2().compareTo(o1.getT2()))
 				.block();
 		assertTrue(results.size() > 10);
-		String type = results.get(0).getT1();
-		assertEquals("java.util.Map", type);
+		IType type = results.get(0).getT1();
+		assertEquals("java.util.Map", type.getFullyQualifiedName());
 	}
 
 	@Test
@@ -116,7 +116,6 @@ public class JavaIndexTest {
 		IType type = project.getIndex().findType("java.util.ArrayList");
 		assertNotNull(type);
 		IMethod m = type.getMethod("clear", Stream.empty());
-		System.out.println("Method clear: " + m.getBindingKey());
 		assertEquals("clear", m.getElementName());
 		assertEquals(IVoidType.DEFAULT, m.getReturnType());
 		assertEquals(0, m.parameters().count());
@@ -164,10 +163,27 @@ public class JavaIndexTest {
 	@Test
 	public void testFindAllSuperTypes() throws Exception {
 		MavenJavaProject project = mavenProjectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file");
-		IType type = project.getIndex().findType("java.util.ArrayList");
-		assertNotNull(type);
-		Set<String> actual = project.getIndex().allSuperTypesOf(type).map(t -> t.getFullyQualifiedName()).collect(Collectors.toSet()).block();
+		Set<String> actual = project.getIndex().allSuperTypesOf("java.util.ArrayList", false).map(t -> t.getFullyQualifiedName()).collect(Collectors.toSet()).block();
 		Set<String> expected = new HashSet<>(Arrays.asList(
+				"java.util.List",
+				"java.util.RandomAccess",
+				"java.lang.Cloneable",
+				"java.io.Serializable",
+				"java.util.AbstractList",
+				"java.util.Collection",
+				"java.lang.Object",
+				"java.util.AbstractCollection",
+				"java.lang.Iterable"
+		));
+		assertEquals(expected, actual);
+	}
+
+	@Test
+	public void testFindAllSuperTypesWithFocusType() throws Exception {
+		MavenJavaProject project = mavenProjectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file");
+		Set<String> actual = project.getIndex().allSuperTypesOf("java.util.ArrayList", true).map(t -> t.getFullyQualifiedName()).collect(Collectors.toSet()).block();
+		Set<String> expected = new HashSet<>(Arrays.asList(
+				"java.util.ArrayList",
 				"java.util.List",
 				"java.util.RandomAccess",
 				"java.lang.Cloneable",

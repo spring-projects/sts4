@@ -23,6 +23,7 @@ import org.springframework.ide.vscode.commons.protocol.java.JavaDataParams;
 import org.springframework.ide.vscode.commons.protocol.java.JavaSearchParams;
 import org.springframework.ide.vscode.commons.protocol.java.JavaTypeHierarchyParams;
 import org.springframework.ide.vscode.commons.protocol.java.TypeData;
+import org.springframework.ide.vscode.commons.protocol.java.TypeDescriptorData;
 
 /**
  * Some 'custom' extensions to standard LSP {@link LanguageClient}.
@@ -59,15 +60,15 @@ public interface STS4LanguageClient extends LanguageClient {
 	CompletableFuture<Location> javaLocation(JavaDataParams params);
 	
 	@JsonRequest("sts/javaSearchTypes")
-	CompletableFuture<List<String>> javaSearchTypes(JavaSearchParams params);
+	CompletableFuture<List<TypeDescriptorData>> javaSearchTypes(JavaSearchParams params);
 	
 	@JsonRequest("sts/javaSearchPackages")
 	CompletableFuture<List<String>> javaSearchPackages(JavaSearchParams params);
 	
 	@JsonRequest("sts/javaSubTypes")
-	CompletableFuture<List<TypeData>> javaSubTypes(JavaTypeHierarchyParams params);
+	CompletableFuture<List<TypeDescriptorData>> javaSubTypes(JavaTypeHierarchyParams params);
 	
 	@JsonRequest("sts/javaSuperTypes")
-	CompletableFuture<List<TypeData>> javaSuperTypes(JavaTypeHierarchyParams params);
+	CompletableFuture<List<TypeDescriptorData>> javaSuperTypes(JavaTypeHierarchyParams params);
 
 }

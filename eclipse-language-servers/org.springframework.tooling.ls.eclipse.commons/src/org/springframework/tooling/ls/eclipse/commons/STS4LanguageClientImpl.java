@@ -72,6 +72,7 @@ import org.springframework.ide.vscode.commons.protocol.java.JavaDataParams;
 import org.springframework.ide.vscode.commons.protocol.java.JavaSearchParams;
 import org.springframework.ide.vscode.commons.protocol.java.JavaTypeHierarchyParams;
 import org.springframework.ide.vscode.commons.protocol.java.TypeData;
+import org.springframework.ide.vscode.commons.protocol.java.TypeDescriptorData;
 import org.springframework.tooling.jdt.ls.commons.Logger;
 import org.springframework.tooling.jdt.ls.commons.classpath.ReusableClasspathListenerHandler;
 import org.springframework.tooling.jdt.ls.commons.java.JavaData;
@@ -126,7 +127,7 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 
 	final private JavaData javaData = new JavaData(STS4LanguageClientImpl::label , Logger.forEclipsePlugin(LanguageServerCommonsActivator::getInstance));
 
-	final private JavaFluxSearch javaFluxSearch = new JavaFluxSearch(Logger.forEclipsePlugin(LanguageServerCommonsActivator::getInstance));
+	final private JavaFluxSearch javaFluxSearch = new JavaFluxSearch(Logger.forEclipsePlugin(LanguageServerCommonsActivator::getInstance), javaData);
 
 	final private TypeHierarchy typeHierarchy = new TypeHierarchy(Logger.forEclipsePlugin(LanguageServerCommonsActivator::getInstance), javaData);
 
@@ -440,11 +441,10 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 	}
 
 	@Override
-	public CompletableFuture<List<String>> javaSearchTypes(JavaSearchParams params) {
+	public CompletableFuture<List<TypeDescriptorData>> javaSearchTypes(JavaSearchParams params) {
 		return CompletableFuture.supplyAsync(() -> {
 			try {
-				List<String> types = javaFluxSearch.fuzzySearchTypes(params);
-				return types;
+				return javaFluxSearch.fuzzySearchTypes(params);
 			} catch (Exception e) {
 				LanguageServerCommonsActivator.logError(e, "Failed to search type with term '" + params.getTerm()
 						+ "' in project " + params.getProjectUri());
@@ -467,16 +467,16 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 	}
 
 	@Override
-	public CompletableFuture<List<TypeData>> javaSubTypes(JavaTypeHierarchyParams params) {
+	public CompletableFuture<List<TypeDescriptorData>> javaSubTypes(JavaTypeHierarchyParams params) {
 		return CompletableFuture.supplyAsync(() ->
-			typeHierarchy.subTypes(params.getProjectUri() == null ? null : URI.create(params.getProjectUri()), params.getFqName()).collect(Collectors.toList())
+			typeHierarchy.subTypes(params).collect(Collectors.toList())
 		);
 	}
 
 	@Override
-	public CompletableFuture<List<TypeData>> javaSuperTypes(JavaTypeHierarchyParams params) {
+	public CompletableFuture<List<TypeDescriptorData>> javaSuperTypes(JavaTypeHierarchyParams params) {
 		return CompletableFuture.supplyAsync(() ->
-			typeHierarchy.superTypes(params.getProjectUri() == null ? null : URI.create(params.getProjectUri()), params.getFqName()).collect(Collectors.toList())
+			typeHierarchy.superTypes(params).collect(Collectors.toList())
 		);
 	}
 

@@ -26,7 +26,7 @@ public class JavaHelpers {
 	
 	final public static Supplier<JavaData> DATA = Suppliers.memoize(() -> new JavaData(element -> HoverInfoProvider.computeSignature(element).getValue(), logger));
 	
-	final public static Supplier<JavaFluxSearch> SEARCH = Suppliers.memoize(() -> new JavaFluxSearch(logger));
+	final public static Supplier<JavaFluxSearch> SEARCH = Suppliers.memoize(() -> new JavaFluxSearch(logger, DATA.get()));
 	
 	final public static Supplier<TypeHierarchy> HIERARCHY = Suppliers.memoize(() -> new TypeHierarchy(logger, DATA.get()));
 

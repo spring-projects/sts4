@@ -29,6 +29,7 @@ import org.springframework.ide.vscode.commons.protocol.java.JavaDataParams;
 import org.springframework.ide.vscode.commons.protocol.java.JavaSearchParams;
 import org.springframework.ide.vscode.commons.protocol.java.JavaTypeHierarchyParams;
 import org.springframework.ide.vscode.commons.protocol.java.TypeData;
+import org.springframework.ide.vscode.commons.protocol.java.TypeDescriptorData;
 import org.springframework.tooling.ls.eclipse.commons.STS4LanguageClientImpl;
 
 public class JavaLangugeClientTest {
@@ -87,32 +88,32 @@ public class JavaLangugeClientTest {
 
 	@Test
 	public void fuzzyFindTypesIncludingSysLibs() throws Exception {
-		List<String> data = client
+		List<TypeDescriptorData> data = client
 				.javaSearchTypes(new JavaSearchParams(project.getLocationURI().toString(), "util.Map", true, true))
 				.get(100, TimeUnit.SECONDS);
 		assertNotNull(data);
 		assertEquals(500, data.size());
-		List<String> closeMatches = data.stream().filter(t -> t.contains("util.Map")).collect(Collectors.toList());
+		List<String> closeMatches = data.stream().map(t -> t.getFqName()).filter(t -> t.contains("util.Map")).collect(Collectors.toList());
 		assertEquals(2, closeMatches.size());
 		assertNotNull(closeMatches.stream().filter(t -> "java.util.Map".equals(t)).findFirst().orElse(null));
 	}
 	
 	@Test
 	public void fuzzyFindTypesExcludingSysLibs() throws Exception {
-		List<String> data = client
+		List<TypeDescriptorData> data = client
 				.javaSearchTypes(new JavaSearchParams(project.getLocationURI().toString(), "util.Map", true, false))
 				.get(10, TimeUnit.SECONDS);
 		assertNotNull(data);
 		assertEquals(186, data.size());
-//		TestUtils.saveJsonData("search-util-map.json", data);
-		List<String> closeMatches = data.stream().filter(t -> t.contains("util.Map")).collect(Collectors.toList());
+		TestUtils.saveJsonData("search-util-map.json", data);
+		List<String> closeMatches = data.stream().map(t -> t.getFqName()).filter(t -> t.contains("util.Map")).collect(Collectors.toList());
 		assertEquals(1, closeMatches.size());
 		assertEquals("io.netty.util.Mapping", closeMatches.get(0));
 	}
 	
 	@Test
 	public void fuzzyFindAllTypesExcludingSysLibs() throws Exception {
-		List<String> data = client
+		List<TypeDescriptorData> data = client
 				.javaSearchTypes(new JavaSearchParams(project.getLocationURI().toString(), "", true, false))
 				.get(1000, TimeUnit.SECONDS);
 		assertNotNull(data);
@@ -141,8 +142,8 @@ public class JavaLangugeClientTest {
 	
 	@Test
 	public void map_Subtypes() throws Exception {
-		List<TypeData> data = client
-				.javaSubTypes(new JavaTypeHierarchyParams(project.getLocationURI().toString(), "java.util.Map"))
+		List<TypeDescriptorData> data = client
+				.javaSubTypes(new JavaTypeHierarchyParams(project.getLocationURI().toString(), "java.util.Map", false))
 				.get(10, TimeUnit.SECONDS);
 		assertNotNull(data);
 		assertTrue(data.size() > 200);
@@ -150,9 +151,19 @@ public class JavaLangugeClientTest {
 	}
 	
 	@Test
+	public void map_Subtypes_with_Itself() throws Exception {
+		List<TypeDescriptorData> data = client
+				.javaSubTypes(new JavaTypeHierarchyParams(project.getLocationURI().toString(), "java.util.Map", true))
+				.get(10, TimeUnit.SECONDS);
+		assertNotNull(data);
+		assertTrue(data.size() > 200);
+		assertTrue(data.stream().filter(t -> "java.util.Map".equals(t.getFqName())).findFirst().isPresent());
+	}
+	
+	@Test
 	public void arrayList_SuperTypes() throws Exception {
-		List<TypeData> data = client
-				.javaSuperTypes(new JavaTypeHierarchyParams(project.getLocationURI().toString(), "java.util.ArrayList"))
+		List<TypeDescriptorData> data = client
+				.javaSuperTypes(new JavaTypeHierarchyParams(project.getLocationURI().toString(), "java.util.ArrayList", false))
 				.get(10, TimeUnit.SECONDS);
 		assertNotNull(data);
 		Set<String> actual = data.stream().map(t -> t.getFqName()).collect(Collectors.toSet());
@@ -171,10 +182,32 @@ public class JavaLangugeClientTest {
 	}
 
 	@Test
+	public void arrayList_SuperTypes_with_Itself() throws Exception {
+		List<TypeDescriptorData> data = client
+				.javaSuperTypes(new JavaTypeHierarchyParams(project.getLocationURI().toString(), "java.util.ArrayList", true))
+				.get(10, TimeUnit.SECONDS);
+		assertNotNull(data);
+		Set<String> actual = data.stream().map(t -> t.getFqName()).collect(Collectors.toSet());
+		Set<String> expected = new HashSet<>(Arrays.asList(
+				"java.util.ArrayList",
+				"java.util.List",
+				"java.util.RandomAccess",
+				"java.lang.Cloneable",
+				"java.io.Serializable",
+				"java.util.AbstractList",
+				"java.util.Collection",
+				"java.lang.Object",
+				"java.util.AbstractCollection",
+				"java.lang.Iterable"
+		));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
 	public void taskExecutorFactoryBean_SuperTypes() throws Exception {
-		List<TypeData> data = client
+		List<TypeDescriptorData> data = client
 				.javaSuperTypes(new JavaTypeHierarchyParams(project.getLocationURI().toString(), "org.springframework.scheduling.config.TaskExecutorFactoryBean"))
-				.get(100000, TimeUnit.SECONDS);
+				.get(10, TimeUnit.SECONDS);
 		assertNotNull(data);
 		Set<String> actual = data.stream().map(t -> t.getFqName()).collect(Collectors.toSet());
 		Set<String> expected = new HashSet<>(Arrays.asList(

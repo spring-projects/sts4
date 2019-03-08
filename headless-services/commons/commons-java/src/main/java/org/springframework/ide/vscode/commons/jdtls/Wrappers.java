@@ -32,12 +32,14 @@ import org.springframework.ide.vscode.commons.java.ITypeVariable;
 import org.springframework.ide.vscode.commons.java.IUnresolvedTypeVariable;
 import org.springframework.ide.vscode.commons.java.IVoidType;
 import org.springframework.ide.vscode.commons.java.IWildcardType;
+import org.springframework.ide.vscode.commons.java.JavaUtils;
 import org.springframework.ide.vscode.commons.javadoc.IJavadoc;
 import org.springframework.ide.vscode.commons.protocol.java.JavaTypeData;
 import org.springframework.ide.vscode.commons.protocol.java.TypeData;
 import org.springframework.ide.vscode.commons.protocol.java.TypeData.AnnotationData;
 import org.springframework.ide.vscode.commons.protocol.java.TypeData.FieldData;
 import org.springframework.ide.vscode.commons.protocol.java.TypeData.MethodData;
+import org.springframework.ide.vscode.commons.protocol.java.TypeDescriptorData;
 
 import com.google.common.base.Supplier;
 
@@ -490,5 +492,112 @@ public class Wrappers {
 
 		};
 	}
+
+	public static IType wrap(TypeDescriptorData descriptor, Supplier<IType> lazyType, Supplier<IType> declaringTypeSupplier, IJavadocProvider javadocProvider) {
+		return new IType() {
+
+			@Override
+			public int getFlags() {
+				return descriptor.getFlags();
+			}
+
+			@Override
+			public IType getDeclaringType() {
+				return declaringTypeSupplier.get();
+			}
+
+			@Override
+			public IJavaModuleData classpathContainer() {
+				return lazyType.get().classpathContainer();
+			}
+
+			@Override
+			public String signature() {
+				return descriptor.getLabel();
+			}
+
+			@Override
+			public String getElementName() {
+				return descriptor.getName();
+			}
+
+			@Override
+			public IJavadoc getJavaDoc() {
+				return javadocProvider.getJavadoc(this);
+			}
+
+			@Override
+			public String getBindingKey() {
+				return JavaUtils.typeFqNametoBindingKey(getFullyQualifiedName());
+			}
+
+			@Override
+			public boolean exists() {
+				return true;
+			}
+
+			@Override
+			public Stream<IAnnotation> getAnnotations() {
+				return lazyType.get().getAnnotations();
+			}
+
+			@Override
+			public boolean isClass() {
+				return descriptor.isClass();
+			}
+
+			@Override
+			public boolean isEnum() {
+				return descriptor.isEnum();
+			}
+
+			@Override
+			public boolean isInterface() {
+				return descriptor.isInterface();
+			}
+
+			@Override
+			public boolean isAnnotation() {
+				return descriptor.isAnnotation();
+			}
+
+			@Override
+			public String getFullyQualifiedName() {
+				return descriptor.getFqName();
+			}
+
+			@Override
+			public IField getField(String name) {
+				return getFields().filter(f -> name.equals(f.getElementName())).findFirst().orElse(null);
+			}
+
+			@Override
+			public Stream<IField> getFields() {
+				return lazyType.get().getFields();
+			}
+
+			@Override
+			public IMethod getMethod(String name, Stream<IJavaType> parameters) {
+				return lazyType.get().getMethod(name, parameters);
+			}
+
+			@Override
+			public Stream<IMethod> getMethods() {
+				return lazyType.get().getMethods();
+			}
+
+			@Override
+			public String getSuperclassName() {
+				return descriptor.getSuperClassName();
+			}
+
+			@Override
+			public String[] getSuperInterfaceNames() {
+				return descriptor.getSuperInterfaceNames();
+			}
+
+		};
+	}
+
 
 }

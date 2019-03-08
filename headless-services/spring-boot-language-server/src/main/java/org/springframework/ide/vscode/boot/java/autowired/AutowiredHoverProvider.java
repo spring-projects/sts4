@@ -242,9 +242,9 @@ public class AutowiredHoverProvider implements HoverProvider {
 			// Raw collections shouldn't match any beans
 			return type.getTypeArguments().length == 1 ? matchBeansByType(project, beans, type.getTypeArguments()[0].getQualifiedName(), false) : ImmutableList.of();
 		} else if (type.isArray() && type.getDimensions() == 1) {
-			return matchBeansByType(project, beans, type.getElementType().getErasure().getQualifiedName(), false);
+			return matchBeansByType(project, beans, type.getElementType().getErasure().getBinaryName(), false);
 		} else {
-			return matchBeansByType(project, beans, type.getErasure().getQualifiedName(), true);
+			return matchBeansByType(project, beans, type.getErasure().getBinaryName(), true);
 		}
 	}
 
@@ -269,16 +269,8 @@ public class AutowiredHoverProvider implements HoverProvider {
 		// Trim the generic parameters part if it's present
 		String liveBeanTypeFQName = idx < 0 ? rawLiveBeanFqName : rawLiveBeanFqName.substring(0, idx);
 		if (liveBeanTypeFQName != null) {
-			if (liveBeanTypeFQName.replace('$', '.').equals(bindingQualifiedName)) {
-				return true;
-			} else {
-				IType type = jp.getIndex().findType(liveBeanTypeFQName);
-				String fqTypeName = bindingQualifiedName;
-				if (type != null) {
-					return jp.getIndex().allSuperTypesOf(type).map(IType::getFullyQualifiedName)
-							.filter(fqn -> fqTypeName.equals(fqn.replace('$', '.'))).blockFirst() != null;
-				}
-			}
+			return jp.getIndex().allSuperTypesOf(liveBeanTypeFQName, true).map(IType::getFullyQualifiedName)
+					.filter(fqn -> bindingQualifiedName.equals(fqn)).blockFirst() != null;
 		}
 		return false;
 	}

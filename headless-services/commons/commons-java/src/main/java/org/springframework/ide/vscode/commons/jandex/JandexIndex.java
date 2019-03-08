@@ -28,6 +28,7 @@ import com.google.common.cache.CacheBuilder;
 
 import reactor.core.publisher.Flux;
 import reactor.util.function.Tuple2;
+import reactor.util.function.Tuples;
 
 public class JandexIndex extends BasicJandexIndex {
 
@@ -79,6 +80,10 @@ public class JandexIndex extends BasicJandexIndex {
 			log.error("Failed to retrieve javadoc provider for resource " + classpathResource, e);
 		}
 		return Wrappers.wrap(this, match.getT1(), match.getT2(), javadocProvider);
+	}
+
+	Flux<Tuple2<IType, Double>> fuzzySearchITypes(String searchTerm) {
+		return fuzzySearchTypes(searchTerm).map(m -> Tuples.of(createType(Tuples.of(m.getT1(), m.getT2())), m.getT3()));
 	}
 
 	public Flux<IType> allSubtypesOf(IType type) {

@@ -43,6 +43,7 @@ import org.springframework.ide.vscode.commons.protocol.java.TypeData.AnnotationD
 import org.springframework.ide.vscode.commons.protocol.java.TypeData.ClasspathEntryData;
 import org.springframework.ide.vscode.commons.protocol.java.TypeData.FieldData;
 import org.springframework.ide.vscode.commons.protocol.java.TypeData.MethodData;
+import org.springframework.ide.vscode.commons.protocol.java.TypeDescriptorData;
 import org.springframework.tooling.jdt.ls.commons.Logger;
 import org.springframework.tooling.jdt.ls.commons.classpath.ClasspathUtil;
 import org.springframework.tooling.jdt.ls.commons.javadoc.JavadocUtils;
@@ -256,10 +257,29 @@ public class JavaData {
 		return data;
 	}
 	
-	private void fillTypeData(IType type, TypeData data) {
-		fillMemberData(type, data);
-		
+	public TypeDescriptorData createTypeDescriptorData(IType type) {
+		TypeDescriptorData data = new TypeDescriptorData();
+		fillTypeDescriptorData(type, data);
+		return data;
+	}
+	
+	private void fillTypeDescriptorData(IType type, TypeDescriptorData data) {
+		fillMemberData(type, data);		
 		data.setFqName(type.getFullyQualifiedName());
+		try {
+			data.setAnnotation(type.isAnnotation());
+			data.setClass(type.isClass());
+			data.setEnum(type.isEnum());
+			data.setInterface(type.isInterface());
+			data.setSuperClassName(type.getSuperclassName());
+			data.setSuperInterfaceNames(type.getSuperInterfaceNames());
+		} catch (JavaModelException e) {
+			logger.log(e);
+		}
+	}
+	
+	private void fillTypeData(IType type, TypeData data) {
+		fillTypeDescriptorData(type, data);
 		
 		data.setBindingKey(type.getKey());
 		
@@ -276,12 +296,6 @@ public class JavaData {
 			for (IAnnotation annotation : type.getAnnotations()) {
 				annotationsBuilder.add(createAnnotationData(type, annotation));
 			}
-			data.setAnnotation(type.isAnnotation());
-			data.setClass(type.isClass());
-			data.setEnum(type.isEnum());
-			data.setInterface(type.isInterface());
-			data.setSuperClassName(type.getSuperclassName());
-			data.setSuperInterfaceNames(type.getSuperInterfaceNames());
 		} catch (JavaModelException e) {
 			logger.log(e);
 		}

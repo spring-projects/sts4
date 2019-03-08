@@ -11,8 +11,11 @@
 package org.springframework.ide.vscode.commons.jdtls;
 
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -29,6 +32,7 @@ import org.springframework.ide.vscode.commons.protocol.java.JavaDataParams;
 import org.springframework.ide.vscode.commons.protocol.java.JavaSearchParams;
 import org.springframework.ide.vscode.commons.protocol.java.JavaTypeHierarchyParams;
 import org.springframework.ide.vscode.commons.protocol.java.TypeData;
+import org.springframework.ide.vscode.commons.protocol.java.TypeDescriptorData;
 import org.springframework.ide.vscode.commons.util.FuzzyMatcher;
 
 import com.google.common.base.Suppliers;
@@ -51,7 +55,9 @@ public class JdtLsIndex implements ClasspathIndex {
 	private final URI projectUri;
 	private final JdtLsJavadocProvider javadocProvider;
 
-	private Cache<String, Optional<IType>> cache = CacheBuilder.newBuilder().expireAfterAccess(10, TimeUnit.SECONDS).build();
+	final private Cache<String, Optional<IType>> typeCache = CacheBuilder.newBuilder().expireAfterAccess(10, TimeUnit.SECONDS).build();
+	final private Cache<JavaTypeHierarchyParams, CompletableFuture<List<IType>>> supertypesCache = CacheBuilder.newBuilder().expireAfterAccess(10, TimeUnit.SECONDS).build();
+	final private Cache<JavaTypeHierarchyParams, CompletableFuture<List<IType>>> subtypesCache = CacheBuilder.newBuilder().expireAfterAccess(10, TimeUnit.SECONDS).build();
 
 	public JdtLsIndex(STS4LanguageClient client, URI projectUri) {
 		this.client = client;
@@ -69,10 +75,16 @@ public class JdtLsIndex implements ClasspathIndex {
 		return Wrappers.wrap(data, Suppliers.memoize(() -> declaringTypeFqName == null ? null : findType(declaringTypeFqName)), javadocProvider);
 	}
 
+	private IType toTypeFromDescriptor(TypeDescriptorData data) {
+		String declaringTypeBindingKey = data.getDeclaringType();
+		String declaringTypeFqName = JavaUtils.typeBindingKeyToFqName(declaringTypeBindingKey);
+		return Wrappers.wrap(data, Suppliers.memoize(() -> findType(data.getFqName())), Suppliers.memoize(() -> declaringTypeFqName == null ? null : findType(declaringTypeFqName)), javadocProvider);
+	}
+
 	@Override
 	public IType findType(String fqName) {
 		try {
-			return cache.get(fqName, () -> {
+			return typeCache.get(fqName, () -> {
 				JavaDataParams params = new JavaDataParams(projectUri.toString(), "L" + fqName.replace('.', '/') + ";", false);
 				try {
 					TypeData data = client.javaType(params).get(500, TimeUnit.MILLISECONDS);
@@ -91,12 +103,12 @@ public class JdtLsIndex implements ClasspathIndex {
 	}
 
 	@Override
-	public Flux<Tuple2<String, Double>> fuzzySearchTypes(String searchTerm, boolean includeBinaries, boolean includeSystemLibs) {
+	public Flux<Tuple2<IType, Double>> fuzzySearchTypes(String searchTerm, boolean includeBinaries, boolean includeSystemLibs) {
 		JavaSearchParams searchParams = new JavaSearchParams(projectUri.toString(), searchTerm, includeBinaries, includeSystemLibs, SEARCH_TIMEOUT);
 		return Mono.fromFuture(client.javaSearchTypes(searchParams))
 				.flatMapMany(results -> Flux.fromIterable(results).publishOn(Schedulers.parallel()))
 				.filter(Objects::nonNull)
-				.map(type -> Tuples.of(type,  FuzzyMatcher.matchScore(searchTerm, type)))
+				.map(type -> Tuples.of(toTypeFromDescriptor(type),  FuzzyMatcher.matchScore(searchTerm, type.getFqName())))
 				.filter(tuple -> tuple.getT2() != 0.0);
 	}
 
@@ -110,22 +122,42 @@ public class JdtLsIndex implements ClasspathIndex {
 				.filter(tuple -> tuple.getT2() != 0.0);
 	}
 
-	@Override
-	public Flux<IType> allSubtypesOf(IType type) {
-		JavaTypeHierarchyParams searchParams = new JavaTypeHierarchyParams(projectUri.toString(), type.getFullyQualifiedName());
-		return Mono.fromFuture(client.javaSubTypes(searchParams))
-				.flatMapMany(results -> Flux.fromIterable(results).publishOn(Schedulers.parallel()))
-				.filter(Objects::nonNull)
-				.map(this::toType);
+	private List<IType> convertTypeDescriptors(List<TypeDescriptorData> descriptors) {
+		List<IType> types = new ArrayList<>(descriptors.size());
+		for (TypeDescriptorData data : descriptors) {
+			if (data != null) {
+				types.add(toTypeFromDescriptor(data));
+			}
+		}
+		return types;
 	}
 
 	@Override
-	public Flux<IType> allSuperTypesOf(IType type) {
-		JavaTypeHierarchyParams searchParams = new JavaTypeHierarchyParams(projectUri.toString(), type.getFullyQualifiedName());
-		return Mono.fromFuture(client.javaSuperTypes(searchParams))
-				.flatMapMany(results -> Flux.fromIterable(results).publishOn(Schedulers.parallel()))
-				.filter(Objects::nonNull)
-				.map(this::toType);
+	public Flux<IType> allSubtypesOf(String fqName, boolean includeFocusType) {
+		JavaTypeHierarchyParams searchParams = new JavaTypeHierarchyParams(projectUri.toString(), fqName, includeFocusType);
+		try {
+			CompletableFuture<List<IType>> future = subtypesCache.get(searchParams, () -> client
+					.javaSubTypes(searchParams).handle((results, exception) -> convertTypeDescriptors(results)));
+			return Mono.fromFuture(future)
+					.flatMapMany(results -> Flux.fromIterable(results));
+		} catch (ExecutionException e) {
+			log.error("{}", e);
+			return Flux.empty();
+		}
+	}
+
+	@Override
+	public Flux<IType> allSuperTypesOf(String fqName, boolean includeFocusType) {
+		JavaTypeHierarchyParams searchParams = new JavaTypeHierarchyParams(projectUri.toString(), fqName, includeFocusType);
+		try {
+			CompletableFuture<List<IType>> future = supertypesCache.get(searchParams, () -> client
+					.javaSuperTypes(searchParams).handle((results, exception) -> convertTypeDescriptors(results)));
+			return Mono.fromFuture(future)
+					.flatMapMany(results -> Flux.fromIterable(results));
+		} catch (ExecutionException e) {
+			log.error("{}", e);
+			return Flux.empty();
+		}
 	}
 
 	@Override

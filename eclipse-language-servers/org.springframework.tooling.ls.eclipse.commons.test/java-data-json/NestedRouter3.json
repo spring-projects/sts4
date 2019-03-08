@@ -1,11 +1,5 @@
 {
-  "fqName": "org.test.NestedRouter3",
   "bindingKey": "Lorg/test/NestedRouter3;",
-  "clazz": true,
-  "annotation": false,
-  "interfaze": false,
-  "enam": false,
-  "superInterfaceNames": [],
   "fields": [],
   "methods": [
     {
@@ -62,6 +56,12 @@
       "isOwn": true
     }
   },
+  "fqName": "org.test.NestedRouter3",
+  "clazz": true,
+  "annotation": false,
+  "interfaze": false,
+  "enam": false,
+  "superInterfaceNames": [],
   "flags": 1,
   "name": "NestedRouter3",
   "handleIdentifier": "\u003dtest-webflux-project/src\\/main\\/java\u003corg.test{NestedRouter3.java[NestedRouter3",

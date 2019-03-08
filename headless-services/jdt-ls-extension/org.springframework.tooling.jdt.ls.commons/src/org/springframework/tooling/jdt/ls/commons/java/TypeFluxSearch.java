@@ -17,18 +17,22 @@ import static org.springframework.tooling.jdt.ls.commons.java.SearchUtils.toWild
 
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IType;
+import org.springframework.ide.vscode.commons.protocol.java.TypeDescriptorData;
 import org.springframework.tooling.jdt.ls.commons.Logger;
 
 import reactor.core.publisher.Flux;
 
-public class TypeFluxSearch extends CachingFluxJavaSearch<String> {
+public class TypeFluxSearch extends CachingFluxJavaSearch<TypeDescriptorData> {
 
-	public TypeFluxSearch(Logger logger, boolean includeBinaries, boolean includeSystemLibs) {
+	private JavaData javaData;
+
+	public TypeFluxSearch(Logger logger, JavaData javaData, boolean includeBinaries, boolean includeSystemLibs) {
 		super(logger, includeBinaries, includeSystemLibs);
+		this.javaData = javaData;
 	}
 
 	@Override
-	protected Flux<String> getValuesAsync(IJavaProject javaProject, String searchTerm) {
+	protected Flux<TypeDescriptorData> getValuesAsync(IJavaProject javaProject, String searchTerm) {
 		try {
 			return new FluxJdtSearch(logger)
 				.scope(searchScope(javaProject, includeBinaries, includeSystemLibs))
@@ -36,7 +40,7 @@ public class TypeFluxSearch extends CachingFluxJavaSearch<String> {
 				.search()
 				.map(match -> match.getElement())
 				.filter(o -> o instanceof IType)
-				.map(e -> ((IType) e).getFullyQualifiedName());
+				.map(e -> javaData.createTypeDescriptorData((IType) e));
 		} catch (Exception e) {
 			logger.log(e);
 			return Flux.empty();
@@ -44,8 +48,8 @@ public class TypeFluxSearch extends CachingFluxJavaSearch<String> {
 	}
 
 	@Override
-	protected String stringValue(String t) {
-		return t;
+	protected String stringValue(TypeDescriptorData t) {
+		return t.getFqName();
 	}
 
 }

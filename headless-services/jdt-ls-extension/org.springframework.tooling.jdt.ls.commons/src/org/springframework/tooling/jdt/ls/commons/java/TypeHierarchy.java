@@ -11,14 +11,14 @@
 package org.springframework.tooling.jdt.ls.commons.java;
 
 import java.net.URI;
-import java.util.Arrays;
 import java.util.stream.Stream;
 
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.ITypeHierarchy;
-import org.springframework.ide.vscode.commons.protocol.java.TypeData;
+import org.springframework.ide.vscode.commons.protocol.java.JavaTypeHierarchyParams;
+import org.springframework.ide.vscode.commons.protocol.java.TypeDescriptorData;
 import org.springframework.tooling.jdt.ls.commons.Logger;
 import org.springframework.tooling.jdt.ls.commons.resources.ResourceUtils;
 
@@ -62,20 +62,26 @@ public class TypeHierarchy {
 		return null;
 	}
 	
-	public Stream<TypeData> subTypes(URI projectUri, String fqName) {
-		ITypeHierarchy hierarchy = hierarchy(projectUri, fqName, false);
+	public Stream<TypeDescriptorData> subTypes(JavaTypeHierarchyParams params) {
+		URI projectUri = params.getProjectUri() == null ? null : URI.create(params.getProjectUri());
+		ITypeHierarchy hierarchy = hierarchy(projectUri, params.getFqName(), false);
 		if (hierarchy != null) {
-			return Arrays.stream(hierarchy.getAllSubtypes(hierarchy.getType())).parallel().map(javaData::createTypeData);
+			IType focusType = hierarchy.getType();
+			return Stream.concat(params.isIncludeFocusType() ? Stream.of(focusType) : Stream.empty(), Stream.of(hierarchy.getAllSubtypes(focusType)))
+					.parallel()
+					.map(javaData::createTypeDescriptorData);
 		}
 		return Stream.of();
 	}
 
-	public Stream<TypeData> superTypes(URI projectUri, String fqName) {
-		ITypeHierarchy hierarchy = hierarchy(projectUri, fqName, true);
+	public Stream<TypeDescriptorData> superTypes(JavaTypeHierarchyParams params) {
+		URI projectUri = params.getProjectUri() == null ? null : URI.create(params.getProjectUri());
+		ITypeHierarchy hierarchy = hierarchy(projectUri, params.getFqName(), true);
 		if (hierarchy != null) {
-			return Arrays.stream(hierarchy.getAllSupertypes(hierarchy.getType()))
+			IType focusType = hierarchy.getType();
+			return Stream.concat(params.isIncludeFocusType() ? Stream.of(focusType) : Stream.empty(), Stream.of(hierarchy.getAllSupertypes(focusType)))
 				.parallel()
-				.map(javaData::createTypeData);
+				.map(javaData::createTypeDescriptorData);
 		}
 		return Stream.of();
 	}

@@ -53,9 +53,11 @@ interface JavaSearchParams {
     term: string;
     includeBinaries: boolean;
     includeSystemLibs: boolean;
+    timeLimit: number
 }
 
 interface JavaTypeHierarchyParams {
     projectUri?: string;
     fqName: string;
+    includeFocusType: boolean;
 }

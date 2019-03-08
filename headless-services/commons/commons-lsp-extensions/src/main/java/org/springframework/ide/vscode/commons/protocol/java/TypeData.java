@@ -10,35 +10,18 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.protocol.java;
 
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
 import org.springframework.ide.vscode.commons.protocol.java.Classpath.CPE;
 
-public class TypeData extends MemberData {
+public class TypeData extends TypeDescriptorData {
 
-	private String fqName;
 	private String bindingKey;
-	private boolean clazz;
-	private boolean annotation;
-	private boolean interfaze;
-	private boolean enam;
-	private String superClassName;
-	private String[] superInterfaceNames;
 	private List<FieldData> fields;
 	private List<MethodData> methods;
 	private List<AnnotationData> annotations;
-
 	private ClasspathEntryData classpathEntry;
-
-	public String getFqName() {
-		return fqName;
-	}
-
-	public void setFqName(String fqName) {
-		this.fqName = fqName;
-	}
 
 	public List<FieldData> getFields() {
 		return fields;
@@ -72,54 +55,6 @@ public class TypeData extends MemberData {
 		this.classpathEntry = classpathContainer;
 	}
 
-	public boolean isClass() {
-		return clazz;
-	}
-
-	public void setClass(boolean clazz) {
-		this.clazz = clazz;
-	}
-
-	public boolean isAnnotation() {
-		return annotation;
-	}
-
-	public void setAnnotation(boolean annotation) {
-		this.annotation = annotation;
-	}
-
-	public boolean isInterface() {
-		return interfaze;
-	}
-
-	public void setInterface(boolean interfaze) {
-		this.interfaze = interfaze;
-	}
-
-	public boolean isEnum() {
-		return enam;
-	}
-
-	public void setEnum(boolean enam) {
-		this.enam = enam;
-	}
-
-	public String getSuperClassName() {
-		return superClassName;
-	}
-
-	public void setSuperClassName(String superClassName) {
-		this.superClassName = superClassName;
-	}
-
-	public String[] getSuperInterfaceNames() {
-		return superInterfaceNames;
-	}
-
-	public void setSuperInterfaceNames(String[] superInterfaceNames) {
-		this.superInterfaceNames = superInterfaceNames;
-	}
-
 	public List<AnnotationData> getAnnotations() {
 		return annotations;
 	}
@@ -129,23 +64,15 @@ public class TypeData extends MemberData {
 	}
 	
 	
-	
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
-		result = prime * result + (annotation ? 1231 : 1237);
 		result = prime * result + ((annotations == null) ? 0 : annotations.hashCode());
 		result = prime * result + ((bindingKey == null) ? 0 : bindingKey.hashCode());
 		result = prime * result + ((classpathEntry == null) ? 0 : classpathEntry.hashCode());
-		result = prime * result + (clazz ? 1231 : 1237);
-		result = prime * result + (enam ? 1231 : 1237);
 		result = prime * result + ((fields == null) ? 0 : fields.hashCode());
-		result = prime * result + ((fqName == null) ? 0 : fqName.hashCode());
-		result = prime * result + (interfaze ? 1231 : 1237);
 		result = prime * result + ((methods == null) ? 0 : methods.hashCode());
-		result = prime * result + ((superClassName == null) ? 0 : superClassName.hashCode());
-		result = prime * result + Arrays.hashCode(superInterfaceNames);
 		return result;
 	}
 
@@ -158,8 +85,6 @@ public class TypeData extends MemberData {
 		if (getClass() != obj.getClass())
 			return false;
 		TypeData other = (TypeData) obj;
-		if (annotation != other.annotation)
-			return false;
 		if (annotations == null) {
 			if (other.annotations != null)
 				return false;
@@ -175,36 +100,19 @@ public class TypeData extends MemberData {
 				return false;
 		} else if (!classpathEntry.equals(other.classpathEntry))
 			return false;
-		if (clazz != other.clazz)
-			return false;
-		if (enam != other.enam)
-			return false;
 		if (fields == null) {
 			if (other.fields != null)
 				return false;
 		} else if (!fields.equals(other.fields))
-			return false;
-		if (fqName == null) {
-			if (other.fqName != null)
-				return false;
-		} else if (!fqName.equals(other.fqName))
-			return false;
-		if (interfaze != other.interfaze)
 			return false;
 		if (methods == null) {
 			if (other.methods != null)
 				return false;
 		} else if (!methods.equals(other.methods))
 			return false;
-		if (superClassName == null) {
-			if (other.superClassName != null)
-				return false;
-		} else if (!superClassName.equals(other.superClassName))
-			return false;
-		if (!Arrays.equals(superInterfaceNames, other.superInterfaceNames))
-			return false;
 		return true;
 	}
+
 
 	public static class AnnotationData extends JavaElementData {
 		
