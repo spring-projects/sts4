@@ -205,8 +205,8 @@ public class CFRouteTest {
 		Assert.assertEquals(CFRoute.NO_PORT, route.getPort());
 
 		// Test parsing around the first encountered ':'
-		route = CFRoute.builder().from("http://myapp.spring.io", SPRING_CLOUD_DOMAINS).build();
-		Assert.assertEquals("http://myapp.spring.io",route.getRoute());
+		route = CFRoute.builder().from("https://myapp.spring.io", SPRING_CLOUD_DOMAINS).build();
+		Assert.assertEquals("https://myapp.spring.io",route.getRoute());
 		Assert.assertEquals(CFRoute.NO_PORT, route.getPort());
 
 		route = CFRoute.builder().from("tcp.spring.io:8000:9000", SPRING_CLOUD_DOMAINS).build();

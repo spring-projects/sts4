@@ -3,7 +3,7 @@
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * https://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
@@ -106,7 +106,7 @@ public class HtmlJavadocTest {
 		assertNotNull(field);
 		String expected = String.join("\n",
 				"<h4>BANNER_LOCATION_PROPERTY_VALUE</h4>",
-				"<pre>public static final&nbsp;<a href=\"http://docs.oracle.com/javase/6/docs/api/java/lang/String.html?is-external=true\" title=\"class or interface in java.lang\">String</a> BANNER_LOCATION_PROPERTY_VALUE</pre>",
+				"<pre>public static final&nbsp;<a href=\"https://docs.oracle.com/javase/6/docs/api/java/lang/String.html?is-external=true\" title=\"class or interface in java.lang\">String</a> BANNER_LOCATION_PROPERTY_VALUE</pre>",
 				"<div class=\"block\">Default banner location.</div>",
 				"<dl>",
 				"<dt><span class=\"seeLabel\">See Also:</span></dt>",
@@ -121,7 +121,7 @@ public class HtmlJavadocTest {
 		assertNotNull(method);
 		expected = String.join("\n",
 				"<h4>getListeners</h4>",
-				"<pre>public&nbsp;<a href=\"http://docs.oracle.com/javase/6/docs/api/java/util/Set.html?is-external=true\" title=\"class or interface in java.util\">Set</a>&lt;org.springframework.context.ApplicationListener&lt;?&gt;&gt;&nbsp;getListeners()</pre>",
+				"<pre>public&nbsp;<a href=\"https://docs.oracle.com/javase/6/docs/api/java/util/Set.html?is-external=true\" title=\"class or interface in java.util\">Set</a>&lt;org.springframework.context.ApplicationListener&lt;?&gt;&gt;&nbsp;getListeners()</pre>",
 				"<div class=\"block\">Returns read-only ordered Set of the <code>ApplicationListener</code>s that will be",
 				" applied to the SpringApplication and registered with the <code>ApplicationContext</code>",
 				" .</div>",
@@ -291,7 +291,7 @@ public class HtmlJavadocTest {
 		assertNotNull(field);
 		String expected = String.join("\n",
 				"<h4>template</h4>",
-				"<pre>public static final&nbsp;<a href=\"http://docs.oracle.com/javase/8/docs/api/java/lang/String.html?is-external=true\" title=\"class or interface in java.lang\">String</a> template</pre>",
+				"<pre>public static final&nbsp;<a href=\"https://docs.oracle.com/javase/8/docs/api/java/lang/String.html?is-external=true\" title=\"class or interface in java.lang\">String</a> template</pre>",
 				"<dl>",
 				"<dt><span class=\"seeLabel\">See Also:</span></dt>",
 				"<dd><a href=\"../constant-values.html#hello.GreetingController.template\">Constant Field Values</a></dd>",

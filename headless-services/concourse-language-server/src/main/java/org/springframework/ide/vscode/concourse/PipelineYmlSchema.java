@@ -3,7 +3,7 @@
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * https://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
@@ -153,7 +153,7 @@ public class PipelineYmlSchema implements YamlSchema {
 			.parseWith(ValueParsers.NE_STRING); //TODO: use real semver parser.
 
 	public final YType t_s3_region = f.yenum("S3Region",
-			//See: http://docs.aws.amazon.com/AmazonS3/latest/API/RESTBucketPUT.html
+			//See: https://docs.aws.amazon.com/AmazonS3/latest/API/RESTBucketPUT.html
 			 "us-west-1", "us-west-2",
 			 "ca-central-1", "EU", "eu-west-1",
 			 "eu-west-2", "eu-central-1",
@@ -558,7 +558,7 @@ public class PipelineYmlSchema implements YamlSchema {
 		//s3
 		{
 			YType t_canned_acl = f.yenum("S3CannedAcl",
-					//See http://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#canned-acl
+					//See https://docs.aws.amazon.com/AmazonS3/latest/dev/acl-overview.html#canned-acl
 					"private", "public-read", "public-read-write", "aws-exec-read",
 					"authenticated-read", "bucket-owner-read", "bucket-owner-full-control",
 					"log-delivery-write"

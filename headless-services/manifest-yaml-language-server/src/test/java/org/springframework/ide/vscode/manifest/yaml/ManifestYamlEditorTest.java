@@ -3,7 +3,7 @@
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * https://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
@@ -662,9 +662,9 @@ public class ManifestYamlEditorTest {
 				"applications:\n" +
 				"- name: my-app\n" +
 				"  health-check-type: http\n" +
-				"  health-check-http-endpoint: http://health/additionalpath"
+				"  health-check-http-endpoint: https://health/additionalpath"
 		);
-		problem = editor.assertProblems("http://health/additionalpath|Path contains scheme").get(0);
+		problem = editor.assertProblems("https://health/additionalpath|Path contains scheme").get(0);
 		assertEquals(DiagnosticSeverity.Error, problem.getSeverity());
 
 		editor = harness.newEditor(
@@ -1476,9 +1476,9 @@ public class ManifestYamlEditorTest {
 				"applications:\n" +
 				"- name: foo\n" +
 				"  routes:\n" +
-				"  - route: http://springsource.org\n");
-		editor.assertProblems("http://springsource.org|is not a valid 'Route'");
-		Diagnostic problem = editor.assertProblem("http://springsource.org");
+				"  - route: https://springsource.org\n");
+		editor.assertProblems("https://springsource.org|is not a valid 'Route'");
+		Diagnostic problem = editor.assertProblem("https://springsource.org");
 		assertEquals(DiagnosticSeverity.Error, problem.getSeverity());
 
 		editor = harness.newEditor(

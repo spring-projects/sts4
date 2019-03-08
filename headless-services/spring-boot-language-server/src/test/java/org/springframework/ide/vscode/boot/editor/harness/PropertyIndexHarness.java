@@ -3,7 +3,7 @@
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * https://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
@@ -307,7 +307,7 @@ public class PropertyIndexHarness {
 		data("spring.data.rest.return-body-on-create", "java.lang.Boolean", null, null);
 		data("spring.data.rest.return-body-on-update", "java.lang.Boolean", null, null);
 		data("spring.data.rest.sort-param-name", "java.lang.String", null, null);
-		data("spring.data.solr.host", "java.lang.String", "http://127.0.0.1:8983/solr", "Solr host. Ignored if \"zk-host\" is set.");
+		data("spring.data.solr.host", "java.lang.String", "https://127.0.0.1:8983/solr", "Solr host. Ignored if \"zk-host\" is set.");
 		data("spring.data.solr.repositories.enabled", "java.lang.Boolean", "true", "Enable Solr repositories.");
 		data("spring.data.solr.zk-host", "java.lang.String", null, "ZooKeeper host address in the form HOST:PORT.");
 		data("spring.datasource.abandon-when-percentage-full", "java.lang.Integer", null, null);

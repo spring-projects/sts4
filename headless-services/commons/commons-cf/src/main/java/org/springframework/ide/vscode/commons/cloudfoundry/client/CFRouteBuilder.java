@@ -89,7 +89,7 @@ public class CFRouteBuilder {
 		// "tcp.spring.io:8888")
 		// 2. Ports are not allowed in HTTP route (valid HTTP route:
 		// "myapps.cfapps.io/pathToApp/home")
-		// 3. Schemes (e.g. "http://") are not allowed in routes values.
+		// 3. Schemes (e.g. "https://") are not allowed in routes values.
 		// Anything that has a ":" is assumed to be TCP route followed by a port
 		// 4. Route can just be domain, or host and domain
 		//

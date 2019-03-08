@@ -1,11 +1,11 @@
 /**
- * Copyright (c) 2008, 2019 http://www.snakeyaml.org and others.
+ * Copyright (c) 2008, 2019 https://www.snakeyaml.org and others.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *     http://www.apache.org/licenses/LICENSE-2.0
+ *     https://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -15,7 +15,7 @@
  *
  * Contributors:
  *
- *   2008 - http://www.snakeyaml.org original api and implementation.
+ *   2008 - https://www.snakeyaml.org original api and implementation.
  *   2019 - Copied and modified by Pivotal.
  */
 package org.springframework.ide.vscode.commons.yaml.ast;

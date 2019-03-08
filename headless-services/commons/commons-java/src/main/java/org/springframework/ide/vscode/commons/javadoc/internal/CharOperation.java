@@ -3,7 +3,7 @@
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
+ * https://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
@@ -890,7 +890,7 @@ public static final int compareTo(char[] array1, char[] array2) {
  * @param array2 the second given array
  * @param start the starting position to compare (inclusive)
  * @param end the ending position to compare (exclusive)
- * 
+ *
  * @return the returned value of the comparison between array1 and array2
  * @throws NullPointerException if one of the arrays is null
  * @since 3.7.1
@@ -1612,7 +1612,7 @@ public static final char[] concatWith(char[][] array, char separator) {
 }
 
 /**
- * Answers the concatenation of the given array parts using the given separator between each part 
+ * Answers the concatenation of the given array parts using the given separator between each part
  * irrespective of whether an element is a zero length array or not.
  * <br>
  * <br>
@@ -2871,7 +2871,7 @@ public static final boolean match(
 		if (iPattern == patternEnd) {
 			if (iName == nameEnd) return true; // the chars match
 			return false; // pattern has ended but not the name, no match
-		} 
+		}
 		if ((patternChar = pattern[iPattern]) == '*') {
 			break;
 		}
@@ -2932,7 +2932,7 @@ public static final boolean match(
  * Answers true if the pattern matches the filepath using the pathSepatator, false otherwise.
  *
  * Path char[] pattern matching, accepting wild-cards '**', '*' and '?' (using Ant directory tasks
- * conventions, also see "http://jakarta.apache.org/ant/manual/dirtasks.html#defaultexcludes").
+ * conventions, also see "https://jakarta.apache.org/ant/manual/dirtasks.html#defaultexcludes").
  * Path pattern matching is enhancing regular pattern matching in supporting extra rule where '**' represent
  * any folder combination.
  * Special rule:
@@ -3884,13 +3884,13 @@ public static final char[][] splitOnWithEnclosures(
 		int enclCount = 0;
 		for (int i = start; i < end; i++) {
 			if (array[i] == openEncl)
-				enclCount++; 
+				enclCount++;
 			else if (array[i] == divider)
 				wordCount++;
 		}
 		if (enclCount == 0)
 			return CharOperation.splitOn(divider, array, start, end);
-		
+
 		int nesting = 0;
 		if (openEncl == divider || closeEncl == divider) // divider should be distinct
 			return CharOperation.NO_CHAR_CHAR;
@@ -3903,7 +3903,7 @@ public static final char[][] splitOnWithEnclosures(
 				continue;
 			}
 			if (array[i] == closeEncl) {
-				if (nesting > 0) 
+				if (nesting > 0)
 					--nesting;
 				continue;
 			}
@@ -4090,7 +4090,7 @@ final static public char[] toLowerCase(char[] chars) {
  *
  * @param chars the chars to convert
  * @return the result of a char[] conversion to uppercase
- * 
+ *
  * @since 3.5
  */
 final static public char[] toUpperCase(char[] chars) {
