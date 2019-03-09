@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2018 Pivotal, Inc.
+ * Copyright (c) 2017, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -16,6 +16,8 @@ import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.StandardCopyOption;
+import java.util.ArrayList;
+import java.util.List;
 
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.Path;
@@ -25,8 +27,6 @@ import org.springframework.tooling.ls.eclipse.commons.JRE;
 import org.springframework.tooling.ls.eclipse.commons.JRE.MissingJDKException;
 import org.springframework.tooling.ls.eclipse.commons.STS4LanguageServerProcessStreamConnector;
 
-import com.google.common.collect.ImmutableList;
-
 /**
  * @author Martin Lippert
  */
@@ -35,17 +35,35 @@ public class SpringBootLanguageServer extends STS4LanguageServerProcessStreamCon
 	public SpringBootLanguageServer() {
 		super(SPRING_BOOT_SERVER);
 		setCommands(getJRE().jarLaunchCommand(getLanguageServerJARLocation(), 
-				ImmutableList.of(
-//					"-Xdebug",
-//					"-Xrunjdwp:server=y,transport=dt_socket,address=4000,suspend=n",
-					"-Dsts.lsp.client=eclipse",
-					"-Dlsp.completions.indentation.enable=true",
-					"-Xmx1024m"
-				)
-		));
+				getJVMArgs()));
 		setWorkingDirectory(getWorkingDirLocation());
 	}
 	
+	private List<String> getJVMArgs() {
+		List<String> args = new ArrayList<>();
+		
+//		args.add("-Xdebug");
+//		args.add("-Xrunjdwp:server=y,transport=dt_socket,address=4000,suspend=n");
+		args.add("-Dsts.lsp.client=eclipse");
+		args.add("-Dlsp.completions.indentation.enable=true");
+		args.add("-Xmx1024m");
+		
+		addCustomJVMArgs(args);
+		
+		return args;
+	}
+
+	private void addCustomJVMArgs(List<String> args) {
+		String customArgs = System.getProperty("boot.ls.custom.vmargs");
+
+		String prefix = "";
+		String[] separateArgs = customArgs.split(",-");
+		for (String arg : separateArgs) {
+			args.add(prefix + arg);
+			prefix = "-";
+		}
+	}
+
 	private JRE getJRE() {
 		try {
 			return JRE.findJRE(true);
