@@ -79,7 +79,13 @@ public class SpringIndexerJava implements SpringIndexer {
 				.map(path -> path.toAbsolutePath().toString())
 				.collect(Collectors.toList());
 
+		log.info("scan java files for symbols for project: " + project.getElementName() + " - no. of files: " + files.size());
+
+		long startTime = System.currentTimeMillis();
 		scanProject(project, (String[]) files.toArray(new String[files.size()]));
+		long endTime = System.currentTimeMillis();
+
+		log.info("scan java files for symbols for project: " + project.getElementName() + " took ms: " + (endTime - startTime));
 	}
 
 	@Override
