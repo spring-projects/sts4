@@ -37,3 +37,6 @@ bin/
 # Mac OSX aux files
 .DS_Store
 **/.DS_Store
+
+third-party-open-source-licenses.txt
+**/third-party-open-source-licenses/**
