@@ -55,12 +55,14 @@ public class SpringBootLanguageServer extends STS4LanguageServerProcessStreamCon
 
 	private void addCustomJVMArgs(List<String> args) {
 		String customArgs = System.getProperty("boot.ls.custom.vmargs");
-
-		String prefix = "";
-		String[] separateArgs = customArgs.split(",-");
-		for (String arg : separateArgs) {
-			args.add(prefix + arg);
-			prefix = "-";
+		
+		if (customArgs != null) {
+			String prefix = "";
+			String[] separateArgs = customArgs.split(",-");
+			for (String arg : separateArgs) {
+				args.add(prefix + arg);
+				prefix = "-";
+			}
 		}
 	}
 
