@@ -141,7 +141,7 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		ReferencesHandler referencesHandler = createReferenceHandler(server, projectFinder);
 		documents.onReferences(referencesHandler);
 
-		if ("true".equals(System.getProperty("boot.ls.symbolCache.enabled", "true"))) {
+		if ("true".equals(System.getProperty("boot.ls.symbols.caching.enabled", "true"))) {
 			try {
 				this.symbolCache = new SymbolCacheOnDisc();
 			}
