@@ -321,7 +321,9 @@ public class SpringIndexerJava implements SpringIndexer {
 		parser.setStatementsRecovery(true);
 		parser.setBindingsRecovery(true);
 		parser.setResolveBindings(true);
-		parser.setIgnoreMethodBodies(false);
+
+		boolean ignoreMethodBodies = "true".equals(System.getProperty("boot.ls.symbols.ignoreMethodBodies", "false"));
+		parser.setIgnoreMethodBodies(ignoreMethodBodies);
 
 		String[] sourceEntries = new String[] {};
 		parser.setEnvironment(classpathEntries, sourceEntries, null, false);
