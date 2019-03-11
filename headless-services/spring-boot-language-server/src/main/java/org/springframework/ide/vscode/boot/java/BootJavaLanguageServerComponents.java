@@ -59,6 +59,9 @@ import org.springframework.ide.vscode.boot.java.snippets.JavaSnippetManager;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.boot.java.utils.RestrictedDefaultSymbolProvider;
 import org.springframework.ide.vscode.boot.java.utils.SpringSymbolIndex;
+import org.springframework.ide.vscode.boot.java.utils.SymbolCache;
+import org.springframework.ide.vscode.boot.java.utils.SymbolCacheOnDisc;
+import org.springframework.ide.vscode.boot.java.utils.SymbolCacheVoid;
 import org.springframework.ide.vscode.boot.java.utils.SpringLiveChangeDetectionWatchdog;
 import org.springframework.ide.vscode.boot.java.utils.SpringLiveHoverWatchdog;
 import org.springframework.ide.vscode.boot.java.value.ValueCompletionProcessor;
@@ -111,6 +114,8 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 	private CodeLensHandler codeLensHandler;
 	private DocumentHighlightHandler highlightsEngine;
 
+	private SymbolCache symbolCache;
+
 	public BootJavaLanguageServerComponents(
 			SimpleLanguageServer server,
 			BootLanguageServerParams serverParams,
@@ -136,7 +141,20 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		ReferencesHandler referencesHandler = createReferenceHandler(server, projectFinder);
 		documents.onReferences(referencesHandler);
 
-		indexer = createAnnotationIndexer(server, serverParams);
+		if ("true".equals(System.getProperty("boot.ls.symbolCache.enabled", "true"))) {
+			try {
+				this.symbolCache = new SymbolCacheOnDisc();
+			}
+			catch (Exception e) {
+				log.warn("symbol cache directory could not be created, no cache enabled");
+				this.symbolCache = new SymbolCacheVoid();
+			}
+		}
+		else {
+			this.symbolCache = new SymbolCacheVoid();
+		}
+
+		indexer = createAnnotationIndexer(server, serverParams, symbolCache);
 		documents.onDidSave(params -> {
 			TextDocument document = params.getDocument();
 			// Spring Boot LS get events from boot properties files as well, so filter them out
@@ -376,7 +394,7 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		return new BootJavaHoverProvider(this, javaProjectFinder, providers, runningAppProvider);
 	}
 
-	protected SpringSymbolIndex createAnnotationIndexer(SimpleLanguageServer server, BootLanguageServerParams params) {
+	public SpringSymbolIndex createAnnotationIndexer(SimpleLanguageServer server, BootLanguageServerParams params, SymbolCache cache) {
 		AnnotationHierarchyAwareLookup<SymbolProvider> providers = new AnnotationHierarchyAwareLookup<>();
 		RequestMappingSymbolProvider requestMappingSymbolProvider = new RequestMappingSymbolProvider();
 		BeansSymbolProvider beansSymbolProvider = new BeansSymbolProvider();
@@ -419,7 +437,7 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		providers.put(Annotations.REPOSITORY, dataRepositorySymbolProvider);
 		providers.put("", webfluxRouterSymbolProvider);
 
-		return new SpringSymbolIndex(server, params, providers);
+		return new SpringSymbolIndex(server, params, providers, cache);
 	}
 
 	protected ReferencesHandler createReferenceHandler(SimpleLanguageServer server, JavaProjectFinder projectFinder) {

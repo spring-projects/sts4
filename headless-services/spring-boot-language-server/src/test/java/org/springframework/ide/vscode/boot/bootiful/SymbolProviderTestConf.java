@@ -20,6 +20,7 @@ import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents
 import org.springframework.ide.vscode.boot.java.links.SourceLinkFactory;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.java.utils.SpringSymbolIndex;
+import org.springframework.ide.vscode.boot.java.utils.SymbolCacheVoid;
 import org.springframework.ide.vscode.boot.metadata.DefaultSpringPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.ValueProviderRegistry;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
@@ -47,8 +48,8 @@ public class SymbolProviderTestConf {
 		return BootLanguageServerParams.createTestDefault(server, valueProviders);
 	}
 
-	@Bean SpringSymbolIndex springSymbolIndex(BootLanguageServerInitializer serverInit) {
-		return serverInit.getComponents().get(BootJavaLanguageServerComponents.class).getSpringSymbolIndex();
+	@Bean SpringSymbolIndex springSymbolIndex(BootLanguageServerInitializer serverInit, SimpleLanguageServer server, BootLanguageServerParams params) {
+		return serverInit.getComponents().get(BootJavaLanguageServerComponents.class).createAnnotationIndexer(server, params, new SymbolCacheVoid());
 	}
 
 	@Bean DefaultSpringPropertyIndexProvider indexProvider(BootLanguageServerParams serverParams) {

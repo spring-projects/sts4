@@ -72,7 +72,7 @@ public class SpringSymbolIndex {
 
 	private final ExecutorService updateQueue;
 	private SpringIndexer[] indexer;
-	private SymbolCache cache;
+	private final SymbolCache cache;
 
 	private static final Logger log = LoggerFactory.getLogger(SpringSymbolIndex.class);
 
@@ -111,7 +111,8 @@ public class SpringSymbolIndex {
 		return params.projectObserver;
 	}
 
-	public SpringSymbolIndex(SimpleLanguageServer server, BootLanguageServerParams params, AnnotationHierarchyAwareLookup<SymbolProvider> specificProviders) {
+	public SpringSymbolIndex(SimpleLanguageServer server, BootLanguageServerParams params,
+			AnnotationHierarchyAwareLookup<SymbolProvider> specificProviders, SymbolCache cache) {
 		log.debug("Creating {}", this);
 		this.server = server;
 		this.params = params;
@@ -124,18 +125,7 @@ public class SpringSymbolIndex {
 		this.addonInformationByDoc = new ConcurrentHashMap<>();
 		this.addonInformationByProject = new ConcurrentHashMap<>();
 
-		if ("true".equals(System.getProperty("boot.ls.symbolCache.enabled", "true"))) {
-			try {
-				this.cache = new SymbolCacheOnDisc();
-			}
-			catch (Exception e) {
-				log.warn("symbol cache directory could not be created, no cache enabled");
-			}
-		}
-
-		if (this.cache == null) {
-			this.cache = new SymbolCacheVoid();
-		}
+		this.cache = cache;
 
 		SymbolHandler handler = new SymbolHandler() {
 			@Override
