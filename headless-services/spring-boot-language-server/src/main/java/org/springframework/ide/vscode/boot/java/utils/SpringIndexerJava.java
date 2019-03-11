@@ -155,6 +155,8 @@ public class SpringIndexerJava implements SpringIndexer {
 
 			parser.createASTs(javaFiles, null, new String[0], requestor, null);
 			this.cache.store(cacheKey, javaFiles, generatedSymbols);
+
+			symbols = (CachedSymbol[]) generatedSymbols.toArray(new CachedSymbol[generatedSymbols.size()]);
 		}
 		else {
 			log.info("scan java files used cached data: " + project.getElementName() + " - no. of cached symbols retrieved: " + symbols.length);
