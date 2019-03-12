@@ -11,18 +11,25 @@
 package org.springframework.ide.vscode.boot.java.utils;
 
 import java.io.File;
+import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.eclipse.lsp4xml.dom.DOMDocument;
 import org.eclipse.lsp4xml.dom.DOMNode;
 import org.eclipse.lsp4xml.dom.DOMParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.commons.java.IClasspath;
+import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.util.UriUtil;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -61,9 +68,31 @@ public class SpringIndexerXML implements SpringIndexer {
 		log.info("scan xml files for symbols for project: " + project.getElementName() + " - no. of files: " + files.length);
 
 		long startTime = System.currentTimeMillis();
-		for (String file : files) {
-			scanFile(project, file);
+		SymbolCacheKey cacheKey = getCacheKey(project);
+
+		CachedSymbol[] symbols = this.cache.retrieve(cacheKey, files);
+		if (symbols == null) {
+			List<CachedSymbol> generatedSymbols = new ArrayList<CachedSymbol>();
+
+			for (String file : files) {
+				scanFile(project, file, generatedSymbols);
+			}
+
+			this.cache.store(cacheKey, files, generatedSymbols);
+
+			symbols = (CachedSymbol[]) generatedSymbols.toArray(new CachedSymbol[generatedSymbols.size()]);
 		}
+		else {
+			log.info("scan xml files used cached data: " + project.getElementName() + " - no. of cached symbols retrieved: " + symbols.length);
+		}
+
+		if (symbols != null) {
+			for (int i = 0; i < symbols.length; i++) {
+				CachedSymbol symbol = symbols[i];
+				symbolHandler.addSymbol(project, symbol.getDocURI(), symbol.getEnhancedSymbol());
+			}
+		}
+
 		long endTime = System.currentTimeMillis();
 
 		log.info("scan xml files for symbols for project: " + project.getElementName() + " took ms: " + (endTime - startTime));
@@ -71,18 +100,34 @@ public class SpringIndexerXML implements SpringIndexer {
 
 	@Override
 	public void removeProject(IJavaProject project) throws Exception {
+		SymbolCacheKey cacheKey = getCacheKey(project);
+		this.cache.remove(cacheKey);
 	}
 
 	@Override
 	public void updateFile(IJavaProject project, String docURI, long lastModified, String content) throws Exception {
-		scanFile(project, content, docURI);
+
+		List<CachedSymbol> generatedSymbols = new ArrayList<CachedSymbol>();
+
+		scanFile(project, content, docURI, lastModified, generatedSymbols);
+
+		SymbolCacheKey cacheKey = getCacheKey(project);
+		String file = new File(new URI(docURI)).getAbsolutePath();
+		this.cache.update(cacheKey, file, lastModified, generatedSymbols);
+
+		for (CachedSymbol symbol : generatedSymbols) {
+			symbolHandler.addSymbol(project, symbol.getDocURI(), symbol.getEnhancedSymbol());
+		}
 	}
 
 	@Override
 	public void removeFile(IJavaProject project, String docURI) throws Exception {
+		SymbolCacheKey cacheKey = getCacheKey(project);
+		String file = new File(new URI(docURI)).getAbsolutePath();
+		this.cache.removeFile(cacheKey, file);
 	}
 
-	private void scanFile(IJavaProject project, String fileName) {
+	private void scanFile(IJavaProject project, String fileName, List<CachedSymbol> generatedSymbols) {
 		log.debug("starting to parse XML file for Spring symbol indexing: ", fileName);
 
 		try {
@@ -92,29 +137,29 @@ public class SpringIndexerXML implements SpringIndexer {
 			String docURI = UriUtil.toUri(file).toString();
 			String fileContent = FileUtils.readFileToString(file);
 
-	        scanFile(project, fileContent, docURI);
+	        scanFile(project, fileContent, docURI, lastModified, generatedSymbols);
 		}
 		catch (Exception e) {
 			log.error("error parsing XML file: ", e);
 		}
 	}
 
-	private void scanFile(IJavaProject project, String fileContent, String docURI) throws Exception {
+	private void scanFile(IJavaProject project, String fileContent, String docURI, long lastModified, List<CachedSymbol> generatedSymbols) throws Exception {
 		DOMParser parser = DOMParser.getInstance();
 		DOMDocument document = parser.parse(fileContent, "", null);
 
 		AtomicReference<TextDocument> docRef = new AtomicReference<>();
-		scanNode(document, project, docURI, docRef, fileContent);
+		scanNode(document, project, docURI, lastModified, docRef, fileContent, generatedSymbols);
 	}
 
-	private void scanNode(DOMNode node, IJavaProject project, String docURI, AtomicReference<TextDocument> docRef, String content) throws Exception {
+	private void scanNode(DOMNode node, IJavaProject project, String docURI, long lastModified, AtomicReference<TextDocument> docRef, String content, List<CachedSymbol> generatedSymbols) throws Exception {
 		String namespaceURI = node.getNamespaceURI();
 
 		if (namespaceURI != null && this.namespaceHandler.containsKey(namespaceURI)) {
 			SpringIndexerXMLNamespaceHandler namespaceHandler = this.namespaceHandler.get(namespaceURI);
 
 			TextDocument document = DocumentUtils.getTempTextDocument(docURI, docRef, content);
-			namespaceHandler.processNode(node, project, docURI, document, this.symbolHandler);
+			namespaceHandler.processNode(node, project, docURI, lastModified, document, generatedSymbols);
 		}
 
 
@@ -129,7 +174,7 @@ public class SpringIndexerXML implements SpringIndexer {
 
 		List<DOMNode> children = node.getChildren();
 		for (DOMNode child : children) {
-			scanNode(child, project, docURI, docRef, content);
+			scanNode(child, project, docURI, lastModified, docRef, content, generatedSymbols);
 		}
 
 
@@ -141,6 +186,18 @@ public class SpringIndexerXML implements SpringIndexer {
 				.filter(Files::isRegularFile)
 				.map(path -> path.toAbsolutePath().toString())
 				.toArray(String[]::new);
+	}
+
+	private SymbolCacheKey getCacheKey(IJavaProject project) {
+		IClasspath classpath = project.getClasspath();
+		Stream<File> classpathEntries = IClasspathUtil.getAllBinaryRoots(classpath).stream();
+
+		String classpathIdentifier = classpathEntries
+				.filter(file -> file.exists())
+				.map(file -> file.getAbsolutePath() + "#" + file.lastModified())
+				.collect(Collectors.joining(","));
+
+		return new SymbolCacheKey(project.getElementName() + "-xml-", DigestUtils.md5Hex(classpathIdentifier).toUpperCase());
 	}
 
 }

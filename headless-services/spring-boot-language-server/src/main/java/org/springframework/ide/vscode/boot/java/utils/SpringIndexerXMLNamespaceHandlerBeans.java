@@ -31,14 +31,14 @@ import org.springframework.lang.NonNull;
 public class SpringIndexerXMLNamespaceHandlerBeans implements SpringIndexerXMLNamespaceHandler {
 
 	@Override
-	public void processNode(DOMNode node, IJavaProject project, String docURI, TextDocument document, SymbolHandler symbolHandler) throws Exception {
+	public void processNode(DOMNode node, IJavaProject project, String docURI, long lastModified, TextDocument document, List<CachedSymbol> generatedSymbols) throws Exception {
 		String localName = node.getLocalName();
 		if (localName != null && "bean".equals(localName)) {
-			createBeanSymbol(node, project, docURI, document, symbolHandler);
+			createBeanSymbol(node, project, docURI, lastModified, document, generatedSymbols);
 		}
 	}
 
-	private void createBeanSymbol(DOMNode node, IJavaProject project, String docURI, TextDocument document, SymbolHandler symbolHandler) throws Exception {
+	private void createBeanSymbol(DOMNode node, IJavaProject project, String docURI, long lastModified, TextDocument document, List<CachedSymbol> generatedSymbols) throws Exception {
 		String beanID = null;
 		int symbolStart = 0;
 		int symbolEnd = 0;
@@ -88,7 +88,9 @@ public class SpringIndexerXMLNamespaceHandlerBeans implements SpringIndexerXMLNa
 			SymbolInformation symbol = new SymbolInformation("@+ '" + beanID + "' " + beanClass, SymbolKind.Interface, new Location(docURI, range));
 
 			EnhancedSymbolInformation fullSymbol = new EnhancedSymbolInformation(symbol, null);
-			symbolHandler.addSymbol(project, docURI, fullSymbol);
+
+			CachedSymbol cachedSymbol = new CachedSymbol(docURI, lastModified, fullSymbol);
+			generatedSymbols.add(cachedSymbol);
 		}
 	}
 

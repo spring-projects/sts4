@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.utils;
 
+import java.util.List;
+
 import org.eclipse.lsp4xml.dom.DOMNode;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -19,6 +21,6 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
  */
 public interface SpringIndexerXMLNamespaceHandler {
 
-	void processNode(DOMNode node, IJavaProject project, String docURI, TextDocument document, SymbolHandler symbolHandler) throws Exception;
+	void processNode(DOMNode node, IJavaProject project, String docURI, long lastModifiued, TextDocument document, List<CachedSymbol> generatedSymbols) throws Exception;
 
 }
