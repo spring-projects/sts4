@@ -73,29 +73,33 @@ public class HighlightsCodeLensProvider extends AbstractCodeMiningProvider {
 		IPreferenceStore store = LanguageServerCommonsActivator.getInstance().getPreferenceStore();
 		if (store.getBoolean(PreferenceConstants.HIGHLIGHT_CODELENS_PREFS)) {
 			IDocument document = viewer.getDocument();
-
-			return CompletableFuture.supplyAsync(() -> {
-				List<LSPDocumentInfo> docInfos = LanguageServiceAccessor.getLSPDocumentInfosFor(document, (x) -> true);
-				if (!docInfos.isEmpty()) {
-					LSPDocumentInfo info = docInfos.get(0);
-					HighlightParams highlights = STS4LanguageClientImpl.currentHighlights.get(info.getFileUri().toString());
-					if (highlights != null) {
-						return highlights.getCodeLenses().stream()
-								.filter(codeLens -> codeLens.getCommand() != null)
-								.map(codeLens -> {
-									try {
-										return new HighlightCodeMining(codeLens, document, this, action(codeLens.getCommand()));
-									} catch (BadLocationException e) {
-										LanguageServerCommonsActivator.logError(e, "Failed to create Eclipse client CodeLens");
-										return null;
-									}
-								})
-								.filter(Objects::nonNull)
-								.collect(Collectors.toList());
+			if (document != null) {
+				return CompletableFuture.supplyAsync(() -> {
+					List<LSPDocumentInfo> docInfos = LanguageServiceAccessor.getLSPDocumentInfosFor(document, (x) -> true);
+					if (!docInfos.isEmpty()) {
+						LSPDocumentInfo info = docInfos.get(0);
+						HighlightParams highlights = STS4LanguageClientImpl.currentHighlights.get(info.getFileUri().toString());
+						if (highlights != null) {
+							return highlights.getCodeLenses().stream()
+									.filter(codeLens -> codeLens.getCommand() != null)
+									.map(codeLens -> {
+										try {
+											return new HighlightCodeMining(codeLens, document, this, action(codeLens.getCommand()));
+										} catch (BadLocationException e) {
+											LanguageServerCommonsActivator.logError(e, "Failed to create Eclipse client CodeLens");
+											return null;
+										}
+									})
+									.filter(Objects::nonNull)
+									.collect(Collectors.toList());
+						}
 					}
-				}
+					return null;
+				});
+			}
+			else {
 				return null;
-			});
+			}
 		}
 		return null;
 	}
