@@ -134,16 +134,23 @@
 				<package.qualifierPrefix>e49</package.qualifierPrefix>
 			</properties>
 			<repositories>
-				<repository>
+				<!-- composite update site contains http references, using exact https urls instead -->
+<!--				<repository>
 					<id>2018-09</id>
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/releases/2018-09/</url>
-				</repository>
-<!--				<repository>
-					<id>staging</id>
-					<layout>p2</layout>
-					<url>https://download.eclipse.org/staging/2018-09/</url>
 				</repository> -->
+				<repository>
+					<id>2018-09</id>
+					<layout>p2</layout>
+					<url>https://download.eclipse.org/releases/2018-09/201809191002</url>
+				</repository>
+				<repository>
+					<id>2018-09-epp</id>
+					<layout>p2</layout>
+					<url>https://download.eclipse.org/technology/epp/packages/2018-09/</url>
+				</repository>
+
 				<repository>
 					<id>orbit</id>
 					<layout>p2</layout>
@@ -164,11 +171,17 @@
 					<layout>p2</layout>
 					<url>https://repo1.maven.org/maven2/.m2e/connectors/m2eclipse-egit/0.15.1/N/LATEST</url>
 				</repository>
-				<repository>
+<!--				<repository>
 					<id>maven-wro4j</id>
 					<layout>p2</layout>
 					<url>https://download.jboss.org/jbosstools/updates/m2e-wro4j/</url>
+				</repository> -->
+				<repository>
+					<id>maven-wro4j</id>
+					<layout>p2</layout>
+					<url>https://download.jboss.org/jbosstools/updates/m2e-extensions/m2e-wro4j/1.1.0-2014-06-25_06-16-31-H26/</url>
 				</repository>
+
 				<repository>
 					<id>maven-devtools</id>
 					<layout>p2</layout>
@@ -213,16 +226,23 @@
 				<package.qualifierPrefix>e410</package.qualifierPrefix>
 			</properties>
 			<repositories>
-				<repository>
+				<!-- composite update site contains http references, using exact https urls instead -->
+<!--				<repository>
 					<id>2018-12</id>
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/releases/2018-12/</url>
-				</repository>
-<!--				<repository>
-					<id>staging</id>
-					<layout>p2</layout>
-					<url>https://download.eclipse.org/staging/2018-12/</url>
 				</repository> -->
+				<repository>
+					<id>2018-12</id>
+					<layout>p2</layout>
+					<url>https://download.eclipse.org/releases/2018-12/201812191000</url>
+				</repository>
+				<repository>
+					<id>2018-12-epp</id>
+					<layout>p2</layout>
+					<url>https://download.eclipse.org/technology/epp/packages/2018-12/</url>
+				</repository>
+
 				<repository>
 					<id>orbit</id>
 					<layout>p2</layout>
@@ -243,10 +263,15 @@
 					<layout>p2</layout>
 					<url>https://repo1.maven.org/maven2/.m2e/connectors/m2eclipse-egit/0.15.1/N/LATEST</url>
 				</repository>
+				<!--				<repository>
+									<id>maven-wro4j</id>
+									<layout>p2</layout>
+									<url>https://download.jboss.org/jbosstools/updates/m2e-wro4j/</url>
+								</repository> -->
 				<repository>
 					<id>maven-wro4j</id>
 					<layout>p2</layout>
-					<url>https://download.jboss.org/jbosstools/updates/m2e-wro4j/</url>
+					<url>https://download.jboss.org/jbosstools/updates/m2e-extensions/m2e-wro4j/1.1.0-2014-06-25_06-16-31-H26/</url>
 				</repository>
 				<repository>
 					<id>maven-devtools</id>
@@ -292,21 +317,23 @@
 				<package.qualifierPrefix>e411</package.qualifierPrefix>
 			</properties>
 			<repositories>
+				<!-- composite update site contains http references, using exact https urls instead -->
 <!--				<repository>
 					<id>2019-03</id>
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/releases/2019-03/</url>
 				</repository> -->
 				<repository>
-					<id>2019-03-staging</id>
+					<id>2019-03</id>
 					<layout>p2</layout>
-					<url>https://download.eclipse.org/staging/2019-03/</url>
+					<url>https://download.eclipse.org/releases/2019-03/201903081000</url>
 				</repository>
-<!--				<repository>
-					<id>2019-03-i-builds</id>
+				<repository>
+					<id>2019-03-epp</id>
 					<layout>p2</layout>
-					<url>https://download.eclipse.org/eclipse/updates/4.11-I-builds/</url>
-				</repository> -->
+					<url>https://download.eclipse.org/technology/epp/packages/2019-03/RC1</url>
+				</repository>
+
 				<repository>
 					<id>orbit</id>
 					<layout>p2</layout>
@@ -327,10 +354,15 @@
 					<layout>p2</layout>
 					<url>https://repo1.maven.org/maven2/.m2e/connectors/m2eclipse-egit/0.15.1/N/LATEST</url>
 				</repository>
+				<!--				<repository>
+									<id>maven-wro4j</id>
+									<layout>p2</layout>
+									<url>https://download.jboss.org/jbosstools/updates/m2e-wro4j/</url>
+								</repository> -->
 				<repository>
 					<id>maven-wro4j</id>
 					<layout>p2</layout>
-					<url>https://download.jboss.org/jbosstools/updates/m2e-wro4j/</url>
+					<url>https://download.jboss.org/jbosstools/updates/m2e-extensions/m2e-wro4j/1.1.0-2014-06-25_06-16-31-H26/</url>
 				</repository>
 				<repository>
 					<id>maven-devtools</id>
@@ -412,10 +444,15 @@
 			<layout>p2</layout>
 			<url>https://download.eclipse.org/egit/github/updates</url>
 		</repository>
-		<repository>
+<!--		<repository>
 			<id>m2e-apt</id>
 			<layout>p2</layout>
 			<url>https://download.jboss.org/jbosstools/updates/m2e-extensions/m2e-apt</url>
+		</repository> -->
+		<repository>
+			<id>m2e-apt</id>
+			<layout>p2</layout>
+			<url>https://download.jboss.org/jbosstools/updates/m2e-extensions/m2e-apt/1.5.2-2018-12-24_15-46-05-H18/</url>
 		</repository>
 	</repositories>
 

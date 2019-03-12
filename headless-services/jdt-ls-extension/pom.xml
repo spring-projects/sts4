@@ -71,11 +71,18 @@
 	</profiles>
 
 	<repositories>
+		<!-- composite update site contains http references, using exact https urls instead -->
 		<repository>
-			<id>eclipse-photon</id>
+			<id>2018-09</id>
 			<layout>p2</layout>
-			<url>https://download.eclipse.org/releases/photon</url>
+			<url>https://download.eclipse.org/releases/2018-09/201809191002</url>
 		</repository>
+		<repository>
+			<id>2018-09-epp</id>
+			<layout>p2</layout>
+			<url>https://download.eclipse.org/technology/epp/packages/2018-09/</url>
+		</repository>
+		
 		<repository>
 			<id>JDT.LS</id>
 			<layout>p2</layout>
