@@ -44,7 +44,9 @@ class StsLanguageClientImpl extends LanguageClientImpl {
           rangeHighlights.get(uri).get.foreach(h => editorManager.editor.getMarkupModel.removeHighlighter(h))
         }
         val highlighters: ListBuffer[RangeHighlighter] = ListBuffer()
-        for (r <- JavaConversions.asScalaBuffer(params.getRanges)) {
+        for (l <- JavaConversions.asScalaBuffer(params.getCodeLenses)) {
+          val r: Range = l.getRange
+
           val startOffset = doc.getLineStartOffset(r.getStart.getLine) + r.getStart.getCharacter
           val endOffset = doc.getLineStartOffset(r.getEnd.getLine) + r.getEnd.getCharacter
           val attrs = new TextAttributes()

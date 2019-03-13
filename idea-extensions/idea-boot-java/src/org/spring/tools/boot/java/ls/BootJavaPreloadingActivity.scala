@@ -55,8 +55,6 @@ class BootJavaPreloadingActivity extends PreloadingActivity {
     LanguageServerDefinition.register(
       new StsServerDefinition("java", Array(
         javaExec.toString(),
-        "-Xdebug",
-        "-agentlib:jdwp=transport=dt_socket,server=y,address=7999,suspend=n",
         "-cp",
         classpath,
         "org.springframework.boot.loader.JarLauncher"

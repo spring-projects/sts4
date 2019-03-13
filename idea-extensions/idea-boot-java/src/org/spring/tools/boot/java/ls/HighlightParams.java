@@ -12,7 +12,7 @@ package org.spring.tools.boot.java.ls;
 
 import java.util.List;
 
-import org.eclipse.lsp4j.Range;
+import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 
 public class HighlightParams {
@@ -23,15 +23,15 @@ public class HighlightParams {
 	// a update site.
 
 	private TextDocumentIdentifier doc;
-	private List<Range> ranges;
+	private List<CodeLens> codeLenses;
 
 	public HighlightParams() {
 	}
 
-	public HighlightParams(TextDocumentIdentifier doc, List<Range> ranges) {
+	public HighlightParams(TextDocumentIdentifier doc, List<CodeLens> codeLenses) {
 		super();
 		this.doc = doc;
-		this.ranges = ranges;
+		this.codeLenses = codeLenses;
 	}
 	public TextDocumentIdentifier getDoc() {
 		return doc;
@@ -39,15 +39,15 @@ public class HighlightParams {
 	public void setDoc(TextDocumentIdentifier doc) {
 		this.doc = doc;
 	}
-	public List<Range> getRanges() {
-		return ranges;
+	public List<CodeLens> getCodeLenses() {
+		return codeLenses;
 	}
-	public void setRanges(List<Range> ranges) {
-		this.ranges = ranges;
+	public void setCodeLenses(List<CodeLens> codeLens) {
+		this.codeLenses = codeLens;
 	}
 
 	@Override
 	public String toString() {
-		return "HighlightParams [doc=" + doc + ", ranges=" + ranges + "]";
+		return "HighlightParams [doc=" + doc + ", ranges=" + codeLenses + "]";
 	}
 }
