@@ -1,0 +1,16 @@
+inputs:
+- name: sts4
+- name: maven-cache
+- name: theia-version
+outputs:
+- name: out
+platform: linux
+run:
+  path: sts4/concourse/tasks/theia-rc-build.sh
+params:
+  extension_id: undefined_extension_id
+image_resource:
+  type: docker-image
+  source:
+    repository: kdvolder/sts4-build-env
+  

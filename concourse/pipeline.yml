@@ -252,6 +252,16 @@ resources:
     secret_access_key: ((s3_secretkey))
     region_name: ((s3_region))
     initial_version: 0.0.5-RC.6
+- name: theia-version
+  type: semver
+  source:
+    driver: s3
+    bucket: ((s3_bucket))
+    key: versions/theia-extensions
+    access_key_id: ((s3_accesskey))
+    secret_access_key: ((s3_secretkey))
+    region_name: ((s3_region))
+    initial_version: 0.0.3
 ########################################################################################
 jobs:
 - name: build-docker-image
@@ -377,6 +387,23 @@ jobs:
       only_tag: true
       tag_prefix: V_
       tag: version/version
+- name: trigger-theia-rc-build
+  serial: true
+  plan: 
+  - aggregate:
+    - get: sts4
+      passed:
+      - build-cf-manifest-yaml-theia-snapshot
+      - build-concourse-theia-snapshot
+      - build-bosh-theia-snapshot
+      - build-spring-boot-theia-snapshot
+    - do:
+      - get: theia-version
+        params:
+          pre: RC
+      - put: theia-version
+        params:
+          file: theia-version/theia-version
 - name: build-bosh-theia-snapshot
   plan:
   - aggregate:
@@ -646,6 +673,149 @@ jobs:
            • <https://atom.io/packages/bosh-yaml|Bosh YAML Editor>
            • <https://atom.io/packages/cf-manifest-yaml|CF Manifest YAML Editor>
            • <https://atom.io/packages/spring-boot|Spring Boot Support>
+
+- name: build-theia-concourse-rc
+  plan:
+  - aggregate:
+    - get: maven-cache
+      passed:
+      - build-concourse-theia-snapshot
+    - get: sts4
+      passed: 
+      - trigger-theia-rc-build
+    - get: theia-version
+      trigger: true
+      passed: 
+      - trigger-theia-rc-build
+  - task: build-theia-concourse-rc
+    file: sts4/concourse/tasks/theia-rc-build.yml
+    params:
+      extension_id: concourse
+    on_failure:
+      put: slack-notification
+      params:
+        text: |
+           Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!      
+  - put: s3-concourse-theia-snapshot
+    params: 
+      file: out/*-concourse-*.tgz
+      acl: public-read
+    on_success:
+      put: slack-notification
+      params:
+        channel: "#tools-team-internal"
+        text_file: s3-concourse-theia-snapshot/url
+        icon_url: https://raw.githubusercontent.com/spring-projects/sts4/master/vscode-extensions/vscode-concourse/icon.png
+        text: |
+          Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has succeed!
+          Release candidate available for testing $TEXT_FILE_CONTENT
+- name: build-theia-cf-manifest-yaml-rc
+  plan:
+  - aggregate:
+    - get: maven-cache
+      passed:
+      - build-cf-manifest-yaml-theia-snapshot
+    - get: sts4
+      passed: 
+      - trigger-theia-rc-build
+    - get: theia-version
+      trigger: true
+      passed: 
+      - trigger-theia-rc-build
+  - task: build-theia-cf-manifest-yaml-rc
+    file: sts4/concourse/tasks/theia-rc-build.yml
+    params:
+      extension_id: cf-manifest-yaml
+    on_failure:
+      put: slack-notification
+      params:
+        text: |
+           Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!      
+  - put: s3-cf-manifest-yaml-theia-snapshot
+    params: 
+      file: out/*-cf-manifest-yaml-*.tgz
+      acl: public-read
+    on_success:
+      put: slack-notification
+      params:
+        channel: "#tools-team-internal"
+        text_file: s3-cf-manifest-yaml-theia-snapshot/url
+        icon_url: https://raw.githubusercontent.com/spring-projects/sts4/master/vscode-extensions/vscode-manifest-yaml/icon.png
+        text: |
+          Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has succeed!
+          Release candidate available for testing $TEXT_FILE_CONTENT
+- name: build-theia-bosh-rc
+  plan:
+  - aggregate:
+    - get: maven-cache
+      passed:
+      - build-bosh-theia-snapshot
+    - get: sts4
+      passed: 
+      - trigger-theia-rc-build
+    - get: theia-version
+      trigger: true
+      passed: 
+      - trigger-theia-rc-build
+  - task: build-theia-bosh-rc
+    file: sts4/concourse/tasks/theia-rc-build.yml
+    params:
+      extension_id: bosh
+    on_failure:
+      put: slack-notification
+      params:
+        text: |
+           Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!      
+  - put: s3-bosh-theia-snapshot
+    params: 
+      file: out/*-bosh-*.tgz
+      acl: public-read
+    on_success:
+      put: slack-notification
+      params:
+        channel: "#tools-team-internal"
+        text_file: s3-bosh-theia-snapshot/url
+        icon_url: https://raw.githubusercontent.com/spring-projects/sts4/master/vscode-extensions/vscode-concourse/icon.png
+        text: |
+          Build ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has succeed!
+          Release candidate available for testing $TEXT_FILE_CONTENT
+- name: build-theia-spring-boot-rc
+  plan:
+  - aggregate:
+    - get: maven-cache
+      passed:
+      - build-spring-boot-theia-snapshot
+    - get: sts4
+      passed: 
+      - trigger-theia-rc-build
+    - get: theia-version
+      trigger: true
+      passed: 
+      - trigger-theia-rc-build
+  - task: build-theia-spring-boot-rc
+    attempts: 4
+    file: sts4/concourse/tasks/theia-rc-build.yml
+    params:
+      extension_id: spring-boot
+    on_failure:
+      put: slack-notification
+      params:
+        text: |
+           Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!      
+  - put: s3-spring-boot-theia-snapshot
+    params: 
+      file: out/*-spring-boot-*.tgz
+      acl: public-read
+    on_success:
+      put: slack-notification
+      params:
+        channel: "#tools-team-internal"
+        text_file: s3-spring-boot-theia-snapshot/url
+        icon_url: https://raw.githubusercontent.com/spring-projects/sts4/master/vscode-extensions/vscode-spring-boot/spring-boot-logo.png
+        text: |
+          Build ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has succeed!
+          Release candidate available for testing $TEXT_FILE_CONTENT
+
 - name: build-concourse-rc
   plan:
   - aggregate:
@@ -1213,6 +1383,17 @@ groups:
   - build-bosh-theia-snapshot
   - build-cf-manifest-yaml-theia-snapshot
   - build-concourse-theia-snapshot
+  - build-spring-boot-theia-snapshot
+- name: theia-release
+  jobs:
+  - build-theia-bosh-rc
+  - build-theia-concourse-rc
+  - build-theia-cf-manifest-yaml-rc
+  - build-theia-spring-boot-rc
+  - trigger-theia-rc-build
+  - build-cf-manifest-yaml-theia-snapshot
+  - build-concourse-theia-snapshot
+  - build-bosh-theia-snapshot
   - build-spring-boot-theia-snapshot
 - name: setup
   jobs:
