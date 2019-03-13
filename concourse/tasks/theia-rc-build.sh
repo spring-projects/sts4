@@ -13,7 +13,7 @@ workdir=`pwd`
 sources=$workdir/sts4/theia-extensions/theia-$extension_id
 ext_sources=$workdir/sts4/theia-extensions/theia-$extension_id/$extension_id
 
-version=`cat theia-version/theia-version`
+version=`cat theia-version/version`
 echo "extension_id=${extension_id}"
 echo "version=${version}"
 

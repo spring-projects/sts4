@@ -403,7 +403,7 @@ jobs:
           pre: RC
       - put: theia-version
         params:
-          file: theia-version/theia-version
+          file: theia-version/version
 - name: build-bosh-theia-snapshot
   plan:
   - aggregate:
