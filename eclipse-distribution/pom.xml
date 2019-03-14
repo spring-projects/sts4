@@ -323,7 +323,7 @@
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/releases/2019-03/</url>
 				</repository> -->
-				<repository>
+<!--				<repository>
 					<id>2019-03</id>
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/releases/2019-03/201903081000</url>
@@ -332,6 +332,11 @@
 					<id>2019-03-epp</id>
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/technology/epp/packages/2019-03/RC1</url>
+				</repository> -->
+				<repository>
+					<id>2019-03-staging</id>
+					<layout>p2</layout>
+					<url>https://download.eclipse.org/staging/2019-03/</url>
 				</repository>
 
 				<repository>
@@ -560,7 +565,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jarsigner-plugin</artifactId>
-				<version>1.4</version>
+				<version>3.0.0</version>
 				<executions>
 					<execution>
 						<id>sign</id>
@@ -575,8 +580,8 @@
 					<keystore>${signing.keystore}</keystore>
 					<storepass>${signing.store.password}</storepass>
 					<keypass>${signing.key.password}</keypass>
-					<tsa>https://ca.signfiles.com/tsa/get.aspx</tsa>
-	<!--					<tsa>http://sha256timestamp.ws.symantec.com/sha256/timestamp</tsa> -->
+<!--					<tsa>https://ca.signfiles.com/tsa/get.aspx</tsa> -->
+					<tsa>http://sha256timestamp.ws.symantec.com/sha256/timestamp</tsa>
 				</configuration>
 			</plugin>
 		</plugins>
