@@ -115,7 +115,7 @@ resources:
     access_key_id: ((s3_accesskey))
     secret_access_key: ((s3_secretkey))
     region_name: ((s3_region))
-    regexp: sts4/theia-extensions/snapshots/theia-bosh-v(.*).tgz
+    regexp: sts4/theia-extensions/snapshots/theia-bosh-(.*).tgz
 - name: s3-cf-manifest-yaml-theia-snapshot
   type: s3
   source:
@@ -123,7 +123,7 @@ resources:
     access_key_id: ((s3_accesskey))
     secret_access_key: ((s3_secretkey))
     region_name: ((s3_region))
-    regexp: sts4/theia-extensions/snapshots/theia-cf-manifest-yaml-v(.*).tgz
+    regexp: sts4/theia-extensions/snapshots/theia-cf-manifest-yaml-(.*).tgz
 - name: s3-concourse-theia-snapshot
   type: s3
   source:
@@ -131,7 +131,7 @@ resources:
     access_key_id: ((s3_accesskey))
     secret_access_key: ((s3_secretkey))
     region_name: ((s3_region))
-    regexp: sts4/theia-extensions/snapshots/theia-concourse-v(.*).tgz
+    regexp: sts4/theia-extensions/snapshots/theia-concourse-(.*).tgz
 - name: s3-spring-boot-theia-snapshot
   type: s3
   source:
@@ -139,7 +139,7 @@ resources:
     access_key_id: ((s3_accesskey))
     secret_access_key: ((s3_secretkey))
     region_name: ((s3_region))
-    regexp: sts4/theia-extensions/snapshots/theia-spring-boot-v(.*).tgz
+    regexp: sts4/theia-extensions/snapshots/theia-spring-boot-(.*).tgz
 - name: s3-manifest-yaml-fatjar-snapshot
   type: s3
   source:
