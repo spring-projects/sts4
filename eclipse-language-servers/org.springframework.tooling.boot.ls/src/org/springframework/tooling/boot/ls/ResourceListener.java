@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2018 Pivotal, Inc.
+ * Copyright (c) 2017, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -15,6 +15,7 @@ import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResourceChangeEvent;
@@ -52,7 +53,8 @@ public class ResourceListener implements IResourceChangeListener {
 			return;
 		}
 
-		sendFileEvents(createFileEventsFromResourceEvent(event));
+		// Send notification in async fashion not to block the main thread
+		CompletableFuture.runAsync(() -> sendFileEvents(createFileEventsFromResourceEvent(event)));
 	}
 
 	private void sendFileEvents(List<FileEvent> fileEvents) {
