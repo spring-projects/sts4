@@ -28,7 +28,7 @@ timestamp=`date -u +%Y%m%d%H%M`
 
 base_version=`jq -r .version package.json`
 
-yarn install lerna -g
+yarn global add lerna
 
 # for snapshot build, work the timestamp into package.json version qualifier
 cd "$sources"

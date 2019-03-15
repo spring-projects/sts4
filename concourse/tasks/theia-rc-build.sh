@@ -26,7 +26,7 @@ else
 fi
 
 cd ${sources}
-yarn install lerna -g
+yarn global add lerna
 lerna version "${version%-*}" || true --exact --no-git-tag-version --no-push --yes
 ./build.sh
 
