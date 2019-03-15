@@ -27,7 +27,7 @@ fi
 
 cd ${sources}
 yarn global add lerna
-lerna version "${version%-*}" || true --exact --no-git-tag-version --no-push --yes
+lerna version $version --exact --no-git-tag-version --no-push --yes
 ./build.sh
 
 cd ${ext_sources}

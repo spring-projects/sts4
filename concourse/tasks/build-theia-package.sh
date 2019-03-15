@@ -34,7 +34,7 @@ yarn global add lerna
 cd "$sources"
 qualified_version=${base_version}-${timestamp}
 echo "Version: ${qualified_version}"
-lerna version ${qualified_version} --exact --no-git-tag-version --no-push --yes
+lerna version $qualified_version --exact --no-git-tag-version --no-push --yes
 
 cd "$ext_sources"
 echo -e "\n\n*Version: ${qualified_version}*" >> README.md
