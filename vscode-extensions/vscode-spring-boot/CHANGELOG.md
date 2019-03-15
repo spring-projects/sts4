@@ -1,3 +1,9 @@
+## 2019-03-21 (4.2.0 RELEASE)
+
+* _(Spring Boot)_ new: Allow configuration of VM arguments for LSP process "PropertiesLauncher" ([#211](https://github.com/spring-projects/sts4/issues/211))
+* _(Spring Boot)_ performance: major performance improvements to symbol indexing infrastructure by caching created symbols across language server starts
+* _(Spring Boot)_ performance: replaced internal type indexing with communication to JDT (language server) to save time and memory spend for keeping our own type index
+
 ## 2019-02-21 (4.1.2 RELEASE)
 
 * _(Spring Boot)_ new: live hover information for bean wirings now supports war-packaged boot apps running in a local server installation

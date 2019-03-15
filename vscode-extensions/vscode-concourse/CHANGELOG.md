@@ -1,3 +1,7 @@
+## 2019-03-21 (4.2.0 RELEASE)
+
+* no major changes
+
 ## 2019-02-21 (4.1.2 RELEASE)
 
 * _(Concourse)_ new: support for hierarchical symbols in file added, produces nice outline view information now
