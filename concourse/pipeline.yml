@@ -862,11 +862,11 @@ jobs:
         text_file: theia-version/version
         text: |
           STS 4 Theia Extensions $TEXT_FILE_CONTENT released
-          Releases now available on Vscode Marketplace:
-           • <https://marketplace.visualstudio.com/items?itemName=Pivotal.vscode-manifest-yaml|Cloudfoundry Manifest Editor>
-           • <https://marketplace.visualstudio.com/items?itemName=Pivotal.vscode-concourse|Concourse CI Pipeline Editor>
-           • <https://marketplace.visualstudio.com/items?itemName=Pivotal.vscode-bosh|Bosh Deployment Manifest Editor>
-           • <https://marketplace.visualstudio.com/items?itemName=Pivotal.vscode-spring-boot|Spring Boot Support>
+          Releases now available in NPM package registry:
+           • <https://www.npmjs.com/package/@pivotal-tools/theia-cf-manifest-yaml|Cloudfoundry Manifest Editor>
+           • <https://www.npmjs.com/package/@pivotal-tools/theia-concourse|Concourse CI Pipeline Editor>
+           • <https://www.npmjs.com/package/@pivotal-tools/theia-bosh|Bosh Deployment Manifest Editor>
+           • <https://www.npmjs.com/package/@pivotal-tools/theia-spring-boot|Spring Boot Support>
   - aggregate:
     - put: theia-version
       params:
