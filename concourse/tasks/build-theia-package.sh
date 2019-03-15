@@ -28,18 +28,17 @@ timestamp=`date -u +%Y%m%d%H%M`
 
 base_version=`jq -r .version package.json`
 
+cd "$sources"
+./build.sh
+
 # for snapshot build, work the timestamp into package.json version qualifier
 qualified_version=${base_version}-${timestamp}
 echo "Version: ${qualified_version}"
-npm version ${qualified_version}
-update_package_json "$sources"/browser-app $server_id $qualified_version
-update_package_json "$sources"/electron-app $server_id $qualified_version
+lerna version ${qualified_version} --exact --no-git-tag-version --no-push --yes
 
 cd "$ext_sources"
 echo -e "\n\n*Version: ${qualified_version}*" >> README.md
 
-cd "$sources"
-./build.sh
 cd "$ext_folder"
 tar_file=$extension_id-v$qualified_version.tgz
 yarn pack --filename $tar_file

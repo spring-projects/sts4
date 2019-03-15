@@ -25,12 +25,9 @@ else
    exit -1
 fi
 
-cd ${ext_sources}
-npm version "${version%-*}" || true
-echo "Version set to " `npm version`
-
 cd ${sources}
 ./build.sh
+lerna version "${version%-*}" || true --exact --no-git-tag-version --no-push --yes
 
 cd ${ext_sources}
 yarn pack
