@@ -6,7 +6,7 @@
     "rebuild:electron": "theia rebuild:electron"
   },
   "devDependencies": {
-    "lerna": "2.11.0"
+    "lerna": "3.13.1"
   },
   "workspaces": [
     "concourse", "browser-app", "electron-app"
