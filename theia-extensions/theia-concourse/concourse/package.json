@@ -1,5 +1,8 @@
 {
   "name": "@pivotal-tools/theia-concourse",
+  "license": "EPL-1.0",
+  "repository": "https://github.com/spring-projects/sts4",
+  "description": "Concourse Pipelines and Tasks YAML Editor Support",
   "keywords": [
     "theia-extension"
   ],

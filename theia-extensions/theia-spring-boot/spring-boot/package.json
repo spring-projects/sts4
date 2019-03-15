@@ -1,5 +1,8 @@
 {
   "name": "@pivotal-tools/theia-spring-boot",
+  "license": "EPL-1.0",
+  "repository": "https://github.com/spring-projects/sts4",
+  "description": "Spring Boot Tools Support",
   "keywords": [
     "theia-extension"
   ],

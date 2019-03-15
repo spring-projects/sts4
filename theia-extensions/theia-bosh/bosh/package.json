@@ -1,5 +1,8 @@
 {
   "name": "@pivotal-tools/theia-bosh",
+  "license": "EPL-1.0",
+  "repository": "https://github.com/spring-projects/sts4",
+  "description": "Bosh Deployment YAML Editor Support",
   "keywords": [
     "theia-extension"
   ],

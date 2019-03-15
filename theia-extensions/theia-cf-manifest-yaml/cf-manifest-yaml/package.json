@@ -1,5 +1,8 @@
 {
   "name": "@pivotal-tools/theia-cf-manifest-yaml",
+  "license": "EPL-1.0",
+  "repository": "https://github.com/spring-projects/sts4",
+  "description": "CF Manifest YAML Editor Support",
   "keywords": [
     "theia-extension"
   ],
