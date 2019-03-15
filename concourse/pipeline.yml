@@ -815,6 +815,62 @@ jobs:
         text: |
           Build ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has succeed!
           Release candidate available for testing $TEXT_FILE_CONTENT
+- name: publish-theia-release
+  serial: true
+  plan:
+  - aggregate:
+    - get: tasks
+    - get: sts4
+      passed:
+      - build-theia-cf-manifest-yaml-rc
+      - build-theia-concourse-rc
+      - build-theia-bosh-rc
+      - build-theia-spring-boot-rc
+    - get: theia-version
+      passed:
+      - build-theia-concourse-rc
+      - build-theia-cf-manifest-yaml-rc
+      - build-theia-bosh-rc
+      - build-theia-spring-boot-rc
+      params:
+        bump: final
+    - get: s3-concourse-theia-snapshot
+      passed:
+      - build-theia-concourse-rc
+    - get: s3-cf-manifest-yaml-theia-snapshot
+      passed:
+      - build-theia-cf-manifest-yaml-rc
+    - get: s3-bosh-theia-snapshot
+      passed:
+      - build-theia-bosh-rc
+    - get: s3-spring-boot-theia-snapshot
+      passed:
+      - build-theia-spring-boot-rc
+  - task: publish-theia-releases
+    file: tasks/concourse/tasks/publish-theia-releases.yml
+    input_mapping:
+      sts4: tasks
+    on_failure:
+      put: slack-notification
+      params:
+        text: |
+           Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!      
+    on_success:
+      put: slack-notification
+      params:
+        channel: "#tools-team-internal"
+        text_file: theia-version/version
+        text: |
+          STS 4 Theia Extensions $TEXT_FILE_CONTENT released
+          Releases now available on Vscode Marketplace:
+           • <https://marketplace.visualstudio.com/items?itemName=Pivotal.vscode-manifest-yaml|Cloudfoundry Manifest Editor>
+           • <https://marketplace.visualstudio.com/items?itemName=Pivotal.vscode-concourse|Concourse CI Pipeline Editor>
+           • <https://marketplace.visualstudio.com/items?itemName=Pivotal.vscode-bosh|Bosh Deployment Manifest Editor>
+           • <https://marketplace.visualstudio.com/items?itemName=Pivotal.vscode-spring-boot|Spring Boot Support>
+  # - aggregate:
+  #   - put: theia-version
+  #     params:
+  #       file: theia-version/version
 
 - name: build-concourse-rc
   plan:
@@ -1075,6 +1131,9 @@ jobs:
     - get: version
       params:
         bump: patch
+    - get: theia-version
+      params:
+        bump: patch
   - task: bump-versions
     file: sts4/concourse/tasks/bump-versions.yml
   - put: sts4
@@ -1084,12 +1143,18 @@ jobs:
   - put: version
     params:
       file: version/version
+  - put: theia-version
+    params:
+      file: theia-version/version
 - name: bump-version-minor
   serial: true
   plan:
   - aggregate:
     - get: sts4
     - get: version
+      params:
+        bump: minor
+    - get: theia-version
       params:
         bump: minor
   - task: bump-versions
@@ -1101,12 +1166,18 @@ jobs:
   - put: version
     params:
       file: version/version
+  - put: theia-version
+    params:
+      file: theia-version/version
 - name: bump-version-major
   serial: true
   plan:
   - aggregate:
     - get: sts4
     - get: version
+      params:
+        bump: major
+    - get: theia-version
       params:
         bump: major
   - task: bump-versions
@@ -1118,6 +1189,9 @@ jobs:
   - put: version
     params:
       file: version/version
+  - put: theia-version
+    params:
+      file: theia-version/version
 # - name: build-atom-snapshot-website
 #   serial: true
 #   plan:
@@ -1391,6 +1465,7 @@ groups:
   - build-theia-cf-manifest-yaml-rc
   - build-theia-spring-boot-rc
   - trigger-theia-rc-build
+  - publish-theia-release
   - build-cf-manifest-yaml-theia-snapshot
   - build-concourse-theia-snapshot
   - build-bosh-theia-snapshot

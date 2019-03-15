@@ -41,7 +41,9 @@ cat > package.json << EOF
     "@theia/markers": "latest",
     "@theia/monaco": "latest",
     "@theia/typescript": "latest",
-    "@theia/messages": "latest"
+    "@theia/messages": "latest",
+    "@theia/java": "latest",
+    "@theia/textmate-grammars": "latest"
   },
   "devDependencies": {
     "@theia/cli": "latest"
