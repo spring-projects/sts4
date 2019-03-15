@@ -28,16 +28,19 @@ timestamp=`date -u +%Y%m%d%H%M`
 
 base_version=`jq -r .version package.json`
 
-cd "$sources"
-./build.sh
+yarn install lerna -g
 
 # for snapshot build, work the timestamp into package.json version qualifier
+cd "$sources"
 qualified_version=${base_version}-${timestamp}
 echo "Version: ${qualified_version}"
 lerna version ${qualified_version} --exact --no-git-tag-version --no-push --yes
 
 cd "$ext_sources"
 echo -e "\n\n*Version: ${qualified_version}*" >> README.md
+
+cd "$sources"
+./build.sh
 
 cd "$ext_folder"
 tar_file=$extension_id-v$qualified_version.tgz
