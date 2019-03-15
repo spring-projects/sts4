@@ -14,4 +14,7 @@ do
     echo ""
     echo "     npm publish $theia_tgz_file --access public"
     echo ""
+
+    yarn publish $theia_tgz_file --access public
+
 done

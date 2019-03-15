@@ -867,10 +867,10 @@ jobs:
            • <https://marketplace.visualstudio.com/items?itemName=Pivotal.vscode-concourse|Concourse CI Pipeline Editor>
            • <https://marketplace.visualstudio.com/items?itemName=Pivotal.vscode-bosh|Bosh Deployment Manifest Editor>
            • <https://marketplace.visualstudio.com/items?itemName=Pivotal.vscode-spring-boot|Spring Boot Support>
-  # - aggregate:
-  #   - put: theia-version
-  #     params:
-  #       file: theia-version/version
+  - aggregate:
+    - put: theia-version
+      params:
+        file: theia-version/version
 
 - name: build-concourse-rc
   plan:
@@ -1123,6 +1123,23 @@ jobs:
     - put: version
       params:
         file: version/version
+- name: bump-theia-version-patch
+  serial: true
+  plan:
+  - aggregate:
+    - get: sts4
+    - get: theia-version
+      params:
+        bump: patch
+  - task: bump-theia-versions
+    file: sts4/concourse/tasks/bump-theia-versions.yml
+  - put: sts4
+    params:
+      repository: out
+      rebase: true
+  - put: theia-version
+    params:
+      file: theia-version/version
 - name: bump-version-patch
   serial: true
   plan:
@@ -1430,6 +1447,7 @@ groups:
   - bump-version-patch
   - bump-version-minor
   - bump-version-major
+  - bump-theia-version-patch
 - name: atom-snapshots
   jobs:
   # - build-atom-snapshot-website
