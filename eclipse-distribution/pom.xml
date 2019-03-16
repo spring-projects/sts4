@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>org.springframework.boot.ide</groupId>
@@ -22,7 +22,7 @@
 	<licenses>
 		<license>
 			<name>Eclipse Public License</name>
-			<url>http://www.eclipse.org/legal/epl-v10.html</url>
+			<url>https://www.eclipse.org/legal/epl-v10.html</url>
 		</license>
 	</licenses>
 
@@ -111,67 +111,67 @@
 				<repository>
 					<id>oxygen</id>
 					<layout>p2</layout>
-					<url>http://download.eclipse.org/releases/oxygen/</url>
+					<url>https://download.eclipse.org/releases/oxygen/</url>
 				</repository>
 <!--				<repository>
 					<id>staging</id>
 					<layout>p2</layout>
-					<url>http://download.eclipse.org/staging/oxygen/</url>
+					<url>https://download.eclipse.org/staging/oxygen/</url>
 				</repository> -->
 				<repository>
 					<id>oxygen-java9-y-builds</id>
 					<layout>p2</layout>
-					<url>http://download.eclipse.org/eclipse/updates/4.7-Y-builds/</url>
+					<url>https://download.eclipse.org/eclipse/updates/4.7-Y-builds/</url>
 				</repository>
 				<repository>
 					<id>latest-m2e</id>
 					<layout>p2</layout>
-					<url>http://download.eclipse.org/technology/m2e/releases</url>
+					<url>https://download.eclipse.org/technology/m2e/releases</url>
 				</repository>
 				<repository>
 					<id>orbit</id>
 					<layout>p2</layout>
-					<url>http://download.eclipse.org/tools/orbit/downloads/drops/R20170818183741/repository/</url>
+					<url>https://download.eclipse.org/tools/orbit/downloads/drops/R20170818183741/repository/</url>
 				</repository>
 				<repository>
 					<id>maven-extras-mirror</id>
 					<layout>p2</layout>
-					<url>http://download.springsource.com/release/TOOLS/third-party/m2e-sts310-signed/</url>
+					<url>https://download.springsource.com/release/TOOLS/third-party/m2e-sts310-signed/</url>
 				</repository>
 				<repository>
 					<id>maven-egit</id>
 					<layout>p2</layout>
-					<url>http://repo1.maven.org/maven2/.m2e/connectors/m2eclipse-egit/0.14.0/N/0.14.0.201504071521/</url>
+					<url>https://repo1.maven.org/maven2/.m2e/connectors/m2eclipse-egit/0.14.0/N/0.14.0.201504071521/</url>
 				</repository>
 				<repository>
 					<id>maven-wro4j</id>
 					<layout>p2</layout>
-					<url>http://download.jboss.org/jbosstools/updates/m2e-wro4j/</url>
+					<url>https://download.jboss.org/jbosstools/updates/m2e-wro4j/</url>
 				</repository>
 				<repository>
 					<id>maven-devtools</id>
 					<layout>p2</layout>
-					<url>http://dist.springsource.com/release/TOOLS/mavendevtools/</url>
+					<url>https://dist.springsource.com/release/TOOLS/mavendevtools/</url>
 				</repository>
 				<repository>
 					<id>maven-dependency-support</id>
 					<layout>p2</layout>
-					<url>http://ianbrandt.github.io/m2e-maven-dependency-plugin/</url>
+					<url>https://ianbrandt.github.io/m2e-maven-dependency-plugin/</url>
 				</repository>
 				<repository>
 					<id>ansi-console</id>
 					<layout>p2</layout>
-					<url>http://www.mihai-nita.net/eclipse</url>
+					<url>https://www.mihai-nita.net/eclipse</url>
 				</repository>
 				<repository>
 					<id>lsp4j</id>
 					<layout>p2</layout>
-					<url>http://download.eclipse.org/modeling/tmf/xtext/updates/milestones/</url>
+					<url>https://download.eclipse.org/modeling/tmf/xtext/updates/milestones/</url>
 				</repository>
 				<repository>
 					<id>lsp4e</id>
 					<layout>p2</layout>
-					<url>http://download.eclipse.org/lsp4e/snapshots/</url>
+					<url>https://download.eclipse.org/lsp4e/snapshots/</url>
 				</repository>
 			</repositories>
 			<modules>
@@ -192,8 +192,8 @@
 					-Dhttps.proxyHost=proxy.eng.vmware.com -Dhttps.proxyPort=3128 ${test.osvmargs}</test.vmargs> -->
 				<p2.qualifier>CI-B${bamboo.buildNumber}</p2.qualifier>
 				<p2.replaceQualifier>true</p2.replaceQualifier>
-				<!-- <http_proxy>http://proxy.eng.vmware.com:3128</http_proxy> -->
-				<!-- <https_proxy>http://proxy.eng.vmware.com:3128</https_proxy> -->
+				<!-- <http_proxy>https://proxy.eng.vmware.com:3128</http_proxy> -->
+				<!-- <https_proxy>https://proxy.eng.vmware.com:3128</https_proxy> -->
 			</properties>
 		</profile>
 
@@ -211,27 +211,27 @@
 		<repository>
 			<id>spring-boot-language-servers</id>
 			<layout>p2</layout>
-			<url>http://dist.springsource.com/${dist.type}/TOOLS/sts4-language-servers/${dist.springboot-language-servers-pathpostfix}</url>
+			<url>https://dist.springsource.com/${dist.type}/TOOLS/sts4-language-servers/${dist.springboot-language-servers-pathpostfix}</url>
 		</repository>
 		<repository>
 			<id>spring-boot-language-server-integrations</id>
 			<layout>p2</layout>
-			<url>http://dist.springsource.com/${dist.type}/TOOLS/sts4-language-server-integrations/${dist.springboot-language-servers-pathpostfix}</url>
+			<url>https://dist.springsource.com/${dist.type}/TOOLS/sts4-language-server-integrations/${dist.springboot-language-servers-pathpostfix}</url>
 		</repository>
 		<repository>
 			<id>springide</id>
 			<layout>p2</layout>
-			<url>http://dist.springframework.org/${dist.type}/IDE/${dist.springide-pathpostfix}</url>
+			<url>https://dist.springframework.org/${dist.type}/IDE/${dist.springide-pathpostfix}</url>
 		</repository>
 		<repository>
 			<id>eclipse-integration-commons</id>
 			<layout>p2</layout>
-			<url>http://dist.springsource.com/${dist.type}/TOOLS/eclipse-integration-commons/${dist.eclipse-integration-commons-version}</url>
+			<url>https://dist.springsource.com/${dist.type}/TOOLS/eclipse-integration-commons/${dist.eclipse-integration-commons-version}</url>
 		</repository>
 		<repository>
 			<id>egit-github</id>
 			<layout>p2</layout>
-			<url>http://download.eclipse.org/egit/github/updates</url>
+			<url>https://download.eclipse.org/egit/github/updates</url>
 		</repository>
 	</repositories>
 
@@ -244,12 +244,12 @@
 		<pluginRepository>
 			<id>spring-maven-release</id>
 			<name>Spring Maven Release Repository</name>
-			<url>http://maven.springframework.org/release</url>
+			<url>https://maven.springframework.org/release</url>
 		</pluginRepository>
 		<pluginRepository>
 			<id>springsource-maven-release</id>
 			<name>SpringSource Maven Release Repository</name>
-			<url>http://repository.springsource.com/maven/bundles/release</url>
+			<url>https://repository.springsource.com/maven/bundles/release</url>
 		</pluginRepository>
 		<pluginRepository>
 			<id>sonatype.snapshots</id>
