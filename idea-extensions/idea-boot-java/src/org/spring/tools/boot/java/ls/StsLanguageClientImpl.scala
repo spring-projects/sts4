@@ -4,9 +4,11 @@ import java.awt.Color
 
 import com.github.gtache.lsp.client.LanguageClientImpl
 import com.github.gtache.lsp.client.languageserver.wrapper.LanguageServerWrapper
-import com.github.gtache.lsp.editor.EditorEventManager
 import com.github.gtache.lsp.utils.FileUtils
+import com.intellij.codeInsight.daemon.impl.HintRenderer
 import com.intellij.openapi.application.ApplicationManager
+import com.intellij.openapi.diagnostic.Logger
+import com.intellij.openapi.editor.Inlay
 import com.intellij.openapi.editor.markup._
 import org.eclipse.lsp4j.Range
 import org.eclipse.lsp4j.jsonrpc.services.JsonNotification
@@ -22,6 +24,9 @@ class StsLanguageClientImpl extends LanguageClientImpl {
 
   private var serverWrapper: LanguageServerWrapper = _
   private var rangeHighlights = scala.collection.mutable.Map[String, ListBuffer[RangeHighlighter]]()
+  private var allInLays = scala.collection.mutable.Map[String, ListBuffer[Inlay[HintRenderer]]]()
+
+  private val LOGGER: Logger = Logger.getInstance(StsLanguageClientImpl.getClass)
 
   override def connect(server: LanguageServer, wrapper: LanguageServerWrapper): Unit = {
     super.connect(server, wrapper)
@@ -30,7 +35,7 @@ class StsLanguageClientImpl extends LanguageClientImpl {
 
   @JsonNotification("sts/highlight")
   def publishHints(params: HighlightParams): Unit = {
-    println("Highlight MSG")
+    LOGGER.debug("Highlight MSG")
     val uri = FileUtils.sanitizeURI(params.getDoc.getUri)
     val editorManager = this.serverWrapper.getEditorManagerFor(uri)
     if (editorManager == null || editorManager.editor == null || editorManager.editor.getDocument == null) {
@@ -43,7 +48,13 @@ class StsLanguageClientImpl extends LanguageClientImpl {
         if (rangeHighlights.get(uri).isDefined) {
           rangeHighlights.get(uri).get.foreach(h => editorManager.editor.getMarkupModel.removeHighlighter(h))
         }
+
+        if(allInLays.get(uri).isDefined) {
+          allInLays.get(uri).get.foreach(i => i.dispose())
+        }
+
         val highlighters: ListBuffer[RangeHighlighter] = ListBuffer()
+        val inLays: ListBuffer[Inlay[HintRenderer]] = ListBuffer()
         for (l <- JavaConversions.asScalaBuffer(params.getCodeLenses)) {
           val r: Range = l.getRange
 
@@ -56,15 +67,21 @@ class StsLanguageClientImpl extends LanguageClientImpl {
           val highlighter = editorManager.editor.getMarkupModel.addRangeHighlighter(startOffset, endOffset, HighlighterLayer.ERROR, attrs, HighlighterTargetArea.EXACT_RANGE)
           highlighter.setGutterIconRenderer(SpringBootGutterIconRenderer.INSTANCE)
           highlighters += highlighter
+
+          if(l.getData != null) {
+            val inlineRenderer = new HintRenderer(l.getData.toString);
+            inLays += editorManager.editor.getInlayModel.addInlineElement(endOffset, inlineRenderer)
+          }
         }
         rangeHighlights += Tuple2(uri, highlighters)
+        allInLays += Tuple2(uri, inLays)
       }
     })
   }
 
   @JsonNotification("sts/progress")
   def progress(progressEvent: ProgressParams): Unit = {
-    println("Progress MSG")
+    LOGGER.debug("Progress MSG")
   }
 
 }
