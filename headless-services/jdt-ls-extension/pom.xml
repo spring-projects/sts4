@@ -1,7 +1,7 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0"
 	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
-                             http://maven.apache.org/maven-v4_0_0.xsd">
+                             https://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>org.springframework.tooling</groupId>
@@ -23,19 +23,19 @@
 		<repository>
 			<id>eclipse-photon</id>
 			<layout>p2</layout>
-			<url>http://download.eclipse.org/releases/photon</url>
+			<url>https://download.eclipse.org/releases/photon</url>
 		</repository>
 		<repository>
 			<id>JDT.LS</id>
 			<layout>p2</layout>
 			<!-- <url>${jdt.ls.updatesite}</url> -->
-			<url>http://download.eclipse.org/jdtls/snapshots/repository/latest/</url>
+			<url>https://download.eclipse.org/jdtls/snapshots/repository/latest/</url>
 		</repository>
 		<repository>
 			<id>jboss-apt</id>
 			<layout>p2</layout>
 			<!--URL copied from jdt.ls target platform file, needed to satisfy some of its dependencies -->
-			<url>http://download.jboss.org/jbosstools/updates/m2e-extensions/m2e-apt/1.5.0-2018-04-06_03-47-50-H10</url>
+			<url>https://download.jboss.org/jbosstools/updates/m2e-extensions/m2e-apt/1.5.0-2018-04-06_03-47-50-H10</url>
 		</repository>
 	</repositories>
 	<build>
