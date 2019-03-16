@@ -12,9 +12,9 @@ do
     echo ""
     echo "We are running the following command:"
     echo ""
-    echo "     yarn publish ${theia_tgz_file} --access public"
+    echo "     npm publish ${theia_tgz_file} --access public"
     echo ""
 
-    yarn publish ${theia_tgz_file} --access public
+    npm publish ${theia_tgz_file} --access public
 
 done

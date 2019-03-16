@@ -27,7 +27,10 @@ fi
 
 cd ${sources}
 yarn global add lerna
-lerna version $version --exact --no-git-tag-version --no-push --yes
+# Don't append RC to package version in package.json
+version_to_set="${version%-*}"
+echo "Version for package ${version_to_set}"
+lerna version $version_to_set --exact --no-git-tag-version --no-push --yes
 ./build.sh
 
 cd ${ext_sources}
