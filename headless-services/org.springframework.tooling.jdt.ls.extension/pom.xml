@@ -1,6 +1,6 @@
 <project 
   xmlns="http://maven.apache.org/POM/4.0.0" 
-  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0                             http://maven.apache.org/maven-v4_0_0.xsd">
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0                             https://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <packaging>eclipse-plugin</packaging>
   <groupId>org.springframework.ide.vscode</groupId>
@@ -14,13 +14,13 @@
     <repository>
       <id>eclipse-oxygen</id>
       <layout>p2</layout>
-      <url>http://download.eclipse.org/releases/oxygen</url>
+      <url>https://download.eclipse.org/releases/oxygen</url>
     </repository>
     <repository>
       <id>JDT.LS</id>
       <layout>p2</layout>
       <!-- <url>${jdt.ls.updatesite}</url> -->
-      <url>http://download.eclipse.org/jdtls/snapshots/repository/latest/</url>
+      <url>https://download.eclipse.org/jdtls/snapshots/repository/latest/</url>
     </repository>
   </repositories>
   <build>
