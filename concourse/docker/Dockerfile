@@ -22,4 +22,6 @@ RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - \
 
 RUN npm install -g vsce
 
+RUN yarn global add lerna
+
 CMD /bin/bash  
