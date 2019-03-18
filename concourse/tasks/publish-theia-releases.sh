@@ -1,10 +1,13 @@
 #!/bin/bash
 set -e
+set -x
 workdir=`pwd`
 
 envsubst > ~/.npmrc << XXXXXX
 //registry.npmjs.org/:_authToken=${npm_token}
 XXXXXX
+
+npm whoami
 
 theia_tgz_files=`ls ${workdir}/s3-*-theia-*/theia-*.tgz`
 
