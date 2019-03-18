@@ -11,4 +11,5 @@ image_resource:
   type: docker-image
   source:
     repository: kdvolder/sts4-build-env
-  
+params:
+  npm_token: npm-auth-token-for-publishing

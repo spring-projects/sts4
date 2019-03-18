@@ -850,6 +850,8 @@ jobs:
     file: tasks/concourse/tasks/publish-theia-releases.yml
     input_mapping:
       sts4: tasks
+    params:
+      npm_token: ((npm_token))  
     on_failure:
       put: slack-notification
       params:

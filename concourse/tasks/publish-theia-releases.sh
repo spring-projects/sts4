@@ -2,6 +2,10 @@
 set -e
 workdir=`pwd`
 
+envsubst > ~/.npmrc << XXXXXX
+//registry.npmjs.org/:_authToken=${npm_token}
+XXXXXX
+
 theia_tgz_files=`ls ${workdir}/s3-*-theia-*/theia-*.tgz`
 
 for theia_tgz_file in $theia_tgz_files
