@@ -90,13 +90,15 @@
 		<dist.key>TOOLS</dist.key>
 		<dist.path>${dist.type}/${dist.key}/${dist.project}/${dist.version}</dist.path>
 
+		<misc.p2.repo.version>3.9.4.201902271843</misc.p2.repo.version>
+
 	</properties>
 
-    <repositories>
-        <repository>
-		    <id>third-party-p2-site</id>
+	<repositories>
+		<repository>
+			<id>third-party-p2-site</id>
 			<layout>p2</layout>
-			<url>http://dist.springsource.com/release/TOOLS/third-party/misc-p2-repo/3.9.4.201810191512</url>
+			<url>http://dist.springsource.com/release/TOOLS/third-party/misc-p2-repo/${misc.p2.repo.version}</url>
 		</repository>
 	</repositories>
 
