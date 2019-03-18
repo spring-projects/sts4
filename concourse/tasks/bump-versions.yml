@@ -1,5 +1,6 @@
 inputs:
 - name: version
+- name: theia-version
 - name: sts4
 outputs:
 - name: out
