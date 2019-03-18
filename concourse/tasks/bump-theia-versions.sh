@@ -10,7 +10,6 @@ echo "theia-version=$theia_version"
 
 # theia extensions
 cd $theia_sources
-yarn global add lerna
 for extension_id in $(ls -d theia-*)
 do
     if [ $extension_id != "theia-commons" ]; then

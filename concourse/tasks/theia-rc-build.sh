@@ -26,7 +26,6 @@ else
 fi
 
 cd ${sources}
-yarn global add lerna
 # Don't append RC to package version in package.json
 version_to_set="${version%-*}"
 echo "Version for package ${version_to_set}"
