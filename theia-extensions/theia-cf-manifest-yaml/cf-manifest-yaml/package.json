@@ -6,18 +6,18 @@
   "keywords": [
     "theia-extension"
   ],
-  "version": "0.0.0",
+  "version": "0.0.4",
   "files": [
     "lib",
     "src",
     "jars"
   ],
   "dependencies": {
+    "@pivotal-tools/jvm-launch-utils": "0.0.11",
+    "@pivotal-tools/theia-languageclient": "0.0.7",
     "@theia/core": "latest",
     "@theia/languages": "latest",
-    "@theia/monaco": "latest",
-    "@pivotal-tools/jvm-launch-utils": "0.0.11",
-    "@pivotal-tools/theia-languageclient": "0.0.7"
+    "@theia/monaco": "latest"
   },
   "devDependencies": {
     "rimraf": "^2.6.2",

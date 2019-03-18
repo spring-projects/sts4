@@ -1,22 +1,22 @@
 {
   "private": true,
   "name": "browser-app",
-  "version": "0.0.0",
+  "version": "0.0.4",
   "dependencies": {
+    "@pivotal-tools/theia-bosh": "file:../bosh",
     "@theia/core": "latest",
-    "@theia/filesystem": "latest",
-    "@theia/workspace": "latest",
-    "@theia/preferences": "latest",
-    "@theia/navigator": "latest",
-    "@theia/process": "latest",
-    "@theia/terminal": "latest",
     "@theia/editor": "latest",
+    "@theia/filesystem": "latest",
     "@theia/languages": "latest",
     "@theia/markers": "latest",
-    "@theia/monaco": "latest",
-    "@theia/typescript": "latest",
     "@theia/messages": "latest",
-    "@pivotal-tools/theia-bosh": "file:../bosh"
+    "@theia/monaco": "latest",
+    "@theia/navigator": "latest",
+    "@theia/preferences": "latest",
+    "@theia/process": "latest",
+    "@theia/terminal": "latest",
+    "@theia/typescript": "latest",
+    "@theia/workspace": "latest"
   },
   "devDependencies": {
     "@theia/cli": "latest"
