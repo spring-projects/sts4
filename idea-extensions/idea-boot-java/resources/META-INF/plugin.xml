@@ -2,7 +2,7 @@
   <id>org.spring.tools.boot-java.ls</id>
   <name>Spring Boot Java Support</name>
   <version>1.0</version>
-  <vendor email="aboyko@pivotal.io" url="http://www.pivotal.io">YourCompany</vendor>
+  <vendor email="aboyko@pivotal.io" url="https://www.pivotal.io">YourCompany</vendor>
 
   <description><![CDATA[
       Enter short description for your plugin here.<br>
@@ -15,10 +15,10 @@
     ]]>
   </change-notes>
 
-  <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
+  <!-- please see https://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/build_number_ranges.html for description -->
   <idea-version since-build="145.0"/>
 
-  <!-- please see http://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
+  <!-- please see https://www.jetbrains.org/intellij/sdk/docs/basics/getting_started/plugin_compatibility.html
        on how to target different products -->
   <depends>com.intellij.modules.lang</depends>
   <depends>com.github.gtache.lsp</depends>

@@ -45,7 +45,7 @@ under the License.
  |-->
 <settings xmlns="http://maven.apache.org/SETTINGS/1.0.0"
           xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 http://maven.apache.org/xsd/settings-1.0.0.xsd">
+          xsi:schemaLocation="http://maven.apache.org/SETTINGS/1.0.0 https://maven.apache.org/xsd/settings-1.0.0.xsd">
           
   <localRepository>${java.io.tmpdir}/test-m2-repository</localRepository>
 
@@ -198,7 +198,7 @@ under the License.
         <repository>
           <id>jdk14</id>
           <name>Repository for JDK 1.4 builds</name>
-          <url>http://www.myhost.com/maven/jdk14</url>
+          <url>https://www.myhost.com/maven/jdk14</url>
           <layout>default</layout>
           <snapshotPolicy>always</snapshotPolicy>
         </repository>
