@@ -317,28 +317,11 @@
 				<package.qualifierPrefix>e411</package.qualifierPrefix>
 			</properties>
 			<repositories>
-				<!-- composite update site contains http references, using exact https urls instead -->
-<!--				<repository>
+				<repository>
 					<id>2019-03</id>
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/releases/2019-03/</url>
-				</repository> -->
-<!--				<repository>
-					<id>2019-03</id>
-					<layout>p2</layout>
-					<url>https://download.eclipse.org/releases/2019-03/201903081000</url>
 				</repository>
-				<repository>
-					<id>2019-03-epp</id>
-					<layout>p2</layout>
-					<url>https://download.eclipse.org/technology/epp/packages/2019-03/RC1</url>
-				</repository> -->
-				<repository>
-					<id>2019-03-staging</id>
-					<layout>p2</layout>
-					<url>https://download.eclipse.org/staging/2019-03/</url>
-				</repository>
-
 				<repository>
 					<id>orbit</id>
 					<layout>p2</layout>
