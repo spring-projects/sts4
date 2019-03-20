@@ -11,5 +11,59 @@
 	
 	<artifactId>org.springframework.tooling.ls.eclipse.commons</artifactId>
 	<packaging>eclipse-plugin</packaging>
-	  
+
+	<build>
+		<plugins>
+
+			<plugin>
+				<!-- make sure lib dir is removed after clean to avoid "dirty" build -->
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-clean-plugin</artifactId>
+				<version>3.0.0</version>
+				<configuration>
+					<filesets>
+						<fileset>
+							<directory>${basedir}/lib</directory>
+						</fileset>
+					</filesets>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<execution>
+						<?m2e execute onConfiguration?>
+						<id>get-libs</id>
+						<goals>
+							<goal>copy</goal>
+						</goals>
+						<phase>validate</phase>
+					</execution>
+				</executions>
+				<configuration>
+					<skip>false</skip>
+					<artifactItems>
+						<artifactItem>
+							<groupId>com.kotcrab.remark</groupId>
+							<artifactId>remark</artifactId>
+							<version>1.0.0</version>
+						</artifactItem>
+						<artifactItem>
+							<groupId>org.jsoup</groupId>
+							<artifactId>jsoup</artifactId>
+							<version>1.9.2</version>
+						</artifactItem>
+					</artifactItems>
+					<outputDirectory>${basedir}/lib/</outputDirectory>
+					<!-- baseVersion is to avoid SNAPSHOT dependencies being copied with
+						ever daily changing timestamp -->
+					<useBaseVersion>true</useBaseVersion>
+				</configuration>
+			</plugin>
+
+		</plugins>
+	</build>
+	
 </project>
