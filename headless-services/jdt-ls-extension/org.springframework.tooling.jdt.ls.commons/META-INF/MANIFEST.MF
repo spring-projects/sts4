@@ -1,6 +1,6 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
-Bundle-Name: Commons
+Bundle-Name: Client-side JDT extension for language servers
 Bundle-SymbolicName: org.springframework.tooling.jdt.ls.commons
 Bundle-Version: 1.0.0.qualifier
 Bundle-Vendor: Pivotal, Inc.
