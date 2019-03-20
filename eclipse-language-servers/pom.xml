@@ -98,7 +98,7 @@
 		<repository>
 			<id>third-party-p2-site</id>
 			<layout>p2</layout>
-			<url>http://dist.springsource.com/release/TOOLS/third-party/misc-p2-repo/${misc.p2.repo.version}</url>
+			<url>https://dist.springsource.com/release/TOOLS/third-party/misc-p2-repo/${misc.p2.repo.version}</url>
 		</repository>
 	</repositories>
 
@@ -417,7 +417,7 @@
 					<storepass>${signing.store.password}</storepass>
 					<keypass>${signing.key.password}</keypass>
 <!--					<tsa>https://ca.signfiles.com/tsa/get.aspx</tsa> -->
-					<tsa>http://sha256timestamp.ws.symantec.com/sha256/timestamp</tsa>
+					<tsa>https://sha256timestamp.ws.symantec.com/sha256/timestamp</tsa>
 				</configuration>
 			</plugin>
 			<plugin>
