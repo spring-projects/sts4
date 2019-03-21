@@ -1125,14 +1125,12 @@ jobs:
     - put: version
       params:
         file: version/version
-- name: bump-theia-version-patch
+- name: set-theia-version-to-vscode-version
   serial: true
   plan:
   - aggregate:
     - get: sts4
-    - get: theia-version
-      params:
-        bump: patch
+    - get: version
   - task: bump-theia-versions
     file: sts4/concourse/tasks/bump-theia-versions.yml
   - put: sts4
@@ -1141,7 +1139,7 @@ jobs:
       rebase: true
   - put: theia-version
     params:
-      file: theia-version/version
+      file: version/version
 - name: bump-version-patch
   serial: true
   plan:
@@ -1449,7 +1447,7 @@ groups:
   - bump-version-patch
   - bump-version-minor
   - bump-version-major
-  - bump-theia-version-patch
+  - set-theia-version-to-vscode-version
 - name: atom-snapshots
   jobs:
   # - build-atom-snapshot-website

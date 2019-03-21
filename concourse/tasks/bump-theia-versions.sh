@@ -5,7 +5,7 @@ workdir=`pwd`
 
 theia_sources=$workdir/sts4/theia-extensions
 
-theia_version=`cat theia-version/version`
+theia_version=`cat version/version`
 echo "theia-version=$theia_version"
 
 # theia extensions
