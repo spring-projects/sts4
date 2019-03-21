@@ -37,7 +37,7 @@ public class BoshValueParserTest {
 
 	@Test public void urlOkay() throws Exception {
 		ValueParser urlParser = BoshValueParsers.url("http", "https", "file");
-		urlParser.parse("http://foobar.com/munhings.tar.gz");
+		urlParser.parse("https://foobar.com/munhings.tar.gz");
 		urlParser.parse("https://foobar.com/munhings.tar.gz");
 		urlParser.parse("hTTp://foobar.com/munhings.tar.gz");
 		urlParser.parse("HTTPS://foobar.com/munhings.tar.gz");

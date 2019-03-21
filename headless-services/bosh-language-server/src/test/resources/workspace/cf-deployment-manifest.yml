@@ -1266,7 +1266,7 @@ instance_groups:
       system_domain: "((system_domain))"
       ssl: *ssl
       cc:
-        srv_api_uri: "http://cloud-controller-ng.service.cf.internal:9022"
+        srv_api_uri: "https://cloud-controller-ng.service.cf.internal:9022"
   - name: route_registrar
     release: routing
     properties:

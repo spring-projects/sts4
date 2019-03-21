@@ -10,8 +10,8 @@ unacceptable behavior to spring-code-of-conduct@pivotal.io.
 
 == Using GitHub issues
 We use GitHub issues to track bugs and enhancements. If you have a general usage question
-please ask on http://stackoverflow.com[Stack Overflow]. The Spring Tools 4 team and the
-broader community monitor the http://stackoverflow.com/tags/spring-tools-4[`spring-tools-4`]
+please ask on https://stackoverflow.com[Stack Overflow]. The Spring Tools 4 team and the
+broader community monitor the https://stackoverflow.com/tags/spring-tools-4[`spring-tools-4`]
 tag.
 
 == Sign the Contributor License Agreement
@@ -37,6 +37,6 @@ added after the original pull request but before a merge.
 * A few unit tests would help a lot as well -- someone has to do it.
 * If no-one else is using your branch, please rebase it against the current master (or
   other target branch in the main project).
-* When writing a commit message please follow http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html[these conventions],
+* When writing a commit message please follow https://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html[these conventions],
   if you are fixing an existing issue please add `Fixes gh-XXXX` at the end of the commit
   message (where `XXXX` is the issue number).
