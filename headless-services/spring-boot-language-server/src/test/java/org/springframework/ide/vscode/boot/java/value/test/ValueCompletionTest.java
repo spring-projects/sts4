@@ -40,6 +40,7 @@ import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
 import org.springframework.ide.vscode.boot.java.links.SourceLinkFactory;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
+import org.springframework.ide.vscode.boot.java.utils.SymbolCacheVoid;
 import org.springframework.ide.vscode.boot.java.value.ValueCompletionProcessor;
 import org.springframework.ide.vscode.boot.metadata.AdHocSpringPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
@@ -117,7 +118,8 @@ public class ValueCompletionTest {
 					indexHarness.getIndexProvider(),
 					testDefaults.typeUtilProvider,
 					RunningAppProvider.NULL,
-					null
+					null,
+					new SymbolCacheVoid()
 			);
 		}
 

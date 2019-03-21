@@ -141,20 +141,9 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		ReferencesHandler referencesHandler = createReferenceHandler(server, projectFinder);
 		documents.onReferences(referencesHandler);
 
-		if ("true".equals(System.getProperty("boot.ls.symbols.caching.enabled", "true"))) {
-			try {
-				this.symbolCache = new SymbolCacheOnDisc();
-			}
-			catch (Exception e) {
-				log.warn("symbol cache directory could not be created, no cache enabled");
-				this.symbolCache = new SymbolCacheVoid();
-			}
-		}
-		else {
-			this.symbolCache = new SymbolCacheVoid();
-		}
+		this.symbolCache = this.serverParams.symbolCache;
+		this.indexer = createAnnotationIndexer(server, serverParams, symbolCache);
 
-		indexer = createAnnotationIndexer(server, serverParams, symbolCache);
 		documents.onDidSave(params -> {
 			TextDocument document = params.getDocument();
 			// Spring Boot LS get events from boot properties files as well, so filter them out

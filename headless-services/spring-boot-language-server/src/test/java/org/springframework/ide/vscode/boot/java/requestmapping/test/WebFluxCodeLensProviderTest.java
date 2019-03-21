@@ -46,7 +46,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 @RunWith(SpringRunner.class)
 @BootLanguageServerTest
 @Import(SymbolProviderTestConf.class)
-@Ignore // temporarily ignore this test
 public class WebFluxCodeLensProviderTest {
 
 	@Autowired private BootLanguageServerHarness harness;

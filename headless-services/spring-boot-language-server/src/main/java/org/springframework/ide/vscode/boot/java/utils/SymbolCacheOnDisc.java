@@ -49,11 +49,11 @@ public class SymbolCacheOnDisc implements SymbolCache {
 
 	private static final Logger log = LoggerFactory.getLogger(SymbolCacheOnDisc.class);
 
-	public SymbolCacheOnDisc() throws Exception {
+	public SymbolCacheOnDisc() {
 		this(new File(System.getProperty("user.home") + File.separatorChar + ".sts4" + File.separatorChar + ".symbolCache"));
 	}
 
-	public SymbolCacheOnDisc(File cacheDirectory) throws Exception {
+	public SymbolCacheOnDisc(File cacheDirectory) {
 		this.cacheDirectory = cacheDirectory;
 		this.stores = new ConcurrentHashMap<>();
 
@@ -62,7 +62,7 @@ public class SymbolCacheOnDisc implements SymbolCache {
 		}
 
 		if (!this.cacheDirectory.exists()) {
-			throw new Exception("symbol cache directory could not be created:");
+			log.warn("symbol cache directory does not exist and cannot be created: " + this.cacheDirectory.toString());
 		}
 	}
 
@@ -253,6 +253,5 @@ public class SymbolCacheOnDisc implements SymbolCache {
 	        }
 	    }
 	}
-
 
 }

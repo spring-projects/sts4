@@ -20,6 +20,9 @@ import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.java.utils.SpringLiveHoverWatchdog;
+import org.springframework.ide.vscode.boot.java.utils.SymbolCache;
+import org.springframework.ide.vscode.boot.java.utils.SymbolCacheOnDisc;
+import org.springframework.ide.vscode.boot.java.utils.SymbolCacheVoid;
 import org.springframework.ide.vscode.boot.jdt.ls.JavaProjectsService;
 import org.springframework.ide.vscode.boot.jdt.ls.JavaProjectsServiceWithFallback;
 import org.springframework.ide.vscode.boot.jdt.ls.JdtLsProjectCache;
@@ -68,6 +71,7 @@ public class BootLanguageServerParams {
 	//Boot Java
 	public final RunningAppProvider runningAppProvider;
 	public final Duration watchDogInterval;
+	public final SymbolCache symbolCache;
 
 	public BootLanguageServerParams(
 			JavaProjectFinder projectFinder,
@@ -75,8 +79,8 @@ public class BootLanguageServerParams {
 			SpringPropertyIndexProvider indexProvider,
 			TypeUtilProvider typeUtilProvider,
 			RunningAppProvider runningAppProvider,
-			Duration watchDogInterval
-	) {
+			Duration watchDogInterval,
+			SymbolCache symbolCache) {
 		super();
 		Assert.isNotNull(projectObserver); // null is bad should be ProjectObserver.NULL
 		this.projectFinder = projectFinder;
@@ -85,6 +89,7 @@ public class BootLanguageServerParams {
 		this.typeUtilProvider = typeUtilProvider;
 		this.runningAppProvider = runningAppProvider;
 		this.watchDogInterval = watchDogInterval;
+		this.symbolCache = symbolCache;
 	}
 
 	public static BootLanguageServerParams createDefault(SimpleLanguageServer server, ValueProviderRegistry valueProviders, boolean isJandexIndex) {
@@ -99,13 +104,22 @@ public class BootLanguageServerParams {
 		DefaultSpringPropertyIndexProvider indexProvider = new DefaultSpringPropertyIndexProvider(jdtProjectCache, jdtProjectCache, fileObserver, valueProviders);
 		indexProvider.setProgressService(server.getProgressService());
 
+		SymbolCache symbolCache = null;
+		if ("true".equals(System.getProperty("boot.ls.symbols.caching.enabled", "true"))) {
+			symbolCache = new SymbolCacheOnDisc();
+		}
+		else {
+			symbolCache = new SymbolCacheVoid();
+		}
+
 		return new BootLanguageServerParams(
 				jdtProjectCache.filter(project -> SpringProjectUtil.isBootProject(project) || SpringProjectUtil.isSpringProject(project)),
 				jdtProjectCache,
 				indexProvider,
 				(SourceLinks sourceLinks, IDocument doc) -> new TypeUtil(sourceLinks, jdtProjectCache.find(new TextDocumentIdentifier(doc.getUri()))),
 				RunningAppProvider.createDefault(server),
-				SpringLiveHoverWatchdog.DEFAULT_INTERVAL
+				SpringLiveHoverWatchdog.DEFAULT_INTERVAL,
+				symbolCache
 		);
 	}
 
@@ -173,7 +187,8 @@ public class BootLanguageServerParams {
 				indexProvider,
 				(SourceLinks sourceLinks, IDocument doc) -> new TypeUtil(sourceLinks, javaProjectFinder.find(new TextDocumentIdentifier(doc.getUri()))),
 				RunningAppProvider.NULL,
-				SpringLiveHoverWatchdog.DEFAULT_INTERVAL
+				SpringLiveHoverWatchdog.DEFAULT_INTERVAL,
+				new SymbolCacheVoid()
 		);
 	}
 }

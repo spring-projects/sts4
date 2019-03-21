@@ -48,8 +48,8 @@ public class SymbolProviderTestConf {
 		return BootLanguageServerParams.createTestDefault(server, valueProviders);
 	}
 
-	@Bean SpringSymbolIndex springSymbolIndex(BootLanguageServerInitializer serverInit, SimpleLanguageServer server, BootLanguageServerParams params) {
-		return serverInit.getComponents().get(BootJavaLanguageServerComponents.class).createAnnotationIndexer(server, params, new SymbolCacheVoid());
+	@Bean SpringSymbolIndex springSymbolIndex(BootLanguageServerInitializer serverInit) {
+		return serverInit.getComponents().get(BootJavaLanguageServerComponents.class).getSpringSymbolIndex();
 	}
 
 	@Bean DefaultSpringPropertyIndexProvider indexProvider(BootLanguageServerParams serverParams) {

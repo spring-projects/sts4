@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Pivotal, Inc.
+ * Copyright (c) 2018, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -19,6 +19,7 @@ import org.springframework.ide.vscode.boot.app.BootLanguageServerParams;
 import org.springframework.ide.vscode.boot.editor.harness.PropertyIndexHarness;
 import org.springframework.ide.vscode.boot.java.links.SourceLinkFactory;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
+import org.springframework.ide.vscode.boot.java.utils.SymbolCacheVoid;
 import org.springframework.ide.vscode.boot.metadata.ValueProviderRegistry;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
@@ -54,7 +55,8 @@ public class HoverTestConf {
 				indexHarness.getIndexProvider(),
 				testDefaults.typeUtilProvider,
 				mockAppsHarness().provider,
-				watchDogInterval()
+				watchDogInterval(),
+				new SymbolCacheVoid()
 		);
 	}
 
