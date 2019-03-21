@@ -4,7 +4,7 @@
 
 The latest snapshot .vsix file can be downloaded from here:
 
-http://dist.springsource.com/snapshot/STS4/nightly-distributions.html
+https://dist.springsource.com/snapshot/STS4/nightly-distributions.html
 
 You should get the file called `vscode-concourse-<version>.vsix`.
 

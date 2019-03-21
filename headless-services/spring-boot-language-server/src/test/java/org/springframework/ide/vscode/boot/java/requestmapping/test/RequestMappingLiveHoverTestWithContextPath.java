@@ -69,7 +69,7 @@ public class RequestMappingLiveHoverTestWithContextPath {
 		Editor editor = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
 		editor.assertHighlights("@RequestMapping(method=RequestMethod.GET)");
 
-		editor.assertHoverContains("@RequestMapping(method=RequestMethod.GET)", "[http://cfapps.io:1111/fromEnv/hello-world](http://cfapps.io:1111/fromEnv/hello-world)  \n" +
+		editor.assertHoverContains("@RequestMapping(method=RequestMethod.GET)", "[https://cfapps.io:1111/fromEnv/hello-world](https://cfapps.io:1111/fromEnv/hello-world)  \n" +
 				"\n" +
 				"Process [PID=22022, name=`test-request-mapping-live-hover`]");
 
@@ -105,7 +105,7 @@ public class RequestMappingLiveHoverTestWithContextPath {
 		Editor editor = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
 		editor.assertHighlights("@RequestMapping(method=RequestMethod.GET)");
 
-		editor.assertHoverContains("@RequestMapping(method=RequestMethod.GET)", "[http://cfapps.io:1111/fromlaunchconfig/hello-world](http://cfapps.io:1111/fromlaunchconfig/hello-world)  \n" +
+		editor.assertHoverContains("@RequestMapping(method=RequestMethod.GET)", "[https://cfapps.io:1111/fromlaunchconfig/hello-world](https://cfapps.io:1111/fromlaunchconfig/hello-world)  \n" +
 				"\n" +
 				"Process [PID=22022, name=`test-request-mapping-live-hover`]");
 
@@ -142,7 +142,7 @@ public class RequestMappingLiveHoverTestWithContextPath {
 		Editor editor = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
 		editor.assertHighlights("@RequestMapping(method=RequestMethod.GET)");
 
-		editor.assertHoverContains("@RequestMapping(method=RequestMethod.GET)", "[http://cfapps.io:1111/fromlaunchconfig/hello-world](http://cfapps.io:1111/fromlaunchconfig/hello-world)  \n" +
+		editor.assertHoverContains("@RequestMapping(method=RequestMethod.GET)", "[https://cfapps.io:1111/fromlaunchconfig/hello-world](https://cfapps.io:1111/fromlaunchconfig/hello-world)  \n" +
 				"\n" +
 				"Process [PID=22022, name=`test-request-mapping-live-hover`]");
 
@@ -179,7 +179,7 @@ public class RequestMappingLiveHoverTestWithContextPath {
 		Editor editor = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
 		editor.assertHighlights("@RequestMapping(method=RequestMethod.GET)");
 
-		editor.assertHoverContains("@RequestMapping(method=RequestMethod.GET)", "[http://cfapps.io:1111/frompropsfile/hello-world](http://cfapps.io:1111/frompropsfile/hello-world)  \n" +
+		editor.assertHoverContains("@RequestMapping(method=RequestMethod.GET)", "[https://cfapps.io:1111/frompropsfile/hello-world](https://cfapps.io:1111/frompropsfile/hello-world)  \n" +
 				"\n" +
 				"Process [PID=22022, name=`test-request-mapping-live-hover`]");
 
@@ -216,7 +216,7 @@ public class RequestMappingLiveHoverTestWithContextPath {
 		Editor editor = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
 		editor.assertHighlights("@RequestMapping(method=RequestMethod.GET)");
 
-		editor.assertHoverContains("@RequestMapping(method=RequestMethod.GET)", "[http://cfapps.io:1111/frompropsfile/hello-world](http://cfapps.io:1111/frompropsfile/hello-world)  \n" +
+		editor.assertHoverContains("@RequestMapping(method=RequestMethod.GET)", "[https://cfapps.io:1111/frompropsfile/hello-world](https://cfapps.io:1111/frompropsfile/hello-world)  \n" +
 				"\n" +
 				"Process [PID=22022, name=`test-request-mapping-live-hover`]");
 
@@ -252,7 +252,7 @@ public class RequestMappingLiveHoverTestWithContextPath {
 		Editor editor = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
 		editor.assertHighlights("@RequestMapping(method=RequestMethod.GET)");
 
-		editor.assertHoverContains("@RequestMapping(method=RequestMethod.GET)", "[http://cfapps.io:1111/fromenvironment/hello-world](http://cfapps.io:1111/fromenvironment/hello-world)  \n" +
+		editor.assertHoverContains("@RequestMapping(method=RequestMethod.GET)", "[https://cfapps.io:1111/fromenvironment/hello-world](https://cfapps.io:1111/fromenvironment/hello-world)  \n" +
 				"\n" +
 				"Process [PID=22022, name=`test-request-mapping-live-hover`]");
 
@@ -288,7 +288,7 @@ public class RequestMappingLiveHoverTestWithContextPath {
 		Editor editor = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
 		editor.assertHighlights("@RequestMapping(method=RequestMethod.GET)");
 
-		editor.assertHoverContains("@RequestMapping(method=RequestMethod.GET)", "[http://cfapps.io:1111/fromlaunchconfig/hello-world](http://cfapps.io:1111/fromlaunchconfig/hello-world)  \n" +
+		editor.assertHoverContains("@RequestMapping(method=RequestMethod.GET)", "[https://cfapps.io:1111/fromlaunchconfig/hello-world](https://cfapps.io:1111/fromlaunchconfig/hello-world)  \n" +
 				"\n" +
 				"Process [PID=22022, name=`test-request-mapping-live-hover`]");
 
@@ -325,7 +325,7 @@ public class RequestMappingLiveHoverTestWithContextPath {
 		Editor editor = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
 		editor.assertHighlights("@RequestMapping(method=RequestMethod.GET)");
 
-		editor.assertHoverContains("@RequestMapping(method=RequestMethod.GET)", "[http://cfapps.io:1111/fromlaunchconfig/hello-world](http://cfapps.io:1111/fromlaunchconfig/hello-world)  \n" +
+		editor.assertHoverContains("@RequestMapping(method=RequestMethod.GET)", "[https://cfapps.io:1111/fromlaunchconfig/hello-world](https://cfapps.io:1111/fromlaunchconfig/hello-world)  \n" +
 				"\n" +
 				"Process [PID=22022, name=`test-request-mapping-live-hover`]");
 
@@ -362,7 +362,7 @@ public class RequestMappingLiveHoverTestWithContextPath {
 		Editor editor = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
 		editor.assertHighlights("@RequestMapping(method=RequestMethod.GET)");
 
-		editor.assertHoverContains("@RequestMapping(method=RequestMethod.GET)", "[http://cfapps.io:1111/frompropsfile/hello-world](http://cfapps.io:1111/frompropsfile/hello-world)  \n" +
+		editor.assertHoverContains("@RequestMapping(method=RequestMethod.GET)", "[https://cfapps.io:1111/frompropsfile/hello-world](https://cfapps.io:1111/frompropsfile/hello-world)  \n" +
 				"\n" +
 				"Process [PID=22022, name=`test-request-mapping-live-hover`]");
 
@@ -399,7 +399,7 @@ public class RequestMappingLiveHoverTestWithContextPath {
 		Editor editor = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
 		editor.assertHighlights("@RequestMapping(method=RequestMethod.GET)");
 
-		editor.assertHoverContains("@RequestMapping(method=RequestMethod.GET)", "[http://cfapps.io:1111/frompropsfile/hello-world](http://cfapps.io:1111/frompropsfile/hello-world)  \n" +
+		editor.assertHoverContains("@RequestMapping(method=RequestMethod.GET)", "[https://cfapps.io:1111/frompropsfile/hello-world](https://cfapps.io:1111/frompropsfile/hello-world)  \n" +
 				"\n" +
 				"Process [PID=22022, name=`test-request-mapping-live-hover`]");
 
@@ -438,7 +438,7 @@ public class RequestMappingLiveHoverTestWithContextPath {
 		Editor editor = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
 		editor.assertHighlights("@RequestMapping(method=RequestMethod.GET)");
 
-		editor.assertHoverContains("@RequestMapping(method=RequestMethod.GET)", "[http://cfapps.io:1111/fromlaunchconfig/hello-world](http://cfapps.io:1111/fromlaunchconfig/hello-world)  \n" +
+		editor.assertHoverContains("@RequestMapping(method=RequestMethod.GET)", "[https://cfapps.io:1111/fromlaunchconfig/hello-world](https://cfapps.io:1111/fromlaunchconfig/hello-world)  \n" +
 				"\n" +
 				"Process [PID=22022, name=`test-request-mapping-live-hover`]");
 
@@ -472,7 +472,7 @@ public class RequestMappingLiveHoverTestWithContextPath {
 
 		Editor editor = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
 		editor.assertHighlights("@RequestMapping(method=RequestMethod.GET)");
-		editor.assertHoverContains("@RequestMapping(method=RequestMethod.GET)", "[http://cfapps.io:1111/mockedpath/hello-world](http://cfapps.io:1111/mockedpath/hello-world)  \n" +
+		editor.assertHoverContains("@RequestMapping(method=RequestMethod.GET)", "[https://cfapps.io:1111/mockedpath/hello-world](https://cfapps.io:1111/mockedpath/hello-world)  \n" +
 				"\n" +
 				"Process [PID=22022, name=`test-request-mapping-live-hover`]");
 
@@ -520,8 +520,8 @@ public class RequestMappingLiveHoverTestWithContextPath {
                 "}",
         docUri);
 
-		editor.assertHoverContains("@RequestMapping(value={\"/greetings\", \"/hello\"}, method=GET)", "[http://cfapps.io:999/mockedpath/greetings](http://cfapps.io:999/mockedpath/greetings)  \n" +
-				"[http://cfapps.io:999/mockedpath/hello](http://cfapps.io:999/mockedpath/hello)  \n" +
+		editor.assertHoverContains("@RequestMapping(value={\"/greetings\", \"/hello\"}, method=GET)", "[https://cfapps.io:999/mockedpath/greetings](https://cfapps.io:999/mockedpath/greetings)  \n" +
+				"[https://cfapps.io:999/mockedpath/hello](https://cfapps.io:999/mockedpath/hello)  \n" +
 				"\n" +
 				"Process [PID=76543, name=`test-request-mapping-live-hover`]");
 

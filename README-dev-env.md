@@ -53,12 +53,12 @@ This lets the Eclipse language server extension connect to the locally running l
          http://services.typefox.io/open-source/jenkins/job/lsp4j/job/master/lastStableBuild/artifact/build/p2-repository/
 
 - There is an update site that contains our latest language servers as extensions for Eclipse:
-  http://dist.springsource.com/snapshot/TOOLS/sts4-language-server-integrations/nightly
+  https://dist.springsource.com/snapshot/TOOLS/sts4-language-server-integrations/nightly
   This is being produced by:
   https://build.spring.io/browse/IDE-CODE
 
 - CI builds of the full STS4 distribution can be downloaded from here:
-  http://dist.springsource.com/snapshot/STS4/nightly-distributions.html
+  https://dist.springsource.com/snapshot/STS4/nightly-distributions.html
 
 
 

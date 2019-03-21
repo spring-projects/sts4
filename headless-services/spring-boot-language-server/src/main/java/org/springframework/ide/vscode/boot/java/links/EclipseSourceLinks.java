@@ -31,7 +31,7 @@ import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFin
  */
 public class EclipseSourceLinks implements SourceLinks {
 
-	private static final String URL_PREFIX = "http://org.eclipse.ui.intro/execute?command=";
+	private static final String URL_PREFIX = "https://org.eclipse.ui.intro/execute?command=";
 	private static final String EQUALS = "=";
 	private static final String PARAMETERS_SEPARATOR = ",";
 	private static final String PARAMETERS_START = "(";
