@@ -27,9 +27,7 @@ import org.springframework.ide.vscode.boot.common.InformationTemplates;
 import org.springframework.ide.vscode.boot.common.PropertyCompletionFactory;
 import org.springframework.ide.vscode.boot.common.RelaxedNameConfig;
 import org.springframework.ide.vscode.boot.configurationmetadata.Deprecation;
-import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
 import org.springframework.ide.vscode.boot.java.links.JavaElementLocationProvider;
-import org.springframework.ide.vscode.boot.java.links.SourceLinkFactory;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.metadata.IndexNavigator;
 import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
@@ -446,16 +444,22 @@ public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistCon
 			Collection<Match<PropertyInfo>> matchingProps = indexNav.findMatching(query);
 			if (!matchingProps.isEmpty()) {
 				ArrayList<ICompletionProposal> completions = new ArrayList<ICompletionProposal>();
-				for (Match<PropertyInfo> match : matchingProps) {
-					DocumentEdits edits = createEdits(doc, node, offset, query, match);
-					ScoreableProposal completion = completionFactory.property(
-							doc.getDocument(), edits, match, typeUtil
-					);
-					if (getContextRoot(doc).exists(YamlPath.fromProperty(match.data.getId()))) {
-						completion.deemphasize(DEEMP_EXISTS);
+				matchingProps.parallelStream().forEach(match -> {
+					try {
+						DocumentEdits edits = createEdits(doc, node, offset, query, match);
+						ScoreableProposal completion = completionFactory.property(
+								doc.getDocument(), edits, match, typeUtil
+						);
+						if (getContextRoot(doc).exists(YamlPath.fromProperty(match.data.getId()))) {
+							completion.deemphasize(DEEMP_EXISTS);
+						}
+						synchronized (completions) {
+							completions.add(completion);
+						}
+					} catch (Exception e) {
+						log.error("{}", e);
 					}
-					completions.add(completion);
-				}
+				});
 				return completions;
 			}
 			return Collections.emptyList();

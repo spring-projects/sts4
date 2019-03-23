@@ -23,6 +23,8 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.common.PropertyCompletionFactory;
 import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
 import org.springframework.ide.vscode.boot.metadata.hints.HintProvider;
@@ -45,7 +47,6 @@ import org.springframework.ide.vscode.commons.util.CollectionUtil;
 import org.springframework.ide.vscode.commons.util.FuzzyMap;
 import org.springframework.ide.vscode.commons.util.FuzzyMap.Match;
 import org.springframework.ide.vscode.commons.util.FuzzyMatcher;
-import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.java.properties.antlr.parser.AntlrParser;
@@ -58,6 +59,8 @@ import org.springframework.ide.vscode.java.properties.parser.PropertiesAst.Value
 import com.google.common.collect.ImmutableList;
 
 public class PropertiesCompletionProposalsCalculator {
+
+	private static final Logger log = LoggerFactory.getLogger(PropertiesCompletionProposalsCalculator.class);
 
 	private static final PrefixFinder valuePrefixFinder = new PrefixFinder() {
 		@Override
@@ -160,7 +163,7 @@ public class PropertiesCompletionProposalsCalculator {
 				}
 			}
 		} catch (Exception e) {
-			Log.log(e);
+			log.error("{}", e);
 		}
 		return Collections.emptyList();
 	}
@@ -219,7 +222,7 @@ public class PropertiesCompletionProposalsCalculator {
 				//TODO: other cases ']' or '[' ?
 			}
 		} catch (Exception e) {
-			Log.log(e);
+			log.error("{}", e);
 		}
 		return Collections.emptyList();
 	}
@@ -334,7 +337,7 @@ public class PropertiesCompletionProposalsCalculator {
 			Collection<Match<PropertyInfo>> matches = findMatches(prefix);
 			if (matches!=null && !matches.isEmpty()) {
 				ArrayList<ICompletionProposal> proposals = new ArrayList<ICompletionProposal>(matches.size());
-				for (final Match<PropertyInfo> match : matches) {
+				matches.parallelStream().forEach(match -> {
 					DocumentEdits docEdits;
 					try {
 						docEdits = LazyProposalApplier.from(() -> {
@@ -345,15 +348,17 @@ public class PropertiesCompletionProposalsCalculator {
 									edits.insert(offset, match.data.getId() + propertyCompletionPostfix(typeUtil, type));
 									return edits;
 								} catch (Throwable t) {
-									Log.log(t);
+									log.error("{}", t);
 									return new DocumentEdits(doc);
 								}
 						});
-						proposals.add(completionFactory.property(doc, docEdits, match, typeUtil));
+						synchronized (proposals) {
+							proposals.add(completionFactory.property(doc, docEdits, match, typeUtil));
+						}
 					} catch (Throwable e) {
-						Log.log(e);
+						log.error("{}", e);
 					}
-				}
+				});
 				return proposals;
 			}
 		}

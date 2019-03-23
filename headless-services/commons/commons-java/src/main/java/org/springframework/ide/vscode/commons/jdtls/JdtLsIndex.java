@@ -18,7 +18,6 @@ import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -87,11 +86,11 @@ public class JdtLsIndex implements ClasspathIndex {
 			return typeCache.get(fqName, () -> {
 				JavaDataParams params = new JavaDataParams(projectUri.toString(), "L" + fqName.replace('.', '/') + ";", false);
 				try {
-					TypeData data = client.javaType(params).get(500, TimeUnit.MILLISECONDS);
+					TypeData data = client.javaType(params).get();
 					if (data != null) {
 						return Optional.ofNullable(toType(data));
 					}
-				} catch (InterruptedException | ExecutionException | TimeoutException e) {
+				} catch (InterruptedException | ExecutionException e) {
 					log.error("", e);
 				}
 				return Optional.empty();
