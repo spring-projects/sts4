@@ -24,7 +24,7 @@ class BootJavaPreloadingActivity extends PreloadingActivity {
 
     val javaPath = Paths.get(javaHome)
 
-    val javaExec = javaPath.resolve(Paths.get("bin", "java"))
+    val javaExec = javaPath.resolve(Paths.get("bin", if(isWindows()) "java.exe" else "java"))
 
     if (!Files.exists(javaExec)) {
       // TODO throw error?
@@ -62,4 +62,7 @@ class BootJavaPreloadingActivity extends PreloadingActivity {
       )))
   }
 
+  def isWindows(): Boolean = {
+    return System.getProperty("os.name").toLowerCase().startsWith("win")
+  }
 }
