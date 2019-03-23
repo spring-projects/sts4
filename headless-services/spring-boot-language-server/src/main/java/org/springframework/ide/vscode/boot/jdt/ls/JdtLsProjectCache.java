@@ -207,7 +207,7 @@ public class JdtLsProjectCache implements InitializableJavaProjectsService {
 								IJavaProject newProject = IS_JANDEX_INDEX
 										? new JavaProject(getFileObserver(), projectUri, classpath,
 												JdtLsProjectCache.this)
-										: new JdtLsJavaProject(server.getClient(), projectUri, classpath);
+										: new JdtLsJavaProject(server.getClient(), projectUri, classpath, JdtLsProjectCache.this);
 								IJavaProject oldProject = table.put(uri, newProject);
 								if (oldProject != null) {
 									notifyChanged(newProject);

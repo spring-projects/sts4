@@ -34,6 +34,7 @@ import org.springframework.ide.vscode.commons.java.IMethod;
 import org.springframework.ide.vscode.commons.java.IPrimitiveType;
 import org.springframework.ide.vscode.commons.java.IType;
 import org.springframework.ide.vscode.commons.jdtls.JdtLsIndex;
+import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 import org.springframework.ide.vscode.commons.protocol.STS4LanguageClient;
 import org.springframework.ide.vscode.commons.protocol.java.TypeData;
 import org.springframework.ide.vscode.commons.protocol.java.TypeDescriptorData;
@@ -69,7 +70,7 @@ public class JdtLsIndexTest {
 			}
 		}));
 		// Some valid URI necessary for URI#toString() to succeed
-		JdtLsIndex index = new JdtLsIndex(client, URI.create(System.getProperty("java.io.tmpdir")));
+		JdtLsIndex index = new JdtLsIndex(client, URI.create(System.getProperty("java.io.tmpdir")), ProjectObserver.NULL);
 		IType type = index.findType("java.util.Map");
 		assertNotNull(type);
 		assertEquals("Ljava/util/Map;", type.getBindingKey());
@@ -91,7 +92,7 @@ public class JdtLsIndexTest {
 			}
 		}));
 		// Some valid URI necessary for URI#toString() to succeed
-		JdtLsIndex index = new JdtLsIndex(client, URI.create(System.getProperty("java.io.tmpdir")));
+		JdtLsIndex index = new JdtLsIndex(client, URI.create(System.getProperty("java.io.tmpdir")), ProjectObserver.NULL);
 		IType type = index.findType("java.util.Map");
 		assertNotNull(type);
 
@@ -114,7 +115,7 @@ public class JdtLsIndexTest {
 			}
 		}));
 		// Some valid URI necessary for URI#toString() to succeed
-		JdtLsIndex index = new JdtLsIndex(client, URI.create(System.getProperty("java.io.tmpdir")));
+		JdtLsIndex index = new JdtLsIndex(client, URI.create(System.getProperty("java.io.tmpdir")), ProjectObserver.NULL);
 		IType type = index.findType("org.springframework.boot.autoconfigure.web.ServerProperties");
 		assertNotNull(type);
 
@@ -138,7 +139,7 @@ public class JdtLsIndexTest {
 			}
 		}));
 		// Some valid URI necessary for URI#toString() to succeed
-		JdtLsIndex index = new JdtLsIndex(client, URI.create(System.getProperty("java.io.tmpdir")));
+		JdtLsIndex index = new JdtLsIndex(client, URI.create(System.getProperty("java.io.tmpdir")), ProjectObserver.NULL);
 		List<Tuple2<IType, Double>> results = index.fuzzySearchTypes("util.Map", true, false).collectSortedList((o1, o2) -> o2.getT2().compareTo(o1.getT2())).block();
 		IType type = results.get(0).getT1();
 		assertEquals("io.netty.util.Mapping", type.getFullyQualifiedName());
@@ -155,7 +156,7 @@ public class JdtLsIndexTest {
 			}
 		}));
 		// Some valid URI necessary for URI#toString() to succeed
-		JdtLsIndex index = new JdtLsIndex(client, URI.create(System.getProperty("java.io.tmpdir")));
+		JdtLsIndex index = new JdtLsIndex(client, URI.create(System.getProperty("java.io.tmpdir")), ProjectObserver.NULL);
 		List<Tuple2<String, Double>> results = index.fuzzySearchPackages("com.e", true, false).collectSortedList((o1, o2) -> o2.getT2().compareTo(o1.getT2())).block();
 		List<String> packages = results.stream().map(t -> t.getT1()).collect(Collectors.toList());
 		assertEquals(Arrays.asList("com.example", "com.another.example"), packages);

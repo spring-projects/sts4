@@ -23,10 +23,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.java.ClasspathIndex;
 import org.springframework.ide.vscode.commons.java.IJavaModuleData;
+import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.IType;
 import org.springframework.ide.vscode.commons.java.JavaUtils;
 import org.springframework.ide.vscode.commons.javadoc.JdtLsJavadocProvider;
+import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
+import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver.Listener;
 import org.springframework.ide.vscode.commons.protocol.STS4LanguageClient;
+import org.springframework.ide.vscode.commons.protocol.java.Classpath;
 import org.springframework.ide.vscode.commons.protocol.java.JavaDataParams;
 import org.springframework.ide.vscode.commons.protocol.java.JavaSearchParams;
 import org.springframework.ide.vscode.commons.protocol.java.JavaTypeHierarchyParams;
@@ -46,26 +50,52 @@ import reactor.util.function.Tuples;
 
 public class JdtLsIndex implements ClasspathIndex {
 
-	private static final long SEARCH_TIMEOUT = 700;
+	final private static long SEARCH_TIMEOUT = 700;
 
-	private static final Logger log = LoggerFactory.getLogger(JdtLsIndex.class);
+	final private static Logger log = LoggerFactory.getLogger(JdtLsIndex.class);
 
-	private final STS4LanguageClient client;
-	private final URI projectUri;
-	private final JdtLsJavadocProvider javadocProvider;
+	final private STS4LanguageClient client;
+	final private URI projectUri;
+	final private JdtLsJavadocProvider javadocProvider;
+	final private ProjectObserver projectObserver;
 
-	final private Cache<String, Optional<IType>> typeCache = CacheBuilder.newBuilder().expireAfterAccess(10, TimeUnit.SECONDS).build();
+	final private Cache<String, Optional<IType>> binaryTypeCache = CacheBuilder.newBuilder().build();
+	final private Cache<String, Optional<IType>> sourceTypeCache = CacheBuilder.newBuilder().expireAfterAccess(10, TimeUnit.SECONDS).build();
+
 	final private Cache<JavaTypeHierarchyParams, CompletableFuture<List<IType>>> supertypesCache = CacheBuilder.newBuilder().expireAfterAccess(10, TimeUnit.SECONDS).build();
 	final private Cache<JavaTypeHierarchyParams, CompletableFuture<List<IType>>> subtypesCache = CacheBuilder.newBuilder().expireAfterAccess(10, TimeUnit.SECONDS).build();
 
-	public JdtLsIndex(STS4LanguageClient client, URI projectUri) {
+	final private Listener projectListener = new Listener() {
+
+		@Override
+		public void deleted(IJavaProject project) {
+			// ignore
+		}
+
+		@Override
+		public void created(IJavaProject project) {
+			// ignore
+		}
+
+		@Override
+		public void changed(IJavaProject project) {
+			binaryTypeCache.invalidateAll();
+			sourceTypeCache.invalidateAll();
+		}
+	};
+
+	public JdtLsIndex(STS4LanguageClient client, URI projectUri, ProjectObserver projectObserver) {
 		this.client = client;
 		this.projectUri = projectUri;
+		this.projectObserver = projectObserver;
 		this.javadocProvider = new JdtLsJavadocProvider(client, projectUri.toString());
+
+		this.projectObserver.addListener(projectListener);
 	}
 
 	@Override
 	public void dispose() {
+		projectObserver.removeListener(projectListener);
 	}
 
 	private IType toType(TypeData data) {
@@ -80,25 +110,38 @@ public class JdtLsIndex implements ClasspathIndex {
 		return Wrappers.wrap(data, Suppliers.memoize(() -> findType(data.getFqName())), Suppliers.memoize(() -> declaringTypeFqName == null ? null : findType(declaringTypeFqName)), javadocProvider);
 	}
 
+	private TypeData findTypeData(String fqName) {
+		JavaDataParams params = new JavaDataParams(projectUri.toString(), "L" + fqName.replace('.', '/') + ";", false);
+		try {
+			return client.javaType(params).get();
+		} catch (InterruptedException | ExecutionException e) {
+			log.error("", e);
+		}
+		return null;
+	}
+
 	@Override
 	public IType findType(String fqName) {
-		try {
-			return typeCache.get(fqName, () -> {
-				JavaDataParams params = new JavaDataParams(projectUri.toString(), "L" + fqName.replace('.', '/') + ";", false);
-				try {
-					TypeData data = client.javaType(params).get();
-					if (data != null) {
-						return Optional.ofNullable(toType(data));
-					}
-				} catch (InterruptedException | ExecutionException e) {
-					log.error("", e);
-				}
-				return Optional.empty();
-			}).orElse(null);
-		} catch (ExecutionException e) {
-			log.error("{}", e);
-			return null;
+		Optional<IType> type = binaryTypeCache.getIfPresent(fqName);
+		if (type == null) {
+			type = sourceTypeCache.getIfPresent(fqName);
 		}
+
+		if (type == null) {
+			TypeData data = findTypeData(fqName);
+			if (data == null) {
+				type = Optional.empty();
+				sourceTypeCache.put(fqName, type);
+			} else {
+				type = Optional.of(toType(data));
+				if (Classpath.isBinary(data.getClasspathEntry().getCpe())) {
+					binaryTypeCache.put(fqName, type);
+				} else {
+					sourceTypeCache.put(fqName, type);
+				}
+			}
+		}
+		return type.orElse(null);
 	}
 
 	@Override

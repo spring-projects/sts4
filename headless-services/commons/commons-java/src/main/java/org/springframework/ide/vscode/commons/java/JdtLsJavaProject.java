@@ -13,20 +13,23 @@ package org.springframework.ide.vscode.commons.java;
 import java.net.URI;
 
 import org.springframework.ide.vscode.commons.jdtls.JdtLsIndex;
+import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 import org.springframework.ide.vscode.commons.protocol.STS4LanguageClient;
 
 public class JdtLsJavaProject extends AbstractJavaProject {
 
 	final private STS4LanguageClient client;
+	final private ProjectObserver projectObserver;
 
-	public JdtLsJavaProject(STS4LanguageClient client, URI uri, IClasspath classpath) {
+	public JdtLsJavaProject(STS4LanguageClient client, URI uri, IClasspath classpath, ProjectObserver projectObserver) {
 		super(uri, classpath);
 		this.client = client;
+		this.projectObserver = projectObserver;
 	}
 
 	@Override
 	protected ClasspathIndex createIndex() {
-		return new JdtLsIndex(client, getLocationUri());
+		return new JdtLsIndex(client, getLocationUri(), projectObserver);
 	}
 
 }
