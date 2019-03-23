@@ -31,8 +31,9 @@ class BootJavaPreloadingActivity extends PreloadingActivity {
       return
     }
 
-    var classpath = getClass().getResource("/server/language-server.jar").getPath()
-
+    // search for the server jar near to jar file or class folder
+    val root = new File(getClass().getResource("/").toURI.getPath)
+    var classpath = new File(root.getParent, "/server/language-server.jar").getPath()
 
     if (javaVersion.startsWith("1.8")) {
         var toolsJar = javaPath.resolve(Paths.get("lib", "tools.jar"))

@@ -1,0 +1,49 @@
+plugins {
+    id "org.jetbrains.intellij" version "0.4.5"
+}
+
+repositories {
+    mavenCentral()
+}
+
+intellij {
+    version '2017.3'
+    plugins = ['IntelliLang', 'com.github.gtache.lsp:1.5.4']
+    pluginName 'idea-boot-java'
+    downloadSources = false
+}
+
+patchPluginXml {
+    untilBuild '2019.3'
+}
+
+dependencies {
+    compile 'org.scala-lang:scala-compiler:2.12.7'
+    compile 'org.scala-lang:scala-library:2.12.7'
+}
+
+apply plugin: 'scala'
+sourceSets {
+    main {
+        scala {
+            srcDirs = ['src']
+        }
+        java {
+            srcDirs = []
+        }
+        resources {
+            srcDirs = ['resources']
+        }
+    }
+}
+
+prepareSandbox.doLast {
+    def pluginServerDir = "${intellij.sandboxDirectory}/plugins/idea-boot-java/lib/server"
+
+    mkdir(pluginServerDir)
+    copy {
+        from("$project.projectDir/server/language-server.jar")
+        into(pluginServerDir)
+    }
+}
+
