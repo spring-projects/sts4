@@ -36,8 +36,6 @@ public class LiveAppURLSymbolProvider {
 	}
 
 	public List<? extends SymbolInformation> getSymbols(String query) {
-		System.out.println(query);
-
 		List<SymbolInformation> result = new ArrayList<>();
 
 		try {

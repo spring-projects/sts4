@@ -12,7 +12,14 @@ package org.springframework.ide.vscode.boot.java.requestmapping;
 
 import org.springframework.ide.vscode.commons.util.StringUtil;
 
+import com.google.common.collect.ImmutableSet;
+
 public class UrlUtil {
+
+	private static final ImmutableSet<String> LOCALHOST_ALIASES = ImmutableSet.of(
+			"localhost",
+			"127.0.0.1"
+	);
 
 	/**
 	 * Creates http URL string based on host, port and path
@@ -40,7 +47,7 @@ public class UrlUtil {
 				if (port.equals("80")) {
 					return "http://"+host+path;
 				} else {
-					if ("localhost".equals(host)) {
+					if (LOCALHOST_ALIASES.contains(host)) {
 						return "http://" + host + ":" + port + path;
 					} else {
 						return "https://" + host + ":" + port + path;
