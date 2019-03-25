@@ -1,3 +1,5 @@
-/resources/server/language-server.jar
+/server/language-server.jar
 /.idea
 *.iml
+*.zip
+/gradle/

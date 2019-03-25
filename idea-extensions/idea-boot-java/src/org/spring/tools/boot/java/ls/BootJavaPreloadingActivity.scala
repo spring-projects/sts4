@@ -24,24 +24,25 @@ class BootJavaPreloadingActivity extends PreloadingActivity {
 
     val javaPath = Paths.get(javaHome)
 
-    val javaExec = javaPath.resolve(Paths.get("bin", "java"))
+    val javaExec = javaPath.resolve(Paths.get("bin", if (isWindows()) "java.exe" else "java"))
 
     if (!Files.exists(javaExec)) {
       // TODO throw error?
       return
     }
 
-    var classpath = getClass().getResource("/server/language-server.jar").getPath()
-
+    // search for the server jar near to jar file or class folder
+    val root = new File(getClass().getResource("/").toURI.getPath)
+    var classpath = new File(root.getParent, "/server/language-server.jar").getPath()
 
     if (javaVersion.startsWith("1.8")) {
         var toolsJar = javaPath.resolve(Paths.get("lib", "tools.jar"))
         if (Files.exists(toolsJar)) {
-          classpath += ":" + toolsJar
+          classpath += File.pathSeparator + toolsJar
         } else {
           toolsJar = javaPath.resolve(Paths.get("..", "lib", "tools.jar"))
           if (Files.exists(toolsJar)) {
-            classpath += ":" + toolsJar
+            classpath += File.pathSeparator + toolsJar
           } else {
             // TODO: tools.jar doesn't exist
           }
@@ -52,6 +53,9 @@ class BootJavaPreloadingActivity extends PreloadingActivity {
       // Error - not Java 8 or 9
     }
 
+    // wrap class path for spaces in path
+    classpath = "\'" + classpath + "\'"
+
     LanguageServerDefinition.register(
       new StsServerDefinition("java", Array(
         javaExec.toString(),
@@ -61,4 +65,7 @@ class BootJavaPreloadingActivity extends PreloadingActivity {
       )))
   }
 
+  def isWindows(): Boolean = {
+    return System.getProperty("os.name").toLowerCase().startsWith("win")
+  }
 }
