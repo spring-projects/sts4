@@ -68,11 +68,8 @@ public class BootLanguagServerBootApp {
 
 	@ConditionalOnMissingClass("org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness")
 	@Bean
-	SymbolCache symbolCache() {
-		//TODO: Don't use system properties. This should be done via 'proper' spring boot property. That way it can
-		// be controlled via sysprop or via application.yml, or via env var etc.
-		//Question... who sets this property? I don't find anything setting this.
-		if ("true".equals(System.getProperty("boot.ls.symbols.caching.enabled", "true"))) {
+	SymbolCache symbolCache(BootLsConfigProperties props) {
+		if (props.isSymbolCacheEnabled()) {
 			return new SymbolCacheOnDisc();
 		} else {
 			return new SymbolCacheVoid();

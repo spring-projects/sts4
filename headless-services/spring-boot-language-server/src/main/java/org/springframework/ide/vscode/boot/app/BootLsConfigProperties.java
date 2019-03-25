@@ -31,5 +31,17 @@ public class BootLsConfigProperties {
 		this.enableJandexIndex = enableJandexIndex;
 	}
 
+	/**
+	 * Enable's or disables disk-based symbol cache. This is
+	 * enabled by default.
+	 */
+	private boolean symbolCacheEnabled = true;
 
+	public boolean isSymbolCacheEnabled() {
+		return symbolCacheEnabled;
+	}
+
+	public void setSymbolCacheEnabled(boolean symbolCacheEnabled) {
+		this.symbolCacheEnabled = symbolCacheEnabled;
+	}
 }
