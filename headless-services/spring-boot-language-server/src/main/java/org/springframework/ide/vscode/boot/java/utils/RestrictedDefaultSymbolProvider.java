@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Pivotal, Inc.
+ * Copyright (c) 2018, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -18,36 +18,29 @@ import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.IAnnotationBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
-import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.springframework.ide.vscode.boot.java.Annotations;
+import org.springframework.ide.vscode.boot.java.handlers.AbstractSymbolProvider;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
-import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
-
-import com.google.common.collect.ImmutableList;
 
 /**
  * @author Martin Lippert
  */
-public class RestrictedDefaultSymbolProvider implements SymbolProvider {
+public class RestrictedDefaultSymbolProvider extends AbstractSymbolProvider {
 
 	@Override
-	public Collection<EnhancedSymbolInformation> getSymbols(Annotation node, ITypeBinding typeBinding,
-			Collection<ITypeBinding> metaAnnotations, TextDocument doc) {
+	protected void addSymbolsPass1(Annotation node, ITypeBinding typeBinding,
+			Collection<ITypeBinding> metaAnnotations, SpringIndexerJavaContext context, TextDocument doc) {
 
 		// provide default symbol only in case this annotation is not combined with @Bean annotation
-		if (isCombinedWithAnnotation(node, Annotations.BEAN)) {
-			return null;
-		}
-		else {
-			ImmutableList.Builder<EnhancedSymbolInformation> symbols = ImmutableList.builder();
+		if (!isCombinedWithAnnotation(node, Annotations.BEAN)) {
 			try {
-				symbols.add(new EnhancedSymbolInformation(DefaultSymbolProvider.provideDefaultSymbol(node, doc), null));
+				EnhancedSymbolInformation enhancedSymbol = new EnhancedSymbolInformation(DefaultSymbolProvider.provideDefaultSymbol(node, doc), null);
+				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), enhancedSymbol));
 			} catch (Exception e) {
 				Log.log(e);
 			}
-			return symbols.build();
 		}
 	}
 
@@ -72,16 +65,6 @@ public class RestrictedDefaultSymbolProvider implements SymbolProvider {
 		}
 
 		return false;
-	}
-
-	@Override
-	public Collection<EnhancedSymbolInformation> getSymbols(TypeDeclaration typeDeclaration, TextDocument doc) {
-		return null;
-	}
-
-	@Override
-	public Collection<EnhancedSymbolInformation> getSymbols(MethodDeclaration methodDeclaration, TextDocument doc) {
-		return null;
 	}
 
 }

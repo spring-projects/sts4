@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2018 Pivotal, Inc.
+ * Copyright (c) 2017, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -29,18 +29,22 @@ import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.Location;
 import org.springframework.ide.vscode.boot.java.Annotations;
+import org.springframework.ide.vscode.boot.java.handlers.AbstractSymbolProvider;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
+import org.springframework.ide.vscode.boot.java.utils.CachedSymbol;
+import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJavaContext;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 /**
  * @author Martin Lippert
  */
-public class RequestMappingSymbolProvider implements SymbolProvider {
+public class RequestMappingSymbolProvider extends AbstractSymbolProvider {
 
 	@Override
-	public Collection<EnhancedSymbolInformation> getSymbols(Annotation node, ITypeBinding annotationType, Collection<ITypeBinding> metaAnnotations, TextDocument doc) {
+	protected void addSymbolsPass1(Annotation node, ITypeBinding annotationType, Collection<ITypeBinding> metaAnnotations, SpringIndexerJavaContext context, TextDocument doc) {
+
 		if (node.getParent() instanceof MethodDeclaration) {
 			try {
 				Location location = new Location(doc.getUri(), doc.toRange(node.getStartPosition(), node.getLength()));
@@ -50,7 +54,8 @@ public class RequestMappingSymbolProvider implements SymbolProvider {
 				String[] contentTypes = getContentTypes(node);
 				String[] acceptTypes = getAcceptTypes(node);
 
-				return (parentPath == null ? Stream.of("") : Arrays.stream(parentPath)).filter(Objects::nonNull)
+				Stream<String> stream = parentPath == null ? Stream.of("") : Arrays.stream(parentPath);
+				stream.filter(Objects::nonNull)
 						.flatMap(parent -> (path == null ? Stream.<String>empty() : Arrays.stream(path))
 								.filter(Objects::nonNull).map(p -> {
 									String separator = !parent.endsWith("/") && !p.startsWith("/") ? "/" : "";
@@ -61,12 +66,11 @@ public class RequestMappingSymbolProvider implements SymbolProvider {
 									return resultPath.startsWith("/") ? resultPath : "/" + resultPath;
 								}))
 						.map(p -> RouteUtils.createRouteSymbol(location, p, methods, contentTypes, acceptTypes, null))
-						.collect(Collectors.toList());
+						.forEach((enhancedSymbol) -> context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), enhancedSymbol)));
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
 		}
-		return null;
 	}
 
 	private String[] getMethod(Annotation node) {
@@ -173,7 +177,7 @@ public class RequestMappingSymbolProvider implements SymbolProvider {
 		}
 		return null;
 	}
-	
+
 	private String[] getAcceptTypes(Annotation node) {
 		if (node.isNormalAnnotation()) {
 			NormalAnnotation normNode = (NormalAnnotation) node;
@@ -210,16 +214,6 @@ public class RequestMappingSymbolProvider implements SymbolProvider {
 			}
 		}
 		return new String[0];
-	}
-
-	@Override
-	public Collection<EnhancedSymbolInformation> getSymbols(TypeDeclaration typeDeclaration, TextDocument doc) {
-		return null;
-	}
-
-	@Override
-	public Collection<EnhancedSymbolInformation> getSymbols(MethodDeclaration methodDeclaration, TextDocument doc) {
-		return null;
 	}
 
 }

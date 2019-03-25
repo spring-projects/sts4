@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Pivotal, Inc.
+ * Copyright (c) 2018, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -17,7 +17,6 @@ import java.util.function.Function;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
-import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.Block;
 import org.eclipse.jdt.core.dom.ExpressionMethodReference;
 import org.eclipse.jdt.core.dom.IMethodBinding;
@@ -31,66 +30,58 @@ import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.Range;
+import org.springframework.ide.vscode.boot.java.handlers.AbstractSymbolProvider;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
-import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
+import org.springframework.ide.vscode.boot.java.utils.CachedSymbol;
+import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJava.SCAN_PASS;
+import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJavaContext;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 /**
  * @author Martin Lippert
  */
-public class WebfluxRouterSymbolProvider implements SymbolProvider {
+public class WebfluxRouterSymbolProvider extends AbstractSymbolProvider {
 
 	@Override
-	public Collection<EnhancedSymbolInformation> getSymbols(Annotation node, ITypeBinding typeBinding,
-			Collection<ITypeBinding> metaAnnotations, TextDocument doc) {
-		return null;
-	}
-
-	@Override
-	public Collection<EnhancedSymbolInformation> getSymbols(TypeDeclaration typeDeclaration, TextDocument doc) {
-		return null;
-	}
-
-	@Override
-	public Collection<EnhancedSymbolInformation> getSymbols(MethodDeclaration methodDeclaration, TextDocument doc) {
+	public void addSymbols(MethodDeclaration methodDeclaration, SpringIndexerJavaContext context, TextDocument doc) {
 		Type returnType = methodDeclaration.getReturnType2();
 		if (returnType != null) {
 			ITypeBinding resolvedBinding = returnType.resolveBinding();
 			if (resolvedBinding != null) {
 				if (WebfluxUtils.ROUTER_FUNCTION_TYPE.equals(resolvedBinding.getBinaryName())) {
-					return getSymbolsForRouterFunction(methodDeclaration, doc);
+
+					Block methodBody = methodDeclaration.getBody();
+					if (methodBody != null && methodBody.statements() != null && methodBody.statements().size() > 0) {
+						addSymbolsForRouterFunction(methodBody, context, doc);
+					}
+					else if (SCAN_PASS.ONE.equals(context.getPass())) {
+						context.getNextPassFiles().add(context.getFile());
+					}
 				}
 			}
 		}
-		return null;
 	}
 
-	private Collection<EnhancedSymbolInformation> getSymbolsForRouterFunction(MethodDeclaration methodDeclaration,
-			TextDocument doc) {
-		List<EnhancedSymbolInformation> result = new ArrayList<>();
-
-		Block body = methodDeclaration.getBody();
-		body.accept(new ASTVisitor() {
+	private void addSymbolsForRouterFunction(Block methodBody, SpringIndexerJavaContext context, TextDocument doc) {
+		methodBody.accept(new ASTVisitor() {
 
 			@Override
 			public boolean visit(MethodInvocation node) {
 				IMethodBinding methodBinding = node.resolveMethodBinding();
 
 				if (methodBinding != null && WebfluxUtils.isRouteMethodInvocation(methodBinding)) {
-					extractMappingSymbol(node, doc, result);
+					extractMappingSymbol(node, doc, context);
 				}
 
 				return super.visit(node);
 			}
 
 		});
-
-		return result;
 	}
 
-	protected void extractMappingSymbol(MethodInvocation node, TextDocument doc, List<EnhancedSymbolInformation> result) {
+	protected void extractMappingSymbol(MethodInvocation node, TextDocument doc, SpringIndexerJavaContext context) {
 		WebfluxRouteElement[] pathElements = extractPath(node, doc);
 		WebfluxRouteElement[] httpMethods = extractMethods(node, doc);
 		WebfluxRouteElement[] contentTypes = extractContentTypes(node, doc);
@@ -113,8 +104,10 @@ public class WebfluxRouterSymbolProvider implements SymbolProvider {
 				WebfluxHandlerInformation handler = extractHandlerInformation(node, path, httpMethods, contentTypes, acceptTypes);
 				WebfluxElementsInformation elements = extractElementsInformation(pathElements, httpMethods, contentTypes, acceptTypes);
 
-				result.add(RouteUtils.createRouteSymbol(location, path, getElementStrings(httpMethods),
-						getElementStrings(contentTypes), getElementStrings(acceptTypes), new SymbolAddOnInformation[] {handler, elements}));
+				EnhancedSymbolInformation enhancedSymbol = RouteUtils.createRouteSymbol(location, path, getElementStrings(httpMethods),
+						getElementStrings(contentTypes), getElementStrings(acceptTypes), new SymbolAddOnInformation[] {handler, elements});
+
+				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), enhancedSymbol));
 
 			} catch (BadLocationException e) {
 				e.printStackTrace();

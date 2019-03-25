@@ -10,11 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.data;
 
-import java.util.Collection;
-
-import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.ITypeBinding;
-import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.SymbolInformation;
@@ -22,14 +18,14 @@ import org.eclipse.lsp4j.SymbolKind;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.beans.BeanUtils;
+import org.springframework.ide.vscode.boot.java.handlers.AbstractSymbolProvider;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
-import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
+import org.springframework.ide.vscode.boot.java.utils.CachedSymbol;
+import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJavaContext;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
-
-import com.google.common.collect.ImmutableList;
 
 import reactor.util.function.Tuple4;
 import reactor.util.function.Tuples;
@@ -37,12 +33,12 @@ import reactor.util.function.Tuples;
 /**
  * @author Martin Lippert
  */
-public class DataRepositorySymbolProvider implements SymbolProvider {
+public class DataRepositorySymbolProvider extends AbstractSymbolProvider {
 
 	private static final Logger log = LoggerFactory.getLogger(DataRepositorySymbolProvider.class);
 
 	@Override
-	public Collection<EnhancedSymbolInformation> getSymbols(TypeDeclaration typeDeclaration, TextDocument doc) {
+	protected void addSymbolsPass1(TypeDeclaration typeDeclaration, SpringIndexerJavaContext context, TextDocument doc) {
 		// this checks spring data repository beans that are defined as extensions of the repository interface
 		Tuple4<String, String, String, DocumentRegion> repositoryBean = getRepositoryBean(typeDeclaration, doc);
 		if (repositoryBean != null) {
@@ -51,12 +47,12 @@ public class DataRepositorySymbolProvider implements SymbolProvider {
 						beanLabel(true, repositoryBean.getT1(), repositoryBean.getT2(), repositoryBean.getT3()),
 						SymbolKind.Interface,
 						new Location(doc.getUri(), doc.toRange(repositoryBean.getT4())));
-				return ImmutableList.of(new EnhancedSymbolInformation(symbol, null));
+				EnhancedSymbolInformation enhancedSymbol = new EnhancedSymbolInformation(symbol, null);
+				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), enhancedSymbol));
 			} catch (BadLocationException e) {
 				log.error("error creating data repository symbol for a specific range", e);
 			}
 		}
-		return ImmutableList.of();
 	}
 
 	protected String beanLabel(boolean isFunctionBean, String beanName, String beanType, String markerString) {
@@ -135,13 +131,4 @@ public class DataRepositorySymbolProvider implements SymbolProvider {
 		return BeanUtils.getBeanNameFromType(beanName);
 	}
 
-	@Override
-	public Collection<EnhancedSymbolInformation> getSymbols(Annotation node, ITypeBinding annotationType, Collection<ITypeBinding> metaAnnotations, TextDocument doc) {
-		return null;
-	}
-
-	@Override
-	public Collection<EnhancedSymbolInformation> getSymbols(MethodDeclaration methodDeclaration, TextDocument doc) {
-		return null;
-	}
 }
