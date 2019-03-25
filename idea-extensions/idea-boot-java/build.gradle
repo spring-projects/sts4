@@ -7,14 +7,17 @@ repositories {
 }
 
 intellij {
-    version '2017.3'
+    version '2018.3'
     plugins = ['IntelliLang', 'com.github.gtache.lsp:1.5.4']
     pluginName 'idea-boot-java'
     downloadSources = false
+    // if you want run with your IDEA installation
+    //localPath '/opt/ideaIC-2018'
 }
 
 patchPluginXml {
-    untilBuild '2019.3'
+    untilBuild '193.*'
+    sinceBuild '183.3647.12'
 }
 
 dependencies {
