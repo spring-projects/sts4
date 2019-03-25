@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "https://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
 	<key>fileTypes</key>
@@ -199,7 +199,7 @@
                                 )
                             </string>
 							<key>name</key>
-							<string>string.unquoted.plain.out.yaml</string>
+							<string>identifier.unquoted.plain.out.yaml</string>
 						</dict>
 					</array>
 				</dict>
@@ -264,7 +264,7 @@
 					<key>end</key>
 					<string>^(?!\1|\s*$)</string>
 					<key>name</key>
-					<string>string.unquoted.block.yaml</string>
+					<string>identifier.unquoted.block.yaml</string>
 				</dict>
 			</array>
 		</dict>
@@ -388,12 +388,12 @@
 						<key>2</key>
 						<dict>
 							<key>name</key>
-							<string>string.unquoted.directive-name.yaml</string>
+							<string>identifier.unquoted.directive-name.yaml</string>
 						</dict>
 						<key>3</key>
 						<dict>
 							<key>name</key>
-							<string>string.unquoted.directive-parameter.yaml</string>
+							<string>identifier.unquoted.directive-parameter.yaml</string>
 						</dict>
 					</dict>
 					<key>match</key>
@@ -632,7 +632,7 @@
                                 )
                             </string>
 							<key>name</key>
-							<string>string.unquoted.plain.in.yaml</string>
+							<string>identifier.unquoted.plain.in.yaml</string>
 						</dict>
 					</array>
 				</dict>
@@ -692,7 +692,7 @@
 				<key>0</key>
 				<dict>
 					<key>name</key>
-					<string>punctuation.definition.string.begin.yaml</string>
+					<string>punctuation.definition.identifier.begin.yaml</string>
 				</dict>
 			</dict>
 			<key>end</key>
@@ -702,11 +702,11 @@
 				<key>0</key>
 				<dict>
 					<key>name</key>
-					<string>punctuation.definition.string.end.yaml</string>
+					<string>punctuation.definition.identifier.end.yaml</string>
 				</dict>
 			</dict>
 			<key>name</key>
-			<string>string.quoted.double.yaml</string>
+			<string>identifier.quoted.double.yaml</string>
 			<key>patterns</key>
 			<array>
 				<dict>
@@ -748,7 +748,7 @@
                         )
                     </string>
 					<key>name</key>
-					<string>string.unquoted.plain.in.yaml</string>
+					<string>identifier.unquoted.plain.in.yaml</string>
 				</dict>
 			</array>
 		</dict>
@@ -872,7 +872,7 @@
                         )
                     </string>
 					<key>name</key>
-					<string>string.unquoted.plain.out.yaml</string>
+					<string>identifier.unquoted.plain.out.yaml</string>
 				</dict>
 			</array>
 		</dict>
@@ -980,7 +980,7 @@
 				<key>0</key>
 				<dict>
 					<key>name</key>
-					<string>punctuation.definition.string.begin.yaml</string>
+					<string>punctuation.definition.identifier.begin.yaml</string>
 				</dict>
 			</dict>
 			<key>end</key>
@@ -990,11 +990,11 @@
 				<key>0</key>
 				<dict>
 					<key>name</key>
-					<string>punctuation.definition.string.end.yaml</string>
+					<string>punctuation.definition.identifier.end.yaml</string>
 				</dict>
 			</dict>
 			<key>name</key>
-			<string>string.quoted.single.yaml</string>
+			<string>identifier.quoted.single.yaml</string>
 			<key>patterns</key>
 			<array>
 				<dict>

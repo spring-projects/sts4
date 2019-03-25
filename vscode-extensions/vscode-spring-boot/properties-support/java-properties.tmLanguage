@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "https://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
 	<key>fileTypes</key>
@@ -73,14 +73,14 @@
 				<key>2</key>
 				<dict>
 					<key>name</key>
-					<string>support.constant.java-properties</string>
+					<string>support.identifier.java-properties</string>
 					<key>patterns</key>
 					<array>
 						<dict>
 							<key>match</key>
 							<string>\\(?:[ \t:=\\ntfr\"']|u[0-9A-Fa-f]{4})</string>
 							<key>name</key>
-							<string>constant.character.escape.java-properties</string>
+							<string>identifier.character.escape.java-properties</string>
 						</dict>
 					</array>
 				</dict>
@@ -116,7 +116,7 @@
 					<key>match</key>
 					<string>\\(?:[\\ntfr\"']|u[0-9A-Fa-f]{4})</string>
 					<key>name</key>
-					<string>constant.character.escape.java-properties</string>
+					<string>identifier.character.escape.java-properties</string>
 				</dict>
 			</array>
 		</dict>
@@ -132,14 +132,14 @@
 				<key>2</key>
 				<dict>
 					<key>name</key>
-					<string>support.constant.java-properties</string>
+					<string>support.identifier.java-properties</string>
 					<key>patterns</key>
 					<array>
 						<dict>
 							<key>match</key>
 							<string>\\(?:[ \t:=\\ntfr\"']|u[0-9A-Fa-f]{4})</string>
 							<key>name</key>
-							<string>constant.character.escape.java-properties</string>
+							<string>identifier.character.escape.java-properties</string>
 						</dict>
 					</array>
 				</dict>

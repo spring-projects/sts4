@@ -99,7 +99,20 @@ public class CloudFoundryManifestLanguageServer extends STS4LanguageServerProces
 		
 		File dataFile = bundle.getDataFile(languageServerLocalCopy);
 		Exception error = null;
-		if (!dataFile.exists() || bundleVersion.endsWith("qualifier")) { // qualifier check to get the language server always copied in dev mode
+		if (bundleVersion.endsWith("qualifier")) {
+			File userHome = new File(System.getProperty("user.home"));
+			File locallyBuiltJar = new File(
+					userHome, 
+					"git/sts4/headless-services/manifest-yaml-language-server/target/manifest-yaml-language-server-"+Constants.LANGUAGE_SERVER_VERSION
+			);
+			if (locallyBuiltJar.exists()) {
+				return locallyBuiltJar.getAbsolutePath();
+			} else {
+				throw new IllegalStateException("Not found language server jar: "+locallyBuiltJar);
+			}
+		}
+		
+		if (!dataFile.exists()) { 
 			try {
 				copyLanguageServerJAR(languageServer, languageServerLocalCopy);
 			}
@@ -108,14 +121,6 @@ public class CloudFoundryManifestLanguageServer extends STS4LanguageServerProces
 			}
 		}
 		if (!dataFile.exists()) {
-			File userHome = new File(System.getProperty("user.home"));
-			File locallyBuiltJar = new File(
-					userHome, 
-					"git/sts4/headless-services/manifest-yaml-language-server/target/manifest-yaml-language-server-"+Constants.LANGUAGE_SERVER_VERSION
-			);
-			if (locallyBuiltJar.exists()) {
-				return locallyBuiltJar.getAbsolutePath();
-			}
 			if (error!=null) {
 				error.printStackTrace();
 			}
