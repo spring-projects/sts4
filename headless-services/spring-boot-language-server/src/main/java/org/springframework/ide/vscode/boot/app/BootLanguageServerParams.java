@@ -60,6 +60,13 @@ import org.springframework.ide.vscode.commons.util.text.IDocument;
  */
 public class BootLanguageServerParams {
 
+	//TODO: This class is supposed to go away. It is basically a 'collection of beans'.
+	// I.e. all the 'components' in here should really become separate beans.
+
+	// So... moving forward...
+	// Do not add more components here. You should instead just make your new
+	// components into separate beans.
+
 	//Shared
 	public final JavaProjectFinder projectFinder;
 	public final ProjectObserver projectObserver;
@@ -71,7 +78,6 @@ public class BootLanguageServerParams {
 	//Boot Java
 	public final RunningAppProvider runningAppProvider;
 	public final Duration watchDogInterval;
-	public final SymbolCache symbolCache;
 
 	public BootLanguageServerParams(
 			JavaProjectFinder projectFinder,
@@ -79,8 +85,8 @@ public class BootLanguageServerParams {
 			SpringPropertyIndexProvider indexProvider,
 			TypeUtilProvider typeUtilProvider,
 			RunningAppProvider runningAppProvider,
-			Duration watchDogInterval,
-			SymbolCache symbolCache) {
+			Duration watchDogInterval
+	) {
 		super();
 		Assert.isNotNull(projectObserver); // null is bad should be ProjectObserver.NULL
 		this.projectFinder = projectFinder;
@@ -89,7 +95,6 @@ public class BootLanguageServerParams {
 		this.typeUtilProvider = typeUtilProvider;
 		this.runningAppProvider = runningAppProvider;
 		this.watchDogInterval = watchDogInterval;
-		this.symbolCache = symbolCache;
 	}
 
 	public static BootLanguageServerParams createDefault(SimpleLanguageServer server, ValueProviderRegistry valueProviders, boolean isJandexIndex) {
@@ -104,22 +109,13 @@ public class BootLanguageServerParams {
 		DefaultSpringPropertyIndexProvider indexProvider = new DefaultSpringPropertyIndexProvider(jdtProjectCache, jdtProjectCache, fileObserver, valueProviders);
 		indexProvider.setProgressService(server.getProgressService());
 
-		SymbolCache symbolCache = null;
-		if ("true".equals(System.getProperty("boot.ls.symbols.caching.enabled", "true"))) {
-			symbolCache = new SymbolCacheOnDisc();
-		}
-		else {
-			symbolCache = new SymbolCacheVoid();
-		}
-
 		return new BootLanguageServerParams(
 				jdtProjectCache.filter(project -> SpringProjectUtil.isBootProject(project) || SpringProjectUtil.isSpringProject(project)),
 				jdtProjectCache,
 				indexProvider,
 				(SourceLinks sourceLinks, IDocument doc) -> new TypeUtil(sourceLinks, jdtProjectCache.find(new TextDocumentIdentifier(doc.getUri()))),
 				RunningAppProvider.createDefault(server),
-				SpringLiveHoverWatchdog.DEFAULT_INTERVAL,
-				symbolCache
+				SpringLiveHoverWatchdog.DEFAULT_INTERVAL
 		);
 	}
 
@@ -187,8 +183,7 @@ public class BootLanguageServerParams {
 				indexProvider,
 				(SourceLinks sourceLinks, IDocument doc) -> new TypeUtil(sourceLinks, javaProjectFinder.find(new TextDocumentIdentifier(doc.getUri()))),
 				RunningAppProvider.NULL,
-				SpringLiveHoverWatchdog.DEFAULT_INTERVAL,
-				new SymbolCacheVoid()
+				SpringLiveHoverWatchdog.DEFAULT_INTERVAL
 		);
 	}
 }

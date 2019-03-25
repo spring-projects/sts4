@@ -22,6 +22,7 @@ import org.springframework.ide.vscode.boot.java.links.SourceLinkFactory;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.boot.java.utils.SpringLiveHoverWatchdog;
+import org.springframework.ide.vscode.boot.java.utils.SymbolCache;
 import org.springframework.ide.vscode.boot.java.utils.SymbolCacheVoid;
 import org.springframework.ide.vscode.boot.metadata.ValueProviderRegistry;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtil;
@@ -38,6 +39,10 @@ import org.springframework.ide.vscode.project.harness.MockRunningAppProvider;
 @Configuration
 @Import(AdHocPropertyHarnessTestConf.class)
 public class PropertyEditorTestConf {
+
+	@Bean SymbolCache symbolCache() {
+		return new SymbolCacheVoid();
+	}
 
 	@Bean PropertyIndexHarness indexHarness(ValueProviderRegistry valueProviders) {
 		return new PropertyIndexHarness(valueProviders);
@@ -68,8 +73,7 @@ public class PropertyEditorTestConf {
 				indexHarness.getIndexProvider(),
 				typeUtilProvider,
 				mockAppsHarness().provider,
-				SpringLiveHoverWatchdog.DEFAULT_INTERVAL,
-				new SymbolCacheVoid()
+				SpringLiveHoverWatchdog.DEFAULT_INTERVAL
 		);
 	}
 

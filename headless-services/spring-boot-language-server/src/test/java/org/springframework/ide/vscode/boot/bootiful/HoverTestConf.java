@@ -19,6 +19,7 @@ import org.springframework.ide.vscode.boot.app.BootLanguageServerParams;
 import org.springframework.ide.vscode.boot.editor.harness.PropertyIndexHarness;
 import org.springframework.ide.vscode.boot.java.links.SourceLinkFactory;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
+import org.springframework.ide.vscode.boot.java.utils.SymbolCache;
 import org.springframework.ide.vscode.boot.java.utils.SymbolCacheVoid;
 import org.springframework.ide.vscode.boot.metadata.ValueProviderRegistry;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
@@ -30,6 +31,10 @@ import org.springframework.ide.vscode.project.harness.MockRunningAppProvider;
 @Configuration
 @Import(AdHocPropertyHarnessTestConf.class)
 public class HoverTestConf {
+
+	@Bean SymbolCache symbolCache() {
+		return new SymbolCacheVoid();
+	}
 
 	@Bean PropertyIndexHarness indexHarness(ValueProviderRegistry valueProviders) {
 		return new PropertyIndexHarness(valueProviders);
@@ -55,8 +60,7 @@ public class HoverTestConf {
 				indexHarness.getIndexProvider(),
 				testDefaults.typeUtilProvider,
 				mockAppsHarness().provider,
-				watchDogInterval(),
-				new SymbolCacheVoid()
+				watchDogInterval()
 		);
 	}
 

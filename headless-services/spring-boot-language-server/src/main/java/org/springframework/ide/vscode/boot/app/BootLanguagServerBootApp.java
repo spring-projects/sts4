@@ -27,6 +27,9 @@ import org.springframework.ide.vscode.boot.java.links.JdtJavaDocumentUriProvider
 import org.springframework.ide.vscode.boot.java.links.SourceLinkFactory;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
+import org.springframework.ide.vscode.boot.java.utils.SymbolCache;
+import org.springframework.ide.vscode.boot.java.utils.SymbolCacheOnDisc;
+import org.springframework.ide.vscode.boot.java.utils.SymbolCacheVoid;
 import org.springframework.ide.vscode.boot.metadata.AdHocSpringPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.ClassReferenceProvider;
 import org.springframework.ide.vscode.boot.metadata.LoggerNameProvider;
@@ -61,6 +64,19 @@ public class BootLanguagServerBootApp {
 
 	@Bean public String serverName() {
 		return SERVER_NAME;
+	}
+
+	@ConditionalOnMissingClass("org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness")
+	@Bean
+	SymbolCache symbolCache() {
+		//TODO: Don't use system properties. This should be done via 'proper' spring boot property. That way it can
+		// be controlled via sysprop or via application.yml, or via env var etc.
+		//Question... who sets this property? I don't find anything setting this.
+		if ("true".equals(System.getProperty("boot.ls.symbols.caching.enabled", "true"))) {
+			return new SymbolCacheOnDisc();
+		} else {
+			return new SymbolCacheVoid();
+		}
 	}
 
 	@ConditionalOnMissingClass("org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness")

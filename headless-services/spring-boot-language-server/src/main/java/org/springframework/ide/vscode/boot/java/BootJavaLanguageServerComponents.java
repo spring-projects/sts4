@@ -94,6 +94,13 @@ import com.google.common.collect.ImmutableSet;
  */
 public class BootJavaLanguageServerComponents implements LanguageServerComponents {
 
+	//TODO: This class is supposed to go away. It is basically a 'collection of beans'.
+	// I.e. all the 'components' in here should really become separate beans.
+
+	// So... moving forward...
+	// Do not add more components here. You should instead just make your new
+	// components into separate beans.
+
 	private static final Set<LanguageId> LANGUAGES = ImmutableSet.of(LanguageId.JAVA, LanguageId.XML);
 
 	private static final Logger log = LoggerFactory.getLogger(BootJavaLanguageServerComponents.class);
@@ -114,14 +121,13 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 	private CodeLensHandler codeLensHandler;
 	private DocumentHighlightHandler highlightsEngine;
 
-	private SymbolCache symbolCache;
-
 	public BootJavaLanguageServerComponents(
 			SimpleLanguageServer server,
 			BootLanguageServerParams serverParams,
 			SourceLinks sourceLinks,
 			CompilationUnitCache cuCache,
-			ProjectBasedPropertyIndexProvider adHocIndexProvider
+			ProjectBasedPropertyIndexProvider adHocIndexProvider,
+			SymbolCache symbolCache
 	) {
 		this.server = server;
 		this.serverParams = serverParams;
@@ -141,7 +147,6 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		ReferencesHandler referencesHandler = createReferenceHandler(server, projectFinder);
 		documents.onReferences(referencesHandler);
 
-		this.symbolCache = this.serverParams.symbolCache;
 		this.indexer = createAnnotationIndexer(server, serverParams, symbolCache);
 
 		documents.onDidSave(params -> {

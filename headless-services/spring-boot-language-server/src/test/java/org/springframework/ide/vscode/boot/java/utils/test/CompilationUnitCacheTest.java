@@ -38,6 +38,7 @@ import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
 import org.springframework.ide.vscode.boot.java.links.SourceLinkFactory;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
+import org.springframework.ide.vscode.boot.java.utils.SymbolCache;
 import org.springframework.ide.vscode.boot.java.utils.SymbolCacheVoid;
 import org.springframework.ide.vscode.boot.metadata.ValueProviderRegistry;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
@@ -74,6 +75,10 @@ public class CompilationUnitCacheTest {
 	@Import(AdHocPropertyHarnessTestConf.class)
 	@Configuration static class TestConf {
 
+		@Bean SymbolCache symbolCache() {
+			return new SymbolCacheVoid();
+		}
+
 		@Bean PropertyIndexHarness indexHarness(ValueProviderRegistry valueProviders) {
 			return new PropertyIndexHarness(valueProviders);
 		}
@@ -98,8 +103,7 @@ public class CompilationUnitCacheTest {
 					indexHarness.getIndexProvider(),
 					testDefaults.typeUtilProvider,
 					RunningAppProvider.NULL,
-					null,
-					new SymbolCacheVoid()
+					null
 			);
 		}
 
