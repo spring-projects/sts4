@@ -17,18 +17,15 @@ import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.lsp4j.CompletionItemKind;
-import org.eclipse.lsp4j.InitializeParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.app.BootJavaConfig;
 import org.springframework.ide.vscode.boot.app.BootLanguageServerParams;
+import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchyAwareLookup;
 import org.springframework.ide.vscode.boot.java.autowired.AutowiredHoverProvider;
-import org.springframework.ide.vscode.boot.java.beans.BeansSymbolProvider;
-import org.springframework.ide.vscode.boot.java.beans.ComponentSymbolProvider;
 import org.springframework.ide.vscode.boot.java.conditionals.ConditionalsLiveHoverProvider;
 import org.springframework.ide.vscode.boot.java.data.DataRepositoryCompletionProcessor;
-import org.springframework.ide.vscode.boot.java.data.DataRepositorySymbolProvider;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaCodeLensEngine;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaCompletionEngine;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaDocumentHighlightEngine;
@@ -42,26 +39,21 @@ import org.springframework.ide.vscode.boot.java.handlers.HighlightProvider;
 import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
 import org.springframework.ide.vscode.boot.java.handlers.ReferenceProvider;
 import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
-import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.java.livehover.ActiveProfilesProvider;
 import org.springframework.ide.vscode.boot.java.livehover.BeanInjectedIntoHoverProvider;
 import org.springframework.ide.vscode.boot.java.livehover.ComponentInjectionsHoverProvider;
 import org.springframework.ide.vscode.boot.java.requestmapping.LiveAppURLSymbolProvider;
 import org.springframework.ide.vscode.boot.java.requestmapping.RequestMappingHoverProvider;
-import org.springframework.ide.vscode.boot.java.requestmapping.RequestMappingSymbolProvider;
 import org.springframework.ide.vscode.boot.java.requestmapping.WebfluxHandlerCodeLensProvider;
 import org.springframework.ide.vscode.boot.java.requestmapping.WebfluxRouteHighlightProdivder;
-import org.springframework.ide.vscode.boot.java.requestmapping.WebfluxRouterSymbolProvider;
 import org.springframework.ide.vscode.boot.java.scope.ScopeCompletionProcessor;
 import org.springframework.ide.vscode.boot.java.snippets.JavaSnippet;
 import org.springframework.ide.vscode.boot.java.snippets.JavaSnippetContext;
 import org.springframework.ide.vscode.boot.java.snippets.JavaSnippetManager;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
-import org.springframework.ide.vscode.boot.java.utils.RestrictedDefaultSymbolProvider;
 import org.springframework.ide.vscode.boot.java.utils.SpringLiveChangeDetectionWatchdog;
 import org.springframework.ide.vscode.boot.java.utils.SpringLiveHoverWatchdog;
-import org.springframework.ide.vscode.boot.java.utils.SpringSymbolIndex;
 import org.springframework.ide.vscode.boot.java.utils.SymbolCache;
 import org.springframework.ide.vscode.boot.java.value.ValueCompletionProcessor;
 import org.springframework.ide.vscode.boot.java.value.ValueHoverProvider;
@@ -100,13 +92,13 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 	// Do not add more components here. You should instead just make your new
 	// components into separate beans.
 
-	private static final Set<LanguageId> LANGUAGES = ImmutableSet.of(LanguageId.JAVA, LanguageId.XML);
+	public static final Set<LanguageId> LANGUAGES = ImmutableSet.of(LanguageId.JAVA, LanguageId.XML);
 
 	private static final Logger log = LoggerFactory.getLogger(BootJavaLanguageServerComponents.class);
 
 	private final SimpleLanguageServer server;
 	private final BootLanguageServerParams serverParams;
-	private final SpringSymbolIndex indexer;
+//	private final SpringSymbolIndex indexer;
 	private final SpringPropertyIndexProvider propertyIndexProvider;
 	private final ProjectBasedPropertyIndexProvider adHocPropertyIndexProvider;
 	private final SpringLiveHoverWatchdog liveHoverWatchdog;
@@ -126,7 +118,8 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 			CompilationUnitCache cuCache,
 			ProjectBasedPropertyIndexProvider adHocIndexProvider,
 			SymbolCache symbolCache,
-			BootJavaConfig config
+			BootJavaConfig config,
+			SpringSymbolIndex indexer
 	) {
 		this.server = server;
 		this.serverParams = serverParams;
@@ -144,17 +137,6 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		ReferencesHandler referencesHandler = createReferenceHandler(server, projectFinder);
 		documents.onReferences(referencesHandler);
 
-		this.indexer = createAnnotationIndexer(server, serverParams, symbolCache);
-
-		documents.onDidSave(params -> {
-			TextDocument document = params.getDocument();
-			// Spring Boot LS get events from boot properties files as well, so filter them out
-			if (getInterestingLanguages().contains(document.getLanguageId())) {
-				String docURI = document.getId().getUri();
-				String content = document.get();
-				indexer.updateDocument(docURI, content);
-			}
-		});
 
 		documents.onDocumentSymbol(new BootJavaDocumentSymbolHandler(indexer));
 		workspaceService.onWorkspaceSymbol(new BootJavaWorkspaceSymbolHandler(indexer,
@@ -201,10 +183,10 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 				serverParams.watchDogInterval,
 				sourceLinks);
 
-		codeLensHandler = createCodeLensEngine();
+		codeLensHandler = createCodeLensEngine(indexer);
 		documents.onCodeLens(codeLensHandler);
 
-		highlightsEngine = createDocumentHighlightEngine();
+		highlightsEngine = createDocumentHighlightEngine(indexer);
 		documents.onDocumentHighlight(highlightsEngine);
 
 		config.addListener(ignore -> {
@@ -215,8 +197,6 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 				liveHoverWatchdog.disableHighlights();
 			}
 
-			indexer.configureIndexer(config.isSpringXMLSupportEnabled());
-
 			// live change detection watchdog
 			if (config.isChangeDetectionEnabled()) {
 				liveChangeDetectionWatchdog.enableHighlights();
@@ -226,7 +206,6 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 			}
 		});
 
-		server.onInitialize(this::initialize);
 		server.doOnInitialized(this::initialized);
 		server.onShutdown(this::shutdown);
 	}
@@ -253,26 +232,13 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		return highlightsEngine;
 	}
 
-	private void initialize(InitializeParams params) {
-//		this.indexer.initialize(server.getWorkspaceRoots());
-	}
-
 	private void initialized() {
-		this.indexer.serverInitialized();
 		this.liveChangeDetectionWatchdog.start();
-
-		// TODO: due to a missing message from lsp4e this "initialized" is not called in
-		// the LSP4E case
-		// if this gets fixed, the code should move here (from "initialize" above)
-
-		// this.indexer.initialize(this.getWorkspaceRoot());
-		// this.liveHoverWatchdog.start();
 	}
 
 	private void shutdown() {
 		this.liveHoverWatchdog.shutdown();
 		this.liveChangeDetectionWatchdog.shutdown();
-		this.indexer.shutdown();
 		this.cuCache.dispose();
 	}
 
@@ -382,52 +348,6 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		return new BootJavaHoverProvider(this, javaProjectFinder, providers, runningAppProvider);
 	}
 
-	public SpringSymbolIndex createAnnotationIndexer(SimpleLanguageServer server, BootLanguageServerParams params, SymbolCache cache) {
-		AnnotationHierarchyAwareLookup<SymbolProvider> providers = new AnnotationHierarchyAwareLookup<>();
-		RequestMappingSymbolProvider requestMappingSymbolProvider = new RequestMappingSymbolProvider();
-		BeansSymbolProvider beansSymbolProvider = new BeansSymbolProvider();
-		ComponentSymbolProvider componentSymbolProvider = new ComponentSymbolProvider();
-		RestrictedDefaultSymbolProvider restrictedDefaultSymbolProvider = new RestrictedDefaultSymbolProvider();
-		DataRepositorySymbolProvider dataRepositorySymbolProvider = new DataRepositorySymbolProvider();
-		WebfluxRouterSymbolProvider webfluxRouterSymbolProvider = new WebfluxRouterSymbolProvider();
-
-		providers.put(Annotations.SPRING_REQUEST_MAPPING, requestMappingSymbolProvider);
-		providers.put(Annotations.SPRING_GET_MAPPING, requestMappingSymbolProvider);
-		providers.put(Annotations.SPRING_POST_MAPPING, requestMappingSymbolProvider);
-		providers.put(Annotations.SPRING_PUT_MAPPING, requestMappingSymbolProvider);
-		providers.put(Annotations.SPRING_DELETE_MAPPING, requestMappingSymbolProvider);
-		providers.put(Annotations.SPRING_PATCH_MAPPING, requestMappingSymbolProvider);
-
-		providers.put(Annotations.BEAN, beansSymbolProvider);
-		providers.put(Annotations.COMPONENT, componentSymbolProvider);
-
-		providers.put(Annotations.PROFILE, restrictedDefaultSymbolProvider);
-
-		providers.put(Annotations.CONDITIONAL, restrictedDefaultSymbolProvider);
-		providers.put(Annotations.CONDITIONAL_ON_BEAN, restrictedDefaultSymbolProvider);
-		providers.put(Annotations.CONDITIONAL_ON_MISSING_BEAN, restrictedDefaultSymbolProvider);
-		providers.put(Annotations.CONDITIONAL_ON_PROPERTY, restrictedDefaultSymbolProvider);
-		providers.put(Annotations.CONDITIONAL_ON_RESOURCE, restrictedDefaultSymbolProvider);
-		providers.put(Annotations.CONDITIONAL_ON_CLASS, restrictedDefaultSymbolProvider);
-		providers.put(Annotations.CONDITIONAL_ON_MISSING_CLASS, restrictedDefaultSymbolProvider);
-		providers.put(Annotations.CONDITIONAL_ON_CLOUD_PLATFORM, restrictedDefaultSymbolProvider);
-		providers.put(Annotations.CONDITIONAL_ON_WEB_APPLICATION, restrictedDefaultSymbolProvider);
-		providers.put(Annotations.CONDITIONAL_ON_NOT_WEB_APPLICATION, restrictedDefaultSymbolProvider);
-		providers.put(Annotations.CONDITIONAL_ON_ENABLED_INFO_CONTRIBUTOR, restrictedDefaultSymbolProvider);
-		providers.put(Annotations.CONDITIONAL_ON_ENABLED_RESOURCE_CHAIN, restrictedDefaultSymbolProvider);
-		providers.put(Annotations.CONDITIONAL_ON_ENABLED_ENDPOINT, restrictedDefaultSymbolProvider);
-		providers.put(Annotations.CONDITIONAL_ON_ENABLED_HEALTH_INDICATOR, restrictedDefaultSymbolProvider);
-		providers.put(Annotations.CONDITIONAL_ON_EXPRESSION, restrictedDefaultSymbolProvider);
-		providers.put(Annotations.CONDITIONAL_ON_JAVA, restrictedDefaultSymbolProvider);
-		providers.put(Annotations.CONDITIONAL_ON_JNDI, restrictedDefaultSymbolProvider);
-		providers.put(Annotations.CONDITIONAL_ON_SINGLE_CANDIDATE, restrictedDefaultSymbolProvider);
-
-		providers.put(Annotations.REPOSITORY, dataRepositorySymbolProvider);
-		providers.put("", webfluxRouterSymbolProvider);
-
-		return new SpringSymbolIndex(server, params, providers, cache);
-	}
-
 	protected ReferencesHandler createReferenceHandler(SimpleLanguageServer server, JavaProjectFinder projectFinder) {
 		Map<String, ReferenceProvider> providers = new HashMap<>();
 		providers.put(org.springframework.ide.vscode.boot.java.value.Constants.SPRING_VALUE,
@@ -436,16 +356,16 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		return new BootJavaReferencesHandler(this, projectFinder, providers);
 	}
 
-	protected BootJavaCodeLensEngine createCodeLensEngine() {
+	protected BootJavaCodeLensEngine createCodeLensEngine(SpringSymbolIndex index) {
 		Collection<CodeLensProvider> codeLensProvider = new ArrayList<>();
-		codeLensProvider.add(new WebfluxHandlerCodeLensProvider(this));
+		codeLensProvider.add(new WebfluxHandlerCodeLensProvider(index));
 
 		return new BootJavaCodeLensEngine(this, codeLensProvider);
 	}
 
-	protected BootJavaDocumentHighlightEngine createDocumentHighlightEngine() {
+	protected BootJavaDocumentHighlightEngine createDocumentHighlightEngine(SpringSymbolIndex indexer) {
 		Collection<HighlightProvider> highlightProvider = new ArrayList<>();
-		highlightProvider.add(new WebfluxRouteHighlightProdivder(this));
+		highlightProvider.add(new WebfluxRouteHighlightProdivder(indexer));
 
 		return new BootJavaDocumentHighlightEngine(this, highlightProvider);
 	}
@@ -456,10 +376,6 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 
 	public JavaProjectFinder getProjectFinder() {
 		return projectFinder;
-	}
-
-	public SpringSymbolIndex getSpringSymbolIndex() {
-		return indexer;
 	}
 
 	public SpringPropertyIndexProvider getSpringPropertyIndexProvider() {

@@ -8,7 +8,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.java.utils;
+package org.springframework.ide.vscode.boot.app;
 
 import java.io.File;
 import java.net.URI;
@@ -34,45 +34,60 @@ import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ide.vscode.boot.app.BootLanguageServerParams;
+import org.springframework.beans.factory.InitializingBean;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchyAwareLookup;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
+import org.springframework.ide.vscode.boot.java.utils.SpringIndexer;
+import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJava;
+import org.springframework.ide.vscode.boot.java.utils.SpringIndexerXML;
+import org.springframework.ide.vscode.boot.java.utils.SpringIndexerXMLNamespaceHandler;
+import org.springframework.ide.vscode.boot.java.utils.SpringIndexerXMLNamespaceHandlerBeans;
+import org.springframework.ide.vscode.boot.java.utils.SymbolCache;
+import org.springframework.ide.vscode.boot.java.utils.SymbolHandler;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver.Listener;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
+import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleWorkspaceService;
 import org.springframework.ide.vscode.commons.util.Futures;
 import org.springframework.ide.vscode.commons.util.StringUtil;
+import org.springframework.ide.vscode.commons.util.text.TextDocument;
+import org.springframework.stereotype.Component;
 
 /**
  * @author Martin Lippert
  */
-public class SpringSymbolIndex {
+@Component
+public class SpringSymbolIndex implements InitializingBean {
+
+	@Autowired SimpleLanguageServer server;
+	@Autowired BootJavaConfig config;
+	@Autowired BootLanguageServerParams params;
+	@Autowired AnnotationHierarchyAwareLookup<SymbolProvider> specificProviders;
+	@Autowired SymbolCache cache;
 
 	private static final String QUERY_PARAM_LOCATION_PREFIX = "locationPrefix:";
 	private static final int MAX_NUMBER_OF_SYMBOLS_IN_RESPONSE = 50;
 
-	private final SimpleLanguageServer server;
-	private final BootLanguageServerParams params;
-	private final JavaProjectFinder projectFinder;
+	private final List<SymbolInformation> symbols = new ArrayList<>();
+	private final List<SymbolAddOnInformation> addonInformation = new ArrayList<>();
 
-	private final List<SymbolInformation> symbols;
-	private final List<SymbolAddOnInformation> addonInformation;
+	private final ConcurrentMap<String, List<SymbolInformation>> symbolsByDoc = new ConcurrentHashMap<>();
+	private final ConcurrentMap<String, List<SymbolAddOnInformation>> addonInformationByDoc = new ConcurrentHashMap<>();
 
-	private final ConcurrentMap<String, List<SymbolInformation>> symbolsByDoc;
-	private final ConcurrentMap<String, List<SymbolAddOnInformation>> addonInformationByDoc;
+	private final ConcurrentMap<String, List<SymbolInformation>> symbolsByProject = new ConcurrentHashMap<>();
+	private final ConcurrentMap<String, List<SymbolAddOnInformation>> addonInformationByProject = new ConcurrentHashMap<>();
 
-	private final ConcurrentMap<String, List<SymbolInformation>> symbolsByProject;
-	private final ConcurrentMap<String, List<SymbolAddOnInformation>> addonInformationByProject;
-
-	private final ExecutorService updateQueue;
+	private final ExecutorService updateQueue = Executors.newSingleThreadExecutor();
 	private SpringIndexer[] indexer;
-	private final SymbolCache cache;
+
 
 	private static final Logger log = LoggerFactory.getLogger(SpringSymbolIndex.class);
 
@@ -103,6 +118,7 @@ public class SpringSymbolIndex {
 	private String watchXMLCreatedRegistration;
 	private String watchXMLChangedRegistration;
 
+
 	private SimpleWorkspaceService getWorkspaceService() {
 		return server.getServer().getWorkspaceService();
 	}
@@ -111,21 +127,9 @@ public class SpringSymbolIndex {
 		return params.projectObserver;
 	}
 
-	public SpringSymbolIndex(SimpleLanguageServer server, BootLanguageServerParams params,
-			AnnotationHierarchyAwareLookup<SymbolProvider> specificProviders, SymbolCache cache) {
-		log.debug("Creating {}", this);
-		this.server = server;
-		this.params = params;
-		this.projectFinder = params.projectFinder;
-
-		this.symbols = new ArrayList<>();
-		this.symbolsByDoc = new ConcurrentHashMap<>();
-		this.symbolsByProject = new ConcurrentHashMap<>();
-		this.addonInformation = new ArrayList<>();
-		this.addonInformationByDoc = new ConcurrentHashMap<>();
-		this.addonInformationByProject = new ConcurrentHashMap<>();
-
-		this.cache = cache;
+	@Override
+	public void afterPropertiesSet() throws Exception {
+		log.debug("Setting up {}", this);
 
 		SymbolHandler handler = new SymbolHandler() {
 			@Override
@@ -141,7 +145,6 @@ public class SpringSymbolIndex {
 
 		this.indexer = new SpringIndexer[] {springIndexerJava};
 
-		this.updateQueue = Executors.newSingleThreadExecutor();
 
 		getWorkspaceService().onDidChangeWorkspaceFolders(evt -> {
 			log.debug("workspace roots have changed event arrived - added: " + evt.getEvent().getAdded() + " - removed: " + evt.getEvent().getRemoved());
@@ -151,6 +154,22 @@ public class SpringSymbolIndex {
 			getProjectObserver().addListener(projectListener);
 			log.info("project listener registered");
 		}
+
+		SimpleTextDocumentService documents = server.getTextDocumentService();
+		documents.onDidSave(params -> {
+			TextDocument document = params.getDocument();
+			// Spring Boot LS get events from boot properties files as well, so filter them out
+			if (BootJavaLanguageServerComponents.LANGUAGES.contains(document.getLanguageId())) {
+				String docURI = document.getId().getUri();
+				String content = document.get();
+				this.updateDocument(docURI, content);
+			}
+		});
+		config.addListener(evt -> {
+			this.configureIndexer(config.isSpringXMLSupportEnabled());
+		});
+		server.doOnInitialized(this::serverInitialized);
+		server.onShutdown(this::shutdown);
 	}
 
 	public void serverInitialized() {
@@ -266,7 +285,7 @@ public class SpringSymbolIndex {
 
 			for (SpringIndexer indexer : this.indexer) {
 				if (indexer.isInterestedIn(docURI)) {
-					Optional<IJavaProject> maybeProject = projectFinder.find(new TextDocumentIdentifier(docURI));
+					Optional<IJavaProject> maybeProject = projectFinder().find(new TextDocumentIdentifier(docURI));
 
 					if (maybeProject.isPresent()) {
 						try {
@@ -289,13 +308,17 @@ public class SpringSymbolIndex {
 		}
 	}
 
+	private JavaProjectFinder projectFinder() {
+		return params.projectFinder;
+	}
+
 	public CompletableFuture<Void> updateDocument(String docURI, String content) {
 		synchronized(this) {
 			List<CompletableFuture<Void>> futures = new ArrayList<>();
 
 			for (SpringIndexer indexer : this.indexer) {
 				if (indexer.isInterestedIn(docURI)) {
-					Optional<IJavaProject> maybeProject = projectFinder.find(new TextDocumentIdentifier(docURI));
+					Optional<IJavaProject> maybeProject = projectFinder().find(new TextDocumentIdentifier(docURI));
 					if (maybeProject.isPresent()) {
 						try {
 							File file = new File(new URI(docURI));
@@ -321,7 +344,7 @@ public class SpringSymbolIndex {
 	public CompletableFuture<Void> deleteDocument(String deletedDocURI) {
 		synchronized(this) {
 			try {
-				Optional<IJavaProject> maybeProject = projectFinder.find(new TextDocumentIdentifier(deletedDocURI));
+				Optional<IJavaProject> maybeProject = projectFinder().find(new TextDocumentIdentifier(deletedDocURI));
 				if (maybeProject.isPresent()) {
 					DeleteItem deleteItem = new DeleteItem(maybeProject.get(), deletedDocURI, this.indexer);
 					return CompletableFuture.runAsync(deleteItem, this.updateQueue);
@@ -674,7 +697,5 @@ public class SpringSymbolIndex {
 				}
 			}
 		}
-
 	}
-
 }

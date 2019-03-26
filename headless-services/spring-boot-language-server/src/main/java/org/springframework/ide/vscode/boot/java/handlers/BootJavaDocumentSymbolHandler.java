@@ -14,7 +14,7 @@ import java.util.List;
 
 import org.eclipse.lsp4j.DocumentSymbolParams;
 import org.eclipse.lsp4j.SymbolInformation;
-import org.springframework.ide.vscode.boot.java.utils.SpringSymbolIndex;
+import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentSymbolHandler;
 
 /**

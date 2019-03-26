@@ -17,9 +17,8 @@ import org.eclipse.lsp4j.DocumentHighlight;
 import org.eclipse.lsp4j.Position;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
+import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.boot.java.handlers.HighlightProvider;
-import org.springframework.ide.vscode.boot.java.utils.SpringSymbolIndex;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 /**
@@ -31,8 +30,8 @@ public class WebfluxRouteHighlightProdivder implements HighlightProvider {
 
 	private final SpringSymbolIndex springIndexer;
 
-	public WebfluxRouteHighlightProdivder(BootJavaLanguageServerComponents bootJavaLanguageServerComponents) {
-		this.springIndexer = bootJavaLanguageServerComponents.getSpringSymbolIndex();
+	public WebfluxRouteHighlightProdivder(SpringSymbolIndex indexer) {
+		this.springIndexer = indexer;
 	}
 
 	@Override

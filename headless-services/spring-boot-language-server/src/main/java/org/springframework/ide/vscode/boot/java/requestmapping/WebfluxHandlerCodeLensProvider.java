@@ -18,10 +18,10 @@ import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.Command;
+import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
 import org.springframework.ide.vscode.boot.java.handlers.CodeLensProvider;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
-import org.springframework.ide.vscode.boot.java.utils.SpringSymbolIndex;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
@@ -32,8 +32,8 @@ public class WebfluxHandlerCodeLensProvider implements CodeLensProvider {
 
 	private final SpringSymbolIndex springIndexer;
 
-	public WebfluxHandlerCodeLensProvider(BootJavaLanguageServerComponents bootJavaLanguageServerComponents) {
-		this.springIndexer = bootJavaLanguageServerComponents.getSpringSymbolIndex();
+	public WebfluxHandlerCodeLensProvider(SpringSymbolIndex springIndexer) {
+		this.springIndexer = springIndexer;
 	}
 
 	@Override

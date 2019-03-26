@@ -14,8 +14,8 @@ import java.util.List;
 
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.WorkspaceSymbolParams;
+import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.boot.java.requestmapping.LiveAppURLSymbolProvider;
-import org.springframework.ide.vscode.boot.java.utils.SpringSymbolIndex;
 import org.springframework.ide.vscode.commons.languageserver.util.WorkspaceSymbolHandler;
 
 /**

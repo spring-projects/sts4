@@ -49,6 +49,7 @@ public class BootLanguageServerInitializer implements InitializingBean {
 	@Autowired YamlAssistContextProvider yamlAssistContextProvider;
 	@Autowired SymbolCache symbolCache;
 	@Autowired BootJavaConfig config;
+	@Autowired SpringSymbolIndex springIndexer;
 
 	@Qualifier("adHocProperties") @Autowired ProjectBasedPropertyIndexProvider adHocProperties;
 
@@ -74,7 +75,7 @@ public class BootLanguageServerInitializer implements InitializingBean {
 		// some server intialization code. Migrate that code and get rid of the ComposableLanguageServer class
 		CompositeLanguageServerComponents.Builder builder = new CompositeLanguageServerComponents.Builder();
 		builder.add(new BootPropertiesLanguageServerComponents(server, params, javaElementLocationProvider, parser, yamlStructureProvider, yamlAssistContextProvider, sourceLinks));
-		builder.add(new BootJavaLanguageServerComponents(server, params, sourceLinks, cuCache, adHocProperties, symbolCache, config));
+		builder.add(new BootJavaLanguageServerComponents(server, params, sourceLinks, cuCache, adHocProperties, symbolCache, config, springIndexer));
 		components = builder.build(server);
 		params.projectObserver.addListener(reconcileOpenDocuments(server, components));
 

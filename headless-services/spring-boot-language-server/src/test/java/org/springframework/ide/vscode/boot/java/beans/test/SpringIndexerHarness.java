@@ -22,7 +22,7 @@ import java.util.List;
 import org.apache.commons.io.IOUtils;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.SymbolInformation;
-import org.springframework.ide.vscode.boot.java.utils.SpringSymbolIndex;
+import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
