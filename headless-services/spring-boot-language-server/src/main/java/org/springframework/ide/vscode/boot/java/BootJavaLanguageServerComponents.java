@@ -20,6 +20,7 @@ import org.eclipse.lsp4j.CompletionItemKind;
 import org.eclipse.lsp4j.InitializeParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.boot.app.BootJavaConfig;
 import org.springframework.ide.vscode.boot.app.BootLanguageServerParams;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchyAwareLookup;
 import org.springframework.ide.vscode.boot.java.autowired.AutowiredHoverProvider;
@@ -58,12 +59,10 @@ import org.springframework.ide.vscode.boot.java.snippets.JavaSnippetContext;
 import org.springframework.ide.vscode.boot.java.snippets.JavaSnippetManager;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.boot.java.utils.RestrictedDefaultSymbolProvider;
-import org.springframework.ide.vscode.boot.java.utils.SpringSymbolIndex;
-import org.springframework.ide.vscode.boot.java.utils.SymbolCache;
-import org.springframework.ide.vscode.boot.java.utils.SymbolCacheOnDisc;
-import org.springframework.ide.vscode.boot.java.utils.SymbolCacheVoid;
 import org.springframework.ide.vscode.boot.java.utils.SpringLiveChangeDetectionWatchdog;
 import org.springframework.ide.vscode.boot.java.utils.SpringLiveHoverWatchdog;
+import org.springframework.ide.vscode.boot.java.utils.SpringSymbolIndex;
+import org.springframework.ide.vscode.boot.java.utils.SymbolCache;
 import org.springframework.ide.vscode.boot.java.value.ValueCompletionProcessor;
 import org.springframework.ide.vscode.boot.java.value.ValueHoverProvider;
 import org.springframework.ide.vscode.boot.java.value.ValuePropertyReferencesProvider;
@@ -113,7 +112,6 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 	private final SpringLiveHoverWatchdog liveHoverWatchdog;
 	private final SpringLiveChangeDetectionWatchdog liveChangeDetectionWatchdog;
 	private final ProjectObserver projectObserver;
-	private final BootJavaConfig config;
 	private final CompilationUnitCache cuCache;
 
 	private JavaProjectFinder projectFinder;
@@ -127,12 +125,11 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 			SourceLinks sourceLinks,
 			CompilationUnitCache cuCache,
 			ProjectBasedPropertyIndexProvider adHocIndexProvider,
-			SymbolCache symbolCache
+			SymbolCache symbolCache,
+			BootJavaConfig config
 	) {
 		this.server = server;
 		this.serverParams = serverParams;
-
-		this.config = new BootJavaConfig();
 
 		projectFinder = serverParams.projectFinder;
 		projectObserver = serverParams.projectObserver;
@@ -210,9 +207,7 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		highlightsEngine = createDocumentHighlightEngine();
 		documents.onDocumentHighlight(highlightsEngine);
 
-		workspaceService.onDidChangeConfiguraton(settings -> {
-			config.handleConfigurationChange(settings);
-
+		config.addListener(ignore -> {
 			// live hover watchdog
 			if (config.isBootHintsEnabled()) {
 				liveHoverWatchdog.enableHighlights();
@@ -221,7 +216,6 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 			}
 
 			indexer.configureIndexer(config.isSpringXMLSupportEnabled());
-
 
 			// live change detection watchdog
 			if (config.isChangeDetectionEnabled()) {
@@ -470,10 +464,6 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 
 	public SpringPropertyIndexProvider getSpringPropertyIndexProvider() {
 		return propertyIndexProvider;
-	}
-
-	public BootJavaConfig getConfig() {
-		return config;
 	}
 
 	public CompilationUnitCache getCompilationUnitCache() {
