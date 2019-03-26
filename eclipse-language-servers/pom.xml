@@ -143,7 +143,7 @@
 				<repository>
 					<id>e-i-commons</id>
 					<layout>p2</layout>
-					<url>https://dist.springframework.org/release/IDE/3.9.7.RELEASE</url>
+					<url>https://dist.springframework.org/release/IDE/3.9.8.RELEASE</url>
 				</repository>
 <!--				<repository>
 					<id>e-i-commons</id>
@@ -190,21 +190,21 @@
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/tools/orbit/downloads/drops/R20181128170323/repository</url>
 				</repository>
-<!--				<repository>
+				<repository>
 					<id>e-i-commons</id>
 					<layout>p2</layout>
-					<url>https://dist.springframework.org/release/IDE/3.9.7.RELEASE</url>
-				</repository> -->
+					<url>https://dist.springframework.org/release/IDE/3.9.8.RELEASE</url>
+				</repository>
 <!--				<repository>
 					<id>e-i-commons</id>
 					<layout>p2</layout>
 					<url>https://dist.springframework.org/milestone/IDE/3.9.7.RC1</url>
 				</repository> -->
-				<repository>
+<!--				<repository>
 					<id>e-i-commons</id>
 					<layout>p2</layout>
 					<url>https://dist.springframework.org/snapshot/IDE/nightly</url>
-				</repository>
+				</repository> -->
 				<repository>
 					<id>lsp4e</id>
 					<layout>p2</layout>
@@ -240,21 +240,21 @@
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/tools/orbit/downloads/drops/R20190226160451/repository</url>
 				</repository>
-<!--				<repository>
+				<repository>
 					<id>e-i-commons</id>
 					<layout>p2</layout>
-					<url>https://dist.springframework.org/release/IDE/3.9.7.RELEASE</url>
-				</repository> -->
+					<url>https://dist.springframework.org/release/IDE/3.9.8.RELEASE</url>
+				</repository>
 <!--				<repository>
 					<id>e-i-commons</id>
 					<layout>p2</layout>
 					<url>https://dist.springframework.org/milestone/IDE/3.9.7.RC1</url>
 				</repository> -->
-				<repository>
+<!--				<repository>
 					<id>e-i-commons</id>
 					<layout>p2</layout>
 					<url>https://dist.springframework.org/snapshot/IDE/nightly</url>
-				</repository>
+				</repository> -->
 				<repository>
 					<id>lsp4e</id>
 					<layout>p2</layout>
