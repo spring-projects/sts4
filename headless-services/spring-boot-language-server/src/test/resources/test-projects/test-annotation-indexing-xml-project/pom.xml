@@ -19,4 +19,12 @@
         </dependency>
 	</dependencies>
 
+	<build>
+		<resources>
+			<resource>
+				<directory>config</directory>
+			</resource>
+		</resources>
+	</build>
+
 </project>

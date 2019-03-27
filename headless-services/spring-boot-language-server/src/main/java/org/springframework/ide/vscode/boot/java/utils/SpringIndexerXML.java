@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.boot.java.utils;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -180,12 +181,18 @@ public class SpringIndexerXML implements SpringIndexer {
 
 	}
 
-	private String[] getFiles(IJavaProject project) throws Exception {
-		return Files.walk(Paths.get(project.getLocationUri()))
-				.filter(path -> path.getFileName().toString().endsWith(".xml"))
-				.filter(Files::isRegularFile)
-				.map(path -> path.toAbsolutePath().toString())
-				.toArray(String[]::new);
+	private String[] getFiles(IJavaProject project) {
+		return IClasspathUtil.getSourceFolders(project.getClasspath()).flatMap(sourceFolder -> {
+			try {
+				return Files.walk(Paths.get(sourceFolder.toURI()))
+						.filter(path -> path.getFileName().toString().endsWith(".xml"))
+						.filter(Files::isRegularFile)
+						.map(path -> path.toAbsolutePath().toString());
+			} catch (IOException e) {
+				log.error("{}", e);
+				return Stream.empty();
+			}
+		}).toArray(String[]::new);
 	}
 
 	private SymbolCacheKey getCacheKey(IJavaProject project) {
