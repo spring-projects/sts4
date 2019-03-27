@@ -22,7 +22,7 @@ public class RemoteSpringBootApp extends AbstractSpringBootApp {
 
 	private String jmxUrl;
 	private String host = null;
-	private String port = "80";
+	private String port = "443";
 
 	protected RemoteSpringBootApp(String jmxUrl, String host) {
 		this.jmxUrl = jmxUrl;

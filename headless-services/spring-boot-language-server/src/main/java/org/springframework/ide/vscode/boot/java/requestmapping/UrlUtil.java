@@ -44,8 +44,10 @@ public class UrlUtil {
 					}
 					path = contextPath + path;
 				}
-				if (port.equals("80")) {
+				if ("80".equals(port)) {
 					return "http://"+host+path;
+				} else if ("443".equals(port)) {
+					return "https://"+host+path;
 				} else {
 					if (LOCALHOST_ALIASES.contains(host)) {
 						return "http://" + host + ":" + port + path;
