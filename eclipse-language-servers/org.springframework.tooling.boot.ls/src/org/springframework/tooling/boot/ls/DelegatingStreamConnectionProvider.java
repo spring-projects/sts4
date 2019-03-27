@@ -17,6 +17,7 @@ import java.net.URI;
 import java.nio.file.FileSystems;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
@@ -32,6 +33,7 @@ import org.eclipse.lsp4j.jsonrpc.messages.ResponseMessage;
 import org.eclipse.lsp4j.services.LanguageServer;
 import org.springframework.tooling.ls.eclipse.commons.LanguageServerCommonsActivator;
 import org.springsource.ide.eclipse.commons.livexp.core.ValueListener;
+import org.springsource.ide.eclipse.commons.livexp.util.Log;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -53,7 +55,7 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 	private LanguageServer languageServer;
 	
 	private final IPropertyChangeListener configListener = (e) -> sendConfiguration();
-	private final ValueListener<ImmutableSet<Pair<String,String>>> remoteAppsListener = (e, v) -> sendConfiguration();
+	private final ValueListener<ImmutableSet<Object>> remoteAppsListener = (e, v) -> sendConfiguration();
 	
 	public DelegatingStreamConnectionProvider() {
 		LanguageServerCommonsActivator.logInfo("Entering DelegatingStreamConnectionProvider()");
@@ -137,6 +139,8 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 	public class RemoteBootAppData {
 		private String jmxurl;
 		private String host;
+		private String urlScheme = "https";
+		private String port = "443";
 		public RemoteBootAppData(String jmxurl, String host) {
 			super();
 			this.jmxurl = jmxurl;
@@ -153,6 +157,18 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 		}
 		public void setHost(String host) {
 			this.host = host;
+		}
+		public String getUrlScheme() {
+			return urlScheme;
+		}
+		public void setUrlScheme(String urlScheme) {
+			this.urlScheme = urlScheme;
+		}
+		public String getPort() {
+			return port;
+		}
+		public void setPort(String port) {
+			this.port = port;
 		}
 	}
 	
@@ -173,13 +189,41 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 
 		bootJavaObj.put("remote-apps", BootLanguageServerPlugin.getRemoteBootApps().getValues()
 				.stream()
-				.map(pair -> new RemoteBootAppData(pair.getLeft(), pair.getRight()))
+				.map(this::parseData)
 				.collect(Collectors.toList())
 		);
 
 		settings.put("boot-java", bootJavaObj);
 
 		this.languageServer.getWorkspaceService().didChangeConfiguration(new DidChangeConfigurationParams(settings));
+	}
+	
+	@SuppressWarnings("unchecked")
+	private RemoteBootAppData parseData(Object incomingData) {
+		if (incomingData instanceof Pair) {
+			//Format prior to STS 4.2.0. Still supported to allows STS 3.9.8 and older to
+			// send data from its boot dash in the old format.
+			Pair<String,String> pair = (Pair<String, String>) incomingData;
+			return new RemoteBootAppData(pair.getLeft(), pair.getRight());
+		} else if (incomingData instanceof List) {
+			//Format since STS 4.2.0
+			List<String> list = (List<String>) incomingData;
+			RemoteBootAppData app = new RemoteBootAppData(list.get(0), list.get(1));
+			if (list.size()>=3) {
+				String portStr = list.get(2);
+				if (portStr!=null) {
+					app.setPort(portStr);
+				}
+			}
+			if (list.size()>=4) {
+				String urlScheme = list.get(3);
+				if (urlScheme!=null) {
+					app.setUrlScheme(urlScheme);
+				}
+			}
+			return app;
+		}
+		throw new IllegalArgumentException("Invalid remote app data: "+incomingData);
 	}
 
 }

@@ -16,11 +16,6 @@ import com.google.common.collect.ImmutableSet;
 
 public class UrlUtil {
 
-	private static final ImmutableSet<String> LOCALHOST_ALIASES = ImmutableSet.of(
-			"localhost",
-			"127.0.0.1"
-	);
-
 	/**
 	 * Creates http URL string based on host, port and path
 	 * @param host
@@ -29,7 +24,7 @@ public class UrlUtil {
 	 * @param contextPath
 	 * @return the resultant URL
 	 */
-	public static String createUrl(String host, String port, String path, String contextPath) {
+	public static String createUrl(String urlScheme, String host, String port, String path, String contextPath) {
 		if (path==null) {
 			path = "";
 		}
@@ -44,16 +39,16 @@ public class UrlUtil {
 					}
 					path = contextPath + path;
 				}
-				if ("80".equals(port)) {
-					return "http://"+host+path;
-				} else if ("443".equals(port)) {
-					return "https://"+host+path;
+				String defaultPort = "";
+				if (urlScheme.equals("http")) {
+					defaultPort = "80";
+				} else if (urlScheme.equals("https")) {
+					defaultPort = "443";
+				}
+				if (defaultPort.equals(port)) {
+					return urlScheme+"://"+host+path;
 				} else {
-					if (LOCALHOST_ALIASES.contains(host)) {
-						return "http://" + host + ":" + port + path;
-					} else {
-						return "https://" + host + ":" + port + path;
-					}
+					return urlScheme+"://"+ host + ":" + port +path;
 				}
 			}
 		}

@@ -23,10 +23,13 @@ public class RemoteSpringBootApp extends AbstractSpringBootApp {
 	private String jmxUrl;
 	private String host = null;
 	private String port = "443";
+	private String urlScheme = "https";
 
-	protected RemoteSpringBootApp(String jmxUrl, String host) {
+	protected RemoteSpringBootApp(String jmxUrl, String host, String port, String urlScheme) {
 		this.jmxUrl = jmxUrl;
 		this.host = host;
+		this.port = port;
+		this.urlScheme = urlScheme;
 	}
 
 	public void setHost(String host) {
@@ -91,8 +94,18 @@ public class RemoteSpringBootApp extends AbstractSpringBootApp {
 		return "Unknown";
 	}
 
-	public static SpringBootApp create(String jmxUrl, String host) {
-		return MemoizingProxy.create(RemoteSpringBootApp.class, Duration.ofMillis(4900), new Class[] {String.class, String.class}, jmxUrl, host);
+	public static SpringBootApp create(String jmxUrl, String host, String port, String urlScheme) {
+		return MemoizingProxy.create(RemoteSpringBootApp.class, Duration.ofMillis(4900), new Class[] {String.class, String.class, String.class, String.class},
+				jmxUrl, host, port, urlScheme);
+	}
+
+	@Override
+	public String getUrlScheme() {
+		return urlScheme;
+	}
+
+	public void setUrlScheme(String urlScheme) {
+		this.urlScheme = urlScheme;
 	}
 
 }

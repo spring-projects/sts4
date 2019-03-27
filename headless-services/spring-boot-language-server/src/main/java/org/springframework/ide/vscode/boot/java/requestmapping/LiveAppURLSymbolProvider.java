@@ -42,12 +42,13 @@ public class LiveAppURLSymbolProvider {
 			SpringBootApp[] runningApps = runningAppProvider.getAllRunningSpringApps().toArray(new SpringBootApp[0]);
 			for (SpringBootApp app : runningApps) {
 				try {
+					String urlScheme = app.getUrlScheme();
 					String host = app.getHost();
 					String port = app.getPort();
 					String contextPath = app.getContextPath();
 					Stream<String> urls = app.getRequestMappings().stream()
 							.flatMap(rm -> Arrays.stream(rm.getSplitPath()))
-							.map(path -> UrlUtil.createUrl(host, port, path, contextPath));
+							.map(path -> UrlUtil.createUrl(urlScheme, host, port, path, contextPath));
 					urls.forEach(url -> result.add(new SymbolInformation(url, SymbolKind.Method, new Location(url, new Range(new Position(0, 0), new Position(0, 1))))));
 				}
 				catch (Exception e) {

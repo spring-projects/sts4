@@ -32,6 +32,8 @@ public class RemoteRunningAppsProvider implements RunningAppProvider {
 	public static class RemoteBootAppData {
 		private String jmxurl;
 		private String host;
+		private String urlScheme = "https";
+		private String port = "443";
 
 		public String getJmxurl() {
 			return jmxurl;
@@ -45,12 +47,31 @@ public class RemoteRunningAppsProvider implements RunningAppProvider {
 		public void setHost(String host) {
 			this.host = host;
 		}
+		public String getUrlScheme() {
+			return urlScheme;
+		}
+		public void setUrlScheme(String urlScheme) {
+			this.urlScheme = urlScheme;
+		}
+		public String getPort() {
+			return port;
+		}
+		public void setPort(String port) {
+			this.port = port;
+		}
+		@Override
+		public String toString() {
+			return "RemoteBootAppData [jmxurl=" + jmxurl + ", host=" + host + ", urlScheme=" + urlScheme + ", port="
+					+ port + "]";
+		}
 		@Override
 		public int hashCode() {
 			final int prime = 31;
 			int result = 1;
 			result = prime * result + ((host == null) ? 0 : host.hashCode());
 			result = prime * result + ((jmxurl == null) ? 0 : jmxurl.hashCode());
+			result = prime * result + ((port == null) ? 0 : port.hashCode());
+			result = prime * result + ((urlScheme == null) ? 0 : urlScheme.hashCode());
 			return result;
 		}
 		@Override
@@ -72,14 +93,18 @@ public class RemoteRunningAppsProvider implements RunningAppProvider {
 					return false;
 			} else if (!jmxurl.equals(other.jmxurl))
 				return false;
+			if (port == null) {
+				if (other.port != null)
+					return false;
+			} else if (!port.equals(other.port))
+				return false;
+			if (urlScheme == null) {
+				if (other.urlScheme != null)
+					return false;
+			} else if (!urlScheme.equals(other.urlScheme))
+				return false;
 			return true;
 		}
-		@Override
-		public String toString() {
-			return "RemoteBootAppData [jmxurl=" + jmxurl + ", host=" + host + "]";
-		}
-
-
 	}
 
 	private static Logger logger = LoggerFactory.getLogger(RemoteRunningAppsProvider.class);
@@ -124,7 +149,7 @@ public class RemoteRunningAppsProvider implements RunningAppProvider {
 			for (RemoteBootAppData key : newAppData) {
 				remoteAppInstances.computeIfAbsent(key, (_key) -> {
 					logger.info("Creating RemoteStringBootApp: "+_key);
-					return RemoteSpringBootApp.create(key.getJmxurl(), key.getHost());
+					return RemoteSpringBootApp.create(key.getJmxurl(), key.getHost(), key.getPort(), key.getUrlScheme());
 				});
 			}
 		}

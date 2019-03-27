@@ -14,7 +14,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.jface.bindings.Binding;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.keys.IBindingService;
@@ -97,9 +96,12 @@ public class BootLanguageServerPlugin extends AbstractUIPlugin {
 		}
 	}
 	
-	private static LiveSetVariable<Pair<String,String>> remoteBootApps = new LiveSetVariable<>();
+	//Should support both older and current formats:
+	// - old format = org.apache.commons.lang3.tuple.Pair<L, R><String,String>  (jmxUrl,host)
+	// - new format = List<String> containing upto 4 elements: jmxUrl, host, port, urlScheme. The last two are optional.
+	private static LiveSetVariable<Object> remoteBootApps = new LiveSetVariable<>();
 	
-	public static LiveSetVariable<Pair<String,String>> getRemoteBootApps() {
+	public static LiveSetVariable<Object> getRemoteBootApps() {
 		return remoteBootApps;
 	}
 

@@ -149,4 +149,9 @@ public class LocalSpringBootApp extends AbstractSpringBootApp {
 		}
 		super.dispose();
 	}
+
+	@Override
+	public String getUrlScheme() throws Exception {
+		return "http";
+	}
 }
