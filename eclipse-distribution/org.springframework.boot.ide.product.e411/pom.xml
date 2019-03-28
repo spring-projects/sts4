@@ -156,7 +156,7 @@
 							<goal>run</goal>
 						</goals>
 					</execution>
-					<!--
+
 					<execution>
 						<id>osx-dmg-creation</id>
 						<phase>verify</phase>
@@ -176,7 +176,7 @@
 							<goal>run</goal>
 						</goals>
 					</execution>
--->
+
 					<execution>
 						<id>osx-dmg-signing</id>
 						<phase>verify</phase>
