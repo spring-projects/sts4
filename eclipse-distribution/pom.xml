@@ -198,7 +198,6 @@
 			</repositories>
 			<modules>
 				<module>org.springframework.boot.ide.product.e49</module>
-				<module>org.springframework.boot.ide.repository.e49</module>
 			</modules>
 		</profile>
 
@@ -277,7 +276,6 @@
 			</repositories>
 			<modules>
 				<module>org.springframework.boot.ide.product.e410</module>
-				<module>org.springframework.boot.ide.repository.e410</module>
 			</modules>
 		</profile>
 
@@ -356,7 +354,6 @@
 			</repositories>
 			<modules>
 				<module>org.springframework.boot.ide.product.e411</module>
-				<module>org.springframework.boot.ide.repository.e411</module>
 			</modules>
 		</profile>
 
@@ -488,7 +485,7 @@
 				<executions>
 					<execution>
 						<id>attached-p2-metadata</id>
-						<phase>package</phase>
+						<phase>verify</phase>
 						<goals>
 							<goal>p2-metadata</goal>
 						</goals>
