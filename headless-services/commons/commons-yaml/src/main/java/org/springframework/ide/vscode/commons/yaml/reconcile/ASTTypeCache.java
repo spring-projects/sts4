@@ -112,7 +112,6 @@ public class ASTTypeCache implements ITypeCollector {
 	@Override
 	public void accept(Node node, YType type, YamlPath path) {
 		if (interestingTypes.contains(type)) {
-			System.out.println(path.toPropString() + " = " +NodeUtil.asScalar(node) +" :: "+type);
 			currentTypes.put(node, type);
 		}
 	}
