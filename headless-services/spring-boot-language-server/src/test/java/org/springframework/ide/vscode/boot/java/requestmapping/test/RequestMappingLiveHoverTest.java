@@ -58,6 +58,7 @@ public class RequestMappingLiveHoverTest {
 			.port("1111")
 			.processId("22022")
 			.host("cfapps.io")
+			.urlScheme("https")
 			.processName("test-request-mapping-live-hover")
 			// Ugly, but this is real JSON copied from a real live running app. We want the
 			// mock app to return realistic results if possible
@@ -88,6 +89,7 @@ public class RequestMappingLiveHoverTest {
 		.port("1111")
 		.processId("22022")
 		.host("cfapps.io")
+		.urlScheme("https")
 		.processName("test-request-mapping-live-hover")
 		.requestMappings(ImmutableList.of(
 				new MockRequestMapping()
@@ -143,6 +145,7 @@ public class RequestMappingLiveHoverTest {
 			.isSpringBootApp(true)
 			.port("999")
 			.processId("76543")
+			.urlScheme("https")
 			.host("cfapps.io")
 			.processName("test-request-mapping-live-hover")
 			// Ugly, but this is real JSON copied from a real live running app. We want the
@@ -206,6 +209,7 @@ public class RequestMappingLiveHoverTest {
 			.isSpringBootApp(true)
 			.port("999")
 			.processId("76543")
+			.urlScheme("https")
 			.host("cfapps.io")
 			.processName("test-request-mapping-live-hover")
 			// Ugly, but this is real JSON copied from a real live running app. We want the
@@ -340,6 +344,7 @@ public class RequestMappingLiveHoverTest {
 			.isSpringBootApp(true)
 			.port("999")
 			.processId("76543")
+			.urlScheme("https")
 			.host("cfapps.io")
 			.processName("test-request-mapping-live-hover")
 			// Ugly, but this is real JSON copied from a real live running app. We want the
@@ -389,6 +394,7 @@ public class RequestMappingLiveHoverTest {
 			.port("999")
 			.processId("76543")
 			.host("cfapps.io")
+			.urlScheme("https")
 			.processName("test-request-mapping-live-hover")
 			// Ugly, but this is real JSON copied from a real live running app. We want the
 			// mock app to return realistic results if possible
@@ -439,6 +445,7 @@ public class RequestMappingLiveHoverTest {
 			.isSpringBootApp(true)
 			.port("999")
 			.processId("76543")
+			.urlScheme("https")
 			.host("cfapps.io")
 			.processName("test-request-mapping-live-hover")
 			// Ugly, but this is real JSON copied from a real live running app. We want the
@@ -490,6 +497,7 @@ public class RequestMappingLiveHoverTest {
 			.isSpringBootApp(true)
 			.port("999")
 			.processId("76543")
+			.urlScheme("https")
 			.host("cfapps.io")
 			.processName("test-request-mapping-live-hover")
 			// Ugly, but this is real JSON copied from a real live running app. We want the
@@ -542,6 +550,7 @@ public class RequestMappingLiveHoverTest {
 			.isSpringBootApp(true)
 			.port("999")
 			.processId("76543")
+			.urlScheme("https")
 			.host("cfapps.io")
 			.processName("test-request-mapping-live-hover")
 			// Ugly, but this is real JSON copied from a real live running app. We want the
@@ -594,6 +603,7 @@ public class RequestMappingLiveHoverTest {
 			.isSpringBootApp(true)
 			.port("999")
 			.processId("76543")
+			.urlScheme("https")
 			.host("cfapps.io")
 			.processName("test-request-mapping-live-hover")
 			// Ugly, but this is real JSON copied from a real live running app. We want the
@@ -644,6 +654,7 @@ public class RequestMappingLiveHoverTest {
 			.isSpringBootApp(true)
 			.port("999")
 			.processId("76543")
+			.urlScheme("https")
 			.host("cfapps.io")
 			.processName("test-request-mapping-live-hover")
 			// Ugly, but this is real JSON copied from a real live running app. We want the
@@ -694,6 +705,7 @@ public class RequestMappingLiveHoverTest {
 			.isSpringBootApp(true)
 			.port("999")
 			.processId("76543")
+			.urlScheme("https")
 			.host("cfapps.io")
 			.processName("test-request-mapping-live-hover")
 			// Ugly, but this is real JSON copied from a real live running app. We want the
@@ -743,6 +755,7 @@ public class RequestMappingLiveHoverTest {
 			.isSpringBootApp(true)
 			.port("1000")
 			.processId("70000")
+			.urlScheme("https")
 			.host("cfapps.io")
 			.processName("test-request-mapping-live-hover")
 			// Ugly, but this is real JSON copied from a real live running app. We want the
@@ -755,6 +768,7 @@ public class RequestMappingLiveHoverTest {
 			.isSpringBootApp(true)
 			.port("1001")
 			.processId("80000")
+			.urlScheme("https")
 			.host("cfapps.io")
 			.processName("test-request-mapping-live-hover")
 			// Ugly, but this is real JSON copied from a real live running app. We want the
@@ -767,6 +781,7 @@ public class RequestMappingLiveHoverTest {
 			.isSpringBootApp(true)
 			.port("1002")
 			.processId("90000")
+			.urlScheme("https")
 			.host("cfapps.io")
 			.processName("test-request-mapping-live-hover")
 			// Ugly, but this is real JSON copied from a real live running app. We want the
@@ -805,6 +820,7 @@ public class RequestMappingLiveHoverTest {
 			.isSpringBootApp(true)
 			.port("999")
 			.processId("76543")
+			.urlScheme("https")
 			.host("cfapps.io")
 			.processName("test-request-mapping-live-hover")
 			// Ugly, but this is real JSON copied from a real live running app. We want the
@@ -838,6 +854,7 @@ public class RequestMappingLiveHoverTest {
 			.isSpringBootApp(true)
 			.port("1111")
 			.processId("22022")
+			.urlScheme("https")
 			.host("cfapps.io")
 			.processName("test-request-mapping-live-hover")
 			// Ugly, but this is real JSON copied from a real live running app. We want the

@@ -109,6 +109,11 @@ public class MockRunningAppProvider {
 			return this;
 		}
 
+		public MockAppBuilder urlScheme(String urlScheme) throws Exception {
+			when(app.getUrlScheme()).thenReturn(urlScheme);
+			return this;
+		}
+
 		public MockAppBuilder isSpringBootApp(boolean isBoot) throws Exception {
 			when(app.hasUsefulJmxBeans()).thenReturn(isBoot);
 			return this;
