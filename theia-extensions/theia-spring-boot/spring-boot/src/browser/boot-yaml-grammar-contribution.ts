@@ -28,7 +28,7 @@ export class BootYamlGrammarContribution implements LanguageGrammarDefinitionCon
             aliases: [
                 BOOT_PROPERTIES_YAML_LANGUAGE_NAME
             ],
-            filenamePatterns: ['application*.yml', 'bootstrap*.yml']
+            filenamePatterns: ['application*.yml', 'application*.yaml', 'bootstrap*.yml']
         });
 
         monaco.languages.setLanguageConfiguration(BOOT_PROPERTIES_YAML_LANGUAGE_ID, YAML_CONFIG);
