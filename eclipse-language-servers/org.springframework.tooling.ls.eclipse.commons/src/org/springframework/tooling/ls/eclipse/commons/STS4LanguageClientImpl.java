@@ -430,7 +430,9 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 				if (element != null ) {
 					IJavaProject project = element.getJavaProject() == null ? ResourceUtils.getJavaProject(projectUri) : element.getJavaProject();
 					if (project != null) {
-						return new Location(Utils.eclipseIntroUri(project.getElementName(), params.getBindingKey()).toString(), null);
+						Location location = new Location();
+						location.setUri(Utils.eclipseIntroUri(project.getElementName(), params.getBindingKey()).toString());
+						return location;
 					}
 				}
 			} catch (Exception e) {
