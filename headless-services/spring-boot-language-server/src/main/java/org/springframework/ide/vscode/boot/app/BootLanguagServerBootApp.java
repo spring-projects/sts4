@@ -18,6 +18,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClas
 import org.springframework.context.annotation.Bean;
 import org.springframework.ide.vscode.boot.common.PropertyCompletionFactory;
 import org.springframework.ide.vscode.boot.common.RelaxedNameConfig;
+import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
 import org.springframework.ide.vscode.boot.java.links.DefaultJavaElementLocationProvider;
 import org.springframework.ide.vscode.boot.java.links.EclipseJavaDocumentUriProvider;
 import org.springframework.ide.vscode.boot.java.links.JavaDocumentUriProvider;
@@ -74,6 +75,12 @@ public class BootLanguagServerBootApp {
 		} else {
 			return new SymbolCacheVoid();
 		}
+	}
+
+	@ConditionalOnMissingClass("org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness")
+	@Bean
+	RunningAppProvider runningAppProvider(SimpleLanguageServer server) {
+		return RunningAppProvider.createDefault(server);
 	}
 
 	@ConditionalOnMissingClass("org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness")

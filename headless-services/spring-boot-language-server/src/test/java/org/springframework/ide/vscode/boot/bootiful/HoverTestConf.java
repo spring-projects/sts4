@@ -17,6 +17,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.ide.vscode.boot.app.BootLanguageServerParams;
 import org.springframework.ide.vscode.boot.editor.harness.PropertyIndexHarness;
+import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
 import org.springframework.ide.vscode.boot.java.links.SourceLinkFactory;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.java.utils.SymbolCache;
@@ -44,6 +45,10 @@ public class HoverTestConf {
 		return new MockRunningAppProvider();
 	}
 
+	@Bean RunningAppProvider runningAppProvider(MockRunningAppProvider mockApps) {
+		return mockApps.provider;
+	}
+
 	@Bean BootLanguageServerHarness harness(SimpleLanguageServer server, BootLanguageServerParams serverParams, PropertyIndexHarness indexHarness, JavaProjectFinder projectFinder) throws Exception {
 		return new BootLanguageServerHarness(server, serverParams, indexHarness, projectFinder, LanguageId.JAVA, ".java");
 	}
@@ -59,7 +64,6 @@ public class HoverTestConf {
 				testDefaults.projectObserver,
 				indexHarness.getIndexProvider(),
 				testDefaults.typeUtilProvider,
-				mockAppsHarness().provider,
 				watchDogInterval()
 		);
 	}

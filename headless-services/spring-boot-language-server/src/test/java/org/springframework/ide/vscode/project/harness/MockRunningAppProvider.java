@@ -15,13 +15,18 @@ import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
+import java.util.Properties;
 
 import org.mockito.Mockito;
 import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
 import org.springframework.ide.vscode.commons.boot.app.cli.ContextPath;
+import org.springframework.ide.vscode.commons.boot.app.cli.LiveConditional;
 import org.springframework.ide.vscode.commons.boot.app.cli.LocalSpringBootApp;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansModel;
+import org.springframework.ide.vscode.commons.boot.app.cli.liveproperties.LiveProperties;
 import org.springframework.ide.vscode.commons.boot.app.cli.liveproperties.LivePropertiesJsonParser;
 import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.RequestMapping;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
@@ -53,7 +58,7 @@ public class MockRunningAppProvider {
 		Mockito.reset(provider);
 	}
 
-	public MockAppBuilder builder() {
+	public MockAppBuilder builder() throws Exception {
 		return new MockAppBuilder(this);
 	}
 
@@ -63,8 +68,9 @@ public class MockRunningAppProvider {
 		private String processId;
 		private String processName;
 
-		public MockAppBuilder(MockRunningAppProvider runningAppProvider) {
+		public MockAppBuilder(MockRunningAppProvider runningAppProvider) throws Exception {
 			this.runningAppProvider = runningAppProvider;
+			when(app.getUrlScheme()).thenReturn("http");
 		}
 
 		public MockAppBuilder beans(String beans) throws Exception {

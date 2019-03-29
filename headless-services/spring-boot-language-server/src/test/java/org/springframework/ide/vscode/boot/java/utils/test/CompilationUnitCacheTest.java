@@ -83,6 +83,10 @@ public class CompilationUnitCacheTest {
 			return new PropertyIndexHarness(valueProviders);
 		}
 
+		@Bean RunningAppProvider runningAppProvider() {
+			return RunningAppProvider.NULL;
+		}
+
 		@Bean JavaProjectFinder projectFinder(BootLanguageServerParams serverParams) {
 			return serverParams.projectFinder;
 		}
@@ -102,7 +106,6 @@ public class CompilationUnitCacheTest {
 					projectObserver,
 					indexHarness.getIndexProvider(),
 					testDefaults.typeUtilProvider,
-					RunningAppProvider.NULL,
 					null
 			);
 		}

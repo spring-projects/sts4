@@ -17,6 +17,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.ide.vscode.boot.app.BootLanguageServerParams;
 import org.springframework.ide.vscode.boot.editor.harness.PropertyIndexHarness;
+import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
 import org.springframework.ide.vscode.boot.java.links.JavaDocumentUriProvider;
 import org.springframework.ide.vscode.boot.java.links.SourceLinkFactory;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
@@ -52,6 +53,10 @@ public class PropertyEditorTestConf {
 		return new MockRunningAppProvider();
 	}
 
+	@Bean RunningAppProvider runningAppProvider(MockRunningAppProvider mockApps) {
+		return mockApps.provider;
+	}
+
 	@Bean BootLanguageServerHarness harness(
 			SimpleLanguageServer server,
 			BootLanguageServerParams serverParams,
@@ -72,7 +77,6 @@ public class PropertyEditorTestConf {
 				ProjectObserver.NULL,
 				indexHarness.getIndexProvider(),
 				typeUtilProvider,
-				mockAppsHarness().provider,
 				SpringLiveHoverWatchdog.DEFAULT_INTERVAL
 		);
 	}

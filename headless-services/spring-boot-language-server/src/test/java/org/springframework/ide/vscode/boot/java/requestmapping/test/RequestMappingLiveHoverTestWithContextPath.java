@@ -56,6 +56,7 @@ public class RequestMappingLiveHoverTestWithContextPath {
 			.port("1111")
 			.processId("22022")
 			.host("cfapps.io")
+			.urlScheme("https")
 			.processName("test-request-mapping-live-hover")
 			// Ugly, but this is real JSON copied from a real live running app. We want the
 			// mock app to return realistic results if possible
@@ -92,6 +93,7 @@ public class RequestMappingLiveHoverTestWithContextPath {
 			.port("1111")
 			.processId("22022")
 			.host("cfapps.io")
+			.urlScheme("https")
 			.processName("test-request-mapping-live-hover")
 			// Ugly, but this is real JSON copied from a real live running app. We want the
 			// mock app to return realistic results if possible
@@ -129,6 +131,7 @@ public class RequestMappingLiveHoverTestWithContextPath {
 			.port("1111")
 			.processId("22022")
 			.host("cfapps.io")
+			.urlScheme("https")
 			.processName("test-request-mapping-live-hover")
 			// Ugly, but this is real JSON copied from a real live running app. We want the
 			// mock app to return realistic results if possible
@@ -166,6 +169,7 @@ public class RequestMappingLiveHoverTestWithContextPath {
 			.port("1111")
 			.processId("22022")
 			.host("cfapps.io")
+			.urlScheme("https")
 			.processName("test-request-mapping-live-hover")
 			// Ugly, but this is real JSON copied from a real live running app. We want the
 			// mock app to return realistic results if possible
@@ -203,6 +207,7 @@ public class RequestMappingLiveHoverTestWithContextPath {
 			.port("1111")
 			.processId("22022")
 			.host("cfapps.io")
+			.urlScheme("https")
 			.processName("test-request-mapping-live-hover")
 			// Ugly, but this is real JSON copied from a real live running app. We want the
 			// mock app to return realistic results if possible
@@ -239,6 +244,7 @@ public class RequestMappingLiveHoverTestWithContextPath {
 			.port("1111")
 			.processId("22022")
 			.host("cfapps.io")
+			.urlScheme("https")
 			.processName("test-request-mapping-live-hover")
 			// Ugly, but this is real JSON copied from a real live running app. We want the
 			// mock app to return realistic results if possible
@@ -275,6 +281,7 @@ public class RequestMappingLiveHoverTestWithContextPath {
 			.port("1111")
 			.processId("22022")
 			.host("cfapps.io")
+			.urlScheme("https")
 			.processName("test-request-mapping-live-hover")
 			// Ugly, but this is real JSON copied from a real live running app. We want the
 			// mock app to return realistic results if possible
@@ -312,6 +319,7 @@ public class RequestMappingLiveHoverTestWithContextPath {
 			.port("1111")
 			.processId("22022")
 			.host("cfapps.io")
+			.urlScheme("https")
 			.processName("test-request-mapping-live-hover")
 			// Ugly, but this is real JSON copied from a real live running app. We want the
 			// mock app to return realistic results if possible
@@ -349,6 +357,7 @@ public class RequestMappingLiveHoverTestWithContextPath {
 			.port("1111")
 			.processId("22022")
 			.host("cfapps.io")
+			.urlScheme("https")
 			.processName("test-request-mapping-live-hover")
 			// Ugly, but this is real JSON copied from a real live running app. We want the
 			// mock app to return realistic results if possible
@@ -386,6 +395,7 @@ public class RequestMappingLiveHoverTestWithContextPath {
 			.port("1111")
 			.processId("22022")
 			.host("cfapps.io")
+			.urlScheme("https")
 			.processName("test-request-mapping-live-hover")
 			// Ugly, but this is real JSON copied from a real live running app. We want the
 			// mock app to return realistic results if possible
@@ -425,6 +435,7 @@ public class RequestMappingLiveHoverTestWithContextPath {
 			.port("1111")
 			.processId("22022")
 			.host("cfapps.io")
+			.urlScheme("https")
 			.processName("test-request-mapping-live-hover")
 			// Ugly, but this is real JSON copied from a real live running app. We want the
 			// mock app to return realistic results if possible
@@ -460,6 +471,7 @@ public class RequestMappingLiveHoverTestWithContextPath {
 			.port("1111")
 			.processId("22022")
 			.host("cfapps.io")
+			.urlScheme("https")
 			.contextPath("/mockedpath")
 			.processName("test-request-mapping-live-hover")
 			// Ugly, but this is real JSON copied from a real live running app. We want the
@@ -493,6 +505,7 @@ public class RequestMappingLiveHoverTestWithContextPath {
 			.port("999")
 			.processId("76543")
 			.host("cfapps.io")
+			.urlScheme("https")
 			.contextPath("/mockedpath")
 			.processName("test-request-mapping-live-hover")
 			// Ugly, but this is real JSON copied from a real live running app. We want the

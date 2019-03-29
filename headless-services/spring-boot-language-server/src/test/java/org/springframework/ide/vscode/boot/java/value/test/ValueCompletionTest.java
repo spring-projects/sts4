@@ -118,7 +118,6 @@ public class ValueCompletionTest {
 					ProjectObserver.NULL,
 					indexHarness.getIndexProvider(),
 					testDefaults.typeUtilProvider,
-					RunningAppProvider.NULL,
 					null
 			);
 		}
@@ -131,6 +130,9 @@ public class ValueCompletionTest {
 			return SourceLinkFactory.NO_SOURCE_LINKS;
 		}
 
+		@Bean RunningAppProvider runningAppProvider() {
+			return RunningAppProvider.NULL;
+		}
 	}
 
 	@Before

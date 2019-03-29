@@ -76,7 +76,7 @@ public class BootLanguageServerParams {
 	public final TypeUtilProvider typeUtilProvider;
 
 	//Boot Java
-	public final RunningAppProvider runningAppProvider;
+	//public final RunningAppProvider runningAppProvider;
 	public final Duration watchDogInterval;
 
 	public BootLanguageServerParams(
@@ -84,7 +84,6 @@ public class BootLanguageServerParams {
 			ProjectObserver projectObserver,
 			SpringPropertyIndexProvider indexProvider,
 			TypeUtilProvider typeUtilProvider,
-			RunningAppProvider runningAppProvider,
 			Duration watchDogInterval
 	) {
 		super();
@@ -93,7 +92,6 @@ public class BootLanguageServerParams {
 		this.projectObserver = projectObserver;
 		this.indexProvider = indexProvider;
 		this.typeUtilProvider = typeUtilProvider;
-		this.runningAppProvider = runningAppProvider;
 		this.watchDogInterval = watchDogInterval;
 	}
 
@@ -114,7 +112,6 @@ public class BootLanguageServerParams {
 				jdtProjectCache,
 				indexProvider,
 				(SourceLinks sourceLinks, IDocument doc) -> new TypeUtil(sourceLinks, jdtProjectCache.find(new TextDocumentIdentifier(doc.getUri()))),
-				RunningAppProvider.createDefault(server),
 				SpringLiveHoverWatchdog.DEFAULT_INTERVAL
 		);
 	}
@@ -182,7 +179,6 @@ public class BootLanguageServerParams {
 				projectObserver,
 				indexProvider,
 				(SourceLinks sourceLinks, IDocument doc) -> new TypeUtil(sourceLinks, javaProjectFinder.find(new TextDocumentIdentifier(doc.getUri()))),
-				RunningAppProvider.NULL,
 				SpringLiveHoverWatchdog.DEFAULT_INTERVAL
 		);
 	}

@@ -154,7 +154,7 @@ public class LanguageServerHarness {
 		this.server = server;
 	}
 
-	public static final Duration HIGHLIGHTS_TIMEOUT = Duration.ofMillis(15000000000L); //Why so long?
+	public static final Duration HIGHLIGHTS_TIMEOUT = Duration.ofMillis(10_000L); //Why so long?
 
 //	public static LanguageServerHarness<SimpleLanguageServer> create(String extensionId, LanguageServerInitializer initializer) throws Exception {
 //		Callable<SimpleLanguageServer> factory = () -> {

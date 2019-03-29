@@ -98,7 +98,6 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 
 	private final SimpleLanguageServer server;
 	private final BootLanguageServerParams serverParams;
-//	private final SpringSymbolIndex indexer;
 	private final SpringPropertyIndexProvider propertyIndexProvider;
 	private final ProjectBasedPropertyIndexProvider adHocPropertyIndexProvider;
 	private final SpringLiveHoverWatchdog liveHoverWatchdog;
@@ -119,7 +118,8 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 			ProjectBasedPropertyIndexProvider adHocIndexProvider,
 			SymbolCache symbolCache,
 			BootJavaConfig config,
-			SpringSymbolIndex indexer
+			SpringSymbolIndex indexer,
+			RunningAppProvider runningAppProvider
 	) {
 		this.server = server;
 		this.serverParams = serverParams;
@@ -140,14 +140,14 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 
 		documents.onDocumentSymbol(new BootJavaDocumentSymbolHandler(indexer));
 		workspaceService.onWorkspaceSymbol(new BootJavaWorkspaceSymbolHandler(indexer,
-				new LiveAppURLSymbolProvider(serverParams.runningAppProvider)));
+				new LiveAppURLSymbolProvider(runningAppProvider)));
 
 //		BootJavaCodeLensEngine codeLensHandler = createCodeLensEngine(server, projectFinder);
 //		documents.onCodeLens(codeLensHandler::createCodeLenses);
 //		documents.onCodeLensResolve(codeLensHandler::resolveCodeLens);
 
-		hoverProvider = createHoverHandler(projectFinder, serverParams.runningAppProvider, sourceLinks);
-		liveHoverWatchdog = new SpringLiveHoverWatchdog(server, hoverProvider, serverParams.runningAppProvider,
+		hoverProvider = createHoverHandler(projectFinder, runningAppProvider, sourceLinks);
+		liveHoverWatchdog = new SpringLiveHoverWatchdog(server, hoverProvider, runningAppProvider,
 				projectFinder, projectObserver, serverParams.watchDogInterval);
 		documents.onDidChangeContent(params -> {
 			TextDocument doc = params.getDocument();
@@ -178,7 +178,7 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 				this,
 				server,
 				serverParams.projectObserver,
-				serverParams.runningAppProvider,
+				runningAppProvider,
 				projectFinder,
 				serverParams.watchDogInterval,
 				sourceLinks);
