@@ -273,7 +273,9 @@ public class WebfluxRouterSymbolProvider extends AbstractSymbolProvider {
 			MethodInvocation methodInvocation = (MethodInvocation) node;
 			IMethodBinding methodBinding = methodInvocation.resolveMethodBinding();
 
-			if (WebfluxUtils.ROUTER_FUNCTIONS_TYPE.equals(methodBinding.getDeclaringClass().getBinaryName())) {
+			if (methodBinding != null && methodBinding.getDeclaringClass() != null
+					&& WebfluxUtils.ROUTER_FUNCTIONS_TYPE.equals(methodBinding.getDeclaringClass().getBinaryName())) {
+
 				String name = methodBinding.getName();
 				if (WebfluxUtils.REQUEST_PREDICATE_NEST_METHOD.equals(name)) {
 					List<?> arguments = methodInvocation.arguments();
