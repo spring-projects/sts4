@@ -318,6 +318,12 @@ public class SpringIndexerJava implements SpringIndexer {
 	private ASTParser createParser(IJavaProject project, boolean ignoreMethodBodies) throws Exception {
 		String[] classpathEntries = getClasspathEntries(project);
 
+		log.info("CLASSPATH ENTRIES for project: " + project.getElementName() + " ... ignore method bodies: " + ignoreMethodBodies);
+		for (String entry : classpathEntries) {
+			log.info("CLASSPATH ENTRY: " + entry);
+		}
+		log.info("CLASSPATH ENTRIES for project: " + project.getElementName() + " ...DONE !!!");
+
 		ASTParser parser = ASTParser.newParser(AST.JLS11);
 		Map<String, String> options = JavaCore.getOptions();
 		JavaCore.setComplianceOptions(JavaCore.VERSION_11, options);
