@@ -229,7 +229,7 @@ public class SymbolCacheOnDiscTest {
 		assertEquals(new Range(new Position(6, 6), new Position(7, 7)), ranges[1]);
 	}
 
-	@Ignore @Test
+	@Test
 	public void testSymbolAddedToExistingFile() throws Exception {
 		Path file1 = Paths.get(tempDir.toAbsolutePath().toString(), "tempFile1");
 
@@ -265,7 +265,7 @@ public class SymbolCacheOnDiscTest {
 		assertEquals(2, cachedSymbols.length);
 	}
 
-	@Ignore @Test
+	@Test
 	public void testSymbolRemovedFromExistingFile() throws Exception {
 		Path file1 = Paths.get(tempDir.toAbsolutePath().toString(), "tempFile1");
 
@@ -293,7 +293,7 @@ public class SymbolCacheOnDiscTest {
 		assertEquals(0, cachedSymbols.length);
 	}
 
-	@Ignore @Test
+	@Test
 	public void testSymbolAddedToNewFile() throws Exception {
 		Path file1 = Paths.get(tempDir.toAbsolutePath().toString(), "tempFile1");
 		Path file2 = Paths.get(tempDir.toAbsolutePath().toString(), "tempFile2");
