@@ -30,6 +30,9 @@ import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.Range;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.boot.java.handlers.AbstractSymbolProvider;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
@@ -37,6 +40,7 @@ import org.springframework.ide.vscode.boot.java.utils.CachedSymbol;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJava.SCAN_PASS;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJavaContext;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
+import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 /**
@@ -44,22 +48,29 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
  */
 public class WebfluxRouterSymbolProvider extends AbstractSymbolProvider {
 
+	private static final Logger log = LoggerFactory.getLogger(WebfluxRouterSymbolProvider.class);
+
 	@Override
 	public void addSymbols(MethodDeclaration methodDeclaration, SpringIndexerJavaContext context, TextDocument doc) {
 		Type returnType = methodDeclaration.getReturnType2();
 		if (returnType != null) {
-			ITypeBinding resolvedBinding = returnType.resolveBinding();
-			if (resolvedBinding != null) {
-				if (WebfluxUtils.ROUTER_FUNCTION_TYPE.equals(resolvedBinding.getBinaryName())) {
 
-					Block methodBody = methodDeclaration.getBody();
-					if (methodBody != null && methodBody.statements() != null && methodBody.statements().size() > 0) {
-						addSymbolsForRouterFunction(methodBody, context, doc);
-					}
-					else if (SCAN_PASS.ONE.equals(context.getPass())) {
-						context.getNextPassFiles().add(context.getFile());
-					}
+			ITypeBinding resolvedBinding = returnType.resolveBinding();
+
+			if (resolvedBinding == null) {
+				log.info("type binding of method declatation return type IS NULL: " + methodDeclaration.toString());
+			}
+
+			if (resolvedBinding != null && WebfluxUtils.ROUTER_FUNCTION_TYPE.equals(resolvedBinding.getBinaryName())) {
+
+				Block methodBody = methodDeclaration.getBody();
+				if (methodBody != null && methodBody.statements() != null && methodBody.statements().size() > 0) {
+					addSymbolsForRouterFunction(methodBody, context, doc);
 				}
+				else if (SCAN_PASS.ONE.equals(context.getPass())) {
+					context.getNextPassFiles().add(context.getFile());
+				}
+
 			}
 		}
 	}
@@ -70,6 +81,10 @@ public class WebfluxRouterSymbolProvider extends AbstractSymbolProvider {
 			@Override
 			public boolean visit(MethodInvocation node) {
 				IMethodBinding methodBinding = node.resolveMethodBinding();
+
+				if (methodBinding == null) {
+					log.info("method binding of method invocation IS NULL: " + node.toString());
+				}
 
 				if (methodBinding != null && WebfluxUtils.isRouteMethodInvocation(methodBinding)) {
 					extractMappingSymbol(node, doc, context);
@@ -143,6 +158,10 @@ public class WebfluxRouterSymbolProvider extends AbstractSymbolProvider {
 		extractNestedValue(routerInvocation, path, (methodInvocation) -> {
 			IMethodBinding methodBinding = methodInvocation.resolveMethodBinding();
 
+			if (methodBinding == null) {
+				log.info("method binding of method invocation IS NULL: " + methodInvocation.toString());
+			}
+
 			try {
 				if (methodBinding != null && WebfluxUtils.REQUEST_PREDICATE_PATH_METHOD.equals(methodBinding.getName())) {
 					StringLiteral stringLiteral = WebfluxUtils.extractStringLiteralArgument(methodInvocation);
@@ -174,6 +193,10 @@ public class WebfluxRouterSymbolProvider extends AbstractSymbolProvider {
 
 		extractNestedValue(routerInvocation, methods, (methodInvocation) -> {
 			IMethodBinding methodBinding = methodInvocation.resolveMethodBinding();
+
+			if (methodBinding == null) {
+				log.info("method binding of method invocation IS NULL: " + methodInvocation.toString());
+			}
 
 			try {
 				if (methodBinding != null && WebfluxUtils.REQUEST_PREDICATE_METHOD_METHOD.equals(methodBinding.getName())) {
@@ -208,6 +231,10 @@ public class WebfluxRouterSymbolProvider extends AbstractSymbolProvider {
 		extractNestedValue(routerInvocation, acceptTypes, (methodInvocation) -> {
 			IMethodBinding methodBinding = methodInvocation.resolveMethodBinding();
 
+			if (methodBinding == null) {
+				log.info("method binding of method invocation IS NULL: " + methodInvocation.toString());
+			}
+
 			try {
 				if (methodBinding != null && WebfluxUtils.REQUEST_PREDICATE_ACCEPT_TYPE_METHOD.equals(methodBinding.getName())) {
 					SimpleName nameArgument = WebfluxUtils.extractSimpleNameArgument(methodInvocation);
@@ -241,6 +268,10 @@ public class WebfluxRouterSymbolProvider extends AbstractSymbolProvider {
 		extractNestedValue(routerInvocation, contentTypes, (methodInvocation) -> {
 			IMethodBinding methodBinding = methodInvocation.resolveMethodBinding();
 
+			if (methodBinding == null) {
+				log.info("method binding of method invocation IS NULL: " + methodInvocation.toString());
+			}
+
 			try {
 				if (methodBinding != null && WebfluxUtils.REQUEST_PREDICATE_CONTENT_TYPE_METHOD.equals(methodBinding.getName())) {
 					SimpleName nameArgument = WebfluxUtils.extractSimpleNameArgument(methodInvocation);
@@ -268,6 +299,10 @@ public class WebfluxRouterSymbolProvider extends AbstractSymbolProvider {
 		if (node instanceof MethodInvocation) {
 			MethodInvocation methodInvocation = (MethodInvocation) node;
 			IMethodBinding methodBinding = methodInvocation.resolveMethodBinding();
+
+			if (methodBinding == null) {
+				log.info("method binding of method invocation IS NULL: " + methodInvocation.toString());
+			}
 
 			if (methodBinding != null && methodBinding.getDeclaringClass() != null
 					&& WebfluxUtils.ROUTER_FUNCTIONS_TYPE.equals(methodBinding.getDeclaringClass().getBinaryName())) {
@@ -301,6 +336,10 @@ public class WebfluxRouterSymbolProvider extends AbstractSymbolProvider {
 				if (argument instanceof ExpressionMethodReference) {
 					ExpressionMethodReference methodReference = (ExpressionMethodReference) argument;
 					IMethodBinding methodBinding = methodReference.resolveMethodBinding();
+
+					if (methodBinding == null) {
+						log.info("method binding of method reference IS NULL: " + methodReference.toString());
+					}
 
 					if (methodBinding != null && methodBinding.getDeclaringClass() != null && methodBinding.getMethodDeclaration() != null) {
 						String handlerClass = methodBinding.getDeclaringClass().getBinaryName();
