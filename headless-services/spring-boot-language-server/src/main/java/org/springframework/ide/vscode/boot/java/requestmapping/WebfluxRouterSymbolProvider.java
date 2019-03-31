@@ -174,10 +174,9 @@ public class WebfluxRouterSymbolProvider extends AbstractSymbolProvider {
 
 		extractNestedValue(routerInvocation, methods, (methodInvocation) -> {
 			IMethodBinding methodBinding = methodInvocation.resolveMethodBinding();
-			String methodName = methodBinding.getName();
 
 			try {
-				if (WebfluxUtils.REQUEST_PREDICATE_METHOD_METHOD.equals(methodName)) {
+				if (methodBinding != null && WebfluxUtils.REQUEST_PREDICATE_METHOD_METHOD.equals(methodBinding.getName())) {
 					QualifiedName qualifiedName = WebfluxUtils.extractQualifiedNameArgument(methodInvocation);
 					if (qualifiedName.getName() != null) {
 						Range range = doc.toRange(qualifiedName.getStartPosition(), qualifiedName.getLength());
