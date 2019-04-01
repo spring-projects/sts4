@@ -73,20 +73,20 @@
     <factorypathentry kind="VARJAR" id="M2_REPO/commons-codec/commons-codec/1.11/commons-codec-1.11.jar" enabled="true" runInBatchMode="false"/>
     <factorypathentry kind="EXTJAR" id="/usr/lib/jvm/java-8-oracle/jre/../lib/tools.jar" enabled="true" runInBatchMode="false"/>
     <factorypathentry kind="VARJAR" id="M2_REPO/org/ow2/asm/asm/6.1.1/asm-6.1.1.jar" enabled="true" runInBatchMode="false"/>
-    <factorypathentry kind="VARJAR" id="M2_REPO/org/eclipse/jdt/org.eclipse.jdt.core/3.16.0/org.eclipse.jdt.core-3.16.0.jar" enabled="true" runInBatchMode="false"/>
-    <factorypathentry kind="VARJAR" id="M2_REPO/org/eclipse/platform/org.eclipse.core.resources/3.13.200/org.eclipse.core.resources-3.13.200.jar" enabled="true" runInBatchMode="false"/>
-    <factorypathentry kind="VARJAR" id="M2_REPO/org/eclipse/platform/org.eclipse.core.expressions/3.6.200/org.eclipse.core.expressions-3.6.200.jar" enabled="true" runInBatchMode="false"/>
-    <factorypathentry kind="VARJAR" id="M2_REPO/org/eclipse/platform/org.eclipse.core.runtime/3.15.100/org.eclipse.core.runtime-3.15.100.jar" enabled="true" runInBatchMode="false"/>
-    <factorypathentry kind="VARJAR" id="M2_REPO/org/eclipse/platform/org.eclipse.osgi/3.13.200/org.eclipse.osgi-3.13.200.jar" enabled="true" runInBatchMode="false"/>
-    <factorypathentry kind="VARJAR" id="M2_REPO/org/eclipse/platform/org.eclipse.equinox.common/3.10.200/org.eclipse.equinox.common-3.10.200.jar" enabled="true" runInBatchMode="false"/>
-    <factorypathentry kind="VARJAR" id="M2_REPO/org/eclipse/platform/org.eclipse.core.jobs/3.10.200/org.eclipse.core.jobs-3.10.200.jar" enabled="true" runInBatchMode="false"/>
-    <factorypathentry kind="VARJAR" id="M2_REPO/org/eclipse/platform/org.eclipse.equinox.registry/3.8.200/org.eclipse.equinox.registry-3.8.200.jar" enabled="true" runInBatchMode="false"/>
-    <factorypathentry kind="VARJAR" id="M2_REPO/org/eclipse/platform/org.eclipse.equinox.preferences/3.7.200/org.eclipse.equinox.preferences-3.7.200.jar" enabled="true" runInBatchMode="false"/>
-    <factorypathentry kind="VARJAR" id="M2_REPO/org/eclipse/platform/org.eclipse.core.contenttype/3.7.200/org.eclipse.core.contenttype-3.7.200.jar" enabled="true" runInBatchMode="false"/>
-    <factorypathentry kind="VARJAR" id="M2_REPO/org/eclipse/platform/org.eclipse.equinox.app/1.4.0/org.eclipse.equinox.app-1.4.0.jar" enabled="true" runInBatchMode="false"/>
-    <factorypathentry kind="VARJAR" id="M2_REPO/org/eclipse/platform/org.eclipse.core.filesystem/1.7.200/org.eclipse.core.filesystem-1.7.200.jar" enabled="true" runInBatchMode="false"/>
-    <factorypathentry kind="VARJAR" id="M2_REPO/org/eclipse/platform/org.eclipse.text/3.8.0/org.eclipse.text-3.8.0.jar" enabled="true" runInBatchMode="false"/>
-    <factorypathentry kind="VARJAR" id="M2_REPO/org/eclipse/platform/org.eclipse.core.commands/3.9.200/org.eclipse.core.commands-3.9.200.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="VARJAR" id="M2_REPO/org/eclipse/jdt/org.eclipse.jdt.core/3.17.0/org.eclipse.jdt.core-3.17.0.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="VARJAR" id="M2_REPO/org/eclipse/platform/org.eclipse.core.resources/3.13.300/org.eclipse.core.resources-3.13.300.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="VARJAR" id="M2_REPO/org/eclipse/platform/org.eclipse.core.expressions/3.6.300/org.eclipse.core.expressions-3.6.300.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="VARJAR" id="M2_REPO/org/eclipse/platform/org.eclipse.core.runtime/3.15.200/org.eclipse.core.runtime-3.15.200.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="VARJAR" id="M2_REPO/org/eclipse/platform/org.eclipse.osgi/3.13.300/org.eclipse.osgi-3.13.300.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="VARJAR" id="M2_REPO/org/eclipse/platform/org.eclipse.equinox.common/3.10.300/org.eclipse.equinox.common-3.10.300.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="VARJAR" id="M2_REPO/org/eclipse/platform/org.eclipse.core.jobs/3.10.300/org.eclipse.core.jobs-3.10.300.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="VARJAR" id="M2_REPO/org/eclipse/platform/org.eclipse.equinox.registry/3.8.300/org.eclipse.equinox.registry-3.8.300.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="VARJAR" id="M2_REPO/org/eclipse/platform/org.eclipse.equinox.preferences/3.7.300/org.eclipse.equinox.preferences-3.7.300.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="VARJAR" id="M2_REPO/org/eclipse/platform/org.eclipse.core.contenttype/3.7.300/org.eclipse.core.contenttype-3.7.300.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="VARJAR" id="M2_REPO/org/eclipse/platform/org.eclipse.equinox.app/1.4.100/org.eclipse.equinox.app-1.4.100.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="VARJAR" id="M2_REPO/org/eclipse/platform/org.eclipse.core.filesystem/1.7.300/org.eclipse.core.filesystem-1.7.300.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="VARJAR" id="M2_REPO/org/eclipse/platform/org.eclipse.text/3.8.100/org.eclipse.text-3.8.100.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="VARJAR" id="M2_REPO/org/eclipse/platform/org.eclipse.core.commands/3.9.300/org.eclipse.core.commands-3.9.300.jar" enabled="true" runInBatchMode="false"/>
     <factorypathentry kind="VARJAR" id="M2_REPO/commons-io/commons-io/2.4/commons-io-2.4.jar" enabled="true" runInBatchMode="false"/>
     <factorypathentry kind="VARJAR" id="M2_REPO/org/lsp4xml/org.eclipse.lsp4xml/0.3.0-SNAPSHOT/org.eclipse.lsp4xml-0.3.0-SNAPSHOT.jar" enabled="true" runInBatchMode="false"/>
     <factorypathentry kind="VARJAR" id="M2_REPO/com/google/code/gson/gson/2.8.5/gson-2.8.5.jar" enabled="true" runInBatchMode="false"/>
@@ -97,9 +97,9 @@
     <factorypathentry kind="VARJAR" id="M2_REPO/org/springframework/spring-jcl/5.0.9.RELEASE/spring-jcl-5.0.9.RELEASE.jar" enabled="true" runInBatchMode="false"/>
     <factorypathentry kind="VARJAR" id="M2_REPO/org/eclipse/lsp4j/org.eclipse.lsp4j/0.6.0/org.eclipse.lsp4j-0.6.0.jar" enabled="true" runInBatchMode="false"/>
     <factorypathentry kind="VARJAR" id="M2_REPO/org/eclipse/lsp4j/org.eclipse.lsp4j.generator/0.6.0/org.eclipse.lsp4j.generator-0.6.0.jar" enabled="true" runInBatchMode="false"/>
-    <factorypathentry kind="VARJAR" id="M2_REPO/org/eclipse/xtend/org.eclipse.xtend.lib/2.17.0-SNAPSHOT/org.eclipse.xtend.lib-2.17.0-SNAPSHOT.jar" enabled="true" runInBatchMode="false"/>
-    <factorypathentry kind="VARJAR" id="M2_REPO/org/eclipse/xtext/org.eclipse.xtext.xbase.lib/2.17.0-SNAPSHOT/org.eclipse.xtext.xbase.lib-2.17.0-SNAPSHOT.jar" enabled="true" runInBatchMode="false"/>
-    <factorypathentry kind="VARJAR" id="M2_REPO/org/eclipse/xtend/org.eclipse.xtend.lib.macro/2.17.0-SNAPSHOT/org.eclipse.xtend.lib.macro-2.17.0-SNAPSHOT.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="VARJAR" id="M2_REPO/org/eclipse/xtend/org.eclipse.xtend.lib/2.18.0-SNAPSHOT/org.eclipse.xtend.lib-2.18.0-SNAPSHOT.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="VARJAR" id="M2_REPO/org/eclipse/xtext/org.eclipse.xtext.xbase.lib/2.18.0-SNAPSHOT/org.eclipse.xtext.xbase.lib-2.18.0-SNAPSHOT.jar" enabled="true" runInBatchMode="false"/>
+    <factorypathentry kind="VARJAR" id="M2_REPO/org/eclipse/xtend/org.eclipse.xtend.lib.macro/2.18.0-SNAPSHOT/org.eclipse.xtend.lib.macro-2.18.0-SNAPSHOT.jar" enabled="true" runInBatchMode="false"/>
     <factorypathentry kind="VARJAR" id="M2_REPO/org/eclipse/lsp4j/org.eclipse.lsp4j.jsonrpc/0.6.0/org.eclipse.lsp4j.jsonrpc-0.6.0.jar" enabled="true" runInBatchMode="false"/>
     <factorypathentry kind="VARJAR" id="M2_REPO/org/slf4j/slf4j-api/1.7.25/slf4j-api-1.7.25.jar" enabled="true" runInBatchMode="false"/>
 </factorypath>
