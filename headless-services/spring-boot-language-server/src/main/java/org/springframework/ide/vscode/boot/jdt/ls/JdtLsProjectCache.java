@@ -123,9 +123,12 @@ public class JdtLsProjectCache implements InitializableJavaProjectsService {
 
 	private void logEvent(String type, IJavaProject project) {
 		try {
-			log.info("Project "+type+": " + project.getLocationUri());
-			log.info("Classpath has "+project.getClasspath().getClasspathEntries().size()+" entries "
-					+countSourceAttachments(project.getClasspath().getClasspathEntries()) + " source attachements");
+			log.info("Project {}: {}", type, project.getLocationUri());
+			log.info("Classpath has {} entries", project.getClasspath().getClasspathEntries().size());
+			if (log.isDebugEnabled()) {
+				//Avoid expensive call to countSourceAttachements if possible.
+				log.debug("Classpath has {} source attachements",  countSourceAttachments(project.getClasspath().getClasspathEntries()));
+			}
 		} catch (Exception e) {
 		}
 	}
