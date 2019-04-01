@@ -85,3 +85,6 @@ Please report bugs, issues and feature requests on the [Github STS4 issue tracke
 [hovers]:  https://raw.githubusercontent.com/spring-projects/sts4/54cf0994b69ef1770ca597a8da325022b19cee69/theia-extensions/theia-concourse/concourse/readme-imgs/hover.png
 [peek]:    https://raw.githubusercontent.com/spring-projects/sts4/0b6278ad4aca86b4d0d4ee219f9a0aad04904f5f/theia-extensions/theia-concourse/concourse/readme-imgs/peek-definition.png
 [goto_symbol]: https://raw.githubusercontent.com/spring-projects/sts4/54cf0994b69ef1770ca597a8da325022b19cee69/theia-extensions/theia-concourse/concourse/readme-imgs/doc-symbols.png
+
+
+**Version: 1.6.0**
