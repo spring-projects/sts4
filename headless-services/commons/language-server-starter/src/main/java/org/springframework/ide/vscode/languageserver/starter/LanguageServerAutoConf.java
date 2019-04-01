@@ -36,7 +36,6 @@ import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import org.springframework.util.Assert;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 @Configuration
@@ -96,7 +95,7 @@ public class LanguageServerAutoConf {
 						return handler.handle(position);
 					}
 				}
-				return ImmutableList.of();
+				return null;
  			});
 		}
 	}

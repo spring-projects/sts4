@@ -343,9 +343,10 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 	  return async.invoke(() -> {
 		ReferencesHandler h = this.referencesHandler;
 		if (h != null) {
-			return h.handle(params);
+			List<? extends Location> list = h.handle(params);
+			return list != null && list.isEmpty() ? null : list;
 		}
-		return Collections.emptyList();
+		return null;
 	  });
 	}
 
