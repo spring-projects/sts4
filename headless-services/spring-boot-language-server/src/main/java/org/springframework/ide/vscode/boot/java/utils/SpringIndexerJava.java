@@ -317,12 +317,7 @@ public class SpringIndexerJava implements SpringIndexer {
 
 	private ASTParser createParser(IJavaProject project, boolean ignoreMethodBodies) throws Exception {
 		String[] classpathEntries = getClasspathEntries(project);
-
-		log.info("CLASSPATH ENTRIES for project: " + project.getElementName() + " ... ignore method bodies: " + ignoreMethodBodies);
-		for (String entry : classpathEntries) {
-			log.info("CLASSPATH ENTRY: " + entry);
-		}
-		log.info("CLASSPATH ENTRIES for project: " + project.getElementName() + " ...DONE !!!");
+		String[] sourceEntries = getSourceEntries(project);
 
 		ASTParser parser = ASTParser.newParser(AST.JLS11);
 		Map<String, String> options = JavaCore.getOptions();
@@ -334,7 +329,6 @@ public class SpringIndexerJava implements SpringIndexer {
 		parser.setResolveBindings(true);
 		parser.setIgnoreMethodBodies(ignoreMethodBodies);
 
-		String[] sourceEntries = new String[] {};
 		parser.setEnvironment(classpathEntries, sourceEntries, null, false);
 		return parser;
 	}
@@ -343,6 +337,15 @@ public class SpringIndexerJava implements SpringIndexer {
 		IClasspath classpath = project.getClasspath();
 		Stream<File> classpathEntries = IClasspathUtil.getAllBinaryRoots(classpath).stream();
 		return classpathEntries
+				.filter(file -> file.exists())
+				.map(file -> file.getAbsolutePath())
+				.toArray(String[]::new);
+	}
+
+	private String[] getSourceEntries(IJavaProject project) throws Exception {
+		IClasspath classpath = project.getClasspath();
+		Stream<File> sourceEntries = IClasspathUtil.getSourceFolders(classpath);
+		return sourceEntries
 				.filter(file -> file.exists())
 				.map(file -> file.getAbsolutePath())
 				.toArray(String[]::new);
