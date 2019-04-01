@@ -152,3 +152,6 @@ Please report bugs, issues and feature requests on the [Github STS4 issue tracke
 [hovers]:      https://raw.githubusercontent.com/spring-projects/sts4/1bdd6f45aaf779252a2f0203f10da1a67b3c018e/theia-extensions/theia-bosh/bosh/readme-imgs/hover.png
 [peek]:        https://raw.githubusercontent.com/spring-projects/sts4/1bdd6f45aaf779252a2f0203f10da1a67b3c018e/theia-extensions/theia-bosh/bosh/readme-imgs/peek-definition.png
 [goto_symbol]: https://raw.githubusercontent.com/spring-projects/sts4/1bdd6f45aaf779252a2f0203f10da1a67b3c018e/theia-extensions/theia-bosh/bosh/readme-imgs/doc-symbol.png
+
+
+**Version: 1.6.0**
