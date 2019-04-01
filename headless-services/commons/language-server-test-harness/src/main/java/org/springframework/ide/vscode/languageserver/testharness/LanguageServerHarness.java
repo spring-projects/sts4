@@ -33,7 +33,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -98,12 +100,14 @@ import org.eclipse.lsp4j.VersionedTextDocumentIdentifier;
 import org.eclipse.lsp4j.WorkspaceClientCapabilities;
 import org.eclipse.lsp4j.WorkspaceEdit;
 import org.eclipse.lsp4j.WorkspaceEditCapabilities;
+import org.eclipse.lsp4j.WorkspaceSymbolParams;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.LanguageClientAware;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.util.LanguageServerTestListener;
 import org.springframework.ide.vscode.commons.languageserver.util.Settings;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
+import org.springframework.ide.vscode.commons.languageserver.util.WorkspaceSymbolHandler;
 import org.springframework.ide.vscode.commons.protocol.CursorMovement;
 import org.springframework.ide.vscode.commons.protocol.HighlightParams;
 import org.springframework.ide.vscode.commons.protocol.ProgressParams;
@@ -121,6 +125,7 @@ import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 import com.google.gson.Gson;
@@ -941,5 +946,16 @@ public class LanguageServerHarness {
 
 	public void enableHierarchicalDocumentSymbols(boolean b) {
 		this.enableHierarchicalDocumentSymbols = b;
+	}
+
+	public Collection<SymbolInformation> getWorkspaceSymbols(String query) throws Exception {
+		WorkspaceSymbolParams params = new WorkspaceSymbolParams(query);
+		List<? extends SymbolInformation> r = server.getWorkspaceService().symbol(params).get();
+		return ImmutableList.copyOf(r);
+	}
+
+	public void assertWorkspaceSymbols(String query, String... expectedSymbols) throws Exception {
+		Set<String> actualSymbols = getWorkspaceSymbols(query).stream().map(sym -> sym.getName()).collect(Collectors.toSet());
+		assertEquals(ImmutableSet.copyOf(expectedSymbols), actualSymbols);
 	}
 }
