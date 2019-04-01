@@ -20,14 +20,17 @@ import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.SymbolKind;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
-import org.springframework.ide.vscode.commons.util.Log;
 
 /**
  * @author Martin Lippert
  */
 public class LiveAppURLSymbolProvider {
+
+	private static final Logger log = LoggerFactory.getLogger(LiveAppURLSymbolProvider.class);
 
 	private final RunningAppProvider runningAppProvider;
 
@@ -52,11 +55,11 @@ public class LiveAppURLSymbolProvider {
 					urls.forEach(url -> result.add(new SymbolInformation(url, SymbolKind.Method, new Location(url, new Range(new Position(0, 0), new Position(0, 1))))));
 				}
 				catch (Exception e) {
-					Log.log(e);
+					log.error("", e);
 				}
 			}
 		} catch (Exception e) {
-			Log.log(e);
+			log.error("", e);
 		}
 
 		return result;

@@ -27,7 +27,6 @@ import com.sun.tools.attach.VirtualMachineDescriptor;
 /**
  * @author Martin Lippert
  */
-@SuppressWarnings("restriction")
 public class LocalSpringBootApp extends AbstractSpringBootApp {
 
 	private static final Logger logger = LoggerFactory.getLogger(LocalSpringBootApp.class);
