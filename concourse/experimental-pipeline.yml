@@ -20,10 +20,14 @@ jobs:
     - get: jvm-launch-utils-git
       trigger: true
     - get: tasks 
-  - task: publish
-    file: tasks/concourse/tasks/npm-publish.yml
-    input_mapping:
-      sources_repo: jvm-launch-utils-git
-    params:
-      npm_token: ((npm_token))
-      sources_dir: nodejs-packages/jvm-launch-utils
+  - task: make-noise
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: ubuntu:18.04
+      run:
+        path: echo
+        args:
+        - "Hello world!" 
