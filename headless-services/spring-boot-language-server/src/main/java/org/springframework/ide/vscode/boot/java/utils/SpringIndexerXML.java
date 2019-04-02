@@ -128,7 +128,7 @@ public class SpringIndexerXML implements SpringIndexer {
 	}
 
 	private void scanFile(IJavaProject project, String fileName, List<CachedSymbol> generatedSymbols) {
-		log.debug("starting to parse XML file for Spring symbol indexing: ", fileName);
+		log.debug("starting to parse XML file for Spring symbol indexing: " + fileName);
 
 		try {
 			File file = new File(fileName);

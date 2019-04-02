@@ -146,8 +146,13 @@ public class SpringIndexerJava implements SpringIndexer {
 		if (symbols == null) {
 			List<CachedSymbol> generatedSymbols = new ArrayList<CachedSymbol>();
 
+			log.info("scan java files, AST parse, pass 1 for files: " + javaFiles.length);
+
 			String[] pass2Files = scanFiles(project, javaFiles, generatedSymbols, SCAN_PASS.ONE);
 			if (pass2Files.length > 0) {
+
+				log.info("scan java files, AST parse, pass 2 for files: " + javaFiles.length);
+
 				scanFiles(project, pass2Files, generatedSymbols, SCAN_PASS.TWO);
 			}
 
