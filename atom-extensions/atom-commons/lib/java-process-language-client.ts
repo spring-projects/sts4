@@ -121,7 +121,9 @@ export class JavaProcessLanguageClient extends AutoLanguageClient {
     }
 
     findJvm(): Promise<JVM | null> {
-        return this.preferJdk() ? findJdk() : findJvm();
+        const options = this.getJavaOptions();
+        const javaHome = options ? this.getJavaOptions().home : '';
+        return this.preferJdk() ? findJdk(javaHome) : findJvm(javaHome);
     }
 
     private launchProcess(port: number): Promise<LanguageServerProcess> {
@@ -162,6 +164,11 @@ export class JavaProcessLanguageClient extends AutoLanguageClient {
             '-Dlsp.yaml.completions.errors.disable=true',
         ]);
 
+        const javaOptions = this.getJavaOptions();
+        if (javaOptions && javaOptions.vmargs) {
+            vmArgs.push(...javaOptions.vmargs);
+        }
+
         this.logger.debug(`starting "${jvm.getJavaExecutable()} ${vmArgs.join('\n')}\n-jar ${launcher}"`);
         return jvm.jarLaunch(launcher, vmArgs, { cwd: this.serverHome });
     }
@@ -170,5 +177,14 @@ export class JavaProcessLanguageClient extends AutoLanguageClient {
         return null;
     }
 
+    protected getJavaOptions(): JavaOptions {
+        return {};
+    }
+
+}
+
+export interface JavaOptions {
+    home?: string;
+    vmargs?: string[];
 }
 

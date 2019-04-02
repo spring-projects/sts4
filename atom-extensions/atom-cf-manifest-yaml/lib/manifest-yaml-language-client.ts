@@ -1,5 +1,5 @@
 import * as path from 'path';
-import { JavaProcessLanguageClient } from '@pivotal-tools/atom-languageclient-commons';
+import { JavaProcessLanguageClient, JavaOptions } from '@pivotal-tools/atom-languageclient-commons';
 import {JVM} from '@pivotal-tools/jvm-launch-utils';
 
 export class ManifestYamlLanguageClient extends JavaProcessLanguageClient {
@@ -40,6 +40,15 @@ export class ManifestYamlLanguageClient extends JavaProcessLanguageClient {
             '-Dorg.slf4j.simpleLogger.logFile=manifest-yaml.log',
         ]);
 
+    }
+
+    getJavaOptions(): JavaOptions {
+        const home = atom.config.get('cf-manifest-yaml.java.home');
+        const vmargs = atom.config.get('cf-manifest-yaml.java.vmargs');
+        return {
+            home: typeof home === 'string' ? home : undefined,
+            vmargs: Array.isArray(vmargs) ? vmargs :  undefined
+        };
     }
 
 }

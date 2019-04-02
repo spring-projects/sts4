@@ -1,5 +1,5 @@
 import * as path from 'path';
-import {JavaProcessLanguageClient} from '@pivotal-tools/atom-languageclient-commons';
+import {JavaProcessLanguageClient, JavaOptions} from '@pivotal-tools/atom-languageclient-commons';
 import {BootStsAdapter} from './boot-sts-adapter';
 import {ActiveServer} from 'atom-languageclient';
 import {JVM} from '@pivotal-tools/jvm-launch-utils';
@@ -18,11 +18,11 @@ export class SpringBootLanguageClient extends JavaProcessLanguageClient {
     protected postInitialization(server: ActiveServer) {
         super.postInitialization(server);
         this.sendConfig(server);
-        (<any>this)._disposable.add(atom.config.observe('boot-java', () => this.sendConfig(server)));
+        (<any>this)._disposable.add(atom.config.observe('spring-boot', () => this.sendConfig(server)));
     }
 
     private sendConfig(server: ActiveServer) {
-        server.connection.didChangeConfiguration({ settings: {'boot-java': atom.config.get('boot-java') }});
+        server.connection.didChangeConfiguration({ settings: {'boot-java': atom.config.get('spring-boot') }});
     }
 
     getGrammarScopes() {
@@ -69,6 +69,15 @@ export class SpringBootLanguageClient extends JavaProcessLanguageClient {
 
     filterChangeWatchedFiles(filePath: string) {
         return filePath.endsWith('.gradle') || filePath.endsWith(path.join('', 'pom.xml'));
+    }
+
+    getJavaOptions(): JavaOptions {
+        const home = atom.config.get('spring-boot.java.home');
+        const vmargs = atom.config.get('spring-boot.java.vmargs');
+        return {
+            home: typeof home === 'string' ? home : undefined,
+            vmargs: Array.isArray(vmargs) ? vmargs :  undefined
+        };
     }
 
 }

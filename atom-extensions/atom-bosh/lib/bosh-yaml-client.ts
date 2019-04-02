@@ -1,5 +1,5 @@
 import * as path from 'path';
-import {JavaProcessLanguageClient} from '@pivotal-tools/atom-languageclient-commons';
+import {JavaProcessLanguageClient, JavaOptions} from '@pivotal-tools/atom-languageclient-commons';
 import {ActiveServer} from 'atom-languageclient';
 import {JVM} from '@pivotal-tools/jvm-launch-utils';
 
@@ -48,5 +48,15 @@ export class BoshYamlClient extends JavaProcessLanguageClient {
     sendConfig(server: ActiveServer) {
         server.connection.didChangeConfiguration({ settings: atom.config.get('bosh-yaml') });
     }
+
+    getJavaOptions(): JavaOptions {
+        const home = atom.config.get('bosh-yaml.java.home');
+        const vmargs = atom.config.get('bosh-yaml.java.vmargs');
+        return {
+            home: typeof home === 'string' ? home : undefined,
+            vmargs: Array.isArray(vmargs) ? vmargs :  undefined
+        };
+    }
+
 
 }

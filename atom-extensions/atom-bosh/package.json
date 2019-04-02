@@ -45,12 +45,29 @@
           "description": "Number of seconds before CLI commands are terminated with a timeout"
         }
       }
+    },
+    "java": {
+      "type": "object",
+      "description": "JVM settings for starting the Language Server",
+      "properties": {
+        "vmargs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Custom VM arguments to start the Language Server"
+        },
+        "home": {
+          "type": "string",
+          "description": "Java home folder to use to start the Language Server"
+        }
+      }
     }
   },
   "dependencies": {
     "atom-package-deps": "^4.6.0",
     "download": "^6.2.5",
-    "@pivotal-tools/atom-languageclient-commons": "0.0.12"
+    "@pivotal-tools/atom-languageclient-commons": "0.0.15"
   },
   "devDependencies": {
     "typescript": "^2.7.2",
