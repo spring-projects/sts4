@@ -45,6 +45,13 @@
             "null"
           ],
           "description": "Overrides JAVA_HOME used for launching the language server JVM process"
+        },
+        "concourse.ls.java.vmargs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          },
+          "description": "Additional 'user defined' VM args to pass to the language server process."
         }
       }
     },
