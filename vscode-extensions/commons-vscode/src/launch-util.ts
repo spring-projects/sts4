@@ -41,6 +41,7 @@ export interface ActivatorOptions {
 type JavaOptions = {
     heap?: string
     home?: string
+    vmargs?: string[]
 }
 
 function getUserDefinedJvmHeap(wsOpts : VSCode.WorkspaceConfiguration,  dflt : string) : string {
@@ -49,6 +50,15 @@ function getUserDefinedJvmHeap(wsOpts : VSCode.WorkspaceConfiguration,  dflt : s
     }
     let javaOptions : JavaOptions = wsOpts.get("java");
     return (javaOptions && javaOptions.heap) || dflt;
+}
+
+function getUserDefinedJvmArgs(wsOpts : VSCode.WorkspaceConfiguration) : string[] {
+    const dflt = [];
+    if (!wsOpts) {
+        return dflt;
+    }
+    let javaOptions : JavaOptions = wsOpts.get("java");
+    return javaOptions && javaOptions.vmargs || dflt;
 }
 
 function getUserDefinedJavaHome(wsOpts : VSCode.WorkspaceConfiguration) : string {
@@ -62,6 +72,7 @@ function getUserDefinedJavaHome(wsOpts : VSCode.WorkspaceConfiguration) : string
 export function activate(options: ActivatorOptions, context: VSCode.ExtensionContext): Thenable<LanguageClient> {
     let DEBUG = options.DEBUG;
     let jvmHeap = getUserDefinedJvmHeap(options.workspaceOptions, options.jvmHeap);
+    let jvmArgs = getUserDefinedJvmArgs(options.workspaceOptions);
     if (options.CONNECT_TO_LS) {
         return VSCode.window.showInformationMessage("Start language server")
         .then((x) => connectToLS(context, options));
@@ -132,8 +143,11 @@ export function activate(options: ActivatorOptions, context: VSCode.ExtensionCon
                             if (options.checkjvm) {
                                 options.checkjvm(context, jvm);
                             }
-                            if (jvmHeap) {
+                            if (jvmHeap && !hasHeapArg(jvmArgs)) {
                                 args.unshift("-Xmx"+jvmHeap);
+                            }
+                            if (jvmArgs) {
+                                args.unshift(...jvmArgs);
                             }
                             if (DEBUG) {
                                 args.unshift(DEBUG_ARG);
@@ -157,6 +171,13 @@ export function activate(options: ActivatorOptions, context: VSCode.ExtensionCon
     }
 }
 
+function hasHeapArg(vmargs?: string[]) : boolean {
+    if (vmargs) {
+        return vmargs.some(a => a.startsWith("-Xmx"));
+    }
+    return false;
+}
+
 function findServerJar(jarsDir) : string {
     let serverJars = FS.readdirSync(jarsDir).filter(jar => 
         jar.indexOf('language-server')>=0 &&
@@ -170,7 +191,6 @@ function findServerJar(jarsDir) : string {
     }
     return Path.resolve(jarsDir, serverJars[0]);
 }
-
 
 function connectToLS(context: VSCode.ExtensionContext, options: ActivatorOptions): Promise<LanguageClient> {
     let connectionInfo = {
