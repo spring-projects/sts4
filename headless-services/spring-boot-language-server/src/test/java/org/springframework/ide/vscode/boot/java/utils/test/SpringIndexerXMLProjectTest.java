@@ -70,13 +70,16 @@ public class SpringIndexerXMLProjectTest {
 	public void testScanningSimpleSpringXMLConfig() throws Exception {
 		List<? extends SymbolInformation> allSymbols = indexer.getAllSymbols("");
 
-		assertEquals(4, allSymbols.size());
+		assertEquals(5, allSymbols.size());
 
 		String docUri = directory.toPath().resolve("config/simple-spring-config.xml").toUri().toString();
 		assertTrue(containsSymbol(allSymbols, "@+ 'transactionManager' DataSourceTransactionManager", docUri, 6, 14, 6, 37));
 		assertTrue(containsSymbol(allSymbols, "@+ 'jdbcTemplate' JdbcTemplate", docUri, 8, 14, 8, 31));
 		assertTrue(containsSymbol(allSymbols, "@+ 'namedParameterJdbcTemplate' NamedParameterJdbcTemplate", docUri, 12, 14, 12, 45));
 		assertTrue(containsSymbol(allSymbols, "@+ 'persistenceExceptionTranslationPostProcessor' PersistenceExceptionTranslationPostProcessor", docUri, 18, 10, 18, 97));
+
+		String beansOnClasspathDocUri = directory.toPath().resolve("src/main/resources/beans.xml").toUri().toString();
+		assertTrue(containsSymbol(allSymbols, "@+ 'sb' SimpleBean", beansOnClasspathDocUri, 6, 14, 6, 21));
 	}
 
 	private boolean containsSymbol(List<? extends SymbolInformation> symbols, String name, String uri, int startLine, int startCHaracter, int endLine, int endCharacter) {

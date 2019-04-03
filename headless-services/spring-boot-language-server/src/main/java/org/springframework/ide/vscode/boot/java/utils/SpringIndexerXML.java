@@ -11,9 +11,14 @@
 package org.springframework.ide.vscode.boot.java.utils;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
+import java.nio.file.FileVisitResult;
+import java.nio.file.FileVisitor;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -33,6 +38,8 @@ import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.util.UriUtil;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
+
+import com.google.common.collect.ImmutableList;
 
 /**
  * @author Martin Lippert
@@ -181,11 +188,37 @@ public class SpringIndexerXML implements SpringIndexer {
 	}
 
 	private String[] getFiles(IJavaProject project) throws Exception {
-		return Files.walk(Paths.get(project.getLocationUri()))
-				.filter(path -> path.getFileName().toString().endsWith(".xml"))
-				.filter(Files::isRegularFile)
-				.map(path -> path.toAbsolutePath().toString())
-				.toArray(String[]::new);
+		List<Path> outputFolders = IClasspathUtil.getOutputFolders(project.getClasspath()).map(f -> f.toPath()).collect(Collectors.toList());
+		ImmutableList.Builder<String> builder = ImmutableList.builder();
+		Files.walkFileTree(Paths.get(project.getLocationUri()), new FileVisitor<Path>() {
+
+			@Override
+			public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+				return outputFolders.contains(dir) ? FileVisitResult.SKIP_SUBTREE : FileVisitResult.CONTINUE;
+			}
+
+			@Override
+			public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
+				String fileName = file.getFileName().toString();
+				if (fileName.endsWith(".xml") && !"pom.xml".equals(fileName)) {
+					builder.add(file.toAbsolutePath().toString());
+				}
+				return FileVisitResult.CONTINUE;
+			}
+
+			@Override
+			public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
+				return FileVisitResult.CONTINUE;
+			}
+
+			@Override
+			public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
+				return FileVisitResult.CONTINUE;
+			}
+		});
+
+		ImmutableList<String> list = builder.build();
+		return list.toArray(new String[list.size()]);
 	}
 
 	private SymbolCacheKey getCacheKey(IJavaProject project) {
