@@ -56,7 +56,7 @@ public abstract class BoshCommandBasedModelProvider<T> implements DynamicModelPr
 		this.config = config;
 		Representer representer = new Representer();
 		representer.getPropertyUtils().setSkipMissingProperties(true);
-		yamlParser = new YamlParser(new Yaml());
+		yamlParser = new YamlParser();
 	}
 
 	/**

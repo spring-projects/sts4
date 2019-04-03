@@ -16,6 +16,7 @@ import static org.springframework.ide.vscode.commons.yaml.ast.NodeUtil.contains;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Set;
 
 import org.springframework.ide.vscode.commons.util.Collector;
 import org.springframework.ide.vscode.commons.util.IRequestor;
@@ -27,6 +28,7 @@ import org.springframework.ide.vscode.commons.yaml.ast.NodeRef.TupleKeyRef;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeRef.TupleValueRef;
 import org.yaml.snakeyaml.nodes.MappingNode;
 import org.yaml.snakeyaml.nodes.Node;
+import org.yaml.snakeyaml.nodes.NodeTuple;
 import org.yaml.snakeyaml.nodes.SequenceNode;
 
 /**
@@ -38,14 +40,13 @@ public class YamlFileAST {
 
 	private static final List<NodeRef<?>> NO_CHILDREN = Collections.emptyList();
 	private final List<Node> nodes;
+	private final Set<Node> anchoredNodes;
 	private final IDocument doc;
 
-	public YamlFileAST(IDocument doc, Iterable<Node> iter) {
+	public YamlFileAST(IDocument doc, List<Node> nodes, Set<Node> anchoredNodes) {
 		this.doc = doc;
-		nodes = new ArrayList<Node>();
-		for (Node node : iter) {
-			nodes.add(node);
-		}
+		this.nodes = nodes;
+		this.anchoredNodes = anchoredNodes;
 	}
 
 	public List<NodeRef<?>> findPath(int offset) {
@@ -159,5 +160,21 @@ public class YamlFileAST {
 		return doc;
 	}
 
-
+	/**
+	 * Detects whether a given map key-value pair is anchored. I.e. corresponds to
+	 * a bit of yaml like this example:
+	 *
+	 * <pre>
+	 * some-key: &some-anchor
+	 *   blah: blah
+	 *   more: blah
+	 * </pre>
+	 */
+	public boolean isAnchored(NodeTuple entry) {
+		if (entry!=null) {
+			Node v = entry.getValueNode();
+			return v!=null && anchoredNodes.contains(v);
+		}
+		return false;
+	}
 }

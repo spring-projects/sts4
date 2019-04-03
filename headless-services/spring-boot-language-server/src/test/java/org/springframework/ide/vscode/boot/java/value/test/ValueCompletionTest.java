@@ -63,6 +63,7 @@ import org.springframework.test.context.junit4.SpringRunner;
  */
 @RunWith(SpringRunner.class)
 @BootLanguageServerTest
+@Import({AdHocPropertyHarnessTestConf.class, ValueCompletionTest.TestConf.class})
 public class ValueCompletionTest {
 
 	@Autowired private BootLanguageServerHarness harness;
@@ -75,7 +76,6 @@ public class ValueCompletionTest {
 	@Autowired private AdHocPropertyHarness adHocProperties;
 
 	@Configuration
-	@Import(AdHocPropertyHarnessTestConf.class)
 	static class TestConf {
 
 		//Somewhat strange test setup, test provides a specific test project.

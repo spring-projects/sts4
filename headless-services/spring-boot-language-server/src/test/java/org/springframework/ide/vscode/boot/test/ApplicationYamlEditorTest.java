@@ -26,6 +26,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -53,13 +54,13 @@ import org.springframework.test.context.junit4.SpringRunner;
  */
 @RunWith(SpringRunner.class)
 @BootLanguageServerTest
-@Import(PropertyEditorTestConf.class)
+@Import({PropertyEditorTestConf.class, ApplicationYamlEditorTest.TestConf.class})
 public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 
 	@Autowired
 	private DefinitionLinkAsserts definitionLinkAsserts;
 
-	@Configuration static class TestConf {
+	@Configuration public static class TestConf {
 		@Bean LanguageId defaultLanguageId() {
 			return LanguageId.BOOT_PROPERTIES_YAML;
 		}

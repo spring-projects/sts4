@@ -110,7 +110,7 @@ public class YamlSchemaProblems {
 				}
 			}
 		} else if (parent instanceof SequenceNode) {
-			Boolean flowStyle = ((SequenceNode) parent).getFlowStyle();
+			Boolean flowStyle = ((SequenceNode) parent).getFlowStyle().getStyleBoolean();
 			if (flowStyle!=null && !flowStyle) {
 				Mark nodeStart = map.getStartMark();
 				underline = new DocumentRegion(doc, 0, nodeStart.getIndex());

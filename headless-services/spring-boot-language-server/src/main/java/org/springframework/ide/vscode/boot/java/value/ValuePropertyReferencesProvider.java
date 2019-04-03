@@ -167,8 +167,7 @@ public class ValuePropertyReferencesProvider implements ReferenceProvider {
 		try {
 			String fileContent = FileUtils.readFileToString(new File(filePath));
 
-			Yaml yaml = new Yaml();
-			YamlASTProvider parser = new YamlParser(yaml);
+			YamlASTProvider parser = new YamlParser();
 
 			URI docURI = Paths.get(filePath).toUri();
 			TextDocument doc = new TextDocument(docURI.toString(), null);

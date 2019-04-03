@@ -56,6 +56,7 @@ import org.springframework.ide.vscode.commons.yaml.schema.YamlSchema;
 import org.springframework.ide.vscode.commons.yaml.schema.constraints.Constraint;
 import org.springframework.ide.vscode.commons.yaml.snippet.SchemaBasedSnippetGenerator;
 import org.springframework.ide.vscode.commons.yaml.snippet.Snippet;
+import org.yaml.snakeyaml.DumperOptions.FlowStyle;
 import org.yaml.snakeyaml.nodes.MappingNode;
 import org.yaml.snakeyaml.nodes.Node;
 import org.yaml.snakeyaml.nodes.NodeId;
@@ -170,7 +171,7 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 						} else {
 							YTypedProperty prop = beanProperties.get(key);
 							if (prop==null) {
-								if (!isAnchored(entry)) {
+								if (!ast.isAnchored(entry)) {
 									unknownBeanProperty(keyNode, type, key);
 								}
 							} else {
@@ -226,28 +227,6 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 				// other stuff we don't check
 			}
 		}
-	}
-
-	/**
-	 * Detects whether a given map key-value pair is anchored. I.e. corresponds to
-	 * a bit of yaml like this example:
-	 *
-	 * <pre>
-	 * some-key: &some-anchor
-	 *   blah: blah
-	 *   more: blah
-	 * </pre>
-	 *
-	 * @param entry
-	 * @return
-	 */
-	private boolean isAnchored(NodeTuple entry) {
-		if (entry!=null) {
-			Node v = entry.getValueNode();
-			String a = v.getAnchor();
-			return a!=null;
-		}
-		return false;
 	}
 
 	private void parse(YamlFileAST ast, Node node, YType type, ValueParser parser) {
@@ -396,7 +375,7 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 
 	private Node debrace(Node _node) {
 		MappingNode node = NodeUtil.asMapping(_node);
-		if (node!=null && node.getFlowStyle() && node.getValue().size()==1) {
+		if (node!=null && node.getFlowStyle()==FlowStyle.FLOW && node.getValue().size()==1) {
 			NodeTuple entry = node.getValue().get(0);
 			if ("".equals(NodeUtil.asScalar(entry.getValueNode()))) {
 				return entry.getKeyNode();
