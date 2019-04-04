@@ -10,3 +10,8 @@
  *******************************************************************************/
 export * from './languages';
 export * from './utils';
+
+export interface JavaLsProcessParameters {
+    javahome?: string;
+    vmargs?: string;
+}

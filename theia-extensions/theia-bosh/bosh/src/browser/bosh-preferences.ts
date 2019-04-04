@@ -31,6 +31,16 @@ export const BoshConfigSchema: PreferenceSchema = {
             type: 'integer',
             description: `Number of seconds before CLI commands are terminated with a timeout.`,
             default: 3
+        },
+        'bosh-yaml.ls.javahome': {
+            type: 'string',
+            default: null,
+            description: "Java Home folder to start Bosh YAML LS"
+        },
+        'bosh-yaml.ls.vmargs': {
+            type: 'string',
+            default: null,
+            description: "Java VM arguments to start Bosh YAML LS"
         }
     }
 };
@@ -39,6 +49,8 @@ export interface BoshConfiguration {
     'boot-bosh.cli.command': string | null;
     'bosh.cli.target': string | null;
     'bosh.cli.timeout': number;
+    'bosh-yaml.ls.javahome': string;
+    'bosh-yaml.ls.vmargs': string;
 }
 
 export const BoshPreferences = Symbol('BoshPreferences');

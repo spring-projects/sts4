@@ -13,7 +13,7 @@
     "jars"
   ],
   "dependencies": {
-    "@pivotal-tools/theia-languageclient": "0.0.7",
+    "@pivotal-tools/theia-languageclient": "0.0.8",
     "@theia/core": "latest",
     "@theia/languages": "latest",
     "@theia/monaco": "latest"

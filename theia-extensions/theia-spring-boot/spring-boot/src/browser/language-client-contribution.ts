@@ -28,6 +28,7 @@ import {OpenerService} from '@theia/core/lib/browser';
 import URI from '@theia/core/lib/common/uri';
 import {JavaClientContribution} from '@theia/java/lib/browser';
 import {JavaDataService} from './java-data';
+import {JavaLsProcessParameters} from '@pivotal-tools/theia-languageclient/lib/common';
 
 const HIGHLIGHTS_NOTIFICATION_TYPE = 'sts/highlight';
 
@@ -137,6 +138,13 @@ export class SpringBootClientContribution extends StsLanguageClientContribution<
             }
         };
 
+    }
+
+    protected getStartParameters(): JavaLsProcessParameters {
+        return {
+            javahome: this.preferences['spring-boot.ls.javahome'],
+            vmargs: this.preferences['spring-boot.ls.vmargs']
+        };
     }
 
 }

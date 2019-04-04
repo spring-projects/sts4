@@ -12,14 +12,17 @@ import { inject, injectable } from 'inversify';
 import { Workspace, Languages, LanguageClientFactory } from '@theia/languages/lib/browser';
 import { CF_MANIFEST_YAML_LANGUAGE_ID, CF_MANIFEST_YAML_LANGUAGE_NAME } from '../common';
 import { StsLanguageClientContribution } from '@pivotal-tools/theia-languageclient/lib/browser/language-client-contribution';
+import { CfManifestYamlConfiguration, CfManifestYamlPreferences } from './cf-manifest-preferences';
+import { JavaLsProcessParameters } from '@pivotal-tools/theia-languageclient/lib/common';
 
 @injectable()
-export class CfManifestYamlClientContribution extends StsLanguageClientContribution<null> {
+export class CfManifestYamlClientContribution extends StsLanguageClientContribution<CfManifestYamlConfiguration> {
 
     readonly id = CF_MANIFEST_YAML_LANGUAGE_ID;
     readonly name = CF_MANIFEST_YAML_LANGUAGE_NAME;
 
     constructor(
+        @inject(CfManifestYamlPreferences) protected readonly preferences: CfManifestYamlPreferences,
         @inject(Workspace) workspace: Workspace,
         @inject(Languages) languages: Languages,
         @inject(LanguageClientFactory) languageClientFactory: LanguageClientFactory,
@@ -32,4 +35,12 @@ export class CfManifestYamlClientContribution extends StsLanguageClientContribut
             '**/*manifest*.yml'
         ];
     }
+
+    protected getStartParameters(): JavaLsProcessParameters {
+        return {
+            javahome: this.preferences['manifest-yaml.ls.javahome'],
+            vmargs: this.preferences['manifest-yaml.ls.vmargs']
+        };
+    }
+
 }

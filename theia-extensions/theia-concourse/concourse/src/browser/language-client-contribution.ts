@@ -15,14 +15,17 @@ import {
     CONCOURSE_PIPELINE_YAML_LANGUAGE_ID, CONCOURSE_SERVER_ID, CONCOURSE_SERVER_NAME,
     CONCOURSE_TASK_YAML_LANGUAGE_ID
 } from '../common';
+import {ConcourseYamlConfiguration, ConcourseYamlPreferences} from './concourse-preferences';
+import {JavaLsProcessParameters} from '@pivotal-tools/theia-languageclient/lib/common';
 
 @injectable()
-export class ConcourseClientContribution extends StsLanguageClientContribution<null> {
+export class ConcourseClientContribution extends StsLanguageClientContribution<ConcourseYamlConfiguration> {
 
     readonly id = CONCOURSE_SERVER_ID;
     readonly name = CONCOURSE_SERVER_NAME;
 
     constructor(
+        @inject(ConcourseYamlPreferences) protected readonly preferences: ConcourseYamlPreferences,
         @inject(Workspace) workspace: Workspace,
         @inject(Languages) languages: Languages,
         @inject(LanguageClientFactory) languageClientFactory: LanguageClientFactory,
@@ -41,4 +44,12 @@ export class ConcourseClientContribution extends StsLanguageClientContribution<n
             '**/tasks/*.yml'
         ];
     }
+
+    protected getStartParameters(): JavaLsProcessParameters {
+        return {
+            javahome: this.preferences['concourse-yaml.ls.javahome'],
+            vmargs: this.preferences['concourse-yaml.ls.vmargs']
+        };
+    }
+
 }

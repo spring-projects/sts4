@@ -12,8 +12,10 @@ import * as path from 'path';
 import * as glob from 'glob';
 import { injectable } from 'inversify';
 import { DEBUG_MODE } from '@theia/core/lib/node';
-import { IConnection, BaseLanguageServerContribution } from '@theia/languages/lib/node';
+import { parseArgs } from '@theia/process/lib/node/utils';
+import {IConnection, BaseLanguageServerContribution, LanguageServerStartOptions} from '@theia/languages/lib/node';
 import {findJdk, findJvm, JVM} from '@pivotal-tools/jvm-launch-utils';
+import {JavaLsProcessParameters} from '../common';
 
 @injectable()
 export abstract class StsLanguageServerContribution extends BaseLanguageServerContribution {
@@ -34,8 +36,8 @@ export abstract class StsLanguageServerContribution extends BaseLanguageServerCo
         return path.resolve(this.lsJarContainerFolder, jarPaths[0]);
     }
 
-    protected findJvm() {
-        return this.preferJdk ? findJdk() : findJvm();
+    protected findJvm(javaHome?: string) {
+        return this.preferJdk ? findJdk(javaHome) : findJvm(javaHome);
     }
 
     protected validate(jvm: JVM) {
@@ -50,9 +52,20 @@ export abstract class StsLanguageServerContribution extends BaseLanguageServerCo
         }
     }
 
-    async start(clientConnection: IConnection) {
+    async start(clientConnection: IConnection, { parameters }: JavaLsStartOptions) {
         const jarPath = this.getJarPath();
-        const jvm = await this.findJvm();
+
+        const userJavaHome =
+            (parameters && parameters.javahome)
+            || process.env.STS_LSP_JAVA_HOME;
+
+        const args = parseArgs(
+            (parameters && parameters.vmargs)
+            || process.env.STS_LSP_JAVA_VMARGS
+            || undefined
+        );
+
+        const jvm = await this.findJvm(userJavaHome);
 
         this.validate(jvm);
 
@@ -68,12 +81,12 @@ export abstract class StsLanguageServerContribution extends BaseLanguageServerCo
         env.CLIENT_PORT = addressInfo.port;
 
         const command = jvm.getJavaExecutable();
-        const args = [
+        args.push(
             '-Dsts.lsp.client=theia',
             '-Dlsp.completions.indentation.enable=true',
             '-Dlsp.yaml.completions.errors.disable=true',
             `-Dserver.port=${env.CLIENT_PORT}`
-        ];
+        );
 
         let toolsJar = jvm.getToolsJar();
         if (toolsJar) {
@@ -99,4 +112,8 @@ export abstract class StsLanguageServerContribution extends BaseLanguageServerCo
         this.forward(clientConnection, serverConnection);
     }
 
+}
+
+export interface JavaLsStartOptions extends LanguageServerStartOptions {
+    parameters?: JavaLsProcessParameters;
 }

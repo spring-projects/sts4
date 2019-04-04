@@ -13,9 +13,11 @@ import { LanguageClientContribution } from '@theia/languages/lib/browser';
 import { ContainerModule } from 'inversify';
 import {ManifestYamlGrammarContribution} from './manifest-yaml-grammar-contribution';
 import {LanguageGrammarDefinitionContribution} from '@theia/monaco/lib/browser/textmate';
+import {bindCfManifestYamlPreferences} from './cf-manifest-preferences';
 
 export default new ContainerModule(bind => {
-    // add your contribution bindings here    
+    // add your contribution bindings here
+    bindCfManifestYamlPreferences(bind);
     bind(LanguageClientContribution).to(CfManifestYamlClientContribution).inSingletonScope();
     bind(LanguageGrammarDefinitionContribution).to(ManifestYamlGrammarContribution).inSingletonScope();
 });

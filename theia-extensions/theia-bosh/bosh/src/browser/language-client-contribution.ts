@@ -11,6 +11,7 @@
 import { injectable, inject } from 'inversify';
 import { Workspace, Languages, LanguageClientFactory } from '@theia/languages/lib/browser';
 import { StsLanguageClientContribution } from '@pivotal-tools/theia-languageclient/lib/browser/language-client-contribution';
+import { JavaLsProcessParameters } from '@pivotal-tools/theia-languageclient/lib//common';
 import {
     BOSH_DEPLOYMENT_YAML_LANGUAGE_ID,
     BOSH_CLOUDCONFIG_YAML_LANGUAGE_ID,
@@ -44,4 +45,12 @@ export class BoshClientContribution extends StsLanguageClientContribution<BoshCo
             '*cloud-config*.yml'
         ];
     }
+
+    protected getStartParameters(): JavaLsProcessParameters {
+        return {
+            javahome: this.preferences['bosh-yaml.ls.javahome'],
+            vmargs: this.preferences['bosh-yaml.ls.vmargs']
+        };
+    }
+
 }

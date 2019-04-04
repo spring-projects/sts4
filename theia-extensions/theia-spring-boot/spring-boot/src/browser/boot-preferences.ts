@@ -13,42 +13,54 @@ import { createPreferenceProxy, PreferenceProxy, PreferenceService, PreferenceCo
 
 // tslint:disable:max-line-length
 
-export const HIGHLIGHTS_PREF_NAME = 'boot-java.boot-hints.on';
-export const XML_SUPPORT_PREF_NAME = 'boot-java.support-spring-xml-config.on';
-export const CODELENS_PREF_NAME = 'boot-java.highlight-codelens.on';
+export const HIGHLIGHTS_PREF_NAME = 'spring-boot.boot-hints.on';
+export const XML_SUPPORT_PREF_NAME = 'spring-boot.support-spring-xml-config.on';
+export const CODELENS_PREF_NAME = 'spring-boot.highlight-codelens.on';
 
 export const BootConfigSchema: PreferenceSchema = {
     'type': 'object',
-    'title': 'Spring Boot Java Configuration',
+    'title': 'Spring Boot Configuration',
     properties: {
-        'boot-java.boot-hints.on': {
+        'spring-boot.boot-hints.on': {
             type: 'boolean',
             description: 'Enable/Disable Spring running Boot application live hints decorators in Java source code.',
             default: true
         },
-        'boot-java.support-spring-xml-config.on': {
+        'spring-boot.support-spring-xml-config.on': {
             type: 'boolean',
             description: 'Enable/Disable Support for Spring XML Config files',
             default: false
         },
-        'boot-java.change-detection.on': {
+        'spring-boot.change-detection.on': {
             type: 'boolean',
             description: 'Enable/Disable detecting changes of running Spring Boot applications.',
             default: false
         },
-        'boot-java.highlight-codelens.on': {
+        'spring-boot.highlight-codelens.on': {
             type: 'boolean',
             default: true,
             description: 'Enable/Disable Spring running Boot application Code Lenses'
+        },
+        'spring-boot.ls.javahome': {
+            type: 'string',
+            default: null,
+            description: "Java Home folder to start Spring Boot LS"
+        },
+        'spring-boot.ls.vmargs': {
+            type: 'string',
+            default: null,
+            description: "Java VM arguments to start Spring Boot LS"
         }
     }
 };
 
 export interface BootConfiguration {
-    'boot-java.boot-hints.on': boolean;
-    'boot-java.support-spring-xml-config.on': boolean;
-    'boot-java.change-detection.on': boolean;
-    'boot-java.highlight-codelens.on': boolean;
+    'spring-boot.boot-hints.on': boolean;
+    'spring-boot.support-spring-xml-config.on': boolean;
+    'spring-boot.change-detection.on': boolean;
+    'spring-boot.highlight-codelens.on': boolean;
+    'spring-boot.ls.javahome': string;
+    'spring-boot.ls.vmargs': string;
 }
 
 export const BootPreferences = Symbol('BootPreferences');
