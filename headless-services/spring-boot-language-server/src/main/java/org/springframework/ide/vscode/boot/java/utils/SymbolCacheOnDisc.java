@@ -13,7 +13,9 @@ package org.springframework.ide.vscode.boot.java.utils;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
+import java.io.IOException;
 import java.lang.reflect.Type;
+import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -72,7 +74,13 @@ public class SymbolCacheOnDisc implements SymbolCache {
 
 		timestampedFiles = Arrays.stream(files)
 				.filter(file -> new File(file).exists())
-				.collect(Collectors.toMap(file -> file, file -> new File(file).lastModified(), (v1,v2) -> { throw new RuntimeException(String.format("Duplicate key for values %s and %s", v1, v2));}, TreeMap::new));
+				.collect(Collectors.toMap(file -> file, file -> {
+					try {
+						return Files.getLastModifiedTime(new File(file).toPath()).toMillis();
+					} catch (IOException e) {
+						throw new RuntimeException(e);
+					}
+				}, (v1,v2) -> { throw new RuntimeException(String.format("Duplicate key for values %s and %s", v1, v2));}, TreeMap::new));
 
 		save(cacheKey, generatedSymbols, timestampedFiles);
 	}
@@ -88,7 +96,13 @@ public class SymbolCacheOnDisc implements SymbolCache {
 
 				SortedMap<String, Long> timestampedFiles = Arrays.stream(files)
 						.filter(file -> new File(file).exists())
-						.collect(Collectors.toMap(file -> file, file -> new File(file).lastModified(),  (v1,v2) -> { throw new RuntimeException(String.format("Duplicate key for values %s and %s", v1, v2));}, TreeMap::new));
+						.collect(Collectors.toMap(file -> file, file -> {
+							try {
+								return Files.getLastModifiedTime(new File(file).toPath()).toMillis();
+							} catch (IOException e) {
+								throw new RuntimeException(e);
+							}
+						},  (v1,v2) -> { throw new RuntimeException(String.format("Duplicate key for values %s and %s", v1, v2));}, TreeMap::new));
 
 				if (isFileMatch(timestampedFiles, store.getTimestampedFiles())) {
 					this.stores.put(cacheKey, store);
