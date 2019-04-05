@@ -10,52 +10,72 @@
             clientImpl="org.springframework.tooling.ls.eclipse.commons.STS4LanguageClientImpl"
             label="Spring Boot Language Server">
       </server>
+
       <contentTypeMapping
             contentType="org.eclipse.jdt.core.javaSource"
             id="org.eclipse.languageserver.languages.springboot">
       </contentTypeMapping>
+
       <contentTypeMapping
             contentType="org.springframework.boot.ide.properties.application.properties"
             id="org.eclipse.languageserver.languages.springboot"
             languageId="spring-boot-properties">
       </contentTypeMapping>
+
       <contentTypeMapping
             contentType="org.springframework.boot.ide.properties.application.yml"
             id="org.eclipse.languageserver.languages.springboot"
             languageId="spring-boot-properties-yaml">
       </contentTypeMapping>
+
+      <contentTypeMapping
+            contentType="org.springframework.boot.ide.xmlconfig"
+            id="org.eclipse.languageserver.languages.springboot">
+      </contentTypeMapping>
+
    </extension>
 
    <extension
          point="org.eclipse.core.contenttype.contentTypes">
+
       <content-type
             default-charset="ISO-8859-1"
             id="org.springframework.boot.ide.properties.application.properties"
             name="Spring Properties File"
             priority="high">
       </content-type>
-      <file-association
-            content-type="org.springframework.boot.ide.properties.application.properties"
-            file-names="application.properties,application-dev.properties"
-            file-patterns="application-*.properties">
-      </file-association>
-   </extension>
-   
-   <extension
-         point="org.eclipse.core.contenttype.contentTypes">
+
       <content-type
             default-charset="UTF-8"
             id="org.springframework.boot.ide.properties.application.yml"
             name="Spring Yaml Properties File"
             priority="high">
       </content-type>
+
+      <content-type id="org.springframework.boot.ide.xmlconfig"
+            name="Spring XML Config File"
+            base-type="org.eclipse.core.runtime.xml" 
+            priority="normal"
+            default-charset="UTF-8">
+            <describer class="org.eclipse.core.runtime.content.XMLRootElementContentDescriber2">
+                  <parameter name="element" value="beans"/>
+            </describer>
+      </content-type>
+
+      <file-association
+            content-type="org.springframework.boot.ide.properties.application.properties"
+            file-names="application.properties,application-dev.properties"
+            file-patterns="application-*.properties">
+      </file-association>
+
       <file-association
             content-type="org.springframework.boot.ide.properties.application.yml"
             file-names="application.yml,bootstrap.yml,application-dev.yml,application.yaml,bootstrap.yaml,application-dev.yaml"
             file-patterns="application-*.yml,application-*.yaml">
       </file-association>
-   </extension>
 
+   </extension>
+   
    <extension
          id="springbootjava-completion-computer"
          point="org.eclipse.jdt.ui.javaCompletionProposalComputer">
@@ -250,6 +270,25 @@
             scopeName="source.java-properties">
       </scopeNameContentTypeBinding>
    </extension>
+   
+   
+   <extension
+      id="idome.xml.generator.contentassist"
+      point="org.eclipse.wst.sse.ui.completionProposal">         
 
+      <proposalCategory 
+            id="org.springframework.boot.ide.xmlconfig.contentassist"
+            name="Spring XML Content Assist">
+      </proposalCategory>
+
+      <proposalComputer
+            activate="true"
+            categoryId="org.springframework.boot.ide.xmlconfig.contentassist"
+            class="org.springframework.tooling.boot.ls.xml.XMLContentAssistProposalComputer"
+            id="org.springframework.boot.ide.xmlconfig.contentassist.proposalcomputer">
+         <contentType id="org.springframework.boot.ide.xmlconfig"/>
+      </proposalComputer>
+
+   </extension>
 
 </plugin>
