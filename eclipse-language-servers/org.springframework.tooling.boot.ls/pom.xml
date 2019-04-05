@@ -71,6 +71,23 @@
 				</executions>
 			</plugin>
 
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>target-platform-configuration</artifactId>
+				<version>${tycho-version}</version>
+				<configuration>
+					<dependency-resolution>
+						<extraRequirements>
+							<requirement>
+								<type>eclipse-plugin</type>
+								<id>org.eclipse.wst.sse.ui</id>
+								<versionRange>0.0.0</versionRange>
+							</requirement>
+						</extraRequirements>
+					</dependency-resolution>
+				</configuration>
+			</plugin>
+
 		</plugins>
 	</build>
 
