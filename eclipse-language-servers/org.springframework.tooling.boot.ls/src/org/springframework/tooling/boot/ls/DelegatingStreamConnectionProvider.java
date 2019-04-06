@@ -33,7 +33,6 @@ import org.eclipse.lsp4j.jsonrpc.messages.ResponseMessage;
 import org.eclipse.lsp4j.services.LanguageServer;
 import org.springframework.tooling.ls.eclipse.commons.LanguageServerCommonsActivator;
 import org.springsource.ide.eclipse.commons.livexp.core.ValueListener;
-import org.springsource.ide.eclipse.commons.livexp.util.Log;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -57,6 +56,9 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 	private final IPropertyChangeListener configListener = (e) -> sendConfiguration();
 	private final ValueListener<ImmutableSet<Object>> remoteAppsListener = (e, v) -> sendConfiguration();
 	
+	private long timestampBeforeStart;
+	private long timestampWhenInitialized;
+	
 	public DelegatingStreamConnectionProvider() {
 		LanguageServerCommonsActivator.logInfo("Entering DelegatingStreamConnectionProvider()");
 		String port = System.getProperty("boot-java-ls-port");
@@ -78,6 +80,7 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 
 	@Override
 	public void start() throws IOException {
+		this.timestampBeforeStart = System.currentTimeMillis();
 		this.provider.start();
 	}
 
@@ -113,6 +116,9 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 			ResponseMessage responseMessage = (ResponseMessage)message;
 			if (responseMessage.getResult() instanceof InitializeResult) {
 				this.languageServer = languageServer;
+				
+				this.timestampWhenInitialized = System.currentTimeMillis();
+				LanguageServerCommonsActivator.logInfo("Boot LS startup time from start to initialized: " + (timestampWhenInitialized - timestampBeforeStart) + "ms");
 				
 				sendConfiguration();
 				
