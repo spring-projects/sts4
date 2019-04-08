@@ -17,10 +17,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.app.BootLanguageServerParams;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.composable.LanguageServerComponents;
+import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.util.HoverHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
-import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
-import org.springframework.ide.vscode.commons.languageserver.util.SimpleWorkspaceService;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 
 import com.google.common.collect.ImmutableSet;
@@ -36,12 +35,14 @@ public class SpringXMLLanguageServerComponents implements LanguageServerComponen
 
 	private final SimpleLanguageServer server;
 	private final BootLanguageServerParams serverParams;
+	private final JavaProjectFinder projectFinder;
 
 	public SpringXMLLanguageServerComponents(
 			SimpleLanguageServer server,
 			BootLanguageServerParams serverParams) {
 		this.server = server;
 		this.serverParams = serverParams;
+		this.projectFinder = serverParams.projectFinder;
 
 		server.doOnInitialized(this::initialized);
 		server.onShutdown(this::shutdown);
@@ -54,7 +55,7 @@ public class SpringXMLLanguageServerComponents implements LanguageServerComponen
 
 	@Override
 	public ICompletionEngine getCompletionEngine() {
-		return new SpringXMLCompletionEngine(this);
+		return new SpringXMLCompletionEngine(this, projectFinder);
 	}
 
 	@Override

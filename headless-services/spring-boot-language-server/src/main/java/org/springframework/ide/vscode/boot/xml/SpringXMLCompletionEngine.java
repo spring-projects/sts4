@@ -12,9 +12,19 @@ package org.springframework.ide.vscode.boot.xml;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 
+import org.eclipse.lsp4xml.dom.DOMAttr;
+import org.eclipse.lsp4xml.dom.DOMDocument;
+import org.eclipse.lsp4xml.dom.DOMNode;
+import org.eclipse.lsp4xml.dom.DOMParser;
+import org.eclipse.lsp4xml.dom.parser.Scanner;
+import org.eclipse.lsp4xml.dom.parser.TokenType;
+import org.eclipse.lsp4xml.dom.parser.XMLScanner;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
+import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 /**
@@ -22,13 +32,54 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
  */
 public class SpringXMLCompletionEngine implements ICompletionEngine {
 
-	public SpringXMLCompletionEngine(SpringXMLLanguageServerComponents springXMLLanguageServerComponents) {
+	private static final String BEANS_NAMESPACE = "http://www.springframework.org/schema/beans";
+
+	private static final String BEAN_ELEMENT = "bean";
+	private static final String BEAN_CLASS_ATTRIBUTE = "class";
+
+
+	private final Map<XMLCompletionProviderKey, XMLCompletionProvider> completionProviders;
+
+	public SpringXMLCompletionEngine(SpringXMLLanguageServerComponents springXMLLanguageServerComponents, JavaProjectFinder projectFinder) {
+		this.completionProviders = new HashMap<>();
+		this.completionProviders.put(new XMLCompletionProviderKey(BEANS_NAMESPACE, BEAN_ELEMENT, BEAN_CLASS_ATTRIBUTE), new TypeCompletionProposalProvider(projectFinder));
 	}
 
 	@Override
-	public Collection<ICompletionProposal> getCompletions(TextDocument document, int offset) throws Exception {
-		System.out.println(" SUPER COOL SPRING XML COMPLETION PROPOSALS COMING SOON... STAY TUNED...");
+	public Collection<ICompletionProposal> getCompletions(TextDocument doc, int offset) throws Exception {
+		String content = doc.get();
 
+		DOMParser parser = DOMParser.getInstance();
+		DOMDocument dom = parser.parse(content, "", null);
+
+		DOMNode node = dom.findNodeBefore(offset);
+
+		if (node != null) {
+			String namespace = node.getNamespaceURI();
+
+			Scanner scanner = XMLScanner.createScanner(content, node.getStart(), false);
+			TokenType token = scanner.scan();
+			while (token != TokenType.EOS && scanner.getTokenOffset() <= offset) {
+				switch (token) {
+				case AttributeValue:
+					if (scanner.getTokenOffset() <= offset && offset <= scanner.getTokenEnd()) {
+						DOMAttr attributeAt = dom.findAttrAt(offset);
+
+						if (attributeAt != null) {
+							XMLCompletionProviderKey key = new XMLCompletionProviderKey(namespace, node.getNodeName(), attributeAt.getNodeName());
+							XMLCompletionProvider completionProvider = this.completionProviders.get(key);
+							if (completionProvider != null) {
+								return completionProvider.getCompletions(doc, namespace, node, attributeAt, scanner, offset);
+							}
+						}
+					}
+					break;
+				default:
+					break;
+				}
+				token = scanner.scan();
+			}
+		}
 		return Collections.emptyList();
 	}
 
