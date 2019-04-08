@@ -16,4 +16,55 @@
       </contentTypeMapping>
    </extension>
 
+   <extension
+         point="org.eclipse.core.contenttype.contentTypes">
+      <content-type
+            default-charset="UTF-8"
+            id="org.springframework.ide.eclipse.manifest.yml"
+            name="Cloudfoundry Manifest"
+            file-names="manifest.yml"
+            priority="high">
+      </content-type>
+      <file-association
+            content-type="org.springframework.ide.eclipse.manifest.yml"
+            file-names="manifest.yml"
+            file-patterns="*manifest*.yml">
+      </file-association>
+   </extension>
+   
+   <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            class="org.springframework.tooling.ls.eclipse.commons.YamlGenericEditor"
+            contributorClass="org.eclipse.ui.editors.text.TextEditorActionContributor"
+            icon="icons/cloud_obj.png"
+            id="CfManifestYMLEditor"
+            name="Generic Editor - Cloudfoundry Manifest YAML"
+            symbolicFontName="org.eclipse.jdt.ui.PropertiesFileEditor.textfont">
+         <contentTypeBinding
+               contentTypeId="org.springframework.ide.eclipse.manifest.yml">
+         </contentTypeBinding>
+      </editor>
+   </extension>
+
+   <extension
+         point="org.eclipse.ui.genericeditor.presentationReconcilers">
+      <presentationReconciler
+            class="org.eclipse.tm4e.ui.text.TMPresentationReconciler"
+            contentType="org.springframework.ide.eclipse.manifest.yml">
+      </presentationReconciler>
+   </extension>
+
+   <extension
+         point="org.eclipse.tm4e.registry.grammars">
+      <grammar
+      		scopeName="source.yaml"
+            path="syntaxes/YAML.tmLanguage" >
+      </grammar>      
+      <scopeNameContentTypeBinding
+            contentTypeId="org.springframework.ide.eclipse.manifest.yml"
+            scopeName="source.yaml">
+      </scopeNameContentTypeBinding>
+   </extension>
+   
 </plugin>

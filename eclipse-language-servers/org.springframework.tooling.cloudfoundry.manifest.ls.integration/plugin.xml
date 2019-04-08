@@ -2,43 +2,6 @@
 <?eclipse version="3.4"?>
 <plugin>
 
-   <extension
-         point="org.eclipse.core.contenttype.contentTypes">
-      <content-type
-            default-charset="UTF-8"
-            id="org.springframework.ide.eclipse.manifest.yml"
-            name="Cloudfoundry Manifest"
-            file-names="manifest.yml"
-            priority="high">
-      </content-type>
-   </extension>
-   
-   <extension
-         point="org.eclipse.ui.editors">
-      <editorContentTypeBinding
-            contentTypeId="org.springframework.ide.eclipse.manifest.yml"
-            editorId="org.eclipse.ui.genericeditor.GenericEditor">
-      </editorContentTypeBinding>
-   </extension>
 
-   <extension
-         point="org.eclipse.ui.genericeditor.presentationReconcilers">
-      <presentationReconciler
-            class="org.eclipse.tm4e.ui.text.TMPresentationReconciler"
-            contentType="org.springframework.ide.eclipse.manifest.yml">
-      </presentationReconciler>
-   </extension>
-
-   <extension
-         point="org.eclipse.tm4e.registry.grammars">
-      <grammar
-      		scopeName="source.yaml"
-            path="./syntaxes/YAML.tmLanguage" >
-      </grammar>      
-      <scopeNameContentTypeBinding
-            contentTypeId="org.springframework.ide.eclipse.manifest.yml"
-            scopeName="source.yaml">
-      </scopeNameContentTypeBinding>
-   </extension>
 
 </plugin>

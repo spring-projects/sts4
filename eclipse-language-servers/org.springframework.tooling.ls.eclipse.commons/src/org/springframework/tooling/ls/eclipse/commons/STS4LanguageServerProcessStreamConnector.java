@@ -58,21 +58,18 @@ public abstract class STS4LanguageServerProcessStreamConnector extends ProcessSt
 				forwardTo(getLanguageServerLog(), console.out);
 			} else {
 
-				Job job = new Job("Consume LS error stream") {
+				new Thread("Consume LS error stream") {
 
 					@Override
-					protected IStatus run(IProgressMonitor monitor) {
+					public void run() {
 						try {
 							IOUtil.consume(getLanguageServerLog());
 						} catch (IOException e) {
 							// ignore
 						}
-						return Status.OK_STATUS;
 					}
 
-				};
-				job.setSystem(true);
-				job.schedule();
+				}.start();;
 			}
 		}
 	}
