@@ -12,27 +12,34 @@ package org.springframework.ide.vscode.commons.protocol.java;
 
 public class JavaSearchParams {
 	
+	public enum SearchType {
+		FUZZY,
+		CAMELCASE
+	}
+	
 	private String projectUri;
 	private String term;
 	private boolean includeBinaries;
 	private boolean includeSystemLibs;
 	private long timeLimit = -1;
+	private SearchType searchType;
 	
-	public JavaSearchParams(String projectUri, String term) {
-		this(projectUri, term, true, false);
+	public JavaSearchParams(String projectUri, String term, SearchType searchType) {
+		this(projectUri, term, searchType, true, false);
 	}
 
-	public JavaSearchParams(String projectUri, String term, boolean includeBinaries, boolean includeSystemLibs, long timeLimit) {
+	public JavaSearchParams(String projectUri, String term, SearchType searchType, boolean includeBinaries, boolean includeSystemLibs, long timeLimit) {
 		super();
 		this.projectUri = projectUri;
 		this.term = term;
+		this.setSearchType(searchType);
 		this.includeBinaries = includeBinaries;
 		this.includeSystemLibs = includeSystemLibs;
 		this.setTimeLimit(timeLimit);
 	}
 
-	public JavaSearchParams(String projectUri, String term, boolean includeBinaries, boolean includeSystemLibs) {
-		this(projectUri, term, includeBinaries, includeSystemLibs, -1);
+	public JavaSearchParams(String projectUri, String term, SearchType searchType, boolean includeBinaries, boolean includeSystemLibs) {
+		this(projectUri, term, searchType, includeBinaries, includeSystemLibs, -1);
 	}
 	
 	public String getProjectUri() {
@@ -73,6 +80,14 @@ public class JavaSearchParams {
 
 	public void setTimeLimit(long timeLimit) {
 		this.timeLimit = timeLimit;
+	}
+
+	public SearchType getSearchType() {
+		return searchType;
+	}
+
+	public void setSearchType(SearchType searchType) {
+		this.searchType = searchType;
 	}
 
 }

@@ -11,12 +11,11 @@
 package org.springframework.tooling.jdt.ls.commons.java;
 
 import static org.springframework.tooling.jdt.ls.commons.java.SearchUtils.searchScope;
-import static org.springframework.tooling.jdt.ls.commons.java.SearchUtils.toProperTypeQuery;
 import static org.springframework.tooling.jdt.ls.commons.java.SearchUtils.toTypePattern;
-import static org.springframework.tooling.jdt.ls.commons.java.SearchUtils.toWildCardPattern;
 
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IType;
+import org.springframework.ide.vscode.commons.protocol.java.JavaSearchParams.SearchType;
 import org.springframework.ide.vscode.commons.protocol.java.TypeDescriptorData;
 import org.springframework.tooling.jdt.ls.commons.Logger;
 
@@ -32,11 +31,11 @@ public class TypeFluxSearch extends CachingFluxJavaSearch<TypeDescriptorData> {
 	}
 
 	@Override
-	protected Flux<TypeDescriptorData> getValuesAsync(IJavaProject javaProject, String searchTerm) {
+	protected Flux<TypeDescriptorData> getValuesAsync(IJavaProject javaProject, String searchTerm, SearchType searchType) {
 		try {
 			return new FluxJdtSearch(logger)
 				.scope(searchScope(javaProject, includeBinaries, includeSystemLibs))
-				.pattern(toTypePattern(toWildCardPattern(toProperTypeQuery(searchTerm))))
+				.pattern(toTypePattern(searchType, searchTerm))
 				.search()
 				.map(match -> match.getElement())
 				.filter(o -> o instanceof IType)
@@ -46,7 +45,7 @@ public class TypeFluxSearch extends CachingFluxJavaSearch<TypeDescriptorData> {
 			return Flux.empty();
 		}
 	}
-
+	
 	@Override
 	protected String stringValue(TypeDescriptorData t) {
 		return t.getFqName();

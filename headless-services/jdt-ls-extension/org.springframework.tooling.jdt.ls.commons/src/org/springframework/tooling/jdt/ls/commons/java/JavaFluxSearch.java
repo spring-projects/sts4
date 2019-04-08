@@ -44,7 +44,7 @@ public class JavaFluxSearch {
 		PackageFluxSearch fluxPackageSearch = packageSearchCache.get(
 				Tuples.of(params.isIncludeBinaries(), params.isIncludeSystemLibs()), () -> new PackageFluxSearch(logger, params.isIncludeBinaries(), params.isIncludeSystemLibs())
 		);
-		return fluxPackageSearch.searchWithLimits(javaProject, params.getTerm(), params.getTimeLimit());
+		return fluxPackageSearch.searchWithLimits(javaProject, params.getTerm(), params.getSearchType(), params.getTimeLimit());
 	}
 
 	public List<TypeDescriptorData> fuzzySearchTypes(JavaSearchParams params) throws Exception {
@@ -53,7 +53,7 @@ public class JavaFluxSearch {
 		TypeFluxSearch fluxTypeSearch = typeSearchCache.get(
 				Tuples.of(params.isIncludeBinaries(), params.isIncludeSystemLibs()), () -> new TypeFluxSearch(logger, javaData, params.isIncludeBinaries(), params.isIncludeSystemLibs())
 		);
-		return fluxTypeSearch.searchWithLimits(javaProject, params.getTerm(), params.getTimeLimit());
+		return fluxTypeSearch.searchWithLimits(javaProject, params.getTerm(), params.getSearchType(), params.getTimeLimit());
 	}
 	
 }

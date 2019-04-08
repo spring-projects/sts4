@@ -17,37 +17,100 @@ import org.eclipse.jdt.core.search.IJavaSearchConstants;
 import org.eclipse.jdt.core.search.IJavaSearchScope;
 import org.eclipse.jdt.core.search.SearchEngine;
 import org.eclipse.jdt.core.search.SearchPattern;
+import org.springframework.ide.vscode.commons.protocol.java.JavaSearchParams.SearchType;
 
 public class SearchUtils {
 	
+	private static final String WILDCARD = "*";
+
 	public static String toWildCardPattern(String query) {
-		StringBuilder builder = new StringBuilder("*");
+		StringBuilder builder = new StringBuilder(WILDCARD);
 		for (char c : query.toCharArray()) {
 			builder.append(c);
 			builder.append('*');
 		}
 		return builder.toString();
 	}
+	
+	public static String toCamelCasePattern(String query) {
+		StringBuilder builder = new StringBuilder();
+		boolean insertStarBeforeCapitalLetter = false;
+		for (char c : query.toCharArray()) {
+			if (Character.isUpperCase(c)) {
+				if (insertStarBeforeCapitalLetter) {
+					builder.append('*');
+				}
+				insertStarBeforeCapitalLetter = true;
+			}
+			builder.append(c);
+		}
+		builder.append('*');
+		return builder.toString();
+	}
+	
+	public static String toSearchPattern(SearchType searchType, String query) {
+		switch(searchType) {
+		case FUZZY:
+			return toWildCardPattern(query);
+		case CAMELCASE:
+			return toCamelCasePattern(query);
+		default:
+			return query;
+		}
+	}
 
-	public static SearchPattern toPackagePattern(String wildCardedQuery) {
+	public static SearchPattern toPackagePattern(SearchType searchType, String query) {
 		int searchFor = IJavaSearchConstants.PACKAGE;
 		int limitTo = IJavaSearchConstants.DECLARATIONS;
-		int matchRule = SearchPattern.R_PATTERN_MATCH;
-		return SearchPattern.createPattern(wildCardedQuery, searchFor, limitTo, matchRule);
+		int matchRule = SearchPattern.R_EXACT_MATCH;
+		String finalQuery = query;
+		switch (searchType) {
+		case FUZZY:
+			matchRule = SearchPattern.R_PATTERN_MATCH;
+			finalQuery = toWildCardPattern(query);
+			break;
+		case CAMELCASE:
+			matchRule = SearchPattern.R_CAMELCASE_MATCH;
+			finalQuery = query.isEmpty() ? WILDCARD : query;
+			break;
+		}
+		return SearchPattern.createPattern(finalQuery, searchFor, limitTo, matchRule);
 	}
 
-	public static SearchPattern toClassPattern(String wildCardedQuery) {
+	public static SearchPattern toClassPattern(SearchType searchType, String query) {
 		int searchFor = IJavaSearchConstants.CLASS;
 		int limitTo = IJavaSearchConstants.DECLARATIONS;
-		int matchRule = SearchPattern.R_PATTERN_MATCH;
-		return SearchPattern.createPattern(wildCardedQuery, searchFor, limitTo, matchRule);
+		int matchRule = SearchPattern.R_EXACT_MATCH;
+		String finalQuery = query;
+		switch (searchType) {
+		case FUZZY:
+			matchRule = SearchPattern.R_PATTERN_MATCH;
+			finalQuery = toWildCardPattern(query);
+			break;
+		case CAMELCASE:
+			matchRule = SearchPattern.R_CAMELCASE_MATCH;
+			finalQuery = query.isEmpty() ? WILDCARD : query;
+			break;
+		}
+		return SearchPattern.createPattern(finalQuery, searchFor, limitTo, matchRule);
 	}
 
-	public static SearchPattern toTypePattern(String wildCardedQuery) {
+	public static SearchPattern toTypePattern(SearchType searchType, String query) {
 		int searchFor = IJavaSearchConstants.TYPE;
 		int limitTo = IJavaSearchConstants.DECLARATIONS;
-		int matchRule = SearchPattern.R_PATTERN_MATCH;
-		return SearchPattern.createPattern(wildCardedQuery, searchFor, limitTo, matchRule);
+		int matchRule = SearchPattern.R_EXACT_MATCH;
+		String finalQuery = query;
+		switch (searchType) {
+		case FUZZY:
+			matchRule = SearchPattern.R_PATTERN_MATCH;
+			finalQuery = toWildCardPattern(query);
+			break;
+		case CAMELCASE:
+			matchRule = SearchPattern.R_CAMELCASE_MATCH;
+			finalQuery = query.isEmpty() ? WILDCARD : query;
+			break;
+		}
+		return SearchPattern.createPattern(finalQuery, searchFor, limitTo, matchRule);
 	}
 
 	public static String toProperTypeQuery(String query) {

@@ -33,6 +33,7 @@ import org.springframework.ide.vscode.commons.protocol.STS4LanguageClient;
 import org.springframework.ide.vscode.commons.protocol.java.Classpath;
 import org.springframework.ide.vscode.commons.protocol.java.JavaDataParams;
 import org.springframework.ide.vscode.commons.protocol.java.JavaSearchParams;
+import org.springframework.ide.vscode.commons.protocol.java.JavaSearchParams.SearchType;
 import org.springframework.ide.vscode.commons.protocol.java.JavaTypeHierarchyParams;
 import org.springframework.ide.vscode.commons.protocol.java.TypeData;
 import org.springframework.ide.vscode.commons.protocol.java.TypeDescriptorData;
@@ -146,7 +147,7 @@ public class JdtLsIndex implements ClasspathIndex {
 
 	@Override
 	public Flux<Tuple2<IType, Double>> fuzzySearchTypes(String searchTerm, boolean includeBinaries, boolean includeSystemLibs) {
-		JavaSearchParams searchParams = new JavaSearchParams(projectUri.toString(), searchTerm, includeBinaries, includeSystemLibs, SEARCH_TIMEOUT);
+		JavaSearchParams searchParams = new JavaSearchParams(projectUri.toString(), searchTerm, SearchType.FUZZY, includeBinaries, includeSystemLibs, SEARCH_TIMEOUT);
 		return Mono.fromFuture(client.javaSearchTypes(searchParams))
 				.flatMapMany(results -> Flux.fromIterable(results).publishOn(Schedulers.parallel()))
 				.filter(Objects::nonNull)
@@ -156,11 +157,22 @@ public class JdtLsIndex implements ClasspathIndex {
 
 	@Override
 	public Flux<Tuple2<String, Double>> fuzzySearchPackages(String searchTerm, boolean includeBinaries, boolean includeSystemLibs) {
-		JavaSearchParams searchParams = new JavaSearchParams(projectUri.toString(), searchTerm, includeBinaries, includeSystemLibs, SEARCH_TIMEOUT);
+		JavaSearchParams searchParams = new JavaSearchParams(projectUri.toString(), searchTerm, SearchType.FUZZY, includeBinaries, includeSystemLibs, SEARCH_TIMEOUT);
 		return Mono.fromFuture(client.javaSearchPackages(searchParams))
 				.flatMapMany(results -> Flux.fromIterable(results).publishOn(Schedulers.parallel()))
 				.filter(Objects::nonNull)
 				.map(p -> Tuples.of(p, FuzzyMatcher.matchScore(searchTerm, p)))
+				.filter(tuple -> tuple.getT2() != 0.0);
+	}
+	
+	@Override
+	public Flux<Tuple2<IType, Double>> camelcaseSearchTypes(String searchTerm, boolean includeBinaries,
+			boolean includeSystemLibs) {
+		JavaSearchParams searchParams = new JavaSearchParams(projectUri.toString(), searchTerm, SearchType.CAMELCASE, includeBinaries, includeSystemLibs, SEARCH_TIMEOUT);
+		return Mono.fromFuture(client.javaSearchTypes(searchParams))
+				.flatMapMany(results -> Flux.fromIterable(results).publishOn(Schedulers.parallel()))
+				.filter(Objects::nonNull)
+				.map(type -> Tuples.of(toTypeFromDescriptor(type),  FuzzyMatcher.matchScore(searchTerm, type.getFqName())))
 				.filter(tuple -> tuple.getT2() != 0.0);
 	}
 

@@ -18,6 +18,7 @@ public interface ClasspathIndex extends Disposable {
 
 	IType findType(String fqName);
 	Flux<Tuple2<IType, Double>> fuzzySearchTypes(String searchTerm, boolean includeBinaries, boolean includeSystemLibs);
+	Flux<Tuple2<IType, Double>> camelcaseSearchTypes(String searchTerm, boolean includeBinaries, boolean includeSystemLibs);
 	Flux<Tuple2<String, Double>> fuzzySearchPackages(String searchTerm, boolean includeBinaries, boolean includeSystemLibs);
 	Flux<IType> allSubtypesOf(String fqName, boolean includeFocusType);
 	Flux<IType> allSuperTypesOf(String fqName, boolean includeFocusType);

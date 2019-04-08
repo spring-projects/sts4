@@ -14,15 +14,16 @@ import java.time.Duration;
 import java.util.List;
 
 import org.eclipse.jdt.core.IJavaProject;
+import org.springframework.ide.vscode.commons.protocol.java.JavaSearchParams.SearchType;
 
 import reactor.core.publisher.Flux;
 
 public interface FluxSearch<T> {
 
-	Flux<T> search(IJavaProject project, String searchTerm);
+	Flux<T> search(IJavaProject project, String searchTerm, SearchType searchType);
 
-	default List<T> searchWithLimits(IJavaProject javaProject, String searchTerm, long timeLimit) {
-		Flux<T> flux = this.search(javaProject, searchTerm);
+	default List<T> searchWithLimits(IJavaProject javaProject, String searchTerm, SearchType searchType, long timeLimit) {
+		Flux<T> flux = this.search(javaProject, searchTerm, searchType);
 		if (timeLimit > 0) {
 			flux = flux.take(Duration.ofMillis(timeLimit));
 		}

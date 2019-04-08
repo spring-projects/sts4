@@ -12,11 +12,11 @@ package org.springframework.tooling.jdt.ls.commons.java;
 
 import static org.springframework.tooling.jdt.ls.commons.java.SearchUtils.searchScope;
 import static org.springframework.tooling.jdt.ls.commons.java.SearchUtils.toPackagePattern;
-import static org.springframework.tooling.jdt.ls.commons.java.SearchUtils.toWildCardPattern;
 
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragment;
 import org.eclipse.jdt.core.JavaModelException;
+import org.springframework.ide.vscode.commons.protocol.java.JavaSearchParams.SearchType;
 import org.springframework.tooling.jdt.ls.commons.Logger;
 
 import reactor.core.publisher.Flux;
@@ -28,11 +28,11 @@ public class PackageFluxSearch extends CachingFluxJavaSearch<String> {
 	}
 
 	@Override
-	protected Flux<String> getValuesAsync(IJavaProject javaProject, String searchTerm) {
+	protected Flux<String> getValuesAsync(IJavaProject javaProject, String searchTerm, SearchType searchType) {
 		try {
 			return new FluxJdtSearch(logger)
 					.scope(searchScope(javaProject, includeBinaries, includeSystemLibs))
-					.pattern(toPackagePattern(toWildCardPattern(searchTerm)))
+					.pattern(toPackagePattern(searchType, searchTerm))
 					.search()
 					.map(match -> match.getElement())
 					.filter(o -> o instanceof IPackageFragment)

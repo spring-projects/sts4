@@ -14,6 +14,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.jdt.core.IJavaProject;
+import org.springframework.ide.vscode.commons.protocol.java.JavaSearchParams.SearchType;
 import org.springframework.tooling.jdt.ls.commons.Logger;
 
 import com.google.common.cache.Cache;
@@ -22,6 +23,7 @@ import com.google.common.cache.CacheLoader.InvalidCacheLoadException;
 
 import reactor.core.publisher.Flux;
 import reactor.util.function.Tuple2;
+import reactor.util.function.Tuple3;
 import reactor.util.function.Tuples;
 
 public abstract class CachingFluxJavaSearch<T> implements FluxSearch<T> {
@@ -62,11 +64,11 @@ public abstract class CachingFluxJavaSearch<T> implements FluxSearch<T> {
 	}
 	
 	@Override
-	public final Flux<T> search(IJavaProject javaProject, String query) {
-		Tuple2<String, String> key = key(javaProject, query);
+	public final Flux<T> search(IJavaProject javaProject, String query, SearchType searchType) {
+		Tuple2<String, String> key = key(javaProject, query, searchType);
 		CacheEntry cached = null;
 		try {
-			cached = cache.get(key, () -> new CacheEntry(query, getValuesIncremental(javaProject, query)));
+			cached = cache.get(key, () -> new CacheEntry(query, getValuesIncremental(javaProject, query, searchType)));
 		} catch (ExecutionException e) {
 			logger.log(e);
 		}
@@ -78,14 +80,14 @@ public abstract class CachingFluxJavaSearch<T> implements FluxSearch<T> {
 	 * <p>
 	 * Falls back on doing a full-blown search if there's no usable 'prefix-query' in the cache.
 	 */
-	private Flux<T> getValuesIncremental(IJavaProject javaProject, String query) {
+	private Flux<T> getValuesIncremental(IJavaProject javaProject, String query, SearchType searchType) {
 //		debug("trying to solve "+query+" incrementally");
 		String subquery = query;
 		while (subquery.length()>=1) {
 			subquery = subquery.substring(0, subquery.length()-1);
 			CacheEntry cached = null;
 			try {
-				cached = cache.get(key(javaProject, subquery), () -> null);
+				cached = cache.get(key(javaProject, subquery, searchType), () -> null);
 			} catch (ExecutionException | InvalidCacheLoadException e) {
 //				Log.log(e);
 			}
@@ -101,19 +103,19 @@ public abstract class CachingFluxJavaSearch<T> implements FluxSearch<T> {
 			}
 		}
 //		debug("full search for: "+query);
-		return getValuesAsync(javaProject, query);
+		return getValuesAsync(javaProject, query, searchType);
 	}
 	
-	protected abstract Flux<T> getValuesAsync(IJavaProject javaProject, String query);
+	protected abstract Flux<T> getValuesAsync(IJavaProject javaProject, String query, SearchType searchType);
 	
 	protected abstract String stringValue(T t);
 
-	private Tuple2<String,String> key(IJavaProject javaProject, String query) {
-		return Tuples.of(javaProject==null?null:javaProject.getElementName(), query);
+	private Tuple3<String,String,SearchType> key(IJavaProject javaProject, String query, SearchType searchType) {
+		return Tuples.of(javaProject==null?null:javaProject.getElementName(), query, searchType);
 	}
 
 	protected <K,V> Cache<K,V> createCache() {
 		return CacheBuilder.newBuilder().expireAfterWrite(1, TimeUnit.MINUTES).expireAfterAccess(1, TimeUnit.MINUTES).build();
 	}
-
+	
 }

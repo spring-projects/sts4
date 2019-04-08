@@ -30,6 +30,7 @@ import org.springframework.ide.vscode.commons.protocol.java.JavaSearchParams;
 import org.springframework.ide.vscode.commons.protocol.java.JavaTypeHierarchyParams;
 import org.springframework.ide.vscode.commons.protocol.java.TypeData;
 import org.springframework.ide.vscode.commons.protocol.java.TypeDescriptorData;
+import org.springframework.ide.vscode.commons.protocol.java.JavaSearchParams.SearchType;
 import org.springframework.tooling.ls.eclipse.commons.STS4LanguageClientImpl;
 
 public class JavaLangugeClientTest {
@@ -89,7 +90,7 @@ public class JavaLangugeClientTest {
 	@Test
 	public void fuzzyFindTypesIncludingSysLibs() throws Exception {
 		List<TypeDescriptorData> data = client
-				.javaSearchTypes(new JavaSearchParams(project.getLocationURI().toString(), "util.Map", true, true))
+				.javaSearchTypes(new JavaSearchParams(project.getLocationURI().toString(), "util.Map", SearchType.FUZZY, true, true))
 				.get(100, TimeUnit.SECONDS);
 		assertNotNull(data);
 		assertEquals(500, data.size());
@@ -101,7 +102,7 @@ public class JavaLangugeClientTest {
 	@Test
 	public void fuzzyFindTypesExcludingSysLibs() throws Exception {
 		List<TypeDescriptorData> data = client
-				.javaSearchTypes(new JavaSearchParams(project.getLocationURI().toString(), "util.Map", true, false))
+				.javaSearchTypes(new JavaSearchParams(project.getLocationURI().toString(), "util.Map", SearchType.FUZZY, true, false))
 				.get(10, TimeUnit.SECONDS);
 		assertNotNull(data);
 		assertEquals(186, data.size());
@@ -114,7 +115,7 @@ public class JavaLangugeClientTest {
 	@Test
 	public void fuzzyFindAllTypesExcludingSysLibs() throws Exception {
 		List<TypeDescriptorData> data = client
-				.javaSearchTypes(new JavaSearchParams(project.getLocationURI().toString(), "", true, false))
+				.javaSearchTypes(new JavaSearchParams(project.getLocationURI().toString(), "", SearchType.FUZZY, true, false))
 				.get(1000, TimeUnit.SECONDS);
 		assertNotNull(data);
 		assertEquals(500, data.size());
@@ -122,21 +123,21 @@ public class JavaLangugeClientTest {
 
 	@Test
 	public void searchPackagesIncludingSysLibs() throws Exception {
-		List<String> packages = client.javaSearchPackages(new JavaSearchParams(project.getLocationURI().toString(), "java.lang", true, true)).get(30, TimeUnit.SECONDS);
+		List<String> packages = client.javaSearchPackages(new JavaSearchParams(project.getLocationURI().toString(), "java.lang", SearchType.FUZZY, true, true)).get(30, TimeUnit.SECONDS);
 		assertTrue(packages.size() > 15 && packages.size() < 25);
 	}
 
 	@Test
 	public void searchPackagesExcludingSysLibs() throws Exception {
-		List<String> packages = client.javaSearchPackages(new JavaSearchParams(project.getLocationURI().toString(), "java.lang", true, false)).get(30, TimeUnit.SECONDS);
+		List<String> packages = client.javaSearchPackages(new JavaSearchParams(project.getLocationURI().toString(), "java.lang", SearchType.FUZZY, true, false)).get(30, TimeUnit.SECONDS);
 		assertEquals(1, packages.size());
-		packages = client.javaSearchPackages(new JavaSearchParams(project.getLocationURI().toString(), "org.test", true, false)).get(30, TimeUnit.SECONDS);
+		packages = client.javaSearchPackages(new JavaSearchParams(project.getLocationURI().toString(), "org.test", SearchType.FUZZY, true, false)).get(30, TimeUnit.SECONDS);
 		assertTrue(packages.contains("org.test"));
 	}
 
 	@Test
 	public void searchAllPackagesExcludingSysLibs() throws Exception {
-		List<String> packages = client.javaSearchPackages(new JavaSearchParams(project.getLocationURI().toString(), "", true, false)).get(30, TimeUnit.SECONDS);
+		List<String> packages = client.javaSearchPackages(new JavaSearchParams(project.getLocationURI().toString(), "", SearchType.FUZZY, true, false)).get(30, TimeUnit.SECONDS);
 		assertEquals(500, packages.size());
 	}
 	
@@ -220,4 +221,41 @@ public class JavaLangugeClientTest {
 		));
 		assertEquals(expected, actual);
 	}
+	
+	@Test
+	public void camelcaseFindTypesExcludingSysLibs_1() throws Exception {
+		List<TypeDescriptorData> data = client
+				.javaSearchTypes(new JavaSearchParams(project.getLocationURI().toString(), "springb", SearchType.CAMELCASE, true, false))
+				.get(10, TimeUnit.SECONDS);
+		assertNotNull(data);
+		assertEquals(24, data.size());
+		List<String> closeMatches = data.stream().map(t -> t.getFqName()).filter(t -> t.endsWith("SpringBootApplication")).collect(Collectors.toList());
+		assertEquals(1, closeMatches.size());
+		assertEquals("org.springframework.boot.autoconfigure.SpringBootApplication", closeMatches.get(0));
+	}
+	
+	@Test
+	public void camelcaseFindTypesExcludingSysLibs_2() throws Exception {
+		List<TypeDescriptorData> data = client
+				.javaSearchTypes(new JavaSearchParams(project.getLocationURI().toString(), "SpBA", SearchType.CAMELCASE, true, false))
+				.get(10, TimeUnit.SECONDS);
+		assertNotNull(data);
+		assertEquals(2, data.size());
+		Set<String> actual = data.stream().map(t -> t.getFqName()).collect(Collectors.toSet());
+		Set<String> expected = new HashSet<>(Arrays.asList(
+				"org.springframework.boot.autoconfigure.SpringBootApplication",
+				"org.springframework.web.context.support.SpringBeanAutowiringSupport"
+		));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
+	public void camelcaseFindAllTypesExcludingSysLibs() throws Exception {
+		List<TypeDescriptorData> data = client
+				.javaSearchTypes(new JavaSearchParams(project.getLocationURI().toString(), "", SearchType.CAMELCASE, true, false))
+				.get(1000, TimeUnit.SECONDS);
+		assertNotNull(data);
+		assertEquals(500, data.size());
+	}
+
 }
