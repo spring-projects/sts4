@@ -70,9 +70,13 @@ public class TypeCompletionProposalProvider implements XMLCompletionProvider {
 	private ICompletionProposal createProposal(Tuple2<IType, Double> t, TextDocument doc, int offset, int tokenStart, int tokenEnd) {
 		IType type = t.getT1();
 
-		String label = type.getElementName();
-		CompletionItemKind kind;
+		String label = type.getFullyQualifiedName();
+		int packageIndex = label.lastIndexOf(".");
+		if (packageIndex > 0) {
+			label = label.substring(packageIndex + 1) + " - " + label.substring(0, packageIndex);
+		}
 
+		CompletionItemKind kind;
 		if (type.isClass()) {
 			kind = CompletionItemKind.Class;
 		}
