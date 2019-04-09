@@ -57,11 +57,12 @@ public class TypeCompletionProposalProvider implements XMLCompletionProvider {
 			}
 
 			Flux<Tuple2<IType, Double>> types = project.getIndex().fuzzySearchTypes(prefix, true, true);
+//			Flux<Tuple2<IType, Double>> types = project.getIndex().camelcaseSearchTypes(prefix, true, true);
 
-			return types.collectSortedList((o1, o2) -> o2.getT2().compareTo(o1.getT2()))
-				.flatMapIterable(l -> l)
+			return types
 				.filter(result -> result.getT1() != null && result.getT1().getElementName() != null && result.getT1().getElementName().length() > 0)
-				.map(t -> createProposal(t, doc, offset, tokenOffset, tokenEnd)).collectList().block();
+				.map(t -> createProposal(t, doc, offset, tokenOffset, tokenEnd))
+				.collectSortedList((p1, p2) -> ((Integer)p1.getLabel().length()).compareTo((Integer)(p2.getLabel().length()))).block();
 		};
 
 		return null;
@@ -71,9 +72,10 @@ public class TypeCompletionProposalProvider implements XMLCompletionProvider {
 		IType type = t.getT1();
 
 		String label = type.getFullyQualifiedName();
-		int packageIndex = label.lastIndexOf(".");
-		if (packageIndex > 0) {
-			label = label.substring(packageIndex + 1) + " - " + label.substring(0, packageIndex);
+		int splitIndex = Math.max(label.lastIndexOf("."), label.lastIndexOf("$"));
+
+		if (splitIndex > 0) {
+			label = label.substring(splitIndex + 1) + " - " + label.substring(0, splitIndex);
 		}
 
 		CompletionItemKind kind;
