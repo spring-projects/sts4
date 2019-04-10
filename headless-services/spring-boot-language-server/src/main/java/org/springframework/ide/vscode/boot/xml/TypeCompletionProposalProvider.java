@@ -56,8 +56,8 @@ public class TypeCompletionProposalProvider implements XMLCompletionProvider {
 				prefix = prefix.substring(1);
 			}
 
-			Flux<Tuple2<IType, Double>> types = project.getIndex().fuzzySearchTypes(prefix, true, true);
-//			Flux<Tuple2<IType, Double>> types = project.getIndex().camelcaseSearchTypes(prefix, true, true);
+//			Flux<Tuple2<IType, Double>> types = project.getIndex().fuzzySearchTypes(prefix, true, true);
+			Flux<Tuple2<IType, Double>> types = project.getIndex().camelcaseSearchTypes(prefix, true, true);
 
 			return types
 				.filter(result -> result.getT1() != null && result.getT1().getElementName() != null && result.getT1().getElementName().length() > 0)
@@ -94,7 +94,7 @@ public class TypeCompletionProposalProvider implements XMLCompletionProvider {
 
 		Renderable renderable = null;
 
-		return new TypeCompletionProposal(label, kind, edits, type.getFullyQualifiedName(), renderable);
+		return new TypeCompletionProposal(label, kind, edits, type.getFullyQualifiedName(), renderable, t.getT2());
 	}
 
 }

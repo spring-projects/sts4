@@ -12,27 +12,29 @@ package org.springframework.ide.vscode.boot.xml;
 
 import org.eclipse.lsp4j.CompletionItemKind;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
-import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
+import org.springframework.ide.vscode.commons.languageserver.completion.ScoreableProposal;
 import org.springframework.ide.vscode.commons.util.Renderable;
 
 /**
  * @author Martin Lippert
  */
-public class TypeCompletionProposal implements ICompletionProposal {
+public class TypeCompletionProposal extends ScoreableProposal {
 
 	private final String label;
 	private final CompletionItemKind kind;
 	private final DocumentEdits edits;
 	private final String detail;
 	private final Renderable documentation;
+	private final double score;
 
-	public TypeCompletionProposal(String label, CompletionItemKind kind, DocumentEdits edits, String detail, Renderable documentation) {
+	public TypeCompletionProposal(String label, CompletionItemKind kind, DocumentEdits edits, String detail, Renderable documentation, double score) {
 		super();
 		this.label = label;
 		this.kind = kind;
 		this.edits = edits;
 		this.detail = detail;
 		this.documentation = documentation;
+		this.score = score;
 	}
 
 	@Override
@@ -58,6 +60,11 @@ public class TypeCompletionProposal implements ICompletionProposal {
 	@Override
 	public Renderable getDocumentation() {
 		return this.documentation;
+	}
+
+	@Override
+	public double getBaseScore() {
+		return this.score;
 	}
 
 }

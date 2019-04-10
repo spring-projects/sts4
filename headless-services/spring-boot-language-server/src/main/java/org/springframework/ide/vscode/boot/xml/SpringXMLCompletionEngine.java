@@ -66,10 +66,11 @@ public class SpringXMLCompletionEngine implements ICompletionEngine {
 						DOMAttr attributeAt = dom.findAttrAt(offset);
 
 						if (attributeAt != null) {
-							XMLCompletionProviderKey key = new XMLCompletionProviderKey(namespace, node.getNodeName(), attributeAt.getNodeName());
+							XMLCompletionProviderKey key = new XMLCompletionProviderKey(namespace, node.getLocalName(), attributeAt.getNodeName());
 							XMLCompletionProvider completionProvider = this.completionProviders.get(key);
 							if (completionProvider != null) {
-								return completionProvider.getCompletions(doc, namespace, node, attributeAt, scanner, offset);
+								Collection<ICompletionProposal> completions = completionProvider.getCompletions(doc, namespace, node, attributeAt, scanner, offset);
+								return completions;
 							}
 						}
 					}
