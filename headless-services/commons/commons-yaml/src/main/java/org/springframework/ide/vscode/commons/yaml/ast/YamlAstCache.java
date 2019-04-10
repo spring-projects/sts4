@@ -12,7 +12,6 @@ package org.springframework.ide.vscode.commons.yaml.ast;
 
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.yaml.util.StaleFallbackCache;
-import org.yaml.snakeyaml.Yaml;
 
 public class YamlAstCache {
 
@@ -20,8 +19,7 @@ public class YamlAstCache {
 	private final YamlParser parser;
 
 	public YamlAstCache() {
-		Yaml yaml = new Yaml();
-		this.parser = new YamlParser(yaml);
+		this.parser = new YamlParser();
 	}
 
 	public YamlASTProvider getAstProvider(boolean allowStaleAsts) {

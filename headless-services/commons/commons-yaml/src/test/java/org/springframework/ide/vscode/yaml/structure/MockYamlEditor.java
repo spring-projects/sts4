@@ -32,15 +32,13 @@ import org.yaml.snakeyaml.nodes.Node;
  */
 class MockYamlEditor {
 
-	private Yaml yaml;
 	private YamlASTProvider parser;
 
 	private String text;
 
 	public MockYamlEditor(String string) throws Exception {
 		this.text = string;
-		this.yaml = new Yaml();
-		this.parser = new YamlParser(yaml);
+		this.parser = new YamlParser();
 	}
 
 	@Override

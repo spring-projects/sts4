@@ -56,7 +56,7 @@ import com.google.common.io.Files;
  */
 @RunWith(SpringRunner.class)
 @BootLanguageServerTest
-@Import(PropertyEditorTestConf.class)
+@Import({PropertyEditorTestConf.class,ApplicationPropertiesEditorTest.TestConf.class})
 public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 
 	@Autowired DefinitionLinkAsserts definitionLinkAsserts;

@@ -52,7 +52,6 @@ import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaBasedReco
 import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureProvider;
 import org.springframework.stereotype.Component;
-import org.yaml.snakeyaml.Yaml;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -60,7 +59,6 @@ import com.google.common.collect.ImmutableSet;
 @Component
 public class ManifestYamlLanguageServerInitializer implements InitializingBean {
 
-	private Yaml yaml = new Yaml();
 	private CfJson cfJson = new CfJson();
 	private ManifestYmlSchema schema;
 	private CFTargetCache cfTargetCache;
@@ -79,7 +77,7 @@ public class ManifestYamlLanguageServerInitializer implements InitializingBean {
 		SimpleTextDocumentService documents = server.getTextDocumentService();
 		SimpleWorkspaceService workspace = server.getWorkspaceService();
 
-		YamlASTProvider parser = new YamlParser(yaml);
+		YamlASTProvider parser = new YamlParser();
 
 		schema = new ManifestYmlSchema(getHintProviders());
 

@@ -59,6 +59,7 @@ import org.springframework.test.context.junit4.SpringRunner;
  */
 @RunWith(SpringRunner.class)
 @BootLanguageServerTest
+@Import({AdHocPropertyHarnessTestConf.class, CompilationUnitCacheTest.TestConf.class})
 public class CompilationUnitCacheTest {
 
 	ProjectsHarness projects = ProjectsHarness.INSTANCE;
@@ -72,7 +73,6 @@ public class CompilationUnitCacheTest {
 	@Autowired
 	private MockProjectObserver projectObserver;
 
-	@Import(AdHocPropertyHarnessTestConf.class)
 	@Configuration static class TestConf {
 
 		@Bean SymbolCache symbolCache() {

@@ -143,11 +143,12 @@ public class BootLanguagServerBootApp {
 	}
 
 	@Bean Yaml yaml() {
+		//TODO: Yaml is not re-entrant. So its a bit fishy to create a 're-usable' bean for this!
 		return new Yaml();
 	}
 
-	@Bean YamlASTProvider yamlAstProvider(Yaml yaml) {
-		return new YamlParser(yaml);
+	@Bean YamlASTProvider yamlAstProvider() {
+		return new YamlParser();
 	}
 
 	@Bean YamlStructureProvider yamlStructureProvider() {

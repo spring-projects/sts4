@@ -11,9 +11,7 @@
 package org.springframework.ide.vscode.boot.app;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import org.springframework.stereotype.Component;
 
-@Component
 @ConfigurationProperties("languageserver.boot")
 public class BootLsConfigProperties {
 
