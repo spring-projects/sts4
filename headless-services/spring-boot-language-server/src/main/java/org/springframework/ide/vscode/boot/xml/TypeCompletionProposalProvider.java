@@ -62,7 +62,7 @@ public class TypeCompletionProposalProvider implements XMLCompletionProvider {
 			return types
 				.filter(result -> result.getT1() != null && result.getT1().getElementName() != null && result.getT1().getElementName().length() > 0)
 				.map(t -> createProposal(t, doc, offset, tokenOffset, tokenEnd))
-				.collectSortedList((p1, p2) -> ((Integer)p1.getLabel().length()).compareTo((Integer)(p2.getLabel().length()))).block();
+				.collectList().block();
 		};
 
 		return null;
@@ -85,8 +85,11 @@ public class TypeCompletionProposalProvider implements XMLCompletionProvider {
 		else if (type.isInterface()) {
 			kind = CompletionItemKind.Interface;
 		}
+		else if (type.isEnum()) {
+			kind = CompletionItemKind.Enum;
+		}
 		else {
-			kind = CompletionItemKind.Value;
+			kind = CompletionItemKind.Property;
 		}
 
 		DocumentEdits edits = new DocumentEdits(doc);
