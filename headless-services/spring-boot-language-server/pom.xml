@@ -95,7 +95,7 @@
 		<dependency>
 			<groupId>org.lsp4xml</groupId>
 			<artifactId>org.eclipse.lsp4xml</artifactId>
-			<version>0.3.0-SNAPSHOT</version>
+			<version>0.5.1-SNAPSHOT</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.eclipse.lsp4j</groupId>
