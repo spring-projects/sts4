@@ -18,16 +18,22 @@ public class XMLCompletionProviderKey {
 	private final String namespaceURI;
 	private final String elementName;
 	private final String attributeName;
+	private final String parentNodeName;
 
-	public XMLCompletionProviderKey(String namespaceURI, String elementName, String attributeName) {
+	public XMLCompletionProviderKey(String namespaceURI, String parentNodeName, String elementName, String attributeName) {
 		super();
 		this.namespaceURI = namespaceURI;
+		this.parentNodeName = parentNodeName;
 		this.elementName = elementName;
 		this.attributeName = attributeName;
 	}
 
 	public String getNamespaceURI() {
 		return namespaceURI;
+	}
+
+	public String getParentNodeName() {
+		return parentNodeName;
 	}
 
 	public String getElementName() {
@@ -45,6 +51,7 @@ public class XMLCompletionProviderKey {
 		result = prime * result + ((attributeName == null) ? 0 : attributeName.hashCode());
 		result = prime * result + ((elementName == null) ? 0 : elementName.hashCode());
 		result = prime * result + ((namespaceURI == null) ? 0 : namespaceURI.hashCode());
+		result = prime * result + ((parentNodeName == null) ? 0 : parentNodeName.hashCode());
 		return result;
 	}
 
@@ -71,6 +78,11 @@ public class XMLCompletionProviderKey {
 			if (other.namespaceURI != null)
 				return false;
 		} else if (!namespaceURI.equals(other.namespaceURI))
+			return false;
+		if (parentNodeName == null) {
+			if (other.parentNodeName != null)
+				return false;
+		} else if (!parentNodeName.equals(other.parentNodeName))
 			return false;
 		return true;
 	}

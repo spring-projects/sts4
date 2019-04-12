@@ -8,15 +8,17 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.xml;
+package org.springframework.ide.vscode.boot.xml.completions;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Optional;
 
 import org.eclipse.lsp4j.CompletionItemKind;
 import org.eclipse.lsp4xml.dom.DOMAttr;
 import org.eclipse.lsp4xml.dom.DOMNode;
 import org.eclipse.lsp4xml.dom.parser.Scanner;
+import org.springframework.ide.vscode.boot.xml.XMLCompletionProvider;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.IType;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
@@ -34,9 +36,11 @@ import reactor.util.function.Tuple2;
 public class TypeCompletionProposalProvider implements XMLCompletionProvider {
 
 	private final JavaProjectFinder projectFinder;
+	private final boolean classesOnly;
 
-	public TypeCompletionProposalProvider(JavaProjectFinder projectFinder) {
+	public TypeCompletionProposalProvider(JavaProjectFinder projectFinder, boolean classesOnly) {
 		this.projectFinder = projectFinder;
+		this.classesOnly = classesOnly;
 	}
 
 	@Override
@@ -61,11 +65,12 @@ public class TypeCompletionProposalProvider implements XMLCompletionProvider {
 
 			return types
 				.filter(result -> result.getT1() != null && result.getT1().getElementName() != null && result.getT1().getElementName().length() > 0)
+				.filter(result -> classesOnly ? result.getT1().isClass() : true)
 				.map(t -> createProposal(t, doc, offset, tokenOffset, tokenEnd))
 				.collectList().block();
 		};
 
-		return null;
+		return Collections.emptyList();
 	}
 
 	private ICompletionProposal createProposal(Tuple2<IType, Double> t, TextDocument doc, int offset, int tokenStart, int tokenEnd) {

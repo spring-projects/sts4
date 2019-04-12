@@ -22,6 +22,8 @@ import org.eclipse.lsp4xml.dom.DOMParser;
 import org.eclipse.lsp4xml.dom.parser.Scanner;
 import org.eclipse.lsp4xml.dom.parser.TokenType;
 import org.eclipse.lsp4xml.dom.parser.XMLScanner;
+import org.springframework.ide.vscode.boot.xml.completions.PropertyNameCompletionProposalProvider;
+import org.springframework.ide.vscode.boot.xml.completions.TypeCompletionProposalProvider;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
@@ -37,12 +39,15 @@ public class SpringXMLCompletionEngine implements ICompletionEngine {
 	private static final String BEAN_ELEMENT = "bean";
 	private static final String BEAN_CLASS_ATTRIBUTE = "class";
 
+	private static final String PROPERTY_ELEMENT = "property";
+	private static final String PROPERTY_NAME_ATTRIBUTE = "name";
 
 	private final Map<XMLCompletionProviderKey, XMLCompletionProvider> completionProviders;
 
 	public SpringXMLCompletionEngine(SpringXMLLanguageServerComponents springXMLLanguageServerComponents, JavaProjectFinder projectFinder) {
 		this.completionProviders = new HashMap<>();
-		this.completionProviders.put(new XMLCompletionProviderKey(BEANS_NAMESPACE, BEAN_ELEMENT, BEAN_CLASS_ATTRIBUTE), new TypeCompletionProposalProvider(projectFinder));
+		this.completionProviders.put(new XMLCompletionProviderKey(BEANS_NAMESPACE, null, BEAN_ELEMENT, BEAN_CLASS_ATTRIBUTE), new TypeCompletionProposalProvider(projectFinder, true));
+		this.completionProviders.put(new XMLCompletionProviderKey(BEANS_NAMESPACE, BEAN_ELEMENT, PROPERTY_ELEMENT, PROPERTY_NAME_ATTRIBUTE), new PropertyNameCompletionProposalProvider(projectFinder));
 	}
 
 	@Override
@@ -66,7 +71,14 @@ public class SpringXMLCompletionEngine implements ICompletionEngine {
 						DOMAttr attributeAt = dom.findAttrAt(offset);
 
 						if (attributeAt != null) {
-							XMLCompletionProviderKey key = new XMLCompletionProviderKey(namespace, node.getLocalName(), attributeAt.getNodeName());
+							XMLCompletionProviderKey key = new XMLCompletionProviderKey(namespace, null, node.getLocalName(), attributeAt.getNodeName());
+
+							if (!this.completionProviders.containsKey(key)) {
+								DOMNode parentNode = node.getParentNode();
+								String parentNodeName = parentNode != null ? parentNode.getLocalName() : null;
+								key = new XMLCompletionProviderKey(namespace, parentNodeName, node.getLocalName(), attributeAt.getNodeName());
+							}
+
 							XMLCompletionProvider completionProvider = this.completionProviders.get(key);
 							if (completionProvider != null) {
 								Collection<ICompletionProposal> completions = completionProvider.getCompletions(doc, namespace, node, attributeAt, scanner, offset);

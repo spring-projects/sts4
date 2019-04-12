@@ -141,6 +141,13 @@ public class StringUtil {
 		return "";
 	}
 
+	public static String lowerCaseFirstChar(String string) {
+		if (StringUtil.hasText(string)) {
+			return Character.toLowerCase(string.charAt(0)) + string.substring(1);
+		}
+		return "";
+	}
+
 	public static String datestamp() {
 		Date d = new Date();
 		SimpleDateFormat f = new SimpleDateFormat("yyyyMMdd");
