@@ -274,7 +274,7 @@
    
    
    <extension
-      id="idome.xml.generator.contentassist"
+      id="springxml-completion-computer"
       point="org.eclipse.wst.sse.ui.completionProposal">         
 
       <proposalCategory 
