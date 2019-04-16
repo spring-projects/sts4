@@ -108,7 +108,8 @@ public final class JandexClasspath implements ClasspathIndex {
 	@Override
 	public Flux<Tuple2<IType, Double>> camelcaseSearchTypes(String searchTerm, boolean includeBinaries,
 			boolean includeSystemLibs) {
-		throw new UnsupportedOperationException("Not implemented for Jandex index!");
+//		throw new UnsupportedOperationException("Not implemented for Jandex index!");
+		return fuzzySearchTypes(searchTerm, includeBinaries, includeSystemLibs);
 	}
 
 	@Override

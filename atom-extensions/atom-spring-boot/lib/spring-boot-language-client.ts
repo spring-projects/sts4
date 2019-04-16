@@ -26,7 +26,7 @@ export class SpringBootLanguageClient extends JavaProcessLanguageClient {
     }
 
     getGrammarScopes() {
-        return ['source.java', 'source.boot-properties', 'source.boot-properties-yaml'];
+        return ['source.java', 'source.boot-properties', 'source.boot-properties-yaml', 'text.xml'];
     }
 
     getLanguageName() {

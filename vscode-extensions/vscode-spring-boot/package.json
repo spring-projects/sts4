@@ -28,7 +28,8 @@
   "activationEvents": [
     "onLanguage:spring-boot-properties",
     "onLanguage:spring-boot-properties-yaml",
-    "onLanguage:java"
+    "onLanguage:java",
+    "onLanguage:xml"
   ],
   "contributes": {
     "javaExtensions": [

@@ -63,17 +63,19 @@ public class TypeCompletionProposalProvider implements XMLCompletionProvider {
 //			Flux<Tuple2<IType, Double>> types = project.getIndex().fuzzySearchTypes(prefix, true, true);
 			Flux<Tuple2<IType, Double>> types = project.getIndex().camelcaseSearchTypes(prefix, true, true);
 
+			final String prefixStr = prefix;
+
 			return types
 				.filter(result -> result.getT1() != null && result.getT1().getElementName() != null && result.getT1().getElementName().length() > 0)
 				.filter(result -> classesOnly ? result.getT1().isClass() : true)
-				.map(t -> createProposal(t, doc, offset, tokenOffset, tokenEnd))
+				.map(t -> createProposal(t, doc, offset, prefixStr))
 				.collectList().block();
 		};
 
 		return Collections.emptyList();
 	}
 
-	private ICompletionProposal createProposal(Tuple2<IType, Double> t, TextDocument doc, int offset, int tokenStart, int tokenEnd) {
+	private ICompletionProposal createProposal(Tuple2<IType, Double> t, TextDocument doc, int offset, String prefix) {
 		IType type = t.getT1();
 
 		String label = type.getFullyQualifiedName();
@@ -98,7 +100,8 @@ public class TypeCompletionProposalProvider implements XMLCompletionProvider {
 		}
 
 		DocumentEdits edits = new DocumentEdits(doc);
-		edits.replace(tokenStart, tokenEnd, "\"" + type.getFullyQualifiedName() + "\"");
+		edits.delete(offset - prefix.length(), offset);
+		edits.insert(offset, type.getFullyQualifiedName());
 
 		Renderable renderable = null;
 

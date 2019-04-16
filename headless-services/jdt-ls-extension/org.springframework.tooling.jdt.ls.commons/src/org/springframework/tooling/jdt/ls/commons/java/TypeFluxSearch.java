@@ -15,7 +15,6 @@ import static org.springframework.tooling.jdt.ls.commons.java.SearchUtils.toType
 
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IType;
-import org.springframework.ide.vscode.commons.protocol.java.JavaSearchParams.SearchType;
 import org.springframework.ide.vscode.commons.protocol.java.TypeDescriptorData;
 import org.springframework.tooling.jdt.ls.commons.Logger;
 
@@ -31,7 +30,7 @@ public class TypeFluxSearch extends CachingFluxJavaSearch<TypeDescriptorData> {
 	}
 
 	@Override
-	protected Flux<TypeDescriptorData> getValuesAsync(IJavaProject javaProject, String searchTerm, SearchType searchType) {
+	protected Flux<TypeDescriptorData> getValuesAsync(IJavaProject javaProject, String searchTerm, String searchType) {
 		try {
 			return new FluxJdtSearch(logger)
 				.scope(searchScope(javaProject, includeBinaries, includeSystemLibs))

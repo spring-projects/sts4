@@ -14,7 +14,8 @@ import {
     SPRING_BOOT_SERVER_ID,
     SPRING_BOOT_SERVER_NAME,
     BOOT_PROPERTIES_YAML_LANGUAGE_ID,
-    BOOT_PROPERTIES_LANGUAGE_ID
+    BOOT_PROPERTIES_LANGUAGE_ID,
+    XML_LANGUAGE_ID
 } from '../common';
 import { DocumentSelector } from '@theia/languages/lib/browser';
 import { JAVA_LANGUAGE_ID } from '@theia/java/lib/common';
@@ -90,12 +91,13 @@ export class SpringBootClientContribution extends StsLanguageClientContribution<
     }
 
     protected get documentSelector(): DocumentSelector | undefined {
-        return [JAVA_LANGUAGE_ID, BOOT_PROPERTIES_YAML_LANGUAGE_ID, BOOT_PROPERTIES_LANGUAGE_ID];
+        return [JAVA_LANGUAGE_ID, BOOT_PROPERTIES_YAML_LANGUAGE_ID, BOOT_PROPERTIES_LANGUAGE_ID, XML_LANGUAGE_ID];
     }
 
     protected get globPatterns() {
         return [
             '**/*.java',
+            '**/*.xml',
             '**/application*.yml',
             '**/application*.yaml',
             '**/bootstrap*.yml',

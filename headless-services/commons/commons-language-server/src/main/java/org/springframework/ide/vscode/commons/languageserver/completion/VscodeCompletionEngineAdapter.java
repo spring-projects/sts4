@@ -29,6 +29,8 @@ import org.eclipse.lsp4j.TextEdit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits.TextReplace;
+import org.springframework.ide.vscode.commons.languageserver.util.LspClient;
+import org.springframework.ide.vscode.commons.languageserver.util.LspClient.Client;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.languageserver.util.SortKeys;
@@ -265,6 +267,9 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 				}
 				if (isMagicIndentingClient()) {
 					newText = vscodeIndentFix(doc, vscodeEdit.getRange().getStart(), replaceEdit.newText);
+				}
+				if (LspClient.currentClient() == Client.THEIA || LspClient.currentClient() == Client.VSCODE) {
+					newText = newText.replace("$", "\\$");
 				}
 				vscodeEdit.setNewText(newText);
 				return Optional.of(vscodeEdit);

@@ -53,6 +53,7 @@ interface JavaDataParams {
 interface JavaSearchParams {
     projectUri: string;
     term: string;
+    searchType: string;
     includeBinaries: boolean;
     includeSystemLibs: boolean;
     timeLimit: number;

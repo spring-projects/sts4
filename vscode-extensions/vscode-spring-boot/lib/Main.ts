@@ -11,6 +11,7 @@ import {LanguageClient} from "vscode-languageclient";
 const PROPERTIES_LANGUAGE_ID = "spring-boot-properties";
 const YAML_LANGUAGE_ID = "spring-boot-properties-yaml";
 const JAVA_LANGUAGE_ID = "java";
+const XML_LANGUAGE_ID = "xml";
 
 /** Called when extension is activated */
 export function activate(context: VSCode.ExtensionContext): Thenable<LanguageClient> {
@@ -41,6 +42,10 @@ export function activate(context: VSCode.ExtensionContext): Thenable<LanguageCli
                 },
                 {
                     language: JAVA_LANGUAGE_ID,
+                    scheme: 'file'
+                },
+                {
+                    language: XML_LANGUAGE_ID,
                     scheme: 'file'
                 }
             ],

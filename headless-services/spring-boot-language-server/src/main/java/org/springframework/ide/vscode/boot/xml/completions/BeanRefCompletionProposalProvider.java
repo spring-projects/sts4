@@ -76,18 +76,19 @@ public class BeanRefCompletionProposalProvider implements XMLCompletionProvider 
 				.filter(beanID -> beanID != null && beanID.length() > 0)
 				.map(beanID -> Tuples.of(beanID, FuzzyMatcher.matchScore(searchPrefix, beanID)))
 				.filter(tuple -> tuple.getT2() != 0.0)
-				.map(tuple -> createProposal(tuple.getT1(), doc, offset, tokenOffset, tokenEnd, tuple.getT2()))
+				.map(tuple -> createProposal(tuple.getT1(), doc, offset, searchPrefix, tuple.getT2()))
 				.collect(Collectors.toList());
 		};
 
 		return Collections.emptyList();
 	}
 
-	private ICompletionProposal createProposal(String beanID, TextDocument doc, int offset, int tokenStart, int tokenEnd, Double score) {
+	private ICompletionProposal createProposal(String beanID, TextDocument doc, int offset, String prefix, Double score) {
 		CompletionItemKind kind = CompletionItemKind.Reference;
 
 		DocumentEdits edits = new DocumentEdits(doc);
-		edits.replace(tokenStart, tokenEnd, "\"" + beanID + "\"");
+		edits.delete(offset - prefix.length(), offset);
+		edits.insert(offset, beanID);
 
 		Renderable renderable = null;
 
