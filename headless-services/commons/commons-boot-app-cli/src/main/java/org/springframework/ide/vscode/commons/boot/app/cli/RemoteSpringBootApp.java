@@ -20,20 +20,23 @@ import org.springframework.ide.vscode.commons.util.MemoizingProxy;
 
 public class RemoteSpringBootApp extends AbstractSpringBootApp {
 
-	private String jmxUrl;
-	private String host = null;
-	private String port = "443";
-	private String urlScheme = "https";
+	private final String jmxUrl;
+	private final String host;
+	private final String port;
+	private final String urlScheme;
+	private boolean keepChecking;
 
-	protected RemoteSpringBootApp(String jmxUrl, String host, String port, String urlScheme) {
+	public static SpringBootApp create(String jmxUrl, String host, String port, String urlScheme, boolean keepChecking) {
+		return MemoizingProxy.create(RemoteSpringBootApp.class, Duration.ofMillis(4900), new Class[] {String.class, String.class, String.class, String.class, boolean.class},
+				jmxUrl, host, port, urlScheme, keepChecking);
+	}
+
+	protected RemoteSpringBootApp(String jmxUrl, String host, String port, String urlScheme, boolean keepChecking) {
 		this.jmxUrl = jmxUrl;
 		this.host = host;
 		this.port = port;
 		this.urlScheme = urlScheme;
-	}
-
-	public void setHost(String host) {
-		this.host = host;
+		this.keepChecking = keepChecking;
 	}
 
 	@Override
@@ -94,18 +97,26 @@ public class RemoteSpringBootApp extends AbstractSpringBootApp {
 		return "Unknown";
 	}
 
-	public static SpringBootApp create(String jmxUrl, String host, String port, String urlScheme) {
-		return MemoizingProxy.create(RemoteSpringBootApp.class, Duration.ofMillis(4900), new Class[] {String.class, String.class, String.class, String.class},
-				jmxUrl, host, port, urlScheme);
-	}
-
 	@Override
 	public String getUrlScheme() {
 		return urlScheme;
 	}
 
-	public void setUrlScheme(String urlScheme) {
-		this.urlScheme = urlScheme;
+	@Override
+	public boolean hasUsefulJmxBeans() {
+		if (keepChecking) {
+			try {
+				logger.info("checking for spring jmx beans, continuously trying -- " + this.toString());
+				return super.containsSpringJmxBeans();
+			}
+			catch (Exception e) {
+				logger.info("no spring jmx beans found, continuously trying -- " + this.toString());
+				return false;
+			}
+		}
+		else {
+			return super.hasUsefulJmxBeans();
+		}
 	}
 
 }

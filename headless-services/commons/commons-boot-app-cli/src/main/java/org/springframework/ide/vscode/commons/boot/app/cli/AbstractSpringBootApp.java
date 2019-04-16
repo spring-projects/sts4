@@ -281,7 +281,7 @@ public abstract class AbstractSpringBootApp implements SpringBootApp {
 		return hasJmxBeans != null ? hasJmxBeans : false;
 	}
 
-	private boolean containsSpringJmxBeans() throws Exception {
+	protected boolean containsSpringJmxBeans() throws Exception {
 		return withTimeout(TIMEOUT_CHECKFORSPRINGAPPS, () -> withJmxConnector(jmxConnector -> {
 			MBeanServerConnection connection = jmxConnector.getMBeanServerConnection();
 

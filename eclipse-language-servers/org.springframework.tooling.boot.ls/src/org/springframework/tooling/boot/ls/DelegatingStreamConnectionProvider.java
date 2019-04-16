@@ -143,38 +143,57 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 	}
 	
 	public class RemoteBootAppData {
+		
 		private String jmxurl;
 		private String host;
 		private String urlScheme = "https";
 		private String port = "443";
+		private boolean keepChecking = false;
+
 		public RemoteBootAppData(String jmxurl, String host) {
 			super();
 			this.jmxurl = jmxurl;
 			this.host = host;
 		}
+
 		public String getJmxurl() {
 			return jmxurl;
 		}
+
 		public void setJmxurl(String jmxurl) {
 			this.jmxurl = jmxurl;
 		}
+
 		public String getHost() {
 			return host;
 		}
+
 		public void setHost(String host) {
 			this.host = host;
 		}
+
 		public String getUrlScheme() {
 			return urlScheme;
 		}
+
 		public void setUrlScheme(String urlScheme) {
 			this.urlScheme = urlScheme;
 		}
+
 		public String getPort() {
 			return port;
 		}
+
 		public void setPort(String port) {
 			this.port = port;
+		}
+		
+		public boolean isKeepChecking() {
+			return keepChecking;
+		}
+		
+		public void setKeepChecking(boolean keepChecking) {
+			this.keepChecking = keepChecking;
 		}
 	}
 	
