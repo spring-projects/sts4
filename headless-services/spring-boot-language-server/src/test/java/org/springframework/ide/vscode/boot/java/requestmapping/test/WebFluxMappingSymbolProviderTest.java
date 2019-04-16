@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Pivotal, Inc.
+ * Copyright (c) 2018, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -31,6 +31,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
 import org.springframework.ide.vscode.boot.bootiful.SymbolProviderTestConf;
+import org.springframework.ide.vscode.boot.java.beans.BeansSymbolAddOnInformation;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
 import org.springframework.ide.vscode.boot.java.requestmapping.WebfluxHandlerInformation;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
@@ -79,8 +80,9 @@ public class WebFluxMappingSymbolProviderTest {
 		assertTrue(containsSymbol(symbols, "@/users - Content-Type: application/json", docUri, 13, 1, 13, 74));
 		assertTrue(containsSymbol(symbols, "@/users/{username} - Content-Type: application/json", docUri, 18, 1, 18, 85));
 
-		List<? extends SymbolAddOnInformation> addons = indexer.getAdditonalInformation(docUri);
-		Assert.noElements(addons);
+		List<? extends SymbolAddOnInformation> addon = indexer.getAdditonalInformation(docUri);
+		assertEquals(1, addon.size());
+		assertEquals("userController", ((BeansSymbolAddOnInformation)addon.get(0)).getBeanID());
 	}
 
 	@Test
@@ -94,7 +96,7 @@ public class WebFluxMappingSymbolProviderTest {
 		assertTrue(containsSymbol(symbols, "@/quotes -- GET - Accept: application/stream+json", docUri, 25, 5, 25, 94));
 
 		List<? extends SymbolAddOnInformation> addons = indexer.getAdditonalInformation(docUri);
-		assertEquals(8, addons.size());
+		assertEquals(10, addons.size());
 
 		WebfluxHandlerInformation handlerInfo1 = getWebfluxHandler(addons, "/hello", "GET").get(0);
 		assertEquals("/hello", handlerInfo1.getPath());
@@ -139,7 +141,7 @@ public class WebFluxMappingSymbolProviderTest {
 		assertTrue(containsSymbol(symbols, "@/person -- GET - Accept: application/json", docUri, 28, 7, 28, 60));
 
 		List<? extends SymbolAddOnInformation> addons = indexer.getAdditonalInformation(docUri);
-		assertEquals(6, addons.size());
+		assertEquals(8, addons.size());
 
 		WebfluxHandlerInformation handlerInfo1 = getWebfluxHandler(addons, "/person/{id}", "GET").get(0);
 		assertEquals("/person/{id}", handlerInfo1.getPath());
@@ -176,7 +178,7 @@ public class WebFluxMappingSymbolProviderTest {
 		assertTrue(containsSymbol(symbols, "@/person -- GET,HEAD - Accept: text/plain,application/json", docUri, 30, 7, 30, 113));
 
 		List<? extends SymbolAddOnInformation> addons = indexer.getAdditonalInformation(docUri);
-		assertEquals(6, addons.size());
+		assertEquals(8, addons.size());
 
 		WebfluxHandlerInformation handlerInfo1 = getWebfluxHandler(addons, "/person/{id}", "GET").get(0);
 		assertEquals("/person/{id}", handlerInfo1.getPath());
@@ -217,7 +219,7 @@ public class WebFluxMappingSymbolProviderTest {
 		assertTrue(containsSymbol(symbols, "@/nestedDelete -- DELETE", docUri, 35, 42, 35, 93));
 
 		List<? extends SymbolAddOnInformation> addons = indexer.getAdditonalInformation(docUri);
-		assertEquals(12, addons.size());
+		assertEquals(14, addons.size());
 
 		WebfluxHandlerInformation handlerInfo1 = getWebfluxHandler(addons, "/person/sub1/sub2/{id}", "GET").get(0);
 		assertEquals("/person/sub1/sub2/{id}", handlerInfo1.getPath());
