@@ -84,6 +84,7 @@ public class SpringBootLanguageServer extends STS4LanguageServerProcessStreamCon
 		String languageServerLocalCopy = bundleVersion + "-" + languageServer;
 		
 		File dataFile = bundle.getDataFile(languageServerLocalCopy);
+
 		Exception error = null;
 		if (!dataFile.exists() || bundleVersion.endsWith("qualifier")) { // qualifier check to get the language server always copied in dev mode
 			try {
@@ -93,11 +94,12 @@ public class SpringBootLanguageServer extends STS4LanguageServerProcessStreamCon
 				error = e;
 			}
 		}
+		
 		if (bundleVersion.endsWith("qualifier")) {
 			File userHome = new File(System.getProperty("user.home"));
 			File locallyBuiltJar = new File(
 					userHome, 
-					"git/sts4/headless-services/spring-boot-language-server/target/spring-boot-language-server-"+Constants.LANGUAGE_SERVER_VERSION
+					"git/sts4/headless-services/spring-boot-language-server/target/spring-boot-language-server-" + Constants.LANGUAGE_SERVER_VERSION
 			);
 			if (locallyBuiltJar.exists()) {
 				return locallyBuiltJar.getAbsolutePath();
