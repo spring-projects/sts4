@@ -1,3 +1,7 @@
+## 2019-04-18 (4.2.1 RELEASE)
+
+* _(VSCode, Atom, Theia)_ improvement: JVM args can now be configured for language server processes
+
 ## 2019-03-21 (4.2.0 RELEASE)
 
 * no major changes

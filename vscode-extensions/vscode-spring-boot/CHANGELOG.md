@@ -1,3 +1,13 @@
+## 2019-04-18 (4.2.1 RELEASE)
+
+* _(Spring Boot)_ performance: additional performance and memory footprint improvements to symbol indexing, eats now less memory and is faster while doing the initial indexing run
+* _(Spring Boot)_ new: content-assist for bean types in Spring XML config files
+* _(Spring Boot)_ new: content-assist for property names in Spring XML config files
+* _(Spring Boot)_ new: content-assist for bean references in property definitions in Spring XML config files (very rough early cut, needs a lot more work on proposal content, number of proposals, and sorting)
+* _(Spring Boot)_ improvement: limit the number of XML files that are scanned for bean symbols, output folders now ignored
+* _(Spring Boot)_ fixed: Ctrl-click in Java editor in Eclipse wasn't working due to issue with hyperlink detector
+* _(VSCode, Atom, Theia)_ improvement: JVM args can now be configured for language server processes
+
 ## 2019-03-21 (4.2.0 RELEASE)
 
 * _(Spring Boot)_ new: Allow configuration of VM arguments for LSP process "PropertiesLauncher" ([#211](https://github.com/spring-projects/sts4/issues/211))
