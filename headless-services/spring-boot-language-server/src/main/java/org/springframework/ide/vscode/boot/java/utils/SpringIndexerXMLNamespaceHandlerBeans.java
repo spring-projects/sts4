@@ -20,7 +20,9 @@ import org.eclipse.lsp4j.SymbolKind;
 import org.eclipse.lsp4xml.dom.DOMAttr;
 import org.eclipse.lsp4xml.dom.DOMNode;
 import org.springframework.ide.vscode.boot.java.beans.BeanUtils;
+import org.springframework.ide.vscode.boot.java.beans.BeansSymbolAddOnInformation;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
+import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import org.springframework.lang.NonNull;
@@ -86,8 +88,9 @@ public class SpringIndexerXMLNamespaceHandlerBeans implements SpringIndexerXMLNa
 			}
 
 			SymbolInformation symbol = new SymbolInformation("@+ '" + beanID + "' " + beanClass, SymbolKind.Interface, new Location(docURI, range));
+			SymbolAddOnInformation[] addon = new SymbolAddOnInformation[] {new BeansSymbolAddOnInformation(beanID)};
 
-			EnhancedSymbolInformation fullSymbol = new EnhancedSymbolInformation(symbol, null);
+			EnhancedSymbolInformation fullSymbol = new EnhancedSymbolInformation(symbol, addon);
 
 			CachedSymbol cachedSymbol = new CachedSymbol(docURI, lastModified, fullSymbol);
 			generatedSymbols.add(cachedSymbol);

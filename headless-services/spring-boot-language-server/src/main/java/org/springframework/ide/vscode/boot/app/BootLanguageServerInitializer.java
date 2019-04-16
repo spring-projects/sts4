@@ -79,7 +79,7 @@ public class BootLanguageServerInitializer implements InitializingBean {
 		CompositeLanguageServerComponents.Builder builder = new CompositeLanguageServerComponents.Builder();
 		builder.add(new BootPropertiesLanguageServerComponents(server, params, javaElementLocationProvider, parser, yamlStructureProvider, yamlAssistContextProvider, sourceLinks));
 		builder.add(new BootJavaLanguageServerComponents(server, params, sourceLinks, cuCache, adHocProperties, symbolCache, config, springIndexer, runningAppProvider));
-		builder.add(new SpringXMLLanguageServerComponents(server, params));
+		builder.add(new SpringXMLLanguageServerComponents(server, springIndexer, params));
 		components = builder.build(server);
 		params.projectObserver.addListener(reconcileOpenDocuments(server, components));
 

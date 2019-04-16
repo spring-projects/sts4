@@ -29,6 +29,7 @@ import org.eclipse.lsp4j.SymbolKind;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.handlers.AbstractSymbolProvider;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
+import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.boot.java.utils.CachedSymbol;
 import org.springframework.ide.vscode.boot.java.utils.FunctionUtils;
@@ -66,7 +67,7 @@ public class BeansSymbolProvider extends AbstractSymbolProvider {
 								beanLabel(isFunction, nameAndRegion.getT1(), beanType, "@Bean" + markerString),
 								SymbolKind.Interface,
 								new Location(doc.getUri(), doc.toRange(nameAndRegion.getT2()))),
-						null
+						new SymbolAddOnInformation[] {new BeansSymbolAddOnInformation(nameAndRegion.getT1())}
 				);
 
 				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), enhancedSymbol));
@@ -88,7 +89,8 @@ public class BeansSymbolProvider extends AbstractSymbolProvider {
 						SymbolKind.Interface,
 						new Location(doc.getUri(), doc.toRange(functionBean.getT3())));
 
-				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), new EnhancedSymbolInformation(symbol, null)));
+				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(),
+						new EnhancedSymbolInformation(symbol, new SymbolAddOnInformation[] {new BeansSymbolAddOnInformation(functionBean.getT1())})));
 
 			} catch (BadLocationException e) {
 				Log.log(e);

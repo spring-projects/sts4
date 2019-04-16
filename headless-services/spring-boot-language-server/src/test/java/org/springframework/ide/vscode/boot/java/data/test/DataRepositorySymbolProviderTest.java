@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Pivotal, Inc.
+ * Copyright (c) 2018, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -29,6 +29,8 @@ import org.springframework.context.annotation.Import;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
 import org.springframework.ide.vscode.boot.bootiful.SymbolProviderTestConf;
+import org.springframework.ide.vscode.boot.java.beans.BeansSymbolAddOnInformation;
+import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
@@ -68,6 +70,11 @@ public class DataRepositorySymbolProviderTest {
 		List<? extends SymbolInformation> symbols = indexer.getSymbols(docUri);
 		assertEquals(1, symbols.size());
 		assertTrue(containsSymbol(symbols, "@+ 'customerRepository' (Customer) Repository<Customer,Long>", docUri, 6, 17, 6, 35));
+
+		List<? extends SymbolAddOnInformation> addon = indexer.getAdditonalInformation(docUri);
+		assertEquals(1, addon.size());
+
+		assertEquals("customerRepository", ((BeansSymbolAddOnInformation)addon.get(0)).getBeanID());
 	}
 
 	private boolean containsSymbol(List<? extends SymbolInformation> symbols, String name, String uri, int startLine, int startCHaracter, int endLine, int endCharacter) {

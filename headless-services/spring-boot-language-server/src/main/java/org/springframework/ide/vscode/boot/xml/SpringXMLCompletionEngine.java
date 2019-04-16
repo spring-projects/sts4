@@ -22,6 +22,8 @@ import org.eclipse.lsp4xml.dom.DOMParser;
 import org.eclipse.lsp4xml.dom.parser.Scanner;
 import org.eclipse.lsp4xml.dom.parser.TokenType;
 import org.eclipse.lsp4xml.dom.parser.XMLScanner;
+import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
+import org.springframework.ide.vscode.boot.xml.completions.BeanRefCompletionProposalProvider;
 import org.springframework.ide.vscode.boot.xml.completions.PropertyNameCompletionProposalProvider;
 import org.springframework.ide.vscode.boot.xml.completions.TypeCompletionProposalProvider;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
@@ -37,17 +39,21 @@ public class SpringXMLCompletionEngine implements ICompletionEngine {
 	private static final String BEANS_NAMESPACE = "http://www.springframework.org/schema/beans";
 
 	private static final String BEAN_ELEMENT = "bean";
-	private static final String BEAN_CLASS_ATTRIBUTE = "class";
+	private static final String CLASS_ATTRIBUTE = "class";
 
 	private static final String PROPERTY_ELEMENT = "property";
-	private static final String PROPERTY_NAME_ATTRIBUTE = "name";
+	private static final String NAME_ATTRIBUTE = "name";
+	private static final String REF_ATTRIBUTE = "ref";
 
 	private final Map<XMLCompletionProviderKey, XMLCompletionProvider> completionProviders;
 
-	public SpringXMLCompletionEngine(SpringXMLLanguageServerComponents springXMLLanguageServerComponents, JavaProjectFinder projectFinder) {
+	public SpringXMLCompletionEngine(SpringXMLLanguageServerComponents springXMLLanguageServerComponents,
+			JavaProjectFinder projectFinder, SpringSymbolIndex symbolIndex) {
+
 		this.completionProviders = new HashMap<>();
-		this.completionProviders.put(new XMLCompletionProviderKey(BEANS_NAMESPACE, null, BEAN_ELEMENT, BEAN_CLASS_ATTRIBUTE), new TypeCompletionProposalProvider(projectFinder, true));
-		this.completionProviders.put(new XMLCompletionProviderKey(BEANS_NAMESPACE, BEAN_ELEMENT, PROPERTY_ELEMENT, PROPERTY_NAME_ATTRIBUTE), new PropertyNameCompletionProposalProvider(projectFinder));
+		this.completionProviders.put(new XMLCompletionProviderKey(BEANS_NAMESPACE, null, BEAN_ELEMENT, CLASS_ATTRIBUTE), new TypeCompletionProposalProvider(projectFinder, true));
+		this.completionProviders.put(new XMLCompletionProviderKey(BEANS_NAMESPACE, BEAN_ELEMENT, PROPERTY_ELEMENT, NAME_ATTRIBUTE), new PropertyNameCompletionProposalProvider(projectFinder));
+		this.completionProviders.put(new XMLCompletionProviderKey(BEANS_NAMESPACE, BEAN_ELEMENT, PROPERTY_ELEMENT, REF_ATTRIBUTE), new BeanRefCompletionProposalProvider(projectFinder, symbolIndex));
 	}
 
 	@Override

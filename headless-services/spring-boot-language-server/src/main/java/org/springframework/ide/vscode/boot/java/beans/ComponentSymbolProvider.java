@@ -22,6 +22,7 @@ import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.SymbolKind;
 import org.springframework.ide.vscode.boot.java.handlers.AbstractSymbolProvider;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
+import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
 import org.springframework.ide.vscode.boot.java.utils.CachedSymbol;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJavaContext;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
@@ -56,7 +57,10 @@ public class ComponentSymbolProvider extends AbstractSymbolProvider {
 		SymbolInformation symbol = new SymbolInformation(
 				beanLabel("+", annotationTypeName, metaAnnotationNames, beanName, beanType), SymbolKind.Interface,
 				new Location(doc.getUri(), doc.toRange(node.getStartPosition(), node.getLength())));
-		return new EnhancedSymbolInformation(symbol, null);
+
+		SymbolAddOnInformation[] addon = new SymbolAddOnInformation[] {new BeansSymbolAddOnInformation(beanName)};
+
+		return new EnhancedSymbolInformation(symbol, addon);
 	}
 
 	protected String beanLabel(String searchPrefix, String annotationTypeName, Collection<String> metaAnnotationNames, String beanName, String beanType) {

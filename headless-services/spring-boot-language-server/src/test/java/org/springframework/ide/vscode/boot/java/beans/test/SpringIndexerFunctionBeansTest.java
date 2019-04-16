@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2018 Pivotal, Inc.
+ * Copyright (c) 2017, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,7 +10,10 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.beans.test;
 
+import static org.junit.Assert.assertEquals;
+
 import java.io.File;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -23,6 +26,8 @@ import org.springframework.context.annotation.Import;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
 import org.springframework.ide.vscode.boot.bootiful.SymbolProviderTestConf;
+import org.springframework.ide.vscode.boot.java.beans.BeansSymbolAddOnInformation;
+import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
@@ -64,6 +69,19 @@ public class SpringIndexerFunctionBeansTest {
 				SpringIndexerHarness.symbol("@Configuration", "@+ 'functionClass' (@Configuration <: @Component) FunctionClass"),
 				SpringIndexerHarness.symbol("@Bean", "@> 'uppercase' (@Bean) Function<String,String>")
 		);
+
+		List<? extends SymbolAddOnInformation> addon = indexer.getAdditonalInformation(docUri);
+		assertEquals(2, addon.size());
+
+		assertEquals(1, addon.stream()
+			.filter(info -> info instanceof BeansSymbolAddOnInformation)
+			.filter(info -> "functionClass".equals(((BeansSymbolAddOnInformation)info).getBeanID()))
+			.count());
+
+		assertEquals(1, addon.stream()
+				.filter(info -> info instanceof BeansSymbolAddOnInformation)
+				.filter(info -> "uppercase".equals(((BeansSymbolAddOnInformation)info).getBeanID()))
+				.count());
 	}
 
 	@Test

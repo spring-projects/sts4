@@ -29,6 +29,8 @@ import org.springframework.context.annotation.Import;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
 import org.springframework.ide.vscode.boot.bootiful.SymbolProviderTestConf;
+import org.springframework.ide.vscode.boot.java.beans.BeansSymbolAddOnInformation;
+import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
@@ -78,8 +80,36 @@ public class SpringIndexerXMLProjectTest {
 		assertTrue(containsSymbol(allSymbols, "@+ 'namedParameterJdbcTemplate' NamedParameterJdbcTemplate", docUri, 12, 14, 12, 45));
 		assertTrue(containsSymbol(allSymbols, "@+ 'persistenceExceptionTranslationPostProcessor' PersistenceExceptionTranslationPostProcessor", docUri, 18, 10, 18, 97));
 
+		List<? extends SymbolAddOnInformation> addon = indexer.getAdditonalInformation(docUri);
+		assertEquals(4, addon.size());
+
+		assertEquals(1, addon.stream()
+			.filter(info -> info instanceof BeansSymbolAddOnInformation)
+			.filter(info -> "transactionManager".equals(((BeansSymbolAddOnInformation)info).getBeanID()))
+			.count());
+
+		assertEquals(1, addon.stream()
+			.filter(info -> info instanceof BeansSymbolAddOnInformation)
+			.filter(info -> "jdbcTemplate".equals(((BeansSymbolAddOnInformation)info).getBeanID()))
+			.count());
+
+		assertEquals(1, addon.stream()
+				.filter(info -> info instanceof BeansSymbolAddOnInformation)
+				.filter(info -> "namedParameterJdbcTemplate".equals(((BeansSymbolAddOnInformation)info).getBeanID()))
+				.count());
+
+		assertEquals(1, addon.stream()
+				.filter(info -> info instanceof BeansSymbolAddOnInformation)
+				.filter(info -> "persistenceExceptionTranslationPostProcessor".equals(((BeansSymbolAddOnInformation)info).getBeanID()))
+				.count());
+
+
 		String beansOnClasspathDocUri = directory.toPath().resolve("src/main/resources/beans.xml").toUri().toString();
 		assertTrue(containsSymbol(allSymbols, "@+ 'sb' SimpleBean", beansOnClasspathDocUri, 6, 14, 6, 21));
+
+		addon = indexer.getAdditonalInformation(beansOnClasspathDocUri);
+		assertEquals(1, addon.size());
+		assertEquals("sb", ((BeansSymbolAddOnInformation)addon.get(0)).getBeanID());
 	}
 
 	private boolean containsSymbol(List<? extends SymbolInformation> symbols, String name, String uri, int startLine, int startCHaracter, int endLine, int endCharacter) {

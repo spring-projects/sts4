@@ -18,8 +18,10 @@ import org.eclipse.lsp4j.SymbolKind;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.beans.BeanUtils;
+import org.springframework.ide.vscode.boot.java.beans.BeansSymbolAddOnInformation;
 import org.springframework.ide.vscode.boot.java.handlers.AbstractSymbolProvider;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
+import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.boot.java.utils.CachedSymbol;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJavaContext;
@@ -47,7 +49,10 @@ public class DataRepositorySymbolProvider extends AbstractSymbolProvider {
 						beanLabel(true, repositoryBean.getT1(), repositoryBean.getT2(), repositoryBean.getT3()),
 						SymbolKind.Interface,
 						new Location(doc.getUri(), doc.toRange(repositoryBean.getT4())));
-				EnhancedSymbolInformation enhancedSymbol = new EnhancedSymbolInformation(symbol, null);
+
+				SymbolAddOnInformation[] addon = new SymbolAddOnInformation[] {new BeansSymbolAddOnInformation(repositoryBean.getT1())};
+				EnhancedSymbolInformation enhancedSymbol = new EnhancedSymbolInformation(symbol, addon);
+
 				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), enhancedSymbol));
 			} catch (BadLocationException e) {
 				log.error("error creating data repository symbol for a specific range", e);
