@@ -35,7 +35,10 @@ public class RemoteRunningAppsProvider implements RunningAppProvider {
 		private String host;
 		private String urlScheme = "https";
 		private String port = "443";
-		private boolean keepChecking = false;
+		private boolean keepChecking = true;
+			//keepChecking defaults to true. Boot dash automatic remote apps should override this explicitly.
+			//Reason. All other 'sources' of remote apps are 'manual' and we want them to default to
+			//'keepChecking' even if the user doesn't set this to true manually.
 
 		public String getJmxurl() {
 			return jmxurl;

@@ -148,7 +148,10 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 		private String host;
 		private String urlScheme = "https";
 		private String port = "443";
-		private boolean keepChecking = false;
+		private boolean keepChecking = true; 
+			//keepChecking defaults to true. Boot dash automatic remote apps should override this explicitly.
+			//Reason. All other 'sources' of remote apps are 'manual' and we want them to default to
+			//'keepChecking' even if the user doesn't set this to true manually.
 
 		public RemoteBootAppData(String jmxurl, String host) {
 			super();
@@ -245,6 +248,11 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 				if (urlScheme!=null) {
 					app.setUrlScheme(urlScheme);
 				}
+			}
+			//keepChecking attribute added in STS 4.2.1
+			if (list.size()>=5) {
+				String keepChecking = list.get(4);
+				app.setKeepChecking("true".equals(keepChecking));
 			}
 			return app;
 		}
