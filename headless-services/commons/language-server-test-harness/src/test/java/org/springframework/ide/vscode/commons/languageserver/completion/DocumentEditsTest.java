@@ -52,7 +52,7 @@ public class DocumentEditsTest {
 
 		public void reset() throws Exception {
 			this.editor = harness.newEditor(orgText);
-			this.edits = new DocumentEdits(getFreshDocument(editor));
+			this.edits = new DocumentEdits(getFreshDocument(editor), false);
 		}
 
 		private IDocument getFreshDocument(Editor editor) throws Exception {

@@ -17,10 +17,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.CompletionList;
+import org.eclipse.lsp4j.InsertTextFormat;
 import org.eclipse.lsp4j.MarkupContent;
 import org.eclipse.lsp4j.MarkupKind;
 import org.eclipse.lsp4j.Position;
@@ -29,8 +31,6 @@ import org.eclipse.lsp4j.TextEdit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits.TextReplace;
-import org.springframework.ide.vscode.commons.languageserver.util.LspClient;
-import org.springframework.ide.vscode.commons.languageserver.util.LspClient.Client;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.languageserver.util.SortKeys;
@@ -217,16 +217,21 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 	}
 
 	private void resolveEdits(TextDocument doc, ICompletionProposal completion, CompletionItem item) {
-		Optional<TextEdit> mainEdit = adaptEdits(doc, completion.getTextEdit());
+		AtomicBoolean usedSnippets = new AtomicBoolean();
+		Optional<TextEdit> mainEdit = adaptEdits(doc, completion.getTextEdit(), usedSnippets);
 		if (mainEdit.isPresent()) {
 			item.setTextEdit(mainEdit.get());
-			item.setInsertTextFormat(completion.getInsertTextFormat());
+			if (server.hasCompletionSnippetSupport()) {
+				item.setInsertTextFormat(usedSnippets.get() ? InsertTextFormat.Snippet : InsertTextFormat.PlainText);
+			} else {
+				item.setInsertTextFormat(InsertTextFormat.PlainText);
+			}
 		} else {
 			item.setInsertText("");
 		}
 
 		completion.getAdditionalEdit().ifPresent(edit -> {
-			adaptEdits(doc, edit).ifPresent(extraEdit -> {
+			adaptEdits(doc, edit, null).ifPresent(extraEdit -> {
 				item.setAdditionalTextEdits(ImmutableList.of(extraEdit));
 			});
 		});
@@ -239,9 +244,12 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 		return null;
 	}
 
-	private Optional<TextEdit> adaptEdits(TextDocument doc, DocumentEdits edits) {
+	private Optional<TextEdit> adaptEdits(TextDocument doc, DocumentEdits edits, AtomicBoolean usedSnippets) {
 		try {
 			TextReplace replaceEdit = edits.asReplacement(doc);
+			if (usedSnippets != null) {
+				usedSnippets.set(edits.hasSnippets());
+			}
 			if (replaceEdit==null) {
 				//The original edit does nothing.
 				return Optional.empty();
@@ -252,24 +260,22 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 				vscodeEdit.setRange(doc.toRange(replaceEdit.start, replaceEdit.end-replaceEdit.start));
 				String newText = replaceEdit.newText;
 				IRegion selection = edits.getSelection();
-				if (selection!=null) {
+				if (selection!=null && usedSnippets != null) {
 					//Special handling for the case where cursor is *not* just at the end of the newText
 					int cursor = selection.getOffset() + selection.getLength();
 					cursor = cursor - replaceEdit.start;
-					if (cursor<newText.length()) {
+					if (cursor < newText.length() && !edits.hasSnippets()) {
 						newText = server.createSnippetBuilder()
 								.text(newText.substring(0, cursor))
 								.finalTabStop()
 								.text(newText.substring(cursor))
 								.build()
 								.toString();
+						usedSnippets.set(true);
 					}
 				}
 				if (isMagicIndentingClient()) {
 					newText = vscodeIndentFix(doc, vscodeEdit.getRange().getStart(), replaceEdit.newText);
-				}
-				if (LspClient.currentClient() == Client.THEIA || LspClient.currentClient() == Client.VSCODE) {
-					newText = newText.replace("$", "\\$");
 				}
 				vscodeEdit.setNewText(newText);
 				return Optional.of(vscodeEdit);

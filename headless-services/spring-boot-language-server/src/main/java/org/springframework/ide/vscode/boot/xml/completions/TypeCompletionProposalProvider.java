@@ -99,9 +99,8 @@ public class TypeCompletionProposalProvider implements XMLCompletionProvider {
 			kind = CompletionItemKind.Property;
 		}
 
-		DocumentEdits edits = new DocumentEdits(doc);
-		edits.delete(offset - prefix.length(), offset);
-		edits.insert(offset, type.getFullyQualifiedName());
+		DocumentEdits edits = new DocumentEdits(doc, false);
+		edits.replace(offset - prefix.length(), offset, type.getFullyQualifiedName());
 
 		Renderable renderable = null;
 

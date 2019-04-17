@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2018 Pivotal, Inc.
+ * Copyright (c) 2017, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -24,7 +24,6 @@ import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MemberValuePair;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.StringLiteral;
-import org.eclipse.lsp4j.InsertTextFormat;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.springframework.ide.vscode.boot.java.handlers.CompletionProvider;
 import org.springframework.ide.vscode.boot.metadata.ProjectBasedPropertyIndexProvider;
@@ -65,13 +64,13 @@ public class ValueCompletionProcessor implements CompletionProvider {
 
 				for (Match<PropertyInfo> match : matches) {
 
-					DocumentEdits edits = new DocumentEdits(doc);
+					DocumentEdits edits = new DocumentEdits(doc, false);
 					edits.replace(offset, offset, "\"${" + match.data.getId() + "}\"");
 
 					// PT-160455522: create a proposal with `PlainText` format type, because for vscode (but not Eclipse), if you send it as a snippet
 					// and it is "place holder" as such `"${debug}"`, vscode may treat it as a snippet place holder, and insert an empty string
 					// if it cannot resolve it. If sending this as plain text, then insertion happens correctly
-					ValuePropertyKeyProposal proposal = new ValuePropertyKeyProposal(edits, match, InsertTextFormat.PlainText);
+					ValuePropertyKeyProposal proposal = new ValuePropertyKeyProposal(edits, match);
 
 					completions.add(proposal);
 				}
@@ -122,10 +121,10 @@ public class ValueCompletionProcessor implements CompletionProvider {
 
 		for (Match<PropertyInfo> match : matches) {
 
-			DocumentEdits edits = new DocumentEdits(doc);
+			DocumentEdits edits = new DocumentEdits(doc, false);
 			edits.replace(startOffset, endOffset, proposalPrefix + "${" + match.data.getId() + "}" + proposalPostfix);
 
-			ValuePropertyKeyProposal proposal = new ValuePropertyKeyProposal(edits, match, InsertTextFormat.PlainText);
+			ValuePropertyKeyProposal proposal = new ValuePropertyKeyProposal(edits, match);
 
 			completions.add(proposal);
 		}
@@ -158,13 +157,13 @@ public class ValueCompletionProcessor implements CompletionProvider {
 
 		for (Match<PropertyInfo> match : matches) {
 
-			DocumentEdits edits = new DocumentEdits(doc);
+			DocumentEdits edits = new DocumentEdits(doc, false);
 			edits.replace(startOffset, endOffset, preCompletion + match.data.getId() + postCompletion);
 
 			// PT 160455522: create a proposal with `PlainText` format type, because for vscode (but not Eclipse), if you send it as a snippet
 			// and the proposal value is "place holder" as such `"${debug}"`, vscode may treat it as a snippet place holder, and insert an empty string
 			// if it cannot resolve it. If sending this as plain text, then insertion happens correctly
-			ValuePropertyKeyProposal proposal = new ValuePropertyKeyProposal(edits, match, InsertTextFormat.PlainText);
+			ValuePropertyKeyProposal proposal = new ValuePropertyKeyProposal(edits, match);
 
 			completions.add(proposal);
 		}

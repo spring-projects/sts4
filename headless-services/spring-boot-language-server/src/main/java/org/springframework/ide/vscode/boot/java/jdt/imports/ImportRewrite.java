@@ -1,9 +1,9 @@
 /*******************************************************************************
  * Derived from:
  * org.eclipse.jdt.core.dom.rewrite.ImportRewrite
- * 
+ *
  * for use in STS4, where IProject and ICompilationUnit are not available when parsing a Java source.
- * 
+ *
  * Original license:
  *
  * Copyright (c) 2000, 2016 IBM Corporation and others.
@@ -542,7 +542,7 @@ public final class ImportRewrite {
 
 		String[] createdImprts = getAddedImports();
 		if (createdImprts != null && createdImprts.length >0) {
-			edits =new DocumentEdits(doc);
+			edits =new DocumentEdits(doc, false);
 			buffer.append('\n');
 			for (String imp : createdImprts) {
 				buffer.append("import ");

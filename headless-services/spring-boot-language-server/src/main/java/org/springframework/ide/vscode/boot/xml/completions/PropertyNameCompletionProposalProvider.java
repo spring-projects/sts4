@@ -89,7 +89,7 @@ public class PropertyNameCompletionProposalProvider implements XMLCompletionProv
 		String label = getPropertyName(method);
 		CompletionItemKind kind = CompletionItemKind.Method;
 
-		DocumentEdits edits = new DocumentEdits(doc);
+		DocumentEdits edits = new DocumentEdits(doc, false);
 
 		String replaceString = "\"" + label + "\"";
 		int replaceStart = tokenStart;

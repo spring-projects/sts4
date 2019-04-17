@@ -17,7 +17,6 @@ import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
-import org.eclipse.jdt.internal.core.util.ASTNodeFinder;
 import org.eclipse.lsp4j.CompletionItemKind;
 import org.springframework.ide.vscode.boot.java.handlers.CompletionProvider;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
@@ -72,7 +71,7 @@ public class DataRepositoryCompletionProcessor implements CompletionProvider {
 		label.append(StringUtils.uncapitalize(domainProperty.getName()));
 		label.append(");");
 
-		DocumentEdits edits = new DocumentEdits(null);
+		DocumentEdits edits = new DocumentEdits(null, false);
 
 		StringBuilder completion = new StringBuilder();
 		completion.append("List<");
@@ -97,7 +96,7 @@ public class DataRepositoryCompletionProcessor implements CompletionProvider {
 			edits.insert(offset, completion.toString());
 		}
 
-		DocumentEdits additionalEdits = new DocumentEdits(null);
+		DocumentEdits additionalEdits = new DocumentEdits(null, false);
 		return new FindByCompletionProposal(label.toString(), CompletionItemKind.Method, edits, null, null, Optional.of(additionalEdits), filter);
 	}
 

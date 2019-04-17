@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -77,7 +77,7 @@ public class SimpleCompletionFactory {
 	}
 
 	public static SimpleProposal simpleProposal(IDocument doc, int offset, String query, CompletionItemKind kind, String value, String detail, Renderable info) {
-		DocumentEdits edits = new DocumentEdits(doc);
+		DocumentEdits edits = new DocumentEdits(doc, false);
 		edits.replace(offset-query.length(), offset, value);
 		return new SimpleProposal(edits, kind, info, detail, value);
 	}

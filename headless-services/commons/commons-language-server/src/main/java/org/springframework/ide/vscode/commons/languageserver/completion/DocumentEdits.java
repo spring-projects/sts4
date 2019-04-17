@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 Pivotal, Inc.
+ * Copyright (c) 2015, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -322,6 +322,7 @@ public class DocumentEdits implements ProposalApplier {
 
 	private List<Edit> edits = new ArrayList<Edit>();
 	private IDocument doc;
+	final private boolean hasSnippets;
 
 	/**
 	 * When this is true, the cursor is moved after each edit, to be positioned right after the
@@ -332,8 +333,9 @@ public class DocumentEdits implements ProposalApplier {
 	 */
 	private boolean grabCursor = true;
 
-	public DocumentEdits(IDocument doc) {
+	public DocumentEdits(IDocument doc, boolean hasSnippets) {
 		this.doc = doc;
+		this.hasSnippets = hasSnippets;
 	}
 
 	public void delete(int start, int end) {
@@ -493,4 +495,9 @@ public class DocumentEdits implements ProposalApplier {
 	public boolean hasRelativeIndents() {
 		return true;
 	}
+
+	final public boolean hasSnippets() {
+		return hasSnippets;
+	}
+
 }

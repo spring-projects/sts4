@@ -235,7 +235,7 @@ public class PropertiesCompletionProposalsCalculator {
 			if (score!=0) {
 				Type valueType = prop.getType();
 				String postFix = propertyCompletionPostfix(typeUtil, valueType);
-				DocumentEdits edits = new DocumentEdits(doc);
+				DocumentEdits edits = new DocumentEdits(doc, false);
 				edits.delete(navOffset+1, offset);
 				edits.insert(offset, prop.getName()+postFix);
 				proposals.add(
@@ -290,7 +290,7 @@ public class PropertiesCompletionProposalsCalculator {
 					String valueCandidate = hint.getValue();
 					double score = FuzzyMatcher.matchScore(query, valueCandidate);
 					if (score != 0) {
-						DocumentEdits edits = new DocumentEdits(doc);
+						DocumentEdits edits = new DocumentEdits(doc, false);
 						edits.delete(startOfValue, offset);
 						edits.insert(offset, valueCandidate);
 						String valueTypeName = typeUtil.niceTypeName(getValueType(index, typeUtil, propertyName));
@@ -343,13 +343,13 @@ public class PropertiesCompletionProposalsCalculator {
 						docEdits = LazyProposalApplier.from(() -> {
 								try {
 									Type type = TypeParser.parse(match.data.getType());
-									DocumentEdits edits = new DocumentEdits(doc);
+									DocumentEdits edits = new DocumentEdits(doc, false);
 									edits.delete(offset-prefix.length(), offset);
 									edits.insert(offset, match.data.getId() + propertyCompletionPostfix(typeUtil, type));
 									return edits;
 								} catch (Throwable t) {
 									log.error("{}", t);
-									return new DocumentEdits(doc);
+									return new DocumentEdits(doc, false);
 								}
 						});
 						synchronized (proposals) {

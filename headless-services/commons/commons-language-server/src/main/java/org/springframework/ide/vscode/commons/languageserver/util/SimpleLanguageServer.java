@@ -713,4 +713,9 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 	public boolean hasHierarchicalDocumentSymbolSupport() {
 		return hasHierarchicalDocumentSymbolSupport;
 	}
+
+	final public boolean hasCompletionSnippetSupport() {
+		return hasCompletionSnippetSupport;
+	}
+
 }

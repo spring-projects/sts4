@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2018 Pivotal, Inc.
+ * Copyright (c) 2017, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -40,7 +40,7 @@ public class JavaSnippetBuilder{
 		IDocument doc = query.getDocument();
 		IndentUtil indentUtil = new IndentUtil(doc);
 
-		DocumentEdits edit = new DocumentEdits(doc);
+		DocumentEdits edit = new DocumentEdits(doc, true);
 
 		// PT 162103145 - Avoid creating a snippet with double `@` if the query is invoked after a `@` AND the template
 		// also starts with a `@`

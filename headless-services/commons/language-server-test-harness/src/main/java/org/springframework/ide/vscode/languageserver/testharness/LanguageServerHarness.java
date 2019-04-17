@@ -774,7 +774,7 @@ public class LanguageServerHarness {
 
 				TextDocument workingDocument = new TextDocument(uri, document.getLanguageId());
 				workingDocument.setText(document.getText());
-				DocumentEdits edits = new DocumentEdits(workingDocument);
+				DocumentEdits edits = new DocumentEdits(workingDocument, false);
 				for (TextEdit edit : entry.getValue()) {
 					Range range = edit.getRange();
 					edits.replace(document.toOffset(range.getStart()), document.toOffset(range.getEnd()), edit.getNewText());
@@ -797,7 +797,7 @@ public class LanguageServerHarness {
 					Path path = Paths.get(URI.create(uri));
 					String content = docInfo == null ? IOUtil.toString(Files.newInputStream(path)) : docInfo.getText();
 					TextDocument workingDocument = new TextDocument(uri, docInfo == null ? (LanguageId) null : docInfo.getLanguageId(), 0, content);
-					DocumentEdits edits = new DocumentEdits(workingDocument);
+					DocumentEdits edits = new DocumentEdits(workingDocument, false);
 					for (TextEdit textEdit : docEdit.getEdits()) {
 						Range range = textEdit.getRange();
 						edits.replace(workingDocument.toOffset(range.getStart()), workingDocument.toOffset(range.getEnd()), textEdit.getNewText());

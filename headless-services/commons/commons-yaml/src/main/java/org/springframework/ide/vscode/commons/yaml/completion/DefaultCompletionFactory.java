@@ -156,7 +156,7 @@ public class DefaultCompletionFactory implements CompletionFactory {
 
 		@Override
 		public DocumentEdits getTextEdit() {
-			return new DocumentEdits(null);
+			return new DocumentEdits(null, false);
 		}
 
 		@Override

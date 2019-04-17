@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Pivotal, Inc.
+ * Copyright (c) 2018, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,11 +13,9 @@ package org.springframework.ide.vscode.boot.java.data;
 import java.util.Optional;
 
 import org.eclipse.lsp4j.CompletionItemKind;
-import org.eclipse.lsp4j.InsertTextFormat;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.util.Renderable;
-import org.springframework.ide.vscode.commons.util.text.IDocument;
 
 public class FindByCompletionProposal implements ICompletionProposal {
 
@@ -69,11 +67,6 @@ public class FindByCompletionProposal implements ICompletionProposal {
 	@Override
 	public Optional<DocumentEdits> getAdditionalEdit() {
 		return additionalEdits;
-	}
-
-	@Override
-	public InsertTextFormat getInsertTextFormat() {
-		return InsertTextFormat.Snippet;
 	}
 
 	@Override

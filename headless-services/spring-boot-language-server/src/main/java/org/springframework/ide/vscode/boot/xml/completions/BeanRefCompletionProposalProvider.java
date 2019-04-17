@@ -32,8 +32,6 @@ import org.springframework.ide.vscode.commons.util.FuzzyMatcher;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
-import reactor.util.function.Tuple2;
-import reactor.util.function.TupleExtensionsKt;
 import reactor.util.function.Tuples;
 
 /**
@@ -86,9 +84,8 @@ public class BeanRefCompletionProposalProvider implements XMLCompletionProvider 
 	private ICompletionProposal createProposal(String beanID, TextDocument doc, int offset, String prefix, Double score) {
 		CompletionItemKind kind = CompletionItemKind.Reference;
 
-		DocumentEdits edits = new DocumentEdits(doc);
-		edits.delete(offset - prefix.length(), offset);
-		edits.insert(offset, beanID);
+		DocumentEdits edits = new DocumentEdits(doc, false);
+		edits.replace(offset - prefix.length(), offset, beanID);
 
 		Renderable renderable = null;
 

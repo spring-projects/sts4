@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016 Pivotal, Inc.
+ * Copyright (c) 2016, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -125,7 +125,7 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 
 	private DocumentEdits createEditFromSnippet(YamlDocument doc, SNode node, int offset, String query, YamlIndentUtil indenter,
 			Snippet _snippet) throws Exception {
-		DocumentEdits edits = new DocumentEdits(doc.getDocument());
+		DocumentEdits edits = new DocumentEdits(doc.getDocument(), true);
 		int start = offset - query.length();
 		edits.delete(start, query);
 		int referenceIndent = doc.getColumn(start);
@@ -170,7 +170,7 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 								edits = createEditFromSnippet(doc, node, offset, query, indenter, snippet);
 							} else {
 								//Generate edits the old-fashioned way
-								edits = new DocumentEdits(doc.getDocument());
+								edits = new DocumentEdits(doc.getDocument(), false);
 								YType YType = p.getType();
 								edits.delete(queryOffset, query);
 								int referenceIndent = doc.getColumn(queryOffset);
@@ -273,7 +273,7 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 				double score = FuzzyMatcher.matchScore(query, value.getValue());
 				if (score!=0 && value!=null && !query.equals(value.getValue())) {
 					int queryStart = offset-query.length();
-					DocumentEdits edits = new DocumentEdits(doc.getDocument());
+					DocumentEdits edits = new DocumentEdits(doc.getDocument(), false);
 					edits.delete(queryStart, offset);
 					if (!Character.isWhitespace(doc.getChar(queryStart-1))) {
 						edits.insert(offset, " ");

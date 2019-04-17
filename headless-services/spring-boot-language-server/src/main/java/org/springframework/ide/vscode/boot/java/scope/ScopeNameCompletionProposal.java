@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -57,7 +57,7 @@ public class ScopeNameCompletionProposal implements ICompletionProposal {
 
 	@Override
 	public DocumentEdits getTextEdit() {
-		DocumentEdits edits = new DocumentEdits(doc);
+		DocumentEdits edits = new DocumentEdits(doc, false);
 		edits.replace(startOffset + prefix.length(), endOffset, completion.getValue().substring(prefix.length()));
 		return edits;
 	}

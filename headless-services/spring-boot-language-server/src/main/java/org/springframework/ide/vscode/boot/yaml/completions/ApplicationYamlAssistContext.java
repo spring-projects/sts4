@@ -267,7 +267,7 @@ public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistCon
 					String value = hint.getValue();
 					double score = FuzzyMatcher.matchScore(query, value);
 					if (score!=0 && !value.equals(query)) {
-						DocumentEdits edits = new DocumentEdits(doc.getDocument());
+						DocumentEdits edits = new DocumentEdits(doc.getDocument(), false);
 						int valueStart = offset-query.length();
 						edits.delete(valueStart, offset);
 						if (doc.getChar(valueStart-1)==':') {
