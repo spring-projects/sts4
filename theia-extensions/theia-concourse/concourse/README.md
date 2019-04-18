@@ -87,4 +87,4 @@ Please report bugs, issues and feature requests on the [Github STS4 issue tracke
 [goto_symbol]: https://raw.githubusercontent.com/spring-projects/sts4/54cf0994b69ef1770ca597a8da325022b19cee69/theia-extensions/theia-concourse/concourse/readme-imgs/doc-symbols.png
 
 
-**Version: 1.6.0**
+**Version: 1.7.0**
