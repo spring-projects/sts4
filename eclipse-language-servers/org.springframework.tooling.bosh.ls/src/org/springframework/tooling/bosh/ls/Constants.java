@@ -16,6 +16,6 @@ package org.springframework.tooling.bosh.ls;
 public class Constants {
 	
 	public static final String PLUGIN_ID = "org.springframework.tooling.bosh.ls";
-	public static final String LANGUAGE_SERVER_VERSION = "1.6.0-SNAPSHOT";
+	public static final String LANGUAGE_SERVER_VERSION = "1.7.0-SNAPSHOT";
 
 }
