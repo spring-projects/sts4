@@ -12,15 +12,6 @@ package org.springframework.tooling.bosh.ls;
 
 import static org.springframework.tooling.ls.eclipse.commons.preferences.LanguageServerConsolePreferenceConstants.BOSH_SERVER;
 
-import java.io.File;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
-
-import org.eclipse.core.runtime.FileLocator;
-import org.eclipse.core.runtime.Path;
-import org.eclipse.core.runtime.Platform;
-import org.osgi.framework.Bundle;
 import org.springframework.tooling.ls.eclipse.commons.JRE;
 import org.springframework.tooling.ls.eclipse.commons.STS4LanguageServerProcessStreamConnector;
 
@@ -42,29 +33,14 @@ public class BoshLanguageServer extends STS4LanguageServerProcessStreamConnector
 		setWorkingDirectory(getWorkingDirLocation());
 	}
 	
-	protected String getLanguageServerJARLocation() {
-		String languageServer = "bosh-language-server-" + Constants.LANGUAGE_SERVER_VERSION + ".jar";
-
-		Bundle bundle = Platform.getBundle(Constants.PLUGIN_ID);
-		File dataFile = bundle.getDataFile(languageServer);
-//		if (!dataFile.exists()) {
-			try {
-				copyLanguageServerJAR(languageServer);
-			}
-			catch (Exception e) {
-				e.printStackTrace();
-			}
-//		}
-		
-		return dataFile.getAbsolutePath();
+	@Override
+	protected String getLanguageServerArtifactId() {
+		return "bosh-language-server";
 	}
-	
-	protected void copyLanguageServerJAR(String languageServerJarName) throws Exception {
-		Bundle bundle = Platform.getBundle(Constants.PLUGIN_ID);
-		InputStream stream = FileLocator.openStream( bundle, new Path("servers/" + languageServerJarName), false );
-		
-		File dataFile = bundle.getDataFile(languageServerJarName);
-		Files.copy(stream, dataFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+
+	@Override
+	protected String getPluginId() {
+		return Constants.PLUGIN_ID;
 	}
 
 }

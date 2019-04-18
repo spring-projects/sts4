@@ -12,17 +12,9 @@ package org.springframework.tooling.boot.ls;
 
 import static org.springframework.tooling.ls.eclipse.commons.preferences.LanguageServerConsolePreferenceConstants.SPRING_BOOT_SERVER;
 
-import java.io.File;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.core.runtime.FileLocator;
-import org.eclipse.core.runtime.Path;
-import org.eclipse.core.runtime.Platform;
-import org.osgi.framework.Bundle;
 import org.springframework.tooling.ls.eclipse.commons.JRE;
 import org.springframework.tooling.ls.eclipse.commons.JRE.MissingJDKException;
 import org.springframework.tooling.ls.eclipse.commons.STS4LanguageServerProcessStreamConnector;
@@ -75,47 +67,13 @@ public class SpringBootLanguageServer extends STS4LanguageServerProcessStreamCon
 		}
 	}
 
-	protected String getLanguageServerJARLocation() {
-		String languageServer = "spring-boot-language-server-" + Constants.LANGUAGE_SERVER_VERSION;
-
-		Bundle bundle = Platform.getBundle(Constants.PLUGIN_ID);
-		String bundleVersion = bundle.getVersion().toString();
-
-		String languageServerLocalCopy = bundleVersion + "-" + languageServer;
-		
-		File dataFile = bundle.getDataFile(languageServerLocalCopy);
-
-		Exception error = null;
-		if (!dataFile.exists() || bundleVersion.endsWith("qualifier")) { // qualifier check to get the language server always copied in dev mode
-			try {
-				copyLanguageServerJAR(languageServer, languageServerLocalCopy);
-			}
-			catch (Exception e) {
-				error = e;
-			}
-		}
-		
-		if (bundleVersion.endsWith("qualifier")) {
-			File userHome = new File(System.getProperty("user.home"));
-			File locallyBuiltJar = new File(
-					userHome, 
-					"git/sts4/headless-services/spring-boot-language-server/target/spring-boot-language-server-" + Constants.LANGUAGE_SERVER_VERSION
-			);
-			if (locallyBuiltJar.exists()) {
-				return locallyBuiltJar.getAbsolutePath();
-			}
-			if (error!=null) {
-				error.printStackTrace();
-			}
-		}
-		return dataFile.getAbsolutePath();
+	@Override
+	protected String getLanguageServerArtifactId() {
+		return "spring-boot-language-server";
 	}
-	
-	protected void copyLanguageServerJAR(String languageServerJarName, String languageServerLocalCopy) throws Exception {
-		Bundle bundle = Platform.getBundle(Constants.PLUGIN_ID);
-		InputStream stream = FileLocator.openStream( bundle, new Path("servers/" + languageServerJarName), false );
-		
-		File dataFile = bundle.getDataFile(languageServerLocalCopy);
-		Files.copy(stream, dataFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+
+	@Override
+	protected String getPluginId() {
+		return Constants.PLUGIN_ID;
 	}
 }

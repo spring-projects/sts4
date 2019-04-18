@@ -12,17 +12,7 @@ package org.springframework.tooling.concourse.ls;
 
 import static org.springframework.tooling.ls.eclipse.commons.preferences.LanguageServerConsolePreferenceConstants.CONCOURSE_SERVER;
 
-import java.io.File;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.StandardCopyOption;
-
-import org.eclipse.core.runtime.FileLocator;
-import org.eclipse.core.runtime.Path;
-import org.eclipse.core.runtime.Platform;
-import org.osgi.framework.Bundle;
 import org.springframework.tooling.ls.eclipse.commons.JRE;
-import org.springframework.tooling.ls.eclipse.commons.LanguageServerCommonsActivator;
 import org.springframework.tooling.ls.eclipse.commons.STS4LanguageServerProcessStreamConnector;
 
 import com.google.common.collect.ImmutableList;
@@ -43,36 +33,13 @@ public class ConcourseLanguageServer extends STS4LanguageServerProcessStreamConn
 		setWorkingDirectory(getWorkingDirLocation());
 	}
 	
-	protected String getLanguageServerJARLocation() {
-		String languageServer = "concourse-language-server-" + Constants.LANGUAGE_SERVER_VERSION + ".jar";
-
-		Bundle bundle = Platform.getBundle(Constants.PLUGIN_ID);
-		File dataFile = bundle.getDataFile(languageServer);
-//		if (!dataFile.exists()) {
-			try {
-				copyLanguageServerJAR(languageServer);
-			}
-			catch (Exception e) {
-				if (bundle.getVersion().getQualifier().equals("qualifier")) {
-					dataFile = new File(System.getProperty("user.home")+"/git/sts4/headless-services/concourse-language-server/target/concourse-language-server-"+Constants.LANGUAGE_SERVER_VERSION+".jar");
-					if (!dataFile.exists()) {
-						LanguageServerCommonsActivator.logError(e, "Problem locating Concourse language server jar");
-					}
-				} else {
-					LanguageServerCommonsActivator.logError(e, "Problem locating Concourse language server jar");
-				}
-			}
-//		}
-		
-		return dataFile.getAbsolutePath();
-	}
-	
-	protected void copyLanguageServerJAR(String languageServerJarName) throws Exception {
-		Bundle bundle = Platform.getBundle(Constants.PLUGIN_ID);
-		InputStream stream = FileLocator.openStream( bundle, new Path("servers/" + languageServerJarName), false );
-		
-		File dataFile = bundle.getDataFile(languageServerJarName);
-		Files.copy(stream, dataFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
+	@Override
+	protected String getLanguageServerArtifactId() {
+		return "concourse-language-server";
 	}
 
+	@Override
+	protected String getPluginId() {
+		return Constants.PLUGIN_ID;
+	}
 }
