@@ -51,6 +51,9 @@
 		<module>org.springframework.tooling.cloudfoundry.manifest.ls.feature</module>
 		<module>org.springframework.tooling.ls.repository</module>
 
+		<module>org.springframework.tooling.cloudfoundry.manifest.ls.integration</module>
+		<module>org.springframework.tooling.cloudfoundry.manifest.ls.integration.feature</module>
+
 		<module>org.springframework.tooling.ls.eclipse.gotosymbol</module>
 		<module>org.springframework.tooling.boot.ls</module>
 		<module>org.springframework.tooling.boot.ls.feature</module>
