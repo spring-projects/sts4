@@ -38,6 +38,7 @@ public class SpringXMLLanguageServerComponents implements LanguageServerComponen
 	private final BootLanguageServerParams serverParams;
 	private final JavaProjectFinder projectFinder;
 	private final SpringSymbolIndex symbolIndex;
+	private final SpringXMLCompletionEngine completionEngine;
 
 	public SpringXMLLanguageServerComponents(
 			SimpleLanguageServer server,
@@ -51,6 +52,8 @@ public class SpringXMLLanguageServerComponents implements LanguageServerComponen
 
 		server.doOnInitialized(this::initialized);
 		server.onShutdown(this::shutdown);
+
+		this.completionEngine = new SpringXMLCompletionEngine(this, projectFinder, symbolIndex, server.getTextDocumentService());
 	}
 
 	@Override
@@ -60,7 +63,7 @@ public class SpringXMLLanguageServerComponents implements LanguageServerComponen
 
 	@Override
 	public ICompletionEngine getCompletionEngine() {
-		return new SpringXMLCompletionEngine(this, projectFinder, symbolIndex);
+		return this.completionEngine;
 	}
 
 	@Override

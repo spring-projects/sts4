@@ -12,7 +12,9 @@ package org.springframework.ide.vscode.boot.xml.completions;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Optional;
+import java.util.Set;
 
 import org.eclipse.lsp4j.CompletionItemKind;
 import org.eclipse.lsp4xml.dom.DOMAttr;
@@ -24,6 +26,7 @@ import org.springframework.ide.vscode.commons.java.IType;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
@@ -37,10 +40,15 @@ public class TypeCompletionProposalProvider implements XMLCompletionProvider {
 
 	private final JavaProjectFinder projectFinder;
 	private final boolean classesOnly;
+	private final Set<String> typeSearchAlreadyInitializedProjects = Collections.synchronizedSet(new HashSet<>());
 
-	public TypeCompletionProposalProvider(JavaProjectFinder projectFinder, boolean classesOnly) {
+	public TypeCompletionProposalProvider(JavaProjectFinder projectFinder, SimpleTextDocumentService simpleTextDocumentService, boolean classesOnly) {
 		this.projectFinder = projectFinder;
 		this.classesOnly = classesOnly;
+
+		simpleTextDocumentService.onDidOpen(doc -> {
+			initializeTypeSearch(doc);
+		});
 	}
 
 	@Override
@@ -105,6 +113,24 @@ public class TypeCompletionProposalProvider implements XMLCompletionProvider {
 		Renderable renderable = null;
 
 		return new TypeCompletionProposal(label, kind, edits, type.getFullyQualifiedName(), renderable, t.getT2());
+	}
+
+	/**
+	 * trigger initial type search as soon as the doc opens to avoid search timeouts when doing type proposals for the first time
+	 */
+	private void initializeTypeSearch(TextDocument doc) {
+		Optional<IJavaProject> foundProject = this.projectFinder.find(doc.getId());
+		if (foundProject.isPresent()) {
+			IJavaProject project = foundProject.get();
+			String projectName = project.getElementName();
+
+			if (!this.typeSearchAlreadyInitializedProjects.contains(projectName)) {
+
+				this.typeSearchAlreadyInitializedProjects.add(projectName);
+				Flux<Tuple2<IType, Double>> types = project.getIndex().camelcaseSearchTypes("", true, true);
+				types.count();
+			}
+		}
 	}
 
 }
