@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2018 Pivotal, Inc.
+ * Copyright (c) 2016, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -77,6 +77,7 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 	private Map<String, TrackedDocument> documents = new HashMap<>();
 	private ListenerList<TextDocumentContentChange> documentChangeListeners = new ListenerList<>();
 	private ListenerList<TextDocument> documentCloseListeners = new ListenerList<>();
+	private ListenerList<TextDocument> documentOpenListeners = new ListenerList<>();
 
 	private CompletionHandler completionHandler = null;
 	private CompletionResolveHandler completionResolveHandler = null;
@@ -182,11 +183,15 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 		//Log.info("didOpen: "+params.getTextDocument().getUri());
 		LanguageId languageId = LanguageId.of(docId.getLanguageId());
 		int version = docId.getVersion();
-		if (url!=null) {
+		if (url != null) {
+
 			String text = params.getTextDocument().getText();
 			TrackedDocument td = createDocument(url, languageId, version, text).open();
-			log.debug("Opened "+td.getOpenCount()+" times: "+url);
+			log.debug("Opened " + td.getOpenCount() + " times: " + url);
 			TextDocument doc = td.getDocument();
+
+			documentOpenListeners.fire(doc);
+
 			TextDocumentContentChangeEvent change = new TextDocumentContentChangeEvent() {
 				@Override
 				public Range getRange() {
@@ -237,6 +242,10 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 
 	void didChangeContent(TextDocument doc, List<TextDocumentContentChangeEvent> changes) {
 		documentChangeListeners.fire(new TextDocumentContentChange(doc, changes));
+	}
+
+	public void onDidOpen(Consumer<TextDocument> l) {
+		documentOpenListeners.add(l);
 	}
 
 	public void onDidChangeContent(Consumer<TextDocumentContentChange> l) {
