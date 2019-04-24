@@ -59,15 +59,17 @@ public class PropertyNameCompletionProposalProvider implements XMLCompletionProv
 			}
 
 			String beanClass = identifyBeanClass(node);
-			if (beanClass != null) {
+			if (beanClass != null && beanClass.length() > 0) {
 				IType beanType = project.getIndex().findType(beanClass);
 
-				final String searchPrefix = prefix;
-				return beanType.getMethods()
-						.filter(method -> isPropertyWriteMethod(method))
-						.filter(method -> getPropertyName(method).startsWith(searchPrefix))
-						.map(method -> createProposal(method, doc, offset, tokenOffset, tokenEnd))
-						.collect(Collectors.toList());
+				if (beanType != null) {
+					final String searchPrefix = prefix;
+					return beanType.getMethods()
+							.filter(method -> isPropertyWriteMethod(method))
+							.filter(method -> getPropertyName(method).startsWith(searchPrefix))
+							.map(method -> createProposal(method, doc, offset, tokenOffset, tokenEnd))
+							.collect(Collectors.toList());
+				}
 			}
 		};
 
