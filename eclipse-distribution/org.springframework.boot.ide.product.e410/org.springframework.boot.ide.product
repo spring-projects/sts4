@@ -93,12 +93,10 @@
 
       <feature id="org.springframework.boot.ide.branding.feature"/>
       <feature id="org.springframework.boot.ide.main.feature" installMode="root"/>
+      <feature id="org.springframework.ide.eclipse.xml.namespaces.feature" installMode="root"/>
 
       <feature id="org.springframework.tooling.boot.ls.feature" installMode="root"/>
-
-      <feature id="org.springframework.tooling.cloudfoundry.manifest.ls.integration.feature" installMode="root"/>
       <feature id="org.springframework.tooling.cloudfoundry.manifest.ls.feature" installMode="root"/>
-
       <feature id="org.springframework.tooling.bosh.ls.feature" installMode="root"/>
       <feature id="org.springframework.tooling.concourse.ls.feature" installMode="root"/>
    </features>

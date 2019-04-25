@@ -41,7 +41,17 @@
 	</feature>
 
 	<feature
+		id="org.springframework.ide.eclipse.xml.namespaces.feature" version="0.0.0">
+		<category name="Extensions / Spring IDE" />
+	</feature>
+
+	<feature
 		id="org.springframework.ide.eclipse.boot.dash.feature.source" version="0.0.0">
+		<category name="Resources / Spring IDE" />
+	</feature>
+
+	<feature
+		id="org.springframework.ide.eclipse.xml.namespaces.feature.source" version="0.0.0">
 		<category name="Resources / Spring IDE" />
 	</feature>
 
