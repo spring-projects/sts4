@@ -17,6 +17,18 @@
 		<relativePath></relativePath>
 	</parent>
 
+	<dependencyManagement>
+		<dependencies>
+			<!-- override spring boot managed dependency to more recent. This can be removed
+			    once spring-boot adopts a newer version -->
+			<dependency>
+				<groupId>org.yaml</groupId>
+				<artifactId>snakeyaml</artifactId>
+				<version>1.25-SNAPSHOT</version>
+			</dependency>
+		</dependencies>
+	</dependencyManagement>
+
 	<modules>
 		<module>commons-language-server</module>
 		<module>commons-lsp-extensions</module>

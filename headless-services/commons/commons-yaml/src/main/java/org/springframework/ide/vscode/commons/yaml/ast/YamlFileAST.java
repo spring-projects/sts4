@@ -40,13 +40,11 @@ public class YamlFileAST {
 
 	private static final List<NodeRef<?>> NO_CHILDREN = Collections.emptyList();
 	private final List<Node> nodes;
-	private final Set<Node> anchoredNodes;
 	private final IDocument doc;
 
-	public YamlFileAST(IDocument doc, List<Node> nodes, Set<Node> anchoredNodes) {
+	public YamlFileAST(IDocument doc, List<Node> nodes) {
 		this.doc = doc;
 		this.nodes = nodes;
-		this.anchoredNodes = anchoredNodes;
 	}
 
 	public List<NodeRef<?>> findPath(int offset) {
@@ -173,7 +171,7 @@ public class YamlFileAST {
 	public boolean isAnchored(NodeTuple entry) {
 		if (entry!=null) {
 			Node v = entry.getValueNode();
-			return v!=null && anchoredNodes.contains(v);
+			return v!=null && v.getAnchor()!=null;
 		}
 		return false;
 	}

@@ -18,6 +18,12 @@
 	</properties>
 
 	<dependencies>
+		<!-- Yaml -->
+		<dependency>
+			<groupId>org.springframework.ide.vscode</groupId>
+			<artifactId>commons-yaml</artifactId>
+			<version>${dependencies.version}</version>
+		</dependency>
 		<!-- spring boot -->
 		<dependency>
 			<groupId>org.springframework.ide.vscode</groupId>
@@ -28,12 +34,6 @@
 		<dependency>
 			<groupId>org.springframework.ide.vscode</groupId>
 			<artifactId>commons-language-server</artifactId>
-			<version>${dependencies.version}</version>
-		</dependency>
-		<!-- Yaml -->
-		<dependency>
-			<groupId>org.springframework.ide.vscode</groupId>
-			<artifactId>commons-yaml</artifactId>
 			<version>${dependencies.version}</version>
 		</dependency>
 		<!-- Test harness -->

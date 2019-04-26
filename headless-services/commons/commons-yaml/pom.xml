@@ -1,4 +1,5 @@
-<project xmlns="https://maven.apache.org/POM/4.0.0" xmlns:xsi="https://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="https://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="https://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="https://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>commons-yaml</artifactId>
@@ -14,6 +15,10 @@
 
 	<dependencies>
 		<dependency>
+			<groupId>org.yaml</groupId>
+			<artifactId>snakeyaml</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>org.springframework.ide.vscode</groupId>
 			<artifactId>commons-util</artifactId>
 			<version>${project.version}</version>
@@ -22,10 +27,6 @@
 			<groupId>org.springframework.ide.vscode</groupId>
 			<artifactId>commons-language-server</artifactId>
 			<version>${project.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.yaml</groupId>
-			<artifactId>snakeyaml</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>javax.inject</groupId>
