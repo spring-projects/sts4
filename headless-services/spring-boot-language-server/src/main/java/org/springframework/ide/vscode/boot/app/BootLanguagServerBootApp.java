@@ -88,10 +88,6 @@ public class BootLanguagServerBootApp {
 		return new AdHocSpringPropertyIndexProvider(params.projectFinder, params.projectObserver, fileObserver, documentEvents);
 	}
 
-	@Bean SimpleTextDocumentService documentEvents(SimpleLanguageServer server) {
-		return server.getTextDocumentService();
-	}
-
 	@Bean FileObserver fileObserver(SimpleLanguageServer server) {
 		return server.getWorkspaceService().getFileObserver();
 	}
