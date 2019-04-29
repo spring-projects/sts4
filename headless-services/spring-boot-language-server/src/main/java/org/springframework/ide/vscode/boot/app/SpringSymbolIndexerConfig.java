@@ -23,7 +23,7 @@ import org.springframework.ide.vscode.boot.java.requestmapping.WebfluxRouterSymb
 import org.springframework.ide.vscode.boot.java.utils.RestrictedDefaultSymbolProvider;
 import org.springframework.ide.vscode.boot.java.utils.SymbolCache;
 
-@Configuration
+@Configuration(proxyBeanMethods = false)
 public class SpringSymbolIndexerConfig {
 
 	@Bean

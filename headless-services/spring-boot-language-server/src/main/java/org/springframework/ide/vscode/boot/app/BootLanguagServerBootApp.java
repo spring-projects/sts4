@@ -54,7 +54,7 @@ import org.springframework.ide.vscode.commons.yaml.structure.YamlDocument;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureProvider;
 import org.yaml.snakeyaml.Yaml;
 
-@SpringBootApplication
+@SpringBootApplication(proxyBeanMethods = false)
 public class BootLanguagServerBootApp {
 	private static final String SERVER_NAME = "boot-language-server";
 
