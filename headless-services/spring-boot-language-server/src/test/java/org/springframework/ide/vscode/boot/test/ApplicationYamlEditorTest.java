@@ -87,7 +87,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		editor.assertProblems(
 				"bork|Expecting a 'int'",
 				"logging.level.org.springframework.kafka.listener.[KafkaMessageListenerContainer$ListenerConsumer]|Unknown property",
-				"bogus|yada"
+				"bogus|Unknown property"
 		);
 	}
 
