@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2018 Pivotal, Inc.
+ * Copyright (c) 2017, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -68,6 +68,14 @@ public class RequestMappingSymbolProviderTest {
 		List<? extends SymbolInformation> symbols = indexer.getSymbols(docUri);
 		assertEquals(1, symbols.size());
 		assertTrue(containsSymbol(symbols, "@/greeting", docUri, 6, 1, 6, 29));
+	}
+
+	@Test
+	public void testSimpleRequestMappingSymbolFromConstant() throws Exception {
+		String docUri = directory.toPath().resolve("src/main/java/org/test/SimpleMappingClassWithConstant.java").toUri().toString();
+		List<? extends SymbolInformation> symbols = indexer.getSymbols(docUri);
+		assertEquals(1, symbols.size());
+		assertTrue(containsSymbol(symbols, "@/path/from/constant", docUri, 6, 1, 6, 48));
 	}
 
 	@Test

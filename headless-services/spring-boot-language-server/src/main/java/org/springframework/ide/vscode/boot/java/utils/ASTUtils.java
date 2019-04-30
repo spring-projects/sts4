@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2018 Pivotal, Inc.
+ * Copyright (c) 2017, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -20,7 +20,9 @@ import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.ArrayInitializer;
 import org.eclipse.jdt.core.dom.Expression;
+import org.eclipse.jdt.core.dom.IBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
+import org.eclipse.jdt.core.dom.IVariableBinding;
 import org.eclipse.jdt.core.dom.MemberValuePair;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.NormalAnnotation;
@@ -180,6 +182,14 @@ public class ASTUtils {
 		if (exp instanceof StringLiteral) {
 			return getLiteralValue((StringLiteral) exp);
 		} else if (exp instanceof QualifiedName) {
+			IBinding binding = ((QualifiedName) exp).resolveBinding();
+			if (binding != null && binding.getKind() == IBinding.VARIABLE) {
+				IVariableBinding varBinding = (IVariableBinding) binding;
+				Object constValue = varBinding.getConstantValue();
+				if (constValue != null) {
+					return constValue.toString();
+				}
+			}
 			return getExpressionValueAsString(((QualifiedName) exp).getName());
 		} else if (exp instanceof SimpleName) {
 			return ((SimpleName) exp).getIdentifier();
