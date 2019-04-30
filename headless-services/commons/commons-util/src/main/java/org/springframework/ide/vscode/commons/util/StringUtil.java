@@ -80,11 +80,15 @@ public class StringUtil {
 	public static String camelCaseToHyphens(String value) {
 		Matcher matcher = CAMEL_CASE_PATTERN.matcher(value);
 		StringBuffer result = new StringBuffer();
+		int start = 0;
 		while (matcher.find()) {
-			matcher.appendReplacement(result, matcher.group(1) + '-'
-					+ matcher.group(2).toLowerCase());
+			result.append(value.substring(start, matcher.start()));
+			result.append(matcher.group(1));
+			result.append('-');
+			result.append(matcher.group(2).toLowerCase());
+			start = matcher.end();
 		}
-		matcher.appendTail(result);
+		result.append(value.substring(start));
 		return result.toString();
 	}
 

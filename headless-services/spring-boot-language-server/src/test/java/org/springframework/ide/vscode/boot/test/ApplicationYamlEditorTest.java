@@ -70,6 +70,26 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 	}
 
 	////////////////////////////////////////////////////////////////////////////////////////
+	
+	@Test public void bug_165724475() throws Exception {
+		//See: 
+		// https://www.pivotaltracker.com/story/show/165724475
+		// https://github.com/spring-projects/spring-ide/issues/376
+		
+		defaultTestData();
+		
+		Editor editor = harness.newEditor(
+				"server:\n" + 
+				"  port: bork\n" + 
+				"logging.level.org.springframework.kafka.listener.[KafkaMessageListenerContainer$ListenerConsumer]: INFO\n" + 
+				"bogus: bad"
+		);
+		editor.assertProblems(
+				"bork|Expecting a 'int'",
+				"logging.level.org.springframework.kafka.listener.[KafkaMessageListenerContainer$ListenerConsumer]|Unknown property",
+				"bogus|yada"
+		);
+	}
 
 	@Test public void inheritedPojoProperties() throws Exception {
 		//See https://github.com/spring-projects/sts4/issues/116
