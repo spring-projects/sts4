@@ -15,7 +15,7 @@ else
 fi
 
 cd ${sources}
-./mvnw clean install -DargLine="-Dlsp.completions.indentation.enable=true -Dlsp.yaml.completions.errors.disable=true"
+xvfb-run ./mvnw clean install -DargLine="-Dlsp.completions.indentation.enable=true -Dlsp.yaml.completions.errors.disable=true"
 
 # Copy fatjars to `out` directory
 timestamp=`date -u +%Y%m%d%H%M`
@@ -29,3 +29,4 @@ ls -la $output
 # Copy installed artefacts from local maven cache to `maven-out`
 mkdir -p ${maven_out}/org/springframework
 cp -R ~/.m2/repository/org/springframework/ide ${maven_out}/org/springframework
+tar cvf -C ${HOME}
