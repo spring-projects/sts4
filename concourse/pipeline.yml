@@ -81,6 +81,14 @@ resources:
     paths:
     - concourse/tasks
     private_key: ((rsa_id))
+- name: s3-headless-maven-out
+  type: s3
+  source:
+    bucket: ((s3_bucket))
+    access_key_id: ((s3_accesskey))
+    secret_access_key: ((s3_secretkey))
+    region_name: ((s3_region))
+    regexp: sts4/snapshots/headless-maven-out-(.*).vsix
 - name: s3-concourse-vsix-snapshot
   type: s3
   source:
@@ -1273,6 +1281,9 @@ jobs:
           Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
     on_success:
       aggregate:
+      - put: s3-headless-maven-out
+        params:
+          file: out/headless-maven-out-*.tar.gz
       - put: artifactory
         params:
           debug: true
@@ -1505,7 +1516,6 @@ groups:
 - name: artifactory
   jobs:
   - build-fatjars
-  - publish-fatjar-snapshots
 - name: npm-packages
   jobs:
   - publish-jvm-launch-utils

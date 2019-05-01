@@ -27,6 +27,11 @@ done
 ls -la $output
 
 # Copy installed artefacts from local maven cache to `maven-out`
+
 mkdir -p ${maven_out}/org/springframework
 cp -R ~/.m2/repository/org/springframework/ide ${maven_out}/org/springframework
 tar cvf -C ${HOME}
+
+timestamp=`date +%s`
+tarfile=${output}/headless-maven-out-${timestamp}.tar.gz
+tar -czvf ${tarfile} ${maven_out}
