@@ -1319,6 +1319,7 @@ jobs:
       folder: out
       exclude: 
       - "**/_remote.repositories"
+      - "**/org.json-*"
 - name: build-manifest-yaml-atom-package
   serial: true
   plan:

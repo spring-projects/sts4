@@ -33,4 +33,4 @@ cp -R ~/.m2/repository/org/springframework/ide ${maven_out}/org/springframework
 
 timestamp=`date +%s`
 tarfile=${output}/headless-maven-out-${timestamp}.tar.gz
-tar -czvf ${tarfile} -C ${maven_out} ${maven_out}
+tar -czvf ${tarfile} -C ${maven_out} .
