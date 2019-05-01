@@ -9,6 +9,11 @@ resource_types:
   source:
     repository: cfcommunity/slack-notification-resource
     tag: latest
+- name: artifactory-resource
+  type: docker-image
+  source:
+    repository: springio/artifactory-resource
+    tag: 0.0.10
 #########################################################
 resources:
 - name: monthly
@@ -262,6 +267,13 @@ resources:
     secret_access_key: ((s3_secretkey))
     region_name: ((s3_region))
     initial_version: 0.0.3
+- name: artifactory
+  type: artifactory-resource
+  source:
+    uri: "https://repo.spring.io/artifactory"
+    username: ((artifactory_user))
+    password: ((artifactory_password))
+    build_name: spring-tools-4-headless
 ########################################################################################
 jobs:
 - name: build-docker-image
@@ -1246,13 +1258,13 @@ jobs:
   - put: vscode-snapshot-website
     params:
       path: website
-- name: atom-language-servers-test
+- name: build-fatjars
   plan:
   - aggregate:
     - get: sts4
       trigger: true
     - get: maven-cache
-  - task: atom-language-servers-test
+  - task: build-fatjars
     file: sts4/concourse/tasks/atom-language-servers-test.yml
     on_failure:
       put: slack-notification
@@ -1261,6 +1273,12 @@ jobs:
           Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
     on_success:
       aggregate:
+      - put: artifactory
+        params:
+          debug: true
+          build_uri: "https://ci.spring.io/teams/${BUILD_TEAM_NAME}/pipelines/${BUILD_PIPELINE_NAME}/jobs/${BUILD_JOB_NAME}/builds/${BUILD_ID}"
+          repo: libs-snapshot-local
+          folder: maven-out
       - put: s3-manifest-yaml-fatjar-snapshot
         params:
           file: out/manifest-yaml-language-server-*.jar
@@ -1283,12 +1301,14 @@ jobs:
   - aggregate:
     - get: sts4
       passed:
-      - atom-language-servers-test
+      - build-fatjars
+  
     - get: atom-cf-manifest-yaml
     - get: s3-manifest-yaml-fatjar-snapshot
       trigger: true
       passed:
-      - atom-language-servers-test
+      - build-fatjars
+  
   - task: build-manifest-yaml-atom-package
     params:
       package_name: atom-cf-manifest-yaml
@@ -1312,12 +1332,14 @@ jobs:
   - aggregate:
     - get: sts4
       passed:
-      - atom-language-servers-test
+      - build-fatjars
+  
     - get: atom-concourse
     - get: s3-concourse-fatjar-snapshot
       trigger: true
       passed:
-      - atom-language-servers-test
+      - build-fatjars
+  
   - task: build-concourse-pipeline-yaml-atom-package
     params:
       package_name: atom-concourse
@@ -1341,12 +1363,14 @@ jobs:
   - aggregate:
     - get: sts4
       passed:
-      - atom-language-servers-test
+      - build-fatjars
+  
     - get: atom-bosh
     - get: s3-bosh-fatjar-snapshot
       trigger: true
       passed:
-      - atom-language-servers-test
+      - build-fatjars
+  
   - task: build-bosh-atom-package
     params:
       package_name: atom-bosh
@@ -1370,12 +1394,14 @@ jobs:
   - aggregate:
     - get: sts4
       passed:
-      - atom-language-servers-test
+      - build-fatjars
+  
     - get: atom-spring-boot
     - get: s3-spring-boot-fatjar-snapshot
       trigger: true
       passed:
-      - atom-language-servers-test
+      - build-fatjars
+  
   - task: build-spring-boot-atom-package
     params:
       package_name: atom-spring-boot
@@ -1435,14 +1461,14 @@ groups:
 - name: atom-snapshots
   jobs:
   # - build-atom-snapshot-website
-  - atom-language-servers-test
+  - build-fatjars
   - build-concourse-atom-package
   - build-bosh-atom-package
   - build-manifest-yaml-atom-package
   - build-spring-boot-atom-package
 - name: atom-release
   jobs:
-  - atom-language-servers-test
+  - build-fatjars
   - build-concourse-atom-package
   - build-bosh-atom-package
   - build-manifest-yaml-atom-package
@@ -1476,6 +1502,10 @@ groups:
   jobs:
   - build-mvn-cache
   - build-docker-image
+- name: artifactory
+  jobs:
+  - build-fatjars
+  - publish-fatjar-snapshots
 - name: npm-packages
   jobs:
   - publish-jvm-launch-utils

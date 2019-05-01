@@ -3,6 +3,7 @@ inputs:
 - name: maven-cache
 outputs:
 - name: out
+- name: maven-out
 platform: linux
 image_resource:
   type: docker-image

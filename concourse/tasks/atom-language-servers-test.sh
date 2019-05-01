@@ -4,6 +4,7 @@ set -v
 workdir=`pwd`
 sources=$workdir/sts4/headless-services
 output=$workdir/out
+maven_out=$workdir/maven-out
 
 if [ -d "maven-cache" ]; then
     echo "Prepopulating maven cache"
@@ -14,8 +15,9 @@ else
 fi
 
 cd ${sources}
-./mvnw clean package -DargLine="-Dlsp.completions.indentation.enable=true -Dlsp.yaml.completions.errors.disable=true"
+./mvnw clean install -DargLine="-Dlsp.completions.indentation.enable=true -Dlsp.yaml.completions.errors.disable=true"
 
+# Copy fatjars to `out` directory
 timestamp=`date -u +%Y%m%d%H%M`
 for i in `ls *-language-server/target/*.jar`; do
     basename=$(basename $i)
@@ -23,3 +25,7 @@ for i in `ls *-language-server/target/*.jar`; do
 done
 
 ls -la $output
+
+# Copy installed artefacts from local maven cache to `maven-out`
+mkdir -p ${maven_out}/org/springframework
+cp -R ~/.m2/repository/org/springframework/ide ${maven_out}/org/springframework
