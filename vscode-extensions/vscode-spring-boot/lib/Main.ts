@@ -45,6 +45,10 @@ export function activate(context: VSCode.ExtensionContext): Thenable<LanguageCli
                     scheme: 'file'
                 },
                 {
+                    language: JAVA_LANGUAGE_ID,
+                    scheme: 'jdt'
+                },
+                {
                     language: XML_LANGUAGE_ID,
                     scheme: 'file'
                 }

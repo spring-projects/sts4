@@ -11,9 +11,11 @@
 package org.springframework.ide.vscode.boot.jdt.ls;
 
 import java.io.File;
+import java.io.UnsupportedEncodingException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -42,6 +44,8 @@ import reactor.core.Disposable;
 import reactor.core.publisher.Mono;
 
 public class JdtLsProjectCache implements InitializableJavaProjectsService {
+
+	private static final Object JDT_SCHEME = "jdt";
 
 	private final boolean IS_JANDEX_INDEX;
 
@@ -151,6 +155,11 @@ public class JdtLsProjectCache implements InitializableJavaProjectsService {
 
 	@Override
 	public Optional<IJavaProject> find(TextDocumentIdentifier doc) {
+		// JDT URI has project
+		URI docUri = URI.create(doc.getUri());
+		if (JDT_SCHEME.equals(docUri.getScheme()) && "contents".equals(docUri.getAuthority())) {
+			return findProjectForJDtUri(docUri);
+		}
 		String uri = UriUtil.normalize(doc.getUri());
 		log.debug("find {} ", uri);
 		synchronized (table) {
@@ -175,6 +184,27 @@ public class JdtLsProjectCache implements InitializableJavaProjectsService {
 			}
 			return Optional.ofNullable(foundProject);
 		}
+	}
+
+	private Optional<IJavaProject> findProjectForJDtUri(URI uri) {
+		String query = uri.getQuery();
+		try {
+			String decodedQuery = URLDecoder.decode(query, "UTF-8");
+			int lastIdx = decodedQuery.indexOf("/\\/");
+			if (lastIdx > 0) {
+				String projectName = decodedQuery.substring(1, lastIdx);
+				synchronized (table) {
+					for (IJavaProject project : table.values()) {
+						if (project.getElementName().equals(projectName)) {
+							return Optional.of(project);
+						}
+					}
+				}
+			}
+		} catch (UnsupportedEncodingException e) {
+			log.error("{}", e);
+		}
+		return Optional.empty();
 	}
 
 	@Override

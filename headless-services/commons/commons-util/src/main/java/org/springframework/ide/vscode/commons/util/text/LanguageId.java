@@ -23,6 +23,7 @@ public class LanguageId {
 	public static final LanguageId CONCOURSE_PIPELINE = of("concourse-pipeline-yaml");
 	public static final LanguageId CF_MANIFEST = of("manifest-yaml");
 	public static final LanguageId JAVA = of("java");
+	public static final LanguageId CLASS = of("class");
 	public static final LanguageId YAML = of("yaml");
 	public static final LanguageId XML = of("xml");
 	

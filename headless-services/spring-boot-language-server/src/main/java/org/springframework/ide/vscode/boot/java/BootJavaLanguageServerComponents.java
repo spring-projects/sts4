@@ -92,7 +92,7 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 	// Do not add more components here. You should instead just make your new
 	// components into separate beans.
 
-	public static final Set<LanguageId> LANGUAGES = ImmutableSet.of(LanguageId.JAVA);
+	public static final Set<LanguageId> LANGUAGES = ImmutableSet.of(LanguageId.JAVA, LanguageId.CLASS);
 
 	private static final Logger log = LoggerFactory.getLogger(BootJavaLanguageServerComponents.class);
 
