@@ -1300,29 +1300,41 @@ jobs:
         params:
           file: out/spring-boot-language-server-*.jar
           acl: public-read
-- name: publish-headless-snapshots
-  plan:
-  - aggregate:
-    - get: s3-headless-maven-out
-      passed:
-      - build-fatjars
-    - get: sts4
-  - task: unpack
-    file: sts4/concourse/tasks/unpack.yml
-    input_mapping:
-      in: s3-headless-maven-out
-  - put: artifactory
-    params:
-      debug: true
-      disable_checksum_uploads: true
-      build_uri: "https://ci.spring.io/teams/${BUILD_TEAM_NAME}/pipelines/${BUILD_PIPELINE_NAME}/jobs/${BUILD_JOB_NAME}/builds/${BUILD_ID}"
-      build_number: "${BUILD_PIPELINE_NAME}-${BUILD_JOB_NAME}-${BUILD_NAME}"
-      repo: libs-snapshot-local
-      folder: out
-      exclude: 
-      - "**/_remote.repositories"
-      #Can't publish org.json jar because its got a 'release' version number, and artifactory rejects publishing it in snapshot repo.
-      - "**/org.json*"
+      - put: artifactory
+        params:
+          debug: true
+          disable_checksum_uploads: true
+          build_uri: "https://ci.spring.io/teams/${BUILD_TEAM_NAME}/pipelines/${BUILD_PIPELINE_NAME}/jobs/${BUILD_JOB_NAME}/builds/${BUILD_ID}"
+          build_number: "${BUILD_PIPELINE_NAME}-${BUILD_JOB_NAME}-${BUILD_NAME}"
+          repo: libs-snapshot-local
+          folder: maven-out
+          exclude: 
+          - "**/_remote.repositories"
+          #Can't publish org.json jar because its got a 'release' version number, and artifactory rejects publishing it in snapshot repo.
+          - "**/org.json*"
+# - name: publish-headless-snapshots
+#   plan:
+#   - aggregate:
+#     - get: s3-headless-maven-out
+#       passed:
+#       - build-fatjars
+#     - get: sts4
+#   - task: unpack
+#     file: sts4/concourse/tasks/unpack.yml
+#     input_mapping:
+#       in: s3-headless-maven-out
+#   - put: artifactory
+#     params:
+#       debug: true
+#       disable_checksum_uploads: true
+#       build_uri: "https://ci.spring.io/teams/${BUILD_TEAM_NAME}/pipelines/${BUILD_PIPELINE_NAME}/jobs/${BUILD_JOB_NAME}/builds/${BUILD_ID}"
+#       build_number: "${BUILD_PIPELINE_NAME}-${BUILD_JOB_NAME}-${BUILD_NAME}"
+#       repo: libs-snapshot-local
+#       folder: out
+#       exclude: 
+#       - "**/_remote.repositories"
+#       #Can't publish org.json jar because its got a 'release' version number, and artifactory rejects publishing it in snapshot repo.
+#       - "**/org.json*"
 - name: build-manifest-yaml-atom-package
   serial: true
   plan:
@@ -1532,7 +1544,7 @@ groups:
 - name: artifactory
   jobs:
   - build-fatjars
-  - publish-headless-snapshots
+#  - publish-headless-snapshots
 - name: npm-packages
   jobs:
   - publish-jvm-launch-utils
