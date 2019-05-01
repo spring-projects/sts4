@@ -278,10 +278,10 @@ resources:
 - name: artifactory
   type: artifactory-resource
   source:
-    uri: "https://repo.spring.io/artifactory"
+    uri: "https://repo.spring.io"
     username: ((artifactory_user))
     password: ((artifactory_password))
-    build_name: spring-tools-4-headless
+    build_name: spring-tools-4
 ########################################################################################
 jobs:
 - name: build-docker-image
@@ -1313,13 +1313,14 @@ jobs:
       in: s3-headless-maven-out
   - put: artifactory
     params:
-      debug: true
+      debug: false
+      disable_checksum_uploads: true
       build_uri: "https://ci.spring.io/teams/${BUILD_TEAM_NAME}/pipelines/${BUILD_PIPELINE_NAME}/jobs/${BUILD_JOB_NAME}/builds/${BUILD_ID}"
+      build_number: "${BUILD_PIPELINE_NAME}-${BUILD_JOB_NAME}-${BUILD_NAME}"
       repo: libs-snapshot-local
       folder: out
       exclude: 
       - "**/_remote.repositories"
-      - "**/org.json-*"
 - name: build-manifest-yaml-atom-package
   serial: true
   plan:
