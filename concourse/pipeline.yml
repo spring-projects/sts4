@@ -88,7 +88,7 @@ resources:
     access_key_id: ((s3_accesskey))
     secret_access_key: ((s3_secretkey))
     region_name: ((s3_region))
-    regexp: sts4/snapshots/headless-maven-out-(.*).vsix
+    regexp: sts4/snapshots/headless-maven-out-(.*).tar.gz
 - name: s3-concourse-vsix-snapshot
   type: s3
   source:
@@ -1284,12 +1284,6 @@ jobs:
       - put: s3-headless-maven-out
         params:
           file: out/headless-maven-out-*.tar.gz
-      - put: artifactory
-        params:
-          debug: true
-          build_uri: "https://ci.spring.io/teams/${BUILD_TEAM_NAME}/pipelines/${BUILD_PIPELINE_NAME}/jobs/${BUILD_JOB_NAME}/builds/${BUILD_ID}"
-          repo: libs-snapshot-local
-          folder: maven-out
       - put: s3-manifest-yaml-fatjar-snapshot
         params:
           file: out/manifest-yaml-language-server-*.jar
@@ -1305,7 +1299,19 @@ jobs:
       - put: s3-spring-boot-fatjar-snapshot
         params:
           file: out/spring-boot-language-server-*.jar
-          acl: public-read          
+          acl: public-read
+- name: publish-headless-snapshots
+  plan:
+  - get: s3-headless-maven-out
+    passed:
+    - build-fatjars
+  - put: artifactory
+    params:
+      debug: true
+      build_uri: "https://ci.spring.io/teams/${BUILD_TEAM_NAME}/pipelines/${BUILD_PIPELINE_NAME}/jobs/${BUILD_JOB_NAME}/builds/${BUILD_ID}"
+      repo: libs-snapshot-local
+      folder: s3-headless-maven-out
+      exclude: "**/_remote.repositories"
 - name: build-manifest-yaml-atom-package
   serial: true
   plan:
@@ -1313,7 +1319,6 @@ jobs:
     - get: sts4
       passed:
       - build-fatjars
-  
     - get: atom-cf-manifest-yaml
     - get: s3-manifest-yaml-fatjar-snapshot
       trigger: true
@@ -1516,6 +1521,7 @@ groups:
 - name: artifactory
   jobs:
   - build-fatjars
+  - publish-headless-snapshots
 - name: npm-packages
   jobs:
   - publish-jvm-launch-utils
