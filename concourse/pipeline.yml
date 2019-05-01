@@ -1313,7 +1313,7 @@ jobs:
       in: s3-headless-maven-out
   - put: artifactory
     params:
-      debug: false
+      debug: true
       disable_checksum_uploads: true
       build_uri: "https://ci.spring.io/teams/${BUILD_TEAM_NAME}/pipelines/${BUILD_PIPELINE_NAME}/jobs/${BUILD_JOB_NAME}/builds/${BUILD_ID}"
       build_number: "${BUILD_PIPELINE_NAME}-${BUILD_JOB_NAME}-${BUILD_NAME}"
@@ -1321,6 +1321,8 @@ jobs:
       folder: out
       exclude: 
       - "**/_remote.repositories"
+      #Can't publish org.json jar because its got a 'release' version number, and artifactory rejects publishing it in snapshot repo.
+      - "**/org.json*"
 - name: build-manifest-yaml-atom-package
   serial: true
   plan:
