@@ -1302,16 +1302,23 @@ jobs:
           acl: public-read
 - name: publish-headless-snapshots
   plan:
-  - get: s3-headless-maven-out
-    passed:
-    - build-fatjars
+  - aggregate:
+    - get: s3-headless-maven-out
+      passed:
+      - build-fatjars
+    - get: sts4
+  - task: unpack
+    file: sts4/concourse/tasks/unpack.yml
+    input_mapping:
+      in: s3-headless-maven-out
   - put: artifactory
     params:
       debug: true
       build_uri: "https://ci.spring.io/teams/${BUILD_TEAM_NAME}/pipelines/${BUILD_PIPELINE_NAME}/jobs/${BUILD_JOB_NAME}/builds/${BUILD_ID}"
       repo: libs-snapshot-local
-      folder: s3-headless-maven-out
-      exclude: "**/_remote.repositories"
+      folder: out
+      exclude: 
+      - "**/_remote.repositories"
 - name: build-manifest-yaml-atom-package
   serial: true
   plan:
