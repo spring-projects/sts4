@@ -12,9 +12,10 @@ package org.springframework.ide.vscode.boot.xml.completions;
 
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
-import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collectors;
 
 import org.eclipse.lsp4j.CompletionItemKind;
 import org.eclipse.lsp4xml.dom.DOMAttr;
@@ -22,16 +23,14 @@ import org.eclipse.lsp4xml.dom.DOMNode;
 import org.eclipse.lsp4xml.dom.parser.Scanner;
 import org.springframework.ide.vscode.boot.xml.XMLCompletionProvider;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.java.IType;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
-import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
+import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
+import org.springframework.ide.vscode.commons.protocol.java.JavaCodeCompleteData;
+import org.springframework.ide.vscode.commons.protocol.java.JavaCodeCompleteParams;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
-
-import reactor.core.publisher.Flux;
-import reactor.util.function.Tuple2;
 
 /**
  * @author Martin Lippert
@@ -39,16 +38,20 @@ import reactor.util.function.Tuple2;
 public class TypeCompletionProposalProvider implements XMLCompletionProvider {
 
 	private final JavaProjectFinder projectFinder;
-	private final boolean classesOnly;
-	private final Set<String> typeSearchAlreadyInitializedProjects = Collections.synchronizedSet(new HashSet<>());
+	private final SimpleLanguageServer server;
+	private final boolean packagesAllowed;
+	private final boolean classesAllowed;
+	private final boolean interfacesAllowed;
+	private final boolean enumsAllowed;
 
-	public TypeCompletionProposalProvider(JavaProjectFinder projectFinder, SimpleTextDocumentService simpleTextDocumentService, boolean classesOnly) {
+	public TypeCompletionProposalProvider(SimpleLanguageServer server, JavaProjectFinder projectFinder,
+			boolean packagesAllowed, boolean classesAllowed, boolean interfacesAllowed, boolean enumsAllowed) {
+		this.server = server;
 		this.projectFinder = projectFinder;
-		this.classesOnly = classesOnly;
-
-		simpleTextDocumentService.onDidOpen(doc -> {
-			initializeTypeSearch(doc);
-		});
+		this.packagesAllowed = packagesAllowed;
+		this.classesAllowed = classesAllowed;
+		this.interfacesAllowed = interfacesAllowed;
+		this.enumsAllowed = enumsAllowed;
 	}
 
 	@Override
@@ -69,68 +72,81 @@ public class TypeCompletionProposalProvider implements XMLCompletionProvider {
 			}
 
 //			Flux<Tuple2<IType, Double>> types = project.getIndex().fuzzySearchTypes(prefix, true, true);
-			Flux<Tuple2<IType, Double>> types = project.getIndex().camelcaseSearchTypes(prefix, true, true);
+//			Flux<Tuple2<IType, Double>> types = project.getIndex().camelcaseSearchTypes(prefix, true, true);
+			
+			JavaCodeCompleteParams params = new JavaCodeCompleteParams(project.getLocationUri().toString(), prefix, true, true);
+			CompletableFuture<List<JavaCodeCompleteData>> completions = server.getClient().javaCodeComplete(params);
 
-			final String prefixStr = prefix;
-
-			return types
-				.filter(result -> result.getT1() != null && result.getT1().getElementName() != null && result.getT1().getElementName().length() > 0)
-				.filter(result -> classesOnly ? result.getT1().isClass() : true)
-				.map(t -> createProposal(t, doc, offset, prefixStr))
-				.collectList().block();
+			final String finalPrefix = prefix;
+			
+			try {
+				return completions.get().stream()
+						.filter(proposal -> {
+							if (proposal.isClassProposal()) return classesAllowed;
+							if (proposal.isInterfaceProposal()) return interfacesAllowed;
+							if (proposal.isEnumProposal()) return enumsAllowed;
+							if (proposal.isPackageProposal()) return packagesAllowed;
+							return false;
+						})
+						.map(proposal -> createProposal(proposal, doc, finalPrefix, offset))
+						.filter(proposal -> proposal != null)
+						.collect(Collectors.toList());
+			}
+			catch (Exception e) {
+				// TODO: logging
+			}
 		};
 
 		return Collections.emptyList();
 	}
 
-	private ICompletionProposal createProposal(Tuple2<IType, Double> t, TextDocument doc, int offset, String prefix) {
-		IType type = t.getT1();
+	private ICompletionProposal createProposal(JavaCodeCompleteData proposal, TextDocument doc, String prefix, int offset) {
+		if (proposal.isPackageProposal()) {
+			return createPackageProposal(proposal, doc, prefix, offset);
+		}
+		else if (proposal.isClassProposal() || proposal.isInterfaceProposal() || proposal.isEnumProposal()) {
+			return createTypeProposal(proposal, doc, prefix, offset);
+		}
+		else {
+			return null;
+		}
+	}
+	
+	private TypeCompletionProposal createPackageProposal(JavaCodeCompleteData proposal, TextDocument doc, String prefix, int offset) {
+		String label = proposal.getFullyQualifiedName();
+		CompletionItemKind kind = CompletionItemKind.Module;
 
-		String label = type.getFullyQualifiedName();
+		DocumentEdits edits = new DocumentEdits(doc, false);
+		edits.replace(offset - prefix.length(), offset, proposal.getFullyQualifiedName());
+
+		Renderable renderable = null;
+
+		return new TypeCompletionProposal(label, kind, edits, proposal.getFullyQualifiedName(), renderable, proposal.getRelevance());
+	}
+	
+	private TypeCompletionProposal createTypeProposal(JavaCodeCompleteData proposal, TextDocument doc, String prefix, int offset) {
+		String label = proposal.getFullyQualifiedName();
+
 		int splitIndex = Math.max(label.lastIndexOf("."), label.lastIndexOf("$"));
 
 		if (splitIndex > 0) {
 			label = label.substring(splitIndex + 1) + " - " + label.substring(0, splitIndex);
 		}
 
-		CompletionItemKind kind;
-		if (type.isClass()) {
-			kind = CompletionItemKind.Class;
-		}
-		else if (type.isInterface()) {
+		CompletionItemKind kind = CompletionItemKind.Class;
+		if (proposal.isInterfaceProposal()) {
 			kind = CompletionItemKind.Interface;
 		}
-		else if (type.isEnum()) {
+		else if (proposal.isEnumProposal()) {
 			kind = CompletionItemKind.Enum;
-		}
-		else {
-			kind = CompletionItemKind.Property;
 		}
 
 		DocumentEdits edits = new DocumentEdits(doc, false);
-		edits.replace(offset - prefix.length(), offset, type.getFullyQualifiedName());
+		edits.replace(offset - prefix.length(), offset, proposal.getFullyQualifiedName());
 
 		Renderable renderable = null;
 
-		return new TypeCompletionProposal(label, kind, edits, type.getFullyQualifiedName(), renderable, t.getT2());
+		return new TypeCompletionProposal(label, kind, edits, proposal.getFullyQualifiedName(), renderable, proposal.getRelevance());
 	}
-
-	/**
-	 * trigger initial type search as soon as the doc opens to avoid search timeouts when doing type proposals for the first time
-	 */
-	private void initializeTypeSearch(TextDocument doc) {
-		Optional<IJavaProject> foundProject = this.projectFinder.find(doc.getId());
-		if (foundProject.isPresent()) {
-			IJavaProject project = foundProject.get();
-			String projectName = project.getElementName();
-
-			if (!this.typeSearchAlreadyInitializedProjects.contains(projectName)) {
-
-				this.typeSearchAlreadyInitializedProjects.add(projectName);
-				Flux<Tuple2<IType, Double>> types = project.getIndex().camelcaseSearchTypes("", true, true);
-				types.count();
-			}
-		}
-	}
-
+		
 }

@@ -30,7 +30,7 @@ import org.springframework.ide.vscode.boot.xml.completions.TypeCompletionProposa
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
-import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
+import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 /**
@@ -51,12 +51,12 @@ public class SpringXMLCompletionEngine implements ICompletionEngine {
 	private final BootJavaConfig config;
 
 	public SpringXMLCompletionEngine(SpringXMLLanguageServerComponents springXMLLanguageServerComponents,
-			JavaProjectFinder projectFinder, SpringSymbolIndex symbolIndex, SimpleTextDocumentService simpleTextDocumentService, BootJavaConfig config) {
+			SimpleLanguageServer server, JavaProjectFinder projectFinder, SpringSymbolIndex symbolIndex, BootJavaConfig config) {
 
 		this.config = config;
-		
+
 		this.completionProviders = new HashMap<>();
-		this.completionProviders.put(new XMLCompletionProviderKey(BEANS_NAMESPACE, null, BEAN_ELEMENT, CLASS_ATTRIBUTE), new TypeCompletionProposalProvider(projectFinder, simpleTextDocumentService, true));
+		this.completionProviders.put(new XMLCompletionProviderKey(BEANS_NAMESPACE, null, BEAN_ELEMENT, CLASS_ATTRIBUTE), new TypeCompletionProposalProvider(server, projectFinder, true, true, false, false));
 		this.completionProviders.put(new XMLCompletionProviderKey(BEANS_NAMESPACE, BEAN_ELEMENT, PROPERTY_ELEMENT, NAME_ATTRIBUTE), new PropertyNameCompletionProposalProvider(projectFinder));
 		this.completionProviders.put(new XMLCompletionProviderKey(BEANS_NAMESPACE, BEAN_ELEMENT, PROPERTY_ELEMENT, REF_ATTRIBUTE), new BeanRefCompletionProposalProvider(projectFinder, symbolIndex));
 	}

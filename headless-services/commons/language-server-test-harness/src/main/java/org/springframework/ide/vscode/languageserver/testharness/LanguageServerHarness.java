@@ -113,6 +113,8 @@ import org.springframework.ide.vscode.commons.protocol.HighlightParams;
 import org.springframework.ide.vscode.commons.protocol.ProgressParams;
 import org.springframework.ide.vscode.commons.protocol.STS4LanguageClient;
 import org.springframework.ide.vscode.commons.protocol.java.ClasspathListenerParams;
+import org.springframework.ide.vscode.commons.protocol.java.JavaCodeCompleteData;
+import org.springframework.ide.vscode.commons.protocol.java.JavaCodeCompleteParams;
 import org.springframework.ide.vscode.commons.protocol.java.JavaDataParams;
 import org.springframework.ide.vscode.commons.protocol.java.JavaSearchParams;
 import org.springframework.ide.vscode.commons.protocol.java.JavaTypeHierarchyParams;
@@ -384,6 +386,11 @@ public class LanguageServerHarness {
 
 				@Override
 				public CompletableFuture<List<TypeDescriptorData>> javaSuperTypes(JavaTypeHierarchyParams params) {
+					return CompletableFuture.completedFuture(Collections.emptyList());
+				}
+
+				@Override
+				public CompletableFuture<List<JavaCodeCompleteData>> javaCodeComplete(JavaCodeCompleteParams params) {
 					return CompletableFuture.completedFuture(Collections.emptyList());
 				}
 

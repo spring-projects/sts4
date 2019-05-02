@@ -19,6 +19,8 @@ import org.eclipse.lsp4j.jsonrpc.services.JsonNotification;
 import org.eclipse.lsp4j.jsonrpc.services.JsonRequest;
 import org.eclipse.lsp4j.services.LanguageClient;
 import org.springframework.ide.vscode.commons.protocol.java.ClasspathListenerParams;
+import org.springframework.ide.vscode.commons.protocol.java.JavaCodeCompleteData;
+import org.springframework.ide.vscode.commons.protocol.java.JavaCodeCompleteParams;
 import org.springframework.ide.vscode.commons.protocol.java.JavaDataParams;
 import org.springframework.ide.vscode.commons.protocol.java.JavaSearchParams;
 import org.springframework.ide.vscode.commons.protocol.java.JavaTypeHierarchyParams;
@@ -71,4 +73,7 @@ public interface STS4LanguageClient extends LanguageClient {
 	@JsonRequest("sts/javaSuperTypes")
 	CompletableFuture<List<TypeDescriptorData>> javaSuperTypes(JavaTypeHierarchyParams params);
 
+	@JsonRequest("sts/javaCodeComplete")
+	CompletableFuture<List<JavaCodeCompleteData>> javaCodeComplete(JavaCodeCompleteParams params);
+	
 }

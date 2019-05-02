@@ -41,6 +41,7 @@ public class JavaFluxSearch {
 	public List<String> fuzzySearchPackages(JavaSearchParams params) throws Exception {
 		URI projectUri = params.getProjectUri() == null ? null : URI.create(params.getProjectUri());
 		IJavaProject javaProject = projectUri == null ? null : ResourceUtils.getJavaProject(projectUri);
+
 		PackageFluxSearch fluxPackageSearch = packageSearchCache.get(
 				Tuples.of(params.isIncludeBinaries(), params.isIncludeSystemLibs()), () -> new PackageFluxSearch(logger, params.isIncludeBinaries(), params.isIncludeSystemLibs())
 		);
@@ -50,6 +51,7 @@ public class JavaFluxSearch {
 	public List<TypeDescriptorData> fuzzySearchTypes(JavaSearchParams params) throws Exception {
 		URI projectUri = params.getProjectUri() == null ? null : URI.create(params.getProjectUri());
 		IJavaProject javaProject = projectUri == null ? null : ResourceUtils.getJavaProject(projectUri);
+		
 		TypeFluxSearch fluxTypeSearch = typeSearchCache.get(
 				Tuples.of(params.isIncludeBinaries(), params.isIncludeSystemLibs()), () -> new TypeFluxSearch(logger, javaData, params.isIncludeBinaries(), params.isIncludeSystemLibs())
 		);

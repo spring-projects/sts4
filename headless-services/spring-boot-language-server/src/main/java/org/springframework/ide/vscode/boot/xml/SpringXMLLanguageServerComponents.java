@@ -55,7 +55,7 @@ public class SpringXMLLanguageServerComponents implements LanguageServerComponen
 		server.doOnInitialized(this::initialized);
 		server.onShutdown(this::shutdown);
 
-		this.completionEngine = new SpringXMLCompletionEngine(this, projectFinder, symbolIndex, server.getTextDocumentService(), config);
+		this.completionEngine = new SpringXMLCompletionEngine(this, server, projectFinder, symbolIndex, config);
 	}
 
 	@Override

@@ -68,6 +68,8 @@ import org.springframework.ide.vscode.commons.protocol.HighlightParams;
 import org.springframework.ide.vscode.commons.protocol.ProgressParams;
 import org.springframework.ide.vscode.commons.protocol.STS4LanguageClient;
 import org.springframework.ide.vscode.commons.protocol.java.ClasspathListenerParams;
+import org.springframework.ide.vscode.commons.protocol.java.JavaCodeCompleteData;
+import org.springframework.ide.vscode.commons.protocol.java.JavaCodeCompleteParams;
 import org.springframework.ide.vscode.commons.protocol.java.JavaDataParams;
 import org.springframework.ide.vscode.commons.protocol.java.JavaSearchParams;
 import org.springframework.ide.vscode.commons.protocol.java.JavaTypeHierarchyParams;
@@ -75,6 +77,7 @@ import org.springframework.ide.vscode.commons.protocol.java.TypeData;
 import org.springframework.ide.vscode.commons.protocol.java.TypeDescriptorData;
 import org.springframework.tooling.jdt.ls.commons.Logger;
 import org.springframework.tooling.jdt.ls.commons.classpath.ReusableClasspathListenerHandler;
+import org.springframework.tooling.jdt.ls.commons.java.JavaCodeCompletion;
 import org.springframework.tooling.jdt.ls.commons.java.JavaData;
 import org.springframework.tooling.jdt.ls.commons.java.JavaFluxSearch;
 import org.springframework.tooling.jdt.ls.commons.java.TypeHierarchy;
@@ -125,11 +128,10 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 		}
 	}
 
-	final private JavaData javaData = new JavaData(STS4LanguageClientImpl::label , Logger.forEclipsePlugin(LanguageServerCommonsActivator::getInstance));
-
-	final private JavaFluxSearch javaFluxSearch = new JavaFluxSearch(Logger.forEclipsePlugin(LanguageServerCommonsActivator::getInstance), javaData);
-
-	final private TypeHierarchy typeHierarchy = new TypeHierarchy(Logger.forEclipsePlugin(LanguageServerCommonsActivator::getInstance), javaData);
+	private final JavaData javaData = new JavaData(STS4LanguageClientImpl::label , Logger.forEclipsePlugin(LanguageServerCommonsActivator::getInstance));
+	private final JavaFluxSearch javaFluxSearch = new JavaFluxSearch(Logger.forEclipsePlugin(LanguageServerCommonsActivator::getInstance), javaData);
+	private final TypeHierarchy typeHierarchy = new TypeHierarchy(Logger.forEclipsePlugin(LanguageServerCommonsActivator::getInstance), javaData);
+	private final JavaCodeCompletion codeComplete = new JavaCodeCompletion();
 
 	private static final String ANNOTION_TYPE_ID = "org.springframework.tooling.bootinfo";
 
@@ -480,6 +482,19 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 		return CompletableFuture.supplyAsync(() ->
 			typeHierarchy.superTypes(params).collect(Collectors.toList())
 		);
+	}
+
+	@Override
+	public CompletableFuture<List<JavaCodeCompleteData>> javaCodeComplete(JavaCodeCompleteParams params) {
+		return CompletableFuture.supplyAsync(() -> {
+			try {
+				return codeComplete.codeComplete(params.getProjectUri(), params.getPrefix(), params.isIncludeTypes(), params.isIncludePackages());
+			} catch (Exception e) {
+				LanguageServerCommonsActivator.logError(e, "Failed to do code complete with prefix '" + params.getPrefix()
+						+ "' in project " + params.getProjectUri());
+				return Collections.emptyList();
+			}
+		});
 	}
 
 }
