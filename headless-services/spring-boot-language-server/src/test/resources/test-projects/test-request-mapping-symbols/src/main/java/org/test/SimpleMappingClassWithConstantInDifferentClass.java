@@ -2,7 +2,7 @@ package org.test;
 
 import org.springframework.web.bind.annotation.RequestMapping;
 
-public class SimpleMappingClassWithConstant {
+public class SimpleMappingClassWithConstantInDifferentClass {
 	
 	@RequestMapping(Constants.REQUEST_MAPPING_PATH)
 	public String hello() {

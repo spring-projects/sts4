@@ -71,11 +71,19 @@ public class RequestMappingSymbolProviderTest {
 	}
 
 	@Test
-	public void testSimpleRequestMappingSymbolFromConstant() throws Exception {
-		String docUri = directory.toPath().resolve("src/main/java/org/test/SimpleMappingClassWithConstant.java").toUri().toString();
+	public void testSimpleRequestMappingSymbolFromConstantInDifferentClass() throws Exception {
+		String docUri = directory.toPath().resolve("src/main/java/org/test/SimpleMappingClassWithConstantInDifferentClass.java").toUri().toString();
 		List<? extends SymbolInformation> symbols = indexer.getSymbols(docUri);
 		assertEquals(1, symbols.size());
 		assertTrue(containsSymbol(symbols, "@/path/from/constant", docUri, 6, 1, 6, 48));
+	}
+
+	@Test
+	public void testSimpleRequestMappingSymbolFromConstantInSameClass() throws Exception {
+		String docUri = directory.toPath().resolve("src/main/java/org/test/SimpleMappingClassWithConstantInSameClass.java").toUri().toString();
+		List<? extends SymbolInformation> symbols = indexer.getSymbols(docUri);
+		assertEquals(1, symbols.size());
+		assertTrue(containsSymbol(symbols, "@/request/mapping/path/from/same/class/constant", docUri, 8, 1, 8, 52));
 	}
 
 	@Test

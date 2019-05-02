@@ -192,6 +192,14 @@ public class ASTUtils {
 			}
 			return getExpressionValueAsString(((QualifiedName) exp).getName());
 		} else if (exp instanceof SimpleName) {
+			IBinding binding = ((SimpleName) exp).resolveBinding();
+			if (binding != null && binding.getKind() == IBinding.VARIABLE) {
+				IVariableBinding varBinding = (IVariableBinding) binding;
+				Object constValue = varBinding.getConstantValue();
+				if (constValue != null) {
+					return constValue.toString();
+				}
+			}
 			return ((SimpleName) exp).getIdentifier();
 		} else {
 			return null;
