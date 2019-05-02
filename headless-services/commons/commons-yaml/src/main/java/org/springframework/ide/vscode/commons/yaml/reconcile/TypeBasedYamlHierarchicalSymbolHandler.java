@@ -75,11 +75,13 @@ public class TypeBasedYamlHierarchicalSymbolHandler implements HierarchicalDocum
 				IDocument doc = currentAst.getDocument();
 				if (namePath!=null) {
 					Node nameNode = namePath.traverseNode(node);
-					return new DocumentSymbol(NodeUtil.asScalar(nameNode), kind,
-							NodeUtil.region(doc, node).asRange(),
-							NodeUtil.region(doc, nameNode).asRange(),
-							detail
-					);
+					if (nameNode!=null) {
+						return new DocumentSymbol(NodeUtil.asScalar(nameNode), kind,
+								NodeUtil.region(doc, node).asRange(),
+								NodeUtil.region(doc, nameNode).asRange(),
+								detail
+						);
+					}
 				} else {
 					//If there's no 'namePath' then we will assume the node we found is the value of a map entry...
 					//and use the map's key as the symbol's name
