@@ -67,7 +67,6 @@ public class IClasspathUtil {
 	}
 
 	private static boolean correspondsToBinaryLocation(CPE cpe, File classpathEntryFile) {
-		classpathEntryFile = canonicalFile(classpathEntryFile);
 		File canonicalFile = binaryLocation(cpe);
 		return Objects.equals(canonicalFile, classpathEntryFile);
 	}
@@ -75,27 +74,11 @@ public class IClasspathUtil {
 	public static File binaryLocation(CPE cpe) {
 		switch (cpe.getKind()) {
 		case Classpath.ENTRY_KIND_BINARY:
-			return canonicalFile(cpe.getPath());
+			return new File(cpe.getPath());
 		case Classpath.ENTRY_KIND_SOURCE:
-			return canonicalFile(cpe.getOutputFolder());
+			return new File(cpe.getOutputFolder());
 		default:
 			throw new IllegalStateException("Missing switch case?");
-		}
-	}
-
-	private static File canonicalFile(String _f) {
-		if (_f!=null) {
-			File f = new File(_f);
-			return canonicalFile(f);
-		}
-		return null;
-	}
-
-	private static File canonicalFile(File f) {
-		try {
-			return f.getCanonicalFile();
-		} catch (IOException e) {
-			return f.getAbsoluteFile();
 		}
 	}
 

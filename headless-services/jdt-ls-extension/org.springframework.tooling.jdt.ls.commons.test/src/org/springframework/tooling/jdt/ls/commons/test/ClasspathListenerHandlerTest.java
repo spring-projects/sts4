@@ -72,6 +72,9 @@ public class ClasspathListenerHandlerTest {
 		service.addClasspathListener(classpaths.commandId);
 		ACondition.waitFor("Project with classpath to appear", Duration.ofSeconds(50), () -> {
 			Classpath cp = classpaths.getFor(loc).classpath;
+			for (CPE cpe : cp.getEntries()) {
+				assertTrue(new File(cpe.getPath()).isAbsolute());
+			}
 			assertTrue(cp.getEntries().stream().filter(cpe -> Classpath.isSource(cpe)).count()==1); //has 1 source entry
 			assertClasspath(cp, cp.getEntries().stream().filter(cpe -> Classpath.isBinary(cpe) && cpe.isSystem()).count()>=1); //has some system libraries
 		});
@@ -87,6 +90,9 @@ public class ClasspathListenerHandlerTest {
 		File loc = project.getLocation().toFile();
 		ACondition.waitFor("Project with classpath to appear", Duration.ofSeconds(5), () -> {
 			Classpath cp = classpaths.getFor(loc).classpath;
+			for (CPE cpe : cp.getEntries()) {
+				assertTrue(new File(cpe.getPath()).isAbsolute());
+			}
 			assertTrue(cp.getEntries().stream().filter(cpe -> Classpath.isSource(cpe)).count()==1); //has 1 source entry
 			assertClasspath(cp, cp.getEntries().stream().filter(cpe -> Classpath.isBinary(cpe) && cpe.isSystem()).count()>=1); //has some system libraries
 		});
@@ -109,6 +115,9 @@ public class ClasspathListenerHandlerTest {
 			service.addClasspathListener(classpaths.commandId);
 			ACondition.waitFor("Project with classpath to appear", Duration.ofSeconds(5), () -> {
 				Classpath cp = classpaths.getFor(loc).classpath;
+				for (CPE cpe : cp.getEntries()) {
+					assertTrue(new File(cpe.getPath()).isAbsolute());
+				}
 				assertTrue(cp.getEntries().stream().filter(cpe -> Classpath.isSource(cpe)).count()==1); //has 1 source entry
 				assertClasspath(cp, cp.getEntries().stream().filter(cpe -> Classpath.isBinary(cpe) && cpe.isSystem()).count()>=1); //has some system libraries
 			});
@@ -140,6 +149,9 @@ public class ClasspathListenerHandlerTest {
 		service.addClasspathListener(classpaths.commandId);
 		ACondition.waitFor("Project with classpath to appear", Duration.ofSeconds(5), () -> {
 			Classpath cp = classpaths.getFor(loc).classpath;
+			for (CPE cpe : cp.getEntries()) {
+				assertTrue(new File(cpe.getPath()).isAbsolute());
+			}
 			assertTrue(cp.getEntries().stream().filter(cpe -> Classpath.isSource(cpe)).count()==1); //has 1 source entry
 			assertClasspath(cp, cp.getEntries().stream().filter(cpe -> Classpath.isBinary(cpe) && cpe.isSystem()).count()>=1); //has some system libraries
 		});
@@ -162,6 +174,9 @@ public class ClasspathListenerHandlerTest {
 		service.addClasspathListener(classpaths.commandId);
 		ACondition.waitFor("Project with classpath to appear", Duration.ofSeconds(50), () -> {
 			Classpath cp = classpaths.getFor(loc).classpath;
+			for (CPE cpe : cp.getEntries()) {
+				assertTrue(new File(cpe.getPath()).isAbsolute());
+			}
 			assertClasspath(cp, cp.getEntries().stream().filter(cpe -> Classpath.isSource(cpe)).count()>=1); //has source entries
 			CPE dependency = cp.getEntries().stream()
 				.filter(Classpath::isBinary)
