@@ -1310,8 +1310,6 @@ jobs:
           folder: maven-out
           exclude: 
           - "**/_remote.repositories"
-          #Can't publish org.json jar because its got a 'release' version number, and artifactory rejects publishing it in snapshot repo.
-          - "**/org.json*"
 # - name: publish-headless-snapshots
 #   plan:
 #   - aggregate:

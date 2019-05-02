@@ -30,6 +30,7 @@
 	</dependencyManagement>
 
 	<modules>
+		<module>org.json</module>
 		<module>commons-language-server</module>
 		<module>commons-lsp-extensions</module>
 		<module>language-server-test-harness</module>
