@@ -15,14 +15,6 @@
 	<version>1.7.0-SNAPSHOT</version>
 	<packaging>eclipse-plugin</packaging>
 
-	<dependencies>
-		<dependency>
-			<groupId>org.springframework.ide.vscode</groupId>
-			<artifactId>manifest-yaml-language-server</artifactId>
-			<version>1.7.0-SNAPSHOT</version>
-		</dependency>
-	</dependencies>
-
 	<build>
 		<plugins>
 			<plugin>
@@ -41,6 +33,8 @@
 								<artifactItem>
 									<groupId>org.springframework.ide.vscode</groupId>
 									<artifactId>manifest-yaml-language-server</artifactId>
+									<version>${project.version}</version>
+									<classifier>exec</classifier>
 									<overWrite>true</overWrite>
 									<outputDirectory>${project.build.directory}/../servers</outputDirectory>
 								</artifactItem>
@@ -61,6 +55,8 @@
 								<artifactItem>
 									<groupId>org.springframework.ide.vscode</groupId>
 									<artifactId>manifest-yaml-language-server</artifactId>
+									<version>${project.version}</version>
+									<classifier>exec</classifier>
 									<!-- <includes>META-INF/third-party-open-source-licenses*</includes> -->
 								</artifactItem>
 							</artifactItems>

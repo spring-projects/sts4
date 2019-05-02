@@ -139,7 +139,7 @@ public abstract class STS4LanguageServerProcessStreamConnector extends ProcessSt
 	}
 
 	final protected String getLanguageServerJARLocation() {
-		String languageServer = getLanguageServerArtifactId() +"-" + getLanguageServerArtifactVersion() +".jar";
+		String languageServer = getLanguageServerArtifactId() +"-" + getLanguageServerArtifactVersion() +"-exec.jar";
 		Bundle bundle = getBundle();
 		String bundleVersion = bundle.getVersion().toString();
 		String languageServerLocalCopy = bundleVersion + "-" + languageServer;
