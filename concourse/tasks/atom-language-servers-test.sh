@@ -19,7 +19,7 @@ xvfb-run ./mvnw clean install -DargLine="-Dlsp.completions.indentation.enable=tr
 
 # Copy fatjars to `out` directory
 timestamp=`date -u +%Y%m%d%H%M`
-for i in `ls *-language-server/target/*.jar`; do
+for i in `ls *-language-server/target/*-exec.jar`; do
     basename=$(basename $i)
     cp $i $output/${basename/SNAPSHOT/$timestamp}
 done

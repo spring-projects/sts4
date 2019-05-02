@@ -11,7 +11,7 @@ cd ../../../headless-services/concourse-language-server
 
 rm -fr ${workdir}/jars
 mkdir -p ${workdir}/jars
-cp target/*.jar ${workdir}/jars
+cp target/*-exec.jar ${workdir}/jars
 
 cd ${workdir}/..
 yarn
