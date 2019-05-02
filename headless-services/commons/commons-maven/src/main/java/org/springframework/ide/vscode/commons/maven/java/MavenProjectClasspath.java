@@ -123,6 +123,8 @@ public class MavenProjectClasspath implements IClasspath {
 			File outputFolder = new File(project.getBuild().getOutputDirectory());
 			CPE cpe = CPE.source(sourceFolder, outputFolder);
 			cpe.setOwn(true);
+			cpe.setTest(false);
+			cpe.setJavaContent(true);
 			safe(() -> {
 				String reportingDir = project.getModel().getReporting().getOutputDirectory();
 				if (reportingDir!=null) {
@@ -131,6 +133,24 @@ public class MavenProjectClasspath implements IClasspath {
 				}
 			});
 			entries.add(cpe);
+		}
+		{	//test/java
+			File sourceFolder = new File(project.getBuild().getTestSourceDirectory());
+			if (sourceFolder.exists()) {
+				File outputFolder = new File(project.getBuild().getTestOutputDirectory());
+				CPE cpe = CPE.source(sourceFolder, outputFolder);
+				cpe.setOwn(true);
+				cpe.setTest(true);
+				cpe.setJavaContent(true);
+				safe(() -> {
+					String reportingDir = project.getModel().getReporting().getOutputDirectory();
+					if (reportingDir!=null) {
+						File apidocs = new File(new File(reportingDir), "apidocs");
+						cpe.setJavadocContainerUrl(apidocs.toURI().toURL());
+					}
+				});
+				entries.add(cpe);
+			}
 		}
 		{	//main/resources
 			for (Resource resource : project.getBuild().getResources()) {
@@ -141,6 +161,8 @@ public class MavenProjectClasspath implements IClasspath {
 				}
 				CPE cpe = CPE.source(sourceFolder, new File(targetPath));
 				cpe.setOwn(true);
+				cpe.setTest(false);
+				cpe.setJavaContent(false);
 				entries.add(cpe);
 			}
 		}
@@ -153,6 +175,8 @@ public class MavenProjectClasspath implements IClasspath {
 				}
 				CPE cpe = CPE.source(sourceFolder, targetPath==null ? null : new File(targetPath));
 				cpe.setOwn(true);
+				cpe.setTest(true);
+				cpe.setJavaContent(false);
 				entries.add(cpe);
 			}
 		}

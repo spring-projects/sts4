@@ -12,15 +12,18 @@ package org.springframework.tooling.boot.ls;
 
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.InstanceScope;
+import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.preference.StringFieldEditor;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Label;
+import org.eclipse.swt.widgets.Group;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.springframework.tooling.ls.eclipse.commons.LanguageServerCommonsActivator;
@@ -35,6 +38,7 @@ import org.springframework.tooling.ls.eclipse.commons.preferences.PreferenceCons
 public class BootLanguageServerPreferencesPage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
 
 	public BootLanguageServerPreferencesPage() {
+		super(GRID);
 	}
 
 	/**
@@ -79,37 +83,48 @@ public class BootLanguageServerPreferencesPage extends FieldEditorPreferencePage
 	public void init(IWorkbench workbench) {
 		setPreferenceStore(BootLanguageServerPlugin.getDefault().getPreferenceStore());
 	}
+	
+	@Override
+	protected void adjustGridLayout() {
+		// Keep empty
+	}
 
 	@Override
 	protected void createFieldEditors() {
-		
-		Composite parent = getFieldEditorParent();
-		
-		Label l = new Label(parent, SWT.NONE);
-		l.setFont(parent.getFont());
-		l.setText("Settings for Spring Boot Live Beans data:");
-		GridData gd = new GridData(GridData.FILL_HORIZONTAL);
-		gd.horizontalSpan = 2;
-		gd.grabExcessHorizontalSpace = false;
-		l.setLayoutData(gd);
-
 		final IPreferenceStore commonsLsPrefs = LanguageServerCommonsActivator.getInstance().getPreferenceStore();
+		
+		Composite contents = new Composite(getFieldEditorParent(), SWT.NONE);
+		GridData gd = new GridData(GridData.FILL_BOTH);
+		contents.setLayoutData(gd);
+		contents.setLayout(new GridLayout());
+		
+		Group liveBeansGroup = new Group(contents, SWT.NONE);
+		liveBeansGroup.setText("Spring Boot Live Beans");
+		liveBeansGroup.setLayout(new GridLayout(1, false));
+		liveBeansGroup.setLayoutData(GridDataFactory.fillDefaults().grab(true, false).create());
 
-		addField(new BooleanFieldEditor(Constants.PREF_BOOT_HINTS, "Live Boot Hint Decorators", parent));
-		addField(new BooleanFieldEditor(PreferenceConstants.HIGHLIGHT_CODELENS_PREFS, "Highlights CodeLens (experimental)", parent) {
+		addField(new BooleanFieldEditor(Constants.PREF_BOOT_HINTS, "Live Boot Hint Decorators", liveBeansGroup));
+		addField(new BooleanFieldEditor(PreferenceConstants.HIGHLIGHT_CODELENS_PREFS, "Highlights CodeLens", liveBeansGroup) {
 			@Override
 			public IPreferenceStore getPreferenceStore() {
 				return commonsLsPrefs;
 			}
 		});
+		addField(new BooleanFieldEditor(Constants.PREF_CHANGE_DETECTION, "Live Boot Change Detection", liveBeansGroup));
 		
-		addField(new BooleanFieldEditor(Constants.PREF_SUPPORT_SPRING_XML_CONFIGS, "Support Spring XML Config files (experimental)", parent));
-		addField(new BooleanFieldEditor(Constants.PREF_CHANGE_DETECTION, "Live Boot Change Detection", parent));
+		Group symbolGroup = new Group(contents, SWT.NONE);
+		symbolGroup.setText("Spring Symbols");
+		symbolGroup.setLayout(new GridLayout(1, false));
+		symbolGroup.setLayoutData(GridDataFactory.fillDefaults().grab(true, false).create());
 		
-		l = new Label(parent, SWT.NONE);
-		gd = new GridData(GridData.FILL_HORIZONTAL);
-		gd.horizontalSpan = 2;
-		l.setLayoutData(gd);
+		addField(new BooleanFieldEditor(Constants.PREF_SCAN_JAVA_TEST_SOURCES, "Scan Java test sources", symbolGroup));
+		addField(new BooleanFieldEditor(Constants.PREF_SUPPORT_SPRING_XML_CONFIGS, "Scan Spring XML Config files (experimental)", symbolGroup));
+		
+		Composite scanFoldersComposite = new Composite(symbolGroup, SWT.NONE);
+		scanFoldersComposite.setFont(symbolGroup.getFont());
+		scanFoldersComposite.setLayoutData(GridDataFactory.swtDefaults().span(2, 1).align(GridData.FILL, GridData.BEGINNING).grab(true, false).create());
+		scanFoldersComposite.setLayout(new GridLayout(2, false));
+		addField(new StringFieldEditor(Constants.PREF_XML_CONFIGS_SCAN_FOLDERS, "Scan Spring XML in folders:", scanFoldersComposite));
 
 	}
 

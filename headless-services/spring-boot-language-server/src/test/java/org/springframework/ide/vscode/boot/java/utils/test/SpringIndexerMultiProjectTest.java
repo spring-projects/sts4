@@ -28,6 +28,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
 import org.springframework.ide.vscode.boot.bootiful.SymbolProviderTestConf;
+import org.springframework.ide.vscode.boot.java.utils.SymbolIndexConfig;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.util.UriUtil;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
@@ -52,7 +53,7 @@ public class SpringIndexerMultiProjectTest {
 	@Before
 	public void setup() throws Exception {
 		harness.intialize(null);
-		indexer.configureIndexer(false);
+		indexer.configureIndexer(SymbolIndexConfig.builder().scanXml(false).build()).get(5, TimeUnit.SECONDS);
 
 		projectUri1 = UriUtil.toUri(new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-large-multiproject-1/").toURI())).toString();
 		projectFinder.find(new TextDocumentIdentifier(projectUri1)).get();

@@ -19,5 +19,7 @@ import org.springframework.ide.vscode.commons.java.IJavaProject;
 public interface SymbolHandler {
 
 	void addSymbol(IJavaProject project, String docURI, EnhancedSymbolInformation enhancedSymbol);
+	
+	void removeSymbols(IJavaProject project, String docURI);
 
 }

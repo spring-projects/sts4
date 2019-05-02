@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.boot.app;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -48,6 +49,7 @@ import org.springframework.ide.vscode.boot.java.utils.SpringIndexerXMLNamespaceH
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexerXMLNamespaceHandlerBeans;
 import org.springframework.ide.vscode.boot.java.utils.SymbolCache;
 import org.springframework.ide.vscode.boot.java.utils.SymbolHandler;
+import org.springframework.ide.vscode.boot.java.utils.SymbolIndexConfig;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
@@ -60,6 +62,8 @@ import org.springframework.ide.vscode.commons.util.Futures;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import org.springframework.stereotype.Component;
+
+import com.google.common.base.Supplier;
 
 /**
  * @author Martin Lippert
@@ -136,12 +140,18 @@ public class SpringSymbolIndex implements InitializingBean {
 			public void addSymbol(IJavaProject project, String docURI, EnhancedSymbolInformation enhancedSymbol) {
 				SpringSymbolIndex.this.addSymbol(project, docURI, enhancedSymbol);
 			}
+
+			@Override
+			public void removeSymbols(IJavaProject project, String docURI) {
+				SpringSymbolIndex.this.removeSymbolsByDoc(project, docURI);
+			}
+			
 		};
 
 		Map<String, SpringIndexerXMLNamespaceHandler> namespaceHandler = new HashMap<>();
 		namespaceHandler.put("http://www.springframework.org/schema/beans", new SpringIndexerXMLNamespaceHandlerBeans());
-		springIndexerXML = new SpringIndexerXML(handler, namespaceHandler, this.cache);
-		springIndexerJava = new SpringIndexerJava(handler, specificProviders, this.cache);
+		springIndexerXML = new SpringIndexerXML(handler, namespaceHandler, this.cache, projectFinder());
+		springIndexerJava = new SpringIndexerJava(handler, specificProviders, this.cache, projectFinder());
 
 		this.indexer = new SpringIndexer[] {springIndexerJava};
 
@@ -166,7 +176,11 @@ public class SpringSymbolIndex implements InitializingBean {
 			}
 		});
 		config.addListener(evt -> {
-			this.configureIndexer(config.isSpringXMLSupportEnabled());
+			this.configureIndexer(SymbolIndexConfig.builder()
+					.scanXml(config.isSpringXMLSupportEnabled())
+					.xmlScanFoldersGlobs(config.xmlBeansFoldersToScan())
+					.scanTestJavaSources(config.isScanJavaTestSourcesEnabled())
+					.build());
 		});
 		server.doOnInitialized(this::serverInitialized);
 		server.onShutdown(this::shutdown);
@@ -186,11 +200,13 @@ public class SpringSymbolIndex implements InitializingBean {
 		});
 	}
 
-	public void configureIndexer(boolean springXMLSupportEnabled) {
+	public CompletableFuture<Void> configureIndexer(SymbolIndexConfig config) {
+		List<CompletableFuture<?>> futuresList = new ArrayList<>();
 		synchronized (this) {
-			if (springXMLSupportEnabled && !(Arrays.asList(this.indexer).contains(springIndexerXML))) {
+			if (config.isScanXml() && !(Arrays.asList(this.indexer).contains(springIndexerXML))) {
 				this.indexer = new SpringIndexer[] {springIndexerJava, springIndexerXML};
-
+				futuresList.add(CompletableFuture.runAsync(() -> springIndexerXML.setScanFolderGlobs(config.getXmlScanFoldersGlobs())));
+				
 				List<String> globPattern = Arrays.asList(springIndexerXML.getFileWatchPatterns());
 
 				watchXMLDeleteRegistration = getWorkspaceService().getFileObserver().onFileDeleted(globPattern, (file) -> {
@@ -202,10 +218,11 @@ public class SpringSymbolIndex implements InitializingBean {
 				watchXMLChangedRegistration = getWorkspaceService().getFileObserver().onFileChanged(globPattern, (file) -> {
 					updateDocument(new TextDocumentIdentifier(file).getUri(), null);
 				});
-
+				
 			}
-			else if (!springXMLSupportEnabled && Arrays.asList(this.indexer).contains(springIndexerXML)) {
+			else if (!config.isScanXml() && Arrays.asList(this.indexer).contains(springIndexerXML)) {
 				this.indexer = new SpringIndexer[] {springIndexerJava};
+				futuresList.add(CompletableFuture.runAsync(() -> springIndexerXML.setScanFolderGlobs(new String[0])));
 
 				getWorkspaceService().getFileObserver().unsubscribe(watchXMLChangedRegistration);
 				getWorkspaceService().getFileObserver().unsubscribe(watchXMLCreatedRegistration);
@@ -214,8 +231,12 @@ public class SpringSymbolIndex implements InitializingBean {
 				watchXMLChangedRegistration = null;
 				watchXMLCreatedRegistration = null;
 				watchXMLDeleteRegistration = null;
+			} else if (config.isScanXml()) {
+				futuresList.add(CompletableFuture.runAsync(() -> springIndexerXML.setScanFolderGlobs(config.getXmlScanFoldersGlobs())));
 			}
+			futuresList.add(CompletableFuture.runAsync(() -> springIndexerJava.setScanTestJavaSources(config.isScanTestJavaSources())));
 		}
+		return CompletableFuture.allOf(futuresList.toArray(new CompletableFuture<?>[futuresList.size()]));
 	}
 
 	public void shutdown() {
@@ -291,7 +312,14 @@ public class SpringSymbolIndex implements InitializingBean {
 						try {
 							File file = new File(new URI(docURI));
 							long lastModified = file.lastModified();
-							String content = FileUtils.readFileToString(file);
+							Supplier<String> content = () -> {
+								try {
+									return FileUtils.readFileToString(file);
+								} catch (IOException e) {
+									log.error("{}", e);
+									return "";
+								}
+							};
 
 							UpdateItem updateItem = new UpdateItem(maybeProject.get(), docURI, lastModified, content, indexer);
 							futures.add(CompletableFuture.runAsync(updateItem, this.updateQueue));
@@ -323,12 +351,21 @@ public class SpringSymbolIndex implements InitializingBean {
 						try {
 							File file = new File(new URI(docURI));
 							long lastModified = file.lastModified();
+							
+							Supplier<String> contentSupplier = () -> {
+								if (content == null) {
+									try {
+										return FileUtils.readFileToString(file);
+									} catch (IOException e) {
+										log.error("{}", e);
+										return "";
+									}
+								} else {
+									return content;
+								}
+							};
 
-							if (content == null) {
-								content = FileUtils.readFileToString(file);
-							}
-
-							UpdateItem updateItem = new UpdateItem(maybeProject.get(), docURI, lastModified, content, indexer);
+							UpdateItem updateItem = new UpdateItem(maybeProject.get(), docURI, lastModified, contentSupplier, indexer);
 							futures.add(CompletableFuture.runAsync(updateItem, this.updateQueue));
 						}
 						catch (Exception e) {
@@ -488,12 +525,12 @@ public class SpringSymbolIndex implements InitializingBean {
 	private class UpdateItem implements Runnable {
 
 		private final String docURI;
-		private final String content;
+		private final Supplier<String> content;
 		private final IJavaProject project;
 		private final SpringIndexer indexer;
 		private final long lastModified;
 
-		public UpdateItem(IJavaProject project, String docURI, long lastModified, String content, SpringIndexer indexer) {
+		public UpdateItem(IJavaProject project, String docURI, long lastModified, Supplier<String> content, SpringIndexer indexer) {
 			this.project = project;
 			this.docURI = docURI;
 			this.lastModified = lastModified;

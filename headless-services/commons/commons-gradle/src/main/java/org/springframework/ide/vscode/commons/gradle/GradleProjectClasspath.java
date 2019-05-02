@@ -98,6 +98,15 @@ public class GradleProjectClasspath implements IClasspath {
 			for (EclipseSourceDirectory sf : project.getSourceDirectories()) {
 				CPE cpe = createSourceCPE(project, sf);
 				cpe.setOwn(true);
+				// TODO: figure out how to differentiate source java folder from resources
+				cpe.setJavaContent(true);
+				boolean isTest = false;
+				try {
+					isTest = sf.getClasspathAttributes().stream().filter(attr -> "gradle_used_by_scope".equals(attr.getName()) && "test".equals(attr.getValue())).findFirst().isPresent();
+				} catch (Throwable t) {
+					log.error("{}", t);
+				}
+				cpe.setTest(isTest);
 				entries.add(cpe);
 			}
 			return entries.build();

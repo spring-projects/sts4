@@ -93,6 +93,42 @@ public class IClasspathUtil {
 		}
 		return Stream.empty();
 	}
+	
+	public static Stream<File> getProjectJavaSourceFolders(IClasspath classpath) {
+		try {
+			if (classpath != null) {
+				return classpath.getClasspathEntries().stream().filter(Classpath::isProjectJavaSource)
+						.map(cpe -> new File(cpe.getPath()));
+			}
+		} catch (Exception e) {
+			log.error("", e);
+		}
+		return Stream.empty();
+	}
+	
+	public static Stream<File> getProjectJavaSourceFoldersWithoutTests(IClasspath classpath) {
+		try {
+			if (classpath != null) {
+				return classpath.getClasspathEntries().stream().filter(Classpath::isProjectNonTestJavaSource)
+						.map(cpe -> new File(cpe.getPath()));
+			}
+		} catch (Exception e) {
+			log.error("", e);
+		}
+		return Stream.empty();
+	}
+	
+	public static Stream<File> getProjectTestJavaSources(IClasspath classpath) {
+		try {
+			if (classpath != null) {
+				return classpath.getClasspathEntries().stream().filter(Classpath::isProjectTestJavaSource)
+						.map(cpe -> new File(cpe.getPath()));
+			}
+		} catch (Exception e) {
+			log.error("", e);
+		}
+		return Stream.empty();
+	}
 
 	public static Stream<File> getOutputFolders(IClasspath classpath) {
 		try {

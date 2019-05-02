@@ -13,30 +13,40 @@ import { createPreferenceProxy, PreferenceProxy, PreferenceService, PreferenceCo
 
 // tslint:disable:max-line-length
 
-export const HIGHLIGHTS_PREF_NAME = 'spring-boot.boot-hints.on';
-export const XML_SUPPORT_PREF_NAME = 'spring-boot.support-spring-xml-config.on';
-export const CODELENS_PREF_NAME = 'spring-boot.highlight-codelens.on';
+export const HIGHLIGHTS_PREF_NAME = 'boot-java.boot-hints.on';
+export const XML_SUPPORT_PREF_NAME = 'boot-java.support-spring-xml-config.on';
+export const CODELENS_PREF_NAME = 'boot-java.highlight-codelens.on';
 
 export const BootConfigSchema: PreferenceSchema = {
     'type': 'object',
     'title': 'Spring Boot Configuration',
     properties: {
-        'spring-boot.boot-hints.on': {
+        'boot-java.boot-hints.on': {
             type: 'boolean',
             description: 'Enable/Disable Spring running Boot application live hints decorators in Java source code.',
             default: true
         },
-        'spring-boot.support-spring-xml-config.on': {
+        'boot-java.scan-java-test-sources.on': {
+            type: 'boolean',
+            description: 'Enable/Disable Java test sources files scanning',
+            default: false
+        },
+        'boot-java.support-spring-xml-config.on': {
             type: 'boolean',
             description: 'Enable/Disable Support for Spring XML Config files',
             default: false
         },
-        'spring-boot.change-detection.on': {
+        'boot-java.support-spring-xml-config.scan-folders-globs': {
+            type: 'string',
+            description: 'Scan Spring XML in folders',
+            default: '**/src/main/**'
+        },
+        'boot-java.change-detection.on': {
             type: 'boolean',
             description: 'Enable/Disable detecting changes of running Spring Boot applications.',
             default: false
         },
-        'spring-boot.highlight-codelens.on': {
+        'boot-java.highlight-codelens.on': {
             type: 'boolean',
             default: true,
             description: 'Enable/Disable Spring running Boot application Code Lenses'
@@ -55,10 +65,12 @@ export const BootConfigSchema: PreferenceSchema = {
 };
 
 export interface BootConfiguration {
-    'spring-boot.boot-hints.on': boolean;
-    'spring-boot.support-spring-xml-config.on': boolean;
-    'spring-boot.change-detection.on': boolean;
-    'spring-boot.highlight-codelens.on': boolean;
+    'boot-java.boot-hints.on': boolean;
+    'boot-java.scan-java-test-sources.on': boolean;
+    'boot-java.support-spring-xml-config.on': boolean;
+    'boot-java.support-spring-xml-config.scan-folders-globs': string;
+    'boot-java.change-detection.on': boolean;
+    'boot-java.highlight-codelens.on': boolean;
     'spring-boot.ls.javahome': string;
     'spring-boot.ls.vmargs': string;
 }

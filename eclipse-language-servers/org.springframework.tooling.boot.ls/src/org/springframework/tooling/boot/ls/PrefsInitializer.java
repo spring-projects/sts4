@@ -11,6 +11,7 @@
 package org.springframework.tooling.boot.ls;
 
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
+import org.eclipse.jface.preference.IPreferenceStore;
 
 /**
  * Preferences initializer for Boot-Java LS extension
@@ -25,9 +26,12 @@ public class PrefsInitializer extends AbstractPreferenceInitializer {
 
 	@Override
 	public void initializeDefaultPreferences() {
-		BootLanguageServerPlugin.getDefault().getPreferenceStore().setDefault(Constants.PREF_BOOT_HINTS, true);
-		BootLanguageServerPlugin.getDefault().getPreferenceStore().setDefault(Constants.PREF_SUPPORT_SPRING_XML_CONFIGS, false);
-		BootLanguageServerPlugin.getDefault().getPreferenceStore().setDefault(Constants.PREF_CHANGE_DETECTION, false);
+		IPreferenceStore preferenceStore = BootLanguageServerPlugin.getDefault().getPreferenceStore();
+		preferenceStore.setDefault(Constants.PREF_BOOT_HINTS, true);
+		preferenceStore.setDefault(Constants.PREF_SUPPORT_SPRING_XML_CONFIGS, false);
+		preferenceStore.setDefault(Constants.PREF_XML_CONFIGS_SCAN_FOLDERS, "**/src/main/**");
+		preferenceStore.setDefault(Constants.PREF_CHANGE_DETECTION, false);
+		preferenceStore.setDefault(Constants.PREF_SCAN_JAVA_TEST_SOURCES, false);
 	}
 
 }

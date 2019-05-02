@@ -58,6 +58,8 @@ public class Classpath {
 		private URL javadocContainerUrl;
 		private boolean isSystem = false;
 		private boolean isOwn = false;
+		private boolean isTest = false;
+		private boolean isJavaContent = false;
 
 		public String getOutputFolder() {
 			return outputFolder;
@@ -133,19 +135,37 @@ public class Classpath {
 			this.isOwn = isOwn;
 		}
 
+		public boolean isTest() {
+			return isTest;
+		}
+
+		public void setTest(boolean isTest) {
+			this.isTest = isTest;
+		}
+
+		public boolean isJavaContent() {
+			return isJavaContent;
+		}
+
+		public void setJavaContent(boolean isJavaContent) {
+			this.isJavaContent = isJavaContent;
+		}
+
 		@Override
 		public String toString() {
 			return "CPE [kind=" + kind + ", path=" + path + ", outputFolder=" + outputFolder + ", sourceContainerUrl="
 					+ sourceContainerUrl + ", javadocContainerUrl=" + javadocContainerUrl + ", isSystem=" + isSystem
-					+ ", isOwn=" + isOwn + "]";
+					+ ", isOwn=" + isOwn + ", isTest=" + isTest + ", isJavaContent=" + isJavaContent + "]";
 		}
 
 		@Override
 		public int hashCode() {
 			final int prime = 31;
 			int result = 1;
+			result = prime * result + (isJavaContent ? 1231 : 1237);
 			result = prime * result + (isOwn ? 1231 : 1237);
 			result = prime * result + (isSystem ? 1231 : 1237);
+			result = prime * result + (isTest ? 1231 : 1237);
 			result = prime * result + ((javadocContainerUrl == null) ? 0 : javadocContainerUrl.hashCode());
 			result = prime * result + ((kind == null) ? 0 : kind.hashCode());
 			result = prime * result + ((outputFolder == null) ? 0 : outputFolder.hashCode());
@@ -163,9 +183,13 @@ public class Classpath {
 			if (getClass() != obj.getClass())
 				return false;
 			CPE other = (CPE) obj;
+			if (isJavaContent != other.isJavaContent)
+				return false;
 			if (isOwn != other.isOwn)
 				return false;
 			if (isSystem != other.isSystem)
+				return false;
+			if (isTest != other.isTest)
 				return false;
 			if (javadocContainerUrl == null) {
 				if (other.javadocContainerUrl != null)
@@ -208,5 +232,18 @@ public class Classpath {
 	public static boolean isProjectSource(CPE e) {
 		return isSource(e) && e.isOwn();
 	}
+	
+	public static boolean isProjectJavaSource(CPE cpe) {
+		return isProjectSource(cpe) && cpe.isJavaContent();
+	}
+	
+	public static boolean isProjectNonTestJavaSource(CPE cpe) {
+		return isProjectJavaSource(cpe) && !cpe.isTest();
+	}
+	
+	public static boolean isProjectTestJavaSource(CPE cpe) {
+		return isProjectJavaSource(cpe) && cpe.isTest();
+	}
+
 
 }

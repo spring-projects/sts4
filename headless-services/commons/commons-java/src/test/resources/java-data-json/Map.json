@@ -1,12 +1,5 @@
 {
-  "fqName": "java.util.Map",
   "bindingKey": "Ljava/util/Map;",
-  "clazz": false,
-  "annotation": false,
-  "interfaze": true,
-  "enam": false,
-  "superClassName": "java.lang.Object",
-  "superInterfaceNames": [],
   "fields": [],
   "methods": [
     {
@@ -710,9 +703,18 @@
       "path": "/Library/Java/JavaVirtualMachines/jdk1.8.0_151.jdk/Contents/Home/jre/lib/rt.jar",
       "sourceContainerUrl": "file:/Library/Java/JavaVirtualMachines/jdk1.8.0_151.jdk/Contents/Home/src.zip",
       "isSystem": true,
-      "isOwn": false
+      "isOwn": false,
+      "isTest": false,
+      "isJavaContent": false
     }
   },
+  "fqName": "java.util.Map",
+  "clazz": false,
+  "annotation": false,
+  "interfaze": true,
+  "enam": false,
+  "superClassName": "java.lang.Object",
+  "superInterfaceNames": [],
   "flags": 1537,
   "name": "Map",
   "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003cjava.util(Map.class[Map",

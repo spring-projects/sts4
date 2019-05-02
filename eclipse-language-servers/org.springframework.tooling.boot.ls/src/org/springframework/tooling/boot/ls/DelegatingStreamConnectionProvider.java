@@ -24,6 +24,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Assert;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.lsp4e.server.StreamConnectionProvider;
 import org.eclipse.lsp4j.DidChangeConfigurationParams;
@@ -206,14 +207,19 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 		Map<String, Object> bootHint = new HashMap<>();
 		Map<String, Object> supportXML = new HashMap<>();
 		Map<String, Object> bootChangeDetection = new HashMap<>();
+		Map<String, Object> scanTestJavaSources = new HashMap<>();
 
-		bootHint.put("on", BootLanguageServerPlugin.getDefault().getPreferenceStore().getBoolean(Constants.PREF_BOOT_HINTS));
-		supportXML.put("on", BootLanguageServerPlugin.getDefault().getPreferenceStore().getBoolean(Constants.PREF_SUPPORT_SPRING_XML_CONFIGS));
-		bootChangeDetection.put("on", BootLanguageServerPlugin.getDefault().getPreferenceStore().getBoolean(Constants.PREF_CHANGE_DETECTION));
+		IPreferenceStore preferenceStore = BootLanguageServerPlugin.getDefault().getPreferenceStore();
+		bootHint.put("on", preferenceStore.getBoolean(Constants.PREF_BOOT_HINTS));
+		supportXML.put("on", preferenceStore.getBoolean(Constants.PREF_SUPPORT_SPRING_XML_CONFIGS));
+		supportXML.put("scan-folders-globs", preferenceStore.getString(Constants.PREF_XML_CONFIGS_SCAN_FOLDERS));
+		bootChangeDetection.put("on", preferenceStore.getBoolean(Constants.PREF_CHANGE_DETECTION));
+		scanTestJavaSources.put("on", preferenceStore.getBoolean(Constants.PREF_SCAN_JAVA_TEST_SOURCES));
 
 		bootJavaObj.put("boot-hints", bootHint);
 		bootJavaObj.put("support-spring-xml-config", supportXML);
 		bootJavaObj.put("change-detection", bootChangeDetection);
+		bootJavaObj.put("scan-java-test-sources", scanTestJavaSources);
 
 		bootJavaObj.put("remote-apps", BootLanguageServerPlugin.getRemoteBootApps().getValues()
 				.stream()

@@ -615,7 +615,9 @@
       "path": "/Users/aboyko/.m2/repository/org/springframework/boot/spring-boot-autoconfigure/2.0.0.RELEASE/spring-boot-autoconfigure-2.0.0.RELEASE.jar",
       "sourceContainerUrl": "file:/Users/aboyko/.m2/repository/org/springframework/boot/spring-boot-autoconfigure/2.0.0.RELEASE/spring-boot-autoconfigure-2.0.0.RELEASE-sources.jar",
       "isSystem": false,
-      "isOwn": false
+      "isOwn": false,
+      "isTest": false,
+      "isJavaContent": false
     }
   },
   "fqName": "org.springframework.boot.autoconfigure.web.ServerProperties",

@@ -10,8 +10,13 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.app;
 
+import java.nio.file.FileSystems;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.function.Consumer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.ide.vscode.commons.languageserver.util.ListenerList;
 import org.springframework.ide.vscode.commons.languageserver.util.Settings;
@@ -26,6 +31,8 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class BootJavaConfig implements InitializingBean {
+	
+	private static final Logger log = LoggerFactory.getLogger(BootJavaConfig.class);
 
 	//TODO: Consider changing this to something that raises Spring application events.
 	// I.e. like described in here: https://www.baeldung.com/spring-events
@@ -47,6 +54,27 @@ public class BootJavaConfig implements InitializingBean {
 	public boolean isSpringXMLSupportEnabled() {
 		Boolean enabled = settings.getBoolean("boot-java", "support-spring-xml-config", "on");
 		return enabled != null && enabled.booleanValue();
+	}
+	
+	public boolean isScanJavaTestSourcesEnabled() {
+		Boolean enabled = settings.getBoolean("boot-java", "scan-java-test-sources", "on");
+		return enabled != null && enabled.booleanValue();
+	}
+	
+	public String[] xmlBeansFoldersToScan() {
+		String folders = settings.getString("boot-java", "support-spring-xml-config", "scan-folders-globs");
+		String[] patterns = folders == null ? new String[0] : folders.split("\\s*,\\s*");
+		// Validate patterns
+		List<String> validatedPatterns = new ArrayList<>(patterns.length);
+		for (String pattern : patterns) {
+			try {
+				FileSystems.getDefault().getPathMatcher("glob:" + pattern);
+				validatedPatterns.add(pattern);
+			} catch (Throwable t) {
+				log.error("Failed to parse glob pattern: '{}'", pattern);
+			}
+		}
+		return validatedPatterns.toArray(new String[validatedPatterns.size()]);
 	}
 
 	public boolean isChangeDetectionEnabled() {

@@ -131,7 +131,17 @@ public class ClasspathUtil {
 				return resolveDependencyProjectCPEs(projectPath);
 			} else if (entry.getEntryKind() == IClasspathEntry.CPE_SOURCE) {
 				CPE cpe = createSourceCPE(javaProject, entry);
-				cpe.setOwn(true);
+				if (cpe != null) {
+					cpe.setOwn(true);
+					cpe.setTest(entry.isTest());
+					// If any package fragment roots from classpath entry has children then there is java content in the source folder
+					for (IPackageFragmentRoot root : ((JavaProject)javaProject).computePackageFragmentRoots(entry)) {
+						if (root.hasChildren()) {
+							cpe.setJavaContent(true);
+							break;
+						}
+					}
+				}
 				return cpe == null ? null : Collections.singletonList(cpe);
 			}
 		}

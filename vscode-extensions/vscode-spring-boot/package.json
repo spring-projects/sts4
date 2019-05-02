@@ -73,10 +73,20 @@
           "default": true,
           "description": "Enable/Disable Spring running Boot application live hints decorators in Java source code"
         },
+        "boot-java.scan-java-test-sources.on": {
+          "type": "boolean",
+          "default": false,
+          "description": "Enable/Disable Java test sources files scanning"
+        },
         "boot-java.support-spring-xml-config.on": {
           "type": "boolean",
           "default": false,
           "description": "Enable/Disable Support for Spring XML Config files"
+        },
+        "boot-java.support-spring-xml-config.scan-folders-globs": {
+          "type": "string",
+          "default": "**/src/main/**",
+          "description": "Scan Spring XML in folders"
         },
         "boot-java.highlight-codelens.on": {
           "type": "boolean",

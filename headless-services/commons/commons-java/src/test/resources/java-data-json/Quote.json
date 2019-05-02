@@ -1,11 +1,5 @@
 {
-  "fqName": "org.test.Quote",
   "bindingKey": "Lorg/test/Quote;",
-  "clazz": true,
-  "annotation": false,
-  "interfaze": false,
-  "enam": false,
-  "superInterfaceNames": [],
   "fields": [
     {
       "bindingKey": "Lorg/test/Quote;.MATH_CONTEXT",
@@ -264,9 +258,17 @@
       "path": "/Users/aboyko/Documents/junit-workspace/test-webflux-project/src/main/java",
       "outputFolder": "/Users/aboyko/Documents/junit-workspace/test-webflux-project/target/classes",
       "isSystem": false,
-      "isOwn": true
+      "isOwn": true,
+      "isTest": false,
+      "isJavaContent": true
     }
   },
+  "fqName": "org.test.Quote",
+  "clazz": true,
+  "annotation": false,
+  "interfaze": false,
+  "enam": false,
+  "superInterfaceNames": [],
   "flags": 1,
   "name": "Quote",
   "handleIdentifier": "\u003dtest-webflux-project/src\\/main\\/java\u003corg.test{Quote.java[Quote",

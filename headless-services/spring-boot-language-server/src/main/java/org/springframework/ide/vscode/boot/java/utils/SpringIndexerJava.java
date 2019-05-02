@@ -11,8 +11,10 @@
 package org.springframework.ide.vscode.boot.java.utils;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -23,6 +25,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.codec.digest.DigestUtils;
+import org.apache.commons.io.FileUtils;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTParser;
@@ -46,8 +49,11 @@ import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.util.UriUtil;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
+
+import com.google.common.base.Supplier;
 
 /**
  * @author Martin Lippert
@@ -63,11 +69,15 @@ public class SpringIndexerJava implements SpringIndexer {
 	private final SymbolHandler symbolHandler;
 	private final AnnotationHierarchyAwareLookup<SymbolProvider> symbolProviders;
 	private final SymbolCache cache;
+	private final JavaProjectFinder projectFinder;
+	private boolean scanTestJavaSources = false;
 
-	public SpringIndexerJava(SymbolHandler symbolHandler, AnnotationHierarchyAwareLookup<SymbolProvider> symbolProviders, SymbolCache cache) {
+	public SpringIndexerJava(SymbolHandler symbolHandler, AnnotationHierarchyAwareLookup<SymbolProvider> symbolProviders, SymbolCache cache,
+			JavaProjectFinder projectFimder) {
 		this.symbolHandler = symbolHandler;
 		this.symbolProviders = symbolProviders;
 		this.cache = cache;
+		this.projectFinder = projectFimder;
 	}
 
 	@Override
@@ -100,8 +110,10 @@ public class SpringIndexerJava implements SpringIndexer {
 	}
 
 	@Override
-	public void updateFile(IJavaProject project, String docURI, long lastModified, String content) throws Exception {
-		scanFile(project, docURI, lastModified, content);
+	public void updateFile(IJavaProject project, String docURI, long lastModified, Supplier<String> content) throws Exception {
+		if (shouldProcessDocument(project, docURI)) {
+			scanFile(project, docURI, lastModified, content.get());
+		}
 	}
 
 	@Override
@@ -109,6 +121,14 @@ public class SpringIndexerJava implements SpringIndexer {
 		SymbolCacheKey cacheKey = getCacheKey(project);
 		String file = new File(new URI(docURI)).getAbsolutePath();
 		this.cache.removeFile(cacheKey, file);
+	}
+	
+	private boolean shouldProcessDocument(IJavaProject project, String docURI) {
+		Path path = Paths.get(URI.create(docURI));
+		return foldersToScan(project)
+				.filter(sourceFolder -> path.startsWith(sourceFolder.toPath()))
+				.findFirst()
+				.isPresent();
 	}
 
 	private void scanFile(IJavaProject project, String docURI, long lastModified, String content) throws Exception {
@@ -355,13 +375,27 @@ public class SpringIndexerJava implements SpringIndexer {
 				.map(file -> file.getAbsolutePath())
 				.toArray(String[]::new);
 	}
+	
+	private Stream<File> foldersToScan(IJavaProject project) {
+		IClasspath classpath = project.getClasspath();
+		return scanTestJavaSources ? IClasspathUtil.getProjectJavaSourceFolders(classpath)
+				: IClasspathUtil.getProjectJavaSourceFoldersWithoutTests(classpath);
+	}
 
 	private String[] getFiles(IJavaProject project) throws Exception {
-		return Files.walk(Paths.get(project.getLocationUri()))
-				.filter(path -> path.getFileName().toString().endsWith(".java"))
-				.filter(Files::isRegularFile)
-				.map(path -> path.toAbsolutePath().toString())
-				.toArray(String[]::new);
+		return foldersToScan(project)
+			.flatMap(folder -> {
+				try {
+					return Files.walk(folder.toPath());
+				} catch (IOException e) {
+					log.error("{}", e);
+					return Stream.empty();
+				}
+			})
+			.filter(path -> path.getFileName().toString().endsWith(".java"))
+			.filter(Files::isRegularFile)
+			.map(path -> path.toAbsolutePath().toString())
+			.toArray(String[]::new);
 	}
 
 	private SymbolCacheKey getCacheKey(IJavaProject project) {
@@ -374,6 +408,67 @@ public class SpringIndexerJava implements SpringIndexer {
 				.collect(Collectors.joining(","));
 
 		return new SymbolCacheKey(project.getElementName() + "-java-", DigestUtils.md5Hex(classpathIdentifier).toUpperCase());
+	}
+
+	public void setScanTestJavaSources(boolean scanTestJavaSources) {
+		if (this.scanTestJavaSources != scanTestJavaSources) {
+			this.scanTestJavaSources = scanTestJavaSources;
+			if (scanTestJavaSources) {
+				addTestsJavaSourcesToIndex();
+			} else {
+				removeTestJavaSourcesFromIndex();
+			}
+		}
+	}
+	
+	private void removeTestJavaSourcesFromIndex() {
+		for (IJavaProject project : projectFinder.all()) {
+			Path[] testJavaFiles = IClasspathUtil.getProjectTestJavaSources(project.getClasspath()).flatMap(folder -> {
+				try {
+					return Files.walk(folder.toPath());
+				} catch (IOException e) {
+					log.error("{}", e);
+					return Stream.empty();
+				}
+			})
+			.filter(path -> path.getFileName().toString().endsWith(".java"))
+			.filter(Files::isRegularFile).toArray(Path[]::new);
+
+			try {
+				for (Path path : testJavaFiles) {
+					URI docUri = UriUtil.toUri(path.toFile());
+					symbolHandler.removeSymbols(project, docUri.toString()); 
+				}
+			} catch (Exception e) {
+				log.error("{}", e);
+			}
+		}
+	}
+	
+	private void addTestsJavaSourcesToIndex() {
+		for (IJavaProject project : projectFinder.all()) {
+			Path[] testJavaFiles = IClasspathUtil.getProjectTestJavaSources(project.getClasspath()).flatMap(folder -> {
+				try {
+					return Files.walk(folder.toPath());
+				} catch (IOException e) {
+					log.error("{}", e);
+					return Stream.empty();
+				}
+			})
+			.filter(path -> path.getFileName().toString().endsWith(".java"))
+			.filter(Files::isRegularFile).toArray(Path[]::new);
+			
+			try {
+				for (Path path : testJavaFiles) {
+					File file = path.toFile();
+					URI docUri = UriUtil.toUri(file);
+					String content = FileUtils.readFileToString(file);
+					scanFile(project, docUri.toString(), file.lastModified(), content);
+				}
+			} catch (Exception e) {
+				log.error("{}", e);
+			}
+		}
 	}
 
 }
