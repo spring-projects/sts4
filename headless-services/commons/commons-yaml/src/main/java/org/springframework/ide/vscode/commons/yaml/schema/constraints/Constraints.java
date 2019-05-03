@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.yaml.schema.constraints;
 
-import static org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems.EXTRA_PROPERTY;
+import static org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems.*;
 import static org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems.missingProperty;
 import static org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems.problem;
 
@@ -46,6 +46,26 @@ import com.google.common.collect.Multimap;
  * @author Kris De Volder
  */
 public class Constraints {
+	
+	public static Constraint implies(String foundProperty, String requiredProperty) {
+		return (DynamicSchemaContext dc, Node parent, Node node, YType type, IProblemCollector problems) -> {
+			if (node instanceof MappingNode) {
+				MappingNode map = (MappingNode) node;
+				Set<String> foundProps = dc.getDefinedProperties();
+				if (foundProps.contains(foundProperty) && !foundProps.contains(requiredProperty)) {
+					for (NodeTuple tup : map.getValue()) {
+						Node keyNode = tup.getKeyNode();
+						String key = NodeUtil.asScalar(keyNode);
+						if (foundProperty.equals(key)) {
+							problems.accept(problem(MISSING_PROPERTY,
+									"Property '"+foundProperty+"' assumes that '"+requiredProperty+"' is also defined", keyNode
+							));
+						}
+					}
+				}
+			}
+		};
+	}
 
 	public static Constraint requireOneOf(String... properties) {
 		return new RequireOneOf(properties);
@@ -150,7 +170,7 @@ public class Constraints {
 					for (NodeTuple tup : map.getValue()) {
 						Node keyNode = tup.getKeyNode();
 						String key = NodeUtil.asScalar(keyNode);
-						if (p1.equals(key) || p1.equals(key)) {
+						if (p1.equals(key) || p2.equals(key)) {
 							problems.accept(problem(EXTRA_PROPERTY,
 									"Only one of '"+p1+"' and '"+p2+"' should be defined for '"+type+"'", keyNode
 							));

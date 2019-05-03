@@ -582,6 +582,14 @@ public class PipelineYmlSchema implements YamlSchema {
 			addProp(source, "regexp", t_ne_string);
 			addProp(source, "versioned_file", t_ne_string);
 			source.requireOneOf("regexp", "versioned_file");
+			addProp(source, "initial_path", t_ne_string);
+			addProp(source, "initial_version", t_ne_string);
+			source.require(Constraints.mutuallyExclusive("initial_path", "initial_version"));
+			source.require(Constraints.implies("initial_version", "versioned_file"));
+			source.require(Constraints.implies("initial_path", "regexp"));
+			addProp(source, "initial_content_text", t_ne_string);
+			addProp(source, "initial_content_binary", t_ne_string);
+			source.require(Constraints.mutuallyExclusive("initial_content_text", "initial_content_binary"));
 
 			AbstractType get = f.ybean("S3GetParams");
 			addProp(get, "unpack", t_boolean);

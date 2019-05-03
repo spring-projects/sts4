@@ -1884,6 +1884,45 @@ public class ConcourseEditorTest {
 		editor.assertHoverContains("target_name", "Specify the name of the target build stage");
 	}
 
+	@Test public void s3ResourceSourceInitialResourceImplications() throws Exception {
+		Editor editor;
+		
+		// 'initial_path' => 'regexp' 
+		editor = harness.newEditor(
+				"resources:\n" +
+				"- name: s3-snapshots\n" +
+				"  type: s3\n" +
+				"  source:\n" +
+				"    bucket: the-bucket\n" +
+				"    access_key_id: the-access-key\n" +
+				"    secret_access_key: the-secret-key\n" +
+				"    versioned_file: path/to/file.tar.gz\n" +
+				"    initial_path: whatever\n"
+		);
+		editor.assertProblems(
+				"s3-snapshots|Unused",
+				"initial_path|Property 'initial_path' assumes that 'regexp' is also defined"
+		);
+		
+		// 'initial_version' => 'versioned_file' 
+		editor = harness.newEditor(
+				"resources:\n" +
+				"- name: s3-snapshots\n" +
+				"  type: s3\n" +
+				"  source:\n" +
+				"    bucket: the-bucket\n" +
+				"    access_key_id: the-access-key\n" +
+				"    secret_access_key: the-secret-key\n" +
+				"    regexp: path/to/file.tar.gz\n" +
+				"    initial_version: whatever\n"
+		);
+		editor.assertProblems(
+				"s3-snapshots|Unused",
+				"initial_version|Property 'initial_version' assumes that 'versioned_file' is also defined"
+		);
+
+	}
+
 	@Test public void s3ResourceSourceReconcileAndHovers() throws Exception {
 		Editor editor;
 
@@ -1920,7 +1959,11 @@ public class ConcourseEditorTest {
 				"    sse_kms_key_id: the-master-key-id\n" +
 				"    use_v2_signing: should-use-v2\n" +
 				"    regexp: path-to-file-(.*).tar.gz\n" +
-				"    versioned_file: path/to/file.tar.gz\n"
+				"    versioned_file: path/to/file.tar.gz\n" +
+				"    initial_path: some/initial/path\n" +
+				"    initial_version: 0.0.0\n" +
+				"    initial_content_text: some-initial-text\n" +
+				"    initial_content_binary: some-base64-stuff\n"
 		);
 		editor.assertProblems(
 				"s3-snapshots|Unused 'Resource'",
@@ -1931,7 +1974,13 @@ public class ConcourseEditorTest {
 				"skipping-downloading|'boolean'",
 				"should-use-v2|'boolean'",
 				"regexp|Only one of [regexp, versioned_file] should be defined",
-				"versioned_file|Only one of [regexp, versioned_file] should be defined"
+				"versioned_file|Only one of [regexp, versioned_file] should be defined",
+				
+				"initial_path|Only one of 'initial_path' and 'initial_version' should be defined",
+				"initial_version|Only one of 'initial_path' and 'initial_version' should be defined",
+				
+				"initial_content_text|Only one of 'initial_content_text' and 'initial_content_binary' should be defined",
+				"initial_content_binary|Only one of 'initial_content_text' and 'initial_content_binary' should be defined"
 		);
 
 		editor.assertHoverContains("bucket", "The name of the bucket");
@@ -1950,6 +1999,10 @@ public class ConcourseEditorTest {
 		editor.assertHoverContains("use_v2_signing", "Use signature v2 signing");
 		editor.assertHoverContains("regexp", "The pattern to match filenames against within S3");
 		editor.assertHoverContains("versioned_file", "If you enable versioning for your S3 bucket");
+		editor.assertHoverContains("initial_path", "the file path containing the initial version");
+		editor.assertHoverContains("initial_version", "the resource version");
+		editor.assertHoverContains("initial_content_text", "Initial content as a string");
+		editor.assertHoverContains("initial_content_binary", "base64 encoded string");
 	}
 
 	@Test public void s3ResourceRegionCompletions() throws Exception {
