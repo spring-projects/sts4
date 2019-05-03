@@ -76,8 +76,6 @@ public class SpringBootLanguageServer extends STS4LanguageServerProcessStreamCon
 	private List<String> getJVMArgs() {
 		List<String> args = new ArrayList<>();
 		
-//		args.add("-Xdebug");
-//		args.add("-Xrunjdwp:server=y,transport=dt_socket,address=4000,suspend=n");
 		args.add("-Dsts.lsp.client=eclipse");
 		args.add("-Dlsp.completions.indentation.enable=true");
 		args.add("-Xmx1024m");
