@@ -24,6 +24,8 @@ import org.eclipse.jface.text.contentassist.IContextInformation;
 import org.eclipse.lsp4e.operations.completion.LSContentAssistProcessor;
 import org.eclipse.wst.sse.ui.contentassist.CompletionProposalInvocationContext;
 import org.eclipse.wst.sse.ui.contentassist.IAsyncCompletionProposalComputer;
+import org.springframework.tooling.boot.ls.BootLanguageServerPlugin;
+import org.springframework.tooling.boot.ls.Constants;
 
 /**
  * @author Martin Lippert
@@ -42,6 +44,10 @@ public class XMLContentAssistProposalComputer implements IAsyncCompletionProposa
 
 	@Override
 	public List<ICompletionProposal> computeCompletionProposals(CompletionProposalInvocationContext context, IProgressMonitor monitor) {
+		if (!BootLanguageServerPlugin.getDefault().getPreferenceStore().getBoolean(Constants.PREF_SUPPORT_SPRING_XML_CONFIGS)) {
+			return Collections.emptyList();
+		}
+		
 		CompletableFuture<ICompletionProposal[]> future = CompletableFuture.supplyAsync(() -> {
 			return lsContentAssistProcessor.computeCompletionProposals(context.getViewer(), context.getInvocationOffset());
 		});
@@ -56,6 +62,10 @@ public class XMLContentAssistProposalComputer implements IAsyncCompletionProposa
 
 	@Override
 	public List<IContextInformation> computeContextInformation(CompletionProposalInvocationContext context, IProgressMonitor monitor) {
+		if (!BootLanguageServerPlugin.getDefault().getPreferenceStore().getBoolean(Constants.PREF_SUPPORT_SPRING_XML_CONFIGS)) {
+			return Collections.emptyList();
+		}
+
 		IContextInformation[] contextInformation = lsContentAssistProcessor.computeContextInformation(context.getViewer(), context.getInvocationOffset());
 		return Arrays.asList(contextInformation);
 	}

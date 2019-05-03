@@ -14,6 +14,7 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.boot.app.BootJavaConfig;
 import org.springframework.ide.vscode.boot.app.BootLanguageServerParams;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
@@ -43,7 +44,8 @@ public class SpringXMLLanguageServerComponents implements LanguageServerComponen
 	public SpringXMLLanguageServerComponents(
 			SimpleLanguageServer server,
 			SpringSymbolIndex springIndexer,
-			BootLanguageServerParams serverParams) {
+			BootLanguageServerParams serverParams,
+			BootJavaConfig config) {
 
 		this.server = server;
 		this.serverParams = serverParams;
@@ -53,7 +55,7 @@ public class SpringXMLLanguageServerComponents implements LanguageServerComponen
 		server.doOnInitialized(this::initialized);
 		server.onShutdown(this::shutdown);
 
-		this.completionEngine = new SpringXMLCompletionEngine(this, projectFinder, symbolIndex, server.getTextDocumentService());
+		this.completionEngine = new SpringXMLCompletionEngine(this, projectFinder, symbolIndex, server.getTextDocumentService(), config);
 	}
 
 	@Override

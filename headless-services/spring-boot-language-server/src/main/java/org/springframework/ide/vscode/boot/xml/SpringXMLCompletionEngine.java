@@ -22,6 +22,7 @@ import org.eclipse.lsp4xml.dom.DOMParser;
 import org.eclipse.lsp4xml.dom.parser.Scanner;
 import org.eclipse.lsp4xml.dom.parser.TokenType;
 import org.eclipse.lsp4xml.dom.parser.XMLScanner;
+import org.springframework.ide.vscode.boot.app.BootJavaConfig;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.boot.xml.completions.BeanRefCompletionProposalProvider;
 import org.springframework.ide.vscode.boot.xml.completions.PropertyNameCompletionProposalProvider;
@@ -47,10 +48,13 @@ public class SpringXMLCompletionEngine implements ICompletionEngine {
 	private static final String REF_ATTRIBUTE = "ref";
 
 	private final Map<XMLCompletionProviderKey, XMLCompletionProvider> completionProviders;
+	private final BootJavaConfig config;
 
 	public SpringXMLCompletionEngine(SpringXMLLanguageServerComponents springXMLLanguageServerComponents,
-			JavaProjectFinder projectFinder, SpringSymbolIndex symbolIndex, SimpleTextDocumentService simpleTextDocumentService) {
+			JavaProjectFinder projectFinder, SpringSymbolIndex symbolIndex, SimpleTextDocumentService simpleTextDocumentService, BootJavaConfig config) {
 
+		this.config = config;
+		
 		this.completionProviders = new HashMap<>();
 		this.completionProviders.put(new XMLCompletionProviderKey(BEANS_NAMESPACE, null, BEAN_ELEMENT, CLASS_ATTRIBUTE), new TypeCompletionProposalProvider(projectFinder, simpleTextDocumentService, true));
 		this.completionProviders.put(new XMLCompletionProviderKey(BEANS_NAMESPACE, BEAN_ELEMENT, PROPERTY_ELEMENT, NAME_ATTRIBUTE), new PropertyNameCompletionProposalProvider(projectFinder));
@@ -59,6 +63,10 @@ public class SpringXMLCompletionEngine implements ICompletionEngine {
 
 	@Override
 	public Collection<ICompletionProposal> getCompletions(TextDocument doc, int offset) throws Exception {
+		if (!config.isSpringXMLSupportEnabled()) {
+			return Collections.emptyList();
+		}
+		
 		String content = doc.get();
 
 		DOMParser parser = DOMParser.getInstance();
