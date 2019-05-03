@@ -25,6 +25,7 @@ import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.IVariableBinding;
 import org.eclipse.jdt.core.dom.MemberValuePair;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
+import org.eclipse.jdt.core.dom.Name;
 import org.eclipse.jdt.core.dom.NormalAnnotation;
 import org.eclipse.jdt.core.dom.QualifiedName;
 import org.eclipse.jdt.core.dom.SimpleName;
@@ -181,8 +182,8 @@ public class ASTUtils {
 	public static String getExpressionValueAsString(Expression exp) {
 		if (exp instanceof StringLiteral) {
 			return getLiteralValue((StringLiteral) exp);
-		} else if (exp instanceof QualifiedName) {
-			IBinding binding = ((QualifiedName) exp).resolveBinding();
+		} else if (exp instanceof Name) {
+			IBinding binding = ((Name) exp).resolveBinding();
 			if (binding != null && binding.getKind() == IBinding.VARIABLE) {
 				IVariableBinding varBinding = (IVariableBinding) binding;
 				Object constValue = varBinding.getConstantValue();
@@ -190,17 +191,15 @@ public class ASTUtils {
 					return constValue.toString();
 				}
 			}
-			return getExpressionValueAsString(((QualifiedName) exp).getName());
-		} else if (exp instanceof SimpleName) {
-			IBinding binding = ((SimpleName) exp).resolveBinding();
-			if (binding != null && binding.getKind() == IBinding.VARIABLE) {
-				IVariableBinding varBinding = (IVariableBinding) binding;
-				Object constValue = varBinding.getConstantValue();
-				if (constValue != null) {
-					return constValue.toString();
-				}
+			if (exp instanceof QualifiedName) {
+				return getExpressionValueAsString(((QualifiedName) exp).getName());
 			}
-			return ((SimpleName) exp).getIdentifier();
+			else if (exp instanceof SimpleName) {
+				return ((SimpleName) exp).getIdentifier();
+			}
+			else {
+				return null;
+			}
 		} else {
 			return null;
 		}
