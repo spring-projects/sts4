@@ -2278,7 +2278,9 @@ public class BoshEditorTest {
 		editor.ignoreProblem(YamlSchemaProblems.MISSING_PROPERTY);
 		editor.assertProblems(
 				"dns|Only one of 'dns' and 'subnets' should be defined",
-				"cloud_properties|Only one of 'cloud_properties' and 'subnets' should be defined"
+				"cloud_properties|Only one of 'cloud_properties' and 'subnets' should be defined",
+				"subnets|Only one of 'cloud_properties' and 'subnets' should be defined",
+				"subnets|Only one of 'dns' and 'subnets' should be defined"
 		);
 	}
 
