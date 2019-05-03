@@ -1,4 +1,5 @@
-<project xmlns="https://maven.apache.org/POM/4.0.0" xmlns:xsi="https://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="https://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="https://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="https://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<artifactId>commons-boot-app-cli</artifactId>
@@ -26,17 +27,8 @@
 		<dependency>
 			<groupId>commons-codec</groupId>
 			<artifactId>commons-codec</artifactId>
-			<version>${commons-codec-version}</version>
 		</dependency>
 
-		<dependency>
-			<groupId>com.sun</groupId>
-			<artifactId>tools</artifactId>
-			<version>1.8.0</version>
-			<scope>system</scope>
-			<!-- <systemPath>C:\Program Files\Java\jdk1.8.0_144\lib\tools.jar</systemPath> -->
- 			<systemPath>${java.home}/../lib/tools.jar</systemPath>
-		</dependency>
 		<dependency>
 			<artifactId>commons-util</artifactId>
 			<groupId>org.springframework.ide.vscode</groupId>
@@ -53,5 +45,26 @@
 			<version>6.1.1</version>
 		</dependency>
 	</dependencies>
+
+	<profiles>
+		<profile>
+			<id>tools-jar-profile</id>
+			<activation>
+				<file>
+					<exists>${java.home}/../lib/tools.jar</exists>
+				</file>
+			</activation>
+			
+			<dependencies>
+				<dependency>
+					<groupId>com.sun</groupId>
+					<artifactId>tools</artifactId>
+					<version>1.8.0</version>
+					<scope>system</scope>
+					<systemPath>${java.home}/../lib/tools.jar</systemPath>
+				</dependency>
+			</dependencies>
+		</profile>
+	</profiles>
 
 </project>
