@@ -38,6 +38,7 @@ import org.springframework.ide.vscode.boot.metadata.ProjectBasedPropertyIndexPro
 import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
 import org.springframework.ide.vscode.boot.metadata.ValueProviderRegistry;
 import org.springframework.ide.vscode.boot.yaml.completions.ApplicationYamlAssistContext;
+import org.springframework.ide.vscode.commons.languageserver.LanguageServerRunner;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentEventListenerManager;
 import org.springframework.ide.vscode.commons.languageserver.util.LspClient;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
@@ -56,15 +57,14 @@ import org.yaml.snakeyaml.Yaml;
 
 @SpringBootApplication(proxyBeanMethods = false)
 public class BootLanguagServerBootApp {
+	
 	private static final String SERVER_NAME = "boot-language-server";
 
 	public static void main(String[] args) throws Exception {
+		System.setProperty(LanguageServerRunner.SYSPROP_LANGUAGESERVER_NAME, SERVER_NAME); //makes it easy to recognize language server processes - and set this as early as possible
+		
 		LogRedirect.bootRedirectToFile(SERVER_NAME); //TODO: use boot (or logback realy) to configure logging instead.
 		SpringApplication.run(BootLanguagServerBootApp.class, args);
-	}
-
-	@Bean public String serverName() {
-		return SERVER_NAME;
 	}
 
 	@ConditionalOnMissingClass("org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness")

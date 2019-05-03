@@ -75,18 +75,15 @@ public class LanguageServerRunner implements CommandLineRunner {
 	public static final String SYSPROP_LANGUAGESERVER_NAME = "sts4.languageserver.name";
 
 	private LanguageServerProperties properties;
-	private final String name;
 	private final SimpleLanguageServer languageServer;
 
-	public LanguageServerRunner(String name, LanguageServerProperties properties, SimpleLanguageServer languageServer) {
+	public LanguageServerRunner(LanguageServerProperties properties, SimpleLanguageServer languageServer) {
 		super();
-		this.name = name;
 		this.properties = properties;
 		this.languageServer = languageServer;
 	}
 
 	public void start() throws Exception {
-		System.setProperty(SYSPROP_LANGUAGESERVER_NAME, name); //makes it easy to recognize language server processes.
 		LanguageServerRunner app = this;
 		log.info("Server ready to start after {} ms", ManagementFactory.getRuntimeMXBean().getUptime());
 		if (properties.isStandalone()) {

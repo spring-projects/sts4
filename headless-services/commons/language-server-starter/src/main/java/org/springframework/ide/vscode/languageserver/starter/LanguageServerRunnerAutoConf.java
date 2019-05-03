@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.languageserver.starter;
 
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.ide.vscode.commons.languageserver.LanguageServerRunner;
@@ -21,11 +20,10 @@ import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguage
 public class LanguageServerRunnerAutoConf {
 
 	@Bean public LanguageServerRunner serverApp(
-			@Qualifier("serverName") String serverName,
 			LanguageServerProperties properties, 
 			SimpleLanguageServer languageServerFactory
 	) {
-		return new LanguageServerRunner(serverName, properties, languageServerFactory);
+		return new LanguageServerRunner(properties, languageServerFactory);
 	}
 
 }
