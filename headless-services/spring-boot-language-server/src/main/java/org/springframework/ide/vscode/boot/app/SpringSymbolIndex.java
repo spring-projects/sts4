@@ -20,6 +20,7 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -29,6 +30,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
 import org.eclipse.lsp4j.SymbolInformation;
@@ -64,6 +66,7 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import org.springframework.stereotype.Component;
 
 import com.google.common.base.Supplier;
+import com.google.common.collect.ImmutableList;
 
 /**
  * @author Martin Lippert
@@ -80,14 +83,11 @@ public class SpringSymbolIndex implements InitializingBean {
 	private static final String QUERY_PARAM_LOCATION_PREFIX = "locationPrefix:";
 	private static final int MAX_NUMBER_OF_SYMBOLS_IN_RESPONSE = 50;
 
-	private final List<SymbolInformation> symbols = new ArrayList<>();
-	private final List<SymbolAddOnInformation> addonInformation = new ArrayList<>();
+	private final List<EnhancedSymbolInformation> symbols = new ArrayList<>();
 
-	private final ConcurrentMap<String, List<SymbolInformation>> symbolsByDoc = new ConcurrentHashMap<>();
-	private final ConcurrentMap<String, List<SymbolAddOnInformation>> addonInformationByDoc = new ConcurrentHashMap<>();
+	private final ConcurrentMap<String, List<EnhancedSymbolInformation>> symbolsByDoc = new ConcurrentHashMap<>();
 
-	private final ConcurrentMap<String, List<SymbolInformation>> symbolsByProject = new ConcurrentHashMap<>();
-	private final ConcurrentMap<String, List<SymbolAddOnInformation>> addonInformationByProject = new ConcurrentHashMap<>();
+	private final ConcurrentMap<String, List<EnhancedSymbolInformation>> symbolsByProject = new ConcurrentHashMap<>();
 
 	private final ExecutorService updateQueue = Executors.newSingleThreadExecutor();
 	private SpringIndexer[] indexer;
@@ -403,17 +403,26 @@ public class SpringSymbolIndex implements InitializingBean {
 			}
 		} else {
 			synchronized(this.symbols) {
-				List<SymbolInformation> subList = this.symbols.subList(0, Math.min(MAX_NUMBER_OF_SYMBOLS_IN_RESPONSE, this.symbols.size()));
-				return new ArrayList<SymbolInformation>(subList);
+				return this.symbols.stream().map(s -> s.getSymbol()).limit(Math.min(MAX_NUMBER_OF_SYMBOLS_IN_RESPONSE, this.symbols.size())).collect(Collectors.toList());
 			}
 		}
 	}
+	
+	public Stream<SymbolInformation> getSymbols(Predicate<EnhancedSymbolInformation> filter) {
+		return symbols.parallelStream()
+			.filter(filter)
+			.map(enhanced -> enhanced.getSymbol());
+	}
 
 	public List<? extends SymbolInformation> getSymbols(String docURI) {
-		List<SymbolInformation> docSymbols = this.symbolsByDoc.get(docURI);
+		List<EnhancedSymbolInformation> docSymbols = this.symbolsByDoc.get(docURI);
 		if (docSymbols != null) {
 			synchronized(docSymbols) {
-				return new ArrayList<SymbolInformation>(docSymbols);
+				ImmutableList.Builder<SymbolInformation> builder = ImmutableList.builder();
+				for (EnhancedSymbolInformation enhanced : docSymbols) {
+					builder.add(enhanced.getSymbol());
+				}
+				return builder.build();
 			}
 		}
 		else {
@@ -423,8 +432,13 @@ public class SpringSymbolIndex implements InitializingBean {
 
 	public List<SymbolAddOnInformation> getAllAdditionalInformation(Predicate<SymbolAddOnInformation> filter) {
 		if (filter != null) {
-			synchronized(addonInformation) {
-				return addonInformation.stream().filter(filter).collect(Collectors.toList());
+			synchronized(symbols) {
+				return symbols.stream()
+						.map(s -> s.getAdditionalInformation())
+						.filter(Objects::nonNull)
+						.flatMap(i -> Arrays.stream(i))
+						.filter(filter)
+						.collect(Collectors.toList());
 			}
 		}
 		else {
@@ -433,11 +447,18 @@ public class SpringSymbolIndex implements InitializingBean {
 	}
 
 	public List<? extends SymbolAddOnInformation> getAdditonalInformation(String docURI) {
-		List<SymbolAddOnInformation> info = this.addonInformationByDoc.get(docURI);
+		List<EnhancedSymbolInformation> info = this.symbolsByDoc.get(docURI);
 
 		if (info != null) {
 			synchronized(info) {
-				return new ArrayList<>(info);
+				ImmutableList.Builder<SymbolAddOnInformation> builder = ImmutableList.builder();
+				for (EnhancedSymbolInformation enhanced : info) {
+					SymbolAddOnInformation[] additionalInformation = enhanced.getAdditionalInformation();
+					if (additionalInformation != null) {
+						builder.add(additionalInformation);
+					}
+				}
+				return builder.build();
 			}
 		}
 		else {
@@ -458,7 +479,7 @@ public class SpringSymbolIndex implements InitializingBean {
 		}, this.updateQueue);
 	}
 
-	private List<SymbolInformation> searchMatchingSymbols(List<SymbolInformation> allsymbols, String query, int maxNumberOfSymbolsInResponse) {
+	private List<SymbolInformation> searchMatchingSymbols(List<EnhancedSymbolInformation> allsymbols, String query, int maxNumberOfSymbolsInResponse) {
 		long limit = maxNumberOfSymbolsInResponse;
 		String locationPrefix = "";
 
@@ -484,6 +505,7 @@ public class SpringSymbolIndex implements InitializingBean {
 		String finalLocationPrefix = locationPrefix;
 
 		return allsymbols.stream()
+				.map(enhanced -> enhanced.getSymbol())
 				.filter(symbol -> symbol.getLocation().getUri().startsWith(finalLocationPrefix))
 				.filter(symbol -> StringUtil.containsCharactersCaseInsensitive(symbol.getName(), finalQuery))
 				.limit(limit)
@@ -603,41 +625,25 @@ public class SpringSymbolIndex implements InitializingBean {
 
 	private void addSymbol(IJavaProject project, String docURI, EnhancedSymbolInformation enhancedSymbol) {
 		synchronized(this.symbols) {
-			symbols.add(enhancedSymbol.getSymbol());
+			symbols.add(enhancedSymbol);
 		}
 
-		List<SymbolInformation> docSymbols = symbolsByDoc.computeIfAbsent(docURI, s -> new ArrayList<SymbolInformation>());
+		List<EnhancedSymbolInformation> docSymbols = symbolsByDoc.computeIfAbsent(docURI, s -> new ArrayList<EnhancedSymbolInformation>());
 		synchronized(docSymbols) {
-			docSymbols.add(enhancedSymbol.getSymbol());
+			docSymbols.add(enhancedSymbol);
 		}
 
-		List<SymbolInformation> projectSymbols = symbolsByProject.computeIfAbsent(project.getElementName(), s -> new ArrayList<SymbolInformation>());
+		List<EnhancedSymbolInformation> projectSymbols = symbolsByProject.computeIfAbsent(project.getElementName(), s -> new ArrayList<EnhancedSymbolInformation>());
 		synchronized(projectSymbols) {
-			projectSymbols.add(enhancedSymbol.getSymbol());
-		}
-
-		if (enhancedSymbol.getAdditionalInformation() != null) {
-			synchronized(addonInformation) {
-				addonInformation.addAll(Arrays.asList(enhancedSymbol.getAdditionalInformation()));
-			}
-
-			List<SymbolAddOnInformation> infoByDoc = addonInformationByDoc.computeIfAbsent(docURI, s -> new ArrayList<SymbolAddOnInformation>());
-			synchronized(infoByDoc) {
-				infoByDoc.addAll(Arrays.asList(enhancedSymbol.getAdditionalInformation()));
-			}
-
-			List<SymbolAddOnInformation> infoByProject = addonInformationByProject.computeIfAbsent(project.getElementName(), s -> new ArrayList<SymbolAddOnInformation>());
-			synchronized(infoByProject) {
-				infoByProject.addAll(Arrays.asList(enhancedSymbol.getAdditionalInformation()));
-			}
+			projectSymbols.add(enhancedSymbol);
 		}
 	}
 
 	private void removeSymbolsByDoc(IJavaProject project, String docURI) {
-		List<SymbolInformation> oldSymbols = symbolsByDoc.remove(docURI);
+		List<EnhancedSymbolInformation> oldSymbols = symbolsByDoc.remove(docURI);
 		if (oldSymbols != null) {
 
-			List<SymbolInformation> copy = null;
+			List<EnhancedSymbolInformation> copy = null;
 			synchronized(oldSymbols) {
 				copy = new ArrayList<>(oldSymbols);
 			}
@@ -646,7 +652,7 @@ public class SpringSymbolIndex implements InitializingBean {
 				this.symbols.removeAll(copy);
 			}
 
-			List<SymbolInformation> projectSymbols = symbolsByProject.get(project.getElementName());
+			List<EnhancedSymbolInformation> projectSymbols = symbolsByProject.get(project.getElementName());
 			if (projectSymbols != null) {
 				synchronized(projectSymbols) {
 					projectSymbols.removeAll(copy);
@@ -654,25 +660,6 @@ public class SpringSymbolIndex implements InitializingBean {
 			}
 		}
 
-		List<SymbolAddOnInformation> oldAddOnInformation = addonInformationByDoc.remove(docURI);
-		if (oldAddOnInformation != null) {
-
-			List<SymbolAddOnInformation> copy = null;
-			synchronized(oldAddOnInformation) {
-				copy = new ArrayList<>(oldAddOnInformation);
-			}
-
-			synchronized(addonInformation) {
-				addonInformation.removeAll(copy);
-			}
-
-			List<SymbolAddOnInformation> projectAddOns = addonInformationByProject.get(project.getElementName());
-			if (projectAddOns != null) {
-				synchronized(projectAddOns) {
-					projectAddOns.removeAll(copy);
-				}
-			}
-		}
 	}
 
 	private void removeSymbolsByProject(IJavaProject project) {
@@ -680,10 +667,10 @@ public class SpringSymbolIndex implements InitializingBean {
 		if (project.getElementName() == null) {
 			return;
 		}
-		List<SymbolInformation> oldSymbols = symbolsByProject.remove(project.getElementName());
+		List<EnhancedSymbolInformation> oldSymbols = symbolsByProject.remove(project.getElementName());
 		if (oldSymbols != null) {
 
-			List<SymbolInformation> copy = null;
+			List<EnhancedSymbolInformation> copy = null;
 			synchronized(oldSymbols) {
 				copy = new ArrayList<>(oldSymbols);
 			}
@@ -696,7 +683,7 @@ public class SpringSymbolIndex implements InitializingBean {
 			Iterator<String> docIter = keySet.iterator();
 			while (docIter.hasNext()) {
 				String docURI = docIter.next();
-				List<SymbolInformation> docSymbols = symbolsByDoc.get(docURI);
+				List<EnhancedSymbolInformation> docSymbols = symbolsByDoc.get(docURI);
 				synchronized(docSymbols) {
 					docSymbols.removeAll(copy);
 
@@ -707,32 +694,5 @@ public class SpringSymbolIndex implements InitializingBean {
 			}
 		}
 
-		List<SymbolAddOnInformation> oldAddInInformation = addonInformationByProject.remove(project.getElementName());
-		if (oldAddInInformation != null) {
-
-			List<SymbolAddOnInformation> copy = null;
-			synchronized(oldAddInInformation) {
-				copy = new ArrayList<>(oldAddInInformation);
-			}
-
-			synchronized(this.addonInformation) {
-				addonInformation.removeAll(copy);
-			}
-
-			Set<String> keySet = addonInformationByDoc.keySet();
-			Iterator<String> docIter = keySet.iterator();
-			while (docIter.hasNext()) {
-				String docURI = docIter.next();
-				List<SymbolAddOnInformation> docAddons = addonInformationByDoc.get(docURI);
-
-				synchronized(docAddons) {
-					docAddons.removeAll(copy);
-
-					if (docAddons.isEmpty()) {
-						docIter.remove();
-					}
-				}
-			}
-		}
 	}
 }

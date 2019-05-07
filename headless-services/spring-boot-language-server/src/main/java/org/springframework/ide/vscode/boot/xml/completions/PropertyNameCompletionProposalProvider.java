@@ -10,6 +10,9 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.xml.completions;
 
+import static org.springframework.ide.vscode.boot.xml.XmlConfigConstants.BEAN_ELEMENT;
+import static org.springframework.ide.vscode.boot.xml.XmlConfigConstants.CLASS_ATTRIBUTE;
+
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
@@ -76,11 +79,11 @@ public class PropertyNameCompletionProposalProvider implements XMLCompletionProv
 		return Collections.emptyList();
 	}
 
-	private String identifyBeanClass(DOMNode node) {
+	public static String identifyBeanClass(DOMNode node) {
 		DOMNode parentNode = node.getParentNode();
 		if (parentNode != null) {
-			if ("bean".equals(parentNode.getLocalName())) {
-				String beanClassAttribute = parentNode.getAttribute("class");
+			if (BEAN_ELEMENT.equals(parentNode.getLocalName())) {
+				String beanClassAttribute = parentNode.getAttribute(CLASS_ATTRIBUTE);
 				return beanClassAttribute;
 			}
 		}
@@ -113,7 +116,7 @@ public class PropertyNameCompletionProposalProvider implements XMLCompletionProv
 				&& method.getElementName().length() > 3;
 	}
 
-	private String getPropertyName(IMethod method) {
+	public static String getPropertyName(IMethod method) {
 		String methodName = method.getElementName();
 		if (methodName.startsWith("set")) {
 			String propertyName = methodName.substring(3);

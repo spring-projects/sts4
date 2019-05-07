@@ -13,14 +13,14 @@ package org.springframework.ide.vscode.boot.xml;
 /**
  * @author Martin Lippert
  */
-public class XMLCompletionProviderKey {
+public class XMLElementKey {
 
 	private final String namespaceURI;
 	private final String elementName;
 	private final String attributeName;
 	private final String parentNodeName;
 
-	public XMLCompletionProviderKey(String namespaceURI, String parentNodeName, String elementName, String attributeName) {
+	public XMLElementKey(String namespaceURI, String parentNodeName, String elementName, String attributeName) {
 		super();
 		this.namespaceURI = namespaceURI;
 		this.parentNodeName = parentNodeName;
@@ -63,7 +63,7 @@ public class XMLCompletionProviderKey {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		XMLCompletionProviderKey other = (XMLCompletionProviderKey) obj;
+		XMLElementKey other = (XMLElementKey) obj;
 		if (attributeName == null) {
 			if (other.attributeName != null)
 				return false;

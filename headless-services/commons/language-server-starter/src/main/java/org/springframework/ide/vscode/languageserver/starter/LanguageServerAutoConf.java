@@ -72,7 +72,7 @@ public class LanguageServerAutoConf {
 
 	@ConditionalOnBean(DefinitionHandler.class)
 	@Bean
-	InitializingBean registerDefintionHandler(SimpleTextDocumentService documents,
+	InitializingBean registerDefinitionHandler(SimpleTextDocumentService documents,
 			List<DefinitionHandler> definitionHandlers) {
 		if (definitionHandlers.size() == 1) {
 			return () -> documents.onDefinition(definitionHandlers.get(0));

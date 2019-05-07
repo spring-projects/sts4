@@ -36,6 +36,16 @@ export const BootConfigSchema: PreferenceSchema = {
             description: 'Enable/Disable Support for Spring XML Config files',
             default: false
         },
+        'boot-java.support-spring-xml-config.hyperlinks': {
+            type: 'boolean',
+            description: 'Enable/Disable Hyperlinks in Spring XML Config file editor',
+            default: true
+        },
+        'boot-java.support-spring-xml-config.content-assist': {
+            type: 'boolean',
+            description: 'Enable/Disable Content Assist in Spring XML Config file editor',
+            default: true
+        },
         'boot-java.support-spring-xml-config.scan-folders-globs': {
             type: 'string',
             description: 'Scan Spring XML in folders',
@@ -68,6 +78,8 @@ export interface BootConfiguration {
     'boot-java.boot-hints.on': boolean;
     'boot-java.scan-java-test-sources.on': boolean;
     'boot-java.support-spring-xml-config.on': boolean;
+    'boot-java.support-spring-xml-config.hyperlinks': boolean;
+    'boot-java.support-spring-xml-config.content-assist': boolean;
     'boot-java.support-spring-xml-config.scan-folders-globs': string;
     'boot-java.change-detection.on': boolean;
     'boot-java.highlight-codelens.on': boolean;

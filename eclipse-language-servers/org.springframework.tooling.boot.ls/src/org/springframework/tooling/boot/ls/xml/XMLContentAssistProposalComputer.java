@@ -62,7 +62,8 @@ public class XMLContentAssistProposalComputer implements IAsyncCompletionProposa
 
 	@Override
 	public List<IContextInformation> computeContextInformation(CompletionProposalInvocationContext context, IProgressMonitor monitor) {
-		if (!BootLanguageServerPlugin.getDefault().getPreferenceStore().getBoolean(Constants.PREF_SUPPORT_SPRING_XML_CONFIGS)) {
+		if (!BootLanguageServerPlugin.getDefault().getPreferenceStore().getBoolean(Constants.PREF_SUPPORT_SPRING_XML_CONFIGS)
+				|| !BootLanguageServerPlugin.getDefault().getPreferenceStore().getBoolean(Constants.PREF_XML_CONFIGS_CONTENT_ASSIST)) {
 			return Collections.emptyList();
 		}
 

@@ -82,6 +82,16 @@ public class BootJavaConfig implements InitializingBean {
 		return enabled != null && enabled.booleanValue();
 	}
 
+	public boolean areXmlHyperlinksEnabled() {
+		Boolean enabled = settings.getBoolean("boot-java", "support-spring-xml-config", "hyperlinks");
+		return enabled != null && enabled.booleanValue();
+	}
+	
+	public boolean isXmlContentAssistEnabled() {
+		Boolean enabled = settings.getBoolean("boot-java", "support-spring-xml-config", "content-assist");
+		return enabled != null && enabled.booleanValue();
+	}
+	
 	public void handleConfigurationChange(Settings newConfig) {
 		this.settings = newConfig;
 		listeners.fire(null);

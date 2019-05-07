@@ -750,6 +750,19 @@ public class Editor {
 
 		assertEquals(ImmutableSet.copyOf(expectedLocations), ImmutableSet.copyOf(definitions));
 	}
+	
+	public void assertNoLinkTargets(String hoverOver) throws Exception {
+		int pos = getRawText().indexOf(hoverOver);
+		if (pos>=0) {
+			pos += hoverOver.length() / 2;
+		}
+		assertTrue("Not found in editor: '"+hoverOver+"'", pos>=0);
+
+		TextDocumentPositionParams params = new TextDocumentPositionParams(new TextDocumentIdentifier(getUri()), doc.toPosition(pos));
+		List<? extends Location> definitions = harness.getDefinitions(params);
+
+		assertTrue(definitions == null || definitions.isEmpty());
+	}
 
 	@Deprecated
 	public void assertLinkTargets(String hoverOver, String... expecteds) {

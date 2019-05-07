@@ -35,6 +35,16 @@
       "default": false,
       "description": "Enable/Disable Support for Spring XML Config files"
     },
+    "support-spring-xml-config.hyperlinks": {
+      "type": "boolean",
+      "description": "Enable/Disable Hyperlinks in Spring XML Config file editor",
+      "default": true
+    },
+    "support-spring-xml-config.content-assist": {
+      "type": "boolean",
+      "description": "Enable/Disable Content Assist in Spring XML Config file editor",
+      "default": true
+    },
     "support-spring-xml-config.scan-folders-globs": {
       "type": "string",
       "default": "**/src/main/**",
