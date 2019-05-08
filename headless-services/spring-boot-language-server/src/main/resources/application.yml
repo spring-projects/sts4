@@ -1,3 +1,0 @@
-languageserver:
-  extension-id: vscode-spring-boot
-  completion-trigger-characters: abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ.

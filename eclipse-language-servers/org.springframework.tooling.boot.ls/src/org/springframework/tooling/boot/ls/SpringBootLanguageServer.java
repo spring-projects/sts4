@@ -62,6 +62,12 @@ public class SpringBootLanguageServer extends STS4LanguageServerProcessStreamCon
 
 			command.addAll(getJVMArgs());
 			
+			StringBuilder configLocation = new StringBuilder(languageServerRoot);
+			configLocation.append("BOOT-INF" + File.separator + "classes");
+			configLocation.append(File.separator);
+			configLocation.append("application.properties");
+			command.add("-Dspring.config.location=file:" + configLocation.toString());
+			
 			command.add("org.springframework.ide.vscode.boot.app.BootLanguagServerBootApp");
 			setCommands(command.build());
 		}
