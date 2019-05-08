@@ -13,9 +13,14 @@ package org.springframework.ide.vscode.boot.app;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.SpringApplication;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.SpringBootConfiguration;
+import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
+import org.springframework.boot.autoconfigure.context.ConfigurationPropertiesAutoConfiguration;
+import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.ide.vscode.boot.common.PropertyCompletionFactory;
 import org.springframework.ide.vscode.boot.common.RelaxedNameConfig;
 import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
@@ -53,9 +58,15 @@ import org.springframework.ide.vscode.commons.yaml.completion.YamlAssistContext;
 import org.springframework.ide.vscode.commons.yaml.completion.YamlAssistContextProvider;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlDocument;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureProvider;
+import org.springframework.ide.vscode.languageserver.starter.LanguageServerAutoConf;
+import org.springframework.ide.vscode.languageserver.starter.LanguageServerRunnerAutoConf;
 import org.yaml.snakeyaml.Yaml;
 
-@SpringBootApplication(proxyBeanMethods = false)
+@SpringBootConfiguration(proxyBeanMethods = false)
+@ImportAutoConfiguration({ LanguageServerAutoConf.class, LanguageServerRunnerAutoConf.class,
+        ConfigurationPropertiesAutoConfiguration.class, PropertyPlaceholderAutoConfiguration.class })
+@EnableConfigurationProperties(BootLsConfigProperties.class)
+@ComponentScan
 public class BootLanguagServerBootApp {
 	
 	private static final String SERVER_NAME = "boot-language-server";
