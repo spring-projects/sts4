@@ -224,6 +224,9 @@ public class LanguageServerHarness {
 	}
 
 	private void receiveHighlights(HighlightParams highlights) {
+		
+		System.out.println("receive highlights !!! " + highlights.getCodeLenses().size());
+		
 		Collection<CompletableFuture<HighlightParams>>requestors = ImmutableList.of();
 		synchronized (this) {
 			String uri = highlights.getDoc().getUri();
