@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.languageserver.starter;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.ide.vscode.commons.languageserver.LanguageServerRunner;
@@ -19,7 +20,9 @@ import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguage
 @Configuration(proxyBeanMethods = false)
 public class LanguageServerRunnerAutoConf {
 
-	@Bean public LanguageServerRunner serverApp(
+	@ConditionalOnMissingClass("org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness")
+	@Bean
+	public LanguageServerRunner serverApp(
 			LanguageServerProperties properties, 
 			SimpleLanguageServer languageServerFactory
 	) {
