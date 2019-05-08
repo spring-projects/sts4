@@ -34,7 +34,6 @@ import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YTypedPro
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeUtil;
 import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
 import org.springframework.ide.vscode.commons.yaml.schema.YamlSchema;
-import org.springframework.ide.vscode.commons.yaml.schema.constraints.Constraints;
 import org.yaml.snakeyaml.nodes.Node;
 
 import com.google.common.collect.ImmutableList;
@@ -202,7 +201,7 @@ public final class ManifestYmlSchema implements YamlSchema {
 			f.yprop("env", t_env),
 			f.yprop("host", t_ne_string),
 			f.yprop("hosts", f.yseq(t_host)),
-			f.yprop("instances", t_strictly_pos_integer),
+			f.yprop("instances", t_pos_integer),
 			f.yprop("memory", t_memory),
 			f.yprop("name", t_application_name).isRequired(true),
 			f.yprop("no-hostname", t_boolean),

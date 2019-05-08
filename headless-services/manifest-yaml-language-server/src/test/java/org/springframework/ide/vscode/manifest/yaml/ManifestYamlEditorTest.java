@@ -134,6 +134,18 @@ public class ManifestYamlEditorTest {
 				"applications|Unknown property"
 		);
 	}
+	
+	@Test public void zeroInstancesIsFine() throws Exception {
+		//See: https://www.pivotaltracker.com/story/show/165839251
+		Editor editor = harness.newEditor(
+				"applications:\n" +
+				"- name: some-name\n" +
+				"  instances: -1\n" +
+				"- name: some-other-name\n" +
+				"  instances: 0"
+		);
+		editor.assertProblems("-1|Value must be positive");
+	}
 
 	@Test
 	public void reconcileStructuralProblems() throws Exception {
@@ -167,7 +179,7 @@ public class ManifestYamlEditorTest {
 		);
 		editor.assertProblems(
 				"- bad sequence|Expecting a 'Memory' but found a 'Sequence'",
-				"bad: map|Expecting a 'Strictly Positive Integer' but found a 'Map'"
+				"bad: map|Expecting a 'Positive Integer' but found a 'Map'"
 		);
 
 		// Add a structural case for `buildpacks` (old `buildpack` was scalar, but `buildpacks` is sequence)
@@ -212,7 +224,7 @@ public class ManifestYamlEditorTest {
 				"  disk_quota: -2048M\n"
 		);
 		editor.assertProblems(
-				"-3|Value must be at least 1",
+				"-3|Value must be positive",
 				"-1024M|Negative value is not allowed",
 				"-2048M|Negative value is not allowed"
 		);
