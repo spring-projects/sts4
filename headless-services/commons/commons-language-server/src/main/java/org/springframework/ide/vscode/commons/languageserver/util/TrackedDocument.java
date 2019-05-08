@@ -20,7 +20,7 @@ import com.google.common.collect.ImmutableList;
 public class TrackedDocument {
 
 	private final TextDocument doc;
-	private List<Quickfix> quickfixes = ImmutableList.of();
+	private List<Quickfix<?>> quickfixes = ImmutableList.of();
 	private int openCount = 0;
 
 	public TrackedDocument(TextDocument doc) {
@@ -31,11 +31,11 @@ public class TrackedDocument {
 		return doc;
 	}
 
-	public void setQuickfixes(List<Quickfix> quickfixes) {
+	public void setQuickfixes(List<Quickfix<?>> quickfixes) {
 		this.quickfixes = quickfixes;
 	}
 
-	public List<Quickfix> getQuickfixes() {
+	public List<Quickfix<?>> getQuickfixes() {
 		return quickfixes;
 	}
 

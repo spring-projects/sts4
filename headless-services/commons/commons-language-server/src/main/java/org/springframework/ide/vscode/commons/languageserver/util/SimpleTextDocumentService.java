@@ -473,7 +473,7 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 		}
 	}
 
-	public void setQuickfixes(TextDocumentIdentifier docId, List<Quickfix> quickfixes) {
+	public void setQuickfixes(TextDocumentIdentifier docId, List<Quickfix<?>> quickfixes) {
 		TrackedDocument td = documents.get(docId.getUri());
 		if (td!=null) {
 			td.setQuickfixes(quickfixes);

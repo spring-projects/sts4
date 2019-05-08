@@ -551,7 +551,7 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 			IProblemCollector problems = new IProblemCollector() {
 
 				private LinkedHashSet<Diagnostic> diagnostics = new LinkedHashSet<>();
-				private List<Quickfix> quickfixes = new ArrayList<>();
+				private List<Quickfix<?>> quickfixes = new ArrayList<>();
 
 				@Override
 				public void endCollecting() {
