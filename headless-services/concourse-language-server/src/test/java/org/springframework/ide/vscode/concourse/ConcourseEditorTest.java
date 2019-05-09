@@ -513,7 +513,7 @@ public class ConcourseEditorTest {
 		);
 		editor.assertProblems(
 				"boohoo|boolean",
-				"-1|must be positive",
+				"-1|must be at least 0",
 				"git|resource does not exist",
 				"yohoho|boolean",
 				"0|must be at least 1",
@@ -1338,7 +1338,7 @@ public class ConcourseEditorTest {
 				"      clean_tags: not-bool-d\n"
 		);
 		editor.assertProblems(
-				"-1|must be positive",
+				"-1|must be at least 0",
 				"not-bool-a|'boolean'",
 				"not-bool-b|'boolean'",
 				"not-bool-c|'boolean'",

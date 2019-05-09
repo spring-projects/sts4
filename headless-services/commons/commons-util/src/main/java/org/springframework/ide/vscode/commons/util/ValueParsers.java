@@ -39,11 +39,7 @@ public class ValueParsers {
 				str = str.replace("_", ""); //Tolerate and ignore underscores in integers.
 				int value = Integer.parseInt(str);
 				if (lowerBound!=null && value<lowerBound) {
-					if (lowerBound==0) {
-						throw new NumberFormatException("Value must be positive");
-					} else {
-						throw new NumberFormatException("Value must be at least "+lowerBound);
-					}
+					throw new NumberFormatException("Value must be at least "+lowerBound);
 				}
 				if (upperBound!=null && value>upperBound) {
 					throw new NumberFormatException("Value must be at most "+upperBound);
