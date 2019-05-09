@@ -1274,6 +1274,7 @@ jobs:
     - get: maven-cache
   - task: build-fatjars
     file: sts4/concourse/tasks/atom-language-servers-test.yml
+    attempts: 3
     on_failure:
       put: slack-notification
       params:
