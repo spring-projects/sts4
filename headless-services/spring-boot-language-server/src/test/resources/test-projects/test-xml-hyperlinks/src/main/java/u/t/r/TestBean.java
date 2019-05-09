@@ -1,6 +1,6 @@
 package u.t.r;
 
-public class TestBean {
+public class TestBean extends SuperTestBean {
 	
 	private int age = 5;
 	

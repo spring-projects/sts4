@@ -25,13 +25,14 @@ import org.eclipse.lsp4xml.dom.parser.Scanner;
 import org.springframework.ide.vscode.boot.xml.XMLCompletionProvider;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.IMethod;
-import org.springframework.ide.vscode.commons.java.IType;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
+
+import reactor.core.publisher.Flux;
 
 /**
  * @author Martin Lippert
@@ -63,16 +64,12 @@ public class PropertyNameCompletionProposalProvider implements XMLCompletionProv
 
 			String beanClass = identifyBeanClass(node);
 			if (beanClass != null && beanClass.length() > 0) {
-				IType beanType = project.getIndex().findType(beanClass);
-
-				if (beanType != null) {
-					final String searchPrefix = prefix;
-					return beanType.getMethods()
-							.filter(method -> isPropertyWriteMethod(method))
-							.filter(method -> getPropertyName(method).startsWith(searchPrefix))
-							.map(method -> createProposal(method, doc, offset, tokenOffset, tokenEnd))
-							.collect(Collectors.toList());
-				}
+				final String searchPrefix = prefix;
+				propertyNameCandidateMethods(project, beanClass)
+					.filter(method -> getPropertyName(method).startsWith(searchPrefix))
+					.map(method -> createProposal(method, doc, offset, tokenOffset, tokenEnd))
+					.toStream()
+					.collect(Collectors.toList());
 			}
 		};
 
@@ -110,7 +107,7 @@ public class PropertyNameCompletionProposalProvider implements XMLCompletionProv
 		return new TypeCompletionProposal(label, kind, edits, label, renderable, 1d);
 	}
 
-	private boolean isPropertyWriteMethod(IMethod method) {
+	private static boolean isPropertyWriteMethod(IMethod method) {
 		return method != null
 				&& method.getElementName().startsWith("set")
 				&& method.getElementName().length() > 3;
@@ -125,6 +122,12 @@ public class PropertyNameCompletionProposalProvider implements XMLCompletionProv
 			}
 		}
 		return methodName;
+	}
+	
+	public static Flux<IMethod> propertyNameCandidateMethods(IJavaProject project, String beanClassFqName) {
+		return project.getIndex().allSuperTypesOf(beanClassFqName, true)
+			.flatMap(type -> Flux.fromStream(type.getMethods()))
+			.filter(PropertyNameCompletionProposalProvider::isPropertyWriteMethod);
 	}
 
 }

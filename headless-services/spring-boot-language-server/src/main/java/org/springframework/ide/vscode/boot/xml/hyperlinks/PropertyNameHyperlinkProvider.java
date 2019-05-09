@@ -18,7 +18,6 @@ import org.eclipse.lsp4xml.dom.DOMNode;
 import org.springframework.ide.vscode.boot.java.links.JavaElementLocationProvider;
 import org.springframework.ide.vscode.boot.xml.completions.PropertyNameCompletionProposalProvider;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.java.IType;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
@@ -45,15 +44,10 @@ public class PropertyNameHyperlinkProvider implements XMLHyperlinkProvider {
 			IJavaProject project = foundProject.get();
 			String beanClass = PropertyNameCompletionProposalProvider.identifyBeanClass(node);
 			if (beanClass != null && beanClass.length() > 0) {
-				IType beanType = project.getIndex().findType(beanClass);
-
-				if (beanType != null) {
-					return beanType.getMethods()
-							.filter(method -> propertyName.equals(PropertyNameCompletionProposalProvider.getPropertyName(method)))
-							.map(method -> locationProvider.findLocation(project, method))
-							.findFirst()
-							.orElse(null);
-				}
+				return PropertyNameCompletionProposalProvider.propertyNameCandidateMethods(project, beanClass)
+					.filter(method -> propertyName.equals(PropertyNameCompletionProposalProvider.getPropertyName(method)))
+					.map(method -> locationProvider.findLocation(project, method))
+					.blockFirst();
 			}
 		}
 		return null;

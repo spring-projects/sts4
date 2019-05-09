@@ -117,6 +117,24 @@ public class XmlBeansHyperlinkTest {
 	}
 	
 	@Test
+	public void testBeanPropertyNameFromSuperClassHyperlink() throws Exception {
+		Path xmlFilePath = Paths.get(project.getLocationUri()).resolve("beans.xml");
+		Editor editor = harness.newEditor(LanguageId.XML,
+				"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+				"<beans xmlns=\"http://www.springframework.org/schema/beans\"\n" + 
+				"xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
+				"xsi:schemaLocation=\"http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd\">\n" +
+				
+				"<bean id=\"someBean\" class=\"u.t.r.TestBean\"\n" +
+				"<property name=\"message\" value=\"Hello\" />\n" +
+				"</bean>\n" +
+				"</beans>\n",
+				UriUtil.toUri(xmlFilePath.toFile()).toString()
+		);
+		definitionLinkAsserts.assertLinkTargets(editor, "message", project, DefinitionLinkAsserts.method("u.t.r.SuperTestBean", "setMessage", "java.lang.String"));
+	}
+	
+	@Test
 	public void testBeanRefHyperlink() throws Exception {
 		Path xmlFilePath = Paths.get(project.getLocationUri()).resolve("beans.xml");
 		Editor editor = harness.newEditor(LanguageId.XML,
