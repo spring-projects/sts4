@@ -8,7 +8,14 @@ import * as Net from 'net';
 import * as ChildProcess from 'child_process';
 import * as CommonsCommands from './commands';
 import { TextDocumentIdentifier, RequestType, LanguageClient, LanguageClientOptions, SettingMonitor, ServerOptions, StreamInfo, Position } from 'vscode-languageclient';
-import {TextDocument, OutputChannel, Disposable, window, Event, EventEmitter} from 'vscode';
+import {
+    Disposable,
+    window,
+    Event,
+    EventEmitter,
+    ProgressLocation,
+    Progress,
+} from 'vscode';
 import { Trace, NotificationType } from 'vscode-jsonrpc';
 import * as P2C from 'vscode-languageclient/lib/protocolConverter';
 import {HighlightService, HighlightParams} from './highlight-service';
@@ -306,25 +313,48 @@ interface ProgressParams {
     statusMsg?: string
 }
 
+class ProgressHandle {
+    constructor(
+        private progress: Progress<{ message?: string; increment?: number }>,
+        private finish: () => void
+    ) {}
+
+    updateStatus(message: string, increment: number) {
+        this.progress.report({
+            message,
+            increment
+        });
+    }
+
+    complete() {
+        this.finish();
+    }
+}
+
 class ProgressService {
 
-    private status = new Map<String, Disposable>();
+    private status = new Map<String, ProgressHandle>();
 
     handle(params: ProgressParams) {
-        let oldMessage = this.status.get(params.id);
-        if (oldMessage) {
-            oldMessage.dispose();
+        const progressHandler = this.status.get(params.id);
+        if (progressHandler) {
+            progressHandler.complete();
+        } else {
+            if (params.statusMsg) {
+                window.withProgress({
+                    location: ProgressLocation.Notification,
+                    title: params.statusMsg,
+                    cancellable: false
+                }, progress => new Promise(resolve => this.status.set(params.id, new ProgressHandle(progress, resolve))));
+            }
         }
-        if (params.statusMsg) {
-            let newMessage = window.setStatusBarMessage(params.statusMsg);
-            this.status.set(params.id, newMessage);
-        }
+
     }
 
     dispose() {
         if (this.status) {
-            for (let d of this.status.values()) {
-                d.dispose();
+            for (let handler of this.status.values()) {
+                handler.complete();
             }
         }
         this.status = null;
