@@ -13,6 +13,8 @@ package org.springframework.ide.vscode.commons.yaml.completion;
 import java.util.Collection;
 import java.util.Collections;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
@@ -34,9 +36,17 @@ import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser
  * @author Kris De Volder
  */
 public abstract class TopLevelAssistContext implements YamlAssistContext {
+	
+	final static Logger logger = LoggerFactory.getLogger(TopLevelAssistContext.class);
 
 	@Override
 	public YamlAssistContext traverse(YamlPathSegment s) throws Exception {
+		YamlAssistContext result = _traverse(s);
+		logger.debug("Traversing {} with {} => {}", this, s, result);
+		return result;
+	}
+
+	protected YamlAssistContext _traverse(YamlPathSegment s) {
 		Integer documentSelector = s.toIndex();
 		if (documentSelector!=null) {
 			return getDocumentContext(documentSelector);

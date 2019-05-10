@@ -289,22 +289,18 @@ resources:
     build_name: spring-tools-4
 ########################################################################################
 jobs:
-- name: run-concourse-ls-tests
-  serial: true
+- name: concourse-ls-tests
+  max_in_flight: 4
   plan:
   - get: every-minute
     trigger: true
-  - get: sts4
+  - aggregate:
+    - get: maven-cache
+    - get: sts4
   - task: run-concourse-ls-test
-    config:
-      platform: linux
-      image_resource:
-        type: docker-image
-        source:
-          repository: kdvolder/sts4-build-env
-      run:
-        dir: sts4/headless-services/concourse-language-server
-        path: build.sh
+    file: sts4/concourse/tasks/build-vsix.yml
+    params:
+      extension_id: vscode-concourse
     on_failure:
       put: slack-notification
       params:
@@ -1572,7 +1568,7 @@ groups:
 #  - publish-headless-snapshots
 - name: debugging
   jobs:
-  - run-concourse-ls-tests
+  - concourse-ls-tests
 - name: npm-packages
   jobs:
   - publish-jvm-launch-utils

@@ -307,6 +307,12 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 
 	@Override
 	public YamlAssistContext traverse(YamlPathSegment s) throws Exception {
+		YamlAssistContext result = _traverse(s);
+		logger.debug("Traversing {} with {} => {}", this, s, result);
+		return result;
+	}
+
+	protected YamlAssistContext _traverse(YamlPathSegment s) {
 		if (s.getType()==YamlPathSegmentType.VAL_AT_KEY) {
 			if (typeUtil.isSequencable(type) || typeUtil.isMap(type)) {
 				return contextWith(s, typeUtil.getDomainType(type));
