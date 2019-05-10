@@ -19,10 +19,10 @@ import java.util.concurrent.Callable;
 
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileException;
-import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.EnumValueParser;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.ValueParser;
+import org.springframework.ide.vscode.commons.util.ValueParsers;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YAtomicType;
 import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
@@ -38,7 +38,7 @@ import com.google.common.collect.Sets;
  */
 public class ManifestYmlValueParsers {
 
-	public static final ValueParser POS_INTEGER = integerRange(0, null);
+	public static final ValueParser POS_INTEGER = ValueParsers.integerRange(0, null);
 
 	public static final ValueParser MEMORY = new ValueParser() {
 
@@ -73,31 +73,6 @@ public class ManifestYmlValueParsers {
 			return null;
 		}
 	};
-
-	public static ValueParser integerAtLeast(final Integer lowerBound) {
-		return integerRange(lowerBound, null);
-	}
-
-	public static ValueParser integerRange(final Integer lowerBound, final Integer upperBound) {
-		Assert.isLegal(lowerBound==null || upperBound==null || lowerBound <= upperBound);
-		return new ValueParser() {
-			@Override
-			public Object parse(String str) throws Exception {
-				int value = Integer.parseInt(str);
-				if (lowerBound!=null && value<lowerBound) {
-					if (lowerBound==0) {
-						throw new NumberFormatException("Value must be positive");
-					} else {
-						throw new NumberFormatException("Value must be at least "+lowerBound);
-					}
-				}
-				if (upperBound!=null && value>upperBound) {
-					throw new NumberFormatException("Value must be at most "+upperBound);
-				}
-				return value;
-			}
-		};
-	}
 
 	public static EnumValueParser fromCFValueHints(Callable<Collection<YValueHint>> hintProvider, YAtomicType type, ProblemType problemType) {
 		return new EnumValueParser(type.toString(), true /*CF value parsers are potentially long running*/, YTypeFactory.valuesFromHintProvider(hintProvider)) {

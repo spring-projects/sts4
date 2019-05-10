@@ -175,7 +175,7 @@ public final class ManifestYmlSchema implements YamlSchema {
 				.build();
 
 		YAtomicType t_strictly_pos_integer = f.yatomic("Strictly Positive Integer");
-		t_strictly_pos_integer.parseWith(ManifestYmlValueParsers.integerAtLeast(1));
+		t_strictly_pos_integer.parseWith(ValueParsers.integerAtLeast(1));
 
 		YAtomicType t_pos_integer = f.yatomic("Positive Integer");
 		t_pos_integer.parseWith(ManifestYmlValueParsers.POS_INTEGER);

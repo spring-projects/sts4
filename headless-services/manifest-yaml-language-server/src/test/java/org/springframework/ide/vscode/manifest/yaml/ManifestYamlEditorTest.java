@@ -144,7 +144,7 @@ public class ManifestYamlEditorTest {
 				"- name: some-other-name\n" +
 				"  instances: 0"
 		);
-		editor.assertProblems("-1|Value must be positive");
+		editor.assertProblems("-1|Value must be at least 0");
 	}
 
 	@Test
@@ -224,7 +224,7 @@ public class ManifestYamlEditorTest {
 				"  disk_quota: -2048M\n"
 		);
 		editor.assertProblems(
-				"-3|Value must be positive",
+				"-3|Value must be at least 0",
 				"-1024M|Negative value is not allowed",
 				"-2048M|Negative value is not allowed"
 		);
