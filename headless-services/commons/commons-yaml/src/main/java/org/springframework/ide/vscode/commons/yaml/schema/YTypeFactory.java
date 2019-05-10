@@ -373,12 +373,13 @@ public class YTypeFactory {
 
 		public Map<String, YTypedProperty> getPropertiesMap() {
 			if (cachedPropertyMap==null) {
-				cachedPropertyMap = new LinkedHashMap<>();
+				ImmutableMap.Builder<String, YTypedProperty> builder = ImmutableMap.builder();
 				for (YTypedProperty p : propertyList) {
-					cachedPropertyMap.put(p.getName(), p);
+					builder.put(p.getName(), p);
 				}
+				cachedPropertyMap = builder.build();
 			}
-			return Collections.unmodifiableMap(cachedPropertyMap);
+			return cachedPropertyMap;
 		}
 
 		public boolean isAtomic() {

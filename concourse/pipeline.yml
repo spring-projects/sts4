@@ -290,7 +290,7 @@ resources:
 ########################################################################################
 jobs:
 - name: concourse-ls-tests
-  max_in_flight: 4
+  max_in_flight: 6
   plan:
   - get: every-minute
     trigger: true
