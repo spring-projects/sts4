@@ -21,6 +21,11 @@ resources:
   check_every: 24h
   source:
     interval: 720h
+- name: every-minute
+  type: time
+  check_every: 1m
+  source:
+    interval: 1m
 - name: docker-git
   type: git
   source:
@@ -284,6 +289,27 @@ resources:
     build_name: spring-tools-4
 ########################################################################################
 jobs:
+- name: run-concourse-ls-tests
+  serial: true
+  plan:
+  - get: every-minute
+    trigger: true
+  - get: sts4
+  - task: run-concourse-ls-test
+    config:
+      platform: linux
+      image_resource:
+        type: docker-image
+        source:
+          repository: kdvolder/sts4-build-env
+      run:
+        dir: sts4/headless-services/concourse-language-server
+        path: build.sh
+    on_failure:
+      put: slack-notification
+      params:
+        text: |
+           Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
 - name: build-docker-image
   serial: true
   plan:
@@ -1544,6 +1570,9 @@ groups:
   jobs:
   - build-fatjars
 #  - publish-headless-snapshots
+- name: debugging
+  jobs:
+  - run-concourse-ls-tests
 - name: npm-packages
   jobs:
   - publish-jvm-launch-utils
