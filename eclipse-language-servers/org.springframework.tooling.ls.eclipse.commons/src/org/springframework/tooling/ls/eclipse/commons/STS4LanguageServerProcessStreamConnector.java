@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2018 Pivotal, Inc.
+ * Copyright (c) 2017, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -15,12 +15,14 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
+import java.util.List;
 
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
@@ -34,6 +36,7 @@ import org.springsource.ide.eclipse.commons.core.util.IOUtil;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Supplier;
+import com.google.common.collect.ImmutableList;
 
 public abstract class STS4LanguageServerProcessStreamConnector extends ProcessStreamConnectionProvider {
 
@@ -69,8 +72,58 @@ public abstract class STS4LanguageServerProcessStreamConnector extends ProcessSt
 						}
 					}
 
-				}.start();;
+				}.start();
 			}
+		}
+	}
+
+	protected JRE getJRE() {
+		return JRE.currentJRE();
+	}
+
+	protected final void initExplodedJarCommand(Path lsFolder, String mainClass, String configFileName, List<String> extraVmArgs) {
+		try {
+			Assert.isNotNull(lsFolder);
+			Assert.isNotNull(mainClass);
+
+			ImmutableList.Builder<String> command = ImmutableList.builder();
+			JRE runtime = getJRE();
+
+			command.add(runtime.getJavaExecutable());
+			command.add("-cp");
+
+			Bundle bundle = Platform.getBundle(getPluginId());
+			File bundleFile = FileLocator.getBundleFile(bundle);
+
+			File bundleRoot = bundleFile.getAbsoluteFile();
+			Path languageServerRoot = bundleRoot.toPath().resolve(lsFolder);
+
+			StringBuilder classpath = new StringBuilder();
+			classpath.append(languageServerRoot.resolve("BOOT-INF/classes").toFile());
+			classpath.append(File.pathSeparator);
+			classpath.append(languageServerRoot.resolve("BOOT-INF/lib/*").toFile());
+
+			if (runtime.toolsJar != null) {
+				classpath.append(File.pathSeparator);
+				classpath.append(runtime.toolsJar);
+			}
+
+			command.add(classpath.toString());
+
+			command.add("-Dsts.lsp.client=eclipse");
+
+			command.addAll(extraVmArgs);
+
+			if (configFileName != null) {
+				command.add("-Dspring.config.location=file:" + languageServerRoot.resolve("BOOT-INF/classes").resolve(configFileName).toFile());
+			}
+
+			command.add(mainClass);
+
+			setCommands(command.build());
+		}
+		catch (Exception e) {
+			LanguageServerCommonsActivator.logError(e, "Failed to assemble exploded LS JAR launch command");
 		}
 	}
 
@@ -195,7 +248,7 @@ public abstract class STS4LanguageServerProcessStreamConnector extends ProcessSt
 
 	protected final void copyLanguageServerJAR(String languageServerJarName, String languageServerLocalCopy) throws Exception {
 		Bundle bundle = Platform.getBundle(getPluginId());
-		InputStream stream = FileLocator.openStream( bundle, new Path("servers/" + languageServerJarName), false );
+		InputStream stream = FileLocator.openStream( bundle, new org.eclipse.core.runtime.Path("servers/" + languageServerJarName), false );
 
 		File dataFile = bundle.getDataFile(languageServerLocalCopy);
 		Files.copy(stream, dataFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
