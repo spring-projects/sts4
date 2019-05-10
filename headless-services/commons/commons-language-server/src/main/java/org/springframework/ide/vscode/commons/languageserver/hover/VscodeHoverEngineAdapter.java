@@ -60,9 +60,6 @@ public class VscodeHoverEngineAdapter implements HoverHandler {
 
 	@Override
 	public Hover handle(TextDocumentPositionParams params) {
-		//TODO: This returns a CompletableFuture which suggests we should try to do expensive work asyncly.
-		// We are currently just doing all this in a blocking way and wrapping the already computed list into
-		// a trivial pre-resolved future.
 		try {
 			SimpleTextDocumentService documents = server.getTextDocumentService();
 			TextDocument doc = documents.get(params);
