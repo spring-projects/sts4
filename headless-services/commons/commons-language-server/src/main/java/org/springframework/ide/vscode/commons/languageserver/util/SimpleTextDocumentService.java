@@ -322,13 +322,20 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 
 	@Override
 	public CompletableFuture<Hover> hover(TextDocumentPositionParams position) {
-	  return async.invoke(() -> {
-		HoverHandler h = hoverHandler;
-		if (h!=null) {
-			return hoverHandler.handle(position);
-		}
-		return null;
-	  });
+		log.debug("hover requested for {}", position);
+		return async.invoke(() -> {
+			try {
+				log.debug("hover handler starting");
+				HoverHandler h = hoverHandler;
+				if (h!=null) {
+					return hoverHandler.handle(position);
+				}
+				log.debug("no hover because there is no handler");
+				return null;
+			} finally {
+				log.debug("hover handler finished");
+			}
+		});
 	}
 
 	@Override

@@ -12,6 +12,8 @@ package org.springframework.ide.vscode.commons.yaml.hover;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.languageserver.hover.HoverInfoProvider;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.Renderable;
@@ -44,6 +46,8 @@ import reactor.util.function.Tuples;
  */
 public class YamlHoverInfoProvider implements HoverInfoProvider {
 
+	private static final Logger log = LoggerFactory.getLogger(YamlHoverInfoProvider.class);
+	
 	private YamlASTProvider astProvider;
 	private YamlAssistContextProvider assistContextProvider;
 	private YamlStructureProvider structureProvider;
@@ -60,42 +64,59 @@ public class YamlHoverInfoProvider implements HoverInfoProvider {
 
 	@Override
 	public Tuple2<Renderable, IRegion> getHoverInfo(IDocument doc, int offset) throws Exception {
-		YamlFileAST ast = getAst(doc);
-		if (ast != null) {
-			IRegion region = getHoverRegion(ast, offset);
-			if (region!=null) {
-				YamlDocument ymlDoc = new YamlDocument(doc, structureProvider);
-				YamlAssistContext assistContext = assistContextProvider.getGlobalAssistContext(ymlDoc);
-				if (assistContext != null) {
-					List<NodeRef<?>> astPath = ast.findPath(offset);
-					final YamlPath path = YamlPath.fromASTPath(astPath);
-					if (path != null) {
-						YamlPath assistPath = path;
-						if (assistPath.pointsAtKey()) {
-							// When a path points at a key we must tramsform it to a
-							// 'value-terminating path'
-							// to be able to reuse the 'getHoverInfo' method on
-							// YamlAssistContext (as navigation
-							// into 'key' is not defined for YamlAssistContext.
-							String key = path.getLastSegment().toPropString();
-							assistPath = path.dropLast().append(YamlPathSegment.valueAt(key));
-						}
-						assistContext = assistPath.traverse(assistContext);
-						if (assistContext != null) {
-							Renderable info = path.pointsAtValue()
-									? assistContext.getValueHoverInfo(ymlDoc, new DocumentRegion(doc, region))
-									: assistContext.getHoverInfo();
-
-						    // Fix for: PT 134914895. If assist context cannot provide an info, then don't return a Tuple.
-							if (info != null) {
-								return Tuples.of(info, region);
+		log.debug("YamlHoverInfoProvider starting");
+		try {
+			YamlFileAST ast = getAst(doc);
+			if (ast == null) {
+				log.debug("No hover because ast is null");
+			} else {
+				IRegion region = getHoverRegion(ast, offset);
+				if (region==null) {
+					log.debug("No hover because region is null");
+				} else {
+					YamlDocument ymlDoc = new YamlDocument(doc, structureProvider);
+					YamlAssistContext assistContext = assistContextProvider.getGlobalAssistContext(ymlDoc);
+					if (assistContext == null) {
+						log.debug("No hover because GLOBAL assistContext is null");
+					} else {
+						List<NodeRef<?>> astPath = ast.findPath(offset);
+						final YamlPath path = YamlPath.fromASTPath(astPath);
+						if (path == null) {
+							log.debug("No hover because path is null");
+						} else {
+							YamlPath assistPath = path;
+							if (assistPath.pointsAtKey()) {
+								// When a path points at a key we must tramsform it to a
+								// 'value-terminating path'
+								// to be able to reuse the 'getHoverInfo' method on
+								// YamlAssistContext (as navigation
+								// into 'key' is not defined for YamlAssistContext.
+								String key = path.getLastSegment().toPropString();
+								assistPath = path.dropLast().append(YamlPathSegment.valueAt(key));
+							}
+							assistContext = assistPath.traverse(assistContext);
+							if (assistContext == null) {
+								log.debug("No hover because assistContext for path {} is null", assistPath);
+							} else {
+								Renderable info = path.pointsAtValue()
+										? assistContext.getValueHoverInfo(ymlDoc, new DocumentRegion(doc, region))
+										: assistContext.getHoverInfo();
+	
+							    // Fix for: PT 134914895. If assist context cannot provide an info, then don't return a Tuple.
+								if (info == null) {
+									log.debug("No hover because assistContext returned no hover", assistPath);
+								} else {
+									return Tuples.of(info, region);
+								}
 							}
 						}
 					}
 				}
 			}
+			return null;
+		} finally {
+			log.debug("YamlHoverInfoProvider finished");
 		}
-		return null;
 	}
 
 	private IRegion getHoverRegion(YamlFileAST ast, int offset) {

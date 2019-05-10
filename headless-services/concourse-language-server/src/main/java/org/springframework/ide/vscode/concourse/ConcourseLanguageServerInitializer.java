@@ -15,6 +15,8 @@ import java.util.List;
 import javax.annotation.PostConstruct;
 
 import org.eclipse.lsp4j.CompletionList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
@@ -52,9 +54,10 @@ import reactor.core.publisher.Mono;
 @Component
 public class ConcourseLanguageServerInitializer {
 
+	private static final Logger log = LoggerFactory.getLogger(ConcourseLanguageServerInitializer.class);
+
 	private final YamlCompletionEngineOptions COMPLETION_OPTIONS = YamlCompletionEngineOptions.DEFAULT;
 	private final YamlStructureProvider structureProvider = YamlStructureProvider.DEFAULT;
-
 
 	private SchemaSpecificPieces forPipelines;
 	private SchemaSpecificPieces forTasks;
@@ -154,15 +157,25 @@ public class ConcourseLanguageServerInitializer {
 			return item;
 		});
 		documents.onHover(params -> {
-			TextDocument doc = documents.get(params);
-			if (doc!=null) {
-				if (LanguageId.CONCOURSE_PIPELINE.equals(doc.getLanguageId())) {
-					return forPipelines.hoverEngine.handle(params);
-				} else if (LanguageId.CONCOURSE_TASK.equals(doc.getLanguageId())) {
-					return forTasks.hoverEngine.handle(params);
+			log.debug("Concourse hover handler starting");
+			try {
+				TextDocument doc = documents.get(params);
+				if (doc!=null) {
+					LanguageId languageId = doc.getLanguageId();
+					if (LanguageId.CONCOURSE_PIPELINE.equals(doc.getLanguageId())) {
+						return forPipelines.hoverEngine.handle(params);
+					} else if (LanguageId.CONCOURSE_TASK.equals(doc.getLanguageId())) {
+						return forTasks.hoverEngine.handle(params);
+					} else {
+						log.debug("No hovers because language-id = {}", languageId);
+					}
+				} else {
+					log.debug("No hovers because doc is null");
 				}
+				return SimpleTextDocumentService.NO_HOVER;
+			} finally {
+				log.debug("Concourse hover handler finished");
 			}
-			return SimpleTextDocumentService.NO_HOVER;
 		});
 		documents.onDefinition(definitionFinder);
 //		documents.onDocumentSymbol((params) -> {
