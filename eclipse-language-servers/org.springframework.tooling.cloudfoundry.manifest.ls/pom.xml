@@ -36,10 +36,10 @@
 				<version>3.1.1</version>
 				<executions>
 					<execution>
-						<id>copy</id>
+						<id>unpack-server</id>
 						<phase>prepare-package</phase>
 						<goals>
-							<goal>copy</goal>
+							<goal>unpack</goal>
 						</goals>
 						<configuration>
 							<artifactItems>
@@ -49,11 +49,11 @@
 									<version>${project.version}</version>
 									<classifier>exec</classifier>
 									<overWrite>true</overWrite>
-									<outputDirectory>${project.build.directory}/../servers</outputDirectory>
 								</artifactItem>
 							</artifactItems>
 							<overWriteReleases>true</overWriteReleases>
 							<overWriteSnapshots>true</overWriteSnapshots>
+							<outputDirectory>${project.build.directory}/../servers/manifest-yaml-language-server</outputDirectory>
 						</configuration>
 					</execution>
 
@@ -78,6 +78,17 @@
 						</configuration>
 					</execution>
 				</executions>
+			</plugin>
+			<plugin>
+				<artifactId>maven-clean-plugin</artifactId>
+				<version>3.1.0</version>
+				<configuration>
+					<filesets>
+						<fileset>
+							<directory>servers</directory>
+						</fileset>
+					</filesets>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>

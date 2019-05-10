@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2017 Pivotal, Inc.
+ * Copyright (c) 2016, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -12,10 +12,10 @@ package org.springframework.tooling.concourse.ls;
 
 import static org.springframework.tooling.ls.eclipse.commons.preferences.LanguageServerConsolePreferenceConstants.CONCOURSE_SERVER;
 
-import org.springframework.tooling.ls.eclipse.commons.JRE;
-import org.springframework.tooling.ls.eclipse.commons.STS4LanguageServerProcessStreamConnector;
+import java.nio.file.Paths;
+import java.util.Arrays;
 
-import com.google.common.collect.ImmutableList;
+import org.springframework.tooling.ls.eclipse.commons.STS4LanguageServerProcessStreamConnector;
 
 /**
  * @author Martin Lippert
@@ -24,12 +24,18 @@ public class ConcourseLanguageServer extends STS4LanguageServerProcessStreamConn
 
 	public ConcourseLanguageServer() {
 		super(CONCOURSE_SERVER);
-		setCommands(JRE.currentJRE().jarLaunchCommand(getLanguageServerJARLocation(), ImmutableList.of(
-				//"-Xdebug",
-				//"-agentlib:jdwp=transport=dt_socket,address=8899,server=y,suspend=n",
-				"-Dlsp.lazy.completions.disable=true",
-				"-Dlsp.completions.indentation.enable=true"
-		)));
+		
+		initExplodedJarCommand(
+				Paths.get("servers", "concourse-language-server"),
+				"org.springframework.ide.vscode.concourse.ConcourseLanguageServerBootApp",
+				"application.properties",
+				Arrays.asList(
+						"-Dlsp.lazy.completions.disable=true",
+						"-Dlsp.completions.indentation.enable=true",
+						"-noverify"
+				)
+		);
+		
 		setWorkingDirectory(getWorkingDirLocation());
 	}
 	
