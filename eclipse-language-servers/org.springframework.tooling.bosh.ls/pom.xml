@@ -36,10 +36,10 @@
 				<version>3.1.1</version>
 				<executions>
 					<execution>
-						<id>unpack-server</id>
+						<id>copy</id>
 						<phase>prepare-package</phase>
 						<goals>
-							<goal>unpack</goal>
+							<goal>copy</goal>
 						</goals>
 						<configuration>
 							<artifactItems>
@@ -49,11 +49,11 @@
 									<version>${project.version}</version>
 									<classifier>exec</classifier>
 									<overWrite>true</overWrite>
+									<outputDirectory>${project.build.directory}/../servers</outputDirectory>
 								</artifactItem>
 							</artifactItems>
 							<overWriteReleases>true</overWriteReleases>
 							<overWriteSnapshots>true</overWriteSnapshots>
-							<outputDirectory>${project.build.directory}/../servers/bosh-language-server</outputDirectory>
 						</configuration>
 					</execution>
 
@@ -78,17 +78,6 @@
 						</configuration>
 					</execution>
 				</executions>
-			</plugin>
-			<plugin>
-				<artifactId>maven-clean-plugin</artifactId>
-				<version>3.1.0</version>
-				<configuration>
-					<filesets>
-						<fileset>
-							<directory>servers</directory>
-						</fileset>
-					</filesets>
-				</configuration>
 			</plugin>
 		</plugins>
 	</build>

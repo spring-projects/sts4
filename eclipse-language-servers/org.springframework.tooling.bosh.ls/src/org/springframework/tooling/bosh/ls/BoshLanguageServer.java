@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2019 Pivotal, Inc.
+ * Copyright (c) 2016, 2017 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -12,10 +12,10 @@ package org.springframework.tooling.bosh.ls;
 
 import static org.springframework.tooling.ls.eclipse.commons.preferences.LanguageServerConsolePreferenceConstants.BOSH_SERVER;
 
-import java.nio.file.Paths;
-import java.util.Arrays;
-
+import org.springframework.tooling.ls.eclipse.commons.JRE;
 import org.springframework.tooling.ls.eclipse.commons.STS4LanguageServerProcessStreamConnector;
+
+import com.google.common.collect.ImmutableList;
 
 /**
  * @author Martin Lippert
@@ -24,18 +24,12 @@ public class BoshLanguageServer extends STS4LanguageServerProcessStreamConnector
 
 	public BoshLanguageServer() {
 		super(BOSH_SERVER);
-		
-		initExplodedJarCommand(
-				Paths.get("servers", "bosh-language-server"),
-				"org.springframework.ide.vscode.bosh.BoshLanguageServerBootApp",
-				"application.properties",
-				Arrays.asList(
-						"-Dlsp.lazy.completions.disable=true",
-						"-Dlsp.completions.indentation.enable=true",
-						"-noverify"
-				)
-		);
-
+		setCommands(JRE.currentJRE().jarLaunchCommand(getLanguageServerJARLocation(), ImmutableList.of(
+				//"-Xdebug",
+				//"-agentlib:jdwp=transport=dt_socket,address=8899,server=y,suspend=n",
+				"-Dlsp.lazy.completions.disable=true",
+				"-Dlsp.completions.indentation.enable=true"
+		)));
 		setWorkingDirectory(getWorkingDirLocation());
 	}
 	

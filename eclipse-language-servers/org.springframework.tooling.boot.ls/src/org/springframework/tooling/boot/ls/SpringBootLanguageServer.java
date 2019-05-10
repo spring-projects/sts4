@@ -12,12 +12,18 @@ package org.springframework.tooling.boot.ls;
 
 import static org.springframework.tooling.ls.eclipse.commons.preferences.LanguageServerConsolePreferenceConstants.SPRING_BOOT_SERVER;
 
-import java.nio.file.Paths;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.core.runtime.FileLocator;
+import org.eclipse.core.runtime.Platform;
+import org.osgi.framework.Bundle;
 import org.springframework.tooling.ls.eclipse.commons.JRE;
 import org.springframework.tooling.ls.eclipse.commons.JRE.MissingJDKException;
+
+import com.google.common.collect.ImmutableList;
+
 import org.springframework.tooling.ls.eclipse.commons.STS4LanguageServerProcessStreamConnector;
 
 /**
@@ -28,12 +34,47 @@ public class SpringBootLanguageServer extends STS4LanguageServerProcessStreamCon
 	public SpringBootLanguageServer() {
 		super(SPRING_BOOT_SERVER);
 		
-		initExplodedJarCommand(
-				Paths.get("servers", "spring-boot-language-server"),
-				"org.springframework.ide.vscode.boot.app.BootLanguagServerBootApp",
-				"application.properties",
-				getJVMArgs()
-		);
+		try {
+			ImmutableList.Builder<String> command = ImmutableList.builder();
+			JRE runtime = getJRE();
+			
+			command.add(runtime.getJavaExecutable());
+			command.add("-cp");
+			
+			Bundle bundle = Platform.getBundle(getPluginId());
+			File bundleFile = FileLocator.getBundleFile(bundle);
+
+			String bundleRoot = bundleFile.getAbsoluteFile().toString();
+			String languageServerRoot = bundleRoot + File.separator + "servers" + File.separator + "spring-boot-language-server" + File.separator;
+
+			StringBuilder classpath = new StringBuilder(languageServerRoot);
+			classpath.append("BOOT-INF" + File.separator + "classes");
+			classpath.append(File.pathSeparator);
+			classpath.append(languageServerRoot);
+			classpath.append("BOOT-INF" + File.separator + "lib" + File.separator + "*");
+
+			if (runtime.toolsJar != null) {
+				classpath.append(File.pathSeparator);
+				classpath.append(runtime.toolsJar);
+			}
+			
+			command.add(classpath.toString());
+
+			command.addAll(getJVMArgs());
+			
+			StringBuilder configLocation = new StringBuilder(languageServerRoot);
+			configLocation.append("BOOT-INF" + File.separator + "classes");
+			configLocation.append(File.separator);
+			configLocation.append("application.properties");
+			command.add("-Dspring.config.location=file:" + configLocation.toString());
+			
+			command.add("org.springframework.ide.vscode.boot.app.BootLanguagServerBootApp");
+			setCommands(command.build());
+		}
+		catch (Exception e) {
+			// error
+			e.printStackTrace();
+		}
 		
 		setWorkingDirectory(getWorkingDirLocation());
 	}
@@ -41,6 +82,7 @@ public class SpringBootLanguageServer extends STS4LanguageServerProcessStreamCon
 	private List<String> getJVMArgs() {
 		List<String> args = new ArrayList<>();
 		
+		args.add("-Dsts.lsp.client=eclipse");
 		args.add("-Dlsp.completions.indentation.enable=true");
 		args.add("-Xmx1024m");
 		args.add("-noverify");
@@ -63,7 +105,7 @@ public class SpringBootLanguageServer extends STS4LanguageServerProcessStreamCon
 		}
 	}
 
-	protected JRE getJRE() {
+	private JRE getJRE() {
 		try {
 			return JRE.findJRE(true);
 		} catch (MissingJDKException e) {
