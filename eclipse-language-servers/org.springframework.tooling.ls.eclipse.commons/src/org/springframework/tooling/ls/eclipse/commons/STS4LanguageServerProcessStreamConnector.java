@@ -101,7 +101,10 @@ public abstract class STS4LanguageServerProcessStreamConnector extends ProcessSt
 			StringBuilder classpath = new StringBuilder();
 			classpath.append(languageServerRoot.resolve("BOOT-INF/classes").toFile());
 			classpath.append(File.pathSeparator);
-			classpath.append(languageServerRoot.resolve("BOOT-INF/lib/*").toFile());
+			classpath.append(languageServerRoot.resolve("BOOT-INF/lib").toFile());
+			// Cannot have * in the java.nio.Path on Windows
+			classpath.append(File.separator);
+			classpath.append('*');
 
 			if (runtime.toolsJar != null) {
 				classpath.append(File.pathSeparator);
