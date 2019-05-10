@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2017 Pivotal, Inc.
+ * Copyright (c) 2016, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,6 +13,8 @@ package org.springframework.tooling.cloudfoundry.manifest.ls;
 import static org.springframework.tooling.ls.eclipse.commons.preferences.LanguageServerConsolePreferenceConstants.CLOUDFOUNDRY_SERVER;
 
 import java.net.URI;
+import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.CopyOnWriteArrayList;
 
@@ -21,10 +23,7 @@ import org.eclipse.lsp4j.InitializeResult;
 import org.eclipse.lsp4j.jsonrpc.messages.Message;
 import org.eclipse.lsp4j.jsonrpc.messages.ResponseMessage;
 import org.eclipse.lsp4j.services.LanguageServer;
-import org.springframework.tooling.ls.eclipse.commons.JRE;
 import org.springframework.tooling.ls.eclipse.commons.STS4LanguageServerProcessStreamConnector;
-
-import com.google.common.collect.ImmutableList;
 
 /**
  * @author Martin Lippert
@@ -39,12 +38,18 @@ public class CloudFoundryManifestLanguageServer extends STS4LanguageServerProces
 
 	public CloudFoundryManifestLanguageServer() {
 		super(CLOUDFOUNDRY_SERVER);
-		setCommands(JRE.currentJRE().jarLaunchCommand(getLanguageServerJARLocation(), ImmutableList.of(
-				//"-Xdebug",
-				//"-agentlib:jdwp=transport=dt_socket,address=8899,server=y,suspend=n",
-				"-Dlsp.lazy.completions.disable=true",
-				"-Dlsp.completions.indentation.enable=true"
-		)));
+		
+		initExplodedJarCommand(
+				Paths.get("servers", "manifest-yaml-language-server"),
+				"org.springframework.ide.vscode.manifest.yaml.ManifestYamlLanguageServerBootApp",
+				"application.properties",
+				Arrays.asList(
+						"-Dlsp.lazy.completions.disable=true",
+						"-Dlsp.completions.indentation.enable=true",
+						"-noverify"
+				)
+		);
+
 		setWorkingDirectory(getWorkingDirLocation());
 	}
 	
