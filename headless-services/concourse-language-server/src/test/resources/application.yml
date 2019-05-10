@@ -1,0 +1,6 @@
+logging:
+  level:
+    org:
+      springframework:
+        ide:
+          vscode: debug

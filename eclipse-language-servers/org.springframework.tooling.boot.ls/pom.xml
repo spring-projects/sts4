@@ -19,18 +19,6 @@
 		<plugins>
 			
 			<plugin>
-				<artifactId>maven-clean-plugin</artifactId>
-				<version>3.1.0</version>
-				<configuration>
-					<filesets>
-						<fileset>
-							<directory>${project.build.directory}/../servers/spring-boot-language-server</directory>
-						</fileset>
-					</filesets>
-				</configuration>
-			</plugin>
-			
-			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
 				<version>3.1.1</version>
@@ -75,6 +63,7 @@
 					</dependency-resolution>
 				</configuration>
 			</plugin>
+			
 			<plugin>
 				<artifactId>maven-clean-plugin</artifactId>
 				<version>3.1.0</version>
@@ -86,6 +75,7 @@
 					</filesets>
 				</configuration>
 			</plugin>
+			
 		</plugins>
 	</build>
 
