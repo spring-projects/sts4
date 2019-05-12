@@ -49,9 +49,39 @@ public class SpringXMLCompletionEngine implements ICompletionEngine {
 		this.config = config;
 
 		this.completionProviders = new HashMap<>();
-		this.completionProviders.put(new XMLElementKey(BEANS_NAMESPACE, null, BEAN_ELEMENT, CLASS_ATTRIBUTE), new TypeCompletionProposalProvider(server, projectFinder, true, true, false, false));
-		this.completionProviders.put(new XMLElementKey(BEANS_NAMESPACE, BEAN_ELEMENT, PROPERTY_ELEMENT, NAME_ATTRIBUTE), new PropertyNameCompletionProposalProvider(projectFinder));
-		this.completionProviders.put(new XMLElementKey(BEANS_NAMESPACE, BEAN_ELEMENT, PROPERTY_ELEMENT, REF_ATTRIBUTE), new BeanRefCompletionProposalProvider(projectFinder, symbolIndex));
+
+		TypeCompletionProposalProvider classesOnlyProvider = new TypeCompletionProposalProvider(server, projectFinder, true, true, false, false);
+		TypeCompletionProposalProvider classesAndInterfacesProvider = new TypeCompletionProposalProvider(server, projectFinder, true, true, true, false);
+		TypeCompletionProposalProvider packagesProvider = new TypeCompletionProposalProvider(server, projectFinder, true, false, false, false);
+
+		BeanRefCompletionProposalProvider beanRefProvider = new BeanRefCompletionProposalProvider(projectFinder, symbolIndex);
+		PropertyNameCompletionProposalProvider propertyNameProvider = new PropertyNameCompletionProposalProvider(projectFinder);
+		
+		this.completionProviders.put(new XMLElementKey(BEANS_NAMESPACE, null, BEAN_ELEMENT, CLASS_ATTRIBUTE), classesOnlyProvider);
+		this.completionProviders.put(new XMLElementKey(BEANS_NAMESPACE, null, CONSTRUCTOR_ARG_ELEMENT, TYPE_ATTRIBUTE), classesAndInterfacesProvider);
+		this.completionProviders.put(new XMLElementKey(BEANS_NAMESPACE, null, ARG_TYPE_ELEMENT, MATCH_ATTRIBUTE), classesAndInterfacesProvider);
+		this.completionProviders.put(new XMLElementKey(BEANS_NAMESPACE, null, VALUE_ELEMENT, TYPE_ATTRIBUTE), classesAndInterfacesProvider);
+		this.completionProviders.put(new XMLElementKey(BEANS_NAMESPACE, null, null, VALUE_TYPE_ATTRIBUTE), classesAndInterfacesProvider);
+		this.completionProviders.put(new XMLElementKey(BEANS_NAMESPACE, null, null, KEY_TYPE_ATTRIBUTE), classesAndInterfacesProvider);
+		
+		this.completionProviders.put(new XMLElementKey(BEANS_NAMESPACE, null, BEAN_ELEMENT, PARENT_ATTRIBUTE), beanRefProvider);
+		this.completionProviders.put(new XMLElementKey(BEANS_NAMESPACE, null, BEAN_ELEMENT, DEPENDS_ON_ATTRIBUTE), beanRefProvider);
+		this.completionProviders.put(new XMLElementKey(BEANS_NAMESPACE, null, BEAN_ELEMENT, FACTORY_BEAN_ATTRIBUTE), beanRefProvider);
+		this.completionProviders.put(new XMLElementKey(BEANS_NAMESPACE, null, REF_ELEMENT, BEAN_ATTRIBUTE), beanRefProvider);
+		this.completionProviders.put(new XMLElementKey(BEANS_NAMESPACE, null, IDREF_ELEMENT, BEAN_ATTRIBUTE), beanRefProvider);
+		this.completionProviders.put(new XMLElementKey(BEANS_NAMESPACE, null, CONSTRUCTOR_ARG_ELEMENT, REF_ATTRIBUTE), beanRefProvider);
+		this.completionProviders.put(new XMLElementKey(BEANS_NAMESPACE, null, ALIAS_ELEMENT, NAME_ATTRIBUTE), beanRefProvider);
+		this.completionProviders.put(new XMLElementKey(BEANS_NAMESPACE, null, REPLACED_METHOD_ELEMENT, REPLACER_ATTRIBUTE), beanRefProvider);
+		this.completionProviders.put(new XMLElementKey(BEANS_NAMESPACE, null, ENTRY_ELEMENT, VALUE_REF_ATTRIBUTE), beanRefProvider);
+		this.completionProviders.put(new XMLElementKey(BEANS_NAMESPACE, null, ENTRY_ELEMENT, KEY_REF_ATTRIBUTE), beanRefProvider);
+		this.completionProviders.put(new XMLElementKey(BEANS_NAMESPACE, null, LOOKUP_METHOD_ELEMENT, BEAN_ATTRIBUTE), beanRefProvider);
+		this.completionProviders.put(new XMLElementKey(BEANS_NAMESPACE, BEAN_ELEMENT, PROPERTY_ELEMENT, REF_ATTRIBUTE), beanRefProvider);
+
+		this.completionProviders.put(new XMLElementKey(BEANS_NAMESPACE, BEAN_ELEMENT, PROPERTY_ELEMENT, NAME_ATTRIBUTE), propertyNameProvider);
+		
+		this.completionProviders.put(new XMLElementKey(CONTEXT_NAMESPACE, null, COMPONENT_SCAN_ELEMENT, BASE_PACKAGE_ATTRIBUTE), packagesProvider);
+		this.completionProviders.put(new XMLElementKey(CONTEXT_NAMESPACE, null, COMPONENT_SCAN_ELEMENT, NAME_GENERATOR_ATTRIBUTE), beanRefProvider);
+		this.completionProviders.put(new XMLElementKey(CONTEXT_NAMESPACE, null, COMPONENT_SCAN_ELEMENT, SCOPE_RESOLVER_ATTRIBUTE), beanRefProvider);
 	}
 
 	@Override

@@ -28,9 +28,7 @@ import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocu
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 /**
- * 
  * @author Alex Boyko
- *
  */
 public class BeanRefHyperlinkProvider implements XMLHyperlinkProvider {
 	

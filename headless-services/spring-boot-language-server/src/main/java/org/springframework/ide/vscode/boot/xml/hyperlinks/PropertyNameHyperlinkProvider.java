@@ -22,9 +22,7 @@ import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFin
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 /**
- * 
  * @author Alex Boyko
- *
  */
 public class PropertyNameHyperlinkProvider implements XMLHyperlinkProvider {
 	

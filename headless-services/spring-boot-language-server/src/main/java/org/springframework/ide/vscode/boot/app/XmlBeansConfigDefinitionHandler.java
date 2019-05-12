@@ -51,9 +51,7 @@ import org.springframework.stereotype.Component;
 import com.google.common.collect.ImmutableList;
 
 /**
- * 
  * @author Alex Boyko
- *
  */
 @Component
 public class XmlBeansConfigDefinitionHandler implements DefinitionHandler, LanguageSpecific {
@@ -78,7 +76,6 @@ public class XmlBeansConfigDefinitionHandler implements DefinitionHandler, Langu
 		hyperlinkProviders.put(new XMLElementKey(BEANS_NAMESPACE, null, BEAN_ELEMENT, CLASS_ATTRIBUTE), Arrays.asList(new JavaTypeHyperlinkProvider(projectFinder, locationProvider)));
 		hyperlinkProviders.put(new XMLElementKey(BEANS_NAMESPACE, BEAN_ELEMENT, PROPERTY_ELEMENT, NAME_ATTRIBUTE), Arrays.asList(new PropertyNameHyperlinkProvider(projectFinder, locationProvider)));
 		hyperlinkProviders.put(new XMLElementKey(BEANS_NAMESPACE, BEAN_ELEMENT, PROPERTY_ELEMENT, REF_ATTRIBUTE), Arrays.asList(new BeanRefHyperlinkProvider(projectFinder, symbolIndex, documents)));
-
 	}
 
 	@Override

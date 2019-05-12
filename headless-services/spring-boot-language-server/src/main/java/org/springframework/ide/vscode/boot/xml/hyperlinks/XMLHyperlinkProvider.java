@@ -16,9 +16,7 @@ import org.eclipse.lsp4xml.dom.DOMNode;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 /**
- * 
  * @author Alex Boyko
- *
  */
 public interface XMLHyperlinkProvider {
 	
