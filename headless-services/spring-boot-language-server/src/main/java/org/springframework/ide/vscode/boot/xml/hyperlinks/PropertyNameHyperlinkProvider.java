@@ -45,7 +45,8 @@ public class PropertyNameHyperlinkProvider implements XMLHyperlinkProvider {
 				return PropertyNameCompletionProposalProvider.propertyNameCandidateMethods(project, beanClass)
 					.filter(method -> propertyName.equals(PropertyNameCompletionProposalProvider.getPropertyName(method)))
 					.map(method -> locationProvider.findLocation(project, method))
-					.blockFirst();
+					.findFirst()
+					.orElse(null);
 			}
 		}
 		return null;

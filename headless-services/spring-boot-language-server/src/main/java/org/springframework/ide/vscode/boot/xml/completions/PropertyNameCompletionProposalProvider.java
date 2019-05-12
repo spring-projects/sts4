@@ -17,6 +17,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.eclipse.lsp4j.CompletionItemKind;
 import org.eclipse.lsp4xml.dom.DOMAttr;
@@ -31,8 +32,6 @@ import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFin
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
-
-import reactor.core.publisher.Flux;
 
 /**
  * @author Martin Lippert
@@ -65,10 +64,9 @@ public class PropertyNameCompletionProposalProvider implements XMLCompletionProv
 			String beanClass = identifyBeanClass(node);
 			if (beanClass != null && beanClass.length() > 0) {
 				final String searchPrefix = prefix;
-				propertyNameCandidateMethods(project, beanClass)
+				return propertyNameCandidateMethods(project, beanClass)
 					.filter(method -> getPropertyName(method).startsWith(searchPrefix))
 					.map(method -> createProposal(method, doc, offset, tokenOffset, tokenEnd))
-					.toStream()
 					.collect(Collectors.toList());
 			}
 		};
@@ -124,9 +122,10 @@ public class PropertyNameCompletionProposalProvider implements XMLCompletionProv
 		return methodName;
 	}
 	
-	public static Flux<IMethod> propertyNameCandidateMethods(IJavaProject project, String beanClassFqName) {
+	public static Stream<IMethod> propertyNameCandidateMethods(IJavaProject project, String beanClassFqName) {
 		return project.getIndex().allSuperTypesOf(beanClassFqName, true)
-			.flatMap(type -> Flux.fromStream(type.getMethods()))
+			.toStream()
+			.flatMap(type -> type.getMethods())
 			.filter(PropertyNameCompletionProposalProvider::isPropertyWriteMethod);
 	}
 
