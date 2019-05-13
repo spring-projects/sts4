@@ -21,11 +21,11 @@ resources:
   check_every: 24h
   source:
     interval: 720h
-- name: every-minute
-  type: time
-  check_every: 1m
-  source:
-    interval: 1m
+# - name: every-minute
+#   type: time
+#   check_every: 1m
+#   source:
+#     interval: 1m
 - name: docker-git
   type: git
   source:
@@ -289,23 +289,23 @@ resources:
     build_name: spring-tools-4
 ########################################################################################
 jobs:
-- name: concourse-ls-tests
-  max_in_flight: 6
-  plan:
-  - get: every-minute
-    trigger: true
-  - aggregate:
-    - get: maven-cache
-    - get: sts4
-  - task: run-concourse-ls-test
-    file: sts4/concourse/tasks/build-vsix.yml
-    params:
-      extension_id: vscode-concourse
-    on_failure:
-      put: slack-notification
-      params:
-        text: |
-           Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
+# - name: concourse-ls-tests
+#   max_in_flight: 6
+#   plan:
+#   - get: every-minute
+#     trigger: true
+#   - aggregate:
+#     - get: maven-cache
+#     - get: sts4
+#   - task: run-concourse-ls-test
+#     file: sts4/concourse/tasks/build-vsix.yml
+#     params:
+#       extension_id: vscode-concourse
+#     on_failure:
+#       put: slack-notification
+#       params:
+#         text: |
+#            Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
 - name: build-docker-image
   serial: true
   plan:
@@ -1566,9 +1566,9 @@ groups:
   jobs:
   - build-fatjars
 #  - publish-headless-snapshots
-- name: debugging
-  jobs:
-  - concourse-ls-tests
+# - name: debugging
+#   jobs:
+#   - concourse-ls-tests
 - name: npm-packages
   jobs:
   - publish-jvm-launch-utils
