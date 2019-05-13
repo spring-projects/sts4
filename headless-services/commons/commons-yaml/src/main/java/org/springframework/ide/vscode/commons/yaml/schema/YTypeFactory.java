@@ -399,10 +399,11 @@ public class YTypeFactory {
 			propertyList.add(p);
 		}
 
-		public void addProperty(String name, YType type, Renderable description) {
+		public YTypedPropertyImpl addProperty(String name, YType type, Renderable description) {
 			YTypedPropertyImpl prop;
 			addProperty(prop = new YTypedPropertyImpl(name, type));
 			prop.setDescriptionProvider(description);
+			return prop;
 		}
 
 		public void addProperty(String name, YType type) {

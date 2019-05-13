@@ -220,7 +220,9 @@ public final class ManifestYmlSchema implements YamlSchema {
 		for (YTypedPropertyImpl prop : props) {
 			prop.setDescriptionProvider(descriptionFor(prop));
 			if (!TOPLEVEL_EXCLUDED.contains(prop.getName())) {
-				TOPLEVEL_TYPE.addProperty(prop);
+				TOPLEVEL_TYPE.addProperty(prop.copy()
+						.isDeprecated("Use of toplevel properties is deprecated: Instead, use Yaml anchors (&) and extend (<<) to define and re-use shared defaults")
+				);
 			}
 			application.addProperty(prop);
 		}
