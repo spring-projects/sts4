@@ -33,6 +33,11 @@ export function activate(context: VSCode.ExtensionContext) {
         extensionId: 'vscode-bosh',
         jvmHeap: "48m",
         workspaceOptions: VSCode.workspace.getConfiguration("bosh.ls"),
+        explodedLsJarData: {
+            lsLocation: 'language-server',
+            mainClass: 'org.springframework.ide.vscode.bosh.BoshLanguageServerBootApp',
+            configFileName: 'application.properties'
+        },
         clientOptions: {
             documentSelector: [
                 {

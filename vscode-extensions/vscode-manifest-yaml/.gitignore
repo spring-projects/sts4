@@ -5,6 +5,7 @@ target
 *.log.*
 .idea
 *.iml
+language-server
 dependency-reduced-pom.xml
 classpath.txt
 *.vsix

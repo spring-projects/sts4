@@ -41,6 +41,8 @@ export interface JVM {
      * using spring-boot-maven-plugin ZIP layout.
      */
     jarLaunch(jar: string, vmargs?: string[], execFileOptions?: ChildProcess.ExecFileOptions) : ChildProcess.ChildProcess
+
+    mainClassLaunch(mainClass: string, classpath: string[], jvmArgs: string[], execFileOptions?: ChildProcess.ExecFileOptions): ChildProcess.ChildProcess
 }
 
 /**
@@ -214,6 +216,27 @@ class JVMImpl implements JVM {
             args.push(...vmargs);
         }
         args.push("-jar", jar);
+        return ChildProcess.execFile(this.getJavaExecutable(), args, execFileOptions);
+    }
+
+    mainClassLaunch(mainClass: string, classpath: string[], jvmArgs: string[], execFileOptions?: ChildProcess.ExecFileOptions): ChildProcess.ChildProcess {
+        const args: string[] = [];
+
+        // Classpath
+        args.push('-cp');
+        let classpathStr = classpath.join(Path.delimiter);
+        const toolsJar = this.getToolsJar();
+        if (toolsJar) {
+            classpathStr += Path.delimiter + toolsJar;
+        }
+        args.push(classpathStr);
+
+        // JVM Arguments
+        args.push(...jvmArgs);
+
+        // Main class
+        args.push(mainClass);
+
         return ChildProcess.execFile(this.getJavaExecutable(), args, execFileOptions);
     }
 }

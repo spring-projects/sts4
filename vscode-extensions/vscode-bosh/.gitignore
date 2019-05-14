@@ -1,5 +1,6 @@
 out
 node_modules
+language-server
 target
 *.log
 *.log.*

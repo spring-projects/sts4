@@ -14,6 +14,13 @@ npm install ../commons-vscode/*-commons-vscode-*.tgz
 cd ../../headless-services/manifest-yaml-language-server
 ./build.sh
 
-rm -fr ${workdir}/jars
-mkdir -p ${workdir}/jars
-cp target/*-exec.jar ${workdir}/jars
+#Clean old LS folder
+rm -fr ${workdir}/language-server
+mkdir -p ${workdir}/language-server
+
+# Explode LS JAR
+cd ${workdir}/language-server
+server_jar_file=$(find ${workdir}/../../headless-services/manifest-yaml-language-server/target -name '*-exec.jar');
+jar -xvf ${server_jar_file}
+
+

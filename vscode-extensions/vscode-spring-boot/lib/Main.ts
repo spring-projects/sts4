@@ -27,6 +27,11 @@ export function activate(context: VSCode.ExtensionContext): Thenable<LanguageCli
                 VSCode.window.showWarningMessage('JAVA_HOME or PATH environment variable seems to point to a JRE. A JDK is required, hence Boot Hints are unavailable.');
             }
         },
+        explodedLsJarData: {
+            lsLocation: 'language-server',
+            mainClass: 'org.springframework.ide.vscode.boot.app.BootLanguagServerBootApp',
+            configFileName: 'application.properties'
+        },
         workspaceOptions: VSCode.workspace.getConfiguration("spring-boot.ls"),
         clientOptions: {
             // See PT-158992999 as to why a scheme is added to the document selector

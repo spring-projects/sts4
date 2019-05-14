@@ -36,6 +36,11 @@ export function activate(context: VSCode.ExtensionContext) {
         extensionId: 'vscode-concourse',
         jvmHeap: "48m",
         workspaceOptions: VSCode.workspace.getConfiguration("concourse.ls"),
+        explodedLsJarData: {
+            lsLocation: 'language-server',
+            mainClass: 'org.springframework.ide.vscode.concourse.ConcourseLanguageServerBootApp',
+            configFileName: 'application.properties'
+        },
         clientOptions: {
             documentSelector: [
                 {

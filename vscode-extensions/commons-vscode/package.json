@@ -24,7 +24,7 @@
     "prepack": "node ./node_modules/vscode/bin/install && tsc -p ./"
   },
   "dependencies": {
-    "@pivotal-tools/jvm-launch-utils": "0.0.11",
+    "@pivotal-tools/jvm-launch-utils": "0.0.12",
     "portfinder": "^0.4.0",
     "deep-equal": "^1.0.1"
   },

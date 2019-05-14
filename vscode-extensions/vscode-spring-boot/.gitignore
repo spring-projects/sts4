@@ -5,6 +5,7 @@ target
 *.log.*
 classpath.txt
 *.vsix
+language-server
 repo
 .idea
 *.iml

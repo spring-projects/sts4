@@ -33,6 +33,11 @@ export function activate(context: VSCode.ExtensionContext) {
         extensionId: 'vscode-manifest-yaml',
         workspaceOptions: VSCode.workspace.getConfiguration("cloudfoundry-manifest.ls"),
         jvmHeap: '64m',
+        explodedLsJarData: {
+            lsLocation: 'language-server',
+            mainClass: 'org.springframework.ide.vscode.manifest.yaml.ManifestYamlLanguageServerBootApp',
+            configFileName: 'application.properties'
+        },
         clientOptions: {
             documentSelector: [
                 {

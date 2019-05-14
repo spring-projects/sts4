@@ -25,6 +25,7 @@ import { JVM, findJvm, findJdk } from '@pivotal-tools/jvm-launch-utils';
 import { registerClasspathService } from './classpath';
 import {HighlightCodeLensProvider} from "./code-lens-service";
 import {registerJavaDataService} from "./java-data";
+import * as path from "path";
 
 let p2c = P2C.createConverter();
 
@@ -43,6 +44,13 @@ export interface ActivatorOptions {
     checkjvm?: (context: VSCode.ExtensionContext, jvm: JVM) => any;
     preferJdk?: boolean;
     highlightCodeLensSettingKey?: string;
+    explodedLsJarData?: ExplodedLsJarData;
+}
+
+export interface ExplodedLsJarData {
+    lsLocation: string;
+    mainClass: string;
+    configFileName?: string;
 }
 
 type JavaOptions = {
@@ -160,15 +168,35 @@ export function activate(options: ActivatorOptions, context: VSCode.ExtensionCon
                                 args.unshift(DEBUG_ARG);
                             }
 
-                            // Start the child java process
-                            let launcher = findServerJar(Path.resolve(context.extensionPath, 'jars'));
-                            let child = jvm.jarLaunch(launcher, args, processLaunchoptions);
-                            child.stdout.on('data', (data) => {
-                                log("" + data);
-                            });
-                            child.stderr.on('data', (data) => {
-                                error("" + data);
-                            })
+                            let child: ChildProcess.ChildProcess = null;
+                            if (options.explodedLsJarData) {
+                                const explodedLsJarData = options.explodedLsJarData;
+                                const lsRoot = Path.resolve(context.extensionPath, explodedLsJarData.lsLocation);
+
+                                // Add config file if needed
+                                if (explodedLsJarData.configFileName) {
+                                    args.push(`-Dspring.config.location=file:${Path.resolve(lsRoot, `BOOT-INF/classes/${explodedLsJarData.configFileName}`)}`);
+                                }
+
+                                // Add classpath
+                                const classpath: string[] = [];
+                                classpath.push(Path.resolve(lsRoot, 'BOOT-INF/classes'));
+                                classpath.push(`${Path.resolve(lsRoot, 'BOOT-INF/lib')}${Path.sep}*`);
+
+                                child = jvm.mainClassLaunch(explodedLsJarData.mainClass, classpath, args, processLaunchoptions);
+                            } else {
+                                // Start the child java process
+                                const launcher = findServerJar(Path.resolve(context.extensionPath, 'jars'));
+                                child = jvm.jarLaunch(launcher, args, processLaunchoptions);
+                            }
+                            if (child) {
+                                child.stdout.on('data', (data) => {
+                                    log("" + data);
+                                });
+                                child.stderr.on('data', (data) => {
+                                    error("" + data);
+                                })
+                            }
                         });
                     });
                 });
