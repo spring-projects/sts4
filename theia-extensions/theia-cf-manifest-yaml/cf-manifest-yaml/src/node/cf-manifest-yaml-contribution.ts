@@ -18,8 +18,9 @@ export class CfManifestYamlContribution extends StsLanguageServerContribution {
 
     readonly id = CF_MANIFEST_YAML_LANGUAGE_ID;
     readonly name = CF_MANIFEST_YAML_LANGUAGE_NAME;
-    protected readonly lsJarContainerFolder = path.resolve(__dirname, '../../jars');
-    protected readonly lsJarGlob = 'manifest-yaml-language-server*.jar';
+    protected readonly lsLocation = path.resolve(__dirname, '../../server/cf-manifest-yaml-language-server');
+    protected readonly configFileName = 'application.properties';
+    protected readonly mainClass = 'org.springframework.ide.vscode.manifest.yaml.ManifestYamlLanguageServerBootApp';
     protected readonly jvmArguments = [
         // '-Xdebug',
         // '-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=7999',

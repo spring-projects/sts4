@@ -9,7 +9,6 @@
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
 import * as path from 'path';
-import * as glob from 'glob';
 import { injectable } from 'inversify';
 import { DEBUG_MODE } from '@theia/core/lib/node';
 import { parseArgs } from '@theia/process/lib/node/utils';
@@ -22,19 +21,13 @@ export abstract class StsLanguageServerContribution extends BaseLanguageServerCo
 
     protected readonly preferJdk: boolean = false;
 
-    protected readonly lsJarContainerFolder: string = path.resolve(__dirname, '../../jars');
+    protected readonly lsLocation: string;
 
-    protected readonly lsJarGlob: string = 'language-server*.jar';
+    protected readonly mainClass: string;
+
+    protected readonly configFileName: string;
 
     protected readonly jvmArguments: string[] = [];
-
-    protected getJarPath() {
-        const jarPaths = glob.sync(this.lsJarGlob, { cwd: this.lsJarContainerFolder });
-        if (jarPaths.length === 0) {
-            throw new Error(`The ${this.name} server launcher is not found`);
-        }
-        return path.resolve(this.lsJarContainerFolder, jarPaths[0]);
-    }
 
     protected findJvm(javaHome?: string) {
         return this.preferJdk ? findJdk(javaHome) : findJvm(javaHome);
@@ -53,7 +46,6 @@ export abstract class StsLanguageServerContribution extends BaseLanguageServerCo
     }
 
     async start(clientConnection: IConnection, { parameters }: JavaLsStartOptions) {
-        const jarPath = this.getJarPath();
 
         const userJavaHome =
             (parameters && parameters.javahome)
@@ -81,18 +73,30 @@ export abstract class StsLanguageServerContribution extends BaseLanguageServerCo
         env.CLIENT_PORT = addressInfo.port;
 
         const command = jvm.getJavaExecutable();
+
+        args.push('-cp');
+
+        let classpath = path.resolve(this.lsLocation, 'BOOT-INF/classes');
+        classpath += path.delimiter;
+        classpath += `${path.resolve(this.lsLocation, 'BOOT-INF/lib')}${path.sep}*`;
+
+        let toolsJar = jvm.getToolsJar();
+        if (toolsJar) {
+            classpath += `${path.delimiter}${toolsJar}`;
+        }
+
+        args.push(classpath);
+
+        if (this.configFileName) {
+            args.push(`-Dspring.config.location=file:${path.resolve(this.lsLocation, `BOOT-INF/classes/${this.configFileName}`)}`);
+        }
+
         args.push(
             '-Dsts.lsp.client=theia',
             '-Dlsp.completions.indentation.enable=true',
             '-Dlsp.yaml.completions.errors.disable=true',
             `-Dserver.port=${env.CLIENT_PORT}`
         );
-
-        let toolsJar = jvm.getToolsJar();
-        if (toolsJar) {
-            args.push("-Dloader.path="+toolsJar);
-        }
-
         args.push(...this.jvmArguments);
 
         if (DEBUG_MODE) {
@@ -103,10 +107,7 @@ export abstract class StsLanguageServerContribution extends BaseLanguageServerCo
             );
         }
 
-        args.push(
-            '-jar',
-            jarPath
-        );
+        args.push(this.mainClass);
 
         const serverConnection = await this.createProcessSocketConnection(socket, socket, command, args, { env });
         this.forward(clientConnection, serverConnection);

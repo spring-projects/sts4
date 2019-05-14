@@ -18,8 +18,9 @@ export class ConcourseLanguageContribution extends StsLanguageServerContribution
 
     readonly id = CONCOURSE_SERVER_ID;
     readonly name = CONCOURSE_SERVER_NAME;
-    protected readonly lsJarContainerFolder = path.resolve(__dirname, '../../jars');
-    protected readonly lsJarGlob = 'concourse-language-server*.jar';
+    protected readonly lsLocation = path.resolve(__dirname, '../../server/concourse-language-server');
+    protected readonly configFileName = 'application.properties';
+    protected readonly mainClass = 'org.springframework.ide.vscode.concourse.ConcourseLanguageServerBootApp';
     protected readonly jvmArguments = [
         // '-Xdebug',
         // '-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=7999',

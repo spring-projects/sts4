@@ -10,11 +10,11 @@
   "files": [
     "lib",
     "src",
-    "jars"
+    "server"
   ],
   "dependencies": {
     "@pivotal-tools/jvm-launch-utils": "0.0.11",
-    "@pivotal-tools/theia-languageclient": "0.0.8",
+    "@pivotal-tools/theia-languageclient": "0.0.9",
     "@theia/core": "latest",
     "@theia/languages": "latest",
     "@theia/monaco": "latest"

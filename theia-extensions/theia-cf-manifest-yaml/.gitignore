@@ -4,4 +4,4 @@ lib
 *.log
 *-app/*
 !*-app/package.json
-/**/jars
+/**/server

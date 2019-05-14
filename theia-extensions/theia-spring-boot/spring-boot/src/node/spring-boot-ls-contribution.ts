@@ -20,8 +20,9 @@ export class SpringBootLsContribution extends StsLanguageServerContribution {
     readonly id = SPRING_BOOT_SERVER_ID;
     readonly name = SPRING_BOOT_SERVER_NAME;
     protected readonly preferJdk = true;
-    protected readonly lsJarContainerFolder = path.resolve(__dirname, '../../jars');
-    protected readonly lsJarGlob = 'spring-boot-language-server*.jar';
+    protected readonly lsLocation = path.resolve(__dirname, '../../server/spring-boot-language-server');
+    protected readonly configFileName = 'application.properties';
+    protected readonly mainClass = 'org.springframework.ide.vscode.boot.app.BootLanguagServerBootApp';
     protected readonly jvmArguments = [
         // '-Xdebug',
         // '-agentlib:jdwp=transport=dt_socket,server=y,suspend=y,address=7999',
