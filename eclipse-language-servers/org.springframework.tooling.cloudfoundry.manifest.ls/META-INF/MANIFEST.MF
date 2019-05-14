@@ -23,3 +23,5 @@ Export-Package: org.springframework.tooling.cloudfoundry.manifest.ls
 Bundle-ClassPath: icons/,
  syntaxes/,
  .
+Eclipse-BundleShape: dir
+
