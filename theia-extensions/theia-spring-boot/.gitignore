@@ -2,7 +2,7 @@ node_modules
 .browser_modules
 lib
 jars
-server
+language-server
 *.log
 *-app/*
 !*-app/package.json

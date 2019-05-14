@@ -18,7 +18,7 @@ export class BoshLanguageContribution extends StsLanguageServerContribution {
 
     readonly id = BOSH_SERVER_ID;
     readonly name = BOSH_SERVER_NAME;
-    protected readonly lsLocation = path.resolve(__dirname, '../../server/bosh-language-server');
+    protected readonly lsLocation = path.resolve(__dirname, '../../language-server');
     protected readonly configFileName = 'application.properties';
     protected readonly mainClass = 'org.springframework.ide.vscode.bosh.BoshLanguageServerBootApp';
     protected readonly jvmArguments = [

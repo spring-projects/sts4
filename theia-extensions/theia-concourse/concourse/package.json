@@ -10,7 +10,7 @@
   "files": [
     "lib",
     "src",
-    "server"
+    "language-server"
   ],
   "dependencies": {
     "@pivotal-tools/theia-languageclient": "0.0.9",
