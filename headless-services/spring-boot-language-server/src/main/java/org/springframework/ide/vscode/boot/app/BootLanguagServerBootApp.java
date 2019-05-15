@@ -63,8 +63,14 @@ import org.springframework.ide.vscode.languageserver.starter.LanguageServerRunne
 import org.yaml.snakeyaml.Yaml;
 
 @SpringBootConfiguration(proxyBeanMethods = false)
-@ImportAutoConfiguration({ LanguageServerAutoConf.class, LanguageServerRunnerAutoConf.class,
-        ConfigurationPropertiesAutoConfiguration.class, PropertyPlaceholderAutoConfiguration.class })
+@ImportAutoConfiguration({ 
+	// During development you can uncomment the below so that boot dash can detect started state properly:
+	// SpringApplicationAdminJmxAutoConfiguration.class,
+	LanguageServerAutoConf.class, 
+	LanguageServerRunnerAutoConf.class, 
+	ConfigurationPropertiesAutoConfiguration.class, 
+	PropertyPlaceholderAutoConfiguration.class
+})
 @EnableConfigurationProperties(BootLsConfigProperties.class)
 @ComponentScan
 public class BootLanguagServerBootApp {
