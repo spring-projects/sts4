@@ -89,7 +89,7 @@ public class GithubValueParsers {
 				for (String expectedPrefix : GithubRepoContentAssistant.URI_PREFIXES) {
 					int lastChar = expectedPrefix.length()-1;
 					if (str.startsWith(expectedPrefix.substring(0, lastChar))) {
-						char actualSeparator = str.charAt(lastChar);
+						char actualSeparator = str.safeCharAt(lastChar);
 						char expectedSeparator = expectedPrefix.charAt(lastChar);
 						if (actualSeparator==expectedSeparator) {
 							return expectedPrefix;

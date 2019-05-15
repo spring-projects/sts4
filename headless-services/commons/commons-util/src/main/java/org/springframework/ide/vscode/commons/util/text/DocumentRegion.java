@@ -125,6 +125,19 @@ public class DocumentRegion implements CharSequence, IRegion {
 			throw new IndexOutOfBoundsException(""+offset);
 		}
 	}
+	
+	/**
+	 * Like charAt, but doesn't IndexOutOfBoundsException. Instead it
+	 * return (char)0.
+	 */
+	public char safeCharAt(int offset) {
+		try {
+			return charAt(offset);
+		} catch (IndexOutOfBoundsException e) {
+			return 0;
+		}
+	}
+
 
 	/**
 	 * Determines whether this range contains a given (absolute) offset.
