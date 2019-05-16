@@ -53,9 +53,15 @@ public abstract class AbstractInjectedIntoHoverProvider implements HoverProvider
 	public AbstractInjectedIntoHoverProvider(SourceLinks sourceLinks) {
 		this.sourceLinks = sourceLinks;
 	}
+	
+	@FunctionalInterface
+	protected interface DefinedBeanProvider {
+		LiveBean definedBean(SpringBootApp app);
+	}
 
 	@Override
-	public Collection<CodeLens> getLiveHintCodeLenses(IJavaProject project, Annotation annotation, TextDocument doc, SpringBootApp[] runningApps) {
+	public Collection<CodeLens> getLiveHintCodeLenses(IJavaProject project, Annotation annotation, TextDocument doc,
+			SpringBootApp[] runningApps) {
 		// Highlight if any running app contains an instance of this component
 		try {
 			if (runningApps.length > 0) {
@@ -64,8 +70,8 @@ public abstract class AbstractInjectedIntoHoverProvider implements HoverProvider
 					if (Stream.of(runningApps).anyMatch(app -> LiveHoverUtils.hasRelevantBeans(app, definedBean))) {
 						Optional<Range> nameRange = ASTUtils.nameRange(doc, annotation);
 						if (nameRange.isPresent()) {
-							List<CodeLens> codeLenses = assembleCodeLenses(project, runningApps, definedBean, doc, nameRange.get(), annotation);
-							return codeLenses.isEmpty() ? ImmutableList.of(new CodeLens(nameRange.get())) : codeLenses;
+							List<CodeLens> codeLenses = assembleCodeLenses(project, runningApps, app -> definedBean, doc, nameRange.get(), annotation);
+							return codeLenses;
 						}
 					}
 				}
@@ -83,7 +89,7 @@ public abstract class AbstractInjectedIntoHoverProvider implements HoverProvider
 
 			LiveBean definedBean = getDefinedBean(annotation);
 			if (definedBean != null) {
-				Hover hover = assembleHover(project, runningApps, definedBean, annotation, true, true);
+				Hover hover = assembleHover(project, runningApps, app -> definedBean, annotation, true, true);
 				if (hover != null) {
 					Optional<Range> nameRange = ASTUtils.nameRange(doc, annotation);
 					if (nameRange.isPresent()) {
@@ -96,10 +102,18 @@ public abstract class AbstractInjectedIntoHoverProvider implements HoverProvider
 		return null;
 	}
 
-	protected List<CodeLens> assembleCodeLenses(IJavaProject project, SpringBootApp[] runningApps, LiveBean definedBean,
+	protected List<CodeLens> assembleCodeLenses(IJavaProject project, SpringBootApp[] runningApps, DefinedBeanProvider definedBeanProvider,
 			TextDocument doc, Range range, ASTNode node) {
+		boolean beanFound = false;
 		for (SpringBootApp app : runningApps) {
+			
+			LiveBean definedBean = definedBeanProvider.definedBean(app);
+			if (definedBean == null) {
+				continue;
+			}
 
+			beanFound = true;
+			
 			List<LiveBean> relevantBeans = LiveHoverUtils.findRelevantBeans(app, definedBean);
 
 			if (!relevantBeans.isEmpty()) {
@@ -120,8 +134,9 @@ public abstract class AbstractInjectedIntoHoverProvider implements HoverProvider
 				List<CodeLens> codeLenses = builder.build();
 				return codeLenses.isEmpty() ? ImmutableList.of(new CodeLens(range)) : codeLenses;
 			}
+			
 		}
-		return ImmutableList.of();
+		return beanFound ? ImmutableList.of(new CodeLens(range)) : null;
 	}
 
 	protected List<CodeLens> assembleCodeLenseForAutowired(List<LiveBean> wiredBeans, IJavaProject project, SpringBootApp app, TextDocument doc, Range nameRange, ASTNode astNode) {
@@ -134,13 +149,19 @@ public abstract class AbstractInjectedIntoHoverProvider implements HoverProvider
 		return Collections.emptyList();
 	}
 
-	protected Hover assembleHover(IJavaProject project, SpringBootApp[] runningApps, LiveBean definedBean, ASTNode astNode, boolean injected, boolean wired) {
+	protected Hover assembleHover(IJavaProject project, SpringBootApp[] runningApps, DefinedBeanProvider definedBeanProvider, ASTNode astNode, boolean injected, boolean wired) {
 		StringBuilder hover = new StringBuilder();
 
 		for (SpringBootApp app : runningApps) {
 
-			List<LiveBean> relevantBeans = LiveHoverUtils.findRelevantBeans(app, definedBean);
+			LiveBean definedBean = definedBeanProvider.definedBean(app);
+			
+			if (definedBean == null) {
+				continue;
+			}
 
+			List<LiveBean> relevantBeans = LiveHoverUtils.findRelevantBeans(app, definedBean);
+			
 			if (!relevantBeans.isEmpty()) {
 				if (hover.length() > 0) {
 					hover.append("  \n  \n");
@@ -180,7 +201,7 @@ public abstract class AbstractInjectedIntoHoverProvider implements HoverProvider
 		}
 
 	}
-
+	
 	protected List<LiveBean> getRelevantInjectedIntoBeans(IJavaProject project, SpringBootApp app, LiveBean definedBean, List<LiveBean> relevantBeans) {
 		LiveBeansModel beans = app.getBeans();
 		if (relevantBeans != null) {

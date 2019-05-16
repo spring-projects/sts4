@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Pivotal, Inc.
+ * Copyright (c) 2018, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -140,6 +140,110 @@ public class BeansByTypeHoverProviderTest {
 				"Bean id: `scannedRandomClass`  \n" +
 				"Process [PID=111, name=`the-app`]"
 		);
+	}
+	
+	@Test
+	public void beanWithNonStandardId() throws Exception {
+		LiveBeansModel beans = LiveBeansModel.builder()
+				.add(LiveBean.builder()
+						.id("random")
+						.type("com.example.ScannedRandomClass")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("randomOtherBean")
+						.type("randomOtherBeanType")
+						.dependencies("random")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("irrelevantBean")
+						.type("com.example.IrrelevantBean")
+						.dependencies("myController")
+						.build()
+				)
+				.build();
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.processId("111")
+			.processName("the-app")
+			.beans(beans)
+			.build();
+
+		Editor editor = harness.newEditor(LanguageId.JAVA,
+				"package com.example;\n" +
+				"\n" +
+				"import java.io.Serializable;\n" +
+				"\n" +
+				"public class ScannedRandomClass implements Serializable {\n" +
+				"\n" +
+				"	public String apply(String t) {\n" +
+				"		return t.toUpperCase();\n" +
+				"	}\n" +
+				"\n" +
+				"}\n" +
+				""
+		);
+		editor.assertHighlights("ScannedRandomClass");
+		editor.assertTrimmedHover("ScannedRandomClass",
+				"**&#8594; `randomOtherBeanType`**\n" +
+				"- Bean: `randomOtherBean`  \n" +
+				"  Type: `randomOtherBeanType`\n" +
+				"  \n" +
+				"Bean id: `random`  \n" +
+				"Process [PID=111, name=`the-app`]"
+		);
+	}
+	
+	@Test
+	public void beansWithNonStandardIdMoreThanOneOfSameType() throws Exception {
+		LiveBeansModel beans = LiveBeansModel.builder()
+				.add(LiveBean.builder()
+						.id("random")
+						.type("com.example.ScannedRandomClass")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("anotherRandom")
+						.type("com.example.ScannedRandomClass")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("randomOtherBean")
+						.type("randomOtherBeanType")
+						.dependencies("random")
+						.build()
+				)
+				.add(LiveBean.builder()
+						.id("irrelevantBean")
+						.type("com.example.IrrelevantBean")
+						.dependencies("anotherRandom")
+						.build()
+				)
+				.build();
+		mockAppProvider.builder()
+			.isSpringBootApp(true)
+			.processId("111")
+			.processName("the-app")
+			.beans(beans)
+			.build();
+
+		Editor editor = harness.newEditor(LanguageId.JAVA,
+				"package com.example;\n" +
+				"\n" +
+				"import java.io.Serializable;\n" +
+				"\n" +
+				"public class ScannedRandomClass implements Serializable {\n" +
+				"\n" +
+				"	public String apply(String t) {\n" +
+				"		return t.toUpperCase();\n" +
+				"	}\n" +
+				"\n" +
+				"}\n" +
+				""
+		);
+		editor.assertHighlights();
+		editor.assertNoHover("ScannedRandomClass");
 	}
 
 	@Test

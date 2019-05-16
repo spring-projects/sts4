@@ -15,7 +15,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Stream;
 
 import org.eclipse.jdt.core.Flags;
 import org.eclipse.jdt.core.dom.ASTNode;
@@ -35,6 +34,7 @@ import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBean;
+import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansModel;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.StringUtil;
@@ -102,18 +102,18 @@ public class ComponentInjectionsHoverProvider extends AbstractInjectedIntoHoverP
 	}
 
 	@Override
-	public Collection<CodeLens> getLiveHintCodeLenses(IJavaProject project, TypeDeclaration typeDeclaration, TextDocument doc,
-			SpringBootApp[] runningApps) {
+	public Collection<CodeLens> getLiveHintCodeLenses(IJavaProject project, TypeDeclaration typeDeclaration,
+			TextDocument doc, SpringBootApp[] runningApps) {
 		if (runningApps.length > 0 && !isComponentAnnotatedType(typeDeclaration)) {
 			try {
-				LiveBean definedBean = getDefinedBeanForType(typeDeclaration, null);
-				if (definedBean != null) {
-					if (Stream.of(runningApps).anyMatch(app -> LiveHoverUtils.hasRelevantBeans(app, definedBean))) {
-						Optional<Range> nameRange = Optional.of(ASTUtils.nodeRegion(doc, typeDeclaration.getName()).asRange());
-						if (nameRange.isPresent()) {
-							List<CodeLens> codeLenses = assembleCodeLenses(project, runningApps, definedBean, doc, nameRange.get(), typeDeclaration);
-							return codeLenses.isEmpty() ? ImmutableList.of(new CodeLens(nameRange.get())) : codeLenses;
-						}
+				ITypeBinding beanType = typeDeclaration.resolveBinding();
+				if (beanType != null) {
+					String id = getBeanId(null, beanType, Flags.isStatic(typeDeclaration.getModifiers()));
+					Optional<Range> nameRange = Optional.of(ASTUtils.nodeRegion(doc, typeDeclaration.getName()).asRange());
+					if (nameRange.isPresent()) {
+						List<CodeLens> codeLenses = assembleCodeLenses(project, runningApps, app -> definedBean(app, getBeanType(beanType), id), doc,
+								nameRange.get(), typeDeclaration);
+						return codeLenses.isEmpty() ? ImmutableList.of(new CodeLens(nameRange.get())) : codeLenses;
 					}
 				}
 			} catch (Exception e) {
@@ -122,16 +122,34 @@ public class ComponentInjectionsHoverProvider extends AbstractInjectedIntoHoverP
 		}
 		return ImmutableList.of();
 	}
+	
+	private LiveBean definedBean(SpringBootApp app, String beanType, String possibleId) {
+		LiveBeansModel beans = app.getBeans();
+		if (beans != null) {
+			if (beans.getBeansOfName(possibleId).isEmpty()) {
+				// try bean type if there is only one bean of such type
+				List<LiveBean> liveBeanCandidates = beans.getBeansOfType(beanType);
+				if (liveBeanCandidates.size() == 1) {
+					return liveBeanCandidates.get(0);
+				}
+			} else {
+				// Just construct defined bean ourselves
+				return LiveBean.builder().id(possibleId).type(beanType).build();
+			}
+		}
+		return null;
+	}
 
 	@Override
 	public Hover provideHover(ASTNode node, TypeDeclaration typeDeclaration, ITypeBinding type, int offset,
 			TextDocument doc, IJavaProject project, SpringBootApp[] runningApps) {
 
 		if (runningApps.length > 0 && !isComponentAnnotatedType(typeDeclaration)) {
-
-			LiveBean definedBean = getDefinedBeanForType(typeDeclaration, null);
-			if (definedBean != null) {
-				Hover hover = assembleHover(project, runningApps, definedBean, typeDeclaration, true, true);
+			ITypeBinding beanType = typeDeclaration.resolveBinding();
+			if (beanType != null) {
+				String id = getBeanId(null, beanType, Flags.isStatic(typeDeclaration.getModifiers()));
+	
+				Hover hover = assembleHover(project, runningApps, app -> definedBean(app, getBeanType(beanType), id), typeDeclaration, true, true);
 				if (hover != null) {
 					SimpleName name = typeDeclaration.getName();
 					try {
