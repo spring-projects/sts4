@@ -111,7 +111,7 @@
 				</executions>
 			</plugin>
 
-			<!-- generate and package license information for included dependencies 
+			<!-- generate and package license information for included dependencies -->
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>license-maven-plugin</artifactId>
@@ -229,7 +229,7 @@
 					</execution>
 				</executions>
 			</plugin>
--->
+
 		</plugins>
 	</build>
 </project>
