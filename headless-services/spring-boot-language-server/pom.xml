@@ -107,8 +107,6 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-		<!-- <dependency> <groupId>com.fasterxml</groupId> <artifactId>aalto-xml</artifactId> 
-			<version>1.1.1</version> </dependency> -->
 
 		<!-- Test harness -->
 		<dependency>
@@ -132,15 +130,6 @@
 	</dependencies>
 	<build>
 		<plugins>
-			<!-- Set source 1.8 -->
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-compiler-plugin</artifactId>
-				<configuration>
-					<source>1.8</source>
-					<target>1.8</target>
-				</configuration>
-			</plugin>
 			<!-- Configure fat jar -->
 			<plugin>
 				<groupId>org.springframework.boot</groupId>
@@ -168,7 +157,7 @@
 					</excludes>
 				</configuration>
 			</plugin>
-
+			
 			<!-- generate and package license information for included dependencies -->
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
@@ -185,6 +174,10 @@
 				</executions>
 				<configuration>
 					<licenseUrlReplacements>
+						<licenseUrlReplacement>
+							<regexp>http://javolution.org/LICENSE.txt</regexp>
+							<replacement>https://raw.githubusercontent.com/javolution/javolution/master/LICENSE</replacement>
+						</licenseUrlReplacement>
 						<licenseUrlReplacement>
 							<regexp>http://(.*)</regexp>
 							<replacement>https://$1</replacement>
@@ -287,7 +280,6 @@
 					</execution>
 				</executions>
 			</plugin>
-
 		</plugins>
 	</build>
 </project>

@@ -85,6 +85,10 @@
 				<configuration>
 					<licenseUrlReplacements>
 						<licenseUrlReplacement>
+							<regexp>http://javolution.org/LICENSE.txt</regexp>
+							<replacement>https://raw.githubusercontent.com/javolution/javolution/master/LICENSE</replacement>
+						</licenseUrlReplacement>
+						<licenseUrlReplacement>
 							<regexp>http://(.*)</regexp>
 							<replacement>https://$1</replacement>
 						</licenseUrlReplacement>
@@ -186,7 +190,6 @@
 					</execution>
 				</executions>
 			</plugin>
-
 		</plugins>
 	</build>
 </project>
