@@ -179,10 +179,12 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 	static class UpdateHighlights extends UIJob {
 
 		private String target;
+		private boolean updateCodeMinings;
 
-		UpdateHighlights(String target) {
+		UpdateHighlights(String target, boolean updateCodeMinings) {
 			super("Update highlights");
 			this.target = target;
+			this.updateCodeMinings = updateCodeMinings;
 			setSystem(true);
 			schedule();
 		}
@@ -204,12 +206,12 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 						if (target != null) {
 							HighlightParams highlightParams = currentHighlights.get(target);
 							if (Utils.isProperDocumentIdFor(doc, highlightParams.getDoc())) {
-								updateHighlightAnnotations(editor, sourceViewer, annotationModel, target);
+								updateHighlightAnnotations(editor, sourceViewer, annotationModel, target, updateCodeMinings);
 							}
 						} else {
 							URI uri = Utils.findDocUri(doc);
 							if (uri != null) {
-								updateHighlightAnnotations(editor, sourceViewer, annotationModel, uri.toString());
+								updateHighlightAnnotations(editor, sourceViewer, annotationModel, uri.toString(), updateCodeMinings);
 							}
 						}
 					}
@@ -220,14 +222,15 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 	};
 
 	private static void updateHighlightAnnotations(IEditorPart editor, ISourceViewer sourceViewer,
-			IAnnotationModel annotationModel, String docUri) {
+			IAnnotationModel annotationModel, String docUri, boolean updateCodeMinings) {
+		boolean codeLensHighlightOn = isCodeLensHighlightOn();
 		if (annotationModel instanceof IAnnotationModelExtension) {
-			if (isCodeLensHighlightOn()) {
+			if (codeLensHighlightOn) {
 				addBootRangeHighlightSupport(editor, sourceViewer);
 			}
 			updateAnnotations(docUri, sourceViewer, (IAnnotationModelExtension) annotationModel);
 		}
-		if (sourceViewer instanceof ISourceViewerExtension5) {
+		if (updateCodeMinings && sourceViewer instanceof ISourceViewerExtension5) {
 			if (sourceViewer instanceof JavaSourceViewer) {
 				// JavaSourceViewer#updateCodeMinings() is overridden and doesn't do anything
 				try {
@@ -323,7 +326,7 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 			List<CodeLens> oldCodelenses = oldHighligts==null ? ImmutableList.of() : oldHighligts.getCodeLenses();
 			if (!oldCodelenses.equals(highlights.getCodeLenses())) {
 				currentHighlights.put(target, highlights);
-				new UpdateHighlights(target);
+				new UpdateHighlights(target, isCodeLensHighlightOn());
 			}
 		}
 	}
