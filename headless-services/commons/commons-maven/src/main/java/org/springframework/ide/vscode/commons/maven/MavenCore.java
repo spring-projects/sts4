@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2018 Pivotal, Inc.
+ * Copyright (c) 2016, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -297,6 +297,31 @@ public class MavenCore {
 			return JavaUtils.getJavaRuntimeMinorVersion(getJavaRuntimeVersion());
 		} catch (MavenException e) {
 			log.error("Cannot determine Java runtime version. Defaulting to version 8", e);
+		}
+		return null;
+	}
+	
+	public MavenProject findPeerProject(MavenProject currentProject, Artifact dependency) {
+		if (currentProject.getGroupId().equals(dependency.getGroupId())) {
+			try {
+				Path parentFolder = currentProject.getBasedir().toPath().getParent();
+				if (Files.isRegularFile(parentFolder.resolve(MavenCore.POM_XML))) {
+					MavenProject parent = readProject(parentFolder.resolve(MavenCore.POM_XML).toFile(), false);
+					for (String module : parent.getModules()) {
+						Path path = parentFolder.resolve(module);
+						if (Files.isDirectory(path)
+								&& !currentProject.getBasedir().equals(path.toFile())
+								&& Files.isRegularFile(path.resolve(MavenCore.POM_XML))) {
+							MavenProject peerProject = readProject(path.resolve(MavenCore.POM_XML).toFile(), false);
+							if (dependency.equals(peerProject.getArtifact())) {
+								return peerProject;
+							}
+						}
+					}
+				}
+			} catch (MavenException e) {
+				log.error("{}", e);
+			}
 		}
 		return null;
 	}

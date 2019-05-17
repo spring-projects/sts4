@@ -98,21 +98,23 @@ public class ProjectsHarness {
 		this.fileObserver = fileObserver;
 	}
 
-	public IJavaProject project(ProjectType type, String name, ProjectCustomizer customizer) throws Exception {
+	public IJavaProject project(ProjectType type, String name, ProjectCustomizer customizer, boolean build) throws Exception {
 		Tuple3<ProjectType, String, ProjectCustomizer> key = Tuples.of(type, name, customizer);
 		return cache.get(key, () -> {
 			Path baseProjectPath = getProjectPath(name);
 			File testProjectRoot = Files.createTempDir();
 			FileUtils.copyDirectory(baseProjectPath.toFile(), testProjectRoot);
 			customizer.customize(new CustomizableProjectContent(testProjectRoot));
-			return createProject(type, testProjectRoot.toPath());
+			return createProject(type, testProjectRoot.toPath(), build);
 		});
 	}
 
-	private IJavaProject createProject(ProjectType type, Path testProjectPath) throws Exception {
+	private IJavaProject createProject(ProjectType type, Path testProjectPath, boolean build) throws Exception {
 		switch (type) {
 		case MAVEN:
-			MavenBuilder.newBuilder(testProjectPath).clean().pack().javadoc().skipTests().execute();
+			if (build) {
+				MavenBuilder.newBuilder(testProjectPath).clean().pack().javadoc().skipTests().execute();
+			}
 			return MavenJavaProject.create(fileObserver, MavenCore.getDefault(),
 					testProjectPath.resolve(MavenCore.POM_XML).toFile(), (uri, cpe) -> JavaDocProviders.createFor(cpe));
 		default:
@@ -120,10 +122,10 @@ public class ProjectsHarness {
 		}
 	}
 
-	public IJavaProject project(ProjectType type, String name) throws Exception {
+	public IJavaProject project(ProjectType type, String name, boolean build) throws Exception {
 		return cache.get(type + "/" + name, () -> {
 			Path testProjectPath = getProjectPath(name);
-			return createProject(type, testProjectPath);
+			return createProject(type, testProjectPath, build);
 		});
 	}
 
@@ -137,11 +139,15 @@ public class ProjectsHarness {
 	}
 
 	public MavenJavaProject mavenProject(String name, ProjectCustomizer customizer) throws Exception {
-		return (MavenJavaProject) project(ProjectType.MAVEN, name, customizer);
+		return (MavenJavaProject) project(ProjectType.MAVEN, name, customizer, true);
 	}
 
 	public MavenJavaProject mavenProject(String name) throws Exception {
-		return (MavenJavaProject) project(ProjectType.MAVEN, name);
+		return (MavenJavaProject) project(ProjectType.MAVEN, name, true);
+	}
+	
+	public MavenJavaProject mavenProjectAlreadyBuilt(String name) throws Exception {
+		return (MavenJavaProject) project(ProjectType.MAVEN, name, false);
 	}
 
 }
