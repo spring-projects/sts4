@@ -319,8 +319,12 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 	public synchronized void highlight(HighlightParams highlights) {
 		String target = highlights.getDoc().getUri();
 		if (target!=null) {
-			currentHighlights.put(target, highlights);
-			new UpdateHighlights(target);
+			HighlightParams oldHighligts = currentHighlights.get(target);
+			List<CodeLens> oldCodelenses = oldHighligts==null ? ImmutableList.of() : oldHighligts.getCodeLenses();
+			if (!oldCodelenses.equals(highlights.getCodeLenses())) {
+				currentHighlights.put(target, highlights);
+				new UpdateHighlights(target);
+			}
 		}
 	}
 

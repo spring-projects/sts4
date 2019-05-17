@@ -115,7 +115,7 @@ public class SpringLiveHoverWatchdog {
 
 	private synchronized void start() {
 		if (highlightsEnabled && timer == null) {
-			logger.debug("Starting SpringLiveHoverWatchdog");
+			logger.info("Starting SpringLiveHoverWatchdog");
 			this.timer = new ScheduledThreadPoolExecutor(1);
 			this.timer.scheduleWithFixedDelay(() -> this.update(), 0, POLLING_INTERVAL_MILLISECONDS, TimeUnit.MILLISECONDS);
 		}
