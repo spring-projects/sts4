@@ -37,6 +37,7 @@ import org.springsource.ide.eclipse.commons.core.util.IOUtil;
 import com.google.common.base.Charsets;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
 
 public abstract class STS4LanguageServerProcessStreamConnector extends ProcessStreamConnectionProvider {
 
@@ -83,47 +84,49 @@ public abstract class STS4LanguageServerProcessStreamConnector extends ProcessSt
 
 	protected final void initExplodedJarCommand(Path lsFolder, String mainClass, String configFileName, List<String> extraVmArgs) {
 		try {
-			Assert.isNotNull(lsFolder);
-			Assert.isNotNull(mainClass);
-
-			ImmutableList.Builder<String> command = ImmutableList.builder();
-			JRE runtime = getJRE();
-
-			command.add(runtime.getJavaExecutable());
-			command.add("-cp");
-
 			Bundle bundle = Platform.getBundle(getPluginId());
-			File bundleFile = FileLocator.getBundleFile(bundle);
+			JRE runtime = getJRE();
+			if (bundle.getVersion().getQualifier().equals("qualifier")) {
+				Builder<String> vmArgs = ImmutableList.builder();
+				vmArgs.add("-Dsts.lsp.client=eclipse");
+				vmArgs.addAll(extraVmArgs);
+				setCommands(runtime.jarLaunchCommand(getLanguageServerJARLocation(), vmArgs.build()));
+			} else {
+				Assert.isNotNull(lsFolder);
+				Assert.isNotNull(mainClass);
 
-			File bundleRoot = bundleFile.getAbsoluteFile();
-			Path languageServerRoot = bundleRoot.toPath().resolve(lsFolder);
+				ImmutableList.Builder<String> command = ImmutableList.builder();
 
-			StringBuilder classpath = new StringBuilder();
-			classpath.append(languageServerRoot.resolve("BOOT-INF/classes").toFile());
-			classpath.append(File.pathSeparator);
-			classpath.append(languageServerRoot.resolve("BOOT-INF/lib").toFile());
-			// Cannot have * in the java.nio.Path on Windows
-			classpath.append(File.separator);
-			classpath.append('*');
+				command.add(runtime.getJavaExecutable());
+				command.add("-cp");
 
-			if (runtime.toolsJar != null) {
+				File bundleFile = FileLocator.getBundleFile(bundle);
+
+				File bundleRoot = bundleFile.getAbsoluteFile();
+				Path languageServerRoot = bundleRoot.toPath().resolve(lsFolder);
+
+				StringBuilder classpath = new StringBuilder();
+				classpath.append(languageServerRoot.resolve("BOOT-INF/classes").toFile());
 				classpath.append(File.pathSeparator);
-				classpath.append(runtime.toolsJar);
+				classpath.append(languageServerRoot.resolve("BOOT-INF/lib").toFile());
+				// Cannot have * in the java.nio.Path on Windows
+				classpath.append(File.separator);
+				classpath.append('*');
+
+				command.add(classpath.toString());
+
+				command.add("-Dsts.lsp.client=eclipse");
+
+				command.addAll(extraVmArgs);
+
+				if (configFileName != null) {
+					command.add("-Dspring.config.location=file:" + languageServerRoot.resolve("BOOT-INF/classes").resolve(configFileName).toFile());
+				}
+
+				command.add(mainClass);
+
+				setCommands(command.build());
 			}
-
-			command.add(classpath.toString());
-
-			command.add("-Dsts.lsp.client=eclipse");
-
-			command.addAll(extraVmArgs);
-
-			if (configFileName != null) {
-				command.add("-Dspring.config.location=file:" + languageServerRoot.resolve("BOOT-INF/classes").resolve(configFileName).toFile());
-			}
-
-			command.add(mainClass);
-
-			setCommands(command.build());
 		}
 		catch (Exception e) {
 			LanguageServerCommonsActivator.logError(e, "Failed to assemble exploded LS JAR launch command");
@@ -194,43 +197,28 @@ public abstract class STS4LanguageServerProcessStreamConnector extends ProcessSt
 		return System.getProperty("user.dir");
 	}
 
+	/**
+	 * Fatjar launch is now only used for running in development mode with a locally built fatjar
+	 */
 	final protected String getLanguageServerJARLocation() {
-		String languageServer = getLanguageServerArtifactId() +"-" + getLanguageServerArtifactVersion() +"-exec.jar";
 		Bundle bundle = getBundle();
 		String bundleVersion = bundle.getVersion().toString();
-		String languageServerLocalCopy = bundleVersion + "-" + languageServer;
-		File dataFile = bundle.getDataFile(languageServerLocalCopy);
 
-		Exception error = null;
-		if (!dataFile.exists() || bundleVersion.endsWith("qualifier")) { // qualifier check to get the language server always copied in dev mode
-			try {
-				copyLanguageServerJAR(languageServer, languageServerLocalCopy);
-			}
-			catch (Exception e) {
-				error = e;
-			}
-		}
-
-		if (bundleVersion.endsWith("qualifier")) {
-			File userHome = new File(System.getProperty("user.home"));
-			File locallyBuiltJar = new File(
-					userHome
-				,
-					"git/sts4/headless-services/"
-					+ getLanguageServerArtifactId()
-					+ "/target/"
-					+ getLanguageServerArtifactId()
-					+ "-"
-					+ getLanguageServerArtifactVersion()
-			);
-			if (locallyBuiltJar.exists()) {
-				return locallyBuiltJar.getAbsolutePath();
-			}
-			if (error!=null) {
-				error.printStackTrace();
-			}
-		}
-		return dataFile.getAbsolutePath();
+		Assert.isLegal(bundleVersion.endsWith("qualifier"));
+		File userHome = new File(System.getProperty("user.home"));
+		File locallyBuiltJar = new File(
+				userHome
+			,
+				"git/sts4/headless-services/"
+				+ getLanguageServerArtifactId()
+				+ "/target/"
+				+ getLanguageServerArtifactId()
+				+ "-"
+				+ getLanguageServerArtifactVersion()
+				+ "-exec.jar"
+		);
+		Assert.isLegal(locallyBuiltJar.exists());
+		return locallyBuiltJar.getAbsolutePath();
 	}
 
 	protected String getLanguageServerArtifactVersion() {
