@@ -36,7 +36,7 @@ public class DocumentEditsTest {
 
 	@Before
 	public void setup() throws Exception {
-		SimpleLanguageServer server = new SimpleLanguageServer("dont-care");
+		SimpleLanguageServer server = new SimpleLanguageServer("dont-care", null);
 		harness = new LanguageServerHarness(server, LanguageId.PLAINTEXT);
 	}
 
