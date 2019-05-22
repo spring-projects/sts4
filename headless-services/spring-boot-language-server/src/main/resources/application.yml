@@ -1,9 +1,0 @@
-languageserver:
-  extension-id: vscode-spring-boot
-  completion-trigger-characters: 
-    java: ""
-    spring-boot-properties-yaml: abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ.
-    spring-boot-properties: abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ.
-spring:
-  main:
-    banner-mode: 'off'
