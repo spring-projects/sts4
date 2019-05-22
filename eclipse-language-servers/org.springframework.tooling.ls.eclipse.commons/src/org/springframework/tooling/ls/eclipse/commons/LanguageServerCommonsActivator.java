@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Pivotal, Inc.
+ * Copyright (c) 2018, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,7 +11,6 @@
 package org.springframework.tooling.ls.eclipse.commons;
 
 import java.net.URL;
-import java.time.Duration;
 
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -59,7 +58,7 @@ public class LanguageServerCommonsActivator extends AbstractUIPlugin {
 				colorRegistry.put(PreferenceConstants.HIGHLIGHT_RANGE_COLOR_PREFS, derivedColor);
 				// No break - need to update highlights for the new color to take effect
 			case PreferenceConstants.HIGHLIGHT_CODELENS_PREFS:
-				new UpdateHighlights(null);
+				new UpdateHighlights(null, true);
 				break;
 			default:
 			}

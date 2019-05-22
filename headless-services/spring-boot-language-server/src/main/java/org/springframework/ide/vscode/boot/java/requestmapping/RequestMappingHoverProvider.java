@@ -278,7 +278,6 @@ public class RequestMappingHoverProvider implements HoverProvider {
 			Renderable urlRenderables = Renderables.concat(renderableUrls);
 			Renderable processSection = Renderables.concat(
 					urlRenderables,
-					Renderables.lineBreak(),
 					Renderables.mdBlob(LiveHoverUtils.niceAppName(app))
 			);
 
