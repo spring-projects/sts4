@@ -1,3 +1,8 @@
+## 2019-05-24 (4.2.2 RELEASE)
+
+* _(all language servers)_ performance: additional improvements to language server startup time
+* _(Concourse)_ fixed: Concourse VSCode Does not recognize "initial_path" param for S3 resource ([#284](https://github.com/spring-projects/sts4/issues/284))
+
 ## 2019-04-18 (4.2.1 RELEASE)
 
 * _(VSCode, Atom, Theia)_ improvement: JVM args can now be configured for language server processes

@@ -1,3 +1,9 @@
+## 2019-05-24 (4.2.2 RELEASE)
+
+* _(all language servers)_ performance: additional improvements to language server startup time
+* _(CF Manifest)_ new: added support for anchors and references
+* _(CF Manifest)_ fixed: zero instances in manifest file now supported
+
 ## 2019-04-18 (4.2.1 RELEASE)
 
 * _(VSCode, Atom, Theia)_ improvement: JVM args can now be configured for language server processes

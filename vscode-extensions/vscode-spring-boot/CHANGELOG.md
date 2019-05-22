@@ -1,3 +1,17 @@
+## 2019-05-24 (4.2.2 RELEASE)
+
+* _(all language servers)_ performance: additional improvements to language server startup time
+* _(Spring Boot)_ new: additional fine-grained preferences for Spring XML config file support
+* _(Spring Boot)_ new: navigation for bean identifiers, bean classes, and property names for Spring XML config files
+* _(Spring Boot)_ new: content-assist rolled out for many more Spring XML config elements and attributes
+* _(Spring Boot)_ new: live bean information now showing up in types from class files (when source code is shown) - _VSCode and Theia only at the moment_
+* _(Spring Boot)_ improvement: hugely improved content-assist for bean class attribute in Spring XML config files (incl. package name proposals and vastly improved performance)
+* _(Spring Boot)_ improvement: property name content-assist in Spring XML config files now shows proposals from properties defined in supertypes, too
+* _(Spring Boot)_ improvement: symbol scanning skips output folders now
+* _(Spring Boot)_ fixed: Detect @RequestMapping with path defined as constant instead of literal string ([#281](https://github.com/spring-projects/sts4/issues/281))
+* _(Spring Boot)_ fixed: NPE when invoking property name content-assist in XML file without bean class being defined
+* _(Spring Boot)_ fixed: tags in yaml files with dollar signs throw IllegalGroupReference in properties editor
+
 ## 2019-04-18 (4.2.1 RELEASE)
 
 * _(Spring Boot)_ performance: additional performance and memory footprint improvements to symbol indexing, eats now less memory and is faster while doing the initial indexing run
