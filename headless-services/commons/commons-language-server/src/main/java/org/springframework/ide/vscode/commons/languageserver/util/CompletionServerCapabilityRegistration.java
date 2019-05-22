@@ -90,7 +90,7 @@ public class CompletionServerCapabilityRegistration implements ServerCapabilityI
 				RegistrationParams regParams = new RegistrationParams(registrations);
 				log.info("Registering Dynamic Completion Capabality {}", regParams);
 				return Mono.fromFuture(server.getClient().registerCapability(regParams));
-			}));
+			})).toFuture();
 		}
 	}
 
@@ -99,7 +99,11 @@ public class CompletionServerCapabilityRegistration implements ServerCapabilityI
 		for (int i = 0; i < triggerCharsString.length(); i++) {
 			builder.add(triggerCharsString.substring(i, i+1));
 		}
-		return builder.build();
+		ImmutableList<String> list = builder.build();
+		if (list.isEmpty()) {
+			return null;
+		}
+		return list;
 	}
 
 }
