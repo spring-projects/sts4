@@ -112,7 +112,7 @@ public class ValueHoverProvider implements HoverProvider {
 						if (foundProperties != null) {
 							for (LiveProperty liveProp : foundProperties) {
 								hover.append(propertyKey + " : " + liveProp.getValue());
-								hover.append(" (from: " + liveProp.getSource() + ")\n\n");
+								hover.append(" (from: " + liveProp.getSource() + ")\n");
 								hover.append(LiveHoverUtils.niceAppName(app));
 								hover.append("\n\n");
 							}
