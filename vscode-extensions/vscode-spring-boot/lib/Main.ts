@@ -5,7 +5,6 @@ import {workspace} from 'vscode';
 
 import * as commons from '@pivotal-tools/commons-vscode';
 
-import {generate_pipeline, UserQuestioner} from '@pivotal-tools/pipeline-builder';
 import {LanguageClient} from "vscode-languageclient";
 
 const PROPERTIES_LANGUAGE_ID = "spring-boot-properties";
@@ -69,31 +68,4 @@ export function activate(context: VSCode.ExtensionContext): Thenable<LanguageCli
     };
 
     return commons.activate(options, context);
-}
-
-// NOTE: Be sure to add this under "contributes" in package.json to enable the command:
-//
-// "commands": [
-//     {
-//       "command": "springboot.generate-concourse-pipeline",
-//       "title": "Spring Boot: Generate Concourse Pipeline"
-//     }
-//   ],
-function registerPipelineGenerator(context: VSCode.ExtensionContext) {
-    context.subscriptions.push(VSCode.commands.registerCommand('springboot.generate-concourse-pipeline', () => {
-        let q = (property, defaultValue) => {
-            defaultValue = defaultValue || '';
-            return;
-        };
-        let projectRoot = VSCode.workspace.rootPath;
-        if (projectRoot) {
-            return generate_pipeline(projectRoot, (property, defaultValue) => new Promise<string>((resolve, reject) => {
-                VSCode.window.showInputBox({
-                    prompt: `Enter '${property}': `,
-                    value: defaultValue,
-                    valueSelection: [0, defaultValue.length]
-                }).then(resolve, reject);
-            }));
-        }
-    }));
 }

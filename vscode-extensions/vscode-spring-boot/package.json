@@ -183,7 +183,6 @@
   },
   "dependencies": {
     "@pivotal-tools/commons-vscode": "file:../commons-vscode/pivotal-tools-commons-vscode-0.2.2.tgz",
-    "@pivotal-tools/pipeline-builder": "^0.0.5",
     "vscode-languageclient": "5.2.1"
   },
   "devDependencies": {
