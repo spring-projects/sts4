@@ -61,8 +61,6 @@ public class SpringXMLCompletionEngine implements ICompletionEngine {
 		this.completionProviders.put(new XMLElementKey(BEANS_NAMESPACE, null, CONSTRUCTOR_ARG_ELEMENT, TYPE_ATTRIBUTE), classesAndInterfacesProvider);
 		this.completionProviders.put(new XMLElementKey(BEANS_NAMESPACE, null, ARG_TYPE_ELEMENT, MATCH_ATTRIBUTE), classesAndInterfacesProvider);
 		this.completionProviders.put(new XMLElementKey(BEANS_NAMESPACE, null, VALUE_ELEMENT, TYPE_ATTRIBUTE), classesAndInterfacesProvider);
-		this.completionProviders.put(new XMLElementKey(BEANS_NAMESPACE, null, null, VALUE_TYPE_ATTRIBUTE), classesAndInterfacesProvider);
-		this.completionProviders.put(new XMLElementKey(BEANS_NAMESPACE, null, null, KEY_TYPE_ATTRIBUTE), classesAndInterfacesProvider);
 		
 		this.completionProviders.put(new XMLElementKey(BEANS_NAMESPACE, null, BEAN_ELEMENT, PARENT_ATTRIBUTE), beanRefProvider);
 		this.completionProviders.put(new XMLElementKey(BEANS_NAMESPACE, null, BEAN_ELEMENT, DEPENDS_ON_ATTRIBUTE), beanRefProvider);
@@ -79,6 +77,9 @@ public class SpringXMLCompletionEngine implements ICompletionEngine {
 
 		this.completionProviders.put(new XMLElementKey(BEANS_NAMESPACE, BEAN_ELEMENT, PROPERTY_ELEMENT, NAME_ATTRIBUTE), propertyNameProvider);
 		
+		this.completionProviders.put(new XMLElementKey(UTIL_NAMESPACE, null, null, VALUE_TYPE_ATTRIBUTE), classesAndInterfacesProvider);
+		this.completionProviders.put(new XMLElementKey(UTIL_NAMESPACE, null, null, KEY_TYPE_ATTRIBUTE), classesAndInterfacesProvider);
+
 		this.completionProviders.put(new XMLElementKey(CONTEXT_NAMESPACE, null, COMPONENT_SCAN_ELEMENT, BASE_PACKAGE_ATTRIBUTE), packagesProvider);
 		this.completionProviders.put(new XMLElementKey(CONTEXT_NAMESPACE, null, COMPONENT_SCAN_ELEMENT, NAME_GENERATOR_ATTRIBUTE), beanRefProvider);
 		this.completionProviders.put(new XMLElementKey(CONTEXT_NAMESPACE, null, COMPONENT_SCAN_ELEMENT, SCOPE_RESOLVER_ATTRIBUTE), beanRefProvider);

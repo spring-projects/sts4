@@ -34,8 +34,6 @@ public class XmlConfigConstants {
 	public static final String NAME_ATTRIBUTE = 		"name";
 	public static final String REF_ATTRIBUTE = 			"ref";
 	public static final String MATCH_ATTRIBUTE = 		"match";
-	public static final String VALUE_TYPE_ATTRIBUTE = 	"value-type";
-	public static final String KEY_TYPE_ATTRIBUTE = 	"key-type";
 	public static final String PARENT_ATTRIBUTE = 		"parent";
 	public static final String DEPENDS_ON_ATTRIBUTE = 	"depends-on";
 	public static final String FACTORY_BEAN_ATTRIBUTE = "factory-bean";
@@ -53,5 +51,9 @@ public class XmlConfigConstants {
 	public static final String NAME_GENERATOR_ATTRIBUTE = 	"name-generator";
 	public static final String SCOPE_RESOLVER_ATTRIBUTE = 	"scope-resolver";
 
+	public static final String UTIL_NAMESPACE = "http://www.springframework.org/schema/util";
+
+	public static final String VALUE_TYPE_ATTRIBUTE = 	"value-type";
+	public static final String KEY_TYPE_ATTRIBUTE = 	"key-type";
 
 }
