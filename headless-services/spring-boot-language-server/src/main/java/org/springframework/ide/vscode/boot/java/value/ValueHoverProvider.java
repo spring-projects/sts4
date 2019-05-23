@@ -39,6 +39,8 @@ import org.springframework.ide.vscode.commons.boot.app.cli.liveproperties.LivePr
 import org.springframework.ide.vscode.commons.boot.app.cli.liveproperties.LiveProperty;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
+import org.springframework.ide.vscode.commons.util.Renderable;
+import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.common.collect.ImmutableList;
@@ -111,10 +113,12 @@ public class ValueHoverProvider implements HoverProvider {
 						List<LiveProperty> foundProperties = properties.getProperties(propertyKey);
 						if (foundProperties != null) {
 							for (LiveProperty liveProp : foundProperties) {
-								hover.append(propertyKey + " : " + liveProp.getValue());
-								hover.append(" (from: " + liveProp.getSource() + ")\n");
-								hover.append(LiveHoverUtils.niceAppName(app));
-								hover.append("\n\n");
+								Renderable renderable = Renderables.concat(Renderables.mdBlob(propertyKey + " : " + liveProp.getValue() + " (from: " + liveProp.getSource() + ")"),
+										Renderables.lineBreak(),
+										Renderables.mdBlob(LiveHoverUtils.niceAppName(app)),
+										Renderables.text("\n\n")		
+								);
+								hover.append(renderable.toMarkdown());				
 							}
 						}
 					}
