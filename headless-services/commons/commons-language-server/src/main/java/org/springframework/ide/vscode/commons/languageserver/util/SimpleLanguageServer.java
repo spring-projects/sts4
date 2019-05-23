@@ -55,6 +55,7 @@ import org.eclipse.lsp4j.services.LanguageClient;
 import org.eclipse.lsp4j.services.LanguageClientAware;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationContext;
 import org.springframework.ide.vscode.commons.languageserver.DiagnosticService;
 import org.springframework.ide.vscode.commons.languageserver.ProgressService;
 import org.springframework.ide.vscode.commons.languageserver.Sts4LanguageServer;
@@ -111,9 +112,7 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 	public final LazyCompletionResolver completionResolver = createCompletionResolver();
 
 	private SimpleTextDocumentService tds;
-
 	private SimpleWorkspaceService workspace;
-
 	private STS4LanguageClient client;
 
 	private ProgressService progressService = (String taskId, String statusMsg) -> {
@@ -155,6 +154,7 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 
 	private String completionTriggerCharacters = null;
 
+	final private ApplicationContext appContext;
 
 	@Override
 	public void connect(LanguageClient _client) {
@@ -187,7 +187,8 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 		}
 	}
 
-	public SimpleLanguageServer(String extensionId) {
+	public SimpleLanguageServer(String extensionId, ApplicationContext appContext) {
+		this.appContext = appContext;
 		Assert.isNotNull(extensionId);
 		this.EXTENSION_ID = extensionId;
 		this.CODE_ACTION_COMMAND_ID = "sts."+EXTENSION_ID+".codeAction";
@@ -270,6 +271,12 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 			getWorkspaceService().onExecuteCommand(this::executeCommand);
 		}
 		ServerCapabilities cap = getServerCapabilities();
+		if (appContext!=null) {
+			Map<String, ServerCapabilityInitializer> extraCaps = appContext.getBeansOfType(ServerCapabilityInitializer.class);
+			for (ServerCapabilityInitializer capIniter : extraCaps.values()) {
+				capIniter.initialize(params, cap);
+			}
+		}
 		result.setCapabilities(cap);
 		Consumer<InitializeParams> ih = this.initializeHandler;
 		if (ih!=null){
@@ -324,7 +331,7 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 	 * Get some info safely. If there's any kind of exception, ignore it
 	 * and retutn default value instead.
 	 */
-	private static <T> T safeGet(T deflt, Callable<T> getter) {
+	public static <T> T safeGet(T deflt, Callable<T> getter) {
 		try {
 			T x = getter.call();
 			if (x!=null) {
@@ -369,17 +376,6 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 
 		c.setTextDocumentSync(TextDocumentSyncKind.Incremental);
 		c.setHoverProvider(true);
-
-		CompletionOptions completionProvider = new CompletionOptions();
-		completionProvider.setResolveProvider(hasLazyCompletionResolver());
-		if (this.completionTriggerCharacters!=null) {
-			String[] chars = new String[this.completionTriggerCharacters.length()];
-			for (int i = 0; i < chars.length; i++) {
-				chars[i] = this.completionTriggerCharacters.substring(i, i+1);
-			}
-			completionProvider.setTriggerCharacters(ImmutableList.copyOf(chars));
-		}
-		c.setCompletionProvider(completionProvider);
 
 		if (hasQuickFixes()) {
 			c.setCodeActionProvider(true);

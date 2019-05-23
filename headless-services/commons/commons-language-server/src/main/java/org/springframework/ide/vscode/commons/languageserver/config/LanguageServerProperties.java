@@ -1,5 +1,7 @@
 package org.springframework.ide.vscode.commons.languageserver.config;
 
+import java.util.Map;
+
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
 @ConfigurationProperties("languageserver")
@@ -31,7 +33,7 @@ public class LanguageServerProperties {
 	 * being ignored when the client is vscode to avoid breaking Java completion
 	 * triggers.
 	 */
-	private String completionTriggerCharacters;
+	private Map<String, String> completionTriggerCharacters;
 
 	public boolean isStandalone() {
 		return standalone;
@@ -57,11 +59,11 @@ public class LanguageServerProperties {
 		this.extensionId = extensionId;
 	}
 
-	public String getCompletionTriggerCharacters() {
+	public Map<String,String> getCompletionTriggerCharacters() {
 		return completionTriggerCharacters;
 	}
 
-	public void setCompletionTriggerCharacters(String completionTriggerCharacters) {
+	public void setCompletionTriggerCharacters(Map<String, String> completionTriggerCharacters) {
 		this.completionTriggerCharacters = completionTriggerCharacters;
 	}
 
