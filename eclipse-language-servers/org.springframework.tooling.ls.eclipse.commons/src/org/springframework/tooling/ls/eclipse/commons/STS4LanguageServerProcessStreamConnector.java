@@ -113,6 +113,11 @@ public abstract class STS4LanguageServerProcessStreamConnector extends ProcessSt
 				classpath.append(File.separator);
 				classpath.append('*');
 
+				if (runtime.toolsJar != null) {
+					classpath.append(File.pathSeparator);
+					classpath.append(runtime.toolsJar);
+				}
+
 				command.add(classpath.toString());
 
 				command.add("-Dsts.lsp.client=eclipse");
