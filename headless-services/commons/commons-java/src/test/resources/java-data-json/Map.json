@@ -42,7 +42,7 @@
       "parameters": [
         {
           "kind": "CLASS",
-          "name": "Ljava.lang.Object;"
+          "name": "Ljava/lang/Object;"
         }
       ],
       "annotations": [],
@@ -62,7 +62,7 @@
       "parameters": [
         {
           "kind": "CLASS",
-          "name": "Ljava.lang.Object;"
+          "name": "Ljava/lang/Object;"
         }
       ],
       "annotations": [],
@@ -82,7 +82,7 @@
       "parameters": [
         {
           "kind": "CLASS",
-          "name": "Ljava.lang.Object;"
+          "name": "Ljava/lang/Object;"
         }
       ],
       "annotations": [],
@@ -126,7 +126,7 @@
       "parameters": [
         {
           "kind": "CLASS",
-          "name": "Ljava.lang.Object;"
+          "name": "Ljava/lang/Object;"
         }
       ],
       "annotations": [],
@@ -146,11 +146,11 @@
       "parameters": [
         {
           "kind": "PARAMETERIZED",
-          "name": "Ljava.util.Map\u003c+TK;+TV;\u003e;",
+          "name": "Ljava/util/Map\u003c+TK;+TV;\u003e;",
           "extras": {
             "owner": {
               "kind": "CLASS",
-              "name": "Ljava.util.Map;"
+              "name": "Ljava/util/Map;"
             },
             "arguments": [
               {
@@ -188,15 +188,15 @@
       "label": "void java.util.Map.clear()"
     },
     {
-      "bindingKey": "Ljava/util/Map;.keySet()Ljava.util.Set\u003cTK;\u003e;",
+      "bindingKey": "Ljava/util/Map;.keySet()Ljava/util/Set\u003cTK;\u003e;",
       "constructor": false,
       "returnType": {
         "kind": "PARAMETERIZED",
-        "name": "Ljava.util.Set\u003cTK;\u003e;",
+        "name": "Ljava/util/Set\u003cTK;\u003e;",
         "extras": {
           "owner": {
             "kind": "CLASS",
-            "name": "Ljava.util.Set;"
+            "name": "Ljava/util/Set;"
           },
           "arguments": [
             {
@@ -215,15 +215,15 @@
       "label": "Set\u003cK\u003e java.util.Map.keySet()"
     },
     {
-      "bindingKey": "Ljava/util/Map;.values()Ljava.util.Collection\u003cTV;\u003e;",
+      "bindingKey": "Ljava/util/Map;.values()Ljava/util/Collection\u003cTV;\u003e;",
       "constructor": false,
       "returnType": {
         "kind": "PARAMETERIZED",
-        "name": "Ljava.util.Collection\u003cTV;\u003e;",
+        "name": "Ljava/util/Collection\u003cTV;\u003e;",
         "extras": {
           "owner": {
             "kind": "CLASS",
-            "name": "Ljava.util.Collection;"
+            "name": "Ljava/util/Collection;"
           },
           "arguments": [
             {
@@ -242,24 +242,24 @@
       "label": "Collection\u003cV\u003e java.util.Map.values()"
     },
     {
-      "bindingKey": "Ljava/util/Map;.entrySet()Ljava.util.Set\u003cLjava.util.Map$Entry\u003cTK;TV;\u003e;\u003e;",
+      "bindingKey": "Ljava/util/Map;.entrySet()Ljava/util/Set\u003cLjava/util/Map$Entry\u003cTK;TV;\u003e;\u003e;",
       "constructor": false,
       "returnType": {
         "kind": "PARAMETERIZED",
-        "name": "Ljava.util.Set\u003cLjava.util.Map$Entry\u003cTK;TV;\u003e;\u003e;",
+        "name": "Ljava/util/Set\u003cLjava/util/Map$Entry\u003cTK;TV;\u003e;\u003e;",
         "extras": {
           "owner": {
             "kind": "CLASS",
-            "name": "Ljava.util.Set;"
+            "name": "Ljava/util/Set;"
           },
           "arguments": [
             {
               "kind": "PARAMETERIZED",
-              "name": "Ljava.util.Map$Entry\u003cTK;TV;\u003e;",
+              "name": "Ljava/util/Map$Entry\u003cTK;TV;\u003e;",
               "extras": {
                 "owner": {
                   "kind": "CLASS",
-                  "name": "Ljava.util.Map$Entry;"
+                  "name": "Ljava/util/Map$Entry;"
                 },
                 "arguments": [
                   {
@@ -294,7 +294,7 @@
       "parameters": [
         {
           "kind": "CLASS",
-          "name": "Ljava.lang.Object;"
+          "name": "Ljava/lang/Object;"
         }
       ],
       "annotations": [],
@@ -329,7 +329,7 @@
       "parameters": [
         {
           "kind": "CLASS",
-          "name": "Ljava.lang.Object;"
+          "name": "Ljava/lang/Object;"
         },
         {
           "kind": "TYPE_VARIABLE",
@@ -353,11 +353,11 @@
       "parameters": [
         {
           "kind": "PARAMETERIZED",
-          "name": "Ljava.util.function.BiConsumer\u003c-TK;-TV;\u003e;",
+          "name": "Ljava/util/function/BiConsumer\u003c-TK;-TV;\u003e;",
           "extras": {
             "owner": {
               "kind": "CLASS",
-              "name": "Ljava.util.function.BiConsumer;"
+              "name": "Ljava/util/function/BiConsumer;"
             },
             "arguments": [
               {
@@ -389,11 +389,11 @@
       "parameters": [
         {
           "kind": "PARAMETERIZED",
-          "name": "Ljava.util.function.BiFunction\u003c-TK;-TV;+TV;\u003e;",
+          "name": "Ljava/util/function/BiFunction\u003c-TK;-TV;+TV;\u003e;",
           "extras": {
             "owner": {
               "kind": "CLASS",
-              "name": "Ljava.util.function.BiFunction;"
+              "name": "Ljava/util/function/BiFunction;"
             },
             "arguments": [
               {
@@ -453,11 +453,11 @@
       "parameters": [
         {
           "kind": "CLASS",
-          "name": "Ljava.lang.Object;"
+          "name": "Ljava/lang/Object;"
         },
         {
           "kind": "CLASS",
-          "name": "Ljava.lang.Object;"
+          "name": "Ljava/lang/Object;"
         }
       ],
       "annotations": [],
@@ -533,11 +533,11 @@
         },
         {
           "kind": "PARAMETERIZED",
-          "name": "Ljava.util.function.Function\u003c-TK;+TV;\u003e;",
+          "name": "Ljava/util/function/Function\u003c-TK;+TV;\u003e;",
           "extras": {
             "owner": {
               "kind": "CLASS",
-              "name": "Ljava.util.function.Function;"
+              "name": "Ljava/util/function/Function;"
             },
             "arguments": [
               {
@@ -573,11 +573,11 @@
         },
         {
           "kind": "PARAMETERIZED",
-          "name": "Ljava.util.function.BiFunction\u003c-TK;-TV;+TV;\u003e;",
+          "name": "Ljava/util/function/BiFunction\u003c-TK;-TV;+TV;\u003e;",
           "extras": {
             "owner": {
               "kind": "CLASS",
-              "name": "Ljava.util.function.BiFunction;"
+              "name": "Ljava/util/function/BiFunction;"
             },
             "arguments": [
               {
@@ -617,11 +617,11 @@
         },
         {
           "kind": "PARAMETERIZED",
-          "name": "Ljava.util.function.BiFunction\u003c-TK;-TV;+TV;\u003e;",
+          "name": "Ljava/util/function/BiFunction\u003c-TK;-TV;+TV;\u003e;",
           "extras": {
             "owner": {
               "kind": "CLASS",
-              "name": "Ljava.util.function.BiFunction;"
+              "name": "Ljava/util/function/BiFunction;"
             },
             "arguments": [
               {
@@ -665,11 +665,11 @@
         },
         {
           "kind": "PARAMETERIZED",
-          "name": "Ljava.util.function.BiFunction\u003c-TV;-TV;+TV;\u003e;",
+          "name": "Ljava/util/function/BiFunction\u003c-TV;-TV;+TV;\u003e;",
           "extras": {
             "owner": {
               "kind": "CLASS",
-              "name": "Ljava.util.function.BiFunction;"
+              "name": "Ljava/util/function/BiFunction;"
             },
             "arguments": [
               {

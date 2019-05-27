@@ -11,7 +11,9 @@
 package org.springframework.ide.vscode.commons.jdtls;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -35,6 +37,7 @@ import org.springframework.ide.vscode.commons.java.IWildcardType;
 import org.springframework.ide.vscode.commons.java.JavaUtils;
 import org.springframework.ide.vscode.commons.javadoc.IJavadoc;
 import org.springframework.ide.vscode.commons.protocol.java.JavaTypeData;
+import org.springframework.ide.vscode.commons.protocol.java.JavaTypeData.JavaTypeKind;
 import org.springframework.ide.vscode.commons.protocol.java.TypeData;
 import org.springframework.ide.vscode.commons.protocol.java.TypeData.AnnotationData;
 import org.springframework.ide.vscode.commons.protocol.java.TypeData.FieldData;
@@ -42,8 +45,11 @@ import org.springframework.ide.vscode.commons.protocol.java.TypeData.MethodData;
 import org.springframework.ide.vscode.commons.protocol.java.TypeDescriptorData;
 
 import com.google.common.base.Supplier;
+import com.google.gson.Gson;
 
 public class Wrappers {
+	
+	static private final Gson GSON = new Gson(); 
 
 	public static IJavaType wrap(JavaTypeData data) {
 		switch (data.getKind()) {
@@ -107,7 +113,8 @@ public class Wrappers {
 				@Override
 				public IJavaType component() {
 					if (data.getExtras() != null && data.getExtras().containsKey("component")) {
-						return wrap((JavaTypeData) data.getExtras().get("component"));
+						JavaTypeData typeData = GSON.fromJson(GSON.toJsonTree(data.getExtras().get("component")), JavaTypeData.class);
+						return wrap(typeData);
 					}
 					return null;
 				}
@@ -128,10 +135,16 @@ public class Wrappers {
 					return data.getName();
 				}
 
+				@SuppressWarnings("unchecked")
 				@Override
 				public IJavaType owner() {
 					if (data.getExtras() != null && data.getExtras().containsKey("owner")) {
-						return wrap((JavaTypeData) data.getExtras().get("owner"));
+						Map<String, Object> owner = (Map<String, Object>) data.getExtras().get("owner");
+						JavaTypeData typeData = GSON.fromJson(GSON.toJsonTree(owner), JavaTypeData.class);
+						if (owner.get("kind") instanceof Double) {
+							typeData.setKind(JavaTypeKind.values()[((Double)owner.get("kind")).intValue()]);
+						}
+						return wrap((typeData) );
 					}
 					return null;
 				}
@@ -140,7 +153,18 @@ public class Wrappers {
 				@Override
 				public Stream<IJavaType> arguments() {
 					if (data.getExtras() != null && data.getExtras().containsKey("arguments")) {
-						return ((List<JavaTypeData>) data.getExtras().get("arguments")).stream().map(Wrappers::wrap);
+						List<Map<String, Object>> args = (List<Map<String, Object>>) data.getExtras().get("arguments");
+						if (args != null) {
+							List<IJavaType> types = new ArrayList<>(args.size()); 
+							for (Map<String, Object> entry : args) {
+								JavaTypeData typeData = GSON.fromJson(GSON.toJson(entry), JavaTypeData.class);
+								if (entry.get("kind") instanceof Double) {
+									typeData.setKind(JavaTypeKind.values()[((Double)entry.get("kind")).intValue()]);
+								}
+								types.add(Wrappers.wrap(typeData));
+							}
+							return types.stream();
+						}
 					}
 					return Stream.of();
 				}

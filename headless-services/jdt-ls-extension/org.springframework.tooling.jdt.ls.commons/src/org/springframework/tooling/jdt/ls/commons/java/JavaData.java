@@ -359,7 +359,7 @@ public class JavaData {
 	
 	private JavaTypeData createFromSignature(IType type, String signature) {
 		JavaTypeData data = new JavaTypeData();
-		data.setName(signature);
+		data.setName(signature.replace('.', '/'));
 
 		char[] typeSignature = signature.toCharArray();
 

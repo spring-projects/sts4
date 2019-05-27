@@ -239,14 +239,17 @@ public class SpringLiveHoverWatchdog {
 
 	private IJavaProject getCachedProject(String docURI) {
 		AtomicReference<IJavaProject> reference = this.watchedDocs.get(docURI);
-		IJavaProject project = reference.get();
-		if (project == null) {
-			project = identifyProject(docURI);
-			if (!reference.compareAndSet(null, project)) {
-				return reference.get();
+		if (reference != null) {
+			IJavaProject project = reference.get();
+			if (project == null) {
+				project = identifyProject(docURI);
+				if (!reference.compareAndSet(null, project)) {
+					return reference.get();
+				}
 			}
+			return project;
 		}
-		return project;
+		return null;
 	}
 
 	private IJavaProject identifyProject(String docURI) {
@@ -260,9 +263,12 @@ public class SpringLiveHoverWatchdog {
 	}
 
 	private void publishLiveHints(String docURI, CodeLens[] codeLenses) {
-		int version = server.getTextDocumentService().get(docURI).getVersion();
-		VersionedTextDocumentIdentifier id = new VersionedTextDocumentIdentifier(docURI, version);
-		server.getClient().highlight(new HighlightParams(id, Arrays.asList(codeLenses)));
+		TextDocument doc = server.getTextDocumentService().get(docURI);
+		if (doc != null) {
+			int version = doc.getVersion();
+			VersionedTextDocumentIdentifier id = new VersionedTextDocumentIdentifier(docURI, version);
+			server.getClient().highlight(new HighlightParams(id, Arrays.asList(codeLenses)));
+		}
 	}
 
 	private void cleanupLiveHints(String docURI) {

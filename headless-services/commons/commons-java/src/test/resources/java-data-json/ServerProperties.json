@@ -5,7 +5,7 @@
       "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.port",
       "type": {
         "kind": "CLASS",
-        "name": "Ljava.lang.Integer;"
+        "name": "Ljava/lang/Integer;"
       },
       "enumConstant": false,
       "annotations": [],
@@ -19,7 +19,7 @@
       "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.address",
       "type": {
         "kind": "CLASS",
-        "name": "Ljava.net.InetAddress;"
+        "name": "Ljava/net/InetAddress;"
       },
       "enumConstant": false,
       "annotations": [],
@@ -33,7 +33,7 @@
       "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.error",
       "type": {
         "kind": "CLASS",
-        "name": "Lorg.springframework.boot.autoconfigure.web.ErrorProperties;"
+        "name": "Lorg/springframework/boot/autoconfigure/web/ErrorProperties;"
       },
       "enumConstant": false,
       "annotations": [
@@ -55,7 +55,7 @@
       "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.useForwardHeaders",
       "type": {
         "kind": "CLASS",
-        "name": "Ljava.lang.Boolean;"
+        "name": "Ljava/lang/Boolean;"
       },
       "enumConstant": false,
       "annotations": [],
@@ -69,7 +69,7 @@
       "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.serverHeader",
       "type": {
         "kind": "CLASS",
-        "name": "Ljava.lang.String;"
+        "name": "Ljava/lang/String;"
       },
       "enumConstant": false,
       "annotations": [],
@@ -97,7 +97,7 @@
       "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.connectionTimeout",
       "type": {
         "kind": "CLASS",
-        "name": "Ljava.time.Duration;"
+        "name": "Ljava/time/Duration;"
       },
       "enumConstant": false,
       "annotations": [],
@@ -111,7 +111,7 @@
       "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.ssl",
       "type": {
         "kind": "CLASS",
-        "name": "Lorg.springframework.boot.web.server.Ssl;"
+        "name": "Lorg/springframework/boot/web/server/Ssl;"
       },
       "enumConstant": false,
       "annotations": [
@@ -133,7 +133,7 @@
       "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.compression",
       "type": {
         "kind": "CLASS",
-        "name": "Lorg.springframework.boot.web.server.Compression;"
+        "name": "Lorg/springframework/boot/web/server/Compression;"
       },
       "enumConstant": false,
       "annotations": [
@@ -155,7 +155,7 @@
       "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.http2",
       "type": {
         "kind": "CLASS",
-        "name": "Lorg.springframework.boot.web.server.Http2;"
+        "name": "Lorg/springframework/boot/web/server/Http2;"
       },
       "enumConstant": false,
       "annotations": [
@@ -177,7 +177,7 @@
       "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.servlet",
       "type": {
         "kind": "CLASS",
-        "name": "Lorg.springframework.boot.autoconfigure.web.ServerProperties$Servlet;"
+        "name": "Lorg/springframework/boot/autoconfigure/web/ServerProperties$Servlet;"
       },
       "enumConstant": false,
       "annotations": [],
@@ -191,7 +191,7 @@
       "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.tomcat",
       "type": {
         "kind": "CLASS",
-        "name": "Lorg.springframework.boot.autoconfigure.web.ServerProperties$Tomcat;"
+        "name": "Lorg/springframework/boot/autoconfigure/web/ServerProperties$Tomcat;"
       },
       "enumConstant": false,
       "annotations": [],
@@ -205,7 +205,7 @@
       "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.jetty",
       "type": {
         "kind": "CLASS",
-        "name": "Lorg.springframework.boot.autoconfigure.web.ServerProperties$Jetty;"
+        "name": "Lorg/springframework/boot/autoconfigure/web/ServerProperties$Jetty;"
       },
       "enumConstant": false,
       "annotations": [],
@@ -219,7 +219,7 @@
       "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.undertow",
       "type": {
         "kind": "CLASS",
-        "name": "Lorg.springframework.boot.autoconfigure.web.ServerProperties$Undertow;"
+        "name": "Lorg/springframework/boot/autoconfigure/web/ServerProperties$Undertow;"
       },
       "enumConstant": false,
       "annotations": [],
@@ -247,11 +247,11 @@
       "label": "org.springframework.boot.autoconfigure.web.ServerProperties.ServerProperties()"
     },
     {
-      "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.getPort()Ljava.lang.Integer;",
+      "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.getPort()Ljava/lang/Integer;",
       "constructor": false,
       "returnType": {
         "kind": "CLASS",
-        "name": "Ljava.lang.Integer;"
+        "name": "Ljava/lang/Integer;"
       },
       "parameters": [],
       "annotations": [],
@@ -271,7 +271,7 @@
       "parameters": [
         {
           "kind": "CLASS",
-          "name": "Ljava.lang.Integer;"
+          "name": "Ljava/lang/Integer;"
         }
       ],
       "annotations": [],
@@ -282,11 +282,11 @@
       "label": "void org.springframework.boot.autoconfigure.web.ServerProperties.setPort(Integer port)"
     },
     {
-      "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.getAddress()Ljava.net.InetAddress;",
+      "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.getAddress()Ljava/net/InetAddress;",
       "constructor": false,
       "returnType": {
         "kind": "CLASS",
-        "name": "Ljava.net.InetAddress;"
+        "name": "Ljava/net/InetAddress;"
       },
       "parameters": [],
       "annotations": [],
@@ -306,7 +306,7 @@
       "parameters": [
         {
           "kind": "CLASS",
-          "name": "Ljava.net.InetAddress;"
+          "name": "Ljava/net/InetAddress;"
         }
       ],
       "annotations": [],
@@ -317,11 +317,11 @@
       "label": "void org.springframework.boot.autoconfigure.web.ServerProperties.setAddress(InetAddress address)"
     },
     {
-      "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.isUseForwardHeaders()Ljava.lang.Boolean;",
+      "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.isUseForwardHeaders()Ljava/lang/Boolean;",
       "constructor": false,
       "returnType": {
         "kind": "CLASS",
-        "name": "Ljava.lang.Boolean;"
+        "name": "Ljava/lang/Boolean;"
       },
       "parameters": [],
       "annotations": [],
@@ -341,7 +341,7 @@
       "parameters": [
         {
           "kind": "CLASS",
-          "name": "Ljava.lang.Boolean;"
+          "name": "Ljava/lang/Boolean;"
         }
       ],
       "annotations": [],
@@ -352,11 +352,11 @@
       "label": "void org.springframework.boot.autoconfigure.web.ServerProperties.setUseForwardHeaders(Boolean useForwardHeaders)"
     },
     {
-      "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.getServerHeader()Ljava.lang.String;",
+      "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.getServerHeader()Ljava/lang/String;",
       "constructor": false,
       "returnType": {
         "kind": "CLASS",
-        "name": "Ljava.lang.String;"
+        "name": "Ljava/lang/String;"
       },
       "parameters": [],
       "annotations": [],
@@ -376,7 +376,7 @@
       "parameters": [
         {
           "kind": "CLASS",
-          "name": "Ljava.lang.String;"
+          "name": "Ljava/lang/String;"
         }
       ],
       "annotations": [],
@@ -422,11 +422,11 @@
       "label": "void org.springframework.boot.autoconfigure.web.ServerProperties.setMaxHttpHeaderSize(int maxHttpHeaderSize)"
     },
     {
-      "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.getConnectionTimeout()Ljava.time.Duration;",
+      "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.getConnectionTimeout()Ljava/time/Duration;",
       "constructor": false,
       "returnType": {
         "kind": "CLASS",
-        "name": "Ljava.time.Duration;"
+        "name": "Ljava/time/Duration;"
       },
       "parameters": [],
       "annotations": [],
@@ -446,7 +446,7 @@
       "parameters": [
         {
           "kind": "CLASS",
-          "name": "Ljava.time.Duration;"
+          "name": "Ljava/time/Duration;"
         }
       ],
       "annotations": [],
@@ -457,11 +457,11 @@
       "label": "void org.springframework.boot.autoconfigure.web.ServerProperties.setConnectionTimeout(Duration connectionTimeout)"
     },
     {
-      "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.getError()Lorg.springframework.boot.autoconfigure.web.ErrorProperties;",
+      "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.getError()Lorg/springframework/boot/autoconfigure/web/ErrorProperties;",
       "constructor": false,
       "returnType": {
         "kind": "CLASS",
-        "name": "Lorg.springframework.boot.autoconfigure.web.ErrorProperties;"
+        "name": "Lorg/springframework/boot/autoconfigure/web/ErrorProperties;"
       },
       "parameters": [],
       "annotations": [],
@@ -472,11 +472,11 @@
       "label": "ErrorProperties org.springframework.boot.autoconfigure.web.ServerProperties.getError()"
     },
     {
-      "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.getSsl()Lorg.springframework.boot.web.server.Ssl;",
+      "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.getSsl()Lorg/springframework/boot/web/server/Ssl;",
       "constructor": false,
       "returnType": {
         "kind": "CLASS",
-        "name": "Lorg.springframework.boot.web.server.Ssl;"
+        "name": "Lorg/springframework/boot/web/server/Ssl;"
       },
       "parameters": [],
       "annotations": [],
@@ -496,7 +496,7 @@
       "parameters": [
         {
           "kind": "CLASS",
-          "name": "Lorg.springframework.boot.web.server.Ssl;"
+          "name": "Lorg/springframework/boot/web/server/Ssl;"
         }
       ],
       "annotations": [],
@@ -507,11 +507,11 @@
       "label": "void org.springframework.boot.autoconfigure.web.ServerProperties.setSsl(Ssl ssl)"
     },
     {
-      "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.getCompression()Lorg.springframework.boot.web.server.Compression;",
+      "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.getCompression()Lorg/springframework/boot/web/server/Compression;",
       "constructor": false,
       "returnType": {
         "kind": "CLASS",
-        "name": "Lorg.springframework.boot.web.server.Compression;"
+        "name": "Lorg/springframework/boot/web/server/Compression;"
       },
       "parameters": [],
       "annotations": [],
@@ -522,11 +522,11 @@
       "label": "Compression org.springframework.boot.autoconfigure.web.ServerProperties.getCompression()"
     },
     {
-      "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.getHttp2()Lorg.springframework.boot.web.server.Http2;",
+      "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.getHttp2()Lorg/springframework/boot/web/server/Http2;",
       "constructor": false,
       "returnType": {
         "kind": "CLASS",
-        "name": "Lorg.springframework.boot.web.server.Http2;"
+        "name": "Lorg/springframework/boot/web/server/Http2;"
       },
       "parameters": [],
       "annotations": [],
@@ -537,11 +537,11 @@
       "label": "Http2 org.springframework.boot.autoconfigure.web.ServerProperties.getHttp2()"
     },
     {
-      "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.getServlet()Lorg.springframework.boot.autoconfigure.web.ServerProperties$Servlet;",
+      "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.getServlet()Lorg/springframework/boot/autoconfigure/web/ServerProperties$Servlet;",
       "constructor": false,
       "returnType": {
         "kind": "CLASS",
-        "name": "Lorg.springframework.boot.autoconfigure.web.ServerProperties$Servlet;"
+        "name": "Lorg/springframework/boot/autoconfigure/web/ServerProperties$Servlet;"
       },
       "parameters": [],
       "annotations": [],
@@ -552,11 +552,11 @@
       "label": "Servlet org.springframework.boot.autoconfigure.web.ServerProperties.getServlet()"
     },
     {
-      "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.getTomcat()Lorg.springframework.boot.autoconfigure.web.ServerProperties$Tomcat;",
+      "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.getTomcat()Lorg/springframework/boot/autoconfigure/web/ServerProperties$Tomcat;",
       "constructor": false,
       "returnType": {
         "kind": "CLASS",
-        "name": "Lorg.springframework.boot.autoconfigure.web.ServerProperties$Tomcat;"
+        "name": "Lorg/springframework/boot/autoconfigure/web/ServerProperties$Tomcat;"
       },
       "parameters": [],
       "annotations": [],
@@ -567,11 +567,11 @@
       "label": "Tomcat org.springframework.boot.autoconfigure.web.ServerProperties.getTomcat()"
     },
     {
-      "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.getJetty()Lorg.springframework.boot.autoconfigure.web.ServerProperties$Jetty;",
+      "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.getJetty()Lorg/springframework/boot/autoconfigure/web/ServerProperties$Jetty;",
       "constructor": false,
       "returnType": {
         "kind": "CLASS",
-        "name": "Lorg.springframework.boot.autoconfigure.web.ServerProperties$Jetty;"
+        "name": "Lorg/springframework/boot/autoconfigure/web/ServerProperties$Jetty;"
       },
       "parameters": [],
       "annotations": [],
@@ -582,11 +582,11 @@
       "label": "Jetty org.springframework.boot.autoconfigure.web.ServerProperties.getJetty()"
     },
     {
-      "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.getUndertow()Lorg.springframework.boot.autoconfigure.web.ServerProperties$Undertow;",
+      "bindingKey": "Lorg/springframework/boot/autoconfigure/web/ServerProperties;.getUndertow()Lorg/springframework/boot/autoconfigure/web/ServerProperties$Undertow;",
       "constructor": false,
       "returnType": {
         "kind": "CLASS",
-        "name": "Lorg.springframework.boot.autoconfigure.web.ServerProperties$Undertow;"
+        "name": "Lorg/springframework/boot/autoconfigure/web/ServerProperties$Undertow;"
       },
       "parameters": [],
       "annotations": [],
