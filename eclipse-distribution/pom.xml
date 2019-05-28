@@ -482,7 +482,7 @@
 	        <plugin>
 	          <groupId>org.eclipse.tycho.extras</groupId>
 	          <artifactId>tycho-source-feature-plugin</artifactId>
-	          <version>1.0.0</version>
+			  <version>${tycho-version}</version>
 	        </plugin>
 
 			<plugin>
