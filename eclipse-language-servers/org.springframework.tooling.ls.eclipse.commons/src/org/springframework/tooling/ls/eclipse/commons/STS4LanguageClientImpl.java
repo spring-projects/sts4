@@ -360,7 +360,7 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 
 	@Override
 	public CompletableFuture<Object> addClasspathListener(ClasspathListenerParams params) {
-		return CompletableFuture.completedFuture(classpathService.addClasspathListener(params.getCallbackCommandId()));
+		return CompletableFuture.completedFuture(classpathService.addClasspathListener(params.getCallbackCommandId(), params.isBatched()));
 	}
 
 	@Override

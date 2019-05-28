@@ -10,107 +10,61 @@
  *******************************************************************************/
 package org.springframework.tooling.jdt.ls.commons.classpath;
 
-import java.io.File;
-import java.net.URI;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 import java.util.function.Supplier;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
-import org.springframework.ide.vscode.commons.protocol.java.Classpath;
 import org.springframework.tooling.jdt.ls.commons.Logger;
 import org.springframework.tooling.jdt.ls.commons.classpath.ClasspathListenerManager.ClasspathListener;
+import org.springframework.tooling.jdt.ls.commons.classpath.SendClasspathNotificationsJob.Notification;
 
 /**
  * {@link ReusableClasspathListenerHandler} is an 'abstracted' version of the jdtls ClasspathListenerHandler. 
  */
 public class ReusableClasspathListenerHandler {
 
-	private final ClientCommandExecutor conn;
 	private final Logger logger;
 	private final Supplier<Comparator<IProject>> projectSorterFactory;
+	private final SendClasspathNotificationsJob sendNotificationJob;
 	
 	public ReusableClasspathListenerHandler(Logger logger, ClientCommandExecutor conn) {
 		this(logger, conn, null);
 	}
 	
 	public ReusableClasspathListenerHandler(Logger logger, ClientCommandExecutor conn, Supplier<Comparator<IProject>> projectSorterFactory) {
-		this.conn = conn;
 		this.logger = logger;
 		this.projectSorterFactory = projectSorterFactory;
+		this.sendNotificationJob = new SendClasspathNotificationsJob(logger, conn);
 		logger.log("Instantiating ReusableClasspathListenerHandler");
 	}
 	
-	/**
-	 * To keep track of project locations. Without this we can't properly handle deleting events because
-	 * deleted projects (no longer) have a location. So we can only send a proper 'project with this location'
-	 * was deleted' events if we keep track of project locations ourselves.
-	 */
-	private Map<String, URI> projectLocations = new HashMap<>();
-	
-	private URI getProjectLocation(IJavaProject jp) {
-		URI loc = jp.getProject().getLocationURI();
-		if (loc!=null) {
-			return loc;
-		} else {
-			//fallback on what we stored ourselves.
-			return projectLocations.get(jp.getElementName());
-		}
-	}
-
-	private boolean projectExists(IJavaProject jp) {
-		//We can't really deal with projects that don't exist in disk. So using this more strict 'exists' check
-		//makes sure anything that looks like it doesn't exist on disk is treated as if it simply doesn't exist 
-		//at all. This kind of addresses a issue caused by Eclipse's idiotic behavior when it comes to deleting
-		//a project's files from the file system... Eclipse recreates a 'vanilla' project in the workspace,
-		//simply refusing to accept the fact that the project is actually gone.
-		if (jp.exists()) {
-			try {
-				URI loc = getProjectLocation(jp);
-				if (loc!=null) {
-					File f = new File(loc);
-					return f.isDirectory() && jp.getProject().hasNature(JavaCore.NATURE_ID);
-				}
-			} catch (Exception e) {
-				//Something bogus about this project... so just pretend it doesn't exist.
-			}
-		}
-		return false;
-	}
-
-
 	class Subscriptions {
 
-		private Set<String> subscribers = null;
+		private Map<String, Boolean> subscribers = null;
 		private ClasspathListenerManager classpathListener = null;
 		
-		public synchronized void subscribe(String callbackCommandId) {
-			logger.log("subscribing to classpath changes: " + callbackCommandId);
+		public synchronized void subscribe(String callbackCommandId, boolean isBatched) {
+			logger.log("subscribing to classpath changes: " + callbackCommandId +" isBatched = "+isBatched);
 			if (subscribers==null) {
 				//First subscriber
-				subscribers = new HashSet<>();
+				subscribers = new HashMap<>();
 				classpathListener = new ClasspathListenerManager(logger, new ClasspathListener() {
 					@Override
 					public void classpathChanged(IJavaProject jp) {
-						sendNotification(jp, subscribers);
+						sendNotification(jp, subscribers.keySet());
 					}
 				});
 			}
-			subscribers.add(callbackCommandId);
+			subscribers.put(callbackCommandId, isBatched);
 			logger.log("subsribers = " + subscribers);
 			sendInitialEvents(callbackCommandId);
 		}
@@ -138,61 +92,13 @@ public class ReusableClasspathListenerHandler {
 			}
 			logger.log("Sending initial event for all projects DONE");
 		}
-	
+
+
 		private void sendNotification(IJavaProject jp, Collection<String> callbackIds) {
-			//TODO: make one Job to accumulate all requested notification and work more efficiently by batching
-			// and avoiding multiple executions of duplicated requests.
-			Job job = new Job("SendClasspath notification") {
-				@Override
-				protected IStatus run(IProgressMonitor monitor) {
-					synchronized (projectLocations) { //Could use some Eclipse job rule. But its really a bit of a PITA to create the right one.
-						try {
-							logger.log("Preparing classpath changed notification " + jp.getElementName());
-							URI projectLoc = getProjectLocation(jp);
-							if (projectLoc==null) {
-								logger.log("Could not send event for project because no project location: "+jp.getElementName());
-							} else {
-								boolean exsits = projectExists(jp);
-								boolean open = true; // WARNING: calling jp.isOpen is unreliable and subject to race condition. After a POST_CHAGE project open event
-													// this should be true but it typically is not unless you wait for some time. No idea how you would know
-													// how long you should wait (200ms is not enough, and that seems pretty long). Isn't it kind of the point 
-													// for a 'POST_CHANGE' event to come **after** model has already changed? I guess not in Eclipse.
-													// So we will just pretend / assume project is always open. If resolving classpath fails because it is not
-													// open... so be it (there will be no classpath... this is expected for closed project, so that is fine).
-								boolean deleted = !(exsits && open);
-								logger.log("exists = "+exsits +" open = "+open +" => deleted = "+deleted);
-								String projectName = jp.getElementName();
-	
-								Classpath classpath = Classpath.EMPTY;
-								if (deleted) {
-									// projectLocations.remove(projectName);
-								} else {
-									projectLocations.put(projectName, projectLoc);
-									try {
-										classpath = ClasspathUtil.resolve(jp, logger);
-									} catch (Exception e) {
-										logger.log(e);
-									}
-								}
-								for (String callbackCommandId : callbackIds) {
-									try {
-										logger.log("executing callback "+callbackCommandId+" "+projectName+" "+deleted+" "+ classpath.getEntries().size());
-										Object r = conn.executeClientCommand(callbackCommandId, projectLoc.toString(), projectName, deleted, classpath);
-										logger.log("executing callback "+callbackCommandId+" SUCCESS ["+r+"]");
-									} catch (Exception e) {
-										logger.log("executing callback "+callbackCommandId+" FAILED");
-										logger.log(e);
-									}
-								}
-							}
-						} catch (Exception e) {
-							logger.log(e);
-						}
-						return Status.OK_STATUS;
-					}
-				}
-			};
-			job.schedule();
+			for (String callbackId : callbackIds) {
+				sendNotificationJob.queue.add(new Notification(jp, callbackId));
+			}
+			sendNotificationJob.schedule();
 		}
 
 		public synchronized void unsubscribe(String callbackCommandId) {
@@ -224,9 +130,14 @@ public class ReusableClasspathListenerHandler {
 		return "ok";
 	}
 
+	@Deprecated
 	public Object addClasspathListener(String callbackCommandId) {
-		logger.log("ClasspathListenerHandler addClasspathListener " + callbackCommandId);
-		subscribptions.subscribe(callbackCommandId);
+		return addClasspathListener(callbackCommandId, false);
+	}
+
+	public Object addClasspathListener(String callbackCommandId, boolean isBatched) {
+		logger.log("ClasspathListenerHandler addClasspathListener " + callbackCommandId + "isBatched = "+isBatched);
+		subscribptions.subscribe(callbackCommandId, isBatched);
 		logger.log("ClasspathListenerHandler addClasspathListener " + callbackCommandId + " => OK");
 		return "ok";
 	}
