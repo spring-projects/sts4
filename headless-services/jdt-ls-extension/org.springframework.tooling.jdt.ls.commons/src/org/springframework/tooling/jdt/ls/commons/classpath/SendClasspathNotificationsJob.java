@@ -12,7 +12,9 @@ package org.springframework.tooling.jdt.ls.commons.classpath;
 
 import java.io.File;
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -26,20 +28,19 @@ import org.eclipse.jdt.core.JavaCore;
 import org.springframework.ide.vscode.commons.protocol.java.Classpath;
 import org.springframework.tooling.jdt.ls.commons.Logger;
 
+import com.google.common.collect.ImmutableList;
+
 public class SendClasspathNotificationsJob extends Job {
 	
 	private final ClientCommandExecutor conn;
 	private final Logger logger;
 	private String callbackCommandId;
-	private boolean isBatched;
-
-	public SendClasspathNotificationsJob(Logger logger, ClientCommandExecutor conn, String callbackId, boolean isBatched) {
-		super("Send Classpath Notifications");
-		this.logger = logger;
-		this.conn = conn;
-		this.callbackCommandId = callbackId;
-		this.isBatched = isBatched;
-	}
+	
+	/**
+	 * Used only if caller has requested 'batched' events. This buffer, accumulates messsages to be sent out all at once,
+	 * rather than one by one.
+	 */
+	private List<Object> buffer;
 
 	/**
 	 * To keep track of project locations. Without this we can't properly handle deletion events because
@@ -47,6 +48,18 @@ public class SendClasspathNotificationsJob extends Job {
 	 * was deleted' event if we keep track of project locations ourselves.
 	 */
 	private Map<String, URI> projectLocations = new HashMap<>();
+	public final Queue<IJavaProject> queue = new ConcurrentLinkedQueue<>();
+
+	public SendClasspathNotificationsJob(Logger logger, ClientCommandExecutor conn, String callbackId, boolean isBatched) {
+		super("Send Classpath Notifications");
+		this.logger = logger;
+		this.conn = conn;
+		this.callbackCommandId = callbackId;
+		if (isBatched) {
+			buffer = new ArrayList<>();
+		}
+	}
+
 	
 	private URI getProjectLocation(IJavaProject jp) {
 		URI loc = jp.getProject().getLocationURI();
@@ -60,7 +73,6 @@ public class SendClasspathNotificationsJob extends Job {
 		}
 	}
 
-	public final Queue<IJavaProject> queue = new ConcurrentLinkedQueue<>();
 	
 	private boolean projectExists(IJavaProject jp) {
 		//We can't really deal with projects that don't exist in disk. So using this more strict 'exists' check
@@ -114,20 +126,45 @@ public class SendClasspathNotificationsJob extends Job {
 								logger.log(e);
 							}
 						}
-						try {
-							logger.log("executing callback "+callbackCommandId+" "+projectName+" "+deleted+" "+ classpath.getEntries().size());
-							Object r = conn.executeClientCommand(callbackCommandId, projectLoc.toString(), projectName, deleted, classpath);
-							logger.log("executing callback "+callbackCommandId+" SUCCESS ["+r+"]");
-						} catch (Exception e) {
-							logger.log("executing callback "+callbackCommandId+" FAILED");
-							logger.log(e);
-						}
+						bufferMessage(projectLoc, deleted, projectName, classpath);
 					}
 				}
+				flush();
 			} catch (Exception e) {
 				logger.log(e);
 			}
 			return Status.OK_STATUS;
+		}
+	}
+
+	protected void bufferMessage(URI projectLoc, boolean deleted, String projectName, Classpath classpath) {
+		if (buffer!=null) {
+			logger.log("buffering callback "+callbackCommandId+" "+projectName+" "+deleted+" "+ classpath.getEntries().size());
+			buffer.add(ImmutableList.of(projectLoc.toString(), projectName, deleted, classpath));
+		} else {
+			try {
+				logger.log("executing callback "+callbackCommandId+" "+projectName+" "+deleted+" "+ classpath.getEntries().size());
+				Object r = conn.executeClientCommand(callbackCommandId, projectLoc.toString(), projectName, deleted, classpath);
+				logger.log("executing callback "+callbackCommandId+" SUCCESS ["+r+"]");
+			} catch (Exception e) {
+				logger.log("executing callback "+callbackCommandId+" FAILED");
+				logger.log(e);
+			}
+		}
+	}
+	
+	protected void flush() {
+		if (buffer!=null && !buffer.isEmpty()) {
+			try {
+				logger.log("executing callback "+callbackCommandId+" "+buffer.size()+" batched events");
+				Object r = conn.executeClientCommand(callbackCommandId, buffer.toArray(new Object[buffer.size()]));
+				logger.log("executing callback "+callbackCommandId+" SUCCESS ["+r+"]");
+			} catch (Exception e) {
+				logger.log("executing callback "+callbackCommandId+" FAILED");
+				logger.log(e);
+			} finally {
+				buffer.clear();
+			}
 		}
 	}
 }

@@ -29,6 +29,7 @@ import org.springframework.ide.vscode.commons.util.AsyncRunner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 
 import reactor.core.Disposable;
@@ -57,19 +58,38 @@ public class ClasspathListenerManager {
 			log.debug("callback {} received {}", callbackCommandId, callbackParams);
 			List<Object> args = callbackParams.getArguments();
 			log.debug("args = {}", args);
-			//Note: not sure... but args might be deserialized as com.google.gson.JsonElement's.
-			//If so the code below is not correct (casts will fail).
-			String projectUri = ((JsonElement) args.get(0)).getAsString();
-			log.debug("projectUri = {}", args);
-			String name = ((JsonElement) args.get(1)).getAsString();
-			log.debug("name = {}", args);
-			boolean deleted = ((JsonElement)args.get(2)).getAsBoolean();
-			log.debug("deleted = {}", deleted);
+			//Args are deserialized as com.google.gson.JsonElements.
+			if (((JsonElement) args.get(0)).isJsonArray()) {
+				// If events are batched... then they will arrive as a array of arrays.
+				for (Object arg : args) {
+					JsonArray event = (JsonArray) arg;
 
-			Classpath classpath = gson.fromJson((JsonElement)args.get(3), Classpath.class);
-			log.debug("classpath = {}", classpath);
+					String projectUri = event.get(0).getAsString();
+					log.debug("projectUri = {}", event);
+					String name = event.get(1).getAsString();
+					log.debug("name = {}", event);
+					boolean deleted = event.get(2).getAsBoolean();
+					log.debug("deleted = {}", deleted);
 
-			classpathListener.changed(new ClasspathListener.Event(projectUri, name, deleted, classpath));
+					Classpath classpath = gson.fromJson((JsonElement)event.get(3), Classpath.class);
+					log.debug("classpath = {}", classpath);
+					classpathListener.changed(new ClasspathListener.Event(projectUri, name, deleted, classpath));
+				}
+			} else {
+				//Still support non-batched events for backwards compatibility with clients
+				// that don't provide batched event support (e.g. IDEA client may only adopt this
+				// later, or not adopt it at all).
+				String projectUri = ((JsonElement) args.get(0)).getAsString();
+				log.debug("projectUri = {}", args);
+				String name = ((JsonElement) args.get(1)).getAsString();
+				log.debug("name = {}", args);
+				boolean deleted = ((JsonElement)args.get(2)).getAsBoolean();
+				log.debug("deleted = {}", deleted);
+
+				Classpath classpath = gson.fromJson((JsonElement)args.get(3), Classpath.class);
+				log.debug("classpath = {}", classpath);
+				classpathListener.changed(new ClasspathListener.Event(projectUri, name, deleted, classpath));
+			}
 			return "done";
 		}));
 
@@ -86,7 +106,7 @@ public class ClasspathListenerManager {
 				server.getClient().registerCapability(params)
 		));
 		Mono<Object> registerClasspathListener = Mono.defer(() -> Mono.fromFuture(
-				server.getClient().addClasspathListener(new ClasspathListenerParams(callbackCommandId))
+				server.getClient().addClasspathListener(new ClasspathListenerParams(callbackCommandId, true))
 		));
 
 		Disposable cleanups = () -> {
