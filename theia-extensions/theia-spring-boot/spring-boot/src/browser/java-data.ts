@@ -20,6 +20,7 @@ export const SEARCH_TYPES_REQUEST_TYPE = 'sts/javaSearchTypes';
 export const SEACH_PACKAGES_REQUEST_TYPE = 'sts/javaSearchPackages';
 export const SUBTYPES_REQUEST_TYPE = 'sts/javaSubTypes';
 export const SUPERTYPES_REQUEST_TYPE = 'sts/javaSuperTypes';
+export const CODE_COMPLETE_REQUEST_TYPE = 'sts/javaCodeComplete';
 
 @injectable()
 export class JavaDataService {
@@ -38,6 +39,7 @@ export class JavaDataService {
         client.onRequest(SEACH_PACKAGES_REQUEST_TYPE, (params: JavaSearchParams) => this.commands.executeCommand('sts.java.search.packages', params));
         client.onRequest(SUBTYPES_REQUEST_TYPE, (params: JavaTypeHierarchyParams) => this.commands.executeCommand('sts.java.hierarchy.subtypes', params));
         client.onRequest(SUPERTYPES_REQUEST_TYPE, (params: JavaTypeHierarchyParams) => this.commands.executeCommand('sts.java.hierarchy.supertypes', params));
+        client.onRequest(CODE_COMPLETE_REQUEST_TYPE, (params: JavaCodeCompleteParams) => this.commands.executeCommand('sts.java.code.completions', params));
     }
 
 }
@@ -61,4 +63,11 @@ interface JavaTypeHierarchyParams {
     projectUri?: string;
     fqName: string;
     includeFocusType: boolean;
+}
+
+interface JavaCodeCompleteParams {
+    projectUri: string;
+    prefix: string;
+    includeTypes: boolean;
+    includePackages: boolean;
 }

@@ -48,6 +48,12 @@
                id="sts.java.hierarchy.supertypes">
          </command>
       </delegateCommandHandler>
+      <delegateCommandHandler
+            class="org.springframework.tooling.jdt.ls.extension.JavaCodeCompletionHandler">
+         <command
+               id="sts.java.code.completions">
+         </command>
+      </delegateCommandHandler>
    </extension>
 </plugin>
  

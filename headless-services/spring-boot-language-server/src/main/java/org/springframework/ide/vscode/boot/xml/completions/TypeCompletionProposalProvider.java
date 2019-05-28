@@ -21,6 +21,8 @@ import org.eclipse.lsp4j.CompletionItemKind;
 import org.eclipse.lsp4xml.dom.DOMAttr;
 import org.eclipse.lsp4xml.dom.DOMNode;
 import org.eclipse.lsp4xml.dom.parser.Scanner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.xml.XMLCompletionProvider;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
@@ -36,6 +38,8 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
  * @author Martin Lippert
  */
 public class TypeCompletionProposalProvider implements XMLCompletionProvider {
+	
+	private static final Logger log = LoggerFactory.getLogger(TypeCompletionProposalProvider.class);
 
 	private final JavaProjectFinder projectFinder;
 	private final SimpleLanguageServer server;
@@ -80,7 +84,8 @@ public class TypeCompletionProposalProvider implements XMLCompletionProvider {
 			final String finalPrefix = prefix;
 			
 			try {
-				return completions.get().stream()
+				List<JavaCodeCompleteData> list = completions.get();
+				return list.stream()
 						.filter(proposal -> {
 							if (proposal.isClassProposal()) return classesAllowed;
 							if (proposal.isInterfaceProposal()) return interfacesAllowed;
@@ -93,7 +98,7 @@ public class TypeCompletionProposalProvider implements XMLCompletionProvider {
 						.collect(Collectors.toList());
 			}
 			catch (Exception e) {
-				// TODO: logging
+				log.error("{}", e);
 			}
 		};
 
@@ -113,19 +118,25 @@ public class TypeCompletionProposalProvider implements XMLCompletionProvider {
 	}
 	
 	private TypeCompletionProposal createPackageProposal(JavaCodeCompleteData proposal, TextDocument doc, String prefix, int offset) {
-		String label = proposal.getFullyQualifiedName();
+		String fqName = proposal.getFullyQualifiedName();
+		String label = fqName;
 		CompletionItemKind kind = CompletionItemKind.Module;
 
 		DocumentEdits edits = new DocumentEdits(doc, false);
-		edits.replace(offset - prefix.length(), offset, proposal.getFullyQualifiedName());
+		if (fqName.startsWith(prefix)) {
+			edits.insert(offset, fqName.substring(prefix.length()));
+		} else {
+			edits.replace(offset - prefix.length(), offset, fqName);
+		}
 
 		Renderable renderable = null;
 
-		return new TypeCompletionProposal(label, kind, edits, proposal.getFullyQualifiedName(), renderable, proposal.getRelevance());
+		return new TypeCompletionProposal(label, kind, edits, fqName, renderable, proposal.getRelevance());
 	}
 	
 	private TypeCompletionProposal createTypeProposal(JavaCodeCompleteData proposal, TextDocument doc, String prefix, int offset) {
-		String label = proposal.getFullyQualifiedName();
+		String fqName = proposal.getFullyQualifiedName();
+		String label = fqName;
 
 		int splitIndex = Math.max(label.lastIndexOf("."), label.lastIndexOf("$"));
 
@@ -142,11 +153,15 @@ public class TypeCompletionProposalProvider implements XMLCompletionProvider {
 		}
 
 		DocumentEdits edits = new DocumentEdits(doc, false);
-		edits.replace(offset - prefix.length(), offset, proposal.getFullyQualifiedName());
+		if (fqName.startsWith(prefix)) {
+			edits.insert(offset, fqName.substring(prefix.length()));
+		} else {
+			edits.replace(offset - prefix.length(), offset, fqName);
+		}
 
 		Renderable renderable = null;
 
-		return new TypeCompletionProposal(label, kind, edits, proposal.getFullyQualifiedName(), renderable, proposal.getRelevance());
+		return new TypeCompletionProposal(label, kind, edits, fqName, renderable, proposal.getRelevance());
 	}
 		
 }

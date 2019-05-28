@@ -12,6 +12,7 @@ package org.springframework.tooling.jdt.ls.extension;
 
 import org.eclipse.jdt.ls.core.internal.HoverInfoProvider;
 import org.springframework.tooling.jdt.ls.commons.Logger;
+import org.springframework.tooling.jdt.ls.commons.java.JavaCodeCompletion;
 import org.springframework.tooling.jdt.ls.commons.java.JavaData;
 import org.springframework.tooling.jdt.ls.commons.java.JavaFluxSearch;
 import org.springframework.tooling.jdt.ls.commons.java.TypeHierarchy;
@@ -29,5 +30,7 @@ public class JavaHelpers {
 	final public static Supplier<JavaFluxSearch> SEARCH = Suppliers.memoize(() -> new JavaFluxSearch(logger, DATA.get()));
 	
 	final public static Supplier<TypeHierarchy> HIERARCHY = Suppliers.memoize(() -> new TypeHierarchy(logger, DATA.get()));
+	
+	final public static Supplier<JavaCodeCompletion> CODE_COMPLETIONS = Suppliers.memoize(() -> new JavaCodeCompletion());
 
 }
