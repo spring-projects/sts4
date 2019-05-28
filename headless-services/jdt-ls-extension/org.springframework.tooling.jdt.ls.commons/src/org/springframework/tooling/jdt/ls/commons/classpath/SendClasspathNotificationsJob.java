@@ -30,21 +30,15 @@ public class SendClasspathNotificationsJob extends Job {
 	
 	private final ClientCommandExecutor conn;
 	private final Logger logger;
+	private String callbackCommandId;
+	private boolean isBatched;
 
-	public SendClasspathNotificationsJob(Logger logger, ClientCommandExecutor conn) {
+	public SendClasspathNotificationsJob(Logger logger, ClientCommandExecutor conn, String callbackId, boolean isBatched) {
 		super("Send Classpath Notifications");
 		this.logger = logger;
 		this.conn = conn;
-	}
-
-	public static class Notification {
-		IJavaProject jp;
-		String callbackId;
-
-		public Notification(IJavaProject jp, String callbackId) {
-			this.jp = jp;
-			this.callbackId = callbackId;
-		}
+		this.callbackCommandId = callbackId;
+		this.isBatched = isBatched;
 	}
 
 	/**
@@ -66,7 +60,7 @@ public class SendClasspathNotificationsJob extends Job {
 		}
 	}
 
-	public final Queue<Notification> queue = new ConcurrentLinkedQueue<>();
+	public final Queue<IJavaProject> queue = new ConcurrentLinkedQueue<>();
 	
 	private boolean projectExists(IJavaProject jp) {
 		//We can't really deal with projects that don't exist in disk. So using this more strict 'exists' check
@@ -93,8 +87,7 @@ public class SendClasspathNotificationsJob extends Job {
 	protected IStatus run(IProgressMonitor monitor) {
 		synchronized (projectLocations) { //Could use some Eclipse job rule. But its really a bit of a PITA to create the right one.
 			try {
-				for (Notification notification = queue.poll(); notification!=null; notification = queue.poll()) {
-					IJavaProject jp = notification.jp;
+				for (IJavaProject jp = queue.poll(); jp!=null; jp = queue.poll()) {
 					logger.log("Preparing classpath changed notification " + jp.getElementName());
 					URI projectLoc = getProjectLocation(jp);
 					if (projectLoc==null) {
@@ -121,16 +114,13 @@ public class SendClasspathNotificationsJob extends Job {
 								logger.log(e);
 							}
 						}
-						String callbackCommandId = notification.callbackId;
-						{
-							try {
-								logger.log("executing callback "+callbackCommandId+" "+projectName+" "+deleted+" "+ classpath.getEntries().size());
-								Object r = conn.executeClientCommand(callbackCommandId, projectLoc.toString(), projectName, deleted, classpath);
-								logger.log("executing callback "+callbackCommandId+" SUCCESS ["+r+"]");
-							} catch (Exception e) {
-								logger.log("executing callback "+callbackCommandId+" FAILED");
-								logger.log(e);
-							}
+						try {
+							logger.log("executing callback "+callbackCommandId+" "+projectName+" "+deleted+" "+ classpath.getEntries().size());
+							Object r = conn.executeClientCommand(callbackCommandId, projectLoc.toString(), projectName, deleted, classpath);
+							logger.log("executing callback "+callbackCommandId+" SUCCESS ["+r+"]");
+						} catch (Exception e) {
+							logger.log("executing callback "+callbackCommandId+" FAILED");
+							logger.log(e);
 						}
 					}
 				}

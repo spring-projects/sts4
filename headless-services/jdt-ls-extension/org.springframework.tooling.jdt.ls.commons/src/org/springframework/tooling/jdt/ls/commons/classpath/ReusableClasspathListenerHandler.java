@@ -18,6 +18,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Supplier;
 
+import javax.management.Notification;
+
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -25,7 +27,6 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.springframework.tooling.jdt.ls.commons.Logger;
 import org.springframework.tooling.jdt.ls.commons.classpath.ClasspathListenerManager.ClasspathListener;
-import org.springframework.tooling.jdt.ls.commons.classpath.SendClasspathNotificationsJob.Notification;
 
 /**
  * {@link ReusableClasspathListenerHandler} is an 'abstracted' version of the jdtls ClasspathListenerHandler. 
@@ -33,8 +34,8 @@ import org.springframework.tooling.jdt.ls.commons.classpath.SendClasspathNotific
 public class ReusableClasspathListenerHandler {
 
 	private final Logger logger;
+	private final ClientCommandExecutor conn;
 	private final Supplier<Comparator<IProject>> projectSorterFactory;
-	private final SendClasspathNotificationsJob sendNotificationJob;
 	
 	public ReusableClasspathListenerHandler(Logger logger, ClientCommandExecutor conn) {
 		this(logger, conn, null);
@@ -43,30 +44,32 @@ public class ReusableClasspathListenerHandler {
 	public ReusableClasspathListenerHandler(Logger logger, ClientCommandExecutor conn, Supplier<Comparator<IProject>> projectSorterFactory) {
 		this.logger = logger;
 		this.projectSorterFactory = projectSorterFactory;
-		this.sendNotificationJob = new SendClasspathNotificationsJob(logger, conn);
+		this.conn = conn;
 		logger.log("Instantiating ReusableClasspathListenerHandler");
 	}
 	
 	class Subscriptions {
 
-		private Map<String, Boolean> subscribers = null;
+		private Map<String, SendClasspathNotificationsJob> subscribers = null;
 		private ClasspathListenerManager classpathListener = null;
 		
 		public synchronized void subscribe(String callbackCommandId, boolean isBatched) {
-			logger.log("subscribing to classpath changes: " + callbackCommandId +" isBatched = "+isBatched);
 			if (subscribers==null) {
 				//First subscriber
 				subscribers = new HashMap<>();
+			}
+			if (!subscribers.containsKey(callbackCommandId)) {
+				logger.log("subscribing to classpath changes: " + callbackCommandId +" isBatched = "+isBatched);
 				classpathListener = new ClasspathListenerManager(logger, new ClasspathListener() {
 					@Override
 					public void classpathChanged(IJavaProject jp) {
 						sendNotification(jp, subscribers.keySet());
 					}
 				});
+				subscribers.put(callbackCommandId, new SendClasspathNotificationsJob(logger, conn, callbackCommandId, isBatched));
+				logger.log("subsribers = " + subscribers);
+				sendInitialEvents(callbackCommandId);
 			}
-			subscribers.put(callbackCommandId, isBatched);
-			logger.log("subsribers = " + subscribers);
-			sendInitialEvents(callbackCommandId);
 		}
 		
 		private void sendInitialEvents(String callbackCommandId) {
@@ -93,12 +96,14 @@ public class ReusableClasspathListenerHandler {
 			logger.log("Sending initial event for all projects DONE");
 		}
 
-
-		private void sendNotification(IJavaProject jp, Collection<String> callbackIds) {
-			for (String callbackId : callbackIds) {
-				sendNotificationJob.queue.add(new Notification(jp, callbackId));
+		private synchronized void sendNotification(IJavaProject jp, Collection<String> callbackIds) {
+			if (subscribers!=null) {
+				for (String callbackId : callbackIds) {
+					SendClasspathNotificationsJob sendNotificationJob = subscribers.get(callbackId);
+					sendNotificationJob.queue.add(jp);
+					sendNotificationJob.schedule();
+				}
 			}
-			sendNotificationJob.schedule();
 		}
 
 		public synchronized void unsubscribe(String callbackCommandId) {

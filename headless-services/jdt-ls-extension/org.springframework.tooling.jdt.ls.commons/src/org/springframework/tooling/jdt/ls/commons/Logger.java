@@ -23,7 +23,7 @@ import org.eclipse.core.runtime.Status;
 
 
 /**
- * Poor man's logger with a defauly implementation writes log output for jdt.ls extension into a predictable location.
+ * Poor man's logger with a default implementation writes log output for jdt.ls extension into a predictable location.
  */
 public interface Logger {
 	

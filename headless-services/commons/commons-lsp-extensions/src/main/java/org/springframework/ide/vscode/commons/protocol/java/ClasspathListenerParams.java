@@ -13,9 +13,22 @@ package org.springframework.ide.vscode.commons.protocol.java;
 public class ClasspathListenerParams {
 
 	private String callbackCommandId;
+	
+	/**
+	 * The requestor can set this to true to request 'batched' events 
+	 * (if the client supports this, it will send multiple events in a single
+	 * callback.
+	 */
+	private boolean batched = false;
+
+	public ClasspathListenerParams() {}
+
+	public ClasspathListenerParams(String callbackCommandId, boolean isBatched) {
+		this.callbackCommandId = callbackCommandId;
+		this.batched = isBatched;
+	}
 
 	public ClasspathListenerParams(String callbackCommandId) {
-		super();
 		this.callbackCommandId = callbackCommandId;
 	}
 
@@ -26,10 +39,18 @@ public class ClasspathListenerParams {
 	public void setCallbackCommandId(String callbackCommandId) {
 		this.callbackCommandId = callbackCommandId;
 	}
-
+	
 	@Override
 	public String toString() {
-		return "ClasspathListenerParams [callbackCommandId=" + callbackCommandId + "]";
+		return "ClasspathListenerParams [callbackCommandId=" + callbackCommandId + ", batched=" + batched + "]";
+	}
+
+	public boolean isBatched() {
+		return batched;
+	}
+
+	public void setBatched(boolean batched) {
+		this.batched = batched;
 	}
 
 }
