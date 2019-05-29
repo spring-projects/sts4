@@ -90,7 +90,7 @@ public class JavaData {
 		return element;
 	}
 
-	private static IJavaElement findElement(IJavaProject project, String bindingKey) {
+	public static IJavaElement findElement(IJavaProject project, String bindingKey) {
 		IJavaElement element = null;
 		// JDT cannot find anonymous inner type from its binding key
 		// Find its declaring type. If declaring type found then anonymous inner type is present in the binding key
@@ -117,6 +117,17 @@ public class JavaData {
 			}
 		}
 		return element;
+	}
+	
+	public static String toBindingKey(String fqName) {
+		StringBuilder sb = new StringBuilder("L");
+		sb.append(fqName.replace('.', '/'));
+		sb.append(";");
+		return sb.toString();
+	}
+	
+	public static String toJdtFqName(String bindingKey) {
+		return bindingKey.substring(1, bindingKey.length() - 1).replace('/', '.').replace('$', '.');
 	}
 	
 	private static IJavaElement findInnerElement(IJavaElement container, String bindingKey) {
@@ -156,7 +167,7 @@ public class JavaData {
 			if (rest.charAt(rest.length() - 1) == ';') {
 				rest = rest.substring(0, rest.length() - 1);
 			}
-			String[] tokens = rest.split("$");
+			String[] tokens = rest.split("\\$");
 			for (String token : tokens) {
 				int dotIdx = token.indexOf('.');
 				String typeToken = dotIdx < 0 ? token : token.substring(0, dotIdx);

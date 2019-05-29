@@ -183,6 +183,27 @@ public class JavaLangugeClientTest {
 	}
 
 	@Test
+	public void anonymousInnerType_SuperTypes() throws Exception {
+		List<TypeDescriptorData> data = client
+				.javaSuperTypes(new JavaTypeHierarchyParams(project.getLocationURI().toString(), "org.test.Application$1", false))
+				.get(1000000000, TimeUnit.SECONDS);
+		assertNotNull(data);
+		Set<String> actual = data.stream().map(t -> t.getFqName()).collect(Collectors.toSet());
+		Set<String> expected = new HashSet<>(Arrays.asList(
+				"org.springframework.scheduling.concurrent.ConcurrentTaskScheduler",
+				"java.util.concurrent.Executor",
+				"org.springframework.scheduling.SchedulingTaskExecutor",
+				"org.springframework.core.task.AsyncTaskExecutor",
+				"org.springframework.scheduling.concurrent.ConcurrentTaskExecutor",
+				"org.springframework.scheduling.TaskScheduler",
+				"org.springframework.core.task.TaskExecutor",
+				"org.springframework.core.task.AsyncListenableTaskExecutor",
+				"java.lang.Object"
+		));
+		assertEquals(expected, actual);
+	}
+	
+	@Test
 	public void arrayList_SuperTypes_with_Itself() throws Exception {
 		List<TypeDescriptorData> data = client
 				.javaSuperTypes(new JavaTypeHierarchyParams(project.getLocationURI().toString(), "java.util.ArrayList", true))

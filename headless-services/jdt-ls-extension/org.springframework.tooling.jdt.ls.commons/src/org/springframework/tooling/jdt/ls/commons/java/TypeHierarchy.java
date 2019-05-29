@@ -33,15 +33,13 @@ public class TypeHierarchy {
 		this.javaData = javaData;
 	}
 	
-	private static String jdtCompatibleFqName(String fqName) {
-		return fqName.replace('$', '.');
-	}
-	
 	private ITypeHierarchy hierarchy(URI projectUri, String fqName, boolean superTypes) {
 		try {
+			String bindingKey = JavaData.toBindingKey(fqName);
 			if (projectUri == null) {
 				for (IJavaProject jp : ResourceUtils.allJavaProjects()) {
-					IType type = jp.findType(jdtCompatibleFqName(fqName));
+					// In case it's an anonymous inner type try the following rather than just find type on the project
+					IType type = (IType) JavaData.findElement(jp, bindingKey);
 					if (type != null) {
 						return superTypes ? type.newSupertypeHierarchy(new NullProgressMonitor()) : type.newTypeHierarchy(new NullProgressMonitor());
 					}
@@ -50,7 +48,8 @@ public class TypeHierarchy {
 			} else {
 				IJavaProject javaProject = projectUri == null ? null : ResourceUtils.getJavaProject(projectUri);
 				if (javaProject != null) {
-					IType type = javaProject.findType(jdtCompatibleFqName(fqName));
+					// In case it's an anonymous inner type try the following rather than just find type on the project
+					IType type = (IType) JavaData.findElement(javaProject, bindingKey);
 					if (type != null) {
 						return superTypes ? type.newSupertypeHierarchy(new NullProgressMonitor()) : type.newTypeHierarchy(javaProject, new NullProgressMonitor());
 					}
