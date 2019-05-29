@@ -313,6 +313,9 @@ public class ConcourseEditorTest {
 				, // ==============
 				"get: <*>"
 				, // ==============
+				"in_parallel:\n" +
+				"    - <*>"
+				, // ==============
 				"put: <*>"
 				, // ==============
 				"task: <*>"
@@ -349,6 +352,8 @@ public class ConcourseEditorTest {
 				"  - do: []\n" +
 				"  - aggregate:\n" +
 				"    - task: perform-something\n" +
+				"  - in_parallel:\n" +
+				"    - task: perform-something\n" +
 				"  - try:\n" +
 				"      put: test-logs\n"
 		);
@@ -356,6 +361,7 @@ public class ConcourseEditorTest {
 		editor.assertHoverContains("get", "Fetches a resource");
 		editor.assertHoverContains("put", "Pushes to the given [Resource]");
 		editor.assertHoverContains("aggregate", "Performs the given steps in parallel");
+		editor.assertHoverContains("in_parallel", "Performs the given steps in parallel");
 		editor.assertHoverContains("task", "Executes a [Task]");
 		editor.assertHoverContains("do", "performs the given steps serially");
 		editor.assertHoverContains("try", "Performs the given step, swallowing any failure");
@@ -498,6 +504,21 @@ public class ConcourseEditorTest {
 		);
 
 		editor.assertHoverContains("aggregate", "Performs the given steps in parallel");
+	}
+
+	@Test
+	public void inParallelStepHovers() throws Exception {
+		Editor editor;
+
+		editor = harness.newEditor(
+				"jobs:\n" +
+				"- name: some-job\n" +
+				"  plan:\n" +
+				"  - in_parallel:\n" +
+				"    - get: some-resource\n"
+		);
+
+		editor.assertHoverContains("in_parallel", "Performs the given steps in parallel");
 	}
 
 	@Test
@@ -3714,6 +3735,7 @@ public class ConcourseEditorTest {
 				"- aggregate",
 				"- do",
 				"- get",
+				"- in_parallel",
 				"- put",
 				"- task",
 				"- try",
@@ -4141,6 +4163,22 @@ public class ConcourseEditorTest {
 				"  serial: true\n" +
 				"  plan:\n" +
 				"  - aggregate:\n" +
+				"    - <*>"
+		);
+		
+		editor = harness.newEditor(
+				"jobs:\n" +
+				"- name: build-docker-image\n" +
+				"  serial: true\n" +
+				"  plan:\n" +
+				"  in_"
+		);
+		editor.assertCompletionWithLabel("- in_parallel",
+				"jobs:\n" +
+				"- name: build-docker-image\n" +
+				"  serial: true\n" +
+				"  plan:\n" +
+				"  - in_parallel:\n" +
 				"    - <*>"
 		);
 	}
