@@ -236,6 +236,7 @@ public class PipelineYmlSchema implements YamlSchema {
 		addProp(t_resource, "check_every", t_duration);
 		addProp(t_resource, "tags", t_strings);
 		addProp(t_resource, "webhook_token", t_ne_string);
+		addProp(t_resource, "icon", t_ne_string);
 
 		AbstractType t_image_resource = f.ybean("ImageResource");
 		{
@@ -361,17 +362,20 @@ public class PipelineYmlSchema implements YamlSchema {
 		YBeanType aggregateStep = f.ybean("AggregateStep");
 		YBeanType doStep = f.ybean("DoStep");
 		YBeanType tryStep = f.ybean("TryStep");
+		YBeanType inParallelStep = f.ybean("InParallelStep");
 
 		YBeanType[] stepTypes = {
 				getStep,
 				putStep,
 				taskStep,
 				aggregateStep,
+				inParallelStep,
 				doStep,
 				tryStep
 		};
 		YBeanUnionType step = f.yBeanUnion("Step", stepTypes);
 		addProp(aggregateStep, "aggregate", f.yseq(step));
+		addProp(inParallelStep, "in_parallel", f.yseq(step));
 		addProp(doStep, "do", f.yseq(step));
 		addProp(tryStep, "try", step);
 

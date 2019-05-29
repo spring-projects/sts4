@@ -1,0 +1,1 @@
+*Optional* If specified, it must be the name of a [Material Design Icon](https://materialdesignicons.com) and will be rendered alongside the resource's name in the Concourse UI.
