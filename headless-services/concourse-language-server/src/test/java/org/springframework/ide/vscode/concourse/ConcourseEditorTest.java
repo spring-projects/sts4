@@ -1591,6 +1591,7 @@ public class ConcourseEditorTest {
 				"resources:\n" +
 				"- name: sts4\n" +
 				"  type: git\n" +
+				"  icon: foo\n" + 
 				"  check_every: 5m\n" +
 				"  webhook_token: bladayadayaaa\n" +
 				"  source:\n" +
@@ -1599,6 +1600,7 @@ public class ConcourseEditorTest {
 
 		editor.assertHoverContains("name", "The name of the resource");
 		editor.assertHoverContains("type", "The type of the resource. Each worker advertises");
+  	editor.assertHoverContains("icon", "name of a [Material Design Icon]");
 		editor.assertHoverContains("source", 2, "The location of the resource");
 		editor.assertHoverContains("webhook_token", "web hooks can be sent to trigger an immediate *check* of the resource");
 		editor.assertHoverContains("check_every", "The interval on which to check for new versions");
@@ -3509,6 +3511,7 @@ public class ConcourseEditorTest {
 		editor.assertCompletionLabels(
 				//For the 'exact' context:
 				"check_every",
+				"icon",
 				"tags",
 				"webhook_token",
 				//"name", exists
