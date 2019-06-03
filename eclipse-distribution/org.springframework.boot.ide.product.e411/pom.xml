@@ -146,7 +146,7 @@
 								    <arg value="--keychain"/>
 								    <arg value="${env.KEYCHAIN}"/>
 								    <arg value="-s"/>
-								    <arg value="Developer ID Application: Trevor Marshall (4NBHJ75BA6)"/>
+								    <arg value="Developer ID Application: Trevor Marshall"/>
 								    <arg value="${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/macosx/cocoa/x86_64/SpringToolSuite4.app"/>
 								</exec>
 
@@ -193,7 +193,7 @@
 								    <arg value="--keychain"/>
 								    <arg value="${env.KEYCHAIN}"/>
 								    <arg value="-s"/>
-								    <arg value="Developer ID Application: Trevor Marshall (4NBHJ75BA6)"/>
+								    <arg value="Developer ID Application: Trevor Marshall"/>
 								    <arg value="${dmgName}"/>
 								</exec>
 
