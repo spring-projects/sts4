@@ -17,8 +17,11 @@ import java.net.URI;
 import java.nio.file.FileSystems;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -32,8 +35,10 @@ import org.eclipse.lsp4j.InitializeResult;
 import org.eclipse.lsp4j.jsonrpc.messages.Message;
 import org.eclipse.lsp4j.jsonrpc.messages.ResponseMessage;
 import org.eclipse.lsp4j.services.LanguageServer;
+import org.springframework.tooling.boot.ls.prefs.RemoteAppsPrefs;
 import org.springframework.tooling.ls.eclipse.commons.LanguageServerCommonsActivator;
 import org.springsource.ide.eclipse.commons.livexp.core.ValueListener;
+import org.springsource.ide.eclipse.commons.livexp.ui.Disposable;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -49,7 +54,7 @@ import com.google.common.collect.ImmutableSet;
  * @author Martin Lippert
  */
 public class DelegatingStreamConnectionProvider implements StreamConnectionProvider {
-	
+
 	private StreamConnectionProvider provider;
 	private ResourceListener fResourceListener;
 	private LanguageServer languageServer;
@@ -59,6 +64,7 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 	
 	private long timestampBeforeStart;
 	private long timestampWhenInitialized;
+	private Disposable remoteAppsPrefsListener;
 	
 	public DelegatingStreamConnectionProvider() {
 		LanguageServerCommonsActivator.logInfo("Entering DelegatingStreamConnectionProvider()");
@@ -83,6 +89,7 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 	public void start() throws IOException {
 		this.timestampBeforeStart = System.currentTimeMillis();
 		this.provider.start();
+		this.remoteAppsPrefsListener = RemoteAppsPrefs.addListener(this::sendConfiguration);
 	}
 
 	@Override
@@ -109,6 +116,10 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 		}
 		BootLanguageServerPlugin.getDefault().getPreferenceStore().removePropertyChangeListener(configListener);
 		BootLanguageServerPlugin.getRemoteBootApps().removeListener(remoteAppsListener);
+		if (remoteAppsPrefsListener!=null) {
+			remoteAppsPrefsListener.dispose();
+			remoteAppsPrefsListener = null;
+		}
 	}
 
 	@Override
@@ -223,15 +234,28 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 		bootJavaObj.put("change-detection", bootChangeDetection);
 		bootJavaObj.put("scan-java-test-sources", scanTestJavaSources);
 
-		bootJavaObj.put("remote-apps", BootLanguageServerPlugin.getRemoteBootApps().getValues()
-				.stream()
-				.map(this::parseData)
-				.collect(Collectors.toList())
+		bootJavaObj.put("remote-apps", getAllRemoteApps()
 		);
 
 		settings.put("boot-java", bootJavaObj);
 
 		this.languageServer.getWorkspaceService().didChangeConfiguration(new DidChangeConfigurationParams(settings));
+	}
+
+	/**
+	 * Combines remote boot app data from all configuration sources.
+	 */
+	protected List<RemoteBootAppData> getAllRemoteApps() {
+		ImmutableSet<Object> fromBootDash = BootLanguageServerPlugin.getRemoteBootApps().getValues();
+		List<List<String>> fromUserPrefs = new RemoteAppsPrefs().getRemoteAppData();
+		
+		Set<Object> combined = new LinkedHashSet<>();
+		combined.addAll(fromBootDash);
+		combined.addAll(fromUserPrefs);
+		return combined
+				.stream()
+				.map(this::parseData)
+				.collect(Collectors.toList());
 	}
 	
 	@SuppressWarnings("unchecked")

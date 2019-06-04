@@ -105,9 +105,15 @@
             contentTypeId="org.eclipse.jdt.core.javaSource">
       </participant>
    </extension>
-   
+
    <extension
          point="org.eclipse.ui.preferencePages">
+      <page
+            category="org.springframework.tooling.boot.java.ls.preferences"
+            class="org.springframework.tooling.boot.ls.prefs.RemoteAppsPrefsPage"
+            id="org.springframework.tooling.boot.ls.prefs.RemoteAppsPrefsPage"
+            name="Remote Boot Apps">
+      </page>
       <page
             category="org.springframework.tooling.boot.ls.preferences"
             class="org.springframework.tooling.boot.ls.BootJavaPreferencesPage"
