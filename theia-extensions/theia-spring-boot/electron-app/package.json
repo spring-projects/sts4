@@ -6,7 +6,6 @@
     "@pivotal-tools/theia-spring-boot": "file:../spring-boot",
     "@theia/core": "latest",
     "@theia/editor": "latest",
-    "@theia/electron": "latest",
     "@theia/filesystem": "latest",
     "@theia/java": "latest",
     "@theia/languages": "latest",
