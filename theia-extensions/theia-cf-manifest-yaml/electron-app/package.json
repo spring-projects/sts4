@@ -6,6 +6,7 @@
     "@pivotal-tools/theia-cf-manifest-yaml": "file:../cf-manifest-yaml",
     "@theia/core": "latest",
     "@theia/editor": "latest",
+    "@theia/electron": "latest",
     "@theia/filesystem": "latest",
     "@theia/languages": "latest",
     "@theia/markers": "latest",
