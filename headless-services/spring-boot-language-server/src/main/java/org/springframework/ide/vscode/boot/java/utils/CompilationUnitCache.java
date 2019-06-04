@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2018 Pivotal, Inc.
+ * Copyright (c) 2017, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -15,6 +15,7 @@ import java.net.URI;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
@@ -35,6 +36,7 @@ import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
+import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.common.cache.Cache;
@@ -49,6 +51,7 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 	private ProjectObserver projectObserver;
 	private Cache<URI, CompilationUnit> uriToCu;
 	private Cache<IJavaProject, Set<URI>> projectToDocs;
+	private Cache<IJavaProject, ASTParser> parsers;
 	private ProjectObserver.Listener projectListener;
 	private SimpleTextDocumentService documents;
 
@@ -63,6 +66,7 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 
 		// PT 154618835 - Avoid retaining the CU in the cache as it consumes memory if it hasn't been
 		// accessed after some time
+		parsers = CacheBuilder.newBuilder().build();
 		uriToCu = CacheBuilder.newBuilder()
 				.expireAfterWrite(CU_ACCESS_EXPIRATION, TimeUnit.MINUTES)
 				.build();
@@ -73,8 +77,9 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 		writeLock = lock.writeLock();
 
 		if (documents != null) {
-			documents.onDidChangeContent(doc -> invalidateCuForJavaFile(doc.getDocument().getId().getUri()));
-			documents.onDidClose(doc -> invalidateCuForJavaFile(doc.getId().getUri()));
+			documents.onDidOpen(this::handleDocOpened);
+			documents.onDidChangeContent(change -> handleDocChanged(change.getDocument()));
+			documents.onDidClose(this::handleDocClosed);
 		}
 
 		if (this.projectObserver != null) {
@@ -111,7 +116,9 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 
 			try {
 				cu = uriToCu.get(uri, () -> {
-					CompilationUnit cUnit = parse(uri.toString(), fetchContent(uri).toCharArray(), project);
+					ASTParser parser = parser(project);
+					String uriPath = uri.getPath();
+					CompilationUnit cUnit = parse(parser, fetchContent(uri).toCharArray(), uri.toString(), uriPath.substring(uriPath.lastIndexOf("/")));
 					projectToDocs.get(project, () -> new HashSet<>()).add(uri);
 					return cUnit;
 				});
@@ -138,7 +145,30 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 
 		return requestor.apply(null);
 	}
-
+	
+	private void handleDocChanged(TextDocument doc) {
+		if (LanguageId.JAVA.equals(doc.getLanguageId())) {
+			invalidateCuForJavaFile(doc.getUri());
+		}
+	}
+	
+	private void handleDocOpened(TextDocument doc) {
+	}
+	
+	private void handleDocClosed(TextDocument doc) {
+		if (LanguageId.JAVA.equals(doc.getLanguageId())) {
+			invalidateCuForJavaFile(doc.getUri());
+		}
+	}
+	
+	private ASTParser parser(IJavaProject project) {
+		try {
+			return parsers.get(project, () -> createParser(getClasspathEntries(project)));
+		} catch (ExecutionException e) {
+			logger.error("{}", e);
+			return null;
+		}
+	}
 
 	private void invalidateCuForJavaFile(String uriStr) {
 		URI uri = URI.create(uriStr);
@@ -150,21 +180,21 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 		}
 	}
 
-	public static CompilationUnit parse(TextDocument document, IJavaProject project) throws Exception {
-		String[] classpathEntries = getClasspathEntries(project);
-		String docURI = document.getUri();
-		String unitName = docURI.substring(docURI.lastIndexOf("/"));
-		char[] source = document.get(0, document.getLength()).toCharArray();
-		return parse(source, docURI, unitName, classpathEntries);
-	}
-
-	public static CompilationUnit parse(String uri, char[] source, IJavaProject project) throws Exception {
-		String[] classpathEntries = getClasspathEntries(project);
-		String unitName = uri.substring(uri.lastIndexOf("/"));
-		return parse(source, uri, unitName, classpathEntries);
-	}
-
 	public static CompilationUnit parse(char[] source, String docURI, String unitName, String[] classpathEntries) throws Exception {
+		ASTParser parser = createParser(classpathEntries);
+		return parse(parser, source, docURI, unitName);
+	}
+	
+	public static CompilationUnit parse(ASTParser parser, char[] source, String docURI, String unitName) throws Exception {
+		parser.setUnitName(unitName);
+		parser.setSource(source);
+
+		CompilationUnit cu = (CompilationUnit) parser.createAST(null);
+
+		return cu;
+	}
+	
+	public static ASTParser createParser(String[] classpathEntries) {
 		ASTParser parser = ASTParser.newParser(AST.JLS11);
 		Map<String, String> options = JavaCore.getOptions();
 		JavaCore.setComplianceOptions(JavaCore.VERSION_11, options);
@@ -176,13 +206,7 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 
 		String[] sourceEntries = new String[] {};
 		parser.setEnvironment(classpathEntries, sourceEntries, null, false);
-
-		parser.setUnitName(unitName);
-		parser.setSource(source);
-
-		CompilationUnit cu = (CompilationUnit) parser.createAST(null);
-
-		return cu;
+		return parser;
 	}
 
 	private static String[] getClasspathEntries(IJavaProject project) throws Exception {
@@ -204,6 +228,7 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 			try {
 				uriToCu.invalidateAll(docUris);
 				projectToDocs.invalidate(project);
+				parsers.invalidate(project);
 			} finally {
 				writeLock.unlock();
 			}
