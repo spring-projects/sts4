@@ -11,8 +11,11 @@
 package org.springframework.ide.vscode.boot.java.utils;
 
 import java.io.File;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Method;
 import java.net.URI;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -23,10 +26,24 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.IOUtils;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.core.ITypeRoot;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.internal.compiler.ICompilerRequestor;
+import org.eclipse.jdt.internal.compiler.IErrorHandlingPolicy;
+import org.eclipse.jdt.internal.compiler.IProblemFactory;
+import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
+import org.eclipse.jdt.internal.compiler.batch.FileSystem.Classpath;
+import org.eclipse.jdt.internal.compiler.env.INameEnvironment;
+import org.eclipse.jdt.internal.compiler.impl.CompilerOptions;
+import org.eclipse.jdt.internal.core.BasicCompilationUnit;
+import org.eclipse.jdt.internal.core.CancelableProblemFactory;
+import org.eclipse.jdt.internal.core.INameEnvironmentWithProgress;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.java.IClasspath;
@@ -184,7 +201,98 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 
 		return cu;
 	}
+	
+	@SuppressWarnings("unchecked")
+	public static CompilationUnit parse2(char[] source, String docURI, String unitName, String[] classpathEntries) throws Exception {
+		ASTParser parser = ASTParser.newParser(AST.JLS11);
+		Map<String, String> options = JavaCore.getOptions();
+		JavaCore.setComplianceOptions(JavaCore.VERSION_11, options);
+		parser.setCompilerOptions(options);
+		parser.setKind(ASTParser.K_COMPILATION_UNIT);
+		parser.setStatementsRecovery(true);
+		parser.setBindingsRecovery(true);
+		parser.setResolveBindings(false);
 
+		String[] sourceEntries = new String[] {};
+		parser.setEnvironment(classpathEntries, sourceEntries, null, false);
+
+		parser.setUnitName(unitName);
+		parser.setSource(source);
+		
+		Method getClasspathMethod = ASTParser.class.getDeclaredMethod("getClasspath");
+		getClasspathMethod.setAccessible(true);
+		List<Classpath> classpaths = (List<Classpath>) getClasspathMethod.invoke(parser);
+
+		Class<?> clazz = Class.forName("org.eclipse.jdt.core.dom.CompilationUnitResolver");
+		Constructor<?> ctor = clazz.getConstructor(
+				INameEnvironment.class,
+				IErrorHandlingPolicy.class,
+				CompilerOptions.class,
+				ICompilerRequestor.class,
+				IProblemFactory.class,
+				IProgressMonitor.class,
+				boolean.class
+		);
+		ctor.setAccessible(true);
+		
+		Classpath[] allEntries = new Classpath[classpaths.size()];
+		classpaths.toArray(allEntries);
+		Class<?> nameEnvironmentWithProgressClass = Class.forName("org.eclipse.jdt.core.dom.NameEnvironmentWithProgress");
+		Constructor<?> lookupCtor = nameEnvironmentWithProgressClass.getConstructor(
+				Classpath[].class,
+				String[].class,
+				IProgressMonitor.class
+		);
+		lookupCtor.setAccessible(true);
+		INameEnvironmentWithProgress environment = (INameEnvironmentWithProgress) lookupCtor.newInstance(allEntries, null, new NullProgressMonitor());
+		
+		Method handlerPolicyMethod = clazz.getDeclaredMethod("getHandlingPolicy");
+		handlerPolicyMethod.setAccessible(true);
+		
+		Method getRequestorMethod = clazz.getDeclaredMethod("getRequestor");
+		getRequestorMethod.setAccessible(true);
+		
+		CancelableProblemFactory problemFactory = new CancelableProblemFactory(new NullProgressMonitor());
+
+		Method compilerOptionsMethod = clazz.getDeclaredMethod("getCompilerOptions", Map.class, boolean.class);
+		compilerOptionsMethod.setAccessible(true);
+		Object compilerOptionsObj = compilerOptionsMethod.invoke(parser, options, true);
+		
+		Object resolver = ctor.newInstance(
+				environment,
+				handlerPolicyMethod.invoke(null),
+				compilerOptionsObj,
+				getRequestorMethod.invoke(null),
+				problemFactory,
+				new NullProgressMonitor(),
+				false
+		);
+
+		BasicCompilationUnit sourceUnit = new BasicCompilationUnit(source, null, unitName, (IJavaElement) null);
+		CompilationUnit cu = (CompilationUnit) parser.createAST(null);
+		
+		Class<?> nodeSearcherClass = Class.forName("org.eclipse.jdt.core.dom.NodeSearcher");
+		Method resolveMethod = clazz.getDeclaredMethod("resolve", 
+				CompilationUnitDeclaration.class,
+				org.eclipse.jdt.internal.compiler.env.ICompilationUnit.class,
+				nodeSearcherClass,
+				boolean.class,
+				boolean.class,
+				boolean.class);
+		resolveMethod.setAccessible(true);
+		
+		CompilationUnitDeclaration unit =
+				(CompilationUnitDeclaration) resolveMethod.invoke(resolver, 
+					null, // no existing compilation unit declaration
+					sourceUnit,
+					null,
+					true, // method verification
+					true, // analyze code
+					true); // generate code
+
+		return cu;
+	}
+	
 	private static String[] getClasspathEntries(IJavaProject project) throws Exception {
 		if (project == null) {
 			return new String[0];
