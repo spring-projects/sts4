@@ -9,4 +9,5 @@ fi
 if [ ! -f nohttp-cli-${VERSION}.jar ]; then
     curl -s -O https://repo.maven.apache.org/maven2/io/spring/nohttp/nohttp-cli/${VERSION}/nohttp-cli-${VERSION}.jar
 fi
-java -jar nohttp-cli-${VERSION}.jar
+java -jar nohttp-cli-${VERSION}.jar -w=nohttp-whitelist.txt -F nohttp-whitelist.txt \
+    -F README-dev-env.md
