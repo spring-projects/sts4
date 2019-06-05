@@ -91,7 +91,10 @@ public class YamlPropertiesJavaDefinitionHandler implements DefinitionHandler, L
 
 						if (assistContext != null) {
 							if (path.pointsAtValue()) {
-								return assistContext.getDefinitionsForPropertyValue(getNodeRegion(ast, offset));
+								DocumentRegion nodeRegion = getNodeRegion(ast, offset);
+								if (nodeRegion != null) {
+									return assistContext.getDefinitionsForPropertyValue(nodeRegion);
+								}
 							} else {
 								return assistContext.getDefinitionsForPropertyKey();
 							}
