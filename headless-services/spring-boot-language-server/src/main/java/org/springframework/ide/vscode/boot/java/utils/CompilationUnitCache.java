@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2018 Pivotal, Inc.
+ * Copyright (c) 2017, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -222,44 +222,44 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 		}
 	}
 
-	public static CompilationUnit parse(TextDocument document, IJavaProject project) throws Exception {
-		String[] classpathEntries = getClasspathEntries(project);
-		String docURI = document.getUri();
-		String unitName = docURI.substring(docURI.lastIndexOf("/"));
-		char[] source = document.get(0, document.getLength()).toCharArray();
-		return parse(source, docURI, unitName, classpathEntries);
-	}
-
-	public CompilationUnit parse(String uri, char[] source, IJavaProject project) throws Exception {
-		String[] classpathEntries = getClasspathEntries(project);
-		String unitName = uri.substring(uri.lastIndexOf("/"));
-		return parse(source, uri, unitName, classpathEntries);
-	}
-
-	public static CompilationUnit parse(char[] source, String docURI, String unitName, String[] classpathEntries) throws Exception {
-		ASTParser parser = ASTParser.newParser(AST.JLS11);
-		Map<String, String> options = JavaCore.getOptions();
-		JavaCore.setComplianceOptions(JavaCore.VERSION_11, options);
-		parser.setCompilerOptions(options);
-		parser.setKind(ASTParser.K_COMPILATION_UNIT);
-		parser.setStatementsRecovery(true);
-		parser.setBindingsRecovery(true);
-		parser.setResolveBindings(true);
-
-		String[] sourceEntries = new String[] {};
-		parser.setEnvironment(classpathEntries, sourceEntries, null, false);
-
-		parser.setUnitName(unitName);
-		parser.setSource(source);
-
-		CompilationUnit cu = (CompilationUnit) parser.createAST(null);
-
-		return cu;
-	}
+//	public static CompilationUnit parse(TextDocument document, IJavaProject project) throws Exception {
+//		String[] classpathEntries = getClasspathEntries(project);
+//		String docURI = document.getUri();
+//		String unitName = docURI.substring(docURI.lastIndexOf("/"));
+//		char[] source = document.get(0, document.getLength()).toCharArray();
+//		return parse(source, docURI, unitName, classpathEntries);
+//	}
+//
+//	public CompilationUnit parse(String uri, char[] source, IJavaProject project) throws Exception {
+//		String[] classpathEntries = getClasspathEntries(project);
+//		String unitName = uri.substring(uri.lastIndexOf("/"));
+//		return parse(source, uri, unitName, classpathEntries);
+//	}
+//
+//	public static CompilationUnit parse(char[] source, String docURI, String unitName, String[] classpathEntries) throws Exception {
+//		ASTParser parser = ASTParser.newParser(AST.JLS11);
+//		Map<String, String> options = JavaCore.getOptions();
+//		JavaCore.setComplianceOptions(JavaCore.VERSION_11, options);
+//		parser.setCompilerOptions(options);
+//		parser.setKind(ASTParser.K_COMPILATION_UNIT);
+//		parser.setStatementsRecovery(true);
+//		parser.setBindingsRecovery(true);
+//		parser.setResolveBindings(true);
+//
+//		String[] sourceEntries = new String[] {};
+//		parser.setEnvironment(classpathEntries, sourceEntries, null, false);
+//
+//		parser.setUnitName(unitName);
+//		parser.setSource(source);
+//
+//		CompilationUnit cu = (CompilationUnit) parser.createAST(null);
+//
+//		return cu;
+//	}
 	
-	public static CompilationUnit parse2(char[] source, String docURI, String unitName, String[] classpathEntries, INameEnvironmentWithProgress environment) throws Exception {
-		List<Classpath> classpaths = createClasspath(classpathEntries);
-		return parse2(source, docURI, unitName, classpaths, environment);
+	public static CompilationUnit parse2(char[] source, String docURI, String unitName, IJavaProject project) throws Exception {
+		List<Classpath> classpaths = createClasspath(getClasspathEntries(project));
+		return parse2(source, docURI, unitName, classpaths, null);
 	}
 	
 	private static CompilationUnit parse2(char[] source, String docURI, String unitName, List<Classpath> classpaths, INameEnvironmentWithProgress environment) throws Exception {

@@ -1,3 +1,13 @@
+/*******************************************************************************
+ * Copyright (c) 2019 Pivotal, Inc.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     Pivotal, Inc. - initial API and implementation
+ *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.utils;
 
 import java.lang.reflect.Constructor;
@@ -28,6 +38,13 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Supplier;
 
+/**
+ * Reflection based implementation of JDT package public CompilationUnitResolver.
+ * It is used to resolve the {@link CompilationUnitDeclaration}
+ * 
+ * @author Alex Boyko
+ *
+ */
 class CUResolver {
 	
 	private static final Logger log = LoggerFactory.getLogger(CUResolver.class);
@@ -65,40 +82,7 @@ class CUResolver {
 			return null;
 		}
 	};
-	
-	private static final Supplier<Field> BITS_FIELD = () -> {
-		try {
-			Field field = ASTParser.class.getDeclaredField("bits");
-			field.setAccessible(true);
-			return field;
-		} catch (SecurityException | NoSuchFieldException e) {
-			log.error("{}", e);
-			return null;
-		}
-	};
-	
-	private static final Supplier<Field> WORKING_COPY_OWNER_FIELD = () -> {
-		try {
-			Field field = ASTParser.class.getDeclaredField("workingCopyOwner");
-			field.setAccessible(true);
-			return field;
-		} catch (SecurityException | NoSuchFieldException e) {
-			log.error("{}", e);
-			return null;
-		}
-	};
-	
-	private static final Supplier<Field> API_LEVEL_FIELD = () -> {
-		try {
-			Field field = ASTParser.class.getDeclaredField("apiLevel");
-			field.setAccessible(true);
-			return field;
-		} catch (SecurityException | NoSuchFieldException e) {
-			log.error("{}", e);
-			return null;
-		}
-	};
-	
+
 	private static final Supplier<Class<?>> COMPILATION_UNIT_RESOLVER_CLASS = () -> {
 		try {
 			return Class.forName("org.eclipse.jdt.core.dom.CompilationUnitResolver");
@@ -272,7 +256,7 @@ class CUResolver {
 	};
 	
 	static CompilationUnitDeclaration resolve(org.eclipse.jdt.internal.compiler.env.ICompilationUnit sourceUnit,
-			List<Classpath> classpaths, Map options, int flags, INameEnvironmentWithProgress environment)
+			List<Classpath> classpaths, Map<String, String> options, int flags, INameEnvironmentWithProgress environment)
 			throws JavaModelException {
 		try {
 
@@ -316,7 +300,7 @@ class CUResolver {
 		return null;
 	}
 	
-	static CompilationUnitDeclaration parse(org.eclipse.jdt.internal.compiler.env.ICompilationUnit sourceUnit, Map options, int flags) {
+	static CompilationUnitDeclaration parse(org.eclipse.jdt.internal.compiler.env.ICompilationUnit sourceUnit, Map<String, String> options, int flags) {
 		try {
 			return (CompilationUnitDeclaration) PARSE_METHOD.get()
 					.invoke(null, sourceUnit, null, options, flags);
@@ -330,7 +314,7 @@ class CUResolver {
 			CompilationUnitDeclaration compilationUnitDeclaration,
 			char[] source,
 			int apiLevel,
-			Map options,
+			Map<String, String> options,
 			boolean needToResolveBindings,
 			WorkingCopyOwner owner,
 			int flags) {
@@ -353,47 +337,7 @@ class CUResolver {
 		return null;
 	}
 	
-	static final Supplier<Integer> BINDING_RECOVERY_FLAG = () -> {
-		try {
-			Class<?> clazz = COMPILATION_UNIT_RESOLVER_CLASS.get();
-			if (clazz != null) {
-				Field field = clazz.getDeclaredField("BINDING_RECOVERY");
-				field.setAccessible(true);
-				return field.getInt(null);
-			}
-		} catch (Exception e) {
-			log.error("{}", e);
-		}
-		return 0;
-	};
-	
-	static final Supplier<Integer> IGNORE_METHOD_BODIES_FLAG = () -> {
-		try {
-			Class<?> clazz = COMPILATION_UNIT_RESOLVER_CLASS.get();
-			if (clazz != null) {
-				Field field = clazz.getDeclaredField("IGNORE_METHOD_BODIES");
-				field.setAccessible(true);
-				return field.getInt(null);
-			}
-		} catch (Exception e) {
-			log.error("{}", e);
-		}
-		return 0;
-	};
-	
-	static final Supplier<Integer> STATEMENT_RECOVERY_FLAG = () -> {
-		try {
-			Class<?> clazz = COMPILATION_UNIT_RESOLVER_CLASS.get();
-			if (clazz != null) {
-				Field field = clazz.getDeclaredField("STATEMENT_RECOVERY");
-				field.setAccessible(true);
-				return field.getInt(null);
-			}
-		} catch (Exception e) {
-			log.error("{}", e);
-		}
-		return 0;
-	};
+
 	static INameEnvironmentWithProgress createLookupEnvironment(Classpath[] classpath) {
 		try {
 			return (INameEnvironmentWithProgress) LOOKUP_ENVIRONMENT_CONSTRUCTOR.get().newInstance(classpath, null, new NullProgressMonitor());
@@ -412,33 +356,6 @@ class CUResolver {
 			log.error("{}", e);
 		}
 		return null;
-	}
-	
-	static int getBits(ASTParser parser) {
-		try {
-			return BITS_FIELD.get().getInt(parser);
-		} catch (IllegalAccessException | IllegalArgumentException e) {
-			log.error("{}", e);
-		}
-		return 0;
-	}
-	
-	static WorkingCopyOwner getWorkingCopyOwner(ASTParser parser) {
-		try {
-			return (WorkingCopyOwner) WORKING_COPY_OWNER_FIELD.get().get(parser);
-		} catch (IllegalArgumentException | IllegalAccessException e) {
-			log.error("{}", e);
-		}
-		return null;
-	}
-	
-	static int getApiLevel(ASTParser parser) {
-		try {
-			return API_LEVEL_FIELD.get().getInt(parser);
-		} catch (IllegalArgumentException | IllegalAccessException e) {
-			log.error("{}", e);
-		}
-		return 0;
 	}
 
 }
