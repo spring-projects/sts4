@@ -113,7 +113,9 @@ public class ComponentInjectionsHoverProvider extends AbstractInjectedIntoHoverP
 					if (nameRange.isPresent()) {
 						List<CodeLens> codeLenses = assembleCodeLenses(project, runningApps, app -> definedBean(app, getBeanType(beanType), id), doc,
 								nameRange.get(), typeDeclaration);
-						return codeLenses.isEmpty() ? ImmutableList.of(new CodeLens(nameRange.get())) : codeLenses;
+						if (codeLenses != null) {
+							return codeLenses.isEmpty() ? ImmutableList.of(new CodeLens(nameRange.get())) : codeLenses;
+						}
 					}
 				}
 			} catch (Exception e) {

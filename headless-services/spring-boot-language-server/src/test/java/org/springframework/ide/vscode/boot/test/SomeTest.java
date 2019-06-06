@@ -43,8 +43,25 @@ public class SomeTest {
 		
 		char[] content = IOUtils.toString(uri).toCharArray();
 		
-		CompilationUnit cu = CompilationUnitCache.parse2(content, uri.toString(), unitName, getClasspathEntries(jp));
+		CompilationUnit cu = CompilationUnitCache.parse2(content, uri.toString(), unitName, getClasspathEntries(jp), null);
+		
+		System.out.println(cu);
 	}
+	
+//	@Test
+//	public void test2() throws Exception {
+//		URL sourceUrl = SourceLinks.source(jp, "org.springframework.boot.SpringApplication").get();
+//		
+//		URI uri = sourceUrl.toURI();
+//		
+//		String unitName = "SpringApplication";
+//		
+//		char[] content = IOUtils.toString(uri).toCharArray();
+//		
+//		CompilationUnit cu = CompilationUnitCache.parse(content, uri.toString(), unitName, getClasspathEntries(jp));
+//		
+//		System.out.println(cu);
+//	}
 	
 	private static String[] getClasspathEntries(IJavaProject project) throws Exception {
 		if (project == null) {
