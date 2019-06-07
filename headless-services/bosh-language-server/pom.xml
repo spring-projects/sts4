@@ -124,6 +124,7 @@
 			</plugin>
 
 			<plugin>
+		        <groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-resources-plugin</artifactId>
 				<executions>
 					<execution>
@@ -139,6 +140,22 @@
 									<directory>${basedir}</directory>
 									<filtering>true</filtering>
 									<include>LICENSE</include>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+					<execution>
+						<id>copy-license-files</id>
+						<phase>process-classes</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+						<configuration>
+							<outputDirectory>${project.build.outputDirectory}/META-INF/third-party-open-source-licenses/</outputDirectory>
+							<resources>
+								<resource>
+									<directory>${project.build.directory}/generated-resources/licenses</directory>
+									<filtering>false</filtering>
 								</resource>
 							</resources>
 						</configuration>
@@ -165,27 +182,6 @@
 				</executions>
 			</plugin>
 
-			<plugin>
-				<artifactId>maven-resources-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>copy-license-files</id>
-						<phase>process-classes</phase>
-						<goals>
-							<goal>copy-resources</goal>
-						</goals>
-						<configuration>
-							<outputDirectory>${project.build.outputDirectory}/META-INF/third-party-open-source-licenses/</outputDirectory>
-							<resources>
-								<resource>
-									<directory>${project.build.directory}/generated-resources/licenses</directory>
-									<filtering>false</filtering>
-								</resource>
-							</resources>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
 		</plugins>
 	</build>
 </project>
