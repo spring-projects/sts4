@@ -565,8 +565,7 @@
 					<keystore>${signing.keystore}</keystore>
 					<storepass>${signing.store.password}</storepass>
 					<keypass>${signing.key.password}</keypass>
-<!--					<tsa>https://ca.signfiles.com/tsa/get.aspx</tsa> -->
-<!--					<tsa>http://sha256timestamp.ws.symantec.com/sha256/timestamp</tsa> -->
+					<tsa>http://sha256timestamp.ws.symantec.com/sha256/timestamp</tsa>
 				</configuration>
 			</plugin>
 		</plugins>
