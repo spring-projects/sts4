@@ -5,6 +5,7 @@
    <extension
          point="org.eclipse.core.contenttype.contentTypes">
       <content-type
+            base-type="org.eclipse.core.runtime.text"
             default-charset="UTF-8"
             id="org.springframework.tooling.concourse.pipeline"
             name="Concourse Pipeline Definition"
@@ -19,6 +20,7 @@
    <extension
          point="org.eclipse.core.contenttype.contentTypes">
       <content-type
+            base-type="org.eclipse.core.runtime.text"
             default-charset="UTF-8"
             id="org.springframework.tooling.concourse.task"
             name="Concourse Task Definition"
@@ -96,6 +98,21 @@
             id="org.eclipse.languageserver.languages.concourse"
             languageId="concourse-task-yaml">
       </contentTypeMapping>
+   </extension>
+
+   <extension
+         point="org.eclipse.core.filebuffers.documentSetup">
+      <participant
+            class="org.eclipse.lsp4e.ConnectDocumentToLanguageServerSetupParticipant"
+            contentTypeId="org.springframework.tooling.concourse.pipeline">
+      </participant>
+   </extension>
+   <extension
+         point="org.eclipse.core.filebuffers.documentSetup">
+      <participant
+            class="org.eclipse.lsp4e.ConnectDocumentToLanguageServerSetupParticipant"
+            contentTypeId="org.springframework.tooling.concourse.task">
+      </participant>
    </extension>
 
 </plugin>
