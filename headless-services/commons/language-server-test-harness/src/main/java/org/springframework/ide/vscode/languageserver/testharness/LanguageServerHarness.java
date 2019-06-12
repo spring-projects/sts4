@@ -729,7 +729,7 @@ public class LanguageServerHarness {
 
 	public List<? extends Location> getDefinitions(TextDocumentPositionParams params) throws Exception {
 		waitForReconcile(); //goto definitions relies on reconciler infos! Must wait or race condition breaking tests occasionally.
-		return getServer().getTextDocumentService().definition(params).get();
+		return getServer().getTextDocumentService().definition(params).get().getLeft();
 	}
 
 	public static void assertDocumentation(String expected, CompletionItem completion) {

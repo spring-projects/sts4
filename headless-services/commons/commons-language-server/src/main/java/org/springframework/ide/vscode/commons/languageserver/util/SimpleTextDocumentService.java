@@ -40,6 +40,7 @@ import org.eclipse.lsp4j.DocumentSymbol;
 import org.eclipse.lsp4j.DocumentSymbolParams;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.Location;
+import org.eclipse.lsp4j.LocationLink;
 import org.eclipse.lsp4j.PublishDiagnosticsParams;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.ReferenceParams;
@@ -344,14 +345,17 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 	}
 
 	@Override
-	public CompletableFuture<List<? extends Location>> definition(TextDocumentPositionParams position) {
-	  return async.invoke(() -> {
+	public CompletableFuture<Either<List<? extends Location>, List<? extends LocationLink>>> definition(
+			TextDocumentPositionParams position) {
+
 		DefinitionHandler h = this.definitionHandler;
-		if (h!=null) {
-			return h.handle(position);
+		if (h != null) {
+			return async.invoke(() -> {
+				List<Location> locations = h.handle(position);
+				return Either.<List<? extends Location>, List<? extends LocationLink>>forLeft(locations);
+			});
 		}
-		return Collections.emptyList();
-	  });
+		return CompletableFuture.completedFuture(Either.forLeft(ImmutableList.of()));
 	}
 
 	@Override
