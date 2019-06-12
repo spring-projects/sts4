@@ -1,0 +1,40 @@
+apiVersion: v1
+kind: Deployment
+metadata:
+  name: theia-spring-boot
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      name: theia-spring-boot
+  template:
+    metadata:
+      labels:
+        name: theia-spring-boot
+    spec:
+      containers:
+        - name: theia-spring-boot
+          image: theia-spring-boot
+          ports:
+          - containerPort: 3000
+          volumeMounts:
+          - name: source
+            mountPath: /home/project
+        - name: git-sync
+          image: k8s.gcr.io/git-sync-amd64:v2.0.6
+          imagePullPolicy: Always
+          volumeMounts:
+          - name: source
+            mountPath: /home
+          env:
+          - name: GIT_SYNC_REPO
+            value: https://github.com/spring-projects/spring-petclinic.git
+          - name: GIT_SYNC_BRANCH
+            value: master
+          - name: GIT_SYNC_ROOT
+            value: /home
+          - name: GIT_SYNC_DEST
+            value: /home
+      volumes:
+        - name: source
+          emptyDir: {}
