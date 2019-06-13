@@ -374,8 +374,11 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 			try {
 				MarkupContent mc = new MarkupContent();
 				mc.setKind(MarkupKind.MARKDOWN);
-				mc.setValue(JavadocUtils.javadoc(JavaDoc2MarkdownConverter::getMarkdownContentReader,
-						URI.create(params.getProjectUri()), params.getBindingKey(), JavaDataParams.isLookInOtherProjects(params)));
+				String javadoc = JavadocUtils.javadoc(JavaDoc2MarkdownConverter::getMarkdownContentReader,
+						URI.create(params.getProjectUri()), params.getBindingKey(), JavaDataParams.isLookInOtherProjects(params));
+				if (javadoc != null) {
+					mc.setValue(javadoc);
+				}
 				return mc;
 			} catch (Exception e) {
 				LanguageServerCommonsActivator.logError(e, "Failed getting javadoc for " + params.toString());
