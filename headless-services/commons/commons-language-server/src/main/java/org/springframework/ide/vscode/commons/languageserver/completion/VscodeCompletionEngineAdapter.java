@@ -185,10 +185,12 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 		}
 		resolveEdits(doc, completion, item); //Warning. Its not allowed by LSP spec to resolveEdits
 											//lazy as we used to do in the past.
-		if (resolver!=null) {
-			item.setData(resolver.resolveLater(completion, doc));
-		} else {
-			resolveItem(doc, completion, item);
+		if (completion.getDocumentation() != null) {
+			if (resolver!=null) {
+				item.setData(resolver.resolveLater(completion, doc));
+			} else {
+				resolveItem(doc, completion, item);
+			}
 		}
 		return item;
 	}
