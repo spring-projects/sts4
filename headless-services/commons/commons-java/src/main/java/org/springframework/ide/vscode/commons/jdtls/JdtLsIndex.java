@@ -111,14 +111,9 @@ public class JdtLsIndex implements ClasspathIndex {
 		return Wrappers.wrap(data, Suppliers.memoize(() -> findType(data.getFqName())), Suppliers.memoize(() -> declaringTypeFqName == null ? null : findType(declaringTypeFqName)), javadocProvider);
 	}
 
-	private TypeData findTypeData(String fqName) {
+	private TypeData findTypeData(String fqName) throws InterruptedException, ExecutionException {
 		JavaDataParams params = new JavaDataParams(projectUri.toString(), "L" + fqName.replace('.', '/') + ";", false);
-		try {
-			return client.javaType(params).get();
-		} catch (InterruptedException | ExecutionException e) {
-			log.error("", e);
-		}
-		return null;
+		return client.javaType(params).get();
 	}
 
 	@Override
@@ -129,17 +124,21 @@ public class JdtLsIndex implements ClasspathIndex {
 		}
 
 		if (type == null) {
-			TypeData data = findTypeData(fqName);
-			if (data == null) {
-				type = Optional.empty();
-				sourceTypeCache.put(fqName, type);
-			} else {
-				type = Optional.of(toType(data));
-				if (Classpath.isBinary(data.getClasspathEntry().getCpe())) {
-					binaryTypeCache.put(fqName, type);
-				} else {
+			try {
+				TypeData data = findTypeData(fqName);
+				if (data == null) {
+					type = Optional.empty();
 					sourceTypeCache.put(fqName, type);
+				} else {
+					type = Optional.of(toType(data));
+					if (Classpath.isBinary(data.getClasspathEntry().getCpe())) {
+						binaryTypeCache.put(fqName, type);
+					} else {
+						sourceTypeCache.put(fqName, type);
+					}
 				}
+			} catch (Exception e) {
+				log.error("{}", e);
 			}
 		}
 		return type.orElse(null);

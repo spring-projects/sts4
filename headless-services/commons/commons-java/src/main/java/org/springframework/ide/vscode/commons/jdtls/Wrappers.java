@@ -90,7 +90,7 @@ public class Wrappers {
 				@Override
 				public String getFQName() {
 					String key = data.getName();
-					return key.substring(0, key.length() - 1).replace('/', '.');
+					return JavaUtils.typeBindingKeyToFqName(key);
 				}
 
 			};
