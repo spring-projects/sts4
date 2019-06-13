@@ -65,4 +65,20 @@ public class UriUtil {
 		}
 	}
 
+	public static File toFile(String docURI) {
+		try {
+			return new File(new URI(docURI));
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
+	public static String toFileString(String docURI) {
+		try {
+			return new File(new URI(docURI)).getAbsolutePath();
+		} catch (Exception e) {
+			return null;
+		}
+	}
+
 }

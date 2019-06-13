@@ -17,18 +17,27 @@ import java.io.IOException;
 import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
 import org.springframework.ide.vscode.commons.util.UriUtil;
 
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.MultimapBuilder;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializationContext;
@@ -69,7 +78,10 @@ public class SymbolCacheOnDisc implements SymbolCache {
 	}
 
 	@Override
-	public void store(SymbolCacheKey cacheKey, String[] files, List<CachedSymbol> generatedSymbols) {
+	public void store(SymbolCacheKey cacheKey, String[] files, List<CachedSymbol> generatedSymbols, Multimap<String, String> dependencies) {
+		if (dependencies==null) {
+			dependencies = ImmutableMultimap.of();
+		}
 		SortedMap<String, Long> timestampedFiles = new TreeMap<>();
 
 		timestampedFiles = Arrays.stream(files)
@@ -82,11 +94,11 @@ public class SymbolCacheOnDisc implements SymbolCache {
 					}
 				}, (v1,v2) -> { throw new RuntimeException(String.format("Duplicate key for values %s and %s", v1, v2));}, TreeMap::new));
 
-		save(cacheKey, generatedSymbols, timestampedFiles);
+		save(cacheKey, generatedSymbols, timestampedFiles, dependencies.asMap());
 	}
 
 	@Override
-	public CachedSymbol[] retrieve(SymbolCacheKey cacheKey, String[] files) {
+	public Pair<CachedSymbol[], Multimap<String, String>> retrieve(SymbolCacheKey cacheKey, String[] files) {
 		try {
 			File cacheStore = new File(cacheDirectory, cacheKey.toString() + ".json");
 			if (cacheStore.exists()) {
@@ -108,7 +120,15 @@ public class SymbolCacheOnDisc implements SymbolCache {
 					this.stores.put(cacheKey, store);
 
 					List<CachedSymbol> symbols = store.getSymbols();
-					return (CachedSymbol[]) symbols.toArray(new CachedSymbol[symbols.size()]);
+					Map<String, Collection<String>> storedDependencies = store.getDependencies();
+					Multimap<String, String> dependencies = MultimapBuilder.hashKeys().hashSetValues().build();
+					for (Entry<String, Collection<String>> entry : storedDependencies.entrySet()) {
+						dependencies.replaceValues(entry.getKey(), entry.getValue());
+					}
+					return Pair.of(
+							(CachedSymbol[]) symbols.toArray(new CachedSymbol[symbols.size()]),
+							MultimapBuilder.hashKeys().hashSetValues().build(dependencies)
+					);
 				}
 			}
 		}
@@ -130,8 +150,9 @@ public class SymbolCacheOnDisc implements SymbolCache {
 			List<CachedSymbol> cachedSymbols = cacheStore.getSymbols().stream()
 					.filter(cachedSymbol -> !cachedSymbol.getDocURI().equals(docURI))
 					.collect(Collectors.toList());
-
-			save(cacheKey, cachedSymbols, timestampedFiles);
+			Map<String, Collection<String>> changedDeps = new HashMap<>(cacheStore.getDependencies());
+			changedDeps.remove(file);
+			save(cacheKey, cachedSymbols, timestampedFiles, changedDeps);
 		}
 	}
 
@@ -145,7 +166,10 @@ public class SymbolCacheOnDisc implements SymbolCache {
 	}
 
 	@Override
-	public void update(SymbolCacheKey cacheKey, String file, long lastModified, List<CachedSymbol> generatedSymbols) {
+	public void update(SymbolCacheKey cacheKey, String file, long lastModified, List<CachedSymbol> generatedSymbols, Set<String> dependencies) {
+		if (dependencies==null) {
+			dependencies = ImmutableSet.of();
+		}
 		CacheStore cacheStore = this.stores.get(cacheKey);
 
 		if (cacheStore != null) {
@@ -159,14 +183,20 @@ public class SymbolCacheOnDisc implements SymbolCache {
 					.collect(Collectors.toList());
 
 			cachedSymbols.addAll(generatedSymbols);
-
-			save(cacheKey, cachedSymbols, timestampedFiles);
+			
+			Map<String, Collection<String>> changedDependencies = new HashMap<>(cacheStore.getDependencies());
+			if (dependencies.isEmpty()) {
+				changedDependencies.remove(file);
+			} else {
+				changedDependencies.put(file, ImmutableSet.copyOf(dependencies));
+			}
+			save(cacheKey, cachedSymbols, timestampedFiles, changedDependencies);
 		}
 	}
 
 	private void save(SymbolCacheKey cacheKey, List<CachedSymbol> generatedSymbols,
-			SortedMap<String, Long> timestampedFiles) {
-		CacheStore store = new CacheStore(cacheKey.toString(), timestampedFiles, generatedSymbols);
+			SortedMap<String, Long> timestampedFiles, Map<String, Collection<String>> dependencies) {
+		CacheStore store = new CacheStore(timestampedFiles, generatedSymbols, dependencies);
 		this.stores.put(cacheKey, store);
 
 		try (FileWriter writer = new FileWriter(new File(cacheDirectory, cacheKey.toString() + ".json")))
@@ -216,19 +246,19 @@ public class SymbolCacheOnDisc implements SymbolCache {
 	 */
 	private static class CacheStore {
 
-		private final String cacheKey;
 		private final SortedMap<String, Long> timestampedFiles;
 		private final List<CachedSymbol> symbols;
+		private final Map<String, Collection<String>> dependencies;
 
-		public CacheStore(String cacheKey, SortedMap<String, Long> timestampedFiles, List<CachedSymbol> symbols) {
+		public CacheStore(SortedMap<String, Long> timestampedFiles, List<CachedSymbol> symbols, Map<String, Collection<String>> dependencies) {
 			super();
-			this.cacheKey = cacheKey;
 			this.timestampedFiles = timestampedFiles;
 			this.symbols = symbols;
+			this.dependencies = dependencies;
 		}
 
-		public String getCacheKey() {
-			return cacheKey;
+		public Map<String, Collection<String>> getDependencies() {
+			return dependencies;
 		}
 
 		public List<CachedSymbol> getSymbols() {

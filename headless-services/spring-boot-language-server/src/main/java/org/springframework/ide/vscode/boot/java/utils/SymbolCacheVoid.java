@@ -11,6 +11,11 @@
 package org.springframework.ide.vscode.boot.java.utils;
 
 import java.util.List;
+import java.util.Set;
+
+import org.apache.commons.lang3.tuple.Pair;
+
+import com.google.common.collect.Multimap;
 
 /**
  * @author Martin Lippert
@@ -18,16 +23,16 @@ import java.util.List;
 public class SymbolCacheVoid implements SymbolCache {
 
 	@Override
-	public void store(SymbolCacheKey cacheKey, String[] files, List<CachedSymbol> generatedSymbols) {
+	public void store(SymbolCacheKey cacheKey, String[] files, List<CachedSymbol> generatedSymbols, Multimap<String,String> dependencies) {
 	}
 
 	@Override
-	public CachedSymbol[] retrieve(SymbolCacheKey cacheKey, String[] files) {
+	public Pair<CachedSymbol[], Multimap<String, String>> retrieve(SymbolCacheKey cacheKey, String[] files) {
 		return null;
 	}
 
 	@Override
-	public void update(SymbolCacheKey cacheKey, String file, long lastModified, List<CachedSymbol> generatedSymbols) {
+	public void update(SymbolCacheKey cacheKey, String file, long lastModified, List<CachedSymbol> generatedSymbols, Set<String> dependencies) {
 	}
 
 	@Override
@@ -37,5 +42,6 @@ public class SymbolCacheVoid implements SymbolCache {
 	@Override
 	public void removeFile(SymbolCacheKey symbolCacheKey, String file) {
 	}
+
 
 }

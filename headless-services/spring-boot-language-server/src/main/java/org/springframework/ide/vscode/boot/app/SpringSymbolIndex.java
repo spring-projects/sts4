@@ -90,7 +90,7 @@ public class SpringSymbolIndex implements InitializingBean {
 	private final ConcurrentMap<String, List<EnhancedSymbolInformation>> symbolsByProject = new ConcurrentHashMap<>();
 
 	private final ExecutorService updateQueue = Executors.newSingleThreadExecutor();
-	private SpringIndexer[] indexer;
+	private SpringIndexer[] indexers;
 
 
 	private static final Logger log = LoggerFactory.getLogger(SpringSymbolIndex.class);
@@ -153,7 +153,7 @@ public class SpringSymbolIndex implements InitializingBean {
 		springIndexerXML = new SpringIndexerXML(handler, namespaceHandler, this.cache, projectFinder());
 		springIndexerJava = new SpringIndexerJava(handler, specificProviders, this.cache, projectFinder());
 
-		this.indexer = new SpringIndexer[] {springIndexerJava};
+		this.indexers = new SpringIndexer[] {springIndexerJava};
 
 
 		getWorkspaceService().onDidChangeWorkspaceFolders(evt -> {
@@ -172,7 +172,7 @@ public class SpringSymbolIndex implements InitializingBean {
 			if (BootJavaLanguageServerComponents.LANGUAGES.contains(document.getLanguageId())) {
 				String docURI = document.getId().getUri();
 				String content = document.get();
-				this.updateDocument(docURI, content);
+				this.updateDocument(docURI, content, "didSave event");
 			}
 		});
 		config.addListener(evt -> {
@@ -196,15 +196,15 @@ public class SpringSymbolIndex implements InitializingBean {
 			createDocument(new TextDocumentIdentifier(file).getUri());
 		});
 		getWorkspaceService().getFileObserver().onFileChanged(globPattern, (file) -> {
-			updateDocument(new TextDocumentIdentifier(file).getUri(), null);
+			updateDocument(new TextDocumentIdentifier(file).getUri(), null, "file changed");
 		});
 	}
 
 	public CompletableFuture<Void> configureIndexer(SymbolIndexConfig config) {
 		List<CompletableFuture<?>> futuresList = new ArrayList<>();
 		synchronized (this) {
-			if (config.isScanXml() && !(Arrays.asList(this.indexer).contains(springIndexerXML))) {
-				this.indexer = new SpringIndexer[] {springIndexerJava, springIndexerXML};
+			if (config.isScanXml() && !(Arrays.asList(this.indexers).contains(springIndexerXML))) {
+				this.indexers = new SpringIndexer[] {springIndexerJava, springIndexerXML};
 				futuresList.add(CompletableFuture.runAsync(() -> springIndexerXML.setScanFolderGlobs(config.getXmlScanFoldersGlobs())));
 				
 				List<String> globPattern = Arrays.asList(springIndexerXML.getFileWatchPatterns());
@@ -216,12 +216,12 @@ public class SpringSymbolIndex implements InitializingBean {
 					createDocument(new TextDocumentIdentifier(file).getUri());
 				});
 				watchXMLChangedRegistration = getWorkspaceService().getFileObserver().onFileChanged(globPattern, (file) -> {
-					updateDocument(new TextDocumentIdentifier(file).getUri(), null);
+					updateDocument(new TextDocumentIdentifier(file).getUri(), null, "xml changed");
 				});
 				
 			}
-			else if (!config.isScanXml() && Arrays.asList(this.indexer).contains(springIndexerXML)) {
-				this.indexer = new SpringIndexer[] {springIndexerJava};
+			else if (!config.isScanXml() && Arrays.asList(this.indexers).contains(springIndexerXML)) {
+				this.indexers = new SpringIndexer[] {springIndexerJava};
 				futuresList.add(CompletableFuture.runAsync(() -> springIndexerXML.setScanFolderGlobs(new String[0])));
 
 				getWorkspaceService().getFileObserver().unsubscribe(watchXMLChangedRegistration);
@@ -267,9 +267,9 @@ public class SpringSymbolIndex implements InitializingBean {
 					removeSymbolsByProject(project);
 
 					@SuppressWarnings("unchecked")
-					CompletableFuture<Void>[] futures = new CompletableFuture[this.indexer.length];
-					for (int i = 0; i < this.indexer.length; i++) {
-						InitializeProject initializeItem = new InitializeProject(project, this.indexer[i]);
+					CompletableFuture<Void>[] futures = new CompletableFuture[this.indexers.length];
+					for (int i = 0; i < this.indexers.length; i++) {
+						InitializeProject initializeItem = new InitializeProject(project, this.indexers[i]);
 						futures[i] = CompletableFuture.runAsync(initializeItem, this.updateQueue);
 					}
 
@@ -291,7 +291,7 @@ public class SpringSymbolIndex implements InitializingBean {
 				log.debug("Project with NULL name is being removed");
 				return CompletableFuture.completedFuture(null);
 			} else {
-				DeleteProject initializeItem = new DeleteProject(project, this.indexer);
+				DeleteProject initializeItem = new DeleteProject(project, this.indexers);
 				return CompletableFuture.runAsync(initializeItem, this.updateQueue);
 			}
 		} catch (Throwable  e) {
@@ -304,7 +304,7 @@ public class SpringSymbolIndex implements InitializingBean {
 		synchronized(this) {
 			List<CompletableFuture<Void>> futures = new ArrayList<>();
 
-			for (SpringIndexer indexer : this.indexer) {
+			for (SpringIndexer indexer : this.indexers) {
 				if (indexer.isInterestedIn(docURI)) {
 					Optional<IJavaProject> maybeProject = projectFinder().find(new TextDocumentIdentifier(docURI));
 
@@ -320,9 +320,7 @@ public class SpringSymbolIndex implements InitializingBean {
 									return "";
 								}
 							};
-
-							UpdateItem updateItem = new UpdateItem(maybeProject.get(), docURI, lastModified, content, indexer);
-							futures.add(CompletableFuture.runAsync(updateItem, this.updateQueue));
+							futures.add(CompletableFuture.runAsync(() -> updateItem(maybeProject.get(), docURI, lastModified, content, indexer), this.updateQueue));
 						}
 						catch (Exception e) {
 							log.error("", e);
@@ -340,11 +338,12 @@ public class SpringSymbolIndex implements InitializingBean {
 		return params.projectFinder;
 	}
 
-	public CompletableFuture<Void> updateDocument(String docURI, String content) {
+	public CompletableFuture<Void> updateDocument(String docURI, String content, String reason) {
+		log.info("Update document [{}]: {}",reason, docURI);
 		synchronized(this) {
 			List<CompletableFuture<Void>> futures = new ArrayList<>();
 
-			for (SpringIndexer indexer : this.indexer) {
+			for (SpringIndexer indexer : this.indexers) {
 				if (indexer.isInterestedIn(docURI)) {
 					Optional<IJavaProject> maybeProject = projectFinder().find(new TextDocumentIdentifier(docURI));
 					if (maybeProject.isPresent()) {
@@ -365,8 +364,7 @@ public class SpringSymbolIndex implements InitializingBean {
 								}
 							};
 
-							UpdateItem updateItem = new UpdateItem(maybeProject.get(), docURI, lastModified, contentSupplier, indexer);
-							futures.add(CompletableFuture.runAsync(updateItem, this.updateQueue));
+							futures.add(updateItem(maybeProject.get(), docURI, lastModified, contentSupplier, indexer));
 						}
 						catch (Exception e) {
 							log.error("{}", e);
@@ -383,7 +381,7 @@ public class SpringSymbolIndex implements InitializingBean {
 			try {
 				Optional<IJavaProject> maybeProject = projectFinder().find(new TextDocumentIdentifier(deletedDocURI));
 				if (maybeProject.isPresent()) {
-					DeleteItem deleteItem = new DeleteItem(maybeProject.get(), deletedDocURI, this.indexer);
+					DeleteItem deleteItem = new DeleteItem(maybeProject.get(), deletedDocURI, this.indexers);
 					return CompletableFuture.runAsync(deleteItem, this.updateQueue);
 				}
 			}
@@ -544,31 +542,17 @@ public class SpringSymbolIndex implements InitializingBean {
 		}
 	}
 
-	private class UpdateItem implements Runnable {
-
-		private final String docURI;
-		private final Supplier<String> content;
-		private final IJavaProject project;
-		private final SpringIndexer indexer;
-		private final long lastModified;
-
-		public UpdateItem(IJavaProject project, String docURI, long lastModified, Supplier<String> content, SpringIndexer indexer) {
-			this.project = project;
-			this.docURI = docURI;
-			this.lastModified = lastModified;
-			this.content = content;
-			this.indexer = indexer;
-		}
-
-		@Override
-		public void run() {
+	CompletableFuture<Void> updateItem(IJavaProject project, String docURI, long lastModified, Supplier<String> content, SpringIndexer indexer) {
+		log.debug("scheduling updateItem {}. {},  {}, {}", project.getElementName(), docURI, lastModified, indexer);
+		return CompletableFuture.runAsync(() -> {
+			log.debug("updateItem {}. {},  {}, {}", project.getElementName(), docURI, lastModified, indexer);
 			try {
 				removeSymbolsByDoc(project, docURI);
 				indexer.updateFile(project, docURI, lastModified, content);
 			} catch (Exception e) {
 				log.error("{}", e);
 			}
-		}
+		}, this.updateQueue);
 	}
 
 	private class DeleteItem implements Runnable {

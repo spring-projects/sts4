@@ -15,7 +15,6 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.eclipse.jdt.core.dom.ASTNode;
@@ -30,12 +29,12 @@ import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.Location;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.handlers.AbstractSymbolProvider;
-import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
-import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.boot.java.utils.CachedSymbol;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJavaContext;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
+
+import ch.qos.logback.core.Context;
 
 /**
  * @author Martin Lippert
@@ -48,11 +47,11 @@ public class RequestMappingSymbolProvider extends AbstractSymbolProvider {
 		if (node.getParent() instanceof MethodDeclaration) {
 			try {
 				Location location = new Location(doc.getUri(), doc.toRange(node.getStartPosition(), node.getLength()));
-				String[] path = getPath(node);
-				String[] parentPath = getParentPath(node);
-				String[] methods = getMethod(node);
-				String[] contentTypes = getContentTypes(node);
-				String[] acceptTypes = getAcceptTypes(node);
+				String[] path = getPath(node, context);
+				String[] parentPath = getParentPath(node, context);
+				String[] methods = getMethod(node, context);
+				String[] contentTypes = getContentTypes(node, context);
+				String[] acceptTypes = getAcceptTypes(node, context);
 
 				Stream<String> stream = parentPath == null ? Stream.of("") : Arrays.stream(parentPath);
 				stream.filter(Objects::nonNull)
@@ -73,7 +72,7 @@ public class RequestMappingSymbolProvider extends AbstractSymbolProvider {
 		}
 	}
 
-	private String[] getMethod(Annotation node) {
+	private String[] getMethod(Annotation node, SpringIndexerJavaContext context) {
 		String[] methods = null;
 
 		if (node.isNormalAnnotation()) {
@@ -86,7 +85,7 @@ public class RequestMappingSymbolProvider extends AbstractSymbolProvider {
 					String valueName = pair.getName().getIdentifier();
 					if (valueName != null && valueName.equals("method")) {
 						Expression expression = pair.getValue();
-						methods = ASTUtils.getExpressionValueAsArray(expression);
+						methods = ASTUtils.getExpressionValueAsArray(expression, context::addDependency);
 						break;
 					}
 				}
@@ -98,14 +97,14 @@ public class RequestMappingSymbolProvider extends AbstractSymbolProvider {
 		if (methods == null && node.getParent() instanceof MethodDeclaration) {
 			Annotation parentAnnotation = getParentAnnotation(node);
 			if (parentAnnotation != null) {
-				methods = getMethod(parentAnnotation);
+				methods = getMethod(parentAnnotation, context);
 			}
 		}
 
 		return methods;
 	}
 
-	private String[] getPath(Annotation node) {
+	private String[] getPath(Annotation node, SpringIndexerJavaContext context) {
 		if (node.isNormalAnnotation()) {
 			NormalAnnotation normNode = (NormalAnnotation) node;
 			List<?> values = normNode.values();
@@ -116,22 +115,22 @@ public class RequestMappingSymbolProvider extends AbstractSymbolProvider {
 					String valueName = pair.getName().getIdentifier();
 					if (valueName != null && (valueName.equals("value") || valueName.equals("path"))) {
 						Expression expression = pair.getValue();
-						return ASTUtils.getExpressionValueAsArray(expression);
+						return ASTUtils.getExpressionValueAsArray(expression, context::addDependency);
 					}
 				}
 			}
 		} else if (node.isSingleMemberAnnotation()) {
 			SingleMemberAnnotation singleNode = (SingleMemberAnnotation) node;
 			Expression expression = singleNode.getValue();
-			return ASTUtils.getExpressionValueAsArray(expression);
+			return ASTUtils.getExpressionValueAsArray(expression, context::addDependency);
 		}
 
 		return new String[] { "" };
 	}
 
-	private String[] getParentPath(Annotation node) {
+	private String[] getParentPath(Annotation node, SpringIndexerJavaContext context) {
 		Annotation parentAnnotation = getParentAnnotation(node);
-		return parentAnnotation == null ? null : getPath(parentAnnotation);
+		return parentAnnotation == null ? null : getPath(parentAnnotation, context);
 	}
 
 	private Annotation getParentAnnotation(Annotation node) {
@@ -178,7 +177,7 @@ public class RequestMappingSymbolProvider extends AbstractSymbolProvider {
 		return null;
 	}
 
-	private String[] getAcceptTypes(Annotation node) {
+	private String[] getAcceptTypes(Annotation node, SpringIndexerJavaContext context) {
 		if (node.isNormalAnnotation()) {
 			NormalAnnotation normNode = (NormalAnnotation) node;
 			List<?> values = normNode.values();
@@ -189,7 +188,7 @@ public class RequestMappingSymbolProvider extends AbstractSymbolProvider {
 					String valueName = pair.getName().getIdentifier();
 					if (valueName != null && valueName.equals("consumes")) {
 						Expression expression = pair.getValue();
-						return ASTUtils.getExpressionValueAsArray(expression);
+						return ASTUtils.getExpressionValueAsArray(expression, context::addDependency);
 					}
 				}
 			}
@@ -197,7 +196,7 @@ public class RequestMappingSymbolProvider extends AbstractSymbolProvider {
 		return new String[0];
 	}
 
-	private String[] getContentTypes(Annotation node) {
+	private String[] getContentTypes(Annotation node, SpringIndexerJavaContext context) {
 		if (node.isNormalAnnotation()) {
 			NormalAnnotation normNode = (NormalAnnotation) node;
 			List<?> values = normNode.values();
@@ -208,7 +207,7 @@ public class RequestMappingSymbolProvider extends AbstractSymbolProvider {
 					String valueName = pair.getName().getIdentifier();
 					if (valueName != null && valueName.equals("produces")) {
 						Expression expression = pair.getValue();
-						return ASTUtils.getExpressionValueAsArray(expression);
+						return ASTUtils.getExpressionValueAsArray(expression, context::addDependency);
 					}
 				}
 			}

@@ -105,7 +105,7 @@ public class SpringIndexerXML implements SpringIndexer {
 		long startTime = System.currentTimeMillis();
 		SymbolCacheKey cacheKey = getCacheKey(project);
 
-		CachedSymbol[] symbols = this.cache.retrieve(cacheKey, files);
+		CachedSymbol[] symbols = this.cache.retrieveSymbols(cacheKey, files);
 		if (symbols == null) {
 			List<CachedSymbol> generatedSymbols = new ArrayList<CachedSymbol>();
 
@@ -113,7 +113,7 @@ public class SpringIndexerXML implements SpringIndexer {
 				scanFile(project, file, generatedSymbols);
 			}
 
-			this.cache.store(cacheKey, files, generatedSymbols);
+			this.cache.store(cacheKey, files, generatedSymbols, null);
 
 			symbols = (CachedSymbol[]) generatedSymbols.toArray(new CachedSymbol[generatedSymbols.size()]);
 		}
@@ -148,7 +148,7 @@ public class SpringIndexerXML implements SpringIndexer {
 
 		SymbolCacheKey cacheKey = getCacheKey(project);
 		String file = new File(new URI(docURI)).getAbsolutePath();
-		this.cache.update(cacheKey, file, lastModified, generatedSymbols);
+		this.cache.update(cacheKey, file, lastModified, generatedSymbols, null);
 
 		for (CachedSymbol symbol : generatedSymbols) {
 			symbolHandler.addSymbol(project, symbol.getDocURI(), symbol.getEnhancedSymbol());
