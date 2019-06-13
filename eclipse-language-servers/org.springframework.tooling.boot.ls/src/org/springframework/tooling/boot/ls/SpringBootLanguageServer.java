@@ -73,11 +73,6 @@ public class SpringBootLanguageServer extends STS4LanguageServerProcessStreamCon
 	}
 
 	@Override
-	protected String getLanguageServerArtifactId() {
-		return "spring-boot-language-server";
-	}
-
-	@Override
 	protected String getPluginId() {
 		return Constants.PLUGIN_ID;
 	}

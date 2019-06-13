@@ -14,9 +14,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.StandardCopyOption;
 import java.util.List;
 
 import org.eclipse.core.runtime.Assert;
@@ -28,7 +26,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.lsp4e.server.ProcessStreamConnectionProvider;
 import org.osgi.framework.Bundle;
-import org.osgi.framework.Version;
 import org.springframework.tooling.ls.eclipse.commons.console.ConsoleUtil.Console;
 import org.springframework.tooling.ls.eclipse.commons.console.LanguageServerConsoles;
 import org.springframework.tooling.ls.eclipse.commons.preferences.LanguageServerConsolePreferenceConstants.ServerInfo;
@@ -37,15 +34,12 @@ import org.springsource.ide.eclipse.commons.core.util.IOUtil;
 import com.google.common.base.Charsets;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
 
 public abstract class STS4LanguageServerProcessStreamConnector extends ProcessStreamConnectionProvider {
 
 	private static LanguageServerProcessReaper processReaper = new LanguageServerProcessReaper();
 
 	private Supplier<Console> consoles = null;
-
-	private Bundle bundle;
 
 	public STS4LanguageServerProcessStreamConnector(ServerInfo server) {
 		this.consoles = LanguageServerConsoles.getConsoleFactory(server);
@@ -86,52 +80,46 @@ public abstract class STS4LanguageServerProcessStreamConnector extends ProcessSt
 		try {
 			Bundle bundle = Platform.getBundle(getPluginId());
 			JRE runtime = getJRE();
-			if (bundle.getVersion().getQualifier().equals("qualifier")) {
-				Builder<String> vmArgs = ImmutableList.builder();
-				vmArgs.add("-Dsts.lsp.client=eclipse");
-				vmArgs.addAll(extraVmArgs);
-				setCommands(runtime.jarLaunchCommand(getLanguageServerJARLocation(), vmArgs.build()));
-			} else {
-				Assert.isNotNull(lsFolder);
-				Assert.isNotNull(mainClass);
 
-				ImmutableList.Builder<String> command = ImmutableList.builder();
+			Assert.isNotNull(lsFolder);
+			Assert.isNotNull(mainClass);
 
-				command.add(runtime.getJavaExecutable());
-				command.add("-cp");
+			ImmutableList.Builder<String> command = ImmutableList.builder();
 
-				File bundleFile = FileLocator.getBundleFile(bundle);
+			command.add(runtime.getJavaExecutable());
+			command.add("-cp");
 
-				File bundleRoot = bundleFile.getAbsoluteFile();
-				Path languageServerRoot = bundleRoot.toPath().resolve(lsFolder);
+			File bundleFile = FileLocator.getBundleFile(bundle);
 
-				StringBuilder classpath = new StringBuilder();
-				classpath.append(languageServerRoot.resolve("BOOT-INF/classes").toFile());
+			File bundleRoot = bundleFile.getAbsoluteFile();
+			Path languageServerRoot = bundleRoot.toPath().resolve(lsFolder);
+
+			StringBuilder classpath = new StringBuilder();
+			classpath.append(languageServerRoot.resolve("BOOT-INF/classes").toFile());
+			classpath.append(File.pathSeparator);
+			classpath.append(languageServerRoot.resolve("BOOT-INF/lib").toFile());
+			// Cannot have * in the java.nio.Path on Windows
+			classpath.append(File.separator);
+			classpath.append('*');
+
+			if (runtime.toolsJar != null) {
 				classpath.append(File.pathSeparator);
-				classpath.append(languageServerRoot.resolve("BOOT-INF/lib").toFile());
-				// Cannot have * in the java.nio.Path on Windows
-				classpath.append(File.separator);
-				classpath.append('*');
-
-				if (runtime.toolsJar != null) {
-					classpath.append(File.pathSeparator);
-					classpath.append(runtime.toolsJar);
-				}
-
-				command.add(classpath.toString());
-
-				command.add("-Dsts.lsp.client=eclipse");
-
-				command.addAll(extraVmArgs);
-
-				if (configFileName != null) {
-					command.add("-Dspring.config.location=file:" + languageServerRoot.resolve("BOOT-INF/classes").resolve(configFileName).toFile());
-				}
-
-				command.add(mainClass);
-
-				setCommands(command.build());
+				classpath.append(runtime.toolsJar);
 			}
+
+			command.add(classpath.toString());
+
+			command.add("-Dsts.lsp.client=eclipse");
+
+			command.addAll(extraVmArgs);
+
+			if (configFileName != null) {
+				command.add("-Dspring.config.location=file:" + languageServerRoot.resolve("BOOT-INF/classes").resolve(configFileName).toFile());
+			}
+
+			command.add(mainClass);
+
+			setCommands(command.build());
 		}
 		catch (Exception e) {
 			LanguageServerCommonsActivator.logError(e, "Failed to assemble exploded LS JAR launch command");
@@ -200,54 +188,6 @@ public abstract class STS4LanguageServerProcessStreamConnector extends ProcessSt
 
 	protected String getWorkingDirLocation() {
 		return System.getProperty("user.dir");
-	}
-
-	/**
-	 * Fatjar launch is now only used for running in development mode with a locally built fatjar
-	 */
-	final protected String getLanguageServerJARLocation() {
-		Bundle bundle = getBundle();
-		String bundleVersion = bundle.getVersion().toString();
-
-		Assert.isLegal(bundleVersion.endsWith("qualifier"));
-		File userHome = new File(System.getProperty("user.home"));
-		File locallyBuiltJar = new File(
-				userHome
-			,
-				"git/sts4/headless-services/"
-				+ getLanguageServerArtifactId()
-				+ "/target/"
-				+ getLanguageServerArtifactId()
-				+ "-"
-				+ getLanguageServerArtifactVersion()
-				+ "-exec.jar"
-		);
-		Assert.isLegal(locallyBuiltJar.exists());
-		return locallyBuiltJar.getAbsolutePath();
-	}
-
-	protected String getLanguageServerArtifactVersion() {
-		Version bv = getBundle().getVersion();
-		//Example of what it should look like:
-		//  "1.6.0-SNAPSHOT"
-		return bv.getMajor()+"."+bv.getMinor()+"."+bv.getMicro()+"-SNAPSHOT";
-	}
-
-	protected Bundle getBundle() {
-		if (bundle==null) {
-			this.bundle = Platform.getBundle(getPluginId());
-		}
-		return bundle;
-	}
-
-	protected abstract String getLanguageServerArtifactId();
-
-	protected final void copyLanguageServerJAR(String languageServerJarName, String languageServerLocalCopy) throws Exception {
-		Bundle bundle = Platform.getBundle(getPluginId());
-		InputStream stream = FileLocator.openStream( bundle, new org.eclipse.core.runtime.Path("servers/" + languageServerJarName), false );
-
-		File dataFile = bundle.getDataFile(languageServerLocalCopy);
-		Files.copy(stream, dataFile.toPath(), StandardCopyOption.REPLACE_EXISTING);
 	}
 
 	protected abstract String getPluginId();

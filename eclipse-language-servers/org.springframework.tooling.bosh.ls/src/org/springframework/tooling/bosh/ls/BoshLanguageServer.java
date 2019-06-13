@@ -40,11 +40,6 @@ public class BoshLanguageServer extends STS4LanguageServerProcessStreamConnector
 	}
 	
 	@Override
-	protected String getLanguageServerArtifactId() {
-		return "bosh-language-server";
-	}
-
-	@Override
 	protected String getPluginId() {
 		return Constants.PLUGIN_ID;
 	}

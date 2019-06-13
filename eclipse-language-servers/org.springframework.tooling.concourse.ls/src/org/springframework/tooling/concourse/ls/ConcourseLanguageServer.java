@@ -40,11 +40,6 @@ public class ConcourseLanguageServer extends STS4LanguageServerProcessStreamConn
 	}
 	
 	@Override
-	protected String getLanguageServerArtifactId() {
-		return "concourse-language-server";
-	}
-
-	@Override
 	protected String getPluginId() {
 		return Constants.PLUGIN_ID;
 	}

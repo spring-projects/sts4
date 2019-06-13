@@ -100,11 +100,6 @@ public class CloudFoundryManifestLanguageServer extends STS4LanguageServerProces
 	}
 
 	@Override
-	protected String getLanguageServerArtifactId() {
-		return "manifest-yaml-language-server";
-	}
-
-	@Override
 	protected String getPluginId() {
 		return Constants.PLUGIN_ID;
 	}
