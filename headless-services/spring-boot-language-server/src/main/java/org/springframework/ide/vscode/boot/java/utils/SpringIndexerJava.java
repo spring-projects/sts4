@@ -76,10 +76,15 @@ public class SpringIndexerJava implements SpringIndexer {
 	private final SymbolCache cache;
 	private final JavaProjectFinder projectFinder;
 	private boolean scanTestJavaSources = false;
+	private FileScanListener fileScanListener = null; //used by test code only
 
 	private final DependencyTracker dependencyTracker = new DependencyTracker();
 
-	static class DependencyTracker {
+	public DependencyTracker getDependencyTracker() {
+		return dependencyTracker;
+	}
+	
+	public static class DependencyTracker {
 		
 		private Multimap<String, String> dependencies = MultimapBuilder.hashKeys().hashSetValues().build();
 		
@@ -190,7 +195,6 @@ public class SpringIndexerJava implements SpringIndexer {
 			List<CachedSymbol> generatedSymbols = new ArrayList<CachedSymbol>();
 			AtomicReference<TextDocument> docRef = new AtomicReference<>();
 			String file = UriUtil.toFileString(docURI);
-
 			Set<String> changedTypes = new HashSet<>();
 			SpringIndexerJavaContext context = new SpringIndexerJavaContext(project, cu, docURI, file,
 					lastModified, docRef, content, generatedSymbols, SCAN_PASS.ONE, new ArrayList<>(), changedTypes);
@@ -206,7 +210,14 @@ public class SpringIndexerJava implements SpringIndexer {
 			}
 			Set<String> scannedFiles = new HashSet<>();
 			scannedFiles.add(file);
+			fileScannedEvent(file);
 			scanAffectedFiles(project, changedTypes, scannedFiles);
+		}
+	}
+
+	private void fileScannedEvent(String file) {
+		if (fileScanListener!=null) {
+			fileScanListener.fileScanned(file);
 		}
 	}
 
@@ -231,6 +242,7 @@ public class SpringIndexerJava implements SpringIndexer {
 							log.debug("Should also scan affected file: {}", file);
 							File f = new File(file);
 							scanAffectedFile(project, UriUtil.toUri(f).toString(), f.lastModified(), FileUtils.readFileToString(f), changedTypes);
+							fileScannedEvent(file);
 						}
 					}
 				} catch (Exception e) {
@@ -598,6 +610,10 @@ public class SpringIndexerJava implements SpringIndexer {
 				log.error("{}", e);
 			}
 		}
+	}
+
+	public void setFileScanListener(FileScanListener fileScanListener) {
+		this.fileScanListener = fileScanListener;
 	}
 
 }

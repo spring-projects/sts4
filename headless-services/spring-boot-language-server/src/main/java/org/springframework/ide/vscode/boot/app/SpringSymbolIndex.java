@@ -284,6 +284,10 @@ public class SpringSymbolIndex implements InitializingBean {
 		}
 	}
 
+	public SpringIndexerJava getJavaIndexer() {
+		return springIndexerJava;
+	}
+	
 	public CompletableFuture<Void> deleteProject(IJavaProject project) {
 		try {
 			if (project.getElementName() == null) {
