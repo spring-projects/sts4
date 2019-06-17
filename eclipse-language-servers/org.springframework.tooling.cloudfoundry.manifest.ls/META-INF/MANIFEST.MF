@@ -16,7 +16,8 @@ Require-Bundle: org.eclipse.jdt.launching;bundle-version="3.8.0",
  org.eclipse.ui.genericeditor;bundle-version="1.0.0",
  org.eclipse.tm4e.core;bundle-version="0.1.0",
  org.eclipse.tm4e.ui;bundle-version="0.1.0",
- org.eclipse.ui
+ org.eclipse.ui,
+ org.eclipse.ui.editors
 Import-Package: org.eclipse.jface.preference,
  org.osgi.framework
 Export-Package: org.springframework.tooling.cloudfoundry.manifest.ls
