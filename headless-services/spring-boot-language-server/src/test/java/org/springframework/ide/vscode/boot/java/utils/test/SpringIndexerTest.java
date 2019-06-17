@@ -193,7 +193,6 @@ public class SpringIndexerTest {
 	@Test
 	public void testNewDocumentCreated() throws Exception {
 		String createdDocURI = directory.toPath().resolve("src/main/java/org/test/CreatedClass.java").toUri().toString();
-
 		// check for document to not be created yet
 		List<? extends SymbolInformation> symbols = indexer.getSymbols(createdDocURI);
 		assertNotNull(symbols);

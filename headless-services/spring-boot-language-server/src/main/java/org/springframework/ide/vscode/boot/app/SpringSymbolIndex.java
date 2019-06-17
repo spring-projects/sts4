@@ -324,7 +324,7 @@ public class SpringSymbolIndex implements InitializingBean {
 									return "";
 								}
 							};
-							futures.add(CompletableFuture.runAsync(() -> updateItem(maybeProject.get(), docURI, lastModified, content, indexer), this.updateQueue));
+							futures.add(updateItem(maybeProject.get(), docURI, lastModified, content, indexer));
 						}
 						catch (Exception e) {
 							log.error("", e);
