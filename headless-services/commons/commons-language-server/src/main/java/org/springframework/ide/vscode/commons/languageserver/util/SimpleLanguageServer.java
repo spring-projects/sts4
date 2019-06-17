@@ -282,7 +282,8 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 		if (ih!=null){
 			ih.accept(params);
 		}
-		log.info("Returning server capabilities to client: {}", result.getCapabilities());
+		log.info("Returning server capabilities to client");
+		log.debug("Capabilities: {}", result.getCapabilities());
 		return CompletableFuture.completedFuture(result);
 	}
 
