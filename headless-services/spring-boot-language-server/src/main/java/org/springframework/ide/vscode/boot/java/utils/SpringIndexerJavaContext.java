@@ -10,10 +10,13 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.utils;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJava.SCAN_PASS;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -33,10 +36,22 @@ public class SpringIndexerJavaContext {
 	private final List<CachedSymbol> generatedSymbols;
 	private final SCAN_PASS pass;
 	private final List<String> nextPassFiles;
+	private final Set<String> dependencies = new HashSet<>();
+	private final Set<String> dependentTypes;
 
-	public SpringIndexerJavaContext(IJavaProject project, CompilationUnit cu, String docURI, String file, long lastModified,
-			AtomicReference<TextDocument> docRef, String content, List<CachedSymbol> generatedSymbols, SCAN_PASS pass,
-			List<String> nextPassFiles) {
+	public SpringIndexerJavaContext(
+			IJavaProject project, 
+			CompilationUnit cu, 
+			String docURI, 
+			String file, 
+			long lastModified,
+			AtomicReference<TextDocument> docRef, 
+			String content, 
+			List<CachedSymbol> generatedSymbols, 
+			SCAN_PASS pass,
+			List<String> nextPassFiles, 
+			Set<String> dependentTypes
+	) {
 		super();
 		this.project = project;
 		this.cu = cu;
@@ -48,6 +63,7 @@ public class SpringIndexerJavaContext {
 		this.generatedSymbols = generatedSymbols;
 		this.pass = pass;
 		this.nextPassFiles = nextPassFiles;
+		this.dependentTypes = dependentTypes;
 	}
 
 	public IJavaProject getProject() {
@@ -88,6 +104,18 @@ public class SpringIndexerJavaContext {
 
 	public List<String> getNextPassFiles() {
 		return nextPassFiles;
+	}
+
+	public Set<String> getDependencies() {
+		return dependencies;
+	}
+	
+	public void addDependency(ITypeBinding dependsOn) {
+		dependencies.add(dependsOn.getKey());
+	}
+
+	public Set<String> getChangedTypes() {
+		return dependentTypes;
 	}
 
 }

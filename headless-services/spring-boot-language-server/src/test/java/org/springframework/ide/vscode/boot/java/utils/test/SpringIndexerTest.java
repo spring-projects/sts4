@@ -161,7 +161,7 @@ public class SpringIndexerTest {
 		assertTrue(containsSymbol(indexer.getSymbols(changedDocURI), "@/mapping1", changedDocURI));
 
 		String newContent = FileUtils.readFileToString(new File(new URI(changedDocURI))).replace("mapping1", "mapping1-CHANGED");
-		CompletableFuture<Void> updateFuture = indexer.updateDocument(changedDocURI, newContent);
+		CompletableFuture<Void> updateFuture = indexer.updateDocument(changedDocURI, newContent, "test triggered");
 		updateFuture.get(5, TimeUnit.SECONDS);
 
 		// check for updated index per document

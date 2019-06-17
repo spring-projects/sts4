@@ -16,9 +16,12 @@ import static org.junit.Assert.assertTrue;
 import java.io.File;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
+import org.apache.commons.io.FileUtils;
+import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.junit.Before;
@@ -29,10 +32,16 @@ import org.springframework.context.annotation.Import;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
 import org.springframework.ide.vscode.boot.bootiful.SymbolProviderTestConf;
+import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJava.DependencyTracker;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.commons.util.UriUtil;
+import org.springframework.ide.vscode.commons.util.text.LanguageId;
+import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import com.google.common.collect.ImmutableSet;
 
 /**
  * @author Martin Lippert
@@ -73,9 +82,45 @@ public class RequestMappingSymbolProviderTest {
 	@Test
 	public void testSimpleRequestMappingSymbolFromConstantInDifferentClass() throws Exception {
 		String docUri = directory.toPath().resolve("src/main/java/org/test/SimpleMappingClassWithConstantInDifferentClass.java").toUri().toString();
+		String constantsUri = directory.toPath().resolve("src/main/java/org/test/Constants.java").toUri().toString();
 		List<? extends SymbolInformation> symbols = indexer.getSymbols(docUri);
 		assertEquals(1, symbols.size());
 		assertTrue(containsSymbol(symbols, "@/path/from/constant", docUri, 6, 1, 6, 48));
+
+		//Verify whether dependency tracker logics works properly for this example.
+		DependencyTracker dt = indexer.getJavaIndexer().getDependencyTracker();
+		assertEquals(ImmutableSet.of("Lorg/test/Constants;"), dt.getAllDependencies().get(UriUtil.toFileString(docUri)));
+		
+		
+		TestFileScanListener fileScanListener = new TestFileScanListener();
+		indexer.getJavaIndexer().setFileScanListener(fileScanListener);
+		indexer.updateDocument(constantsUri, FileUtils.readFileToString(UriUtil.toFile(constantsUri)), "test triggered").get();
+		fileScanListener.assertScannedUris(constantsUri, docUri);
+		fileScanListener.assertScannedUri(constantsUri, 1);
+		fileScanListener.assertScannedUri(docUri, 1);
+	}
+	
+	@Test
+	public void testCyclicalRequestMappingDependency() throws Exception {
+		//Cyclical dependency:
+		//file a => file b => file a
+		//This has the potential to cause infinite loop.
+		
+		String pingUri = directory.toPath().resolve("src/main/java/org/test/PingConstantRequestMapping.java").toUri().toString();
+		String pongUri = directory.toPath().resolve("src/main/java/org/test/PongConstantRequestMapping.java").toUri().toString();
+
+		assertSymbol(pingUri, "@/pong -- GET", "@GetMapping(PongConstantRequestMapping.PONG)");
+		assertSymbol(pongUri, "@/ping -- GET", "@GetMapping(PingConstantRequestMapping.PING)");
+		
+		TestFileScanListener fileScanListener = new TestFileScanListener();
+		indexer.getJavaIndexer().setFileScanListener(fileScanListener);
+		indexer.updateDocument(pingUri, null, "test triggered").get();
+		fileScanListener.assertScannedUris(pingUri, pongUri);
+		
+		fileScanListener.reset();
+		fileScanListener.assertScannedUris(/*none*/);
+		indexer.updateDocument(pongUri, null, "test triggered").get();
+		fileScanListener.assertScannedUris(pingUri, pongUri);
 	}
 
 	@Test
@@ -189,5 +234,22 @@ public class RequestMappingSymbolProviderTest {
  		}
 
 		return false;
+	}
+	
+	private void assertSymbol(String docUri, String name, String coveredText) throws Exception {
+		List<? extends SymbolInformation> symbols = indexer.getSymbols(docUri);
+		Optional<? extends SymbolInformation> maybeSymbol = symbols.stream().filter(s -> name.equals(s.getName())).findFirst();
+		assertTrue(maybeSymbol.isPresent());
+		
+		TextDocument doc = new TextDocument(docUri, LanguageId.JAVA);
+		doc.setText(FileUtils.readFileToString(UriUtil.toFile(docUri)));
+		
+		SymbolInformation symbol = maybeSymbol.get();
+		Location loc = symbol.getLocation();
+		assertEquals(docUri, loc.getUri());
+		int start = doc.toOffset(loc.getRange().getStart());
+		int end = doc.toOffset(loc.getRange().getEnd());
+		String actualCoveredText = doc.textBetween(start, end);
+		assertEquals(coveredText, actualCoveredText);
 	}
 }

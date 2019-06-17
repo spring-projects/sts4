@@ -14,8 +14,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.stream.Stream;
 
+import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.ArrayInitializer;
@@ -179,20 +181,24 @@ public class ASTUtils {
 		}
 	}
 
-	public static String getExpressionValueAsString(Expression exp) {
+	public static String getExpressionValueAsString(Expression exp, Consumer<ITypeBinding> dependencies) {
 		if (exp instanceof StringLiteral) {
 			return getLiteralValue((StringLiteral) exp);
 		} else if (exp instanceof Name) {
 			IBinding binding = ((Name) exp).resolveBinding();
 			if (binding != null && binding.getKind() == IBinding.VARIABLE) {
 				IVariableBinding varBinding = (IVariableBinding) binding;
+				ITypeBinding klass = varBinding.getDeclaringClass();
+				if (klass!=null) {
+					dependencies.accept(klass);
+				}
 				Object constValue = varBinding.getConstantValue();
 				if (constValue != null) {
 					return constValue.toString();
 				}
 			}
 			if (exp instanceof QualifiedName) {
-				return getExpressionValueAsString(((QualifiedName) exp).getName());
+				return getExpressionValueAsString(((QualifiedName) exp).getName(), dependencies);
 			}
 			else if (exp instanceof SimpleName) {
 				return ((SimpleName) exp).getIdentifier();
@@ -206,13 +212,13 @@ public class ASTUtils {
 	}
 
 	@SuppressWarnings("unchecked")
-	public static String[] getExpressionValueAsArray(Expression exp) {
+	public static String[] getExpressionValueAsArray(Expression exp, Consumer<ITypeBinding> dependencies) {
 		if (exp instanceof ArrayInitializer) {
 			ArrayInitializer array = (ArrayInitializer) exp;
-			return ((List<Expression>) array.expressions()).stream().map(e -> getExpressionValueAsString(e))
+			return ((List<Expression>) array.expressions()).stream().map(e -> getExpressionValueAsString(e, dependencies))
 					.filter(Objects::nonNull).toArray(String[]::new);
 		} else {
-			String rm = getExpressionValueAsString(exp);
+			String rm = getExpressionValueAsString(exp, dependencies);
 			if (rm != null) {
 				return new String[] { rm };
 			}

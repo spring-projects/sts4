@@ -18,14 +18,17 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
+import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTParser;
@@ -54,12 +57,14 @@ import org.springframework.ide.vscode.commons.util.UriUtil;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.common.base.Supplier;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.MultimapBuilder;
 
 /**
  * @author Martin Lippert
  */
 public class SpringIndexerJava implements SpringIndexer {
-
+	
 	public static enum SCAN_PASS {
 		ONE, TWO
 	}
@@ -71,7 +76,48 @@ public class SpringIndexerJava implements SpringIndexer {
 	private final SymbolCache cache;
 	private final JavaProjectFinder projectFinder;
 	private boolean scanTestJavaSources = false;
+	private FileScanListener fileScanListener = null; //used by test code only
 
+	private final DependencyTracker dependencyTracker = new DependencyTracker();
+
+	public DependencyTracker getDependencyTracker() {
+		return dependencyTracker;
+	}
+	
+	public static class DependencyTracker {
+		
+		private Multimap<String, String> dependencies = MultimapBuilder.hashKeys().hashSetValues().build();
+		
+		public void addDependency(String sourceFile, ITypeBinding dependsOn) {
+			dependencies.put(sourceFile, dependsOn.getKey());
+		}
+		
+		public void dump() {
+			log.info("=== Dependencies ===");
+			for (String sourceFile : dependencies.keySet()) {
+				Collection<String> values = dependencies.get(sourceFile);
+				if (!values.isEmpty())
+				log.info(sourceFile + "=> ");
+				for (String v : values) {
+					log.info("   "+v);
+				}
+			}
+			log.info("======================");
+		}
+
+		public Multimap<String, String> getAllDependencies() {
+			return dependencies;
+		}
+
+		public void update(String file, Set<String> dependenciesForFile) {
+			dependencies.replaceValues(file, dependenciesForFile);
+		}
+
+		public void restore(Multimap<String, String> deps) {
+			this.dependencies = deps;
+		}
+	}
+	
 	public SpringIndexerJava(SymbolHandler symbolHandler, AnnotationHierarchyAwareLookup<SymbolProvider> symbolProviders, SymbolCache cache,
 			JavaProjectFinder projectFimder) {
 		this.symbolHandler = symbolHandler;
@@ -132,8 +178,87 @@ public class SpringIndexerJava implements SpringIndexer {
 	}
 
 	private void scanFile(IJavaProject project, String docURI, long lastModified, String content) throws Exception {
+		//TODO: optimise? Check last modified to avoid redundant scan. Reason:
+		//  on saving a file, this may be triggered twice. Once when file is saved and once more because of a 'file changed'
+		//  on file system. Looking at the timestamp in the cache we should be able to avoid a second scan of the exact same
+		//  content.
 		ASTParser parser = createParser(project, false);
 
+		String unitName = docURI.substring(docURI.lastIndexOf("/"));
+		parser.setUnitName(unitName);
+		log.debug("Scan file: {}", unitName);
+		parser.setSource(content.toCharArray());
+
+		CompilationUnit cu = (CompilationUnit) parser.createAST(null);
+
+		if (cu != null) {
+			List<CachedSymbol> generatedSymbols = new ArrayList<CachedSymbol>();
+			AtomicReference<TextDocument> docRef = new AtomicReference<>();
+			String file = UriUtil.toFileString(docURI);
+			Set<String> changedTypes = new HashSet<>();
+			SpringIndexerJavaContext context = new SpringIndexerJavaContext(project, cu, docURI, file,
+					lastModified, docRef, content, generatedSymbols, SCAN_PASS.ONE, new ArrayList<>(), changedTypes);
+
+			scanAST(context);
+
+			SymbolCacheKey cacheKey = getCacheKey(project);
+			this.cache.update(cacheKey, file, lastModified, generatedSymbols, context.getDependencies());
+//			dependencyTracker.dump();
+
+			for (CachedSymbol symbol : generatedSymbols) {
+				symbolHandler.addSymbol(project, symbol.getDocURI(), symbol.getEnhancedSymbol());
+			}
+			Set<String> scannedFiles = new HashSet<>();
+			scannedFiles.add(file);
+			fileScannedEvent(file);
+			scanAffectedFiles(project, changedTypes, scannedFiles);
+		}
+	}
+
+	private void fileScannedEvent(String file) {
+		if (fileScanListener!=null) {
+			fileScanListener.fileScanned(file);
+		}
+	}
+
+	private void scanAffectedFiles(IJavaProject project, Set<String> changedTypes, Set<String> scannedFiles) {
+		log.info("Start scanning affected files for types {}", changedTypes);
+		//TODO: optimise? When multiple files are 'affected', we could try to parse and scan them in batch. 
+		// I.e. something similar to the 'scanFiles' method.
+		// That is probably more efficient than one by one.
+		
+		Multimap<String, String> dependencies = dependencyTracker.getAllDependencies();
+//		Collection<String> filesToScan = new HashSet<>();
+		boolean scannedAnyFiles;
+		do {
+			scannedAnyFiles = false;
+			for (String file : dependencies.keys()) {
+				try {
+					if (!scannedFiles.contains(file)) {
+						Collection<String> dependsOn = dependencies.get(file);
+						if (dependsOn.stream().anyMatch(changedTypes::contains)) {
+							scannedFiles.add(file);
+							scannedAnyFiles = true;
+							log.debug("Should also scan affected file: {}", file);
+							File f = new File(file);
+							scanAffectedFile(project, UriUtil.toUri(f).toString(), f.lastModified(), FileUtils.readFileToString(f), changedTypes);
+							fileScannedEvent(file);
+						}
+					}
+				} catch (Exception e) {
+					log.debug("Problems scanning file {}", file, e);
+				}
+			}
+			if (scannedAnyFiles) {
+				log.debug("Some affected files where scanned, make another pass");
+			}
+		} while (scannedAnyFiles);
+		log.info("Finished scanning affected files {}", scannedFiles);
+	}
+
+	private void scanAffectedFile(IJavaProject project, String docURI, long lastModified, String content, Set<String> changedTypes) throws Exception {
+		symbolHandler.removeSymbols(project, docURI);
+		ASTParser parser = createParser(project, false);
 		String unitName = docURI.substring(docURI.lastIndexOf("/"));
 		parser.setUnitName(unitName);
 		parser.setSource(content.toCharArray());
@@ -143,27 +268,32 @@ public class SpringIndexerJava implements SpringIndexer {
 		if (cu != null) {
 			List<CachedSymbol> generatedSymbols = new ArrayList<CachedSymbol>();
 			AtomicReference<TextDocument> docRef = new AtomicReference<>();
-			String file = new File(new URI(docURI)).getAbsolutePath();
+			File file = UriUtil.toFile(docURI);
+			if (file!=null) {
+				SpringIndexerJavaContext context = new SpringIndexerJavaContext(
+						project, cu, 
+						docURI, file.toString(), lastModified, docRef, 
+						content, generatedSymbols, 
+						SCAN_PASS.ONE, new ArrayList<>(), changedTypes);
+				scanAST(context);
 
-			SpringIndexerJavaContext context = new SpringIndexerJavaContext(project, cu, docURI, file,
-					lastModified, docRef, content, generatedSymbols, SCAN_PASS.ONE, new ArrayList<>());
+				SymbolCacheKey cacheKey = getCacheKey(project);
+				this.cache.update(cacheKey, file.getAbsolutePath(), lastModified, generatedSymbols, context.getDependencies());
+//				dependencyTracker.dump();
 
-			scanAST(context);
-
-			SymbolCacheKey cacheKey = getCacheKey(project);
-			this.cache.update(cacheKey, file, lastModified, generatedSymbols);
-
-			for (CachedSymbol symbol : generatedSymbols) {
-				symbolHandler.addSymbol(project, symbol.getDocURI(), symbol.getEnhancedSymbol());
+				for (CachedSymbol symbol : generatedSymbols) {
+					symbolHandler.addSymbol(project, symbol.getDocURI(), symbol.getEnhancedSymbol());
+				}
 			}
 		}
 	}
 
 	private void scanFiles(IJavaProject project, String[] javaFiles) throws Exception {
 		SymbolCacheKey cacheKey = getCacheKey(project);
-		CachedSymbol[] symbols = this.cache.retrieve(cacheKey, javaFiles);
+		Pair<CachedSymbol[], Multimap<String, String>> cached = this.cache.retrieve(cacheKey, javaFiles);
 
-		if (symbols == null) {
+		CachedSymbol[] symbols;
+		if (cached == null) {
 			List<CachedSymbol> generatedSymbols = new ArrayList<CachedSymbol>();
 
 			log.info("scan java files, AST parse, pass 1 for files: {}", javaFiles.length);
@@ -176,12 +306,16 @@ public class SpringIndexerJava implements SpringIndexer {
 				scanFiles(project, pass2Files, generatedSymbols, SCAN_PASS.TWO);
 			}
 
-			this.cache.store(cacheKey, javaFiles, generatedSymbols);
+			this.cache.store(cacheKey, javaFiles, generatedSymbols, dependencyTracker.getAllDependencies());
+//			dependencyTracker.dump();
 
 			symbols = (CachedSymbol[]) generatedSymbols.toArray(new CachedSymbol[generatedSymbols.size()]);
 		}
 		else {
+			symbols = cached.getLeft();
 			log.info("scan java files used cached data: {} - no. of cached symbols retrieved: {}", project.getElementName(), symbols.length);
+			this.dependencyTracker.restore(cached.getRight());
+			log.info("scan java files restored cached dependency data: {} - no. of cached dependencies: {}", cached.getRight().size());
 		}
 
 		if (symbols != null) {
@@ -206,7 +340,7 @@ public class SpringIndexerJava implements SpringIndexer {
 				AtomicReference<TextDocument> docRef = new AtomicReference<>();
 
 				SpringIndexerJavaContext context = new SpringIndexerJavaContext(project, cu, docURI, sourceFilePath,
-						lastModified, docRef, null, generatedSymbols, pass, nextPassFiles);
+						lastModified, docRef, null, generatedSymbols, pass, nextPassFiles, null);
 
 				scanAST(context);
 			}
@@ -218,12 +352,18 @@ public class SpringIndexerJava implements SpringIndexer {
 	}
 
 	private void scanAST(final SpringIndexerJavaContext context) {
-
 		context.getCu().accept(new ASTVisitor() {
 
 			@Override
 			public boolean visit(TypeDeclaration node) {
 				try {
+					Set<String> changedTypes = context.getChangedTypes();
+					if (changedTypes!=null) {
+						ITypeBinding changedType = node.resolveBinding();
+						if (changedType!=null) {
+							changedTypes.add(changedType.getKey());
+						}
+					}
 					extractSymbolInformation(node, context);
 				}
 				catch (Exception e) {
@@ -279,6 +419,7 @@ public class SpringIndexerJava implements SpringIndexer {
 				return super.visit(node);
 			}
 		});
+		dependencyTracker.update(context.getFile(), context.getDependencies());;
 	}
 
 	private void extractSymbolInformation(TypeDeclaration typeDeclaration, final SpringIndexerJavaContext context) throws Exception {
@@ -469,6 +610,10 @@ public class SpringIndexerJava implements SpringIndexer {
 				log.error("{}", e);
 			}
 		}
+	}
+
+	public void setFileScanListener(FileScanListener fileScanListener) {
+		this.fileScanListener = fileScanListener;
 	}
 
 }

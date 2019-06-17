@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.project.harness;
 
+import static org.junit.Assert.assertTrue;
+
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
@@ -73,7 +75,7 @@ public class ProjectsHarness {
 			File target = new File(projectRoot, path);
 			IOUtil.pipe(new ByteArrayInputStream(content.getBytes("UTF8")), target);
 		}
-
+		
 		public void createType(String fqName, String sourceCode) throws Exception {
 			String sourceFile = sourceFolder()+"/"+fqName.replace('.', '/')+".java";
 			createFile(sourceFile, sourceCode);
@@ -98,7 +100,7 @@ public class ProjectsHarness {
 		this.fileObserver = fileObserver;
 	}
 
-	public IJavaProject project(ProjectType type, String name, ProjectCustomizer customizer, boolean build) throws Exception {
+	public IJavaProject project(ProjectType type, String name, boolean build, ProjectCustomizer customizer) throws Exception {
 		Tuple3<ProjectType, String, ProjectCustomizer> key = Tuples.of(type, name, customizer);
 		return cache.get(key, () -> {
 			Path baseProjectPath = getProjectPath(name);
@@ -122,7 +124,7 @@ public class ProjectsHarness {
 		}
 	}
 
-	public IJavaProject project(ProjectType type, String name, boolean build) throws Exception {
+	private IJavaProject project(ProjectType type, String name, boolean build) throws Exception {
 		return cache.get(type + "/" + name, () -> {
 			Path testProjectPath = getProjectPath(name);
 			return createProject(type, testProjectPath, build);
@@ -138,8 +140,12 @@ public class ProjectsHarness {
 		return Paths.get(resource);
 	}
 
+	public MavenJavaProject mavenProject(String name, boolean build, ProjectCustomizer customizer) throws Exception {
+		return (MavenJavaProject) project(ProjectType.MAVEN, name, build, customizer);
+	}
+
 	public MavenJavaProject mavenProject(String name, ProjectCustomizer customizer) throws Exception {
-		return (MavenJavaProject) project(ProjectType.MAVEN, name, customizer, true);
+		return (MavenJavaProject) project(ProjectType.MAVEN, name, true, customizer);
 	}
 
 	public MavenJavaProject mavenProject(String name) throws Exception {

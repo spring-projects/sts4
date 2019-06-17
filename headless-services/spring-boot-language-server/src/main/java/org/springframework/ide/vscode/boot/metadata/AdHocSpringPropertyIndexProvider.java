@@ -63,9 +63,9 @@ public class AdHocSpringPropertyIndexProvider implements ProjectBasedPropertyInd
 					"**/application.properties",
 					"**/application.yml"
 			), changed -> {
-				log.info("File changed: "+changed);
+				log.debug("File changed: {}", changed);
 				projectFinder.find(new TextDocumentIdentifier(changed)).ifPresent(project -> {
-					log.info("=> Project changed: "+project.getElementName());
+					log.debug("=> Project changed: {}", project.getElementName());
 					indexes.invalidate(project);
 				});
 			});
