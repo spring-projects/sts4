@@ -1,0 +1,149 @@
+/*******************************************************************************
+ * Copyright (c) 2019 Pivotal, Inc.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     Pivotal, Inc. - initial API and implementation
+ *******************************************************************************/
+package org.springframework.ide.vscode.commons.util;
+
+import static org.junit.Assert.assertEquals;
+
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+
+import org.junit.Test;
+
+import com.google.common.collect.ImmutableList;
+
+public class MemoizingProxyTest {
+
+	TestSubject proxy;
+	
+	public static class TestSubject {
+		
+		List<String> invocations = new ArrayList<>();
+		String name;
+		int otherConstructorArg;
+		
+		public TestSubject(String name, int otherConstructorArg) {
+			this.name = name;
+			this.otherConstructorArg = otherConstructorArg;
+		}
+		
+		public String getName() {
+			invocations.add("getName");
+			return name;
+		}
+		
+		public String getMessage(String someArgument) {
+			invocations.add("getMessage");
+			return getName() + someArgument;
+		}
+		
+		public String getMyName() {
+			invocations.add("getMyName");
+			return getName();
+		}
+	}
+	private void assertInvocations(String...expectedInvocations) {
+		assertEquals(ImmutableList.copyOf(expectedInvocations), proxy.invocations);
+		proxy.invocations.clear();
+	}
+	
+	private void sleep(int millis) {
+		long endTime = System.currentTimeMillis()+millis;
+		long timeLeft = endTime - System.currentTimeMillis();
+		while (timeLeft>0) {
+			try {
+				Thread.sleep(timeLeft);
+			} catch (InterruptedException e) {
+			}
+			timeLeft = endTime - System.currentTimeMillis();
+		}
+	}
+
+	private static final Class<?>[] CONSTRUCTOR_ARG_TYPES = {
+			String.class, int.class
+	};
+	
+	@Test
+	public void constructorCalled() throws Exception {
+		this.proxy = MemoizingProxy.create(TestSubject.class, Duration.ofMinutes(1), CONSTRUCTOR_ARG_TYPES, "Johny", 45);
+		assertEquals(proxy.name, "Johny"); //Constructor was called so name should be set
+		assertEquals(proxy.otherConstructorArg, 45); //Constructor was called so name should be set
+	}
+
+	@Test
+	public void zeroArgMethodCached() throws Exception {
+		this.proxy = MemoizingProxy.create(TestSubject.class, Duration.ofMinutes(1), CONSTRUCTOR_ARG_TYPES, "Johny", 45);
+		assertEquals(proxy.getName(), "Johny");
+		assertInvocations("getName");
+		assertEquals(proxy.getName(), "Johny");
+		assertInvocations(/*NONE*/);
+	}
+	
+	@Test
+	public void methodWithArgumentNotCached() throws Exception {
+		this.proxy = MemoizingProxy.create(TestSubject.class, Duration.ofMinutes(1), CONSTRUCTOR_ARG_TYPES, "Johny", 45);
+		assertInvocations(/*NONE*/);
+		
+		assertEquals(proxy.getMessage(" whatever"), "Johny whatever");
+		assertInvocations("getMessage", "getName");
+		
+		assertEquals(proxy.getMessage(" whatever"), "Johny whatever");
+		assertInvocations("getMessage");
+		
+	}
+
+	@Test
+	public void callsViaThisCached() throws Exception {
+		this.proxy = MemoizingProxy.create(TestSubject.class, Duration.ofMinutes(1), CONSTRUCTOR_ARG_TYPES, "Johny", 45);
+		assertInvocations(/*NONE*/);
+		
+		assertEquals(proxy.getMessage(" whatever"), "Johny whatever");
+		assertInvocations("getMessage", "getName");
+		
+		assertEquals(proxy.getMyName(), "Johny");
+		assertInvocations("getMyName");
+	}
+	
+	@Test public void cacheExpires() throws Exception {
+		this.proxy = MemoizingProxy.create(TestSubject.class, Duration.ofMillis(10), CONSTRUCTOR_ARG_TYPES, "Johny", 45);
+		assertEquals("Johny", proxy.getMyName());
+		assertInvocations("getMyName", "getName");
+		sleep(20);
+		assertEquals("Johny", proxy.getMyName());
+		assertInvocations("getMyName", "getName");
+	}
+	
+
+	@Test public void multiThreaded() throws Exception {
+		this.proxy = MemoizingProxy.create(TestSubject.class, Duration.ofMinutes(1), CONSTRUCTOR_ARG_TYPES, "Johny", 45);
+		ExecutorService manyThreads = Executors.newFixedThreadPool(100);
+		Future<?>[] futures = new Future<?>[1000]; 
+		
+		for (int i = 0; i < futures.length; i++) {
+			futures[i] = manyThreads.submit(() -> {
+				assertEquals("Johny", proxy.getMyName());
+			});
+		}
+		
+		for (Future<?> future : futures) {
+			future.get();
+		}
+		
+		//Should only have one call to each method all the rest should hit the cache
+		assertInvocations("getMyName", "getName");
+		
+		manyThreads.shutdown();
+	}
+
+}
