@@ -68,7 +68,8 @@ public class CompletionServerCapabilityRegistration implements ServerCapabilityI
 			completionProvider.setResolveProvider(server.hasLazyCompletionResolver());
 			completionProvider.setTriggerCharacters(getMergedTriggerCharacters());
 			cap.setCompletionProvider(completionProvider);
-			log.info("Registering Completion Capability Statically {}", completionProvider);
+			log.info("Registering Completion Capability Statically");
+			log.debug("completionProvider = {}", completionProvider);
 		} else {
 			//Register completion provider and triggerCharacters dynamically, one registration per
 			//language
@@ -88,7 +89,8 @@ public class CompletionServerCapabilityRegistration implements ServerCapabilityI
 					registrations.add(r);
 				}
 				RegistrationParams regParams = new RegistrationParams(registrations);
-				log.info("Registering Dynamic Completion Capabality {}", regParams);
+				log.info("Registering Dynamic Completion Capabality");
+				log.debug("regParams = {}", regParams);
 				return Mono.fromFuture(server.getClient().registerCapability(regParams));
 			})).toFuture();
 		}
