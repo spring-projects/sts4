@@ -122,8 +122,10 @@ public class SymbolCacheOnDisc implements SymbolCache {
 					List<CachedSymbol> symbols = store.getSymbols();
 					Map<String, Collection<String>> storedDependencies = store.getDependencies();
 					Multimap<String, String> dependencies = MultimapBuilder.hashKeys().hashSetValues().build();
-					for (Entry<String, Collection<String>> entry : storedDependencies.entrySet()) {
-						dependencies.replaceValues(entry.getKey(), entry.getValue());
+					if (storedDependencies!=null && !storedDependencies.isEmpty()) {
+						for (Entry<String, Collection<String>> entry : storedDependencies.entrySet()) {
+							dependencies.replaceValues(entry.getKey(), entry.getValue());
+						}
 					}
 					return Pair.of(
 							(CachedSymbol[]) symbols.toArray(new CachedSymbol[symbols.size()]),
