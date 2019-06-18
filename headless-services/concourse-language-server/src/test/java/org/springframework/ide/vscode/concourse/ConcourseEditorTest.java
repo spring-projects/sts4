@@ -465,7 +465,9 @@ public class ConcourseEditorTest {
 				"    image: some-image\n" +
 				"    params:\n" +
 				"      map: of-stuff\n" +
-				"    input_mapping:\n" +
+				"    vars:\n" +
+				"      map: of-stuff\n" +
+ 				"    input_mapping:\n" +
 				"      map: of-stuff\n" +
 				"    output_mapping:\n" +
 				"      map: of-stuff\n" +
@@ -484,11 +486,42 @@ public class ConcourseEditorTest {
 		editor.assertHoverContains("privileged", "If set to `true`, the task will run with full capabilities");
 		editor.assertHoverContains("image", "Names an artifact source within the plan");
 		editor.assertHoverContains("params", "A map of task parameters to set, overriding those configured in `config` or `file`");
+		editor.assertHoverContains("vars", "A map of template variables to pass to an external task");
 		editor.assertHoverContains("input_mapping", "A map from task input names to concrete names in the build plan");
 		editor.assertHoverContains("output_mapping", "A map from task output names to concrete names");
 		editor.assertHoverContains("config", "Use `config` to inline the task config");
 		editor.assertHoverContains("tags", "Any step can be directed at a pool of workers");
 		editor.assertHoverContains("timeout", "amount of time to limit the step's execution");
+	}
+	
+	@Test
+	public void taskVarsReconcile() throws Exception {
+		Editor editor;
+		
+		editor = harness.newEditor(
+				"jobs:\n" +
+				"- name: some-job-with-external-task\n" +
+				"  plan:\n" +
+				"  - task: do-something\n" +
+				"    file: some-file.yml\n" +
+				"    vars:\n" +
+				"      foo: bar\n"
+		);
+		editor.assertProblems(/*NONE*/);
+		
+		editor = harness.newEditor(
+				"jobs:\n" +
+				"- name: some-job-internal-task\n" +
+				"  plan:\n" +
+				"  - task: do-something\n" +
+				"    config: some-config\n" +
+				"    vars: not-a-map"
+		);
+		editor.assertProblems(
+				"some-config|Expecting a 'Map'",
+				"vars|assumes that 'file' is also defined",
+				"not-a-map|Expecting a 'Map'"
+		);
 	}
 
 	@Test
@@ -3734,6 +3767,7 @@ public class ConcourseEditorTest {
 				"→ privileged",
 				"→ tags",
 				"→ timeout",
+				"→ vars",
 				//Completions with '-'
 				"- aggregate",
 				"- do",
