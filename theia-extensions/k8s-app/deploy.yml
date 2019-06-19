@@ -15,16 +15,18 @@ spec:
 apiVersion: apps/v1
 kind: Deployment
 metadata:
+  labels:
+    app: theia-spring-boot
   name: theia-spring-boot
 spec:
   replicas: 1
   selector:
    matchLabels:  
-    name: theia-spring-boot
+    app: theia-spring-boot
   template:
     metadata:
       labels:
-        name: theia-spring-boot
+        app: theia-spring-boot
     spec:
       containers:
         - name: theia-spring-boot
@@ -34,7 +36,7 @@ spec:
           - containerPort: 3000
           volumeMounts:
           - name: source
-            mountPath: /tmp/git
+            mountPath: /home/project
         - name: git-sync
           image: k8s.gcr.io/git-sync:v3.0.1
           volumeMounts:
