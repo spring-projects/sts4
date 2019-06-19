@@ -1,3 +1,8 @@
+## 2019-06-21 (4.3.0 RELEASE)
+
+- _(CF Manifest)_ fixed: CF manifest editor supports manifest files with number of instances set to zero
+- _(CF Manifest)_ fixed: content-assist in CF manifest editor showed error when it should not
+
 ## 2019-05-24 (4.2.2 RELEASE)
 
 * _(all language servers)_ performance: additional improvements to language server startup time

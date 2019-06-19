@@ -1,3 +1,7 @@
+## 2019-06-21 (4.3.0 RELEASE)
+
+- _(Concourse)_ fixed: Added support for `vars` property in task step ([#307](https://github.com/spring-projects/sts4/issues/307))
+
 ## 2019-05-24 (4.2.2 RELEASE)
 
 * _(all language servers)_ performance: additional improvements to language server startup time

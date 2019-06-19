@@ -1,3 +1,12 @@
+## 2019-06-21 (4.3.0 RELEASE)
+
+- _(Spring Boot)_ improvement: project classpath notifications now happen in batch on startup to further optimize performance and job load on the Eclipse side
+- _(Spring Boot)_ improvement: symbols are now being re-created if dependent types change
+- _(Spring Boot)_ fixed: Slow code completion takes more than a 1 sec. ([#293](https://github.com/spring-projects/sts4/issues/293))
+- _(Spring Boot)_ fixed: content-assist for Spring XML config files now working again in VS Code and Theia
+- _(Spring Boot)_ fixed: ClassCast Exception in Boot LS while application.yml file opened in the editor
+- _(Spring Boot)_ fixed: Anonymous inner type beans don't have boot hints
+
 ## 2019-05-24 (4.2.2 RELEASE)
 
 * _(all language servers)_ performance: additional improvements to language server startup time

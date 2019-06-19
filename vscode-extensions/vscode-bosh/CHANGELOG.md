@@ -1,3 +1,7 @@
+## 2019-06-21 (4.3.0 RELEASE)
+
+* no major changes
+
 ## 2019-05-24 (4.2.2 RELEASE)
 
 * _(all language servers)_ performance: additional improvements to language server startup time
