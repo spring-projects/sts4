@@ -36,7 +36,7 @@ spec:
           - containerPort: 3000
           volumeMounts:
           - name: source
-            mountPath: /home/project
+            mountPath: home
         - name: git-sync
           image: k8s.gcr.io/git-sync:v3.0.1
           volumeMounts:
@@ -48,7 +48,7 @@ spec:
           - name: GIT_SYNC_BRANCH
             value: master
           - name: GIT_SYNC_DEST
-            value: git-sync
+            value: project
       volumes:
         - name: source
           emptyDir: {}
