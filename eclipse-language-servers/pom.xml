@@ -140,16 +140,16 @@
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/tools/orbit/downloads/drops/R20181128170323/repository</url>
 				</repository>
-<!--				<repository>
-					<id>e-i-commons</id>
-					<layout>p2</layout>
-					<url>https://dist.springframework.org/release/IDE/3.9.8.RELEASE</url>
-				</repository> -->
 				<repository>
 					<id>e-i-commons</id>
 					<layout>p2</layout>
-					<url>https://dist.springframework.org/snapshot/IDE/nightly</url>
+					<url>https://dist.springframework.org/release/IDE/3.9.9.RELEASE</url>
 				</repository>
+<!--				<repository>
+					<id>e-i-commons</id>
+					<layout>p2</layout>
+					<url>https://dist.springframework.org/snapshot/IDE/nightly</url>
+				</repository> -->
 				<repository>
 					<id>lsp4e</id>
 					<layout>p2</layout>
@@ -185,16 +185,16 @@
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/tools/orbit/downloads/drops/R20190226160451/repository</url>
 				</repository>
-<!--				<repository>
-					<id>e-i-commons</id>
-					<layout>p2</layout>
-					<url>https://dist.springframework.org/release/IDE/3.9.8.RELEASE</url>
-				</repository> -->
 				<repository>
 					<id>e-i-commons</id>
 					<layout>p2</layout>
-					<url>https://dist.springframework.org/snapshot/IDE/nightly</url>
+					<url>https://dist.springframework.org/release/IDE/3.9.9.RELEASE</url>
 				</repository>
+<!--				<repository>
+					<id>e-i-commons</id>
+					<layout>p2</layout>
+					<url>https://dist.springframework.org/snapshot/IDE/nightly</url>
+				</repository> -->
 				<repository>
 					<id>lsp4e</id>
 					<layout>p2</layout>
@@ -235,16 +235,16 @@
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/tools/orbit/downloads/drops/R20190602212107/repository</url>
 				</repository>
-<!--				<repository>
-					<id>e-i-commons</id>
-					<layout>p2</layout>
-					<url>https://dist.springframework.org/release/IDE/3.9.8.RELEASE</url>
-				</repository> -->
 				<repository>
 					<id>e-i-commons</id>
 					<layout>p2</layout>
-					<url>https://dist.springframework.org/snapshot/IDE/nightly</url>
+					<url>https://dist.springframework.org/release/IDE/3.9.9.RELEASE</url>
 				</repository>
+<!--				<repository>
+					<id>e-i-commons</id>
+					<layout>p2</layout>
+					<url>https://dist.springframework.org/snapshot/IDE/nightly</url>
+				</repository> -->
 				<repository>
 					<id>lsp4e</id>
 					<layout>p2</layout>
