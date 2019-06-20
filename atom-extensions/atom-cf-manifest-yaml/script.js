@@ -21,7 +21,12 @@ fileExists(localFileName).then(exists => {
    if (!exists) {
        console.log(`Downloading ${serverDownloadUrl} to ${localFileName}`);
        fileExists(serverHome)
-           .then(doesExist => { if (!doesExist) fs.mkdir(serverHome) })
+           .then(doesExist => {
+               if (!doesExist)
+                   fs.mkdir(serverHome, err => {
+                       if (err) console.error('Failed to create folder: ' + JSON.stringify(err));
+                   });
+           })
            .then(() => download(serverDownloadUrl))
            .then(data => fs.writeFileSync(localFileName, data))
            .then(() => fileExists(localFileName))
