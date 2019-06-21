@@ -64,8 +64,8 @@ public class MemoizingProxyClassTest {
 		}
 	}
 	
-	private TestSubject defaultTestSubject() {
-		return MemoizingProxy.create(TestSubject.class, Duration.ofMinutes(1), CONSTRUCTOR_ARG_TYPES, "Johny", 45);
+	private TestSubject defaultTestSubject() throws Exception {
+		return MemoizingProxy.builder(TestSubject.class, Duration.ofMinutes(1), CONSTRUCTOR_ARG_TYPES).newInstance("Johny", 45);
 	}
 
 	private void assertInvocations(String...expectedInvocations) {
@@ -148,7 +148,7 @@ public class MemoizingProxyClassTest {
 	}
 	
 	@Test public void cacheExpires() throws Exception {
-		this.proxy = MemoizingProxy.create(TestSubject.class, Duration.ofMillis(10), CONSTRUCTOR_ARG_TYPES, "Johny", 45);
+		this.proxy = MemoizingProxy.builder(TestSubject.class, Duration.ofMillis(10), CONSTRUCTOR_ARG_TYPES).newInstance("Johny", 45);
 		assertEquals("Johny", proxy.getMyName());
 		assertInvocations("getMyName", "getName");
 		sleep(20);
@@ -157,15 +157,10 @@ public class MemoizingProxyClassTest {
 	}
 	
 	@Test public void proxyClassReused() throws Exception {
-		//The old (deprecated) way creates a new proxy class for every proxy:
-		TestSubject proxy1 = MemoizingProxy.create(TestSubject.class, Duration.ofMinutes(1), CONSTRUCTOR_ARG_TYPES, "Johny", 45);
-		TestSubject proxy2 = MemoizingProxy.create(TestSubject.class, Duration.ofMinutes(1), CONSTRUCTOR_ARG_TYPES, "Johny", 45);
-		assertFalse(proxy1.getClass().equals(proxy2.getClass()));
-		
 		//Using the new 'builder' api allows re-using the same class (if used properly)
 		Builder<TestSubject> builder = MemoizingProxy.builder(TestSubject.class, Duration.ofMinutes(1), CONSTRUCTOR_ARG_TYPES);
-		proxy1 = builder.newInstance("Freddy", 12);
-		proxy2 = builder.newInstance("Johny", 45);
+		TestSubject proxy1 = builder.newInstance("Freddy", 12);
+		TestSubject proxy2 = builder.newInstance("Johny", 45);
 		assertFalse(proxy1.equals(proxy2)); // different instance...
 		assertEquals(proxy1.getClass(), proxy2.getClass()); //same class
 	}

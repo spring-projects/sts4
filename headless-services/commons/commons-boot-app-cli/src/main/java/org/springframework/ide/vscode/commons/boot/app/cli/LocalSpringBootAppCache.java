@@ -27,6 +27,7 @@ public class LocalSpringBootAppCache {
 
 	private static final Duration EXPIRE_AFTER = Duration.ofMillis(500); //Limits rate at which we refresh list of apps
 	private long nextRefreshAfter = Long.MIN_VALUE;
+	private final MemoizingProxy.Builder<LocalSpringBootApp> memoizingProxyBuilder = MemoizingProxy.builder(LocalSpringBootApp.class, Duration.ofMillis(4500), VirtualMachineDescriptor.class);
 
 	private ImmutableMap<VirtualMachineDescriptor, SpringBootApp> apps = ImmutableMap.of();
 
@@ -46,7 +47,7 @@ public class LocalSpringBootAppCache {
 				newAppsBuilder.put(vm, existingApp);
 			} else {
 				try {
-					LocalSpringBootApp localApp = MemoizingProxy.create(LocalSpringBootApp.class, Duration.ofMillis(4500), new Class[] {VirtualMachineDescriptor.class}, vm);
+					LocalSpringBootApp localApp = memoizingProxyBuilder.newInstance(vm);
 					newAppsBuilder.put(vm, localApp);
 				} catch (Exception e) {
 					//Ignore problems attaching to a VM. We will try again on next polling loop, if vm still exists.
@@ -63,4 +64,5 @@ public class LocalSpringBootAppCache {
 		apps = newApps;
 		nextRefreshAfter = System.currentTimeMillis() + EXPIRE_AFTER.toMillis();
 	}
+
 }

@@ -38,9 +38,6 @@ import org.springframework.ide.vscode.commons.protocol.HighlightParams;
 import org.springframework.ide.vscode.commons.util.MemoizingProxy;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
-import net.sf.cglib.proxy.Enhancer;
-import net.sf.cglib.proxy.MethodInterceptor;
-
 /**
  * @author Martin Lippert
  */
@@ -60,6 +57,7 @@ public class SpringLiveHoverWatchdog {
 	private ScheduledThreadPoolExecutor timer;
 	private JavaProjectFinder projectFinder;
 	private final Map<String, AtomicReference<IJavaProject>> watchedDocs;
+	
 
 
 	public SpringLiveHoverWatchdog(
@@ -208,18 +206,17 @@ public class SpringLiveHoverWatchdog {
 		}
 	}
 
+	private final MemoizingProxy.Builder<SpringBootApp> memoizingProxyBuilder = MemoizingProxy.builder(SpringBootApp.class, Duration.ofMillis(20000));
+	
 	private Collection<SpringBootApp> createAppCaches(Collection<SpringBootApp> runningBootApps) {
 		return runningBootApps.stream().map(app -> {
-		    MethodInterceptor handler = new MemoizingProxy.MemoizingProxyHandler(app, Duration.ofMillis(20000));
-		    SpringBootApp proxied = (SpringBootApp) Enhancer.create(SpringBootApp.class, handler);
-
+			SpringBootApp proxied = memoizingProxyBuilder.delegateTo(app);
 		    try {
 		    	proxied.getProcessName();
 		    	proxied.getProcessID();
 		    }
 		    catch (Exception e) {
 		    }
-
 		    return proxied;
 		}).filter(app -> app != null).collect(Collectors.toList());
 	}

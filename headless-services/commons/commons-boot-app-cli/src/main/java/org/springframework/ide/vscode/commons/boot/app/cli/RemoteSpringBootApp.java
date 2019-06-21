@@ -19,6 +19,10 @@ import java.util.Properties;
 import org.springframework.ide.vscode.commons.util.MemoizingProxy;
 
 public class RemoteSpringBootApp extends AbstractSpringBootApp {
+	
+	private static MemoizingProxy.Builder<RemoteSpringBootApp> memoizingProxyBuilder = MemoizingProxy.builder(RemoteSpringBootApp.class,  Duration.ofMillis(4900), 
+			String.class, String.class, String.class, String.class, boolean.class
+	);
 
 	private final String jmxUrl;
 	private final String host;
@@ -27,8 +31,7 @@ public class RemoteSpringBootApp extends AbstractSpringBootApp {
 	private boolean keepChecking;
 
 	public static SpringBootApp create(String jmxUrl, String host, String port, String urlScheme, boolean keepChecking) {
-		return MemoizingProxy.create(RemoteSpringBootApp.class, Duration.ofMillis(4900), new Class[] {String.class, String.class, String.class, String.class, boolean.class},
-				jmxUrl, host, port, urlScheme, keepChecking);
+		return memoizingProxyBuilder.newInstance(jmxUrl, host, port, urlScheme, keepChecking);
 	}
 
 	protected RemoteSpringBootApp(String jmxUrl, String host, String port, String urlScheme, boolean keepChecking) {

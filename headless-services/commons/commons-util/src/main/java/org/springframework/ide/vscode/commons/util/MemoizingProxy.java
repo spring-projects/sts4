@@ -154,85 +154,89 @@ public class MemoizingProxy {
 		}
 	}
 
-	public static <T> Builder<T> builder(Class<T> klass, Duration duration, Class<?>... argTypes) throws Exception {
-		if (klass.isInterface()) {
-			Assert.isLegal(argTypes.length==0, "Should not provide constructor argument types for interface type "+klass.getSimpleName());
-			DynamicType.Builder<T> builder = new ByteBuddy()
-					.subclass(klass, ConstructorStrategy.Default.NO_CONSTRUCTORS)
-					.defineField(F_DURATION, long.class, Opcodes.ACC_FINAL | Opcodes.ACC_PRIVATE | Opcodes.ACC_STATIC).value(duration.toMillis())
-					.defineField(F_CACHE, Cache.class, Opcodes.ACC_PRIVATE)
-					.defineField(F_DELEGATE, klass, Opcodes.ACC_PRIVATE | Opcodes.ACC_FINAL)
-					.method(ElementMatchers.isAbstract()).intercept(MethodDelegation.to(DelegateMethodInterceptor.class))
-					.defineConstructor(Visibility.PUBLIC).withParameters(klass).intercept(
-							MethodCall.invoke(Object.class.getConstructor())
-							.andThen(FieldAccessor.ofField(F_DELEGATE).setsArgumentAt(0))
-							.andThen(METHOD_DELEGATION.to(ClassConstructorInterceptor.class))
-					);
-			
-			Constructor<? extends T> constructor = builder.make().load(klass.getClassLoader()).getLoaded().getConstructor(klass);
-			return new Builder<T>() {
-
-				@Override
-				public T newInstance(Object... args) {
-					throw new UnsupportedOperationException(
-							"Can't use 'newInstance' because '"+klass.getSimpleName()+" is an interface.\n"+
-							"Use 'delegateTo' instead."
-					);
-				}
-
-				@Override
-				public T delegateTo(T delegate) {
-					try {
-						return constructor.newInstance(delegate);
-					} catch (Exception e) {
-						throw ExceptionUtil.unchecked(e);
-					}
-				}
-				
-			};
-		} else {
-			DynamicType.Builder<T> builder = new ByteBuddy()
-					.subclass(klass, ConstructorStrategy.Default.NO_CONSTRUCTORS)
-					.defineField(F_DURATION, long.class, Opcodes.ACC_FINAL | Opcodes.ACC_PRIVATE | Opcodes.ACC_STATIC).value(duration.toMillis())
-					.defineField(F_CACHE, Cache.class, Opcodes.ACC_PRIVATE)
-					.method(CACHABLE_METHODS).intercept(MethodDelegation.to(SuperMethodInterceptor.class))
-					.defineConstructor(Visibility.PUBLIC).withParameters(argTypes).intercept(
-							MethodCall.invoke(klass.getConstructor(argTypes)).withAllArguments()
-							.andThen(METHOD_DELEGATION.to(ClassConstructorInterceptor.class))
-					);
-			
-			Constructor<? extends T> constructor = builder.make().load(klass.getClassLoader()).getLoaded().getConstructor(argTypes);
-			return new Builder<T>() {
-				@Override
-				public T newInstance(Object... args) {
-					try {
-						return constructor.newInstance(args);
-					} catch (Exception e) {
-						throw ExceptionUtil.unchecked(e);
-					}
-				}
-	
-				@Override
-				public T delegateTo(T delegate) {
-					throw new UnsupportedOperationException(
-							"Can't use 'delegateTo' because '"+klass.getSimpleName()+" is not an interface.\n"+
-							"Use 'newInstance' instead."
-					);
-				}
-			};
-		}
-	}
-	
-	/**
-	 * Deprecated: use the 'builder' method instead
-	 */
-	@Deprecated
-	public static <T> T create(Class<T> klass, Duration duration, Class<?>[] argTypes, Object... args) {
+	public static <T> Builder<T> builder(Class<T> klass, Duration duration, Class<?>... argTypes) {
 		try {
-			return builder(klass, duration, argTypes).newInstance(args);
+			if (klass.isInterface()) {
+				Assert.isLegal(argTypes.length==0, "Should not provide constructor argument types for interface type "+klass.getSimpleName());
+				DynamicType.Builder<T> builder = new ByteBuddy()
+						.subclass(klass, ConstructorStrategy.Default.NO_CONSTRUCTORS)
+						.defineField(F_DURATION, long.class, Opcodes.ACC_FINAL | Opcodes.ACC_PRIVATE | Opcodes.ACC_STATIC).value(duration.toMillis())
+						.defineField(F_CACHE, Cache.class, Opcodes.ACC_PRIVATE)
+						.defineField(F_DELEGATE, klass, Opcodes.ACC_PRIVATE | Opcodes.ACC_FINAL)
+						.method(ElementMatchers.isAbstract()).intercept(MethodDelegation.to(DelegateMethodInterceptor.class))
+						.defineConstructor(Visibility.PUBLIC).withParameters(klass).intercept(
+								MethodCall.invoke(Object.class.getConstructor())
+								.andThen(FieldAccessor.ofField(F_DELEGATE).setsArgumentAt(0))
+								.andThen(METHOD_DELEGATION.to(ClassConstructorInterceptor.class))
+						);
+				
+				Constructor<? extends T> constructor = builder.make().load(klass.getClassLoader()).getLoaded().getConstructor(klass);
+				return new Builder<T>() {
+	
+					@Override
+					public T newInstance(Object... args) {
+						throw new UnsupportedOperationException(
+								"Can't use 'newInstance' because '"+klass.getSimpleName()+" is an interface.\n"+
+								"Use 'delegateTo' instead."
+						);
+					}
+	
+					@Override
+					public T delegateTo(T delegate) {
+						try {
+							return constructor.newInstance(delegate);
+						} catch (Exception e) {
+							throw ExceptionUtil.unchecked(e);
+						}
+					}
+					
+				};
+			} else {
+				DynamicType.Builder<T> builder = new ByteBuddy()
+						.subclass(klass, ConstructorStrategy.Default.NO_CONSTRUCTORS)
+						.defineField(F_DURATION, long.class, Opcodes.ACC_FINAL | Opcodes.ACC_PRIVATE | Opcodes.ACC_STATIC).value(duration.toMillis())
+						.defineField(F_CACHE, Cache.class, Opcodes.ACC_PRIVATE)
+						.method(CACHABLE_METHODS).intercept(MethodDelegation.to(SuperMethodInterceptor.class))
+						.defineConstructor(Visibility.PUBLIC).withParameters(argTypes).intercept(
+								MethodCall.invoke(klass.getConstructor(argTypes)).withAllArguments()
+								.andThen(METHOD_DELEGATION.to(ClassConstructorInterceptor.class))
+						);
+				
+				Constructor<? extends T> constructor = builder.make().load(klass.getClassLoader()).getLoaded().getConstructor(argTypes);
+				return new Builder<T>() {
+					@Override
+					public T newInstance(Object... args) {
+						try {
+							return constructor.newInstance(args);
+						} catch (Exception e) {
+							throw ExceptionUtil.unchecked(e);
+						}
+					}
+		
+					@Override
+					public T delegateTo(T delegate) {
+						throw new UnsupportedOperationException(
+								"Can't use 'delegateTo' because '"+klass.getSimpleName()+" is not an interface.\n"+
+								"Use 'newInstance' instead."
+						);
+					}
+				};
+			}
 		} catch (Exception e) {
 			throw ExceptionUtil.unchecked(e);
 		}
 	}
+	
+//	/**
+//	 * Deprecated: use the 'builder' method instead
+//	 */
+//	@Deprecated
+//	public static <T> T create(Class<T> klass, Duration duration, Class<?>[] argTypes, Object... args) {
+//		try {
+//			return builder(klass, duration, argTypes).newInstance(args);
+//		} catch (Exception e) {
+//			throw ExceptionUtil.unchecked(e);
+//		}
+//	}
 		
 }
