@@ -11,6 +11,8 @@
 package org.springframework.ide.vscode.commons.util;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 
 import java.io.IOException;
@@ -22,6 +24,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 
 import org.junit.Test;
+import org.springframework.ide.vscode.commons.util.MemoizingProxy.Builder;
 
 import com.google.common.collect.ImmutableList;
 
@@ -153,6 +156,19 @@ public class MemoizingProxyTest {
 		assertInvocations("getMyName", "getName");
 	}
 	
+	@Test public void proxyClassReused() throws Exception {
+		//The old (deprecated) way creates a new proxy class for every proxy:
+		TestSubject proxy1 = MemoizingProxy.create(TestSubject.class, Duration.ofMinutes(1), CONSTRUCTOR_ARG_TYPES, "Johny", 45);
+		TestSubject proxy2 = MemoizingProxy.create(TestSubject.class, Duration.ofMinutes(1), CONSTRUCTOR_ARG_TYPES, "Johny", 45);
+		assertFalse(proxy1.getClass().equals(proxy2.getClass()));
+		
+		//Using the new 'builder' api allows re-using the same class (if used properly)
+		Builder<TestSubject> builder = MemoizingProxy.builder(TestSubject.class, Duration.ofMinutes(1), CONSTRUCTOR_ARG_TYPES);
+		proxy1 = builder.build("Freddy", 12);
+		proxy2 = builder.build("Johny", 45);
+		assertFalse(proxy1.equals(proxy2)); // different instance...
+		assertEquals(proxy1.getClass(), proxy2.getClass()); //same class
+	}
 
 	@Test public void multiThreaded() throws Exception {
 		this.proxy = defaultTestSubject();
