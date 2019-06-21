@@ -28,7 +28,7 @@ import org.springframework.ide.vscode.commons.util.MemoizingProxy.Builder;
 
 import com.google.common.collect.ImmutableList;
 
-public class MemoizingProxyTest {
+public class MemoizingProxyClassTest {
 
 	TestSubject proxy;
 	
@@ -164,8 +164,8 @@ public class MemoizingProxyTest {
 		
 		//Using the new 'builder' api allows re-using the same class (if used properly)
 		Builder<TestSubject> builder = MemoizingProxy.builder(TestSubject.class, Duration.ofMinutes(1), CONSTRUCTOR_ARG_TYPES);
-		proxy1 = builder.build("Freddy", 12);
-		proxy2 = builder.build("Johny", 45);
+		proxy1 = builder.newInstance("Freddy", 12);
+		proxy2 = builder.newInstance("Johny", 45);
 		assertFalse(proxy1.equals(proxy2)); // different instance...
 		assertEquals(proxy1.getClass(), proxy2.getClass()); //same class
 	}
