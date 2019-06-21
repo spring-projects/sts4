@@ -119,4 +119,4 @@ Released versions of this extension can be installed directly from npm registry.
 [java-navigation]: https://raw.githubusercontent.com/spring-projects/sts4/1bdd6f45aaf779252a2f0203f10da1a67b3c018e/theia-extensions/theia-spring-boot/spring-boot/readme-imgs/workspace-symbol.png
 
 
-**Version: 1.8.0**
+**Version: 1.9.0**

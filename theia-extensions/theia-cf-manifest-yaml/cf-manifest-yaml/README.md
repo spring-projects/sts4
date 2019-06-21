@@ -47,4 +47,4 @@ read its detailed documentation.
 [dcfca]: https://raw.githubusercontent.com/spring-projects/sts4/1bdd6f45aaf779252a2f0203f10da1a67b3c018e/theia-extensions/theia-cf-manifest-yaml/cf-manifest-yaml/readme-imgs/dynamic-ca.png
 [hovers]: https://raw.githubusercontent.com/spring-projects/sts4/1bdd6f45aaf779252a2f0203f10da1a67b3c018e/theia-extensions/theia-cf-manifest-yaml/cf-manifest-yaml/readme-imgs/hovers.png
 
-**Version: 1.8.0**
+**Version: 1.9.0**
