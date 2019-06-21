@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.languageserver.util;
 
+import java.time.Duration;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -59,6 +60,7 @@ import org.eclipse.lsp4j.services.LanguageClient;
 import org.eclipse.lsp4j.services.TextDocumentService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.commons.languageserver.config.LanguageServerProperties;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.Quickfix;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.AsyncRunner;
@@ -70,11 +72,14 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.common.collect.ImmutableList;
 
+import reactor.core.publisher.Mono;
+
 public class SimpleTextDocumentService implements TextDocumentService, DocumentEventListenerManager {
 
 	private static Logger log = LoggerFactory.getLogger(SimpleTextDocumentService.class);
-
+	
 	final private SimpleLanguageServer server;
+	final private LanguageServerProperties props;
 	private Map<String, TrackedDocument> documents = new HashMap<>();
 	private ListenerList<TextDocumentContentChange> documentChangeListeners = new ListenerList<>();
 	private ListenerList<TextDocument> documentCloseListeners = new ListenerList<>();
@@ -97,8 +102,9 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 	private AsyncRunner async;
 
 
-	public SimpleTextDocumentService(SimpleLanguageServer server) {
+	public SimpleTextDocumentService(SimpleLanguageServer server, LanguageServerProperties props) {
 		this.server = server;
+		this.props = props;
 		this.async = server.getAsync();
 	}
 
@@ -324,19 +330,24 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 	@Override
 	public CompletableFuture<Hover> hover(TextDocumentPositionParams position) {
 		log.debug("hover requested for {}", position);
-		return async.invoke(() -> {
-			try {
-				log.debug("hover handler starting");
-				HoverHandler h = hoverHandler;
-				if (h!=null) {
-					return hoverHandler.handle(position);
-				}
-				log.debug("no hover because there is no handler");
-				return null;
-			} finally {
-				log.debug("hover handler finished");
+		long timeout = props.getHoverTimeout();
+		return timeout <= 0 ? async.invoke(() -> computeHover(position)) : async.invoke(Duration.ofMillis(timeout), () -> computeHover(position), Mono.fromRunnable(() -> {
+			log.error("Hover Request handler timed out after {} ms.", timeout);
+		}));
+	}
+	
+	private Hover computeHover(TextDocumentPositionParams position) {
+		try {
+			log.debug("hover handler starting");
+			HoverHandler h = hoverHandler;
+			if (h!=null) {
+				return hoverHandler.handle(position);
 			}
-		});
+			log.debug("no hover because there is no handler");
+			return null;
+		} finally {
+			log.debug("hover handler finished");
+		}
 	}
 
 	@Override

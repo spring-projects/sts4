@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Pivotal, Inc.
+ * Copyright (c) 2018, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -41,6 +41,15 @@ public class AsyncRunner {
 		return x;
 	}
 
+	public synchronized <T> CompletableFuture<T> invoke(Duration timeout, Callable<T> callable, Mono<T> fallback) {
+		CompletableFuture<T> x = Mono.fromCallable(callable)
+				.subscribeOn(executor)
+				.timeout(timeout, fallback)
+				.toFuture();
+		lastRequest = x;
+		return x;
+	}
+	
 	public synchronized <T> CompletableFuture<T> invoke(Callable<T> callable) {
 		CompletableFuture<T> x = Mono.fromCallable(callable).subscribeOn(executor).toFuture();
 		lastRequest = x;

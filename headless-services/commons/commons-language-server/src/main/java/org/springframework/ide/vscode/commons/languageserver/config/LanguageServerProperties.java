@@ -34,6 +34,11 @@ public class LanguageServerProperties {
 	 * triggers.
 	 */
 	private Map<String, String> completionTriggerCharacters;
+	
+	/**
+	 * Hover request handler timeout in milliseconds
+	 */
+	private long hoverTimeout = -1;
 
 	public boolean isStandalone() {
 		return standalone;
@@ -65,6 +70,14 @@ public class LanguageServerProperties {
 
 	public void setCompletionTriggerCharacters(Map<String, String> completionTriggerCharacters) {
 		this.completionTriggerCharacters = completionTriggerCharacters;
+	}
+
+	public long getHoverTimeout() {
+		return hoverTimeout;
+	}
+
+	public void setHoverTimeout(long hoverTimeout) {
+		this.hoverTimeout = hoverTimeout;
 	}
 
 }

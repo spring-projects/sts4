@@ -63,6 +63,7 @@ import org.springframework.ide.vscode.commons.languageserver.completion.IComplet
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter.CompletionFilter;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter.LazyCompletionResolver;
+import org.springframework.ide.vscode.commons.languageserver.config.LanguageServerProperties;
 import org.springframework.ide.vscode.commons.languageserver.java.ls.ClasspathListener;
 import org.springframework.ide.vscode.commons.languageserver.java.ls.ClasspathListenerManager;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.Quickfix;
@@ -114,6 +115,7 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 	private SimpleTextDocumentService tds;
 	private SimpleWorkspaceService workspace;
 	private STS4LanguageClient client;
+	private final LanguageServerProperties props;
 
 	private ProgressService progressService = (String taskId, String statusMsg) -> {
 		STS4LanguageClient client = SimpleLanguageServer.this.client;
@@ -187,8 +189,9 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 		}
 	}
 
-	public SimpleLanguageServer(String extensionId, ApplicationContext appContext) {
+	public SimpleLanguageServer(String extensionId, ApplicationContext appContext, LanguageServerProperties props) {
 		this.appContext = appContext;
+		this.props = props;
 		Assert.isNotNull(extensionId);
 		this.EXTENSION_ID = extensionId;
 		this.CODE_ACTION_COMMAND_ID = "sts."+EXTENSION_ID+".codeAction";
@@ -485,7 +488,7 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 	}
 
 	protected SimpleTextDocumentService createTextDocumentService() {
-		return new SimpleTextDocumentService(this);
+		return new SimpleTextDocumentService(this, props);
 	}
 
 	public SimpleWorkspaceService createWorkspaceService() {

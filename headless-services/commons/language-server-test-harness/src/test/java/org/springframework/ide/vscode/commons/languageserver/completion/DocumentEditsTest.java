@@ -15,6 +15,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.ide.vscode.commons.languageserver.config.LanguageServerProperties;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.util.text.IRegion;
@@ -36,7 +37,7 @@ public class DocumentEditsTest {
 
 	@Before
 	public void setup() throws Exception {
-		SimpleLanguageServer server = new SimpleLanguageServer("dont-care", null);
+		SimpleLanguageServer server = new SimpleLanguageServer("dont-care", null, new LanguageServerProperties());
 		harness = new LanguageServerHarness(server, LanguageId.PLAINTEXT);
 	}
 

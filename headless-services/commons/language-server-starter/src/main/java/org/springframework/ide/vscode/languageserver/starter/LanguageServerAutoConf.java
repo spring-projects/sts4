@@ -49,7 +49,7 @@ public class LanguageServerAutoConf {
 			Optional<CompletionFilter> completionFilter,
 			ApplicationContext appContext
 	) throws Exception {
-		SimpleLanguageServer server = new SimpleLanguageServer(props.getExtensionId(), appContext);
+		SimpleLanguageServer server = new SimpleLanguageServer(props.getExtensionId(), appContext, props);
 		server.setCompletionFilter(completionFilter);
 		severities.ifPresent(server::setDiagnosticSeverityProvider);
 		return server;

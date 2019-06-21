@@ -119,6 +119,8 @@ public abstract class STS4LanguageServerProcessStreamConnector extends ProcessSt
 
 			command.add(mainClass);
 
+			command.add("--languageserver.hover-timeout=225");
+
 			setCommands(command.build());
 		}
 		catch (Exception e) {

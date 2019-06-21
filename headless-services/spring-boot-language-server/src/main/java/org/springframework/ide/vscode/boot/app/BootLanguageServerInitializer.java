@@ -27,6 +27,7 @@ import org.springframework.ide.vscode.boot.xml.SpringXMLLanguageServerComponents
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.composable.CompositeLanguageServerComponents;
+import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 import org.springframework.ide.vscode.commons.languageserver.util.HoverHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
@@ -61,12 +62,14 @@ public class BootLanguageServerInitializer implements InitializingBean {
 
 	private static final Logger log = LoggerFactory.getLogger(BootLanguageServerInitializer.class);
 
-	private static ProjectObserver.Listener reconcileOpenDocuments(SimpleLanguageServer s, CompositeLanguageServerComponents c) {
+	private static ProjectObserver.Listener reconcileOpenDocuments(SimpleLanguageServer s, CompositeLanguageServerComponents c, JavaProjectFinder projectFinder) {
 		return ProjectObserver.onAny(project -> {
 			c.getReconcileEngine().ifPresent(reconciler -> {
-				log.info("A project changed {}, triggering reconcile on all open documents", project.getElementName());
+				log.info("A project changed {}, triggering reconcile on all project's open documents", project.getElementName());
 				for (TextDocument doc : s.getTextDocumentService().getAll()) {
-					s.validateWith(doc.getId(), reconciler);
+					if (projectFinder.find(doc.getId()).orElse(null) == project) {
+						s.validateWith(doc.getId(), reconciler);
+					}
 				}
 			});
 		});
@@ -81,7 +84,7 @@ public class BootLanguageServerInitializer implements InitializingBean {
 		builder.add(new BootJavaLanguageServerComponents(server, params, sourceLinks, cuCache, adHocProperties, symbolCache, config, springIndexer, runningAppProvider));
 		builder.add(new SpringXMLLanguageServerComponents(server, springIndexer, params, config));
 		components = builder.build(server);
-		params.projectObserver.addListener(reconcileOpenDocuments(server, components));
+		params.projectObserver.addListener(reconcileOpenDocuments(server, components, params.projectFinder));
 
 		SimpleTextDocumentService documents = server.getTextDocumentService();
 
