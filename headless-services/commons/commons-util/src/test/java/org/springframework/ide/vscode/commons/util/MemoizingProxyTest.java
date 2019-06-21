@@ -11,7 +11,9 @@
 package org.springframework.ide.vscode.commons.util;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.fail;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.List;
@@ -38,6 +40,11 @@ public class MemoizingProxyTest {
 			this.otherConstructorArg = otherConstructorArg;
 		}
 		
+		public int throwsError() throws IOException {
+			invocations.add("throwsError");
+			throw new IOException("Problem");
+		}
+		
 		public String getName() {
 			invocations.add("getName");
 			return name;
@@ -53,6 +60,11 @@ public class MemoizingProxyTest {
 			return getName();
 		}
 	}
+	
+	private TestSubject defaultTestSubject() {
+		return MemoizingProxy.create(TestSubject.class, Duration.ofMinutes(1), CONSTRUCTOR_ARG_TYPES, "Johny", 45);
+	}
+
 	private void assertInvocations(String...expectedInvocations) {
 		assertEquals(ImmutableList.copyOf(expectedInvocations), proxy.invocations);
 		proxy.invocations.clear();
@@ -76,23 +88,40 @@ public class MemoizingProxyTest {
 	
 	@Test
 	public void constructorCalled() throws Exception {
-		this.proxy = MemoizingProxy.create(TestSubject.class, Duration.ofMinutes(1), CONSTRUCTOR_ARG_TYPES, "Johny", 45);
+		this.proxy = defaultTestSubject();
 		assertEquals(proxy.name, "Johny"); //Constructor was called so name should be set
 		assertEquals(proxy.otherConstructorArg, 45); //Constructor was called so name should be set
 	}
 
 	@Test
 	public void zeroArgMethodCached() throws Exception {
-		this.proxy = MemoizingProxy.create(TestSubject.class, Duration.ofMinutes(1), CONSTRUCTOR_ARG_TYPES, "Johny", 45);
+		this.proxy = defaultTestSubject();
 		assertEquals(proxy.getName(), "Johny");
 		assertInvocations("getName");
 		assertEquals(proxy.getName(), "Johny");
 		assertInvocations(/*NONE*/);
 	}
+
+	@Test public void exceptionsCached() throws Exception {
+		this.proxy = defaultTestSubject();
+		callMethodThatThrows();
+		assertInvocations("throwsError");
+		callMethodThatThrows();
+		assertInvocations(/*NONE*/);
+	}
+
+	private void callMethodThatThrows() {
+		try {
+			this.proxy.throwsError();
+			fail("should have thrown");
+		} catch (IOException e) {
+			assertEquals("Problem", e.getMessage());
+		}
+	}
 	
 	@Test
 	public void methodWithArgumentNotCached() throws Exception {
-		this.proxy = MemoizingProxy.create(TestSubject.class, Duration.ofMinutes(1), CONSTRUCTOR_ARG_TYPES, "Johny", 45);
+		this.proxy = defaultTestSubject();
 		assertInvocations(/*NONE*/);
 		
 		assertEquals(proxy.getMessage(" whatever"), "Johny whatever");
@@ -105,7 +134,7 @@ public class MemoizingProxyTest {
 
 	@Test
 	public void callsViaThisCached() throws Exception {
-		this.proxy = MemoizingProxy.create(TestSubject.class, Duration.ofMinutes(1), CONSTRUCTOR_ARG_TYPES, "Johny", 45);
+		this.proxy = defaultTestSubject();
 		assertInvocations(/*NONE*/);
 		
 		assertEquals(proxy.getMessage(" whatever"), "Johny whatever");
@@ -126,7 +155,7 @@ public class MemoizingProxyTest {
 	
 
 	@Test public void multiThreaded() throws Exception {
-		this.proxy = MemoizingProxy.create(TestSubject.class, Duration.ofMinutes(1), CONSTRUCTOR_ARG_TYPES, "Johny", 45);
+		this.proxy = defaultTestSubject();
 		ExecutorService manyThreads = Executors.newFixedThreadPool(100);
 		Future<?>[] futures = new Future<?>[1000]; 
 		
