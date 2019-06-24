@@ -367,7 +367,6 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 					// vscode client does not like to recieve null result. See: https://github.com/spring-projects/sts4/issues/309
 					locations = ImmutableList.of();
 				}
-				log.info("definition locations: {}", locations);
 				return Either.forLeft(locations);
 			});
 		}
