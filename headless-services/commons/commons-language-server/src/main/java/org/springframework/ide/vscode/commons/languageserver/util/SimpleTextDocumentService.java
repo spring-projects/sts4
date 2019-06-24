@@ -352,7 +352,11 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 		if (h != null) {
 			return async.invoke(() -> {
 				List<Location> locations = h.handle(position);
-				return Either.<List<? extends Location>, List<? extends LocationLink>>forLeft(locations);
+				if (locations==null) {
+					// vscode client does not like to recieve null result. See: https://github.com/spring-projects/sts4/issues/309
+					locations = ImmutableList.of();
+				}
+				return Either.forLeft(locations);
 			});
 		}
 		return CompletableFuture.completedFuture(Either.forLeft(ImmutableList.of()));
