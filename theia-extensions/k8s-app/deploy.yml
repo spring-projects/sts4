@@ -28,6 +28,8 @@ spec:
       labels:
         app: theia-spring-boot
     spec:
+      securityContext:
+        fsGroup: 3000
       containers:
         - name: theia-spring-boot
           image: theia-spring-boot
@@ -36,7 +38,11 @@ spec:
           - containerPort: 3000
           volumeMounts:
           - name: source
-            mountPath: home
+            mountPath: /home/project
+          resources:
+            requests:
+              cpu: "2000m"
+              memory: 1000M
         - name: git-sync
           image: k8s.gcr.io/git-sync:v3.0.1
           volumeMounts:
@@ -48,7 +54,9 @@ spec:
           - name: GIT_SYNC_BRANCH
             value: master
           - name: GIT_SYNC_DEST
-            value: project
+            value: spring-petclinic
+          - name: GIT_SYNC_PERMISSIONS
+            value: "0777"
       volumes:
         - name: source
           emptyDir: {}
