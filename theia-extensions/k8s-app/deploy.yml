@@ -29,7 +29,7 @@ spec:
         app: theia-spring-boot
     spec:
       securityContext:
-        fsGroup: 1000
+        fsGroup: 3000
       containers:
         - name: theia-spring-boot
           image: theia-spring-boot
@@ -39,6 +39,10 @@ spec:
           volumeMounts:
           - name: source
             mountPath: /home/project
+          resources:
+            requests:
+              cpu: "2000m"
+              memory: 1000M
         - name: git-sync
           image: k8s.gcr.io/git-sync:v3.0.1
           volumeMounts:
