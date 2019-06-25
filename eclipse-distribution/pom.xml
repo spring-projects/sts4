@@ -475,7 +475,7 @@
 				</repository>
 			</repositories>
 			<modules>
-				<module>org.springframework.boot.ide.product.e412</module>
+				<module>org.springframework.boot.ide.product.e413</module>
 			</modules>
 		</profile>
 
