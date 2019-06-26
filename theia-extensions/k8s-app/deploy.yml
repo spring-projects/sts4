@@ -32,7 +32,9 @@ spec:
         fsGroup: 3000
       containers:
         - name: theia-spring-boot
-          image: theia-spring-boot
+     #   image: theia-spring-boot
+          image: theia-spring-boot:java_ls_started
+          # Image pull policy `Never` is needed to pull from local Docker Daemon
           imagePullPolicy: Never
           ports:
           - containerPort: 3000
