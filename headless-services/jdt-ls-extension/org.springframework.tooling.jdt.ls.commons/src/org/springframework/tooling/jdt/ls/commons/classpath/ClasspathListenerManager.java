@@ -10,13 +10,13 @@
  *******************************************************************************/
 package org.springframework.tooling.jdt.ls.commons.classpath;
 
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.function.Supplier;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
-import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.ElementChangedEvent;
 import org.eclipse.jdt.core.IElementChangedListener;
 import org.eclipse.jdt.core.IJavaElement;
@@ -34,6 +34,22 @@ import org.springframework.tooling.jdt.ls.commons.Logger;
  */
 public class ClasspathListenerManager {
 
+	Queue<Runnable> workQueue = new ConcurrentLinkedQueue<>();
+	
+	Job worker = new Job("Processing JDT Change Events") {
+		{
+			setSystem(true);
+		}
+		
+		@Override
+		protected IStatus run(IProgressMonitor monitor) {
+			while (!workQueue.isEmpty()) {
+				workQueue.remove().run();
+			}
+			return Status.OK_STATUS;
+		}
+	};
+
 	public interface ClasspathListener {
 		public abstract void classpathChanged(IJavaProject jp);
 	}
@@ -42,7 +58,8 @@ public class ClasspathListenerManager {
 
 		@Override
 		public void elementChanged(ElementChangedEvent event) {
-			visit(event.getDelta());
+			workQueue.add(() -> visit(event.getDelta()));
+			worker.schedule();
 		}
 
 		private void visit(IJavaElementDelta delta) {
