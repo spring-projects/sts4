@@ -422,7 +422,7 @@
 					<id>orbit-i-build</id>
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/tools/orbit/downloads/drops/I20190626001249/repository</url>
-				</repository> -->
+				</repository>
 				<repository>
 					<id>latest-m2e</id>
 					<layout>p2</layout>
