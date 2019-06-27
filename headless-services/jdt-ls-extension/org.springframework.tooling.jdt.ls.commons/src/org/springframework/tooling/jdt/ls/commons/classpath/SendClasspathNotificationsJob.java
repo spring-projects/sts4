@@ -14,9 +14,11 @@ import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -26,6 +28,7 @@ import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.springframework.ide.vscode.commons.protocol.java.Classpath;
+import org.springframework.ide.vscode.commons.protocol.java.Classpath.CPE;
 import org.springframework.tooling.jdt.ls.commons.Logger;
 
 import com.google.common.collect.ImmutableList;
@@ -49,7 +52,10 @@ public class SendClasspathNotificationsJob extends Job {
 	 */
 	private Map<String, URI> projectLocations = new HashMap<>();
 	public final Queue<IJavaProject> queue = new ConcurrentLinkedQueue<>();
-
+	public final Queue<IJavaProject> builtProjectQueue = new ConcurrentLinkedQueue<>();
+	
+	private final Set<IJavaProject> notReadyProjects = new HashSet<>();
+	
 	public SendClasspathNotificationsJob(Logger logger, ClientCommandExecutor conn, String callbackId, boolean isBatched) {
 		super("Send Classpath Notifications");
 		this.logger = logger;
@@ -99,8 +105,19 @@ public class SendClasspathNotificationsJob extends Job {
 	protected IStatus run(IProgressMonitor monitor) {
 		synchronized (projectLocations) { //Could use some Eclipse job rule. But its really a bit of a PITA to create the right one.
 			try {
+				// Try to see if classpath needs to be sent for the projects that have been
+				// built since classpath JAR may not have existed (not downloaded) at the time
+				// of classpath changed event
+				for (IJavaProject jp = builtProjectQueue.poll(); jp!=null; jp = builtProjectQueue.poll()) {
+					if (notReadyProjects.remove(jp)) {
+						queue.add(jp);
+					}
+				}
 				for (IJavaProject jp = queue.poll(); jp!=null; jp = queue.poll()) {
 					logger.log("Preparing classpath changed notification " + jp.getElementName());
+					// Project wasn't ready before but now it's about to be processed for Classpath again.
+					// Remove it from the set of not readt projects
+					notReadyProjects.remove(jp);
 					URI projectLoc = getProjectLocation(jp);
 					if (projectLoc==null) {
 						logger.log("Could not send event for project because no project location: "+jp.getElementName());
@@ -117,11 +134,26 @@ public class SendClasspathNotificationsJob extends Job {
 
 						Classpath classpath = Classpath.EMPTY;
 						if (deleted) {
+							// Project has been removed no need to keep in not ready projects set
+							notReadyProjects.remove(jp);
 							// projectLocations.remove(projectName);
 						} else {
 							projectLocations.put(projectName, projectLoc);
 							try {
 								classpath = ClasspathUtil.resolve(jp, logger);
+								List<CPE> filteredCPEs = new ArrayList<>(classpath.getEntries().size());
+								for (CPE cpe : classpath.getEntries()) {
+									// Some classpath entries don't exist yet (to be downloaded during the build). Filter them out as these JARs won't be indexed until they exist
+									if (!Classpath.isBinary(cpe) || new File(cpe.getPath()).exists()) {
+										filteredCPEs.add(cpe);
+									}
+								}
+								if (filteredCPEs.size() != classpath.getEntries().size()) {
+									// If some entries in the classpath don't exist yet add the project to not ready projects set to process later when project is built
+									notReadyProjects.add(jp);
+									// Only send effective classpath that has all entries physically present.
+									classpath = new Classpath(filteredCPEs);
+								}
 							} catch (Exception e) {
 								logger.log(e);
 							}

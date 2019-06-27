@@ -65,6 +65,12 @@ public class ReusableClasspathListenerHandler {
 					public void classpathChanged(IJavaProject jp) {
 						sendNotification(jp, subscribers.keySet());
 					}
+
+					@Override
+					public void projectBuilt(IJavaProject jp) {
+						sendNotificationOnProjectBuilt(jp, subscribers.keySet());
+					}
+					
 				});
 				subscribers.put(callbackCommandId, new SendClasspathNotificationsJob(logger, conn, callbackCommandId, isBatched));
 				logger.log("subsribers = " + subscribers);
@@ -106,6 +112,16 @@ public class ReusableClasspathListenerHandler {
 			}
 		}
 
+		private synchronized void sendNotificationOnProjectBuilt(IJavaProject jp, Collection<String> callbackIds) {
+			if (subscribers!=null) {
+				for (String callbackId : callbackIds) {
+					SendClasspathNotificationsJob sendNotificationJob = subscribers.get(callbackId);
+					sendNotificationJob.builtProjectQueue.add(jp);
+					sendNotificationJob.schedule();
+				}
+			}
+		}
+		
 		public synchronized void unsubscribe(String callbackCommandId) {
 			logger.log("unsubscribing from classpath changes: " + callbackCommandId);
 			if (subscribers != null) {

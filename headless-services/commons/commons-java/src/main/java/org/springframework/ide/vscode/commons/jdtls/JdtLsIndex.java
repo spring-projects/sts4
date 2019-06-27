@@ -23,7 +23,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.java.ClasspathIndex;
 import org.springframework.ide.vscode.commons.java.IJavaModuleData;
-import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.IType;
 import org.springframework.ide.vscode.commons.java.JavaUtils;
 import org.springframework.ide.vscode.commons.javadoc.JdtLsJavadocProvider;
@@ -65,31 +64,23 @@ public class JdtLsIndex implements ClasspathIndex {
 
 	final private Cache<JavaTypeHierarchyParams, CompletableFuture<List<IType>>> supertypesCache = CacheBuilder.newBuilder().expireAfterAccess(10, TimeUnit.SECONDS).build();
 	final private Cache<JavaTypeHierarchyParams, CompletableFuture<List<IType>>> subtypesCache = CacheBuilder.newBuilder().expireAfterAccess(10, TimeUnit.SECONDS).build();
-
-	final private Listener projectListener = new Listener() {
-
-		@Override
-		public void deleted(IJavaProject project) {
-			// ignore
-		}
-
-		@Override
-		public void created(IJavaProject project) {
-			// ignore
-		}
-
-		@Override
-		public void changed(IJavaProject project) {
-			binaryTypeCache.invalidateAll();
-			sourceTypeCache.invalidateAll();
-		}
-	};
+	
+	final private Listener projectListener;
 
 	public JdtLsIndex(STS4LanguageClient client, URI projectUri, ProjectObserver projectObserver) {
 		this.client = client;
 		this.projectUri = projectUri;
 		this.projectObserver = projectObserver;
 		this.javadocProvider = new JdtLsJavadocProvider(client, projectUri.toString());
+		
+		this.projectListener = ProjectObserver.onAny(project -> {
+			if (Objects.equals(project.getLocationUri(), projectUri)) {
+				binaryTypeCache.invalidateAll();
+				sourceTypeCache.invalidateAll();
+				supertypesCache.invalidateAll();
+				subtypesCache.invalidateAll();
+			}
+		});
 
 		this.projectObserver.addListener(projectListener);
 	}
