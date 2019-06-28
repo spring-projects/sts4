@@ -16,7 +16,7 @@ if branch == 'master':
               '      -p sts4-'+ branch +' -c pipeline.yml')
 else:
     fname = "pipeline-"+branch+".yml"
-    replace("pipeline.yml", "pipeline-"+branch+".yml", "snapshot", branch)
+    replace("pipeline.yml", "pipeline-"+branch+".yml", "((branch))", branch)
     with open(fname, 'r') as fin:
         print fin.read()
     cmd = ('fly -t tools set-pipeline ' + 

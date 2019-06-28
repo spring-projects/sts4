@@ -229,7 +229,7 @@ resources:
     access_key_id: ((s3_prod_accesskey))
     secret_access_key: ((s3_prod_secretkey))
     region_name: ((s3_region))
-    path: snapshot/STS4/vscode-extensions
+    path: snapshot/STS4/((branch))/vscode-extensions
     options:
     - "--acl public-read"
 # - name: atom-snapshot-website
@@ -265,17 +265,17 @@ resources:
   source:
     driver: s3
     bucket: ((s3_bucket))
-    key: versions/vscode-extensions
+    key: versions/((branch))/vscode-extensions
     access_key_id: ((s3_accesskey))
     secret_access_key: ((s3_secretkey))
     region_name: ((s3_region))
-    initial_version: 0.0.5-RC.6
+    initial_version: 1.8.0
 - name: theia-version
   type: semver
   source:
     driver: s3
     bucket: ((s3_bucket))
-    key: versions/theia-extensions
+    key: versions/((branch))/theia-extensions
     access_key_id: ((s3_accesskey))
     secret_access_key: ((s3_secretkey))
     region_name: ((s3_region))
