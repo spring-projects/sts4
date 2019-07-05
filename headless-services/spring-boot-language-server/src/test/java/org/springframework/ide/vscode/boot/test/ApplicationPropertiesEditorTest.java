@@ -92,6 +92,22 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		editor.assertProblems("key|extraneous input");
 	}
 
+	@Test public void bug_GH_STS4_314() throws Exception {
+		///See: https://github.com/spring-projects/sts4/issues/314
+		data("my.text", "java.lang.String", null, null);
+		Editor editor;
+		
+		editor = newEditor(
+				"my.text=something \\n escapy"
+		);
+		editor.assertProblems(/*NONE*/);
+		
+		editor = newEditor(
+				"my.text=something simple"
+		);
+		editor.assertProblems(/*NONE*/);
+	}
+	
 	@Test public void bug_158348104() throws Exception {
 		//See: https://www.pivotaltracker.com/story/show/158348104
 		data("spring.activemq.close-timeout", "java.time.Duration", null, null);

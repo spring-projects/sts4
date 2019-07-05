@@ -60,9 +60,20 @@ valueChar
   |  Exclamation
   |  Number
   |  Space
-  |  Backslash LineBreak
+  |  Backslash anyChar
   |  Equals
   |  Colon
+  ;
+
+anyChar
+  : LineBreak
+  | IdentifierChar
+  | Backslash
+  | Colon
+  | Equals
+  | Space
+  | Exclamation
+  | Number
   ;
 
 Backslash : '\\';

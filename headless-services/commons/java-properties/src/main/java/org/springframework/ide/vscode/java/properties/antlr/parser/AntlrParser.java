@@ -40,9 +40,11 @@ import com.google.common.collect.ImmutableList;
 
 /**
  * ANTLR based parser implementation
+ * <p>
+ * To regenerate the parser from Antlr4 grammar, see the
+ * generate-parser.sh bash script in this project's root.
  * 
  * @author Alex Boyko
- *
  */
 public class AntlrParser implements Parser {
 
