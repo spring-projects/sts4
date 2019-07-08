@@ -55,7 +55,7 @@ resources:
 - name: slack-notification
   type: slack-notification
   source:
-    url: https://hooks.slack.com/services/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
+    url: {{slack_webhook}}
 - name: docker-image
   type: docker-image
   source:
