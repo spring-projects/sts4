@@ -26,6 +26,8 @@ import org.springframework.ide.vscode.concourse.github.GithubInfoProvider;
 
 @SpringBootApplication
 public class ConcourseLanguageServerBootApp {
+	
+	deliberate-error 
 
 	private static final String SERVER_NAME = "concourse-language-server";
 
