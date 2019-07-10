@@ -95,7 +95,8 @@ export abstract class StsLanguageServerContribution extends BaseLanguageServerCo
             '-Dsts.lsp.client=theia',
             '-Dlsp.completions.indentation.enable=true',
             '-Dlsp.yaml.completions.errors.disable=true',
-            `-Dserver.port=${env.CLIENT_PORT}`
+            `-Dserver.port=${env.CLIENT_PORT}`,
+            '-XX:TieredStopAtLevel=1'
         );
         args.push(...this.jvmArguments);
 

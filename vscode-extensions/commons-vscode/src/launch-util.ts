@@ -153,7 +153,8 @@ export function activate(options: ActivatorOptions, context: VSCode.ExtensionCon
                                 '-Dserver.port=' + port,
                                 '-Dsts.lsp.client=vscode',
                                 '-Dsts.log.file=' + logfile, //old style log redirect
-                                '-Dlogging.file=' + logfile // spring boot log redirect
+                                '-Dlogging.file=' + logfile, // spring boot log redirect
+                                '-XX:TieredStopAtLevel=1'
                             ];
                             if (options.checkjvm) {
                                 options.checkjvm(context, jvm);
