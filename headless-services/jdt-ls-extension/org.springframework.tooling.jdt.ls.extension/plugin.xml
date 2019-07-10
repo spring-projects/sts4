@@ -3,8 +3,12 @@
 <plugin>
    <extension point="org.eclipse.jdt.ls.core.delegateCommandHandler">
       <delegateCommandHandler class="org.springframework.tooling.jdt.ls.extension.ClasspathListenerHandler">
-            <command id="sts.java.addClasspathListener"/>
-            <command id="sts.java.removeClasspathListener"/>
+            <command
+                  id="sts.java.addClasspathListener"
+                  static="true"/>
+            <command
+                  id="sts.java.removeClasspathListener"
+                  static="true"/>
        </delegateCommandHandler>
       <delegateCommandHandler
             class="org.springframework.tooling.jdt.ls.extension.JavadocHandler">
@@ -15,7 +19,8 @@
       <delegateCommandHandler
             class="org.springframework.tooling.jdt.ls.extension.JavaTypeHandler">
          <command
-               id="sts.java.type">
+               id="sts.java.type"
+               static="true">
          </command>
       </delegateCommandHandler>
       <delegateCommandHandler
@@ -33,19 +38,23 @@
       <delegateCommandHandler
             class="org.springframework.tooling.jdt.ls.extension.SearchHandler">
          <command
-               id="sts.java.search.types">
+               id="sts.java.search.types"
+               static="true">
          </command>
          <command
-               id="sts.java.search.packages">
+               id="sts.java.search.packages"
+               static="true">
          </command>
       </delegateCommandHandler>
       <delegateCommandHandler
             class="org.springframework.tooling.jdt.ls.extension.HierarchyHandler">
          <command
-               id="sts.java.hierarchy.subtypes">
+               id="sts.java.hierarchy.subtypes"
+               static="true">
          </command>
          <command
-               id="sts.java.hierarchy.supertypes">
+               id="sts.java.hierarchy.supertypes"
+               static="true">
          </command>
       </delegateCommandHandler>
       <delegateCommandHandler
