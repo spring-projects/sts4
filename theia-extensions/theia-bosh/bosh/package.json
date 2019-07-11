@@ -13,7 +13,7 @@
     "language-server"
   ],
   "dependencies": {
-    "@pivotal-tools/theia-languageclient": "0.0.9",
+    "@pivotal-tools/theia-languageclient": "0.0.10",
     "@theia/core": "latest",
     "@theia/languages": "latest",
     "@theia/monaco": "latest"

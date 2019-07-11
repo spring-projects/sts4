@@ -16,7 +16,7 @@
   ],
   "dependencies": {
     "@pivotal-tools/jvm-launch-utils": "0.0.11",
-    "@pivotal-tools/theia-languageclient": "0.0.9",
+    "@pivotal-tools/theia-languageclient": "0.0.10",
     "@theia/core": "latest",
     "@theia/editor": "latest",
     "@theia/java": "latest",
