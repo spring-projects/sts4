@@ -66,6 +66,8 @@ import com.google.common.collect.ImmutableList;
  */
 public class MavenProjectCacheTest {
 
+	private static final int TIMEOUT_SECONDS = 60;
+
 	private Sts4LanguageServer server;
 	private BasicFileObserver fileObserver;
 	private Path testProjectPath;
@@ -188,7 +190,7 @@ public class MavenProjectCacheTest {
 					e.printStackTrace();
 				}
 			}
-		}).get(30, TimeUnit.SECONDS);
+		}).get(TIMEOUT_SECONDS, TimeUnit.SECONDS);
 
 		assertTrue(classpathCacheFile.exists());
 		assertEquals(51, project.getClasspath().getClasspathEntries().stream().filter(cpe -> !cpe.isSystem()).count());
@@ -238,7 +240,7 @@ public class MavenProjectCacheTest {
 					e.printStackTrace();
 				}
 			}
-		}).get(30, TimeUnit.SECONDS);
+		}).get(TIMEOUT_SECONDS, TimeUnit.SECONDS);
 		progressDone.set(false);
 		verify(diagnosticService, never()).diagnosticEvent(any(ShowMessageException.class));
 
@@ -252,7 +254,7 @@ public class MavenProjectCacheTest {
 					e.printStackTrace();
 				}
 			}
-		}).get(30, TimeUnit.SECONDS);
+		}).get(TIMEOUT_SECONDS, TimeUnit.SECONDS);
 		progressDone.set(false);
 		verify(diagnosticService, times(1)).diagnosticEvent(any(ShowMessageException.class));
 		assertTrue(project.getClasspath().getClasspathEntries().isEmpty());
