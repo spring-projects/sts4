@@ -198,7 +198,7 @@ public class MemoizingProxy {
 						.defineField(F_CACHE, Cache.class, Opcodes.ACC_PRIVATE)
 						.method(CACHABLE_METHODS).intercept(MethodDelegation.to(SuperMethodInterceptor.class))
 						.defineConstructor(Visibility.PUBLIC).withParameters(argTypes).intercept(
-								MethodCall.invoke(klass.getConstructor(argTypes)).withAllArguments()
+								MethodCall.invoke(klass.getDeclaredConstructor(argTypes)).withAllArguments()
 								.andThen(METHOD_DELEGATION.to(ClassConstructorInterceptor.class))
 						);
 				
