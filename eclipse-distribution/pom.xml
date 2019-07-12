@@ -189,11 +189,11 @@
 					<layout>p2</layout>
 					<url>https://www.mihai-nita.net/eclipse</url>
 				</repository>
-				<repository>
+<!--				<repository>
 					<id>xtext-base</id>
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/modeling/tmf/xtext/updates/milestones/</url>
-				</repository>
+				</repository> -->
 				<repository>
 					<id>lsp4e</id>
 					<layout>p2</layout>
@@ -277,11 +277,11 @@
 					<layout>p2</layout>
 					<url>https://www.mihai-nita.net/eclipse</url>
 				</repository>
-				<repository>
+<!--				<repository>
 					<id>xtext-base</id>
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/modeling/tmf/xtext/updates/milestones/</url>
-				</repository>
+				</repository> -->
 				<repository>
 					<id>lsp4e</id>
 					<layout>p2</layout>
@@ -370,11 +370,11 @@
 					<layout>p2</layout>
 					<url>https://www.mihai-nita.net/eclipse</url>
 				</repository>
-				<repository>
+<!--				<repository>
 					<id>xtext-base</id>
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/modeling/tmf/xtext/updates/milestones/</url>
-				</repository>
+				</repository> -->
 				<repository>
 					<id>lsp4e</id>
 					<layout>p2</layout>
@@ -473,11 +473,11 @@
 					<layout>p2</layout>
 					<url>https://www.mihai-nita.net/eclipse</url>
 				</repository>
-				<repository>
+<!--				<repository>
 					<id>xtext-base</id>
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/modeling/tmf/xtext/updates/milestones/</url>
-				</repository>
+				</repository> -->
 				<repository>
 					<id>lsp4e</id>
 					<layout>p2</layout>
