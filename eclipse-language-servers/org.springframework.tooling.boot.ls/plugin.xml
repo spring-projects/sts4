@@ -39,8 +39,12 @@
          point="org.eclipse.core.contenttype.contentTypes">
 
 <!--            
-      base-type="org.eclipse.core.runtime.text" 
+      WARNING! 
+      Do not use  
       base-type="org.eclipse.jdt.core.javaProperties"
+      This causes reconciling of *any* properties file
+      as if it was a boot properties file.
+      See: https://github.com/spring-projects/sts4/issues/320
   -->
       <content-type
             base-type="org.eclipse.core.runtime.text" 
