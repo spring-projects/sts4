@@ -38,12 +38,31 @@
    <extension
          point="org.eclipse.core.contenttype.contentTypes">
 
-<!--            
+<!--
       WARNING! 
+      
+      TLDR; Always put 
+         base-type="org.eclipse.core.runtime.text" 
+      in *every* content type definiton.
+      
+      Longer explanation:
+      
       Do not use  
       base-type="org.eclipse.jdt.core.javaProperties"
-      This causes reconciling of *any* properties file
+      this causes reconciling of *any* properties file
       as if it was a boot properties file.
+      
+      Similarly
+      base-type="org.eclipse.core.runtime.xml" 
+      causes reconciling of *any* XML file
+      as if it was a Spring xml config file.
+      
+      Also to avoid some suspected bug/weirdness in Lsp4e
+      which I do not really understand, a base-type must allways 
+      be added. Therefore the only possible choice 
+      that makes everything work is
+      "org.eclipse.core.runtime.text".
+      
       See: https://github.com/spring-projects/sts4/issues/320
   -->
       <content-type
@@ -64,7 +83,7 @@
 
       <content-type id="org.springframework.boot.ide.xmlconfig"
             name="Spring XML Config File"
-            base-type="org.eclipse.core.runtime.xml" 
+            base-type="org.eclipse.core.runtime.text"
             priority="normal"
             default-charset="UTF-8">
             <describer class="org.eclipse.core.runtime.content.XMLRootElementContentDescriber2">
@@ -250,16 +269,6 @@
       </editor>
    </extension>
 
-<!--
-   <extension
-         point="org.eclipse.ui.editors">
-      <editorContentTypeBinding
-            contentTypeId="org.springframework.boot.ide.properties.application.yml"
-            editorId="org.eclipse.ui.genericeditor.GenericEditor">
-      </editorContentTypeBinding>
-   </extension>
--->
-
    <extension
          point="org.eclipse.ui.genericeditor.presentationReconcilers">
       <presentationReconciler
@@ -320,6 +329,7 @@
 
    </extension>
 
+   <!-- what is this for? Commented it out but everything seems to work
    <extension
          point="org.eclipse.core.filebuffers.documentSetup">
       <participant
@@ -341,5 +351,6 @@
             contentTypeId="org.springframework.boot.ide.xmlconfig">
       </participant>
    </extension>
+   -->
 
 </plugin>
