@@ -801,10 +801,10 @@
   resolved "https://registry.yarnpkg.com/@pivotal-tools/jvm-launch-utils/-/jvm-launch-utils-0.0.11.tgz#11e8cc4850aa16a91c7579a8e3ed2a071acc36ba"
   integrity sha512-PSBzegFv+m1AaAlHBtWzfxdxZG3RFJaTNk0ognOjDV+URrPnMWkD2DBt4pgEGynpnnK8G5WZZGVu5flcIsKGyQ==
 
-"@pivotal-tools/theia-languageclient@0.0.9":
-  version "0.0.9"
-  resolved "https://registry.yarnpkg.com/@pivotal-tools/theia-languageclient/-/theia-languageclient-0.0.9.tgz#d41036a33ec31e1f567a9fe728a1249c020beafa"
-  integrity sha512-8FzA4RrcxAQXDQiL+LWc1GOtezpTnciXliyChbTHcQfnSRd8/n6tkcRxWPeHa6Z+WsKJJluvZa44TbXo+CBW/g==
+"@pivotal-tools/theia-languageclient@0.0.10":
+  version "0.0.10"
+  resolved "https://registry.yarnpkg.com/@pivotal-tools/theia-languageclient/-/theia-languageclient-0.0.10.tgz#bbff8aef66ecbb68c9484390621d477a937dcdcc"
+  integrity sha512-Pd5h3Iz/L+Wxko3Il/A2docGwmlGYlcsAcsEyfvIsyCcIs8C5BBF7lg9sjnTSRzQ7P33+R7FZHCDLLIP9pn2jw==
   dependencies:
     "@pivotal-tools/jvm-launch-utils" "0.0.11"
     "@theia/core" latest
@@ -813,10 +813,10 @@
     "@theia/monaco" latest
 
 "@pivotal-tools/theia-spring-boot@file:spring-boot":
-  version "1.8.0"
+  version "1.10.0"
   dependencies:
     "@pivotal-tools/jvm-launch-utils" "0.0.11"
-    "@pivotal-tools/theia-languageclient" "0.0.9"
+    "@pivotal-tools/theia-languageclient" "0.0.10"
     "@theia/core" latest
     "@theia/editor" latest
     "@theia/java" latest

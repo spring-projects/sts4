@@ -9,8 +9,14 @@ spec:
   selector:
     app: theia-spring-boot
   ports:
-  - port: 80
+  - name: theia
+    port: 80
     targetPort: 3000
+  - name: debug
+    nodePort: 30031
+    port: 7999
+    protocol: TCP
+    targetPort: 7999
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -38,6 +44,8 @@ spec:
           imagePullPolicy: Never
           ports:
           - containerPort: 3000
+          - containerPort: 7999
+            name: "debug"
           volumeMounts:
           - name: source
             mountPath: /home/project

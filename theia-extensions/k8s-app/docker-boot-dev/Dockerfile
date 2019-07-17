@@ -22,6 +22,7 @@ RUN chmod g+rw /home && \
     mkdir -p /home/project && \
     chown -R theia:theia /home/theia && \
     chown -R theia:theia /home/project;
+
 WORKDIR /home/theia
 
 COPY theia-spring-boot.tgz ./theia-spring-boot.tgz
@@ -29,7 +30,7 @@ COPY package.json ./package.json
 RUN chmod g+rw ./package.json && \
     chown -R theia:theia ./package.json;
 
-USER theia
+# USER theia
 RUN yarn add ./theia-spring-boot.tgz --cache-folder ./ycache && rm -rf ./ycache && yarn theia build
 EXPOSE 3000
 ENV SHELL /bin/bash
