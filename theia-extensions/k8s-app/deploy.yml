@@ -45,20 +45,14 @@ spec:
             requests:
               cpu: "2000m"
               memory: 1000M
-        - name: git-sync
-          image: k8s.gcr.io/git-sync:v3.0.1
+      initContainers:
+        - name: git-clone
+          image: alpine/git
           volumeMounts:
           - name: source
             mountPath: /tmp/git
-          env:
-          - name: GIT_SYNC_REPO
-            value: https://github.com/spring-projects/spring-petclinic.git
-          - name: GIT_SYNC_BRANCH
-            value: master
-          - name: GIT_SYNC_DEST
-            value: spring-petclinic
-          - name: GIT_SYNC_PERMISSIONS
-            value: "0777"
+          workingDir: /tmp/git
+          command: ["git",  "clone", "https://github.com/spring-projects/spring-petclinic.git"]
       volumes:
         - name: source
           emptyDir: {}

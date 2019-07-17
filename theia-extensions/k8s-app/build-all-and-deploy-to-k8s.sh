@@ -14,7 +14,7 @@ cd docker-boot-dev
 # Then build it into a docker image
 docker build -t theia-spring-boot .
 
-# If using a 'kind' cluster, we must upload the image to the k8s cluster
+# If using a 'kind' cluster, we must upload the image to the cluster
 kind load docker-image theia-spring-boot
 
 cd ..
