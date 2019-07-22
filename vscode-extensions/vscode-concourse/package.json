@@ -32,6 +32,13 @@
       "type": "object",
       "title": "Concourse Language Server Options",
       "properties": {
+        "concourse.ls.logfile": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "The path of a file to write language server logs. If not set or null, then logs are discarded."
+        },
         "concourse.ls.java.heap": {
           "type": [
             "string",

@@ -133,10 +133,17 @@
           },
           "description": "Array of jmx urls pointing to remote spring boot applications to poll for live hover information. A typical url looks something like this: `service:jmx:rmi://localhost:9111/jndi/rmi://localhost:9111/jmxrmi`"
         },
+        "spring-boot.ls.logfile": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "The path of a file to write language server logs. If not set or null, then logs are discarded."
+        },
         "spring-boot.ls.java.home": {
           "type": [
             "string",
-            null
+            "null"
           ],
           "default": null,
           "description": "Override JAVA_HOME used for launching the spring-boot-language-server JVM process."
@@ -144,7 +151,7 @@
         "spring-boot.ls.java.heap": {
           "type": [
             "string",
-            null
+            "null"
           ],
           "default": null,
           "description": "Max JVM heap value, passed via -Xmx argument when launching spring-boot-language-server JVM process."

@@ -146,14 +146,14 @@ export function activate(options: ActivatorOptions, context: VSCode.ExtensionCon
                             let processLaunchoptions = {
                                 cwd: VSCode.workspace.rootPath
                             };
-                            let logfile = Path.join(tmpdir(), options.extensionId + '-' + Date.now()+'.log');
+                            let logfile : string = options.workspaceOptions.get("logfile") || "/dev/null";
+                            //The logfile = '/dev/null' is handled specifically by the language server process so it works on all OSs.
                             log('Redirecting server logs to ' + logfile);
                             const args = [
                                 '-Dspring.lsp.client-port='+port,
                                 '-Dserver.port=' + port,
                                 '-Dsts.lsp.client=vscode',
-                                '-Dsts.log.file=' + logfile, //old style log redirect
-                                '-Dlogging.file=' + logfile, // spring boot log redirect
+                                '-Dsts.log.file=' + logfile,
                                 '-XX:TieredStopAtLevel=1'
                             ];
                             if (options.checkjvm) {

@@ -49,6 +49,13 @@
     "configuration": {
       "title": "Cloudfoundry Manifest Language Server Configuration",
       "properties": {
+        "cloudfoundry-manifest.ls.logfile": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "The path of a file to write language server logs. If not set or null, then logs are discarded."
+        },
         "cloudfoundry-manifest.ls.java.heap": {
           "type": [
             "string",

@@ -64,6 +64,13 @@
       "type": "object",
       "title": "Bosh CLI Configuration",
       "properties": {
+        "bosh.ls.logfile": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "description": "The path of a file to write language server logs. If not set or null, then logs are discarded."
+        },
         "bosh.ls.java.heap": {
           "type": [
             "string",
