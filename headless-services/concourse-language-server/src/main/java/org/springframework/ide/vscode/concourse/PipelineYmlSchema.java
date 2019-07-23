@@ -745,6 +745,13 @@ public class PipelineYmlSchema implements YamlSchema {
 			addProp(put, "path", t_ne_string);
 			addProp(put, "current_app_name", t_ne_string);
 			addProp(put, "environment_variables", t_string_params);
+			addProp(put, "vars", t_params);
+			addProp(put, "vars_files", t_strings);
+			addProp(put, "docker_username", t_ne_string);
+			addProp(put, "docker_password", t_ne_string);
+			addProp(put, "show_app_log", t_boolean);
+			addProp(put, "no_start", t_boolean);
+			put.require(Constraints.mutuallyExclusive("no_start", "current_app_name"));
 
 			resourceTypes.def("cf", source, get, put);
 		}

@@ -4561,7 +4561,7 @@ public class ConcourseEditorTest {
 		editor.assertHoverContains("verbose", "Invoke `cf` cli using `CF_TRACE=true`");
 	}
 
-	@Test public void cfPutParamsHovers() throws Exception {
+	@Test public void cfPutParamsReconcileAndHovers() throws Exception {
 		Editor editor = harness.newEditor(
 				"resources:\n" +
 				"- name: pws\n" +
@@ -4576,12 +4576,30 @@ public class ConcourseEditorTest {
 				"      current_app_name: the-name\n" +
 				"      environment_variables:\n" +
 				"        key: value\n" +
-				"        key2: value2\n"
+				"        key2: value2\n" +
+				"      vars: {}\n" +
+				"      vars_files: []\n" +
+				"      docker_username: mike\n" +
+				"      docker_password: ((secret))\n" +
+				"      show_app_log: true\n" +
+				"      no_start: false\n"
 		);
+		
+		editor.assertProblems(
+				"current_app_name|Only one of 'no_start' and 'current_app_name' should be defined",
+				"no_start|Only one of 'no_start' and 'current_app_name' should be defined"
+		);
+		
 		editor.assertHoverContains("manifest", "Path to a application manifest file");
 		editor.assertHoverContains("path", "Path to the application to push");
 		editor.assertHoverContains("current_app_name", "zero-downtime deploy");
 		editor.assertHoverContains("environment_variables", "Environment variables");
+		editor.assertHoverContains("vars", "variables to pass");
+		editor.assertHoverContains("vars_files", "variables files to pass");
+		editor.assertHoverContains("docker_username", "username to authenticate");
+		editor.assertHoverContains("docker_password", "password when authenticating");
+		editor.assertHoverContains("show_app_log", "Tails the app log");
+		editor.assertHoverContains("no_start", "does not start it");
 	}
 
 	@Test public void bug_152918825_no_reconciling_for_double_parens_placeholders() throws Exception {
