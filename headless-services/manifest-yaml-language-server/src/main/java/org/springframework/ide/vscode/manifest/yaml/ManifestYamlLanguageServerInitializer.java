@@ -50,6 +50,7 @@ import org.springframework.ide.vscode.commons.yaml.reconcile.ASTTypeCache;
 import org.springframework.ide.vscode.commons.yaml.reconcile.TypeBasedYamlSymbolHandler;
 import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaBasedReconcileEngine;
 import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
+import org.springframework.ide.vscode.commons.yaml.snippet.SchemaBasedSnippetGenerator;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureProvider;
 import org.springframework.stereotype.Component;
 
@@ -80,6 +81,7 @@ public class ManifestYamlLanguageServerInitializer implements InitializingBean {
 		YamlASTProvider parser = new YamlParser();
 
 		schema = new ManifestYmlSchema(getHintProviders());
+		enableSnippets(schema, true);
 
 		YamlStructureProvider structureProvider = YamlStructureProvider.DEFAULT;
 		YamlAssistContextProvider contextProvider = new SchemaBasedYamlAssistContextProvider(schema);
@@ -192,6 +194,15 @@ public class ManifestYamlLanguageServerInitializer implements InitializingBean {
 				return stacksProvider;
 			}
 		};
+	}
+
+	public void enableSnippets(ManifestYmlSchema schema, boolean enable) {
+		//TODO: move to where schema bean is defined?
+		if (enable) {
+			schema.f.setSnippetProvider(new SchemaBasedSnippetGenerator(schema.getTypeUtil(), server::createSnippetBuilder));
+		} else {
+			schema.f.setSnippetProvider(null);
+		}
 	}
 
 	private CFTargetCache getCfTargetCache() {

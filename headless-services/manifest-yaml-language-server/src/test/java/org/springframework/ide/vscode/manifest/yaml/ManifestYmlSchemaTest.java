@@ -42,6 +42,7 @@ public class ManifestYmlSchemaTest {
 			"buildpacks",
 			"command",
 			"disk_quota",
+			"docker",
 			"domain",
 			"domains",
 			"env",

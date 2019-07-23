@@ -24,7 +24,7 @@ import org.springframework.ide.vscode.boot.editor.harness.PropertyIndexHarness;
  *
  */
 public class IndexNavigatorTest {
-
+	
 	@Test
 	public void testSimple() throws Exception {
 		PropertyIndexHarness harness = indexHarness();

@@ -442,6 +442,11 @@ public class ManifestYamlEditorTest {
 				// ---------------
 				"applications:\n" +
 				"- name: foo\n" +
+				"  docker:\n" +
+				"    image: <*>",
+				// ---------------
+				"applications:\n" +
+				"- name: foo\n" +
 				"  domain: <*>",
 				// ---------------
 				"applications:\n" +
@@ -1787,7 +1792,7 @@ public class ManifestYamlEditorTest {
 		);
 	}
 
-	@Test public void gotoSymbolInPipeline() throws Exception {
+	@Test public void gotoSymbolInDocument() throws Exception {
 		Editor editor = harness.newEditor(
 				"applications:\n" +
 				"- name: my-app\n" +
@@ -1979,7 +1984,80 @@ public class ManifestYamlEditorTest {
 
 	}
 
+	@Test
+	public void dockerAttributesValidation() throws Exception {
+		Editor editor;
+		
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: my-app\n" +
+				"  docker:\n" +
+				"    image: docker-image-repository/docker-image-name\n" +
+				"    bogus: bad"
+		);
+		editor.assertProblems("bogus|Unknown");
 
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: my-app\n" +
+				"  docker:\n" +
+				"    username: myself\n"
+		);
+		editor.assertProblems(
+				"docker|'image' is required"
+		);
+		
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: my-app\n" +
+				"  buildpacks:\n" +
+				"  - java-buildpack\n" +
+				"  docker:\n" +
+				"    image: somewhere/someimage\n"
+		);
+		editor.assertProblems(
+				"buildpacks|Only one of 'docker' and 'buildpacks'",
+				"docker|Only one of 'docker' and 'buildpacks'"
+		);
+
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: my-app\n" +
+				"  buildpack: java-buildpack\n" +
+				"  docker:\n" +
+				"    image: somewhere/someimage\n"
+		);
+		editor.assertProblems(
+				"buildpack|Only one of 'docker' and 'buildpack'",
+				"docker|Only one of 'docker' and 'buildpack'"
+		);
+		
+		editor = harness.newEditor(
+				"applications:\n" +
+				"- name: my-app\n" +
+				"  path: /somehere/in/filesystem\n" +
+				"  docker:\n" +
+				"    image: somewhere/someimage\n"
+		);
+		editor.assertProblems(
+				"path|Only one of 'docker' and 'path'",
+				"docker|Only one of 'docker' and 'path'"
+		);
+	}
+
+	@Test
+	public void dockerAttributesHovers() throws Exception {
+		Editor editor = harness.newEditor(
+				"applications:\n" +
+				"- name: my-app\n" +
+				"  docker:\n" +
+				"    image: docker-image-repository/docker-image-name\n" +
+				"    username: myself"
+		);
+		editor.assertHoverContains("docker", "If your app is contained in a Docker image");
+		editor.assertHoverContains("image", "Docker image");
+		editor.assertHoverContains("username", "If your app is contained in a Docker image");
+	}
 
 	//////////////////////////////////////////////////////////////////////////////
 
