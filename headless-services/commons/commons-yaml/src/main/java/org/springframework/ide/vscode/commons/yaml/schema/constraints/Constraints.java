@@ -47,6 +47,21 @@ import com.google.common.collect.Multimap;
  */
 public class Constraints {
 	
+	public static Constraint together(String p1, String p2) {
+		return and(
+				implies(p1, p2), 
+				implies(p2, p1)
+		);
+	}
+
+	public static Constraint and(Constraint c1, Constraint c2) {
+		return (DynamicSchemaContext dc, Node parent, Node node, YType type, IProblemCollector problems) -> {
+			c1.verify(dc, parent, node, type, problems);
+			c2.verify(dc, parent, node, type, problems);
+		};
+	}
+
+
 	public static Constraint implies(String foundProperty, String requiredProperty) {
 		return (DynamicSchemaContext dc, Node parent, Node node, YType type, IProblemCollector problems) -> {
 			if (node instanceof MappingNode) {
@@ -209,5 +224,4 @@ public class Constraints {
 			}
 		};
 	}
-
 }

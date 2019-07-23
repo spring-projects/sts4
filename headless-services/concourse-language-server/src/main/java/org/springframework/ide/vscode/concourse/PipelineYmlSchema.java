@@ -724,11 +724,17 @@ public class PipelineYmlSchema implements YamlSchema {
 
 			AbstractType source = f.ybean("CloudFoundrySource");
 			addProp(source, "api", t_cf_api_url).isRequired(true);
-			addProp(source, "username", t_ne_string).isRequired(true);
-			addProp(source, "password", t_ne_string).isRequired(true);
+			addProp(source, "username", t_ne_string);
+			addProp(source, "password", t_ne_string);
+			addProp(source, "client_id", t_ne_string);
+			addProp(source, "client_secret", t_ne_string);
 			addProp(source, "organization", t_ne_string).isRequired(true);
 			addProp(source, "space", t_ne_string).isRequired(true);
-			addProp(source, "skip_cert_check", t_ne_string);
+			addProp(source, "skip_cert_check", t_boolean);
+			
+			source.require(Constraints.together("username", "password"));
+			source.require(Constraints.together("client_id", "client_secret"));
+			source.require(Constraints.requireAtLeastOneOf("username", "password", "client_id", "client_secret"));
 
 			AbstractType get = f.ybean("CloudFoundryGetParams");
 			//get params deliberately left empty

@@ -4394,16 +4394,12 @@ public class ConcourseEditorTest {
 		editor.assertContextualCompletions(PLAIN_COMPLETION, "<*>",
 				//Snippet:
 				"api: $1\n" +
-				"    username: $2\n" +
-				"    password: $3\n" +
-				"    organization: $4\n" +
-				"    space: $5<*>"
+				"    organization: $2\n" +
+				"    space: $3<*>"
 				, // non-snippet:
 				"api: <*>",
 				"organization: <*>",
-				"password: <*>",
-				"space: <*>",
-				"username: <*>"
+				"space: <*>"
 		);
 
 		editor = harness.newEditor(
@@ -4412,14 +4408,126 @@ public class ConcourseEditorTest {
 				"  type: cf\n" +
 				"  source:\n" +
 				"    api: {{cf_api}}\n" +
-				"    username: {{cf_user}}\n" +
-				"    password: {{cf_password}}\n" +
 				"    organization: {{cf_org}}\n" +
 				"    space: {{cf_space}}\n" +
 				"    <*>"
 		);
 		editor.assertContextualCompletions(PLAIN_COMPLETION, "<*>",
-				"skip_cert_check: <*>"
+				"client_id: <*>",
+				"client_secret: <*>",
+				"password: <*>",
+				"skip_cert_check: <*>",
+				"username: <*>"
+		);
+	}
+	
+	@Test public void cfResourceSourceValidations() throws Exception {
+		Editor editor;
+		
+		editor = harness.newEditor(
+				"resources:\n" +
+				"- name: pws\n" +
+				"  type: cf\n" +
+				"  source:\n" +
+				"    api: https://api.run.pivotal.io\n" +
+				"    organization: my-org\n" +
+				"    space: my-space\n"
+		);
+		editor.assertProblems(
+				"pws|Unused",
+				"source|One of [username, password, client_id, client_secret] is required"
+		);
+		
+		editor = harness.newEditor(
+				"resources:\n" +
+				"- name: pws\n" +
+				"  type: cf\n" +
+				"  source:\n" +
+				"    api: https://api.run.pivotal.io\n" +
+				"    organization: my-org\n" +
+				"    space: my-space\n" +
+				"    username: myself"
+		);
+		editor.assertProblems(
+				"pws|Unused",
+				"username|assumes that 'password' is also defined"
+		);
+		
+		editor = harness.newEditor(
+				"resources:\n" +
+				"- name: pws\n" +
+				"  type: cf\n" +
+				"  source:\n" +
+				"    api: https://api.run.pivotal.io\n" +
+				"    organization: my-org\n" +
+				"    space: my-space\n" +
+				"    password: ((secret))"
+		);
+		editor.assertProblems(
+				"pws|Unused",
+				"password|assumes that 'username' is also defined"
+		);
+
+		editor = harness.newEditor(
+				"resources:\n" +
+				"- name: pws\n" +
+				"  type: cf\n" +
+				"  source:\n" +
+				"    api: https://api.run.pivotal.io\n" +
+				"    organization: my-org\n" +
+				"    space: my-space\n" +
+				"    client_id: ((secret))"
+		);
+		editor.assertProblems(
+				"pws|Unused",
+				"client_id|assumes that 'client_secret' is also defined"
+		);
+
+		editor = harness.newEditor(
+				"resources:\n" +
+				"- name: pws\n" +
+				"  type: cf\n" +
+				"  source:\n" +
+				"    api: https://api.run.pivotal.io\n" +
+				"    organization: my-org\n" +
+				"    space: my-space\n" +
+				"    client_secret: ((secret))"
+		);
+		editor.assertProblems(
+				"pws|Unused",
+				"client_secret|assumes that 'client_id' is also defined"
+		);
+		
+		editor = harness.newEditor(
+				"resources:\n" +
+				"- name: pws\n" +
+				"  type: cf\n" +
+				"  source:\n" +
+				"    api: https://api.run.pivotal.io\n" +
+				"    organization: my-org\n" +
+				"    space: my-space\n" +
+				"    client_id: ((secret))\n" +
+				"    client_secret: ((secret))"
+		);
+		editor.assertProblems(
+				"pws|Unused"
+		);
+
+		editor = harness.newEditor(
+				"resources:\n" +
+				"- name: pws\n" +
+				"  type: cf\n" +
+				"  source:\n" +
+				"    api: https://api.run.pivotal.io\n" +
+				"    organization: my-org\n" +
+				"    space: my-space\n" +
+				"    username: ((secret))\n" +
+				"    password: ((secret))\n" +
+				"    skip_cert_check: not-bool"
+		);
+		editor.assertProblems(
+				"pws|Unused",
+				"not-bool|boolean"
 		);
 	}
 
@@ -4432,6 +4540,8 @@ public class ConcourseEditorTest {
 				"    api: {{cf_api}}\n" +
 				"    username: {{cf_user}}\n" +
 				"    password: {{cf_password}}\n" +
+				"    client_id: ((cf_client_id))\n" +
+				"    client_secret: ((cf_client_secret))\n" +
 				"    organization: {{cf_org}}\n" +
 				"    space: {{cf_space}}\n" +
 				"    skip_cert_check: true<*>"
@@ -4439,6 +4549,8 @@ public class ConcourseEditorTest {
 		editor.assertHoverContains("api", "address of the Cloud Controller");
 		editor.assertHoverContains("username", "username used to authenticate");
 		editor.assertHoverContains("password", "password used to authenticate");
+		editor.assertHoverContains("client_id", "client id used to authenticate");
+		editor.assertHoverContains("client_secret", "client secret used to authenticate");
 		editor.assertHoverContains("organization", "organization to push");
 		editor.assertHoverContains("space", "space to push");
 		editor.assertHoverContains("skip_cert_check", "Check the validity of the CF SSL cert");
