@@ -4417,7 +4417,8 @@ public class ConcourseEditorTest {
 				"client_secret: <*>",
 				"password: <*>",
 				"skip_cert_check: <*>",
-				"username: <*>"
+				"username: <*>",
+				"verbose: <*>"
 		);
 	}
 	
@@ -4523,11 +4524,13 @@ public class ConcourseEditorTest {
 				"    space: my-space\n" +
 				"    username: ((secret))\n" +
 				"    password: ((secret))\n" +
-				"    skip_cert_check: not-bool"
+				"    skip_cert_check: not-bool-1\n" +
+				"    verbose: not-bool-2"
 		);
 		editor.assertProblems(
 				"pws|Unused",
-				"not-bool|boolean"
+				"not-bool-1|boolean",
+				"not-bool-2|boolean"
 		);
 	}
 
@@ -4544,7 +4547,8 @@ public class ConcourseEditorTest {
 				"    client_secret: ((cf_client_secret))\n" +
 				"    organization: {{cf_org}}\n" +
 				"    space: {{cf_space}}\n" +
-				"    skip_cert_check: true<*>"
+				"    skip_cert_check: true<*>\n" +
+				"    verbose: true"
 		);
 		editor.assertHoverContains("api", "address of the Cloud Controller");
 		editor.assertHoverContains("username", "username used to authenticate");
@@ -4554,6 +4558,7 @@ public class ConcourseEditorTest {
 		editor.assertHoverContains("organization", "organization to push");
 		editor.assertHoverContains("space", "space to push");
 		editor.assertHoverContains("skip_cert_check", "Check the validity of the CF SSL cert");
+		editor.assertHoverContains("verbose", "Invoke `cf` cli using `CF_TRACE=true`");
 	}
 
 	@Test public void cfPutParamsHovers() throws Exception {

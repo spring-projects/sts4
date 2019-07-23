@@ -731,6 +731,7 @@ public class PipelineYmlSchema implements YamlSchema {
 			addProp(source, "organization", t_ne_string).isRequired(true);
 			addProp(source, "space", t_ne_string).isRequired(true);
 			addProp(source, "skip_cert_check", t_boolean);
+			addProp(source, "verbose", t_boolean);
 			
 			source.require(Constraints.together("username", "password"));
 			source.require(Constraints.together("client_id", "client_secret"));
