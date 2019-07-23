@@ -10,14 +10,19 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.editor.harness;
 
-import org.springframework.ide.vscode.boot.metadata.FuzzyMapPropertyInfo;
 import org.springframework.ide.vscode.boot.metadata.ProjectBasedPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
 import org.springframework.ide.vscode.commons.util.FuzzyMap;
 
 public class AdHocPropertyHarness {
 
-	private FuzzyMap<PropertyInfo> adHocProperties = new FuzzyMapPropertyInfo();
+	private FuzzyMap<PropertyInfo> adHocProperties = new FuzzyMap<PropertyInfo>() {
+		@Override
+		protected String getKey(PropertyInfo entry) {
+			return entry.getId();
+		}
+		
+	};
 
 	protected final ProjectBasedPropertyIndexProvider adHocIndexProvider = project -> adHocProperties;
 
