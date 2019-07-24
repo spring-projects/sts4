@@ -4532,6 +4532,27 @@ public class ConcourseEditorTest {
 				"not-bool-1|boolean",
 				"not-bool-2|boolean"
 		);
+		
+		editor = harness.newEditor(
+				"resources:\n" +
+				"- name: pws\n" +
+				"  type: cf\n" +
+				"  source:\n" +
+				"    api: https://api.run.pivotal.io\n" +
+				"    organization: my-org\n" +
+				"    space: my-space\n" +
+				"    username: ((secret))\n" +
+				"    password: ((secret))\n" +
+				"    client_id: ((id)\n" +
+				"    client_secret: ((secret)\n"
+		);
+		editor.assertProblems(
+				"pws|Unused",
+				"username|Properties [username, password] should not be used together with [client_id, client_secret]",
+				"password|Properties [username, password] should not be used together with [client_id, client_secret]",
+				"client_id|Properties [username, password] should not be used together with [client_id, client_secret]",
+				"client_secret|Properties [username, password] should not be used together with [client_id, client_secret]"				
+		);
 	}
 
 	@Test public void cfResourceSourceHovers() throws Exception {

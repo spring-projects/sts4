@@ -58,6 +58,7 @@ import org.yaml.snakeyaml.nodes.MappingNode;
 import org.yaml.snakeyaml.nodes.Node;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * @author Kris De Volder
@@ -736,6 +737,10 @@ public class PipelineYmlSchema implements YamlSchema {
 			source.require(Constraints.together("username", "password"));
 			source.require(Constraints.together("client_id", "client_secret"));
 			source.require(Constraints.requireAtLeastOneOf("username", "password", "client_id", "client_secret"));
+			source.require(Constraints.mutuallyExclusive(
+					ImmutableList.of("username", "password"), 
+					ImmutableList.of("client_id", "client_secret")
+			));
 
 			AbstractType get = f.ybean("CloudFoundryGetParams");
 			//get params deliberately left empty

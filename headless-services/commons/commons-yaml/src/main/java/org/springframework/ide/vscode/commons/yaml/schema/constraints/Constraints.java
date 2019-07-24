@@ -37,6 +37,7 @@ import org.yaml.snakeyaml.nodes.Node;
 import org.yaml.snakeyaml.nodes.NodeTuple;
 
 import com.google.common.collect.ArrayListMultimap;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 
@@ -58,6 +59,14 @@ public class Constraints {
 		return (DynamicSchemaContext dc, Node parent, Node node, YType type, IProblemCollector problems) -> {
 			c1.verify(dc, parent, node, type, problems);
 			c2.verify(dc, parent, node, type, problems);
+		};
+	}
+
+	public static Constraint and(Constraint... constraints) {
+		return (DynamicSchemaContext dc, Node parent, Node node, YType type, IProblemCollector problems) -> {
+			for (Constraint c : constraints) {
+				c.verify(dc, parent, node, type, problems);
+			}
 		};
 	}
 
@@ -174,6 +183,30 @@ public class Constraints {
 		return (DynamicSchemaContext dc, Node parent, Node node, YType type, IProblemCollector problems) -> {
 			dispatcher.safeWithContext(dc).ifPresent((constraint) -> constraint.verify(dc, parent, node, type, problems));
 		};
+	}
+
+	public static Constraint mutuallyExclusive(List<String> group1, List<String> group2) {
+		return (DynamicSchemaContext dc, Node parent, Node node, YType type, IProblemCollector problems) -> {
+			if (node instanceof MappingNode) {
+				MappingNode map = (MappingNode) node;
+				Set<String> defined = dc.getDefinedProperties();
+				if (containsAny(defined, group1) && containsAny(defined, group2)) {
+					for (NodeTuple tup : map.getValue()) {
+						Node keyNode = tup.getKeyNode();
+						String key = NodeUtil.asScalar(keyNode);
+						if (group1.contains(key) || group2.contains(key)) {
+							problems.accept(problem(EXTRA_PROPERTY,
+									"Properties "+group1+" should not be used together with "+group2+" for '"+type+"'", keyNode
+							));
+						}
+					}
+				}
+			}
+		};
+	}
+
+	private static boolean containsAny(Set<String> set, Collection<String> lookFor) {
+		return lookFor.stream().filter(set::contains).findAny().isPresent();
 	}
 
 	public static Constraint mutuallyExclusive(String p1, String p2) {
