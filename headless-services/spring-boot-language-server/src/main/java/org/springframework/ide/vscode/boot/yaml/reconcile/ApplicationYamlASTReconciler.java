@@ -155,6 +155,10 @@ public class ApplicationYamlASTReconciler implements YamlASTReconciler {
 				IndexNavigator subNavAlias = nav.selectSubProperty(key);
 				match = subNavAlias.getExactMatch();
 				extension = subNavAlias.getExtensionCandidate();
+				if (subNav==null) {
+					//ensure subnav is not null, even if no real matches found.
+					subNav = subNavAlias;
+				}
 				if (match!=null || extension!=null) {
 					subNav = subNavAlias;
 					break; //stop at first alias that gives a result.

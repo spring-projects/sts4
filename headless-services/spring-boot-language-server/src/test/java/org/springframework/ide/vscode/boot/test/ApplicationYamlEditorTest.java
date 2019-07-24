@@ -78,20 +78,6 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		
 		Editor editor;
 
-		//Also check whether reconciler understands the structure when inside of a 'relaxed' name key 
-		editor = harness.newEditor(
-				"spring:\n" + 
-				"  resources:\n" + 
-				"    static_locations: bad\n" + 
-				"  devtools:\n" + 
-				"    restart:\n" + 
-				"      additional_paths: wrong\n"
-		);
-		editor.assertProblems(
-				"bad|boolean", //TODO: fill in proper expected message instead of XXXX
-				"wrong|boolean"  //TODO: fill in proper expected message instead of XXXX
-		);
-
 		// basic check
 		editor = harness.newEditor(
 				"spring:\n" + 
@@ -102,6 +88,20 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 				"      additional_paths: false\n"
 		);
 		editor.assertProblems(/*NONE*/);
+
+		//Also check whether reconciler understands the structure when inside of a 'relaxed' name key 
+		editor = harness.newEditor(
+				"spring:\n" + 
+				"  resources:\n" + 
+				"    static_locations: bad\n" + 
+				"  devtools:\n" + 
+				"    restart:\n" + 
+				"      additional_paths: wrong\n"
+		);
+		editor.assertProblems(
+				"bad|boolean",
+				"wrong|boolean"
+		);
 	}
 	
 	@Test public void bug_165724475() throws Exception {
