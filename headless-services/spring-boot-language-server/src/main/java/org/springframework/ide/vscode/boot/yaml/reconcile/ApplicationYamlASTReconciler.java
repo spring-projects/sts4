@@ -11,11 +11,13 @@
 
 package org.springframework.ide.vscode.boot.yaml.reconcile;
 
-import static org.springframework.ide.vscode.boot.yaml.reconcile.ApplicationYamlProblemType.*;
+import static org.springframework.ide.vscode.boot.yaml.reconcile.ApplicationYamlProblemType.YAML_DEPRECATED_ERROR;
+import static org.springframework.ide.vscode.boot.yaml.reconcile.ApplicationYamlProblemType.YAML_DEPRECATED_WARNING;
 import static org.springframework.ide.vscode.boot.yaml.reconcile.ApplicationYamlProblemType.YAML_DUPLICATE_KEY;
 import static org.springframework.ide.vscode.commons.yaml.ast.NodeUtil.asScalar;
 import static org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST.getChildren;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -59,6 +61,8 @@ import org.yaml.snakeyaml.nodes.NodeId;
 import org.yaml.snakeyaml.nodes.NodeTuple;
 import org.yaml.snakeyaml.nodes.ScalarNode;
 import org.yaml.snakeyaml.nodes.SequenceNode;
+
+import com.google.common.collect.ImmutableSet;
 
 /**
  * @author Kris De Volder
@@ -139,24 +143,21 @@ public class ApplicationYamlASTReconciler implements YamlASTReconciler {
 
 	private void reconcile(YamlFileAST root, NodeTuple entry, IndexNavigator nav) {
 		Node keyNode = entry.getKeyNode();
-		String key = asScalar(keyNode);
-		if (key==null) {
+		String _key = asScalar(keyNode);
+		if (_key==null) {
 			expectScalar(keyNode);
 		} else {
-			IndexNavigator subNav = nav.selectSubProperty(key);
-			PropertyInfo match = subNav.getExactMatch();
-			PropertyInfo extension = subNav.getExtensionCandidate();
-			if (match==null && extension==null) {
-				//nothing found for this key. Maybe user is using camelCase variation of the key?
-				String keyAlias = StringUtil.camelCaseToHyphens(key);
-				IndexNavigator subNavAlias = nav.selectSubProperty(keyAlias);
+			IndexNavigator subNav = null;
+			PropertyInfo match = null;
+			PropertyInfo extension = null;
+			//Try different 'relaxed' variants for this key. Maybe user is using camelCase or snake case?
+			for (String key : keyAliases(_key)) {
+				IndexNavigator subNavAlias = nav.selectSubProperty(key);
 				match = subNavAlias.getExactMatch();
 				extension = subNavAlias.getExtensionCandidate();
 				if (match!=null || extension!=null) {
-					//Got something for the alias, so use that instead.
-					//Note: do not swap for alias unless we actually found something.
-					// This gives more logical errors (in terms of user's key, not its canonical alias)
 					subNav = subNavAlias;
+					break; //stop at first alias that gives a result.
 				}
 			}
 			if (match!=null && extension!=null) {
@@ -181,6 +182,14 @@ public class ApplicationYamlASTReconciler implements YamlASTReconciler {
 				unkownProperty(root.getDocument().getUri(), keyNode, subNav.getPrefix(), entry, quickFixes.MISSING_PROPERTY);
 			}
 		}
+	}
+
+	private Collection<String> keyAliases(String originalKey) {
+		ImmutableSet.Builder<String> builder = ImmutableSet.builder();
+		builder.add(originalKey);
+		builder.add(StringUtil.camelCaseToHyphens(originalKey));
+		builder.add(StringUtil.snakeCaseToHyphens(originalKey));
+		return builder.build();
 	}
 
 	/**

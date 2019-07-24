@@ -71,37 +71,37 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 
 	////////////////////////////////////////////////////////////////////////////////////////
 	
-	@Ignore //Ignored because this bug is not yet fixed so the test fails.
 	@Test public void bug_GH_327() throws Exception {
 		//See https://github.com/spring-projects/sts4/issues/327
-		data("spring.resources.static-locations", "java.lang.String[]", null, "Blah");
-		data("spring.devtools.restart.additional-paths", "java.util.List<java.lang.String>", null, "Blah blah");
+		data("spring.resources.static-locations", "java.lang.Boolean", null, "Blah");
+		data("spring.devtools.restart.additional-paths", "java.lang.Boolean", null, "Blah blah");
 		
 		Editor editor;
-		
-		editor = harness.newEditor(
-				"spring:\n" + 
-				"  resources:\n" + 
-				"    static_locations: []\n" + 
-				"  devtools:\n" + 
-				"    restart:\n" + 
-				"      additional_paths: []\n"
-		);
-		editor.assertProblems(/*NONE*/);
-		
+
 		//Also check whether reconciler understands the structure when inside of a 'relaxed' name key 
 		editor = harness.newEditor(
 				"spring:\n" + 
 				"  resources:\n" + 
-				"    static_locations: not-a-list-1\n" + 
+				"    static_locations: bad\n" + 
 				"  devtools:\n" + 
 				"    restart:\n" + 
-				"      additional_paths: not-a-list-2\n"
+				"      additional_paths: wrong\n"
 		);
 		editor.assertProblems(
-				"not-a-list-1|XXXX", //TODO: fill in proper expected message instead of XXXX
-				"not-a-list-2|XXXX"  //TODO: fill in proper expected message instead of XXXX
+				"bad|boolean", //TODO: fill in proper expected message instead of XXXX
+				"wrong|boolean"  //TODO: fill in proper expected message instead of XXXX
 		);
+
+		// basic check
+		editor = harness.newEditor(
+				"spring:\n" + 
+				"  resources:\n" + 
+				"    static_locations: true\n" + 
+				"  devtools:\n" + 
+				"    restart:\n" + 
+				"      additional_paths: false\n"
+		);
+		editor.assertProblems(/*NONE*/);
 	}
 	
 	@Test public void bug_165724475() throws Exception {

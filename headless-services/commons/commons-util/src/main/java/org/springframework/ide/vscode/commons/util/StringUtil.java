@@ -257,4 +257,8 @@ public class StringUtil {
 
 		return queryindex == queryChars.length;
 	}
+
+	public static String snakeCaseToHyphens(String snakeString) {
+		return snakeString.replace('_', '-').toLowerCase();
+	}
 }
