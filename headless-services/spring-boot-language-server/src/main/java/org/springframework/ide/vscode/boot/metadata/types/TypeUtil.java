@@ -578,6 +578,13 @@ public class TypeUtil {
 		}
 		return false;
 	}
+	
+	public IType getSuperType(IType type) {
+		if (type!=null) {
+			return findType(type.getSuperclassName());
+		}
+		return null;
+	}
 
 	private IType findType(String typeName) {
 		try {

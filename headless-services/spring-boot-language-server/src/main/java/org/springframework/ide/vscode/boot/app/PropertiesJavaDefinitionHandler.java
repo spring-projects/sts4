@@ -72,7 +72,7 @@ public class PropertiesJavaDefinitionHandler implements DefinitionHandler, Langu
 		PropertyFinder propertyFinder = new PropertyFinder(index, typeUtil, doc, offset);
 		Node node = propertyFinder.findNode();
 		if (node instanceof Key) {
-			Collection<IMember> propertyJavaElements = PropertiesDefinitionCalculator.getPropertyJavaElements(propertyFinder, project, ((Key) node).decode());
+			Collection<IMember> propertyJavaElements = PropertiesDefinitionCalculator.getPropertyJavaElements(typeUtil, propertyFinder, project, ((Key) node).decode());
 			return PropertiesDefinitionCalculator.getLocations(javaElementLocationProvider, project, propertyJavaElements);
 		} else if (node instanceof Value) {
 			Value value = (Value) node;

@@ -140,7 +140,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		);
 		editor.assertProblems(/*NONE*/);
 	}
-
+	
 	@Test public void bug_158348104() throws Exception {
 		//See: https://www.pivotaltracker.com/story/show/158348104
 		data("spring.activemq.close-timeout", "java.time.Duration", null, null);
@@ -541,6 +541,31 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 
 		definitionLinkAsserts.assertLinkTargets(editor, "data", project, method("demo.FooProperties", "setData", "demo.ColorData"));
 		definitionLinkAsserts.assertLinkTargets(editor, "wavelen", project, method("demo.ColorData", "setWavelen", "double"));
+	}
+	
+	@Test
+	public void testInheritedPropertyLinkTarget() throws Exception {
+		//See: https://github.com/spring-projects/sts4/issues/326
+		MavenJavaProject project = createPredefinedMavenProject("super-property-nav-sample");
+		useProject(project);
+
+		Editor editor = harness.newEditor(
+				"initializr:\n" + 
+				"  languages:\n" + 
+				"  - name: foo\n" + 
+				"    id: yada\n" + 
+				"    default: false\n" +
+				"    bogus: whatever\n"
+		);
+
+		//io.spring.initializr.metadata.DefaultMetadataElement.setDefault(boolean)
+		//io.spring.initializr.metadata.MetadataElement.setId(String)
+		//io.spring.initializr.metadata.MetadataElement.setName(String)
+		definitionLinkAsserts.assertLinkTargets(editor, "name", project, method("io.spring.initializr.metadata.MetadataElement", "setName", "java.lang.String"));
+		definitionLinkAsserts.assertLinkTargets(editor, "id", project, method("io.spring.initializr.metadata.MetadataElement", "setId", "java.lang.String"));
+		definitionLinkAsserts.assertLinkTargets(editor, "default", project, method("io.spring.initializr.metadata.DefaultMetadataElement", "setDefault", "boolean"));
+		
+		definitionLinkAsserts.assertLinkTargets(editor, "bogus", project /*NONE*/);
 	}
 
 	@Test public void testHyperlinkTargets() throws Exception {

@@ -52,15 +52,15 @@ public class PropertiesDefinitionCalculator {
 		return null;
 	}
 
-	public static Collection<IMember> getPropertyJavaElements(PropertyFinder propertyFinder, IJavaProject project, String propertyKey) {
+	public static Collection<IMember> getPropertyJavaElements(TypeUtil typeUtil, PropertyFinder propertyFinder, IJavaProject project, String propertyKey) {
 		PropertyInfo best = propertyFinder.findBestHoverMatch(propertyKey);
 		if (best != null) {
-			return getPropertyJavaElement(project, best);
+			return getPropertyJavaElement(typeUtil, project, best);
 		}
 		return ImmutableList.of();
 	}
 
-	public static Collection<IMember> getPropertyJavaElement(IJavaProject project, PropertyInfo property) {
+	public static Collection<IMember> getPropertyJavaElement(TypeUtil typeUtil, IJavaProject project, PropertyInfo property) {
 		List<PropertySource> sources = property.getSources();
 		ImmutableList.Builder<IMember> elements = ImmutableList.builder();
 		if (sources != null) {
@@ -74,7 +74,7 @@ public class PropertiesDefinitionCalculator {
 						if (methodSig!=null) {
 							method = getMethod(type, methodSig);
 						} else {
-							method = getPropertyMethod(type, property.getName());
+							method = getPropertyMethod(typeUtil, type, property.getName());
 						}
 					}
 					if (method!=null) {
@@ -146,13 +146,16 @@ public class PropertiesDefinitionCalculator {
 		}
 	}
 
-	public static IMethod getPropertyMethod(IType type, String propName) {
+	public static IMethod getPropertyMethod(TypeUtil typeUtil, IType type, String propName) {
 		String[] accessors = { "set", "get", "is" };
-		for (String a : accessors) {
-			IMethod propertyMethod = getAccessor(type, a, propName);
-			if (propertyMethod != null) {
-				return propertyMethod;
+		while (type!=null && !"java.lang.Object".equals(type.getFullyQualifiedName())) {
+			for (String a : accessors) {
+				IMethod propertyMethod = getAccessor(type, a, propName);
+				if (propertyMethod != null) {
+					return propertyMethod;
+				}
 			}
+			type = typeUtil.getSuperType(type);
 		}
 		return null;
 	}

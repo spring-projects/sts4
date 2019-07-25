@@ -1,0 +1,5 @@
+initializr:
+  languages:
+  - name: ffo
+    id: yada
+    default: false
