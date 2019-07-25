@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.yaml.schema;
 
+import org.springframework.ide.vscode.commons.languageserver.util.PlaceHolderString;
 import org.springframework.ide.vscode.commons.util.Renderable;
 
 public interface YValueHint {
@@ -22,7 +23,7 @@ public interface YValueHint {
 	 * on the next line and indented to line-up relative to the indentation of
 	 * the line where the value itself is being inserted.
 	 */
-	String getExtraInsertion();
+	PlaceHolderString getExtraInsertion();
 
 	/**
 	 * An optional documentation string (i.e. shown in javadoc side hover in Eclipse style

@@ -424,7 +424,7 @@ public class ConcourseModel {
 						snippet.text("\n  "+p.getName()+": ");
 						snippet.placeHolder();
 					}
-					return snippet.toString();
+					return snippet.build();
 				}
 			}
 			return null;

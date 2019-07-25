@@ -17,6 +17,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.eclipse.lsp4j.TextEdit;
+import org.springframework.ide.vscode.commons.languageserver.util.PlaceHolderString;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
@@ -322,7 +323,7 @@ public class DocumentEdits implements ProposalApplier {
 
 	private List<Edit> edits = new ArrayList<Edit>();
 	private IDocument doc;
-	final private boolean hasSnippets;
+	private boolean hasSnippets;
 
 	/**
 	 * When this is true, the cursor is moved after each edit, to be positioned right after the
@@ -337,7 +338,7 @@ public class DocumentEdits implements ProposalApplier {
 		this.doc = doc;
 		this.hasSnippets = hasSnippets;
 	}
-
+	
 	public void delete(int start, int end) {
 		Assert.isLegal(start<=end);
 		edits.add(new Deletion(grabCursor, start, end));
@@ -345,6 +346,17 @@ public class DocumentEdits implements ProposalApplier {
 
 	public void delete(int offset, String text) {
 		delete(offset, offset+text.length());
+	}
+
+	public void insertSnippet(int offset, String snippet) {
+		//The way we track/handle snippet usage is not totally correct.
+		//There is a bug here that if we compose multiple edits, some of which
+		//use snippet placeholders and others which don't, all will be considered
+		//as using snippets. This may pose problems if somehow literal text that
+		//looks like a placeholder is combined with real snippet. Then all will
+		//be treated as a snippet.
+		hasSnippets |= true; 
+		edits.add(new Insertion(grabCursor, offset, snippet.toString()));
 	}
 
 	public void insert(int offset, String insert) {
@@ -499,5 +511,4 @@ public class DocumentEdits implements ProposalApplier {
 	final public boolean hasSnippets() {
 		return hasSnippets;
 	}
-
 }

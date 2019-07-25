@@ -77,6 +77,18 @@ public class PlaceHolderString {
 		this.string = string;
 	}
 
+	public boolean hasPlaceHolders() {
+		if (placeHolders.isEmpty()) {
+			return false;
+		}
+		if (placeHolders.size()==1) {
+			PlaceHolder placeHolder = CollectionUtil.getAny(placeHolders.values());
+			if (string.length()==placeHolder.getEnd()) {
+				return false;
+			}
+		}
+		return true;
+	}
 
 	@Override
 	public String toString() {

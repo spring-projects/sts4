@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.yaml.schema;
 
+import org.springframework.ide.vscode.commons.languageserver.util.PlaceHolderString;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.Renderable;
 
@@ -19,7 +20,7 @@ public class BasicYValueHint implements YValueHint {
 
 	private final String value;
 	private String label;
-	private Supplier<String> extraInsertion = null;
+	private Supplier<PlaceHolderString> extraInsertion = null;
 	private Renderable documentation;
 
 	public BasicYValueHint(String value, String label) {
@@ -85,12 +86,12 @@ public class BasicYValueHint implements YValueHint {
 	}
 
 	@Override
-	public String getExtraInsertion() {
-		Supplier<String> ei = this.extraInsertion;
+	public PlaceHolderString getExtraInsertion() {
+		Supplier<PlaceHolderString> ei = this.extraInsertion;
 		return ei==null ? null : ei.get();
 	}
 
-	public BasicYValueHint setExtraInsertion(Supplier<String> insertions) {
+	public BasicYValueHint setExtraInsertion(Supplier<PlaceHolderString> insertions) {
 		Assert.isLegal(this.extraInsertion==null);
 		this.extraInsertion = insertions;
 		return this;

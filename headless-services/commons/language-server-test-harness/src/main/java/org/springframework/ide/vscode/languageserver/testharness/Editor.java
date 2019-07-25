@@ -717,12 +717,13 @@ public class Editor {
 		setText(saveText);
 	}
 
-	public void assertCompletionWithLabel(Predicate<String> expectLabel, String expectedResult) throws Exception {
+	public CompletionItem assertCompletionWithLabel(Predicate<String> expectLabel, String expectedResult) throws Exception {
 		CompletionItem completion = assertCompletionWithLabel(expectLabel);
 		String saveText = getText();
 		apply(completion);
 		assertEquals(expectedResult, getText());
 		setText(saveText);
+		return completion;
 	}
 
 	public void setSelection(int start, int end) {

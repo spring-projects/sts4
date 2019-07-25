@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticSeverity;
+import org.eclipse.lsp4j.InsertTextFormat;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Rule;
@@ -4381,6 +4382,24 @@ public class ConcourseEditorTest {
 				"    - build-it"
 		);
 		editor.assertProblems(/*NONE*/);
+	}
+	
+	@Test public void cfResourceTypeCompletion() throws Exception {
+		Editor editor = harness.newEditor(
+				"resources:\n" +
+				"- name: foo\n" +
+				"  type: <*>"
+		);
+		CompletionItem item = editor.assertCompletionWithLabel(label -> label.startsWith("cf"), 
+				"resources:\n" + 
+				"- name: foo\n" + 
+				"  type: cf\n" + 
+				"  source:\n" + 
+				"    api: $1\n" + 
+				"    organization: $2\n" + 
+				"    space: $3<*>"
+		);
+		assertEquals(InsertTextFormat.Snippet, item.getInsertTextFormat());
 	}
 
 	@Test public void cfResourceSourceCompletions() throws Exception {
