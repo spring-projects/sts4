@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 
+import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.ExternalCommand;
 import org.springframework.ide.vscode.commons.util.ExternalProcess;
 
@@ -32,6 +33,7 @@ public class MavenBuilder {
 	public void execute() throws IOException, InterruptedException, TimeoutException {
 		Path mvnwPath = System.getProperty("os.name").toLowerCase().startsWith("win") ? projectPath.resolve("mvnw.cmd")
 				: projectPath.resolve("mvnw");
+		Assert.isLegal(mvnwPath.toFile().isFile(), "No maven wrapper found at: "+mvnwPath);
 		mvnwPath.toFile().setExecutable(true);
 		List<String> all = new ArrayList<>(1 + targets.size() + properties.size());
 		all.add(mvnwPath.toAbsolutePath().toString());
