@@ -2,14 +2,16 @@
 set -e
 
 # Create k8s cluster using 'kind'
-kind create cluster
-export KUBECONFIG="$(kind get kubeconfig-path --name="kind")"
-kubectl cluster-info
+#kind create cluster
+#export KUBECONFIG="$(kind get kubeconfig-path --name="kind")"
+#kubectl cluster-info
 
-cd docker-boot-dev
+workdir=$(pwd)
+
+#cd docker-boot-dev
 
 # Build the 'theia-spring-boot' package
-./create-theia-boot-pkg.sh
+#./create-theia-boot-pkg.sh
 
 # Then build it into a docker image
 docker build -t theia-spring-boot .
@@ -17,7 +19,7 @@ docker build -t theia-spring-boot .
 # If using a 'kind' cluster, we must upload the image to the cluster
 kind load docker-image theia-spring-boot
 
-cd ..
+cd ${workdir}
 
 # Deploy to the cluster
 ./deploy_theia_k8s.sh

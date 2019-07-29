@@ -16,13 +16,14 @@ RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - \
  && apt-get update \
  && apt-get install -y yarn
 
-RUN adduser --disabled-password --gecos '' theia
-RUN chmod g+rw /home && \
-    mkdir -p /home/project && \
-    chown -R theia:theia /home/theia && \
-    chown -R theia:theia /home/project;
+RUN mkdir -p /home/project
+# RUN adduser --disabled-password --gecos '' theia
+# RUN chmod g+rw /home && \
+#     mkdir -p /home/project && \
+#     chown -R theia:theia /home/theia && \
+#     chown -R theia:theia /home/project;
 WORKDIR /home/theia
-USER theia
+#USER theia
 
 ADD package.json ./package.json
 RUN yarn --cache-folder ./ycache && rm -rf ./ycache

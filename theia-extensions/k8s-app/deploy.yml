@@ -35,7 +35,8 @@ spec:
         app: theia-spring-boot
     spec:
       securityContext:
-        fsGroup: 3000
+         runAsUser: 0
+#        fsGroup: 1000
       containers:
         - name: theia-spring-boot
           image: theia-spring-boot
