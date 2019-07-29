@@ -5,7 +5,7 @@ RUN apt-get update && apt-get install -y \
   gettext-base \
   git \
   jq \
-  openjdk-8-jdk=8u162-b12-1 openjdk-8-jre=8u162-b12-1 openjdk-8-jdk-headless=8u162-b12-1 openjdk-8-jre-headless=8u162-b12-1 openjdk-8-source=8u162-b12-1 \
+  openjdk-8-jdk openjdk-8-jre openjdk-8-jdk-headless openjdk-8-jre-headless openjdk-8-source=8u162-b12-1 \
   curl
 
 RUN curl -sL https://deb.nodesource.com/setup_8.x | bash - \
