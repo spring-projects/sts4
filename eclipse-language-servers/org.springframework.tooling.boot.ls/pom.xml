@@ -17,7 +17,16 @@
 
 	<build>
 		<plugins>
-			
+
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-compiler-plugin</artifactId>
+				<version>${tycho-version}</version>
+				<configuration>
+					<compilerArgument>-warn:+discouraged,forbidden</compilerArgument>
+				</configuration>
+			</plugin>
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
@@ -63,7 +72,7 @@
 					</dependency-resolution>
 				</configuration>
 			</plugin>
-			
+
 			<plugin>
 				<artifactId>maven-clean-plugin</artifactId>
 				<version>3.1.0</version>
@@ -75,7 +84,7 @@
 					</filesets>
 				</configuration>
 			</plugin>
-			
+
 		</plugins>
 	</build>
 
