@@ -18,7 +18,6 @@ import org.springsource.ide.eclipse.commons.livexp.ui.PrefsPageSection;
 
 import com.google.common.collect.ImmutableList;
 
-@SuppressWarnings("restriction")
 public class RemoteAppsPrefsPage extends PreferencePageWithSections {
 
 	public static final String PREF_REMOTE_BOOT_APPS_JSON = "boot-java.remote-apps";

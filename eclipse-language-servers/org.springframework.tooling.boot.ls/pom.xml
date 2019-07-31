@@ -19,15 +19,6 @@
 		<plugins>
 
 			<plugin>
-				<groupId>org.eclipse.tycho</groupId>
-				<artifactId>tycho-compiler-plugin</artifactId>
-				<version>${tycho-version}</version>
-				<configuration>
-					<compilerArgument>-warn:+discouraged,forbidden</compilerArgument>
-				</configuration>
-			</plugin>
-
-			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
 				<version>3.1.1</version>
@@ -86,6 +77,7 @@
 			</plugin>
 
 		</plugins>
+
 	</build>
 
 </project>

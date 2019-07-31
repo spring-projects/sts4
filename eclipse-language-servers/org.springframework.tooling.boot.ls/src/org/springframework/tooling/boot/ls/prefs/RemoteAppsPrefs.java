@@ -27,7 +27,6 @@ import org.springsource.ide.eclipse.commons.livexp.util.Log;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 
-@SuppressWarnings("restriction")
 public class RemoteAppsPrefs {
 
 	public static final String REMOTE_APPS_KEY = "remote-apps";

@@ -52,7 +52,6 @@ import com.google.common.collect.ImmutableSet;
  * 
  * @author Martin Lippert
  */
-@SuppressWarnings("restriction")
 public class DelegatingStreamConnectionProvider implements StreamConnectionProvider {
 
 	private StreamConnectionProvider provider;
