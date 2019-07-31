@@ -17,7 +17,6 @@ Require-Bundle: org.eclipse.jdt.launching;bundle-version="3.9.0",
  org.eclipse.lsp4j.jsonrpc;bundle-version="0.6.0",
  org.eclipse.ui.workbench,
  org.eclipse.jface,
- org.eclipse.xtext.xbase.lib,
  org.springframework.tooling.ls.eclipse.commons;bundle-version="0.2.0",
  org.eclipse.core.resources,
  org.eclipse.ui,
@@ -28,7 +27,8 @@ Require-Bundle: org.eclipse.jdt.launching;bundle-version="3.9.0",
  org.apache.commons.lang3,
  org.eclipse.wst.sse.ui;bundle-version="1.5.0";resolution:=optional,
  org.json;bundle-version="1.0.0"
-Import-Package: com.google.gson;version="2.7.0",
+Import-Package: com.google.common.base,
+ com.google.gson;version="2.7.0",
  org.eclipse.jface.preference,
  org.osgi.framework
 Bundle-Activator: org.springframework.tooling.boot.ls.BootLanguageServerPlugin
