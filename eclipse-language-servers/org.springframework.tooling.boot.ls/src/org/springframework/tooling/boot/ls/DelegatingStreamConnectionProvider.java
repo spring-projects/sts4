@@ -21,7 +21,6 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.tuple.Pair;
@@ -53,6 +52,7 @@ import com.google.common.collect.ImmutableSet;
  * 
  * @author Martin Lippert
  */
+@SuppressWarnings("restriction")
 public class DelegatingStreamConnectionProvider implements StreamConnectionProvider {
 
 	private StreamConnectionProvider provider;
