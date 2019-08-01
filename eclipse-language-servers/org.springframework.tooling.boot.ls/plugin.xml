@@ -81,12 +81,13 @@
             priority="high">
       </content-type>
 
-      <content-type id="org.springframework.boot.ide.xmlconfig"
+      <content-type
+            base-type="org.eclipse.core.runtime.xml"
+            default-charset="UTF-8"
+            id="org.springframework.boot.ide.xmlconfig"
             name="Spring XML Config File"
-            base-type="org.eclipse.core.runtime.text"
-            priority="normal"
-            default-charset="UTF-8">
-            <describer class="org.eclipse.core.runtime.content.XMLRootElementContentDescriber2">
+            priority="normal">
+            <describer class="org.springframework.tooling.boot.ls.xml.XMLRootElementContentDescriber2">
                   <parameter name="element" value="beans"/>
             </describer>
       </content-type>
