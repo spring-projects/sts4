@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.tooling.ls.eclipse.commons;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -94,7 +95,7 @@ public class HighlightsCodeLensProvider extends AbstractCodeMiningProvider {
 									.collect(Collectors.toList());
 						}
 					}
-					return null;
+					return Collections.emptyList();
 				});
 			}
 			else {
