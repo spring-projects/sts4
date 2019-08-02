@@ -20,6 +20,7 @@ import java.util.Map;
 import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -39,6 +40,8 @@ public class SendClasspathNotificationsJob extends Job {
 	private final Logger logger;
 	private String callbackCommandId;
 	
+	List<String> notificationsSentForProjects;
+ 	
 	/**
 	 * Used only if caller has requested 'batched' events. This buffer, accumulates messsages to be sent out all at once,
 	 * rather than one by one.
@@ -103,6 +106,7 @@ public class SendClasspathNotificationsJob extends Job {
 	
 	@Override
 	protected IStatus run(IProgressMonitor monitor) {
+		notificationsSentForProjects = null;
 		synchronized (projectLocations) { //Could use some Eclipse job rule. But its really a bit of a PITA to create the right one.
 			try {
 				// Try to see if classpath needs to be sent for the projects that have been
@@ -177,6 +181,7 @@ public class SendClasspathNotificationsJob extends Job {
 			try {
 				logger.log("executing callback "+callbackCommandId+" "+projectName+" "+deleted+" "+ classpath.getEntries().size());
 				Object r = conn.executeClientCommand(callbackCommandId, projectLoc.toString(), projectName, deleted, classpath);
+				notificationsSentForProjects = ImmutableList.of(projectName);
 				logger.log("executing callback "+callbackCommandId+" SUCCESS ["+r+"]");
 			} catch (Exception e) {
 				logger.log("executing callback "+callbackCommandId+" FAILED");
@@ -190,6 +195,8 @@ public class SendClasspathNotificationsJob extends Job {
 			try {
 				logger.log("executing callback "+callbackCommandId+" "+buffer.size()+" batched events");
 				Object r = conn.executeClientCommand(callbackCommandId, buffer.toArray(new Object[buffer.size()]));
+				notificationsSentForProjects = ImmutableList.copyOf(buffer.stream().filter(l -> l instanceof List)
+						.map(l -> (List<?>) l).map(l -> (String) l.get(1)).collect(Collectors.toList()));
 				logger.log("executing callback "+callbackCommandId+" SUCCESS ["+r+"]");
 			} catch (Exception e) {
 				logger.log("executing callback "+callbackCommandId+" FAILED");

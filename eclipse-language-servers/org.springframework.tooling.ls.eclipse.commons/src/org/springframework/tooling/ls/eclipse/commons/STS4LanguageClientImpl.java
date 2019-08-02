@@ -17,10 +17,14 @@ import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
+import org.eclipse.core.resources.IFile;
+import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
@@ -58,6 +62,10 @@ import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
+import org.eclipse.ui.IEditorReference;
+import org.eclipse.ui.IFileEditorInput;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.progress.UIJob;
 import org.eclipse.ui.texteditor.AbstractDecoratedTextEditor;
@@ -356,6 +364,31 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 		catch (NullPointerException e) {
 			return null;
 		}
+	}
+
+	public STS4LanguageClientImpl() {
+		classpathService.addNotificationsSentCallback(projectNames -> {
+			List<IProject> projects = projectNames.stream().map(projectName -> ResourcesPlugin.getWorkspace().getRoot().getProject(projectName)).filter(Objects::nonNull).collect(Collectors.toList());
+			for (IWorkbenchWindow ww : PlatformUI.getWorkbench().getWorkbenchWindows()) {
+				for (IWorkbenchPage page : ww.getPages()) {
+					for (IEditorReference editorRef : page.getEditorReferences()) {
+						IEditorPart editor = editorRef.getEditor(false);
+						if (editor != null) {
+							if (editor.getEditorInput() instanceof IFileEditorInput) {
+								IFile file = ((IFileEditorInput)editor.getEditorInput()).getFile();
+								if (file != null && projects.contains(file.getProject())) {
+									ITextViewer viewer = editor.getAdapter(ITextViewer.class);
+									if (viewer instanceof ISourceViewerExtension5) {
+										((ISourceViewerExtension5)viewer).updateCodeMinings();
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+
+		});
 	}
 
 	@Override

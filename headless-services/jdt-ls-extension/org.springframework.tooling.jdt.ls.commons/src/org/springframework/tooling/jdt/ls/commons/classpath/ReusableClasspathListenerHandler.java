@@ -15,14 +15,22 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.function.Supplier;
-
-import javax.management.Notification;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
+import org.eclipse.core.runtime.ListenerList;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.IJobChangeEvent;
+import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.core.runtime.jobs.JobChangeAdapter;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.springframework.tooling.jdt.ls.commons.Logger;
@@ -32,10 +40,15 @@ import org.springframework.tooling.jdt.ls.commons.classpath.ClasspathListenerMan
  * {@link ReusableClasspathListenerHandler} is an 'abstracted' version of the jdtls ClasspathListenerHandler. 
  */
 public class ReusableClasspathListenerHandler {
+	
+	public interface NotificationSentCallback {
+		void sent(Collection<String> projectNames);
+	}
 
 	private final Logger logger;
 	private final ClientCommandExecutor conn;
 	private final Supplier<Comparator<IProject>> projectSorterFactory;
+	private final ListenerList<NotificationSentCallback> notificationsSentCallbacks;
 	
 	public ReusableClasspathListenerHandler(Logger logger, ClientCommandExecutor conn) {
 		this(logger, conn, null);
@@ -45,13 +58,40 @@ public class ReusableClasspathListenerHandler {
 		this.logger = logger;
 		this.projectSorterFactory = projectSorterFactory;
 		this.conn = conn;
+		this.notificationsSentCallbacks = new ListenerList<>();
 		logger.log("Instantiating ReusableClasspathListenerHandler");
+	}
+	
+	private class CallbackJob extends Job {
+		
+		public CallbackJob() {
+			super("Classpath Notiifcation Post Processing");
+			setSystem(true);
+		}
+
+		private Set<String> projectNames = Collections.synchronizedSet(new HashSet<>());
+
+		@Override
+		protected IStatus run(IProgressMonitor monitor) {
+			if (!projectNames.isEmpty()) {
+				notificationsSentCallbacks.forEach(callback -> callback.sent(projectNames));
+			}
+			return Status.OK_STATUS;
+		}
+		
+		void queueProjects(Collection<String> projectNames) {
+			this.projectNames.addAll(projectNames);
+			schedule();
+		}
+		
 	}
 	
 	class Subscriptions {
 
 		private Map<String, SendClasspathNotificationsJob> subscribers = null;
 		private ClasspathListenerManager classpathListener = null;
+		private CallbackJob callbackJob = new CallbackJob();
+
 		
 		public synchronized void subscribe(String callbackCommandId, boolean isBatched) {
 			if (subscribers==null) {
@@ -72,7 +112,19 @@ public class ReusableClasspathListenerHandler {
 					}
 					
 				});
-				subscribers.put(callbackCommandId, new SendClasspathNotificationsJob(logger, conn, callbackCommandId, isBatched));
+				final SendClasspathNotificationsJob job = new SendClasspathNotificationsJob(logger, conn, callbackCommandId, isBatched);
+				subscribers.put(callbackCommandId, job);
+				job.addJobChangeListener(new JobChangeAdapter() {
+
+					@Override
+					public void done(IJobChangeEvent event) {
+						List<String> projectNames = job.notificationsSentForProjects;
+						if (projectNames != null) {
+							callbackJob.queueProjects(projectNames);
+						}
+					}
+					
+				});
 				logger.log("subsribers = " + subscribers);
 				sendInitialEvents(callbackCommandId);
 			}
@@ -167,4 +219,11 @@ public class ReusableClasspathListenerHandler {
 		return subscribptions.isEmpty();
 	}
 
+	public void addNotificationsSentCallback(NotificationSentCallback callback) {
+		notificationsSentCallbacks.add(callback);
+	}
+	
+	public void removeNotificationsSentCallback(NotificationSentCallback callback) {
+		notificationsSentCallbacks.remove(callback);
+	}
 }
