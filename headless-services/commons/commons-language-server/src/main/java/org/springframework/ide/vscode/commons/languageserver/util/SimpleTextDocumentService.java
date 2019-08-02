@@ -358,7 +358,6 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 	@Override
 	public CompletableFuture<Either<List<? extends Location>, List<? extends LocationLink>>> definition(
 			TextDocumentPositionParams position) {
-
 		DefinitionHandler h = this.definitionHandler;
 		if (h != null) {
 			return async.invoke(() -> {
@@ -367,6 +366,7 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 					// vscode client does not like to recieve null result. See: https://github.com/spring-projects/sts4/issues/309
 					locations = ImmutableList.of();
 				}
+				log.info("Found {} definitions", locations.size());
 				return Either.forLeft(locations);
 			});
 		}
