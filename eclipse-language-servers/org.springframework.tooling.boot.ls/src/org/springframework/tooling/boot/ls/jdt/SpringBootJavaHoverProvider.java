@@ -20,7 +20,6 @@ import org.eclipse.jdt.internal.ui.text.java.hover.JavadocBrowserInformationCont
 import org.eclipse.jdt.internal.ui.text.java.hover.JavadocHover;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextViewer;
-import org.eclipse.lsp4e.operations.hover.LSPTextHover;
 
 /**
  * @author Martin Lippert
