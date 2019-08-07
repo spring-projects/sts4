@@ -300,7 +300,6 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 
 	@Override
 	public CompletableFuture<Either<List<CompletionItem>, CompletionList>> completion(CompletionParams position) {
-		log.info("completion request received");
 		CompletionHandler h = completionHandler;
 		if (h!=null) {
 			return completionHandler.handle(position)
