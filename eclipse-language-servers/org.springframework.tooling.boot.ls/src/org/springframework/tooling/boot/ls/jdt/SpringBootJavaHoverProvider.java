@@ -20,7 +20,7 @@ import org.eclipse.jdt.internal.ui.text.java.hover.JavadocBrowserInformationCont
 import org.eclipse.jdt.internal.ui.text.java.hover.JavadocHover;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextViewer;
-import org.eclipse.lsp4e.operations.hover.LSBasedHover;
+import org.eclipse.lsp4e.operations.hover.LSPTextHover;
 
 /**
  * @author Martin Lippert
@@ -28,11 +28,11 @@ import org.eclipse.lsp4e.operations.hover.LSBasedHover;
 @SuppressWarnings("restriction")
 public class SpringBootJavaHoverProvider extends JavadocHover {
 	
-	private LSBasedHover lsBasedHover;
+	private LSPTextHover lsBasedHover;
 
 	public SpringBootJavaHoverProvider() {
 		super();
-		lsBasedHover = new LSBasedHover();
+		lsBasedHover = new LSPTextHover();
 	}
 
 	@Override
