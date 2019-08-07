@@ -99,11 +99,12 @@ public class SymbolCacheOnDisc implements SymbolCache {
 
 	@Override
 	public Pair<CachedSymbol[], Multimap<String, String>> retrieve(SymbolCacheKey cacheKey, String[] files) {
-		try {
-			File cacheStore = new File(cacheDirectory, cacheKey.toString() + ".json");
-			if (cacheStore.exists()) {
-				Gson gson = createGson();
-				JsonReader reader = new JsonReader(new FileReader(cacheStore));
+		File cacheStore = new File(cacheDirectory, cacheKey.toString() + ".json");
+		if (cacheStore.exists()) {
+
+			Gson gson = createGson();
+
+			try (JsonReader reader = new JsonReader(new FileReader(cacheStore))) {
 				CacheStore store = gson.fromJson(reader, CacheStore.class);
 
 				SortedMap<String, Long> timestampedFiles = Arrays.stream(files)
@@ -133,9 +134,9 @@ public class SymbolCacheOnDisc implements SymbolCache {
 					);
 				}
 			}
-		}
-		catch (Exception e) {
-			log.error("error reading cached symbols", e);
+			catch (Exception e) {
+				log.error("error reading cached symbols", e);
+			}
 		}
 		return null;
 	}
