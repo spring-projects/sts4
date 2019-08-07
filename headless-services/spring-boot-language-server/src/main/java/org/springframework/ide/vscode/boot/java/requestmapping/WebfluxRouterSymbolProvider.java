@@ -104,9 +104,13 @@ public class WebfluxRouterSymbolProvider extends AbstractSymbolProvider {
 				Location location = new Location(doc.getUri(), doc.toRange(methodNameStart, node.getLength() - (methodNameStart - invocationStart)));
 				WebfluxHandlerInformation handler = extractHandlerInformation(node, path, httpMethods, contentTypes, acceptTypes);
 				WebfluxElementsInformation elements = extractElementsInformation(pathElements, httpMethods, contentTypes, acceptTypes);
+				
+				SymbolAddOnInformation[] addon = handler != null ?
+						new SymbolAddOnInformation[] {handler, elements} :
+						new SymbolAddOnInformation[] {elements};
 
 				EnhancedSymbolInformation enhancedSymbol = RouteUtils.createRouteSymbol(location, path, getElementStrings(httpMethods),
-						getElementStrings(contentTypes), getElementStrings(acceptTypes), new SymbolAddOnInformation[] {handler, elements});
+						getElementStrings(contentTypes), getElementStrings(acceptTypes), addon);
 
 				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), enhancedSymbol));
 
