@@ -31,6 +31,7 @@ import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 
 import reactor.core.Disposable;
+import reactor.core.publisher.Mono;
 
 public class JavaProjectsServiceWithFallback implements JavaProjectsService {
 
@@ -80,7 +81,9 @@ public class JavaProjectsServiceWithFallback implements JavaProjectsService {
 
 		this.mainServiceInitialized = this.server
 				.onInitialized(main.initialize())
-				.timeout(Duration.ofSeconds(5))
+				.doOnError(error -> {
+					log.warn("JDT-based JavaProject service not available, will use fallback service", error);
+				})
 				.toFuture();
 
 		this.server.onShutdown(() -> {

@@ -16,6 +16,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -214,7 +215,7 @@ public class JdtLsProjectCache implements InitializableJavaProjectsService {
 
 	@Override
 	public Mono<Disposable> initialize() {
-		return server.addClasspathListener(new ClasspathListener() {
+		return Mono.defer(() -> server.addClasspathListener(new ClasspathListener() {
 			@Override
 			public void changed(Event event) {
 				log.debug("claspath event received {}", event);
@@ -254,7 +255,9 @@ public class JdtLsProjectCache implements InitializableJavaProjectsService {
 					}
 				});
 			}
-		}).doOnError(t -> {
+		})
+		.timeout(Duration.ofSeconds(5))
+		.doOnError(t -> {
 			if (isNoJdtError(t)) {
 				log.info("JDT Language Server not available. Fallback classpath provider will be used instead.");
 			} else if (isOldJdt(t)) {
@@ -262,7 +265,7 @@ public class JdtLsProjectCache implements InitializableJavaProjectsService {
 			} else {
 				log.error("Unexpected error registering classpath listener with JDT. Fallback classpath provider will be used instead.", t);
 			}
-		});
+		}));
 	}
 
 	@Override
