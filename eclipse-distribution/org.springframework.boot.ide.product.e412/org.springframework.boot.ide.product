@@ -16,13 +16,9 @@
 -XX:+UseStringDeduplication
 --add-modules=ALL-SYSTEM
       </vmArgs>
-      <vmArgsLin>
-      </vmArgsLin>
       <vmArgsMac>-XstartOnFirstThread
 -Dorg.eclipse.swt.internal.carbon.smallFonts -Xdock:icon=../Resources/sts4.icns
       </vmArgsMac>
-      <vmArgsWin>
-      </vmArgsWin>
    </launcherArgs>
 
    <windowImages i16="/org.springframework.boot.ide.branding/sts4-16.png" i32="/org.springframework.boot.ide.branding/sts4-32.png" i48="/orgorg.springframework.boot.ide.branding/sts4-48.png" i64="/org.springframework.boot.ide.branding/sts4-64.png" i128="/org.springframework.boot.ide.branding/sts4-128.png"/>
