@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.jdt.ls;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -79,6 +80,7 @@ public class JavaProjectsServiceWithFallback implements JavaProjectsService {
 
 		this.mainServiceInitialized = this.server
 				.onInitialized(main.initialize())
+				.timeout(Duration.ofSeconds(5))
 				.toFuture();
 
 		this.server.onShutdown(() -> {

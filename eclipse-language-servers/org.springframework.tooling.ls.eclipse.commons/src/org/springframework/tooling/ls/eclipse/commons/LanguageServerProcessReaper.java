@@ -11,8 +11,9 @@
 package org.springframework.tooling.ls.eclipse.commons;
 
 import java.lang.reflect.Field;
+import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedList;
+import java.util.Map;
 
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.lsp4e.server.ProcessStreamConnectionProvider;
@@ -27,17 +28,17 @@ import org.eclipse.lsp4e.server.ProcessStreamConnectionProvider;
  * something goes wrong inside lsp4e then the `destroyProcesses` method really should
  * just be iterating an empty collection of processes. I.e. the typical debug output
  * on shutdown should look something like this:
- * 
+ *
  * <pre>
- *  LanguageServerProcessReaper: Destroying errant processes... 
+ *  LanguageServerProcessReaper: Destroying errant processes...
  *  LanguageServerProcessReaper: Number of alive processes = 0
  *  LanguageServerProcessReaper: Destroying errant processes... DONE
- * </pre> 
- * 
+ * </pre>
+ *
  * @author Kris De Volder
  */
 public class LanguageServerProcessReaper extends Thread {
-	
+
 	private static final boolean DEBUG = (""+Platform.getLocation()).contains("kdvolder");
 
 	private static void debug(String string) {
@@ -59,15 +60,23 @@ public class LanguageServerProcessReaper extends Thread {
 		}
 	}
 
-	LinkedList<Process> processes = new LinkedList<>();
+	Map<String, Process> processes = new HashMap<>();
 	{
 		Runtime.getRuntime().addShutdownHook(this);
 	}
-	
-	public synchronized void addProcess(Process process) {
+
+	public synchronized void addProcess(String id, Process process) {
 		debug("added process: "+process);
 		if (process!=null) {
-			processes.add(process);
+			Process existingProcess = processes.get(id);
+			//workaround for this bug: https://bugs.eclipse.org/bugs/show_bug.cgi?id=549904
+			if (existingProcess!=null) {
+				if (existingProcess.isAlive()) {
+					debug("Destroying leaked process: "+process);
+					existingProcess.destroyForcibly();
+				}
+			}
+			processes.put(id, process);
 		}
 		garbageCollect();
 	}
@@ -79,7 +88,7 @@ public class LanguageServerProcessReaper extends Thread {
 	 */
 	protected void garbageCollect() {
 		Process process;
-		Iterator<Process> iter = processes.iterator();
+		Iterator<Process> iter = processes.values().iterator();
 		while (iter.hasNext()) {
 			process = iter.next();
 			if (!process.isAlive()) {
@@ -102,7 +111,7 @@ public class LanguageServerProcessReaper extends Thread {
 	private synchronized void destroyProcesses() {
 		debug("Destroying errant processes... ");
 		garbageCollect();
-		for (Process process : processes) {
+		for (Process process : processes.values()) {
 			try {
 				debug("Destroying process "+process);
 				process.destroyForcibly();

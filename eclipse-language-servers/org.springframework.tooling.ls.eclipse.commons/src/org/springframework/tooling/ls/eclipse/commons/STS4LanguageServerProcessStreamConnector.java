@@ -16,7 +16,9 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Path;
 import java.util.List;
+import java.util.UUID;
 
+import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.FileLocator;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -40,8 +42,10 @@ public abstract class STS4LanguageServerProcessStreamConnector extends ProcessSt
 	private static LanguageServerProcessReaper processReaper = new LanguageServerProcessReaper();
 
 	private Supplier<Console> consoles = null;
+	private final String connectorId;
 
 	public STS4LanguageServerProcessStreamConnector(ServerInfo server) {
+		this.connectorId = UUID.randomUUID().toString();
 		this.consoles = LanguageServerConsoles.getConsoleFactory(server);
 	}
 
@@ -49,7 +53,7 @@ public abstract class STS4LanguageServerProcessStreamConnector extends ProcessSt
 	public void start() throws IOException {
 		super.start();
 		Process process = LanguageServerProcessReaper.getProcess(this);
-		processReaper.addProcess(process);
+		processReaper.addProcess(connectorId, process);
 		if (consoles!=null) {
 			Console console = consoles.get();
 			if (console!=null) {
@@ -146,12 +150,11 @@ public abstract class STS4LanguageServerProcessStreamConnector extends ProcessSt
 			protected IStatus run(IProgressMonitor arg0) {
 				try {
 					pipe(is, os);
-					os.write("==== Process Terminated====\n".getBytes(Charsets.UTF_8));
 				} catch (IOException e) {
-					e.printStackTrace();
 				}
 				finally {
 					try {
+						os.write("==== Process Terminated====\n".getBytes(Charsets.UTF_8));
 						os.close();
 					} catch (IOException e) {
 					}
