@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.jdt.ls;
 
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
@@ -31,7 +30,6 @@ import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
 
 import reactor.core.Disposable;
-import reactor.core.publisher.Mono;
 
 public class JavaProjectsServiceWithFallback implements JavaProjectsService {
 

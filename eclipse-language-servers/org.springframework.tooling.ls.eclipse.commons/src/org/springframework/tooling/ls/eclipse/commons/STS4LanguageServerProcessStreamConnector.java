@@ -42,10 +42,10 @@ public abstract class STS4LanguageServerProcessStreamConnector extends ProcessSt
 	private static LanguageServerProcessReaper processReaper = new LanguageServerProcessReaper();
 
 	private Supplier<Console> consoles = null;
-	private final String connectorId;
+	private String connectorId;
 
 	public STS4LanguageServerProcessStreamConnector(ServerInfo server) {
-		this.connectorId = UUID.randomUUID().toString();
+		this.connectorId = server.bundleId;
 		this.consoles = LanguageServerConsoles.getConsoleFactory(server);
 	}
 
@@ -59,9 +59,7 @@ public abstract class STS4LanguageServerProcessStreamConnector extends ProcessSt
 			if (console!=null) {
 				forwardTo(getLanguageServerLog(), console.out);
 			} else {
-
 				new Thread("Consume LS error stream") {
-
 					@Override
 					public void run() {
 						try {
@@ -70,7 +68,6 @@ public abstract class STS4LanguageServerProcessStreamConnector extends ProcessSt
 							// ignore
 						}
 					}
-
 				}.start();
 			}
 		}
