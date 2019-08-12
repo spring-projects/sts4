@@ -1,3 +1,8 @@
+## 2019-08-13 (4.3.2 RELEASE)
+
+* _(CF Manifest)_ fixed: docker not supported in vscode manifest extension ([#302](https://github.com/spring-projects/sts4/issues/302))
+* _(VSCode)_ fixed: Spring boot tool vscode extension is causing system to run out of disk space ([#328](https://github.com/spring-projects/sts4/issues/328))
+
 ## 2019-07-12 (4.3.1 RELEASE)
 
 * _(all language servers)_ performance: further improvements to the language server startup time
