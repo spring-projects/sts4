@@ -9,12 +9,6 @@
 	<category-def name="Core / Eclipse Integration Commons" label="Core / Eclipse Integration Commons"/>
 	<category-def name="Resources / Eclipse Integration Commons" label="Resources / Eclipse Integration Commons"/>
 
-	<feature
-		id="org.springsource.ide.eclipse.commons.quicksearch.feature"
-		version="0.0.0">
-		<category name="Core / Eclipse Integration Commons" />
-	</feature>
-	
 	<!-- STS4 branding and custom features -->
 	<category-def name="Spring Tool Suite 4 Distribution" label="Spring Tool Suite 4 Distribution" />
 
