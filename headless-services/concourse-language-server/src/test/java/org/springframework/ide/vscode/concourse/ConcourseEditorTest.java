@@ -375,6 +375,7 @@ public class ConcourseEditorTest {
 				"- name: some-job\n" +
 				"  plan:\n" +
 				"  - put: something\n" +
+				"    inputs: []\n" +
 				"    resource: something\n" +
 				"    params:\n" +
 				"      some_param: some_value\n" +
@@ -382,6 +383,7 @@ public class ConcourseEditorTest {
 				"      skip_download: true\n"
 		);
 
+		editor.assertHoverContains("inputs", "only the listed artifacts will be provided to the container");
 		editor.assertHoverContains("resource", "The resource to update");
 		editor.assertHoverContains("params", "A map of arbitrary configuration");
 		editor.assertHoverContains("get_params", "A map of arbitrary configuration to forward to the resource that will be utilized during the implicit `get` step");
@@ -1577,6 +1579,25 @@ public class ConcourseEditorTest {
 		editor.assertHoverContains("depth", "using the `--depth` option");
 		editor.assertHoverContains("submodules", "If `none`, submodules will not be fetched");
 		editor.assertHoverContains("disable_git_lfs", "will not fetch Git LFS files");
+	}
+	
+	@Test
+	public void putStepInputsReconcile() throws Exception {
+		//See: https://github.com/spring-projects/sts4/issues/341
+		Editor editor = harness.newEditor(
+				"resources:\n" +
+				"- name: my-git\n" +
+				"  type: git\n" +
+				"  source:\n" +
+				"    uri: https://example.com/my-name/my-repo.git\n" +
+				"    branch: master\n" +
+				"jobs:\n" +
+				"- name: do-stuff\n" +
+				"  plan:\n" +
+				"  - put: my-git\n" +
+				"    inputs: not-a-list\n"
+		);
+		editor.assertProblems("not-a-list|Expecting a 'Sequence'");
 	}
 
 	@Test

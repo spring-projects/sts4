@@ -325,6 +325,7 @@ public class PipelineYmlSchema implements YamlSchema {
 		YBeanType putStep = f.ybean("PutStep");
 		addProp(putStep, "put", t_put_get_name);
 		addProp(putStep, "resource", t_resource_name);
+		addProp(putStep, "inputs", t_strings);
 		addProp(putStep, "params", f.contextAware("PutParams", (dc) ->
 			resourceTypes.getOutParamsType(getResourceType("put", models, dc))
 		));
