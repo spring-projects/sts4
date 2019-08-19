@@ -19,6 +19,7 @@ import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
 import org.yaml.snakeyaml.nodes.MappingNode;
 import org.yaml.snakeyaml.nodes.Node;
 import org.yaml.snakeyaml.nodes.ScalarNode;
+import org.yaml.snakeyaml.nodes.SequenceNode;
 
 /**
  * Adapts a SnakeYaml ast node as a {@link DynamicSchemaContext} (so it
@@ -76,5 +77,9 @@ public class ASTDynamicSchemaContext extends CachingSchemaContext {
 	@Override
 	public boolean isMap() {
 		return mapNode!=null;
+	}
+	@Override
+	public boolean isSequence() {
+		return node instanceof SequenceNode;
 	}
 }

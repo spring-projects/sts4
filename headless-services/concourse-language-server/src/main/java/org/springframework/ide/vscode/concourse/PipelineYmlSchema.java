@@ -377,9 +377,18 @@ public class PipelineYmlSchema implements YamlSchema {
 				doStep,
 				tryStep
 		};
+		
+
 		YBeanUnionType step = f.yBeanUnion("Step", stepTypes);
 		addProp(aggregateStep, "aggregate", f.yseq(step));
-		addProp(inParallelStep, "in_parallel", f.yseq(step));
+		YBeanType inParallelStepOptions = f.ybean("InParallelStepOptions");
+		addProp(inParallelStepOptions, "steps", f.yseq(step));
+		addProp(inParallelStepOptions, "limit", t_pos_integer);
+		addProp(inParallelStepOptions, "fail_fast", t_boolean);
+		addProp(inParallelStep, "in_parallel", f.yunion(null, 
+				f.yseq(step),
+				inParallelStepOptions
+		));
 		addProp(doStep, "do", f.yseq(step));
 		addProp(tryStep, "try", step);
 

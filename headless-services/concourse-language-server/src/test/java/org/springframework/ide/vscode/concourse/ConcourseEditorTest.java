@@ -315,7 +315,7 @@ public class ConcourseEditorTest {
 				"get: <*>"
 				, // ==============
 				"in_parallel:\n" +
-				"    - <*>"
+				"      <*>"
 				, // ==============
 				"put: <*>"
 				, // ==============
@@ -551,12 +551,68 @@ public class ConcourseEditorTest {
 				"- name: some-job\n" +
 				"  plan:\n" +
 				"  - in_parallel:\n" +
-				"    - get: some-resource\n"
+				"      limit: 2\n" +
+				"      fail_fast: true\n" +
+				"      steps:\n" +
+				"      - get: some-resource\n"
 		);
 
 		editor.assertHoverContains("in_parallel", "Performs the given steps in parallel");
+		editor.assertHoverContains("limit", "sempahore which limits the parallelism");
+		editor.assertHoverContains("fail_fast", "step will fail fast");
+	}
+	
+	@Test
+	public void inParallelStepReconcile() throws Exception {
+		Editor editor;
+		
+		//old style... just a sequence of steps
+		editor = harness.newEditor(
+				"jobs:\n" +
+				"- name: some-job\n" +
+				"  plan:\n" +
+				"  - in_parallel:\n" +
+				"    - get: some-resource\n"
+		);
+		editor.assertProblems(
+				"some-resource|does not exist"
+		);
+		
+		//new style... object with a 'steps' property
+		editor = harness.newEditor(
+				"jobs:\n" +
+				"- name: some-job\n" +
+				"  plan:\n" +
+				"  - in_parallel:\n" +
+				"      limit: not-a-number\n" +
+				"      fail_fast: not-a-bool\n"+
+				"      steps:\n" +
+				"      - get: some-resource\n"
+		);
+		editor.assertProblems(
+				"not-a-number|NumberFormatException",
+				"not-a-bool|boolean",
+				"some-resource|does not exist"
+		);
 	}
 
+	@Test
+	public void inParallelStepCompletion() throws Exception {
+		Editor editor = harness.newEditor(
+			"jobs:\n" +
+			"- name: some-job\n" +
+			"  plan:\n" +
+			"  - <*>"
+		);
+		editor.assertCompletionWithLabel("in_parallel", 
+				"jobs:\n" +
+				"- name: some-job\n" +
+				"  plan:\n" +
+				"  - in_parallel:\n" +
+				"      <*>"
+		);
+	}
+		
 	@Test
 	public void reconcileSimpleTypes() throws Exception {
 		Editor editor;
@@ -4231,14 +4287,6 @@ public class ConcourseEditorTest {
 				"  serial: true\n" +
 				"  plan:\n" +
 				"  in_"
-		);
-		editor.assertCompletionWithLabel("- in_parallel",
-				"jobs:\n" +
-				"- name: build-docker-image\n" +
-				"  serial: true\n" +
-				"  plan:\n" +
-				"  - in_parallel:\n" +
-				"    - <*>"
 		);
 	}
 

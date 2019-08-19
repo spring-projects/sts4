@@ -81,6 +81,11 @@ public class SNodeDynamicSchemaContext extends CachingSchemaContext {
 
 	@Override
 	public boolean isMap() {
+		return !computeDefinedProperties().isEmpty();
+	}
+
+	@Override
+	public boolean isSequence() {
 		return false;
 	}
 

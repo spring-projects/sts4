@@ -56,6 +56,11 @@ public interface DynamicSchemaContext {
 		public boolean isMap() {
 			return false;
 		}
+
+		@Override
+		public boolean isSequence() {
+			return false;
+		}
 	};
 
 	/**
@@ -98,5 +103,10 @@ public interface DynamicSchemaContext {
 	 * Returns true if the current node is a Mapping node
 	 */
 	boolean isMap();
+	
+	/**
+	 * Returns true if the current node is a Sequence node
+	 */
+	boolean isSequence();
 
 }

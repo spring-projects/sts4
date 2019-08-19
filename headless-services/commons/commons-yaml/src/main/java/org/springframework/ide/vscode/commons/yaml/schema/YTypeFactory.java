@@ -38,6 +38,7 @@ import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.util.ValueParser;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST;
 import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems;
+import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YBeanAndSequenceUnion;
 import org.springframework.ide.vscode.commons.yaml.schema.constraints.Constraint;
 import org.springframework.ide.vscode.commons.yaml.schema.constraints.Constraints;
 import org.springframework.ide.vscode.commons.yaml.snippet.TypeBasedSnippetProvider;
@@ -168,19 +169,27 @@ public class YTypeFactory {
 			}
 			return new YBeanUnionType(name, beanTypes);
 		}
+		ArrayList<YBeanType> beans = new ArrayList<>(types.length);
 		ArrayList<YMapType> maps = new ArrayList<>(types.length);
 		ArrayList<YAtomicType> atoms = new ArrayList<>(types.length);
+		ArrayList<YSeqType> arrays = new ArrayList<>(types.length);
 		for (YType t : types) {
 			if (t instanceof YMapType) {
 				maps.add((YMapType) t);
 			} else if (t instanceof YAtomicType) {
 				atoms.add((YAtomicType) t);
+			} else if (t instanceof YSeqType) {
+				arrays.add((YSeqType) t);
+			} else if (t instanceof YBeanType) {
+				beans.add((YBeanType) t);
 			} else {
 				throw new IllegalArgumentException("Union of this kind of types is not (yet) supported: "+t);
 			}
 		}
-		if (atoms.size()==1 && maps.size()==1) {
+		if (atoms.size()==1 && maps.size()==1 && arrays.size()==0 && beans.size()==0) {
 			return new YAtomAndMapUnion(name, atoms.get(0), maps.get(0));
+		} else if (atoms.size()==0 && maps.size()==0 && arrays.size()==1 && beans.size()==1) {
+			return new YBeanAndSequenceUnion(name, beans.get(0), arrays.get(0));
 		}
 		throw new IllegalArgumentException("Union of this kind of types is not (yet) supported: "+types);
 	}
@@ -544,7 +553,6 @@ public class YTypeFactory {
 			this.isSeq = false;
 			return this;
 		}
-
 	}
 
 
@@ -833,6 +841,49 @@ public class YTypeFactory {
 		@Override
 		public PartialCollection<YValueHint> getHintValues(DynamicSchemaContext dc) {
 			return atom.getHintValues(dc).addAll(map.getHintValues(dc));
+		}
+
+	}
+	
+	public class YBeanAndSequenceUnion extends AbstractType {
+
+		private String name;
+		private YBeanType bean;
+		private YSeqType seq;
+
+		public YBeanAndSequenceUnion(String name, YBeanType yBeanType, YSeqType ySeqType) {
+			this.name = name;
+			this.bean = yBeanType;
+			this.seq = ySeqType;
+		}
+
+		@Override
+		public YType inferMoreSpecificType(DynamicSchemaContext dc) {
+			if (dc.isMap()) {
+				return bean;
+			} else if (dc.isSequence()) {
+				return seq;
+			}
+			return super.inferMoreSpecificType(dc);
+		}
+
+		@Override
+		public String toString() {
+			if (name!=null) {
+				return name;
+			} else {
+				return "(" + bean +" | " + seq + ")";
+			}
+		}
+
+		@Override
+		public boolean isBean() {
+			return true;
+		}
+		
+		@Override
+		public boolean isSequenceable() {
+			return true;
 		}
 
 	}
