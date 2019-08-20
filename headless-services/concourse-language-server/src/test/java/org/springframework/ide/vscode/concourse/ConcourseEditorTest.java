@@ -612,7 +612,84 @@ public class ConcourseEditorTest {
 				"      <*>"
 		);
 	}
+
+	@Test
+	public void inParallelStepCompletionInList() throws Exception {
+		Editor editor = harness.newEditor(
+			"jobs:\n" +
+			"- name: some-job\n" +
+			"  plan:\n" +
+			"  - in_parallel:\n" +
+			"    - <*>"
+		);
+		editor.assertCompletionWithLabel("get", 
+			"jobs:\n" +
+			"- name: some-job\n" +
+			"  plan:\n" +
+			"  - in_parallel:\n" +
+			"    - get: <*>"
+		);
+	}
+
+	@Test
+	public void inParallelStepCompletionOptions() throws Exception {
+		assertContextualCompletions(PLAIN_COMPLETION,
+				"jobs:\n" +
+				"- name: some-job\n" +
+				"  plan:\n" +
+				"  - in_parallel:\n" +
+				"      <*>"
+				, // ------------
+				"<*>"
+				, // ==>
+				"fail_fast: <*>"
+				,
+				"limit: <*>"
+				,
+				"steps:\n"+
+				"      - <*>"
+		);
 		
+		assertContextualCompletions(c -> {
+					String l = c.getLabel();
+					boolean isDedentedStep = l.startsWith(Unicodes.LEFT_ARROW+" -");
+					return isDedentedStep && (l.contains("get") || l.contains("put"));
+				},
+				"jobs:\n" +
+				"- name: some-job\n" +
+				"  plan:\n" +
+				"  - in_parallel:\n" +
+				"    <*>"
+				, // ------------
+				"  <*>"
+				, // ==>
+				"- get: <*>"
+				,
+				"- put: <*>"
+		);
+
+	}
+
+	@Test
+	public void inParallelStepCompletionInObject() throws Exception {
+		Editor editor = harness.newEditor(
+			"jobs:\n" +
+			"- name: some-job\n" +
+			"  plan:\n" +
+			"  - in_parallel:\n" +
+			"      steps:\n" +
+			"      - <*>"
+		);
+		editor.assertCompletionWithLabel("get", 
+			"jobs:\n" +
+			"- name: some-job\n" +
+			"  plan:\n" +
+			"  - in_parallel:\n" +
+			"      steps:\n" +
+			"      - get: <*>"
+		);
+	}
+
 	@Test
 	public void reconcileSimpleTypes() throws Exception {
 		Editor editor;

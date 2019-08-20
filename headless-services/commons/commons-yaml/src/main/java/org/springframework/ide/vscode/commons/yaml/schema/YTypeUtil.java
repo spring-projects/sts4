@@ -74,4 +74,32 @@ public interface YTypeUtil {
 	 * or suppress them (false).
 	 */
 	boolean suggestDeprecatedProperties();
+	
+	/**
+	 * If a type can be considered to be the union of several other types, then 
+	 * this method optionally can be implemented to return a collection of these
+	 * types. 
+	 * <p>
+	 * The default implementation returns a singleton colllection containing the type 
+	 * itself because every type can at least be considered a union of itself with nothing else.
+	 */
+	Collection<YType> getUnionSubTypes(YType type);
+	
+	/**
+	 * Determines whether this type is a 'true' union type. This means that 'getUnionSubTypes'
+	 * does not simply return a collection of the type itself.
+	 */
+	default boolean isTrueUnion(YType type) {
+		Collection<YType> subtypes = getUnionSubTypes(type);
+		if (subtypes!=null) {
+			for (YType subType : subtypes) {
+				if (subType.equals(type)) {
+					return false;
+				}
+			}
+			return true;
+		}
+		return false;
+	}
+	
 }

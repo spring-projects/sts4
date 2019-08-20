@@ -38,6 +38,7 @@ import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.util.ValueParser;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST;
 import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems;
+import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.AbstractUnionType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YBeanAndSequenceUnion;
 import org.springframework.ide.vscode.commons.yaml.schema.constraints.Constraint;
 import org.springframework.ide.vscode.commons.yaml.schema.constraints.Constraints;
@@ -289,6 +290,14 @@ public class YTypeFactory {
 		@Override
 		public boolean suggestDeprecatedProperties() {
 			return suggestDeprecatedProperties;
+		}
+
+		@Override
+		public Collection<YType> getUnionSubTypes(YType type) {
+			if (type instanceof AbstractUnionType) {
+				return ((AbstractUnionType) type).getUnionSubTypes();
+			}
+			return ImmutableList.of(type);
 		}
 	};
 
@@ -801,21 +810,47 @@ public class YTypeFactory {
 		}
 	}
 
-	public class YAtomAndMapUnion extends AbstractType {
+	public class AbstractUnionType extends AbstractType {
+		protected final String name;
+		protected final YType[] subtypes;
+		
+		public AbstractUnionType(String name, YType... subTypes) {
+			this.name = name;
+			this.subtypes = subTypes;
+		}
+		@Override
+		public final String toString() {
+			if (name!=null) {
+				return name;
+			} else {
+				StringBuilder b = new StringBuilder("(");
+				boolean first = true;
+				for (YType t : subtypes) {
+					if (!first) {
+						b.append(" | ");
+					}
+					b.append(t);
+					first = false;
+				}
+				b.append(")");
+				return b.toString();
+			}
+		}
+		
+		public Collection<YType> getUnionSubTypes() {
+			return ImmutableList.copyOf(subtypes);
+		}
+	}
 
-		private String name;
+	public class YAtomAndMapUnion extends AbstractUnionType {
+
 		private YAtomicType atom;
 		private YMapType map;
 
 		public YAtomAndMapUnion(String name, YAtomicType atom, YMapType map) {
-			this.name = name;
+			super(name, atom, map);
 			this.atom = atom;
 			this.map = map;
-		}
-
-		@Override
-		public String toString() {
-			return name;
 		}
 
 		@Override
@@ -845,14 +880,13 @@ public class YTypeFactory {
 
 	}
 	
-	public class YBeanAndSequenceUnion extends AbstractType {
+	public class YBeanAndSequenceUnion extends AbstractUnionType {
 
-		private String name;
-		private YBeanType bean;
-		private YSeqType seq;
+		private final YBeanType bean;
+		private final YSeqType seq;
 
 		public YBeanAndSequenceUnion(String name, YBeanType yBeanType, YSeqType ySeqType) {
-			this.name = name;
+			super(name, yBeanType, ySeqType);
 			this.bean = yBeanType;
 			this.seq = ySeqType;
 		}
@@ -868,15 +902,6 @@ public class YTypeFactory {
 		}
 
 		@Override
-		public String toString() {
-			if (name!=null) {
-				return name;
-			} else {
-				return "(" + bean +" | " + seq + ")";
-			}
-		}
-
-		@Override
 		public boolean isBean() {
 			return true;
 		}
@@ -885,7 +910,6 @@ public class YTypeFactory {
 		public boolean isSequenceable() {
 			return true;
 		}
-
 	}
 
 	public static class YTypedPropertyImpl implements YTypedProperty, Cloneable {

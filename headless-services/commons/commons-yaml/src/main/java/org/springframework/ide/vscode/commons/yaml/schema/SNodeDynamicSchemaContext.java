@@ -15,13 +15,15 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.util.CollectionUtil;
-import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser.SChildBearingNode;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser.SKeyNode;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser.SNode;
+import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser.SSeqNode;
 
 /**
  * Adapts an SNode so it can be used by a YamlSchema as a {@link DynamicSchemaContext}
@@ -30,6 +32,9 @@ import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser
  */
 public class SNodeDynamicSchemaContext extends CachingSchemaContext {
 
+	final static Logger log = LoggerFactory.getLogger(SNodeDynamicSchemaContext.class);
+
+	
 	private SNode contextNode;
 	private YamlPath contextPath;
 
@@ -54,7 +59,7 @@ public class SNodeDynamicSchemaContext extends CachingSchemaContext {
 				}
 			}
 		} catch (Exception e) {
-			Log.log(e);
+			log.error("", e);
 		}
 		return Collections.emptySet();
 	}
@@ -86,6 +91,20 @@ public class SNodeDynamicSchemaContext extends CachingSchemaContext {
 
 	@Override
 	public boolean isSequence() {
+		try {
+			if (contextNode instanceof SChildBearingNode) {
+				List<SNode> children = ((SChildBearingNode)contextNode).getChildren();
+				if (CollectionUtil.hasElements(children)) {
+					for (SNode c : children) {
+						if (c instanceof SSeqNode) {
+							return true;
+						}
+					}
+				}
+			}
+		} catch (Exception e) {
+			log.error("", e);
+		}
 		return false;
 	}
 

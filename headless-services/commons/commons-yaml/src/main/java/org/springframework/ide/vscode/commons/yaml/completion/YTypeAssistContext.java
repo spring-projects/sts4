@@ -99,29 +99,42 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 				return customContentAssistant.getCompletions(completionFactory(), region, region.toRelative(offset));
 			}
 		}
-		String query = getPrefix(doc, node, offset);
-		List<ICompletionProposal> completions = getValueCompletions(doc, node, offset, query);
-		if (completions.isEmpty()) {
-			TypeBasedSnippetProvider snippetProvider = typeUtil.getSnippetProvider();
-			if (snippetProvider!=null) {
-				Collection<Snippet> snippets = snippetProvider.getSnippets(type);
-				YamlIndentUtil indenter = new YamlIndentUtil(doc);
-				for (Snippet snippet : snippets) {
-					String snippetName = snippet.getName();
-					double score = FuzzyMatcher.matchScore(query, snippetName);
-					if (score!=0.0 && snippet.isApplicable(getSchemaContext())) {
-						DocumentEdits edits = createEditFromSnippet(doc, node, offset, query, indenter, snippet);
-						completions.add(completionFactory().valueProposal(snippetName, query, snippetName, type, null, score, edits, typeUtil));
+		if (typeUtil.isTrueUnion(type)) {
+			Collection<YType> unionSubTypes = typeUtil.getUnionSubTypes(type);
+			//When a union type was not inferred to one of its subtypes...
+			//Then suggest completions for all of its subtypes since, presumably they are
+			//all valid in this context at the moment.
+			List<ICompletionProposal> completions = new ArrayList<>();
+			for (YType unionSubType : unionSubTypes) {
+				YTypeAssistContext unionContext = new YTypeAssistContext(this, unionSubType);
+				completions.addAll(unionContext.getCompletions(doc, node, offset));
+			}
+			return completions;
+		} else {
+			String query = getPrefix(doc, node, offset);
+			List<ICompletionProposal> completions = getValueCompletions(doc, node, offset, query);
+			if (completions.isEmpty()) {
+				TypeBasedSnippetProvider snippetProvider = typeUtil.getSnippetProvider();
+				if (snippetProvider!=null) {
+					Collection<Snippet> snippets = snippetProvider.getSnippets(type);
+					YamlIndentUtil indenter = new YamlIndentUtil(doc);
+					for (Snippet snippet : snippets) {
+						String snippetName = snippet.getName();
+						double score = FuzzyMatcher.matchScore(query, snippetName);
+						if (score!=0.0 && snippet.isApplicable(getSchemaContext())) {
+							DocumentEdits edits = createEditFromSnippet(doc, node, offset, query, indenter, snippet);
+							completions.add(completionFactory().valueProposal(snippetName, query, snippetName, type, null, score, edits, typeUtil));
+						}
 					}
 				}
+				completions.addAll(getKeyCompletions(doc, node, offset, query));
 			}
-			completions.addAll(getKeyCompletions(doc, node, offset, query));
+			if (typeUtil.isSequencable(type)) {
+				completions = new ArrayList<>(completions);
+				completions.addAll(getDashedCompletions(doc, node, offset));
+			}
+			return completions;
 		}
-		if (typeUtil.isSequencable(type)) {
-			completions = new ArrayList<>(completions);
-			completions.addAll(getDashedCompletions(doc, node, offset));
-		}
-		return completions;
 	}
 
 	private DocumentEdits createEditFromSnippet(YamlDocument doc, SNode node, int offset, String query, YamlIndentUtil indenter,
