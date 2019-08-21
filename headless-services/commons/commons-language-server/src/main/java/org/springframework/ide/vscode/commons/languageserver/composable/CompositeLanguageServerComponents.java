@@ -19,6 +19,8 @@ import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
@@ -35,6 +37,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 public class CompositeLanguageServerComponents implements LanguageServerComponents {
+
+	private static Logger log = LoggerFactory.getLogger(CompositeLanguageServerComponents.class);
 
 	public static class Builder {
 		private Map<LanguageId, LanguageServerComponents> componentsByLanguageId = new HashMap<>();
@@ -65,6 +69,7 @@ public class CompositeLanguageServerComponents implements LanguageServerComponen
 			@Override
 			public Collection<ICompletionProposal> getCompletions(TextDocument document, int offset) throws Exception {
 				LanguageId language = document.getLanguageId();
+				log.info("languageId = {}", language);
 				LanguageServerComponents subComponents = componentsByLanguageId.get(language);
 				if (subComponents!=null) {
 					ICompletionEngine subEngine = subComponents.getCompletionEngine();
