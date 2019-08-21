@@ -13,8 +13,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.2.0.M2</version>
-		<relativePath></relativePath>
+		<version>2.2.0.M5</version>
 	</parent>
 
 	<dependencyManagement>
@@ -119,6 +118,8 @@
 		<reactor-netty>0.7.5.RELEASE</reactor-netty>
 		<commons-io-version>2.4</commons-io-version>
 		<commons-codec-version>1.11</commons-codec-version>
+		<sprotty-version>0.7.0-SNAPSHOT</sprotty-version>
+		<elk-version>0.6.0-SNAPSHOT</elk-version>
 	</properties>
 
 	<build>

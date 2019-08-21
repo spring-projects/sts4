@@ -14,10 +14,8 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.SpringBootConfiguration;
-import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
+import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
-import org.springframework.boot.autoconfigure.context.ConfigurationPropertiesAutoConfiguration;
-import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -58,19 +56,22 @@ import org.springframework.ide.vscode.commons.yaml.completion.YamlAssistContext;
 import org.springframework.ide.vscode.commons.yaml.completion.YamlAssistContextProvider;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlDocument;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureProvider;
-import org.springframework.ide.vscode.languageserver.starter.LanguageServerAutoConf;
-import org.springframework.ide.vscode.languageserver.starter.LanguageServerRunnerAutoConf;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskScheduler;
 import org.yaml.snakeyaml.Yaml;
 
 @SpringBootConfiguration(proxyBeanMethods = false)
-@ImportAutoConfiguration({ 
-	// During development you can uncomment the below so that boot dash can detect started state properly:
-	// SpringApplicationAdminJmxAutoConfiguration.class,
-	LanguageServerAutoConf.class, 
-	LanguageServerRunnerAutoConf.class, 
-	ConfigurationPropertiesAutoConfiguration.class, 
-	PropertyPlaceholderAutoConfiguration.class
-})
+//@ImportAutoConfiguration({ 
+//	// During development you can uncomment the below so that boot dash can detect started state properly:
+//	// SpringApplicationAdminJmxAutoConfiguration.class,
+//	LanguageServerAutoConf.class, 
+//	LanguageServerRunnerAutoConf.class, 
+//	ConfigurationPropertiesAutoConfiguration.class, 
+//	PropertyPlaceholderAutoConfiguration.class,
+//	SprottyAutoConf.class,
+//	WebSocketServletAutoConfiguration.class,
+//	WebMvcAutoConfiguration.class
+//})
+@EnableAutoConfiguration
 @EnableConfigurationProperties(BootLsConfigProperties.class)
 @ComponentScan
 public class BootLanguagServerBootApp {
@@ -111,6 +112,12 @@ public class BootLanguagServerBootApp {
 
 	@Bean ValueProviderRegistry valueProviders() {
 		return new ValueProviderRegistry();
+	}
+	
+	@Bean ThreadPoolTaskScheduler taskScheduler() {
+		ThreadPoolTaskScheduler t = new ThreadPoolTaskScheduler();
+		t.initialize();
+		return t;
 	}
 
 	@Bean InitializingBean initializeValueProviders(ValueProviderRegistry r, @Qualifier("adHocProperties") ProjectBasedPropertyIndexProvider adHocProperties, SourceLinks sourceLinks) {

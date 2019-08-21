@@ -120,6 +120,14 @@ public class LiveBean {
 	public String[] getDependencies() {
 		return dependencies;
 	}
+	
+	public String getShortName() {
+		int idx = id.lastIndexOf('.');
+		if (idx >= 0) {
+			return id.substring(idx + 1);
+		}
+		return id;
+	}
 
 	@Override
 	public String toString() {

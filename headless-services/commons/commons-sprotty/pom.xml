@@ -1,0 +1,40 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.springframework.ide.vscode</groupId>
+		<artifactId>commons-parent</artifactId>
+		<version>1.11.0-SNAPSHOT</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
+  <artifactId>commons-sprotty</artifactId>
+	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter</artifactId>
+		</dependency>
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-websocket</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.sprotty</groupId>
+			<artifactId>org.eclipse.sprotty.server</artifactId>
+			<version>${sprotty-version}</version>
+		</dependency>
+		<!-- https://mvnrepository.com/artifact/org.eclipse.elk/org.eclipse.elk.core -->
+		<dependency>
+		    <groupId>org.eclipse.elk</groupId>
+		    <artifactId>org.eclipse.elk.core</artifactId>
+		    <version>${elk-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.elk</groupId>
+			<artifactId>org.eclipse.elk.alg.layered</artifactId>
+			    <version>${elk-version}</version>
+		</dependency>	
+	</dependencies>
+</project>
