@@ -10,11 +10,10 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.languageserver;
 
-import org.eclipse.lsp4j.jsonrpc.services.JsonDelegate;
 import org.eclipse.lsp4j.services.LanguageServer;
-import org.springframework.ide.vscode.commons.languageserver.sprotty.SprottyService;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleWorkspaceService;
+import org.springframework.ide.vscode.commons.protocol.java.SprottyProtocol;
 
 /**
  * STS4 language server
@@ -22,7 +21,7 @@ import org.springframework.ide.vscode.commons.languageserver.util.SimpleWorkspac
  * @author Alex Boyko
  *
  */
-public interface Sts4LanguageServer extends LanguageServer {
+public interface Sts4LanguageServer extends LanguageServer, SprottyProtocol {
 
 	@Override
 	SimpleTextDocumentService getTextDocumentService();
@@ -42,8 +41,4 @@ public interface Sts4LanguageServer extends LanguageServer {
 	 */
 	DiagnosticService getDiagnosticService();
 	
-	@JsonDelegate
-	SprottyService getSprottyService();
-
-
 }

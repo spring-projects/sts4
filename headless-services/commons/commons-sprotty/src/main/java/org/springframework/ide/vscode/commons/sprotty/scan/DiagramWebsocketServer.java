@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
+import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
@@ -22,6 +23,9 @@ import org.springframework.web.socket.handler.TextWebSocketHandler;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
+
+import reactor.core.publisher.Mono;
 
 @Controller
 public class DiagramWebsocketServer implements WebSocketConfigurer, InitializingBean {
@@ -35,6 +39,9 @@ public class DiagramWebsocketServer implements WebSocketConfigurer, Initializing
 	@Autowired
 	private IDiagramServer diagramServer;
 	
+	@Autowired
+	private SimpleLanguageServer server;
+	
 	private void initializeGson() {
 		if (gson == null) {
 			GsonBuilder builder = new GsonBuilder();
@@ -46,6 +53,15 @@ public class DiagramWebsocketServer implements WebSocketConfigurer, Initializing
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		initializeGson();
+		server.onSprottyMessage((jsonMessage) -> {
+			ActionMessage actionMessage = gson.fromJson(jsonMessage, ActionMessage.class);
+			diagramServer.accept(actionMessage);
+		});
+		server.doOnInitialized(() -> {
+			diagramServer.setRemoteEndpoint(message -> {
+				sendMessage((JsonObject)gson.toJsonTree(message));
+			});
+		});
 	}
 
 	@Override
@@ -73,9 +89,6 @@ public class DiagramWebsocketServer implements WebSocketConfigurer, Initializing
 				}
 				log.info("Websocket connection OPENED in: "+this);
 				log.info("Number of active sessions = {}", ws_sessions.size());
-				diagramServer.setRemoteEndpoint(message -> {
-					sendMessage(gson.toJson(message, ActionMessage.class));
-				});
 			}
 
 			@Override
@@ -116,13 +129,14 @@ public class DiagramWebsocketServer implements WebSocketConfigurer, Initializing
 		};
 	}
 	
-	private void sendMessage(String msg) {
+	private void sendMessage(JsonObject msg) {
+		server.getClient().sprottyMessage(msg);
 		synchronized (ws_sessions) {
 			for (WebSocketSession ws : ws_sessions) {
 				try {
 					if (ws.isOpen()) {
 						log.info("Sent: {}", msg);
-						ws.sendMessage(new TextMessage(msg));
+						ws.sendMessage(new TextMessage(msg.toString()));
 					}
 				} catch (Exception e) {
 					log.error("Error forwarding message to ws session", e);

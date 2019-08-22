@@ -32,7 +32,6 @@ import org.eclipse.lsp4j.ApplyWorkspaceEditParams;
 import org.eclipse.lsp4j.ApplyWorkspaceEditResponse;
 import org.eclipse.lsp4j.ClientCapabilities;
 import org.eclipse.lsp4j.CodeLensOptions;
-import org.eclipse.lsp4j.CompletionOptions;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.eclipse.lsp4j.ExecuteCommandOptions;
@@ -513,6 +512,8 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 
 	private DiagnosticSeverityProvider severityProvider = DiagnosticSeverityProvider.DEFAULT;
 
+	private SprottyMessageHandler sprottyMessageHandler;
+
 	/**
 	 * Convenience method. Subclasses can call this to use a {@link IReconcileEngine} ported
 	 * from old STS codebase to validate a given {@link TextDocument} and publish Diagnostics.
@@ -718,4 +719,16 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 		return hasCompletionSnippetSupport;
 	}
 
+	@Override
+	public void sprottyMessage(JsonObject message) {
+		if (this.sprottyMessageHandler != null) {
+			async.execute(() -> this.sprottyMessageHandler.handleMessage(message));
+		}
+	}
+	
+	public void onSprottyMessage(SprottyMessageHandler h) {
+		Assert.isNull("Multiple handlers not supported!", this.sprottyMessageHandler);
+		this.sprottyMessageHandler = h;
+	}
+	
 }

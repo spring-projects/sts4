@@ -132,6 +132,7 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
 import reactor.core.publisher.Mono;
 
@@ -392,6 +393,10 @@ public class LanguageServerHarness {
 				@Override
 				public CompletableFuture<List<JavaCodeCompleteData>> javaCodeComplete(JavaCodeCompleteParams params) {
 					return CompletableFuture.completedFuture(Collections.emptyList());
+				}
+
+				@Override
+				public void sprottyMessage(JsonObject message) {
 				}
 
 			});

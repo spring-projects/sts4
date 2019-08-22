@@ -24,6 +24,7 @@ import org.springframework.ide.vscode.commons.protocol.java.JavaCodeCompletePara
 import org.springframework.ide.vscode.commons.protocol.java.JavaDataParams;
 import org.springframework.ide.vscode.commons.protocol.java.JavaSearchParams;
 import org.springframework.ide.vscode.commons.protocol.java.JavaTypeHierarchyParams;
+import org.springframework.ide.vscode.commons.protocol.java.SprottyProtocol;
 import org.springframework.ide.vscode.commons.protocol.java.TypeData;
 import org.springframework.ide.vscode.commons.protocol.java.TypeDescriptorData;
 
@@ -32,7 +33,7 @@ import org.springframework.ide.vscode.commons.protocol.java.TypeDescriptorData;
  *
  * @author Kris De Volder
  */
-public interface STS4LanguageClient extends LanguageClient {
+public interface STS4LanguageClient extends LanguageClient, SprottyProtocol {
 
 	@JsonNotification("sts/highlight")
 	void highlight(HighlightParams highlights);
