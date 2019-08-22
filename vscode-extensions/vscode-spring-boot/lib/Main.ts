@@ -2,10 +2,11 @@
 
 import * as VSCode from 'vscode';
 import {workspace} from 'vscode';
+import * as LiveBeansModule from './live-bean-view';
 
 import * as commons from '@pivotal-tools/commons-vscode';
 
-import {LanguageClient} from "vscode-languageclient";
+import {LanguageClient, NotificationType} from "vscode-languageclient";
 
 const PROPERTIES_LANGUAGE_ID = "spring-boot-properties";
 const YAML_LANGUAGE_ID = "spring-boot-properties-yaml";
@@ -18,7 +19,7 @@ export function activate(context: VSCode.ExtensionContext): Thenable<LanguageCli
     // registerPipelineGenerator(context);
     let options : commons.ActivatorOptions = {
         DEBUG: false,
-        CONNECT_TO_LS: false,
+        CONNECT_TO_LS: true,
         extensionId: 'vscode-spring-boot',
         preferJdk: true,
         checkjvm: (context: VSCode.ExtensionContext, jvm: commons.JVM) => {
@@ -67,5 +68,7 @@ export function activate(context: VSCode.ExtensionContext): Thenable<LanguageCli
         highlightCodeLensSettingKey: 'boot-java.highlight-codelens.on'
     };
 
-    return commons.activate(options, context);
+    return commons.activate(options, context).then(client => {
+        return LiveBeansModule.activate(context, client).then(() => client);
+    })
 }

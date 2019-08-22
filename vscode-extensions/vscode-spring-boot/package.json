@@ -29,7 +29,8 @@
     "onLanguage:spring-boot-properties",
     "onLanguage:spring-boot-properties-yaml",
     "onLanguage:java",
-    "onLanguage:xml"
+    "onLanguage:xml",
+    "onCommand:sts4.liveBeans.start"
   ],
   "contributes": {
     "javaExtensions": [
@@ -176,6 +177,13 @@
         "scopeName": "source.java-properties",
         "path": "./properties-support/java-properties.tmLanguage"
       }
+    ],
+    "commands": [
+      {
+        "command": "sts4.liveBeans.start",
+        "title": "Live Beans Graph",
+        "category": "Spring-Boot"
+      }
     ]
   },
   "main": "./out/lib/Main",
@@ -190,12 +198,15 @@
   },
   "dependencies": {
     "@pivotal-tools/commons-vscode": "file:../commons-vscode/pivotal-tools-commons-vscode-0.2.2.tgz",
+    "sockjs-client": "1.3.0",
     "vscode-languageclient": "5.2.1"
   },
   "devDependencies": {
-    "vsce": "^1.36.1",
+    "@types/sockjs-client": "^1.1.1",
+    "@types/node": "^9.6.51",
+    "@types/ws": "^6.0.2",
     "typescript": "2.7.2",
-    "@types/node": "^9.4.6",
+    "vsce": "^1.36.1",
     "vscode": "^1.1.33"
   },
   "extensionDependencies": [

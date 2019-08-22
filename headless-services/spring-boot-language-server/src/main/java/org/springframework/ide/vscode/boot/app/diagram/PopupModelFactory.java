@@ -18,18 +18,19 @@ public class PopupModelFactory implements IPopupModelFactory {
 	@Override
 	public SModelRoot createPopupModel(SModelElement element, RequestPopupModelAction request, IDiagramServer server) {
 		
-		SGraph graph = new SGraph();
-		graph.setId("popup");
-		List<SModelElement> children = new ArrayList<>();
-		
-		SLabel label = new SLabel();
-		label.setType("node:label");
-		label.setText("I'm a tooltip!");
-		children.add(label);
-		
-		graph.setChildren(children);
-		
-		return graph;
+//		SGraph graph = new SGraph();
+//		graph.setId("popup");
+//		List<SModelElement> children = new ArrayList<>();
+//		
+//		SLabel label = new SLabel();
+//		label.setType("node:label");
+//		label.setText("I'm a tooltip!");
+//		children.add(label);
+//		
+//		graph.setChildren(children);
+//		
+//		return graph;
+		return null;
 	}
 
 }

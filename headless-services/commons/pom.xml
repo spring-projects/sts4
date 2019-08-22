@@ -42,6 +42,7 @@
 		<module>commons-gradle</module>
 		<module>commons-boot-app-cli</module>
 		<module>language-server-starter</module>
+		<module>commons-sprotty</module>
 	</modules>
 
 	<repositories>

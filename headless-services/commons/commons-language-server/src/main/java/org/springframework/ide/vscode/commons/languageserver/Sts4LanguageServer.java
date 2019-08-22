@@ -10,7 +10,9 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.languageserver;
 
+import org.eclipse.lsp4j.jsonrpc.services.JsonDelegate;
 import org.eclipse.lsp4j.services.LanguageServer;
+import org.springframework.ide.vscode.commons.languageserver.sprotty.SprottyService;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleWorkspaceService;
 
@@ -39,5 +41,9 @@ public interface Sts4LanguageServer extends LanguageServer {
 	 * @return
 	 */
 	DiagnosticService getDiagnosticService();
+	
+	@JsonDelegate
+	SprottyService getSprottyService();
+
 
 }

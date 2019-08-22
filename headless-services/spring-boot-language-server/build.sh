@@ -8,11 +8,13 @@ if command -v xvfb-run ; then
         -f ../pom.xml \
         -pl $modules \
         -am \
-        clean install
+        clean install \
+        -DskipTests
 else
     ../mvnw \
         -f ../pom.xml \
         -pl $modules \
         -am \
-        clean install
+        clean install \
+        -DskipTests
 fi

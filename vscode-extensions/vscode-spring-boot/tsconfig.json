@@ -9,7 +9,8 @@
 		"declaration": true,
 		"outDir": "out",
 		"sourceMap": true,
-		"rootDir": "."
+		"rootDir": ".",
+		"skipLibCheck": true
 	},
 	"include": [
 		"typings/*.d.ts",
