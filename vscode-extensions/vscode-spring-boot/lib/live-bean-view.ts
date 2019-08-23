@@ -8,7 +8,16 @@ export async function activate(context: vscode.ExtensionContext, client: Languag
 
     context.subscriptions.push(
 		vscode.commands.registerCommand('sts4.liveBeans.start', () => {
-            LiveBeansView.createOrShow(context.extensionPath, client);
+            vscode.window.showQuickPick([
+            	'process-1',
+            	'process-2',
+            	'process-3',
+            ]).then(pick => {
+            	console.log('Pick is: ' + pick);
+            	LiveBeansView.createOrShow(context.extensionPath, client, pick);
+
+
+            })
 		})
 	);
 
@@ -21,7 +30,7 @@ class LiveBeansView {
 	/**
 	 * Track the currently panel. Only allow a single panel to exist at a time.
 	 */
-	public static currentPanel: LiveBeansView | undefined;
+	public static currentPanels: Map<string, LiveBeansView> = new Map();
 
 	public static readonly viewType = 'catCoding';
 
@@ -29,14 +38,16 @@ class LiveBeansView {
 	private readonly _extensionPath: string;
     private _disposables: vscode.Disposable[] = [];
 
-	public static createOrShow(extensionPath: string, client: LanguageClient) {
+	private clientId: string;
+
+	public static createOrShow(extensionPath: string, client: LanguageClient, clientId: string) {
 		const column = vscode.window.activeTextEditor
 			? vscode.window.activeTextEditor.viewColumn
 			: undefined;
 
 		// If we already have a panel, show it.
-		if (LiveBeansView.currentPanel) {
-			LiveBeansView.currentPanel._panel.reveal(column);
+		if (LiveBeansView.currentPanels.has(clientId)) {
+			LiveBeansView.currentPanels.get(clientId)._panel.reveal(column);
 			return;
 		}
 
@@ -48,26 +59,25 @@ class LiveBeansView {
 			{
 				// Enable javascript in the webview
                 enableScripts: true,
-                
-
-
+				
 				// And restrict the webview to only loading content from our extension's `media` directory.
 				localResourceRoots: [vscode.Uri.file(path.join(extensionPath, 'media'))]
 			}
 		);
 
-        LiveBeansView.currentPanel = new LiveBeansView(panel, extensionPath);
+        LiveBeansView.currentPanels.set(clientId, new LiveBeansView(panel, extensionPath, clientId));
 
 		console.log('Created webview panel!');
-		const bridge: LSWebViewToLSPBridge = new LSWebViewToLSPBridge(panel.webview, client);
+		const bridge: LSWebViewToLSPBridge = new LSWebViewToLSPBridge(panel, client);
         panel.webview.onDidReceiveMessage(message => bridge.sendToLs(message));
 	}
 
-	public static revive(panel: vscode.WebviewPanel, extensionPath: string) {
-		LiveBeansView.currentPanel = new LiveBeansView(panel, extensionPath);
-	}
+	// public static revive(panel: vscode.WebviewPanel, extensionPath: string) {
+	// 	LiveBeansView.currentPanels.set() = new LiveBeansView(panel, extensionPath);
+	// }
 
-	private constructor(panel: vscode.WebviewPanel, extensionPath: string) {
+	private constructor(panel: vscode.WebviewPanel, extensionPath: string, clientId: string) {
+		this.clientId = clientId;
 		this._panel = panel;
 		this._extensionPath = extensionPath;
 
@@ -110,7 +120,7 @@ class LiveBeansView {
 	}
 
 	public dispose() {
-		LiveBeansView.currentPanel = undefined;
+		LiveBeansView.currentPanels.delete(this.clientId);
 
 		// Clean up our resources
 		this._panel.dispose();
@@ -161,7 +171,7 @@ class LiveBeansView {
         </head>
         <body>
             <div class="container">
-                <div class="row" id="sprotty-app" data-app="circlegraph">
+                <div class="row" id="sprotty-app" client-id="${this.clientId}">
                     <div class="col-md-10">
                         <h1>sprotty Circles Example</h1>
                         <p>
@@ -175,7 +185,7 @@ class LiveBeansView {
                 </div>
                 <div class="row">
                     <div class="col-md-12">
-                        <div id="spring-boot" class="sprotty"/>
+                        <div id="${this.clientId}" class="sprotty"/>
                     </div>
                     <div class="copyright">
                         &copy; 2017 <a href="http://typefox.io">TypeFox GmbH</a>.
@@ -211,12 +221,12 @@ interface LSWebViewBridge {
 class LSWebViewToWebsocketBridge implements LSWebViewBridge {
 	private ws: WebSocket;
 
-	constructor(webview: vscode.Webview): LSWebViewBridge {
+	constructor(panel: vscode.WebviewPanel) {
 		this.ws = new SockJS('http://localhost:8080/websocket');
 		this.ws.addEventListener('message', (event) => {
 			console.dir(event.data);
 			const actionMessage = JSON.parse(event.data);
-			webview.postMessage(actionMessage);
+			panel.webview.postMessage(actionMessage);
 		});
 	}
 
@@ -237,11 +247,11 @@ class LSWebViewToLSPBridge implements LSWebViewBridge {
 
 	private client: LanguageClient;
 
-    constructor(webview: vscode.Webview, client: LanguageClient) {
+    constructor(panel: vscode.WebviewPanel, client: LanguageClient) {
         client.onReady().then(() => {
-            client.onNotification(SPROTTY_LSP_NOTIFICATION, async (params: any) =>
-                webview.postMessage(params)
-        	);
+            client.onNotification(SPROTTY_LSP_NOTIFICATION, async (params: any) => {
+				panel.webview.postMessage(params)
+			});
         });
 		this.client = client;
 
