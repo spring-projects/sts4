@@ -38,11 +38,15 @@ export class VSCodeWebViewDiagramServer extends DiagramServer {
     protected vscode: any;
 
     listen(vscode: any): void {
-
+        console.log('Adding listener!');
         window.addEventListener('message', (event: any) => {
             const message = event.data; // The json data that the extension sent
-            console.log('Message Received');
-            this.messageReceived(message);
+            if (event.data == 'test') {
+                console.log('Received TEST message!');
+            } else {
+                console.log('Message Received');
+                this.messageReceived(message);
+            }
         });
 
         this.vscode = vscode;

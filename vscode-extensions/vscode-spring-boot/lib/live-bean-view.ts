@@ -54,7 +54,7 @@ class LiveBeansView {
 		// Otherwise, create a new panel.
 		const panel = vscode.window.createWebviewPanel(
 			LiveBeansView.viewType,
-			'Live Beans',
+			clientId,
 			column || vscode.ViewColumn.One,
 			{
 				// Enable javascript in the webview
@@ -243,20 +243,40 @@ class LSWebViewToWebsocketBridge implements LSWebViewBridge {
 
 const SPROTTY_LSP_NOTIFICATION =  new NotificationType<any, void>("sts/sprotty");
 
+
 class LSWebViewToLSPBridge implements LSWebViewBridge {
 
+	static bridges: LSWebViewToLSPBridge[] = [];
+	static initialized = false;
+
 	private client: LanguageClient;
+	private panel: vscode.WebviewPanel;
 
     constructor(panel: vscode.WebviewPanel, client: LanguageClient) {
-        client.onReady().then(() => {
-            client.onNotification(SPROTTY_LSP_NOTIFICATION, async (params: any) => {
-				panel.webview.postMessage(params)
-			});
-        });
 		this.client = client;
+		this.panel = panel;
+		if (!LSWebViewToLSPBridge.initialized) {
+			LSWebViewToLSPBridge.initialized = true;
+			client.onReady().then(() => {
+				client.onNotification(SPROTTY_LSP_NOTIFICATION, async (params: any) => {
+					LSWebViewToLSPBridge.bridges.forEach(bridge => {
+						bridge.panel.webview.postMessage(params)
+					});
+				});
+			});
+		}
 
-    }
+		LSWebViewToLSPBridge.bridges.push(this);
 
+		panel.onDidDispose(() => {
+			const index = LSWebViewToLSPBridge.bridges.indexOf(this);
+			if (index >= 0) {
+				LSWebViewToLSPBridge.bridges.splice(index, 1);
+			}
+		});
+
+	}
+	
     sendToLs(message: any) {
     	this.client.onReady().then(() => {
     		this.client.sendNotification(SPROTTY_LSP_NOTIFICATION, message);
