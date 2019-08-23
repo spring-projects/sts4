@@ -19,7 +19,7 @@ import org.springframework.stereotype.Component;
 import net.bytebuddy.utility.RandomString;
 
 
-@Component
+//@Component
 public class MockDiagramServerModel implements InitializingBean {
 	
 	@Autowired

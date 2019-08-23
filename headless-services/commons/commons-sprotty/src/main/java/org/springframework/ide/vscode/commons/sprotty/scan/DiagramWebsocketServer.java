@@ -4,7 +4,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.eclipse.sprotty.ActionMessage;
-import org.eclipse.sprotty.IDiagramServer;
 import org.eclipse.sprotty.server.json.ActionTypeAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,8 +24,6 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 
-import reactor.core.publisher.Mono;
-
 @Controller
 public class DiagramWebsocketServer implements WebSocketConfigurer, InitializingBean {
 		
@@ -37,7 +34,7 @@ public class DiagramWebsocketServer implements WebSocketConfigurer, Initializing
 	private Gson gson;
 	
 	@Autowired
-	private IDiagramServer diagramServer;
+	private DiagramServerManager diagramServers;
 	
 	@Autowired
 	private SimpleLanguageServer server;
@@ -55,10 +52,10 @@ public class DiagramWebsocketServer implements WebSocketConfigurer, Initializing
 		initializeGson();
 		server.onSprottyMessage((jsonMessage) -> {
 			ActionMessage actionMessage = gson.fromJson(jsonMessage, ActionMessage.class);
-			diagramServer.accept(actionMessage);
+			diagramServers.sendMessageToServer(actionMessage);
 		});
 		server.doOnInitialized(() -> {
-			diagramServer.setRemoteEndpoint(message -> {
+			diagramServers.setRemoteEndpoint(message -> {
 				sendMessage((JsonObject)gson.toJsonTree(message));
 			});
 		});
@@ -99,7 +96,7 @@ public class DiagramWebsocketServer implements WebSocketConfigurer, Initializing
 					if (END_MESSAGE.equals(payload)) {
 						ActionMessage actionMessage = gson.fromJson(buff.toString(), ActionMessage.class);
 						buff = new StringBuilder();
-						diagramServer.accept(actionMessage);
+						diagramServers.sendMessageToServer(actionMessage);
 					} else {
 						buff.append(payload);
 					}

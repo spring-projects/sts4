@@ -1,12 +1,16 @@
 package org.springframework.ide.vscode.boot.app.diagram;
 
-import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.function.Consumer;
 
+import org.eclipse.sprotty.ActionMessage;
+import org.eclipse.sprotty.DefaultDiagramServer;
 import org.eclipse.sprotty.Dimension;
 import org.eclipse.sprotty.IDiagramServer;
+import org.eclipse.sprotty.ILayoutEngine;
 import org.eclipse.sprotty.Point;
 import org.eclipse.sprotty.SCompartment;
 import org.eclipse.sprotty.SEdge;
@@ -17,42 +21,78 @@ import org.eclipse.sprotty.SModelRoot;
 import org.eclipse.sprotty.SNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBean;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansModel;
-import org.springframework.scheduling.TaskScheduler;
+import org.springframework.ide.vscode.commons.sprotty.scan.DiagramServerManager;
+import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 import org.springframework.stereotype.Component;
+import org.springframework.util.Assert;
+
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 
 @Component
-public class LiveBeanDiagramModel implements InitializingBean {
-		
-	private static final Logger log = LoggerFactory.getLogger(LiveBeanDiagramModel.class);
-
-	@Autowired
-	private IDiagramServer diagramServer;
+public class LiveBeansDiagramServerManager implements DiagramServerManager {
 	
+	private static final Logger log = LoggerFactory.getLogger(LiveBeansDiagramServerManager.class);
+
+	private Cache<String, IDiagramServer> servers = CacheBuilder.newBuilder().build();
+
 	@Autowired
 	private RunningAppProvider runningAppProvider;
 	
 	@Autowired
-	@Qualifier("taskScheduler")
-	private TaskScheduler taskScheduler;
-
-
-	@Override
-	public void afterPropertiesSet() throws Exception {
-		taskScheduler.scheduleAtFixedRate(() -> diagramServer.setModel(generateModel()), Duration.ofSeconds(15));
+	private ILayoutEngine layoutEngine;
+	
+	private Consumer<ActionMessage> remoteEndpoint;
+	
+//	@Override
+	private IDiagramServer getDiagramServer(String clientId) {
+		try {
+			return servers.get(clientId, () -> {
+				DefaultDiagramServer diagramServer = new DefaultDiagramServer(clientId);
+				diagramServer.setRemoteEndpoint(this::sendMessageToRemoteEndpoint);
+				diagramServer.setLayoutEngine(layoutEngine);
+				diagramServer.setModel(generateModel(clientId));
+				return diagramServer;
+			});
+		} catch (ExecutionException e) {
+			throw ExceptionUtil.unchecked(e);
+		}
 	}
 	
-	private SModelRoot generateModel() {
+	public void setRemoteEndpoint(Consumer<ActionMessage> remoteEndpoint) {
+		Assert.isNull(this.remoteEndpoint, "Can only be set once!");
+		this.remoteEndpoint = remoteEndpoint;
+	}
+	
+	private void sendMessageToRemoteEndpoint(ActionMessage message) {
+		if (remoteEndpoint != null) {
+			remoteEndpoint.accept(message);
+		}
+	}
+	
+	public void sendMessageToServer(ActionMessage message) {
+		IDiagramServer server = getDiagramServer(message.getClientId());
+		if (server != null) {
+			server.accept(message);
+		}
+	}
+	
+	private SModelRoot generateModel(String clientId) {
 		try {
 			Collection<SpringBootApp> apps = runningAppProvider.getAllRunningSpringApps();
 			if (!apps.isEmpty()) {
-				return toSprottyGraph(apps.iterator().next());
+				String indexStr = clientId.substring(clientId.lastIndexOf('-') + 1);
+				int index = Integer.valueOf(indexStr);
+				for (SpringBootApp springBootApp : apps) {
+					if (--index == 0) {
+						return toSprottyGraph(springBootApp);
+					}
+				}
 			}
 		} catch (Exception e) {
 			log.error("{}", e);
