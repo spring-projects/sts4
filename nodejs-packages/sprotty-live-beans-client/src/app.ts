@@ -21,9 +21,7 @@ import runStandalone from "./standalone";
 
 const appDiv = document.getElementById('sprotty-app')
 if(appDiv) {
-    const appMode = appDiv.getAttribute('data-app');
-    if (appMode === 'circlegraph')
-        runStandalone();
-    else
-        throw new Error('Dunno what to do :-(');
+    const clientId = appDiv.getAttribute('client-id');
+    console.log('app.ts : ' + clientId);
+    runStandalone(clientId || 'spring-boot');
 }

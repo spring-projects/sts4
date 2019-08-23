@@ -14,18 +14,19 @@
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
 
+
 declare const acquireVsCodeApi: any;
 
 import {
     TYPES, IActionDispatcher, SModelElementSchema, SEdgeSchema, SNodeSchema, SGraphSchema,
     ModelSource, LocalModelSource, WebSocketDiagramServer, RequestModelAction
 } from "sprotty";
-import createContainer from "./di.config";
+import createContainer, {TransportMedium} from "./di.config";
 import * as SockJS from "sockjs-client";
 import {VSCodeWebViewDiagramServer} from "./model";
 
-export default function runStandalone() {
-    const container = createContainer(true);
+export default function runStandalone(clientId: string) {
+    const container = createContainer(TransportMedium.LSP, clientId);
     const dispatcher = container.get<IActionDispatcher>(TYPES.IActionDispatcher);
 
     // Initialize gmodel
@@ -105,6 +106,7 @@ export default function runStandalone() {
     }
 
     if (modelSource instanceof VSCodeWebViewDiagramServer) {
+        console.log('Listen and acquire VSCode API with client-id = ' + clientId);
         modelSource.listen(acquireVsCodeApi());
     }
 
