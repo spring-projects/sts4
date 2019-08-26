@@ -17,11 +17,11 @@ import org.eclipse.sprotty.SEdge;
 import org.eclipse.sprotty.SGraph;
 import org.eclipse.sprotty.SLabel;
 import org.eclipse.sprotty.SModelElement;
-import org.eclipse.sprotty.SModelRoot;
 import org.eclipse.sprotty.SNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.ApplicationContext;
 import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBean;
@@ -37,6 +37,11 @@ import com.google.common.cache.CacheBuilder;
 @Component
 public class LiveBeansDiagramServerManager implements DiagramServerManager {
 	
+	public static final SGraph EMPTY_GRAPH = new SGraph(((Consumer<SGraph>) (SGraph it) -> {
+		it.setType("NONE");
+		it.setId("EMPTY");
+	}));
+	
 	private static final Logger log = LoggerFactory.getLogger(LiveBeansDiagramServerManager.class);
 
 	private Cache<String, IDiagramServer> servers = CacheBuilder.newBuilder().build();
@@ -47,9 +52,11 @@ public class LiveBeansDiagramServerManager implements DiagramServerManager {
 	@Autowired
 	private ILayoutEngine layoutEngine;
 	
+	@Autowired
+	private ApplicationContext appContext;
+	
 	private Consumer<ActionMessage> remoteEndpoint;
 	
-//	@Override
 	private IDiagramServer getDiagramServer(String clientId) {
 		try {
 			return servers.get(clientId, () -> {
@@ -82,7 +89,7 @@ public class LiveBeansDiagramServerManager implements DiagramServerManager {
 		}
 	}
 	
-	private SModelRoot generateModel(String clientId) {
+	private SGraph generateModel(String clientId) {
 		try {
 			Collection<SpringBootApp> apps = runningAppProvider.getAllRunningSpringApps();
 			if (!apps.isEmpty()) {
@@ -97,11 +104,11 @@ public class LiveBeansDiagramServerManager implements DiagramServerManager {
 		} catch (Exception e) {
 			log.error("{}", e);
 		}
-		return SGraph.EMPTY_ROOT;
+		return EMPTY_GRAPH;
 	}
 	
-	private SModelRoot toSprottyGraph(SpringBootApp app) throws Exception {
-		SModelRoot graph = new SModelRoot();
+	private SGraph toSprottyGraph(SpringBootApp app) throws Exception {
+		SGraph graph = new SGraph();
 		graph.setId(app.getProcessName());
 		graph.setType("graph");
 		

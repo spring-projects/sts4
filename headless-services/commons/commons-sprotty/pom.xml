@@ -30,16 +30,15 @@
 			<artifactId>org.eclipse.sprotty.server</artifactId>
 			<version>${sprotty-version}</version>
 		</dependency>
-		<!-- https://mvnrepository.com/artifact/org.eclipse.elk/org.eclipse.elk.core -->
 		<dependency>
-		    <groupId>org.eclipse.elk</groupId>
-		    <artifactId>org.eclipse.elk.core</artifactId>
-		    <version>${elk-version}</version>
+			<groupId>org.eclipse.sprotty</groupId>
+			<artifactId>org.eclipse.sprotty.layout</artifactId>
+			<version>${sprotty-version}</version>
 		</dependency>
 		<dependency>
 			<groupId>org.eclipse.elk</groupId>
 			<artifactId>org.eclipse.elk.alg.layered</artifactId>
 			    <version>${elk-version}</version>
 		</dependency>	
-	</dependencies>
+</dependencies>
 </project>

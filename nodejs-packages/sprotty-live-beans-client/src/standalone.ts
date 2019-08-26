@@ -108,6 +108,7 @@ export default function runStandalone(clientId: string) {
     if (modelSource instanceof VSCodeWebViewDiagramServer) {
         console.log('Listen and acquire VSCode API with client-id = ' + clientId);
         modelSource.listen(acquireVsCodeApi());
+        dispatcher.dispatch(new RequestModelAction());
     }
 
     console.log('Before requesting model');
