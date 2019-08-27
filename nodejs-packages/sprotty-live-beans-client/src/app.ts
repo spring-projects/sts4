@@ -19,9 +19,4 @@ console.log("Loaded reflect-metadata");
 
 import runStandalone from "./standalone";
 
-const appDiv = document.getElementById('sprotty-app')
-if(appDiv) {
-    const clientId = appDiv.getAttribute('client-id');
-    console.log('app.ts : ' + clientId);
-    runStandalone(clientId || 'spring-boot');
-}
+runStandalone();

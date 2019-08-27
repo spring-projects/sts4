@@ -14,7 +14,7 @@ export async function activate(context: vscode.ExtensionContext, client: Languag
             	'process-3',
             ]).then(pick => {
             	console.log('Pick is: ' + pick);
-            	LiveBeansView.createOrShow(context.extensionPath, client, pick);
+            	LiveBeansView.createOrShow(context.extensionPath, client, pick, pick);
 
 
             })
@@ -27,8 +27,9 @@ export async function activate(context: vscode.ExtensionContext, client: Languag
  * Manages cat coding webview panels
  */
 class LiveBeansView {
+
 	/**
-	 * Track the currently panel. Only allow a single panel to exist at a time.
+	 * Track panels that currently exist. Indexed by process id.
 	 */
 	public static currentPanels: Map<string, LiveBeansView> = new Map();
 
@@ -39,8 +40,9 @@ class LiveBeansView {
     private _disposables: vscode.Disposable[] = [];
 
 	private clientId: string;
+	private processId: string;
 
-	public static createOrShow(extensionPath: string, client: LanguageClient, clientId: string) {
+	public static createOrShow(extensionPath: string, client: LanguageClient, clientId: string, processId: string) {
 		const column = vscode.window.activeTextEditor
 			? vscode.window.activeTextEditor.viewColumn
 			: undefined;
@@ -65,7 +67,7 @@ class LiveBeansView {
 			}
 		);
 
-        LiveBeansView.currentPanels.set(clientId, new LiveBeansView(panel, extensionPath, clientId));
+        LiveBeansView.currentPanels.set(clientId, new LiveBeansView(panel, extensionPath, clientId, processId));
 
 		console.log('Created webview panel!');
 		const bridge: LSWebViewToLSPBridge = new LSWebViewToLSPBridge(panel, client);
@@ -76,8 +78,9 @@ class LiveBeansView {
 	// 	LiveBeansView.currentPanels.set() = new LiveBeansView(panel, extensionPath);
 	// }
 
-	private constructor(panel: vscode.WebviewPanel, extensionPath: string, clientId: string) {
+	private constructor(panel: vscode.WebviewPanel, extensionPath: string, clientId: string, processId: string) {
 		this.clientId = clientId;
+		this.processId = processId;
 		this._panel = panel;
 		this._extensionPath = extensionPath;
 
@@ -113,12 +116,6 @@ class LiveBeansView {
 		);
 	}
 
-	public doRefactor() {
-		// Send a message to the webview webview.
-		// You can send any JSON serializable data.
-		this._panel.webview.postMessage({ command: 'refactor' });
-	}
-
 	public dispose() {
 		LiveBeansView.currentPanels.delete(this.clientId);
 
@@ -134,7 +131,7 @@ class LiveBeansView {
 	}
 
 	private _update() {
-		this._panel.webview.html = this._getHtmlForWebview(/*cats[catName]*/);
+		this._panel.webview.html = this._getHtmlForWebview();
 	}
 
 	mediaUrl(...pathsegments: string[]) {
@@ -149,14 +146,11 @@ class LiveBeansView {
 		return scriptPathOnDisk.with({ scheme: 'vscode-resource' });
 	}
 
-	private _getHtmlForWebview(/*catGif: string*/) {
+	private _getHtmlForWebview() {
         
 		// And the uri we use to load this script in the webview
 		const scriptUri = this.mediaUrl('bundle.js');
         const cssUri = this.mediaUrl('css', 'page.css');
-        
-		// Use a nonce to whitelist which scripts can be run
-        const nonce = getNonce();
         
 		return `<!DOCTYPE html>
         <html>
@@ -171,7 +165,7 @@ class LiveBeansView {
         </head>
         <body>
             <div class="container">
-                <div class="row" id="sprotty-app" client-id="${this.clientId}">
+                <div class="row" id="sprotty-app" client-id="${this.clientId}" target="${this.processId}">
                     <div class="col-md-10">
                         <h1>sprotty Circles Example</h1>
                         <p>
@@ -196,15 +190,6 @@ class LiveBeansView {
         </body>
         </html>`;
 	}
-}
-
-function getNonce() {
-	let text = '';
-	const possible = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
-	for (let i = 0; i < 32; i++) {
-		text += possible.charAt(Math.floor(Math.random() * possible.length));
-	}
-	return text;
 }
 
 const SOCKET_MESSAGE_BUFFER = 4000;

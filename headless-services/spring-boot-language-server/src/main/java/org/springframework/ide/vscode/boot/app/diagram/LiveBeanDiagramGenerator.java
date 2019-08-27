@@ -3,15 +3,12 @@ package org.springframework.ide.vscode.boot.app.diagram;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 
-import org.eclipse.sprotty.ActionMessage;
 import org.eclipse.sprotty.DefaultDiagramServer;
 import org.eclipse.sprotty.Dimension;
-import org.eclipse.sprotty.IDiagramServer;
-import org.eclipse.sprotty.ILayoutEngine;
 import org.eclipse.sprotty.Point;
+import org.eclipse.sprotty.RequestModelAction;
 import org.eclipse.sprotty.SCompartment;
 import org.eclipse.sprotty.SEdge;
 import org.eclipse.sprotty.SGraph;
@@ -21,88 +18,42 @@ import org.eclipse.sprotty.SNode;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.ApplicationContext;
 import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBean;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansModel;
-import org.springframework.ide.vscode.commons.sprotty.scan.DiagramServerManager;
-import org.springframework.ide.vscode.commons.util.ExceptionUtil;
+import org.springframework.ide.vscode.commons.sprotty.scan.DiagramGenerator;
 import org.springframework.stereotype.Component;
-import org.springframework.util.Assert;
-
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
 
 @Component
-public class LiveBeansDiagramServerManager implements DiagramServerManager {
-	
+public class LiveBeanDiagramGenerator implements DiagramGenerator {
+
 	public static final SGraph EMPTY_GRAPH = new SGraph(((Consumer<SGraph>) (SGraph it) -> {
 		it.setType("NONE");
 		it.setId("EMPTY");
 	}));
-	
-	private static final Logger log = LoggerFactory.getLogger(LiveBeansDiagramServerManager.class);
 
-	private Cache<String, IDiagramServer> servers = CacheBuilder.newBuilder().build();
-
-	@Autowired
-	private RunningAppProvider runningAppProvider;
+	private static final Logger log = LoggerFactory.getLogger(LiveBeanDiagramGenerator.class);
 	
 	@Autowired
-	private ILayoutEngine layoutEngine;
+	RunningAppProvider runningAppProvider;
 	
-	@Autowired
-	private ApplicationContext appContext;
-	
-	private Consumer<ActionMessage> remoteEndpoint;
-	
-	private IDiagramServer getDiagramServer(String clientId) {
-		try {
-			return servers.get(clientId, () -> {
-				DefaultDiagramServer diagramServer = new DefaultDiagramServer(clientId);
-				diagramServer.setRemoteEndpoint(this::sendMessageToRemoteEndpoint);
-				diagramServer.setLayoutEngine(layoutEngine);
-				diagramServer.setModel(generateModel(clientId));
-				return diagramServer;
-			});
-		} catch (ExecutionException e) {
-			throw ExceptionUtil.unchecked(e);
+	public SGraph generateModel(String clientId, RequestModelAction modelRequest) {
+		String processStr = modelRequest.getOptions().get("target");
+		if (processStr.startsWith("process-")) {
+			processStr = processStr.substring("process-".length());
 		}
-	}
-	
-	public void setRemoteEndpoint(Consumer<ActionMessage> remoteEndpoint) {
-		Assert.isNull(this.remoteEndpoint, "Can only be set once!");
-		this.remoteEndpoint = remoteEndpoint;
-	}
-	
-	private void sendMessageToRemoteEndpoint(ActionMessage message) {
-		if (remoteEndpoint != null) {
-			remoteEndpoint.accept(message);
-		}
-	}
-	
-	public void sendMessageToServer(ActionMessage message) {
-		IDiagramServer server = getDiagramServer(message.getClientId());
-		if (server != null) {
-			server.accept(message);
-		}
-	}
-	
-	private SGraph generateModel(String clientId) {
+		int process = Integer.parseInt(processStr);
 		try {
 			Collection<SpringBootApp> apps = runningAppProvider.getAllRunningSpringApps();
-			if (!apps.isEmpty()) {
-				String indexStr = clientId.substring(clientId.lastIndexOf('-') + 1);
-				int index = Integer.valueOf(indexStr);
-				for (SpringBootApp springBootApp : apps) {
-					if (--index == 0) {
-						return toSprottyGraph(springBootApp);
-					}
+			int index = 0;
+			for (SpringBootApp app : apps) {
+				if (++index == process) {
+					return toSprottyGraph(app);
 				}
 			}
 		} catch (Exception e) {
-			log.error("{}", e);
+			log.error("", e);
 		}
 		return EMPTY_GRAPH;
 	}
@@ -162,6 +113,7 @@ public class LiveBeansDiagramServerManager implements DiagramServerManager {
 		edge.setTargetId(targetId);
 		return edge;
 	}
+
 
 
 }

@@ -11,6 +11,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
+import org.springframework.ide.vscode.commons.protocol.STS4LanguageClient;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.socket.CloseStatus;
 import org.springframework.web.socket.TextMessage;
@@ -54,10 +55,8 @@ public class DiagramWebsocketServer implements WebSocketConfigurer, Initializing
 			ActionMessage actionMessage = gson.fromJson(jsonMessage, ActionMessage.class);
 			diagramServers.sendMessageToServer(actionMessage);
 		});
-		server.doOnInitialized(() -> {
-			diagramServers.setRemoteEndpoint(message -> {
-				sendMessage((JsonObject)gson.toJsonTree(message));
-			});
+		diagramServers.setRemoteEndpoint(message -> {
+			sendMessage((JsonObject)gson.toJsonTree(message));
 		});
 	}
 
@@ -127,7 +126,10 @@ public class DiagramWebsocketServer implements WebSocketConfigurer, Initializing
 	}
 	
 	private void sendMessage(JsonObject msg) {
-		server.getClient().sprottyMessage(msg);
+		STS4LanguageClient client = server.getClient();
+		if (client!=null) {
+			client.sprottyMessage(msg);
+		}
 		synchronized (ws_sessions) {
 			for (WebSocketSession ws : ws_sessions) {
 				try {
