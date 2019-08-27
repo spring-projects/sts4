@@ -485,7 +485,7 @@ public class TypeUtil {
 		return type!=null && type.getErasure().endsWith("[]");
 	}
 
-	public static boolean isMap(Type type) {
+	public boolean isMap(Type type) {
 		//Note: to be really correct we should use JDT infrastructure to resolve
 		//type in project classpath instead of using Java reflection.
 		//However, use reflection here is okay assuming types we care about
@@ -493,15 +493,50 @@ public class TypeUtil {
 		//also potentialy be very slow.
 		if (type!=null) {
 			String erasure = type.getErasure();
+			if ("java.util.Map".equals(erasure)) {
+				//quick / easy case. No looking for types and hierarchies required.
+				return true;
+			}
 			try {
-				Class<?> erasureClass = Class.forName(erasure);
-				return Map.class.isAssignableFrom(erasureClass);
+				IType mapType = findType("java.util.Map");
+				IType erasureType = findType(erasure);
+				return isAssignableFrom(mapType, erasureType);
 			} catch (Exception e) {
 				//type not resolveable
 			}
 		}
 		return false;
 	}
+
+	private boolean isAssignableFrom(IType mapType, IType erasureType) {
+		Set<String> seen = new HashSet<>();
+		return searchSuperTypes(seen, erasureType, mapType.getFullyQualifiedName());
+	}
+
+
+	private boolean searchSuperTypes(Set<String> seen, IType searchIn, String fqTargetType) {
+		if (searchIn!=null) {
+			String fqName = searchIn.getFullyQualifiedName();
+			if (fqName.equals(fqTargetType)) {
+				return true;
+			}
+			if (seen.add(fqName)) {
+				for (String itfName : searchIn.getSuperInterfaceNames()) {
+					IType itf = findType(itfName);
+					if (searchSuperTypes(seen, itf, fqTargetType)) {
+						return true;
+					}
+				}
+				String klassName = searchIn.getSuperclassName();
+				IType klass = findType(klassName);
+				if (searchSuperTypes(seen, klass, fqTargetType)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
 
 	/**
 	 * Get domain type for a map or list generic type.
@@ -966,9 +1001,9 @@ public class TypeUtil {
 	 * List<List<List<String>>> -> 2
 	 * Map<*,List<String>> -> 2
 	 */
-	public static int getDimensionality(Type type) {
+	public int getDimensionality(Type type) {
 		int dim = 0;
-		while (isSequencable(type) || isMap(type)) {
+		while (isSequencable(type) || this.isMap(type)) {
 			dim++;
 			type = getDomainType(type);
 		}

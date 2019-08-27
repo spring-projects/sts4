@@ -163,7 +163,7 @@ public class PropertyNavigator {
 	 * checked to be 'dotable'.
 	 */
 	private Type dotNavigate(int offset, Type type) {
-		if (TypeUtil.isMap(type)) {
+		if (typeUtil.isMap(type)) {
 			int keyStart = offset+1;
 			Type domainType = TypeUtil.getDomainType(type);
 			int keyEnd = -1;

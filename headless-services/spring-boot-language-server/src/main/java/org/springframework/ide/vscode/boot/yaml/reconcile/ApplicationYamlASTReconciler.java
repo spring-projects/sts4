@@ -224,7 +224,7 @@ public class ApplicationYamlASTReconciler implements YamlASTReconciler {
 		checkForDuplicateKeys(mapping);
 		if (typeUtil.isAtomic(type)) {
 			expectTypeFoundMapping(type, mapping);
-		} else if (TypeUtil.isMap(type) || TypeUtil.isSequencable(type)) {
+		} else if (typeUtil.isMap(type) || TypeUtil.isSequencable(type)) {
 			Type keyType = typeUtil.getKeyType(type);
 			Type valueType = TypeUtil.getDomainType(type);
 			if (keyType!=null) {

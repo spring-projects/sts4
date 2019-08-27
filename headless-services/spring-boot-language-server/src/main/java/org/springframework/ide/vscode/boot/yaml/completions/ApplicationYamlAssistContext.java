@@ -116,7 +116,7 @@ public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistCon
 	protected String appendTextFor(Type type) {
 		//Note that proper indentation after each \n" is added automatically
 		//so the strings created here do not need to contain indentation spaces
-		if (TypeUtil.isMap(type)) {
+		if (typeUtil.isMap(type)) {
 			//ready to enter nested map key on next line
 			return "\n"+YamlIndentUtil.INDENT_STR;
 		} if (TypeUtil.isSequencable(type)) {
@@ -328,7 +328,7 @@ public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistCon
 		@Override
 		public YamlAssistContext traverse(YamlPathSegment s) {
 			if (s.getType()==YamlPathSegmentType.VAL_AT_KEY) {
-				if (TypeUtil.isSequencable(type) || TypeUtil.isMap(type)) {
+				if (TypeUtil.isSequencable(type) || typeUtil.isMap(type)) {
 					return contextWith(s, TypeUtil.getDomainType(type));
 				}
 				String key = s.toPropString();
@@ -632,7 +632,7 @@ public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistCon
 	private static List<IJavaElement> getAllJavaElements(TypeUtil typeUtil, Type parentType, String propName) {
 		if (propName!=null) {
 			Type beanType = parentType;
-			if (TypeUtil.isMap(beanType)) {
+			if (typeUtil.isMap(beanType)) {
 				Type keyType = typeUtil.getKeyType(beanType);
 				if (keyType!=null && typeUtil.isEnum(keyType)) {
 					IField field = typeUtil.getEnumConstant(keyType, propName);
