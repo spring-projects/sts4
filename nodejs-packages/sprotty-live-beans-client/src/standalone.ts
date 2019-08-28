@@ -27,7 +27,8 @@ import {VSCodeWebViewDiagramServer} from "./model";
 
 export default function runStandalone() {
     const clientId = getOptionFromDom('client-id') || 'sprotty-client';
-    const container = createContainer(TransportMedium.LSP, clientId);
+    const transport = getOptionFromDom('transport') || 'websocket';
+    const container = createContainer(transport=='websocket' ? TransportMedium.Websocket : TransportMedium.LSP, clientId);
     const dispatcher = container.get<IActionDispatcher>(TYPES.IActionDispatcher);
 
     // Run

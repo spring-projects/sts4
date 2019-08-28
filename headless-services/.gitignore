@@ -2,3 +2,7 @@
 .classpath
 .settings
 .factorypath
+/spring-boot-language-server/src/main/resources/static/lib
+/spring-boot-language-server/src/main/resources/static/css
+/spring-boot-language-server/src/main/resources/static/*.js
+/spring-boot-language-server/src/main/resources/static/*.js.map

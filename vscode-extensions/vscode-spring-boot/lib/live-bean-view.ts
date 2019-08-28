@@ -165,7 +165,7 @@ class LiveBeansView {
         </head>
         <body>
             <div class="container">
-                <div class="row" id="sprotty-app" client-id="${this.clientId}" target="${this.processId}">
+                <div class="row" id="sprotty-app" client-id="${this.clientId}" transport="lsp" target="${this.processId}">
                     <div class="col-md-10">
                         <h1>sprotty Circles Example</h1>
                         <p>
