@@ -1,4 +1,4 @@
-package org.springframework.ide.vscode.commons.sprotty.scan;
+package org.springframework.ide.vscode.commons.sprotty.api;
 
 import java.util.function.Consumer;
 

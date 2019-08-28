@@ -14,6 +14,7 @@
 		<module>manifest-yaml-language-server</module>
 		<module>concourse-language-server</module>
 		<module>spring-boot-language-server</module>
+		<module>sprotty-si-view</module>
 		<module>bosh-language-server</module>
 		<module>jdt-ls-extension</module>
 	</modules>

@@ -13,6 +13,8 @@ import org.eclipse.sprotty.SGraph;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.ide.vscode.commons.sprotty.api.DiagramGenerator;
+import org.springframework.ide.vscode.commons.sprotty.api.DiagramServerManager;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;

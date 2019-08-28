@@ -5,7 +5,6 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Consumer;
 
-import org.eclipse.sprotty.DefaultDiagramServer;
 import org.eclipse.sprotty.Dimension;
 import org.eclipse.sprotty.Point;
 import org.eclipse.sprotty.RequestModelAction;
@@ -22,7 +21,7 @@ import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBean;
 import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansModel;
-import org.springframework.ide.vscode.commons.sprotty.scan.DiagramGenerator;
+import org.springframework.ide.vscode.commons.sprotty.api.DiagramGenerator;
 import org.springframework.stereotype.Component;
 
 @Component

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>sprotty Circles Example</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.2.1/css/bootstrap.min.css">    
+    <link rel="stylesheet" href="css/page.css">
+    <!-- support Microsoft browsers -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/dom4/3.0.0/dom4.js">
+</head>
+<body>
+    <div class="container">
+        <div class="row" id="sprotty-app" client-id="spring-boot">
+            <div class="col-md-10">
+                <h1>sprotty Circles Example</h1>
+                <p>
+                    <button id="refresh">Refresh</button>
+                    <button id="scrambleNodes">Scramble nodes</button>
+                </p>
+            </div>
+            <div class="help col-md-2">
+                <a href='https://github.com/theia-ide/sprotty/wiki/Using-sprotty'>Help</a>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-md-12">
+                <div id="spring-boot" class="sprotty"/>
+            </div>
+            <div class="copyright">
+                &copy; 2017 <a href="http://typefox.io">TypeFox GmbH</a>.
+            </div>
+        </div>
+    </div>
+    </div>
+<script src="bundle.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sockjs-client@1/dist/sockjs.min.js"></script>
+</body>
+</html>
