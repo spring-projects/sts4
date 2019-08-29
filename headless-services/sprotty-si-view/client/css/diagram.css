@@ -20,6 +20,16 @@
     stroke-width: 2;
 }
 
+.sprotty-port {
+    fill: #aaffaa;
+    stroke: #000000;
+    stroke-width: 1px;
+}
+
+.sprotty-port.sprotty-error-port {
+    fill: #ff0000;
+}
+
 .sprotty-text {
     font-size: 16pt;
     text-anchor: middle;

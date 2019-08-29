@@ -1,5 +1,6 @@
 package org.springframework.ide.vscode.commons.sprotty.scan;
 
+import java.util.Optional;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
 
@@ -8,6 +9,7 @@ import org.eclipse.sprotty.ActionMessage;
 import org.eclipse.sprotty.DefaultDiagramServer;
 import org.eclipse.sprotty.IDiagramServer;
 import org.eclipse.sprotty.ILayoutEngine;
+import org.eclipse.sprotty.IPopupModelFactory;
 import org.eclipse.sprotty.RequestModelAction;
 import org.eclipse.sprotty.SGraph;
 import org.slf4j.Logger;
@@ -40,6 +42,9 @@ public class DefaultDiagramServerManager implements DiagramServerManager {
 	@Autowired
 	private ILayoutEngine layoutEngine;
 	
+	@Autowired
+	private Optional<IPopupModelFactory> popups;
+	
 	private Consumer<ActionMessage> remoteEndpoint;
 	
 	private IDiagramServer getDiagramServer(String clientId) {
@@ -48,6 +53,7 @@ public class DefaultDiagramServerManager implements DiagramServerManager {
 				DefaultDiagramServer diagramServer = new DefaultDiagramServer(clientId);
 				diagramServer.setRemoteEndpoint(this::sendMessageToRemoteEndpoint);
 				diagramServer.setLayoutEngine(layoutEngine);
+				diagramServer.setPopupModelFactory(popups.orElse(null));
 				return diagramServer;
 			});
 		} catch (ExecutionException e) {

@@ -123,6 +123,30 @@ export class ChannelNodeView extends RectangularNodeView {
         </g>;
     }
 }
+
+@injectable()
+export class PortView implements IView {
+    render(node: Readonly<SShapeElement & Hoverable & Selectable>, context: RenderingContext): VNode {
+        return <g>
+            <rect class-sprotty-node={node instanceof SPort} class-sprotty-port={node instanceof SPort}
+                  class-mouseover={node.hoverFeedback} class-selected={node.selected}
+                  x="0" y="0" width={Math.max(node.size.width, 0)} height={Math.max(node.size.height, 0)}></rect>
+            {context.renderChildren(node)}
+        </g>;
+    }
+}
+
+@injectable()
+export class ErrorPortView implements IView {
+    render(node: Readonly<SShapeElement & Hoverable & Selectable>, context: RenderingContext): VNode {
+        return <g>
+            <rect class-sprotty-node={node instanceof SPort} class-sprotty-port={node instanceof SPort}
+                  class-sprotty-error-port={node instanceof SPort} class-mouseover={node.hoverFeedback} class-selected={node.selected}
+                  x="0" y="0" width={Math.max(node.size.width, 0)} height={Math.max(node.size.height, 0)}></rect>
+            {context.renderChildren(node)}
+        </g>;
+    }
+}
 /*
 <g class="shape">'+
             '<rect class="border"/>' +

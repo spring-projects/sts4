@@ -1,5 +1,8 @@
 package org.springframework.ide.si.view;
 
+import java.io.IOException;
+
+import org.apache.commons.io.IOUtils;
 import org.springframework.ide.si.view.json.SpringIntegrationGraph;
 import org.springframework.stereotype.Component;
 
@@ -323,7 +326,12 @@ public class MockGraphData implements GraphDataProvider {
 			"}";
 
 	@Override
-	public SpringIntegrationGraph getGraph() {
+	public SpringIntegrationGraph getGraph() throws IOException {
+//		Gson gson = new Gson().newBuilder().setPrettyPrinting().create();
+//		JsonObject json = gson.fromJson(data, JsonObject.class);
+//		System.out.println(gson.toJson(json));
+		
+		String data = IOUtils.toString(getClass().getResource("/static/sample.json"));
 		return new Gson().fromJson(data, SpringIntegrationGraph.class);
 	}
 }

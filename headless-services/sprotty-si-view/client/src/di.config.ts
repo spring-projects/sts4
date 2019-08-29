@@ -40,12 +40,31 @@ import {
     graphModule,
     routingModule,
     modelSourceModule,
+    edgeLayoutModule,
     SLabel,
     SLabelView,
     SCompartment,
-    SCompartmentView, SEdge, RectangularNode
+    SCompartmentView,
+    SEdge,
+    RectangularNode,
+    HtmlRootView,
+    HtmlRoot,
+    PreRenderedView,
+    PreRenderedElement,
+    labelEditModule, edgeEditModule, RectangularPort
 } from "sprotty";
-import {IntegrationNodeView, CircleNodeView, EdgeView, ExampleGraphView, ChannelNodeView} from "./views";
+import {
+    IntegrationNodeView,
+    CircleNodeView,
+    EdgeView,
+    ExampleGraphView,
+    ChannelNodeView,
+    PortView,
+    ErrorPortView
+} from "./views";
+import fadeModule from "sprotty/lib/features/fade/di.config";
+import buttonModule from "sprotty/lib/features/button/di.config";
+import expandModule from "sprotty/lib/features/expand/di.config";
 
 export enum TransportMedium {
     None,
@@ -56,7 +75,7 @@ export enum TransportMedium {
 export default (transport: TransportMedium, clientId: string) => {
     require("sprotty/css/sprotty.css");
     require("../css/diagram.css");
-    const circlegraphModule = new ContainerModule((bind, unbind, isBound, rebind) => {
+    const integrationGaphModule = new ContainerModule((bind, unbind, isBound, rebind) => {
         switch (transport) {
             case TransportMedium.Websocket:
                 bind(TYPES.ModelSource).to(ExampleWebsocketDiagramServer).inSingletonScope();
@@ -77,16 +96,22 @@ export default (transport: TransportMedium, clientId: string) => {
         configureModelElement(context, 'node:label', SLabel, SLabelView);
         configureModelElement(context, 'compartment', SCompartment, SCompartmentView);
         configureModelElement(context, 'edge:straight', /*OrthogonalEgde*/ SEdge, EdgeView);
+        configureModelElement(context, 'html', HtmlRoot, HtmlRootView);
+        configureModelElement(context, 'pre-rendered', PreRenderedElement, PreRenderedView);
+        configureModelElement(context, 'input-port', RectangularPort, PortView);
+        configureModelElement(context, 'output-port', RectangularPort, PortView);
+        configureModelElement(context, 'error-port', RectangularPort, ErrorPortView);
         configureViewerOptions(context, {
             needsClientLayout: true,
             needsServerLayout: true,
             baseDiv: clientId,
         });
-        console.log('di.config.ts : ' + clientId);
     });
 
     const container = new Container();
-    container.load(defaultModule, selectModule, moveModule, boundsModule, undoRedoModule, viewportModule,
-        exportModule, updateModule, graphModule, routingModule, modelSourceModule, circlegraphModule, hoverModule);
+    container.load(defaultModule, selectModule, moveModule, boundsModule, undoRedoModule,
+        viewportModule, fadeModule, hoverModule, exportModule, expandModule, buttonModule,
+        updateModule, graphModule, routingModule, edgeEditModule, edgeLayoutModule, labelEditModule,
+        modelSourceModule, integrationGaphModule);
     return container;
 };
