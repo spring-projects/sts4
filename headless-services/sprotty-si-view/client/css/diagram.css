@@ -15,9 +15,9 @@
  ********************************************************************************/
 
 .sprotty-node {
-    fill: #aae;
+    fill: rgb(229, 231, 231);
     stroke: #66b;
-    stroke-width: 3;
+    stroke-width: 2;
 }
 
 .sprotty-text {
@@ -28,7 +28,7 @@
 .sprotty-edge {
     fill: none;
     stroke: #488;
-    stroke-width: 2;
+    stroke-width: 1;
 }
 
 .sprotty-node.selected {

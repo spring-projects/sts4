@@ -112,7 +112,10 @@ export class ChannelNodeView extends RectangularNodeView {
         const h = Math.max(node.size.height, 0);
         const path = `M 0 ${h} H ${w-8} A 8 ${h/2} 0 0 0 ${w-8} 0 H 0`;
         return <g>
-            <g class-sprotty-node={node instanceof SNode}>
+            <g class-sprotty-node={node instanceof SNode}
+               class-mouseover={node.hoverFeedback}
+               class-selected={node.selected}
+            >
                 <path d={path}/>
                 <ellipse cx="0" cy={h/2} rx="8" ry={h/2}/>
             </g>
