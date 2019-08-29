@@ -1,9 +1,5 @@
-import {ManhattanEdgeRouter, RectangularNode, SEdge, WebSocketDiagramServer, ActionMessage, DiagramServer} from "sprotty";
+import {ManhattanEdgeRouter, SEdge, WebSocketDiagramServer, ActionMessage, DiagramServer} from "sprotty";
 import {injectable} from 'inversify';
-
-export class BeanNode extends RectangularNode {
-
-}
 
 export class OrthogonalEgde extends SEdge {
 

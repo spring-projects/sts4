@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.eclipse.sprotty.Dimension;
+import org.eclipse.sprotty.LayoutOptions;
 import org.eclipse.sprotty.Point;
 import org.eclipse.sprotty.RequestModelAction;
 import org.eclipse.sprotty.SCompartment;
@@ -130,11 +131,29 @@ public class SIDiagramGenerator implements DiagramGenerator {
 	    return node;
 	}
 	
+	private static SNode createIntegrationNode(String id, String labelText) {
+		SNode node = createNode(id, labelText, "integration_node");
+		LayoutOptions layoutOptions = new LayoutOptions();
+		layoutOptions.setMinHeight(80D);
+		layoutOptions.setMinWidth(120D);
+		node.setLayoutOptions(layoutOptions);
+		return node;
+	}
+	
+	private static SNode createChannelNode(String id, String labelText) {
+		SNode node = createNode(id, labelText, "channel");
+		LayoutOptions layoutOptions = new LayoutOptions();
+		layoutOptions.setMinHeight(80D);
+		layoutOptions.setMinWidth(120D);
+		node.setLayoutOptions(layoutOptions);
+		return node;
+	}
+	
 	private static String visualType(String type) {
 		if (channelTypes.contains(type)) {
 			return "channel";
 		} else {
-			return "bean";
+			return "integration_node";
 		}
 	}
 

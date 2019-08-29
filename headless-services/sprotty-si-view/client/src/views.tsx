@@ -94,7 +94,7 @@ export class EdgeView extends PolylineEdgeView {
 }
 
 @injectable()
-export class BeanNodeView extends RectangularNodeView {
+export class IntegrationNodeView extends RectangularNodeView {
     render(node: Readonly<SShapeElement & Hoverable & Selectable>, context: RenderingContext): VNode {
         return <g>
             <rect class-sprotty-node={node instanceof SNode} class-sprotty-port={node instanceof SPort}

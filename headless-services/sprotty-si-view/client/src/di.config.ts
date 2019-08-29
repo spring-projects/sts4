@@ -13,7 +13,7 @@
  *
  * SPDX-License-Identifier: EPL-2.0 OR GPL-2.0 WITH Classpath-exception-2.0
  ********************************************************************************/
-import {BeanNode, ExampleWebsocketDiagramServer, VSCodeWebViewDiagramServer} from "./model";
+import {ExampleWebsocketDiagramServer, VSCodeWebViewDiagramServer} from "./model";
 
 console.log("Loading di.config");
 import "reflect-metadata"
@@ -43,9 +43,9 @@ import {
     SLabel,
     SLabelView,
     SCompartment,
-    SCompartmentView, SEdge
+    SCompartmentView, SEdge, RectangularNode
 } from "sprotty";
-import {BeanNodeView, CircleNodeView, EdgeView, ExampleGraphView, ChannelNodeView} from "./views";
+import {IntegrationNodeView, CircleNodeView, EdgeView, ExampleGraphView, ChannelNodeView} from "./views";
 
 export enum TransportMedium {
     None,
@@ -72,8 +72,8 @@ export default (transport: TransportMedium, clientId: string) => {
         const context = { bind, unbind, isBound, rebind };
         configureModelElement(context, 'graph', SGraph, ExampleGraphView);
         configureModelElement(context, 'node:circle', CircularNode, CircleNodeView);
-        configureModelElement(context, 'node:bean', BeanNode, BeanNodeView);
-        configureModelElement(context, 'node:channel', BeanNode, ChannelNodeView);
+        configureModelElement(context, 'node:integration_node', RectangularNode, IntegrationNodeView);
+        configureModelElement(context, 'node:channel', RectangularNode, ChannelNodeView);
         configureModelElement(context, 'node:label', SLabel, SLabelView);
         configureModelElement(context, 'compartment', SCompartment, SCompartmentView);
         configureModelElement(context, 'edge:straight', /*OrthogonalEgde*/ SEdge, EdgeView);
