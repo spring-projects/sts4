@@ -13,6 +13,8 @@ package org.springframework.ide.vscode.commons.util;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 
+import org.apache.commons.text.StringEscapeUtils;
+
 /**
  * Helper class to make it a little easier to create simple html page.
  *
@@ -118,6 +120,12 @@ public class HtmlBuffer {
 		raw("</b>");
 	}
 
+	public void code(String string) {
+		raw("<code>");
+		text(string);
+		raw("</code>");
+	}
+
 	/**
 	 * Escapes reserved HTML characters in the given string.
 	 * <p>
@@ -127,30 +135,6 @@ public class HtmlBuffer {
 	 * @return the string with escaped characters
 	 */
 	public static String convertToHTMLContent(String content) {
-		content= replace(content, '&', "&amp;"); //$NON-NLS-1$
-		content= replace(content, '"', "&quot;"); //$NON-NLS-1$
-		content= replace(content, '<', "&lt;"); //$NON-NLS-1$
-		return replace(content, '>', "&gt;"); //$NON-NLS-1$
+		return StringEscapeUtils.escapeHtml4(content);
 	}
-
-	private static String replace(String text, char c, String s) {
-
-		int previous= 0;
-		int current= text.indexOf(c, previous);
-
-		if (current == -1)
-			return text;
-
-		StringBuffer buffer= new StringBuffer();
-		while (current > -1) {
-			buffer.append(text.substring(previous, current));
-			buffer.append(s);
-			previous= current + 1;
-			current= text.indexOf(c, previous);
-		}
-		buffer.append(text.substring(previous));
-
-		return buffer.toString();
-	}
-
 }

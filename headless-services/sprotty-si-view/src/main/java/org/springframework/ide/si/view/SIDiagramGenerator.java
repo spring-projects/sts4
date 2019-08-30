@@ -23,9 +23,9 @@ import org.eclipse.sprotty.SShapeElement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.ide.si.view.json.SpringIntegrationEdge;
-import org.springframework.ide.si.view.json.SpringIntegrationGraph;
-import org.springframework.ide.si.view.json.SpringIntegrationNode;
+import org.springframework.ide.si.view.json.SpringIntegrationEdgeJson;
+import org.springframework.ide.si.view.json.SpringIntegrationGraphJson;
+import org.springframework.ide.si.view.json.SpringIntegrationNodeJson;
 import org.springframework.ide.vscode.commons.sprotty.api.DiagramGenerator;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.StringUtil;
@@ -62,10 +62,21 @@ public class SIDiagramGenerator implements DiagramGenerator {
 	
 	Gson gson = new GsonBuilder().setPrettyPrinting().create();
 	
+	Map<String, SpringIntegrationNodeJson> nodesById = new HashMap<>();
+
+	/**
+	 * Fetch node data for given node id. This data is retrieved from the
+	 * model produced the last time 'generateModel' was called.
+	 */
+	public synchronized SpringIntegrationNodeJson getNodeData(String nodeId) {
+		 return nodesById.get(nodeId);
+	}
+	
 	@Override
-	public SModelRoot generateModel(String clientId, RequestModelAction modelRequest) {
+	public synchronized SModelRoot generateModel(String clientId, RequestModelAction modelRequest) {
+		nodesById.clear();
 		try {
-			SpringIntegrationGraph jsonData = graphDataProvider.getGraph();
+			SpringIntegrationGraphJson jsonData = graphDataProvider.getGraph();
 			return toSprottyGraph(jsonData);
 		} catch (Exception e) {
 			log.error("", e);
@@ -73,7 +84,7 @@ public class SIDiagramGenerator implements DiagramGenerator {
 		}
 	}
 
-	private SGraph toSprottyGraph(SpringIntegrationGraph json) throws Exception {
+	private SGraph toSprottyGraph(SpringIntegrationGraphJson json) throws Exception {
 		SGraph graph = new SGraph();
 		graph.setId("root");
 		graph.setType(TYPE_INTEGRATION_GRAPH);
@@ -81,13 +92,11 @@ public class SIDiagramGenerator implements DiagramGenerator {
 		List<SModelElement> children = new ArrayList<>();
 		graph.setChildren(children);
 		
-		Map<String, SpringIntegrationNode> nodeIds = new HashMap<>();
-		
-		for (SpringIntegrationNode node : json.getNodes()) {
+		for (SpringIntegrationNodeJson node : json.getNodes()) {
 			String id = node.getNodeId()+"";
 			String name = node.getName();
-			Assert.isLegal(!nodeIds.containsKey(id));
-			nodeIds.put(id, node);
+			Assert.isLegal(!nodesById.containsKey(id));
+			nodesById.put(id, node);
 			String type = visualType(node.getComponentType());
 			switch (type) {
 			case "channel":
@@ -99,13 +108,13 @@ public class SIDiagramGenerator implements DiagramGenerator {
 		}
 
 		int linkId = 0;
-		for (SpringIntegrationEdge link : json.getLinks()) {
+		for (SpringIntegrationEdgeJson link : json.getLinks()) {
 			String id = "l"+(linkId++);
 			String sourceId = link.getFrom()+"";
 			String targetId = link.getTo()+"";
 			
 			
-			SEdge e = createEdge(id, sourceId, targetId, getEdgeLabel(nodeIds.get(sourceId)), link.getType());
+			SEdge e = createEdge(id, sourceId, targetId, getEdgeLabel(nodesById.get(sourceId)), link.getType());
 			children.add(e);
 		}
 //		
@@ -122,7 +131,7 @@ public class SIDiagramGenerator implements DiagramGenerator {
 		return graph;
 	}
 	
-	private String getEdgeLabel(SpringIntegrationNode springIntegrationNode) {
+	private String getEdgeLabel(SpringIntegrationNodeJson springIntegrationNode) {
 		JsonElement json = gson.toJsonTree(springIntegrationNode);
 		for (String prop : labelProperty.split("\\.")) {
 			if (json instanceof JsonObject) {
@@ -161,15 +170,6 @@ public class SIDiagramGenerator implements DiagramGenerator {
 	    label.setType("node:label");
 	    label.setText(labelText);
 	    centerNode(label);
-	    
-	    compartment.getChildren().add(label);
-
-	    label = new SLabel();
-	    label.setId(id + "-lanbel1");
-	    label.setType("node:label");
-	    label.setText("s");
-	    centerNode(label);
-	    
 	    compartment.getChildren().add(label);
 
 	    node.getChildren().add(compartment);
@@ -218,7 +218,7 @@ public class SIDiagramGenerator implements DiagramGenerator {
 	private static SNode createChannelNode(String id, String labelText) {
 		SNode node = createNode(id, labelText, "channel");
 		LayoutOptions layoutOptions = new LayoutOptions();
-		layoutOptions.setMinHeight(CHANNEL_HEIGHT);
+//		layoutOptions.setMinHeight(CHANNEL_HEIGHT);
 		layoutOptions.setMinWidth(MIN_WIDTH);
 		node.setLayoutOptions(layoutOptions);
 		

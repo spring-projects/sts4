@@ -2,7 +2,7 @@ package org.springframework.ide.si.view.json;
 
 import com.google.gson.JsonObject;
 
-public class SpringIntegrationNode extends PrettyJson {
+public class SpringIntegrationNodeJson extends PrettyJson {
 
 	private int nodeId;
 	private String name;

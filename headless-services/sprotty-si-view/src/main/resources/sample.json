@@ -283,6 +283,11 @@
   "links": [
     {
       "from": 5,
+      "to": 4,
+      "type": "error"
+    },
+    {
+      "from": 5,
       "to": 1,
       "type": "output"
     },
@@ -305,11 +310,6 @@
       "from": 4,
       "to": 8,
       "type": "input"
-    },
-    {
-      "from": 5, 
-      "to": 4,
-      "type": "error"
     }
   ]
 }

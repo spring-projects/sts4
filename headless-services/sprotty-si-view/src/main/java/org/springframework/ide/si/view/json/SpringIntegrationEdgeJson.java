@@ -1,6 +1,6 @@
 package org.springframework.ide.si.view.json;
 
-public class SpringIntegrationEdge extends PrettyJson {
+public class SpringIntegrationEdgeJson extends PrettyJson {
 	
 	private int from;
 	private int to;

@@ -54,3 +54,21 @@
     font-size: 14pt;
     text-anchor: middle;
 }
+
+#sprotty-popup {
+    max-width: 600px;
+}
+
+.sprotty-popup table {
+    font-size: 8pt;
+    font-family: 'Courier New', Courier, monospace;
+    word-wrap: break-word; 
+    word-break: break-all;
+}
+
+.sprotty-popup table td {
+    vertical-align: top;
+    text-align: left;
+    border: 1px dotted gray;
+    white-space: pre-wrap;
+}

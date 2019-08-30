@@ -2,11 +2,10 @@ package org.springframework.ide.si.view;
 
 import java.io.IOException;
 
-import org.apache.commons.io.IOUtils;
-import org.springframework.ide.si.view.json.SpringIntegrationGraph;
-import org.springframework.stereotype.Component;
+import org.springframework.ide.si.view.json.SpringIntegrationGraphJson;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 
 public class MockGraphData implements GraphDataProvider {
 	
@@ -325,12 +324,10 @@ public class MockGraphData implements GraphDataProvider {
 			"}";
 
 	@Override
-	public SpringIntegrationGraph getGraph() throws IOException {
-//		Gson gson = new Gson().newBuilder().setPrettyPrinting().create();
-//		JsonObject json = gson.fromJson(data, JsonObject.class);
-//		System.out.println(gson.toJson(json));
-		
-		String data = IOUtils.toString(getClass().getResource("/static/sample.json"));
-		return new Gson().fromJson(data, SpringIntegrationGraph.class);
+	public SpringIntegrationGraphJson getGraph() throws IOException {
+		Gson gson = new Gson().newBuilder().setPrettyPrinting().create();
+		JsonObject json = gson.fromJson(data, JsonObject.class);
+		System.out.println(gson.toJson(json));
+		return gson.fromJson(json, SpringIntegrationGraphJson.class);
 	}
 }
