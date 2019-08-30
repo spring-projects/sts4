@@ -55,7 +55,6 @@ export default function runStandalone() {
         dispatcher.dispatch(requestModelAction());
     });
 
-
     function getOptionFromDom(att: string) : string | null {
         const appDiv = document.getElementById('sprotty-app');
         if (appDiv) {
@@ -65,7 +64,9 @@ export default function runStandalone() {
     }
 
     function getTarget() : string {
-        return getOptionFromDom('target') || 'target-missing';
+        const input = <HTMLInputElement>document.getElementById('target-url');
+        const target = input && input.value;
+        return target || 'target-missing';
     }
 
     function requestModelAction() : RequestModelAction {

@@ -2,15 +2,13 @@ package org.springframework.ide.si.view;
 
 import java.net.URL;
 
-import org.apache.commons.io.IOUtils;
+import org.eclipse.sprotty.RequestModelAction;
 import org.springframework.ide.si.view.json.SpringIntegrationGraphJson;
 import org.springframework.util.Assert;
 
-import com.google.gson.Gson;
-
 @FunctionalInterface
 public interface GraphDataProvider {
-	SpringIntegrationGraphJson getGraph() throws Exception;
+	SpringIntegrationGraphJson getGraph(RequestModelAction modelRequest) throws Exception;
 	
 	static GraphDataProvider fromClasspathResource(String path) {
 		if (!path.startsWith("/")) {
@@ -22,9 +20,17 @@ public interface GraphDataProvider {
 	}
 
 	static GraphDataProvider fromUrl(URL resource) {
-		return () -> {
-			String jsonString = IOUtils.toString(resource);
-			return new Gson().fromJson(jsonString, SpringIntegrationGraphJson.class);
+		return (RequestModelAction modelRequest) -> {
+			return SpringIntegrationGraphJson.readFrom(resource);
+		};
+	}
+
+	static GraphDataProvider fromUrlOption(String propName) {
+		return (RequestModelAction modelRequest) -> {
+			String urlStr = modelRequest.getOptions().get(propName);
+			Assert.hasText(urlStr, "Url must be provided in modelRequest.options."+propName);
+			URL url = new URL(modelRequest.getOptions().get(propName));
+			return SpringIntegrationGraphJson.readFrom(url);
 		};
 	}
 }

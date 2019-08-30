@@ -8,6 +8,7 @@ import org.eclipse.sprotty.layout.SprottyLayoutConfigurator;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
+import org.springframework.ide.si.view.json.SpringIntegrationGraphJson;
 
 @SpringBootApplication
 public class SprottySiViewApplication {
@@ -15,7 +16,9 @@ public class SprottySiViewApplication {
 	@Bean
 	GraphDataProvider graphDataProvider() {
 //		return new MockGraphData();
-		return GraphDataProvider.fromClasspathResource("/sample.json");
+//		return GraphDataProvider.fromClasspathResource("/sample.json");
+		
+		return GraphDataProvider.fromUrlOption("target");
 	}
 
 	@Bean

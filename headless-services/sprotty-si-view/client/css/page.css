@@ -21,6 +21,13 @@
     color: #888;
 }
 
+#refresh {
+    width: 20%;
+}
+#target-url {
+    width: 80%;
+}
+
 .help {
     margin-top: 24px;
     text-align: right;

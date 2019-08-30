@@ -76,7 +76,7 @@ public class SIDiagramGenerator implements DiagramGenerator {
 	public synchronized SModelRoot generateModel(String clientId, RequestModelAction modelRequest) {
 		nodesById.clear();
 		try {
-			SpringIntegrationGraphJson jsonData = graphDataProvider.getGraph();
+			SpringIntegrationGraphJson jsonData = graphDataProvider.getGraph(modelRequest);
 			return toSprottyGraph(jsonData);
 		} catch (Exception e) {
 			log.error("", e);
@@ -166,7 +166,7 @@ public class SIDiagramGenerator implements DiagramGenerator {
 	    centerNode(compartment);
 	    
 	    SLabel label = new SLabel();
-	    label.setId(id + "-lanbel");
+	    label.setId(id + "-label");
 	    label.setType("node:label");
 	    label.setText(labelText);
 	    centerNode(label);
