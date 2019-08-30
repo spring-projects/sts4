@@ -8,7 +8,6 @@ import org.springframework.stereotype.Component;
 
 import com.google.gson.Gson;
 
-@Component
 public class MockGraphData implements GraphDataProvider {
 	
 	public static String data = "{\n" + 
