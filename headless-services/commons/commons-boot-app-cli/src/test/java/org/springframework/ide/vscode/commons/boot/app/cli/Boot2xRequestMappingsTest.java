@@ -19,8 +19,8 @@ import java.util.stream.Collectors;
 import org.apache.commons.io.IOUtils;
 import org.json.JSONObject;
 import org.junit.Test;
-import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.RequestMapping;
-import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.RequestMappingsParser20;
+import org.springframework.ide.vscode.boot.java.livehover.v2.RequestMapping;
+import org.springframework.ide.vscode.boot.java.livehover.v2.RequestMappingsParser20;
 
 import com.google.common.collect.ImmutableSet;
 

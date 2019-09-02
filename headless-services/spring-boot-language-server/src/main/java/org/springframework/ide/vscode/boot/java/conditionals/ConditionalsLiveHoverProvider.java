@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.boot.java.conditionals;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -30,8 +31,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
 import org.springframework.ide.vscode.boot.java.livehover.LiveHoverUtils;
-import org.springframework.ide.vscode.commons.boot.app.cli.LiveConditional;
-import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
+import org.springframework.ide.vscode.boot.java.livehover.v2.LiveConditional;
+import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveData;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
@@ -48,14 +49,14 @@ public class ConditionalsLiveHoverProvider implements HoverProvider {
 
 	@Override
 	public Hover provideHover(ASTNode node, Annotation annotation, ITypeBinding type, int offset,
-			TextDocument doc, IJavaProject project, SpringBootApp[] runningApps) {
-		return provideHover(annotation, doc, runningApps);
+			TextDocument doc, IJavaProject project, SpringProcessLiveData[] processLiveData) {
+		return provideHover(annotation, doc, processLiveData);
 	}
 
 	@Override
-	public Collection<CodeLens> getLiveHintCodeLenses(IJavaProject project, Annotation annotation, TextDocument doc, SpringBootApp[] runningApps) {
+	public Collection<CodeLens> getLiveHintCodeLenses(IJavaProject project, Annotation annotation, TextDocument doc, SpringProcessLiveData[] processLiveData) {
 		try {
-			Optional<List<LiveConditional>> val = getMatchedLiveConditionals(annotation, runningApps);
+			Optional<List<LiveConditional>> val = getMatchedLiveConditionals(annotation, processLiveData);
 			if (val.isPresent()) {
 				Range hoverRange = doc.toRange(annotation.getStartPosition(), annotation.getLength());
 				return ImmutableList.of(new CodeLens(hoverRange));
@@ -68,18 +69,19 @@ public class ConditionalsLiveHoverProvider implements HoverProvider {
 	}
 
 	private Optional<List<LiveConditional>> getMatchedLiveConditionals(Annotation annotation,
-			SpringBootApp[] runningApps) throws Exception {
-		if (runningApps != null) {
+			SpringProcessLiveData[] processLiveData) throws Exception {
+		if (processLiveData != null) {
 			List<LiveConditional> all = new ArrayList<>();
 
-			for (SpringBootApp springBootApp : runningApps) {
-				springBootApp.getLiveConditionals().ifPresent((conditionals) -> {
-					conditionals.stream().forEach((conditional) -> {
+			for (SpringProcessLiveData liveData : processLiveData) {
+				LiveConditional[] conditionals = liveData.getLiveConditionals();
+				if (conditionals != null) {
+					Arrays.stream(conditionals).forEach((conditional) -> {
 						if (matchesAnnotation(annotation, conditional)) {
 							all.add(conditional);
 						}
 					});
-				});
+				};
 			}
 			if (!all.isEmpty()) {
 				return Optional.of(all);
@@ -89,11 +91,11 @@ public class ConditionalsLiveHoverProvider implements HoverProvider {
 	}
 
 	private Hover provideHover(Annotation annotation, TextDocument doc,
-			SpringBootApp[] runningApps) {
+			SpringProcessLiveData[] processLiveData) {
 
 		try {
 			List<Either<String, MarkedString>> hoverContent = new ArrayList<>();
-			Optional<List<LiveConditional>> val = getMatchedLiveConditionals(annotation, runningApps);
+			Optional<List<LiveConditional>> val = getMatchedLiveConditionals(annotation, processLiveData);
 
 			if (val.isPresent()) {
 				addHoverContent(val.get(), hoverContent);

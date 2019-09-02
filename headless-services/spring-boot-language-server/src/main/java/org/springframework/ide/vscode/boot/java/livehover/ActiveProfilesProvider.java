@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2018 Pivotal, Inc.
+ * Copyright (c) 2017, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -12,8 +12,8 @@ package org.springframework.ide.vscode.boot.java.livehover;
 
 import static org.springframework.ide.vscode.boot.java.utils.ASTUtils.nameRange;
 
+import java.util.Arrays;
 import java.util.Collection;
-import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
@@ -29,8 +29,8 @@ import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
+import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveData;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
-import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
@@ -46,27 +46,23 @@ public class ActiveProfilesProvider implements HoverProvider {
 	private static final Logger log = LoggerFactory.getLogger(ActiveProfilesProvider.class);
 
 	@Override
-	public Hover provideHover(
-			ASTNode node,
-			Annotation annotation,
-			ITypeBinding type,
-			int offset,
-			TextDocument doc, IJavaProject project, SpringBootApp[] runningApps
-	) {
-		if (runningApps.length > 0) {
+	public Hover provideHover(ASTNode node, Annotation annotation, ITypeBinding type, int offset,
+			TextDocument doc, IJavaProject project, SpringProcessLiveData[] processLiveData) {
+
+		if (processLiveData.length > 0) {
 			StringBuilder markdown = new StringBuilder();
 			markdown.append("**Active Profiles**\n\n");
 			boolean hasInterestingApp = false;
-			for (SpringBootApp app : runningApps) {
-				List<String> profiles = app.getActiveProfiles();
-				if (profiles==null) {
-					markdown.append(LiveHoverUtils.niceAppName(app)+" : _Unknown_\n\n");
+			for (SpringProcessLiveData liveData : processLiveData) {
+				String[] profiles = liveData.getActiveProfiles();
+				if (profiles == null) {
+					markdown.append(LiveHoverUtils.niceAppName(liveData)+" : _Unknown_\n\n");
 				} else {
 					hasInterestingApp = true;
-					if (profiles.isEmpty()) {
-						markdown.append(LiveHoverUtils.niceAppName(app)+" : _None_\n\n");
+					if (profiles.length == 0) {
+						markdown.append(LiveHoverUtils.niceAppName(liveData)+" : _None_\n\n");
 					} else {
-						markdown.append(LiveHoverUtils.niceAppName(app)+" :\n");
+						markdown.append(LiveHoverUtils.niceAppName(liveData)+" :\n");
 						for (String profile : profiles) {
 							markdown.append("- "+profile+"\n");
 						}
@@ -91,11 +87,11 @@ public class ActiveProfilesProvider implements HoverProvider {
 	}
 
 	@Override
-	public Collection<CodeLens> getLiveHintCodeLenses(IJavaProject project, Annotation annotation, TextDocument doc, SpringBootApp[] runningApps) {
-		if (runningApps.length > 0) {
+	public Collection<CodeLens> getLiveHintCodeLenses(IJavaProject project, Annotation annotation, TextDocument doc, SpringProcessLiveData[] processLiveData) {
+		if (processLiveData.length > 0) {
 			Builder<CodeLens> codeLenses = ImmutableList.builder();
 
-			Set<String> allActiveProfiles = getAllActiveProfiles(runningApps);
+			Set<String> allActiveProfiles = getAllActiveProfiles(processLiveData);
 			if (allActiveProfiles != null && allActiveProfiles.size() > 0) {
 				nameRange(doc, annotation).map(CodeLens::new).ifPresent(codeLenses::add);
 			}
@@ -115,12 +111,12 @@ public class ActiveProfilesProvider implements HoverProvider {
 		return ImmutableList.of();
 	}
 
-	private static Set<String> getAllActiveProfiles(SpringBootApp[] runningApps) {
+	private static Set<String> getAllActiveProfiles(SpringProcessLiveData[] processLiveData) {
 		ImmutableSet.Builder<String> builder = ImmutableSet.builder();
-		for (SpringBootApp app : runningApps) {
-			List<String> profiles = app.getActiveProfiles();
-			if (profiles!=null) {
-				builder.addAll(app.getActiveProfiles());
+		for (SpringProcessLiveData liveData : processLiveData) {
+			String[] profiles = liveData.getActiveProfiles();
+			if (profiles != null) {
+				builder.addAll(Arrays.asList(liveData.getActiveProfiles()));
 			}
 		}
 		return builder.build();

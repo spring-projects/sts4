@@ -18,16 +18,19 @@ import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.IAnnotationBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.handlers.AbstractSymbolProvider;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
-import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 /**
  * @author Martin Lippert
  */
 public class RestrictedDefaultSymbolProvider extends AbstractSymbolProvider {
+
+	private static final Logger log = LoggerFactory.getLogger(RestrictedDefaultSymbolProvider.class);
 
 	@Override
 	protected void addSymbolsPass1(Annotation node, ITypeBinding typeBinding,
@@ -39,7 +42,7 @@ public class RestrictedDefaultSymbolProvider extends AbstractSymbolProvider {
 				EnhancedSymbolInformation enhancedSymbol = new EnhancedSymbolInformation(DefaultSymbolProvider.provideDefaultSymbol(node, doc), null);
 				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), enhancedSymbol));
 			} catch (Exception e) {
-				Log.log(e);
+				log.warn(e.getMessage());
 			}
 		}
 	}

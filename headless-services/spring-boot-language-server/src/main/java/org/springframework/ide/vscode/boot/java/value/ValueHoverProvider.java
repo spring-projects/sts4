@@ -34,9 +34,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
 import org.springframework.ide.vscode.boot.java.livehover.LiveHoverUtils;
-import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
-import org.springframework.ide.vscode.commons.boot.app.cli.liveproperties.LiveProperties;
-import org.springframework.ide.vscode.commons.boot.app.cli.liveproperties.LiveProperty;
+import org.springframework.ide.vscode.boot.java.livehover.v2.LiveProperties;
+import org.springframework.ide.vscode.boot.java.livehover.v2.LiveProperty;
+import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveData;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.Renderable;
@@ -60,7 +60,7 @@ public class ValueHoverProvider implements HoverProvider {
 
 	@Override
 	public Hover provideHover(ASTNode node, Annotation annotation, ITypeBinding type, int offset, TextDocument doc,
-			IJavaProject project, SpringBootApp[] runningApps) {
+			IJavaProject project, SpringProcessLiveData[] processLiveData) {
 
 		try {
 			ASTNode foundNode = NodeFinder.perform(node, offset, 0);
@@ -68,7 +68,7 @@ public class ValueHoverProvider implements HoverProvider {
 
 			if (exactNode != null) {
 				return provideHover(exactNode.toString(), offset - exactNode.getStartPosition(),
-						exactNode.getStartPosition(), doc, runningApps);
+						exactNode.getStartPosition(), doc, processLiveData);
 			}
 		} catch (Exception e) {
 			logger.error("Error while generating live hovers for @Value", e);
@@ -96,7 +96,7 @@ public class ValueHoverProvider implements HoverProvider {
 		return null;
 	}
 
-	private Hover provideHover(String value, int offset, int nodeStartOffset, TextDocument doc, SpringBootApp[] runningApps) {
+	private Hover provideHover(String value, int offset, int nodeStartOffset, TextDocument doc, SpringProcessLiveData[] processLiveData) {
 
 		try {
 			LocalRange range = parsePropertyOnHoverOffset(value, offset);
@@ -104,11 +104,11 @@ public class ValueHoverProvider implements HoverProvider {
 				String propertyKey = value.substring(range.getStart(), range.getEnd());
 
 				if (propertyKey != null) {
-					Map<SpringBootApp, LiveProperties> allProperties = getPropertiesFromProcesses(runningApps);
+					Map<SpringProcessLiveData, LiveProperties> allProperties = getPropertiesFromProcesses(processLiveData);
 
 					StringBuilder hover = new StringBuilder();
 
-					for (SpringBootApp app : allProperties.keySet()) {
+					for (SpringProcessLiveData app : allProperties.keySet()) {
 						LiveProperties properties = allProperties.get(app);
 						List<LiveProperty> foundProperties = properties.getProperties(propertyKey);
 						if (foundProperties != null) {
@@ -150,10 +150,10 @@ public class ValueHoverProvider implements HoverProvider {
 	 *
 	 * @param doc
 	 * @param node
-	 * @param runningApps
+	 * @param processLiveData
 	 * @return
 	 */
-	private List<CodeLens> provideHighlightHints(TextDocument doc, StringLiteral node, SpringBootApp[] runningApps) {
+	private List<CodeLens> provideHighlightHints(TextDocument doc, StringLiteral node, SpringProcessLiveData[] processLiveData) {
 		ASTNode exactNode = getExactNode(node);
 
 		if (exactNode != null) {
@@ -183,7 +183,7 @@ public class ValueHoverProvider implements HoverProvider {
 					String parsedProp = entry.getKey();
 					List<LocalRange> propRanges = entry.getValue();
 
-					List<LiveProperty> matchingLiveProperties = findMatchingLiveProperties(runningApps, parsedProp);
+					List<LiveProperty> matchingLiveProperties = findMatchingLiveProperties(processLiveData, parsedProp);
 					if (matchingLiveProperties != null && !matchingLiveProperties.isEmpty()) {
 
 						propRanges.stream().forEach(propRange -> {
@@ -206,11 +206,11 @@ public class ValueHoverProvider implements HoverProvider {
 		return ImmutableList.of();
 	}
 
-	private List<LiveProperty> findMatchingLiveProperties(SpringBootApp[] runningApps, String propFromValue) {
-		Map<SpringBootApp, LiveProperties> allProperties = getPropertiesFromProcesses(runningApps);
+	private List<LiveProperty> findMatchingLiveProperties(SpringProcessLiveData[] processLiveData, String propFromValue) {
+		Map<SpringProcessLiveData, LiveProperties> allProperties = getPropertiesFromProcesses(processLiveData);
 
-		for (SpringBootApp app : allProperties.keySet()) {
-			LiveProperties properties = allProperties.get(app);
+		for (SpringProcessLiveData liveData : allProperties.keySet()) {
+			LiveProperties properties = allProperties.get(liveData);
 			List<LiveProperty> matchingLiveProperties = properties.getProperties(propFromValue);
 			if (matchingLiveProperties != null && !matchingLiveProperties.isEmpty()) {
 				return matchingLiveProperties;
@@ -219,14 +219,14 @@ public class ValueHoverProvider implements HoverProvider {
 		return null;
 	}
 
-	public Map<SpringBootApp, LiveProperties> getPropertiesFromProcesses(SpringBootApp[] runningApps) {
-		Map<SpringBootApp, LiveProperties> result = new HashMap<>();
+	public Map<SpringProcessLiveData, LiveProperties> getPropertiesFromProcesses(SpringProcessLiveData[] processLiveData) {
+		Map<SpringProcessLiveData, LiveProperties> result = new HashMap<>();
 
 		try {
-			for (SpringBootApp app : runningApps) {
-				LiveProperties liveProperties = app.getLiveProperties();
+			for (SpringProcessLiveData liveData : processLiveData) {
+				LiveProperties liveProperties = liveData.getLiveProperties();
 				if (liveProperties != null) {
-					result.put(app, liveProperties);
+					result.put(liveData, liveProperties);
 				}
 			}
 		}
@@ -361,19 +361,19 @@ public class ValueHoverProvider implements HoverProvider {
 
 	@Override
 	public Hover provideHover(ASTNode node, TypeDeclaration typeDeclaration, ITypeBinding type, int offset,
-			TextDocument doc, IJavaProject project, SpringBootApp[] runningApps) {
+			TextDocument doc, IJavaProject project, SpringProcessLiveData[] processLiveData) {
 		return null;
 	}
 
 	@Override
-	public Collection<CodeLens> getLiveHintCodeLenses(IJavaProject project, Annotation annotation, TextDocument doc, SpringBootApp[] runningApps) {
+	public Collection<CodeLens> getLiveHintCodeLenses(IJavaProject project, Annotation annotation, TextDocument doc, SpringProcessLiveData[] processLiveData) {
 		// Show highlight hints for properties in @Value that have live information
 
 		List<CodeLens> lenses = new ArrayList<>();
 		annotation.accept(new ASTVisitor() {
 			@Override
 			public boolean visit(StringLiteral node) {
-				List<CodeLens> provideHighlightHints = provideHighlightHints(doc, node, runningApps);
+				List<CodeLens> provideHighlightHints = provideHighlightHints(doc, node, processLiveData);
 				lenses.addAll(provideHighlightHints);
 				return super.visit(node);
 			}

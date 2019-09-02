@@ -8,7 +8,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.commons.boot.app.cli;
+package org.springframework.ide.vscode.boot.java.livehover.v2;
 
 public class LiveConditional {
 

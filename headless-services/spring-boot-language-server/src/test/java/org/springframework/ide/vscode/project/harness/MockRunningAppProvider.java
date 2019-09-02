@@ -21,14 +21,14 @@ import java.util.Properties;
 
 import org.mockito.Mockito;
 import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
+import org.springframework.ide.vscode.boot.java.livehover.v2.LiveBeansModel;
+import org.springframework.ide.vscode.boot.java.livehover.v2.LiveConditional;
+import org.springframework.ide.vscode.boot.java.livehover.v2.LiveProperties;
+import org.springframework.ide.vscode.boot.java.livehover.v2.LivePropertiesJsonParser;
+import org.springframework.ide.vscode.boot.java.livehover.v2.LiveRequestMapping;
 import org.springframework.ide.vscode.commons.boot.app.cli.ContextPath;
-import org.springframework.ide.vscode.commons.boot.app.cli.LiveConditional;
 import org.springframework.ide.vscode.commons.boot.app.cli.LocalSpringBootApp;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
-import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansModel;
-import org.springframework.ide.vscode.commons.boot.app.cli.liveproperties.LiveProperties;
-import org.springframework.ide.vscode.commons.boot.app.cli.liveproperties.LivePropertiesJsonParser;
-import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.RequestMapping;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 
 import com.google.common.collect.ImmutableList;
@@ -126,12 +126,12 @@ public class MockRunningAppProvider {
 		}
 
 		public MockAppBuilder requestMappingsJson(String mappings) throws Exception {
-			Collection<RequestMapping> requestMappings = LocalSpringBootApp.parseRequestMappingsJson(mappings, "1.x");
+			Collection<LiveRequestMapping> requestMappings = LocalSpringBootApp.parseRequestMappingsJson(mappings, "1.x");
 			when(app.getRequestMappings()).thenReturn(requestMappings);
 			return this;
 		}
 
-		public MockAppBuilder requestMappings(Collection<RequestMapping> rms) throws Exception {
+		public MockAppBuilder requestMappings(Collection<LiveRequestMapping> rms) throws Exception {
 			when(app.getRequestMappings()).thenReturn(rms);
 			return this;
 		}

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2018 Pivotal, Inc.
+ * Copyright (c) 2017, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -26,9 +26,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.autowired.AutowiredHoverProvider;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
+import org.springframework.ide.vscode.boot.java.livehover.v2.LiveBean;
+import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveData;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
-import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
-import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBean;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.util.Optionals;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -83,33 +83,33 @@ public class BeanInjectedIntoHoverProvider extends AbstractInjectedIntoHoverProv
 	}
 
 	@Override
-	protected List<LiveBean> findWiredBeans(IJavaProject project, SpringBootApp app, List<LiveBean> relevantBeans, ASTNode astNode) {
+	protected List<LiveBean> findWiredBeans(IJavaProject project, SpringProcessLiveData liveData, List<LiveBean> relevantBeans, ASTNode astNode) {
 		if (astNode instanceof Annotation) {
 			// @Bean annotation case
 			MethodDeclaration beanMethod = ASTUtils.getAnnotatedMethod((Annotation) astNode);
 			if (beanMethod != null) {
-				return AutowiredHoverProvider.getRelevantAutowiredBeans(project, beanMethod, app, relevantBeans);
+				return AutowiredHoverProvider.getRelevantAutowiredBeans(project, beanMethod, liveData, relevantBeans);
 			}
 		} else if (astNode instanceof SingleVariableDeclaration) {
 			// Bean method parameter case
-			return AutowiredHoverProvider.getRelevantAutowiredBeans(project, astNode, app, relevantBeans);
+			return AutowiredHoverProvider.getRelevantAutowiredBeans(project, astNode, liveData, relevantBeans);
 		}
 		return Collections.emptyList();
 	}
 
 	@Override
 	protected List<CodeLens> assembleCodeLenseForAutowired(List<LiveBean> wiredBeans, IJavaProject project,
-			SpringBootApp app, TextDocument doc, Range nameRange, ASTNode astNode) {
+			SpringProcessLiveData liveData, TextDocument doc, Range nameRange, ASTNode astNode) {
 		ImmutableList.Builder<CodeLens> builder = ImmutableList.builder();
 
 		// Code lens for the @Bean annotation
-		builder.addAll(super.assembleCodeLenseForAutowired(wiredBeans, project, app, doc, nameRange, astNode));
+		builder.addAll(super.assembleCodeLenseForAutowired(wiredBeans, project, liveData, doc, nameRange, astNode));
 
 		if (astNode instanceof Annotation) {
 			// Add code lenses for method parameters
 			MethodDeclaration beanMethod = ASTUtils.getAnnotatedMethod((Annotation) astNode);
 			if (beanMethod != null) {
-				builder.addAll(LiveHoverUtils.createCodeLensForMethodParameters(app, project, beanMethod, doc, wiredBeans));
+				builder.addAll(LiveHoverUtils.createCodeLensForMethodParameters(liveData, project, beanMethod, doc, wiredBeans));
 			}
 		}
 
@@ -118,16 +118,16 @@ public class BeanInjectedIntoHoverProvider extends AbstractInjectedIntoHoverProv
 
 	@Override
 	public Hover provideMethodParameterHover(SingleVariableDeclaration parameter, int offset, TextDocument doc,
-			IJavaProject project, SpringBootApp[] runningApps) {
+			IJavaProject project, SpringProcessLiveData[] processLiveData) {
 		try {
-			if (runningApps.length > 0) {
+			if (processLiveData.length > 0) {
 				Range range = ASTUtils.nodeRegion(doc, parameter.getName()).asRange();
 				MethodDeclaration method = (MethodDeclaration) parameter.getParent();
 				Annotation beanAnnotation = ASTUtils.getBeanAnnotation(method);
 				if (beanAnnotation != null) {
 					LiveBean definedBean = getDefinedBean(beanAnnotation);
 					if (definedBean != null) {
-						Hover hover = assembleHover(project, runningApps, app -> definedBean, parameter, false, true);
+						Hover hover = assembleHover(project, processLiveData, app -> definedBean, parameter, false, true);
 						if (hover != null) {
 							hover.setRange(range);
 						}

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2019 Pivotal, Inc.
+ * Copyright (c) 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -8,10 +8,9 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.java.handlers;
+package org.springframework.ide.vscode.boot.java.livehover.v2;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -21,13 +20,13 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ide.vscode.commons.boot.app.cli.RemoteSpringBootApp;
-import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.languageserver.util.Settings;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
-import org.springframework.ide.vscode.commons.util.CollectorUtil;
 
-public class RemoteRunningAppsProvider implements RunningAppProvider {
+/**
+ * @author Martin Lippert
+ */
+public class SpringProcessConnectorRemote {
 
 	public static class RemoteBootAppData {
 
@@ -134,52 +133,74 @@ public class RemoteRunningAppsProvider implements RunningAppProvider {
 
 	}
 
-	private static Logger logger = LoggerFactory.getLogger(RemoteRunningAppsProvider.class);
+	private static Logger logger = LoggerFactory.getLogger(SpringProcessConnectorRemote.class);
 
 	/**
 	 * We keep the remote app instances in a Map indexed by the json daya. This allows us to
 	 * return the same instance(s) repeatedly as long as the data does not change.
 	 */
-	private Map<RemoteBootAppData,SpringBootApp> remoteAppInstances = new HashMap<>();
+	private final Map<RemoteBootAppData, String> remoteAppInstances;
+	private final SpringProcessConnectorService processConnectorService;
+	private final SpringProcessLiveDataProvider liveDataProvider;
 
-	public RemoteRunningAppsProvider(SimpleLanguageServer server) {
-//		server.getWorkspaceService().onDidChangeConfiguraton(this::handleSettings);
+	public SpringProcessConnectorRemote(SimpleLanguageServer server, SpringProcessConnectorService processConnector,
+			SpringProcessLiveDataProvider liveDataProvider) {
+		this.processConnectorService = processConnector;
+		this.liveDataProvider = liveDataProvider;
+		this.remoteAppInstances = new HashMap<>();
+
+		server.getWorkspaceService().onDidChangeConfiguraton(this::handleSettings);
 	}
 
-	@Override
-	public synchronized Collection<SpringBootApp> getAllRunningSpringApps() throws Exception {
-		return remoteAppInstances.values().stream().filter(SpringBootApp::hasUsefulJmxBeans).collect(CollectorUtil.toImmutableList());
-	}
+	private synchronized void handleSettings(Settings settings) {
+		RemoteBootAppData[] appData = settings.getAs(RemoteBootAppData[].class, "boot-java", "remote-apps");
+		if (appData == null) {
+			//Avoid NPE
+			appData = new RemoteBootAppData[0];
+		}
 
-	synchronized void handleSettings(Settings settings) {
-//		RemoteBootAppData[] appData = settings.getAs(RemoteBootAppData[].class, "boot-java", "remote-apps");
-//		if (appData==null) {
-//			//Avoid NPE
-//			appData = new RemoteBootAppData[0];
-//		}
-//
-//		Set<RemoteBootAppData> newAppData = new HashSet<>(Arrays.asList(appData));
-//		{	//Remove obsolete apps
-//			Iterator<Entry<RemoteBootAppData, SpringBootApp>> entries = remoteAppInstances.entrySet().iterator();
-//			while (entries.hasNext()) {
-//				Entry<RemoteBootAppData, SpringBootApp> entry = entries.next();
-//				RemoteBootAppData key = entry.getKey();
-//				if (!newAppData.contains(key)) {
-//					logger.info("Removing RemoteSpringBootApp: "+key);
-//					entries.remove();
-//					entry.getValue().dispose();
-//				}
-//			}
-//		}
-//
-//		{	//Add new apps
-//			for (RemoteBootAppData key : newAppData) {
-//				remoteAppInstances.computeIfAbsent(key, (_key) -> {
-//					logger.info("Creating RemoteStringBootApp: "+_key);
-//					return RemoteSpringBootApp.create(key.getJmxurl(), key.getHost(), key.getPort(), key.getUrlScheme(), key.isKeepChecking());
-//				});
-//			}
-//		}
+		// remove outdated remote apps
+		Set<RemoteBootAppData> newAppData = new HashSet<>(Arrays.asList(appData));
+
+		Iterator<Entry<RemoteBootAppData, String>> entries = remoteAppInstances.entrySet().iterator();
+		while (entries.hasNext()) {
+			Entry<RemoteBootAppData, String> entry = entries.next();
+			RemoteBootAppData key = entry.getKey();
+
+			if (!newAppData.contains(key)) {
+				logger.info("Removing RemoteSpringBootApp: "+key);
+				entries.remove();
+				
+				// create meaningful process key here
+				String processKey = entry.getValue();
+				processConnectorService.disconnectProcess(processKey);
+			}
+		}
+
+		//Add new apps
+		for (RemoteBootAppData data : newAppData) {
+			remoteAppInstances.computeIfAbsent(data, (_appData) -> {
+				logger.info("Creating RemoteStringBootApp: " + _appData);
+				
+				String processKey = getProcessKey(_appData);
+				String processID = null;
+				String processName = null;
+				String jmxURL = _appData.getJmxurl();
+				String host = _appData.getHost();
+				String port = _appData.getPort();
+				String urlScheme = _appData.getUrlScheme();
+				boolean keepChecking = _appData.isKeepChecking();
+				
+				SpringProcessConnectorOverJMX connector = new SpringProcessConnectorOverJMX(liveDataProvider, processKey, jmxURL, urlScheme, processID, processName, host, port, keepChecking);
+				processConnectorService.connectProcess(processKey, connector);
+				
+				return processKey;
+			});
+		}
+	}
+	
+	private static String getProcessKey(RemoteBootAppData appData) {
+		return "remote";
 	}
 
 }

@@ -13,8 +13,8 @@ package org.springframework.ide.vscode.commons.boot.app.cli;
 import static org.junit.Assert.assertEquals;
 
 import org.junit.Test;
-import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.AbstractRequestMapping;
-import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.Boot1xRequestMapping;
+import org.springframework.ide.vscode.boot.java.livehover.v2.AbstractRequestMapping;
+import org.springframework.ide.vscode.boot.java.livehover.v2.Boot1xRequestMapping;
 
 /**
  * @author Martin Lippert

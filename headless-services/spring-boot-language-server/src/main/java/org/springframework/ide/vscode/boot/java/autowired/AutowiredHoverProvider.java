@@ -38,9 +38,9 @@ import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.java.livehover.ComponentInjectionsHoverProvider;
 import org.springframework.ide.vscode.boot.java.livehover.LiveHoverUtils;
+import org.springframework.ide.vscode.boot.java.livehover.v2.LiveBean;
+import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveData;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
-import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
-import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBean;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.IType;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
@@ -73,17 +73,17 @@ public class AutowiredHoverProvider implements HoverProvider {
 
 	@Override
 	public Collection<CodeLens> getLiveHintCodeLenses(IJavaProject project, Annotation annotation, TextDocument doc,
-			SpringBootApp[] runningApps) {
+			SpringProcessLiveData[] processLiveData) {
 		ImmutableList.Builder<CodeLens> builder = ImmutableList.builder();
-		if (runningApps.length > 0) {
+		if (processLiveData.length > 0) {
 			LiveBean definedBean = getDefinedBeanForTypeDeclaration(ASTUtils.findDeclaringType(annotation));
 			// Annotation is MarkerNode, parent is some field, method, variable declaration
 			// node.
 			ASTNode declarationNode = annotation.getParent();
 			try {
 				Range hoverRange = doc.toRange(annotation.getStartPosition(), annotation.getLength());
-				for (SpringBootApp app : runningApps) {
-					List<LiveBean> relevantBeans = getRelevantAutowiredBeans(project, declarationNode, app,
+				for (SpringProcessLiveData liveData : processLiveData) {
+					List<LiveBean> relevantBeans = getRelevantAutowiredBeans(project, declarationNode, liveData,
 							definedBean);
 					if (!relevantBeans.isEmpty()) {
 						builder.addAll(LiveHoverUtils.createCodeLensesForBeans(hoverRange, relevantBeans,
@@ -100,12 +100,12 @@ public class AutowiredHoverProvider implements HoverProvider {
 
 	@Override
 	public Hover provideHover(ASTNode node, Annotation annotation, ITypeBinding type, int offset,
-			TextDocument doc, IJavaProject project, SpringBootApp[] runningApps) {
-		if (runningApps.length > 0) {
+			TextDocument doc, IJavaProject project, SpringProcessLiveData[] processLiveData) {
+		if (processLiveData.length > 0) {
 			LiveBean definedBean = getDefinedBeanForTypeDeclaration(ASTUtils.findDeclaringType(annotation));
 			// Annotation is MarkerNode, parent is some field, method, variable declaration node.
 			ASTNode declarationNode = annotation.getParent();
-			Hover hover = provideHover(definedBean, declarationNode, offset, doc, project, runningApps);
+			Hover hover = provideHover(definedBean, declarationNode, offset, doc, project, processLiveData);
 			if (hover != null) {
 				try {
 					hover.setRange(doc.toRange(annotation.getStartPosition(), annotation.getLength()));
@@ -119,14 +119,14 @@ public class AutowiredHoverProvider implements HoverProvider {
 	}
 
 	private Hover provideHover(LiveBean definedBean, ASTNode declarationNode, int offset, TextDocument doc,
-			IJavaProject project, SpringBootApp[] runningApps) {
+			IJavaProject project, SpringProcessLiveData[] processLiveData) {
 		if (definedBean != null) {
 
 			StringBuilder hover = new StringBuilder();
 
-			for (SpringBootApp app : runningApps) {
+			for (SpringProcessLiveData liveData : processLiveData) {
 
-				List<LiveBean> autowiredBeans = getRelevantAutowiredBeans(project, declarationNode, app, definedBean);
+				List<LiveBean> autowiredBeans = getRelevantAutowiredBeans(project, declarationNode, liveData, definedBean);
 
 				if (!autowiredBeans.isEmpty()) {
 					if (hover.length() > 0) {
@@ -136,7 +136,7 @@ public class AutowiredHoverProvider implements HoverProvider {
 					hover.append("Bean id: `");
 					hover.append(definedBean.getId());
 					hover.append("`  \n");
-					hover.append(LiveHoverUtils.niceAppName(app));
+					hover.append(LiveHoverUtils.niceAppName(liveData));
 				}
 
 			}
@@ -158,14 +158,14 @@ public class AutowiredHoverProvider implements HoverProvider {
 		hover.append("\n  \n");
 	}
 
-	public static List<LiveBean> getRelevantAutowiredBeans(IJavaProject project, ASTNode declarationNode, SpringBootApp app, LiveBean definedBean) {
-		List<LiveBean> relevantBeans = LiveHoverUtils.findRelevantBeans(app, definedBean);
-		return getRelevantAutowiredBeans(project, declarationNode, app, relevantBeans);
+	public static List<LiveBean> getRelevantAutowiredBeans(IJavaProject project, ASTNode declarationNode, SpringProcessLiveData liveData, LiveBean definedBean) {
+		List<LiveBean> relevantBeans = LiveHoverUtils.findRelevantBeans(liveData, definedBean);
+		return getRelevantAutowiredBeans(project, declarationNode, liveData, relevantBeans);
 	}
 
-	public static List<LiveBean> getRelevantAutowiredBeans(IJavaProject project, ASTNode declarationNode, SpringBootApp app, List<LiveBean> relevantBeans) {
+	public static List<LiveBean> getRelevantAutowiredBeans(IJavaProject project, ASTNode declarationNode, SpringProcessLiveData liveData, List<LiveBean> relevantBeans) {
 		if (!relevantBeans.isEmpty()) {
-			List<LiveBean> allDependencyBeans = LiveHoverUtils.findAllDependencyBeans(app, relevantBeans);
+			List<LiveBean> allDependencyBeans = LiveHoverUtils.findAllDependencyBeans(liveData, relevantBeans);
 
 			if (!allDependencyBeans.isEmpty()) {
 
@@ -304,9 +304,9 @@ public class AutowiredHoverProvider implements HoverProvider {
 	}
 
 	@Override
-	public Hover provideHover(MethodDeclaration methodDeclaration, int offset, TextDocument doc, IJavaProject project, SpringBootApp[] runningApps) {
+	public Hover provideHover(MethodDeclaration methodDeclaration, int offset, TextDocument doc, IJavaProject project, SpringProcessLiveData[] processLiveData) {
 		LiveBean definedBean = getDefinedBeanForImplicitAutowiredConstructor(methodDeclaration);
-		Hover hover = provideHover(definedBean, methodDeclaration, offset, doc, project, runningApps);
+		Hover hover = provideHover(definedBean, methodDeclaration, offset, doc, project, processLiveData);
 		if (hover != null) {
 			SimpleName name = methodDeclaration.getName();
 			try {
@@ -320,10 +320,10 @@ public class AutowiredHoverProvider implements HoverProvider {
 
 	@Override
 	public Hover provideMethodParameterHover(SingleVariableDeclaration parameter, int offset, TextDocument doc,
-			IJavaProject project, SpringBootApp[] runningApps) {
+			IJavaProject project, SpringProcessLiveData[] processLiveData) {
 		MethodDeclaration method = (MethodDeclaration) parameter.getParent();
 		LiveBean definedBean = getDefinedBeanForImplicitAutowiredConstructor(method);
-		Hover hover = provideHover(definedBean, parameter, offset, doc, project, runningApps);
+		Hover hover = provideHover(definedBean, parameter, offset, doc, project, processLiveData);
 		if (hover != null) {
 			SimpleName name = parameter.getName();
 			try {
@@ -337,7 +337,7 @@ public class AutowiredHoverProvider implements HoverProvider {
 
 	@Override
 	public Collection<CodeLens> getLiveHintCodeLenses(IJavaProject project, MethodDeclaration methodDeclaration,
-			TextDocument doc, SpringBootApp[] runningApps) {
+			TextDocument doc, SpringProcessLiveData[] processLiveData) {
 		ImmutableList.Builder<CodeLens> builder = ImmutableList.builder();
 		LiveBean definedBean = getDefinedBeanForImplicitAutowiredConstructor(methodDeclaration);
 		if (definedBean != null) {
@@ -345,8 +345,8 @@ public class AutowiredHoverProvider implements HoverProvider {
 				Range hoverRange = doc.toRange(methodDeclaration.getName().getStartPosition(),
 						methodDeclaration.getName().getLength());
 
-				for (SpringBootApp app : runningApps) {
-					List<LiveBean> relevantBeans = getRelevantAutowiredBeans(project, methodDeclaration, app,
+				for (SpringProcessLiveData liveData : processLiveData) {
+					List<LiveBean> relevantBeans = getRelevantAutowiredBeans(project, methodDeclaration, liveData,
 							definedBean);
 					if (!relevantBeans.isEmpty()) {
 
@@ -357,7 +357,7 @@ public class AutowiredHoverProvider implements HoverProvider {
 
 						// CodeLenses for the method parameters. Only ranges just to provide a highlight
 						// for the hover
-						builder.addAll(LiveHoverUtils.createCodeLensForMethodParameters(app, project, methodDeclaration, doc, relevantBeans));
+						builder.addAll(LiveHoverUtils.createCodeLensForMethodParameters(liveData, project, methodDeclaration, doc, relevantBeans));
 
 					}
 				}

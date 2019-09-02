@@ -31,10 +31,10 @@ import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
 import org.springframework.ide.vscode.boot.java.beans.BeanUtils;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
+import org.springframework.ide.vscode.boot.java.livehover.v2.LiveBean;
+import org.springframework.ide.vscode.boot.java.livehover.v2.LiveBeansModel;
+import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveData;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
-import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
-import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBean;
-import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansModel;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.StringUtil;
@@ -103,15 +103,15 @@ public class ComponentInjectionsHoverProvider extends AbstractInjectedIntoHoverP
 
 	@Override
 	public Collection<CodeLens> getLiveHintCodeLenses(IJavaProject project, TypeDeclaration typeDeclaration,
-			TextDocument doc, SpringBootApp[] runningApps) {
-		if (runningApps.length > 0 && !isComponentAnnotatedType(typeDeclaration)) {
+			TextDocument doc, SpringProcessLiveData[] processLiveData) {
+		if (processLiveData.length > 0 && !isComponentAnnotatedType(typeDeclaration)) {
 			try {
 				ITypeBinding beanType = typeDeclaration.resolveBinding();
 				if (beanType != null) {
 					String id = getBeanId(null, beanType, Flags.isStatic(typeDeclaration.getModifiers()));
 					Optional<Range> nameRange = Optional.of(ASTUtils.nodeRegion(doc, typeDeclaration.getName()).asRange());
 					if (nameRange.isPresent()) {
-						List<CodeLens> codeLenses = assembleCodeLenses(project, runningApps, app -> definedBean(app, getBeanType(beanType), id), doc,
+						List<CodeLens> codeLenses = assembleCodeLenses(project, processLiveData, liveData -> definedBean(liveData, getBeanType(beanType), id), doc,
 								nameRange.get(), typeDeclaration);
 						if (codeLenses != null) {
 							return codeLenses.isEmpty() ? ImmutableList.of(new CodeLens(nameRange.get())) : codeLenses;
@@ -125,8 +125,8 @@ public class ComponentInjectionsHoverProvider extends AbstractInjectedIntoHoverP
 		return ImmutableList.of();
 	}
 	
-	private LiveBean definedBean(SpringBootApp app, String beanType, String possibleId) {
-		LiveBeansModel beans = app.getBeans();
+	private LiveBean definedBean(SpringProcessLiveData liveData, String beanType, String possibleId) {
+		LiveBeansModel beans = liveData.getBeans();
 		if (beans != null) {
 			if (beans.getBeansOfName(possibleId).isEmpty()) {
 				// try bean type if there is only one bean of such type
@@ -144,14 +144,14 @@ public class ComponentInjectionsHoverProvider extends AbstractInjectedIntoHoverP
 
 	@Override
 	public Hover provideHover(ASTNode node, TypeDeclaration typeDeclaration, ITypeBinding type, int offset,
-			TextDocument doc, IJavaProject project, SpringBootApp[] runningApps) {
+			TextDocument doc, IJavaProject project, SpringProcessLiveData[] processLiveData) {
 
-		if (runningApps.length > 0 && !isComponentAnnotatedType(typeDeclaration)) {
+		if (processLiveData.length > 0 && !isComponentAnnotatedType(typeDeclaration)) {
 			ITypeBinding beanType = typeDeclaration.resolveBinding();
 			if (beanType != null) {
 				String id = getBeanId(null, beanType, Flags.isStatic(typeDeclaration.getModifiers()));
 	
-				Hover hover = assembleHover(project, runningApps, app -> definedBean(app, getBeanType(beanType), id), typeDeclaration, true, true);
+				Hover hover = assembleHover(project, processLiveData, app -> definedBean(app, getBeanType(beanType), id), typeDeclaration, true, true);
 				if (hover != null) {
 					SimpleName name = typeDeclaration.getName();
 					try {
@@ -167,7 +167,7 @@ public class ComponentInjectionsHoverProvider extends AbstractInjectedIntoHoverP
 	}
 
 	@Override
-	protected List<LiveBean> findWiredBeans(IJavaProject project, SpringBootApp app, List<LiveBean> relevantBeans,
+	protected List<LiveBean> findWiredBeans(IJavaProject project, SpringProcessLiveData liveData, List<LiveBean> relevantBeans,
 			ASTNode astNode) {
 		TypeDeclaration typeDeclaration = null;
 		if (astNode instanceof TypeDeclaration) {
@@ -175,7 +175,7 @@ public class ComponentInjectionsHoverProvider extends AbstractInjectedIntoHoverP
 		} else if (astNode instanceof Annotation) {
 			typeDeclaration = ASTUtils.getAnnotatedType((Annotation) astNode);
 		}
-		return typeDeclaration == null ? Collections.emptyList() : LiveHoverUtils.findAllDependencyBeans(app, relevantBeans);
+		return typeDeclaration == null ? Collections.emptyList() : LiveHoverUtils.findAllDependencyBeans(liveData, relevantBeans);
 	}
 
 	private boolean isComponentAnnotatedType(TypeDeclaration typeDeclaration) {

@@ -43,6 +43,12 @@ import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.java.livehover.ActiveProfilesProvider;
 import org.springframework.ide.vscode.boot.java.livehover.BeanInjectedIntoHoverProvider;
 import org.springframework.ide.vscode.boot.java.livehover.ComponentInjectionsHoverProvider;
+import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessConnectorLocal;
+import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessConnectorRemote;
+import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessConnectorService;
+import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveDataProvider;
+import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveHoverUpdater;
+import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessTracker;
 import org.springframework.ide.vscode.boot.java.requestmapping.LiveAppURLSymbolProvider;
 import org.springframework.ide.vscode.boot.java.requestmapping.RequestMappingHoverProvider;
 import org.springframework.ide.vscode.boot.java.requestmapping.WebfluxHandlerCodeLensProvider;
@@ -53,7 +59,6 @@ import org.springframework.ide.vscode.boot.java.snippets.JavaSnippetContext;
 import org.springframework.ide.vscode.boot.java.snippets.JavaSnippetManager;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.boot.java.utils.SpringLiveChangeDetectionWatchdog;
-import org.springframework.ide.vscode.boot.java.utils.SpringLiveHoverWatchdog;
 import org.springframework.ide.vscode.boot.java.utils.SymbolCache;
 import org.springframework.ide.vscode.boot.java.value.ValueCompletionProcessor;
 import org.springframework.ide.vscode.boot.java.value.ValueHoverProvider;
@@ -73,7 +78,6 @@ import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguage
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleWorkspaceService;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
-import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -100,7 +104,10 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 	private final BootLanguageServerParams serverParams;
 	private final SpringPropertyIndexProvider propertyIndexProvider;
 	private final ProjectBasedPropertyIndexProvider adHocPropertyIndexProvider;
-	private final SpringLiveHoverWatchdog liveHoverWatchdog;
+
+	private final SpringProcessLiveDataProvider liveDataProvider;
+	private final SpringProcessConnectorService liveDataConnector;
+
 	private final SpringLiveChangeDetectionWatchdog liveChangeDetectionWatchdog;
 	private final ProjectObserver projectObserver;
 	private final CompilationUnitCache cuCache;
@@ -109,6 +116,9 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 	private BootJavaHoverProvider hoverProvider;
 	private CodeLensHandler codeLensHandler;
 	private DocumentHighlightHandler highlightsEngine;
+
+	private SpringProcessTracker liveProcessTracker;
+
 
 	public BootJavaLanguageServerComponents(
 			SimpleLanguageServer server,
@@ -142,37 +152,44 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		workspaceService.onWorkspaceSymbol(new BootJavaWorkspaceSymbolHandler(indexer,
 				new LiveAppURLSymbolProvider(runningAppProvider)));
 
-//		BootJavaCodeLensEngine codeLensHandler = createCodeLensEngine(server, projectFinder);
-//		documents.onCodeLens(codeLensHandler::createCodeLenses);
-//		documents.onCodeLensResolve(codeLensHandler::resolveCodeLens);
 
-		hoverProvider = createHoverHandler(projectFinder, runningAppProvider, sourceLinks);
-		liveHoverWatchdog = new SpringLiveHoverWatchdog(server, hoverProvider, runningAppProvider,
-				projectFinder, projectObserver, serverParams.watchDogInterval);
-		documents.onDidChangeContent(params -> {
-			TextDocument doc = params.getDocument();
-			if (getInterestingLanguages().contains(doc.getLanguageId())) {
+		liveDataProvider = new SpringProcessLiveDataProvider();
+
+		hoverProvider = createHoverHandler(projectFinder, sourceLinks, liveDataProvider);
+		new SpringProcessLiveHoverUpdater(server, hoverProvider, projectFinder, liveDataProvider);
+
+		liveDataConnector = new SpringProcessConnectorService();
+		new SpringProcessConnectorRemote(server, liveDataConnector, liveDataProvider);
+		
+		SpringProcessConnectorLocal liveHoverLocalProcessConnector = new SpringProcessConnectorLocal(liveDataConnector, liveDataProvider, projectObserver);
+		liveProcessTracker = new SpringProcessTracker(liveHoverLocalProcessConnector, serverParams.watchDogInterval);
+
+//		liveHoverWatchdog = new SpringLiveHoverWatchdog(server, hoverProvider, runningAppProvider,
+//				projectFinder, projectObserver, serverParams.watchDogInterval);
+//		documents.onDidChangeContent(params -> {
+//			TextDocument doc = params.getDocument();
+//			if (getInterestingLanguages().contains(doc.getLanguageId())) {
 //				if (testHightlighter != null) {
 //					getClient()
 //							.highlight(new HighlightParams(params.getDocument().getId(), testHightlighter.apply(doc)));
 //				} else {
-					try {
-						liveHoverWatchdog.watchDocument(doc.getUri());
-						liveHoverWatchdog.update(doc.getUri());
-					} catch (Throwable t) {
-						log.error("", t);
-					}
+//					try {
+//						liveHoverWatchdog.watchDocument(doc.getUri());
+//						liveHoverWatchdog.update(doc.getUri());
+//					} catch (Throwable t) {
+//						log.error("", t);
+//					}
 //				}
-			}
-		});
+//			}
+//		});
 
-		documents.onDidClose(doc -> {
+//		documents.onDidClose(doc -> {
 //			if (testHightlighter != null) {
 //				getClient().highlight(new HighlightParams(doc.getId(), testHightlighter.apply(doc)));
 //			} else {
-				liveHoverWatchdog.unwatchDocument(doc.getUri());
+//				liveHoverWatchdog.unwatchDocument(doc.getUri());
 //			}
-		});
+//		});
 
 		liveChangeDetectionWatchdog = new SpringLiveChangeDetectionWatchdog(
 				this,
@@ -191,11 +208,12 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 
 		config.addListener(ignore -> {
 			// live hover watchdog
-			if (config.isBootHintsEnabled()) {
-				liveHoverWatchdog.enableHighlights();
-			} else {
-				liveHoverWatchdog.disableHighlights();
-			}
+//			liveProcessTracker.setTrackingEnabled(config.isBootHintsEnabled());
+//			if (config.isBootHintsEnabled()) {
+//				liveHoverWatchdog.enableHighlights();
+//			} else {
+//				liveHoverWatchdog.disableHighlights();
+//			}
 
 			// live change detection watchdog
 			if (config.isChangeDetectionEnabled()) {
@@ -233,11 +251,13 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 	}
 
 	private void initialized() {
+		this.liveProcessTracker.start();
 		this.liveChangeDetectionWatchdog.start();
 	}
 
 	private void shutdown() {
-		this.liveHoverWatchdog.shutdown();
+//		this.liveHoverWatchdog.shutdown();
+		this.liveProcessTracker.stop();
 		this.liveChangeDetectionWatchdog.shutdown();
 		this.cuCache.dispose();
 	}
@@ -300,8 +320,9 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		return snippetManager;
 	}
 
-	protected BootJavaHoverProvider createHoverHandler(JavaProjectFinder javaProjectFinder,
-			RunningAppProvider runningAppProvider, SourceLinks sourceLinks) {
+	protected BootJavaHoverProvider createHoverHandler(JavaProjectFinder javaProjectFinder, SourceLinks sourceLinks,
+			SpringProcessLiveDataProvider liveDataProvider) {
+
 		AnnotationHierarchyAwareLookup<HoverProvider> providers = new AnnotationHierarchyAwareLookup<>();
 
 		ValueHoverProvider valueHoverProvider = new ValueHoverProvider();
@@ -345,7 +366,7 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		providers.put(Annotations.CONDITIONAL_ON_JNDI, conditionalsLiveHoverProvider);
 		providers.put(Annotations.CONDITIONAL_ON_SINGLE_CANDIDATE, conditionalsLiveHoverProvider);
 
-		return new BootJavaHoverProvider(this, javaProjectFinder, providers, runningAppProvider);
+		return new BootJavaHoverProvider(this, javaProjectFinder, providers, liveDataProvider);
 	}
 
 	protected ReferencesHandler createReferenceHandler(SimpleLanguageServer server, JavaProjectFinder projectFinder) {

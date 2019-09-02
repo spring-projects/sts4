@@ -8,7 +8,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.commons.boot.app.cli.livebean;
+package org.springframework.ide.vscode.boot.java.livehover.v2;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +16,8 @@ import java.util.Set;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.springframework.ide.vscode.commons.util.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 
 import com.google.common.collect.ImmutableListMultimap;
@@ -26,6 +27,8 @@ import com.google.common.collect.ImmutableListMultimap;
  * @author Kris De Volder
  */
 public class LiveBeansModel {
+
+	private static final Logger log = LoggerFactory.getLogger(LiveBeansModel.class);
 
 	private static final String[] NO_STRINGS = new String[] {};
 
@@ -196,7 +199,7 @@ public class LiveBeansModel {
 		//Only getting here if none of the parsers worked... So if at least one parser works,
 		// we won't log any exceptions.
 		for (Exception e : exceptions) {
-			Log.log(e);
+			log.warn(e.getMessage());
 		}
 		return LiveBeansModel.builder().build(); // always return at least an empty model.
 	}

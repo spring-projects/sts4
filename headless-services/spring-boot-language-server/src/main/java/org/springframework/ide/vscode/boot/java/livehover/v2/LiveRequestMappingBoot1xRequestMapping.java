@@ -8,13 +8,13 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.commons.boot.app.cli.requestmappings;
+package org.springframework.ide.vscode.boot.java.livehover.v2;
 
 import org.json.JSONObject;
 
 import com.google.common.base.Objects;
 
-public class Boot1xRequestMapping extends AbstractRequestMapping {
+public class LiveRequestMappingBoot1xRequestMapping extends LiveRequestMappingAbstractImpl {
 
 	/*
 There are two styles of entries:
@@ -34,7 +34,7 @@ There are two styles of entries:
 	private JSONObject beanInfo;
 	private String pathKey;
 
-	public Boot1xRequestMapping(String pathKey, JSONObject beanInfo) {
+	public LiveRequestMappingBoot1xRequestMapping(String pathKey, JSONObject beanInfo) {
 		this.pathKey = pathKey;
 		this.beanInfo = beanInfo;
 	}
@@ -52,7 +52,7 @@ There are two styles of entries:
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-		Boot1xRequestMapping other = (Boot1xRequestMapping) obj;
+		LiveRequestMappingBoot1xRequestMapping other = (LiveRequestMappingBoot1xRequestMapping) obj;
 		return Objects.equal(this.pathKey, other.pathKey)
 			&& Objects.equal(this.getMethodString(), other.getMethodString());
 	}

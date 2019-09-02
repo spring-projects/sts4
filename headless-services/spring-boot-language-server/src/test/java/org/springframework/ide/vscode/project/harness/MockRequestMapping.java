@@ -2,11 +2,11 @@ package org.springframework.ide.vscode.project.harness;
 
 import java.util.Set;
 
-import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.RequestMapping;
+import org.springframework.ide.vscode.boot.java.livehover.v2.LiveRequestMapping;
 
 import com.google.common.collect.ImmutableSet;
 
-public class MockRequestMapping implements RequestMapping {
+public class MockRequestMapping implements LiveRequestMapping {
 
 	private String[] paths = {};
 	private String className;

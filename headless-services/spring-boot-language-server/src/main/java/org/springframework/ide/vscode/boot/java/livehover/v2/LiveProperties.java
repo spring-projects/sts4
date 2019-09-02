@@ -8,7 +8,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.commons.boot.app.cli.liveproperties;
+package org.springframework.ide.vscode.boot.java.livehover.v2;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -22,7 +22,6 @@ public class LiveProperties {
 	public LiveProperties(List<LivePropertySource> sources) {
 		this.sources = sources != null ? ImmutableList.copyOf(sources) : ImmutableList.of();
 	}
-
 
 	public List<LiveProperty> getProperties(String propertyName) {
 		List<LiveProperty> foundProperties = new ArrayList<>();

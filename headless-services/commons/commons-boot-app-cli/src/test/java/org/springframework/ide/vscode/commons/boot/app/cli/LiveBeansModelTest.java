@@ -19,8 +19,8 @@ import java.util.List;
 
 import org.apache.commons.io.IOUtils;
 import org.junit.Test;
-import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBean;
-import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansModel;
+import org.springframework.ide.vscode.boot.java.livehover.v2.LiveBean;
+import org.springframework.ide.vscode.boot.java.livehover.v2.LiveBeansModel;
 
 /**
  * @author Martin Lippert

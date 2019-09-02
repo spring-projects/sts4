@@ -26,11 +26,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.autowired.AutowiredHoverProvider;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
+import org.springframework.ide.vscode.boot.java.livehover.v2.LiveBean;
+import org.springframework.ide.vscode.boot.java.livehover.v2.LiveBeansModel;
+import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveData;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.boot.java.utils.SpringResource;
-import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
-import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBean;
-import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansModel;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.Renderables;
@@ -137,12 +137,12 @@ public class LiveHoverUtils {
 		return new SpringResource(sourceLinks, resource, project).toMarkdown();
 	}
 
-	public static boolean hasRelevantBeans(SpringBootApp app, LiveBean definedBean) {
-		return findRelevantBeans(app, definedBean).stream().findAny().isPresent();
+	public static boolean hasRelevantBeans(SpringProcessLiveData liveData, LiveBean definedBean) {
+		return findRelevantBeans(liveData, definedBean).stream().findAny().isPresent();
 	}
 
-	public static List<LiveBean> findRelevantBeans(SpringBootApp app, LiveBean definedBean) {
-		LiveBeansModel beansModel = app.getBeans();
+	public static List<LiveBean> findRelevantBeans(SpringProcessLiveData liveData, LiveBean definedBean) {
+		LiveBeansModel beansModel = liveData.getBeans();
 		if (beansModel != null) {
 			List<LiveBean> relevantBeans = beansModel.getBeansOfName(definedBean.getId());
 			String type = definedBean.getType(true);
@@ -159,20 +159,20 @@ public class LiveHoverUtils {
 		return Collections.emptyList();
 	}
 
-	public static List<LiveBean> findAllDependencyBeans(SpringBootApp app, List<LiveBean> relevantBeans) {
-		LiveBeansModel beans = app.getBeans();
+	public static List<LiveBean> findAllDependencyBeans(SpringProcessLiveData liveData, List<LiveBean> relevantBeans) {
+		LiveBeansModel beans = liveData.getBeans();
 		return relevantBeans.stream()
 				.flatMap(b -> Arrays.stream(b.getDependencies())).distinct()
 				.flatMap(d -> beans.getBeansOfName(d).stream()).collect(Collectors.toList());
 
 	}
 
-	public static String niceAppName(SpringBootApp app) {
+	public static String niceAppName(SpringProcessLiveData liveData) {
 		try {
-			return niceAppName(app.getProcessID(), app.getProcessName());
+			return niceAppName(liveData.getProcessID(), liveData.getProcessName());
 		} catch (Exception e) {
 			log.error("", e);
-			return app.toString();
+			return liveData.toString();
 		}
 	}
 
@@ -200,7 +200,7 @@ public class LiveHoverUtils {
 	}
 
 	@SuppressWarnings("unchecked")
-	public static List<CodeLens> createCodeLensForMethodParameters(SpringBootApp app, IJavaProject project, MethodDeclaration method, TextDocument doc, List<LiveBean> wiredBeans) {
+	public static List<CodeLens> createCodeLensForMethodParameters(SpringProcessLiveData liveData, IJavaProject project, MethodDeclaration method, TextDocument doc, List<LiveBean> wiredBeans) {
 		ImmutableList.Builder<CodeLens> builder = ImmutableList.builder();
 		method.parameters().forEach(p -> {
 			if (p instanceof SingleVariableDeclaration) {

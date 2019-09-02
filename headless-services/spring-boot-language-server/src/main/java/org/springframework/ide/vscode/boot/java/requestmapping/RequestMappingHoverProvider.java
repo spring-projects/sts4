@@ -31,8 +31,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
 import org.springframework.ide.vscode.boot.java.livehover.LiveHoverUtils;
-import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
-import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.RequestMapping;
+import org.springframework.ide.vscode.boot.java.livehover.v2.LiveRequestMapping;
+import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveData;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
@@ -57,15 +57,15 @@ public class RequestMappingHoverProvider implements HoverProvider {
 
 	@Override
 	public Hover provideHover(ASTNode node, Annotation annotation,
-			ITypeBinding type, int offset, TextDocument doc, IJavaProject project, SpringBootApp[] runningApps) {
-		return provideHover(annotation, doc, runningApps);
+			ITypeBinding type, int offset, TextDocument doc, IJavaProject project, SpringProcessLiveData[] processLiveData) {
+		return provideHover(annotation, doc, processLiveData);
 	}
 
 	@Override
-	public Collection<CodeLens> getLiveHintCodeLenses(IJavaProject project, Annotation annotation, TextDocument doc, SpringBootApp[] runningApps) {
+	public Collection<CodeLens> getLiveHintCodeLenses(IJavaProject project, Annotation annotation, TextDocument doc, SpringProcessLiveData[] processLiveData) {
 		try {
-			if (runningApps.length > 0) {
-				List<Tuple2<RequestMapping, SpringBootApp>> val = getRequestMappingMethodFromRunningApp(annotation, runningApps);
+			if (processLiveData.length > 0) {
+				List<Tuple2<LiveRequestMapping, SpringProcessLiveData>> val = getRequestMappingMethodFromRunningApp(annotation, processLiveData);
 				if (!val.isEmpty()) {
 					Range hoverRange = doc.toRange(annotation.getStartPosition(), annotation.getLength());
 				    List<String> urls = getUrls(val);
@@ -150,10 +150,10 @@ public class RequestMappingHoverProvider implements HoverProvider {
 		return lenses;
 	}
 
-	private Hover provideHover(Annotation annotation, TextDocument doc, SpringBootApp[] runningApps) {
+	private Hover provideHover(Annotation annotation, TextDocument doc, SpringProcessLiveData[] processLiveData) {
 
 		try {
-			List<Tuple2<RequestMapping, SpringBootApp>> val = getRequestMappingMethodFromRunningApp(annotation, runningApps);
+			List<Tuple2<LiveRequestMapping, SpringProcessLiveData>> val = getRequestMappingMethodFromRunningApp(annotation, processLiveData);
 
 			if (!val.isEmpty()) {
 				Hover hover = createHoverWithContent(val);
@@ -171,17 +171,17 @@ public class RequestMappingHoverProvider implements HoverProvider {
 		return null;
 	}
 
-	private List<Tuple2<RequestMapping, SpringBootApp>> getRequestMappingMethodFromRunningApp(Annotation annotation,
-			SpringBootApp[] runningApps) {
+	private List<Tuple2<LiveRequestMapping, SpringProcessLiveData>> getRequestMappingMethodFromRunningApp(Annotation annotation,
+			SpringProcessLiveData[] processLiveData) {
 
-		List<Tuple2<RequestMapping, SpringBootApp>> results = new ArrayList<>();
+		List<Tuple2<LiveRequestMapping, SpringProcessLiveData>> results = new ArrayList<>();
 		try {
-			for (SpringBootApp app : runningApps) {
-				Collection<RequestMapping> mappings = app.getRequestMappings();
-				if (mappings != null && !mappings.isEmpty()) {
-					mappings.stream()
+			for (SpringProcessLiveData liveData : processLiveData) {
+				LiveRequestMapping[] mappings = liveData.getRequestMappings();
+				if (mappings != null && mappings.length > 0) {
+					Arrays.stream(mappings)
 							.filter(rm -> methodMatchesAnnotation(annotation, rm))
-							.map(rm -> Tuples.of(rm, app))
+							.map(rm -> Tuples.of(rm, liveData))
 							.findFirst().ifPresent(t -> results.add(t));
 				}
 			}
@@ -191,7 +191,7 @@ public class RequestMappingHoverProvider implements HoverProvider {
 		return results;
 	}
 
-	private boolean methodMatchesAnnotation(Annotation annotation, RequestMapping rm) {
+	private boolean methodMatchesAnnotation(Annotation annotation, LiveRequestMapping rm) {
 		String rqClassName = rm.getFullyQualifiedClassName();
 
 		if (rqClassName != null) {
@@ -222,16 +222,16 @@ public class RequestMappingHoverProvider implements HoverProvider {
 		return false;
 	}
 
-	private List<String> getUrls(List<Tuple2<RequestMapping, SpringBootApp>> mappingMethods) throws Exception {
+	private List<String> getUrls(List<Tuple2<LiveRequestMapping, SpringProcessLiveData>> mappingMethods) throws Exception {
 		List<String> urls = new ArrayList<>();
 		for (int i = 0; i < mappingMethods.size(); i++) {
-			Tuple2<RequestMapping, SpringBootApp> mappingMethod = mappingMethods.get(i);
-			SpringBootApp app = mappingMethod.getT2();
-			String contextPath = app.getContextPath();
+			Tuple2<LiveRequestMapping, SpringProcessLiveData> mappingMethod = mappingMethods.get(i);
+			SpringProcessLiveData liveData = mappingMethod.getT2();
+			String contextPath = liveData.getContextPath();
 
-			String urlScheme = app.getUrlScheme();
-			String port = app.getPort();
-			String host = app.getHost();
+			String urlScheme = liveData.getUrlScheme();
+			String port = liveData.getPort();
+			String host = liveData.getHost();
 
 			String[] paths = mappingMethod.getT1().getSplitPath();
 			if (paths==null || paths.length==0) {
@@ -249,16 +249,16 @@ public class RequestMappingHoverProvider implements HoverProvider {
 		return urls;
 	}
 
-	private Hover createHoverWithContent(List<Tuple2<RequestMapping, SpringBootApp>> mappingMethods) throws Exception {
+	private Hover createHoverWithContent(List<Tuple2<LiveRequestMapping, SpringProcessLiveData>> mappingMethods) throws Exception {
 
 		StringBuilder contentVal = new StringBuilder();
 		for (int i = 0; i < mappingMethods.size(); i++) {
-			Tuple2<RequestMapping, SpringBootApp> mappingMethod = mappingMethods.get(i);
+			Tuple2<LiveRequestMapping, SpringProcessLiveData> mappingMethod = mappingMethods.get(i);
 
-			SpringBootApp app = mappingMethod.getT2();
-			String urlScheme = app.getUrlScheme();
-			String port = app.getPort();
-			String host = app.getHost();
+			SpringProcessLiveData liveData = mappingMethod.getT2();
+			String urlScheme = liveData.getUrlScheme();
+			String port = liveData.getPort();
+			String host = liveData.getHost();
 
 			String[] paths = mappingMethod.getT1().getSplitPath();
 			if (paths==null || paths.length==0) {
@@ -268,7 +268,7 @@ public class RequestMappingHoverProvider implements HoverProvider {
 				//So we'll pretend this is the same as path="" as that gives a working link.
 				paths = new String[] {""};
 			}
-			String contextPath = app.getContextPath();
+			String contextPath = liveData.getContextPath();
 			List<Renderable> renderableUrls = Arrays.stream(paths).flatMap(path -> {
 				String url = UrlUtil.createUrl(urlScheme, host, port, path, contextPath);
 				return Stream.of(Renderables.link(url, url), Renderables.lineBreak());
@@ -278,7 +278,7 @@ public class RequestMappingHoverProvider implements HoverProvider {
 			Renderable urlRenderables = Renderables.concat(renderableUrls);
 			Renderable processSection = Renderables.concat(
 					urlRenderables,
-					Renderables.mdBlob(LiveHoverUtils.niceAppName(app))
+					Renderables.mdBlob(LiveHoverUtils.niceAppName(liveData))
 			);
 
 			if (i < mappingMethods.size() - 1) {

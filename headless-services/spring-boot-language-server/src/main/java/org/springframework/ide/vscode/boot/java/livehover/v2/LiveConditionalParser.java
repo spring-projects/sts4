@@ -8,7 +8,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.commons.boot.app.cli;
+package org.springframework.ide.vscode.boot.java.livehover.v2;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,7 +16,8 @@ import java.util.Optional;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.springframework.ide.vscode.commons.util.Log;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 
 /**
@@ -30,6 +31,8 @@ import org.springframework.ide.vscode.commons.util.StringUtil;
  *
  */
 public class LiveConditionalParser {
+	
+	private static final Logger log = LoggerFactory.getLogger(LiveConditionalParser.class);
 
 	private final String autoConfigRecord;
 	private final String appProcessName;
@@ -41,7 +44,7 @@ public class LiveConditionalParser {
 		this.appProcessName = appProcessName;
 	}
 
-	public Optional<List<LiveConditional>> parse() {
+	public LiveConditional[] parse() {
 		try {
 			List<LiveConditional> allConditionals = new ArrayList<>();
 			if (StringUtil.hasText(autoConfigRecord)) {
@@ -58,12 +61,12 @@ public class LiveConditionalParser {
 				}
 			}
 			if (!allConditionals.isEmpty()) {
-				return Optional.of(allConditionals);
+				return (LiveConditional[]) allConditionals.toArray(new LiveConditional[allConditionals.size()]);
 			}
 		} catch (Exception e) {
-			Log.log(e);
+			log.warn(e.getMessage());
 		}
-		return Optional.empty();
+		return new LiveConditional[0];
 	}
 
 	/**
@@ -152,7 +155,7 @@ public class LiveConditionalParser {
 	}
 
 
-	public static Optional<List<LiveConditional>> parse(String autoConfigRecord, String appProcessId,
+	public static LiveConditional[] parse(String autoConfigRecord, String appProcessId,
 			String appProcessName) {
 		return new LiveConditionalParser(autoConfigRecord, appProcessId, appProcessName).parse();
 	}

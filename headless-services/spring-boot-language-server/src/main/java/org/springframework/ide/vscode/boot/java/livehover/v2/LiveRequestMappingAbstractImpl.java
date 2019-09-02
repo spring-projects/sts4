@@ -8,7 +8,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.commons.boot.app.cli.requestmappings;
+package org.springframework.ide.vscode.boot.java.livehover.v2;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -23,7 +23,7 @@ import org.springframework.ide.vscode.commons.java.parser.JLRMethodParser.JLRMet
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 
-public abstract class AbstractRequestMapping implements RequestMapping {
+public abstract class LiveRequestMappingAbstractImpl implements LiveRequestMapping {
 
 	private static final Pattern REQUEST_METHODS_PATTERN = Pattern.compile(".*methods=\\[(.*)\\].*");
 
@@ -31,7 +31,7 @@ public abstract class AbstractRequestMapping implements RequestMapping {
 	final private Supplier<Set<String>> requestMethodsSupplier;
 	final private Supplier<String[]> pathsSuplier;
 
-	public AbstractRequestMapping() {
+	public LiveRequestMappingAbstractImpl() {
 		this.requestMethodsSupplier = Suppliers.memoize(() -> parseRequestMethods());
 		this.methodDataSupplier = Suppliers.memoize(() -> JLRMethodParser.parse(getMethodString()));
 		this.pathsSuplier = Suppliers.memoize(() -> computePaths());
@@ -90,13 +90,13 @@ public abstract class AbstractRequestMapping implements RequestMapping {
 			int end = predicate.indexOf(']');
 			if (end>=2) {
 				String pathString = predicate.substring(start, end);
-				return ParseUtil.splitPaths(pathString);
+				return splitPaths(pathString);
 			}
 		}
 		//Case 1, or some unanticipated stuff.
 		//Assume the key is the paths strk g, which is right for Case 1
 		// and  probably more useful than null for 'unanticipated stuff'.
-		return ParseUtil.splitPaths(predicate);
+		return splitPaths(predicate);
 	}
 
 	protected abstract String getPredicateString();
@@ -104,6 +104,20 @@ public abstract class AbstractRequestMapping implements RequestMapping {
 	@Override
 	public String[] getSplitPath() {
 		return pathsSuplier.get();
+	}
+
+	protected String[] splitPaths(String paths) {
+		return Arrays.stream(paths.split("\\|\\|"))
+				.map(s -> s.trim())
+				.filter(s -> !s.isEmpty())
+				.map(s -> {
+					if (s.charAt(0) != '/') {
+						return '/' + s;
+					} else {
+						return s;
+					}
+				})
+				.toArray(String[]::new);
 	}
 
 }

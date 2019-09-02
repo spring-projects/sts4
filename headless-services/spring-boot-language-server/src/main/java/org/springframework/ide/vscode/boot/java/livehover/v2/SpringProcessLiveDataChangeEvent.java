@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -8,16 +8,21 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.commons.boot.app.cli.requestmappings;
+package org.springframework.ide.vscode.boot.java.livehover.v2;
 
-import java.util.Set;
+/**
+ * @author Martin Lippert
+ */
+public class SpringProcessLiveDataChangeEvent {
+	
+	private final SpringProcessLiveData[] updatedLiveData;
 
-public interface RequestMapping {
-	// String getPath(); commented... because... not used??
-	String[] getSplitPath();
-	String getFullyQualifiedClassName();
-	String getMethodName();
-	String[] getMethodParameters();
-	String getMethodString();
-	Set<String> getRequestMethods();
+	public SpringProcessLiveDataChangeEvent(SpringProcessLiveData[] updatedLiveData) {
+		this.updatedLiveData = updatedLiveData;
+	}
+	
+	public SpringProcessLiveData[] getUpdatedLiveData() {
+		return updatedLiveData;
+	}
+
 }

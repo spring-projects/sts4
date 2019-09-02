@@ -8,7 +8,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.commons.boot.app.cli.requestmappings;
+package org.springframework.ide.vscode.boot.java.livehover.v2;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -20,7 +20,7 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.objectweb.asm.Type;
 
-public class Boot20DispatcherServletMapping implements RequestMapping {
+public class LiveRequestMappingBoot2xDispatcherServletMapping implements LiveRequestMapping {
 
 /*
 
@@ -54,7 +54,7 @@ Example entry:
 
 	private JSONObject data;
 
-	public Boot20DispatcherServletMapping(JSONObject data) {
+	public LiveRequestMappingBoot2xDispatcherServletMapping(JSONObject data) {
 		this.data = data;
 	}
 

@@ -13,8 +13,8 @@ package org.springframework.ide.vscode.boot.java.utils;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.springframework.ide.vscode.boot.java.livehover.v2.LiveBean;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
-import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBean;
 
 /**
  * @author Martin Lippert

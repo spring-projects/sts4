@@ -17,9 +17,9 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.ide.vscode.boot.java.livehover.v2.LiveBean;
+import org.springframework.ide.vscode.boot.java.livehover.v2.LiveBeansModel;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
-import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBean;
-import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansModel;
 
 /**
  * @author Martin Lippert
@@ -59,17 +59,17 @@ public class ChangeHistory {
 	public Change checkForUpdates() {
 		Change result = null;
 
-		LiveBeansModel currentBeans = this.associatedProcess.getBeans();
-		if (!currentBeans.isEmpty()) {
-
-			if (lastBeans == null) {
-				lastBeans = currentBeans;
-			}
-			else if (lastBeans != null && currentBeans != null) {
-				result = calculateBeansDiff(lastBeans, currentBeans, result);
-				lastBeans = currentBeans;
-			}
-		}
+//		LiveBeansModel currentBeans = this.associatedProcess.getBeans();
+//		if (!currentBeans.isEmpty()) {
+//
+//			if (lastBeans == null) {
+//				lastBeans = currentBeans;
+//			}
+//			else if (lastBeans != null && currentBeans != null) {
+//				result = calculateBeansDiff(lastBeans, currentBeans, result);
+//				lastBeans = currentBeans;
+//			}
+//		}
 
 		return result;
 	}

@@ -29,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaHoverProvider;
 import org.springframework.ide.vscode.boot.java.handlers.RunningAppMatcher;
 import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
+import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveDataProvider;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
@@ -57,17 +58,14 @@ public class SpringLiveHoverWatchdog {
 	private ScheduledThreadPoolExecutor timer;
 	private JavaProjectFinder projectFinder;
 	private final Map<String, AtomicReference<IJavaProject>> watchedDocs;
-	
-
 
 	public SpringLiveHoverWatchdog(
 			SimpleLanguageServer server,
 			BootJavaHoverProvider hoverProvider,
-			RunningAppProvider runningAppProvider,
 			JavaProjectFinder projectFinder,
 			ProjectObserver projectChanges,
-			Duration pollingInterval
-	) {
+			Duration pollingInterval) {
+
 		this.POLLING_INTERVAL_MILLISECONDS = pollingInterval == null ? DEFAULT_INTERVAL.toMillis() : pollingInterval.toMillis();
 		this.server = server;
 		this.hoverProvider = hoverProvider;
@@ -176,9 +174,6 @@ public class SpringLiveHoverWatchdog {
 					SpringBootApp[] matchingApps = RunningAppMatcher.getAllMatchingApps(cachedApps, project).toArray(new SpringBootApp[0]);
 					update(docURI, project, matchingApps);
 				}
-
-				this.hoverProvider.setRunningSpringApps(cachedApps);
-
 			} catch (Exception e) {
 				logger.error("", e);
 			}
@@ -193,7 +188,7 @@ public class SpringLiveHoverWatchdog {
 				if (hasCurrentRunningBootApps) {
 					TextDocument doc = this.server.getTextDocumentService().get(docURI);
 					if (doc != null) {
-						CodeLens[] infos = this.hoverProvider.getLiveHoverHints(doc, project, runningBootApps);
+						CodeLens[] infos = this.hoverProvider.getLiveHoverHints(doc, project);
 						publishLiveHints(docURI, infos);
 					}
 				}

@@ -15,9 +15,10 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Properties;
 
-import org.springframework.ide.vscode.commons.boot.app.cli.livebean.LiveBeansModel;
-import org.springframework.ide.vscode.commons.boot.app.cli.liveproperties.LiveProperties;
-import org.springframework.ide.vscode.commons.boot.app.cli.requestmappings.RequestMapping;
+import org.springframework.ide.vscode.boot.java.livehover.v2.LiveBeansModel;
+import org.springframework.ide.vscode.boot.java.livehover.v2.LiveConditional;
+import org.springframework.ide.vscode.boot.java.livehover.v2.LiveProperties;
+import org.springframework.ide.vscode.boot.java.livehover.v2.RequestMapping;
 
 import reactor.core.Disposable;
 

@@ -8,7 +8,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.commons.boot.app.cli.liveproperties;
+package org.springframework.ide.vscode.boot.java.livehover.v2;
 
 import java.util.List;
 
@@ -18,7 +18,6 @@ public class LivePropertySource {
 
 	private final List<LiveProperty> properties;
 	private final String sourceName;
-
 
 	public LivePropertySource(String sourceName, List<LiveProperty> properties) {
 		this.sourceName = sourceName;
