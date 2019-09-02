@@ -409,20 +409,10 @@
 					<url>https://download.eclipse.org/staging/2019-09/</url>
 				</repository>
 				<repository>
-					<id>2019-09-platform-i-builds</id>
-					<layout>p2</layout>
-					<url>https://download.eclipse.org/eclipse/updates/4.13-I-builds/</url>
-				</repository>
-				<repository>
-					<id>orbit-i-build</id>
-					<layout>p2</layout>
-					<url>https://download.eclipse.org/tools/orbit/downloads/drops/I20190812210208/repository</url>
-				</repository>
-<!--				<repository>
 					<id>orbit-s-build</id>
 					<layout>p2</layout>
-					<url>https://download.eclipse.org/tools/orbit/downloads/drops/S20190726194335/repository</url>
-				</repository> -->
+					<url>https://download.eclipse.org/tools/orbit/downloads/drops/S20190827152740/repository</url>
+				</repository>
 				<repository>
 					<id>latest-m2e</id>
 					<layout>p2</layout>
