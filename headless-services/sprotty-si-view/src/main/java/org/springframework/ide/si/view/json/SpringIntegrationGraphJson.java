@@ -34,6 +34,7 @@ public class SpringIntegrationGraphJson extends PrettyJson {
 	}
 	public static SpringIntegrationGraphJson readFrom(URL resource) throws IOException {
 		String jsonString = IOUtils.toString(resource);
+		System.out.println(jsonString);
 		return new Gson().fromJson(jsonString, SpringIntegrationGraphJson.class);
 	}
 }

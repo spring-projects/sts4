@@ -1,12 +1,13 @@
 package org.springframework.ide.si.view.json;
 
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 
 public class SpringIntegrationNodeJson extends PrettyJson {
 
 	private int nodeId;
 	private String name;
-	private JsonObject stats;
+	private JsonElement stats;
 	private String componentType;
 	private JsonObject properties;
 	
@@ -22,7 +23,7 @@ public class SpringIntegrationNodeJson extends PrettyJson {
 	public void setName(String name) {
 		this.name = name;
 	}
-	public JsonObject getStats() {
+	public JsonElement getStats() {
 		return stats;
 	}
 	public void setStats(JsonObject stats) {

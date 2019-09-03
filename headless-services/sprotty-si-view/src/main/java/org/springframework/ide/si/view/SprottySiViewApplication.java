@@ -15,9 +15,7 @@ public class SprottySiViewApplication {
 	
 	@Bean
 	GraphDataProvider graphDataProvider() {
-//		return new MockGraphData();
 //		return GraphDataProvider.fromClasspathResource("/sample.json");
-		
 		return GraphDataProvider.fromUrlOption("target");
 	}
 
@@ -26,8 +24,8 @@ public class SprottySiViewApplication {
 		SprottyLayoutConfigurator configurator = new SprottyLayoutConfigurator();
 		
 		IPropertyHolder holder = configurator.configureByType(SIDiagramGenerator.TYPE_INTEGRATION_GRAPH);
-		holder.setProperty(LayeredOptions.SPACING_COMPONENT_COMPONENT, 40.0);
-		holder.setProperty(LayeredOptions.SPACING_NODE_NODE_BETWEEN_LAYERS, 40.0);
+		holder.setProperty(LayeredOptions.SPACING_COMPONENT_COMPONENT, 60.0);
+		holder.setProperty(LayeredOptions.SPACING_NODE_NODE_BETWEEN_LAYERS, 60.0);
 		
 		holder = configurator.configureByType("output-port");
 		holder.setProperty(LayeredOptions.PORT_SIDE, PortSide.EAST);
