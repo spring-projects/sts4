@@ -53,15 +53,15 @@ public class SIDiagramGenerator implements DiagramGenerator {
 	private static final ImmutableSet<String> channelTypes = ImmutableSet.of(
 			"channel",
 			"publish-subscribe-channel"
-	);
-	
+			);
+
 	private String labelProperty = "stats.sendCount";
-	
+
 	@Autowired
 	GraphDataProvider graphDataProvider;
-	
+
 	Gson gson = new GsonBuilder().setPrettyPrinting().create();
-	
+
 	Map<String, SpringIntegrationNodeJson> nodesById = new HashMap<>();
 
 	/**
@@ -69,9 +69,9 @@ public class SIDiagramGenerator implements DiagramGenerator {
 	 * model produced the last time 'generateModel' was called.
 	 */
 	public synchronized SpringIntegrationNodeJson getNodeData(String nodeId) {
-		 return nodesById.get(nodeId);
+		return nodesById.get(nodeId);
 	}
-	
+
 	@Override
 	public synchronized SModelRoot generateModel(String clientId, RequestModelAction modelRequest) {
 		nodesById.clear();
@@ -88,10 +88,10 @@ public class SIDiagramGenerator implements DiagramGenerator {
 		SGraph graph = new SGraph();
 		graph.setId("root");
 		graph.setType(TYPE_INTEGRATION_GRAPH);
-		
+
 		List<SModelElement> children = new ArrayList<>();
 		graph.setChildren(children);
-		
+
 		for (SpringIntegrationNodeJson node : json.getNodes()) {
 			String id = node.getNodeId()+"";
 			String name = node.getName();
@@ -112,25 +112,25 @@ public class SIDiagramGenerator implements DiagramGenerator {
 			String id = "l"+(linkId++);
 			String sourceId = link.getFrom()+"";
 			String targetId = link.getTo()+"";
-			
-			
+
+
 			SEdge e = createEdge(id, sourceId, targetId, getEdgeLabel(nodesById.get(sourceId)), link.getType());
 			children.add(e);
 		}
-//		
-//		LiveBeansModel beansModel = app.getBeans();
-//		for (String targetBeanId : beansModel.getBeanNames()) {
-//			for (LiveBean bean : beansModel.getBeansOfName(targetBeanId)) {
-//				graphChildren.add(createBean(bean.getId(), bean.getShortName(), new Point(), new Dimension()));
-//			}
-//			for (LiveBean sourceBean : beansModel.getBeansDependingOn(targetBeanId)) {
-//				graphChildren.add(createEdge(sourceBean.getId() + " " + targetBeanId, sourceBean.getId(), targetBeanId));
-//			}
-//		}
+		//		
+		//		LiveBeansModel beansModel = app.getBeans();
+		//		for (String targetBeanId : beansModel.getBeanNames()) {
+		//			for (LiveBean bean : beansModel.getBeansOfName(targetBeanId)) {
+		//				graphChildren.add(createBean(bean.getId(), bean.getShortName(), new Point(), new Dimension()));
+		//			}
+		//			for (LiveBean sourceBean : beansModel.getBeansDependingOn(targetBeanId)) {
+		//				graphChildren.add(createEdge(sourceBean.getId() + " " + targetBeanId, sourceBean.getId(), targetBeanId));
+		//			}
+		//		}
 
 		return graph;
 	}
-	
+
 	private String getEdgeLabel(SpringIntegrationNodeJson springIntegrationNode) {
 		JsonElement json = gson.toJsonTree(springIntegrationNode);
 		for (String prop : labelProperty.split("\\.")) {
@@ -150,45 +150,55 @@ public class SIDiagramGenerator implements DiagramGenerator {
 
 	private static SNode createNode(String id, String labelText, String type) {
 		SNode node = new SNode();
-	    node.setId(id);
-	    node.setType("node:"+type);
-	    node.setLayout("vbox");
-	    node.setPosition(new Point(Math.random() * 1024, Math.random() * 768));
-	    node.setSize(new Dimension(80, 80));
-	    node.setChildren(new ArrayList<>());
-	    centerNode(node);
-	    
-	    SCompartment compartment = new SCompartment();
-	    compartment.setId(id + "-comp");
-	    compartment.setType("compartment");
-	    compartment.setLayout("vbox");
-	    compartment.setChildren(new ArrayList<>());
-	    centerNode(compartment);
-	    
-	    SLabel label = new SLabel();
-	    label.setId(id + "-label");
-	    label.setType("node:label");
-	    label.setText(labelText);
-	    centerNode(label);
-	    compartment.getChildren().add(label);
+		node.setId(id);
+		node.setType("node:"+type);
+		node.setLayout("hbox");
+		node.setPosition(new Point(Math.random() * 1024, Math.random() * 768));
+		node.setSize(new Dimension(80, 80));
+		node.setChildren(new ArrayList<>());
+		centerNode(node);
 
-	    node.getChildren().add(compartment);
-	    
-	    SPort outputPort = new SPort();
-	    outputPort.setType("output-port");
-	    outputPort.setId("output-port-" + id);
-	    outputPort.setSize(new Dimension(10,10));	    
-	    node.getChildren().add(outputPort);
-	    
-	    SPort inputPort = new SPort();
-	    inputPort.setType("input-port");
-	    inputPort.setId("input-port-" + id);
-	    inputPort.setSize(new Dimension(10,10));
-	    node.getChildren().add(inputPort);
-	    	    
-	    return node;
+		SCompartment compartment = new SCompartment();
+		node.getChildren().add(compartment);
+		compartment.setId(id + "-comp");
+		compartment.setType("compartment");
+		compartment.setLayout("vbox");
+		compartment.setChildren(new ArrayList<>());
+		centerNode(compartment);
+
+		{
+			SLabel label = new SLabel();
+			label.setId(id + "-label");
+			label.setType("node:label");
+			label.setText(labelText);
+			centerNode(label);
+			compartment.getChildren().add(label);
+		}
+		{
+			SLabel label = new SLabel();
+			label.setId(id + "-label-test");
+			label.setType("node:label");
+			label.setText("s");
+			centerNode(label);
+			compartment.getChildren().add(label);
+		}
+
+
+		SPort outputPort = new SPort();
+		outputPort.setType("output-port");
+		outputPort.setId("output-port-" + id);
+		outputPort.setSize(new Dimension(10,10));	    
+		node.getChildren().add(outputPort);
+
+		SPort inputPort = new SPort();
+		inputPort.setType("input-port");
+		inputPort.setId("input-port-" + id);
+		inputPort.setSize(new Dimension(10,10));
+		node.getChildren().add(inputPort);
+
+		return node;
 	}
-	
+
 	private static void centerNode(SShapeElement shape) {
 		LayoutOptions options = shape.getLayoutOptions();
 		if (options == null) {
@@ -198,14 +208,14 @@ public class SIDiagramGenerator implements DiagramGenerator {
 		options.setHAlign("center");
 		options.setVAlign("center");
 	}
-	
+
 	private static SNode createIntegrationNode(String id, String labelText) {
 		SNode node = createNode(id, labelText, "integration_node");
 		LayoutOptions layoutOptions = new LayoutOptions();
 		layoutOptions.setMinHeight(NODE_MIN_HEIGHT);
 		layoutOptions.setMinWidth(MIN_WIDTH);
 		node.setLayoutOptions(layoutOptions);
-		
+
 		SPort errorPort = new SPort();
 		errorPort.setType("error-port");
 		errorPort.setId("error-port-" + id);
@@ -214,17 +224,17 @@ public class SIDiagramGenerator implements DiagramGenerator {
 
 		return node;
 	}
-	
+
 	private static SNode createChannelNode(String id, String labelText) {
 		SNode node = createNode(id, labelText, "channel");
 		LayoutOptions layoutOptions = new LayoutOptions();
-//		layoutOptions.setMinHeight(CHANNEL_HEIGHT);
+		//		layoutOptions.setMinHeight(CHANNEL_HEIGHT);
 		layoutOptions.setMinWidth(MIN_WIDTH);
 		node.setLayoutOptions(layoutOptions);
-		
+
 		return node;
 	}
-	
+
 	private static String visualType(String type) {
 		if (channelTypes.contains(type)) {
 			return "channel";
@@ -243,7 +253,7 @@ public class SIDiagramGenerator implements DiagramGenerator {
 			edge.setSourceId("output-port-" + sourceId);
 		}
 		edge.setTargetId("input-port-" + targetId);
-		
+
 		if (StringUtil.hasText(labelStr)) {
 			SLabel label = new SLabel();
 			label.setType("node:label");
@@ -254,13 +264,13 @@ public class SIDiagramGenerator implements DiagramGenerator {
 			label.setEdgePlacement(edgePlacement);
 			label.setId(id + "-label1");
 			label.setText(labelStr);
-			
+
 			label.setPosition(new Point(20,30));
 			ArrayList<SModelElement> children = new ArrayList<>();
 			children.add(label);
 			edge.setChildren(children);
 		}
-		
+
 		return edge;
 	}
 
