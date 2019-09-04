@@ -11,7 +11,6 @@ import org.eclipse.sprotty.EdgePlacement.Side;
 import org.eclipse.sprotty.LayoutOptions;
 import org.eclipse.sprotty.Point;
 import org.eclipse.sprotty.RequestModelAction;
-import org.eclipse.sprotty.SCompartment;
 import org.eclipse.sprotty.SEdge;
 import org.eclipse.sprotty.SGraph;
 import org.eclipse.sprotty.SLabel;
@@ -40,11 +39,9 @@ import com.google.gson.JsonObject;
 @Component
 public class SIDiagramGenerator implements DiagramGenerator {
 
+	private static final double INTEGRATION_NODE_VERTICAL_PADDING = 20.0;
+
 	static final String TYPE_INTEGRATION_GRAPH = "graph";
-
-	private static final double CHANNEL_HEIGHT = 40D;
-
-	private static final double NODE_MIN_HEIGHT = 80D;
 
 	private static final double MIN_WIDTH = 120D;
 
@@ -113,20 +110,9 @@ public class SIDiagramGenerator implements DiagramGenerator {
 			String sourceId = link.getFrom()+"";
 			String targetId = link.getTo()+"";
 
-
 			SEdge e = createEdge(id, sourceId, targetId, getEdgeLabel(nodesById.get(sourceId)), link.getType());
 			children.add(e);
 		}
-		//		
-		//		LiveBeansModel beansModel = app.getBeans();
-		//		for (String targetBeanId : beansModel.getBeanNames()) {
-		//			for (LiveBean bean : beansModel.getBeansOfName(targetBeanId)) {
-		//				graphChildren.add(createBean(bean.getId(), bean.getShortName(), new Point(), new Dimension()));
-		//			}
-		//			for (LiveBean sourceBean : beansModel.getBeansDependingOn(targetBeanId)) {
-		//				graphChildren.add(createEdge(sourceBean.getId() + " " + targetBeanId, sourceBean.getId(), targetBeanId));
-		//			}
-		//		}
 
 		return graph;
 	}
@@ -152,19 +138,10 @@ public class SIDiagramGenerator implements DiagramGenerator {
 		SNode node = new SNode();
 		node.setId(id);
 		node.setType("node:"+type);
-		node.setLayout("hbox");
-		node.setPosition(new Point(Math.random() * 1024, Math.random() * 768));
+		node.setLayout("vbox");
 		node.setSize(new Dimension(80, 80));
 		node.setChildren(new ArrayList<>());
 		centerNode(node);
-
-		SCompartment compartment = new SCompartment();
-		node.getChildren().add(compartment);
-		compartment.setId(id + "-comp");
-		compartment.setType("compartment");
-		compartment.setLayout("vbox");
-		compartment.setChildren(new ArrayList<>());
-		centerNode(compartment);
 
 		{
 			SLabel label = new SLabel();
@@ -172,17 +149,8 @@ public class SIDiagramGenerator implements DiagramGenerator {
 			label.setType("node:label");
 			label.setText(labelText);
 			centerNode(label);
-			compartment.getChildren().add(label);
+			node.getChildren().add(label);
 		}
-		{
-			SLabel label = new SLabel();
-			label.setId(id + "-label-test");
-			label.setType("node:label");
-			label.setText("s");
-			centerNode(label);
-			compartment.getChildren().add(label);
-		}
-
 
 		SPort outputPort = new SPort();
 		outputPort.setType("output-port");
@@ -208,12 +176,13 @@ public class SIDiagramGenerator implements DiagramGenerator {
 		options.setHAlign("center");
 		options.setVAlign("center");
 	}
-
+	
 	private static SNode createIntegrationNode(String id, String labelText) {
 		SNode node = createNode(id, labelText, "integration_node");
 		LayoutOptions layoutOptions = new LayoutOptions();
-		layoutOptions.setMinHeight(NODE_MIN_HEIGHT);
 		layoutOptions.setMinWidth(MIN_WIDTH);
+		layoutOptions.setPaddingBottom(INTEGRATION_NODE_VERTICAL_PADDING);
+		layoutOptions.setPaddingTop(20.0);
 		node.setLayoutOptions(layoutOptions);
 
 		SPort errorPort = new SPort();

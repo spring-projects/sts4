@@ -1,5 +1,6 @@
 package org.springframework.ide.si.view;
 
+import org.eclipse.elk.alg.layered.options.FixedAlignment;
 import org.eclipse.elk.alg.layered.options.LayeredOptions;
 import org.eclipse.elk.core.options.PortConstraints;
 import org.eclipse.elk.core.options.PortSide;
@@ -8,7 +9,6 @@ import org.eclipse.sprotty.layout.SprottyLayoutConfigurator;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.annotation.Bean;
-import org.springframework.ide.si.view.json.SpringIntegrationGraphJson;
 
 @SpringBootApplication
 public class SprottySiViewApplication {
@@ -26,7 +26,8 @@ public class SprottySiViewApplication {
 		IPropertyHolder holder = configurator.configureByType(SIDiagramGenerator.TYPE_INTEGRATION_GRAPH);
 		holder.setProperty(LayeredOptions.SPACING_COMPONENT_COMPONENT, 60.0);
 		holder.setProperty(LayeredOptions.SPACING_NODE_NODE_BETWEEN_LAYERS, 60.0);
-		
+		holder.setProperty(LayeredOptions.NODE_PLACEMENT_BK_FIXED_ALIGNMENT, FixedAlignment.BALANCED);
+
 		holder = configurator.configureByType("output-port");
 		holder.setProperty(LayeredOptions.PORT_SIDE, PortSide.EAST);
 		

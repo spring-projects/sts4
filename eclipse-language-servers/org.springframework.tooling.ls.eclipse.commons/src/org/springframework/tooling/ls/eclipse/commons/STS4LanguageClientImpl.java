@@ -96,6 +96,7 @@ import org.springframework.tooling.ls.eclipse.commons.preferences.PreferenceCons
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.gson.JsonObject;
 
 @SuppressWarnings("restriction")
 public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4LanguageClient {
@@ -538,6 +539,10 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 				return Collections.emptyList();
 			}
 		});
+	}
+
+	@Override
+	public void sprottyMessage(JsonObject message) {
 	}
 
 }

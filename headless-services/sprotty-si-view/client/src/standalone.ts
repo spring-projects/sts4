@@ -51,9 +51,12 @@ export default function runStandalone() {
     }
 
     // Button features
-    document.getElementById('refresh')!.addEventListener('click', () => {
-        dispatcher.dispatch(requestModelAction());
-    });
+    const refreshButton = document.getElementById('refresh');
+    if (refreshButton) {
+        refreshButton.addEventListener('click', () => {
+            dispatcher.dispatch(requestModelAction());
+        });
+    }
 
     function getOptionFromDom(att: string) : string | null {
         const appDiv = document.getElementById('sprotty-app');
@@ -66,7 +69,7 @@ export default function runStandalone() {
     function getTarget() : string {
         const input = <HTMLInputElement>document.getElementById('target-url');
         const target = input && input.value;
-        return target || 'target-missing';
+        return target || /*'target-missing'*/'http://localhost:8080/integration';
     }
 
     function requestModelAction() : RequestModelAction {

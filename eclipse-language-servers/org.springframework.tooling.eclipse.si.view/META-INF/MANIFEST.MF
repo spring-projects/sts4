@@ -1,0 +1,9 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Spring Integration View
+Bundle-SymbolicName: org.springframework.tooling.eclipse.si.view;singleton:=true
+Bundle-Version: 4.4.0.qualifier
+Automatic-Module-Name: org.springframework.tooling.eclipse.si.view
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime

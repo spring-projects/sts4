@@ -51,7 +51,7 @@ import {
     HtmlRoot,
     PreRenderedView,
     PreRenderedElement,
-    labelEditModule, edgeEditModule, RectangularPort
+    labelEditModule, edgeEditModule, RectangularPort, LayoutRegistry, VBoxLayouter, HBoxLayouter
 } from "sprotty";
 import {
     IntegrationNodeView,
@@ -65,6 +65,7 @@ import {
 import fadeModule from "sprotty/lib/features/fade/di.config";
 import buttonModule from "sprotty/lib/features/button/di.config";
 import expandModule from "sprotty/lib/features/expand/di.config";
+import {MyHBoxLayouter, MyVBoxLayouter} from "./layout";
 
 export enum TransportMedium {
     None,
@@ -113,5 +114,13 @@ export default (transport: TransportMedium, clientId: string) => {
         viewportModule, fadeModule, hoverModule, exportModule, expandModule, buttonModule,
         updateModule, graphModule, routingModule, edgeEditModule, edgeLayoutModule, labelEditModule,
         modelSourceModule, integrationGaphModule);
+
+    const layoutRegistry = container.get<LayoutRegistry>(TYPES.LayoutRegistry);
+    layoutRegistry.deregister(VBoxLayouter.KIND);
+    layoutRegistry.register(VBoxLayouter.KIND, new MyVBoxLayouter());
+    layoutRegistry.deregister(HBoxLayouter.KIND);
+    layoutRegistry.register(HBoxLayouter.KIND, new MyHBoxLayouter());
+
+
     return container;
 };
