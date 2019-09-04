@@ -1,0 +1,806 @@
+{
+  "contentDescriptor": {
+    "providerVersion": "5.1.7.RELEASE",
+    "providerFormatVersion": 1.0,
+    "provider": "spring-integration"
+  },
+  "nodes": [
+    {
+      "nodeId": 1,
+      "name": "orders",
+      "stats": {
+        "countsEnabled": true,
+        "statsEnabled": true,
+        "loggingEnabled": true,
+        "sendCount": 1561,
+        "sendErrorCount": 0,
+        "timeSinceLastSend": 1429.0248509645462,
+        "meanSendRate": 0.19872301370567233,
+        "meanErrorRate": 0.0,
+        "meanErrorRatio": 1.1102230246251565E-16,
+        "meanSendDuration": 5003.650878194805,
+        "minSendDuration": 0.15412,
+        "maxSendDuration": 5014.799534,
+        "standardDeviationSendDuration": 1.363640363553712,
+        "sendDuration": {
+          "count": 1560,
+          "min": 0.15412,
+          "max": 5014.799534,
+          "mean": 5003.650878194805,
+          "standardDeviation": 1.363640363553712,
+          "countLong": 1560
+        },
+        "sendRate": {
+          "count": 1561,
+          "min": 2.0863598585128785E-4,
+          "max": 5.0149249210357665,
+          "mean": 0.19872298170154085,
+          "standardDeviation": 6.1696431014795805E-6,
+          "countLong": 1561
+        },
+        "errorRate": {
+          "count": 0,
+          "min": 0.0,
+          "max": 0.0,
+          "mean": 0.0,
+          "standardDeviation": 0.0,
+          "countLong": 0
+        }
+      },
+      "componentType": "channel",
+      "properties": {}
+    },
+    {
+      "nodeId": 2,
+      "name": "drinks",
+      "stats": {
+        "countsEnabled": true,
+        "statsEnabled": true,
+        "loggingEnabled": true,
+        "sendCount": 3121,
+        "sendErrorCount": 0,
+        "timeSinceLastSend": 1429.0787830352783,
+        "meanSendRate": 3.9946284090990978,
+        "meanErrorRate": 0.0,
+        "meanErrorRatio": 0.0,
+        "meanSendDuration": 2370.2359079638513,
+        "minSendDuration": 0.011644,
+        "maxSendDuration": 5014.652454,
+        "standardDeviationSendDuration": 2498.428610188665,
+        "sendDuration": {
+          "count": 3120,
+          "min": 0.011644,
+          "max": 5014.652454,
+          "mean": 2370.2359079638513,
+          "standardDeviation": 2498.428610188665,
+          "countLong": 3120
+        },
+        "sendRate": {
+          "count": 3121,
+          "min": 6.322205066680909E-5,
+          "max": 5.014701367020607,
+          "mean": 3.9946212584416454,
+          "standardDeviation": 162.60439431075358,
+          "countLong": 3121
+        },
+        "errorRate": {
+          "count": 0,
+          "min": 0.0,
+          "max": 0.0,
+          "mean": 0.0,
+          "standardDeviation": 0.0,
+          "countLong": 0
+        }
+      },
+      "componentType": "channel",
+      "properties": {}
+    },
+    {
+      "nodeId": 3,
+      "name": "coldDrinks",
+      "stats": {
+        "countsEnabled": true,
+        "statsEnabled": true,
+        "loggingEnabled": true,
+        "sendCount": 1560,
+        "sendErrorCount": 0,
+        "timeSinceLastSend": 1429.1956920027733,
+        "meanSendRate": 0.19872288631751323,
+        "meanErrorRate": 0.0,
+        "meanErrorRatio": 1.1102230246251565E-16,
+        "meanSendDuration": 0.0035419568681405956,
+        "minSendDuration": 0.00139,
+        "maxSendDuration": 0.111822,
+        "standardDeviationSendDuration": 6.359127572244061E-4,
+        "sendDuration": {
+          "count": 1560,
+          "min": 0.00139,
+          "max": 0.111822,
+          "mean": 0.0035419568681405956,
+          "standardDeviation": 6.359127572244061E-4,
+          "countLong": 1560
+        },
+        "sendRate": {
+          "count": 1560,
+          "min": 2.0191603899002075E-4,
+          "max": 5.014931671023369,
+          "mean": 0.1987228658502675,
+          "standardDeviation": 6.190136782228871E-6,
+          "countLong": 1560
+        },
+        "errorRate": {
+          "count": 0,
+          "min": 0.0,
+          "max": 0.0,
+          "mean": 0.0,
+          "standardDeviation": 0.0,
+          "countLong": 0
+        }
+      },
+      "componentType": "channel",
+      "properties": {}
+    },
+    {
+      "nodeId": 4,
+      "name": "hotDrinks",
+      "stats": {
+        "countsEnabled": true,
+        "statsEnabled": true,
+        "loggingEnabled": true,
+        "sendCount": 1561,
+        "sendErrorCount": 0,
+        "timeSinceLastSend": 1429.1548599600792,
+        "meanSendRate": 0.19872291318417598,
+        "meanErrorRate": 0.0,
+        "meanErrorRatio": 0.0,
+        "meanSendDuration": 5003.590805525635,
+        "minSendDuration": 0.008038,
+        "maxSendDuration": 5014.631164,
+        "standardDeviationSendDuration": 1.3643270200570699,
+        "sendDuration": {
+          "count": 1560,
+          "min": 0.008038,
+          "max": 5014.631164,
+          "mean": 5003.590805525635,
+          "standardDeviation": 1.3643270200570699,
+          "countLong": 1560
+        },
+        "sendRate": {
+          "count": 1561,
+          "min": 2.0728200674057006E-4,
+          "max": 5.014925371050834,
+          "mean": 0.19872289389054654,
+          "standardDeviation": 6.164594582431265E-6,
+          "countLong": 1561
+        },
+        "errorRate": {
+          "count": 0,
+          "min": 0.0,
+          "max": 0.0,
+          "mean": 0.0,
+          "standardDeviation": 0.0,
+          "countLong": 0
+        }
+      },
+      "componentType": "channel",
+      "properties": {}
+    },
+    {
+      "nodeId": 5,
+      "name": "coldDrinkBarista",
+      "stats": {
+        "countsEnabled": true,
+        "statsEnabled": true,
+        "loggingEnabled": true,
+        "sendCount": 1560,
+        "sendErrorCount": 0,
+        "timeSinceLastSend": 881.5405940413475,
+        "meanSendRate": 0.19873440540639117,
+        "meanErrorRate": 0.0,
+        "meanErrorRatio": 0.0,
+        "meanSendDuration": 1003.5126326006912,
+        "minSendDuration": 1000.228565,
+        "maxSendDuration": 1112.043471,
+        "standardDeviationSendDuration": 1.3022780189205296,
+        "sendDuration": {
+          "count": 1559,
+          "min": 1000.228565,
+          "max": 1112.043471,
+          "mean": 1003.5126326006912,
+          "standardDeviation": 1.3022780189205296,
+          "countLong": 1559
+        },
+        "sendRate": {
+          "count": 1560,
+          "min": 1.0020495340228082,
+          "max": 5.040197880983353,
+          "mean": 0.19873438120993936,
+          "standardDeviation": 1.6047682169374947E-5,
+          "countLong": 1560
+        },
+        "errorRate": {
+          "count": 0,
+          "min": 0.0,
+          "max": 0.0,
+          "mean": 0.0,
+          "standardDeviation": 0.0,
+          "countLong": 0
+        }
+      },
+      "componentType": "channel",
+      "properties": {}
+    },
+    {
+      "nodeId": 6,
+      "name": "hotDrinkBarista",
+      "stats": {
+        "countsEnabled": true,
+        "statsEnabled": true,
+        "loggingEnabled": true,
+        "sendCount": 1550,
+        "sendErrorCount": 0,
+        "timeSinceLastSend": 1429.3890929818153,
+        "meanSendRate": 0.1987227278958619,
+        "meanErrorRate": 0.0,
+        "meanErrorRatio": 0.0,
+        "meanSendDuration": 5003.709062876814,
+        "minSendDuration": 5000.359221,
+        "maxSendDuration": 5012.99843,
+        "standardDeviationSendDuration": 1.3690899772908132,
+        "sendDuration": {
+          "count": 1549,
+          "min": 5000.359221,
+          "max": 5012.99843,
+          "mean": 5003.709062876814,
+          "standardDeviation": 1.3690899772908132,
+          "countLong": 1549
+        },
+        "sendRate": {
+          "count": 1550,
+          "min": 5.000380456984043,
+          "max": 5.013030328035355,
+          "mean": 0.19872269111971524,
+          "standardDeviation": 6.1998210245207215E-6,
+          "countLong": 1550
+        },
+        "errorRate": {
+          "count": 0,
+          "min": 0.0,
+          "max": 0.0,
+          "mean": 0.0,
+          "standardDeviation": 0.0,
+          "countLong": 0
+        }
+      },
+      "componentType": "channel",
+      "properties": {}
+    },
+    {
+      "nodeId": 7,
+      "name": "preparedDrinks",
+      "stats": {
+        "countsEnabled": true,
+        "statsEnabled": true,
+        "loggingEnabled": true,
+        "sendCount": 3108,
+        "sendErrorCount": 0,
+        "timeSinceLastSend": 1429.894403040409,
+        "meanSendRate": 0.3918871560015905,
+        "meanErrorRate": 0.0,
+        "meanErrorRatio": 1.1102230246251565E-16,
+        "meanSendDuration": 0.33589069331477384,
+        "minSendDuration": 0.076157,
+        "maxSendDuration": 7.546004,
+        "standardDeviationSendDuration": 0.23511089412174876,
+        "sendDuration": {
+          "count": 3108,
+          "min": 0.076157,
+          "max": 7.546004,
+          "mean": 0.33589069331477384,
+          "standardDeviation": 0.23511089412174876,
+          "countLong": 3108
+        },
+        "sendRate": {
+          "count": 3108,
+          "min": 0.022141517996788027,
+          "max": 4.002905887961387,
+          "mean": 0.3918870708409155,
+          "standardDeviation": 0.005819420767766574,
+          "countLong": 3108
+        },
+        "errorRate": {
+          "count": 0,
+          "min": 0.0,
+          "max": 0.0,
+          "mean": 0.0,
+          "standardDeviation": 0.0,
+          "countLong": 0
+        }
+      },
+      "componentType": "channel",
+      "properties": {}
+    },
+    {
+      "nodeId": 8,
+      "name": "deliveries",
+      "stats": {
+        "countsEnabled": true,
+        "statsEnabled": true,
+        "loggingEnabled": true,
+        "sendCount": 1549,
+        "sendErrorCount": 0,
+        "timeSinceLastSend": 1429.6123870015144,
+        "meanSendRate": 0.19872256936926955,
+        "meanErrorRate": 0.0,
+        "meanErrorRatio": 0.0,
+        "meanSendDuration": 0.04190433049833542,
+        "minSendDuration": 0.021149,
+        "maxSendDuration": 0.440369,
+        "standardDeviationSendDuration": 0.012591642596904994,
+        "sendDuration": {
+          "count": 1549,
+          "min": 0.021149,
+          "max": 0.440369,
+          "mean": 0.04190433049833542,
+          "standardDeviation": 0.012591642596904994,
+          "countLong": 1549
+        },
+        "sendRate": {
+          "count": 1549,
+          "min": 5.000379998981953,
+          "max": 5.113779273986816,
+          "mean": 0.1987225514460575,
+          "standardDeviation": 6.19586783811112E-6,
+          "countLong": 1549
+        },
+        "errorRate": {
+          "count": 0,
+          "min": 0.0,
+          "max": 0.0,
+          "mean": 0.0,
+          "standardDeviation": 0.0,
+          "countLong": 0
+        }
+      },
+      "componentType": "channel",
+      "properties": {}
+    },
+    {
+      "nodeId": 9,
+      "name": "nullChannel",
+      "stats": {
+        "countsEnabled": true,
+        "statsEnabled": true,
+        "loggingEnabled": true,
+        "sendCount": 0,
+        "sendErrorCount": 0,
+        "timeSinceLastSend": 0.0,
+        "meanSendRate": 0.0,
+        "meanErrorRate": 0.0,
+        "meanErrorRatio": 0.0,
+        "meanSendDuration": 0.0,
+        "minSendDuration": 0.0,
+        "maxSendDuration": 0.0,
+        "standardDeviationSendDuration": 0.0,
+        "sendDuration": {
+          "count": 0,
+          "min": 0.0,
+          "max": 0.0,
+          "mean": 0.0,
+          "standardDeviation": 0.0,
+          "countLong": 0
+        },
+        "sendRate": {
+          "count": 0,
+          "min": 0.0,
+          "max": 0.0,
+          "mean": 0.0,
+          "standardDeviation": 0.0,
+          "countLong": 0
+        },
+        "errorRate": {
+          "count": 0,
+          "min": 0.0,
+          "max": 0.0,
+          "mean": 0.0,
+          "standardDeviation": 0.0,
+          "countLong": 0
+        }
+      },
+      "componentType": "null-channel",
+      "properties": {}
+    },
+    {
+      "nodeId": 10,
+      "name": "errorChannel",
+      "stats": {
+        "countsEnabled": true,
+        "statsEnabled": true,
+        "loggingEnabled": true,
+        "sendCount": 0,
+        "sendErrorCount": 0,
+        "timeSinceLastSend": 0.0,
+        "meanSendRate": 0.0,
+        "meanErrorRate": 0.0,
+        "meanErrorRatio": 0.0,
+        "meanSendDuration": 0.0,
+        "minSendDuration": 0.0,
+        "maxSendDuration": 0.0,
+        "standardDeviationSendDuration": 0.0,
+        "sendDuration": {
+          "count": 0,
+          "min": 0.0,
+          "max": 0.0,
+          "mean": 0.0,
+          "standardDeviation": 0.0,
+          "countLong": 0
+        },
+        "sendRate": {
+          "count": 0,
+          "min": 0.0,
+          "max": 0.0,
+          "mean": 0.0,
+          "standardDeviation": 0.0,
+          "countLong": 0
+        },
+        "errorRate": {
+          "count": 0,
+          "min": 0.0,
+          "max": 0.0,
+          "mean": 0.0,
+          "standardDeviation": 0.0,
+          "countLong": 0
+        }
+      },
+      "componentType": "publish-subscribe-channel",
+      "properties": {}
+    },
+    {
+      "nodeId": 11,
+      "name": "cafe.placeOrder(com.coffee.barista.model.Order)",
+      "stats": null,
+      "componentType": "gateway",
+      "properties": {},
+      "output": "orders",
+      "errors": null
+    },
+    {
+      "nodeId": 12,
+      "name": "org.springframework.integration.config.ConsumerEndpointFactoryBean#0",
+      "stats": {
+        "countsEnabled": true,
+        "statsEnabled": true,
+        "loggingEnabled": true,
+        "handleCount": 1560,
+        "meanDuration": 1003.518562869151,
+        "minDuration": 1000.233368,
+        "maxDuration": 1112.060177,
+        "standardDeviationDuration": 1.3030029550200601,
+        "errorCount": 0,
+        "activeCount": 1,
+        "duration": {
+          "count": 1559,
+          "min": 1000.233368,
+          "max": 1112.060177,
+          "mean": 1003.518562869151,
+          "standardDeviation": 1.3030029550200601,
+          "countLong": 1559
+        }
+      },
+      "componentType": "bridge",
+      "properties": {},
+      "output": "coldDrinkBarista",
+      "input": "coldDrinks",
+      "errors": null
+    },
+    {
+      "nodeId": 13,
+      "name": "org.springframework.integration.config.ConsumerEndpointFactoryBean#1",
+      "stats": {
+        "countsEnabled": true,
+        "statsEnabled": true,
+        "loggingEnabled": true,
+        "handleCount": 1550,
+        "meanDuration": 5003.712236239948,
+        "minDuration": 5000.361081,
+        "maxDuration": 5013.008827,
+        "standardDeviationDuration": 1.368902308120164,
+        "errorCount": 0,
+        "activeCount": 1,
+        "duration": {
+          "count": 1549,
+          "min": 5000.361081,
+          "max": 5013.008827,
+          "mean": 5003.712236239948,
+          "standardDeviation": 1.368902308120164,
+          "countLong": 1549
+        }
+      },
+      "componentType": "bridge",
+      "properties": {},
+      "output": "hotDrinkBarista",
+      "input": "hotDrinks",
+      "errors": null
+    },
+    {
+      "nodeId": 14,
+      "name": "deliveries.adapter",
+      "stats": {
+        "countsEnabled": true,
+        "statsEnabled": true,
+        "loggingEnabled": true,
+        "handleCount": 1549,
+        "meanDuration": 0.03922531460394737,
+        "minDuration": 0.01943,
+        "maxDuration": 0.312978,
+        "standardDeviationDuration": 0.01227842190964896,
+        "errorCount": 0,
+        "activeCount": 0,
+        "duration": {
+          "count": 1549,
+          "min": 0.01943,
+          "max": 0.312978,
+          "mean": 0.03922531460394737,
+          "standardDeviation": 0.01227842190964896,
+          "countLong": 1549
+        }
+      },
+      "componentType": "stream:outbound-channel-adapter(character)",
+      "properties": {},
+      "output": null,
+      "input": "deliveries"
+    },
+    {
+      "nodeId": 15,
+      "name": "_org.springframework.integration.errorLogger",
+      "stats": {
+        "countsEnabled": true,
+        "statsEnabled": true,
+        "loggingEnabled": true,
+        "handleCount": 0,
+        "meanDuration": 0.0,
+        "minDuration": 0.0,
+        "maxDuration": 0.0,
+        "standardDeviationDuration": 0.0,
+        "errorCount": 0,
+        "activeCount": 0,
+        "duration": {
+          "count": 0,
+          "min": 0.0,
+          "max": 0.0,
+          "mean": 0.0,
+          "standardDeviation": 0.0,
+          "countLong": 0
+        }
+      },
+      "componentType": "logging-channel-adapter",
+      "properties": {},
+      "output": null,
+      "input": "errorChannel"
+    },
+    {
+      "nodeId": 16,
+      "name": "barista.prepareHotDrink.serviceActivator",
+      "stats": {
+        "countsEnabled": true,
+        "statsEnabled": true,
+        "loggingEnabled": true,
+        "handleCount": 1550,
+        "meanDuration": 5003.707504086414,
+        "minDuration": 5000.358286,
+        "maxDuration": 5012.995772,
+        "standardDeviationDuration": 1.369033564410027,
+        "errorCount": 0,
+        "activeCount": 1,
+        "duration": {
+          "count": 1549,
+          "min": 5000.358286,
+          "max": 5012.995772,
+          "mean": 5003.707504086414,
+          "standardDeviation": 1.369033564410027,
+          "countLong": 1549
+        }
+      },
+      "componentType": "service-activator",
+      "properties": {},
+      "output": "preparedDrinks",
+      "input": "hotDrinkBarista"
+    },
+    {
+      "nodeId": 17,
+      "name": "barista.prepareColdDrink.serviceActivator",
+      "stats": {
+        "countsEnabled": true,
+        "statsEnabled": true,
+        "loggingEnabled": true,
+        "handleCount": 1560,
+        "meanDuration": 1003.507666352316,
+        "minDuration": 1000.22605,
+        "maxDuration": 1112.031208,
+        "standardDeviationDuration": 1.300996104762833,
+        "errorCount": 0,
+        "activeCount": 1,
+        "duration": {
+          "count": 1559,
+          "min": 1000.22605,
+          "max": 1112.031208,
+          "mean": 1003.507666352316,
+          "standardDeviation": 1.300996104762833,
+          "countLong": 1559
+        }
+      },
+      "componentType": "service-activator",
+      "properties": {},
+      "output": "preparedDrinks",
+      "input": "coldDrinkBarista"
+    },
+    {
+      "nodeId": 18,
+      "name": "drinkRouter.resolveOrderItemChannel.router",
+      "stats": {
+        "countsEnabled": true,
+        "statsEnabled": true,
+        "loggingEnabled": true,
+        "handleCount": 3121,
+        "meanDuration": 2370.2345934783143,
+        "minDuration": 0.010944,
+        "maxDuration": 5014.649644,
+        "standardDeviationDuration": 2498.428529231691,
+        "errorCount": 0,
+        "activeCount": 1,
+        "duration": {
+          "count": 3120,
+          "min": 0.010944,
+          "max": 5014.649644,
+          "mean": 2370.2345934783143,
+          "standardDeviation": 2498.428529231691,
+          "countLong": 3120
+        }
+      },
+      "componentType": "router",
+      "properties": {},
+      "output": null,
+      "input": "drinks",
+      "routes": []
+    },
+    {
+      "nodeId": 19,
+      "name": "orderSplitter.split.splitter",
+      "stats": {
+        "countsEnabled": true,
+        "statsEnabled": true,
+        "loggingEnabled": true,
+        "handleCount": 1561,
+        "meanDuration": 5003.649297328232,
+        "minDuration": 0.146871,
+        "maxDuration": 5014.796199,
+        "standardDeviationDuration": 1.3635449140853426,
+        "errorCount": 0,
+        "activeCount": 1,
+        "duration": {
+          "count": 1560,
+          "min": 0.146871,
+          "max": 5014.796199,
+          "mean": 5003.649297328232,
+          "standardDeviation": 1.3635449140853426,
+          "countLong": 1560
+        }
+      },
+      "componentType": "splitter",
+      "properties": {},
+      "output": "drinks",
+      "input": "orders"
+    },
+    {
+      "nodeId": 20,
+      "name": "waiter.prepareDelivery.aggregator",
+      "stats": {
+        "countsEnabled": true,
+        "statsEnabled": true,
+        "loggingEnabled": true,
+        "handleCount": 3108,
+        "meanDuration": 0.3323798716314965,
+        "minDuration": 0.072916,
+        "maxDuration": 7.539735,
+        "standardDeviationDuration": 0.23517653062568422,
+        "errorCount": 0,
+        "activeCount": 0,
+        "duration": {
+          "count": 3108,
+          "min": 0.072916,
+          "max": 7.539735,
+          "mean": 0.3323798716314965,
+          "standardDeviation": 0.23517653062568422,
+          "countLong": 3108
+        }
+      },
+      "componentType": "aggregator",
+      "properties": {},
+      "output": "deliveries",
+      "input": "preparedDrinks",
+      "discards": "org.springframework.integration.channel.NullChannel@2204e377"
+    }
+  ],
+  "links": [
+    {
+      "from": 11,
+      "to": 1,
+      "type": "output"
+    },
+    {
+      "from": 3,
+      "to": 12,
+      "type": "input"
+    },
+    {
+      "from": 12,
+      "to": 5,
+      "type": "output"
+    },
+    {
+      "from": 4,
+      "to": 13,
+      "type": "input"
+    },
+    {
+      "from": 13,
+      "to": 6,
+      "type": "output"
+    },
+    {
+      "from": 8,
+      "to": 14,
+      "type": "input"
+    },
+    {
+      "from": 10,
+      "to": 15,
+      "type": "input"
+    },
+    {
+      "from": 6,
+      "to": 16,
+      "type": "input"
+    },
+    {
+      "from": 16,
+      "to": 7,
+      "type": "output"
+    },
+    {
+      "from": 5,
+      "to": 17,
+      "type": "input"
+    },
+    {
+      "from": 17,
+      "to": 7,
+      "type": "output"
+    },
+    {
+      "from": 2,
+      "to": 18,
+      "type": "input"
+    },
+    {
+      "from": 1,
+      "to": 19,
+      "type": "input"
+    },
+    {
+      "from": 19,
+      "to": 2,
+      "type": "output"
+    },
+    {
+      "from": 7,
+      "to": 20,
+      "type": "input"
+    },
+    {
+      "from": 20,
+      "to": 8,
+      "type": "output"
+    }
+  ]
+}

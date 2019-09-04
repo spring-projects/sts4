@@ -39,6 +39,10 @@ export default function runStandalone() {
         modelSource.listen(ws);
         ws.addEventListener('open', () => {
             dispatcher.dispatch(requestModelAction());
+            const refreshRate = parseInt(extractQueryParam('refresh'));
+            if (refreshRate) {
+                setInterval(() => dispatcher.dispatch(requestModelAction()), refreshRate);
+            }
         });
         ws.addEventListener('error', (event) => {
             console.error(`WebSocket Error: ${event}`)
@@ -68,8 +72,16 @@ export default function runStandalone() {
 
     function getTarget() : string {
         const input = <HTMLInputElement>document.getElementById('target-url');
-        const target = input && input.value;
-        return target || /*'target-missing'*/'http://localhost:8080/integration';
+        let target = input && input.value;
+        if (!target) {
+            target = extractQueryParam('url') || '';
+        }
+        return target || `${window.location.protocol}//${window.location.host}/samples/coffee.json`;
+    }
+
+    function extractQueryParam(param: string) {
+        const searchParams = new URLSearchParams(window.location.search);
+        return searchParams.get(param) || '';
     }
 
     function requestModelAction() : RequestModelAction {
