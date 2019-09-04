@@ -12,7 +12,7 @@ public class LiveGraphView extends ViewPart {
 	@Override
 	public void createPartControl(Composite parent) {
 		browser = new Browser(parent, SWT.NONE);
-		browser.setUrl("http://localhost:8877");
+		browser.setUrl("http://localhost:8877/eclipse.html");
 	}
 
 	@Override
