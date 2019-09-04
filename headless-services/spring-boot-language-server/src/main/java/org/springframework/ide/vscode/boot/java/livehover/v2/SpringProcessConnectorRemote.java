@@ -189,9 +189,9 @@ public class SpringProcessConnectorRemote {
 				String host = _appData.getHost();
 				String port = _appData.getPort();
 				String urlScheme = _appData.getUrlScheme();
-				boolean keepChecking = _appData.isKeepChecking();
+//				boolean keepChecking = _appData.isKeepChecking();
 				
-				SpringProcessConnectorOverJMX connector = new SpringProcessConnectorOverJMX(liveDataProvider, processKey, jmxURL, urlScheme, processID, processName, host, port, keepChecking);
+				SpringProcessConnectorOverJMX connector = new SpringProcessConnectorOverJMX(liveDataProvider, processKey, jmxURL, urlScheme, processID, processName, host, port);
 				processConnectorService.connectProcess(processKey, connector);
 				
 				return processKey;

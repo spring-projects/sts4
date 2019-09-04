@@ -165,7 +165,7 @@ public class SpringProcessConnectorLocal {
 				String urlScheme = "http";
 				
 				SpringProcessConnectorOverJMX connector = new SpringProcessConnectorOverJMX(
-						liveDataProvider, processKey, jmxAddress, urlScheme, processID, processName, null, null, false);
+						liveDataProvider, processKey, jmxAddress, urlScheme, processID, processName, null, null);
 
 				this.processConnectorService.connectProcess(processKey, connector);
 			}

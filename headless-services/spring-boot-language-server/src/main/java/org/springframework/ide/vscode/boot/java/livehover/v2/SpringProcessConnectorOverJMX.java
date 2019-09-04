@@ -32,10 +32,9 @@ public class SpringProcessConnectorOverJMX implements SpringProcessConnector {
 	private final String processName;
 	private final String host;
 	private final String port;
-	private final boolean keepChecking;
 	
 	public SpringProcessConnectorOverJMX(SpringProcessLiveDataProvider liveDataProvider, String processKey, String jmxURL,
-			String urlScheme, String processID, String processName, String host, String port, boolean keepChecking) {
+			String urlScheme, String processID, String processName, String host, String port) {
 
 		this.liveDataProvider = liveDataProvider;
 		this.processKey = processKey;
@@ -45,7 +44,6 @@ public class SpringProcessConnectorOverJMX implements SpringProcessConnector {
 		this.processName = processName;
 		this.host = host;
 		this.port = port;
-		this.keepChecking = keepChecking;
 	}
 	
 	@Override
