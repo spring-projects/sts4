@@ -70,7 +70,7 @@ public class CommonLanguageTools {
 
 	public static Collection<StsValueHint> getValueHints(FuzzyMap<PropertyInfo> index, TypeUtil typeUtil, String query, String propertyName, EnumCaseMode caseMode) {
 		Type type = getValueType(index, typeUtil, propertyName);
-		if (TypeUtil.isSequencable(type)) {
+		if (typeUtil.isSequencable(type)) {
 			//It is useful to provide content assist for the values in the list when entering a list
 			type = TypeUtil.getDomainType(type);
 		}

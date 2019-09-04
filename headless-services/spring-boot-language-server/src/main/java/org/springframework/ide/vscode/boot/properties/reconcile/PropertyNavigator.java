@@ -11,16 +11,16 @@
 
 package org.springframework.ide.vscode.boot.properties.reconcile;
 
-import static org.springframework.ide.vscode.boot.metadata.types.TypeUtil.isBracketable;
 import static org.springframework.ide.vscode.boot.properties.reconcile.SpringPropertyProblem.problem;
 
 import java.util.List;
 
 import org.springframework.ide.vscode.boot.metadata.types.Type;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtil;
-import org.springframework.ide.vscode.boot.metadata.types.TypedProperty;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtil.BeanPropertyNameMode;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtil.EnumCaseMode;
+import org.springframework.ide.vscode.boot.metadata.types.TypedProperty;
+import org.springframework.ide.vscode.boot.properties.completions.SpringPropertiesCompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblem;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
@@ -87,7 +87,7 @@ public class PropertyNavigator {
 								offset, region.getEnd()-offset));
 					}
 				} else if (navOp=='[') {
-					if (isBracketable(type)) {
+					if (typeUtil.isBracketable(type)) {
 						return bracketNavigate(offset, type);
 					} else {
 						problemCollector.accept(problem(ApplicationPropertiesProblemType.PROP_INVALID_INDEXED_NAVIGATION,

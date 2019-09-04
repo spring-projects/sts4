@@ -119,7 +119,7 @@ public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistCon
 		if (typeUtil.isMap(type)) {
 			//ready to enter nested map key on next line
 			return "\n"+YamlIndentUtil.INDENT_STR;
-		} if (TypeUtil.isSequencable(type)) {
+		} if (typeUtil.isSequencable(type)) {
 			//ready to enter sequence element on next line
 			return "\n- ";
 		} else if (typeUtil.isAtomic(type)) {
@@ -328,7 +328,7 @@ public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistCon
 		@Override
 		public YamlAssistContext traverse(YamlPathSegment s) {
 			if (s.getType()==YamlPathSegmentType.VAL_AT_KEY) {
-				if (TypeUtil.isSequencable(type) || typeUtil.isMap(type)) {
+				if (typeUtil.isSequencable(type) || typeUtil.isMap(type)) {
 					return contextWith(s, TypeUtil.getDomainType(type));
 				}
 				String key = s.toPropString();
@@ -337,7 +337,7 @@ public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistCon
 					return contextWith(s, TypedProperty.typeOf(subproperties.get(key)));
 				}
 			} else if (s.getType()==YamlPathSegmentType.VAL_AT_INDEX) {
-				if (TypeUtil.isSequencable(type)) {
+				if (typeUtil.isSequencable(type)) {
 					return contextWith(s, TypeUtil.getDomainType(type));
 				}
 			}
