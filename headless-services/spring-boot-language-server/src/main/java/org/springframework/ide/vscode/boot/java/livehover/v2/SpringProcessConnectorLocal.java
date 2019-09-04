@@ -87,6 +87,20 @@ public class SpringProcessConnectorLocal {
 		});
 	}
 	
+	/**
+	 * checks whether this class can operate normally or not - it is recommended to check this before calling out to this class
+	 * (if the attach to VirtualMachine library is not around, this class cannot really do anything and will throw exceptions)
+	 */
+	public static boolean isAvailable() {
+		try {
+			Class<?> vmClass = VirtualMachine.class;
+			return vmClass != null;
+		}
+		catch (NoClassDefFoundError e) {
+			return false;
+		}
+	}
+
 	public void searchForNewProcesses() {
 		List<VirtualMachineDescriptor> currentVms = VirtualMachine.list();
 		Set<String> currentVMKeys = new HashSet<>();
@@ -211,5 +225,5 @@ public class SpringProcessConnectorLocal {
 		int firstSpace = rawName.indexOf(' ');
 		return firstSpace < 0 ? rawName : rawName.substring(0, firstSpace);
 	}
-
+	
 }

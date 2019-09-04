@@ -27,6 +27,7 @@ public class SpringProcessTracker {
 
 	private final long POLLING_INTERVAL_MILLISECONDS;
 	private final SpringProcessConnectorLocal localProcessConnector;
+	private final boolean isConnectorAvailable;
 
 	private boolean automaticTrackingEnabled;
 	private ScheduledThreadPoolExecutor timer;
@@ -35,16 +36,28 @@ public class SpringProcessTracker {
 		this.localProcessConnector = localProcessConnector;
 		this.POLLING_INTERVAL_MILLISECONDS = pollingInterval == null ? DEFAULT_INTERVAL.toMillis() : pollingInterval.toMillis();
 		this.automaticTrackingEnabled = true;
+		
+		this.isConnectorAvailable = SpringProcessConnectorLocal.isAvailable();
 	}
 
 	public synchronized void setTrackingEnabled(boolean trackingEnabled) {
 		if (automaticTrackingEnabled != trackingEnabled) {
 			automaticTrackingEnabled = trackingEnabled;
-			refresh();
+
+			if (automaticTrackingEnabled) {
+				start();
+			} else {
+				stop();
+			}
 		}
 	}
 
 	public synchronized void start() {
+		if (!isConnectorAvailable) {
+			log.error("virtual machine connector library not available, no automatic local process tracking possible");
+			return;
+		}
+		
 		if (automaticTrackingEnabled && timer == null) {
 			log.info("Starting SpringProcessTracker");
 			this.timer = new ScheduledThreadPoolExecutor(1);
@@ -67,14 +80,6 @@ public class SpringProcessTracker {
 		}
 		catch (Throwable e) {
 			log.error("error searching for local processes", e);
-		}
-	}
-
-	private void refresh() {
-		if (automaticTrackingEnabled) {
-			start();
-		} else {
-			stop();
 		}
 	}
 

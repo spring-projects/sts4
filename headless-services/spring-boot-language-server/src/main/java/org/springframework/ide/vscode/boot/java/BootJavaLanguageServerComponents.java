@@ -256,7 +256,6 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 	}
 
 	private void shutdown() {
-//		this.liveHoverWatchdog.shutdown();
 		this.liveProcessTracker.stop();
 		this.liveChangeDetectionWatchdog.shutdown();
 		this.cuCache.dispose();
