@@ -73,14 +73,14 @@
       <feature id="org.eclipse.wst.server_ui.feature" installMode="root"/>
       <feature id="org.eclipse.wst.server_adapters.feature" installMode="root"/>
 
-<!--      <feature id="org.eclipse.wst.json_ui.feature" installMode="root"/> -->
-<!--      <feature id="org.eclipse.wst.jsdt.feature" installMode="root"/> -->
-<!--      <feature id="org.eclipse.wst.jsdt.chromium.debug.feature" installMode="root"/> -->
+      <feature id="org.eclipse.wst.json_ui.feature" installMode="root"/>
+      <feature id="org.eclipse.wst.jsdt.feature" installMode="root"/>
+      <feature id="org.eclipse.wst.jsdt.chromium.debug.feature" installMode="root"/>
 
       <feature id="org.eclipse.jst.server_adapters.ext.feature" installMode="root"/>
       <feature id="org.eclipse.jst.server_adapters.feature" installMode="root"/>
 
-      <feature id="org.eclipse.wildwebdeveloper.feature" installMode="root"/>
+<!--      <feature id="org.eclipse.wildwebdeveloper.feature" installMode="root"/> -->
       <feature id="org.eclipse.tm.terminal.feature" installMode="root"/>
       <feature id="org.eclipse.rse" installMode="root"/>
       <feature id="org.eclipse.tips.feature" installMode="root"/>
