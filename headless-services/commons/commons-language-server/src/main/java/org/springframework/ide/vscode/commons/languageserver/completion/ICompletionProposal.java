@@ -39,7 +39,7 @@ public interface ICompletionProposal {
 
 	default boolean isDeprecated() { return false; }
 	
-	default ICompletionProposal dropLabelPrefix(int numberOfDroppedChars) {
+	default TransformedCompletion dropLabelPrefix(int numberOfDroppedChars) {
 		return new TransformedCompletion(this) {
 			@Override
 			protected String tranformLabel(String originalLabel) {

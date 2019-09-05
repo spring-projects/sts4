@@ -450,6 +450,10 @@ public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistCon
 						ScoreableProposal completion = completionFactory.property(
 								doc.getDocument(), edits, match, typeUtil
 						);
+						String prefix = indexNav.getPrefix();
+						if (StringUtil.hasText(prefix)) {
+							completion = completion.dropLabelPrefix(prefix.length()+1);
+						}
 						if (getContextRoot(doc).exists(YamlPath.fromProperty(match.data.getId()))) {
 							completion.deemphasize(DEEMP_EXISTS);
 						}
