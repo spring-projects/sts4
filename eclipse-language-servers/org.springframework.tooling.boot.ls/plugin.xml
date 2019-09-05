@@ -358,4 +358,12 @@
    </extension>
    -->
 
+   <extension
+         point="org.eclipse.ui.quickAccess">
+      <computer
+            class="org.springframework.tooling.boot.ls.commands.LiveProcessCommandsQuickAccessProvider"
+            name="Spring - Live Process Information"
+            requiresUIAccess="false"/>
+   </extension>
+
 </plugin>

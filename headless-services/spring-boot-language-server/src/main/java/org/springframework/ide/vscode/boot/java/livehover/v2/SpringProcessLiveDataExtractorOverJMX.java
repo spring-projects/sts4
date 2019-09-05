@@ -33,7 +33,6 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ide.vscode.commons.boot.app.cli.ContextPath;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 
 import com.google.common.collect.ImmutableList;
@@ -442,7 +441,7 @@ public class SpringProcessLiveDataExtractorOverJMX {
 			if (result != null) {
 				bootVersion = "2.x";
 			}
-			return bootVersion != null && environment != null ? ContextPath.getContextPath(bootVersion, environment) : null;
+			return bootVersion != null && environment != null ? LiveContextPathUtil.getContextPath(bootVersion, environment) : null;
 		} catch (IOException e) {
 			//Ignore... happens a low when app is stopped
 		} catch (ExecutionException e) {

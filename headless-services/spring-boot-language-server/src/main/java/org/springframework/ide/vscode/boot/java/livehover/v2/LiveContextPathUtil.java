@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Pivotal, Inc.
+ * Copyright (c) 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -8,7 +8,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.commons.boot.app.cli;
+package org.springframework.ide.vscode.boot.java.livehover.v2;
 
 import java.util.Collection;
 
@@ -20,9 +20,9 @@ import org.springframework.ide.vscode.commons.util.StringUtil;
 
 import com.google.common.collect.ImmutableList;
 
-public class ContextPath {
+public class LiveContextPathUtil {
 
-	protected static Logger logger = LoggerFactory.getLogger(ContextPath.class);
+	protected static Logger logger = LoggerFactory.getLogger(LiveContextPathUtil.class);
 
 	public static final Collection<String> BOOT_1X_CONTEXTPATH = ImmutableList.of("server.context-path",
 			"server.contextPath", "SERVER_CONTEXT_PATH");

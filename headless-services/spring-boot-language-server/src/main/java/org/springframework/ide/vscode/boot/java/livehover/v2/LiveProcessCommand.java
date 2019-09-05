@@ -13,13 +13,34 @@ package org.springframework.ide.vscode.boot.java.livehover.v2;
 /**
  * @author Martin Lippert
  */
-public interface SpringProcessConnector {
+public class LiveProcessCommand {
 	
-	String getProcessKey();
-	String getLabel();
+	private String processKey;
+	private String label;
+	private String action;
+	
+	public String getProcessKey() {
+		return processKey;
+	}
 
-	void connect() throws Exception;
-	void refresh() throws Exception;
-	void disconnect() throws Exception;
+	public void setProcessKey(String processKey) {
+		this.processKey = processKey;
+	}
+
+	public String getLabel() {
+		return label;
+	}
+	
+	public void setLabel(String label) {
+		this.label = label;
+	}
+	
+	public String getAction() {
+		return action;
+	}
+
+	public void setAction(String action) {
+		this.action = action;
+	}
 
 }

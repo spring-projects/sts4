@@ -43,6 +43,7 @@ import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.java.livehover.ActiveProfilesProvider;
 import org.springframework.ide.vscode.boot.java.livehover.BeanInjectedIntoHoverProvider;
 import org.springframework.ide.vscode.boot.java.livehover.ComponentInjectionsHoverProvider;
+import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessCommandHandler;
 import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessConnectorLocal;
 import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessConnectorRemote;
 import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessConnectorService;
@@ -163,6 +164,8 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		
 		SpringProcessConnectorLocal liveHoverLocalProcessConnector = new SpringProcessConnectorLocal(liveDataConnector, liveDataProvider, projectObserver);
 		liveProcessTracker = new SpringProcessTracker(liveHoverLocalProcessConnector, serverParams.watchDogInterval);
+		
+		new SpringProcessCommandHandler(server, liveDataConnector, liveHoverLocalProcessConnector);
 
 //		liveHoverWatchdog = new SpringLiveHoverWatchdog(server, hoverProvider, runningAppProvider,
 //				projectFinder, projectObserver, serverParams.watchDogInterval);

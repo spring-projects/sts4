@@ -30,16 +30,20 @@ public class SpringProcessConnectorService {
 
 	private final ScheduledThreadPoolExecutor scheduler;
 	private final ConcurrentMap<String, SpringProcessConnector> connectors;
+	private final ConcurrentMap<String, Boolean> connectedSuccess;
 	
 	public SpringProcessConnectorService() {
 		this.scheduler = new ScheduledThreadPoolExecutor(10);
 		this.connectors = new ConcurrentHashMap<>();
+		this.connectedSuccess = new ConcurrentHashMap<>();
 	}
 	
 	public void connectProcess(String processKey, SpringProcessConnector connector) {
 		log.info("connect to process: " + processKey);
 
 		this.connectors.put(processKey, connector);
+		this.connectedSuccess.put(processKey, false);
+
 		try {
 			scheduleConnect(processKey, connector, 0, TimeUnit.SECONDS, 0);
 		}
@@ -61,6 +65,7 @@ public class SpringProcessConnectorService {
 		log.info("disconnect from process: " + processKey);
 
 		SpringProcessConnector connector = this.connectors.remove(processKey);
+		this.connectedSuccess.put(processKey, false);
 		
 		if (connector != null) {
 			scheduleDisconnect(processKey, connector, 0, TimeUnit.SECONDS, 0);
@@ -68,7 +73,8 @@ public class SpringProcessConnectorService {
 	}
 	
 	public SpringProcessConnector[] getConnectedProcesses() {
-		return (SpringProcessConnector[]) this.connectors.values().toArray(new SpringProcessConnector[this.connectors.values().size()]);
+		return (SpringProcessConnector[]) this.connectors.values().stream()
+				.filter((connector) -> connectedSuccess.get(connector.getProcessKey())).toArray(SpringProcessConnector[]::new);
 	}
 
 	/**
@@ -119,6 +125,7 @@ public class SpringProcessConnectorService {
 		this.scheduler.schedule(() -> {
 			try {
 				connector.refresh();
+				this.connectedSuccess.put(processKey, true);
 			}
 			catch (Exception e) {
 				log.info("problem occured during process live data refresh", e);

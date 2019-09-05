@@ -43,6 +43,7 @@ import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.livehover.v2.Boot1xRequestMapping;
+import org.springframework.ide.vscode.boot.java.livehover.v2.ContextPath;
 import org.springframework.ide.vscode.boot.java.livehover.v2.LiveBeansModel;
 import org.springframework.ide.vscode.boot.java.livehover.v2.LiveConditional;
 import org.springframework.ide.vscode.boot.java.livehover.v2.LiveConditionalParser;

@@ -47,6 +47,16 @@ public class SpringProcessConnectorOverJMX implements SpringProcessConnector {
 	}
 	
 	@Override
+	public String getProcessKey() {
+		return processKey;
+	}
+	
+	@Override
+	public String getLabel() {
+		return processID + " (" + processName + ") ";
+	}
+	
+	@Override
 	public void connect() throws Exception {
 	}
 

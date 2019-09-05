@@ -21,12 +21,12 @@ import java.util.Properties;
 
 import org.mockito.Mockito;
 import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
+import org.springframework.ide.vscode.boot.java.livehover.v2.LiveContextPathUtil;
 import org.springframework.ide.vscode.boot.java.livehover.v2.LiveBeansModel;
 import org.springframework.ide.vscode.boot.java.livehover.v2.LiveConditional;
 import org.springframework.ide.vscode.boot.java.livehover.v2.LiveProperties;
 import org.springframework.ide.vscode.boot.java.livehover.v2.LivePropertiesJsonParser;
 import org.springframework.ide.vscode.boot.java.livehover.v2.LiveRequestMapping;
-import org.springframework.ide.vscode.commons.boot.app.cli.ContextPath;
 import org.springframework.ide.vscode.commons.boot.app.cli.LocalSpringBootApp;
 import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
@@ -100,7 +100,7 @@ public class MockRunningAppProvider {
 		}
 
 		public MockAppBuilder contextPathEnvJson(String bootVersion, String envJson) throws Exception {
-			String contextPath = ContextPath.getContextPath(bootVersion, envJson);
+			String contextPath = LiveContextPathUtil.getContextPath(bootVersion, envJson);
 			when(app.getContextPath()).thenReturn(contextPath);
 			return this;
 		}
