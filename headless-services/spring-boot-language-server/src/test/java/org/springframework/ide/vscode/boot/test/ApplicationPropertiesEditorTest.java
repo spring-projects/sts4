@@ -85,6 +85,57 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		);
 		editor.assertProblems("no-bool|boolean");
 	}
+	
+	@Test public void abbreviateLongPrefixCompletions() throws Exception {
+		//See: https://github.com/spring-projects/sts4/issues/361
+		Editor editor;
+		
+		data("spring.data.jpa.very.long.foobar", "java.lang.String", null, null);
+		data("spring.data.jpa.very.long.barbar", "java.lang.String", null, null);
+		data("spring.data.jpa.very.long.foofoo", "java.lang.String", null, null);
+		data("spring.data.jpa.very.long.barfoo", "java.lang.String", null, null);
+		data("spring.data.jpa.very.long.foobar.more", "java.lang.String", null, null);
+		data("spring.data.jpa.very.long.barbar.more", "java.lang.String", null, null);
+		data("spring.data.jpa.very.long.foofoo.more", "java.lang.String", null, null);
+		data("spring.data.jpa.very.long.barfoo.more", "java.lang.String", null, null);
+		
+		
+		editor = newEditor(
+				"spring.data.jpa.very.bar<*>"
+		);
+		editor.assertCompletions(
+				"spring.data.jpa.very.long.barbar=<*>",
+				"spring.data.jpa.very.long.barfoo=<*>",
+				"spring.data.jpa.very.long.foobar=<*>",
+				"spring.data.jpa.very.long.barbar.more=<*>",
+				"spring.data.jpa.very.long.barfoo.more=<*>",
+				"spring.data.jpa.very.long.foobar.more=<*>"
+		);
+		
+		editor.assertCompletionLabels(
+				"long.barbar",
+				"long.barfoo", 
+				"long.foobar", 
+				"long.barbar.more", 
+				"long.barfoo.more", 
+				"long.foobar.more"
+		);
+		
+		editor = newEditor(
+				"spring.data.jpa.vr<*>"
+		);
+		editor.assertCompletionLabels(
+				"very.long.barbar",
+				"very.long.barfoo", 
+				"very.long.foobar", 
+				"very.long.foofoo",
+				"very.long.barbar.more", 
+				"very.long.barfoo.more", 
+				"very.long.foobar.more",
+				"very.long.foofoo.more"
+		);
+		
+	}
 
 	@Test
 	public void testReconcileCatchesParseError() throws Exception {

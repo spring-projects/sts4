@@ -38,5 +38,16 @@ public interface ICompletionProposal {
 	default ICompletionProposal deemphasize(double howmuch) { return this; }
 
 	default boolean isDeprecated() { return false; }
-
+	
+	default ICompletionProposal dropLabelPrefix(int numberOfDroppedChars) {
+		return new TransformedCompletion(this) {
+			@Override
+			protected String tranformLabel(String originalLabel) {
+				if (originalLabel.length()>=numberOfDroppedChars) {
+					return originalLabel.substring(numberOfDroppedChars);
+				}
+				return "";
+			}
+		};
+	}
 }

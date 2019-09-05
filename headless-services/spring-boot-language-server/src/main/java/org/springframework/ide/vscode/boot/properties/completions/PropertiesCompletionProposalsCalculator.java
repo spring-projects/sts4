@@ -22,6 +22,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.stream.Stream;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,12 +42,15 @@ import org.springframework.ide.vscode.boot.properties.reconcile.PropertyNavigato
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.languageserver.completion.LazyProposalApplier;
+import org.springframework.ide.vscode.commons.languageserver.completion.TransformedCompletion;
 import org.springframework.ide.vscode.commons.languageserver.util.PrefixFinder;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.CollectionUtil;
 import org.springframework.ide.vscode.commons.util.FuzzyMap;
 import org.springframework.ide.vscode.commons.util.FuzzyMap.Match;
 import org.springframework.ide.vscode.commons.util.FuzzyMatcher;
+import org.springframework.ide.vscode.commons.util.Streams;
+import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.java.properties.antlr.parser.AntlrParser;
@@ -359,10 +363,23 @@ public class PropertiesCompletionProposalsCalculator {
 						log.error("{}", e);
 					}
 				});
-				return proposals;
+				return elideCommonPrefix(prefix, proposals);
 			}
 		}
 		return Collections.emptyList();
 	}
+
+	private Collection<ICompletionProposal> elideCommonPrefix(String basePrefix, ArrayList<ICompletionProposal> proposals) {
+		String prefix = StringUtil.commonPrefix(Stream.concat(Stream.of(basePrefix), proposals.stream().map(ICompletionProposal::getLabel)));
+		int lastDot = prefix.lastIndexOf('.');
+		if (lastDot>=0) {
+			for (int i = 0; i < proposals.size(); i++) {
+				ICompletionProposal p = proposals.get(i);
+				proposals.set(i, p.dropLabelPrefix(lastDot+1));
+			}
+		}
+		return proposals;
+	}
+
 
 }

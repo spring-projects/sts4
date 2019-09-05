@@ -8,12 +8,9 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.commons.yaml.completion;
+package org.springframework.ide.vscode.commons.languageserver.completion;
 
 import org.eclipse.lsp4j.CompletionItemKind;
-import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
-import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
-import org.springframework.ide.vscode.commons.languageserver.completion.ScoreableProposal;
 import org.springframework.ide.vscode.commons.util.Renderable;
 
 /**
@@ -24,6 +21,7 @@ import org.springframework.ide.vscode.commons.util.Renderable;
  * @author Kris De Volder
  */
 public abstract class TransformedCompletion extends ScoreableProposal {
+	
 	protected final ICompletionProposal original;
 
 	private DocumentEdits transformedEdit = null;
@@ -35,7 +33,9 @@ public abstract class TransformedCompletion extends ScoreableProposal {
 	protected String tranformLabel(String originalLabel) {
 		return originalLabel;
 	}
-	protected abstract DocumentEdits transformEdit(DocumentEdits textEdit);
+	protected DocumentEdits transformEdit(DocumentEdits textEdit) {
+		return textEdit;
+	}
 
 	@Override
 	public synchronized DocumentEdits getTextEdit() {
