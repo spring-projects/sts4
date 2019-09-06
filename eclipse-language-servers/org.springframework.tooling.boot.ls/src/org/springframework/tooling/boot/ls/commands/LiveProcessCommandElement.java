@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.jdt.annotation.NonNull;
@@ -37,12 +38,15 @@ public class LiveProcessCommandElement extends QuickAccessElement {
 	private final String processKey;
 	private final String label;
 	private final String action;
+	private final int randomIDExtension;
 
 	public LiveProcessCommandElement(String processKey, String label, String action) {
 		super();
 		this.processKey = processKey;
 		this.label = label;
 		this.action = action;
+		
+		this.randomIDExtension = new Random().nextInt();
 	}
 
 	@Override
@@ -69,7 +73,7 @@ public class LiveProcessCommandElement extends QuickAccessElement {
 
 	@Override
 	public String getId() {
-		return processKey + action;
+		return processKey + action + randomIDExtension;
 	}
 
 	@Override
