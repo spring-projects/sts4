@@ -230,6 +230,9 @@ public class SpringIndexerXML implements SpringIndexer {
 
 			@Override
 			public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+				if (dir.getFileName().toString().startsWith(".")) {
+					return FileVisitResult.SKIP_SUBTREE;
+				}
 				return FileVisitResult.CONTINUE;
 			}
 
@@ -242,6 +245,7 @@ public class SpringIndexerXML implements SpringIndexer {
 						for (PathMatcher matcher : matchers) {
 							if (matcher.matches(parent)) {
 								builder.add(file.toAbsolutePath().toString());
+								return FileVisitResult.CONTINUE;
 							}
 						}
 					}
