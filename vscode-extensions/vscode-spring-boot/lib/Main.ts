@@ -18,7 +18,7 @@ export function activate(context: VSCode.ExtensionContext): Thenable<LanguageCli
     // registerPipelineGenerator(context);
     let options : commons.ActivatorOptions = {
         DEBUG: false,
-        CONNECT_TO_LS: true,
+        CONNECT_TO_LS: false,
         extensionId: 'vscode-spring-boot',
         preferJdk: true,
         checkjvm: (context: VSCode.ExtensionContext, jvm: commons.JVM) => {
