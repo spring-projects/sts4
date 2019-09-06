@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.test;
 
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.ide.vscode.boot.properties.reconcile.ApplicationPropertiesProblemType.PROP_DUPLICATE_KEY;
@@ -25,6 +26,7 @@ import java.util.List;
 
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.Diagnostic;
+import org.eclipse.lsp4j.TextEdit;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -112,7 +114,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 				"spring.data.jpa.very.long.foobar.more=<*>"
 		);
 		
-		editor.assertCompletionLabels(
+		List<CompletionItem> completions = editor.assertCompletionLabels(
 				"long.barbar",
 				"long.barfoo", 
 				"long.foobar", 
@@ -120,11 +122,15 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 				"long.barfoo.more", 
 				"long.foobar.more"
 		);
+		for (CompletionItem c : completions) {
+			TextEdit edit = c.getTextEdit();
+			assertEquals("bar", editor.getText(edit.getRange()));
+		}
 		
 		editor = newEditor(
 				"spring.data.jpa.vr<*>"
 		);
-		editor.assertCompletionLabels(
+		completions = editor.assertCompletionLabels(
 				"very.long.barbar",
 				"very.long.barfoo", 
 				"very.long.foobar", 
@@ -134,6 +140,38 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 				"very.long.foobar.more",
 				"very.long.foofoo.more"
 		);
+		for (CompletionItem c : completions) {
+			TextEdit edit = c.getTextEdit();
+			assertEquals("vr", editor.getText(edit.getRange()));
+		}
+
+		editor = newEditor(
+				"spring.data.jpa.very.<*>"
+		);
+		editor.assertCompletions(
+				"spring.data.jpa.very.long.barbar=<*>",
+				"spring.data.jpa.very.long.barbar.more=<*>",
+				"spring.data.jpa.very.long.barfoo=<*>",
+				"spring.data.jpa.very.long.barfoo.more=<*>",
+				"spring.data.jpa.very.long.foobar=<*>",
+				"spring.data.jpa.very.long.foobar.more=<*>",
+				"spring.data.jpa.very.long.foofoo=<*>",
+				"spring.data.jpa.very.long.foofoo.more=<*>"
+		);
+		completions = editor.assertCompletionLabels(
+				"long.barbar",
+				"long.barbar.more",
+				"long.barfoo",
+				"long.barfoo.more",
+				"long.foobar",
+				"long.foobar.more",
+				"long.foofoo",
+				"long.foofoo.more"
+		);
+		for (CompletionItem c : completions) {
+			TextEdit edit = c.getTextEdit();
+			assertEquals("", editor.getText(edit.getRange()));
+		}
 		
 	}
 

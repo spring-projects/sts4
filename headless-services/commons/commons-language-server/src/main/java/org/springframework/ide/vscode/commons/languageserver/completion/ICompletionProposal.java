@@ -39,14 +39,20 @@ public interface ICompletionProposal {
 
 	default boolean isDeprecated() { return false; }
 	
-	default TransformedCompletion dropLabelPrefix(int numberOfDroppedChars) {
+	default TransformedCompletion dropLabelPrefix(int _numberOfDroppedChars) {
+		String orgLabel = getLabel();
+		int numberOfDroppedChars = Math.min(orgLabel.length(), _numberOfDroppedChars);
+		String prefix = getLabel().substring(0, numberOfDroppedChars);
 		return new TransformedCompletion(this) {
 			@Override
 			protected String tranformLabel(String originalLabel) {
-				if (originalLabel.length()>=numberOfDroppedChars) {
-					return originalLabel.substring(numberOfDroppedChars);
-				}
-				return "";
+				return originalLabel.substring(numberOfDroppedChars);
+			}
+			
+			@Override
+			protected DocumentEdits transformEdit(DocumentEdits textEdit) {
+				textEdit.dropPrefix(prefix);
+				return textEdit;
 			}
 		};
 	}
