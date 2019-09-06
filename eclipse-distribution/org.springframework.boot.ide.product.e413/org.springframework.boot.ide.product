@@ -82,7 +82,7 @@
 
 <!--      <feature id="org.eclipse.wildwebdeveloper.feature" installMode="root"/> -->
       <feature id="org.eclipse.tm.terminal.feature" installMode="root"/>
-      <feature id="org.eclipse.rse" installMode="root"/>
+<!--      <feature id="org.eclipse.rse" installMode="root"/> -->
       <feature id="org.eclipse.tips.feature" installMode="root"/>
 	  
       <feature id="org.eclipse.epp.mpc" installMode="root"/>
