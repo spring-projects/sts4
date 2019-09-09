@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.springframework.tooling.ls.eclipse.commons;
 
-import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
@@ -42,8 +41,6 @@ import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.TextSelection;
 import org.eclipse.jface.text.source.Annotation;
-import org.eclipse.jface.text.source.AnnotationPainter;
-import org.eclipse.jface.text.source.AnnotationPainter.IDrawingStrategy;
 import org.eclipse.jface.text.source.IAnnotationModel;
 import org.eclipse.jface.text.source.IAnnotationModelExtension;
 import org.eclipse.jface.text.source.ISourceViewer;
@@ -54,12 +51,6 @@ import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.MarkupContent;
 import org.eclipse.lsp4j.MarkupKind;
-import org.eclipse.swt.custom.StyledText;
-import org.eclipse.swt.graphics.Color;
-import org.eclipse.swt.graphics.Font;
-import org.eclipse.swt.graphics.GC;
-import org.eclipse.swt.graphics.Point;
-import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
@@ -68,9 +59,7 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.progress.UIJob;
-import org.eclipse.ui.texteditor.AbstractDecoratedTextEditor;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
-import org.eclipse.ui.texteditor.SourceViewerDecorationSupport;
 import org.springframework.ide.vscode.commons.protocol.CursorMovement;
 import org.springframework.ide.vscode.commons.protocol.HighlightParams;
 import org.springframework.ide.vscode.commons.protocol.ProgressParams;
@@ -143,8 +132,8 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 
 	private static final String ANNOTION_TYPE_ID = "org.springframework.tooling.bootinfo";
 
-	private static final String ALT_ANNOTATION_DRAWING_STRATEGY_ID = "boot.hint.strategy";
-	private static final String ALT_ANNOTATION_TYPE_ID = "org.springframework.tooling.bootinfoCodeLens";
+//	private static final String ALT_ANNOTATION_DRAWING_STRATEGY_ID = "boot.hint.strategy";
+//	private static final String ALT_ANNOTATION_TYPE_ID = "org.springframework.tooling.bootinfoCodeLens";
 
 	/**
 	 * Latest highlight request params. It is sufficient to only remember the last request per uri, because
@@ -157,32 +146,32 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 	 */
 	private static Map<String, Annotation[]> currentAnnotations = new ConcurrentHashMap<>();
 
-	private static final IDrawingStrategy BOOT_RANGE_HIGHLIGHT_DRAWING_STRATEGY = new IDrawingStrategy() {
-
-		@Override
-		public void draw(Annotation annotation, GC gc, StyledText textWidget, int offset, int length, Color color) {
-
-			if (gc == null) {
-				textWidget.redrawRange(offset, length, true);
-			} else {
-				int oldAlpha = gc.getAlpha();
-				Font oldFont = gc.getFont();
-
-				Point left= textWidget.getLocationAtOffset(offset);
-				Point right = textWidget.getLocationAtOffset(offset + length);
-				gc.setFont(textWidget.getFont());
-				int fontHeight = gc.getFontMetrics().getHeight();
-				Rectangle r = new Rectangle(left.x, left.y + textWidget.getLineHeight(offset) - fontHeight, right.x - left.x, fontHeight);
-				gc.setAlpha(0x40);
-				gc.setBackground(color);
-				gc.fillRectangle(r);
-
-				gc.setAlpha(oldAlpha);
-				gc.setFont(oldFont);
-			}
-		}
-
-	};
+//	private static final IDrawingStrategy BOOT_RANGE_HIGHLIGHT_DRAWING_STRATEGY = new IDrawingStrategy() {
+//
+//		@Override
+//		public void draw(Annotation annotation, GC gc, StyledText textWidget, int offset, int length, Color color) {
+//
+//			if (gc == null) {
+//				textWidget.redrawRange(offset, length, true);
+//			} else {
+//				int oldAlpha = gc.getAlpha();
+//				Font oldFont = gc.getFont();
+//
+//				Point left= textWidget.getLocationAtOffset(offset);
+//				Point right = textWidget.getLocationAtOffset(offset + length);
+//				gc.setFont(textWidget.getFont());
+//				int fontHeight = gc.getFontMetrics().getHeight();
+//				Rectangle r = new Rectangle(left.x, left.y + textWidget.getLineHeight(offset) - fontHeight, right.x - left.x, fontHeight);
+//				gc.setAlpha(0x40);
+//				gc.setBackground(color);
+//				gc.fillRectangle(r);
+//
+//				gc.setAlpha(oldAlpha);
+//				gc.setFont(oldFont);
+//			}
+//		}
+//
+//	};
 
 	static class UpdateHighlights extends UIJob {
 
@@ -231,11 +220,11 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 
 	private static void updateHighlightAnnotations(IEditorPart editor, ISourceViewer sourceViewer,
 			IAnnotationModel annotationModel, String docUri, boolean updateCodeMinings) {
-		boolean codeLensHighlightOn = isCodeLensHighlightOn();
+//		boolean codeLensHighlightOn = isCodeLensHighlightOn();
 		if (annotationModel instanceof IAnnotationModelExtension) {
-			if (codeLensHighlightOn) {
-				addBootRangeHighlightSupport(editor, sourceViewer);
-			}
+//			if (codeLensHighlightOn) {
+//				addBootRangeHighlightSupport(editor, sourceViewer);
+//			}
 			updateAnnotations(docUri, sourceViewer, (IAnnotationModelExtension) annotationModel);
 		}
 		if (updateCodeMinings && sourceViewer instanceof ISourceViewerExtension5) {
@@ -255,39 +244,39 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 		}
 	}
 
-	private static void addBootRangeHighlightSupport(IEditorPart editor, ISourceViewer sourceViewer) {
-		if (editor instanceof AbstractDecoratedTextEditor) {
-			addBootRangeHighlightSupport((AbstractDecoratedTextEditor)editor, sourceViewer);
-		}
-//		else if () {
-//			// TODO: XML multi page editor handling for highlight support of XML source editor
+//	private static void addBootRangeHighlightSupport(IEditorPart editor, ISourceViewer sourceViewer) {
+//		if (editor instanceof AbstractDecoratedTextEditor) {
+//			addBootRangeHighlightSupport((AbstractDecoratedTextEditor)editor, sourceViewer);
 //		}
-	}
-
-	@SuppressWarnings("unchecked")
-	private static void addBootRangeHighlightSupport(AbstractDecoratedTextEditor editor, ISourceViewer sourceViewer) {
-		try {
-			Field f = AbstractDecoratedTextEditor.class.getDeclaredField("fSourceViewerDecorationSupport");
-			f.setAccessible(true);
-			SourceViewerDecorationSupport support = (SourceViewerDecorationSupport) f.get(editor);
-			f = SourceViewerDecorationSupport.class.getDeclaredField("fAnnotationPainter");
-			f.setAccessible(true);
-			AnnotationPainter painter = (AnnotationPainter) f.get(support);
-
-			f = AnnotationPainter.class.getDeclaredField("fAnnotationType2Color");
-			f.setAccessible(true);
-			Color highlightColor = LanguageServerCommonsActivator.getInstance().getBootHighlightRangeColor();
-			if (highlightColor!=null && ((Map<Object, Color>)f.get(painter)).get(ALT_ANNOTATION_TYPE_ID) != highlightColor) {
-				painter.setAnnotationTypeColor(ALT_ANNOTATION_TYPE_ID, highlightColor);
-				painter.addDrawingStrategy(ALT_ANNOTATION_DRAWING_STRATEGY_ID, BOOT_RANGE_HIGHLIGHT_DRAWING_STRATEGY);
-				painter.addAnnotationType(ALT_ANNOTATION_TYPE_ID, ALT_ANNOTATION_DRAWING_STRATEGY_ID);
-			}
-
-		} catch (Exception e) {
-			LanguageServerCommonsActivator.logError(e,
-					"Failed to contribute alternative range highlight annotation. Switch off highlight CodeLense under STS Language Server preferences!");
-		}
-	}
+////		else if () {
+////			// TODO: XML multi page editor handling for highlight support of XML source editor
+////		}
+//	}
+//
+//	@SuppressWarnings("unchecked")
+//	private static void addBootRangeHighlightSupport(AbstractDecoratedTextEditor editor, ISourceViewer sourceViewer) {
+//		try {
+//			Field f = AbstractDecoratedTextEditor.class.getDeclaredField("fSourceViewerDecorationSupport");
+//			f.setAccessible(true);
+//			SourceViewerDecorationSupport support = (SourceViewerDecorationSupport) f.get(editor);
+//			f = SourceViewerDecorationSupport.class.getDeclaredField("fAnnotationPainter");
+//			f.setAccessible(true);
+//			AnnotationPainter painter = (AnnotationPainter) f.get(support);
+//
+//			f = AnnotationPainter.class.getDeclaredField("fAnnotationType2Color");
+//			f.setAccessible(true);
+//			Color highlightColor = LanguageServerCommonsActivator.getInstance().getBootHighlightRangeColor();
+//			if (highlightColor!=null && ((Map<Object, Color>)f.get(painter)).get(ALT_ANNOTATION_TYPE_ID) != highlightColor) {
+//				painter.setAnnotationTypeColor(ALT_ANNOTATION_TYPE_ID, highlightColor);
+//				painter.addDrawingStrategy(ALT_ANNOTATION_DRAWING_STRATEGY_ID, BOOT_RANGE_HIGHLIGHT_DRAWING_STRATEGY);
+//				painter.addAnnotationType(ALT_ANNOTATION_TYPE_ID, ALT_ANNOTATION_DRAWING_STRATEGY_ID);
+//			}
+//
+//		} catch (Exception e) {
+//			LanguageServerCommonsActivator.logError(e,
+//					"Failed to contribute alternative range highlight annotation. Switch off highlight CodeLense under STS Language Server preferences!");
+//		}
+//	}
 
 	private static boolean isCodeLensHighlightOn() {
 		IPreferenceStore store = LanguageServerCommonsActivator.getInstance().getPreferenceStore();
@@ -302,7 +291,7 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 		}
 		HighlightParams highlightParams = currentHighlights.get(target);
 		List<CodeLens> highlights = highlightParams == null ? null : highlightParams.getCodeLenses();
-		String annotationType = isCodeLensHighlightOn() ? ALT_ANNOTATION_TYPE_ID : ANNOTION_TYPE_ID;
+		String annotationType = /*isCodeLensHighlightOn() ? ALT_ANNOTATION_TYPE_ID :*/ ANNOTION_TYPE_ID;
 		Map<Annotation, Position> newAnnotations = createAnnotations(sourceViewer.getDocument(), highlights, annotationType);
 		annotationModel.replaceAnnotations(toRemove, newAnnotations);
 		currentAnnotations.put(target, newAnnotations.keySet().toArray(new Annotation[newAnnotations.size()]));
