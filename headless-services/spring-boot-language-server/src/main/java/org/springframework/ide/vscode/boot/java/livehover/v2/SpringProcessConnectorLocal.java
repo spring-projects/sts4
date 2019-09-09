@@ -18,6 +18,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,6 +73,7 @@ public class SpringProcessConnectorLocal {
 			ProjectObserver projectObserver) {
 		this.projects = Collections.synchronizedCollection(new HashSet<>());
 		this.processes = Collections.synchronizedSet(new HashSet<>());
+		
 		this.liveDataProvider = liveDataProvider;
 		this.processConnectorService = processConnector;
 
@@ -103,22 +106,26 @@ public class SpringProcessConnectorLocal {
 		}
 	}
 	
-	public SpringProcessDescriptor[] getProcesses() {
-		if (processes.size() == 0) {
-			updateProcesses();
-		}
-		
-		return (SpringProcessDescriptor[]) processes.toArray(new SpringProcessDescriptor[processes.size()]);
-	}
-
-	public void searchForNewProcesses() {
-		SpringProcessDescriptor[] newProcesses = updateProcesses();
-		
-		for (SpringProcessDescriptor descriptor : newProcesses) {
-			connectLocalProcess(descriptor, true);
-		}
+	public boolean isLocalProcess(String processKey) {
+		return this.processes.stream().anyMatch(process -> processKey.equals(process.getProcessKey()));
 	}
 	
+	public SpringProcessDescriptor[] getProcesses(boolean update, SpringProcessStatus status) {
+		if (update) {
+			SpringProcessDescriptor[] newProcesses = updateProcesses();
+			if (newProcesses.length > 0) {
+				updateStatus(newProcesses);
+			}
+		}
+		
+		if (status != null) {
+			return processes.stream().filter((process) -> status.equals(process.getStatus())).toArray(SpringProcessDescriptor[]::new);
+		}
+		else {
+			return (SpringProcessDescriptor[]) processes.toArray(new SpringProcessDescriptor[processes.size()]);
+		}
+	}
+
 	public SpringProcessDescriptor[] updateProcesses() {
 		List<VirtualMachineDescriptor> currentVms = VirtualMachine.list();
 		Set<String> currentVMKeys = new HashSet<>();
@@ -159,7 +166,66 @@ public class SpringProcessConnectorLocal {
 		return (SpringProcessDescriptor[]) newProcesses.toArray(new SpringProcessDescriptor[newProcesses.size()]);
 	}
 	
-	public void connectLocalProcess(SpringProcessDescriptor descriptor, boolean checkAutoConnect) {
+	private void updateStatus(SpringProcessDescriptor[] newProcesses) {
+		List<CompletableFuture<Void>> futures = new ArrayList<>();
+
+		for (SpringProcessDescriptor newProcess : newProcesses) {
+			CompletableFuture<SpringProcessStatus> checkStatusFuture = checkStatus(newProcess);
+			CompletableFuture<Void> result = checkStatusFuture.thenAccept((status) -> newProcess.setStatus(status));
+			
+			futures.add(result);
+		}
+		
+		CompletableFuture<Void> allStatusUpdates = CompletableFuture.allOf((CompletableFuture[]) futures.toArray(new CompletableFuture[futures.size()]));
+		try {
+			allStatusUpdates.get(3, TimeUnit.SECONDS);
+		}
+		catch (Exception e) {
+			log.info("timeout or problem occured while updating the status of the new processes");
+		}
+	}
+	
+	private CompletableFuture<SpringProcessStatus> checkStatus(SpringProcessDescriptor descriptor) {
+		if (SpringProcessStatus.UNKNOWN.equals(descriptor.getStatus())) {
+			return CompletableFuture.supplyAsync(() -> {
+				
+				VirtualMachine vm = null;
+				try {
+					vm = VirtualMachine.attach(descriptor.getVm());
+					
+					boolean ignore = shouldIgnore(descriptor.getVm(), vm);
+					boolean autoConnect = shouldAutoConnect(descriptor.getVm(), vm);
+					
+					if (ignore) {
+						return SpringProcessStatus.IGNORE;
+					}
+					else if (autoConnect) {
+						return SpringProcessStatus.AUTO_CONNECT;
+					}
+					else {
+						return SpringProcessStatus.REGULAR;
+					}
+				}
+				catch (Exception e) {
+					return SpringProcessStatus.IGNORE;
+				}
+				finally {
+					if (vm != null) {
+						try {
+							vm.detach();
+						}
+						catch (Exception e) {
+							log.error("error detaching from vm: " + descriptor.getVm().id(), e);
+						}
+					}
+				}
+			});
+		}
+		
+		return CompletableFuture.completedFuture(SpringProcessStatus.UNKNOWN);
+	}
+
+	public void connectProcess(SpringProcessDescriptor descriptor) {
 		VirtualMachine vm = null;
 		VirtualMachineDescriptor vmDescriptor = descriptor.getVm();
 		
@@ -167,10 +233,6 @@ public class SpringProcessConnectorLocal {
 			String jmxAddress = null;
 			vm = VirtualMachine.attach(vmDescriptor);
 			
-			if (checkAutoConnect && !shouldAutoConnectToProcess(vmDescriptor, vm)) {
-				return;
-			}
-
 			try {
 				jmxAddress = vm.getAgentProperties().getProperty(LOCAL_CONNECTOR_ADDRESS);
 			} catch (Exception e) {
@@ -211,37 +273,45 @@ public class SpringProcessConnectorLocal {
 		}
 	}
 
-	private boolean shouldAutoConnectToProcess(VirtualMachineDescriptor vmDescriptor, VirtualMachine vm) {
-		return false;
+	private boolean shouldIgnore(VirtualMachineDescriptor vmDescriptor, VirtualMachine vm) {
+		try {
+			String displayName = vmDescriptor.displayName();
+			if (displayName != null && displayName.startsWith(ECLIPSE_PROCESS_DISPLAY_NAME_PREFIX)) {
+				log.info("Eclipse process found, do not connect: " + vmDescriptor.id());
+				return true;
+			}
+			
+			Properties systemProperties = vm.getSystemProperties();
+			
+			Object languageServerIndicatorProperty = systemProperties.get(LANGUAGE_SERVER_PROPERTY);
+			if (languageServerIndicatorProperty != null) {
+				log.info("language server process found, do not connect: " + vmDescriptor.id());
+				return true;
+			}
+			
+		}
+		catch (Exception e) {
+			return true;
+		}
 		
-//		try {
-//			String displayName = vmDescriptor.displayName();
-//			if (displayName != null && displayName.startsWith(ECLIPSE_PROCESS_DISPLAY_NAME_PREFIX)) {
-//				log.info("Eclipse process found, do not connect: " + vmDescriptor.id());
-//				return false;
-//			}
-//			
-//			Properties systemProperties = vm.getSystemProperties();
-//			
-//			Object projectNameProperty = systemProperties.get(SPRING_APP_PROJECT_NAME_PROPERTY);
-//			if (projectNameProperty instanceof String) {
-//				log.info("Spring boot process found: " + projectNameProperty);
-//				return this.projects.contains((String) projectNameProperty);
-//			}
-//			
-//			Object languageServerIndicatorProperty = systemProperties.get(LANGUAGE_SERVER_PROPERTY);
-//			if (languageServerIndicatorProperty != null) {
-//				log.info("language server process found, do not connect: " + vmDescriptor.id());
-//				return false;
-//			}
-//			
-//		}
-//		catch (Exception e) {
-//			return false;
-//		}
-//		
-//		// default case:
-//		return true;
+		return false;
+	}
+
+	private boolean shouldAutoConnect(VirtualMachineDescriptor vmDescriptor, VirtualMachine vm) {
+		try {
+			Properties systemProperties = vm.getSystemProperties();
+			
+			Object projectNameProperty = systemProperties.get(SPRING_APP_PROJECT_NAME_PROPERTY);
+			if (projectNameProperty instanceof String) {
+				log.info("Spring boot process found: " + projectNameProperty);
+				return this.projects.contains((String) projectNameProperty);
+			}
+		}
+		catch (Exception e) {
+			return false;
+		}
+		
+		return false;
 	}
 
 	private String getProcessID(VirtualMachineDescriptor descriptor) {
@@ -253,5 +323,5 @@ public class SpringProcessConnectorLocal {
 		int firstSpace = rawName.indexOf(' ');
 		return firstSpace < 0 ? rawName : rawName.substring(0, firstSpace);
 	}
-	
+
 }

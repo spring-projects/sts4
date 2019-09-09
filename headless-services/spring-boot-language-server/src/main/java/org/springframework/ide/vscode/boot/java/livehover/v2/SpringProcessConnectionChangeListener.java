@@ -13,16 +13,8 @@ package org.springframework.ide.vscode.boot.java.livehover.v2;
 /**
  * @author Martin Lippert
  */
-public interface SpringProcessConnector {
+public interface SpringProcessConnectionChangeListener {
 	
-	String getProcessKey();
-	String getLabel();
-
-	void connect() throws Exception;
-	void refresh() throws Exception;
-	void disconnect() throws Exception;
-	
-	void addConnectorChangeListener(SpringProcessConnectionChangeListener listener);
-	void removeConnectorChangeListener(SpringProcessConnectionChangeListener listener);
+	void connectionClosed(String processKey);
 
 }

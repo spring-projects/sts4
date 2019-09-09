@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2019 Pivotal, Inc.
+ * Copyright (c) 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -74,13 +74,19 @@ public class SpringProcessTracker {
 	}
 
 	private void update() {
-		log.info("scan for local processes cycle...");
-		try {
-			this.localProcessConnector.searchForNewProcesses();
-		}
-		catch (Throwable e) {
-			log.error("error searching for local processes", e);
-		}
+//		log.info("scan for local processes cycle...");
+//		try {
+//			SpringProcessDescriptor[] autoConnectProcesses = this.localProcessConnector.getProcesses(true, SpringProcessStatus.AUTO_CONNECT);
+//			
+//			for (SpringProcessDescriptor process : autoConnectProcesses) {
+//				log.info("auto-connect to process: " + process.getProcessKey());
+//
+//				this.localProcessConnector.connectProcess(process);
+//			}
+//		}
+//		catch (Throwable e) {
+//			log.error("error searching for local processes", e);
+//		}
 	}
 
 }

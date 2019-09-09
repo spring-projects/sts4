@@ -49,8 +49,6 @@ public class LiveProcessCommandsQuickAccessProvider implements IQuickAccessCompu
 
 	@Override
 	public QuickAccessElement[] computeElements(String query, IProgressMonitor monitor) {
-		System.out.println("COMPUTE QUICK ACCESS ELEMENTS !!!");
-		
 		this.usedLanguageServers = LanguageServiceAccessor.getActiveLanguageServers(serverCapabilities -> true);
 
 		if (usedLanguageServers.isEmpty()) {
@@ -65,12 +63,6 @@ public class LiveProcessCommandsQuickAccessProvider implements IQuickAccessCompu
 		ls.getWorkspaceService().executeCommand(commandParams).thenAcceptAsync(commandResult ->
 			createCommandItems(res, commandResult))).toArray(CompletableFuture[]::new)).join();
 		
-		System.out.println("quick access elements computed: " + res.size());
-		
-		for (QuickAccessElement quickAccessElement : res) {
-			System.out.println("generated element: " + quickAccessElement.getLabel());
-		}
-
 		return res.toArray(new QuickAccessElement[res.size()]);
 	}
 

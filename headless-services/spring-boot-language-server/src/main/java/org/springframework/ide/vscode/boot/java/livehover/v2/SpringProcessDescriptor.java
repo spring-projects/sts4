@@ -23,11 +23,15 @@ public class SpringProcessDescriptor {
 	private final String processName;
 	private final VirtualMachineDescriptor vm;
 	
+	private SpringProcessStatus status;
+	
 	public SpringProcessDescriptor(String processKey, String processID, String processName, VirtualMachineDescriptor vm) {
 		this.processKey = processKey;
 		this.processID = processID;
 		this.processName = processName;
 		this.vm = vm;
+		
+		this.status = SpringProcessStatus.UNKNOWN;
 	}
 
 	public String getProcessKey() {
@@ -47,17 +51,20 @@ public class SpringProcessDescriptor {
 	}
 
 	public String getLabel() {
-		return processID + " (" + processName + ") ";
+		return processID + " (" + processName + ")";
+	}
+	
+	public void setStatus(SpringProcessStatus status) {
+		this.status = status;
+	}
+	
+	public SpringProcessStatus getStatus() {
+		return this.status;
 	}
 
 	@Override
 	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((processID == null) ? 0 : processID.hashCode());
-		result = prime * result + ((processKey == null) ? 0 : processKey.hashCode());
-		result = prime * result + ((processName == null) ? 0 : processName.hashCode());
-		return result;
+		return processKey.hashCode();
 	}
 
 	@Override
@@ -69,22 +76,15 @@ public class SpringProcessDescriptor {
 		if (getClass() != obj.getClass())
 			return false;
 		SpringProcessDescriptor other = (SpringProcessDescriptor) obj;
-		if (processID == null) {
-			if (other.processID != null)
-				return false;
-		} else if (!processID.equals(other.processID))
-			return false;
 		if (processKey == null) {
 			if (other.processKey != null)
 				return false;
 		} else if (!processKey.equals(other.processKey))
 			return false;
-		if (processName == null) {
-			if (other.processName != null)
-				return false;
-		} else if (!processName.equals(other.processName))
-			return false;
 		return true;
 	}
+	
+	
+
 
 }

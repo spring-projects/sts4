@@ -61,10 +61,10 @@ public class SpringProcessCommandHandler {
 	private CompletableFuture<Object> connect(ExecuteCommandParams params) {
 		String processKey = getProcessKey(params);
 		if (processKey != null) {
-			SpringProcessDescriptor[] processes = localProcessConnector.getProcesses();
+			SpringProcessDescriptor[] processes = localProcessConnector.getProcesses(false, SpringProcessStatus.REGULAR);
 			for (SpringProcessDescriptor process : processes) {
 				if (process.getProcessKey().equals(processKey)) {
-					localProcessConnector.connectLocalProcess(process, false);
+					localProcessConnector.connectProcess(process);
 					return CompletableFuture.completedFuture(null);
 				}
 			}
@@ -83,6 +83,11 @@ public class SpringProcessCommandHandler {
 	}
 
 	private CompletableFuture<Object> disconnect(ExecuteCommandParams params) {
+		String processKey = getProcessKey(params);
+		if (processKey != null) {
+			connectorService.disconnectProcess(processKey);
+		}
+
 		return CompletableFuture.completedFuture(null);
 	}
 
@@ -96,20 +101,26 @@ public class SpringProcessCommandHandler {
 		for (SpringProcessConnector process : connectedProcesses) {
 			String processKey = process.getProcessKey();
 			String label = process.getLabel();
-			String action = COMMAND_REFRESH;
 
-			LiveProcessCommand command = new LiveProcessCommand();
-			command.setAction(action);
-			command.setLabel(label);
-			command.setProcessKey(processKey);
+			LiveProcessCommand refreshCommand = new LiveProcessCommand();
+			refreshCommand.setAction(COMMAND_REFRESH);
+			refreshCommand.setLabel(label);
+			refreshCommand.setProcessKey(processKey);
+			result.add(refreshCommand);
 			
-			result.add(command);
-			
+			if (localProcessConnector.isLocalProcess(process.getProcessKey())) {
+				LiveProcessCommand disconnectCommand = new LiveProcessCommand();
+				disconnectCommand.setAction(COMMAND_DISCONNECT);
+				disconnectCommand.setLabel(label);
+				disconnectCommand.setProcessKey(processKey);
+				result.add(disconnectCommand);
+			}
+
 			alreadyConnected.add(processKey);
 		}
 		
 		// other available local processes
-		SpringProcessDescriptor[] localProcesses = localProcessConnector.getProcesses();
+		SpringProcessDescriptor[] localProcesses = localProcessConnector.getProcesses(true, SpringProcessStatus.REGULAR);
 		for (SpringProcessDescriptor localProcess : localProcesses) {
 			String processKey = localProcess.getProcessKey();
 			if (!alreadyConnected.contains(processKey)) {

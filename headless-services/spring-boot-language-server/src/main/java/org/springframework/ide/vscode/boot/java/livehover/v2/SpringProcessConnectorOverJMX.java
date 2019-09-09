@@ -10,6 +10,9 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.livehover.v2;
 
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
+
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
@@ -33,6 +36,8 @@ public class SpringProcessConnectorOverJMX implements SpringProcessConnector {
 	private final String host;
 	private final String port;
 	
+	private final List<SpringProcessConnectionChangeListener> listeners;
+	
 	public SpringProcessConnectorOverJMX(SpringProcessLiveDataProvider liveDataProvider, String processKey, String jmxURL,
 			String urlScheme, String processID, String processName, String host, String port) {
 
@@ -44,6 +49,8 @@ public class SpringProcessConnectorOverJMX implements SpringProcessConnector {
 		this.processName = processName;
 		this.host = host;
 		this.port = port;
+
+		this.listeners = new CopyOnWriteArrayList<>();
 	}
 	
 	@Override
@@ -102,5 +109,23 @@ public class SpringProcessConnectorOverJMX implements SpringProcessConnector {
 	public void disconnect() throws Exception {
 		this.liveDataProvider.remove(processKey);
 	}
+
+	@Override
+	public void addConnectorChangeListener(SpringProcessConnectionChangeListener listener) {
+		this.listeners.add(listener);
+	}
+
+	@Override
+	public void removeConnectorChangeListener(SpringProcessConnectionChangeListener listener) {
+		this.listeners.remove(listener);
+	}
+	
+	private void announceConnectionClosed() {
+		for (SpringProcessConnectionChangeListener listener : this.listeners) {
+			listener.connectionClosed(processKey);
+		}
+	}
+
+
 
 }

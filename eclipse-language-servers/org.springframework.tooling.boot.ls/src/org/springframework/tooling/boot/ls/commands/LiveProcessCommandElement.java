@@ -78,8 +78,6 @@ public class LiveProcessCommandElement extends QuickAccessElement {
 
 	@Override
 	public void execute() {
-		System.out.println("EXECUTE THE COMMAND !!!");
-		
 		List<@NonNull LanguageServer> usedLanguageServers = LanguageServiceAccessor.getActiveLanguageServers(serverCapabilities -> true);
 
 		if (usedLanguageServers.isEmpty()) {
