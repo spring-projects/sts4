@@ -145,9 +145,9 @@ public class PropertyInfo {
 
 	public HintProvider getHints(TypeUtil typeUtil) {
 		Type type = TypeParser.parse(this.type);
-		if (TypeUtil.isMap(type)) {
+		if (typeUtil.isMap(type)) {
 			return HintProviders.forMap(keyHints(typeUtil), valueHints(typeUtil), TypeUtil.getDomainType(type));
-		} else if (TypeUtil.isSequencable(type)) {
+		} else if (typeUtil.isSequencable(type)) {
 			return HintProviders.forAllValueContexts(valueHints(typeUtil));
 		} else {
 			return HintProviders.forHere(valueHints(typeUtil));

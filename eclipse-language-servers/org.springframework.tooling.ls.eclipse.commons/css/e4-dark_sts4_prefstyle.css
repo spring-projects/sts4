@@ -1,0 +1,4 @@
+/* See bug 466075 about the pseudo-selector ":org-springframework-tooling-ls-eclipse-commons" */
+IEclipsePreferences#org-eclipse-ui-workbench:org-springframework-tooling-ls-eclipse-commons {
+		preferences:
+			'org.springframework.tooling.ls.eclipse.commons.STS4BootMarkerIndicationColor=56,84,26'

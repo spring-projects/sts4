@@ -77,22 +77,23 @@ class PropertiesHoverCalculator {
 		if (valueRegion.getStart() <= propertyFinder.offset && propertyFinder.offset < valueRegion.getEnd()) {
 			String valueString = valueRegion.toString();
 			String propertyName = value.getParent().getKey().decode();
-			Type type = getValueType(propertyFinder.index, propertyFinder.typeUtil, propertyName);
-			if (TypeUtil.isSequencable(type)) {
+			TypeUtil typeUtil = propertyFinder.typeUtil;
+			Type type = getValueType(propertyFinder.index, typeUtil, propertyName);
+			if (typeUtil.isSequencable(type)) {
 				//It is useful to provide content assist for the values in the list when entering a list
 				type = TypeUtil.getDomainType(type);
 			}
 			if (TypeUtil.isClass(type)) {
 				//Special case. We want to provide hoverinfos more liberally than what's suggested for completions (i.e. even class names
 				//that are not suggested by the hints because they do not meet subtyping constraints should be hoverable and linkable!
-				StsValueHint hint = StsValueHint.className(valueString, propertyFinder.typeUtil);
+				StsValueHint hint = StsValueHint.className(valueString, typeUtil);
 				if (hint!=null) {
 					return Tuples.of(createRenderable(hint), valueRegion.asRegion());
 				}
 			}
 			//Hack: pretend to invoke content-assist at the end of the value text. This should provide hints applicable to that value
 			// then show hoverinfo based on that. That way we can avoid duplication a lot of similar logic to compute hoverinfos and hyperlinks.
-			Collection<StsValueHint> hints = getValueHints(propertyFinder.index, propertyFinder.typeUtil, valueString, propertyName, EnumCaseMode.ALIASED);
+			Collection<StsValueHint> hints = getValueHints(propertyFinder.index, typeUtil, valueString, propertyName, EnumCaseMode.ALIASED);
 			if (hints!=null) {
 				Optional<StsValueHint> hint = hints.stream().filter(h -> valueString.equals(h.getValue())).findFirst();
 				if (hint.isPresent()) {

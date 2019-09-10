@@ -116,10 +116,10 @@ public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistCon
 	protected String appendTextFor(Type type) {
 		//Note that proper indentation after each \n" is added automatically
 		//so the strings created here do not need to contain indentation spaces
-		if (TypeUtil.isMap(type)) {
+		if (typeUtil.isMap(type)) {
 			//ready to enter nested map key on next line
 			return "\n"+YamlIndentUtil.INDENT_STR;
-		} if (TypeUtil.isSequencable(type)) {
+		} if (typeUtil.isSequencable(type)) {
 			//ready to enter sequence element on next line
 			return "\n- ";
 		} else if (typeUtil.isAtomic(type)) {
@@ -328,7 +328,7 @@ public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistCon
 		@Override
 		public YamlAssistContext traverse(YamlPathSegment s) {
 			if (s.getType()==YamlPathSegmentType.VAL_AT_KEY) {
-				if (TypeUtil.isSequencable(type) || TypeUtil.isMap(type)) {
+				if (typeUtil.isSequencable(type) || typeUtil.isMap(type)) {
 					return contextWith(s, TypeUtil.getDomainType(type));
 				}
 				String key = s.toPropString();
@@ -337,7 +337,7 @@ public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistCon
 					return contextWith(s, TypedProperty.typeOf(subproperties.get(key)));
 				}
 			} else if (s.getType()==YamlPathSegmentType.VAL_AT_INDEX) {
-				if (TypeUtil.isSequencable(type)) {
+				if (typeUtil.isSequencable(type)) {
 					return contextWith(s, TypeUtil.getDomainType(type));
 				}
 			}
@@ -450,6 +450,10 @@ public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistCon
 						ScoreableProposal completion = completionFactory.property(
 								doc.getDocument(), edits, match, typeUtil
 						);
+						String prefix = indexNav.getPrefix();
+						if (StringUtil.hasText(prefix)) {
+							completion = completion.dropLabelPrefix(prefix.length()+1);
+						}
 						if (getContextRoot(doc).exists(YamlPath.fromProperty(match.data.getId()))) {
 							completion.deemphasize(DEEMP_EXISTS);
 						}
@@ -632,7 +636,7 @@ public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistCon
 	private static List<IJavaElement> getAllJavaElements(TypeUtil typeUtil, Type parentType, String propName) {
 		if (propName!=null) {
 			Type beanType = parentType;
-			if (TypeUtil.isMap(beanType)) {
+			if (typeUtil.isMap(beanType)) {
 				Type keyType = typeUtil.getKeyType(beanType);
 				if (keyType!=null && typeUtil.isEnum(keyType)) {
 					IField field = typeUtil.getEnumConstant(keyType, propName);

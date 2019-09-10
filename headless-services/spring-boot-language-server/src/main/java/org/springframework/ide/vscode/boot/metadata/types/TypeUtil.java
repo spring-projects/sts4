@@ -99,6 +99,9 @@ public class TypeUtil {
 
 	private static final Object OBJECT_TYPE_NAME = Object.class.getName();
 	private static final String STRING_TYPE_NAME = String.class.getName();
+	private static final String MAP_TYPE_NAME = Map.class.getName();
+	private static final String SET_TYPE_NAME = Set.class.getName();
+	private static final String LIST_TYPE_NAME = List.class.getName();
 	private static final String INET_ADDRESS_TYPE_NAME = InetAddress.class.getName();
 	private static final String DURATION_TYPE_NAME = Duration.class.getName();
 	private static final String CLASS_TYPE_NAME = Class.class.getName();
@@ -443,7 +446,7 @@ public class TypeUtil {
 	 * use the notation <name>[<index>]=<value> in property file
 	 * for properties of this type.
 	 */
-	public static boolean isBracketable(Type type) {
+	public boolean isBracketable(Type type) {
 		//Note array types where once not considered 'Bracketable'
 		//see: STS-4031
 
@@ -452,32 +455,13 @@ public class TypeUtil {
 		//This is actually more logical too.
 		//So '[' notation in props file can be used for either list or arrays (at least in recent versions of boot).
 		//Note also 'Set' are now considered bracketable. See: https://www.pivotaltracker.com/story/show/154644992
-		return isArray(type) || isCollection(List.class, type) || isCollection(Set.class, type);
-	}
-
-	@SuppressWarnings("rawtypes")
-	private static boolean isCollection( Class<? extends Collection> klass, Type type) {
-		//Note: to be really correct we should use JDT infrastructure to resolve
-		//type in project classpath instead of using Java reflection.
-		//However, use reflection here is okay assuming types we care about
-		//are part of JRE standard libraries. Using eclipse 'type hirearchy' would
-		//also potentialy be very slow.
-		if (type!=null) {
-			String erasure = type.getErasure();
-			try {
-				Class<?> erasureClass = Class.forName(erasure);
-				return klass.isAssignableFrom(erasureClass);
-			} catch (Exception e) {
-				//type not resolveable assume its not 'array like'
-			}
-		}
-		return false;
+		return isArray(type) || isCollection(LIST_TYPE_NAME, type) || isCollection(SET_TYPE_NAME, type);
 	}
 
 	/**
 	 * Check if type can be treated / represented as a sequence node in .yml file
 	 */
-	public static boolean isSequencable(Type type) {
+	public boolean isSequencable(Type type) {
 		return isBracketable(type);
 	}
 
@@ -485,23 +469,70 @@ public class TypeUtil {
 		return type!=null && type.getErasure().endsWith("[]");
 	}
 
-	public static boolean isMap(Type type) {
-		//Note: to be really correct we should use JDT infrastructure to resolve
-		//type in project classpath instead of using Java reflection.
-		//However, use reflection here is okay assuming types we care about
-		//are part of JRE standard libraries. Using eclipse 'type hirearchy' would
-		//also potentialy be very slow.
+	public boolean isMap(Type type) {
 		if (type!=null) {
 			String erasure = type.getErasure();
+			if (MAP_TYPE_NAME.equals(erasure)) {
+				//quick / easy case. No looking for types and hierarchies required.
+				return true;
+			}
 			try {
-				Class<?> erasureClass = Class.forName(erasure);
-				return Map.class.isAssignableFrom(erasureClass);
+				IType erasureType = findType(erasure);
+				return isAssignableFrom(MAP_TYPE_NAME, erasureType);
 			} catch (Exception e) {
 				//type not resolveable
 			}
 		}
 		return false;
 	}
+
+	private boolean isCollection(String collectionTypeName, Type type) {
+		if (type!=null) {
+			String erasure = type.getErasure();
+			if (collectionTypeName.equals(erasure)) {
+				//quick / easy case. No looking for types and hierarchies required.
+				return true;
+			}
+			try {
+				IType erasureType = findType(erasure);
+				return isAssignableFrom(collectionTypeName, erasureType);
+			} catch (Exception e) {
+				//type not resolveable 
+			}
+		}
+		return false;
+	}
+
+
+	private boolean isAssignableFrom(String superTypeName, IType erasureType) {
+		Set<String> seen = new HashSet<>();
+		return searchSuperTypes(seen, erasureType, superTypeName);
+	}
+
+
+	private boolean searchSuperTypes(Set<String> seen, IType searchIn, String fqTargetType) {
+		if (searchIn!=null) {
+			String fqName = searchIn.getFullyQualifiedName();
+			if (fqName.equals(fqTargetType)) {
+				return true;
+			}
+			if (seen.add(fqName)) {
+				for (String itfName : searchIn.getSuperInterfaceNames()) {
+					IType itf = findType(itfName);
+					if (searchSuperTypes(seen, itf, fqTargetType)) {
+						return true;
+					}
+				}
+				String klassName = searchIn.getSuperclassName();
+				IType klass = findType(klassName);
+				if (searchSuperTypes(seen, klass, fqTargetType)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
 
 	/**
 	 * Get domain type for a map or list generic type.
@@ -966,9 +997,9 @@ public class TypeUtil {
 	 * List<List<List<String>>> -> 2
 	 * Map<*,List<String>> -> 2
 	 */
-	public static int getDimensionality(Type type) {
+	public int getDimensionality(Type type) {
 		int dim = 0;
-		while (isSequencable(type) || isMap(type)) {
+		while (isSequencable(type) || this.isMap(type)) {
 			dim++;
 			type = getDomainType(type);
 		}

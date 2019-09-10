@@ -224,7 +224,7 @@ public class ApplicationYamlASTReconciler implements YamlASTReconciler {
 		checkForDuplicateKeys(mapping);
 		if (typeUtil.isAtomic(type)) {
 			expectTypeFoundMapping(type, mapping);
-		} else if (TypeUtil.isMap(type) || TypeUtil.isSequencable(type)) {
+		} else if (typeUtil.isMap(type) || typeUtil.isSequencable(type)) {
 			Type keyType = typeUtil.getKeyType(type);
 			Type valueType = TypeUtil.getDomainType(type);
 			if (keyType!=null) {
@@ -280,7 +280,7 @@ public class ApplicationYamlASTReconciler implements YamlASTReconciler {
 	private void reconcile(YamlFileAST root, SequenceNode seq, Type type) {
 		if (typeUtil.isAtomic(type)) {
 			expectTypeFoundSequence(type, seq);
-		} else if (TypeUtil.isSequencable(type)) {
+		} else if (typeUtil.isSequencable(type)) {
 			Type domainType = TypeUtil.getDomainType(type);
 			if (domainType!=null) {
 				for (Node element : seq.getValue()) {

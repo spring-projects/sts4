@@ -17,7 +17,8 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.eclipse.lsp4j.TextEdit;
-import org.springframework.ide.vscode.commons.languageserver.util.PlaceHolderString;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
@@ -45,6 +46,8 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
  * @author Kris De Volder
  */
 public class DocumentEdits implements ProposalApplier {
+	
+	private static final Logger log = LoggerFactory.getLogger(DocumentEdits.class);
 
 	private static final Pattern NON_WS_CHAR = Pattern.compile("\\S");
 
@@ -510,5 +513,21 @@ public class DocumentEdits implements ProposalApplier {
 
 	final public boolean hasSnippets() {
 		return hasSnippets;
+	}
+
+	public void dropPrefix(String prefix) {
+		try {
+			if (edits.size() == 2 && edits.get(0) instanceof Deletion && edits.get(1) instanceof Insertion) {
+				Deletion del = (Deletion) edits.get(0);
+				Insertion ins = (Insertion) edits.get(1);
+				String replacedText = doc.textBetween(del.start, del.end);
+				if (ins.offset>=del.start && ins.offset <=del.end && replacedText.startsWith(prefix)) {
+					del.start+=prefix.length();
+					ins.text = ins.text.substring(prefix.length());
+				}
+			}
+		} catch (BadLocationException e) {
+			log.error("", e);
+		}
 	}
 }

@@ -14,6 +14,7 @@
             highlightPreferenceKey="STS4BootMarkerHighlighting"
             highlightPreferenceValue="true"
             icon="icons/boot-icon.png"
+            includeOnPreferencePage="false"
             label="Boot Dynamic Info"
             overviewRulerPreferenceKey="STS4BootMarkerIndicationInOverviewRuler"
             overviewRulerPreferenceValue="false"
@@ -116,5 +117,27 @@
                optional="false">
          </commandParameter>
       </command>
+   </extension>
+   <extension
+         point="org.eclipse.e4.ui.css.swt.theme">
+      <stylesheet
+            uri="css/e4-dark_sts4_prefstyle.css">
+         <themeid
+               refid="org.eclipse.e4.ui.css.theme.e4_dark">
+         </themeid>
+      </stylesheet>
+   </extension>
+   <extension
+         point="org.eclipse.ui.themes">
+      <colorDefinition
+            categoryId="org.springsource.ide.eclipse.commons.ui"
+            id="org.springframework.tooling.ls.eclipse.commons.STS4BootMarkerIndicationColor"
+            isEditable="true"
+            label="Live Boot Hint Color"
+            value="219,236,207">
+         <description>
+            Running Spring Boot app live data availability hints
+         </description>
+      </colorDefinition>
    </extension>
 </plugin>

@@ -71,6 +71,98 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 
 	////////////////////////////////////////////////////////////////////////////////////////
 	
+	@Test public void abbreviateLongPrefixCompletions() throws Exception {
+		//See: https://github.com/spring-projects/sts4/issues/361
+		Editor editor;
+		
+		data("spring.data.jpa.very.long.foobar", "java.lang.String", null, null);
+		data("spring.data.jpa.very.long.barbar", "java.lang.String", null, null);
+		data("spring.data.jpa.very.long.foofoo", "java.lang.String", null, null);
+		data("spring.data.jpa.very.long.barfoo", "java.lang.String", null, null);
+		data("spring.data.jpa.very.long.foobar.more", "java.lang.String", null, null);
+		data("spring.data.jpa.very.long.barbar.more", "java.lang.String", null, null);
+		data("spring.data.jpa.very.long.foofoo.more", "java.lang.String", null, null);
+		data("spring.data.jpa.very.long.barfoo.more", "java.lang.String", null, null);
+		
+		
+		editor = newEditor(
+				"spring:\n" +
+				"  data:\n" +
+				"    jpa:\n" +
+				"      very:\n" +
+				"        bar<*>"
+		);
+		editor.assertCompletions(
+				"spring:\n" +
+				"  data:\n" +
+				"    jpa:\n" +
+				"      very:\n" +
+				"        long:\n" +
+				"          barbar: <*>",
+				"spring:\n" +
+				"  data:\n" +
+				"    jpa:\n" +
+				"      very:\n" +
+				"        long:\n" +
+				"          barfoo: <*>",
+				"spring:\n" +
+				"  data:\n" +
+				"    jpa:\n" +
+				"      very:\n" +
+				"        long:\n" +
+				"          foobar: <*>",
+				"spring:\n" +
+				"  data:\n" +
+				"    jpa:\n" +
+				"      very:\n" +
+				"        long:\n" +
+				"          barbar:\n"+
+				"            more: <*>",
+				"spring:\n" +
+				"  data:\n" +
+				"    jpa:\n" +
+				"      very:\n" +
+				"        long:\n" +
+				"          barfoo:\n"+
+				"            more: <*>",
+				"spring:\n" +
+				"  data:\n" +
+				"    jpa:\n" +
+				"      very:\n" +
+				"        long:\n" +
+				"          foobar:\n"+
+				"            more: <*>"
+		);
+		
+		editor.assertCompletionLabels(
+				"long.barbar",
+				"long.barfoo", 
+				"long.foobar", 
+				"long.barbar.more", 
+				"long.barfoo.more", 
+				"long.foobar.more"
+		);
+		
+		editor = newEditor(
+				"spring:\n" +
+				"  data:\n" +
+				"    jpa:\n" +
+				"      vr<*>"
+		);
+		editor.assertCompletionLabels(
+				"very.long.barbar",
+				"very.long.barfoo", 
+				"very.long.foobar", 
+				"very.long.foofoo",
+				"very.long.barbar.more", 
+				"very.long.barfoo.more", 
+				"very.long.foobar.more",
+				"very.long.foofoo.more"
+		);
+		
+	}
+
+	
 	@Test public void bug_GH_327() throws Exception {
 		//See https://github.com/spring-projects/sts4/issues/327
 		data("spring.resources.static-locations", "java.lang.Boolean", null, "Blah");
@@ -3358,7 +3450,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 				"  p<*>"
 		);
 
-		editor.assertCompletionLabels("server.port");
+		editor.assertCompletionLabels("port");
 
 
 

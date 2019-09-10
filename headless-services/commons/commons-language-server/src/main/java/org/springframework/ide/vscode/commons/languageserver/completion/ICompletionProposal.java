@@ -38,5 +38,22 @@ public interface ICompletionProposal {
 	default ICompletionProposal deemphasize(double howmuch) { return this; }
 
 	default boolean isDeprecated() { return false; }
-
+	
+	default TransformedCompletion dropLabelPrefix(int _numberOfDroppedChars) {
+		String orgLabel = getLabel();
+		int numberOfDroppedChars = Math.min(orgLabel.length(), _numberOfDroppedChars);
+		String prefix = getLabel().substring(0, numberOfDroppedChars);
+		return new TransformedCompletion(this) {
+			@Override
+			protected String tranformLabel(String originalLabel) {
+				return originalLabel.substring(numberOfDroppedChars);
+			}
+			
+			@Override
+			protected DocumentEdits transformEdit(DocumentEdits textEdit) {
+				textEdit.dropPrefix(prefix);
+				return textEdit;
+			}
+		};
+	}
 }

@@ -20,6 +20,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import com.google.common.base.Strings;
 
@@ -75,6 +76,22 @@ public class StringUtil {
 			return s.subSequence(0,len).toString();
 		}
 		return "";
+	}
+
+	public static String commonPrefix(Stream<CharSequence> strings) {
+		CharSequence prefix = null;
+		for (CharSequence string : (Iterable<CharSequence>)strings::iterator) {
+			if (prefix==null) {
+				prefix = string;
+			} else {
+				int end = 0;
+				while (end<prefix.length() && end<string.length() && string.charAt(end)==prefix.charAt(end)) {
+					end++;
+				}
+				prefix = prefix.subSequence(0, end);
+			}
+		}
+		return prefix.toString();
 	}
 
 	public static String camelCaseToHyphens(String value) {
