@@ -305,15 +305,10 @@
 				<package.qualifierPrefix>e412</package.qualifierPrefix>
 			</properties>
 			<repositories>
-<!--				<repository>
+				<repository>
 					<id>2019-06</id>
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/releases/2019-06/</url>
-				</repository> -->
-				<repository>
-					<id>2019-06-staging</id>
-					<layout>p2</layout>
-					<url>https://download.eclipse.org/staging/2019-06/</url>
 				</repository>
 				<repository>
 					<id>orbit</id>
