@@ -189,7 +189,7 @@
     "vsce-package": "vsce package"
   },
   "dependencies": {
-    "@pivotal-tools/commons-vscode": "file:../commons-vscode/pivotal-tools-commons-vscode-0.2.2.tgz",
+    "@pivotal-tools/commons-vscode": "file:../commons-vscode/pivotal-tools-commons-vscode-0.2.3.tgz",
     "vscode-languageclient": "5.2.1"
   },
   "devDependencies": {
