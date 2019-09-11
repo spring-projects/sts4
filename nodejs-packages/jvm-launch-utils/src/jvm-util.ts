@@ -55,15 +55,19 @@ export interface JVM {
  * toolsjar and to check whether the JVM is a JDK.
  */
 export function findJvm(javaHome?: string) : Promise<JVM | null> {
-    let javaExe = findJavaExe(javaHome);
-    if (javaExe) {
-        return getJavaInfo(javaExe).then(javaProps => new JVMImpl(
-            javaProps.get("java.home"), 
-            javaExe, 
-            getMajorVersion(javaProps)
-        ));
+    try {
+        let javaExe = findJavaExe(javaHome);
+        if (javaExe) {
+            return getJavaInfo(javaExe).then(javaProps => new JVMImpl(
+                javaProps.get("java.home"), 
+                javaExe, 
+                getMajorVersion(javaProps)
+            ));
+        }
+        return Promise.resolve(null);
+    } catch (e) {
+        return Promise.reject(e);
     }
-    return Promise.resolve(null);
 }
 
 /**
