@@ -15,6 +15,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.annotation.NonNull;
@@ -59,9 +60,16 @@ public class LiveProcessCommandsQuickAccessProvider implements IQuickAccessCompu
 		commandParams.setCommand(LiveProcessCommandElement.COMMAND_LIST_PROCESSES);
 
 		List<QuickAccessElement> res = Collections.synchronizedList(new ArrayList<>());
-		CompletableFuture.allOf(usedLanguageServers.stream().map(ls ->
-		ls.getWorkspaceService().executeCommand(commandParams).thenAcceptAsync(commandResult ->
-			createCommandItems(res, commandResult))).toArray(CompletableFuture[]::new)).join();
+		
+		try {
+			CompletableFuture.allOf(usedLanguageServers.stream().map(ls ->
+			ls.getWorkspaceService().executeCommand(commandParams).thenAcceptAsync(commandResult ->
+				createCommandItems(res, commandResult))).toArray(CompletableFuture[]::new)).get(2000, TimeUnit.MILLISECONDS);
+		}
+		catch (Exception e) {
+			// TODO: better error handling
+			e.printStackTrace();
+		}
 		
 		return res.toArray(new QuickAccessElement[res.size()]);
 	}

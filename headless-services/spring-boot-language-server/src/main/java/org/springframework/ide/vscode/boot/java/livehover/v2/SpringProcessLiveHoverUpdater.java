@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.boot.java.livehover.v2;
 
 import java.util.Arrays;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -68,7 +69,9 @@ public class SpringProcessLiveHoverUpdater {
 		});
 		
 		liveDataProvider.addLiveDataChangeListener(event -> {
-			update();
+			CompletableFuture.runAsync(() -> {
+				update();
+			});
 		});
 	}
 

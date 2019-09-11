@@ -10,9 +10,14 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.livehover.v2;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import javax.management.Notification;
+import javax.management.NotificationListener;
+import javax.management.remote.JMXConnectionNotification;
 import javax.management.remote.JMXConnector;
 import javax.management.remote.JMXConnectorFactory;
 import javax.management.remote.JMXServiceURL;
@@ -27,22 +32,31 @@ public class SpringProcessConnectorOverJMX implements SpringProcessConnector {
 
 	private static final Logger log = LoggerFactory.getLogger(SpringProcessConnectorOverJMX.class);
 
-	private final SpringProcessLiveDataProvider liveDataProvider;
+	private static final String JMX_CLIENT_CONNECTION_CHECK_PERIOD_PROPERTY_KEY = "jmx.remote.x.client.connection.check.period";
+	private static final long JMX_HEARTBEAT_INTERVAL = 1000;
+
 	private final String processKey;
 	private final String jmxURL;
 	private final String urlScheme;
-	private final String processID;
-	private final String processName;
-	private final String host;
 	private final String port;
+	
+	// not final, might be updated with data from JMX process, if not initially set
+	private String processID;
+	private String processName;
+	private String host;
 	
 	private final List<SpringProcessConnectionChangeListener> listeners;
 	
-	public SpringProcessConnectorOverJMX(SpringProcessLiveDataProvider liveDataProvider, String processKey, String jmxURL,
+	private JMXConnector jmxConnection;
+	private JMXServiceURL jmxServiceURL;
+
+	private final NotificationListener notificationListener;
+	
+	public SpringProcessConnectorOverJMX(String processKey, String jmxURL,
 			String urlScheme, String processID, String processName, String host, String port) {
 
-		this.liveDataProvider = liveDataProvider;
 		this.processKey = processKey;
+
 		this.jmxURL = jmxURL;
 		this.urlScheme = urlScheme;
 		this.processID = processID;
@@ -50,7 +64,28 @@ public class SpringProcessConnectorOverJMX implements SpringProcessConnector {
 		this.host = host;
 		this.port = port;
 
+		this.jmxConnection = null;
+		this.jmxServiceURL = null;
+		
 		this.listeners = new CopyOnWriteArrayList<>();
+		
+		this.notificationListener = new NotificationListener() {
+			@Override
+			public void handleNotification(Notification notification, Object handback) {
+				String notificationType = notification.getType();
+				
+				if (JMXConnectionNotification.CLOSED.equals(notificationType)) {
+					try {
+						jmxConnection.removeConnectionNotificationListener(notificationListener);
+						jmxConnection = null;
+					}
+					catch (Exception e) {
+						log.error("exception while reacting to connection close of: " + jmxURL, e);
+					}
+					announceConnectionClosed();
+				}
+			}
+		};
 	}
 	
 	@Override
@@ -65,40 +100,44 @@ public class SpringProcessConnectorOverJMX implements SpringProcessConnector {
 	
 	@Override
 	public void connect() throws Exception {
+		jmxServiceURL = new JMXServiceURL(jmxURL);
+		
+		Map<String, Object> environment = new HashMap<>();
+		environment.put(JMX_CLIENT_CONNECTION_CHECK_PERIOD_PROPERTY_KEY, new Long(JMX_HEARTBEAT_INTERVAL));
+		jmxConnection = JMXConnectorFactory.connect(jmxServiceURL, environment);
+		
+		jmxConnection.addConnectionNotificationListener(notificationListener, null, null);
 	}
 
 	@Override
-	public void refresh() throws Exception {
+	public SpringProcessLiveData refresh() throws Exception {
 		log.info("try to open JMX connection to: " + jmxURL);
-		JMXConnector jmxConnector = null;
-		try {
-			SpringProcessLiveDataExtractorOverJMX springJMXConnector = new SpringProcessLiveDataExtractorOverJMX();
-
-			JMXServiceURL jmxServiceURL = new JMXServiceURL(jmxURL);
-			jmxConnector = JMXConnectorFactory.connect(jmxServiceURL, null);
-
-			String hostName = host != null ? host : jmxServiceURL.getHost(); 
-			
-			log.info("retrieve live data from: " + jmxURL);
-			SpringProcessLiveData liveData = springJMXConnector.retrieveLiveData(jmxConnector, processID, processName, urlScheme, hostName, null, port);
-			
-			if (liveData != null && liveData.getBeans() != null && !liveData.getBeans().isEmpty()) {
-				this.liveDataProvider.add(processKey, liveData);
-				return;
+		
+		if (jmxConnection != null) {
+			try {
+				SpringProcessLiveDataExtractorOverJMX springJMXConnector = new SpringProcessLiveDataExtractorOverJMX();
+	
+				if (this.host == null) {
+					this.host = jmxServiceURL.getHost();
+				}
+				
+				log.info("retrieve live data from: " + jmxURL);
+				SpringProcessLiveData liveData = springJMXConnector.retrieveLiveData(jmxConnection, processID, processName, urlScheme, host, null, port);
+				
+				if (this.processID == null) {
+					this.processID = liveData.getProcessID();
+				}
+				
+				if (this.processName == null) {
+					this.processName = liveData.getProcessName();
+				}
+				
+				if (liveData != null && liveData.getBeans() != null && !liveData.getBeans().isEmpty()) {
+					return liveData;
+				}
 			}
-		}
-		catch (Exception e) {
-			log.error("exception while connecting to jmx: " + jmxURL, e);
-		}
-		finally {
-			if (jmxConnector != null) {
-				try {
-					log.info("close JMX connection to: " + jmxURL);
-					jmxConnector.close();
-				}
-				catch (Exception e) {
-					log.error("error closing the JMX connection for: " + jmxURL, e);
-				}
+			catch (Exception e) {
+				log.error("exception while connecting to jmx: " + jmxURL, e);
 			}
 		}
 		
@@ -107,7 +146,18 @@ public class SpringProcessConnectorOverJMX implements SpringProcessConnector {
 
 	@Override
 	public void disconnect() throws Exception {
-		this.liveDataProvider.remove(processKey);
+		try {
+			if (jmxConnection != null) {
+
+				log.info("close JMX connection to: " + jmxURL);
+				jmxConnection.removeConnectionNotificationListener(notificationListener);
+				jmxConnection.close();
+				jmxConnection = null;
+			}
+		}
+		catch (Exception e) {
+			log.error("error closing the JMX connection for: " + jmxURL, e);
+		}
 	}
 
 	@Override
@@ -125,7 +175,5 @@ public class SpringProcessConnectorOverJMX implements SpringProcessConnector {
 			listener.connectionClosed(processKey);
 		}
 	}
-
-
 
 }

@@ -67,14 +67,11 @@ public class SpringProcessConnectorLocal {
 	private final Set<SpringProcessDescriptor> processes;
 	
 	private final SpringProcessConnectorService processConnectorService;
-	private final SpringProcessLiveDataProvider liveDataProvider;
 	
-	public SpringProcessConnectorLocal(SpringProcessConnectorService processConnector, SpringProcessLiveDataProvider liveDataProvider,
-			ProjectObserver projectObserver) {
+	public SpringProcessConnectorLocal(SpringProcessConnectorService processConnector, ProjectObserver projectObserver) {
 		this.projects = Collections.synchronizedCollection(new HashSet<>());
 		this.processes = Collections.synchronizedSet(new HashSet<>());
 		
-		this.liveDataProvider = liveDataProvider;
 		this.processConnectorService = processConnector;
 
 		projectObserver.addListener(new ProjectObserver.Listener() {
@@ -253,7 +250,7 @@ public class SpringProcessConnectorLocal {
 				String urlScheme = "http";
 				
 				SpringProcessConnectorOverJMX connector = new SpringProcessConnectorOverJMX(
-						liveDataProvider, descriptor.getProcessKey(), jmxAddress, urlScheme, processID, processName, null, null);
+						descriptor.getProcessKey(), jmxAddress, urlScheme, processID, processName, null, null);
 
 				this.processConnectorService.connectProcess(descriptor.getProcessKey(), connector);
 			}

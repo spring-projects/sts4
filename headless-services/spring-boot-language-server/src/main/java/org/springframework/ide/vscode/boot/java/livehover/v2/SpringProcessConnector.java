@@ -19,7 +19,7 @@ public interface SpringProcessConnector {
 	String getLabel();
 
 	void connect() throws Exception;
-	void refresh() throws Exception;
+	SpringProcessLiveData refresh() throws Exception;
 	void disconnect() throws Exception;
 	
 	void addConnectorChangeListener(SpringProcessConnectionChangeListener listener);

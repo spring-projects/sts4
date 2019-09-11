@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
 
 import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -94,8 +95,14 @@ public class LiveProcessCommandElement extends QuickAccessElement {
 		
 		commandParams.setArguments(arguments);
 
-		CompletableFuture.allOf(usedLanguageServers.stream().map(ls ->
-			ls.getWorkspaceService().executeCommand(commandParams)).toArray(CompletableFuture[]::new)).join();
+		try {
+			CompletableFuture.allOf(usedLanguageServers.stream().map(ls ->
+				ls.getWorkspaceService().executeCommand(commandParams)).toArray(CompletableFuture[]::new)).get(2, TimeUnit.SECONDS);
+		}
+		catch (Exception e) {
+			// TODO: better exception handling
+			e.printStackTrace();
+		}
 	}
 
 }

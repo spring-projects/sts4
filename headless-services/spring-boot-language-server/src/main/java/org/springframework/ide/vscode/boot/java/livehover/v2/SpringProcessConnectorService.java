@@ -28,14 +28,26 @@ public class SpringProcessConnectorService {
 	private static final int RETRY_MAX_NO = 10;
 	private static final int RETRY_DELAY_IN_SECONDS = 3;
 
+	private final SpringProcessLiveDataProvider liveDataProvider;
+
 	private final ScheduledThreadPoolExecutor scheduler;
 	private final ConcurrentMap<String, SpringProcessConnector> connectors;
 	private final ConcurrentMap<String, Boolean> connectedSuccess;
+
+	private final SpringProcessConnectionChangeListener connectorListener;
 	
-	public SpringProcessConnectorService() {
+	public SpringProcessConnectorService(SpringProcessLiveDataProvider liveDataProvider) {
+		this.liveDataProvider = liveDataProvider;
 		this.scheduler = new ScheduledThreadPoolExecutor(10);
 		this.connectors = new ConcurrentHashMap<>();
 		this.connectedSuccess = new ConcurrentHashMap<>();
+		
+		this.connectorListener = new SpringProcessConnectionChangeListener() {
+			@Override
+			public void connectionClosed(String processKey) {
+				disconnectProcess(processKey);
+			}
+		};
 	}
 	
 	public void connectProcess(String processKey, SpringProcessConnector connector) {
@@ -43,6 +55,8 @@ public class SpringProcessConnectorService {
 
 		this.connectors.put(processKey, connector);
 		this.connectedSuccess.put(processKey, false);
+		
+		connector.addConnectorChangeListener(connectorListener);
 
 		try {
 			scheduleConnect(processKey, connector, 0, TimeUnit.SECONDS, 0);
@@ -63,6 +77,8 @@ public class SpringProcessConnectorService {
 
 	public void disconnectProcess(String processKey) {
 		log.info("disconnect from process: " + processKey);
+
+		this.liveDataProvider.remove(processKey);
 
 		SpringProcessConnector connector = this.connectors.remove(processKey);
 		this.connectedSuccess.put(processKey, false);
@@ -90,6 +106,7 @@ public class SpringProcessConnectorService {
 		this.scheduler.schedule(() -> {
 			try {
 				connector.connect();
+				refreshProcess(processKey);
 			}
 			catch (Exception e) {
 				log.info("problem occured during process connect", e);
@@ -98,7 +115,6 @@ public class SpringProcessConnectorService {
 					scheduleConnect(processKey, connector, RETRY_DELAY_IN_SECONDS, TimeUnit.SECONDS, retryNo + 1);
 				}
 			}
-			refreshProcess(processKey);
 		}, delay, unit);
 	}
 
@@ -124,14 +140,20 @@ public class SpringProcessConnectorService {
 		
 		this.scheduler.schedule(() -> {
 			try {
-				connector.refresh();
-				this.connectedSuccess.put(processKey, true);
+				SpringProcessLiveData newLiveData = connector.refresh();
+				if (newLiveData != null) {
+					if (!this.liveDataProvider.add(processKey, newLiveData)) {
+						this.liveDataProvider.update(processKey, newLiveData);
+					}
+					
+					this.connectedSuccess.put(processKey, true);
+				}
 			}
 			catch (Exception e) {
 				log.info("problem occured during process live data refresh", e);
 				
 				if (retryNo < RETRY_MAX_NO) {
-					scheduleRefresh(processKey, connector, 3, TimeUnit.SECONDS, retryNo + 1);
+					scheduleRefresh(processKey, connector, RETRY_DELAY_IN_SECONDS, TimeUnit.SECONDS, retryNo + 1);
 				}
 				else {
 					disconnectProcess(processKey);

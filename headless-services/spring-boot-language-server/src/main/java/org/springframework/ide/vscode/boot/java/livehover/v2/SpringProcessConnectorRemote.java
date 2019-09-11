@@ -141,12 +141,9 @@ public class SpringProcessConnectorRemote {
 	 */
 	private final Map<RemoteBootAppData, String> remoteAppInstances;
 	private final SpringProcessConnectorService processConnectorService;
-	private final SpringProcessLiveDataProvider liveDataProvider;
 
-	public SpringProcessConnectorRemote(SimpleLanguageServer server, SpringProcessConnectorService processConnector,
-			SpringProcessLiveDataProvider liveDataProvider) {
+	public SpringProcessConnectorRemote(SimpleLanguageServer server, SpringProcessConnectorService processConnector) {
 		this.processConnectorService = processConnector;
-		this.liveDataProvider = liveDataProvider;
 		this.remoteAppInstances = new HashMap<>();
 
 		server.getWorkspaceService().onDidChangeConfiguraton(this::handleSettings);
@@ -181,26 +178,34 @@ public class SpringProcessConnectorRemote {
 		for (RemoteBootAppData data : newAppData) {
 			remoteAppInstances.computeIfAbsent(data, (_appData) -> {
 				logger.info("Creating RemoteStringBootApp: " + _appData);
-				
 				String processKey = getProcessKey(_appData);
-				String processID = null;
-				String processName = null;
-				String jmxURL = _appData.getJmxurl();
-				String host = _appData.getHost();
-				String port = _appData.getPort();
-				String urlScheme = _appData.getUrlScheme();
-//				boolean keepChecking = _appData.isKeepChecking();
-				
-				SpringProcessConnectorOverJMX connector = new SpringProcessConnectorOverJMX(liveDataProvider, processKey, jmxURL, urlScheme, processID, processName, host, port);
-				processConnectorService.connectProcess(processKey, connector);
-				
+				connectProcess(_appData);
 				return processKey;
 			});
 		}
 	}
 	
-	private static String getProcessKey(RemoteBootAppData appData) {
-		return "remote";
+	public static String getProcessKey(RemoteBootAppData appData) {
+		return "remote process - " + appData.getJmxurl();
+	}
+	
+	public void connectProcess(RemoteBootAppData remoteProcess) {
+		String processKey = getProcessKey(remoteProcess);
+		String processID = null;
+		String processName = null;
+		String jmxURL = remoteProcess.getJmxurl();
+		String host = remoteProcess.getHost();
+		String port = remoteProcess.getPort();
+		String urlScheme = remoteProcess.getUrlScheme();
+//		boolean keepChecking = _appData.isKeepChecking();
+		
+		SpringProcessConnectorOverJMX connector = new SpringProcessConnectorOverJMX(processKey, jmxURL, urlScheme, processID, processName, host, port);
+		processConnectorService.connectProcess(processKey, connector);
+	}
+	
+	public RemoteBootAppData[] getProcesses() {
+		Set<RemoteBootAppData> remoteApps = this.remoteAppInstances.keySet();
+		return (RemoteBootAppData[]) remoteApps.toArray(new RemoteBootAppData[remoteApps.size()]);
 	}
 
 }

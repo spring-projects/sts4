@@ -107,7 +107,7 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 	private final ProjectBasedPropertyIndexProvider adHocPropertyIndexProvider;
 
 	private final SpringProcessLiveDataProvider liveDataProvider;
-	private final SpringProcessConnectorService liveDataConnector;
+	private final SpringProcessConnectorService liveDataService;
 
 	private final SpringLiveChangeDetectionWatchdog liveChangeDetectionWatchdog;
 	private final ProjectObserver projectObserver;
@@ -153,47 +153,36 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		workspaceService.onWorkspaceSymbol(new BootJavaWorkspaceSymbolHandler(indexer,
 				new LiveAppURLSymbolProvider(runningAppProvider)));
 
+		
+		//
+		// live data component wiring
+		//
 
+		// central live data components (to coordinate live data flow)
 		liveDataProvider = new SpringProcessLiveDataProvider();
+		liveDataService = new SpringProcessConnectorService(liveDataProvider);
 
+		// connect the live data provider with the hovers (for data extraction and live updates)
 		hoverProvider = createHoverHandler(projectFinder, sourceLinks, liveDataProvider);
 		new SpringProcessLiveHoverUpdater(server, hoverProvider, projectFinder, liveDataProvider);
 
-		liveDataConnector = new SpringProcessConnectorService();
-		new SpringProcessConnectorRemote(server, liveDataConnector, liveDataProvider);
+		// deal with locally running processes and their connections
+		SpringProcessConnectorLocal liveDataLocalProcessConnector = new SpringProcessConnectorLocal(liveDataService, projectObserver);
+
+		// deal with configured remote connections
+		SpringProcessConnectorRemote liveDataRemoteProcessConnector = new SpringProcessConnectorRemote(server, liveDataService);
+
+		// create and handle commands
+		new SpringProcessCommandHandler(server, liveDataService, liveDataLocalProcessConnector, liveDataRemoteProcessConnector);
+
+		// track locally running processes and automatically connect to them if configured to do so
+		liveProcessTracker = new SpringProcessTracker(liveDataLocalProcessConnector, serverParams.watchDogInterval);
 		
-		SpringProcessConnectorLocal liveHoverLocalProcessConnector = new SpringProcessConnectorLocal(liveDataConnector, liveDataProvider, projectObserver);
-		liveProcessTracker = new SpringProcessTracker(liveHoverLocalProcessConnector, serverParams.watchDogInterval);
+		//
+		//
+		//
+
 		
-		new SpringProcessCommandHandler(server, liveDataConnector, liveHoverLocalProcessConnector);
-
-//		liveHoverWatchdog = new SpringLiveHoverWatchdog(server, hoverProvider, runningAppProvider,
-//				projectFinder, projectObserver, serverParams.watchDogInterval);
-//		documents.onDidChangeContent(params -> {
-//			TextDocument doc = params.getDocument();
-//			if (getInterestingLanguages().contains(doc.getLanguageId())) {
-//				if (testHightlighter != null) {
-//					getClient()
-//							.highlight(new HighlightParams(params.getDocument().getId(), testHightlighter.apply(doc)));
-//				} else {
-//					try {
-//						liveHoverWatchdog.watchDocument(doc.getUri());
-//						liveHoverWatchdog.update(doc.getUri());
-//					} catch (Throwable t) {
-//						log.error("", t);
-//					}
-//				}
-//			}
-//		});
-
-//		documents.onDidClose(doc -> {
-//			if (testHightlighter != null) {
-//				getClient().highlight(new HighlightParams(doc.getId(), testHightlighter.apply(doc)));
-//			} else {
-//				liveHoverWatchdog.unwatchDocument(doc.getUri());
-//			}
-//		});
-
 		liveChangeDetectionWatchdog = new SpringLiveChangeDetectionWatchdog(
 				this,
 				server,
