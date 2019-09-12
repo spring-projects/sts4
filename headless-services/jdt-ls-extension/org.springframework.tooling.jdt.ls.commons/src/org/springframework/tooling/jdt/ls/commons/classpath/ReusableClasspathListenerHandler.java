@@ -14,11 +14,11 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 import java.util.function.Supplier;
 
 import org.eclipse.core.resources.IProject;
@@ -88,62 +88,65 @@ public class ReusableClasspathListenerHandler {
 	
 	class Subscriptions {
 
-		private Map<String, SendClasspathNotificationsJob> subscribers = null;
-		private ClasspathListenerManager classpathListener = null;
-		private CallbackJob callbackJob = new CallbackJob();
-
+		private ConcurrentMap<String, SendClasspathNotificationsJob> subscribers;
+		private ClasspathListenerManager classpathListener;
+		private CallbackJob callbackJob;
 		
-		public synchronized void subscribe(String callbackCommandId, boolean isBatched) {
-			if (subscribers==null) {
-				//First subscriber
-				subscribers = new HashMap<>();
-			}
-			if (!subscribers.containsKey(callbackCommandId)) {
-				logger.log("subscribing to classpath changes: " + callbackCommandId +" isBatched = "+isBatched);
-				classpathListener = new ClasspathListenerManager(logger, new ClasspathListener() {
-					@Override
-					public void classpathChanged(IJavaProject jp) {
-						sendNotification(jp, subscribers.keySet());
-					}
+		public Subscriptions() {
+			this.subscribers = new ConcurrentHashMap<>();
+			this.callbackJob = new CallbackJob();
+		}
+		
+		public void subscribe(String callbackCommandId, boolean isBatched) {
+			// keep put of synchronized block to avoid workspace locks
+			IProject[] sortedProjects = getSortedProjects();
 
-					@Override
-					public void projectBuilt(IJavaProject jp) {
-						sendNotificationOnProjectBuilt(jp, subscribers.keySet());
-					}
-					
-				});
-				final SendClasspathNotificationsJob job = new SendClasspathNotificationsJob(logger, conn, callbackCommandId, isBatched);
-				subscribers.put(callbackCommandId, job);
-				job.addJobChangeListener(new JobChangeAdapter() {
-
-					@Override
-					public void done(IJobChangeEvent event) {
-						List<String> projectNames = job.notificationsSentForProjects;
-						if (projectNames != null) {
-							callbackJob.queueProjects(projectNames);
+			synchronized(this) {
+				if (!subscribers.containsKey(callbackCommandId)) {
+					logger.log("subscribing to classpath changes: " + callbackCommandId +" isBatched = "+isBatched);
+					classpathListener = new ClasspathListenerManager(logger, new ClasspathListener() {
+						@Override
+						public void classpathChanged(IJavaProject jp) {
+							sendNotification(jp, subscribers.keySet());
 						}
-					}
-					
-				});
-				logger.log("subsribers = " + subscribers);
-				sendInitialEvents(callbackCommandId);
+	
+						@Override
+						public void projectBuilt(IJavaProject jp) {
+							sendNotificationOnProjectBuilt(jp, subscribers.keySet());
+						}
+						
+					});
+					final SendClasspathNotificationsJob job = new SendClasspathNotificationsJob(logger, conn, callbackCommandId, isBatched);
+					subscribers.put(callbackCommandId, job);
+					job.addJobChangeListener(new JobChangeAdapter() {
+	
+						@Override
+						public void done(IJobChangeEvent event) {
+							List<String> projectNames = job.notificationsSentForProjects;
+							if (projectNames != null) {
+								callbackJob.queueProjects(projectNames);
+							}
+						}
+						
+					});
+					logger.log("subsribers = " + subscribers);
+					sendInitialEvents(callbackCommandId, sortedProjects);
+				}
 			}
 		}
 		
-		private void sendInitialEvents(String callbackCommandId) {
+		private void sendInitialEvents(String callbackCommandId, IProject[] projects) {
 			logger.log("Sending initial event for all projects ...");
 			
-			IProject[] projects = ResourcesPlugin.getWorkspace().getRoot().getProjects();
-			if (projectSorterFactory != null) {
-				Arrays.sort(projects, projectSorterFactory.get());
-			}
+			Set<String> callbackIds = Collections.singleton(callbackCommandId);
 
 			for (IProject p : projects) {
 				logger.log("project "+p.getName() +" ..." );
+
 				try {
 					if (p.isAccessible() && p.hasNature(JavaCore.NATURE_ID)) {
 						IJavaProject jp = JavaCore.create(p);
-						sendNotification(jp, Collections.singleton(callbackCommandId));
+						sendNotification(jp, callbackIds);
 					} else {
 						logger.log("project "+p.getName() +" SKIPPED" );
 					}
@@ -153,52 +156,54 @@ public class ReusableClasspathListenerHandler {
 			}
 			logger.log("Sending initial event for all projects DONE");
 		}
+		
+		private IProject[] getSortedProjects() {
+			IProject[] projects = ResourcesPlugin.getWorkspace().getRoot().getProjects();
+			if (projectSorterFactory != null) {
+				Arrays.sort(projects, projectSorterFactory.get());
+			}
+			
+			return projects;
+		}
 
 		private synchronized void sendNotification(IJavaProject jp, Collection<String> callbackIds) {
-			if (subscribers!=null) {
-				for (String callbackId : callbackIds) {
-					SendClasspathNotificationsJob sendNotificationJob = subscribers.get(callbackId);
-					sendNotificationJob.queue.add(jp);
-					sendNotificationJob.schedule();
-				}
+			for (String callbackId : callbackIds) {
+				SendClasspathNotificationsJob sendNotificationJob = subscribers.get(callbackId);
+				sendNotificationJob.queue.add(jp);
+				sendNotificationJob.schedule();
 			}
 		}
 
 		private synchronized void sendNotificationOnProjectBuilt(IJavaProject jp, Collection<String> callbackIds) {
-			if (subscribers!=null) {
-				for (String callbackId : callbackIds) {
-					SendClasspathNotificationsJob sendNotificationJob = subscribers.get(callbackId);
-					sendNotificationJob.builtProjectQueue.add(jp);
-					sendNotificationJob.schedule();
-				}
+			for (String callbackId : callbackIds) {
+				SendClasspathNotificationsJob sendNotificationJob = subscribers.get(callbackId);
+				sendNotificationJob.builtProjectQueue.add(jp);
+				sendNotificationJob.schedule();
 			}
 		}
 		
 		public synchronized void unsubscribe(String callbackCommandId) {
 			logger.log("unsubscribing from classpath changes: " + callbackCommandId);
-			if (subscribers != null) {
-				subscribers.remove(callbackCommandId);
-				if (subscribers.isEmpty()) {
-					subscribers = null;
-					if (classpathListener!=null) {
-						classpathListener.dispose();
-						classpathListener = null;
-					}
-				}
+			subscribers.remove(callbackCommandId);
+
+			if (subscribers.isEmpty() && classpathListener != null) {
+				classpathListener.dispose();
+				classpathListener = null;
 			}
+
 			logger.log("subsribers = " + subscribers);
 		}
 
 		public boolean isEmpty() {
-			return subscribers == null || subscribers.isEmpty();
+			return subscribers.isEmpty();
 		}
 	}
 	
-	private Subscriptions subscribptions = new Subscriptions();
+	private Subscriptions subscriptions = new Subscriptions();
 
 	public Object removeClasspathListener(String callbackCommandId) {
 		logger.log("ClasspathListenerHandler removeClasspathListener " + callbackCommandId);
-		subscribptions.unsubscribe(callbackCommandId);
+		subscriptions.unsubscribe(callbackCommandId);
 		logger.log("ClasspathListenerHandler removeClasspathListener " + callbackCommandId + " => OK");
 		return "ok";
 	}
@@ -210,13 +215,13 @@ public class ReusableClasspathListenerHandler {
 
 	public Object addClasspathListener(String callbackCommandId, boolean isBatched) {
 		logger.log("ClasspathListenerHandler addClasspathListener " + callbackCommandId + "isBatched = "+isBatched);
-		subscribptions.subscribe(callbackCommandId, isBatched);
+		subscriptions.subscribe(callbackCommandId, isBatched);
 		logger.log("ClasspathListenerHandler addClasspathListener " + callbackCommandId + " => OK");
 		return "ok";
 	}
 
 	public boolean hasNoActiveSubscriptions() {
-		return subscribptions.isEmpty();
+		return subscriptions.isEmpty();
 	}
 
 	public void addNotificationsSentCallback(NotificationSentCallback callback) {
