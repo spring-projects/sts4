@@ -201,42 +201,42 @@ public class SpringSymbolIndex implements InitializingBean {
 	}
 
 	public CompletableFuture<Void> configureIndexer(SymbolIndexConfig config) {
-		List<CompletableFuture<?>> futuresList = new ArrayList<>();
-		synchronized (this) {
-			if (config.isScanXml() && !(Arrays.asList(this.indexers).contains(springIndexerXML))) {
-				this.indexers = new SpringIndexer[] {springIndexerJava, springIndexerXML};
-				futuresList.add(CompletableFuture.runAsync(() -> springIndexerXML.setScanFolderGlobs(config.getXmlScanFoldersGlobs())));
-				
-				List<String> globPattern = Arrays.asList(springIndexerXML.getFileWatchPatterns());
-
-				watchXMLDeleteRegistration = getWorkspaceService().getFileObserver().onFileDeleted(globPattern, (file) -> {
-					deleteDocument(new TextDocumentIdentifier(file).getUri());
-				});
-				watchXMLCreatedRegistration = getWorkspaceService().getFileObserver().onFileCreated(globPattern, (file) -> {
-					createDocument(new TextDocumentIdentifier(file).getUri());
-				});
-				watchXMLChangedRegistration = getWorkspaceService().getFileObserver().onFileChanged(globPattern, (file) -> {
-					updateDocument(new TextDocumentIdentifier(file).getUri(), null, "xml changed");
-				});
-				
+		return CompletableFuture.runAsync(() -> {
+			synchronized (SpringSymbolIndex.this) {
+				if (config.isScanXml() && !(Arrays.asList(this.indexers).contains(springIndexerXML))) {
+					this.indexers = new SpringIndexer[] {springIndexerJava, springIndexerXML};
+					springIndexerXML.setScanFolderGlobs(config.getXmlScanFoldersGlobs());
+					
+					List<String> globPattern = Arrays.asList(springIndexerXML.getFileWatchPatterns());
+					
+					watchXMLDeleteRegistration = getWorkspaceService().getFileObserver().onFileDeleted(globPattern, (file) -> {
+						deleteDocument(new TextDocumentIdentifier(file).getUri());
+					});
+					watchXMLCreatedRegistration = getWorkspaceService().getFileObserver().onFileCreated(globPattern, (file) -> {
+						createDocument(new TextDocumentIdentifier(file).getUri());
+					});
+					watchXMLChangedRegistration = getWorkspaceService().getFileObserver().onFileChanged(globPattern, (file) -> {
+						updateDocument(new TextDocumentIdentifier(file).getUri(), null, "xml changed");
+					});
+					
+				}
+				else if (!config.isScanXml() && Arrays.asList(this.indexers).contains(springIndexerXML)) {
+					this.indexers = new SpringIndexer[] {springIndexerJava};
+					springIndexerXML.setScanFolderGlobs(new String[0]);
+	
+					getWorkspaceService().getFileObserver().unsubscribe(watchXMLChangedRegistration);
+					getWorkspaceService().getFileObserver().unsubscribe(watchXMLCreatedRegistration);
+					getWorkspaceService().getFileObserver().unsubscribe(watchXMLDeleteRegistration);
+	
+					watchXMLChangedRegistration = null;
+					watchXMLCreatedRegistration = null;
+					watchXMLDeleteRegistration = null;
+				} else if (config.isScanXml()) {
+					springIndexerXML.setScanFolderGlobs(config.getXmlScanFoldersGlobs());
+				}
+				springIndexerJava.setScanTestJavaSources(config.isScanTestJavaSources());
 			}
-			else if (!config.isScanXml() && Arrays.asList(this.indexers).contains(springIndexerXML)) {
-				this.indexers = new SpringIndexer[] {springIndexerJava};
-				futuresList.add(CompletableFuture.runAsync(() -> springIndexerXML.setScanFolderGlobs(new String[0])));
-
-				getWorkspaceService().getFileObserver().unsubscribe(watchXMLChangedRegistration);
-				getWorkspaceService().getFileObserver().unsubscribe(watchXMLCreatedRegistration);
-				getWorkspaceService().getFileObserver().unsubscribe(watchXMLDeleteRegistration);
-
-				watchXMLChangedRegistration = null;
-				watchXMLCreatedRegistration = null;
-				watchXMLDeleteRegistration = null;
-			} else if (config.isScanXml()) {
-				futuresList.add(CompletableFuture.runAsync(() -> springIndexerXML.setScanFolderGlobs(config.getXmlScanFoldersGlobs())));
-			}
-			futuresList.add(CompletableFuture.runAsync(() -> springIndexerJava.setScanTestJavaSources(config.isScanTestJavaSources())));
-		}
-		return CompletableFuture.allOf(futuresList.toArray(new CompletableFuture<?>[futuresList.size()]));
+		});
 	}
 
 	public void shutdown() {
