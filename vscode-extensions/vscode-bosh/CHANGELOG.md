@@ -1,3 +1,7 @@
+## 2019-09-19 (4.4.0 RELEASE)
+
+* _(VSCode)_ fixed: show error message when manually configured JDK is not there
+
 ## 2019-08-13 (4.3.2 RELEASE)
 
 * _(VSCode)_ fixed: Spring boot tool vscode extension is causing system to run out of disk space ([#328](https://github.com/spring-projects/sts4/issues/328))

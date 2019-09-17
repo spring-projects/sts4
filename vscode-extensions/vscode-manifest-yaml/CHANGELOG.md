@@ -1,3 +1,7 @@
+## 2019-09-19 (4.4.0 RELEASE)
+
+* _(VSCode)_ fixed: show error message when manually configured JDK is not there
+
 ## 2019-08-13 (4.3.2 RELEASE)
 
 * _(CF Manifest)_ fixed: docker not supported in vscode manifest extension ([#302](https://github.com/spring-projects/sts4/issues/302))
