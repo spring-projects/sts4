@@ -17,7 +17,9 @@ public class DiagramServerConfiguration {
 	public ILayoutEngine layoutEngine(Optional<SprottyLayoutConfigurator> configurator) {
 		ElkLayoutEngine.initialize(new LayeredMetaDataProvider());
 		final ElkLayoutEngine engine = new ElkLayoutEngine();
-		return (root) -> engine.layout((SGraph)root, configurator.orElse(null));
+		return (root, action) -> {
+			engine.layout((SGraph)root, configurator.orElse(null), action);
+		};
 	}
 	
 }
