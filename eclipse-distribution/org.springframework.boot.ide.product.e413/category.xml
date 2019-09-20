@@ -138,7 +138,7 @@
 		<category name="Uncategorized"/>
 	</bundle>
 
-	<feature id="tm-feature">
+	<feature id="org.eclipse.tm4e.feature">
 		<category name="Uncategorized"/>
 	</feature>
 
