@@ -6,25 +6,13 @@ import java.util.function.Consumer;
 
 import org.eclipse.sprotty.Action;
 import org.eclipse.sprotty.ActionMessage;
-import org.eclipse.sprotty.Alignable;
-import org.eclipse.sprotty.BoundsAware;
-import org.eclipse.sprotty.ComputedBoundsAction;
 import org.eclipse.sprotty.ComputedBoundsApplicator;
 import org.eclipse.sprotty.DefaultDiagramServer;
-import org.eclipse.sprotty.Dimension;
-import org.eclipse.sprotty.ElementAndAlignment;
-import org.eclipse.sprotty.ElementAndBounds;
 import org.eclipse.sprotty.IDiagramServer;
 import org.eclipse.sprotty.ILayoutEngine;
 import org.eclipse.sprotty.IPopupModelFactory;
-import org.eclipse.sprotty.Point;
 import org.eclipse.sprotty.RequestModelAction;
 import org.eclipse.sprotty.SGraph;
-import org.eclipse.sprotty.SModelElement;
-import org.eclipse.sprotty.SModelIndex;
-import org.eclipse.sprotty.SModelRoot;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ide.vscode.commons.sprotty.api.DiagramGenerator;
 import org.springframework.ide.vscode.commons.sprotty.api.DiagramServerManager;
@@ -43,8 +31,6 @@ public class DefaultDiagramServerManager implements DiagramServerManager {
 		it.setId("EMPTY");
 	}));
 	
-	private static final Logger log = LoggerFactory.getLogger(DefaultDiagramServerManager.class);
-
 	private Cache<String, IDiagramServer> servers = CacheBuilder.newBuilder().build();
 
 	@Autowired
@@ -65,7 +51,7 @@ public class DefaultDiagramServerManager implements DiagramServerManager {
 				diagramServer.setRemoteEndpoint(this::sendMessageToRemoteEndpoint);
 				diagramServer.setLayoutEngine(layoutEngine);
 				diagramServer.setPopupModelFactory(popups.orElse(null));
-				diagramServer.setComputedBoundsApplicator(new CorrectedComputedBoundsApplicator());
+				diagramServer.setComputedBoundsApplicator(new ComputedBoundsApplicator());
 				return diagramServer;
 			});
 		} catch (ExecutionException e) {
@@ -100,30 +86,4 @@ public class DefaultDiagramServerManager implements DiagramServerManager {
 		}
 	}
 	
-	private static class CorrectedComputedBoundsApplicator extends ComputedBoundsApplicator {
-		
-		/**
-		 * Apply the computed bounds from the given action to the model.
-		 */
-		public void applyBounds(SModelRoot root, ComputedBoundsAction action) {
-			SModelIndex index = new SModelIndex(root);
-			for (ElementAndBounds b : action.getBounds()) {
-				SModelElement element = index.get(b.getElementId());
-				if (element instanceof BoundsAware) {
-					BoundsAware bae = (BoundsAware) element;
-					if (b.getNewPosition() != null)
-						bae.setPosition(new Point(b.getNewPosition().getX(), b.getNewPosition().getY()));
-					if (b.getNewSize() != null)
-						bae.setSize(new Dimension(b.getNewSize().getWidth(), b.getNewSize().getHeight()));
-				}
-			}
-			for (ElementAndAlignment a: action.getAlignments()) {
-				SModelElement element = index.get(a.getElementId());
-				if (element instanceof Alignable) {
-					Alignable alignable = (Alignable) element;
-					alignable.setAlignment(a.getNewAlignment());
-				}
-			}
-		}
-	}
 }
