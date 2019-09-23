@@ -11,6 +11,13 @@ public class SpringIntegrationNodeJson extends PrettyJson {
 	private String componentType;
 	private JsonObject properties;
 	
+	private String input;
+	private String output;
+	private String errors;
+	
+	private String[] routes;
+	
+	
 	public int getNodeId() {
 		return nodeId;
 	}
@@ -41,4 +48,33 @@ public class SpringIntegrationNodeJson extends PrettyJson {
 	public void setProperties(JsonObject properties) {
 		this.properties = properties;
 	}
+	public String getInput() {
+		return input;
+	}
+	public void setInput(String input) {
+		this.input = input;
+	}
+	public String getOutput() {
+		return output;
+	}
+	public void setOutput(String output) {
+		this.output = output;
+	}
+	public String getErrors() {
+		return errors;
+	}
+	public void setErrors(String errors) {
+		this.errors = errors;
+	}
+	public String[] getRoutes() {
+		return routes;
+	}
+	public void setRoutes(String[] routes) {
+		this.routes = routes;
+	}
+	public void setStats(JsonElement stats) {
+		this.stats = stats;
+	}
+	
+	
 }

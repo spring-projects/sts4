@@ -49,8 +49,9 @@ public class SIDiagramGenerator implements DiagramGenerator {
 
 	private static final ImmutableSet<String> channelTypes = ImmutableSet.of(
 			"channel",
-			"publish-subscribe-channel"
-			);
+			"publish-subscribe-channel",
+			"null-channel"
+	);
 
 	private String labelProperty = "stats.sendCount";
 
@@ -91,16 +92,15 @@ public class SIDiagramGenerator implements DiagramGenerator {
 
 		for (SpringIntegrationNodeJson node : json.getNodes()) {
 			String id = node.getNodeId()+"";
-			String name = node.getName();
 			Assert.isLegal(!nodesById.containsKey(id));
 			nodesById.put(id, node);
 			String type = visualType(node.getComponentType());
 			switch (type) {
 			case "channel":
-				children.add(createChannelNode(id, name));
+				children.add(createChannelNode(node));
 				break;
 			default:
-				children.add(createIntegrationNode(id, name));
+				children.add(createIntegrationNode(node));
 			}
 		}
 
@@ -134,8 +134,9 @@ public class SIDiagramGenerator implements DiagramGenerator {
 		return json.getAsString();
 	}
 
-	private static SNode createNode(String id, String labelText, String type) {
+	private static SNode createNode(SpringIntegrationNodeJson json, String type) {
 		SNode node = new SNode();
+		String id = getId(json);
 		node.setId(id);
 		node.setType("node:"+type);
 		node.setLayout("vbox");
@@ -147,22 +148,10 @@ public class SIDiagramGenerator implements DiagramGenerator {
 			SLabel label = new SLabel();
 			label.setId(id + "-label");
 			label.setType("node:label");
-			label.setText(labelText);
+			label.setText(json.getName());
 			centerNode(label);
 			node.getChildren().add(label);
 		}
-
-		SPort outputPort = new SPort();
-		outputPort.setType("output-port");
-		outputPort.setId("output-port-" + id);
-		outputPort.setSize(new Dimension(10,10));	    
-		node.getChildren().add(outputPort);
-
-		SPort inputPort = new SPort();
-		inputPort.setType("input-port");
-		inputPort.setId("input-port-" + id);
-		inputPort.setSize(new Dimension(10,10));
-		node.getChildren().add(inputPort);
 
 		return node;
 	}
@@ -177,29 +166,65 @@ public class SIDiagramGenerator implements DiagramGenerator {
 		options.setVAlign("center");
 	}
 	
-	private static SNode createIntegrationNode(String id, String labelText) {
-		SNode node = createNode(id, labelText, "integration_node");
+	private static SNode createIntegrationNode(SpringIntegrationNodeJson json) {
+		SNode node = createNode(json, "integration_node");
+		String id = getId(json);
 		LayoutOptions layoutOptions = new LayoutOptions();
 		layoutOptions.setMinWidth(MIN_WIDTH);
 		layoutOptions.setPaddingBottom(INTEGRATION_NODE_VERTICAL_PADDING);
 		layoutOptions.setPaddingTop(20.0);
 		node.setLayoutOptions(layoutOptions);
+		
+		if (json.getOutput() != null) {
+			SPort outputPort = new SPort();
+			outputPort.setType("output-port");
+			outputPort.setId("output-port-" + id);
+			outputPort.setSize(new Dimension(10,10));	    
+			node.getChildren().add(outputPort);
+		}
 
-		SPort errorPort = new SPort();
-		errorPort.setType("error-port");
-		errorPort.setId("error-port-" + id);
-		errorPort.setSize(new Dimension(10, 10));
-		node.getChildren().add(errorPort);
+		if (json.getInput() != null) {
+			SPort inputPort = new SPort();
+			inputPort.setType("input-port");
+			inputPort.setId("input-port-" + id);
+			inputPort.setSize(new Dimension(10,10));
+			node.getChildren().add(inputPort);
+		}
+		
+		if (json.getErrors() != null) {
+			SPort errorPort = new SPort();
+			errorPort.setType("error-port");
+			errorPort.setId("error-port-" + id);
+			errorPort.setSize(new Dimension(10, 10));
+			node.getChildren().add(errorPort);
+		}
 
 		return node;
 	}
+	
+	private static String getId(SpringIntegrationNodeJson json) {
+		return json.getNodeId() + "";
+	}
 
-	private static SNode createChannelNode(String id, String labelText) {
-		SNode node = createNode(id, labelText, "channel");
+	private static SNode createChannelNode(SpringIntegrationNodeJson json) {
+		SNode node = createNode(json, "channel");
 		LayoutOptions layoutOptions = new LayoutOptions();
 		//		layoutOptions.setMinHeight(CHANNEL_HEIGHT);
 		layoutOptions.setMinWidth(MIN_WIDTH);
 		node.setLayoutOptions(layoutOptions);
+		String id = getId(json);
+		
+		SPort outputPort = new SPort();
+		outputPort.setType("output-port");
+		outputPort.setId("output-port-" + id);
+		outputPort.setSize(new Dimension(1, 1));
+		node.getChildren().add(outputPort);
+
+		SPort inputPort = new SPort();
+		inputPort.setType("input-port");
+		inputPort.setId("input-port-" + id);
+		inputPort.setSize(new Dimension(1, 1));
+		node.getChildren().add(inputPort);
 
 		return node;
 	}
