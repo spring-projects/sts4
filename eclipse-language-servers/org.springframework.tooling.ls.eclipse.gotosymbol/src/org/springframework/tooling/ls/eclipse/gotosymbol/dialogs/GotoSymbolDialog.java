@@ -24,8 +24,8 @@ import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.PopupDialog;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.resource.JFaceColors;
-import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.BadLocationException;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.viewers.ColumnViewerToolTipSupport;
 import org.eclipse.jface.viewers.ISelection;
@@ -55,7 +55,6 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
-import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Shell;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.TreeItem;
@@ -103,13 +102,13 @@ public class GotoSymbolDialog extends PopupDialog {
 		private Stylers stylers;
 		private SymbolsLabelProvider symbolsLabelProvider;
 		
-		public  GotoSymbolsLabelProvider(Font base) {
+		public GotoSymbolsLabelProvider(Font base) {
 			stylers = new Stylers(base);
 			boolean showSymbolsLabelProviderLocation  = false; /* dont show full location. we show relative location in our own implementation below */
 			boolean showKindInformation = false;
 			symbolsLabelProvider = new SymbolsLabelProvider(showSymbolsLabelProviderLocation , showKindInformation) {
 				@Override
-				protected int getMaxSeverity(IResource resource, Range range)
+				protected int getMaxSeverity(IResource resource, IDocument doc, Range range)
 						throws CoreException, BadLocationException {
 					int maxSeverity = -1;
 					for (IMarker marker : resource.findMarkers(IMarker.PROBLEM, true, IResource.DEPTH_ZERO)) {

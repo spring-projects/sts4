@@ -53,7 +53,7 @@ public class SpringIndexerMultiProjectTest {
 	@Before
 	public void setup() throws Exception {
 		harness.intialize(null);
-		indexer.configureIndexer(SymbolIndexConfig.builder().scanXml(false).build()).get(5, TimeUnit.SECONDS);
+		indexer.configureIndexer(SymbolIndexConfig.builder().scanXml(false).build());
 
 		projectUri1 = UriUtil.toUri(new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-large-multiproject-1/").toURI())).toString();
 		projectFinder.find(new TextDocumentIdentifier(projectUri1)).get();

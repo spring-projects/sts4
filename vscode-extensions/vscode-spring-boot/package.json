@@ -3,7 +3,7 @@
   "displayName": "Spring Boot Tools",
   "description": "Provides validation and content assist for Spring Boot `application.properties`, `application.yml` properties files. As well as Boot-specific support for `.java` files.",
   "icon": "spring-boot-logo.png",
-  "version": "1.11.0",
+  "version": "1.12.0",
   "publisher": "Pivotal",
   "repository": {
     "type": "git",
@@ -189,7 +189,7 @@
     "vsce-package": "vsce package"
   },
   "dependencies": {
-    "@pivotal-tools/commons-vscode": "file:../commons-vscode/pivotal-tools-commons-vscode-0.2.2.tgz",
+    "@pivotal-tools/commons-vscode": "file:../commons-vscode/pivotal-tools-commons-vscode-0.2.3.tgz",
     "vscode-languageclient": "5.2.1"
   },
   "devDependencies": {

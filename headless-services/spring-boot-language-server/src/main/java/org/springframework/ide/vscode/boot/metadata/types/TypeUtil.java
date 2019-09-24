@@ -600,9 +600,11 @@ public class TypeUtil {
 
 	public boolean isEnum(Type type) {
 		try {
-			IType eclipseType = findType(type.getErasure());
-			if (eclipseType!=null) {
-				return eclipseType.isEnum();
+			if (!isArray(type)) {
+				IType eclipseType = findType(type.getErasure());
+				if (eclipseType!=null) {
+					return eclipseType.isEnum();
+				}
 			}
 		} catch (Exception e) {
 			log.error("", e);

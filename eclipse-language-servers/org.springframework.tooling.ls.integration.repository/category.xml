@@ -52,7 +52,7 @@
 		<category name="deps"/>
 	</bundle>
 
-	<feature id="tm-feature">
+	<feature id="org.eclipse.tm4e.feature">
 		<category name="deps"/>
 	</feature>
 

@@ -1,3 +1,8 @@
+## 2019-09-19 (4.4.0 RELEASE)
+
+* _(Spring Boot)_ fixed: Adding/removing bean in XML file doesn't update the symbol index
+* _(VSCode)_ fixed: show error message when manually configured JDK is not there
+
 ## 2019-08-13 (4.3.2 RELEASE)
 
 * _(Spring Boot)_ fixed: CTRL-click navigation does not handle properties on super class correctly ([#326](https://github.com/spring-projects/sts4/issues/326))

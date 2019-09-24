@@ -122,14 +122,15 @@ public class JdtLsIndex implements ClasspathIndex {
 					sourceTypeCache.put(fqName, type);
 				} else {
 					type = Optional.of(toType(data));
-					if (Classpath.isBinary(data.getClasspathEntry().getCpe())) {
+					if (data.getClasspathEntry() != null && Classpath.isBinary(data.getClasspathEntry().getCpe())) {
 						binaryTypeCache.put(fqName, type);
 					} else {
 						sourceTypeCache.put(fqName, type);
 					}
 				}
 			} catch (Exception e) {
-				log.error("{}", e);
+				log.error("Find type failed for `{}` with {}", fqName, e);
+				return null;
 			}
 		}
 		return type.orElse(null);

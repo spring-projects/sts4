@@ -175,13 +175,16 @@ public class SpringSymbolIndex implements InitializingBean {
 				this.updateDocument(docURI, content, "didSave event");
 			}
 		});
-		config.addListener(evt -> {
-			this.configureIndexer(SymbolIndexConfig.builder()
-					.scanXml(config.isSpringXMLSupportEnabled())
-					.xmlScanFoldersGlobs(config.xmlBeansFoldersToScan())
-					.scanTestJavaSources(config.isScanJavaTestSourcesEnabled())
-					.build());
-		});
+		config.addListener(evt -> 
+			server.getAsync().execute(() -> 
+				configureIndexer(SymbolIndexConfig.builder()
+						.scanXml(config.isSpringXMLSupportEnabled())
+						.xmlScanFoldersGlobs(config.xmlBeansFoldersToScan())
+						.scanTestJavaSources(config.isScanJavaTestSourcesEnabled())
+						.build()
+				)
+			)
+		);
 		server.doOnInitialized(this::serverInitialized);
 		server.onShutdown(this::shutdown);
 	}
@@ -200,29 +203,27 @@ public class SpringSymbolIndex implements InitializingBean {
 		});
 	}
 
-	public CompletableFuture<Void> configureIndexer(SymbolIndexConfig config) {
-		List<CompletableFuture<?>> futuresList = new ArrayList<>();
+	public void configureIndexer(SymbolIndexConfig config) {
 		synchronized (this) {
 			if (config.isScanXml() && !(Arrays.asList(this.indexers).contains(springIndexerXML))) {
-				this.indexers = new SpringIndexer[] {springIndexerJava, springIndexerXML};
-				futuresList.add(CompletableFuture.runAsync(() -> springIndexerXML.setScanFolderGlobs(config.getXmlScanFoldersGlobs())));
-				
+				this.indexers = new SpringIndexer[] { springIndexerJava, springIndexerXML };
+				springIndexerXML.setScanFolderGlobs(config.getXmlScanFoldersGlobs());
 				List<String> globPattern = Arrays.asList(springIndexerXML.getFileWatchPatterns());
-
-				watchXMLDeleteRegistration = getWorkspaceService().getFileObserver().onFileDeleted(globPattern, (file) -> {
-					deleteDocument(new TextDocumentIdentifier(file).getUri());
-				});
-				watchXMLCreatedRegistration = getWorkspaceService().getFileObserver().onFileCreated(globPattern, (file) -> {
-					createDocument(new TextDocumentIdentifier(file).getUri());
-				});
-				watchXMLChangedRegistration = getWorkspaceService().getFileObserver().onFileChanged(globPattern, (file) -> {
-					updateDocument(new TextDocumentIdentifier(file).getUri(), null, "xml changed");
-				});
-				
-			}
-			else if (!config.isScanXml() && Arrays.asList(this.indexers).contains(springIndexerXML)) {
-				this.indexers = new SpringIndexer[] {springIndexerJava};
-				futuresList.add(CompletableFuture.runAsync(() -> springIndexerXML.setScanFolderGlobs(new String[0])));
+				watchXMLDeleteRegistration = getWorkspaceService().getFileObserver().onFileDeleted(globPattern,
+						(file) -> {
+							deleteDocument(new TextDocumentIdentifier(file).getUri());
+						});
+				watchXMLCreatedRegistration = getWorkspaceService().getFileObserver().onFileCreated(globPattern,
+						(file) -> {
+							createDocument(new TextDocumentIdentifier(file).getUri());
+						});
+				watchXMLChangedRegistration = getWorkspaceService().getFileObserver().onFileChanged(globPattern,
+						(file) -> {
+							updateDocument(new TextDocumentIdentifier(file).getUri(), null, "xml changed");
+						});
+			} else if (!config.isScanXml() && Arrays.asList(this.indexers).contains(springIndexerXML)) {
+				this.indexers = new SpringIndexer[] { springIndexerJava };
+				springIndexerXML.setScanFolderGlobs(new String[0]);
 
 				getWorkspaceService().getFileObserver().unsubscribe(watchXMLChangedRegistration);
 				getWorkspaceService().getFileObserver().unsubscribe(watchXMLCreatedRegistration);
@@ -232,11 +233,10 @@ public class SpringSymbolIndex implements InitializingBean {
 				watchXMLCreatedRegistration = null;
 				watchXMLDeleteRegistration = null;
 			} else if (config.isScanXml()) {
-				futuresList.add(CompletableFuture.runAsync(() -> springIndexerXML.setScanFolderGlobs(config.getXmlScanFoldersGlobs())));
+				springIndexerXML.setScanFolderGlobs(config.getXmlScanFoldersGlobs());
 			}
-			futuresList.add(CompletableFuture.runAsync(() -> springIndexerJava.setScanTestJavaSources(config.isScanTestJavaSources())));
+			springIndexerJava.setScanTestJavaSources(config.isScanTestJavaSources());
 		}
-		return CompletableFuture.allOf(futuresList.toArray(new CompletableFuture<?>[futuresList.size()]));
 	}
 
 	public void shutdown() {

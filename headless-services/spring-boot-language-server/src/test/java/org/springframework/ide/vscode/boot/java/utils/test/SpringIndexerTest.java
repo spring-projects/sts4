@@ -60,7 +60,7 @@ public class SpringIndexerTest {
 	@Before
 	public void setup() throws Exception {
 		harness.intialize(null);
-		indexer.configureIndexer(SymbolIndexConfig.builder().scanXml(false).build()).get(5, TimeUnit.SECONDS);;
+		indexer.configureIndexer(SymbolIndexConfig.builder().scanXml(false).build());
 
 		directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-parent/test-annotation-indexing/").toURI());
 		projectDir = directory.toURI().toString();
@@ -96,14 +96,14 @@ public class SpringIndexerTest {
 	
 	@Test
 	public void testScanTestJavaSources() throws Exception {
-		indexer.configureIndexer(SymbolIndexConfig.builder().scanTestJavaSources(true).build()).get(1, TimeUnit.SECONDS);
+		indexer.configureIndexer(SymbolIndexConfig.builder().scanTestJavaSources(true).build());
 		
 		List<? extends SymbolInformation> allSymbols = indexer.getAllSymbols("");
 		assertEquals(8, allSymbols.size());
 		String docUri = directory.toPath().resolve("src/test/java/demo/ApplicationTests.java").toUri().toString();
 		assertTrue(containsSymbol(allSymbols, "@SpringBootTest", docUri, 8, 0, 8, 15));
 		
-		indexer.configureIndexer(SymbolIndexConfig.builder().scanTestJavaSources(false).build()).get(1, TimeUnit.SECONDS);
+		indexer.configureIndexer(SymbolIndexConfig.builder().scanTestJavaSources(false).build());
 		allSymbols = indexer.getAllSymbols("");
 		assertEquals(7, allSymbols.size());
 		assertFalse(containsSymbol(allSymbols, "@SpringBootTest", docUri, 8, 0, 8, 15));

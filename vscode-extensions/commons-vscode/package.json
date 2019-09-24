@@ -1,6 +1,6 @@
 {
   "name": "@pivotal-tools/commons-vscode",
-  "version": "0.2.2",
+  "version": "0.2.3",
   "description": "commons-vscode",
   "license": "MIT",
   "repository": "",
@@ -24,9 +24,9 @@
     "prepack": "node ./node_modules/vscode/bin/install && tsc -p ./"
   },
   "dependencies": {
-    "@pivotal-tools/jvm-launch-utils": "0.0.12",
-    "portfinder": "^0.4.0",
-    "deep-equal": "^1.0.1"
+    "@pivotal-tools/jvm-launch-utils": "0.0.14",
+    "deep-equal": "^1.0.1",
+    "portfinder": "^0.4.0"
   },
   "devDependencies": {
     "typescript": "2.6.1",

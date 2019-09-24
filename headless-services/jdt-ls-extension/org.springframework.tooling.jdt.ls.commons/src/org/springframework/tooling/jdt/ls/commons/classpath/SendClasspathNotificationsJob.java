@@ -126,14 +126,14 @@ public class SendClasspathNotificationsJob extends Job {
 					if (projectLoc==null) {
 						logger.log("Could not send event for project because no project location: "+jp.getElementName());
 					} else {
-						boolean exsits = projectExists(jp);
+						boolean exists = projectExists(jp);
 						boolean open = true; // WARNING: calling jp.isOpen is unreliable and subject to race condition. After a POST_CHAGE project open event
 											// this should be true but it typically is not unless you wait for some time. No idea how you would know
 											// how long you should wait (200ms is not enough, and that seems pretty long).
 											// So we will just pretend / assume project is always open. If resolving classpath fails because it is not
 											// open... so be it (there will be no classpath... this is expected for closed project, so that is fine).
-						boolean deleted = !(exsits && open);
-						logger.log("exists = "+exsits +" open = "+open +" => deleted = "+deleted);
+						boolean deleted = !(exists && open);
+						logger.log("exists = "+exists +" open = "+open +" => deleted = "+deleted);
 						String projectName = jp.getElementName();
 
 						Classpath classpath = Classpath.EMPTY;

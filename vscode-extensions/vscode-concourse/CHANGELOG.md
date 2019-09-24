@@ -1,3 +1,9 @@
+## 2019-09-19 (4.4.0 RELEASE)
+
+* _(Concourse)_ fixed: in_parallel - support both array of steps; and explicit "steps" child ([#345](https://github.com/spring-projects/sts4/issues/345))
+* _(Concourse)_ fixed: support 'inputs' property for type 'PutStep' ([#341](https://github.com/spring-projects/sts4/issues/341))
+* _(VSCode)_ fixed: show error message when manually configured JDK is not there
+
 ## 2019-08-13 (4.3.2 RELEASE)
 
 * _(Concourse)_ fixed: VS Code Extensions missing Cloud Foundry params options ([#330](https://github.com/spring-projects/sts4/issues/330))
