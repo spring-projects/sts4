@@ -16,6 +16,9 @@ import java.util.List;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
+
 /**
  * @author Martin Lippert
  */
@@ -24,7 +27,7 @@ public class DomainType {
 	private final String packageName;
 	private final String fullName;
 	private final String simpleName;
-	private DomainProperty[] properties;
+	private Supplier<DomainProperty[]> properties;
 
 	public DomainType(String packageName, String fullName, String simpleName) {
 		this.packageName = packageName;
@@ -37,24 +40,24 @@ public class DomainType {
 		this.fullName = typeBinding.getQualifiedName();
 		this.simpleName = typeBinding.getName();
 
-		if (!this.packageName.startsWith("java")) {
-			IMethodBinding[] methods = typeBinding.getDeclaredMethods();
-			if (methods != null && methods.length > 0) {
-				List<DomainProperty> properties = new ArrayList<>();
+		this.properties = Suppliers.memoize(() -> {
+			if (!this.packageName.startsWith("java")) {
+				IMethodBinding[] methods = typeBinding.getDeclaredMethods();
+				if (methods != null && methods.length > 0) {
+					List<DomainProperty> properties = new ArrayList<>();
 
-				for (IMethodBinding method : methods) {
-					String methodName = method.getName();
-					if (methodName != null && methodName.startsWith("get")) {
-						String propertyName = methodName.substring(3);
-						properties.add(new DomainProperty(propertyName, new DomainType(method.getReturnType())));
+					for (IMethodBinding method : methods) {
+						String methodName = method.getName();
+						if (methodName != null && methodName.startsWith("get")) {
+							String propertyName = methodName.substring(3);
+							properties.add(new DomainProperty(propertyName, new DomainType(method.getReturnType())));
+						}
 					}
+					return (DomainProperty[]) properties.toArray(new DomainProperty[properties.size()]);
 				}
-				this.properties = (DomainProperty[]) properties.toArray(new DomainProperty[properties.size()]);
 			}
-			else {
-				this.properties = new DomainProperty[0];
-			}
-		}
+			return new DomainProperty[0];
+		});
 	}
 
 	public String getPackageName() {
@@ -70,7 +73,7 @@ public class DomainType {
 	}
 
 	public DomainProperty[] getProperties() {
-		return properties;
+		return properties.get();
 	}
 
 }
