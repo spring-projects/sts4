@@ -214,13 +214,19 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 	private void sendConfiguration() {
 		Map<String, Object> settings = new HashMap<>();
 		Map<String, Object> bootJavaObj = new HashMap<>();
-		Map<String, Object> bootHint = new HashMap<>();
+		Map<String, Object> liveInformation = new HashMap<>();
+		Map<String, Object> liveInformationAutomaticTracking = new HashMap<>();
 		Map<String, Object> supportXML = new HashMap<>();
 		Map<String, Object> bootChangeDetection = new HashMap<>();
 		Map<String, Object> scanTestJavaSources = new HashMap<>();
 
 		IPreferenceStore preferenceStore = BootLanguageServerPlugin.getDefault().getPreferenceStore();
-		bootHint.put("on", preferenceStore.getBoolean(Constants.PREF_BOOT_HINTS));
+
+		liveInformationAutomaticTracking.put("on", preferenceStore.getBoolean(Constants.PREF_LIVE_INFORMATION_AUTOMATIC_TRACKING_ENABLED));
+		liveInformationAutomaticTracking.put("delay", preferenceStore.getInt(Constants.PREF_LIVE_INFORMATION_AUTOMATIC_TRACKING_DELAY));
+		
+		liveInformation.put("automatic-tracking", liveInformationAutomaticTracking);
+		
 		supportXML.put("on", preferenceStore.getBoolean(Constants.PREF_SUPPORT_SPRING_XML_CONFIGS));
 		supportXML.put("scan-folders-globs", preferenceStore.getString(Constants.PREF_XML_CONFIGS_SCAN_FOLDERS));
 		supportXML.put("hyperlinks", preferenceStore.getString(Constants.PREF_XML_CONFIGS_HYPERLINKS));
@@ -228,7 +234,7 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 		bootChangeDetection.put("on", preferenceStore.getBoolean(Constants.PREF_CHANGE_DETECTION));
 		scanTestJavaSources.put("on", preferenceStore.getBoolean(Constants.PREF_SCAN_JAVA_TEST_SOURCES));
 
-		bootJavaObj.put("boot-hints", bootHint);
+		bootJavaObj.put("live-information", liveInformation);
 		bootJavaObj.put("support-spring-xml-config", supportXML);
 		bootJavaObj.put("change-detection", bootChangeDetection);
 		bootJavaObj.put("scan-java-test-sources", scanTestJavaSources);

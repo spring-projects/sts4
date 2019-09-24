@@ -17,7 +17,9 @@ public class Constants {
 	
 	public static final String PLUGIN_ID = "org.springframework.tooling.boot.ls";
 	
-	public static final String PREF_BOOT_HINTS = "boot-java.boot-hints.on";
+	public static final String PREF_LIVE_INFORMATION_AUTOMATIC_TRACKING_ENABLED = "boot-java.live-information.automatic-tracking.on";
+	public static final String PREF_LIVE_INFORMATION_AUTOMATIC_TRACKING_DELAY = "boot-java.live-information.automatic-tracking.delay";
+
 	public static final String PREF_SUPPORT_SPRING_XML_CONFIGS = "boot-java.support-spring-xml-config.on";
 	public static final String PREF_XML_CONFIGS_SCAN_FOLDERS = "boot-java.support-spring-xml-config.scan-folders-globs";
 	public static final String PREF_SCAN_JAVA_TEST_SOURCES = "boot-java.scan-java-test-sources";

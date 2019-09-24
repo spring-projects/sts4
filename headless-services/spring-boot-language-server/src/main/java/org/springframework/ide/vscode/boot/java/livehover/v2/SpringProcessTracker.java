@@ -16,26 +16,28 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.boot.app.BootJavaConfig;
 
 /**
  * @author Martin Lippert
  */
 public class SpringProcessTracker {
 
-	private static final Duration DEFAULT_INTERVAL = Duration.ofMillis(5000);
+	private static final long DELAY_MINIMUM = 1000;
+	
 	private static final Logger log = LoggerFactory.getLogger(SpringProcessTracker.class);
 
-	private final long POLLING_INTERVAL_MILLISECONDS;
 	private final SpringProcessConnectorLocal localProcessConnector;
 	private final boolean isConnectorAvailable;
 
 	private boolean automaticTrackingEnabled;
+	private Duration POLLING_INTERVAL;
 	private ScheduledThreadPoolExecutor timer;
 
 	public SpringProcessTracker(SpringProcessConnectorLocal localProcessConnector, Duration pollingInterval) {
 		this.localProcessConnector = localProcessConnector;
-		this.POLLING_INTERVAL_MILLISECONDS = pollingInterval == null ? DEFAULT_INTERVAL.toMillis() : pollingInterval.toMillis();
-		this.automaticTrackingEnabled = true;
+		this.POLLING_INTERVAL = pollingInterval != null ? pollingInterval : Duration.ofMillis(BootJavaConfig.LIVE_INFORMATION_AUTOMATIC_TRACKING_DELAY_DEFAULT);
+		this.automaticTrackingEnabled = false;
 		
 		this.isConnectorAvailable = SpringProcessConnectorLocal.isAvailable();
 	}
@@ -52,6 +54,19 @@ public class SpringProcessTracker {
 		}
 	}
 
+	public void setDelay(long delay) {
+		Duration newDelay = Duration.ofMillis(Math.max(DELAY_MINIMUM, delay));
+		
+		if (!newDelay.equals(POLLING_INTERVAL)) {
+			this.POLLING_INTERVAL = newDelay;
+
+			if (automaticTrackingEnabled) {
+				stop();
+				start();
+			}
+		}
+	}
+
 	public synchronized void start() {
 		if (!isConnectorAvailable) {
 			log.error("virtual machine connector library not available, no automatic local process tracking possible");
@@ -61,7 +76,7 @@ public class SpringProcessTracker {
 		if (automaticTrackingEnabled && timer == null) {
 			log.info("Starting SpringProcessTracker");
 			this.timer = new ScheduledThreadPoolExecutor(1);
-			this.timer.scheduleWithFixedDelay(() -> this.update(), 0, POLLING_INTERVAL_MILLISECONDS, TimeUnit.MILLISECONDS);
+			this.timer.scheduleWithFixedDelay(() -> this.update(), 0, POLLING_INTERVAL.toMillis(), TimeUnit.MILLISECONDS);
 		}
 	}
 
@@ -74,19 +89,18 @@ public class SpringProcessTracker {
 	}
 
 	private void update() {
-//		log.info("scan for local processes cycle...");
-//		try {
-//			SpringProcessDescriptor[] autoConnectProcesses = this.localProcessConnector.getProcesses(true, SpringProcessStatus.AUTO_CONNECT);
-//			
-//			for (SpringProcessDescriptor process : autoConnectProcesses) {
-//				log.info("auto-connect to process: " + process.getProcessKey());
-//
-//				this.localProcessConnector.connectProcess(process);
-//			}
-//		}
-//		catch (Throwable e) {
-//			log.error("error searching for local processes", e);
-//		}
+		try {
+			SpringProcessDescriptor[] autoConnectProcesses = this.localProcessConnector.getProcesses(true, SpringProcessStatus.AUTO_CONNECT);
+			
+			for (SpringProcessDescriptor process : autoConnectProcesses) {
+				log.info("auto-connect to process: " + process.getProcessKey());
+
+				this.localProcessConnector.connectProcess(process);
+			}
+		}
+		catch (Throwable e) {
+			log.error("error searching for local processes", e);
+		}
 	}
 
 }

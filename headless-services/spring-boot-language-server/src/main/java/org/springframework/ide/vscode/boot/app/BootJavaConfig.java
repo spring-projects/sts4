@@ -34,6 +34,9 @@ public class BootJavaConfig implements InitializingBean {
 	
 	private static final Logger log = LoggerFactory.getLogger(BootJavaConfig.class);
 
+	public static final boolean LIVE_INFORMATION_AUTOMATIC_TRACKING_ENABLED_DEFAULT = true;
+	public static final int LIVE_INFORMATION_AUTOMATIC_TRACKING_DELAY_DEFAULT = 5000;
+
 	//TODO: Consider changing this to something that raises Spring application events.
 	// I.e. like described in here: https://www.baeldung.com/spring-events
 
@@ -45,10 +48,14 @@ public class BootJavaConfig implements InitializingBean {
 		this.workspace = server.getWorkspaceService();
 	}
 
+	public boolean isLiveInformationAutomaticTrackingEnabled() {
+		Boolean enabled = settings.getBoolean("boot-java", "live-information", "automatic-tracking", "on");
+		return enabled != null ? enabled.booleanValue() : LIVE_INFORMATION_AUTOMATIC_TRACKING_ENABLED_DEFAULT;
+	}
 
-	public boolean isBootHintsEnabled() {
-		Boolean enabled = settings.getBoolean("boot-java", "boot-hints", "on");
-		return enabled == null || enabled.booleanValue();
+	public int getLiveInformationAutomaticTrackingDelay() {
+		Integer delay = settings.getInt("boot-java", "live-information", "automatic-tracking", "delay");
+		return delay != null ? delay.intValue() : LIVE_INFORMATION_AUTOMATIC_TRACKING_DELAY_DEFAULT;
 	}
 
 	public boolean isSpringXMLSupportEnabled() {

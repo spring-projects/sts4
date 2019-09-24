@@ -15,6 +15,7 @@ import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.preference.StringFieldEditor;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.widgets.Composite;
@@ -81,7 +82,10 @@ public class BootJavaPreferencesPage extends FieldEditorPreferencePage implement
 		Composite fieldEditorParent = getFieldEditorParent();
 		
 		addField(new BooleanFieldEditor(Constants.PREF_SCAN_JAVA_TEST_SOURCES, "Scan Java test sources", fieldEditorParent));
-		addField(new BooleanFieldEditor(Constants.PREF_BOOT_HINTS, "Live Boot Hint Decorators", fieldEditorParent));
+		
+		addField(new BooleanFieldEditor(Constants.PREF_LIVE_INFORMATION_AUTOMATIC_TRACKING_ENABLED, "Live Information - Automatic Process Tracking Enabled", fieldEditorParent));
+		addField(new StringFieldEditor(Constants.PREF_LIVE_INFORMATION_AUTOMATIC_TRACKING_DELAY, "Live Information - Automatic Process Tracking Delay in ms", fieldEditorParent));
+		
 		addField(new BooleanFieldEditor(PreferenceConstants.HIGHLIGHT_CODELENS_PREFS, "Highlights CodeLens", fieldEditorParent) {
 			@Override
 			public IPreferenceStore getPreferenceStore() {

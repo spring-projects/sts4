@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java;
 
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -176,7 +177,7 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		new SpringProcessCommandHandler(server, liveDataService, liveDataLocalProcessConnector, liveDataRemoteProcessConnector);
 
 		// track locally running processes and automatically connect to them if configured to do so
-		liveProcessTracker = new SpringProcessTracker(liveDataLocalProcessConnector, serverParams.watchDogInterval);
+		liveProcessTracker = new SpringProcessTracker(liveDataLocalProcessConnector, Duration.ofMillis(config.getLiveInformationAutomaticTrackingDelay()));
 		
 		//
 		//
@@ -200,8 +201,10 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 
 		config.addListener(ignore -> {
 			// live hover watchdog
-//			liveProcessTracker.setTrackingEnabled(config.isBootHintsEnabled());
-//			if (config.isBootHintsEnabled()) {
+			liveProcessTracker.setDelay(config.getLiveInformationAutomaticTrackingDelay());
+			liveProcessTracker.setTrackingEnabled(config.isLiveInformationAutomaticTrackingEnabled());
+
+			//			if (config.isBootHintsEnabled()) {
 //				liveHoverWatchdog.enableHighlights();
 //			} else {
 //				liveHoverWatchdog.disableHighlights();

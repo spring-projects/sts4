@@ -27,7 +27,8 @@ public class PrefsInitializer extends AbstractPreferenceInitializer {
 	@Override
 	public void initializeDefaultPreferences() {
 		IPreferenceStore preferenceStore = BootLanguageServerPlugin.getDefault().getPreferenceStore();
-		preferenceStore.setDefault(Constants.PREF_BOOT_HINTS, true);
+		preferenceStore.setDefault(Constants.PREF_LIVE_INFORMATION_AUTOMATIC_TRACKING_ENABLED, true);
+		preferenceStore.setDefault(Constants.PREF_LIVE_INFORMATION_AUTOMATIC_TRACKING_DELAY, 5000);
 		preferenceStore.setDefault(Constants.PREF_SUPPORT_SPRING_XML_CONFIGS, false);
 		preferenceStore.setDefault(Constants.PREF_XML_CONFIGS_HYPERLINKS, true);
 		preferenceStore.setDefault(Constants.PREF_XML_CONFIGS_CONTENT_ASSIST, true);
