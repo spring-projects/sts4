@@ -18,7 +18,7 @@ import java.util.Set;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
-import org.objectweb.asm.Type;
+import org.springframework.asm.Type;
 
 public class Boot20DispatcherServletMapping implements RequestMapping {
 
