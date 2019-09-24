@@ -190,18 +190,15 @@ public class SpringProcessConnectorLocal {
 				try {
 					vm = VirtualMachine.attach(descriptor.getVm());
 					
-					boolean ignore = shouldIgnore(descriptor.getVm(), vm);
-					boolean autoConnect = shouldAutoConnect(descriptor.getVm(), vm);
-					
-					if (ignore) {
+					if (shouldIgnore(descriptor.getVm(), vm)) {
 						return SpringProcessStatus.IGNORE;
 					}
-					else if (autoConnect) {
+					
+					if (shouldAutoConnect(descriptor.getVm(), vm)) {
 						return SpringProcessStatus.AUTO_CONNECT;
 					}
-					else {
-						return SpringProcessStatus.REGULAR;
-					}
+
+					return SpringProcessStatus.REGULAR;
 				}
 				catch (Exception e) {
 					return SpringProcessStatus.IGNORE;
