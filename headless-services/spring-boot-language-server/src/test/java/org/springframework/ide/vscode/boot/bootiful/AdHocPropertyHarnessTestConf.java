@@ -14,7 +14,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.ide.vscode.boot.editor.harness.AdHocPropertyHarness;
 import org.springframework.ide.vscode.boot.metadata.ProjectBasedPropertyIndexProvider;
-import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
 
 @Configuration
 public class AdHocPropertyHarnessTestConf {
