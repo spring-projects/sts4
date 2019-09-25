@@ -10,19 +10,22 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.livehover.test;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
+import org.springframework.ide.vscode.boot.bootiful.HoverTestConf;
+import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveData;
+import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveDataProvider;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
-import org.springframework.ide.vscode.project.harness.MockRunningAppProvider;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
+import org.springframework.ide.vscode.project.harness.SpringProcessLiveDataBuilder;
 import org.springframework.test.context.junit4.SpringRunner;
-import org.springframework.ide.vscode.boot.bootiful.HoverTestConf;
 
 @RunWith(SpringRunner.class)
 @BootLanguageServerTest
@@ -31,26 +34,30 @@ public class ActiveProfilesHoverTest {
 
 	private ProjectsHarness projects = ProjectsHarness.INSTANCE;
 
-	@Autowired
-	private BootLanguageServerHarness harness;
-
-	@Autowired
-	private MockRunningAppProvider mockAppProvider;
+	@Autowired private BootLanguageServerHarness harness;
+	@Autowired private SpringProcessLiveDataProvider liveDataProvider;
 
 	@Before
 	public void setup() throws Exception {
 		harness.useProject(projects.mavenProject("empty-boot-15-web-app"));
 		harness.intialize(null);
 	}
+	
+	@After
+	public void tearDown() throws Exception {
+		liveDataProvider.remove("processkey");
+		liveDataProvider.remove("processkey1");
+		liveDataProvider.remove("processkey2");
+	}
 
 	@Test
 	public void testActiveProfileHover() throws Exception {
-		mockAppProvider.builder()
-			.isSpringBootApp(true)
-			.processId("22022")
+		SpringProcessLiveData liveData = new SpringProcessLiveDataBuilder()
+			.processID("22022")
 			.processName("foo.bar.RunningApp")
-			.profiles("testing-profile", "local-profile")
+			.activeProfiles("testing-profile", "local-profile")
 			.build();
+		liveDataProvider.add("processkey", liveData);
 
 		Editor editor = harness.newEditor(LanguageId.JAVA,
 				"package hello;\n" +
@@ -84,12 +91,12 @@ public class ActiveProfilesHoverTest {
 		//Make sure we show something sensible
 		harness.useProject(projects.mavenProject("no-actuator-boot-15-web-app"));
 
-		mockAppProvider.builder()
-			.isSpringBootApp(true)
-			.processId("22022")
+		SpringProcessLiveData liveData = new SpringProcessLiveDataBuilder()
+			.processID("22022")
 			.processName("foo.bar.RunningApp")
-			.profilesUnknown()
+			.activeProfiles((String[]) null)
 			.build();
+		liveDataProvider.add("processkey", liveData);
 
 		Editor editor = harness.newEditor(LanguageId.JAVA,
 				"package hello;\n" +
@@ -104,24 +111,24 @@ public class ActiveProfilesHoverTest {
 				"}"
 		);
 		editor.assertHoverContains("@Profile", "Consider adding `spring-boot-actuator` as a dependency");
-		editor.assertHighlights(/*NONE*/);
+		editor.assertNoHighlights();
 	}
 
 	@Test
 	public void testActiveProfileHoverMixedKnownAndUnknown() throws Exception {
-		mockAppProvider.builder()
-			.isSpringBootApp(true)
-			.processId("22022")
+		SpringProcessLiveData liveData1 = new SpringProcessLiveDataBuilder()
+			.processID("22022")
 			.processName("foo.bar.NoActuatorApp")
-			.profilesUnknown()
+			.activeProfiles((String[]) null)
 			.build();
+		liveDataProvider.add("processkey1", liveData1);
 
-		mockAppProvider.builder()
-			.isSpringBootApp(true)
-			.processId("3456")
+		SpringProcessLiveData liveData2 = new SpringProcessLiveDataBuilder()
+			.processID("3456")
 			.processName("foo.bar.NormalApp")
-			.profiles("fancy")
+			.activeProfiles("fancy")
 			.build();
+		liveDataProvider.add("processkey2", liveData2);
 
 		Editor editor = harness.newEditor(LanguageId.JAVA,
 				"package hello;\n" +
@@ -156,6 +163,6 @@ public class ActiveProfilesHoverTest {
 				"}"
 		);
 		editor.assertNoHover("@Profile");
-		editor.assertHighlights(/*NONE*/);
+		editor.assertNoHighlights();
 	}
 }

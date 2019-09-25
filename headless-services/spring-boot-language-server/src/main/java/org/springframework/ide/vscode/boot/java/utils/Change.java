@@ -14,26 +14,25 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.ide.vscode.boot.java.livehover.v2.LiveBean;
-import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 
 /**
  * @author Martin Lippert
  */
 public class Change {
 	
-	private final SpringBootApp runningApp;
+//	private final SpringBootApp runningApp;
 
 	private List<LiveBean> newBeans;
 	private List<LiveBean> deletedBeans;
 	
-	public Change(SpringBootApp runningApp) {
-		this.runningApp = runningApp;
-	}
-
-	public SpringBootApp getRunningApp() {
-		return runningApp;
-	}
-	
+//	public Change(SpringBootApp runningApp) {
+//		this.runningApp = runningApp;
+//	}
+//
+//	public SpringBootApp getRunningApp() {
+//		return runningApp;
+//	}
+//	
 	public List<LiveBean> getNewBeans() {
 		return newBeans;
 	}

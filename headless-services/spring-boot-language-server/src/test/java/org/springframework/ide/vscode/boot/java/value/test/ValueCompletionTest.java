@@ -22,7 +22,6 @@ import java.util.Optional;
 import org.apache.commons.io.IOUtils;
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
-import org.eclipse.xtend.lib.annotations.Accessors;
 import org.gradle.internal.impldep.com.google.common.collect.ImmutableList;
 import org.junit.Before;
 import org.junit.Test;
@@ -36,15 +35,12 @@ import org.springframework.ide.vscode.boot.bootiful.AdHocPropertyHarnessTestConf
 import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
 import org.springframework.ide.vscode.boot.editor.harness.AdHocPropertyHarness;
 import org.springframework.ide.vscode.boot.editor.harness.PropertyIndexHarness;
-import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
 import org.springframework.ide.vscode.boot.java.links.SourceLinkFactory;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.boot.java.utils.SymbolCache;
 import org.springframework.ide.vscode.boot.java.utils.SymbolCacheVoid;
 import org.springframework.ide.vscode.boot.java.value.ValueCompletionProcessor;
-import org.springframework.ide.vscode.boot.metadata.AdHocSpringPropertyIndexProvider;
-import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.ValueProviderRegistry;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
@@ -117,8 +113,7 @@ public class ValueCompletionTest {
 					projectFinder,
 					ProjectObserver.NULL,
 					indexHarness.getIndexProvider(),
-					testDefaults.typeUtilProvider,
-					null
+					testDefaults.typeUtilProvider
 			);
 		}
 
@@ -130,9 +125,6 @@ public class ValueCompletionTest {
 			return SourceLinkFactory.NO_SOURCE_LINKS;
 		}
 
-		@Bean RunningAppProvider runningAppProvider() {
-			return RunningAppProvider.NULL;
-		}
 	}
 
 	@Before

@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.boot.java.requestmapping.test;
 
 import java.io.File;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -19,11 +20,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
 import org.springframework.ide.vscode.boot.bootiful.HoverTestConf;
+import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveData;
+import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveDataProvider;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
-import org.springframework.ide.vscode.project.harness.MockRunningAppProvider;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
+import org.springframework.ide.vscode.project.harness.SpringProcessLiveDataBuilder;
 import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
@@ -31,12 +34,17 @@ import org.springframework.test.context.junit4.SpringRunner;
 @Import(HoverTestConf.class)
 public class RequestMappingLiveHoverTestWithContextPath {
 
-	@Autowired BootLanguageServerHarness harness;
-	@Autowired MockRunningAppProvider mockAppProvider;
+	@Autowired private BootLanguageServerHarness harness;
+	@Autowired private SpringProcessLiveDataProvider liveDataProvider;
 
 	@Before
 	public void setup() throws Exception {
 		harness.useProject(ProjectsHarness.INSTANCE.mavenProject("test-request-mapping-live-hover"));
+	}
+
+	@After
+	public void tearDown() throws Exception {
+		liveDataProvider.remove("processkey");
 	}
 
 	@Test
@@ -51,10 +59,9 @@ public class RequestMappingLiveHoverTestWithContextPath {
 
 
 		// Build a mock running boot app
-		mockAppProvider.builder()
-			.isSpringBootApp(true)
+		SpringProcessLiveData liveData = new SpringProcessLiveDataBuilder()
 			.port("1111")
-			.processId("22022")
+			.processID("22022")
 			.host("cfapps.io")
 			.urlScheme("https")
 			.processName("test-request-mapping-live-hover")
@@ -64,6 +71,7 @@ public class RequestMappingLiveHoverTestWithContextPath {
 				"{\"/webjars/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**/favicon.ico\":{\"bean\":\"faviconHandlerMapping\"},\"{[/hello-world],methods=[GET]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public example.Greeting example.HelloWorldController.sayHello(java.lang.String)\"},\"{[/goodbye]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.goodbye()\"},\"{[/hello]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.hello()\"},\"{[/error]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.http.ResponseEntity<java.util.Map<java.lang.String, java.lang.Object>> org.springframework.boot.autoconfigure.web.BasicErrorController.error(javax.servlet.http.HttpServletRequest)\"},\"{[/error],produces=[text/html]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.web.servlet.ModelAndView org.springframework.boot.autoconfigure.web.BasicErrorController.errorHtml(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse)\"}}")
 			.contextPathEnvJson(bootVersion, AcuatorEnvTestConstants.BOOT_1x_ENV)
 			.build();
+		liveDataProvider.add("processkey", liveData);
 
 		harness.intialize(directory);
 
@@ -87,10 +95,9 @@ public class RequestMappingLiveHoverTestWithContextPath {
 		String bootVersion = "1.x";
 
 		// Build a mock running boot app
-		mockAppProvider.builder()
-			.isSpringBootApp(true)
+		SpringProcessLiveData liveData = new SpringProcessLiveDataBuilder()
 			.port("1111")
-			.processId("22022")
+			.processID("22022")
 			.host("cfapps.io")
 			.urlScheme("https")
 			.processName("test-request-mapping-live-hover")
@@ -100,6 +107,7 @@ public class RequestMappingLiveHoverTestWithContextPath {
 				"{\"/webjars/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**/favicon.ico\":{\"bean\":\"faviconHandlerMapping\"},\"{[/hello-world],methods=[GET]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public example.Greeting example.HelloWorldController.sayHello(java.lang.String)\"},\"{[/goodbye]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.goodbye()\"},\"{[/hello]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.hello()\"},\"{[/error]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.http.ResponseEntity<java.util.Map<java.lang.String, java.lang.Object>> org.springframework.boot.autoconfigure.web.BasicErrorController.error(javax.servlet.http.HttpServletRequest)\"},\"{[/error],produces=[text/html]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.web.servlet.ModelAndView org.springframework.boot.autoconfigure.web.BasicErrorController.errorHtml(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse)\"}}")
 			.contextPathEnvJson(bootVersion, AcuatorEnvTestConstants.BOOT_1x_COMMAND_LINE_ARG_CAMEL_CASE)
 			.build();
+		liveDataProvider.add("processkey", liveData);
 
 		harness.intialize(directory);
 
@@ -124,10 +132,9 @@ public class RequestMappingLiveHoverTestWithContextPath {
 
 
 		// Build a mock running boot app
-		mockAppProvider.builder()
-			.isSpringBootApp(true)
+		SpringProcessLiveData liveData = new SpringProcessLiveDataBuilder()
 			.port("1111")
-			.processId("22022")
+			.processID("22022")
 			.host("cfapps.io")
 			.urlScheme("https")
 			.processName("test-request-mapping-live-hover")
@@ -137,6 +144,7 @@ public class RequestMappingLiveHoverTestWithContextPath {
 				"{\"/webjars/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**/favicon.ico\":{\"bean\":\"faviconHandlerMapping\"},\"{[/hello-world],methods=[GET]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public example.Greeting example.HelloWorldController.sayHello(java.lang.String)\"},\"{[/goodbye]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.goodbye()\"},\"{[/hello]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.hello()\"},\"{[/error]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.http.ResponseEntity<java.util.Map<java.lang.String, java.lang.Object>> org.springframework.boot.autoconfigure.web.BasicErrorController.error(javax.servlet.http.HttpServletRequest)\"},\"{[/error],produces=[text/html]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.web.servlet.ModelAndView org.springframework.boot.autoconfigure.web.BasicErrorController.errorHtml(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse)\"}}")
 			.contextPathEnvJson(bootVersion, AcuatorEnvTestConstants.BOOT_1x_COMMAND_LINE_ARG_KEBAB_CASE)
 			.build();
+		liveDataProvider.add("processkey", liveData);
 
 		harness.intialize(directory);
 
@@ -161,10 +169,9 @@ public class RequestMappingLiveHoverTestWithContextPath {
 
 
 		// Build a mock running boot app
-		mockAppProvider.builder()
-			.isSpringBootApp(true)
+		SpringProcessLiveData liveData = new SpringProcessLiveDataBuilder()
 			.port("1111")
-			.processId("22022")
+			.processID("22022")
 			.host("cfapps.io")
 			.urlScheme("https")
 			.processName("test-request-mapping-live-hover")
@@ -174,6 +181,7 @@ public class RequestMappingLiveHoverTestWithContextPath {
 				"{\"/webjars/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**/favicon.ico\":{\"bean\":\"faviconHandlerMapping\"},\"{[/hello-world],methods=[GET]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public example.Greeting example.HelloWorldController.sayHello(java.lang.String)\"},\"{[/goodbye]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.goodbye()\"},\"{[/hello]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.hello()\"},\"{[/error]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.http.ResponseEntity<java.util.Map<java.lang.String, java.lang.Object>> org.springframework.boot.autoconfigure.web.BasicErrorController.error(javax.servlet.http.HttpServletRequest)\"},\"{[/error],produces=[text/html]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.web.servlet.ModelAndView org.springframework.boot.autoconfigure.web.BasicErrorController.errorHtml(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse)\"}}")
 			.contextPathEnvJson(bootVersion, AcuatorEnvTestConstants.BOOT_1x_APP_CONFIG_FILE_KEBAB_CASE)
 			.build();
+		liveDataProvider.add("processkey", liveData);
 
 		harness.intialize(directory);
 
@@ -198,10 +206,9 @@ public class RequestMappingLiveHoverTestWithContextPath {
 
 
 		// Build a mock running boot app
-		mockAppProvider.builder()
-			.isSpringBootApp(true)
+		SpringProcessLiveData liveData = new SpringProcessLiveDataBuilder()
 			.port("1111")
-			.processId("22022")
+			.processID("22022")
 			.host("cfapps.io")
 			.urlScheme("https")
 			.processName("test-request-mapping-live-hover")
@@ -211,6 +218,7 @@ public class RequestMappingLiveHoverTestWithContextPath {
 				"{\"/webjars/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**/favicon.ico\":{\"bean\":\"faviconHandlerMapping\"},\"{[/hello-world],methods=[GET]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public example.Greeting example.HelloWorldController.sayHello(java.lang.String)\"},\"{[/goodbye]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.goodbye()\"},\"{[/hello]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.hello()\"},\"{[/error]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.http.ResponseEntity<java.util.Map<java.lang.String, java.lang.Object>> org.springframework.boot.autoconfigure.web.BasicErrorController.error(javax.servlet.http.HttpServletRequest)\"},\"{[/error],produces=[text/html]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.web.servlet.ModelAndView org.springframework.boot.autoconfigure.web.BasicErrorController.errorHtml(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse)\"}}")
 			.contextPathEnvJson(bootVersion, AcuatorEnvTestConstants.BOOT_1x_APP_CONFIG_FILE_CAMEL_CASE)
 			.build();
+		liveDataProvider.add("processkey", liveData);
 
 		harness.intialize(directory);
 
@@ -234,10 +242,9 @@ public class RequestMappingLiveHoverTestWithContextPath {
 
 
 		// Build a mock running boot app
-		mockAppProvider.builder()
-			.isSpringBootApp(true)
+		SpringProcessLiveData liveData = new SpringProcessLiveDataBuilder()
 			.port("1111")
-			.processId("22022")
+			.processID("22022")
 			.host("cfapps.io")
 			.urlScheme("https")
 			.processName("test-request-mapping-live-hover")
@@ -247,6 +254,7 @@ public class RequestMappingLiveHoverTestWithContextPath {
 				"{\"/webjars/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**/favicon.ico\":{\"bean\":\"faviconHandlerMapping\"},\"{[/hello-world],methods=[GET]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public example.Greeting example.HelloWorldController.sayHello(java.lang.String)\"},\"{[/goodbye]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.goodbye()\"},\"{[/hello]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.hello()\"},\"{[/error]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.http.ResponseEntity<java.util.Map<java.lang.String, java.lang.Object>> org.springframework.boot.autoconfigure.web.BasicErrorController.error(javax.servlet.http.HttpServletRequest)\"},\"{[/error],produces=[text/html]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.web.servlet.ModelAndView org.springframework.boot.autoconfigure.web.BasicErrorController.errorHtml(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse)\"}}")
 			.contextPathEnvJson(bootVersion, AcuatorEnvTestConstants.BOOT_2x_ENV)
 			.build();
+		liveDataProvider.add("processkey", liveData);
 
 		harness.intialize(directory);
 
@@ -270,10 +278,9 @@ public class RequestMappingLiveHoverTestWithContextPath {
 		String bootVersion = "2.x";
 
 		// Build a mock running boot app
-		mockAppProvider.builder()
-			.isSpringBootApp(true)
+		SpringProcessLiveData liveData = new SpringProcessLiveDataBuilder()
 			.port("1111")
-			.processId("22022")
+			.processID("22022")
 			.host("cfapps.io")
 			.urlScheme("https")
 			.processName("test-request-mapping-live-hover")
@@ -283,6 +290,7 @@ public class RequestMappingLiveHoverTestWithContextPath {
 				"{\"/webjars/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**/favicon.ico\":{\"bean\":\"faviconHandlerMapping\"},\"{[/hello-world],methods=[GET]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public example.Greeting example.HelloWorldController.sayHello(java.lang.String)\"},\"{[/goodbye]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.goodbye()\"},\"{[/hello]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.hello()\"},\"{[/error]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.http.ResponseEntity<java.util.Map<java.lang.String, java.lang.Object>> org.springframework.boot.autoconfigure.web.BasicErrorController.error(javax.servlet.http.HttpServletRequest)\"},\"{[/error],produces=[text/html]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.web.servlet.ModelAndView org.springframework.boot.autoconfigure.web.BasicErrorController.errorHtml(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse)\"}}")
 			.contextPathEnvJson(bootVersion, AcuatorEnvTestConstants.BOOT_2x_COMMAND_LINE_ARG_CAMEL_CASE)
 			.build();
+		liveDataProvider.add("processkey", liveData);
 
 		harness.intialize(directory);
 
@@ -307,10 +315,9 @@ public class RequestMappingLiveHoverTestWithContextPath {
 
 
 		// Build a mock running boot app
-		mockAppProvider.builder()
-			.isSpringBootApp(true)
+		SpringProcessLiveData liveData = new SpringProcessLiveDataBuilder()
 			.port("1111")
-			.processId("22022")
+			.processID("22022")
 			.host("cfapps.io")
 			.urlScheme("https")
 			.processName("test-request-mapping-live-hover")
@@ -320,6 +327,7 @@ public class RequestMappingLiveHoverTestWithContextPath {
 				"{\"/webjars/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**/favicon.ico\":{\"bean\":\"faviconHandlerMapping\"},\"{[/hello-world],methods=[GET]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public example.Greeting example.HelloWorldController.sayHello(java.lang.String)\"},\"{[/goodbye]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.goodbye()\"},\"{[/hello]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.hello()\"},\"{[/error]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.http.ResponseEntity<java.util.Map<java.lang.String, java.lang.Object>> org.springframework.boot.autoconfigure.web.BasicErrorController.error(javax.servlet.http.HttpServletRequest)\"},\"{[/error],produces=[text/html]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.web.servlet.ModelAndView org.springframework.boot.autoconfigure.web.BasicErrorController.errorHtml(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse)\"}}")
 			.contextPathEnvJson(bootVersion, AcuatorEnvTestConstants.BOOT_2x_COMMAND_LINE_ARG_KEBAB_CASE)
 			.build();
+		liveDataProvider.add("prcesskey", liveData);
 
 		harness.intialize(directory);
 
@@ -344,10 +352,9 @@ public class RequestMappingLiveHoverTestWithContextPath {
 
 
 		// Build a mock running boot app
-		mockAppProvider.builder()
-			.isSpringBootApp(true)
+		SpringProcessLiveData liveData = new SpringProcessLiveDataBuilder()
 			.port("1111")
-			.processId("22022")
+			.processID("22022")
 			.host("cfapps.io")
 			.urlScheme("https")
 			.processName("test-request-mapping-live-hover")
@@ -357,6 +364,7 @@ public class RequestMappingLiveHoverTestWithContextPath {
 				"{\"/webjars/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**/favicon.ico\":{\"bean\":\"faviconHandlerMapping\"},\"{[/hello-world],methods=[GET]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public example.Greeting example.HelloWorldController.sayHello(java.lang.String)\"},\"{[/goodbye]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.goodbye()\"},\"{[/hello]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.hello()\"},\"{[/error]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.http.ResponseEntity<java.util.Map<java.lang.String, java.lang.Object>> org.springframework.boot.autoconfigure.web.BasicErrorController.error(javax.servlet.http.HttpServletRequest)\"},\"{[/error],produces=[text/html]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.web.servlet.ModelAndView org.springframework.boot.autoconfigure.web.BasicErrorController.errorHtml(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse)\"}}")
 			.contextPathEnvJson(bootVersion, AcuatorEnvTestConstants.BOOT_2x_APP_CONFIG_FILE_KEBAB_CASE)
 			.build();
+		liveDataProvider.add("processkey", liveData);
 
 		harness.intialize(directory);
 
@@ -381,10 +389,9 @@ public class RequestMappingLiveHoverTestWithContextPath {
 
 
 		// Build a mock running boot app
-		mockAppProvider.builder()
-			.isSpringBootApp(true)
+		SpringProcessLiveData liveData = new SpringProcessLiveDataBuilder()
 			.port("1111")
-			.processId("22022")
+			.processID("22022")
 			.host("cfapps.io")
 			.urlScheme("https")
 			.processName("test-request-mapping-live-hover")
@@ -394,6 +401,7 @@ public class RequestMappingLiveHoverTestWithContextPath {
 				"{\"/webjars/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**/favicon.ico\":{\"bean\":\"faviconHandlerMapping\"},\"{[/hello-world],methods=[GET]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public example.Greeting example.HelloWorldController.sayHello(java.lang.String)\"},\"{[/goodbye]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.goodbye()\"},\"{[/hello]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.hello()\"},\"{[/error]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.http.ResponseEntity<java.util.Map<java.lang.String, java.lang.Object>> org.springframework.boot.autoconfigure.web.BasicErrorController.error(javax.servlet.http.HttpServletRequest)\"},\"{[/error],produces=[text/html]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.web.servlet.ModelAndView org.springframework.boot.autoconfigure.web.BasicErrorController.errorHtml(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse)\"}}")
 			.contextPathEnvJson(bootVersion, AcuatorEnvTestConstants.BOOT_2x_APP_CONFIG_FILE_CAMEL_CASE)
 			.build();
+		liveDataProvider.add("processkey", liveData);
 
 		harness.intialize(directory);
 
@@ -420,10 +428,9 @@ public class RequestMappingLiveHoverTestWithContextPath {
 
 
 		// Build a mock running boot app
-		mockAppProvider.builder()
-			.isSpringBootApp(true)
+		SpringProcessLiveData liveData = new SpringProcessLiveDataBuilder()
 			.port("1111")
-			.processId("22022")
+			.processID("22022")
 			.host("cfapps.io")
 			.urlScheme("https")
 			.processName("test-request-mapping-live-hover")
@@ -433,6 +440,7 @@ public class RequestMappingLiveHoverTestWithContextPath {
 				"{\"/webjars/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**/favicon.ico\":{\"bean\":\"faviconHandlerMapping\"},\"{[/hello-world],methods=[GET]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public example.Greeting example.HelloWorldController.sayHello(java.lang.String)\"},\"{[/goodbye]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.goodbye()\"},\"{[/hello]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.hello()\"},\"{[/error]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.http.ResponseEntity<java.util.Map<java.lang.String, java.lang.Object>> org.springframework.boot.autoconfigure.web.BasicErrorController.error(javax.servlet.http.HttpServletRequest)\"},\"{[/error],produces=[text/html]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.web.servlet.ModelAndView org.springframework.boot.autoconfigure.web.BasicErrorController.errorHtml(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse)\"}}")
 			.contextPathEnvJson(bootVersion, AcuatorEnvTestConstants.BOOT_2x_PROPERTY_SOURCE_PRIORITY)
 			.build();
+		liveDataProvider.add("processkey", liveData);
 
 		harness.intialize(directory);
 
@@ -455,10 +463,9 @@ public class RequestMappingLiveHoverTestWithContextPath {
 				.toString();
 
 		// Build a mock running boot app
-		mockAppProvider.builder()
-			.isSpringBootApp(true)
+		SpringProcessLiveData liveData = new SpringProcessLiveDataBuilder()
 			.port("1111")
-			.processId("22022")
+			.processID("22022")
 			.host("cfapps.io")
 			.urlScheme("https")
 			.contextPath("/mockedpath")
@@ -468,6 +475,7 @@ public class RequestMappingLiveHoverTestWithContextPath {
 			.requestMappingsJson(
 				"{\"/webjars/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**/favicon.ico\":{\"bean\":\"faviconHandlerMapping\"},\"{[/hello-world],methods=[GET]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public example.Greeting example.HelloWorldController.sayHello(java.lang.String)\"},\"{[/goodbye]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.goodbye()\"},\"{[/hello]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.hello()\"},\"{[/error]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.http.ResponseEntity<java.util.Map<java.lang.String, java.lang.Object>> org.springframework.boot.autoconfigure.web.BasicErrorController.error(javax.servlet.http.HttpServletRequest)\"},\"{[/error],produces=[text/html]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.web.servlet.ModelAndView org.springframework.boot.autoconfigure.web.BasicErrorController.errorHtml(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse)\"}}")
 			.build();
+		liveDataProvider.add("processkey", liveData);
 
 		harness.intialize(directory);
 
@@ -488,10 +496,9 @@ public class RequestMappingLiveHoverTestWithContextPath {
 
 
 		// Build a mock running boot app
-		mockAppProvider.builder()
-			.isSpringBootApp(true)
+		SpringProcessLiveData liveData = new SpringProcessLiveDataBuilder()
 			.port("999")
-			.processId("76543")
+			.processID("76543")
 			.host("cfapps.io")
 			.urlScheme("https")
 			.contextPath("/mockedpath")
@@ -500,7 +507,8 @@ public class RequestMappingLiveHoverTestWithContextPath {
 			// mock app to return realistic results if possible
 			.requestMappingsJson(
 				"{\"{[/greetings || /hello],methods=[GET]}\": {\"bean\": \"requestMappingHandlerMapping\", \"method\":\"public java.lang.String com.example.RestApi.greetings()\"}}")
-		.	build();
+			.build();
+		liveDataProvider.add("processkey", liveData);
 
 		harness.intialize(directory);
 

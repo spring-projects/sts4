@@ -34,7 +34,6 @@ import org.springframework.ide.vscode.boot.bootiful.AdHocPropertyHarnessTestConf
 import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
 import org.springframework.ide.vscode.boot.editor.harness.PropertyIndexHarness;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
-import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
 import org.springframework.ide.vscode.boot.java.links.SourceLinkFactory;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
@@ -83,10 +82,6 @@ public class CompilationUnitCacheTest {
 			return new PropertyIndexHarness(valueProviders);
 		}
 
-		@Bean RunningAppProvider runningAppProvider() {
-			return RunningAppProvider.NULL;
-		}
-
 		@Bean JavaProjectFinder projectFinder(BootLanguageServerParams serverParams) {
 			return serverParams.projectFinder;
 		}
@@ -105,8 +100,7 @@ public class CompilationUnitCacheTest {
 					indexHarness.getProjectFinder(),
 					projectObserver,
 					indexHarness.getIndexProvider(),
-					testDefaults.typeUtilProvider,
-					null
+					testDefaults.typeUtilProvider
 			);
 		}
 

@@ -10,18 +10,21 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.livehover.test;
 
+import org.junit.After;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
 import org.springframework.ide.vscode.boot.bootiful.HoverTestConf;
+import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveData;
+import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveDataProvider;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
-import org.springframework.ide.vscode.project.harness.MockRunningAppProvider;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
+import org.springframework.ide.vscode.project.harness.SpringProcessLiveDataBuilder;
 import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
@@ -34,16 +37,21 @@ public class ActuatorWarningHoverTest {
 	private ProjectsHarness projects = ProjectsHarness.INSTANCE;
 
 	@Autowired private BootLanguageServerHarness harness;
-	@Autowired private MockRunningAppProvider mockAppProvider;
+	@Autowired private SpringProcessLiveDataProvider liveDataProvider;
+	
+	@After
+	public void tearDown() throws Exception {
+		liveDataProvider.remove("processkey");
+	}
 
 	@Test public void showWarningIf_NoActuator_and_RunningApp() throws Exception {
-		//Has running app:
-		mockAppProvider.builder()
-			.isSpringBootApp(true)
-			.processId("22022")
+		
+		SpringProcessLiveData liveData = new SpringProcessLiveDataBuilder()
+			.processID("22022")
 			.processName("foo.bar.RunningApp")
-			.profilesUnknown()
+			.activeProfiles((String[]) null)
 			.build();
+		liveDataProvider.add("processkey", liveData);
 
 		//No actuator on classpath:
 		String projectName = NO_ACTUATOR_PROJECT;
@@ -97,12 +105,12 @@ public class ActuatorWarningHoverTest {
 
 	@Test public void noWarningIf_ActuatorOnClasspath() throws Exception {
 		//Has running app:
-		mockAppProvider.builder()
-			.isSpringBootApp(true)
-			.processId("22022")
+		SpringProcessLiveData liveData = new SpringProcessLiveDataBuilder()
+			.processID("22022")
 			.processName("foo.bar.RunningApp")
-			.profilesUnknown()
+			.activeProfiles((String[]) null)
 			.build();
+		liveDataProvider.add("processkey", liveData);
 
 		//Actuator on classpath:
 		String projectName = ACTUATOR_PROJECT;
@@ -135,12 +143,12 @@ public class ActuatorWarningHoverTest {
 		// annotation name rather than the whole range of the ast node.
 
 		//Has running app:
-		mockAppProvider.builder()
-			.isSpringBootApp(true)
-			.processId("22022")
+		SpringProcessLiveData liveData = new SpringProcessLiveDataBuilder()
+			.processID("22022")
 			.processName("foo.bar.RunningApp")
-			.profilesUnknown()
+			.activeProfiles((String[]) null)
 			.build();
+		liveDataProvider.add("processkey", liveData);
 
 		//No actuator on classpath:
 		String projectName = NO_ACTUATOR_PROJECT;

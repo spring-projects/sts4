@@ -11,18 +11,12 @@
 package org.springframework.ide.vscode.boot.app;
 
 import java.nio.file.Paths;
-import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Optional;
 
 import org.eclipse.lsp4j.TextDocumentIdentifier;
-import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
-import org.springframework.ide.vscode.boot.java.utils.SpringLiveHoverWatchdog;
-import org.springframework.ide.vscode.boot.java.utils.SymbolCache;
-import org.springframework.ide.vscode.boot.java.utils.SymbolCacheOnDisc;
-import org.springframework.ide.vscode.boot.java.utils.SymbolCacheVoid;
 import org.springframework.ide.vscode.boot.jdt.ls.JavaProjectsService;
 import org.springframework.ide.vscode.boot.jdt.ls.JavaProjectsServiceWithFallback;
 import org.springframework.ide.vscode.boot.jdt.ls.JdtLsProjectCache;
@@ -75,16 +69,11 @@ public class BootLanguageServerParams {
 	//Boot Properies
 	public final TypeUtilProvider typeUtilProvider;
 
-	//Boot Java
-	//public final RunningAppProvider runningAppProvider;
-	public final Duration watchDogInterval;
-
 	public BootLanguageServerParams(
 			JavaProjectFinder projectFinder,
 			ProjectObserver projectObserver,
 			SpringPropertyIndexProvider indexProvider,
-			TypeUtilProvider typeUtilProvider,
-			Duration watchDogInterval
+			TypeUtilProvider typeUtilProvider
 	) {
 		super();
 		Assert.isNotNull(projectObserver); // null is bad should be ProjectObserver.NULL
@@ -92,7 +81,6 @@ public class BootLanguageServerParams {
 		this.projectObserver = projectObserver;
 		this.indexProvider = indexProvider;
 		this.typeUtilProvider = typeUtilProvider;
-		this.watchDogInterval = watchDogInterval;
 	}
 
 	public static BootLanguageServerParams createDefault(SimpleLanguageServer server, ValueProviderRegistry valueProviders, boolean isJandexIndex) {
@@ -111,8 +99,7 @@ public class BootLanguageServerParams {
 				jdtProjectCache.filter(project -> SpringProjectUtil.isBootProject(project) || SpringProjectUtil.isSpringProject(project)),
 				jdtProjectCache,
 				indexProvider,
-				(SourceLinks sourceLinks, IDocument doc) -> new TypeUtil(sourceLinks, jdtProjectCache.find(new TextDocumentIdentifier(doc.getUri()))),
-				SpringLiveHoverWatchdog.DEFAULT_INTERVAL
+				(SourceLinks sourceLinks, IDocument doc) -> new TypeUtil(sourceLinks, jdtProjectCache.find(new TextDocumentIdentifier(doc.getUri())))
 		);
 	}
 
@@ -178,8 +165,7 @@ public class BootLanguageServerParams {
 				javaProjectFinder.filter(project -> SpringProjectUtil.isBootProject(project) || SpringProjectUtil.isSpringProject(project)),
 				projectObserver,
 				indexProvider,
-				(SourceLinks sourceLinks, IDocument doc) -> new TypeUtil(sourceLinks, javaProjectFinder.find(new TextDocumentIdentifier(doc.getUri()))),
-				SpringLiveHoverWatchdog.DEFAULT_INTERVAL
+				(SourceLinks sourceLinks, IDocument doc) -> new TypeUtil(sourceLinks, javaProjectFinder.find(new TextDocumentIdentifier(doc.getUri())))
 		);
 	}
 }

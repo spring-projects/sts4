@@ -78,11 +78,6 @@
 			<version>${dependencies.version}</version>
 		</dependency>
 		<dependency>
-			<groupId>org.springframework.ide.vscode</groupId>
-			<artifactId>commons-boot-app-cli</artifactId>
-			<version>${dependencies.version}</version>
-		</dependency>
-		<dependency>
 			<groupId>org.eclipse.jdt</groupId>
 			<artifactId>org.eclipse.jdt.core</artifactId>
 			<version>3.18.0</version>
@@ -91,6 +86,11 @@
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
 			<version>${commons-io-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.json</groupId>
+			<artifactId>json</artifactId>
+			<version>20160810</version>
 		</dependency>
 		<dependency>
 			<groupId>org.lsp4xml</groupId>
@@ -134,6 +134,28 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+
+	<profiles>
+		<profile>
+			<id>tools-jar-profile</id>
+			<activation>
+				<file>
+					<exists>${java.home}/../lib/tools.jar</exists>
+				</file>
+			</activation>
+
+			<dependencies>
+				<dependency>
+					<groupId>com.sun</groupId>
+					<artifactId>tools</artifactId>
+					<version>1.8.0</version>
+					<scope>system</scope>
+					<systemPath>${java.home}/../lib/tools.jar</systemPath>
+				</dependency>
+			</dependencies>
+		</profile>
+	</profiles>
+
 	<build>
 		<plugins>
 			<!-- Configure fat jar -->

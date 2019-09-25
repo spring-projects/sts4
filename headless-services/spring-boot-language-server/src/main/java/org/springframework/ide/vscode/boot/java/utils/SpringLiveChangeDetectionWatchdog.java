@@ -10,35 +10,16 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.utils;
 
-import java.io.File;
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
-import org.eclipse.lsp4j.Diagnostic;
-import org.eclipse.lsp4j.DiagnosticSeverity;
-import org.eclipse.lsp4j.Position;
-import org.eclipse.lsp4j.PublishDiagnosticsParams;
-import org.eclipse.lsp4j.Range;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
-import org.springframework.ide.vscode.boot.java.handlers.RunningAppMatcher;
-import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
-import org.springframework.ide.vscode.boot.java.livehover.v2.LiveBean;
-import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
@@ -57,7 +38,6 @@ public class SpringLiveChangeDetectionWatchdog {
 	private final long POLLING_INTERVAL_MILLISECONDS;
 
 	private final SimpleLanguageServer server;
-	private final RunningAppProvider runningAppProvider;
 	private final SourceLinks sourceLinks;
 
 	private final ChangeDetectionHistory changeHistory;
@@ -70,7 +50,6 @@ public class SpringLiveChangeDetectionWatchdog {
 			BootJavaLanguageServerComponents bootJavaLanguageServerComponents,
 			SimpleLanguageServer server,
 			ProjectObserver projectObserver,
-			RunningAppProvider runningAppProvider,
 			JavaProjectFinder projectFinder,
 			Duration pollingInterval,
 			SourceLinks sourceLinks
@@ -78,7 +57,6 @@ public class SpringLiveChangeDetectionWatchdog {
 		this.observedProjects = new HashSet<>();
 
 		this.server = server;
-		this.runningAppProvider = runningAppProvider;
 
 		this.POLLING_INTERVAL_MILLISECONDS = pollingInterval == null ? DEFAULT_INTERVAL.toMillis() : pollingInterval.toMillis();
 
@@ -124,142 +102,139 @@ public class SpringLiveChangeDetectionWatchdog {
 
 	public void update() {
 		if (changeDetectionEnabled) {
-			try {
-				SpringBootApp[] runningBootApps = runningAppProvider.getAllRunningSpringApps().toArray(new SpringBootApp[0]);
-				Change[] changes = changeHistory.checkForChanges(runningBootApps);
-				if (changes != null && changes.length > 0) {
-					for (Change change : changes) {
-						publishDetectedChange(change);
-					}
-				}
-				for (SpringBootApp app : runningBootApps) {
-					updateApp(app);
-				}
-			} catch (Exception e) {
-				logger.error("", e);
-			}
+//			try {
+//				SpringBootApp[] runningBootApps = runningAppProvider.getAllRunningSpringApps().toArray(new SpringBootApp[0]);
+//				Change[] changes = changeHistory.checkForChanges(runningBootApps);
+//				if (changes != null && changes.length > 0) {
+//					for (Change change : changes) {
+//						publishDetectedChange(change);
+//					}
+//				}
+//				for (SpringBootApp app : runningBootApps) {
+//					updateApp(app);
+//				}
+//			} catch (Exception e) {
+//				logger.error("", e);
+//			}
 		}
-	}
-
-	private void updateApp(SpringBootApp app) {
 	}
 
 	private void publishDetectedChange(Change change) {
-		Map<String, List<Diagnostic>> diagnostics = new HashMap<>();
-
-		IJavaProject[] projects = findProjectsFor(change.getRunningApp());
-
-		List<LiveBean> deletedBeans = change.getDeletedBeans();
-		if (deletedBeans != null) {
-			for (LiveBean liveBean : deletedBeans) {
-				Diagnostic diag = new Diagnostic();
-				diag.setSeverity(DiagnosticSeverity.Information);
-				diag.setRange(new Range(new Position(0, 0), new Position(0, 0)));
-				diag.setSource("Spring Boot Change Detection Mechanism");
-
-				diag.setMessage("bean removed from app: " + liveBean.getId());
-
-				String docURI = getDocURI(liveBean, projects);
-				if (docURI != null) {
-					List<Diagnostic> diags = diagnostics.computeIfAbsent(docURI, (s) -> new ArrayList<>());
-					diags.add(diag);
-				}
-				else {
-					logger.info("deleted bean could not be associated with a doc URI: " + liveBean.getId());
-				}
-			}
-		}
-
-		List<LiveBean> newBeans = change.getNewBeans();
-		if (newBeans != null) {
-			for (LiveBean liveBean : newBeans) {
-				Diagnostic diag = new Diagnostic();
-				diag.setSeverity(DiagnosticSeverity.Information);
-				diag.setRange(new Range(new Position(0, 0), new Position(0, 0)));
-				diag.setSource("Spring Boot Change Detection Mechanism");
-
-				diag.setMessage("new bean detected: " + liveBean.getId());
-
-				String docURI = getDocURI(liveBean, projects);
-				if (docURI != null) {
-					List<Diagnostic> diags = diagnostics.computeIfAbsent(docURI, (s) -> new ArrayList<>());
-					diags.add(diag);
-				}
-				else {
-					logger.info("new bean could not be associated with a doc URI: " + liveBean.getId());
-				}
-			}
-		}
-
-		for (String docURI : diagnostics.keySet()) {
-			PublishDiagnosticsParams params = new PublishDiagnosticsParams(docURI, diagnostics.get(docURI));
-			server.getClient().publishDiagnostics(params);
-		}
+//		Map<String, List<Diagnostic>> diagnostics = new HashMap<>();
+//
+//		IJavaProject[] projects = findProjectsFor(change.getRunningApp());
+//
+//		List<LiveBean> deletedBeans = change.getDeletedBeans();
+//		if (deletedBeans != null) {
+//			for (LiveBean liveBean : deletedBeans) {
+//				Diagnostic diag = new Diagnostic();
+//				diag.setSeverity(DiagnosticSeverity.Information);
+//				diag.setRange(new Range(new Position(0, 0), new Position(0, 0)));
+//				diag.setSource("Spring Boot Change Detection Mechanism");
+//
+//				diag.setMessage("bean removed from app: " + liveBean.getId());
+//
+//				String docURI = getDocURI(liveBean, projects);
+//				if (docURI != null) {
+//					List<Diagnostic> diags = diagnostics.computeIfAbsent(docURI, (s) -> new ArrayList<>());
+//					diags.add(diag);
+//				}
+//				else {
+//					logger.info("deleted bean could not be associated with a doc URI: " + liveBean.getId());
+//				}
+//			}
+//		}
+//
+//		List<LiveBean> newBeans = change.getNewBeans();
+//		if (newBeans != null) {
+//			for (LiveBean liveBean : newBeans) {
+//				Diagnostic diag = new Diagnostic();
+//				diag.setSeverity(DiagnosticSeverity.Information);
+//				diag.setRange(new Range(new Position(0, 0), new Position(0, 0)));
+//				diag.setSource("Spring Boot Change Detection Mechanism");
+//
+//				diag.setMessage("new bean detected: " + liveBean.getId());
+//
+//				String docURI = getDocURI(liveBean, projects);
+//				if (docURI != null) {
+//					List<Diagnostic> diags = diagnostics.computeIfAbsent(docURI, (s) -> new ArrayList<>());
+//					diags.add(diag);
+//				}
+//				else {
+//					logger.info("new bean could not be associated with a doc URI: " + liveBean.getId());
+//				}
+//			}
+//		}
+//
+//		for (String docURI : diagnostics.keySet()) {
+//			PublishDiagnosticsParams params = new PublishDiagnosticsParams(docURI, diagnostics.get(docURI));
+//			server.getClient().publishDiagnostics(params);
+//		}
 
 	}
 
-	private IJavaProject[] findProjectsFor(SpringBootApp app) {
-		List<IJavaProject> result = new ArrayList<>();
-
-		try {
-			Set<String> runningClasspath = new HashSet<>();
-			Collections.addAll(runningClasspath, app.getClasspath());
-
-			for (IJavaProject project : this.observedProjects) {
-				if (RunningAppMatcher.doesClasspathMatch(runningClasspath, project)) {
-					result.add(project);
-					break;
-				}
-			}
-		}
-		catch (Exception e) {
-			logger.error("find projects failed with: ", e);
-		}
-
-		return (IJavaProject[]) result.toArray(new IJavaProject[result.size()]);
-	}
-
-	private String getDocURI(LiveBean liveBean, IJavaProject[] projects) {
-		String result = null;
-
-		String resource = liveBean.getResource();
-		if (resource != null) {
-
-			Pattern BRACKETS = Pattern.compile("\\[[^\\]]*\\]");
-
-			Matcher matcher = BRACKETS.matcher(resource);
-			if (matcher.find()) {
-				String type = resource.substring(0, matcher.start()).trim();
-				String path = resource.substring(matcher.start()+1, matcher.end()-1);
-
-				for (IJavaProject project : projects) {
-					if (SpringResource.FILE.equals(type) || SpringResource.URL.equals(type)) {
-						result = sourceLinks.sourceLinkUrlForClasspathResource(path).get();
-						if (result == null) {
-							result = sourceLinks.sourceLinkForResourcePath(Paths.get(path)).get();
-						}
-						break;
-					}
-					else if (SpringResource.CLASS_PATH_RESOURCE.equals(type)) {
-						int idx = path.lastIndexOf(SourceLinks.CLASS);
-						if (idx >= 0) {
-							Path p = Paths.get(path.substring(0, idx));
-							result = sourceLinks.sourceLinkUrlForFQName(project, p.toString().replace(File.separator, ".")).get();
-						}
-						break;
-					}
-				}
-			}
-
-			if (result != null) {
-				int position = result.lastIndexOf('#');
-				if (position > 0) {
-					result = result.substring(0, position);
-				}
-			}
-		}
-		return result;
-	}
+//	private IJavaProject[] findProjectsFor(SpringBootApp app) {
+//		List<IJavaProject> result = new ArrayList<>();
+//
+//		try {
+//			Set<String> runningClasspath = new HashSet<>();
+//			Collections.addAll(runningClasspath, app.getClasspath());
+//
+//			for (IJavaProject project : this.observedProjects) {
+//				if (RunningAppMatcher.doesClasspathMatch(runningClasspath, project)) {
+//					result.add(project);
+//					break;
+//				}
+//			}
+//		}
+//		catch (Exception e) {
+//			logger.error("find projects failed with: ", e);
+//		}
+//
+//		return (IJavaProject[]) result.toArray(new IJavaProject[result.size()]);
+//	}
+//
+//	private String getDocURI(LiveBean liveBean, IJavaProject[] projects) {
+//		String result = null;
+//
+//		String resource = liveBean.getResource();
+//		if (resource != null) {
+//
+//			Pattern BRACKETS = Pattern.compile("\\[[^\\]]*\\]");
+//
+//			Matcher matcher = BRACKETS.matcher(resource);
+//			if (matcher.find()) {
+//				String type = resource.substring(0, matcher.start()).trim();
+//				String path = resource.substring(matcher.start()+1, matcher.end()-1);
+//
+//				for (IJavaProject project : projects) {
+//					if (SpringResource.FILE.equals(type) || SpringResource.URL.equals(type)) {
+//						result = sourceLinks.sourceLinkUrlForClasspathResource(path).get();
+//						if (result == null) {
+//							result = sourceLinks.sourceLinkForResourcePath(Paths.get(path)).get();
+//						}
+//						break;
+//					}
+//					else if (SpringResource.CLASS_PATH_RESOURCE.equals(type)) {
+//						int idx = path.lastIndexOf(SourceLinks.CLASS);
+//						if (idx >= 0) {
+//							Path p = Paths.get(path.substring(0, idx));
+//							result = sourceLinks.sourceLinkUrlForFQName(project, p.toString().replace(File.separator, ".")).get();
+//						}
+//						break;
+//					}
+//				}
+//			}
+//
+//			if (result != null) {
+//				int position = result.lastIndexOf('#');
+//				if (position > 0) {
+//					result = result.substring(0, position);
+//				}
+//			}
+//		}
+//		return result;
+//	}
 
 	public synchronized void enableHighlights() {
 		if (!changeDetectionEnabled) {

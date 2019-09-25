@@ -11,11 +11,11 @@
 package org.springframework.ide.vscode.boot.java.conditionals.test;
 
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 
 import org.eclipse.lsp4j.Hover;
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,11 +23,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
 import org.springframework.ide.vscode.boot.bootiful.HoverTestConf;
+import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveData;
+import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveDataProvider;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
-import org.springframework.ide.vscode.project.harness.MockRunningAppProvider;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
+import org.springframework.ide.vscode.project.harness.SpringProcessLiveDataBuilder;
 import org.springframework.test.context.junit4.SpringRunner;
 
 @RunWith(SpringRunner.class)
@@ -35,15 +37,20 @@ import org.springframework.test.context.junit4.SpringRunner;
 @Import(HoverTestConf.class)
 public class ConditionalsLiveHoverTest {
 
-	@Autowired
-	private BootLanguageServerHarness harness;
-
-	@Autowired
-	private MockRunningAppProvider mockAppProvider;
+	@Autowired private BootLanguageServerHarness harness;
+	@Autowired private SpringProcessLiveDataProvider liveDataProvider;
 
 	@Before
 	public void setup() throws Exception {
 		harness.useProject(ProjectsHarness.INSTANCE.mavenProject("test-conditionals-live-hover"));
+	}
+	
+	@After
+	public void tearDown() throws Exception {
+		liveDataProvider.remove("processkey");
+		liveDataProvider.remove("processkey1");
+		liveDataProvider.remove("processkey2");
+		liveDataProvider.remove("processkey3");
 	}
 
 	@Test
@@ -55,9 +62,6 @@ public class ConditionalsLiveHoverTest {
 				.toString();
 
 		harness.intialize(directory);
-
-		assertTrue("Expected no mock running boot apps, but found: " + mockAppProvider.mockedApps,
-				mockAppProvider.mockedApps.isEmpty());
 
 		Editor editor = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
 		editor.assertNoHover("@ConditionalOnMissingBean");
@@ -72,11 +76,15 @@ public class ConditionalsLiveHoverTest {
 				.toString();
 
 		// Build a mock running boot app
-		mockAppProvider.builder().isSpringBootApp(true).port("1111").processId("22022").host("cfapps.io")
+		SpringProcessLiveData liveData = new SpringProcessLiveDataBuilder()
+				.port("1111")
+				.processID("22022")
+				.host("cfapps.io")
 				.processName("test-conditionals-live-hover")
 				.liveConditionalsJson(
 						"{\"positiveMatches\":{\"ConditionalOnBeanConfig#hi\":[{\"condition\":\"OnBeanCondition\",\"message\":\"@ConditionalOnBean (types: example.Hello; SearchStrategy: all) found bean 'missing'\"}]}}")
 				.build();
+		liveDataProvider.add("processkey", liveData);
 
 		harness.intialize(directory);
 
@@ -95,11 +103,15 @@ public class ConditionalsLiveHoverTest {
 				.toString();
 
 		// Build a mock running boot app
-		mockAppProvider.builder().isSpringBootApp(true).port("1111").processId("22022").host("cfapps.io")
+		SpringProcessLiveData liveData = new SpringProcessLiveDataBuilder()
+				.port("1111")
+				.processID("22022")
+				.host("cfapps.io")
 				.processName("test-conditionals-live-hover")
 				.liveConditionalsJson(
 						"{\"positiveMatches\":{\"ConditionalOnMissingBeanConfig#missing\":[{\"condition\":\"OnBeanCondition\",\"message\":\"@ConditionalOnMissingBean (types: example.Hello; SearchStrategy: all) did not find any beans\"}]}}")
 				.build();
+		liveDataProvider.add("proesskey", liveData);
 
 		harness.intialize(directory);
 
@@ -119,11 +131,15 @@ public class ConditionalsLiveHoverTest {
 				.toString();
 
 		// Build a mock running boot app
-		mockAppProvider.builder().isSpringBootApp(true).port("1111").processId("22022").host("cfapps.io")
+		SpringProcessLiveData liveData = new SpringProcessLiveDataBuilder()
+				.port("1111")
+				.processID("22022")
+				.host("cfapps.io")
 				.processName("test-conditionals-live-hover")
 				.liveConditionalsJson(
 						"{\"positiveMatches\":{\"HelloConfig#missing\":[{\"condition\":\"OnBeanCondition\",\"message\":\"@ConditionalOnMissingBean (types: example.Hello; SearchStrategy: all) did not find any beans\"}],\"HelloConfig2#hi\":[{\"condition\":\"OnBeanCondition\",\"message\":\"@ConditionalOnBean (types: example.Hello; SearchStrategy: all) found bean 'missing'\"}],\"MultipleConditionals#hi\":[{\"condition\":\"OnClassCondition\",\"message\":\"@ConditionalOnClass found required class; @ConditionalOnMissingClass did not find unwanted class\"},{\"condition\":\"OnWebApplicationCondition\",\"message\":\"@ConditionalOnWebApplication (required) found StandardServletEnvironment\"},{\"condition\":\"OnJavaCondition\",\"message\":\"@ConditionalOnJava (1.8 or newer) found 1.8\"},{\"condition\":\"OnExpressionCondition\",\"message\":\"@ConditionalOnExpression (#{true}) resulted in true\"},{\"condition\":\"OnBeanCondition\",\"message\":\"@ConditionalOnBean (types: example.Hello; SearchStrategy: all) found beans 'hi', 'missing'\"}]}}")
 				.build();
+		liveDataProvider.add("proesskey", liveData);
 
 		harness.intialize(directory);
 
@@ -159,23 +175,35 @@ public class ConditionalsLiveHoverTest {
 				.toString();
 
 		// Build a mock running boot app
-		mockAppProvider.builder().isSpringBootApp(true).port("1000").processId("70000").host("cfapps.io")
+		SpringProcessLiveData liveData1 = new SpringProcessLiveDataBuilder()
+				.port("1000")
+				.processID("70000")
+				.host("cfapps.io")
 				.processName("test-conditionals-live-hover")
 				.liveConditionalsJson(
 						"{\"positiveMatches\":{\"ConditionalOnMissingBeanConfig#missing\":[{\"condition\":\"OnBeanCondition\",\"message\":\"@ConditionalOnMissingBean (types: example.Hello; SearchStrategy: all) did not find any beans\"}]}}")
 				.build();
+		liveDataProvider.add("processkey1", liveData1);
 
-		mockAppProvider.builder().isSpringBootApp(true).port("1001").processId("80000").host("cfapps.io")
+		SpringProcessLiveData liveData2 = new SpringProcessLiveDataBuilder()
+				.port("1001")
+				.processID("80000")
+				.host("cfapps.io")
 				.processName("test-conditionals-live-hover")
 				.liveConditionalsJson(
 						"{\"positiveMatches\":{\"ConditionalOnMissingBeanConfig#missing\":[{\"condition\":\"OnBeanCondition\",\"message\":\"@ConditionalOnMissingBean (types: example.Hello; SearchStrategy: all) did not find any beans\"}]}}")
 				.build();
+		liveDataProvider.add("processkey2", liveData2);
 
-		mockAppProvider.builder().isSpringBootApp(true).port("1002").processId("90000").host("cfapps.io")
+		SpringProcessLiveData liveData3 = new SpringProcessLiveDataBuilder()
+				.port("1002")
+				.processID("90000")
+				.host("cfapps.io")
 				.processName("test-conditionals-live-hover")
 				.liveConditionalsJson(
 						"{\"positiveMatches\":{\"ConditionalOnMissingBeanConfig#missing\":[{\"condition\":\"OnBeanCondition\",\"message\":\"@ConditionalOnMissingBean (types: example.Hello; SearchStrategy: all) did not find any beans\"}]}}")
 				.build();
+		liveDataProvider.add("processkey3", liveData3);
 
 		harness.intialize(directory);
 
@@ -211,11 +239,15 @@ public class ConditionalsLiveHoverTest {
 				.toString();
 
 		// Build a mock running boot app
-		mockAppProvider.builder().isSpringBootApp(true).port("1000").processId("70000").host("cfapps.io")
+		SpringProcessLiveData liveData = new SpringProcessLiveDataBuilder()
+				.port("1000")
+				.processID("70000")
+				.host("cfapps.io")
 				.processName("test-conditionals-live-hover")
 				.liveConditionalsJson(
 						"{\"positiveMatches\":{\"HelloConfig#missing\":[{\"condition\":\"OnBeanCondition\",\"message\":\"@ConditionalOnMissingBean (types: example.Hello; SearchStrategy: all) did not find any beans\"}],\"HelloConfig2#hi\":[{\"condition\":\"OnBeanCondition\",\"message\":\"@ConditionalOnBean (types: example.Hello; SearchStrategy: all) found bean 'missing'\"}],\"MultipleConditionals#hi\":[{\"condition\":\"OnClassCondition\",\"message\":\"@ConditionalOnClass found required class; @ConditionalOnMissingClass did not find unwanted class\"},{\"condition\":\"OnWebApplicationCondition\",\"message\":\"@ConditionalOnWebApplication (required) found StandardServletEnvironment\"},{\"condition\":\"OnJavaCondition\",\"message\":\"@ConditionalOnJava (1.8 or newer) found 1.8\"},{\"condition\":\"OnExpressionCondition\",\"message\":\"@ConditionalOnExpression (#{true}) resulted in true\"},{\"condition\":\"OnBeanCondition\",\"message\":\"@ConditionalOnBean (types: example.Hello; SearchStrategy: all) found beans 'hi', 'missing'\"}]}}")
 				.build();
+		liveDataProvider.add("processkey", liveData);
 
 		harness.intialize(directory);
 
@@ -259,11 +291,15 @@ public class ConditionalsLiveHoverTest {
 				.toString();
 
 		// Build a mock running boot app
-		mockAppProvider.builder().isSpringBootApp(true).port("1000").processId("70000").host("cfapps.io")
+		SpringProcessLiveData liveData = new SpringProcessLiveDataBuilder()
+				.port("1000")
+				.processID("70000")
+				.host("cfapps.io")
 				.processName("test-conditionals-live-hover")
 				.liveConditionalsJson(
 						"{\"positiveMatches\":{\"MultipleConditionalsPT152535713#hi\":[{\"condition\":\"OnWebApplicationCondition\",\"message\":\"@ConditionalOnWebApplication (required) found StandardServletEnvironment\"},{\"condition\":\"OnJavaCondition\",\"message\":\"@ConditionalOnJava (1.8 or newer) found 1.8\"}]}}")
 				.build();
+		liveDataProvider.add("processkey", liveData);
 
 		harness.intialize(directory);
 
@@ -296,11 +332,15 @@ public class ConditionalsLiveHoverTest {
 				.toString();
 
 		// Build a mock running boot app
-		mockAppProvider.builder().isSpringBootApp(true).port("1111").processId("22022").host("cfapps.io")
+		SpringProcessLiveData liveData = new SpringProcessLiveDataBuilder()
+				.port("1111")
+				.processID("22022")
+				.host("cfapps.io")
 				.processName("test-conditionals-live-hover")
 				.liveConditionalsJson(
 						"{\"positiveMatches\":{\"HelloConfig#missing\":[{\"condition\":\"OnBeanCondition\",\"message\":\"@ConditionalOnMissingBean (types: example.Hello; SearchStrategy: all) did not find any beans\"}],\"HelloConfig2#hi\":[{\"condition\":\"OnBeanCondition\",\"message\":\"@ConditionalOnBean (types: example.Hello; SearchStrategy: all) found bean 'missing'\"}],\"MultipleConditionals#hi\":[{\"condition\":\"OnClassCondition\",\"message\":\"@ConditionalOnClass found required class; @ConditionalOnMissingClass did not find unwanted class\"},{\"condition\":\"OnWebApplicationCondition\",\"message\":\"@ConditionalOnWebApplication (required) found StandardServletEnvironment\"},{\"condition\":\"OnJavaCondition\",\"message\":\"@ConditionalOnJava (1.8 or newer) found 1.8\"},{\"condition\":\"OnExpressionCondition\",\"message\":\"@ConditionalOnExpression (#{true}) resulted in true\"},{\"condition\":\"OnBeanCondition\",\"message\":\"@ConditionalOnBean (types: example.Hello; SearchStrategy: all) found beans 'hi', 'missing'\"}]}}")
 				.build();
+		liveDataProvider.add("processkey", liveData);
 
 		harness.intialize(directory);
 
@@ -336,7 +376,10 @@ public class ConditionalsLiveHoverTest {
 				.toString();
 
 		// Build a mock running boot app
-		mockAppProvider.builder().isSpringBootApp(true).port("1111").processId("22022").host("cfapps.io")
+		SpringProcessLiveData liveData = new SpringProcessLiveDataBuilder()
+				.port("1111")
+				.processID("22022")
+				.host("cfapps.io")
 				.processName("test-conditionals-live-hover")
 				.liveConditionalsJson("{\"negativeMatches\": {\n" + "        \"MyConditionalComponent\": {\n"
 						+ "            \"notMatched\": [\n" + "                {\n"
@@ -345,6 +388,7 @@ public class ConditionalsLiveHoverTest {
 						+ "                }\n" + "            ],\n" + "            \"matched\": []\n" + "        }\n"
 						+ "}\n" + "}")
 				.build();
+		liveDataProvider.add("processkey", liveData);
 
 		harness.intialize(directory);
 
@@ -368,7 +412,10 @@ public class ConditionalsLiveHoverTest {
 				.toString();
 
 		// Build a mock running boot app
-		mockAppProvider.builder().isSpringBootApp(true).port("1111").processId("67950").host("cfapps.io")
+		SpringProcessLiveData liveData = new SpringProcessLiveDataBuilder()
+				.port("1111")
+				.processID("67950")
+				.host("cfapps.io")
 				.processName("test-conditionals-live-hover")
 				.liveConditionalsJson("{\"negativeMatches\": {\n" + "        \"MyConditionalComponent\": {\n"
 						+ "            \"notMatched\": [\n" + "                {\n"
@@ -377,6 +424,7 @@ public class ConditionalsLiveHoverTest {
 						+ "                }\n" + "            ],\n" + "            \"matched\": []\n" + "        }\n"
 						+ "}\n" + "}")
 				.build();
+		liveDataProvider.add("processkey", liveData);
 
 		harness.intialize(directory);
 

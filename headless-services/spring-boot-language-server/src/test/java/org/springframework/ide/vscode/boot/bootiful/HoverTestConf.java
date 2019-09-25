@@ -10,14 +10,11 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.bootiful;
 
-import java.time.Duration;
-
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.ide.vscode.boot.app.BootLanguageServerParams;
 import org.springframework.ide.vscode.boot.editor.harness.PropertyIndexHarness;
-import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
 import org.springframework.ide.vscode.boot.java.links.SourceLinkFactory;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.java.utils.SymbolCache;
@@ -27,7 +24,6 @@ import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFin
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
-import org.springframework.ide.vscode.project.harness.MockRunningAppProvider;
 
 @Configuration
 @Import(AdHocPropertyHarnessTestConf.class)
@@ -41,20 +37,8 @@ public class HoverTestConf {
 		return new PropertyIndexHarness(valueProviders);
 	}
 
-	@Bean MockRunningAppProvider mockAppsHarness() {
-		return new MockRunningAppProvider();
-	}
-
-	@Bean RunningAppProvider runningAppProvider(MockRunningAppProvider mockApps) {
-		return mockApps.provider;
-	}
-
 	@Bean BootLanguageServerHarness harness(SimpleLanguageServer server, BootLanguageServerParams serverParams, PropertyIndexHarness indexHarness, JavaProjectFinder projectFinder) throws Exception {
 		return new BootLanguageServerHarness(server, serverParams, indexHarness, projectFinder, LanguageId.JAVA, ".java");
-	}
-
-	@Bean Duration watchDogInterval() {
-		return Duration.ofMillis(100);
 	}
 
 	@Bean BootLanguageServerParams serverParams(SimpleLanguageServer server, ValueProviderRegistry valueProviders, PropertyIndexHarness indexHarness) {
@@ -63,8 +47,7 @@ public class HoverTestConf {
 				indexHarness.getProjectFinder(),
 				testDefaults.projectObserver,
 				indexHarness.getIndexProvider(),
-				testDefaults.typeUtilProvider,
-				watchDogInterval()
+				testDefaults.typeUtilProvider
 		);
 	}
 

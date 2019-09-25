@@ -12,6 +12,7 @@
 package org.springframework.ide.vscode.languageserver.testharness;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness.getDocString;
@@ -223,6 +224,11 @@ public class Editor {
 			.collect(Collectors.toList());
 		assertEquals(ImmutableList.copyOf(expectedHighlights), actualHighlights);
 		return ranges;
+	}
+
+	public void assertNoHighlights() throws Exception {
+		HighlightParams highlights = harness.getHighlights(false, doc);
+		assertNull(highlights);
 	}
 
 	/**

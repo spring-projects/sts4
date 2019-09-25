@@ -18,8 +18,6 @@ import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.lsp4j.CompletionItemKind;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.app.BootJavaConfig;
 import org.springframework.ide.vscode.boot.app.BootLanguageServerParams;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
@@ -39,7 +37,6 @@ import org.springframework.ide.vscode.boot.java.handlers.CompletionProvider;
 import org.springframework.ide.vscode.boot.java.handlers.HighlightProvider;
 import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
 import org.springframework.ide.vscode.boot.java.handlers.ReferenceProvider;
-import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.java.livehover.ActiveProfilesProvider;
 import org.springframework.ide.vscode.boot.java.livehover.BeanInjectedIntoHoverProvider;
@@ -100,8 +97,6 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 
 	public static final Set<LanguageId> LANGUAGES = ImmutableSet.of(LanguageId.JAVA, LanguageId.CLASS);
 
-	private static final Logger log = LoggerFactory.getLogger(BootJavaLanguageServerComponents.class);
-
 	private final SimpleLanguageServer server;
 	private final BootLanguageServerParams serverParams;
 	private final SpringPropertyIndexProvider propertyIndexProvider;
@@ -129,9 +124,9 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 			CompilationUnitCache cuCache,
 			ProjectBasedPropertyIndexProvider adHocIndexProvider,
 			SymbolCache symbolCache,
+			SpringProcessLiveDataProvider liveDataProvider,
 			BootJavaConfig config,
-			SpringSymbolIndex indexer,
-			RunningAppProvider runningAppProvider
+			SpringSymbolIndex indexer
 	) {
 		this.server = server;
 		this.serverParams = serverParams;
@@ -148,11 +143,8 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 
 		ReferencesHandler referencesHandler = createReferenceHandler(server, projectFinder);
 		documents.onReferences(referencesHandler);
-
-
-		documents.onDocumentSymbol(new BootJavaDocumentSymbolHandler(indexer));
-		workspaceService.onWorkspaceSymbol(new BootJavaWorkspaceSymbolHandler(indexer,
-				new LiveAppURLSymbolProvider(runningAppProvider)));
+		
+		this.liveDataProvider = liveDataProvider;
 
 		
 		//
@@ -160,7 +152,6 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		//
 
 		// central live data components (to coordinate live data flow)
-		liveDataProvider = new SpringProcessLiveDataProvider();
 		liveDataService = new SpringProcessConnectorService(liveDataProvider);
 
 		// connect the live data provider with the hovers (for data extraction and live updates)
@@ -184,13 +175,17 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		//
 
 		
+		documents.onDocumentSymbol(new BootJavaDocumentSymbolHandler(indexer));
+		workspaceService.onWorkspaceSymbol(new BootJavaWorkspaceSymbolHandler(indexer,
+				new LiveAppURLSymbolProvider(liveDataProvider)));
+
+
 		liveChangeDetectionWatchdog = new SpringLiveChangeDetectionWatchdog(
 				this,
 				server,
 				serverParams.projectObserver,
-				runningAppProvider,
 				projectFinder,
-				serverParams.watchDogInterval,
+				Duration.ofSeconds(5),
 				sourceLinks);
 
 		codeLensHandler = createCodeLensEngine(indexer);
@@ -200,15 +195,9 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		documents.onDocumentHighlight(highlightsEngine);
 
 		config.addListener(ignore -> {
-			// live hover watchdog
+			// live information automatic process tracking
 			liveProcessTracker.setDelay(config.getLiveInformationAutomaticTrackingDelay());
 			liveProcessTracker.setTrackingEnabled(config.isLiveInformationAutomaticTrackingEnabled());
-
-			//			if (config.isBootHintsEnabled()) {
-//				liveHoverWatchdog.enableHighlights();
-//			} else {
-//				liveHoverWatchdog.disableHighlights();
-//			}
 
 			// live change detection watchdog
 			if (config.isChangeDetectionEnabled()) {

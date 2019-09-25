@@ -16,9 +16,9 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
-import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
 import org.springframework.ide.vscode.boot.java.links.JavaElementLocationProvider;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
+import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveDataProvider;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.boot.java.utils.SymbolCache;
 import org.springframework.ide.vscode.boot.metadata.ProjectBasedPropertyIndexProvider;
@@ -51,9 +51,9 @@ public class BootLanguageServerInitializer implements InitializingBean {
 	@Autowired YamlStructureProvider yamlStructureProvider;
 	@Autowired YamlAssistContextProvider yamlAssistContextProvider;
 	@Autowired SymbolCache symbolCache;
+	@Autowired SpringProcessLiveDataProvider liveDataProvider;
 	@Autowired BootJavaConfig config;
 	@Autowired SpringSymbolIndex springIndexer;
-	@Autowired RunningAppProvider runningAppProvider;
 
 	@Qualifier("adHocProperties") @Autowired ProjectBasedPropertyIndexProvider adHocProperties;
 
@@ -81,7 +81,7 @@ public class BootLanguageServerInitializer implements InitializingBean {
 		// some server intialization code. Migrate that code and get rid of the ComposableLanguageServer class
 		CompositeLanguageServerComponents.Builder builder = new CompositeLanguageServerComponents.Builder();
 		builder.add(new BootPropertiesLanguageServerComponents(server, params, javaElementLocationProvider, parser, yamlStructureProvider, yamlAssistContextProvider, sourceLinks));
-		builder.add(new BootJavaLanguageServerComponents(server, params, sourceLinks, cuCache, adHocProperties, symbolCache, config, springIndexer, runningAppProvider));
+		builder.add(new BootJavaLanguageServerComponents(server, params, sourceLinks, cuCache, adHocProperties, symbolCache, liveDataProvider, config, springIndexer));
 		builder.add(new SpringXMLLanguageServerComponents(server, springIndexer, params, config));
 		components = builder.build(server);
 		params.projectObserver.addListener(reconcileOpenDocuments(server, components, params.projectFinder));

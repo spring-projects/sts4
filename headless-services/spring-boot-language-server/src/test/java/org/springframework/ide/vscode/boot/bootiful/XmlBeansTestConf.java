@@ -15,7 +15,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.ide.vscode.boot.app.BootLanguageServerParams;
 import org.springframework.ide.vscode.boot.editor.harness.PropertyIndexHarness;
-import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
 import org.springframework.ide.vscode.boot.java.links.JavaDocumentUriProvider;
 import org.springframework.ide.vscode.boot.java.links.SourceLinkFactory;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
@@ -57,8 +56,7 @@ public class XmlBeansTestConf {
 				indexHarness.getProjectFinder(),
 				new MockProjectObserver(),
 				testDefaults.indexProvider,
-				testDefaults.typeUtilProvider,
-				testDefaults.watchDogInterval
+				testDefaults.typeUtilProvider
 		);
 	}
 
@@ -74,10 +72,6 @@ public class XmlBeansTestConf {
 		return SourceLinkFactory.NO_SOURCE_LINKS;
 	}
 
-	@Bean RunningAppProvider runningAppProvider() {
-		return RunningAppProvider.NULL;
-	}
-	
 	@Bean MockProjectObserver mockProjectObserver(BootLanguageServerParams params) {
 		return (MockProjectObserver) params.projectObserver;
 	}

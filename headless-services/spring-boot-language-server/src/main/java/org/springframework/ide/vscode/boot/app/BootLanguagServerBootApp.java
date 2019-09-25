@@ -23,7 +23,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.ide.vscode.boot.common.PropertyCompletionFactory;
 import org.springframework.ide.vscode.boot.common.RelaxedNameConfig;
-import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
 import org.springframework.ide.vscode.boot.java.links.DefaultJavaElementLocationProvider;
 import org.springframework.ide.vscode.boot.java.links.EclipseJavaDocumentUriProvider;
 import org.springframework.ide.vscode.boot.java.links.JavaDocumentUriProvider;
@@ -32,6 +31,7 @@ import org.springframework.ide.vscode.boot.java.links.JavaServerElementLocationP
 import org.springframework.ide.vscode.boot.java.links.JdtJavaDocumentUriProvider;
 import org.springframework.ide.vscode.boot.java.links.SourceLinkFactory;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
+import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveDataProvider;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.boot.java.utils.SymbolCache;
 import org.springframework.ide.vscode.boot.java.utils.SymbolCacheOnDisc;
@@ -94,10 +94,9 @@ public class BootLanguagServerBootApp {
 		}
 	}
 
-	@ConditionalOnMissingClass("org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness")
 	@Bean
-	RunningAppProvider runningAppProvider(SimpleLanguageServer server) {
-		return RunningAppProvider.createDefault(server);
+	SpringProcessLiveDataProvider liveDataProvider() {
+		return new SpringProcessLiveDataProvider();
 	}
 
 	@ConditionalOnMissingClass("org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness")

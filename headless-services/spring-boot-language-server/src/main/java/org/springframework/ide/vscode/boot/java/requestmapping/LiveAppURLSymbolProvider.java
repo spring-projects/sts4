@@ -13,16 +13,10 @@ package org.springframework.ide.vscode.boot.java.requestmapping;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.lsp4j.Location;
-import org.eclipse.lsp4j.Position;
-import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.SymbolInformation;
-import org.eclipse.lsp4j.SymbolKind;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ide.vscode.boot.java.handlers.RunningAppProvider;
-import org.springframework.ide.vscode.boot.java.livehover.v2.LiveRequestMapping;
-import org.springframework.ide.vscode.commons.boot.app.cli.SpringBootApp;
+import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveDataProvider;
 
 /**
  * @author Martin Lippert
@@ -31,10 +25,10 @@ public class LiveAppURLSymbolProvider {
 
 	private static final Logger log = LoggerFactory.getLogger(LiveAppURLSymbolProvider.class);
 
-	private final RunningAppProvider runningAppProvider;
+	private final SpringProcessLiveDataProvider liveDataProvider;
 
-	public LiveAppURLSymbolProvider(RunningAppProvider runningAppProvider) {
-		this.runningAppProvider = runningAppProvider;
+	public LiveAppURLSymbolProvider(SpringProcessLiveDataProvider liveDataProvider) {
+		this.liveDataProvider = liveDataProvider;
 	}
 
 	public List<? extends SymbolInformation> getSymbols(String query) {
