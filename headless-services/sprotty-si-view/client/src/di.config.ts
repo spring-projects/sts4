@@ -51,7 +51,7 @@ import {
     HtmlRoot,
     PreRenderedView,
     PreRenderedElement,
-    labelEditModule, edgeEditModule, RectangularPort, LayoutRegistry, VBoxLayouter, HBoxLayouter
+    labelEditModule, edgeEditModule, RectangularPort, LayoutRegistry, VBoxLayouter, HBoxLayouter, boundsFeature
 } from "sprotty";
 import {
     IntegrationNodeView,
@@ -92,7 +92,7 @@ export default (transport: TransportMedium, clientId: string) => {
         const context = { bind, unbind, isBound, rebind };
         configureModelElement(context, 'graph', SGraph, ExampleGraphView);
         configureModelElement(context, 'node:circle', CircularNode, CircleNodeView);
-        configureModelElement(context, 'node:integration_node', RectangularNode, IntegrationNodeView);
+        configureModelElement(context, 'node:integration', RectangularNode, IntegrationNodeView, {disable: [boundsFeature]});
         configureModelElement(context, 'node:channel', RectangularNode, ChannelNodeView);
         configureModelElement(context, 'node:label', SLabel, SLabelView);
         configureModelElement(context, 'compartment', SCompartment, SCompartmentView);

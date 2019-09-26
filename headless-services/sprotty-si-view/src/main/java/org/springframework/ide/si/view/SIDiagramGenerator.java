@@ -5,6 +5,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.elk.alg.layered.options.LayeredOptions;
 import org.eclipse.sprotty.Dimension;
 import org.eclipse.sprotty.EdgePlacement;
 import org.eclipse.sprotty.EdgePlacement.Side;
@@ -166,23 +167,24 @@ public class SIDiagramGenerator implements DiagramGenerator {
 		options.setVAlign("center");
 	}
 	
-	private static SNode createIntegrationNode(SpringIntegrationNodeJson json) {
-		SNode node = createNode(json, "integration_node");
-		String id = getId(json);
-		LayoutOptions layoutOptions = new LayoutOptions();
-		layoutOptions.setMinWidth(MIN_WIDTH);
-		layoutOptions.setPaddingBottom(INTEGRATION_NODE_VERTICAL_PADDING);
-		layoutOptions.setPaddingTop(20.0);
-		node.setLayoutOptions(layoutOptions);
+	private static SIntegrationNode createIntegrationNode(SpringIntegrationNodeJson json) {
+		SIntegrationNode node = new SIntegrationNode(json);
+		node.setSize(new Dimension(100, 100));
+		String id = node.getId();
+//		LayoutOptions layoutOptions = new LayoutOptions();
+//		layoutOptions.setMinWidth(MIN_WIDTH);
+//		layoutOptions.setPaddingBottom(INTEGRATION_NODE_VERTICAL_PADDING);
+//		layoutOptions.setPaddingTop(20.0);
+//		node.setLayoutOptions(layoutOptions);
 		
 		if (json.getOutput() != null) {
 			SPort outputPort = new SPort();
 			outputPort.setType("output-port");
 			outputPort.setId("output-port-" + id);
-			outputPort.setSize(new Dimension(10,10));	    
+			outputPort.setSize(new Dimension(10,10));
 			node.getChildren().add(outputPort);
 		}
-
+		
 		if (json.getInput() != null) {
 			SPort inputPort = new SPort();
 			inputPort.setType("input-port");
@@ -202,6 +204,30 @@ public class SIDiagramGenerator implements DiagramGenerator {
 		return node;
 	}
 	
+	private static String getSvgIcon(String componentType) {
+		String color;
+		switch (componentType) {
+		case "gateway": 
+			color = "rgb(0,200,0)";
+			break;
+		case "bridge": 
+			color = "rgb(0,200,200)";
+			break;
+		default:
+			color = "rgb(200,200,200)";
+			break;
+		}
+		return 
+			"<g>" +
+				"<rect class=\"svg-icon\" "+
+					//"x=\"0\" y=\"0\" "+
+					"width=\"100\" height=\"100\" " +
+					"rx=\"5\" ry=\"5\" " +
+					"style=\"fill:"+color+";stroke-width:1;stroke:rgb(0,0,0)\" "+
+				"></rect>" +
+			"</g>";
+	}
+
 	private static String getId(SpringIntegrationNodeJson json) {
 		return json.getNodeId() + "";
 	}

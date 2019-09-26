@@ -1,0 +1,43 @@
+{
+  "contentDescriptor": {
+    "providerVersion": "5.1.7.RELEASE",
+    "providerFormatVersion": 1.0,
+    "provider": "spring-integration"
+  },
+  "nodes": [
+    {
+      "nodeId": 11,
+      "name": "cafe.placeOrder(com.coffee.barista.model.Order)",
+      "stats": null,
+      "componentType": "gateway",
+      "properties": {},
+      "output": "orders",
+      "errors": null
+    },
+    {
+      "nodeId": 12,
+      "name": "org.springframework.integration.config.ConsumerEndpointFactoryBean#0",
+      "stats": {
+        "countsEnabled": true,
+        "statsEnabled": true,
+        "loggingEnabled": true,
+        "handleCount": 1560,
+        "meanDuration": 1003.518562869151,
+        "minDuration": 1000.233368,
+        "maxDuration": 1112.060177,
+        "standardDeviationDuration": 1.3030029550200601,
+        "errorCount": 0,
+        "activeCount": 1,
+        "duration": {
+          "count": 1559,
+          "min": 1000.233368,
+          "max": 1112.060177,
+          "mean": 1003.518562869151,
+          "standardDeviation": 1.3030029550200601,
+          "countLong": 1559
+        }
+      }
+   }],
+  "links": [
+  ]
+}

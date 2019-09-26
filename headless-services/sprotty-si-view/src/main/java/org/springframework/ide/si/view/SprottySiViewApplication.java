@@ -1,8 +1,12 @@
 package org.springframework.ide.si.view;
 
+import java.util.EnumSet;
+
 import org.eclipse.elk.alg.layered.options.FixedAlignment;
 import org.eclipse.elk.alg.layered.options.LayeredOptions;
+import org.eclipse.elk.core.math.ElkPadding;
 import org.eclipse.elk.core.options.EdgeRouting;
+import org.eclipse.elk.core.options.NodeLabelPlacement;
 import org.eclipse.elk.core.options.PortConstraints;
 import org.eclipse.elk.core.options.PortSide;
 import org.eclipse.elk.graph.properties.IPropertyHolder;
@@ -42,9 +46,15 @@ public class SprottySiViewApplication {
 		holder = configurator.configureByType("node:channel");
 		holder.setProperty(LayeredOptions.PORT_CONSTRAINTS, PortConstraints.FIXED_SIDE);
 
-		holder = configurator.configureByType("node:integration_node");
+		holder = configurator.configureByType("node:integration");
 		holder.setProperty(LayeredOptions.PORT_CONSTRAINTS, PortConstraints.FIXED_SIDE);
-		
+		holder.setProperty(LayeredOptions.NODE_LABELS_PLACEMENT, EnumSet.of(NodeLabelPlacement.OUTSIDE, NodeLabelPlacement.V_BOTTOM));
+		holder.setProperty(LayeredOptions.NODE_LABELS_PADDING, new ElkPadding(5.0));
+
+		holder = configurator.configureByType("node:label");
+		holder.setProperty(LayeredOptions.NODE_LABELS_PLACEMENT, EnumSet.of(NodeLabelPlacement.OUTSIDE, NodeLabelPlacement.V_BOTTOM));
+		holder.setProperty(LayeredOptions.NODE_LABELS_PADDING, new ElkPadding(5.0));
+
 		return configurator;
 	}
 
