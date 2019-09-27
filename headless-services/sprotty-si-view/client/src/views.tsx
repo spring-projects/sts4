@@ -122,7 +122,7 @@ export class EdgeView extends PolylineEdgeView {
 export class IntegrationNodeView extends RectangularNodeView {
     render(node: Readonly<IntegrationNode & Hoverable & Selectable>, context: RenderingContext): VNode {
         if (node.componentType==='transformer') {
-            return <g id="main_group">
+            return <g>
                 <rect x="1.5px" stroke="black" height="97px" id="background_rect" stroke-width="3" width="97px" y="1.5px" fill="none"
                     class-sprotty-node={node instanceof SNode}
                     class-mouseover={node.hoverFeedback} class-selected={node.selected}
@@ -134,7 +134,7 @@ export class IntegrationNodeView extends RectangularNodeView {
                 {context.renderChildren(node)}
             </g>;
         } else if (node.componentType==='aggregator') {
-            return <g id="main_group">
+            return <g>
                 <rect x="1.5px" stroke="black" height="97px" id="background_rect" stroke-width="3" width="97px" y="1.5px" fill="none"
                     class-sprotty-node={node instanceof SNode}
                     class-mouseover={node.hoverFeedback} class-selected={node.selected}
@@ -156,7 +156,7 @@ export class IntegrationNodeView extends RectangularNodeView {
                 {context.renderChildren(node)}
             </g>
         } else if (node.componentType==='splitter') {
-            return <g id="main_group">
+            return <g>
                 <rect x="1.5px" stroke="black" height="97px" id="background_rect" stroke-width="3" width="97px" y="1.5px" fill="none"
                     class-sprotty-node={node instanceof SNode}
                     class-mouseover={node.hoverFeedback} class-selected={node.selected}
@@ -194,7 +194,28 @@ export class IntegrationNodeView extends RectangularNodeView {
                 <line stroke="#000000" stroke-width="2px" x1="85" y1="80" x2="94" y2="80"/>
                 {context.renderChildren(node)}
             </g>;
-            
+        } else if (node.componentType === 'service-activator') {
+            return <g>
+                <rect x="1.5px" stroke="black" height="97px" id="background_rect" stroke-width="3" width="97px" y="1.5px" fill="none"
+                    class-sprotty-node={node instanceof SNode}
+                    class-mouseover={node.hoverFeedback} class-selected={node.selected}
+                ></rect>
+                <rect x="15" y="45" width="10" height="10" fill="black" stroke-width="2px" transform="matrix(0.707107, 0.707107, -0.707107, 0.707107, 59.21994, 0.486262)"/>
+                <rect x="15" y="45" width="10" height="10"
+                     stroke="black" fill="#ffffff" stroke-width="2px"
+                     transform="matrix(0.707107, 0.707107, -0.707107, 0.707107, 97.098412, 0.486262)"/>
+                <g>
+                    <line stroke="black" x1="10" y1="50" x2="30" y2="50"/>
+                    <line stroke="black" x1="24" y1="45" x2="30" y2="50"/>
+                    <line stroke="black" x1="24" y1="55" x2="30" y2="50"/>
+                </g>
+                <g transform="matrix(1, 0, 0, 1, 35.958775, -0.044944)">
+                    <line stroke="black" x1="10" y1="50" x2="30" y2="50"/>
+                    <line stroke="black" x1="24" y1="45" x2="30" y2="50"/>
+                    <line stroke="black" x1="24" y1="55" x2="30" y2="50"/>
+                </g>
+                {context.renderChildren(node)}
+            </g>;
         } else {
             return <g> 
                 <rect class-sprotty-node={node instanceof SNode}
