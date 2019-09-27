@@ -216,6 +216,21 @@ export class IntegrationNodeView extends RectangularNodeView {
                 </g>
                 {context.renderChildren(node)}
             </g>;
+        } else if (node.componentType.indexOf('outbound-channel-adapter')>=0) {
+            return <g> 
+                <rect class-sprotty-node={node instanceof SNode}
+                      class-mouseover={node.hoverFeedback} class-selected={node.selected}
+                      x="0" y="0" width={Math.max(node.size.width, 0)} height={Math.max(node.size.height, 0)} rx="10" ry="10"/>
+                <g>
+                    <line stroke="black" x1="10" y1="50" x2="27" y2="50"/>
+                    <line stroke="black" x1="21" y1="45" x2="27" y2="50"/>
+                    <line stroke="black" x1="21" y1="55" x2="27" y2="50"/>
+                </g>
+                <line stroke="black" x1="75" y1="30" x2="75" y2="30"/>
+                <polygon fill="greenyellow" stroke="black" stroke-linejoin="round" points="55 10 55 90 30 70 30 30"/>
+                <rect x="60" y="10" width="30" height="80" stroke="black" fill="white" stroke-linejoin="round"/>
+                {context.renderChildren(node)}
+            </g>
         } else {
             return <g> 
                 <rect class-sprotty-node={node instanceof SNode}
