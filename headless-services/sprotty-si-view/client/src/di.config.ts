@@ -42,7 +42,6 @@ import {
     modelSourceModule,
     edgeLayoutModule,
     SLabel,
-    SLabelView,
     SCompartment,
     SCompartmentView,
     SEdge,
@@ -51,7 +50,13 @@ import {
     HtmlRoot,
     PreRenderedView,
     PreRenderedElement,
-    labelEditModule, edgeEditModule, RectangularPort, LayoutRegistry, VBoxLayouter, HBoxLayouter, boundsFeature
+    labelEditModule, 
+    edgeEditModule, 
+    RectangularPort, 
+    LayoutRegistry, 
+    VBoxLayouter, 
+    HBoxLayouter,
+    boundsFeature
 } from "sprotty";
 import {
     IntegrationNodeView,
@@ -60,7 +65,8 @@ import {
     ExampleGraphView,
     ChannelNodeView,
     PortView,
-    ErrorPortView
+    ErrorPortView,
+    LimitedWidthLabelView
 } from "./views";
 import fadeModule from "sprotty/lib/features/fade/di.config";
 import buttonModule from "sprotty/lib/features/button/di.config";
@@ -94,7 +100,7 @@ export default (transport: TransportMedium, clientId: string) => {
         configureModelElement(context, 'node:circle', CircularNode, CircleNodeView);
         configureModelElement(context, 'node:integration', RectangularNode, IntegrationNodeView, {disable: [boundsFeature]});
         configureModelElement(context, 'node:channel', RectangularNode, ChannelNodeView);
-        configureModelElement(context, 'node:label', SLabel, SLabelView);
+        configureModelElement(context, 'node:label', SLabel, LimitedWidthLabelView);
         configureModelElement(context, 'compartment', SCompartment, SCompartmentView);
         configureModelElement(context, 'edge:straight', /*OrthogonalEgde*/ SEdge, EdgeView);
         configureModelElement(context, 'html', HtmlRoot, HtmlRootView);

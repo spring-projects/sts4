@@ -31,9 +31,12 @@ import {
     Selectable,
     SPort,
     Hoverable,
-    SShapeElement
+    SShapeElement,
+    SLabelView,
+    SLabel
 } from "sprotty";
 import { injectable } from 'inversify';
+import { IntegrationNode } from './model';
 
 /**
  * A very simple example node consisting of a plain circle.
@@ -52,6 +55,28 @@ export class CircleNodeView implements IView {
         return 40;
     }
 }
+
+/**
+ * A very simple example node consisting of a plain circle.
+ */
+@injectable()
+export class LimitedWidthLabelView extends SLabelView {
+
+    static maxChars = 30; 
+
+    render(label: SLabel, context: RenderingContext): VNode {
+        let l = label.text;
+        if (l.length > LimitedWidthLabelView.maxChars) {
+            const excess = l.length - LimitedWidthLabelView.maxChars + 1;
+            const keepChars = l.length - excess;
+            const prefixLen = Math.floor(keepChars / 2);
+            const postfixLen = keepChars - prefixLen; 
+            l = l.substring(0, prefixLen)+"\u2026" + l.substring(l.length-postfixLen);
+        }
+        return <text class-sprotty-label={true}>{l}</text>;
+    }
+}
+
 
 @injectable()
 export class ExampleGraphView extends SGraphView {
@@ -95,13 +120,71 @@ export class EdgeView extends PolylineEdgeView {
 
 @injectable()
 export class IntegrationNodeView extends RectangularNodeView {
-    render(node: Readonly<SShapeElement & Hoverable & Selectable>, context: RenderingContext): VNode {
-        return <g>
-            <rect class-sprotty-node={node instanceof SNode} class-sprotty-port={node instanceof SPort}
-                  class-mouseover={node.hoverFeedback} class-selected={node.selected}
-                  x="0" y="0" width={Math.max(node.size.width, 0)} height={Math.max(node.size.height, 0)} rx="10" ry="10"></rect>
-            {context.renderChildren(node)}
-        </g>;
+    render(node: Readonly<IntegrationNode & Hoverable & Selectable>, context: RenderingContext): VNode {
+        if (node.componentType==='transformer') {
+            return <g id="main_group">
+                <rect x="1.5px" stroke="black" height="97px" id="background_rect" stroke-width="3" width="97px" y="1.5px" fill="none"
+                    class-sprotty-node={node instanceof SNode}
+                    class-mouseover={node.hoverFeedback} class-selected={node.selected}
+                />
+                <rect stroke="#000000" height="80px" x="10px" id="rect1" stroke-width="3px" width="20px" y="10px" fill="greenyellow" transform=""/>
+                <rect stroke="#000000" height="80px" x="70px" id="rect2" stroke-width="3px" width="20px" y="10px" fill="greenyellow" transform=""/>
+                <line stroke="#000000" y1="20.000000px" id="line1" stroke-width="3px" x1="25.000000px" y2="80.000000px" x2="75.000000px" transform=""/>
+                <line stroke="#000000" y1="80.000000px" id="line2" x1="25.000000px" stroke-width="3px" y2="20.000000px" x2="75.000000px" transform=""/>
+                {context.renderChildren(node)}
+            </g>;
+        } else if (node.componentType==='aggregator') {
+            return <g id="main_group">
+                <rect x="1.5px" stroke="black" height="97px" id="background_rect" stroke-width="3" width="97px" y="1.5px" fill="none"
+                    class-sprotty-node={node instanceof SNode}
+                    class-mouseover={node.hoverFeedback} class-selected={node.selected}
+                />
+                <rect stroke="#000000" x="10px" height="20px" y="10px" id="rect1" stroke-width="3px" width="20px" fill="greenyellow"
+                    transform=""></rect>
+                <rect stroke="#000000" x="10px" height="20px" y="40px" id="rect2" stroke-width="3px" width="20px" fill="greenyellow"
+                    transform=""></rect>
+                <rect stroke="#000000" x="70px" height="20px" y="40px" id="rect4" stroke-width="3px" width="20px" fill="greenyellow"
+                    transform=""></rect>
+                <rect stroke="#000000" x="10px" height="20px" y="70px" id="rect3" stroke-width="3px" width="20px" fill="greenyellow"
+                    transform=""></rect>
+                <line stroke="#000000" y1="50.000000px" id="line1" x1="35.000000px" stroke-width="3px" y2="50.000000px"
+                    x2="65.000000px" transform=""></line>
+                <line stroke="#000000" y1="45.000000px" id="line2" x1="58.000000px" stroke-width="3px" y2="50.000000px"
+                    x2="65.000000px" transform=""></line>
+                <line stroke="#000000" y1="55.000000px" id="line3" x1="58.000000px" stroke-width="3px" y2="50.000000px"
+                    x2="65.000000px" transform=""></line>
+                {context.renderChildren(node)}
+            </g>
+        } else if (node.componentType==='splitter') {
+            return <g id="main_group">
+                <rect x="1.5px" stroke="black" height="97px" id="background_rect" stroke-width="3" width="97px" y="1.5px" fill="none"
+                    class-sprotty-node={node instanceof SNode}
+                    class-mouseover={node.hoverFeedback} class-selected={node.selected}
+                ></rect>
+                <rect stroke="#000000" x="70px" height="20px" y="10px" id="rect1" stroke-width="3px" width="20px" fill="greenyellow"
+                    transform=""></rect>
+                <rect stroke="#000000" x="10px" height="20px" y="40px" id="rect2" stroke-width="3px" width="20px" fill="greenyellow"
+                    transform=""></rect>
+                <rect stroke="#000000" x="70px" height="20px" y="40px" id="rect4" stroke-width="3px" width="20px" fill="greenyellow"
+                    transform=""></rect>
+                <rect stroke="#000000" x="70px" height="20px" y="70px" id="rect3" stroke-width="3px" width="20px" fill="greenyellow"
+                    transform=""></rect>
+                <line stroke="#000000" y1="50.000000px" id="line1" x1="35.000000px" stroke-width="3px" y2="50.000000px"
+                    x2="65.000000px" transform=""></line>
+                <line stroke="#000000" y1="45.000000px" id="line2" x1="58.000000px" stroke-width="3px" y2="50.000000px"
+                    x2="65.000000px" transform=""></line>
+                <line stroke="#000000" y1="55.000000px" id="line3" x1="58.000000px" stroke-width="3px" y2="50.000000px"
+                    x2="65.000000px" transform=""></line>
+                {context.renderChildren(node)}
+            </g>;
+        } else {
+            return <g> 
+                <rect class-sprotty-node={node instanceof SNode}
+                      class-mouseover={node.hoverFeedback} class-selected={node.selected}
+                      x="0" y="0" width={Math.max(node.size.width, 0)} height={Math.max(node.size.height, 0)} rx="10" ry="10"></rect>
+                {context.renderChildren(node)}
+            </g>
+        }
     }
 }
 

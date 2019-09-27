@@ -157,7 +157,7 @@ public class SIDiagramGenerator implements DiagramGenerator {
 		return node;
 	}
 
-	private static void centerNode(SShapeElement shape) {
+	public static void centerNode(SShapeElement shape) {
 		LayoutOptions options = shape.getLayoutOptions();
 		if (options == null) {
 			options = new LayoutOptions();

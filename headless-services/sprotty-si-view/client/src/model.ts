@@ -1,4 +1,4 @@
-import {ManhattanEdgeRouter, SEdge, WebSocketDiagramServer, ActionMessage, DiagramServer} from "sprotty";
+import {ManhattanEdgeRouter, SEdge, WebSocketDiagramServer, ActionMessage, DiagramServer, RectangularNode} from "sprotty";
 import {injectable} from 'inversify';
 
 export class OrthogonalEgde extends SEdge {
@@ -64,4 +64,8 @@ export class VSCodeWebViewDiagramServer extends DiagramServer {
             throw new Error('No VSCode api object');
         }
     }
+}
+
+export class IntegrationNode extends RectangularNode {
+    componentType : string;
 }

@@ -18,6 +18,7 @@ public class SIntegrationNode extends SNode {
 	public SIntegrationNode(SpringIntegrationNodeJson json) {
 		this.setComponentType(json.getComponentType());
 		this.getChildren().add(new SLabel(l -> {
+			l.setId(json.getNodeId()+"-label");
 			l.setType("node:label");
 			l.setText(json.getName());
 		}));
