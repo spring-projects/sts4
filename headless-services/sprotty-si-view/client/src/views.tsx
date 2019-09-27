@@ -177,6 +177,24 @@ export class IntegrationNodeView extends RectangularNodeView {
                     x2="65.000000px" transform=""></line>
                 {context.renderChildren(node)}
             </g>;
+        } else if (node.componentType === 'router') {
+            return <g>
+                <rect x="1.5px" stroke="black" height="97px" id="background_rect" stroke-width="3" width="97px" y="1.5px" fill="none"
+                    class-sprotty-node={node instanceof SNode}
+                    class-mouseover={node.hoverFeedback} class-selected={node.selected}
+                ></rect>
+                <line stroke="#000000" stroke-width="2px" x1="23.25" y1="50" x2="77" y2="20"/>
+                <circle cx="20" cy="50" r="7"/>
+                <circle cx="80" cy="20" r="7"/>
+                <circle cx="80" cy="50" r="7"/>
+                <circle cx="80" cy="80" r="7"/>
+                <line stroke="#000000" stroke-width="2px" x1="7.5" y1="50.25" x2="15" y2="50"/>
+                <line stroke="#000000" stroke-width="2px" x1="85" y1="20" x2="94" y2="20"/>
+                <line stroke="#000000" stroke-width="2px" x1="85" y1="50" x2="94" y2="50"/>
+                <line stroke="#000000" stroke-width="2px" x1="85" y1="80" x2="94" y2="80"/>
+                {context.renderChildren(node)}
+            </g>;
+            
         } else {
             return <g> 
                 <rect class-sprotty-node={node instanceof SNode}
