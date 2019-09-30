@@ -66,7 +66,8 @@ public class DiagramWebsocketServer implements WebSocketConfigurer, Initializing
 	public void registerWebSocketHandlers(WebSocketHandlerRegistry registry) {
 		registry.addHandler(WsMessageHandler(), "/websocket")
 		.setAllowedOrigins("*")
-		.withSockJS();
+		.withSockJS()
+		.setWebSocketEnabled(false);
 	}
 	
 	private final String END_MESSAGE = "@end";
