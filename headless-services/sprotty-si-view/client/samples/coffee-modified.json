@@ -516,7 +516,7 @@
           "countLong": 1549
         }
       },
-      "componentType": "bridge",
+      "componentType": "filter",
       "properties": {},
       "output": "hotDrinkBarista",
       "input": "hotDrinks",
@@ -629,7 +629,7 @@
           "countLong": 1559
         }
       },
-      "componentType": "service-activator",
+      "componentType": "transformer",
       "properties": {},
       "output": "preparedDrinks",
       "input": "coldDrinkBarista"

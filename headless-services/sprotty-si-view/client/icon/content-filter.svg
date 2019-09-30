@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN" "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink"
+     xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://web.resource.org/cc/"
+     xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+     xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+     xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape" version="1.1" baseProfile="full" width="100px"
+     height="100px" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet" id="svg_document"
+     style="zoom: 1;"><!-- Created with macSVG - https://macsvg.org/ - https://github.com/dsward2/macsvg/ -->
+    <title id="svg_document_title">Untitled.svg</title>
+    <defs id="svg_document_defs"></defs>
+    <g id="main_group"></g>
+    <rect stroke="#000000" x="10px" height="30px" y="35px" id="rect1" stroke-width="3px" width="30px" fill="greenyellow"
+          transform=""></rect>
+    <rect stroke="#000000" x="70px" height="20px" y="40px" id="rect2" stroke-width="3px" width="20px" fill="greenyellow"
+          transform=""></rect>
+    <line stroke="#000000" y1="50.000000px" id="line1" stroke-width="3px" x1="45.000000px" y2="50.000000px"
+          stroke-linecap="round" x2="65.000000px" transform=""></line>
+    <line stroke="#000000" y1="45.000000px" id="line2" stroke-width="3px" x1="60.000000px" y2="50.000000px"
+          stroke-linecap="round" x2="65.000000px"></line>
+    <line stroke="#000000" y1="50.000000px" id="line3" stroke-width="3px" x1="65.000000px" y2="55.000000px"
+          stroke-linecap="round" x2="60.000000px"></line>
+</svg>

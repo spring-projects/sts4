@@ -629,7 +629,7 @@
           "countLong": 1559
         }
       },
-      "componentType": "transformer",
+      "componentType": "service-activator",
       "properties": {},
       "output": "preparedDrinks",
       "input": "coldDrinkBarista"

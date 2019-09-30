@@ -23,6 +23,7 @@ cp -R ${client_dir}/samples $static_dir/samples
 cp -R ${client_dir}/css $static_dir/css
 cp -R ${client_dir}/lib $static_dir/lib
 cp -R ${client_dir}/src $static_dir/src
+cp -R ${client_dir}/icon $static_dir/icon
 
 ../mvnw \
     -f ../pom.xml \

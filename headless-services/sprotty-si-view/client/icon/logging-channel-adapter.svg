@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <g transform="matrix(1, 0, 0, 1, -2, 0)">
+    <line style="stroke: rgb(0, 0, 0); stroke-linecap: round;" x1="10" y1="50" x2="30" y2="50"/>
+    <line style="stroke: rgb(0, 0, 0); stroke-linecap: round;" x1="24" y1="45" x2="30" y2="50"/>
+    <line style="stroke: rgb(0, 0, 0); stroke-linecap: round;" x1="24" y1="55" x2="30" y2="50"/>
+  </g>
+  <line style="stroke: rgb(0, 0, 0);" x1="74.53838348388673" y1="29.348882518908752" x2="74.53838348388673" y2="29.348882518908752"/>
+  <rect x="60" y="10" width="30" height="80" style="stroke: rgb(0, 0, 0); fill: rgb(252, 252, 252); stroke-linejoin: round;"/>
+  <polygon fill="greenyellow" stroke="black" stroke-linejoin="round" points="55 10 55 90 30 70 30 30"/>
+  <line style="stroke: rgb(144, 144, 144);" x1="63" y1="15" x2="85" y2="15"/>
+  <line style="stroke: rgb(144, 144, 144);" x1="63" y1="19" x2="85" y2="19"/>
+  <line style="stroke: rgb(144, 144, 144);" x1="63" y1="23" x2="85" y2="23"/>
+  <line style="stroke: rgb(144, 144, 144);" x1="63" y1="27" x2="85" y2="27"/>
+  <line style="stroke: rgb(144, 144, 144);" x1="63" y1="31" x2="85" y2="31"/>
+  <line style="stroke: rgb(144, 144, 144);" x1="63" y1="35" x2="85" y2="35"/>
+  <line style="stroke: rgb(144, 144, 144);" x1="63" y1="39" x2="85" y2="39"/>
+  <line style="stroke: rgb(144, 144, 144);" x1="63" y1="43" x2="85" y2="43"/>
+</svg>

@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg version="1.1" baseProfile="full" width="100px" height="100px" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet" id="svg_document" style="zoom: 1;" xmlns="http://www.w3.org/2000/svg" xmlns:bx="https://boxy-svg.com">
+  <title id="svg_document_title">Untitled.svg</title>
+  <line stroke="#000000" y1="64" id="line1" stroke-width="5px" x1="10" y2="64" x2="90"/>
+  <line stroke="#000000" y1="12px" id="line2" x1="30px" stroke-width="3px" y2="12px" x2="30px" transform=""/>
+  <line stroke="#000000" y1="12px" id="line3" x1="28px" stroke-width="3px" y2="12px" x2="28px" transform=""/>
+  <line stroke="#000000" y1="24" id="line4" stroke-width="7px" x1="30" y2="75" x2="30" style="stroke-linecap: round;"/>
+  <line stroke="#000000" y1="22px" id="line5" x1="78px" stroke-width="3px" y2="22px" x2="78px" transform=""/>
+  <line stroke="#000000" y1="24" id="line6" stroke-width="7px" x1="70" y2="75" x2="70" style="stroke-linecap: round;"/>
+  <line stroke="#000000" y1="38" id="line12" x1="40" y2="64" x2="40" style="stroke-width: 2px;"/>
+  <path style="stroke: rgb(0, 0, 0); fill: none; stroke-width: 2px;" d="M 30 32 C 43 42 57 42 70 32"/>
+  <line stroke="#000000" y1="38" id="line-1" x1="60" y2="64" x2="60" style="stroke-width: 2px;"/>
+  <line stroke="#000000" y1="40" id="line-2" x1="50" y2="63" x2="50" style="stroke-width: 2px;" transform="matrix(1, 0.00013, -0.00013, 1, 0.00819, -0.006499)" bx:origin="0 1"/>
+  <path style="stroke: rgb(0, 0, 0); fill: none; stroke-width: 2px;" d="M 71 33 Q 73 56 87 64"/>
+  <path style="stroke: rgb(0, 0, 0); fill: none; stroke-width: 2px;" d="M -3 94 C -2 79 3 69 13 63" transform="matrix(-1, 0, 0, -1, 26, 126)" bx:origin="1 0"/>
+</svg>

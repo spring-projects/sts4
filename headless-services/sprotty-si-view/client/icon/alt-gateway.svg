@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" xmlns:bx="https://boxy-svg.com">
+  <line style="stroke: rgb(0, 0, 0);" x1="74.53838348388673" y1="29.348882518908752" x2="74.53838348388673" y2="29.348882518908752"/>
+  <path style="" transform="matrix(1, 0, 0, -1, 0, 0)" d="M 8 -90 H 18 V -15 A 5 5 0 0 1 13 -10 H 13 A 5 5 0 0 1 8 -15 V -90 Z" bx:shape="rect 8 -90 10 80 0 0 5 5 1@160af39c"/>
+  <polygon style="fill: rgb(216, 216, 216); stroke: rgb(0, 0, 0);" points="22 14"/>
+  <polygon style="fill: greenyellow; stroke: rgb(0, 0, 0);" points="20 20 48 30 48 75 20 87"/>
+  <path style="" transform="matrix(-1, 0, 0, -1, 0, 0)" d="M -92 -90 H -82 V -15 A 5 5 0 0 1 -87 -10 H -87 A 5 5 0 0 1 -92 -15 V -90 Z" bx:shape="rect -92 -90 10 80 0 0 5 5 1@7aff9b84"/>
+  <polygon style="fill: greenyellow; stroke: rgb(0, 0, 0);" points="52 87 80 77 80 32 52 20" transform="matrix(-1, 0, 0, -1, 132, 107)"/>
+</svg>

@@ -77,7 +77,6 @@ export class LimitedWidthLabelView extends SLabelView {
     }
 }
 
-
 @injectable()
 export class ExampleGraphView extends SGraphView {
 
@@ -121,123 +120,10 @@ export class EdgeView extends PolylineEdgeView {
 @injectable()
 export class IntegrationNodeView extends RectangularNodeView {
     render(node: Readonly<IntegrationNode & Hoverable & Selectable>, context: RenderingContext): VNode {
-        if (node.componentType==='transformer') {
-            return <g>
-                <rect x="1.5px" stroke="black" height="97px" id="background_rect" stroke-width="3" width="97px" y="1.5px" fill="none"
-                    class-sprotty-node={node instanceof SNode}
-                    class-mouseover={node.hoverFeedback} class-selected={node.selected}
-                />
-                <rect stroke="#000000" height="80px" x="10px" id="rect1" stroke-width="3px" width="20px" y="10px" fill="greenyellow" transform=""/>
-                <rect stroke="#000000" height="80px" x="70px" id="rect2" stroke-width="3px" width="20px" y="10px" fill="greenyellow" transform=""/>
-                <line stroke="#000000" y1="20.000000px" id="line1" stroke-width="3px" x1="25.000000px" y2="80.000000px" x2="75.000000px" transform=""/>
-                <line stroke="#000000" y1="80.000000px" id="line2" x1="25.000000px" stroke-width="3px" y2="20.000000px" x2="75.000000px" transform=""/>
-                {context.renderChildren(node)}
-            </g>;
-        } else if (node.componentType==='aggregator') {
-            return <g>
-                <rect x="1.5px" stroke="black" height="97px" id="background_rect" stroke-width="3" width="97px" y="1.5px" fill="none"
-                    class-sprotty-node={node instanceof SNode}
-                    class-mouseover={node.hoverFeedback} class-selected={node.selected}
-                />
-                <rect stroke="#000000" x="10px" height="20px" y="10px" id="rect1" stroke-width="3px" width="20px" fill="greenyellow"
-                    transform=""></rect>
-                <rect stroke="#000000" x="10px" height="20px" y="40px" id="rect2" stroke-width="3px" width="20px" fill="greenyellow"
-                    transform=""></rect>
-                <rect stroke="#000000" x="70px" height="20px" y="40px" id="rect4" stroke-width="3px" width="20px" fill="greenyellow"
-                    transform=""></rect>
-                <rect stroke="#000000" x="10px" height="20px" y="70px" id="rect3" stroke-width="3px" width="20px" fill="greenyellow"
-                    transform=""></rect>
-                <line stroke="#000000" y1="50.000000px" id="line1" x1="35.000000px" stroke-width="3px" y2="50.000000px"
-                    x2="65.000000px" transform=""></line>
-                <line stroke="#000000" y1="45.000000px" id="line2" x1="58.000000px" stroke-width="3px" y2="50.000000px"
-                    x2="65.000000px" transform=""></line>
-                <line stroke="#000000" y1="55.000000px" id="line3" x1="58.000000px" stroke-width="3px" y2="50.000000px"
-                    x2="65.000000px" transform=""></line>
-                {context.renderChildren(node)}
-            </g>
-        } else if (node.componentType==='splitter') {
-            return <g>
-                <rect x="1.5px" stroke="black" height="97px" id="background_rect" stroke-width="3" width="97px" y="1.5px" fill="none"
-                    class-sprotty-node={node instanceof SNode}
-                    class-mouseover={node.hoverFeedback} class-selected={node.selected}
-                ></rect>
-                <rect stroke="#000000" x="70px" height="20px" y="10px" id="rect1" stroke-width="3px" width="20px" fill="greenyellow"
-                    transform=""></rect>
-                <rect stroke="#000000" x="10px" height="20px" y="40px" id="rect2" stroke-width="3px" width="20px" fill="greenyellow"
-                    transform=""></rect>
-                <rect stroke="#000000" x="70px" height="20px" y="40px" id="rect4" stroke-width="3px" width="20px" fill="greenyellow"
-                    transform=""></rect>
-                <rect stroke="#000000" x="70px" height="20px" y="70px" id="rect3" stroke-width="3px" width="20px" fill="greenyellow"
-                    transform=""></rect>
-                <line stroke="#000000" y1="50.000000px" id="line1" x1="35.000000px" stroke-width="3px" y2="50.000000px"
-                    x2="65.000000px" transform=""></line>
-                <line stroke="#000000" y1="45.000000px" id="line2" x1="58.000000px" stroke-width="3px" y2="50.000000px"
-                    x2="65.000000px" transform=""></line>
-                <line stroke="#000000" y1="55.000000px" id="line3" x1="58.000000px" stroke-width="3px" y2="50.000000px"
-                    x2="65.000000px" transform=""></line>
-                {context.renderChildren(node)}
-            </g>;
-        } else if (node.componentType === 'router') {
-            return <g>
-                <rect x="1.5px" stroke="black" height="97px" id="background_rect" stroke-width="3" width="97px" y="1.5px" fill="none"
-                    class-sprotty-node={node instanceof SNode}
-                    class-mouseover={node.hoverFeedback} class-selected={node.selected}
-                ></rect>
-                <line stroke="#000000" stroke-width="2px" x1="23.25" y1="50" x2="77" y2="20"/>
-                <circle cx="20" cy="50" r="7"/>
-                <circle cx="80" cy="20" r="7"/>
-                <circle cx="80" cy="50" r="7"/>
-                <circle cx="80" cy="80" r="7"/>
-                <line stroke="#000000" stroke-width="2px" x1="7.5" y1="50.25" x2="15" y2="50"/>
-                <line stroke="#000000" stroke-width="2px" x1="85" y1="20" x2="94" y2="20"/>
-                <line stroke="#000000" stroke-width="2px" x1="85" y1="50" x2="94" y2="50"/>
-                <line stroke="#000000" stroke-width="2px" x1="85" y1="80" x2="94" y2="80"/>
-                {context.renderChildren(node)}
-            </g>;
-        } else if (node.componentType === 'service-activator') {
-            return <g>
-                <rect x="1.5px" stroke="black" height="97px" id="background_rect" stroke-width="3" width="97px" y="1.5px" fill="none"
-                    class-sprotty-node={node instanceof SNode}
-                    class-mouseover={node.hoverFeedback} class-selected={node.selected}
-                ></rect>
-                <rect x="15" y="45" width="10" height="10" fill="black" stroke-width="2px" transform="matrix(0.707107, 0.707107, -0.707107, 0.707107, 59.21994, 0.486262)"/>
-                <rect x="15" y="45" width="10" height="10"
-                     stroke="black" fill="#ffffff" stroke-width="2px"
-                     transform="matrix(0.707107, 0.707107, -0.707107, 0.707107, 97.098412, 0.486262)"/>
-                <g>
-                    <line stroke="black" x1="10" y1="50" x2="30" y2="50"/>
-                    <line stroke="black" x1="24" y1="45" x2="30" y2="50"/>
-                    <line stroke="black" x1="24" y1="55" x2="30" y2="50"/>
-                </g>
-                <g transform="matrix(1, 0, 0, 1, 35.958775, -0.044944)">
-                    <line stroke="black" x1="10" y1="50" x2="30" y2="50"/>
-                    <line stroke="black" x1="24" y1="45" x2="30" y2="50"/>
-                    <line stroke="black" x1="24" y1="55" x2="30" y2="50"/>
-                </g>
-                {context.renderChildren(node)}
-            </g>;
-        } else if (node.componentType.indexOf('outbound-channel-adapter')>=0) {
-            return <g> 
-                <rect class-sprotty-node={node instanceof SNode}
-                      class-mouseover={node.hoverFeedback} class-selected={node.selected}
-                      x="0" y="0" width={Math.max(node.size.width, 0)} height={Math.max(node.size.height, 0)} rx="10" ry="10"/>
-                <g>
-                    <line stroke="black" x1="10" y1="50" x2="27" y2="50"/>
-                    <line stroke="black" x1="21" y1="45" x2="27" y2="50"/>
-                    <line stroke="black" x1="21" y1="55" x2="27" y2="50"/>
-                </g>
-                <line stroke="black" x1="75" y1="30" x2="75" y2="30"/>
-                <polygon fill="greenyellow" stroke="black" stroke-linejoin="round" points="55 10 55 90 30 70 30 30"/>
-                <rect x="60" y="10" width="30" height="80" stroke="black" fill="white" stroke-linejoin="round"/>
-                {context.renderChildren(node)}
-            </g>
+        if (node.componentType.indexOf('outbound-channel-adapter')>=0) {
+            return  nodeIcon(node, context, "outbound-channel-adapter");
         } else {
-            return <g> 
-                <rect class-sprotty-node={node instanceof SNode}
-                      class-mouseover={node.hoverFeedback} class-selected={node.selected}
-                      x="0" y="0" width={Math.max(node.size.width, 0)} height={Math.max(node.size.height, 0)} rx="10" ry="10"></rect>
-                {context.renderChildren(node)}
-            </g>
+            return nodeIcon(node, context, node.componentType);
         }
     }
 }
@@ -283,6 +169,15 @@ export class ErrorPortView implements IView {
             {context.renderChildren(node)}
         </g>;
     }
+}
+
+function nodeIcon(node: Readonly<IntegrationNode & Hoverable & Selectable>, context: RenderingContext, iconType: string): VNode {
+    const url = `/icon/${iconType}.svg`;
+    return <g>
+        <rect class-sprotty-node={node instanceof SNode} class-mouseover={node.hoverFeedback} class-selected={node.selected} fill="none" x="0" y="0" width={Math.max(node.size.width, 0)} height={Math.max(node.size.height, 0)}></rect>
+        <image width="100" height="100" color="blue" href={url} />
+        {context.renderChildren(node)}
+    </g>;
 }
 /*
 <g class="shape">'+

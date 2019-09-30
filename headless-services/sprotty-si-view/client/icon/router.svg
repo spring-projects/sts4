@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <line style="stroke-width: 2px; stroke: rgb(67, 67, 67);" x1="25" y1="50" x2="75" y2="19.999999999999996"/>
+  <circle style="" cx="20" cy="50" r="7"/>
+  <line style="stroke: rgb(0, 0, 0); stroke-width: 2px;" x1="7.5" y1="50.25" x2="15" y2="50"/>
+  <circle style="" cx="80" cy="20" r="7"/>
+  <line style="stroke: rgb(0, 0, 0); stroke-width: 2px;" x1="85" y1="20" x2="93.8" y2="20"/>
+  <circle style="" cx="80" cy="50" r="7"/>
+  <line style="stroke: rgb(0, 0, 0); stroke-width: 2px;" x1="85" y1="50" x2="94" y2="50"/>
+  <circle style="" cx="80" cy="80" r="7"/>
+  <line style="stroke: rgb(0, 0, 0); stroke-width: 2px;" x1="85" y1="80" x2="94" y2="80"/>
+</svg>

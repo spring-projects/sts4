@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg version="1.1" baseProfile="full" width="100px" height="100px" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet" id="svg_document" style="zoom: 1;" xmlns="http://www.w3.org/2000/svg">
+  <title id="svg_document_title">Untitled.svg</title>
+  <g id="main_group">
+    <rect stroke="#000000" height="80px" x="10px" id="rect1" stroke-width="3px" width="20px" y="10px" fill="greenyellow" transform=""/>
+    <rect stroke="#000000" height="80px" x="70px" id="rect2" stroke-width="3px" width="20px" y="10px" fill="greenyellow" transform=""/>
+    <line stroke="#000000" y1="20.000000px" id="line1" stroke-width="3px" x1="25.000000px" y2="80.000000px" x2="75.000000px" transform=""/>
+    <line stroke="#000000" y1="80.000000px" id="line2" x1="25.000000px" stroke-width="3px" y2="20.000000px" x2="75.000000px" transform=""/>
+  </g>
+</svg>

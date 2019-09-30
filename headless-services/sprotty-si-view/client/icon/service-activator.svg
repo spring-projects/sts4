@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+  <rect x="15" y="45" width="10" height="10" style="fill: black; stroke-width: 2px;" transform="matrix(0.707107, 0.707107, -0.707107, 0.707107, 59.21994, 0.486262)"/>
+  <rect x="15" y="45" width="10" height="10" style="stroke-width: 3px; fill: rgb(255, 255, 255); paint-order: stroke; stroke: rgb(0, 0, 0);" transform="matrix(0.707107, 0.707107, -0.707107, 0.707107, 97.098412, 0.486262)"/>
+  <g>
+    <line style="stroke: rgb(0, 0, 0);" x1="10" y1="50" x2="30" y2="50"/>
+    <line style="stroke: rgb(0, 0, 0);" x1="24" y1="45" x2="30" y2="50"/>
+    <line style="stroke: rgb(0, 0, 0);" x1="24" y1="55" x2="30" y2="50"/>
+  </g>
+  <g transform="matrix(1, 0, 0, 1, 35.958775, -0.044944)">
+    <line style="stroke: rgb(0, 0, 0);" x1="10" y1="50" x2="30" y2="50"/>
+    <line style="stroke: rgb(0, 0, 0);" x1="24" y1="45" x2="30" y2="50"/>
+    <line style="stroke: rgb(0, 0, 0);" x1="24" y1="55" x2="30" y2="50"/>
+  </g>
+</svg>
