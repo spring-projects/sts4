@@ -400,7 +400,7 @@ jobs:
       task: sync-mirror-repo
       file: sts4/concourse/tasks/sync-mirror-repo.yml
       params:
-        mirror_repo: https://github.com/pivotal/sts4-vscode-spring-boot-mirror
+        mirror_repo: git@github.com:pivotal/sts4-vscode-spring-boot-mirror.git
     on_failure:
       put: slack-notification
       params:
