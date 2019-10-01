@@ -92,6 +92,10 @@ public class SpringProcessConnectorService {
 		return (SpringProcessConnector[]) this.connectors.values().stream()
 				.filter((connector) -> connectedSuccess.get(connector.getProcessKey())).toArray(SpringProcessConnector[]::new);
 	}
+	
+	public boolean isConnected(String processKey) {
+		return this.connectors.containsKey(processKey);
+	}
 
 	/**
 	 * common method to generate process keys from process IDs and process names

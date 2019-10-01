@@ -67,7 +67,7 @@ public class SpringProcessCommandHandler {
 		if (processKey != null) {
 			
 			// try local processes
-			SpringProcessDescriptor[] processes = localProcessConnector.getProcesses(false, SpringProcessStatus.REGULAR);
+			SpringProcessDescriptor[] processes = localProcessConnector.getProcesses(false, SpringProcessStatus.REGULAR, SpringProcessStatus.AUTO_CONNECT);
 			for (SpringProcessDescriptor process : processes) {
 				if (process.getProcessKey().equals(processKey)) {
 					localProcessConnector.connectProcess(process);
@@ -134,7 +134,7 @@ public class SpringProcessCommandHandler {
 		}
 		
 		// other available local processes
-		SpringProcessDescriptor[] localProcesses = localProcessConnector.getProcesses(true, SpringProcessStatus.REGULAR);
+		SpringProcessDescriptor[] localProcesses = localProcessConnector.getProcesses(true, SpringProcessStatus.REGULAR, SpringProcessStatus.AUTO_CONNECT);
 		for (SpringProcessDescriptor localProcess : localProcesses) {
 			String processKey = localProcess.getProcessKey();
 			if (!alreadyConnected.contains(processKey)) {

@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.boot.java.livehover.v2;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -107,7 +108,7 @@ public class SpringProcessConnectorLocal {
 		return this.processes.stream().anyMatch(process -> processKey.equals(process.getProcessKey()));
 	}
 	
-	public SpringProcessDescriptor[] getProcesses(boolean update, SpringProcessStatus status) {
+	public SpringProcessDescriptor[] getProcesses(boolean update, SpringProcessStatus... status) {
 		if (update) {
 			SpringProcessDescriptor[] newProcesses = updateProcesses();
 			if (newProcesses.length > 0) {
@@ -115,8 +116,9 @@ public class SpringProcessConnectorLocal {
 			}
 		}
 		
-		if (status != null) {
-			return processes.stream().filter((process) -> status.equals(process.getStatus())).toArray(SpringProcessDescriptor[]::new);
+		if (status != null && status.length > 0) {
+			List<SpringProcessStatus> statusList = Arrays.asList(status);
+			return processes.stream().filter((process) -> statusList.contains(process.getStatus())).toArray(SpringProcessDescriptor[]::new);
 		}
 		else {
 			return (SpringProcessDescriptor[]) processes.toArray(new SpringProcessDescriptor[processes.size()]);
@@ -265,6 +267,10 @@ public class SpringProcessConnectorLocal {
 				}
 			}
 		}
+	}
+	
+	public boolean isConnected(String processKey) {
+		return this.processConnectorService.isConnected(processKey);
 	}
 
 	private boolean shouldIgnore(VirtualMachineDescriptor vmDescriptor, VirtualMachine vm) {

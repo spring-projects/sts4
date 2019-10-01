@@ -93,9 +93,10 @@ public class SpringProcessTracker {
 			SpringProcessDescriptor[] autoConnectProcesses = this.localProcessConnector.getProcesses(true, SpringProcessStatus.AUTO_CONNECT);
 			
 			for (SpringProcessDescriptor process : autoConnectProcesses) {
-				log.info("auto-connect to process: " + process.getProcessKey());
-
-				this.localProcessConnector.connectProcess(process);
+				if (!this.localProcessConnector.isConnected(process.getProcessKey())) {
+					log.info("auto-connect to process: " + process.getProcessKey());
+					this.localProcessConnector.connectProcess(process);
+				}
 			}
 		}
 		catch (Throwable e) {
