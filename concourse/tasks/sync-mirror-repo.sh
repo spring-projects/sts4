@@ -11,7 +11,13 @@ cd $output
 
 echo "Syncing original repo $origin_url' and mirror repo '$mirror_repo'"
 
-git clone --mirror $origin_url original-repo
+mkdir original-repo
+# enable hidden files for * matcher
+shopt -s dotglob
+cp -a $workdir/sts4/* original-repo
+# disable hidden files for * matcher
+shopt -u dotglob
+
 cd original-repo
 git config user.email "aboyko@pivotal.io"
 git config user.name "Alex Boyko"
