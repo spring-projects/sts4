@@ -11,6 +11,9 @@
 package org.springframework.ide.vscode.boot.java.livehover.v2;
 
 import java.time.Duration;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -33,11 +36,14 @@ public class SpringProcessTracker {
 	private boolean automaticTrackingEnabled;
 	private Duration POLLING_INTERVAL;
 	private ScheduledThreadPoolExecutor timer;
+	
+	private Set<String> processesAlreadySeen;
 
 	public SpringProcessTracker(SpringProcessConnectorLocal localProcessConnector, Duration pollingInterval) {
 		this.localProcessConnector = localProcessConnector;
 		this.POLLING_INTERVAL = pollingInterval != null ? pollingInterval : Duration.ofMillis(BootJavaConfig.LIVE_INFORMATION_AUTOMATIC_TRACKING_DELAY_DEFAULT);
 		this.automaticTrackingEnabled = false;
+		this.processesAlreadySeen = new HashSet<>();
 		
 		this.isConnectorAvailable = SpringProcessConnectorLocal.isAvailable();
 	}
@@ -92,10 +98,25 @@ public class SpringProcessTracker {
 		try {
 			SpringProcessDescriptor[] autoConnectProcesses = this.localProcessConnector.getProcesses(true, SpringProcessStatus.AUTO_CONNECT);
 			
+			Set<String> autoConnectProcessKeys = new HashSet<>();
+			
 			for (SpringProcessDescriptor process : autoConnectProcesses) {
-				if (!this.localProcessConnector.isConnected(process.getProcessKey())) {
+				autoConnectProcessKeys.add(process.getProcessKey());
+				
+				if (!processesAlreadySeen.contains(process.getProcessKey())) {
+					processesAlreadySeen.add(process.getProcessKey());
+
 					log.info("auto-connect to process: " + process.getProcessKey());
 					this.localProcessConnector.connectProcess(process);
+				}
+			}
+			
+			// cleanup list of already seen processes
+			Iterator<String> iter = this.processesAlreadySeen.iterator();
+			while (iter.hasNext()) {
+				String processKey = iter.next();
+				if (!autoConnectProcessKeys.contains(processKey)) {
+					iter.remove();
 				}
 			}
 		}
