@@ -396,6 +396,11 @@ jobs:
     file: sts4/concourse/tasks/build-vsix.yml
     params:
       extension_id: vscode-spring-boot
+    on_success:
+      task: sync-mirror-repo
+      file: sts4/concourse/tasks/sync-mirror-repo.yml
+      params:
+        mirror_repo: https://github.com/pivotal/sts4-vscode-spring-boot-mirror
     on_failure:
       put: slack-notification
       params:
