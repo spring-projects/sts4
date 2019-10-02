@@ -280,16 +280,16 @@
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/tools/orbit/downloads/drops/R20190827152740/repository</url>
 				</repository>
-				<repository>
-					<id>e-i-commons</id>
-					<layout>p2</layout>
-					<url>https://dist.springframework.org/release/IDE/3.9.10.RELEASE</url>
-				</repository>
 <!--				<repository>
 					<id>e-i-commons</id>
 					<layout>p2</layout>
-					<url>https://dist.springframework.org/snapshot/IDE/nightly</url>
+					<url>https://dist.springframework.org/release/IDE/3.9.10.RELEASE</url>
 				</repository> -->
+				<repository>
+					<id>e-i-commons</id>
+					<layout>p2</layout>
+					<url>https://dist.springframework.org/snapshot/IDE/nightly</url>
+				</repository>
 				<repository>
 					<id>lsp4e</id>
 					<layout>p2</layout>
