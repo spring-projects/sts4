@@ -46,6 +46,18 @@ resources:
     uri: git@github.com:spring-projects/sts4.git
     branch: ((branch))
     private_key: ((rsa_id))
+- name: mirror-vscode-spring-boot
+  type: git
+  source:
+    branch: ((branch))
+    private_key: ((rsa_id))
+    uri: git@github.com:pivotal/sts4-vscode-spring-boot-mirror.git
+- name: mirror-vscode-concourse
+  type: git
+  source:
+    branch: ((branch))
+    private_key: ((rsa_id))
+    uri: git@github.com:pivotal/sts4-vscode-concourse-mirror.git
 - name: atom-cf-manifest-yaml
   type: git
   source:
@@ -362,10 +374,14 @@ jobs:
       params:
         text: |
            Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
-  - put: s3-bosh-vsix-snapshot
-    params: 
-      file: out/vscode-bosh-*.vsix
-      acl: public-read
+  - aggregate:
+    - put: s3-bosh-vsix-snapshot
+      params: 
+        file: out/vscode-bosh-*.vsix
+        acl: public-read
+    - put: mirror-vscode-concourse
+      params:
+        repository: sts4
 - name: build-manifest-yaml-vsix-snapshot
   plan:
   - aggregate:
@@ -396,11 +412,6 @@ jobs:
     file: sts4/concourse/tasks/build-vsix.yml
     params:
       extension_id: vscode-spring-boot
-    on_success:
-      task: sync-mirror-repo
-      file: sts4/concourse/tasks/sync-mirror-repo.yml
-      params:
-        mirror_repo: git@github.com:pivotal/sts4-vscode-spring-boot-mirror.git
     on_failure:
       put: slack-notification
       params:
@@ -411,6 +422,9 @@ jobs:
       params: 
         file: out/vscode-spring-boot-*.vsix
         acl: public-read
+    - put: mirror-vscode-spring-boot
+      params:
+        repository: sts4
 - name: trigger-rc-build
   serial: true
   plan: 
