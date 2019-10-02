@@ -118,6 +118,11 @@
 		<reactor-netty>0.7.5.RELEASE</reactor-netty>
 		<commons-io-version>2.4</commons-io-version>
 		<commons-codec-version>1.11</commons-codec-version>
+
+		<signing.skip>true</signing.skip>
+		<signing.alias>pivotal</signing.alias>
+		<signing.keystore>~/.keytool/pivotal.jks</signing.keystore>
+
 	</properties>
 
 	<build>
@@ -157,6 +162,14 @@
 
 		</plugins>
 	</build>
+
+	<profile>
+		<id>bamboo-signing</id>
+		<properties>
+			<signing.store.password>${env.bamboo_signing_store_password}</signing.store.password>
+			<signing.key.password>${env.bamboo_signing_store_password}</signing.key.password>
+		</properties>
+	</profile>
 
 	<dependencies>
 		<dependency>
