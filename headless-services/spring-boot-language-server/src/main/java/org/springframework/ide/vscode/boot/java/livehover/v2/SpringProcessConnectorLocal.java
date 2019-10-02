@@ -69,9 +69,12 @@ public class SpringProcessConnectorLocal {
 	
 	private final SpringProcessConnectorService processConnectorService;
 	
+	private boolean projectsChanged;
+	
 	public SpringProcessConnectorLocal(SpringProcessConnectorService processConnector, ProjectObserver projectObserver) {
 		this.projects = Collections.synchronizedCollection(new HashSet<>());
 		this.processes = Collections.synchronizedSet(new HashSet<>());
+		this.projectsChanged = false;
 		
 		this.processConnectorService = processConnector;
 
@@ -79,6 +82,7 @@ public class SpringProcessConnectorLocal {
 			@Override
 			public void created(IJavaProject project) {
 				projects.add(project.getElementName());
+				projectsChanged = true;
 			}
 			@Override
 			public void deleted(IJavaProject project) {
@@ -111,7 +115,13 @@ public class SpringProcessConnectorLocal {
 	public SpringProcessDescriptor[] getProcesses(boolean update, SpringProcessStatus... status) {
 		if (update) {
 			SpringProcessDescriptor[] newProcesses = updateProcesses();
-			if (newProcesses.length > 0) {
+			if (this.projectsChanged) {
+				this.projectsChanged = false;
+
+				SpringProcessDescriptor[] allProcesses = this.processes.toArray(new SpringProcessDescriptor[this.processes.size()]);
+				updateStatus(allProcesses);
+			}
+			else {
 				updateStatus(newProcesses);
 			}
 		}
@@ -165,60 +175,58 @@ public class SpringProcessConnectorLocal {
 		return (SpringProcessDescriptor[]) newProcesses.toArray(new SpringProcessDescriptor[newProcesses.size()]);
 	}
 	
-	private void updateStatus(SpringProcessDescriptor[] newProcesses) {
-		List<CompletableFuture<Void>> futures = new ArrayList<>();
-
-		for (SpringProcessDescriptor newProcess : newProcesses) {
-			CompletableFuture<SpringProcessStatus> checkStatusFuture = checkStatus(newProcess);
-			CompletableFuture<Void> result = checkStatusFuture.thenAccept((status) -> newProcess.setStatus(status));
+	private void updateStatus(SpringProcessDescriptor[] processes) {
+		if (processes != null && processes.length > 0) {
+			List<CompletableFuture<Void>> futures = new ArrayList<>();
+	
+			for (SpringProcessDescriptor process : processes) {
+				CompletableFuture<SpringProcessStatus> checkStatusFuture = checkStatus(process);
+				CompletableFuture<Void> result = checkStatusFuture.thenAccept((status) -> process.setStatus(status));
+				
+				futures.add(result);
+			}
 			
-			futures.add(result);
-		}
-		
-		CompletableFuture<Void> allStatusUpdates = CompletableFuture.allOf((CompletableFuture[]) futures.toArray(new CompletableFuture[futures.size()]));
-		try {
-			allStatusUpdates.get(3, TimeUnit.SECONDS);
-		}
-		catch (Exception e) {
-			log.info("timeout or problem occured while updating the status of the new processes");
+			CompletableFuture<Void> allStatusUpdates = CompletableFuture.allOf((CompletableFuture[]) futures.toArray(new CompletableFuture[futures.size()]));
+			try {
+				allStatusUpdates.get(5, TimeUnit.SECONDS);
+			}
+			catch (Exception e) {
+				log.info("timeout or problem occured while updating the status of the new processes");
+			}
 		}
 	}
 	
 	private CompletableFuture<SpringProcessStatus> checkStatus(SpringProcessDescriptor descriptor) {
-		if (SpringProcessStatus.UNKNOWN.equals(descriptor.getStatus())) {
-			return CompletableFuture.supplyAsync(() -> {
-				
-				VirtualMachine vm = null;
-				try {
-					vm = VirtualMachine.attach(descriptor.getVm());
-					
-					if (shouldIgnore(descriptor.getVm(), vm)) {
-						return SpringProcessStatus.IGNORE;
-					}
-					
-					if (shouldAutoConnect(descriptor.getVm(), vm)) {
-						return SpringProcessStatus.AUTO_CONNECT;
-					}
+		return CompletableFuture.supplyAsync(() -> {
 
-					return SpringProcessStatus.REGULAR;
-				}
-				catch (Exception e) {
+			VirtualMachine vm = null;
+			try {
+				vm = VirtualMachine.attach(descriptor.getVm());
+
+				if (shouldIgnore(descriptor.getVm(), vm)) {
 					return SpringProcessStatus.IGNORE;
 				}
-				finally {
-					if (vm != null) {
-						try {
-							vm.detach();
-						}
-						catch (Exception e) {
-							log.error("error detaching from vm: " + descriptor.getVm().id(), e);
-						}
+
+				if (shouldAutoConnect(descriptor.getVm(), vm)) {
+					return SpringProcessStatus.AUTO_CONNECT;
+				}
+
+				return SpringProcessStatus.REGULAR;
+			}
+			catch (Exception e) {
+				return SpringProcessStatus.IGNORE;
+			}
+			finally {
+				if (vm != null) {
+					try {
+						vm.detach();
+					}
+					catch (Exception e) {
+						log.error("error detaching from vm: " + descriptor.getVm().id(), e);
 					}
 				}
-			});
-		}
-		
-		return CompletableFuture.completedFuture(SpringProcessStatus.UNKNOWN);
+			}
+		});
 	}
 
 	public void connectProcess(SpringProcessDescriptor descriptor) {
