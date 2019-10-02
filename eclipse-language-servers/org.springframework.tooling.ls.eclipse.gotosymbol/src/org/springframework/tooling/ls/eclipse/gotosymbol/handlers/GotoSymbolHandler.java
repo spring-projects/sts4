@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016 Rogue Wave Software Inc. and others.
+ * Copyright (c) 2016, 2019 Rogue Wave Software Inc. and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -24,12 +24,12 @@ import org.eclipse.lsp4e.LanguageServiceAccessor;
 import org.eclipse.lsp4e.LanguageServiceAccessor.LSPDocumentInfo;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.keys.IBindingService;
+import org.eclipse.ui.part.MultiPageEditorPart;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.springframework.tooling.ls.eclipse.gotosymbol.dialogs.GotoSymbolDialog;
 import org.springframework.tooling.ls.eclipse.gotosymbol.dialogs.GotoSymbolDialogModel;
@@ -60,7 +60,7 @@ public class GotoSymbolHandler extends AbstractHandler {
 			debug("GotoSymbolDialog already open: send 'toggle' signal");
 			currentDialog.toggleSymbolsProvider();
 		} else {
-			IEditorPart part = HandlerUtil.getActiveEditor(event);
+			IWorkbenchPart part = getActiveWorkbenchPart(HandlerUtil.getActiveEditor(event));
 			if (part instanceof ITextEditor) {
 				final Shell shell = HandlerUtil.getActiveShell(event);
 				final ITextEditor textEditor = (ITextEditor) part;
@@ -104,7 +104,7 @@ public class GotoSymbolHandler extends AbstractHandler {
 		return r;
 	}
 	public boolean _isEnabled() {
-		IWorkbenchPart part = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActivePart();
+		IWorkbenchPart part = getActiveWorkbenchPart(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActivePart());
 		if (part instanceof ITextEditor) {
 			debug("activePart instanceof ITextEditor");
 			List<LSPDocumentInfo> infos = LanguageServiceAccessor.getLSPDocumentInfosFor(
@@ -114,5 +114,16 @@ public class GotoSymbolHandler extends AbstractHandler {
 		}
 		debug("activePart not ITextEditor: "+part);
 		return false;
+	}
+	
+	private static IWorkbenchPart getActiveWorkbenchPart(IWorkbenchPart part) {
+		if (part instanceof MultiPageEditorPart) {
+			MultiPageEditorPart multipageEditor = (MultiPageEditorPart) part;
+			Object page = multipageEditor.getSelectedPage();
+			if (page instanceof IWorkbenchPart) {
+				part = (IWorkbenchPart) page;
+			}			
+		}
+		return part;
 	}
 }
