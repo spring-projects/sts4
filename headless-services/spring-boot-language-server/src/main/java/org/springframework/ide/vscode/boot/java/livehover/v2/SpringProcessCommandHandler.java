@@ -18,7 +18,10 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.lsp4j.ExecuteCommandParams;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessConnectorRemote.RemoteBootAppData;
+import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 
 import com.google.gson.JsonElement;
@@ -28,6 +31,8 @@ import com.google.gson.JsonObject;
  * @author mlippert
  */
 public class SpringProcessCommandHandler {
+	
+	private static final Logger log = LoggerFactory.getLogger(SpringProcessCommandHandler.class);
 	
 	private static final String COMMAND_LIST_PROCESSES = "sts/livedata/listProcesses";
 	private static final String COMMAND_CONNECT = "sts/livedata/connect";
@@ -47,19 +52,22 @@ public class SpringProcessCommandHandler {
 		server.onCommand(COMMAND_LIST_PROCESSES, (params) -> {
 			return getProcessCommands();
 		});
+		log.info("Registered command handler: {}",COMMAND_LIST_PROCESSES);
 		
 		server.onCommand(COMMAND_CONNECT, (params) -> {
 			return connect(params);
 		});
+		log.info("Registered command handler: {}",COMMAND_CONNECT);
 		
 		server.onCommand(COMMAND_REFRESH, (params) -> {
 			return refresh(params);
 		});
+		log.info("Registered command handler: {}",COMMAND_REFRESH);
 
 		server.onCommand(COMMAND_DISCONNECT, (params) -> {
 			return disconnect(params);
 		});
-
+		log.info("Registered command handler: {}",COMMAND_DISCONNECT);
 	}
 
 	private CompletableFuture<Object> connect(ExecuteCommandParams params) {
@@ -166,7 +174,7 @@ public class SpringProcessCommandHandler {
 				result.add(command);
 			}
 		}
-
+		log.info("getProcessCommands => {}", result);
 		return CompletableFuture.completedFuture((Object[]) result.toArray(new Object[result.size()]));
 	}
 	

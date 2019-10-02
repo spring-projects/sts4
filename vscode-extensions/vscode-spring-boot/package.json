@@ -64,6 +64,11 @@
         "configuration": "./properties-support/language-configuration.json"
       }
     ],
+    "commands": [ {
+        "command": "vscode-spring-boot.live-hover.connect",
+        "title": "Manage Live Spring Boot Process Connections"
+      }
+    ],
     "configuration": {
       "type": "object",
       "title": "Boot-Java Configuration",

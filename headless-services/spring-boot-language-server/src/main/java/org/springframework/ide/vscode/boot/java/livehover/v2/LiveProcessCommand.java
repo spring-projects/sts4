@@ -43,4 +43,8 @@ public class LiveProcessCommand {
 		this.action = action;
 	}
 
+	@Override
+	public String toString() {
+		return "LiveProcessCommand [processKey=" + processKey + ", label=" + label + ", action=" + action + "]";
+	}
 }

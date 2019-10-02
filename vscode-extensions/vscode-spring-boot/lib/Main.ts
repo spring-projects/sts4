@@ -4,6 +4,7 @@ import * as VSCode from 'vscode';
 import {workspace} from 'vscode';
 
 import * as commons from '@pivotal-tools/commons-vscode';
+import * as liveHoverUi from './live-hover-connect-ui';
 
 import {LanguageClient} from "vscode-languageclient";
 
@@ -67,5 +68,8 @@ export function activate(context: VSCode.ExtensionContext): Thenable<LanguageCli
         highlightCodeLensSettingKey: 'boot-java.highlight-codelens.on'
     };
 
-    return commons.activate(options, context);
+    return commons.activate(options, context).then(client => {
+        liveHoverUi.activate(client, options, context);
+        return client;
+    });
 }
