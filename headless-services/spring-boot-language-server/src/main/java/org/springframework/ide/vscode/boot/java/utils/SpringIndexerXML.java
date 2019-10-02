@@ -98,11 +98,11 @@ public class SpringIndexerXML implements SpringIndexer {
 
 	@Override
 	public void initializeProject(IJavaProject project) throws Exception {
+		long startTime = System.currentTimeMillis();
 		String[] files = this.getFiles(project);
 
 		log.info("scan xml files for symbols for project: " + project.getElementName() + " - no. of files: " + files.length);
 
-		long startTime = System.currentTimeMillis();
 		SymbolCacheKey cacheKey = getCacheKey(project);
 
 		CachedSymbol[] symbols = this.cache.retrieveSymbols(cacheKey, files);
@@ -216,6 +216,7 @@ public class SpringIndexerXML implements SpringIndexer {
 	}
 
 	private String[] getFiles(IJavaProject project) throws Exception {
+		long start = System.currentTimeMillis();
 		String[] globs = scanFolderGlobs;
 		if (globs.length == 0) {
 			return new String[0];
@@ -225,12 +226,16 @@ public class SpringIndexerXML implements SpringIndexer {
 			matchers.add(FileSystems.getDefault().getPathMatcher("glob:" + glob));
 		}
 		
+		List<Path> outputFolders = IClasspathUtil.getOutputFolders(project.getClasspath()).map(f -> Paths.get(f.toURI())).collect(Collectors.toList());
 		ImmutableList.Builder<String> builder = ImmutableList.builder();
 		Files.walkFileTree(Paths.get(project.getLocationUri()), new FileVisitor<Path>() {
 
 			@Override
 			public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
 				if (dir.getFileName().toString().startsWith(".")) {
+					return FileVisitResult.SKIP_SUBTREE;
+				}
+				if (outputFolders.contains(dir)) {
 					return FileVisitResult.SKIP_SUBTREE;
 				}
 				return FileVisitResult.CONTINUE;
@@ -244,7 +249,7 @@ public class SpringIndexerXML implements SpringIndexer {
 					if (parent != null) {
 						for (PathMatcher matcher : matchers) {
 							if (matcher.matches(parent)) {
-								builder.add(file.toAbsolutePath().toString());
+								builder.add(file.toString());
 								return FileVisitResult.CONTINUE;
 							}
 						}
@@ -265,6 +270,7 @@ public class SpringIndexerXML implements SpringIndexer {
 		});
 
 		ImmutableList<String> list = builder.build();
+		log.info("Found {} XML files to scan in {}ms", list.size(), System.currentTimeMillis() - start);
 		return list.toArray(new String[list.size()]);
 	}
 
