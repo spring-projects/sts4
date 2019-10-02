@@ -58,6 +58,12 @@ resources:
     branch: ((branch))
     private_key: ((rsa_id))
     uri: git@github.com:pivotal/sts4-vscode-concourse-mirror.git
+- name: mirror-vscode-bosh
+  type: git
+  source:
+    branch: ((branch))
+    private_key: ((rsa_id))
+    uri: git@github.com:pivotal/sts4-vscode-bosh-mirror.git
 - name: atom-cf-manifest-yaml
   type: git
   source:
@@ -355,10 +361,14 @@ jobs:
       params:
         text: |
            Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
-  - put: s3-concourse-vsix-snapshot
-    params: 
-      file: out/vscode-concourse-*.vsix
-      acl: public-read
+  - aggregate:
+    - put: s3-concourse-vsix-snapshot
+      params: 
+        file: out/vscode-concourse-*.vsix
+        acl: public-read
+    - put: mirror-vscode-concourse
+      params:
+        repository: sts4
 - name: build-bosh-vsix-snapshot
   plan:
   - aggregate:
@@ -379,7 +389,7 @@ jobs:
       params: 
         file: out/vscode-bosh-*.vsix
         acl: public-read
-    - put: mirror-vscode-concourse
+    - put: mirror-vscode-bosh
       params:
         repository: sts4
 - name: build-manifest-yaml-vsix-snapshot
