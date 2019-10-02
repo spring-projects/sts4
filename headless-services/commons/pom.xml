@@ -131,6 +131,30 @@
 					<target>1.8</target>
 				</configuration>
 			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-jarsigner-plugin</artifactId>
+				<version>3.0.0</version>
+				<executions>
+					<execution>
+						<id>sign</id>
+						<goals>
+							<goal>sign</goal>
+						</goals>
+					</execution>
+				</executions>
+				<configuration>
+					<skip>${signing.skip}</skip>
+					<alias>${signing.alias}</alias>
+					<keystore>${signing.keystore}</keystore>
+					<storepass>${signing.store.password}</storepass>
+					<keypass>${signing.key.password}</keypass>
+<!--					<tsa>http://sha256timestamp.ws.symantec.com/sha256/timestamp</tsa> -->
+					<tsa>http://timestamp.digicert.com</tsa>
+				</configuration>
+			</plugin>
+
 		</plugins>
 	</build>
 
