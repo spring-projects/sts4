@@ -1,2 +1,3 @@
- http://sha256timestamp\.ws\.symantec\.com/sha256/timestamp
- http://org\.eclipse\.ui\.intro/.*
+http://timestamp\.digicert\.com
+http://sha256timestamp\.ws\.symantec\.com/sha256/timestamp
+http://org\.eclipse\.ui\.intro/.*
