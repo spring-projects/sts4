@@ -163,13 +163,15 @@
 		</plugins>
 	</build>
 
-	<profile>
-		<id>bamboo-signing</id>
-		<properties>
-			<signing.store.password>${env.bamboo_signing_store_password}</signing.store.password>
-			<signing.key.password>${env.bamboo_signing_store_password}</signing.key.password>
-		</properties>
-	</profile>
+	<profiles>
+		<profile>
+			<id>bamboo-signing</id>
+			<properties>
+				<signing.store.password>${env.bamboo_signing_store_password}</signing.store.password>
+				<signing.key.password>${env.bamboo_signing_store_password}</signing.key.password>
+			</properties>
+		</profile>
+	</profiles>
 
 	<dependencies>
 		<dependency>
