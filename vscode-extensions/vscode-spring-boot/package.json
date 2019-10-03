@@ -99,9 +99,9 @@
           "description": "Enable/Disable Content Assist in Spring XML Config file editor",
           "default": true
         },
-        "boot-java.support-spring-xml-config.scan-folders-globs": {
+        "boot-java.support-spring-xml-config.scan-folders": {
           "type": "string",
-          "default": "**/src/main/**",
+          "default": "src/main",
           "description": "Scan Spring XML in folders"
         },
         "boot-java.highlight-codelens.on": {

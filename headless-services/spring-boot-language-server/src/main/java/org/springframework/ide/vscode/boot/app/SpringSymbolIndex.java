@@ -179,7 +179,7 @@ public class SpringSymbolIndex implements InitializingBean {
 			server.getAsync().execute(() -> 
 				configureIndexer(SymbolIndexConfig.builder()
 						.scanXml(config.isSpringXMLSupportEnabled())
-						.xmlScanFoldersGlobs(config.xmlBeansFoldersToScan())
+						.xmlScanFolders(config.xmlBeansFoldersToScan())
 						.scanTestJavaSources(config.isScanJavaTestSourcesEnabled())
 						.build()
 				)
@@ -207,38 +207,53 @@ public class SpringSymbolIndex implements InitializingBean {
 		synchronized (this) {
 			if (config.isScanXml() && !(Arrays.asList(this.indexers).contains(springIndexerXML))) {
 				this.indexers = new SpringIndexer[] { springIndexerJava, springIndexerXML };
-				springIndexerXML.setScanFolderGlobs(config.getXmlScanFoldersGlobs());
-				List<String> globPattern = Arrays.asList(springIndexerXML.getFileWatchPatterns());
-				watchXMLDeleteRegistration = getWorkspaceService().getFileObserver().onFileDeleted(globPattern,
-						(file) -> {
-							deleteDocument(new TextDocumentIdentifier(file).getUri());
-						});
-				watchXMLCreatedRegistration = getWorkspaceService().getFileObserver().onFileCreated(globPattern,
-						(file) -> {
-							createDocument(new TextDocumentIdentifier(file).getUri());
-						});
-				watchXMLChangedRegistration = getWorkspaceService().getFileObserver().onFileChanged(globPattern,
-						(file) -> {
-							updateDocument(new TextDocumentIdentifier(file).getUri(), null, "xml changed");
-						});
+				springIndexerXML.updateScanFolders(config.getXmlScanFolders());
+				addXmlFileListeners(Arrays.asList(springIndexerXML.getFileWatchPatterns()));
 			} else if (!config.isScanXml() && Arrays.asList(this.indexers).contains(springIndexerXML)) {
 				this.indexers = new SpringIndexer[] { springIndexerJava };
-				springIndexerXML.setScanFolderGlobs(new String[0]);
-
-				getWorkspaceService().getFileObserver().unsubscribe(watchXMLChangedRegistration);
-				getWorkspaceService().getFileObserver().unsubscribe(watchXMLCreatedRegistration);
-				getWorkspaceService().getFileObserver().unsubscribe(watchXMLDeleteRegistration);
-
-				watchXMLChangedRegistration = null;
-				watchXMLCreatedRegistration = null;
-				watchXMLDeleteRegistration = null;
+				springIndexerXML.updateScanFolders(new String[0]);
+				removeXmlFileListeners();
 			} else if (config.isScanXml()) {
-				springIndexerXML.setScanFolderGlobs(config.getXmlScanFoldersGlobs());
+				if (springIndexerXML.updateScanFolders(config.getXmlScanFolders())) {
+					// should remove the old listeners before adding the new ones
+					addXmlFileListeners(Arrays.asList(springIndexerXML.getFileWatchPatterns()));
+				}
 			}
 			springIndexerJava.setScanTestJavaSources(config.isScanTestJavaSources());
 		}
 	}
-
+	
+	private void addXmlFileListeners(List<String> globPattern) {
+		removeXmlFileListeners();
+		watchXMLDeleteRegistration = getWorkspaceService().getFileObserver().onFileDeleted(globPattern,
+				(file) -> {
+					deleteDocument(new TextDocumentIdentifier(file).getUri());
+				});
+		watchXMLCreatedRegistration = getWorkspaceService().getFileObserver().onFileCreated(globPattern,
+				(file) -> {
+					createDocument(new TextDocumentIdentifier(file).getUri());
+				});
+		watchXMLChangedRegistration = getWorkspaceService().getFileObserver().onFileChanged(globPattern,
+				(file) -> {
+					updateDocument(new TextDocumentIdentifier(file).getUri(), null, "xml changed");
+				});
+	}
+	
+	private void removeXmlFileListeners() {
+		if (watchXMLChangedRegistration != null) {
+			getWorkspaceService().getFileObserver().unsubscribe(watchXMLChangedRegistration);
+			watchXMLChangedRegistration = null;
+		}
+		if (watchXMLCreatedRegistration != null) {
+			getWorkspaceService().getFileObserver().unsubscribe(watchXMLCreatedRegistration);
+			watchXMLCreatedRegistration = null;
+		}
+		if (watchXMLDeleteRegistration != null) {
+			getWorkspaceService().getFileObserver().unsubscribe(watchXMLDeleteRegistration);
+			watchXMLDeleteRegistration = null;
+		}
+	}
+	
 	public void shutdown() {
 		try {
 			synchronized(this) {

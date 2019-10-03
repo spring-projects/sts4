@@ -18,7 +18,7 @@ public interface SymbolIndexConfig {
 		
 		private boolean scanTestJavaSources = false;
 		
-		private String[] xmlScanFoldersGlobs = new String[0];
+		private String[] xmlScanFolders = new String[0];
 		
 		private Builder() {
 			
@@ -34,8 +34,8 @@ public interface SymbolIndexConfig {
 			return this;
 		}
 		
-		public Builder xmlScanFoldersGlobs(String[] xmlScanFoldersGlobs) {
-			this.xmlScanFoldersGlobs = xmlScanFoldersGlobs;
+		public Builder xmlScanFolders(String[] xmlScanFolders) {
+			this.xmlScanFolders = xmlScanFolders;
 			return this;
 		}
 		
@@ -53,8 +53,8 @@ public interface SymbolIndexConfig {
 				}
 
 				@Override
-				public String[] getXmlScanFoldersGlobs() {
-					return xmlScanFoldersGlobs;
+				public String[] getXmlScanFolders() {
+					return xmlScanFolders;
 				}
 				
 			};
@@ -65,7 +65,7 @@ public interface SymbolIndexConfig {
 
 	boolean isScanTestJavaSources();
 
-	String[] getXmlScanFoldersGlobs();
+	String[] getXmlScanFolders();
 	
 	static Builder builder() {
 		return new Builder();

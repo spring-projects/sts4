@@ -46,10 +46,10 @@ export const BootConfigSchema: PreferenceSchema = {
             description: 'Enable/Disable Content Assist in Spring XML Config file editor',
             default: true
         },
-        'boot-java.support-spring-xml-config.scan-folders-globs': {
+        'boot-java.support-spring-xml-config.scan-folders': {
             type: 'string',
             description: 'Scan Spring XML in folders',
-            default: '**/src/main/**'
+            default: 'src/main'
         },
         'boot-java.change-detection.on': {
             type: 'boolean',
@@ -80,7 +80,7 @@ export interface BootConfiguration {
     'boot-java.support-spring-xml-config.on': boolean;
     'boot-java.support-spring-xml-config.hyperlinks': boolean;
     'boot-java.support-spring-xml-config.content-assist': boolean;
-    'boot-java.support-spring-xml-config.scan-folders-globs': string;
+    'boot-java.support-spring-xml-config.scan-folders': string;
     'boot-java.change-detection.on': boolean;
     'boot-java.highlight-codelens.on': boolean;
     'spring-boot.ls.javahome': string;

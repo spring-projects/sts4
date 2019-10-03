@@ -58,7 +58,7 @@ public class SpringIndexerXMLProjectTest {
 		harness.intialize(null);
 		indexer.configureIndexer(SymbolIndexConfig.builder()
 				.scanXml(true)
-				.xmlScanFoldersGlobs(new String[] { "**/src/main/**", "**/config" })
+				.xmlScanFolders(new String[] { "src/main", "config" })
 				.build());
 
 		project = projects.mavenProject("test-annotation-indexing-xml-project");
@@ -129,30 +129,51 @@ public class SpringIndexerXMLProjectTest {
 		
 		indexer.configureIndexer(SymbolIndexConfig.builder()
 				.scanXml(true)
-				.xmlScanFoldersGlobs(new String[] {  "**/src/main/**" })
+				.xmlScanFolders(new String[] {  "src/main" })
 				.build());
 		allSymbols = indexer.getAllSymbols("");
 		assertEquals(1, allSymbols.size());
 		
 		indexer.configureIndexer(SymbolIndexConfig.builder()
 				.scanXml(true)
-				.xmlScanFoldersGlobs(new String[] { "**/config", "**/src/main/**" })
+				.xmlScanFolders(new String[] { "config", "src/main" })
 				.build());
 		allSymbols = indexer.getAllSymbols("");
 		assertEquals(5, allSymbols.size());
 
 		indexer.configureIndexer(SymbolIndexConfig.builder()
 				.scanXml(true)
-				.xmlScanFoldersGlobs(new String[] { "**/config" })
+				.xmlScanFolders(new String[] { "config" })
 				.build());
 		allSymbols = indexer.getAllSymbols("");
 		assertEquals(4, allSymbols.size());
 		
 		indexer.configureIndexer(SymbolIndexConfig.builder()
 				.scanXml(false)
-				.xmlScanFoldersGlobs(new String[] { "**/config", "**/src/main/**" })
+				.xmlScanFolders(new String[] { "config", "src/main" })
 				.build());
 		allSymbols = indexer.getAllSymbols("");
+		assertEquals(0, allSymbols.size());
+		
+		indexer.configureIndexer(SymbolIndexConfig.builder()
+				.scanXml(true)
+				.xmlScanFolders(new String[] { "config", "src/main" })
+				.build());
+		allSymbols = indexer.getAllSymbols("");
+		assertEquals(5, allSymbols.size());
+		
+		indexer.configureIndexer(SymbolIndexConfig.builder()
+				.scanXml(true)
+				.xmlScanFolders(new String[0])
+				.build());
+		allSymbols = indexer.getAllSymbols("");
+		assertEquals(0, allSymbols.size());
+
+		indexer.configureIndexer(SymbolIndexConfig.builder()
+				.scanXml(true)
+				.xmlScanFolders(new String[0])
+				.build());
+		allSymbols = indexer.getAllSymbols("    ");
 		assertEquals(0, allSymbols.size());
 	}
 

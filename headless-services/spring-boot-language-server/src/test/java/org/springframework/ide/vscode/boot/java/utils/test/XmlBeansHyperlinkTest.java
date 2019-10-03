@@ -64,7 +64,7 @@ public class XmlBeansHyperlinkTest {
 		Map<String, Object> supportXML = new HashMap<>();
 		supportXML.put("on", true);
 		supportXML.put("hyperlinks", true);
-		supportXML.put("scan-folders-globs", "**/src/main/**");
+		supportXML.put("scan-folders", "/src/main/");
 		Map<String, Object> bootJavaObj = new HashMap<>();
 		bootJavaObj.put("support-spring-xml-config", supportXML);
 		Map<String, Object> settings = new HashMap<>();
@@ -157,11 +157,77 @@ public class XmlBeansHyperlinkTest {
 	}
 	
 	@Test
+	public void testBeanRefNoHyperlink_FolderNotScanned() throws Exception {
+		Map<String, Object> supportXML = new HashMap<>();
+		supportXML.put("on", true);
+		supportXML.put("hyperlinks", true);
+		supportXML.put("scan-folders", "  ");
+		Map<String, Object> bootJavaObj = new HashMap<>();
+		bootJavaObj.put("support-spring-xml-config", supportXML);
+		Map<String, Object> settings = new HashMap<>();
+		settings.put("boot-java", bootJavaObj);
+		
+		harness.getServer().getWorkspaceService().didChangeConfiguration(new DidChangeConfigurationParams(new Gson().toJsonTree(settings)));
+		
+		Path xmlFilePath = Paths.get(project.getLocationUri()).resolve("beans.xml");
+		Editor editor = harness.newEditor(LanguageId.XML,
+				"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+				"<beans xmlns=\"http://www.springframework.org/schema/beans\"\n" + 
+				"xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
+				"xsi:schemaLocation=\"http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd\">\n" +
+				
+				"<bean id=\"someBean\" class=\"u.t.r.TestBean\"\n" +
+				"<property name=\"simple\" ref=\"simpleObj\"></property>\n" +
+				"</bean>\n" +
+				"</beans>\n",
+				UriUtil.toUri(xmlFilePath.toFile()).toString()
+		);
+		Path rootContextFilePath = Paths.get(project.getLocationUri()).resolve("src/main/webapp/WEB-INF/spring/root-context.xml");
+		Location expectedLocation = new Location();
+		expectedLocation.setUri(UriUtil.toUri(rootContextFilePath.toFile()).toString());
+		expectedLocation.setRange(new Range(new Position(6,7), new Position(6, 21)));
+		editor.assertNoLinkTargets("simpleObj");
+	}
+	
+	@Test
+	public void testBeanRefHyperlink_SpecifyScanFolderDifferently() throws Exception {
+		Map<String, Object> supportXML = new HashMap<>();
+		supportXML.put("on", true);
+		supportXML.put("hyperlinks", true);
+		supportXML.put("scan-folders", "  src/main/  ");
+		Map<String, Object> bootJavaObj = new HashMap<>();
+		bootJavaObj.put("support-spring-xml-config", supportXML);
+		Map<String, Object> settings = new HashMap<>();
+		settings.put("boot-java", bootJavaObj);
+		
+		harness.getServer().getWorkspaceService().didChangeConfiguration(new DidChangeConfigurationParams(new Gson().toJsonTree(settings)));
+		
+		Path xmlFilePath = Paths.get(project.getLocationUri()).resolve("beans.xml");
+		Editor editor = harness.newEditor(LanguageId.XML,
+				"<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +
+				"<beans xmlns=\"http://www.springframework.org/schema/beans\"\n" + 
+				"xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n" +
+				"xsi:schemaLocation=\"http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd\">\n" +
+				
+				"<bean id=\"someBean\" class=\"u.t.r.TestBean\"\n" +
+				"<property name=\"simple\" ref=\"simpleObj\"></property>\n" +
+				"</bean>\n" +
+				"</beans>\n",
+				UriUtil.toUri(xmlFilePath.toFile()).toString()
+		);
+		Path rootContextFilePath = Paths.get(project.getLocationUri()).resolve("src/main/webapp/WEB-INF/spring/root-context.xml");
+		Location expectedLocation = new Location();
+		expectedLocation.setUri(UriUtil.toUri(rootContextFilePath.toFile()).toString());
+		expectedLocation.setRange(new Range(new Position(6,7), new Position(6, 21)));
+		editor.assertLinkTargets("simpleObj", Collections.singleton(expectedLocation));
+	}
+	
+	@Test
 	public void testNoHyperlinkWhenXmlSupportOff() throws Exception {
 		Map<String, Object> supportXML = new HashMap<>();
 		supportXML.put("on", false);
 		supportXML.put("hyperlinks", true);
-		supportXML.put("scan-folders-globs", "**/src/main/**");
+		supportXML.put("scan-folders", "src/main");
 		Map<String, Object> bootJavaObj = new HashMap<>();
 		bootJavaObj.put("support-spring-xml-config", supportXML);
 		Map<String, Object> settings = new HashMap<>();
@@ -188,7 +254,7 @@ public class XmlBeansHyperlinkTest {
 		Map<String, Object> supportXML = new HashMap<>();
 		supportXML.put("on", true);
 		supportXML.put("hyperlinks", false);
-		supportXML.put("scan-folders-globs", "**/src/main/**");
+		supportXML.put("scan-folders", "src/main");
 		Map<String, Object> bootJavaObj = new HashMap<>();
 		bootJavaObj.put("support-spring-xml-config", supportXML);
 		Map<String, Object> settings = new HashMap<>();

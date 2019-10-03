@@ -13,14 +13,9 @@ package org.springframework.ide.vscode.boot.java.utils;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
-import java.nio.file.FileSystems;
-import java.nio.file.FileVisitResult;
-import java.nio.file.FileVisitor;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -44,7 +39,6 @@ import org.springframework.ide.vscode.commons.util.UriUtil;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.common.base.Supplier;
-import com.google.common.collect.ImmutableList;
 
 /**
  * @author Martin Lippert
@@ -58,7 +52,7 @@ public class SpringIndexerXML implements SpringIndexer {
 	private final SymbolCache cache;
 	private final JavaProjectFinder projectFinder;
 	
-	private String[] scanFolderGlobs = new String[0];
+	private String[] scanFolders = new String[0];
 
 	public SpringIndexerXML(SymbolHandler handler, Map<String, SpringIndexerXMLNamespaceHandler> namespaceHandler,
 			SymbolCache cache, JavaProjectFinder projectFinder) {
@@ -68,25 +62,32 @@ public class SpringIndexerXML implements SpringIndexer {
 		this.projectFinder = projectFinder;
 	}
 
-	public void setScanFolderGlobs(String[] scanFolderGlobs) {
-		if (!Arrays.equals(this.scanFolderGlobs, scanFolderGlobs)) {
+	public boolean updateScanFolders(String[] scanFoldes) {
+		if (!Arrays.equals(this.scanFolders, scanFoldes)) {
 			clearIndex();
-			this.scanFolderGlobs = scanFolderGlobs;
+			this.scanFolders = scanFoldes;
 			populateIndex();
+			return true;
 		}
+		return false;
 	}
 
 	@Override
 	public String[] getFileWatchPatterns() {
-		String[] patterns = new String[scanFolderGlobs.length];
-		for (int i = 0; i < scanFolderGlobs.length; i++) {
+		String[] patterns = new String[scanFolders.length * 2];
+		for (int i = 0; i < scanFolders.length; i+=2) {
 			StringBuilder sb = new StringBuilder();
-			sb.append(scanFolderGlobs[i]);
-			if (scanFolderGlobs[i].charAt(scanFolderGlobs[i].length() - 1) != '/') {
-				sb.append('/');
-			}
-			sb.append("*.xml");
-			patterns[i] = sb.toString();
+			sb.append("**/");
+			sb.append(scanFolders[i]);
+			sb.append('/');
+			StringBuilder pattern1 = new StringBuilder(sb);
+			pattern1.append("*.xml");
+			patterns[i] = pattern1.toString();
+			
+			StringBuilder pattern2 = new StringBuilder(sb);
+			pattern2.append("**/");
+			pattern2.append("*.xml");
+			patterns[i + 1] = pattern2.toString();
 		}
 		return patterns;
 	}
@@ -217,61 +218,25 @@ public class SpringIndexerXML implements SpringIndexer {
 
 	private String[] getFiles(IJavaProject project) throws Exception {
 		long start = System.currentTimeMillis();
-		String[] globs = scanFolderGlobs;
-		if (globs.length == 0) {
-			return new String[0];
-		}
-		List<PathMatcher> matchers = new ArrayList<>(globs.length);
-		for (String glob : globs) {
-			matchers.add(FileSystems.getDefault().getPathMatcher("glob:" + glob));
-		}
+		Path projectPath = Paths.get(project.getLocationUri());
+		String[] xmlFiles = Arrays.stream(scanFolders)
+			.map(folder -> projectPath.resolve(folder))
+			.filter(Files::isDirectory)
+			.flatMap(folder -> {
+				try {
+					return Files.walk(folder);
+				} catch (IOException e) {
+					log.error("", e);
+					return Stream.empty();
+				}
+			})
+			.filter(Files::isRegularFile)
+			.filter(file -> file.getFileName().toString().endsWith(".xml"))
+			.map(file -> file.toString())
+			.toArray(String[]::new);
 		
-		List<Path> outputFolders = IClasspathUtil.getOutputFolders(project.getClasspath()).map(f -> Paths.get(f.toURI())).collect(Collectors.toList());
-		ImmutableList.Builder<String> builder = ImmutableList.builder();
-		Files.walkFileTree(Paths.get(project.getLocationUri()), new FileVisitor<Path>() {
-
-			@Override
-			public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
-				if (dir.getFileName().toString().startsWith(".")) {
-					return FileVisitResult.SKIP_SUBTREE;
-				}
-				if (outputFolders.contains(dir)) {
-					return FileVisitResult.SKIP_SUBTREE;
-				}
-				return FileVisitResult.CONTINUE;
-			}
-
-			@Override
-			public FileVisitResult visitFile(Path file, BasicFileAttributes attrs) throws IOException {
-				String fileName = file.getFileName().toString();
-				if (fileName.endsWith(".xml")) {
-					Path parent = file.getParent();
-					if (parent != null) {
-						for (PathMatcher matcher : matchers) {
-							if (matcher.matches(parent)) {
-								builder.add(file.toString());
-								return FileVisitResult.CONTINUE;
-							}
-						}
-					}
-				}
-				return FileVisitResult.CONTINUE;
-			}
-
-			@Override
-			public FileVisitResult visitFileFailed(Path file, IOException exc) throws IOException {
-				return FileVisitResult.CONTINUE;
-			}
-
-			@Override
-			public FileVisitResult postVisitDirectory(Path dir, IOException exc) throws IOException {
-				return FileVisitResult.CONTINUE;
-			}
-		});
-
-		ImmutableList<String> list = builder.build();
-		log.info("Found {} XML files to scan in {}ms", list.size(), System.currentTimeMillis() - start);
-		return list.toArray(new String[list.size()]);
+		log.info("Found {} XML files to scan in {}ms", xmlFiles.length, System.currentTimeMillis() - start);
+		return xmlFiles;
 	}
 
 	private SymbolCacheKey getCacheKey(IJavaProject project) {

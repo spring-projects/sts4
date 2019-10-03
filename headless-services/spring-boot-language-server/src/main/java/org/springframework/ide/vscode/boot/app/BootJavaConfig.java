@@ -10,13 +10,11 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.app;
 
-import java.nio.file.FileSystems;
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.ide.vscode.commons.languageserver.util.ListenerList;
 import org.springframework.ide.vscode.commons.languageserver.util.Settings;
@@ -32,8 +30,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class BootJavaConfig implements InitializingBean {
 	
-	private static final Logger log = LoggerFactory.getLogger(BootJavaConfig.class);
-
 	public static final boolean LIVE_INFORMATION_AUTOMATIC_TRACKING_ENABLED_DEFAULT = true;
 	public static final int LIVE_INFORMATION_AUTOMATIC_TRACKING_DELAY_DEFAULT = 5000;
 
@@ -69,19 +65,30 @@ public class BootJavaConfig implements InitializingBean {
 	}
 	
 	public String[] xmlBeansFoldersToScan() {
-		String folders = settings.getString("boot-java", "support-spring-xml-config", "scan-folders-globs");
-		String[] patterns = folders == null ? new String[0] : folders.split("\\s*,\\s*");
-		// Validate patterns
-		List<String> validatedPatterns = new ArrayList<>(patterns.length);
-		for (String pattern : patterns) {
-			try {
-				FileSystems.getDefault().getPathMatcher("glob:" + pattern);
-				validatedPatterns.add(pattern);
-			} catch (Throwable t) {
-				log.error("Failed to parse glob pattern: '{}'", pattern);
+		String foldersStr = settings.getString("boot-java", "support-spring-xml-config", "scan-folders");
+		if (foldersStr != null) {
+			foldersStr = foldersStr.trim();
+		}
+		String[] folders = foldersStr == null || foldersStr.isEmpty()? new String[0] : foldersStr.split("\\s*,\\s*");
+		List<String> cleanedFolders = new ArrayList<>(folders.length);
+		for (String folder : folders) {
+			int startIndex = 0;
+			int endIndex = folder.length();
+			if (folder.startsWith(File.separator)) {
+				startIndex += File.separator.length();
+			}
+			if (folder.endsWith(File.separator)) {
+				endIndex -= File.separator.length();
+			}
+			if (startIndex > 0 || endIndex < folder.length()) {
+				if (startIndex < endIndex) {
+					cleanedFolders.add(folder.substring(startIndex, endIndex));
+				}
+			} else {
+				cleanedFolders.add(folder);
 			}
 		}
-		return validatedPatterns.toArray(new String[validatedPatterns.size()]);
+		return cleanedFolders.toArray(new String[cleanedFolders.size()]);
 	}
 
 	public boolean isChangeDetectionEnabled() {

@@ -228,7 +228,7 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 		liveInformation.put("automatic-tracking", liveInformationAutomaticTracking);
 		
 		supportXML.put("on", preferenceStore.getBoolean(Constants.PREF_SUPPORT_SPRING_XML_CONFIGS));
-		supportXML.put("scan-folders-globs", preferenceStore.getString(Constants.PREF_XML_CONFIGS_SCAN_FOLDERS));
+		supportXML.put("scan-folders", preferenceStore.getString(Constants.PREF_XML_CONFIGS_SCAN_FOLDERS));
 		supportXML.put("hyperlinks", preferenceStore.getString(Constants.PREF_XML_CONFIGS_HYPERLINKS));
 		supportXML.put("content-assist", preferenceStore.getString(Constants.PREF_XML_CONFIGS_CONTENT_ASSIST));
 		bootChangeDetection.put("on", preferenceStore.getBoolean(Constants.PREF_CHANGE_DETECTION));
