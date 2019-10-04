@@ -20,6 +20,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.eclipse.lsp4j.DidChangeConfigurationParams;
 import org.eclipse.lsp4j.Location;
+import org.eclipse.lsp4j.LocationLink;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.junit.Before;
@@ -95,7 +96,7 @@ public class XmlBeansHyperlinkTest {
 				"</beans>\n",
 				UriUtil.toUri(xmlFilePath.toFile()).toString()
 		);
-		definitionLinkAsserts.assertLinkTargets(editor, "u.t.r.SimpleObj", project, "u.t.r.SimpleObj");
+		definitionLinkAsserts.assertLinkTargets(editor, "u.t.r.SimpleObj", project, editor.rangeOf("u.t.r.SimpleObj", "u.t.r.SimpleObj"), "u.t.r.SimpleObj");
 	}
 
 	@Test
@@ -113,7 +114,9 @@ public class XmlBeansHyperlinkTest {
 				"</beans>\n",
 				UriUtil.toUri(xmlFilePath.toFile()).toString()
 		);
-		definitionLinkAsserts.assertLinkTargets(editor, "age", project, DefinitionLinkAsserts.method("u.t.r.TestBean", "setAge", "int"));
+		definitionLinkAsserts.assertLinkTargets(editor, "age", project,
+				editor.rangeOf("<property name=\"age\" value=\"10\" />", "age"),
+				DefinitionLinkAsserts.method("u.t.r.TestBean", "setAge", "int"));
 	}
 	
 	@Test
@@ -131,7 +134,9 @@ public class XmlBeansHyperlinkTest {
 				"</beans>\n",
 				UriUtil.toUri(xmlFilePath.toFile()).toString()
 		);
-		definitionLinkAsserts.assertLinkTargets(editor, "message", project, DefinitionLinkAsserts.method("u.t.r.SuperTestBean", "setMessage", "java.lang.String"));
+		definitionLinkAsserts.assertLinkTargets(editor, "message", project,
+				editor.rangeOf("<property name=\"message\" value=\"Hello\" />", "message"),
+				DefinitionLinkAsserts.method("u.t.r.SuperTestBean", "setMessage", "java.lang.String"));
 	}
 	
 	@Test
@@ -150,9 +155,13 @@ public class XmlBeansHyperlinkTest {
 				UriUtil.toUri(xmlFilePath.toFile()).toString()
 		);
 		Path rootContextFilePath = Paths.get(project.getLocationUri()).resolve("src/main/webapp/WEB-INF/spring/root-context.xml");
-		Location expectedLocation = new Location();
-		expectedLocation.setUri(UriUtil.toUri(rootContextFilePath.toFile()).toString());
-		expectedLocation.setRange(new Range(new Position(6,7), new Position(6, 21)));
+		Range targetRange = new Range(new Position(6,7), new Position(6, 21));
+		LocationLink expectedLocation = new LocationLink(
+				UriUtil.toUri(rootContextFilePath.toFile()).toString(),
+				targetRange,
+				targetRange,
+				editor.rangeOf("name=\"simple\" ref=\"simpleObj\"", "simpleObj")
+		);
 		editor.assertLinkTargets("simpleObj", Collections.singleton(expectedLocation));
 	}
 	
@@ -216,9 +225,13 @@ public class XmlBeansHyperlinkTest {
 				UriUtil.toUri(xmlFilePath.toFile()).toString()
 		);
 		Path rootContextFilePath = Paths.get(project.getLocationUri()).resolve("src/main/webapp/WEB-INF/spring/root-context.xml");
-		Location expectedLocation = new Location();
-		expectedLocation.setUri(UriUtil.toUri(rootContextFilePath.toFile()).toString());
-		expectedLocation.setRange(new Range(new Position(6,7), new Position(6, 21)));
+		Range targetRange = new Range(new Position(6,7), new Position(6, 21));
+		LocationLink expectedLocation = new LocationLink(
+				UriUtil.toUri(rootContextFilePath.toFile()).toString(),
+				targetRange,
+				targetRange,
+				editor.rangeOf("name=\"simple\" ref=\"simpleObj\"", "simpleObj")
+		);
 		editor.assertLinkTargets("simpleObj", Collections.singleton(expectedLocation));
 	}
 	

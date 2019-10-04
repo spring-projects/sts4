@@ -35,7 +35,6 @@ import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -75,6 +74,7 @@ import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.InitializeParams;
 import org.eclipse.lsp4j.InitializeResult;
 import org.eclipse.lsp4j.Location;
+import org.eclipse.lsp4j.LocationLink;
 import org.eclipse.lsp4j.MarkupContent;
 import org.eclipse.lsp4j.MessageActionItem;
 import org.eclipse.lsp4j.MessageParams;
@@ -107,7 +107,6 @@ import org.springframework.ide.vscode.commons.languageserver.completion.Document
 import org.springframework.ide.vscode.commons.languageserver.util.LanguageServerTestListener;
 import org.springframework.ide.vscode.commons.languageserver.util.Settings;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
-import org.springframework.ide.vscode.commons.languageserver.util.WorkspaceSymbolHandler;
 import org.springframework.ide.vscode.commons.protocol.CursorMovement;
 import org.springframework.ide.vscode.commons.protocol.HighlightParams;
 import org.springframework.ide.vscode.commons.protocol.ProgressParams;
@@ -727,9 +726,9 @@ public class LanguageServerHarness {
 		assertEquals(expected, completion.getLabel());
 	}
 
-	public List<? extends Location> getDefinitions(TextDocumentPositionParams params) throws Exception {
+	public List<? extends LocationLink> getDefinitions(TextDocumentPositionParams params) throws Exception {
 		waitForReconcile(); //goto definitions relies on reconciler infos! Must wait or race condition breaking tests occasionally.
-		return getServer().getTextDocumentService().definition(params).get().getLeft();
+		return getServer().getTextDocumentService().definition(params).get().getRight();
 	}
 
 	public static void assertDocumentation(String expected, CompletionItem completion) {

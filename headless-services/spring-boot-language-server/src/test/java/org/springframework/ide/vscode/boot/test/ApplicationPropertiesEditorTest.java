@@ -395,16 +395,17 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 				"flyway.init-sqls=a,b,c\n"
 		);
 
-		definitionLinkAsserts.assertLinkTargets(editor, "server", p,
+		definitionLinkAsserts.assertLinkTargets(editor, "server", p, editor.rangeOf("server.port", "server.port"),
 				method("org.springframework.boot.autoconfigure.web.ServerProperties", "setPort", "java.lang.Integer"));
 
-		definitionLinkAsserts.assertLinkTargets(editor, "data", p,
+		definitionLinkAsserts.assertLinkTargets(editor, "data", p, editor.rangeOf("spring.datasource.login-timeout", "spring.datasource.login-timeout"),
 				method("org.springframework.boot.autoconfigure.jdbc.DataSourceConfigMetadata", "hikariDataSource"),
 				method("org.springframework.boot.autoconfigure.jdbc.DataSourceConfigMetadata", "tomcatDataSource"),
 				method("org.springframework.boot.autoconfigure.jdbc.DataSourceConfigMetadata", "dbcpDataSource")
 		);
 
-		definitionLinkAsserts.assertLinkTargets(editor, "flyway", p, method("org.springframework.boot.autoconfigure.flyway.FlywayProperties", "setInitSqls", "java.util.List"));
+		definitionLinkAsserts.assertLinkTargets(editor, "flyway", p, editor.rangeOf("flyway.init-sqls", "flyway.init-sqls"),
+				method("org.springframework.boot.autoconfigure.flyway.FlywayProperties", "setInitSqls", "java.util.List"));
 		System.out.println("<<< testHyperlinkTargets");
 	}
 
@@ -420,7 +421,8 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 				"logging.level.com.acme=INFO\n"
 		);
 
-		definitionLinkAsserts.assertLinkTargets(editor, "level", p, "org.springframework.boot.logging.LoggingApplicationListener");
+		definitionLinkAsserts.assertLinkTargets(editor, "level", p, editor.rangeOf("logging.level", "logging.level"),
+				"org.springframework.boot.logging.LoggingApplicationListener");
 		System.out.println("<<< testHyperlinkTargetsLoggingLevel");
 	}
 
@@ -1642,7 +1644,9 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 				"spring.data.mongodb.field-naming-strategy=org.springframework.data.mapping.model.PropertyNameFieldNamingStrategy\n" +
 				"#more stuff"
 		);
-		definitionLinkAsserts.assertLinkTargets(editor, "org.springframework.data.mapping.model.PropertyNameFieldNamingStrategy", project, "org.springframework.data.mapping.model.PropertyNameFieldNamingStrategy");
+		definitionLinkAsserts.assertLinkTargets(editor, "org.springframework.data.mapping.model.PropertyNameFieldNamingStrategy", project,
+				editor.rangeOf("org.springframework.data.mapping.model.PropertyNameFieldNamingStrategy", "org.springframework.data.mapping.model.PropertyNameFieldNamingStrategy"),
+				"org.springframework.data.mapping.model.PropertyNameFieldNamingStrategy");
 
 		//Linking should also work for types that aren't valid based on the constraints
 
@@ -1653,7 +1657,9 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 				"spring.data.mongodb.field-naming-strategy=java.lang.String\n" +
 				"#more stuff"
 		);
-		definitionLinkAsserts.assertLinkTargets(editor, "java.lang.String", project, "java.lang.String");
+		definitionLinkAsserts.assertLinkTargets(editor, "java.lang.String", project,
+				editor.rangeOf("java.lang.String", "java.lang.String"),
+				"java.lang.String");
 
 		// Instead of java.lang.String
 		editor = newEditor(
@@ -1661,7 +1667,9 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 				"spring.data.mongodb.field-naming-strategy=org.springframework.core.io.Resource\n" +
 				"#more stuff"
 		);
-		definitionLinkAsserts.assertLinkTargets(editor, "org.springframework.core.io.Resource", project, "org.springframework.core.io.Resource");
+		definitionLinkAsserts.assertLinkTargets(editor, "org.springframework.core.io.Resource", project,
+				editor.rangeOf("org.springframework.core.io.Resource", "org.springframework.core.io.Resource"),
+				"org.springframework.core.io.Resource");
 
 	}
 
@@ -1834,12 +1842,12 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		editor = newEditor(
 				"my.background: RED"
 		);
-		definitionLinkAsserts.assertLinkTargets(editor, "RED", project, field("demo.Color", "RED"));
+		definitionLinkAsserts.assertLinkTargets(editor, "RED", project, editor.rangeOf("RED",  "RED"), field("demo.Color", "RED"));
 
 		editor = newEditor(
 				"my.background=red"
 		);
-		definitionLinkAsserts.assertLinkTargets(editor, "red", project, field("demo.Color", "RED"));
+		definitionLinkAsserts.assertLinkTargets(editor, "red", project, editor.rangeOf("red",  "red"), field("demo.Color", "RED"));
 	}
 
 	@Test public void testEnumInPojoField() throws Exception {
@@ -1851,8 +1859,8 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		editor = newEditor(
 				"my.screen.background=green"
 		);
-		definitionLinkAsserts.assertLinkTargets(editor, "background", project, method("com.example.demo.MyProperties$Screen", "getScreen"));
-		definitionLinkAsserts.assertLinkTargets(editor, "green", project, field("com.example.demo.Color", "GREEN"));
+		definitionLinkAsserts.assertLinkTargets(editor, "background", project, editor.rangeOf("my.screen.background", "my.screen.background"), method("com.example.demo.MyProperties$Screen", "getScreen"));
+		definitionLinkAsserts.assertLinkTargets(editor, "green", project, editor.rangeOf("green", "green"), field("com.example.demo.Color", "GREEN"));
 	}
 
 	@Test public void testNoHoverForUnrecognizedProperty() throws Exception {

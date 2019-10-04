@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.boot.java.links;
 import java.net.URI;
 
 import org.eclipse.lsp4j.Location;
+import org.eclipse.lsp4j.Range;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.IMember;
 
@@ -26,6 +27,7 @@ public class EclipseJavaElementLocationProvider implements JavaElementLocationPr
 		} else {
 			Location location = new Location();
 			location.setUri(uri.toString());
+			location.setRange(new Range());
 			return location;
 		}
 	}

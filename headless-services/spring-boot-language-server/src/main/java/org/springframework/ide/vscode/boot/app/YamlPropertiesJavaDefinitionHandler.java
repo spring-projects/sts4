@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Pivotal, Inc.
+ * Copyright (c) 2018, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -12,8 +12,10 @@ package org.springframework.ide.vscode.boot.app;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.stream.Collectors;
 
-import org.eclipse.lsp4j.Location;
+import org.eclipse.lsp4j.LocationLink;
+import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -65,7 +67,7 @@ public class YamlPropertiesJavaDefinitionHandler implements DefinitionHandler, L
 	}
 
 	@Override
-	public List<Location> handle(TextDocumentPositionParams position) {
+	public List<LocationLink> handle(TextDocumentPositionParams position) {
 		try {
 			TextDocument doc = documents.get(position);
 			int offset = doc.toOffset(position.getPosition());
@@ -90,13 +92,21 @@ public class YamlPropertiesJavaDefinitionHandler implements DefinitionHandler, L
 						assistContext = assistPath.traverse(assistContext);
 
 						if (assistContext != null) {
+							Node node = astPath.get(astPath.size() - 1).get();
+							int start = node.getStartMark().getIndex();
+							int end = node.getEndMark().getIndex();
+							Range originalRange = doc.toRange(start, end - start);
 							if (path.pointsAtValue()) {
 								DocumentRegion nodeRegion = getNodeRegion(ast, offset);
 								if (nodeRegion != null) {
-									return assistContext.getDefinitionsForPropertyValue(nodeRegion);
+									return assistContext.getDefinitionsForPropertyValue(nodeRegion).stream()
+											.map(l -> new LocationLink(l.getUri(), l.getRange(), l.getRange(), originalRange))
+											.collect(Collectors.toList());
 								}
 							} else {
-								return assistContext.getDefinitionsForPropertyKey();
+								return assistContext.getDefinitionsForPropertyKey().stream()
+										.map(l -> new LocationLink(l.getUri(), l.getRange(), l.getRange(), originalRange))
+										.collect(Collectors.toList());
 							}
 						}
 					}

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016 Pivotal, Inc.
+ * Copyright (c) 2016, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -46,7 +46,6 @@ import org.springframework.ide.vscode.languageserver.testharness.CodeAction;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
 import org.springframework.ide.vscode.languageserver.testharness.SynchronizationPoint;
-import org.springframework.test.annotation.Repeat;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.common.collect.ImmutableList;
@@ -3161,7 +3160,8 @@ public class ConcourseEditorTest {
 		);
 
 		editor.assertGotoDefinition(editor.positionOf("get: my-git", "my-git"),
-				editor.rangeOf("- name: my-git", "my-git")
+				editor.rangeOf("- name: my-git", "my-git"),
+				editor.rangeOf("get: my-git", "my-git")
 		);
 	}
 
@@ -3184,7 +3184,8 @@ public class ConcourseEditorTest {
 				"    - prepare-stuff\n"
 		);
 		editor.assertGotoDefinition(editor.positionOf("- prepare-stuff", "prepare-stuff"),
-				editor.rangeOf("- name: prepare-stuff", "prepare-stuff")
+				editor.rangeOf("- name: prepare-stuff", "prepare-stuff"),
+				editor.rangeOf("- prepare-stuff", "prepare-stuff")
 		);
 	}
 
@@ -3199,7 +3200,8 @@ public class ConcourseEditorTest {
 				"  type: slack-notification\n"
 		);
 		editor.assertGotoDefinition(editor.positionOf("type: slack-notification", "slack-notification"),
-				editor.rangeOf("- name: slack-notification", "slack-notification")
+				editor.rangeOf("- name: slack-notification", "slack-notification"),
+				editor.rangeOf("type: slack-notification", "slack-notification")
 		);
 	}
 

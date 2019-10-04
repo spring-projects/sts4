@@ -48,6 +48,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.eclipse.lsp4j.Location;
+import org.eclipse.lsp4j.LocationLink;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.eclipse.lsp4xml.dom.DOMAttr;
 import org.eclipse.lsp4xml.dom.DOMDocument;
@@ -139,7 +140,7 @@ public class XmlBeansConfigDefinitionHandler implements DefinitionHandler, Langu
 	}
 
 	@Override
-	public List<Location> handle(TextDocumentPositionParams position) {
+	public List<LocationLink> handle(TextDocumentPositionParams position) {
 		try {
 			if (config.isSpringXMLSupportEnabled() && config.areXmlHyperlinksEnabled()) {
 				TextDocument doc = documents.get(position);
@@ -175,11 +176,15 @@ public class XmlBeansConfigDefinitionHandler implements DefinitionHandler, Langu
 	
 										List<? extends XMLHyperlinkProvider> providers = hyperlinkProviders.get(key);
 										if (providers != null) {
-											ImmutableList.Builder<Location> listBuilder = ImmutableList.builder();
+											ImmutableList.Builder<LocationLink> listBuilder = ImmutableList.builder();
 											for (XMLHyperlinkProvider provider : providers) {
 												Location location = provider.getDefinition(doc, namespace, node, attributeAt);
 												if (location != null) {
-													listBuilder.add(location);
+													int start = attributeAt.getNodeAttrValue().getStart() + 1;
+													int end = attributeAt.getNodeAttrValue().getEnd() - 1;
+													listBuilder.add(new LocationLink(location.getUri(),
+															location.getRange(), location.getRange(),
+															doc.toRange(start, Math.max(0, end - start))));
 												}
 											}
 											return listBuilder.build();

@@ -26,7 +26,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.context.TestConfiguration;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
@@ -631,8 +630,8 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 				"    getter-only: getme\n"
 		);
 
-		definitionLinkAsserts.assertLinkTargets(editor, "data", project, method("demo.FooProperties", "setData", "demo.ColorData"));
-		definitionLinkAsserts.assertLinkTargets(editor, "wavelen", project, method("demo.ColorData", "setWavelen", "double"));
+		definitionLinkAsserts.assertLinkTargets(editor, "data", project, editor.rangeOf("data:", "data"), method("demo.FooProperties", "setData", "demo.ColorData"));
+		definitionLinkAsserts.assertLinkTargets(editor, "wavelen", project, editor.rangeOf("wavelen:", "wavelen"), method("demo.ColorData", "setWavelen", "double"));
 	}
 	
 	@Test
@@ -653,11 +652,11 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		//io.spring.initializr.metadata.DefaultMetadataElement.setDefault(boolean)
 		//io.spring.initializr.metadata.MetadataElement.setId(String)
 		//io.spring.initializr.metadata.MetadataElement.setName(String)
-		definitionLinkAsserts.assertLinkTargets(editor, "name", project, method("io.spring.initializr.metadata.MetadataElement", "setName", "java.lang.String"));
-		definitionLinkAsserts.assertLinkTargets(editor, "id", project, method("io.spring.initializr.metadata.MetadataElement", "setId", "java.lang.String"));
-		definitionLinkAsserts.assertLinkTargets(editor, "default", project, method("io.spring.initializr.metadata.DefaultMetadataElement", "setDefault", "boolean"));
+		definitionLinkAsserts.assertLinkTargets(editor, "name", project, editor.rangeOf("name:", "name"), method("io.spring.initializr.metadata.MetadataElement", "setName", "java.lang.String"));
+		definitionLinkAsserts.assertLinkTargets(editor, "id", project, editor.rangeOf("id:", "id"), method("io.spring.initializr.metadata.MetadataElement", "setId", "java.lang.String"));
+		definitionLinkAsserts.assertLinkTargets(editor, "default", project, editor.rangeOf("default:", "default"), method("io.spring.initializr.metadata.DefaultMetadataElement", "setDefault", "boolean"));
 		
-		definitionLinkAsserts.assertLinkTargets(editor, "bogus", project /*NONE*/);
+		definitionLinkAsserts.assertLinkTargets(editor, "bogus", project, editor.rangeOf("bogus", "bogus") /*NONE*/);
 	}
 
 	@Test public void testHyperlinkTargets() throws Exception {
@@ -675,14 +674,17 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		);
 
 		definitionLinkAsserts.assertLinkTargets(editor, "port", p,
+				editor.rangeOf("port", "port"),
 				method("org.springframework.boot.autoconfigure.web.ServerProperties", "setPort", "java.lang.Integer")
 		);
 		definitionLinkAsserts.assertLinkTargets(editor, "login-", p,
+				editor.rangeOf("login-timeout", "login-timeout"),
 				method("org.springframework.boot.autoconfigure.jdbc.DataSourceConfigMetadata", "hikariDataSource"),
 				method("org.springframework.boot.autoconfigure.jdbc.DataSourceConfigMetadata", "tomcatDataSource"),
 				method("org.springframework.boot.autoconfigure.jdbc.DataSourceConfigMetadata", "dbcpDataSource")
 		);
 		definitionLinkAsserts.assertLinkTargets(editor, "init-sql", p,
+				editor.rangeOf("init-sqls", "init-sqls"),
 				method("org.springframework.boot.autoconfigure.flyway.FlywayProperties", "setInitSqls", "java.util.List"));
 	}
 
@@ -3858,7 +3860,9 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 			"    mongodb:\n" +
 			"      field-naming-strategy: org.springframework.data.mapping.model.PropertyNameFieldNamingStrategy\n"
 		);
-		definitionLinkAsserts.assertLinkTargets(editor, "org.springframework.data.mapping.model.PropertyNameFieldNamingStrategy", project, "org.springframework.data.mapping.model.PropertyNameFieldNamingStrategy");
+		definitionLinkAsserts.assertLinkTargets(editor, "org.springframework.data.mapping.model.PropertyNameFieldNamingStrategy", project,
+				editor.rangeOf("org.springframework.data.mapping.model.PropertyNameFieldNamingStrategy", "org.springframework.data.mapping.model.PropertyNameFieldNamingStrategy"),
+				"org.springframework.data.mapping.model.PropertyNameFieldNamingStrategy");
 
 		editor = newEditor(
 			"spring:\n" +
@@ -3867,7 +3871,9 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 			"      field-naming-strategy:\n" +
 			"        org.springframework.data.mapping.model.PropertyNameFieldNamingStrategy\n"
 		);
-		definitionLinkAsserts.assertLinkTargets(editor, "org.springframework.data.mapping.model.PropertyNameFieldNamingStrategy", project, "org.springframework.data.mapping.model.PropertyNameFieldNamingStrategy");
+		definitionLinkAsserts.assertLinkTargets(editor, "org.springframework.data.mapping.model.PropertyNameFieldNamingStrategy", project,
+				editor.rangeOf("org.springframework.data.mapping.model.PropertyNameFieldNamingStrategy", "org.springframework.data.mapping.model.PropertyNameFieldNamingStrategy"),
+				"org.springframework.data.mapping.model.PropertyNameFieldNamingStrategy");
 
 		//Linking should also work for types that aren't valid based on the constraints
 		editor = newEditor(
@@ -3877,7 +3883,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 				"      field-naming-strategy: java.lang.String\n" +
 				"#more stuff"
 		);
-		definitionLinkAsserts.assertLinkTargets(editor, "java.lang.String", project, "java.lang.String");
+		definitionLinkAsserts.assertLinkTargets(editor, "java.lang.String", project, editor.rangeOf("java.lang.String", "java.lang.String"), "java.lang.String");
 	}
 
 	@Test public void test_STS_3335_reconcile_list_nested_in_Map_of_String() throws Exception {
@@ -4022,13 +4028,13 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 				"my:\n" +
 				"  background: RED"
 		);
-		definitionLinkAsserts.assertLinkTargets(editor, "RED", project, field("demo.Color", "RED"));
+		definitionLinkAsserts.assertLinkTargets(editor, "RED", project, editor.rangeOf("RED", "RED"), field("demo.Color", "RED"));
 
 		editor = newEditor(
 				"my:\n" +
 				"  background: red"
 		);
-		definitionLinkAsserts.assertLinkTargets(editor, "red", project, field("demo.Color", "RED"));
+		definitionLinkAsserts.assertLinkTargets(editor, "red", project, editor.rangeOf("red", "red"), field("demo.Color", "RED"));
 	}
 
 	 @Test public void testHyperLinkEnumValueInMapKey() throws Exception {
@@ -4044,8 +4050,8 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 				"      RED: Rood\n" +
 				"      green: Groen\n"
 		);
-		definitionLinkAsserts.assertLinkTargets(editor, "RED", project, field("demo.Color", "RED"));
-		definitionLinkAsserts.assertLinkTargets(editor, "green", project, field("demo.Color", "GREEN"));
+		definitionLinkAsserts.assertLinkTargets(editor, "RED", project, editor.rangeOf("RED", "RED"), field("demo.Color", "RED"));
+		definitionLinkAsserts.assertLinkTargets(editor, "green", project, editor.rangeOf("green", "green"), field("demo.Color", "GREEN"));
 
 		editor = newEditor(
 			"spring:\n" +
@@ -4054,6 +4060,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 			"      INDENT_OUTPUT: true"
 		);
 		definitionLinkAsserts.assertLinkTargets(editor, "INDENT_OUTPUT", project,
+				editor.rangeOf("INDENT_OUTPUT", "INDENT_OUTPUT"),
 				field("com.fasterxml.jackson.databind.SerializationFeature", "INDENT_OUTPUT")
 		);
 
@@ -4064,6 +4071,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 			"      indent-output: true"
 		);
 		definitionLinkAsserts.assertLinkTargets(editor, "indent-output", project,
+				editor.rangeOf("indent-output", "indent-output"),
 				field("com.fasterxml.jackson.databind.SerializationFeature", "INDENT_OUTPUT")
 		);
 	}

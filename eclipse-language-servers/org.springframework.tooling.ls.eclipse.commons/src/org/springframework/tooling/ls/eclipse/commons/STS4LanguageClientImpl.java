@@ -51,6 +51,7 @@ import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.MarkupContent;
 import org.eclipse.lsp4j.MarkupKind;
+import org.eclipse.lsp4j.Range;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
@@ -466,6 +467,9 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 					if (project != null) {
 						Location location = new Location();
 						location.setUri(Utils.eclipseIntroUri(project.getElementName(), params.getBindingKey()).toString());
+						// Set the range because LocationLink needs it to be non-null. The target range
+						// would highlighted by the eclipse intro URL navigation anyway
+						location.setRange(new Range());
 						return location;
 					}
 				}

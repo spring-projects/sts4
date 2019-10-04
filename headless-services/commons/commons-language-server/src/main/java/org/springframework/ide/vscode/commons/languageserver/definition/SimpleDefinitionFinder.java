@@ -13,11 +13,13 @@ package org.springframework.ide.vscode.commons.languageserver.definition;
 import java.util.Collections;
 import java.util.List;
 
-import org.eclipse.lsp4j.Location;
+import org.eclipse.lsp4j.LocationLink;
+import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.languageserver.util.DefinitionHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
-import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.common.collect.ImmutableList;
@@ -27,6 +29,8 @@ import com.google.common.collect.ImmutableList;
  * @author Kris De Volder
  */
 public class SimpleDefinitionFinder<T extends SimpleLanguageServer> implements DefinitionHandler {
+	
+	private static final Logger log = LoggerFactory.getLogger(SimpleDefinitionFinder.class);
 
 	protected final T server;
 
@@ -35,7 +39,7 @@ public class SimpleDefinitionFinder<T extends SimpleLanguageServer> implements D
 	}
 
 	@Override
-	public List<Location> handle(TextDocumentPositionParams params) {
+	public List<LocationLink> handle(TextDocumentPositionParams params) {
 		try {
 			TextDocument doc = server.getTextDocumentService().get(params);
 			if (doc != null) {
@@ -50,19 +54,18 @@ public class SimpleDefinitionFinder<T extends SimpleLanguageServer> implements D
 					end++;
 				}
 				String word = doc.textBetween(start, end);
-				Log.log("Looking for definition of '"+word+"'");
 				String text = doc.get();
 				int def = text.indexOf(word);
 				if (def>=0) {
-					Location loc = new Location(params.getTextDocument().getUri(),
-						doc.toRange(def, word.length())
+					Range targetRange = doc.toRange(def, word.length());
+					LocationLink link = new LocationLink(params.getTextDocument().getUri(),
+						targetRange, targetRange, doc.toRange(start, end - start)
 					);
-					Log.log("definition: "+loc);
-					return ImmutableList.of(loc);
+					return ImmutableList.of(link);
 				}
 			}
 		} catch (Exception e) {
-			Log.log(e);
+			log.error("", e);
 		}
 		return Collections.emptyList();
 	}

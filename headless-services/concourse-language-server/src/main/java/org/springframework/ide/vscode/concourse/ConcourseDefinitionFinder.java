@@ -14,13 +14,17 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.eclipse.lsp4j.Location;
+import org.eclipse.lsp4j.LocationLink;
+import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.languageserver.definition.SimpleDefinitionFinder;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
-import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeUtil;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlAstCache;
@@ -34,6 +38,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 
 public class ConcourseDefinitionFinder extends SimpleDefinitionFinder<SimpleLanguageServer> {
+		
+	private static final Logger log = LoggerFactory.getLogger(ConcourseDefinitionFinder.class);
 
 	@FunctionalInterface
 	private interface Handler {
@@ -84,7 +90,7 @@ public class ConcourseDefinitionFinder extends SimpleDefinitionFinder<SimpleLang
 	}
 
 	@Override
-	public List<Location> handle(TextDocumentPositionParams params) {
+	public List<LocationLink> handle(TextDocumentPositionParams params) {
 		try {
 			TextDocument doc = server.getTextDocumentService().get(params);
 			if (doc!=null) {
@@ -96,14 +102,19 @@ public class ConcourseDefinitionFinder extends SimpleDefinitionFinder<SimpleLang
 						if (type!=null) {
 							Handler handler = handlers.get(type);
 							if (handler!=null) {
-								return handler.handle(refNode, doc, ast);
+								int start = refNode.getStartMark().getIndex();
+								int end = refNode.getEndMark().getIndex();
+								Range originalRange = doc.toRange(start, end - start);
+								return handler.handle(refNode, doc, ast).stream()
+										.map(l -> new LocationLink(l.getUri(), l.getRange(), l.getRange(), originalRange))
+										.collect(Collectors.toList());
 							}
 						}
 					}
 				}
 			}
 		} catch (Exception e) {
-			Log.log(e);
+			log.error("", e);;
 		}
 		return ImmutableList.of();
 	}
@@ -114,7 +125,7 @@ public class ConcourseDefinitionFinder extends SimpleDefinitionFinder<SimpleLang
 		try {
 			return Optional.of(new Location(doc.getUri(), doc.toRange(start, end-start)));
 		} catch (BadLocationException e) {
-			Log.log(e);
+			log.error("", e);;
 			return Optional.empty();
 		}
 	}

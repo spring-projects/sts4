@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Pivotal, Inc.
+ * Copyright (c) 2018, 2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -27,6 +27,7 @@ import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.Location;
+import org.eclipse.lsp4j.LocationLink;
 import org.eclipse.lsp4j.Range;
 import org.springframework.ide.vscode.boot.java.links.JavaDocumentUriProvider;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
@@ -88,34 +89,34 @@ public class DefinitionLinkAsserts {
 
 	}
 
-	public void assertLinkTargets(Editor editor, String hoverOver, IJavaProject project, JavaMethod... methods) throws Exception {
-		Set<Location> expectedLocations = Arrays.stream(methods).map(method -> {
+	public void assertLinkTargets(Editor editor, String hoverOver, IJavaProject project, Range highlightRange, JavaMethod... methods) throws Exception {
+		Set<LocationLink> expectedLocations = Arrays.stream(methods).map(method -> {
 			try {
 				return getLocation(project, method);
 			} catch (Exception e) {
 				throw new IllegalStateException(e);
 			}
-		}).collect(Collectors.toSet());
+		}).map(l -> new LocationLink(l.getUri(), l.getRange(), l.getRange(), highlightRange)).collect(Collectors.toSet());
 
 		editor.assertLinkTargets(hoverOver, expectedLocations);
 	}
 
-	public void assertLinkTargets(Editor editor, String hoverOver, IJavaProject project, String typeFqName) throws Exception {
+	public void assertLinkTargets(Editor editor, String hoverOver, IJavaProject project, Range highlightRange, String typeFqName) throws Exception {
 
-		Location expectedLocation = getLocation(project, typeFqName);
+		Location l = getLocation(project, typeFqName);
+		
+		LocationLink link = new LocationLink(l.getUri(), l.getRange(), l.getRange(), highlightRange);
 
-		System.out.println("Expected Location: " + expectedLocation);
-
-		editor.assertLinkTargets(hoverOver, ImmutableSet.of(expectedLocation));
+		editor.assertLinkTargets(hoverOver, ImmutableSet.of(link));
 	}
 
-	public void assertLinkTargets(Editor editor, String hoverOver, IJavaProject project, JavaField field) throws Exception {
+	public void assertLinkTargets(Editor editor, String hoverOver, IJavaProject project, Range highlightRange, JavaField field) throws Exception {
 
-		Location expectedLocation = getLocation(project, field);
+		Location l = getLocation(project, field);
 
-		System.out.println("Expected Location: " + expectedLocation);
+		LocationLink link = new LocationLink(l.getUri(), l.getRange(), l.getRange(), highlightRange);
 
-		editor.assertLinkTargets(hoverOver, ImmutableSet.of(expectedLocation));
+		editor.assertLinkTargets(hoverOver, ImmutableSet.of(link));
 	}
 
 	private Location getLocation(IJavaProject project, String fqName) throws Exception {

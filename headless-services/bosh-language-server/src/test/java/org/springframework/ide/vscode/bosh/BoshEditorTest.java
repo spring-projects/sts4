@@ -41,7 +41,6 @@ import org.springframework.ide.vscode.bosh.models.ReleaseData;
 import org.springframework.ide.vscode.bosh.models.ReleasesModel;
 import org.springframework.ide.vscode.bosh.models.StemcellData;
 import org.springframework.ide.vscode.bosh.models.StemcellsModel;
-import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.ExternalCommand;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems;
@@ -1587,7 +1586,8 @@ public class BoshEditorTest {
 				"- name: some-release\n"
 				,
 				"some-release"
-			)
+			),
+			editor.rangeOf("- release: some-release", "some-release")
 		);
 	}
 
@@ -1612,7 +1612,8 @@ public class BoshEditorTest {
 
 		editor.assertGotoDefinition(
 			editor.positionOf("stemcell: windoze", "windoze"),
-			editor.rangeOf("- alias: windoze", "windoze")
+			editor.rangeOf("- alias: windoze", "windoze"),
+			editor.rangeOf("stemcell: windoze", "windoze")
 		);
 	}
 

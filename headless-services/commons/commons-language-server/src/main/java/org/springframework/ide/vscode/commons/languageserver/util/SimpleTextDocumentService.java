@@ -361,12 +361,12 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 		DefinitionHandler h = this.definitionHandler;
 		if (h != null) {
 			return async.invoke(() -> {
-				List<Location> locations = h.handle(position);
+				List<LocationLink> locations = h.handle(position);
 				if (locations==null) {
 					// vscode client does not like to recieve null result. See: https://github.com/spring-projects/sts4/issues/309
 					locations = ImmutableList.of();
 				}
-				return Either.forLeft(locations);
+				return Either.forRight(locations);
 			});
 		}
 		return CompletableFuture.completedFuture(Either.forLeft(ImmutableList.of()));
