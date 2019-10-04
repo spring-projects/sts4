@@ -21,7 +21,6 @@ import org.eclipse.lsp4j.ExecuteCommandParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessConnectorRemote.RemoteBootAppData;
-import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 
 import com.google.gson.JsonElement;
@@ -75,11 +74,13 @@ public class SpringProcessCommandHandler {
 		if (processKey != null) {
 			
 			// try local processes
-			SpringProcessDescriptor[] processes = localProcessConnector.getProcesses(false, SpringProcessStatus.REGULAR, SpringProcessStatus.AUTO_CONNECT);
-			for (SpringProcessDescriptor process : processes) {
-				if (process.getProcessKey().equals(processKey)) {
-					localProcessConnector.connectProcess(process);
-					return CompletableFuture.completedFuture(null);
+			if (SpringProcessConnectorLocal.isAvailable()) {
+				SpringProcessDescriptor[] processes = localProcessConnector.getProcesses(false, SpringProcessStatus.REGULAR, SpringProcessStatus.AUTO_CONNECT);
+				for (SpringProcessDescriptor process : processes) {
+					if (process.getProcessKey().equals(processKey)) {
+						localProcessConnector.connectProcess(process);
+						return CompletableFuture.completedFuture(null);
+					}
 				}
 			}
 			
@@ -142,19 +143,21 @@ public class SpringProcessCommandHandler {
 		}
 		
 		// other available local processes
-		SpringProcessDescriptor[] localProcesses = localProcessConnector.getProcesses(true, SpringProcessStatus.REGULAR, SpringProcessStatus.AUTO_CONNECT);
-		for (SpringProcessDescriptor localProcess : localProcesses) {
-			String processKey = localProcess.getProcessKey();
-			if (!alreadyConnected.contains(processKey)) {
-				String label = localProcess.getLabel();
-				String action = COMMAND_CONNECT;
-
-				LiveProcessCommand command = new LiveProcessCommand();
-				command.setAction(action);
-				command.setLabel(label);
-				command.setProcessKey(processKey);
-				
-				result.add(command);
+		if (SpringProcessConnectorLocal.isAvailable()) {
+			SpringProcessDescriptor[] localProcesses = localProcessConnector.getProcesses(true, SpringProcessStatus.REGULAR, SpringProcessStatus.AUTO_CONNECT);
+			for (SpringProcessDescriptor localProcess : localProcesses) {
+				String processKey = localProcess.getProcessKey();
+				if (!alreadyConnected.contains(processKey)) {
+					String label = localProcess.getLabel();
+					String action = COMMAND_CONNECT;
+	
+					LiveProcessCommand command = new LiveProcessCommand();
+					command.setAction(action);
+					command.setLabel(label);
+					command.setProcessKey(processKey);
+					
+					result.add(command);
+				}
 			}
 		}
 		
