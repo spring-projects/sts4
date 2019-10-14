@@ -17,10 +17,6 @@
 	<url>https://spring.io/tools</url>
 	<inceptionYear>2007</inceptionYear>
 
-	<prerequisites>
-		<maven>3.0</maven>
-	</prerequisites>
-
 	<licenses>
 		<license>
 			<name>Eclipse Public License v1.0</name>
