@@ -53,7 +53,7 @@ public class SelfExtractor {
 			try (ZipOutputStream zipOut = new ZipOutputStream(new FileOutputStream(new File(repackagedPath)))) {
 				ZipEntry entry;
 				while ((entry = zipIn.getNextEntry())!=null) {
-					System.out.println("Adding: "+entry.getName());
+					//System.out.println("Adding: "+entry.getName());
 					if (entry.getName().equals("contents.zip")) {
 						//skip. We need to write the wrapped zip contents here.
 					} else {
@@ -67,7 +67,7 @@ public class SelfExtractor {
 				} //end while
 				entry = new ZipEntry("contents.zip");
 				zipOut.putNextEntry(entry);
-				System.out.println("Adding: "+entry.getName());
+				//System.out.println("Adding: "+entry.getName());
 				try (FileInputStream contentsZipIn = new FileInputStream(contentsZip)) {
 					copy(contentsZipIn, zipOut);
 				}
@@ -89,7 +89,8 @@ public class SelfExtractor {
         String myResourceUrl = resource.toString();
         //Example: jar:file:/home/.../self-extracing-jar-creator-0.0.1-SNAPSHOT.jar!/SelfExtractor.class 
         if (!myResourceUrl.startsWith("jar:file:")) {
-        	File devJar = new File("target/self-extracing-jar-creator-0.0.1-SNAPSHOT.jar");
+        	//For convenience in 'development mode' look for a local jar built by maven.
+        	File devJar = new File("target/self-extracting-jar-creator-0.0.1-SNAPSHOT.jar");
         	if (devJar.isFile()) {
         		return devJar;
         	}
@@ -101,7 +102,7 @@ public class SelfExtractor {
 	private ZipInputStream openContentsZip() {
 		InputStream zip = this.getClass().getResourceAsStream(CONTENTS_ZIP_RSRC);
 		if (zip==null) {
-			throw new IllegalArgumentException("Couldn't find embedded '"+CONTENTS_ZIP_RSRC+"");
+			throw new IllegalArgumentException("Malformed archive: Couldn't find embedded '"+CONTENTS_ZIP_RSRC+"");
 		}
 		return new ZipInputStream(zip);
 	}
