@@ -76,6 +76,7 @@ public class PipelineYmlSchema implements YamlSchema {
 			hint("semver", "The 'semver' resource can set or bump version numbers."),
 			hint("github-release", "The 'github-release' resource can fetch and publish versioned GitHub resources."),
 			hint("docker-image", "The 'docker-image' resource can fetch, build, and push Docker images."),
+			hint("registry-image", "Supports checking, fetching, and pushing of images to Docker registries."),
 			hint("tracker", "The 'tracker' resource can deliver stories and bugs on Pivotal Tracker."),
 			hint("pool", "The 'pool' resource allows you to configure how to serialize use of an external system. "
 					+ "This lets you prevent test interference or overwork on shared systems."),

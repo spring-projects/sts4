@@ -72,7 +72,7 @@ public class ConcourseEditorTest {
 	@Before public void setup() throws Exception {
 		serverInitializer.setMaxCompletions(100);
 	}
-
+	
 	@Test public void addSingleRequiredPropertiesQuickfix() throws Exception {
 		Editor editor = harness.newEditor(
 				"resources:\n" +
@@ -777,7 +777,9 @@ public class ConcourseEditorTest {
 	public void valueCompletions() throws Exception {
 		String [] builtInResourceTypes = {
 				"git", "hg", "time", "s3", "archive",
-				"semver", "github-release", "docker-image", "tracker",
+				"semver", "github-release", 
+				"docker-image", "registry-image", 
+				"tracker",
 				"pool", "cf",
 				"bosh-io-release", "bosh-io-stemcell", "bosh-deployment",
 				"vagrant-cloud"
@@ -1904,6 +1906,28 @@ public class ConcourseEditorTest {
 		editor.assertProblems(
 				"repo^ # <- bad|should define 'branch'"
 		);
+	}
+	
+	@Test public void repositoryImageResourceIsKnown() throws Exception {
+		Editor editor;
+
+		editor = harness.newEditor(
+				"jobs:\n" + 
+				"- name: noise-maker\n" + 
+				"  plan:\n" + 
+				"  - task: make-noise\n" + 
+				"    config:\n" + 
+				"      platform: linux\n" + 
+				"      image_resource:\n" + 
+				"        type: registry-image\n" + 
+				"        source:\n" + 
+				"          repository: ubuntu:18.04\n" + 
+				"      run:\n" + 
+				"        path: echo\n" + 
+				"        args:\n" + 
+				"        - \"Hello world!\"" 
+		);
+		editor.assertProblems(/*None*/);
 	}
 
 	@Test public void dockerImageResourceSourceReconcileAndHovers() throws Exception {
@@ -3265,7 +3289,7 @@ public class ConcourseEditorTest {
 				//built-in:
 				"git", "hg", "time", "s3",
 				"archive", "semver", "github-release",
-				"docker-image", "tracker", "pool", "cf", "bosh-io-release",
+				"docker-image", "registry-image", "tracker", "pool", "cf", "bosh-io-release",
 				"bosh-io-stemcell", "bosh-deployment", "vagrant-cloud"
 		};
 		Arrays.sort(goodNames);
