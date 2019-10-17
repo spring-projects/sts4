@@ -20,6 +20,8 @@ import { BootPropertiesGrammarContribution } from './boot-properties-grammar-con
 import { BootYamlGrammarContribution } from './boot-yaml-grammar-contribution';
 import { ClasspathService } from './classpath-service';
 import {JavaDataService} from './java-data';
+import {LiveDataCommandContribution} from './live-data-commands';
+import {CommandContribution} from '@theia/core';
 
 export default new ContainerModule(bind => {
     // add your contribution bindings here
@@ -31,4 +33,5 @@ export default new ContainerModule(bind => {
     bind(HighlightCodeLensService).toSelf().inSingletonScope();
     bind(ClasspathService).toSelf().inSingletonScope();
     bind(JavaDataService).toSelf().inRequestScope();
+    bind(CommandContribution).to(LiveDataCommandContribution).inSingletonScope();
 });
