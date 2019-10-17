@@ -27,12 +27,12 @@ export class HighlightCodeLensService implements monaco.languages.CodeLensProvid
     handle(highlghtParams: HighlightParams) {
         if (!deepEqual(this.highlights.get(highlghtParams.doc.uri), highlghtParams)) {
             this.highlights.set(highlghtParams.doc.uri, highlghtParams);
-            this._onDidChangeCodeLenses.fire();
+            this._onDidChangeCodeLenses.fire(this);
         }
     }
 
-    static toMonacoCodeLens(cl: Lsp.CodeLens): monaco.languages.ICodeLensSymbol {
-        const codeLens: monaco.languages.ICodeLensSymbol = {
+    static toMonacoCodeLens(cl: Lsp.CodeLens): monaco.languages.CodeLens {
+        const codeLens: monaco.languages.CodeLens = {
             range: {
                 startLineNumber: cl.range.start.line + 1,
                 startColumn: cl.range.start.character,
@@ -54,12 +54,18 @@ export class HighlightCodeLensService implements monaco.languages.CodeLensProvid
         const highlightParams = this.highlights.get(activeUri);
         if (highlightParams && highlightParams.doc.version === activeVersion) {
             const codeLenses = highlightParams.codeLenses || [];
-            return codeLenses.filter(cl => cl.command).map(cl => HighlightCodeLensService.toMonacoCodeLens(cl));
+            return {
+                lenses: codeLenses.filter(cl => cl.command).map(cl => HighlightCodeLensService.toMonacoCodeLens(cl)),
+                dispose: () => {}
+            };
         }
-        return [];
+        return {
+            lenses: [],
+            dispose: () => {}
+        };
     };
 
-    resolveCodeLens(model: monaco.editor.ITextModel, codeLens: monaco.languages.ICodeLensSymbol, token: monaco.CancellationToken) {
+    resolveCodeLens(model: monaco.editor.ITextModel, codeLens: monaco.languages.CodeLens, token: monaco.CancellationToken) {
         return codeLens;
     }
 
