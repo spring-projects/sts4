@@ -9,6 +9,12 @@ import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 import java.util.zip.ZipOutputStream;
 
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+
+import ui.ProgressApi;
+import ui.ProgressBar;
+
 
 /**
  * SelfExtractor
@@ -21,7 +27,19 @@ public class SelfExtractor {
 	byte[] buffer = new byte[BUF_SIZE];
 
 	public static void main(String[] args) throws Exception {
-		new SelfExtractor().run(args);
+		try {
+			new SelfExtractor().run(args);
+			System.exit(0);
+		} catch (Throwable e) {
+			e.printStackTrace();
+			String message = e.getMessage();
+			if (message==null) {
+				message = e.getClass().getName();
+			}
+			JOptionPane.showMessageDialog(new JFrame(), message, "Error",
+					JOptionPane.ERROR_MESSAGE);
+			System.exit(-1);
+		}
 	}
 
 	private void run(String[] args) throws Exception {
@@ -46,7 +64,7 @@ public class SelfExtractor {
 		}
 		repackagedPath = repackagedPath + ".self-extracting.jar";
 		System.out.println("         as "+repackagedPath);
-		
+
 		File wrapperJar = getMyJar();
 		System.out.println("wrapperJar = "+wrapperJar);
 		try (ZipInputStream zipIn = new ZipInputStream(new FileInputStream(wrapperJar))) {
@@ -85,20 +103,20 @@ public class SelfExtractor {
 	private File getMyJar() {
 		Class<?> myklass = this.getClass();
 		String resourceName = this.getClass().getName() + ".class";
-        URL resource = myklass.getResource(resourceName);
-        String myResourceUrl = resource.toString();
-        //Example: jar:file:/home/.../self-extracing-jar-creator-0.0.1-SNAPSHOT.jar!/SelfExtractor.class 
-        if (!myResourceUrl.startsWith("jar:file:")) {
-        	//For convenience in 'development mode' look for a local jar built by maven.
-        	File devJar = new File("target/self-extracting-jar-creator-0.0.1-SNAPSHOT.jar");
-        	if (devJar.isFile()) {
-        		return devJar;
-        	}
-    		throw new IllegalStateException("To create self extracting jar, you must run this code from a jar");
-        }
-        return new File(myResourceUrl.substring("jar:file:".length(), myResourceUrl.indexOf('!')));
-    }
-	
+		URL resource = myklass.getResource(resourceName);
+		String myResourceUrl = resource.toString();
+		//Example: jar:file:/home/.../self-extracing-jar-creator-0.0.1-SNAPSHOT.jar!/SelfExtractor.class 
+		if (!myResourceUrl.startsWith("jar:file:")) {
+			//For convenience in 'development mode' look for a local jar built by maven.
+			File devJar = new File("target/self-extracting-jar-creator-0.0.1-SNAPSHOT.jar");
+			if (devJar.isFile()) {
+				return devJar;
+			}
+			throw new IllegalStateException("To create self extracting jar, you must run this code from a jar");
+		}
+		return new File(myResourceUrl.substring("jar:file:".length(), myResourceUrl.indexOf('!')));
+	}
+
 	private ZipInputStream openContentsZip() {
 		InputStream zip = this.getClass().getResourceAsStream(CONTENTS_ZIP_RSRC);
 		if (zip==null) {
@@ -109,6 +127,9 @@ public class SelfExtractor {
 
 	public void unpack() throws Exception {
 		File destDir = new File(System.getProperty("user.dir"));
+		int numEntries = getNumEntries();
+		int processed = 0;
+		ProgressApi progress = ProgressBar.create(numEntries);
 		try (ZipInputStream zip = openContentsZip()) {
 			ZipEntry entry;
 			while ((entry = zip.getNextEntry())!=null) {
@@ -127,7 +148,22 @@ public class SelfExtractor {
 						copy(zip, out);
 					}
 				}
+				processed++;
+				System.out.println("Progress = "+processed +"/"+numEntries);
+				progress.worked(1);
+			}
+		} finally {
+			progress.done();
+		}
+	}
+
+	private int getNumEntries() throws IOException {
+		int count = 0;
+		try (ZipInputStream zip = openContentsZip()) {
+			while (zip.getNextEntry()!=null) {
+				count++;
 			}
 		}
+		return count;
 	}
 }
