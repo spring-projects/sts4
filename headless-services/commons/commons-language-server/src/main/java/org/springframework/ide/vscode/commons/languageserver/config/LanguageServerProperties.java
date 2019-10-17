@@ -28,10 +28,7 @@ public class LanguageServerProperties {
 	private String extensionId;
 
 	/**
-	 * List of characters that trigger completions. Note: because of this bug:
-	 * https://github.com/spring-projects/sts4/issues/193 this setting is currently
-	 * being ignored when the client is vscode to avoid breaking Java completion
-	 * triggers.
+	 * List of characters that trigger completions.
 	 */
 	private Map<String, String> completionTriggerCharacters;
 	
