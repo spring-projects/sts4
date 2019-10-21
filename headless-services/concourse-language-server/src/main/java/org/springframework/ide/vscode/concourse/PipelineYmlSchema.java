@@ -573,6 +573,35 @@ public class PipelineYmlSchema implements YamlSchema {
 
 			resourceTypes.def("docker-image", source, get, put);
 		}
+		//registry_image
+		{
+			AbstractType source = f.ybean("RegistryImageSource");
+			addProp(source, "repository", t_ne_string).isPrimary(true);
+			addProp(source, "tag", t_ne_string);
+			addProp(source, "username", t_ne_string);
+			addProp(source, "password", t_ne_string);
+			addProp(source, "debug", t_boolean);
+			{
+				AbstractType contentTrust = f.ybean("RegistryImageContentTrust");
+				addProp(contentTrust, "server", t_ne_string);
+				addProp(contentTrust, "repository_key_id", t_ne_string).isRequired(true);
+				addProp(contentTrust, "repository_key", t_ne_string).isRequired(true);
+				addProp(contentTrust, "repository_passphrase", t_ne_string).isRequired(true);
+				addProp(contentTrust, "tls_key", t_ne_string);
+				addProp(contentTrust, "tls_cert", t_ne_string);
+				
+				addProp(source, "content_trust", contentTrust);
+			}
+			
+			AbstractType get = f.ybean("RegistryImageGetParams");
+			addProp(get, "format", f.yenum("RegistryImageFormat", "rootfs", "oci"));
+			
+			AbstractType put = f.ybean("RegistryImagePutParams");
+			addProp(put, "image", t_ne_string).isPrimary(true);
+			addProp(put, "additional_tags", t_ne_string);
+
+			resourceTypes.def("registry-image", source, get, put);
+		}
 		//s3
 		{
 			YType t_canned_acl = f.yenum("S3CannedAcl",

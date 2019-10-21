@@ -1929,7 +1929,7 @@ public class ConcourseEditorTest {
 		);
 		editor.assertProblems(/*None*/);
 	}
-
+	
 	@Test public void dockerImageResourceSourceReconcileAndHovers() throws Exception {
 		Editor editor;
 
@@ -2121,6 +2121,125 @@ public class ConcourseEditorTest {
 		editor.assertHoverContains("cache_from", "An array of images to consider as cache");
 		editor.assertHoverContains("load_bases", "Same as `load_base`, but takes an array");
 		editor.assertHoverContains("target_name", "Specify the name of the target build stage");
+	}
+	
+	@Test public void registryImageResourceeSourceReconcileAndHovers() throws Exception {
+		Editor editor;
+
+		editor = harness.newEditor(
+				"resources:\n" +
+				"- name: my-docker-image\n" +
+				"  type: registry-image\n" +
+				"  source:\n" +
+				"    tag: latest\n"
+		);
+		editor.assertProblems(
+			"my-docker-image|Unused 'Resource'",
+			"source|'repository' is required"
+		);
+
+		editor = harness.newEditor(
+				"resources:\n" +
+				"- name: my-docker-image\n" +
+				"  type: registry-image\n" +
+				"  source:\n" +
+				"    repository: kdvolder/sts4-build-env\n" +
+				"    tag: latest\n" +
+				"    username: kdvolder\n" +
+				"    password: {{docker_password}}\n" +
+				"    debug: no-bool\n" +
+				"    content_trust: {}\n"
+		);
+		editor.assertProblems(
+				"my-docker-image|Unused 'Resource'",
+				"no-bool|boolean",
+				"content_trust|Properties [repository_key, repository_key_id, repository_passphrase] are required"
+		);
+
+		editor.assertHoverContains("repository", "The name of the repository");
+		editor.assertHoverContains("tag", "name of the tag");
+		editor.assertHoverContains("username", "username to use");
+		editor.assertHoverContains("password", "password to use");
+		editor.assertHoverContains("debug",  "debugging output will be printed");
+		
+		editor = harness.newEditor(
+				"resources:\n" +
+				"- name: my-docker-image\n" +
+				"  type: registry-image\n" +
+				"  source:\n" +
+				"    repository: kdvolder/sts4-build-env\n" +
+				"    content_trust:\n"+
+				"      server: notary.server\n" +
+				"      repository_key: repokey\n" +
+				"      repository_key_id: keyid\n" +
+				"      repository_passphrase: Secret phrase\n" +
+				"      tls_key: tlskey\n" +
+				"      tls_cert: tlscert\n" +
+				"      bogus_prop:\n"
+		);
+		editor.assertProblems(
+				"my-docker-image|Unused 'Resource'",
+				"bogus_prop|Unknown property"
+		);
+		editor.assertHoverContains("server", "URL for the notary server");
+		editor.assertHoverContains("repository_key_id", "ID used to sign the trusted collection");
+		editor.assertHoverContains("repository_key", "Target key used to sign");
+		editor.assertHoverContains("repository_passphrase", "passphrase of the signing/target key");
+		editor.assertHoverContains("tls_key", "TLS key for the notary server");
+		editor.assertHoverContains("tls_cert", "TLS certificate for the notary server");
+	}
+
+	@Test public void registryImageResourceGetParamsReconcileAndHovers() throws Exception {
+		Editor editor;
+
+		editor = harness.newEditor(
+				"resources:\n" +
+				"- name: my-docker-image\n" +
+				"  type: registry-image\n" +
+				"jobs:\n" +
+				"- name: a-job\n" +
+				"  plan:\n" +
+				"  - get: my-docker-image\n" +
+				"    params:\n" +
+				"      format: bad-format\n" +
+				"      bogus: bad"
+		);
+
+		editor.assertProblems(
+				"bad-format|Valid values are: [oci, rootfs]",
+				"bogus|Unknown property"
+		);
+
+		editor.assertHoverContains("format", "The format to fetch as");
+	}
+
+	@Test public void registryImageResourcePutParamsReconcileAndHovers() throws Exception {
+		Editor editor;
+
+		editor = harness.newEditor(
+				"resources:\n" +
+				"- name: my-docker-image\n" +
+				"  type: registry-image\n" +
+				"jobs:\n" +
+				"- name: a-job\n" +
+				"  plan:\n" +
+				"  - put: my-docker-image\n" +
+				"    params:\n" +
+				"      image: path/to/image/tarball\n" +
+				"      additional_tags: path/to/tagsfiles\n" +
+				"      bogus: bad\n" +
+				"    get_params:\n" +
+				"      format: bad-format\n"
+		);
+
+		editor.assertProblems(
+				"bogus|Unknown property",
+				"bad-format|Valid values are: [oci, rootfs]"
+		);
+
+		editor.assertHoverContains("image", 4, "path to the OCI image tarball");
+		editor.assertHoverContains("additional_tags", "list of tag values");
+		editor.assertHoverContains("format", "The format to fetch as");
 	}
 
 	@Test public void s3ResourceSourceInitialResourceImplications() throws Exception {
