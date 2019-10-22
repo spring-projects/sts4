@@ -23,13 +23,24 @@
 			<url>file://${project.basedir}/repo</url>
 		</repository>
 
-		<repository>
+<!-- 		<repository>
 			<id>oss-jfrog-snapshots</id>
 			<url>https://oss.jfrog.org/artifactory/libs-snapshot</url>
-			<!-- <releases> <enabled>false</enabled> </releases> -->
 			<snapshots>
 				<enabled>true</enabled>
 			</snapshots>
+		</repository>
+-->
+
+		<repository>
+			<id>lsp4xml-releases</id>
+			<url>https://dl.bintray.com/lsp4xml/releases</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
+			<releases>
+				<enabled>true</enabled>
+			</releases>
 		</repository>
 	</repositories>
 
@@ -95,7 +106,7 @@
 		<dependency>
 			<groupId>org.lsp4xml</groupId>
 			<artifactId>org.eclipse.lsp4xml</artifactId>
-			<version>0.5.1-SNAPSHOT</version>
+			<version>0.9.1</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.eclipse.lsp4j</groupId>
@@ -185,7 +196,7 @@
 					</excludes>
 				</configuration>
 			</plugin>
-			
+
 			<!-- generate and package license information for included dependencies -->
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
@@ -242,7 +253,7 @@
 			</plugin>
 
 			<plugin>
-		        <groupId>org.apache.maven.plugins</groupId>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-resources-plugin</artifactId>
 				<executions>
 					<execution>
@@ -262,7 +273,7 @@
 							</resources>
 						</configuration>
 					</execution>
-					
+
 					<execution>
 						<id>copy-license-files</id>
 						<phase>process-classes</phase>
