@@ -267,12 +267,24 @@ public class SIDiagramGenerator implements DiagramGenerator {
 		SEdge edge = new SEdge();
 		edge.setId(id);
 		edge.setType("edge:straight");
-		if ("error".equals(linkType)) {
+		switch (linkType) {
+		case "error":
 			edge.setSourceId("error-port-" + sourceId);
-		} else {
+			edge.setTargetId("input-port-" + targetId);
+			break;
+		case "route":
+			edge.setSourceId(sourceId);
+			edge.setTargetId("input-port-" + targetId);
+			break;
+		case "discard":
+			edge.setSourceId("discard-port-" + sourceId);
+			edge.setTargetId("input-port-" + targetId);
+			break;
+		default:
 			edge.setSourceId("output-port-" + sourceId);
+			edge.setTargetId("input-port-" + targetId);
+			break;
 		}
-		edge.setTargetId("input-port-" + targetId);
 
 		if (StringUtil.hasText(labelStr)) {
 			SLabel label = new SLabel();
