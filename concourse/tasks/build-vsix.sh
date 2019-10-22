@@ -32,6 +32,7 @@ else
 fi
 
 npm install
+npm audit
 npm run vsce-package
 
 # for release build we don't don't add version-qualifier to package.json
