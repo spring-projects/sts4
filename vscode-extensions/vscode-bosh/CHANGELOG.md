@@ -1,3 +1,7 @@
+## 2019-10-24 (4.4.1 RELEASE)
+
+* no major changes
+
 ## 2019-09-19 (4.4.0 RELEASE)
 
 * _(VSCode)_ fixed: show error message when manually configured JDK is not there

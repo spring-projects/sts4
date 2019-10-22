@@ -1,3 +1,8 @@
+## 2019-10-24 (4.4.1 RELEASE)
+
+* _(Concourse)_ enhancement: added support for `registry-image` resource type.
+   ([#380](https://github.com/spring-projects/sts4/issues/380))
+
 ## 2019-09-19 (4.4.0 RELEASE)
 
 * _(Concourse)_ fixed: in_parallel - support both array of steps; and explicit "steps" child ([#345](https://github.com/spring-projects/sts4/issues/345))
