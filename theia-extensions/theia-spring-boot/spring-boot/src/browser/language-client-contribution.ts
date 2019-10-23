@@ -20,7 +20,7 @@ import {
 import { DocumentSelector } from '@theia/languages/lib/browser';
 import { JAVA_LANGUAGE_ID } from '@theia/java/lib/common';
 import { HighlightService} from './highlight-service';
-import {BootConfiguration, BootPreferences, CODELENS_PREF_NAME, HIGHLIGHTS_PREF_NAME} from './boot-preferences';
+import {BootConfiguration, BootPreferences, CODELENS_PREF_NAME} from './boot-preferences';
 import { StsLanguageClientContribution } from '@pivotal-tools/theia-languageclient/lib/browser/language-client-contribution';
 import { ClasspathService } from './classpath-service';
 import { HighlightCodeLensService } from './codelens-service';
@@ -69,8 +69,7 @@ export class SpringBootClientContribution extends StsLanguageClientContribution<
             this.javaDataService.attach(client);
 
             this.preferences.onPreferenceChanged(event => {
-                if (event.preferenceName === CODELENS_PREF_NAME
-                    || event.preferenceName === HIGHLIGHTS_PREF_NAME) {
+                if (event.preferenceName === CODELENS_PREF_NAME) {
                     this.toggleHighlightCodeLenses();
                 }
             });
@@ -78,7 +77,7 @@ export class SpringBootClientContribution extends StsLanguageClientContribution<
     }
 
     private toggleHighlightCodeLenses() {
-        if (this.preferences[CODELENS_PREF_NAME] && this.preferences[HIGHLIGHTS_PREF_NAME]) {
+        if (this.preferences[CODELENS_PREF_NAME]) {
             if (!this.codeLensProviderRegistration) {
                 this.codeLensProviderRegistration = monaco.languages.registerCodeLensProvider(JAVA_LANGUAGE_ID, this.highlightCodeLensService);
             }

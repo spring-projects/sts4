@@ -74,10 +74,15 @@
       "type": "object",
       "title": "Boot-Java Configuration",
       "properties": {
-        "boot-java.boot-hints.on": {
+        "boot-java.live-information.automatic-tracking.on": {
           "type": "boolean",
-          "default": true,
-          "description": "Enable/Disable Spring running Boot application live hints decorators in Java source code"
+          "default": false,
+          "description": "Live Information - Automatic Process Tracking Enabled"
+        },
+        "boot-java.live-information.automatic-tracking.delay": {
+          "type": "number",
+          "default": 5000,
+          "description": "Live Information - Automatic Process Tracking Delay in ms"
         },
         "boot-java.scan-java-test-sources.on": {
           "type": "boolean",

@@ -13,7 +13,6 @@ import { createPreferenceProxy, PreferenceProxy, PreferenceService, PreferenceCo
 
 // tslint:disable:max-line-length
 
-export const HIGHLIGHTS_PREF_NAME = 'boot-java.boot-hints.on';
 export const XML_SUPPORT_PREF_NAME = 'boot-java.support-spring-xml-config.on';
 export const CODELENS_PREF_NAME = 'boot-java.highlight-codelens.on';
 
@@ -21,10 +20,15 @@ export const BootConfigSchema: PreferenceSchema = {
     'type': 'object',
     'title': 'Spring Boot Configuration',
     properties: {
-        'boot-java.boot-hints.on': {
+        'boot-java.live-information.automatic-tracking.on': {
             type: 'boolean',
-            description: 'Enable/Disable Spring running Boot application live hints decorators in Java source code.',
-            default: true
+            description: 'Live Information - Automatic Process Tracking Enabled',
+            default: false
+        },
+        'boot-java.live-information.automatic-tracking.delay': {
+            type: 'number',
+            description: 'Live Information - Automatic Process Tracking Delay in ms',
+            default: 5000
         },
         'boot-java.scan-java-test-sources.on': {
             type: 'boolean',
@@ -75,7 +79,8 @@ export const BootConfigSchema: PreferenceSchema = {
 };
 
 export interface BootConfiguration {
-    'boot-java.boot-hints.on': boolean;
+    'boot-java.live-information.automatic-tracking.on': boolean;
+    'boot-java.live-information.automatic-tracking.delay': number;
     'boot-java.scan-java-test-sources.on': boolean;
     'boot-java.support-spring-xml-config.on': boolean;
     'boot-java.support-spring-xml-config.hyperlinks': boolean;
