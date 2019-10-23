@@ -450,8 +450,8 @@
 					<keystore>${signing.keystore}</keystore>
 					<storepass>${signing.store.password}</storepass>
 					<keypass>${signing.key.password}</keypass>
-<!--					<tsa>http://sha256timestamp.ws.symantec.com/sha256/timestamp</tsa> -->
-					<tsa>http://timestamp.digicert.com</tsa>
+					<tsa>http://sha256timestamp.ws.symantec.com/sha256/timestamp</tsa>
+<!--					<tsa>http://timestamp.digicert.com</tsa> -->
 				</configuration>
 			</plugin>
 			<plugin>
