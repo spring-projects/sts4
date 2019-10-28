@@ -10,20 +10,52 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.livehover.v2;
 
+import java.util.Properties;
+import java.util.concurrent.CompletableFuture;
+import java.util.function.Predicate;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.sun.tools.attach.VirtualMachine;
 import com.sun.tools.attach.VirtualMachineDescriptor;
 
 /**
  * @author Martin Lippert
  */
-@SuppressWarnings("restriction")
 public class SpringProcessDescriptor {
 	
+	private static final Logger log = LoggerFactory.getLogger(SpringProcessDescriptor.class);
+
+	/**
+	 * this property is automatically set my language servers to their own processes
+	 * to avoid the spring boot language server to connect to itself or another language server process
+	 * 
+	 * this is primarily an optimization to avoid that overhead of trying to connect to such a process
+	 */
+	private static final String LANGUAGE_SERVER_PROPERTY = "sts4.languageserver.name";
+	
+	/**
+	 * this property can be set to a running spring boot app at startup to indicatew that the
+	 * process of this running boot app belongs to a specific project
+	 * 
+	 * in that case, the running process is only connected if the workspace contains that project
+	 */
+	private static final String SPRING_APP_PROJECT_NAME_PROPERTY = "spring.boot.project.name";
+	
+	/**
+	 * common prefix for the vm descriptor display name of Eclipse processes, we can filter that out
+	 * of the list of processes to connect to immediately to avoid further processing
+	 */
+	private static final String ECLIPSE_PROCESS_DISPLAY_NAME_PREFIX = "org.eclipse.equinox.launcher.Main";
+
 	private final String processKey;
 	private final String processID;
 	private final String processName;
 	private final VirtualMachineDescriptor vm;
 	
 	private SpringProcessStatus status;
+	private String projectName;
 	
 	public SpringProcessDescriptor(String processKey, String processID, String processName, VirtualMachineDescriptor vm) {
 		this.processKey = processKey;
@@ -53,11 +85,7 @@ public class SpringProcessDescriptor {
 	public String getLabel() {
 		return processID + " (" + processName + ")";
 	}
-	
-	public void setStatus(SpringProcessStatus status) {
-		this.status = status;
-	}
-	
+		
 	public SpringProcessStatus getStatus() {
 		return this.status;
 	}
@@ -83,8 +111,86 @@ public class SpringProcessDescriptor {
 			return false;
 		return true;
 	}
-	
-	
 
+	public CompletableFuture<Void> updateStatus(Predicate<String> projectIsKnown) {
+		return CompletableFuture.supplyAsync(() -> {
+			this.status = checkStatus(projectIsKnown);
+			return null;
+		});
+	}
+	
+	private SpringProcessStatus checkStatus(Predicate<String> projectIsKnown) {
+		VirtualMachine vm = null;
+		try {
+			vm = VirtualMachine.attach(this.getVm());
+			if (shouldIgnore(this.getVm(), vm)) {
+				return SpringProcessStatus.IGNORE;
+			}
+			if (shouldAutoConnect(this.getVm(), vm, projectIsKnown)) {
+				return SpringProcessStatus.AUTO_CONNECT;
+			}
+
+			return SpringProcessStatus.REGULAR;
+		}
+		catch (Exception e) {
+			return SpringProcessStatus.IGNORE;
+		}
+		finally {
+			if (vm != null) {
+				try {
+					vm.detach();
+				}
+				catch (Exception e) {
+					log.error("error detaching from vm: " + this.getVm().id(), e);
+				}
+			}
+		}
+	}
+
+	private boolean shouldIgnore(VirtualMachineDescriptor vmDescriptor, VirtualMachine vm) {
+		try {
+			String displayName = vmDescriptor.displayName();
+			if (displayName != null && displayName.startsWith(ECLIPSE_PROCESS_DISPLAY_NAME_PREFIX)) {
+				log.info("Eclipse process found, do not connect: " + vmDescriptor.id());
+				return true;
+			}
+			
+			Properties systemProperties = vm.getSystemProperties();
+			
+			Object languageServerIndicatorProperty = systemProperties.get(LANGUAGE_SERVER_PROPERTY);
+			if (languageServerIndicatorProperty != null) {
+				log.info("language server process found, do not connect: " + vmDescriptor.id());
+				return true;
+			}
+			
+		}
+		catch (Exception e) {
+			return true;
+		}
+		
+		return false;
+	}
+
+	private boolean shouldAutoConnect(VirtualMachineDescriptor vmDescriptor, VirtualMachine vm, Predicate<String> projectIsKnown) {
+		try {
+			Properties systemProperties = vm.getSystemProperties();
+			
+			Object projectName = systemProperties.get(SPRING_APP_PROJECT_NAME_PROPERTY);
+			if (projectName instanceof String) {
+				log.info("Spring boot process found: " + projectName);
+				this.projectName = (String) projectName;
+				return projectIsKnown.test((String) projectName);
+			}
+		}
+		catch (Exception e) {
+			return false;
+		}
+		
+		return false;
+	}
+
+	public String getProjectName() {
+		return projectName;
+	}
 
 }

@@ -39,6 +39,8 @@ public class SpringProcessConnectorOverJMX implements SpringProcessConnector {
 	private final String jmxURL;
 	private final String urlScheme;
 	private final String port;
+	final private String projectName;
+	
 	
 	// not final, might be updated with data from JMX process, if not initially set
 	private String processID;
@@ -51,9 +53,9 @@ public class SpringProcessConnectorOverJMX implements SpringProcessConnector {
 	private JMXServiceURL jmxServiceURL;
 
 	private final NotificationListener notificationListener;
-	
+
 	public SpringProcessConnectorOverJMX(String processKey, String jmxURL,
-			String urlScheme, String processID, String processName, String host, String port) {
+			String urlScheme, String processID, String processName, String projectName, String host, String port) {
 
 		this.processKey = processKey;
 
@@ -61,6 +63,7 @@ public class SpringProcessConnectorOverJMX implements SpringProcessConnector {
 		this.urlScheme = urlScheme;
 		this.processID = processID;
 		this.processName = processName;
+		this.projectName = projectName;
 		this.host = host;
 		this.port = port;
 
@@ -174,6 +177,11 @@ public class SpringProcessConnectorOverJMX implements SpringProcessConnector {
 		for (SpringProcessConnectionChangeListener listener : this.listeners) {
 			listener.connectionClosed(processKey);
 		}
+	}
+
+	@Override
+	public String getProjectName() {
+		return projectName;
 	}
 
 }

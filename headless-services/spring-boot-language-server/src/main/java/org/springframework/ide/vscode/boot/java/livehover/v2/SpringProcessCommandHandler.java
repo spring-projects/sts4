@@ -126,19 +126,8 @@ public class SpringProcessCommandHandler {
 		for (SpringProcessConnector process : connectedProcesses) {
 			String processKey = process.getProcessKey();
 			String label = process.getLabel();
-
-			LiveProcessCommand refreshCommand = new LiveProcessCommand();
-			refreshCommand.setAction(COMMAND_REFRESH);
-			refreshCommand.setLabel(label);
-			refreshCommand.setProcessKey(processKey);
-			result.add(refreshCommand);
-			
-			LiveProcessCommand disconnectCommand = new LiveProcessCommand();
-			disconnectCommand.setAction(COMMAND_DISCONNECT);
-			disconnectCommand.setLabel(label);
-			disconnectCommand.setProcessKey(processKey);
-			result.add(disconnectCommand);
-
+			result.add(new LiveProcessCommand(COMMAND_REFRESH, processKey, label, process.getProjectName()));
+			result.add(new LiveProcessCommand(COMMAND_DISCONNECT, processKey, label, process.getProjectName()));
 			alreadyConnected.add(processKey);
 		}
 		
@@ -149,13 +138,8 @@ public class SpringProcessCommandHandler {
 				String processKey = localProcess.getProcessKey();
 				if (!alreadyConnected.contains(processKey)) {
 					String label = localProcess.getLabel();
-					String action = COMMAND_CONNECT;
 	
-					LiveProcessCommand command = new LiveProcessCommand();
-					command.setAction(action);
-					command.setLabel(label);
-					command.setProcessKey(processKey);
-					
+					LiveProcessCommand command = new LiveProcessCommand(COMMAND_CONNECT, processKey, label, localProcess.getProjectName());
 					result.add(command);
 				}
 			}
@@ -167,14 +151,7 @@ public class SpringProcessCommandHandler {
 			String processKey = SpringProcessConnectorRemote.getProcessKey(remoteProcess);
 			if (!alreadyConnected.contains(processKey)) {
 				String label = "remote process: " + remoteProcess.getJmxurl();
-				String action = COMMAND_CONNECT;
-
-				LiveProcessCommand command = new LiveProcessCommand();
-				command.setAction(action);
-				command.setLabel(label);
-				command.setProcessKey(processKey);
-				
-				result.add(command);
+				result.add(new LiveProcessCommand(COMMAND_CONNECT, processKey, label, null));
 			}
 		}
 		log.info("getProcessCommands => {}", result);

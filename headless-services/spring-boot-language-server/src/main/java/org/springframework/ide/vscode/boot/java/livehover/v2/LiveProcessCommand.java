@@ -18,33 +18,34 @@ public class LiveProcessCommand {
 	private String processKey;
 	private String label;
 	private String action;
+	private String projectName;
 	
-	public String getProcessKey() {
-		return processKey;
+	public LiveProcessCommand(String action, String processKey, String label, String projectName) {
+		super();
+		this.processKey = processKey;
+		this.label = label;
+		this.action = action;
+		this.projectName = projectName;
 	}
 
-	public void setProcessKey(String processKey) {
-		this.processKey = processKey;
+	public String getProcessKey() {
+		return processKey;
 	}
 
 	public String getLabel() {
 		return label;
 	}
 	
-	public void setLabel(String label) {
-		this.label = label;
-	}
-	
 	public String getAction() {
 		return action;
-	}
-
-	public void setAction(String action) {
-		this.action = action;
 	}
 
 	@Override
 	public String toString() {
 		return "LiveProcessCommand [processKey=" + processKey + ", label=" + label + ", action=" + action + "]";
+	}
+
+	public String getProjectName() {
+		return projectName;
 	}
 }
