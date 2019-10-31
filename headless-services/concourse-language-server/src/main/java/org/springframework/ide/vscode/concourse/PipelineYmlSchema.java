@@ -425,6 +425,10 @@ public class PipelineYmlSchema implements YamlSchema {
 		addProp(resourceType, "type", t_resource_type_name).isRequired(true);
 		addProp(resourceType, "source", resourceSource);
 		addProp(resourceType, "privileged", t_boolean);
+		addProp(resourceType, "params", t_params);
+		addProp(resourceType, "check_every", t_duration);
+		addProp(resourceType, "tags", t_strings);
+		addProp(resourceType, "unique_version_history", t_boolean);
 
 		YType t_group_name_def= f.yatomic("Group Name")
 				.parseWith(ValueParsers.NE_STRING);

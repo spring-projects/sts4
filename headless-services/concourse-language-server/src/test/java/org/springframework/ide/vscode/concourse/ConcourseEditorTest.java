@@ -1760,11 +1760,51 @@ public class ConcourseEditorTest {
 	}
 
 	@Test
+	public void resourceTypeAttributeReconcile() throws Exception {
+		//Example from https://github.com/spring-projects/sts4/issues/382
+		Editor editor = harness.newEditor(
+				"resource_types:\n" + 
+				"\n" + 
+				"- name: cogito\n" + 
+				"  type: registry-image\n" + 
+				"  check_every: 24h\n" + 
+				"  source:\n" + 
+				"    repository: ((docker-registry))/cogito"
+		);
+		editor.assertProblems(/*none*/);
+
+		//More elaborate example
+		editor = harness.newEditor(
+				"resource_types:\n" + 
+				"- name: cogito\n" + 
+				"  type: registry-image\n" + 
+				"  check_every: bad-duration\n" + 
+				"  privileged: is-priviliged\n" +
+				"  params:\n" +
+				"    foo: bar\n"+
+				"  tags: tags-list\n" +
+				"  unique_version_history: is-unique-hist\n" +
+				"  source:\n" + 
+				"    repository: ((docker-registry))/cogito"
+		);
+		editor.assertProblems(
+				"bad-duration|Duration",
+				"is-priviliged|boolean",
+				"tags-list|Sequence",
+				"is-unique-hist|boolean"
+		);
+	}
+	
+	@Test
 	public void resourceTypeAttributeHovers() throws Exception {
 		Editor editor = harness.newEditor(
 				"resource_types:\n" +
 				"- name: s3-multi\n" +
 				"  type: docker-image\n" +
+				"  check_every: bad-duration\n" + 
+				"  privileged: is-priviliged\n" +
+				"  tags: tags-list\n" +
+				"  unique_version_history: is-unique-hist\n" +
 				"  source:\n" +
 				"    repository: kdvolder/s3-resource-simple\n"
 		);
@@ -1772,6 +1812,10 @@ public class ConcourseEditorTest {
 		editor.assertHoverContains("name", "This name will be referenced by `resources` defined within the same pipeline");
 		editor.assertHoverContains("type", 2, "used to provide the resource type's container image");
 		editor.assertHoverContains("source", 2, "The location of the resource type's resource");
+		editor.assertHoverContains("privileged", "containers will be run with full capabilities");
+		editor.assertHoverContains("check_every", "interval on which to check for new versions");
+		editor.assertHoverContains("tags", "list of tags to determine which workers");
+		editor.assertHoverContains("unique_version_history", "resource type will have a version history that is unique to the resource");
 	}
 
 	@Test
@@ -1789,7 +1833,7 @@ public class ConcourseEditorTest {
 
 		editor.assertHoverContains("name", "The name of the resource");
 		editor.assertHoverContains("type", "The type of the resource. Each worker advertises");
-  	editor.assertHoverContains("icon", "name of a [Material Design Icon]");
+		editor.assertHoverContains("icon", "name of a [Material Design Icon]");
 		editor.assertHoverContains("source", 2, "The location of the resource");
 		editor.assertHoverContains("webhook_token", "web hooks can be sent to trigger an immediate *check* of the resource");
 		editor.assertHoverContains("check_every", "The interval on which to check for new versions");
