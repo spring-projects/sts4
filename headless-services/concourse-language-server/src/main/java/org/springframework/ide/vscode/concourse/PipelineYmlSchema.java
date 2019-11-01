@@ -418,6 +418,7 @@ public class PipelineYmlSchema implements YamlSchema {
 		addProp(job, "ensure",  step);
 		addProp(job, "on_success",  step);
 		addProp(job, "on_failure",  step);
+		addProp(job, "on_error",  step);
 		addProp(job, "on_abort", step);
 
 		AbstractType resourceType = f.ybean("ResourceType");

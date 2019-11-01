@@ -3996,6 +3996,8 @@ public class ConcourseEditorTest {
 				"      - get: code\n" +
 				"    on_failure:\n" +
 				"      put: code\n" +
+				"    on_error:\n" +
+				"      put: code\n" +
 				"    on_success:\n" +
 				"      put: code\n" +
 				"    ensure:\n" +
@@ -4020,6 +4022,7 @@ public class ConcourseEditorTest {
 		editor.assertHoverContains("interruptible", "worker will not wait on the builds");
 		editor.assertHoverContains("on_success", "Step to execute when the job succeeds");
 		editor.assertHoverContains("on_failure", "Step to execute when the job fails");
+		editor.assertHoverContains("on_error", "Step to execute when the job errors");
 		editor.assertHoverContains("on_abort", "Step to execute when the job aborts");
 		editor.assertHoverContains("ensure", "Step to execute regardless");
 	}
@@ -4039,10 +4042,12 @@ public class ConcourseEditorTest {
 				"      - get: a-resource\n" +
 				"    on_failure:\n" +
 				"      put: b-resource\n" +
-				"    on_success:\n" +
-				"      put: a-resource\n" +
-				"    ensure:\n" +
+				"    on_error:\n" +
 				"      put: c-resource\n" +
+				"    on_success:\n" +
+				"      put: d-resource\n" +
+				"    ensure:\n" +
+				"      put: e-resource\n" +
 				"resources:\n" +
 				"- name: b-resource\n" +
 				"  type: git\n" +
@@ -4064,8 +4069,9 @@ public class ConcourseEditorTest {
 				"nointerrupt|boolean",
 				"a-resource|resource does not exist",
 				"b-resource|should define 'branch'",
-				"a-resource|resource does not exist",
 				"c-resource|resource does not exist",
+				"d-resource|resource does not exist",
+				"e-resource|resource does not exist",
 				"code|Unused"
 		);
 	}
@@ -4089,6 +4095,7 @@ public class ConcourseEditorTest {
 				"interruptible",
 				"max_in_flight",
 				"on_abort",
+				"on_error",
 				"on_failure",
 				"on_success",
 				"serial",
