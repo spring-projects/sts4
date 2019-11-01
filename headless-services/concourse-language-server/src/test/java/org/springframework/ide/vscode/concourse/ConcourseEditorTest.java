@@ -3985,6 +3985,7 @@ public class ConcourseEditorTest {
 		Editor editor = harness.newEditor(
 				"jobs:\n" +
 				"  - name: job\n" +
+				"    old_name: formerly-known-as\n" +
 				"    serial: true\n" +
 				"    build_logs_to_retain: 10\n" +
 				"    serial_groups: []\n" +
@@ -4013,6 +4014,7 @@ public class ConcourseEditorTest {
 		);
 		editor.assertProblems(/*NONE*/);
 		editor.assertHoverContains("name", "The name of the job");
+		editor.assertHoverContains("old_name", "history of old job will be inherited to the new one");
 		editor.assertHoverContains("serial", "execute one-by-one");
 		editor.assertHoverContains("build_logs_to_retain", "only the last specified number of builds");
 		editor.assertHoverContains("serial_groups", "referencing the same tags will be serialized");
@@ -4031,6 +4033,7 @@ public class ConcourseEditorTest {
 		Editor editor = harness.newEditor(
 				"jobs:\n" +
 				"  - name: job\n" +
+				"    old_name: formerly-known-as\n" +
 				"    serial: isSerial\n" +
 				"    build_logs_to_retain: retainers\n" +
 				"    serial_groups: no-list\n" +
@@ -4094,6 +4097,7 @@ public class ConcourseEditorTest {
 				"ensure",
 				"interruptible",
 				"max_in_flight",
+				"old_name",
 				"on_abort",
 				"on_error",
 				"on_failure",

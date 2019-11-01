@@ -407,6 +407,7 @@ public class PipelineYmlSchema implements YamlSchema {
 
 		AbstractType job = f.ybean("Job");
 		addProp(job, "name", jobNameDef).isPrimary(true);
+		addProp(job, "old_name", t_ne_string);
 		addProp(job, "plan", f.yseq(step)).isRequired(true);
 		addProp(job, "serial", t_boolean);
 		addProp(job, "build_logs_to_retain", t_pos_integer);
