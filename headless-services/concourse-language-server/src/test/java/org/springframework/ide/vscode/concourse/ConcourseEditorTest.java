@@ -4016,6 +4016,10 @@ public class ConcourseEditorTest {
 				"    old_name: formerly-known-as\n" +
 				"    serial: true\n" +
 				"    build_logs_to_retain: 10\n" +
+				"    build_log_retention:\n" +
+				"      days: 1\n" +
+				"      builds: 2\n" +
+				"      minimum_succeeded_builds: 1\n" +
 				"    serial_groups: []\n" +
 				"    max_in_flight: 3\n" +
 				"    public: false\n" +
@@ -4040,11 +4044,14 @@ public class ConcourseEditorTest {
 				"    uri: blah\n" +
 				"    branch: master\n"
 		);
-		editor.assertProblems(/*NONE*/);
 		editor.assertHoverContains("name", "The name of the job");
 		editor.assertHoverContains("old_name", "history of old job will be inherited to the new one");
 		editor.assertHoverContains("serial", "execute one-by-one");
-		editor.assertHoverContains("build_logs_to_retain", "only the last specified number of builds");
+		editor.assertHoverContains("build_logs_to_retain", "Deprecated");
+		editor.assertHoverContains("build_log_retention", "Configures the retention policy for build logs");
+		editor.assertHoverContains("days", "Keep logs for builds which have finished within the specified number of days");
+		editor.assertHoverContains("builds", "Keep logs for the last specified number of builds");
+		editor.assertHoverContains("minimum_succeeded_builds", "Keep logs for at least N successful builds");
 		editor.assertHoverContains("serial_groups", "referencing the same tags will be serialized");
 		editor.assertHoverContains("max_in_flight", "maximum number of builds to run at a time");
 		editor.assertHoverContains("public", "build log of this job will be viewable");
@@ -4064,6 +4071,10 @@ public class ConcourseEditorTest {
 				"    old_name: formerly-known-as\n" +
 				"    serial: isSerial\n" +
 				"    build_logs_to_retain: retainers\n" +
+				"    build_log_retention:\n" +
+				"      days: retain-days\n" +
+				"      builds: retain-builds\n" +
+				"      minimum_succeeded_builds: succ-builds\n" +
 				"    serial_groups: no-list\n" +
 				"    max_in_flight: flying-number\n" +
 				"    public: publicize\n" +
@@ -4092,7 +4103,11 @@ public class ConcourseEditorTest {
 		);
 		editor.assertProblems(
 				"isSerial|boolean",
+				"build_logs_to_retain|Deprecated",
 				"retainers|Number",
+				"retain-days|Number",
+				"retain-builds|Number",
+				"succ-builds|Number",
 				"no-list|Expecting a 'Sequence'",
 				"flying-number|Number",
 				"publicize|boolean",
@@ -4120,7 +4135,7 @@ public class ConcourseEditorTest {
 
 		editor.assertCompletionLabels(
 				//completions for current (i.e Job) context:
-				"build_logs_to_retain",
+				"build_log_retention",
 				"disable_manual_trigger",
 				"ensure",
 				"interruptible",
@@ -4132,6 +4147,7 @@ public class ConcourseEditorTest {
 				"on_success",
 				"serial",
 				"serial_groups",
+				"build_logs_to_retain",
 				//"name", exists
 				//"plan", exists
 				//"public", exists

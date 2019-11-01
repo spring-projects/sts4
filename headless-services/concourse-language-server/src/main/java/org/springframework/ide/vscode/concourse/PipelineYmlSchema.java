@@ -405,12 +405,18 @@ public class PipelineYmlSchema implements YamlSchema {
 		}
 		models.setStepType(step);
 
+		YBeanType t_retention_config = f.ybean("RetentionConfig");
+		addProp(t_retention_config, "days", t_pos_integer);
+		addProp(t_retention_config, "builds", t_pos_integer);
+		addProp(t_retention_config, "minimum_succeeded_builds", t_pos_integer);
+
 		AbstractType job = f.ybean("Job");
 		addProp(job, "name", jobNameDef).isPrimary(true);
 		addProp(job, "old_name", t_ne_string);
 		addProp(job, "plan", f.yseq(step)).isRequired(true);
 		addProp(job, "serial", t_boolean);
-		addProp(job, "build_logs_to_retain", t_pos_integer);
+		addProp(job, "build_logs_to_retain", t_pos_integer).isDeprecated("Deprecated in favor of `build_log_retention`");
+		addProp(job, "build_log_retention", t_retention_config);
 		addProp(job, "serial_groups", t_strings);
 		addProp(job, "max_in_flight", t_pos_integer);
 		addProp(job, "public", t_boolean);
