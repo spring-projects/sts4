@@ -284,7 +284,7 @@ public class PipelineYmlSchema implements YamlSchema {
 		addProp(task, "caches", f.yseq(cache));
 		addProp(task, "outputs", f.yseq(t_output));
 		addProp(task, "run", t_command).isRequired(true);
-		addProp(task, "params", t_string_params);
+		addProp(task, "params", t_params);
 		task.require(Constraints.schemaContextAware((DynamicSchemaContext dc) -> {
 			LanguageId languageId = dc.getDocument().getLanguageId();
 			if (LanguageId.CONCOURSE_PIPELINE.equals(languageId)) {

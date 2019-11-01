@@ -495,7 +495,7 @@ public class ConcourseEditorTest {
 		editor.assertHoverContains("tags", "Any step can be directed at a pool of workers");
 		editor.assertHoverContains("timeout", "amount of time to limit the step's execution");
 	}
-	
+
 	@Test
 	public void taskVarsReconcile() throws Exception {
 		Editor editor;
@@ -3485,6 +3485,34 @@ public class ConcourseEditorTest {
 		);
 	}
 
+	@Test
+	public void taskWithYamlParams() throws Exception {
+		Editor editor;
+		
+		editor = harness.newEditor(LanguageId.CONCOURSE_TASK,
+			"---\n" +
+			"platform: linux\n" +
+			"image_resource:\n" +
+			"  type: docker-image\n" +
+			"  source:\n" +
+			"    repository: czero/platform-automation\n" +
+			"params:\n" +
+			"  DEBUG: false\n" +
+			"  VCENTER_URL: \n" +
+			"  VCENTER_INSECURE: true\n" +
+			"  NODE_COUNT: 4\n" +
+			"  IDRAC_IPS:\n" +
+			"    - 1.1.1.1\n" +
+			"    - 2.2.2.2\n" +
+			"inputs:\n" +
+			"  - name: pipeline\n" +
+			"run:\n" +
+			"  path: pipeline/tasks/re-image-hosts/task.sh\n"
+			
+		);
+		editor.assertProblems(/*NONE*/);
+	}
+	
 	@Test public void reconcileTaskFileToplevelProperties() throws Exception {
 		Editor editor;
 
