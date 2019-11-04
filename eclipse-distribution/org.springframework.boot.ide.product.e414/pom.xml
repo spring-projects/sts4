@@ -143,8 +143,6 @@
 
 								<exec executable="codesign" failonerror="true">
 									<arg value="--verbose"/>
-									<arg value="--options"/>
-									<arg value="runtime"/>
 									<arg value="--deep"/>
 									<arg value="--force"/>
 									<arg value="--entitlements"/>
