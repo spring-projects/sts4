@@ -184,4 +184,8 @@ public class SpringProcessConnectorOverJMX implements SpringProcessConnector {
 		return projectName;
 	}
 
+	@Override
+	public String getProcessId() {
+		return processID;
+	}
 }

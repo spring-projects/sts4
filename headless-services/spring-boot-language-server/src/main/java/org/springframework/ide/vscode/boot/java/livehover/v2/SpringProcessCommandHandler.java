@@ -126,8 +126,8 @@ public class SpringProcessCommandHandler {
 		for (SpringProcessConnector process : connectedProcesses) {
 			String processKey = process.getProcessKey();
 			String label = process.getLabel();
-			result.add(new LiveProcessCommand(COMMAND_REFRESH, processKey, label, process.getProjectName()));
-			result.add(new LiveProcessCommand(COMMAND_DISCONNECT, processKey, label, process.getProjectName()));
+			result.add(new LiveProcessCommand(COMMAND_REFRESH, processKey, label, process.getProjectName(), process.getProcessId()));
+			result.add(new LiveProcessCommand(COMMAND_DISCONNECT, processKey, label, process.getProjectName(), process.getProcessId()));
 			alreadyConnected.add(processKey);
 		}
 		
@@ -139,7 +139,7 @@ public class SpringProcessCommandHandler {
 				if (!alreadyConnected.contains(processKey)) {
 					String label = localProcess.getLabel();
 	
-					LiveProcessCommand command = new LiveProcessCommand(COMMAND_CONNECT, processKey, label, localProcess.getProjectName());
+					LiveProcessCommand command = new LiveProcessCommand(COMMAND_CONNECT, processKey, label, localProcess.getProjectName(), null);
 					result.add(command);
 				}
 			}
@@ -151,7 +151,7 @@ public class SpringProcessCommandHandler {
 			String processKey = SpringProcessConnectorRemote.getProcessKey(remoteProcess);
 			if (!alreadyConnected.contains(processKey)) {
 				String label = "remote process: " + remoteProcess.getJmxurl();
-				result.add(new LiveProcessCommand(COMMAND_CONNECT, processKey, label, null));
+				result.add(new LiveProcessCommand(COMMAND_CONNECT, processKey, label, null, remoteProcess.getProcessId()));
 			}
 		}
 		log.info("getProcessCommands => {}", result);

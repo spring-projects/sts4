@@ -40,6 +40,8 @@ import org.springsource.ide.eclipse.commons.livexp.core.ValueListener;
 import org.springsource.ide.eclipse.commons.livexp.ui.Disposable;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 
 /**
  * if the system property "boot-java-ls-port" exists, delegate to the socket-based
@@ -163,6 +165,11 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 			//keepChecking defaults to true. Boot dash automatic remote apps should override this explicitly.
 			//Reason. All other 'sources' of remote apps are 'manual' and we want them to default to
 			//'keepChecking' even if the user doesn't set this to true manually.
+		
+		private String processId = null;
+
+		public RemoteBootAppData() {
+		}
 
 		public RemoteBootAppData(String jmxurl, String host) {
 			super();
@@ -208,6 +215,14 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 		
 		public void setKeepChecking(boolean keepChecking) {
 			this.keepChecking = keepChecking;
+		}
+
+		public String getProcessId() {
+			return processId;
+		}
+
+		public void getProcessId(String processId) {
+			this.processId = processId;
 		}
 	}
 	
@@ -292,6 +307,10 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 				app.setKeepChecking("true".equals(keepChecking));
 			}
 			return app;
+		} else if (incomingData instanceof Map) {
+			Gson gson = new Gson();
+			JsonElement tree = gson.toJsonTree(incomingData);
+			return gson.fromJson(tree, RemoteBootAppData.class);
 		}
 		throw new IllegalArgumentException("Invalid remote app data: "+incomingData);
 	}

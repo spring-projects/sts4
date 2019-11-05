@@ -25,5 +25,6 @@ public interface SpringProcessConnector {
 	void addConnectorChangeListener(SpringProcessConnectionChangeListener listener);
 	void removeConnectorChangeListener(SpringProcessConnectionChangeListener listener);
 	String getProjectName();
+	String getProcessId();
 
 }

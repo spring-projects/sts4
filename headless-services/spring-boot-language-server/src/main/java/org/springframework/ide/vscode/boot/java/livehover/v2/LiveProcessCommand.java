@@ -19,13 +19,15 @@ public class LiveProcessCommand {
 	private String label;
 	private String action;
 	private String projectName;
+	private String processId;
 	
-	public LiveProcessCommand(String action, String processKey, String label, String projectName) {
+	public LiveProcessCommand(String action, String processKey, String label, String projectName, String processId) {
 		super();
 		this.processKey = processKey;
 		this.label = label;
 		this.action = action;
 		this.projectName = projectName;
+		this.processId = processId;
 	}
 
 	public String getProcessKey() {
@@ -42,10 +44,14 @@ public class LiveProcessCommand {
 
 	@Override
 	public String toString() {
-		return "LiveProcessCommand [processKey=" + processKey + ", label=" + label + ", action=" + action + "]";
+		return "LiveProcessCommand [processKey=" + processKey + ", action=" + action + ", projectName=" + projectName
+				+ ", processId=" + processId + "]";
 	}
 
 	public String getProjectName() {
 		return projectName;
+	}
+	public String getProcessId() {
+		return processId;
 	}
 }

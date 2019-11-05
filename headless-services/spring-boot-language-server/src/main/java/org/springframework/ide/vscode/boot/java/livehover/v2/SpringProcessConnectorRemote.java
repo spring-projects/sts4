@@ -38,6 +38,8 @@ public class SpringProcessConnectorRemote {
 			//keepChecking defaults to true. Boot dash automatic remote apps should override this explicitly.
 			//Reason. All other 'sources' of remote apps are 'manual' and we want them to default to
 			//'keepChecking' even if the user doesn't set this to true manually.
+		
+		private String processId;
 
 		public String getJmxurl() {
 			return jmxurl;
@@ -85,6 +87,14 @@ public class SpringProcessConnectorRemote {
 					+ port + ", keepChecking=" + keepChecking + "]";
 		}
 
+		public String getProcessId() {
+			return processId;
+		}
+
+		public void setProcessId(String processId) {
+			this.processId = processId;
+		}
+
 		@Override
 		public int hashCode() {
 			final int prime = 31;
@@ -94,6 +104,7 @@ public class SpringProcessConnectorRemote {
 			result = prime * result + (keepChecking ? 1231 : 1237);
 			result = prime * result + ((port == null) ? 0 : port.hashCode());
 			result = prime * result + ((urlScheme == null) ? 0 : urlScheme.hashCode());
+			result = prime * result + ((processId == null) ? 0 : processId.hashCode());
 			return result;
 		}
 
@@ -128,9 +139,13 @@ public class SpringProcessConnectorRemote {
 					return false;
 			} else if (!urlScheme.equals(other.urlScheme))
 				return false;
+			if (processId == null) {
+				if (other.processId != null)
+					return false;
+			} else if (!processId.equals(other.processId))
+				return false;
 			return true;
 		}
-
 	}
 
 	private static Logger logger = LoggerFactory.getLogger(SpringProcessConnectorRemote.class);
@@ -191,8 +206,8 @@ public class SpringProcessConnectorRemote {
 	
 	public void connectProcess(RemoteBootAppData remoteProcess) {
 		String processKey = getProcessKey(remoteProcess);
-		String processID = null;
-		String processName = null;
+		String processID = remoteProcess.getProcessId();
+		String processName = processKey;
 		String jmxURL = remoteProcess.getJmxurl();
 		String host = remoteProcess.getHost();
 		String port = remoteProcess.getPort();
