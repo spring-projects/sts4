@@ -55,8 +55,9 @@
 		<signing.alias>pivotal</signing.alias>
 		<signing.keystore>~/.keytool/pivotal.jks</signing.keystore>
 
-		<!-- OSX app signing -->
+		<!-- OSX app signing and notarizing-->
 		<skip.osx.signing>true</skip.osx.signing>
+		<skip.osx.notarizing>true</skip.osx.notarizing>
 
 		<dist.name>Spring Tool Suite 4</dist.name>
 
