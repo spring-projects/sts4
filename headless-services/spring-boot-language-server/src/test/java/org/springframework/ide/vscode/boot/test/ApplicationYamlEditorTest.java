@@ -678,7 +678,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 				method("org.springframework.boot.autoconfigure.web.ServerProperties", "setPort", "java.lang.Integer")
 		);
 		definitionLinkAsserts.assertLinkTargets(editor, "login-", p,
-				editor.rangeOf("login-timeout", "login-timeout"),
+				editor.rangeOf("login-timeout"),
 				method("org.springframework.boot.autoconfigure.jdbc.DataSourceConfigMetadata", "hikariDataSource"),
 				method("org.springframework.boot.autoconfigure.jdbc.DataSourceConfigMetadata", "tomcatDataSource"),
 				method("org.springframework.boot.autoconfigure.jdbc.DataSourceConfigMetadata", "dbcpDataSource")
@@ -3846,6 +3846,31 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 			"      field-naming-strategy: <*>"
 			// =>
 			/*NONE*/
+		);
+	}
+	
+	@Test public void definitionLinks_bug_169240253() throws Exception {
+		MavenJavaProject p = createPredefinedMavenProject("boot-web-actuator-2.2.0");
+		//See: https://www.pivotaltracker.com/story/show/169240253
+		useProject(p );
+		Editor editor = newEditor(
+				"management:\n" + 
+				"  endpoints:\n" + 
+				"    web:\n" + 
+				"      exposure:\n" + 
+				"        exclude: '*'\n" +
+				"spring:\n" + 
+				"  messages:\n" + 
+				"    basename: messages/messages\n"
+		);
+		//org.springframework.boot.actuate.autoconfigure.endpoint.web.WebEndpointProperties.Exposure.setExclude(Set<String>)
+		definitionLinkAsserts.assertLinkTargets(editor, "exclude", p, editor.rangeOf("exclude"), 
+				method("org.springframework.boot.actuate.autoconfigure.endpoint.web.WebEndpointProperties$Exposure", "setExclude", "java.util.Set")
+		);
+		
+		//org.springframework.boot.autoconfigure.context.MessageSourceProperties.setBasename(String)
+		definitionLinkAsserts.assertLinkTargets(editor, "basename", p, editor.rangeOf("basename"), 
+				method("org.springframework.boot.autoconfigure.context.MessageSourceProperties", "setBasename", "java.lang.String")
 		);
 	}
 

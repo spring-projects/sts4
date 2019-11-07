@@ -848,6 +848,10 @@ public class Editor {
 		return positionOf(snippet, snippet);
 	}
 
+	public Range rangeOf(String focusSnippet) throws Exception {
+		return rangeOf(focusSnippet, focusSnippet);
+	}
+
 	/**
 	 * Determines the range of a snippet of text in the document.
 	 *

@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.properties.hover;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -25,8 +26,10 @@ import org.springframework.ide.vscode.boot.metadata.PropertyInfo.PropertySource;
 import org.springframework.ide.vscode.boot.metadata.types.Type;
 import org.springframework.ide.vscode.boot.metadata.types.TypeParser;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtil;
+import org.springframework.ide.vscode.commons.java.IClassType;
 import org.springframework.ide.vscode.commons.java.IField;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.java.IJavaType;
 import org.springframework.ide.vscode.commons.java.IMember;
 import org.springframework.ide.vscode.commons.java.IMethod;
 import org.springframework.ide.vscode.commons.java.IType;
@@ -61,31 +64,53 @@ public class PropertiesDefinitionCalculator {
 	}
 
 	public static Collection<IMember> getPropertyJavaElement(TypeUtil typeUtil, IJavaProject project, PropertyInfo property) {
+		ImmutableList.Builder<IMember> elements = ImmutableList.builder(); 
 		List<PropertySource> sources = property.getSources();
-		ImmutableList.Builder<IMember> elements = ImmutableList.builder();
 		if (sources != null) {
 			for (PropertySource source : sources) {
-				String typeName = source.getSourceType();
-				if (typeName!=null) {
-					IType type = project.getIndex().findType(typeName);
-					IMethod method = null;
-					if (type!=null) {
-						String methodSig = source.getSourceMethod();
-						if (methodSig!=null) {
-							method = getMethod(type, methodSig);
-						} else {
-							method = getPropertyMethod(typeUtil, type, property.getName());
-						}
-					}
-					if (method!=null) {
-						elements.add(method);
-					} else if (type!=null) {
-						elements.add(type);
-					}
+				IMember e = getPropertyJavaElement(typeUtil, project, property, source);
+				if (e!=null) {
+					elements.add(e);
 				}
 			}
 		}
 		return elements.build();
+	}
+
+	private static IMember getPropertyJavaElement(TypeUtil typeUtil, IJavaProject project, PropertyInfo property, PropertySource source) {
+		List<IMember> elements = new ArrayList<>();
+			// collect elements in increasing order of accuracy, so that we can return the last
+			// (most accurate) element at the end of this method.
+		String typeName = source.getSourceType();
+		if (typeName!=null) {
+			IType type = project.getIndex().findType(typeName);
+			if (type!=null) {
+				elements.add(type);
+				String methodSig = source.getSourceMethod();
+				if (methodSig!=null) {
+					// the property source is a method, so actually we look for accessor in the return type.
+					IMethod method = getMethod(type, methodSig);
+					if (method!=null) {
+						elements.add(method);
+						IJavaType retType = method.getReturnType();
+						if (retType instanceof IClassType) {
+							type = project.getIndex().findType(((IClassType) retType).getFQName());
+							if (type!=null) {
+								elements.add(type);
+							}
+						}
+					}
+				} 
+				IMethod method = getPropertyMethod(typeUtil, type, property.getName());
+				if (method!=null) {
+					elements.add(method);
+				}
+			}
+		}
+		if (!elements.isEmpty()) {
+			return elements.get(elements.size()-1);
+		}
+		return null;
 	}
 
 	private static IMethod getMethod(IType type, String methodSig) {

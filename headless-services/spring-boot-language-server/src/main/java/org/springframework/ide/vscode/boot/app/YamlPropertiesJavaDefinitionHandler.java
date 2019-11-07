@@ -14,6 +14,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.LocationLink;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
@@ -89,7 +90,9 @@ public class YamlPropertiesJavaDefinitionHandler implements DefinitionHandler, L
 							String key = path.getLastSegment().toPropString();
 							assistPath = path.dropLast().append(YamlPathSegment.valueAt(key));
 						}
+						log.debug("handleYamlDefinition at {}", assistPath.toPropString());
 						assistContext = assistPath.traverse(assistContext);
+						log.debug("assistContext = {}", assistContext);
 
 						if (assistContext != null) {
 							Node node = astPath.get(astPath.size() - 1).get();
@@ -97,6 +100,7 @@ public class YamlPropertiesJavaDefinitionHandler implements DefinitionHandler, L
 							int end = node.getEndMark().getIndex();
 							Range originalRange = doc.toRange(start, end - start);
 							if (path.pointsAtValue()) {
+								log.debug("pathPointsAtValue = true");
 								DocumentRegion nodeRegion = getNodeRegion(ast, offset);
 								if (nodeRegion != null) {
 									return assistContext.getDefinitionsForPropertyValue(nodeRegion).stream()
@@ -104,7 +108,10 @@ public class YamlPropertiesJavaDefinitionHandler implements DefinitionHandler, L
 											.collect(Collectors.toList());
 								}
 							} else {
-								return assistContext.getDefinitionsForPropertyKey().stream()
+								log.debug("pathPointsAtValue = false");
+								List<Location> defs = assistContext.getDefinitionsForPropertyKey();
+								log.debug("definitions = {}", defs);
+								return defs.stream()
 										.map(l -> new LocationLink(l.getUri(), l.getRange(), l.getRange(), originalRange))
 										.collect(Collectors.toList());
 							}

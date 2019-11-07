@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.boot.test;
 import java.net.URI;
 import java.net.URL;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
@@ -90,13 +91,11 @@ public class DefinitionLinkAsserts {
 	}
 
 	public void assertLinkTargets(Editor editor, String hoverOver, IJavaProject project, Range highlightRange, JavaMethod... methods) throws Exception {
-		Set<LocationLink> expectedLocations = Arrays.stream(methods).map(method -> {
-			try {
-				return getLocation(project, method);
-			} catch (Exception e) {
-				throw new IllegalStateException(e);
-			}
-		}).map(l -> new LocationLink(l.getUri(), l.getRange(), l.getRange(), highlightRange)).collect(Collectors.toSet());
+		Set<LocationLink> expectedLocations = new HashSet<>();
+		for (JavaMethod method : methods) {
+			Location l = getLocation(project, method);
+			expectedLocations.add(new LocationLink(l.getUri(), l.getRange(), l.getRange(), highlightRange));
+		}
 
 		editor.assertLinkTargets(hoverOver, expectedLocations);
 	}
