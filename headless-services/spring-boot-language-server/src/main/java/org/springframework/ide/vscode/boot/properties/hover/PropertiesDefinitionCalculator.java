@@ -58,14 +58,14 @@ public class PropertiesDefinitionCalculator {
 	public static Collection<IMember> getPropertyJavaElements(TypeUtil typeUtil, PropertyFinder propertyFinder, IJavaProject project, String propertyKey) {
 		PropertyInfo best = propertyFinder.findBestHoverMatch(propertyKey);
 		if (best != null) {
-			return getPropertyJavaElement(typeUtil, project, best);
+			return getPropertyJavaElements(typeUtil, project, best);
 		}
 		return ImmutableList.of();
 	}
 
-	public static Collection<IMember> getPropertyJavaElement(TypeUtil typeUtil, IJavaProject project, PropertyInfo property) {
-		ImmutableList.Builder<IMember> elements = ImmutableList.builder(); 
+	public static Collection<IMember> getPropertyJavaElements(TypeUtil typeUtil, IJavaProject project, PropertyInfo property) {
 		List<PropertySource> sources = property.getSources();
+		ImmutableList.Builder<IMember> elements = ImmutableList.builder(); 
 		if (sources != null) {
 			for (PropertySource source : sources) {
 				IMember e = getPropertyJavaElement(typeUtil, project, property, source);
@@ -75,6 +75,44 @@ public class PropertiesDefinitionCalculator {
 			}
 		}
 		return elements.build();
+	}
+
+	public static Collection<IMember> getPropertySourceJavaElements(TypeUtil typeUtil, IJavaProject project, Collection<PropertySource> sources) {
+		ImmutableList.Builder<IMember> elements = ImmutableList.builder(); 
+		if (sources != null) {
+			for (PropertySource source : sources) {
+				IMember e = getPropertySourceJavaElement(typeUtil, project, source);
+				if (e!=null) {
+					elements.add(e);
+				}
+			}
+		}
+		return elements.build();
+	}
+
+	private static IMember getPropertySourceJavaElement(TypeUtil typeUtil, IJavaProject project, PropertySource source) {
+		List<IMember> elements = new ArrayList<>();
+		// collect elements in increasing order of accuracy, so that we can return the last
+		// (most accurate) element at the end of this method.
+		String typeName = source.getSourceType();
+		if (typeName!=null) {
+			IType type = project.getIndex().findType(typeName);
+			if (type!=null) {
+				elements.add(type);
+				String methodSig = source.getSourceMethod();
+				if (methodSig!=null) {
+					// the property source is a method, so actually we look for accessor in the return type.
+					IMethod method = getMethod(type, methodSig);
+					if (method!=null) {
+						elements.add(method);
+					}
+				} 
+			}
+		}
+		if (!elements.isEmpty()) {
+			return elements.get(elements.size()-1);
+		}
+		return null;
 	}
 
 	private static IMember getPropertyJavaElement(TypeUtil typeUtil, IJavaProject project, PropertyInfo property, PropertySource source) {

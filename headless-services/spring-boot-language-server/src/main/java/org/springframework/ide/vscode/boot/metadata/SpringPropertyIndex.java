@@ -11,21 +11,34 @@
 package org.springframework.ide.vscode.boot.metadata;
 
 import java.util.Collection;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 import org.springframework.ide.vscode.boot.configurationmetadata.ConfigurationMetadataGroup;
 import org.springframework.ide.vscode.boot.configurationmetadata.ConfigurationMetadataProperty;
 import org.springframework.ide.vscode.boot.configurationmetadata.ConfigurationMetadataRepository;
 import org.springframework.ide.vscode.boot.configurationmetadata.ConfigurationMetadataSource;
+import org.springframework.ide.vscode.boot.metadata.PropertyInfo.PropertySource;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.util.FuzzyMap;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 
-public class SpringPropertyIndex extends FuzzyMap<PropertyInfo> {
+import com.google.common.collect.ImmutableSet;
 
-	public static final FuzzyMap<PropertyInfo> EMPTY_INDEX = new SpringPropertyIndex(null, null);
+public class SpringPropertyIndex {
+	
+	public static final SpringPropertyIndex EMPTY_INDEX = new SpringPropertyIndex(null, null);
 
-	private ValueProviderRegistry valueProviders;
+	private final ValueProviderRegistry valueProviders;
+	
+	private final Map<String, Collection<PropertySource>> groups = new HashMap<String, Collection<PropertySource>>();
+	
+	private final FuzzyMap<PropertyInfo> properties = new FuzzyMap<PropertyInfo>() {
+		@Override
+		protected String getKey(PropertyInfo entry) {
+			return entry.getId();
+		}
+	};
 
 	public SpringPropertyIndex(ValueProviderRegistry valueProviders, IClasspath projectPath) {
 		this.valueProviders = valueProviders;
@@ -37,15 +50,17 @@ public class SpringPropertyIndex extends FuzzyMap<PropertyInfo> {
 
 				Collection<ConfigurationMetadataProperty> allEntries = metadata.getAllProperties().values();
 				for (ConfigurationMetadataProperty item : allEntries) {
-					add(new PropertyInfo(valueProviders, item));
+					properties.add(new PropertyInfo(valueProviders, item));
 				}
 
 				for (ConfigurationMetadataGroup group : metadata.getAllGroups().values()) {
 					for (ConfigurationMetadataSource source : group.getSources().values()) {
+						ImmutableSet.Builder<PropertySource> sources = ImmutableSet.builder();
 						for (ConfigurationMetadataProperty prop : source.getProperties().values()) {
-							PropertyInfo info = get(prop.getId());
-							info.addSource(source);
+							PropertyInfo info = properties.get(prop.getId());
+							sources.add(info.addSource(source));
 						}
+						groups.put(group.getId(), sources.build());
 					}
 				}
 
@@ -59,34 +74,34 @@ public class SpringPropertyIndex extends FuzzyMap<PropertyInfo> {
 	}
 
 	public void add(ConfigurationMetadataProperty propertyInfo) {
-		add(new PropertyInfo(valueProviders, propertyInfo));
+		properties.add(new PropertyInfo(valueProviders, propertyInfo));
 	}
 
-	/**
-	 * Dumps out 'test data' based on the current contents of the index. This is not meant to be
-	 * used in 'production' code. The idea is to call this method during development to dump a
-	 * 'snapshot' of the index onto System.out. The data is printed in a forma so that it can be easily
-	 * pasted/used into JUNit testing code.
-	 */
-	public void dumpAsTestData() {
-		List<Match<PropertyInfo>> allData = this.find("");
-		for (Match<PropertyInfo> match : allData) {
-			PropertyInfo d = match.data;
-			System.out.println("data("
-					+dumpString(d.getId())+", "
-					+dumpString(d.getType())+", "
-					+dumpString(d.getDefaultValue())+", "
-					+dumpString(d.getDescription()) +");"
-			);
-//			for (PropertySource source : d.getSources()) {
-//				String st = source.getSourceType();
-//				String sm = source.getSourceMethod();
-//				if (sm!=null) {
-//					System.out.println(d.getId() +" from: "+st+"::"+sm);
-//				}
-//			}
-		}
-	}
+//	/**
+//	 * Dumps out 'test data' based on the current contents of the index. This is not meant to be
+//	 * used in 'production' code. The idea is to call this method during development to dump a
+//	 * 'snapshot' of the index onto System.out. The data is printed in a forma so that it can be easily
+//	 * pasted/used into JUNit testing code.
+//	 */
+//	public void dumpAsTestData() {
+//		List<Match<PropertyInfo>> allData = this.find("");
+//		for (Match<PropertyInfo> match : allData) {
+//			PropertyInfo d = match.data;
+//			System.out.println("data("
+//					+dumpString(d.getId())+", "
+//					+dumpString(d.getType())+", "
+//					+dumpString(d.getDefaultValue())+", "
+//					+dumpString(d.getDescription()) +");"
+//			);
+////			for (PropertySource source : d.getSources()) {
+////				String st = source.getSourceType();
+////				String sm = source.getSourceMethod();
+////				if (sm!=null) {
+////					System.out.println(d.getId() +" from: "+st+"::"+sm);
+////				}
+////			}
+//		}
+//	}
 
 	private String dumpString(Object v) {
 		if (v==null) {
@@ -124,11 +139,6 @@ public class SpringPropertyIndex extends FuzzyMap<PropertyInfo> {
 		}
 	}
 
-	@Override
-	protected String getKey(PropertyInfo entry) {
-		return entry.getId();
-	}
-
 	/**
 	 * Find the longest known property that is a prefix of the given name. Here prefix does not mean
 	 * 'string prefix' but a prefix in the sense of treating '.' as a kind of separators. So
@@ -153,6 +163,18 @@ public class SpringPropertyIndex extends FuzzyMap<PropertyInfo> {
 			return prop.withId(prefix);
 		}
 		return null;
+	}
+
+	public FuzzyMap<PropertyInfo> getProperties() {
+		return properties;
+	}
+
+	public int size() {
+		return properties.size();
+	}
+
+	public Collection<PropertySource> getGroupSources(String prefix) {
+		return groups.get(prefix);
 	}
 
 }

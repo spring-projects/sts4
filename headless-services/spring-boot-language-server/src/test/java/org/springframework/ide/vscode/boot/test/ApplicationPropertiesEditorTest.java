@@ -1859,8 +1859,10 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		editor = newEditor(
 				"my.screen.background=green"
 		);
-		definitionLinkAsserts.assertLinkTargets(editor, "background", project, editor.rangeOf("my.screen.background", "my.screen.background"), method("com.example.demo.MyProperties$Screen", "getScreen"));
-		definitionLinkAsserts.assertLinkTargets(editor, "green", project, editor.rangeOf("green", "green"), field("com.example.demo.Color", "GREEN"));
+		definitionLinkAsserts.assertLinkTargets(editor, "background", project, editor.rangeOf("my.screen.background"), 
+				method("com.example.demo.MyProperties$Screen", "setBackground", "com.example.demo.Color")
+		);
+		definitionLinkAsserts.assertLinkTargets(editor, "green", project, editor.rangeOf("green"), field("com.example.demo.Color", "GREEN"));
 	}
 
 	@Test public void testNoHoverForUnrecognizedProperty() throws Exception {

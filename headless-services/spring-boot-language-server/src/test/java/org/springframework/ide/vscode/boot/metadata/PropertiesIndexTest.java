@@ -38,7 +38,7 @@ public class PropertiesIndexTest {
 		SpringPropertiesIndexManager indexManager = new SpringPropertiesIndexManager(
 				new ValueProviderRegistry(), null, null);
 		IJavaProject mavenProject = projects.mavenProject(CUSTOM_PROPERTIES_PROJECT);
-		FuzzyMap<PropertyInfo> index = indexManager.get(mavenProject, progressService);
+		FuzzyMap<PropertyInfo> index = indexManager.get(mavenProject, progressService).getProperties();
 		PropertyInfo propertyInfo = index.get("server.port");
 		assertNotNull(propertyInfo);
 		assertEquals(Integer.class.getName(), propertyInfo.getType());
@@ -50,7 +50,7 @@ public class PropertiesIndexTest {
 		SpringPropertiesIndexManager indexManager = new SpringPropertiesIndexManager(
 				new ValueProviderRegistry(), null, null);
 		IJavaProject mavenProject = projects.mavenProject(CUSTOM_PROPERTIES_PROJECT);
-		FuzzyMap<PropertyInfo> index = indexManager.get(mavenProject, progressService);
+		FuzzyMap<PropertyInfo> index = indexManager.get(mavenProject, progressService).getProperties();
 		PropertyInfo propertyInfo = index.get("demo.settings.user");
 		assertNotNull(propertyInfo);
 		assertEquals(String.class.getName(), propertyInfo.getType());
@@ -62,7 +62,7 @@ public class PropertiesIndexTest {
 		SpringPropertiesIndexManager indexManager = new SpringPropertiesIndexManager(
 				new ValueProviderRegistry(), null, null);
 		IJavaProject mavenProject = projects.mavenProject(CUSTOM_PROPERTIES_PROJECT);
-		FuzzyMap<PropertyInfo> index = indexManager.get(mavenProject, progressService);
+		FuzzyMap<PropertyInfo> index = indexManager.get(mavenProject, progressService).getProperties();
 		PropertyInfo propertyInfo = index.get("my.server.port");
 		assertNull(propertyInfo);
 	}

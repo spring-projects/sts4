@@ -125,7 +125,7 @@ public class IndexNavigatorTest {
 	 * Reset navigation state to point at the root of the index.
 	 */
 	public void start(PropertyIndexHarness harness) {
-		navigator = IndexNavigator.with(harness.getIndexProvider().getIndex(null));
+		navigator = IndexNavigator.with(harness.getIndexProvider().getIndex(null).getProperties());
 	}
 
 	/**

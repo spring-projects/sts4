@@ -42,7 +42,7 @@ public class DefaultSpringPropertyIndexProvider implements SpringPropertyIndexPr
 	}
 
 	@Override
-	public FuzzyMap<PropertyInfo> getIndex(IDocument doc) {
+	public SpringPropertyIndex getIndex(IDocument doc) {
 		Optional<IJavaProject> jp = javaProjectFinder.find(new TextDocumentIdentifier(doc.getUri()));
 		if (jp.isPresent()) {
 			return indexManager.get(jp.get(), progressService);

@@ -51,7 +51,7 @@ public class SpringPropertiesCompletionEngine implements ICompletionEngine {
 	 */
 	@Override
 	public Collection<ICompletionProposal> getCompletions(TextDocument doc, int offset) throws BadLocationException {
-		return new PropertiesCompletionProposalsCalculator(indexProvider.getIndex(doc),
+		return new PropertiesCompletionProposalsCalculator(indexProvider.getIndex(doc).getProperties(),
 				typeUtilProvider.getTypeUtil(sourceLinks, doc), completionFactory, doc, offset, preferLowerCaseEnums).calculate();
 	}
 

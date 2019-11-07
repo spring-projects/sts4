@@ -43,7 +43,7 @@ public class ApplicationYamlReconcileEngine extends YamlReconcileEngine {
 
 	@Override
 	protected YamlASTReconciler getASTReconciler(IDocument doc, IProblemCollector problemCollector) {
-		FuzzyMap<PropertyInfo> index = indexProvider.getIndex(doc);
+		FuzzyMap<PropertyInfo> index = indexProvider.getIndex(doc).getProperties();
 		if (index!=null && !index.isEmpty()) {
 			IndexNavigator nav = IndexNavigator.with(index);
 			return new ApplicationYamlASTReconciler(problemCollector, nav, typeUtilProvider.getTypeUtil(sourceLinks, doc), quickFixes);

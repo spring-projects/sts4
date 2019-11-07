@@ -201,7 +201,7 @@ public class ValueCompletionProcessor implements CompletionProvider {
 	}
 
 	private List<Match<PropertyInfo>> findMatches(String prefix, IDocument doc) {
-		FuzzyMap<PropertyInfo> index = indexProvider.getIndex(doc);
+		FuzzyMap<PropertyInfo> index = indexProvider.getIndex(doc).getProperties();
 		List<Match<PropertyInfo>> matches =index.find(camelCaseToHyphens(prefix));
 
 		//First the 'real' properties.

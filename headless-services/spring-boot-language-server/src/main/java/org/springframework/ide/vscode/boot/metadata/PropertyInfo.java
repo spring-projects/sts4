@@ -63,6 +63,36 @@ public class PropertyInfo {
 		public String getSourceMethod() {
 			return sourceMethod;
 		}
+		@Override
+		public int hashCode() {
+			final int prime = 31;
+			int result = 1;
+			result = prime * result + ((sourceMethod == null) ? 0 : sourceMethod.hashCode());
+			result = prime * result + ((sourceType == null) ? 0 : sourceType.hashCode());
+			return result;
+		}
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (getClass() != obj.getClass())
+				return false;
+			PropertySource other = (PropertySource) obj;
+			if (sourceMethod == null) {
+				if (other.sourceMethod != null)
+					return false;
+			} else if (!sourceMethod.equals(other.sourceMethod))
+				return false;
+			if (sourceType == null) {
+				if (other.sourceType != null)
+					return false;
+			} else if (!sourceType.equals(other.sourceType))
+				return false;
+			return true;
+		}
+		
 	}
 
 	final private String id;
@@ -173,11 +203,13 @@ public class PropertyInfo {
 	public String toString() {
 		return "PropertyInfo("+getId()+")";
 	}
-	public void addSource(ConfigurationMetadataSource source) {
+	public PropertySource addSource(ConfigurationMetadataSource source) {
 		if (sources==null) {
 			sources = new ArrayList<PropertySource>();
 		}
-		sources.add(new PropertySource(source));
+		PropertySource s = new PropertySource(source);
+		sources.add(s);
+		return s;
 	}
 
 	public PropertyInfo withId(String alias) {

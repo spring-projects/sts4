@@ -38,7 +38,7 @@ public class PropertiesHoverInfoProvider implements HoverInfoProvider {
 
 	@Override
 	public Tuple2<Renderable, IRegion> getHoverInfo(IDocument document, int offset) throws Exception {
-		return new PropertiesHoverCalculator(indexProvider.getIndex(document),
+		return new PropertiesHoverCalculator(indexProvider.getIndex(document).getProperties(),
 					typeUtilProvider.getTypeUtil(sourceLinks, document), document, offset).calculate();
 	}
 }

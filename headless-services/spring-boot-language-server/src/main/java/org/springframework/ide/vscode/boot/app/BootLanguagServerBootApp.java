@@ -41,6 +41,7 @@ import org.springframework.ide.vscode.boot.metadata.ClassReferenceProvider;
 import org.springframework.ide.vscode.boot.metadata.LoggerNameProvider;
 import org.springframework.ide.vscode.boot.metadata.ProjectBasedPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
+import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndex;
 import org.springframework.ide.vscode.boot.metadata.ValueProviderRegistry;
 import org.springframework.ide.vscode.boot.yaml.completions.ApplicationYamlAssistContext;
 import org.springframework.ide.vscode.commons.languageserver.LanguageServerRunner;
@@ -172,7 +173,7 @@ public class BootLanguagServerBootApp {
 			@Override
 			public YamlAssistContext getGlobalAssistContext(YamlDocument ydoc) {
 				IDocument doc = ydoc.getDocument();
-				FuzzyMap<PropertyInfo> index = params.indexProvider.getIndex(doc);
+				SpringPropertyIndex index = params.indexProvider.getIndex(doc);
 				return ApplicationYamlAssistContext.global(ydoc, index, new PropertyCompletionFactory(), params.typeUtilProvider.getTypeUtil(sourceLinks, doc), RelaxedNameConfig.COMPLETION_DEFAULTS, javaElementLocationProvider);
 			}
 		};

@@ -46,7 +46,7 @@ public class PropertyIndexHarness {
 
 	protected final SpringPropertyIndexProvider indexProvider = new SpringPropertyIndexProvider() {
 		@Override
-		public FuzzyMap<PropertyInfo> getIndex(IDocument doc) {
+		public SpringPropertyIndex getIndex(IDocument doc) {
 			synchronized (PropertyIndexHarness.this) {
 				if (index==null) {
 					IClasspath classpath = testProject == null ? null : testProject.getClasspath();

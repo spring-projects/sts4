@@ -3849,7 +3849,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 	
-	@Test public void definitionLinks_bug_169240253() throws Exception {
+	@Test public void definitionLinks_bug_169240253_nested() throws Exception {
 		MavenJavaProject p = createPredefinedMavenProject("boot-web-actuator-2.2.0");
 		//See: https://www.pivotaltracker.com/story/show/169240253
 		useProject(p );
@@ -3874,6 +3874,26 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
+	@Test public void definitionLinks_bug_169240253_parent() throws Exception {
+		MavenJavaProject p = createPredefinedMavenProject("boot-web-actuator-2.2.0");
+		//See: https://www.pivotaltracker.com/story/show/169240253
+		useProject(p );
+		Editor editor = newEditor(
+				"management:\n" + 
+				"  endpoints:\n" + 
+				"    web:\n" + 
+				"      exposure:\n" + 
+				"        exclude: '*'\n" +
+				"spring:\n" + 
+				"  messages:\n" + 
+				"    basename: messages/messages\n"
+		);
+		//org.springframework.boot.actuate.autoconfigure.endpoint.web.WebEndpointProperties.getExposure()
+		definitionLinkAsserts.assertLinkTargets(editor, "exposure", p, editor.rangeOf("exposure"), 
+				method("org.springframework.boot.actuate.autoconfigure.endpoint.web.WebEndpointProperties", "getExposure")
+		);
+	}
+	
 	 @Test public void testClassReferenceInValueLink() throws Exception {
 		Editor editor;
 		MavenJavaProject project = createPredefinedMavenProject("empty-boot-1.3.0-with-mongo");
@@ -3992,7 +4012,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		useProject(createPredefinedMavenProject("boot-1.3.3-app-with-resource-prop"));
 
 		//Check the metadata reflects the 'handle-as':
-		PropertyInfo metadata = getIndexProvider().getIndex(null).get("my.welcome.path");
+		PropertyInfo metadata = getIndexProvider().getIndex(null).getProperties().get("my.welcome.path");
 		assertEquals("org.springframework.core.io.Resource", metadata.getType());
 
 		//Check the content assist based on it works too:

@@ -64,7 +64,7 @@ public class PropertiesJavaDefinitionHandler implements DefinitionHandler, Langu
 		try {
 			TextDocument doc = documents.get(position);
 			TypeUtil typeUtil = params.typeUtilProvider.getTypeUtil(sourceLinks, doc);
-			FuzzyMap<PropertyInfo> index = params.indexProvider.getIndex(doc);
+			FuzzyMap<PropertyInfo> index = params.indexProvider.getIndex(doc).getProperties();
 			int offset;
 			offset = doc.toOffset(position.getPosition());
 			return getDefinitions(index, typeUtil, doc, offset);

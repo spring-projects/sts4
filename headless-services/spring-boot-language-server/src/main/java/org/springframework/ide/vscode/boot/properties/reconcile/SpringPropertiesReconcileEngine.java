@@ -90,7 +90,7 @@ public class SpringPropertiesReconcileEngine implements IReconcileEngine {
 
 	@Override
 	public void reconcile(IDocument doc, IProblemCollector problemCollector) {
-		FuzzyMap<PropertyInfo> index = fIndexProvider.getIndex(doc);
+		FuzzyMap<PropertyInfo> index = fIndexProvider.getIndex(doc).getProperties();
 		problemCollector.beginCollecting();
 		try {
 			ParseResults results = parser.parse(doc.get());

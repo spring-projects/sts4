@@ -96,7 +96,7 @@ public class AdHocSpringPropertyIndexProvider implements ProjectBasedPropertyInd
 				log.error("", e);
 			}
 		}
-		return SpringPropertyIndex.EMPTY_INDEX;
+		return SpringPropertyIndex.EMPTY_INDEX.getProperties();
 	}
 
 	private void processFile(Function<File, Properties> parserFunction, File file, SimplePropertyIndex index) {
