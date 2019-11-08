@@ -305,9 +305,6 @@ public class ConcourseEditorTest {
 				, // ==============
 				"<*>"
 				, // =>
-				"aggregate:\n" +
-				"    - <*>"
-				, // ==============
 				"do:\n" +
 				"    - <*>"
 				, // ==============
@@ -322,6 +319,9 @@ public class ConcourseEditorTest {
 				, // ==============
 				"try:\n" +
 				"      <*>"
+				, // ==============
+				"aggregate:\n" +
+				"    - <*>"
 		);
 	}
 
@@ -4168,13 +4168,13 @@ public class ConcourseEditorTest {
 				"→ timeout",
 				"→ vars",
 				//Completions with '-'
-				"- aggregate",
 				"- do",
 				"- get",
 				"- in_parallel",
 				"- put",
 				"- task",
 				"- try",
+				"- aggregate",
 				//Dedented completions
 				"← groups",
 				"← resource_types",
@@ -4363,7 +4363,7 @@ public class ConcourseEditorTest {
 			"jobs:\n" +
 			"- name: build-it\n" +
 			"  plan:\n" +
-			"  - aggregate:\n" +
+			"  - in_parallel:\n" +
 			"    # - put: version\n" +
 			"    - get: source-repo\n" +
 			"- name: test-it\n" +
@@ -4388,7 +4388,7 @@ public class ConcourseEditorTest {
 			"jobs:\n" +
 			"- name: build-it\n" +
 			"  plan:\n" +
-			"  - aggregate:\n" +
+			"  - in_parallel:\n" +
 			"    - put: version\n" +
 			"    # - get: source-repo\n" +
 			"- name: test-it\n" +
@@ -4414,7 +4414,7 @@ public class ConcourseEditorTest {
 			"jobs:\n" +
 			"- name: build-it\n" +
 			"  plan:\n" +
-			"  - aggregate:\n" +
+			"  - in_parallel:\n" +
 			"    - put: version\n" +
 			"    - get: source-repo\n" +
 			"- name: test-it\n" +
@@ -4477,7 +4477,10 @@ public class ConcourseEditorTest {
 				"    - build-it"
 		);
 
-		editor.assertProblems("get: ^versi^|resource does not exist");
+		editor.assertProblems(
+				"aggregate|Deprecated",
+				"get: ^versi^|resource does not exist"
+		);
 	}
 
 	@Test public void relaxedContentAssistContextForListItem_sameLine() throws Exception {
@@ -4609,6 +4612,14 @@ public class ConcourseEditorTest {
 				"  plan:\n" +
 				"  in_"
 		);
+		editor.assertCompletionWithLabel("- in_parallel",
+				"jobs:\n" +
+				"- name: build-docker-image\n" +
+				"  serial: true\n" +
+				"  plan:\n" +
+				"  - in_parallel:\n" +
+				"      <*>"
+		);
 	}
 
 	@Test public void relaxedContentAssist_primary_properties() throws Exception{
@@ -4716,7 +4727,7 @@ public class ConcourseEditorTest {
 				"jobs:\n" +
 				"- name: build-it\n" +
 				"  plan:\n" +
-				"  - aggregate:\n" +
+				"  - in_parallel:\n" +
 				"    - get: not-used\n" +  // <-- This isn't a real use but looks like one!
 				"      resource: version\n" +
 				"    - put: source-repo\n"

@@ -381,7 +381,7 @@ public class PipelineYmlSchema implements YamlSchema {
 		
 
 		YBeanUnionType step = f.yBeanUnion("Step", stepTypes);
-		addProp(aggregateStep, "aggregate", f.yseq(step));
+		addProp(aggregateStep, "aggregate", f.yseq(step)).isDeprecated("Deprecated in favor of `in_parallel`");
 		YBeanType inParallelStepOptions = f.ybean("InParallelStepOptions");
 		addProp(inParallelStepOptions, "steps", f.yseq(step));
 		addProp(inParallelStepOptions, "limit", t_pos_integer);

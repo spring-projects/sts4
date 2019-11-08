@@ -81,7 +81,7 @@ jobs:
   - task: build-vscode-extensions
     file: sts4/concourse/tasks/build-vscode-extensions.yml
     on_success:
-      aggregate:
+      in_parallel:
       - put: s3-manifest-yaml-vsix
         params: 
           file: vsix-files/vscode-manifest-yaml-*.vsix
@@ -98,7 +98,7 @@ jobs:
            Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
 - name: build-website
   plan:
-  - aggregate:
+  - in_parallel:
     - get: sts4
     - get: s3-manifest-yaml-vsix
       passed:
