@@ -7,7 +7,6 @@ public class SpringIntegrationNodeJson extends PrettyJson {
 
 	private int nodeId;
 	private String name;
-	private JsonElement stats;
 	private String componentType;
 	private JsonObject properties;
 	
@@ -15,8 +14,10 @@ public class SpringIntegrationNodeJson extends PrettyJson {
 	private String output;
 	private String errors;
 	
-	private String[] routes;
+	private JsonElement sendTimers;
+	private JsonElement receiveCounters;
 	
+	private String[] routes;
 	
 	public int getNodeId() {
 		return nodeId;
@@ -29,12 +30,6 @@ public class SpringIntegrationNodeJson extends PrettyJson {
 	}
 	public void setName(String name) {
 		this.name = name;
-	}
-	public JsonElement getStats() {
-		return stats;
-	}
-	public void setStats(JsonObject stats) {
-		this.stats = stats;
 	}
 	public String getComponentType() {
 		return componentType;
@@ -72,9 +67,16 @@ public class SpringIntegrationNodeJson extends PrettyJson {
 	public void setRoutes(String[] routes) {
 		this.routes = routes;
 	}
-	public void setStats(JsonElement stats) {
-		this.stats = stats;
+	public JsonElement getSendTimers() {
+		return sendTimers;
 	}
-	
-	
+	public void setSendTimers(JsonElement sendTimers) {
+		this.sendTimers = sendTimers;
+	}
+	public JsonElement getReceiveCounters() {
+		return receiveCounters;
+	}
+	public void setReceiveCounters(JsonElement receiveCounters) {
+		this.receiveCounters = receiveCounters;
+	}
 }

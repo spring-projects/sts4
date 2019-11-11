@@ -53,8 +53,10 @@ public class SIDiagramGenerator implements DiagramGenerator {
 			"publish-subscribe-channel",
 			"null-channel"
 	);
-
-	private String labelProperty = "stats.sendCount";
+	
+	private String edgeSourceLabelProperty = "sendTimers.successes.count";
+	
+	private String edgeTargetLabelProperty = "receiveCounters.successes";
 
 	@Autowired
 	GraphDataProvider graphDataProvider;
@@ -111,14 +113,15 @@ public class SIDiagramGenerator implements DiagramGenerator {
 			String sourceId = link.getFrom()+"";
 			String targetId = link.getTo()+"";
 
-			SEdge e = createEdge(id, sourceId, targetId, getEdgeLabel(nodesById.get(sourceId)), link.getType());
+			SEdge e = createEdge(id, sourceId, targetId, getEdgeLabel(nodesById.get(sourceId), edgeSourceLabelProperty),
+					getEdgeLabel(nodesById.get(targetId), edgeTargetLabelProperty), link.getType());
 			children.add(e);
 		}
 
 		return graph;
 	}
 
-	private String getEdgeLabel(SpringIntegrationNodeJson springIntegrationNode) {
+	private String getEdgeLabel(SpringIntegrationNodeJson springIntegrationNode, String labelProperty) {
 		JsonElement json = gson.toJsonTree(springIntegrationNode);
 		for (String prop : labelProperty.split("\\.")) {
 			if (json instanceof JsonObject) {
@@ -263,7 +266,7 @@ public class SIDiagramGenerator implements DiagramGenerator {
 		}
 	}
 
-	private static SEdge createEdge(String id, String sourceId, String targetId, String labelStr, String linkType) {
+	private static SEdge createEdge(String id, String sourceId, String targetId, String sourceLabelStr, String targetLabelStr, String linkType) {
 		SEdge edge = new SEdge();
 		edge.setId(id);
 		edge.setType("edge:straight");
@@ -286,7 +289,7 @@ public class SIDiagramGenerator implements DiagramGenerator {
 			break;
 		}
 
-		if (StringUtil.hasText(labelStr)) {
+		if (StringUtil.hasText(sourceLabelStr)) {
 			SLabel label = new SLabel();
 			label.setType("node:label");
 			EdgePlacement edgePlacement = new EdgePlacement();
@@ -294,14 +297,32 @@ public class SIDiagramGenerator implements DiagramGenerator {
 			edgePlacement.setPosition(0.0);
 			edgePlacement.setSide(Side.right);
 			label.setEdgePlacement(edgePlacement);
-			label.setId(id + "-label1");
-			label.setText(labelStr);
+			label.setId(id + "-source-label");
+			label.setText(sourceLabelStr);
 
 			label.setPosition(new Point(20,30));
 			ArrayList<SModelElement> children = new ArrayList<>();
 			children.add(label);
 			edge.setChildren(children);
 		}
+		
+		if (StringUtil.hasText(targetLabelStr)) {
+			SLabel label = new SLabel();
+			label.setType("node:label");
+			EdgePlacement edgePlacement = new EdgePlacement();
+			edgePlacement.setRotate(true);
+			edgePlacement.setPosition(1.0);
+			edgePlacement.setSide(Side.left);
+			label.setEdgePlacement(edgePlacement);
+			label.setId(id + "-target-label");
+			label.setText(targetLabelStr);
+
+			label.setPosition(new Point(20,30));
+			ArrayList<SModelElement> children = new ArrayList<>();
+			children.add(label);
+			edge.setChildren(children);
+		}
+
 
 		return edge;
 	}
