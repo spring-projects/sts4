@@ -31,8 +31,6 @@ import org.eclipse.lsp4j.TextEdit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits.TextReplace;
-import org.springframework.ide.vscode.commons.languageserver.util.LspClient;
-import org.springframework.ide.vscode.commons.languageserver.util.LspClient.Client;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.languageserver.util.SortKeys;
@@ -166,12 +164,13 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 					}
 				}
 				list.setItems(items);
-				//This is a hack. It bypasses lsp4e filtering / sorting because it
-				// it behaves totally bonkers. See: https://bugs.eclipse.org/bugs/show_bug.cgi?id=535823
-				// See also https://www.pivotaltracker.com/story/show/159667257
-				if (LspClient.currentClient()==Client.ECLIPSE) {
-					list.setIsIncomplete(true); 
-				}
+				//This is a hack is no  longer  needed but keeping it as  a reference:
+				// See: https://bugs.eclipse.org/bugs/show_bug.cgi?id=535823
+				// Reason  hack is not needed is because of the fix in: https://www.pivotaltracker.com/story/show/159667257
+				
+//				if (LspClient.currentClient()==Client.ECLIPSE) {
+//					list.setIsIncomplete(true); 
+//				}
 				return list;
 			})
 			.doOnNext(x -> log.info("Got {} completions", x.getItems().size()))
