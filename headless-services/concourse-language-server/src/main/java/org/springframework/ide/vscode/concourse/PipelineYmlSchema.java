@@ -246,6 +246,7 @@ public class PipelineYmlSchema implements YamlSchema {
 			addProp(t_image_resource, "type", t_resource_type_name).isRequired(true);
 			t_image_resource.addProperty(resourceProperties.get("source"));
 			addProp(t_image_resource, "params", t_params);
+
 			//TODO: make ImageResourceParams dynamic based on resource type. Somewhat like below, but that code isn't exactly
 			// right (yet :-)
 //			addProp(t_image_resource, "params", f.contextAware("ImageResourceParams", (dc) ->
@@ -433,7 +434,9 @@ public class PipelineYmlSchema implements YamlSchema {
 		addProp(resourceType, "type", t_resource_type_name).isRequired(true);
 		addProp(resourceType, "source", resourceSource);
 		addProp(resourceType, "privileged", t_boolean);
-		addProp(resourceType, "params", t_params);
+		addProp(resourceType, "params", f.contextAware("GetParams", (dc) ->
+			resourceTypes.getInParamsType( getParentPropertyValue("type", models, dc))
+		));
 		addProp(resourceType, "check_every", t_duration);
 		addProp(resourceType, "tags", t_strings);
 		addProp(resourceType, "unique_version_history", t_boolean);

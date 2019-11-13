@@ -1781,7 +1781,8 @@ public class ConcourseEditorTest {
 				"  check_every: bad-duration\n" + 
 				"  privileged: is-priviliged\n" +
 				"  params:\n" +
-				"    foo: bar\n"+
+				"    foo_param: bar\n"+
+				"    format: rootfs\n" +
 				"  tags: tags-list\n" +
 				"  unique_version_history: is-unique-hist\n" +
 				"  source:\n" + 
@@ -1790,6 +1791,7 @@ public class ConcourseEditorTest {
 		editor.assertProblems(
 				"bad-duration|Duration",
 				"is-priviliged|boolean",
+				"foo_param|Unknown",
 				"tags-list|Sequence",
 				"is-unique-hist|boolean"
 		);
