@@ -149,7 +149,7 @@ public class SpringProcessConnectorService {
 		
 		this.scheduler.schedule(() -> {
 			// Use the same progressId to indicate with progress is done
-			String progressId = "spring-process-connector-service-refresh-data";
+			String progressId = "spring-process-connector-service-refresh-data-"+processKey;
 			try {
 				progress(progressId, progressMessage);
 				SpringProcessLiveData newLiveData = connector.refresh();
