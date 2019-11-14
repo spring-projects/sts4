@@ -10,6 +10,7 @@ $(curl -s -X POST \
   ${NOTARIZE_SERVICE_URL}/macos-notarization-service/notarize)
 	  
 echo "Notarization request submitted"
+echo ${RESPONSE}
   
 UUID=$(echo ${RESPONSE} | jq -r '.uuid')
 
