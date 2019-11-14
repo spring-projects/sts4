@@ -148,6 +148,7 @@
 									<arg value="--force"/>
 									<arg value="--entitlements"/>
 									<arg value="${project.build.directory}/../entitlements.plist"/>
+									<arg value="--options=runtime"/>
 								    <arg value="--keychain"/>
 								    <arg value="${env.KEYCHAIN}"/>
 								    <arg value="-s"/>
