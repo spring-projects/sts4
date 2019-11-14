@@ -132,6 +132,7 @@
 				<version>1.7</version>
 				<executions>
 
+					<!-- macos code signing requires the build to run on a macOS machine with Xcode installed, including the appropriate Apple Developer certificates for code signing -->
 					<execution>
 						<id>osx-app-signing</id>
 						<phase>package</phase>
@@ -147,10 +148,11 @@
 									<arg value="--force"/>
 									<arg value="--entitlements"/>
 									<arg value="${project.build.directory}/../entitlements.plist"/>
+									<arg value="--options=runtime"/>
 								    <arg value="--keychain"/>
 								    <arg value="${env.KEYCHAIN}"/>
 								    <arg value="-s"/>
-								    <arg value="Developer ID Application: Trevor Marshall"/>
+								    <arg value="${env.MACOS_CERTIFICATE_ID}"/>
 								    <arg value="${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/macosx/cocoa/x86_64/SpringToolSuite4.app"/>
 								</exec>
 
@@ -161,6 +163,7 @@
 						</goals>
 					</execution>
 
+					<!-- the creation of the DMG file is based on appdmg: https://www.npmjs.com/package/appdmg -->
 					<execution>
 						<id>osx-dmg-creation</id>
 						<phase>verify</phase>
@@ -197,8 +200,31 @@
 								    <arg value="--keychain"/>
 								    <arg value="${env.KEYCHAIN}"/>
 								    <arg value="-s"/>
-								    <arg value="Developer ID Application: Trevor Marshall"/>
+								    <arg value="${env.MACOS_CERTIFICATE_ID}"/>
 								    <arg value="${dmgName}"/>
+								</exec>
+
+							</target>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+
+					<!-- the notarizing of the DMG file needs this service running somewhere: https://github.com/eclipse-cbi/macos-notarization-service -->
+					<execution>
+						<id>osx-dmg-notarizing</id>
+						<phase>verify</phase>
+						<configuration>
+							<skip>${skip.osx.notarizing}</skip>
+							<target>
+
+								<property name="dmgName" value="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-macosx.cocoa.x86_64.dmg" />
+
+								<exec executable="/bin/bash" failonerror="true">
+									<arg value="${project.build.directory}/../macos-notarize.sh"/>
+									<arg value="${dmgName}"/>
+								    <arg value="${env.MACOS_NOTARIZATION_SERVICE_URL}"/>
 								</exec>
 
 							</target>
