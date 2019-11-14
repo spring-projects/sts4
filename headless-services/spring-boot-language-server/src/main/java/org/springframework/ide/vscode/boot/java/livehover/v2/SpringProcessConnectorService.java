@@ -17,6 +17,7 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.commons.languageserver.ProgressService;
 
 /**
  * @author Martin Lippert
@@ -35,12 +36,15 @@ public class SpringProcessConnectorService {
 	private final ConcurrentMap<String, Boolean> connectedSuccess;
 
 	private final SpringProcessConnectionChangeListener connectorListener;
+
+	private final ProgressService progressService;
 	
-	public SpringProcessConnectorService(SpringProcessLiveDataProvider liveDataProvider) {
+	public SpringProcessConnectorService(ProgressService progressService, SpringProcessLiveDataProvider liveDataProvider) {
 		this.liveDataProvider = liveDataProvider;
 		this.scheduler = new ScheduledThreadPoolExecutor(10);
 		this.connectors = new ConcurrentHashMap<>();
 		this.connectedSuccess = new ConcurrentHashMap<>();
+		this.progressService = progressService;
 		
 		this.connectorListener = new SpringProcessConnectionChangeListener() {
 			@Override
@@ -140,11 +144,15 @@ public class SpringProcessConnectorService {
 	}
 
 	private void scheduleRefresh(String processKey, SpringProcessConnector connector, long delay, TimeUnit unit, int retryNo) {
-		log.info("schedule task to refresh data from process: " + processKey + " - retry no: " + retryNo);
+		String progressMessage = "Refreshing data from Spring process: " + processKey + " - retry no: " + retryNo;
+		log.info(progressMessage);
 		
 		this.scheduler.schedule(() -> {
+			String progressId = "uniqueId";
 			try {
+				progress(progressId, progressMessage);
 				SpringProcessLiveData newLiveData = connector.refresh();
+
 				if (newLiveData != null) {
 					if (!this.liveDataProvider.add(processKey, newLiveData)) {
 						this.liveDataProvider.update(processKey, newLiveData);
@@ -152,18 +160,33 @@ public class SpringProcessConnectorService {
 					
 					this.connectedSuccess.put(processKey, true);
 				}
+				progressDone(progressId);
 			}
 			catch (Exception e) {
+
 				log.info("problem occured during process live data refresh", e);
 				
 				if (retryNo < RETRY_MAX_NO) {
 					scheduleRefresh(processKey, connector, RETRY_DELAY_IN_SECONDS, TimeUnit.SECONDS, retryNo + 1);
 				}
 				else {
+					progressDone(progressId);
+
 					disconnectProcess(processKey);
 				}
 			}
 		}, delay, unit);
 	}
 
+	private void progress(String taskId, String message) {
+		if (this.progressService != null) {
+			this.progressService.progressEvent(taskId, message);
+		}
+	}
+	
+	private void progressDone(String taskId) {
+		if (this.progressService != null) {
+			this.progressService.progressDone(taskId);
+		}
+	}
 }

@@ -19,7 +19,6 @@ import org.springframework.ide.vscode.commons.languageserver.ProgressService;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 import org.springframework.ide.vscode.commons.util.FileObserver;
-import org.springframework.ide.vscode.commons.util.FuzzyMap;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 
 public class DefaultSpringPropertyIndexProvider implements SpringPropertyIndexProvider {
@@ -29,7 +28,7 @@ public class DefaultSpringPropertyIndexProvider implements SpringPropertyIndexPr
 
 	private Runnable changeHandler = null;
 
-	private ProgressService progressService = (id, msg) -> { /*ignore*/ };
+	private ProgressService progressService = ProgressService.NO_PROGRESS;
 
 	public DefaultSpringPropertyIndexProvider(JavaProjectFinder javaProjectFinder, ProjectObserver projectObserver, FileObserver fileObserver, ValueProviderRegistry valueProviders) {
 		this.javaProjectFinder = javaProjectFinder;

@@ -32,7 +32,6 @@ import org.eclipse.lsp4j.ApplyWorkspaceEditParams;
 import org.eclipse.lsp4j.ApplyWorkspaceEditResponse;
 import org.eclipse.lsp4j.ClientCapabilities;
 import org.eclipse.lsp4j.CodeLensOptions;
-import org.eclipse.lsp4j.CompletionOptions;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.eclipse.lsp4j.ExecuteCommandOptions;
@@ -84,7 +83,6 @@ import org.springframework.ide.vscode.commons.util.CollectionUtil;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -118,10 +116,19 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 	private STS4LanguageClient client;
 	private final LanguageServerProperties props;
 
-	private ProgressService progressService = (String taskId, String statusMsg) -> {
-		STS4LanguageClient client = SimpleLanguageServer.this.client;
-		if (client!=null) {
-			client.progress(new ProgressParams(taskId, statusMsg));
+	private ProgressService progressService = new ProgressService()  {
+
+		@Override
+		public void progressEvent(String taskId, String statusMsg) {
+			STS4LanguageClient client = SimpleLanguageServer.this.client;
+			if (client!=null) {
+				client.progress(new ProgressParams(taskId, statusMsg));
+			}
+		}
+
+		@Override
+		public void progressDone(String taskId) {
+			progressEvent(taskId, null);
 		}
 	};
 

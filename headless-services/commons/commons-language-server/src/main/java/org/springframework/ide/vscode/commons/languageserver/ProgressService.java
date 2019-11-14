@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016-2017 Pivotal, Inc.
+ * Copyright (c) 2016-2019 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,9 +11,21 @@
 
 package org.springframework.ide.vscode.commons.languageserver;
 
-@FunctionalInterface
 public interface ProgressService {
 
+	public static ProgressService NO_PROGRESS = new ProgressService() {
+		
+		@Override
+		public void progressEvent(String taskId, String statusMsg) {
+			
+		}
+		
+		@Override
+		public void progressDone(String taskId) {
+		
+		}
+	};
+	
 	/**
 	 * Sends a progress event to the LSP client. A taskId is an arbirary id
 	 * that can be chosen by the caller. The purpose of the id is to be a 'unique'
@@ -31,5 +43,7 @@ public interface ProgressService {
 	 * @param statusMsg
 	 */
 	void progressEvent(String taskId, String statusMsg);
+	
+	void progressDone(String taskId);
 
 }

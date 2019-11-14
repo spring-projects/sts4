@@ -152,7 +152,7 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		//
 
 		// central live data components (to coordinate live data flow)
-		liveDataService = new SpringProcessConnectorService(liveDataProvider);
+		liveDataService = new SpringProcessConnectorService(server.getProgressService(), liveDataProvider);
 
 		// connect the live data provider with the hovers (for data extraction and live updates)
 		hoverProvider = createHoverHandler(projectFinder, sourceLinks, liveDataProvider);
