@@ -1,6 +1,6 @@
 {
   "name": "@pivotal-tools/theia-languageclient",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "Theia IDE language client for STS4 language servers",
   "license": "EPL-1.0",
   "repository": "https://github.com/spring-projects/sts4",
@@ -16,7 +16,7 @@
     "vscode": "^1.25.0"
   },
   "dependencies": {
-    "@pivotal-tools/jvm-launch-utils": "0.0.11",
+    "@pivotal-tools/jvm-launch-utils": "0.0.14",
     "@theia/core": "latest",
     "@theia/editor": "latest",
     "@theia/languages": "latest",
