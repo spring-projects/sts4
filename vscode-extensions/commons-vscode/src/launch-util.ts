@@ -338,7 +338,8 @@ interface MoveCursorResponse {
 }
 
 interface ProgressParams {
-    id: string
+	id: string
+	title: string
     statusMsg?: string
 }
 
@@ -367,14 +368,24 @@ class ProgressService {
     handle(params: ProgressParams) {
         const progressHandler = this.status.get(params.id);
         if (progressHandler) {
-            progressHandler.complete();
+			if(params.statusMsg) {
+				progressHandler.updateStatus(params.statusMsg, -1);
+			} else {
+				progressHandler.complete();
+			}
         } else {
             if (params.statusMsg) {
                 window.withProgress({
                     location: ProgressLocation.Notification,
-                    title: params.statusMsg,
+                    title: "",
                     cancellable: false
-                }, progress => new Promise(resolve => this.status.set(params.id, new ProgressHandle(progress, resolve))));
+                }, progress => new Promise(resolve => {
+					this.status.set(params.id, new ProgressHandle(progress, resolve));
+					progress.report({
+						message: params.statusMsg,
+						increment: -1
+					})
+				}));
             }
         }
 
