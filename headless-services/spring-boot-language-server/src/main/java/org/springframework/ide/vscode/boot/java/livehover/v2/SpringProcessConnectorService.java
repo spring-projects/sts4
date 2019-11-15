@@ -40,7 +40,7 @@ public class SpringProcessConnectorService {
 
 	private final ProgressService progressService;
 	
-	private int progressKey = 0;
+	private int progressIdKey = 0;
 	
 	public SpringProcessConnectorService(ProgressService progressService, SpringProcessLiveDataProvider liveDataProvider) {
 		this.liveDataProvider = liveDataProvider;
@@ -197,9 +197,8 @@ public class SpringProcessConnectorService {
 	}
 	
 	private ProgressTask getProgressTask(ProgressTask progressTask, String prefixId) {
-		String uniqueId = prefixId + progressKey++;
-		ProgressTask task = (progressTask == null)
-				? this.progressService.createProgressTask(uniqueId)
+		ProgressTask task = progressTask == null
+				? this.progressService.createProgressTask(prefixId + progressIdKey++)
 				: progressTask;
 		return task;
 	}
