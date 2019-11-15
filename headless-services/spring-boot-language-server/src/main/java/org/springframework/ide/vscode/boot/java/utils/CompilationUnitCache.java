@@ -106,6 +106,7 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 			
 			@Override
 			public void deleted(IJavaProject project) {
+				logger.info("CU Cache: deleted project {}", project.getElementName());
 				CompletableFuture.runAsync(() -> {
 					writeLock.lock();
 					try {
@@ -118,6 +119,7 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 			
 			@Override
 			public void created(IJavaProject project) {
+				logger.info("CU Cache: created project {}", project.getElementName());
 				CompletableFuture.runAsync(() -> {
 					writeLock.lock();
 					try {
@@ -132,6 +134,7 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 			
 			@Override
 			public void changed(IJavaProject project) {
+				logger.info("CU Cache: changed project {}", project.getElementName());
 				CompletableFuture.runAsync(() -> {
 					writeLock.lock();
 					try {
@@ -147,6 +150,7 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 
 		if (this.projectObserver != null) {
 			this.projectObserver.addListener(projectListener);
+			logger.info("CU Cache: Adding project listener");
 		}
 		
 	}
@@ -154,6 +158,7 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 	public void dispose() {
 		if (projectObserver != null) {
 			projectObserver.removeListener(projectListener);
+			logger.info("Dispose CU Cache: Removing project listener");
 		}
 	}
 
