@@ -45,5 +45,9 @@ public interface ProgressService {
 	void progressEvent(String taskId, String statusMsg);
 	
 	void progressDone(String taskId);
+	
+	default ProgressTask createProgressTask(String taskId) {
+		return new ProgressTask(taskId, this);
+	}
 
 }
