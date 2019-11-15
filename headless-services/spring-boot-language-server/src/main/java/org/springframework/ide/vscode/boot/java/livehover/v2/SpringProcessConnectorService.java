@@ -109,11 +109,16 @@ public class SpringProcessConnectorService {
 	}
 	
 	private void scheduleConnect(String processKey, SpringProcessConnector connector, long delay, TimeUnit unit, int retryNo) {
-		log.info("schedule task to connect to process: " + processKey + " - retry no: " + retryNo);
-		
+		String progressMessage = "Connecting to process: " + processKey + " - retry no: " + retryNo;
+		log.info(progressMessage);
+		String progressId = "spring-process-connector-service-connect-"+processKey;
+
 		this.scheduler.schedule(() -> {
 			try {
+				progress(progressId, progressMessage);
 				connector.connect();
+				progressDone(progressId);
+				
 				refreshProcess(processKey);
 			}
 			catch (Exception e) {
@@ -121,6 +126,8 @@ public class SpringProcessConnectorService {
 
 				if (retryNo < RETRY_MAX_NO) {
 					scheduleConnect(processKey, connector, RETRY_DELAY_IN_SECONDS, TimeUnit.SECONDS, retryNo + 1);
+				} else {
+					progressDone(progressId);
 				}
 			}
 		}, delay, unit);
