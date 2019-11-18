@@ -16,7 +16,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -44,12 +43,15 @@ import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
+import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
+import org.springframework.ide.vscode.commons.util.AsyncRunner;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
+import reactor.core.scheduler.Schedulers;
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 
@@ -65,14 +67,14 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 	private Cache<IJavaProject, Tuple2<List<Classpath>, INameEnvironmentWithProgress>> lookupEnvCache;
 	private ProjectObserver.Listener projectListener;
 	private SimpleTextDocumentService documents;
+	private AsyncRunner async;
 
 	private ReadLock readLock;
 	private WriteLock writeLock;
 
-	public CompilationUnitCache(JavaProjectFinder projectFinder, SimpleTextDocumentService documents, ProjectObserver projectObserver) {
+	public CompilationUnitCache(JavaProjectFinder projectFinder, SimpleLanguageServer server, ProjectObserver projectObserver) {
 		this.projectFinder = projectFinder;
 		this.projectObserver = projectObserver;
-		this.documents = documents;
 		this.lookupEnvCache = CacheBuilder.newBuilder().build();
 		
 		// PT 154618835 - Avoid retaining the CU in the cache as it consumes memory if it hasn't been
@@ -86,12 +88,16 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 		readLock = lock.readLock();
 		writeLock = lock.writeLock();
 
+		this.documents = server == null ? null : server.getTextDocumentService();
+		this.async = server == null ? new AsyncRunner(Schedulers.single()) : server.getAsync();
+		
+
 		if (documents != null) {
 			documents.onDidChangeContent(doc -> invalidateCuForJavaFile(doc.getDocument().getId().getUri()));
 			documents.onDidClose(doc -> invalidateCuForJavaFile(doc.getId().getUri()));
 		}
 
-		CompletableFuture.runAsync(() -> {
+		async.execute(() -> {
 			writeLock.lock();
 			try {
 				for (IJavaProject project : projectFinder.all()) {
@@ -107,7 +113,7 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 			@Override
 			public void deleted(IJavaProject project) {
 				logger.info("CU Cache: deleted project {}", project.getElementName());
-				CompletableFuture.runAsync(() -> {
+				async.execute(() -> {
 					writeLock.lock();
 					try {
 						invalidateProject(project);
@@ -120,7 +126,7 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 			@Override
 			public void created(IJavaProject project) {
 				logger.info("CU Cache: created project {}", project.getElementName());
-				CompletableFuture.runAsync(() -> {
+				async.execute(() -> {
 					writeLock.lock();
 					try {
 						invalidateProject(project);
@@ -135,7 +141,7 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 			@Override
 			public void changed(IJavaProject project) {
 				logger.info("CU Cache: changed project {}", project.getElementName());
-				CompletableFuture.runAsync(() -> {
+				async.execute(() -> {
 					writeLock.lock();
 					try {
 						invalidateProject(project);
@@ -150,7 +156,6 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 
 		if (this.projectObserver != null) {
 			this.projectObserver.addListener(projectListener);
-			logger.info("CU Cache: Adding project listener");
 		}
 		
 	}
@@ -158,7 +163,6 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 	public void dispose() {
 		if (projectObserver != null) {
 			projectObserver.removeListener(projectListener);
-			logger.info("Dispose CU Cache: Removing project listener");
 		}
 	}
 

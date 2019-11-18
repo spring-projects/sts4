@@ -40,7 +40,6 @@ import org.springframework.ide.vscode.boot.metadata.AdHocSpringPropertyIndexProv
 import org.springframework.ide.vscode.boot.metadata.ClassReferenceProvider;
 import org.springframework.ide.vscode.boot.metadata.LoggerNameProvider;
 import org.springframework.ide.vscode.boot.metadata.ProjectBasedPropertyIndexProvider;
-import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
 import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndex;
 import org.springframework.ide.vscode.boot.metadata.ValueProviderRegistry;
 import org.springframework.ide.vscode.boot.yaml.completions.ApplicationYamlAssistContext;
@@ -48,9 +47,7 @@ import org.springframework.ide.vscode.commons.languageserver.LanguageServerRunne
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentEventListenerManager;
 import org.springframework.ide.vscode.commons.languageserver.util.LspClient;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
-import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.util.FileObserver;
-import org.springframework.ide.vscode.commons.util.FuzzyMap;
 import org.springframework.ide.vscode.commons.util.LogRedirect;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlASTProvider;
@@ -130,10 +127,10 @@ public class BootLanguagServerBootApp {
 		return SourceLinkFactory.createSourceLinks(server, cuCache, params.projectFinder);
 	}
 
-	@Bean CompilationUnitCache cuCache(BootLanguageServerParams params, SimpleTextDocumentService documents) {
-		return new CompilationUnitCache(params.projectFinder, documents, params.projectObserver);
+	@Bean CompilationUnitCache cuCache(SimpleLanguageServer server, BootLanguageServerParams params) {
+		return new CompilationUnitCache(params.projectFinder, server, params.projectObserver);
 	}
-
+	
 	@Bean JavaDocumentUriProvider javaDocumentUriProvider() {
 		switch (LspClient.currentClient()) {
 		case ECLIPSE:
