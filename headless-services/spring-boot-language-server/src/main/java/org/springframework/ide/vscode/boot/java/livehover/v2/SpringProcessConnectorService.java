@@ -18,6 +18,7 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.languageserver.ProgressTask;
+import org.springframework.ide.vscode.boot.app.BootJavaConfig;
 import org.springframework.ide.vscode.commons.languageserver.ProgressService;
 
 /**
@@ -26,9 +27,6 @@ import org.springframework.ide.vscode.commons.languageserver.ProgressService;
 public class SpringProcessConnectorService {
 
 	private static final Logger log = LoggerFactory.getLogger(SpringProcessConnectorService.class);
-
-	private static final int RETRY_MAX_NO = 10;
-	private static final int RETRY_DELAY_IN_SECONDS = 3;
 
 	private final SpringProcessLiveDataProvider liveDataProvider;
 
@@ -41,6 +39,8 @@ public class SpringProcessConnectorService {
 	private final ProgressService progressService;
 	
 	private int progressIdKey = 0;
+	private int maxRetryCount;
+	private int retryDelayInSeconds;
 	
 	public SpringProcessConnectorService(ProgressService progressService, SpringProcessLiveDataProvider liveDataProvider) {
 		this.liveDataProvider = liveDataProvider;
@@ -49,12 +49,23 @@ public class SpringProcessConnectorService {
 		this.connectedSuccess = new ConcurrentHashMap<>();
 		this.progressService = progressService == null ? ProgressService.NO_PROGRESS : progressService;
 		
+		this.maxRetryCount = BootJavaConfig.LIVE_INFORMATION_FETCH_DATA_RETRY_MAX_NO_DEFAULT;
+		this.retryDelayInSeconds = BootJavaConfig.LIVE_INFORMATION_FETCH_DATA_RETRY_DELAY_IN_SECONDS_DEFAULT;
+		
 		this.connectorListener = new SpringProcessConnectionChangeListener() {
 			@Override
 			public void connectionClosed(String processKey) {
 				disconnectProcess(processKey);
 			}
 		};
+	}
+	
+	public void setMaxRetryCount(int maxRetryCount) {
+		this.maxRetryCount = maxRetryCount;
+	}
+	
+	public void setRetryDelayInSeconds(int retryDelayInSeconds) {
+		this.retryDelayInSeconds = retryDelayInSeconds;
 	}
 	
 	public void connectProcess(String processKey, SpringProcessConnector connector) {
@@ -130,8 +141,8 @@ public class SpringProcessConnectorService {
 			catch (Exception e) {
 				log.info("problem occured during process connect", e);
 
-				if (retryNo < RETRY_MAX_NO) {
-					scheduleConnect(connectProgressTask, processKey, connector, RETRY_DELAY_IN_SECONDS, TimeUnit.SECONDS, retryNo + 1);
+				if (retryNo < maxRetryCount) {
+					scheduleConnect(connectProgressTask, processKey, connector, retryDelayInSeconds, TimeUnit.SECONDS, retryNo + 1);
 				} else {
 					connectProgressTask.progressDone();
 				}
@@ -149,8 +160,8 @@ public class SpringProcessConnectorService {
 			catch (Exception e) {
 				log.info("problem occured during process disconnect", e);
 
-				if (retryNo < RETRY_MAX_NO) {
-					scheduleDisconnect(processKey, connector, RETRY_DELAY_IN_SECONDS, TimeUnit.SECONDS, retryNo + 1);
+				if (retryNo < maxRetryCount) {
+					scheduleDisconnect(processKey, connector, retryDelayInSeconds, TimeUnit.SECONDS, retryNo + 1);
 				}
 			}
 		}, delay, unit);
@@ -183,8 +194,8 @@ public class SpringProcessConnectorService {
 
 				log.info("problem occured during process live data refresh", e);
 				
-				if (retryNo < RETRY_MAX_NO) {
-					scheduleRefresh(refreshProgressTask, processKey, connector, RETRY_DELAY_IN_SECONDS, TimeUnit.SECONDS,
+				if (retryNo < maxRetryCount) {
+					scheduleRefresh(refreshProgressTask, processKey, connector, retryDelayInSeconds, TimeUnit.SECONDS,
 							retryNo + 1);
 				}
 				else {

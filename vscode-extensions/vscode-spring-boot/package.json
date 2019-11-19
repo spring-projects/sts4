@@ -84,6 +84,16 @@
           "default": 5000,
           "description": "Live Information - Automatic Process Tracking Delay in ms"
         },
+        "boot-java.live-information.fetch-data.max-retries": {
+          "type": "number",
+          "default": 10,
+          "description": "Live Information - Max number of retries (before giving up)"
+        },
+        "boot-java.live-information.fetch-data.retry-delay-in-seconds": {
+          "type": "number",
+          "default": 3,
+          "description": "Live Information - Delay between retries in seconds"
+        },
         "boot-java.scan-java-test-sources.on": {
           "type": "boolean",
           "default": false,

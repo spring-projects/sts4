@@ -39,8 +39,7 @@ public class SpringProcessConnectorOverJMX implements SpringProcessConnector {
 	private final String jmxURL;
 	private final String urlScheme;
 	private final String port;
-	final private String projectName;
-	
+	private final String projectName;
 	
 	// not final, might be updated with data from JMX process, if not initially set
 	private String processID;

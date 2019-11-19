@@ -30,6 +30,16 @@ export const BootConfigSchema: PreferenceSchema = {
             description: 'Live Information - Automatic Process Tracking Delay in ms',
             default: 5000
         },
+        'boot-java.live-information.fetch-data.max-retries': {
+          type: 'number',
+          default: 10,
+          description: 'Live Information - Max number of retries (before giving up)'
+        },
+        'boot-java.live-information.fetch-data.retry-delay-in-seconds': {
+          type: 'number',
+          default: 3,
+          description: 'Live Information - Delay between retries in seconds'
+        },
         'boot-java.scan-java-test-sources.on': {
             type: 'boolean',
             description: 'Enable/Disable Java test sources files scanning',
@@ -81,6 +91,8 @@ export const BootConfigSchema: PreferenceSchema = {
 export interface BootConfiguration {
     'boot-java.live-information.automatic-tracking.on': boolean;
     'boot-java.live-information.automatic-tracking.delay': number;
+    'boot-java.live-information.fetch-data.max-retries': number;
+    'boot-java.live-information.fetch-data.retry-delay-in-seconds': number;
     'boot-java.scan-java-test-sources.on': boolean;
     'boot-java.support-spring-xml-config.on': boolean;
     'boot-java.support-spring-xml-config.hyperlinks': boolean;

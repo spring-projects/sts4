@@ -86,6 +86,9 @@ public class BootJavaPreferencesPage extends FieldEditorPreferencePage implement
 		addField(new BooleanFieldEditor(Constants.PREF_LIVE_INFORMATION_AUTOMATIC_TRACKING_ENABLED, "Live Information - Automatic Process Tracking Enabled", fieldEditorParent));
 		addField(new StringFieldEditor(Constants.PREF_LIVE_INFORMATION_AUTOMATIC_TRACKING_DELAY, "Live Information - Automatic Process Tracking Delay in ms", fieldEditorParent));
 		
+		addField(new BooleanFieldEditor(Constants.PREF_LIVE_INFORMATION_FETCH_DATA_RETRY_MAX_NO, "Live Information - Max number of retries (before giving up)", fieldEditorParent));
+		addField(new StringFieldEditor(Constants.PREF_LIVE_INFORMATION_FETCH_DATA_RETRY_DELAY_IN_SECONDS, "Live Information - Delay between retries in seconds", fieldEditorParent));
+
 		addField(new BooleanFieldEditor(PreferenceConstants.HIGHLIGHT_CODELENS_PREFS, "Highlights CodeLens", fieldEditorParent) {
 			@Override
 			public IPreferenceStore getPreferenceStore() {

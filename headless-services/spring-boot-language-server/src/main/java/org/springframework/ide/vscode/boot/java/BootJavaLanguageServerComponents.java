@@ -199,6 +199,10 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 			liveProcessTracker.setDelay(config.getLiveInformationAutomaticTrackingDelay());
 			liveProcessTracker.setTrackingEnabled(config.isLiveInformationAutomaticTrackingEnabled());
 
+			// live information data fetch params
+			liveDataService.setMaxRetryCount(config.getLiveInformationFetchDataMaxRetryCount());
+			liveDataService.setRetryDelayInSeconds(config.getLiveInformationFetchDataRetryDelayInSeconds());
+
 			// live change detection watchdog
 			if (config.isChangeDetectionEnabled()) {
 				liveChangeDetectionWatchdog.enableHighlights();

@@ -231,6 +231,7 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 		Map<String, Object> bootJavaObj = new HashMap<>();
 		Map<String, Object> liveInformation = new HashMap<>();
 		Map<String, Object> liveInformationAutomaticTracking = new HashMap<>();
+		Map<String, Object> liveInformationFetchData = new HashMap<>();
 		Map<String, Object> supportXML = new HashMap<>();
 		Map<String, Object> bootChangeDetection = new HashMap<>();
 		Map<String, Object> scanTestJavaSources = new HashMap<>();
@@ -240,7 +241,11 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 		liveInformationAutomaticTracking.put("on", preferenceStore.getBoolean(Constants.PREF_LIVE_INFORMATION_AUTOMATIC_TRACKING_ENABLED));
 		liveInformationAutomaticTracking.put("delay", preferenceStore.getInt(Constants.PREF_LIVE_INFORMATION_AUTOMATIC_TRACKING_DELAY));
 		
+		liveInformationFetchData.put("max-retries", preferenceStore.getInt(Constants.PREF_LIVE_INFORMATION_FETCH_DATA_RETRY_MAX_NO));
+		liveInformationFetchData.put("retry-delay-in-seconds", preferenceStore.getInt(Constants.PREF_LIVE_INFORMATION_FETCH_DATA_RETRY_DELAY_IN_SECONDS));
+		
 		liveInformation.put("automatic-tracking", liveInformationAutomaticTracking);
+		liveInformation.put("fetch-data", liveInformationFetchData);
 		
 		supportXML.put("on", preferenceStore.getBoolean(Constants.PREF_SUPPORT_SPRING_XML_CONFIGS));
 		supportXML.put("scan-folders", preferenceStore.getString(Constants.PREF_XML_CONFIGS_SCAN_FOLDERS));
