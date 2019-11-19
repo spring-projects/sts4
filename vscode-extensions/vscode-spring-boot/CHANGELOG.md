@@ -1,3 +1,7 @@
+## 2019-11-21 (4.4.2 RELEASE)
+
+* _(Spring Boot)_ bugfix: CTRL-click in yaml file inaccurate (for 'nested' properties)
+
 ## 2019-10-24 (4.4.1 RELEASE)
 
 * _(Spring Boot)_ Provide UI to allow user to explicitly connect/disconnect to/from processes to collect Live Hover data from. See the [wiki](https://github.com/spring-projects/sts4/wiki/Live-Application-Information#managing-live-data-connections-to-local-processes) for details.
