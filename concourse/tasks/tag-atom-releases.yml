@@ -7,7 +7,7 @@ inputs:
 - name: sts4
 - name: atom-bosh
 - name: atom-concourse
-- name: atom-spring-boot
+# - name: atom-spring-boot
 - name: atom-cf-manifest-yaml
 outputs:
 - name: out
