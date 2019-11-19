@@ -368,10 +368,13 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 				}
 				// Workaround for https://github.com/eclipse-theia/theia/issues/6414
 				// Theia does not support LocationLink yet
-				if (LspClient.currentClient() == LspClient.Client.THEIA) {
-					return Either.forLeft(locations.stream().map(link -> new Location(link.getTargetUri(), link.getTargetRange())).collect(Collectors.toList()));
-				} else {
-					return Either.forRight(locations);
+				switch (LspClient.currentClient()) {
+					case THEIA:
+					case ATOM:
+					case INTELLIJ:	
+						return Either.forLeft(locations.stream().map(link -> new Location(link.getTargetUri(), link.getTargetRange())).collect(Collectors.toList()));
+					default:
+						return Either.forRight(locations);
 				}
 			});
 		}
