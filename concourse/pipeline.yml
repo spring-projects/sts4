@@ -678,9 +678,9 @@ jobs:
     - get: atom-concourse
       passed:
       - prepare-concourse-atom-rc
-    - get: atom-spring-boot
-      passed:
-      - prepare-spring-boot-atom-rc
+    # - get: atom-spring-boot
+    #   passed:
+    #   - prepare-spring-boot-atom-rc
     - get: atom-cf-manifest-yaml
       passed:
       - prepare-manifest-yaml-atom-rc
@@ -695,10 +695,10 @@ jobs:
       params:
         repository: out/atom-concourse
         only_tag: true
-    - put: atom-spring-boot
-      params:
-        repository: out/atom-spring-boot
-        only_tag: true
+    # - put: atom-spring-boot
+    #   params:
+    #     repository: out/atom-spring-boot
+    #     only_tag: true
     - put: atom-cf-manifest-yaml
       params:
         repository: out/atom-cf-manifest-yaml
@@ -720,10 +720,10 @@ jobs:
       trigger: true
       passed:
       - tag-atom-release
-    - get: atom-spring-boot
-      trigger: true
-      passed:
-      - tag-atom-release
+    # - get: atom-spring-boot
+    #   trigger: true
+    #   passed:
+    #   - tag-atom-release
   - task: publish-atom-releases
     file: sts4/concourse/tasks/publish-atom-releases.yml
     params:
@@ -743,7 +743,7 @@ jobs:
            • <https://atom.io/packages/concourse-pipeline-yaml|Concourse CI Pipeline Editor>
            • <https://atom.io/packages/bosh-yaml|Bosh YAML Editor>
            • <https://atom.io/packages/cf-manifest-yaml|CF Manifest YAML Editor>
-           • <https://atom.io/packages/spring-boot|Spring Boot Support>
+          #  • <https://atom.io/packages/spring-boot|Spring Boot Support>
 
 - name: build-theia-concourse-rc
   plan:
