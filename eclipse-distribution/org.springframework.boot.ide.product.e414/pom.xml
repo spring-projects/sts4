@@ -132,6 +132,41 @@
 				<version>1.7</version>
 				<executions>
 
+					<!-- win exe signing reguires the npm module osslsigncode to be installed on the build machine and the corresponding keys to be around in PKCS#12 format -->
+					<execution>
+						<id>win-exe-signing</id>
+						<phase>package</phase>
+						<configuration>
+							<skip>${skip.win.signing}</skip>
+							<target>
+
+								<taskdef resource="net/sf/antcontrib/antcontrib.properties" />
+
+								<exec executable="osslsigncode" failonerror="true">
+									<arg value="sign"/>
+									<arg value="-pkcs12"/>
+									<arg value="${env.WIN_KEY_LOCATION}"/>
+									<arg value="-pass"/>
+									<arg value="${env.bamboo_signing_store_password}"/>
+									<arg value="-n"/>
+									<arg value="Spring Tools 4"/>
+								    <arg value="-i"/>
+								    <arg value="https://spring.io"/>
+								    <arg value="-t"/>
+								    <arg value="http://timestamp.digicert.com"/>
+									<arg value="-in"/>
+									<arg value="${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/win32/win32/x86_64/sts-${unqualifiedVersion}.${p2.qualifier}/SpringToolSuite4.exe"/>
+									<arg value="-out"/>
+								    <arg value="${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/win32/win32/x86_64/sts-${unqualifiedVersion}.${p2.qualifier}/SpringToolSuite4.exe"/>
+								</exec>
+
+							</target>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+
 					<!-- macos code signing requires the build to run on a macOS machine with Xcode installed, including the appropriate Apple Developer certificates for code signing -->
 					<execution>
 						<id>osx-app-signing</id>
