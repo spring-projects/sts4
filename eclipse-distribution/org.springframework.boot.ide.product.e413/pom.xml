@@ -146,7 +146,8 @@
 									<arg value="sign"/>
 									<arg value="-pkcs12"/>
 									<arg value="${env.WIN_KEY_LOCATION}"/>
-									<arg value="-askpass"/>
+									<arg value="-pass"/>
+									<arg value="${env.bamboo_signing_store_password}"/>
 									<arg value="-n"/>
 									<arg value="Spring Tools 4"/>
 								    <arg value="-i"/>
