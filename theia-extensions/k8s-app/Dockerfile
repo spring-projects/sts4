@@ -1,33 +1,27 @@
 FROM ubuntu:18.04
-
 RUN apt-get update && apt-get install -y \
   build-essential \
   gettext-base \
   git \
   jq \
-  openjdk-8-jdk openjdk-8-jre openjdk-8-jdk-headless openjdk-8-jre-headless openjdk-8-source=8u162-b12-1 \
+  openjdk-8-jdk \
   curl
 
-RUN curl -sL https://deb.nodesource.com/setup_8.x | bash - \
-  && apt-get install -y nodejs
+RUN curl -sL https://deb.nodesource.com/setup_10.x | bash -
+RUN apt-get install -y nodejs
 
-RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - \
- && echo "deb https://dl.yarnpkg.com/debian/ stable main" | tee /etc/apt/sources.list.d/yarn.list \
- && apt-get update \
- && apt-get install -y yarn
+RUN npm install -g yarn
 
-RUN mkdir -p /home/project
-# RUN adduser --disabled-password --gecos '' theia
-# RUN chmod g+rw /home && \
-#     mkdir -p /home/project && \
-#     chown -R theia:theia /home/theia && \
-#     chown -R theia:theia /home/project;
-WORKDIR /home/theia
-#USER theia
+RUN mkdir /theia-app
+ADD package.json /theia-app
+RUN cd /theia-app && \
+    yarn && \
+    yarn theia build
 
-ADD package.json ./package.json
-RUN yarn --cache-folder ./ycache && rm -rf ./ycache
-RUN yarn theia build
-EXPOSE 3000
+RUN mkdir /theia-app/plugins && \
+    cd /theia-app/plugins && \
+    curl --compressed -o vscode-spring-boot.vsix https://marketplace.visualstudio.com/_apis/public/gallery/publishers/Pivotal/vsextensions/vscode-spring-boot/1.13.0/vspackage
+WORKDIR /theia-app
 ENV SHELL /bin/bash
-ENTRYPOINT [ "yarn", "theia", "start", "/home/project", "--hostname=0.0.0.0" ]
+CMD [ "yarn",  "theia", "start", "--hostname=0.0.0.0", "--plugins=local-dir:/theia-app/plugins/" ]
+EXPOSE 3000 
