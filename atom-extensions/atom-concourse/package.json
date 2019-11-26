@@ -1,6 +1,6 @@
 {
   "name": "concourse-pipeline-yaml",
-  "version": "1.13.0",
+  "version": "1.14.0",
   "description": "Provides validation and content assist for Concourse CI pipeline and task configuration yml files",
   "repository": "https://github.com/spring-projects/atom-concourse",
   "icon": "icon.png",
