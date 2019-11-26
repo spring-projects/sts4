@@ -14,7 +14,6 @@
     "@theia/filesystem": "next",
     "@theia/getting-started": "next",
     "@theia/git": "next",
-    "@theia/java-debug": "next",
     "@theia/json": "next",
     "@theia/keymaps": "next",
     "@theia/languages": "next",
