@@ -30,7 +30,7 @@ RUN mkdir /theia-app/plugins && \
       https://marketplace.visualstudio.com/_apis/public/gallery/publishers/Pivotal/vsextensions/vscode-concourse/1.13.0/vspackage && \
     curl --compressed -o vscode-manifest-yaml.vsix \
       https://marketplace.visualstudio.com/_apis/public/gallery/publishers/Pivotal/vsextensions/vscode-manifest-yaml/1.13.0/vspackage && \
-    curl --compressed -o vscode-manifest-yaml.vsix \
+    curl --compressed -o vscode-bosh.vsix \
       https://marketplace.visualstudio.com/_apis/public/gallery/publishers/Pivotal/vsextensions/vscode-bosh/1.13.0/vspackage
 
 WORKDIR /theia-app
