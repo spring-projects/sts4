@@ -14,6 +14,10 @@ resource_types:
   source:
     repository: springio/artifactory-resource
     tag: 0.0.10
+- name: theia-docker-image
+  type: docker-image
+  source:
+    repository: kdvolder/theia-sts4
 #########################################################
 resources:
 - name: monthly
@@ -324,6 +328,22 @@ jobs:
 #       params:
 #         text: |
 #            Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
+- name: build-theia-docker-snapshot-image
+  serial: true
+  plan:
+  - in_parallel:
+    - get: s3-concourse-vsix-snapshot
+      trigger: true
+    - get: s3-spring-boot-vsix-snapshot
+      trigger: true
+    - get: s3-bosh-vsix-snapshot
+      trigger: true
+    - get: s3-manifest-yaml-vsix-snapshot
+      trigger: true
+    - get: sts4
+  - task: prepare-theia-docker-image
+    file: tasks/prepare-theia-docker-image.yml
+
 - name: build-docker-image
   serial: true
   plan:
@@ -1571,6 +1591,7 @@ groups:
   - publish-atom-releases
 - name: theia-snapshots
   jobs:
+  - build-theia-docker-snapshot-image
   - build-bosh-theia-snapshot
   - build-cf-manifest-yaml-theia-snapshot
   - build-concourse-theia-snapshot
