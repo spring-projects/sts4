@@ -312,7 +312,7 @@ jobs:
 #   plan:
 #   - get: every-minute
 #     trigger: true
-#   - aggregate:
+#   - in_parallel:
 #     - get: maven-cache
 #     - get: sts4
 #   - task: run-concourse-ls-test
@@ -348,7 +348,7 @@ jobs:
       file: out/*.tar.gz
 - name: build-consourse-vsix-snapshot
   plan:
-  - aggregate:
+  - in_parallel:
     - get: sts4
       trigger: true
     - get: maven-cache
@@ -361,7 +361,7 @@ jobs:
       params:
         text: |
            Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
-  - aggregate:
+  - in_parallel:
     - put: s3-concourse-vsix-snapshot
       params: 
         file: out/vscode-concourse-*.vsix
@@ -371,7 +371,7 @@ jobs:
         repository: sts4
 - name: build-bosh-vsix-snapshot
   plan:
-  - aggregate:
+  - in_parallel:
     - get: sts4
       trigger: true
     - get: maven-cache
@@ -384,7 +384,7 @@ jobs:
       params:
         text: |
            Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
-  - aggregate:
+  - in_parallel:
     - put: s3-bosh-vsix-snapshot
       params: 
         file: out/vscode-bosh-*.vsix
@@ -394,7 +394,7 @@ jobs:
         repository: sts4
 - name: build-manifest-yaml-vsix-snapshot
   plan:
-  - aggregate:
+  - in_parallel:
     - get: sts4
       trigger: true
     - get: maven-cache
@@ -407,14 +407,14 @@ jobs:
       params:
         text: |
            Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
-  - aggregate:
+  - in_parallel:
     - put: s3-manifest-yaml-vsix-snapshot
       params: 
         file: out/vscode-manifest-yaml-*.vsix
         acl: public-read
 - name: build-spring-boot-vsix-snapshot
   plan:
-  - aggregate:
+  - in_parallel:
     - get: sts4
       trigger: true
     - get: maven-cache
@@ -427,7 +427,7 @@ jobs:
       params:
         text: |
            Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
-  - aggregate:
+  - in_parallel:
     - put: s3-spring-boot-vsix-snapshot
       params: 
         file: out/vscode-spring-boot-*.vsix
@@ -438,7 +438,7 @@ jobs:
 - name: trigger-rc-build
   serial: true
   plan: 
-  - aggregate:
+  - in_parallel:
     - get: sts4
       passed:
       - build-manifest-yaml-vsix-snapshot
@@ -461,7 +461,7 @@ jobs:
 - name: trigger-theia-rc-build
   serial: true
   plan: 
-  - aggregate:
+  - in_parallel:
     - get: sts4
       passed:
       - build-cf-manifest-yaml-theia-snapshot
@@ -477,7 +477,7 @@ jobs:
           file: theia-version/version
 - name: build-bosh-theia-snapshot
   plan:
-  - aggregate:
+  - in_parallel:
     - get: sts4
       trigger: true
     - get: maven-cache
@@ -496,7 +496,7 @@ jobs:
       acl: public-read
 - name: build-cf-manifest-yaml-theia-snapshot
   plan:
-  - aggregate:
+  - in_parallel:
     - get: sts4
       trigger: true
     - get: maven-cache
@@ -515,7 +515,7 @@ jobs:
       acl: public-read
 - name: build-concourse-theia-snapshot
   plan:
-  - aggregate:
+  - in_parallel:
     - get: sts4
       trigger: true
     - get: maven-cache
@@ -534,7 +534,7 @@ jobs:
       acl: public-read
 - name: build-spring-boot-theia-snapshot
   plan:
-  - aggregate:
+  - in_parallel:
     - get: sts4
       trigger: true
     - get: maven-cache
@@ -554,7 +554,7 @@ jobs:
 - name: promote-fatjars-to-rc
   serial: true
   plan:
-  - aggregate:
+  - in_parallel:
     - get: s3-bosh-fatjar-snapshot
       passed:
       - build-bosh-atom-package
@@ -567,7 +567,7 @@ jobs:
     - get: s3-spring-boot-fatjar-snapshot
       passed:
       - build-spring-boot-atom-package
-  - aggregate:
+  - in_parallel:
     - put: s3-bosh-fatjar--rc
       params:
         file: s3-bosh-fatjar-snapshot/*.jar
@@ -587,7 +587,7 @@ jobs:
 - name: prepare-manifest-yaml-atom-rc
   serial: true
   plan:
-  - aggregate:
+  - in_parallel:
     - get: sts4
     - get: atom-cf-manifest-yaml
     - get: s3-manifest-yaml-fatjar--rc
@@ -608,7 +608,7 @@ jobs:
 - name: prepare-concourse-atom-rc
   serial: true
   plan:
-  - aggregate:
+  - in_parallel:
     - get: sts4
     - get: atom-concourse
     - get: s3-concourse-fatjar--rc
@@ -629,7 +629,7 @@ jobs:
 - name: prepare-bosh-atom-rc
   serial: true
   plan:
-  - aggregate:
+  - in_parallel:
     - get: sts4
     - get: atom-bosh
     - get: s3-bosh-fatjar--rc
@@ -650,7 +650,7 @@ jobs:
 - name: prepare-spring-boot-atom-rc
   serial: true
   plan:
-  - aggregate:
+  - in_parallel:
     - get: sts4
     - get: atom-spring-boot
     - get: s3-spring-boot-fatjar--rc
@@ -670,7 +670,7 @@ jobs:
       rebase: true
 - name: tag-atom-release
   plan:
-  - aggregate:
+  - in_parallel:
     - get: sts4
     - get: atom-bosh
       passed:
@@ -686,7 +686,7 @@ jobs:
       - prepare-manifest-yaml-atom-rc
   - task: tag-atom-releases
     file: sts4/concourse/tasks/tag-atom-releases.yml
-  - aggregate:
+  - in_parallel:
     - put: atom-bosh
       params:
         repository: out/atom-bosh
@@ -706,7 +706,7 @@ jobs:
 - name: publish-atom-releases
   serial: true
   plan:
-  - aggregate:
+  - in_parallel:
     - get: sts4
     - get: atom-concourse
       trigger: true
@@ -747,7 +747,7 @@ jobs:
 
 - name: build-theia-concourse-rc
   plan:
-  - aggregate:
+  - in_parallel:
     - get: maven-cache
       passed:
       - build-concourse-theia-snapshot
@@ -782,7 +782,7 @@ jobs:
           Release candidate available for testing $TEXT_FILE_CONTENT
 - name: build-theia-cf-manifest-yaml-rc
   plan:
-  - aggregate:
+  - in_parallel:
     - get: maven-cache
       passed:
       - build-cf-manifest-yaml-theia-snapshot
@@ -817,7 +817,7 @@ jobs:
           Release candidate available for testing $TEXT_FILE_CONTENT
 - name: build-theia-bosh-rc
   plan:
-  - aggregate:
+  - in_parallel:
     - get: maven-cache
       passed:
       - build-bosh-theia-snapshot
@@ -852,7 +852,7 @@ jobs:
           Release candidate available for testing $TEXT_FILE_CONTENT
 - name: build-theia-spring-boot-rc
   plan:
-  - aggregate:
+  - in_parallel:
     - get: maven-cache
       passed:
       - build-spring-boot-theia-snapshot
@@ -889,7 +889,7 @@ jobs:
 - name: publish-theia-release
   serial: true
   plan:
-  - aggregate:
+  - in_parallel:
     - get: tasks
     - get: sts4
       passed:
@@ -940,14 +940,14 @@ jobs:
            • <https://www.npmjs.com/package/@pivotal-tools/theia-concourse|Concourse CI Pipeline Editor>
            • <https://www.npmjs.com/package/@pivotal-tools/theia-bosh|Bosh Deployment Manifest Editor>
            • <https://www.npmjs.com/package/@pivotal-tools/theia-spring-boot|Spring Boot Support>
-  - aggregate:
+  - in_parallel:
     - put: theia-version
       params:
         file: theia-version/version
 
 - name: build-concourse-rc
   plan:
-  - aggregate:
+  - in_parallel:
     - get: maven-cache
       passed:
       - build-consourse-vsix-snapshot
@@ -982,7 +982,7 @@ jobs:
           Release candidate available for testing $TEXT_FILE_CONTENT
 - name: build-manifest-yaml-rc
   plan:
-  - aggregate:
+  - in_parallel:
     - get: maven-cache
       passed:
       - build-manifest-yaml-vsix-snapshot
@@ -1017,7 +1017,7 @@ jobs:
           Release candidate available for testing $TEXT_FILE_CONTENT
 - name: build-bosh-rc
   plan:
-  - aggregate:
+  - in_parallel:
     - get: maven-cache
       passed:
       - build-bosh-vsix-snapshot
@@ -1052,7 +1052,7 @@ jobs:
           Release candidate available for testing $TEXT_FILE_CONTENT
 - name: build-spring-boot-rc
   plan:
-  - aggregate:
+  - in_parallel:
     - get: maven-cache
       passed:
       - build-spring-boot-vsix-snapshot
@@ -1089,7 +1089,7 @@ jobs:
 - name: publish-release
   serial: true
   plan:
-  - aggregate:
+  - in_parallel:
     - get: tasks
     - get: sts4
       passed:
@@ -1140,7 +1140,7 @@ jobs:
            • <https://marketplace.visualstudio.com/items?itemName=Pivotal.vscode-concourse|Concourse CI Pipeline Editor>
            • <https://marketplace.visualstudio.com/items?itemName=Pivotal.vscode-bosh|Bosh Deployment Manifest Editor>
            • <https://marketplace.visualstudio.com/items?itemName=Pivotal.vscode-spring-boot|Spring Boot Support>
-  - aggregate:
+  - in_parallel:
     - put: sts4-out
       params:
         repository: sts4
@@ -1153,7 +1153,7 @@ jobs:
 - name: publish-concourse-vsix-release
   serial: true
   plan:
-  - aggregate:
+  - in_parallel:
     - get: tasks
     - get: sts4
       passed:
@@ -1186,7 +1186,7 @@ jobs:
           STS 4 VScode Extensions $TEXT_FILE_CONTENT released
           Releases now available on Vscode Marketplace:
            • <https://marketplace.visualstudio.com/items?itemName=Pivotal.vscode-concourse|Concourse CI Pipeline Editor>
-  - aggregate:
+  - in_parallel:
     - put: sts4-out
       params:
         repository: sts4
@@ -1199,7 +1199,7 @@ jobs:
 - name: bump-version-patch
   serial: true
   plan:
-  - aggregate:
+  - in_parallel:
     - get: sts4
     - get: version
       params:
@@ -1222,7 +1222,7 @@ jobs:
 - name: bump-version-minor
   serial: true
   plan:
-  - aggregate:
+  - in_parallel:
     - get: sts4
     - get: version
       params:
@@ -1245,7 +1245,7 @@ jobs:
 - name: bump-version-major
   serial: true
   plan:
-  - aggregate:
+  - in_parallel:
     - get: sts4
     - get: version
       params:
@@ -1268,7 +1268,7 @@ jobs:
 # - name: build-atom-snapshot-website
 #   serial: true
 #   plan:
-#   - aggregate:
+#   - in_parallel:
 #     - get: sts4
 #     - get: s3-bosh-atom-snapshot
 #       trigger: true
@@ -1294,7 +1294,7 @@ jobs:
 - name: build-vscode-snapshot-website
   serial: true
   plan:
-  - aggregate:
+  - in_parallel:
     - get: sts4
     - get: s3-bosh-vsix-snapshot
       trigger: true
@@ -1319,7 +1319,7 @@ jobs:
       path: website
 - name: build-fatjars
   plan:
-  - aggregate:
+  - in_parallel:
     - get: sts4
       trigger: true
     - get: maven-cache
@@ -1332,7 +1332,7 @@ jobs:
         text: |
           Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
     on_success:
-      aggregate:
+      in_parallel:
       - put: s3-headless-maven-out
         params:
           file: out/headless-maven-out-*.tar.gz
@@ -1364,7 +1364,7 @@ jobs:
           - "**/_remote.repositories"
 # - name: publish-headless-snapshots
 #   plan:
-#   - aggregate:
+#   - in_parallel:
 #     - get: s3-headless-maven-out
 #       passed:
 #       - build-fatjars
@@ -1388,7 +1388,7 @@ jobs:
 - name: build-manifest-yaml-atom-package
   serial: true
   plan:
-  - aggregate:
+  - in_parallel:
     - get: sts4
       passed:
       - build-fatjars
@@ -1405,7 +1405,7 @@ jobs:
       release_repo: atom-cf-manifest-yaml
       fatjar: s3-manifest-yaml-fatjar-snapshot
     file: sts4/concourse/tasks/build-atom-package.yml
-  - aggregate:
+  - in_parallel:
     - put: atom-cf-manifest-yaml
       params:
         repository: out/repo
@@ -1418,7 +1418,7 @@ jobs:
 - name: build-concourse-atom-package
   serial: true
   plan:
-  - aggregate:
+  - in_parallel:
     - get: sts4
       passed:
       - build-fatjars
@@ -1436,7 +1436,7 @@ jobs:
       release_repo: atom-concourse
       fatjar: s3-concourse-fatjar-snapshot
     file: sts4/concourse/tasks/build-atom-package.yml
-  - aggregate:
+  - in_parallel:
     - put: atom-concourse
       params:
         repository: out/repo
@@ -1449,7 +1449,7 @@ jobs:
 - name: build-bosh-atom-package
   serial: true
   plan:
-  - aggregate:
+  - in_parallel:
     - get: sts4
       passed:
       - build-fatjars
@@ -1467,7 +1467,7 @@ jobs:
       fatjar: s3-bosh-fatjar-snapshot
       release_repo: atom-bosh
     file: sts4/concourse/tasks/build-atom-package.yml
-  - aggregate:
+  - in_parallel:
     - put: atom-bosh
       params:
         repository: out/repo
@@ -1480,7 +1480,7 @@ jobs:
 - name: build-spring-boot-atom-package
   serial: true
   plan:
-  - aggregate:
+  - in_parallel:
     - get: sts4
       passed:
       - build-fatjars
@@ -1498,7 +1498,7 @@ jobs:
       fatjar: s3-spring-boot-fatjar-snapshot
       release_repo: atom-spring-boot
     file: sts4/concourse/tasks/build-atom-package.yml
-  - aggregate:
+  - in_parallel:
     - put: atom-spring-boot
       params:
         repository: out/repo
@@ -1510,7 +1510,7 @@ jobs:
          Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
 - name: publish-jvm-launch-utils
   plan:
-  - aggregate:
+  - in_parallel:
     - get: jvm-launch-utils-git
       trigger: true
     - get: tasks 
