@@ -342,7 +342,7 @@ jobs:
       trigger: true
     - get: sts4
   - task: prepare-theia-docker-image
-    file: tasks/prepare-theia-docker-image.yml
+    file: sts4/concourse/tasks/prepare-theia-docker-image.yml
 
 - name: build-docker-image
   serial: true

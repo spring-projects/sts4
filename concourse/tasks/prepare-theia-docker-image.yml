@@ -12,4 +12,4 @@ inputs:
 outputs:
 - name: output
 run:
-  path: sts4/tasks/prepare-theia-docker-image.sh
+  path: sts4/concourse/tasks/prepare-theia-docker-image.sh
