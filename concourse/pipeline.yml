@@ -14,10 +14,6 @@ resource_types:
   source:
     repository: springio/artifactory-resource
     tag: 0.0.10
-- name: theia-docker-image
-  type: docker-image
-  source:
-    repository: kdvolder/theia-sts4
 #########################################################
 resources:
 - name: monthly
@@ -274,6 +270,12 @@ resources:
     username: ((docker_hub_username))
     password: ((docker_hub_password))
     repository: kdvolder/sts4-build-env
+- name: theia-docker-image
+  type: docker-image
+  source:
+    username: ((docker_hub_username))
+    password: ((docker_hub_password))
+    repository: kdvolder/sts4-theia-snapshot
 - name: maven-cache
   type: s3
   source:
@@ -311,39 +313,34 @@ resources:
     build_name: spring-tools-4
 ########################################################################################
 jobs:
-# - name: concourse-ls-tests
-#   max_in_flight: 6
-#   plan:
-#   - get: every-minute
-#     trigger: true
-#   - in_parallel:
-#     - get: maven-cache
-#     - get: sts4
-#   - task: run-concourse-ls-test
-#     file: sts4/concourse/tasks/build-vsix.yml
-#     params:
-#       extension_id: vscode-concourse
-#     on_failure:
-#       put: slack-notification
-#       params:
-#         text: |
-#            Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
 - name: build-theia-docker-snapshot-image
   serial: true
   plan:
   - in_parallel:
     - get: s3-concourse-vsix-snapshot
       trigger: true
+      passed:
+      - build-consourse-vsix-snapshot
     - get: s3-spring-boot-vsix-snapshot
       trigger: true
+      passed:
+      - build-spring-boot-vsix-snapshot
     - get: s3-bosh-vsix-snapshot
       trigger: true
+      passed:
+      - build-bosh-vsix-snapshot
     - get: s3-manifest-yaml-vsix-snapshot
       trigger: true
+      passed:
+      - build-manifest-yaml-vsix-snapshot
     - get: sts4
   - task: prepare-theia-docker-image
     file: sts4/concourse/tasks/prepare-theia-docker-image.yml
-
+  - put: theia-docker-image
+    params:
+      build: output
+    get_params:
+      skip_download: true
 - name: build-docker-image
   serial: true
   plan:
@@ -1596,6 +1593,10 @@ groups:
   - build-cf-manifest-yaml-theia-snapshot
   - build-concourse-theia-snapshot
   - build-spring-boot-theia-snapshot
+  - build-consourse-vsix-snapshot
+  - build-manifest-yaml-vsix-snapshot
+  - build-spring-boot-vsix-snapshot
+  - build-bosh-vsix-snapshot
 - name: theia-release
   jobs:
   - build-theia-bosh-rc
