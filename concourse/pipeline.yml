@@ -273,6 +273,11 @@ resources:
 jobs:
 - name: build-theia-docker-snapshot-image
   serial: true
+  on_failure:
+    put: slack-notification
+    params:
+      text: |
+          Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
   plan:
   - in_parallel:
     - get: s3-concourse-vsix-snapshot
