@@ -10,9 +10,6 @@ theia_sources=$workdir/sts4/theia-extensions
 version=`cat version/version`
 echo "version=$version"
 
-theia_version=`cat theia-version/version`
-echo "theia-version=$theia_version"
-
 # vscode extensions
 cd $vscode_sources
 for extension_id in $(ls -d vscode-*)
@@ -38,33 +35,39 @@ do
 done
 
 # theia extensions
-cd $theia_sources
-for extension_id in $(ls -d theia-*)
-do
-    if [ $extension_id != "theia-commons" ]; then
-        echo "Should update version of $extension_id"
-        # skip over 'theia-'
-        ext_type=${extension_id:6}
-        # step into folder containg actual extension source
-        cd $theia_sources/$extension_id/$ext_type
-        # Lerna version command needs package to be modofoed since last release
-        # Change version in the README.md file to make necessaey change to make Lerna version command work
-        if grep -q '^\*\*Version: .*\*\*$' README.md;
-        then
-          # Change version in the README.md file
-          perl -p -i -e 's/^\*\*Version: .*\*\*$/**Version: '"$theia_version"'**/g' README.md
-        else
-          # add version string if isn't there
-          echo -e "\n\n**Version: ${theia_version}**" >> README.md
-        fi
+# cd $workdir
+# if [ -f theia-version/version ]; then
+#     theia_version=`cat theia-version/version`
+#     echo "theia-version=$theia_version"
 
-        # step into theia extension folder and run Lerna command to update appropriate versions in all projects
-        cd $theia_sources/$extension_id
-        lerna version $theia_version --exact --no-git-tag-version --no-push --yes
-        git add ./
-        echo ""
-    fi
-done
+#     cd $theia_sources
+#     for extension_id in $(ls -d theia-*)
+#     do
+#         if [ $extension_id != "theia-commons" ]; then
+#             echo "Should update version of $extension_id"
+#             # skip over 'theia-'
+#             ext_type=${extension_id:6}
+#             # step into folder containg actual extension source
+#             cd $theia_sources/$extension_id/$ext_type
+#             # Lerna version command needs package to be modofoed since last release
+#             # Change version in the README.md file to make necessaey change to make Lerna version command work
+#             if grep -q '^\*\*Version: .*\*\*$' README.md;
+#             then
+#             # Change version in the README.md file
+#             perl -p -i -e 's/^\*\*Version: .*\*\*$/**Version: '"$theia_version"'**/g' README.md
+#             else
+#             # add version string if isn't there
+#             echo -e "\n\n**Version: ${theia_version}**" >> README.md
+#             fi
+
+#             # step into theia extension folder and run Lerna command to update appropriate versions in all projects
+#             cd $theia_sources/$extension_id
+#             lerna version $theia_version --exact --no-git-tag-version --no-push --yes
+#             git add ./
+#             echo ""
+#         fi
+#     done
+# fi
 
 cd $workdir/sts4/headless-services
 $workdir/sts4/concourse/tasks/update-pom-versions.sh $version
