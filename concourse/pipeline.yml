@@ -278,6 +278,7 @@ jobs:
     params:
       text: |
           Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
+          https://ci.spring.io/teams/tools/pipelines/${BUILD_PIPELINE_NAME}/jobs/${BUILD_JOB_NAME}/builds/${BUILD_NAME}
   plan:
   - in_parallel:
     - get: s3-concourse-vsix-snapshot
