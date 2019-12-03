@@ -16,7 +16,6 @@ package org.springframework.ide.vscode.boot.java.livehover.v2;
 public interface SpringProcessConnector {
 	
 	String getProcessKey();
-	String getLabel();
 
 	void connect() throws Exception;
 	SpringProcessLiveData refresh() throws Exception;
@@ -26,5 +25,5 @@ public interface SpringProcessConnector {
 	void removeConnectorChangeListener(SpringProcessConnectionChangeListener listener);
 	String getProjectName();
 	String getProcessId();
-
+	String getProcessName();
 }

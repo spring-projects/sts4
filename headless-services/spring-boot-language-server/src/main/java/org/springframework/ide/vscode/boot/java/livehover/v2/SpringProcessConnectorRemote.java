@@ -22,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.languageserver.util.Settings;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
+import org.springframework.util.StringUtils;
 
 /**
  * @author Martin Lippert
@@ -87,7 +88,7 @@ public class SpringProcessConnectorRemote {
 					+ port + ", keepChecking=" + keepChecking + "]";
 		}
 
-		public String getProcessId() {
+		public String getProcessID() {
 			return processId;
 		}
 
@@ -199,15 +200,23 @@ public class SpringProcessConnectorRemote {
 			});
 		}
 	}
-	
+
+	public static String getProcessName(RemoteBootAppData appData) {
+		if (StringUtils.hasText(appData.getHost())) {
+			return "remote process - "+ appData.getHost();
+		} else {
+			return "remote process - " + appData.getJmxurl();
+		}
+	}
+
 	public static String getProcessKey(RemoteBootAppData appData) {
 		return "remote process - " + appData.getJmxurl();
 	}
-	
+
 	public void connectProcess(RemoteBootAppData remoteProcess) {
 		String processKey = getProcessKey(remoteProcess);
-		String processID = remoteProcess.getProcessId();
-		String processName = processKey;
+		String processID = remoteProcess.getProcessID();
+		String processName = getProcessName(remoteProcess);
 		String jmxURL = remoteProcess.getJmxurl();
 		String host = remoteProcess.getHost();
 		String port = remoteProcess.getPort();

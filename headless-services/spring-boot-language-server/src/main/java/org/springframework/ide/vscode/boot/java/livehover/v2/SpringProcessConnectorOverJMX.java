@@ -96,11 +96,6 @@ public class SpringProcessConnectorOverJMX implements SpringProcessConnector {
 	}
 	
 	@Override
-	public String getLabel() {
-		return processID + " (" + processName + ") ";
-	}
-	
-	@Override
 	public void connect() throws Exception {
 		jmxServiceURL = new JMXServiceURL(jmxURL);
 		
@@ -187,4 +182,17 @@ public class SpringProcessConnectorOverJMX implements SpringProcessConnector {
 	public String getProcessId() {
 		return processID;
 	}
+
+	@Override
+	public String getProcessName() {
+		return processName;
+	}
+
+	@Override
+	public String toString() {
+		return "SpringProcessConnectorOverJMX [jmxURL=" + jmxURL + ", processID=" + processID + ", processName="
+				+ processName + ", listeners=" + listeners + ", jmxConnection=" + jmxConnection + ", jmxServiceURL="
+				+ jmxServiceURL + ", notificationListener=" + notificationListener + "]";
+	}
+	
 }

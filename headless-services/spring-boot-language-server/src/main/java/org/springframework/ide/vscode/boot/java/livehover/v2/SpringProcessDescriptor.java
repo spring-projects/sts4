@@ -82,10 +82,6 @@ public class SpringProcessDescriptor {
 		return vm;
 	}
 
-	public String getLabel() {
-		return processID + " (" + processName + ")";
-	}
-		
 	public SpringProcessStatus getStatus() {
 		return this.status;
 	}
@@ -192,5 +188,13 @@ public class SpringProcessDescriptor {
 	public String getProjectName() {
 		return projectName;
 	}
+
+	@Override
+	public String toString() {
+		return "SpringProcessDescriptor [processKey=" + processKey + ", processID=" + processID + ", processName="
+				+ processName + "]";
+	}
+	
+	
 
 }

@@ -44,8 +44,12 @@ public class LiveProcessCommand {
 
 	@Override
 	public String toString() {
-		return "LiveProcessCommand [processKey=" + processKey + ", action=" + action + ", projectName=" + projectName
-				+ ", processId=" + processId + "]";
+		return "LiveProcessCommand [\n" +
+				"    processKey=" + processKey + ",\n" +
+				"    label=" + label +",\n" +
+				"    action=" + action + ",\n" + 
+				"    projectName=" + projectName+"\n" +
+				"    processId=" + processId + "\n]";
 	}
 
 	public String getProjectName() {
