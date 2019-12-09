@@ -42,3 +42,5 @@ bin/
 third-party-open-source-licenses.txt
 **/third-party-open-source-licenses/**
 nohttp-cli-*.jar
+
+unpack/
