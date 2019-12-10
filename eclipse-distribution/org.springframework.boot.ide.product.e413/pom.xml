@@ -105,6 +105,7 @@
 				<version>1.6.0</version>
 				<executions>
 					<execution>
+	                    <id>generate-license-files</id>
 						<phase>package</phase>
 						<goals>
 							<goal>exec</goal>
@@ -123,6 +124,23 @@
 							</arguments>
 						</configuration>
 					</execution>
+
+					<execution>
+	                    <id>generate-self-extracting-jar</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+						<configuration>
+					        <executable>java</executable>
+							<arguments>
+								<argument>-jar</argument>
+								<argument>${project.build.directory}/../../common/self-extracting-jar-creator.jar</argument>
+								<argument>${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-win32.win32.x86_64.zip</argument>
+							</arguments>
+						</configuration>
+					</execution>
+
 				</executions>
 			</plugin>
 
@@ -284,6 +302,8 @@
 								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-linux.gtk.x86_64.tar.gz" algorithm="MD5" fileext=".md5" />
 								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-win32.win32.x86_64.zip" algorithm="SHA1" fileext=".sha1" />
 								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-win32.win32.x86_64.zip" algorithm="MD5" fileext=".md5" />
+								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-win32.win32.x86_64.self-extracting.jar" algorithm="SHA1" fileext=".sha1" />
+								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-win32.win32.x86_64.self-extracting.jar" algorithm="MD5" fileext=".md5" />
 
 								<s3 accessKey="${dist.accessKey}" secretKey="${dist.secretKey}">
 
@@ -292,6 +312,9 @@
 											<include name="spring-tool-suite-4*.zip" />
 											<include name="spring-tool-suite-4*.zip.md5" />
 											<include name="spring-tool-suite-4*.zip.sha1" />
+											<include name="spring-tool-suite-4*.jar" />
+											<include name="spring-tool-suite-4*.jar.md5" />
+											<include name="spring-tool-suite-4*.jar.sha1" />
 											<include name="spring-tool-suite-4*.tar.gz" />
 											<include name="spring-tool-suite-4*.tar.gz.md5" />
 											<include name="spring-tool-suite-4*.tar.gz.sha1" />
@@ -307,6 +330,9 @@
 											<include name="spring-tool-suite-4*.zip" />
 											<include name="spring-tool-suite-4*.zip.md5" />
 											<include name="spring-tool-suite-4*.zip.sha1" />
+											<include name="spring-tool-suite-4*.jar" />
+											<include name="spring-tool-suite-4*.jar.md5" />
+											<include name="spring-tool-suite-4*.jar.sha1" />
 											<include name="spring-tool-suite-4*.tar.gz" />
 											<include name="spring-tool-suite-4*.tar.gz.md5" />
 											<include name="spring-tool-suite-4*.tar.gz.sha1" />
