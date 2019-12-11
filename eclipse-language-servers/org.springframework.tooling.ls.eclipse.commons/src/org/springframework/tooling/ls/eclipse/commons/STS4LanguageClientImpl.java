@@ -27,6 +27,7 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.ILocalVariable;
@@ -341,7 +342,15 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 			public void run() {
 				IStatusLineManager statusLineManager = getStatusLineManager();
 				if (statusLineManager != null) {
-					statusLineManager.setMessage(status);
+					// PT 169821181 - Show progress in progress status line
+					IProgressMonitor progressMonitor = statusLineManager.getProgressMonitor();
+
+					if (progressMonitor != null) {
+						SubMonitor sub = SubMonitor.convert(progressMonitor);
+						// language server will send empty status when progress sequence terminates so
+						// this takes care of clearing the status line from the previous displayed message
+						sub.subTask(status);
+					}
 				}
 			}
 		});
@@ -355,6 +364,8 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 			return null;
 		}
 	}
+
+
 
 	public STS4LanguageClientImpl() {
 		classpathService.addNotificationsSentCallback(projectNames -> {
