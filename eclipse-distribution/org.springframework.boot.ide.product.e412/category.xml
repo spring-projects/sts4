@@ -168,6 +168,10 @@
 		<category name="Uncategorized"/>
 	</bundle>
 
+    <bundle id="com.google.guava" version="27.1.0">
+		<category name="Uncategorized"/>
+	</bundle>
+
 	<bundle id="org.jcodings">
 		<category name="Uncategorized"/>
 	</bundle>
