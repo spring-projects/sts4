@@ -125,7 +125,7 @@ public class SpringProcessCommandHandler {
 		SpringProcessConnector[] connectedProcesses = connectorService.getConnectedProcesses();
 		for (SpringProcessConnector process : connectedProcesses) {
 			String processKey = process.getProcessKey();
-			String label = createLabel(process);
+			String label = createLabel(process.getProcessId(), process.getProcessName());
 			result.add(new LiveProcessCommand(COMMAND_REFRESH, processKey, label, process.getProjectName(), process.getProcessId()));
 			result.add(new LiveProcessCommand(COMMAND_DISCONNECT, processKey, label, process.getProjectName(), process.getProcessId()));
 			alreadyConnected.add(processKey);
@@ -137,7 +137,7 @@ public class SpringProcessCommandHandler {
 			for (SpringProcessDescriptor localProcess : localProcesses) {
 				String processKey = localProcess.getProcessKey();
 				if (!alreadyConnected.contains(processKey)) {
-					String label = createLabel(localProcess);
+					String label = createLabel(localProcess.getProcessID(), localProcess.getProcessName());
 	
 					LiveProcessCommand command = new LiveProcessCommand(COMMAND_CONNECT, processKey, label, localProcess.getProjectName(), null);
 					result.add(command);
@@ -150,27 +150,21 @@ public class SpringProcessCommandHandler {
 		for (RemoteBootAppData remoteProcess : remoteProcesses) {
 			String processKey = SpringProcessConnectorRemote.getProcessKey(remoteProcess);
 			if (!alreadyConnected.contains(processKey)) {
-				String label = createLabel(remoteProcess);
+				String label = createLabel(remoteProcess.getProcessID(), SpringProcessConnectorRemote.getProcessName(remoteProcess));
 				result.add(new LiveProcessCommand(COMMAND_CONNECT, processKey, label, null, remoteProcess.getProcessID()));
 			}
 		}
 		log.debug("getProcessCommands => {}", result);
 		return CompletableFuture.completedFuture((Object[]) result.toArray(new Object[result.size()]));
 	}
-	
-	private String createLabel(RemoteBootAppData remoteProcess) {
-		//For the case of a not yet connected Remote BootApp
-		return remoteProcess.getProcessID() + " ("+SpringProcessConnectorRemote.getProcessName(remoteProcess);
-	}
 
-	private String createLabel(SpringProcessDescriptor localProcess) {
-		//For the case of a not yet connected local process
-		return localProcess.getProcessID() + " ("+localProcess.getProcessName()+")";
-	}
-
-	private String createLabel(SpringProcessConnector process) {
-		//For the case of an already connected process (local or remote).
-		return process.getProcessId() +" ("+process.getProcessName() + ")";
+	private String createLabel(String processId, String processName) {
+		if (processId!=null && processId.length() < 10) {
+			return processName +" (pid: "+ processId + ")";
+		} else {
+			//long processid is just too much clutter, so don't show that.
+			return processName;
+		}
 	}
 
 	private String getProcessKey(ExecuteCommandParams params) {
