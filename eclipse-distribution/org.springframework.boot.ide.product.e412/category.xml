@@ -168,7 +168,7 @@
 		<category name="Uncategorized"/>
 	</bundle>
 
-    <bundle id="com.google.guava" version="27.1.0">
+    <bundle id="com.google.guava">
 		<category name="Uncategorized"/>
 	</bundle>
 
