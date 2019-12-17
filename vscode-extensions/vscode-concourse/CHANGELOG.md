@@ -1,3 +1,7 @@
+## 2019-12-19 (4.5.0 RELEASE)
+
+* no major changes
+
 ## 2019-11-21 (4.4.2 RELEASE)
 
 * _(Concourse)_ enhancement: Concourse extension doesn't know about check_every for a resource type

@@ -1,3 +1,7 @@
+## 2019-12-19 (4.5.0 RELEASE)
+
+* _(Spring Boot)_ improvement: better and more consistent labels for running processes in live hover actions across the board
+
 ## 2019-11-21 (4.4.2 RELEASE)
 
 * _(Spring Boot)_ bugfix: CTRL-click in yaml file inaccurate (for 'nested' properties)
