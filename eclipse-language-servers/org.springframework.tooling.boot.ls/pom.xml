@@ -12,12 +12,11 @@
 	</parent>
 
 	<artifactId>org.springframework.tooling.boot.ls</artifactId>
-	<version>1.14.0-SNAPSHOT</version>
+	<version>1.15.0-SNAPSHOT</version>
 	<packaging>eclipse-plugin</packaging>
 
 	<build>
 		<plugins>
-
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-dependency-plugin</artifactId>
