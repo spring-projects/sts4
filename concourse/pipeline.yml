@@ -46,6 +46,12 @@ resources:
     uri: git@github.com:spring-projects/sts4.git
     branch: ((branch))
     private_key: ((rsa_id))
+# - name: sts4-wiki
+#   type: git
+#   source:
+#     uri: git@github.com:spring-projects/sts4.wiki.git
+#     branch: master
+#     private_key: ((rsa_id))
 - name: mirror-vscode-spring-boot
   type: git
   source:
@@ -144,6 +150,35 @@ resources:
     secret_access_key: ((s3_secretkey))
     region_name: ((s3_region))
     regexp: sts4/vscode-extensions/snapshots/vscode-spring-boot-(.*).vsix
+- name: s3-concourse-vsix-release
+  type: s3
+  source:
+    bucket: dist.springsource.com
+    access_key_id: ((s3_accesskey))
+    secret_access_key: ((s3_secretkey))
+    regexp: release/STS4/vscode/vscode-concourse-(.*).vsix
+- name: s3-bosh-vsix-release
+  type: s3
+  source:
+    bucket: dist.springsource.com
+    access_key_id: ((s3_accesskey))
+    secret_access_key: ((s3_secretkey))
+    regexp: release/STS4/vscode/vscode-bosh-(.*).vsix
+- name: s3-manifest-yaml-vsix-release
+  type: s3
+  source:
+    bucket: dist.springsource.com
+    access_key_id: ((s3_accesskey))
+    secret_access_key: ((s3_secretkey))
+    regexp: release/STS4/vscode/vscode-manifest-yaml-(.*).vsix
+- name: s3-spring-boot-vsix-release
+  type: s3
+  source:
+    bucket: dist.springsource.com
+    access_key_id: ((s3_accesskey))
+    secret_access_key: ((s3_secretkey))
+    #region_name: ((s3_region))
+    regexp: release/STS4/vscode/vscode-spring-boot-(.*).vsix
 - name: s3-manifest-yaml-fatjar-snapshot
   type: s3
   source:
@@ -271,6 +306,46 @@ resources:
     build_name: spring-tools-4
 ########################################################################################
 jobs:
+- name: vsix-s3-publish
+  plan:
+  - in_parallel:
+    - get: s3-spring-boot-vsix-snapshot
+    - get: s3-manifest-yaml-vsix-snapshot
+    - get: s3-bosh-vsix-snapshot
+    - get: s3-concourse-vsix-snapshot
+  - in_parallel:
+    - put: s3-spring-boot-vsix-release
+      params:
+        file: s3-spring-boot-vsix-snapshot/*.vsix
+        acl: public-read
+    - put: s3-manifest-yaml-vsix-release
+      params:
+        file: s3-manifest-yaml-vsix-snapshot/*.vsix
+        acl: public-read
+    - put: s3-bosh-vsix-release
+      params:
+        file: s3-bosh-vsix-snapshot/*.vsix
+        acl: public-read
+    - put: s3-concourse-vsix-release
+      params:
+        file: s3-concourse-vsix-snapshot/*.vsix
+        acl: public-read
+# Stuff below is untested and incomplete
+# - name: create-release-wiki-page
+#   plan:
+#   - in_parallel:
+#     - get: sts4-wiki
+#     - get: sts4
+#     - get: s3-spring-boot-vsix-release
+#     - get: s3-manifest-yaml-vsix-release
+#     - get: s3-bosh-vsix-release
+#     - get: s3-concourse-vsix-release
+#   - task: create-vsix-release-wiki-page
+#     file: sts4/concourse/tasks/create-release-wiki-page.yml
+#   - put: sts4-wiki
+#     params:
+#       rebase: true
+#       repository: sts4-wiki-out
 - name: build-theia-docker-snapshot-image
   serial: true
   on_failure:
@@ -1234,3 +1309,7 @@ groups:
 - name: npm-packages
   jobs:
   - publish-jvm-launch-utils
+- name: experimental
+  jobs: 
+  - vsix-s3-publish
+#  - create-release-wiki-page

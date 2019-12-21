@@ -1,0 +1,16 @@
+inputs:
+- name: concourse-vsix
+- name: bosh-vsix
+- name: manifest-yaml-vsix
+- name: spring-boot-vsix
+- name: sts4
+- name: sts4-wiki
+outputs:
+- name: sts4-wiki-out
+platform: linux
+image_resource:
+  type: docker-image
+  source:
+    repository: kdvolder/sts4-build-env
+run:
+  path: sts4/concourse/tasks/create-release-wiki-page.sh
