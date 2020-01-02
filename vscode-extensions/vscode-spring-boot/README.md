@@ -46,9 +46,9 @@ Easy navigation to the provided request mappings of running apps.
 * `//` shows all request mappings of all running Spring Boot apps and opens a browser for the selected endpoint
 
 ## Live application information hovers
-STS4 automatically detects JVM processes for running boot applications on your local machine.
+The Spring Tools 4 can connect to running Spring processes to visualize internal information of those running Spring processes inline with your source code. This allows you to see, for example, which beans have bean created at runtime, how they are wired, and more.
 
-When a running app is detected, STS 4 automatically shows hints by highlighting sections of source code with a light green background. Hovering over the highlights with the mouse pointer, data from the running app is displayed in a popup.
+The Spring Tools 4 shows hints by highlighting sections of source code with a light green background. Hovering over the highlights with the mouse pointer, data from the running app is displayed in a popup.
 
 For some types of information, STS 4 may also show a 'quick summary' as a codelens. Codelenses are only supported in Eclipse and Vscode at the moment, not in atom. For Eclipse this has to be enabled via *Preferences >> Language Servers >> Spring Language Servers >> Spring Boot Language Server*.
 
@@ -61,17 +61,20 @@ If there are multiple instances of the app running on your machine, the live dat
 * `@Component`, `@Bean`, `@Autowired`: shows detailed information about the beans and their wiring from the live app
 * `@ContidionalOn...`: shows information about the conditions and their evaluation at runtime
 
-### Configuration
-You can enable/disable this feature via workspace or user preferences, 
-using the key: `boot-java.boot-hints.on`.
+### Application Requirements for Spring Boot projects
 
-## Code templates
+Live information is scraped from running apps using JMX to connect to [Spring Boot Actuator Endpoints](https://docs.spring.io/spring-boot/docs/current/reference/html/production-ready-endpoints.html). This means that `spring-boot-actuator` must be added as a dependency to your application and enabled. The easiest way to accomplish this is to add the `spring-boot-actuator-starter` dependency to your application's `pom.xml` or `build.gradle` as explained [here](https://docs.spring.io/spring-boot/docs/current/reference/html/production-ready-enabling.html).
+
+#### Spring Boot 2.2 and beyond
+
+⚠️ The JMX versions of the actuator endpoints (which the tooling uses under the hood to retrieve live data from the running applications) is not enabled by default anymore since Spring Boot 2.2. In order to allow Spring Tools 4 to continue to visualize live data from the running applications, you need to start the boot app with `-Dspring.jmx.enabled=true` in order to activate the JMX endpoints.
+
+### Managing Live Data Connections
+
+Press `CTRL-SHIFT-P` (or `CMD-SHIFT-P` on Mac) and select the command to
+"Manage Live Spring Boot Process Connections". A choice of actions to connect/refresh/disconnect
+to local processes found on your machine will then be presented.## Code templates
 Write Spring code with templates, available via regular code completion.
-
-### Examples
-* `@GetMapping`
-* `@PostMapping`
-* `@PutMapping`
 
 ## Smart code completions
 Additional code completions for Spring-specific annotations
