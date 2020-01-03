@@ -295,6 +295,9 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 		}
 		
 		CompilationUnit cu = CUResolver.convert(unit, source, AST.JLS11, options, needToResolveBindings, DefaultWorkingCopyOwner.PRIMARY, flags);
+		
+//		classpaths.forEach(e -> e.reset());
+		environment.cleanup();
 
 		return cu;
 	}

@@ -92,12 +92,34 @@
 			<groupId>org.springframework.ide.vscode</groupId>
 			<artifactId>commons-language-server</artifactId>
 			<version>${dependencies.version}</version>
-		</dependency>
+		</dependency>		
 		<dependency>
 			<groupId>org.eclipse.jdt</groupId>
 			<artifactId>org.eclipse.jdt.core</artifactId>
-			<version>3.19.0</version>
+			<version>3.20.100-SNAPSHOT</version>
 		</dependency>
+
+		<dependency>
+			<groupId>org.eclipse.platform</groupId>
+			<artifactId>org.eclipse.core.runtime</artifactId>
+			<version>3.17.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.platform</groupId>
+			<artifactId>org.eclipse.core.resources</artifactId>
+			<version>3.13.600</version>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.platform</groupId>
+			<artifactId>org.eclipse.core.filesystem</artifactId>
+			<version>1.7.600</version>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.platform</groupId>
+			<artifactId>org.eclipse.text</artifactId>
+			<version>3.10.0</version>
+		</dependency>
+		
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
