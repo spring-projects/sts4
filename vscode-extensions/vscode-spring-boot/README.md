@@ -59,7 +59,7 @@ If there are multiple instances of the app running on your machine, the live dat
 ### Examples
 * `@Profile`: shows information about the active profiles on the running apps
 * `@Component`, `@Bean`, `@Autowired`: shows detailed information about the beans and their wiring from the live app
-* `@ContidionalOn...`: shows information about the conditions and their evaluation at runtime
+* `@ConditionalOn...`: shows information about the conditions and their evaluation at runtime
 
 ### Application Requirements for Spring Boot projects
 
@@ -73,8 +73,17 @@ Live information is scraped from running apps using JMX to connect to [Spring Bo
 
 Press `CTRL-SHIFT-P` (or `CMD-SHIFT-P` on Mac) and select the command to
 "Manage Live Spring Boot Process Connections". A choice of actions to connect/refresh/disconnect
-to local processes found on your machine will then be presented.## Code templates
+to local processes found on your machine will then be presented.
+
+## Code templates
+
 Write Spring code with templates, available via regular code completion.
+
+### Examples
+
+* `@GetMapping`
+* `@PostMapping`
+* `@PutMapping`
 
 ## Smart code completions
 Additional code completions for Spring-specific annotations
