@@ -81,6 +81,12 @@
 			<url>https://download.eclipse.org/jdtls/snapshots/repository/latest/</url>
 		</repository>
 		<repository>
+			<id>specific orbit</id>
+			<layout>p2</layout>
+			<url>https://download.eclipse.org/tools/orbit/R-builds/R20170516192513/repository</url>
+		</repository>
+		
+		<repository>
 			<id>jboss-apt</id>
 			<layout>p2</layout>
 			<!--URL copied from jdt.ls target platform file, needed to satisfy some of its dependencies -->
