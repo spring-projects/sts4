@@ -69,14 +69,9 @@
 	<repositories>
 		<!-- composite update site contains http references, using exact https urls instead -->
 		<repository>
-			<id>photon</id>
+			<id>eclipse-2012-09</id>
 			<layout>p2</layout>
-			<url>https://download.eclipse.org/releases/photon/201806271001</url>
-		</repository>
-		<repository>
-			<id>photon-epp</id>
-			<layout>p2</layout>
-			<url>https://download.eclipse.org/technology/epp/packages/photon/</url>
+			<url>https://download.eclipse.org/releases/2019-09</url>
 		</repository>
 		
 		<repository>
