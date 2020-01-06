@@ -41,7 +41,7 @@ public class SpringProcessConnectorService {
 	private int progressIdKey = 0;
 	private int maxRetryCount;
 	private int retryDelayInSeconds;
-	
+		
 	public SpringProcessConnectorService(ProgressService progressService, SpringProcessLiveDataProvider liveDataProvider) {
 		this.liveDataProvider = liveDataProvider;
 		this.scheduler = new ScheduledThreadPoolExecutor(10);
@@ -77,7 +77,10 @@ public class SpringProcessConnectorService {
 		connector.addConnectorChangeListener(connectorListener);
 
 		try {
-			scheduleConnect(/* start with no progress handler */null, processKey, connector, 0, TimeUnit.SECONDS, 0);
+			final ProgressTask progressTask = getProgressTask(
+					"spring-process-connector-service-connect-" + processKey);
+			
+			scheduleConnect(progressTask, processKey, connector, 0, TimeUnit.SECONDS, 0);
 		}
 		catch (Exception e) {
 			log.error("error connecting to " + processKey, e);
@@ -89,7 +92,10 @@ public class SpringProcessConnectorService {
 		
 		SpringProcessConnector connector = this.connectors.get(processKey);
 		if (connector != null) {
-			scheduleRefresh(/* start with no progress handler */null, processKey, connector, 0, TimeUnit.SECONDS, 0);
+			final ProgressTask progressTask = getProgressTask(
+					"spring-process-connector-service-refresh-data-" + processKey);
+			
+			scheduleRefresh(progressTask, processKey, connector, 0, TimeUnit.SECONDS, 0);
 		}
 	}
 
@@ -102,7 +108,10 @@ public class SpringProcessConnectorService {
 		this.connectedSuccess.put(processKey, false);
 		
 		if (connector != null) {
-			scheduleDisconnect(null, processKey, connector, 0, TimeUnit.SECONDS, 0);
+			final ProgressTask progressTask = getProgressTask(
+					"spring-process-connector-service-disconnect-" + processKey);
+			
+			scheduleDisconnect(progressTask, processKey, connector, 0, TimeUnit.SECONDS, 0);
 		}
 	}
 	
@@ -126,15 +135,12 @@ public class SpringProcessConnectorService {
 		String progressMessage = "Connecting to process: " + processKey + " - retry no: " + retryNo;
 		log.info(progressMessage);
 		
-		// Use the same progress task for all retries so that progress messages appear in the same progress task
-		final ProgressTask connectProgressTask = getProgressTask(progressTask,
-				"spring-process-connector-service-connect-" + processKey);
 	
 		this.scheduler.schedule(() -> {
 			try {
-				connectProgressTask.progressEvent(progressMessage);
+				progressTask.progressEvent(progressMessage);
 				connector.connect();
-				connectProgressTask.progressDone();
+				progressTask.progressDone();
 				
 				refreshProcess(processKey);
 			}
@@ -142,9 +148,9 @@ public class SpringProcessConnectorService {
 				log.info("problem occured during process connect", e);
 
 				if (retryNo < maxRetryCount) {
-					scheduleConnect(connectProgressTask, processKey, connector, retryDelayInSeconds, TimeUnit.SECONDS, retryNo + 1);
+					scheduleConnect(progressTask, processKey, connector, retryDelayInSeconds, TimeUnit.SECONDS, retryNo + 1);
 				} else {
-					connectProgressTask.progressDone();
+					progressTask.progressDone();
 				}
 			}
 		}, delay, unit);
@@ -153,24 +159,21 @@ public class SpringProcessConnectorService {
 	private void scheduleDisconnect(ProgressTask progressTask, String processKey, SpringProcessConnector connector, long delay, TimeUnit unit, int retryNo) {
 		String message = "Disconnect from process: " + processKey + " - retry no: " + retryNo;
 		log.info(message);
-		
-		// Use the same progress task for all retries so that progress messages appear in the same progress task
-		final ProgressTask disconnectProgressTask = getProgressTask(progressTask,
-				"spring-process-connector-service-disconnect-" + processKey);
+	
 		
 		this.scheduler.schedule(() -> {
 			try {
-				disconnectProgressTask.progressEvent(message);
+				progressTask.progressEvent(message);
 				connector.disconnect();
-				disconnectProgressTask.progressDone();
+				progressTask.progressDone();
 			}
 			catch (Exception e) {
 				log.info("problem occured during process disconnect", e);
 
 				if (retryNo < maxRetryCount) {
-					scheduleDisconnect(disconnectProgressTask, processKey, connector, retryDelayInSeconds, TimeUnit.SECONDS, retryNo + 1);
+					scheduleDisconnect(progressTask, processKey, connector, retryDelayInSeconds, TimeUnit.SECONDS, retryNo + 1);
 				} else {
-					disconnectProgressTask.progressDone();
+					progressTask.progressDone();
 				}
 			}
 		}, delay, unit);
@@ -180,14 +183,11 @@ public class SpringProcessConnectorService {
 		String progressMessage = "Refreshing data from Spring process: " + processKey + " - retry no: " + retryNo;
 		log.info(progressMessage);
 		
-		// Use the same progress task for all retries so that progress messages appear in the same progress task
-		final ProgressTask refreshProgressTask = getProgressTask(progressTask,
-				"spring-process-connector-service-refresh-data-" + processKey);
 		
 		this.scheduler.schedule(() -> {
 			
 			try {
-				refreshProgressTask.progressEvent(progressMessage);
+				progressTask.progressEvent(progressMessage);
 				SpringProcessLiveData newLiveData = connector.refresh();
 
 				if (newLiveData != null) {
@@ -197,18 +197,18 @@ public class SpringProcessConnectorService {
 					
 					this.connectedSuccess.put(processKey, true);
 				}
-				refreshProgressTask.progressDone();
+				progressTask.progressDone();
 			}
 			catch (Exception e) {
 
 				log.info("problem occured during process live data refresh", e);
 				
 				if (retryNo < maxRetryCount) {
-					scheduleRefresh(refreshProgressTask, processKey, connector, retryDelayInSeconds, TimeUnit.SECONDS,
+					scheduleRefresh(progressTask, processKey, connector, retryDelayInSeconds, TimeUnit.SECONDS,
 							retryNo + 1);
 				}
 				else {
-					refreshProgressTask.progressDone();
+					progressTask.progressDone();
 
 					disconnectProcess(processKey);
 				}
@@ -216,10 +216,7 @@ public class SpringProcessConnectorService {
 		}, delay, unit);
 	}
 	
-	private ProgressTask getProgressTask(ProgressTask progressTask, String prefixId) {
-		ProgressTask task = progressTask == null
-				? this.progressService.createProgressTask(prefixId + progressIdKey++)
-				: progressTask;
-		return task;
+	private ProgressTask getProgressTask(String prefixId) {
+		return this.progressService.createProgressTask(prefixId + progressIdKey++);
 	}
 }
