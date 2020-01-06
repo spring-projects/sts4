@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019 Pivotal, Inc.
+ * Copyright (c) 2019, 2020 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -102,7 +102,7 @@ public class SpringProcessConnectorService {
 		this.connectedSuccess.put(processKey, false);
 		
 		if (connector != null) {
-			scheduleDisconnect(processKey, connector, 0, TimeUnit.SECONDS, 0);
+			scheduleDisconnect(null, processKey, connector, 0, TimeUnit.SECONDS, 0);
 		}
 	}
 	
@@ -150,18 +150,27 @@ public class SpringProcessConnectorService {
 		}, delay, unit);
 	}
 
-	private void scheduleDisconnect(String processKey, SpringProcessConnector connector, long delay, TimeUnit unit, int retryNo) {
-		log.info("schedule task to disconnect from process: " + processKey + " - retry no: " + retryNo);
+	private void scheduleDisconnect(ProgressTask progressTask, String processKey, SpringProcessConnector connector, long delay, TimeUnit unit, int retryNo) {
+		String message = "Disconnect from process: " + processKey + " - retry no: " + retryNo;
+		log.info(message);
+		
+		// Use the same progress task for all retries so that progress messages appear in the same progress task
+		final ProgressTask disconnectProgressTask = getProgressTask(progressTask,
+				"spring-process-connector-service-disconnect-" + processKey);
 		
 		this.scheduler.schedule(() -> {
 			try {
+				disconnectProgressTask.progressEvent(message);
 				connector.disconnect();
+				disconnectProgressTask.progressDone();
 			}
 			catch (Exception e) {
 				log.info("problem occured during process disconnect", e);
 
 				if (retryNo < maxRetryCount) {
-					scheduleDisconnect(processKey, connector, retryDelayInSeconds, TimeUnit.SECONDS, retryNo + 1);
+					scheduleDisconnect(disconnectProgressTask, processKey, connector, retryDelayInSeconds, TimeUnit.SECONDS, retryNo + 1);
+				} else {
+					disconnectProgressTask.progressDone();
 				}
 			}
 		}, delay, unit);
