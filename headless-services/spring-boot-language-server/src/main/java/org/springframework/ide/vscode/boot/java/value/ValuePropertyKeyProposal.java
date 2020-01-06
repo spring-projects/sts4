@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2019 Pivotal, Inc.
+ * Copyright (c) 2017, 2020 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -23,6 +23,7 @@ import org.springframework.ide.vscode.commons.util.Renderable;
  */
 public class ValuePropertyKeyProposal extends ScoreableProposal {
 
+	private static final String EMPTY_DETAIL = "";
 	private DocumentEdits edits;
 	private String label;
 	private String detail;
@@ -32,7 +33,10 @@ public class ValuePropertyKeyProposal extends ScoreableProposal {
 	private ValuePropertyKeyProposal(DocumentEdits edits, String label, String detail, double score, Renderable documentation) {
 		this.edits = edits;
 		this.label = label;
-		this.detail = detail;
+		// PT  161489998 - Detail for proposal must not be null. For some clients like Eclipse,
+		// a null detail results in an NPE at JDT level when inserting the proposal in the editor, and results
+		// in odd behaviour like insertion of an extra new line.
+		this.detail = detail == null ? EMPTY_DETAIL : detail;
 		this.documentation = documentation;
 		this.score = score;
 	}
