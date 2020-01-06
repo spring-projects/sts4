@@ -17,9 +17,12 @@ import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ide.vscode.commons.languageserver.ProgressTask;
 import org.springframework.ide.vscode.boot.app.BootJavaConfig;
+import org.springframework.ide.vscode.commons.languageserver.DiagnosticService;
 import org.springframework.ide.vscode.commons.languageserver.ProgressService;
+import org.springframework.ide.vscode.commons.languageserver.ProgressTask;
+import org.springframework.ide.vscode.commons.languageserver.util.ShowMessageException;
+import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 
 /**
  * @author Martin Lippert
@@ -36,18 +39,26 @@ public class SpringProcessConnectorService {
 
 	private final SpringProcessConnectionChangeListener connectorListener;
 
-	private final ProgressService progressService;
+	private ProgressService progressService;
+	private DiagnosticService diagnosticService;
 	
 	private int progressIdKey = 0;
 	private int maxRetryCount;
 	private int retryDelayInSeconds;
+
 		
-	public SpringProcessConnectorService(ProgressService progressService, SpringProcessLiveDataProvider liveDataProvider) {
+	public SpringProcessConnectorService(SimpleLanguageServer server, SpringProcessLiveDataProvider liveDataProvider) {
 		this.liveDataProvider = liveDataProvider;
 		this.scheduler = new ScheduledThreadPoolExecutor(10);
 		this.connectors = new ConcurrentHashMap<>();
 		this.connectedSuccess = new ConcurrentHashMap<>();
-		this.progressService = progressService == null ? ProgressService.NO_PROGRESS : progressService;
+		
+		this.progressService = server.getProgressService();
+		if (this.progressService == null) {
+			this.progressService = ProgressService.NO_PROGRESS;
+		}
+		
+		this.diagnosticService = server.getDiagnosticService();
 		
 		this.maxRetryCount = BootJavaConfig.LIVE_INFORMATION_FETCH_DATA_RETRY_MAX_NO_DEFAULT;
 		this.retryDelayInSeconds = BootJavaConfig.LIVE_INFORMATION_FETCH_DATA_RETRY_DELAY_IN_SECONDS_DEFAULT;
@@ -151,6 +162,10 @@ public class SpringProcessConnectorService {
 					scheduleConnect(progressTask, processKey, connector, retryDelayInSeconds, TimeUnit.SECONDS, retryNo + 1);
 				} else {
 					progressTask.progressDone();
+					
+					// Send message to client if maximum retries reached on error
+					diagnosticService.diagnosticEvent(ShowMessageException
+							.error("Failed to connect to process " + processKey + " after retries: " + retryNo, e));	
 				}
 			}
 		}, delay, unit);
@@ -174,6 +189,11 @@ public class SpringProcessConnectorService {
 					scheduleDisconnect(progressTask, processKey, connector, retryDelayInSeconds, TimeUnit.SECONDS, retryNo + 1);
 				} else {
 					progressTask.progressDone();
+					
+					// Send message to client if maximum retries reached on error
+					diagnosticService.diagnosticEvent(ShowMessageException
+							.error("Failed to disconnect from process " + processKey + " after retries: " + retryNo, e));
+				
 				}
 			}
 		}, delay, unit);
@@ -209,6 +229,10 @@ public class SpringProcessConnectorService {
 				}
 				else {
 					progressTask.progressDone();
+					
+					// Send message to client if maximum retries reached on error
+					diagnosticService.diagnosticEvent(ShowMessageException
+							.error("Failed to refresh live data from process " + processKey + " after retries: " + retryNo, e));
 
 					disconnectProcess(processKey);
 				}
