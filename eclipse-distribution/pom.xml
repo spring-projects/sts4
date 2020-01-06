@@ -319,6 +319,11 @@
 					<url>https://download.eclipse.org/staging/2020-03/</url>
 				</repository>
 				<repository>
+					<id>platform-i-bulds</id>
+					<layout>p2</layout>
+					<url>https://download.eclipse.org/eclipse/updates/4.15-I-builds/</url>
+				</repository>
+				<repository>
 					<id>orbit</id>
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/tools/orbit/downloads/drops/R20191126223242/repository</url>
