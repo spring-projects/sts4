@@ -12,11 +12,12 @@ package org.springframework.ide.vscode.boot.java.utils;
 
 import java.io.File;
 import java.net.URI;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
@@ -25,17 +26,12 @@ import java.util.function.Function;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.IOUtils;
-import org.eclipse.jdt.core.ICompilationUnit;
-import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTParser;
 import org.eclipse.jdt.core.dom.CompilationUnit;
-import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.eclipse.jdt.internal.compiler.batch.FileSystem.Classpath;
-import org.eclipse.jdt.internal.core.BasicCompilationUnit;
-import org.eclipse.jdt.internal.core.DefaultWorkingCopyOwner;
-import org.eclipse.jdt.internal.core.INameEnvironmentWithProgress;
+import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.java.IClasspath;
@@ -52,8 +48,6 @@ import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
 import reactor.core.scheduler.Schedulers;
-import reactor.util.function.Tuple2;
-import reactor.util.function.Tuples;
 
 public final class CompilationUnitCache implements DocumentContentProvider {
 
@@ -64,13 +58,15 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 	private ProjectObserver projectObserver;
 	private Cache<URI, CompilationUnit> uriToCu;
 	private Cache<IJavaProject, Set<URI>> projectToDocs;
-	private Cache<IJavaProject, Tuple2<List<Classpath>, INameEnvironmentWithProgress>> lookupEnvCache;
+	private Cache<IJavaProject, List<Classpath>> lookupEnvCache;
 	private ProjectObserver.Listener projectListener;
 	private SimpleTextDocumentService documents;
 	private AsyncRunner async;
 
 	private ReadLock readLock;
 	private WriteLock writeLock;
+	
+	private ClasspathLookupEnvironmentPool classpathLookupPool = new ClasspathLookupEnvironmentPool();
 
 	public CompilationUnitCache(JavaProjectFinder projectFinder, SimpleLanguageServer server, ProjectObserver projectObserver) {
 		this.projectFinder = projectFinder;
@@ -81,6 +77,7 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 		// accessed after some time
 		uriToCu = CacheBuilder.newBuilder()
 				.expireAfterWrite(CU_ACCESS_EXPIRATION, TimeUnit.MINUTES)
+				.removalListener(removal -> invalidateCuForJavaFile(removal.getKey().toString()))
 				.build();
 		projectToDocs = CacheBuilder.newBuilder().build();
 
@@ -93,20 +90,34 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 		
 
 		if (documents != null) {
-			documents.onDidChangeContent(doc -> invalidateCuForJavaFile(doc.getDocument().getId().getUri()));
-			documents.onDidClose(doc -> invalidateCuForJavaFile(doc.getId().getUri()));
+			documents.onDidChangeContent(doc -> {
+				writeLock.lock();
+				try {
+					invalidateCuForJavaFile(doc.getDocument().getId().getUri());
+				} finally {
+					writeLock.unlock();
+				}
+			});
+			documents.onDidClose(doc -> {
+				writeLock.lock();
+				try {
+					invalidateCuForJavaFile(doc.getId().getUri());
+				} finally {
+					writeLock.unlock();
+				}
+			});
 		}
 
-		async.execute(() -> {
-			writeLock.lock();
-			try {
-				for (IJavaProject project : projectFinder.all()) {
-					loadLookupEnvTuple(project);
-				}
-			} finally {
-				writeLock.unlock();
-			}
-		});
+//		async.execute(() -> {
+//			writeLock.lock();
+//			try {
+//				for (IJavaProject project : projectFinder.all()) {
+//					loadLookupEnvTuple(project);
+//				}
+//			} finally {
+//				writeLock.unlock();
+//			}
+//		});
 
 		projectListener = new ProjectObserver.Listener() {
 			
@@ -130,8 +141,6 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 					writeLock.lock();
 					try {
 						invalidateProject(project);
-						// Load the new cache the value right away
-						loadLookupEnvTuple(project);
 					} finally {
 						writeLock.unlock();
 					}
@@ -145,8 +154,6 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 					writeLock.lock();
 					try {
 						invalidateProject(project);
-						// Load the new cache the value right away
-						loadLookupEnvTuple(project);
 					} finally {
 						writeLock.unlock();
 					}
@@ -189,10 +196,13 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 
 			try {
 				cu = uriToCu.get(uri, () -> {
-					Tuple2<List<Classpath>, INameEnvironmentWithProgress> lookupEnvTuple = loadLookupEnvTuple(project);
+					List<Classpath> lookupEnv =lookupEnvCache.get(project, () -> {
+						return createClasspath(project);
+					});
 					String utiStr = uri.toString();
 					String unitName = utiStr.substring(utiStr.lastIndexOf("/"));
-					CompilationUnit cUnit = parse2(fetchContent(uri).toCharArray(), utiStr, unitName, lookupEnvTuple.getT1(), lookupEnvTuple.getT2());
+					CompilationUnit cUnit = parse2(fetchContent(uri).toCharArray(), utiStr, unitName, lookupEnv, getClasspathEntries(project));
+					
 					projectToDocs.get(project, () -> new HashSet<>()).add(uri);
 					return cUnit;
 				});
@@ -226,6 +236,16 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 		writeLock.lock();
 		try {
 			uriToCu.invalidate(uri);
+			IJavaProject project = projectFinder.find(new TextDocumentIdentifier(uriStr)).orElse(null);
+			if (project != null) {
+				Set<URI> docUris = projectToDocs.getIfPresent(project);
+				if (docUris != null) {
+					docUris.remove(uri);
+					if (docUris.isEmpty()) {
+						invalidateProject(project);
+					}
+				}
+			}
 		} finally {
 			writeLock.unlock();
 		}
@@ -265,61 +285,95 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 //
 //		return cu;
 //	}
+//	
+//	public static CompilationUnit parse2(char[] source, String docURI, String unitName, IJavaProject project) throws Exception {
+//		List<Classpath> classpaths = createClasspath(project);
+//		return parse2(source, docURI, unitName, classpaths, getClasspathEntries(project));
+//	}
 	
-	public static CompilationUnit parse2(char[] source, String docURI, String unitName, IJavaProject project) throws Exception {
-		List<Classpath> classpaths = createClasspath(getClasspathEntries(project));
-		return parse2(source, docURI, unitName, classpaths, null);
-	}
-	
-	private static CompilationUnit parse2(char[] source, String docURI, String unitName, List<Classpath> classpaths, INameEnvironmentWithProgress environment) throws Exception {
+	private static CompilationUnit parse2(char[] source, String docURI, String unitName, List<Classpath> classpaths, String[] entries) throws Exception {
+		ASTParser parser = ASTParser.newParser(AST.JLS11);
 		Map<String, String> options = JavaCore.getOptions();
-		String apiLevel = JavaCore.VERSION_11;
-		JavaCore.setComplianceOptions(apiLevel, options);
-		if (environment == null) {
-			environment = CUResolver.createLookupEnvironment(classpaths.toArray(new Classpath[classpaths.size()]));
-		}
-		
-		BasicCompilationUnit sourceUnit = new BasicCompilationUnit(source, null, unitName, (IJavaElement) null);
-		
-		int flags = 0;
-		boolean needToResolveBindings = true;
-		flags |= ICompilationUnit.ENABLE_STATEMENTS_RECOVERY;
-		flags |= ICompilationUnit.ENABLE_BINDINGS_RECOVERY;
-		CompilationUnitDeclaration unit = null;
-		try {
-			unit = CUResolver.resolve(sourceUnit, classpaths, options, flags, environment);
-		} catch (Exception e) {
-			flags &= ~ICompilationUnit.ENABLE_BINDINGS_RECOVERY;
-			unit = CUResolver.parse(sourceUnit, options, flags);
-			needToResolveBindings = false;
-		}
-		
-		CompilationUnit cu = CUResolver.convert(unit, source, AST.JLS11, options, needToResolveBindings, DefaultWorkingCopyOwner.PRIMARY, flags);
-		
-//		classpaths.forEach(e -> e.reset());
-		environment.cleanup();
+		JavaCore.setComplianceOptions(JavaCore.VERSION_11, options);
+		parser.setCompilerOptions(options);
+		parser.setKind(ASTParser.K_COMPILATION_UNIT);
+		parser.setStatementsRecovery(true);
+		parser.setBindingsRecovery(true);
+		parser.setResolveBindings(true);
+
+//		parser.setEnvironment(entries, new String[0], null, false);
+		parser.setClasspathLookupEnvironment(classpaths);
+
+		parser.setUnitName(unitName);
+		parser.setSource(source);
+
+		CompilationUnit cu = (CompilationUnit) parser.createAST(null);
 
 		return cu;
+		
+//		Map<String, String> options = JavaCore.getOptions();
+//		String apiLevel = JavaCore.VERSION_11;
+//		JavaCore.setComplianceOptions(apiLevel, options);
+//		if (environment == null) {
+//			environment = CUResolver.createLookupEnvironment(classpaths.toArray(new Classpath[classpaths.size()]));
+//		}
+//		
+//		BasicCompilationUnit sourceUnit = new BasicCompilationUnit(source, null, unitName, (IJavaElement) null);
+//		
+//		int flags = 0;
+//		boolean needToResolveBindings = true;
+//		flags |= ICompilationUnit.ENABLE_STATEMENTS_RECOVERY;
+//		flags |= ICompilationUnit.ENABLE_BINDINGS_RECOVERY;
+//		CompilationUnitDeclaration unit = null;
+//		try {
+//			unit = CUResolver.resolve(sourceUnit, classpaths, options, flags, environment);
+//		} catch (Exception e) {
+//			flags &= ~ICompilationUnit.ENABLE_BINDINGS_RECOVERY;
+//			unit = CUResolver.parse(sourceUnit, options, flags);
+//			needToResolveBindings = false;
+//		}
+//		
+//		CompilationUnit cu = CUResolver.convert(unit, source, AST.JLS11, options, needToResolveBindings, DefaultWorkingCopyOwner.PRIMARY, flags);
+//		
+//		return cu;
 	}
 	
-	private static List<Classpath> createClasspath(String[] classpathEntries) {
-		ASTParser parser = ASTParser.newParser(AST.JLS11);
-		String[] sourceEntries = new String[] {};
-		parser.setEnvironment(classpathEntries, sourceEntries, null, false);
-		return CUResolver.getClasspath(parser);
-	}
-	
-	private Tuple2<List<Classpath>, INameEnvironmentWithProgress> loadLookupEnvTuple(IJavaProject project) {
-		try {
-			return lookupEnvCache.get(project, () -> {
-				List<Classpath> classpaths = createClasspath(getClasspathEntries(project));
-				INameEnvironmentWithProgress environment = CUResolver.createLookupEnvironment(classpaths.toArray(new Classpath[classpaths.size()]));
-				return Tuples.of(classpaths, environment);
-			});
-		} catch (ExecutionException e) {
-			logger.error("{}", e);
-			return null;
+//	private static List<Classpath> createClasspath(String[] classpathEntries) {
+//		ASTParser parser = ASTParser.newParser(AST.JLS11);
+//		String[] sourceEntries = new String[] {};
+//		parser.setEnvironment(classpathEntries, sourceEntries, null, false);
+//		return CUResolver.getClasspath(parser);
+//	}
+//	
+//	private List<Classpath> loadLookupEnvTuple(IJavaProject project) {
+////		return createClasspath(project);
+//		try {
+//			return lookupEnvCache.get(project, () -> {
+//				return createClasspath(project);
+//			});
+//		} catch (ExecutionException e) {
+//			logger.error("{}", e);
+//			return null;
+//		}
+//	}
+//	
+	private List<Classpath> createClasspath(IJavaProject project) {
+		IClasspath cp = project.getClasspath();
+		List<Classpath> allClasspaths = new ArrayList<>();
+		for (File f : IClasspathUtil.getAllBinaryRoots(cp)) {
+			allClasspaths.addAll(classpathLookupPool.acquire(f.getAbsolutePath()));
 		}
+		return allClasspaths;
+		
+//		ASTParser parser = ASTParser.newParser(AST.JLS11);
+//		String[] sourceEntries = new String[] {};
+//		try {
+//			parser.setEnvironment(getClasspathEntries(project), sourceEntries, null, false);
+//		} catch (Exception e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//		return CUResolver.getClasspath(parser);
 	}
 	
 	private static String[] getClasspathEntries(IJavaProject project) throws Exception {
@@ -340,7 +394,13 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 			uriToCu.invalidateAll(docUris);
 			projectToDocs.invalidate(project);
 		}
-		lookupEnvCache.invalidate(project);
+		List<Classpath> paths = lookupEnvCache.getIfPresent(project);
+		if (paths != null) {
+			for (File f : IClasspathUtil.getAllBinaryRoots(project.getClasspath())) {
+				classpathLookupPool.release(f.getAbsolutePath());
+			}
+			lookupEnvCache.invalidate(project);
+		}
 	}
 
 	@Override
@@ -354,4 +414,42 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 		return IOUtils.toString(uri);
 
 	}
+	
+	private static class ClasspathLookupEnvironmentPool {
+		
+		private Map<String, List<Classpath>> classpathsMap = new HashMap<>();
+		private Map<String, Integer> linksMap = new HashMap<>(); 
+		
+		List<Classpath> acquire(String path) {
+			List<Classpath> cp = classpathsMap.get(path);
+			if (cp == null) {
+				cp = ASTParser.createNonSourceClasspathEntries(path);
+				classpathsMap.put(path, cp);
+				linksMap.put(path, 0);
+			}
+			linksMap.put(path, linksMap.get(path) + 1);
+			return cp;
+		}
+		
+		void release(String path) {
+//			if (!linksMap.containsKey(path) || !classpathsMap.containsKey(path)) {
+//				throw new IllegalArgumentException("Path doesn't have classpath entries!");
+//			}
+			int links = linksMap.get(path);
+			if (links <= 1) {
+				linksMap.remove(path);
+				List<Classpath> cp = classpathsMap.remove(path);
+				if (cp != null) {
+					for (Classpath e : cp) {
+						e.reset();
+					}
+				}
+			} else {
+				if (linksMap.containsKey(path)) {
+					linksMap.put(path, links - 1);
+				}
+			}
+		}
+	}
+
 }

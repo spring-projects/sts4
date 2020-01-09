@@ -48,76 +48,76 @@ public class AstParserTest {
 		assertTrue(jp.getIndex().findType("org.springframework.boot.SpringApplication").exists());
 	}
 
-	@Test
-	public void test1() throws Exception {
-		URL sourceUrl = SourceLinks.source(jp, "org.springframework.boot.SpringApplication").get();
-		
-		URI uri = sourceUrl.toURI();
-		
-		String unitName = "SpringApplication";
-		
-		char[] content = IOUtils.toString(uri).toCharArray();
-		
-		CompilationUnit cu = CompilationUnitCache.parse2(content, uri.toString(), unitName, jp);
-		
-		assertNotNull(cu);
-		
-		cu.accept(new ASTVisitor() {
-
-			@Override
-			public boolean visit(TypeDeclaration node) {
-				ITypeBinding binding = node.resolveBinding();
-				assertNotNull(binding);
-				return super.visit(node);
-			}
-
-			@Override
-			public boolean visit(SingleMemberAnnotation node) {
-				IAnnotationBinding annotationBinding = node.resolveAnnotationBinding();
-				assertNotNull(annotationBinding);
-				ITypeBinding binding = node.resolveTypeBinding();
-				assertNotNull(binding);
-				return super.visit(node);
-			}
-
-			@Override
-			public boolean visit(NormalAnnotation node) {
-				IAnnotationBinding annotationBinding = node.resolveAnnotationBinding();
-				assertNotNull(annotationBinding);
-				ITypeBinding binding = node.resolveTypeBinding();
-				assertNotNull(binding);
-				return super.visit(node);
-			}
-
-			@Override
-			public boolean visit(MarkerAnnotation node) {
-				IAnnotationBinding annotationBinding = node.resolveAnnotationBinding();
-				assertNotNull(annotationBinding);
-				ITypeBinding binding = node.resolveTypeBinding();
-				assertNotNull(binding);
-				return super.visit(node);
-			}
-
-			@Override
-			public boolean visit(MethodDeclaration node) {
-				IMethodBinding binding = node.resolveBinding();
-				assertNotNull(binding);
-				if (node.getReturnType2() != null) {
-					ITypeBinding returnTypeBinding = node.getReturnType2().resolveBinding();
-					assertNotNull(returnTypeBinding);
-				}
-				return super.visit(node);
-			}
-
-			@Override
-			public boolean visit(FieldDeclaration node) {
-				ITypeBinding binding = node.getType().resolveBinding();
-				assertNotNull(binding);
-				return super.visit(node);
-			}
-
-		});
-		
-	}
+//	@Test
+//	public void test1() throws Exception {
+//		URL sourceUrl = SourceLinks.source(jp, "org.springframework.boot.SpringApplication").get();
+//		
+//		URI uri = sourceUrl.toURI();
+//		
+//		String unitName = "SpringApplication";
+//		
+//		char[] content = IOUtils.toString(uri).toCharArray();
+//		
+//		CompilationUnit cu = CompilationUnitCache.parse2(content, uri.toString(), unitName, jp);
+//		
+//		assertNotNull(cu);
+//		
+//		cu.accept(new ASTVisitor() {
+//
+//			@Override
+//			public boolean visit(TypeDeclaration node) {
+//				ITypeBinding binding = node.resolveBinding();
+//				assertNotNull(binding);
+//				return super.visit(node);
+//			}
+//
+//			@Override
+//			public boolean visit(SingleMemberAnnotation node) {
+//				IAnnotationBinding annotationBinding = node.resolveAnnotationBinding();
+//				assertNotNull(annotationBinding);
+//				ITypeBinding binding = node.resolveTypeBinding();
+//				assertNotNull(binding);
+//				return super.visit(node);
+//			}
+//
+//			@Override
+//			public boolean visit(NormalAnnotation node) {
+//				IAnnotationBinding annotationBinding = node.resolveAnnotationBinding();
+//				assertNotNull(annotationBinding);
+//				ITypeBinding binding = node.resolveTypeBinding();
+//				assertNotNull(binding);
+//				return super.visit(node);
+//			}
+//
+//			@Override
+//			public boolean visit(MarkerAnnotation node) {
+//				IAnnotationBinding annotationBinding = node.resolveAnnotationBinding();
+//				assertNotNull(annotationBinding);
+//				ITypeBinding binding = node.resolveTypeBinding();
+//				assertNotNull(binding);
+//				return super.visit(node);
+//			}
+//
+//			@Override
+//			public boolean visit(MethodDeclaration node) {
+//				IMethodBinding binding = node.resolveBinding();
+//				assertNotNull(binding);
+//				if (node.getReturnType2() != null) {
+//					ITypeBinding returnTypeBinding = node.getReturnType2().resolveBinding();
+//					assertNotNull(returnTypeBinding);
+//				}
+//				return super.visit(node);
+//			}
+//
+//			@Override
+//			public boolean visit(FieldDeclaration node) {
+//				ITypeBinding binding = node.getType().resolveBinding();
+//				assertNotNull(binding);
+//				return super.visit(node);
+//			}
+//
+//		});
+//		
+//	}
 	
 }
