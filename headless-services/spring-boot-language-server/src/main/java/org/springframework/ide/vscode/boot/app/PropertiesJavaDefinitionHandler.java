@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2019 Pivotal, Inc.
+ * Copyright (c) 2018, 2020 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -84,10 +84,13 @@ public class PropertiesJavaDefinitionHandler implements DefinitionHandler, Langu
 				Collection<IMember> propertyJavaElements = PropertiesDefinitionCalculator.getPropertyJavaElements(typeUtil, propertyFinder, project, propertyKey);
 
 				// Attempt to highlight only chunk of the key for which definition is found
-				Range range = adjustedHighlightRangeForKey(doc, selectionRange, propertyFinder.findBestHoverMatch(propertyKey));
-				return PropertiesDefinitionCalculator.getLocations(javaElementLocationProvider, project, propertyJavaElements).stream()
-						.map(l -> new LocationLink(l.getUri(), l.getRange(), l.getRange(), range))
-						.collect(Collectors.toList());
+				PropertyInfo propertyInfo = propertyFinder.findBestHoverMatch(propertyKey);
+				if (propertyInfo != null) {
+					Range range = adjustedHighlightRangeForKey(doc, selectionRange, propertyInfo);
+					return PropertiesDefinitionCalculator.getLocations(javaElementLocationProvider, project, propertyJavaElements).stream()
+							.map(l -> new LocationLink(l.getUri(), l.getRange(), l.getRange(), range))
+							.collect(Collectors.toList());
+				}
 			} else if (node instanceof Value) {
 				Value value = (Value) node;
 				Key key = value.getParent().getKey();
