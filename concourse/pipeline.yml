@@ -153,6 +153,7 @@ resources:
 - name: s3-concourse-vsix-release
   type: s3
   source:
+    cache_buster: stuff
     bucket: dist.springsource.com
     access_key_id: ((s3_accesskey))
     secret_access_key: ((s3_secretkey))
@@ -160,6 +161,7 @@ resources:
 - name: s3-bosh-vsix-release
   type: s3
   source:
+    cache_buster: stuff
     bucket: dist.springsource.com
     access_key_id: ((s3_accesskey))
     secret_access_key: ((s3_secretkey))
@@ -167,6 +169,7 @@ resources:
 - name: s3-manifest-yaml-vsix-release
   type: s3
   source:
+    cache_buster: stuff
     bucket: dist.springsource.com
     access_key_id: ((s3_accesskey))
     secret_access_key: ((s3_secretkey))
@@ -174,6 +177,7 @@ resources:
 - name: s3-spring-boot-vsix-release
   type: s3
   source:
+    cache_buster: stuff
     bucket: dist.springsource.com
     access_key_id: ((s3_accesskey))
     secret_access_key: ((s3_secretkey))
