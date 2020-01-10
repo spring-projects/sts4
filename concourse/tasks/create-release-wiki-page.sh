@@ -2,12 +2,9 @@
 #######################################
 ## !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 ## This script is not working yet, 
-## Not tested, incomplete
-## WIP
 ##########################################
 
-set -e
-set -v
+set -e -v
 workdir=`pwd`
 
 vsix_files=$(find "$workdir" *-vsix -name "*.vsix") 

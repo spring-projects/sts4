@@ -335,12 +335,17 @@ jobs:
   - in_parallel:
     - get: sts4-wiki
     - get: sts4
-    - get: s3-spring-boot-vsix-release
-    - get: s3-manifest-yaml-vsix-release
     - get: s3-bosh-vsix-release
+    - get: s3-manifest-yaml-vsix-release
     - get: s3-concourse-vsix-release
+    - get: s3-spring-boot-vsix-release
   - task: create-vsix-release-wiki-page
     file: sts4/concourse/tasks/create-release-wiki-page.yml
+    input_mapping:
+      concourse-vsix: s3-concourse-vsix-release
+      bosh-vsix: s3-bosh-vsix-release
+      manifest-yaml-vsix: s3-manifest-yaml-vsix-release
+      spring-boot-vsix: s3-spring-boot-vsix-release
   - put: sts4-wiki
     params:
       rebase: true

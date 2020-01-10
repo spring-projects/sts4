@@ -1,6 +1,6 @@
 inputs:
-- name: concourse-vsix
 - name: bosh-vsix
+- name: concourse-vsix
 - name: manifest-yaml-vsix
 - name: spring-boot-vsix
 - name: sts4
