@@ -4,9 +4,7 @@ workdir=`pwd`
 vsix_files=$(find *-vsix -name "*.vsix")
 page=$workdir/sts4-wiki/Current-VSCode-Releases.md
 
-echo "Current/Latest Vscode Releases" > $page
-echo "==============================" >> $page
-echo "" >> $page
+echo "" > $page
 for vsix_file in ${vsix_files}
 do
     echo "Processing $vsix_file"
