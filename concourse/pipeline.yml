@@ -46,12 +46,12 @@ resources:
     uri: git@github.com:spring-projects/sts4.git
     branch: ((branch))
     private_key: ((rsa_id))
-# - name: sts4-wiki
-#   type: git
-#   source:
-#     uri: git@github.com:spring-projects/sts4.wiki.git
-#     branch: master
-#     private_key: ((rsa_id))
+- name: sts4-wiki
+  type: git
+  source:
+    uri: git@github.com:spring-projects/sts4.wiki.git
+    branch: master
+    private_key: ((rsa_id))
 - name: mirror-vscode-spring-boot
   type: git
   source:
@@ -330,22 +330,21 @@ jobs:
       params:
         file: s3-concourse-vsix-snapshot/*.vsix
         acl: public-read
-# Stuff below is untested and incomplete
-# - name: create-release-wiki-page
-#   plan:
-#   - in_parallel:
-#     - get: sts4-wiki
-#     - get: sts4
-#     - get: s3-spring-boot-vsix-release
-#     - get: s3-manifest-yaml-vsix-release
-#     - get: s3-bosh-vsix-release
-#     - get: s3-concourse-vsix-release
-#   - task: create-vsix-release-wiki-page
-#     file: sts4/concourse/tasks/create-release-wiki-page.yml
-#   - put: sts4-wiki
-#     params:
-#       rebase: true
-#       repository: sts4-wiki-out
+- name: create-release-wiki-page
+  plan:
+  - in_parallel:
+    - get: sts4-wiki
+    - get: sts4
+    - get: s3-spring-boot-vsix-release
+    - get: s3-manifest-yaml-vsix-release
+    - get: s3-bosh-vsix-release
+    - get: s3-concourse-vsix-release
+  - task: create-vsix-release-wiki-page
+    file: sts4/concourse/tasks/create-release-wiki-page.yml
+  - put: sts4-wiki
+    params:
+      rebase: true
+      repository: sts4-wiki-out
 - name: build-theia-docker-snapshot-image
   serial: true
   on_failure:
@@ -1312,4 +1311,4 @@ groups:
 - name: experimental
   jobs: 
   - vsix-s3-publish
-#  - create-release-wiki-page
+  - create-release-wiki-page
