@@ -1,21 +1,11 @@
 #!/bin/bash
-#######################################
-## !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-## This script is not working yet, 
-##########################################
-
-set -e -v
+set -e
 workdir=`pwd`
-
 vsix_files=$(find *-vsix -name "*.vsix")
-# version=`cat version/version`
-# echo "version=$version"
+page=$workdir/sts4-wiki/Current-VSCode-Releases.md
 
-
-page=$workdir/sts4-wiki/VSCode-Extensions-Downloads-Latest.md
-
-echo "Current Vscode Extensions Downloads" > $page
-echo "===================================" >> $page
+echo "Current/Latest Vscode Releases" > $page
+echo "==============================" >> $page
 echo "" >> $page
 for vsix_file in ${vsix_files}
 do
@@ -24,7 +14,7 @@ do
     echo "- [$fname](https://dist.springsource.com/release/STS4/vscode/$fname)" >> $page
 done
 
-echo "Vsix Downloads Page Generated:"
+echo "Current Vsix Release Page Generated:"
 echo "----------------------------------------------"
 cat $page
 echo "----------------------------------------------"
