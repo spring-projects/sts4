@@ -19,7 +19,7 @@ echo "===================================" >> $page
 echo "" >> $page
 for vsix_file in ${vsix_files}
 do
-    fname=$(basename $vsix_files)
+    fname=$(basename $vsix_file)
     echo "- [$fname](https://dist.springsource.com/release/STS4/vscode/$fname)" >> $page
 done
 
