@@ -63,7 +63,8 @@
             activate="true"
             categoryId="org.eclipse.jdt.ui.defaultProposalCategory"
             class="org.springframework.tooling.boot.ls.jdt.SpringBootJavaCompletionProposalComputer"
-            needsSortingAfterFiltering="false">
+            needsSortingAfterFiltering="false"
+            requiresUIThread="false">
       </javaCompletionProposalComputer>
    </extension>
    
