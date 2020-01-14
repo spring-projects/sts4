@@ -3,7 +3,7 @@
   "theia": {
       "frontend": {
           "config": {
-              "applicationName": "Theia Multi-Language Example",
+              "applicationName": "Theia STS 4",
               "preferences": {
                   "files.enableTrash": false
               }
