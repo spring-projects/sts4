@@ -18,6 +18,7 @@ RUN cd /usr/local/bin && \
 RUN mkdir /theia-app
 ADD package.json /theia-app
 RUN cd /theia-app && \
+    curl -H 'Cache-Control: no-cache' https://api.github.com/repos/microsoft/ripgrep-prebuilt/releases/tags/v11.0.1-2 && \
     yarn && \
     yarn theia build
 
