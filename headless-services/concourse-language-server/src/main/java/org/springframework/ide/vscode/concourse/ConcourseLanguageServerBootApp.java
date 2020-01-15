@@ -30,7 +30,7 @@ public class ConcourseLanguageServerBootApp {
 	private static final String SERVER_NAME = "concourse-language-server";
 
 	public static void main(String[] args) throws Exception {
-		System.setProperty(LanguageServerRunner.SYSPROP_LANGUAGESERVER_NAME, SERVER_NAME); //makes it easy to recognize language server processes - and set this as early as possible
+		System.setProperty(LanguageServerRunner.SYSPROP_LANGUAGESERVER_NAME, SERVER_NAME); //makes it easy to recognize language server processes. Set this as early as possible.
 
 		LogRedirect.bootRedirectToFile(SERVER_NAME); //TODO: use boot (or logback realy) to configure logging instead.
 		SpringApplication.run(ConcourseLanguageServerBootApp.class, args);
