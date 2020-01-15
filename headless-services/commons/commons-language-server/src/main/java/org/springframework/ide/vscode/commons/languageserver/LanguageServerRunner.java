@@ -37,7 +37,6 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.ide.vscode.commons.languageserver.config.LanguageServerProperties;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.protocol.STS4LanguageClient;
-import org.springframework.ide.vscode.commons.util.Log;
 
 /**
  * A CommandLineRunner that launches a language server. This meant to be used as a Spring bean
@@ -52,6 +51,7 @@ public class LanguageServerRunner implements CommandLineRunner {
 
 	@Override
 	public void run(String... args) throws Exception {
+		log.info("java.home = {}", System.getProperty("java.home"));
 		//TODO: feels a bit wasteful to have thread dedicated to just waiting for the server to stop.
 		//  Not sure how we can really avoid this though. Lsp4j is providing
 		//  lots of api that returns Futures which the only way to deal with them is blocking threads calling
@@ -109,34 +109,34 @@ public class LanguageServerRunner implements CommandLineRunner {
 				try {
 					in.close();
 				} catch (IOException e) {
-					Log.log(e);
+					log.error("", e);
 				}
 			}
 			if (out != null) {
 				try {
 					out.close();
 				} catch (IOException e) {
-					Log.log(e);
+					log.error("", e);
 				}
 			}
 			if (socket != null) {
 				try {
 					socket.close();
 				} catch (IOException e) {
-					Log.log(e);
+					log.error("", e);
 				}
 			}
 		}
 	}
 
 	private void startAsClient() throws IOException {
-		Log.info("Starting LS");
+		log.info("Starting LS as client");
 		Connection connection = null;
 		try {
 			connection = connectToNode();
 			runAsync(connection).get();
 		} catch (Throwable t) {
-			Log.log(t);
+			log.error("", t);
 			System.exit(1);
 		} finally {
 			if (connection != null) {
@@ -202,14 +202,14 @@ public class LanguageServerRunner implements CommandLineRunner {
 			InputStream in = socket.getInputStream();
 			OutputStream out = socket.getOutputStream();
 
-			Log.info("Connected to parent using socket on port " + port);
+			log.info("Connected to parent using socket on port {}", port);
 			return new Connection(in, out, socket);
 		}
 		else {
 			InputStream in = System.in;
 			PrintStream out = System.out;
 
-			Log.info("Connected to parent using stdio");
+			log.info("Connected to parent using stdio");
 
 			return new Connection(in, out, null);
 		}
