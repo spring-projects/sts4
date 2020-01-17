@@ -34,8 +34,6 @@ import org.springframework.ide.vscode.boot.java.utils.CachedSymbol;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJavaContext;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
-import ch.qos.logback.core.Context;
-
 /**
  * @author Martin Lippert
  */

@@ -12,8 +12,6 @@ package org.springframework.ide.vscode.boot.java.requestmapping;
 
 import org.springframework.ide.vscode.commons.util.StringUtil;
 
-import com.google.common.collect.ImmutableSet;
-
 public class UrlUtil {
 
 	/**
