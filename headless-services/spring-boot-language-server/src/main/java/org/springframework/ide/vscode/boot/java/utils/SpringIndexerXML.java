@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019 Pivotal, Inc.
+ * Copyright (c) 2019, 2020 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -37,8 +37,6 @@ import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.util.UriUtil;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
-
-import com.google.common.base.Supplier;
 
 /**
  * @author Martin Lippert
@@ -141,15 +139,16 @@ public class SpringIndexerXML implements SpringIndexer {
 	}
 
 	@Override
-	public void updateFile(IJavaProject project, String docURI, long lastModified, Supplier<String> content) throws Exception {
+	public void updateFile(IJavaProject project, UpdatedDoc updatedDoc) throws Exception {
 
 		List<CachedSymbol> generatedSymbols = new ArrayList<CachedSymbol>();
+		String docURI = updatedDoc.getDocURI();
 
-		scanFile(project, content.get(), docURI, lastModified, generatedSymbols);
+		scanFile(project, updatedDoc.getContent().get(), docURI, updatedDoc.getLastModified(), generatedSymbols);
 
 		SymbolCacheKey cacheKey = getCacheKey(project);
 		String file = new File(new URI(docURI)).getAbsolutePath();
-		this.cache.update(cacheKey, file, lastModified, generatedSymbols, null);
+		this.cache.update(cacheKey, file, updatedDoc.getLastModified(), generatedSymbols, null);
 
 		for (CachedSymbol symbol : generatedSymbols) {
 			symbolHandler.addSymbol(project, symbol.getDocURI(), symbol.getEnhancedSymbol());
@@ -157,10 +156,33 @@ public class SpringIndexerXML implements SpringIndexer {
 	}
 
 	@Override
-	public void removeFile(IJavaProject project, String docURI) throws Exception {
+	public void updateFiles(IJavaProject project, UpdatedDoc[] updatedDocs) throws Exception {
+
+		List<CachedSymbol> generatedSymbols = new ArrayList<CachedSymbol>();
+		
+		for (UpdatedDoc updatedDoc : updatedDocs) {
+			String docURI = updatedDoc.getDocURI();
+
+			scanFile(project, updatedDoc.getContent().get(), docURI, updatedDoc.getLastModified(), generatedSymbols);
+	
+			SymbolCacheKey cacheKey = getCacheKey(project);
+			String file = new File(new URI(docURI)).getAbsolutePath();
+			this.cache.update(cacheKey, file, updatedDoc.getLastModified(), generatedSymbols, null);
+		}
+
+		for (CachedSymbol symbol : generatedSymbols) {
+			symbolHandler.addSymbol(project, symbol.getDocURI(), symbol.getEnhancedSymbol());
+		}
+	}
+
+	@Override
+	public void removeFiles(IJavaProject project, String[] docURIs) throws Exception {
 		SymbolCacheKey cacheKey = getCacheKey(project);
-		String file = new File(new URI(docURI)).getAbsolutePath();
-		this.cache.removeFile(cacheKey, file);
+		
+		for (String docURI : docURIs) {
+			String file = new File(new URI(docURI)).getAbsolutePath();
+			this.cache.removeFile(cacheKey, file);
+		}
 	}
 
 	private void scanFile(IJavaProject project, String fileName, List<CachedSymbol> generatedSymbols) {
@@ -254,10 +276,18 @@ public class SpringIndexerXML implements SpringIndexer {
 	private void clearIndex() {
 		for (IJavaProject project : projectFinder.all()) {
 			try {
-				for (String file : getFiles(project)) {
-					String docUri = UriUtil.toUri(new File(file)).toString();
-					symbolHandler.removeSymbols(project, docUri);
-					removeFile(project, docUri);
+				String[] files = getFiles(project);
+				
+				if (files.length > 0) {
+					String[] docURIs = new String[files.length];
+					for (int i = 0; i < files.length; i++) {
+
+						String docURI = UriUtil.toUri(new File(files[i])).toString();
+						symbolHandler.removeSymbols(project, docURI);
+						docURIs[i] = docURI;
+					}
+					
+					removeFiles(project, docURIs);
 				}
 			} catch (Exception e) {
 				log.error("{}", e);

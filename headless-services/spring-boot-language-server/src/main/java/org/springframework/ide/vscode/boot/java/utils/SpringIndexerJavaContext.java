@@ -37,7 +37,7 @@ public class SpringIndexerJavaContext {
 	private final SCAN_PASS pass;
 	private final List<String> nextPassFiles;
 	private final Set<String> dependencies = new HashSet<>();
-	private final Set<String> dependentTypes;
+	private final Set<String> scannedTypes;
 
 	public SpringIndexerJavaContext(
 			IJavaProject project, 
@@ -50,7 +50,7 @@ public class SpringIndexerJavaContext {
 			List<CachedSymbol> generatedSymbols, 
 			SCAN_PASS pass,
 			List<String> nextPassFiles, 
-			Set<String> dependentTypes
+			Set<String> scannedTypes
 	) {
 		super();
 		this.project = project;
@@ -63,7 +63,7 @@ public class SpringIndexerJavaContext {
 		this.generatedSymbols = generatedSymbols;
 		this.pass = pass;
 		this.nextPassFiles = nextPassFiles;
-		this.dependentTypes = dependentTypes;
+		this.scannedTypes = scannedTypes;
 	}
 
 	public IJavaProject getProject() {
@@ -114,8 +114,13 @@ public class SpringIndexerJavaContext {
 		dependencies.add(dependsOn.getKey());
 	}
 
-	public Set<String> getChangedTypes() {
-		return dependentTypes;
+	public Set<String> getScannedTypes() {
+		return scannedTypes;
 	}
-
+	
+	public void addScannedType(ITypeBinding scannedType) {
+		if (this.scannedTypes != null && scannedType != null) {
+			scannedTypes.add(scannedType.getKey());
+		}
+	}
 }

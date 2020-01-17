@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2019 Pivotal, Inc.
+ * Copyright (c) 2017, 2020 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.boot.app;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -29,6 +30,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Predicate;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -52,6 +54,7 @@ import org.springframework.ide.vscode.boot.java.utils.SpringIndexerXMLNamespaceH
 import org.springframework.ide.vscode.boot.java.utils.SymbolCache;
 import org.springframework.ide.vscode.boot.java.utils.SymbolHandler;
 import org.springframework.ide.vscode.boot.java.utils.SymbolIndexConfig;
+import org.springframework.ide.vscode.boot.java.utils.UpdatedDoc;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
@@ -65,7 +68,6 @@ import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import org.springframework.stereotype.Component;
 
-import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 
 /**
@@ -329,17 +331,8 @@ public class SpringSymbolIndex implements InitializingBean {
 
 					if (maybeProject.isPresent()) {
 						try {
-							File file = new File(new URI(docURI));
-							long lastModified = file.lastModified();
-							Supplier<String> content = () -> {
-								try {
-									return FileUtils.readFileToString(file);
-								} catch (IOException e) {
-									log.error("{}", e);
-									return "";
-								}
-							};
-							futures.add(updateItem(maybeProject.get(), docURI, lastModified, content, indexer));
+							UpdatedDoc newDoc = createUpdatedDoc(docURI, null);
+							futures.add(updateItems(maybeProject.get(), new UpdatedDoc[] {newDoc}, indexer));
 						}
 						catch (Exception e) {
 							log.error("", e);
@@ -358,7 +351,8 @@ public class SpringSymbolIndex implements InitializingBean {
 	}
 
 	public CompletableFuture<Void> updateDocument(String docURI, String content, String reason) {
-		log.info("Update document [{}]: {}",reason, docURI);
+		log.info("Update document [{}]: {}", reason, docURI);
+		
 		synchronized(this) {
 			List<CompletableFuture<Void>> futures = new ArrayList<>();
 
@@ -367,23 +361,8 @@ public class SpringSymbolIndex implements InitializingBean {
 					Optional<IJavaProject> maybeProject = projectFinder().find(new TextDocumentIdentifier(docURI));
 					if (maybeProject.isPresent()) {
 						try {
-							File file = new File(new URI(docURI));
-							long lastModified = file.lastModified();
-							
-							Supplier<String> contentSupplier = () -> {
-								if (content == null) {
-									try {
-										return FileUtils.readFileToString(file);
-									} catch (IOException e) {
-										log.error("{}", e);
-										return "";
-									}
-								} else {
-									return content;
-								}
-							};
-
-							futures.add(updateItem(maybeProject.get(), docURI, lastModified, contentSupplier, indexer));
+							UpdatedDoc updatedDoc = createUpdatedDoc(docURI, content);
+							futures.add(updateItem(maybeProject.get(), updatedDoc, indexer));
 						}
 						catch (Exception e) {
 							log.error("{}", e);
@@ -395,6 +374,81 @@ public class SpringSymbolIndex implements InitializingBean {
 		}
 	}
 
+	public CompletableFuture<Void> updateDocuments(String[] docURIs, String reason) {
+		for (String docURI : docURIs) {
+			log.info("Update document [{}]: {}", reason, docURI);
+		}
+		
+		synchronized(this) {
+			List<CompletableFuture<Void>> futures = new ArrayList<>();
+
+			for (SpringIndexer indexer : this.indexers) {
+				String[] interestingDocs = getDocumentsInterestingForIndexer(indexer, docURIs);
+				Map<String, IJavaProject> projectsForDocs = getProjectsForDocs(interestingDocs);
+				Map<IJavaProject, List<String>> projectMapping = getProjectMapping(projectsForDocs);
+				
+				for (IJavaProject project : projectMapping.keySet()) {
+					List<String> docs = projectMapping.get(project);
+					
+					try {
+						UpdatedDoc[] updatedDocs = docs.stream().map(doc -> createUpdatedDoc(doc, null)).toArray(UpdatedDoc[]::new);
+						futures.add(updateItems(project, updatedDocs, indexer));
+					}
+					catch (Exception e) {
+						log.error("{}", e);
+					}
+				}
+			}
+			return CompletableFuture.allOf((CompletableFuture[]) futures.toArray(new CompletableFuture[futures.size()]));
+		}
+	}
+	
+	private Map<String, IJavaProject> getProjectsForDocs(String[] docURIs) {
+		Map<String, IJavaProject> result = new HashMap<>();
+		
+		for (String docURI : docURIs) {
+			Optional<IJavaProject> project = projectFinder().find(new TextDocumentIdentifier(docURI));
+			if (project.isPresent()) {
+				result.put(docURI, project.get());
+			}
+		}
+		return result;
+	}
+
+	private String[] getDocumentsInterestingForIndexer(SpringIndexer indexer, String[] docURIs) {
+		return Arrays.stream(docURIs).filter(docURI -> indexer.isInterestedIn(docURI)).toArray(String[]::new);
+	}
+
+	private Map<IJavaProject, List<String>> getProjectMapping(Map<String, IJavaProject> docsToProject) {
+		return docsToProject.keySet().stream().collect(Collectors.groupingBy(docURI -> docsToProject.get(docURI)));
+	}
+	
+	private UpdatedDoc createUpdatedDoc(String docURI, String content) throws RuntimeException {
+		try {
+			File file = new File(new URI(docURI));
+			long lastModified = file.lastModified();
+			Supplier<String> contentSupplier = createContentSupplier(file, content);
+			return new UpdatedDoc(docURI, lastModified, contentSupplier);
+		} catch (URISyntaxException e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	private Supplier<String> createContentSupplier(File file, String content) {
+		return () -> {
+			if (content == null) {
+				try {
+					return FileUtils.readFileToString(file);
+				} catch (IOException e) {
+					log.error("{}", e);
+					return "";
+				}
+			} else {
+				return content;
+			}
+		};
+	}
+	
 	public CompletableFuture<Void> deleteDocument(String deletedDocURI) {
 		synchronized(this) {
 			try {
@@ -561,13 +615,36 @@ public class SpringSymbolIndex implements InitializingBean {
 		}
 	}
 
-	CompletableFuture<Void> updateItem(IJavaProject project, String docURI, long lastModified, Supplier<String> content, SpringIndexer indexer) {
-		log.debug("scheduling updateItem {}. {},  {}, {}", project.getElementName(), docURI, lastModified, indexer);
+	CompletableFuture<Void> updateItem(IJavaProject project, UpdatedDoc updatedDoc, SpringIndexer indexer) {
+		log.debug("scheduling updateItem {}. {},  {}, {}", project.getElementName(), updatedDoc.getDocURI(), updatedDoc.getLastModified(), indexer);
+
 		return CompletableFuture.runAsync(() -> {
-			log.debug("updateItem {}. {},  {}, {}", project.getElementName(), docURI, lastModified, indexer);
+			
 			try {
-				removeSymbolsByDoc(project, docURI);
-				indexer.updateFile(project, docURI, lastModified, content);
+				log.debug("updateItem {}. {},  {}, {}", project.getElementName(), updatedDoc.getDocURI(), updatedDoc.getLastModified(), indexer);
+				removeSymbolsByDoc(project, updatedDoc.getDocURI());
+
+				indexer.updateFile(project, updatedDoc);
+			} catch (Exception e) {
+				log.error("{}", e);
+			}
+		}, this.updateQueue);
+	}
+
+	CompletableFuture<Void> updateItems(IJavaProject project, UpdatedDoc[] updatedDoc, SpringIndexer indexer) {
+		for (UpdatedDoc doc : updatedDoc) {
+			log.debug("scheduling updateItem {}. {},  {}, {}", project.getElementName(), doc.getDocURI(), doc.getLastModified(), indexer);
+		}
+
+		return CompletableFuture.runAsync(() -> {
+			
+			try {
+				for (UpdatedDoc doc : updatedDoc) {
+					log.debug("updateItem {}. {},  {}, {}", project.getElementName(), doc.getDocURI(), doc.getLastModified(), indexer);
+					removeSymbolsByDoc(project, doc.getDocURI());
+				}
+
+				indexer.updateFiles(project, updatedDoc);
 			} catch (Exception e) {
 				log.error("{}", e);
 			}
@@ -591,7 +668,7 @@ public class SpringSymbolIndex implements InitializingBean {
 			try {
 				removeSymbolsByDoc(project, docURI);
 				for (SpringIndexer index : this.indexer) {
-					index.removeFile(project, docURI);
+					index.removeFiles(project, new String[] {docURI});
 				}
 			} catch (Exception e) {
 				log.error("{}", e);
@@ -662,7 +739,6 @@ public class SpringSymbolIndex implements InitializingBean {
 				}
 			}
 		}
-
 	}
 
 	private void removeSymbolsByProject(IJavaProject project) {

@@ -17,7 +17,6 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
-import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.ArrayInitializer;
@@ -191,6 +190,8 @@ public class ASTUtils {
 				ITypeBinding klass = varBinding.getDeclaringClass();
 				if (klass!=null) {
 					dependencies.accept(klass);
+					
+					
 				}
 				Object constValue = varBinding.getConstantValue();
 				if (constValue != null) {

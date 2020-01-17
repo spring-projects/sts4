@@ -32,7 +32,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
 import org.springframework.ide.vscode.boot.bootiful.SymbolProviderTestConf;
-import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJava.DependencyTracker;
+import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJavaDependencyTracker;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.util.UriUtil;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
@@ -88,7 +88,7 @@ public class RequestMappingSymbolProviderTest {
 		assertTrue(containsSymbol(symbols, "@/path/from/constant", docUri, 6, 1, 6, 48));
 
 		//Verify whether dependency tracker logics works properly for this example.
-		DependencyTracker dt = indexer.getJavaIndexer().getDependencyTracker();
+		SpringIndexerJavaDependencyTracker dt = indexer.getJavaIndexer().getDependencyTracker();
 		assertEquals(ImmutableSet.of("Lorg/test/Constants;"), dt.getAllDependencies().get(UriUtil.toFileString(docUri)));
 		
 		TestFileScanListener fileScanListener = new TestFileScanListener();

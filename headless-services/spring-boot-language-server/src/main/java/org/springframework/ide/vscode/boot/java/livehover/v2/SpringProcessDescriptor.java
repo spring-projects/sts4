@@ -23,6 +23,7 @@ import com.sun.tools.attach.VirtualMachineDescriptor;
 /**
  * @author Martin Lippert
  */
+@SuppressWarnings("restriction")
 public class SpringProcessDescriptor {
 	
 	private static final Logger log = LoggerFactory.getLogger(SpringProcessDescriptor.class);

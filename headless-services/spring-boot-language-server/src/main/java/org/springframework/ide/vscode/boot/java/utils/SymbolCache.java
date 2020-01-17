@@ -29,6 +29,7 @@ public interface SymbolCache {
 
 	void remove(SymbolCacheKey cacheKey);
 	void removeFile(SymbolCacheKey symbolCacheKey, String file);
+	
 	default CachedSymbol[] retrieveSymbols(SymbolCacheKey cacheKey, String[] files) {
 		Pair<CachedSymbol[], Multimap<String, String>> r = retrieve(cacheKey, files);
 		return r!=null ? r.getLeft() : null;

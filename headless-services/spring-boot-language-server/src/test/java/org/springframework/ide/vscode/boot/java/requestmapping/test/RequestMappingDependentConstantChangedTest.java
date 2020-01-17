@@ -88,6 +88,8 @@ public class RequestMappingDependentConstantChangedTest {
 		indexer.getJavaIndexer().setFileScanListener(fileScanListener);
 		
 		replaceInFile(constantsUri, "path/from/constant", "/changed-path");
+		indexer.updateDocument(constantsUri, null, "triggered by test code").get();
+		
 		fileScanListener.assertScannedUris(constantsUri, docUri);
 		fileScanListener.assertScannedUri(constantsUri, 1);
 		fileScanListener.assertScannedUri(docUri, 1);
@@ -97,7 +99,53 @@ public class RequestMappingDependentConstantChangedTest {
 		assertSymbol(docUri, "@/changed-path", "@RequestMapping(Constants.REQUEST_MAPPING_PATH)");
 	}
 	
-	@Test public void testCyclicalDependency() throws Exception {
+	@Test
+	public void testSimpleRequestMappingSymbolFromConstantInDifferentClassViaMultipleFilesUpdate() throws Exception {
+		String docUri = directory.resolve("src/main/java/org/test/SimpleMappingClassWithConstantInDifferentClass.java").toUri().toString();
+		String constantsUri = directory.resolve("src/main/java/org/test/Constants.java").toUri().toString();
+		List<? extends SymbolInformation> symbols = indexer.getSymbols(docUri);
+		assertEquals(1, symbols.size());
+		assertSymbol(docUri, "@/path/from/constant", "@RequestMapping(Constants.REQUEST_MAPPING_PATH)");
+
+		TestFileScanListener fileScanListener = new TestFileScanListener();
+		indexer.getJavaIndexer().setFileScanListener(fileScanListener);
+		
+		replaceInFile(constantsUri, "path/from/constant", "/changed-path");
+		indexer.updateDocuments(new String[] {constantsUri}, "triggered by test code").get();
+
+		fileScanListener.assertScannedUris(constantsUri, docUri);
+		fileScanListener.assertScannedUri(constantsUri, 1);
+		fileScanListener.assertScannedUri(docUri, 1);
+		
+		symbols = indexer.getSymbols(docUri);
+		assertSymbolCount(1, symbols);
+		assertSymbol(docUri, "@/changed-path", "@RequestMapping(Constants.REQUEST_MAPPING_PATH)");
+	}
+	
+	@Test
+	public void testRequestMappingSymbolFromConstantChained() throws Exception {
+		String docUri = directory.resolve("src/main/java/org/test/ChainedRequestMappingPathOverMultipleClasses.java").toUri().toString();
+		String chainConstantsUri_2 = directory.resolve("src/main/java/org/test/ChainElement2.java").toUri().toString();
+
+		List<? extends SymbolInformation> symbols = indexer.getSymbols(docUri);
+		assertEquals(1, symbols.size());
+		assertSymbol(docUri, "@/path/from/chain", "@RequestMapping(ChainElement1.MAPPING_PATH_1)");
+
+		replaceInFile(chainConstantsUri_2, "path/from/chain", "/changed-path");
+		indexer.updateDocument(chainConstantsUri_2, null, "triggered by test code").get();
+
+		symbols = indexer.getSymbols(docUri);
+		assertSymbolCount(1, symbols);
+		assertSymbol(docUri, "@/path/from/chain", "@RequestMapping(ChainElement1.MAPPING_PATH_1)");
+		
+		// You would expect here that the symbol got updated from "path/from/chain" to the changed value "/changed-path",
+		// but the mechanism doesn't know anything about this chained dependendy. This is a limitation of the current
+		// implementation, since the AST has no idea about the chain, therefore we are only aware of the first
+		// element in this chained dependency, which comes from ChainElement1.java
+	}
+	
+	@Test
+	public void testCyclicalDependency() throws Exception {
 		//cyclical dependency between two files (ping refers pong and vice versa)
 		
 		String pingUri = directory.resolve("src/main/java/org/test/PingConstantRequestMapping.java").toUri().toString();
@@ -118,6 +166,43 @@ public class RequestMappingDependentConstantChangedTest {
 		}
 
 		replaceInFile(pingUri, "/ping", "/changed");
+		indexer.updateDocument(pingUri, null, "triggered by test code").get();
+
+		{
+			List<? extends SymbolInformation> symbols = indexer.getSymbols(pingUri);
+			assertSymbolCount(1, symbols);
+			assertSymbol(pingUri, "@/pong -- GET", "@GetMapping(PongConstantRequestMapping.PONG)");
+		}
+		{
+			List<? extends SymbolInformation> symbols = indexer.getSymbols(pongUri);
+			assertSymbolCount(1, symbols);
+			assertSymbol(pongUri, "@/changed -- GET", "@GetMapping(PingConstantRequestMapping.PING)");
+		}
+	}
+
+	@Test
+	public void testCyclicalDependencyViaMultipleFilesUpdate() throws Exception {
+		//cyclical dependency between two files (ping refers pong and vice versa)
+		
+		String pingUri = directory.resolve("src/main/java/org/test/PingConstantRequestMapping.java").toUri().toString();
+		String pongUri = directory.resolve("src/main/java/org/test/PongConstantRequestMapping.java").toUri().toString();
+
+		{
+			List<? extends SymbolInformation> symbols = indexer.getSymbols(pingUri);
+			for (SymbolInformation s : symbols) {
+				System.out.println(s.getName());
+			}
+			assertSymbolCount(1, symbols);
+			assertSymbol(pingUri, "@/pong -- GET", "@GetMapping(PongConstantRequestMapping.PONG)");
+		}
+		{
+			List<? extends SymbolInformation> symbols = indexer.getSymbols(pongUri);
+			assertSymbolCount(1, symbols);
+			assertSymbol(pongUri, "@/ping -- GET", "@GetMapping(PingConstantRequestMapping.PING)");
+		}
+
+		replaceInFile(pingUri, "/ping", "/changed");
+		indexer.updateDocuments(new String[] {pingUri}, "triggered by test code").get();
 
 		{
 			List<? extends SymbolInformation> symbols = indexer.getSymbols(pingUri);
@@ -167,7 +252,5 @@ public class RequestMappingDependentConstantChangedTest {
 		assertTrue(oldContent.contains(find));
 		String newContent = oldContent.replace(find, replace);
 		FileUtils.write(target, newContent, "UTF8");
-		
-		indexer.updateDocument(docUri, null, "triggered by test code").get();
 	}
 }

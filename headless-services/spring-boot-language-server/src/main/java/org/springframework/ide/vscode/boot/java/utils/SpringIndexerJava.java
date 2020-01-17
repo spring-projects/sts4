@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2019 Pivotal, Inc.
+ * Copyright (c) 2017, 2020 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -17,7 +17,9 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -56,9 +58,7 @@ import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFin
 import org.springframework.ide.vscode.commons.util.UriUtil;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
-import com.google.common.base.Supplier;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.MultimapBuilder;
 
 /**
  * @author Martin Lippert
@@ -78,46 +78,8 @@ public class SpringIndexerJava implements SpringIndexer {
 	private boolean scanTestJavaSources = false;
 	private FileScanListener fileScanListener = null; //used by test code only
 
-	private final DependencyTracker dependencyTracker = new DependencyTracker();
+	private final SpringIndexerJavaDependencyTracker dependencyTracker = new SpringIndexerJavaDependencyTracker();
 
-	public DependencyTracker getDependencyTracker() {
-		return dependencyTracker;
-	}
-	
-	public static class DependencyTracker {
-		
-		private Multimap<String, String> dependencies = MultimapBuilder.hashKeys().hashSetValues().build();
-		
-		public void addDependency(String sourceFile, ITypeBinding dependsOn) {
-			dependencies.put(sourceFile, dependsOn.getKey());
-		}
-		
-		public void dump() {
-			log.info("=== Dependencies ===");
-			for (String sourceFile : dependencies.keySet()) {
-				Collection<String> values = dependencies.get(sourceFile);
-				if (!values.isEmpty())
-				log.info(sourceFile + "=> ");
-				for (String v : values) {
-					log.info("   "+v);
-				}
-			}
-			log.info("======================");
-		}
-
-		public Multimap<String, String> getAllDependencies() {
-			return dependencies;
-		}
-
-		public void update(String file, Set<String> dependenciesForFile) {
-			dependencies.replaceValues(file, dependenciesForFile);
-		}
-
-		public void restore(Multimap<String, String> deps) {
-			this.dependencies = deps;
-		}
-	}
-	
 	public SpringIndexerJava(SymbolHandler symbolHandler, AnnotationHierarchyAwareLookup<SymbolProvider> symbolProviders, SymbolCache cache,
 			JavaProjectFinder projectFimder) {
 		this.symbolHandler = symbolHandler;
@@ -126,6 +88,10 @@ public class SpringIndexerJava implements SpringIndexer {
 		this.projectFinder = projectFimder;
 	}
 
+	public SpringIndexerJavaDependencyTracker getDependencyTracker() {
+		return dependencyTracker;
+	}
+	
 	@Override
 	public String[] getFileWatchPatterns() {
 		return new String[] {"**/*.java"};
@@ -155,20 +121,53 @@ public class SpringIndexerJava implements SpringIndexer {
 		this.cache.remove(cacheKey);
 	}
 
+	/**
+	 * Goal: collect all affected files that need to be re-scanned
+	 * 1 - look into dependency tracker and collect all types that are contained in the initial list of files to scan
+	 * 2 - walk through all files in dependency tracker to check which have a dependency on one of the collected types
+	 * 3 - add them to the list of files to be re-scanned
+	 * 
+	 * There is no recursion or loop needed anymore beyond this point, I think, since we assume
+	 * that all changed files coming in via the initial call to the update method. There is no need to traverse the dependency
+	 * chain. E.g.
+	 * 
+	 * Root.java depends on Chain1.java
+	 * Chain1.java depends on Chain2.java
+	 * 
+	 * Chain2 comes in as a change
+	 * -> we need to re-scan Chain1, but not Root (since Chain1 inself didn't change)
+	 * 
+	 */
+	
 	@Override
-	public void updateFile(IJavaProject project, String docURI, long lastModified, Supplier<String> content) throws Exception {
-		if (shouldProcessDocument(project, docURI)) {
-			scanFile(project, docURI, lastModified, content.get());
+	public void updateFile(IJavaProject project, UpdatedDoc updatedDoc) throws Exception {
+		if (updatedDoc != null && shouldProcessDocument(project, updatedDoc.getDocURI())) {
+			scanFile(project, updatedDoc);
 		}
+	}
+	
+	@Override
+	public void updateFiles(IJavaProject project, UpdatedDoc[] updatedDocs) throws Exception {
+		if (updatedDocs != null) {
+			UpdatedDoc[] docs = filterDocuments(project, updatedDocs);
+			scanFiles(project, docs);
+		}
+	}
+	
+	private UpdatedDoc[] filterDocuments(IJavaProject project, UpdatedDoc[] updatedDocs) {
+		return Arrays.stream(updatedDocs).filter(doc -> shouldProcessDocument(project, doc.getDocURI())).toArray(UpdatedDoc[]::new);
 	}
 
 	@Override
-	public void removeFile(IJavaProject project, String docURI) throws Exception {
+	public void removeFiles(IJavaProject project, String[] docURIs) throws Exception {
 		SymbolCacheKey cacheKey = getCacheKey(project);
-		String file = new File(new URI(docURI)).getAbsolutePath();
-		this.cache.removeFile(cacheKey, file);
+		
+		for (String docURI : docURIs) {
+			String file = new File(new URI(docURI)).getAbsolutePath();
+			this.cache.removeFile(cacheKey, file);
+		}
 	}
-	
+
 	private boolean shouldProcessDocument(IJavaProject project, String docURI) {
 		Path path = Paths.get(URI.create(docURI));
 		return foldersToScan(project)
@@ -177,13 +176,67 @@ public class SpringIndexerJava implements SpringIndexer {
 				.isPresent();
 	}
 
-	private void scanFile(IJavaProject project, String docURI, long lastModified, String content) throws Exception {
+	private void scanFiles(IJavaProject project, UpdatedDoc[] docs) throws Exception {
+		ASTParser parser = createParser(project, false);
+		
+		// this is to keep track of already scanned files to avoid endless loops due to circular dependencies
+		Set<String> scannedFiles = new HashSet<>();
+		Set<String> scannedTypes = new HashSet<>();
+
+		Map<String, UpdatedDoc> updatedDocs = new HashMap<>();
+		String[] javaFiles = new String[docs.length];
+
+		for (int i = 0; i < docs.length; i++) {
+			updatedDocs.put(docs[i].getDocURI(), docs[i]);
+
+			String file = UriUtil.toFileString(docs[i].getDocURI());
+			javaFiles[i] = file;
+			scannedFiles.add(file);
+		}
+		
+		FileASTRequestor requestor = new FileASTRequestor() {
+			@Override
+			public void acceptAST(String sourceFilePath, CompilationUnit cu) {
+				File file = new File(sourceFilePath);
+				String docURI = UriUtil.toUri(file).toString();
+				long lastModified = file.lastModified();
+				AtomicReference<TextDocument> docRef = new AtomicReference<>();
+				UpdatedDoc updatedDoc = updatedDocs.get(docURI);
+
+				List<CachedSymbol> generatedSymbols = new ArrayList<CachedSymbol>();
+
+				SpringIndexerJavaContext context = new SpringIndexerJavaContext(project, cu, docURI, sourceFilePath,
+						lastModified, docRef, updatedDoc.getContent().get(), generatedSymbols, SCAN_PASS.ONE, new ArrayList<>(), scannedTypes);
+
+				scanAST(context);
+				
+				SymbolCacheKey cacheKey = getCacheKey(project);
+				SpringIndexerJava.this.cache.update(cacheKey, sourceFilePath, lastModified, generatedSymbols, context.getDependencies());
+
+				for (CachedSymbol symbol : generatedSymbols) {
+					symbolHandler.addSymbol(project, symbol.getDocURI(), symbol.getEnhancedSymbol());
+				}
+				
+				fileScannedEvent(sourceFilePath);
+			}
+		};
+
+		parser.createASTs(javaFiles, null, new String[0], requestor, null);
+		
+		scanAffectedFiles(project, scannedTypes, scannedFiles);
+	}
+
+	private void scanFile(IJavaProject project, UpdatedDoc updatedDoc) throws Exception {
 		//TODO: optimise? Check last modified to avoid redundant scan. Reason:
 		//  on saving a file, this may be triggered twice. Once when file is saved and once more because of a 'file changed'
 		//  on file system. Looking at the timestamp in the cache we should be able to avoid a second scan of the exact same
 		//  content.
 		ASTParser parser = createParser(project, false);
-
+		
+		String docURI = updatedDoc.getDocURI();
+		String content = updatedDoc.getContent().get();
+		long lastModified = updatedDoc.getLastModified();
+		
 		String unitName = docURI.substring(docURI.lastIndexOf("/"));
 		parser.setUnitName(unitName);
 		log.debug("Scan file: {}", unitName);
@@ -357,13 +410,7 @@ public class SpringIndexerJava implements SpringIndexer {
 			@Override
 			public boolean visit(TypeDeclaration node) {
 				try {
-					Set<String> changedTypes = context.getChangedTypes();
-					if (changedTypes!=null) {
-						ITypeBinding changedType = node.resolveBinding();
-						if (changedType!=null) {
-							changedTypes.add(changedType.getKey());
-						}
-					}
+					context.addScannedType(node.resolveBinding());
 					extractSymbolInformation(node, context);
 				}
 				catch (Exception e) {
@@ -604,7 +651,7 @@ public class SpringIndexerJava implements SpringIndexer {
 					File file = path.toFile();
 					URI docUri = UriUtil.toUri(file);
 					String content = FileUtils.readFileToString(file);
-					scanFile(project, docUri.toString(), file.lastModified(), content);
+					scanFile(project, new UpdatedDoc(docUri.toString(), file.lastModified(), () -> content));
 				}
 			} catch (Exception e) {
 				log.error("{}", e);

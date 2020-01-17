@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019 Pivotal, Inc.
+ * Copyright (c) 2019, 2020 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -12,8 +12,6 @@ package org.springframework.ide.vscode.boot.java.utils;
 
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 
-import com.google.common.base.Supplier;
-
 /**
  * @author Martin Lippert
  */
@@ -25,8 +23,8 @@ public interface SpringIndexer {
 	void initializeProject(IJavaProject project) throws Exception;
 	void removeProject(IJavaProject project) throws Exception;
 
-	void updateFile(IJavaProject project, String docURI, long lastModified, Supplier<String> content) throws Exception;
-	void removeFile(IJavaProject project, String docURI) throws Exception;
-
+	void updateFile(IJavaProject project, UpdatedDoc updatedDoc) throws Exception;
+	void updateFiles(IJavaProject project, UpdatedDoc[] updatedDocs) throws Exception;
+	void removeFiles(IJavaProject project, String[] docURIs) throws Exception;
 
 }

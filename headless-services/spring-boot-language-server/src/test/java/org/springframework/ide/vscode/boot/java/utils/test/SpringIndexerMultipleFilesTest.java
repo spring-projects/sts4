@@ -1,0 +1,180 @@
+/*******************************************************************************
+ * Copyright (c) 2020 Pivotal, Inc.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     Pivotal, Inc. - initial API and implementation
+ *******************************************************************************/
+package org.springframework.ide.vscode.boot.java.utils.test;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
+
+import java.io.File;
+import java.net.URI;
+import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.TimeUnit;
+
+import org.apache.commons.io.FileUtils;
+import org.eclipse.lsp4j.SymbolInformation;
+import org.eclipse.lsp4j.TextDocumentIdentifier;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Import;
+import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
+import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
+import org.springframework.ide.vscode.boot.bootiful.SymbolProviderTestConf;
+import org.springframework.ide.vscode.boot.java.utils.SymbolIndexConfig;
+import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.commons.util.Assert;
+import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
+import org.springframework.ide.vscode.project.harness.ProjectsHarness;
+import org.springframework.test.context.junit4.SpringRunner;
+
+/**
+ * @author Martin Lippert
+ */
+@RunWith(SpringRunner.class)
+@BootLanguageServerTest
+@Import(SymbolProviderTestConf.class)
+public class SpringIndexerMultipleFilesTest {
+
+	@Autowired private BootLanguageServerHarness harness;
+	@Autowired private SpringSymbolIndex indexer;
+	@Autowired private JavaProjectFinder projectFinder;
+
+	private File directory;
+	private String projectDir;
+	private IJavaProject project;
+
+	@Before
+	public void setup() throws Exception {
+		harness.intialize(null);
+		indexer.configureIndexer(SymbolIndexConfig.builder().scanXml(false).build());
+
+		directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-parent/test-annotation-indexing/").toURI());
+		projectDir = directory.toURI().toString();
+
+		// trigger project creation
+		project = projectFinder.find(new TextDocumentIdentifier(projectDir)).get();
+
+		CompletableFuture<Void> initProject = indexer.waitOperation();
+		initProject.get(5, TimeUnit.SECONDS);
+	}
+
+	@Test
+	public void testUpdateChangedSingleDocumentOnDisc() throws Exception {
+		
+		String changedDocURI = directory.toPath().resolve("src/main/java/org/test/SimpleMappingClass.java").toUri().toString();
+		String originalContent = FileUtils.readFileToString(new File(new URI(changedDocURI)));
+
+		try {
+			// update document and update index
+			assertTrue(containsSymbol(indexer.getSymbols(changedDocURI), "@/mapping1", changedDocURI));
+			
+			String newContent = originalContent.replace("mapping1", "mapping1-CHANGED");
+			FileUtils.writeStringToFile(new File(new URI(changedDocURI)), newContent);
+			
+			CompletableFuture<Void> updateFuture = indexer.updateDocument(changedDocURI, null, "test triggered");
+			updateFuture.get(5, TimeUnit.SECONDS);
+	
+			// check for updated index per document
+			List<? extends SymbolInformation> symbols = indexer.getSymbols(changedDocURI);
+			assertEquals(2, symbols.size());
+			assertTrue(containsSymbol(symbols, "@/mapping1-CHANGED", changedDocURI, 6, 1, 6, 36));
+			assertTrue(containsSymbol(symbols, "@/mapping2", changedDocURI, 11, 1, 11, 28));
+		}
+		finally {
+			FileUtils.writeStringToFile(new File(new URI(changedDocURI)), originalContent);
+		}
+	}
+
+	@Test
+	public void testUpdateChangedMultipleDocumentsOnDisc() throws Exception {
+		
+		String doc1URI = directory.toPath().resolve("src/main/java/org/test/SimpleMappingClass.java").toUri().toString();
+		String original1Content = FileUtils.readFileToString(new File(new URI(doc1URI)));
+
+		String doc2URI = directory.toPath().resolve("src/main/java/org/test/MainClass.java").toUri().toString();
+		String original2Content = FileUtils.readFileToString(new File(new URI(doc2URI)));
+
+		String doc3URI = directory.toPath().resolve("src/main/java/org/test/sub/MappingClassSubpackage.java").toUri().toString();
+		String original3Content = FileUtils.readFileToString(new File(new URI(doc3URI)));
+
+		try {
+			String new1Content = original1Content.replace("mapping1", "mapping1-CHANGED");
+			FileUtils.writeStringToFile(new File(new URI(doc1URI)), new1Content);
+			
+			String new2Content = original2Content.replace("\"/embedded-foo-mapping\"", "\"/embedded-foo-mapping-CHANGED\"");
+			FileUtils.writeStringToFile(new File(new URI(doc2URI)), new2Content);
+			
+			String new3Content = original3Content.replace("classlevel", "classlevel-CHANGED");
+			FileUtils.writeStringToFile(new File(new URI(doc3URI)), new3Content);
+			
+			CompletableFuture<Void> updateFuture = indexer.updateDocuments(new String[] {doc1URI, doc2URI, doc3URI}, "test triggered");
+			updateFuture.get(5, TimeUnit.SECONDS);
+	
+			// check for updated index per document
+			List<? extends SymbolInformation> symbols1 = indexer.getSymbols(doc1URI);
+			assertEquals(2, symbols1.size());
+			assertTrue(containsSymbol(symbols1, "@/mapping1-CHANGED", doc1URI, 6, 1, 6, 36));
+			assertTrue(containsSymbol(symbols1, "@/mapping2", doc1URI, 11, 1, 11, 28));
+			
+			List<? extends SymbolInformation> symbols2 = indexer.getSymbols(doc2URI);
+			assertTrue(containsSymbol(symbols2, "@+ 'mainClass' (@SpringBootApplication <: @SpringBootConfiguration, @Configuration, @Component) MainClass", doc2URI, 6, 0, 6, 22));
+			assertTrue(containsSymbol(symbols2, "@/embedded-foo-mapping-CHANGED", doc2URI, 17, 1, 17, 49));
+			assertTrue(containsSymbol(symbols2, "@/foo-root-mapping/embedded-foo-mapping-with-root", doc2URI, 27, 1, 27, 51));
+
+			List<? extends SymbolInformation> symbols3 = indexer.getSymbols(doc3URI);
+			assertTrue(containsSymbol(symbols3, "@/classlevel-CHANGED/mapping-subpackage", doc3URI, 7, 1, 7, 38));
+		}
+		finally {
+			FileUtils.writeStringToFile(new File(new URI(doc1URI)), original1Content);
+			FileUtils.writeStringToFile(new File(new URI(doc2URI)), original2Content);
+			FileUtils.writeStringToFile(new File(new URI(doc3URI)), original3Content);
+		}
+	}
+
+	private boolean containsSymbol(List<? extends SymbolInformation> symbols, String name, String uri) {
+		for (Iterator<? extends SymbolInformation> iterator = symbols.iterator(); iterator.hasNext();) {
+			SymbolInformation symbol = iterator.next();
+
+			if (
+					symbol.getName().equals(name) &&
+					symbol.getLocation().getUri().equals(uri)
+			) {
+				return true;
+			}
+ 		}
+
+		return false;
+	}
+
+	private boolean containsSymbol(List<? extends SymbolInformation> symbols, String name, String uri, int startLine, int startCHaracter, int endLine, int endCharacter) {
+		for (Iterator<? extends SymbolInformation> iterator = symbols.iterator(); iterator.hasNext();) {
+			SymbolInformation symbol = iterator.next();
+
+			if (symbol.getName().equals(name)
+					&& symbol.getLocation().getUri().equals(uri)
+					&& symbol.getLocation().getRange().getStart().getLine() == startLine
+					&& symbol.getLocation().getRange().getStart().getCharacter() == startCHaracter
+					&& symbol.getLocation().getRange().getEnd().getLine() == endLine
+					&& symbol.getLocation().getRange().getEnd().getCharacter() == endCharacter) {
+				return true;
+			}
+ 		}
+
+		return false;
+	}
+
+}
