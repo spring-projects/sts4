@@ -9,7 +9,15 @@ for vsix_file in ${vsix_files}
 do
     echo "Processing $vsix_file"
     fname=$(basename $vsix_file)
-    echo "- [$fname](https://dist.springsource.com/release/STS4/vscode/$fname)" >> $page
+
+    if [[ $string =~ "Release-Candidates" ]] ; then
+       # Example url for snapshot or RC:
+       #  https://s3-us-west-1.amazonaws.com/s3-test.spring.io/sts4/vscode-extensions/snapshots/vscode-spring-boot-1.15.0-RC.1.vsix
+       url=https://s3-us-west-1.amazonaws.com/s3-test.spring.io/sts4/vscode-extensions/snapshots/$fname
+    else
+       url=https://dist.springsource.com/release/STS4/vscode/$fname
+    fi
+    echo "- [$fname]($url)" >> $page
 done
 
 echo "Vsix Wiki Page Generated:"
