@@ -7,6 +7,8 @@ inputs:
 - name: sts4-wiki
 outputs:
 - name: sts4-wiki-out
+params:
+  wiki_page_file_name: Current-VSCode-Releases
 platform: linux
 image_resource:
   type: docker-image

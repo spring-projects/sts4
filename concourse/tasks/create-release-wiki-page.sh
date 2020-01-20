@@ -2,7 +2,7 @@
 set -e
 workdir=`pwd`
 vsix_files=$(find *-vsix -name "*.vsix")
-page=$workdir/sts4-wiki/Current-VSCode-Releases.md
+page=$workdir/sts4-wiki/${wiki_page_file_name}
 
 echo "" > $page
 for vsix_file in ${vsix_files}
@@ -12,7 +12,7 @@ do
     echo "- [$fname](https://dist.springsource.com/release/STS4/vscode/$fname)" >> $page
 done
 
-echo "Current Vsix Release Page Generated:"
+echo "Vsix Wiki Page Generated:"
 echo "----------------------------------------------"
 cat $page
 echo "----------------------------------------------"

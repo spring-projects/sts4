@@ -330,6 +330,40 @@ jobs:
       params:
         file: s3-concourse-vsix-snapshot/*.vsix
         acl: public-read
+- name: create-rc-wiki-page
+  plan:
+  - in_parallel:
+    - get: sts4-wiki
+    - get: sts4
+    - get: s3-bosh-vsix-snapshot
+      trigger: true
+      passed:
+      - build-bosh-rc
+    - get: s3-manifest-yaml-vsix-snapshot
+      trigger: true
+      passed:
+      - build-manifest-yaml-rc
+    - get: s3-concourse-vsix-snapshot
+      trigger: true
+      passed:
+      - build-concourse-rc
+    - get: s3-spring-boot-vsix-snapshot
+      trigger: true
+      passed:
+      - build-spring-boot-rc
+  - task: create-vsix-release-wiki-page
+    file: sts4/concourse/tasks/create-release-wiki-page.yml
+    params:
+      wiki_page_file_name: Vscode-Release-Candidates
+    input_mapping:
+      concourse-vsix: s3-concourse-vsix-release
+      bosh-vsix: s3-bosh-vsix-release
+      manifest-yaml-vsix: s3-manifest-yaml-vsix-release
+      spring-boot-vsix: s3-spring-boot-vsix-release
+  - put: sts4-wiki
+    params:
+      rebase: true
+      repository: sts4-wiki-out
 - name: create-release-wiki-page
   plan:
   - in_parallel:
@@ -1317,3 +1351,4 @@ groups:
   jobs: 
   - vsix-s3-publish
   - create-release-wiki-page
+  - create-rc-wiki-page
