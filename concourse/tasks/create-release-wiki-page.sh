@@ -2,7 +2,7 @@
 set -e
 workdir=`pwd`
 vsix_files=$(find *-vsix -name "*.vsix")
-page=$workdir/sts4-wiki/${wiki_page_file_name}
+page=$workdir/sts4-wiki/${wiki_page_file_name}.md
 
 echo "" > $page
 for vsix_file in ${vsix_files}

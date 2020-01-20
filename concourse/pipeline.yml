@@ -354,12 +354,12 @@ jobs:
   - task: create-vsix-release-wiki-page
     file: sts4/concourse/tasks/create-release-wiki-page.yml
     params:
-      wiki_page_file_name: Vscode-Release-Candidates
+      wiki_page_file_name: VSCode-Release-Candidates
     input_mapping:
-      concourse-vsix: s3-concourse-vsix-release
-      bosh-vsix: s3-bosh-vsix-release
-      manifest-yaml-vsix: s3-manifest-yaml-vsix-release
-      spring-boot-vsix: s3-spring-boot-vsix-release
+      concourse-vsix: s3-concourse-vsix-snapshot
+      bosh-vsix: s3-bosh-vsix-snapshot
+      manifest-yaml-vsix: s3-manifest-yaml-vsix-snapshot
+      spring-boot-vsix: s3-spring-boot-vsix-snapshot
   - put: sts4-wiki
     params:
       rebase: true
@@ -375,6 +375,8 @@ jobs:
     - get: s3-spring-boot-vsix-release
   - task: create-vsix-release-wiki-page
     file: sts4/concourse/tasks/create-release-wiki-page.yml
+    params:
+      wiki_page_file_name: Current-VSCode-Releases
     input_mapping:
       concourse-vsix: s3-concourse-vsix-release
       bosh-vsix: s3-bosh-vsix-release
