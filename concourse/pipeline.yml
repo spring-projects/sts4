@@ -1301,6 +1301,7 @@ groups:
   - build-bosh-vsix-snapshot
   - build-spring-boot-vsix-snapshot
   - publish-concourse-vsix-release
+  - create-rc-wiki-page
 - name: bump-versions
   jobs:
   - bump-version-patch
@@ -1353,4 +1354,3 @@ groups:
   jobs: 
   - vsix-s3-publish
   - create-release-wiki-page
-  - create-rc-wiki-page
