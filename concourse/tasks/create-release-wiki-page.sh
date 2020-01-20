@@ -10,7 +10,7 @@ do
     echo "Processing $vsix_file"
     fname=$(basename $vsix_file)
 
-    if [[ $string =~ "Release-Candidates" ]] ; then
+    if [[ $fname =~ "Release-Candidates" ]] ; then
        # Example url for snapshot or RC:
        #  https://s3-us-west-1.amazonaws.com/s3-test.spring.io/sts4/vscode-extensions/snapshots/vscode-spring-boot-1.15.0-RC.1.vsix
        url=https://s3-us-west-1.amazonaws.com/s3-test.spring.io/sts4/vscode-extensions/snapshots/$fname
