@@ -1,3 +1,7 @@
+## 2020-01-22 (4.5.1 RELEASE)
+
+* _(Spring Boot)_ improvement: live hover mechanism now reports connection failures
+
 ## 2019-12-19 (4.5.0 RELEASE)
 
 * _(Spring Boot)_ improvement: better and more consistent labels for running processes in live hover actions across the board
