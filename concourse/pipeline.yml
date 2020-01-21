@@ -309,10 +309,22 @@ jobs:
 - name: vsix-s3-publish
   plan:
   - in_parallel:
+    - get: version
+      trigger: true
+      passed:
+      - publish-release
     - get: s3-spring-boot-vsix-snapshot
+      passed:
+      - publish-release
     - get: s3-manifest-yaml-vsix-snapshot
+      passed:
+      - publish-release
     - get: s3-bosh-vsix-snapshot
+      passed:
+      - publish-release
     - get: s3-concourse-vsix-snapshot
+      passed:
+      - publish-release
   - in_parallel:
     - put: s3-spring-boot-vsix-release
       params:
@@ -370,9 +382,13 @@ jobs:
     - get: sts4-wiki
     - get: sts4
     - get: s3-bosh-vsix-release
+      trigger: true
     - get: s3-manifest-yaml-vsix-release
+      trigger: true
     - get: s3-concourse-vsix-release
+      trigger: true
     - get: s3-spring-boot-vsix-release
+      trigger: true
   - task: create-vsix-release-wiki-page
     file: sts4/concourse/tasks/create-release-wiki-page.yml
     params:
@@ -1302,6 +1318,8 @@ groups:
   - build-spring-boot-vsix-snapshot
   - publish-concourse-vsix-release
   - create-rc-wiki-page
+  - vsix-s3-publish
+  - create-release-wiki-page
 - name: bump-versions
   jobs:
   - bump-version-patch
@@ -1350,7 +1368,3 @@ groups:
 - name: npm-packages
   jobs:
   - publish-jvm-launch-utils
-- name: experimental
-  jobs: 
-  - vsix-s3-publish
-  - create-release-wiki-page
