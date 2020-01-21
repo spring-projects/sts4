@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 workdir=$(pwd)
-vscode-java-url="https://marketplace.visualstudio.com/_apis/public/gallery/publishers/redhat/vsextensions/java/0.53.1/vspackage"
+vscode_java_url="https://marketplace.visualstudio.com/_apis/public/gallery/publishers/redhat/vsextensions/java/0.53.1/vspackage"
 
 echo "workdir=${workdir}"
 
@@ -12,7 +12,7 @@ for i in ${workdir}/*-vsix-*/*.vsix ; do
 done
 
 # Download vscode-java 0.53.1. Higher versions require vscode-client 0.40 or higher not available in Theia
-curl ${vscode-java-url} > ${workdir}/output/plugins/vscode-java.vsix
+curl ${vscode_java_url} > ${workdir}/output/plugins/vscode-java.vsix
 
 ls -Rl ${workdir}/output
 
