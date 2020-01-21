@@ -20,7 +20,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
-import java.util.stream.Stream;
 
 import org.apache.commons.io.IOUtils;
 import org.eclipse.jdt.core.JavaCore;
@@ -177,7 +176,7 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 						});
 						String utiStr = uri.toString();
 						String unitName = utiStr.substring(utiStr.lastIndexOf("/"));
-						CompilationUnit cUnit = parse2(fetchContent(uri).toCharArray(), utiStr, unitName, lookupEnv, getClasspathEntries(project));
+						CompilationUnit cUnit = parse2(fetchContent(uri).toCharArray(), utiStr, unitName, lookupEnv);
 						
 						projectToDocs.get(project, () -> new HashSet<>()).add(uri);
 						return cUnit;
@@ -261,7 +260,7 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 //		return parse2(source, docURI, unitName, classpaths, getClasspathEntries(project));
 //	}
 	
-	private static CompilationUnit parse2(char[] source, String docURI, String unitName, List<Classpath> classpaths, String[] entries) throws Exception {
+	private static CompilationUnit parse2(char[] source, String docURI, String unitName, List<Classpath> classpaths) throws Exception {
 		ASTParser parser = ASTParser.newParser(AST.JLS11);
 		Map<String, String> options = JavaCore.getOptions();
 		JavaCore.setComplianceOptions(JavaCore.VERSION_11, options);
@@ -272,7 +271,7 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 		parser.setResolveBindings(true);
 
 //		parser.setEnvironment(entries, new String[0], null, false);
-		parser.setClasspathLookupEnvironment(classpaths);
+		parser.setEnvironment(classpaths);
 
 		parser.setUnitName(unitName);
 		parser.setSource(source);
@@ -346,17 +345,17 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 //		return CUResolver.getClasspath(parser);
 	}
 	
-	private static String[] getClasspathEntries(IJavaProject project) throws Exception {
-		if (project == null) {
-			return new String[0];
-		} else {
-			IClasspath classpath = project.getClasspath();
-			Stream<File> classpathEntries = IClasspathUtil.getAllBinaryRoots(classpath).stream();
-			return classpathEntries
-					.filter(file -> file.exists())
-					.map(file -> file.getAbsolutePath()).toArray(String[]::new);
-		}
-	}
+//	private static String[] getClasspathEntries(IJavaProject project) throws Exception {
+//		if (project == null) {
+//			return new String[0];
+//		} else {
+//			IClasspath classpath = project.getClasspath();
+//			Stream<File> classpathEntries = IClasspathUtil.getAllBinaryRoots(classpath).stream();
+//			return classpathEntries
+//					.filter(file -> file.exists())
+//					.map(file -> file.getAbsolutePath()).toArray(String[]::new);
+//		}
+//	}
 
 	private void invalidateProject(IJavaProject project) {
 		Set<URI> docUris = projectToDocs.getIfPresent(project);
@@ -393,7 +392,7 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 		List<Classpath> acquire(String path) {
 			List<Classpath> cp = classpathsMap.get(path);
 			if (cp == null) {
-				cp = ASTParser.createNonSourceClasspathEntries(path);
+				cp = ASTParser.createClasspathEntries(path);
 				classpathsMap.put(path, cp);
 				linksMap.put(path, 0);
 			}
