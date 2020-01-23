@@ -17,14 +17,13 @@ RUN cd /usr/local/bin && \
 
 RUN mkdir /theia-app
 ADD package.json /theia-app
-RUN cd /theia-app && \
-    curl -H 'Cache-Control: no-cache' https://api.github.com/repos/microsoft/ripgrep-prebuilt/releases/tags/v11.0.1-2 && \
-    yarn && \
-    yarn theia build
+WORKDIR /theia-app
+# using "NODE_OPTIONS=..." to avoid out-of-memory problem in CI
+RUN yarn --cache-folder ./ycache && rm -rf ./ycache && \
+    NODE_OPTIONS="--max_old_space_size=8192" yarn theia build
 
 ADD plugins /theia-app/plugins
 
-WORKDIR /theia-app
 ENV SHELL /bin/bash
 ENTRYPOINT [ "yarn",  "theia", "start", "--hostname=0.0.0.0", "--plugins=local-dir:/theia-app/plugins/", "/home/project" ]
 EXPOSE 3000 
