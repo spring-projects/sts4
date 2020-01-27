@@ -10,12 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.utils;
 
-import java.io.File;
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
@@ -25,8 +21,8 @@ import org.apache.commons.io.IOUtils;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.dom.AST;
 import org.eclipse.jdt.core.dom.ASTParser;
+import org.eclipse.jdt.core.dom.BindingEnvironment;
 import org.eclipse.jdt.core.dom.CompilationUnit;
-import org.eclipse.jdt.internal.compiler.batch.FileSystem.Classpath;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -54,12 +50,10 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 	private ProjectObserver projectObserver;
 	private Cache<URI, CompilationUnit> uriToCu;
 	private Cache<IJavaProject, Set<URI>> projectToDocs;
-	private Cache<IJavaProject, List<Classpath>> lookupEnvCache;
+	private Cache<IJavaProject, BindingEnvironment> lookupEnvCache;
 	private ProjectObserver.Listener projectListener;
 	private SimpleTextDocumentService documents;
 	private AsyncRunner async;
-
-	private ClasspathLookupEnvironmentPool classpathLookupPool = new ClasspathLookupEnvironmentPool();
 
 	private Object lock = new Object();;
 
@@ -171,7 +165,7 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 			synchronized(lock ) {
 				try {
 					cu = uriToCu.get(uri, () -> {
-						List<Classpath> lookupEnv =lookupEnvCache.get(project, () -> {
+						BindingEnvironment lookupEnv =lookupEnvCache.get(project, () -> {
 							return createClasspath(project);
 						});
 						String utiStr = uri.toString();
@@ -260,18 +254,16 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 //		return parse2(source, docURI, unitName, classpaths, getClasspathEntries(project));
 //	}
 	
-	private static CompilationUnit parse2(char[] source, String docURI, String unitName, List<Classpath> classpaths) throws Exception {
+	private static CompilationUnit parse2(char[] source, String docURI, String unitName, BindingEnvironment environment) throws Exception {
 		ASTParser parser = ASTParser.newParser(AST.JLS11);
-		Map<String, String> options = JavaCore.getOptions();
-		JavaCore.setComplianceOptions(JavaCore.VERSION_11, options);
-		parser.setCompilerOptions(options);
+		parser.setCompilerOptions(createCompilerOptions());
 		parser.setKind(ASTParser.K_COMPILATION_UNIT);
 		parser.setStatementsRecovery(true);
 		parser.setBindingsRecovery(true);
 		parser.setResolveBindings(true);
 
 //		parser.setEnvironment(entries, new String[0], null, false);
-		parser.setEnvironment(classpaths);
+		parser.setEnvironment(environment);
 
 		parser.setUnitName(unitName);
 		parser.setSource(source);
@@ -307,6 +299,12 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 //		return cu;
 	}
 	
+	private static Map<String, String> createCompilerOptions() {
+		Map<String, String> options = JavaCore.getOptions();
+		JavaCore.setComplianceOptions(JavaCore.VERSION_11, options);
+		return options;
+	}
+	
 //	private static List<Classpath> createClasspath(String[] classpathEntries) {
 //		ASTParser parser = ASTParser.newParser(AST.JLS11);
 //		String[] sourceEntries = new String[] {};
@@ -326,13 +324,12 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 //		}
 //	}
 //	
-	private List<Classpath> createClasspath(IJavaProject project) {
+	private BindingEnvironment createClasspath(IJavaProject project) {
 		IClasspath cp = project.getClasspath();
-		List<Classpath> allClasspaths = new ArrayList<>();
-		for (File f : IClasspathUtil.getAllBinaryRoots(cp)) {
-			allClasspaths.addAll(classpathLookupPool.acquire(f.getAbsolutePath()));
-		}
-		return allClasspaths;
+		BindingEnvironment env = ASTParser.createBindingEnvironment(
+				IClasspathUtil.getAllBinaryRoots(cp).stream().map(f -> f.getAbsolutePath()).toArray(String[]::new),
+				new String[0], null, false, createCompilerOptions(), 0);
+		return env;
 		
 //		ASTParser parser = ASTParser.newParser(AST.JLS11);
 //		String[] sourceEntries = new String[] {};
@@ -363,12 +360,9 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 			uriToCu.invalidateAll(docUris);
 			projectToDocs.invalidate(project);
 		}
-		List<Classpath> paths = lookupEnvCache.getIfPresent(project);
-		if (paths != null) {
-			for (File f : IClasspathUtil.getAllBinaryRoots(project.getClasspath())) {
-				classpathLookupPool.release(f.getAbsolutePath());
-			}
-			lookupEnvCache.invalidate(project);
+		BindingEnvironment env = lookupEnvCache.getIfPresent(project);
+		if (env != null) {
+			env.dispose();
 		}
 	}
 
@@ -384,41 +378,41 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 
 	}
 	
-	private static class ClasspathLookupEnvironmentPool {
-		
-		private Map<String, List<Classpath>> classpathsMap = new HashMap<>();
-		private Map<String, Integer> linksMap = new HashMap<>(); 
-		
-		List<Classpath> acquire(String path) {
-			List<Classpath> cp = classpathsMap.get(path);
-			if (cp == null) {
-				cp = ASTParser.createClasspathEntries(path);
-				classpathsMap.put(path, cp);
-				linksMap.put(path, 0);
-			}
-			linksMap.put(path, linksMap.get(path) + 1);
-			return cp;
-		}
-		
-		void release(String path) {
-//			if (!linksMap.containsKey(path) || !classpathsMap.containsKey(path)) {
-//				throw new IllegalArgumentException("Path doesn't have classpath entries!");
+//	private static class ClasspathLookupEnvironmentPool {
+//		
+//		private Map<String, List<Classpath>> classpathsMap = new HashMap<>();
+//		private Map<String, Integer> linksMap = new HashMap<>(); 
+//		
+//		List<Classpath> acquire(String path) {
+//			List<Classpath> cp = classpathsMap.get(path);
+//			if (cp == null) {
+//				cp = ASTParser.createClasspathEntries(path);
+//				classpathsMap.put(path, cp);
+//				linksMap.put(path, 0);
 //			}
-			int links = linksMap.get(path);
-			if (links <= 1) {
-				linksMap.remove(path);
-				List<Classpath> cp = classpathsMap.remove(path);
-				if (cp != null) {
-					for (Classpath e : cp) {
-						e.reset();
-					}
-				}
-			} else {
-				if (linksMap.containsKey(path)) {
-					linksMap.put(path, links - 1);
-				}
-			}
-		}
-	}
+//			linksMap.put(path, linksMap.get(path) + 1);
+//			return cp;
+//		}
+//		
+//		void release(String path) {
+////			if (!linksMap.containsKey(path) || !classpathsMap.containsKey(path)) {
+////				throw new IllegalArgumentException("Path doesn't have classpath entries!");
+////			}
+//			int links = linksMap.get(path);
+//			if (links <= 1) {
+//				linksMap.remove(path);
+//				List<Classpath> cp = classpathsMap.remove(path);
+//				if (cp != null) {
+//					for (Classpath e : cp) {
+//						e.reset();
+//					}
+//				}
+//			} else {
+//				if (linksMap.containsKey(path)) {
+//					linksMap.put(path, links - 1);
+//				}
+//			}
+//		}
+//	}
 
 }
