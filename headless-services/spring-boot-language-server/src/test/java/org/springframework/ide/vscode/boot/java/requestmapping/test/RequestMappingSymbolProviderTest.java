@@ -91,7 +91,6 @@ public class RequestMappingSymbolProviderTest {
 		DependencyTracker dt = indexer.getJavaIndexer().getDependencyTracker();
 		assertEquals(ImmutableSet.of("Lorg/test/Constants;"), dt.getAllDependencies().get(UriUtil.toFileString(docUri)));
 		
-		
 		TestFileScanListener fileScanListener = new TestFileScanListener();
 		indexer.getJavaIndexer().setFileScanListener(fileScanListener);
 		indexer.updateDocument(constantsUri, FileUtils.readFileToString(UriUtil.toFile(constantsUri)), "test triggered").get();
