@@ -11,11 +11,14 @@
 package org.springframework.ide.vscode.boot.java.utils;
 
 import java.net.URI;
-import java.util.HashSet;
+import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.ExecutionException;
 import java.util.function.Function;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.apache.commons.io.IOUtils;
 import org.eclipse.jdt.core.JavaCore;
@@ -34,6 +37,7 @@ import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserve
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.util.AsyncRunner;
+import org.springframework.ide.vscode.commons.util.FileObserver;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.common.cache.Cache;
@@ -48,12 +52,12 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 	private static final long CU_ACCESS_EXPIRATION = 1;
 	private JavaProjectFinder projectFinder;
 	private ProjectObserver projectObserver;
-	private Cache<URI, CompilationUnit> uriToCu;
-	private Cache<IJavaProject, Set<URI>> projectToDocs;
-	private Cache<IJavaProject, BindingEnvironment> lookupEnvCache;
+	private Cache<IJavaProject, ProjectEnvironmentData> lookupEnvCache;
+	private Map<IJavaProject, String[]> projectSubscriptions;
 	private ProjectObserver.Listener projectListener;
 	private SimpleTextDocumentService documents;
 	private AsyncRunner async;
+	private FileObserver fileObserver;
 
 	private Object lock = new Object();;
 
@@ -62,16 +66,10 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 		this.projectObserver = projectObserver;
 		this.lookupEnvCache = CacheBuilder.newBuilder().build();
 		
-		// PT 154618835 - Avoid retaining the CU in the cache as it consumes memory if it hasn't been
-		// accessed after some time
-		uriToCu = CacheBuilder.newBuilder()
-				.expireAfterWrite(CU_ACCESS_EXPIRATION, TimeUnit.MINUTES)
-				.removalListener(removal -> invalidateCuForJavaFile(removal.getKey().toString()))
-				.build();
-		projectToDocs = CacheBuilder.newBuilder().build();
-
 		this.documents = server == null ? null : server.getTextDocumentService();
 		this.async = server == null ? new AsyncRunner(Schedulers.single()) : server.getAsync();
+		this.fileObserver = server == null ? null : server.getWorkspaceService().getFileObserver();
+		this.projectSubscriptions = new HashMap<>();
 
 		if (documents != null) {
 			documents.onDidChangeContent(doc -> {
@@ -79,11 +77,11 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 					invalidateCuForJavaFile(doc.getDocument().getId().getUri());
 				}
 			});
-			documents.onDidClose(doc -> {
-				synchronized(lock) {
-					invalidateCuForJavaFile(doc.getId().getUri());
-				}
-			});
+//			documents.onDidClose(doc -> {
+//				synchronized(lock) {
+//					invalidateCuForJavaFile(doc.getId().getUri());
+//				}
+//			});
 		}
 
 //		async.execute(() -> {
@@ -104,7 +102,10 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 				logger.info("CU Cache: deleted project {}", project.getElementName());
 				async.execute(() -> {
 					synchronized(lock) {
+						stopListenToProjectSourceFolderChanges(project);
 						invalidateProject(project);
+						projectData(project);
+						startListenToProjectSourceFolderChanges(project);
 					}
 				});
 			}
@@ -114,7 +115,10 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 				logger.info("CU Cache: created project {}", project.getElementName());
 				async.execute(() -> {
 					synchronized(lock) {
+						stopListenToProjectSourceFolderChanges(project);
 						invalidateProject(project);
+						projectData(project);
+						startListenToProjectSourceFolderChanges(project);
 					}
 				});
 			}
@@ -134,6 +138,40 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 			this.projectObserver.addListener(projectListener);
 		}
 		
+	}
+	
+	private void startListenToProjectSourceFolderChanges(IJavaProject project) {
+		List<String> globs = IClasspathUtil.getProjectJavaSourceFolders(project.getClasspath()).map(file -> {
+			Path path = file.getAbsoluteFile().toPath();
+			return Stream.of(path.resolve("*").toString(), path.resolve("**/*").toString());
+		}).flatMap(glob -> glob).collect(Collectors.toList());
+		String[] subscriptions = new String[] {
+				fileObserver.onFileCreated(globs, (file) -> {
+					invalidateProject(project);
+					try {
+						projectData(project);
+					} catch (ExecutionException e) {
+						logger.error("", e);
+					}
+				}),
+				fileObserver.onFileDeleted(globs, (file) -> {
+					invalidateProject(project);
+					try {
+						projectData(project);
+					} catch (ExecutionException e) {
+						logger.error("", e);
+					}
+				}),
+		};
+		projectSubscriptions.put(project, subscriptions);
+	}
+	
+	private void stopListenToProjectSourceFolderChanges(IJavaProject project) {
+		if (projectSubscriptions.containsKey(project)) {
+			for (String subscription : projectSubscriptions.remove(project)) {
+				CompilationUnitCache.this.fileObserver.unsubscribe(subscription);
+			}
+		}
 	}
 
 	public void dispose() {
@@ -164,20 +202,22 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 
 			synchronized(lock ) {
 				try {
-					cu = uriToCu.get(uri, () -> {
-						BindingEnvironment lookupEnv =lookupEnvCache.get(project, () -> {
-							return createClasspath(project);
-						});
-						String utiStr = uri.toString();
-						String unitName = utiStr.substring(utiStr.lastIndexOf("/"));
-						CompilationUnit cUnit = parse2(fetchContent(uri).toCharArray(), utiStr, unitName, lookupEnv);
-						
-						projectToDocs.get(project, () -> new HashSet<>()).add(uri);
-						return cUnit;
-					});
-					if (cu != null) {
-						projectToDocs.get(project, () -> new HashSet<>()).add(uri);
-					}
+					ProjectEnvironmentData data = projectData(project);
+					cu = data.compilationUnit(uri);
+//					cu = uriToCu.get(uri, () -> {
+//						BindingEnvironment lookupEnv =lookupEnvCache.get(project, () -> {
+//							return createClasspath(project);
+//						});
+//						String utiStr = uri.toString();
+//						String unitName = utiStr.substring(utiStr.lastIndexOf("/"));
+//						CompilationUnit cUnit = parse2(fetchContent(uri).toCharArray(), utiStr, unitName, lookupEnv);
+//						
+//						projectToDocs.get(project, () -> new HashSet<>()).add(uri);
+//						return cUnit;
+//					});
+//					if (cu != null) {
+//						projectToDocs.get(project, () -> new HashSet<>()).add(uri);
+//					}
 				} catch (Exception e) {
 					logger.error("", e);
 				}
@@ -200,17 +240,27 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 
 
 	private void invalidateCuForJavaFile(String uriStr) {
-		URI uri = URI.create(uriStr);
-		uriToCu.invalidate(uri);
+//		URI uri = URI.create(uriStr);
+//		uriToCu.invalidate(uri);
+//		IJavaProject project = projectFinder.find(new TextDocumentIdentifier(uriStr)).orElse(null);
+//		if (project != null) {
+//			Set<URI> docUris = projectToDocs.getIfPresent(project);
+//			if (docUris != null) {
+//				docUris.remove(uri);
+//				if (docUris.isEmpty()) {
+//					invalidateProject(project);
+//				} else {
+//					BindingEnvironment environment = lookupEnvCache.getIfPresent(project);
+//					if (environment != null) {
+//						environment.reset();
+//					}
+//				}
+//			}
+//		}
 		IJavaProject project = projectFinder.find(new TextDocumentIdentifier(uriStr)).orElse(null);
 		if (project != null) {
-			Set<URI> docUris = projectToDocs.getIfPresent(project);
-			if (docUris != null) {
-				docUris.remove(uri);
-				if (docUris.isEmpty()) {
-					invalidateProject(project);
-				}
-			}
+			ProjectEnvironmentData data = this.lookupEnvCache.getIfPresent(project);
+			data.reset();
 		}
 	}
 
@@ -341,7 +391,16 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 //		}
 //		return CUResolver.getClasspath(parser);
 	}
-	
+
+	private ProjectEnvironmentData createProjectEnvironment(IJavaProject project) {
+		IClasspath cp = project.getClasspath();
+		BindingEnvironment env = ASTParser.createBindingEnvironment(
+				IClasspathUtil.getAllBinaryRoots(cp).stream().map(f -> f.getAbsolutePath()).toArray(String[]::new),
+				new String[0], null, false, createCompilerOptions(), 0);
+		return new ProjectEnvironmentData(env);
+		
+	}
+
 //	private static String[] getClasspathEntries(IJavaProject project) throws Exception {
 //		if (project == null) {
 //			return new String[0];
@@ -354,16 +413,26 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 //		}
 //	}
 
-	private void invalidateProject(IJavaProject project) {
-		Set<URI> docUris = projectToDocs.getIfPresent(project);
-		if (docUris != null) {
-			uriToCu.invalidateAll(docUris);
-			projectToDocs.invalidate(project);
+	private boolean invalidateProject(IJavaProject project) {
+//		Set<URI> docUris = projectToDocs.getIfPresent(project);
+//		if (docUris != null) {
+//			uriToCu.invalidateAll(docUris);
+//			projectToDocs.invalidate(project);
+//		}
+//		BindingEnvironment env = lookupEnvCache.getIfPresent(project);
+//		if (env != null) {
+//			env.dispose();
+//		}
+		ProjectEnvironmentData data = lookupEnvCache.getIfPresent(project);
+		if (data != null) {
+			data.dispose();
 		}
-		BindingEnvironment env = lookupEnvCache.getIfPresent(project);
-		if (env != null) {
-			env.dispose();
-		}
+		lookupEnvCache.invalidate(project);
+		return data != null;
+	}
+	
+	private ProjectEnvironmentData projectData(IJavaProject project) throws ExecutionException {
+		return lookupEnvCache.get(project, () -> createProjectEnvironment(project));
 	}
 
 	@Override
@@ -376,6 +445,35 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 		}
 		return IOUtils.toString(uri);
 
+	}
+	
+	private class ProjectEnvironmentData {
+		
+		private BindingEnvironment bindingEnvironment;
+		
+		private Cache<URI, CompilationUnit> compilationUnits;
+		
+		ProjectEnvironmentData(BindingEnvironment bindingEnvironment) {
+			this.bindingEnvironment = bindingEnvironment;
+			this.compilationUnits = CacheBuilder.newBuilder().build();
+		}
+		
+		CompilationUnit compilationUnit(URI uri) throws ExecutionException {
+			return this.compilationUnits.get(uri, () -> {
+				String utiStr = uri.toString();
+				String unitName = utiStr.substring(utiStr.lastIndexOf("/"));
+				return parse2(fetchContent(uri).toCharArray(), utiStr, unitName, bindingEnvironment);
+			});
+		}
+		
+		void reset() {
+			this.bindingEnvironment.reset();
+		}
+		
+		void dispose() {
+			this.compilationUnits.invalidateAll();
+			this.bindingEnvironment.dispose();
+		}
 	}
 	
 //	private static class ClasspathLookupEnvironmentPool {
