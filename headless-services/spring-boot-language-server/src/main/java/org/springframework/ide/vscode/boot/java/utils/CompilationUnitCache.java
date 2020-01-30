@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.utils;
 
+import java.io.File;
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.HashMap;
@@ -94,6 +95,15 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 //				writeLock.unlock();
 //			}
 //		});
+		
+		async.execute(() -> {
+			synchronized(lock) {
+				for (IJavaProject project : projectFinder.all()) {
+					projectData(project);
+					startListenToProjectSourceFolderChanges(project);
+				}
+			}
+		});
 
 		projectListener = new ProjectObserver.Listener() {
 			
@@ -141,29 +151,34 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 	}
 	
 	private void startListenToProjectSourceFolderChanges(IJavaProject project) {
-		List<String> globs = IClasspathUtil.getProjectJavaSourceFolders(project.getClasspath()).map(file -> {
-			Path path = file.getAbsoluteFile().toPath();
-			return Stream.of(path.resolve("*").toString(), path.resolve("**/*").toString());
-		}).flatMap(glob -> glob).collect(Collectors.toList());
-		String[] subscriptions = new String[] {
-				fileObserver.onFileCreated(globs, (file) -> {
-					invalidateProject(project);
-					try {
-						projectData(project);
-					} catch (ExecutionException e) {
-						logger.error("", e);
-					}
-				}),
-				fileObserver.onFileDeleted(globs, (file) -> {
-					invalidateProject(project);
-					try {
-						projectData(project);
-					} catch (ExecutionException e) {
-						logger.error("", e);
-					}
-				}),
-		};
-		projectSubscriptions.put(project, subscriptions);
+		try {
+			List<String> globs = IClasspathUtil.getProjectJavaSourceFolders(project.getClasspath()).map(file -> {
+				Path path = file.getAbsoluteFile().toPath();
+				return Stream.of(path.toString().replace(File.separatorChar, '/') + "/*",
+						path.toString().replace(File.separatorChar, '/') + "/**/*");
+			}).flatMap(glob -> glob).collect(Collectors.toList());
+			String[] subscriptions = new String[] {
+					fileObserver.onFileCreated(globs, (file) -> {
+						invalidateProject(project);
+						try {
+							projectData(project);
+						} catch (ExecutionException e) {
+							logger.error("", e);
+						}
+					}),
+					fileObserver.onFileDeleted(globs, (file) -> {
+						invalidateProject(project);
+						try {
+							projectData(project);
+						} catch (ExecutionException e) {
+							logger.error("", e);
+						}
+					}),
+			};
+			projectSubscriptions.put(project, subscriptions);
+		} catch (Exception e) {
+			logger.error("", e);
+		}
 	}
 	
 	private void stopListenToProjectSourceFolderChanges(IJavaProject project) {
