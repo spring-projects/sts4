@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -470,7 +471,11 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 		
 		ProjectEnvironmentData(BindingEnvironment bindingEnvironment) {
 			this.bindingEnvironment = bindingEnvironment;
-			this.compilationUnits = CacheBuilder.newBuilder().build();
+			this.compilationUnits = CacheBuilder.newBuilder().expireAfterAccess(CU_ACCESS_EXPIRATION, TimeUnit.MINUTES)
+					.removalListener(notification -> {
+						this.bindingEnvironment.reset();
+					})
+					.build();
 		}
 		
 		CompilationUnit compilationUnit(URI uri) throws ExecutionException {
@@ -482,7 +487,7 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 		}
 		
 		void reset() {
-			this.bindingEnvironment.reset();
+			this.compilationUnits.invalidateAll();
 		}
 		
 		void dispose() {
