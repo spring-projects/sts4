@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2019 Pivotal, Inc.
+ * Copyright (c) 2018, 2020 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -204,13 +204,16 @@ public class MockProjects {
 	}
 
 	private static class FileListener {
+		
 		final PathMatcher matcher;
-		final Consumer<String> handler;
-		FileListener(List<String> globPatterns, Consumer<String> listener) {
+		final Consumer<String[]> handler;
+		
+		FileListener(List<String> globPatterns, Consumer<String[]> listener) {
 			super();
 			this.matcher = buildPathMatcher(globPatterns);
 			this.handler = listener;
 		}
+		
 		private PathMatcher buildPathMatcher(List<String> globPatterns) {
 			if (globPatterns.size()==0) {
 				return path -> true;
@@ -241,7 +244,7 @@ public class MockProjects {
 		final Map<String,FileListener> change_listeners = new HashMap<>();
 		final Map<String,FileListener> delete_listeners = new HashMap<>();
 
-		private String add(Map<String, FileListener> listeners, List<String> globPatterns, Consumer<String> handler) {
+		private String add(Map<String, FileListener> listeners, List<String> globPatterns, Consumer<String[]> handler) {
 			String id = ""+idGen.incrementAndGet();
 			synchronized (listeners) {
 				listeners.put(id, new FileListener(globPatterns, handler));
@@ -262,25 +265,25 @@ public class MockProjects {
 			synchronized (listeners) {
 				for (FileListener l : listeners.values()) {
 					if (l.matcher.matches(path)) {
-						l.handler.accept(target.toURI().toString());
+						l.handler.accept(new String[] {target.toURI().toString()});
 					}
 				}
 			}
 		}
 
 		@Override
-		public String onFileCreated(List<String> globPattern, Consumer<String> handler) {
+		public String onFilesCreated(List<String> globPattern, Consumer<String[]> handler) {
 			return add(create_listeners, globPattern, handler);
 		}
 
 
 		@Override
-		public String onFileChanged(List<String> globPattern, Consumer<String> handler) {
+		public String onFilesChanged(List<String> globPattern, Consumer<String[]> handler) {
 			return add(change_listeners, globPattern, handler);
 		}
 
 		@Override
-		public String onFileDeleted(List<String> globPattern, Consumer<String> handler) {
+		public String onFilesDeleted(List<String> globPattern, Consumer<String[]> handler) {
 			return add(delete_listeners, globPattern, handler);
 		}
 

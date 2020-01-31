@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2020 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -12,9 +12,9 @@ package org.springframework.ide.vscode.commons.util;
 
 import java.net.URI;
 import java.nio.file.FileSystems;
-import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -24,8 +24,6 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.tuple.ImmutablePair;
 
-import reactor.core.Disposable;
-
 /**
  * Basic implementation of File Observer interface
  * 
@@ -34,22 +32,22 @@ import reactor.core.Disposable;
  */
 public class BasicFileObserver implements FileObserver {
 	
-	protected ConcurrentHashMap<String, ImmutablePair<List<PathMatcher>, Consumer<String>>> createRegistry = new ConcurrentHashMap<>(); 
-	protected ConcurrentHashMap<String, ImmutablePair<List<PathMatcher>, Consumer<String>>> deleteRegistry = new ConcurrentHashMap<>(); 
-	protected ConcurrentHashMap<String, ImmutablePair<List<PathMatcher>, Consumer<String>>> changeRegistry = new ConcurrentHashMap<>(); 
+	protected ConcurrentHashMap<String, ImmutablePair<List<PathMatcher>, Consumer<String[]>>> createRegistry = new ConcurrentHashMap<>(); 
+	protected ConcurrentHashMap<String, ImmutablePair<List<PathMatcher>, Consumer<String[]>>> deleteRegistry = new ConcurrentHashMap<>(); 
+	protected ConcurrentHashMap<String, ImmutablePair<List<PathMatcher>, Consumer<String[]>>> changeRegistry = new ConcurrentHashMap<>(); 
 	
 	@Override
-	public String onFileCreated(List<String> globPattern, Consumer<String> handler) {
+	public String onFilesCreated(List<String> globPattern, Consumer<String[]> handler) {
 		return registerFileListener(createRegistry, globPattern, handler);
 	}
 
 	@Override
-	public String onFileChanged(List<String> globPattern, Consumer<String> handler) {
+	public String onFilesChanged(List<String> globPattern, Consumer<String[]> handler) {
 		return registerFileListener(changeRegistry, globPattern, handler);
 	}
 
 	@Override
-	public String onFileDeleted(List<String> globPattern, Consumer<String> handler) {
+	public String onFilesDeleted(List<String> globPattern, Consumer<String[]> handler) {
 		return registerFileListener(deleteRegistry, globPattern, handler);
 	}
 
@@ -67,34 +65,66 @@ public class BasicFileObserver implements FileObserver {
 		return false;
 	}
 	
-	private static String registerFileListener(Map<String, ImmutablePair<List<PathMatcher>, Consumer<String>>> registry, List<String> globPattern, Consumer<String> handler) {
+	private static String registerFileListener(Map<String, ImmutablePair<List<PathMatcher>, Consumer<String[]>>> registry, List<String> globPattern, Consumer<String[]> handler) {
 		String subscriptionId = UUID.randomUUID().toString();
 		registry.put(subscriptionId, ImmutablePair.of(globPattern.stream().map(g -> FileSystems.getDefault().getPathMatcher("glob:" + g)).collect(Collectors.toList()), handler));
 		return subscriptionId;
 	}
 	
 	final public void notifyFileCreated(String uri) {
-		notify(createRegistry, uri);
+		notify(createRegistry, new String[] {uri});
+	}
+	
+	final public void notifyFilesCreated(String[] uris) {
+		notify(createRegistry, uris);
 	}
 	
 	final public void notifyFileChanged(String uri) {
-		notify(changeRegistry, uri);
+		notify(changeRegistry, new String[] {uri});
+	}
+	
+	final public void notifyFilesChanged(String[] uris) {
+		notify(changeRegistry, uris);
 	}
 	
 	final public void notifyFileDeleted(String uri) {
-		notify(deleteRegistry, uri);
+		notify(deleteRegistry, new String[] {uri});
 	}
 	
-	private static void notify(Map<String, ImmutablePair<List<PathMatcher>, Consumer<String>>> registry, String uri) {
-		Path path = Paths.get(URI.create(uri));
+	final public void notifyFilesDeleted(String[] uris) {
+		notify(deleteRegistry, uris);
+	}
+	
+	private static void notify(Map<String, ImmutablePair<List<PathMatcher>, Consumer<String[]>>> registry, String[] uris) {
+//		Path path = Paths.get(URI.create(uris));
+//		registry.values().stream()
+//			.filter(pair -> pair.left.stream()
+//					.filter(matcher -> 
+//						matcher.matches(path)
+//					)
+//					.findFirst()
+//					.isPresent())
+//			.forEach(pair -> pair.right.accept(uris));
+//		
 		registry.values().stream()
-			.filter(pair -> pair.left.stream()
-					.filter(matcher -> 
-						matcher.matches(path)
-					)
-					.findFirst()
-					.isPresent())
-			.forEach(pair -> pair.right.accept(uri));
+		
+			// create for each consumer with multiple pattern patchers a pair that contains the pair + an array of matching doc URIs
+			.map(pair -> ImmutablePair.of(
+					pair,
+					
+					// this creates an array of those doc URIs that match at least to one of those pattern matchers
+					Arrays.stream(uris)
+						.filter(uri ->
+						
+								// keep only URIs for which a matcher succeeds
+								pair.left.stream()
+									.filter(matcher -> matcher.matches(Paths.get(URI.create(uri))))
+										.findFirst()
+										.isPresent())
+						.toArray(String[]::new)))
+			
+			// then call the accept method of each consumer with the generated array of doc URIs
+			.forEach(superPair -> superPair.left.right.accept(superPair.right));
 	}
 
 }

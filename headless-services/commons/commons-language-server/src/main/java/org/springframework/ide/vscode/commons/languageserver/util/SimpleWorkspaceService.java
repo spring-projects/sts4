@@ -13,14 +13,18 @@ package org.springframework.ide.vscode.commons.languageserver.util;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import org.eclipse.lsp4j.DidChangeConfigurationParams;
 import org.eclipse.lsp4j.DidChangeWatchedFilesParams;
 import org.eclipse.lsp4j.DidChangeWorkspaceFoldersParams;
 import org.eclipse.lsp4j.ExecuteCommandParams;
+import org.eclipse.lsp4j.FileChangeType;
+import org.eclipse.lsp4j.FileEvent;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.WorkspaceFolder;
 import org.eclipse.lsp4j.WorkspaceFoldersChangeEvent;
@@ -31,7 +35,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.AsyncRunner;
 import org.springframework.ide.vscode.commons.util.FileObserver;
-import org.springframework.ide.vscode.commons.util.Log;
 
 import com.google.common.collect.ImmutableList;
 import com.google.gson.JsonElement;
@@ -78,29 +81,31 @@ public class SimpleWorkspaceService implements WorkspaceService {
 
 	@Override
 	public void didChangeWatchedFiles(DidChangeWatchedFilesParams params) {
-		params.getChanges().forEach(event -> {
-			try {
-				String uri = event.getUri();
-				if (uri != null) {
-					switch (event.getType()) {
-					case Created:
-						fileObserver.notifyFileCreated(uri);
-						break;
-					case Changed:
-						fileObserver.notifyFileChanged(uri);
-						break;
-					case Deleted:
-						fileObserver.notifyFileDeleted(uri);
-						break;
-					default:
-						Log.log("Uknown file change type '" + event.getType() + "' for file: " + uri);
-						break;
-					}
+		try {
+			Map<FileChangeType, List<FileEvent>> collect =
+					params.getChanges().stream().filter(event -> event.getUri() != null).collect(Collectors.groupingBy(FileEvent::getType));
+			
+			for (FileChangeType type : collect.keySet()) {
+				String[] docURIs = collect.get(type).stream().map(event -> event.getUri()).toArray(String[]::new);
+	
+				switch (type) {
+				case Created:
+					fileObserver.notifyFilesCreated(docURIs);
+					break;
+				case Changed:
+					fileObserver.notifyFilesChanged(docURIs);
+					break;
+				case Deleted:
+					fileObserver.notifyFilesDeleted(docURIs);
+					break;
+				default:
+					log.warn("Uknown file change type '" + type + "' for files: " + docURIs);
+					break;
 				}
-			} catch (Throwable t) {
-				Log.log(t);
 			}
-		});
+		} catch (Throwable t) {
+			log.warn("problem occurred while dispatching file event", t);
+		}
 	}
 
 	@Override
