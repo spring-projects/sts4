@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019 Pivotal, Inc.
+ * Copyright (c) 2019 2020 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -19,6 +19,7 @@ import java.nio.file.Files;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -170,9 +171,10 @@ public class SymbolCacheOnDisc implements SymbolCache {
 
 	@Override
 	public void update(SymbolCacheKey cacheKey, String file, long lastModified, List<CachedSymbol> generatedSymbols, Set<String> dependencies) {
-		if (dependencies==null) {
+		if (dependencies == null) {
 			dependencies = ImmutableSet.of();
 		}
+
 		CacheStore cacheStore = this.stores.get(cacheKey);
 
 		if (cacheStore != null) {
@@ -193,6 +195,48 @@ public class SymbolCacheOnDisc implements SymbolCache {
 			} else {
 				changedDependencies.put(file, ImmutableSet.copyOf(dependencies));
 			}
+			save(cacheKey, cachedSymbols, timestampedFiles, changedDependencies);
+		}
+	}
+
+	@Override
+	public void update(SymbolCacheKey cacheKey, String[] files, long[] lastModified, List<CachedSymbol> generatedSymbols, Multimap<String, String> dependencies) {
+		if (dependencies == null) {
+			dependencies = ImmutableMultimap.of();
+		}
+
+		CacheStore cacheStore = this.stores.get(cacheKey);
+
+		if (cacheStore != null) {
+			SortedMap<String, Long> timestampedFiles = new TreeMap<>(cacheStore.getTimestampedFiles());
+			Set<String> allDocURIs = new HashSet<>();
+			
+			Map<String, Collection<String>> changedDependencies = new HashMap<>(cacheStore.getDependencies());
+			
+			for (int i = 0; i < files.length; i++) {
+				
+				// update cache internal map of timestamps per file
+				String docURI = UriUtil.toUri(new File(files[i])).toString();
+				allDocURIs.add(docURI);
+				
+				timestampedFiles.put(files[i], lastModified[i]);
+
+				// update cache internal map of dependencies per file
+				Collection<String> updatedDependencies = dependencies.get(files[i]);
+				if (updatedDependencies == null || updatedDependencies.isEmpty()) {
+					changedDependencies.remove(files[i]);
+				} else {
+					changedDependencies.put(files[i], ImmutableSet.copyOf(updatedDependencies));
+				}
+			}
+
+			// update cache internal list of cached symbols (by removing old ones and adding all new ones)
+			List<CachedSymbol> cachedSymbols = cacheStore.getSymbols().stream()
+					.filter(cachedSymbol -> !allDocURIs.contains(cachedSymbol.getDocURI()))
+					.collect(Collectors.toList());
+			cachedSymbols.addAll(generatedSymbols);
+
+			// store the complete cache content of this project to disc
 			save(cacheKey, cachedSymbols, timestampedFiles, changedDependencies);
 		}
 	}

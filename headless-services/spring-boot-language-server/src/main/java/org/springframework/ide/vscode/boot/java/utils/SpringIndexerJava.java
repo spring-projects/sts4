@@ -59,6 +59,7 @@ import org.springframework.ide.vscode.commons.util.UriUtil;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.common.collect.Multimap;
+import com.google.common.collect.MultimapBuilder;
 
 /**
  * @author Martin Lippert
@@ -183,45 +184,54 @@ public class SpringIndexerJava implements SpringIndexer {
 		Set<String> scannedFiles = new HashSet<>();
 		Set<String> scannedTypes = new HashSet<>();
 
-		Map<String, UpdatedDoc> updatedDocs = new HashMap<>();
+		Map<String, UpdatedDoc> updatedDocs = new HashMap<>(); // docURI -> UpdatedDoc
 		String[] javaFiles = new String[docs.length];
+		long[] lastModified = new long[docs.length];
 
 		for (int i = 0; i < docs.length; i++) {
 			updatedDocs.put(docs[i].getDocURI(), docs[i]);
 
 			String file = UriUtil.toFileString(docs[i].getDocURI());
+
 			javaFiles[i] = file;
+			lastModified[i] = docs[i].getLastModified();
+			
 			scannedFiles.add(file);
 		}
 		
+		List<CachedSymbol> generatedSymbols = new ArrayList<CachedSymbol>();
+		Multimap<String, String> dependencies = MultimapBuilder.hashKeys().hashSetValues().build();
+
 		FileASTRequestor requestor = new FileASTRequestor() {
 			@Override
 			public void acceptAST(String sourceFilePath, CompilationUnit cu) {
 				File file = new File(sourceFilePath);
 				String docURI = UriUtil.toUri(file).toString();
-				long lastModified = file.lastModified();
-				AtomicReference<TextDocument> docRef = new AtomicReference<>();
+				
 				UpdatedDoc updatedDoc = updatedDocs.get(docURI);
-
-				List<CachedSymbol> generatedSymbols = new ArrayList<CachedSymbol>();
+				long lastModified = updatedDoc.getLastModified();
+				
+				AtomicReference<TextDocument> docRef = new AtomicReference<>();
 
 				SpringIndexerJavaContext context = new SpringIndexerJavaContext(project, cu, docURI, sourceFilePath,
 						lastModified, docRef, updatedDoc.getContent().get(), generatedSymbols, SCAN_PASS.ONE, new ArrayList<>(), scannedTypes);
+				
+				dependencies.putAll(sourceFilePath, context.getDependencies());
 
 				scanAST(context);
-				
-				SymbolCacheKey cacheKey = getCacheKey(project);
-				SpringIndexerJava.this.cache.update(cacheKey, sourceFilePath, lastModified, generatedSymbols, context.getDependencies());
-
-				for (CachedSymbol symbol : generatedSymbols) {
-					symbolHandler.addSymbol(project, symbol.getDocURI(), symbol.getEnhancedSymbol());
-				}
 				
 				fileScannedEvent(sourceFilePath);
 			}
 		};
 
 		parser.createASTs(javaFiles, null, new String[0], requestor, null);
+		
+		for (CachedSymbol symbol : generatedSymbols) {
+			symbolHandler.addSymbol(project, symbol.getDocURI(), symbol.getEnhancedSymbol());
+		}
+		
+		SymbolCacheKey cacheKey = getCacheKey(project);
+		SpringIndexerJava.this.cache.update(cacheKey, javaFiles, lastModified, generatedSymbols, dependencies);
 		
 		scanAffectedFiles(project, scannedTypes, scannedFiles);
 	}

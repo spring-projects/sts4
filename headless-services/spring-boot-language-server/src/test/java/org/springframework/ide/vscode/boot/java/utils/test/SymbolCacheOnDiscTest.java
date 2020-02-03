@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019 Pivotal, Inc.
+ * Copyright (c) 2019, 2020 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -32,6 +32,7 @@ import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.SymbolKind;
 import org.junit.After;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
@@ -46,7 +47,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
-import com.google.common.collect.MultimapBuilder;
 
 public class SymbolCacheOnDiscTest {
 
@@ -282,6 +282,93 @@ public class SymbolCacheOnDiscTest {
 		CachedSymbol[] cachedSymbols = cache.retrieveSymbols(new SymbolCacheKey("somekey", "1"), files);
 		assertNotNull(cachedSymbols);
 		assertEquals(2, cachedSymbols.length);
+	}
+
+	@Test
+	public void testSymbolsAddedToMultipleFiles() throws Exception {
+		
+		// create 3 files with one symbol each
+		Path file1 = Paths.get(tempDir.toAbsolutePath().toString(), "tempFile1");
+		Path file2 = Paths.get(tempDir.toAbsolutePath().toString(), "tempFile2");
+		Path file3 = Paths.get(tempDir.toAbsolutePath().toString(), "tempFile3");
+
+		Files.createFile(file1);
+		Files.createFile(file2);
+		Files.createFile(file3);
+
+		FileTime timeFile1 = Files.getLastModifiedTime(file1);
+		FileTime timeFile2 = Files.getLastModifiedTime(file2);
+		FileTime timeFile3 = Files.getLastModifiedTime(file3);
+
+		String[] files = {file1.toAbsolutePath().toString(), file2.toAbsolutePath().toString(), file3.toAbsolutePath().toString()};
+
+		String doc1URI = UriUtil.toUri(file1.toFile()).toString();
+		String doc2URI = UriUtil.toUri(file2.toFile()).toString();
+		String doc3URI = UriUtil.toUri(file3.toFile()).toString();
+
+		List<CachedSymbol> generatedSymbols = new ArrayList<>();
+		SymbolInformation symbol1 = new SymbolInformation("symbol1", SymbolKind.Field, new Location(doc1URI, new Range(new Position(3, 10), new Position(3, 20))));
+		EnhancedSymbolInformation enhancedSymbol1 = new EnhancedSymbolInformation(symbol1, null);
+		generatedSymbols.add(new CachedSymbol(doc1URI, timeFile1.toMillis(), enhancedSymbol1));
+
+		SymbolInformation symbol2 = new SymbolInformation("symbol2", SymbolKind.Field, new Location(doc2URI, new Range(new Position(3, 10), new Position(3, 20))));
+		EnhancedSymbolInformation enhancedSymbol2 = new EnhancedSymbolInformation(symbol2, null);
+		generatedSymbols.add(new CachedSymbol(doc2URI, timeFile2.toMillis(), enhancedSymbol2));
+
+		SymbolInformation symbol3 = new SymbolInformation("symbol3", SymbolKind.Field, new Location(doc3URI, new Range(new Position(3, 10), new Position(3, 20))));
+		EnhancedSymbolInformation enhancedSymbol3 = new EnhancedSymbolInformation(symbol3, null);
+		generatedSymbols.add(new CachedSymbol(doc3URI, timeFile3.toMillis(), enhancedSymbol3));
+
+		// store original version of the symbols to the cache 
+		cache.store(new SymbolCacheKey("somekey", "1"), files, generatedSymbols, null);
+
+
+		// create updated and new symbols
+		List<CachedSymbol> updatedSymbols = new ArrayList<>();
+		
+		SymbolInformation updatedSymbol1 = new SymbolInformation("symbol1", SymbolKind.Field, new Location(doc1URI, new Range(new Position(3, 10), new Position(3, 20))));
+		EnhancedSymbolInformation updatedEnhancedSymbol1 = new EnhancedSymbolInformation(updatedSymbol1, null);
+
+		SymbolInformation newSymbol1 = new SymbolInformation("symbol1-new", SymbolKind.Interface, new Location(doc1URI, new Range(new Position(5, 5), new Position(5, 10))));
+		EnhancedSymbolInformation newEnhancedSymbol1 = new EnhancedSymbolInformation(newSymbol1, null);
+
+		updatedSymbols.add(new CachedSymbol(doc1URI, timeFile1.toMillis() + 2000, updatedEnhancedSymbol1));
+		updatedSymbols.add(new CachedSymbol(doc1URI, timeFile1.toMillis() + 2000, newEnhancedSymbol1));
+		assertTrue(file1.toFile().setLastModified(timeFile1.toMillis() + 2000));
+
+		SymbolInformation updatedSymbol2 = new SymbolInformation("symbol2-updated", SymbolKind.Field, new Location(doc2URI, new Range(new Position(3, 10), new Position(3, 20))));
+		EnhancedSymbolInformation updatedEnhancedSymbol2 = new EnhancedSymbolInformation(updatedSymbol2, null);
+		updatedSymbols.add(new CachedSymbol(doc2URI, timeFile2.toMillis() + 3000, updatedEnhancedSymbol2));
+		assertTrue(file2.toFile().setLastModified(timeFile2.toMillis() + 3000));
+		
+		String[] updatedFiles = new String[] {file1.toAbsolutePath().toString(), file2.toAbsolutePath().toString()};
+		long[] updatedModificationTimestamps = new long[] {timeFile1.toMillis() + 2000, timeFile2.toMillis() + 3000};
+		
+		// update multiple files in the cache
+		cache.update(new SymbolCacheKey("somekey", "1"), updatedFiles, updatedModificationTimestamps, updatedSymbols, null);
+
+		// double check whether all changes got stored and retrieved correctly
+		CachedSymbol[] cachedSymbols = cache.retrieveSymbols(new SymbolCacheKey("somekey", "1"), files);
+		assertNotNull(cachedSymbols);
+		assertEquals(4, cachedSymbols.length);
+		
+		assertSymbol(updatedEnhancedSymbol1, cachedSymbols);
+		assertSymbol(newEnhancedSymbol1, cachedSymbols);
+		assertSymbol(updatedEnhancedSymbol2, cachedSymbols);
+		assertSymbol(enhancedSymbol3, cachedSymbols);
+	}
+
+	private void assertSymbol(EnhancedSymbolInformation enhancedSymbol, CachedSymbol[] cachedSymbols) {
+		for (CachedSymbol cachedSymbol : cachedSymbols) {
+			SymbolInformation symbol = cachedSymbol.getEnhancedSymbol().getSymbol();
+			
+			if (symbol.toString().equals(enhancedSymbol.getSymbol().toString())) {
+				return;
+			}
+		}
+		
+		
+		Assert.fail("symbol not found: " + enhancedSymbol.getSymbol().toString());
 	}
 
 	@Test
