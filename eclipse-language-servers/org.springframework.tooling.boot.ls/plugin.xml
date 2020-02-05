@@ -366,5 +366,11 @@
             name="Spring - Live Process Information"
             requiresUIAccess="false"/>
    </extension>
+   <extension
+         point="org.springframework.ide.eclipse.boot.dash.injections">
+      <injection
+            class="org.springframework.tooling.boot.ls.BootDashInjections">
+      </injection>
+   </extension>
 
 </plugin>

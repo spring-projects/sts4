@@ -16,6 +16,7 @@ import java.io.OutputStream;
 import java.net.URI;
 import java.nio.file.FileSystems;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -34,6 +35,8 @@ import org.eclipse.lsp4j.InitializeResult;
 import org.eclipse.lsp4j.jsonrpc.messages.Message;
 import org.eclipse.lsp4j.jsonrpc.messages.ResponseMessage;
 import org.eclipse.lsp4j.services.LanguageServer;
+import org.springframework.ide.eclipse.boot.dash.remoteapps.RemoteBootAppsDataHolder;
+import org.springframework.ide.eclipse.boot.dash.remoteapps.RemoteBootAppsDataHolder.RemoteAppData;
 import org.springframework.tooling.boot.ls.prefs.RemoteAppsPrefs;
 import org.springframework.tooling.ls.eclipse.commons.LanguageServerCommonsActivator;
 import org.springsource.ide.eclipse.commons.livexp.core.ValueListener;
@@ -60,12 +63,10 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 	private ResourceListener fResourceListener;
 	private LanguageServer languageServer;
 	
-	private final IPropertyChangeListener configListener = (e) -> sendConfiguration();
-	private final ValueListener<ImmutableSet<Object>> remoteAppsListener = (e, v) -> sendConfiguration();
+	private final ValueListener<ImmutableSet<RemoteAppData>> remoteAppsListener = (e, v) -> sendConfiguration();
 	
 	private long timestampBeforeStart;
 	private long timestampWhenInitialized;
-	private Disposable remoteAppsPrefsListener;
 	
 	public DelegatingStreamConnectionProvider() {
 		LanguageServerCommonsActivator.logInfo("Entering DelegatingStreamConnectionProvider()");
@@ -90,7 +91,6 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 	public void start() throws IOException {
 		this.timestampBeforeStart = System.currentTimeMillis();
 		this.provider.start();
-		this.remoteAppsPrefsListener = RemoteAppsPrefs.addListener(this::sendConfiguration);
 	}
 
 	@Override
@@ -115,12 +115,7 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 			ResourcesPlugin.getWorkspace().removeResourceChangeListener(fResourceListener);
 			fResourceListener = null;
 		}
-		BootLanguageServerPlugin.getDefault().getPreferenceStore().removePropertyChangeListener(configListener);
-		BootLanguageServerPlugin.getRemoteBootApps().removeListener(remoteAppsListener);
-		if (remoteAppsPrefsListener!=null) {
-			remoteAppsPrefsListener.dispose();
-			remoteAppsPrefsListener = null;
-		}
+		RemoteBootAppsDataHolder.getDefault().getRemoteApps().removeListener(remoteAppsListener);
 	}
 
 	@Override
@@ -132,11 +127,6 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 				
 				this.timestampWhenInitialized = System.currentTimeMillis();
 				LanguageServerCommonsActivator.logInfo("Boot LS startup time from start to initialized: " + (timestampWhenInitialized - timestampBeforeStart) + "ms");
-				
-				sendConfiguration();
-				
-				// Add config listener
-				BootLanguageServerPlugin.getDefault().getPreferenceStore().addPropertyChangeListener(configListener);
 				
 				// Add resource listener
 				ResourcesPlugin.getWorkspace().addResourceChangeListener(fResourceListener = new ResourceListener(languageServer, Arrays.asList(
@@ -150,81 +140,11 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 				)));
 				
 				//Add remote boot apps listener
-				BootLanguageServerPlugin.getRemoteBootApps().addListener(remoteAppsListener);
+				RemoteBootAppsDataHolder.getDefault().getRemoteApps().addListener(remoteAppsListener);
 			}
 		}
 	}
 	
-	public class RemoteBootAppData {
-		
-		private String jmxurl;
-		private String host;
-		private String urlScheme = "https";
-		private String port = "443";
-		private boolean keepChecking = true; 
-			//keepChecking defaults to true. Boot dash automatic remote apps should override this explicitly.
-			//Reason. All other 'sources' of remote apps are 'manual' and we want them to default to
-			//'keepChecking' even if the user doesn't set this to true manually.
-		
-		private String processId = null;
-
-		public RemoteBootAppData() {
-		}
-
-		public RemoteBootAppData(String jmxurl, String host) {
-			super();
-			this.jmxurl = jmxurl;
-			this.host = host;
-		}
-
-		public String getJmxurl() {
-			return jmxurl;
-		}
-
-		public void setJmxurl(String jmxurl) {
-			this.jmxurl = jmxurl;
-		}
-
-		public String getHost() {
-			return host;
-		}
-
-		public void setHost(String host) {
-			this.host = host;
-		}
-
-		public String getUrlScheme() {
-			return urlScheme;
-		}
-
-		public void setUrlScheme(String urlScheme) {
-			this.urlScheme = urlScheme;
-		}
-
-		public String getPort() {
-			return port;
-		}
-
-		public void setPort(String port) {
-			this.port = port;
-		}
-		
-		public boolean isKeepChecking() {
-			return keepChecking;
-		}
-		
-		public void setKeepChecking(boolean keepChecking) {
-			this.keepChecking = keepChecking;
-		}
-
-		public String getProcessId() {
-			return processId;
-		}
-
-		public void getProcessId(String processId) {
-			this.processId = processId;
-		}
-	}
 	
 	private void sendConfiguration() {
 		Map<String, Object> settings = new HashMap<>();
@@ -259,8 +179,7 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 		bootJavaObj.put("change-detection", bootChangeDetection);
 		bootJavaObj.put("scan-java-test-sources", scanTestJavaSources);
 
-		bootJavaObj.put("remote-apps", getAllRemoteApps()
-		);
+		bootJavaObj.put("remote-apps", getAllRemoteApps());
 
 		settings.put("boot-java", bootJavaObj);
 
@@ -270,30 +189,21 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 	/**
 	 * Combines remote boot app data from all configuration sources.
 	 */
-	protected List<RemoteBootAppData> getAllRemoteApps() {
-		ImmutableSet<Object> fromBootDash = BootLanguageServerPlugin.getRemoteBootApps().getValues();
-		List<List<String>> fromUserPrefs = new RemoteAppsPrefs().getRemoteAppData();
-		
-		Set<Object> combined = new LinkedHashSet<>();
-		combined.addAll(fromBootDash);
-		combined.addAll(fromUserPrefs);
-		return combined
-				.stream()
-				.map(this::parseData)
-				.collect(Collectors.toList());
+	protected Collection<RemoteAppData> getAllRemoteApps() {
+		return RemoteBootAppsDataHolder.getDefault().getRemoteApps().getValues();
 	}
 	
 	@SuppressWarnings("unchecked")
-	private RemoteBootAppData parseData(Object incomingData) {
+	private RemoteAppData parseLegacyData(Object incomingData) {
 		if (incomingData instanceof Pair) {
 			//Format prior to STS 4.2.0. Still supported to allows STS 3.9.8 and older to
 			// send data from its boot dash in the old format.
 			Pair<String,String> pair = (Pair<String, String>) incomingData;
-			return new RemoteBootAppData(pair.getLeft(), pair.getRight());
+			return new RemoteAppData(pair.getLeft(), pair.getRight());
 		} else if (incomingData instanceof List) {
 			//Format since STS 4.2.0
 			List<String> list = (List<String>) incomingData;
-			RemoteBootAppData app = new RemoteBootAppData(list.get(0), list.get(1));
+			RemoteAppData app = new RemoteAppData(list.get(0), list.get(1));
 			if (list.size()>=3) {
 				String portStr = list.get(2);
 				if (portStr!=null) {
@@ -315,7 +225,7 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 		} else if (incomingData instanceof Map) {
 			Gson gson = new Gson();
 			JsonElement tree = gson.toJsonTree(incomingData);
-			return gson.fromJson(tree, RemoteBootAppData.class);
+			return gson.fromJson(tree, RemoteAppData.class);
 		}
 		throw new IllegalArgumentException("Invalid remote app data: "+incomingData);
 	}

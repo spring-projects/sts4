@@ -21,6 +21,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.keys.IBindingService;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
+import org.springframework.ide.eclipse.boot.dash.remoteapps.RemoteBootAppsDataHolder;
 import org.springsource.ide.eclipse.commons.livexp.core.LiveSetVariable;
 
 /**
@@ -101,14 +102,4 @@ public class BootLanguageServerPlugin extends AbstractUIPlugin {
 			});
 		}
 	}
-	
-	//Should support both older and current formats:
-	// - old format = org.apache.commons.lang3.tuple.Pair<L, R><String,String>  (jmxUrl,host)
-	// - new format = List<String> containing upto 4 elements: jmxUrl, host, port, urlScheme. The last two are optional.
-	private static LiveSetVariable<Object> remoteBootApps = new LiveSetVariable<>();
-	
-	public static LiveSetVariable<Object> getRemoteBootApps() {
-		return remoteBootApps;
-	}
-
 }

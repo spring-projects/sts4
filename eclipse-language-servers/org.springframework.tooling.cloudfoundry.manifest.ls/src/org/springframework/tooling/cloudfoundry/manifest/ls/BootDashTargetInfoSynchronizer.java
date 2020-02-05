@@ -17,13 +17,13 @@ import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.springframework.ide.eclipse.boot.dash.BootDashActivator;
+import org.springframework.ide.eclipse.boot.dash.cf.client.ClientRequests;
+import org.springframework.ide.eclipse.boot.dash.cf.client.v2.DefaultClientRequestsV2;
+import org.springframework.ide.eclipse.boot.dash.cf.runtarget.CloudFoundryRunTarget;
+import org.springframework.ide.eclipse.boot.dash.cf.runtarget.CloudFoundryTargetProperties;
 import org.springframework.ide.eclipse.boot.dash.cloudfoundry.CfTargetsInfo;
 import org.springframework.ide.eclipse.boot.dash.cloudfoundry.CfTargetsInfo.Target;
 import org.springframework.ide.eclipse.boot.dash.cloudfoundry.CfTargetsInfo.TargetDiagnosticMessages;
-import org.springframework.ide.eclipse.boot.dash.cloudfoundry.CloudFoundryRunTarget;
-import org.springframework.ide.eclipse.boot.dash.cloudfoundry.CloudFoundryTargetProperties;
-import org.springframework.ide.eclipse.boot.dash.cloudfoundry.client.ClientRequests;
-import org.springframework.ide.eclipse.boot.dash.cloudfoundry.client.v2.DefaultClientRequestsV2;
 import org.springframework.ide.eclipse.boot.dash.model.BootDashViewModel;
 import org.springframework.ide.eclipse.boot.dash.model.RunTarget;
 import org.springsource.ide.eclipse.commons.livexp.core.ValueListener;
