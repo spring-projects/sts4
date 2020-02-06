@@ -28,7 +28,6 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
@@ -171,6 +170,9 @@ public class SpringIndexerMultipleFilesTest {
 
 		fileScanListener.assertScannedUris();
 		fileScanListener.assertScannedUri(unchangedDocURI, 0);
+		
+		List<? extends SymbolInformation> symbols = indexer.getSymbols(unchangedDocURI);
+		assertEquals(2, symbols.size());
 	}
 
 	@Test
@@ -203,6 +205,9 @@ public class SpringIndexerMultipleFilesTest {
 			assertTrue(containsSymbol(symbols1, "@/mapping1-CHANGED", doc1URI, 6, 1, 6, 36));
 			assertTrue(containsSymbol(symbols1, "@/mapping2", doc1URI, 11, 1, 11, 28));
 			
+			List<? extends SymbolInformation> symbols2 = indexer.getSymbols(doc2URI);
+			assertEquals(3, symbols2.size());
+
 			List<? extends SymbolInformation> symbols3 = indexer.getSymbols(doc3URI);
 			assertTrue(containsSymbol(symbols3, "@/classlevel-CHANGED/mapping-subpackage", doc3URI, 7, 1, 7, 38));
 			

@@ -144,7 +144,8 @@ public class SpringIndexerJava implements SpringIndexer {
 	public void updateFile(IJavaProject project, UpdatedDoc updatedDoc) throws Exception {
 		SymbolCacheKey cacheKey = getCacheKey(project);
 		if (updatedDoc != null && shouldProcessDocument(project, updatedDoc.getDocURI())
-				&& hasNewerModificationTimestamp(cacheKey, updatedDoc.getDocURI(), updatedDoc.getLastModified())) {
+				&& isCacheOutdated(cacheKey, updatedDoc.getDocURI(), updatedDoc.getLastModified())) {
+			this.symbolHandler.removeSymbols(project, updatedDoc.getDocURI());
 			scanFile(project, updatedDoc);
 		}
 	}
@@ -153,6 +154,11 @@ public class SpringIndexerJava implements SpringIndexer {
 	public void updateFiles(IJavaProject project, UpdatedDoc[] updatedDocs) throws Exception {
 		if (updatedDocs != null) {
 			UpdatedDoc[] docs = filterDocuments(project, updatedDocs);
+
+			for (UpdatedDoc updatedDoc : docs) {
+				this.symbolHandler.removeSymbols(project, updatedDoc.getDocURI());
+			}
+
 			scanFiles(project, docs);
 		}
 	}
@@ -160,7 +166,7 @@ public class SpringIndexerJava implements SpringIndexer {
 	private UpdatedDoc[] filterDocuments(IJavaProject project, UpdatedDoc[] updatedDocs) {
 		SymbolCacheKey cacheKey = getCacheKey(project);
 		return Arrays.stream(updatedDocs).filter(doc -> shouldProcessDocument(project, doc.getDocURI()))
-				.filter(doc -> hasNewerModificationTimestamp(cacheKey, doc.getDocURI(), doc.getLastModified())).toArray(UpdatedDoc[]::new);
+				.filter(doc -> isCacheOutdated(cacheKey, doc.getDocURI(), doc.getLastModified())).toArray(UpdatedDoc[]::new);
 	}
 
 	@Override
@@ -181,7 +187,7 @@ public class SpringIndexerJava implements SpringIndexer {
 				.isPresent();
 	}
 	
-	private boolean hasNewerModificationTimestamp(SymbolCacheKey cacheKey, String docURI, long modifiedTimestamp) {
+	private boolean isCacheOutdated(SymbolCacheKey cacheKey, String docURI, long modifiedTimestamp) {
 		long cachedModificationTImestamp = this.cache.getModificationTimestamp(cacheKey, UriUtil.toFileString(docURI));
 		return modifiedTimestamp > cachedModificationTImestamp;
 	}

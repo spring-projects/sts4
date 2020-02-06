@@ -141,6 +141,8 @@ public class SpringIndexerXML implements SpringIndexer {
 	@Override
 	public void updateFile(IJavaProject project, UpdatedDoc updatedDoc) throws Exception {
 
+		this.symbolHandler.removeSymbols(project, updatedDoc.getDocURI());
+
 		List<CachedSymbol> generatedSymbols = new ArrayList<CachedSymbol>();
 		String docURI = updatedDoc.getDocURI();
 
@@ -162,6 +164,8 @@ public class SpringIndexerXML implements SpringIndexer {
 		
 		for (UpdatedDoc updatedDoc : updatedDocs) {
 			String docURI = updatedDoc.getDocURI();
+			
+			this.symbolHandler.removeSymbols(project, docURI);
 
 			scanFile(project, updatedDoc.getContent().get(), docURI, updatedDoc.getLastModified(), generatedSymbols);
 	

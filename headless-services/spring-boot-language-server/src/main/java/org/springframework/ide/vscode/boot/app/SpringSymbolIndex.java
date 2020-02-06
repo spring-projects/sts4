@@ -672,8 +672,6 @@ public class SpringSymbolIndex implements InitializingBean {
 			
 			try {
 				log.debug("updateItem {}. {},  {}, {}", project.getElementName(), updatedDoc.getDocURI(), updatedDoc.getLastModified(), indexer);
-				removeSymbolsByDoc(project, updatedDoc.getDocURI());
-
 				indexer.updateFile(project, updatedDoc);
 			} catch (Exception e) {
 				log.error("{}", e);
@@ -691,7 +689,6 @@ public class SpringSymbolIndex implements InitializingBean {
 			try {
 				for (UpdatedDoc doc : updatedDoc) {
 					log.debug("updateItem {}. {},  {}, {}", project.getElementName(), doc.getDocURI(), doc.getLastModified(), indexer);
-					removeSymbolsByDoc(project, doc.getDocURI());
 				}
 
 				indexer.updateFiles(project, updatedDoc);
