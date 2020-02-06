@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2019 Pivotal, Inc.
+ * Copyright (c) 2017, 2020 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -33,6 +33,7 @@ import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
 import org.springframework.ide.vscode.boot.bootiful.SymbolProviderTestConf;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJavaDependencyTracker;
+import org.springframework.ide.vscode.boot.java.utils.test.TestFileScanListener;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.util.UriUtil;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
@@ -50,7 +51,7 @@ import com.google.common.collect.ImmutableSet;
 @BootLanguageServerTest
 @Import(SymbolProviderTestConf.class)
 public class RequestMappingSymbolProviderTest {
-
+	
 	@Autowired private BootLanguageServerHarness harness;
 	@Autowired private JavaProjectFinder projectFinder;
 	@Autowired private SpringSymbolIndex indexer;
@@ -93,7 +94,10 @@ public class RequestMappingSymbolProviderTest {
 		
 		TestFileScanListener fileScanListener = new TestFileScanListener();
 		indexer.getJavaIndexer().setFileScanListener(fileScanListener);
-		indexer.updateDocument(constantsUri, FileUtils.readFileToString(UriUtil.toFile(constantsUri)), "test triggered").get();
+
+		CompletableFuture<Void> updateFuture = indexer.updateDocument(constantsUri, FileUtils.readFileToString(UriUtil.toFile(constantsUri)), "test triggered");
+		updateFuture.get(5, TimeUnit.SECONDS);
+		
 		fileScanListener.assertScannedUris(constantsUri, docUri);
 		fileScanListener.assertScannedUri(constantsUri, 1);
 		fileScanListener.assertScannedUri(docUri, 1);
@@ -113,12 +117,18 @@ public class RequestMappingSymbolProviderTest {
 		
 		TestFileScanListener fileScanListener = new TestFileScanListener();
 		indexer.getJavaIndexer().setFileScanListener(fileScanListener);
-		indexer.updateDocument(pingUri, null, "test triggered").get();
+		
+		CompletableFuture<Void> updateFuture = indexer.updateDocument(pingUri, null, "test triggered");
+		updateFuture.get(5, TimeUnit.SECONDS);
+
 		fileScanListener.assertScannedUris(pingUri, pongUri);
 		
 		fileScanListener.reset();
 		fileScanListener.assertScannedUris(/*none*/);
-		indexer.updateDocument(pongUri, null, "test triggered").get();
+
+		CompletableFuture<Void> updateFuture2 = indexer.updateDocument(pongUri, null, "test triggered");
+		updateFuture2.get(5, TimeUnit.SECONDS);
+
 		fileScanListener.assertScannedUris(pingUri, pongUri);
 	}
 

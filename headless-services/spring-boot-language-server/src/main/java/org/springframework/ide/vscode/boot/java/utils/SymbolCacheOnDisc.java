@@ -241,6 +241,20 @@ public class SymbolCacheOnDisc implements SymbolCache {
 		}
 	}
 
+	@Override
+	public long getModificationTimestamp(SymbolCacheKey cacheKey, String file) {
+		CacheStore cacheStore = this.stores.get(cacheKey);
+		
+		if (cacheStore != null) {
+			Long result = cacheStore.getTimestampedFiles().get(file);
+			if (result != null) {
+				return result;
+			}
+		}
+
+		return 0;
+	}
+
 	private void save(SymbolCacheKey cacheKey, List<CachedSymbol> generatedSymbols,
 			SortedMap<String, Long> timestampedFiles, Map<String, Collection<String>> dependencies) {
 		CacheStore store = new CacheStore(timestampedFiles, generatedSymbols, dependencies);

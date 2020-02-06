@@ -11,8 +11,6 @@
 package org.springframework.ide.vscode.boot.java.utils.test;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
@@ -29,14 +27,15 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
 import org.springframework.ide.vscode.boot.bootiful.SymbolProviderTestConf;
+import org.springframework.ide.vscode.boot.java.utils.SymbolCache;
 import org.springframework.ide.vscode.boot.java.utils.SymbolIndexConfig;
-import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
-import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -46,8 +45,18 @@ import org.springframework.test.context.junit4.SpringRunner;
  */
 @RunWith(SpringRunner.class)
 @BootLanguageServerTest
-@Import(SymbolProviderTestConf.class)
+@Import(SpringIndexerMultipleFilesTest.TimestampingAwareCacheConfig.class)
 public class SpringIndexerMultipleFilesTest {
+
+	// usually, the test config ignores any caching by using the void impl,
+	// but here we need the one that implements at least the timestamp caching
+	// in order to check the java symbol indexer feature which avoid scanning the
+	// same file again even if the timestamp hasn't changed
+	public static class TimestampingAwareCacheConfig extends SymbolProviderTestConf {
+		@Bean public SymbolCache symbolCache() {
+			return new SymbolCacheTimestampsOnly();
+		}
+	}
 
 	@Autowired private BootLanguageServerHarness harness;
 	@Autowired private SpringSymbolIndex indexer;
@@ -55,7 +64,6 @@ public class SpringIndexerMultipleFilesTest {
 
 	private File directory;
 	private String projectDir;
-	private IJavaProject project;
 
 	@Before
 	public void setup() throws Exception {
@@ -66,7 +74,7 @@ public class SpringIndexerMultipleFilesTest {
 		projectDir = directory.toURI().toString();
 
 		// trigger project creation
-		project = projectFinder.find(new TextDocumentIdentifier(projectDir)).get();
+		projectFinder.find(new TextDocumentIdentifier(projectDir)).get();
 
 		CompletableFuture<Void> initProject = indexer.waitOperation();
 		initProject.get(5, TimeUnit.SECONDS);
@@ -74,25 +82,31 @@ public class SpringIndexerMultipleFilesTest {
 
 	@Test
 	public void testUpdateChangedSingleDocumentOnDisc() throws Exception {
-		
 		String changedDocURI = directory.toPath().resolve("src/main/java/org/test/SimpleMappingClass.java").toUri().toString();
 		String originalContent = FileUtils.readFileToString(new File(new URI(changedDocURI)));
 
 		try {
 			// update document and update index
-			assertTrue(containsSymbol(indexer.getSymbols(changedDocURI), "@/mapping1", changedDocURI));
+			List<? extends SymbolInformation> symbols = indexer.getSymbols(changedDocURI);
+			assertTrue(containsSymbol(symbols, "@/mapping1", changedDocURI));
 			
 			String newContent = originalContent.replace("mapping1", "mapping1-CHANGED");
 			FileUtils.writeStringToFile(new File(new URI(changedDocURI)), newContent);
 			
+			TestFileScanListener fileScanListener = new TestFileScanListener();
+			indexer.getJavaIndexer().setFileScanListener(fileScanListener);
+
 			CompletableFuture<Void> updateFuture = indexer.updateDocument(changedDocURI, null, "test triggered");
 			updateFuture.get(5, TimeUnit.SECONDS);
 	
 			// check for updated index per document
-			List<? extends SymbolInformation> symbols = indexer.getSymbols(changedDocURI);
+			symbols = indexer.getSymbols(changedDocURI);
 			assertEquals(2, symbols.size());
 			assertTrue(containsSymbol(symbols, "@/mapping1-CHANGED", changedDocURI, 6, 1, 6, 36));
 			assertTrue(containsSymbol(symbols, "@/mapping2", changedDocURI, 11, 1, 11, 28));
+			
+			fileScanListener.assertScannedUris(changedDocURI);
+			fileScanListener.assertScannedUri(changedDocURI, 1);
 		}
 		finally {
 			FileUtils.writeStringToFile(new File(new URI(changedDocURI)), originalContent);
@@ -141,6 +155,64 @@ public class SpringIndexerMultipleFilesTest {
 		finally {
 			FileUtils.writeStringToFile(new File(new URI(doc1URI)), original1Content);
 			FileUtils.writeStringToFile(new File(new URI(doc2URI)), original2Content);
+			FileUtils.writeStringToFile(new File(new URI(doc3URI)), original3Content);
+		}
+	}
+	
+	@Test
+	public void testDontScanUnchangedDocument() throws Exception {
+		String unchangedDocURI = directory.toPath().resolve("src/main/java/org/test/SimpleMappingClass.java").toUri().toString();
+		
+		TestFileScanListener fileScanListener = new TestFileScanListener();
+		indexer.getJavaIndexer().setFileScanListener(fileScanListener);
+
+		CompletableFuture<Void> updateFuture = indexer.updateDocuments(new String[] {unchangedDocURI}, "test triggered");
+		updateFuture.get(5, TimeUnit.SECONDS);
+
+		fileScanListener.assertScannedUris();
+		fileScanListener.assertScannedUri(unchangedDocURI, 0);
+	}
+
+	@Test
+	public void testDontScanUnchangedDocumentAmongMultipleChangedFiles() throws Exception {
+		
+		String doc1URI = directory.toPath().resolve("src/main/java/org/test/SimpleMappingClass.java").toUri().toString();
+		String original1Content = FileUtils.readFileToString(new File(new URI(doc1URI)));
+
+		String doc2URI = directory.toPath().resolve("src/main/java/org/test/MainClass.java").toUri().toString();
+
+		String doc3URI = directory.toPath().resolve("src/main/java/org/test/sub/MappingClassSubpackage.java").toUri().toString();
+		String original3Content = FileUtils.readFileToString(new File(new URI(doc3URI)));
+
+		try {
+			String new1Content = original1Content.replace("mapping1", "mapping1-CHANGED");
+			FileUtils.writeStringToFile(new File(new URI(doc1URI)), new1Content);
+			
+			String new3Content = original3Content.replace("classlevel", "classlevel-CHANGED");
+			FileUtils.writeStringToFile(new File(new URI(doc3URI)), new3Content);
+			
+			TestFileScanListener fileScanListener = new TestFileScanListener();
+			indexer.getJavaIndexer().setFileScanListener(fileScanListener);
+
+			CompletableFuture<Void> updateFuture = indexer.updateDocuments(new String[] {doc1URI, doc2URI, doc3URI}, "test triggered");
+			updateFuture.get(5, TimeUnit.SECONDS);
+	
+			// check for updated index per document
+			List<? extends SymbolInformation> symbols1 = indexer.getSymbols(doc1URI);
+			assertEquals(2, symbols1.size());
+			assertTrue(containsSymbol(symbols1, "@/mapping1-CHANGED", doc1URI, 6, 1, 6, 36));
+			assertTrue(containsSymbol(symbols1, "@/mapping2", doc1URI, 11, 1, 11, 28));
+			
+			List<? extends SymbolInformation> symbols3 = indexer.getSymbols(doc3URI);
+			assertTrue(containsSymbol(symbols3, "@/classlevel-CHANGED/mapping-subpackage", doc3URI, 7, 1, 7, 38));
+			
+			fileScanListener.assertScannedUris(doc1URI, doc3URI);
+			fileScanListener.assertScannedUri(doc1URI, 1);
+			fileScanListener.assertScannedUri(doc2URI, 0);
+			fileScanListener.assertScannedUri(doc3URI, 1);
+		}
+		finally {
+			FileUtils.writeStringToFile(new File(new URI(doc1URI)), original1Content);
 			FileUtils.writeStringToFile(new File(new URI(doc3URI)), original3Content);
 		}
 	}

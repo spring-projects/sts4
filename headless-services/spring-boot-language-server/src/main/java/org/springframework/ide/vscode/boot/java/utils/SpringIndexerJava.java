@@ -142,7 +142,9 @@ public class SpringIndexerJava implements SpringIndexer {
 	
 	@Override
 	public void updateFile(IJavaProject project, UpdatedDoc updatedDoc) throws Exception {
-		if (updatedDoc != null && shouldProcessDocument(project, updatedDoc.getDocURI())) {
+		SymbolCacheKey cacheKey = getCacheKey(project);
+		if (updatedDoc != null && shouldProcessDocument(project, updatedDoc.getDocURI())
+				&& hasNewerModificationTimestamp(cacheKey, updatedDoc.getDocURI(), updatedDoc.getLastModified())) {
 			scanFile(project, updatedDoc);
 		}
 	}
@@ -156,7 +158,9 @@ public class SpringIndexerJava implements SpringIndexer {
 	}
 	
 	private UpdatedDoc[] filterDocuments(IJavaProject project, UpdatedDoc[] updatedDocs) {
-		return Arrays.stream(updatedDocs).filter(doc -> shouldProcessDocument(project, doc.getDocURI())).toArray(UpdatedDoc[]::new);
+		SymbolCacheKey cacheKey = getCacheKey(project);
+		return Arrays.stream(updatedDocs).filter(doc -> shouldProcessDocument(project, doc.getDocURI()))
+				.filter(doc -> hasNewerModificationTimestamp(cacheKey, doc.getDocURI(), doc.getLastModified())).toArray(UpdatedDoc[]::new);
 	}
 
 	@Override
@@ -175,6 +179,11 @@ public class SpringIndexerJava implements SpringIndexer {
 				.filter(sourceFolder -> path.startsWith(sourceFolder.toPath()))
 				.findFirst()
 				.isPresent();
+	}
+	
+	private boolean hasNewerModificationTimestamp(SymbolCacheKey cacheKey, String docURI, long modifiedTimestamp) {
+		long cachedModificationTImestamp = this.cache.getModificationTimestamp(cacheKey, UriUtil.toFileString(docURI));
+		return modifiedTimestamp > cachedModificationTImestamp;
 	}
 
 	private void scanFiles(IJavaProject project, UpdatedDoc[] docs) throws Exception {

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Pivotal, Inc.
+ * Copyright (c) 2018, 2020 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -29,7 +29,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
 import org.springframework.ide.vscode.boot.bootiful.SymbolProviderTestConf;
-import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
@@ -49,7 +48,6 @@ public class SpringIndexerNonBootProjectTest {
 
 	private File directory;
 	private String projectDir;
-	private IJavaProject project;
 
 	@Before
 	public void setup() throws Exception {
@@ -59,7 +57,7 @@ public class SpringIndexerNonBootProjectTest {
 		projectDir = directory.toURI().toString();
 
 		// trigger project creation
-		project = projectFinder.find(new TextDocumentIdentifier(projectDir)).get();
+		projectFinder.find(new TextDocumentIdentifier(projectDir)).get();
 
 		CompletableFuture<Void> initProject = indexer.waitOperation();
 		initProject.get(5, TimeUnit.SECONDS);

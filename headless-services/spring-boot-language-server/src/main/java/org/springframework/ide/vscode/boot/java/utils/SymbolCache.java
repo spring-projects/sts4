@@ -35,5 +35,7 @@ public interface SymbolCache {
 		Pair<CachedSymbol[], Multimap<String, String>> r = retrieve(cacheKey, files);
 		return r!=null ? r.getLeft() : null;
 	}
+	
+	long getModificationTimestamp(SymbolCacheKey cacheKey, String docURI);
 
 }

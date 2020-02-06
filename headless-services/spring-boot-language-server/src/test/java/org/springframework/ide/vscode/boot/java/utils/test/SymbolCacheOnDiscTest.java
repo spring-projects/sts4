@@ -109,6 +109,9 @@ public class SymbolCacheOnDiscTest {
 		assertEquals(2, dependencies.keySet().size());
 		assertEquals(dependencies.get(file1.toString()), ImmutableSet.of("file1dep1"));
 		assertEquals(dependencies.get(file2.toString()), ImmutableSet.of("file2dep1", "file2dep2"));
+		
+		assertEquals(timeFile1.toMillis(), cache.getModificationTimestamp(new SymbolCacheKey("somekey", "1"), file1.toString()));
+		assertEquals(0, cache.getModificationTimestamp(new SymbolCacheKey("somekey", "1"), "random-non-existing-file"));
 	}
 
 	@Test
@@ -282,6 +285,8 @@ public class SymbolCacheOnDiscTest {
 		CachedSymbol[] cachedSymbols = cache.retrieveSymbols(new SymbolCacheKey("somekey", "1"), files);
 		assertNotNull(cachedSymbols);
 		assertEquals(2, cachedSymbols.length);
+		
+		assertEquals(timeFile1.toMillis() + 2000, cache.getModificationTimestamp(new SymbolCacheKey("somekey", "1"), file1.toString()));
 	}
 
 	@Test
@@ -356,6 +361,10 @@ public class SymbolCacheOnDiscTest {
 		assertSymbol(newEnhancedSymbol1, cachedSymbols);
 		assertSymbol(updatedEnhancedSymbol2, cachedSymbols);
 		assertSymbol(enhancedSymbol3, cachedSymbols);
+
+		assertEquals(timeFile1.toMillis() + 2000, cache.getModificationTimestamp(new SymbolCacheKey("somekey", "1"), file1.toString()));
+		assertEquals(timeFile2.toMillis() + 3000, cache.getModificationTimestamp(new SymbolCacheKey("somekey", "1"), file2.toString()));
+		assertEquals(timeFile3.toMillis(), cache.getModificationTimestamp(new SymbolCacheKey("somekey", "1"), file3.toString()));
 	}
 
 	private void assertSymbol(EnhancedSymbolInformation enhancedSymbol, CachedSymbol[] cachedSymbols) {
@@ -494,12 +503,8 @@ public class SymbolCacheOnDiscTest {
 		Files.createFile(file1);
 		Files.createFile(file2);
 
-		FileTime timeFile1 = Files.getLastModifiedTime(file1);
 		FileTime timeFile2 = Files.getLastModifiedTime(file2);
 		String[] files = {file1.toString()};
-
-		String doc1URI = UriUtil.toUri(file1.toFile()).toString();
-		String doc2URI = UriUtil.toUri(file2.toFile()).toString();
 
 		List<CachedSymbol> generatedSymbols1 = ImmutableList.of();
 		Multimap<String, String> dependencies1 = ImmutableMultimap.of(

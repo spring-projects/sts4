@@ -47,5 +47,9 @@ public class SymbolCacheVoid implements SymbolCache {
 	public void removeFile(SymbolCacheKey symbolCacheKey, String file) {
 	}
 
+	@Override
+	public long getModificationTimestamp(SymbolCacheKey cacheKey, String docURI) {
+		return 0;
+	}
 
 }
