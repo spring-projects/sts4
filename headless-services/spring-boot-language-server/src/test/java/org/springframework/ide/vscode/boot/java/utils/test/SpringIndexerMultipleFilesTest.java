@@ -15,6 +15,8 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.attribute.FileTime;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -82,7 +84,9 @@ public class SpringIndexerMultipleFilesTest {
 	@Test
 	public void testUpdateChangedSingleDocumentOnDisc() throws Exception {
 		String changedDocURI = directory.toPath().resolve("src/main/java/org/test/SimpleMappingClass.java").toUri().toString();
-		String originalContent = FileUtils.readFileToString(new File(new URI(changedDocURI)));
+		File file = new File(new URI(changedDocURI));
+		String originalContent = FileUtils.readFileToString(file);
+		FileTime modifiedTime = Files.getLastModifiedTime(file.toPath());
 
 		try {
 			// update document and update index
@@ -91,6 +95,7 @@ public class SpringIndexerMultipleFilesTest {
 			
 			String newContent = originalContent.replace("mapping1", "mapping1-CHANGED");
 			FileUtils.writeStringToFile(new File(new URI(changedDocURI)), newContent);
+			Files.setLastModifiedTime(file.toPath(), FileTime.fromMillis(modifiedTime.toMillis() + 1000));
 			
 			TestFileScanListener fileScanListener = new TestFileScanListener();
 			indexer.getJavaIndexer().setFileScanListener(fileScanListener);
@@ -116,23 +121,32 @@ public class SpringIndexerMultipleFilesTest {
 	public void testUpdateChangedMultipleDocumentsOnDisc() throws Exception {
 		
 		String doc1URI = directory.toPath().resolve("src/main/java/org/test/SimpleMappingClass.java").toUri().toString();
-		String original1Content = FileUtils.readFileToString(new File(new URI(doc1URI)));
+		File file1 = new File(new URI(doc1URI));
+		String original1Content = FileUtils.readFileToString(file1);
+		FileTime modifiedTime1 = Files.getLastModifiedTime(file1.toPath());
 
 		String doc2URI = directory.toPath().resolve("src/main/java/org/test/MainClass.java").toUri().toString();
-		String original2Content = FileUtils.readFileToString(new File(new URI(doc2URI)));
+		File file2 = new File(new URI(doc2URI));
+		String original2Content = FileUtils.readFileToString(file2);
+		FileTime modifiedTime2 = Files.getLastModifiedTime(file2.toPath());
 
 		String doc3URI = directory.toPath().resolve("src/main/java/org/test/sub/MappingClassSubpackage.java").toUri().toString();
-		String original3Content = FileUtils.readFileToString(new File(new URI(doc3URI)));
+		File file3 = new File(new URI(doc3URI));
+		String original3Content = FileUtils.readFileToString(file3);
+		FileTime modifiedTime3 = Files.getLastModifiedTime(file3.toPath());
 
 		try {
 			String new1Content = original1Content.replace("mapping1", "mapping1-CHANGED");
 			FileUtils.writeStringToFile(new File(new URI(doc1URI)), new1Content);
+			Files.setLastModifiedTime(file1.toPath(), FileTime.fromMillis(modifiedTime1.toMillis() + 1000));
 			
 			String new2Content = original2Content.replace("\"/embedded-foo-mapping\"", "\"/embedded-foo-mapping-CHANGED\"");
 			FileUtils.writeStringToFile(new File(new URI(doc2URI)), new2Content);
+			Files.setLastModifiedTime(file2.toPath(), FileTime.fromMillis(modifiedTime2.toMillis() + 1000));
 			
 			String new3Content = original3Content.replace("classlevel", "classlevel-CHANGED");
 			FileUtils.writeStringToFile(new File(new URI(doc3URI)), new3Content);
+			Files.setLastModifiedTime(file3.toPath(), FileTime.fromMillis(modifiedTime3.toMillis() + 1000));
 			
 			CompletableFuture<Void> updateFuture = indexer.updateDocuments(new String[] {doc1URI, doc2URI, doc3URI}, "test triggered");
 			updateFuture.get(5, TimeUnit.SECONDS);
@@ -179,19 +193,25 @@ public class SpringIndexerMultipleFilesTest {
 	public void testDontScanUnchangedDocumentAmongMultipleChangedFiles() throws Exception {
 		
 		String doc1URI = directory.toPath().resolve("src/main/java/org/test/SimpleMappingClass.java").toUri().toString();
-		String original1Content = FileUtils.readFileToString(new File(new URI(doc1URI)));
+		File file1 = new File(new URI(doc1URI));
+		String original1Content = FileUtils.readFileToString(file1);
+		FileTime modifiedTime1 = Files.getLastModifiedTime(file1.toPath());
 
 		String doc2URI = directory.toPath().resolve("src/main/java/org/test/MainClass.java").toUri().toString();
 
 		String doc3URI = directory.toPath().resolve("src/main/java/org/test/sub/MappingClassSubpackage.java").toUri().toString();
-		String original3Content = FileUtils.readFileToString(new File(new URI(doc3URI)));
+		File file3 = new File(new URI(doc3URI));
+		String original3Content = FileUtils.readFileToString(file3);
+		FileTime modifiedTime3 = Files.getLastModifiedTime(file3.toPath());
 
 		try {
 			String new1Content = original1Content.replace("mapping1", "mapping1-CHANGED");
-			FileUtils.writeStringToFile(new File(new URI(doc1URI)), new1Content);
+			FileUtils.writeStringToFile(file1, new1Content);
+			Files.setLastModifiedTime(file1.toPath(), FileTime.fromMillis(modifiedTime1.toMillis() + 1000));
 			
 			String new3Content = original3Content.replace("classlevel", "classlevel-CHANGED");
 			FileUtils.writeStringToFile(new File(new URI(doc3URI)), new3Content);
+			Files.setLastModifiedTime(file3.toPath(), FileTime.fromMillis(modifiedTime3.toMillis() + 1000));
 			
 			TestFileScanListener fileScanListener = new TestFileScanListener();
 			indexer.getJavaIndexer().setFileScanListener(fileScanListener);
@@ -217,7 +237,7 @@ public class SpringIndexerMultipleFilesTest {
 			fileScanListener.assertScannedUri(doc3URI, 1);
 		}
 		finally {
-			FileUtils.writeStringToFile(new File(new URI(doc1URI)), original1Content);
+			FileUtils.writeStringToFile(file1, original1Content);
 			FileUtils.writeStringToFile(new File(new URI(doc3URI)), original3Content);
 		}
 	}
