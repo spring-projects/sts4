@@ -23,8 +23,8 @@ public interface SpringIndexer {
 	void initializeProject(IJavaProject project) throws Exception;
 	void removeProject(IJavaProject project) throws Exception;
 
-	void updateFile(IJavaProject project, UpdatedDoc updatedDoc) throws Exception;
-	void updateFiles(IJavaProject project, UpdatedDoc[] updatedDocs) throws Exception;
+	void updateFile(IJavaProject project, DocumentDescriptor updatedDoc, String content) throws Exception;
+	void updateFiles(IJavaProject project, DocumentDescriptor[] updatedDocs) throws Exception;
 	void removeFiles(IJavaProject project, String[] docURIs) throws Exception;
 
 }

@@ -139,14 +139,14 @@ public class SpringIndexerXML implements SpringIndexer {
 	}
 
 	@Override
-	public void updateFile(IJavaProject project, UpdatedDoc updatedDoc) throws Exception {
+	public void updateFile(IJavaProject project, DocumentDescriptor updatedDoc, String content) throws Exception {
 
 		this.symbolHandler.removeSymbols(project, updatedDoc.getDocURI());
 
 		List<CachedSymbol> generatedSymbols = new ArrayList<CachedSymbol>();
 		String docURI = updatedDoc.getDocURI();
 
-		scanFile(project, updatedDoc.getContent().get(), docURI, updatedDoc.getLastModified(), generatedSymbols);
+		scanFile(project, content, docURI, updatedDoc.getLastModified(), generatedSymbols);
 
 		SymbolCacheKey cacheKey = getCacheKey(project);
 		String file = new File(new URI(docURI)).getAbsolutePath();
@@ -158,16 +158,18 @@ public class SpringIndexerXML implements SpringIndexer {
 	}
 
 	@Override
-	public void updateFiles(IJavaProject project, UpdatedDoc[] updatedDocs) throws Exception {
+	public void updateFiles(IJavaProject project, DocumentDescriptor[] updatedDocs) throws Exception {
 
 		List<CachedSymbol> generatedSymbols = new ArrayList<CachedSymbol>();
 		
-		for (UpdatedDoc updatedDoc : updatedDocs) {
+		for (DocumentDescriptor updatedDoc : updatedDocs) {
 			String docURI = updatedDoc.getDocURI();
 			
 			this.symbolHandler.removeSymbols(project, docURI);
 
-			scanFile(project, updatedDoc.getContent().get(), docURI, updatedDoc.getLastModified(), generatedSymbols);
+			Path path = Paths.get(new URI(docURI));
+			String content = new String(Files.readAllBytes(path));
+			scanFile(project, content, docURI, updatedDoc.getLastModified(), generatedSymbols);
 	
 			SymbolCacheKey cacheKey = getCacheKey(project);
 			String file = new File(new URI(docURI)).getAbsolutePath();

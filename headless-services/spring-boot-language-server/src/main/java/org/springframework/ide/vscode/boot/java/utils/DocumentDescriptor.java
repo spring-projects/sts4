@@ -10,19 +10,15 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.utils;
 
-import java.util.function.Supplier;
-
-public class UpdatedDoc {
+public class DocumentDescriptor {
 	
 	private final String docURI;
 	private final long lastModified;
-	private final Supplier<String> content;
 	
-	public UpdatedDoc(String docURI, long lastModified, Supplier<String> content) {
+	public DocumentDescriptor(String docURI, long lastModified) {
 		super();
 		this.docURI = docURI;
 		this.lastModified = lastModified;
-		this.content = content;
 	}
 	
 	public String getDocURI() {
@@ -33,8 +29,4 @@ public class UpdatedDoc {
 		return lastModified;
 	}
 	
-	public Supplier<String> getContent() {
-		return content;
-	}
-
 }

@@ -11,7 +11,6 @@
 package org.springframework.ide.vscode.boot.app;
 
 import java.io.File;
-import java.io.IOException;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
@@ -30,11 +29,9 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.function.Predicate;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.apache.commons.io.FileUtils;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.slf4j.Logger;
@@ -46,6 +43,7 @@ import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchyA
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
+import org.springframework.ide.vscode.boot.java.utils.DocumentDescriptor;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexer;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJava;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexerXML;
@@ -54,7 +52,6 @@ import org.springframework.ide.vscode.boot.java.utils.SpringIndexerXMLNamespaceH
 import org.springframework.ide.vscode.boot.java.utils.SymbolCache;
 import org.springframework.ide.vscode.boot.java.utils.SymbolHandler;
 import org.springframework.ide.vscode.boot.java.utils.SymbolIndexConfig;
-import org.springframework.ide.vscode.boot.java.utils.UpdatedDoc;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
@@ -331,8 +328,8 @@ public class SpringSymbolIndex implements InitializingBean {
 
 					if (maybeProject.isPresent()) {
 						try {
-							UpdatedDoc newDoc = createUpdatedDoc(docURI, null);
-							futures.add(updateItems(maybeProject.get(), new UpdatedDoc[] {newDoc}, indexer));
+							DocumentDescriptor newDoc = createUpdatedDoc(docURI);
+							futures.add(updateItems(maybeProject.get(), new DocumentDescriptor[] {newDoc}, indexer));
 						}
 						catch (Exception e) {
 							log.error("", e);
@@ -359,7 +356,7 @@ public class SpringSymbolIndex implements InitializingBean {
 					List<String> docs = projectMapping.get(project);
 					
 					try {
-						UpdatedDoc[] updatedDocs = docs.stream().map(doc -> createUpdatedDoc(doc, null)).toArray(UpdatedDoc[]::new);
+						DocumentDescriptor[] updatedDocs = docs.stream().map(doc -> createUpdatedDoc(doc)).toArray(DocumentDescriptor[]::new);
 						futures.add(updateItems(project, updatedDocs, indexer));
 					}
 					catch (Exception e) {
@@ -387,8 +384,8 @@ public class SpringSymbolIndex implements InitializingBean {
 					Optional<IJavaProject> maybeProject = projectFinder().find(new TextDocumentIdentifier(docURI));
 					if (maybeProject.isPresent()) {
 						try {
-							UpdatedDoc updatedDoc = createUpdatedDoc(docURI, content);
-							futures.add(updateItem(maybeProject.get(), updatedDoc, indexer));
+							DocumentDescriptor updatedDoc = createUpdatedDoc(docURI);
+							futures.add(updateItem(maybeProject.get(), updatedDoc, content, indexer));
 						}
 						catch (Exception e) {
 							log.error("{}", e);
@@ -417,7 +414,7 @@ public class SpringSymbolIndex implements InitializingBean {
 					List<String> docs = projectMapping.get(project);
 					
 					try {
-						UpdatedDoc[] updatedDocs = docs.stream().map(doc -> createUpdatedDoc(doc, null)).toArray(UpdatedDoc[]::new);
+						DocumentDescriptor[] updatedDocs = docs.stream().map(doc -> createUpdatedDoc(doc)).toArray(DocumentDescriptor[]::new);
 						futures.add(updateItems(project, updatedDocs, indexer));
 					}
 					catch (Exception e) {
@@ -449,32 +446,16 @@ public class SpringSymbolIndex implements InitializingBean {
 		return docsToProject.keySet().stream().collect(Collectors.groupingBy(docURI -> docsToProject.get(docURI)));
 	}
 	
-	private UpdatedDoc createUpdatedDoc(String docURI, String content) throws RuntimeException {
+	private DocumentDescriptor createUpdatedDoc(String docURI) throws RuntimeException {
 		try {
 			File file = new File(new URI(docURI));
 			long lastModified = file.lastModified();
-			Supplier<String> contentSupplier = createContentSupplier(file, content);
-			return new UpdatedDoc(docURI, lastModified, contentSupplier);
+			return new DocumentDescriptor(docURI, lastModified);
 		} catch (URISyntaxException e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	private Supplier<String> createContentSupplier(File file, String content) {
-		return () -> {
-			if (content == null) {
-				try {
-					return FileUtils.readFileToString(file);
-				} catch (IOException e) {
-					log.error("{}", e);
-					return "";
-				}
-			} else {
-				return content;
-			}
-		};
-	}
-	
 	public CompletableFuture<Void> deleteDocument(String deletedDocURI) {
 		synchronized(this) {
 			try {
@@ -665,29 +646,29 @@ public class SpringSymbolIndex implements InitializingBean {
 		}
 	}
 
-	CompletableFuture<Void> updateItem(IJavaProject project, UpdatedDoc updatedDoc, SpringIndexer indexer) {
+	CompletableFuture<Void> updateItem(IJavaProject project, DocumentDescriptor updatedDoc, String content, SpringIndexer indexer) {
 		log.debug("scheduling updateItem {}. {},  {}, {}", project.getElementName(), updatedDoc.getDocURI(), updatedDoc.getLastModified(), indexer);
 
 		return CompletableFuture.runAsync(() -> {
 			
 			try {
 				log.debug("updateItem {}. {},  {}, {}", project.getElementName(), updatedDoc.getDocURI(), updatedDoc.getLastModified(), indexer);
-				indexer.updateFile(project, updatedDoc);
+				indexer.updateFile(project, updatedDoc, content);
 			} catch (Exception e) {
 				log.error("{}", e);
 			}
 		}, this.updateQueue);
 	}
 
-	CompletableFuture<Void> updateItems(IJavaProject project, UpdatedDoc[] updatedDoc, SpringIndexer indexer) {
-		for (UpdatedDoc doc : updatedDoc) {
+	CompletableFuture<Void> updateItems(IJavaProject project, DocumentDescriptor[] updatedDoc, SpringIndexer indexer) {
+		for (DocumentDescriptor doc : updatedDoc) {
 			log.debug("scheduling updateItem {}. {},  {}, {}", project.getElementName(), doc.getDocURI(), doc.getLastModified(), indexer);
 		}
 
 		return CompletableFuture.runAsync(() -> {
 			
 			try {
-				for (UpdatedDoc doc : updatedDoc) {
+				for (DocumentDescriptor doc : updatedDoc) {
 					log.debug("updateItem {}. {},  {}, {}", project.getElementName(), doc.getDocURI(), doc.getLastModified(), indexer);
 				}
 
