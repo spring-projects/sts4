@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2019 Pivotal, Inc.
+ * Copyright (c) 2018, 2020 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -24,6 +24,7 @@ import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.RGB;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.internal.editors.text.EditorsPlugin;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
@@ -87,8 +88,11 @@ public class LanguageServerCommonsActivator extends AbstractUIPlugin {
 	private void updateMarkerAnnotationPreferences() {
 		RGB themeRgb = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry()
 				.getRGB(PreferenceConstants.HIGHLIGHT_RANGE_COLOR_THEME);
-		PreferenceConverter.setValue(EditorsPlugin.getDefault().getPreferenceStore(),
-				bootHintAnnotationPreference.getColorPreferenceKey(), themeRgb);
+		Display display = PlatformUI.getWorkbench().getDisplay();
+		if (!display.isDisposed()) {
+			display.asyncExec(() -> PreferenceConverter.setValue(EditorsPlugin.getDefault().getPreferenceStore(),
+					bootHintAnnotationPreference.getColorPreferenceKey(), themeRgb));
+		}
 	}
 
 	public Color getBootHighlightRangeColor() {
