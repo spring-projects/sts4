@@ -36,8 +36,9 @@ public class SpringIndexerJavaContext {
 	private final List<CachedSymbol> generatedSymbols;
 	private final SCAN_PASS pass;
 	private final List<String> nextPassFiles;
+	
 	private final Set<String> dependencies = new HashSet<>();
-	private final Set<String> scannedTypes;
+	private final Set<String> scannedTypes = new HashSet<>();
 
 	public SpringIndexerJavaContext(
 			IJavaProject project, 
@@ -49,8 +50,7 @@ public class SpringIndexerJavaContext {
 			String content, 
 			List<CachedSymbol> generatedSymbols, 
 			SCAN_PASS pass,
-			List<String> nextPassFiles, 
-			Set<String> scannedTypes
+			List<String> nextPassFiles
 	) {
 		super();
 		this.project = project;
@@ -63,7 +63,6 @@ public class SpringIndexerJavaContext {
 		this.generatedSymbols = generatedSymbols;
 		this.pass = pass;
 		this.nextPassFiles = nextPassFiles;
-		this.scannedTypes = scannedTypes;
 	}
 
 	public IJavaProject getProject() {
@@ -111,7 +110,13 @@ public class SpringIndexerJavaContext {
 	}
 	
 	public void addDependency(ITypeBinding dependsOn) {
-		dependencies.add(dependsOn.getKey());
+		if (dependsOn != null && dependsOn.isFromSource()) {
+			String type = dependsOn.getKey();
+		
+			if (type != null && !scannedTypes.contains(type)) {
+				dependencies.add(type);
+			}
+		}
 	}
 
 	public Set<String> getScannedTypes() {
@@ -119,8 +124,10 @@ public class SpringIndexerJavaContext {
 	}
 	
 	public void addScannedType(ITypeBinding scannedType) {
-		if (this.scannedTypes != null && scannedType != null) {
-			scannedTypes.add(scannedType.getKey());
+		if (scannedType != null) {
+			String type = scannedType.getKey();
+			scannedTypes.add(type);
+			dependencies.remove(type);
 		}
 	}
 }

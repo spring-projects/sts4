@@ -207,9 +207,8 @@ public class SpringIndexerJava implements SpringIndexer {
 			List<CachedSymbol> generatedSymbols = new ArrayList<CachedSymbol>();
 			AtomicReference<TextDocument> docRef = new AtomicReference<>();
 			String file = UriUtil.toFileString(docURI);
-			Set<String> changedTypes = new HashSet<>();
 			SpringIndexerJavaContext context = new SpringIndexerJavaContext(project, cu, docURI, file,
-					lastModified, docRef, content, generatedSymbols, SCAN_PASS.ONE, new ArrayList<>(), changedTypes);
+					lastModified, docRef, content, generatedSymbols, SCAN_PASS.ONE, new ArrayList<>());
 
 			scanAST(context);
 
@@ -223,7 +222,7 @@ public class SpringIndexerJava implements SpringIndexer {
 			Set<String> scannedFiles = new HashSet<>();
 			scannedFiles.add(file);
 			fileScannedEvent(file);
-			scanAffectedFiles(project, changedTypes, scannedFiles);
+			scanAffectedFiles(project, context.getScannedTypes(), scannedFiles);
 		}
 	}
 
@@ -261,12 +260,13 @@ public class SpringIndexerJava implements SpringIndexer {
 				AtomicReference<TextDocument> docRef = new AtomicReference<>();
 
 				SpringIndexerJavaContext context = new SpringIndexerJavaContext(project, cu, docURI, sourceFilePath,
-						lastModified, docRef, null, generatedSymbols, SCAN_PASS.ONE, new ArrayList<>(), scannedTypes);
+						lastModified, docRef, null, generatedSymbols, SCAN_PASS.ONE, new ArrayList<>());
 				
-				dependencies.putAll(sourceFilePath, context.getDependencies());
-
 				scanAST(context);
 				
+				dependencies.putAll(sourceFilePath, context.getDependencies());
+				scannedTypes.addAll(context.getScannedTypes());
+
 				fileScannedEvent(sourceFilePath);
 			}
 		};
@@ -366,7 +366,7 @@ public class SpringIndexerJava implements SpringIndexer {
 				AtomicReference<TextDocument> docRef = new AtomicReference<>();
 
 				SpringIndexerJavaContext context = new SpringIndexerJavaContext(project, cu, docURI, sourceFilePath,
-						lastModified, docRef, null, generatedSymbols, pass, nextPassFiles, null);
+						lastModified, docRef, null, generatedSymbols, pass, nextPassFiles);
 
 				scanAST(context);
 			}
@@ -439,6 +439,7 @@ public class SpringIndexerJava implements SpringIndexer {
 				return super.visit(node);
 			}
 		});
+		
 		dependencyTracker.update(context.getFile(), context.getDependencies());;
 	}
 

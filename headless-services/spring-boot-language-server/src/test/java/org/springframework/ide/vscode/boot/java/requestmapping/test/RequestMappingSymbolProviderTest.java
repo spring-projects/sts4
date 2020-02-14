@@ -104,6 +104,31 @@ public class RequestMappingSymbolProviderTest {
 	}
 	
 	@Test
+	public void testUpdateDocumentWithConstantFromDifferentClass() throws Exception {
+		String docUri = directory.toPath().resolve("src/main/java/org/test/SimpleMappingClassWithConstantInDifferentClass.java").toUri().toString();
+		String constantsUri = directory.toPath().resolve("src/main/java/org/test/Constants.java").toUri().toString();
+		List<? extends SymbolInformation> symbols = indexer.getSymbols(docUri);
+		assertEquals(1, symbols.size());
+		assertTrue(containsSymbol(symbols, "@/path/from/constant", docUri, 6, 1, 6, 48));
+
+		//Verify whether dependency tracker logics works properly for this example.
+		SpringIndexerJavaDependencyTracker dt = indexer.getJavaIndexer().getDependencyTracker();
+		assertEquals(ImmutableSet.of("Lorg/test/Constants;"), dt.getAllDependencies().get(UriUtil.toFileString(docUri)));
+		
+		TestFileScanListener fileScanListener = new TestFileScanListener();
+		indexer.getJavaIndexer().setFileScanListener(fileScanListener);
+
+		CompletableFuture<Void> updateFuture = indexer.updateDocument(docUri, FileUtils.readFileToString(UriUtil.toFile(docUri)), "test triggered");
+		updateFuture.get(5, TimeUnit.SECONDS);
+		
+		assertEquals(ImmutableSet.of("Lorg/test/Constants;"), dt.getAllDependencies().get(UriUtil.toFileString(docUri)));
+
+		fileScanListener.assertScannedUris(docUri);
+		fileScanListener.assertScannedUri(constantsUri, 0);
+		fileScanListener.assertScannedUri(docUri, 1);
+	}
+	
+	@Test
 	public void testCyclicalRequestMappingDependency() throws Exception {
 		//Cyclical dependency:
 		//file a => file b => file a
@@ -138,6 +163,20 @@ public class RequestMappingSymbolProviderTest {
 		List<? extends SymbolInformation> symbols = indexer.getSymbols(docUri);
 		assertEquals(1, symbols.size());
 		assertTrue(containsSymbol(symbols, "@/request/mapping/path/from/same/class/constant", docUri, 8, 1, 8, 52));
+		
+		SpringIndexerJavaDependencyTracker dt = indexer.getJavaIndexer().getDependencyTracker();
+		assertEquals(ImmutableSet.of(), dt.getAllDependencies().get(UriUtil.toFileString(docUri)));
+	}
+
+	@Test
+	public void testSimpleRequestMappingSymbolFromConstantInBinaryType() throws Exception {
+		String docUri = directory.toPath().resolve("src/main/java/org/test/SimpleMappingClassWithConstantFromBinaryType.java").toUri().toString();
+		List<? extends SymbolInformation> symbols = indexer.getSymbols(docUri);
+		assertEquals(1, symbols.size());
+		assertTrue(containsSymbol(symbols, "@/(inferred)", docUri, 7, 1, 7, 53));
+		
+		SpringIndexerJavaDependencyTracker dt = indexer.getJavaIndexer().getDependencyTracker();
+		assertEquals(ImmutableSet.of(), dt.getAllDependencies().get(UriUtil.toFileString(docUri)));
 	}
 
 	@Test
