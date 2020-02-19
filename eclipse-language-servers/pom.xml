@@ -229,7 +229,7 @@
 				<repository>
 					<id>orbit</id>
 					<layout>p2</layout>
-					<url>https://download.eclipse.org/tools/orbit/downloads/drops/R20191126223242/repository</url>
+					<url>https://download.eclipse.org/tools/orbit/downloads/drops/S20200128200239/repository</url>
 				</repository>
 <!--				<repository>
 					<id>e-i-commons</id>
