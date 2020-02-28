@@ -122,7 +122,6 @@
 		<signing.skip>true</signing.skip>
 		<signing.alias>pivotal</signing.alias>
 		<signing.keystore>~/.keytool/pivotal.jks</signing.keystore>
-		<surefire.useFile>false</surefire.useFile>
 	</properties>
 
 	<build>

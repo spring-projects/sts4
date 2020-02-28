@@ -195,6 +195,7 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
+  					<useFile>false</useFile>
 					<trimStackTrace>false</trimStackTrace>
 					<excludes>
 						<exclude>test-projects/**</exclude>
