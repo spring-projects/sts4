@@ -24,7 +24,6 @@ RUN yarn --cache-folder ./ycache && rm -rf ./ycache && \
     yarn theia download:plugins
 
 ADD plugins /theia-app/plugins
-RUN rm /theia-app/plugins/README.txt 
 
 ENV SHELL=/bin/bash \
     THEIA_DEFAULT_PLUGINS=local-dir:/theia-app/plugins
