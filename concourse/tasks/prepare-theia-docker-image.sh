@@ -10,9 +10,6 @@ for i in ${workdir}/*-vsix-*/*.vsix ; do
     cp "$i" ${workdir}/output/plugins/
 done
 
-#Remove readme text file because theai doesn't like it?
-rm  "${workdir}/output/plugins/*.txt"
-
 # Download vscode-java 0.53.1. Higher versions require vscode-client 0.40 or higher not available in Theia
 #vscode_java_url="https://marketplace.visualstudio.com/_apis/public/gallery/publishers/redhat/vsextensions/java/0.53.1/vspackage"
 #curl ${vscode_java_url} > ${workdir}/output/plugins/vscode-java.vsix
