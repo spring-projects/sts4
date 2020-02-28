@@ -24,11 +24,11 @@ WORKDIR /theia-app
 ENV SHELL=/bin/bash \
     THEIA_DEFAULT_PLUGINS=local-dir:/theia-app/plugins
 
-ADD plugins /theia-app/plugins
-
 RUN yarn --cache-folder ./ycache && rm -rf ./ycache && \
     NODE_OPTIONS="--max_old_space_size=8192" yarn theia build ; \
     yarn theia download:plugins
+
+ADD plugins/*.vsix /theia-app/plugins/
 
 ENTRYPOINT [ "yarn",  "theia", "start", "--hostname=0.0.0.0", "/home/project" ]
 EXPOSE 3000 
