@@ -23,8 +23,8 @@ RUN yarn --cache-folder ./ycache && rm -rf ./ycache && \
     NODE_OPTIONS="--max_old_space_size=8192" yarn theia build ; \
     yarn theia download:plugins
 
-#ADD plugins /theia-app/plugins
-#RUN rm /theia-app/plugins/README.txt 
+ADD plugins /theia-app/plugins
+RUN rm /theia-app/plugins/README.txt 
 
 ENV SHELL=/bin/bash \
     THEIA_DEFAULT_PLUGINS=local-dir:/theia-app/plugins
