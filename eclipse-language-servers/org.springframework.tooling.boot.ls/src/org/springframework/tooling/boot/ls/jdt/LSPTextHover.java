@@ -234,7 +234,7 @@ public class LSPTextHover implements ITextHover, ITextHoverExtension {
 					.map(languageServer -> {
 						try {
 								return languageServer.getTextDocumentService()
-										.hover(LSPEclipseUtils.toTextDocumentPosistionParams(offset, document)).get();
+										.hover(LSPEclipseUtils.toHoverParams(offset, document)).get();
 						} catch (ExecutionException | BadLocationException e) {
 							LanguageServerPlugin.logError(e);
 							return null;
