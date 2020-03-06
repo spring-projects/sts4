@@ -26,6 +26,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.function.Function;
 
+import org.apache.commons.lang3.StringUtils;
 import org.eclipse.lsp4j.jsonrpc.Launcher;
 import org.eclipse.lsp4j.jsonrpc.MessageConsumer;
 import org.eclipse.lsp4j.services.LanguageClient;
@@ -161,9 +162,27 @@ public class LanguageServerRunner implements CommandLineRunner {
 		int serverPort = properties.getStandalonePort();
 		log.info("Starting LS as standlone server port = {}", serverPort);
 
-		Function<MessageConsumer, MessageConsumer> wrapper = consumer -> {
-			MessageConsumer result = consumer;
-			return result;
+//		Function<MessageConsumer, MessageConsumer> wrapper = consumer -> {
+//			MessageConsumer result = consumer;
+//			return result;
+//		};
+		
+		Function<MessageConsumer, MessageConsumer> wrapper = (MessageConsumer consumer) -> {
+			return (msg) -> {
+				try {
+					long beforeConsumingMessage = System.currentTimeMillis();
+					
+					consumer.consume(msg);
+					
+					long afterConsumingMessage = System.currentTimeMillis();
+					String shortMessage = StringUtils.left(msg.toString(), 140);
+					log.info("working on message took " + (afterConsumingMessage - beforeConsumingMessage) + "ms - message content: " + shortMessage);
+
+				} catch (UnsupportedOperationException e) {
+					//log a warning and ignore. We are getting some messages from vsCode the server doesn't know about
+					log.warn("Unsupported message was ignored!", e);
+				}
+			};
 		};
 
 		Launcher<STS4LanguageClient> launcher = createSocketLauncher(languageServer, STS4LanguageClient.class,
@@ -221,7 +240,14 @@ public class LanguageServerRunner implements CommandLineRunner {
 		Function<MessageConsumer, MessageConsumer> wrapper = (MessageConsumer consumer) -> {
 			return (msg) -> {
 				try {
+					long beforeConsumingMessage = System.currentTimeMillis();
+					
 					consumer.consume(msg);
+					
+					long afterConsumingMessage = System.currentTimeMillis();
+					String shortMessage = StringUtils.left(msg.toString(), 140);
+					log.info("working on message took " + (afterConsumingMessage - beforeConsumingMessage) + "ms - message content: " + shortMessage);
+
 				} catch (UnsupportedOperationException e) {
 					//log a warning and ignore. We are getting some messages from vsCode the server doesn't know about
 					log.warn("Unsupported message was ignored!", e);
