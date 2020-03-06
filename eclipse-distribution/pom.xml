@@ -193,6 +193,11 @@
 					<url>https://download.eclipse.org/modeling/tmf/xtext/updates/milestones/</url>
 				</repository> -->
 				<repository>
+					<id>mylyn-markdown</id>
+					<layout>p2</layout>
+					<url>https://download.eclipse.org/mylyn/docs/releases/3.0/</url>
+				</repository>
+				<repository>
 					<id>lsp4e</id>
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/lsp4e/snapshots/</url>
@@ -281,6 +286,11 @@
 					<url>https://download.eclipse.org/modeling/tmf/xtext/updates/milestones/</url>
 				</repository> -->
 				<repository>
+					<id>mylyn-markdown</id>
+					<layout>p2</layout>
+					<url>https://download.eclipse.org/mylyn/docs/releases/3.0/</url>
+				</repository>
+				<repository>
 					<id>lsp4e</id>
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/lsp4e/snapshots/</url>
@@ -368,6 +378,11 @@
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/modeling/tmf/xtext/updates/milestones/</url>
 				</repository> -->
+				<repository>
+					<id>mylyn-markdown</id>
+					<layout>p2</layout>
+					<url>https://download.eclipse.org/mylyn/docs/releases/3.0/</url>
+				</repository>
 				<repository>
 					<id>lsp4e</id>
 					<layout>p2</layout>
