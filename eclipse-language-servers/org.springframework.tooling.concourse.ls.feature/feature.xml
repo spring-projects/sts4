@@ -2,7 +2,7 @@
 <feature
 	id="org.springframework.tooling.concourse.ls.feature"
 	label="Concourse Pipeline Language Server Feature"
-	version="4.5.2.qualifier"
+	version="4.6.0.qualifier"
 	provider-name="Pivotal, Inc.">
 
     <description>
