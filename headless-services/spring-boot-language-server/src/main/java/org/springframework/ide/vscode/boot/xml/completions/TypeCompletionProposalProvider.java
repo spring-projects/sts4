@@ -65,9 +65,14 @@ public class TypeCompletionProposalProvider implements XMLCompletionProvider {
 		int tokenOffset = scanner.getTokenOffset();
 		int tokenEnd = scanner.getTokenEnd();
 		String tokenText = scanner.getTokenText();
+		
+		log.info("Stating calculating completions for {} at offset {}.", doc.getId().getUri(), offset);
+		log.info("Allowed proposals packagesAllowed={} classesAllowed={} interfacesAllowed={} enumsAllowed={}", packagesAllowed, classesAllowed, interfacesAllowed, enumsAllowed);
 
 		Optional<IJavaProject> foundProject = this.projectFinder.find(doc.getId());
 		if (foundProject.isPresent()) {
+			log.info("Project found is {}", foundProject.get().getElementName());
+
 			IJavaProject project = foundProject.get();
 
 			String prefix = tokenText.substring(0, offset - tokenOffset);
@@ -77,6 +82,8 @@ public class TypeCompletionProposalProvider implements XMLCompletionProvider {
 
 //			Flux<Tuple2<IType, Double>> types = project.getIndex().fuzzySearchTypes(prefix, true, true);
 //			Flux<Tuple2<IType, Double>> types = project.getIndex().camelcaseSearchTypes(prefix, true, true);
+			
+			log.info("Prefix is '{}'", prefix);
 			
 			JavaCodeCompleteParams params = new JavaCodeCompleteParams(project.getLocationUri().toString(), prefix, true, true);
 			CompletableFuture<List<JavaCodeCompleteData>> completions = server.getClient().javaCodeComplete(params);

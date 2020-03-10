@@ -23,6 +23,8 @@ import org.eclipse.lsp4j.CompletionItemKind;
 import org.eclipse.lsp4xml.dom.DOMAttr;
 import org.eclipse.lsp4xml.dom.DOMNode;
 import org.eclipse.lsp4xml.dom.parser.Scanner;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.xml.XMLCompletionProvider;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.IMethod;
@@ -37,6 +39,8 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
  * @author Martin Lippert
  */
 public class PropertyNameCompletionProposalProvider implements XMLCompletionProvider {
+	
+	private static final Logger log = LoggerFactory.getLogger(PropertyNameCompletionProposalProvider.class);
 
 	private final JavaProjectFinder projectFinder;
 
@@ -51,18 +55,27 @@ public class PropertyNameCompletionProposalProvider implements XMLCompletionProv
 		int tokenOffset = scanner.getTokenOffset();
 		int tokenEnd = scanner.getTokenEnd();
 		String tokenText = scanner.getTokenText();
+		
+		log.info("Stating calculating completions for {} at offset {}.", doc.getId().getUri(), offset);
+
 
 		Optional<IJavaProject> foundProject = this.projectFinder.find(doc.getId());
 		if (foundProject.isPresent()) {
 			IJavaProject project = foundProject.get();
+			log.info("Project found is {}", project.getElementName());
 
 			String prefix = tokenText.substring(0, offset - tokenOffset);
 			if (prefix.startsWith("\"")) {
 				prefix = prefix.substring(1);
 			}
 
+			log.info("Prefix is '{}'", prefix);
+
 			String beanClass = identifyBeanClass(node);
 			if (beanClass != null && beanClass.length() > 0) {
+				
+				log.info("Bean class '{}'", beanClass);
+
 				final String searchPrefix = prefix;
 				return propertyNameCandidateMethods(project, beanClass)
 					.filter(method -> getPropertyName(method).startsWith(searchPrefix))
