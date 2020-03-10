@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2019 Pivotal, Inc.
+ * Copyright (c) 2018, 2020 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -59,6 +59,17 @@ public class JdtLsProjectCache implements InitializableJavaProjectsService {
 	public JdtLsProjectCache(SimpleLanguageServer server, boolean isJandexIndex) {
 		this.server = server;
 		this.IS_JANDEX_INDEX = isJandexIndex;
+		this.server
+			.onInitialized(initialize())
+			.doOnSuccess((disposable) -> {
+				server.onShutdown(() -> {
+					disposable.dispose();
+				});
+			})
+			.doOnError(error -> {
+				log.error("JDT-based JavaProject service not available!", error);
+			})
+			.toFuture();
 	}
 
 	private FileObserver getFileObserver() {

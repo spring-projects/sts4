@@ -17,7 +17,6 @@ import java.util.stream.Collectors;
 import org.eclipse.lsp4j.LocationLink;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
-import org.gradle.internal.impldep.com.google.common.collect.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +40,8 @@ import org.springframework.ide.vscode.java.properties.parser.PropertiesAst.Key;
 import org.springframework.ide.vscode.java.properties.parser.PropertiesAst.Node;
 import org.springframework.ide.vscode.java.properties.parser.PropertiesAst.Value;
 import org.springframework.stereotype.Component;
+
+import com.google.common.collect.ImmutableList;
 
 @Component
 public class PropertiesJavaDefinitionHandler implements DefinitionHandler, LanguageSpecific {

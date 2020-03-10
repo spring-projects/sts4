@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2019 Pivotal, Inc.
+ * Copyright (c) 2017, 2020 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -12,16 +12,33 @@ package org.springframework.ide.vscode.project.harness;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 
+import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.junit.Assert;
 import org.springframework.ide.vscode.boot.app.BootLanguageServerParams;
 import org.springframework.ide.vscode.boot.editor.harness.PropertyIndexHarness;
+import org.springframework.ide.vscode.boot.java.links.SourceLinks;
+import org.springframework.ide.vscode.boot.metadata.DefaultSpringPropertyIndexProvider;
+import org.springframework.ide.vscode.boot.metadata.ValueProviderRegistry;
+import org.springframework.ide.vscode.boot.metadata.types.TypeUtil;
+import org.springframework.ide.vscode.commons.gradle.GradleCore;
+import org.springframework.ide.vscode.commons.gradle.GradleProjectCache;
+import org.springframework.ide.vscode.commons.gradle.GradleProjectFinder;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
+import org.springframework.ide.vscode.commons.javadoc.JavaDocProviders;
+import org.springframework.ide.vscode.commons.languageserver.java.CompositeJavaProjectFinder;
+import org.springframework.ide.vscode.commons.languageserver.java.CompositeProjectOvserver;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
+import org.springframework.ide.vscode.commons.maven.MavenCore;
+import org.springframework.ide.vscode.commons.maven.java.MavenProjectCache;
+import org.springframework.ide.vscode.commons.maven.java.MavenProjectFinder;
 import org.springframework.ide.vscode.commons.protocol.java.Classpath;
 import org.springframework.ide.vscode.commons.protocol.java.Classpath.CPE;
+import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
 
@@ -144,5 +161,30 @@ public class BootLanguageServerHarness extends LanguageServerHarness {
 		}
 		return null;
 	}
+	
+	public static BootLanguageServerParams createTestDefault(SimpleLanguageServer server, ValueProviderRegistry valueProviders) {
+		// Initialize project finders, project caches and project observers
+		CompositeJavaProjectFinder javaProjectFinder = new CompositeJavaProjectFinder();
+		MavenProjectCache mavenProjectCache = new MavenProjectCache(server, MavenCore.getDefault(), false, null, (uri, cpe) -> JavaDocProviders.createFor(cpe));
+		mavenProjectCache.setAlwaysFireEventOnFileChanged(true);
+		javaProjectFinder.addJavaProjectFinder(new MavenProjectFinder(mavenProjectCache));
+
+		GradleProjectCache gradleProjectCache = new GradleProjectCache(server, GradleCore.getDefault(), false, null, (uri, cpe) -> JavaDocProviders.createFor(cpe));
+		gradleProjectCache.setAlwaysFireEventOnFileChanged(true);
+		javaProjectFinder.addJavaProjectFinder(new GradleProjectFinder(gradleProjectCache));
+
+		CompositeProjectOvserver projectObserver = new CompositeProjectOvserver(Arrays.asList(mavenProjectCache, gradleProjectCache));
+
+		DefaultSpringPropertyIndexProvider indexProvider = new DefaultSpringPropertyIndexProvider(javaProjectFinder, projectObserver, null, valueProviders);
+		indexProvider.setProgressService(server.getProgressService());
+
+		return new BootLanguageServerParams(
+				javaProjectFinder.filter(project -> SpringProjectUtil.isBootProject(project) || SpringProjectUtil.isSpringProject(project)),
+				projectObserver,
+				indexProvider,
+				(SourceLinks sourceLinks, IDocument doc) -> new TypeUtil(sourceLinks, javaProjectFinder.find(new TextDocumentIdentifier(doc.getUri())))
+		);
+	}
+
 
 }

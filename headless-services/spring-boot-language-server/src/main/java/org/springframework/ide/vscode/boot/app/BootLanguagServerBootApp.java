@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2019 Pivotal, Inc.
+ * Copyright (c) 2018, 2020 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -36,6 +36,8 @@ import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.boot.java.utils.SymbolCache;
 import org.springframework.ide.vscode.boot.java.utils.SymbolCacheOnDisc;
 import org.springframework.ide.vscode.boot.java.utils.SymbolCacheVoid;
+import org.springframework.ide.vscode.boot.jdt.ls.JavaProjectsService;
+import org.springframework.ide.vscode.boot.jdt.ls.JdtLsProjectCache;
 import org.springframework.ide.vscode.boot.metadata.AdHocSpringPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.ClassReferenceProvider;
 import org.springframework.ide.vscode.boot.metadata.LoggerNameProvider;
@@ -116,10 +118,15 @@ public class BootLanguagServerBootApp {
 			r.def("class-reference", ClassReferenceProvider.factory(sourceLinks));
 		};
 	}
+	
+	@ConditionalOnMissingClass("org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness")
+	@Bean JavaProjectsService javaProjectsService(SimpleLanguageServer server, BootLsConfigProperties configProperties) {
+		return new JdtLsProjectCache(server, configProperties.isEnableJandexIndex());
+	}
 
 	@ConditionalOnMissingClass("org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness")
-	@Bean BootLanguageServerParams serverParams(SimpleLanguageServer server, ValueProviderRegistry valueProviders, BootLsConfigProperties configProperties) {
-		return BootLanguageServerParams.createDefault(server, valueProviders, configProperties.isEnableJandexIndex());
+	@Bean BootLanguageServerParams serverParams(SimpleLanguageServer server, ValueProviderRegistry valueProviders, JavaProjectsService projectsService) {
+		return BootLanguageServerParams.createDefault(server, valueProviders, projectsService);
 	}
 
 	@ConditionalOnMissingClass("org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness")

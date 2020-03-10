@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2019 Pivotal, Inc.
+ * Copyright (c) 2017, 2020 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -95,7 +95,7 @@ public class CompilationUnitCacheTest {
 		}
 
 		@Bean BootLanguageServerParams serverParams(SimpleLanguageServer server, MockProjectObserver projectObserver, ValueProviderRegistry valueProviders, PropertyIndexHarness indexHarness) {
-			BootLanguageServerParams testDefaults = BootLanguageServerParams.createTestDefault(server, valueProviders);
+			BootLanguageServerParams testDefaults = BootLanguageServerHarness.createTestDefault(server, valueProviders);
 			return new BootLanguageServerParams(
 					indexHarness.getProjectFinder(),
 					projectObserver,

@@ -80,12 +80,7 @@
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.ide.vscode</groupId>
-			<artifactId>commons-maven</artifactId>
-			<version>${dependencies.version}</version>
-		</dependency>
-		<dependency>
-			<groupId>org.springframework.ide.vscode</groupId>
-			<artifactId>commons-gradle</artifactId>
+			<artifactId>commons-java</artifactId>
 			<version>${dependencies.version}</version>
 		</dependency>
 		<dependency>
@@ -102,6 +97,10 @@
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
 			<version>${commons-io-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>commons-codec</groupId>
+			<artifactId>commons-codec</artifactId>
 		</dependency>
 		<dependency>
 			<groupId>org.json</groupId>
@@ -147,6 +146,19 @@
 			<groupId>org.mockito</groupId>
 			<artifactId>mockito-all</artifactId>
 			<version>${mockito-version}</version>
+			<scope>test</scope>
+		</dependency>
+		
+		<dependency>
+			<groupId>org.springframework.ide.vscode</groupId>
+			<artifactId>commons-maven</artifactId>
+			<version>${dependencies.version}</version>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.ide.vscode</groupId>
+			<artifactId>commons-gradle</artifactId>
+			<version>${dependencies.version}</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
