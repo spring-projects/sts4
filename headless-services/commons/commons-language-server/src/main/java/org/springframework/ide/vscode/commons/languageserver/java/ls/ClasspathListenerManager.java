@@ -105,6 +105,7 @@ public class ClasspathListenerManager {
 		Mono<Void> registerCallbackCommand = Mono.defer(() -> Mono.fromFuture(
 				server.getClient().registerCapability(params)
 		));
+
 		Mono<Object> registerClasspathListener = Mono.defer(() -> Mono.fromFuture(
 				server.getClient().addClasspathListener(new ClasspathListenerParams(callbackCommandId, true))
 		));
