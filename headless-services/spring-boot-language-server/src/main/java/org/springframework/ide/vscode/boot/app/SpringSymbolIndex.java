@@ -174,16 +174,21 @@ public class SpringSymbolIndex implements InitializingBean {
 				this.updateDocument(docURI, content, "didSave event");
 			}
 		});
-		config.addListener(evt -> 
+
+		config.addListener(evt -> {
+			log.info("update settings of spring indexer - start");
+			
 			server.getAsync().execute(() -> 
-				configureIndexer(SymbolIndexConfig.builder()
-						.scanXml(config.isSpringXMLSupportEnabled())
-						.xmlScanFolders(config.xmlBeansFoldersToScan())
-						.scanTestJavaSources(config.isScanJavaTestSourcesEnabled())
-						.build()
-				)
-			)
-		);
+			configureIndexer(SymbolIndexConfig.builder()
+					.scanXml(config.isSpringXMLSupportEnabled())
+					.xmlScanFolders(config.xmlBeansFoldersToScan())
+					.scanTestJavaSources(config.isScanJavaTestSourcesEnabled())
+					.build()
+			));
+			
+			log.info("update settings of spring indexer - done");
+		});
+		
 		server.doOnInitialized(this::serverInitialized);
 		server.onShutdown(this::shutdown);
 	}

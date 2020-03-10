@@ -166,6 +166,8 @@ public class SpringProcessConnectorRemote {
 	}
 
 	private synchronized void handleSettings(Settings settings) {
+		logger.info("updating settings for remote processses to track - start");
+		
 		RemoteBootAppData[] appData = settings.getAs(RemoteBootAppData[].class, "boot-java", "remote-apps");
 		if (appData == null) {
 			//Avoid NPE
@@ -199,6 +201,8 @@ public class SpringProcessConnectorRemote {
 				return processKey;
 			});
 		}
+		
+		logger.info("updating settings for remote processses to track - done");
 	}
 
 	public static String getProcessName(RemoteBootAppData appData) {

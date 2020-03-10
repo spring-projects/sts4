@@ -18,6 +18,8 @@ import java.util.Map;
 import java.util.Set;
 
 import org.eclipse.lsp4j.CompletionItemKind;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.app.BootJavaConfig;
 import org.springframework.ide.vscode.boot.app.BootLanguageServerParams;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
@@ -94,6 +96,8 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 	// So... moving forward...
 	// Do not add more components here. You should instead just make your new
 	// components into separate beans.
+
+	private static final Logger log = LoggerFactory.getLogger(BootJavaLanguageServerComponents.class);
 
 	public static final Set<LanguageId> LANGUAGES = ImmutableSet.of(LanguageId.JAVA, LanguageId.CLASS);
 
@@ -195,6 +199,8 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		documents.onDocumentHighlight(highlightsEngine);
 
 		config.addListener(ignore -> {
+			log.info("update live process tracker settings - start");
+			
 			// live information automatic process tracking
 			liveProcessTracker.setDelay(config.getLiveInformationAutomaticTrackingDelay());
 			liveProcessTracker.setTrackingEnabled(config.isLiveInformationAutomaticTrackingEnabled());
@@ -210,6 +216,8 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 			else {
 				liveChangeDetectionWatchdog.disableHighlights();
 			}
+			
+			log.info("update live process tracker settings - done");
 		});
 
 		server.doOnInitialized(this::initialized);

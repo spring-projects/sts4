@@ -46,6 +46,7 @@ import reactor.core.publisher.Mono;
 
 public class JdtLsProjectCache implements InitializableJavaProjectsService {
 
+	private static final Duration INITIALIZE_TIMEOUT = Duration.ofSeconds(10);
 	private static final Object JDT_SCHEME = "jdt";
 
 	private final boolean IS_JANDEX_INDEX;
@@ -256,7 +257,7 @@ public class JdtLsProjectCache implements InitializableJavaProjectsService {
 				});
 			}
 		})
-		.timeout(Duration.ofSeconds(5))
+		.timeout(INITIALIZE_TIMEOUT)
 		.doOnError(t -> {
 			if (isNoJdtError(t)) {
 				log.info("JDT Language Server not available. Fallback classpath provider will be used instead.");
