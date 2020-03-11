@@ -139,25 +139,25 @@ public class ReusableClasspathListenerHandler {
 		}
 		
 		private void sendInitialEvents(String callbackCommandId, IProject[] projects) {
-			logger.log("Sending initial event for all projects ...");
+			logger.log("Scheduling initial event for all projects ...");
 			
 			Set<String> callbackIds = Collections.singleton(callbackCommandId);
 
 			for (IProject p : projects) {
-				logger.log("project "+p.getName() +" ..." );
+//				logger.log("project "+p.getName() +" ..." );
 
 				try {
 					if (p.isAccessible() && p.hasNature(JavaCore.NATURE_ID)) {
 						IJavaProject jp = JavaCore.create(p);
 						sendNotification(jp, callbackIds);
 					} else {
-						logger.log("project "+p.getName() +" SKIPPED" );
+//						logger.log("project "+p.getName() +" SKIPPED" );
 					}
 				} catch (CoreException e) {
 					logger.log(e);
 				}
 			}
-			logger.log("Sending initial event for all projects DONE");
+			logger.log("Scheduling initial event for all projects DONE");
 		}
 		
 		private IProject[] getSortedProjects() {
