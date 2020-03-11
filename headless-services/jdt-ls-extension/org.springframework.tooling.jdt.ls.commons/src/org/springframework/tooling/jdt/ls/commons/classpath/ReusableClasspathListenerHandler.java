@@ -98,7 +98,7 @@ public class ReusableClasspathListenerHandler {
 		}
 		
 		public void subscribe(String callbackCommandId, boolean isBatched) {
-			// keep put of synchronized block to avoid workspace locks
+			// keep out of synchronized block to avoid workspace locks
 			IProject[] sortedProjects = getSortedProjects();
 
 			synchronized(this) {
