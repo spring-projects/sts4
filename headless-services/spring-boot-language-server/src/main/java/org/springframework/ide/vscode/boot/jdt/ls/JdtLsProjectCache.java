@@ -42,7 +42,9 @@ import org.springframework.ide.vscode.commons.util.FileObserver;
 import org.springframework.ide.vscode.commons.util.UriUtil;
 
 import reactor.core.Disposable;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.util.context.Context;
 
 public class JdtLsProjectCache implements InitializableJavaProjectsService {
 
@@ -269,14 +271,10 @@ public class JdtLsProjectCache implements InitializableJavaProjectsService {
 			}
 		})
 		.timeout(INITIALIZE_TIMEOUT)
+		.doOnSubscribe(x -> log.info("addClasspathListener ..."))
+		.doOnSuccess(x -> log.info("addClasspathListener DONE"))
 		.doOnError(t -> {
-			if (isNoJdtError(t)) {
-				log.info("JDT Language Server not available. Fallback classpath provider will be used instead.");
-			} else if (isOldJdt(t)) {
-				log.info("JDT Lanuage Server too old. Fallback classpath provider will be used instead.");
-			} else {
-				log.error("Unexpected error registering classpath listener with JDT. Fallback classpath provider will be used instead.", t);
-			}
+			log.error("Unexpected error registering classpath listener with JDT. Fallback classpath provider will be used instead.", t);
 		}));
 	}
 

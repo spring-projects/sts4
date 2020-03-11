@@ -14,59 +14,33 @@ import java.util.Comparator;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.eclipse.core.filebuffers.FileBuffers;
+import org.eclipse.core.filebuffers.IFileBuffer;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.IEditorReference;
-import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
-import org.eclipse.ui.part.FileEditorInput;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.IPath;
+import org.springframework.tooling.jdt.ls.commons.Logger;
 
 public class ProjectSorter implements Comparator<IProject> {
 
-	private IProject activeProject;
 	private Set<IProject> projectsWithEditors;
 
-	public ProjectSorter() {
+	private Logger logger = Logger.forEclipsePlugin(() -> LanguageServerCommonsActivator.getInstance());
 
+	public ProjectSorter() {
+		logger.log("Creating project sorter...");
 		this.projectsWithEditors = new HashSet<IProject>();
 
-		PlatformUI.getWorkbench().getDisplay().syncExec(new Runnable() {
-			@Override
-			public void run() {
-				IEditorPart activeEditor = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor();
-				IEditorInput editorInput = activeEditor.getEditorInput();
-				activeProject = getProject(editorInput);
-
-				IWorkbenchPage[] pages = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getPages();
-				for (IWorkbenchPage page : pages) {
-					IEditorReference[] references = page.getEditorReferences();
-					for (IEditorReference editorReference : references) {
-						try {
-							IEditorInput additionalInput = editorReference.getEditorInput();
-							IProject additionalProject = getProject(additionalInput);
-
-							if (additionalProject != null && additionalProject != activeProject) {
-								projectsWithEditors.add(additionalProject);
-							}
-						} catch (PartInitException e) {
-							// ignore this editor
-						}
-					}
-				}
+		IFileBuffer[] openBuffers = FileBuffers.getTextFileBufferManager().getFileBuffers();
+		for (IFileBuffer ob : openBuffers) {
+			IPath path = ob.getLocation();
+			System.out.println(path);
+			if (path.segmentCount() >= 1) {
+				IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(path.segment(0));
+				projectsWithEditors.add(project);
 			}
-		});
-	}
-
-	private IProject getProject(IEditorInput editorInput) {
-		if (editorInput != null && editorInput instanceof FileEditorInput) {
-			FileEditorInput fileInput = (FileEditorInput) editorInput;
-			return fileInput.getFile() != null ? fileInput.getFile().getProject() : null;
 		}
-		else {
-			return null;
-		}
+		logger.log("Creating project sorter... DONE");
 	}
 
 	@Override
@@ -76,11 +50,7 @@ public class ProjectSorter implements Comparator<IProject> {
 
 	private int score(IProject project) {
 		if (project == null) return 0;
-
-		if (project == activeProject) return 10;
 		if (projectsWithEditors.contains(project)) return 5;
-
 		return 0;
 	}
-
 }

@@ -99,9 +99,12 @@ public class ReusableClasspathListenerHandler {
 		
 		public void subscribe(String callbackCommandId, boolean isBatched) {
 			// keep out of synchronized block to avoid workspace locks
+			logger.log("Sorting projects...");
 			IProject[] sortedProjects = getSortedProjects();
+			logger.log("Sorting projects... DONE");
 
 			synchronized(this) {
+				logger.log("inside synchronized Subscriptions");
 				if (!subscribers.containsKey(callbackCommandId)) {
 					logger.log("subscribing to classpath changes: " + callbackCommandId +" isBatched = "+isBatched);
 					classpathListener = new ClasspathListenerManager(logger, new ClasspathListener() {
