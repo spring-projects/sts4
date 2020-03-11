@@ -170,13 +170,13 @@ public class LanguageServerRunner implements CommandLineRunner {
 		Function<MessageConsumer, MessageConsumer> wrapper = (MessageConsumer consumer) -> {
 			return (msg) -> {
 				try {
-					long beforeConsumingMessage = System.currentTimeMillis();
+//					long beforeConsumingMessage = System.currentTimeMillis();
 					
 					consumer.consume(msg);
 					
-					long afterConsumingMessage = System.currentTimeMillis();
-					String shortMessage = StringUtils.left(msg.toString(), 140);
-					log.info("working on message took " + (afterConsumingMessage - beforeConsumingMessage) + "ms - message content: " + shortMessage);
+//					long afterConsumingMessage = System.currentTimeMillis();
+//					String shortMessage = StringUtils.left(msg.toString(), 140);
+//					log.info("working on message took " + (afterConsumingMessage - beforeConsumingMessage) + "ms - message content: " + shortMessage);
 
 				} catch (UnsupportedOperationException e) {
 					//log a warning and ignore. We are getting some messages from vsCode the server doesn't know about
