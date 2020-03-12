@@ -437,10 +437,15 @@
 			<layout>p2</layout>
 			<url>${eclipsecommons-p2-repo}</url>
 		</repository>
-		<repository>
+<!--		<repository>
 			<id>egit-github</id>
 			<layout>p2</layout>
 			<url>https://download.eclipse.org/egit/github/updates</url>
+		</repository> -->
+		<repository>
+			<id>egit-github</id>
+			<layout>p2</layout>
+			<url>https://download.eclipse.org/egit/github/updates-stable-nightly/</url>
 		</repository>
 <!--		<repository>
 			<id>m2e-apt</id>
