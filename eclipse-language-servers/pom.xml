@@ -136,16 +136,16 @@
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/tools/orbit/downloads/drops/R20190827152740/repository</url>
 				</repository>
-<!--				<repository>
-					<id>e-i-commons</id>
-					<layout>p2</layout>
-					<url>https://dist.springframework.org/release/IDE/3.9.11.RELEASE</url>
-				</repository> -->
 				<repository>
 					<id>e-i-commons</id>
 					<layout>p2</layout>
-					<url>https://dist.springframework.org/snapshot/IDE/nightly</url>
+					<url>https://dist.springframework.org/release/IDE/3.9.12.RELEASE</url>
 				</repository>
+<!--				<repository>
+					<id>e-i-commons</id>
+					<layout>p2</layout>
+					<url>https://dist.springframework.org/snapshot/IDE/nightly</url>
+				</repository> -->
 				<repository>
 					<id>mylyn-markdown</id>
 					<layout>p2</layout>
@@ -186,16 +186,16 @@
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/tools/orbit/downloads/drops/R20191126223242/repository</url>
 				</repository>
-<!--				<repository>
-					<id>e-i-commons</id>
-					<layout>p2</layout>
-					<url>https://dist.springframework.org/release/IDE/3.9.11.RELEASE</url>
-				</repository> -->
 				<repository>
 					<id>e-i-commons</id>
 					<layout>p2</layout>
-					<url>https://dist.springframework.org/snapshot/IDE/nightly</url>
+					<url>https://dist.springframework.org/release/IDE/3.9.12.RELEASE</url>
 				</repository>
+<!--				<repository>
+					<id>e-i-commons</id>
+					<layout>p2</layout>
+					<url>https://dist.springframework.org/snapshot/IDE/nightly</url>
+				</repository> -->
 				<repository>
 					<id>mylyn-markdown</id>
 					<layout>p2</layout>
@@ -241,16 +241,16 @@
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/tools/orbit/downloads/drops/R20200224183213/repository</url>
 				</repository>
-<!--				<repository>
-					<id>e-i-commons</id>
-					<layout>p2</layout>
-					<url>https://dist.springframework.org/release/IDE/3.9.11.RELEASE</url>
-				</repository> -->
 				<repository>
 					<id>e-i-commons</id>
 					<layout>p2</layout>
-					<url>https://dist.springframework.org/snapshot/IDE/nightly</url>
+					<url>https://dist.springframework.org/release/IDE/3.9.12.RELEASE</url>
 				</repository>
+<!--				<repository>
+					<id>e-i-commons</id>
+					<layout>p2</layout>
+					<url>https://dist.springframework.org/snapshot/IDE/nightly</url>
+				</repository> -->
 				<repository>
 					<id>mylyn-markdown</id>
 					<layout>p2</layout>
