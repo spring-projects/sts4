@@ -1,3 +1,8 @@
+## 2020-03-19 (4.6.0 RELEASE)
+
+* _(Spring Boot)_ performance: improved performance while scanning projects for symbols
+* _(Spring Boot)_ performance: improved performance when multiple files change at once (e.g. after a switch to a different branch or a git pull + refresh)
+
 ## 2020-01-22 (4.5.1 RELEASE)
 
 * _(Spring Boot)_ improvement: live hover mechanism now reports connection failures
