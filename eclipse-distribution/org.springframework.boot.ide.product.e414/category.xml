@@ -112,9 +112,14 @@
 		<category name="Uncategorized"/>
 	</bundle>
 -->
+	<feature id="org.eclipse.mylyn.wikitext_feature">
+		<category name="Uncategorized"/>
+	</feature>
+
 	<bundle id="javax.activation" version="0.0.0">
 		<category name="Uncategorized"/>
 	</bundle>
+	
 	<bundle id="javax.activation.source" version="0.0.0">
 		<category name="Uncategorized"/>
 	</bundle>
