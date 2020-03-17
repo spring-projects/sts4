@@ -20,7 +20,8 @@
   "scripts": {
     "clean": "rm -rf lib node_modules package-lock.json",
     "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./"
+    "watch": "tsc -watch -p ./",
+    "prepack": "tsc -p ./"
   },
   "dependencies": {
     "@pivotal-tools/jvm-launch-utils": "0.0.14",
