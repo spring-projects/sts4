@@ -3515,7 +3515,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		assertCompletionWithLabel(
 				"logging:\n" +
 				"  level:\n" +
-				"    <*>"
+				"    roo<*>"
 				, // =>
 				"root"
 				,
@@ -3526,7 +3526,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		assertCompletionDetails(
 				"logging:\n" +
 				"  level:\n" +
-				"    <*>"
+				"    roo<*>"
 				, // =>
 				"root",
 				"String",
