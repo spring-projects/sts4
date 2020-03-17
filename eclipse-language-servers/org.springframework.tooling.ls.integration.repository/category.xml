@@ -24,6 +24,10 @@
 
 	<category-def name="deps" label="Dependencies"/>
 
+	<feature id="org.eclipse.mylyn.wikitext_feature">
+		<category name="deps"/>
+	</feature>
+
 	<bundle id="org.springframework.tooling.ls.eclipse.commons">
 		<category name="deps"/>
 	</bundle>
