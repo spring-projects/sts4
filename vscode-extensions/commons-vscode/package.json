@@ -7,7 +7,7 @@
   "author": "Kris De Volder <kdevolder@pivotal.io>",
   "engines": {
     "npm": "^3.0.0",
-    "vscode": "^1.30.0"
+    "vscode": "^1.41.0"
   },
   "keywords": [],
   "files": [
@@ -20,8 +20,7 @@
   "scripts": {
     "clean": "rm -rf lib node_modules package-lock.json",
     "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
-    "prepack": "node ./node_modules/vscode/bin/install && tsc -p ./"
+    "watch": "tsc -watch -p ./"
   },
   "dependencies": {
     "@pivotal-tools/jvm-launch-utils": "0.0.14",
@@ -29,9 +28,9 @@
     "portfinder": "^1.0.25"
   },
   "devDependencies": {
-    "typescript": "3.6.3",
+    "typescript": "3.7.3",
     "@types/node": "^12.7.9",
-    "vscode": "^1.1.33",
-    "vscode-languageclient": "5.2.1"
+    "@types/vscode": "^1.43.0",
+    "vscode-languageclient": "6.1.1"
   }
 }
