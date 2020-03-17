@@ -144,4 +144,10 @@ public class CfTargetsInfo {
 			return "Target [api=" + api + ", org=" + org + ", space=" + space + "]";
 		}
 	}
+
+	@Override
+	public String toString() {
+		return "CfTargetsInfo "+cfTargets;
+	}
+	
 }

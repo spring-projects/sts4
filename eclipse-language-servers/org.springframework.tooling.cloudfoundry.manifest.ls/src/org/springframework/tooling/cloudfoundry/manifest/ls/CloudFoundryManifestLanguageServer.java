@@ -25,7 +25,7 @@ import org.eclipse.lsp4j.jsonrpc.messages.ResponseMessage;
 import org.eclipse.lsp4j.services.LanguageServer;
 import org.springframework.tooling.ls.eclipse.commons.STS4LanguageServerProcessStreamConnector;
 
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableMap;
 
 /**
  * @author Martin Lippert
@@ -63,9 +63,9 @@ public class CloudFoundryManifestLanguageServer extends STS4LanguageServerProces
 			if (responseMessage.getResult() instanceof InitializeResult) {
 				this.languageServer = languageServer;
 				this.rootPath = rootPath;
-				
 				updateLanguageServer();
-				addLanguageServer(this);
+				servers.add(this);
+				BootDashTargetInfoSynchronizer.start();
 			}
 		}
 	}
@@ -80,29 +80,19 @@ public class CloudFoundryManifestLanguageServer extends STS4LanguageServerProces
 
 	@Override
 	public void stop() {
-		removeLanguageServer(this);
+		servers.remove(this);
 		super.stop();
 	}
 	
 	@Override
 	public Object getInitializationOptions(URI rootUri) {
 		Object opts = cfTargetOptionSettings;
-		return opts!=null?opts:ImmutableSet.of();
+		return opts!=null?opts:ImmutableMap.of();
 	}
 	
-	protected void updateLanguageServer() {
+	private void updateLanguageServer() {
 		DidChangeConfigurationParams params = new DidChangeConfigurationParams(getInitializationOptions(rootPath));
 		languageServer.getWorkspaceService().didChangeConfiguration(params);
-	}
-
-	private static void addLanguageServer(CloudFoundryManifestLanguageServer server) {
-		BootDashTargetInfoSynchronizer.start();
-		servers.add(server);
-	}
-	
-
-	private static void removeLanguageServer(CloudFoundryManifestLanguageServer server) {
-		servers.remove(server);
 	}
 
 	@Override
