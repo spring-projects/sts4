@@ -333,6 +333,11 @@ public class Wrappers {
 				return data.isConstructor();
 			}
 
+			@Override
+			public List<String> getParameterNames() {
+				return data.getParameterNames();
+			}
+
 		};
 	}
 

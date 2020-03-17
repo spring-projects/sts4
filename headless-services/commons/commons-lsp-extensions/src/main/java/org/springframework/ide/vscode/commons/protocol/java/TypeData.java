@@ -313,6 +313,7 @@ public class TypeData extends TypeDescriptorData {
 		private boolean constructor;
 		private JavaTypeData returnType;
 		private List<JavaTypeData> parameters;
+		private List<String> parameterNames;
 		private List<AnnotationData> annotations;
 
 		public String getBindingKey() {
@@ -346,13 +347,21 @@ public class TypeData extends TypeDescriptorData {
 		public void setReturnType(JavaTypeData returnType) {
 			this.returnType = returnType;
 		}
-
+		
 		public List<JavaTypeData> getParameters() {
 			return parameters;
 		}
 
 		public void setParameters(List<JavaTypeData> parameters) {
 			this.parameters = parameters;
+		}
+
+		public List<String> getParameterNames() {
+			return parameterNames;
+		}
+
+		public void setParameterNames(List<String> parameterNames) {
+			this.parameterNames = parameterNames;
 		}
 
 		@Override
@@ -362,6 +371,7 @@ public class TypeData extends TypeDescriptorData {
 			result = prime * result + ((annotations == null) ? 0 : annotations.hashCode());
 			result = prime * result + ((bindingKey == null) ? 0 : bindingKey.hashCode());
 			result = prime * result + (constructor ? 1231 : 1237);
+			result = prime * result + ((parameterNames == null) ? 0 : parameterNames.hashCode());
 			result = prime * result + ((parameters == null) ? 0 : parameters.hashCode());
 			result = prime * result + ((returnType == null) ? 0 : returnType.hashCode());
 			return result;
@@ -388,6 +398,11 @@ public class TypeData extends TypeDescriptorData {
 				return false;
 			if (constructor != other.constructor)
 				return false;
+			if (parameterNames == null) {
+				if (other.parameterNames != null)
+					return false;
+			} else if (!parameterNames.equals(other.parameterNames))
+				return false;
 			if (parameters == null) {
 				if (other.parameters != null)
 					return false;
@@ -400,6 +415,5 @@ public class TypeData extends TypeDescriptorData {
 				return false;
 			return true;
 		}
-
 	}
 }

@@ -49,6 +49,7 @@ import org.springframework.ide.vscode.commons.java.Flags;
 import org.springframework.ide.vscode.commons.java.IField;
 import org.springframework.ide.vscode.commons.java.IJavaElement;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.java.IJavaType;
 import org.springframework.ide.vscode.commons.java.IMethod;
 import org.springframework.ide.vscode.commons.java.IType;
 import org.springframework.ide.vscode.commons.util.AlwaysFailingParser;
@@ -666,6 +667,7 @@ public class TypeUtil {
 
 	private static final Map<String, ValueProviderStrategy> VALUE_HINTERS = new HashMap<>();
 	private static final Object JL_OBJECT = Object.class.getName();
+	private static final String CONSTRUCTOR_BINDING = "org.springframework.boot.context.properties.ConstructorBinding";
 
 	static {
 		valueHints("java.nio.charset.Charset", new LazyProvider<String[]>() {
@@ -741,28 +743,56 @@ public class TypeUtil {
 			if (typeFromIndex != null) {
 				IJavaProject project = getJavaProject();
 				ArrayList<TypedProperty> properties = new ArrayList<>();
-				getGetterMethods(typeFromIndex).forEach(m -> {
-					Deprecation deprecation = DeprecationUtil.extract(m);
-					Type propType = null;
-					try {
-						propType = Type.fromJavaType(m.getReturnType());
-					} catch (Exception e) {
-						log.error("", e);
+				Optional<IMethod> constructorBinding = findConstructorBinding(typeFromIndex);
+				if (constructorBinding.isPresent()) {
+					IMethod c = constructorBinding.get();
+					List<IJavaType> types = c.parameters().collect(Collectors.toList());
+					List<String> params = c.getParameterNames();
+					int len = Math.min(params.size(), types.size());
+					for (int i = 0; i < len; i++) {
+						Deprecation deprecation = null;
+						properties.add(new TypedProperty(
+								StringUtil.camelCaseToHyphens(params.get(i)), 
+								Type.fromJavaType(types.get(i)), 
+								deprecation
+						));
 					}
-					if (beanMode.includesHyphenated()) {
-						properties.add(new TypedProperty(getterOrSetterNameToProperty(m.getElementName()), propType,
-								Renderables.lazy(() -> PropertyDocUtils.documentJavaElement(sourceLinks, project, m)), deprecation));
-					}
-					if (beanMode.includesCamelCase()) {
-						properties.add(new TypedProperty(getterOrSetterNameToCamelName(m.getElementName()), propType,
-								Renderables.lazy(() -> PropertyDocUtils.documentJavaElement(sourceLinks, project, m)), deprecation));
-					}
-				});
+					return properties;
+				} else {
+					getGetterMethods(typeFromIndex).forEach(m -> {
+						Deprecation deprecation = DeprecationUtil.extract(m);
+						Type propType = null;
+						try {
+							propType = Type.fromJavaType(m.getReturnType());
+						} catch (Exception e) {
+							log.error("", e);
+						}
+						if (beanMode.includesHyphenated()) {
+							properties.add(new TypedProperty(getterOrSetterNameToProperty(m.getElementName()), propType,
+									Renderables.lazy(() -> PropertyDocUtils.documentJavaElement(sourceLinks, project, m)), deprecation));
+						}
+						if (beanMode.includesCamelCase()) {
+							properties.add(new TypedProperty(getterOrSetterNameToCamelName(m.getElementName()), propType,
+									Renderables.lazy(() -> PropertyDocUtils.documentJavaElement(sourceLinks, project, m)), deprecation));
+						}
+					});
+				}
 				return properties;
 			}
 		}
 		return null;
 	}
+
+	private Optional<IMethod> findConstructorBinding(IType type) {
+		return type.getMethods()
+		.filter(m -> m.isConstructor())
+		.filter(m -> m.getAnnotations()
+				.anyMatch(annotation -> 
+					CONSTRUCTOR_BINDING.equals(annotation.getElementName()))
+		)
+		.findFirst();
+	}
+
 
 	/**
 	 * Registers a strategy for providing value hints with a given typeName.

@@ -237,6 +237,7 @@ public class JavaData {
 		data.setBindingKey(method.getKey());
 		ImmutableList.Builder<AnnotationData> annotationsBuilder = ImmutableList.builder();
 		ImmutableList.Builder<JavaTypeData> parametersBuilder = ImmutableList.builder();
+		ImmutableList.Builder<String> paramNamesBuilder = ImmutableList.builder();
 		try {
 			data.setConstructor(method.isConstructor());
 			data.setReturnType(createFromSignature(type, method.getReturnType()));
@@ -259,6 +260,14 @@ public class JavaData {
 		}
 		data.setAnnotations(annotationsBuilder.build());
 		data.setParameters(parametersBuilder.build());
+		try {
+			String[] paramNames = method.getParameterNames();
+			if (paramNames!=null) {
+				data.setParameterNames(ImmutableList.copyOf(paramNames));
+			}
+		} catch (JavaModelException e) {
+			//ignore.
+		}
 		return data;
 	}
 

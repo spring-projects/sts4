@@ -1,0 +1,4 @@
+some-config:
+  nested:
+    dude: hello
+    bob: bbbba

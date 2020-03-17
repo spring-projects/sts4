@@ -18,10 +18,13 @@ import static org.springframework.ide.vscode.boot.test.DefinitionLinkAsserts.met
 import static org.springframework.ide.vscode.languageserver.testharness.Editor.INDENTED_COMPLETION;
 
 import java.time.Duration;
+import java.util.HashMap;
 import java.util.Optional;
 
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticSeverity;
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -43,6 +46,12 @@ import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.languageserver.testharness.CodeAction;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import com.google.common.collect.ImmutableList;
+
+import org.springframework.ide.vscode.commons.jandex.MethodImpl;
+import org.springframework.ide.vscode.commons.jandex.TestDataProvider;
+
 
 /**
  * This class is a placeholder where we will attempt to copy and port
@@ -68,7 +77,50 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		}
 	}
 
+	@Before
+	public void setup() {
+		MethodImpl.testDataProvider = new TestDataProvider();
+	}
+
+	@After
+	public void cleanups() {
+		MethodImpl.testDataProvider = null;
+	}
+	
 	////////////////////////////////////////////////////////////////////////////////////////
+	
+	@Test public void GH_404_ConsutructorBinding_support() throws Exception {
+		useProject(createPredefinedMavenProject("gh_404"));
+		Editor editor;
+		
+		MethodImpl.testDataProvider.methodParams("Ltest/NestedConfigProperties;.<init>(Ljava/lang/String;)V", "dude");
+		
+		editor = newEditor(
+				"someConfig:\n" + 
+				"  nested:\n" + 
+				"    <*>"
+		);
+		editor.assertCompletionLabels("dude"); //Only the property from constructor binding, not the one from setter!
+
+		editor = newEditor(
+				"some-config:\n" + 
+				"  nested:\n" + 
+				"    <*>"
+		);
+		editor.assertCompletionLabels("dude"); //Only the property from constructor binding, not the one from setter!
+
+		editor = newEditor(
+				"someConfig:\n" + 
+				"  nested:\n" + 
+				"    bob: bob\n" +
+				"    dude: dude\n" +
+				"    bogus: bad\n"
+		);
+		editor.assertProblems(
+				"bob|Unknown",
+				"bogus|Unknown"
+		);
+	}
 	
 	@Test public void abbreviateLongPrefixCompletions() throws Exception {
 		//See: https://github.com/spring-projects/sts4/issues/361

@@ -12,6 +12,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.java;
 
+import java.util.List;
 import java.util.stream.Stream;
 
 public interface IMethod extends IMember {
@@ -70,5 +71,7 @@ public interface IMethod extends IMember {
 	default IJavaModuleData classpathContainer() {
 		return getDeclaringType().classpathContainer();
 	}
+
+	List<String> getParameterNames();
 
 }
