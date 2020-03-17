@@ -11,8 +11,8 @@
   },
   "license": "EPL-1.0",
   "engines": {
-    "npm": "^3.0.0",
-    "vscode": "^1.30.0"
+    "npm": "^6.0.0",
+    "vscode": "^1.43.0"
   },
   "categories": [
     "Programming Languages",
@@ -107,7 +107,6 @@
     "watch": "tsc -watch -p ./",
     "clean": "rm -fr node_modules out *.vsix package-lock.json",
     "preinstall": "./scripts/preinstall.sh",
-    "postinstall": "node ./node_modules/vscode/bin/install",
     "vsce-package": "vsce package"
   },
   "dependencies": {
@@ -115,9 +114,9 @@
     "vscode-languageclient": "5.2.1"
   },
   "devDependencies": {
-    "vsce": "^1.69.0",
-    "typescript": "3.6.3",
+    "vsce": "^1.74.0",
+    "typescript": "3.8.3",
     "@types/node": "^12.7.9",
-    "vscode": "^1.1.33"
+    "@types/vscode": "^1.43.0"
   }
 }

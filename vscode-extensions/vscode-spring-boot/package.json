@@ -11,8 +11,8 @@
   },
   "license": "EPL-1.0",
   "engines": {
-    "npm": "^3.0.0",
-    "vscode": "^1.30.0"
+    "npm": "^6.0.0",
+    "vscode": "^1.43.0"
   },
   "categories": [
     "Programming Languages",
@@ -204,7 +204,6 @@
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
-    "postinstall": "node ./node_modules/vscode/bin/install",
     "test": "npm run compile && node ./node_modules/vscode/bin/test",
     "preinstall": "bash ./scripts/preinstall.sh",
     "vsce-package": "vsce package"
@@ -214,10 +213,10 @@
     "vscode-languageclient": "5.2.1"
   },
   "devDependencies": {
-    "vsce": "^1.36.1",
-    "typescript": "3.6.3",
+    "vsce": "^1.74.0",
+    "typescript": "3.8.3",
     "@types/node": "^12.7.9",
-    "vscode": "^1.1.33"
+    "@types/vscode": "^1.43.0"
   },
   "extensionDependencies": [
     "redhat.java"
