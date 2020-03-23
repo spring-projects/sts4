@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2019 Pivotal, Inc.
+ * Copyright (c) 2017, 2020 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -18,13 +18,12 @@ import java.nio.file.FileSystems;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
-import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.lsp4e.server.StreamConnectionProvider;
 import org.eclipse.lsp4j.DidChangeConfigurationParams;
 import org.eclipse.lsp4j.InitializeResult;
@@ -37,8 +36,6 @@ import org.springframework.tooling.ls.eclipse.commons.LanguageServerCommonsActiv
 import org.springsource.ide.eclipse.commons.livexp.core.ValueListener;
 
 import com.google.common.collect.ImmutableSet;
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
 
 /**
  * if the system property "boot-java-ls-port" exists, delegate to the socket-based
@@ -57,6 +54,7 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 	private ResourceListener fResourceListener;
 	private LanguageServer languageServer;
 	
+	private final IPropertyChangeListener configListener = (e) -> sendConfiguration();
 	private final ValueListener<ImmutableSet<RemoteAppData>> remoteAppsListener = (e, v) -> sendConfiguration();
 	
 	private long timestampBeforeStart;
@@ -109,6 +107,7 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 			ResourcesPlugin.getWorkspace().removeResourceChangeListener(fResourceListener);
 			fResourceListener = null;
 		}
+		BootLanguageServerPlugin.getDefault().getPreferenceStore().removePropertyChangeListener(configListener);
 		RemoteBootAppsDataHolder.getDefault().getRemoteApps().removeListener(remoteAppsListener);
 	}
 
@@ -121,7 +120,12 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 				
 				this.timestampWhenInitialized = System.currentTimeMillis();
 				LanguageServerCommonsActivator.logInfo("Boot LS startup time from start to initialized: " + (timestampWhenInitialized - timestampBeforeStart) + "ms");
+
+				sendConfiguration();
 				
+				// Add config listener
+				BootLanguageServerPlugin.getDefault().getPreferenceStore().addPropertyChangeListener(configListener);
+
 				// Add resource listener
 				ResourcesPlugin.getWorkspace().addResourceChangeListener(fResourceListener = new ResourceListener(languageServer, Arrays.asList(
 						FileSystems.getDefault().getPathMatcher("glob:**/pom.xml"),
@@ -187,41 +191,4 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 		return RemoteBootAppsDataHolder.getDefault().getRemoteApps().getValues();
 	}
 	
-	@SuppressWarnings("unchecked")
-	private RemoteAppData parseLegacyData(Object incomingData) {
-		if (incomingData instanceof Pair) {
-			//Format prior to STS 4.2.0. Still supported to allows STS 3.9.8 and older to
-			// send data from its boot dash in the old format.
-			Pair<String,String> pair = (Pair<String, String>) incomingData;
-			return new RemoteAppData(pair.getLeft(), pair.getRight());
-		} else if (incomingData instanceof List) {
-			//Format since STS 4.2.0
-			List<String> list = (List<String>) incomingData;
-			RemoteAppData app = new RemoteAppData(list.get(0), list.get(1));
-			if (list.size()>=3) {
-				String portStr = list.get(2);
-				if (portStr!=null) {
-					app.setPort(portStr);
-				}
-			}
-			if (list.size()>=4) {
-				String urlScheme = list.get(3);
-				if (urlScheme!=null) {
-					app.setUrlScheme(urlScheme);
-				}
-			}
-			//keepChecking attribute added in STS 4.2.1
-			if (list.size()>=5) {
-				String keepChecking = list.get(4);
-				app.setKeepChecking("true".equals(keepChecking));
-			}
-			return app;
-		} else if (incomingData instanceof Map) {
-			Gson gson = new Gson();
-			JsonElement tree = gson.toJsonTree(incomingData);
-			return gson.fromJson(tree, RemoteAppData.class);
-		}
-		throw new IllegalArgumentException("Invalid remote app data: "+incomingData);
-	}
-
 }
