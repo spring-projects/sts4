@@ -195,7 +195,7 @@
 				<repository>
 					<id>mylyn-markdown</id>
 					<layout>p2</layout>
-					<url>https://download.eclipse.org/mylyn/docs/releases/3.0/</url>
+					<url>https://download.eclipse.org/mylyn/docs/releases/3.0.36/</url>
 				</repository>
 				<repository>
 					<id>lsp4e</id>
@@ -288,7 +288,7 @@
 				<repository>
 					<id>mylyn-markdown</id>
 					<layout>p2</layout>
-					<url>https://download.eclipse.org/mylyn/docs/releases/3.0/</url>
+					<url>https://download.eclipse.org/mylyn/docs/releases/3.0.36/</url>
 				</repository>
 				<repository>
 					<id>lsp4e</id>
@@ -386,7 +386,7 @@
 				<repository>
 					<id>mylyn-markdown</id>
 					<layout>p2</layout>
-					<url>https://download.eclipse.org/mylyn/docs/releases/3.0/</url>
+					<url>https://download.eclipse.org/mylyn/docs/releases/3.0.36/</url>
 				</repository>
 				<repository>
 					<id>lsp4e</id>
