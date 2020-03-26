@@ -90,7 +90,7 @@ public class BootDashTargetInfoSynchronizer {
 		if (targets != null) {
 			for (RunTarget runTarget : targets) {
 				if (runTarget instanceof CloudFoundryRunTarget) {
-					((CloudFoundryRunTarget) runTarget).addConnectionStateListener(clientsChangedListener);
+//					((CloudFoundryRunTarget) runTarget).addConnectionStateListener(clientsChangedListener);
 				}
 			}
 		}
