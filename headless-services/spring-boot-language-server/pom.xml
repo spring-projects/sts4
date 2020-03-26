@@ -15,6 +15,7 @@
 
 	<properties>
 		<dependencies.version>${project.version}</dependencies.version>
+		<jdt.core.version>3.21.0</jdt.core.version>
 	</properties>
 
 	<repositories>
@@ -91,7 +92,7 @@
 		<dependency>
 			<groupId>org.eclipse.jdt</groupId>
 			<artifactId>org.eclipse.jdt.core</artifactId>
-			<version>3.19.0</version>
+			<version>${jdt.core.version}</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-io</groupId>
