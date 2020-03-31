@@ -49,6 +49,7 @@ import org.springframework.ide.vscode.commons.util.ValueParseException;
 import org.springframework.ide.vscode.commons.util.ValueParser;
 import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
+import org.springframework.ide.vscode.commons.yaml.ast.NodeMergeSupport;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeRef;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeRef.Kind;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeRef.TupleValueRef;
@@ -72,6 +73,7 @@ public class ApplicationYamlASTReconciler implements YamlASTReconciler {
 	private final IProblemCollector problems;
 	private final TypeUtil typeUtil;
 	private final IndexNavigator nav;
+	private final NodeMergeSupport nodeMerger;
 	private AppYamlQuickfixes quickFixes;
 
 	public ApplicationYamlASTReconciler(IProblemCollector problems, IndexNavigator nav, TypeUtil typeUtil, AppYamlQuickfixes quickFixes) {
@@ -79,6 +81,7 @@ public class ApplicationYamlASTReconciler implements YamlASTReconciler {
 		this.typeUtil = typeUtil;
 		this.nav = nav;
 		this.quickFixes = quickFixes;
+		this.nodeMerger = new NodeMergeSupport(problems);
 	}
 
 	@Override
@@ -98,8 +101,10 @@ public class ApplicationYamlASTReconciler implements YamlASTReconciler {
 	protected void reconcile(YamlFileAST root, Node node, IndexNavigator nav) {
 		switch (node.getNodeId()) {
 		case mapping:
-			checkForDuplicateKeys((MappingNode)node);
-			for (NodeTuple entry : ((MappingNode)node).getValue()) {
+			MappingNode map = (MappingNode) node;
+			nodeMerger.flattenMapping(map);
+			checkForDuplicateKeys(map);
+			for (NodeTuple entry : map.getValue()) {
 				reconcile(root, entry, nav);
 			}
 			break;
@@ -183,7 +188,9 @@ public class ApplicationYamlASTReconciler implements YamlASTReconciler {
 			} else {
 				//both are null, this means there's no valid property with the current prefix
 				//whether exact or extending it with further navigation
-				unkownProperty(root.getDocument().getUri(), keyNode, subNav.getPrefix(), entry, quickFixes.MISSING_PROPERTY);
+				if (!NodeUtil.isAnchored(entry)) { //See https://github.com/spring-projects/sts4/issues/420
+					unkownProperty(root.getDocument().getUri(), keyNode, subNav.getPrefix(), entry, quickFixes.MISSING_PROPERTY);
+				}
 			}
 		}
 	}
@@ -221,6 +228,7 @@ public class ApplicationYamlASTReconciler implements YamlASTReconciler {
 	}
 
 	private void reconcile(YamlFileAST root, MappingNode mapping, Type type) {
+		nodeMerger.flattenMapping(mapping);
 		checkForDuplicateKeys(mapping);
 		if (typeUtil.isAtomic(type)) {
 			expectTypeFoundMapping(type, mapping);

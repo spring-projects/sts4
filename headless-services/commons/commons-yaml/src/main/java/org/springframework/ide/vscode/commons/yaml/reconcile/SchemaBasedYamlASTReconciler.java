@@ -171,7 +171,7 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 						} else {
 							YTypedProperty prop = beanProperties.get(key);
 							if (prop==null) {
-								if (!ast.isAnchored(entry)) {
+								if (!NodeUtil.isAnchored(entry)) {
 									unknownBeanProperty(keyNode, type, key);
 								}
 							} else {

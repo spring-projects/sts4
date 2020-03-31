@@ -148,4 +148,22 @@ public class NodeUtil {
 		return new DocumentRegion(doc, tup.getKeyNode().getStartMark().getIndex(), tup.getValueNode().getEndMark().getIndex());
 	}
 
+	/**
+	 * Detects whether a given map key-value pair is anchored. I.e. corresponds to
+	 * a bit of yaml like this example:
+	 *
+	 * <pre>
+	 * some-key: &some-anchor
+	 *   blah: blah
+	 *   more: blah
+	 * </pre>
+	 */
+	public static boolean isAnchored(NodeTuple entry) {
+		if (entry!=null) {
+			Node v = entry.getValueNode();
+			return v!=null && v.getAnchor()!=null;
+		}
+		return false;
+	}
+
 }

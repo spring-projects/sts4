@@ -89,7 +89,33 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 	
 	////////////////////////////////////////////////////////////////////////////////////////
 	
-	@Test public void GH_404_ConsutructorBinding_support() throws Exception {
+	
+	@Test public void GH_420_anchorReference() throws Exception {
+		Editor editor;
+		data("config.bob", "java.lang.String", null, null);
+		data("config.dude", "java.lang.String", null, null);
+		
+		editor = newEditor(
+			"configref: &config\n" + 
+			"  bob: bob\n" + 
+			"  asdf: dude\n" + 
+			"config:\n" + 
+			"  <<: *config"
+		);
+		editor.assertProblems("asdf|Unknown");
+		
+		editor = newEditor(
+			"configref: &config\n" + 
+			"  bob: bob\n" + 
+			"  asdf: dude\n" + 
+			"config: *config"
+		);
+		editor.assertProblems(
+				"asdf|Unknown"
+		);
+	}
+	
+	@Test public void GH_404_ConstructorBinding_support() throws Exception {
 		useProject(createPredefinedMavenProject("gh_404"));
 		Editor editor;
 		
