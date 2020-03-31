@@ -27,6 +27,7 @@ RUN curl -sS https://dl-ssl.google.com/linux/linux_signing_key.pub | apt-key add
  && apt-get update && apt-get install -y google-chrome-stable
 
 RUN npm install -g vsce
+RUN npm install -g osvx
 
 RUN yarn global add lerna
 
