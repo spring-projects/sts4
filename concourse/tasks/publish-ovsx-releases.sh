@@ -19,7 +19,7 @@ do
     echo ""
     echo "We are runing the following command:"
     echo ""
-    echo "     ovsx publish -p vsce_token $vsix_file"
+    echo "      ovsx publish -p $ovsx_token $vsix_file"
     echo ""
-    ovsx publish -p $vsce_token $vsix_file
+    ovsx publish -p $ovsx_token $vsix_file
 done
