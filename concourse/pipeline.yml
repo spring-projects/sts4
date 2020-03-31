@@ -937,9 +937,8 @@ jobs:
       put: slack-notification
       params:
         channel: "#tools-team-internal"
-        text_file: version/version
         text: |
-          STS 4 VScode Extensions $TEXT_FILE_CONTENT released to ovsx.
+          STS 4 VScode Extensions released to ovsx.
 - name: publish-release
   serial: true
   plan:
