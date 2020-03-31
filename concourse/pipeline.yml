@@ -905,6 +905,41 @@ jobs:
         text: |
           Build ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has succeed!
           Release candidate available for testing $TEXT_FILE_CONTENT
+- name: publish-ovsx-releases
+  serial: true
+  plan:
+  - in_parallel:
+    - get: tasks
+    - get: s3-concourse-vsix-snapshot
+      passed:
+      - build-concourse-rc
+    - get: s3-manifest-yaml-vsix-snapshot
+      passed:
+      - build-manifest-yaml-rc
+    - get: s3-bosh-vsix-snapshot
+      passed:
+      - build-bosh-rc
+    - get: s3-spring-boot-vsix-snapshot
+      passed:
+      - build-spring-boot-rc
+  - task: publish-ovsx-releases
+    file: tasks/concourse/tasks/publish-ovsx-releases.yml
+    input_mapping:
+      sts4: tasks
+    params:
+      ovsx_token: ((ovsx_token))
+    on_failure:
+      put: slack-notification
+      params:
+        text: |
+           Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!      
+    on_success:
+      put: slack-notification
+      params:
+        channel: "#tools-team-internal"
+        text_file: version/version
+        text: |
+          STS 4 VScode Extensions $TEXT_FILE_CONTENT released to ovsx.
 - name: publish-release
   serial: true
   plan:
@@ -1317,6 +1352,7 @@ groups:
   - build-bosh-vsix-snapshot
   - build-spring-boot-vsix-snapshot
   - publish-concourse-vsix-release
+  - publish-ovsx-releases
   - create-rc-wiki-page
   - vsix-s3-publish
   - create-release-wiki-page
