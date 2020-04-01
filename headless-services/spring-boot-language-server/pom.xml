@@ -16,6 +16,7 @@
 	<properties>
 		<dependencies.version>${project.version}</dependencies.version>
 		<jdt.core.version>3.21.0</jdt.core.version>
+		<lsp4xml.version>0.11.1</lsp4xml.version>
 	</properties>
 
 	<repositories>
@@ -24,18 +25,12 @@
 			<url>file://${project.basedir}/repo</url>
 		</repository>
 
-<!-- 		<repository>
-			<id>oss-jfrog-snapshots</id>
-			<url>https://oss.jfrog.org/artifactory/libs-snapshot</url>
-			<snapshots>
-				<enabled>true</enabled>
-			</snapshots>
-		</repository>
--->
+		<!-- <repository> <id>oss-jfrog-snapshots</id> <url>https://oss.jfrog.org/artifactory/libs-snapshot</url> 
+			<snapshots> <enabled>true</enabled> </snapshots> </repository> -->
 
 		<repository>
-			<id>lsp4xml-releases</id>
-			<url>https://dl.bintray.com/lsp4xml/releases</url>
+			<id>lemminx-releases</id>
+			<url>https://repo.eclipse.org/content/repositories/lemminx-releases/</url>
 			<snapshots>
 				<enabled>false</enabled>
 			</snapshots>
@@ -108,10 +103,11 @@
 			<artifactId>json</artifactId>
 			<version>20160810</version>
 		</dependency>
+
 		<dependency>
-			<groupId>org.lsp4xml</groupId>
-			<artifactId>org.eclipse.lsp4xml</artifactId>
-			<version>0.9.1</version>
+			<groupId>org.eclipse.lemminx</groupId>
+			<artifactId>org.eclipse.lemminx</artifactId>
+			<version>${lsp4xml.version}</version>
 			<exclusions>
 				<exclusion>
 					<groupId>org.eclipse.lsp4j</groupId>
@@ -149,7 +145,7 @@
 			<version>${mockito-version}</version>
 			<scope>test</scope>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.springframework.ide.vscode</groupId>
 			<artifactId>commons-maven</artifactId>
@@ -208,7 +204,7 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration>
-  					<useFile>false</useFile>
+					<useFile>false</useFile>
 					<trimStackTrace>false</trimStackTrace>
 					<excludes>
 						<exclude>test-projects/**</exclude>

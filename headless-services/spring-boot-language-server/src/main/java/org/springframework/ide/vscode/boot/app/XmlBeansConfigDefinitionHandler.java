@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019 Pivotal, Inc.
+ * Copyright (c) 2019, 2020 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -47,16 +47,16 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.lemminx.dom.DOMAttr;
+import org.eclipse.lemminx.dom.DOMDocument;
+import org.eclipse.lemminx.dom.DOMNode;
+import org.eclipse.lemminx.dom.DOMParser;
+import org.eclipse.lemminx.dom.parser.Scanner;
+import org.eclipse.lemminx.dom.parser.TokenType;
+import org.eclipse.lemminx.dom.parser.XMLScanner;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.LocationLink;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
-import org.eclipse.lsp4xml.dom.DOMAttr;
-import org.eclipse.lsp4xml.dom.DOMDocument;
-import org.eclipse.lsp4xml.dom.DOMNode;
-import org.eclipse.lsp4xml.dom.DOMParser;
-import org.eclipse.lsp4xml.dom.parser.Scanner;
-import org.eclipse.lsp4xml.dom.parser.TokenType;
-import org.eclipse.lsp4xml.dom.parser.XMLScanner;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.links.JavaElementLocationProvider;

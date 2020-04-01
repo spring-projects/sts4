@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019 Pivotal, Inc.
+ * Copyright (c) 2019, 2020 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,20 +10,51 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.xml;
 
-import static org.springframework.ide.vscode.boot.xml.XmlConfigConstants.*;
+import static org.springframework.ide.vscode.boot.xml.XmlConfigConstants.ALIAS_ELEMENT;
+import static org.springframework.ide.vscode.boot.xml.XmlConfigConstants.ARG_TYPE_ELEMENT;
+import static org.springframework.ide.vscode.boot.xml.XmlConfigConstants.BASE_PACKAGE_ATTRIBUTE;
+import static org.springframework.ide.vscode.boot.xml.XmlConfigConstants.BEANS_NAMESPACE;
+import static org.springframework.ide.vscode.boot.xml.XmlConfigConstants.BEAN_ATTRIBUTE;
+import static org.springframework.ide.vscode.boot.xml.XmlConfigConstants.BEAN_ELEMENT;
+import static org.springframework.ide.vscode.boot.xml.XmlConfigConstants.CLASS_ATTRIBUTE;
+import static org.springframework.ide.vscode.boot.xml.XmlConfigConstants.COMPONENT_SCAN_ELEMENT;
+import static org.springframework.ide.vscode.boot.xml.XmlConfigConstants.CONSTRUCTOR_ARG_ELEMENT;
+import static org.springframework.ide.vscode.boot.xml.XmlConfigConstants.CONTEXT_NAMESPACE;
+import static org.springframework.ide.vscode.boot.xml.XmlConfigConstants.DEPENDS_ON_ATTRIBUTE;
+import static org.springframework.ide.vscode.boot.xml.XmlConfigConstants.ENTRY_ELEMENT;
+import static org.springframework.ide.vscode.boot.xml.XmlConfigConstants.FACTORY_BEAN_ATTRIBUTE;
+import static org.springframework.ide.vscode.boot.xml.XmlConfigConstants.IDREF_ELEMENT;
+import static org.springframework.ide.vscode.boot.xml.XmlConfigConstants.KEY_REF_ATTRIBUTE;
+import static org.springframework.ide.vscode.boot.xml.XmlConfigConstants.KEY_TYPE_ATTRIBUTE;
+import static org.springframework.ide.vscode.boot.xml.XmlConfigConstants.LOOKUP_METHOD_ELEMENT;
+import static org.springframework.ide.vscode.boot.xml.XmlConfigConstants.MATCH_ATTRIBUTE;
+import static org.springframework.ide.vscode.boot.xml.XmlConfigConstants.NAME_ATTRIBUTE;
+import static org.springframework.ide.vscode.boot.xml.XmlConfigConstants.NAME_GENERATOR_ATTRIBUTE;
+import static org.springframework.ide.vscode.boot.xml.XmlConfigConstants.PARENT_ATTRIBUTE;
+import static org.springframework.ide.vscode.boot.xml.XmlConfigConstants.PROPERTY_ELEMENT;
+import static org.springframework.ide.vscode.boot.xml.XmlConfigConstants.REF_ATTRIBUTE;
+import static org.springframework.ide.vscode.boot.xml.XmlConfigConstants.REF_ELEMENT;
+import static org.springframework.ide.vscode.boot.xml.XmlConfigConstants.REPLACED_METHOD_ELEMENT;
+import static org.springframework.ide.vscode.boot.xml.XmlConfigConstants.REPLACER_ATTRIBUTE;
+import static org.springframework.ide.vscode.boot.xml.XmlConfigConstants.SCOPE_RESOLVER_ATTRIBUTE;
+import static org.springframework.ide.vscode.boot.xml.XmlConfigConstants.TYPE_ATTRIBUTE;
+import static org.springframework.ide.vscode.boot.xml.XmlConfigConstants.UTIL_NAMESPACE;
+import static org.springframework.ide.vscode.boot.xml.XmlConfigConstants.VALUE_ELEMENT;
+import static org.springframework.ide.vscode.boot.xml.XmlConfigConstants.VALUE_REF_ATTRIBUTE;
+import static org.springframework.ide.vscode.boot.xml.XmlConfigConstants.VALUE_TYPE_ATTRIBUTE;
 
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.eclipse.lsp4xml.dom.DOMAttr;
-import org.eclipse.lsp4xml.dom.DOMDocument;
-import org.eclipse.lsp4xml.dom.DOMNode;
-import org.eclipse.lsp4xml.dom.DOMParser;
-import org.eclipse.lsp4xml.dom.parser.Scanner;
-import org.eclipse.lsp4xml.dom.parser.TokenType;
-import org.eclipse.lsp4xml.dom.parser.XMLScanner;
+import org.eclipse.lemminx.dom.DOMAttr;
+import org.eclipse.lemminx.dom.DOMDocument;
+import org.eclipse.lemminx.dom.DOMNode;
+import org.eclipse.lemminx.dom.DOMParser;
+import org.eclipse.lemminx.dom.parser.Scanner;
+import org.eclipse.lemminx.dom.parser.TokenType;
+import org.eclipse.lemminx.dom.parser.XMLScanner;
 import org.springframework.ide.vscode.boot.app.BootJavaConfig;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.boot.xml.completions.BeanRefCompletionProposalProvider;
