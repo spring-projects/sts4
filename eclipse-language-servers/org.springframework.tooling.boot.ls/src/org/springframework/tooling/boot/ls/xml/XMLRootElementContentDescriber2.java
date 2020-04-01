@@ -1,3 +1,26 @@
+/*******************************************************************************
+ * Copyright (c) 2004, 2009 IBM Corporation and others.
+ *
+ * This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License 2.0
+ * which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-2.0/
+ *
+ * SPDX-License-Identifier: EPL-2.0
+ *
+ * Contributors:
+ *     IBM Corporation - initial API and implementation
+ *     Jesper Steen Moeller - added namespace support
+ *
+ *
+ * =======
+ *
+ * Copied from org.eclipse.core.runtime.content.XMLRootElementContentDescriber2 because:
+ * 1. Cannot be overridden
+ * 2. Need to return INVALID status if root element searched for not found. INDETERMINATE status only if there are no root elements 
+ * @author aboyko
+ *     
+ *******************************************************************************/
 package org.springframework.tooling.boot.ls.xml;
 
 import java.io.IOException;
@@ -71,13 +94,6 @@ import org.xml.sax.SAXException;
  *
  * @since org.eclipse.core.contenttype 3.3
  * @noinstantiate This class is not intended to be instantiated by clients.
- */
-/**
- * Copied from org.eclipse.core.runtime.content.XMLRootElementContentDescriber2 because:
- * 1. Cannot be overridden
- * 2. Need to return INVALID status if root element searched for not found. INDETERMINATE status only if there are no root elements 
- * @author aboyko
- *
  */
 public final class XMLRootElementContentDescriber2 extends XMLContentDescriber implements IExecutableExtension {
 
