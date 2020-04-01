@@ -120,6 +120,46 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 	
+	@Test public void GH_427_completionInDollarReference() throws Exception {
+		defaultTestData();
+		assertCompletions(
+				"server:\n" + 
+				"  port: 8006\n" + 
+				"\n" + 
+				"spring:\n" + 
+				"  application:\n" + 
+				"    name: dadada\n" + 
+				"  cloud:\n" + 
+				"    consul:\n" + 
+				"      host: localhost\n" + 
+				"      port: 8500\n" + 
+				"      discovery:\n" + 
+				"        service-name: ${appnam<*>}"
+				, //==>
+				"server:\n" + 
+				"  port: 8006\n" + 
+				"\n" + 
+				"spring:\n" + 
+				"  application:\n" + 
+				"    name: dadada\n" + 
+				"  cloud:\n" + 
+				"    consul:\n" + 
+				"      host: localhost\n" + 
+				"      port: 8500\n" + 
+				"      discovery:\n" + 
+				"        service-name: ${spring.application.name}"
+		);
+		
+		assertCompletions(
+				"spring:\n" + 
+				"  application:\n" + 
+				"    name: ${sport<*>}\n" 
+				, //==>
+				"spring:\n" + 
+				"  application:\n" + 
+				"    name: ${server.port<*>}\n" 
+		);
+	}
 	
 	@Test public void GH_420_anchorReference() throws Exception {
 		Editor editor;
