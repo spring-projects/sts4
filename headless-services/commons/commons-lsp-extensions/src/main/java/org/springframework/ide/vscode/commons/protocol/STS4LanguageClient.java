@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019 Pivotal, Inc.
+ * Copyright (c) 2019, 2020 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -15,6 +15,8 @@ import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.MarkupContent;
+import org.eclipse.lsp4j.jsonrpc.json.ResponseJsonAdapter;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.jsonrpc.services.JsonNotification;
 import org.eclipse.lsp4j.jsonrpc.services.JsonRequest;
 import org.eclipse.lsp4j.services.LanguageClient;
@@ -68,10 +70,12 @@ public interface STS4LanguageClient extends LanguageClient {
 	CompletableFuture<List<String>> javaSearchPackages(JavaSearchParams params);
 	
 	@JsonRequest("sts/javaSubTypes")
-	CompletableFuture<List<TypeDescriptorData>> javaSubTypes(JavaTypeHierarchyParams params);
+	@ResponseJsonAdapter(TypeHierarchyResponseAdapter.class)
+	CompletableFuture<List<Either<TypeDescriptorData, TypeData>>> javaSubTypes(JavaTypeHierarchyParams params);
 	
 	@JsonRequest("sts/javaSuperTypes")
-	CompletableFuture<List<TypeDescriptorData>> javaSuperTypes(JavaTypeHierarchyParams params);
+	@ResponseJsonAdapter(TypeHierarchyResponseAdapter.class)
+	CompletableFuture<List<Either<TypeDescriptorData, TypeData>>> javaSuperTypes(JavaTypeHierarchyParams params);
 
 	@JsonRequest("sts/javaCodeComplete")
 	CompletableFuture<List<JavaCodeCompleteData>> javaCodeComplete(JavaCodeCompleteParams params);

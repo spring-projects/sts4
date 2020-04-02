@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2019 Pivotal, Inc.
+ * Copyright (c) 2016, 2020 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -141,7 +141,7 @@ public class ClassReferenceProvider extends CachingValueProvider {
 		if (target == null) {
 			typesWithScoresFlux = javaProject.getIndex().fuzzySearchTypes(query, true, false);
 		} else {
-			typesWithScoresFlux = javaProject.getIndex().allSubtypesOf(target, true)
+			typesWithScoresFlux = javaProject.getIndex().allSubtypesOf(target, true, false)
 					.filter(t -> Flags.isPublic(t.getFlags()) && !concrete || !isAbstract(t))
 					.map(type -> Tuples.of(type, FuzzyMatcher.matchScore(query, type.getFullyQualifiedName())));
 		}

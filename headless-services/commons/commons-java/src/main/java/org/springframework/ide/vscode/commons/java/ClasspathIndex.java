@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2019 Pivotal, Inc.
+ * Copyright (c) 2018, 2020 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -20,8 +20,8 @@ public interface ClasspathIndex extends Disposable {
 	Flux<Tuple2<IType, Double>> fuzzySearchTypes(String searchTerm, boolean includeBinaries, boolean includeSystemLibs);
 	Flux<Tuple2<IType, Double>> camelcaseSearchTypes(String searchTerm, boolean includeBinaries, boolean includeSystemLibs);
 	Flux<Tuple2<String, Double>> fuzzySearchPackages(String searchTerm, boolean includeBinaries, boolean includeSystemLibs);
-	Flux<IType> allSubtypesOf(String fqName, boolean includeFocusType);
-	Flux<IType> allSuperTypesOf(String fqName, boolean includeFocusType);
+	Flux<IType> allSubtypesOf(String fqName, boolean includeFocusType, boolean detailed);
+	Flux<IType> allSuperTypesOf(String fqName, boolean includeFocusType, boolean detailed);
 	IJavaModuleData findClasspathResourceContainer(String fqName);
 
 }

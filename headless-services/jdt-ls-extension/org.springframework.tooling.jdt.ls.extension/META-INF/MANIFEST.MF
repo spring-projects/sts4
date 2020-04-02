@@ -12,4 +12,5 @@ Require-Bundle: org.eclipse.jdt.ls.core,
  org.springframework.tooling.jdt.ls.commons,
  com.google.guava,
  com.google.gson,
- org.eclipse.lsp4j
+ org.eclipse.lsp4j,
+ org.eclipse.lsp4j.jsonrpc

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019 Pivotal, Inc.
+ * Copyright (c) 2019, 2020 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -144,8 +144,8 @@ public class JavaLangugeClientTest {
 	@Test
 	public void map_Subtypes() throws Exception {
 		List<TypeDescriptorData> data = client
-				.javaSubTypes(new JavaTypeHierarchyParams(project.getLocationURI().toString(), "java.util.Map", false))
-				.get(10, TimeUnit.SECONDS);
+				.javaSubTypes(new JavaTypeHierarchyParams(project.getLocationURI().toString(), "java.util.Map", false, false))
+				.get(10, TimeUnit.SECONDS).stream().map(e -> e.getLeft()).collect(Collectors.toList());
 		assertNotNull(data);
 		assertTrue(data.size() > 200);
 		assertTrue(data.stream().filter(t -> "java.util.AbstractMap".equals(t.getFqName())).findFirst().isPresent());
@@ -154,8 +154,8 @@ public class JavaLangugeClientTest {
 	@Test
 	public void map_Subtypes_with_Itself() throws Exception {
 		List<TypeDescriptorData> data = client
-				.javaSubTypes(new JavaTypeHierarchyParams(project.getLocationURI().toString(), "java.util.Map", true))
-				.get(10, TimeUnit.SECONDS);
+				.javaSubTypes(new JavaTypeHierarchyParams(project.getLocationURI().toString(), "java.util.Map", true, false))
+				.get(10, TimeUnit.SECONDS).stream().map(e -> e.getLeft()).collect(Collectors.toList());
 		assertNotNull(data);
 		assertTrue(data.size() > 200);
 		assertTrue(data.stream().filter(t -> "java.util.Map".equals(t.getFqName())).findFirst().isPresent());
@@ -164,8 +164,8 @@ public class JavaLangugeClientTest {
 	@Test
 	public void arrayList_SuperTypes() throws Exception {
 		List<TypeDescriptorData> data = client
-				.javaSuperTypes(new JavaTypeHierarchyParams(project.getLocationURI().toString(), "java.util.ArrayList", false))
-				.get(10, TimeUnit.SECONDS);
+				.javaSuperTypes(new JavaTypeHierarchyParams(project.getLocationURI().toString(), "java.util.ArrayList", false, false))
+				.get(10, TimeUnit.SECONDS).stream().map(e -> e.getLeft()).collect(Collectors.toList());
 		assertNotNull(data);
 		Set<String> actual = data.stream().map(t -> t.getFqName()).collect(Collectors.toSet());
 		Set<String> expected = new HashSet<>(Arrays.asList(
@@ -185,8 +185,8 @@ public class JavaLangugeClientTest {
 	@Test
 	public void anonymousInnerType_SuperTypes() throws Exception {
 		List<TypeDescriptorData> data = client
-				.javaSuperTypes(new JavaTypeHierarchyParams(project.getLocationURI().toString(), "org.test.Application$1", false))
-				.get(1000000000, TimeUnit.SECONDS);
+				.javaSuperTypes(new JavaTypeHierarchyParams(project.getLocationURI().toString(), "org.test.Application$1", false, false))
+				.get(1000000000, TimeUnit.SECONDS).stream().map(e -> e.getLeft()).collect(Collectors.toList());
 		assertNotNull(data);
 		Set<String> actual = data.stream().map(t -> t.getFqName()).collect(Collectors.toSet());
 		Set<String> expected = new HashSet<>(Arrays.asList(
@@ -206,8 +206,8 @@ public class JavaLangugeClientTest {
 	@Test
 	public void arrayList_SuperTypes_with_Itself() throws Exception {
 		List<TypeDescriptorData> data = client
-				.javaSuperTypes(new JavaTypeHierarchyParams(project.getLocationURI().toString(), "java.util.ArrayList", true))
-				.get(10, TimeUnit.SECONDS);
+				.javaSuperTypes(new JavaTypeHierarchyParams(project.getLocationURI().toString(), "java.util.ArrayList", true, false))
+				.get(10, TimeUnit.SECONDS).stream().map(e -> e.getLeft()).collect(Collectors.toList());
 		assertNotNull(data);
 		Set<String> actual = data.stream().map(t -> t.getFqName()).collect(Collectors.toSet());
 		Set<String> expected = new HashSet<>(Arrays.asList(
@@ -229,7 +229,7 @@ public class JavaLangugeClientTest {
 	public void taskExecutorFactoryBean_SuperTypes() throws Exception {
 		List<TypeDescriptorData> data = client
 				.javaSuperTypes(new JavaTypeHierarchyParams(project.getLocationURI().toString(), "org.springframework.scheduling.config.TaskExecutorFactoryBean"))
-				.get(10, TimeUnit.SECONDS);
+				.get(10, TimeUnit.SECONDS).stream().map(e -> e.getLeft()).collect(Collectors.toList());
 		assertNotNull(data);
 		Set<String> actual = data.stream().map(t -> t.getFqName()).collect(Collectors.toSet());
 		Set<String> expected = new HashSet<>(Arrays.asList(
