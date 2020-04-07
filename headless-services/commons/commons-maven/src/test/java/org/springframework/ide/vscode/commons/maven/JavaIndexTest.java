@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2019 Pivotal, Inc.
+ * Copyright (c) 2016, 2020 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -163,7 +163,7 @@ public class JavaIndexTest {
 	@Test
 	public void testFindAllSuperTypes() throws Exception {
 		MavenJavaProject project = mavenProjectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file");
-		Set<String> actual = project.getIndex().allSuperTypesOf("java.util.ArrayList", false).map(t -> t.getFullyQualifiedName()).collect(Collectors.toSet()).block();
+		Set<String> actual = project.getIndex().allSuperTypesOf("java.util.ArrayList", false, true).map(t -> t.getFullyQualifiedName()).collect(Collectors.toSet()).block();
 		Set<String> expected = new HashSet<>(Arrays.asList(
 				"java.util.List",
 				"java.util.RandomAccess",
@@ -181,7 +181,7 @@ public class JavaIndexTest {
 	@Test
 	public void testFindAllSuperTypesWithFocusType() throws Exception {
 		MavenJavaProject project = mavenProjectsCache.get("gs-rest-service-cors-boot-1.4.1-with-classpath-file");
-		Set<String> actual = project.getIndex().allSuperTypesOf("java.util.ArrayList", true).map(t -> t.getFullyQualifiedName()).collect(Collectors.toSet()).block();
+		Set<String> actual = project.getIndex().allSuperTypesOf("java.util.ArrayList", true, true).map(t -> t.getFullyQualifiedName()).collect(Collectors.toSet()).block();
 		Set<String> expected = new HashSet<>(Arrays.asList(
 				"java.util.ArrayList",
 				"java.util.List",

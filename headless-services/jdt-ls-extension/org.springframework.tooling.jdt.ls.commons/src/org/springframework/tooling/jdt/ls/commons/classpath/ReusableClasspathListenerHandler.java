@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2019 Pivotal, Inc.
+ * Copyright (c) 2018, 2020 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -99,25 +99,15 @@ public class ReusableClasspathListenerHandler {
 		
 		public void subscribe(String callbackCommandId, boolean isBatched) {
 			// keep out of synchronized block to avoid workspace locks
-			logger.log("Sorting projects...");
 			IProject[] sortedProjects = getSortedProjects();
-			logger.log("Sorting projects... DONE");
 
 			synchronized(this) {
-				logger.log("inside synchronized Subscriptions");
 				if (!subscribers.containsKey(callbackCommandId)) {
-					logger.log("subscribing to classpath changes: " + callbackCommandId +" isBatched = "+isBatched);
 					classpathListener = new ClasspathListenerManager(logger, new ClasspathListener() {
 						@Override
 						public void classpathChanged(IJavaProject jp) {
 							sendNotification(jp, subscribers.keySet());
 						}
-	
-						@Override
-						public void projectBuilt(IJavaProject jp) {
-							sendNotificationOnProjectBuilt(jp, subscribers.keySet());
-						}
-						
 					});
 					final SendClasspathNotificationsJob job = new SendClasspathNotificationsJob(logger, conn, callbackCommandId, isBatched);
 					subscribers.put(callbackCommandId, job);
@@ -132,7 +122,6 @@ public class ReusableClasspathListenerHandler {
 						}
 						
 					});
-					logger.log("subsribers = " + subscribers);
 					sendInitialEvents(callbackCommandId, sortedProjects);
 				}
 			}
@@ -177,14 +166,6 @@ public class ReusableClasspathListenerHandler {
 			}
 		}
 
-		private synchronized void sendNotificationOnProjectBuilt(IJavaProject jp, Collection<String> callbackIds) {
-			for (String callbackId : callbackIds) {
-				SendClasspathNotificationsJob sendNotificationJob = subscribers.get(callbackId);
-				sendNotificationJob.builtProjectQueue.add(jp);
-				sendNotificationJob.schedule();
-			}
-		}
-		
 		public synchronized void unsubscribe(String callbackCommandId) {
 			logger.log("unsubscribing from classpath changes: " + callbackCommandId);
 			subscribers.remove(callbackCommandId);

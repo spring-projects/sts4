@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019 Pivotal, Inc.
+ * Copyright (c) 2019, 2020 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,13 +11,13 @@
 package org.springframework.ide.vscode.commons.jdtls;
 
 import java.net.URI;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -167,22 +167,13 @@ public class JdtLsIndex implements ClasspathIndex {
 				.filter(tuple -> tuple.getT2() != 0.0);
 	}
 
-	private List<IType> convertTypeDescriptors(List<TypeDescriptorData> descriptors) {
-		List<IType> types = new ArrayList<>(descriptors.size());
-		for (TypeDescriptorData data : descriptors) {
-			if (data != null) {
-				types.add(toTypeFromDescriptor(data));
-			}
-		}
-		return types;
-	}
-
 	@Override
-	public Flux<IType> allSubtypesOf(String fqName, boolean includeFocusType) {
-		JavaTypeHierarchyParams searchParams = new JavaTypeHierarchyParams(projectUri.toString(), fqName, includeFocusType);
+	public Flux<IType> allSubtypesOf(String fqName, boolean includeFocusType, boolean detailed) {
+		JavaTypeHierarchyParams searchParams = new JavaTypeHierarchyParams(projectUri.toString(), fqName, includeFocusType, detailed);
 		try {
 			CompletableFuture<List<IType>> future = subtypesCache.get(searchParams, () -> client
-					.javaSubTypes(searchParams).handle((results, exception) -> convertTypeDescriptors(results)));
+					.javaSubTypes(searchParams)
+					.handle((results, exception) -> results.stream().map(e -> detailed ? toType(e.getRight()) : toTypeFromDescriptor(e.getLeft())).collect(Collectors.toList())));
 			return Mono.fromFuture(future)
 					.flatMapMany(results -> Flux.fromIterable(results));
 		} catch (ExecutionException e) {
@@ -192,11 +183,12 @@ public class JdtLsIndex implements ClasspathIndex {
 	}
 
 	@Override
-	public Flux<IType> allSuperTypesOf(String fqName, boolean includeFocusType) {
-		JavaTypeHierarchyParams searchParams = new JavaTypeHierarchyParams(projectUri.toString(), fqName, includeFocusType);
+	public Flux<IType> allSuperTypesOf(String fqName, boolean includeFocusType, boolean detailed) {
+		JavaTypeHierarchyParams searchParams = new JavaTypeHierarchyParams(projectUri.toString(), fqName, includeFocusType, detailed);
 		try {
 			CompletableFuture<List<IType>> future = supertypesCache.get(searchParams, () -> client
-					.javaSuperTypes(searchParams).handle((results, exception) -> convertTypeDescriptors(results)));
+					.javaSuperTypes(searchParams)
+					.handle((results, exception) -> results.stream().map(e -> detailed ? toType(e.getRight()) : toTypeFromDescriptor(e.getLeft())).collect(Collectors.toList())));
 			return Mono.fromFuture(future)
 					.flatMapMany(results -> Flux.fromIterable(results));
 		} catch (ExecutionException e) {

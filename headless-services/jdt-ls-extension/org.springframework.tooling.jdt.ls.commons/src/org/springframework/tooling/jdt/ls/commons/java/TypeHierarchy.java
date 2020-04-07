@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019 Pivotal, Inc.
+ * Copyright (c) 2019, 2020 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -17,7 +17,9 @@ import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.ITypeHierarchy;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.springframework.ide.vscode.commons.protocol.java.JavaTypeHierarchyParams;
+import org.springframework.ide.vscode.commons.protocol.java.TypeData;
 import org.springframework.ide.vscode.commons.protocol.java.TypeDescriptorData;
 import org.springframework.tooling.jdt.ls.commons.Logger;
 import org.springframework.tooling.jdt.ls.commons.resources.ResourceUtils;
@@ -61,26 +63,26 @@ public class TypeHierarchy {
 		return null;
 	}
 	
-	public Stream<TypeDescriptorData> subTypes(JavaTypeHierarchyParams params) {
+	public Stream<Either<TypeDescriptorData, TypeData>> subTypes(JavaTypeHierarchyParams params) {
 		URI projectUri = params.getProjectUri() == null ? null : URI.create(params.getProjectUri());
 		ITypeHierarchy hierarchy = hierarchy(projectUri, params.getFqName(), false);
 		if (hierarchy != null) {
 			IType focusType = hierarchy.getType();
 			return Stream.concat(params.isIncludeFocusType() ? Stream.of(focusType) : Stream.empty(), Stream.of(hierarchy.getAllSubtypes(focusType)))
 					.parallel()
-					.map(javaData::createTypeDescriptorData);
+					.map(type -> params.isDetailed() ? Either.forRight(javaData.createTypeData(type)) : Either.forLeft(javaData.createTypeDescriptorData(type)));
 		}
 		return Stream.of();
 	}
 
-	public Stream<TypeDescriptorData> superTypes(JavaTypeHierarchyParams params) {
+	public Stream<Either<TypeDescriptorData, TypeData>> superTypes(JavaTypeHierarchyParams params) {
 		URI projectUri = params.getProjectUri() == null ? null : URI.create(params.getProjectUri());
 		ITypeHierarchy hierarchy = hierarchy(projectUri, params.getFqName(), true);
 		if (hierarchy != null) {
 			IType focusType = hierarchy.getType();
 			return Stream.concat(params.isIncludeFocusType() ? Stream.of(focusType) : Stream.empty(), Stream.of(hierarchy.getAllSupertypes(focusType)))
 				.parallel()
-				.map(javaData::createTypeDescriptorData);
+				.map(type -> params.isDetailed() ? Either.forRight(javaData.createTypeData(type)) : Either.forLeft(javaData.createTypeDescriptorData(type)));
 		}
 		return Stream.of();
 	}

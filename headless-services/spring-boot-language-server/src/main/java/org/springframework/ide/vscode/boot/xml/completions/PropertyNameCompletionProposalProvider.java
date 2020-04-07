@@ -136,7 +136,7 @@ public class PropertyNameCompletionProposalProvider implements XMLCompletionProv
 	}
 	
 	public static Stream<IMethod> propertyNameCandidateMethods(IJavaProject project, String beanClassFqName) {
-		return project.getIndex().allSuperTypesOf(beanClassFqName, true)
+		return project.getIndex().allSuperTypesOf(beanClassFqName, true, true)
 			.toStream()
 			.flatMap(type -> type.getMethods())
 			.filter(PropertyNameCompletionProposalProvider::isPropertyWriteMethod);
