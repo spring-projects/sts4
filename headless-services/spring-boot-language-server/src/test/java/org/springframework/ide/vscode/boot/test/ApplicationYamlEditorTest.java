@@ -11,16 +11,19 @@
 package org.springframework.ide.vscode.boot.test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertTrue;
 import static org.springframework.ide.vscode.boot.test.DefinitionLinkAsserts.field;
 import static org.springframework.ide.vscode.boot.test.DefinitionLinkAsserts.method;
 import static org.springframework.ide.vscode.languageserver.testharness.Editor.INDENTED_COMPLETION;
 
+import java.io.File;
 import java.time.Duration;
-import java.util.HashMap;
+import java.util.List;
 import java.util.Optional;
 
+import org.apache.commons.io.FileUtils;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.junit.After;
@@ -38,19 +41,18 @@ import org.springframework.ide.vscode.boot.configurationmetadata.Deprecation.Lev
 import org.springframework.ide.vscode.boot.editor.harness.AbstractPropsEditorTest;
 import org.springframework.ide.vscode.boot.metadata.CachingValueProvider;
 import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
+import org.springframework.ide.vscode.boot.properties.quickfix.MissingPropertyData;
+import org.springframework.ide.vscode.commons.jandex.MethodImpl;
+import org.springframework.ide.vscode.commons.jandex.TestDataProvider;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
 import org.springframework.ide.vscode.commons.util.RunnableWithException;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
+import org.springframework.ide.vscode.commons.yaml.reconcile.MissingPropertiesData;
 import org.springframework.ide.vscode.languageserver.testharness.CodeAction;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.test.context.junit4.SpringRunner;
-
-import com.google.common.collect.ImmutableList;
-
-import org.springframework.ide.vscode.commons.jandex.MethodImpl;
-import org.springframework.ide.vscode.commons.jandex.TestDataProvider;
 
 
 /**
@@ -3020,31 +3022,101 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		assertCompletionDetailsWithDeprecation("foo:\n  nam<*>", "alt-name", "String", null, Boolean.TRUE);
 	}
 
-	@Test public void missingPropertyQuickfix() throws Exception {
+	@Test public void missingPropertyQuickfix_1() throws Exception {
 		IJavaProject p = createPredefinedMavenProject("empty-boot-2.1.0-app");
 		useProject(p);
+		File location = new File(p.getLocationUri());
 		
-		{
+		File metadata_rsrc = new File(location, "src/main/resources/META-INF/additional-spring-configuration-metadata.json");
+		File metadata_java = new File(location, "src/main/java/META-INF/additional-spring-configuration-metadata.json");
+		
+		assertFalse(
+			metadata_rsrc.exists()
+		);
+		assertFalse(
+			metadata_java.exists()
+		);
+		try {
 			Editor editor = newEditor(
 					"myapp:\n" + 
 					"  orders:\n" + 
 					"    pages: 10"
 			);
 			Diagnostic problem = editor.assertProblems("myapp|Unknown").get(0);
-			editor.assertQuickfixes(problem, "Create metadata for `myapp.orders.pages`");
+			CodeAction fix = editor.assertQuickfixes(problem, "Create metadata for `myapp.orders.pages`").get(0);
+			assertEquals("myapp.orders.pages", getMissingPropertyName(fix));
+			
+			fix.perform();
+			assertTrue(metadata_rsrc.exists());
+			assertEquals(
+					"{\"properties\": [{\n" + 
+					"  \"name\": \"myapp.orders.pages\",\n" + 
+					"  \"type\": \"java.lang.String\",\n" + 
+					"  \"description\": \"A description for 'myapp.orders.pages'\"\n" + 
+					"}]}",
+					FileUtils.readFileToString(metadata_rsrc, "utf8")
+			);
+			
+		} finally {
+			FileUtils.deleteQuietly(new File(location, "src/main/resources/META-INF"));
+			FileUtils.deleteQuietly(new File(location, "src/main/java/META-INF"));
 		}
+	}
+	
+	private String getMissingPropertyName(CodeAction fix) {
+		String cmd = fix.command.getCommand();
+		assertEquals("sts.vscode-spring-boot.codeAction", cmd);
+		List<Object> args = fix.command.getArguments();
+		assertEquals("MISSING_PROPERTY_APP", args.get(0));
+		MissingPropertyData data = (MissingPropertyData) args.get(1);
+		return data.getProperty();
+	}
+
+	@Test public void missingPropertyQuickfix_2() throws Exception {
+		IJavaProject p = createPredefinedMavenProject("empty-boot-2.1.0-app");
+		useProject(p);
+		File location = new File(p.getLocationUri());
 		
-		{
+		File metadata_rsrc = new File(location, "src/main/resources/META-INF/additional-spring-configuration-metadata.json");
+		File metadata_java = new File(location, "src/main/java/META-INF/additional-spring-configuration-metadata.json");
+		
+		assertFalse(
+			metadata_rsrc.exists()
+		);
+		assertFalse(
+			metadata_java.exists()
+		);
+		try {
 			Editor editor = newEditor(
 					"myapp:\n" + 
 					"  orders:\n" + 
 					"    pageSize: 10"
 			);
 			Diagnostic problem = editor.assertProblems("myapp|Unknown").get(0);
-			editor.assertQuickfixes(problem, "Create metadata for `myapp.orders.page-size`");
+			CodeAction fix = editor.assertQuickfixes(problem, "Create metadata for `myapp.orders.page-size`").get(0);
+			assertEquals("myapp.orders.page-size", getMissingPropertyName(fix));
+		} finally {
+			FileUtils.deleteQuietly(new File(location, "src/main/resources/META-INF"));
+			FileUtils.deleteQuietly(new File(location, "src/main/java/META-INF"));
 		}
+	}
 
-		{
+	@Test public void missingPropertyQuickfix_3() throws Exception {
+		IJavaProject p = createPredefinedMavenProject("empty-boot-2.1.0-app");
+		useProject(p);
+		File location = new File(p.getLocationUri());
+		
+		File metadata_rsrc = new File(location, "src/main/resources/META-INF/additional-spring-configuration-metadata.json");
+		File metadata_java = new File(location, "src/main/java/META-INF/additional-spring-configuration-metadata.json");
+		
+		assertFalse(
+			metadata_rsrc.exists()
+		);
+		assertFalse(
+			metadata_java.exists()
+		);
+		try {
+	
 			Editor editor = newEditor(
 					"myapp:\n" + 
 					"  orders:\n" + 
@@ -3056,13 +3128,13 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 					"Create metadata for `myapp.orders.page-size`",
 					"Create metadata for `myapp.orders.start`"
 			);
+	
+		} finally {
+			FileUtils.deleteQuietly(new File(location, "src/main/resources/META-INF"));
+			FileUtils.deleteQuietly(new File(location, "src/main/java/META-INF"));
 		}
-
-		//TODO: a test case that verifies codeAction.perform has expected result.
-		// Carefull though, if you do add this you must make sure to cleanup any side-effects the quickfix does
-		// to files in the project.
-		
 	}
+
 	
 	@Test public void testDeprecatedPropertyQuickfixSimple() throws Exception {
 		//A simple case for starters. The path edits aren't too complicated since there's

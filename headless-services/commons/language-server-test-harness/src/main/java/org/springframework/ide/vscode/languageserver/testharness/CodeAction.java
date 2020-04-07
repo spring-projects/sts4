@@ -10,7 +10,12 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.languageserver.testharness;
 
+import static org.junit.Assert.assertEquals;
+
+import java.util.List;
+
 import org.eclipse.lsp4j.Command;
+import org.springframework.ide.vscode.commons.util.Assert;
 
 /**
  * Wrapper for the test harness to refer to and manipulate a
@@ -18,7 +23,7 @@ import org.eclipse.lsp4j.Command;
  */
 public class CodeAction {
 
-	private final Command command;
+	public final Command command;
 	private LanguageServerHarness harness;
 
 	public CodeAction(LanguageServerHarness harness, Command command) {

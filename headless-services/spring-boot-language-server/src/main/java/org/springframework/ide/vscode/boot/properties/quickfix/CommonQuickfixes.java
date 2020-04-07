@@ -104,10 +104,11 @@ public class CommonQuickfixes {
 						IJavaProject project = p.get();
 						List<File> sourceFolders = IClasspathUtil.getSourceFolders(project.getClasspath()).collect(Collectors.toList());
 						if (!sourceFolders.isEmpty()) {
+							File preferredSourceFolder = getPreferredMetadataSourceFolder(sourceFolders);
 							WorkspaceEdit we = new WorkspaceEdit(new ArrayList<Either<TextDocumentEdit, ResourceOperation>>());
 							Path metadataFilePath = sourceFolders.stream().map(f -> f.toPath()).map(path -> path.resolve(METADATA_PATH)).filter(path -> Files.exists(path)).findFirst().orElse(null);
 							if (metadataFilePath == null) {
-								metadataFilePath = sourceFolders.get(0).toPath().resolve(METADATA_PATH);
+								metadataFilePath = preferredSourceFolder.toPath().resolve(METADATA_PATH);
 								we.getDocumentChanges().add(Either.forRight(new CreateFile(metadataFilePath.toUri().toString())));
 							}
 							if (metadataFilePath != null) {
@@ -141,6 +142,21 @@ public class CommonQuickfixes {
 		} else {
 			MISSING_PROPERTY = null;
 		}
+	}
+
+	private File getPreferredMetadataSourceFolder(List<File> sourceFolders) {
+		Path mainResources = Paths.get("main", "resources");
+		for (File file : sourceFolders) {
+			if (file.toPath().endsWith(mainResources)) {
+				return file;
+			}
+		}
+		return sourceFolders.get(0);
+	}
+
+	private void selectMetadataSourceFolder(List<File> sourceFolders) {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

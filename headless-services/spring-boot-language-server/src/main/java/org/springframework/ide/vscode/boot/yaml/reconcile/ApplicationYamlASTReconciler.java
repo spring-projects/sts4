@@ -357,7 +357,7 @@ public class ApplicationYamlASTReconciler implements YamlASTReconciler {
 				case CommonQuickfixes.MISSING_PROPERTY_APP_QF_ID:
 					for (String missingProp : getUnknownProperties(name, entry.getValueNode(), new ArrayList<>())) {
 						p.addQuickfix(new QuickfixData<>(fixType,
-								new MissingPropertyData(new TextDocumentIdentifier(docUri), name),
+								new MissingPropertyData(new TextDocumentIdentifier(docUri), missingProp),
 								"Create metadata for `" + missingProp +"`"));
 					}
 					break;

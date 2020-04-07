@@ -814,7 +814,7 @@ public class Editor {
 		return ca;
 	}
 	
-	public void assertQuickfixes(Diagnostic problem, String... expectedLabels) throws Exception {
+	public List<CodeAction> assertQuickfixes(Diagnostic problem, String... expectedLabels) throws Exception {
 		List<CodeAction> actions = getCodeActions(problem);
 		StringBuilder expecteds = new StringBuilder();
 		for (String l : expectedLabels) {
@@ -825,6 +825,7 @@ public class Editor {
 			actuals.append(a.getLabel()+"\n");
 		}
 		assertEquals(expecteds.toString(), actuals.toString());
+		return actions;
 	}
 
 	public void assertText(String expected) {
