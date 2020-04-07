@@ -3020,6 +3020,50 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		assertCompletionDetailsWithDeprecation("foo:\n  nam<*>", "alt-name", "String", null, Boolean.TRUE);
 	}
 
+	@Test public void missingPropertyQuickfix() throws Exception {
+		IJavaProject p = createPredefinedMavenProject("empty-boot-2.1.0-app");
+		useProject(p);
+		
+		{
+			Editor editor = newEditor(
+					"myapp:\n" + 
+					"  orders:\n" + 
+					"    pages: 10"
+			);
+			Diagnostic problem = editor.assertProblems("myapp|Unknown").get(0);
+			editor.assertQuickfixes(problem, "Create metadata for `myapp.orders.pages`");
+		}
+		
+		{
+			Editor editor = newEditor(
+					"myapp:\n" + 
+					"  orders:\n" + 
+					"    pageSize: 10"
+			);
+			Diagnostic problem = editor.assertProblems("myapp|Unknown").get(0);
+			editor.assertQuickfixes(problem, "Create metadata for `myapp.orders.page-size`");
+		}
+
+		{
+			Editor editor = newEditor(
+					"myapp:\n" + 
+					"  orders:\n" + 
+					"    pageSize: 10\n" +
+					"    start: 0\n"
+			);
+			Diagnostic problem = editor.assertProblems("myapp|Unknown").get(0);
+			editor.assertQuickfixes(problem, 
+					"Create metadata for `myapp.orders.page-size`",
+					"Create metadata for `myapp.orders.start`"
+			);
+		}
+
+		//TODO: a test case that verifies codeAction.perform has expected result.
+		// Carefull though, if you do add this you must make sure to cleanup any side-effects the quickfix does
+		// to files in the project.
+		
+	}
+	
 	@Test public void testDeprecatedPropertyQuickfixSimple() throws Exception {
 		//A simple case for starters. The path edits aren't too complicated since there's
 		//just the one property in the file and only the last part of the 'path' changes.

@@ -17,6 +17,7 @@ import static org.springframework.ide.vscode.boot.yaml.reconcile.ApplicationYaml
 import static org.springframework.ide.vscode.commons.yaml.ast.NodeUtil.asScalar;
 import static org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST.getChildren;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -55,6 +56,7 @@ import org.springframework.ide.vscode.commons.yaml.ast.NodeRef.Kind;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeRef.TupleValueRef;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeUtil;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST;
+import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
 import org.springframework.ide.vscode.commons.yaml.reconcile.YamlASTReconciler;
 import org.yaml.snakeyaml.nodes.MappingNode;
 import org.yaml.snakeyaml.nodes.Node;
@@ -353,15 +355,33 @@ public class ApplicationYamlASTReconciler implements YamlASTReconciler {
 			if (fixType != null) {
 				switch (fixType.getId()) {
 				case CommonQuickfixes.MISSING_PROPERTY_APP_QF_ID:
-					p.addQuickfix(new QuickfixData<>(fixType,
-							new MissingPropertyData(new TextDocumentIdentifier(docUri), name),
-							"Create metadata for `" + name +"`"));
+					for (String missingProp : getUnknownProperties(name, entry.getValueNode(), new ArrayList<>())) {
+						p.addQuickfix(new QuickfixData<>(fixType,
+								new MissingPropertyData(new TextDocumentIdentifier(docUri), name),
+								"Create metadata for `" + missingProp +"`"));
+					}
 					break;
 				}
 			}
 		}
 
 		problems.accept(p);
+	}
+
+	private List<String> getUnknownProperties(String name, Node valueNode, List<String> unknownProps) {
+		if (valueNode instanceof MappingNode) {
+			MappingNode map = (MappingNode) valueNode;
+			for (NodeTuple entry : map.getValue()) {
+				String key = NodeUtil.asScalar(entry.getKeyNode());
+				if (key!=null) {
+					key = StringUtil.camelCaseToHyphens(key);
+					getUnknownProperties(name+"."+key, entry.getValueNode(), unknownProps);
+				}
+			}
+		} else {
+			unknownProps.add(name);
+		}
+		return unknownProps;
 	}
 
 	private String extendForQuickfix(String name, Node node) {

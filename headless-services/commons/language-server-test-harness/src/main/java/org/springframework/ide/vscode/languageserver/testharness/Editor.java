@@ -813,6 +813,19 @@ public class Editor {
 		assertEquals(expectLabel, ca.getLabel());
 		return ca;
 	}
+	
+	public void assertQuickfixes(Diagnostic problem, String... expectedLabels) throws Exception {
+		List<CodeAction> actions = getCodeActions(problem);
+		StringBuilder expecteds = new StringBuilder();
+		for (String l : expectedLabels) {
+			expecteds.append(l+"\n");
+		}
+		StringBuilder actuals = new StringBuilder();
+		for (CodeAction a : actions) {
+			actuals.append(a.getLabel()+"\n");
+		}
+		assertEquals(expecteds.toString(), actuals.toString());
+	}
 
 	public void assertText(String expected) {
 		assertEquals(expected, getText());
@@ -965,5 +978,6 @@ public class Editor {
 	public void setCursor(Position position) {
 		this.selectionStart = this.selectionEnd = doc.toOffset(position);
 	}
+
 
 }
