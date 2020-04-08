@@ -30,7 +30,8 @@ Require-Bundle: org.eclipse.jdt.launching;bundle-version="3.9.0",
  org.eclipse.mylyn.wikitext.markdown,
  org.eclipse.mylyn.wikitext,
  org.springframework.ide.eclipse.boot.dash;bundle-version="3.9.12",
- com.google.gson
+ com.google.gson,
+ org.eclipse.lsp4e.jdt;bundle-version="0.10.0"
 Import-Package: com.google.common.base,
  com.google.common.collect,
  com.google.gson;version="2.7.0",

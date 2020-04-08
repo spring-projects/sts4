@@ -111,37 +111,6 @@
    </extension>
    
    <extension
-         id="springbootjava-completion-computer"
-         name="Spring Proposals (based on Spring Boot LS)"
-         point="org.eclipse.jdt.ui.javaCompletionProposalComputer">
-      <javaCompletionProposalComputer
-            activate="true"
-            categoryId="org.springframework.tooling.boot.ls.springbootjava-completion-computer"
-            class="org.springframework.tooling.boot.ls.jdt.SpringBootJavaCompletionProposalComputer"
-            needsSortingAfterFiltering="false"
-            requiresUIThread="false">
-      </javaCompletionProposalComputer>
-   </extension>
-   
-   <extension
-         id="springbootjava-hover-provider"
-         point="org.eclipse.jdt.ui.javaEditorTextHovers">
-      <hover
-            activate="true"
-            class="org.springframework.tooling.boot.ls.jdt.SpringBootJavaHoverProvider"
-            id="org.springframework.boot.ide.java.servers.hoverprovider">
-      </hover>
-   </extension>
-   
-   <extension
-         point="org.eclipse.core.filebuffers.documentSetup">
-      <participant
-            class="org.eclipse.lsp4e.ConnectDocumentToLanguageServerSetupParticipant"
-            contentTypeId="org.eclipse.jdt.core.javaSource">
-      </participant>
-   </extension>
-
-   <extension
          point="org.eclipse.ui.preferencePages">
       <page
             category="org.springframework.tooling.boot.java.ls.preferences"
