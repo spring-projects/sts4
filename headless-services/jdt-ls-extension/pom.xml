@@ -83,7 +83,7 @@
 		<repository>
 			<id>specific orbit</id>
 			<layout>p2</layout>
-			<url>https://download.eclipse.org/tools/orbit/R-builds/R20170516192513/repository</url>
+			<url>https://download.eclipse.org/tools/orbit/downloads/drops/R20190827152740/repository</url>
 		</repository>
 		
 		<repository>

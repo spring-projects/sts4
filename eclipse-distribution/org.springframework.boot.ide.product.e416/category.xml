@@ -1,0 +1,215 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<site pack200="true">
+	<description url="https://spring.io/tools">
+		Spring Tool Suite 4
+	</description>
+
+	<!-- Eclipse Integration Commons -->
+	<category-def name="Uncategorized" label="Uncategorized"/>
+	<category-def name="Core / Eclipse Integration Commons" label="Core / Eclipse Integration Commons"/>
+	<category-def name="Resources / Eclipse Integration Commons" label="Resources / Eclipse Integration Commons"/>
+
+	<!-- STS4 branding and custom features -->
+	<category-def name="Spring Tool Suite 4 Distribution" label="Spring Tool Suite 4 Distribution" />
+
+	<feature
+		id="org.springframework.boot.ide.main.feature" version="0.0.0">
+		<category name="Spring Tool Suite 4 Distribution" />
+	</feature>
+
+	<feature
+		id="org.springframework.boot.ide.branding.feature" version="0.0.0">
+		<category name="Spring Tool Suite 4 Distribution" />
+	</feature>
+
+	<!-- Spring IDE -->
+	<category-def name="Core / Spring IDE" label="Core / Spring IDE" />
+	<category-def name="Extensions / Spring IDE" label="Extensions / Spring IDE" />
+	<category-def name="Extensions (Incubation) / Spring IDE" label="Extensions (Incubation) / Spring IDE" />
+	<category-def name="Integrations / Spring IDE" label="Integrations / Spring IDE" />
+	<category-def name="Resources / Spring IDE" label="Resources / Spring IDE" />
+
+	<feature
+		id="org.springframework.ide.eclipse.boot.dash.feature" version="0.0.0">
+		<category name="Extensions / Spring IDE" />
+	</feature>
+
+	<feature
+		id="org.springframework.ide.eclipse.xml.namespaces.feature" version="0.0.0">
+		<category name="Extensions / Spring IDE" />
+	</feature>
+
+	<feature
+		id="org.springframework.ide.eclipse.boot.dash.feature.source" version="0.0.0">
+		<category name="Resources / Spring IDE" />
+	</feature>
+
+	<feature
+		id="org.springframework.ide.eclipse.xml.namespaces.feature.source" version="0.0.0">
+		<category name="Resources / Spring IDE" />
+	</feature>
+
+	<!-- Language Server -->
+	<category-def name="Spring Tool Suite 4 Language Server Integrations for Eclipse" label="Spring Tool Suite 4 Language Server Integrations for Eclipse"/>
+
+	<feature
+		id="org.springframework.tooling.cloudfoundry.manifest.ls.feature" version="0.0.0">
+		<category name="Spring Tool Suite 4 Language Server Integrations for Eclipse" />
+	</feature>
+
+	<feature
+		id="org.springframework.tooling.boot.ls.feature" version="0.0.0">
+		<category name="Spring Tool Suite 4 Language Server Integrations for Eclipse" />
+	</feature>
+
+	<feature
+		id="org.springframework.tooling.bosh.ls.feature" version="0.0.0">
+		<category name="Spring Tool Suite 4 Language Server Integrations for Eclipse" />
+	</feature>
+
+	<feature
+		id="org.springframework.tooling.concourse.ls.feature" version="0.0.0">
+		<category name="Spring Tool Suite 4 Language Server Integrations for Eclipse" />
+	</feature>
+
+	<bundle id="org.springframework.tooling.ls.eclipse.commons">
+		<category name="Spring Tool Suite 4 Language Server Integrations for Eclipse"/>
+	</bundle>
+
+	<bundle id="org.springframework.tooling.jdt.ls.commons">
+		<category name="Spring Tool Suite 4 Language Server Integrations for Eclipse"/>
+	</bundle>
+
+	<bundle id="org.springframework.tooling.ls.eclipse.gotosymbol">
+		<category name="Spring Tool Suite 4 Language Server Integrations for Eclipse"/>
+	</bundle>
+
+	<bundle id="org.springsource.ide.eclipse.commons.core">
+		<category name="Core / Eclipse Integration Commons"/>
+	</bundle>
+
+	<bundle id="org.springsource.ide.eclipse.commons.ui">
+		<category name="Core / Eclipse Integration Commons"/>
+	</bundle>
+
+	<bundle id="org.springsource.ide.eclipse.commons.frameworks.core">
+		<category name="Core / Eclipse Integration Commons"/>
+	</bundle>
+
+	<bundle id="org.springsource.ide.eclipse.commons.frameworks.ui">
+		<category name="Core / Eclipse Integration Commons"/>
+	</bundle>
+
+	<bundle id="org.springsource.ide.eclipse.commons.livexp">
+		<category name="Core / Eclipse Integration Commons"/>
+	</bundle>
+<!--
+	<bundle id="io.projectreactor.reactor-core">
+		<category name="Uncategorized"/>
+	</bundle>
+
+	<bundle id="org.reactivestreams.reactive-streams">
+		<category name="Uncategorized"/>
+	</bundle>
+-->
+	<feature id="org.eclipse.mylyn.wikitext_feature">
+		<category name="Uncategorized"/>
+	</feature>
+
+	<bundle id="javax.activation" version="0.0.0">
+		<category name="Uncategorized"/>
+	</bundle>
+
+	<bundle id="javax.activation.source" version="0.0.0">
+		<category name="Uncategorized"/>
+	</bundle>
+
+	<bundle id="javax.xml.bind" version="0.0.0">
+		<category name="Uncategorized"/>
+	</bundle>
+	<bundle id="javax.xml.bind.source" version="0.0.0">
+		<category name="Uncategorized"/>
+	</bundle>
+
+	<bundle id="javax.xml.stream" version="0.0.0">
+		<category name="Uncategorized"/>
+	</bundle>
+
+	<bundle id="org.dadacoalition.yedit">
+		<category name="Uncategorized"/>
+	</bundle>
+
+	<bundle id="org.yaml.snakeyaml">
+		<category name="Uncategorized"/>
+	</bundle>
+
+	<feature id="org.eclipse.tm4e.feature">
+		<category name="Uncategorized"/>
+	</feature>
+
+	<bundle id="org.eclipse.lsp4e">
+		<category name="Uncategorized"/>
+	</bundle>
+
+	<bundle id="org.eclipse.lsp4j">
+		<category name="Uncategorized"/>
+	</bundle>
+
+	<bundle id="org.eclipse.lsp4j.jsonrpc">
+		<category name="Uncategorized"/>
+	</bundle>
+
+	<bundle id="org.eclipse.xtext.xbase.lib">
+		<category name="Uncategorized"/>
+	</bundle>
+
+	<bundle id="com.google.gson">
+		<category name="Uncategorized"/>
+	</bundle>
+
+	<bundle id="org.jcodings">
+		<category name="Uncategorized"/>
+	</bundle>
+
+	<bundle id="org.joni">
+		<category name="Uncategorized"/>
+	</bundle>
+
+    <bundle id="org.bouncycastle.bcpg" version="0.0.0">
+		<category name="Uncategorized"/>
+	</bundle>
+    <bundle id="org.bouncycastle.bcpg.source" version="0.0.0">
+		<category name="Uncategorized"/>
+	</bundle>
+    <bundle id="org.bouncycastle.bcpkix" version="0.0.0">
+		<category name="Uncategorized"/>
+	</bundle>
+    <bundle id="org.bouncycastle.bcpkix.source" version="0.0.0">
+		<category name="Uncategorized"/>
+	</bundle>
+    <bundle id="org.bouncycastle.bcprov" version="0.0.0">
+		<category name="Uncategorized"/>
+	</bundle>
+    <bundle id="org.bouncycastle.bcprov.source" version="0.0.0">
+		<category name="Uncategorized"/>
+	</bundle>
+    <bundle id="com.hierynomus.sshj" version="0.0.0">
+		<category name="Uncategorized"/>
+	</bundle>
+    <bundle id="com.hierynomus.sshj.source" version="0.0.0">
+		<category name="Uncategorized"/>
+	</bundle>
+    <bundle id="com.jcraft.jzlib" version="0.0.0">
+		<category name="Uncategorized"/>
+	</bundle>
+    <bundle id="com.jcraft.jzlib.source" version="0.0.0">
+		<category name="Uncategorized"/>
+	</bundle>
+    <bundle id="net.i2p.crypto.eddsa" version="0.0.0">
+		<category name="Uncategorized"/>
+	</bundle>
+    <bundle id="net.i2p.crypto.eddsa.source" version="0.0.0">
+		<category name="Uncategorized"/>
+	</bundle>
+
+</site>
