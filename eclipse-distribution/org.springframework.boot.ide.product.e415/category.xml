@@ -151,6 +151,10 @@
 		<category name="Uncategorized"/>
 	</bundle>
 
+	<bundle id="org.eclipse.lsp4e.jdt">
+		<category name="Uncategorized"/>
+	</bundle>
+
 	<bundle id="org.eclipse.lsp4j">
 		<category name="Uncategorized"/>
 	</bundle>
