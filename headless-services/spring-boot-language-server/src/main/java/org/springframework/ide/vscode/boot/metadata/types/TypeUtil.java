@@ -518,10 +518,13 @@ public class TypeUtil {
 				return true;
 			}
 			if (seen.add(fqName)) {
-				for (String itfName : searchIn.getSuperInterfaceNames()) {
-					IType itf = findType(itfName);
-					if (searchSuperTypes(seen, itf, fqTargetType)) {
-						return true;
+				String[] itfs = searchIn.getSuperInterfaceNames();
+				if (itfs!=null) {
+					for (String itfName : itfs) {
+						IType itf = findType(itfName);
+						if (searchSuperTypes(seen, itf, fqTargetType)) {
+							return true;
+						}
 					}
 				}
 				String klassName = searchIn.getSuperclassName();

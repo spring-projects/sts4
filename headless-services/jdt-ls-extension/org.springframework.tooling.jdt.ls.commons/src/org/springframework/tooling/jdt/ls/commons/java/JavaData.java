@@ -291,8 +291,8 @@ public class JavaData {
 			data.setClass(type.isClass());
 			data.setEnum(type.isEnum());
 			data.setInterface(type.isInterface());
-			data.setSuperClassName(type.getSuperclassName());
-			data.setSuperInterfaceNames(type.getSuperInterfaceNames());
+			data.setSuperClassName(resolveFQName(type, type.getSuperclassName()));
+			data.setSuperInterfaceNames(resolveFQNames(type, type.getSuperInterfaceNames()));
 		} catch (JavaModelException e) {
 			logger.log(e);
 		}
@@ -498,12 +498,31 @@ public class JavaData {
 		return data;
 	}
 	
-	private String resolveFQName(IType type, String name) throws JavaModelException {
-		String[][] resolution = type.resolveType(name);
-		if (resolution != null && resolution.length > 0 && resolution[0].length > 1) {
-			return resolution[0][0] + "." + resolution[0][1].replace('.', '$');
+	private String[] resolveFQNames(IType type, String[] names) {
+		if (names!=null) {
+			String[] resolved = new String[names.length];
+			for (int i = 0; i < resolved.length; i++) {
+				try {
+					resolved[i] = resolveFQName(type, names[i]);
+				} catch (JavaModelException e) {
+					logger.log(e);
+					resolved[i] = names[i];
+				}
+			}
 		}
-		return name;
+		return null;
+	}
+
+
+	private String resolveFQName(IType type, String name) throws JavaModelException {
+		if (name!=null) {
+			String[][] resolution = type.resolveType(name);
+			if (resolution != null && resolution.length > 0 && resolution[0].length > 1) {
+				return resolution[0][0] + "." + resolution[0][1].replace('.', '$');
+			}
+			return name;
+		}
+		return null;
 	}
 
 }

@@ -49,7 +49,6 @@ import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
 import org.springframework.ide.vscode.commons.util.RunnableWithException;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
-import org.springframework.ide.vscode.commons.yaml.reconcile.MissingPropertiesData;
 import org.springframework.ide.vscode.languageserver.testharness.CodeAction;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -90,6 +89,36 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////
+	
+	@Test public void GH_449_inheritedPropertiesInListValues() throws Exception {
+		//See: https://github.com/spring-projects/sts4/issues/449
+		MavenJavaProject p = createPredefinedMavenProject("gh_449");
+		useProject(p);
+		
+		// Validation
+		Editor editor = harness.newEditor(
+				"myprops:\n" + 
+				"  nested:\n" + 
+				"  - foo: fv\n" + 
+				"    bar: bv\n" +
+				"    bad: bad"
+		);
+		editor.assertProblems(
+				"bad|Unknown"
+		);
+				
+		// Completion
+		editor = harness.newEditor(
+				"myprops:\n" + 
+				"  nested:\n" + 
+				"  - <*>"
+		);
+		editor.assertContextualCompletions("<*>"
+				, // ==>
+				"bar: <*>",
+				"foo: <*>"
+		);
+	}
 	
 	
 	@Test public void GH_420_anchorReference() throws Exception {
