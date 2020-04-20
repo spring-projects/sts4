@@ -1,3 +1,10 @@
+## 2020-04-23 (4.6.1 RELEASE)
+
+* _(Spring Boot)_ improvement: Spring yaml validation doesn't understand the "<<:" syntax ([#440](https://github.com/spring-projects/sts4/issues/440))
+* _(Spring Boot)_ improvement: YAML Property completion: Superclass properties not detected in case of List or Map ([#449](https://github.com/spring-projects/sts4/issues/449))
+* _(Spring Boot)_ improvement: improved performance for content-assist for Spring XML config files
+* _(Spring Boot)_ bugfix: Quick Fix for unknown properties broken ([#442](https://github.com/spring-projects/sts4/issues/442))
+
 ## 2020-03-19 (4.6.0 RELEASE)
 
 * _(Spring Boot)_ performance: improved performance while scanning projects for symbols
