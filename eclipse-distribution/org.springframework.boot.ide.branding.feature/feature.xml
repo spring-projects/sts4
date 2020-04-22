@@ -2,7 +2,7 @@
 <feature
 	id="org.springframework.boot.ide.branding.feature"
 	label="Spring Tool Suite 4 Branding Feature"
-	version="4.6.1.qualifier"
+	version="4.6.2.qualifier"
 	provider-name="Pivotal, Inc.">
 
 	<plugin
