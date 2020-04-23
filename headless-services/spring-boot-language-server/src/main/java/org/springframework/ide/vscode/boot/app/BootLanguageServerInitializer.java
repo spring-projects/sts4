@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.app;
 
+import java.util.List;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -54,6 +56,7 @@ public class BootLanguageServerInitializer implements InitializingBean {
 	@Autowired SpringProcessLiveDataProvider liveDataProvider;
 	@Autowired BootJavaConfig config;
 	@Autowired SpringSymbolIndex springIndexer;
+	@Autowired(required = false) List<ICompletionEngine> completionEngines;
 
 	@Qualifier("adHocProperties") @Autowired ProjectBasedPropertyIndexProvider adHocProperties;
 
@@ -83,6 +86,7 @@ public class BootLanguageServerInitializer implements InitializingBean {
 		builder.add(new BootPropertiesLanguageServerComponents(server, params, javaElementLocationProvider, parser, yamlStructureProvider, yamlAssistContextProvider, sourceLinks));
 		builder.add(new BootJavaLanguageServerComponents(server, params, sourceLinks, cuCache, adHocProperties, symbolCache, liveDataProvider, config, springIndexer));
 		builder.add(new SpringXMLLanguageServerComponents(server, springIndexer, params, config));
+		builder.completionEngines(completionEngines);
 		components = builder.build(server);
 		params.projectObserver.addListener(reconcileOpenDocuments(server, components, params.projectFinder));
 

@@ -10,19 +10,19 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.languageserver.composable;
 
-import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.commons.languageserver.completion.CompositeCompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
-import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
 import org.springframework.ide.vscode.commons.languageserver.util.HoverHandler;
@@ -33,7 +33,6 @@ import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 public class CompositeLanguageServerComponents implements LanguageServerComponents {
@@ -42,6 +41,7 @@ public class CompositeLanguageServerComponents implements LanguageServerComponen
 
 	public static class Builder {
 		private Map<LanguageId, LanguageServerComponents> componentsByLanguageId = new HashMap<>();
+		private List<ICompletionEngine> completionEngines;
 
 		public void add(LanguageServerComponents components) {
 			for (LanguageId language : components.getInterestingLanguages()) {
@@ -55,31 +55,32 @@ public class CompositeLanguageServerComponents implements LanguageServerComponen
 			return new CompositeLanguageServerComponents(server, this);
 		}
 
+		public void completionEngines(List<ICompletionEngine> completionEngines) {
+			Assert.isNull("completionEngines should only be set once", this.completionEngines);
+			this.completionEngines = completionEngines;
+		}
 	}
 
 	private final Map<LanguageId, LanguageServerComponents> componentsByLanguageId;
-	private final ICompletionEngine completionEngine;
+	private final CompositeCompletionEngine completionEngine;
 	private final IReconcileEngine reconcileEngine;
 	private final HoverHandler hoverHandler;
 
 	public CompositeLanguageServerComponents(SimpleLanguageServer server, Builder builder) {
 		this.componentsByLanguageId = ImmutableMap.copyOf(builder.componentsByLanguageId);
 		//Create composite Completion engine
-		this.completionEngine = new ICompletionEngine() {
-			@Override
-			public Collection<ICompletionProposal> getCompletions(TextDocument document, int offset) throws Exception {
-				LanguageId language = document.getLanguageId();
-				log.info("languageId = {}", language);
-				LanguageServerComponents subComponents = componentsByLanguageId.get(language);
-				if (subComponents!=null) {
-					ICompletionEngine subEngine = subComponents.getCompletionEngine();
-					if (subEngine!=null) {
-						return subEngine.getCompletions(document, offset);
-					}
-				}
-				return ImmutableList.of();
+		this.completionEngine = new CompositeCompletionEngine();
+		for (Entry<LanguageId, LanguageServerComponents> entry : componentsByLanguageId.entrySet()) {
+			ICompletionEngine engine = entry.getValue().getCompletionEngine();
+			if (engine!=null) {
+				completionEngine.add(entry.getKey(), entry.getValue().getCompletionEngine());
 			}
-		};
+		}
+		if (builder.completionEngines!=null) {
+			for (ICompletionEngine engine : builder.completionEngines) {
+				this.completionEngine.add(engine);
+			}
+		}
 		//Create composite Reconcile engine
 		if (componentsByLanguageId.values().stream().map(LanguageServerComponents::getReconcileEngine).anyMatch(Optional::isPresent)) {
 			this.reconcileEngine = new IReconcileEngine() {

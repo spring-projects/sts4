@@ -122,7 +122,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 	
 	@Test public void GH_427_completionInDollarReference() throws Exception {
 		defaultTestData();
-		assertCompletions(
+		Editor editor = newEditor(
 				"server:\n" + 
 				"  port: 8006\n" + 
 				"\n" + 
@@ -134,30 +134,23 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 				"      host: localhost\n" + 
 				"      port: 8500\n" + 
 				"      discovery:\n" + 
-				"        service-name: ${appnam<*>}"
-				, //==>
-				"server:\n" + 
-				"  port: 8006\n" + 
-				"\n" + 
-				"spring:\n" + 
-				"  application:\n" + 
-				"    name: dadada\n" + 
-				"  cloud:\n" + 
-				"    consul:\n" + 
-				"      host: localhost\n" + 
-				"      port: 8500\n" + 
-				"      discovery:\n" + 
-				"        service-name: ${spring.application.name}"
+				"        service-name: ${<*>}"
+		);
+	
+		editor.assertContextualCompletions("appnam<*>", 
+				"spring.application.name<*>",
+				"spring.data.rest.page-param-name<*>",
+				"spring.jackson.property-naming-strategy<*>"
 		);
 		
-		assertCompletions(
+		editor = newEditor(
 				"spring:\n" + 
 				"  application:\n" + 
-				"    name: ${sport<*>}\n" 
-				, //==>
-				"spring:\n" + 
-				"  application:\n" + 
-				"    name: ${server.port<*>}\n" 
+				"    name: ${<*>\n" 
+		);
+		editor.assertContextualCompletions("servport<*>",
+				"server.port}<*>",
+				"server.tomcat.port-header}<*>"
 		);
 	}
 	
