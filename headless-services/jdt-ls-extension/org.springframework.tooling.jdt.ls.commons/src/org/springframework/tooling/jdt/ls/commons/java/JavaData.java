@@ -509,6 +509,7 @@ public class JavaData {
 					resolved[i] = names[i];
 				}
 			}
+			return resolved;
 		}
 		return null;
 	}
