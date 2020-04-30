@@ -179,39 +179,54 @@
 		<category name="Uncategorized"/>
 	</bundle>
 
+	<bundle id="org.apache.commons.lang3">
+		<category name="Uncategorized"/>
+	</bundle>
+
     <bundle id="org.bouncycastle.bcpg" version="0.0.0">
 		<category name="Uncategorized"/>
 	</bundle>
+
     <bundle id="org.bouncycastle.bcpg.source" version="0.0.0">
 		<category name="Uncategorized"/>
 	</bundle>
+
     <bundle id="org.bouncycastle.bcpkix" version="0.0.0">
 		<category name="Uncategorized"/>
 	</bundle>
+
     <bundle id="org.bouncycastle.bcpkix.source" version="0.0.0">
 		<category name="Uncategorized"/>
 	</bundle>
+
     <bundle id="org.bouncycastle.bcprov" version="0.0.0">
 		<category name="Uncategorized"/>
 	</bundle>
+
     <bundle id="org.bouncycastle.bcprov.source" version="0.0.0">
 		<category name="Uncategorized"/>
 	</bundle>
+
     <bundle id="com.hierynomus.sshj" version="0.0.0">
 		<category name="Uncategorized"/>
 	</bundle>
+
     <bundle id="com.hierynomus.sshj.source" version="0.0.0">
 		<category name="Uncategorized"/>
 	</bundle>
+
     <bundle id="com.jcraft.jzlib" version="0.0.0">
 		<category name="Uncategorized"/>
 	</bundle>
+
     <bundle id="com.jcraft.jzlib.source" version="0.0.0">
 		<category name="Uncategorized"/>
 	</bundle>
+
     <bundle id="net.i2p.crypto.eddsa" version="0.0.0">
 		<category name="Uncategorized"/>
 	</bundle>
+
     <bundle id="net.i2p.crypto.eddsa.source" version="0.0.0">
 		<category name="Uncategorized"/>
 	</bundle>

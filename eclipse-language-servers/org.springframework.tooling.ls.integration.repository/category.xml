@@ -88,4 +88,8 @@
 		<category name="deps"/>
 	</bundle>
 
+	<bundle id="org.apache.commons.lang3">
+		<category name="deps"/>
+	</bundle>
+
 </site>
