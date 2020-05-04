@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019 Pivotal, Inc.
+ * Copyright (c) 2019, 2020 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -109,21 +109,21 @@ public class SpringProcessDescriptor {
 		return true;
 	}
 
-	public CompletableFuture<Void> updateStatus(Predicate<String> projectIsKnown) {
+	public CompletableFuture<Void> updateStatus(Predicate<String> projectIsKnown, Predicate<String> projectHasActuators) {
 		return CompletableFuture.supplyAsync(() -> {
-			this.status = checkStatus(projectIsKnown);
+			this.status = checkStatus(projectIsKnown, projectHasActuators);
 			return null;
 		});
 	}
 	
-	private SpringProcessStatus checkStatus(Predicate<String> projectIsKnown) {
+	private SpringProcessStatus checkStatus(Predicate<String> projectIsKnown, Predicate<String> projectHasActuators) {
 		VirtualMachine vm = null;
 		try {
 			vm = VirtualMachine.attach(this.getVm());
 			if (shouldIgnore(this.getVm(), vm)) {
 				return SpringProcessStatus.IGNORE;
 			}
-			if (shouldAutoConnect(this.getVm(), vm, projectIsKnown)) {
+			if (shouldAutoConnect(this.getVm(), vm, projectIsKnown, projectHasActuators)) {
 				return SpringProcessStatus.AUTO_CONNECT;
 			}
 
@@ -168,7 +168,7 @@ public class SpringProcessDescriptor {
 		return false;
 	}
 
-	private boolean shouldAutoConnect(VirtualMachineDescriptor vmDescriptor, VirtualMachine vm, Predicate<String> projectIsKnown) {
+	private boolean shouldAutoConnect(VirtualMachineDescriptor vmDescriptor, VirtualMachine vm, Predicate<String> projectIsKnown, Predicate<String> projectHasActuators) {
 		try {
 			Properties systemProperties = vm.getSystemProperties();
 			
@@ -176,7 +176,8 @@ public class SpringProcessDescriptor {
 			if (projectName instanceof String) {
 				log.info("Spring boot process found: " + projectName);
 				this.projectName = (String) projectName;
-				return projectIsKnown.test((String) projectName);
+				
+				return projectIsKnown.test((String) projectName) && projectHasActuators.test((String)projectName);
 			}
 		}
 		catch (Exception e) {

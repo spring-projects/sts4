@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019 Pivotal, Inc.
+ * Copyright (c) 2019, 2020 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -12,18 +12,20 @@ package org.springframework.ide.vscode.boot.java.livehover.v2;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 
 import com.sun.tools.attach.VirtualMachine;
@@ -41,7 +43,7 @@ public class SpringProcessConnectorLocal {
 	private static final String LOCAL_CONNECTOR_ADDRESS = "com.sun.management.jmxremote.localConnectorAddress";
 	
 
-	private final Collection<String> projects;
+	private final Map<String, Boolean> projects;
 	private final Set<SpringProcessDescriptor> processes;
 	
 	private final SpringProcessConnectorService processConnectorService;
@@ -49,7 +51,7 @@ public class SpringProcessConnectorLocal {
 	private boolean projectsChanged;
 	
 	public SpringProcessConnectorLocal(SpringProcessConnectorService processConnector, ProjectObserver projectObserver) {
-		this.projects = Collections.synchronizedCollection(new HashSet<>());
+		this.projects = new ConcurrentHashMap<>();
 		this.processes = Collections.synchronizedSet(new HashSet<>());
 		this.projectsChanged = false;
 		
@@ -58,7 +60,8 @@ public class SpringProcessConnectorLocal {
 		projectObserver.addListener(new ProjectObserver.Listener() {
 			@Override
 			public void created(IJavaProject project) {
-				projects.add(project.getElementName());
+				boolean hasActuators = SpringProjectUtil.hasBootActuators(project);
+				projects.put(project.getElementName(), hasActuators);
 				projectsChanged = true;
 			}
 			@Override
@@ -157,7 +160,7 @@ public class SpringProcessConnectorLocal {
 			List<CompletableFuture<Void>> futures = new ArrayList<>();
 	
 			for (SpringProcessDescriptor process : processes) {
-				futures.add(process.updateStatus(projects::contains));
+				futures.add(process.updateStatus(projects::containsKey, projects::get));
 			}
 			
 			CompletableFuture<Void> allStatusUpdates = CompletableFuture.allOf((CompletableFuture[]) futures.toArray(new CompletableFuture[futures.size()]));

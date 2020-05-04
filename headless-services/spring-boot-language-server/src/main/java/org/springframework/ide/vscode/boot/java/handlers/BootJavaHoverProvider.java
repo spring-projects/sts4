@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2019 Pivotal, Inc.
+ * Copyright (c) 2017, 2020 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -39,9 +39,8 @@ import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchyA
 import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveData;
 import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveDataProvider;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
-import org.springframework.ide.vscode.commons.java.IClasspath;
-import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.util.HoverHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
@@ -292,7 +291,7 @@ public class BootJavaHoverProvider implements HoverHandler {
 				}
 
 				//Only reaching here if we didn't get a hover.
-				if (!hasActuatorDependency(project)) {
+				if (!SpringProjectUtil.hasBootActuators(project)) {
 					DocumentRegion region = ASTUtils.nameRegion(doc, annotation);
 					if (region.containsOffset(offset)) {
 						return liveHoverWarning(project);
@@ -326,21 +325,6 @@ public class BootJavaHoverProvider implements HoverHandler {
 				"Live hover providers use either `spring-boot-actuator` endpoints to retrieve information or the Spring live beans option. "+
 				"Consider adding `spring-boot-actuator` as a dependency to your project `"+project.getElementName()+"` or enable the live beans option in your launch configuration.";
 		return new Hover(ImmutableList.of(Either.forLeft(hoverText)));
-	}
-
-	private boolean hasActuatorDependency(IJavaProject project) {
-		try {
-			IClasspath classpath = project.getClasspath();
-			if (classpath != null) {
-				return IClasspathUtil.getBinaryRoots(classpath, (cpe) -> !cpe.isSystem()).stream().anyMatch(cpe -> {
-					String name = cpe.getName();
-					return name.startsWith("spring-boot-actuator-");
-				});
-			}
-		} catch (Exception e) {
-			logger.error("error identifying actuator dependency on project '" + project.getElementName() + "'", e);
-		}
-		return false;
 	}
 
 	private Optional<IJavaProject> getProject(IDocument doc) {
