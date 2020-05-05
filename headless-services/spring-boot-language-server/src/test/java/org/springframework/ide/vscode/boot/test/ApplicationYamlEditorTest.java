@@ -137,6 +137,12 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 				"        service-name: ${<*>}"
 		);
 	
+		editor.assertContextualCompletions("spring.appnam<*>", 
+				"spring.application.name<*>",
+				"spring.data.rest.page-param-name<*>",
+				"spring.jackson.property-naming-strategy<*>"
+		);
+		
 		editor.assertContextualCompletions("appnam<*>", 
 				"spring.application.name<*>",
 				"spring.data.rest.page-param-name<*>",

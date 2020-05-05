@@ -37,7 +37,7 @@ public class DollarPropertyCompletionProvider implements ICompletionEngine, Lang
 	private static PrefixFinder PREFIX_FINDER = new PrefixFinder() {
 		@Override
 		protected boolean isPrefixChar(char c) {
-			return Character.isJavaIdentifierPart(c) || c=='-';
+			return Character.isJavaIdentifierPart(c) || c=='-' || c=='.';
 		}
 	};
 	private static final Collection<LanguageId> LANGUAGES = ImmutableList.of(
