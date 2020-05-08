@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2019 Pivotal, Inc.
+ * Copyright (c) 2017, 2019, 2020 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -12,6 +12,7 @@ package org.springframework.tooling.ls.eclipse.gotosymbol.dialogs;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.commands.ExecutionEvent;
@@ -38,11 +39,22 @@ import reactor.core.publisher.Mono;
 @SuppressWarnings("restriction")
 public class InWorkspaceSymbolsProvider implements SymbolsProvider {
 
+	public static InWorkspaceSymbolsProvider createFor(Supplier<IProject> _project) {
+		return new InWorkspaceSymbolsProvider(() -> {
+			IProject project = _project.get();
+			if (project!=null) {
+				return LanguageServiceAccessor.getLanguageServers(project,
+						capabilities -> Boolean.TRUE.equals(capabilities.getWorkspaceSymbolProvider()), true);
+			}
+			return ImmutableList.of();
+		});
+	}
+	
 	public static InWorkspaceSymbolsProvider createFor(IProject project) {
 		List<LanguageServer> languageServers = LanguageServiceAccessor.getLanguageServers(project,
 				capabilities -> Boolean.TRUE.equals(capabilities.getWorkspaceSymbolProvider()), true);
 		if (!languageServers.isEmpty()) {
-			return new InWorkspaceSymbolsProvider(languageServers);
+			return new InWorkspaceSymbolsProvider(() -> languageServers);
 		}
 		return null;
 	}
@@ -50,10 +62,9 @@ public class InWorkspaceSymbolsProvider implements SymbolsProvider {
 
 	private static final Duration TIMEOUT = Duration.ofSeconds(2);
 	private static final int MAX_RESULTS = 200;
+	private Supplier<List<LanguageServer>> languageServers;
 	
-	private List<LanguageServer> languageServers;
-
-	public InWorkspaceSymbolsProvider(List<LanguageServer> languageServers) {
+	public InWorkspaceSymbolsProvider(Supplier<List<LanguageServer>> languageServers) {
 		this.languageServers = languageServers;
 	}
 
@@ -75,7 +86,7 @@ public class InWorkspaceSymbolsProvider implements SymbolsProvider {
 		// really use this with a single language server anyways.
 		WorkspaceSymbolParams params = new WorkspaceSymbolParams(query);
 		
-		Flux<Either<SymbolInformation, DocumentSymbol>> symbols = Flux.fromIterable(this.languageServers)
+		Flux<Either<SymbolInformation, DocumentSymbol>> symbols = Flux.fromIterable(this.languageServers.get())
 				.flatMap(server -> Mono.fromFuture(server.getWorkspaceService().symbol(params))
 					.timeout(TIMEOUT)
 					.doOnError(e -> log(e))
