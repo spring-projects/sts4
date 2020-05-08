@@ -181,7 +181,7 @@ public class Editor {
 	public List<Diagnostic> assertProblems(String... expectedProblems) throws Exception {
 		Editor editor = this;
 		List<Diagnostic> actualProblems = new ArrayList<>(editor.reconcile().stream().filter(d -> {
-			return !ignoredTypes.contains(d.getCode());
+			return !ignoredTypes.contains(d.getCode().getLeft());
 		}).collect(Collectors.toList()));
 		Collections.sort(actualProblems, PROBLEM_COMPARATOR);
 		String bad = null;
