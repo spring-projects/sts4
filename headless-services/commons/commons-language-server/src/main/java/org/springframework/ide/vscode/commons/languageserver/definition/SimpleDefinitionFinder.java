@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2018 Pivotal, Inc.
+ * Copyright (c) 2017, 2020 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,9 +13,9 @@ package org.springframework.ide.vscode.commons.languageserver.definition;
 import java.util.Collections;
 import java.util.List;
 
+import org.eclipse.lsp4j.DefinitionParams;
 import org.eclipse.lsp4j.LocationLink;
 import org.eclipse.lsp4j.Range;
-import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.languageserver.util.DefinitionHandler;
@@ -28,20 +28,20 @@ import com.google.common.collect.ImmutableList;
  * {@link SimpleDefinitionFinder} provides a 'dummy' implementation of
  * @author Kris De Volder
  */
-public class SimpleDefinitionFinder<T extends SimpleLanguageServer> implements DefinitionHandler {
+public class SimpleDefinitionFinder implements DefinitionHandler {
 	
 	private static final Logger log = LoggerFactory.getLogger(SimpleDefinitionFinder.class);
 
-	protected final T server;
+	protected final SimpleLanguageServer server;
 
-	public SimpleDefinitionFinder(T server) {
+	public SimpleDefinitionFinder(SimpleLanguageServer server) {
 		this.server = server;
 	}
 
 	@Override
-	public List<LocationLink> handle(TextDocumentPositionParams params) {
+	public List<LocationLink> handle(DefinitionParams params) {
 		try {
-			TextDocument doc = server.getTextDocumentService().get(params);
+			TextDocument doc = server.getTextDocumentService().get(params.getTextDocument().getUri());
 			if (doc != null) {
 				int offset = doc.toOffset(params.getPosition());
 				int start = offset;

@@ -55,6 +55,7 @@ import org.eclipse.lsp4j.CompletionItemCapabilities;
 import org.eclipse.lsp4j.CompletionList;
 import org.eclipse.lsp4j.CompletionParams;
 import org.eclipse.lsp4j.CreateFile;
+import org.eclipse.lsp4j.DefinitionParams;
 import org.eclipse.lsp4j.DeleteFile;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticSeverity;
@@ -71,6 +72,7 @@ import org.eclipse.lsp4j.ExecuteCommandParams;
 import org.eclipse.lsp4j.FileChangeType;
 import org.eclipse.lsp4j.FileEvent;
 import org.eclipse.lsp4j.Hover;
+import org.eclipse.lsp4j.HoverParams;
 import org.eclipse.lsp4j.InitializeParams;
 import org.eclipse.lsp4j.InitializeResult;
 import org.eclipse.lsp4j.Location;
@@ -92,7 +94,6 @@ import org.eclipse.lsp4j.TextDocumentContentChangeEvent;
 import org.eclipse.lsp4j.TextDocumentEdit;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.TextDocumentItem;
-import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.eclipse.lsp4j.TextDocumentSyncOptions;
 import org.eclipse.lsp4j.TextEdit;
@@ -597,7 +598,7 @@ public class LanguageServerHarness {
 	}
 
 	public Hover getHover(TextDocumentInfo document, Position cursor) throws Exception {
-		TextDocumentPositionParams params = new TextDocumentPositionParams();
+		HoverParams params = new HoverParams();
 		params.setPosition(cursor);
 		params.setTextDocument(document.getId());
 		return getServer().getTextDocumentService().hover(params ).get();
@@ -726,7 +727,7 @@ public class LanguageServerHarness {
 		assertEquals(expected, completion.getLabel());
 	}
 
-	public List<? extends LocationLink> getDefinitions(TextDocumentPositionParams params) throws Exception {
+	public List<? extends LocationLink> getDefinitions(DefinitionParams params) throws Exception {
 		waitForReconcile(); //goto definitions relies on reconciler infos! Must wait or race condition breaking tests occasionally.
 		return getServer().getTextDocumentService().definition(params).get().getRight();
 	}

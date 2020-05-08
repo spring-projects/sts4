@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2019 Pivotal, Inc.
+ * Copyright (c) 2018, 2020 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -14,10 +14,10 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.eclipse.lsp4j.DefinitionParams;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.LocationLink;
 import org.eclipse.lsp4j.Range;
-import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,10 +68,10 @@ public class YamlPropertiesJavaDefinitionHandler implements DefinitionHandler, L
 	}
 
 	@Override
-	public List<LocationLink> handle(TextDocumentPositionParams position) {
+	public List<LocationLink> handle(DefinitionParams definitionParams) {
 		try {
-			TextDocument doc = documents.get(position);
-			int offset = doc.toOffset(position.getPosition());
+			TextDocument doc = documents.get(definitionParams);
+			int offset = doc.toOffset(definitionParams.getPosition());
 			YamlFileAST ast = getAst(doc);
 			if (ast != null) {
 				YamlDocument ymlDoc = new YamlDocument(doc, structureProvider);

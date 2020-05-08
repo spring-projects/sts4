@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Pivotal, Inc.
+ * Copyright (c) 2018, 2020 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -18,7 +18,7 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.eclipse.lsp4j.Hover;
-import org.eclipse.lsp4j.TextDocumentPositionParams;
+import org.eclipse.lsp4j.HoverParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.languageserver.completion.CompositeCompletionEngine;
@@ -105,13 +105,13 @@ public class CompositeLanguageServerComponents implements LanguageServerComponen
 		//Create composite hover handler
 		this.hoverHandler = new HoverHandler() {
 			@Override
-			public Hover handle(TextDocumentPositionParams params) {
-				TextDocument doc = server.getTextDocumentService().get(params);
+			public Hover handle(HoverParams params) {
+				TextDocument doc = server.getTextDocumentService().get(params.getTextDocument().getUri());
 				LanguageId language = doc.getLanguageId();
 				LanguageServerComponents subComponents = componentsByLanguageId.get(language);
 				if (subComponents!=null) {
 					HoverHandler subEngine = subComponents.getHoverProvider();
-					if (subEngine!=null) {
+					if (subEngine != null) {
 						return subEngine.handle(params);
 					}
 				}

@@ -16,10 +16,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
+import org.eclipse.lsp4j.DefinitionParams;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.LocationLink;
 import org.eclipse.lsp4j.Range;
-import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.languageserver.definition.SimpleDefinitionFinder;
@@ -37,7 +37,7 @@ import org.yaml.snakeyaml.nodes.Node;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 
-public class ConcourseDefinitionFinder extends SimpleDefinitionFinder<SimpleLanguageServer> {
+public class ConcourseDefinitionFinder extends SimpleDefinitionFinder {
 		
 	private static final Logger log = LoggerFactory.getLogger(ConcourseDefinitionFinder.class);
 
@@ -90,7 +90,7 @@ public class ConcourseDefinitionFinder extends SimpleDefinitionFinder<SimpleLang
 	}
 
 	@Override
-	public List<LocationLink> handle(TextDocumentPositionParams params) {
+	public List<LocationLink> handle(DefinitionParams params) {
 		try {
 			TextDocument doc = server.getTextDocumentService().get(params);
 			if (doc!=null) {

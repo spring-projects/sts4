@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2019 Pivotal, Inc.
+ * Copyright (c) 2016, 2020 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -8,7 +8,6 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-
 package org.springframework.ide.vscode.languageserver.testharness;
 
 import static org.junit.Assert.assertEquals;
@@ -36,6 +35,7 @@ import javax.swing.text.BadLocationException;
 import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.CompletionList;
+import org.eclipse.lsp4j.DefinitionParams;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DocumentSymbol;
 import org.eclipse.lsp4j.Hover;
@@ -47,7 +47,6 @@ import org.eclipse.lsp4j.PublishDiagnosticsParams;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
-import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.eclipse.lsp4j.TextEdit;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.junit.Assert;
@@ -752,7 +751,7 @@ public class Editor {
 		}
 		assertTrue("Not found in editor: '"+hoverOver+"'", pos>=0);
 
-		TextDocumentPositionParams params = new TextDocumentPositionParams(new TextDocumentIdentifier(getUri()), doc.toPosition(pos));
+		DefinitionParams params = new DefinitionParams(new TextDocumentIdentifier(getUri()), doc.toPosition(pos));
 		List<? extends LocationLink> definitions = harness.getDefinitions(params);
 
 		assertEquals(ImmutableSet.copyOf(expectedLocations), ImmutableSet.copyOf(definitions));
@@ -765,7 +764,7 @@ public class Editor {
 		}
 		assertTrue("Not found in editor: '"+hoverOver+"'", pos>=0);
 
-		TextDocumentPositionParams params = new TextDocumentPositionParams(new TextDocumentIdentifier(getUri()), doc.toPosition(pos));
+		DefinitionParams params = new DefinitionParams(new TextDocumentIdentifier(getUri()), doc.toPosition(pos));
 		List<? extends LocationLink> definitions = harness.getDefinitions(params);
 
 		assertTrue(definitions == null || definitions.isEmpty());
@@ -838,7 +837,7 @@ public class Editor {
 
 	public void assertGotoDefinition(Position pos, Range expectedTarget, Range highlightRange) throws Exception {
 		TextDocumentIdentifier textDocumentId = doc.getId();
-		TextDocumentPositionParams params = new TextDocumentPositionParams(textDocumentId, textDocumentId.getUri(), pos);
+		DefinitionParams params = new DefinitionParams(textDocumentId, pos);
 		List<? extends LocationLink> defs = harness.getDefinitions(params);
 		assertEquals(1, defs.size());
 		assertEquals(new LocationLink(textDocumentId.getUri(), expectedTarget, expectedTarget, highlightRange), defs.get(0));

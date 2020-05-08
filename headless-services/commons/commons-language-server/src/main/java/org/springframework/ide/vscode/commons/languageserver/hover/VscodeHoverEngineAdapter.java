@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2018 Pivotal, Inc.
+ * Copyright (c) 2016, 2020 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,18 +10,15 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.languageserver.hover;
 
-import java.util.concurrent.CompletableFuture;
-
 import org.eclipse.lsp4j.Hover;
+import org.eclipse.lsp4j.HoverParams;
 import org.eclipse.lsp4j.Range;
-import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.languageserver.util.HoverHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
-import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.text.IRegion;
@@ -60,11 +57,11 @@ public class VscodeHoverEngineAdapter implements HoverHandler {
 	}
 
 	@Override
-	public Hover handle(TextDocumentPositionParams params) {
+	public Hover handle(HoverParams params) {
 		try {
 			SimpleTextDocumentService documents = server.getTextDocumentService();
-			TextDocument doc = documents.get(params);
-			if (doc!=null) {
+			TextDocument doc = documents.get(params.getTextDocument().getUri());
+			if (doc != null) {
 				int offset = doc.toOffset(params.getPosition());
 
 				Tuple2<Renderable, IRegion> hoverTuple = hoverInfoProvider.getHoverInfo(doc, offset);

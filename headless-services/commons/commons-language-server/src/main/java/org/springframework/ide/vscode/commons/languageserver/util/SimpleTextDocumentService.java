@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2019 Pivotal, Inc.
+ * Copyright (c) 2016, 2020 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -28,6 +28,7 @@ import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.CompletionList;
 import org.eclipse.lsp4j.CompletionParams;
+import org.eclipse.lsp4j.DefinitionParams;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DidChangeTextDocumentParams;
 import org.eclipse.lsp4j.DidCloseTextDocumentParams;
@@ -35,11 +36,13 @@ import org.eclipse.lsp4j.DidOpenTextDocumentParams;
 import org.eclipse.lsp4j.DidSaveTextDocumentParams;
 import org.eclipse.lsp4j.DocumentFormattingParams;
 import org.eclipse.lsp4j.DocumentHighlight;
+import org.eclipse.lsp4j.DocumentHighlightParams;
 import org.eclipse.lsp4j.DocumentOnTypeFormattingParams;
 import org.eclipse.lsp4j.DocumentRangeFormattingParams;
 import org.eclipse.lsp4j.DocumentSymbol;
 import org.eclipse.lsp4j.DocumentSymbolParams;
 import org.eclipse.lsp4j.Hover;
+import org.eclipse.lsp4j.HoverParams;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.LocationLink;
 import org.eclipse.lsp4j.PublishDiagnosticsParams;
@@ -47,6 +50,7 @@ import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.ReferenceParams;
 import org.eclipse.lsp4j.RenameParams;
 import org.eclipse.lsp4j.SignatureHelp;
+import org.eclipse.lsp4j.SignatureHelpParams;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.TextDocumentContentChangeEvent;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
@@ -327,20 +331,20 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 	}
 
 	@Override
-	public CompletableFuture<Hover> hover(TextDocumentPositionParams position) {
-		log.debug("hover requested for {}", position);
+	public CompletableFuture<Hover> hover(HoverParams hoverParams) {
+		log.debug("hover requested for {}", hoverParams.getPosition());
 		long timeout = props.getHoverTimeout();
-		return timeout <= 0 ? async.invoke(() -> computeHover(position)) : async.invoke(Duration.ofMillis(timeout), () -> computeHover(position), Mono.fromRunnable(() -> {
+		return timeout <= 0 ? async.invoke(() -> computeHover(hoverParams)) : async.invoke(Duration.ofMillis(timeout), () -> computeHover(hoverParams), Mono.fromRunnable(() -> {
 			log.error("Hover Request handler timed out after {} ms.", timeout);
 		}));
 	}
 	
-	private Hover computeHover(TextDocumentPositionParams position) {
+	private Hover computeHover(HoverParams hoverParams) {
 		try {
 			log.debug("hover handler starting");
 			HoverHandler h = hoverHandler;
-			if (h!=null) {
-				return hoverHandler.handle(position);
+			if (h != null) {
+				return hoverHandler.handle(hoverParams);
 			}
 			log.debug("no hover because there is no handler");
 			return null;
@@ -350,18 +354,18 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 	}
 
 	@Override
-	public CompletableFuture<SignatureHelp> signatureHelp(TextDocumentPositionParams position) {
+	public CompletableFuture<SignatureHelp> signatureHelp(SignatureHelpParams signatureHelpParams) {
 		return CompletableFuture.completedFuture(null);
 	}
 
 	@Override
 	public CompletableFuture<Either<List<? extends Location>, List<? extends LocationLink>>> definition(
-			TextDocumentPositionParams position) {
+			DefinitionParams definitionParams) {
 
 		DefinitionHandler h = this.definitionHandler;
 		if (h != null) {
 			return async.invoke(() -> {
-				List<LocationLink> locations = h.handle(position);
+				List<LocationLink> locations = h.handle(definitionParams);
 				if (locations==null) {
 					// vscode client does not like to receive null result. See: https://github.com/spring-projects/sts4/issues/309
 					locations = ImmutableList.of();
@@ -524,11 +528,11 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 	}
 
 	@Override
-	public CompletableFuture<List<? extends DocumentHighlight>> documentHighlight(TextDocumentPositionParams position) {
+	public CompletableFuture<List<? extends DocumentHighlight>> documentHighlight(DocumentHighlightParams highlightParams) {
 	  return async.invoke(() -> {
 		DocumentHighlightHandler handler = this.documentHighlightHandler;
 		if (handler != null) {
-			return handler.handle(position);
+			return handler.handle(highlightParams);
 		}
 		return NO_HIGHLIGHTS;
 	  });

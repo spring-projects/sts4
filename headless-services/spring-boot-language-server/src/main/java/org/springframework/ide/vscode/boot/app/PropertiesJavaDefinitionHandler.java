@@ -14,9 +14,9 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import org.eclipse.lsp4j.DefinitionParams;
 import org.eclipse.lsp4j.LocationLink;
 import org.eclipse.lsp4j.Range;
-import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,13 +61,13 @@ public class PropertiesJavaDefinitionHandler implements DefinitionHandler, Langu
 	private BootLanguageServerParams params;
 
 	@Override
-	public List<LocationLink> handle(TextDocumentPositionParams position) {
+	public List<LocationLink> handle(DefinitionParams definitionParams) {
 		try {
-			TextDocument doc = documents.get(position);
+			TextDocument doc = documents.get(definitionParams);
 			TypeUtil typeUtil = params.typeUtilProvider.getTypeUtil(sourceLinks, doc);
 			FuzzyMap<PropertyInfo> index = params.indexProvider.getIndex(doc).getProperties();
 			int offset;
-			offset = doc.toOffset(position.getPosition());
+			offset = doc.toOffset(definitionParams.getPosition());
 			return getDefinitions(index, typeUtil, doc, offset);
 		} catch (BadLocationException e) {
 			return ImmutableList.of();

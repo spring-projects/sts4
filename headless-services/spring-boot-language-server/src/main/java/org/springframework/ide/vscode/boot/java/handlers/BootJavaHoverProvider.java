@@ -29,8 +29,8 @@ import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.Hover;
+import org.eclipse.lsp4j.HoverParams;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
-import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,7 +71,7 @@ public class BootJavaHoverProvider implements HoverHandler {
 	}
 	
 	@Override
-	public Hover handle(TextDocumentPositionParams params) {
+	public Hover handle(HoverParams params) {
 		SimpleTextDocumentService documents = server.getTextDocumentService();
 		if (documents.get(params) != null) {
 			TextDocument doc = documents.get(params).copy();

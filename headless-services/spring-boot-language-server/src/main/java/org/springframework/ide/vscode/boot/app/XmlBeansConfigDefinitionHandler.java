@@ -54,9 +54,9 @@ import org.eclipse.lemminx.dom.DOMParser;
 import org.eclipse.lemminx.dom.parser.Scanner;
 import org.eclipse.lemminx.dom.parser.TokenType;
 import org.eclipse.lemminx.dom.parser.XMLScanner;
+import org.eclipse.lsp4j.DefinitionParams;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.LocationLink;
-import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.links.JavaElementLocationProvider;
@@ -140,17 +140,17 @@ public class XmlBeansConfigDefinitionHandler implements DefinitionHandler, Langu
 	}
 
 	@Override
-	public List<LocationLink> handle(TextDocumentPositionParams position) {
+	public List<LocationLink> handle(DefinitionParams params) {
 		try {
 			if (config.isSpringXMLSupportEnabled() && config.areXmlHyperlinksEnabled()) {
-				TextDocument doc = documents.get(position);
+				TextDocument doc = documents.get(params);
 				if (doc != null) {
 					String content = doc.get();
 	
 					DOMParser parser = DOMParser.getInstance();
 					DOMDocument dom = parser.parse(content, "", null);
 					
-					int offset = doc.toOffset(position.getPosition());
+					int offset = doc.toOffset(params.getPosition());
 	
 					DOMNode node = dom.findNodeBefore(offset);
 	
