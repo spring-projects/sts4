@@ -33,6 +33,7 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.ILocalVariable;
 import org.eclipse.jdt.internal.ui.javaeditor.JavaSourceViewer;
 import org.eclipse.jdt.internal.ui.viewsupport.JavaElementLinks;
+import org.eclipse.jdt.ui.JavaElementLabelProvider;
 import org.eclipse.jdt.ui.JavaElementLabels;
 import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.jface.preference.IPreferenceStore;
@@ -132,6 +133,7 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 	private final JavaFluxSearch javaFluxSearch = new JavaFluxSearch(Logger.forEclipsePlugin(LanguageServerCommonsActivator::getInstance), javaData);
 	private final TypeHierarchy typeHierarchy = new TypeHierarchy(Logger.forEclipsePlugin(LanguageServerCommonsActivator::getInstance), javaData);
 	private final JavaCodeCompletion codeComplete = new JavaCodeCompletion();
+	private final JavaElementLabelProvider javaLabelProvider = new JavaElementLabelProvider(JavaElementLabelProvider.SHOW_POST_QUALIFIED);
 
 	private static final String ANNOTION_TYPE_ID = "org.springframework.tooling.bootinfo";
 
@@ -478,7 +480,8 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 					IJavaProject project = element.getJavaProject() == null ? ResourceUtils.getJavaProject(projectUri) : element.getJavaProject();
 					if (project != null) {
 						Location location = new Location();
-						location.setUri(Utils.eclipseIntroUri(project.getElementName(), params.getBindingKey()).toString());
+						String label = javaLabelProvider.getText(element);
+						location.setUri(Utils.eclipseIntroUri(project.getElementName(), params.getBindingKey(), label).toString());
 						// Set the range because LocationLink needs it to be non-null. The target range
 						// would highlighted by the eclipse intro URL navigation anyway
 						location.setRange(new Range());
