@@ -9,7 +9,7 @@
             icon="$nl$/icons/boot-icon.png"
             category="org.springframework.ide.eclipse.ui.views"
             class="org.springframework.tooling.ls.eclipse.gotosymbol.view.SpringSymbolsView"
-            id="org.springframework.ide.eclipse.boot.dash.views.BootDashView">
+            id="org.springframework.tooling.ls.eclipse.gotosymbol.view.SpringSymbolsView">
       </view>
    </extension>
 
