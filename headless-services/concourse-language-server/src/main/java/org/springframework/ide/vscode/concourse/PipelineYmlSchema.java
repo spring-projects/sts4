@@ -365,12 +365,6 @@ public class PipelineYmlSchema implements YamlSchema {
 		taskStep.requireOneOf("config", "file");
 		taskStep.require(Constraints.implies("vars", "file"));
 
-		YBeanType setPipelineStep = f.ybean("SetPipelineStep");
-		addProp(setPipelineStep, "set_pipeline", t_ne_string);
-		addProp(setPipelineStep, "file", t_string).isRequired(true);
-		addProp(setPipelineStep, "vars", t_params);
-		addProp(setPipelineStep, "var_files", t_strings);
-
 		YBeanType aggregateStep = f.ybean("AggregateStep");
 		YBeanType doStep = f.ybean("DoStep");
 		YBeanType tryStep = f.ybean("TryStep");
@@ -380,7 +374,6 @@ public class PipelineYmlSchema implements YamlSchema {
 				getStep,
 				putStep,
 				taskStep,
-				setPipelineStep,
 				aggregateStep,
 				inParallelStep,
 				doStep,
