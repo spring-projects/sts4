@@ -355,9 +355,7 @@ public class ConcourseEditorTest {
 				"  - in_parallel:\n" +
 				"    - task: perform-something\n" +
 				"  - try:\n" +
-				"      put: test-logs\n" +
-				"  - set_pipeline: configure-the-pipeline\n" +
-			  "	   file: my-repo/ci/pipeline.yml\n"
+				"      put: test-logs\n"
 		);
 
 		editor.assertHoverContains("get", "Fetches a resource");
@@ -367,7 +365,6 @@ public class ConcourseEditorTest {
 		editor.assertHoverContains("task", "Executes a [Task]");
 		editor.assertHoverContains("do", "performs the given steps serially");
 		editor.assertHoverContains("try", "Performs the given step, swallowing any failure");
-		editor.assertHoverContains("set_pipeline", "The identifier specifies the name of the pipeline to configure");
 	}
 
 	@Test
@@ -389,26 +386,6 @@ public class ConcourseEditorTest {
 		editor.assertHoverContains("resource", "The resource to update");
 		editor.assertHoverContains("params", "A map of arbitrary configuration");
 		editor.assertHoverContains("get_params", "A map of arbitrary configuration to forward to the resource that will be utilized during the implicit `get` step");
-	}
-
-	@Test
-	public void setPipelineStepHovers() throws Exception {
-		Editor editor = harness.newEditor(
-			"jobs:\n" +
-			"- name: some-job\n" +
-			"  plan:\n" +
-			"  - get: my-repo\n" +
-			"  - set_pipeline: configure-the-pipeline\n" +
-			"	   file: my-repo/ci/pipeline.yml\n" +
-			"    var_files:\n" +
-			"      -  my-repo/ci/dev.yml\n" +
-			"	   vars:\n" +
-			"		   text: \"Hello World!\"\n"
-		);
-
-		editor.assertHoverContains("file", "The path to the pipeline's configuration file.");
-		editor.assertHoverContains("var_files", "files that will be passed to the pipeline config in the same manner as the --load-vars-from flag");
-		editor.assertHoverContains("vars", "A map of template variables to pass to the pipeline config.");
 	}
 
 	@Test
