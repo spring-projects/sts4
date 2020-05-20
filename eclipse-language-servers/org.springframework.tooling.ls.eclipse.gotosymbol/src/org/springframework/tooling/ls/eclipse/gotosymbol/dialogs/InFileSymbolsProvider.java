@@ -13,7 +13,10 @@ package org.springframework.tooling.ls.eclipse.gotosymbol.dialogs;
 import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Supplier;
 
+import org.eclipse.core.resources.IResource;
+import org.eclipse.jface.text.IDocument;
 import org.eclipse.lsp4e.LSPEclipseUtils;
 import org.eclipse.lsp4e.LanguageServiceAccessor;
 import org.eclipse.lsp4e.LanguageServiceAccessor.LSPDocumentInfo;
@@ -23,6 +26,7 @@ import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.ui.texteditor.ITextEditor;
+import org.springsource.ide.eclipse.commons.livexp.core.LiveExpression;
 
 import com.google.common.collect.ImmutableList;
 
@@ -34,34 +38,54 @@ import com.google.common.collect.ImmutableList;
 @SuppressWarnings("restriction")
 public class InFileSymbolsProvider implements SymbolsProvider {
 	
-	private LSPDocumentInfo info;
+	private Supplier<LSPDocumentInfo> info;
 
-	public InFileSymbolsProvider(LSPDocumentInfo target) {
+	public InFileSymbolsProvider(Supplier<LSPDocumentInfo> target) {
 		super();
 		this.info = target;
 	}
 	
 	@Override
 	public List<Either<SymbolInformation, DocumentSymbol>> fetchFor(String query) throws Exception {
-		DocumentSymbolParams params = new DocumentSymbolParams(
-				new TextDocumentIdentifier(info.getFileUri().toString()));
-		CompletableFuture<List<Either<SymbolInformation, DocumentSymbol>>> symbolsFuture = info.getLanguageClient()
-				.getTextDocumentService().documentSymbol(params);
-		List<Either<SymbolInformation, DocumentSymbol>> symbols = symbolsFuture.get();
-		return symbols == null ? ImmutableList.of() : ImmutableList.copyOf(symbols);
+		LSPDocumentInfo info = this.info.get();
+		if (info!=null) {
+			DocumentSymbolParams params = new DocumentSymbolParams(
+					new TextDocumentIdentifier(info.getFileUri().toString()));
+			CompletableFuture<List<Either<SymbolInformation, DocumentSymbol>>> symbolsFuture = info.getLanguageClient()
+					.getTextDocumentService().documentSymbol(params);
+			List<Either<SymbolInformation, DocumentSymbol>> symbols = symbolsFuture.get();
+			return symbols == null ? ImmutableList.of() : ImmutableList.copyOf(symbols);
+		}
+		return ImmutableList.of();
+	}
+
+	public static SymbolsProvider createFor(LiveExpression<IResource> rsrc) {
+		LiveExpression<LSPDocumentInfo> target = rsrc.apply(r -> {
+			IDocument document = LSPEclipseUtils.getDocument(r);
+			return getLSPDocumentInfo(document);
+		});
+		return new InFileSymbolsProvider(target::getValue);
 	}
 
 	public static SymbolsProvider createFor(ITextEditor textEditor) {
-		Collection<LSPDocumentInfo> infos = LanguageServiceAccessor.getLSPDocumentInfosFor(
-				LSPEclipseUtils.getDocument(textEditor),
-				capabilities -> Boolean.TRUE.equals(capabilities.getDocumentSymbolProvider()));
-		if (infos.isEmpty()) {
-			return null;
-		}
-		// TODO maybe consider better strategy such as iterating on all LS until we have a good result
-		LSPDocumentInfo info = infos.iterator().next();
+		IDocument document = LSPEclipseUtils.getDocument(textEditor);
+		LSPDocumentInfo info = getLSPDocumentInfo(document);
 		if (info!=null) {
-			return new InFileSymbolsProvider(info);
+			return new InFileSymbolsProvider(() -> info);
+		}
+		return null;
+	}
+
+	private static LSPDocumentInfo getLSPDocumentInfo(IDocument document) {
+		if (document!=null) {
+			Collection<LSPDocumentInfo> infos = LanguageServiceAccessor.getLSPDocumentInfosFor(
+					document,
+					capabilities -> Boolean.TRUE.equals(capabilities.getDocumentSymbolProvider()));
+			if (infos.isEmpty()) {
+				return null;
+			}
+			// TODO maybe consider better strategy such as iterating on all LS until we have a good result
+			return infos.iterator().next();
 		}
 		return null;
 	}
@@ -73,7 +97,8 @@ public class InFileSymbolsProvider implements SymbolsProvider {
 
 	@Override
 	public boolean fromFile(SymbolInformation symbol) {
-		if (symbol != null && symbol.getLocation() != null) {
+		LSPDocumentInfo info = this.info.get();
+		if (info!=null && symbol != null && symbol.getLocation() != null) {
 			String symbolUri = symbol.getLocation().getUri();
 			return info.getFileUri().toString().equals(symbolUri);
 		}

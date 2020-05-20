@@ -18,9 +18,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.Assert;
+import org.eclipse.lsp4e.LSPEclipseUtils;
 import org.eclipse.lsp4j.DocumentSymbol;
+import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
+import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.PlatformUI;
 import org.springframework.tooling.ls.eclipse.gotosymbol.GotoSymbolPlugin;
 import org.springsource.ide.eclipse.commons.core.util.FuzzyMatcher;
 import org.springsource.ide.eclipse.commons.core.util.StringUtil;
@@ -34,6 +38,7 @@ import org.springsource.ide.eclipse.commons.livexp.util.ExceptionUtil;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+@SuppressWarnings("restriction")
 public class GotoSymbolDialogModel {
 
 	public static class Match<T> {
@@ -77,13 +82,22 @@ public class GotoSymbolDialogModel {
 	}
 	
 	private static final OKHandler DEFAULT_OK_HANDLER = (selection) -> true;
+	
+	public static final OKHandler OPEN_IN_EDITOR_OK_HANDLER = symbolInformation -> {
+		if (symbolInformation!=null) {
+			Location location = symbolInformation.getLocation();
+			IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+			LSPEclipseUtils.openInEditor(location, page);
+		}
+		return true;
+	};
 
 	private SymbolsProvider[] symbolsProviders;
 	private final LiveVariable<HighlightedText> status = new LiveVariable<>();
 	private int currentSymbolsProviderIndex;
-	private final LiveVariable<SymbolsProvider> currentSymbolsProvider = new LiveVariable<>(null);
+	public final LiveVariable<SymbolsProvider> currentSymbolsProvider = new LiveVariable<>(null);
 	private final LiveVariable<String> searchBox = new LiveVariable<>("");
-	private final ObservableSet<Either<SymbolInformation, DocumentSymbol>> unfilteredSymbols = new ObservableSet<Either<SymbolInformation, DocumentSymbol>>(ImmutableSet.of(), AsyncMode.ASYNC, AsyncMode.SYNC) {
+	public final ObservableSet<Either<SymbolInformation, DocumentSymbol>> unfilteredSymbols = new ObservableSet<Either<SymbolInformation, DocumentSymbol>>(ImmutableSet.of(), AsyncMode.ASYNC, AsyncMode.SYNC) {
 		//Note: fetching is 'slow' so is done asynchronously
 		{
 			setRefreshDelay(100);
@@ -205,6 +219,10 @@ public class GotoSymbolDialogModel {
 	public synchronized void toggleSymbolsProvider() {
 		currentSymbolsProviderIndex = (currentSymbolsProviderIndex+1)%symbolsProviders.length;
 		currentSymbolsProvider.setValue(symbolsProviders[currentSymbolsProviderIndex]);
+	}
+	
+	public SymbolsProvider[] getSymbolsProviders() {
+		return symbolsProviders;
 	}
 
 	/**

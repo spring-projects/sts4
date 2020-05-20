@@ -90,7 +90,7 @@ public class GotoSymbolSection extends WizardPageSection {
 			return null;
 		}
 	}
-
+	
 	private  class GotoSymbolsLabelProvider extends StyledCellLabelProvider {
 		
 		private Stylers stylers;
@@ -192,7 +192,7 @@ public class GotoSymbolSection extends WizardPageSection {
 	}
 
 	private final GotoSymbolDialogModel model;
-
+	private boolean enableStatusLine = true;
 
 	public GotoSymbolSection(IPageWithSections owner, GotoSymbolDialogModel model) {
 		super(owner);
@@ -258,16 +258,19 @@ public class GotoSymbolSection extends WizardPageSection {
 		installWidgetListeners(pattern, viewer);
 
 		//Status label
-		StyledText statusLabel = new StyledText(dialogArea, SWT.NONE);
-		// Allow for some extra space for highlight fonts
-		statusLabel.setLeftMargin(3);
-		statusLabel.setBottomMargin(2);
-		statusLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+		if (enableStatusLine) {
+			StyledText statusLabel = new StyledText(dialogArea, SWT.NONE);
+			// Allow for some extra space for highlight fonts
+			statusLabel.setLeftMargin(3);
+			statusLabel.setBottomMargin(2);
+			statusLabel.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
+			
+			Stylers stylers = new Stylers(dialogArea.getFont());
+			disposables.add(stylers);
+			
+			SwtConnect.connectHighlighted(stylers.bold(), statusLabel, model.getStatus(), Duration.ofMillis(500));
+		}
 		
-		Stylers stylers = new Stylers(dialogArea.getFont());
-		disposables.add(stylers);
-		
-		SwtConnect.connectHighlighted(stylers.bold(), statusLabel, model.getStatus(), Duration.ofMillis(500));
 		viewer.setInput(model);
 	}
 
@@ -396,6 +399,15 @@ public class GotoSymbolSection extends WizardPageSection {
 		}
 
 		return val != null ? Optional.of(val) : Optional.empty();
+	}
+	
+
+	/**
+	 * Enable or disable displaying status line at the bottom of the goto symbols view/section.
+	 */
+	public GotoSymbolSection enableStatusLine(boolean enable) {
+		this.enableStatusLine = enable;
+		return this;
 	}
 	
 }

@@ -29,6 +29,7 @@ import org.eclipse.lsp4j.services.LanguageServer;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.springframework.tooling.ls.eclipse.gotosymbol.GotoSymbolPlugin;
+import org.springsource.ide.eclipse.commons.livexp.ui.Ilabelable;
 import org.springsource.ide.eclipse.commons.livexp.util.ExceptionUtil;
 
 import com.google.common.collect.ImmutableList;
@@ -134,5 +135,4 @@ public class InWorkspaceSymbolsProvider implements SymbolsProvider {
 	private static void log(Throwable e) {
 		GotoSymbolPlugin.getInstance().getLog().log(ExceptionUtil.status(e));
 	}
-	
 }

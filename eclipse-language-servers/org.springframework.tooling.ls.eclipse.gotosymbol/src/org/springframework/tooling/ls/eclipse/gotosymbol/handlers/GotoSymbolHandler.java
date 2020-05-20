@@ -66,14 +66,7 @@ public class GotoSymbolHandler extends AbstractHandler {
 				final ITextEditor textEditor = (ITextEditor) part;
 				
 				GotoSymbolDialogModel model = new GotoSymbolDialogModel(getKeybindings(event), InWorkspaceSymbolsProvider.createFor(event), InProjectSymbolsProvider.createFor(event), InFileSymbolsProvider.createFor(textEditor))
-				.setOkHandler(symbolInformation -> {
-					if (symbolInformation!=null) {
-						Location location = symbolInformation.getLocation();
-						IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
-						LSPEclipseUtils.openInEditor(location, page);
-					}
-					return true;
-				});
+				.setOkHandler(GotoSymbolDialogModel.OPEN_IN_EDITOR_OK_HANDLER);
 				GotoSymbolDialog dialog = new GotoSymbolDialog(shell, textEditor, model, /*alignRight*/ false);
 				currentDialog = model;
 				dialog.open();
