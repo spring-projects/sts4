@@ -315,6 +315,8 @@ public class ConcourseEditorTest {
 				, // ==============
 				"put: <*>"
 				, // ==============
+				"set_pipeline: <*>"
+				, // ==============
 				"task: <*>"
 				, // ==============
 				"try:\n" +
@@ -357,7 +359,7 @@ public class ConcourseEditorTest {
 				"  - try:\n" +
 				"      put: test-logs\n" +
 				"  - set_pipeline: configure-the-pipeline\n" +
-			  "	   file: my-repo/ci/pipeline.yml\n"
+				"    file: my-repo/ci/pipeline.yml\n"
 		);
 
 		editor.assertHoverContains("get", "Fetches a resource");
@@ -399,11 +401,11 @@ public class ConcourseEditorTest {
 			"  plan:\n" +
 			"  - get: my-repo\n" +
 			"  - set_pipeline: configure-the-pipeline\n" +
-			"	   file: my-repo/ci/pipeline.yml\n" +
+			"    file: my-repo/ci/pipeline.yml\n" +
 			"    var_files:\n" +
-			"      -  my-repo/ci/dev.yml\n" +
-			"	   vars:\n" +
-			"		   text: \"Hello World!\"\n"
+			"    - my-repo/ci/dev.yml\n" +
+			"    vars:\n" +
+			"    text: \"Hello World!\"\n"
 		);
 
 		editor.assertHoverContains("file", "The path to the pipeline's configuration file.");
@@ -4197,6 +4199,7 @@ public class ConcourseEditorTest {
 				"- get",
 				"- in_parallel",
 				"- put",
+				"- set_pipeline",
 				"- task",
 				"- try",
 				"- aggregate",
