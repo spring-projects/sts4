@@ -89,6 +89,18 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////
+
+	@Test public void GH_190_tolerate_placeholders_without_quotes_integer() throws Exception {
+		data("server.port", "java.lang.Integer", null, null);
+		Editor editor = harness.newEditor(
+				"server:\n" + 
+				"  port: @port@\n" +
+				"bad: problem"
+		);
+		editor.assertProblems(
+				"bad|Unknown"
+		);
+	}
 	
 	@Test public void GH_190_tolerate_placeholders_without_quotes() throws Exception {
 		//See: https://github.com/spring-projects/sts4/issues/190
