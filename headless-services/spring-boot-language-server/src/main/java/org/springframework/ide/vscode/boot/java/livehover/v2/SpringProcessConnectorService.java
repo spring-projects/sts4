@@ -158,14 +158,16 @@ public class SpringProcessConnectorService {
 			catch (Exception e) {
 				log.info("problem occured during process connect", e);
 
-				if (retryNo < maxRetryCount) {
+				if (retryNo < maxRetryCount && isConnected(processKey)) {
 					scheduleConnect(progressTask, processKey, connector, retryDelayInSeconds, TimeUnit.SECONDS, retryNo + 1);
 				} else {
 					progressTask.progressDone();
 					
 					// Send message to client if maximum retries reached on error
-					diagnosticService.diagnosticEvent(ShowMessageException
-							.error("Failed to connect to process " + processKey + " after retries: " + retryNo, e));	
+					if (isConnected(processKey)) {
+						diagnosticService.diagnosticEvent(ShowMessageException
+									.error("Failed to connect to process " + processKey + " after retries: " + retryNo, e));	
+					}
 				}
 			}
 		}, delay, unit);
@@ -223,7 +225,7 @@ public class SpringProcessConnectorService {
 
 				log.info("problem occured during process live data refresh", e);
 				
-				if (retryNo < maxRetryCount) {
+				if (retryNo < maxRetryCount && isConnected(processKey)) {
 					scheduleRefresh(progressTask, processKey, connector, retryDelayInSeconds, TimeUnit.SECONDS,
 							retryNo + 1);
 				}
@@ -231,10 +233,12 @@ public class SpringProcessConnectorService {
 					progressTask.progressDone();
 					
 					// Send message to client if maximum retries reached on error
-					diagnosticService.diagnosticEvent(ShowMessageException
-							.error("Failed to refresh live data from process " + processKey + " after retries: " + retryNo, e));
-
-					disconnectProcess(processKey);
+					if (isConnected(processKey)) {
+						diagnosticService.diagnosticEvent(ShowMessageException
+								.error("Failed to refresh live data from process " + processKey + " after retries: " + retryNo, e));
+	
+						disconnectProcess(processKey);
+					}
 				}
 			}
 		}, delay, unit);
