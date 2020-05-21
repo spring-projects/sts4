@@ -90,6 +90,23 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 	
 	////////////////////////////////////////////////////////////////////////////////////////
 	
+	@Test public void GH_190_tolerate_placeholders_without_quotes() throws Exception {
+		//See: https://github.com/spring-projects/sts4/issues/190
+		data("info.build", "java.util.Map<String,String>", null, null);
+		Editor editor = harness.newEditor(
+				"info:\n" + 
+				"  build:\n" + 
+				"    artifact: @project.artifactId@\n" + 
+				"    name: @project.name@\n" + 
+				"    description: @project.description@\n" + 
+				"    version: @project.version@\n" +
+				"bad: problem"
+		);
+		editor.assertProblems(
+				"bad|Unknown"
+		);
+	}
+	
 	@Test public void GH_449_inheritedPropertiesInListValues() throws Exception {
 		//See: https://github.com/spring-projects/sts4/issues/449
 		MavenJavaProject p = createPredefinedMavenProject("gh_449");
