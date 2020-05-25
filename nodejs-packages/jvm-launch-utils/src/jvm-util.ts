@@ -76,6 +76,9 @@ export function findJvm(javaHome?: string) : Promise<JVM | null> {
  */
 export function findJdk(javaHome?: string) : Promise<JVM | null> {
     return findJvm(javaHome).then(jvm => {
+        if(!jvm) {
+            return null;
+        }
         if (!jvm.isJdk()) {
             console.log("found jvm is not a JDK");
 
