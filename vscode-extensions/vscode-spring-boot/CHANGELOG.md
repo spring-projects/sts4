@@ -1,3 +1,12 @@
+## 2020-05-28 (4.6.2 RELEASE)
+
+* _(Spring Boot)_ improvement: additional check to auto-connect live hovers only when actuators are on the project classpath ([#450](https://github.com/spring-projects/sts4/issues/450))
+* _(Spring Boot)_ improvement: added content assist for keys that exist in YAML and properties files ([#427](https://github.com/spring-projects/sts4/issues/427))
+* _(Spring Boot)_ improvement: Yaml editor gives error when using @..@ placeholders ([#190](https://github.com/spring-projects/sts4/issues/190))
+* _(Spring Boot)_ bugfix: super type hierarchy lookup might fail
+* _(Spring Boot)_ bugfix: quickly restarting app caused error popup from live hover mechanism to show up
+* _(VSCode/Theia)_ bugfix: Fix null reference when no JVM was found - contributed by [@tfriem](https://github.com/tfriem)
+
 ## 2020-04-23 (4.6.1 RELEASE)
 
 * _(Spring Boot)_ improvement: Spring yaml validation doesn't understand the "<<:" syntax ([#440](https://github.com/spring-projects/sts4/issues/440))

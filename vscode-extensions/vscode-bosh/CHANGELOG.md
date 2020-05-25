@@ -1,3 +1,7 @@
+## 2020-05-28 (4.6.2 RELEASE)
+
+* _(VSCode/Theia)_ bugfix: Fix null reference when no JVM was found - contributed by [@tfriem](https://github.com/tfriem)
+
 ## 2020-04-23 (4.6.1 RELEASE)
 
 * no major changes
