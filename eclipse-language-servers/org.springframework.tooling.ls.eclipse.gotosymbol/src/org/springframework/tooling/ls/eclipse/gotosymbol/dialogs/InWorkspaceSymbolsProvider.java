@@ -12,6 +12,7 @@ package org.springframework.tooling.ls.eclipse.gotosymbol.dialogs;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -22,6 +23,7 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.lsp4e.LanguageServiceAccessor;
 import org.eclipse.lsp4j.DocumentSymbol;
+import org.eclipse.lsp4j.ServerCapabilities;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.WorkspaceSymbolParams;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
@@ -40,14 +42,18 @@ import reactor.core.publisher.Mono;
 @SuppressWarnings("restriction")
 public class InWorkspaceSymbolsProvider implements SymbolsProvider {
 
+	private static final Predicate<ServerCapabilities> WS_SYMBOL_CAP = capabilities -> Boolean.TRUE.equals(capabilities.getWorkspaceSymbolProvider());
+	
 	public static InWorkspaceSymbolsProvider createFor(Supplier<IProject> _project) {
 		return new InWorkspaceSymbolsProvider(() -> {
 			IProject project = _project.get();
 			if (project!=null) {
 				return LanguageServiceAccessor.getLanguageServers(project,
-						capabilities -> Boolean.TRUE.equals(capabilities.getWorkspaceSymbolProvider()), true);
+						WS_SYMBOL_CAP, true);
+			} else {
+				System.out.println("project = null");
+				return LanguageServiceAccessor.getActiveLanguageServers(WS_SYMBOL_CAP);
 			}
-			return ImmutableList.of();
 		});
 	}
 	
