@@ -912,16 +912,17 @@ jobs:
     - get: tasks
     - get: s3-concourse-vsix-snapshot
       passed:
-      - build-concourse-rc
+      - publish-release
     - get: s3-manifest-yaml-vsix-snapshot
       passed:
-      - build-manifest-yaml-rc
+      - publish-release
     - get: s3-bosh-vsix-snapshot
       passed:
-      - build-bosh-rc
+      - publish-release
     - get: s3-spring-boot-vsix-snapshot
+      trigger: true
       passed:
-      - build-spring-boot-rc
+      - publish-release
   - task: publish-ovsx-releases
     file: tasks/concourse/tasks/publish-ovsx-releases.yml
     input_mapping:
