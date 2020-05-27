@@ -1299,7 +1299,6 @@ jobs:
       trigger: true
       passed:
       - build-fatjars
-  
   - task: build-spring-boot-atom-package
     params:
       package_name: atom-spring-boot
