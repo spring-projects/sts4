@@ -12,17 +12,18 @@ package org.springframework.tooling.ls.eclipse.gotosymbol.view;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
+import org.eclipse.core.runtime.Platform;
+import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.lsp4e.LSPEclipseUtils;
-import org.eclipse.lsp4j.Location;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IEditorInput;
@@ -32,6 +33,7 @@ import org.eclipse.ui.ISelectionService;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
+import org.springframework.ide.eclipse.boot.dash.BootDashActivator;
 import org.springframework.ide.eclipse.boot.dash.views.sections.ViewPartWithSections;
 import org.springframework.tooling.ls.eclipse.gotosymbol.dialogs.GotoSymbolDialogModel;
 import org.springframework.tooling.ls.eclipse.gotosymbol.dialogs.GotoSymbolSection;
@@ -39,14 +41,16 @@ import org.springframework.tooling.ls.eclipse.gotosymbol.dialogs.InFileSymbolsPr
 import org.springframework.tooling.ls.eclipse.gotosymbol.dialogs.InProjectSymbolsProvider;
 import org.springframework.tooling.ls.eclipse.gotosymbol.dialogs.InWorkspaceSymbolsProvider;
 import org.springsource.ide.eclipse.commons.livexp.ui.ChooseOneSectionCombo;
+import org.springsource.ide.eclipse.commons.livexp.ui.Disposable;
 import org.springsource.ide.eclipse.commons.livexp.ui.IPageSection;
 import org.springsource.ide.eclipse.commons.livexp.ui.SimpleLabelProvider;
 import org.springsource.ide.eclipse.commons.livexp.util.Log;
 
 import com.google.common.collect.ImmutableList;
 
-@SuppressWarnings("restriction")
 public class SpringSymbolsView extends ViewPartWithSections {
+
+	private static String VIEW_TYPE_ID = SpringSymbolsView.class.getName();
 
 	/**
 	 * Adds scroll support to the whole view. You probably want to disable this
@@ -59,6 +63,19 @@ public class SpringSymbolsView extends ViewPartWithSections {
 		model.gotoSymbols.setOkHandler(GotoSymbolDialogModel.OPEN_IN_EDITOR_OK_HANDLER);
 	}
 
+	Action a = new Action("New View", BootDashActivator.getImageDescriptor("icons/add_target.png")) {
+		@Override
+		public void run() {
+			try {
+				IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+				if (page!=null) {
+					page.showView(VIEW_TYPE_ID, UUID.randomUUID().toString(), IWorkbenchPage.VIEW_ACTIVATE);
+				}
+			} catch (Exception e) {
+				Log.log(e);
+			}
+		}
+	};	
 	
 	private ISelectionListener selectionListener = new ISelectionListener() {
 		
@@ -94,6 +111,8 @@ public class SpringSymbolsView extends ViewPartWithSections {
 			return null;
 		}
 	};
+
+	private List<Disposable> disposables = new ArrayList<>();
 	
 	public SpringSymbolsView() {
 		super(ENABLE_SCROLLING);
@@ -125,6 +144,9 @@ public class SpringSymbolsView extends ViewPartWithSections {
 		sections.add(new GotoSymbolSection(this, model.gotoSymbols).enableStatusLine(false));
 		ISelectionService selectitonService = getSite().getWorkbenchWindow().getSelectionService();
 		selectitonService.addSelectionListener(selectionListener);
+		this.disposables.add(() -> {
+			selectitonService.removeSelectionListener(selectionListener);
+		});
 		return sections;
 	}
 
@@ -147,9 +169,20 @@ public class SpringSymbolsView extends ViewPartWithSections {
 	 * Fills the pull-down menu for this view (accessible from the toolbar)
 	 */
 	private void fillLocalPullDown(IMenuManager manager) {
+//		manager.add(a);
 	}
 
 	private void fillLocalToolBar(IToolBarManager manager) {
+		manager.add(a);
+	}
+	
+	@Override
+	public void dispose() {
+		for (Disposable d : disposables) {
+			d.dispose();
+		}
+		disposables.clear();
+		super.dispose();
 	}
 	
 }
