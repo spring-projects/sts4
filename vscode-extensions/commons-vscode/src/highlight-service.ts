@@ -62,7 +62,7 @@ export class HighlightService {
     private updateHighlightsForEditor(editor: TextEditor) {
         if (editor) {
             const highlightParams: HighlightParams = this.highlights.get(editor.document.uri.toString());
-            const highlights: CodeLens[] = highlightParams.codeLenses || [];
+            const highlights: CodeLens[] = highlightParams?.codeLenses || [];
             let decorations = highlights.map(hl => toVSRange(hl.range));
             editor.setDecorations(this.DECORATION, decorations);
         }
