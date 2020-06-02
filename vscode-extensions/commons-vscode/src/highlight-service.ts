@@ -1,5 +1,6 @@
 import {VersionedTextDocumentIdentifier, MarkupContent, Position, Range, CodeLens} from 'vscode-languageclient'
 import * as VSCode from 'vscode';
+import { TextEditor } from 'vscode';
 
 export function toVSRange(rng : Range) : VSCode.Range {
     return new VSCode.Range(toPosition(rng.start), toPosition(rng.end));
@@ -37,6 +38,8 @@ export class HighlightService {
             borderWidth: '4px'
         });
         this.highlights = new Map();
+
+        VSCode.window.onDidChangeActiveTextEditor(editor => this.updateHighlightsForEditor(editor));
     }
 
     handle(params : HighlightParams) : void {
@@ -51,11 +54,17 @@ export class HighlightService {
             const activeVersion = editor.document.version;
             if (docId.uri === activeUri && docId.version === activeVersion) {
                 //We only update highlights in the active editor for now
-                const highlightParams: HighlightParams = this.highlights.get(docId.uri);
-                const highlights: CodeLens[] = highlightParams.codeLenses || [];
-                let decorations = highlights.map(hl => toVSRange(hl.range));
-                editor.setDecorations(this.DECORATION, decorations);
+                this.updateHighlightsForEditor(editor);
             }
+        }
+    }
+
+    private updateHighlightsForEditor(editor: TextEditor) {
+        if (editor) {
+            const highlightParams: HighlightParams = this.highlights.get(editor.document.uri.toString());
+            const highlights: CodeLens[] = highlightParams.codeLenses || [];
+            let decorations = highlights.map(hl => toVSRange(hl.range));
+            editor.setDecorations(this.DECORATION, decorations);
         }
     }
 }
