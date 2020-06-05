@@ -78,7 +78,7 @@
 
 		<sts4-language-servers-p2-repo>https://dist.springsource.com/${dist.type}/TOOLS/sts4-language-server-integrations/${sts4-language-servers-version}</sts4-language-servers-p2-repo>
 
-		<tycho-version>1.2.0</tycho-version>
+		<tycho-version>1.7.0</tycho-version>
 		<encoding>UTF-8</encoding>
 	</properties>
 
@@ -424,7 +424,7 @@
 				<repository>
 					<id>orbit</id>
 					<layout>p2</layout>
-					<url>https://download.eclipse.org/tools/orbit/downloads/drops/S20200427151422/repository</url>
+					<url>https://download.eclipse.org/tools/orbit/downloads/drops/R20200529191137/repository</url>
 				</repository>
 				<repository>
 					<id>latest-m2e-wtp</id>

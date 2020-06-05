@@ -56,9 +56,9 @@
 				<groupId>org.eclipse.tycho</groupId>
 				<artifactId>target-platform-configuration</artifactId>
 				<version>${tycho-version}</version>
-				<configuration>
+<!--				<configuration>
 					<executionEnvironment>JavaSE-9</executionEnvironment>
-				</configuration>
+				</configuration> -->
 			</plugin>
 
 			<plugin>
