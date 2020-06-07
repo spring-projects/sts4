@@ -367,7 +367,7 @@
 		<category name="Uncategorized" />
 	</bundle>
 
-	<bundle id="org.apache.commons.compress.archivers" version="0.0.0">
+	<bundle id="org.apache.commons.compress" version="0.0.0">
 		<category name="Uncategorized" />
 	</bundle>
 
