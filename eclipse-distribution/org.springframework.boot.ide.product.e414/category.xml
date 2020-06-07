@@ -363,4 +363,8 @@
 		<category name="Uncategorized" />
 	</bundle>
 
+	<bundle id="javax.ws.rs" version="0.0.0">
+		<category name="Uncategorized" />
+	</bundle>
+
 </site>
