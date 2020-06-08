@@ -371,4 +371,8 @@
 		<category name="Uncategorized" />
 	</bundle>
 
+	<bundle id="org.slf4j" version="0.0.0">
+		<category name="Uncategorized" />
+	</bundle>
+
 </site>
