@@ -335,6 +335,10 @@
 		<category name="Uncategorized" />
 	</bundle>
 
+	<bundle id="org.objectweb.asm.tree" version="0.0.0">
+		<category name="Uncategorized" />
+	</bundle>
+
 	<bundle id="org.objectweb.asm.util" version="0.0.0">
 		<category name="Uncategorized" />
 	</bundle>
@@ -371,7 +375,7 @@
 		<category name="Uncategorized" />
 	</bundle>
 
-	<bundle id="org.slf4j" version="0.0.0">
+	<bundle id="org.slf4j.api" version="0.0.0">
 		<category name="Uncategorized" />
 	</bundle>
 
