@@ -15,6 +15,8 @@ import org.osgi.framework.BundleContext;
 
 public class GotoSymbolPlugin extends AbstractUIPlugin {
 
+	public static final String ID = "org.springframework.tooling.ls.eclipse.gotosymbol";
+	
 	private static GotoSymbolPlugin instance;
 
 	public GotoSymbolPlugin() {

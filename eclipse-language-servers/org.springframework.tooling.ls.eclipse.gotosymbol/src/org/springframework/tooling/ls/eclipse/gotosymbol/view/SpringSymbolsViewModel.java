@@ -16,7 +16,7 @@ import org.springframework.tooling.ls.eclipse.gotosymbol.dialogs.GotoSymbolDialo
 import org.springframework.tooling.ls.eclipse.gotosymbol.dialogs.InFileSymbolsProvider;
 import org.springframework.tooling.ls.eclipse.gotosymbol.dialogs.InProjectSymbolsProvider;
 import org.springframework.tooling.ls.eclipse.gotosymbol.dialogs.InWorkspaceSymbolsProvider;
-import org.springframework.tooling.ls.eclipse.gotosymbol.dialogs.GotoSymbolDialogModel.Favourite;
+import org.springframework.tooling.ls.eclipse.gotosymbol.favourites.FavouritesPreference;
 import org.springsource.ide.eclipse.commons.livexp.core.LiveExpression;
 import org.springsource.ide.eclipse.commons.livexp.core.LiveVariable;
 
@@ -29,11 +29,7 @@ public class SpringSymbolsViewModel {
 			InProjectSymbolsProvider.createFor(currentProject),
 			InFileSymbolsProvider.createFor(currentResource)
 	)
-	.setFavourites(
-			new Favourite("Request Mappings", "@/"),
-			new Favourite("Beans", "@+"),
-			new Favourite("All Spring Elements", "@")
-	);
+	.setFavourites(FavouritesPreference.INSTANCE);
 	{	
 		gotoSymbols.unfilteredSymbols.dependsOn(currentProject);
 	}

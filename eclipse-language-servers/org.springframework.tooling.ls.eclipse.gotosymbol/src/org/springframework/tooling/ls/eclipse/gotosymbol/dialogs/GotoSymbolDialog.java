@@ -30,7 +30,6 @@ public class GotoSymbolDialog extends PopupDialog implements IPageWithSections {
 	
 	private static final Point DEFAULT_SIZE = new Point(280, 300);
 
-	private GotoSymbolDialogModel model;
 	private final GotoSymbolSection content;
 	private ITextEditor fTextEditor;
 	
@@ -49,7 +48,6 @@ public class GotoSymbolDialog extends PopupDialog implements IPageWithSections {
 		// If we want this to work, it will have to be debugged. 
 		//For the time being I've simply disabled the menu that makes it appear like this should work.
 		this.fTextEditor = textEditor;
-		this.model = model;
 		this.content = new GotoSymbolSection(this, model);
 		this.alignRight = alignRight;
 		create();

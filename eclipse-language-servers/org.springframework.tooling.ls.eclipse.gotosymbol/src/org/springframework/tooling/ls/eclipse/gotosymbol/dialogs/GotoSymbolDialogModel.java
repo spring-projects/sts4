@@ -26,6 +26,7 @@ import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
 import org.springframework.tooling.ls.eclipse.gotosymbol.GotoSymbolPlugin;
+import org.springframework.tooling.ls.eclipse.gotosymbol.favourites.FavouritesPreference;
 import org.springsource.ide.eclipse.commons.core.util.FuzzyMatcher;
 import org.springsource.ide.eclipse.commons.core.util.StringUtil;
 import org.springsource.ide.eclipse.commons.livexp.core.AsyncLiveExpression.AsyncMode;
@@ -196,7 +197,7 @@ public class GotoSymbolDialogModel {
 	private String keyBindings;
 	private OKHandler okHandler = DEFAULT_OK_HANDLER;
 
-	private Favourite[] favourites = null;
+	private FavouritesPreference favourites = null;
 
 	public GotoSymbolDialogModel(String keyBindings, SymbolsProvider... symbolsProviders) {
 		this.keyBindings = keyBindings;
@@ -213,12 +214,12 @@ public class GotoSymbolDialogModel {
 		}
 	}
 	
-	public GotoSymbolDialogModel setFavourites(Favourite... favourites) {
+	public GotoSymbolDialogModel setFavourites(FavouritesPreference favourites) {
 		this.favourites = favourites;
 		return this;
 	}
 	
-	public Favourite[] getFavourites() {
+	public FavouritesPreference getFavourites() {
 		return favourites;
 	}
 

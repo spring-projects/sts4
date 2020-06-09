@@ -14,12 +14,17 @@ package org.springframework.tooling.ls.eclipse.gotosymbol.dialogs;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.eclipse.core.resources.IMarker;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.jface.dialogs.IDialogConstants;
+import org.eclipse.jface.dialogs.InputDialog;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.resource.JFaceColors;
 import org.eclipse.jface.text.BadLocationException;
@@ -62,7 +67,9 @@ import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.TreeItem;
 import org.springframework.tooling.ls.eclipse.gotosymbol.dialogs.GotoSymbolDialogModel.Favourite;
 import org.springframework.tooling.ls.eclipse.gotosymbol.dialogs.GotoSymbolDialogModel.Match;
+import org.springframework.tooling.ls.eclipse.gotosymbol.favourites.FavouritesPreference;
 import org.springsource.ide.eclipse.commons.core.util.FuzzyMatcher;
+import org.springsource.ide.eclipse.commons.core.util.StringUtil;
 import org.springsource.ide.eclipse.commons.livexp.core.LiveVariable;
 import org.springsource.ide.eclipse.commons.livexp.core.UIValueListener;
 import org.springsource.ide.eclipse.commons.livexp.ui.Disposable;
@@ -295,13 +302,16 @@ public class GotoSymbolSection extends WizardPageSection {
 		viewer.setInput(model);
 	}
 
-	private void createFavouritesPulldown(Composite parent, Favourite[] favourites, LiveVariable<String> searchBox) {
+	private void createFavouritesPulldown(Composite parent, FavouritesPreference favouritePrefs, LiveVariable<String> searchBox) {
 		Button btn = new Button(parent, SWT.ARROW | SWT.DOWN);
 		btn.addSelectionListener(new SelectionAdapter() {
 			@Override
 			public void widgetSelected(SelectionEvent e) {
 				super.widgetSelected(e);
 				Menu menu = new Menu(btn);
+				// create item for each of the known favourites
+				Favourite[] favourites = favouritePrefs.getFavourites();
+				Set<String> existingFavs = new HashSet<>();
 				for (Favourite f : favourites) {
 					MenuItem item = new MenuItem(menu, SWT.PUSH);
 					item.setText(f.toString());
@@ -310,7 +320,40 @@ public class GotoSymbolSection extends WizardPageSection {
 							searchBox.setValue(f.query);
 						}
 					});
+					existingFavs.add(f.query);
 				}
+				//separator 
+				new MenuItem(menu, SWT.SEPARATOR);
+				
+				String currentSearch = searchBox.getValue();
+				
+				if (StringUtil.hasText(currentSearch)) {
+					if (!existingFavs.contains(currentSearch)) {
+						//create a 'add favourite' menu item
+						MenuItem item = new MenuItem(menu, SWT.PUSH);
+						item.setText("Add Favourite...");
+						item.addSelectionListener(new SelectionAdapter() {
+							@Override
+							public void widgetSelected(SelectionEvent e) {
+								String name = inputDialog("Add '"+currentSearch+"' as a favourite", "Name:", "");
+								if (StringUtil.hasText(name)) {
+									favouritePrefs.add(name, currentSearch);
+								}
+							}
+						});
+					} else { // the currentSearch is already a favourite
+						//create a 'remove favourite' menu item
+						MenuItem item = new MenuItem(menu, SWT.PUSH);
+						item.setText("Remove '"+currentSearch+"' Favourite");
+						item.addSelectionListener(new SelectionAdapter() {
+							@Override
+							public void widgetSelected(SelectionEvent e) {
+								favouritePrefs.remove(currentSearch);
+							}
+						});
+					}
+				}
+				
 				Point loc = btn.getLocation();
 				Rectangle rect = btn.getBounds();
 				Point mLoc = new Point(loc.x-1, loc.y+rect.height);
@@ -320,6 +363,20 @@ public class GotoSymbolSection extends WizardPageSection {
 		});		
 	}
 	
+	private String inputDialog(String dialogTitle, String prompt, String defaultValue) {
+		AtomicReference<String> result = new AtomicReference<>();
+		owner.getShell().getDisplay().syncExec(new Runnable() {
+			public void run() {
+				InputDialog dlg = new InputDialog(owner.getShell(), dialogTitle, prompt, defaultValue, null);
+				int code = dlg.open();
+				if (code==IDialogConstants.OK_ID) {
+					result.set(dlg.getValue());
+				}
+			}
+		});
+		return result.get();
+	}
+
 	private void installWidgetListeners(Text pattern, TreeViewer list) {
 		pattern.addKeyListener(new KeyAdapter() {
 			public void keyPressed(KeyEvent e) {
