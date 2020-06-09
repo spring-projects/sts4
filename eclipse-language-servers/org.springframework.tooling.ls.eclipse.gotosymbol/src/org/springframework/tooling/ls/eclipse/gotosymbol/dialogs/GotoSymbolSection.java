@@ -44,16 +44,26 @@ import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.KeyAdapter;
 import org.eclipse.swt.events.KeyEvent;
+import org.eclipse.swt.events.SelectionAdapter;
+import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.Point;
+import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
+import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.swt.widgets.Event;
+import org.eclipse.swt.widgets.Menu;
+import org.eclipse.swt.widgets.MenuItem;
 import org.eclipse.swt.widgets.Text;
 import org.eclipse.swt.widgets.TreeItem;
+import org.springframework.tooling.ls.eclipse.gotosymbol.dialogs.GotoSymbolDialogModel.Favourite;
 import org.springframework.tooling.ls.eclipse.gotosymbol.dialogs.GotoSymbolDialogModel.Match;
 import org.springsource.ide.eclipse.commons.core.util.FuzzyMatcher;
+import org.springsource.ide.eclipse.commons.livexp.core.LiveVariable;
 import org.springsource.ide.eclipse.commons.livexp.core.UIValueListener;
 import org.springsource.ide.eclipse.commons.livexp.ui.Disposable;
 import org.springsource.ide.eclipse.commons.livexp.ui.IPageWithSections;
@@ -208,8 +218,19 @@ public class GotoSymbolSection extends WizardPageSection {
 			}
 		});	
 		
+		//Favourites pulldown
+		Composite sbComposite = dialogArea;
+		if (model.getFavourites()!=null) {
+			sbComposite = new Composite(dialogArea, SWT.NONE);
+			GridLayout layout = new GridLayout(2, false);
+			layout.marginWidth = 0; layout.marginHeight = 0;
+			sbComposite.setLayout(layout);
+			GridDataFactory.fillDefaults().grab(true, false).applyTo(sbComposite);
+			createFavouritesPulldown(sbComposite, model.getFavourites(), model.getSearchBox());
+		}
+		
 		//Search box:
-		Text pattern = new Text(dialogArea, SWT.SINGLE | SWT.BORDER | SWT.SEARCH | SWT.ICON_CANCEL);
+		Text pattern = new Text(sbComposite, SWT.SINGLE | SWT.BORDER | SWT.SEARCH | SWT.ICON_CANCEL);
 //		pattern.getAccessible().addAccessibleListener(new AccessibleAdapter() {
 //			public void getName(AccessibleEvent e) {
 //				e.result = LegacyActionTools.removeMnemonics(headerLabel)
@@ -274,6 +295,31 @@ public class GotoSymbolSection extends WizardPageSection {
 		viewer.setInput(model);
 	}
 
+	private void createFavouritesPulldown(Composite parent, Favourite[] favourites, LiveVariable<String> searchBox) {
+		Button btn = new Button(parent, SWT.ARROW | SWT.DOWN);
+		btn.addSelectionListener(new SelectionAdapter() {
+			@Override
+			public void widgetSelected(SelectionEvent e) {
+				super.widgetSelected(e);
+				Menu menu = new Menu(btn);
+				for (Favourite f : favourites) {
+					MenuItem item = new MenuItem(menu, SWT.PUSH);
+					item.setText(f.toString());
+					item.addSelectionListener(new SelectionAdapter() {
+						public void widgetSelected(SelectionEvent e) {
+							searchBox.setValue(f.query);
+						}
+					});
+				}
+				Point loc = btn.getLocation();
+				Rectangle rect = btn.getBounds();
+				Point mLoc = new Point(loc.x-1, loc.y+rect.height);
+				menu.setLocation(btn.getDisplay().map(btn.getParent(), null, mLoc));
+				menu.setVisible(true);
+			}
+		});		
+	}
+	
 	private void installWidgetListeners(Text pattern, TreeViewer list) {
 		pattern.addKeyListener(new KeyAdapter() {
 			public void keyPressed(KeyEvent e) {

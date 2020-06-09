@@ -29,10 +29,10 @@ import org.springframework.tooling.ls.eclipse.gotosymbol.GotoSymbolPlugin;
 import org.springsource.ide.eclipse.commons.core.util.FuzzyMatcher;
 import org.springsource.ide.eclipse.commons.core.util.StringUtil;
 import org.springsource.ide.eclipse.commons.livexp.core.AsyncLiveExpression.AsyncMode;
+import org.springsource.ide.eclipse.commons.livexp.core.HighlightedText;
 import org.springsource.ide.eclipse.commons.livexp.core.LiveExpression;
 import org.springsource.ide.eclipse.commons.livexp.core.LiveVariable;
 import org.springsource.ide.eclipse.commons.livexp.core.ObservableSet;
-import org.springsource.ide.eclipse.commons.livexp.core.HighlightedText;
 import org.springsource.ide.eclipse.commons.livexp.util.ExceptionUtil;
 
 import com.google.common.collect.ImmutableList;
@@ -40,7 +40,22 @@ import com.google.common.collect.ImmutableSet;
 
 @SuppressWarnings("restriction")
 public class GotoSymbolDialogModel {
-
+	
+	public static class Favourite {
+		public final String name; //Descriptive name 
+		public final String query; //The 'search string' it corresponds to
+		public Favourite(String name, String query) {
+			super();
+			this.name = name;
+			this.query = query;
+		}
+		
+		@Override
+		public String toString() {
+			return query + " ("+name+")";
+		}
+	}
+	
 	public static class Match<T> {
 		final double score;
 		final String query;
@@ -181,6 +196,8 @@ public class GotoSymbolDialogModel {
 	private String keyBindings;
 	private OKHandler okHandler = DEFAULT_OK_HANDLER;
 
+	private Favourite[] favourites = null;
+
 	public GotoSymbolDialogModel(String keyBindings, SymbolsProvider... symbolsProviders) {
 		this.keyBindings = keyBindings;
 		Assert.isLegal(symbolsProviders.length>0);		
@@ -194,6 +211,15 @@ public class GotoSymbolDialogModel {
 			unfilteredSymbols.addListener((e, v) -> debug("raw = "+summary(filteredSymbols.getValue())));
 			filteredSymbols.addListener((e, v) -> debug("filtered = "+summary(filteredSymbols.getValue())));
 		}
+	}
+	
+	public GotoSymbolDialogModel setFavourites(Favourite... favourites) {
+		this.favourites = favourites;
+		return this;
+	}
+	
+	public Favourite[] getFavourites() {
+		return favourites;
 	}
 
 	private List<String> summary(Collection<Match<Either<SymbolInformation, DocumentSymbol>>> collection) {
@@ -248,6 +274,4 @@ public class GotoSymbolDialogModel {
 		}
 		return false;
 	}
-	
-	
 }
