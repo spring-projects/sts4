@@ -60,17 +60,25 @@ public class SpringProcessConnectorLocal {
 		projectObserver.addListener(new ProjectObserver.Listener() {
 			@Override
 			public void created(IJavaProject project) {
-				boolean hasActuators = SpringProjectUtil.hasBootActuators(project);
-				projects.put(project.getElementName(), hasActuators);
-				projectsChanged = true;
+				update(project);
 			}
+			
 			@Override
 			public void deleted(IJavaProject project) {
 				projects.remove(project.getElementName());
 			}
+			
 			@Override
 			public void changed(IJavaProject project) {
+				update(project);
 			}
+			
+			protected void update(IJavaProject project) {
+				boolean hasActuators = SpringProjectUtil.hasBootActuators(project);
+				projects.put(project.getElementName(), hasActuators);
+				projectsChanged = true;
+			}
+			
 		});
 	}
 	
