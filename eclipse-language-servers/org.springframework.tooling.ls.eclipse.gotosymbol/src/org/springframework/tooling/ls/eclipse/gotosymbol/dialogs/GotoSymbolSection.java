@@ -225,7 +225,7 @@ public class GotoSymbolSection extends WizardPageSection {
 			}
 		});	
 		
-		//Favourites pulldown
+		//Favourites pulldown composite
 		Composite sbComposite = dialogArea;
 		if (model.getFavourites()!=null) {
 			sbComposite = new Composite(dialogArea, SWT.NONE);
@@ -233,7 +233,6 @@ public class GotoSymbolSection extends WizardPageSection {
 			layout.marginWidth = 0; layout.marginHeight = 0;
 			sbComposite.setLayout(layout);
 			GridDataFactory.fillDefaults().grab(true, false).applyTo(sbComposite);
-			createFavouritesPulldown(sbComposite, model.getFavourites(), model.getSearchBox());
 		}
 		
 		//Search box:
@@ -247,6 +246,11 @@ public class GotoSymbolSection extends WizardPageSection {
 		pattern.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		pattern.setMessage(model.getSearchBoxHintMessage());
 		SwtConnect.connect(pattern, model.getSearchBox());
+		
+		//Favourites pulldown
+		if (model.getFavourites()!=null) {
+			createFavouritesPulldown(sbComposite, model.getFavourites(), model.getSearchBox());
+		}
 
 		//Tree viewer with results
 		TreeViewer viewer = new TreeViewer(dialogArea, SWT.SINGLE);
