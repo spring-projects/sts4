@@ -177,7 +177,12 @@ public class SpringProcessDescriptor {
 				log.info("Spring boot process found: " + projectName);
 				this.projectName = (String) projectName;
 				
-				return projectIsKnown.test((String) projectName) && projectHasActuators.test((String)projectName);
+				boolean knownProject = projectIsKnown.test((String) projectName);
+				boolean hasActuators = projectHasActuators.test((String)projectName);
+
+				log.info("Spring boot process details: " + knownProject + " - " + hasActuators);
+				
+				return knownProject && hasActuators;
 			}
 		}
 		catch (Exception e) {
