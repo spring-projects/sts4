@@ -69,9 +69,7 @@ function isCheckingJVM(wsOpts : VSCode.WorkspaceConfiguration): boolean {
     if (!wsOpts) {
         return true;
     }
-    const checkJvm: boolean = wsOpts.get("checkJVM");
-    console.log(`Check JVM: ${checkJvm}`);
-    return checkJvm;
+    return wsOpts.get("checkJVM");
 }
 
 function getUserDefinedJvmArgs(wsOpts : VSCode.WorkspaceConfiguration) : string[] {
