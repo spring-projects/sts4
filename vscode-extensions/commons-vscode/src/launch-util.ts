@@ -20,12 +20,10 @@ import { Trace, NotificationType } from 'vscode-jsonrpc';
 import * as P2C from 'vscode-languageclient/lib/protocolConverter';
 import {HighlightService, HighlightParams} from './highlight-service';
 import { log } from 'util';
-import { tmpdir } from 'os';
 import { JVM, findJvm, findJdk } from '@pivotal-tools/jvm-launch-utils';
 import { registerClasspathService } from './classpath';
 import {HighlightCodeLensProvider} from "./code-lens-service";
 import {registerJavaDataService} from "./java-data";
-import * as path from "path";
 
 let p2c = P2C.createConverter();
 
@@ -65,6 +63,15 @@ function getUserDefinedJvmHeap(wsOpts : VSCode.WorkspaceConfiguration,  dflt : s
     }
     let javaOptions : JavaOptions = wsOpts.get("java");
     return (javaOptions && javaOptions.heap) || dflt;
+}
+
+function isCheckingJVM(wsOpts : VSCode.WorkspaceConfiguration): boolean {
+    if (!wsOpts) {
+        return true;
+    }
+    const checkJvm: boolean = wsOpts.get("checkJVM");
+    console.log(`Check JVM: ${checkJvm}`);
+    return checkJvm;
 }
 
 function getUserDefinedJvmArgs(wsOpts : VSCode.WorkspaceConfiguration) : string[] {
@@ -156,7 +163,7 @@ export function activate(options: ActivatorOptions, context: VSCode.ExtensionCon
                                 '-Dsts.log.file=' + logfile,
                                 '-XX:TieredStopAtLevel=1'
                             ];
-                            if (options.checkjvm) {
+                            if (isCheckingJVM(options.workspaceOptions) && options.checkjvm) {
                                 options.checkjvm(context, jvm);
                             }
                             if (jvmHeap && !hasHeapArg(jvmArgs)) {

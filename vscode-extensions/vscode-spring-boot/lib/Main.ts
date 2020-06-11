@@ -1,7 +1,7 @@
 'use strict';
 
 import * as VSCode from 'vscode';
-import {workspace} from 'vscode';
+import { workspace } from 'vscode';
 
 import * as commons from '@pivotal-tools/commons-vscode';
 import * as liveHoverUi from './live-hover-connect-ui';
@@ -12,6 +12,8 @@ const PROPERTIES_LANGUAGE_ID = "spring-boot-properties";
 const YAML_LANGUAGE_ID = "spring-boot-properties-yaml";
 const JAVA_LANGUAGE_ID = "java";
 const XML_LANGUAGE_ID = "xml";
+
+const NEVER_SHOW_AGAIN = "Do not show again";
 
 /** Called when extension is activated */
 export function activate(context: VSCode.ExtensionContext): Thenable<LanguageClient> {
@@ -24,7 +26,14 @@ export function activate(context: VSCode.ExtensionContext): Thenable<LanguageCli
         preferJdk: true,
         checkjvm: (context: VSCode.ExtensionContext, jvm: commons.JVM) => {
             if (!jvm.isJdk()) {
-                VSCode.window.showWarningMessage('JAVA_HOME or PATH environment variable seems to point to a JRE. A JDK is required, hence Boot Hints are unavailable.');
+                VSCode.window.showWarningMessage(
+                    'JAVA_HOME or PATH environment variable seems to point to a JRE. A JDK is required, hence Boot Hints are unavailable.',
+                    NEVER_SHOW_AGAIN).then(selection => {
+                        if (selection === NEVER_SHOW_AGAIN) {
+                            options.workspaceOptions.update('checkJVM', false);
+                        }
+                    }
+                );
             }
         },
         explodedLsJarData: {

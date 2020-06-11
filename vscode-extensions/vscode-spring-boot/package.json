@@ -183,6 +183,11 @@
             "type": "string"
           },
           "description": "Additional 'user defined' VM args to pass to the language server process."
+        },
+        "spring-boot.ls.checkJVM": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable/Disable Java VM validation"
         }
       }
     },
