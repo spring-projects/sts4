@@ -124,6 +124,14 @@
 		<category name="Uncategorized"/>
 	</bundle>
 
+	<bundle id="javax.annotation" version="0.0.0">
+		<category name="Uncategorized"/>
+	</bundle>
+	
+	<bundle id="javax.annotation.source" version="0.0.0">
+		<category name="Uncategorized"/>
+	</bundle>
+
 	<bundle id="javax.xml.bind" version="0.0.0">
 		<category name="Uncategorized"/>
 	</bundle>
