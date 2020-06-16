@@ -1,4 +1,10 @@
-## 2020-05-28 (4.6.2 RELEASE)
+## 2020-06-18 (4.7.0 RELEASE, incl. language servers version 1.19.0)
+
+* _(Spring Boot)_ bugfix: automatic live hover detection works again reliably
+* _(VSCode)_ improvement: Flag to configure the "JAVA_HOME or PATH..." message display ([#478](https://github.com/spring-projects/sts4/issues/478))
+* _(VSCode)_ bugfix: green live hovers markers are no longer gone after switching to a different editor
+
+## 2020-05-28 (4.6.2 RELEASE, incl. language servers version 1.18.0)
 
 * _(Spring Boot)_ improvement: additional check to auto-connect live hovers only when actuators are on the project classpath ([#450](https://github.com/spring-projects/sts4/issues/450))
 * _(Spring Boot)_ improvement: added content assist for keys that exist in YAML and properties files ([#427](https://github.com/spring-projects/sts4/issues/427))

@@ -1,4 +1,8 @@
-## 2020-05-28 (4.6.2 RELEASE)
+## 2020-06-18 (4.7.0 RELEASE, incl. language servers version 1.19.0)
+
+* no major changes
+
+## 2020-05-28 (4.6.2 RELEASE, incl. language servers version 1.18.0)
 
 * _(VSCode/Theia)_ bugfix: Fix null reference when no JVM was found - contributed by [@tfriem](https://github.com/tfriem)
 * _(Concourse)_ improvement: add support for set-pipeline step ([#464](https://github.com/spring-projects/sts4/issues/464)) - contributed by [@deepakmohanakrishnan1984](https://github.com/deepakmohanakrishnan1984)
