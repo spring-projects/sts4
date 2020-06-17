@@ -416,11 +416,11 @@
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/releases/2020-06/</url>
 				</repository>
-				<repository>
+<!--				<repository>
 					<id>2020-06-staging</id>
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/staging/2020-06/</url>
-				</repository>
+				</repository> -->
 				<repository>
 					<id>orbit</id>
 					<layout>p2</layout>
