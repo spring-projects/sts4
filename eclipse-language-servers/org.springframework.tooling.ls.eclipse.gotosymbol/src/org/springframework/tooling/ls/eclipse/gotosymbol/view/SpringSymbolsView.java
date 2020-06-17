@@ -14,24 +14,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
-import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IAdaptable;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
-import org.eclipse.jface.text.ITextSelection;
-import org.eclipse.jface.viewers.ISelection;
-import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IActionBars;
-import org.eclipse.ui.IEditorInput;
-import org.eclipse.ui.IEditorPart;
-import org.eclipse.ui.ISelectionListener;
-import org.eclipse.ui.ISelectionService;
+import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.IWorkbenchPage;
-import org.eclipse.ui.IWorkbenchPart;
+import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.springframework.ide.eclipse.boot.dash.BootDashActivator;
 import org.springframework.ide.eclipse.boot.dash.views.sections.ViewPartWithSections;
@@ -58,10 +49,7 @@ public class SpringSymbolsView extends ViewPartWithSections {
 	 */
 	private static final boolean ENABLE_SCROLLING = false;
 
-	private final SpringSymbolsViewModel model = new SpringSymbolsViewModel();
-	{
-		model.gotoSymbols.setOkHandler(GotoSymbolDialogModel.OPEN_IN_EDITOR_OK_HANDLER);
-	}
+	private SpringSymbolsViewModel model;
 
 	Action a = new Action("New View", BootDashActivator.getImageDescriptor("icons/add_target.png")) {
 		@Override
@@ -77,42 +65,7 @@ public class SpringSymbolsView extends ViewPartWithSections {
 		}
 	};	
 	
-	private ISelectionListener selectionListener = new ISelectionListener() {
-		
-		@Override
-		public void selectionChanged(IWorkbenchPart arg0, ISelection selection) {
-			if (selection instanceof IStructuredSelection) {
-				IStructuredSelection ss = (IStructuredSelection) selection;
-				Object element = ss.getFirstElement();
-				IResource rsrc = getResource(element);
-				if (rsrc!=null) {
-					model.currentResource.setValue(rsrc);
-				}
-			} else if (selection instanceof ITextSelection) {
-				//Let's assume the selection is in the active editor
-				try {
-					IEditorPart editor = getSite().getWorkbenchWindow().getActivePage().getActiveEditor();
-					if (editor!=null) {
-						IEditorInput input = editor.getEditorInput();
-						model.currentResource.setValue(input.getAdapter(IResource.class));
-					}
-				} catch (Exception e) {
-					Log.log(e);
-				}
-			}
-		}
-
-		private IResource getResource(Object element) {
-			if (element instanceof IResource) {
-				return (IResource) element;
-			} else if (element instanceof IAdaptable) {
-				return ((IAdaptable) element).getAdapter(IResource.class);
-			}
-			return null;
-		}
-	};
-
-	private List<Disposable> disposables = new ArrayList<>();
+	private List<Disposable> disposables = new ArrayList<>(); //TODO: Remove... unused?
 	
 	public SpringSymbolsView() {
 		super(ENABLE_SCROLLING);
@@ -142,11 +95,6 @@ public class SpringSymbolsView extends ViewPartWithSections {
 			})
 		);
 		sections.add(new GotoSymbolSection(this, model.gotoSymbols).enableStatusLine(false));
-		ISelectionService selectitonService = getSite().getWorkbenchWindow().getSelectionService();
-		selectitonService.addSelectionListener(selectionListener);
-		this.disposables.add(() -> {
-			selectitonService.removeSelectionListener(selectionListener);
-		});
 		return sections;
 	}
 
@@ -183,6 +131,13 @@ public class SpringSymbolsView extends ViewPartWithSections {
 		}
 		disposables.clear();
 		super.dispose();
+	}
+	
+	@Override
+	public void init(IViewSite site) throws PartInitException {
+		super.init(site);
+		model = new SpringSymbolsViewModel(getSite().getWorkbenchWindow());
+		model.gotoSymbols.setOkHandler(GotoSymbolDialogModel.OPEN_IN_EDITOR_OK_HANDLER);
 	}
 	
 }

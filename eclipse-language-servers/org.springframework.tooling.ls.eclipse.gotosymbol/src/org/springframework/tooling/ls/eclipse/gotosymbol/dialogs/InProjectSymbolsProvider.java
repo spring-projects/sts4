@@ -37,15 +37,16 @@ import reactor.core.publisher.Mono;
 public class InProjectSymbolsProvider implements SymbolsProvider {
 
 	public static InProjectSymbolsProvider createFor(LiveExpression<IProject> project) {
-		LiveExpression<List<LanguageServer>> languageServers = project.apply(p ->
-			p == null 
+		LiveExpression<List<LanguageServer>> languageServers = project.apply(p -> {
+			System.out.println("project = "+(p==null?null:p.getName()));
+			return p == null 
 				? ImmutableList.of()
 				: LanguageServiceAccessor.getLanguageServers(
 					project.getValue(), 
 					capabilities -> Boolean.TRUE.equals(capabilities.getWorkspaceSymbolProvider()), 
 					true
-				)
-		);
+				);
+		});
 		return new InProjectSymbolsProvider(languageServers::getValue, project::getValue);
 	}
 
