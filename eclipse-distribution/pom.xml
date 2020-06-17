@@ -69,12 +69,12 @@
 		<dist.pathpostfix>nightly</dist.pathpostfix>
 		<dist.path>${dist.type}/${dist.key}/${dist.project}/${dist.pathpostfix}</dist.path>
 		
-<!--	    <eclipsecommons-p2-repo>https://dist.springsource.com/snapshot/TOOLS/eclipse-integration-commons/nightly</eclipsecommons-p2-repo>
-		<springide-p2-repo>https://dist.springframework.org/snapshot/IDE/nightly</springide-p2-repo> -->
+	    <eclipsecommons-p2-repo>https://dist.springsource.com/snapshot/TOOLS/eclipse-integration-commons/nightly</eclipsecommons-p2-repo>
+		<springide-p2-repo>https://dist.springframework.org/snapshot/IDE/nightly</springide-p2-repo>
 <!--		<eclipsecommons-p2-repo>https://dist.springsource.com/milestone/TOOLS/eclipse-integration-commons/3.9.7.RC1/</eclipsecommons-p2-repo>
 		<springide-p2-repo>https://dist.springframework.org/milestone/IDE/3.9.7.RC1</springide-p2-repo> -->
-		<eclipsecommons-p2-repo>https://dist.springsource.com/release/TOOLS/eclipse-integration-commons/3.9.13.RELEASE/</eclipsecommons-p2-repo>
-		<springide-p2-repo>https://dist.springframework.org/release/IDE/3.9.13.RELEASE</springide-p2-repo>
+<!--		<eclipsecommons-p2-repo>https://dist.springsource.com/release/TOOLS/eclipse-integration-commons/3.9.13.RELEASE/</eclipsecommons-p2-repo>
+		<springide-p2-repo>https://dist.springframework.org/release/IDE/3.9.13.RELEASE</springide-p2-repo> -->
 
 		<sts4-language-servers-p2-repo>https://dist.springsource.com/${dist.type}/TOOLS/sts4-language-server-integrations/${sts4-language-servers-version}</sts4-language-servers-p2-repo>
 
@@ -416,11 +416,11 @@
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/releases/2020-06/</url>
 				</repository>
-				<repository>
+<!--				<repository>
 					<id>2020-06-staging</id>
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/staging/2020-06/</url>
-				</repository>
+				</repository> -->
 				<repository>
 					<id>orbit</id>
 					<layout>p2</layout>
