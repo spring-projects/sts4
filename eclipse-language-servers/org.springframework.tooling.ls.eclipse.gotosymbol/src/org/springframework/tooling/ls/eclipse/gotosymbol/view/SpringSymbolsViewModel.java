@@ -13,6 +13,7 @@ package org.springframework.tooling.ls.eclipse.gotosymbol.view;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.ui.IWorkbenchWindow;
+import org.springframework.ide.eclipse.boot.dash.livexp.LiveCounter;
 import org.springframework.tooling.ls.eclipse.gotosymbol.dialogs.GotoSymbolDialogModel;
 import org.springframework.tooling.ls.eclipse.gotosymbol.dialogs.InFileSymbolsProvider;
 import org.springframework.tooling.ls.eclipse.gotosymbol.dialogs.InProjectSymbolsProvider;
@@ -25,6 +26,7 @@ public class SpringSymbolsViewModel {
 
 	public final SelectionTracker currentSelection;
 	public final GotoSymbolDialogModel gotoSymbols;
+	public final LiveCounter refreshButton = new LiveCounter();
 	
 	public SpringSymbolsViewModel(IWorkbenchWindow wbw) {
 		currentSelection = SelectionTracker.getInstance(wbw);
@@ -39,6 +41,7 @@ public class SpringSymbolsViewModel {
 		{	
 			gotoSymbols.unfilteredSymbols.dependsOn(currentResource);
 			gotoSymbols.unfilteredSymbols.dependsOn(currentProject);
+			gotoSymbols.unfilteredSymbols.dependsOn(refreshButton);
 		}
 	}
 }

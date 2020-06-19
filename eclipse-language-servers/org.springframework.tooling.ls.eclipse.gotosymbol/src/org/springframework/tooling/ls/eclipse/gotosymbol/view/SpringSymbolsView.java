@@ -51,7 +51,7 @@ public class SpringSymbolsView extends ViewPartWithSections {
 
 	private SpringSymbolsViewModel model;
 
-	Action a = new Action("New View", BootDashActivator.getImageDescriptor("icons/add_target.png")) {
+	Action newViewAction = new Action("New View", BootDashActivator.getImageDescriptor("icons/add_target.png")) {
 		@Override
 		public void run() {
 			try {
@@ -63,7 +63,14 @@ public class SpringSymbolsView extends ViewPartWithSections {
 				Log.log(e);
 			}
 		}
-	};	
+	};
+	
+	Action refreshAction = new Action("Refresh", BootDashActivator.getImageDescriptor("icons/refresh.png")) {
+		@Override
+		public void run() {
+			model.refreshButton.increment();
+		}
+	};
 	
 	private List<Disposable> disposables = new ArrayList<>(); //TODO: Remove... unused?
 	
@@ -121,7 +128,8 @@ public class SpringSymbolsView extends ViewPartWithSections {
 	}
 
 	private void fillLocalToolBar(IToolBarManager manager) {
-		manager.add(a);
+		manager.add(newViewAction);
+		manager.add(refreshAction);
 	}
 	
 	@Override
