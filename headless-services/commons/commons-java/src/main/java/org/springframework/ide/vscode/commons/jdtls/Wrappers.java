@@ -110,10 +110,15 @@ public class Wrappers {
 					return 0;
 				}
 
+				@SuppressWarnings("unchecked")
 				@Override
 				public IJavaType component() {
 					if (data.getExtras() != null && data.getExtras().containsKey("component")) {
-						JavaTypeData typeData = GSON.fromJson(GSON.toJsonTree(data.getExtras().get("component")), JavaTypeData.class);
+						Map<String, Object> component = (Map<String, Object>) data.getExtras().get("component");
+						JavaTypeData typeData = GSON.fromJson(GSON.toJsonTree(component), JavaTypeData.class);
+						if (component != null && component.get("kind") instanceof Double) {
+							typeData.setKind(JavaTypeKind.values()[((Double)component.get("kind")).intValue()]);
+						}
 						return wrap(typeData);
 					}
 					return null;

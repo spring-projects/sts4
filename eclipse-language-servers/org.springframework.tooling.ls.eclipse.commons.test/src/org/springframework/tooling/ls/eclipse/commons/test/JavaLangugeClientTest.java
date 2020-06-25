@@ -55,6 +55,7 @@ public class JavaLangugeClientTest {
 		TypeData data = client
 				.javaType(new JavaDataParams(project.getLocationURI().toString(), "Ljava/util/Map;", true))
 				.get(10, TimeUnit.SECONDS);
+//		TestUtils.saveJsonData("Map.json", data);
 		assertNotNull(data);
 		assertEquals(TestUtils.loadJsonString("Map.json"), TestUtils.toJsonString(data));
 	}
@@ -65,6 +66,7 @@ public class JavaLangugeClientTest {
 				.javaType(new JavaDataParams(project.getLocationURI().toString(),
 						"Lorg/springframework/boot/autoconfigure/web/ServerProperties;", true))
 				.get(10, TimeUnit.SECONDS);
+//		TestUtils.saveJsonData("ServerProperties.json", data);
 		assertNotNull(data);
 		assertEquals(TestUtils.loadJsonString("ServerProperties.json"), TestUtils.toJsonString(data));
 	}
@@ -74,6 +76,7 @@ public class JavaLangugeClientTest {
 		TypeData data = client
 				.javaType(new JavaDataParams(project.getLocationURI().toString(), "Lorg/test/Quote;", true))
 				.get(10, TimeUnit.SECONDS);
+//		TestUtils.saveJsonData("Quote.json", data);
 		assertNotNull(data);
 		assertEquals(TestUtils.loadJsonString("Quote.json"), TestUtils.toJsonString(data));
 	}
@@ -83,6 +86,7 @@ public class JavaLangugeClientTest {
 		TypeData data = client
 				.javaType(new JavaDataParams(project.getLocationURI().toString(), "Lorg/test/NestedRouter3;", true))
 				.get(10, TimeUnit.SECONDS);
+//		TestUtils.saveJsonData("NestedRouter3.json", data);
 		assertNotNull(data);
 		assertEquals(TestUtils.loadJsonString("NestedRouter3.json"), TestUtils.toJsonString(data));
 	}
@@ -106,7 +110,7 @@ public class JavaLangugeClientTest {
 				.get(10, TimeUnit.SECONDS);
 		assertNotNull(data);
 		assertEquals(186, data.size());
-		TestUtils.saveJsonData("search-util-map.json", data);
+//		TestUtils.saveJsonData("search-util-map.json", data);
 		List<String> closeMatches = data.stream().map(t -> t.getFqName()).filter(t -> t.contains("util.Map")).collect(Collectors.toList());
 		assertEquals(1, closeMatches.size());
 		assertEquals("io.netty.util.Mapping", closeMatches.get(0));

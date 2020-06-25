@@ -12,7 +12,7 @@
       "declaringType": "Lorg/test/Quote;",
       "flags": 26,
       "name": "MATH_CONTEXT",
-      "handleIdentifier": "\u003dtest-webflux-project/src\\/main\\/java\u003corg.test{Quote.java[Quote^MATH_CONTEXT",
+      "handleIdentifier": "\u003dtest-webflux-project/src\\/main\\/java\u003d/optional\u003d/true\u003d/\u003d/maven.pomderived\u003d/true\u003d/\u003corg.test{Quote.java[Quote^MATH_CONTEXT",
       "label": "MathContext MATH_CONTEXT"
     },
     {
@@ -26,7 +26,7 @@
       "declaringType": "Lorg/test/Quote;",
       "flags": 2,
       "name": "ticker",
-      "handleIdentifier": "\u003dtest-webflux-project/src\\/main\\/java\u003corg.test{Quote.java[Quote^ticker",
+      "handleIdentifier": "\u003dtest-webflux-project/src\\/main\\/java\u003d/optional\u003d/true\u003d/\u003d/maven.pomderived\u003d/true\u003d/\u003corg.test{Quote.java[Quote^ticker",
       "label": "String ticker"
     },
     {
@@ -40,7 +40,7 @@
       "declaringType": "Lorg/test/Quote;",
       "flags": 2,
       "name": "price",
-      "handleIdentifier": "\u003dtest-webflux-project/src\\/main\\/java\u003corg.test{Quote.java[Quote^price",
+      "handleIdentifier": "\u003dtest-webflux-project/src\\/main\\/java\u003d/optional\u003d/true\u003d/\u003d/maven.pomderived\u003d/true\u003d/\u003corg.test{Quote.java[Quote^price",
       "label": "BigDecimal price"
     },
     {
@@ -54,7 +54,7 @@
       "declaringType": "Lorg/test/Quote;",
       "flags": 2,
       "name": "instant",
-      "handleIdentifier": "\u003dtest-webflux-project/src\\/main\\/java\u003corg.test{Quote.java[Quote^instant",
+      "handleIdentifier": "\u003dtest-webflux-project/src\\/main\\/java\u003d/optional\u003d/true\u003d/\u003d/maven.pomderived\u003d/true\u003d/\u003corg.test{Quote.java[Quote^instant",
       "label": "Instant instant"
     }
   ],
@@ -67,11 +67,12 @@
         "name": "V"
       },
       "parameters": [],
+      "parameterNames": [],
       "annotations": [],
       "declaringType": "Lorg/test/Quote;",
       "flags": 1,
       "name": "Quote",
-      "handleIdentifier": "\u003dtest-webflux-project/src\\/main\\/java\u003corg.test{Quote.java[Quote~Quote",
+      "handleIdentifier": "\u003dtest-webflux-project/src\\/main\\/java\u003d/optional\u003d/true\u003d/\u003d/maven.pomderived\u003d/true\u003d/\u003corg.test{Quote.java[Quote~Quote",
       "label": "org.test.Quote.Quote()"
     },
     {
@@ -91,11 +92,15 @@
           "name": "Ljava/math/BigDecimal;"
         }
       ],
+      "parameterNames": [
+        "ticker",
+        "price"
+      ],
       "annotations": [],
       "declaringType": "Lorg/test/Quote;",
       "flags": 1,
       "name": "Quote",
-      "handleIdentifier": "\u003dtest-webflux-project/src\\/main\\/java\u003corg.test{Quote.java[Quote~Quote~QString;~QBigDecimal;",
+      "handleIdentifier": "\u003dtest-webflux-project/src\\/main\\/java\u003d/optional\u003d/true\u003d/\u003d/maven.pomderived\u003d/true\u003d/\u003corg.test{Quote.java[Quote~Quote~QString;~QBigDecimal;",
       "label": "org.test.Quote.Quote(String ticker, BigDecimal price)"
     },
     {
@@ -115,11 +120,15 @@
           "name": "Ljava/lang/Double;"
         }
       ],
+      "parameterNames": [
+        "ticker",
+        "price"
+      ],
       "annotations": [],
       "declaringType": "Lorg/test/Quote;",
       "flags": 1,
       "name": "Quote",
-      "handleIdentifier": "\u003dtest-webflux-project/src\\/main\\/java\u003corg.test{Quote.java[Quote~Quote~QString;~QDouble;",
+      "handleIdentifier": "\u003dtest-webflux-project/src\\/main\\/java\u003d/optional\u003d/true\u003d/\u003d/maven.pomderived\u003d/true\u003d/\u003corg.test{Quote.java[Quote~Quote~QString;~QDouble;",
       "label": "org.test.Quote.Quote(String ticker, Double price)"
     },
     {
@@ -130,11 +139,12 @@
         "name": "Ljava/lang/String;"
       },
       "parameters": [],
+      "parameterNames": [],
       "annotations": [],
       "declaringType": "Lorg/test/Quote;",
       "flags": 1,
       "name": "getTicker",
-      "handleIdentifier": "\u003dtest-webflux-project/src\\/main\\/java\u003corg.test{Quote.java[Quote~getTicker",
+      "handleIdentifier": "\u003dtest-webflux-project/src\\/main\\/java\u003d/optional\u003d/true\u003d/\u003d/maven.pomderived\u003d/true\u003d/\u003corg.test{Quote.java[Quote~getTicker",
       "label": "String org.test.Quote.getTicker()"
     },
     {
@@ -150,11 +160,14 @@
           "name": "Ljava/lang/String;"
         }
       ],
+      "parameterNames": [
+        "ticker"
+      ],
       "annotations": [],
       "declaringType": "Lorg/test/Quote;",
       "flags": 1,
       "name": "setTicker",
-      "handleIdentifier": "\u003dtest-webflux-project/src\\/main\\/java\u003corg.test{Quote.java[Quote~setTicker~QString;",
+      "handleIdentifier": "\u003dtest-webflux-project/src\\/main\\/java\u003d/optional\u003d/true\u003d/\u003d/maven.pomderived\u003d/true\u003d/\u003corg.test{Quote.java[Quote~setTicker~QString;",
       "label": "void org.test.Quote.setTicker(String ticker)"
     },
     {
@@ -165,11 +178,12 @@
         "name": "Ljava/math/BigDecimal;"
       },
       "parameters": [],
+      "parameterNames": [],
       "annotations": [],
       "declaringType": "Lorg/test/Quote;",
       "flags": 1,
       "name": "getPrice",
-      "handleIdentifier": "\u003dtest-webflux-project/src\\/main\\/java\u003corg.test{Quote.java[Quote~getPrice",
+      "handleIdentifier": "\u003dtest-webflux-project/src\\/main\\/java\u003d/optional\u003d/true\u003d/\u003d/maven.pomderived\u003d/true\u003d/\u003corg.test{Quote.java[Quote~getPrice",
       "label": "BigDecimal org.test.Quote.getPrice()"
     },
     {
@@ -185,11 +199,14 @@
           "name": "Ljava/math/BigDecimal;"
         }
       ],
+      "parameterNames": [
+        "price"
+      ],
       "annotations": [],
       "declaringType": "Lorg/test/Quote;",
       "flags": 1,
       "name": "setPrice",
-      "handleIdentifier": "\u003dtest-webflux-project/src\\/main\\/java\u003corg.test{Quote.java[Quote~setPrice~QBigDecimal;",
+      "handleIdentifier": "\u003dtest-webflux-project/src\\/main\\/java\u003d/optional\u003d/true\u003d/\u003d/maven.pomderived\u003d/true\u003d/\u003corg.test{Quote.java[Quote~setPrice~QBigDecimal;",
       "label": "void org.test.Quote.setPrice(BigDecimal price)"
     },
     {
@@ -200,11 +217,12 @@
         "name": "Ljava/time/Instant;"
       },
       "parameters": [],
+      "parameterNames": [],
       "annotations": [],
       "declaringType": "Lorg/test/Quote;",
       "flags": 1,
       "name": "getInstant",
-      "handleIdentifier": "\u003dtest-webflux-project/src\\/main\\/java\u003corg.test{Quote.java[Quote~getInstant",
+      "handleIdentifier": "\u003dtest-webflux-project/src\\/main\\/java\u003d/optional\u003d/true\u003d/\u003d/maven.pomderived\u003d/true\u003d/\u003corg.test{Quote.java[Quote~getInstant",
       "label": "Instant org.test.Quote.getInstant()"
     },
     {
@@ -220,11 +238,14 @@
           "name": "Ljava/time/Instant;"
         }
       ],
+      "parameterNames": [
+        "instant"
+      ],
       "annotations": [],
       "declaringType": "Lorg/test/Quote;",
       "flags": 1,
       "name": "setInstant",
-      "handleIdentifier": "\u003dtest-webflux-project/src\\/main\\/java\u003corg.test{Quote.java[Quote~setInstant~QInstant;",
+      "handleIdentifier": "\u003dtest-webflux-project/src\\/main\\/java\u003d/optional\u003d/true\u003d/\u003d/maven.pomderived\u003d/true\u003d/\u003corg.test{Quote.java[Quote~setInstant~QInstant;",
       "label": "void org.test.Quote.setInstant(Instant instant)"
     },
     {
@@ -235,19 +256,20 @@
         "name": "Ljava/lang/String;"
       },
       "parameters": [],
+      "parameterNames": [],
       "annotations": [
         {
           "fqName": "java.lang.Override",
           "valuePairs": {},
           "name": "Override",
-          "handleIdentifier": "\u003dtest-webflux-project/src\\/main\\/java\u003corg.test{Quote.java[Quote~toString}Override",
+          "handleIdentifier": "\u003dtest-webflux-project/src\\/main\\/java\u003d/optional\u003d/true\u003d/\u003d/maven.pomderived\u003d/true\u003d/\u003corg.test{Quote.java[Quote~toString}Override",
           "label": "Override"
         }
       ],
       "declaringType": "Lorg/test/Quote;",
       "flags": 1,
       "name": "toString",
-      "handleIdentifier": "\u003dtest-webflux-project/src\\/main\\/java\u003corg.test{Quote.java[Quote~toString",
+      "handleIdentifier": "\u003dtest-webflux-project/src\\/main\\/java\u003d/optional\u003d/true\u003d/\u003d/maven.pomderived\u003d/true\u003d/\u003corg.test{Quote.java[Quote~toString",
       "label": "String org.test.Quote.toString()"
     }
   ],
@@ -271,6 +293,6 @@
   "superInterfaceNames": [],
   "flags": 1,
   "name": "Quote",
-  "handleIdentifier": "\u003dtest-webflux-project/src\\/main\\/java\u003corg.test{Quote.java[Quote",
+  "handleIdentifier": "\u003dtest-webflux-project/src\\/main\\/java\u003d/optional\u003d/true\u003d/\u003d/maven.pomderived\u003d/true\u003d/\u003corg.test{Quote.java[Quote",
   "label": "org.test.Quote"
 }

@@ -10,11 +10,12 @@
         "name": "I"
       },
       "parameters": [],
+      "parameterNames": [],
       "annotations": [],
       "declaringType": "Ljava/util/Map;",
       "flags": 1025,
       "name": "size",
-      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003cjava.util(Map.class[Map~size",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003d/maven.pomderived\u003d/true\u003d/\u003d/javadoc_location\u003d/https:\\/\\/docs.oracle.com\\/javase\\/8\\/docs\\/api\\/\u003d/\u003cjava.util(Map.class[Map~size",
       "label": "int java.util.Map.size()"
     },
     {
@@ -25,11 +26,12 @@
         "name": "Z"
       },
       "parameters": [],
+      "parameterNames": [],
       "annotations": [],
       "declaringType": "Ljava/util/Map;",
       "flags": 1025,
       "name": "isEmpty",
-      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003cjava.util(Map.class[Map~isEmpty",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003d/maven.pomderived\u003d/true\u003d/\u003d/javadoc_location\u003d/https:\\/\\/docs.oracle.com\\/javase\\/8\\/docs\\/api\\/\u003d/\u003cjava.util(Map.class[Map~isEmpty",
       "label": "boolean java.util.Map.isEmpty()"
     },
     {
@@ -45,11 +47,14 @@
           "name": "Ljava/lang/Object;"
         }
       ],
+      "parameterNames": [
+        "key"
+      ],
       "annotations": [],
       "declaringType": "Ljava/util/Map;",
       "flags": 1025,
       "name": "containsKey",
-      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003cjava.util(Map.class[Map~containsKey~Ljava.lang.Object;",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003d/maven.pomderived\u003d/true\u003d/\u003d/javadoc_location\u003d/https:\\/\\/docs.oracle.com\\/javase\\/8\\/docs\\/api\\/\u003d/\u003cjava.util(Map.class[Map~containsKey~Ljava.lang.Object;",
       "label": "boolean java.util.Map.containsKey(Object key)"
     },
     {
@@ -65,11 +70,14 @@
           "name": "Ljava/lang/Object;"
         }
       ],
+      "parameterNames": [
+        "value"
+      ],
       "annotations": [],
       "declaringType": "Ljava/util/Map;",
       "flags": 1025,
       "name": "containsValue",
-      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003cjava.util(Map.class[Map~containsValue~Ljava.lang.Object;",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003d/maven.pomderived\u003d/true\u003d/\u003d/javadoc_location\u003d/https:\\/\\/docs.oracle.com\\/javase\\/8\\/docs\\/api\\/\u003d/\u003cjava.util(Map.class[Map~containsValue~Ljava.lang.Object;",
       "label": "boolean java.util.Map.containsValue(Object value)"
     },
     {
@@ -85,11 +93,14 @@
           "name": "Ljava/lang/Object;"
         }
       ],
+      "parameterNames": [
+        "key"
+      ],
       "annotations": [],
       "declaringType": "Ljava/util/Map;",
       "flags": 1025,
       "name": "get",
-      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003cjava.util(Map.class[Map~get~Ljava.lang.Object;",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003d/maven.pomderived\u003d/true\u003d/\u003d/javadoc_location\u003d/https:\\/\\/docs.oracle.com\\/javase\\/8\\/docs\\/api\\/\u003d/\u003cjava.util(Map.class[Map~get~Ljava.lang.Object;",
       "label": "V java.util.Map.get(Object key)"
     },
     {
@@ -109,11 +120,15 @@
           "name": "TV;"
         }
       ],
+      "parameterNames": [
+        "key",
+        "value"
+      ],
       "annotations": [],
       "declaringType": "Ljava/util/Map;",
       "flags": 1025,
       "name": "put",
-      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003cjava.util(Map.class[Map~put~TK;~TV;",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003d/maven.pomderived\u003d/true\u003d/\u003d/javadoc_location\u003d/https:\\/\\/docs.oracle.com\\/javase\\/8\\/docs\\/api\\/\u003d/\u003cjava.util(Map.class[Map~put~TK;~TV;",
       "label": "V java.util.Map.put(K key, V value)"
     },
     {
@@ -129,11 +144,14 @@
           "name": "Ljava/lang/Object;"
         }
       ],
+      "parameterNames": [
+        "key"
+      ],
       "annotations": [],
       "declaringType": "Ljava/util/Map;",
       "flags": 1025,
       "name": "remove",
-      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003cjava.util(Map.class[Map~remove~Ljava.lang.Object;",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003d/maven.pomderived\u003d/true\u003d/\u003d/javadoc_location\u003d/https:\\/\\/docs.oracle.com\\/javase\\/8\\/docs\\/api\\/\u003d/\u003cjava.util(Map.class[Map~remove~Ljava.lang.Object;",
       "label": "V java.util.Map.remove(Object key)"
     },
     {
@@ -165,11 +183,14 @@
           }
         }
       ],
+      "parameterNames": [
+        "m"
+      ],
       "annotations": [],
       "declaringType": "Ljava/util/Map;",
       "flags": 1025,
       "name": "putAll",
-      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003cjava.util(Map.class[Map~putAll~Ljava.util.Map\\\u003c+TK;+TV;\u003e;",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003d/maven.pomderived\u003d/true\u003d/\u003d/javadoc_location\u003d/https:\\/\\/docs.oracle.com\\/javase\\/8\\/docs\\/api\\/\u003d/\u003cjava.util(Map.class[Map~putAll~Ljava.util.Map\\\u003c+TK;+TV;\u003e;",
       "label": "void java.util.Map.putAll(Map\u003c? extends K, ? extends V\u003e m)"
     },
     {
@@ -180,11 +201,12 @@
         "name": "V"
       },
       "parameters": [],
+      "parameterNames": [],
       "annotations": [],
       "declaringType": "Ljava/util/Map;",
       "flags": 1025,
       "name": "clear",
-      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003cjava.util(Map.class[Map~clear",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003d/maven.pomderived\u003d/true\u003d/\u003d/javadoc_location\u003d/https:\\/\\/docs.oracle.com\\/javase\\/8\\/docs\\/api\\/\u003d/\u003cjava.util(Map.class[Map~clear",
       "label": "void java.util.Map.clear()"
     },
     {
@@ -207,11 +229,12 @@
         }
       },
       "parameters": [],
+      "parameterNames": [],
       "annotations": [],
       "declaringType": "Ljava/util/Map;",
       "flags": 1025,
       "name": "keySet",
-      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003cjava.util(Map.class[Map~keySet",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003d/maven.pomderived\u003d/true\u003d/\u003d/javadoc_location\u003d/https:\\/\\/docs.oracle.com\\/javase\\/8\\/docs\\/api\\/\u003d/\u003cjava.util(Map.class[Map~keySet",
       "label": "Set\u003cK\u003e java.util.Map.keySet()"
     },
     {
@@ -234,11 +257,12 @@
         }
       },
       "parameters": [],
+      "parameterNames": [],
       "annotations": [],
       "declaringType": "Ljava/util/Map;",
       "flags": 1025,
       "name": "values",
-      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003cjava.util(Map.class[Map~values",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003d/maven.pomderived\u003d/true\u003d/\u003d/javadoc_location\u003d/https:\\/\\/docs.oracle.com\\/javase\\/8\\/docs\\/api\\/\u003d/\u003cjava.util(Map.class[Map~values",
       "label": "Collection\u003cV\u003e java.util.Map.values()"
     },
     {
@@ -277,11 +301,12 @@
         }
       },
       "parameters": [],
+      "parameterNames": [],
       "annotations": [],
       "declaringType": "Ljava/util/Map;",
       "flags": 1025,
       "name": "entrySet",
-      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003cjava.util(Map.class[Map~entrySet",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003d/maven.pomderived\u003d/true\u003d/\u003d/javadoc_location\u003d/https:\\/\\/docs.oracle.com\\/javase\\/8\\/docs\\/api\\/\u003d/\u003cjava.util(Map.class[Map~entrySet",
       "label": "Set\u003cEntry\u003cK, V\u003e\u003e java.util.Map.entrySet()"
     },
     {
@@ -297,11 +322,14 @@
           "name": "Ljava/lang/Object;"
         }
       ],
+      "parameterNames": [
+        "o"
+      ],
       "annotations": [],
       "declaringType": "Ljava/util/Map;",
       "flags": 1025,
       "name": "equals",
-      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003cjava.util(Map.class[Map~equals~Ljava.lang.Object;",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003d/maven.pomderived\u003d/true\u003d/\u003d/javadoc_location\u003d/https:\\/\\/docs.oracle.com\\/javase\\/8\\/docs\\/api\\/\u003d/\u003cjava.util(Map.class[Map~equals~Ljava.lang.Object;",
       "label": "boolean java.util.Map.equals(Object o)"
     },
     {
@@ -312,11 +340,12 @@
         "name": "I"
       },
       "parameters": [],
+      "parameterNames": [],
       "annotations": [],
       "declaringType": "Ljava/util/Map;",
       "flags": 1025,
       "name": "hashCode",
-      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003cjava.util(Map.class[Map~hashCode",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003d/maven.pomderived\u003d/true\u003d/\u003d/javadoc_location\u003d/https:\\/\\/docs.oracle.com\\/javase\\/8\\/docs\\/api\\/\u003d/\u003cjava.util(Map.class[Map~hashCode",
       "label": "int java.util.Map.hashCode()"
     },
     {
@@ -336,11 +365,15 @@
           "name": "TV;"
         }
       ],
+      "parameterNames": [
+        "key",
+        "defaultValue"
+      ],
       "annotations": [],
       "declaringType": "Ljava/util/Map;",
       "flags": 65537,
       "name": "getOrDefault",
-      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003cjava.util(Map.class[Map~getOrDefault~Ljava.lang.Object;~TV;",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003d/maven.pomderived\u003d/true\u003d/\u003d/javadoc_location\u003d/https:\\/\\/docs.oracle.com\\/javase\\/8\\/docs\\/api\\/\u003d/\u003cjava.util(Map.class[Map~getOrDefault~Ljava.lang.Object;~TV;",
       "label": "V java.util.Map.getOrDefault(Object key, V defaultValue)"
     },
     {
@@ -372,11 +405,14 @@
           }
         }
       ],
+      "parameterNames": [
+        "action"
+      ],
       "annotations": [],
       "declaringType": "Ljava/util/Map;",
       "flags": 65537,
       "name": "forEach",
-      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003cjava.util(Map.class[Map~forEach~Ljava.util.function.BiConsumer\\\u003c-TK;-TV;\u003e;",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003d/maven.pomderived\u003d/true\u003d/\u003d/javadoc_location\u003d/https:\\/\\/docs.oracle.com\\/javase\\/8\\/docs\\/api\\/\u003d/\u003cjava.util(Map.class[Map~forEach~Ljava.util.function.BiConsumer\\\u003c-TK;-TV;\u003e;",
       "label": "void java.util.Map.forEach(BiConsumer\u003c? super K, ? super V\u003e action)"
     },
     {
@@ -412,11 +448,14 @@
           }
         }
       ],
+      "parameterNames": [
+        "function"
+      ],
       "annotations": [],
       "declaringType": "Ljava/util/Map;",
       "flags": 65537,
       "name": "replaceAll",
-      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003cjava.util(Map.class[Map~replaceAll~Ljava.util.function.BiFunction\\\u003c-TK;-TV;+TV;\u003e;",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003d/maven.pomderived\u003d/true\u003d/\u003d/javadoc_location\u003d/https:\\/\\/docs.oracle.com\\/javase\\/8\\/docs\\/api\\/\u003d/\u003cjava.util(Map.class[Map~replaceAll~Ljava.util.function.BiFunction\\\u003c-TK;-TV;+TV;\u003e;",
       "label": "void java.util.Map.replaceAll(BiFunction\u003c? super K, ? super V, ? extends V\u003e function)"
     },
     {
@@ -436,11 +475,15 @@
           "name": "TV;"
         }
       ],
+      "parameterNames": [
+        "key",
+        "value"
+      ],
       "annotations": [],
       "declaringType": "Ljava/util/Map;",
       "flags": 65537,
       "name": "putIfAbsent",
-      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003cjava.util(Map.class[Map~putIfAbsent~TK;~TV;",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003d/maven.pomderived\u003d/true\u003d/\u003d/javadoc_location\u003d/https:\\/\\/docs.oracle.com\\/javase\\/8\\/docs\\/api\\/\u003d/\u003cjava.util(Map.class[Map~putIfAbsent~TK;~TV;",
       "label": "V java.util.Map.putIfAbsent(K key, V value)"
     },
     {
@@ -460,11 +503,15 @@
           "name": "Ljava/lang/Object;"
         }
       ],
+      "parameterNames": [
+        "key",
+        "value"
+      ],
       "annotations": [],
       "declaringType": "Ljava/util/Map;",
       "flags": 65537,
       "name": "remove",
-      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003cjava.util(Map.class[Map~remove~Ljava.lang.Object;~Ljava.lang.Object;",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003d/maven.pomderived\u003d/true\u003d/\u003d/javadoc_location\u003d/https:\\/\\/docs.oracle.com\\/javase\\/8\\/docs\\/api\\/\u003d/\u003cjava.util(Map.class[Map~remove~Ljava.lang.Object;~Ljava.lang.Object;",
       "label": "boolean java.util.Map.remove(Object key, Object value)"
     },
     {
@@ -488,11 +535,16 @@
           "name": "TV;"
         }
       ],
+      "parameterNames": [
+        "key",
+        "oldValue",
+        "newValue"
+      ],
       "annotations": [],
       "declaringType": "Ljava/util/Map;",
       "flags": 65537,
       "name": "replace",
-      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003cjava.util(Map.class[Map~replace~TK;~TV;~TV;",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003d/maven.pomderived\u003d/true\u003d/\u003d/javadoc_location\u003d/https:\\/\\/docs.oracle.com\\/javase\\/8\\/docs\\/api\\/\u003d/\u003cjava.util(Map.class[Map~replace~TK;~TV;~TV;",
       "label": "boolean java.util.Map.replace(K key, V oldValue, V newValue)"
     },
     {
@@ -512,11 +564,15 @@
           "name": "TV;"
         }
       ],
+      "parameterNames": [
+        "key",
+        "value"
+      ],
       "annotations": [],
       "declaringType": "Ljava/util/Map;",
       "flags": 65537,
       "name": "replace",
-      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003cjava.util(Map.class[Map~replace~TK;~TV;",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003d/maven.pomderived\u003d/true\u003d/\u003d/javadoc_location\u003d/https:\\/\\/docs.oracle.com\\/javase\\/8\\/docs\\/api\\/\u003d/\u003cjava.util(Map.class[Map~replace~TK;~TV;",
       "label": "V java.util.Map.replace(K key, V value)"
     },
     {
@@ -552,11 +608,15 @@
           }
         }
       ],
+      "parameterNames": [
+        "key",
+        "mappingFunction"
+      ],
       "annotations": [],
       "declaringType": "Ljava/util/Map;",
       "flags": 65537,
       "name": "computeIfAbsent",
-      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003cjava.util(Map.class[Map~computeIfAbsent~TK;~Ljava.util.function.Function\\\u003c-TK;+TV;\u003e;",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003d/maven.pomderived\u003d/true\u003d/\u003d/javadoc_location\u003d/https:\\/\\/docs.oracle.com\\/javase\\/8\\/docs\\/api\\/\u003d/\u003cjava.util(Map.class[Map~computeIfAbsent~TK;~Ljava.util.function.Function\\\u003c-TK;+TV;\u003e;",
       "label": "V java.util.Map.computeIfAbsent(K key, Function\u003c? super K, ? extends V\u003e mappingFunction)"
     },
     {
@@ -596,11 +656,15 @@
           }
         }
       ],
+      "parameterNames": [
+        "key",
+        "remappingFunction"
+      ],
       "annotations": [],
       "declaringType": "Ljava/util/Map;",
       "flags": 65537,
       "name": "computeIfPresent",
-      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003cjava.util(Map.class[Map~computeIfPresent~TK;~Ljava.util.function.BiFunction\\\u003c-TK;-TV;+TV;\u003e;",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003d/maven.pomderived\u003d/true\u003d/\u003d/javadoc_location\u003d/https:\\/\\/docs.oracle.com\\/javase\\/8\\/docs\\/api\\/\u003d/\u003cjava.util(Map.class[Map~computeIfPresent~TK;~Ljava.util.function.BiFunction\\\u003c-TK;-TV;+TV;\u003e;",
       "label": "V java.util.Map.computeIfPresent(K key, BiFunction\u003c? super K, ? super V, ? extends V\u003e remappingFunction)"
     },
     {
@@ -640,11 +704,15 @@
           }
         }
       ],
+      "parameterNames": [
+        "key",
+        "remappingFunction"
+      ],
       "annotations": [],
       "declaringType": "Ljava/util/Map;",
       "flags": 65537,
       "name": "compute",
-      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003cjava.util(Map.class[Map~compute~TK;~Ljava.util.function.BiFunction\\\u003c-TK;-TV;+TV;\u003e;",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003d/maven.pomderived\u003d/true\u003d/\u003d/javadoc_location\u003d/https:\\/\\/docs.oracle.com\\/javase\\/8\\/docs\\/api\\/\u003d/\u003cjava.util(Map.class[Map~compute~TK;~Ljava.util.function.BiFunction\\\u003c-TK;-TV;+TV;\u003e;",
       "label": "V java.util.Map.compute(K key, BiFunction\u003c? super K, ? super V, ? extends V\u003e remappingFunction)"
     },
     {
@@ -688,11 +756,16 @@
           }
         }
       ],
+      "parameterNames": [
+        "key",
+        "value",
+        "remappingFunction"
+      ],
       "annotations": [],
       "declaringType": "Ljava/util/Map;",
       "flags": 65537,
       "name": "merge",
-      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003cjava.util(Map.class[Map~merge~TK;~TV;~Ljava.util.function.BiFunction\\\u003c-TV;-TV;+TV;\u003e;",
+      "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003d/maven.pomderived\u003d/true\u003d/\u003d/javadoc_location\u003d/https:\\/\\/docs.oracle.com\\/javase\\/8\\/docs\\/api\\/\u003d/\u003cjava.util(Map.class[Map~merge~TK;~TV;~Ljava.util.function.BiFunction\\\u003c-TV;-TV;+TV;\u003e;",
       "label": "V java.util.Map.merge(K key, V value, BiFunction\u003c? super V, ? super V, ? extends V\u003e remappingFunction)"
     }
   ],
@@ -717,6 +790,6 @@
   "superInterfaceNames": [],
   "flags": 1537,
   "name": "Map",
-  "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003cjava.util(Map.class[Map",
+  "handleIdentifier": "\u003dtest-webflux-project/\\/Library\\/Java\\/JavaVirtualMachines\\/jdk1.8.0_151.jdk\\/Contents\\/Home\\/jre\\/lib\\/rt.jar\u003d/maven.pomderived\u003d/true\u003d/\u003d/javadoc_location\u003d/https:\\/\\/docs.oracle.com\\/javase\\/8\\/docs\\/api\\/\u003d/\u003cjava.util(Map.class[Map",
   "label": "java.util.Map\u003cK, V\u003e"
 }

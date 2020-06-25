@@ -22,19 +22,20 @@
         }
       },
       "parameters": [],
+      "parameterNames": [],
       "annotations": [
         {
           "fqName": "org.springframework.context.annotation.Bean",
           "valuePairs": {},
           "name": "Bean",
-          "handleIdentifier": "\u003dtest-webflux-project/src\\/main\\/java\u003corg.test{NestedRouter3.java[NestedRouter3~routingFunction}Bean",
+          "handleIdentifier": "\u003dtest-webflux-project/src\\/main\\/java\u003d/optional\u003d/true\u003d/\u003d/maven.pomderived\u003d/true\u003d/\u003corg.test{NestedRouter3.java[NestedRouter3~routingFunction}Bean",
           "label": "Bean"
         }
       ],
       "declaringType": "Lorg/test/NestedRouter3;",
       "flags": 1,
       "name": "routingFunction",
-      "handleIdentifier": "\u003dtest-webflux-project/src\\/main\\/java\u003corg.test{NestedRouter3.java[NestedRouter3~routingFunction",
+      "handleIdentifier": "\u003dtest-webflux-project/src\\/main\\/java\u003d/optional\u003d/true\u003d/\u003d/maven.pomderived\u003d/true\u003d/\u003corg.test{NestedRouter3.java[NestedRouter3~routingFunction",
       "label": "RouterFunction\u003cServerResponse\u003e org.test.NestedRouter3.routingFunction()"
     }
   ],
@@ -43,7 +44,7 @@
       "fqName": "org.springframework.context.annotation.Configuration",
       "valuePairs": {},
       "name": "Configuration",
-      "handleIdentifier": "\u003dtest-webflux-project/src\\/main\\/java\u003corg.test{NestedRouter3.java[NestedRouter3}Configuration",
+      "handleIdentifier": "\u003dtest-webflux-project/src\\/main\\/java\u003d/optional\u003d/true\u003d/\u003d/maven.pomderived\u003d/true\u003d/\u003corg.test{NestedRouter3.java[NestedRouter3}Configuration",
       "label": "Configuration"
     }
   ],
@@ -66,6 +67,6 @@
   "superInterfaceNames": [],
   "flags": 1,
   "name": "NestedRouter3",
-  "handleIdentifier": "\u003dtest-webflux-project/src\\/main\\/java\u003corg.test{NestedRouter3.java[NestedRouter3",
+  "handleIdentifier": "\u003dtest-webflux-project/src\\/main\\/java\u003d/optional\u003d/true\u003d/\u003d/maven.pomderived\u003d/true\u003d/\u003corg.test{NestedRouter3.java[NestedRouter3",
   "label": "org.test.NestedRouter3"
 }
