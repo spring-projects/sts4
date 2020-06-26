@@ -1,9 +1,9 @@
-Theai Docker Image
+Theia Docker Image
 ==================
 
 We currently publish a docker image that contains:
 
-- a full-featured `theai` set of package for version `next`.
+- a full-featured `theia` set of package for version `next`.
 - all 4 of our vscode extensions as latest snapshot version.
 
 This image is published to docker hub as `kdvolder/sts4-theia-snapshot:latest`.

@@ -1,4 +1,4 @@
-Theai + Spring Petclinic layer
+Theia + Spring Petclinic layer
 =============================
 
 To build this docker image:
