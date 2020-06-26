@@ -1,7 +1,7 @@
 Theai Docker Image
 ==================
 
-We currently plublish a docler image that contains:
+We currently publish a docker image that contains:
 
 - a full-featured `theai` set of package for version `next`.
 - all 4 of our vscode extensions as latest snapshot version.
