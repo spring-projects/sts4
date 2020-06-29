@@ -174,11 +174,13 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 			VersionedTextDocumentIdentifier docId = params.getTextDocument();
 			String url = docId.getUri();
 //			Log.debug("didChange: "+url);
-			if (url!=null) {
+			if (url != null) {
 				TextDocument doc = getDocument(url);
-				List<TextDocumentContentChangeEvent> changes = params.getContentChanges();
-				doc.apply(params);
-				didChangeContent(doc, changes);
+				if (doc != null) {
+					List<TextDocumentContentChangeEvent> changes = params.getContentChanges();
+					doc.apply(params);
+					didChangeContent(doc, changes);
+				}
 			}
 		} catch (BadLocationException e) {
 			log.error("", e);
@@ -232,7 +234,7 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 		String url = params.getTextDocument().getUri();
 		if (url!=null) {
 			TrackedDocument doc = documents.get(url);
-			if (doc!=null) {
+			if (doc != null) {
 				if (doc.close()) {
 					log.info("Closed: "+url);
 					//Clear diagnostics when a file is closed. This makes the errors disapear when the language is changed for
@@ -277,19 +279,17 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 
 	public synchronized TextDocument getDocument(String url) {
 		TrackedDocument doc = documents.get(url);
-		if (doc==null) {
-			log.warn("Trying to get document ["+url+"] but it did not exists. Creating it with language-id 'plaintext'");
-			doc = createDocument(url, LanguageId.PLAINTEXT, 0, "");
-		}
-		return doc.getDocument();
+		return doc != null ? doc.getDocument() : null;
 	}
 
 	private synchronized TrackedDocument createDocument(String url, LanguageId languageId, int version, String text) {
 		TrackedDocument existingDoc = documents.get(url);
-		if (existingDoc!=null) {
+
+		if (existingDoc != null) {
 			log.warn("Creating document ["+url+"] but it already exists. Reusing existing!");
 			return existingDoc;
 		}
+
 		TrackedDocument doc = new TrackedDocument(new TextDocument(url, languageId, version, text));
 		documents.put(url, doc);
 		return doc;
@@ -491,10 +491,12 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 			TextDocumentIdentifier docId = params.getTextDocument();
 			String url = docId.getUri();
 			log.debug("didSave: "+url);
-			if (url!=null) {
+			if (url != null) {
 				TextDocument doc = getDocument(url);
-				for (Consumer<TextDocumentSaveChange> l : documentSaveListeners) {
-					l.accept(new TextDocumentSaveChange(doc));
+				if (doc != null) {
+					for (Consumer<TextDocumentSaveChange> l : documentSaveListeners) {
+						l.accept(new TextDocumentSaveChange(doc));
+					}
 				}
 			}
 		}

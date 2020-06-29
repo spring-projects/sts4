@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2019 Pivotal, Inc.
+ * Copyright (c) 2017, 2020 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -57,7 +57,7 @@ public class YamlQuickfixes {
 			MissingPropertiesData params = gson.fromJson((JsonElement)_params, MissingPropertiesData.class);
 			try {
 				TextDocument _doc = textDocumentService.getDocument(params.getUri());
-				if (_doc!=null) {
+				if (_doc != null) {
 					YamlDocument doc = new YamlDocument(_doc, structureProvider);
 					SNode root = doc.getStructure();
 					if (root!=null) {
@@ -96,7 +96,7 @@ public class YamlQuickfixes {
 			try {
 				ReplaceStringData params = gson.fromJson((JsonElement)_params, ReplaceStringData.class);
 				TextDocument _doc = textDocumentService.getDocument(params.getUri());
-				if (_doc!=null) {
+				if (_doc != null) {
 					return new QuickfixEdit(
 						new WorkspaceEdit(
 							ImmutableMap.of(params.getUri(), ImmutableList.of(params.getEdit()))

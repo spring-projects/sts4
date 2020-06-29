@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2019 Pivotal, Inc.
+ * Copyright (c) 2016, 2020 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -533,9 +533,15 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 	 */
 	public void validateWith(TextDocumentIdentifier docId, IReconcileEngine engine) {
 		SimpleTextDocumentService documents = getTextDocumentService();
-		int requestedVersion = documents.getDocument(docId.getUri()).getVersion();
-		VersionedTextDocumentIdentifier request = new VersionedTextDocumentIdentifier(requestedVersion);
-		request.setUri(docId.getUri());
+
+		TextDocument document = documents.getDocument(docId.getUri());
+		if (document == null) {
+			log.debug("Reconcile skipped due to document doesn't exist anymore {}", docId.getUri());
+			return;
+		}
+		
+		int requestedVersion = document.getVersion();
+		VersionedTextDocumentIdentifier request = new VersionedTextDocumentIdentifier(docId.getUri(), requestedVersion);
 		log.debug("Reconcile requested {} - {}", request.getUri(), request.getVersion());
 		if (!queuedReconcileRequests.add(request)) {
 			log.debug("Reconcile skipped {} - {}", request.getUri(), request.getVersion());
@@ -545,23 +551,30 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 		CompletableFuture<Void> reconcileSession = this.busyReconcile = new CompletableFuture<Void>();
 //		Log.debug("Reconciling BUSY");
 
-
-
-
 		// Avoid running in the same thread as lsp4j as it can result
 		// in long "hangs" for slow reconcile providers
 		Mono.fromRunnable(() -> {
 			queuedReconcileRequests.remove(request);
 			log.debug("Reconcile starting {} - {}", request.getUri(), request.getVersion());
+
 			TextDocument doc = documents.getDocument(docId.getUri()).copy();
-			if (requestedVersion!=doc.getVersion()) {
-				log.debug("Reconcile aborted {} - {}", request.getUri(), request.getVersion());
+
+			if (doc == null) {
+				log.debug("Reconcile aborted due to document doesn't exist {} - {}", request.getUri(), request.getVersion());
+				//Do not bother reconciling if document doesn't exist anymore (got closed in the meantime)
+				return;
+			}
+
+			if (requestedVersion != doc.getVersion()) {
+				log.debug("Reconcile aborted due to document being already stale {} - {}", request.getUri(), request.getVersion());
 				//Do not bother reconciling if document contents is already stale.
 				return;
 			}
-			if (testListener!=null) {
+
+			if (testListener != null) {
 				testListener.reconcileStarted(docId.getUri(), doc.getVersion());
 			}
+
 			IProblemCollector problems = new IProblemCollector() {
 
 				private LinkedHashSet<Diagnostic> diagnostics = new LinkedHashSet<>();

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2020 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -28,8 +28,6 @@ import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeUtil;
-import org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST;
-import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.yaml.snakeyaml.nodes.Node;
 
@@ -67,12 +65,14 @@ public class TypeBasedYamlSymbolHandler implements DocumentSymbolHandler {
 	public List<? extends SymbolInformation> handle(DocumentSymbolParams params) {
 		Builder<SymbolInformation> builder = ImmutableList.builder();
 		TextDocument doc = documents.getDocument(params.getTextDocument().getUri());
-		for (Entry<Node, YType> entry : astTypeCache.getNodeTypes(params.getTextDocument().getUri()).getTypes().entrySet()) {
-			if (definitionTypes.contains(entry.getValue())) {
-				try {
-					builder.add(createSymbol(doc, entry.getKey(), entry.getValue()));
-				} catch (Exception e) {
-					logger.error("", e);
+		if (doc != null) {
+			for (Entry<Node, YType> entry : astTypeCache.getNodeTypes(params.getTextDocument().getUri()).getTypes().entrySet()) {
+				if (definitionTypes.contains(entry.getValue())) {
+					try {
+						builder.add(createSymbol(doc, entry.getKey(), entry.getValue()));
+					} catch (Exception e) {
+						logger.error("", e);
+					}
 				}
 			}
 		}
