@@ -374,6 +374,10 @@
 	<bundle id="org.glassfish.jersey.core.jersey-common" version="0.0.0">
 		<category name="Uncategorized" />
 	</bundle>
+	
+	<bundle id="com.fasterxml.jackson.core.jackson-core" version="0.0.0">
+		<category name="Uncategorized" />
+	</bundle>
 
 	<bundle id="javax.ws.rs" version="0.0.0">
 		<category name="Uncategorized" />
