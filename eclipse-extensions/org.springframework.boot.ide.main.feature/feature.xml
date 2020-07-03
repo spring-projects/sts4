@@ -78,13 +78,6 @@
           unpack="false"/>
          
     <plugin
-          id="org.springframework.ide.eclipse.buildship20"
-          download-size="0"
-          install-size="0"
-          version="0.0.0"
-          unpack="false"/>
-
-    <plugin
           id="org.springframework.ide.eclipse.buildship30"
           download-size="0"
           install-size="0"
