@@ -97,6 +97,7 @@ public class BootJavaPreferencesPage extends FieldEditorPreferencePage implement
 		});
 		addField(new BooleanFieldEditor(Constants.PREF_CHANGE_DETECTION, "Live Boot Change Detection", fieldEditorParent));
 		
+		addField(new BooleanFieldEditor(Constants.PREF_VALIDATION_SPEL_EXPRESSIONS, "SpEL Expression Syntax Validation", fieldEditorParent));
 	}
 
 }

@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
 
 import org.eclipse.lsp4j.CompletionItemKind;
@@ -32,6 +33,7 @@ import org.springframework.ide.vscode.boot.java.handlers.BootJavaCompletionEngin
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaDocumentHighlightEngine;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaDocumentSymbolHandler;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaHoverProvider;
+import org.springframework.ide.vscode.boot.java.handlers.BootJavaReconcileEngine;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaReferencesHandler;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaWorkspaceSymbolHandler;
 import org.springframework.ide.vscode.boot.java.handlers.CodeLensProvider;
@@ -70,6 +72,7 @@ import org.springframework.ide.vscode.commons.languageserver.completion.IComplet
 import org.springframework.ide.vscode.commons.languageserver.composable.LanguageServerComponents;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
+import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
 import org.springframework.ide.vscode.commons.languageserver.util.CodeLensHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentHighlightHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.HoverHandler;
@@ -103,6 +106,8 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 
 	private final SimpleLanguageServer server;
 	private final BootLanguageServerParams serverParams;
+	private final BootJavaConfig config;
+
 	private final SpringPropertyIndexProvider propertyIndexProvider;
 	private final ProjectBasedPropertyIndexProvider adHocPropertyIndexProvider;
 
@@ -120,7 +125,6 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 
 	private SpringProcessTracker liveProcessTracker;
 
-
 	public BootJavaLanguageServerComponents(
 			SimpleLanguageServer server,
 			BootLanguageServerParams serverParams,
@@ -134,6 +138,7 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 	) {
 		this.server = server;
 		this.serverParams = serverParams;
+		this.config = config;
 
 		projectFinder = serverParams.projectFinder;
 		projectObserver = serverParams.projectObserver;
@@ -197,7 +202,7 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 
 		highlightsEngine = createDocumentHighlightEngine(indexer);
 		documents.onDocumentHighlight(highlightsEngine);
-
+		
 		config.addListener(ignore -> {
 			log.info("update live process tracker settings - start");
 			
@@ -244,6 +249,11 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 
 	public DocumentHighlightHandler getDocumentHighlightHandler() {
 		return highlightsEngine;
+	}
+	
+	@Override
+	public Optional<IReconcileEngine> getReconcileEngine() {
+		return Optional.of(new BootJavaReconcileEngine(this, config));
 	}
 
 	private void initialized() {

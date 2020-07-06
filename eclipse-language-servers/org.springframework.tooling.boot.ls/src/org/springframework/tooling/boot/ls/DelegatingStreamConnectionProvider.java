@@ -153,6 +153,8 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 		Map<String, Object> supportXML = new HashMap<>();
 		Map<String, Object> bootChangeDetection = new HashMap<>();
 		Map<String, Object> scanTestJavaSources = new HashMap<>();
+		Map<String, Object> validation = new HashMap<>();
+		Map<String, Object> validationSpelExpressions = new HashMap<>();
 
 		IPreferenceStore preferenceStore = BootLanguageServerPlugin.getDefault().getPreferenceStore();
 
@@ -172,10 +174,15 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 		bootChangeDetection.put("on", preferenceStore.getBoolean(Constants.PREF_CHANGE_DETECTION));
 		scanTestJavaSources.put("on", preferenceStore.getBoolean(Constants.PREF_SCAN_JAVA_TEST_SOURCES));
 
+		validationSpelExpressions.put("on", preferenceStore.getBoolean(Constants.PREF_VALIDATION_SPEL_EXPRESSIONS));
+		validation.put("spel", validationSpelExpressions);
+
 		bootJavaObj.put("live-information", liveInformation);
 		bootJavaObj.put("support-spring-xml-config", supportXML);
 		bootJavaObj.put("change-detection", bootChangeDetection);
 		bootJavaObj.put("scan-java-test-sources", scanTestJavaSources);
+		bootJavaObj.put("change-detection", bootChangeDetection);
+		bootJavaObj.put("validation", validation);
 
 		bootJavaObj.put("remote-apps", getAllRemoteApps());
 

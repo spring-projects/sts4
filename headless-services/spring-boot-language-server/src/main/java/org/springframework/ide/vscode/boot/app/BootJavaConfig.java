@@ -35,6 +35,8 @@ public class BootJavaConfig implements InitializingBean {
 	
 	public static final int LIVE_INFORMATION_FETCH_DATA_RETRY_MAX_NO_DEFAULT = 10;
 	public static final int LIVE_INFORMATION_FETCH_DATA_RETRY_DELAY_IN_SECONDS_DEFAULT = 3;
+	
+	public static final boolean VALIDAITON_SPEL_EXPRESSIONS_ENABLED_DEFAULT = true;
 
 
 	//TODO: Consider changing this to something that raises Spring application events.
@@ -108,6 +110,11 @@ public class BootJavaConfig implements InitializingBean {
 	public boolean isChangeDetectionEnabled() {
 		Boolean enabled = settings.getBoolean("boot-java", "change-detection", "on");
 		return enabled != null && enabled.booleanValue();
+	}
+
+	public boolean isSpelExpressionValidationEnabled() {
+		Boolean enabled = settings.getBoolean("boot-java", "validation", "spel", "on");
+		return enabled != null ? enabled.booleanValue() : VALIDAITON_SPEL_EXPRESSIONS_ENABLED_DEFAULT;
 	}
 
 	public boolean areXmlHyperlinksEnabled() {

@@ -39,6 +39,7 @@ public class PrefsInitializer extends AbstractPreferenceInitializer {
 		preferenceStore.setDefault(Constants.PREF_XML_CONFIGS_SCAN_FOLDERS, "src/main");
 
 		preferenceStore.setDefault(Constants.PREF_CHANGE_DETECTION, false);
+		preferenceStore.setDefault(Constants.PREF_VALIDATION_SPEL_EXPRESSIONS, true);
 
 		preferenceStore.setDefault(Constants.PREF_SCAN_JAVA_TEST_SOURCES, false);
 	}

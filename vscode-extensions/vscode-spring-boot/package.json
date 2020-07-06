@@ -129,6 +129,11 @@
           "default": false,
           "description": "Enable/Disable detecting changes of running Spring Boot applications"
         },
+        "boot-java.validation.spel.on": {
+          "type": "boolean",
+          "default": false,
+          "description": "Validation - Validate SpEL Expression Syntax"
+        },
         "boot-java.remote-apps": {
           "type": "array",
           "items": {

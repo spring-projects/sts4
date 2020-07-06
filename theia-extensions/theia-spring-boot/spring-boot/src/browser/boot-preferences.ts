@@ -70,6 +70,11 @@ export const BootConfigSchema: PreferenceSchema = {
             description: 'Enable/Disable detecting changes of running Spring Boot applications.',
             default: false
         },
+        'boot-java.validation.spel.on': {
+            type: 'boolean',
+            description: 'Validation - Validate SpEL Expression Syntax',
+            default: true
+        },
         'boot-java.highlight-codelens.on': {
             type: 'boolean',
             default: true,
@@ -99,6 +104,7 @@ export interface BootConfiguration {
     'boot-java.support-spring-xml-config.content-assist': boolean;
     'boot-java.support-spring-xml-config.scan-folders': string;
     'boot-java.change-detection.on': boolean;
+    'boot-java.validation.spel.on': boolean;
     'boot-java.highlight-codelens.on': boolean;
     'spring-boot.ls.javahome': string;
     'spring-boot.ls.vmargs': string;
