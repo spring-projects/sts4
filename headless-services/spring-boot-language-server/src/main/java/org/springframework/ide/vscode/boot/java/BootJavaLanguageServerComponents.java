@@ -122,6 +122,7 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 	private BootJavaHoverProvider hoverProvider;
 	private CodeLensHandler codeLensHandler;
 	private DocumentHighlightHandler highlightsEngine;
+	private BootJavaReconcileEngine reconcileEngine;
 
 	private SpringProcessTracker liveProcessTracker;
 
@@ -203,6 +204,8 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		highlightsEngine = createDocumentHighlightEngine(indexer);
 		documents.onDocumentHighlight(highlightsEngine);
 		
+		reconcileEngine = new BootJavaReconcileEngine(cuCache, projectFinder);
+		
 		config.addListener(ignore -> {
 			log.info("update live process tracker settings - start");
 			
@@ -221,6 +224,8 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 			else {
 				liveChangeDetectionWatchdog.disableHighlights();
 			}
+			
+			reconcileEngine.setSpelExpressionSyntaxValidationEnabled(config.isSpelExpressionValidationEnabled());
 			
 			log.info("update live process tracker settings - done");
 		});
@@ -253,7 +258,7 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 	
 	@Override
 	public Optional<IReconcileEngine> getReconcileEngine() {
-		return Optional.of(new BootJavaReconcileEngine(this, config));
+		return Optional.of(reconcileEngine);
 	}
 
 	private void initialized() {

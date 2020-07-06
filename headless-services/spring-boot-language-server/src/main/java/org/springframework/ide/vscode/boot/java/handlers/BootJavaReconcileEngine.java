@@ -23,8 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.expression.ParseException;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
-import org.springframework.ide.vscode.boot.app.BootJavaConfig;
-import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
+import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.boot.java.value.Constants;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
@@ -44,13 +43,19 @@ public class BootJavaReconcileEngine implements IReconcileEngine {
 	private static final Logger log = LoggerFactory.getLogger(BootJavaReconcileEngine.class);
 
 	private final JavaProjectFinder projectFinder; 
-	private final BootJavaLanguageServerComponents server;
-	private final BootJavaConfig config;
+	private final CompilationUnitCache compilationUnitCache;
+
+	private boolean spelExpressionValidationEnabled;
 	
-	public BootJavaReconcileEngine(BootJavaLanguageServerComponents server, BootJavaConfig config) {
-		this.server = server;
-		this.config = config;
-		this.projectFinder = this.server.getProjectFinder();
+	public BootJavaReconcileEngine(CompilationUnitCache compilationUnitCache, JavaProjectFinder projectFinder) {
+		this.compilationUnitCache = compilationUnitCache;
+		this.projectFinder = projectFinder;
+		
+		this.spelExpressionValidationEnabled = true;
+	}
+
+	public void setSpelExpressionSyntaxValidationEnabled(boolean spelExpressionValidationEnabled) {
+		this.spelExpressionValidationEnabled = spelExpressionValidationEnabled;
 	}
 
 	@Override
@@ -65,7 +70,7 @@ public class BootJavaReconcileEngine implements IReconcileEngine {
 			try {
 				problemCollector.beginCollecting();
 				
-				server.getCompilationUnitCache().withCompilationUnit(project, uri, cu -> {
+				compilationUnitCache.withCompilationUnit(project, uri, cu -> {
 					if (cu != null) {
 						reconcileAST(cu, problemCollector);
 					}
@@ -95,7 +100,7 @@ public class BootJavaReconcileEngine implements IReconcileEngine {
 	}
 
 	protected void visitAnnotation(SingleMemberAnnotation node, IProblemCollector problemCollector) {
-		if (!config.isSpelExpressionValidationEnabled()) {
+		if (!spelExpressionValidationEnabled) {
 			return;
 		}
 		
