@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2018 Pivotal, Inc.
+ * Copyright (c) 2017, 2020 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -61,7 +61,10 @@ public class InFileSymbolsProvider implements SymbolsProvider {
 
 	public static SymbolsProvider createFor(LiveExpression<IResource> rsrc) {
 		LiveExpression<LSPDocumentInfo> target = rsrc.apply(r -> {
-			IDocument document = LSPEclipseUtils.getDocument(r);
+			// Get the existing document rather than request a document that may result
+			// in a connection to the associated file buffer. The reason for this is
+			// described in https://www.pivotaltracker.com/story/show/173267278
+			IDocument document = LSPEclipseUtils.getExistingDocument(r);
 			return getLSPDocumentInfo(document);
 		});
 		return new InFileSymbolsProvider(target::getValue);
