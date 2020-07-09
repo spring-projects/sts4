@@ -60,8 +60,6 @@ public class BootJavaReconcileEngine implements IReconcileEngine {
 
 	@Override
 	public void reconcile(final IDocument doc, final IProblemCollector problemCollector) {
-		System.out.println("reconcile document: " + doc);
-		
 		IJavaProject project = projectFinder.find(new TextDocumentIdentifier(doc.getUri())).orElse(null);
 		URI uri = URI.create(doc.getUri());
 		
