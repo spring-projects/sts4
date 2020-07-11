@@ -1,6 +1,7 @@
 package org.test;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cache.annotation.Cacheable;
 
 public class TestValueCompletion {
 	

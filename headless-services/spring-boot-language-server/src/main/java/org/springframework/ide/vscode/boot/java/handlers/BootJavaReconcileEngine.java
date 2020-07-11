@@ -14,25 +14,19 @@ import java.net.URI;
 
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
-import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.ITypeBinding;
+import org.eclipse.jdt.core.dom.NormalAnnotation;
 import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
-import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.expression.ParseException;
-import org.springframework.expression.spel.standard.SpelExpressionParser;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.boot.java.value.Constants;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
-import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity;
-import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemTypes;
-import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblem;
-import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblemImpl;
+import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 
 /**
@@ -40,22 +34,54 @@ import org.springframework.ide.vscode.commons.util.text.IDocument;
  */
 public class BootJavaReconcileEngine implements IReconcileEngine {
 
+	// annotations with SpEL expression params 
+	public static final String SPRING_CACHEABLE = "org.springframework.cache.annotation.Cacheable";
+	public static final String SPRING_EVENT_LISTENER = "org.springframework.context.event.EventListener";
+	
+	public static final String SPRING_PRE_AUTHORIZE = "org.springframework.security.access.prepost.PreAuthorize";
+	public static final String SPRING_PRE_FILTER = "org.springframework.security.access.prepost.PreFilter";
+	public static final String SPRING_POST_AUTHORIZE = "org.springframework.security.access.prepost.PostAuthorize";
+	public static final String SPRING_POST_FILTER= "org.springframework.security.access.prepost.PostFilter";
+
+	
 	private static final Logger log = LoggerFactory.getLogger(BootJavaReconcileEngine.class);
 
 	private final JavaProjectFinder projectFinder; 
 	private final CompilationUnitCache compilationUnitCache;
-
-	private boolean spelExpressionValidationEnabled;
+	private final AnnotationParamReconciler[] reconcilers;
+	private final SpelExpressionReconciler spelExpressionReconciler;
 	
 	public BootJavaReconcileEngine(CompilationUnitCache compilationUnitCache, JavaProjectFinder projectFinder) {
 		this.compilationUnitCache = compilationUnitCache;
 		this.projectFinder = projectFinder;
 		
-		this.spelExpressionValidationEnabled = true;
+		this.spelExpressionReconciler = new SpelExpressionReconciler();
+		
+		this.reconcilers = new AnnotationParamReconciler[] {
+
+				new AnnotationParamReconciler(Constants.SPRING_VALUE, null, "#{", "}", spelExpressionReconciler),
+				new AnnotationParamReconciler(Constants.SPRING_VALUE, "value", "#{", "}", spelExpressionReconciler),
+
+				new AnnotationParamReconciler(SPRING_CACHEABLE, "key", "", "", spelExpressionReconciler),
+				new AnnotationParamReconciler(SPRING_CACHEABLE, "condition", "", "", spelExpressionReconciler),
+				new AnnotationParamReconciler(SPRING_CACHEABLE, "unless", "", "", spelExpressionReconciler),
+
+				new AnnotationParamReconciler(SPRING_EVENT_LISTENER, "condition", "", "", spelExpressionReconciler),
+				
+				new AnnotationParamReconciler(SPRING_PRE_AUTHORIZE, null, "", "", spelExpressionReconciler),
+				new AnnotationParamReconciler(SPRING_PRE_AUTHORIZE, "value", "", "", spelExpressionReconciler),
+				new AnnotationParamReconciler(SPRING_PRE_FILTER, null, "", "", spelExpressionReconciler),
+				new AnnotationParamReconciler(SPRING_PRE_FILTER, "value", "", "", spelExpressionReconciler),
+				new AnnotationParamReconciler(SPRING_POST_AUTHORIZE, null, "", "", spelExpressionReconciler),
+				new AnnotationParamReconciler(SPRING_POST_AUTHORIZE, "value", "", "", spelExpressionReconciler),
+				new AnnotationParamReconciler(SPRING_POST_FILTER, null, "", "", spelExpressionReconciler),
+				new AnnotationParamReconciler(SPRING_POST_FILTER, "value", "", "", spelExpressionReconciler)
+
+		};
 	}
 
 	public void setSpelExpressionSyntaxValidationEnabled(boolean spelExpressionValidationEnabled) {
-		this.spelExpressionValidationEnabled = spelExpressionValidationEnabled;
+		this.spelExpressionReconciler.setEnabled(spelExpressionValidationEnabled);
 	}
 
 	@Override
@@ -88,60 +114,44 @@ public class BootJavaReconcileEngine implements IReconcileEngine {
 			@Override
 			public boolean visit(SingleMemberAnnotation node) {
 				try {
-					visitAnnotation(node, problemCollector);
+					visitAnnotationWithDefaultParam(node, problemCollector);
 				}
 				catch (Exception e) {
 				}
 				return super.visit(node);
 			}
+			
+			@Override
+			public boolean visit(NormalAnnotation node) {
+				try {
+					visitAnnotationWithParams(node, problemCollector);
+				}
+				catch (Exception e) {
+				}
+				return super.visit(node);
+			}
+			
 		});
 	}
 
-	protected void visitAnnotation(SingleMemberAnnotation node, IProblemCollector problemCollector) {
-		if (!spelExpressionValidationEnabled) {
-			return;
-		}
-		
+	protected void visitAnnotationWithDefaultParam(SingleMemberAnnotation node, IProblemCollector problemCollector) {
 		ITypeBinding typeBinding = node.resolveTypeBinding();
 
 		if (typeBinding != null) {
-			String qname = typeBinding.getQualifiedName();
-			if (Constants.SPRING_VALUE.equals(qname)) {
-				Expression valueExp = node.getValue();
-
-				if (valueExp instanceof StringLiteral) {
-					String value = ((StringLiteral) valueExp).getLiteralValue();
-					if (value != null && value.startsWith("#{") && value.endsWith("}")) {
-						reconcileSpELExpressionValue(value, valueExp, problemCollector);
-					}
-				}
+			for (int i = 0; i < reconcilers.length; i++) {
+				reconcilers[i].visit(node, typeBinding, problemCollector);
 			}
 		}
 	}
 
-	private void reconcileSpELExpressionValue(String value, Expression valueExp, IProblemCollector problemCollector) {
-		String spelExpression = value.substring(2, value.length() - 1);
-		
-		if (spelExpression.length() > 0) {
-			SpelExpressionParser parser = new SpelExpressionParser();
-			try {
-				parser.parseExpression(spelExpression);
-			}
-			catch (ParseException e) {
-				String message = e.getSimpleMessage();
-				int position = e.getPosition();
-				
-				createProblem(valueExp, message, position, problemCollector);
+	protected void visitAnnotationWithParams(NormalAnnotation node, IProblemCollector problemCollector) {
+		ITypeBinding typeBinding = node.resolveTypeBinding();
+
+		if (typeBinding != null) {
+			for (int i = 0; i < reconcilers.length; i++) {
+				reconcilers[i].visit(node, typeBinding, problemCollector);
 			}
 		}
-	}
-
-	private void createProblem(Expression valueExp, String message, int position, IProblemCollector problemCollector) {
-		int start = valueExp.getStartPosition() + 3 + position;
-		int length = valueExp.getLength() - 5 - position;
-		
-		ReconcileProblem problem = new ReconcileProblemImpl(ProblemTypes.create("SpEL Expression Problem", ProblemSeverity.ERROR), message, start, length);
-		problemCollector.accept(problem);
 	}
 
 }
