@@ -233,7 +233,7 @@ public class ValueSpelExpressionValidationTest {
 	
 	@Test
 	public void testIncorrectSpelExpressionFoundOnSpelParamOfCachableAnnotation() throws Exception {
-		TextDocument doc = prepareDocument("@Value(\"onField\")", "@Cacheable(condition=\"#{new String('hello world).toUpperCase()}\")");
+		TextDocument doc = prepareDocument("@Value(\"onField\")", "@Cacheable(condition=\"new String('hello world).toUpperCase()\")");
 		assertNotNull(doc);
 		
 		reconcileEngine.reconcile(doc, problemCollector);
@@ -244,7 +244,7 @@ public class ValueSpelExpressionValidationTest {
 	
 	@Test
 	public void testIncorrectSpelExpressionNotFoundOnNonSpelParamOfCachableAnnotation() throws Exception {
-		TextDocument doc = prepareDocument("@Value(\"onField\")", "@Cacheable(keyGenerator=\"#{new String('hello world).toUpperCase()}\")");
+		TextDocument doc = prepareDocument("@Value(\"onField\")", "@Cacheable(keyGenerator=\"new String('hello world).toUpperCase()\")");
 		assertNotNull(doc);
 		
 		reconcileEngine.reconcile(doc, problemCollector);
@@ -255,7 +255,7 @@ public class ValueSpelExpressionValidationTest {
 	
 	@Test
 	public void testIncorrectSpelExpressionFoundOnSpelParamOfCachableAnnotationAmongOtherParams() throws Exception {
-		TextDocument doc = prepareDocument("@Value(\"onField\")", "@Cacheable(keyGenerator=\"somekey\", condition=\"#{new String('hello world).toUpperCase()}\")");
+		TextDocument doc = prepareDocument("@Value(\"onField\")", "@Cacheable(keyGenerator=\"somekey\", condition=\"new String('hello world).toUpperCase()\")");
 		assertNotNull(doc);
 		
 		reconcileEngine.reconcile(doc, problemCollector);
@@ -266,7 +266,7 @@ public class ValueSpelExpressionValidationTest {
 	
 	@Test
 	public void testIncorrectSpelExpressionFoundOnMultipleSpelParamsOfCachableAnnotation() throws Exception {
-		TextDocument doc = prepareDocument("@Value(\"onField\")", "@Cacheable(unless=\"#{new String('hello world).toUpperCase()}\", condition=\"#{new String('hello world).toUpperCase()}\")");
+		TextDocument doc = prepareDocument("@Value(\"onField\")", "@Cacheable(unless=\"new String('hello world).toUpperCase()\", condition=\"new String('hello world).toUpperCase()\")");
 		assertNotNull(doc);
 		
 		reconcileEngine.reconcile(doc, problemCollector);
@@ -274,6 +274,30 @@ public class ValueSpelExpressionValidationTest {
 		List<ReconcileProblem> problems = problemCollector.getCollectedProblems();
 		assertEquals(2, problems.size());
 	}
+	
+	@Test
+	public void testCorrectSpelExpressionFoundOnCustomAnnotation() throws Exception {
+		TextDocument doc = prepareDocument("@Value(\"onMethod\")", "@CustomEventListener(condition=\"new String('hello world').toUpperCase()\")");
+		assertNotNull(doc);
+		
+		reconcileEngine.reconcile(doc, problemCollector);
+		
+		List<ReconcileProblem> problems = problemCollector.getCollectedProblems();
+		assertEquals(0, problems.size());
+	}
+
+	@Test
+	public void testIncorrectSpelExpressionFoundOnCustomAnnotation() throws Exception {
+		TextDocument doc = prepareDocument("@Value(\"onMethod\")", "@CustomEventListener(condition=\"new String('hello world).toUpperCase()\")");
+		assertNotNull(doc);
+		
+		reconcileEngine.reconcile(doc, problemCollector);
+		
+		List<ReconcileProblem> problems = problemCollector.getCollectedProblems();
+		assertEquals(1, problems.size());
+	}
+	
+
 	
 	private TextDocument prepareDocument(String selectedAnnotation, String annotationStatementBeforeTest) throws Exception {
 		String content = IOUtils.toString(new URI(docUri));

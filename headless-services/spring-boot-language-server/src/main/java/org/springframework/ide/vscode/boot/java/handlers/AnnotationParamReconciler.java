@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.boot.java.handlers;
 
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.ITypeBinding;
@@ -18,6 +19,7 @@ import org.eclipse.jdt.core.dom.MemberValuePair;
 import org.eclipse.jdt.core.dom.NormalAnnotation;
 import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
 import org.eclipse.jdt.core.dom.StringLiteral;
+import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 
 /**
@@ -44,9 +46,9 @@ public class AnnotationParamReconciler {
 		if (this.paramName != null) {
 			return;
 		}
-
-		String qname = typeBinding.getQualifiedName();
-		if (!this.annotationType.equals(qname)) {
+		
+		Set<String> allAnnotations = AnnotationHierarchies.getTransitiveSuperAnnotations(typeBinding);
+		if (!allAnnotations.contains(this.annotationType)) {
 			return;
 		}
 		
@@ -62,8 +64,8 @@ public class AnnotationParamReconciler {
 			return;
 		}
 		
-		String qname = typeBinding.getQualifiedName();
-		if (!this.annotationType.equals(qname)) {
+		Set<String> allAnnotations = AnnotationHierarchies.getTransitiveSuperAnnotations(typeBinding);
+		if (!allAnnotations.contains(this.annotationType)) {
 			return;
 		}
 			
