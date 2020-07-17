@@ -57,6 +57,15 @@ public class SelectionTracker extends AbstractDisposable {
 		}
 	}
 	
+	public static synchronized void disposeAll(IWorkbenchWindow[] workbenchWindows) {
+		if (workbenchWindows != null) {
+			for (IWorkbenchWindow wbw : workbenchWindows) {
+				disposeInstance(wbw);
+			}
+			INSTANCES = new HashMap<>();
+		}
+	}
+	
 	// In order for the symbols view to correctly fetching information for a selection,  it needs to find an active language
 	// server for the given selection via LSP4E API (see the symbols view model), and document is required to find that active language server
 	// Typically this document will be available if an editor is open.
@@ -106,6 +115,10 @@ public class SelectionTracker extends AbstractDisposable {
 	}
 	
 	private final LiveVariable<DocumentData> documentData = new OldValueDisposer<DocumentData>(this).getVar();
+	{
+		addDisposableChild(documentData);
+	}
+	
 	private final LiveVariable<IResource> currentResource = new LiveVariable<>();
 	{
 		currentResource.onChange(this, (e, v) -> {

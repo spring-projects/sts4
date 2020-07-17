@@ -20,8 +20,10 @@ import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IActionBars;
+import org.eclipse.ui.IViewReference;
 import org.eclipse.ui.IViewSite;
 import org.eclipse.ui.IWorkbenchPage;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.springframework.ide.eclipse.boot.dash.BootDashActivator;
@@ -31,8 +33,8 @@ import org.springframework.tooling.ls.eclipse.gotosymbol.dialogs.GotoSymbolSecti
 import org.springframework.tooling.ls.eclipse.gotosymbol.dialogs.InFileSymbolsProvider;
 import org.springframework.tooling.ls.eclipse.gotosymbol.dialogs.InProjectSymbolsProvider;
 import org.springframework.tooling.ls.eclipse.gotosymbol.dialogs.InWorkspaceSymbolsProvider;
+import org.springframework.tooling.ls.eclipse.gotosymbol.dialogs.SelectionTracker;
 import org.springsource.ide.eclipse.commons.livexp.ui.ChooseOneSectionCombo;
-import org.springsource.ide.eclipse.commons.livexp.ui.Disposable;
 import org.springsource.ide.eclipse.commons.livexp.ui.IPageSection;
 import org.springsource.ide.eclipse.commons.livexp.ui.SimpleLabelProvider;
 import org.springsource.ide.eclipse.commons.livexp.util.Log;
@@ -71,9 +73,7 @@ public class SpringSymbolsView extends ViewPartWithSections {
 			model.refreshButton.increment();
 		}
 	};
-	
-	private List<Disposable> disposables = new ArrayList<>(); //TODO: Remove... unused?
-	
+
 	public SpringSymbolsView() {
 		super(ENABLE_SCROLLING);
 	}
@@ -134,13 +134,47 @@ public class SpringSymbolsView extends ViewPartWithSections {
 	
 	@Override
 	public void dispose() {
-		for (Disposable d : disposables) {
-			d.dispose();
+		if (lastView()) {
+			IWorkbenchWindow[] workbenchWindows = PlatformUI.getWorkbench().getWorkbenchWindows();
+			// PT 173267278 - When closing the last symbols view, ensure all selection
+			// trackers are
+			// disposed. This will indirectly shut down the active boot LS, via LSP4E
+			// (see org.eclipse.lsp4e.LanguageServerWrapper), if there are no more
+			// references
+			// to IDocuments connected to that boot LS,
+			// either from open editors, or the selection trackers.
+			SelectionTracker.disposeAll(workbenchWindows);
 		}
-		disposables.clear();
 		super.dispose();
 	}
-	
+
+	private boolean lastView() {
+		IWorkbenchWindow[] workbenchWindows = PlatformUI.getWorkbench().getWorkbenchWindows();
+		// This will check if there is still another view present aside from the current
+		// one being closed
+		if (workbenchWindows != null) {
+			for (IWorkbenchWindow wbw : workbenchWindows) {
+				IWorkbenchPage[] pages = wbw.getPages();
+				if (pages != null) {
+					for (IWorkbenchPage page : pages) {
+						IViewReference[] references = page.getViewReferences();
+						if (references != null) {
+							for (IViewReference reference : references) {
+								if (VIEW_TYPE_ID.equals(reference.getId())) {
+									// there is still one other view left, so the current one being disposed is not
+									// the last one
+									return false;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
+		return true;
+	}
+
 	@Override
 	public void init(IViewSite site) throws PartInitException {
 		super.init(site);
