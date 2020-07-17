@@ -35,7 +35,7 @@ public class SpringSymbolsViewModel {
 		gotoSymbols = new GotoSymbolDialogModel(null, 
 				InWorkspaceSymbolsProvider.createFor(currentProject::getValue),
 				InProjectSymbolsProvider.createFor(currentProject),
-				InFileSymbolsProvider.createFor(currentResource)
+				InFileSymbolsProvider.createFor(currentSelection.getDocumentData())
 		)
 		.setFavourites(FavouritesPreference.INSTANCE);
 		{	
