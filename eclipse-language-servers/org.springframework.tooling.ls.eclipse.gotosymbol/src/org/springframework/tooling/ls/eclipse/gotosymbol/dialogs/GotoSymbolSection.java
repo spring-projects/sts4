@@ -245,7 +245,7 @@ public class GotoSymbolSection extends WizardPageSection {
 //		});
 		pattern.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 		pattern.setMessage(model.getSearchBoxHintMessage());
-		SwtConnect.connect(pattern, model.getSearchBox());
+		SwtConnect.connect(pattern, model.getSearchBox(), true);
 		
 		//Favourites pulldown
 		if (model.getFavourites()!=null) {
