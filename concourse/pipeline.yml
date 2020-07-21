@@ -70,30 +70,6 @@ resources:
     branch: ((branch))
     private_key: ((rsa_id))
     uri: git@github.com:pivotal/sts4-vscode-bosh-mirror.git
-- name: atom-cf-manifest-yaml
-  type: git
-  source:
-    branch: ((branch))
-    private_key: ((rsa_id))
-    uri: git@github.com:spring-projects/atom-cf-manifest-yaml.git
-- name: atom-concourse
-  type: git
-  source:
-    branch: ((branch))
-    private_key: ((rsa_id))
-    uri: git@github.com:spring-projects/atom-concourse.git
-- name: atom-bosh
-  type: git
-  source:
-    branch: ((branch))
-    private_key: ((rsa_id))
-    uri: git@github.com:spring-projects/atom-bosh.git
-- name: atom-spring-boot
-  type: git
-  source:
-    branch: ((branch))
-    private_key: ((rsa_id))
-    uri: git@github.com:spring-projects/atom-spring-boot.git
 - name: jvm-launch-utils-git
   type: git
   source:
@@ -187,14 +163,14 @@ resources:
     secret_access_key: ((s3_secretkey))
     region_name: ((s3_region))
     regexp: sts4/fatjars/snapshots/manifest-yaml-language-server-(.*).jar
-- name: s3-manifest-yaml-fatjar--rc
-  type: s3
-  source:
-    bucket: ((s3_prod_bucket))
-    access_key_id: ((s3_prod_accesskey))
-    secret_access_key: ((s3_prod_secretkey))
-    region_name: ((s3_prod_region))
-    regexp: release/STS4/fatjars/manifest-yaml-language-server-(.*).jar
+# - name: s3-manifest-yaml-fatjar--rc
+#   type: s3
+#   source:
+#     bucket: ((s3_prod_bucket))
+#     access_key_id: ((s3_prod_accesskey))
+#     secret_access_key: ((s3_prod_secretkey))
+#     region_name: ((s3_prod_region))
+#     regexp: release/STS4/fatjars/manifest-yaml-language-server-(.*).jar
 - name: s3-concourse-fatjar-snapshot
   type: s3
   source:
@@ -203,14 +179,14 @@ resources:
     secret_access_key: ((s3_secretkey))
     region_name: ((s3_region))
     regexp: sts4/fatjars/snapshots/concourse-language-server-(.*).jar
-- name: s3-concourse-fatjar--rc
-  type: s3
-  source:
-    bucket: ((s3_prod_bucket))
-    access_key_id: ((s3_prod_accesskey))
-    secret_access_key: ((s3_prod_secretkey))
-    region_name: ((s3_prod_region))
-    regexp: release/STS4/fatjars/concourse-language-server-(.*).jar
+# - name: s3-concourse-fatjar--rc
+#   type: s3
+#   source:
+#     bucket: ((s3_prod_bucket))
+#     access_key_id: ((s3_prod_accesskey))
+#     secret_access_key: ((s3_prod_secretkey))
+#     region_name: ((s3_prod_region))
+#     regexp: release/STS4/fatjars/concourse-language-server-(.*).jar
 - name: s3-bosh-fatjar-snapshot
   type: s3
   source:
@@ -219,14 +195,14 @@ resources:
     secret_access_key: ((s3_secretkey))
     region_name: ((s3_region))
     regexp: sts4/fatjars/snapshots/bosh-language-server-(.*).jar
-- name: s3-bosh-fatjar--rc
-  type: s3
-  source:
-    bucket: ((s3_prod_bucket))
-    access_key_id: ((s3_prod_accesskey))
-    secret_access_key: ((s3_prod_secretkey))
-    region_name: ((s3_prod_region))
-    regexp: release/STS4/fatjars/bosh-language-server-(.*).jar
+# - name: s3-bosh-fatjar--rc
+#   type: s3
+#   source:
+#     bucket: ((s3_prod_bucket))
+#     access_key_id: ((s3_prod_accesskey))
+#     secret_access_key: ((s3_prod_secretkey))
+#     region_name: ((s3_prod_region))
+#     regexp: release/STS4/fatjars/bosh-language-server-(.*).jar
 - name: s3-spring-boot-fatjar-snapshot
   type: s3
   source:
@@ -235,14 +211,14 @@ resources:
     secret_access_key: ((s3_secretkey))
     region_name: ((s3_region))
     regexp: sts4/fatjars/snapshots/spring-boot-language-server-(.*).jar
-- name: s3-spring-boot-fatjar--rc
-  type: s3
-  source:
-    bucket: ((s3_prod_bucket))
-    access_key_id: ((s3_prod_accesskey))
-    secret_access_key: ((s3_prod_secretkey))
-    region_name: ((s3_prod_region))
-    regexp: release/STS4/fatjars/spring-boot-language-server-(.*).jar
+# - name: s3-spring-boot-fatjar--rc
+#   type: s3
+#   source:
+#     bucket: ((s3_prod_bucket))
+#     access_key_id: ((s3_prod_accesskey))
+#     secret_access_key: ((s3_prod_secretkey))
+#     region_name: ((s3_prod_region))
+#     regexp: release/STS4/fatjars/spring-boot-language-server-(.*).jar
 - name: vscode-snapshot-website
   type: s3-multi
   source:
@@ -273,12 +249,6 @@ resources:
     username: ((docker_hub_username))
     password: ((docker_hub_password))
     repository: kdvolder/sts4-build-env
-- name: theia-docker-image
-  type: docker-image
-  source:
-    username: ((docker_hub_username))
-    password: ((docker_hub_password))
-    repository: kdvolder/sts4-theia-snapshot
 - name: maven-cache
   type: s3
   source:
@@ -402,40 +372,6 @@ jobs:
     params:
       rebase: true
       repository: sts4-wiki-out
-- name: build-theia-docker-snapshot-image
-  serial: true
-  on_failure:
-    put: slack-notification
-    params:
-      text: |
-          Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
-          https://ci.spring.io/teams/tools/pipelines/${BUILD_PIPELINE_NAME}/jobs/${BUILD_JOB_NAME}/builds/${BUILD_NAME}
-  plan:
-  - in_parallel:
-    - get: s3-concourse-vsix-snapshot
-      trigger: true
-      passed:
-      - build-consourse-vsix-snapshot
-    - get: s3-spring-boot-vsix-snapshot
-      trigger: true
-      passed:
-      - build-spring-boot-vsix-snapshot
-    - get: s3-bosh-vsix-snapshot
-      trigger: true
-      passed:
-      - build-bosh-vsix-snapshot
-    - get: s3-manifest-yaml-vsix-snapshot
-      trigger: true
-      passed:
-      - build-manifest-yaml-vsix-snapshot
-    - get: sts4
-  - task: prepare-theia-docker-image
-    file: sts4/concourse/tasks/prepare-theia-docker-image.yml
-  - put: theia-docker-image
-    params:
-      build: output
-    get_params:
-      skip_download: true
 - name: build-docker-image
   serial: true
   plan:
@@ -570,200 +506,6 @@ jobs:
       only_tag: true
       tag_prefix: V_
       tag: version/version
-- name: promote-fatjars-to-rc
-  serial: true
-  plan:
-  - in_parallel:
-    - get: s3-bosh-fatjar-snapshot
-      passed:
-      - build-bosh-atom-package
-    - get: s3-concourse-fatjar-snapshot
-      passed:
-      - build-concourse-atom-package
-    - get: s3-manifest-yaml-fatjar-snapshot
-      passed:
-      - build-manifest-yaml-atom-package
-    - get: s3-spring-boot-fatjar-snapshot
-      passed:
-      - build-spring-boot-atom-package
-  - in_parallel:
-    - put: s3-bosh-fatjar--rc
-      params:
-        file: s3-bosh-fatjar-snapshot/*.jar
-        acl: public-read
-    - put: s3-concourse-fatjar--rc
-      params:
-        file: s3-concourse-fatjar-snapshot/*.jar
-        acl: public-read
-    - put: s3-manifest-yaml-fatjar--rc
-      params:
-        file: s3-manifest-yaml-fatjar-snapshot/*.jar
-        acl: public-read
-    - put: s3-spring-boot-fatjar--rc
-      params:
-        file: s3-spring-boot-fatjar-snapshot/*.jar
-        acl: public-read
-- name: prepare-manifest-yaml-atom-rc
-  serial: true
-  plan:
-  - in_parallel:
-    - get: sts4
-    - get: atom-cf-manifest-yaml
-    - get: s3-manifest-yaml-fatjar--rc
-      trigger: true
-      passed:
-      - promote-fatjars-to-rc
-  - task: build-atom-package
-    params:
-      package_name: atom-cf-manifest-yaml
-    input_mapping:
-      release_repo: atom-cf-manifest-yaml
-      fatjar: s3-manifest-yaml-fatjar--rc
-    file: sts4/concourse/tasks/build-atom-package.yml
-  - put: atom-cf-manifest-yaml
-    params:
-      repository: out/repo
-      rebase: true
-- name: prepare-concourse-atom-rc
-  serial: true
-  plan:
-  - in_parallel:
-    - get: sts4
-    - get: atom-concourse
-    - get: s3-concourse-fatjar--rc
-      trigger: true
-      passed:
-      - promote-fatjars-to-rc
-  - task: build-atom-package
-    params:
-      package_name: atom-concourse
-    input_mapping:
-      release_repo: atom-concourse
-      fatjar: s3-concourse-fatjar--rc
-    file: sts4/concourse/tasks/build-atom-package.yml
-  - put: atom-concourse
-    params:
-      repository: out/repo
-      rebase: true
-- name: prepare-bosh-atom-rc
-  serial: true
-  plan:
-  - in_parallel:
-    - get: sts4
-    - get: atom-bosh
-    - get: s3-bosh-fatjar--rc
-      trigger: true
-      passed:
-      - promote-fatjars-to-rc
-  - task: build-atom-package
-    params:
-      package_name: atom-bosh
-    input_mapping:
-      release_repo: atom-bosh
-      fatjar: s3-bosh-fatjar--rc
-    file: sts4/concourse/tasks/build-atom-package.yml
-  - put: atom-bosh
-    params:
-      repository: out/repo
-      rebase: true
-- name: prepare-spring-boot-atom-rc
-  serial: true
-  plan:
-  - in_parallel:
-    - get: sts4
-    - get: atom-spring-boot
-    - get: s3-spring-boot-fatjar--rc
-      trigger: true
-      passed:
-      - promote-fatjars-to-rc
-  - task: build-atom-package
-    params:
-      package_name: atom-spring-boot
-    input_mapping:
-      release_repo: atom-spring-boot
-      fatjar: s3-spring-boot-fatjar--rc
-    file: sts4/concourse/tasks/build-atom-package.yml
-  - put: atom-spring-boot
-    params:
-      repository: out/repo
-      rebase: true
-- name: tag-atom-release
-  plan:
-  - in_parallel:
-    - get: sts4
-    - get: atom-bosh
-      passed:
-      - prepare-bosh-atom-rc
-    - get: atom-concourse
-      passed:
-      - prepare-concourse-atom-rc
-    # - get: atom-spring-boot
-    #   passed:
-    #   - prepare-spring-boot-atom-rc
-    - get: atom-cf-manifest-yaml
-      passed:
-      - prepare-manifest-yaml-atom-rc
-  - task: tag-atom-releases
-    file: sts4/concourse/tasks/tag-atom-releases.yml
-  - in_parallel:
-    - put: atom-bosh
-      params:
-        repository: out/atom-bosh
-        only_tag: true
-    - put: atom-concourse
-      params:
-        repository: out/atom-concourse
-        only_tag: true
-    # - put: atom-spring-boot
-    #   params:
-    #     repository: out/atom-spring-boot
-    #     only_tag: true
-    - put: atom-cf-manifest-yaml
-      params:
-        repository: out/atom-cf-manifest-yaml
-        only_tag: true
-- name: publish-atom-releases
-  serial: true
-  plan:
-  - in_parallel:
-    - get: sts4
-    - get: atom-concourse
-      trigger: true
-      passed:
-      - tag-atom-release
-    - get: atom-bosh
-      trigger: true
-      passed:
-      - tag-atom-release
-    - get: atom-cf-manifest-yaml
-      trigger: true
-      passed:
-      - tag-atom-release
-    # - get: atom-spring-boot
-    #   trigger: true
-    #   passed:
-    #   - tag-atom-release
-  - task: publish-atom-releases
-    file: sts4/concourse/tasks/publish-atom-releases.yml
-    params:
-      atom_token: ((atom_token))
-    on_failure:
-      put: slack-notification
-      params:
-        text: |
-           Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!      
-    on_success:
-      put: slack-notification
-      params:
-        channel: "#tools-team-internal"
-        text: |
-          STS 4 Atom Extensions released
-          Releases now available on Atom Marketplace:
-           • <https://atom.io/packages/concourse-pipeline-yaml|Concourse CI Pipeline Editor>
-           • <https://atom.io/packages/bosh-yaml|Bosh YAML Editor>
-           • <https://atom.io/packages/cf-manifest-yaml|CF Manifest YAML Editor>
-          #  • <https://atom.io/packages/spring-boot|Spring Boot Support>
-
 - name: build-concourse-rc
   plan:
   - in_parallel:
@@ -1195,128 +937,6 @@ jobs:
 #       - "**/_remote.repositories"
 #       #Can't publish org.json jar because its got a 'release' version number, and artifactory rejects publishing it in snapshot repo.
 #       - "**/org.json*"
-- name: build-manifest-yaml-atom-package
-  serial: true
-  plan:
-  - in_parallel:
-    - get: sts4
-      passed:
-      - build-fatjars
-    - get: atom-cf-manifest-yaml
-    - get: s3-manifest-yaml-fatjar-snapshot
-      trigger: true
-      passed:
-      - build-fatjars
-  
-  - task: build-manifest-yaml-atom-package
-    params:
-      package_name: atom-cf-manifest-yaml
-    input_mapping:
-      release_repo: atom-cf-manifest-yaml
-      fatjar: s3-manifest-yaml-fatjar-snapshot
-    file: sts4/concourse/tasks/build-atom-package.yml
-  - in_parallel:
-    - put: atom-cf-manifest-yaml
-      params:
-        repository: out/repo
-        rebase: true    
-  on_failure:
-    put: slack-notification
-    params:
-      text: |
-         Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
-- name: build-concourse-atom-package
-  serial: true
-  plan:
-  - in_parallel:
-    - get: sts4
-      passed:
-      - build-fatjars
-  
-    - get: atom-concourse
-    - get: s3-concourse-fatjar-snapshot
-      trigger: true
-      passed:
-      - build-fatjars
-  
-  - task: build-concourse-pipeline-yaml-atom-package
-    params:
-      package_name: atom-concourse
-    input_mapping:
-      release_repo: atom-concourse
-      fatjar: s3-concourse-fatjar-snapshot
-    file: sts4/concourse/tasks/build-atom-package.yml
-  - in_parallel:
-    - put: atom-concourse
-      params:
-        repository: out/repo
-        rebase: true    
-  on_failure:
-    put: slack-notification
-    params:
-      text: |
-         Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
-- name: build-bosh-atom-package
-  serial: true
-  plan:
-  - in_parallel:
-    - get: sts4
-      passed:
-      - build-fatjars
-  
-    - get: atom-bosh
-    - get: s3-bosh-fatjar-snapshot
-      trigger: true
-      passed:
-      - build-fatjars
-  
-  - task: build-bosh-atom-package
-    params:
-      package_name: atom-bosh
-    input_mapping:
-      fatjar: s3-bosh-fatjar-snapshot
-      release_repo: atom-bosh
-    file: sts4/concourse/tasks/build-atom-package.yml
-  - in_parallel:
-    - put: atom-bosh
-      params:
-        repository: out/repo
-        rebase: true    
-  on_failure:
-    put: slack-notification
-    params:
-      text: |
-         Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
-- name: build-spring-boot-atom-package
-  serial: true
-  plan:
-  - in_parallel:
-    - get: sts4
-      passed:
-      - build-fatjars
-  
-    - get: atom-spring-boot
-    - get: s3-spring-boot-fatjar-snapshot
-      trigger: true
-      passed:
-      - build-fatjars
-  - task: build-spring-boot-atom-package
-    params:
-      package_name: atom-spring-boot
-    input_mapping:
-      fatjar: s3-spring-boot-fatjar-snapshot
-      release_repo: atom-spring-boot
-    file: sts4/concourse/tasks/build-atom-package.yml
-  - in_parallel:
-    - put: atom-spring-boot
-      params:
-        repository: out/repo
-        rebase: true    
-  on_failure:
-    put: slack-notification
-    params:
-      text: |
-         Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
 - name: publish-jvm-launch-utils
   plan:
   - in_parallel:
@@ -1360,35 +980,6 @@ groups:
   - bump-version-patch
   - bump-version-minor
   - bump-version-major
-- name: atom-snapshots
-  jobs:
-  # - build-atom-snapshot-website
-  - build-fatjars
-  - build-concourse-atom-package
-  - build-bosh-atom-package
-  - build-manifest-yaml-atom-package
-  - build-spring-boot-atom-package
-- name: atom-release
-  jobs:
-  - build-fatjars
-  - build-concourse-atom-package
-  - build-bosh-atom-package
-  - build-manifest-yaml-atom-package
-  - build-spring-boot-atom-package
-  - prepare-bosh-atom-rc
-  - prepare-concourse-atom-rc
-  - prepare-manifest-yaml-atom-rc
-  - prepare-spring-boot-atom-rc
-  - promote-fatjars-to-rc
-  - tag-atom-release
-  - publish-atom-releases
-- name: theia-snapshots
-  jobs:
-  - build-theia-docker-snapshot-image
-  - build-consourse-vsix-snapshot
-  - build-manifest-yaml-vsix-snapshot
-  - build-spring-boot-vsix-snapshot
-  - build-bosh-vsix-snapshot
 - name: setup
   jobs:
   - build-mvn-cache
