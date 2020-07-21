@@ -1,0 +1,13 @@
+inputs:
+- name: sts4
+- name: maven-cache
+outputs:
+- name: out
+- name: maven-out
+platform: linux
+image_resource:
+  type: docker-image
+  source:
+    repository: kdvolder/sts4-build-env
+run:
+  path: sts4/concourse/tasks/fatjars-language-servers.sh
