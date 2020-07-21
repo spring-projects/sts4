@@ -1,8 +1,0 @@
-'scopeName': 'source.concourse-task-yaml'
-'name': 'Concourse-Task-YAML'
-'fileTypes': [
-  'task.yml'
-]
-'patterns': [
-  { 'include': 'source.yaml' }
-]

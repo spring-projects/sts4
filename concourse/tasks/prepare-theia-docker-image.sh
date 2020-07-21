@@ -11,4 +11,3 @@ for i in ${workdir}/*-vsix-*/*.vsix ; do
 done
 
 ls -Rl ${workdir}/output
-

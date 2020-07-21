@@ -1,8 +1,0 @@
-'scopeName': 'source.bosh-cloud-config'
-'name': 'Bosh-Cloud-Config'
-'fileTypes': [
-  'cloud-config.yml'
-]
-'patterns': [
-  { 'include': 'source.yaml' }
-]

@@ -1,8 +1,0 @@
-'scopeName': 'source.boot-properties'
-'name': 'Spring-Boot-Properties'
-'fileTypes': [
-  'application.properties'
-]
-'patterns': [
-  { 'include': 'source.java-properties' }
-]

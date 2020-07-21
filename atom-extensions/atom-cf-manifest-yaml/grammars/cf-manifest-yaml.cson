@@ -1,8 +1,0 @@
-'scopeName': 'source.cf-manifest-yaml'
-'name': 'Manifest-YAML'
-'fileTypes': [
-  'manifest.yml'
-]
-'patterns': [
-  { 'include': 'source.yaml' }
-]
