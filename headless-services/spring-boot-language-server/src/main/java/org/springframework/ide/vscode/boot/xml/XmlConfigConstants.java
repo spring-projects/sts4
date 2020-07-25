@@ -42,6 +42,7 @@ public class XmlConfigConstants {
 	public static final String VALUE_REF_ATTRIBUTE = 	"value-ref";
 	public static final String KEY_REF_ATTRIBUTE = 		"key-ref";
 	public static final String LOCAL_ATTRIBUTE = 		"local";
+	public static final String VALUE_ATTRIBUTE = 		"value";
 
 
 	public static final String CONTEXT_NAMESPACE = "http://www.springframework.org/schema/context";

@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.xml;
 
+import java.util.Optional;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -20,6 +21,7 @@ import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.composable.LanguageServerComponents;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
 import org.springframework.ide.vscode.commons.languageserver.util.HoverHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
@@ -40,6 +42,8 @@ public class SpringXMLLanguageServerComponents implements LanguageServerComponen
 	private final JavaProjectFinder projectFinder;
 	private final SpringSymbolIndex symbolIndex;
 	private final SpringXMLCompletionEngine completionEngine;
+	private final SpringXMLReconcileEngine reconcileEngine;
+
 
 	public SpringXMLLanguageServerComponents(
 			SimpleLanguageServer server,
@@ -56,6 +60,12 @@ public class SpringXMLLanguageServerComponents implements LanguageServerComponen
 		server.onShutdown(this::shutdown);
 
 		this.completionEngine = new SpringXMLCompletionEngine(this, server, projectFinder, symbolIndex, config);
+		this.reconcileEngine = new SpringXMLReconcileEngine(projectFinder);
+		
+		config.addListener(ignore -> {
+			reconcileEngine.setSpelExpressionSyntaxValidationEnabled(config.isSpelExpressionValidationEnabled());
+		});
+
 	}
 
 	@Override
@@ -66,6 +76,11 @@ public class SpringXMLLanguageServerComponents implements LanguageServerComponen
 	@Override
 	public ICompletionEngine getCompletionEngine() {
 		return this.completionEngine;
+	}
+	
+	@Override
+	public Optional<IReconcileEngine> getReconcileEngine() {
+		return Optional.of(this.reconcileEngine);
 	}
 
 	@Override
