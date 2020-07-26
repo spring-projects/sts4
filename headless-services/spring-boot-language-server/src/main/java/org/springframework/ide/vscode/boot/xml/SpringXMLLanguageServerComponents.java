@@ -63,7 +63,7 @@ public class SpringXMLLanguageServerComponents implements LanguageServerComponen
 		this.reconcileEngine = new SpringXMLReconcileEngine(projectFinder);
 		
 		config.addListener(ignore -> {
-			reconcileEngine.setSpelExpressionSyntaxValidationEnabled(config.isSpelExpressionValidationEnabled());
+			reconcileEngine.setSpelExpressionSyntaxValidationEnabled(config.isSpelExpressionValidationEnabled() && config.isSpringXMLSupportEnabled());
 		});
 
 	}
