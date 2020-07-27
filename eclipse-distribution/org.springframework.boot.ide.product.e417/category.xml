@@ -192,6 +192,10 @@
 		<category name="Uncategorized"/>
 	</bundle>
 
+	<bundle id="org.apache.commons.collections">
+		<category name="Uncategorized"/>
+	</bundle>
+
     <bundle id="org.bouncycastle.bcpg" version="0.0.0">
 		<category name="Uncategorized"/>
 	</bundle>
