@@ -1,3 +1,8 @@
+## 2020-07-30 (4.7.1 RELEASE, incl. language servers version 1.20.0)
+
+* _(Spring Boot)_ enhancement: Syntax check for Annotations with Spring Expression Language ([#475](https://github.com/spring-projects/sts4/issues/475))
+* _(Spring Boot)_ fixed: hard to reproduce BadLocationException inside of language server fixed now, occurred e.g. in ([#451](https://github.com/spring-projects/sts4/issues/451))
+
 ## 2020-06-18 (4.7.0 RELEASE, incl. language servers version 1.19.0)
 
 * _(Spring Boot)_ bugfix: automatic live hover detection works again reliably

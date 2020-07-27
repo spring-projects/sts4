@@ -1,3 +1,7 @@
+## 2020-07-30 (4.7.1 RELEASE, incl. language servers version 1.20.0)
+
+* no major changes
+
 ## 2020-06-18 (4.7.0 RELEASE, incl. language servers version 1.19.0)
 
 * no major changes
