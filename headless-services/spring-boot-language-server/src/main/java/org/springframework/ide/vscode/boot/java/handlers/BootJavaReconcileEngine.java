@@ -41,7 +41,8 @@ public class BootJavaReconcileEngine implements IReconcileEngine {
 	public static final String SPRING_PRE_FILTER = "org.springframework.security.access.prepost.PreFilter";
 	public static final String SPRING_POST_AUTHORIZE = "org.springframework.security.access.prepost.PostAuthorize";
 	public static final String SPRING_POST_FILTER= "org.springframework.security.access.prepost.PostFilter";
-
+	
+	public static final String SPRING_CONDITIONAL_ON_EXPRESSION = "org.springframework.boot.autoconfigure.condition.ConditionalOnExpression";
 	
 	private static final Logger log = LoggerFactory.getLogger(BootJavaReconcileEngine.class);
 
@@ -74,8 +75,10 @@ public class BootJavaReconcileEngine implements IReconcileEngine {
 				new AnnotationParamReconciler(SPRING_POST_AUTHORIZE, null, "", "", spelExpressionReconciler),
 				new AnnotationParamReconciler(SPRING_POST_AUTHORIZE, "value", "", "", spelExpressionReconciler),
 				new AnnotationParamReconciler(SPRING_POST_FILTER, null, "", "", spelExpressionReconciler),
-				new AnnotationParamReconciler(SPRING_POST_FILTER, "value", "", "", spelExpressionReconciler)
+				new AnnotationParamReconciler(SPRING_POST_FILTER, "value", "", "", spelExpressionReconciler),
 
+				new AnnotationParamReconciler(SPRING_CONDITIONAL_ON_EXPRESSION, null, "", "", spelExpressionReconciler),
+				new AnnotationParamReconciler(SPRING_CONDITIONAL_ON_EXPRESSION, "value", "", "", spelExpressionReconciler)
 		};
 	}
 
