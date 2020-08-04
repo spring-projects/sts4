@@ -60,28 +60,33 @@
       <feature id="org.eclipse.jgit" installMode="root"/>
       <feature id="org.eclipse.jgit.lfs" installMode="root"/>
 
+      <feature id="org.eclipse.mylyn.wikitext.editors_feature" installMode="root"/>
+
       <feature id="org.eclipse.m2e.feature" installMode="root"/>
+      <feature id="org.eclipse.m2e.lemminx.feature" installMode="root"/>
       <feature id="org.eclipse.m2e.logback.feature" installMode="root"/>
       <feature id="org.eclipse.m2e.wtp.feature" installMode="root"/>
       <feature id="org.eclipse.m2e.wtp.jaxrs.feature" installMode="root"/>
       <feature id="org.eclipse.m2e.wtp.jsf.feature" installMode="root"/>
       <feature id="org.jboss.tools.maven.apt.feature" installMode="root"/>
 
-      <feature id="org.eclipse.wst.web_ui.feature" installMode="root"/>
-      <feature id="org.eclipse.wst.xml_ui.feature" installMode="root"/>
+<!--      <feature id="org.eclipse.wst.web_ui.feature" installMode="root"/> -->
+<!--      <feature id="org.eclipse.wst.xml_ui.feature" installMode="root"/> -->
       <feature id="org.eclipse.wst.server_ui.feature" installMode="root"/>
       <feature id="org.eclipse.wst.server_adapters.feature" installMode="root"/>
 
-      <feature id="org.eclipse.wst.json_ui.feature" installMode="root"/>
-      <feature id="org.eclipse.wst.jsdt.feature" installMode="root"/>
-      <feature id="org.eclipse.wst.jsdt.chromium.debug.feature" installMode="root"/>
+<!--      <feature id="org.eclipse.wst.json_ui.feature" installMode="root"/> -->
+<!--      <feature id="org.eclipse.wst.jsdt.feature" installMode="root"/> -->
+<!--      <feature id="org.eclipse.wst.jsdt.chromium.debug.feature" installMode="root"/> -->
 
       <feature id="org.eclipse.jst.server_adapters.ext.feature" installMode="root"/>
       <feature id="org.eclipse.jst.server_adapters.feature" installMode="root"/>
 
-<!--      <feature id="org.eclipse.wildwebdeveloper.feature" installMode="root"/> -->
+      <feature id="org.eclipse.wildwebdeveloper.feature" installMode="root"/>
+      <feature id="org.eclipse.wildwebdeveloper.xml.feature" installMode="root"/>
+
       <feature id="org.eclipse.tm.terminal.feature" installMode="root"/>
-<!--      <feature id="org.eclipse.rse" installMode="root"/> -->
+      <feature id="org.eclipse.rse" installMode="root"/>
       <feature id="org.eclipse.tips.feature" installMode="root"/>
 	  
       <feature id="org.eclipse.epp.mpc" installMode="root"/>
