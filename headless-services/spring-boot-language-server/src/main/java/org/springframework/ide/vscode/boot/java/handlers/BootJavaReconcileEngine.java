@@ -35,6 +35,8 @@ public class BootJavaReconcileEngine implements IReconcileEngine {
 
 	// annotations with SpEL expression params 
 	public static final String SPRING_CACHEABLE = "org.springframework.cache.annotation.Cacheable";
+	public static final String SPRING_CACHE_EVICT = "org.springframework.cache.annotation.CacheEvict";
+	
 	public static final String SPRING_EVENT_LISTENER = "org.springframework.context.event.EventListener";
 	
 	public static final String SPRING_PRE_AUTHORIZE = "org.springframework.security.access.prepost.PreAuthorize";
@@ -65,6 +67,9 @@ public class BootJavaReconcileEngine implements IReconcileEngine {
 				new AnnotationParamReconciler(SPRING_CACHEABLE, "key", "", "", spelExpressionReconciler),
 				new AnnotationParamReconciler(SPRING_CACHEABLE, "condition", "", "", spelExpressionReconciler),
 				new AnnotationParamReconciler(SPRING_CACHEABLE, "unless", "", "", spelExpressionReconciler),
+
+				new AnnotationParamReconciler(SPRING_CACHE_EVICT, "key", "", "", spelExpressionReconciler),
+				new AnnotationParamReconciler(SPRING_CACHE_EVICT, "condition", "", "", spelExpressionReconciler),
 
 				new AnnotationParamReconciler(SPRING_EVENT_LISTENER, "condition", "", "", spelExpressionReconciler),
 				
