@@ -95,6 +95,9 @@
 
       <feature id="net.mihai-nita.ansicon" installMode="root"/>
 
+      <feature id="org.eclipse.linuxtools.docker.feature" installMode="root"/>
+      <feature id="org.eclipse.linuxtools.jdt.docker.launcher.feature" installMode="root"/>
+
       <feature id="org.springframework.ide.eclipse.boot.dash.feature" installMode="root"/>
 
       <feature id="org.springframework.boot.ide.branding.feature"/>
