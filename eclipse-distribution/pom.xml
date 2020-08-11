@@ -333,10 +333,15 @@
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/tools/orbit/downloads/drops/S20200707174545/repository</url>
 				</repository>
-				<repository>
+<!--				<repository>
 					<id>latest-m2e-wtp</id>
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/m2e-wtp/releases/1.4/</url>
+				</repository> -->
+				<repository>
+					<id>latest-m2e-wtp</id>
+					<layout>p2</layout>
+					<url>https://download.eclipse.org/m2e-wtp/milestones/1.4/1.4.4.20200220-1005/</url>
 				</repository>
 				<repository>
 					<id>maven-extras-mirror</id>
