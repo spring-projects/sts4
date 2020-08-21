@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019 Pivotal, Inc.
+ * Copyright (c) 2019, 2020 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -41,6 +41,7 @@ public class SpringProcessConnectorRemote {
 			//'keepChecking' even if the user doesn't set this to true manually.
 		
 		private String processId;
+		private String processName;
 
 		public String getJmxurl() {
 			return jmxurl;
@@ -82,18 +83,26 @@ public class SpringProcessConnectorRemote {
 			this.keepChecking = keepChecking;
 		}
 
-		@Override
-		public String toString() {
-			return "RemoteBootAppData [jmxurl=" + jmxurl + ", host=" + host + ", urlScheme=" + urlScheme + ", port="
-					+ port + ", keepChecking=" + keepChecking + "]";
-		}
-
 		public String getProcessID() {
 			return processId;
 		}
 
 		public void setProcessId(String processId) {
 			this.processId = processId;
+		}
+		
+		public String getProcessName() {
+			return processName;
+		}
+		
+		public void setProcessName(String processName) {
+			this.processName = processName;
+		}
+
+		@Override
+		public String toString() {
+			return "RemoteBootAppData [jmxurl=" + jmxurl + ", host=" + host + ", urlScheme=" + urlScheme + ", port=" + port
+					+ ", keepChecking=" + keepChecking + ", processId=" + processId + ", processName=" + processName + "]";
 		}
 
 		@Override
@@ -104,11 +113,13 @@ public class SpringProcessConnectorRemote {
 			result = prime * result + ((jmxurl == null) ? 0 : jmxurl.hashCode());
 			result = prime * result + (keepChecking ? 1231 : 1237);
 			result = prime * result + ((port == null) ? 0 : port.hashCode());
+			result = prime * result + ((processId == null) ? 0 : processId.hashCode());
 			result = prime * result + ((urlScheme == null) ? 0 : urlScheme.hashCode());
 			result = prime * result + ((processId == null) ? 0 : processId.hashCode());
+			result = prime * result + ((processName == null) ? 0 : processName.hashCode());
 			return result;
 		}
-
+		
 		@Override
 		public boolean equals(Object obj) {
 			if (this == obj)
@@ -135,18 +146,24 @@ public class SpringProcessConnectorRemote {
 					return false;
 			} else if (!port.equals(other.port))
 				return false;
-			if (urlScheme == null) {
-				if (other.urlScheme != null)
-					return false;
-			} else if (!urlScheme.equals(other.urlScheme))
-				return false;
 			if (processId == null) {
 				if (other.processId != null)
 					return false;
 			} else if (!processId.equals(other.processId))
 				return false;
+			if (processName == null) {
+				if (other.processName != null)
+					return false;
+			} else if (!processName.equals(other.processName))
+				return false;
+			if (urlScheme == null) {
+				if (other.urlScheme != null)
+					return false;
+			} else if (!urlScheme.equals(other.urlScheme))
+				return false;
 			return true;
 		}
+		
 	}
 
 	private static Logger logger = LoggerFactory.getLogger(SpringProcessConnectorRemote.class);
@@ -206,7 +223,10 @@ public class SpringProcessConnectorRemote {
 	}
 
 	public static String getProcessName(RemoteBootAppData appData) {
-		if (StringUtils.hasText(appData.getHost())) {
+		if (StringUtils.hasText(appData.getProcessName())) {
+			return appData.getProcessName();
+		}
+		else if (StringUtils.hasText(appData.getHost())) {
 			return "remote process - "+ appData.getHost();
 		} else {
 			return "remote process - " + appData.getJmxurl();
