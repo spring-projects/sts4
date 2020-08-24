@@ -1,3 +1,7 @@
+## 2020-08-27 (4.7.2 RELEASE, incl. language servers version 1.21.0)
+
+* no major changes
+
 ## 2020-07-30 (4.7.1 RELEASE, incl. language servers version 1.20.0)
 
 * _(Concourse)_ fixed: Typo in README ([#494](https://github.com/spring-projects/sts4/issues/494))
