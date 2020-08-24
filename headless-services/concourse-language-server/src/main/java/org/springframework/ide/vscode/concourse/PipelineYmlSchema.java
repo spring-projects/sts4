@@ -617,6 +617,7 @@ public class PipelineYmlSchema implements YamlSchema {
 			
 			AbstractType get = f.ybean("RegistryImageGetParams");
 			addProp(get, "format", f.yenum("RegistryImageFormat", "rootfs", "oci"));
+			addProp(get, "skip_download", t_boolean);
 			
 			AbstractType put = f.ybean("RegistryImagePutParams");
 			addProp(put, "image", t_ne_string).isPrimary(true);

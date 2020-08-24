@@ -1808,6 +1808,7 @@ public class ConcourseEditorTest {
 				"  params:\n" +
 				"    foo_param: bar\n"+
 				"    format: rootfs\n" +
+				"    skip_download: should-skip-dl\n" +
 				"  tags: tags-list\n" +
 				"  unique_version_history: is-unique-hist\n" +
 				"  source:\n" + 
@@ -1817,6 +1818,7 @@ public class ConcourseEditorTest {
 				"bad-duration|Duration",
 				"is-priviliged|boolean",
 				"foo_param|Unknown",
+				"should-skip-dl|boolean",
 				"tags-list|Sequence",
 				"is-unique-hist|boolean"
 		);
@@ -2273,15 +2275,18 @@ public class ConcourseEditorTest {
 				"  - get: my-docker-image\n" +
 				"    params:\n" +
 				"      format: bad-format\n" +
+				"      skip_download: is-download\n" +
 				"      bogus: bad"
 		);
 
 		editor.assertProblems(
 				"bad-format|Valid values are: [oci, rootfs]",
+				"is-download|boolean",
 				"bogus|Unknown property"
 		);
 
 		editor.assertHoverContains("format", "The format to fetch as");
+		editor.assertHoverContains("skip_download", "Skip downloading the image");
 	}
 
 	@Test public void registryImageResourcePutParamsReconcileAndHovers() throws Exception {
@@ -5961,7 +5966,7 @@ public class ConcourseEditorTest {
 			editor.assertCompletionLabels(c -> c.getLabel().startsWith("cache"), "cache", "cache_from", "cache_tag");
 		}
 	}
-
+	
 	//////////////////////////////////////////////////////////////////////////////
 
 	private void assertContextualCompletions(String conText, String textBefore, String... textAfter) throws Exception {

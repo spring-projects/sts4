@@ -1,33 +1,17 @@
 resources:
-- name: jvm-launch-utils-git
-  type: git
+- name: docker-base
+  type: registry-image
   source:
-    uri: git@github.com:spring-projects/sts4.git
-    private_key: ((rsa_id))
-    branch: ((branch))
-    paths:
-    - nodejs-packages/jvm-launch-utils
-- name: tasks
-  type: git
-  source:
-    uri: git@github.com:spring-projects/sts4.git
-    private_key: ((rsa_id))
-    branch: ((branch))
+    repository: alpine
 jobs:
 - name: publish-jvm-launch-utils
   plan:
-  - aggregate:
-    - get: jvm-launch-utils-git
-      trigger: true
-    - get: tasks 
-  - task: make-noise
-    config:
-      platform: linux
-      image_resource:
-        type: docker-image
-        source:
-          repository: ubuntu:18.04
-      run:
-        path: echo
-        args:
-        - "Hello world!" 
+  - get: docker-base
+    trigger: true
+    params:
+      skip_download: true
+  - put: docker-base
+    get_params:
+      skip_download: true
+    params:
+      image: blah
