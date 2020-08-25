@@ -319,6 +319,7 @@ jobs:
         file: s3-concourse-vsix-snapshot/*.vsix
         acl: public-read
 - name: create-rc-wiki-page
+  serial: true
   plan:
   - in_parallel:
     - get: sts4-wiki
@@ -575,7 +576,7 @@ jobs:
     on_success:
       put: slack-notification
       params:
-        channel: "#tools-team-internal"
+        channel: "#spring-tools-team"
         text_file: s3-concourse-vsix-snapshot/url
         icon_url: https://raw.githubusercontent.com/spring-projects/sts4/master/vscode-extensions/vscode-concourse/icon.png
         text: |
@@ -610,7 +611,7 @@ jobs:
     on_success:
       put: slack-notification
       params:
-        channel: "#tools-team-internal"
+        channel: "#spring-tools-team"
         text_file: s3-manifest-yaml-vsix-snapshot/url
         icon_url: https://raw.githubusercontent.com/spring-projects/sts4/master/vscode-extensions/vscode-manifest-yaml/icon.png
         text: |
@@ -645,7 +646,7 @@ jobs:
     on_success:
       put: slack-notification
       params:
-        channel: "#tools-team-internal"
+        channel: "#spring-tools-team"
         text_file: s3-bosh-vsix-snapshot/url
         icon_url: https://raw.githubusercontent.com/spring-projects/sts4/master/vscode-extensions/vscode-concourse/icon.png
         text: |
@@ -681,7 +682,7 @@ jobs:
     on_success:
       put: slack-notification
       params:
-        channel: "#tools-team-internal"
+        channel: "#spring-tools-team"
         text_file: s3-spring-boot-vsix-snapshot/url
         icon_url: https://raw.githubusercontent.com/spring-projects/sts4/master/vscode-extensions/vscode-spring-boot/spring-boot-logo.png
         text: |
@@ -719,7 +720,7 @@ jobs:
     on_success:
       put: slack-notification
       params:
-        channel: "#tools-team-internal"
+        channel: "#spring-tools-team"
         text: |
           STS 4 VScode Extensions released to ovsx.
 - name: publish-release
@@ -767,7 +768,7 @@ jobs:
     on_success:
       put: slack-notification
       params:
-        channel: "#tools-team-internal"
+        channel: "#spring-tools-team"
         text_file: version/version
         text: |
           STS 4 VScode Extensions $TEXT_FILE_CONTENT released
@@ -816,7 +817,7 @@ jobs:
     on_success:
       put: slack-notification
       params:
-        channel: "#tools-team-internal"
+        channel: "#spring-tools-team"
         text_file: version/version
         text: |
           STS 4 VScode Extensions $TEXT_FILE_CONTENT released
