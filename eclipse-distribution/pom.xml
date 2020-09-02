@@ -238,7 +238,7 @@
 				<repository>
 					<id>m2e</id>
 					<layout>p2</layout>
-					<url>https://download.eclipse.org/technology/m2e/releases/1.16.1/</url>
+					<url>https://download.eclipse.org/technology/m2e/snapshots/1.16.2/latest/</url>
 				</repository>
 				<repository>
 					<id>latest-m2e-wtp</id>
@@ -332,6 +332,11 @@
 					<id>orbit</id>
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/tools/orbit/downloads/drops/R20200831200620/repository</url>
+				</repository>
+				<repository>
+					<id>m2e</id>
+					<layout>p2</layout>
+					<url>https://download.eclipse.org/technology/m2e/snapshots/1.16.2/latest/</url>
 				</repository>
 <!--				<repository>
 					<id>latest-m2e-wtp</id>
