@@ -205,7 +205,7 @@
 				<repository>
 					<id>lsp4e</id>
 					<layout>p2</layout>
-					<url>https://download.eclipse.org/lsp4e/snapshots/</url>
+					<url>https://download.eclipse.org/lsp4e/releases/0.16.0/</url>
 				</repository>
 			</repositories>
 			<modules>
@@ -298,7 +298,7 @@
 				<repository>
 					<id>lsp4e</id>
 					<layout>p2</layout>
-					<url>https://download.eclipse.org/lsp4e/snapshots/</url>
+					<url>https://download.eclipse.org/lsp4e/releases/0.16.0/</url>
 				</repository>
 			</repositories>
 			<modules>

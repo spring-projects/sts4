@@ -153,7 +153,7 @@
 				<repository>
 					<id>lsp4e</id>
 					<layout>p2</layout>
-					<url>https://download.eclipse.org/lsp4e/snapshots/</url>
+					<url>https://download.eclipse.org/lsp4e/releases/0.16.0/</url>
 				</repository>
 				<repository>
 					<id>tm4e</id>
@@ -198,7 +198,7 @@
 				<repository>
 					<id>lsp4e</id>
 					<layout>p2</layout>
-					<url>https://download.eclipse.org/lsp4e/snapshots/</url>
+					<url>https://download.eclipse.org/lsp4e/releases/0.16.0/</url>
 				</repository>
 				<repository>
 					<id>tm4e</id>
