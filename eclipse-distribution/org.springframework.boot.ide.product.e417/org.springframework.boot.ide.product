@@ -113,7 +113,9 @@
       <feature id="org.springframework.tooling.cloudfoundry.manifest.ls.feature" installMode="root"/>
       <feature id="org.springframework.tooling.bosh.ls.feature" installMode="root"/>
       <feature id="org.springframework.tooling.concourse.ls.feature" installMode="root"/>
-   </features>
+
+      <feature id="org.eclipse.justj.openjdk.hotspot.jre.full" installMode="root"/>
+</features>
 
    <configurations>
    	  <property name="eclipse.buildId" value="${unqualifiedVersion}.${buildQualifier}"/>
