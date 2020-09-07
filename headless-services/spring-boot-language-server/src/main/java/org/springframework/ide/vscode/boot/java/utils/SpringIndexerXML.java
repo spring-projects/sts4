@@ -167,7 +167,7 @@ public class SpringIndexerXML implements SpringIndexer {
 			
 			this.symbolHandler.removeSymbols(project, docURI);
 
-			Path path = Paths.get(new URI(docURI));
+			Path path = new File(new URI(docURI)).toPath();
 			String content = new String(Files.readAllBytes(path));
 			scanFile(project, content, docURI, updatedDoc.getLastModified(), generatedSymbols);
 	

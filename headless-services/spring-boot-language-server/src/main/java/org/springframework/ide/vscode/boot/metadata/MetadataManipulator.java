@@ -161,12 +161,12 @@ public class MetadataManipulator {
 
 			@Override
 			public String getContents() throws Exception {
-				return new String(Files.readAllBytes(Paths.get(file.toURI())), ENCODING);
+				return new String(Files.readAllBytes(file.toPath()), ENCODING);
 			}
 
 			@Override
 			public void setContents(String content) throws Exception {
-				Files.write(Paths.get(file.toURI()), content.getBytes(ENCODING));
+				Files.write(file.toPath(), content.getBytes(ENCODING));
 			}
 
 		});

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019 Pivotal, Inc.
+ * Copyright (c) 2019, 2020 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.utils;
 
+import java.io.File;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -32,7 +33,7 @@ public class DocumentUtils {
 
 	private static TextDocument createTempTextDocument(String docURI, String content) throws Exception {
 		if (content == null) {
-			Path path = Paths.get(new URI(docURI));
+			Path path = new File(new URI(docURI)).toPath();
 			content = new String(Files.readAllBytes(path));
 		}
 

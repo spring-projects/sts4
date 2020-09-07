@@ -192,7 +192,7 @@ public class SpringIndexerJava implements SpringIndexer {
 		long lastModified = updatedDoc.getLastModified();
 		
 		if (content == null) {
-			Path path = Paths.get(new URI(docURI));
+			Path path = new File(new URI(docURI)).toPath();
 			content = new String(Files.readAllBytes(path));
 		}
 		
