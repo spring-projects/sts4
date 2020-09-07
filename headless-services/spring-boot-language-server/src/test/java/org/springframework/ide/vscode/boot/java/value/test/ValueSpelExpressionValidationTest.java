@@ -297,7 +297,16 @@ public class ValueSpelExpressionValidationTest {
 		assertEquals(1, problems.size());
 	}
 	
-
+	@Test
+	public void testIgnoreSpelExpressionsWithPropertyPlaceholder() throws Exception {
+		TextDocument doc = prepareDocument("@Value(\"onField\")", "@Value(value=\"#{${property.hello:false}}\")");
+		assertNotNull(doc);
+		
+		reconcileEngine.reconcile(doc, problemCollector);
+		
+		List<ReconcileProblem> problems = problemCollector.getCollectedProblems();
+		assertEquals(0, problems.size());
+	}
 	
 	private TextDocument prepareDocument(String selectedAnnotation, String annotationStatementBeforeTest) throws Exception {
 		String content = IOUtils.toString(new URI(docUri));

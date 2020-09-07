@@ -17,6 +17,7 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSe
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemTypes;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblem;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblemImpl;
+import org.springframework.util.SystemPropertyUtils;
 
 /**
  * @author Martin Lippert
@@ -39,7 +40,7 @@ public class SpelExpressionReconciler implements Reconciler {
 			return;
 		}
 		
-		if (spelExpression.length() > 0) {
+		if (spelExpression.length() > 0 && spelExpression.indexOf(SystemPropertyUtils.PLACEHOLDER_PREFIX) == -1) {
 			SpelExpressionParser parser = new SpelExpressionParser();
 			try {
 				parser.parseExpression(spelExpression);
