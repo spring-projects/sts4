@@ -110,7 +110,8 @@ public class JRE {
 	 * java home is a JDK.
 	 */
 	private static final String JMOD_PATHS[] = {
-			"jmods/jdk.management.jmod"
+			"jmods/jdk.management.jmod",
+			"lib/libmanagement.dylib"
 	};
 
 	private static boolean javaVersionNeedsToolsJar() {
