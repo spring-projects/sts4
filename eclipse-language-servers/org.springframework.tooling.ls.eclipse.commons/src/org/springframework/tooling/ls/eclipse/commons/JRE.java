@@ -111,7 +111,8 @@ public class JRE {
 	 */
 	private static final String JMOD_PATHS[] = {
 			"jmods/jdk.management.jmod",
-			"lib/libmanagement.dylib"
+			"lib/libmanagement.dylib",
+			"lib/libmanagement.so"
 	};
 
 	private static boolean javaVersionNeedsToolsJar() {
