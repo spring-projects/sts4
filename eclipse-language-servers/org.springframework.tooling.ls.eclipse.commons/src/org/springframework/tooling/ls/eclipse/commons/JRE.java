@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Pivotal, Inc.
+ * Copyright (c) 2018, 2020 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -18,10 +18,8 @@ import java.util.Set;
 import java.util.function.Consumer;
 
 import org.eclipse.jdt.internal.launching.StandardVMType;
-import org.eclipse.ui.internal.commands.CommandService;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
 
 @SuppressWarnings("restriction")
 public class JRE {
@@ -63,13 +61,19 @@ public class JRE {
 	 */
 	public static JRE findJRE(boolean needJdk) throws MissingJDKException, MissingToolsJarException {
 		File mainHome = new File(System.getProperty("java.home"));
+
 		if (!needJdk) {
 			return new JRE(mainHome, null);
 		}
-		Set<File> jhomes = new LinkedHashSet<>();
-		jhomes.add(mainHome);
-		findPairedJdk(mainHome, jhomes::add);
-		if (javaVersionNeedsToolsJar()) {
+		else if (!javaVersionNeedsToolsJar()) {
+			return new JRE(mainHome, null);
+		}
+		else {
+			Set<File> jhomes = new LinkedHashSet<>();
+			jhomes.add(mainHome);
+
+			findPairedJdk(mainHome, jhomes::add);
+
 			//Finding a JDK with a tools jar
 			List<File> lookedIn = new ArrayList<>();
 			for (File jhome : jhomes) {
@@ -82,17 +86,6 @@ public class JRE {
 				}
 			}
 			throw new MissingToolsJarException(mainHome, lookedIn);
-		} else { // needJdk && !needsToolsJar
-			//Find a jdk 'java 9 style'.
-			for (File jhome : jhomes) {
-				for (String jmPath : JMOD_PATHS) {
-					File jmodFile = new File(jhome, jmPath).toPath().normalize().toFile();
-					if (jmodFile.exists()) {
-						return new JRE(jhome, null);
-					}
-				}
-			}
-			throw new MissingJDKException(mainHome);
 		}
 	}
 
@@ -102,17 +95,6 @@ public class JRE {
 	private final static String[] TOOLS_JAR_PATHS = {
 			"../lib/tools.jar",
 			"lib/tools.jar"
-	};
-
-	/**
-	 * Different places to look for jdk.mamagement.jmod file. We don't need this file
-	 * explicitly. It is just used as a means to try to recognize whether the given
-	 * java home is a JDK.
-	 */
-	private static final String JMOD_PATHS[] = {
-			"jmods/jdk.management.jmod",
-			"lib/libmanagement.dylib",
-			"lib/libmanagement.so"
 	};
 
 	private static boolean javaVersionNeedsToolsJar() {
