@@ -86,9 +86,9 @@
 		<dist.key>TOOLS</dist.key>
 		<dist.path>${dist.type}/${dist.key}/${dist.project}/${dist.version}</dist.path>
 
-<!--		<springide-p2-repo>https://dist.springframework.org/snapshot/IDE/nightly</springide-p2-repo> -->
+		<springide-p2-repo>https://dist.springframework.org/snapshot/IDE/nightly</springide-p2-repo>
 <!--		<springide-p2-repo>https://dist.springframework.org/milestone/IDE/3.9.7.RC1</springide-p2-repo> -->
-		<springide-p2-repo>https://dist.springframework.org/release/IDE/3.9.14.RELEASE</springide-p2-repo>
+<!--		<springide-p2-repo>https://dist.springframework.org/release/IDE/3.9.13.RELEASE</springide-p2-repo> -->
 
 	</properties>
 
