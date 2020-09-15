@@ -1,3 +1,7 @@
+## 2020-09-17 (4.8.0 RELEASE, incl. language servers version 1.22.0)
+
+* _(Spring Boot)_ fix: Eclips shows error on `@ConditionalOnExpression("${downlink.active:false}")` ([#529](https://github.com/spring-projects/sts4/issues/529))
+
 ## 2020-08-27 (4.7.2 RELEASE, incl. language servers version 1.21.0)
 
 * no major changes
