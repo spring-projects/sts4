@@ -77,6 +77,66 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 	private static final ProjectCustomizer WITH_EMPTY_APPLICATION_YML = projectContents -> {
 		projectContents.createFile("src/main/resources/application.yml", "");
 	};
+	
+	@Test public void reconcilesWithMultiDocuments() throws Exception {
+		//See: https://github.com/spring-projects/sts4/issues/533
+		
+		defaultTestData();
+		
+		//lowest bar: just disable the warning
+		Editor editor = newEditor(
+				"spring.config.activate.on-profile=foo\n" + 
+				"server.port=8888\n" + 
+				"#---\n" + 
+				"spring.config.activate.on-profile=bar\n" + 
+				"server.port=8080\n"
+		);
+		editor.assertProblems(/*NONE*/);
+		
+		//better: still detect duplicates within same section
+		editor = newEditor(
+				"spring.application.name=frodo\n" +
+				"spring.config.activate.on-profile=foo\n" + 
+				"server.port=8888\n" + 
+				"spring.application.name=frodo\n" +
+				"#---\n" + 
+				"spring.config.activate.on-profile=bar\n" + 
+				"server.port=8080\n" +
+				"server.port=9090\n"
+		);
+		editor.assertProblems(
+				"spring.application.name|Duplicate",
+				"spring.application.name|Duplicate",
+				"server.port|Duplicate",
+				"server.port|Duplicate"
+		);
+		
+		//nitpick 1: leading spaces before the marker means... it is not a marker
+		editor = newEditor(
+				"spring.config.activate.on-profile=foo\n" + 
+				"server.port=8888\n" + 
+				" #---\n" + 
+				"spring.config.activate.on-profile=bar\n" + 
+				"server.port=8080\n"
+		);
+		editor.assertProblems(
+				"spring.config.activate.on-profile|Duplicate",
+				"server.port|Duplicate",
+				"spring.config.activate.on-profile|Duplicate",
+				"server.port|Duplicate"
+		);
+		
+		//nitpick 2: trailing spaces after the marker are ignored
+		editor = newEditor(
+				"spring.config.activate.on-profile=foo\n" + 
+				"server.port=8888\n" + 
+				"#---   \t\n" + 
+				"spring.config.activate.on-profile=bar\n" + 
+				"server.port=8080\n"
+		);
+		editor.assertProblems(/*NONE*/);
+
+	}
 
 	@Test public void inheritedPojoProperties() throws Exception {
 		//See https://github.com/spring-projects/sts4/issues/116

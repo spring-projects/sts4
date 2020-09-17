@@ -48,6 +48,7 @@ import org.springframework.ide.vscode.java.properties.antlr.parser.AntlrParser;
 import org.springframework.ide.vscode.java.properties.parser.ParseResults;
 import org.springframework.ide.vscode.java.properties.parser.Parser;
 import org.springframework.ide.vscode.java.properties.parser.PropertiesAst.KeyValuePair;
+import org.springframework.ide.vscode.java.properties.parser.PropertiesAst.Comment;
 import org.springframework.ide.vscode.java.properties.parser.PropertiesAst.Node;
 import org.springframework.ide.vscode.java.properties.parser.PropertiesFileEscapes;
 
@@ -108,31 +109,38 @@ public class SpringPropertiesReconcileEngine implements IReconcileEngine {
 				return;
 			}
 
-			results.ast.getNodes(KeyValuePair.class).forEach(pair -> {
+			results.ast.getNodes(n -> n instanceof KeyValuePair || n instanceof Comment).forEach(node -> {
 				try {
-					DocumentRegion propertyNameRegion = createRegion(doc, pair.getKey());
-					String keyName = PropertiesFileEscapes.unescape(propertyNameRegion.toString());
-					duplicateNameChecker.check(propertyNameRegion);
-					PropertyInfo validProperty = SpringPropertyIndex.findLongestValidProperty(index, keyName);
-					if (validProperty!=null) {
-						//TODO: Remove last remnants of 'IRegion trimmedRegion' here and replace
-						// it all with just passing around 'fullName' DocumentRegion. This may require changes
-						// in PropertyNavigator (probably these changes are also for the better making it simpler as well)
-						if (validProperty.isDeprecated()) {
-							problemCollector.accept(problemDeprecated(propertyNameRegion, validProperty, quickFixes.DEPRECATED_PROPERTY));
+					if (node instanceof Comment) {
+						if (isDocumentMarker(doc, (Comment)node)) {
+							duplicateNameChecker.startNewSubDocument();
 						}
-						int offset = validProperty.getId().length() + propertyNameRegion.getStart();
-						PropertyNavigator navigator = new PropertyNavigator(doc, problemCollector, typeUtilProvider.getTypeUtil(sourceLinks, doc), propertyNameRegion);
-						Type valueType = navigator.navigate(offset, TypeParser.parse(validProperty.getType()));
-						if (valueType!=null) {
-							reconcileType(doc, valueType, pair.getValue(), problemCollector);
-						}
-					} else { //validProperty==null
-						//The name is invalid, with no 'prefix' of the name being a valid property name.
-						PropertyInfo similarEntry = index.findLongestCommonPrefixEntry(propertyNameRegion.toString());
-						CharSequence validPrefix = commonPrefix(similarEntry.getId(), keyName);
-						problemCollector.accept(problemUnkownProperty(propertyNameRegion, similarEntry, validPrefix, quickFixes.MISSING_PROPERTY));
-					} //end: validProperty==null
+					} else if (node instanceof KeyValuePair) {
+						KeyValuePair pair = (KeyValuePair) node;
+						DocumentRegion propertyNameRegion = createRegion(doc, pair.getKey());
+						String keyName = PropertiesFileEscapes.unescape(propertyNameRegion.toString());
+						duplicateNameChecker.check(propertyNameRegion);
+						PropertyInfo validProperty = SpringPropertyIndex.findLongestValidProperty(index, keyName);
+						if (validProperty!=null) {
+							//TODO: Remove last remnants of 'IRegion trimmedRegion' here and replace
+							// it all with just passing around 'fullName' DocumentRegion. This may require changes
+							// in PropertyNavigator (probably these changes are also for the better making it simpler as well)
+							if (validProperty.isDeprecated()) {
+								problemCollector.accept(problemDeprecated(propertyNameRegion, validProperty, quickFixes.DEPRECATED_PROPERTY));
+							}
+							int offset = validProperty.getId().length() + propertyNameRegion.getStart();
+							PropertyNavigator navigator = new PropertyNavigator(doc, problemCollector, typeUtilProvider.getTypeUtil(sourceLinks, doc), propertyNameRegion);
+							Type valueType = navigator.navigate(offset, TypeParser.parse(validProperty.getType()));
+							if (valueType!=null) {
+								reconcileType(doc, valueType, pair.getValue(), problemCollector);
+							}
+						} else { //validProperty==null
+							//The name is invalid, with no 'prefix' of the name being a valid property name.
+							PropertyInfo similarEntry = index.findLongestCommonPrefixEntry(propertyNameRegion.toString());
+							CharSequence validPrefix = commonPrefix(similarEntry.getId(), keyName);
+							problemCollector.accept(problemUnkownProperty(propertyNameRegion, similarEntry, validPrefix, quickFixes.MISSING_PROPERTY));
+						} //end: validProperty==null
+					}
 				} catch (Exception e) {
 					log.error("", e);
 				}
@@ -142,6 +150,12 @@ public class SpringPropertiesReconcileEngine implements IReconcileEngine {
 		} finally {
 			problemCollector.endCollecting();
 		}
+	}
+
+	private boolean isDocumentMarker(IDocument doc, Comment node) {
+		DocumentRegion region = createRegion(doc, node).trimEnd();
+		String t = region.toString();
+		return t.equals("#---") && region.isAtStartOfLine();
 	}
 
 	protected SpringPropertyProblem problemDeprecated(DocumentRegion region, PropertyInfo property, QuickfixType fixType) {

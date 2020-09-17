@@ -283,6 +283,7 @@ public class PropertyIndexHarness {
 		data("spring.batch.job.enabled", "java.lang.Boolean", "true", "Execute all Spring Batch jobs in the context on startup.");
 		data("spring.batch.job.names", "java.lang.String", "", "Comma-separated list of job names to execute on startup. By default, all Jobs\n found in the context are executed.");
 		data("spring.batch.schema", "java.lang.String", "classpath:org/springframework/batch/core/schema-@@platform@@.sql", "Path to the SQL file to use to initialize the database schema.");
+		data("spring.config.activate.on-profile", "java.lang.String[]", null, "Activate on blah.");
 		data("spring.config.location", "java.lang.String", null, "Config file locations.");
 		data("spring.config.name", "java.lang.String", "application", "Config file name.");
 		data("spring.dao.exceptiontranslation.enabled", "java.lang.Boolean", "true", "Enable the PersistenceExceptionTranslationPostProcessor.");

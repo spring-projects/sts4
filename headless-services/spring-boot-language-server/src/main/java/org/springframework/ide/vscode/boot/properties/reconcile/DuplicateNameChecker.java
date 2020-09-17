@@ -66,4 +66,8 @@ public class DuplicateNameChecker {
 				"Duplicate property '"+decodedKey+"'", nameRegion));
 	}
 
+	public void startNewSubDocument() {
+		seen.clear();
+	}
+
 }

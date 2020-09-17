@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.java.properties.parser;
 
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 /**
@@ -34,7 +35,11 @@ public final class PropertiesAst {
 	public List<Node> getAllNodes() {
 		return nodes;
 	}
-	
+
+	public List<Node> getNodes(Predicate<Node> test) {
+		return nodes.stream().filter(test).collect(Collectors.toList());
+	}
+
 	/**
 	 * Retrieves AST nodes of specific type
 	 * @param clazz Type of AST nodes

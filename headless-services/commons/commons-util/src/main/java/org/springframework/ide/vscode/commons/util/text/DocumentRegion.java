@@ -351,4 +351,12 @@ public class DocumentRegion implements CharSequence, IRegion {
 		return getStart();
 	}
 
+	public boolean isAtStartOfLine() {
+		if (start==0) {
+			return true;
+		}
+		String charBefore = this.textBefore(1).toString();
+		return charBefore.equals("\n"); //This should work on windows too because windows uses "\r\n" but that still ends with "\n".
+	}
+
 }
