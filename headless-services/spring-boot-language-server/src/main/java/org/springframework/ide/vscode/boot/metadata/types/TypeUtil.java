@@ -263,30 +263,32 @@ public class TypeUtil {
 	}
 
 	public ValueParser getValueParser(Type type) {
-		ValueParser simpleParser = VALUE_PARSERS.get(type.getErasure());
-		if (simpleParser!=null) {
-			return simpleParser;
-		}
-		Collection<StsValueHint> enumValues = getAllowedValues(type, EnumCaseMode.ALIASED);
-		if (enumValues!=null) {
-			//Note, technically if 'enumValues is empty array' this means something different
-			// from when it is null. An empty array means a type that has no values, so
-			// assigning anything to it is an error.
-			return new EnumValueParser(niceTypeName(type), getBareValues(enumValues));
-		}
-		if (isMap(type)) {
-			//Trying to parse map types from scalars is not possible. Thus we
-			// provide a parser that allows throws
-			return new AlwaysFailingParser(niceTypeName(type));
-		}
-		if (isSequencable(type)) {
-			//Trying to parse list from scalars is possible if the domain type is parseable. Spring boot
-			// will try to interpret the string as a comma-separated list
-			Type elType = getDomainType(type);
-			if (elType!=null) {
-				ValueParser elParser = getValueParser(elType);
-				if (elParser!=null) {
-					return new DelimitedStringParser(elParser);
+		if (type!=null) {
+			ValueParser simpleParser = VALUE_PARSERS.get(type.getErasure());
+			if (simpleParser!=null) {
+				return simpleParser;
+			}
+			Collection<StsValueHint> enumValues = getAllowedValues(type, EnumCaseMode.ALIASED);
+			if (enumValues!=null) {
+				//Note, technically if 'enumValues is empty array' this means something different
+				// from when it is null. An empty array means a type that has no values, so
+				// assigning anything to it is an error.
+				return new EnumValueParser(niceTypeName(type), getBareValues(enumValues));
+			}
+			if (isMap(type)) {
+				//Trying to parse map types from scalars is not possible. Thus we
+				// provide a parser that allows throws
+				return new AlwaysFailingParser(niceTypeName(type));
+			}
+			if (isSequencable(type)) {
+				//Trying to parse list from scalars is possible if the domain type is parseable. Spring boot
+				// will try to interpret the string as a comma-separated list
+				Type elType = getDomainType(type);
+				if (elType!=null) {
+					ValueParser elParser = getValueParser(elType);
+					if (elParser!=null) {
+						return new DelimitedStringParser(elParser);
+					}
 				}
 			}
 		}
@@ -443,16 +445,18 @@ public class TypeUtil {
 	}
 
 	/**
-	 * Check if it is valid to
-	 * use the notation <name>[<index>]=<value> in property file
+	 * Check if it is valid to use the notation <name>[<index>]=<value> in property file
 	 * for properties of this type.
+	 * <p>
+	 * Note it is also possible to use 'bracket' notation with other types such as Map's for example.
+	 * This method returns true only for types that support/expect using of integer indexes.
 	 */
-	public boolean isBracketable(Type type) {
-		//Note array types where once not considered 'Bracketable'
+	public boolean isIndexable(Type type) {
+		//Note array types where once not considered 'indexable'
 		//see: STS-4031
 
 		//However...
-		//Seems that in Boot 1.3 arrays are now 'Bracketable' and funcion much equivalnt to list (even including 'autogrowing' them).
+		//Seems that in Boot 1.3 arrays are now 'Indexable' and funcion much equivalnt to list (even including 'autogrowing' them).
 		//This is actually more logical too.
 		//So '[' notation in props file can be used for either list or arrays (at least in recent versions of boot).
 		//Note also 'Set' are now considered bracketable. See: https://www.pivotaltracker.com/story/show/154644992
@@ -463,7 +467,7 @@ public class TypeUtil {
 	 * Check if type can be treated / represented as a sequence node in .yml file
 	 */
 	public boolean isSequencable(Type type) {
-		return isBracketable(type);
+		return isIndexable(type);
 	}
 
 	private static boolean isArray(Type type) {
@@ -595,7 +599,7 @@ public class TypeUtil {
 	}
 
 	private boolean isAssignableCollection(Type type) {
-		if (isBracketable(type)) {
+		if (isIndexable(type)) {
 			Type domainType = getDomainType(type);
 			return isAtomic(domainType);
 		}
@@ -1046,6 +1050,11 @@ public class TypeUtil {
 			return CLASS_TYPE_NAME.equals(type.getErasure());
 		}
 		return false;
+	}
+
+
+	public boolean isBracketable(Type type) {
+		return isMap(type) || isIndexable(type);
 	}
 
 

@@ -141,13 +141,17 @@ public class PropertyNavigator {
 		} else {
 			String indexStr = textBetween(lbrack+1, rbrack);
 			if (!indexStr.contains("${")) {
-				try {
-					Integer.parseInt(indexStr);
-				} catch (Exception e) {
-					problemCollector.accept(problem(ApplicationPropertiesProblemType.PROP_NON_INTEGER_IN_BRACKETS,
-						"Expecting 'Integer' for '[...]' notation '"+textBetween(region.getStart(), lbrack)+"'",
-						lbrack+1, rbrack-lbrack-1
-					));
+				Type keytype = typeUtil.getKeyType(type);
+				ValueParser parser = typeUtil.getValueParser(keytype);
+				if (parser!=null) {
+					try {
+						parser.parse(indexStr);
+					} catch (Exception e) {
+						problemCollector.accept(problem(ApplicationPropertiesProblemType.PROP_VALUE_TYPE_MISMATCH,
+							"Expecting '"+typeUtil.niceTypeName(keytype)+"' for '[...]' notation '"+textBetween(region.getStart(), lbrack)+"'",
+							lbrack+1, rbrack-lbrack-1
+						));
+					}
 				}
 			}
 			Type domainType = TypeUtil.getDomainType(type);

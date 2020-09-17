@@ -23,6 +23,7 @@ import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.List;
+import java.util.Properties;
 
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.Diagnostic;
@@ -575,11 +576,39 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 				"spring.thymeleaf.view-names[1]=hello" //This is okay now. Boot handles this notation for arrays
 		);
 		editor.assertProblems(
-				"bork|Integer",
+				"bork|'int'",
 				"[|matching ']'",
 				"crap|'.' or '['",
 				"[0]|Can't use '[..]'"
 				//no other problems
+		);
+	}
+	
+	@Test public void test_GH_534() throws Exception {
+		IJavaProject p = createPredefinedMavenProject("map-of-pojo");
+		useProject(p);
+		data("my.props", "java.util.Properties", null, "Properties in java.util.Properties");
+		data("my.arr", "java.lang.String[]", null, "Array");
+		
+		Editor editor = newEditor(
+				"my.arr[index]=something\n" +
+				"my.props[foo.bar]=something\n" + 
+				"my.map[foo.bar].name=Freddy\n" + 
+				"my.map[foo.bar].age=the-age\n"
+		);
+		editor.assertProblems(
+				"index|'int'",
+				"the-age|'int'"
+		);
+		
+		//Also check if completion engine understands the convention
+		editor = newEditor(
+				"my.map[foo.bar].<*>"
+		);
+		editor.assertContextualCompletions("<*>", 
+				// ==>
+				"age=<*>",
+				"name=<*>"
 		);
 	}
 

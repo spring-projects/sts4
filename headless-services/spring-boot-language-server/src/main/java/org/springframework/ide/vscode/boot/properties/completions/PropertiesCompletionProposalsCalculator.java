@@ -268,7 +268,7 @@ public class PropertiesCompletionProposalsCalculator {
 		if (type!=null) {
 			if (typeUtil.isAssignableType(type)) {
 				postfix = "=";
-			} else if (typeUtil.isBracketable(type)) {
+			} else if (typeUtil.isIndexable(type)) {
 				postfix = "[";
 			} else if (typeUtil.isDotable(type)) {
 				postfix = ".";
