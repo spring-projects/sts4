@@ -69,7 +69,8 @@
           "Concourse Pipeline"
         ],
         "filenamePatterns": [
-          "*pipeline*.yml"
+          "*pipeline*.yml",
+          "**/pipeline/*.yml"
         ],
         "firstLine": "^#(\\s)*pipeline(\\s)*",
         "configuration": "./yaml-support/language-configuration.json"
