@@ -420,7 +420,7 @@
 				</repository> -->
 			</repositories>
 			<modules>
-				<module>org.springframework.boot.ide.product.e417</module>
+				<module>org.springframework.boot.ide.product.e418</module>
 			</modules>
 		</profile>
 		
