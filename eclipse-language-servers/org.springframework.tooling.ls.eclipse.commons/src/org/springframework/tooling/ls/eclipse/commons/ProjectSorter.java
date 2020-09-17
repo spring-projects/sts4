@@ -28,7 +28,6 @@ public class ProjectSorter implements Comparator<IProject> {
 	private Logger logger = Logger.forEclipsePlugin(() -> LanguageServerCommonsActivator.getInstance());
 
 	public ProjectSorter() {
-		logger.log("Creating project sorter...");
 		this.projectsWithEditors = new HashSet<IProject>();
 
 		IFileBuffer[] openBuffers = FileBuffers.getTextFileBufferManager().getFileBuffers();
@@ -40,7 +39,6 @@ public class ProjectSorter implements Comparator<IProject> {
 				projectsWithEditors.add(project);
 			}
 		}
-		logger.log("Creating project sorter... DONE");
 	}
 
 	@Override
