@@ -51,16 +51,16 @@
 					<publishArtifacts>true</publishArtifacts>
 				</configuration>
 			</plugin>
-
+<!--
 			<plugin>
 				<groupId>org.eclipse.tycho</groupId>
 				<artifactId>target-platform-configuration</artifactId>
 				<version>${tycho-version}</version>
 				<configuration>
-					<executionEnvironment>JavaSE-9</executionEnvironment>
+					<executionEnvironment>none</executionEnvironment>
 				</configuration>
 			</plugin>
-
+-->
 			<plugin>
 				<groupId>org.eclipse.tycho</groupId>
 				<artifactId>tycho-p2-director-plugin</artifactId>
@@ -475,5 +475,21 @@
 
 		</plugins>
 
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.eclipse.tycho</groupId>
+					<artifactId>target-platform-configuration</artifactId>
+					<version>${tycho-version}</version>
+					<configuration>
+						<dependency-resolution>
+							<profileProperties>
+								<org.eclipse.justj.buildtime>true</org.eclipse.justj.buildtime>
+							</profileProperties>
+						</dependency-resolution>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
 	</build>
 </project>
