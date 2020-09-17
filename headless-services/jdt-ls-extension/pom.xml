@@ -47,7 +47,7 @@
 	</modules>
 
 	<properties>
-		<tycho-version>1.5.1</tycho-version>
+		<tycho-version>1.7.0</tycho-version>
 
 		<!-- Signing -->
 		<signing.skip>true</signing.skip>
@@ -157,4 +157,3 @@
 		</plugins>
 	</build>
 </project>
-
