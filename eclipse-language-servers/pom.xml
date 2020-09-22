@@ -86,6 +86,7 @@
 		<dist.key>TOOLS</dist.key>
 		<dist.path>${dist.type}/${dist.key}/${dist.project}/${dist.version}</dist.path>
 
+		<springide-commons-p2-repo>https://dist.springsource.com/snapshot/TOOLS/eclipse-integration-commons/nightly/</springide-commons-p2-repo>
 		<springide-p2-repo>https://dist.springframework.org/snapshot/IDE/nightly</springide-p2-repo>
 <!--		<springide-p2-repo>https://dist.springframework.org/milestone/IDE/3.9.7.RC1</springide-p2-repo> -->
 <!--		<springide-p2-repo>https://dist.springframework.org/release/IDE/3.9.14.RELEASE</springide-p2-repo> -->
@@ -141,9 +142,14 @@
 					<url>https://download.eclipse.org/tools/orbit/downloads/drops/R20200529191137/repository</url>
 				</repository>
 				<repository>
-					<id>e-i-commons</id>
+					<id>sts3-repo</id>
 					<layout>p2</layout>
 					<url>${springide-p2-repo}</url>
+				</repository>
+				<repository>
+					<id>e-i-commons</id>
+					<layout>p2</layout>
+					<url>${springide-commons-p2-repo}</url>
 				</repository>
 				<repository>
 					<id>mylyn-markdown</id>
@@ -186,9 +192,14 @@
 					<url>https://download.eclipse.org/tools/orbit/downloads/drops/R20200831200620/repository</url>
 				</repository>
 				<repository>
-					<id>e-i-commons</id>
+					<id>sts3-repo</id>
 					<layout>p2</layout>
 					<url>${springide-p2-repo}</url>
+				</repository>
+				<repository>
+					<id>e-i-commons</id>
+					<layout>p2</layout>
+					<url>${springide-commons-p2-repo}</url>
 				</repository>
 				<repository>
 					<id>mylyn-markdown</id>
@@ -241,9 +252,14 @@
 					<url>https://download.eclipse.org/tools/orbit/downloads/drops/R20200831200620/repository</url>
 				</repository>
 				<repository>
-					<id>e-i-commons</id>
+					<id>sts3-repo</id>
 					<layout>p2</layout>
 					<url>${springide-p2-repo}</url>
+				</repository>
+				<repository>
+					<id>e-i-commons</id>
+					<layout>p2</layout>
+					<url>${springide-commons-p2-repo}</url>
 				</repository>
 				<repository>
 					<id>mylyn-markdown</id>
