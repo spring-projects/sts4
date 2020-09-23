@@ -10,8 +10,8 @@
  *******************************************************************************/
 package org.springframework.tooling.boot.ls.prefs;
 
-import org.springframework.ide.eclipse.boot.dash.remoteapps.RemoteBootAppsDataHolder;
-import org.springframework.ide.eclipse.boot.dash.remoteapps.RemoteBootAppsDataHolder.RemoteAppData;
+import org.springsource.ide.eclipse.commons.boot.ls.remoteapps.RemoteBootAppsDataHolder;
+import org.springsource.ide.eclipse.commons.boot.ls.remoteapps.RemoteBootAppsDataHolder.RemoteAppData;
 import org.springsource.ide.eclipse.commons.livexp.core.ObservableSet;
 import org.springsource.ide.eclipse.commons.livexp.ui.Disposable;
 
@@ -19,7 +19,6 @@ import com.google.common.collect.ImmutableSet;
 
 public class RemoteAppsFromPrefsDataContributor implements RemoteBootAppsDataHolder.Contributor {
 
-	public static final RemoteAppsFromPrefsDataContributor INSTANCE = new RemoteAppsFromPrefsDataContributor();
 	private RemoteAppsPrefs prefs = new RemoteAppsPrefs();
 	
 	private RemoteAppsFromPrefsDataContributor() {}

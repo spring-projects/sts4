@@ -12,8 +12,8 @@ package org.springframework.tooling.boot.ls.prefs;
 
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences.IPreferenceChangeListener;
-import org.springframework.ide.eclipse.boot.dash.remoteapps.RemoteBootAppsDataHolder.RemoteAppData;
 import org.springframework.tooling.boot.ls.BootLanguageServerPlugin;
+import org.springsource.ide.eclipse.commons.boot.ls.remoteapps.RemoteBootAppsDataHolder.RemoteAppData;
 import org.springsource.ide.eclipse.commons.livexp.ui.Disposable;
 import org.springsource.ide.eclipse.commons.livexp.util.ExceptionUtil;
 import org.springsource.ide.eclipse.commons.livexp.util.Log;
