@@ -26,8 +26,7 @@ import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
-import org.springframework.ide.eclipse.boot.dash.BootDashActivator;
-import org.springframework.ide.eclipse.boot.dash.views.sections.ViewPartWithSections;
+import org.springframework.tooling.ls.eclipse.gotosymbol.GotoSymbolPlugin;
 import org.springframework.tooling.ls.eclipse.gotosymbol.dialogs.GotoSymbolDialogModel;
 import org.springframework.tooling.ls.eclipse.gotosymbol.dialogs.GotoSymbolSection;
 import org.springframework.tooling.ls.eclipse.gotosymbol.dialogs.InFileSymbolsProvider;
@@ -37,6 +36,7 @@ import org.springframework.tooling.ls.eclipse.gotosymbol.dialogs.SelectionTracke
 import org.springsource.ide.eclipse.commons.livexp.ui.ChooseOneSectionCombo;
 import org.springsource.ide.eclipse.commons.livexp.ui.IPageSection;
 import org.springsource.ide.eclipse.commons.livexp.ui.SimpleLabelProvider;
+import org.springsource.ide.eclipse.commons.livexp.ui.ViewPartWithSections;
 import org.springsource.ide.eclipse.commons.livexp.util.Log;
 
 import com.google.common.collect.ImmutableList;
@@ -53,7 +53,7 @@ public class SpringSymbolsView extends ViewPartWithSections {
 
 	private SpringSymbolsViewModel model;
 
-	Action newViewAction = new Action("New View", BootDashActivator.getImageDescriptor("icons/add_target.png")) {
+	Action newViewAction = new Action("New View", GotoSymbolPlugin.getImageDescriptor("icons/add_target.png")) {
 		@Override
 		public void run() {
 			try {
@@ -67,7 +67,7 @@ public class SpringSymbolsView extends ViewPartWithSections {
 		}
 	};
 	
-	Action refreshAction = new Action("Refresh", BootDashActivator.getImageDescriptor("icons/refresh.png")) {
+	Action refreshAction = new Action("Refresh", GotoSymbolPlugin.getImageDescriptor("icons/refresh.png")) {
 		@Override
 		public void run() {
 			model.refreshButton.increment();

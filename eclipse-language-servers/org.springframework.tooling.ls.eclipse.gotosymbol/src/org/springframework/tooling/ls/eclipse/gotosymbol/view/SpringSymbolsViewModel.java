@@ -13,13 +13,13 @@ package org.springframework.tooling.ls.eclipse.gotosymbol.view;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.ui.IWorkbenchWindow;
-import org.springframework.ide.eclipse.boot.dash.livexp.LiveCounter;
 import org.springframework.tooling.ls.eclipse.gotosymbol.dialogs.GotoSymbolDialogModel;
 import org.springframework.tooling.ls.eclipse.gotosymbol.dialogs.InFileSymbolsProvider;
 import org.springframework.tooling.ls.eclipse.gotosymbol.dialogs.InProjectSymbolsProvider;
 import org.springframework.tooling.ls.eclipse.gotosymbol.dialogs.InWorkspaceSymbolsProvider;
 import org.springframework.tooling.ls.eclipse.gotosymbol.dialogs.SelectionTracker;
 import org.springframework.tooling.ls.eclipse.gotosymbol.favourites.FavouritesPreference;
+import org.springsource.ide.eclipse.commons.livexp.core.LiveCounter;
 import org.springsource.ide.eclipse.commons.livexp.core.LiveExpression;
 
 public class SpringSymbolsViewModel {
