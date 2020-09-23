@@ -18,11 +18,9 @@ Require-Bundle: org.eclipse.jdt.launching;bundle-version="3.8.0",
  org.eclipse.tm4e.ui;bundle-version="0.1.0",
  org.eclipse.ui,
  org.eclipse.ui.editors,
- org.springframework.ide.eclipse.boot.dash,
  org.springsource.ide.eclipse.commons.livexp,
  io.projectreactor.reactor-core,
- org.reactivestreams.reactive-streams,
- org.springframework.ide.eclipse.boot.dash.cf;bundle-version="3.9.12"
+ org.reactivestreams.reactive-streams
 Import-Package: org.eclipse.jface.preference,
  org.osgi.framework
 Export-Package: org.springframework.tooling.cloudfoundry.manifest.ls
