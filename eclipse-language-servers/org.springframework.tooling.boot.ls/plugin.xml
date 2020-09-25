@@ -336,12 +336,6 @@
             requiresUIAccess="false"/>
    </extension>
    <extension
-         point="org.springframework.ide.eclipse.boot.dash.injections">
-      <injection
-            class="org.springframework.tooling.boot.ls.BootDashInjections">
-      </injection>
-   </extension>
-   <extension
          point="org.springsource.ide.eclipse.commons.boot.ls.remoteapps.RemoteBootAppsDataHolder.Contributor">
       <injection
             class="org.springframework.tooling.boot.ls.prefs.RemoteAppsFromPrefsDataContributor">
