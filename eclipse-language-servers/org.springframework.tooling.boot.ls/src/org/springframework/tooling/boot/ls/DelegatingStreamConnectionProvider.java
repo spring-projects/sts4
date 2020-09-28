@@ -22,6 +22,7 @@ import java.util.Map;
 
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Assert;
+import org.eclipse.core.runtime.Platform;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.lsp4e.server.StreamConnectionProvider;
@@ -49,6 +50,14 @@ import com.google.common.collect.ImmutableSet;
  * @author Martin Lippert
  */
 public class DelegatingStreamConnectionProvider implements StreamConnectionProvider {
+	
+	private static final boolean DEBUG = (""+Platform.getLocation()).contains("kdvolder");
+	private static void debug(String string) {
+		if (DEBUG) {
+			System.out.println(string);
+		}
+	}
+
 
 	private StreamConnectionProvider provider;
 	private ResourceListener fResourceListener;
@@ -183,9 +192,7 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 		bootJavaObj.put("scan-java-test-sources", scanTestJavaSources);
 		bootJavaObj.put("change-detection", bootChangeDetection);
 		bootJavaObj.put("validation", validation);
-
 		bootJavaObj.put("remote-apps", getAllRemoteApps());
-
 		settings.put("boot-java", bootJavaObj);
 
 		this.languageServer.getWorkspaceService().didChangeConfiguration(new DidChangeConfigurationParams(settings));

@@ -20,9 +20,9 @@ import com.google.common.collect.ImmutableSet;
 public class RemoteAppsFromPrefsDataContributor implements RemoteBootAppsDataHolder.Contributor {
 
 	private RemoteAppsPrefs prefs = new RemoteAppsPrefs();
-	
-	private RemoteAppsFromPrefsDataContributor() {}
-	
+
+	public RemoteAppsFromPrefsDataContributor() {}
+
 	private ObservableSet<RemoteAppData> remoteApps = ObservableSet.create(() -> ImmutableSet.copyOf(prefs.getRemoteAppData()));
 	{
 		Disposable d = RemoteAppsPrefs.addListener(remoteApps::refresh);
