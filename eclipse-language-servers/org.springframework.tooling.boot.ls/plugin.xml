@@ -113,16 +113,10 @@
    <extension
          point="org.eclipse.ui.preferencePages">
       <page
-            category="org.springframework.tooling.boot.java.ls.preferences"
+            category="org.springframework.tooling.boot.ls.preferences"
             class="org.springframework.tooling.boot.ls.prefs.RemoteAppsPrefsPage"
             id="org.springframework.tooling.boot.ls.prefs.RemoteAppsPrefsPage"
             name="Remote Boot Apps">
-      </page>
-      <page
-            category="org.springframework.tooling.boot.ls.preferences"
-            class="org.springframework.tooling.boot.ls.BootJavaPreferencesPage"
-            id="org.springframework.tooling.boot.java.ls.preferences"
-            name="Spring Boot Java">
       </page>
       <page
             category="org.springframework.tooling.boot.ls.preferences"
@@ -132,7 +126,7 @@
       </page>
       <page
             category="org.springframework.tooling.ls.eclipse.commons.console.preferences"
-            class="org.springframework.tooling.boot.ls.SpringBootLanguageServerPreferencePage"
+            class="org.springframework.tooling.boot.ls.BootJavaPreferencesPage"
             id="org.springframework.tooling.boot.ls.preferences"
             name="Spring Boot Language Server">
       </page>
