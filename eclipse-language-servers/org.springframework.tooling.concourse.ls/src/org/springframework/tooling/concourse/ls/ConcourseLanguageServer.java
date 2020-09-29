@@ -32,7 +32,6 @@ public class ConcourseLanguageServer extends STS4LanguageServerProcessStreamConn
 				Arrays.asList(
 						"-Dlsp.lazy.completions.disable=true",
 						"-Dlsp.completions.indentation.enable=true",
-						"-noverify",
 						"-XX:TieredStopAtLevel=1"
 				)
 		);
