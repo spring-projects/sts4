@@ -20,6 +20,7 @@ import org.springframework.ide.vscode.boot.configurationmetadata.Deprecation;
 import org.springframework.ide.vscode.boot.configurationmetadata.Deprecation.Level;
 import org.springframework.ide.vscode.boot.configurationmetadata.ValueHint;
 import org.springframework.ide.vscode.boot.configurationmetadata.ValueProvider;
+import org.springframework.ide.vscode.boot.java.links.JavaElementLocationProvider;
 import org.springframework.ide.vscode.boot.metadata.ValueProviderRegistry.ValueProviderStrategy;
 import org.springframework.ide.vscode.boot.metadata.hints.HintProvider;
 import org.springframework.ide.vscode.boot.metadata.hints.HintProviders;
@@ -106,6 +107,7 @@ public class PropertyInfo {
 	private ImmutableList<ValueHint> keyHints;
 	private ValueProviderStrategy valueProvider;
 	private ValueProviderStrategy keyProvider;
+	private String handleKeyAs;
 
 	public PropertyInfo(String id, String type, String name,
 			Object defaultValue, String description,
@@ -147,6 +149,11 @@ public class PropertyInfo {
 				handleAs(h.getParameters().get("target"));
 			}
 		}
+		for (ValueProvider h : prop.getHints().getKeyProviders()) {
+			if (h.getName().equals("handle-as")) {
+				handleKeyAs(h.getParameters().get("target"));
+			}
+		}
 	}
 	public PropertyInfo(String p) {
 		this(p, null, null, null, null, null, null, null, null, null, null);
@@ -157,6 +164,12 @@ public class PropertyInfo {
 			this.type = (String)targetObject;
 		}
 	}
+	private void handleKeyAs(Object targetObject) {
+		if (targetObject instanceof String) {
+			this.handleKeyAs = (String)targetObject;
+		}
+	}
+	
 	public String getId() {
 		return id;
 	}
@@ -256,5 +269,8 @@ public class PropertyInfo {
 		builder.addAll(keyHints);
 		builder.addAll(hints);
 		keyHints = builder.build();
+	}
+	public String getHandleKeyAs() {
+		return handleKeyAs;
 	}
 }

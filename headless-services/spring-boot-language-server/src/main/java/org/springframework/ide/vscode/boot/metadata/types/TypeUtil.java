@@ -58,6 +58,7 @@ import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.CollectionUtil;
 import org.springframework.ide.vscode.commons.util.EnumValueParser;
 import org.springframework.ide.vscode.commons.util.LazyProvider;
+import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.MimeTypes;
 import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.util.StringUtil;
@@ -1055,6 +1056,20 @@ public class TypeUtil {
 
 	public boolean isBracketable(Type type) {
 		return isMap(type) || isIndexable(type);
+	}
+
+
+	public Type subsituteKey(Type type, String handleKeyAs) {
+		try {
+			if (handleKeyAs!=null && isMap(type)) {
+				Type valueType = getDomainType(type);
+				Type keyType = TypeParser.parse(handleKeyAs);
+				return new Type(MAP_TYPE_NAME, new Type[] {keyType, valueType});
+			}
+		} catch (Exception e) {
+			log.error("Invalid type", e);
+		}
+		return type;
 	}
 
 

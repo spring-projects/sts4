@@ -150,11 +150,14 @@ public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistCon
 		private HintProvider hints;
 
 		public TypeContext(ApplicationYamlAssistContext parent, YamlPath contextPath, Type type,
-				PropertyCompletionFactory completionFactory, TypeUtil typeUtil, RelaxedNameConfig conf, HintProvider hints, JavaElementLocationProvider javaElementLocationProvider) {
+				PropertyCompletionFactory completionFactory, TypeUtil typeUtil, RelaxedNameConfig conf, 
+				HintProvider hints, String handleKeyAs,
+				JavaElementLocationProvider javaElementLocationProvider
+		) {
 			super(parent.getDocument(), parent.documentSelector, contextPath, typeUtil, conf, javaElementLocationProvider);
 			this.parent = parent;
 			this.completionFactory = completionFactory;
-			this.type = type;
+			this.type = typeUtil.subsituteKey(type, handleKeyAs);
 			this.hints = hints;
 		}
 
@@ -349,7 +352,7 @@ public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistCon
 		private AbstractYamlAssistContext contextWith(YamlPathSegment s, Type nextType) {
 			if (nextType!=null) {
 				return new TypeContext(this, contextPath.append(s), nextType, completionFactory, typeUtil, conf,
-						new YamlPath(s).traverse(hints), javaElementLocationProvider);
+						new YamlPath(s).traverse(hints), null, javaElementLocationProvider);
 			}
 			return null;
 		}
@@ -527,7 +530,7 @@ public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistCon
 				} else if (subIndex.getExactMatch()!=null) {
 					IndexContext asIndexContext = new IndexContext(getDocument(), documentSelector, contextPath.append(s), index, subIndex, completionFactory, typeUtil, conf, javaElementLocationProvider);
 					PropertyInfo prop = subIndex.getExactMatch();
-					return new TypeContext(asIndexContext, contextPath.append(s), TypeParser.parse(prop.getType()), completionFactory, typeUtil, conf, prop.getHints(typeUtil), javaElementLocationProvider);
+					return new TypeContext(asIndexContext, contextPath.append(s), TypeParser.parse(prop.getType()), completionFactory, typeUtil, conf, prop.getHints(typeUtil), prop.getHandleKeyAs(), javaElementLocationProvider);
 				}
 			}
 			//Unsuported navigation => no context for assist

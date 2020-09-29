@@ -90,6 +90,29 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 	
 	////////////////////////////////////////////////////////////////////////////////////////
 
+	@Test public void handleAsKey() throws Exception {
+		//See: https://www.pivotaltracker.com/story/show/174954118
+		useProject(createPredefinedMavenProject("justauth-example"));
+		
+		Editor editor = harness.newEditor(
+				"justauth:\n" +
+				"  type:\n" +
+				"    <*>"
+		);
+		editor.assertContextualCompletions("<*>", "alipay:\n      <*>");
+		
+		editor = harness.newEditor(
+				"justauth:\n" + 
+				"  name: ALIPAY\n" + 
+				"  type:\n" + 
+				"    alipay:\n" + 
+				"      client-id: aaa\n" + 
+				"      client-secret: bbb \n" + 
+				"      bad: xxxx\n"
+		);
+		editor.assertProblems("bad|Unknown property");
+	}
+	
 	@Test public void GH_190_tolerate_placeholders_without_quotes_integer() throws Exception {
 		data("server.port", "java.lang.Integer", null, null);
 		Editor editor = harness.newEditor(

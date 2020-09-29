@@ -1,0 +1,9 @@
+justauth:
+  name: alipay
+  type:
+    alipay:
+      client-id: aaa
+      client-secret: bbb 
+      bad: xxxx  
+  
+      

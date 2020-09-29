@@ -1,0 +1,24 @@
+{"hints": [
+    {
+      "name": "justauth.type.keys",
+      "providers": [
+        {
+          "name": "handle-as",
+          "parameters": {
+            "target": "com.example.demo.AuthDefaultSource"
+          }
+        }
+      ]
+    },
+    {
+      "name": "justauth.name",
+      "providers": [
+        {
+          "name": "handle-as",
+          "parameters": {
+            "target": "com.example.demo.AuthDefaultSource"
+          }
+        }
+      ]
+    }
+]} 
