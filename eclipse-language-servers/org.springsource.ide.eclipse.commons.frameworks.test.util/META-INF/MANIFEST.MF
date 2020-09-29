@@ -1,0 +1,13 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: com.springsource.sts.frameworks.test.util
+Bundle-SymbolicName: org.springsource.ide.eclipse.commons.frameworks.test.util;singleton:=true
+Bundle-Version: 4.8.1.qualifier
+Bundle-ActivationPolicy: lazy
+Bundle-Vendor: Pivotal Software, Inc.
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Require-Bundle: org.eclipse.swtbot.go,
+ org.springsource.ide.eclipse.commons.tests.util,
+ org.eclipse.debug.core,
+ org.hamcrest.library
+Export-Package: org.springsource.ide.eclipse.commons.frameworks.test.util

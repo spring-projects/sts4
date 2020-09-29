@@ -43,6 +43,16 @@
 		<module>org.springframework.tooling.ls.eclipse.commons</module>
 		<module>org.springframework.tooling.ls.eclipse.commons.test</module>
 	
+		<module>org.springsource.ide.eclipse.commons.boot.ls</module>
+		<module>org.springsource.ide.eclipse.commons.core</module>
+		<module>org.springsource.ide.eclipse.commons.frameworks.core</module>
+		<module>org.springsource.ide.eclipse.commons.frameworks.test.util</module>
+		<module>org.springsource.ide.eclipse.commons.frameworks.ui</module>
+		<module>org.springsource.ide.eclipse.commons.jdk_tools</module>
+		<module>org.springsource.ide.eclipse.commons.livexp</module>
+		<module>org.springsource.ide.eclipse.commons.tests.util</module>
+		<module>org.springsource.ide.eclipse.commons.ui</module>
+
 		<module>org.springframework.tooling.cloudfoundry.manifest.ls</module>
 		<module>org.springframework.tooling.cloudfoundry.manifest.ls.feature</module>
 		<module>org.springframework.tooling.ls.repository</module>
@@ -86,8 +96,7 @@
 		<dist.key>TOOLS</dist.key>
 		<dist.path>${dist.type}/${dist.key}/${dist.project}/${dist.version}</dist.path>
 
-		<springide-commons-p2-repo>https://dist.springsource.com/snapshot/TOOLS/eclipse-integration-commons/nightly/</springide-commons-p2-repo>
-
+		<misc.p2.repo.version>3.9.4.202003091750</misc.p2.repo.version>
 	</properties>
 
 	<profiles>
@@ -139,11 +148,6 @@
 					<url>https://download.eclipse.org/tools/orbit/downloads/drops/R20200529191137/repository</url>
 				</repository>
 				<repository>
-					<id>e-i-commons</id>
-					<layout>p2</layout>
-					<url>${springide-commons-p2-repo}</url>
-				</repository>
-				<repository>
 					<id>mylyn-markdown</id>
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/mylyn/docs/releases/3.0/</url>
@@ -182,11 +186,6 @@
 					<id>orbit</id>
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/tools/orbit/downloads/drops/R20200831200620/repository</url>
-				</repository>
-				<repository>
-					<id>e-i-commons</id>
-					<layout>p2</layout>
-					<url>${springide-commons-p2-repo}</url>
 				</repository>
 				<repository>
 					<id>mylyn-markdown</id>
@@ -239,11 +238,6 @@
 					<url>https://download.eclipse.org/tools/orbit/downloads/drops/R20200831200620/repository</url>
 				</repository>
 				<repository>
-					<id>e-i-commons</id>
-					<layout>p2</layout>
-					<url>${springide-commons-p2-repo}</url>
-				</repository>
-				<repository>
 					<id>mylyn-markdown</id>
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/mylyn/docs/releases/3.0/</url>
@@ -292,6 +286,14 @@
 		</profile>
 
 	</profiles>
+
+	<repositories>
+		<repository>
+			<id>p2-thirdparty-bundles</id>
+			<layout>p2</layout>
+			<url>https://dist.springsource.com/release/TOOLS/third-party/misc-p2-repo/${misc.p2.repo.version}</url>
+		</repository>
+	</repositories>
 
 	<pluginRepositories>
 	    <pluginRepository>

@@ -1,0 +1,1 @@
+This plugin contains common testing infrastructure and utilities for Grails and Roo tests.

@@ -1,0 +1,26 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Eclipse Integration Commands - Livexp
+Bundle-SymbolicName: org.springsource.ide.eclipse.commons.livexp
+Bundle-Version: 4.8.1.qualifier
+Bundle-Activator: org.springsource.ide.eclipse.commons.livexp.Activator
+Require-Bundle: org.eclipse.jface,
+ org.eclipse.ui.workbench,
+ org.eclipse.core.resources,
+ org.eclipse.ui.forms,
+ org.eclipse.text
+Bundle-ActivationPolicy: lazy
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-Vendor: Pivotal Software, Inc.
+Export-Package: org.springsource.ide.eclipse.commons.livexp.core;uses:="com.google.common.base",
+ org.springsource.ide.eclipse.commons.livexp.core.validators,
+ org.springsource.ide.eclipse.commons.livexp.ui,
+ org.springsource.ide.eclipse.commons.livexp.ui.util,
+ org.springsource.ide.eclipse.commons.livexp.util
+Import-Package: com.google.common.base,
+ com.google.common.cache,
+ com.google.common.collect,
+ org.eclipse.core.runtime,
+ org.eclipse.core.runtime.jobs,
+ org.eclipse.osgi.util,
+ org.osgi.framework

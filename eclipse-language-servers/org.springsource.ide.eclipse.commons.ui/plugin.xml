@@ -1,0 +1,217 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+	<extension-point id="com.springsource.sts.ide.ui.startup" name="STS Startup"
+		schema="schema/startup.exsd" />
+
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            class="org.springsource.ide.eclipse.commons.ui.CommonsPreferencePage"
+            id="org.springsource.ide.eclipse.commons.preferencePage"
+            name="Spring">
+      </page>
+      <page
+            category="org.springsource.ide.eclipse.commons.preferencePage"
+            class="org.springsource.ide.eclipse.commons.ui.PreferencesCurator"
+            id="org.springsource.ide.eclipse.commons.curatorPreferencesPage"
+            name="Global Preferences Curator">
+         <keywordReference
+               id="org.springsource.ide.eclipse.commons.ui.global_prefs.keyword">
+         </keywordReference>
+      </page>
+   </extension>
+   <extension
+         name="SpringSource Startup Reader"
+         point="org.eclipse.ui.startup">
+      <startup
+            class="org.springsource.ide.eclipse.commons.internal.ui.StartupExtensionPointReader"></startup>
+      <startup
+            class="org.springsource.ide.eclipse.commons.internal.ui.AnyEditToolsPrefsInitializer">
+      </startup>
+      <startup
+            class="org.springsource.ide.eclipse.commons.internal.ui.EgitPreferencesFixer">
+      </startup>
+   </extension>
+
+	<extension point="org.eclipse.wst.xml.core.catalogContributions">
+		<catalogContribution>
+			<public 
+				publicId="-//LOG4J//DTD LOG4J//EN"
+				uri="platform:/plugin/org.springsource.ide.eclipse.commons.ui/dtd/log4j-1.2.dtd"
+				webURL="https://logging.apache.org/log4j/1.2/apidocs/org/apache/log4j/xml/doc-files/log4j.dtd" />
+		</catalogContribution>
+	</extension>
+ <extension
+       point="org.eclipse.ui.keywords">
+    <keyword
+          id="org.springsource.ide.eclipse.commons.ui.global_prefs.keyword"
+          label="global curator preferences curated spring tool">
+    </keyword>
+ </extension>
+ 
+ <extension
+       point="org.eclipse.ui.actionSets">
+    <actionSet
+          description="Launch"
+          id="org.springsource.ide.eclipse.commons.launch.actionSet"
+          label="Launch"
+          visible="true">
+       <action
+             allowLabelUpdate="true"
+             class="org.springsource.ide.eclipse.commons.ui.launch.RelaunchProcessPullDownToolbarDelegate"
+             disabledIcon="icons/launch/term_restart_disabled.png"
+             icon="icons/launch/term_restart.png"
+             id="org.springsource.ide.eclipse.commons.launch.relaunch.action"
+             label="Relaunch"
+             style="pulldown"
+             toolbarPath="org.eclipse.debug.ui.launchActionSet/debug">
+       </action>
+       <action
+             allowLabelUpdate="true"
+             class="org.springsource.ide.eclipse.commons.ui.launch.StopProcessPullDownToolbarDelegate"
+             disabledIcon="icons/launch/stop_disabled.gif"
+             icon="icons/launch/stop.gif"
+             id="org.springsource.ide.eclipse.commons.launch.stop.action"
+             label="Terminate"
+             style="pulldown"
+             toolbarPath="org.eclipse.debug.ui.launchActionSet/debug">
+       </action>
+    </actionSet>
+ </extension>
+   <extension
+         point="org.eclipse.ui.handlers">
+      <handler
+            class="org.springsource.ide.eclipse.commons.ui.handlers.RelaunchHandler"
+            commandId="org.springsource.ide.eclipse.commons.ui.relaunch">
+      </handler>
+      <handler
+            class="org.springsource.ide.eclipse.commons.ui.handlers.StopHandler"
+            commandId="org.springsource.ide.eclipse.commons.ui.stop">
+      </handler>
+   </extension>
+   <extension
+         point="org.eclipse.ui.commands">
+      <category
+            id="org.springsource.ide.eclipse.common.ui.commands"
+            name="SpringSource Tools">
+      </category>
+      <command
+            categoryId="org.springsource.ide.eclipse.common.ui.commands"
+            description="Relaunch last launched application"
+            id="org.springsource.ide.eclipse.commons.ui.relaunch"
+            name="Relaunch Application">
+      </command>
+      <command
+            categoryId="org.springsource.ide.eclipse.common.ui.commands"
+            description="Stop last launched application"
+            id="org.springsource.ide.eclipse.commons.ui.stop"
+            name="Stop Application">
+      </command>
+   </extension>
+<extension point="org.eclipse.ui.commandImages">
+       <image
+          commandId="org.springsource.ide.eclipse.commons.ui.relaunch"
+          icon="icons/launch/term_restart.png"
+          disabledIcon="icons/launch/term_restart_disabled.png"/>
+       <image
+          commandId="org.springsource.ide.eclipse.commons.ui.stop"
+          disabledIcon="icons/launch/stop_disabled.gif"
+          icon="icons/launch/stop.gif">
+       </image>
+</extension>
+
+   <!-- toggle line numbers -->
+   <extension
+         point="org.eclipse.ui.commands">
+      <command
+            description="Toggle Line Numbers"
+            id="org.springframework.ide.eclipse.boot.dash.ToggleLineNumbers"
+            name="Toggle Line Numbers"
+            defaultHandler="org.springsources.ide.eclipse.commons.ui.linenumtoggle.ToggleLineNumbersHandler">
+          <state
+                id="org.eclipse.ui.commands.toggleState"
+                class="org.springsources.ide.eclipse.commons.ui.linenumtoggle.ToggleLineNumbersState">
+          </state>
+      </command>
+   </extension>
+
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            allPopups="false"
+            locationURI="popup:org.eclipse.ui.popup.any?after=additions">
+         <menu
+               icon="icons/view16/spring.png"
+               id="org.springframework.ide.eclipse.ui.tools"
+               label="Spring"
+               tooltip="Spring Features">
+            <separator
+                  name="group0"
+                  visible="true">
+            </separator>
+            <separator
+                  name="boot"
+                  visible="true">
+            </separator>
+         </menu>
+      </menuContribution>
+   </extension>
+   <extension
+         point="org.eclipse.ui.propertyPages">
+      <page
+            class="org.springsource.ide.eclipse.commons.ui.CommonSpringProjectPropertiesPage"
+            id="org.springsource.ide.eclipse.commons.projectPropertyPage"
+            name="Spring">
+         <enabledWhen>
+            <or>
+               <and>
+                  <instanceof
+                        value="org.eclipse.core.resources.IProject">
+                  </instanceof>
+                  <test
+                        property="org.springsource.ide.eclipse.commons.isSpringProject">
+                  </test>
+               </and>
+               <and>
+                  <instanceof
+                        value="org.eclipse.jdt.core.IJavaProject">
+                  </instanceof>
+                  <test
+                        property="org.springsource.ide.eclipse.commons.java.isInSpringProject">
+                  </test>
+               </and>
+            </or>
+         </enabledWhen>
+      </page>
+   </extension>
+   <extension
+         point="org.eclipse.core.expressions.propertyTesters">
+      <propertyTester
+            class="org.springsource.ide.eclipse.commons.ui.SpringPropertyTester"
+            id="org.springsource.ide.eclipse.commons.ui.SpringPropertyTester"
+            namespace="org.springsource.ide.eclipse.commons"
+            properties="isSpringProject,isSpringProjectResource"
+            type="org.eclipse.core.resources.IResource">
+      </propertyTester>
+      <propertyTester
+            class="org.springsource.ide.eclipse.commons.ui.SpringJavaElementPropertyTester"
+            id="org.springsource.ide.eclipse.commons.ui.SpringJavaElementPropertyTester"
+            namespace="org.springsource.ide.eclipse.commons.java"
+            properties="isInSpringProject,projectNature"
+            type="org.eclipse.jdt.core.IJavaElement">
+      </propertyTester>
+   </extension>
+   <extension
+         point="org.eclipse.ui.themes">
+      <themeElementCategory
+            id="org.springsource.ide.eclipse.commons.ui"
+            label="Spring">
+         <description>
+            Spring Tooling Colors and Fonts
+         </description>
+      </themeElementCategory>
+   </extension>
+
+
+</plugin>

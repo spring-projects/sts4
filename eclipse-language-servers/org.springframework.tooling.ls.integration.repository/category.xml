@@ -40,11 +40,39 @@
 		<category name="deps"/>
 	</bundle>
 
+	<bundle id="org.springsource.ide.eclipse.commons.boot.ls">
+		<category name="deps"/>
+	</bundle>
+
 	<bundle id="org.springsource.ide.eclipse.commons.core">
 		<category name="deps"/>
 	</bundle>
 
+	<bundle id="org.springsource.ide.eclipse.commons.frameworks.core">
+		<category name="deps"/>
+	</bundle>
+
+	<bundle id="org.springsource.ide.eclipse.commons.frameworks.test.util">
+		<category name="deps"/>
+	</bundle>
+
+	<bundle id="org.springsource.ide.eclipse.commons.frameworks.ui">
+		<category name="deps"/>
+	</bundle>
+
+	<bundle id="org.springsource.ide.eclipse.commons.jdk_tools">
+		<category name="deps"/>
+	</bundle>
+
 	<bundle id="org.springsource.ide.eclipse.commons.livexp">
+		<category name="deps"/>
+	</bundle>
+
+	<bundle id="org.springsource.ide.eclipse.commons.tests.util">
+		<category name="deps"/>
+	</bundle>
+
+	<bundle id="org.springsource.ide.eclipse.commons.ui">
 		<category name="deps"/>
 	</bundle>
 
@@ -65,7 +93,7 @@
 	</bundle>
 
 	<bundle id="org.eclipse.lsp4e.jdt">
-		<category name="Uncategorized"/>
+		<category name="deps"/>
 	</bundle>
 
 	<bundle id="org.eclipse.lsp4j">
