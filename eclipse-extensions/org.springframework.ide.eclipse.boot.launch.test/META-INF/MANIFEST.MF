@@ -1,0 +1,26 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Boot Launch Tests
+Bundle-SymbolicName: org.springframework.ide.eclipse.boot.launch.test
+Bundle-Version: 4.8.1.qualifier
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ org.junit,
+ org.springframework.ide.eclipse.boot.launch,
+ org.springsource.ide.eclipse.commons.tests.util,
+ org.eclipse.core.resources,
+ org.springsource.ide.eclipse.commons.livexp,
+ org.eclipse.debug.core,
+ org.eclipse.jdt.launching,
+ org.eclipse.jdt.core,
+ org.eclipse.jdt.debug.ui,
+ org.springframework.ide.eclipse.boot,
+ org.springsource.ide.eclipse.commons.frameworks.core,
+ org.springframework.ide.eclipse.boot.test,
+ org.springsource.ide.eclipse.commons.frameworks.test.util,
+ org.apache.commons.io,
+ org.apache.commons.lang3,
+ org.springframework.ide.eclipse.buildship30
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-ActivationPolicy: lazy
+Bundle-Vendor: GoPivotal Inc.

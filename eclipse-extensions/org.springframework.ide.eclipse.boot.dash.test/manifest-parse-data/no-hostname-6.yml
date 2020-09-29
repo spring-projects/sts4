@@ -1,0 +1,7 @@
+---
+applications:
+- name: app
+  no-hostname: true
+  domains:
+  - springsource.org
+  - spring.framework

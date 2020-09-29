@@ -1,0 +1,6 @@
+---
+applications:
+- name: app
+  no-hostname: true
+  memory: 2048M
+  domain: springsource.org

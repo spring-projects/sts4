@@ -1,0 +1,190 @@
+
+
+{
+  "_links": {
+    "maven-project": {
+      "href": "https://start.spring.io/starter.zip?type=maven-project{&dependencies,packaging,javaVersion,language,bootVersion,groupId,artifactId,version,name,description,packageName}",
+      "templated": true
+    },
+    "maven-build": {
+      "href": "https://start.spring.io/pom.xml?type=maven-build{&dependencies,packaging,javaVersion,language,bootVersion,groupId,artifactId,version,name,description,packageName}",
+      "templated": true
+    },
+    "gradle-project": {
+      "href": "https://start.spring.io/starter.zip?type=gradle-project{&dependencies,packaging,javaVersion,language,bootVersion,groupId,artifactId,version,name,description,packageName}",
+      "templated": true
+    },
+    "gradle-build": {
+      "href": "https://start.spring.io/build.gradle?type=gradle-build{&dependencies,packaging,javaVersion,language,bootVersion,groupId,artifactId,version,name,description,packageName}",
+      "templated": true
+    },
+    "dependencies": {
+      "href": "https://start.spring.io/dependencies{?bootVersion}",
+      "templated": true
+    }
+  },
+  "dependencies": {
+    "type": "hierarchical-multi-select",
+    "values": [
+      {
+        "name": "Cloud Discovery",
+        "values": [
+          {
+            "id": "cloud-eureka",
+            "name": "Eureka Discovery",
+            "description": "Service discovery using spring-cloud-netflix and Eureka",
+            "versionRange": "1.2.3.RELEASE"
+          },
+          {
+            "id": "fake-dep",
+            "name": "Fake Dependency",
+            "description": "Does not really exist"
+          }
+        ]
+      }
+    ]
+  },
+   "type": {
+    "type": "action",
+    "default": "maven-project",
+    "values": [
+      {
+        "id": "maven-project",
+        "name": "Maven Project",
+        "description": "Generate a Maven based project archive",
+        "action": "/starter.zip",
+        "tags": {
+          "build": "maven",
+          "format": "project"
+        }
+      },
+      {
+        "id": "maven-build",
+        "name": "Maven POM",
+        "description": "Generate a Maven pom.xml",
+        "action": "/pom.xml",
+        "tags": {
+          "build": "maven",
+          "format": "build"
+        }
+      },
+      {
+        "id": "gradle-project",
+        "name": "Gradle Project",
+        "description": "Generate a Gradle based project archive",
+        "action": "/starter.zip",
+        "tags": {
+          "build": "gradle",
+          "format": "project"
+        }
+      },
+      {
+        "id": "gradle-build",
+        "name": "Gradle Config",
+        "description": "Generate a Gradle build file",
+        "action": "/build.gradle",
+        "tags": {
+          "build": "gradle",
+          "format": "build"
+        }
+      }
+    ]
+  },
+  "packaging": {
+    "type": "single-select",
+    "default": "jar",
+    "values": [
+      {
+        "id": "jar",
+        "name": "Jar"
+      },
+      {
+        "id": "war",
+        "name": "War"
+      }
+    ]
+  },
+  "javaVersion": {
+    "type": "single-select",
+    "default": "1.8",
+    "values": [
+      {
+        "id": "10",
+        "name": "10"
+      },
+      {
+        "id": "1.8",
+        "name": "8"
+      }
+    ]
+  },
+  "language": {
+    "type": "single-select",
+    "default": "java",
+    "values": [
+      {
+        "id": "java",
+        "name": "Java"
+      },
+      {
+        "id": "kotlin",
+        "name": "Kotlin"
+      },
+      {
+        "id": "groovy",
+        "name": "Groovy"
+      }
+    ]
+  },
+  "bootVersion": {
+    "type": "single-select",
+    "default": "2.0.3.RELEASE",
+    "values": [
+      {
+        "id": "2.1.0.BUILD-SNAPSHOT",
+        "name": "2.1.0 (SNAPSHOT)"
+      },
+      {
+        "id": "2.0.4.BUILD-SNAPSHOT",
+        "name": "2.0.4 (SNAPSHOT)"
+      },
+      {
+        "id": "2.0.3.RELEASE",
+        "name": "2.0.3"
+      },
+      {
+        "id": "1.5.15.BUILD-SNAPSHOT",
+        "name": "1.5.15 (SNAPSHOT)"
+      },
+      {
+        "id": "1.5.14.RELEASE",
+        "name": "1.5.14"
+      }
+    ]
+  },
+  "groupId": {
+    "type": "text",
+    "default": "com.example"
+  },
+  "artifactId": {
+    "type": "text",
+    "default": "demo"
+  },
+  "version": {
+    "type": "text",
+    "default": "0.0.1-SNAPSHOT"
+  },
+  "name": {
+    "type": "text",
+    "default": "demo"
+  },
+  "description": {
+    "type": "text",
+    "default": "Demo project for Spring Boot"
+  },
+  "packageName": {
+    "type": "text",
+    "default": "com.example.demo"
+  }
+}
+

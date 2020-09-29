@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension-point id="namespacemanager" name="namespacemanager" schema="schema/namespacemanager.exsd"/>
+
+    <extension
+          point="org.eclipse.wst.common.uriresolver.resolverExtensions">
+       <resolverExtension
+             class="org.springframework.ide.eclipse.xml.namespaces.internal.ProjectClasspathExtensibleUriResolver"
+             priority="high"
+             stage="postnormalization">
+<!--          <projectNature
+                value="org.springframework.ide.eclipse.core.springnature">
+          </projectNature> -->
+       </resolverExtension>
+    </extension>
+
+	<extension
+         point="org.eclipse.ui.propertyPages">
+      <page
+            id="org.springframework.ide.eclipse.beans.ui.namespaces.projectPropertyPage"
+            name="Namespaces"
+            class="org.springframework.ide.eclipse.xml.namespaces.ui.preferences.NamespaceVersionPreferencePage"
+            adaptable="true"
+            objectClass="org.eclipse.core.resources.IProject"
+            category="org.springframework.ide.eclipse.beans.ui.properties.ProjectPropertyPage">
+ <!--    <filter
+               name="nature"
+               value="org.springframework.ide.eclipse.core.springnature">
+         </filter> -->
+         <keywordReference
+               id="org.springframework.ide.eclipse.beans.ui.namespaces.keywords">
+         </keywordReference>
+      </page>
+   </extension>
+    <extension point="org.eclipse.ui.keywords">
+         <keyword id="org.springframework.ide.eclipse.beans.ui.namespaces.keywords"
+            label="Spring Beans config xsd schema location version"/>
+    </extension>
+   
+    <extension point="org.eclipse.ui.preferencePages">
+	 	<page id="org.springframework.ide.eclipse.beans.ui.namespaces.preferencePage"
+ 			name="Namespaces"
+    		class="org.springframework.ide.eclipse.xml.namespaces.ui.preferences.NamespaceVersionPreferencePage"
+    		category="org.springsource.ide.eclipse.commons.preferencePage">
+   		</page>
+   	</extension>
+
+</plugin>

@@ -1,0 +1,19 @@
+---
+applications:
+- name: app
+  memory: 2048M
+  env:
+  
+  
+# Comment 1
+
+    KEY1-DELETE: value1
+    KEY2-DELETE: value2
+    
+# Comment 2
+
+    KEY3-DELETE: value3
+# Comment 3
+  host: test-app
+# Comment 4
+  domain: springsource.org

@@ -1,0 +1,6 @@
+---
+applications:
+- name: app
+  health-check-type: process
+  routes: 
+    - route: my-route.springsource.org

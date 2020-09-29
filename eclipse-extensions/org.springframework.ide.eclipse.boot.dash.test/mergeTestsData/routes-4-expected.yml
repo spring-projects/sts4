@@ -1,0 +1,9 @@
+---
+applications:
+- name: app
+  routes:
+  - route: app-1.springsource.org
+  - route: app-2.springsource.org
+  - route: app-3.springsource.org
+  memory: 2048M
+  

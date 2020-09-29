@@ -1,0 +1,8 @@
+---
+instances: 2
+applications:
+- name: somapp
+- name: app
+  instances: 1
+  memory: 2048M
+  domain: springsource.org

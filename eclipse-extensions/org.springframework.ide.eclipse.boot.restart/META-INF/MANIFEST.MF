@@ -1,0 +1,17 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-SymbolicName: org.springframework.ide.eclipse.boot.restart;singleton:=true
+Bundle-Version: 4.8.1.qualifier
+Bundle-Vendor: Pivotal Inc
+Bundle-Name: Spring Boot Devtools Easy Restart
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ org.eclipse.ui.console,
+ org.eclipse.debug.ui;bundle-version="3.9.0",
+ org.eclipse.ui.workbench.texteditor;bundle-version="3.9.0",
+ org.springframework.ide.eclipse.boot.launch,
+ org.springframework.ide.eclipse.boot
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-Activator: org.springframework.ide.eclipse.boot.restart.RestartPlugin
+Bundle-ActivationPolicy: lazy
+Automatic-Module-Name: org.springframework.ide.eclipse.boot.restart

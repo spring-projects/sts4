@@ -1,0 +1,7 @@
+---
+applications:
+- name: app
+  memory: 2048M
+  instances: 2
+  host: test-app
+  domain: springsource.org

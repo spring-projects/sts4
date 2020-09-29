@@ -1,0 +1,196 @@
+{
+  "_links" : {
+    "maven-build" : {
+      "href" : "https://start.spring.io/pom.xml?type=maven-build{&dependencies,packaging,javaVersion,language,bootVersion,groupId,artifactId,version,name,description,packageName}",
+      "templated" : true
+    },
+    "maven-project" : {
+      "href" : "https://start.spring.io/starter.zip?type=maven-project{&dependencies,packaging,javaVersion,language,bootVersion,groupId,artifactId,version,name,description,packageName}",
+      "templated" : true
+    },
+    "gradle-build" : {
+      "href" : "https://start.spring.io/build.gradle?type=gradle-build{&dependencies,packaging,javaVersion,language,bootVersion,groupId,artifactId,version,name,description,packageName}",
+      "templated" : true
+    },
+    "gradle-project" : {
+      "href" : "https://start.spring.io/starter.zip?type=gradle-project{&dependencies,packaging,javaVersion,language,bootVersion,groupId,artifactId,version,name,description,packageName}",
+      "templated" : true
+    },
+    "dependencies" : {
+      "href" : "https://start.spring.io/dependencies{?bootVersion}",
+      "templated" : true
+    }
+  },
+  "dependencies" : {
+    "type" : "hierarchical-multi-select",
+    "values" : [ {
+      "name" : "Core",
+      "values" : [ {
+        "id" : "web",
+        "name" : "Web",
+        "description" : "Web dependency description",
+        "_links" : {
+          "guide" : {
+            "href" : "https://example.com/guide",
+            "title" : "Building a RESTful Web Service"
+          },
+          "reference" : {
+            "href" : "https://example.com/doc"
+          }
+        }
+      }, {
+        "id" : "security",
+        "name" : "Security"
+      }, {
+        "id" : "data-jpa",
+        "name" : "Data JPA"
+      } ]
+    }, {
+      "name" : "Other",
+      "values" : [ {
+        "id" : "org.acme:foo",
+        "name" : "Foo",
+        "_links" : {
+          "guide" : [ {
+            "href" : "https://example.com/guide1"
+          }, {
+            "href" : "https://example.com/guide2",
+            "title" : "Some guide for foo"
+          } ],
+          "reference" : {
+            "href" : "https://example.com/{bootVersion}/doc",
+            "templated" : true
+          }
+        }
+      }, {
+        "id" : "org.acme:bar",
+        "name" : "Bar"
+      }, {
+        "id" : "org.acme:biz",
+        "name" : "Biz",
+        "versionRange" : "2.2.0.BUILD-SNAPSHOT"
+      }, {
+        "id" : "org.acme:bur",
+        "name" : "Bur",
+        "versionRange" : "[2.1.4.RELEASE,2.4.0-SNAPSHOT)"
+      }, {
+        "id" : "my-api",
+        "name" : "My API"
+      } ]
+    } ]
+  },
+  "type" : {
+    "type" : "action",
+    "default" : "maven-project",
+    "values" : [ {
+      "id" : "maven-build",
+      "name" : "Maven POM",
+      "action" : "/pom.xml",
+      "tags" : {
+        "build" : "maven",
+        "format" : "build"
+      }
+    }, {
+      "id" : "maven-project",
+      "name" : "Maven Project",
+      "action" : "/starter.zip",
+      "tags" : {
+        "format" : "project",
+        "build" : "maven"
+      }
+    }, {
+      "id" : "gradle-build",
+      "name" : "Gradle Config",
+      "action" : "/build.gradle",
+      "tags" : {
+        "build" : "gradle",
+        "format" : "build"
+      }
+    }, {
+      "id" : "gradle-project",
+      "name" : "Gradle Project",
+      "action" : "/starter.zip",
+      "tags" : {
+        "format" : "project",
+        "build" : "gradle"
+      }
+    } ]
+  },
+  "packaging" : {
+    "type" : "single-select",
+    "default" : "jar",
+    "values" : [ {
+      "id" : "jar",
+      "name" : "Jar"
+    }, {
+      "id" : "war",
+      "name" : "War"
+    } ]
+  },
+  "javaVersion" : {
+    "type" : "single-select",
+    "default" : "1.8",
+    "values" : [ {
+      "id" : "1.6",
+      "name" : "1.6"
+    }, {
+      "id" : "1.7",
+      "name" : "1.7"
+    }, {
+      "id" : "1.8",
+      "name" : "1.8"
+    } ]
+  },
+  "language" : {
+    "type" : "single-select",
+    "default" : "java",
+    "values" : [ {
+      "id" : "groovy",
+      "name" : "Groovy"
+    }, {
+      "id" : "java",
+      "name" : "Java"
+    }, {
+      "id" : "kotlin",
+      "name" : "Kotlin"
+    } ]
+  },
+  "bootVersion" : {
+    "type" : "single-select",
+    "default" : "2.1.4.RELEASE",
+    "values" : [ {
+      "id" : "2.4.0-SNAPSHOT",
+      "name" : "Latest SNAPSHOT"
+    }, {
+      "id" : "2.1.4.RELEASE",
+      "name" : "2.1.4"
+    }, {
+      "id" : "1.5.17.RELEASE",
+      "name" : "1.5.17"
+    } ]
+  },
+  "groupId" : {
+    "type" : "text",
+    "default" : "com.example"
+  },
+  "artifactId" : {
+    "type" : "text",
+    "default" : "demo"
+  },
+  "version" : {
+    "type" : "text",
+    "default" : "0.0.1-SNAPSHOT"
+  },
+  "name" : {
+    "type" : "text",
+    "default" : "demo"
+  },
+  "description" : {
+    "type" : "text",
+    "default" : "Demo project for Spring Boot"
+  },
+  "packageName" : {
+    "type" : "text",
+    "default" : "com.example.demo"
+  }
+}

@@ -1,0 +1,19 @@
+apply plugin: 'application'
+
+repositories {
+    maven { 
+        url "$projectDir/../repo"
+    }
+    maven {
+        url 'https://repo.gradle.org/gradle/libs-releases-local'
+    }
+    mavenCentral()
+}
+    
+dependencies {
+    compile files('../sts-model-plugin/build/libs/sts-model-plugin-1.0.0-SNAPSHOT.jar')
+    compile "org.gradle:gradle-tooling-api:6.2.2"
+    runtime 'org.slf4j:slf4j-simple:1.7.5'
+}
+
+mainClassName = 'org.gradle.sample.toolingapi.ToolingApiRunner'

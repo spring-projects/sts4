@@ -1,0 +1,40 @@
+{
+  "bootVersion": "2.0.3.RELEASE",
+  "dependencies": {
+    "cloud-eureka": {
+      "groupId": "org.springframework.cloud",
+      "artifactId": "spring-cloud-starter-eureka",
+      "scope": "compile",
+      "bom": "cloud-bom"
+    },
+    "fake-dep": {
+      "groupId": "org.springframework.fake",
+      "artifactId": "spring-fake-dep",
+      "scope": "compile",
+      "repository": "spring-milestones"
+    }
+  },
+  "repositories": {
+    "spring-snapshots": {
+      "name": "Spring Snapshots",
+      "url": "https:\/\/repo.spring.io\/snapshot",
+      "snapshotEnabled": true
+    },
+    "spring-milestones": {
+      "name": "Spring Milestones",
+      "url": "https:\/\/repo.spring.io\/milestone",
+      "snapshotEnabled": false
+    }
+  },
+  "boms": {
+    "cloud-bom": {
+      "groupId": "org.springframework.cloud",
+      "artifactId": "spring-cloud-dependencies",
+      "version": "Finchley.RC2",
+      "repositories": [
+        "spring-milestones",
+        "spring-snapshots"
+      ]
+    }
+  }
+}

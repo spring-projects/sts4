@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="https://maven.apache.org/POM/4.0.0" xmlns:xsi="https://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://maven.apache.org/POM/4.0.0 https://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.springframework.boot.ide</groupId>
+		<artifactId>org.springframework.boot.ide</artifactId>
+		<version>4.8.1-SNAPSHOT</version>
+		<relativePath>../../eclipse-distribution/pom.xml</relativePath>
+	</parent>
+
+	<groupId>org.springframework.ide.eclipse</groupId>
+	<artifactId>org.springframework.ide.eclipse.buildship30</artifactId>
+
+	<packaging>eclipse-plugin</packaging>
+
+	<properties>
+		<gradle.executable>./gradlew</gradle.executable>
+		<gradle.model-plugin.artifactId>sts-gradle-model-plugin</gradle.model-plugin.artifactId>
+	</properties>
+
+	<profiles>
+		<profile>
+			<id>e45</id>
+			<repositories>
+				<repository>
+					<id>buildship3</id>
+					<layout>p2</layout>
+					<url>https://download.eclipse.org/buildship/updates/e45/snapshots/3.x</url>
+				</repository>
+			</repositories>
+		</profile>
+		<profile>
+			<id>e46</id>
+			<repositories>
+				<repository>
+					<id>buildship3</id>
+					<layout>p2</layout>
+					<url>https://download.eclipse.org/buildship/updates/e46/snapshots/3.x</url>
+				</repository>
+			</repositories>
+		</profile>
+		<profile>
+			<id>e47</id>
+			<repositories>
+				<repository>
+					<id>buildship3</id>
+					<layout>p2</layout>
+					<url>https://download.eclipse.org/buildship/updates/e47/snapshots/3.x</url>
+				</repository>
+			</repositories>
+		</profile>
+		<profile>
+			<id>e48</id>
+			<repositories>
+				<repository>
+					<id>buildship3</id>
+					<layout>p2</layout>
+					<url>https://download.eclipse.org/buildship/updates/e48/snapshots/3.x</url>
+				</repository>
+			</repositories>
+		</profile>
+	</profiles>
+
+	<build>
+		<plugins>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-clean-plugin</artifactId>
+				<configuration>
+					<filesets>
+						<fileset>
+							<directory>${project.basedir}/gradle-plugin</directory>
+							<includes>
+								<include>*.jar</include>
+							</includes>
+						</fileset>
+					</filesets>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>sts-gradle-model-build</id>
+						<phase>generate-resources</phase>
+						<configuration>
+							<workingDirectory>${project.basedir}/../sts-gradle-model-plugin/sts-gradle-model-plugin</workingDirectory>
+							<executable>${gradle.executable}</executable>
+							<arguments>
+								<argument>clean</argument>
+								<argument>build</argument>
+								<argument>-S</argument>
+							</arguments>
+						</configuration>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<artifactId>maven-resources-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy-sts-gradle-model-jars</id>
+						<phase>process-resources</phase>
+						<goals>
+							<goal>copy-resources</goal>
+						</goals>
+
+						<configuration>
+							<outputDirectory>${project.basedir}/gradle-plugin</outputDirectory>
+							<resources>
+								<resource>
+									<directory>${project.basedir}/../sts-gradle-model-plugin/sts-gradle-model-plugin/build/libs/</directory>
+									<includes>
+										<include>${gradle.model-plugin.artifactId}.jar</include>
+									</includes>
+								</resource>
+							</resources>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>target-platform-configuration</artifactId>
+				<version>${tycho-version}</version>
+				<configuration>
+					<resolver>p2</resolver>
+					<pomDependencies>ignore</pomDependencies>
+					<dependency-resolution>
+						<optionalDependencies>require</optionalDependencies>
+						<extraRequirements>
+							<requirement>
+								<type>eclipse-plugin</type>
+								<id>org.eclipse.buildship.core</id>
+								<versionRange>[3.0.0,4.0.0)</versionRange>
+							</requirement>
+						</extraRequirements>
+					</dependency-resolution>
+					<!-- 					<filters> -->
+					<!-- 						<filter> -->
+					<!-- 							<type>p2-installable-unit</type> -->
+					<!-- 							<id>org.eclipse.buildship.core</id> -->
+					<!-- 							<versionRange>[2.0.0,3.0.0)</versionRange> -->
+					<!-- 						</filter> -->
+					<!-- 					</filters> -->
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-compiler-plugin</artifactId>
+				<version>${tycho-version}</version>
+			</plugin>
+
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-source-plugin</artifactId>
+				<version>${tycho-version}</version>
+				<executions>
+					<execution>
+						<id>plugin-source</id>
+						<phase>generate-sources</phase>
+						<goals>
+							<goal>plugin-source</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-p2-plugin</artifactId>
+				<version>${tycho-version}</version>
+				<executions>
+					<execution>
+						<id>second-generate-p2-metadata</id>
+						<goals>
+							<goal>p2-metadata</goal>
+						</goals>
+						<phase>verify</phase>
+					</execution>
+				</executions>
+			</plugin>
+
+		</plugins>
+	</build>
+</project>

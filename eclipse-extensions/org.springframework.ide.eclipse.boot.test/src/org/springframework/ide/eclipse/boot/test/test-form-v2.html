@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Spring Initializr</title>
+<link rel="stylesheet" href="/css/bootstrap-sts.min.css"/>
+</head>
+<body>
+<div class="container">
+<div class="navbar">
+<div class="navbar-inner">
+<a class="brand" href="https://spring.io">
+Spring
+</a>
+<ul class="nav">
+<li>
+<a href="/" title="Download a template project or build file with some very basic content.">
+Projects
+</a>
+</li>
+<li>
+<a href="/spring.zip" title="Download the spring CLI as a zip distribution (unpack and run bin/spring on a command line).">
+Download
+</a>
+</li>
+<li>
+<a href="/install.sh" title="Installer for the spring CLI command on Un*x-like system (should work on Linux, Mac or Cygwin). Curl this link and pipe to bash, or download the script and run it.">
+Installer
+</a>
+</li>
+</ul>
+</div>
+</div>
+<h1>Spring Initializr</h1>
+<div>
+<form id="form" action="/starter.zip" method="get">
+<label for="groupId">Group:</label> <input id="groupId" type="text" value="org.test" name="groupId"/>
+<label for="artifactId">Artifact:</label> <input id="artifactId" type="text" value="demo" name="artifactId"/>
+<label for="name">Name:</label> <input id="name" type="text" value="demo" name="name"/>
+<label for="name">Description:</label> <input id="description" type="text" value="Demo project for Spring Boot" name="description"/>
+<label for="packageName">Package Name:</label> <input id="packageName" type="text" value="demo" name="packageName"/>
+<label>Styles:</label>
+<label class="checkbox">
+<input type="checkbox" name="style" value="security"/>
+Security
+</label>
+<label class="checkbox">
+<input type="checkbox" name="style" value="aop"/>
+AOP
+</label>
+<label class="checkbox">
+<input type="checkbox" name="style" value="jdbc"/>
+JDBC
+</label>
+<label class="checkbox">
+<input type="checkbox" name="style" value="data-jpa"/>
+JPA
+</label>
+<label class="checkbox">
+<input type="checkbox" name="style" value="data-mongodb"/>
+MongoDB
+</label>
+<label class="checkbox">
+<input type="checkbox" name="style" value="redis"/>
+Redis
+</label>
+<label class="checkbox">
+<input type="checkbox" name="style" value="data-gemfire"/>
+Gemfire
+</label>
+<label class="checkbox">
+<input type="checkbox" name="style" value="data-solr"/>
+Solr
+</label>
+<label class="checkbox">
+<input type="checkbox" name="style" value="data-elasticsearch"/>
+Elasticsearch
+</label>
+<label class="checkbox">
+<input type="checkbox" name="style" value="batch"/>
+Batch
+</label>
+<label class="checkbox">
+<input type="checkbox" name="style" value="integration"/>
+Integration
+</label>
+<label class="checkbox">
+<input type="checkbox" name="style" value="hornetq"/>
+JMS
+</label>
+<label class="checkbox">
+<input type="checkbox" name="style" value="amqp"/>
+AMQP
+</label>
+<label class="checkbox">
+<input type="checkbox" name="style" value="web"/>
+Web
+</label>
+<label class="checkbox">
+<input type="checkbox" name="style" value="websocket"/>
+Websocket
+</label>
+<label class="checkbox">
+<input type="checkbox" name="style" value="ws"/>
+WS
+</label>
+<label class="checkbox">
+<input type="checkbox" name="style" value="data-rest"/>
+Rest Repositories
+</label>
+<label class="checkbox">
+<input type="checkbox" name="style" value="mobile"/>
+Mobile
+</label>
+<label class="checkbox">
+<input type="checkbox" name="style" value="freemarker"/>
+Freemarker
+</label>
+<label class="checkbox">
+<input type="checkbox" name="style" value="velocity"/>
+Velocity
+</label>
+<label class="checkbox">
+<input type="checkbox" name="style" value="groovy-templates"/>
+Groovy Templates
+</label>
+<label class="checkbox">
+<input type="checkbox" name="style" value="thymeleaf"/>
+Thymeleaf
+</label>
+<label class="checkbox">
+<input type="checkbox" name="style" value="social-facebook"/>
+Facebook
+</label>
+<label class="checkbox">
+<input type="checkbox" name="style" value="social-linkedin"/>
+LinkedIn
+</label>
+<label class="checkbox">
+<input type="checkbox" name="style" value="social-twitter"/>
+Twitter
+</label>
+<label class="checkbox">
+<input type="checkbox" name="style" value="actuator"/>
+Actuator
+</label>
+<label class="checkbox">
+<input type="checkbox" name="style" value="remote-shell"/>
+Remote Shell
+</label>
+<label>Type:</label>
+<label class="radio">
+<input type="radio" name="type" value="maven-build" onclick="javascript:this.form.action='/pom.xml'"/>
+Maven POM
+</label>
+<label class="radio">
+<input type="radio" name="type" value="maven-project" checked="true" onclick="javascript:this.form.action='/starter.zip'"/>
+Maven Project
+</label>
+<label class="radio">
+<input type="radio" name="type" value="gradle-build" onclick="javascript:this.form.action='/build.gradle'"/>
+Gradle Config
+</label>
+<label class="radio">
+<input type="radio" name="type" value="gradle-project" onclick="javascript:this.form.action='/starter.zip'"/>
+Gradle Project
+</label>
+<label>Packaging:</label>
+<label class="radio">
+<input type="radio" name="packaging" value="jar" checked="true"/>
+Jar
+</label>
+<label class="radio">
+<input type="radio" name="packaging" value="war"/>
+War
+</label>
+<label>Java Version:</label>
+<label class="radio">
+<input type="radio" name="javaVersion" value="1.6"/>
+1.6
+</label>
+<label class="radio">
+<input type="radio" name="javaVersion" value="1.7" checked="true"/>
+1.7
+</label>
+<label class="radio">
+<input type="radio" name="javaVersion" value="1.8"/>
+1.8
+</label>
+<label>Language:</label>
+<label class="radio">
+<input type="radio" name="language" value="groovy"/>
+Groovy
+</label>
+<label class="radio">
+<input type="radio" name="language" value="java" checked="true"/>
+Java
+</label>
+<label>Spring Boot Version:</label>
+<label class="radio">
+<input type="radio" name="bootVersion" value="1.2.0.M2"/>
+1.2.0 M2
+</label>
+<label class="radio">
+<input type="radio" name="bootVersion" value="1.2.0.BUILD-SNAPSHOT"/>
+1.2.0 (SNAPSHOT)
+</label>
+<label class="radio">
+<input type="radio" name="bootVersion" value="1.1.8.RELEASE" checked="true"/>
+1.1.8
+</label>
+<label class="radio">
+<input type="radio" name="bootVersion" value="1.1.8.BUILD-SNAPSHOT"/>
+1.1.8 (SNAPSHOT)
+</label>
+<label class="radio">
+<input type="radio" name="bootVersion" value="1.0.2.RELEASE"/>
+1.0.2
+</label>
+<button name="generate-project" type="submit" class="btn">Generate</button>
+</form>
+</div>
+</div>
+</body>
+</html>

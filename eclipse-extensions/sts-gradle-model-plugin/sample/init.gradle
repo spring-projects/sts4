@@ -1,0 +1,9 @@
+initscript {
+    dependencies {
+       classpath files('../sts-model-plugin/build/libs/sts-model-plugin-1.0.0-SNAPSHOT.jar')
+    }
+}
+
+allprojects {
+    apply plugin: sts.model.plugin.StsModelPlugin
+}

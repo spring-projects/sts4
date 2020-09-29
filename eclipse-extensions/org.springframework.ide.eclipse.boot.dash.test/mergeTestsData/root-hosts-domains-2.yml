@@ -1,0 +1,10 @@
+---
+host: test-app
+hosts:
+- test-app1
+- test-app2
+applications:
+- name: another-app
+- name: app
+  host: my-app
+  memory: 2048M

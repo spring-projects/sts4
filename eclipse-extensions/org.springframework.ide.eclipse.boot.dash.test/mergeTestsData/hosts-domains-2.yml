@@ -1,0 +1,6 @@
+---
+applications:
+- name: app
+  memory: 2048M
+  host: app-1
+

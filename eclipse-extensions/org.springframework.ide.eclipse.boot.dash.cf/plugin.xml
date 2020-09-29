@@ -1,0 +1,89 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         point="org.springframework.ide.eclipse.boot.dash.injections">
+      <injection class="org.springframework.ide.eclipse.boot.dash.cf.BootDashInjections"/>
+   </extension>
+
+	<extension
+	      point="org.eclipse.compare.contentMergeViewers">
+	   <contentTypeBinding
+	         contentMergeViewerId="org.springframework.ide.eclipse.boot.dash.cf.yamlMergeViewer"
+	         contentTypeId="org.springframework.ide.eclipse.manifest.yml">
+	   </contentTypeBinding>
+	   <viewer
+	         class="org.springframework.ide.eclipse.boot.dash.cloudfoundry.deployment.YamlMergeViewerCreator"
+	         extensions="yml"
+	         id="org.springframework.ide.eclipse.boot.dash.cf.yamlMergeViewer"
+	         label="YAML Text Merge">
+	   </viewer>
+	</extension>
+
+   <extension point="org.eclipse.debug.core.launchConfigurationTypes">
+	    <launchConfigurationType
+	          id="org.springframework.ide.eclipse.boot.dash.ssh.tunnel.launch"
+	          name="Boot Dash SSH Debug Tunnel"
+	          delegate="org.springframework.ide.eclipse.boot.dash.cf.debug.SshDebugLaunchConfigurationDelegate"
+	          modes="debug"
+	          sourceLocatorId="org.eclipse.jdt.launching.sourceLocator.JavaSourceLookupDirector"
+	          sourcePathComputerId="org.eclipse.jdt.launching.sourceLookup.javaSourcePathComputer">
+	    </launchConfigurationType>
+   </extension>
+
+   <extension
+         point="org.eclipse.ui.views.properties.tabbed.propertySections">
+      <propertySections
+            contributorId="org.springframework.ide.eclipse.boot.dash.propertyContributor">
+         <propertySection
+               class="org.springframework.ide.eclipse.boot.dash.cf.views.properties.CloudFoundryAppPropertiesSection"
+               id="org.springframework.ide.eclipse.boot.dash.section.CloudFoundryGeneral"
+               tab="org.springframework.ide.eclipse.boot.dash.tab.General">
+            <input
+                  type="org.springframework.ide.eclipse.boot.dash.cf.model.CloudAppDashElement">
+            </input>
+         </propertySection>
+         <propertySection
+               class="org.springframework.ide.eclipse.boot.dash.cf.views.properties.CloudServiceGeneralPropertiesSection"
+               id="org.springframework.ide.eclipse.boot.dash.section.CloudServiceSection"
+               tab="org.springframework.ide.eclipse.boot.dash.tab.General">
+            <input
+                  type="org.springframework.ide.eclipse.boot.dash.cf.model.CloudServiceInstanceDashElement">
+            </input>
+         </propertySection>
+      </propertySections>
+   </extension>
+
+    <extension
+          point="org.eclipse.debug.ui.launchConfigurationTypeImages">
+	    <launchConfigurationTypeImage
+	        icon="platform:/plugin/org.springframework.ide.eclipse.boot/resources/icons/boot-devtools-icon.png"
+	        configTypeID="org.springframework.ide.eclipse.boot.dash.ssh.tunnel.launch"
+	        id="org.springframework.ide.eclipse.boot.dash.ssh.tunnel.launch.image">
+	    </launchConfigurationTypeImage>
+    </extension>
+
+	<extension point="org.eclipse.debug.ui.launchConfigurationTabGroups">
+	    <launchConfigurationTabGroup
+	        type="org.springframework.ide.eclipse.boot.dash.ssh.tunnel.launch"
+	        class="org.springframework.ide.eclipse.boot.dash.cf.debug.SshDebugLaunchConfigurationTabGroup"
+	        id="org.springframework.ide.eclipse.boot.dash.cf.debug.SshDebugLaunchConfigurationTabGroup">
+	    </launchConfigurationTabGroup>
+	</extension>
+	<extension
+	      point="org.eclipse.ui.genericeditor.reconcilers">
+	   <reconciler
+	         class="org.springframework.ide.eclipse.boot.dash.cf.deployment.ApplicationNameReconciler"
+	         contentType="org.springframework.ide.eclipse.manifest.yml">
+	      <enabledWhen>
+	         <with
+	               variable="editor">
+	            <test
+	                  property="org.springframework.ide.eclipse.boot.EmbeddedEditor.context"
+	                  value="deployment-properties-dialog">
+	            </test>
+	         </with>
+	      </enabledWhen>
+	   </reconciler>
+	</extension>
+</plugin>

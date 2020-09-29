@@ -1,0 +1,4 @@
+---
+random-route: true
+applications:
+- name: app

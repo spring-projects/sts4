@@ -1,0 +1,25 @@
+[{
+  "parent": null,
+  "beans": [
+    {
+      "aliases": [],
+      "resource": "class path resource [org/springframework/boot/autoconfigure/jackson/JacksonAutoConfiguration$Jackson2ObjectMapperBuilderCustomizerConfiguration.class]",
+      "scope": "singleton",
+      "type": "org.springframework.boot.autoconfigure.jackson.JacksonAutoConfiguration$Jackson2ObjectMapperBuilderCustomizerConfiguration$StandardJackson2ObjectMapperBuilderCustomizer",
+      "bean": "standardJacksonObjectMapperBuilderCustomizer",
+      "dependencies": [
+        "org.springframework.boot.context.embedded.AnnotationConfigEmbeddedWebApplicationContext@4b9e255",
+        "spring.jackson-org.springframework.boot.autoconfigure.jackson.JacksonProperties"
+      ]
+    },
+    {
+      "aliases": [],
+      "resource": "null",
+      "scope": "singleton",
+      "type": "org.springframework.boot.autoconfigure.jackson.JacksonProperties",
+      "bean": "spring.jackson-org.springframework.boot.autoconfigure.jackson.JacksonProperties",
+      "dependencies": []
+    }
+  ],
+  "context": "application:9999"
+}]

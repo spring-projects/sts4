@@ -1,0 +1,7 @@
+---
+no-route: true
+applications:
+- name: app
+  no-route: false
+  memory: 2048M
+  domain: springsource.org

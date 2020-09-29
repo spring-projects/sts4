@@ -1,0 +1,13 @@
+---
+applications:
+- name: app
+  memory: 2048M
+  host: app3
+  hosts:
+  - app1
+  - app2
+  domains:
+  - spring.io
+  - springsource.org
+  domain: spring.framework
+

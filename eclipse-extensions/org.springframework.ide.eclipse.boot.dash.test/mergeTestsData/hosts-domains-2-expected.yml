@@ -1,0 +1,10 @@
+---
+applications:
+- name: app
+  hosts:
+  - app1
+  - app2
+  domain: springsource.org
+  memory: 2048M
+  
+

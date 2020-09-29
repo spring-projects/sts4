@@ -1,0 +1,6 @@
+---
+applications:
+- name: app
+  domain: spring.io
+  memory: 1.5G
+  

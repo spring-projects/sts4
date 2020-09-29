@@ -1,0 +1,9 @@
+---
+applications:
+- name: app
+  memory: 2048M
+  hosts:
+  - app1
+  - app2
+  domain: spring.io
+

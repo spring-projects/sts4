@@ -1,0 +1,15 @@
+---
+applications:
+- name: app
+  random-route: true
+  no-route: true
+  memory: 512M
+  host: my-app2
+  hosts:
+  - app-2-1
+  - app-2-2
+  domain: springsource.org
+  path: target/demo-0.0.1-SNAPSHOT.jar
+  env:
+    KEY1: value1
+    KEY2: value2

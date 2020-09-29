@@ -1,0 +1,5 @@
+---
+applications:
+- name: app
+  memory: 2048M
+  random-route: true

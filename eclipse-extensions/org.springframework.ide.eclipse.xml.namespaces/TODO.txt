@@ -1,0 +1,17 @@
+===========================================================
+Moving namespaces extension point?
+
+- id: org.springframework.ide.eclipse.beans.ui.namespaces 
+
+Results from extension point search:
+
+org.springframework.ide.eclipse.beans.ui.namespaces - org.springframework.ide.eclipse.batch
+org.springframework.ide.eclipse.beans.ui.namespaces - org.springframework.ide.eclipse.beans.ui
+org.springframework.ide.eclipse.beans.ui.namespaces - org.springframework.ide.eclipse.data.core
+org.springframework.ide.eclipse.beans.ui.namespaces - org.springframework.ide.eclipse.integration
+org.springframework.ide.eclipse.beans.ui.namespaces - org.springframework.ide.eclipse.security
+org.springframework.ide.eclipse.beans.ui.namespaces - org.springframework.ide.eclipse.webflow.ui
+
+If we move extension point to xml.namespaces plugin, the id will change
+and each of the references has to be changed.
+=============================================================

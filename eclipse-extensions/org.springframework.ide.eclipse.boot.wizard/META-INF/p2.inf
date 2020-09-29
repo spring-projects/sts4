@@ -1,0 +1,5 @@
+# Specify gradle bundles as optional non greedy
+#requires.0.namespace=osgi.bundle
+#requires.0.name=org.glassfish.jersey.inject.jersey-hk2
+#requires.0.greedy=true
+#requires.0.optional=false

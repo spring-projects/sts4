@@ -1,0 +1,14 @@
+#instructions.configure=\
+# org.eclipse.equinox.p2.touchpoint.eclipse.addRepository(type:0,location:https${#58}//download.eclipse.org/releases/something2,name:Something2);\
+# org.eclipse.equinox.p2.touchpoint.eclipse.uninstallBundle(bundle:org.slf4j.api);
+
+
+#requires.0.namespace = org.eclipse.equinox.p2.iu
+#requires.0.name = org.slf4j.api
+#requires.0.range = [1.7.2, 1.7.30)
+#requires.0.min = 0
+#requires.0.max = 0
+
+#units.0.id = org.slf4j.api
+#units.0.version = 1.7.2
+#units.0.instructions.install = uninstallBundle(bundle:org.slf4j.api);

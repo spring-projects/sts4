@@ -1,0 +1,9 @@
+routes:
+- route: my-route-1.springsource.org 
+- route: my-route-2.springsource.org
+applications:
+- name: app
+  hosts:
+  - aboyko-test1
+  path: target/demo-0.0.1-SNAPSHOT.jar
+  

@@ -1,0 +1,17 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Templates
+Bundle-SymbolicName: org.springframework.ide.eclipse.boot.templates;singleton:=true
+Bundle-Version: 4.8.1.qualifier
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Require-Bundle: org.eclipse.jdt.core,
+ org.eclipse.text,
+ org.eclipse.jdt.ui,
+ org.eclipse.jface.text,
+ org.eclipse.core.runtime,
+ org.springsource.ide.eclipse.commons.frameworks.core,
+ org.eclipse.ui.editors,
+ org.eclipse.ui.workbench,
+ com.google.guava,
+ org.springframework.ide.eclipse.boot
+Bundle-Vendor: Pivotal Inc

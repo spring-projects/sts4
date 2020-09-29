@@ -1,0 +1,7 @@
+---
+applications:
+- name: app
+  memory: 512M
+  command: my-command
+  routes:
+  - route: app.springsource.org

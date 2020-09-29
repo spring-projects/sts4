@@ -1,0 +1,10 @@
+---
+applications:
+- name: app
+  memory: 2048M
+  host: test-app
+  domain: springsource.org
+  env:
+    KEY1: value1
+    KEY2: value2
+    KEY3: value3

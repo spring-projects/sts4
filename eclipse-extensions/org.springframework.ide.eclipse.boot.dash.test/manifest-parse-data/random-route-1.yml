@@ -1,0 +1,5 @@
+---
+applications:
+- name: app
+  host: my-app
+  random-route: true

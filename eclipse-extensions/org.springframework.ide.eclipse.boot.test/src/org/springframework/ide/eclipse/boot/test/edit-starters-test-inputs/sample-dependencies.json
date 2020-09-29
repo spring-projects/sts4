@@ -1,0 +1,659 @@
+{
+  "bootVersion": "2.0.3.RELEASE",
+  "dependencies": {
+    "aop": {
+      "groupId": "org.springframework.boot",
+      "artifactId": "spring-boot-starter-aop",
+      "scope": "compile"
+    },
+    "actuator": {
+      "groupId": "org.springframework.boot",
+      "artifactId": "spring-boot-starter-actuator",
+      "scope": "compile"
+    },
+    "data-redis-reactive": {
+      "groupId": "org.springframework.boot",
+      "artifactId": "spring-boot-starter-data-redis-reactive",
+      "scope": "compile"
+    },
+    "cloud-contract-stub-runner": {
+      "groupId": "org.springframework.cloud",
+      "artifactId": "spring-cloud-starter-contract-stub-runner",
+      "scope": "test",
+      "bom": "spring-cloud"
+    },
+    "data-rest-hal": {
+      "groupId": "org.springframework.data",
+      "artifactId": "spring-data-rest-hal-browser",
+      "scope": "compile"
+    },
+    "azure-support": {
+      "groupId": "com.microsoft.azure",
+      "artifactId": "azure-spring-boot",
+      "scope": "compile",
+      "bom": "azure"
+    },
+    "validation": {
+      "groupId": "org.springframework.boot",
+      "artifactId": "spring-boot-starter-validation",
+      "scope": "compile"
+    },
+    "cloud-starter-zookeeper-config": {
+      "groupId": "org.springframework.cloud",
+      "artifactId": "spring-cloud-starter-zookeeper-config",
+      "scope": "compile",
+      "bom": "spring-cloud"
+    },
+    "cloud-turbine": {
+      "groupId": "org.springframework.cloud",
+      "artifactId": "spring-cloud-starter-netflix-turbine",
+      "scope": "compile",
+      "bom": "spring-cloud"
+    },
+    "cloud-hystrix": {
+      "groupId": "org.springframework.cloud",
+      "artifactId": "spring-cloud-starter-netflix-hystrix",
+      "scope": "compile",
+      "bom": "spring-cloud"
+    },
+    "cache": {
+      "groupId": "org.springframework.boot",
+      "artifactId": "spring-boot-starter-cache",
+      "scope": "compile"
+    },
+    "spring-shell": {
+      "groupId": "org.springframework.shell",
+      "artifactId": "spring-shell-starter",
+      "version": "2.0.0.RELEASE",
+      "scope": "compile",
+      "repository": "spring-milestones"
+    },
+    "codecentric-spring-boot-admin-client": {
+      "groupId": "de.codecentric",
+      "artifactId": "spring-boot-admin-starter-client",
+      "scope": "compile",
+      "bom": "codecentric-spring-boot-admin"
+    },
+    "cloud-starter-consul-discovery": {
+      "groupId": "org.springframework.cloud",
+      "artifactId": "spring-cloud-starter-consul-discovery",
+      "scope": "compile",
+      "bom": "spring-cloud"
+    },
+    "data-cassandra": {
+      "groupId": "org.springframework.boot",
+      "artifactId": "spring-boot-starter-data-cassandra",
+      "scope": "compile"
+    },
+    "azure-active-directory": {
+      "groupId": "com.microsoft.azure",
+      "artifactId": "azure-active-directory-spring-boot-starter",
+      "scope": "compile",
+      "bom": "azure"
+    },
+    "scs-circuit-breaker": {
+      "groupId": "io.pivotal.spring.cloud",
+      "artifactId": "spring-cloud-services-starter-circuit-breaker",
+      "scope": "compile",
+      "bom": "spring-cloud-services"
+    },
+    "kafka": {
+      "groupId": "org.springframework.kafka",
+      "artifactId": "spring-kafka",
+      "scope": "compile"
+    },
+    "scs-config-client": {
+      "groupId": "io.pivotal.spring.cloud",
+      "artifactId": "spring-cloud-services-starter-config-client",
+      "scope": "compile",
+      "bom": "spring-cloud-services"
+    },
+    "integration": {
+      "groupId": "org.springframework.boot",
+      "artifactId": "spring-boot-starter-integration",
+      "scope": "compile"
+    },
+    "cloud-security": {
+      "groupId": "org.springframework.cloud",
+      "artifactId": "spring-cloud-starter-security",
+      "scope": "compile",
+      "bom": "spring-cloud"
+    },
+    "cloud-connectors": {
+      "groupId": "org.springframework.boot",
+      "artifactId": "spring-boot-starter-cloud-connectors",
+      "scope": "compile",
+      "bom": "spring-cloud"
+    },
+    "cloud-config-server": {
+      "groupId": "org.springframework.cloud",
+      "artifactId": "spring-cloud-config-server",
+      "scope": "compile",
+      "bom": "spring-cloud"
+    },
+    "jta-atomikos": {
+      "groupId": "org.springframework.boot",
+      "artifactId": "spring-boot-starter-jta-atomikos",
+      "scope": "compile"
+    },
+    "cloud-turbine-stream": {
+      "groupId": "org.springframework.cloud",
+      "artifactId": "spring-cloud-starter-netflix-turbine-stream",
+      "scope": "compile",
+      "bom": "spring-cloud"
+    },
+    "freemarker": {
+      "groupId": "org.springframework.boot",
+      "artifactId": "spring-boot-starter-freemarker",
+      "scope": "compile"
+    },
+    "vaadin": {
+      "groupId": "com.vaadin",
+      "artifactId": "vaadin-spring-boot-starter",
+      "scope": "compile",
+      "bom": "vaadin"
+    },
+    "web": {
+      "groupId": "org.springframework.boot",
+      "artifactId": "spring-boot-starter-web",
+      "scope": "compile"
+    },
+    "data-cassandra-reactive": {
+      "groupId": "org.springframework.boot",
+      "artifactId": "spring-boot-starter-data-cassandra-reactive",
+      "scope": "compile"
+    },
+    "cloud-ribbon": {
+      "groupId": "org.springframework.cloud",
+      "artifactId": "spring-cloud-starter-netflix-ribbon",
+      "scope": "compile",
+      "bom": "spring-cloud"
+    },
+    "hsql": {
+      "groupId": "org.hsqldb",
+      "artifactId": "hsqldb",
+      "scope": "runtime"
+    },
+    "groovy-templates": {
+      "groupId": "org.springframework.boot",
+      "artifactId": "spring-boot-starter-groovy-templates",
+      "scope": "compile"
+    },
+    "data-couchbase-reactive": {
+      "groupId": "org.springframework.boot",
+      "artifactId": "spring-boot-starter-data-couchbase-reactive",
+      "scope": "compile"
+    },
+    "devtools": {
+      "groupId": "org.springframework.boot",
+      "artifactId": "spring-boot-devtools",
+      "scope": "runtime"
+    },
+    "activemq": {
+      "groupId": "org.springframework.boot",
+      "artifactId": "spring-boot-starter-activemq",
+      "scope": "compile"
+    },
+    "cloud-starter": {
+      "groupId": "org.springframework.cloud",
+      "artifactId": "spring-cloud-starter",
+      "scope": "compile",
+      "bom": "spring-cloud"
+    },
+    "amqp": {
+      "groupId": "org.springframework.boot",
+      "artifactId": "spring-boot-starter-amqp",
+      "scope": "compile"
+    },
+    "cloud-task": {
+      "groupId": "org.springframework.cloud",
+      "artifactId": "spring-cloud-starter-task",
+      "scope": "compile",
+      "bom": "spring-cloud-task"
+    },
+    "cloud-bus": {
+      "groupId": "org.springframework.cloud",
+      "artifactId": "spring-cloud-bus",
+      "scope": "compile",
+      "bom": "spring-cloud"
+    },
+    "kafka-streams": {
+      "groupId": "org.apache.kafka",
+      "artifactId": "kafka-streams",
+      "version": "1.0.1",
+      "scope": "compile"
+    },
+    "data-ldap": {
+      "groupId": "org.springframework.boot",
+      "artifactId": "spring-boot-starter-data-ldap",
+      "scope": "compile"
+    },
+    "data-neo4j": {
+      "groupId": "org.springframework.boot",
+      "artifactId": "spring-boot-starter-data-neo4j",
+      "scope": "compile"
+    },
+    "data-rest": {
+      "groupId": "org.springframework.boot",
+      "artifactId": "spring-boot-starter-data-rest",
+      "scope": "compile"
+    },
+    "mail": {
+      "groupId": "org.springframework.boot",
+      "artifactId": "spring-boot-starter-mail",
+      "scope": "compile"
+    },
+    "cloud-stream": {
+      "groupId": "org.springframework.cloud",
+      "artifactId": "spring-cloud-stream",
+      "scope": "compile",
+      "bom": "spring-cloud"
+    },
+    "liquibase": {
+      "groupId": "org.liquibase",
+      "artifactId": "liquibase-core",
+      "scope": "compile"
+    },
+    "jta-bitronix": {
+      "groupId": "org.springframework.boot",
+      "artifactId": "spring-boot-starter-jta-bitronix",
+      "scope": "compile"
+    },
+    "reactive-cloud-stream": {
+      "groupId": "org.springframework.cloud",
+      "artifactId": "spring-cloud-stream-reactive",
+      "scope": "compile",
+      "bom": "spring-cloud"
+    },
+    "websocket": {
+      "groupId": "org.springframework.boot",
+      "artifactId": "spring-boot-starter-websocket",
+      "scope": "compile"
+    },
+    "derby": {
+      "groupId": "org.apache.derby",
+      "artifactId": "derby",
+      "scope": "runtime"
+    },
+    "cloud-starter-zipkin": {
+      "groupId": "org.springframework.cloud",
+      "artifactId": "spring-cloud-starter-zipkin",
+      "scope": "compile",
+      "bom": "spring-cloud"
+    },
+    "mysql": {
+      "groupId": "mysql",
+      "artifactId": "mysql-connector-java",
+      "scope": "runtime"
+    },
+    "cloud-starter-consul-config": {
+      "groupId": "org.springframework.cloud",
+      "artifactId": "spring-cloud-starter-consul-config",
+      "scope": "compile",
+      "bom": "spring-cloud"
+    },
+    "data-couchbase": {
+      "groupId": "org.springframework.boot",
+      "artifactId": "spring-boot-starter-data-couchbase",
+      "scope": "compile"
+    },
+    "web-services": {
+      "groupId": "org.springframework.boot",
+      "artifactId": "spring-boot-starter-web-services",
+      "scope": "compile"
+    },
+    "cloud-oauth2": {
+      "groupId": "org.springframework.cloud",
+      "artifactId": "spring-cloud-starter-oauth2",
+      "scope": "compile",
+      "bom": "spring-cloud"
+    },
+    "flyway": {
+      "groupId": "org.flywaydb",
+      "artifactId": "flyway-core",
+      "scope": "compile"
+    },
+    "configuration-processor": {
+      "groupId": "org.springframework.boot",
+      "artifactId": "spring-boot-configuration-processor",
+      "scope": "compileOnly"
+    },
+    "batch": {
+      "groupId": "org.springframework.boot",
+      "artifactId": "spring-boot-starter-batch",
+      "scope": "compile"
+    },
+    "cloud-hystrix-dashboard": {
+      "groupId": "org.springframework.cloud",
+      "artifactId": "spring-cloud-starter-netflix-hystrix-dashboard",
+      "scope": "compile",
+      "bom": "spring-cloud"
+    },
+    "data-jpa": {
+      "groupId": "org.springframework.boot",
+      "artifactId": "spring-boot-starter-data-jpa",
+      "scope": "compile"
+    },
+    "cloud-cloudfoundry-discovery": {
+      "groupId": "org.springframework.cloud",
+      "artifactId": "spring-cloud-cloudfoundry-discovery",
+      "scope": "compile",
+      "bom": "spring-cloud"
+    },
+    "cloud-eureka": {
+      "groupId": "org.springframework.cloud",
+      "artifactId": "spring-cloud-starter-netflix-eureka-client",
+      "scope": "compile",
+      "bom": "spring-cloud"
+    },
+    "thymeleaf": {
+      "groupId": "org.springframework.boot",
+      "artifactId": "spring-boot-starter-thymeleaf",
+      "scope": "compile"
+    },
+    "lombok": {
+      "groupId": "org.projectlombok",
+      "artifactId": "lombok",
+      "scope": "compileOnly"
+    },
+    "data-solr": {
+      "groupId": "org.springframework.boot",
+      "artifactId": "spring-boot-starter-data-solr",
+      "scope": "compile"
+    },
+    "jta-narayana": {
+      "groupId": "org.springframework.boot",
+      "artifactId": "spring-boot-starter-jta-narayana",
+      "scope": "compile"
+    },
+    "cloud-starter-vault-config": {
+      "groupId": "org.springframework.cloud",
+      "artifactId": "spring-cloud-starter-vault-config",
+      "scope": "compile",
+      "bom": "spring-cloud"
+    },
+    "codecentric-spring-boot-admin-server": {
+      "groupId": "de.codecentric",
+      "artifactId": "spring-boot-admin-starter-server",
+      "scope": "compile",
+      "bom": "codecentric-spring-boot-admin"
+    },
+    "data-redis": {
+      "groupId": "org.springframework.boot",
+      "artifactId": "spring-boot-starter-data-redis",
+      "scope": "compile"
+    },
+    "cloud-starter-zookeeper-discovery": {
+      "groupId": "org.springframework.cloud",
+      "artifactId": "spring-cloud-starter-zookeeper-discovery",
+      "scope": "compile",
+      "bom": "spring-cloud"
+    },
+    "session": {
+      "groupId": "org.springframework.session",
+      "artifactId": "spring-session-core",
+      "scope": "compile"
+    },
+    "mybatis": {
+      "groupId": "org.mybatis.spring.boot",
+      "artifactId": "mybatis-spring-boot-starter",
+      "version": "1.3.2",
+      "scope": "compile"
+    },
+    "data-mongodb": {
+      "groupId": "org.springframework.boot",
+      "artifactId": "spring-boot-starter-data-mongodb",
+      "scope": "compile"
+    },
+    "webflux": {
+      "groupId": "org.springframework.boot",
+      "artifactId": "spring-boot-starter-webflux",
+      "scope": "compile"
+    },
+    "flapdoodle-mongo": {
+      "groupId": "de.flapdoodle.embed",
+      "artifactId": "de.flapdoodle.embed.mongo",
+      "scope": "test"
+    },
+    "jdbc": {
+      "groupId": "org.springframework.boot",
+      "artifactId": "spring-boot-starter-jdbc",
+      "scope": "compile"
+    },
+    "h2": {
+      "groupId": "com.h2database",
+      "artifactId": "h2",
+      "scope": "runtime"
+    },
+    "azure-keyvault-secrets": {
+      "groupId": "com.microsoft.azure",
+      "artifactId": "azure-keyvault-secrets-spring-boot-starter",
+      "scope": "compile",
+      "bom": "azure"
+    },
+    "cloud-contract-verifier": {
+      "groupId": "org.springframework.cloud",
+      "artifactId": "spring-cloud-starter-contract-verifier",
+      "scope": "test",
+      "bom": "spring-cloud"
+    },
+    "cloud-gateway": {
+      "groupId": "org.springframework.cloud",
+      "artifactId": "spring-cloud-starter-gateway",
+      "scope": "compile",
+      "bom": "spring-cloud"
+    },
+    "mustache": {
+      "groupId": "org.springframework.boot",
+      "artifactId": "spring-boot-starter-mustache",
+      "scope": "compile"
+    },
+    "cloud-gcp-pubsub": {
+      "groupId": "org.springframework.cloud",
+      "artifactId": "spring-cloud-gcp-starter-pubsub",
+      "scope": "compile",
+      "bom": "spring-cloud-gcp"
+    },
+    "data-mongodb-reactive": {
+      "groupId": "org.springframework.boot",
+      "artifactId": "spring-boot-starter-data-mongodb-reactive",
+      "scope": "compile"
+    },
+    "cloud-feign": {
+      "groupId": "org.springframework.cloud",
+      "artifactId": "spring-cloud-starter-openfeign",
+      "scope": "compile",
+      "bom": "spring-cloud"
+    },
+    "security": {
+      "groupId": "org.springframework.boot",
+      "artifactId": "spring-boot-starter-security",
+      "scope": "compile"
+    },
+    "cloud-zuul": {
+      "groupId": "org.springframework.cloud",
+      "artifactId": "spring-cloud-starter-netflix-zuul",
+      "scope": "compile",
+      "bom": "spring-cloud"
+    },
+    "sqlserver": {
+      "groupId": "com.microsoft.sqlserver",
+      "artifactId": "mssql-jdbc",
+      "scope": "runtime"
+    },
+    "postgresql": {
+      "groupId": "org.postgresql",
+      "artifactId": "postgresql",
+      "scope": "runtime"
+    },
+    "jooq": {
+      "groupId": "org.springframework.boot",
+      "artifactId": "spring-boot-starter-jooq",
+      "scope": "compile"
+    },
+    "jersey": {
+      "groupId": "org.springframework.boot",
+      "artifactId": "spring-boot-starter-jersey",
+      "scope": "compile"
+    },
+    "hateoas": {
+      "groupId": "org.springframework.boot",
+      "artifactId": "spring-boot-starter-hateoas",
+      "scope": "compile"
+    },
+    "scs-service-registry": {
+      "groupId": "io.pivotal.spring.cloud",
+      "artifactId": "spring-cloud-services-starter-service-registry",
+      "scope": "compile",
+      "bom": "spring-cloud-services"
+    },
+    "statemachine": {
+      "groupId": "org.springframework.statemachine",
+      "artifactId": "spring-statemachine-starter",
+      "scope": "compile",
+      "bom": "spring-statemachine"
+    },
+    "retry": {
+      "groupId": "org.springframework.retry",
+      "artifactId": "spring-retry",
+      "scope": "compile"
+    },
+    "cloud-aws-messaging": {
+      "groupId": "org.springframework.cloud",
+      "artifactId": "spring-cloud-starter-aws-messaging",
+      "scope": "compile",
+      "bom": "spring-cloud"
+    },
+    "cloud-starter-sleuth": {
+      "groupId": "org.springframework.cloud",
+      "artifactId": "spring-cloud-starter-sleuth",
+      "scope": "compile",
+      "bom": "spring-cloud"
+    },
+    "data-elasticsearch": {
+      "groupId": "org.springframework.boot",
+      "artifactId": "spring-boot-starter-data-elasticsearch",
+      "scope": "compile"
+    },
+    "cloud-aws": {
+      "groupId": "org.springframework.cloud",
+      "artifactId": "spring-cloud-starter-aws",
+      "scope": "compile",
+      "bom": "spring-cloud"
+    },
+    "artemis": {
+      "groupId": "org.springframework.boot",
+      "artifactId": "spring-boot-starter-artemis",
+      "scope": "compile"
+    },
+    "restdocs": {
+      "groupId": "org.springframework.restdocs",
+      "artifactId": "spring-restdocs-mockmvc",
+      "scope": "test"
+    },
+    "quartz": {
+      "groupId": "org.springframework.boot",
+      "artifactId": "spring-boot-starter-quartz",
+      "scope": "compile"
+    },
+    "cloud-gcp-storage": {
+      "groupId": "org.springframework.cloud",
+      "artifactId": "spring-cloud-gcp-starter-storage",
+      "scope": "compile",
+      "bom": "spring-cloud-gcp"
+    },
+    "azure-storage": {
+      "groupId": "com.microsoft.azure",
+      "artifactId": "azure-storage-spring-boot-starter",
+      "scope": "compile",
+      "bom": "azure"
+    },
+    "cloud-eureka-server": {
+      "groupId": "org.springframework.cloud",
+      "artifactId": "spring-cloud-starter-netflix-eureka-server",
+      "scope": "compile",
+      "bom": "spring-cloud"
+    },
+    "cloud-aws-jdbc": {
+      "groupId": "org.springframework.cloud",
+      "artifactId": "spring-cloud-starter-aws-jdbc",
+      "scope": "compile",
+      "bom": "spring-cloud"
+    },
+    "cloud-gcp": {
+      "groupId": "org.springframework.cloud",
+      "artifactId": "spring-cloud-gcp-starter",
+      "scope": "compile",
+      "bom": "spring-cloud-gcp"
+    },
+    "cloud-config-client": {
+      "groupId": "org.springframework.cloud",
+      "artifactId": "spring-cloud-starter-config",
+      "scope": "compile",
+      "bom": "spring-cloud"
+    }
+  },
+  "repositories": {
+    "spring-milestones": {
+      "name": "Spring Milestones",
+      "url": "https://repo.spring.io/milestone",
+      "snapshotEnabled": false
+    }
+  },
+  "boms": {
+    "codecentric-spring-boot-admin": {
+      "groupId": "de.codecentric",
+      "artifactId": "spring-boot-admin-dependencies",
+      "version": "2.0.0",
+      "repositories": []
+    },
+    "spring-cloud-task": {
+      "groupId": "org.springframework.cloud",
+      "artifactId": "spring-cloud-task-dependencies",
+      "version": "2.0.0.RELEASE",
+      "repositories": []
+    },
+    "spring-cloud": {
+      "groupId": "org.springframework.cloud",
+      "artifactId": "spring-cloud-dependencies",
+      "version": "Finchley.RC2",
+      "repositories": [
+        "spring-milestones"
+      ]
+    },
+    "vaadin": {
+      "groupId": "com.vaadin",
+      "artifactId": "vaadin-bom",
+      "version": "8.4.1",
+      "repositories": []
+    },
+    "spring-statemachine": {
+      "groupId": "org.springframework.statemachine",
+      "artifactId": "spring-statemachine-bom",
+      "version": "2.0.1.RELEASE",
+      "repositories": []
+    },
+    "spring-cloud-services": {
+      "groupId": "io.pivotal.spring.cloud",
+      "artifactId": "spring-cloud-services-dependencies",
+      "version": "2.0.0.RC1",
+      "repositories": [
+        "spring-milestones"
+      ]
+    },
+    "spring-cloud-gcp": {
+      "groupId": "org.springframework.cloud",
+      "artifactId": "spring-cloud-gcp-dependencies",
+      "version": "1.0.0.M3",
+      "repositories": [
+        "spring-milestones"
+      ]
+    },
+    "azure": {
+      "groupId": "com.microsoft.azure",
+      "artifactId": "azure-spring-boot-bom",
+      "version": "2.0.3",
+      "repositories": []
+    }
+  }
+}

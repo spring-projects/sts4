@@ -1,0 +1,7 @@
+---
+applications:
+- name: app
+  memory: 512M
+  health-check-type: process
+  routes:
+  - route: app.springsource.org

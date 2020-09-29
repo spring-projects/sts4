@@ -1,0 +1,67 @@
+{
+   "/webjars/**":{
+      "bean":"resourceHandlerMapping"
+   },
+   "/**":{
+      "bean":"resourceHandlerMapping"
+   },
+   "/**/favicon.ico":{
+      "bean":"faviconHandlerMapping"
+   },
+   "{[/error],produces=[text/html]}":{
+      "bean":"requestMappingHandlerMapping",
+      "method":"public org.springframework.web.servlet.ModelAndView org.springframework.boot.autoconfigure.web.BasicErrorController.errorHtml(javax.servlet.http.HttpServletRequest)"
+   },
+   "{[/error]}":{
+      "bean":"requestMappingHandlerMapping",
+      "method":"public org.springframework.http.ResponseEntity<java.util.Map<java.lang.String, java.lang.Object>> org.springframework.boot.autoconfigure.web.BasicErrorController.error(javax.servlet.http.HttpServletRequest)"
+   },
+   "{[/metrics/{name:.*}],methods=[GET]}":{
+      "bean":"endpointHandlerMapping",
+      "method":"public java.lang.Object org.springframework.boot.actuate.endpoint.mvc.MetricsMvcEndpoint.value(java.lang.String)"
+   },
+   "{[/metrics],methods=[GET]}":{
+      "bean":"endpointHandlerMapping",
+      "method":"public java.lang.Object org.springframework.boot.actuate.endpoint.mvc.EndpointMvcAdapter.invoke()"
+   },
+   "{[/configprops],methods=[GET]}":{
+      "bean":"endpointHandlerMapping",
+      "method":"public java.lang.Object org.springframework.boot.actuate.endpoint.mvc.EndpointMvcAdapter.invoke()"
+   },
+   "{[/health]}":{
+      "bean":"endpointHandlerMapping",
+      "method":"public java.lang.Object org.springframework.boot.actuate.endpoint.mvc.HealthMvcEndpoint.invoke(java.security.Principal)"
+   },
+   "{[/info],methods=[GET]}":{
+      "bean":"endpointHandlerMapping",
+      "method":"public java.lang.Object org.springframework.boot.actuate.endpoint.mvc.EndpointMvcAdapter.invoke()"
+   },
+   "{[/beans],methods=[GET]}":{
+      "bean":"endpointHandlerMapping",
+      "method":"public java.lang.Object org.springframework.boot.actuate.endpoint.mvc.EndpointMvcAdapter.invoke()"
+   },
+   "{[/mappings],methods=[GET]}":{
+      "bean":"endpointHandlerMapping",
+      "method":"public java.lang.Object org.springframework.boot.actuate.endpoint.mvc.EndpointMvcAdapter.invoke()"
+   },
+   "{[/autoconfig],methods=[GET]}":{
+      "bean":"endpointHandlerMapping",
+      "method":"public java.lang.Object org.springframework.boot.actuate.endpoint.mvc.EndpointMvcAdapter.invoke()"
+   },
+   "{[/env/{name:.*}],methods=[GET]}":{
+      "bean":"endpointHandlerMapping",
+      "method":"public java.lang.Object org.springframework.boot.actuate.endpoint.mvc.EnvironmentMvcEndpoint.value(java.lang.String)"
+   },
+   "{[/env],methods=[GET]}":{
+      "bean":"endpointHandlerMapping",
+      "method":"public java.lang.Object org.springframework.boot.actuate.endpoint.mvc.EndpointMvcAdapter.invoke()"
+   },
+   "{[/trace],methods=[GET]}":{
+      "bean":"endpointHandlerMapping",
+      "method":"public java.lang.Object org.springframework.boot.actuate.endpoint.mvc.EndpointMvcAdapter.invoke()"
+   },
+   "{[/dump],methods=[GET]}":{
+      "bean":"endpointHandlerMapping",
+      "method":"public java.lang.Object org.springframework.boot.actuate.endpoint.mvc.EndpointMvcAdapter.invoke()"
+   }
+}

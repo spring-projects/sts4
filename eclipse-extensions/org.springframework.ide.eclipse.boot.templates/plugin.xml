@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+	<extension
+         point="org.eclipse.jdt.ui.javaCompletionProposalComputer"
+         id="org.springframework.ide.eclipse.boot.templates.BootTemplateCompletionProposalComputer">
+      <javaCompletionProposalComputer
+            class="org.springframework.ide.eclipse.boot.templates.BootTemplateCompletionProposalComputer"
+            activate="true"
+			categoryId="org.eclipse.jdt.ui.templateProposalCategory" requiresUIThread="false">
+			<partition type="__dftl_partition_content_type"/>
+      </javaCompletionProposalComputer>
+    </extension>
+ <extension
+       point="org.eclipse.ui.editors.templates">
+      <contextType
+            name="Boot"
+            class="org.springframework.ide.eclipse.boot.templates.BootContextType"
+            id="boot"
+            registryId="org.eclipse.jdt.ui.CompilationUnitEditor">
+      </contextType>
+      <contextType
+            name="Boot Statements"
+            class="org.springframework.ide.eclipse.boot.templates.BootContextType"
+            id="boot-statements"
+            registryId="org.eclipse.jdt.ui.CompilationUnitEditor">
+      </contextType>
+      <contextType
+            name="Boot Members"
+            class="org.springframework.ide.eclipse.boot.templates.BootContextType"
+            id="boot-members"
+            registryId="org.eclipse.jdt.ui.CompilationUnitEditor">
+      </contextType>
+      <include
+            file="resources/templates.xml">
+      </include>
+ </extension>
+</plugin>

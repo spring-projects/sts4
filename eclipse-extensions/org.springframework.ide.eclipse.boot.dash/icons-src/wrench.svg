@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<!-- Created with Inkscape (http://www.inkscape.org/) -->
+
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="11mm"
+   height="7mm"
+   viewBox="0 0 11 7"
+   version="1.1"
+   id="svg8"
+   inkscape:version="0.92.3 (2405546, 2018-03-11)"
+   sodipodi:docname="wrench.svg"
+   inkscape:export-filename="/home/kdvolder/git/spring-ide/plugins/org.springframework.ide.eclipse.boot.dash/icons/DT.png"
+   inkscape:export-xdpi="25.4"
+   inkscape:export-ydpi="25.4">
+  <defs
+     id="defs2" />
+  <sodipodi:namedview
+     id="base"
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1.0"
+     inkscape:pageopacity="0.0"
+     inkscape:pageshadow="2"
+     inkscape:zoom="22.4"
+     inkscape:cx="26.206114"
+     inkscape:cy="11.309158"
+     inkscape:document-units="mm"
+     inkscape:current-layer="layer1"
+     showgrid="false"
+     inkscape:window-width="1920"
+     inkscape:window-height="1025"
+     inkscape:window-x="0"
+     inkscape:window-y="1227"
+     inkscape:window-maximized="1" />
+  <metadata
+     id="metadata5">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <g
+     inkscape:label="Layer 1"
+     inkscape:groupmode="layer"
+     id="layer1"
+     transform="translate(0,-290)">
+    <path
+       style="opacity:1;fill:#73d673;fill-opacity:1;stroke:#468b46;stroke-width:0.94500929;stroke-linecap:round;stroke-linejoin:round;stroke-miterlimit:4;stroke-dasharray:none;stroke-dashoffset:0;stroke-opacity:1"
+       d="m 9.0370952,290.50677 -2.2418848,0.003 -1.4646319,1.6406 H 0.88581993 c -0.20822843,0 -0.37628107,0.18781 -0.37628107,0.42049 v 2.02302 c -1e-8,0.2327 0.16805264,0.41994 0.37628107,0.41994 H 5.4174886 l 1.3851291,1.54348 2.2413909,-0.003 1.4986474,-1.87603 -2.9943894,0.0331 c -0.2147617,0.003 -0.3837214,-0.1932 -0.3876387,-0.43318 l -0.0226,-1.38446 c -0.00391,-0.23998 0.1629512,-0.40939 0.3763392,-0.43318 l 3.0354629,-0.0331 z"
+       id="path868"
+       inkscape:connector-curvature="0"
+       inkscape:export-filename="/home/kdvolder/git/spring-ide/plugins/org.springframework.ide.eclipse.boot.dash/icons/path868.png"
+       inkscape:export-xdpi="25.496847"
+       inkscape:export-ydpi="25.496847"
+       sodipodi:nodetypes="cccssssccccsssscc" />
+  </g>
+</svg>

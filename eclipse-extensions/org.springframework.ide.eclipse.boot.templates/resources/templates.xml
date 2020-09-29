@@ -1,0 +1,299 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<templates>
+<!-- contexts:
+ java-statements : inside methods. I.e. place where you can type a statement
+ java-members : inside a type. I.e. place where you can type a method (or other 'member'  declaration)
+ ...more...?
+ -->
+ 
+ <!-- TODO: It was suggested that @SpringBootApplication annotation should be added to the
+     class if its not there yet, when invoking this template  -->
+<template
+    id="org.springframework.ide.eclipse.boot.templates.main"
+    name="main"
+    description="Spring Boot main method"
+    context="boot-members">
+public static void main(String[] args) throws Exception {
+        SpringApplication.run(${enclosing_type}.class, args);
+}${:import(org.springframework.boot.SpringApplication)}
+</template>
+
+<template
+    id="org.springframework.ide.eclipse.boot.templates.expectedexception.decl"
+    name="eerule"
+    description="Declare a @Rule ExpectedException field [test]"
+    context="boot-members">
+${:import(org.junit.Rule,org.junit.rules.ExpectedException)}
+@Rule
+ExpectedException thrown = ExpectedException.none();
+</template>
+<template
+    id="org.springframework.ide.eclipse.boot.templates.expectedexception.use"
+    name="eerule"
+    description="Add an Exception to an ExpectedException rule [test]"
+    context="boot-statements">
+${thrown:field(org.junit.rules.ExpectedException)}.expect(${Exception}.class);
+${thrown:field(org.junit.rules.ExpectedException)}.expectMessage("${cursor}");
+</template>
+
+<template
+    id="org.springframework.ide.eclipse.boot.templates.assert.notNull.Spring"
+    name="notnull"
+    description="Assert that a variable is not null, using Spring's Assert class. Context restriction: [!test]"
+    context="boot-statements">
+Assert.notNull(${name:var}, "${name} must not be null");${:import(org.springframework.util.Assert)}
+</template>
+<template
+    id="org.springframework.ide.eclipse.boot.templates.assert.notNull.JUnit"
+    name="notnull"
+    description="Assert that a variable is not null, using JUnit's Assert class. Context restriction: [test][!assertj]"
+    context="boot-statements">
+Assert.assertNotNull("${name:var} must not be null", ${name});${:import(org.junit.Assert)}
+</template>
+<template
+    id="org.springframework.ide.eclipse.boot.templates.assert.notNull.AssertJ"
+    name="notnull"
+    description="Assert that a variable is not null, using AssertJ. Context restriction: [test][assertj]"
+    context="boot-statements">
+assertThat(${name:var}).isNotNull();${:importStatic('org.assertj.core.api.Assertions.*')} 	
+</template>
+<template
+    id="org.springframework.ide.eclipse.boot.templates.license.apache"
+    name="asl"
+    description="Apache Copyright License embedded in Java Comments"
+    context="java">
+/*
+ * Copyright ${year} the original author or authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+</template>
+
+<!-- TODO: These two templates generate garbage when used on a fresh class. See eclipse bug: 
+     https://bugs.eclipse.org/bugs/show_bug.cgi?id=494691 
+     When that bug is fixed... uncomment them. 
+ <template
+    id="org.springframework.ide.eclipse.boot.templates.cprops"
+    name="cprops"
+    description="@ConfigurationProperties"
+    context="boot">
+${:import(org.springframework.boot.context.properties.ConfigurationProperties)}
+@ConfigurationProperties("${prefix}")
+</template>
+ 
+<template
+    id="org.springframework.ide.eclipse.boot.templates.jurwm"
+    name="jurwm"
+    description="@RunWith(MockitoJUnitRunner.class)"
+    context="java">
+${:import(org.junit.runner.RunWith,org.mockito.runners.MockitoJUnitRunner)}
+@RunWith(MockitoJUnitRunner.class)
+</template>
+ -->
+
+<template
+    id="org.springframework.ide.eclipse.boot.templates.jumock"
+    name="jumock"
+    description="@Mock field"
+    context="java-members">
+${:import(org.mockito.Mock)}@Mock ${Type} ${mockName};
+</template>
+
+<!-- TODO: disable in boot 1.4 (can we make template somehow detect this and disable itself?) -->
+<template
+    id="org.springframework.ide.eclipse.boot.templates.jumockmvcwac"
+    name="jumockmvcwac"
+    description="JUnit MockMvc with WebApplicationContext setup"
+    context="boot-members">
+${standardImports:import(org.junit.Before,org.springframework.beans.factory.annotation.Autowired,org.springframework.test.web.servlet.MockMvc,org.springframework.test.web.servlet.setup.MockMvcBuilders,org.springframework.web.context.WebApplicationContext)}
+${:importStatic('org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*','org.springframework.test.web.servlet.result.MockMvcResultHandlers.*','org.springframework.test.web.servlet.result.MockMvcResultMatchers.*')}
+
+    @Autowired
+    WebApplicationContext context;
+    
+    MockMvc mockMvc;
+    
+    @Before
+    public void setup() {
+        mockMvc = MockMvcBuilders
+                .webAppContextSetup(context)
+                .build();
+    }
+</template>
+
+<template
+    id="org.springframework.ide.eclipse.boot.templates.noformat"
+    name="formatter-off"
+    description="Disable formatter with formatter:off/on tags"
+    context="java">
+// @formatter:off
+${cursor} ${line_selection}
+// @formatter:on
+</template>
+
+<template
+    id="org.springframework.ide.eclipse.boot.templates.slf4j.logger"
+    name="logger"
+    description="static Logger field using slf4j"
+    context="boot-members">
+${:import(org.slf4j.Logger,org.slf4j.LoggerFactory)}
+private static final Logger ${log} = LoggerFactory.getLogger(${enclosing_type}.class);
+</template>
+
+<template
+    id="org.springframework.ide.eclipse.boot.templates.slf4j.loginfo"
+    name="logi"
+    description="log an INFO message using slf4jlogger declared in this class"
+    context="boot-statements">
+    ${log:field(org.slf4j.Logger)}.info("${message}");
+</template>
+
+<template
+    id="org.springframework.ide.eclipse.boot.templates.slf4j.logerror"
+    name="loge"
+    description="log an ERROR message using slf4jlogger declared in this class"
+    context="boot-statements">
+    ${log:field(org.slf4j.Logger)}.error("${message}", ${exception:var(java.lang.Throwable)});
+</template>
+
+<template
+    id="org.springframework.ide.eclipse.boot.templates.slf4j.logwarn"
+    name="logw"
+    description="log a WARNING using slf4jlogger declared in this class"
+    context="boot-statements">
+    ${log:field(org.slf4j.Logger)}.warn("${warning}");
+</template>
+
+<template
+    id="org.springframework.ide.eclipse.boot.templates.slf4j.logdebug"
+    name="logd"
+    description="log an DEBUG message using slf4jlogger declared in this class"
+    context="boot-statements">
+    ${log:field(org.slf4j.Logger)}.debug("${message}");
+</template>
+
+<template
+	id="org.springframework.ide.eclipse.boot.templates.rtexchange"
+	name="rtex"
+	description="Call restTemplate.exchange"
+	context="boot-statements">
+${:import(org.springframework.core.ParameterizedTypeReference,org.springframework.hateoas.PagedResources,org.springframework.http.HttpEntity,org.springframework.http.HttpMethod,org.springframework.http.ResponseEntity)}
+ResponseEntity&lt;PagedResources&lt;?&gt;&gt; result = ${restTemplate:var(org.springframework.web.client.RestTemplate)}.exchange("", 
+     HttpMethod.GET, 
+     new HttpEntity&lt;Void&gt;((Void) null),
+     new ParameterizedTypeReference&lt;PagedResources&lt;${cursor}&gt;&gt;() {});
+</template>
+<template 
+	id="org.springframework.ide.eclipse.boot.templates.spring-snapshots"
+	name="spring-snapshots"
+	description="Spring snapshot repositories"
+	context="org.eclipse.m2e.editor.xml.templates.contextType.project">
+	&lt;repositories&gt;
+		&lt;repository&gt;
+			&lt;id&gt;spring-snapshots&lt;/id&gt;
+			&lt;name&gt;Spring Snapshots&lt;/name&gt;
+			&lt;url&gt;https://repo.spring.io/snapshot&lt;/url&gt;
+			&lt;snapshots&gt;
+				&lt;enabled&gt;true&lt;/enabled&gt;
+			&lt;/snapshots&gt;
+		&lt;/repository&gt;
+		&lt;repository&gt;
+			&lt;id&gt;spring-milestones&lt;/id&gt;
+			&lt;name&gt;Spring Milestones&lt;/name&gt;
+			&lt;url&gt;https://repo.spring.io/milestone&lt;/url&gt;
+			&lt;snapshots&gt;
+				&lt;enabled&gt;false&lt;/enabled&gt;
+			&lt;/snapshots&gt;
+		&lt;/repository&gt;
+	&lt;/repositories&gt;
+	&lt;pluginRepositories&gt;
+		&lt;pluginRepository&gt;
+			&lt;id&gt;spring-snapshots&lt;/id&gt;
+			&lt;name&gt;Spring Snapshots&lt;/name&gt;
+			&lt;url&gt;https://repo.spring.io/snapshot&lt;/url&gt;
+			&lt;snapshots&gt;
+				&lt;enabled&gt;true&lt;/enabled&gt;
+			&lt;/snapshots&gt;
+		&lt;/pluginRepository&gt;
+		&lt;pluginRepository&gt;
+			&lt;id&gt;spring-milestones&lt;/id&gt;
+			&lt;name&gt;Spring Milestones&lt;/name&gt;
+			&lt;url&gt;https://repo.spring.io/milestone&lt;/url&gt;
+			&lt;snapshots&gt;
+				&lt;enabled&gt;false&lt;/enabled&gt;
+			&lt;/snapshots&gt;
+		&lt;/pluginRepository&gt;
+	&lt;/pluginRepositories&gt;
+</template>
+<template autoinsert="true" 
+	id="org.springframework.ide.eclipse.boot.templates.RequestMapping" 
+	name="RequestMapping method"
+	context="boot-members" 
+	description="RequestMapping method" 
+	enabled="true"
+	>${x:import(org.springframework.web.bind.annotation.RequestMapping, org.springframework.web.bind.annotation.RequestMethod, org.springframework.web.bind.annotation.RequestParam)}@RequestMapping(value="${path}", method=RequestMethod.${GET})
+public ${SomeData} ${requestMethodName}(@RequestParam ${String} ${param}) {
+	return new ${SomeData}(${cursor});
+}
+</template>
+<template autoinsert="true" 
+	id="org.springframework.ide.eclipse.boot.templates.GetMapping" 
+	name="GetMapping method"
+	context="boot-members" 
+	description="GetMapping method" 
+	enabled="true" 
+	>${x:import(org.springframework.web.bind.annotation.GetMapping, org.springframework.web.bind.annotation.RequestParam)}@GetMapping(value="${path}")
+public ${SomeData} ${getMethodName}(@RequestParam ${String} ${param}) {
+	return new ${SomeData}(${cursor});
+}
+</template>
+<template autoinsert="true" 
+	id="org.springframework.ide.eclipse.boot.templates.PostMapping" 
+	name="PostMapping method"
+	context="boot-members" 
+	description="PostMapping method" 
+	enabled="true" 
+	>${x:import(org.springframework.web.bind.annotation.PostMapping, org.springframework.web.bind.annotation.RequestBody)}@PostMapping(value="${path}")
+public ${SomeEnityData} ${postMethodName}(@RequestBody ${SomeEnityData} ${entity}) {
+	//TODO: process POST request
+	${cursor}
+	return ${entity};
+}
+</template>
+<template autoinsert="true" 
+	id="org.springframework.ide.eclipse.boot.templates.PutMapping" 
+	name="PutMapping method"
+	context="boot-members" 
+	description="PutMapping method" 
+	enabled="true" 
+	>${x:import(org.springframework.web.bind.annotation.PutMapping, org.springframework.web.bind.annotation.RequestBody, org.springframework.web.bind.annotation.PathVariable)}@PutMapping(value="${path}/{${id}}")
+public ${SomeEnityData} ${putMethodName}(@PathVariable ${pvt:link(String,int,long)} ${id}, @RequestBody ${SomeEnityData} ${entity}) {
+	//TODO: process PUT request
+	${cursor}
+	return ${entity};
+}
+</template>
+<template autoinsert="true" 
+	id="org.springframework.ide.eclipse.boot.templates.DeleteMapping" 
+	name="DeleteMapping method"
+	context="boot-members" 
+	description="DeleteMapping method" 
+	enabled="true" 
+	>${x:import(org.springframework.web.bind.annotation.DeleteMapping, org.springframework.web.bind.annotation.PathVariable)}@DeleteMapping(value="${path}/{${id}}")
+public ${r:link(String)} ${deleteMethodName}(@PathVariable ${pv:link(String,int,long)} ${id}) {
+	//TODO: process DELETE request
+	${cursor}
+	return "${Success}";
+}
+</template>
+</templates>

@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+   <extension
+         point="org.eclipse.ui.commands">
+      <command
+            categoryId="org.springframework.ide.eclipse.boot.commands.category"
+            defaultHandler="org.springframework.ide.eclipse.boot.refactoring.ConvertPropertiesToYamlHandler"
+            id="org.springframework.ide.eclipse.boot.properties.editor.convertPropertiesToYaml"
+            name="Convert .properties to .yaml">
+      </command>
+   </extension>
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+          locationURI="popup:org.eclipse.ui.popup.any?after=additions">
+            <command
+                  icon="icons/boot-icon.png"
+                  commandId="org.springframework.ide.eclipse.boot.properties.editor.convertPropertiesToYaml">
+                <visibleWhen
+                       checkEnabled="false">
+                   <and>
+                       <count
+                             value="1">
+                       </count>
+                       <or>
+                         <with variable="activeEditorId">
+                           <equals value="SpringBootPropertyEditor"/>
+                         </with>
+                         <with variable="activeMenuSelection">
+                          <iterate
+                               ifEmpty="false">
+                             <adapt type="org.eclipse.core.resources.IResource">
+                                  <test property="org.eclipse.core.resources.extension" value="properties" />
+                             </adapt>
+                          </iterate>
+                         </with>
+                       </or>
+                   </and>
+                </visibleWhen>
+            </command>
+            
+      </menuContribution>
+   </extension>
+   
+   <extension point="org.eclipse.ltk.core.refactoring.renameParticipants">
+	  <renameParticipant class="org.springframework.ide.eclipse.boot.refactoring.typerename.TypeRenameParticipant" id="org.springframework.ide.eclipse.boot.refactoring.TypeRenameParticipant" name="Rename Companion Type Rename Participant">
+	    <enablement>
+	      <with variable="affectedNatures">
+	        <iterate operator="or">
+	          <equals value="org.eclipse.jdt.core.javanature"/>
+	        </iterate>
+	      </with>
+	      <with variable="element">
+	        <instanceof value="org.eclipse.jdt.core.IType"/>
+	      </with>
+	    </enablement>
+	  </renameParticipant>
+	</extension>
+   
+
+</plugin>

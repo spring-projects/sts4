@@ -1,0 +1,8 @@
+---
+applications:
+- name: app
+  host: my-app-1
+  hosts:
+  - my-app-2
+  - my-app-3
+  

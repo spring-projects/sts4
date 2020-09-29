@@ -1,0 +1,4 @@
+---
+applications:
+- name: app
+  domain: spring.io

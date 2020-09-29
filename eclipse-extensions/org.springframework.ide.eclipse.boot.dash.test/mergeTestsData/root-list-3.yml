@@ -1,0 +1,12 @@
+---
+services:
+- s1
+- s2
+applications:
+- memory: 512M
+  name: somapp
+- name: app
+  memory: 2048M
+  domain: springsource.org
+  services:
+  - s3

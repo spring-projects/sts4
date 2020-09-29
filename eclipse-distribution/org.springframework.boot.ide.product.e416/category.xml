@@ -39,16 +39,6 @@
 		<category name="Extensions / Spring IDE" />
 	</feature>
 
-	<feature
-		id="org.springframework.ide.eclipse.boot.dash.feature.source" version="0.0.0">
-		<category name="Resources / Spring IDE" />
-	</feature>
-
-	<feature
-		id="org.springframework.ide.eclipse.xml.namespaces.feature.source" version="0.0.0">
-		<category name="Resources / Spring IDE" />
-	</feature>
-
 	<!-- Language Server -->
 	<category-def name="Spring Tool Suite 4 Language Server Integrations for Eclipse" label="Spring Tool Suite 4 Language Server Integrations for Eclipse"/>
 

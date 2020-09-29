@@ -1,0 +1,4 @@
+---
+applications:
+- name: app
+  host: my-app

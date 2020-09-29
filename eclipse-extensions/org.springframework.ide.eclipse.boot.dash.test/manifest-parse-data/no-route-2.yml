@@ -1,0 +1,6 @@
+---
+host: my-app
+domain: springsource.org
+applications:
+- name: app
+  no-route: true

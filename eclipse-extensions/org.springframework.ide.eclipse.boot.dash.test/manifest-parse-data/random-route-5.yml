@@ -1,0 +1,7 @@
+---
+applications:
+- name: app
+  random-route: true
+  domains:
+  - spring.io
+  - spring.framework 

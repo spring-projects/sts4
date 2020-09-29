@@ -1,0 +1,8 @@
+---
+applications:
+- name: app
+  memory: 2048M
+  routes:
+  - route: app-1.springsource.org
+  - route: app-2.invaliddomain.org
+  - route: app-3.springsource.org

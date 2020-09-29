@@ -1,0 +1,14 @@
+---
+applications:
+- name: app
+  memory: 2048M
+  host: test-app
+  random-route: true
+  no-hostname: true
+  hosts:
+  - h1
+  - h2
+  domain: springsource.org
+  domains:
+  - spring.io
+  - spring.framework

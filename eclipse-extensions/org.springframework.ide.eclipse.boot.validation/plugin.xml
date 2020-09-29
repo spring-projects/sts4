@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+<extension point="org.eclipse.core.resources.markers"
+	id="problemmarker"
+	name="Spring Boot Problem">
+    <super type="org.eclipse.core.resources.problemmarker"/>
+	<super type="org.eclipse.core.resources.textmarker"/>
+	<attribute name="ruleId"/>
+	<attribute name="errorId"/>
+	<persistent value="true" />
+</extension>
+
+<extension point="org.eclipse.ui.ide.markerSupport">
+		<markerTypeCategory name="Spring Boot Problem">
+			<markerTypeReference id="org.springframework.ide.eclipse.boot.validation.problemmarker"/>
+		</markerTypeCategory>
+</extension>
+
+<extension
+	point="org.eclipse.ui.ide.markerResolution">
+	<markerResolutionGenerator
+		markerType="org.springframework.ide.eclipse.boot.validation.problemmarker"
+		class="org.springframework.ide.eclipse.boot.validation.quickfix.BootMarkerResolutionGenerator">
+	</markerResolutionGenerator>
+</extension>
+
+<extension
+      id="springbootbuilder"
+      name="Spring Boot Validations Builder"
+      point="org.eclipse.core.resources.builders">
+   <builder>
+      <run
+            class="org.springframework.ide.eclipse.boot.validation.framework.SpringBootProjectBuilder">
+      </run>
+   </builder>
+</extension>
+
+<extension
+	      point="org.eclipse.ui.preferencePages">
+	   <page
+	         name="Java Editor"
+	         category="org.springframework.ide.eclipse.boot.ui.preferences.BootPreferencePage"
+	         class="org.springframework.ide.eclipse.boot.validation.preferences.BootValidationPreferencesPage"
+	            id="org.springframework.ide.eclipse.boot.validation.preferences.BootValidationPreferencesPage">
+	   </page>
+</extension>  
+
+<extension
+     point="org.eclipse.ui.propertyPages">
+  <page
+        id="org.springframework.ide.eclipse.boot.validation.preferences.BootValidationProjectPropertyPage"
+        name="Boot Java Validation"
+        class="org.springframework.ide.eclipse.boot.validation.preferences.BootValidationProjectPropertyPage"
+        adaptable="true"
+        objectClass="org.eclipse.core.resources.IProject"
+        category="org.springsource.ide.eclipse.commons.projectPropertyPage">
+     <keywordReference
+           id="org.springframework.ide.eclipse.ui.keywords">
+     </keywordReference>
+     <enabledWhen>
+        <or>
+           <and>
+              <instanceof
+                    value="org.eclipse.core.resources.IProject">
+              </instanceof>
+              <test
+                    property="org.springsource.ide.eclipse.boot.isBootProject">
+              </test>
+           </and>
+           <and>
+              <instanceof
+                    value="org.eclipse.jdt.core.IJavaProject">
+              </instanceof>
+              <test
+                    property="org.springsource.ide.eclipse.boot.javaelement.isInBootProject">
+              </test>
+           </and>
+        </or>
+     </enabledWhen>
+  </page>
+</extension>
+
+<extension point="org.eclipse.ui.startup">
+      <startup class="org.springframework.ide.eclipse.boot.validation.BootValidationEnabler"/>
+</extension>
+</plugin>

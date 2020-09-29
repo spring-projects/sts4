@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension
+         id="org.springframework.ide.eclipse.boot.restart.consolePage"
+         point="org.eclipse.ui.console.consolePageParticipants">
+      <consolePageParticipant
+            class="org.springframework.ide.eclipse.boot.restart.RestartConsolePageParticipant"
+            id="org.springframework.ide.eclipse.boot.restart.consolePage.consolePageParticipant">
+         <enablement>
+            <instanceof
+                  value="org.eclipse.debug.internal.ui.views.console.ProcessConsole">
+            </instanceof></enablement>
+      </consolePageParticipant>
+   </extension>
+   <extension
+         point="org.eclipse.ui.commands">
+      <command
+            name="Trigger Restart"
+            categoryId="org.eclipse.debug.ui.category.run"
+            description="Restart Spring Boot Application"
+            id="org.springframework.ide.eclipse.boot.restart.commands.restart">
+      </command>
+   </extension>
+   <extension
+         point="org.eclipse.ui.bindings">
+      <key
+            commandId="org.springframework.ide.eclipse.boot.restart.commands.restart"
+            contextId="org.eclipse.debug.ui.console"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"
+            sequence="M1+R"/>
+   </extension>
+</plugin>

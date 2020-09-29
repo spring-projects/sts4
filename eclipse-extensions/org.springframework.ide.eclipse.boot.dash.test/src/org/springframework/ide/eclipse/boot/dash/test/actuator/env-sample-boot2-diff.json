@@ -1,0 +1,311 @@
+{
+	"activeProfiles": [
+		"production",
+		"differentstaging"
+	],
+	"propertySources": [
+		{
+			"name": "server.ports",
+			"properties": {
+				"local.server.port": {
+					"value": 8085
+				}
+			}
+		},
+		{
+			"name": "commandLineArgs",
+			"properties": {
+				"spring.output.ansi.enabled": {
+					"value": "always"
+				},
+				"spring.profiles.active": {
+					"value": "production, differentstaging"
+				}
+			}
+		},
+		{
+			"name": "servletContextInitParams",
+			"properties": {
+				
+			}
+		},
+		{
+			"name": "systemProperties",
+			"properties": {
+				"com.sun.management.jmxremote.authenticate": {
+					"value": "false"
+				},
+				"java.runtime.name": {
+					"value": "Java(TM) SE Runtime Environment"
+				},
+				"sun.boot.library.path": {
+					"value": "/Library/Java/JavaVirtualMachines/jdk1.8.0_191.jdk/Contents/Home/jre/lib"
+				},
+				"java.vm.version": {
+					"value": "25.191-b12"
+				},
+				"gopherProxySet": {
+					"value": "false"
+				},
+				"java.vm.vendor": {
+					"value": "Oracle Corporation"
+				},
+				"java.vendor.url": {
+					"value": "https://java.oracle.com/"
+				},
+				"java.rmi.server.randomIDs": {
+					"value": "true"
+				},
+				"path.separator": {
+					"value": ":"
+				},
+				"java.vm.name": {
+					"value": "Java HotSpot(TM) 64-Bit Server VM"
+				},
+				"file.encoding.pkg": {
+					"value": "sun.io"
+				},
+				"user.country": {
+					"value": "CA"
+				},
+				"sun.java.launcher": {
+					"value": "SUN_STANDARD"
+				},
+				"PID": {
+					"value": "4337033"
+				},
+				"com.sun.management.jmxremote.port": {
+					"value": "49208"
+				},
+				"java.vm.specification.name": {
+					"value": "Java Virtual Machine Specification"
+				},
+				"user.dir": {
+					"value": "/Users/user/workingfolder/sts4dev/rt-boot-ls/gs-rest-service-complete"
+				},
+				"java.runtime.version": {
+					"value": "1.8.0_191-b12"
+				},
+				"java.awt.graphicsenv": {
+					"value": "sun.awt.CGraphicsEnvironment"
+				},
+				"java.endorsed.dirs": {
+					"value": "/Library/Java/JavaVirtualMachines/jdk1.8.0_191.jdk/Contents/Home/jre/lib/endorsed"
+				},
+				"os.arch": {
+					"value": "x86_64"
+				},
+				"java.io.tmpdir": {
+					"value": "/var/folders/0l/sdmkvnyd7vxcm3825k_ynj8w0000gn/T/"
+				},
+				"line.separator": {
+					"value": "\n"
+				},
+				"java.vm.specification.vendor": {
+					"value": "Oracle Corporation"
+				},
+				"os.name": {
+					"value": "Mac OS X"
+				},
+				"sun.jnu.encoding": {
+					"value": "UTF-8"
+				},
+				"spring.beaninfo.ignore": {
+					"value": "true"
+				},
+				"java.library.path": {
+					"value": "/Users/user/Library/Java/Extensions:/Library/Java/Extensions:/Network/Library/Java/Extensions:/System/Library/Java/Extensions:/usr/lib/java:."
+				},
+				"java.specification.name": {
+					"value": "Java Platform API Specification"
+				},
+				"java.class.version": {
+					"value": "52.0"
+				},
+				"sun.management.compiler": {
+					"value": "HotSpot 64-Bit Tiered Compilers"
+				},
+				"os.version": {
+					"value": "10.14"
+				},
+				"http.nonProxyHosts": {
+					"value": "local|*.local|169.254/16|*.169.254/16"
+				},
+				"user.home": {
+					"value": "/Users/user"
+				},
+				"catalina.useNaming": {
+					"value": "false"
+				},
+				"user.timezone": {
+					"value": "America/Los_Angeles"
+				},
+				"java.awt.printerjob": {
+					"value": "sun.lwawt.macosx.CPrinterJob"
+				},
+				"file.encoding": {
+					"value": "UTF-8"
+				},
+				"java.specification.version": {
+					"value": "1.8"
+				},
+				"catalina.home": {
+					"value": "/private/var/folders/0l/sdmkvnyd7vxcm3825k_ynj8w0000gn/T/tomcat.3339174210667415129.8080"
+				},
+				"java.class.path": {
+					"value": "/Users/user/workingfolder/sts4dev/rt-boot-ls/gs-rest-service-complete/target/classes:/Users/user/.gradle/caches/modules-2/files-2.1/org.springframework.boot/spring-boot-starter-web/2.0.5.RELEASE/52daa1f1509bd637a737206e54c06a17aabb9504/spring-boot-starter-web-2.0.5.RELEASE.jar:/Users/user/.gradle/caches/modules-2/files-2.1/org.springframework.boot/spring-boot-starter-json/2.0.5.RELEASE/d0052ded4733ceb1fb7d927238f22f9a92099227/spring-boot-starter-json-2.0.5.RELEASE.jar:/Users/user/.gradle/caches/modules-2/files-2.1/org.springframework.boot/spring-boot-starter/2.0.5.RELEASE/1f53487a373be18d064a5815e9bac9882ef15cdc/spring-boot-starter-2.0.5.RELEASE.jar:/Users/user/.gradle/caches/modules-2/files-2.1/org.springframework.boot/spring-boot-starter-tomcat/2.0.5.RELEASE/eaac8a5d73b45400bc88cd7f6b5c99b5f0d5e9b7/spring-boot-starter-tomcat-2.0.5.RELEASE.jar:/Users/user/.gradle/caches/modules-2/files-2.1/org.hibernate.validator/hibernate-validator/6.0.12.Final/478003e61b056c1f97840ba3e62ff31cdc89597/hibernate-validator-6.0.12.Final.jar:/Users/user/.gradle/caches/modules-2/files-2.1/org.springframework/spring-webmvc/5.0.9.RELEASE/c18346caaeb8dc648c4cc01874996fd9fef76664/spring-webmvc-5.0.9.RELEASE.jar:/Users/user/.gradle/caches/modules-2/files-2.1/org.springframework/spring-web/5.0.9.RELEASE/1ea3aab93340849313fa74ec626ddaf1fff9ed8e/spring-web-5.0.9.RELEASE.jar:/Users/user/.gradle/caches/modules-2/files-2.1/org.springframework.boot/spring-boot-autoconfigure/2.0.5.RELEASE/e5588642799e0c0c04638e255c3d3f31ba400ff4/spring-boot-autoconfigure-2.0.5.RELEASE.jar:/Users/user/.gradle/caches/modules-2/files-2.1/org.springframework.boot/spring-boot/2.0.5.RELEASE/19a4624cbd89a318d10c79f289c6c816043850fb/spring-boot-2.0.5.RELEASE.jar:/Users/user/.gradle/caches/modules-2/files-2.1/org.springframework.boot/spring-boot-starter-logging/2.0.5.RELEASE/c353e0b9591d0765c687ff0a678478cbebfd5c23/spring-boot-starter-logging-2.0.5.RELEASE.jar:/Users/user/.gradle/caches/modules-2/files-2.1/javax.annotation/javax.annotation-api/1.3.2/934c04d3cfef185a8008e7bf34331b79730a9d43/javax.annotation-api-1.3.2.jar:/Users/user/.gradle/caches/modules-2/files-2.1/org.springframework/spring-context/5.0.9.RELEASE/2501e55acb6c2e84667cda3f845d1d00a0dc4e05/spring-context-5.0.9.RELEASE.jar:/Users/user/.gradle/caches/modules-2/files-2.1/org.springframework/spring-aop/5.0.9.RELEASE/98003b099697fe46b6bdf18c7e3f66d7a1381060/spring-aop-5.0.9.RELEASE.jar:/Users/user/.gradle/caches/modules-2/files-2.1/org.springframework/spring-beans/5.0.9.RELEASE/65f56fdab1bb90ad059e314d2f2f4cf76f9bdbde/spring-beans-5.0.9.RELEASE.jar:/Users/user/.gradle/caches/modules-2/files-2.1/org.springframework/spring-expression/5.0.9.RELEASE/1f9db5ff3a758102c0434cc3457aa47c50c39a4a/spring-expression-5.0.9.RELEASE.jar:/Users/user/.gradle/caches/modules-2/files-2.1/org.springframework/spring-core/5.0.9.RELEASE/9f9a828936d81afd49a603bda9cc1aed863a0d85/spring-core-5.0.9.RELEASE.jar:/Users/user/.gradle/caches/modules-2/files-2.1/org.yaml/snakeyaml/1.19/2d998d3d674b172a588e54ab619854d073f555b5/snakeyaml-1.19.jar:/Users/user/.gradle/caches/modules-2/files-2.1/com.fasterxml.jackson.datatype/jackson-datatype-jdk8/2.9.6/456895fc91bf7180b216fead220373e6278230c9/jackson-datatype-jdk8-2.9.6.jar:/Users/user/.gradle/caches/modules-2/files-2.1/com.fasterxml.jackson.datatype/jackson-datatype-jsr310/2.9.6/ea54f6193d224e5e5732bbd4262327eb465397c2/jackson-datatype-jsr310-2.9.6.jar:/Users/user/.gradle/caches/modules-2/files-2.1/com.fasterxml.jackson.module/jackson-module-parameter-names/2.9.6/129acd77a4b6ee30d62d3a0899b1344c8ec2bff8/jackson-module-parameter-names-2.9.6.jar:/Users/user/.gradle/caches/modules-2/files-2.1/com.fasterxml.jackson.core/jackson-databind/2.9.6/cfa4f316351a91bfd95cb0644c6a2c95f52db1fc/jackson-databind-2.9.6.jar:/Users/user/.gradle/caches/modules-2/files-2.1/org.apache.tomcat.embed/tomcat-embed-websocket/8.5.34/5f86906367c2540b21e6aeecc277d2ce9ec939b0/tomcat-embed-websocket-8.5.34.jar:/Users/user/.gradle/caches/modules-2/files-2.1/org.apache.tomcat.embed/tomcat-embed-core/8.5.34/a038040d68a90397f95dd1e11b979fe364a5000f/tomcat-embed-core-8.5.34.jar:/Users/user/.gradle/caches/modules-2/files-2.1/org.apache.tomcat.embed/tomcat-embed-el/8.5.34/be71a9a5bdd001db7cf97c47429eec0bdd3b7b88/tomcat-embed-el-8.5.34.jar:/Users/user/.gradle/caches/modules-2/files-2.1/javax.validation/validation-api/2.0.1.Final/cb855558e6271b1b32e716d24cb85c7f583ce09e/validation-api-2.0.1.Final.jar:/Users/user/.gradle/caches/modules-2/files-2.1/org.jboss.logging/jboss-logging/3.3.2.Final/3789d00e859632e6c6206adc0c71625559e6e3b0/jboss-logging-3.3.2.Final.jar:/Users/user/.gradle/caches/modules-2/files-2.1/com.fasterxml/classmate/1.3.4/3d5f48f10bbe4eb7bd862f10c0583be2e0053c6/classmate-1.3.4.jar:/Users/user/.gradle/caches/modules-2/files-2.1/ch.qos.logback/logback-classic/1.2.3/7c4f3c474fb2c041d8028740440937705ebb473a/logback-classic-1.2.3.jar:/Users/user/.gradle/caches/modules-2/files-2.1/org.apache.logging.log4j/log4j-to-slf4j/2.10.0/f7e631ccf49cfc0aefa4a2a728da7d374c05bd3c/log4j-to-slf4j-2.10.0.jar:/Users/user/.gradle/caches/modules-2/files-2.1/org.slf4j/jul-to-slf4j/1.7.25/af5364cd6679bfffb114f0dec8a157aaa283b76/jul-to-slf4j-1.7.25.jar:/Users/user/.gradle/caches/modules-2/files-2.1/org.springframework/spring-jcl/5.0.9.RELEASE/bc3b5aaae53f0bc03647e53ecbd98a05b47a4e90/spring-jcl-5.0.9.RELEASE.jar:/Users/user/.gradle/caches/modules-2/files-2.1/com.fasterxml.jackson.core/jackson-annotations/2.9.0/7c10d545325e3a6e72e06381afe469fd40eb701/jackson-annotations-2.9.0.jar:/Users/user/.gradle/caches/modules-2/files-2.1/com.fasterxml.jackson.core/jackson-core/2.9.6/4e393793c37c77e042ccc7be5a914ae39251b365/jackson-core-2.9.6.jar:/Users/user/.gradle/caches/modules-2/files-2.1/ch.qos.logback/logback-core/1.2.3/864344400c3d4d92dfeb0a305dc87d953677c03c/logback-core-1.2.3.jar:/Users/user/.gradle/caches/modules-2/files-2.1/org.slf4j/slf4j-api/1.7.25/da76ca59f6a57ee3102f8f9bd9cee742973efa8a/slf4j-api-1.7.25.jar:/Users/user/.gradle/caches/modules-2/files-2.1/org.apache.logging.log4j/log4j-api/2.10.0/fec5797a55b786184a537abd39c3fa1449d752d6/log4j-api-2.10.0.jar:/Users/user/.gradle/caches/modules-2/files-2.1/org.springframework.boot/spring-boot-starter-test/2.0.5.RELEASE/ab04ca2e76f6a8e786001352a81a10e4b0e7fbc8/spring-boot-starter-test-2.0.5.RELEASE.jar:/Users/user/.gradle/caches/modules-2/files-2.1/com.jayway.jsonpath/json-path/2.4.0/765a4401ceb2dc8d40553c2075eb80a8fa35c2ae/json-path-2.4.0.jar:/Users/user/.gradle/caches/modules-2/files-2.1/org.springframework.boot/spring-boot-test-autoconfigure/2.0.5.RELEASE/54d5e8f9e88c6236fe164474f0aed5a8a1052c43/spring-boot-test-autoconfigure-2.0.5.RELEASE.jar:/Users/user/.gradle/caches/modules-2/files-2.1/org.springframework.boot/spring-boot-test/2.0.5.RELEASE/ce6353f33217982357a6bdba6576015ea333304c/spring-boot-test-2.0.5.RELEASE.jar:/Users/user/.gradle/caches/modules-2/files-2.1/junit/junit/4.12/2973d150c0dc1fefe998f834810d68f278ea58ec/junit-4.12.jar:/Users/user/.gradle/caches/modules-2/files-2.1/org.assertj/assertj-core/3.9.1/c5ce126b15f28d56cd8f960c1a6a058b9c9aea87/assertj-core-3.9.1.jar:/Users/user/.gradle/caches/modules-2/files-2.1/org.mockito/mockito-core/2.15.0/b84bfbbc29cd22c9529409627af6ea2897f4fa85/mockito-core-2.15.0.jar:/Users/user/.gradle/caches/modules-2/files-2.1/org.hamcrest/hamcrest-library/1.3/4785a3c21320980282f9f33d0d1264a69040538f/hamcrest-library-1.3.jar:/Users/user/.gradle/caches/modules-2/files-2.1/org.hamcrest/hamcrest-core/1.3/42a25dc3219429f0e5d060061f71acb49bf010a0/hamcrest-core-1.3.jar:/Users/user/.gradle/caches/modules-2/files-2.1/org.skyscreamer/jsonassert/1.5.0/6c9d5fe2f59da598d9aefc1cfc6528ff3cf32df3/jsonassert-1.5.0.jar:/Users/user/.gradle/caches/modules-2/files-2.1/org.springframework/spring-test/5.0.9.RELEASE/218c8648f898453be92d550252e0ce2a84b54375/spring-test-5.0.9.RELEASE.jar:/Users/user/.gradle/caches/modules-2/files-2.1/org.xmlunit/xmlunit-core/2.5.1/4ffdb346572a7356f7521cd3119ce5287d2e339d/xmlunit-core-2.5.1.jar:/Users/user/.gradle/caches/modules-2/files-2.1/net.minidev/json-smart/2.3/7396407491352ce4fa30de92efb158adb76b5b/json-smart-2.3.jar:/Users/user/.gradle/caches/modules-2/files-2.1/net.bytebuddy/byte-buddy/1.7.11/f02857a4e2c66ccbe7aaad6100a0a6c461bce9b3/byte-buddy-1.7.11.jar:/Users/user/.gradle/caches/modules-2/files-2.1/net.bytebuddy/byte-buddy-agent/1.7.11/b425a8933ca07edd03c6dbc8bc3b595fba9780de/byte-buddy-agent-1.7.11.jar:/Users/user/.gradle/caches/modules-2/files-2.1/org.objenesis/objenesis/2.6/639033469776fd37c08358c6b92a4761feb2af4b/objenesis-2.6.jar:/Users/user/.gradle/caches/modules-2/files-2.1/com.vaadin.external.google/android-json/0.0.20131108.vaadin1/fa26d351fe62a6a17f5cda1287c1c6110dec413f/android-json-0.0.20131108.vaadin1.jar:/Users/user/.gradle/caches/modules-2/files-2.1/net.minidev/accessors-smart/1.2/c592b500269bfde36096641b01238a8350f8aa31/accessors-smart-1.2.jar:/Users/user/.gradle/caches/modules-2/files-2.1/org.ow2.asm/asm/5.0.4/da08b8cce7bbf903602a25a3a163ae252435795/asm-5.0.4.jar:/Users/user/.m2/repository/org/springframework/boot/spring-boot-starter-web/2.0.5.RELEASE/spring-boot-starter-web-2.0.5.RELEASE.jar:/Users/user/.m2/repository/org/springframework/boot/spring-boot-starter/2.0.5.RELEASE/spring-boot-starter-2.0.5.RELEASE.jar:/Users/user/.m2/repository/org/springframework/boot/spring-boot/2.0.5.RELEASE/spring-boot-2.0.5.RELEASE.jar:/Users/user/.m2/repository/org/springframework/boot/spring-boot-autoconfigure/2.0.5.RELEASE/spring-boot-autoconfigure-2.0.5.RELEASE.jar:/Users/user/.m2/repository/org/springframework/boot/spring-boot-starter-logging/2.0.5.RELEASE/spring-boot-starter-logging-2.0.5.RELEASE.jar:/Users/user/.m2/repository/ch/qos/logback/logback-classic/1.2.3/logback-classic-1.2.3.jar:/Users/user/.m2/repository/ch/qos/logback/logback-core/1.2.3/logback-core-1.2.3.jar:/Users/user/.m2/repository/org/apache/logging/log4j/log4j-to-slf4j/2.10.0/log4j-to-slf4j-2.10.0.jar:/Users/user/.m2/repository/org/apache/logging/log4j/log4j-api/2.10.0/log4j-api-2.10.0.jar:/Users/user/.m2/repository/org/slf4j/jul-to-slf4j/1.7.25/jul-to-slf4j-1.7.25.jar:/Users/user/.m2/repository/javax/annotation/javax.annotation-api/1.3.2/javax.annotation-api-1.3.2.jar:/Users/user/.m2/repository/org/yaml/snakeyaml/1.19/snakeyaml-1.19.jar:/Users/user/.m2/repository/org/springframework/boot/spring-boot-starter-json/2.0.5.RELEASE/spring-boot-starter-json-2.0.5.RELEASE.jar:/Users/user/.m2/repository/com/fasterxml/jackson/core/jackson-databind/2.9.6/jackson-databind-2.9.6.jar:/Users/user/.m2/repository/com/fasterxml/jackson/core/jackson-annotations/2.9.0/jackson-annotations-2.9.0.jar:/Users/user/.m2/repository/com/fasterxml/jackson/core/jackson-core/2.9.6/jackson-core-2.9.6.jar:/Users/user/.m2/repository/com/fasterxml/jackson/datatype/jackson-datatype-jdk8/2.9.6/jackson-datatype-jdk8-2.9.6.jar:/Users/user/.m2/repository/com/fasterxml/jackson/datatype/jackson-datatype-jsr310/2.9.6/jackson-datatype-jsr310-2.9.6.jar:/Users/user/.m2/repository/com/fasterxml/jackson/module/jackson-module-parameter-names/2.9.6/jackson-module-parameter-names-2.9.6.jar:/Users/user/.m2/repository/org/springframework/boot/spring-boot-starter-tomcat/2.0.5.RELEASE/spring-boot-starter-tomcat-2.0.5.RELEASE.jar:/Users/user/.m2/repository/org/apache/tomcat/embed/tomcat-embed-core/8.5.34/tomcat-embed-core-8.5.34.jar:/Users/user/.m2/repository/org/apache/tomcat/embed/tomcat-embed-el/8.5.34/tomcat-embed-el-8.5.34.jar:/Users/user/.m2/repository/org/apache/tomcat/embed/tomcat-embed-websocket/8.5.34/tomcat-embed-websocket-8.5.34.jar:/Users/user/.m2/repository/org/hibernate/validator/hibernate-validator/6.0.12.Final/hibernate-validator-6.0.12.Final.jar:/Users/user/.m2/repository/javax/validation/validation-api/2.0.1.Final/validation-api-2.0.1.Final.jar:/Users/user/.m2/repository/org/jboss/logging/jboss-logging/3.3.2.Final/jboss-logging-3.3.2.Final.jar:/Users/user/.m2/repository/com/fasterxml/classmate/1.3.4/classmate-1.3.4.jar:/Users/user/.m2/repository/org/springframework/spring-web/5.0.9.RELEASE/spring-web-5.0.9.RELEASE.jar:/Users/user/.m2/repository/org/springframework/spring-beans/5.0.9.RELEASE/spring-beans-5.0.9.RELEASE.jar:/Users/user/.m2/repository/org/springframework/spring-webmvc/5.0.9.RELEASE/spring-webmvc-5.0.9.RELEASE.jar:/Users/user/.m2/repository/org/springframework/spring-aop/5.0.9.RELEASE/spring-aop-5.0.9.RELEASE.jar:/Users/user/.m2/repository/org/springframework/spring-context/5.0.9.RELEASE/spring-context-5.0.9.RELEASE.jar:/Users/user/.m2/repository/org/springframework/spring-expression/5.0.9.RELEASE/spring-expression-5.0.9.RELEASE.jar:/Users/user/.m2/repository/org/springframework/spring-core/5.0.9.RELEASE/spring-core-5.0.9.RELEASE.jar:/Users/user/.m2/repository/org/springframework/spring-jcl/5.0.9.RELEASE/spring-jcl-5.0.9.RELEASE.jar:/Users/user/.m2/repository/org/slf4j/slf4j-api/1.7.25/slf4j-api-1.7.25.jar:/Users/user/.m2/repository/org/springframework/boot/spring-boot-starter-actuator/2.0.5.RELEASE/spring-boot-starter-actuator-2.0.5.RELEASE.jar:/Users/user/.m2/repository/org/springframework/boot/spring-boot-actuator-autoconfigure/2.0.5.RELEASE/spring-boot-actuator-autoconfigure-2.0.5.RELEASE.jar:/Users/user/.m2/repository/org/springframework/boot/spring-boot-actuator/2.0.5.RELEASE/spring-boot-actuator-2.0.5.RELEASE.jar:/Users/user/.m2/repository/io/micrometer/micrometer-core/1.0.6/micrometer-core-1.0.6.jar:/Users/user/.m2/repository/org/hdrhistogram/HdrHistogram/2.1.10/HdrHistogram-2.1.10.jar:/Users/user/.m2/repository/org/latencyutils/LatencyUtils/2.0.3/LatencyUtils-2.0.3.jar"
+				},
+				"user.name": {
+					"value": "user"
+				},
+				"com.sun.management.jmxremote": {
+					"value": ""
+				},
+				"java.vm.specification.version": {
+					"value": "1.8"
+				},
+				"sun.java.command": {
+					"value": "******"
+				},
+				"java.home": {
+					"value": "/Library/Java/JavaVirtualMachines/jdk1.8.0_191.jdk/Contents/Home/jre"
+				},
+				"sun.arch.data.model": {
+					"value": "64"
+				},
+				"user.language": {
+					"value": "en"
+				},
+				"java.specification.vendor": {
+					"value": "Oracle Corporation"
+				},
+				"awt.toolkit": {
+					"value": "sun.lwawt.macosx.LWCToolkit"
+				},
+				"com.sun.management.jmxremote.ssl": {
+					"value": "false"
+				},
+				"java.vm.info": {
+					"value": "mixed mode"
+				},
+				"java.version": {
+					"value": "1.8.0_191"
+				},
+				"java.ext.dirs": {
+					"value": "/Users/user/Library/Java/Extensions:/Library/Java/JavaVirtualMachines/jdk1.8.0_191.jdk/Contents/Home/jre/lib/ext:/Library/Java/Extensions:/Network/Library/Java/Extensions:/System/Library/Java/Extensions:/usr/lib/java"
+				},
+				"sun.boot.class.path": {
+					"value": "/Library/Java/JavaVirtualMachines/jdk1.8.0_191.jdk/Contents/Home/jre/lib/resources.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_191.jdk/Contents/Home/jre/lib/rt.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_191.jdk/Contents/Home/jre/lib/sunrsasign.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_191.jdk/Contents/Home/jre/lib/jsse.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_191.jdk/Contents/Home/jre/lib/jce.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_191.jdk/Contents/Home/jre/lib/charsets.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_191.jdk/Contents/Home/jre/lib/jfr.jar:/Library/Java/JavaVirtualMachines/jdk1.8.0_191.jdk/Contents/Home/jre/classes"
+				},
+				"java.awt.headless": {
+					"value": "true"
+				},
+				"java.vendor": {
+					"value": "Oracle Corporation"
+				},
+				"catalina.base": {
+					"value": "/private/var/folders/0l/sdmkvnyd7vxcm3825k_ynj8w0000gn/T/tomcat.3339174210667415129.8080"
+				},
+				"spring.application.admin.enabled": {
+					"value": "true"
+				},
+				"java.security.egd": {
+					"value": "file:/dev/./urandom"
+				},
+				"file.separator": {
+					"value": "/"
+				},
+				"java.vendor.url.bug": {
+					"value": "https://bugreport.sun.com/bugreport/"
+				},
+				"sun.io.unicode.encoding": {
+					"value": "UnicodeBig"
+				},
+				"sun.cpu.endian": {
+					"value": "little"
+				},
+				"java.rmi.server.hostname": {
+					"value": "localhost"
+				},
+				"socksNonProxyHosts": {
+					"value": "local|*.local|169.254/16|*.169.254/16"
+				},
+				"ftp.nonProxyHosts": {
+					"value": "local|*.local|169.254/16|*.169.254/16"
+				},
+				"sun.cpu.isalist": {
+					"value": ""
+				}
+			}
+		},
+		{
+			"name": "systemEnvironment",
+			"properties": {
+				"APP_ICON_36880": {
+					"value": "../Resources/sts4.icns",
+					"origin": "System Environment Property \"APP_ICON_36880\""
+				},
+				"PATH": {
+					"value": "/usr/bin:/bin:/usr/sbin:/sbin",
+					"origin": "System Environment Property \"PATH\""
+				},
+				"SHELL": {
+					"value": "/bin/bash",
+					"origin": "System Environment Property \"SHELL\""
+				},
+				"SQLITE_EXEMPT_PATH_FROM_VNODE_GUARDS": {
+					"value": "/Users/user/Library/WebKit/Databases",
+					"origin": "System Environment Property \"SQLITE_EXEMPT_PATH_FROM_VNODE_GUARDS\""
+				},
+				"USER": {
+					"value": "user",
+					"origin": "System Environment Property \"USER\""
+				},
+				"JAVA_MAIN_CLASS_43363": {
+					"value": "org.eclipse.equinox.launcher.Main",
+					"origin": "System Environment Property \"JAVA_MAIN_CLASS_43363\""
+				},
+				"TMPDIR": {
+					"value": "/var/folders/0l/sdmkvnyd7vxcm3825k_ynj8w0000gn/T/",
+					"origin": "System Environment Property \"TMPDIR\""
+				},
+				"JAVA_MAIN_CLASS_43370": {
+					"value": "hello.Application",
+					"origin": "System Environment Property \"JAVA_MAIN_CLASS_43370\""
+				},
+				"SSH_AUTH_SOCK": {
+					"value": "/private/tmp/com.apple.launchd.u3ySv0SI6p/Listeners",
+					"origin": "System Environment Property \"SSH_AUTH_SOCK\""
+				},
+				"XPC_FLAGS": {
+					"value": "0x0",
+					"origin": "System Environment Property \"XPC_FLAGS\""
+				},
+				"JAVA_STARTED_ON_FIRST_THREAD_36880": {
+					"value": "1",
+					"origin": "System Environment Property \"JAVA_STARTED_ON_FIRST_THREAD_36880\""
+				},
+				"JAVA_STARTED_ON_FIRST_THREAD_43363": {
+					"value": "1",
+					"origin": "System Environment Property \"JAVA_STARTED_ON_FIRST_THREAD_43363\""
+				},
+				"__CF_USER_TEXT_ENCODING": {
+					"value": "0x1F5:0x0:0x52",
+					"origin": "System Environment Property \"__CF_USER_TEXT_ENCODING\""
+				},
+				"LOGNAME": {
+					"value": "user",
+					"origin": "System Environment Property \"LOGNAME\""
+				},
+				"XPC_SERVICE_NAME": {
+					"value": "org.springframework.boot.ide.branding.sts4.5948",
+					"origin": "System Environment Property \"XPC_SERVICE_NAME\""
+				},
+				"HOME": {
+					"value": "/Users/user",
+					"origin": "System Environment Property \"HOME\""
+				}
+			}
+		}
+	]
+}

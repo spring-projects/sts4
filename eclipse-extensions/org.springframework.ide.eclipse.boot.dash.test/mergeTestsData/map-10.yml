@@ -1,0 +1,10 @@
+---
+applications:
+- name: app
+  memory: 2048M
+  host: test-app
+  domain: springsource.org
+  env:
+    KEY1-DELETE: value1
+    KEY3-DELETE: value3
+    KEY2: value2

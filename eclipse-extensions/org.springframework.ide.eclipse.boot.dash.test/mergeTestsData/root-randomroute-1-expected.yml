@@ -1,0 +1,10 @@
+---
+random-route: true
+applications:
+- name: another-app
+- name: app
+  routes:
+  - route: app-1.springsource.org
+  - route: app-2.springsource.org
+  memory: 2048M
+  

@@ -1,0 +1,6 @@
+---
+applications:
+- name: app
+  no-hostname: true
+  domain: spring.framework
+  memory: 2048M

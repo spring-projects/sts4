@@ -1,0 +1,23 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Validation
+Bundle-SymbolicName: org.springframework.ide.eclipse.boot.validation;singleton:=true
+Bundle-Vendor: Pivotal Software Inc.
+Bundle-Version: 4.8.1.qualifier
+Bundle-Activator: org.springframework.ide.eclipse.boot.validation.BootValidationActivator
+Require-Bundle: org.eclipse.core.runtime,
+ org.eclipse.core.resources,
+ org.eclipse.jdt.core,
+ org.springsource.ide.eclipse.commons.livexp,
+ org.springframework.ide.eclipse.boot,
+ org.eclipse.ui.workbench,
+ org.eclipse.ui.ide,
+ org.eclipse.jdt.ui,
+ com.google.guava,
+ org.springsource.ide.eclipse.commons.core,
+ org.springframework.ide.eclipse.editor.support,
+ org.eclipse.jface,
+ org.springsource.ide.eclipse.commons.frameworks.core
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-ActivationPolicy: lazy
+Export-Package: org.springframework.ide.eclipse.boot.validation.framework

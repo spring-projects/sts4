@@ -1,0 +1,267 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+
+
+ <extension
+       point="org.eclipse.debug.ui.launchShortcuts">
+    <shortcut
+          class="org.springframework.ide.eclipse.boot.launch.BootLaunchShortcut"
+          description="Run or Debug as a Standalone Spring Boot Application"
+          id="org.springsource.ide.eclipse.boot.BootLaunchShortcut"
+          icon="platform:/plugin/org.springframework.ide.eclipse.boot/resources/icons/spring.png"
+          label="Spring Boot App"
+          modes="run, debug">
+        <contextualLaunch>
+           <enablement>
+             <count value="1"/>
+             <iterate>
+                 <and>
+                  <adapt type="org.eclipse.jdt.core.IJavaElement">
+                  	<test property="org.springsource.ide.eclipse.boot.javaelement.isInBootProject"/>
+                  </adapt>
+               	  <or>
+               	    <test property="org.eclipse.jdt.launching.hasMain"/>
+               	    <test property="org.eclipse.jdt.launching.isContainer"/>
+               	    <test property="org.eclipse.jdt.launching.isPackageFragment"/>
+               	    <test property="org.eclipse.jdt.launching.isPackageFragmentRoot"/>
+               	  </or>
+                 </and>
+             </iterate>
+           </enablement>
+        </contextualLaunch>
+        <configurationType
+               id="org.springframework.ide.eclipse.boot.launch">
+         </configurationType>
+        <description
+               description="Run as Spring Boot App"
+               mode="run">
+         </description>
+         <description
+               description="Debug as Spring Boot App"
+               mode="debug">
+         </description>
+    </shortcut>
+    
+    <shortcut
+          class="org.springframework.ide.eclipse.boot.launch.devtools.BootDevtoolsClientLaunchShortcut"
+          description="Connect Spring Devtools Client to a Remote Spring Boot Application"
+          id="org.springframework.ide.eclipse.boot.launch.devtools.BootDevtoolsClientLaunchShortcut"
+          icon="platform:/plugin/org.springframework.ide.eclipse.boot/resources/icons/boot-devtools-icon.png"
+          label="Spring Devtools Client"
+          modes="run, debug">
+        <contextualLaunch>
+           <enablement>
+             <count value="1"/>
+             <iterate>
+                <adapt type="org.eclipse.core.resources.IResource">
+                	<test property="org.springsource.ide.eclipse.boot.isBootProject"/>
+                </adapt>
+             </iterate>
+           </enablement>
+        </contextualLaunch>
+        <configurationType
+               id="org.springframework.ide.eclipse.boot.devtools.client.launch">
+         </configurationType>
+        <description
+               description="Run as Spring Devtools Client"
+               mode="run">
+         </description>
+         <description
+               description="Debug as Spring Devtools Client"
+               mode="debug">
+         </description>
+    </shortcut>
+    
+ </extension>
+ 
+ <extension point="org.eclipse.debug.core.launchConfigurationTypes">
+    <launchConfigurationType
+        name="Spring Boot CLI Script"
+        delegate="org.springframework.ide.eclipse.boot.launch.cli.BootGroovyScriptLaunchConfigurationDelegate"
+        category="org.eclipse.ui.externaltools"
+        modes="run"
+        id="org.springsource.ide.eclipse.boot.groovy.script.launch">
+    </launchConfigurationType>
+    <launchConfigurationType
+          id="org.springframework.ide.eclipse.boot.launch"
+          name="Spring Boot App"
+          delegate="org.springframework.ide.eclipse.boot.launch.BootLaunchConfigurationDelegate"
+          modes="run,debug"
+          sourceLocatorId="org.eclipse.jdt.launching.sourceLocator.JavaSourceLookupDirector"
+          sourcePathComputerId="org.eclipse.jdt.launching.sourceLookup.javaSourcePathComputer">
+    </launchConfigurationType>
+    <launchConfigurationType
+          id="org.springframework.ide.eclipse.boot.devtools.client.launch"
+          name="Spring Boot Devtools Client"
+          delegate="org.springframework.ide.eclipse.boot.launch.devtools.BootDevtoolsClientLaunchConfigurationDelegate"
+          modes="run,debug"
+          sourceLocatorId="org.eclipse.jdt.launching.sourceLocator.JavaSourceLookupDirector"
+          sourcePathComputerId="org.eclipse.jdt.launching.sourceLookup.javaSourcePathComputer">
+    </launchConfigurationType>
+    <launchConfigurationType
+          category="org.eclipse.ui.externaltools"
+          delegate="org.springframework.ide.eclipse.boot.launch.cli.CloudCliServiceLaunchConfigurationDelegate"
+          id="org.springframework.ide.eclipse.boot.launch.cloud.cli.service"
+          modes="run"
+          name="Spring Cloud CLI Service">
+    </launchConfigurationType>
+  </extension>
+ 
+ <extension
+       point="org.eclipse.debug.ui.launchShortcuts">
+    <shortcut
+          class="org.springframework.ide.eclipse.boot.launch.cli.BootGroovyScriptLaunchShortcut"
+          description="Run or Debug as a Spring Boot CLI Script"
+          id="org.springsource.ide.eclipse.boot.BootLaunchGroovyScriptShortcut"
+          icon="platform:/plugin/org.springframework.ide.eclipse.boot/resources/icons/spring.png"
+          label="Spring Boot CLI Script"
+          modes="run"> <!-- debug not yet support -->
+        <contextualLaunch>
+           <enablement>
+             <count value="1"/>
+             <iterate>
+           	   <adapt type="org.eclipse.core.resources.IFile">
+		             <test
+		                   property="org.eclipse.core.resources.name"
+		                   value="*.groovy">
+		             </test>
+           	   </adapt>
+             </iterate>
+           </enablement>
+        </contextualLaunch>
+        <configurationType
+               id="org.eclipse.jdt.launching.localJavaApplication">
+         </configurationType>
+        <description
+               description="Run as Spring Boot CLI Script"
+               mode="run">
+         </description>
+<!--     Debugging is not yet supported.
+         <description
+               description="Debug as Spring Boot CLI Script"
+               mode="debug">
+         </description> -->
+    </shortcut>
+ </extension>
+ 
+ <extension point="org.eclipse.debug.ui.launchConfigurationTypeImages">
+    <launchConfigurationTypeImage
+        icon="platform:/plugin/org.springframework.ide.eclipse.boot/resources/icons/boot-icon.png"
+        configTypeID="org.springframework.ide.eclipse.boot.launch"
+        id="org.springframework.ide.eclipse.boot.launch.image">
+    </launchConfigurationTypeImage>
+    <launchConfigurationTypeImage
+        icon="platform:/plugin/org.springframework.ide.eclipse.boot/resources/icons/boot-devtools-icon.png"
+        configTypeID="org.springframework.ide.eclipse.boot.devtools.client.launch"
+        id="org.springframework.ide.eclipse.boot.launch.image">
+    </launchConfigurationTypeImage>
+</extension>
+ 
+<extension point="org.eclipse.debug.ui.launchConfigurationTabGroups">
+    <launchConfigurationTabGroup
+        type="org.springframework.ide.eclipse.boot.launch"
+        class="org.springframework.ide.eclipse.boot.launch.BootLaunchConfigurationTabGroup"
+        id="org.springframework.ide.eclipse.boot.launch.LaunchConfigurationTabGroup">
+    </launchConfigurationTabGroup>
+    <launchConfigurationTabGroup
+        type="org.springframework.ide.eclipse.boot.devtools.client.launch"
+        class="org.springframework.ide.eclipse.boot.launch.devtools.BootDevtoolsClientLaunchConfigurationTabGroup"
+        id="org.springframework.ide.eclipse.boot.launch.devtools.BootDevtoolsClientLaunchConfigurationTabGroup">
+    </launchConfigurationTabGroup>
+</extension>
+
+   <extension point="org.eclipse.jdt.launching.classpathProviders">
+      <classpathProvider
+          id="org.springframework.ide.eclipse.boot.launch.BootMavenSourcePathProvider"
+          class="org.springframework.ide.eclipse.boot.launch.BootMavenSourcePathProvider"/>
+      <classpathProvider
+          id="org.springframework.ide.eclipse.boot.launch.BootMavenClassPathProvider"
+          class="org.springframework.ide.eclipse.boot.launch.BootMavenClassPathProvider"/>
+   </extension>
+
+ 
+<!-- TODO: ui for editing Spring Groovy CLI launch configs
+ <extension point="org.eclipse.debug.ui.launchConfigurationTypeImages">
+    <launchConfigurationTypeImage
+        icon="resources/icons/spring.png"
+        configTypeID="org.springsource.ide.eclipse.boot.groovy.script.launch"
+        id="org.springsource.ide.eclipse.boot.groovy.script.launch.image">
+    </launchConfigurationTypeImage>
+</extension>
+
+<extension point="org.eclipse.debug.ui.launchConfigurationTabGroups">
+    <launchConfigurationTabGroup
+        type="org.springsource.ide.eclipse.boot.groovy.script.launch"
+        class="org.springframework.ide.eclipse.boot.core.cli.BootGroovyScriptLaunchConfigurationTabGroup"
+        id="org.springframework.ide.eclipse.boot.core.cli.BootGroovyScriptLaunchConfigurationTabGroup">
+    </launchConfigurationTabGroup>
+</extension>
+-->
+ 
+   <extension point="org.eclipse.ui.commands">
+      <command
+            name="Debug Spring Boot App"
+            description="Debug Spring Boot App"
+            categoryId="org.eclipse.debug.ui.category.run"
+            id="org.springsource.ide.eclipse.boot.BootLaunchShortcut.debug">
+      </command>
+      <command
+            name="Run Spring Boot App"
+            description="Run Spring Boot App"
+            categoryId="org.eclipse.debug.ui.category.run"
+            id="org.springsource.ide.eclipse.boot.BootLaunchShortcut.run">
+      </command>
+      <category
+            id="org.springframework.ide.eclipse.boot.commands.category"
+            name="Spring Boot">
+      </category>
+      <command
+            categoryId="org.springframework.ide.eclipse.boot.commands.category"
+            id="org.springframework.ide.eclipse.boot.commands.editStartersCommand"
+            name="Edit Starters">
+      </command>
+   </extension>
+   <extension point="org.eclipse.ui.bindings">
+       <key
+            sequence="M2+M3+X B"
+            commandId="org.springsource.ide.eclipse.boot.BootLaunchShortcut.run"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+   </extension>
+   <extension point="org.eclipse.ui.bindings">
+       <key
+            sequence="M2+M3+D B"
+            commandId="org.springsource.ide.eclipse.boot.BootLaunchShortcut.debug"
+            schemeId="org.eclipse.ui.defaultAcceleratorConfiguration"/>
+   </extension>
+    <extension point="org.eclipse.debug.core.processFactories">
+   <processFactory
+           id="org.springframework.ide.eclipse.boot.launch.process.BootProcessFactory"
+           class="org.springframework.ide.eclipse.boot.launch.process.BootProcessFactory">
+   </processFactory>
+   <processFactory
+         class="org.springframework.ide.eclipse.boot.launch.cli.CloudCliServiceLaunchConfigurationDelegate$CloudCliProcessFactory"
+         id="org.springframework.ide.eclipse.boot.launch.cli.CloudCliServiceLaunchConfigurationDelegate$CloudCliProcessFactory">
+   </processFactory>
+ </extension>
+   
+   	 <extension point="org.eclipse.ui.console.consolePageParticipants">
+   		<consolePageParticipant
+      		id="org.springframework.ide.eclipse.boot.launch.devtools.DevtoolsClientConsolePageParticipant"
+      		class="org.springframework.ide.eclipse.boot.launch.console.BootConsolePageParticipant">
+	         <enablement>
+	            <instanceof value="org.eclipse.debug.internal.ui.views.console.ProcessConsole"/>
+	         </enablement>
+   		</consolePageParticipant>
+ 	</extension>
+     <extension
+           point="org.eclipse.core.expressions.propertyTesters">
+        <propertyTester
+              class="org.springframework.ide.eclipse.boot.launch.properties.EmbeddedEditorPropertyTester"
+              id="org.springframework.ide.eclipse.boot.EmbeddedEditor"
+              namespace="org.springframework.ide.eclipse.boot.EmbeddedEditor"
+              properties="context"
+              type="java.lang.Object">
+        </propertyTester>
+     </extension>
+</plugin>

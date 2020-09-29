@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="https://maven.apache.org/POM/4.0.0" xmlns:xsi="https://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="https://maven.apache.org/POM/4.0.0 https://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.springframework.boot.ide</groupId>
+		<artifactId>org.springframework.boot.ide</artifactId>
+		<version>4.8.1-SNAPSHOT</version>
+		<relativePath>../../eclipse-distribution/pom.xml</relativePath>
+	</parent>
+
+	<groupId>org.springframework.ide.eclipse</groupId>
+	<artifactId>org.springframework.ide.eclipse.boot.refactoring.test</artifactId>
+	<packaging>eclipse-test-plugin</packaging>
+	
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-surefire-plugin</artifactId>
+				<version>${tycho-version}</version>
+				<configuration>
+					<useUIHarness>true</useUIHarness>
+					<forkedProcessTimeoutInSeconds>7200</forkedProcessTimeoutInSeconds>
+					<testSuite>org.springframework.ide.eclipse.boot.refactoring.test</testSuite>
+					<testClass>org.springframework.ide.eclipse.boot.refactoring.test.ConvertPropertiesToYamlTest</testClass>
+				</configuration>
+			</plugin>
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>target-platform-configuration</artifactId>
+				<version>${tycho-version}</version>
+				<configuration>
+					<dependency-resolution>
+						<extraRequirements>
+							<requirement>
+								<type>eclipse-feature</type>
+								<id>org.eclipse.m2e.feature</id>
+								<versionRange>0.0.0</versionRange>
+							</requirement>
+							<requirement>
+								<type>eclipse-plugin</type>
+								<id>org.eclipse.equinox.event</id>
+								<versionRange>0.0.0</versionRange>
+							</requirement>
+							<requirement>
+								<type>eclipse-plugin</type>
+								<id>org.apache.felix.scr</id>
+								<versionRange>0.0.0</versionRange>
+							</requirement>
+						</extraRequirements>
+					</dependency-resolution>
+				</configuration>
+			</plugin>
+
+		</plugins>
+	</build>
+
+</project>

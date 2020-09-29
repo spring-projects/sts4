@@ -1,0 +1,333 @@
+{
+   "_links": {
+      "maven-build": {
+         "href": "https://start.spring.io/pom.xml{?dependencies,type,packaging,javaVersion,language,bootVersion,groupId,artifactId,version,name,description,packageName}",
+         "templated": true
+      },
+      "maven-project": {
+         "href": "https://start.spring.io/maven.zip{?dependencies,type,packaging,javaVersion,language,bootVersion,groupId,artifactId,version,name,description,packageName}",
+         "templated": true
+      },
+      "gradle-build": {
+         "href": "https://start.spring.io/build.gradle{?dependencies,type,packaging,javaVersion,language,bootVersion,groupId,artifactId,version,name,description,packageName}",
+         "templated": true
+      },
+      "gradle-project": {
+         "href": "https://start.spring.io/gradle.zip{?dependencies,type,packaging,javaVersion,language,bootVersion,groupId,artifactId,version,name,description,packageName}",
+         "templated": true
+      }
+   },
+   "dependencies": {
+      "type": "hierarchical-multi-select",
+      "values": [
+         {
+            "name": "Core",
+            "values": [
+               {
+                  "id": "security",
+                  "name": "Security",
+                  "description": "Support for spring-security"
+               },
+               {
+                  "id": "aop",
+                  "name": "AOP",
+                  "description": "Support for aspect-oriented programming including spring-aop and AspectJ"
+               }
+            ]
+         },
+         {
+            "name": "Data",
+            "values": [
+               {
+                  "id": "jdbc",
+                  "name": "JDBC",
+                  "description": "Support for JDBC databases"
+               },
+               {
+                  "id": "data-jpa",
+                  "name": "JPA",
+                  "description": "Support for the Java Persistence API including spring-data-jpa, spring-orm and Hibernate"
+               },
+               {
+                  "id": "data-mongodb",
+                  "name": "MongoDB",
+                  "description": "Support for the MongoDB NoSQL Database, including spring-data-mongodb"
+               },
+               {
+                  "id": "redis",
+                  "name": "Redis",
+                  "description": "Support for the REDIS key-value data store, including spring-redis"
+               },
+               {
+                  "id": "data-gemfire",
+                  "name": "Gemfire",
+                  "description": "Support for the GemFire distributed data store including spring-data-gemfire"
+               },
+               {
+                  "id": "data-solr",
+                  "name": "Solr",
+                  "description": "Support for the Apache Solr search platform, including spring-data-solr"
+               },
+               {
+                  "id": "data-elasticsearch",
+                  "name": "Elasticsearch",
+                  "description": "Support for the Elasticsearch search and analytics engine including spring-data-elasticsearch"
+               }
+            ]
+         },
+         {
+            "name": "I/O",
+            "values": [
+               {
+                  "id": "batch",
+                  "name": "Batch",
+                  "description": "Support for Spring Batch including HSQLDB database"
+               },
+               {
+                  "id": "integration",
+                  "name": "Integration",
+                  "description": "Support for common spring-integration modules"
+               },
+               {
+                  "id": "hornetq",
+                  "name": "JMS",
+                  "description": "Support for Java Message Service API via HornetQ"
+               },
+               {
+                  "id": "amqp",
+                  "name": "AMQP",
+                  "description": "Support for the Advanced Message Queuing Protocol via spring-rabbit"
+               }
+            ]
+         },
+         {
+            "name": "Web",
+            "values": [
+               {
+                  "id": "web",
+                  "name": "Web",
+                  "description": "Support for full-stack web development, including Tomcat and spring-webmvc"
+               },
+               {
+                  "id": "websocket",
+                  "name": "Websocket",
+                  "description": "Support for websocket development with Tomcat"
+               },
+               {
+                  "id": "ws",
+                  "name": "WS",
+                  "description": "Support for Spring Web Services"
+               },
+               {
+                  "id": "data-rest",
+                  "name": "Rest Repositories",
+                  "description": "Support for exposing Spring Data repositories over REST via spring-data-rest-webmvc"
+               },
+               {
+                  "id": "mobile",
+                  "name": "Mobile",
+                  "description": "Support for spring-mobile"
+               }
+            ]
+         },
+         {
+            "name": "Template Engines",
+            "values": [
+               {
+                  "id": "freemarker",
+                  "name": "Freemarker",
+                  "description": "Support for the FreeMarker templating engine"
+               },
+               {
+                  "id": "velocity",
+                  "name": "Velocity",
+                  "description": "Support for the Velocity templating engine"
+               },
+               {
+                  "id": "groovy-templates",
+                  "name": "Groovy Templates",
+                  "description": "Support for the Groovy templating engine"
+               },
+               {
+                  "id": "thymeleaf",
+                  "name": "Thymeleaf",
+                  "description": "Support for the Thymeleaf templating engine, including integration with Spring"
+               }
+            ]
+         },
+         {
+            "name": "Social",
+            "values": [
+               {
+                  "id": "social-facebook",
+                  "name": "Facebook",
+                  "description": "Support for spring-social-facebook"
+               },
+               {
+                  "id": "social-linkedin",
+                  "name": "LinkedIn",
+                  "description": "Support for spring-social-linkedin"
+               },
+               {
+                  "id": "social-twitter",
+                  "name": "Twitter",
+                  "description": "Support for spring-social-twitter"
+               }
+            ]
+         },
+         {
+            "name": "Ops",
+            "values": [
+               {
+                  "id": "actuator",
+                  "name": "Actuator",
+                  "description": "Production ready features to help you monitor and manage your application"
+               },
+               {
+                  "id": "remote-shell",
+                  "name": "Remote Shell",
+                  "description": "Support for CRaSH"
+               }
+            ]
+         }
+      ]
+   },
+   "type": {
+      "type": "action",
+      "default": "maven-project",
+      "values": [
+         {
+            "id": "maven-build",
+            "name": "Maven POM",
+            "action": "/pom.xml",
+            "tags": {
+               "build": "maven",
+               "format": "build"
+            }
+         },
+         {
+            "id": "maven-project",
+            "name": "Maven Project",
+            "action": "/maven.zip",
+            "tags": {
+               "format": "project",
+               "build": "maven"
+            }
+         },
+         {
+            "id": "gradle-build",
+            "name": "Gradle Config",
+            "action": "/build.gradle",
+            "tags": {
+               "build": "gradle",
+               "format": "build"
+            }
+         },
+         {
+            "id": "gradle-project",
+            "name": "Gradle Project",
+            "action": "/gradle.zip",
+            "tags": {
+               "format": "project",
+               "build": "gradle"
+            }
+         }
+      ]
+   },
+   "packaging": {
+      "type": "single-select",
+      "default": "jar",
+      "values": [
+         {
+            "id": "jar",
+            "name": "Jar"
+         },
+         {
+            "id": "war",
+            "name": "War"
+         }
+      ]
+   },
+   "javaVersion": {
+      "type": "single-select",
+      "default": "1.7",
+      "values": [
+         {
+            "id": "1.6",
+            "name": "1.6"
+         },
+         {
+            "id": "1.7",
+            "name": "1.7"
+         },
+         {
+            "id": "1.8",
+            "name": "1.8"
+         }
+      ]
+   },
+   "language": {
+      "type": "single-select",
+      "default": "java",
+      "values": [
+         {
+            "id": "groovy",
+            "name": "Groovy"
+         },
+         {
+            "id": "java",
+            "name": "Java"
+         }
+      ]
+   },
+   "bootVersion": {
+      "type": "single-select",
+      "default": "1.1.9.RELEASE",
+      "values": [
+         {
+            "id": "1.2.0.RC1",
+            "name": "1.2.0 RC1"
+         },
+         {
+            "id": "1.2.0.BUILD-SNAPSHOT",
+            "name": "1.2.0 (SNAPSHOT)"
+         },
+         {
+            "id": "1.1.9.RELEASE",
+            "name": "1.1.9"
+         },
+         {
+            "id": "1.1.8.BUILD-SNAPSHOT",
+            "name": "1.1.8 (SNAPSHOT)"
+         },
+         {
+            "id": "1.0.2.RELEASE",
+            "name": "1.0.2"
+         }
+      ]
+   },
+   "groupId": {
+      "type": "text",
+      "default": "org.test"
+   },
+   "artifactId": {
+      "type": "text",
+      "default": "demo"
+   },
+   "version": {
+      "type": "text",
+      "default": "0.0.1-SNAPSHOT"
+   },
+   "name": {
+      "type": "text",
+      "default": "demo"
+   },
+   "description": {
+      "type": "text",
+      "default": "Demo project for Spring Boot"
+   },
+   "packageName": {
+      "type": "text",
+      "default": "demo"
+   }
+}

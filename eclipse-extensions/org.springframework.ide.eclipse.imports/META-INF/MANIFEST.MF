@@ -1,0 +1,14 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: %pluginName
+Bundle-SymbolicName: org.springframework.ide.eclipse.imports;singleton:=true
+Bundle-Version: 4.8.1.qualifier
+Bundle-Localization: plugin
+Bundle-Vendor: %providerName
+Bundle-Activator: org.springframework.ide.eclipse.imports.ImportsActivator
+Require-Bundle: org.eclipse.ui,
+ org.eclipse.core.runtime,
+ org.eclipse.jdt.ui,
+ org.eclipse.jdt.core
+Bundle-RequiredExecutionEnvironment: JavaSE-1.7
+Bundle-ActivationPolicy: lazy

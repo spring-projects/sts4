@@ -1,0 +1,9 @@
+plugins {
+    id 'java-library'
+}
+
+dependencies {
+	implementation gradleApi()
+}
+
+group = "org.springframework.ide.eclipse"

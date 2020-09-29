@@ -1,0 +1,11 @@
+---
+env:
+  k1: v1
+  k2: v2
+applications:
+- name: somapp
+- name: app
+  env:
+    k2: v2-alt
+  memory: 2048M
+  domain: springsource.org

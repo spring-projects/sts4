@@ -1,0 +1,8 @@
+---
+applications:
+- name: app
+  host: my-app
+  routes: 
+    - route: my-route-1.springsource.org
+    - route: my-route-2.springsource.org
+    

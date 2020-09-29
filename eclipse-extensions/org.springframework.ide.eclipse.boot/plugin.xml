@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.4"?>
+<plugin>
+   <extension-point id="org.springframework.ide.eclipse.boot.project" name="Boot Project" schema="schema/org.springframework.ide.eclipse.boot.project.exsd"/>
+  
+ 
+  
+<extension
+       point="org.eclipse.core.expressions.propertyTesters">
+    <propertyTester
+          class="org.springframework.ide.eclipse.boot.core.BootPropertyTester"
+          id="org.springsource.ide.eclipse.boot.BootPropertyTester"
+          namespace="org.springsource.ide.eclipse.boot"
+          properties="isBootProject,isBootResource,hasBootDevTools"
+          type="org.eclipse.core.resources.IResource">
+    <!--       type="java.lang.Object" -->
+    </propertyTester>
+    <propertyTester
+          class="org.springframework.ide.eclipse.boot.core.BootJavaElementPropertyTester"
+          id="org.springframework.ide.eclipse.boot.core.BootJavaElementPropertyTester"
+          namespace="org.springsource.ide.eclipse.boot.javaelement"
+          properties="isInBootProject,isInBootProjectWithDevTools"
+          type="org.eclipse.jdt.core.IJavaElement">
+    <!--       type="java.lang.Object" -->
+    </propertyTester>
+ </extension>
+
+    <extension point="org.eclipse.ui.preferencePages">
+	 	<page
+         category="org.springsource.ide.eclipse.commons.preferencePage"
+         class="org.springframework.ide.eclipse.boot.ui.preferences.BootPreferencePage"
+         id="org.springframework.ide.eclipse.boot.ui.preferences.BootPreferencePage"
+         name="Boot">
+   		</page>
+   	</extension>
+   	
+    <extension point="org.eclipse.ui.preferencePages">
+	 	<page
+         category="org.springframework.ide.eclipse.boot.ui.preferences.BootPreferencePage"
+         class="org.springframework.ide.eclipse.boot.ui.preferences.BootInstallPreferencePage"
+         id="org.springframework.ide.eclipse.boot.ui.preferences.BootInstallPreferencePage"
+         name="CLI">
+   		</page>
+   <page
+         category="org.springframework.ide.eclipse.boot.ui.preferences.BootPreferencePage"
+         class="org.springframework.ide.eclipse.boot.ui.preferences.InitializrPreferencePage"
+         id="org.springframework.ide.eclipse.boot.ui.preferences.InitializrPreferencePage"
+         name="Initializr">
+   </page>
+   	</extension>
+   	
+<extension point="org.eclipse.ui.decorators">
+<decorator
+    id="org.springframework.ide.eclipse.boot.ui.DevtoolsProjectDecorator"
+    label="Spring Boot Project Decorator"
+    lightweight="true"
+    state="true"
+    class= "org.springframework.ide.eclipse.boot.ui.BootProjectDecorator">
+    <description>
+      Decorates projects to show when a project's classpath contains Spring Boot Elements. 
+    </description>
+    <enablement>
+       <or>
+	       <objectClass
+	             name="org.eclipse.jdt.core.IJavaProject">
+	       </objectClass>
+	       <objectClass
+	             name="org.eclipse.core.resources.IProject">
+	       </objectClass>
+	   </or>
+    </enablement>
+  </decorator>
+</extension>
+
+<extension
+      point="org.eclipse.core.runtime.preferences">
+   <initializer
+         class="org.springframework.ide.eclipse.boot.ui.preferences.PreferencesInitializer">
+   </initializer>
+</extension>
+<extension
+      point="org.eclipse.ui.handlers">
+   <handler
+         class="org.springframework.ide.eclipse.boot.ui.EnableDisableBootDevtools"
+         commandId="org.springframework.ide.eclipse.boot.ui.EnableDisableBootDevtools">
+      <enabledWhen>
+         <and>
+            <count
+                  value="1">
+            </count>
+            <iterate>
+               <or>
+                  <adapt
+                        type="org.eclipse.core.resources.IResource">
+                     <or>
+                        <adapt
+                              type="org.eclipse.core.resources.IProject">
+                           <and>
+                              <test
+                                    property="org.eclipse.core.resources.projectNature"
+                                    value="org.eclipse.m2e.core.maven2Nature">
+                              </test>
+                              <test
+                                    forcePluginActivation="true"
+                                    property="org.springsource.ide.eclipse.boot.isBootProject">
+                              </test>
+                           </and>
+                        </adapt>
+                        <test
+                              property="org.eclipse.core.resources.name"
+                              value="pom.xml">
+                        </test>
+                     </or>
+                  </adapt>
+                  <and>
+                     <instanceof
+                           value="org.eclipse.jdt.core.IJavaProject">
+                     </instanceof>
+                     <test
+                           property="org.springsource.ide.eclipse.commons.java.projectNature"
+                           value="org.eclipse.m2e.core.maven2Nature">
+                     </test>
+                     <test
+                           forcePluginActivation="true"
+                           property="org.springsource.ide.eclipse.boot.javaelement.isInBootProject">
+                     </test>
+                  </and>
+               </or>
+            </iterate>
+         </and>
+      </enabledWhen>
+   </handler>
+</extension>
+<extension
+      point="org.eclipse.ui.commands">
+   <command
+         categoryId="org.springframework.ide.eclipse.boot.commands.category"
+         id="org.springframework.ide.eclipse.boot.ui.EnableDisableBootDevtools"
+         name="Add/Remove Boot Devtools">
+   </command>
+</extension>
+<extension
+      point="org.eclipse.ui.menus">
+   <menuContribution
+         allPopups="false"
+         locationURI="popup:org.springframework.ide.eclipse.ui.tools?after=boot">
+      <command
+            commandId="org.springframework.ide.eclipse.boot.ui.EnableDisableBootDevtools"
+            id="org.springframework.ide.eclipse.boot.ui.RemoveDevTools"
+            label="Remove DevTools"
+            style="push">
+         <visibleWhen
+               checkEnabled="false">
+            <and>
+               <count
+                     value="1">
+               </count>
+               <iterate>
+                  <or>
+                     <adapt
+                           type="org.eclipse.core.resources.IResource">
+                        <and>
+                           <test
+                                 forcePluginActivation="true"
+                                 property="org.springsource.ide.eclipse.boot.isBootResource">
+                           </test>
+                           <test
+                                 property="org.springsource.ide.eclipse.boot.hasBootDevTools">
+                           </test>
+                           <or>
+                              <test
+                                    property="org.eclipse.core.resources.name"
+                                    value="pom.xml">
+                              </test>
+                              <adapt
+                                    type="org.eclipse.core.resources.IProject">
+                                 <test
+                                       property="org.eclipse.core.resources.projectNature"
+                                       value="org.eclipse.m2e.core.maven2Nature">
+                                 </test>
+                              </adapt>
+                           </or>
+                        </and>
+                     </adapt>
+                     <and>
+                        <instanceof
+                              value="org.eclipse.jdt.core.IJavaProject">
+                        </instanceof>
+                        <test
+                              property="org.springsource.ide.eclipse.commons.java.projectNature"
+                              value="org.eclipse.m2e.core.maven2Nature">
+                        </test>
+                        <test
+                              forcePluginActivation="true"
+                              property="org.springsource.ide.eclipse.boot.javaelement.isInBootProject">
+                        </test>
+                        <test
+                              property="org.springsource.ide.eclipse.boot.javaelement.isInBootProjectWithDevTools">
+                        </test>
+                     </and>
+                  </or>
+               </iterate>
+            </and>
+         </visibleWhen>
+      </command>
+      <command
+            commandId="org.springframework.ide.eclipse.boot.ui.EnableDisableBootDevtools"
+            id="org.springframework.ide.eclipse.boot.ui.AddDevTools"
+            label="Add DevTools"
+            style="push">
+         <visibleWhen
+               checkEnabled="false">
+            <and>
+               <count
+                     value="1">
+               </count>
+               <iterate>
+                  <or>
+                     <adapt
+                           type="org.eclipse.core.resources.IResource">
+                        <and>
+                           <test
+                                 forcePluginActivation="true"
+                                 property="org.springsource.ide.eclipse.boot.isBootResource">
+                           </test>
+                           <not>
+                              <test
+                                    property="org.springsource.ide.eclipse.boot.hasBootDevTools">
+                              </test>
+                           </not>
+                           <or>
+                              <test
+                                    property="org.eclipse.core.resources.name"
+                                    value="pom.xml">
+                              </test>
+                              <adapt
+                                    type="org.eclipse.core.resources.IProject">
+                                 <test
+                                       property="org.eclipse.core.resources.projectNature"
+                                       value="org.eclipse.m2e.core.maven2Nature">
+                                 </test>
+                              </adapt>
+                           </or>
+                        </and>
+                     </adapt>
+                     <and>
+                        <instanceof
+                              value="org.eclipse.jdt.core.IJavaProject">
+                        </instanceof>
+                        <test
+                              property="org.springsource.ide.eclipse.commons.java.projectNature"
+                              value="org.eclipse.m2e.core.maven2Nature">
+                        </test>
+                        <test
+                              forcePluginActivation="true"
+                              property="org.springsource.ide.eclipse.boot.javaelement.isInBootProject">
+                        </test>
+                        <not>
+                           <test
+                                 property="org.springsource.ide.eclipse.boot.javaelement.isInBootProjectWithDevTools">
+                           </test>
+                        </not>
+                     </and>
+                  </or>
+               </iterate>
+            </and>
+         </visibleWhen>
+      </command>
+   </menuContribution>
+</extension>
+<extension
+      point="org.springframework.ide.eclipse.boot.project">
+      <project nature="org.eclipse.m2e.core.maven2Nature" projectClass="org.springframework.ide.eclipse.boot.core.internal.MavenSpringBootProject"></project>
+</extension>
+
+</plugin>

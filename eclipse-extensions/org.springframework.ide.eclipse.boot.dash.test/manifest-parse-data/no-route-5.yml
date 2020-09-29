@@ -1,0 +1,6 @@
+---
+no-route: true
+applications:
+- name: app
+  routes:
+    route: app.springsource.org

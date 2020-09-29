@@ -1,0 +1,9 @@
+---
+applications:
+- name: app
+  memory: 2048M
+  health-check-type: http
+  health-check-http-endpoint: /testhealth
+  routes:
+  - route: app-1.springsource.org
+  

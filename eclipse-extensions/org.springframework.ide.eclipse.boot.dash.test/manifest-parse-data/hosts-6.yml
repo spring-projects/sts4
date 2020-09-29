@@ -1,0 +1,12 @@
+---
+host: my-root-1
+hosts:
+  - my-root-2
+  - my-root-3
+applications:
+- name: app
+  host: my-app-1
+  hosts:
+  - my-app-2
+  - my-app-3
+  

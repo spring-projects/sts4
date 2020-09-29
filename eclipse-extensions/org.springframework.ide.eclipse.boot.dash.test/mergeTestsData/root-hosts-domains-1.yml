@@ -1,0 +1,6 @@
+---
+host: test-app
+applications:
+- name: another-app
+- name: app
+  memory: 2048M

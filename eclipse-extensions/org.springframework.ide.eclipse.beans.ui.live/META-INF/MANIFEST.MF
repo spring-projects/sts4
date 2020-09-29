@@ -1,0 +1,27 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: Live Beans Tree
+Bundle-SymbolicName: org.springframework.ide.eclipse.beans.ui.live;singleton:=true
+Bundle-Version: 4.8.1.qualifier
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Export-Package: org.springframework.ide.eclipse.beans.ui.live,
+ org.springframework.ide.eclipse.beans.ui.live.actions,
+ org.springframework.ide.eclipse.beans.ui.live.model,
+ org.springframework.ide.eclipse.beans.ui.live.tree,
+ org.springframework.ide.eclipse.beans.ui.live.utils
+Require-Bundle: org.eclipse.core.runtime,
+ org.eclipse.ui.views,
+ org.json,
+ org.eclipse.core.resources,
+ org.apache.commons.lang,
+ org.eclipse.jface,
+ org.eclipse.ui.workbench,
+ org.eclipse.jdt.core,
+ org.springsource.ide.eclipse.commons.ui,
+ org.eclipse.jdt.ui,
+ com.google.guava,
+ org.springsource.ide.eclipse.commons.livexp,
+ org.springsource.ide.eclipse.commons.frameworks.core
+Bundle-ActivationPolicy: lazy
+Bundle-Vendor: Spring IDE Developers
+Bundle-Activator: org.springframework.ide.eclipse.beans.ui.live.LiveBeansUiPlugin

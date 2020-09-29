@@ -1,0 +1,6 @@
+---
+applications:
+- name: app
+  no-route: true
+  routes:
+  - route: privateapps.io

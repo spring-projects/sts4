@@ -1,0 +1,7 @@
+---
+applications:
+- name: app
+  host: my-app
+  random-route: true
+  routes: 
+    - route: my-route.springsource.org

@@ -1,0 +1,2 @@
+The files here are copied from https://github.com/spring-io/initializr/tree/master/initializr-generator/src/main/java/io/spring/initializr/generator/version
+THe only changes made are the package names.

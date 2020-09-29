@@ -1,0 +1,5 @@
+---
+host: my-app
+applications:
+- name: app
+  no-hostname: true

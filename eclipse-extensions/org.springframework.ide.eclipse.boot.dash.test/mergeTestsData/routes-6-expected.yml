@@ -1,0 +1,7 @@
+applications:
+- name: demo-app
+  routes:
+  - route: route-2.springsource.org 
+- name: cvcvcv
+  memory: 512M
+  

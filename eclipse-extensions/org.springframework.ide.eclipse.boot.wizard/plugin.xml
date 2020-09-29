@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<?eclipse version="3.3"?>
+<!--
+/*******************************************************************************
+ * Copyright (c) 2016 Spring IDE Developers
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-v10.html
+ * 
+ * Contributors:
+ *     Spring IDE Developers - initial API and implementation
+ *******************************************************************************/
+ -->
+<plugin>
+   <extension-point id="org.springframework.ide.eclipse.wizard.import.strategy" name="org.springframework.ide.eclipse.wizard.import.strategy" schema="schema/org.springframework.ide.eclipse.wizard.import.strategy.exsd"/>
+
+ <extension
+       point="org.eclipse.ui.newWizards">
+   <wizard
+         category="org.springsource.ide.eclipse.boot.wizards.category"
+         icon="icons/full/etool16/new_template_project_obj.png"
+         class="org.springframework.ide.eclipse.boot.wizard.NewSpringBootWizard"
+         hasPages="true"
+         id="org.springsource.ide.eclipse.commons.gettingstarted.wizard.boot.NewSpringBootWizard"
+         name="Spring Starter Project"
+         project="true">
+       <description>Create new Spring Starter Project</description>
+   </wizard>
+      
+      <wizard
+            category="org.springsource.ide.eclipse.boot.wizards.category"
+            class="org.springframework.ide.eclipse.boot.wizard.guides.GSImportWizard"
+            icon="icons/full/etool16/new_template_project_obj.png"
+            id="org.springsource.ide.eclipse.gettingstarted.wizards.import.generic.newalias"
+            name="Import Spring Getting Started Content"
+            project="true"> 
+         <description>Import Spring Getting Started Content</description> 
+         <selection class="org.eclipse.core.resources.IResource"/> 
+      </wizard>
+      
+      <category
+            id="org.springsource.ide.eclipse.boot.wizards.category"
+            name="Spring Boot">
+      </category> 
+
+ </extension>
+ 
+ <extension
+       point="org.eclipse.ui.perspectiveExtensions">
+    <perspectiveExtension
+          targetID="org.eclipse.jdt.ui.JavaPerspective">
+       <newWizardShortcut
+             id="org.springsource.ide.eclipse.commons.gettingstarted.wizard.boot.NewSpringBootWizard">
+       </newWizardShortcut>
+       <newWizardShortcut
+             id="org.springsource.ide.eclipse.gettingstarted.wizards.import.generic.newalias">
+       </newWizardShortcut>
+    </perspectiveExtension>
+    <perspectiveExtension 
+          targetID="org.eclipse.ui.resourcePerspective">
+       <newWizardShortcut
+             id="org.springsource.ide.eclipse.commons.gettingstarted.wizard.boot.NewSpringBootWizard">
+       </newWizardShortcut>
+       <newWizardShortcut
+             id="org.springsource.ide.eclipse.gettingstarted.wizards.import.generic.newalias">
+       </newWizardShortcut>
+    </perspectiveExtension>
+    <perspectiveExtension
+          targetID="org.eclipse.jst.j2ee.J2EEPerspective">
+       <newWizardShortcut
+             id="org.springsource.ide.eclipse.commons.gettingstarted.wizard.boot.NewSpringBootWizard">
+       </newWizardShortcut>
+       <newWizardShortcut
+             id="org.springsource.ide.eclipse.gettingstarted.wizards.import.generic.newalias">
+       </newWizardShortcut>
+    </perspectiveExtension>
+    <perspectiveExtension
+          targetID="org.eclipse.jdt.ui.JavaBrowsingPerspective">
+       <newWizardShortcut
+             id="org.springsource.ide.eclipse.commons.gettingstarted.wizard.boot.NewSpringBootWizard">
+       </newWizardShortcut>
+       <newWizardShortcut
+             id="org.springsource.ide.eclipse.gettingstarted.wizards.import.generic.newalias">
+       </newWizardShortcut>
+    </perspectiveExtension>
+    <perspectiveExtension
+          targetID="org.eclipse.jdt.ui.JavaHierarchyPerspective">
+       <newWizardShortcut
+             id="org.springsource.ide.eclipse.commons.gettingstarted.wizard.boot.NewSpringBootWizard">
+       </newWizardShortcut>
+       <newWizardShortcut
+             id="org.springsource.ide.eclipse.gettingstarted.wizards.import.generic.newalias">
+       </newWizardShortcut>
+    </perspectiveExtension>
+ </extension>
+    
+       <extension
+         point="org.eclipse.ui.handlers">
+      <handler
+            class="org.springframework.ide.eclipse.boot.wizard.AddBootStartersHandler"
+            commandId="org.springframework.ide.eclipse.boot.commands.editStartersCommand">
+         <enabledWhen>
+            <and>
+               <count
+                     value="1">
+               </count>
+               <iterate>
+                  <or>
+                     <adapt
+                           type="org.eclipse.core.resources.IResource">
+                        <and>
+                           <test
+                                 forcePluginActivation="true"
+                                 property="org.springsource.ide.eclipse.boot.isBootResource">
+                           </test>
+                           <or>
+                              <adapt
+                                    type="org.eclipse.core.resources.IProject">
+                                 <or>
+	                                 <test
+	                                       property="org.eclipse.core.resources.projectNature"
+	                                       value="org.eclipse.m2e.core.maven2Nature">
+	                                 </test>
+	                                 <and>
+		                                 <test
+		                                       property="org.eclipse.core.resources.projectNature"
+		                                       value="org.eclipse.buildship.core.gradleprojectnature">
+		                                 </test>
+	                                 </and>
+                                 </or>
+                              </adapt>
+                              <test
+                                    property="org.eclipse.core.resources.name"
+                                    value="pom.xml">
+                              </test>
+                           </or>
+                        </and>
+                     </adapt>
+                  </or>
+               </iterate>
+            </and>
+         </enabledWhen>
+      </handler>
+   </extension>
+   
+   
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            allPopups="false"
+            locationURI="popup:org.springframework.ide.eclipse.ui.tools?after=boot">
+         <command
+               commandId="org.springframework.ide.eclipse.boot.commands.editStartersCommand"
+               icon="platform:/plugin/org.springframework.ide.eclipse.boot/resources/icons/boot-18x16.png"
+               id="org.springframework.ide.eclipse.boot.menus.editStarters"
+               label="Add Starters"
+               mnemonic="S"
+               style="push">
+            <visibleWhen
+                  checkEnabled="false">
+               <and>
+                  <count
+                        value="1">
+                  </count>
+                  <iterate>
+                     <or>
+                        <adapt
+                              type="org.eclipse.core.resources.IResource">
+                           <and>
+                              <test
+                                    forcePluginActivation="true"
+                                    property="org.springsource.ide.eclipse.boot.isBootResource">
+                              </test>
+                              <or>
+                                 <adapt
+                                       type="org.eclipse.core.resources.IProject">
+	                                 <or>
+		                                 <test
+		                                       property="org.eclipse.core.resources.projectNature"
+		                                       value="org.eclipse.m2e.core.maven2Nature">
+		                                 </test>
+		                                 <test
+		                                       property="org.eclipse.core.resources.projectNature"
+		                                       value="org.eclipse.buildship.core.gradleprojectnature">
+		                                 </test>
+	                                 </or>
+                                 </adapt>
+                                 <test
+                                       property="org.eclipse.core.resources.name"
+                                       value="pom.xml">
+                                 </test>
+                              </or>
+                           </and>
+                        </adapt>
+                        <and>
+                           <instanceof
+                                 value="org.eclipse.jdt.core.IJavaProject">
+                           </instanceof>
+	                        <or>
+		                        <test
+		                              property="org.springsource.ide.eclipse.commons.java.projectNature"
+		                              value="org.eclipse.m2e.core.maven2Nature">
+		                        </test>
+		                        <test
+		                              property="org.springsource.ide.eclipse.commons.java.projectNature"
+		                              value="org.eclipse.buildship.core.gradleprojectnature">
+		                        </test>
+	                        </or>
+                           <test
+                                 forcePluginActivation="true"
+                                 property="org.springsource.ide.eclipse.boot.javaelement.isInBootProject">
+                           </test>
+                        </and>
+                     </or>
+                  </iterate>
+               </and>
+            </visibleWhen>
+         </command>
+      </menuContribution>
+   </extension>
+   <extension
+         point="org.eclipse.wst.sse.ui.completionProposal">
+      <proposalCategory
+            icon="icons/full/etool16/boot-icon.png"
+            id="org.springframework.ide.eclipse.boot.proposalCategory"
+            name="Boot">
+      </proposalCategory>
+      <proposalComputer
+            activate="true"
+            categoryId="org.springframework.ide.eclipse.boot.proposalCategory"
+            class="org.springframework.ide.eclipse.boot.wizard.BootPomCompletionProposalComputer"
+            icon="icons/full/etool16/boot-icon.png"
+            id="org.springframework.ide.eclipse.boot.wizard.PomCompletionProposalComputer"
+            name="Boot Pom Completions">
+         <contentType
+               id="org.eclipse.m2e.core.pomFile">
+         </contentType>
+      </proposalComputer>
+   </extension>
+   <extension
+         point="org.eclipse.ui.preferencePages">
+      <page
+            category="org.springframework.ide.eclipse.boot.ui.preferences.InitializrPreferencePage"
+            class="org.springframework.ide.eclipse.boot.wizard.preferences.AddStartersWizardPreferencePage"
+            id="org.springframework.ide.eclipse.boot.wizard.initializr"
+            name="Add Starters">
+      </page>
+   </extension>
+ 
+    
+</plugin>

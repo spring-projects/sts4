@@ -1,0 +1,13 @@
+---
+host: test-app
+applications:
+- name: another-app
+  hosts:
+  - test-app1
+  - test-app2
+- name: app
+  hosts:
+  - test-app1
+  domain: springsource.org
+  host: my-app
+  memory: 2048M

@@ -1,0 +1,6 @@
+---
+applications:
+- name: app
+  memory: 2048M
+  routes:
+  - route: test-app.springsource.org
