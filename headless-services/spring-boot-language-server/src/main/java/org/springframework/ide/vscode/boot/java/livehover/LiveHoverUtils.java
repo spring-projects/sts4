@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.eclipse.jdt.core.dom.MethodDeclaration;
@@ -176,7 +177,18 @@ public class LiveHoverUtils {
 		}
 	}
 
+	private static final Pattern HEX_HASH = Pattern.compile("^[A-Za-z0-9]+$"); 
+	
 	public static String niceAppName(String processId, String processName) {
+		int pidLen = processId.length();
+		if (pidLen>32 && HEX_HASH.matcher(processId).matches()) {
+			//looks like a long hash. Shorten it for display purposes
+			processId = processId.substring(0, 12);
+		}
+		if (processName.contains(processId)) {
+			//somewhat redundant to display both if one contains the other
+			return "Process ["+processName+"]";
+		}
 		return "Process [PID="+processId+", name=`"+processName+"`]";
 	}
 
