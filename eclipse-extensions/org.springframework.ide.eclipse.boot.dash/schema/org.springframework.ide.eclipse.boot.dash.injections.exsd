@@ -1,6 +1,6 @@
 <?xml version='1.0' encoding='UTF-8'?>
 <!-- Schema file written by PDE -->
-<schema targetNamespace="org.springframework.ide.eclipse.boot.dash" xmlns="http://www.w3.org/2001/XMLSchema">
+<schema targetNamespace="org.springframework.ide.eclipse.boot.dash" xmlns="https://www.w3.org/2001/XMLSchema">
 <annotation>
       <appinfo>
          <meta.schema plugin="org.springframework.ide.eclipse.boot.dash" id="org.springframework.ide.eclipse.boot.dash.injections" name="org.springframework.ide.eclipse.boot.dash.injections"/>
