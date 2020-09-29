@@ -48,13 +48,14 @@ public class GenericRemoteAppElementDataContributor implements Contributor, Elem
 			// the connection but then doesn't reconnect again when the same url is added again while
 			// the disconnect is still in progress.
 			// Adding refresh delay avoids this issue by never sending updates in quick succession
-		remoteApps.onChange((e, v) -> {
-			System.out.println(">>> remote jmx apps");
-			for (RemoteAppData remoteAppData : remoteApps.getValues()) {
-				System.out.println(remoteAppData);
-			}
-			System.out.println("<<< remote jmx apps");
-		});
+//		remoteApps.onChange((e, v) -> {
+//			System.out.println(">>> remote jmx apps");
+//			ImmutableSet<RemoteAppData> vals = remoteApps.getValues();
+//			for (RemoteAppData remoteAppData : vals) {
+//				System.out.println(remoteAppData);
+//			}
+//			System.out.println("<<< remote jmx apps");
+//		});
 		remoteApps.refresh(); //need one initial manual refresh because registering for
 						// boot dash element changes only triggers when something changes.
 	}
