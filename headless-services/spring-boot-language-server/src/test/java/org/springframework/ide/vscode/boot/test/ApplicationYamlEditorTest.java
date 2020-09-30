@@ -150,6 +150,14 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		assertEquals(DiagnosticSeverity.Warning, problem.getSeverity());
 	}
 
+	@Test
+	public void escapeValuesWithDots() {
+		//now that there is a warning for values with '.' in them we should probably automatically escape them when
+		// inserted by a completion.
+		
+	}
+	
+	
 	@Test public void handleAsKey() throws Exception {
 		//See: https://www.pivotaltracker.com/story/show/174954118
 		useProject(createPredefinedMavenProject("justauth-example"));
@@ -956,7 +964,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 				"    extracrap: 8080\n" +
 				"logging:\n"+
 				"  level:\n" +
-				"    com.acme: INFO\n" +
+				"    '[com.acme]': INFO\n" +
 				"  snuggem: what?\n" +
 				"bogus:\n" +
 				"  no: \n" +
@@ -3927,7 +3935,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 				, // =>
 				"logging:\n" +
 				"  level:\n" +
-				"    org.springframework.boot.autoconfigure: <*>"
+				"    '[org.springframework.boot.autoconfigure]': <*>"
 		);
 		assertCompletionDetails(
 				"logging:\n" +
@@ -3946,7 +3954,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 				, // =>
 				"logging:\n" +
 				"  level:\n" +
-				"    org.springframework.boot.autoconfigure.MessageSourceAutoConfiguration: <*>"
+				"    '[org.springframework.boot.autoconfigure.MessageSourceAutoConfiguration]': <*>"
 		);
 		assertCompletionDetails(
 				"logging:\n" +

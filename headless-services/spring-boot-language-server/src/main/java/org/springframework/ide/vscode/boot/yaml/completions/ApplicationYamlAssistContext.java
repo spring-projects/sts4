@@ -45,6 +45,8 @@ import org.springframework.ide.vscode.boot.metadata.types.TypeUtil.EnumCaseMode;
 import org.springframework.ide.vscode.boot.metadata.types.TypedProperty;
 import org.springframework.ide.vscode.boot.metadata.util.PropertyDocUtils;
 import org.springframework.ide.vscode.boot.properties.hover.PropertiesDefinitionCalculator;
+import org.springframework.ide.vscode.boot.yaml.reconcile.ApplicationYamlASTReconciler;
+import org.springframework.ide.vscode.boot.yaml.reconcile.ApplicationYamlReconcileEngine;
 import org.springframework.ide.vscode.commons.java.IField;
 import org.springframework.ide.vscode.commons.java.IJavaElement;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
@@ -195,6 +197,9 @@ public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistCon
 				Set<String> definedProps = getDefinedProperties(contextNode);
 				for (TypedProperty p : properties) {
 					String name = p.getName();
+					if (ApplicationYamlASTReconciler.needsEscaping(name)) {
+						name = "["+name+"]";
+					}
 					double score = FuzzyMatcher.matchScore(query, name);
 					if (score!=0) {
 						YamlPath relativePath = YamlPath.fromSimpleProperty(name);

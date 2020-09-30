@@ -303,7 +303,7 @@ public class ApplicationYamlASTReconciler implements YamlASTReconciler {
 		}
 	}
 
-	private boolean needsEscaping(String key) {
+	public static boolean needsEscaping(String key) {
 		if (key!=null) {
 			if (key.startsWith("[")) {
 				return false; // looks like its already escaped. So doesn't need more escaping.
