@@ -93,6 +93,7 @@
 	<bundle id="org.springsource.ide.eclipse.commons.livexp">
 		<category name="Core / Eclipse Integration Commons"/>
 	</bundle>
+
 	<feature id="org.eclipse.mylyn.wikitext_feature">
 		<category name="Uncategorized"/>
 	</feature>
@@ -268,5 +269,26 @@
     <bundle id="net.i2p.crypto.eddsa.source" version="0.0.0">
 		<category name="Uncategorized"/>
 	</bundle>
-		
+
+	<!-- additional test bundles, required for other tests that might reuse this, e.g. from STS3 -->
+	<bundle id="org.springframework.ide.eclipse.boot.dash.test">
+		<category name="Uncategorized"/>
+	</bundle>
+
+	<bundle id="org.springframework.ide.eclipse.boot.launch.test">
+		<category name="Uncategorized"/>
+	</bundle>
+
+	<bundle id="org.springframework.ide.eclipse.boot.refactoring.test">
+		<category name="Uncategorized"/>
+	</bundle>
+
+	<bundle id="org.springframework.ide.eclipse.boot.test">
+		<category name="Uncategorized"/>
+	</bundle>
+
+	<bundle id="org.springframework.ide.eclipse.maven.pom.tests">
+		<category name="Uncategorized"/>
+	</bundle>
+
 </site>
