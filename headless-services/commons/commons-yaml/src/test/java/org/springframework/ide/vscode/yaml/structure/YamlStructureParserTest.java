@@ -33,6 +33,39 @@ import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureParser
 
 public class YamlStructureParserTest {
 
+	@Test public void escapedStringKey() throws Exception {
+		MockYamlEditor editor;
+		
+		editor = new MockYamlEditor(
+				"my:\n" +
+				"  map:\n"+
+				"    foobar:\n" +
+				"      name: jeff"
+		);
+		assertParseOneDoc(editor,
+				"DOC(0): ",
+				"  KEY(0): my:", 
+				"    KEY(2): map:", 
+				"      KEY(4): foobar:",
+				"        KEY(6): name: jeff"
+		);
+		
+		editor = new MockYamlEditor(
+				"my:\n" +
+				"  map:\n"+
+				"    '[foo.bar]':\n" +
+				"      name: jeff"
+		);
+		assertParseOneDoc(editor,
+				"DOC(0): ",
+				"  KEY(0): my:", 
+				"    KEY(2): map:", 
+				"      KEY(4): '[foo.bar]':",
+				"        KEY(6): name: jeff"
+		);
+		
+	}
+	
 	@Test public void ignoreLeadingYamlCruftBeforeLeadingDocumentSeparator() throws Exception {
 		String[] stuffToIgnore = {
 				"#comment",

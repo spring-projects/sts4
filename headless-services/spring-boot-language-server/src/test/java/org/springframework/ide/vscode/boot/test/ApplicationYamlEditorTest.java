@@ -90,6 +90,46 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 	
 	////////////////////////////////////////////////////////////////////////////////////////
 
+	
+	@Test public void test_GH_534() throws Exception {
+		//See: https://www.pivotaltracker.com/n/projects/1346850/stories/174872660
+		IJavaProject p = createPredefinedMavenProject("map-of-pojo");
+		useProject(p);
+		data("my.props", "java.util.Properties", null, "Properties in java.util.Properties");
+		data("my.arr", "java.lang.String[]", null, "Array");
+		
+		Editor editor = newEditor(
+				"my:\n" +
+				"  arr:\n" +
+				"    index: something\n" +
+				"  props:\n" +
+				"    '[foo.bar]': something\n" + 
+				"  map:\n" +
+				"    '[foo.bar]':\n" +
+				"        name: Freddy\n" + 
+				"        age: the-age\n" +
+				"        bad: 123"
+		);
+		editor.assertProblems(
+				"index|'int'",
+				"the-age|'int'",
+				"bad|Person"
+		);
+		
+		//Also check if completion engine understands the convention
+		editor = newEditor(
+				"my:\n" +
+				"  map:\n"+
+				"    '[foo.bar]':\n" +
+				"      <*>"
+		);
+		editor.assertContextualCompletions("<*>", 
+				// ==>
+				"age: <*>",
+				"name: <*>"
+		);
+	}
+
 	@Test public void handleAsKey() throws Exception {
 		//See: https://www.pivotaltracker.com/story/show/174954118
 		useProject(createPredefinedMavenProject("justauth-example"));

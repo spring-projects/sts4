@@ -76,7 +76,7 @@ public class YamlStructureParser {
 	 * Pattern that matches a line starting with a 'simple key'
 	 */
 	public static final Pattern SIMPLE_KEY_LINE = Pattern.compile(
-			"^(\\w(\\.|\\w|-)*):( .*|$)");
+			"^((\\w(\\.|\\w|-)*)|(\\'(\\.|\\w|-|\\[|\\])*\\')):( .*|$)");
 	//TODO: the parrern above is too selective (e.g. in real yaml one can have
 	//spaces in simple keys and lots of other characters that this pattern does not
 	//allow. For now it is good enough because we are only interested in spring property
