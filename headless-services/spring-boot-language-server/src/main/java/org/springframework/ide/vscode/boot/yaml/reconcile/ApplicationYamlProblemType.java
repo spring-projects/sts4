@@ -32,7 +32,8 @@ public enum ApplicationYamlProblemType implements ProblemType {
 	YAML_INVALID_BEAN_PROPERTY("Accessing a named property in a type that doesn't provide a property accessor with that name"),
 	YAML_DEPRECATED_ERROR(ERROR, "Property is marked as Deprecated(Error)"),
 	YAML_DEPRECATED_WARNING(WARNING, "Property is marked as Deprecated(Warning)"),
-	YAML_DUPLICATE_KEY("A mapping node contains multiple entries for the same key");
+	YAML_DUPLICATE_KEY("A mapping node contains multiple entries for the same key"),
+	YAML_SHOULD_ESCAPE(WARNING, "This key contains special characters and should probably be escaped by surrounding it with '[]'");
 
 	private final ProblemSeverity defaultSeverity;
 	private String description;

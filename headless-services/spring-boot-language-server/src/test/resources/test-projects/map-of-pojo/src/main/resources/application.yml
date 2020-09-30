@@ -1,0 +1,4 @@
+my:
+  map:
+    foo.bar:
+      name: jeff

@@ -235,6 +235,9 @@ public class ApplicationYamlASTReconciler implements YamlASTReconciler {
 		if (typeUtil.isAtomic(type)) {
 			expectTypeFoundMapping(type, mapping);
 		} else if (typeUtil.isMap(type) || typeUtil.isSequencable(type)) {
+			if (typeUtil.isMap(type)) {
+				checkForEscapableKeys(mapping);
+			}
 			Type keyType = typeUtil.getKeyType(type);
 			Type valueType = TypeUtil.getDomainType(type);
 			if (keyType!=null) {
@@ -285,6 +288,36 @@ public class ApplicationYamlASTReconciler implements YamlASTReconciler {
 				}
 			}
 		}
+	}
+
+	private void checkForEscapableKeys(MappingNode mapping) {
+		if (mapping!=null) {
+			for (NodeTuple tup : mapping.getValue()) {
+				Node keyNode = tup.getKeyNode();
+				String key = NodeUtil.asScalar(keyNode);
+				if (needsEscaping(key)) {
+					problems.accept(problem(ApplicationYamlProblemType.YAML_SHOULD_ESCAPE, keyNode, 
+							"This key is used in a map and contains special characters. It is recommended to escape it by surrounding it with '[]'"));
+				}
+			}
+		}
+	}
+
+	private boolean needsEscaping(String key) {
+		if (key!=null) {
+			if (key.startsWith("[")) {
+				return false; // looks like its already escaped. So doesn't need more escaping.
+			}
+			for (int i = 0; i < key.length(); i++) {
+				char c = key.charAt(i);
+				if (c=='-'||Character.isAlphabetic(c)||Character.isDigit(c)) {
+					//fine!
+				} else {
+					return true;
+				}
+			}
+		}
+		return false;
 	}
 
 	private void reconcile(YamlFileAST root, SequenceNode seq, Type type) {

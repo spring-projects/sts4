@@ -130,6 +130,26 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		);
 	}
 
+	@Test public void test_GH_534_warning() throws Exception {
+		//See: https://www.pivotaltracker.com/n/projects/1346850/stories/174872660
+		IJavaProject p = createPredefinedMavenProject("map-of-pojo");
+		useProject(p);
+		
+		//detect values in map keys that are recommended to be escpaped.
+		Editor editor = newEditor(
+				"my:\n" + 
+				"  map:\n" + 
+				"    foo.bar:\n" + 
+				"      name: jeff\n" +
+				"    '[rab.dab]':\n" + //no warn for this, already escaped! 
+				"      name: jeff\n" +
+				"    yaza:\n" +  //nothing special, so no warning either.
+				"      name: good"
+		);
+		Diagnostic problem = editor.assertProblems("foo.bar|escape it by surrounding it with '[]'").get(0);
+		assertEquals(DiagnosticSeverity.Warning, problem.getSeverity());
+	}
+
 	@Test public void handleAsKey() throws Exception {
 		//See: https://www.pivotaltracker.com/story/show/174954118
 		useProject(createPredefinedMavenProject("justauth-example"));
