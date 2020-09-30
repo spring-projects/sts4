@@ -2519,14 +2519,14 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 				"    green: Groen\n"+
 				"    blue: Blauw\n" +
 				"    not-a-color: Wrong\n" +
-				"    blue.bad: Blauw\n" +
+				"    blue-bad: Blauw\n" +
 				"    blue:\n" +
 				"      bad: Blauw"
 		);
 		editor.assertProblems(
 				"blue|Duplicate",
 				"not-a-color|Color",
-				"blue.bad|Color",
+				"blue-bad|Color",
 				"blue|Duplicate",
 				"bad: Blauw|Expecting a 'String' but got a 'Mapping'"
 		);
