@@ -1,6 +1,4 @@
-<project xmlns="https://maven.apache.org/POM/4.0.0"
-	xmlns:xsi="https://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="https://maven.apache.org/POM/4.0.0
+<project xmlns="https://maven.apache.org/POM/4.0.0" xmlns:xsi="https://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://maven.apache.org/POM/4.0.0
                              https://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
@@ -55,7 +53,7 @@
 		<signing.keystore>~/.keytool/pivotal.jks</signing.keystore>
 		<misc.p2.repo.version>3.9.4.201902271843</misc.p2.repo.version>
 	</properties>
-	
+
 	<profiles>
 		<profile>
 			<id>bamboo-signing</id>
@@ -73,7 +71,7 @@
 			<layout>p2</layout>
 			<url>https://download.eclipse.org/releases/2019-09</url>
 		</repository>
-		
+
 		<repository>
 			<id>JDT.LS</id>
 			<layout>p2</layout>
@@ -85,21 +83,50 @@
 			<layout>p2</layout>
 			<url>https://download.eclipse.org/tools/orbit/downloads/drops/R20190827152740/repository</url>
 		</repository>
-		
+
 		<repository>
 			<id>jboss-apt</id>
 			<layout>p2</layout>
 			<!--URL copied from jdt.ls target platform file, needed to satisfy some of its dependencies -->
 			<url>https://download.jboss.org/jbosstools/updates/m2e-extensions/m2e-apt/1.5.0-2018-08-14_20-24-39-H12/</url>
 		</repository>
- 		<repository>
- 			<id>p2-thirdparty-bundles</id>
- 			<layout>p2</layout>
- 			<url>https://dist.springsource.com/release/TOOLS/third-party/misc-p2-repo/${misc.p2.repo.version}</url>
- 		</repository>
+		<repository>
+			<id>p2-thirdparty-bundles</id>
+			<layout>p2</layout>
+			<url>https://dist.springsource.com/release/TOOLS/third-party/misc-p2-repo/${misc.p2.repo.version}</url>
+		</repository>
 	</repositories>
 	<build>
 		<plugins>
+
+			<plugin>
+				<groupId>org.eclipse.tycho.extras</groupId>
+				<artifactId>tycho-source-feature-plugin</artifactId>
+				<version>${tycho-version}</version>
+				<executions>
+					<execution>
+						<id>source-feature</id>
+						<phase>package</phase>
+						<goals>
+							<goal>source-feature</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-source-plugin</artifactId>
+				<version>${tycho-version}</version>
+				<executions>
+					<execution>
+						<id>plugin-source</id>
+						<goals>
+							<goal>plugin-source</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 
 			<plugin>
 				<groupId>org.eclipse.tycho</groupId>
@@ -135,7 +162,7 @@
 					<storepass>${signing.store.password}</storepass>
 					<keypass>${signing.key.password}</keypass>
 					<tsa>http://sha256timestamp.ws.symantec.com/sha256/timestamp</tsa>
-<!--					<tsa>http://timestamp.digicert.com</tsa> -->
+					<!--					<tsa>http://timestamp.digicert.com</tsa> -->
 				</configuration>
 			</plugin>
 

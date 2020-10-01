@@ -6,7 +6,15 @@
 		<category name="Spring Tools 4 Language Server Integrations for Eclipse"/>
 	</feature>
 
+	<feature id="org.springframework.tooling.boot.ls.feature.source">
+		<category name="Spring Tools 4 Language Server Integrations for Eclipse"/>
+	</feature>
+
 	<feature id="org.springframework.tooling.cloudfoundry.manifest.ls.integration.feature">
+		<category name="Spring Tools 4 Language Server Integrations for Eclipse"/>
+	</feature>
+
+	<feature id="org.springframework.tooling.cloudfoundry.manifest.ls.integration.feature.source">
 		<category name="Spring Tools 4 Language Server Integrations for Eclipse"/>
 	</feature>
 
@@ -14,11 +22,23 @@
 		<category name="Spring Tools 4 Language Server Integrations for Eclipse"/>
 	</feature>
 
+	<feature id="org.springframework.tooling.cloudfoundry.manifest.ls.feature.source">
+		<category name="Spring Tools 4 Language Server Integrations for Eclipse"/>
+	</feature>
+
 	<feature id="org.springframework.tooling.bosh.ls.feature">
 		<category name="Spring Tools 4 Language Server Integrations for Eclipse"/>
 	</feature>
 
+	<feature id="org.springframework.tooling.bosh.ls.feature.source">
+		<category name="Spring Tools 4 Language Server Integrations for Eclipse"/>
+	</feature>
+
 	<feature id="org.springframework.tooling.concourse.ls.feature">
+		<category name="Spring Tools 4 Language Server Integrations for Eclipse"/>
+	</feature>
+
+	<feature id="org.springframework.tooling.concourse.ls.feature.source">
 		<category name="Spring Tools 4 Language Server Integrations for Eclipse"/>
 	</feature>
 
@@ -32,7 +52,15 @@
 		<category name="deps"/>
 	</bundle>
 
+	<bundle id="org.springframework.tooling.ls.eclipse.commons.source">
+		<category name="deps"/>
+	</bundle>
+
 	<bundle id="org.springframework.tooling.jdt.ls.commons">
+		<category name="deps"/>
+	</bundle>
+
+	<bundle id="org.springframework.tooling.jdt.ls.commons.source">
 		<category name="deps"/>
 	</bundle>
 
@@ -40,7 +68,15 @@
 		<category name="deps"/>
 	</bundle>
 
+	<bundle id="org.springframework.tooling.ls.eclipse.gotosymbol.source">
+		<category name="deps"/>
+	</bundle>
+
 	<bundle id="org.springsource.ide.eclipse.commons.boot.ls">
+		<category name="deps"/>
+	</bundle>
+
+	<bundle id="org.springsource.ide.eclipse.commons.boot.ls.source">
 		<category name="deps"/>
 	</bundle>
 
@@ -48,7 +84,15 @@
 		<category name="deps"/>
 	</bundle>
 
+	<bundle id="org.springsource.ide.eclipse.commons.core.source">
+		<category name="deps"/>
+	</bundle>
+
 	<bundle id="org.springsource.ide.eclipse.commons.frameworks.core">
+		<category name="deps"/>
+	</bundle>
+
+	<bundle id="org.springsource.ide.eclipse.commons.frameworks.core.source">
 		<category name="deps"/>
 	</bundle>
 
@@ -56,7 +100,15 @@
 		<category name="deps"/>
 	</bundle>
 
+	<bundle id="org.springsource.ide.eclipse.commons.frameworks.test.util.source">
+		<category name="deps"/>
+	</bundle>
+
 	<bundle id="org.springsource.ide.eclipse.commons.frameworks.ui">
+		<category name="deps"/>
+	</bundle>
+
+	<bundle id="org.springsource.ide.eclipse.commons.frameworks.ui.source">
 		<category name="deps"/>
 	</bundle>
 
@@ -64,7 +116,15 @@
 		<category name="deps"/>
 	</bundle>
 
+	<bundle id="org.springsource.ide.eclipse.commons.jdk_tools.source">
+		<category name="deps"/>
+	</bundle>
+
 	<bundle id="org.springsource.ide.eclipse.commons.livexp">
+		<category name="deps"/>
+	</bundle>
+
+	<bundle id="org.springsource.ide.eclipse.commons.livexp.source">
 		<category name="deps"/>
 	</bundle>
 
@@ -72,7 +132,15 @@
 		<category name="deps"/>
 	</bundle>
 
+	<bundle id="org.springsource.ide.eclipse.commons.tests.util.source">
+		<category name="deps"/>
+	</bundle>
+
 	<bundle id="org.springsource.ide.eclipse.commons.ui">
+		<category name="deps"/>
+	</bundle>
+
+	<bundle id="org.springsource.ide.eclipse.commons.ui.source">
 		<category name="deps"/>
 	</bundle>
 

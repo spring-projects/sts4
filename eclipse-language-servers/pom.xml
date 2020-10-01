@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="https://maven.apache.org/POM/4.0.0" xmlns:xsi="https://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="https://maven.apache.org/POM/4.0.0 https://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="https://maven.apache.org/POM/4.0.0" xmlns:xsi="https://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://maven.apache.org/POM/4.0.0 https://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>org.springframework.boot.ide</groupId>
@@ -42,7 +41,7 @@
 		<module>../headless-services/jdt-ls-extension</module>
 		<module>org.springframework.tooling.ls.eclipse.commons</module>
 		<module>org.springframework.tooling.ls.eclipse.commons.test</module>
-	
+
 		<module>org.springsource.ide.eclipse.commons.boot.ls</module>
 		<module>org.springsource.ide.eclipse.commons.core</module>
 		<module>org.springsource.ide.eclipse.commons.frameworks.core</module>
@@ -108,7 +107,7 @@
 				<dist.version>nightly</dist.version>
 			</properties>
 		</profile>
-		
+
 		<profile>
 			<id>milestone</id>
 			<properties>
@@ -116,7 +115,7 @@
 				<dist.version>today</dist.version> <!-- should be overridden when building with some timestamp like 20171114 -->
 			</properties>
 		</profile>
-		
+
 		<profile>
 			<id>release</id>
 			<properties>
@@ -192,7 +191,7 @@
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/mylyn/docs/releases/3.0/</url>
 				</repository>
-<!--				<repository>
+				<!--				<repository>
 					<id>lsp4e</id>
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/lsp4e/snapshots/</url>
@@ -242,7 +241,7 @@
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/mylyn/docs/releases/3.0/</url>
 				</repository>
-<!--				<repository>
+				<!--				<repository>
 					<id>lsp4e</id>
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/lsp4e/snapshots/</url>
@@ -296,10 +295,10 @@
 	</repositories>
 
 	<pluginRepositories>
-	    <pluginRepository>
-	      <id>tycho-snapshots</id>
-	      <url>https://repo.eclipse.org/content/repositories/tycho-snapshots/</url>
-	    </pluginRepository>
+		<pluginRepository>
+			<id>tycho-snapshots</id>
+			<url>https://repo.eclipse.org/content/repositories/tycho-snapshots/</url>
+		</pluginRepository>
 		<!-- necessary for Maven and Ant AWS dependency -->
 		<pluginRepository>
 			<id>spring-maven-release</id>
@@ -327,6 +326,35 @@
 		</extensions>
 
 		<plugins>
+
+			<plugin>
+				<groupId>org.eclipse.tycho.extras</groupId>
+				<artifactId>tycho-source-feature-plugin</artifactId>
+				<version>${tycho-version}</version>
+				<executions>
+					<execution>
+						<id>source-feature</id>
+						<phase>package</phase>
+						<goals>
+							<goal>source-feature</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-source-plugin</artifactId>
+				<version>${tycho-version}</version>
+				<executions>
+					<execution>
+						<id>plugin-source</id>
+						<goals>
+							<goal>plugin-source</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 
 			<plugin>
 				<artifactId>maven-deploy-plugin</artifactId>
@@ -371,9 +399,10 @@
 					<storepass>${signing.store.password}</storepass>
 					<keypass>${signing.key.password}</keypass>
 					<tsa>http://sha256timestamp.ws.symantec.com/sha256/timestamp</tsa>
-<!--					<tsa>http://timestamp.digicert.com</tsa> -->
+					<!--					<tsa>http://timestamp.digicert.com</tsa> -->
 				</configuration>
 			</plugin>
+
 			<plugin>
 				<groupId>org.eclipse.tycho</groupId>
 				<artifactId>tycho-p2-plugin</artifactId>
@@ -384,7 +413,7 @@
 						<goals>
 							<goal>p2-metadata</goal>
 						</goals>
-						<phase>verify</phase>
+						<phase>package</phase>
 					</execution>
 				</executions>
 			</plugin>
@@ -392,6 +421,7 @@
 
 		<pluginManagement>
 			<plugins>
+	
 				<plugin>
 					<groupId>org.eclipse.tycho</groupId>
 					<artifactId>tycho-compiler-plugin</artifactId>
@@ -401,6 +431,7 @@
 						<compilerArgument>-err:-forbidden</compilerArgument>
 					</configuration>
 				</plugin>
+
 				<plugin>
 					<groupId>org.eclipse.tycho</groupId>
 					<artifactId>target-platform-configuration</artifactId>

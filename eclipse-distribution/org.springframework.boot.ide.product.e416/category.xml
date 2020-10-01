@@ -4,94 +4,159 @@
 		Spring Tool Suite 4
 	</description>
 
-	<!-- Eclipse Integration Commons -->
 	<category-def name="Uncategorized" label="Uncategorized"/>
-	<category-def name="Core / Eclipse Integration Commons" label="Core / Eclipse Integration Commons"/>
-	<category-def name="Resources / Eclipse Integration Commons" label="Resources / Eclipse Integration Commons"/>
+	<category-def name="Spring Tools" label="Spring Tools"/>
+	<category-def name="Spring Tools - Developer Resources" label="Spring Tools - Developer Resources"/>
 
 	<!-- STS4 branding and custom features -->
-	<category-def name="Spring Tool Suite 4 Distribution" label="Spring Tool Suite 4 Distribution" />
-
 	<feature
 		id="org.springframework.boot.ide.main.feature" version="0.0.0">
-		<category name="Spring Tool Suite 4 Distribution" />
+		<category name="Spring Tools" />
+	</feature>
+
+	<feature
+		id="org.springframework.boot.ide.main.feature.source" version="0.0.0">
+		<category name="Spring Tools - Developer Resources" />
 	</feature>
 
 	<feature
 		id="org.springframework.boot.ide.branding.feature" version="0.0.0">
-		<category name="Spring Tool Suite 4 Distribution" />
+		<category name="Spring Tools" />
 	</feature>
 
-	<!-- Spring IDE -->
-	<category-def name="Core / Spring IDE" label="Core / Spring IDE" />
-	<category-def name="Extensions / Spring IDE" label="Extensions / Spring IDE" />
-	<category-def name="Extensions (Incubation) / Spring IDE" label="Extensions (Incubation) / Spring IDE" />
-	<category-def name="Integrations / Spring IDE" label="Integrations / Spring IDE" />
-	<category-def name="Resources / Spring IDE" label="Resources / Spring IDE" />
+	<feature
+		id="org.springframework.boot.ide.branding.feature.source" version="0.0.0">
+		<category name="Spring Tools - Developer Resources" />
+	</feature>
 
 	<feature
 		id="org.springframework.ide.eclipse.boot.dash.feature" version="0.0.0">
-		<category name="Extensions / Spring IDE" />
+		<category name="Spring Tools" />
+	</feature>
+
+	<feature
+		id="org.springframework.ide.eclipse.boot.dash.feature.source" version="0.0.0">
+		<category name="Spring Tools - Developer Resources" />
 	</feature>
 
 	<feature
 		id="org.springframework.ide.eclipse.xml.namespaces.feature" version="0.0.0">
-		<category name="Extensions / Spring IDE" />
+		<category name="Spring Tools" />
 	</feature>
 
-	<!-- Language Server -->
-	<category-def name="Spring Tool Suite 4 Language Server Integrations for Eclipse" label="Spring Tool Suite 4 Language Server Integrations for Eclipse"/>
+	<feature
+		id="org.springframework.ide.eclipse.xml.namespaces.feature.source" version="0.0.0">
+		<category name="Spring Tools - Developer Resources" />
+	</feature>
 
 	<feature
 		id="org.springframework.tooling.cloudfoundry.manifest.ls.feature" version="0.0.0">
-		<category name="Spring Tool Suite 4 Language Server Integrations for Eclipse" />
+		<category name="Spring Tools" />
+	</feature>
+
+	<feature
+		id="org.springframework.tooling.cloudfoundry.manifest.ls.feature.source" version="0.0.0">
+		<category name="Spring Tools - Developer Resources" />
 	</feature>
 
 	<feature
 		id="org.springframework.tooling.boot.ls.feature" version="0.0.0">
-		<category name="Spring Tool Suite 4 Language Server Integrations for Eclipse" />
+		<category name="Spring Tools" />
+	</feature>
+
+	<feature
+		id="org.springframework.tooling.boot.ls.feature.source" version="0.0.0">
+		<category name="Spring Tools - Developer Resources" />
 	</feature>
 
 	<feature
 		id="org.springframework.tooling.bosh.ls.feature" version="0.0.0">
-		<category name="Spring Tool Suite 4 Language Server Integrations for Eclipse" />
+		<category name="Spring Tools" />
+	</feature>
+
+	<feature
+		id="org.springframework.tooling.bosh.ls.feature.source" version="0.0.0">
+		<category name="Spring Tools - Developer Resources" />
 	</feature>
 
 	<feature
 		id="org.springframework.tooling.concourse.ls.feature" version="0.0.0">
-		<category name="Spring Tool Suite 4 Language Server Integrations for Eclipse" />
+		<category name="Spring Tools" />
+	</feature>
+
+	<feature
+		id="org.springframework.tooling.concourse.ls.feature.source" version="0.0.0">
+		<category name="Spring Tools - Developer Resources" />
 	</feature>
 
 	<bundle id="org.springframework.tooling.ls.eclipse.commons">
-		<category name="Spring Tool Suite 4 Language Server Integrations for Eclipse"/>
+		<category name="Uncategorized"/>
+	</bundle>
+
+	<bundle id="org.springframework.tooling.ls.eclipse.commons.source">
+		<category name="Uncategorized"/>
+	</bundle>
+
+	<bundle id="org.springframework.tooling.ls.eclipse.commons">
+		<category name="Uncategorized"/>
+	</bundle>
+
+	<bundle id="org.springframework.tooling.ls.eclipse.commons.source">
+		<category name="Uncategorized"/>
 	</bundle>
 
 	<bundle id="org.springframework.tooling.jdt.ls.commons">
-		<category name="Spring Tool Suite 4 Language Server Integrations for Eclipse"/>
+		<category name="Uncategorized"/>
+	</bundle>
+
+	<bundle id="org.springframework.tooling.jdt.ls.commons.source">
+		<category name="Uncategorized"/>
 	</bundle>
 
 	<bundle id="org.springframework.tooling.ls.eclipse.gotosymbol">
-		<category name="Spring Tool Suite 4 Language Server Integrations for Eclipse"/>
+		<category name="Uncategorized"/>
+	</bundle>
+
+	<bundle id="org.springframework.tooling.ls.eclipse.gotosymbol.source">
+		<category name="Uncategorized"/>
 	</bundle>
 
 	<bundle id="org.springsource.ide.eclipse.commons.core">
-		<category name="Core / Eclipse Integration Commons"/>
+		<category name="Uncategorized"/>
+	</bundle>
+
+	<bundle id="org.springsource.ide.eclipse.commons.core.source">
+		<category name="Uncategorized"/>
 	</bundle>
 
 	<bundle id="org.springsource.ide.eclipse.commons.ui">
-		<category name="Core / Eclipse Integration Commons"/>
+		<category name="Uncategorized"/>
+	</bundle>
+
+	<bundle id="org.springsource.ide.eclipse.commons.ui.source">
+		<category name="Uncategorized"/>
 	</bundle>
 
 	<bundle id="org.springsource.ide.eclipse.commons.frameworks.core">
-		<category name="Core / Eclipse Integration Commons"/>
+		<category name="Uncategorized"/>
+	</bundle>
+
+	<bundle id="org.springsource.ide.eclipse.commons.frameworks.core.source">
+		<category name="Uncategorized"/>
 	</bundle>
 
 	<bundle id="org.springsource.ide.eclipse.commons.frameworks.ui">
-		<category name="Core / Eclipse Integration Commons"/>
+		<category name="Uncategorized"/>
+	</bundle>
+
+	<bundle id="org.springsource.ide.eclipse.commons.frameworks.ui.source">
+		<category name="Uncategorized"/>
 	</bundle>
 
 	<bundle id="org.springsource.ide.eclipse.commons.livexp">
-		<category name="Core / Eclipse Integration Commons"/>
+	</bundle>
+
+	<bundle id="org.springsource.ide.eclipse.commons.livexp.source">
 	</bundle>
 
 	<feature id="org.eclipse.mylyn.wikitext_feature">
@@ -272,23 +337,43 @@
 
 	<!-- additional test bundles, required for other tests that might reuse this, e.g. from STS3 -->
 	<bundle id="org.springframework.ide.eclipse.boot.dash.test">
-		<category name="Uncategorized"/>
+		<category name="Spring Tools - Developer Resources"/>
+	</bundle>
+
+	<bundle id="org.springframework.ide.eclipse.boot.dash.test.source">
+		<category name="Spring Tools - Developer Resources"/>
 	</bundle>
 
 	<bundle id="org.springframework.ide.eclipse.boot.launch.test">
-		<category name="Uncategorized"/>
+		<category name="Spring Tools - Developer Resources"/>
+	</bundle>
+
+	<bundle id="org.springframework.ide.eclipse.boot.launch.test.source">
+		<category name="Spring Tools - Developer Resources"/>
 	</bundle>
 
 	<bundle id="org.springframework.ide.eclipse.boot.refactoring.test">
-		<category name="Uncategorized"/>
+		<category name="Spring Tools - Developer Resources"/>
+	</bundle>
+
+	<bundle id="org.springframework.ide.eclipse.boot.refactoring.test.source">
+		<category name="Spring Tools - Developer Resources"/>
 	</bundle>
 
 	<bundle id="org.springframework.ide.eclipse.boot.test">
-		<category name="Uncategorized"/>
+		<category name="Spring Tools - Developer Resources"/>
+	</bundle>
+
+	<bundle id="org.springframework.ide.eclipse.boot.test.source">
+		<category name="Spring Tools - Developer Resources"/>
 	</bundle>
 
 	<bundle id="org.springframework.ide.eclipse.maven.pom.tests">
-		<category name="Uncategorized"/>
+		<category name="Spring Tools - Developer Resources"/>
 	</bundle>
-		
+
+	<bundle id="org.springframework.ide.eclipse.maven.pom.tests.source">
+		<category name="Spring Tools - Developer Resources"/>
+	</bundle>
+
 </site>

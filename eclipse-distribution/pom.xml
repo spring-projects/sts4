@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="https://maven.apache.org/POM/4.0.0" xmlns:xsi="https://www.w3.org/2001/XMLSchema-instance"
-	xsi:schemaLocation="https://maven.apache.org/POM/4.0.0 https://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="https://maven.apache.org/POM/4.0.0" xmlns:xsi="https://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="https://maven.apache.org/POM/4.0.0 https://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
 	<groupId>org.springframework.boot.ide</groupId>
@@ -40,7 +39,7 @@
 
 	<modules>
 		<module>../eclipse-extensions/org.springframework.boot.ide.main.feature</module>
-		
+
 		<module>org.springframework.boot.ide.branding</module>
 		<module>org.springframework.boot.ide.branding.feature</module>
 
@@ -93,12 +92,12 @@
 		<dist.bucket>dist.springsource.com</dist.bucket>
 		<dist.key>TOOLS</dist.key>
 		<dist.project>sts4</dist.project>
-		
+
 		<dist.pathpostfix>nightly</dist.pathpostfix>
 		<dist.path>${dist.type}/${dist.key}/${dist.project}/${dist.pathpostfix}</dist.path>
-		
-		<sts4-language-servers-p2-repo>https://dist.springsource.com/${dist.type}/TOOLS/sts4-language-server-integrations/${sts4-language-servers-version}</sts4-language-servers-p2-repo>
 
+		<sts4-language-servers-p2-repo>https://dist.springsource.com/${dist.type}/TOOLS/sts4-language-server-integrations/${sts4-language-servers-version}</sts4-language-servers-p2-repo>
+		
 		<tycho-version>1.7.0</tycho-version>
 		<encoding>UTF-8</encoding>
 
@@ -114,11 +113,11 @@
 				<dist.path.repo>${dist.type}/TOOLS/sts4/nightly/${dist.target.major}</dist.path.repo>
 				<dist.path.product>${dist.type}/STS4/nightly/dist/${dist.target.major}</dist.path.product>
 				<skip.update-nightly-download-page>false</skip.update-nightly-download-page>
-				
+
 				<sts4-language-servers-version>nightly</sts4-language-servers-version>
 			</properties>
 		</profile>
-		
+
 		<profile>
 			<id>milestone</id>
 			<properties>
@@ -130,7 +129,7 @@
 				<sts4-language-servers-version>today</sts4-language-servers-version> <!-- this should be overridden in the build with the concrete ls version to include-->
 			</properties>
 		</profile>
-		
+
 		<profile>
 			<id>release</id>
 			<properties>
@@ -215,7 +214,7 @@
 					<layout>p2</layout>
 					<url>https://www.mihai-nita.net/eclipse</url>
 				</repository>
-<!--				<repository>
+				<!--				<repository>
 					<id>xtext-base</id>
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/modeling/tmf/xtext/updates/milestones/</url>
@@ -263,7 +262,7 @@
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/technology/m2e/snapshots/1.16.2/latest/</url>
 				</repository>
-<!--				<repository>
+				<!--				<repository>
 					<id>latest-m2e-wtp</id>
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/m2e-wtp/releases/1.4/</url>
@@ -313,7 +312,7 @@
 					<layout>p2</layout>
 					<url>https://www.mihai-nita.net/eclipse</url>
 				</repository>
-<!--				<repository>
+				<!--				<repository>
 					<id>xtext-base</id>
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/modeling/tmf/xtext/updates/milestones/</url>
@@ -328,7 +327,7 @@
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/lsp4e/snapshots/</url>
 				</repository>
-<!--				<repository>
+				<!--				<repository>
 					<id>lsp4e</id>
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/lsp4e/releases/latest/</url>
@@ -343,7 +342,7 @@
 				<module>org.springframework.boot.ide.product.e417</module>
 			</modules>
 		</profile>
-		
+
 		<profile>
 			<id>e418</id>
 			<properties>
@@ -376,7 +375,7 @@
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/technology/m2e/snapshots/1.16.2/latest/</url>
 				</repository>
-<!--				<repository>
+				<!--				<repository>
 					<id>latest-m2e-wtp</id>
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/m2e-wtp/releases/1.4/</url>
@@ -426,7 +425,7 @@
 					<layout>p2</layout>
 					<url>https://www.mihai-nita.net/eclipse</url>
 				</repository>
-<!--				<repository>
+				<!--				<repository>
 					<id>xtext-base</id>
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/modeling/tmf/xtext/updates/milestones/</url>
@@ -441,7 +440,7 @@
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/lsp4e/snapshots/</url>
 				</repository>
-<!--				<repository>
+				<!--				<repository>
 					<id>lsp4e</id>
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/lsp4e/releases/latest/</url>
@@ -456,7 +455,7 @@
 				<module>org.springframework.boot.ide.product.e418</module>
 			</modules>
 		</profile>
-		
+
 		<profile>
 			<id>build.springsource.com</id>
 			<activation>
@@ -500,7 +499,7 @@
 			<layout>p2</layout>
 			<url>https://dist.springsource.com/release/TOOLS/third-party/misc-p2-repo/${misc.p2.repo.version}</url>
 		</repository>
-<!--		<repository>
+		<!--		<repository>
 			<id>egit-github</id>
 			<layout>p2</layout>
 			<url>https://download.eclipse.org/egit/github/updates</url>
@@ -510,7 +509,7 @@
 			<layout>p2</layout>
 			<url>https://download.eclipse.org/egit/github/updates-stable-nightly/</url>
 		</repository>
-<!--		<repository>
+		<!--		<repository>
 			<id>m2e-apt</id>
 			<layout>p2</layout>
 			<url>https://download.jboss.org/jbosstools/updates/m2e-extensions/m2e-apt</url>
@@ -528,10 +527,10 @@
 	</repositories>
 
 	<pluginRepositories>
-	    <pluginRepository>
-	      <id>tycho-snapshots</id>
-	      <url>https://repo.eclipse.org/content/repositories/tycho-snapshots/</url>
-	    </pluginRepository>
+		<pluginRepository>
+			<id>tycho-snapshots</id>
+			<url>https://repo.eclipse.org/content/repositories/tycho-snapshots/</url>
+		</pluginRepository>
 		<!-- necessary for Maven and Ant AWS dependency -->
 		<pluginRepository>
 			<id>spring-maven-release</id>
@@ -560,11 +559,20 @@
 
 		<plugins>
 
-	        <plugin>
-	          <groupId>org.eclipse.tycho.extras</groupId>
-	          <artifactId>tycho-source-feature-plugin</artifactId>
-			  <version>${tycho-version}</version>
-	        </plugin>
+			<plugin>
+				<groupId>org.eclipse.tycho.extras</groupId>
+				<artifactId>tycho-source-feature-plugin</artifactId>
+				<version>${tycho-version}</version>
+				<executions>
+					<execution>
+						<id>source-feature</id>
+						<phase>package</phase>
+						<goals>
+							<goal>source-feature</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
 
 			<plugin>
 				<groupId>org.eclipse.tycho</groupId>
@@ -595,14 +603,14 @@
 				<executions>
 					<execution>
 						<id>attached-p2-metadata</id>
-						<phase>verify</phase>
+						<phase>package</phase>
 						<goals>
 							<goal>p2-metadata</goal>
 						</goals>
 					</execution>
 				</executions>
 			</plugin>
-			
+
 			<plugin>
 				<groupId>org.eclipse.tycho</groupId>
 				<artifactId>tycho-maven-plugin</artifactId>
@@ -627,7 +635,7 @@
 					<skipArchive>true</skipArchive>
 				</configuration>
 			</plugin>
-			
+
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-jarsigner-plugin</artifactId>
@@ -647,14 +655,14 @@
 					<storepass>${signing.store.password}</storepass>
 					<keypass>${signing.key.password}</keypass>
 					<tsa>http://sha256timestamp.ws.symantec.com/sha256/timestamp</tsa>
-<!--					<tsa>http://timestamp.digicert.com</tsa> -->
+					<!--					<tsa>http://timestamp.digicert.com</tsa> -->
 				</configuration>
 			</plugin>
 		</plugins>
 
 		<pluginManagement>
 			<plugins>
-				
+
 				<plugin>
 					<groupId>org.eclipse.tycho</groupId>
 					<artifactId>tycho-compiler-plugin</artifactId>
@@ -672,7 +680,7 @@
 						<resolver>p2</resolver>
 						<pomDependencies>consider</pomDependencies>
 						<ignoreTychoRepositories>true</ignoreTychoRepositories>
-<!--						<dependency-resolution>
+						<!--						<dependency-resolution>
 							<optionalDependencies>ignore</optionalDependencies>
 						</dependency-resolution> -->
 						<environments>
