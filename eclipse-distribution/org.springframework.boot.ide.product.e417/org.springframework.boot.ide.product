@@ -14,6 +14,7 @@
 -Xms256m
 -Xmx2048m
 --add-modules=ALL-SYSTEM
+-Dorg.eclipse.swt.browser.DefaultType=chromium
       </vmArgs>
       <vmArgsLin>
       </vmArgsLin>
@@ -115,6 +116,8 @@
       <feature id="org.springframework.tooling.concourse.ls.feature" installMode="root"/>
 
       <feature id="org.eclipse.justj.openjdk.hotspot.jre.full" installMode="root"/>
+      
+      <feature id="com.make.chromium.cef.feature" installMode="root"/>
 </features>
 
    <configurations>

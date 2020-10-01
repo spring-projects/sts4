@@ -333,6 +333,11 @@
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/lsp4e/releases/latest/</url>
 				</repository> -->
+				<repository>
+					<id>chromium-binaries</id>
+					<layout>p2</layout>
+					<url>https://dl.maketechnology.io/chromium-cef/rls/repository</url>
+				</repository>
 			</repositories>
 			<modules>
 				<module>org.springframework.boot.ide.product.e417</module>
@@ -441,6 +446,11 @@
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/lsp4e/releases/latest/</url>
 				</repository> -->
+				<repository>
+					<id>chromium-binaries</id>
+					<layout>p2</layout>
+					<url>https://dl.maketechnology.io/chromium-cef/rls/repository</url>
+				</repository>
 			</repositories>
 			<modules>
 				<module>org.springframework.boot.ide.product.e418</module>
