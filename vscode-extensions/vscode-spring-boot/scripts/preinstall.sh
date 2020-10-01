@@ -32,6 +32,7 @@ server_jar_file=$(find ${workdir}/../../headless-services/spring-boot-language-s
 jar -xvf ${server_jar_file}
 
 cd ${workdir}/../../headless-services/jdt-ls-extension
+find . -name "*-sources.jar" -delete
 cp org.springframework.tooling.jdt.ls.extension/target/*.jar ${workdir}/jars/jdt-ls-extension.jar
 cp org.springframework.tooling.jdt.ls.commons/target/*.jar ${workdir}/jars/jdt-ls-commons.jar
 
