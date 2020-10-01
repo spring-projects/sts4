@@ -21,12 +21,12 @@
 
 	<feature
 		id="org.springframework.boot.ide.branding.feature" version="0.0.0">
-		<category name="Spring Tools" />
+		<category name="Uncategorized" />
 	</feature>
 
 	<feature
 		id="org.springframework.boot.ide.branding.feature.source" version="0.0.0">
-		<category name="Spring Tools - Developer Resources" />
+		<category name="Uncategorized" />
 	</feature>
 
 	<feature
@@ -97,11 +97,11 @@
 		<category name="Uncategorized"/>
 	</bundle>
 
-	<bundle id="org.springframework.tooling.ls.eclipse.commons">
+	<bundle id="org.springsource.ide.eclipse.commons.boot.ls">
 		<category name="Uncategorized"/>
 	</bundle>
 
-	<bundle id="org.springframework.tooling.ls.eclipse.commons.source">
+	<bundle id="org.springsource.ide.eclipse.commons.boot.ls.source">
 		<category name="Uncategorized"/>
 	</bundle>
 
