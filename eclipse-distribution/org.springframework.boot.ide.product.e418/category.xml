@@ -159,6 +159,22 @@
 	<bundle id="org.springsource.ide.eclipse.commons.livexp.source">
 	</bundle>
 
+	<bundle id="io.projectreactor.reactor-core">
+		<category name="Uncategorized"/>
+	</bundle>
+
+	<bundle id="io.projectreactor.reactor-core.source">
+		<category name="Uncategorized"/>
+	</bundle>
+
+	<bundle id="org.reactivestreams.reactive-streams">
+		<category name="Uncategorized"/>
+	</bundle>
+
+	<bundle id="org.reactivestreams.reactive-streams.source">
+		<category name="Uncategorized"/>
+	</bundle>
+
 	<feature id="org.eclipse.mylyn.wikitext_feature">
 		<category name="Uncategorized"/>
 	</feature>

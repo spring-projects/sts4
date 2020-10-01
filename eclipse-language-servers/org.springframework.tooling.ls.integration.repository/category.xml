@@ -148,7 +148,15 @@
 		<category name="deps"/>
 	</bundle>
 
+	<bundle id="io.projectreactor.reactor-core.source">
+		<category name="deps"/>
+	</bundle>
+
 	<bundle id="org.reactivestreams.reactive-streams">
+		<category name="deps"/>
+	</bundle>
+
+	<bundle id="org.reactivestreams.reactive-streams.source">
 		<category name="deps"/>
 	</bundle>
 
