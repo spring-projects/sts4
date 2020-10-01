@@ -420,6 +420,13 @@ public class DockerContainer implements App, RunStateProvider, JmxConnectable, S
 	 */
 	private static AtomicInteger activeLogHandlers = new AtomicInteger();
 	
+	/**
+	 * For debugging purposes. Keep track of number of calls to start for which there
+	 * isn't yet a corresponding 'close' call.
+	 */
+	private static AtomicInteger startedLogHandlers = new AtomicInteger();
+
+	
 	private static class LogHandler implements ResultCallback<Frame>{
 
 		private AtomicBoolean isClosed = new AtomicBoolean();
@@ -455,6 +462,7 @@ public class DockerContainer implements App, RunStateProvider, JmxConnectable, S
 		public void close() {
 			if (isClosed.compareAndSet(false, true)) {
 				closeable.thenAccept(c -> {
+					Log.info("Closing ResultCallback. Now active: "+startedLogHandlers.decrementAndGet());
 					try {
 						c.close();
 					} catch (IOException e) {
@@ -479,6 +487,7 @@ public class DockerContainer implements App, RunStateProvider, JmxConnectable, S
 
 		@Override
 		public void onStart(Closeable closeable) {
+			Log.info("ResultCallback.onStart. Now active: "+startedLogHandlers.incrementAndGet());
 			this.closeable.complete(closeable);
 		}
 
