@@ -53,13 +53,13 @@ import org.springsource.ide.eclipse.commons.livexp.util.ExceptionUtil;
 public class MissingConfigurationProcessorRule extends BootValidationRule {
 
 	private static final String SPRING_BOOT_CONFIGURATION_PROCESSOR = "spring-boot-configuration-processor";
+	private static final MavenCoordinates DEP_CONFIGURATION_PROCESSOR =
+			new MavenCoordinates("org.springframework.boot", SPRING_BOOT_CONFIGURATION_PROCESSOR, null);
+
 	public static final BootValidationProblemType PROBLEM_ID = new BootValidationProblemType("MISSING_CONFIGURATION_PROCESSOR", ProblemSeverity.WARNING, 
 			"Missing Configuration Processor",
 			"When using @ConfigurationProperties, it is recommended to add the Spring Boot Configuration Processor to a project's classpath"
 	);
-	private static final MavenCoordinates DEP_CONFIGURATION_PROCESSOR =
-			new MavenCoordinates("org.springframework.boot", SPRING_BOOT_CONFIGURATION_PROCESSOR, null);
-
 	private static final IMarkerResolutionGenerator2 QUICK_FIX = new IMarkerResolutionGenerator2() {
 
 		@Override

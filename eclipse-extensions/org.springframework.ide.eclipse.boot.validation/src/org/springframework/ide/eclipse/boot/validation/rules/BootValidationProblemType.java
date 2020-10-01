@@ -27,11 +27,15 @@ public class BootValidationProblemType implements ProblemType {
 	private String label;
 	private String description;
 	
+	public static final BootValidationProblemType MISSING_CONFIGURATION_PROCESSOR = MissingConfigurationProcessorRule.PROBLEM_ID;
+	
 	public static List<ProblemType> values() {
 		synchronized (problemTypes) {
 			return ImmutableList.copyOf(problemTypes);
 		}
 	}
+	
+	
 
 	public BootValidationProblemType(String id, ProblemSeverity defaultSeverity, String label, String description) {
 		this.id = id;
