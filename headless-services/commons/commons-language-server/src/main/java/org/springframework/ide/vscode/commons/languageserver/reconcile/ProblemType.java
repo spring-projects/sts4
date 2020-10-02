@@ -26,4 +26,6 @@ public interface ProblemType {
 	ProblemSeverity getDefaultSeverity();
 	String toString();
 	String getCode();
+	String getLabel();
+	String getDescription();
 }

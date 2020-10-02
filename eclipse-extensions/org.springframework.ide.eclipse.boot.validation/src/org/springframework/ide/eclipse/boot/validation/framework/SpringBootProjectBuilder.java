@@ -30,6 +30,7 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.SubProgressMonitor;
 import org.springframework.ide.eclipse.boot.core.BootPropertyTester;
 import org.springframework.ide.eclipse.boot.validation.BootValidationActivator;
+import org.springframework.ide.eclipse.boot.validation.preferences.BootValidationPreferencesPage;
 import org.springframework.ide.eclipse.boot.validation.rules.ValidationRuleDefinitions;
 import org.springframework.ide.eclipse.editor.support.preferences.EditorType;
 import org.springframework.ide.eclipse.editor.support.preferences.PreferencesBasedSeverityProvider;
@@ -111,7 +112,7 @@ public class SpringBootProjectBuilder extends IncrementalProjectBuilder {
 	}
 	
 	private IValidationContext validationContext(IResource rsrc, IValidationRule rule) {
-		SeverityProvider severityProvider = new PreferencesBasedSeverityProvider(rsrc.getProject(), BootValidationActivator.PLUGIN_ID, EditorType.JAVA);
+		SeverityProvider severityProvider = new PreferencesBasedSeverityProvider(BootValidationPreferencesPage.util, rsrc.getProject(), BootValidationActivator.PLUGIN_ID, EditorType.JAVA);
 		return (IResource cu, ProblemType problemId, String msg, int offset, int end) -> {
 			ProblemSeverity severity = severityProvider.getSeverity(problemId);
 			if (severity==ProblemSeverity.IGNORE) {

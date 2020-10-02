@@ -16,7 +16,6 @@ import org.springframework.ide.eclipse.boot.validation.BootValidationActivator;
 import org.springframework.ide.eclipse.boot.validation.rules.ValidationRuleDefinitions;
 import org.springframework.ide.eclipse.editor.support.preferences.AbstractProblemSeverityPreferencesPage;
 import org.springframework.ide.eclipse.editor.support.preferences.EditorType;
-import org.springframework.ide.eclipse.editor.support.preferences.ProblemSeverityPreferencesUtil;
 import org.springframework.ide.eclipse.editor.support.reconcile.ProblemType;
 
 /**
@@ -24,13 +23,17 @@ import org.springframework.ide.eclipse.editor.support.reconcile.ProblemType;
  */
 public class BootValidationProjectPropertyPage extends AbstractProblemSeverityPreferencesPage {
 
+	public BootValidationProjectPropertyPage() {
+		super(BootValidationPreferencesPage.util);
+	}
+
 	protected List<ProblemType> getProblemTypes() {
 		return ValidationRuleDefinitions.getProblemTypes();
 	}
 
 	@Override
 	protected String getEnableProjectPreferencesKey() {
-		return ProblemSeverityPreferencesUtil.ENABLE_PROJECT_PREFERENCES(EditorType.JAVA);
+		return BootValidationPreferencesPage.util.ENABLE_PROJECT_PREFERENCES(EditorType.JAVA);
 	}
 
 	@Override

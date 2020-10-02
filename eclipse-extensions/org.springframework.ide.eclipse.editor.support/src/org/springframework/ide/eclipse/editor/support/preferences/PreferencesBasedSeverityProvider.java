@@ -35,15 +35,18 @@ public class PreferencesBasedSeverityProvider implements SeverityProvider {
 	private IPreferenceStore workspacePrefs;
 
 	private Map<ProblemType, ProblemSeverity> cache = null;
+	private final ProblemSeverityPreferencesUtil util;
 
-	public PreferencesBasedSeverityProvider(IPreferenceStore projectPrefs, IPreferenceStore workspacePrefs, EditorType editorType) {
+	public PreferencesBasedSeverityProvider(ProblemSeverityPreferencesUtil util, IPreferenceStore projectPrefs, IPreferenceStore workspacePrefs, EditorType editorType) {
+		this.util = util;
 		this.projectPrefs = projectPrefs;
 		this.workspacePrefs = workspacePrefs;
 		this.editorType = editorType;
 	}
 
-	public PreferencesBasedSeverityProvider(IProject project, String pluginId, EditorType editorType) {
+	public PreferencesBasedSeverityProvider(ProblemSeverityPreferencesUtil util, IProject project, String pluginId, EditorType editorType) {
 		this(
+				util,
 				new ScopedPreferenceStore(new ProjectScope(project), pluginId),
 				new ScopedPreferenceStore(InstanceScope.INSTANCE, pluginId),
 				editorType
@@ -56,7 +59,7 @@ public class PreferencesBasedSeverityProvider implements SeverityProvider {
 		}
 		ProblemSeverity existing = cache.get(problemType);
 		if (existing==null) {
-			cache.put(problemType, existing = ProblemSeverityPreferencesUtil.getSeverity(getPrefs(), problemType));
+			cache.put(problemType, existing = util.getSeverity(getPrefs(), problemType));
 		}
 		return existing;
 	}
@@ -71,7 +74,7 @@ public class PreferencesBasedSeverityProvider implements SeverityProvider {
 
 	private boolean useProjectPreferences() {
 		if (projectPrefs!=null) {
-			return ProblemSeverityPreferencesUtil.projectPreferencesEnabled(projectPrefs, editorType);
+			return util.projectPreferencesEnabled(projectPrefs, editorType);
 		}
 		return false;
 	}

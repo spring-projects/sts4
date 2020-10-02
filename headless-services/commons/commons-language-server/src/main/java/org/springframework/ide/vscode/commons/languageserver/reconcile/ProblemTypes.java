@@ -10,18 +10,24 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.languageserver.reconcile;
 
-public class ProblemTypes {
+import java.util.HashSet;
 
+import org.springframework.ide.vscode.commons.util.Assert;
+
+public class ProblemTypes {
+	
 	/**
 	 * Creates a new problem type. The newly created problem type is not 'equals' to any other
 	 * problem type.
+	 * 
+	 * This method is deprecated. Look at ApplicationYamlProblemType for an example of how to define
+	 * problem types to facilitate integration with preferences ui.
 	 *
 	 * @param defaultSeverity
 	 * @param typeName A unique name for this problem type. Note that it is the caller's responsibility that the typeName is unique.
-	 *                 If this method is called more than once with identical typeName's it makes no attempts to veify that
-	 *                 the name is uniquer, or to return the same object for the same typeName.
 	 * @return A newly create problem type.
 	 */
+	@Deprecated
 	public static ProblemType create(String typeName, ProblemSeverity defaultSeverity) {
 		return new ProblemType() {
 			@Override
@@ -34,6 +40,14 @@ public class ProblemTypes {
 			}
 			@Override
 			public String getCode() {
+				return typeName;
+			}
+			@Override
+			public String getDescription() {
+				return typeName;
+			}
+			@Override
+			public String getLabel() {
 				return typeName;
 			}
 		};

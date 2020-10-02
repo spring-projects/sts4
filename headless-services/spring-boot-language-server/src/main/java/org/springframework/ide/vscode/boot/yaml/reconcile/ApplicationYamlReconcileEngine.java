@@ -10,8 +10,6 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.yaml.reconcile;
 
-import static org.springframework.ide.vscode.boot.yaml.reconcile.ApplicationYamlProblems.Type.YAML_SYNTAX_ERROR;
-
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.metadata.IndexNavigator;
 import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
@@ -53,6 +51,6 @@ public class ApplicationYamlReconcileEngine extends YamlReconcileEngine {
 
 	@Override
 	protected ReconcileProblem syntaxError(String msg, int offset, int len) {
-		return ApplicationYamlProblems.problem(YAML_SYNTAX_ERROR, msg, offset, len);
+		return ApplicationYamlProblems.problem(ApplicationYamlProblemType.YAML_SYNTAX_ERROR, msg, offset, len);
 	}
 }

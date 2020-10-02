@@ -36,6 +36,16 @@ public class BadWordReconcileEngine implements IReconcileEngine {
 		public String getCode() {
 			return this.name();
 		}
+
+		@Override
+		public String getDescription() {
+			return "It is bad";
+		}
+
+		@Override
+		public String getLabel() {
+			return "Bad label";
+		}
 	}
 
 	private final String[] BADWORDS = {

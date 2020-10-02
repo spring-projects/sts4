@@ -38,10 +38,14 @@
 	</ciManagement>
 
 	<modules>
+        <module>../eclipse-extensions/org.springframework.ide.eclipse.boot</module>
+        <module>../eclipse-extensions/org.springframework.ide.eclipse.editor.support</module>
 		<module>../headless-services/jdt-ls-extension</module>
+		
 		<module>org.springframework.tooling.ls.eclipse.commons</module>
 		<module>org.springframework.tooling.ls.eclipse.commons.test</module>
 
+        
 		<module>org.springsource.ide.eclipse.commons.boot.ls</module>
 		<module>org.springsource.ide.eclipse.commons.core</module>
 		<module>org.springsource.ide.eclipse.commons.frameworks.core</module>
@@ -292,6 +296,11 @@
 			<layout>p2</layout>
 			<url>https://dist.springsource.com/release/TOOLS/third-party/misc-p2-repo/${misc.p2.repo.version}</url>
 		</repository>
+        <repository>
+            <id>yedit</id>
+            <layout>p2</layout>
+            <url>https://dist.springsource.com/release/TOOLS/third-party/yedit</url>
+        </repository>
 	</repositories>
 
 	<pluginRepositories>

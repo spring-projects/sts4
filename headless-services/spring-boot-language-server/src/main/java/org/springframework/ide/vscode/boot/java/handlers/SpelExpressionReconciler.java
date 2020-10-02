@@ -57,7 +57,6 @@ public class SpelExpressionReconciler implements Reconciler {
 	private void createProblem(String spelExpression, String message, int startPosition, int position, IProblemCollector problemCollector) {
 		int start = startPosition + position;
 		int length = spelExpression.length() - position;
-		
 		ReconcileProblem problem = new ReconcileProblemImpl(ProblemTypes.create("SpEL Expression Problem", ProblemSeverity.ERROR), message, start, length);
 		problemCollector.accept(problem);
 	}

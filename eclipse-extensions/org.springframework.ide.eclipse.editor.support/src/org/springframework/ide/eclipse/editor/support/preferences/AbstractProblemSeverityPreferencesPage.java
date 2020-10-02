@@ -54,6 +54,8 @@ import org.springsource.ide.eclipse.commons.livexp.core.UIValueListener;
  */
 public abstract class AbstractProblemSeverityPreferencesPage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage {
 
+	private final ProblemSeverityPreferencesUtil util;
+
 	/**
 	 * Project for a project propertypage, or null for a workspace preference page.
 	 */
@@ -63,6 +65,8 @@ public abstract class AbstractProblemSeverityPreferencesPage extends FieldEditor
 	 * The state of the 'enable project specific settings' checkbox.
 	 */
 	private LiveVariable<Boolean> enablePreferences = new LiveVariable<>(true);
+
+	private boolean initialized;
 
 
 	private static final Comparator<ProblemType> PROBLEM_TYPE_COMPARATOR = new Comparator<ProblemType>() {
@@ -76,9 +80,9 @@ public abstract class AbstractProblemSeverityPreferencesPage extends FieldEditor
 			{"Ignore", ProblemSeverity.IGNORE.toString()}
 	};
 
-	protected AbstractProblemSeverityPreferencesPage() {
+	protected AbstractProblemSeverityPreferencesPage(ProblemSeverityPreferencesUtil util) {
 		super(FieldEditorPreferencePage.GRID);
-		initializeDefaults();
+		this.util = util;
 	}
 
 	/**
@@ -90,7 +94,7 @@ public abstract class AbstractProblemSeverityPreferencesPage extends FieldEditor
 	protected void initializeDefaults() {
 		IEclipsePreferences defaults = DefaultScope.INSTANCE.getNode(getPluginId());
 		for (ProblemType problemType : getProblemTypes()) {
-			defaults.put(getPreferenceName(problemType), problemType.getDefaultSeverity().toString());
+			defaults.put(util.getPreferenceName(problemType), problemType.getDefaultSeverity().toString());
 		}
 		try {
 			defaults.flush();
@@ -112,12 +116,16 @@ public abstract class AbstractProblemSeverityPreferencesPage extends FieldEditor
 
 	@Override
 	protected void createFieldEditors() {
+		if (!initialized) {
+			initialized = true;
+			initializeDefaults();
+		}
 		ProblemType[] problemTypes = getProblemTypes().toArray(new ProblemType[0]);
 		Arrays.sort(problemTypes, PROBLEM_TYPE_COMPARATOR);
 
 		for (ProblemType problemType : problemTypes) {
 			ComboFieldEditor field = new ComboFieldEditor(
-					ProblemSeverityPreferencesUtil.getPreferenceName(problemType),
+					util.getPreferenceName(problemType),
 					problemType.getLabel(),
 					SEVERITY_NAMES_AND_VALUES,
 					getFieldEditorParent()

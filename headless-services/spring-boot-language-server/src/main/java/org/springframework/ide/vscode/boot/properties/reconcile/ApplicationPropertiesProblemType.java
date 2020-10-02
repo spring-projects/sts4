@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.boot.properties.reconcile;
 import static org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity.ERROR;
 import static org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity.WARNING;
 
+import org.springframework.boot.SpringApplication;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
 
@@ -20,7 +21,7 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemTy
  * @author Kris De Volder
  */
 public enum ApplicationPropertiesProblemType implements ProblemType {
-
+	
 	PROP_INVALID_BEAN_NAVIGATION("Accessing a 'bean property' in a type that doesn't have properties (e.g. like String or Integer)"),
 	PROP_INVALID_INDEXED_NAVIGATION("Accessing a property using [] in a type that doesn't support that"),
 	PROP_EXPECTED_DOT_OR_LBRACK("Unexpected character found where a '.' or '[' was expected"),

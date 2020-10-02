@@ -130,7 +130,21 @@
             id="org.springframework.tooling.boot.ls.preferences"
             name="Spring Boot Language Server">
       </page>
+      
+	   <page
+	         name="Properties Editor"
+	         category="org.springframework.tooling.boot.ls.preferences"
+	         class="org.springframework.tooling.boot.ls.prefs.ApplicationPropertiesEditorProblemSeverityPrefsPage"
+	            id="org.springframework.tooling.boot.ls.prefs.ApplicationPropertiesEditorProblemSeverityPrefsPage">
+	   </page>
+	   <page
+	         name="Yaml Editor"
+	         category="org.springframework.tooling.boot.ls.preferences"
+	         class="org.springframework.tooling.boot.ls.prefs.ApplicationYamlEditorProblemSeverityPrefsPage"
+	            id="org.springframework.tooling.boot.ls.prefs.ApplicationYamlEditorProblemSeverityPrefsPage">
+	   </page>
    </extension>
+   
    
    <extension
          point="org.eclipse.core.runtime.preferences">

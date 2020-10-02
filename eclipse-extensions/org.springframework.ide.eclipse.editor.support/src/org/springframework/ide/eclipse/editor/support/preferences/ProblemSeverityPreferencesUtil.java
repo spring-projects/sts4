@@ -24,17 +24,21 @@ import org.springsource.ide.eclipse.commons.core.util.StringUtil;
  */
 public class ProblemSeverityPreferencesUtil {
 
-	public static final String PREFERENCE_PREFIX = "spring.properties.editor.problem.";
+	public final String PREFERENCE_PREFIX;// = "spring.properties.editor.problem.";
 
-	public static final String ENABLE_PROJECT_PREFERENCES(EditorType et) {
+	public ProblemSeverityPreferencesUtil(String preferencePrefix) {
+		this.PREFERENCE_PREFIX = preferencePrefix;
+	}
+
+	public final String ENABLE_PROJECT_PREFERENCES(EditorType et) {
 		return PREFERENCE_PREFIX+et+".project.prefs.enabled";
 	}
 
-	public static String getPreferenceName(ProblemType problemType) {
-		return PREFERENCE_PREFIX+problemType.toString();
+	public String getPreferenceName(ProblemType problemType) {
+		return PREFERENCE_PREFIX+problemType.getId();
 	}
 
-	public static ProblemSeverity getSeverity(IPreferenceStore prefs, ProblemType problemType) {
+	public ProblemSeverity getSeverity(IPreferenceStore prefs, ProblemType problemType) {
 		String value = prefs.getString(getPreferenceName(problemType));
 		try {
 			if (StringUtil.hasText(value)) {
@@ -47,15 +51,15 @@ public class ProblemSeverityPreferencesUtil {
 		return problemType.getDefaultSeverity();
 	}
 
-	public static void setSeverity(IPreferenceStore prefs, ProblemType problemType, ProblemSeverity severity) {
+	public void setSeverity(IPreferenceStore prefs, ProblemType problemType, ProblemSeverity severity) {
 		prefs.setValue(getPreferenceName(problemType), severity.toString());
 	}
 
-	public static boolean projectPreferencesEnabled(IPreferenceStore projectPrefs, EditorType et) {
+	public boolean projectPreferencesEnabled(IPreferenceStore projectPrefs, EditorType et) {
 		return projectPrefs.getBoolean(ENABLE_PROJECT_PREFERENCES(et));
 	}
 
-	public static void enableProjectPrefs(IPreferenceStore projectPrefs, EditorType et, boolean enable) {
+	public void enableProjectPrefs(IPreferenceStore projectPrefs, EditorType et, boolean enable) {
 		projectPrefs.setValue(ENABLE_PROJECT_PREFERENCES(et), enable);
 	}
 

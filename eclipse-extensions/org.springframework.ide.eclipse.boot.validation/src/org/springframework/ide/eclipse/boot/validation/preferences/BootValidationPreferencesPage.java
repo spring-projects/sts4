@@ -24,13 +24,20 @@ import org.springframework.ide.eclipse.editor.support.reconcile.ProblemType;
  */
 public class BootValidationPreferencesPage extends AbstractProblemSeverityPreferencesPage {
 
+	public static final ProblemSeverityPreferencesUtil util = new ProblemSeverityPreferencesUtil("boot.project.validation.builder.");
+
+	public BootValidationPreferencesPage() {
+		super(util);
+	}
+
+
 	protected List<ProblemType> getProblemTypes() {
 		return BootValidationProblemType.values();
 	}
 
 	@Override
 	protected String getEnableProjectPreferencesKey() {
-		return ProblemSeverityPreferencesUtil.ENABLE_PROJECT_PREFERENCES(EditorType.PROP);
+		return util.ENABLE_PROJECT_PREFERENCES(EditorType.PROP);
 	}
 
 	@Override
