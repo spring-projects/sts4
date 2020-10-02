@@ -42,158 +42,46 @@
 		<category name="Spring Tools 4 Language Server Integrations for Eclipse"/>
 	</feature>
 
-	<category-def name="deps" label="Dependencies"/>
+	<feature id="org.eclipse.mylyn.wikitext_feature"/>
+	<feature id="org.eclipse.tm4e.feature"/>
 
-	<feature id="org.eclipse.mylyn.wikitext_feature">
-		<category name="deps"/>
-	</feature>
+	<bundle id="org.springframework.tooling.ls.eclipse.commons"/>
+	<bundle id="org.springframework.tooling.ls.eclipse.commons.source"/>
+	<bundle id="org.springframework.tooling.jdt.ls.commons"/>
+	<bundle id="org.springframework.tooling.jdt.ls.commons.source"/>
+	<bundle id="org.springframework.tooling.ls.eclipse.gotosymbol"/>
+	<bundle id="org.springframework.tooling.ls.eclipse.gotosymbol.source"/>
+	<bundle id="org.springsource.ide.eclipse.commons.boot.ls"/>
+	<bundle id="org.springsource.ide.eclipse.commons.boot.ls.source"/>
+	<bundle id="org.springsource.ide.eclipse.commons.core"/>
+	<bundle id="org.springsource.ide.eclipse.commons.core.source"/>
+	<bundle id="org.springsource.ide.eclipse.commons.frameworks.core"/>
+	<bundle id="org.springsource.ide.eclipse.commons.frameworks.core.source"/>
+	<bundle id="org.springsource.ide.eclipse.commons.frameworks.test.util"/>
+	<bundle id="org.springsource.ide.eclipse.commons.frameworks.test.util.source"/>
+	<bundle id="org.springsource.ide.eclipse.commons.frameworks.ui"/>
+	<bundle id="org.springsource.ide.eclipse.commons.frameworks.ui.source"/>
+	<bundle id="org.springsource.ide.eclipse.commons.jdk_tools"/>
+	<bundle id="org.springsource.ide.eclipse.commons.jdk_tools.source"/>
+	<bundle id="org.springsource.ide.eclipse.commons.livexp"/>
+	<bundle id="org.springsource.ide.eclipse.commons.livexp.source"/>
+	<bundle id="org.springsource.ide.eclipse.commons.tests.util"/>
+	<bundle id="org.springsource.ide.eclipse.commons.tests.util.source"/>
+	<bundle id="org.springsource.ide.eclipse.commons.ui"/>
+	<bundle id="org.springsource.ide.eclipse.commons.ui.source"/>
 
-	<bundle id="org.springframework.tooling.ls.eclipse.commons">
-		<category name="deps"/>
-	</bundle>
+	<bundle id="io.projectreactor.reactor-core"/>
+	<bundle id="io.projectreactor.reactor-core.source"/>
+	<bundle id="org.reactivestreams.reactive-streams"/>
+	<bundle id="org.reactivestreams.reactive-streams.source"/>
 
-	<bundle id="org.springframework.tooling.ls.eclipse.commons.source">
-		<category name="deps"/>
-	</bundle>
-
-	<bundle id="org.springframework.tooling.jdt.ls.commons">
-		<category name="deps"/>
-	</bundle>
-
-	<bundle id="org.springframework.tooling.jdt.ls.commons.source">
-		<category name="deps"/>
-	</bundle>
-
-	<bundle id="org.springframework.tooling.ls.eclipse.gotosymbol">
-		<category name="deps"/>
-	</bundle>
-
-	<bundle id="org.springframework.tooling.ls.eclipse.gotosymbol.source">
-		<category name="deps"/>
-	</bundle>
-
-	<bundle id="org.springsource.ide.eclipse.commons.boot.ls">
-		<category name="deps"/>
-	</bundle>
-
-	<bundle id="org.springsource.ide.eclipse.commons.boot.ls.source">
-		<category name="deps"/>
-	</bundle>
-
-	<bundle id="org.springsource.ide.eclipse.commons.core">
-		<category name="deps"/>
-	</bundle>
-
-	<bundle id="org.springsource.ide.eclipse.commons.core.source">
-		<category name="deps"/>
-	</bundle>
-
-	<bundle id="org.springsource.ide.eclipse.commons.frameworks.core">
-		<category name="deps"/>
-	</bundle>
-
-	<bundle id="org.springsource.ide.eclipse.commons.frameworks.core.source">
-		<category name="deps"/>
-	</bundle>
-
-	<bundle id="org.springsource.ide.eclipse.commons.frameworks.test.util">
-		<category name="deps"/>
-	</bundle>
-
-	<bundle id="org.springsource.ide.eclipse.commons.frameworks.test.util.source">
-		<category name="deps"/>
-	</bundle>
-
-	<bundle id="org.springsource.ide.eclipse.commons.frameworks.ui">
-		<category name="deps"/>
-	</bundle>
-
-	<bundle id="org.springsource.ide.eclipse.commons.frameworks.ui.source">
-		<category name="deps"/>
-	</bundle>
-
-	<bundle id="org.springsource.ide.eclipse.commons.jdk_tools">
-		<category name="deps"/>
-	</bundle>
-
-	<bundle id="org.springsource.ide.eclipse.commons.jdk_tools.source">
-		<category name="deps"/>
-	</bundle>
-
-	<bundle id="org.springsource.ide.eclipse.commons.livexp">
-		<category name="deps"/>
-	</bundle>
-
-	<bundle id="org.springsource.ide.eclipse.commons.livexp.source">
-		<category name="deps"/>
-	</bundle>
-
-	<bundle id="org.springsource.ide.eclipse.commons.tests.util">
-		<category name="deps"/>
-	</bundle>
-
-	<bundle id="org.springsource.ide.eclipse.commons.tests.util.source">
-		<category name="deps"/>
-	</bundle>
-
-	<bundle id="org.springsource.ide.eclipse.commons.ui">
-		<category name="deps"/>
-	</bundle>
-
-	<bundle id="org.springsource.ide.eclipse.commons.ui.source">
-		<category name="deps"/>
-	</bundle>
-
-	<bundle id="io.projectreactor.reactor-core">
-		<category name="deps"/>
-	</bundle>
-
-	<bundle id="io.projectreactor.reactor-core.source">
-		<category name="deps"/>
-	</bundle>
-
-	<bundle id="org.reactivestreams.reactive-streams">
-		<category name="deps"/>
-	</bundle>
-
-	<bundle id="org.reactivestreams.reactive-streams.source">
-		<category name="deps"/>
-	</bundle>
-
-	<feature id="org.eclipse.tm4e.feature">
-		<category name="deps"/>
-	</feature>
-
-	<bundle id="org.eclipse.lsp4e">
-		<category name="deps"/>
-	</bundle>
-
-	<bundle id="org.eclipse.lsp4e.jdt">
-		<category name="deps"/>
-	</bundle>
-
-	<bundle id="org.eclipse.lsp4j">
-		<category name="deps"/>
-	</bundle>
-
-	<bundle id="org.eclipse.lsp4j.jsonrpc">
-		<category name="deps"/>
-	</bundle>
-
-	<bundle id="org.eclipse.xtext.xbase.lib">
-		<category name="deps"/>
-	</bundle>
-
-	<bundle id="org.jcodings">
-		<category name="deps"/>
-	</bundle>
-
-	<bundle id="org.joni">
-		<category name="deps"/>
-	</bundle>
-
-	<bundle id="org.apache.commons.lang3">
-		<category name="deps"/>
-	</bundle>
+	<bundle id="org.eclipse.lsp4e"/>
+	<bundle id="org.eclipse.lsp4e.jdt"/>
+	<bundle id="org.eclipse.lsp4j"/>
+	<bundle id="org.eclipse.lsp4j.jsonrpc"/>
+	<bundle id="org.eclipse.xtext.xbase.lib"/>
+	<bundle id="org.jcodings"/>
+	<bundle id="org.joni"/>
+	<bundle id="org.apache.commons.lang3"/>
 
 </site>

@@ -4,7 +4,6 @@
 		Spring Tool Suite 4
 	</description>
 
-	<category-def name="Uncategorized" label="Uncategorized"/>
 	<category-def name="Spring Tools" label="Spring Tools"/>
 	<category-def name="Spring Tools - Developer Resources" label="Spring Tools - Developer Resources"/>
 
@@ -19,14 +18,10 @@
 		<category name="Spring Tools - Developer Resources" />
 	</feature>
 
-	<feature
-		id="org.springframework.boot.ide.branding.feature" version="0.0.0">
-		<category name="Uncategorized" />
-	</feature>
+	<feature id="org.springframework.boot.ide.branding.feature" version="0.0.0" />
 
 	<feature
 		id="org.springframework.boot.ide.branding.feature.source" version="0.0.0">
-		<category name="Uncategorized" />
 	</feature>
 
 	<feature
@@ -89,307 +84,88 @@
 		<category name="Spring Tools - Developer Resources" />
 	</feature>
 
-	<bundle id="org.springframework.tooling.ls.eclipse.commons">
-		<category name="Uncategorized"/>
-	</bundle>
+	<bundle id="org.springframework.tooling.ls.eclipse.commons" />
+	<bundle id="org.springframework.tooling.ls.eclipse.commons.source" />
+	<bundle id="org.springsource.ide.eclipse.commons.boot.ls" />
+	<bundle id="org.springsource.ide.eclipse.commons.boot.ls.source"/>
+	<bundle id="org.springframework.tooling.jdt.ls.commons"/>
+	<bundle id="org.springframework.tooling.jdt.ls.commons.source"/>
+	<bundle id="org.springframework.tooling.ls.eclipse.gotosymbol"/>
+	<bundle id="org.springframework.tooling.ls.eclipse.gotosymbol.source"/>
+	<bundle id="org.springsource.ide.eclipse.commons.core"/>
+	<bundle id="org.springsource.ide.eclipse.commons.core.source"/>
+	<bundle id="org.springsource.ide.eclipse.commons.ui"/>
+	<bundle id="org.springsource.ide.eclipse.commons.ui.source"/>
+	<bundle id="org.springsource.ide.eclipse.commons.frameworks.core"/>
+	<bundle id="org.springsource.ide.eclipse.commons.frameworks.core.source"/>
+	<bundle id="org.springsource.ide.eclipse.commons.frameworks.ui"/>
+	<bundle id="org.springsource.ide.eclipse.commons.frameworks.ui.source"/>
+	<bundle id="org.springsource.ide.eclipse.commons.livexp"/>
+	<bundle id="org.springsource.ide.eclipse.commons.livexp.source"/>
+	<bundle id="org.springsource.ide.eclipse.commons.tests.util"/>
+	<bundle id="org.springsource.ide.eclipse.commons.tests.util.source"/>
 
-	<bundle id="org.springframework.tooling.ls.eclipse.commons.source">
-		<category name="Uncategorized"/>
-	</bundle>
+	<bundle id="io.projectreactor.reactor-core"/>
+	<bundle id="io.projectreactor.reactor-core.source"/>
+	<bundle id="org.reactivestreams.reactive-streams"/>
+	<bundle id="org.reactivestreams.reactive-streams.source"/>
 
-	<bundle id="org.springsource.ide.eclipse.commons.boot.ls">
-		<category name="Uncategorized"/>
-	</bundle>
+	<feature id="org.eclipse.mylyn.wikitext_feature"/>
+	<feature id="org.eclipse.tm4e.feature"/>
 
-	<bundle id="org.springsource.ide.eclipse.commons.boot.ls.source">
-		<category name="Uncategorized"/>
-	</bundle>
-
-	<bundle id="org.springframework.tooling.jdt.ls.commons">
-		<category name="Uncategorized"/>
-	</bundle>
-
-	<bundle id="org.springframework.tooling.jdt.ls.commons.source">
-		<category name="Uncategorized"/>
-	</bundle>
-
-	<bundle id="org.springframework.tooling.ls.eclipse.gotosymbol">
-		<category name="Uncategorized"/>
-	</bundle>
-
-	<bundle id="org.springframework.tooling.ls.eclipse.gotosymbol.source">
-		<category name="Uncategorized"/>
-	</bundle>
-
-	<bundle id="org.springsource.ide.eclipse.commons.core">
-		<category name="Uncategorized"/>
-	</bundle>
-
-	<bundle id="org.springsource.ide.eclipse.commons.core.source">
-		<category name="Uncategorized"/>
-	</bundle>
-
-	<bundle id="org.springsource.ide.eclipse.commons.ui">
-		<category name="Uncategorized"/>
-	</bundle>
-
-	<bundle id="org.springsource.ide.eclipse.commons.ui.source">
-		<category name="Uncategorized"/>
-	</bundle>
-
-	<bundle id="org.springsource.ide.eclipse.commons.frameworks.core">
-		<category name="Uncategorized"/>
-	</bundle>
-
-	<bundle id="org.springsource.ide.eclipse.commons.frameworks.core.source">
-		<category name="Uncategorized"/>
-	</bundle>
-
-	<bundle id="org.springsource.ide.eclipse.commons.frameworks.ui">
-		<category name="Uncategorized"/>
-	</bundle>
-
-	<bundle id="org.springsource.ide.eclipse.commons.frameworks.ui.source">
-		<category name="Uncategorized"/>
-	</bundle>
-
-	<bundle id="org.springsource.ide.eclipse.commons.livexp">
-	</bundle>
-
-	<bundle id="org.springsource.ide.eclipse.commons.livexp.source">
-	</bundle>
-
-	<bundle id="io.projectreactor.reactor-core">
-		<category name="Uncategorized"/>
-	</bundle>
-
-	<bundle id="io.projectreactor.reactor-core.source">
-		<category name="Uncategorized"/>
-	</bundle>
-
-	<bundle id="org.reactivestreams.reactive-streams">
-		<category name="Uncategorized"/>
-	</bundle>
-
-	<bundle id="org.reactivestreams.reactive-streams.source">
-		<category name="Uncategorized"/>
-	</bundle>
-
-	<feature id="org.eclipse.mylyn.wikitext_feature">
-		<category name="Uncategorized"/>
-	</feature>
-
-	<bundle id="javassist">
-		<category name="Uncategorized"/>
-	</bundle>
-
-	<bundle id="javassist.source">
-		<category name="Uncategorized"/>
-	</bundle>
-
-	<bundle id="javax.activation">
-		<category name="Uncategorized"/>
-	</bundle>
-
-	<bundle id="javax.activation.source">
-		<category name="Uncategorized"/>
-	</bundle>
-
-	<bundle id="javax.annotation">
-		<category name="Uncategorized"/>
-	</bundle>
-	
-	<bundle id="javax.annotation.source">
-		<category name="Uncategorized"/>
-	</bundle>
-
-	<bundle id="javax.ws.rs">
-		<category name="Uncategorized"/>
-	</bundle>
-
-	<bundle id="javax.xml.bind">
-		<category name="Uncategorized"/>
-	</bundle>
-	
-	<bundle id="javax.xml.bind.source">
-		<category name="Uncategorized"/>
-	</bundle>
-
-	<bundle id="javax.xml.stream">
-		<category name="Uncategorized"/>
-	</bundle>
-
-	<bundle id="org.aopalliance">
-		<category name="Uncategorized"/>
-	</bundle>
-
-	<bundle id="org.apache.log4j">
-		<category name="Uncategorized"/>
-	</bundle>
-
-	<bundle id="org.dadacoalition.yedit">
-		<category name="Uncategorized"/>
-	</bundle>
-
-	<bundle id="org.yaml.snakeyaml">
-		<category name="Uncategorized"/>
-	</bundle>
-
-	<feature id="org.eclipse.tm4e.feature">
-		<category name="Uncategorized"/>
-	</feature>
-
-	<bundle id="org.eclipse.lsp4e">
-		<category name="Uncategorized"/>
-	</bundle>
-
-	<bundle id="org.eclipse.lsp4e.jdt">
-		<category name="Uncategorized"/>
-	</bundle>
-
-	<bundle id="org.eclipse.lsp4j">
-		<category name="Uncategorized"/>
-	</bundle>
-
-	<bundle id="org.eclipse.lsp4j.jsonrpc">
-		<category name="Uncategorized"/>
-	</bundle>
-
-	<bundle id="org.eclipse.xtext.xbase.lib">
-		<category name="Uncategorized"/>
-	</bundle>
-
-	<bundle id="org.eclipse.zest.core">
-		<category name="Uncategorized"/>
-	</bundle>
-
-	<bundle id="org.eclipse.zest.layouts">
-		<category name="Uncategorized"/>
-	</bundle>
-
-	<bundle id="com.google.gson">
-		<category name="Uncategorized"/>
-	</bundle>
-
-	<bundle id="org.jcodings">
-		<category name="Uncategorized"/>
-	</bundle>
-
-	<bundle id="org.joni">
-		<category name="Uncategorized"/>
-	</bundle>
-
-	<bundle id="org.json">
-		<category name="Uncategorized"/>
-	</bundle>
-
-	<bundle id="org.apache.commons.lang3">
-		<category name="Uncategorized"/>
-	</bundle>
-
-	<bundle id="org.apache.commons.collections">
-		<category name="Uncategorized"/>
-	</bundle>
-
-    <bundle id="org.bouncycastle.bcpg">
-		<category name="Uncategorized"/>
-	</bundle>
-
-    <bundle id="org.bouncycastle.bcpg.source">
-		<category name="Uncategorized"/>
-	</bundle>
-
-    <bundle id="org.bouncycastle.bcpkix">
-		<category name="Uncategorized"/>
-	</bundle>
-
-    <bundle id="org.bouncycastle.bcpkix.source">
-		<category name="Uncategorized"/>
-	</bundle>
-
-    <bundle id="org.bouncycastle.bcprov">
-		<category name="Uncategorized"/>
-	</bundle>
-
-    <bundle id="org.bouncycastle.bcprov.source">
-		<category name="Uncategorized"/>
-	</bundle>
-
-    <bundle id="com.hierynomus.sshj">
-		<category name="Uncategorized"/>
-	</bundle>
-
-    <bundle id="com.hierynomus.sshj.source">
-		<category name="Uncategorized"/>
-	</bundle>
-
-    <bundle id="com.jcraft.jzlib">
-		<category name="Uncategorized"/>
-	</bundle>
-
-    <bundle id="com.jcraft.jzlib.source">
-		<category name="Uncategorized"/>
-	</bundle>
-
-	<bundle id="com.fasterxml.jackson.core.jackson-annotations">
-		<category name="Uncategorized"/>
-	</bundle>
-
-	<bundle id="com.fasterxml.jackson.core.jackson-core">
-		<category name="Uncategorized"/>
-	</bundle>
-
-	<bundle id="com.fasterxml.jackson.core.jackson-databind">
-		<category name="Uncategorized"/>
-	</bundle>
-
-    <bundle id="net.i2p.crypto.eddsa" version="0.0.0">
-		<category name="Uncategorized"/>
-	</bundle>
-		 
-    <bundle id="net.i2p.crypto.eddsa.source" version="0.0.0">
-		<category name="Uncategorized"/>
-	</bundle>
+	<bundle id="javassist"/>
+	<bundle id="javassist.source"/>
+	<bundle id="javax.activation"/>
+	<bundle id="javax.activation.source"/>
+	<bundle id="javax.annotation"/>
+	<bundle id="javax.annotation.source"/>
+	<bundle id="javax.ws.rs"/>
+	<bundle id="javax.xml.bind"/>
+	<bundle id="javax.xml.bind.source"/>
+	<bundle id="javax.xml.stream"/>
+	<bundle id="org.aopalliance"/>
+	<bundle id="org.apache.log4j"/>
+	<bundle id="org.dadacoalition.yedit"/>
+	<bundle id="org.yaml.snakeyaml"/>
+	<bundle id="org.eclipse.lsp4e"/>
+	<bundle id="org.eclipse.lsp4e.jdt"/>
+	<bundle id="org.eclipse.lsp4j"/>
+	<bundle id="org.eclipse.lsp4j.jsonrpc"/>
+	<bundle id="org.eclipse.xtext.xbase.lib"/>
+	<bundle id="org.eclipse.zest.core"/>
+	<bundle id="org.eclipse.zest.layouts"/>
+	<bundle id="com.google.gson"/>
+	<bundle id="org.jcodings"/>
+	<bundle id="org.joni"/>
+	<bundle id="org.json"/>
+	<bundle id="org.apache.commons.lang3"/>
+	<bundle id="org.apache.commons.collections"/>
+    <bundle id="org.bouncycastle.bcpg"/>
+    <bundle id="org.bouncycastle.bcpg.source"/>
+    <bundle id="org.bouncycastle.bcpkix"/>
+    <bundle id="org.bouncycastle.bcpkix.source"/>
+    <bundle id="org.bouncycastle.bcprov"/>
+    <bundle id="org.bouncycastle.bcprov.source"/>
+    <bundle id="com.hierynomus.sshj"/>
+    <bundle id="com.hierynomus.sshj.source"/>
+    <bundle id="com.jcraft.jzlib"/>
+    <bundle id="com.jcraft.jzlib.source"/>
+	<bundle id="com.fasterxml.jackson.core.jackson-annotations"/>
+	<bundle id="com.fasterxml.jackson.core.jackson-core"/>
+	<bundle id="com.fasterxml.jackson.core.jackson-databind"/>
+    <bundle id="net.i2p.crypto.eddsa"/>
+    <bundle id="net.i2p.crypto.eddsa.source"/>
 
 	<!-- additional test bundles, required for other tests that might reuse this, e.g. from STS3 -->
-	<bundle id="org.springframework.ide.eclipse.boot.dash.test">
-		<category name="Spring Tools - Developer Resources"/>
-	</bundle>
-
-	<bundle id="org.springframework.ide.eclipse.boot.dash.test.source">
-		<category name="Spring Tools - Developer Resources"/>
-	</bundle>
-
-	<bundle id="org.springframework.ide.eclipse.boot.launch.test">
-		<category name="Spring Tools - Developer Resources"/>
-	</bundle>
-
-	<bundle id="org.springframework.ide.eclipse.boot.launch.test.source">
-		<category name="Spring Tools - Developer Resources"/>
-	</bundle>
-
-	<bundle id="org.springframework.ide.eclipse.boot.refactoring.test">
-		<category name="Spring Tools - Developer Resources"/>
-	</bundle>
-
-	<bundle id="org.springframework.ide.eclipse.boot.refactoring.test.source">
-		<category name="Spring Tools - Developer Resources"/>
-	</bundle>
-
-	<bundle id="org.springframework.ide.eclipse.boot.test">
-		<category name="Spring Tools - Developer Resources"/>
-	</bundle>
-
-	<bundle id="org.springframework.ide.eclipse.boot.test.source">
-		<category name="Spring Tools - Developer Resources"/>
-	</bundle>
-
-	<bundle id="org.springframework.ide.eclipse.maven.pom.tests">
-		<category name="Spring Tools - Developer Resources"/>
-	</bundle>
-
-	<bundle id="org.springframework.ide.eclipse.maven.pom.tests.source">
-		<category name="Spring Tools - Developer Resources"/>
-	</bundle>
+	<bundle id="org.springframework.ide.eclipse.boot.dash.test"/>
+	<bundle id="org.springframework.ide.eclipse.boot.dash.test.source"/>
+	<bundle id="org.springframework.ide.eclipse.boot.launch.test"/>
+	<bundle id="org.springframework.ide.eclipse.boot.launch.test.source"/>
+	<bundle id="org.springframework.ide.eclipse.boot.refactoring.test"/>
+	<bundle id="org.springframework.ide.eclipse.boot.refactoring.test.source"/>
+	<bundle id="org.springframework.ide.eclipse.boot.test"/>
+	<bundle id="org.springframework.ide.eclipse.boot.test.source"/>
+	<bundle id="org.springframework.ide.eclipse.maven.pom.tests"/>
+	<bundle id="org.springframework.ide.eclipse.maven.pom.tests.source"/>
 
 </site>
