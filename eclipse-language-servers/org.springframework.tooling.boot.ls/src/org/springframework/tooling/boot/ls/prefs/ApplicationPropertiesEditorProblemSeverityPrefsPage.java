@@ -12,13 +12,14 @@ package org.springframework.tooling.boot.ls.prefs;
 
 import java.io.IOException;
 
+import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.springframework.ide.eclipse.editor.support.preferences.ProblemSeverityPreferencesUtil;
 import org.springframework.ide.eclipse.editor.support.preferences.ProblemSeverityPreferityPageFromMetadata;
 import org.springframework.tooling.boot.ls.BootLanguageServerPlugin;
 
 public class ApplicationPropertiesEditorProblemSeverityPrefsPage extends ProblemSeverityPreferityPageFromMetadata {
 	
-	public static final ProblemSeverityPreferencesUtil util = new ProblemSeverityPreferencesUtil("application.properties.problem.");
+	public static final ProblemSeverityPreferencesUtil util = new ProblemSeverityPreferencesUtil("problem.properties.");
 	
 	public ApplicationPropertiesEditorProblemSeverityPrefsPage() throws IOException {
 		super(util, LanguageServerProblemTypesMetadata.load().get("application-properties"));

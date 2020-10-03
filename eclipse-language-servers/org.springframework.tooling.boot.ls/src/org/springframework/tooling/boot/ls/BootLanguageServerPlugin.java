@@ -30,7 +30,7 @@ import org.osgi.framework.BundleContext;
  */
 public class BootLanguageServerPlugin extends AbstractUIPlugin {
 	
-	public static final String PLUGIN_ID = "org.springframework.tooling.boot.java.ls";
+	public static String PLUGIN_ID = "org.springframework.tooling.boot.ls";
 
 	private static final Object LSP4E_COMMAND_SYMBOL_IN_WORKSPACE = "org.eclipse.lsp4e.symbolinworkspace";
 	

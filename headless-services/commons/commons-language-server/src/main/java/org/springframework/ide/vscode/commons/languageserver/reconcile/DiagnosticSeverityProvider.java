@@ -14,10 +14,8 @@ import org.eclipse.lsp4j.DiagnosticSeverity;
 
 @FunctionalInterface
 public interface DiagnosticSeverityProvider {
-	DiagnosticSeverity getDiagnosticSeverity(ReconcileProblem problem);
-
-	static final DiagnosticSeverityProvider DEFAULT = (problem) -> {
-		ProblemSeverity severity = problem.getType().getDefaultSeverity();
+	
+	static DiagnosticSeverity diagnosticSeverity(ProblemSeverity severity) {
 		switch (severity) {
 		case ERROR:
 			return DiagnosticSeverity.Error;
@@ -32,5 +30,12 @@ public interface DiagnosticSeverityProvider {
 		default:
 			throw new IllegalStateException("Bug! Missing switch case?");
 		}
+	}
+	
+	DiagnosticSeverity getDiagnosticSeverity(ReconcileProblem problem);
+
+	static final DiagnosticSeverityProvider DEFAULT = (problem) -> {
+		ProblemSeverity severity = problem.getType().getDefaultSeverity();
+		return diagnosticSeverity(severity);
 	};
 }

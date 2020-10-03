@@ -45,5 +45,5 @@ public class SpringPropertyProblem extends ReconcileProblemImpl {
 	public void setPropertyName(String name) {
 		propertyName = name;
 	}
-
+	
 }

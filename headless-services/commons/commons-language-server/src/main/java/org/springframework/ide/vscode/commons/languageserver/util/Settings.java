@@ -15,10 +15,12 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
+import com.google.gson.JsonNull;
 import com.google.gson.JsonObject;
 
 /**
@@ -129,7 +131,38 @@ public class Settings {
 
 	@Override
 	public String toString() {
-		return settings.toString();
+		return ""+settings;
+	}
+
+	public Settings navigate(String... names) {
+		if (this.settings!=null && !this.settings.isJsonNull()) {
+			if (names.length==0) {
+				return this;
+			} else if (this.settings.isJsonObject()) {
+				JsonObject obj = (JsonObject) this.settings;
+				if (obj.has(names[0])) {
+					Settings sub = new Settings(obj.get(names[0]));
+					return sub.navigate(cdr(names));
+				}
+			}
+		}
+		return new Settings(JsonNull.INSTANCE);
+	}
+
+	private String[] cdr(String[] names) {
+		String[] rest = new String[names.length-1];
+		for (int i = 0; i < rest.length; i++) {
+			rest[i] = names[i+1];
+		}
+		return rest;
+	}
+
+	public Iterable<String> keys() {
+		if (settings!=null && settings.isJsonObject()) {
+			JsonObject obj = (JsonObject) settings;
+			return obj.keySet();
+		}
+		return ImmutableList.of();
 	}
 
 }

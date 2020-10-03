@@ -12,6 +12,7 @@ package org.springframework.ide.eclipse.boot.validation.preferences;
 
 import java.util.List;
 
+import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.springframework.ide.eclipse.boot.validation.BootValidationActivator;
 import org.springframework.ide.eclipse.boot.validation.rules.BootValidationProblemType;
 import org.springframework.ide.eclipse.editor.support.preferences.AbstractProblemSeverityPreferencesPage;
@@ -44,5 +45,6 @@ public class BootValidationPreferencesPage extends AbstractProblemSeverityPrefer
 	protected String getPluginId() {
 		return BootValidationActivator.PLUGIN_ID;
 	}
+
 
 }

@@ -93,4 +93,8 @@ public class ReconcileProblemImpl implements ReconcileProblem {
 		return this;
 	}
 
+	@Override
+	public String toString() {
+		return this.getClass().getSimpleName()+"("+type+", "+msg+")";
+	}
 }

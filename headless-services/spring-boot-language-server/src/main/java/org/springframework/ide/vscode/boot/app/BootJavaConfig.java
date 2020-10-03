@@ -39,9 +39,6 @@ public class BootJavaConfig implements InitializingBean {
 	public static final boolean VALIDAITON_SPEL_EXPRESSIONS_ENABLED_DEFAULT = true;
 
 
-	//TODO: Consider changing this to something that raises Spring application events.
-	// I.e. like described in here: https://www.baeldung.com/spring-events
-
 	private final SimpleWorkspaceService workspace;
 	private Settings settings = new Settings(null);
 	private ListenerList<Void> listeners = new ListenerList<Void>();
@@ -139,5 +136,9 @@ public class BootJavaConfig implements InitializingBean {
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		workspace.onDidChangeConfiguraton(this::handleConfigurationChange);
+	}
+
+	public Settings getRawSettings() {
+		return settings;
 	}
 }

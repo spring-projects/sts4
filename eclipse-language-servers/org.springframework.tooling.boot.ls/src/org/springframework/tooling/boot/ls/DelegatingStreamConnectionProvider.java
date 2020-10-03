@@ -23,6 +23,7 @@ import java.util.Map;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.lsp4e.server.StreamConnectionProvider;
@@ -35,6 +36,7 @@ import org.springframework.tooling.ls.eclipse.commons.LanguageServerCommonsActiv
 import org.springsource.ide.eclipse.commons.boot.ls.remoteapps.RemoteBootAppsDataHolder;
 import org.springsource.ide.eclipse.commons.boot.ls.remoteapps.RemoteBootAppsDataHolder.RemoteAppData;
 import org.springsource.ide.eclipse.commons.livexp.core.ValueListener;
+import org.springsource.ide.eclipse.commons.livexp.util.Log;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -64,6 +66,7 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 	private LanguageServer languageServer;
 	
 	private final IPropertyChangeListener configListener = (e) -> sendConfiguration();
+	
 	private final ValueListener<ImmutableSet<RemoteAppData>> remoteAppsListener = (e, v) -> sendConfiguration();
 	
 	private long timestampBeforeStart;
@@ -117,6 +120,7 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 			fResourceListener = null;
 		}
 		BootLanguageServerPlugin.getDefault().getPreferenceStore().removePropertyChangeListener(configListener);
+//		BootLanguageServerPlugin.getPreferences().removePreferenceChangeListener(prefsListener);
 		RemoteBootAppsDataHolder.getDefault().getRemoteApps().removeListener(remoteAppsListener);
 	}
 
@@ -134,6 +138,7 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 				
 				// Add config listener
 				BootLanguageServerPlugin.getDefault().getPreferenceStore().addPropertyChangeListener(configListener);
+//				BootLanguageServerPlugin.getPreferences().addPreferenceChangeListener(prefsListener);
 
 				// Add resource listener
 				ResourcesPlugin.getWorkspace().addResourceChangeListener(fResourceListener = new ResourceListener(languageServer, Arrays.asList(
@@ -194,8 +199,45 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 		bootJavaObj.put("validation", validation);
 		bootJavaObj.put("remote-apps", getAllRemoteApps());
 		settings.put("boot-java", bootJavaObj);
+		
+		putValidationPreferences(settings);
 
 		this.languageServer.getWorkspaceService().didChangeConfiguration(new DidChangeConfigurationParams(settings));
+	}
+	
+	private void putValidationPreferences(Map<String, Object> settings) {
+		try {
+			IEclipsePreferences prefs = BootLanguageServerPlugin.getPreferences();
+			for (String key : prefs.keys()) {
+				if (key.startsWith("problem.")) {
+					String val = prefs.get(key, null);
+					if (val!=null) {
+						dotPut(settings, "spring-boot.ls."+key, val);
+					}
+				}
+			}
+		} catch (Exception e) {
+			Log.log(e);
+		}
+	}
+
+	private void dotPut(Object _settings, String dottedProperty, Object value) {
+		if (_settings instanceof Map) {
+			Map<String, Object> settings = (Map<String, Object>) _settings;
+			int dot = dottedProperty.indexOf('.');
+			if (dot>=0) {
+				String first = dottedProperty.substring(0, dot);
+				String rest = dottedProperty.substring(dot+1);
+				Object nested = settings.getOrDefault(first, null);
+				if (nested==null) {
+					nested = new HashMap<>();
+					settings.put(first, nested);
+				}
+				dotPut(nested, rest, value);
+			} else {
+				settings.put(dottedProperty, value);
+			}
+		}
 	}
 
 	/**

@@ -18,7 +18,7 @@ import org.springframework.tooling.boot.ls.BootLanguageServerPlugin;
 
 public class ApplicationYamlEditorProblemSeverityPrefsPage extends ProblemSeverityPreferityPageFromMetadata {
 	
-	public static final ProblemSeverityPreferencesUtil util = new ProblemSeverityPreferencesUtil("application.yaml.problem.");
+	public static final ProblemSeverityPreferencesUtil util = new ProblemSeverityPreferencesUtil("problem.yaml.");
 	
 	public ApplicationYamlEditorProblemSeverityPrefsPage() throws IOException {
 		super(util, LanguageServerProblemTypesMetadata.load().get("application-yaml"));
@@ -28,5 +28,4 @@ public class ApplicationYamlEditorProblemSeverityPrefsPage extends ProblemSeveri
 	protected String getPluginId() {
 		return BootLanguageServerPlugin.PLUGIN_ID;
 	}
-
 }
