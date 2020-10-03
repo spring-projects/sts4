@@ -71,9 +71,9 @@ public class CompositeLanguageServerComponents implements LanguageServerComponen
 		//Create composite Completion engine
 		this.completionEngine = new CompositeCompletionEngine();
 		for (Entry<LanguageId, LanguageServerComponents> entry : componentsByLanguageId.entrySet()) {
-			ICompletionEngine engine = entry.getValue().getCompletionEngine();
+			ICompletionEngine engine = entry.getValue().getCompletionEngine().orElse(null);
 			if (engine!=null) {
-				completionEngine.add(entry.getKey(), entry.getValue().getCompletionEngine());
+				completionEngine.add(entry.getKey(), engine);
 			}
 		}
 		if (builder.completionEngines!=null) {
@@ -127,8 +127,8 @@ public class CompositeLanguageServerComponents implements LanguageServerComponen
 	}
 
 	@Override
-	public ICompletionEngine getCompletionEngine() {
-		return completionEngine;
+	public Optional<ICompletionEngine> getCompletionEngine() {
+		return Optional.ofNullable(completionEngine);
 	}
 
 	@Override

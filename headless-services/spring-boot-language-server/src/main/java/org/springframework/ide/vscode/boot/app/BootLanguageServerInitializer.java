@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.boot.app;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -99,7 +100,7 @@ public class BootLanguageServerInitializer implements InitializingBean {
 			});
 		});
 
-		ICompletionEngine completionEngine = components.getCompletionEngine();
+		ICompletionEngine completionEngine = components.getCompletionEngine().orElse(null);
 		if (completionEngine!=null) {
 			completionEngineAdapter = server.createCompletionEngineAdapter(completionEngine);
 			completionEngineAdapter.setMaxCompletions(100);

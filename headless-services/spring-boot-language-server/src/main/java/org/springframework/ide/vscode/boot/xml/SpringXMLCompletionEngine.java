@@ -63,22 +63,30 @@ import org.springframework.ide.vscode.boot.xml.completions.TypeCompletionProposa
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.commons.languageserver.util.LanguageSpecific;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
+import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
+
+import com.google.common.collect.ImmutableList;
 
 /**
  * @author Martin Lippert
+ * @author Kris De Volder
  */
-public class SpringXMLCompletionEngine implements ICompletionEngine {
+public class SpringXMLCompletionEngine implements ICompletionEngine, LanguageSpecific {
 
 	private final Map<XMLElementKey, XMLCompletionProvider> completionProviders;
 	private final BootJavaConfig config;
 
-	public SpringXMLCompletionEngine(SpringXMLLanguageServerComponents springXMLLanguageServerComponents,
-			SimpleLanguageServer server, JavaProjectFinder projectFinder, SpringSymbolIndex symbolIndex, BootJavaConfig config) {
+	public SpringXMLCompletionEngine(
+			SimpleLanguageServer server, 
+			JavaProjectFinder projectFinder, 
+			SpringSymbolIndex symbolIndex, 
+			BootJavaConfig config
+	) {
 
 		this.config = config;
-
 		this.completionProviders = new HashMap<>();
 
 		TypeCompletionProposalProvider classesOnlyProvider = new TypeCompletionProposalProvider(server, projectFinder, true, true, false, false);
@@ -166,4 +174,8 @@ public class SpringXMLCompletionEngine implements ICompletionEngine {
 		return Collections.emptyList();
 	}
 
+	@Override
+	public Collection<LanguageId> supportedLanguages() {
+		return ImmutableList.of(LanguageId.XML);
+	}
 }

@@ -239,8 +239,8 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 	}
 
 	@Override
-	public ICompletionEngine getCompletionEngine() {
-		return createCompletionEngine(projectFinder, propertyIndexProvider, adHocPropertyIndexProvider);
+	public Optional<ICompletionEngine> getCompletionEngine() {
+		return Optional.of(createCompletionEngine(projectFinder, propertyIndexProvider, adHocPropertyIndexProvider));
 	}
 
 	@Override

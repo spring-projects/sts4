@@ -15,6 +15,8 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
+import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.autoconfigure.admin.SpringApplicationAdminJmxAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
 import org.springframework.boot.autoconfigure.context.ConfigurationPropertiesAutoConfiguration;
 import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration;
@@ -44,8 +46,10 @@ import org.springframework.ide.vscode.boot.metadata.LoggerNameProvider;
 import org.springframework.ide.vscode.boot.metadata.ProjectBasedPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndex;
 import org.springframework.ide.vscode.boot.metadata.ValueProviderRegistry;
+import org.springframework.ide.vscode.boot.xml.SpringXMLCompletionEngine;
 import org.springframework.ide.vscode.boot.yaml.completions.ApplicationYamlAssistContext;
 import org.springframework.ide.vscode.commons.languageserver.LanguageServerRunner;
+import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentEventListenerManager;
 import org.springframework.ide.vscode.commons.languageserver.util.LspClient;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
@@ -73,8 +77,9 @@ import reactor.core.publisher.Hooks;
 	ConfigurationPropertiesAutoConfiguration.class, 
 	PropertyPlaceholderAutoConfiguration.class
 })
-@EnableConfigurationProperties(BootLsConfigProperties.class)
 @ComponentScan
+@EnableConfigurationProperties(BootLsConfigProperties.class)
+//@SpringBootApplication
 public class BootLanguagServerBootApp {
 	
 	private static final String SERVER_NAME = "boot-language-server";
@@ -139,6 +144,10 @@ public class BootLanguagServerBootApp {
 
 	@Bean CompilationUnitCache cuCache(SimpleLanguageServer server, BootLanguageServerParams params) {
 		return new CompilationUnitCache(params.projectFinder, server, params.projectObserver);
+	}
+	
+	@Bean SpringXMLCompletionEngine xmlCompletionEngine(SimpleLanguageServer server, JavaProjectFinder projectFinder, SpringSymbolIndex symbolIndex, BootJavaConfig config) {
+		return new SpringXMLCompletionEngine(server, projectFinder, symbolIndex, config);
 	}
 	
 	@Bean JavaDocumentUriProvider javaDocumentUriProvider() {

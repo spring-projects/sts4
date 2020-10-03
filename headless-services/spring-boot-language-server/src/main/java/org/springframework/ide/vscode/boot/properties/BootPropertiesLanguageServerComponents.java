@@ -127,10 +127,10 @@ public class BootPropertiesLanguageServerComponents implements LanguageServerCom
 	}
 
 	@Override
-	public ICompletionEngine getCompletionEngine() {
+	public Optional<ICompletionEngine> getCompletionEngine() {
 		ICompletionEngine propertiesCompletions = new SpringPropertiesCompletionEngine(indexProvider, typeUtilProvider, javaProjectFinder, sourceLinks);
 		ICompletionEngine yamlCompletions = new YamlCompletionEngine(yamlStructureProvider, yamlAssistContextProvider, COMPLETION_OPTIONS);
-		return (TextDocument document, int offset) -> {
+		return Optional.of((TextDocument document, int offset) -> {
 			String uri = document.getUri();
 			if (uri!=null) {
 				if (uri.endsWith(PROPERTIES)) {
@@ -144,7 +144,7 @@ public class BootPropertiesLanguageServerComponents implements LanguageServerCom
 				}
 			}
 			return ImmutableList.of();
-		};
+		});
 	}
 
 	@Override

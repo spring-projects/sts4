@@ -16,12 +16,21 @@ import java.util.Set;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
 import org.springframework.ide.vscode.commons.languageserver.util.HoverHandler;
+import org.springframework.ide.vscode.commons.languageserver.util.LanguageSpecific;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 
 public interface LanguageServerComponents {
 
 	Set<LanguageId> getInterestingLanguages();
 	default Optional<IReconcileEngine> getReconcileEngine() { return Optional.empty(); }
-	ICompletionEngine getCompletionEngine();
+
+	/**
+	 * Don't use language server components. Instead create a bean of type ICompletionEngine that implements 
+	 * {@link LanguageSpecific}. The bean will be automatically wired up to handle completion requests for
+	 * documents of the language(s) it handles.
+	 */
+	@Deprecated
+	default Optional<ICompletionEngine> getCompletionEngine() { return Optional.empty(); }
+	
 	HoverHandler getHoverProvider();
 }
