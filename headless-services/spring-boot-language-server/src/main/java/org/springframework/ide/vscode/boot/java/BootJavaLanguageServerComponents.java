@@ -106,12 +106,10 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 
 	private final SimpleLanguageServer server;
 	private final BootLanguageServerParams serverParams;
-	private final BootJavaConfig config;
 
 	private final SpringPropertyIndexProvider propertyIndexProvider;
 	private final ProjectBasedPropertyIndexProvider adHocPropertyIndexProvider;
 
-	private final SpringProcessLiveDataProvider liveDataProvider;
 	private final SpringProcessConnectorService liveDataService;
 
 	private final SpringLiveChangeDetectionWatchdog liveChangeDetectionWatchdog;
@@ -139,7 +137,6 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 	) {
 		this.server = server;
 		this.serverParams = serverParams;
-		this.config = config;
 
 		projectFinder = serverParams.projectFinder;
 		projectObserver = serverParams.projectObserver;
@@ -153,9 +150,6 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 
 		ReferencesHandler referencesHandler = createReferenceHandler(server, projectFinder);
 		documents.onReferences(referencesHandler);
-		
-		this.liveDataProvider = liveDataProvider;
-
 		
 		//
 		// live data component wiring
