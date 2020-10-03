@@ -18,33 +18,26 @@ import org.springframework.ide.vscode.boot.java.links.JavaElementLocationProvide
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.types.TypeUtilProvider;
-import org.springframework.ide.vscode.boot.properties.completions.SpringPropertiesCompletionEngine;
 import org.springframework.ide.vscode.boot.properties.hover.PropertiesHoverInfoProvider;
 import org.springframework.ide.vscode.boot.properties.quickfix.AppPropertiesQuickFixes;
 import org.springframework.ide.vscode.boot.properties.quickfix.CommonQuickfixes;
 import org.springframework.ide.vscode.boot.properties.reconcile.SpringPropertiesReconcileEngine;
 import org.springframework.ide.vscode.boot.yaml.quickfix.AppYamlQuickfixes;
 import org.springframework.ide.vscode.boot.yaml.reconcile.ApplicationYamlReconcileEngine;
-import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.composable.LanguageServerComponents;
 import org.springframework.ide.vscode.commons.languageserver.hover.HoverInfoProvider;
 import org.springframework.ide.vscode.commons.languageserver.hover.VscodeHoverEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
-import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
 import org.springframework.ide.vscode.commons.languageserver.util.HoverHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
-import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlASTProvider;
 import org.springframework.ide.vscode.commons.yaml.completion.YamlAssistContextProvider;
-import org.springframework.ide.vscode.commons.yaml.completion.YamlCompletionEngine;
-import org.springframework.ide.vscode.commons.yaml.completion.YamlCompletionEngineOptions;
 import org.springframework.ide.vscode.commons.yaml.hover.YamlHoverInfoProvider;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureProvider;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 /**
@@ -63,12 +56,7 @@ public class BootPropertiesLanguageServerComponents implements LanguageServerCom
 			LanguageId.BOOT_PROPERTIES_YAML
 	);
 
-	private static final YamlCompletionEngineOptions COMPLETION_OPTIONS = new YamlCompletionEngineOptions() {
-		@Override
-		public boolean includeDeindentedProposals() { return false; };
-	};
 	// Shared:
-	private final ProjectObserver projectObserver;
 	private final JavaProjectFinder javaProjectFinder;
 	private final SpringPropertyIndexProvider indexProvider;
 	private final TypeUtilProvider typeUtilProvider;
@@ -96,7 +84,6 @@ public class BootPropertiesLanguageServerComponents implements LanguageServerCom
 		this.indexProvider = serverParams.indexProvider;
 		this.typeUtilProvider = serverParams.typeUtilProvider;
 		this.javaProjectFinder = serverParams.projectFinder;
-		this.projectObserver = serverParams.projectObserver;
 		this.yamlStructureProvider = yamlStructureProvider;
 		this.yamlAssistContextProvider = yamlAssistContextProvider;
 		this.sourceLinks = sourceLinks;
@@ -124,27 +111,6 @@ public class BootPropertiesLanguageServerComponents implements LanguageServerCom
 	@Override
 	public Set<LanguageId> getInterestingLanguages() {
 		return LANGUAGES;
-	}
-
-	@Override
-	public Optional<ICompletionEngine> getCompletionEngine() {
-		ICompletionEngine propertiesCompletions = new SpringPropertiesCompletionEngine(indexProvider, typeUtilProvider, javaProjectFinder, sourceLinks);
-		ICompletionEngine yamlCompletions = new YamlCompletionEngine(yamlStructureProvider, yamlAssistContextProvider, COMPLETION_OPTIONS);
-		return Optional.of((TextDocument document, int offset) -> {
-			String uri = document.getUri();
-			if (uri!=null) {
-				if (uri.endsWith(PROPERTIES)) {
-					return propertiesCompletions.getCompletions(document, offset);
-				} else {
-					for (String yml : YML) {
-						if (uri.endsWith(yml)) {
-							return yamlCompletions.getCompletions(document, offset);
-						}
-					}
-				}
-			}
-			return ImmutableList.of();
-		});
 	}
 
 	@Override

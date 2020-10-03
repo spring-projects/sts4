@@ -47,7 +47,6 @@ public class ProblemSeverityConfigurer implements InitializingBean {
 			Settings problemConf = settings.navigate(editorType);
 			for (String code : problemConf.keys()) {
 				String severity = problemConf.getString(code);
-				System.out.println(code+" => "+severity);
 				Assert.isLegal(!severityOverrides.containsKey(code), "Multpile entries for problem type "+code);
 				severityOverrides.put(code, ProblemSeverity.valueOf(severity));
 			}

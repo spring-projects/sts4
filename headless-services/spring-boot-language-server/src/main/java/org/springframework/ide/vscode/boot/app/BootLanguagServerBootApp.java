@@ -45,9 +45,13 @@ import org.springframework.ide.vscode.boot.metadata.ClassReferenceProvider;
 import org.springframework.ide.vscode.boot.metadata.LoggerNameProvider;
 import org.springframework.ide.vscode.boot.metadata.ProjectBasedPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndex;
+import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.ValueProviderRegistry;
+import org.springframework.ide.vscode.boot.metadata.types.TypeUtilProvider;
+import org.springframework.ide.vscode.boot.properties.completions.SpringPropertiesCompletionEngine;
 import org.springframework.ide.vscode.boot.xml.SpringXMLCompletionEngine;
 import org.springframework.ide.vscode.boot.yaml.completions.ApplicationYamlAssistContext;
+import org.springframework.ide.vscode.boot.yaml.completions.SpringYamlCompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.LanguageServerRunner;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentEventListenerManager;
@@ -60,6 +64,8 @@ import org.springframework.ide.vscode.commons.yaml.ast.YamlASTProvider;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlParser;
 import org.springframework.ide.vscode.commons.yaml.completion.YamlAssistContext;
 import org.springframework.ide.vscode.commons.yaml.completion.YamlAssistContextProvider;
+import org.springframework.ide.vscode.commons.yaml.completion.YamlCompletionEngine;
+import org.springframework.ide.vscode.commons.yaml.completion.YamlCompletionEngineOptions;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlDocument;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureProvider;
 import org.springframework.ide.vscode.languageserver.starter.LanguageServerAutoConf;
@@ -150,6 +156,21 @@ public class BootLanguagServerBootApp {
 		return new SpringXMLCompletionEngine(server, projectFinder, symbolIndex, config);
 	}
 	
+	@Bean SpringPropertiesCompletionEngine propertiesCompletionEngine(BootLanguageServerParams params, JavaProjectFinder projectFinder, SourceLinks sourceLinks) {
+		return new SpringPropertiesCompletionEngine(
+				params.indexProvider, 
+				params.typeUtilProvider, 
+				projectFinder, sourceLinks);
+	}
+
+	@Bean YamlCompletionEngine yamlCompletionEngine(YamlStructureProvider structureProvider, YamlAssistContextProvider contextProvider) {
+		YamlCompletionEngineOptions options = new YamlCompletionEngineOptions() {
+			@Override
+			public boolean includeDeindentedProposals() { return false; };
+		};
+		return new SpringYamlCompletionEngine(structureProvider, contextProvider, options);
+	}
+
 	@Bean JavaDocumentUriProvider javaDocumentUriProvider() {
 		switch (LspClient.currentClient()) {
 		case ECLIPSE:

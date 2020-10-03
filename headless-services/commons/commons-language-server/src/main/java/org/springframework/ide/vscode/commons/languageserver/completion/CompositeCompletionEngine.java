@@ -41,7 +41,7 @@ public class CompositeCompletionEngine implements ICompletionEngine {
 	}
 	
 	public void add(ICompletionEngine engine) {
-		Assert.isLegal(engine instanceof LanguageSpecific, "Only LanguageSpecific completion engines are currently supported");
+		Assert.isLegal(engine instanceof LanguageSpecific, "Only LanguageSpecific completion engines are currently supported "+engine.getClass().getName());
 		Collection<LanguageId> languages = ((LanguageSpecific)engine).supportedLanguages();
 		Assert.isLegal(!languages.isEmpty(), "Completion engine that doesn't support any language");
 		for (LanguageId languageId : languages) {

@@ -20,13 +20,17 @@ import org.springframework.ide.vscode.boot.metadata.types.TypeUtilProvider;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.commons.languageserver.util.LanguageSpecific;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
-import org.springframework.ide.vscode.commons.util.text.TextDocument;;
+import org.springframework.ide.vscode.commons.util.text.LanguageId;
+import org.springframework.ide.vscode.commons.util.text.TextDocument;
+
+import com.google.common.collect.ImmutableList;;
 
 /**
  * @author Kris De Volder
  */
-public class SpringPropertiesCompletionEngine implements ICompletionEngine {
+public class SpringPropertiesCompletionEngine implements ICompletionEngine, LanguageSpecific {
 
 	private boolean preferLowerCaseEnums = true; //might make sense to make this user configurable
 
@@ -61,6 +65,11 @@ public class SpringPropertiesCompletionEngine implements ICompletionEngine {
 
 	public void setPreferLowerCaseEnums(boolean preferLowerCaseEnums) {
 		this.preferLowerCaseEnums = preferLowerCaseEnums;
+	}
+
+	@Override
+	public Collection<LanguageId> supportedLanguages() {
+		return ImmutableList.of(LanguageId.BOOT_PROPERTIES);
 	}
 
 }
