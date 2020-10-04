@@ -21,29 +21,34 @@ import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.NodeFinder;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
 import org.springframework.ide.vscode.boot.java.snippets.JavaSnippetManager;
+import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
+import org.springframework.ide.vscode.commons.languageserver.util.LanguageSpecific;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
+import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
+
+import com.google.common.collect.ImmutableList;
 
 /**
  * @author Martin Lippert
  */
-public class BootJavaCompletionEngine implements ICompletionEngine {
+public class BootJavaCompletionEngine implements ICompletionEngine, LanguageSpecific {
 
 	private Map<String, CompletionProvider> completionProviders;
 	private JavaSnippetManager snippets;
-	private BootJavaLanguageServerComponents server;
+	private CompilationUnitCache cuCache;
 
-	public BootJavaCompletionEngine(BootJavaLanguageServerComponents server, Map<String, CompletionProvider> specificProviders, JavaSnippetManager snippets) {
-		this.server = server;
+	public BootJavaCompletionEngine(CompilationUnitCache cuCache, Map<String, CompletionProvider> specificProviders, JavaSnippetManager snippets) {
+		this.cuCache = cuCache;
 		this.completionProviders = specificProviders;
 		this.snippets = snippets;
 	}
 
 	@Override
 	public Collection<ICompletionProposal> getCompletions(TextDocument document, int offset) throws Exception {
-		return server.getCompilationUnitCache().withCompilationUnit(document, cu -> {
+		return cuCache.withCompilationUnit(document, cu -> {
 			if (cu != null) {
 				ASTNode node = NodeFinder.perform(cu, offset, 0);
 
@@ -89,6 +94,11 @@ public class BootJavaCompletionEngine implements ICompletionEngine {
 				completionProvider.provideCompletions(node, offset, document, completions);
 			}
 		}
+	}
+
+	@Override
+	public Collection<LanguageId> supportedLanguages() {
+		return ImmutableList.of(LanguageId.JAVA);
 	}
 
 }

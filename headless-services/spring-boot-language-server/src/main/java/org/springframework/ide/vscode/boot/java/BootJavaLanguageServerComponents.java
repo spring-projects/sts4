@@ -108,7 +108,6 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 	private final BootLanguageServerParams serverParams;
 
 	private final SpringPropertyIndexProvider propertyIndexProvider;
-	private final ProjectBasedPropertyIndexProvider adHocPropertyIndexProvider;
 
 	private final SpringProcessConnectorService liveDataService;
 
@@ -143,7 +142,6 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		this.cuCache = cuCache;
 
 		propertyIndexProvider = serverParams.indexProvider;
-		this.adHocPropertyIndexProvider = adHocIndexProvider;
 
 		SimpleWorkspaceService workspaceService = server.getWorkspaceService();
 		SimpleTextDocumentService documents = server.getTextDocumentService();
@@ -233,11 +231,6 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 	}
 
 	@Override
-	public Optional<ICompletionEngine> getCompletionEngine() {
-		return Optional.of(createCompletionEngine(projectFinder, propertyIndexProvider, adHocPropertyIndexProvider));
-	}
-
-	@Override
 	public HoverHandler getHoverProvider() {
 		return hoverProvider;
 	}
@@ -266,63 +259,6 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		this.cuCache.dispose();
 	}
 
-	protected ICompletionEngine createCompletionEngine(
-			JavaProjectFinder javaProjectFinder,
-			SpringPropertyIndexProvider indexProvider,
-			ProjectBasedPropertyIndexProvider adHocIndexProvider) {
-
-		Map<String, CompletionProvider> providers = new HashMap<>();
-		providers.put(org.springframework.ide.vscode.boot.java.scope.Constants.SPRING_SCOPE,
-				new ScopeCompletionProcessor());
-		providers.put(org.springframework.ide.vscode.boot.java.value.Constants.SPRING_VALUE,
-				new ValueCompletionProcessor(javaProjectFinder, indexProvider, adHocIndexProvider));
-		providers.put(Annotations.REPOSITORY, new DataRepositoryCompletionProcessor());
-
-		JavaSnippetManager snippetManager = getSnippets();
-		return new BootJavaCompletionEngine(this, providers, snippetManager);
-	}
-
-	protected JavaSnippetManager getSnippets() {
-		JavaSnippetManager snippetManager = new JavaSnippetManager(server::createSnippetBuilder);
-
-		// PT 160529904: Eclipse templates are duplicated, due to templates in Eclipse also being contributed by
-		// STS3 bundle. Therefore do not include templates if client is Eclipse
-		// TODO: REMOVE this check once STS3 is no longer supported
-		if (LspClient.currentClient() != LspClient.Client.ECLIPSE) {
-			snippetManager.add(
-					new JavaSnippet("RequestMapping method", JavaSnippetContext.BOOT_MEMBERS, CompletionItemKind.Method,
-							ImmutableList.of("org.springframework.web.bind.annotation.RequestMapping",
-									"org.springframework.web.bind.annotation.RequestMethod",
-									"org.springframework.web.bind.annotation.RequestParam"),
-							"@RequestMapping(value=\"${path}\", method=RequestMethod.${GET})\n"
-									+ "public ${SomeData} ${requestMethodName}(@RequestParam ${String} ${param}) {\n"
-									+ "	return new ${SomeData}(${cursor});\n" + "}\n"));
-			snippetManager
-					.add(new JavaSnippet("GetMapping method", JavaSnippetContext.BOOT_MEMBERS, CompletionItemKind.Method,
-							ImmutableList.of("org.springframework.web.bind.annotation.GetMapping",
-									"org.springframework.web.bind.annotation.RequestParam"),
-							"@GetMapping(value=\"${path}\")\n"
-									+ "public ${SomeData} ${getMethodName}(@RequestParam ${String} ${param}) {\n"
-									+ "	return new ${SomeData}(${cursor});\n" + "}\n"));
-			snippetManager.add(new JavaSnippet("PostMapping method", JavaSnippetContext.BOOT_MEMBERS,
-					CompletionItemKind.Method,
-					ImmutableList.of("org.springframework.web.bind.annotation.PostMapping",
-							"org.springframework.web.bind.annotation.RequestBody"),
-					"@PostMapping(value=\"${path}\")\n"
-							+ "public ${SomeEnityData} ${postMethodName}(@RequestBody ${SomeEnityData} ${entity}) {\n"
-							+ "	//TODO: process POST request\n" + "	${cursor}\n" + "	return ${entity};\n" + "}\n"));
-			snippetManager.add(new JavaSnippet("PutMapping method", JavaSnippetContext.BOOT_MEMBERS,
-					CompletionItemKind.Method,
-					ImmutableList.of("org.springframework.web.bind.annotation.PutMapping",
-							"org.springframework.web.bind.annotation.RequestBody",
-							"org.springframework.web.bind.annotation.PathVariable"),
-					"@PutMapping(value=\"${path}/{${id}}\")\n"
-							+ "public ${SomeEnityData} ${putMethodName}(@PathVariable ${pvt:String} ${id}, @RequestBody ${SomeEnityData} ${entity}) {\n"
-							+ "	//TODO: process PUT request\n" + "	${cursor}\n" + "	return ${entity};\n" + "}"));
-		}
-
-		return snippetManager;
-	}
 
 	protected BootJavaHoverProvider createHoverHandler(JavaProjectFinder javaProjectFinder, SourceLinks sourceLinks,
 			SpringProcessLiveDataProvider liveDataProvider) {
