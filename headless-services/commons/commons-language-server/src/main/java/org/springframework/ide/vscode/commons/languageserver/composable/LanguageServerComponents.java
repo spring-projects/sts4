@@ -23,14 +23,5 @@ public interface LanguageServerComponents {
 
 	Set<LanguageId> getInterestingLanguages();
 	default Optional<IReconcileEngine> getReconcileEngine() { return Optional.empty(); }
-
-	/**
-	 * Don't use language server components. Instead create a bean of type ICompletionEngine that implements 
-	 * {@link LanguageSpecific}. The bean will be automatically wired up to handle completion requests for
-	 * documents of the language(s) it handles.
-	 */
-	@Deprecated
-	default Optional<ICompletionEngine> getCompletionEngine() { return Optional.empty(); }
-	
 	HoverHandler getHoverProvider();
 }

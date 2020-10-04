@@ -27,6 +27,7 @@ import org.springframework.ide.vscode.boot.java.utils.SymbolCache;
 import org.springframework.ide.vscode.boot.metadata.ProjectBasedPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.properties.BootPropertiesLanguageServerComponents;
 import org.springframework.ide.vscode.boot.xml.SpringXMLLanguageServerComponents;
+import org.springframework.ide.vscode.commons.languageserver.completion.CompositeCompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.composable.CompositeLanguageServerComponents;
@@ -81,13 +82,12 @@ public class BootLanguageServerInitializer implements InitializingBean {
 
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		//TODO: ComposableLanguageServer object instance serves no purpose anymore. The constructor really just contains
+		//TODO: CompositeLanguageServerComponents object instance serves no purpose anymore. The constructor really just contains
 		// some server intialization code. Migrate that code and get rid of the ComposableLanguageServer class
 		CompositeLanguageServerComponents.Builder builder = new CompositeLanguageServerComponents.Builder();
 		builder.add(new BootPropertiesLanguageServerComponents(server, params, javaElementLocationProvider, parser, yamlStructureProvider, yamlAssistContextProvider, sourceLinks));
 		builder.add(new BootJavaLanguageServerComponents(server, params, sourceLinks, cuCache, adHocProperties, symbolCache, liveDataProvider, config, springIndexer));
 		builder.add(new SpringXMLLanguageServerComponents(server, springIndexer, params, config));
-		builder.completionEngines(completionEngines);
 		components = builder.build(server);
 		params.projectObserver.addListener(reconcileOpenDocuments(server, components, params.projectFinder));
 
@@ -100,9 +100,10 @@ public class BootLanguageServerInitializer implements InitializingBean {
 			});
 		});
 
-		ICompletionEngine completionEngine = components.getCompletionEngine().orElse(null);
-		if (completionEngine!=null) {
-			completionEngineAdapter = server.createCompletionEngineAdapter(completionEngine);
+		if (!completionEngines.isEmpty()) {
+			CompositeCompletionEngine compositeCompletionEngine = new CompositeCompletionEngine();
+			completionEngines.forEach(compositeCompletionEngine::add);
+			completionEngineAdapter = server.createCompletionEngineAdapter(compositeCompletionEngine);
 			completionEngineAdapter.setMaxCompletions(100);
 			documents.onCompletion(completionEngineAdapter::getCompletions);
 			documents.onCompletionResolve(completionEngineAdapter::resolveCompletion);

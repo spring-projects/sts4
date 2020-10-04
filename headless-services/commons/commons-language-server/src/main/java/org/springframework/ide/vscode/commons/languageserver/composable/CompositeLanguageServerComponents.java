@@ -41,7 +41,6 @@ public class CompositeLanguageServerComponents implements LanguageServerComponen
 
 	public static class Builder {
 		private Map<LanguageId, LanguageServerComponents> componentsByLanguageId = new HashMap<>();
-		private List<ICompletionEngine> completionEngines;
 
 		public void add(LanguageServerComponents components) {
 			for (LanguageId language : components.getInterestingLanguages()) {
@@ -54,33 +53,14 @@ public class CompositeLanguageServerComponents implements LanguageServerComponen
 		public CompositeLanguageServerComponents build(SimpleLanguageServer server) {
 			return new CompositeLanguageServerComponents(server, this);
 		}
-
-		public void completionEngines(List<ICompletionEngine> completionEngines) {
-			Assert.isNull("completionEngines should only be set once", this.completionEngines);
-			this.completionEngines = completionEngines;
-		}
 	}
 
 	private final Map<LanguageId, LanguageServerComponents> componentsByLanguageId;
-	private final CompositeCompletionEngine completionEngine;
 	private final IReconcileEngine reconcileEngine;
 	private final HoverHandler hoverHandler;
 
 	public CompositeLanguageServerComponents(SimpleLanguageServer server, Builder builder) {
 		this.componentsByLanguageId = ImmutableMap.copyOf(builder.componentsByLanguageId);
-		//Create composite Completion engine
-		this.completionEngine = new CompositeCompletionEngine();
-		for (Entry<LanguageId, LanguageServerComponents> entry : componentsByLanguageId.entrySet()) {
-			ICompletionEngine engine = entry.getValue().getCompletionEngine().orElse(null);
-			if (engine!=null) {
-				completionEngine.add(entry.getKey(), engine);
-			}
-		}
-		if (builder.completionEngines!=null) {
-			for (ICompletionEngine engine : builder.completionEngines) {
-				this.completionEngine.add(engine);
-			}
-		}
 		//Create composite Reconcile engine
 		if (componentsByLanguageId.values().stream().map(LanguageServerComponents::getReconcileEngine).anyMatch(Optional::isPresent)) {
 			this.reconcileEngine = new IReconcileEngine() {
@@ -124,11 +104,6 @@ public class CompositeLanguageServerComponents implements LanguageServerComponen
 	@Override
 	public Set<LanguageId> getInterestingLanguages() {
 		return componentsByLanguageId.keySet();
-	}
-
-	@Override
-	public Optional<ICompletionEngine> getCompletionEngine() {
-		return Optional.ofNullable(completionEngine);
 	}
 
 	@Override
