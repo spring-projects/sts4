@@ -19,6 +19,7 @@ import org.springframework.ide.vscode.commons.util.GsonUtil;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
 import org.springframework.ide.vscode.commons.yaml.path.YamlTraversal;
 import org.springframework.ide.vscode.commons.yaml.schema.DynamicSchemaContext;
+import org.springframework.ide.vscode.commons.yaml.util.JSONCursor;
 
 public class BoshCommandStemcellsProvider extends BoshCommandBasedModelProvider<StemcellsModel> {
 

@@ -10,14 +10,18 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.test;
 
+import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertEquals;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -26,11 +30,20 @@ import org.apache.commons.io.FileUtils;
 import org.springframework.ide.vscode.boot.java.SpringJavaProblemType;
 import org.springframework.ide.vscode.boot.properties.reconcile.ApplicationPropertiesProblemType;
 import org.springframework.ide.vscode.boot.yaml.reconcile.ApplicationYamlProblemType;
+import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
+import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
+import org.springframework.ide.vscode.commons.yaml.util.JSONCursor;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonIOException;
+import com.google.gson.JsonObject;
+import com.google.gson.JsonSyntaxException;
 
 /**
  * Helper that dumps out ProblemTypes to a json file. This file can 
@@ -41,6 +54,7 @@ import com.google.gson.GsonBuilder;
  */
 public class ProblemTypesToJson {
 
+	public static final String packageJsonPath = "../../vscode-extensions/vscode-spring-boot/package.json";
 	public static final String resourcesPath = "src/main/resources";
 	public static final String metaDataFileName = "problem-types.json";
 	
@@ -96,12 +110,15 @@ public class ProblemTypesToJson {
 
 	Map<String, ProblemTypeData[]> problemTypes = new HashMap<>();
 
-	public static void main(String[] args) throws IOException {
+	public static void main(String[] args) throws Exception {
 		ProblemTypesToJson writer = new ProblemTypesToJson();
 		writer.problemsFor("application-yaml", ApplicationYamlProblemType.values());
 		writer.problemsFor("application-properties", ApplicationPropertiesProblemType.values());
 		writer.problemsFor("java", SpringJavaProblemType.values());
 		writer.dump();
+		
+		
+		writer.updatePackageJson(new File(packageJsonPath), "spring-boot.ls.problem");
 	}
 
 	private void dump() throws IOException {
@@ -151,6 +168,37 @@ public class ProblemTypesToJson {
 			assertEquals(actual.getLabel(), metadata.getLabel());
 		}
 	}
-	
+
+	public void updatePackageJson(File packageJsonFile, String propertyPrefix) throws Exception {
+		Gson gson = new GsonBuilder()
+				.setPrettyPrinting()
+				.serializeNulls()
+				.create();
+		JsonElement parsed = gson.fromJson(new FileReader(packageJsonFile), JsonElement.class);
+		JsonObject configProps = (JsonObject) YamlPath.fromProperty("contributes.configuration.properties").traverse(new JSONCursor(parsed)).target;
+		Set<String> removeProps = configProps.keySet().stream().filter(s -> s.startsWith(propertyPrefix)).collect(Collectors.toSet());
+		for (String rp : removeProps) {
+			configProps.remove(rp);
+		}
+		JsonArray severities = new JsonArray();
+		for (ProblemSeverity severity : ProblemSeverity.values()) {
+			severities.add(severity.name());
+		}
+		for (Entry<String, ProblemTypeData[]> e : problemTypes.entrySet()) {
+			String editorType = e.getKey();
+			for (ProblemTypeData data : e.getValue()) {
+				JsonObject schema = new JsonObject();
+				schema.addProperty("type", "string");
+				schema.addProperty("default", data.defaultSeverity);
+				schema.addProperty("description", data.description);
+				schema.add("enum", severities);
+				configProps.add(propertyPrefix+"."+editorType+"."+data.code, schema);
+			}
+		}
+		
+		String newContent = gson.toJson(parsed);
+		System.out.println(newContent);
+		FileUtils.writeStringToFile(packageJsonFile, newContent);
+	}
 	
 }

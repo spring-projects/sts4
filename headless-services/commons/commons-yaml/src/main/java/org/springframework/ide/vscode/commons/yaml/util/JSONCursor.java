@@ -8,7 +8,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.bosh.models;
+package org.springframework.ide.vscode.commons.yaml.util;
 
 import java.util.stream.Stream;
 

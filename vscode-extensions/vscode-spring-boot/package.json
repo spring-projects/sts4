@@ -171,7 +171,6 @@
             "string",
             "null"
           ],
-          "default": null,
           "description": "Override JAVA_HOME used for launching the spring-boot-language-server JVM process."
         },
         "spring-boot.ls.java.heap": {
@@ -179,7 +178,6 @@
             "string",
             "null"
           ],
-          "default": null,
           "description": "Max JVM heap value, passed via -Xmx argument when launching spring-boot-language-server JVM process."
         },
         "spring-boot.ls.java.vmargs": {
@@ -187,12 +185,312 @@
           "items": {
             "type": "string"
           },
-          "description": "Additional 'user defined' VM args to pass to the language server process."
+          "description": "Additional \u0027user defined\u0027 VM args to pass to the language server process."
         },
         "spring-boot.ls.checkJVM": {
           "type": "boolean",
           "default": true,
           "description": "Enable/Disable Java VM validation"
+        },
+        "spring-boot.ls.problem.java.JAVA_SPEL_EXPRESSION_SYNTAX": {
+          "type": "string",
+          "default": "ERROR",
+          "description": "SpEL parser raised a ParseException",
+          "enum": [
+            "IGNORE",
+            "INFO",
+            "WARNING",
+            "HINT",
+            "ERROR"
+          ]
+        },
+        "spring-boot.ls.problem.application-yaml.YAML_SYNTAX_ERROR": {
+          "type": "string",
+          "default": "ERROR",
+          "description": "Error parsing the input using snakeyaml",
+          "enum": [
+            "IGNORE",
+            "INFO",
+            "WARNING",
+            "HINT",
+            "ERROR"
+          ]
+        },
+        "spring-boot.ls.problem.application-yaml.YAML_UNKNOWN_PROPERTY": {
+          "type": "string",
+          "default": "WARNING",
+          "description": "Property-key not found in the configuration metadata on the project\u0027s classpath",
+          "enum": [
+            "IGNORE",
+            "INFO",
+            "WARNING",
+            "HINT",
+            "ERROR"
+          ]
+        },
+        "spring-boot.ls.problem.application-yaml.YAML_VALUE_TYPE_MISMATCH": {
+          "type": "string",
+          "default": "ERROR",
+          "description": "Expecting a value of a certain type, but value doesn\u0027t parse as such",
+          "enum": [
+            "IGNORE",
+            "INFO",
+            "WARNING",
+            "HINT",
+            "ERROR"
+          ]
+        },
+        "spring-boot.ls.problem.application-yaml.YAML_EXPECT_SCALAR": {
+          "type": "string",
+          "default": "ERROR",
+          "description": "Expecting a \u0027scalar\u0027 value but found something more complex.",
+          "enum": [
+            "IGNORE",
+            "INFO",
+            "WARNING",
+            "HINT",
+            "ERROR"
+          ]
+        },
+        "spring-boot.ls.problem.application-yaml.YAML_EXPECT_TYPE_FOUND_SEQUENCE": {
+          "type": "string",
+          "default": "ERROR",
+          "description": "Found a \u0027sequence\u0027 node where a non \u0027list-like\u0027 type is expected",
+          "enum": [
+            "IGNORE",
+            "INFO",
+            "WARNING",
+            "HINT",
+            "ERROR"
+          ]
+        },
+        "spring-boot.ls.problem.application-yaml.YAML_EXPECT_TYPE_FOUND_MAPPING": {
+          "type": "string",
+          "default": "ERROR",
+          "description": "Found a \u0027mapping\u0027 node where a type that can\u0027t be treated as a \u0027property map\u0027 is expected",
+          "enum": [
+            "IGNORE",
+            "INFO",
+            "WARNING",
+            "HINT",
+            "ERROR"
+          ]
+        },
+        "spring-boot.ls.problem.application-yaml.YAML_EXPECT_MAPPING": {
+          "type": "string",
+          "default": "ERROR",
+          "description": "Expecting a \u0027mapping\u0027 node but found something else",
+          "enum": [
+            "IGNORE",
+            "INFO",
+            "WARNING",
+            "HINT",
+            "ERROR"
+          ]
+        },
+        "spring-boot.ls.problem.application-yaml.YAML_EXPECT_BEAN_PROPERTY_NAME": {
+          "type": "string",
+          "default": "ERROR",
+          "description": "Expecting a \u0027bean property\u0027 name but found something more complex",
+          "enum": [
+            "IGNORE",
+            "INFO",
+            "WARNING",
+            "HINT",
+            "ERROR"
+          ]
+        },
+        "spring-boot.ls.problem.application-yaml.YAML_INVALID_BEAN_PROPERTY": {
+          "type": "string",
+          "default": "ERROR",
+          "description": "Accessing a named property in a type that doesn\u0027t provide a property accessor with that name",
+          "enum": [
+            "IGNORE",
+            "INFO",
+            "WARNING",
+            "HINT",
+            "ERROR"
+          ]
+        },
+        "spring-boot.ls.problem.application-yaml.YAML_DEPRECATED_ERROR": {
+          "type": "string",
+          "default": "ERROR",
+          "description": "Property is marked as Deprecated(Error)",
+          "enum": [
+            "IGNORE",
+            "INFO",
+            "WARNING",
+            "HINT",
+            "ERROR"
+          ]
+        },
+        "spring-boot.ls.problem.application-yaml.YAML_DEPRECATED_WARNING": {
+          "type": "string",
+          "default": "WARNING",
+          "description": "Property is marked as Deprecated(Warning)",
+          "enum": [
+            "IGNORE",
+            "INFO",
+            "WARNING",
+            "HINT",
+            "ERROR"
+          ]
+        },
+        "spring-boot.ls.problem.application-yaml.YAML_DUPLICATE_KEY": {
+          "type": "string",
+          "default": "ERROR",
+          "description": "A mapping node contains multiple entries for the same key",
+          "enum": [
+            "IGNORE",
+            "INFO",
+            "WARNING",
+            "HINT",
+            "ERROR"
+          ]
+        },
+        "spring-boot.ls.problem.application-yaml.YAML_SHOULD_ESCAPE": {
+          "type": "string",
+          "default": "WARNING",
+          "description": "This key contains special characters and should probably be escaped by surrounding it with \u0027[]\u0027",
+          "enum": [
+            "IGNORE",
+            "INFO",
+            "WARNING",
+            "HINT",
+            "ERROR"
+          ]
+        },
+        "spring-boot.ls.problem.application-properties.PROP_INVALID_BEAN_NAVIGATION": {
+          "type": "string",
+          "default": "ERROR",
+          "description": "Accessing a \u0027bean property\u0027 in a type that doesn\u0027t have properties (e.g. like String or Integer)",
+          "enum": [
+            "IGNORE",
+            "INFO",
+            "WARNING",
+            "HINT",
+            "ERROR"
+          ]
+        },
+        "spring-boot.ls.problem.application-properties.PROP_INVALID_INDEXED_NAVIGATION": {
+          "type": "string",
+          "default": "ERROR",
+          "description": "Accessing a property using [] in a type that doesn\u0027t support that",
+          "enum": [
+            "IGNORE",
+            "INFO",
+            "WARNING",
+            "HINT",
+            "ERROR"
+          ]
+        },
+        "spring-boot.ls.problem.application-properties.PROP_EXPECTED_DOT_OR_LBRACK": {
+          "type": "string",
+          "default": "ERROR",
+          "description": "Unexpected character found where a \u0027.\u0027 or \u0027[\u0027 was expected",
+          "enum": [
+            "IGNORE",
+            "INFO",
+            "WARNING",
+            "HINT",
+            "ERROR"
+          ]
+        },
+        "spring-boot.ls.problem.application-properties.PROP_NO_MATCHING_RBRACK": {
+          "type": "string",
+          "default": "ERROR",
+          "description": "Found a \u0027[\u0027 but no matching \u0027]\u0027",
+          "enum": [
+            "IGNORE",
+            "INFO",
+            "WARNING",
+            "HINT",
+            "ERROR"
+          ]
+        },
+        "spring-boot.ls.problem.application-properties.PROP_NON_INTEGER_IN_BRACKETS": {
+          "type": "string",
+          "default": "ERROR",
+          "description": "Use of [..] navigation with non-integer value",
+          "enum": [
+            "IGNORE",
+            "INFO",
+            "WARNING",
+            "HINT",
+            "ERROR"
+          ]
+        },
+        "spring-boot.ls.problem.application-properties.PROP_VALUE_TYPE_MISMATCH": {
+          "type": "string",
+          "default": "ERROR",
+          "description": "Expecting a value of a certain type, but value doesn\u0027t parse as such",
+          "enum": [
+            "IGNORE",
+            "INFO",
+            "WARNING",
+            "HINT",
+            "ERROR"
+          ]
+        },
+        "spring-boot.ls.problem.application-properties.PROP_INVALID_BEAN_PROPERTY": {
+          "type": "string",
+          "default": "ERROR",
+          "description": "Accessing a named property in a type that doesn\u0027t provide a property accessor with that name",
+          "enum": [
+            "IGNORE",
+            "INFO",
+            "WARNING",
+            "HINT",
+            "ERROR"
+          ]
+        },
+        "spring-boot.ls.problem.application-properties.PROP_UNKNOWN_PROPERTY": {
+          "type": "string",
+          "default": "WARNING",
+          "description": "Property-key not found in any configuration metadata on the project\u0027s classpath",
+          "enum": [
+            "IGNORE",
+            "INFO",
+            "WARNING",
+            "HINT",
+            "ERROR"
+          ]
+        },
+        "spring-boot.ls.problem.application-properties.PROP_DEPRECATED": {
+          "type": "string",
+          "default": "WARNING",
+          "description": "Property is marked as Deprecated",
+          "enum": [
+            "IGNORE",
+            "INFO",
+            "WARNING",
+            "HINT",
+            "ERROR"
+          ]
+        },
+        "spring-boot.ls.problem.application-properties.PROP_DUPLICATE_KEY": {
+          "type": "string",
+          "default": "ERROR",
+          "description": "Multiple assignments to the same property value",
+          "enum": [
+            "IGNORE",
+            "INFO",
+            "WARNING",
+            "HINT",
+            "ERROR"
+          ]
+        },
+        "spring-boot.ls.problem.application-properties.PROP_SYNTAX_ERROR": {
+          "type": "string",
+          "default": "ERROR",
+          "description": "Syntax Error",
+          "enum": [
+            "IGNORE",
+            "INFO",
+            "WARNING",
+            "HINT",
+            "ERROR"
+          ]
         }
       }
     },
@@ -214,7 +512,7 @@
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
-    "test": "npm run compile && node ./node_modules/vscode/bin/test",
+    "test": "npm run compile \u0026\u0026 node ./node_modules/vscode/bin/test",
     "preinstall": "bash ./scripts/preinstall.sh",
     "vsce-package": "vsce package"
   },
