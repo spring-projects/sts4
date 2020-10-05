@@ -143,6 +143,12 @@
 	         class="org.springframework.tooling.boot.ls.prefs.ApplicationYamlEditorProblemSeverityPrefsPage"
 	            id="org.springframework.tooling.boot.ls.prefs.ApplicationYamlEditorProblemSeverityPrefsPage">
 	   </page>
+	   <page
+	         name="Java Editor"
+	         category="org.springframework.tooling.boot.ls.preferences"
+	         class="org.springframework.tooling.boot.ls.prefs.SpringJavaProblemSeverityPrefsPage"
+	            id="org.springframework.tooling.boot.ls.prefs.SpringJavaProblemSeverityPrefsPage">
+	   </page>
    </extension>
    
    

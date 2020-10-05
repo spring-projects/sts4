@@ -23,6 +23,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
+import org.springframework.ide.vscode.boot.java.SpringJavaProblemType;
 import org.springframework.ide.vscode.boot.properties.reconcile.ApplicationPropertiesProblemType;
 import org.springframework.ide.vscode.boot.yaml.reconcile.ApplicationYamlProblemType;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
@@ -99,6 +100,7 @@ public class ProblemTypesToJson {
 		ProblemTypesToJson writer = new ProblemTypesToJson();
 		writer.problemsFor("application-yaml", ApplicationYamlProblemType.values());
 		writer.problemsFor("application-properties", ApplicationPropertiesProblemType.values());
+		writer.problemsFor("java", SpringJavaProblemType.values());
 		writer.dump();
 	}
 

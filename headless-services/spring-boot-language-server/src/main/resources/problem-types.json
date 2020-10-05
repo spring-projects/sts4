@@ -1,4 +1,12 @@
 {
+  "java": [
+    {
+      "code": "JAVA_SPEL_EXPRESSION_SYNTAX",
+      "label": "SpEL Expression Syntax",
+      "description": "SpEL parser raised a ParseException",
+      "defaultSeverity": "ERROR"
+    }
+  ],
   "application-yaml": [
     {
       "code": "YAML_SYNTAX_ERROR",
