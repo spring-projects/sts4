@@ -67,7 +67,7 @@ public class BootLanguageServerInitializer implements InitializingBean {
 
 	private static final Logger log = LoggerFactory.getLogger(BootLanguageServerInitializer.class);
 
-	private static ProjectObserver.Listener reconcileOpenDocuments(SimpleLanguageServer s, CompositeLanguageServerComponents c, JavaProjectFinder projectFinder) {
+	private static ProjectObserver.Listener reconcileOpenDocumentsForProjectChange(SimpleLanguageServer s, CompositeLanguageServerComponents c, JavaProjectFinder projectFinder) {
 		return ProjectObserver.onAny(project -> {
 			c.getReconcileEngine().ifPresent(reconciler -> {
 				log.info("A project changed {}, triggering reconcile on all project's open documents", project.getElementName());
@@ -79,7 +79,7 @@ public class BootLanguageServerInitializer implements InitializingBean {
 			});
 		});
 	}
-
+	
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		//TODO: CompositeLanguageServerComponents object instance serves no purpose anymore. The constructor really just contains
@@ -89,7 +89,7 @@ public class BootLanguageServerInitializer implements InitializingBean {
 		builder.add(new BootJavaLanguageServerComponents(server, params, sourceLinks, cuCache, adHocProperties, symbolCache, liveDataProvider, config, springIndexer));
 		builder.add(new SpringXMLLanguageServerComponents(server, springIndexer, params, config));
 		components = builder.build(server);
-		params.projectObserver.addListener(reconcileOpenDocuments(server, components, params.projectFinder));
+		params.projectObserver.addListener(reconcileOpenDocumentsForProjectChange(server, components, params.projectFinder));
 
 		SimpleTextDocumentService documents = server.getTextDocumentService();
 
@@ -111,6 +111,15 @@ public class BootLanguageServerInitializer implements InitializingBean {
 
 		HoverHandler hoverHandler = components.getHoverProvider();
 		documents.onHover(hoverHandler);
+		
+		config.addListener(evt -> {
+			components.getReconcileEngine().ifPresent(reconciler -> {
+				log.info("A configuration changed, triggering reconcile on all open documents");
+				for (TextDocument doc : server.getTextDocumentService().getAll()) {
+					server.validateWith(doc.getId(), reconciler);
+				}
+			});
+		});
 	}
 
 	public CompositeLanguageServerComponents getComponents() {
