@@ -10,11 +10,9 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.test;
 
-import static org.hamcrest.Matchers.startsWith;
 import static org.junit.Assert.assertEquals;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
@@ -35,22 +33,25 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemTy
 import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
 import org.springframework.ide.vscode.commons.yaml.util.JSONCursor;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.reflect.TypeToken;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonIOException;
 import com.google.gson.JsonObject;
-import com.google.gson.JsonSyntaxException;
 
 /**
  * Helper that dumps out ProblemTypes to a json file. This file can 
- * be used (how?) to drive problem severity configuration ui.
+ * be used to drive problem severity configuration ui. See 
+ * org.springframework.ide.eclipse.editor.support.preferences.ProblemSeverityPreferityPageFromMetadata
  * <p>
  * Run this from Eclipse simply by selecting this file and do
- * "Run As >> Java Application"
+ * "Run As >> Java Application". This does two things:
+ * <ul>
+ * <li> Dumps metadata into 'problem-types.json' metadata. This file is packaged with the language
+ * server jar.
+ * <li> Updates the 'package.json' file in vscode-spring-boot extension with the same metadata.
+ * </ul>
  */
 public class ProblemTypesToJson {
 
