@@ -24,6 +24,7 @@ import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
+import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Combo;
@@ -43,6 +44,16 @@ import org.springsource.ide.eclipse.commons.livexp.util.Parser;
  * an element.
  */
 public class ChooseOneSectionCombo<T> extends AbstractChooseOneSection<T> {
+	
+	private static final boolean isGtk = checkGtk();
+	
+	private static boolean checkGtk() {
+		try { 
+			return Class.forName("org.eclipse.swt.internal.gtk.GTK")!=null;
+		} catch (Exception e) {
+			return false;
+		}
+	}
 
 	private boolean DEBUG = false; //(""+Platform.getLocation()).contains("kdvolder");
 
@@ -72,7 +83,6 @@ public class ChooseOneSectionCombo<T> extends AbstractChooseOneSection<T> {
 			}
 		}
 	});
-
 
 	/**
 	 * For a combo that allows text edits, a textInputParser must be provided to convert
@@ -111,7 +121,7 @@ public class ChooseOneSectionCombo<T> extends AbstractChooseOneSection<T> {
 			T[] options) {
 		this(owner, model.getLabel(), new SelectionModel<>(model.getVariable(), model.getValidator()), LiveExpression.constant(options));
 	}
-
+	
 	/**
 	 * Enable's support for 'editable' text widget in the Combo. This means user can perform textual edits
 	 * in addition to using the combo.
@@ -150,6 +160,17 @@ public class ChooseOneSectionCombo<T> extends AbstractChooseOneSection<T> {
 		labelGridData.applyTo(fieldNameLabel);
 
 		final Combo combo = new Combo(field, inputParser==null?SWT.READ_ONLY:SWT.NONE);
+		{	//works around strange bug (?) in Combo widget. This code looks like it shouldn't do anything... 
+			//but it actually does. Without it, the 'pulldown' from the combo will be transparant on Linux 
+			// and hard to read.
+			// See: https://www.pivotaltracker.com/story/show/174833544
+			//Note avoid doing the workaround for editable combo (i.e. where text is editable).
+			//because the call to 'setBackground' then messes up the background color of selected text.
+			if (inputParser==null && isGtk) {
+				Color comboBg = combo.getBackground();
+				combo.setBackground(comboBg);
+			}
+		}
 
 		options.addListener(new ValueListener<T[]>() {
 			public void gotValue(org.springsource.ide.eclipse.commons.livexp.core.LiveExpression<T[]> exp, T[] value) {
