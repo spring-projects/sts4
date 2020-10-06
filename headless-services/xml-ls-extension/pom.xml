@@ -1,0 +1,97 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<artifactId>xml-ls-extension</artifactId>
+	<name>xml-ls-extension</name>
+	<description>Lemminx XML Language Server Extension for contributing project classpath specific NSURI resolution</description>
+
+	<parent>
+		<groupId>org.springframework.ide.vscode</groupId>
+		<artifactId>commons-parent</artifactId>
+		<version>1.23.0-SNAPSHOT</version>
+		<relativePath>../commons/pom.xml</relativePath>
+	</parent>
+
+	<properties>
+		<dependencies.version>${project.version}</dependencies.version>
+		<lsp4xml.version>0.14.0-SNAPSHOT</lsp4xml.version>
+	</properties>
+
+	<repositories>
+		<repository>
+			<id>lemminx-snapshots</id>
+			<url>https://repo.eclipse.org/content/repositories/lemminx-snapshots/</url>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+		</repository>
+	</repositories>
+
+	<dependencies>
+		<dependency>
+			<groupId>org.eclipse.lsp4j</groupId>
+			<artifactId>org.eclipse.lsp4j</artifactId>
+			<version>${lsp4j-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.eclipse.lemminx</groupId>
+			<artifactId>org.eclipse.lemminx</artifactId>
+			<version>${lsp4xml.version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.eclipse.lsp4j</groupId>
+					<artifactId>org.eclipse.lsp4j</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.eclipse.lsp4j</groupId>
+					<artifactId>org.eclipse.lsp4j.jsonrpc</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+		<dependency>
+			<groupId>org.springframework.ide.vscode</groupId>
+			<artifactId>commons-lsp-extensions</artifactId>
+			<version>${project.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+			
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<execution>
+						<id>copy-dependencies</id>
+						<phase>package</phase>
+						<goals>
+							<goal>copy-dependencies</goal>
+						</goals>
+						<configuration>
+							<stripVersion>true</stripVersion>
+							<outputDirectory>${project.build.directory}/dependencies</outputDirectory>
+							<overWriteReleases>true</overWriteReleases>
+							<overWriteSnapshots>true</overWriteSnapshots>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+		
+			<plugin>
+				<groupId>org.apache.felix</groupId>
+				<artifactId>maven-bundle-plugin</artifactId>
+				<version>6.0.3</version>
+			</plugin>
+		</plugins>
+	</build>
+</project>

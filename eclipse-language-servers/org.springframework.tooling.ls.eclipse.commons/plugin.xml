@@ -91,6 +91,10 @@
             class="org.springframework.tooling.ls.eclipse.commons.commands.OpenResourceInEditor"
             commandId="org.springframework.tooling.ls.eclipse.commons.commands.OpenResourceInEditor">
       </handler>
+      <handler
+            class="org.springframework.tooling.ls.eclipse.commons.commands.JavaWorkspaceCommandHanlder"
+            commandId="java.execute.workspaceCommand">
+      </handler>
    </extension>
    <extension
          point="org.eclipse.ui.commands">

@@ -93,7 +93,7 @@ import com.google.common.collect.ImmutableMap;
 @SuppressWarnings("restriction")
 public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4LanguageClient {
 
-	private static ReusableClasspathListenerHandler classpathService = new ReusableClasspathListenerHandler (
+	public static final ReusableClasspathListenerHandler CLASSPATH_SERVICE = new ReusableClasspathListenerHandler (
 			Logger.forEclipsePlugin(LanguageServerCommonsActivator::getInstance),
 			new LSP4ECommandExecutor(),
 			() -> new ProjectSorter()
@@ -371,7 +371,7 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 
 
 	public STS4LanguageClientImpl() {
-		classpathService.addNotificationsSentCallback(projectNames -> {
+		CLASSPATH_SERVICE.addNotificationsSentCallback(projectNames -> {
 			List<IProject> projects = projectNames.stream().map(projectName -> ResourcesPlugin.getWorkspace().getRoot().getProject(projectName)).filter(Objects::nonNull).collect(Collectors.toList());
 			for (IWorkbenchWindow ww : PlatformUI.getWorkbench().getWorkbenchWindows()) {
 				for (IWorkbenchPage page : ww.getPages()) {
@@ -397,12 +397,12 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 
 	@Override
 	public CompletableFuture<Object> addClasspathListener(ClasspathListenerParams params) {
-		return CompletableFuture.completedFuture(classpathService.addClasspathListener(params.getCallbackCommandId(), params.isBatched()));
+		return CompletableFuture.completedFuture(CLASSPATH_SERVICE.addClasspathListener(params.getCallbackCommandId(), params.isBatched()));
 	}
 
 	@Override
 	public CompletableFuture<Object> removeClasspathListener(ClasspathListenerParams params) {
-		return CompletableFuture.completedFuture(classpathService.removeClasspathListener(params.getCallbackCommandId()));
+		return CompletableFuture.completedFuture(CLASSPATH_SERVICE.removeClasspathListener(params.getCallbackCommandId()));
 	}
 
 	@Override

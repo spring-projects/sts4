@@ -31,6 +31,7 @@ cd ${workdir}/language-server
 server_jar_file=$(find ${workdir}/../../headless-services/spring-boot-language-server/target -name '*-exec.jar');
 jar -xvf ${server_jar_file}
 
+# JDT LS Extension
 cd ${workdir}/../../headless-services/jdt-ls-extension
 find . -name "*-sources.jar" -delete
 cp org.springframework.tooling.jdt.ls.extension/target/*.jar ${workdir}/jars/jdt-ls-extension.jar
@@ -39,3 +40,10 @@ cp org.springframework.tooling.jdt.ls.commons/target/*.jar ${workdir}/jars/jdt-l
 # Copy Reactor dependency bundles
 cp org.springframework.tooling.jdt.ls.commons/target/dependencies/io.projectreactor.reactor-core.jar ${workdir}/jars/
 cp org.springframework.tooling.jdt.ls.commons/target/dependencies/org.reactivestreams.reactive-streams.jar ${workdir}/jars/
+
+# XML LS Extension
+cd ${workdir}/../../headless-services/xml-ls-extension
+find . -name "*-sources.jar" -delete
+cp target/*.jar ${workdir}/jars/xml-ls-extension.jar
+cp target/dependencies/commons-lsp-extensions.jar ${workdir}/jars/
+

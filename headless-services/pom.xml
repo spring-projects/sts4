@@ -16,6 +16,7 @@
 		<module>spring-boot-language-server</module>
 		<module>bosh-language-server</module>
 		<module>jdt-ls-extension</module>
+		<module>xml-ls-extension</module>
 	</modules>
 
 </project>

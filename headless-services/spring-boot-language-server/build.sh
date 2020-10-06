@@ -18,3 +18,10 @@ else
         -am \
         clean install
 fi
+cd ../xml-ls-extension
+    ../mvnw \
+        -DtrimStackTrace=false \
+        -f ../pom.xml \
+        -pl xml-ls-extension \
+        -am \
+        clean install

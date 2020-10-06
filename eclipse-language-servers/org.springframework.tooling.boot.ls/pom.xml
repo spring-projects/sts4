@@ -43,6 +43,33 @@
 							<outputDirectory>${project.build.directory}/../servers/spring-boot-language-server</outputDirectory>
 						</configuration>
 					</execution>
+					<execution>
+						<id>xml-extension</id>
+						<phase>prepare-package</phase>
+						<goals>
+							<goal>copy</goal>
+						</goals>
+						<configuration>
+							<artifactItems>
+								<artifactItem>
+									<groupId>org.springframework.ide.vscode</groupId>
+									<artifactId>xml-ls-extension</artifactId>
+									<version>${project.version}</version>
+									<overWrite>true</overWrite>
+								</artifactItem>
+								<artifactItem>
+									<groupId>org.springframework.ide.vscode</groupId>
+									<artifactId>commons-lsp-extensions</artifactId>
+									<version>${project.version}</version>
+									<overWrite>true</overWrite>
+								</artifactItem>
+							</artifactItems>
+							<stripVersion>true</stripVersion>
+							<overWriteReleases>true</overWriteReleases>
+							<overWriteSnapshots>true</overWriteSnapshots>
+							<outputDirectory>${project.build.directory}/../jars</outputDirectory>
+						</configuration>
+					</execution>
 				</executions>
 			</plugin>
 
@@ -70,6 +97,9 @@
 					<filesets>
 						<fileset>
 							<directory>servers</directory>
+						</fileset>
+						<fileset>
+							<directory>jars</directory>
 						</fileset>
 					</filesets>
 				</configuration>
