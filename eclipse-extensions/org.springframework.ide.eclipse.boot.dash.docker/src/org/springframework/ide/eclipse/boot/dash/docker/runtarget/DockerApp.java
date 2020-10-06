@@ -12,7 +12,6 @@ package org.springframework.ide.eclipse.boot.dash.docker.runtarget;
 
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -51,6 +50,7 @@ import org.springframework.ide.eclipse.boot.dash.api.TemporalBoolean;
 import org.springframework.ide.eclipse.boot.dash.console.LogType;
 import org.springframework.ide.eclipse.boot.dash.devtools.DevtoolsUtil;
 import org.springframework.ide.eclipse.boot.dash.docker.jmx.JmxSupport;
+import org.springframework.ide.eclipse.boot.dash.docker.runtarget.BuildScriptLocator.BuildKind;
 import org.springframework.ide.eclipse.boot.dash.labels.BootDashLabels;
 import org.springframework.ide.eclipse.boot.dash.model.RunState;
 import org.springframework.ide.eclipse.boot.dash.model.remote.ChildBearing;
@@ -59,10 +59,10 @@ import org.springframework.ide.eclipse.boot.dash.util.LineBasedStreamGobler;
 import org.springframework.ide.eclipse.boot.launch.util.PortFinder;
 import org.springframework.ide.eclipse.boot.util.JavaProjectUtil;
 import org.springsource.ide.eclipse.commons.core.pstore.PropertyStoreApi;
-import org.springsource.ide.eclipse.commons.core.util.OsUtils;
 import org.springsource.ide.eclipse.commons.frameworks.core.util.JobUtil;
 import org.springsource.ide.eclipse.commons.frameworks.core.util.StringUtils;
 import org.springsource.ide.eclipse.commons.livexp.core.AbstractDisposable;
+import org.springsource.ide.eclipse.commons.livexp.util.ExceptionUtil;
 import org.springsource.ide.eclipse.commons.livexp.util.Log;
 import org.springsource.ide.eclipse.commons.livexp.util.OldValueDisposer;
 
@@ -244,13 +244,49 @@ public class DockerApp extends AbstractDisposable implements App, ChildBearing, 
 				throw new IllegalStateException("The project '"+project.getName()+"' is not accessible");
 			}
 			console.write("Deploying Docker app " + getName() + BootDashLabels.ELLIPSIS, LogType.STDOUT);
-			return build(console);
+			try {
+				return build(console);
+			} catch (Exception e) {
+				console.write(ExceptionUtil.getMessage(e), LogType.STDERROR);
+				if (e instanceof MissingBuildScriptException) {
+					console.write("Places we looked for build script: ", LogType.STDERROR);
+					for (File loc : ((MissingBuildScriptException) e).locationsChecked) {
+						console.write(" - "+loc, LogType.STDERROR);
+					}
+					showBuildScriptHelp(console, (MissingBuildScriptException) e);
+				}
+				throw e;
+			}
 		});
 		
 		refreshTracker.run("Starting container '" + image + "'" +  + BootDashLabels.ELLIPSIS, () -> {
 			run(console, image, deployment);
 			console.write("DONE Deploying Docker app " + getName(), LogType.STDOUT);
 		});
+	}
+
+	private void showBuildScriptHelp(AppConsole console, MissingBuildScriptException e) {
+		String[] help = {
+				"To build a docker image, Boot Dash needs to run a build script from your project.",
+				"Three different types are supported and checked for in this order:",
+				"",
+				"1. "+e.locationsChecked.get(0).getAbsoluteFile().getName(),
+				"   A custom script placed by you at the project root.",
+				"   Typically this runs a custom maven or gradle command on your project.",
+				"",
+				"2. maven",
+				"   If your project has a mvnw, we will use that to execute the `spring-boot:build-image` task",
+				"",
+				"3. gradle",
+				"   If your project has a gradlew, we will use that to execute the `bootBuildImage` task",
+		};
+		try {
+			for (String line : help) {
+				console.write(line, LogType.STDERROR);
+			}
+		} catch (Exception e1) {
+			//ignore
+		}
 	}
 
 	private void run(AppConsole console, String image, DockerDeployment deployment) throws Exception {
@@ -409,36 +445,19 @@ public class DockerApp extends AbstractDisposable implements App, ChildBearing, 
 		IVMInstall jvm = JavaRuntime.getVMInstall(JavaCore.create(project));
 		return jvm.getInstallLocation().toString();
 	}
-
-	private String[] getBuildCommand(File directory) {
-		boolean isMaven = true;
-		List<String> command = new ArrayList<>();
-		if (OsUtils.isWindows()) {
-			if (Files.exists(directory.toPath().resolve("mvnw.cmd"))) {
-				command.addAll(ImmutableList.of("CMD", "/C", "mvnw.cmd", "spring-boot:build-image", "-DskipTests"));
-				//, "-Dspring-boot.repackage.excludeDevtools=false" };
-			} else if (Files.exists(directory.toPath().resolve("gradlew.bat"))) {
-				isMaven = false;
-				command.addAll(ImmutableList.of("CMD", "/C", "gradlew.bat", "bootBuildImage", "-x", "test"));
-			} 
-		} else {
-			if (Files.exists(directory.toPath().resolve("sts-docker-build.sh"))) {
-				command.addAll(ImmutableList.of("./sts-docker-build.sh"));
-			} else if (Files.exists(directory.toPath().resolve("mvnw"))) {
-				command.addAll(ImmutableList.of("./mvnw", "spring-boot:build-image", "-DskipTests"));
-			} else if (Files.exists(directory.toPath().resolve("gradlew"))) {
-				isMaven = false;
-				command.addAll(ImmutableList.of("./gradlew", "--stacktrace", "bootBuildImage", "-x", "test" ));
-			}	
-		}
-		if (command.isEmpty()) {
-			throw new IllegalStateException("Neither sts-docker-build.sh nor Gradle/Maven wrapper was found!");
+	
+	private String[] getBuildCommand(File directory) throws MissingBuildScriptException {
+		BuildScriptLocator buildScriptLocator = new BuildScriptLocator(directory);
+		BuildKind buildKind = buildScriptLocator.getBuildKind();
+		if (buildKind==null) {
+			throw new MissingBuildScriptException(buildScriptLocator.checkedLocations);
 		}
 		boolean wantsDevtools = deployment().getSystemProperties().getOrDefault(DevtoolsUtil.REMOTE_SECRET_PROP, null)!=null;
+		List<String> command = buildScriptLocator.command;
 		if (wantsDevtools) {
-			if (isMaven) {
+			if (buildKind==BuildKind.MAVEN) {
 				command.add("-Dspring-boot.repackage.excludeDevtools=false");
-			} else {
+			} else if (buildKind==BuildKind.GRADLE) {
 				try {
 					command.addAll(gradle_initScript(
 							"allprojects {\n" + 
@@ -458,7 +477,6 @@ public class DockerApp extends AbstractDisposable implements App, ChildBearing, 
     }
 
 	private synchronized static List<String> gradle_initScript(String script) throws IOException {
-		System.out.println(script);
 		if (initFile==null) {
 			initFile = File.createTempFile("init-script", ".gradle");
 			FileUtils.writeStringToFile(initFile, script, "UTF8");
