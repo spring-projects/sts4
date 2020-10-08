@@ -47,6 +47,10 @@
 			<optional>true</optional>
 		</dependency>
 		<dependency>
+			<groupId>org.springframework</groupId>
+			<artifactId>spring-web</artifactId>
+		</dependency>
+		<dependency>
 			<groupId>org.springframework.ide.vscode</groupId>
 			<artifactId>commons-yaml</artifactId>
 			<version>${dependencies.version}</version>
