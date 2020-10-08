@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2016 Pivotal, Inc.
+ * Copyright (c) 2015, 2020 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -171,8 +171,6 @@ public class CloudFoundryTargetWizardModel {
 		allPropertiesValidator.addChild(storeCredentialsValidator);
 		allPropertiesValidator.addChild(resolvedSpacesValidator);
 		allPropertiesValidator.addChild(spaceValidator);
-
-		url.setValue(getDefaultTargetUrl());
 	}
 
 	public void setUrl(String url) {
@@ -217,10 +215,6 @@ public class CloudFoundryTargetWizardModel {
 
 	public StoreCredentialsMode getStoreCredentials() {
 		return storeCredentials.getValue();
-	}
-
-	protected String getDefaultTargetUrl() {
-		return "https://api.run.pivotal.io";
 	}
 
 	public OrgsAndSpaces resolveSpaces(IRunnableContext context) {
