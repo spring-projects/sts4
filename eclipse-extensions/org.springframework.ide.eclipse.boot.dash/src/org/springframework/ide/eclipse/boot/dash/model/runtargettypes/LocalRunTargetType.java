@@ -64,4 +64,12 @@ public class LocalRunTargetType extends AbstractRunTargetType<Void> {
 	public ImageDescriptor getDisconnectedIcon() {
 		return getIcon();
 	}
+
+	@Override
+	public boolean supportsDeletion() {
+		//Not supported right now.
+		//It might be possible to support deletion in the future (deleting a local app could amount
+		// to deleting corresponding project from the workspace, for example).
+		return false;
+	}
 }

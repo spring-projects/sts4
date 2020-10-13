@@ -26,6 +26,8 @@ import static org.springsource.ide.eclipse.commons.tests.util.StsTestCase.assert
 import static org.springsource.ide.eclipse.commons.tests.util.StsTestCase.assertNotContains;
 import static org.springsource.ide.eclipse.commons.tests.util.StsTestCase.createFile;
 
+import static org.mockito.ArgumentMatchers.*;
+
 import java.net.URI;
 import java.time.Duration;
 import java.util.ArrayList;
@@ -51,6 +53,7 @@ import org.eclipse.swt.graphics.Color;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
+import org.mockito.ArgumentMatchers;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
 import org.springframework.ide.eclipse.beans.ui.live.model.LiveBeansModel;
@@ -618,7 +621,6 @@ public class BootDashDockerTests {
 		String containerId = con.getName();
 		assertEquals(1, listContainersWithId(containerId).size());
 
-//		when(ui().confirmOperation(eq("Deleting Elements"), any())).thenAnswer(answer);
 		DeleteElementsAction<?> delete = actions().getDeleteAppsAction();
 		harness.selection.setElements(con);
 		assertTrue(delete.isEnabled());
@@ -1121,8 +1123,15 @@ public class BootDashDockerTests {
 
 		//if (ui().confirmOperation("Deleting Elements", modifiable.getDeletionConfirmationMessage(workitem.getValue()))) {
 
-// confirm popup was disabled.
-//		when(ui().confirmOperation("Deleting Elements", "Delete webby ?")).thenReturn(true);
+		RunTargetType rtt = model.getRunTarget().getType();
+		Mockito.when(ui().confirmWithToggle(eq(DeleteElementsAction.PREF_SKIP_CONFIRM_DELETE(rtt)),
+				// String title,
+				eq("Deleting Elements"),
+				// String message,
+				anyString(),
+				// String toggleMessage
+				anyString()
+		)).thenReturn(true);
 		deleteAction.run();
 
 		ACondition.waitFor("Everything is deleted", 5_000, () -> {
@@ -1136,6 +1145,7 @@ public class BootDashDockerTests {
 
 //			client().listImages(ListImagesParam.allImages()).stream().
 		});
+//		verifyNoMoreInteractions(ui());
 	}
 
 	@Test
@@ -1162,6 +1172,14 @@ public class BootDashDockerTests {
 		assertTrue(delete.isEnabled());
 		assertTrue(delete.isVisible());
 
+		Mockito.when(ui().confirmWithToggle(eq(DeleteElementsAction.PREF_SKIP_CONFIRM_DELETE(model.getRunTarget().getType())),
+				// String title,
+				eq("Deleting Elements"),
+				// String message,
+				anyString(),
+				// String toggleMessage
+				anyString()
+		)).thenReturn(true);
 		delete.run();
 
 		ACondition.waitFor("Image and container deletion", 10_000, () -> {
@@ -1244,7 +1262,7 @@ public class BootDashDockerTests {
 			Model model = (Model) invocation.getArguments()[0];
 			//model.performOk(); //no clicking ok, so that's like when dialog is 'canceled'.
 			return null;
-		}).when(ui()).selectDockerDaemonDialog(Matchers.any());
+		}).when(ui()).selectDockerDaemonDialog(any());
 
 		createTarget.run();
 		createTarget.waitFor(Duration.ofMillis(2000));

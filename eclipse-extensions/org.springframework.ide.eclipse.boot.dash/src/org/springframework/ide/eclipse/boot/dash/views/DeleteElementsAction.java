@@ -31,6 +31,10 @@ import com.google.common.collect.Multimap;
 
 public class DeleteElementsAction<T extends RunTargetType> extends AbstractBootDashElementsAction {
 
+	public static String PREF_SKIP_CONFIRM_DELETE(RunTargetType rtt) {
+		return "boot.dash."+rtt.getName()+".delete.confirm.skip";
+	}
+
 	private Class<T> targetTypeClass;
 
 	public DeleteElementsAction(BootDashActions actions, Class<T> targetType, MultiSelection<BootDashElement> selection, SimpleDIContext context) {
@@ -62,7 +66,8 @@ public class DeleteElementsAction<T extends RunTargetType> extends AbstractBootD
 			BootDashModel model = workitem.getKey();
 			final DeletionCapabableModel modifiable = (DeletionCapabableModel)model; //cast is safe. Only DeleteCapabableModel are added to sortingBins
 			String confirmationMsg = modifiable.getDeletionConfirmationMessage(workitem.getValue());
-			if (confirmationMsg==null || ui().confirmOperation("Deleting Elements", confirmationMsg)) {
+			RunTargetType runTargetType = model.getRunTarget().getType();
+			if (confirmationMsg==null || ui().confirmWithToggle(PREF_SKIP_CONFIRM_DELETE(runTargetType), "Deleting Elements", confirmationMsg, "Skip this dialog next time")) {
 				Job job = new Job("Deleting Elements from " + model.getRunTarget().getName()) {
 					@Override
 					protected IStatus run(IProgressMonitor monitor) {

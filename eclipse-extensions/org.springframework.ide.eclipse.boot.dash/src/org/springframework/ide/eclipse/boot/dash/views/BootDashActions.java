@@ -31,6 +31,7 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.IAction;
 import org.springframework.ide.eclipse.boot.core.BootActivator;
+import org.springframework.ide.eclipse.boot.core.BootPreferences;
 import org.springframework.ide.eclipse.boot.dash.BootDashActivator;
 import org.springframework.ide.eclipse.boot.dash.api.RunTargetType;
 import org.springframework.ide.eclipse.boot.dash.cloudfoundry.deployment.DeployToRemoteTargetAction;
@@ -50,6 +51,7 @@ import org.springframework.ide.eclipse.boot.dash.model.runtargettypes.LocalRunTa
 import org.springframework.ide.eclipse.boot.dash.model.runtargettypes.RemoteRunTarget;
 import org.springframework.ide.eclipse.boot.dash.model.runtargettypes.RemoteRunTargetType;
 import org.springframework.ide.eclipse.boot.dash.ngrok.NGROKInstallManager;
+import org.springframework.ide.eclipse.boot.dash.prefs.BootDashPrefsPage;
 import org.springframework.ide.eclipse.boot.dash.views.AbstractBootDashAction.Location;
 import org.springframework.ide.eclipse.boot.dash.views.AbstractBootDashElementsAction.Params;
 import org.springsource.ide.eclipse.commons.livexp.core.LiveExpression;
@@ -84,7 +86,8 @@ public class BootDashActions {
 	private ExposeAppAction exposeRunAppAction;
 	private ExposeAppAction exposeDebugAppAction;
 
-	private OpenFilterPreferencesAction openFilterPreferencesAction;
+	private OpenPreferencesAction openFilterPreferencesAction;
+	private OpenPreferencesAction openBootDashPreferencesAction;
 
 	private DuplicateConfigAction duplicateConfigAction;
 
@@ -110,6 +113,7 @@ public class BootDashActions {
 	private EnableRemoteDevtoolsAction enableRemoteDevtoolsAction;
 
 	private RestartDevtoolsClientAction restartDevtoolsClientAction;
+
 
 	public interface Factory {
 		Collection<AbstractBootDashAction> create(BootDashActions actions, BootDashViewModel model, MultiSelection<BootDashElement> selection, LiveExpression<BootDashModel> section, SimpleDIContext context, LiveProcessCommandsExecutor liveProcessCmds);
@@ -314,7 +318,14 @@ public class BootDashActions {
 		debugOnTargetActions = createDeployOnTargetActions(RunState.DEBUGGING);
 		runOnTargetActions = createDeployOnTargetActions(RunState.RUNNING);
 
-		openFilterPreferencesAction = new OpenFilterPreferencesAction(context);
+		openFilterPreferencesAction = new OpenPreferencesAction(context, BootPreferences.BOOT_PREFERENCE_PAGE_ID,
+				"Boot Projects Filters Preferences...",
+				"Open Preferences for Spring Boot projects filters"
+		);
+		openBootDashPreferencesAction = new OpenPreferencesAction(context, BootDashPrefsPage.class.getName(),
+				"Boot Dash UI Preferences...",
+				"Open Preferences for Boot Dash"
+		);
 		liveDataConnectionManagement = new LiveDataConnectionManagementActions(defaultActionParams());
 
 		enableRemoteDevtoolsAction = new EnableRemoteDevtoolsAction(defaultActionParams());
@@ -583,8 +594,12 @@ public class BootDashActions {
 		return getDeployAndStartOnTargetActions(runOnTargetActions);
 	}
 
-	public OpenFilterPreferencesAction getOpenFilterPreferencesAction() {
+	public OpenPreferencesAction getOpenFilterPreferencesAction() {
 		return openFilterPreferencesAction;
+	}
+
+	public IAction getOpenBootDashPreferencesAction() {
+		return this.openBootDashPreferencesAction;
 	}
 
 	private ImmutableList<IAction> getDeployAndStartOnTargetActions(

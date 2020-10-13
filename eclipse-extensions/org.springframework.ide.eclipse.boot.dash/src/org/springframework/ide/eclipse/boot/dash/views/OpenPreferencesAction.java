@@ -12,28 +12,27 @@ package org.springframework.ide.eclipse.boot.dash.views;
 
 import org.eclipse.jface.action.IAction;
 import org.eclipse.ui.dialogs.PreferencesUtil;
-import org.springframework.ide.eclipse.boot.core.BootPreferences;
 import org.springframework.ide.eclipse.boot.dash.di.SimpleDIContext;
-import org.springframework.ide.eclipse.boot.dash.model.UserInteractions;
 
 /**
- * Action opens Preferences dialog at Spring -> Boot page to allow Spring Boot
- * projects filtering
+ * Action opens Preferences dialog on some specific page.
  *
  * @author Alex Boyko
- *
  */
-public class OpenFilterPreferencesAction extends AbstractBootDashAction {
+public class OpenPreferencesAction extends AbstractBootDashAction {
 
-	protected OpenFilterPreferencesAction(SimpleDIContext context) {
+	private final String PREFERENCE_PAGE_ID;
+
+	protected OpenPreferencesAction(SimpleDIContext context, String pageId, String text, String tooltip) {
 		super(context, IAction.AS_PUSH_BUTTON);
-		setText("Boot Projects Filters Preferences...");
-		setToolTipText("Open Preferences for Spring Boot projects filters");
+		this.PREFERENCE_PAGE_ID = pageId;
+		setText(text);
+		setToolTipText(tooltip);
 	}
 
 	@Override
 	public void run() {
-		PreferencesUtil.createPreferenceDialogOn(null, BootPreferences.BOOT_PREFERENCE_PAGE_ID, null, null).open();
+		PreferencesUtil.createPreferenceDialogOn(null, PREFERENCE_PAGE_ID, null, null).open();
 	}
 
 }

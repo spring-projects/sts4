@@ -13,6 +13,7 @@ package org.springframework.ide.eclipse.boot.dash.model.remote;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
@@ -23,6 +24,7 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.springframework.ide.eclipse.boot.dash.api.App;
 import org.springframework.ide.eclipse.boot.dash.api.Deletable;
 import org.springframework.ide.eclipse.boot.dash.api.ProjectDeploymentTarget;
+import org.springframework.ide.eclipse.boot.dash.api.Styleable;
 import org.springframework.ide.eclipse.boot.dash.cloudfoundry.RemoteBootDashModel;
 import org.springframework.ide.eclipse.boot.dash.livexp.DisposingFactory;
 import org.springframework.ide.eclipse.boot.dash.model.BootDashElement;
@@ -144,8 +146,39 @@ public class GenericRemoteBootDashModel<Client, Params> extends RemoteBootDashMo
 	}
 
 	@Override
-	public String getDeletionConfirmationMessage(Collection<BootDashElement> value) {
+	public String getDeletionConfirmationMessage(Collection<BootDashElement> elements) {
+
+		Set<BootDashElement> withChild = new LinkedHashSet<>();
+		for (BootDashElement toDelete : elements) {
+			ImmutableSet<BootDashElement> children = toDelete.getChildren().getValues();
+			for (BootDashElement child : children) {
+				if (!elements.contains(child)) {
+					//child is implicitly deleted. So we should warn/confirm
+					// See: https://www.pivotaltracker.com/story/show/173538290
+					withChild.add(toDelete);
+				}
+			}
+		}
+		if (!withChild.isEmpty()) {
+			StringBuilder confirmMessage = new StringBuilder("These elements have children, which will be deleted implicitly:\n");
+			boolean first = true;
+			for (BootDashElement bde : withChild) {
+				if (!first) {
+					confirmMessage.append(", ");
+				}
+				confirmMessage.append(niceName(bde));
+				first = false;
+			}
+			return confirmMessage.toString();
+		}
 		return null; // no confirmation asked.
+	}
+
+	private String niceName(BootDashElement bde) {
+		if (bde instanceof Styleable) {
+			return ((Styleable) bde).getStyledName(null).getString();
+		}
+		return bde.getName();
 	}
 
 	@Override

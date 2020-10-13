@@ -240,6 +240,13 @@
          id="org.springframework.ide.eclipse.boot.dash.ngrok.NGROKInstallPreferencePage"
          name="ngrok">
    		</page>
+   		
+	 	<page
+         category="org.springframework.ide.eclipse.boot.ui.preferences.BootPreferencePage"
+         class="org.springframework.ide.eclipse.boot.dash.prefs.BootDashPrefsPage"
+         id="org.springframework.ide.eclipse.boot.dash.prefs.BootDashPrefsPage"
+         name="Boot Dash">
+   		</page>
    	</extension>
 
 <extension

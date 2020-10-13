@@ -13,6 +13,7 @@ package org.springframework.ide.eclipse.boot.dash.api;
 import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.jface.resource.ImageDescriptor;
+import org.springframework.ide.eclipse.boot.dash.model.DeletionCapabableModel;
 import org.springframework.ide.eclipse.boot.dash.model.MissingLiveInfoMessages;
 import org.springframework.ide.eclipse.boot.dash.model.Nameable;
 import org.springframework.ide.eclipse.boot.dash.model.RunTarget;
@@ -95,5 +96,12 @@ public interface RunTargetType<Params> extends Nameable {
 
 	default MissingLiveInfoMessages getMissingLiveInfoMessages() {
 		return MissingLiveInfoMessages.DEFAULT;
+	}
+
+	/**
+	 * Must return true if the models of this type are {@link DeletionCapabableModel}s.
+	 */
+	default boolean supportsDeletion() {
+		return true; // true for most models, so we make this the default implementation
 	}
 }
