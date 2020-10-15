@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feature
+      id="org.springframework.ide.eclipse.xterm.feature"
+      label="%featureName"
+      version="4.8.1.qualifier"
+      provider-name="%providerName"
+      plugin="org.springframework.ide.eclipse">
+
+   <description>
+      %description
+   </description>
+
+   <copyright>
+      %copyright
+   </copyright>
+
+   <license url="%licenseUrl">
+      %license
+   </license>
+
+   <requires>
+      <import feature="com.make.chromium.cef.feature"/>
+      <import feature="org.eclipse.wildwebdeveloper.embedder.node.feature" version="0.1.1" match="greaterOrEqual"/>
+   </requires>
+
+   <plugin
+         id="org.springframework.ide.eclipse.xterm"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"/>
+
+   <plugin
+         id="org.springframework.ide.eclipse.xterm.linux.x86_64"
+         os="linux"
+         ws="gtk"
+         arch="x86_64"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         fragment="true"
+         unpack="false"/>
+
+   <plugin
+         id="org.springframework.ide.eclipse.xterm.win32.x86_64"
+         os="win32"
+         ws="win32"
+         arch="x86_64"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         fragment="true"
+         unpack="false"/>
+
+   <plugin
+         id="org.springframework.ide.eclipse.xterm.macosx.x86_64"
+         os="macosx"
+         ws="cocoa"
+         arch="x86_64"
+         download-size="0"
+         install-size="0"
+         version="0.0.0"
+         fragment="true"
+         unpack="false"/>
+
+</feature>

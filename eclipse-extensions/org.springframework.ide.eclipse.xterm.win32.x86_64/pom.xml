@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="https://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="https://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="https://maven.apache.org/POM/4.0.0 https://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.springframework.boot.ide</groupId>
+		<artifactId>org.springframework.boot.ide</artifactId>
+		<version>4.8.1-SNAPSHOT</version>
+		<relativePath>../../eclipse-distribution/pom.xml</relativePath>
+	</parent>
+	<packaging>eclipse-plugin</packaging>
+	<artifactId>org.springframework.ide.eclipse.xterm.win32.x86_64</artifactId>
+
+	<properties>
+		<archive-url>https://dist.springsource.com/release/TOOLS/node-xterm/node-xterm-0.0.2-win32-x86_64.zip</archive-url>
+	</properties>
+
+	<build>
+		<plugins>
+		
+			<plugin>
+				<artifactId>maven-clean-plugin</artifactId>
+				<version>3.1.0</version>
+				<configuration>
+					<filesets>
+						<fileset>
+							<directory>${project.basedir}</directory>
+							<includes>
+								<include>**/lib/**</include>
+							</includes>
+							<followSymlinks>false</followSymlinks>
+						</fileset>
+					</filesets>
+				</configuration>				
+    		</plugin>
+		
+			<plugin>
+				<groupId>com.googlecode.maven-download-plugin</groupId>
+				<artifactId>download-maven-plugin</artifactId>
+				<version>1.6.0</version>
+				<executions>
+					<execution>
+						<id>fetch-node-xterm-linux</id>
+						<phase>generate-resources</phase>
+						<goals>
+							<goal>wget</goal>
+						</goals>
+						<configuration>
+							<url>${archive-url}</url>
+							<unpack>true</unpack>
+							<outputDirectory>${project.basedir}/lib</outputDirectory>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>target-platform-configuration</artifactId>
+				<version>${tycho-version}</version>
+				<configuration>
+					<resolver>p2</resolver>
+					<pomDependencies>ignore</pomDependencies>
+					<environments>
+						<environment>
+							<os>win32</os>
+							<ws>win32</ws>
+							<arch>x86_64</arch>
+						</environment>
+					</environments>
+				</configuration>
+			</plugin>
+			
+		</plugins>
+	</build>
+</project>

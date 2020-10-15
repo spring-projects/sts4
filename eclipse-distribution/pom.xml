@@ -69,7 +69,6 @@
 		<module>../eclipse-extensions/org.springframework.ide.eclipse.xml.namespaces</module>
 		<module>../eclipse-extensions/org.springframework.ide.eclipse.xml.namespaces.feature</module>
 		<module>../eclipse-extensions/org.springsource.ide.eclipse.commons.cloudfoundry.client.v2</module>
-
 	</modules>
 
 	<properties>
@@ -340,6 +339,14 @@
 			</repositories>
 			<modules>
 				<module>org.springframework.boot.ide.product.e417</module>
+				
+				<!-- Xterm modules -->
+				<module>../eclipse-extensions/org.springframework.ide.eclipse.xterm</module>
+				<module>../eclipse-extensions/org.springframework.ide.eclipse.xterm.feature</module>
+				<module>../eclipse-extensions/org.springframework.ide.eclipse.xterm.linux.x86_64</module>
+				<module>../eclipse-extensions/org.springframework.ide.eclipse.xterm.macosx.x86_64</module>
+				<module>../eclipse-extensions/org.springframework.ide.eclipse.xterm.win32.x86_64</module>
+						
 			</modules>
 		</profile>
 
@@ -453,6 +460,13 @@
 			</repositories>
 			<modules>
 				<module>org.springframework.boot.ide.product.e418</module>
+				
+				<!-- Xterm modules -->
+				<module>../eclipse-extensions/org.springframework.ide.eclipse.xterm</module>
+				<module>../eclipse-extensions/org.springframework.ide.eclipse.xterm.feature</module>
+				<module>../eclipse-extensions/org.springframework.ide.eclipse.xterm.linux.x86_64</module>
+				<module>../eclipse-extensions/org.springframework.ide.eclipse.xterm.macosx.x86_64</module>
+				<module>../eclipse-extensions/org.springframework.ide.eclipse.xterm.win32.x86_64</module>
 			</modules>
 		</profile>
 
