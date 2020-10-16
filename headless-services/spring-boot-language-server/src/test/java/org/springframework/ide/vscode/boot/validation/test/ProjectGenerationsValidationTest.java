@@ -10,14 +10,17 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.validation.test;
 
-import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.io.File;
 import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ide.vscode.boot.validation.generations.SpringProjectIndex;
 import org.springframework.ide.vscode.boot.validation.generations.SpringProjectsClient;
 import org.springframework.ide.vscode.boot.validation.generations.json.Generation;
@@ -28,12 +31,63 @@ import org.springframework.ide.vscode.boot.validation.generations.json.Link;
 import org.springframework.ide.vscode.boot.validation.generations.json.SpringProject;
 import org.springframework.ide.vscode.boot.validation.generations.json.SpringProjects;
 import org.springframework.ide.vscode.boot.validation.generations.json.SpringProjectsEmbedded;
+import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
+import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
+import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 
 public class ProjectGenerationsValidationTest {
+	
+	@Autowired private BootLanguageServerHarness harness;
+
+	private ProjectsHarness projects = ProjectsHarness.INSTANCE;
+
 
 	@Before
 	public void setup() throws Exception {
+//		harness.useProject(projects.mavenProject("empty-boot-15-web-app"));
 
+	}
+	
+	@Test
+	public void testVersionParsing() throws Exception {
+		String version = SpringProjectUtil.getMajMinVersion("spring-boot-starter-batch-2.3.4.RELEASE");
+		assertEquals("2.3", version);
+		
+		version = SpringProjectUtil.getMajMinVersion("spring-boot-starter-batch-2.4.0-M4");
+		assertEquals("2.4", version);
+
+		version = SpringProjectUtil.getMajMinVersion("spring-boot-4.4.0-RC2");
+		assertEquals("4.4", version);
+		
+		version = SpringProjectUtil.getMajMinVersion("spring-integration-70.411.RELEASE");
+		assertEquals("70.411", version);
+
+		version = SpringProjectUtil.getMajMinVersion("another-java-");
+		assertNull(version);
+
+		version = SpringProjectUtil.getMajMinVersion("spring-core-5.f.2");
+		assertNull(version);
+
+		version = SpringProjectUtil.getMajMinVersion("springcore.f.b");
+		assertNull(version);
+	}
+	
+	@Test
+	public void testVersionAndLibsFromActualProject() throws Exception {
+		IJavaProject jp = projects.mavenProject("empty-boot-1.3.0-app");
+		assertTrue(SpringProjectUtil.isBootProject(jp));
+		
+		File file = SpringProjectUtil.getLibraryOnClasspath(jp, "spring-boot");
+		assertNotNull(file);
+		assertTrue(file.exists());
+		
+		String version = SpringProjectUtil.getMajMinVersion(jp, "spring-boot");
+		assertEquals("1.3", version);
+		
+		List<File> springLibs = SpringProjectUtil.getLibrariesOnClasspath(jp, "spring");
+		assertNotNull(springLibs);
+		assertTrue(springLibs.size() > 1);
 	}
 
 	@Test
