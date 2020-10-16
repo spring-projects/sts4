@@ -85,8 +85,6 @@ import com.google.common.collect.ImmutableSet;
 
 public class DockerApp extends AbstractDisposable implements App, ChildBearing, Deletable, ProjectRelatable, DesiredInstanceCount, SystemPropertySupport, LogSource, DevtoolsConnectable {
 
-	
-	
 	private static final String DOCKER_IO_LIBRARY = "docker.io/library/";
 	private static final String[] NO_STRINGS = new String[0];
 	private DockerClient client;
@@ -312,9 +310,6 @@ public class DockerApp extends AbstractDisposable implements App, ChildBearing, 
 			ImmutableList.Builder<PortBinding> portBindings = ImmutableList.builder();
 
 			CreateContainerCmd cb = client.createContainerCmd(image);
-//			cb.withHostName(getName());
-//			cb.withNetworkMode("bridge");
-//			cb.withAliases(getName());
 			
 			int appLocalPort = PortFinder.findFreePort();
 			int appContainerPort = 8080;
@@ -392,7 +387,6 @@ public class DockerApp extends AbstractDisposable implements App, ChildBearing, 
 	}
 
 	private static final Pattern BUILT_IMAGE_MESSAGE = Pattern.compile("Successfully built image.*\\'(.*)\\'");
-//	private static final Pattern BUILT_IMAGE_MESSAGE = Pattern.compile("Successfully built image");
 	
 	private String build(AppConsole console) throws Exception {
 		AtomicReference<String> image = new AtomicReference<>();
@@ -400,8 +394,11 @@ public class DockerApp extends AbstractDisposable implements App, ChildBearing, 
 		String[] command = getBuildCommand(directory);
 
 		ProcessBuilder builder = new ProcessBuilder(command).directory(directory);
-		builder.environment().put("JAVA_HOME", getJavaHome());
-		
+		String jhome = getJavaHome();
+		builder.environment().put("JAVA_HOME", jhome);
+		console.write("build.env.JAVA_HOME="+jhome, LogType.STDOUT);
+		console.write("build.directory="+directory, LogType.STDOUT);
+		console.write("build.command="+CommandUtil.escape(command), LogType.STDOUT);
 		Process process = builder.start();
 		LineBasedStreamGobler outputGobler = new LineBasedStreamGobler(process.getInputStream(), (line) -> {
 			System.out.println(line);
