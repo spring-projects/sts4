@@ -338,8 +338,6 @@
 				</repository>
 			</repositories>
 			<modules>
-				<module>org.springframework.boot.ide.product.e417</module>
-				
 				<!-- Xterm modules -->
 				<module>../eclipse-extensions/org.springframework.ide.eclipse.xterm</module>
 				<module>../eclipse-extensions/org.springframework.ide.eclipse.xterm.feature</module>
@@ -347,6 +345,7 @@
 				<module>../eclipse-extensions/org.springframework.ide.eclipse.xterm.macosx.x86_64</module>
 				<module>../eclipse-extensions/org.springframework.ide.eclipse.xterm.win32.x86_64</module>
 						
+				<module>org.springframework.boot.ide.product.e417</module>				
 			</modules>
 		</profile>
 
@@ -459,14 +458,14 @@
 				</repository>
 			</repositories>
 			<modules>
-				<module>org.springframework.boot.ide.product.e418</module>
-				
 				<!-- Xterm modules -->
 				<module>../eclipse-extensions/org.springframework.ide.eclipse.xterm</module>
 				<module>../eclipse-extensions/org.springframework.ide.eclipse.xterm.feature</module>
 				<module>../eclipse-extensions/org.springframework.ide.eclipse.xterm.linux.x86_64</module>
 				<module>../eclipse-extensions/org.springframework.ide.eclipse.xterm.macosx.x86_64</module>
 				<module>../eclipse-extensions/org.springframework.ide.eclipse.xterm.win32.x86_64</module>
+				
+				<module>org.springframework.boot.ide.product.e418</module>				
 			</modules>
 		</profile>
 
