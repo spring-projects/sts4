@@ -20,8 +20,13 @@ import java.util.List;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.ide.vscode.boot.validation.generations.SpringProjectIndex;
+import org.springframework.context.annotation.Import;
+import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
+import org.springframework.ide.vscode.boot.bootiful.HoverTestConf;
+import org.springframework.ide.vscode.boot.validation.generations.SpringProjectsCache;
+import org.springframework.ide.vscode.boot.validation.generations.SpringProjectsValidations;
 import org.springframework.ide.vscode.boot.validation.generations.SpringProjectsClient;
 import org.springframework.ide.vscode.boot.validation.generations.json.Generation;
 import org.springframework.ide.vscode.boot.validation.generations.json.Generations;
@@ -35,7 +40,11 @@ import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
+import org.springframework.test.context.junit4.SpringRunner;
 
+@RunWith(SpringRunner.class)
+@BootLanguageServerTest
+@Import(HoverTestConf.class)
 public class ProjectGenerationsValidationTest {
 	
 	@Autowired private BootLanguageServerHarness harness;
@@ -45,12 +54,12 @@ public class ProjectGenerationsValidationTest {
 
 	@Before
 	public void setup() throws Exception {
-//		harness.useProject(projects.mavenProject("empty-boot-15-web-app"));
-
+		harness.useProject(projects.mavenProject("empty-boot-1.3.0-app"));
+		harness.intialize(null);
 	}
 	
 	@Test
-	public void testVersionParsing() throws Exception {
+	public void testMajMinVersionParsing() throws Exception {
 		String version = SpringProjectUtil.getMajMinVersion("spring-boot-starter-batch-2.3.4.RELEASE");
 		assertEquals("2.3", version);
 		
@@ -60,8 +69,8 @@ public class ProjectGenerationsValidationTest {
 		version = SpringProjectUtil.getMajMinVersion("spring-boot-4.4.0-RC2");
 		assertEquals("4.4", version);
 		
-		version = SpringProjectUtil.getMajMinVersion("spring-integration-70.411.RELEASE");
-		assertEquals("70.411", version);
+		version = SpringProjectUtil.getMajMinVersion("spring-integration-70.811.0.RELEASE");
+		assertEquals("70.811", version);
 
 		version = SpringProjectUtil.getMajMinVersion("another-java-");
 		assertNull(version);
@@ -74,72 +83,94 @@ public class ProjectGenerationsValidationTest {
 	}
 	
 	@Test
+	public void testVersionParsing() throws Exception {
+		String version = SpringProjectUtil.getVersion("spring-boot-starter-batch-2.3.0.RELEASE");
+		assertEquals("2.3.0", version);
+		
+		version = SpringProjectUtil.getVersion("spring-boot-starter-batch-2.4.0-M4");
+		assertEquals("2.4.0-M4", version);
+
+		version = SpringProjectUtil.getVersion("spring-boot-4.4.0-RC2");
+		assertEquals("4.4.0-RC2", version);
+		
+		version = SpringProjectUtil.getVersion("spring-integration-70.811.0.RELEASE");
+		assertEquals("70.811.0", version);
+
+		version = SpringProjectUtil.getVersion("another-java-");
+		assertNull(version);
+
+		version = SpringProjectUtil.getVersion("spring-core-5.f.2");
+		assertNull(version);
+
+		version = SpringProjectUtil.getVersion("springcore.f.b");
+		assertNull(version);
+	}
+	
+	@Test
+	public void testProjectSlugParsing() throws Exception {
+		String slug = SpringProjectUtil.getProjectSlug("spring-boot-starter-batch-2.3.4.RELEASE");
+		assertEquals("spring-boot-starter-batch", slug);
+		
+		slug = SpringProjectUtil.getProjectSlug("spring-2.4.0-M4");
+		assertEquals("spring", slug);
+
+		slug = SpringProjectUtil.getProjectSlug("-4.4.0-RC2");
+		assertNull(slug);
+	}
+	
+	@Test
 	public void testVersionAndLibsFromActualProject() throws Exception {
 		IJavaProject jp = projects.mavenProject("empty-boot-1.3.0-app");
 		assertTrue(SpringProjectUtil.isBootProject(jp));
 		
-		File file = SpringProjectUtil.getLibraryOnClasspath(jp, "spring-boot");
-		assertNotNull(file);
-		assertTrue(file.exists());
-		
-		String version = SpringProjectUtil.getMajMinVersion(jp, "spring-boot");
-		assertEquals("1.3", version);
-		
 		List<File> springLibs = SpringProjectUtil.getLibrariesOnClasspath(jp, "spring");
 		assertNotNull(springLibs);
 		assertTrue(springLibs.size() > 1);
+		
+		File file = getLib(springLibs, "spring-boot");
+		assertNotNull(file);
+		assertTrue(file.exists());
+		
+		String version = SpringProjectUtil.getMajMinVersion(file.getName());
+		assertEquals("1.3", version);
+		
+		String slug = SpringProjectUtil.getProjectSlug(file.getName());
+		assertEquals("spring-boot", slug);
 	}
 
 	@Test
 	public void testProjectsInfoFromSpringIo() throws Exception {
 		String url = "https://spring.io/api/projects";
 		SpringProjectsClient client = new SpringProjectsClient(url);
-		SpringProjectIndex projectIndex = new SpringProjectIndex(client);
+		SpringProjectsCache cache = new SpringProjectsCache(client, harness.getServer());
 
-		SpringProjects springProjects = projectIndex.getProjects();
-		assertNotNull(springProjects);
-		assertTrue(!springProjects.getProjects().isEmpty());
-
-		SpringProject project = projectIndex.getProject("spring-boot");
+		SpringProject project = cache.getProject("spring-boot");
 		assertNotNull(project);
 		assertEquals("Spring Boot", project.getName());
 		assertEquals("spring-boot", project.getSlug());
-
-		project = projectIndex.getProject("spring-integration");
-		assertNotNull(project);
-		assertEquals("Spring Integration", project.getName());
-		assertEquals("spring-integration", project.getSlug());
-	}
-
-	@Test
-	public void testGenerationsFromSpringIo() throws Exception {
-		String url = "https://spring.io/api/projects";
-		SpringProjectsClient client = new SpringProjectsClient(url);
-		SpringProjectIndex projectIndex = new SpringProjectIndex(client);
-
-		SpringProject project = projectIndex.getProject("spring-boot");
-		assertNotNull(project);
 		Link generationsUrl = project.get_links().getGenerations();
 		assertNotNull(generationsUrl);
 		assertEquals("https://spring.io/api/projects/spring-boot/generations", generationsUrl.getHref());
 
-		Generations generations = projectIndex.getGenerations(project);
-
-		// NOTE: at the moment Generations are not available from spring.io API. Enable
-		// when they are
-//		assertNotNull(generations);
+		project = cache.getProject("spring-integration");
+		assertNotNull(project);
+		assertEquals("Spring Integration", project.getName());
+		assertEquals("spring-integration", project.getSlug());
+		generationsUrl = project.get_links().getGenerations();
+		assertNotNull(generationsUrl);
+		assertEquals("https://spring.io/api/projects/spring-integration/generations", generationsUrl.getHref());
 	}
 
 	@Test
 	public void testGenerationsFromSample() throws Exception {
 		SpringProjectsClient client = getMockClient();
 
-		SpringProjectIndex projectIndex = new SpringProjectIndex(client);
+		SpringProjectsCache cache = new SpringProjectsCache(client, harness.getServer());
 
-		SpringProject project = projectIndex.getProject("spring-boot");
+		SpringProject project = cache.getProject("spring-boot");
 		assertNotNull(project);
 
-		Generations generations = projectIndex.getGenerations(project);
+		Generations generations = cache.getGenerations(project);
 		assertNotNull(generations);
 
 		List<Generation> genList = generations.getGenerations();
@@ -148,10 +179,25 @@ public class ProjectGenerationsValidationTest {
 		assertTrue(genList.size() > 0);
 
 		Generation generation = genList.get(0);
-		assertEquals("2.1.x", generation.getName());
+		assertEquals("1.3.x", generation.getName());
 		assertEquals("2019-01-01", generation.getInitialReleaseDate());
 		assertEquals("2020-01-01", generation.getOssSupportEndDate());
 		assertEquals("2021-01-01", generation.getCommercialSupportEndDate());
+	}
+	
+	@Test
+	public void testWarningsFromSample() throws Exception {
+		
+		SpringProjectsClient client = getMockClient();
+		IJavaProject jp = projects.mavenProject("empty-boot-1.3.0-app");
+
+		SpringProjectsCache cache = new SpringProjectsCache(client, harness.getServer());
+		SpringProjectsValidations validation = new SpringProjectsValidations(cache);
+		List<String> messages = validation.getVersionWarnings(jp);
+		assertTrue(messages != null && messages.size()  > 0);
+		String msg = messages.get(0);
+		// Check that the message mentions the boot version of the project and the OSS support end date
+		assertTrue(msg.contains("1.3.2") && msg.contains("OSS") &&  msg.contains("2020-01-01"));
 	}
 
 	/*
@@ -192,6 +238,17 @@ public class ProjectGenerationsValidationTest {
 		if (json != null) {
 			JsonHalParser parser = new JsonHalParser();
 			return parser.getEmbedded(json, GenerationsEmbedded.class);
+		}
+		return null;
+	}
+	
+	private File getLib(List<File> springLibs, String slug) {
+		for (File file : springLibs) {
+			String name = file.getName();
+			String libSlug = SpringProjectUtil.getProjectSlug(name);
+			if (slug.equals(libSlug)) {
+				return file;
+			}
 		}
 		return null;
 	}

@@ -3,11 +3,11 @@ package org.springframework.ide.vscode.boot.validation.test;
 public class SpringProjectsTestSamples {
 	
 	public static final String SPRING_BOOT_PROJECT_GENERATIONS = "{\n" + "  \"_embedded\" : {\n"
-			+ "    \"generations\" : [ {\n" + "      \"name\" : \"2.1.x\",\n"
+			+ "    \"generations\" : [ {\n" + "      \"name\" : \"1.3.x\",\n"
 			+ "      \"initialReleaseDate\" : \"2019-01-01\",\n" + "      \"ossSupportEndDate\" : \"2020-01-01\",\n"
 			+ "      \"commercialSupportEndDate\" : \"2021-01-01\",\n" + "      \"_links\" : {\n"
 			+ "        \"self\" : {\n"
-			+ "          \"href\" : \"https://spring.io/api/projects/spring-boot/generations/2.1.x\"\n" + "        },\n"
+			+ "          \"href\" : \"https://spring.io/api/projects/spring-boot/generations/1.3.x\"\n" + "        },\n"
 			+ "        \"project\" : {\n" + "          \"href\" : \"https://spring.io/api/projects/spring-boot\"\n"
 			+ "        }\n" + "      }\n" + "    }, {\n" + "      \"name\" : \"2.2.x\",\n"
 			+ "      \"initialReleaseDate\" : \"2020-01-01\",\n" + "      \"ossSupportEndDate\" : \"2021-01-01\",\n"
