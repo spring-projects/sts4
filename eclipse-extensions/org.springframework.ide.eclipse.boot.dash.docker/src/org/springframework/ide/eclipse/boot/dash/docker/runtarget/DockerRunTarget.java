@@ -27,9 +27,11 @@ import java.util.UUID;
 import org.eclipse.core.resources.IProject;
 import org.springframework.ide.eclipse.boot.core.BootPropertyTester;
 import org.springframework.ide.eclipse.boot.dash.api.App;
+import org.springframework.ide.eclipse.boot.dash.api.AppConsole;
 import org.springframework.ide.eclipse.boot.dash.api.DebuggableTarget;
 import org.springframework.ide.eclipse.boot.dash.api.ProjectDeploymentTarget;
 import org.springframework.ide.eclipse.boot.dash.cloudfoundry.RemoteBootDashModel;
+import org.springframework.ide.eclipse.boot.dash.console.LogType;
 import org.springframework.ide.eclipse.boot.dash.devtools.DevtoolsUtil;
 import org.springframework.ide.eclipse.boot.dash.di.SimpleDIContext;
 import org.springframework.ide.eclipse.boot.dash.docker.ui.DefaultDockerUserInteractions;
@@ -182,14 +184,16 @@ implements RemoteRunTarget<DockerClient, DockerTargetParams>, ProjectDeploymentT
 		return true;
 	}
 
-	public synchronized Network ensureNetwork() {
+	public synchronized Network ensureNetwork(AppConsole console) {
 		DockerClient client = this.client.getValue();
 		if (client!=null) {
 			Network network = getNetwork(client, DOCKER_NETWORK_NAME);
 			if (network!=null) {
 				return network;
 			}
-			client.createNetworkCmd().withName(DOCKER_NETWORK_NAME).withDriver("bridge").exec();
+			console.logCommand("docker network create -d bridge "+DOCKER_NETWORK_NAME);
+			CreateNetworkResponse r = client.createNetworkCmd().withName(DOCKER_NETWORK_NAME).withDriver("bridge").exec();
+			console.logCommandResult(r.getId());
 			return getNetwork(client, DOCKER_NETWORK_NAME);
 		}
 		return null;

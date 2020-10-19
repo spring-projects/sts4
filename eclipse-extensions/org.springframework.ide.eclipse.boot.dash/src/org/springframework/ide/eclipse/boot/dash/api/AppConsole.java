@@ -56,4 +56,23 @@ public interface AppConsole {
 
 	void show();
 
+	default void logCommand(String string) {
+		try {
+			String[] pieces = string.split("\\n");
+			for (int i = 0; i < pieces.length; i++) {
+				write((i==0?"$ ":"> ")+pieces[i], LogType.STDOUT);
+			}
+		} catch (Exception e) {
+			Log.log(e);
+		}
+	}
+
+	default void logCommandResult(String string) {
+		try {
+			write(string, LogType.STDOUT);
+		} catch (Exception e) {
+			Log.log(e);
+		}
+	}
+
 }

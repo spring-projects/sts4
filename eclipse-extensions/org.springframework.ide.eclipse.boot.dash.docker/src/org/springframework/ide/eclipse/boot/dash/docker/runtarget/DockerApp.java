@@ -291,7 +291,7 @@ public class DockerApp extends AbstractDisposable implements App, ChildBearing, 
 		if (client==null) {
 			console.write("Cannot start container... Docker client is disconnected!", LogType.STDERROR);
 		} else {
-			Network network = target.ensureNetwork();
+			Network network = target.ensureNetwork(console);
 			console.write("Running container with '"+image+"'", LogType.STDOUT);
 			JmxSupport jmx = new JmxSupport();
 			String jmxUrl = jmx.getJmxUrl();
@@ -305,7 +305,6 @@ public class DockerApp extends AbstractDisposable implements App, ChildBearing, 
 					.put(APP_NAME, getName())
 					.put(BUILD_ID, desiredBuildId)
 					.put(SYSTEM_PROPS, sysprops);
-			
 			ImmutableSet.Builder<ExposedPort> exposedPorts = ImmutableSet.builder();
 			ImmutableList.Builder<PortBinding> portBindings = ImmutableList.builder();
 
@@ -371,6 +370,17 @@ public class DockerApp extends AbstractDisposable implements App, ChildBearing, 
 			String networkAlias = getName();
 			cb.withAliases(networkAlias);
 			cb.withLabels(labels.build());
+
+			//See: https://www.pivotaltracker.com/story/show/175202648
+			FakeDockerRunCommand fakeCmd = new FakeDockerRunCommand()
+					.withImage(image)
+					.withLabels(cb.getLabels())
+					.withNetwork(network)
+					.withNetworkAliases(networkAlias)
+					.withPortBindings(cb.getHostConfig().getPortBindings())
+					.withEnv(cb.getEnv());
+			console.logCommand(fakeCmd.toString());
+
 			CreateContainerResponse c = cb.exec();
 			console.write("Container created: "+c.getId(), LogType.STDOUT);
 			console.write("Starting container: "+c.getId(), LogType.STDOUT);
@@ -382,6 +392,7 @@ public class DockerApp extends AbstractDisposable implements App, ChildBearing, 
 			//appContext.showConsole(c.id());
 			
 			client.startContainerCmd(c.getId()).exec();
+			console.write("Streaming container output ...", LogType.STDOUT);
 			containerLogConnection.setValue(DockerContainer.connectLog(target, c.getId(), console, true));
 		}
 	}
