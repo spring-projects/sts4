@@ -104,10 +104,13 @@ import org.eclipse.lsp4j.WorkspaceEditCapabilities;
 import org.eclipse.lsp4j.WorkspaceSymbolParams;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.LanguageClientAware;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.util.LanguageServerTestListener;
 import org.springframework.ide.vscode.commons.languageserver.util.Settings;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
+import org.springframework.ide.vscode.commons.languageserver.util.SimpleWorkspaceService;
 import org.springframework.ide.vscode.commons.protocol.CursorMovement;
 import org.springframework.ide.vscode.commons.protocol.HighlightParams;
 import org.springframework.ide.vscode.commons.protocol.ProgressParams;
@@ -138,6 +141,8 @@ import reactor.core.publisher.Mono;
 public class LanguageServerHarness {
 
 	//Warning this 'harness' is incomplete. Growing it as needed.
+	
+	private static Logger log = LoggerFactory.getLogger(LanguageServerHarness.class);
 
 	private Random random = new Random();
 
@@ -161,7 +166,7 @@ public class LanguageServerHarness {
 		this.server = server;
 	}
 
-	public static final Duration HIGHLIGHTS_TIMEOUT = Duration.ofMillis(10_000L); //Why so long?
+	public static final Duration HIGHLIGHTS_TIMEOUT = Duration.ofMillis(5_000L);
 
 //	public static LanguageServerHarness<SimpleLanguageServer> create(String extensionId, LanguageServerInitializer initializer) throws Exception {
 //		Callable<SimpleLanguageServer> factory = () -> {
@@ -224,6 +229,7 @@ public class LanguageServerHarness {
 	}
 
 	private void receiveHighlights(HighlightParams highlights) {
+		log.info("highlights received: {}", highlights);
 		Collection<CompletableFuture<HighlightParams>>requestors = ImmutableList.of();
 		synchronized (this) {
 			String uri = highlights.getDoc().getUri();
@@ -515,38 +521,10 @@ public class LanguageServerHarness {
 	}
 
 	public synchronized Future<HighlightParams> getHighlightsFuture(TextDocumentInfo doc) {
+		log.info("highlights requested");
 		CompletableFuture<HighlightParams> future = new CompletableFuture<HighlightParams>();
 		highlights.put(doc.getUri(), future);
 		return future;
-	}
-
-	public HighlightParams getHighlights(TextDocumentInfo doc) throws Exception {
-		return getHighlights(true, doc);
-	}
-
-	/**
-	 * Set expectServerHighlights to false if NO highlights are expected from the server (for example, test cases
-	 * that test that no highlights are received from the server because there are no running apps).
-	 * @param expectServerHighlights false if NOT expecting any highlights from the server
-	 * @param doc
-	 * @return highlights, if they are expected, or null if they are not expected.
-	 * @throws Exception
-	 */
-	public HighlightParams getHighlights(boolean expectServerHighlights, TextDocumentInfo doc) throws Exception {
-		try {
-			return getHighlightsFuture(doc).get(HIGHLIGHTS_TIMEOUT.toMillis(), TimeUnit.MILLISECONDS);
-		} catch (TimeoutException e) {
-			// highlight requestor will timeout if the server does not send any highlights. This
-			// is not always an error. For example, if there are no initial running apps, the server will
-			// NOT send highlights (see PT 156688501), so in this case we expect to time out as part of
-			// the expected behaviour
-			if (!expectServerHighlights) {
-				return null;
-			}
-			else {
-				throw e;
-			}
-		}
 	}
 
 	public static Condition<Diagnostic> isDiagnosticWithSeverity(DiagnosticSeverity severity) {

@@ -11,9 +11,9 @@
 package org.springframework.ide.vscode.languageserver.testharness;
 
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness.HIGHLIGHTS_TIMEOUT;
 import static org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness.getDocString;
 import static org.springframework.ide.vscode.languageserver.testharness.TestAsserts.assertContains;
 import static org.springframework.ide.vscode.languageserver.testharness.TestAsserts.assertDoesNotContain;
@@ -27,6 +27,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -137,6 +139,7 @@ public class Editor {
 	private int selectionStart;
 	private Set<String> ignoredTypes;
 	private LanguageId languageId;
+	private Future<HighlightParams> highlightsFuture;
 
 	public Editor(LanguageServerHarness harness, String contents, LanguageId languageId) throws Exception {
 		this(harness, contents, languageId, null);
@@ -150,6 +153,7 @@ public class Editor {
 		this.selectionStart = state.selectionStart;
 		this.selectionEnd = state.selectionEnd;
 		this.ignoredTypes = new HashSet<>();
+		this.highlightsFuture = harness.getHighlightsFuture(doc);
 	}
 	public Editor(LanguageServerHarness harness, TextDocumentInfo doc, String contents, LanguageId languageId) throws Exception {
 		this.harness = harness;
@@ -159,6 +163,7 @@ public class Editor {
 		this.selectionStart = state.selectionStart;
 		this.selectionEnd = state.selectionEnd;
 		this.ignoredTypes = new HashSet<>();
+		this.highlightsFuture = harness.getHighlightsFuture(doc);
 	}
 
 	/**
@@ -215,7 +220,7 @@ public class Editor {
 
 
 	public List<Range> assertHighlights(String... expectedHighlights) throws Exception {
-		HighlightParams highlights = harness.getHighlights(doc);
+		HighlightParams highlights = this.highlightsFuture.get(HIGHLIGHTS_TIMEOUT.toMillis(), TimeUnit.MILLISECONDS);
 		List<Range> ranges = highlights != null ? highlights.getCodeLenses().stream().map(CodeLens::getRange).collect(Collectors.toList()) : ImmutableList.of();
 		Collections.sort(ranges, RANGE_COMPARATOR);
 		List<String> actualHighlights = ranges.stream()
@@ -223,11 +228,6 @@ public class Editor {
 			.collect(Collectors.toList());
 		assertEquals(ImmutableList.copyOf(expectedHighlights), actualHighlights);
 		return ranges;
-	}
-
-	public void assertNoHighlights() throws Exception {
-		HighlightParams highlights = harness.getHighlights(false, doc);
-		assertNull(highlights);
 	}
 
 	/**

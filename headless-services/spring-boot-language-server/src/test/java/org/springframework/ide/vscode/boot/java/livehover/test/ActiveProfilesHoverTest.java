@@ -110,8 +110,8 @@ public class ActiveProfilesHoverTest {
 				"\n" +
 				"}"
 		);
+		editor.assertHighlights(/*NONE*/);
 		editor.assertHoverContains("@Profile", "Consider adding `spring-boot-actuator` as a dependency");
-		editor.assertNoHighlights();
 	}
 
 	@Test
@@ -162,7 +162,7 @@ public class ActiveProfilesHoverTest {
 				"\n" +
 				"}"
 		);
+		editor.assertHighlights(/*NONE*/);
 		editor.assertNoHover("@Profile");
-		editor.assertNoHighlights();
 	}
 }
