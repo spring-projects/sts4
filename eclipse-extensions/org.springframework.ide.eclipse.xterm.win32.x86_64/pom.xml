@@ -13,7 +13,7 @@
 	<artifactId>org.springframework.ide.eclipse.xterm.win32.x86_64</artifactId>
 
 	<properties>
-		<archive-url>https://dist.springsource.com/release/TOOLS/node-xterm/node-xterm-0.0.2-win32-x86_64.zip</archive-url>
+		<archive-file>node-xterm-0.0.2-win32-x86_64.zip</archive-file>
 	</properties>
 
 	<build>
@@ -35,22 +35,50 @@
 				</configuration>				
     		</plugin>
 		
+			<!-- download-maven-plugin fails to download archive files for mac and linux some times. Use
+			 - wagon-maven-plugin for downloading
+			 - maven-antrun-plugin for unpacking and deleting the archive
+			-->
 			<plugin>
-				<groupId>com.googlecode.maven-download-plugin</groupId>
-				<artifactId>download-maven-plugin</artifactId>
-				<version>1.6.0</version>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>wagon-maven-plugin</artifactId>
+				<version>2.0.0</version>
 				<executions>
 					<execution>
-						<id>fetch-node-xterm-linux</id>
+						<id>download-nodejs-app</id>
 						<phase>generate-resources</phase>
 						<goals>
-							<goal>wget</goal>
+							<goal>download-single</goal>
 						</goals>
 						<configuration>
-							<url>${archive-url}</url>
-							<unpack>true</unpack>
-							<outputDirectory>${project.basedir}/lib</outputDirectory>
+							<serverId>s3</serverId>
+							<url>https://dist.springsource.com/release/TOOLS/node-xterm</url>
+							<fromFile>${archive-file}</fromFile>
+							<toFile>${project.basedir}/lib/node-xterm.zip</toFile>
 						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<executions>
+					<execution>
+						<phase>process-resources</phase>
+						<configuration>
+							<tasks>
+								<echo message="unzipping node-xterm.zip" />
+								<unzip src="${project.basedir}/lib/node-xterm.zip"
+									dest="lib/" />
+								<delete>
+									<fileset dir="${project.basedir}/lib"
+										includes="node-xterm.zip" />
+								</delete>
+							</tasks>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
 					</execution>
 				</executions>
 			</plugin>
