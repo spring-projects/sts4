@@ -8,4 +8,4 @@ Fragment-Host: org.springframework.ide.eclipse.xterm;bundle-version="4.8.1"
 Automatic-Module-Name: org.springframework.ide.eclipse.xterm.macosx.x86.64
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Eclipse-PlatformFilter: (& (osgi.ws=cocoa) (osgi.os=macosx) (|(osgi.arch=x86_64)(osgi.arch=ppc)))
-
+Eclipse-BundleShape: dir
