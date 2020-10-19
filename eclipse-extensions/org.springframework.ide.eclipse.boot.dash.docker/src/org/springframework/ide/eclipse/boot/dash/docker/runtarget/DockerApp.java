@@ -259,7 +259,6 @@ public class DockerApp extends AbstractDisposable implements App, ChildBearing, 
 		
 		refreshTracker.run("Starting container '" + image + "'" +  + BootDashLabels.ELLIPSIS, () -> {
 			run(console, image, deployment);
-			console.write("DONE Deploying Docker app " + getName(), LogType.STDOUT);
 		});
 	}
 
@@ -409,7 +408,7 @@ public class DockerApp extends AbstractDisposable implements App, ChildBearing, 
 		builder.environment().put("JAVA_HOME", jhome);
 		console.write("build.env.JAVA_HOME="+jhome, LogType.STDOUT);
 		console.write("build.directory="+directory, LogType.STDOUT);
-		console.write("build.command="+CommandUtil.escape(command), LogType.STDOUT);
+		console.logCommand(CommandUtil.escape(command));
 		Process process = builder.start();
 		LineBasedStreamGobler outputGobler = new LineBasedStreamGobler(process.getInputStream(), (line) -> {
 			System.out.println(line);
