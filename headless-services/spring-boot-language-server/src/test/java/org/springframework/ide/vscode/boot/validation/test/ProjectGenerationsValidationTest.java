@@ -63,7 +63,7 @@ public class ProjectGenerationsValidationTest {
 		String version = SpringProjectUtil.getMajMinVersion("spring-boot-starter-batch-2.3.4.RELEASE");
 		assertEquals("2.3", version);
 		
-		version = SpringProjectUtil.getMajMinVersion("spring-boot-starter-batch-2.4.0-M4");
+		version = SpringProjectUtil.getMajMinVersion("spring-batch-core-2.4.0-M4");
 		assertEquals("2.4", version);
 
 		version = SpringProjectUtil.getMajMinVersion("spring-boot-4.4.0-RC2");
@@ -87,7 +87,7 @@ public class ProjectGenerationsValidationTest {
 		String version = SpringProjectUtil.getVersion("spring-boot-starter-batch-2.3.0.RELEASE");
 		assertEquals("2.3.0", version);
 		
-		version = SpringProjectUtil.getVersion("spring-boot-starter-batch-2.4.0-M4");
+		version = SpringProjectUtil.getVersion("spring-batch-core-2.4.0-M4");
 		assertEquals("2.4.0-M4", version);
 
 		version = SpringProjectUtil.getVersion("spring-boot-4.4.0-RC2");
@@ -108,8 +108,8 @@ public class ProjectGenerationsValidationTest {
 	
 	@Test
 	public void testProjectSlugParsing() throws Exception {
-		String slug = SpringProjectUtil.getProjectSlug("spring-boot-starter-batch-2.3.4.RELEASE");
-		assertEquals("spring-boot-starter-batch", slug);
+		String slug = SpringProjectUtil.getProjectSlug("spring-batch-core-2.4.0-M4");
+		assertEquals("spring-batch-core", slug);
 		
 		slug = SpringProjectUtil.getProjectSlug("spring-2.4.0-M4");
 		assertEquals("spring", slug);
