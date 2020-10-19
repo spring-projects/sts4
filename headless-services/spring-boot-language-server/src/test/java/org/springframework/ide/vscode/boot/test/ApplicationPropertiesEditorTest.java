@@ -583,6 +583,20 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 				//no other problems
 		);
 	}
+
+	@Test public void test_PT_175147973_tolerate_extra_dot_before_lbrack() throws Exception {
+		//See: https://www.pivotaltracker.com/story/show/175147973
+		IJavaProject p = createPredefinedMavenProject("map-of-pojo");
+		useProject(p);
+		Editor editor = newEditor(
+				"my.map.[foo.bar].age=foo-age\n" +
+				"my.map[foo.bar].age=bar-age\n"
+		);
+		editor.assertProblems(
+				"foo-age|'int'",
+				"bar-age|'int'"
+		);
+	}
 	
 	@Test public void test_GH_534() throws Exception {
 		IJavaProject p = createPredefinedMavenProject("map-of-pojo");

@@ -78,6 +78,9 @@ public class PropertyNavigator {
 		if (type!=null) {
 			if (offset<region.getEnd()) {
 				char navOp = getChar(offset);
+				if (navOp=='.' && getChar(offset+1)=='[') {
+					navOp = '['; // just skip the redundant '.'. See:  https://www.pivotaltracker.com/story/show/175147973
+				}
 				if (navOp=='.') {
 					if (typeUtil.isDotable(type)) {
 						return dotNavigate(offset, type);
