@@ -10,12 +10,10 @@
  *******************************************************************************/
 package org.springframework.ide.eclipse.editor.support.yaml.path;
 
-import java.util.Map;
 import java.util.stream.Stream;
 
-import org.springframework.ide.eclipse.boot.util.Log;
-import org.springframework.ide.eclipse.editor.support.yaml.ast.YamlFileAST;
 import org.springframework.ide.eclipse.editor.support.yaml.structure.YamlStructureParser.SNode;
+import org.springsource.ide.eclipse.commons.livexp.util.Log;
 
 /**
  * Different types of things (e.g. {@link ApplicationYamlAssistContext}, {@link SNode} ...) can
