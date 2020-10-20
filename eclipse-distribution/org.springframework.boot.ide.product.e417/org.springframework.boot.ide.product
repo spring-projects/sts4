@@ -116,7 +116,7 @@
 
       <feature id="org.eclipse.justj.openjdk.hotspot.jre.full" installMode="root"/>
       
-      <feature id="com.make.chromium.cef.feature" installMode="root"/>
+<!--      <feature id="com.make.chromium.cef.feature" installMode="root"/> -->
 </features>
 
    <configurations>
