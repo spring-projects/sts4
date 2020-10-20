@@ -64,13 +64,6 @@
           unpack="false"/>
 
     <plugin
-          id="org.springframework.ide.eclipse.editor.support"
-          download-size="0"
-          install-size="0"
-          version="0.0.0"
-          unpack="false"/>
-
-    <plugin
           id="org.springframework.ide.eclipse.imports"
           download-size="0"
           install-size="0"

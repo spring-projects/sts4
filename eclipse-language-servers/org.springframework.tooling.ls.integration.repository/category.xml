@@ -51,6 +51,10 @@
 	<bundle id="org.springframework.tooling.jdt.ls.commons.source"/>
 	<bundle id="org.springframework.tooling.ls.eclipse.gotosymbol"/>
 	<bundle id="org.springframework.tooling.ls.eclipse.gotosymbol.source"/>
+	
+    <bundle id="org.springframework.ide.eclipse.editor.support"/>
+    <bundle id="org.springframework.ide.eclipse.editor.support.source"/>
+	
 	<bundle id="org.springsource.ide.eclipse.commons.boot.ls"/>
 	<bundle id="org.springsource.ide.eclipse.commons.boot.ls.source"/>
 	<bundle id="org.springsource.ide.eclipse.commons.core"/>

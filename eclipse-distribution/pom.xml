@@ -63,7 +63,6 @@
 		<module>../eclipse-extensions/org.springframework.ide.eclipse.boot.launch.test</module>
 		<module>../eclipse-extensions/org.springframework.ide.eclipse.boot.refactoring.test</module>
 		<module>../eclipse-extensions/org.springframework.ide.eclipse.docker.client</module>
-		<module>../eclipse-extensions/org.springframework.ide.eclipse.editor.support</module>
 		<module>../eclipse-extensions/org.springframework.ide.eclipse.maven.pom</module>
 		<module>../eclipse-extensions/org.springframework.ide.eclipse.maven.pom.tests</module>
 		<module>../eclipse-extensions/org.springframework.ide.eclipse.xml.namespaces</module>
