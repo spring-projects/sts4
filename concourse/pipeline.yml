@@ -25,7 +25,7 @@ resources:
 #   type: time
 #   check_every: 1m
 #   source:
-#     interval: 1m
+#     interval: 1mcd
 - name: docker-git
   type: git
   source:
@@ -34,6 +34,14 @@ resources:
     private_key: ((rsa_id))
     paths:
     - concourse/docker
+- name: boot-dev-pack-git
+  type: git
+  source:
+    uri: git@github.com:spring-projects/sts4.git
+    branch: ((branch))
+    private_key: ((rsa_id))
+    paths:
+    - vscode-extensions/boot-dev-pack
 - name: sts4
   type: git
   source:
@@ -282,6 +290,18 @@ resources:
     build_name: spring-tools-4
 ########################################################################################
 jobs:
+- name: boot-dev-pack-ovsx-publish
+  plan:
+  - in_parallel:
+    - get: boot-dev-pack-git
+      trigger: true
+    - get: tasks
+  - task: ovsx-build-and-publish
+    file: tasks/concourse/tasks/ovsx-build-and-publish.yml
+    input_mapping:
+      sts4: boot-dev-pack-git
+    params:
+      ovsx_token: ((ovsx_token))
 - name: vsix-s3-publish
   plan:
   - in_parallel:
@@ -1013,6 +1033,7 @@ groups:
   - build-spring-boot-vsix-snapshot
   - publish-concourse-vsix-release
   - publish-ovsx-releases
+  - boot-dev-pack-ovsx-publish
   - create-rc-wiki-page
   - vsix-s3-publish
   - create-release-wiki-page
