@@ -729,8 +729,8 @@
 					<artifactId>tycho-packaging-plugin</artifactId>
 					<version>${tycho-version}</version>
 					<configuration>
-						<format>yyyyMMddHHmm-'${p2.qualifier}'</format>
-						<archiveSite>false</archiveSite>
+						<format>yyyyMMddHHmm</format>
+						<archiveSite>true</archiveSite>
 						<archive>
 							<addMavenDescriptor>false</addMavenDescriptor>
 						</archive>
