@@ -1,3 +1,10 @@
+## 2020-10-23 (4.8.1 RELEASE, incl. language servers version 1.23.0)
+
+* _(Spring Boot)_ fixed: Spring Boot Language Server processing java.util.Properties type configuration logic error ([#534](https://github.com/spring-projects/sts4/issues/534))
+* _(Spring Boot)_ fixed: Add support for Spring Boot multi-document properties files ([#533](https://github.com/spring-projects/sts4/issues/533))
+* _(Spring Boot)_ fixed: Support escaping of map keys with '[]' in Spring Boot property yaml files
+* _(Spring Boot)_ fixed: Tolerate '.[' for map navigation in .properties file
+
 ## 2020-09-17 (4.8.0 RELEASE, incl. language servers version 1.22.0)
 
 * _(Spring Boot)_ fix: Eclips shows error on `@ConditionalOnExpression("${downlink.active:false}")` ([#529](https://github.com/spring-projects/sts4/issues/529))
