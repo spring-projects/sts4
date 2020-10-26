@@ -52,7 +52,7 @@ import org.springsource.ide.eclipse.commons.livexp.util.Log;
  */
 public abstract class AbstractProblemSeverityPreferencesPage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage, IWorkbenchPropertyPage {
 
-	private final ProblemSeverityPreferencesUtil util;
+	protected final ProblemSeverityPreferencesUtil util;
 
 	/**
 	 * Project for a project propertypage, or null for a workspace preference page.
