@@ -1,4 +1,4 @@
-Alternate Docker Client
+com.github.dockerjavaAlternate Docker Client
 =====================
 
 Repackaged as a single osgi bundle with all its dependencies.
@@ -13,7 +13,7 @@ Packaging Process:
 - Build the maven project `docker-client-wrapper` which is included as a sub-folder in this project.
 - copy all the jars from `docker-client-wrapper/target/dependency` to `dependency`.
 - Open `manifest.mf` with PDE tabbed editor. Select the 'Runtime' tab and then:
-   - clear out exported packages section then add all com.spotify.docker.client* packages back
+   - clear out exported packages section then add all `com.github.dockerjava*` packages back
    - clear our 'classpath' section and all jars in the 'dependency folder.
 
 

@@ -34,6 +34,7 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientImpl;
 import com.github.dockerjava.transport.DockerHttpClient;
+import com.github.dockerjava.zerodep.ConnectionPoolConfig;
 import com.github.dockerjava.zerodep.ZerodepDockerHttpClient;
 
 public class DockerRunTargetType extends AbstractRemoteRunTargetType<DockerTargetParams> {
@@ -84,6 +85,9 @@ public class DockerRunTargetType extends AbstractRemoteRunTargetType<DockerTarge
 		DockerHttpClient httpClient = new ZerodepDockerHttpClient.Builder()
 				.dockerHost(conf.getDockerHost())
 				.sslConfig(conf.getSSLConfig())
+				.connectionPool(new ConnectionPoolConfig()
+						.setMaxConnections(200)
+				)
 				.build();
 		return DockerClientImpl.getInstance(conf, httpClient);
 	}

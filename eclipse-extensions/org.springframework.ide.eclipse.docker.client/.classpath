@@ -1,22 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
+	<classpathentry exported="true" kind="lib" path="dependency/docker-java-api-99.99.99-SNAPSHOT.jar"/>
+	<classpathentry exported="true" kind="lib" path="dependency/docker-java-core-99.99.99-SNAPSHOT.jar"/>
+	<classpathentry exported="true" kind="lib" path="dependency/docker-java-transport-99.99.99-SNAPSHOT.jar"/>
+	<classpathentry exported="true" kind="lib" path="dependency/docker-java-transport-zerodep-99.99.99-SNAPSHOT.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8">
+		<attributes>
+			<attribute name="module" value="true"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry exported="true" kind="lib" path="dependency/bcpkix-jdk15on-1.64.jar"/>
 	<classpathentry exported="true" kind="lib" path="dependency/bcprov-jdk15on-1.64.jar"/>
 	<classpathentry exported="true" kind="lib" path="dependency/commons-compress-1.20.jar"/>
 	<classpathentry exported="true" kind="lib" path="dependency/commons-io-2.6.jar"/>
 	<classpathentry exported="true" kind="lib" path="dependency/commons-lang-2.6.jar"/>
-	<classpathentry exported="true" kind="lib" path="dependency/docker-java-api-3.2.5.jar" sourcepath="/home/kdvolder/.m2/repository/com/github/docker-java/docker-java-api/3.2.5/docker-java-api-3.2.5-sources.jar"/>
-	<classpathentry exported="true" kind="lib" path="dependency/docker-java-core-3.2.5.jar" sourcepath="/home/kdvolder/.m2/repository/com/github/docker-java/docker-java-core/3.2.5/docker-java-core-3.2.5-sources.jar"/>
-	<classpathentry exported="true" kind="lib" path="dependency/docker-java-transport-3.2.5.jar" sourcepath="/home/kdvolder/.m2/repository/com/github/docker-java/docker-java-transport/3.2.5/docker-java-transport-3.2.5-sources.jar"/>
-	<classpathentry exported="true" kind="lib" path="dependency/docker-java-transport-zerodep-3.2.5.jar" sourcepath="/home/kdvolder/.m2/repository/com/github/docker-java/docker-java-transport-zerodep/3.2.5/docker-java-transport-zerodep-3.2.5-sources.jar"/>
 	<classpathentry exported="true" kind="lib" path="dependency/guava-19.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="dependency/jackson-annotations-2.11.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="dependency/jackson-core-2.11.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="dependency/jackson-databind-2.11.2.jar"/>
 	<classpathentry exported="true" kind="lib" path="dependency/jna-5.5.0.jar"/>
 	<classpathentry exported="true" kind="lib" path="dependency/slf4j-api-1.7.30.jar"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
-	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry kind="src" path="src"/>
+	<classpathentry exported="true" kind="lib" path="dependency/slf4j-simple-1.7.30.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

@@ -50,6 +50,7 @@ import org.springframework.ide.eclipse.boot.dash.api.Styleable;
 import org.springframework.ide.eclipse.boot.dash.console.LogType;
 import org.springframework.ide.eclipse.boot.dash.devtools.DevtoolsUtil;
 import org.springframework.ide.eclipse.boot.dash.docker.jmx.JmxSupport;
+import org.springframework.ide.eclipse.boot.dash.docker.util.Ownable;
 import org.springframework.ide.eclipse.boot.dash.model.RunState;
 import org.springframework.ide.eclipse.boot.dash.model.remote.RefreshStateTracker;
 import org.springframework.ide.eclipse.boot.util.RetryUtil;
@@ -359,6 +360,8 @@ public class DockerContainer implements App, RunStateProvider, JmxConnectable, S
 			.thenValAt("dependencies")
 			.thenAnyChild()
 			.thenValAt("name");
+	
+	private static final boolean USE_DEDICATED_CLIENT = false;
 
 	private Supplier<Boolean> hasDevtoolsDep;
 	
@@ -454,10 +457,10 @@ public class DockerContainer implements App, RunStateProvider, JmxConnectable, S
 
 		private final CompletableFuture<Closeable> closeable = new CompletableFuture<Closeable>();
 
-		private DockerClient dedicatedClient;
+		private Ownable<DockerClient> client;
 
-		public LogHandler(DockerClient dedicatedClient, AppConsole console) {
-			this.dedicatedClient = dedicatedClient;
+		public LogHandler(Ownable<DockerClient> client, AppConsole console) {
+			this.client = client;
 			consoleOut = console.getOutputStream(LogType.APP_OUT);
 			consoleErr = console.getOutputStream(LogType.APP_OUT);
 			Log.info("Creating log handler. Now active: "+activeLogHandlers.incrementAndGet());
@@ -482,11 +485,12 @@ public class DockerContainer implements App, RunStateProvider, JmxConnectable, S
 				} catch (IOException e) {
 				}
 				try {
-					Log.info("Closing log handler. Now active: "+activeLogHandlers.decrementAndGet());
-					dedicatedClient.close();
+					if (client.isOwned) {
+						client.ref.close();
+					}
 				} catch (IOException e) {
-					//ignore
 				}
+				Log.info("Closing log handler. Now active: "+activeLogHandlers.decrementAndGet());
 			}
 		}
 
@@ -530,14 +534,16 @@ public class DockerContainer implements App, RunStateProvider, JmxConnectable, S
 	}
 	
 	public static LogConnection connectLog(DockerRunTarget target, String containerId, AppConsole console, boolean includeHistory) {
-		DockerClient client = target.getDedicatedClientInstance();
-		//Uses a dedicated client for log streaming because java docker client will eventually run out of connections in connection pool
+		//Use a dedicated client for log streaming because java docker client will eventually run out of connections in connection pool
 		//otherwise. 
 		//See: 
 		//  - https://www.pivotaltracker.com/n/projects/1346850
 		//  - https://github.com/docker-java/docker-java/issues/1466
+		Ownable<DockerClient> client = USE_DEDICATED_CLIENT 
+				? Ownable.owned(target.getDedicatedClientInstance()) 
+				: Ownable.borrowed(target.getClient());
 		if (client!=null) {
-			LogContainerCmd cmd = client.logContainerCmd(containerId)
+			LogContainerCmd cmd = client.ref.logContainerCmd(containerId)
 					.withStdOut(true).withStdErr(true).withFollowStream(true);
 			
 			if (!includeHistory) {
