@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Boot Launch
 Bundle-SymbolicName: org.springframework.ide.eclipse.boot.launch;singleton:=true
 Bundle-Vendor: Pivotal Software Inc.
-Bundle-Version: 4.8.1.qualifier
+Bundle-Version: 4.8.2.qualifier
 Require-Bundle: org.eclipse.ui,
  org.eclipse.core.runtime,
  org.eclipse.core.resources,
