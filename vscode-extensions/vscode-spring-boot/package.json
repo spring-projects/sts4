@@ -3,7 +3,7 @@
   "displayName": "Spring Boot Tools",
   "description": "Provides validation and content assist for Spring Boot `application.properties`, `application.yml` properties files. As well as Boot-specific support for `.java` files.",
   "icon": "spring-boot-logo.png",
-  "version": "1.23.0",
+  "version": "1.24.0",
   "publisher": "Pivotal",
   "repository": {
     "type": "git",
@@ -185,7 +185,7 @@
           "items": {
             "type": "string"
           },
-          "description": "Additional \u0027user defined\u0027 VM args to pass to the language server process."
+          "description": "Additional 'user defined' VM args to pass to the language server process."
         },
         "spring-boot.ls.checkJVM": {
           "type": "boolean",
@@ -219,7 +219,7 @@
         "spring-boot.ls.problem.application-yaml.YAML_UNKNOWN_PROPERTY": {
           "type": "string",
           "default": "WARNING",
-          "description": "Property-key not found in the configuration metadata on the project\u0027s classpath",
+          "description": "Property-key not found in the configuration metadata on the project's classpath",
           "enum": [
             "IGNORE",
             "INFO",
@@ -231,7 +231,7 @@
         "spring-boot.ls.problem.application-yaml.YAML_VALUE_TYPE_MISMATCH": {
           "type": "string",
           "default": "ERROR",
-          "description": "Expecting a value of a certain type, but value doesn\u0027t parse as such",
+          "description": "Expecting a value of a certain type, but value doesn't parse as such",
           "enum": [
             "IGNORE",
             "INFO",
@@ -243,7 +243,7 @@
         "spring-boot.ls.problem.application-yaml.YAML_EXPECT_SCALAR": {
           "type": "string",
           "default": "ERROR",
-          "description": "Expecting a \u0027scalar\u0027 value but found something more complex.",
+          "description": "Expecting a 'scalar' value but found something more complex.",
           "enum": [
             "IGNORE",
             "INFO",
@@ -255,7 +255,7 @@
         "spring-boot.ls.problem.application-yaml.YAML_EXPECT_TYPE_FOUND_SEQUENCE": {
           "type": "string",
           "default": "ERROR",
-          "description": "Found a \u0027sequence\u0027 node where a non \u0027list-like\u0027 type is expected",
+          "description": "Found a 'sequence' node where a non 'list-like' type is expected",
           "enum": [
             "IGNORE",
             "INFO",
@@ -267,7 +267,7 @@
         "spring-boot.ls.problem.application-yaml.YAML_EXPECT_TYPE_FOUND_MAPPING": {
           "type": "string",
           "default": "ERROR",
-          "description": "Found a \u0027mapping\u0027 node where a type that can\u0027t be treated as a \u0027property map\u0027 is expected",
+          "description": "Found a 'mapping' node where a type that can't be treated as a 'property map' is expected",
           "enum": [
             "IGNORE",
             "INFO",
@@ -279,7 +279,7 @@
         "spring-boot.ls.problem.application-yaml.YAML_EXPECT_MAPPING": {
           "type": "string",
           "default": "ERROR",
-          "description": "Expecting a \u0027mapping\u0027 node but found something else",
+          "description": "Expecting a 'mapping' node but found something else",
           "enum": [
             "IGNORE",
             "INFO",
@@ -291,7 +291,7 @@
         "spring-boot.ls.problem.application-yaml.YAML_EXPECT_BEAN_PROPERTY_NAME": {
           "type": "string",
           "default": "ERROR",
-          "description": "Expecting a \u0027bean property\u0027 name but found something more complex",
+          "description": "Expecting a 'bean property' name but found something more complex",
           "enum": [
             "IGNORE",
             "INFO",
@@ -303,7 +303,7 @@
         "spring-boot.ls.problem.application-yaml.YAML_INVALID_BEAN_PROPERTY": {
           "type": "string",
           "default": "ERROR",
-          "description": "Accessing a named property in a type that doesn\u0027t provide a property accessor with that name",
+          "description": "Accessing a named property in a type that doesn't provide a property accessor with that name",
           "enum": [
             "IGNORE",
             "INFO",
@@ -351,7 +351,7 @@
         "spring-boot.ls.problem.application-yaml.YAML_SHOULD_ESCAPE": {
           "type": "string",
           "default": "WARNING",
-          "description": "This key contains special characters and should probably be escaped by surrounding it with \u0027[]\u0027",
+          "description": "This key contains special characters and should probably be escaped by surrounding it with '[]'",
           "enum": [
             "IGNORE",
             "INFO",
@@ -363,7 +363,7 @@
         "spring-boot.ls.problem.application-properties.PROP_INVALID_BEAN_NAVIGATION": {
           "type": "string",
           "default": "ERROR",
-          "description": "Accessing a \u0027bean property\u0027 in a type that doesn\u0027t have properties (e.g. like String or Integer)",
+          "description": "Accessing a 'bean property' in a type that doesn't have properties (e.g. like String or Integer)",
           "enum": [
             "IGNORE",
             "INFO",
@@ -375,7 +375,7 @@
         "spring-boot.ls.problem.application-properties.PROP_INVALID_INDEXED_NAVIGATION": {
           "type": "string",
           "default": "ERROR",
-          "description": "Accessing a property using [] in a type that doesn\u0027t support that",
+          "description": "Accessing a property using [] in a type that doesn't support that",
           "enum": [
             "IGNORE",
             "INFO",
@@ -387,7 +387,7 @@
         "spring-boot.ls.problem.application-properties.PROP_EXPECTED_DOT_OR_LBRACK": {
           "type": "string",
           "default": "ERROR",
-          "description": "Unexpected character found where a \u0027.\u0027 or \u0027[\u0027 was expected",
+          "description": "Unexpected character found where a '.' or '[' was expected",
           "enum": [
             "IGNORE",
             "INFO",
@@ -399,7 +399,7 @@
         "spring-boot.ls.problem.application-properties.PROP_NO_MATCHING_RBRACK": {
           "type": "string",
           "default": "ERROR",
-          "description": "Found a \u0027[\u0027 but no matching \u0027]\u0027",
+          "description": "Found a '[' but no matching ']'",
           "enum": [
             "IGNORE",
             "INFO",
@@ -423,7 +423,7 @@
         "spring-boot.ls.problem.application-properties.PROP_VALUE_TYPE_MISMATCH": {
           "type": "string",
           "default": "ERROR",
-          "description": "Expecting a value of a certain type, but value doesn\u0027t parse as such",
+          "description": "Expecting a value of a certain type, but value doesn't parse as such",
           "enum": [
             "IGNORE",
             "INFO",
@@ -435,7 +435,7 @@
         "spring-boot.ls.problem.application-properties.PROP_INVALID_BEAN_PROPERTY": {
           "type": "string",
           "default": "ERROR",
-          "description": "Accessing a named property in a type that doesn\u0027t provide a property accessor with that name",
+          "description": "Accessing a named property in a type that doesn't provide a property accessor with that name",
           "enum": [
             "IGNORE",
             "INFO",
@@ -447,7 +447,7 @@
         "spring-boot.ls.problem.application-properties.PROP_UNKNOWN_PROPERTY": {
           "type": "string",
           "default": "WARNING",
-          "description": "Property-key not found in any configuration metadata on the project\u0027s classpath",
+          "description": "Property-key not found in any configuration metadata on the project's classpath",
           "enum": [
             "IGNORE",
             "INFO",
@@ -512,7 +512,7 @@
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
-    "test": "npm run compile \u0026\u0026 node ./node_modules/vscode/bin/test",
+    "test": "npm run compile && node ./node_modules/vscode/bin/test",
     "preinstall": "bash ./scripts/preinstall.sh",
     "vsce-package": "vsce package"
   },

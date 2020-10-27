@@ -3,7 +3,7 @@
   "displayName": "Cloudfoundry Manifest YML Support",
   "description": "Adds linting, content assist and hoverinfo's for Cloudfoundry Deployment Manifests (a.k.a. `manifest.yml`) files.",
   "icon": "icon.png",
-  "version": "1.23.0",
+  "version": "1.24.0",
   "publisher": "Pivotal",
   "repository": {
     "type": "git",
