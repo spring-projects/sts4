@@ -23,7 +23,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -49,6 +48,9 @@ import org.springframework.ide.eclipse.boot.dash.api.SystemPropertySupport;
 import org.springframework.ide.eclipse.boot.dash.api.TemporalBoolean;
 import org.springframework.ide.eclipse.boot.dash.console.LogType;
 import org.springframework.ide.eclipse.boot.dash.devtools.DevtoolsUtil;
+import org.springframework.ide.eclipse.boot.dash.docker.exceptions.DockerBuildException;
+import org.springframework.ide.eclipse.boot.dash.docker.exceptions.MissingBuildScriptException;
+import org.springframework.ide.eclipse.boot.dash.docker.exceptions.MissingBuildTagException;
 import org.springframework.ide.eclipse.boot.dash.docker.jmx.JmxSupport;
 import org.springframework.ide.eclipse.boot.dash.docker.runtarget.BuildScriptLocator.BuildKind;
 import org.springframework.ide.eclipse.boot.dash.labels.BootDashLabels;
@@ -70,6 +72,7 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.CreateContainerResponse;
+import com.github.dockerjava.api.command.InspectImageResponse;
 import com.github.dockerjava.api.exception.NotModifiedException;
 import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.ExposedPort;
@@ -246,44 +249,15 @@ public class DockerApp extends AbstractDisposable implements App, ChildBearing, 
 				return build(console);
 			} catch (Exception e) {
 				console.write(ExceptionUtil.getMessage(e), LogType.STDERROR);
-				if (e instanceof MissingBuildScriptException) {
-					console.write("Places we looked for build script: ", LogType.STDERROR);
-					for (File loc : ((MissingBuildScriptException) e).locationsChecked) {
-						console.write(" - "+loc, LogType.STDERROR);
-					}
-					showBuildScriptHelp(console, (MissingBuildScriptException) e);
+				if (e instanceof DockerBuildException) {
+					((DockerBuildException) e).writeDetailedExplanation(console);
 				}
 				throw e;
 			}
 		});
-		
 		refreshTracker.run("Starting container '" + image + "'" +  + BootDashLabels.ELLIPSIS, () -> {
 			run(console, image, deployment);
 		});
-	}
-
-	private void showBuildScriptHelp(AppConsole console, MissingBuildScriptException e) {
-		String[] help = {
-				"To build a docker image, Boot Dash needs to run a build script from your project.",
-				"Three different types are supported and checked for in this order:",
-				"",
-				"1. "+e.locationsChecked.get(0).getAbsoluteFile().getName(),
-				"   A custom script placed by you at the project root.",
-				"   Typically this runs a custom maven or gradle command on your project.",
-				"",
-				"2. maven",
-				"   If your project has a mvnw, we will use that to execute the `spring-boot:build-image` task",
-				"",
-				"3. gradle",
-				"   If your project has a gradlew, we will use that to execute the `bootBuildImage` task",
-		};
-		try {
-			for (String line : help) {
-				console.write(line, LogType.STDERROR);
-			}
-		} catch (Exception e1) {
-			//ignore
-		}
 	}
 
 	private void run(AppConsole console, String image, DockerDeployment deployment) throws Exception {
@@ -395,11 +369,24 @@ public class DockerApp extends AbstractDisposable implements App, ChildBearing, 
 			containerLogConnection.setValue(DockerContainer.connectLog(target, c.getId(), console, true));
 		}
 	}
+	
+	/* Sample output from `docker build -t fui .`
+Successfully built f3157a980fd2
+Successfully tagged fui:latest
+	 */
 
-	private static final Pattern BUILT_IMAGE_MESSAGE = Pattern.compile("Successfully built image.*\\'(.*)\\'");
+	/**
+	 * List of patterns that we look for in order of priority. If more than one pattern matches, the first pattern 
+	 * takes in this list takes priority over the next.
+	 */
+	private static final Pattern[] BUILT_IMAGE_MESSAGE_PATS = {
+			Pattern.compile("Successfully built image.*\\'(.*)\\'"), //from  mvn spring-boot:build-image
+			Pattern.compile("Successfully tagged ([^\\s]+)"), //from `docker build -t <name> .`
+			Pattern.compile("Successfully built ([a-f0-9]+)"), //from `docker build .`
+	};
 	
 	private String build(AppConsole console) throws Exception {
-		AtomicReference<String> image = new AtomicReference<>();
+		String[] imageIds = new String[BUILT_IMAGE_MESSAGE_PATS.length];
 		File directory = new File(project.getLocation().toString());
 		String[] command = getBuildCommand(directory);
 
@@ -412,9 +399,11 @@ public class DockerApp extends AbstractDisposable implements App, ChildBearing, 
 		Process process = builder.start();
 		LineBasedStreamGobler outputGobler = new LineBasedStreamGobler(process.getInputStream(), (line) -> {
 			System.out.println(line);
-			Matcher matcher = BUILT_IMAGE_MESSAGE.matcher(line);
-			if (matcher.find()) {
-				image.set(matcher.group(1));
+			for (int i = 0; i < BUILT_IMAGE_MESSAGE_PATS.length; i++) {
+				Matcher matcher = BUILT_IMAGE_MESSAGE_PATS[i].matcher(line);
+				if (matcher.find()) {
+					imageIds[i] = matcher.group(1);
+				}
 			}
 			try {
 				console.write(line, LogType.APP_OUT);
@@ -435,16 +424,29 @@ public class DockerApp extends AbstractDisposable implements App, ChildBearing, 
 		}
 		outputGobler.join();
 		
-		String imageTag = image.get();
+		String imageTag = null;
+		for (String found : imageIds) {
+			if (found!=null) {
+				imageTag = found;
+				break;
+			}
+		}
+		if (imageTag==null) {
+			throw new MissingBuildTagException(BUILT_IMAGE_MESSAGE_PATS);
+		}
 		if (imageTag.startsWith(DOCKER_IO_LIBRARY)) {
 			imageTag = imageTag.substring(DOCKER_IO_LIBRARY.length());
 		}
 		List<Image> images = client.listImagesCmd().withImageNameFilter(imageTag).exec();
-		
-		for (Image img : images) {
-			addPersistedImage(img.getId());
+		if (images.isEmpty()) {
+			// maybe the 'imageTag' is not actually a tag but an id/hash.
+			InspectImageResponse inspect = client.inspectImageCmd(imageTag).exec();
+			addPersistedImage(inspect.getId());
+		} else {
+			for (Image img : images) {
+				addPersistedImage(img.getId());
+			}
 		}
-		
 		return imageTag;
 	}
 	

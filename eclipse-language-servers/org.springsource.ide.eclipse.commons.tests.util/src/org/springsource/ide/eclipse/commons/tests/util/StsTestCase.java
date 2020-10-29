@@ -25,6 +25,7 @@ import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.resources.IncrementalProjectBuilder;
+import org.eclipse.core.resources.ResourceAttributes;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.Path;
@@ -125,6 +126,14 @@ public abstract class StsTestCase extends TestCase {
 		return file;
 	}
 
+	public static IFile createExeFile(IProject project, String path, String data) throws CoreException {
+		IFile f = createFile(project, path, data);
+		ResourceAttributes a = f.getResourceAttributes();
+		a.setExecutable(true);
+		f.setResourceAttributes(a);
+		return f;
+	}
+
 	public static void fileReplace(IProject project, String path, String find, String replace) throws Exception {
 		IFile file = project.getFile(path);
 		assertTrue(file.exists());
@@ -156,4 +165,5 @@ public abstract class StsTestCase extends TestCase {
 			fail("Found: "+needle+"\n in \n"+haystack);
 		}
 	}
+
 }

@@ -16,6 +16,9 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
@@ -25,8 +28,6 @@ import static org.springframework.ide.eclipse.boot.test.BootProjectTestHarness.w
 import static org.springsource.ide.eclipse.commons.tests.util.StsTestCase.assertContains;
 import static org.springsource.ide.eclipse.commons.tests.util.StsTestCase.assertNotContains;
 import static org.springsource.ide.eclipse.commons.tests.util.StsTestCase.createFile;
-
-import static org.mockito.ArgumentMatchers.*;
 
 import java.net.URI;
 import java.time.Duration;
@@ -53,7 +54,6 @@ import org.eclipse.swt.graphics.Color;
 import org.junit.After;
 import org.junit.Rule;
 import org.junit.Test;
-import org.mockito.ArgumentMatchers;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
 import org.springframework.ide.eclipse.beans.ui.live.model.LiveBeansModel;
@@ -77,6 +77,7 @@ import org.springframework.ide.eclipse.boot.dash.model.BootDashElement;
 import org.springframework.ide.eclipse.boot.dash.model.BootDashModel;
 import org.springframework.ide.eclipse.boot.dash.model.BootProjectDashElement;
 import org.springframework.ide.eclipse.boot.dash.model.Failable;
+import org.springframework.ide.eclipse.boot.dash.model.RefreshState;
 import org.springframework.ide.eclipse.boot.dash.model.RunState;
 import org.springframework.ide.eclipse.boot.dash.model.Taggable;
 import org.springframework.ide.eclipse.boot.dash.model.actuator.RequestMapping;
@@ -100,14 +101,16 @@ import org.springframework.ide.eclipse.boot.test.BootProjectTestHarness;
 import org.springframework.ide.eclipse.boot.test.util.TestBracketter;
 import org.springsource.ide.eclipse.commons.core.util.StringUtil;
 import org.springsource.ide.eclipse.commons.frameworks.test.util.ACondition;
+import org.springsource.ide.eclipse.commons.tests.util.StsTestCase;
 
 import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.InspectContainerResponse;
-import com.github.dockerjava.api.command.InspectImageResponse;
 import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.Image;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+
+import static org.springsource.ide.eclipse.commons.tests.util.StsTestCase.*;
 
 public class BootDashDockerTests {
 
@@ -120,6 +123,90 @@ public class BootDashDockerTests {
 	@Test
 	public void testCreateDockerTarget() throws Exception {
 		createDockerTarget();
+	}
+
+	@Test
+	public void projectWithdDockerFile() throws Exception {
+		GenericRemoteBootDashModel<DockerClient, DockerTargetParams> model = createDockerTarget();
+		IProject project = projects.createBootWebProject("webby", bootVersionAtLeast("2.3.0"));
+		createExeFile(project, "sts-docker-build.sh",
+				"#!/bin/bash\n" +
+				"docker build -t webby ."
+		);
+		createFile(project, "Dockerfile",
+				"FROM openjdk:11 as builder\n" +
+				"CMD mkdir /source\n" +
+				"COPY . /source\n" +
+				"WORKDIR /source\n" +
+				"RUN ls -la\n" +
+				"RUN ./mvnw clean package\n" +
+				"FROM openjdk:11\n" +
+				"COPY --from=builder /source/target/*.jar /app.jar\n" +
+				"ENTRYPOINT java $JAVA_OPTS -jar /app.jar"
+		);
+
+		dragAndDrop(project, model);
+		GenericRemoteAppElement dep = waitForDeployment(model, project);
+		GenericRemoteAppElement img = waitForChild(dep, d -> d instanceof DockerImage);
+		GenericRemoteAppElement con = waitForChild(img, d -> d instanceof DockerContainer);
+
+		assertContains("webby:latest", img.getStyledName(null).getString());
+
+		ACondition.waitFor("all started", BUILD_IMAGE_TIMEOUT, () -> {
+			assertEquals(RunState.RUNNING, dep.getRunState());
+			assertEquals(RunState.RUNNING, img.getRunState());
+			assertEquals(RunState.RUNNING, con.getRunState());
+		});
+	}
+
+
+	@Test
+	public void missingBuildTagException() throws Exception {
+		GenericRemoteBootDashModel<DockerClient, DockerTargetParams> model = createDockerTarget();
+		IProject project = projects.createBootWebProject("webby", bootVersionAtLeast("2.3.0"));
+		createExeFile(project, "sts-docker-build.sh",
+				"#!/bin/bash\n" +
+				"# do nothing"
+		);
+		dragAndDrop(project, model);
+		GenericRemoteAppElement dep = waitForDeployment(model, project);
+		ACondition.waitFor("error marker", 3_000, () -> {
+			RefreshState s = dep.getRefreshState();
+			assertTrue(s.isError());
+			assertEquals("MissingBuildTagException: Couldn't detect the image id or tag", s.getMessage());
+		});
+	}
+
+	@Test
+	public void projectWithdDockerFileNoTag() throws Exception {
+		GenericRemoteBootDashModel<DockerClient, DockerTargetParams> model = createDockerTarget();
+		IProject project = projects.createBootWebProject("webby", bootVersionAtLeast("2.3.0"));
+		createExeFile(project, "sts-docker-build.sh",
+				"#!/bin/bash\n" +
+				"docker build ."
+		);
+		createFile(project, "Dockerfile",
+				"FROM openjdk:11 as builder\n" +
+				"CMD mkdir /source\n" +
+				"COPY . /source\n" +
+				"WORKDIR /source\n" +
+				"RUN ls -la\n" +
+				"RUN ./mvnw clean package\n" +
+				"FROM openjdk:11\n" +
+				"COPY --from=builder /source/target/*.jar /app.jar\n" +
+				"ENTRYPOINT java $JAVA_OPTS -jar /app.jar"
+		);
+
+		dragAndDrop(project, model);
+		GenericRemoteAppElement dep = waitForDeployment(model, project);
+		GenericRemoteAppElement img = waitForChild(dep, d -> d instanceof DockerImage);
+		GenericRemoteAppElement con = waitForChild(img, d -> d instanceof DockerContainer);
+
+		ACondition.waitFor("all started", BUILD_IMAGE_TIMEOUT, () -> {
+			assertEquals(RunState.RUNNING, dep.getRunState());
+			assertEquals(RunState.RUNNING, img.getRunState());
+			assertEquals(RunState.RUNNING, con.getRunState());
+		});
 	}
 
 	@Test

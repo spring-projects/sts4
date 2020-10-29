@@ -100,11 +100,16 @@ public class DockerContainer implements App, RunStateProvider, JmxConnectable, S
 		return Suppliers.memoize(() ->{
 			Map<String, String> labels = labelsSupplier.get();
 			try {
-				Map<?,?> bpmd = new ObjectMapper().readValue(labels.get("io.buildpacks.build.metadata"), Map.class);
-				Set<String> deps =  dependencyNamePath
-						.traverseAmbiguously(YamlNavigable.javaObject(bpmd))
-						.flatMap(JavaObjectNav::asStringMaybe).collect(Collectors.toSet());
-				return deps.contains("spring-boot-devtools");
+				if (labels!=null) {
+					String buildpackMetadata = labels.get("io.buildpacks.build.metadata");
+					if (buildpackMetadata!=null) {
+						Map<?,?> bpmd = new ObjectMapper().readValue(buildpackMetadata, Map.class);
+						Set<String> deps =  dependencyNamePath
+								.traverseAmbiguously(YamlNavigable.javaObject(bpmd))
+								.flatMap(JavaObjectNav::asStringMaybe).collect(Collectors.toSet());
+						return deps.contains("spring-boot-devtools");
+					}
+				}
 			} catch (Exception e) {
 				Log.log(e);
 			}

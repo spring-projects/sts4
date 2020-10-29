@@ -62,7 +62,6 @@ public class FakeDockerRunCommand {
 								bindTo.getHostIp()+":"+bindTo.getHostPortSpec()+":"+exposed.getPort()+"/"+exposed.getProtocol()
 						);
 					}
-					System.out.println(entry);
 				}
 			}
 		}
