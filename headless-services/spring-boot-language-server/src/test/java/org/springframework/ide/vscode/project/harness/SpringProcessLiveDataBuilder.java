@@ -19,6 +19,7 @@ import org.springframework.ide.vscode.boot.java.livehover.v2.LiveBeansModel;
 import org.springframework.ide.vscode.boot.java.livehover.v2.LiveConditional;
 import org.springframework.ide.vscode.boot.java.livehover.v2.LiveConditionalParser;
 import org.springframework.ide.vscode.boot.java.livehover.v2.LiveContextPathUtil;
+import org.springframework.ide.vscode.boot.java.livehover.v2.LiveMetricsModel;
 import org.springframework.ide.vscode.boot.java.livehover.v2.LiveProperties;
 import org.springframework.ide.vscode.boot.java.livehover.v2.LiveRequestMapping;
 import org.springframework.ide.vscode.boot.java.livehover.v2.LiveRequestMappingBoot1xRequestMapping;
@@ -42,6 +43,7 @@ public class SpringProcessLiveDataBuilder {
 	private LiveRequestMapping[] requestMappings;
 	private LiveConditional[] conditionals;
 	private LiveProperties properties;
+	private LiveMetricsModel metrics;
 	
 	public SpringProcessLiveDataBuilder processName(String processName) {
 		this.processName = processName;
@@ -122,8 +124,13 @@ public class SpringProcessLiveDataBuilder {
 		return this;
 	}
 	
+	public SpringProcessLiveDataBuilder liveMetrics(LiveMetricsModel metrics) {
+		this.metrics = metrics;
+		return this;
+	}
+	
 	public SpringProcessLiveData build() {
-		return new SpringProcessLiveData(processName, processID, contextPath, urlScheme, port, host, beansModel, activeProfiles, requestMappings, conditionals, properties);
+		return new SpringProcessLiveData(processName, processID, contextPath, urlScheme, port, host, beansModel, activeProfiles, requestMappings, conditionals, properties, metrics);
 	}
 
 }

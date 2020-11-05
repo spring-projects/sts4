@@ -90,6 +90,7 @@ public class SpringProcessLiveDataExtractorOverJMX {
 			LiveConditional[] conditionals = getConditionals(connection, domain, processID, processName);
 			LiveRequestMapping[] requestMappings = getRequestMappings(connection, domain);
 			LiveBeansModel beans = getBeans(connection, domain);
+			LiveMetricsModel metrics = getMetrics(connection, domain);
 			
 			if (contextPath == null) {
 				contextPath = getContextPath(connection, domain, environment);
@@ -110,7 +111,8 @@ public class SpringProcessLiveDataExtractorOverJMX {
 					activeProfiles,
 					requestMappings,
 					conditionals,
-					properties);
+					properties,
+					metrics);
 		}
 		catch (Exception e) {
 			log.error("error reading live data from: " + processID + " - " + processName, e);
@@ -119,6 +121,35 @@ public class SpringProcessLiveDataExtractorOverJMX {
 		return null;
 	}
 	
+	private LiveMetricsModel getMetrics(MBeanServerConnection connection, String domain) {
+		
+		return new LiveMetricsModel() {
+			
+			@Override
+			public RequestMappingMetrics getRequestMappingMetrics(LiveRequestMapping rm) {
+				try {
+					List<Object> tags = new ArrayList<>();
+					if (rm.getSplitPath().length == 0) {
+						return null;
+					}
+					tags.add("uri:" + rm.getSplitPath()[0]);
+					if (!rm.getRequestMethods().isEmpty()) {
+						tags.add("methods:" + String.join(",", rm.getRequestMethods()));
+					}
+					Object metricsData = getActuatorDataFromOperation(connection, getObjectName(domain, "type=Endpoint,name=Metrics"), "metric", "http.server.requests", tags);
+					if (metricsData instanceof String) {
+						return RequestMappingMetrics.parse((String) metricsData);
+					} else {
+						return RequestMappingMetrics.parse(gson.toJson(metricsData));
+					}
+				} catch (Exception e) {
+					log.error("", e);
+					return null;
+				}
+			}
+		};
+	}
+
 	public String getProcessID(MBeanServerConnection connection) {
 		try {
 			RuntimeMXBean runtime = ManagementFactory.getPlatformMXBean(connection, RuntimeMXBean.class);
@@ -371,6 +402,18 @@ public class SpringProcessLiveDataExtractorOverJMX {
 		if (objectName != null) {
 			try {
 				return connection.invoke(objectName, operation, null, null);
+			}
+			catch (InstanceNotFoundException|IOException e) {
+				return null;
+			}
+		}
+		return null;
+	}
+	
+	private Object getActuatorDataFromOperation(MBeanServerConnection connection, ObjectName objectName, String operation, Object... parameters) throws Exception {
+		if (objectName != null) {
+			try {
+				return connection.invoke(objectName, operation, parameters, null);
 			}
 			catch (InstanceNotFoundException|IOException e) {
 				return null;

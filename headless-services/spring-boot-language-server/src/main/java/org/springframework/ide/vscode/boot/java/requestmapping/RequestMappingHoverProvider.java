@@ -32,6 +32,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
 import org.springframework.ide.vscode.boot.java.livehover.LiveHoverUtils;
 import org.springframework.ide.vscode.boot.java.livehover.v2.LiveRequestMapping;
+import org.springframework.ide.vscode.boot.java.livehover.v2.RequestMappingMetrics;
 import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveData;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.util.Renderable;
@@ -256,11 +257,12 @@ public class RequestMappingHoverProvider implements HoverProvider {
 			Tuple2<LiveRequestMapping, SpringProcessLiveData> mappingMethod = mappingMethods.get(i);
 
 			SpringProcessLiveData liveData = mappingMethod.getT2();
+			LiveRequestMapping requestMapping = mappingMethod.getT1();
 			String urlScheme = liveData.getUrlScheme();
 			String port = liveData.getPort();
 			String host = liveData.getHost();
 
-			String[] paths = mappingMethod.getT1().getSplitPath();
+			String[] paths = requestMapping.getSplitPath();
 			if (paths==null || paths.length==0) {
 				//Technically, this means the path 'predicate' is unconstrained, meaning any path matches.
 				//So this is not quite the same as the case where path=""... but...
@@ -276,6 +278,13 @@ public class RequestMappingHoverProvider implements HoverProvider {
 			.collect(Collectors.toList());
 
 			Renderable urlRenderables = Renderables.concat(renderableUrls);
+			
+			RequestMappingMetrics metrics = liveData.getLiveMterics().getRequestMappingMetrics(requestMapping);
+			if (metrics != null) {
+				Renderable metricsRenderable = Renderables.bold("Count: " + metrics.getCallsCount() + " Total Time: " + metrics.getTotalTime());
+				urlRenderables = Renderables.concat(urlRenderables, Renderables.text("\n\n"), metricsRenderable);
+			}
+			
 			Renderable processSection = Renderables.concat(
 					urlRenderables,
 					Renderables.mdBlob(LiveHoverUtils.niceAppName(liveData))
