@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019 Pivotal, Inc.
+ * Copyright (c) 2019, 2020 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -134,9 +134,18 @@ public class SpringProcessLiveDataExtractorOverJMX {
 					}
 					tags.add("uri:" + rm.getSplitPath()[0]);
 					if (!rm.getRequestMethods().isEmpty()) {
-						tags.add("methods:" + String.join(",", rm.getRequestMethods()));
+						tags.add("method:" + String.join(",", rm.getRequestMethods()));
 					}
-					Object metricsData = getActuatorDataFromOperation(connection, getObjectName(domain, "type=Endpoint,name=Metrics"), "metric", "http.server.requests", tags);
+					
+					Object[] params = new Object[] {"http.server.requests", tags};
+					String[] signature =  new String[] {String.class.getName(), List.class.getName()};
+					
+					Object metricsData = getActuatorDataFromOperation(connection,
+							getObjectName(domain, "type=Endpoint,name=Metrics"), 
+							"metric", 
+							params, 
+							signature);
+
 					if (metricsData instanceof String) {
 						return RequestMappingMetrics.parse((String) metricsData);
 					} else {
@@ -410,10 +419,10 @@ public class SpringProcessLiveDataExtractorOverJMX {
 		return null;
 	}
 	
-	private Object getActuatorDataFromOperation(MBeanServerConnection connection, ObjectName objectName, String operation, Object... parameters) throws Exception {
+	private Object getActuatorDataFromOperation(MBeanServerConnection connection, ObjectName objectName, String operation, Object[] parameters,  String[] tags) throws Exception {
 		if (objectName != null) {
 			try {
-				return connection.invoke(objectName, operation, parameters, null);
+				return connection.invoke(objectName, operation, parameters, tags);
 			}
 			catch (InstanceNotFoundException|IOException e) {
 				return null;
