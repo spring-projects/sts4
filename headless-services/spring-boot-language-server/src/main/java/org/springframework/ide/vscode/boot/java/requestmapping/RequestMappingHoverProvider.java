@@ -281,7 +281,9 @@ public class RequestMappingHoverProvider implements HoverProvider {
 			
 			RequestMappingMetrics metrics = liveData.getLiveMterics().getRequestMappingMetrics(requestMapping);
 			if (metrics != null) {
-				Renderable metricsRenderable = Renderables.concat(Renderables.bold("Count: " + metrics.getCallsCount() + ", Total Time: " + metrics.getTotalTime()), Renderables.text("\n\n"));
+				Renderable metricsRenderable = Renderables.concat(
+						Renderables.bold("Count: " + metrics.getCallsCount() + " | Total Time: " + metrics.getTotalTime() + " | Max Time: " + metrics.getMaxTime()),
+						Renderables.text("\n\n"));
 				urlRenderables = Renderables.concat(urlRenderables, Renderables.text("\n\n"), metricsRenderable);
 			}
 			

@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.boot.java.requestmapping.test;
 
 import java.io.File;
+import java.util.concurrent.TimeUnit;
 
 import org.junit.After;
 import org.junit.Before;
@@ -20,6 +21,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
 import org.springframework.ide.vscode.boot.bootiful.HoverTestConf;
+import org.springframework.ide.vscode.boot.java.livehover.v2.LiveMetricsModel;
+import org.springframework.ide.vscode.boot.java.livehover.v2.LiveRequestMapping;
+import org.springframework.ide.vscode.boot.java.livehover.v2.RequestMappingMetrics;
 import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveData;
 import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveDataProvider;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
@@ -172,6 +176,69 @@ public class RequestMappingLiveHoverTest {
 
 	}
 
+	@Test
+	public void testLiveHoverMetricsSection() throws Exception {
+
+		File directory = new File(
+				ProjectsHarness.class.getResource("/test-projects/test-request-mapping-live-hover/").toURI());
+		String docUri = directory.toPath().resolve("src/main/java/example/RestApi.java").toUri()
+				.toString();
+
+
+		// Build a mock running boot app
+		SpringProcessLiveData liveData = new SpringProcessLiveDataBuilder()
+				.port("999")
+				.processID("76543")
+				.urlScheme("https")
+				.host("cfapps.io")
+				.processName("test-request-mapping-live-hover")
+				// Ugly, but this is real JSON copied from a real live running app. We want the
+				// mock app to return realistic results if possible
+				.requestMappingsJson(
+						"{\"/webjars/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**/favicon.ico\":{\"bean\":\"faviconHandlerMapping\"},\"{[/hello-world],methods=[GET]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public example.Greeting example.HelloWorldController.sayHello(java.lang.String)\"},\"{[/goodbye]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.goodbye()\"},\"{[/hello]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.hello()\"},\"{[/error]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.http.ResponseEntity<java.util.Map<java.lang.String, java.lang.Object>> org.springframework.boot.autoconfigure.web.BasicErrorController.error(javax.servlet.http.HttpServletRequest)\"},\"{[/error],produces=[text/html]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.web.servlet.ModelAndView org.springframework.boot.autoconfigure.web.BasicErrorController.errorHtml(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse)\"}}")
+				.liveMetrics(new LiveMetricsModel() {
+					
+					@Override
+					public RequestMappingMetrics getRequestMappingMetrics(LiveRequestMapping rm) {
+						return new RequestMappingMetrics() {
+							
+							@Override
+							public double getTotalTime() {
+								return 3.0;
+							}
+							
+							@Override
+							public TimeUnit getTimeUnit() {
+								return TimeUnit.SECONDS;
+							}
+							
+							@Override
+							public double getMaxTime() {
+								return 0.55;
+							}
+							
+							@Override
+							public long getCallsCount() {
+								return 25;
+							}
+						};
+					}
+				})
+				.build();
+		liveDataProvider.add("processkey", liveData);
+
+		harness.intialize(directory);
+
+		Editor editor = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
+		editor.assertHighlights("@RequestMapping(\"/hello\")", "@RequestMapping(\"/goodbye\")");
+
+		editor.assertHoverContains("@RequestMapping(\"/hello\")", "[https://cfapps.io:999/hello](https://cfapps.io:999/hello)  \n" +
+				"Process [PID=76543, name=`test-request-mapping-live-hover`]");
+
+		editor.assertHoverContains("@RequestMapping(\"/goodbye\")", "Count: 25 | Total Time: 3.0 | Max Time: 0.55");
+
+	}
+	
 	@Test
 	public void testNoLiveHoverNoRunningApp() throws Exception {
 

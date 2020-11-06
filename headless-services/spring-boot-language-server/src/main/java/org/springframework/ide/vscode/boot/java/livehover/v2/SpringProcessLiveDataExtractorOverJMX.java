@@ -419,10 +419,10 @@ public class SpringProcessLiveDataExtractorOverJMX {
 		return null;
 	}
 	
-	private Object getActuatorDataFromOperation(MBeanServerConnection connection, ObjectName objectName, String operation, Object[] parameters,  String[] tags) throws Exception {
+	private Object getActuatorDataFromOperation(MBeanServerConnection connection, ObjectName objectName, String operation, Object[] parameters,  String[] signature) throws Exception {
 		if (objectName != null) {
 			try {
-				return connection.invoke(objectName, operation, parameters, tags);
+				return connection.invoke(objectName, operation, parameters, signature);
 			}
 			catch (InstanceNotFoundException|IOException e) {
 				return null;
