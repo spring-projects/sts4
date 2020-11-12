@@ -13,6 +13,8 @@ package org.springframework.ide.vscode.boot.java.livehover.v2;
 import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -36,6 +38,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
@@ -126,12 +129,13 @@ public class SpringProcessLiveDataExtractorOverJMX {
 		return new LiveMetricsModel() {
 			
 			@Override
-			public RequestMappingMetrics getRequestMappingMetrics(String[] paths, String[] requestMethods) {
+			public RequestMappingMetrics getRequestMappingMetrics(String[] uris, String[] requestMethods) {
 				try {
 					List<Object> tags = new ArrayList<>();
-					if (paths.length == 0) {
+					if (uris.length == 0) {
 						return null;
 					}
+					String[] paths = getPaths(uris);
 					tags.add("uri:" + String.join(",", paths));
 					if (requestMethods.length > 0) {
 						tags.add("method:" + String.join(",", requestMethods));
@@ -155,6 +159,23 @@ public class SpringProcessLiveDataExtractorOverJMX {
 					log.error("", e);
 				}
 				return null;
+			}
+
+			private String[] getPaths(String[] uris) {
+				Builder<String> builder = ImmutableList.builder();
+				if (uris != null) {
+					for (String val : uris) {
+						try {
+							URI uri = new URI(val);
+							builder.add(uri.getPath());
+						} catch (URISyntaxException e) {
+							log.error("", e);
+						}
+						
+					}
+				}
+				
+				return builder.build().toArray(new String[0]);
 			}
 		};
 	}
