@@ -324,22 +324,23 @@ public class RequestMappingHoverProvider implements HoverProvider {
 			if (metrics != null) {
 				char timeUnitShort = metrics.getTimeUnit().name().charAt(0);
 				
-				StringBuilder codeLenseContent = new StringBuilder(content);
+				StringBuilder codeLensContent = new StringBuilder(content);
 
-				codeLenseContent.append('(');
-				codeLenseContent.append("Count=");
-				codeLenseContent.append(metrics.getCallsCount());
-				codeLenseContent.append(' ');
-				codeLenseContent.append("Total=");
-				codeLenseContent.append(metrics.getTotalTime());
-				codeLenseContent.append(timeUnitShort);
-				codeLenseContent.append(' ');
-				codeLenseContent.append("Max=");
-				codeLenseContent.append(metrics.getMaxTime());
-				codeLenseContent.append(timeUnitShort);
-				codeLenseContent.append(')');
+				codeLensContent.append(' ');
+				codeLensContent.append('(');
+				codeLensContent.append("Count=");
+				codeLensContent.append(metrics.getCallsCount());
+				codeLensContent.append(' ');
+				codeLensContent.append("Total=");
+				codeLensContent.append(shorten(metrics.getTotalTime()));
+				codeLensContent.append(timeUnitShort);
+				codeLensContent.append(' ');
+				codeLensContent.append("Max=");
+				codeLensContent.append(shorten(metrics.getMaxTime()));
+				codeLensContent.append(timeUnitShort);
+				codeLensContent.append(')');
 
-				content  = codeLenseContent.toString();
+				content  = codeLensContent.toString();
 			} 
 			
 			codeLens.setData(content);
@@ -351,6 +352,10 @@ public class RequestMappingHoverProvider implements HoverProvider {
 		codeLens.setCommand(cmd);
 
 		return codeLens;
+	}
+
+	private double shorten(double val) {
+		return val;
 	}
 
 	private CodeLens createCodeLensForRemaining(Range range, int remaining) {
