@@ -148,13 +148,13 @@ public class SpringProcessLiveDataExtractorOverJMX {
 
 					if (metricsData instanceof String) {
 						return RequestMappingMetrics.parse((String) metricsData);
-					} else {
+					} else if (metricsData != null) {
 						return RequestMappingMetrics.parse(gson.toJson(metricsData));
 					}
 				} catch (Exception e) {
 					log.error("", e);
-					return null;
 				}
+				return null;
 			}
 		};
 	}

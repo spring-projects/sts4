@@ -321,11 +321,11 @@ public class RequestMappingHoverProvider implements HoverProvider {
 
 		if (StringUtil.hasText(content)) {
 			
-			codeLens.setData(content);
-			
-			StringBuilder codeLenseContent = new StringBuilder(content);
 			if (metrics != null) {
 				char timeUnitShort = metrics.getTimeUnit().name().charAt(0);
+				
+				StringBuilder codeLenseContent = new StringBuilder(content);
+
 				codeLenseContent.append('(');
 				codeLenseContent.append("Count=");
 				codeLenseContent.append(metrics.getCallsCount());
@@ -338,9 +338,12 @@ public class RequestMappingHoverProvider implements HoverProvider {
 				codeLenseContent.append(metrics.getMaxTime());
 				codeLenseContent.append(timeUnitShort);
 				codeLenseContent.append(')');
-			}
-			cmd.setTitle(codeLenseContent.toString());
 
+				content  = codeLenseContent.toString();
+			} 
+			
+			codeLens.setData(content);
+			cmd.setTitle(content);
 			cmd.setCommand("sts.open.url");
 			cmd.setArguments(ImmutableList.of(content));
 		}
