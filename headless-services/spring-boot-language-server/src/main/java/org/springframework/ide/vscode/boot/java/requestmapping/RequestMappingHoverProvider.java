@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -69,8 +70,7 @@ public class RequestMappingHoverProvider implements HoverProvider {
 				List<Tuple2<LiveRequestMapping, SpringProcessLiveData>> val = getRequestMappingMethodFromRunningApp(annotation, processLiveData);
 				if (!val.isEmpty()) {
 					Range hoverRange = doc.toRange(annotation.getStartPosition(), annotation.getLength());
-				    List<String> urls = getUrls(val);
-					return assembleCodeLenses(hoverRange, urls);
+					return assembleCodeLenses(hoverRange, val);
 				}
 			}
 		}
@@ -133,21 +133,30 @@ public class RequestMappingHoverProvider implements HoverProvider {
 //		return builder.build();
 //	}
 
-	private Collection<CodeLens> assembleCodeLenses(Range range, List<String> urls) {
+	private Collection<CodeLens> assembleCodeLenses(Range range, List<Tuple2<LiveRequestMapping, SpringProcessLiveData>> data) {
 
 		Collection<CodeLens> lenses = new ArrayList<>();
-
-		if (urls != null) {
-			int limit = urls.size() <= CODE_LENS_LIMIT ? urls.size() : CODE_LENS_LIMIT;
-			for (int i = 0; i < limit; i++) {
-				CodeLens codeLens = createCodeLensForRequestMapping(range, urls.get(i));
-				lenses.add(codeLens);
-			}
-			if (urls.size() > CODE_LENS_LIMIT) {
-				CodeLens codeLens = createCodeLensForRemaining(range, urls.size() - CODE_LENS_LIMIT);
-				lenses.add(codeLens);
+		
+		int remaining = 0; 
+		
+		for (Tuple2<LiveRequestMapping, SpringProcessLiveData> dataEntry : data) {
+			for (String url : getUrls(dataEntry)) {
+				if (lenses.size() <= CODE_LENS_LIMIT) {
+					Set<String> requestMethods = dataEntry.getT1().getRequestMethods();
+					RequestMappingMetrics metrics = dataEntry.getT2().getLiveMterics().getRequestMappingMetrics(new String[] { url }, requestMethods.toArray(new String[requestMethods.size()]));
+					CodeLens codeLens = createCodeLensForRequestMapping(range, url, metrics);
+					lenses.add(codeLens);
+				} else {
+					remaining++;
+				}
 			}
 		}
+		
+		if (remaining > 0) {
+			CodeLens codeLens = createCodeLensForRemaining(range, remaining);
+			lenses.add(codeLens);
+		}
+
 		return lenses;
 	}
 
@@ -223,29 +232,26 @@ public class RequestMappingHoverProvider implements HoverProvider {
 		return false;
 	}
 
-	private List<String> getUrls(List<Tuple2<LiveRequestMapping, SpringProcessLiveData>> mappingMethods) throws Exception {
+	private List<String> getUrls(Tuple2<LiveRequestMapping, SpringProcessLiveData> mappingMethod) {
 		List<String> urls = new ArrayList<>();
-		for (int i = 0; i < mappingMethods.size(); i++) {
-			Tuple2<LiveRequestMapping, SpringProcessLiveData> mappingMethod = mappingMethods.get(i);
-			SpringProcessLiveData liveData = mappingMethod.getT2();
-			String contextPath = liveData.getContextPath();
+		SpringProcessLiveData liveData = mappingMethod.getT2();
+		String contextPath = liveData.getContextPath();
 
-			String urlScheme = liveData.getUrlScheme();
-			String port = liveData.getPort();
-			String host = liveData.getHost();
+		String urlScheme = liveData.getUrlScheme();
+		String port = liveData.getPort();
+		String host = liveData.getHost();
 
-			String[] paths = mappingMethod.getT1().getSplitPath();
-			if (paths==null || paths.length==0) {
-				//Technically, this means the path 'predicate' is unconstrained, meaning any path matches.
-				//So this is not quite the same as the case where path=""... but...
-				//It is better for us to show one link where any path is allowed, versus showing no links where any link is allowed.
-				//So we'll pretend this is the same as path="" as that gives a working link.
-				paths = new String[] {""};
-			}
-			for (String path : paths) {
-				String url = UrlUtil.createUrl(urlScheme, host, port, path, contextPath);
-				urls.add(url);
-			}
+		String[] paths = mappingMethod.getT1().getSplitPath();
+		if (paths==null || paths.length==0) {
+			//Technically, this means the path 'predicate' is unconstrained, meaning any path matches.
+			//So this is not quite the same as the case where path=""... but...
+			//It is better for us to show one link where any path is allowed, versus showing no links where any link is allowed.
+			//So we'll pretend this is the same as path="" as that gives a working link.
+			paths = new String[] {""};
+		}
+		for (String path : paths) {
+			String url = UrlUtil.createUrl(urlScheme, host, port, path, contextPath);
+			urls.add(url);
 		}
 		return urls;
 	}
@@ -279,7 +285,8 @@ public class RequestMappingHoverProvider implements HoverProvider {
 
 			Renderable urlRenderables = Renderables.concat(renderableUrls);
 			
-			RequestMappingMetrics metrics = liveData.getLiveMterics().getRequestMappingMetrics(requestMapping);
+			Set<String> requestMethods = requestMapping.getRequestMethods();
+			RequestMappingMetrics metrics = liveData.getLiveMterics().getRequestMappingMetrics(requestMapping.getSplitPath(), requestMethods.toArray(new String[requestMethods.size()]));
 			if (metrics != null) {
 				Renderable metricsRenderable = Renderables.concat(
 						Renderables.bold("Count: " + metrics.getCallsCount() + " | Total Time: " + metrics.getTotalTime() + " | Max Time: " + metrics.getMaxTime()),
@@ -307,14 +314,32 @@ public class RequestMappingHoverProvider implements HoverProvider {
 		return new Hover(ImmutableList.of(Either.forLeft(contentVal.toString())));
 	}
 
-	private CodeLens createCodeLensForRequestMapping(Range range, String content) {
+	private CodeLens createCodeLensForRequestMapping(Range range, String content, RequestMappingMetrics metrics) {
 		CodeLens codeLens = new CodeLens();
 		codeLens.setRange(range);
 		Command cmd = new Command();
 
 		if (StringUtil.hasText(content)) {
+			
 			codeLens.setData(content);
-			cmd.setTitle(content);
+			
+			StringBuilder codeLenseContent = new StringBuilder(content);
+			if (metrics != null) {
+				char timeUnitShort = metrics.getTimeUnit().name().charAt(0);
+				codeLenseContent.append('(');
+				codeLenseContent.append("Count=");
+				codeLenseContent.append(metrics.getCallsCount());
+				codeLenseContent.append(' ');
+				codeLenseContent.append("Total=");
+				codeLenseContent.append(metrics.getTotalTime());
+				codeLenseContent.append(timeUnitShort);
+				codeLenseContent.append(' ');
+				codeLenseContent.append("Max=");
+				codeLenseContent.append(metrics.getMaxTime());
+				codeLenseContent.append(timeUnitShort);
+				codeLenseContent.append(')');
+			}
+			cmd.setTitle(codeLenseContent.toString());
 
 			cmd.setCommand("sts.open.url");
 			cmd.setArguments(ImmutableList.of(content));

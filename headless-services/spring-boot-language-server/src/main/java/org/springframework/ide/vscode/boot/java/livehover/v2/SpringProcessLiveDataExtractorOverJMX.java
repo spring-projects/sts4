@@ -126,15 +126,15 @@ public class SpringProcessLiveDataExtractorOverJMX {
 		return new LiveMetricsModel() {
 			
 			@Override
-			public RequestMappingMetrics getRequestMappingMetrics(LiveRequestMapping rm) {
+			public RequestMappingMetrics getRequestMappingMetrics(String[] paths, String[] requestMethods) {
 				try {
 					List<Object> tags = new ArrayList<>();
-					if (rm.getSplitPath().length == 0) {
+					if (paths.length == 0) {
 						return null;
 					}
-					tags.add("uri:" + rm.getSplitPath()[0]);
-					if (!rm.getRequestMethods().isEmpty()) {
-						tags.add("method:" + String.join(",", rm.getRequestMethods()));
+					tags.add("uri:" + String.join(",", paths));
+					if (requestMethods.length > 0) {
+						tags.add("method:" + String.join(",", requestMethods));
 					}
 					
 					Object[] params = new Object[] {"http.server.requests", tags};

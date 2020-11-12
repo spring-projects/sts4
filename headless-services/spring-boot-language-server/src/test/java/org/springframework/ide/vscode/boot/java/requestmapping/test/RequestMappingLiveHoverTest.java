@@ -22,7 +22,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
 import org.springframework.ide.vscode.boot.bootiful.HoverTestConf;
 import org.springframework.ide.vscode.boot.java.livehover.v2.LiveMetricsModel;
-import org.springframework.ide.vscode.boot.java.livehover.v2.LiveRequestMapping;
 import org.springframework.ide.vscode.boot.java.livehover.v2.RequestMappingMetrics;
 import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveData;
 import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveDataProvider;
@@ -199,7 +198,7 @@ public class RequestMappingLiveHoverTest {
 				.liveMetrics(new LiveMetricsModel() {
 					
 					@Override
-					public RequestMappingMetrics getRequestMappingMetrics(LiveRequestMapping rm) {
+					public RequestMappingMetrics getRequestMappingMetrics(String[] paths, String[] requestMethods) {
 						return new RequestMappingMetrics() {
 							
 							@Override
