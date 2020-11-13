@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.commons.util;
 
 import java.net.URI;
 import java.nio.file.FileSystems;
+import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
 import java.util.Arrays;
@@ -118,7 +119,7 @@ public class BasicFileObserver implements FileObserver {
 						
 								// keep only URIs for which a matcher succeeds
 								pair.left.stream()
-									.filter(matcher -> matcher.matches(Paths.get(URI.create(uri))))
+									.filter(matcher -> matcher.matches(paths_get(uri)))
 										.findFirst()
 										.isPresent())
 						.toArray(String[]::new)))
@@ -127,4 +128,13 @@ public class BasicFileObserver implements FileObserver {
 			.forEach(superPair -> superPair.left.right.accept(superPair.right));
 	}
 
+	// Added in an attempt to learn what causes: https://www.pivotaltracker.com/story/show/175715622
+	private static Path paths_get(String uri) {
+		try {
+			return Paths.get(URI.create(uri));
+		} catch (IllegalArgumentException e) {
+			//make the error more specific (reveal the uri string that causes it)
+			throw new IllegalArgumentException("uri = '"+uri+"'", e);
+		}
+	}
 }
