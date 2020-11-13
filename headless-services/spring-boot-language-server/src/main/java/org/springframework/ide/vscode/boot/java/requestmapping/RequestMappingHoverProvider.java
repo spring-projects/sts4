@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2019 Pivotal, Inc.
+ * Copyright (c) 2017, 2020 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -140,10 +140,18 @@ public class RequestMappingHoverProvider implements HoverProvider {
 		int remaining = 0; 
 		
 		for (Tuple2<LiveRequestMapping, SpringProcessLiveData> dataEntry : data) {
-			for (String url : getUrls(dataEntry)) {
+			for (Tuple2<String, String> urlWithPath : getUrlsWithPath(dataEntry)) {
 				if (lenses.size() <= CODE_LENS_LIMIT) {
-					Set<String> requestMethods = dataEntry.getT1().getRequestMethods();
-					RequestMappingMetrics metrics = dataEntry.getT2().getLiveMterics().getRequestMappingMetrics(new String[] { url }, requestMethods.toArray(new String[requestMethods.size()]));
+					SpringProcessLiveData liveData = dataEntry.getT2();
+					LiveRequestMapping requestMapping = dataEntry.getT1();
+					String url = urlWithPath.getT1();
+					String path = urlWithPath.getT2();
+					Set<String> requestMethods = requestMapping.getRequestMethods();
+					
+					RequestMappingMetrics metrics = liveData.getLiveMterics() == null ? null
+							: liveData.getLiveMterics().getRequestMappingMetrics(new String[] { path },
+									requestMethods.toArray(new String[requestMethods.size()]));
+
 					CodeLens codeLens = createCodeLensForRequestMapping(range, url, metrics);
 					lenses.add(codeLens);
 				} else {
@@ -232,8 +240,8 @@ public class RequestMappingHoverProvider implements HoverProvider {
 		return false;
 	}
 
-	private List<String> getUrls(Tuple2<LiveRequestMapping, SpringProcessLiveData> mappingMethod) {
-		List<String> urls = new ArrayList<>();
+	private List<Tuple2<String, String>> getUrlsWithPath(Tuple2<LiveRequestMapping, SpringProcessLiveData> mappingMethod) {
+		List<Tuple2<String, String>> urls = new ArrayList<>();
 		SpringProcessLiveData liveData = mappingMethod.getT2();
 		String contextPath = liveData.getContextPath();
 
@@ -241,7 +249,8 @@ public class RequestMappingHoverProvider implements HoverProvider {
 		String port = liveData.getPort();
 		String host = liveData.getHost();
 
-		String[] paths = mappingMethod.getT1().getSplitPath();
+		LiveRequestMapping requestMapping = mappingMethod.getT1();
+		String[] paths = requestMapping.getSplitPath();
 		if (paths==null || paths.length==0) {
 			//Technically, this means the path 'predicate' is unconstrained, meaning any path matches.
 			//So this is not quite the same as the case where path=""... but...
@@ -251,7 +260,7 @@ public class RequestMappingHoverProvider implements HoverProvider {
 		}
 		for (String path : paths) {
 			String url = UrlUtil.createUrl(urlScheme, host, port, path, contextPath);
-			urls.add(url);
+			urls.add(Tuples.of(url, path));
 		}
 		return urls;
 	}
@@ -286,10 +295,12 @@ public class RequestMappingHoverProvider implements HoverProvider {
 			Renderable urlRenderables = Renderables.concat(renderableUrls);
 			
 			Set<String> requestMethods = requestMapping.getRequestMethods();
-			RequestMappingMetrics metrics = liveData.getLiveMterics().getRequestMappingMetrics(requestMapping.getSplitPath(), requestMethods.toArray(new String[requestMethods.size()]));
+			RequestMappingMetrics metrics = liveData.getLiveMterics() == null ? null
+					: liveData.getLiveMterics().getRequestMappingMetrics(requestMapping.getSplitPath(),
+							requestMethods.toArray(new String[requestMethods.size()]));
 			if (metrics != null) {
 				Renderable metricsRenderable = Renderables.concat(
-						Renderables.bold("Count: " + metrics.getCallsCount() + " | Total Time: " + metrics.getTotalTime() + " | Max Time: " + metrics.getMaxTime()),
+						Renderables.bold(createHoverMetricsContent(metrics)),
 						Renderables.text("\n\n"));
 				urlRenderables = Renderables.concat(urlRenderables, Renderables.text("\n\n"), metricsRenderable);
 			}
@@ -313,6 +324,42 @@ public class RequestMappingHoverProvider implements HoverProvider {
 		// being added between the content itself
 		return new Hover(ImmutableList.of(Either.forLeft(contentVal.toString())));
 	}
+	
+	private String createHoverMetricsContent(RequestMappingMetrics metrics) {
+		char timeUnitShort = metrics.getTimeUnit().name().toLowerCase().charAt(0);
+		
+		StringBuilder metricsContent = new StringBuilder();
+		metricsContent.append("Count: ");
+		metricsContent.append(metrics.getCallsCount());
+		metricsContent.append(" | Total Time: ");
+		metricsContent.append(metrics.getTotalTime());
+		metricsContent.append(timeUnitShort);
+		metricsContent.append(" | Max Time: ");
+		metricsContent.append(metrics.getMaxTime());
+		metricsContent.append(timeUnitShort);
+		
+		return metricsContent.toString();
+	}
+
+	private String createCodeLensMetricsContent(RequestMappingMetrics metrics) {
+		char timeUnitShort = metrics.getTimeUnit().name().toLowerCase().charAt(0);
+		
+		StringBuilder metricsContent = new StringBuilder();
+
+		metricsContent.append("Count=");
+		metricsContent.append(metrics.getCallsCount());
+		metricsContent.append(' ');
+		metricsContent.append("Total=");
+		metricsContent.append(String.format("%.2f", metrics.getTotalTime()));
+		metricsContent.append(timeUnitShort);
+		metricsContent.append(' ');
+		metricsContent.append("Max=");
+		metricsContent.append(String.format("%.2f", metrics.getMaxTime()));
+		metricsContent.append(timeUnitShort);
+		metricsContent.append(')');
+		
+		return metricsContent.toString();
+	}
 
 	private CodeLens createCodeLensForRequestMapping(Range range, String content, RequestMappingMetrics metrics) {
 		CodeLens codeLens = new CodeLens();
@@ -322,24 +369,11 @@ public class RequestMappingHoverProvider implements HoverProvider {
 		if (StringUtil.hasText(content)) {
 			
 			if (metrics != null) {
-				char timeUnitShort = metrics.getTimeUnit().name().charAt(0);
-				
 				StringBuilder codeLensContent = new StringBuilder(content);
-
 				codeLensContent.append(' ');
 				codeLensContent.append('(');
-				codeLensContent.append("Count=");
-				codeLensContent.append(metrics.getCallsCount());
-				codeLensContent.append(' ');
-				codeLensContent.append("Total=");
-				codeLensContent.append(shorten(metrics.getTotalTime()));
-				codeLensContent.append(timeUnitShort);
-				codeLensContent.append(' ');
-				codeLensContent.append("Max=");
-				codeLensContent.append(shorten(metrics.getMaxTime()));
-				codeLensContent.append(timeUnitShort);
+				codeLensContent.append(createCodeLensMetricsContent(metrics));
 				codeLensContent.append(')');
-
 				content  = codeLensContent.toString();
 			} 
 			
@@ -352,10 +386,6 @@ public class RequestMappingHoverProvider implements HoverProvider {
 		codeLens.setCommand(cmd);
 
 		return codeLens;
-	}
-
-	private double shorten(double val) {
-		return val;
 	}
 
 	private CodeLens createCodeLensForRemaining(Range range, int remaining) {
@@ -373,5 +403,5 @@ public class RequestMappingHoverProvider implements HoverProvider {
 
 		return codeLens;
 	}
-
+	
 }

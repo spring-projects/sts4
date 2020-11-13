@@ -556,6 +556,26 @@ public class Editor {
 		assertContains(snippet, hoverString(hover));
 	}
 
+	public void assertLiveCodeLensContains(String codeLensOver, int occurrence, String snippet) throws Exception {
+		int cmPosition = getHoverPosition(codeLensOver, occurrence);
+		for (CodeLens cm : getLiveDataCodeLenses()) {
+			if (cmPosition >= doc.toOffset(cm.getRange().getStart()) && cmPosition <= doc.toOffset(cm.getRange().getEnd())) {
+				if (cm.getData() instanceof String) {
+					if (((String) cm.getData()).contains(snippet)) {
+						return;
+					}
+				} else {
+					fail("Live Data CodeLens data field is not a string");
+				}
+			}
+		}
+		fail("Cannot find '" + snippet + "' in Live Data Code Lenses");
+	}
+	
+	public void assertLiveCodeLensContains(String codeLensOver, String snippet) throws Exception {
+		assertLiveCodeLensContains(codeLensOver, 1, snippet);
+	}
+	
 	public String hoverString(Hover hover) {
 		StringBuilder buf = new StringBuilder();
 		boolean first = true;
@@ -619,6 +639,16 @@ public class Editor {
 		Hover hover = harness.getHover(doc, doc.toPosition(hoverPosition));
 		assertEquals(expectedHover.trim(), hoverString(hover).trim());
 	}
+	
+	public List<? extends CodeLens> getCodeLenses() throws Exception {
+		return harness.getCodeLenses(doc);
+	}
+	
+	public List<? extends CodeLens> getLiveDataCodeLenses() throws Exception {
+		HighlightParams highlights = this.highlightsFuture.get(HIGHLIGHTS_TIMEOUT.toMillis(), TimeUnit.MILLISECONDS);
+		return highlights != null ? highlights.getCodeLenses() : ImmutableList.of();
+	}
+
 
 	public void assertNoHover(String hoverOver, int occurence) throws Exception {
 		int hoverPosition = getHoverPosition(hoverOver,occurence);

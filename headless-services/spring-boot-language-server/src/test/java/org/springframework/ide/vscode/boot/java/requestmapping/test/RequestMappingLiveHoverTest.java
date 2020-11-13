@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2018 Pivotal, Inc.
+ * Copyright (c) 2017, 2020 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -203,7 +203,7 @@ public class RequestMappingLiveHoverTest {
 							
 							@Override
 							public double getTotalTime() {
-								return 3.0;
+								return "/hello".equals(paths[0]) ? 3.034567 : 5.43673;
 							}
 							
 							@Override
@@ -213,12 +213,12 @@ public class RequestMappingLiveHoverTest {
 							
 							@Override
 							public double getMaxTime() {
-								return 0.55;
+								return "/hello".equals(paths[0]) ? 0.5535632 : 0.7437624;
 							}
 							
 							@Override
 							public long getCallsCount() {
-								return 25;
+								return "/hello".equals(paths[0]) ? 25 : 34;
 							}
 						};
 					}
@@ -231,10 +231,72 @@ public class RequestMappingLiveHoverTest {
 		Editor editor = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
 		editor.assertHighlights("@RequestMapping(\"/hello\")", "@RequestMapping(\"/goodbye\")");
 
-		editor.assertHoverContains("@RequestMapping(\"/hello\")", "[https://cfapps.io:999/hello](https://cfapps.io:999/hello)  \n" +
-				"Process [PID=76543, name=`test-request-mapping-live-hover`]");
+		editor.assertHoverContains("@RequestMapping(\"/hello\")", "[https://cfapps.io:999/hello](https://cfapps.io:999/hello)  \n");
+		editor.assertHoverContains("@RequestMapping(\"/hello\")", "Count: 25 | Total Time: 3.034567s | Max Time: 0.5535632s");
+		editor.assertHoverContains("@RequestMapping(\"/hello\")", "Process [PID=76543, name=`test-request-mapping-live-hover`]");
 
-		editor.assertHoverContains("@RequestMapping(\"/goodbye\")", "Count: 25 | Total Time: 3.0 | Max Time: 0.55");
+		editor.assertHoverContains("@RequestMapping(\"/goodbye\")", "Count: 34 | Total Time: 5.43673s | Max Time: 0.7437624s");
+
+	}
+	
+	@Test
+	public void testLiveCodeLensMetricsSection() throws Exception {
+
+		File directory = new File(
+				ProjectsHarness.class.getResource("/test-projects/test-request-mapping-live-hover/").toURI());
+		String docUri = directory.toPath().resolve("src/main/java/example/RestApi.java").toUri()
+				.toString();
+
+
+		// Build a mock running boot app
+		SpringProcessLiveData liveData = new SpringProcessLiveDataBuilder()
+				.port("999")
+				.processID("76543")
+				.urlScheme("https")
+				.host("cfapps.io")
+				.processName("test-request-mapping-live-hover")
+				// Ugly, but this is real JSON copied from a real live running app. We want the
+				// mock app to return realistic results if possible
+				.requestMappingsJson(
+						"{\"/webjars/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**/favicon.ico\":{\"bean\":\"faviconHandlerMapping\"},\"{[/hello-world],methods=[GET]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public example.Greeting example.HelloWorldController.sayHello(java.lang.String)\"},\"{[/goodbye]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.goodbye()\"},\"{[/hello]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.hello()\"},\"{[/error]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.http.ResponseEntity<java.util.Map<java.lang.String, java.lang.Object>> org.springframework.boot.autoconfigure.web.BasicErrorController.error(javax.servlet.http.HttpServletRequest)\"},\"{[/error],produces=[text/html]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.web.servlet.ModelAndView org.springframework.boot.autoconfigure.web.BasicErrorController.errorHtml(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse)\"}}")
+				.liveMetrics(new LiveMetricsModel() {
+					
+					@Override
+					public RequestMappingMetrics getRequestMappingMetrics(String[] paths, String[] requestMethods) {
+						return new RequestMappingMetrics() {
+							
+							@Override
+							public double getTotalTime() {
+								return "/hello".equals(paths[0]) ? 3.034567 : 5.43673;
+							}
+							
+							@Override
+							public TimeUnit getTimeUnit() {
+								return TimeUnit.SECONDS;
+							}
+							
+							@Override
+							public double getMaxTime() {
+								return "/hello".equals(paths[0]) ? 0.5535632 : 0.7437624;
+							}
+							
+							@Override
+							public long getCallsCount() {
+								return "/hello".equals(paths[0]) ? 25 : 34;
+							}
+						};
+					}
+				})
+				.build();
+		liveDataProvider.add("processkey", liveData);
+
+		harness.intialize(directory);
+
+		Editor editor = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
+		editor.assertHighlights("@RequestMapping(\"/hello\")", "@RequestMapping(\"/goodbye\")");
+
+		editor.assertLiveCodeLensContains("@RequestMapping(\"/hello\")", "Count=25 Total=3.03s Max=0.55s");
+		editor.assertLiveCodeLensContains("@RequestMapping(\"/goodbye\")", "Count=34 Total=5.44s Max=0.74s");
 
 	}
 	
