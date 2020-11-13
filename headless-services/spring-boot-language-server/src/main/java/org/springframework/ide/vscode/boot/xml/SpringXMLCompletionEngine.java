@@ -58,6 +58,7 @@ import org.eclipse.lemminx.dom.parser.XMLScanner;
 import org.springframework.ide.vscode.boot.app.BootJavaConfig;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.boot.xml.completions.BeanRefCompletionProposalProvider;
+import org.springframework.ide.vscode.boot.xml.completions.ConstructorArgNameCompletionProposalProvider;
 import org.springframework.ide.vscode.boot.xml.completions.PropertyNameCompletionProposalProvider;
 import org.springframework.ide.vscode.boot.xml.completions.TypeCompletionProposalProvider;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
@@ -95,6 +96,7 @@ public class SpringXMLCompletionEngine implements ICompletionEngine, LanguageSpe
 
 		BeanRefCompletionProposalProvider beanRefProvider = new BeanRefCompletionProposalProvider(projectFinder, symbolIndex);
 		PropertyNameCompletionProposalProvider propertyNameProvider = new PropertyNameCompletionProposalProvider(projectFinder);
+		ConstructorArgNameCompletionProposalProvider constructorArgNameProvider = new ConstructorArgNameCompletionProposalProvider(projectFinder);
 		
 		this.completionProviders.put(new XMLElementKey(BEANS_NAMESPACE, null, BEAN_ELEMENT, CLASS_ATTRIBUTE), classesOnlyProvider);
 		this.completionProviders.put(new XMLElementKey(BEANS_NAMESPACE, null, CONSTRUCTOR_ARG_ELEMENT, TYPE_ATTRIBUTE), classesAndInterfacesProvider);
@@ -115,6 +117,7 @@ public class SpringXMLCompletionEngine implements ICompletionEngine, LanguageSpe
 		this.completionProviders.put(new XMLElementKey(BEANS_NAMESPACE, BEAN_ELEMENT, PROPERTY_ELEMENT, REF_ATTRIBUTE), beanRefProvider);
 
 		this.completionProviders.put(new XMLElementKey(BEANS_NAMESPACE, BEAN_ELEMENT, PROPERTY_ELEMENT, NAME_ATTRIBUTE), propertyNameProvider);
+		this.completionProviders.put(new XMLElementKey(BEANS_NAMESPACE, null, CONSTRUCTOR_ARG_ELEMENT, NAME_ATTRIBUTE), constructorArgNameProvider);
 		
 		this.completionProviders.put(new XMLElementKey(UTIL_NAMESPACE, null, null, VALUE_TYPE_ATTRIBUTE), classesAndInterfacesProvider);
 		this.completionProviders.put(new XMLElementKey(UTIL_NAMESPACE, null, null, KEY_TYPE_ATTRIBUTE), classesAndInterfacesProvider);

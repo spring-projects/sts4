@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2020 Pivotal, Inc.
+ * Copyright (c) 2020 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -15,36 +15,41 @@ import static org.springframework.ide.vscode.boot.xml.XmlConfigConstants.CLASS_A
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
+import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.lemminx.dom.DOMAttr;
 import org.eclipse.lemminx.dom.DOMNode;
 import org.eclipse.lemminx.dom.parser.Scanner;
 import org.eclipse.lsp4j.CompletionItemKind;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.boot.metadata.types.Type;
 import org.springframework.ide.vscode.boot.xml.XMLCompletionProvider;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.java.IJavaType;
 import org.springframework.ide.vscode.commons.java.IMethod;
+import org.springframework.ide.vscode.commons.java.IType;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.util.Renderable;
-import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 /**
  * @author Martin Lippert
  */
-public class PropertyNameCompletionProposalProvider implements XMLCompletionProvider {
+public class ConstructorArgNameCompletionProposalProvider implements XMLCompletionProvider {
 	
-	private static final Logger log = LoggerFactory.getLogger(PropertyNameCompletionProposalProvider.class);
+	private static final Logger log = LoggerFactory.getLogger(ConstructorArgNameCompletionProposalProvider.class);
 
 	private final JavaProjectFinder projectFinder;
 
-	public PropertyNameCompletionProposalProvider(JavaProjectFinder projectFinder) {
+	public ConstructorArgNameCompletionProposalProvider(JavaProjectFinder projectFinder) {
 		this.projectFinder = projectFinder;
 	}
 
@@ -77,9 +82,9 @@ public class PropertyNameCompletionProposalProvider implements XMLCompletionProv
 				log.info("Bean class '{}'", beanClass);
 
 				final String searchPrefix = prefix;
-				return propertyNameCandidateMethods(project, beanClass)
-					.filter(method -> getPropertyName(method).startsWith(searchPrefix))
-					.map(method -> createProposal(method, doc, offset, tokenOffset, tokenEnd))
+				return constructorArgNameCandidates(project, beanClass)
+					.filter(constructorArg -> constructorArg.getRight().startsWith(searchPrefix))
+					.map(constructorArg -> createProposal(constructorArg, doc, offset, tokenOffset, tokenEnd))
 					.collect(Collectors.toList());
 			}
 		};
@@ -98,9 +103,9 @@ public class PropertyNameCompletionProposalProvider implements XMLCompletionProv
 		return null;
 	}
 
-	private ICompletionProposal createProposal(IMethod method, TextDocument doc, int offset, int tokenStart, int tokenEnd) {
-		String label = getPropertyName(method);
-		CompletionItemKind kind = CompletionItemKind.Method;
+	private ICompletionProposal createProposal(Pair<IJavaType, String> constructorArg, TextDocument doc, int offset, int tokenStart, int tokenEnd) {
+		String label = constructorArg.getRight();
+		CompletionItemKind kind = CompletionItemKind.Reference;
 
 		DocumentEdits edits = new DocumentEdits(doc, false);
 
@@ -114,32 +119,42 @@ public class PropertyNameCompletionProposalProvider implements XMLCompletionProv
 		edits.replace(replaceStart, tokenEnd, replaceString);
 
 		Renderable renderable = null;
-
-		return new GenericXMLCompletionProposal(label, kind, edits, label, renderable, 1d);
-	}
-
-	private static boolean isPropertyWriteMethod(IMethod method) {
-		return method != null
-				&& method.getElementName().startsWith("set")
-				&& method.getElementName().length() > 3;
-	}
-
-	public static String getPropertyName(IMethod method) {
-		String methodName = method.getElementName();
-		if (methodName.startsWith("set")) {
-			String propertyName = methodName.substring(3);
-			if (propertyName.length() > 0) {
-				return StringUtil.lowerCaseFirstChar(propertyName);
+		String detail = label;
+		
+		IJavaType paramType = constructorArg.getLeft();
+		if (paramType != null) {
+			Type type = Type.fromJavaType(paramType);
+			if (type != null) {
+				detail = constructorArg.getRight() + " - " + type.toString();
 			}
 		}
-		return methodName;
+
+		return new GenericXMLCompletionProposal(label, kind, edits, detail, renderable, 1d);
 	}
-	
-	public static Stream<IMethod> propertyNameCandidateMethods(IJavaProject project, String beanClassFqName) {
-		return project.getIndex().allSuperTypesOf(beanClassFqName, true, true)
-			.toStream()
-			.flatMap(type -> type.getMethods())
-			.filter(PropertyNameCompletionProposalProvider::isPropertyWriteMethod);
+
+	public static Stream<Pair<IJavaType, String>> constructorArgNameCandidates(IJavaProject project, String beanClassFqName) {
+		IType type = project.getIndex().findType(beanClassFqName);
+		if (type != null) {
+			return type.getMethods()
+					.filter(method -> method.isConstructor())
+					.flatMap(method -> getConstructorArgs(method));
+		}
+		else {
+			return Stream.empty();
+		}
+	}
+
+	private static Stream<Pair<IJavaType, String>> getConstructorArgs(IMethod method) {
+		List<String> parameterNames = method.getParameterNames();
+		List<IJavaType> parameterTypes = method.parameters().collect(Collectors.toList());
+		
+		if (parameterNames != null && parameterTypes != null && parameterNames.size() == parameterTypes.size()) {
+			return IntStream.range(0, parameterNames.size())
+				.mapToObj(i -> Pair.of(parameterTypes.get(i), parameterNames.get(i)));
+		}
+		else {
+			return Stream.empty();
+		}
 	}
 
 }

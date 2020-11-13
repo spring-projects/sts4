@@ -18,7 +18,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.WorkspaceFolder;

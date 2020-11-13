@@ -89,7 +89,7 @@ public class BeanRefCompletionProposalProvider implements XMLCompletionProvider 
 
 		Renderable renderable = null;
 
-		return new TypeCompletionProposal(beanID, kind, edits, beanID, renderable, score);
+		return new GenericXMLCompletionProposal(beanID, kind, edits, beanID, renderable, score);
 	}
 
 }

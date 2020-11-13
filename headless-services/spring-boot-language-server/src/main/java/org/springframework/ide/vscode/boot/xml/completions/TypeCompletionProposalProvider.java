@@ -124,7 +124,7 @@ public class TypeCompletionProposalProvider implements XMLCompletionProvider {
 		}
 	}
 	
-	private TypeCompletionProposal createPackageProposal(JavaCodeCompleteData proposal, TextDocument doc, String prefix, int offset) {
+	private GenericXMLCompletionProposal createPackageProposal(JavaCodeCompleteData proposal, TextDocument doc, String prefix, int offset) {
 		String fqName = proposal.getFullyQualifiedName();
 		String label = fqName;
 		CompletionItemKind kind = CompletionItemKind.Module;
@@ -138,10 +138,10 @@ public class TypeCompletionProposalProvider implements XMLCompletionProvider {
 
 		Renderable renderable = null;
 
-		return new TypeCompletionProposal(label, kind, edits, fqName, renderable, proposal.getRelevance());
+		return new GenericXMLCompletionProposal(label, kind, edits, fqName, renderable, proposal.getRelevance());
 	}
 	
-	private TypeCompletionProposal createTypeProposal(JavaCodeCompleteData proposal, TextDocument doc, String prefix, int offset) {
+	private GenericXMLCompletionProposal createTypeProposal(JavaCodeCompleteData proposal, TextDocument doc, String prefix, int offset) {
 		String fqName = proposal.getFullyQualifiedName();
 		String label = fqName;
 
@@ -168,7 +168,7 @@ public class TypeCompletionProposalProvider implements XMLCompletionProvider {
 
 		Renderable renderable = null;
 
-		return new TypeCompletionProposal(label, kind, edits, fqName, renderable, proposal.getRelevance());
+		return new GenericXMLCompletionProposal(label, kind, edits, fqName, renderable, proposal.getRelevance());
 	}
 		
 }
