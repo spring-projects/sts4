@@ -356,7 +356,6 @@ public class RequestMappingHoverProvider implements HoverProvider {
 		metricsContent.append("Max=");
 		metricsContent.append(String.format("%.2f", metrics.getMaxTime()));
 		metricsContent.append(timeUnitShort);
-		metricsContent.append(')');
 		
 		return metricsContent.toString();
 	}
