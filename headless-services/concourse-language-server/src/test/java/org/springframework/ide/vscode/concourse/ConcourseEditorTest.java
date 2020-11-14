@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticSeverity;
+import org.eclipse.lsp4j.DocumentSymbol;
 import org.eclipse.lsp4j.InsertTextFormat;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -239,6 +240,31 @@ public class ConcourseEditorTest {
 	private String getClasspathResourceText(String resourceName) throws Exception {
 		InputStream stream = ConcourseEditorTest.class.getClassLoader().getResourceAsStream(resourceName);
 		return IOUtil.toString(stream);
+	}
+	
+	@Test
+	public void outlineWithAnchors() throws Exception {
+		harness.enableHierarchicalDocumentSymbols(true);
+		//See: https://github.com/spring-projects/sts4/issues/483
+		Editor editor = harness.newEditor(
+				"def: &stuff\n" + 
+				"  name: git\n" + 
+				"  type: git\n" + 
+				"  source:\n" + 
+				"    uri: \n" + 
+				"resources:\n" + 
+				"- <<: *stuff\n" + 
+				"- name: git2\n" + 
+				"  type: git\n" + 
+				"  source:\n" + 
+				"    uri: git@github.com:kdvolder/7zip.git"
+		);
+		
+		editor.assertHierarchicalDocumentSymbols(
+				"resources::Resources\n" + 
+				"  git::Resource\n" + 
+				"  git2::Resource\n"
+		);
 	}
 
 	@Test

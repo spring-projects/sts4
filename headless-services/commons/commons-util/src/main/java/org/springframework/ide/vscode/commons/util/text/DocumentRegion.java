@@ -359,4 +359,8 @@ public class DocumentRegion implements CharSequence, IRegion {
 		return charBefore.equals("\n"); //This should work on windows too because windows uses "\r\n" but that still ends with "\n".
 	}
 
+	public boolean contains(DocumentRegion inner) {
+		return start<=inner.start && inner.end <= end;
+	}
+
 }

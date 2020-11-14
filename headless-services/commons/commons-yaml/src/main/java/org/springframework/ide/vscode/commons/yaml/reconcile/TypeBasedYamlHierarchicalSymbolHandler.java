@@ -24,6 +24,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.languageserver.util.HierarchicalDocumentSymbolHandler;
 import org.springframework.ide.vscode.commons.util.Assert;
+import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeUtil;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST;
@@ -76,9 +77,16 @@ public class TypeBasedYamlHierarchicalSymbolHandler implements HierarchicalDocum
 				if (namePath!=null) {
 					Node nameNode = namePath.traverseNode(node);
 					if (nameNode!=null) {
+						DocumentRegion nodeRegion = NodeUtil.region(doc, node);
+						DocumentRegion nameRegion = NodeUtil.region(doc, nameNode);
+						if (!nodeRegion.contains(nameRegion)) {
+							//This violates the expectation that most clients have. 
+							//vscode, for example drops the entire symbols hierarchy as 'invalid' if this happens
+							nodeRegion = nameRegion;
+						}
 						return new DocumentSymbol(NodeUtil.asScalar(nameNode), kind,
-								NodeUtil.region(doc, node).asRange(),
-								NodeUtil.region(doc, nameNode).asRange(),
+								nodeRegion.asRange(),
+								nameRegion.asRange(),
 								detail
 						);
 					}
@@ -151,7 +159,9 @@ public class TypeBasedYamlHierarchicalSymbolHandler implements HierarchicalDocum
 
 	@Override
 	public List<? extends DocumentSymbol> handleHierarchic(DocumentSymbolParams params) {
-		return outlineByUri.get(params.getTextDocument().getUri());
+		List<DocumentSymbol> symbols = outlineByUri.get(params.getTextDocument().getUri());
+		log.info("hierarchical symbols: {}", symbols);
+		return symbols;
 	}
 
 	@Override
@@ -168,10 +178,12 @@ public class TypeBasedYamlHierarchicalSymbolHandler implements HierarchicalDocum
 		if (def!=null) {
 			Item parent = findParent(path);
 			DocumentSymbol sym = def.createSymbol(currentAst, node, type, path);
-			if (parent!=null) {
-				parent.addChild(sym);
-			} else {
-				rootSymbols.add(sym);
+			if (sym!=null) {
+				if (parent!=null) {
+					parent.addChild(sym);
+				} else {
+					rootSymbols.add(sym);
+				}
 			}
 			stack.push(new Item(path, sym));
 		}

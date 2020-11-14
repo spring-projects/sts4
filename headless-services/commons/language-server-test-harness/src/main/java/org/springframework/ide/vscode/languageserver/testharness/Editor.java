@@ -55,6 +55,7 @@ import org.junit.Assert;
 import org.springframework.ide.vscode.commons.protocol.HighlightParams;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.Unicodes;
+import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 
 import com.google.common.collect.ImmutableList;
@@ -991,9 +992,33 @@ public class Editor {
 		symbolDump.append(s.getDetail());
 		symbolDump.append("\n");
 		assertEquals(s.getName(), getText(s.getSelectionRange()));
+		
+		assertNestedRange("Invalid selection range for "+s.getName(), s.getRange(), s.getSelectionRange());
 		List<DocumentSymbol> children = s.getChildren();
 		if (children!=null) {
 			dumpSymbols(children, indent+1, symbolDump);
+		}
+	}
+
+	private void assertNestedRange(String msg, Range outerRange, Range innerRange) {
+		boolean startOk = compare(outerRange.getStart(), innerRange.getStart()) <= 0;
+		boolean endOk = compare(outerRange.getEnd(), innerRange.getEnd()) >= 0;
+		if (startOk && endOk) {
+			//it's fine!
+		} else {
+			fail(msg + "\n" +
+				"outer: '"+this.getText(outerRange)+"'\n" +
+				"does not contain\n" +
+				"inner: '"+this.getText(innerRange)+"'"
+			);
+		}
+	}
+
+	private static int compare(Position p1, Position p2) {
+		if (p1.getLine()==p2.getLine()) {
+			return p1.getCharacter() - p2.getCharacter();
+		} else {
+			return p1.getLine() - p2.getLine();
 		}
 	}
 
