@@ -159,9 +159,7 @@ public class TypeBasedYamlHierarchicalSymbolHandler implements HierarchicalDocum
 
 	@Override
 	public List<? extends DocumentSymbol> handleHierarchic(DocumentSymbolParams params) {
-		List<DocumentSymbol> symbols = outlineByUri.get(params.getTextDocument().getUri());
-		log.info("hierarchical symbols: {}", symbols);
-		return symbols;
+		return outlineByUri.get(params.getTextDocument().getUri());
 	}
 
 	@Override
