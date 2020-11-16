@@ -10,11 +10,12 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.util;
 
+import java.io.File;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.FileSystems;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
-import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
@@ -131,8 +132,8 @@ public class BasicFileObserver implements FileObserver {
 	// Added in an attempt to learn what causes: https://www.pivotaltracker.com/story/show/175715622
 	private static Path paths_get(String uri) {
 		try {
-			return Paths.get(URI.create(uri));
-		} catch (IllegalArgumentException e) {
+			return new File(new URI(uri)).toPath();
+		} catch (IllegalArgumentException | URISyntaxException e) {
 			//make the error more specific (reveal the uri string that causes it)
 			throw new IllegalArgumentException("uri = '"+uri+"'", e);
 		}

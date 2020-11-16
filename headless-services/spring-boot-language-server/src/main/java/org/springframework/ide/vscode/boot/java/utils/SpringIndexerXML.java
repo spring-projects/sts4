@@ -15,7 +15,6 @@ import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -246,7 +245,7 @@ public class SpringIndexerXML implements SpringIndexer {
 
 	private String[] getFiles(IJavaProject project) throws Exception {
 		long start = System.currentTimeMillis();
-		Path projectPath = Paths.get(project.getLocationUri());
+		Path projectPath = new File(project.getLocationUri()).toPath();
 		String[] xmlFiles = Arrays.stream(scanFolders)
 			.map(folder -> projectPath.resolve(folder))
 			.filter(Files::isDirectory)

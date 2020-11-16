@@ -13,9 +13,9 @@ package org.springframework.ide.vscode.boot.java.utils;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -162,11 +162,16 @@ public class SpringIndexerJava implements SpringIndexer {
 	}
 
 	private boolean shouldProcessDocument(IJavaProject project, String docURI) {
-		Path path = Paths.get(URI.create(docURI));
-		return foldersToScan(project)
-				.filter(sourceFolder -> path.startsWith(sourceFolder.toPath()))
-				.findFirst()
-				.isPresent();
+		try {
+			Path path = new File(new URI(docURI)).toPath();
+			return foldersToScan(project)
+					.filter(sourceFolder -> path.startsWith(sourceFolder.toPath()))
+					.findFirst()
+					.isPresent();
+		} catch (URISyntaxException e) {
+			log.info("shouldProcessDocument - docURI syntax problem: {}", docURI);
+			return false;
+		}
 	}
 	
 	private boolean isCacheOutdated(SymbolCacheKey cacheKey, String docURI, long modifiedTimestamp) {
