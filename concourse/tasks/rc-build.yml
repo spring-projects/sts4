@@ -12,5 +12,7 @@ params:
 image_resource:
   type: docker-image
   source:
-    repository: kdvolder/sts4-build-env
+    username: ((docker_hub_username))
+    password: ((docker_hub_password))
+    repository: springci/sts4-build-env
   

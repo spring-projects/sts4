@@ -256,7 +256,7 @@ resources:
   source:
     username: ((docker_hub_username))
     password: ((docker_hub_password))
-    repository: kdvolder/sts4-build-env
+    repository: springci/sts4-build-env
 - name: theia-docker-image
   type: docker-image
   source:
