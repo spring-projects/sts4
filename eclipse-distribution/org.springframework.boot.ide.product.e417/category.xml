@@ -91,7 +91,7 @@
 
 	<feature
 		id="org.springframework.ide.eclipse.xterm.feature.source" version="0.0.0">
-		<category name="Spring Tools" />
+		<category name="Spring Tools - Developer Resources" />
 	</feature>
 
 	<feature id="com.make.chromium.cef.feature"/>
