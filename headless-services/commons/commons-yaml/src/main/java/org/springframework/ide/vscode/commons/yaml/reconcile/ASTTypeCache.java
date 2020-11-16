@@ -17,6 +17,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.apache.commons.lang3.tuple.Pair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
@@ -41,6 +44,8 @@ import com.google.common.collect.Multimap;
  * @author Kris De Volder
  */
 public class ASTTypeCache implements ITypeCollector {
+	
+	private static Logger log = LoggerFactory.getLogger(ASTTypeCache.class);
 
 	public interface NodeTypes {
 		Collection<Node> getNodes(YType type);
@@ -88,7 +93,7 @@ public class ASTTypeCache implements ITypeCollector {
 	/**
 	 * Collects types for the current session.
 	 */
-	private ImmutableMap.Builder<Node, YType> currentTypes = null;
+	private Map<Node, Pair<YType, YamlPath>> currentTypes = null;
 
 	private final Set<YType> interestingTypes = new HashSet<>();
 	private final Map<String, NodeTypes> typeIndex = new HashMap<>();
@@ -97,14 +102,18 @@ public class ASTTypeCache implements ITypeCollector {
 	public void beginCollecting(YamlFileAST ast) {
 		Assert.isNull("A session is already active. Concurrency isn't supported by ITypeCollector protocol", currentTypes);
 		this.currentAst = ast;
-		this.currentTypes = ImmutableMap.builder();
+		this.currentTypes = new HashMap<>();
 	}
 
 	@Override
 	public synchronized void endCollecting(YamlFileAST ast) {
 		Assert.isLegal(currentAst==ast);
 		String uri = ast.getDocument().getUri();
-		typeIndex.put(uri, new NodeTypesImpl(currentAst, currentTypes.build()));
+		ImmutableMap.Builder<Node, YType> nodeTypes = ImmutableMap.builder();
+		for (Entry<Node, Pair<YType, YamlPath>> entry : currentTypes.entrySet()) {
+			nodeTypes.put(entry.getKey(), entry.getValue().getLeft());
+		}
+		typeIndex.put(uri, new NodeTypesImpl(currentAst, nodeTypes.build()));
 		this.currentAst = null;
 		this.currentTypes = null;
 	}
@@ -112,7 +121,25 @@ public class ASTTypeCache implements ITypeCollector {
 	@Override
 	public void accept(Node node, YType type, YamlPath path) {
 		if (interestingTypes.contains(type)) {
-			currentTypes.put(node, type);
+			Pair<YType, YamlPath> existing = currentTypes.get(node);
+			if (existing!=null) {
+				//A second time assinging type to the same node. This is possible when anchors / references
+				// are used (this makes parts of the tree 'shared').
+				YType oldType = existing.getLeft();
+				if (oldType.equals(type)) {
+					//If the types are the same nothing is lost by dropping the extra assignment.
+				} else {
+					//different types trying to be assigned to same node. 
+					//This is possible in theory when 'anchors and references' are in use.
+					//We hope this doesn't happen in practice. We'll log it in case it does.
+					log.warn("Ignore assignment of type for: {}", path);
+					log.warn("          Already assigned at: {}", existing.getRight());
+					log.warn("               Previous type : {}", existing.getLeft());
+					log.warn("                    New type : {}", type);
+				}
+			} else {
+				currentTypes.put(node, Pair.of(type, path));
+			}
 		}
 	}
 

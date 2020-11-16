@@ -1,0 +1,2096 @@
+notifications: &notifications
+  on_failure:
+    put: Mattermost notification
+    resource: mattermost-notify
+    params:
+      attachments:
+      - color: danger
+        title: Failure on job "${BUILD_PIPELINE_NAME}/$BUILD_JOB_NAME"
+        text: |
+          @channel [build #$BUILD_NAME]($ATC_EXTERNAL_URL/teams/$BUILD_TEAM_NAME/pipelines/$BUILD_PIPELINE_NAME/jobs/$BUILD_JOB_NAME/builds/$BUILD_NAME) on failure!
+      icon_url: https://concourse-ci.org/images/trademarks/concourse-black.png
+      username: concourse
+      silent: true
+
+registries-pe: &registries-pe
+  insecure_registries:
+    - ((docker_pe.registre))
+  username: ((docker_pe.utilisateur))
+  password: ((docker_pe.mot_de_passe))
+  registry_mirror: http://((docker_pe.registre))
+
+webhook-config: &webhook-config
+  check_every: 24h
+  webhook_token: webhook-token
+
+git-branch-config: &git-branch-config
+  branch: master
+  private_key: ((gitlab.cle_privee))
+
+pipeline-repo: &pipeline-repo
+  uri: ssh://git@git-scm.pe.intra:2222/pe/pipeline-test.git
+  <<: *git-branch-config
+
+resource_types:
+
+- name: concourse-pipeline-resource
+  type: docker-image
+  source:
+    repository: ((docker_pe.registre))/concourse/concourse-pipeline-resource
+    tag: 1.1.0
+    <<: *registries-pe
+
+- name: slack-notification
+  type: docker-image
+  source:
+    repository: ((docker_poleemploi.registre))/cfcommunity/slack-notification-resource
+    tag: v1.4.2
+    <<: *registries-pe
+
+resources:
+- name: git-ci-pipeline
+  type: git
+  source:
+    <<: *pipeline-repo
+    paths:
+    - ci/pipeline.yaml
+  <<: *webhook-config
+
+- name: concourse
+  type: concourse-pipeline-resource
+  source:
+    target: ((concourse.url))
+    insecure: "true"
+    teams:
+      - name: myTeam
+        username: ((concourse.utilisateur))
+        password: ((concourse.mot_de_passe))
+
+- name: mattermost-notify
+  type: slack-notification
+  source:
+    disable: false
+    insecure: true
+    url: https://mattermost.intra/hooks/zopgiazrugqsdfdpij
+
+jobs:
+- name: pipeline install
+  plan:
+  - get: git-ci-pipeline
+    trigger: true
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications
+  - put: concourse
+    params:
+      pipelines:
+      - name: "test"
+        team: myTeam
+        config_file: git-ci-pipeline/pipeline.yaml
+        unpaused: true
+    <<: *notifications

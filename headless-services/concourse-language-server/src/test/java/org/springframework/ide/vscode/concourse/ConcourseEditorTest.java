@@ -266,6 +266,26 @@ public class ConcourseEditorTest {
 				"  git2::Resource\n"
 		);
 	}
+	
+	@Test
+	public void complexOutlineWithAnchors() throws Exception {
+		harness.enableHierarchicalDocumentSymbols(true);
+		//See: https://github.com/spring-projects/sts4/issues/483
+
+		Editor editor = harness.newEditorFromClasspath("/workspace/gh_483_pipeline.yml");
+
+		editor.assertHierarchicalDocumentSymbols(
+				"resource_types::Resource Types\n" + 
+				"  concourse-pipeline-resource::Resource Type\n" + 
+				"  slack-notification::Resource Type\n" + 
+				"resources::Resources\n" + 
+				"  git-ci-pipeline::Resource\n" + 
+				"  concourse::Resource\n" + 
+				"  mattermost-notify::Resource\n" + 
+				"jobs::Jobs\n" + 
+				"  pipeline install::Job\n"
+		);
+	}
 
 	@Test
 	public void reconcileStructuralProblems() throws Exception {
