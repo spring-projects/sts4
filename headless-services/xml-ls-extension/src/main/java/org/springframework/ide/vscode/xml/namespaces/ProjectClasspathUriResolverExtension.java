@@ -29,6 +29,8 @@ import org.springframework.ide.vscode.xml.namespaces.util.DocumentAccessor;
 import org.springframework.ide.vscode.xml.namespaces.util.DocumentAccessor.SchemaLocations;
 import org.w3c.dom.Document;
 
+import org.springframework.ide.vscode.xml.namespaces.util.Logger;
+
 public class ProjectClasspathUriResolverExtension implements URIResolverExtension {
 	
 	private IJavaProjectProvider javaProjectProvider;
@@ -69,50 +71,54 @@ public class ProjectClasspathUriResolverExtension implements URIResolverExtensio
 	
 	@Override
 	public String resolve(String file, String publicId, String systemId) {
-			System.out.println("BaseLocation=" + file + " publicId=" + publicId + " systemId=" + systemId);
-			
-			// systemId is already resolved; so don't touch
-			if (systemId != null && systemId.startsWith("jar:")) {
-				return null;
+		Logger.DEFAULT.log("Resolve XML from classpath.");
+		Logger.DEFAULT.log("BaseLocation=" + file + " publicId=" + publicId + " systemId=" + systemId);
+		
+		// systemId is already resolved; so don't touch
+		if (systemId != null && systemId.startsWith("jar:")) {
+			return null;
+		}
+					
+		// identify the correct project
+		IJavaProjectData project = null;
+		
+		if (file != null) {
+			if (file.startsWith(ProjectAwareUrlStreamHandlerFactory.PROJECT_AWARE_PROTOCOL_HEADER)) {
+				String nameAndLocation = file
+						.substring(ProjectAwareUrlStreamHandlerFactory.PROJECT_AWARE_PROTOCOL_HEADER
+								.length());
+				String projectName = nameAndLocation.substring(0, nameAndLocation.indexOf('/'));
+				project = javaProjectProvider.get(projectName);
+			} else {
+				project = getBestMatchingProject(file);
 			}
-						
-			// identify the correct project
-			IJavaProjectData project = null;
-			
-			if (file != null) {
-				if (file.startsWith(ProjectAwareUrlStreamHandlerFactory.PROJECT_AWARE_PROTOCOL_HEADER)) {
-					String nameAndLocation = file
-							.substring(ProjectAwareUrlStreamHandlerFactory.PROJECT_AWARE_PROTOCOL_HEADER
-									.length());
-					String projectName = nameAndLocation.substring(0, nameAndLocation.indexOf('/'));
-					project = javaProjectProvider.get(projectName);
-				} else {
-					project = getBestMatchingProject(file);
-				}
-			}
-			
-			if (project == null) {
-				return null;
-			}
-			
-			if (systemId == null && file != null) {
-				systemId = findSystemIdFromFile(file, publicId);
-			}
-	
-			if (systemId == null && publicId == null) {
-				return null;
-			}
-			
-			ProjectClasspathUriResolver resolver = getProjectResolver(file, project);
-			if (resolver != null) {
-				String resolved = resolver.resolveOnClasspath(publicId, systemId);
-				if (resolved != null) {
-					resolved = ProjectAwareUrlStreamHandlerFactory.createProjectAwareUrl(project.getName(), resolved);
-				}
-				return resolved;
-			}
-	
+		}
+		
+		if (project == null) {
+			Logger.DEFAULT.log("Resolve XML from classpath failed. No project.");
+			return null;
+		}
+		
+		if (systemId == null && file != null) {
+			systemId = findSystemIdFromFile(file, publicId);
+		}
 
+		if (systemId == null && publicId == null) {
+			Logger.DEFAULT.log("Resolve XML from classpath failed. No systemId && publicId.");
+			return null;
+		}
+		
+		ProjectClasspathUriResolver resolver = getProjectResolver(file, project);
+		if (resolver != null) {
+			String resolved = resolver.resolveOnClasspath(publicId, systemId);
+			if (resolved != null) {
+				resolved = ProjectAwareUrlStreamHandlerFactory.createProjectAwareUrl(project.getName(), resolved);
+			}
+			Logger.DEFAULT.log("Resolve XML from classpath => "+resolved);
+			return resolved;
+		}
+
+		Logger.DEFAULT.log("Resolve XML from classpath failed. End of method");
 		return null;
 	}
 	
