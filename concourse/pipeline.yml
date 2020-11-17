@@ -262,7 +262,7 @@ resources:
   source:
     username: ((docker_hub_username))
     password: ((docker_hub_password))
-    repository: kdvolder/sts4-theia-snapshot    
+    repository: springci/sts4-theia-snapshot    
 - name: maven-cache
   type: s3
   source:
