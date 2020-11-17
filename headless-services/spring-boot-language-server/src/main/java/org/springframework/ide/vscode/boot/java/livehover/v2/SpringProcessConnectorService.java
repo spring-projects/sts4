@@ -210,7 +210,7 @@ public class SpringProcessConnectorService {
 			
 			try {
 				progressTask.progressEvent(progressMessage);
-				SpringProcessLiveData newLiveData = connector.refresh();
+				SpringProcessLiveData newLiveData = connector.refresh(this.liveDataProvider.getCurrent(processKey));
 
 				if (newLiveData != null) {
 					if (!this.liveDataProvider.add(processKey, newLiveData)) {

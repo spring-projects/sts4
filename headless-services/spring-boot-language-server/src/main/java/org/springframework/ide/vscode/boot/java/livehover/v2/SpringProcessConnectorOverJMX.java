@@ -107,7 +107,7 @@ public class SpringProcessConnectorOverJMX implements SpringProcessConnector {
 	}
 
 	@Override
-	public SpringProcessLiveData refresh() throws Exception {
+	public SpringProcessLiveData refresh(SpringProcessLiveData currentData) throws Exception {
 		log.info("try to open JMX connection to: " + jmxURL);
 		
 		if (jmxConnection != null) {
@@ -119,7 +119,7 @@ public class SpringProcessConnectorOverJMX implements SpringProcessConnector {
 				}
 				
 				log.info("retrieve live data from: " + jmxURL);
-				SpringProcessLiveData liveData = springJMXConnector.retrieveLiveData(jmxConnection, processID, processName, urlScheme, host, null, port);
+				SpringProcessLiveData liveData = springJMXConnector.retrieveLiveData(jmxConnection, processID, processName, urlScheme, host, null, port, currentData);
 				
 				if (this.processID == null) {
 					this.processID = liveData.getProcessID();

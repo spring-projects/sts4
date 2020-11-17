@@ -29,11 +29,12 @@ public class SpringProcessLiveData {
 	private final LiveConditional[] conditionals;
 	private final LiveProperties properties;
 	private final LiveMetricsModel metrics;
+	private StartupModel startup;
 	
 	public SpringProcessLiveData(String processName, String processID, String contextPath, String urlScheme,
 			String port, String host, LiveBeansModel beansModel, String[] activeProfiles,
 			LiveRequestMapping[] requestMappings, LiveConditional[] conditionals, LiveProperties properties,
-			LiveMetricsModel metrics) {
+			LiveMetricsModel metrics, StartupModel startup) {
 		super();
 		this.processName = processName;
 		this.processID = processID;
@@ -47,6 +48,8 @@ public class SpringProcessLiveData {
 		this.conditionals = conditionals;
 		this.properties = properties;
 		this.metrics = metrics;
+		this.startup = startup;
+		
 	}
 
 	public String getProcessName() {
@@ -95,6 +98,10 @@ public class SpringProcessLiveData {
 	
 	public LiveMetricsModel getLiveMterics() {
 		return this.metrics;
+	}
+
+	public StartupModel getStartup() {
+		return startup;
 	}
 
 }

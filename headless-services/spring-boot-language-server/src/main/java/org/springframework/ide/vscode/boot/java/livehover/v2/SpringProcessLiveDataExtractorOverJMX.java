@@ -17,6 +17,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Set;
@@ -61,9 +62,10 @@ public class SpringProcessLiveDataExtractorOverJMX {
 	 * @param host should always be != null
 	 * @param contextPath if null, will be determined searching existing mbeans for that information (for local processes)
 	 * @param port if null, will be determined searching existing mbeans for that information (for local processes)
+	 * @param currentData currently stored live data
 	 */
 	public SpringProcessLiveData retrieveLiveData(JMXConnector jmxConnector, String processID, String processName,
-			String urlScheme, String host, String contextPath, String port) {
+			String urlScheme, String host, String contextPath, String port, SpringProcessLiveData currentData) {
 		
 		try {
 			MBeanServerConnection connection = jmxConnector.getMBeanServerConnection();
@@ -91,6 +93,7 @@ public class SpringProcessLiveDataExtractorOverJMX {
 			LiveRequestMapping[] requestMappings = getRequestMappings(connection, domain);
 			LiveBeansModel beans = getBeans(connection, domain);
 			LiveMetricsModel metrics = getMetrics(connection, domain);
+			StartupModel startup = getStartup(connection, domain, currentData == null ? null : currentData.getStartup());
 			
 			if (contextPath == null) {
 				contextPath = getContextPath(connection, domain, environment);
@@ -112,7 +115,8 @@ public class SpringProcessLiveDataExtractorOverJMX {
 					requestMappings,
 					conditionals,
 					properties,
-					metrics);
+					metrics,
+					startup);
 		}
 		catch (Exception e) {
 			log.error("error reading live data from: " + processID + " - " + processName, e);
@@ -158,6 +162,21 @@ public class SpringProcessLiveDataExtractorOverJMX {
 			}
 
 		};
+	}
+	
+	private StartupModel getStartup(MBeanServerConnection connection, String domain, StartupModel currentStartup) {
+		if (currentStartup != null) {
+			return currentStartup;
+		}
+		try {
+			Map<?,?> result = (Map<?,?>) getActuatorDataFromOperation(connection, getObjectName(domain, "type=Endpoint,name=Startup"), "startup");
+			if (result != null) {
+				return StartupModel.parse(result);
+			}
+		} catch (Exception e) {
+			log.error("", e);
+		}
+		return null;
 	}
 
 	public String getProcessID(MBeanServerConnection connection) {

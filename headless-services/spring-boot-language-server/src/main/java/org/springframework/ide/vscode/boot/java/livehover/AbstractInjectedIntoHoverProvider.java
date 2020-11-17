@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.livehover;
 
+import java.time.Duration;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -184,6 +185,16 @@ public abstract class AbstractInjectedIntoHoverProvider implements HoverProvider
 					List<LiveBean> wiredBeans = findWiredBeans(project, liveData, relevantBeans, astNode);
 					if (!wiredBeans.isEmpty()) {
 						AutowiredHoverProvider.createHoverContentForBeans(sourceLinks, project, hover, wiredBeans);
+					}
+					
+					if (liveData.getStartup() != null) {
+						Duration instanciationTime = liveData.getStartup().getBeanInstanciationTime(definedBean.getId());
+						if (instanciationTime != null) {
+							hover.append("Instanciation Time: ");
+							hover.append(instanciationTime.toMillis());
+							hover.append("ms");
+							hover.append("\n\n");
+						}
 					}
 
 					hover.append("Bean id: `");

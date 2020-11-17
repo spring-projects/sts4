@@ -78,5 +78,9 @@ public class SpringProcessLiveDataProvider {
 			listener.liveDataChanged(event);
 		}
 	}
+	
+	SpringProcessLiveData getCurrent(String processKey) {
+		return this.liveData.get(processKey);
+	}
 
 }

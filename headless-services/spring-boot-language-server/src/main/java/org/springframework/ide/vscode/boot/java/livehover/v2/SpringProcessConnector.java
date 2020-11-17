@@ -18,7 +18,7 @@ public interface SpringProcessConnector {
 	String getProcessKey();
 
 	void connect() throws Exception;
-	SpringProcessLiveData refresh() throws Exception;
+	SpringProcessLiveData refresh(SpringProcessLiveData currentData) throws Exception;
 	void disconnect() throws Exception;
 	
 	void addConnectorChangeListener(SpringProcessConnectionChangeListener listener);
