@@ -1,3 +1,13 @@
+/*******************************************************************************
+ * Copyright (c) 2020 Pivotal, Inc.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     Pivotal, Inc. - initial API and implementation
+ *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.livehover.v2;
 
 import java.time.Duration;
@@ -11,7 +21,13 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonDeserializer;
 import com.google.gson.reflect.TypeToken;
 
-public class StartupModel {
+/**
+ * POJO for Startup metrics data
+ * 
+ * @author Alex Boyko
+ *
+ */
+public class StartupMetricsModel {
 	
 	private static final String BEAN_INSTANCIATION_EVENT = "spring.beans.instantiate";
 	
@@ -106,13 +122,14 @@ public class StartupModel {
 		}
 	}
 	
-	public static StartupModel parse(Map<?, ?> mapContent) {
+	public static StartupMetricsModel parse(Map<?, ?> mapContent) {
 		Object timeline = mapContent.get("timeline");
 		if (timeline instanceof Map) {
 			Object events = ((Map<?,?>) timeline).get("events");
 			if (events instanceof List) {
-				List<StartupEvent> fromJson = gson.fromJson(gson.toJson(events), new TypeToken<List<StartupEvent>>() {}.getType());
-				return new StartupModel(fromJson);
+				String json = gson.toJson(events);
+				List<StartupEvent> fromJson = gson.fromJson(json, new TypeToken<List<StartupEvent>>() {}.getType());
+				return new StartupMetricsModel(fromJson);
 			}
 		}
 		return null;
@@ -122,7 +139,7 @@ public class StartupModel {
 	
 	private Map<String, Duration> beanInstanciationTimes;
 	
-	public StartupModel(List<StartupEvent> startupEvents) {
+	public StartupMetricsModel(List<StartupEvent> startupEvents) {
 		this.startupEvents = startupEvents;
 		beanInstanciationTimes = createbeanInstanciationTimes();
 	}

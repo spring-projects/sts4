@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2019 Pivotal, Inc.
+ * Copyright (c) 2017, 2020 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -187,8 +187,8 @@ public abstract class AbstractInjectedIntoHoverProvider implements HoverProvider
 						AutowiredHoverProvider.createHoverContentForBeans(sourceLinks, project, hover, wiredBeans);
 					}
 					
-					if (liveData.getStartup() != null) {
-						Duration instanciationTime = liveData.getStartup().getBeanInstanciationTime(definedBean.getId());
+					if (liveData.getStartupMetrics() != null) {
+						Duration instanciationTime = liveData.getStartupMetrics().getBeanInstanciationTime(definedBean.getId());
 						if (instanciationTime != null) {
 							hover.append("Instanciation Time: ");
 							hover.append(instanciationTime.toMillis());

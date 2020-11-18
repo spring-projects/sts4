@@ -93,7 +93,7 @@ public class SpringProcessLiveDataExtractorOverJMX {
 			LiveRequestMapping[] requestMappings = getRequestMappings(connection, domain);
 			LiveBeansModel beans = getBeans(connection, domain);
 			LiveMetricsModel metrics = getMetrics(connection, domain);
-			StartupModel startup = getStartup(connection, domain, currentData == null ? null : currentData.getStartup());
+			StartupMetricsModel startup = getStartupMetrics(connection, domain, currentData == null ? null : currentData.getStartupMetrics());
 			
 			if (contextPath == null) {
 				contextPath = getContextPath(connection, domain, environment);
@@ -164,14 +164,14 @@ public class SpringProcessLiveDataExtractorOverJMX {
 		};
 	}
 	
-	private StartupModel getStartup(MBeanServerConnection connection, String domain, StartupModel currentStartup) {
+	private StartupMetricsModel getStartupMetrics(MBeanServerConnection connection, String domain, StartupMetricsModel currentStartup) {
 		if (currentStartup != null) {
 			return currentStartup;
 		}
 		try {
 			Map<?,?> result = (Map<?,?>) getActuatorDataFromOperation(connection, getObjectName(domain, "type=Endpoint,name=Startup"), "startup");
 			if (result != null) {
-				return StartupModel.parse(result);
+				return StartupMetricsModel.parse(result);
 			}
 		} catch (Exception e) {
 			log.error("", e);

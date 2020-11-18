@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019 Pivotal, Inc.
+ * Copyright (c) 2019, 2020 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -23,7 +23,7 @@ import org.springframework.ide.vscode.boot.java.livehover.v2.LiveMetricsModel;
 import org.springframework.ide.vscode.boot.java.livehover.v2.LiveProperties;
 import org.springframework.ide.vscode.boot.java.livehover.v2.LiveRequestMapping;
 import org.springframework.ide.vscode.boot.java.livehover.v2.LiveRequestMappingBoot1xRequestMapping;
-import org.springframework.ide.vscode.boot.java.livehover.v2.StartupModel;
+import org.springframework.ide.vscode.boot.java.livehover.v2.StartupMetricsModel;
 import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveData;
 
 /**
@@ -45,7 +45,7 @@ public class SpringProcessLiveDataBuilder {
 	private LiveConditional[] conditionals;
 	private LiveProperties properties;
 	private LiveMetricsModel metrics;
-	private StartupModel startup;
+	private StartupMetricsModel startup;
 	
 	public SpringProcessLiveDataBuilder processName(String processName) {
 		this.processName = processName;
@@ -131,7 +131,7 @@ public class SpringProcessLiveDataBuilder {
 		return this;
 	}
 	
-	public SpringProcessLiveDataBuilder liveStartup(StartupModel startup) {
+	public SpringProcessLiveDataBuilder liveStartup(StartupMetricsModel startup) {
 		this.startup = startup;
 		return this;
 	}

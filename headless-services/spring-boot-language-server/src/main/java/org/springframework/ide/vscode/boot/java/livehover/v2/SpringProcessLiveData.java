@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019 Pivotal, Inc.
+ * Copyright (c) 2019, 2020 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -29,12 +29,12 @@ public class SpringProcessLiveData {
 	private final LiveConditional[] conditionals;
 	private final LiveProperties properties;
 	private final LiveMetricsModel metrics;
-	private StartupModel startup;
+	private StartupMetricsModel startup;
 	
 	public SpringProcessLiveData(String processName, String processID, String contextPath, String urlScheme,
 			String port, String host, LiveBeansModel beansModel, String[] activeProfiles,
 			LiveRequestMapping[] requestMappings, LiveConditional[] conditionals, LiveProperties properties,
-			LiveMetricsModel metrics, StartupModel startup) {
+			LiveMetricsModel metrics, StartupMetricsModel startup) {
 		super();
 		this.processName = processName;
 		this.processID = processID;
@@ -100,7 +100,7 @@ public class SpringProcessLiveData {
 		return this.metrics;
 	}
 
-	public StartupModel getStartup() {
+	public StartupMetricsModel getStartupMetrics() {
 		return startup;
 	}
 
