@@ -167,7 +167,7 @@
 					<id>wwd</id>
 					<layout>p2</layout>
 					<!--  <url>https://download.eclipse.org/wildwebdeveloper/releases/latest/</url> -->
-					<url>http://download.eclipse.org/wildwebdeveloper/snapshots</url>
+					<url>https://download.eclipse.org/wildwebdeveloper/snapshots</url>
 				</repository>
 			</repositories>
 		</profile>
@@ -218,7 +218,7 @@
 					<id>wwd</id>
 					<layout>p2</layout>
 					<!--  <url>https://download.eclipse.org/wildwebdeveloper/releases/latest/</url> -->
-					<url>http://download.eclipse.org/wildwebdeveloper/snapshots</url>
+					<url>https://download.eclipse.org/wildwebdeveloper/snapshots</url>
 				</repository>
 			</repositories>
 		</profile>
