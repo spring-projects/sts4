@@ -508,18 +508,14 @@ public class BootDashActionTests {
 				return true;
 			}
 		};
-
-		when(ui().confirmOperation(eq("Deleting Elements"), anyString())).thenReturn(true);
+		when(ui().confirmWithToggle(anyString(), eq("Deleting Elements"), anyString(), anyString())).thenReturn(true);
 		action.run();
 
-		new ACondition("Wait for config deletion", 3000) {
-			public boolean test() throws Exception {
-				assertEquals(ImmutableSet.of(conf2), element.getLaunchConfigs());
-				assertFalse(conf1.exists());
-				assertTrue(element.getCurrentChildren().size()==1);
-				return true;
-			}
-		};
+		ACondition.waitFor("Wait for config deletion", 3000, () -> {
+			assertEquals(ImmutableSet.of(conf2), element.getLaunchConfigs());
+			assertFalse(conf1.exists());
+			assertTrue(element.getCurrentChildren().size()==1);
+		});
 	}
 
 
