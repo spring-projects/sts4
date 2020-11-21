@@ -355,7 +355,7 @@
             class="org.springframework.tooling.boot.ls.prefs.RemoteAppsFromPrefsDataContributor">
       </injection>
    </extension>
-   <extension
+ <!--  <extension
          point="org.eclipse.wildwebdeveloper.xml.lemminxExtension">
       <jar
             path="jars/commons-lsp-extensions.jar">
@@ -363,6 +363,6 @@
       <jar
             path="jars/xml-ls-extension.jar">
       </jar>
-   </extension>
+   </extension> -->
 
 </plugin>
