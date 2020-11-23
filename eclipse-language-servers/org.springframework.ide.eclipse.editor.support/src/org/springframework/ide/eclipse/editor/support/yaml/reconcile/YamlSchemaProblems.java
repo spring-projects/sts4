@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016 Pivotal, Inc.
+ * Copyright (c) 2016, 2020 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -19,6 +19,7 @@ import org.springframework.ide.eclipse.editor.support.util.DocumentRegion;
 import org.springframework.ide.eclipse.editor.support.yaml.ast.NodeUtil;
 import org.springframework.ide.eclipse.editor.support.yaml.schema.YType;
 import org.springframework.ide.eclipse.editor.support.yaml.schema.YTypedProperty;
+import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.error.Mark;
 import org.yaml.snakeyaml.nodes.MappingNode;
 import org.yaml.snakeyaml.nodes.Node;
@@ -84,17 +85,33 @@ public class YamlSchemaProblems {
 		int end = node.getEndMark().getIndex();
 		return new ReconcileProblemImpl(SCHEMA_PROBLEM, msg, start, end-start);
 	}
+
 	public static ReconcileProblemImpl missingProperty(String msg, IDocument doc, Node parent, MappingNode map) {
 		DocumentRegion underline = NodeUtil.region(doc, map);
+
 		if (parent instanceof MappingNode) {
 			for (NodeTuple prop : ((MappingNode) parent).getValue()) {
 				if (prop.getValueNode()==map) {
 					underline = NodeUtil.region(doc, prop.getKeyNode());
 				}
 			}
+
 		} else if (parent instanceof SequenceNode) {
-			Boolean flowStyle = ((SequenceNode) parent).getFlowStyle();
-			if (flowStyle!=null && !flowStyle) {
+			Object flowStyle = ((SequenceNode) parent).getFlowStyle();
+			boolean flow = false;
+
+			// check the type of the flow style, since that return type changed between snakeyaml versions
+			// from Boolean to DumperOptions.FlowStyle, so this type check allows us to compile against and
+			// work with both versions (1.14 and 1.27)
+			if (flowStyle instanceof Boolean) {
+				flow = ((Boolean)flowStyle).booleanValue();
+			}
+			else if (flowStyle instanceof DumperOptions.FlowStyle) {
+				DumperOptions.FlowStyle style = (DumperOptions.FlowStyle) flowStyle;
+				flow = style.getStyleBoolean();
+			}
+
+			if (!flow) {
 				Mark nodeStart = map.getStartMark();
 				underline = new DocumentRegion(doc, 0, nodeStart.getIndex());
 				underline = underline.trimEnd();
