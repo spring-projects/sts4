@@ -38,6 +38,10 @@
       "./jars/jdt-ls-commons.jar",
       "./jars/jdt-ls-extension.jar"
     ],
+    "xml.javaExtensions": [
+      "./jars/commons-lsp-extensions.jar",
+      "./jars/xml-ls-extension.jar"
+    ],
     "languages": [
       {
         "id": "spring-boot-properties-yaml",
