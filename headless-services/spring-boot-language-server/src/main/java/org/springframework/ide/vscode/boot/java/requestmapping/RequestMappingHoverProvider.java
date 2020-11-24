@@ -301,10 +301,8 @@ public class RequestMappingHoverProvider implements HoverProvider {
 					: liveData.getLiveMterics().getRequestMappingMetrics(requestMapping.getSplitPath(),
 							requestMethods.toArray(new String[requestMethods.size()]));
 			if (metrics != null) {
-				Renderable metricsRenderable = Renderables.concat(
-						Renderables.bold(createHoverMetricsContent(metrics)),
-						Renderables.text("\n\n"));
-				urlRenderables = Renderables.concat(urlRenderables, Renderables.text("\n\n"), metricsRenderable);
+				Renderable metricsRenderable = Renderables.concat(Renderables.text(createHoverMetricsContent(metrics)), Renderables.text("\n\n"));
+				urlRenderables = Renderables.concat(urlRenderables, metricsRenderable);
 			}
 			
 			Renderable processSection = Renderables.concat(
@@ -331,7 +329,7 @@ public class RequestMappingHoverProvider implements HoverProvider {
 		char timeUnitShort = metrics.getTimeUnit().name().toLowerCase().charAt(0);
 		
 		StringBuilder metricsContent = new StringBuilder();
-		metricsContent.append("Count: ");
+		metricsContent.append("( Count: ");
 		metricsContent.append(metrics.getCallsCount());
 		metricsContent.append(" | Total Time: ");
 		metricsContent.append(metrics.getTotalTime());
@@ -339,6 +337,7 @@ public class RequestMappingHoverProvider implements HoverProvider {
 		metricsContent.append(" | Max Time: ");
 		metricsContent.append(metrics.getMaxTime());
 		metricsContent.append(timeUnitShort);
+		metricsContent.append(" )");
 		
 		return metricsContent.toString();
 	}
