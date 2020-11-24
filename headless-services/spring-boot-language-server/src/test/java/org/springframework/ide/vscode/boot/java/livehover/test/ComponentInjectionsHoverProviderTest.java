@@ -12,6 +12,9 @@ package org.springframework.ide.vscode.boot.java.livehover.test;
 
 import static org.junit.Assert.assertTrue;
 
+import java.time.Duration;
+import java.util.Collections;
+
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,6 +27,7 @@ import org.springframework.ide.vscode.boot.java.livehover.v2.LiveBean;
 import org.springframework.ide.vscode.boot.java.livehover.v2.LiveBeansModel;
 import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveData;
 import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveDataProvider;
+import org.springframework.ide.vscode.boot.java.livehover.v2.StartupMetricsModel;
 import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
@@ -121,7 +125,101 @@ public class ComponentInjectionsHoverProviderTest {
 				"Process [PID=111, name=`the-app`]"
 		);
 	}
+	
+	@Test
+	public void beanStartupMetricsHover() throws Exception {
+		LiveBeansModel beans = LiveBeansModel.builder()
+				.add(LiveBean.builder()
+						.id("fooImplementation")
+						.type("com.example.FooImplementation")
+						.build()
+				)
+				.build();
 
+		
+		SpringProcessLiveData liveData = new SpringProcessLiveDataBuilder()
+			.processID("111")
+			.processName("the-app")
+			.beans(beans)
+			.liveStartup(new StartupMetricsModel(Collections.emptyList()) {
+
+				@Override
+				public Duration getBeanInstanciationTime(String beanId) {
+					return Duration.ofMillis(15);
+				}
+				
+			})
+			.build();
+		liveDataProvider.add("processkey", liveData);
+
+		Editor editor = harness.newEditor(LanguageId.JAVA,
+				"package com.example;\n" +
+				"\n" +
+				"import org.springframework.stereotype.Component;\n" +
+				"\n" +
+				"@Component\n" +
+				"public class FooImplementation implements Foo {\n" +
+				"\n" +
+				"	@Override\n" +
+				"	public void doSomeFoo() {\n" +
+				"		System.out.println(\"Foo do do do!\");\n" +
+				"	}\n" +
+				"}\n"
+		);
+		editor.assertHighlights("@Component");
+		editor.assertTrimmedHover("@Component",
+				"Instanciation Time: 15ms\n" +
+				"\n" +
+				"Bean id: `fooImplementation`  \n" +
+				"Process [PID=111, name=`the-app`]"
+		);
+	}
+
+	@Test
+	public void beanStartupMetricsCodeLens() throws Exception {
+		LiveBeansModel beans = LiveBeansModel.builder()
+				.add(LiveBean.builder()
+						.id("fooImplementation")
+						.type("com.example.FooImplementation")
+						.build()
+				)
+				.build();
+
+		
+		SpringProcessLiveData liveData = new SpringProcessLiveDataBuilder()
+			.processID("111")
+			.processName("the-app")
+			.beans(beans)
+			.liveStartup(new StartupMetricsModel(Collections.emptyList()) {
+
+				@Override
+				public Duration getBeanInstanciationTime(String beanId) {
+					return Duration.ofMillis(15);
+				}
+				
+			})
+			.build();
+		liveDataProvider.add("processkey", liveData);
+
+		Editor editor = harness.newEditor(LanguageId.JAVA,
+				"package com.example;\n" +
+				"\n" +
+				"import org.springframework.stereotype.Component;\n" +
+				"\n" +
+				"@Component\n" +
+				"public class FooImplementation implements Foo {\n" +
+				"\n" +
+				"	@Override\n" +
+				"	public void doSomeFoo() {\n" +
+				"		System.out.println(\"Foo do do do!\");\n" +
+				"	}\n" +
+				"}\n"
+		);
+		editor.assertHighlights("@Component");
+		
+		editor.assertLiveCodeLensContains("@Component", "Startup: 15ms");
+	}
+	
 	@Test
 	public void componentWithOneInjection() throws Exception {
 		LiveBeansModel beans = LiveBeansModel.builder()
