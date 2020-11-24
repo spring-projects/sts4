@@ -260,7 +260,9 @@ public class RequestMappingHoverProvider implements HoverProvider {
 		}
 		for (String path : paths) {
 			String url = UrlUtil.createUrl(urlScheme, host, port, path, contextPath);
-			urls.add(Tuples.of(url, path));
+			if (url != null) {
+				urls.add(Tuples.of(url, path));
+			}
 		}
 		return urls;
 	}
@@ -360,26 +362,27 @@ public class RequestMappingHoverProvider implements HoverProvider {
 		return metricsContent.toString();
 	}
 
-	private CodeLens createCodeLensForRequestMapping(Range range, String content, RequestMappingMetrics metrics) {
+	private CodeLens createCodeLensForRequestMapping(Range range, String url, RequestMappingMetrics metrics) {
 		CodeLens codeLens = new CodeLens();
 		codeLens.setRange(range);
 		Command cmd = new Command();
 
-		if (StringUtil.hasText(content)) {
+		if (StringUtil.hasText(url)) {
+			
+			StringBuilder codeLensContent = new StringBuilder(url);
 			
 			if (metrics != null) {
-				StringBuilder codeLensContent = new StringBuilder(content);
 				codeLensContent.append(' ');
 				codeLensContent.append('(');
 				codeLensContent.append(createCodeLensMetricsContent(metrics));
 				codeLensContent.append(')');
-				content  = codeLensContent.toString();
 			} 
 			
+			String content = codeLensContent.toString();
 			codeLens.setData(content);
 			cmd.setTitle(content);
 			cmd.setCommand("sts.open.url");
-			cmd.setArguments(ImmutableList.of(content));
+			cmd.setArguments(ImmutableList.of(url));
 		}
 
 		codeLens.setCommand(cmd);

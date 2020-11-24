@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2019 Pivotal, Inc.
+ * Copyright (c) 2017, 2020 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.livehover;
 
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
@@ -209,6 +210,21 @@ public class LiveHoverUtils {
 			return ImmutableList.of();
 		}
 
+	}
+	
+	public static CodeLens createCodeLenseForBeanStartupMetric(Range range, Duration startupTime) {
+		CodeLens codeLens = new CodeLens();
+		codeLens.setRange(range);
+		StringBuilder sb = new StringBuilder("Startup: ");
+		sb.append(startupTime.toMillis());
+		sb.append("ms");
+		codeLens.setData(sb.toString());
+		Command cmd = new Command();
+		cmd.setTitle(sb.toString());
+		cmd.setCommand("sts.showHoverAtPosition");
+		cmd.setArguments(ImmutableList.of(range.getStart()));
+		codeLens.setCommand(cmd);
+		return codeLens;
 	}
 
 	@SuppressWarnings("unchecked")

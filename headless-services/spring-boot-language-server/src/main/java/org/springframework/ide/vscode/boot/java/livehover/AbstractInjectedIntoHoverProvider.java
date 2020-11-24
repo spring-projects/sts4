@@ -105,6 +105,7 @@ public abstract class AbstractInjectedIntoHoverProvider implements HoverProvider
 
 	protected List<CodeLens> assembleCodeLenses(IJavaProject project, SpringProcessLiveData[] processLiveData, DefinedBeanProvider definedBeanProvider,
 			TextDocument doc, Range range, ASTNode node) {
+		List<CodeLens> codeLenses = null;
 		boolean beanFound = false;
 		for (SpringProcessLiveData liveData : processLiveData) {
 			
@@ -112,9 +113,9 @@ public abstract class AbstractInjectedIntoHoverProvider implements HoverProvider
 			if (definedBean == null) {
 				continue;
 			}
-
-			beanFound = true;
 			
+			beanFound = true;
+
 			List<LiveBean> relevantBeans = LiveHoverUtils.findRelevantBeans(liveData, definedBean);
 
 			if (!relevantBeans.isEmpty()) {
@@ -131,13 +132,28 @@ public abstract class AbstractInjectedIntoHoverProvider implements HoverProvider
 				// Wired beans code lenses
 				List<LiveBean> wiredBeans = findWiredBeans(project, liveData, relevantBeans, node);
 				builder.addAll(assembleCodeLenseForAutowired(wiredBeans, project, liveData, doc, range, node));
+				
+				// Startup metrics CodeLens
+				if (liveData.getStartupMetrics() != null) {
+					Duration startupTime = liveData.getStartupMetrics().getBeanInstanciationTime(definedBean.getId());
+					if (startupTime != null) {
+						builder.add(LiveHoverUtils.createCodeLenseForBeanStartupMetric(range, startupTime));
+					}
+				}
 
-				List<CodeLens> codeLenses = builder.build();
-				return codeLenses.isEmpty() ? ImmutableList.of(new CodeLens(range)) : codeLenses;
+				// If Injected into and Wired beans are found for an app just return ocde lenses for the bean from the app 
+				codeLenses = builder.build();
+				break;
+			} else if (liveData.getStartupMetrics() != null && liveData.getStartupMetrics().getBeanInstanciationTime(definedBean.getId()) != null) {
+				Duration startupTime = liveData.getStartupMetrics().getBeanInstanciationTime(definedBean.getId());
+				codeLenses = ImmutableList.of(LiveHoverUtils.createCodeLenseForBeanStartupMetric(range, startupTime));
 			}
 			
 		}
-		return beanFound ? ImmutableList.of(new CodeLens(range)) : null;
+		if (beanFound) {
+			return codeLenses == null || codeLenses.isEmpty() ? ImmutableList.of(new CodeLens(range)) : codeLenses; 
+		}
+		return null;
 	}
 
 	protected List<CodeLens> assembleCodeLenseForAutowired(List<LiveBean> wiredBeans, IJavaProject project, SpringProcessLiveData processLiveData, TextDocument doc, Range nameRange, ASTNode astNode) {
