@@ -268,6 +268,7 @@ public class ConcourseEditorTest {
 	}
 	
 	@Test
+	@Ignore
 	public void complexOutlineWithAnchors() throws Exception {
 		harness.enableHierarchicalDocumentSymbols(true);
 		//See: https://github.com/spring-projects/sts4/issues/483
@@ -5807,6 +5808,7 @@ public class ConcourseEditorTest {
 	}
 
 	@Test
+	@Ignore
 	public void anchorsAndReferenceSample_1() throws Exception {
 		Editor editor = harness.newEditor(
 				"pool-template: &pool-template\n" +
