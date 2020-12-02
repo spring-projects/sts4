@@ -533,7 +533,7 @@
 		</repository>
 		<repository>
 			<id>justj</id>
-			<url>https://download.eclipse.org/justj/jres/15/updates/milestone/latest/</url>
+			<url>https://download.eclipse.org/justj/jres/15/updates/release/latest/</url>
 			<layout>p2</layout>
 		</repository>
 	</repositories>
