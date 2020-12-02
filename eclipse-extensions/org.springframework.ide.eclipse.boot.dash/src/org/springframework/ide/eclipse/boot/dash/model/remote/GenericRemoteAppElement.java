@@ -895,7 +895,20 @@ public class GenericRemoteAppElement extends WrappingBootDashElement<String> imp
 	@Override
 	public boolean matchesLiveProcessCommand(ExecuteCommandAction action) {
 		App data = getAppData();
-		return data.getName() != null&& data.getName().equals(action.getProcessId());
+		boolean selfMatch = data.getName() != null&& data.getName().equals(action.getProcessId());
+		return selfMatch || childMatch(action);
+	}
+
+	private boolean childMatch(ExecuteCommandAction action) {
+		for (BootDashElement child : this.getChildren().getValues()) {
+			if (
+					child instanceof LiveDataCapableElement &&
+					((LiveDataCapableElement) child).matchesLiveProcessCommand(action)
+			) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 }
