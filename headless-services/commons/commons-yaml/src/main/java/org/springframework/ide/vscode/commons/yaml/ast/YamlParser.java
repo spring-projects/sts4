@@ -16,6 +16,8 @@ import java.util.regex.Pattern;
 
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
+import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.nodes.Node;
 
@@ -32,7 +34,9 @@ public class YamlParser implements YamlASTProvider {
 	public YamlFileAST getAST(IDocument doc) throws Exception {
 		CharSequenceReader reader = new CharSequenceReader();
 		reader.setInput(atTokenTransformHack(doc.get()));
-		Iterable<Node> nodes = new Yaml().composeAll(reader);
+		LoaderOptions loaderOpts = new LoaderOptions();
+		loaderOpts.setMaxAliasesForCollections(1000);
+		Iterable<Node> nodes = new Yaml(loaderOpts).composeAll(reader);
 		return new YamlFileAST(doc, ImmutableList.copyOf(nodes));
 	}
 

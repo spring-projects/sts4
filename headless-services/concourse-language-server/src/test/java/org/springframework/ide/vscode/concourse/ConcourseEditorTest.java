@@ -268,7 +268,6 @@ public class ConcourseEditorTest {
 	}
 	
 	@Test
-	@Ignore
 	public void complexOutlineWithAnchors() throws Exception {
 		harness.enableHierarchicalDocumentSymbols(true);
 		//See: https://github.com/spring-projects/sts4/issues/483
@@ -5807,8 +5806,8 @@ public class ConcourseEditorTest {
 		);
 	}
 
+	
 	@Test
-	@Ignore
 	public void anchorsAndReferenceSample_1() throws Exception {
 		Editor editor = harness.newEditor(
 				"pool-template: &pool-template\n" +
@@ -5888,6 +5887,42 @@ public class ConcourseEditorTest {
 		editor.assertProblems(/*none*/);
 	}
 
+	@Test
+	public void anchorsAndReferenceSample_1_simple() throws Exception {
+		Editor editor = harness.newEditor(
+				"sleep: &sleep\n" + 
+				"  config:\n" + 
+				"    platform: linux\n" + 
+				"    image_resource:\n" + 
+				"      type: docker-image\n" + 
+				"      source:\n" + 
+				"        repository: alpine\n" + 
+				"        tag: latest\n" + 
+				"    run:\n" + 
+				"      path: sh\n" + 
+				"      args:\n" + 
+				"      - -exc\n" + 
+				"      - sleep 60\n" + 
+				"\n" + 
+				"##########\n" + 
+				"\n" + 
+				"resource_types:\n" + 
+				"- name: pool\n" + 
+				"  type: docker-image\n" + 
+				"\n" + 
+				"jobs:\n" + 
+				"- name: acquire-1\n" + 
+				"  plan:\n" + 
+				"    - task: sleep\n" + 
+				"      <<: *sleep\n"
+		);
+
+		System.out.println("============================");
+		System.out.println(editor.getRawText());
+		System.out.println("============================");
+		editor.assertProblems(/*none*/);
+	}
+	
 	@Test
 	public void anchorsAndReferenceSample_2() throws Exception {
 		Editor editor = harness.newEditor(

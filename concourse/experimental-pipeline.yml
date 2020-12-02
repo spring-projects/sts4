@@ -1,17 +1,25 @@
-resources:
-- name: docker-base
-  type: registry-image
-  source:
-    repository: alpine
+sleep: &sleep
+  config:
+    platform: linux
+    image_resource:
+      type: docker-image
+      source:
+        repository: alpine
+        tag: latest
+    run:
+      path: sh
+      args:
+      - -exc
+      - sleep 60
+
+##########
+
+resource_types:
+- name: pool
+  type: docker-image
+
 jobs:
-- name: publish-jvm-launch-utils
+- name: acquire-1
   plan:
-  - get: docker-base
-    trigger: true
-    params:
-      skip_download: true
-  - put: docker-base
-    get_params:
-      skip_download: true
-    params:
-      image: blah
+    - task: sleep
+      <<: *sleep

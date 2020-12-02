@@ -40,6 +40,7 @@ import org.springframework.ide.vscode.commons.util.ValueParseException;
 import org.springframework.ide.vscode.commons.util.ValueParser;
 import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
+import org.springframework.ide.vscode.commons.yaml.ast.AstDumper;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeMergeSupport;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeUtil;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST;
@@ -142,6 +143,11 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 	}
 
 	private void reconcile(YamlFileAST ast, YamlPath path, Node parent, Node node, YType _type) {
+		nodeMerger.flattenMapping(node);
+
+//		System.out.println("--------- Reconciling ---------");
+//		AstDumper.dump(node, 0);
+		
 		if (_type!=null && !skipReconciling(node)) {
 			DynamicSchemaContext schemaContext = new ASTDynamicSchemaContext(ast, path, node);
 			YType type = typeUtil.inferMoreSpecificType(_type, schemaContext);
@@ -152,7 +158,6 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 			switch (getNodeId(node)) {
 			case mapping:
 				MappingNode map = (MappingNode) node;
-				nodeMerger.flattenMapping(map);
 				checkForDuplicateKeys(map);
 				if (typeUtil.isMap(type)) {
 					for (NodeTuple entry : map.getValue()) {
