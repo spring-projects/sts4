@@ -15,18 +15,18 @@
 
 	<properties>
 		<dependencies.version>${project.version}</dependencies.version>
-		<lsp4xml.version>0.14.0-SNAPSHOT</lsp4xml.version>
+		<lsp4xml.version>0.14.1</lsp4xml.version>
 	</properties>
 
 	<repositories>
 		<repository>
 			<id>lemminx-snapshots</id>
-			<url>https://repo.eclipse.org/content/repositories/lemminx-snapshots/</url>
+			<url>https://repo.eclipse.org/content/repositories/lemminx-releases</url>
 			<releases>
-				<enabled>false</enabled>
+				<enabled>true</enabled>
 			</releases>
 			<snapshots>
-				<enabled>true</enabled>
+				<enabled>false</enabled>
 			</snapshots>
 		</repository>
 	</repositories>
