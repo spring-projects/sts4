@@ -34,7 +34,7 @@ import org.springframework.tooling.boot.ls.Constants;
 public class XMLContentAssistProposalComputer implements IAsyncCompletionProposalComputer {
 
 	private static TimeUnit TIMEOUT_UNIT = TimeUnit.MILLISECONDS;
-	private static long TIMEOUT_LENGTH = 30000;
+	private static long TIMEOUT_LENGTH = 2000;
 
 	private LSContentAssistProcessor lsContentAssistProcessor;
 
