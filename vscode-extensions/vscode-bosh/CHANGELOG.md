@@ -1,3 +1,7 @@
+## 2020-12-16 (4.9.0 RELEASE, incl. language servers version 1.24.0)
+
+* no major changes
+
 ## 2020-10-23 (4.8.1 RELEASE, incl. language servers version 1.23.0)
 
 * no major changes

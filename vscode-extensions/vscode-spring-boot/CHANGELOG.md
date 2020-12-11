@@ -1,3 +1,10 @@
+## 2020-12-16 (4.9.0 RELEASE, incl. language servers version 1.24.0)
+
+* _(Spring Boot)_ new: show bean startup performance metrics in live hovers and code lenses (details in the user guide)
+* _(Spring Boot)_ new: show basic request mapping performance metrics in live hovers and code lensses (details in the user guide)
+* _(Spring Boot)_ new: provide content-assist for constructor-arg name in Spring XML config files ([#562](https://github.com/spring-projects/sts4/issues/562))
+* _(Spring Boot)_ fixed: language-server-internal exception happening when saving a file that has a space or other special characters in its name or path
+
 ## 2020-10-23 (4.8.1 RELEASE, incl. language servers version 1.23.0)
 
 * _(Spring Boot)_ fixed: Spring Boot Language Server processing java.util.Properties type configuration logic error ([#534](https://github.com/spring-projects/sts4/issues/534))

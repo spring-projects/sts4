@@ -1,3 +1,7 @@
+## 2020-12-16 (4.9.0 RELEASE, incl. language servers version 1.24.0)
+
+* _(Concourse)_ fixed: navigation in pipeline files with VSCode Concourse CI extension doesn't work everytime ([#483](https://github.com/spring-projects/sts4/issues/483))
+
 ## 2020-10-23 (4.8.1 RELEASE, incl. language servers version 1.23.0)
 
 * _(Concourse)_ fixed: support pipeline directory as well see ([#525](https://github.com/spring-projects/sts4/issues/525))
