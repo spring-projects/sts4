@@ -73,6 +73,7 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.command.CreateContainerCmd;
 import com.github.dockerjava.api.command.CreateContainerResponse;
 import com.github.dockerjava.api.command.InspectImageResponse;
+import com.github.dockerjava.api.command.ListImagesCmd;
 import com.github.dockerjava.api.exception.NotModifiedException;
 import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.ExposedPort;
@@ -437,7 +438,12 @@ Successfully tagged fui:latest
 		if (imageTag.startsWith(DOCKER_IO_LIBRARY)) {
 			imageTag = imageTag.substring(DOCKER_IO_LIBRARY.length());
 		}
-		List<Image> images = client.listImagesCmd().withImageNameFilter(imageTag).exec();
+
+//		List<Image> images = client.listImagesCmd().withImageNameFilter(imageTag).exec();
+		ListImagesCmd listImagesCmd = client.listImagesCmd();
+		listImagesCmd.getFilters().put("reference", Arrays.asList(imageTag));
+		List<Image> images = listImagesCmd.exec();
+
 		if (images.isEmpty()) {
 			// maybe the 'imageTag' is not actually a tag but an id/hash.
 			InspectImageResponse inspect = client.inspectImageCmd(imageTag).exec();
