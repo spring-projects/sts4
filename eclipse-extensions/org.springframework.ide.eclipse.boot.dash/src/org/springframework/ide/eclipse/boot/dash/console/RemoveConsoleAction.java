@@ -26,6 +26,7 @@ public class RemoveConsoleAction extends Action {
 	public RemoveConsoleAction(IConsoleView consoleView, IConsoleManager consoleManager) {
 		this.consoleView = consoleView;
 		this.consoleManager = consoleManager;
+		setImageDescriptor(DebugPluginImages.getImageDescriptor(IInternalDebugUIConstants.IMG_ELCL_REMOVE));
 		setDisabledImageDescriptor(DebugPluginImages.getImageDescriptor(IInternalDebugUIConstants.IMG_DLCL_REMOVE));
 		setHoverImageDescriptor(DebugPluginImages.getImageDescriptor(IInternalDebugUIConstants.IMG_ELCL_REMOVE));
 		setEnabled(true);
