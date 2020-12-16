@@ -137,11 +137,14 @@ public class RemoteJavaLaunchUtil {
 		for (ILaunch l : lm.getLaunches()) {
 			if (conf.equals(l.getLaunchConfiguration())) {
 				if (!l.isTerminated()) {
-					return null;
+					return l;
 				}
 			}
 		};
-		return RetryUtil.retry(50, 500, () -> conf.launch(ILaunchManager.DEBUG_MODE, new NullProgressMonitor(), false, true));
+		ILaunch newLaunch = RetryUtil.retry(50, 1500, () ->
+			 conf.launch(ILaunchManager.DEBUG_MODE, new NullProgressMonitor(), false, true)
+		);
+		return newLaunch;
 	}
 
 	private static ILaunchConfiguration getLaunchConfig(GenericRemoteAppElement app) {

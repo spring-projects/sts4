@@ -145,9 +145,6 @@ public class SchemaBasedYamlASTReconciler implements YamlASTReconciler {
 	private void reconcile(YamlFileAST ast, YamlPath path, Node parent, Node node, YType _type) {
 		nodeMerger.flattenMapping(node);
 
-//		System.out.println("--------- Reconciling ---------");
-//		AstDumper.dump(node, 0);
-		
 		if (_type!=null && !skipReconciling(node)) {
 			DynamicSchemaContext schemaContext = new ASTDynamicSchemaContext(ast, path, node);
 			YType type = typeUtil.inferMoreSpecificType(_type, schemaContext);
