@@ -2,7 +2,7 @@
 <feature
 	id="org.springframework.boot.ide.main.feature"
 	label="Spring Tool Suite 4 Main Feature"
-	version="4.9.0.qualifier"
+	version="4.9.1.qualifier"
 	provider-name="Pivotal, Inc.">
 
     <description>
