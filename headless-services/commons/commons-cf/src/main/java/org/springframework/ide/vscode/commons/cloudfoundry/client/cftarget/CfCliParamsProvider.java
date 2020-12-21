@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2018 Pivotal, Inc.
+ * Copyright (c) 2017, 2020 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -79,13 +79,6 @@ public class CfCliParamsProvider implements ClientParamsProvider {
 		
 	}
 	
-	/*
-	 * (non-Javadoc)
-	 *
-	 * @see org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.
-	 * ClientParamsProvider#getParams()
-	 */
-	@SuppressWarnings("unchecked")
 	@Override
 	public List<CFClientParams> getParams() throws NoTargetsException, ExecutionException {
 		List<CFClientParams> params = new ArrayList<>();
@@ -93,26 +86,7 @@ public class CfCliParamsProvider implements ClientParamsProvider {
 		try {
 			File file = getConfigJsonFile();
 			if (file != null) {
-				Map<String, Object> userData = gson.fromJson(new FileReader(file), Map.class);
-				if (userData != null) {
-					String refreshToken = (String) userData.get(REFRESH_TOKEN);
-					// Only support connecting to CF via refresh token for now
-					if (isRefreshTokenSet(refreshToken)) {
-						CFCredentials credentials = CFCredentials.fromRefreshToken(refreshToken);
-						boolean sslDisabled = (Boolean) userData.get(SSL_DISABLED);
-						String target = (String) userData.get(TARGET);
-						Map<String, Object> orgFields = (Map<String, Object>) userData.get(ORGANIZATION_FIELDS);
-						Map<String, Object> spaceFields = (Map<String, Object>) userData.get(SPACE_FIELDS);
-						if (target != null && orgFields != null && spaceFields != null) {
-							String orgName = (String) orgFields.get(NAME);
-							String spaceName = (String) spaceFields.get(NAME);
-							if (!StringUtil.hasText(orgName) || !StringUtil.hasText(spaceName)) {
-								throw new NoTargetsException(getMessages().getNoOrgSpace());
-							}
-							params.add(new CFClientParams(target, null, credentials, orgName, spaceName, sslDisabled));
-						}
-					}
-				}
+				readConfigFile(params, file);
 			}
 		} catch (IOException | InterruptedException e) {
 			throw new ExecutionException(e);
@@ -122,6 +96,34 @@ public class CfCliParamsProvider implements ClientParamsProvider {
 			throw new NoTargetsException(getMessages().getNoTargetsFound());
 		} else {
 			return params;
+		}
+	}
+
+	@SuppressWarnings("unchecked")
+	private void readConfigFile(List<CFClientParams> params, File file)
+			throws NoTargetsException, IOException {
+
+		try (FileReader reader = new FileReader(file)) {
+			Map<String, Object> userData = gson.fromJson(reader, Map.class);
+			if (userData != null) {
+				String refreshToken = (String) userData.get(REFRESH_TOKEN);
+				// Only support connecting to CF via refresh token for now
+				if (isRefreshTokenSet(refreshToken)) {
+					CFCredentials credentials = CFCredentials.fromRefreshToken(refreshToken);
+					boolean sslDisabled = (Boolean) userData.get(SSL_DISABLED);
+					String target = (String) userData.get(TARGET);
+					Map<String, Object> orgFields = (Map<String, Object>) userData.get(ORGANIZATION_FIELDS);
+					Map<String, Object> spaceFields = (Map<String, Object>) userData.get(SPACE_FIELDS);
+					if (target != null && orgFields != null && spaceFields != null) {
+						String orgName = (String) orgFields.get(NAME);
+						String spaceName = (String) spaceFields.get(NAME);
+						if (!StringUtil.hasText(orgName) || !StringUtil.hasText(spaceName)) {
+							throw new NoTargetsException(getMessages().getNoOrgSpace());
+						}
+						params.add(new CFClientParams(target, null, credentials, orgName, spaceName, sslDisabled));
+					}
+				}
+			}
 		}
 	}
 
