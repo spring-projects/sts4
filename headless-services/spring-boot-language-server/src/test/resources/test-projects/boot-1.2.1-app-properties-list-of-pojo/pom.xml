@@ -46,6 +46,15 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-javadoc-plugin</artifactId>
+				<version>3.2.0</version>
+				<configuration>
+				  <source>8</source>
+				  <detectJavaApiLink>false</detectJavaApiLink>
+				</configuration>
+			</plugin>
 		</plugins>
 	</build>
 
@@ -91,7 +100,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-javadoc-plugin</artifactId>
-				<version>2.10.4</version>
+				<version>3.2.0</version>
 			</plugin>
 		</plugins>
 	</reporting>
