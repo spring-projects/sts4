@@ -87,14 +87,14 @@ public class GradleProjectClasspath implements IClasspath {
 			for (EclipseExternalDependency dep : project.getClasspath()) {
 				entries.add(new CPE(Classpath.ENTRY_KIND_BINARY, dep.getFile().getAbsolutePath()));
 			}
-			for (EclipseProjectDependency dep : project.getProjectDependencies()) {
+/**			for (EclipseProjectDependency dep : project.getProjectDependencies()) {
 				EclipseProject peer = findPeer(root, dep.getTargetProject().getName());
 				if (peer!=null) {
 					for (EclipseSourceDirectory sf : peer.getSourceDirectories()) {
 						entries.add(createSourceCPE(peer, sf));
 					}
 				}
-			}
+			} */
 			for (EclipseSourceDirectory sf : project.getSourceDirectories()) {
 				CPE cpe = createSourceCPE(project, sf);
 				cpe.setOwn(true);
