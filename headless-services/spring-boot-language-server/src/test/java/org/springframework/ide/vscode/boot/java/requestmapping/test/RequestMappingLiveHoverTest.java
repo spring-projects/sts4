@@ -295,8 +295,14 @@ public class RequestMappingLiveHoverTest {
 		Editor editor = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
 		editor.assertHighlights("@RequestMapping(\"/hello\")", "@RequestMapping(\"/goodbye\")");
 
-		editor.assertLiveCodeLensContains("@RequestMapping(\"/hello\")", "Count=25 Total=3.03s Max=0.55s");
-		editor.assertLiveCodeLensContains("@RequestMapping(\"/goodbye\")", "Count=34 Total=5.44s Max=0.74s");
+		String total1 = String.format("%.2f", 3.03d);
+		String max1 = String.format("%.2f", 0.55d);
+
+		String total2 = String.format("%.2f", 5.44d);
+		String max2 = String.format("%.2f", 0.74d);
+		
+		editor.assertLiveCodeLensContains("@RequestMapping(\"/hello\")", "Count=25 Total=" + total1 + "s Max=" + max1 + "s");
+		editor.assertLiveCodeLensContains("@RequestMapping(\"/goodbye\")", "Count=34 Total=" + total2 + "s Max=" + max2 + "s");
 
 	}
 	
