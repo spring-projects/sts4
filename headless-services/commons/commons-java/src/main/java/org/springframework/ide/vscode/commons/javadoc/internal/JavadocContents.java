@@ -167,60 +167,76 @@ public class JavadocContents {
 	 * Compute the ranges of the parts of the javadoc that describe each method of the type
 	 */
 	private int[] computeChildRange(char[] anchor, int indexOfSectionBottom) throws Exception {
-		
+
 		// checks each known anchor locations
 		if (this.tempAnchorIndexesCount > 0) {
 			for (int i = 0; i < this.tempAnchorIndexesCount; i++) {
 				int anchorEndStart = this.tempAnchorIndexes[i];
-				
+
 				if (anchorEndStart != -1 && CharOperation.prefixEquals(anchor, this.content, false, anchorEndStart)) {
-					
+
 					this.tempAnchorIndexes[i] = -1;
-					
+
 					return computeChildRange(anchorEndStart, anchor, indexOfSectionBottom);
 				}
 			}
 		}
-		
+
 		int fromIndex = this.tempLastAnchorFoundIndex;
-		int index;
-		
+		int[] index;
+
 		// check each next unknown anchor locations
-		while ((index = CharOperation.indexOf(JavadocConstants.ANCHOR_PREFIX_START, this.content, false, fromIndex)) != -1 && (index < indexOfSectionBottom || indexOfSectionBottom == -1)) {
-			fromIndex = index + 1;
-			
-			int anchorEndStart = index + JavadocConstants.ANCHOR_PREFIX_START_LENGHT;
-			
+		index = getAnchorIndex(fromIndex);
+		while (index[0] != -1 && (index[0] < indexOfSectionBottom || indexOfSectionBottom == -1)) {
+			fromIndex = index[0] + 1;
+
+			int anchorEndStart = index[0] + index[1];
+
 			this.tempLastAnchorFoundIndex = anchorEndStart;
-			
+
 			if (CharOperation.prefixEquals(anchor, this.content, false, anchorEndStart)) {
 				return computeChildRange(anchorEndStart, anchor, indexOfSectionBottom);
 			} else {
 				if (this.tempAnchorIndexes.length == this.tempAnchorIndexesCount) {
 					System.arraycopy(this.tempAnchorIndexes, 0, this.tempAnchorIndexes = new int[this.tempAnchorIndexesCount + 20], 0, this.tempAnchorIndexesCount);
 				}
-				
+
 				this.tempAnchorIndexes[this.tempAnchorIndexesCount++] = anchorEndStart;
 			}
+			index = getAnchorIndex(fromIndex);
 		}
-		
+
 		return null;
+	}
+	private int[] getAnchorIndex(int fromIndex) {
+		int index = CharOperation.indexOf(JavadocConstants.ANCHOR_PREFIX_START, this.content, false, fromIndex);
+		if (index != -1) {
+			return new int[]{index, JavadocConstants.ANCHOR_PREFIX_START_LENGTH};
+		}
+		if (index == -1) {
+			index = CharOperation.indexOf(JavadocConstants.ANCHOR_PREFIX_START_2, this.content, false, fromIndex);
+		}
+		if (index == -1) {
+			return new int[]{-1, -1};
+		} else {
+			return new int[]{index, JavadocConstants.ANCHOR_PREFIX_START2_LENGTH};
+		}
 	}
 	
 	private int[] computeChildRange(int anchorEndStart, char[] anchor, int indexOfBottom) {
 		int[] range = null;
-				
+
 		// try to find the bottom of the section
 		if (indexOfBottom != -1) {
 			// try to find the end of the anchor
 			int indexOfEndLink = CharOperation.indexOf(JavadocConstants.ANCHOR_SUFFIX, this.content, false, anchorEndStart + anchor.length);
 			if (indexOfEndLink != -1) {
 				// try to find the next anchor
-				int indexOfNextElement = CharOperation.indexOf(JavadocConstants.ANCHOR_PREFIX_START, this.content, false, indexOfEndLink);
-				
+				int indexOfNextElement = getAnchorIndex(indexOfEndLink)[0];
+
 				int javadocStart = indexOfEndLink + JavadocConstants.ANCHOR_SUFFIX_LENGTH;
 				int javadocEnd = indexOfNextElement == -1 ? indexOfBottom : Math.min(indexOfNextElement, indexOfBottom);
-				range = sanitizeRange(new int[]{javadocStart, javadocEnd}, "ul", "li");
+				range = new int[]{javadocStart, javadocEnd};
 			} else {
 				// the anchor has no suffix
 				range = UNKNOWN_FORMAT;
@@ -229,7 +245,7 @@ public class JavadocContents {
 			// the detail section has no bottom
 			range = UNKNOWN_FORMAT;
 		}
-		
+
 		return range;
 	}
 
@@ -238,70 +254,37 @@ public class JavadocContents {
 		int lastIndex = CharOperation.indexOf(JavadocConstants.SEPARATOR_START, this.content, false, this.childrenStart);
 		lastIndex = lastIndex == -1 ? this.childrenStart : lastIndex;
 
-		// try to find enum cosntants detail start
-		this.indexOfEnumConstantsDetails = CharOperation.indexOf(JavadocConstants.ENUM_CONSTANT_DETAIL, this.content, false, lastIndex);
-		lastIndex = this.indexOfEnumConstantsDetails == -1 ? lastIndex : this.indexOfEnumConstantsDetails;
-
 		// try to find field detail start
 		this.indexOfFieldDetails = CharOperation.indexOf(JavadocConstants.FIELD_DETAIL, this.content, false, lastIndex);
 		lastIndex = this.indexOfFieldDetails == -1 ? lastIndex : this.indexOfFieldDetails;
-				
+
 		// try to find constructor detail start
 		this.indexOfConstructorDetails = CharOperation.indexOf(JavadocConstants.CONSTRUCTOR_DETAIL, this.content, false, lastIndex);
 		lastIndex = this.indexOfConstructorDetails == -1 ? lastIndex : this.indexOfConstructorDetails;
-		
+
 		// try to find method detail start
 		this.indexOfMethodDetails = CharOperation.indexOf(JavadocConstants.METHOD_DETAIL, this.content, false, lastIndex);
 		lastIndex = this.indexOfMethodDetails == -1 ? lastIndex : this.indexOfMethodDetails;
-		
+
 		// we take the end of class data
-		final int indexOfStartOfClassData = CharOperation.indexOf(JavadocConstants.START_OF_CLASS_DATA, this.content, false);
 		this.indexOfEndOfClassData = CharOperation.indexOf(JavadocConstants.END_OF_CLASS_DATA, this.content, false, lastIndex);
-		int[] classDataRange = sanitizeRange(new int[] { indexOfStartOfClassData + JavadocConstants.START_OF_CLASS_DATA.length, indexOfEndOfClassData}, "ul", "li", "div");
-		this.indexOfEndOfClassData = classDataRange[1];
-		
-		// try to find enum constants bottom
-		this.indexOfEnumConstantsBottom = this.indexOfFieldDetails != -1 ? this.indexOfFieldDetails
-				: this.indexOfConstructorDetails != -1 ? this.indexOfConstructorDetails
-						: this.indexOfMethodDetails != -1 ? this.indexOfMethodDetails : this.indexOfEndOfClassData;
-		
-		// Get rid of possible <ul><li> tag wrappers
-		int[] fieldsRange = sanitizeRange(new int[] {indexOfEnumConstantsDetails + JavadocConstants.ENUM_CONSTANT_DETAIL.length, indexOfEnumConstantsBottom}, "ul", "li", "div");
-		indexOfEnumConstantsDetails = fieldsRange[0];
-		indexOfEnumConstantsBottom = fieldsRange[1];
-		
+
 		// try to find the field detail end
 		this.indexOfFieldsBottom =
 			this.indexOfConstructorDetails != -1 ? this.indexOfConstructorDetails :
 				this.indexOfMethodDetails != -1 ? this.indexOfMethodDetails:
 					this.indexOfEndOfClassData;
-		
+
 		this.indexOfAllMethodsTop =
 			this.indexOfConstructorDetails != -1 ?
 					this.indexOfConstructorDetails :
 						this.indexOfMethodDetails;
-		
-		this.indexOfAllMethodsBottom = this.indexOfEndOfClassData;
-	
-		// Get rid of possible <ul><li> tag wrappers
-		fieldsRange = sanitizeRange(new int[] {indexOfFieldDetails + JavadocConstants.FIELD_DETAIL.length, indexOfFieldsBottom}, "ul", "li", "div");
-		indexOfFieldDetails = fieldsRange[0];
-		indexOfFieldsBottom = fieldsRange[1];
 
-		int[] methodsRange = sanitizeRange(new int[] {
-				indexOfAllMethodsTop + (indexOfAllMethodsTop == indexOfConstructorDetails
-						? JavadocConstants.CONSTRUCTOR_DETAIL.length : JavadocConstants.METHOD_DETAIL.length),
-				indexOfAllMethodsBottom }, "ul", "li", "div");
-		indexOfAllMethodsTop = methodsRange[0];
-		indexOfAllMethodsBottom = methodsRange[1];
-		
-		// Remove trailing extra tag closings
-		String badEnding = "</li>\n</ul>\n</li>\n</ul>";
-		indexOfAllMethodsBottom = trimBadEnding(badEnding, indexOfAllMethodsBottom, badEnding.length() / 2);
-		
+		this.indexOfAllMethodsBottom = this.indexOfEndOfClassData;
+
 		this.hasComputedChildrenSections = true;
-		
 	}
+
 	
 	private int trimBadEnding(String badEnding, int end) {
 		return trimBadEnding(badEnding, end, badEnding.length());
@@ -320,33 +303,31 @@ public class JavadocContents {
 	 */
 	private int[] computeFieldRange(IField field) throws Exception {
 		IType type = field.getDeclaringType();
-		
+
 		if (!this.hasComputedChildrenSections) {
 			computeChildrenSections();
 		}
-		
+
 		StringBuffer buffer = new StringBuffer(field.getElementName());
 		buffer.append(JavadocConstants.ANCHOR_PREFIX_END);
 		char[] anchor = String.valueOf(buffer).toCharArray();
-		
+
 		int[] range = null;
-		int top = field.isEnumConstant() ? this.indexOfEnumConstantsDetails : this.indexOfFieldDetails;
-		int bottom = field.isEnumConstant() ? this.indexOfEnumConstantsBottom : this.indexOfFieldsBottom;
-		
-		if (top == -1 || bottom == -1) {
+
+		if (this.indexOfFieldDetails == -1 || this.indexOfFieldsBottom == -1) {
 			// the detail section has no top or bottom, so the doc has an unknown format
 			if (this.unknownFormatAnchorIndexes == null) {
 				this.unknownFormatAnchorIndexes = new int[(int)type.getFields().count()];
 				this.unknownFormatAnchorIndexesCount = 0;
 				this.unknownFormatLastAnchorFoundIndex = this.childrenStart;
 			}
-			
+
 			this.tempAnchorIndexes = this.unknownFormatAnchorIndexes;
 			this.tempAnchorIndexesCount = this.unknownFormatAnchorIndexesCount;
 			this.tempLastAnchorFoundIndex = this.unknownFormatLastAnchorFoundIndex;
-			
-			range = computeChildRange(anchor, bottom);
-			
+
+			range = computeChildRange(anchor, this.indexOfFieldsBottom);
+
 			this.unknownFormatLastAnchorFoundIndex = this.tempLastAnchorFoundIndex;
 			this.unknownFormatAnchorIndexesCount = this.tempAnchorIndexesCount;
 			this.unknownFormatAnchorIndexes = this.tempAnchorIndexes;
@@ -354,23 +335,23 @@ public class JavadocContents {
 			if (this.fieldAnchorIndexes == null) {
 				this.fieldAnchorIndexes = new int[(int)type.getFields().count()];
 				this.fieldAnchorIndexesCount = 0;
-				this.fieldLastAnchorFoundIndex = top;
+				this.fieldLastAnchorFoundIndex = this.indexOfFieldDetails;
 			}
-			
+
 			this.tempAnchorIndexes = this.fieldAnchorIndexes;
 			this.tempAnchorIndexesCount = this.fieldAnchorIndexesCount;
 			this.tempLastAnchorFoundIndex = this.fieldLastAnchorFoundIndex;
-			
-			range = computeChildRange(anchor, bottom);
-			
+
+			range = computeChildRange(anchor, this.indexOfFieldsBottom);
+
 			this.fieldLastAnchorFoundIndex = this.tempLastAnchorFoundIndex;
 			this.fieldAnchorIndexesCount = this.tempAnchorIndexesCount;
 			this.fieldAnchorIndexes = this.tempAnchorIndexes;
 		}
-		
+
 		return range;
 	}
-	
+
 	/*
 	 * Compute the ranges of the parts of the javadoc that describe each method of the type
 	 */

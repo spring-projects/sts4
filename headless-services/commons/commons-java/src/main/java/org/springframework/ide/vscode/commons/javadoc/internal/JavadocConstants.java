@@ -15,7 +15,9 @@ public interface JavadocConstants {
 
 	String ANCHOR_PREFIX_END = "\""; //$NON-NLS-1$
 	char[] ANCHOR_PREFIX_START = "<A NAME=\"".toCharArray(); //$NON-NLS-1$
-	int ANCHOR_PREFIX_START_LENGHT = ANCHOR_PREFIX_START.length;
+	char[] ANCHOR_PREFIX_START_2 = "<A ID=\"".toCharArray(); //$NON-NLS-1$
+	int ANCHOR_PREFIX_START_LENGTH = ANCHOR_PREFIX_START.length;
+	int ANCHOR_PREFIX_START2_LENGTH = ANCHOR_PREFIX_START_2.length;
 	char[] ANCHOR_SUFFIX = "</A>".toCharArray(); //$NON-NLS-1$
 	int ANCHOR_SUFFIX_LENGTH = JavadocConstants.ANCHOR_SUFFIX.length;
 	char[] CONSTRUCTOR_DETAIL = "<!-- ========= CONSTRUCTOR DETAIL ======== -->".toCharArray(); //$NON-NLS-1$
@@ -23,7 +25,6 @@ public interface JavadocConstants {
 	char[] FIELD_DETAIL= "<!-- ============ FIELD DETAIL =========== -->".toCharArray(); //$NON-NLS-1$
 	char[] FIELD_SUMMARY = "<!-- =========== FIELD SUMMARY =========== -->".toCharArray(); //$NON-NLS-1$
 	char[] ENUM_CONSTANT_SUMMARY = "<!-- =========== ENUM CONSTANT SUMMARY =========== -->".toCharArray(); //$NON-NLS-1$
-	char[] ENUM_CONSTANT_DETAIL = "<!-- ============ ENUM CONSTANT DETAIL =========== -->".toCharArray();
 	char[] ANNOTATION_TYPE_REQUIRED_MEMBER_SUMMARY = "<!-- =========== ANNOTATION TYPE REQUIRED MEMBER SUMMARY =========== -->".toCharArray(); //$NON-NLS-1$
 	char[] ANNOTATION_TYPE_OPTIONAL_MEMBER_SUMMARY = "<!-- =========== ANNOTATION TYPE OPTIONAL MEMBER SUMMARY =========== -->".toCharArray(); //$NON-NLS-1$
 	char[] END_OF_CLASS_DATA = "<!-- ========= END OF CLASS DATA ========= -->".toCharArray(); //$NON-NLS-1$
@@ -35,6 +36,9 @@ public interface JavadocConstants {
 	String PACKAGE_FILE_NAME = "package-summary.html"; //$NON-NLS-1$
 	char[] PACKAGE_DESCRIPTION_START = "name=\"package_description\"".toCharArray(); //$NON-NLS-1$
 	char[] PACKAGE_DESCRIPTION_START2 = "name=\"package.description\"".toCharArray(); //$NON-NLS-1$
+	char[] PACKAGE_DESCRIPTION_START3 = "<div class=\"contentContainer\">".toCharArray(); //$NON-NLS-1$
+	String MODULE_FILE_SUFFIX = "-summary.html"; //$NON-NLS-1$
+	char[] MODULE_DESCRIPTION_START = "<!-- ============ MODULE DESCRIPTION =========== -->".toCharArray(); //$NON-NLS-1$
 	char[] H2_PREFIX = "<H2".toCharArray(); //$NON-NLS-1$
 	char[] H2_SUFFIX = "</H2>".toCharArray(); //$NON-NLS-1$
 	int H2_SUFFIX_LENGTH = H2_SUFFIX.length;
@@ -44,4 +48,5 @@ public interface JavadocConstants {
 	int START_OF_CLASS_DATA_LENGTH = JavadocConstants.START_OF_CLASS_DATA.length;
 	String P = "<P>"; //$NON-NLS-1$
 	String DIV_CLASS_BLOCK = "<DIV CLASS=\"BLOCK\">"; //$NON-NLS-1$
+
 }
