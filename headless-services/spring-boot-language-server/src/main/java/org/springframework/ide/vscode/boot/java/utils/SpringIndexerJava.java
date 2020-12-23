@@ -510,7 +510,11 @@ public class SpringIndexerJava implements SpringIndexer {
 	private ASTParser createParser(IJavaProject project, boolean ignoreMethodBodies) throws Exception {
 		String[] classpathEntries = getClasspathEntries(project);
 		String[] sourceEntries = getSourceEntries(project);
-
+		
+		log.info("Java symbol parsing for project: " + project.getElementName());
+		log.info("Classpath: " + Arrays.toString(classpathEntries));
+		log.info("Source: " + Arrays.toString(sourceEntries));
+		
 		ASTParser parser = ASTParser.newParser(AST.JLS14);
 		Map<String, String> options = JavaCore.getOptions();
 		JavaCore.setComplianceOptions(JavaCore.VERSION_14, options);
