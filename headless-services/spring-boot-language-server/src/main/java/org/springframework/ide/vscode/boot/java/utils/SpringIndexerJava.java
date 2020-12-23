@@ -478,6 +478,10 @@ public class SpringIndexerJava implements SpringIndexer {
 		if (typeBinding != null) {
 			Collection<SymbolProvider> providers = symbolProviders.get(typeBinding);
 			Collection<ITypeBinding> metaAnnotations = AnnotationHierarchies.getMetaAnnotations(typeBinding, symbolProviders::containsKey);
+			
+			log.info("symbol providers found: " + providers.size() + " for type bindung: " + typeBinding.getQualifiedName());
+			log.info("meta annotations found: " + metaAnnotations.size());
+			
 			if (!providers.isEmpty()) {
 				TextDocument doc = DocumentUtils.getTempTextDocument(context.getDocURI(), context.getDocRef(), context.getContent());
 				for (SymbolProvider provider : providers) {
@@ -490,6 +494,9 @@ public class SpringIndexerJava implements SpringIndexer {
 					context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), enhancedSymbol));
 				}
 			}
+		}
+		else {
+			log.warn("type binding not around: " + context.getDocURI() + " - " + node.toString());
 		}
 	}
 
