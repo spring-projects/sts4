@@ -21,6 +21,9 @@ import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.IAnnotationBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.internal.compiler.problem.AbortCompilation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJava;
 import org.springframework.ide.vscode.commons.util.CollectorUtil;
 
 import com.google.common.collect.ImmutableList;
@@ -34,6 +37,8 @@ import com.google.common.collect.ImmutableList;
  * @author Kris De Volder
  */
 public abstract class AnnotationHierarchies {
+	
+	private static final Logger log = LoggerFactory.getLogger(AnnotationHierarchies.class);
 
 	protected static boolean ignoreAnnotation(String fqname) {
 		return fqname.startsWith("java."); //mostly intended to capture java.lang.annotation.* types. But really it should be
@@ -47,6 +52,9 @@ public abstract class AnnotationHierarchies {
 				ImmutableList.Builder<ITypeBinding> superAnnotations = ImmutableList.builder();
 				for (IAnnotationBinding ab : annotations) {
 					ITypeBinding sa = ab.getAnnotationType();
+					
+					log.info("super annotation analysis for " + typeBinding.getName() + " - " + ab.getName() + " - with binding: " + sa != null ? sa.getName() : "null");
+					
 					if (sa != null) {
 						if (!ignoreAnnotation(sa.getQualifiedName())) {
 							superAnnotations.add(sa);
@@ -57,6 +65,7 @@ public abstract class AnnotationHierarchies {
 			}
 		}
 		catch (AbortCompilation e) {
+			log.warn("compilation aborted: " + e);
 			// ignore this, it is most likely caused by broken source code, a broken classpath, or some optional dependencies not being on the classpath
 		}
 
