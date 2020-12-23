@@ -65,7 +65,7 @@ public abstract class AnnotationHierarchies {
 			}
 		}
 		catch (AbortCompilation e) {
-			log.warn("compilation aborted: " + e);
+			log.warn("compilation aborted ", e);
 			// ignore this, it is most likely caused by broken source code, a broken classpath, or some optional dependencies not being on the classpath
 		}
 
