@@ -337,6 +337,8 @@ public class SpringIndexerJava implements SpringIndexer {
 				scanFiles(project, pass2Files, generatedSymbols, SCAN_PASS.TWO);
 			}
 
+			log.info("scan java files done, number of symbols created: " + generatedSymbols.size());
+
 			this.cache.store(cacheKey, javaFiles, generatedSymbols, dependencyTracker.getAllDependencies());
 //			dependencyTracker.dump();
 
@@ -373,6 +375,8 @@ public class SpringIndexerJava implements SpringIndexer {
 				SpringIndexerJavaContext context = new SpringIndexerJavaContext(project, cu, docURI, sourceFilePath,
 						lastModified, docRef, null, generatedSymbols, pass, nextPassFiles);
 
+				log.info("AST created, scan in AST for symbols in: " + docURI);
+				
 				scanAST(context);
 			}
 		};
