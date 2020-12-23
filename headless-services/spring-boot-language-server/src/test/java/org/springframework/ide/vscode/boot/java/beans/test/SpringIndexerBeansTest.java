@@ -16,7 +16,6 @@ import java.io.File;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
-import java.util.stream.Collectors;
 
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.junit.Before;
