@@ -13,12 +13,10 @@ package org.springframework.ide.vscode.boot.java.beans.test;
 import static org.junit.Assert.assertEquals;
 
 import java.io.File;
-import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
-import org.eclipse.jdt.internal.compiler.batch.ClasspathJrt;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.junit.Before;
 import org.junit.Test;
@@ -68,30 +66,6 @@ public class SpringIndexerBeansTest {
 
 	@Test
 	public void testScanSimpleConfigurationClass() throws Exception {
-		ClasspathJrt jrt = new ClasspathJrt(new File("/opt/jdk-11/lib/jrt-fs.jar"), true, null, null);
-		jrt.initialize();
-		
-		System.out.println();
-		System.out.println("--- list all the packages ---");
-		Collection<String> moduleNames = jrt.getModuleNames(null);
-		for (String name : moduleNames) {
-			System.out.println(name);
-		}
-
-		System.out.println();
-		System.out.println("type names: ");
-		char[][][] typeNames = jrt.findTypeNames("java/lang/annotation", "java.base");
-		System.out.println("found type names: " + typeNames.length);
-		for( int i = 0; i < typeNames[i].length; i++) {
-			char[][] cs = typeNames[i];
-			for (int j = 0; j < cs.length; j++) {
-				String name = new String(cs[j]);
-				System.out.println(name);
-			}
-		}
-		System.out.println();
-		
-		
 		String docUri = directory.toPath().resolve("src/main/java/org/test/SimpleConfiguration.java").toUri().toString();
 		SpringIndexerHarness.assertDocumentSymbols(indexer, docUri,
 				SpringIndexerHarness.symbol("@Configuration", "@+ 'simpleConfiguration' (@Configuration <: @Component) SimpleConfiguration"),
