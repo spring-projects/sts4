@@ -213,6 +213,7 @@
 					<excludes>
 						<exclude>test-projects/**</exclude>
 					</excludes>
+					<argLine>-Dorg.eclipse.jdt.disable_JRT_cache=true</argLine>
 				</configuration>
 			</plugin>
 
