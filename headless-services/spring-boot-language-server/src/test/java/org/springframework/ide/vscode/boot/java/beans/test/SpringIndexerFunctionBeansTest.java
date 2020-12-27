@@ -120,10 +120,4 @@ public class SpringIndexerFunctionBeansTest {
 		SpringIndexerHarness.assertDocumentSymbols(indexer, docUri);
 	}
 
-	@Test
-	public void testScanInconsistentInterfaceHierarchy() throws Exception {
-		String docUri = directory.toPath().resolve("src/main/java/org/test/LoopedFunctionClass.java").toUri().toString();
-		SpringIndexerHarness.assertDocumentSymbols(indexer, docUri);
-	}
-
 }

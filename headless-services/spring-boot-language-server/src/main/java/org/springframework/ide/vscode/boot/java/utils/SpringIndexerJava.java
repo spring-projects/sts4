@@ -375,8 +375,6 @@ public class SpringIndexerJava implements SpringIndexer {
 				SpringIndexerJavaContext context = new SpringIndexerJavaContext(project, cu, docURI, sourceFilePath,
 						lastModified, docRef, null, generatedSymbols, pass, nextPassFiles);
 
-				log.info("AST created, scan in AST for symbols in: " + docURI);
-				
 				scanAST(context);
 			}
 		};
@@ -479,9 +477,6 @@ public class SpringIndexerJava implements SpringIndexer {
 			Collection<SymbolProvider> providers = symbolProviders.get(typeBinding);
 			Collection<ITypeBinding> metaAnnotations = AnnotationHierarchies.getMetaAnnotations(typeBinding, symbolProviders::containsKey);
 			
-			log.info("symbol providers found: " + providers.size() + " for type bindung: " + typeBinding.getQualifiedName());
-			log.info("meta annotations found: " + metaAnnotations.size());
-			
 			if (!providers.isEmpty()) {
 				TextDocument doc = DocumentUtils.getTempTextDocument(context.getDocURI(), context.getDocRef(), context.getContent());
 				for (SymbolProvider provider : providers) {
@@ -496,7 +491,7 @@ public class SpringIndexerJava implements SpringIndexer {
 			}
 		}
 		else {
-			log.warn("type binding not around: " + context.getDocURI() + " - " + node.toString());
+			log.debug("type binding not around: " + context.getDocURI() + " - " + node.toString());
 		}
 	}
 
@@ -521,10 +516,6 @@ public class SpringIndexerJava implements SpringIndexer {
 	private ASTParser createParser(IJavaProject project, boolean ignoreMethodBodies) throws Exception {
 		String[] classpathEntries = getClasspathEntries(project);
 		String[] sourceEntries = getSourceEntries(project);
-		
-		log.info("Java symbol parsing for project: " + project.getElementName());
-		log.info("Classpath: " + Arrays.toString(classpathEntries));
-		log.info("Source: " + Arrays.toString(sourceEntries));
 		
 		ASTParser parser = ASTParser.newParser(AST.JLS14);
 		Map<String, String> options = JavaCore.getOptions();

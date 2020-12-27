@@ -18,9 +18,6 @@ import java.util.Map;
 import java.util.function.Consumer;
 
 import org.eclipse.jdt.core.dom.ITypeBinding;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJava;
 import org.springframework.ide.vscode.commons.util.Assert;
 
 import com.google.common.collect.ImmutableList;
@@ -36,8 +33,6 @@ import com.google.common.collect.ImmutableList;
  */
 public class AnnotationHierarchyAwareLookup<T> {
 	
-	private static final Logger log = LoggerFactory.getLogger(AnnotationHierarchyAwareLookup.class);
-
 	private static class Binding<T> {
 		T value;
 		boolean isOverriding;
@@ -105,12 +100,8 @@ public class AnnotationHierarchyAwareLookup<T> {
 
 	private void findElements(ITypeBinding typeBinding, HashSet<String> seen, Consumer<T> requestor) {
 		String qname = typeBinding.getQualifiedName();
-		log.info("find elements for " + typeBinding.getName() + " with qname " + qname);
-		
 		if (seen.add(qname)) {
 			Binding<T> binding = bindings.get(qname);
-			
-			log.info("binding for " + qname + " is " + binding);
 			
 			boolean isOverriding = false;
 			if (binding != null) {
@@ -120,8 +111,6 @@ public class AnnotationHierarchyAwareLookup<T> {
 
 			if (!isOverriding) {
 				Collection<ITypeBinding> directSuperAnnotations = AnnotationHierarchies.getDirectSuperAnnotations(typeBinding);
-				log.info("direct super annotations found for " + typeBinding.getName() + " are: " + directSuperAnnotations);
-				
 				for (ITypeBinding superAnnotation : directSuperAnnotations) {
 					findElements(superAnnotation, seen, requestor);
 				}

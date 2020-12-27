@@ -23,7 +23,6 @@ import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.internal.compiler.problem.AbortCompilation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJava;
 import org.springframework.ide.vscode.commons.util.CollectorUtil;
 
 import com.google.common.collect.ImmutableList;
@@ -52,9 +51,6 @@ public abstract class AnnotationHierarchies {
 				ImmutableList.Builder<ITypeBinding> superAnnotations = ImmutableList.builder();
 				for (IAnnotationBinding ab : annotations) {
 					ITypeBinding sa = ab.getAnnotationType();
-					
-					log.info("super annotation analysis for " + typeBinding.getName() + " - " + ab.getName() + " - with binding: " + sa != null ? sa.getName() : "null");
-					
 					if (sa != null) {
 						if (!ignoreAnnotation(sa.getQualifiedName())) {
 							superAnnotations.add(sa);
@@ -65,7 +61,7 @@ public abstract class AnnotationHierarchies {
 			}
 		}
 		catch (AbortCompilation e) {
-			log.warn("compilation aborted ", e);
+			log.debug("compilation aborted ", e);
 			// ignore this, it is most likely caused by broken source code, a broken classpath, or some optional dependencies not being on the classpath
 		}
 
