@@ -14,4 +14,4 @@ Require-Bundle: org.eclipse.jdt.core,
  org.eclipse.ui.workbench,
  com.google.guava,
  org.springframework.ide.eclipse.boot
-Bundle-Vendor: Pivotal Inc
+Bundle-Vendor: VMware, Inc

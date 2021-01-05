@@ -3,7 +3,7 @@
 	id="org.springframework.boot.ide.branding.feature"
 	label="Spring Tool Suite 4 Branding Feature"
 	version="4.9.1.qualifier"
-	provider-name="Pivotal, Inc.">
+	provider-name="VMware, Inc.">
 
 	<plugin
 		id="org.springframework.boot.ide.branding"

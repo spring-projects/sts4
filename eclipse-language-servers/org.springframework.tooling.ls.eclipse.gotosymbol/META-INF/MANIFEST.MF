@@ -27,4 +27,4 @@ Require-Bundle: org.eclipse.ui,
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-Activator: org.springframework.tooling.ls.eclipse.gotosymbol.GotoSymbolPlugin
 Bundle-ActivationPolicy: lazy
-Bundle-Vendor: Pivotal, Inc.
+Bundle-Vendor: VMware, Inc.

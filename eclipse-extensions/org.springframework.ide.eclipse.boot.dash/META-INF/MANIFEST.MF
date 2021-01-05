@@ -4,7 +4,7 @@ Bundle-Name: Spring Boot Dashboard View
 Bundle-SymbolicName: org.springframework.ide.eclipse.boot.dash;singleton:=true
 Bundle-Version: 4.9.1.qualifier
 Bundle-Activator: org.springframework.ide.eclipse.boot.dash.BootDashActivator
-Bundle-Vendor: Pivotal Inc
+Bundle-Vendor: VMware, Inc
 Require-Bundle: org.eclipse.ui,
  org.springsource.ide.eclipse.commons.ui,
  org.eclipse.core.resources,

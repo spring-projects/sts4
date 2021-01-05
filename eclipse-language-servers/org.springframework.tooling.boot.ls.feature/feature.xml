@@ -3,7 +3,7 @@
 	id="org.springframework.tooling.boot.ls.feature"
 	label="Spring Boot Language Server Feature"
 	version="4.9.1.qualifier"
-	provider-name="Pivotal, Inc.">
+	provider-name="VMware, Inc.">
 
     <description>
        %description

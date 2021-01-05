@@ -23,4 +23,4 @@ Require-Bundle: org.eclipse.ui,
  org.springframework.ide.eclipse.buildship30
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
-Bundle-Vendor: GoPivotal Inc.
+Bundle-Vendor: GoVMware, Inc.

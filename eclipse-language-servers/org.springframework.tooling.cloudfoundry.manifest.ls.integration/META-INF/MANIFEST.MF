@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Cloud Foundry Manifest Language Server Generic Editor Integration
-Bundle-Vendor: Pivotal, Inc.
+Bundle-Vendor: VMware, Inc.
 Bundle-SymbolicName: org.springframework.tooling.cloudfoundry.manifest.ls.integration;singleton:=true
 Bundle-Version: 4.9.1.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8

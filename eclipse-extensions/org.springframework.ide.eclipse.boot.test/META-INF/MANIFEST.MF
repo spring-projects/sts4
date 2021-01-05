@@ -33,7 +33,7 @@ Require-Bundle: org.eclipse.ui,
  org.hamcrest.library;bundle-version="1.3.0"
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
-Bundle-Vendor: Pivotal Inc.
+Bundle-Vendor: VMware, Inc.
 Export-Package: org.springframework.ide.eclipse.boot.test,
  org.springframework.ide.eclipse.boot.test.util
 Import-Package: org.eclipse.core.runtime,

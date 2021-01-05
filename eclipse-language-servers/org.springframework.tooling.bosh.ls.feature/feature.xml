@@ -3,7 +3,7 @@
 	id="org.springframework.tooling.bosh.ls.feature"
 	label="BOSH Language Server Feature"
 	version="4.9.1.qualifier"
-	provider-name="Pivotal, Inc.">
+	provider-name="VMware, Inc.">
 
     <description>
        %description

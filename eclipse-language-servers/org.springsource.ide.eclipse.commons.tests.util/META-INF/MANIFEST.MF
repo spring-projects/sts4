@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: SpringSource Tool Suite Test Utilities
 Bundle-SymbolicName: org.springsource.ide.eclipse.commons.tests.util;singleton:=true
 Bundle-Version: 4.9.1.qualifier
-Bundle-Vendor: Pivotal Software, Inc.
+Bundle-Vendor: VMware, Inc.
 Require-Bundle: org.eclipse.core.runtime,
  org.eclipse.core.resources,
  org.eclipse.jdt.core,

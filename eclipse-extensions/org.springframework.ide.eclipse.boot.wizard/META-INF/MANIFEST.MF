@@ -45,7 +45,7 @@ Export-Package: org.springframework.ide.eclipse.boot.wizard,
  org.springframework.ide.eclipse.boot.wizard.importing,
  org.springframework.ide.eclipse.boot.wizard.starters,
  org.springframework.ide.eclipse.boot.wizard.util
-Bundle-Vendor: Pivotal Inc.
+Bundle-Vendor: VMware, Inc.
 Import-Package: org.eclipse.core.runtime,
  org.eclipse.core.runtime.jobs,
  org.eclipse.osgi.util,

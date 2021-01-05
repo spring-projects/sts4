@@ -10,4 +10,4 @@ Require-Bundle: org.junit,
  org.springframework.ide.eclipse.maven.pom,
  org.springsource.ide.eclipse.commons.livexp,
  org.eclipse.compare
-Bundle-Vendor: Pivotal Inc.
+Bundle-Vendor: VMware, Inc.

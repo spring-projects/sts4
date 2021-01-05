@@ -11,7 +11,7 @@ Require-Bundle: org.eclipse.jface,
  org.eclipse.text
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Bundle-Vendor: Pivotal Software, Inc.
+Bundle-Vendor: VMware, Inc.
 Export-Package: org.springsource.ide.eclipse.commons.livexp.core;uses:="com.google.common.base",
  org.springsource.ide.eclipse.commons.livexp.core.validators,
  org.springsource.ide.eclipse.commons.livexp.ui,
