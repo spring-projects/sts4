@@ -38,8 +38,8 @@ https://github.com/spring-projects/sts4/blob/master/CONTRIBUTING.adoc
 
 ### Code of Conduct
 
-Please see our https://github.com/spring-projects/.github/blob/master/CODE_OF_CONDUCT.md[code of conduct]
+Please see our https://github.com/spring-projects/.github/blob/master/CODE_OF_CONDUCT.md
 
 ### Reporting Security Vulnerabilities
 
-Please see our https://github.com/spring-projects/spring-integration/security/policy[Security policy].
+Please see our https://github.com/spring-projects/spring-integration/security/policy.
