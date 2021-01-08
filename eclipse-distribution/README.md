@@ -9,7 +9,7 @@ To run the distribution builds locally:
 
 - `-Pe418` defines the eclipse platform version
 
-This will build the full distributions for Windows, macOS, and Linux. The final products can be found in `eclipse-distribution/org.springframework.boot.ide.product.e412/target/products/org.springframework.boot.ide.branding.sts4/`
+This will build the full distributions for Windows, macOS, and Linux. The final products can be found in `eclipse-distribution/org.springframework.boot.ide.product.e418/target/products/org.springframework.boot.ide.branding.sts4/`
 
 This consumes the language servers from the nightly update site as defined here: https://github.com/spring-projects/sts4/blob/master/eclipse-distribution/pom.xml#L97
 
