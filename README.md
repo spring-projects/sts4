@@ -38,6 +38,8 @@ https://github.com/spring-projects/sts4/blob/master/CONTRIBUTING.adoc
 
 ### Code of Conduct
 
-This project adheres to the Contributor Covenant [code of
-conduct](CODE_OF_CONDUCT.adoc). By participating, you  are expected to uphold this code. Please report
-unacceptable behavior to spring-code-of-conduct@pivotal.io.
+Please see our https://github.com/spring-projects/.github/blob/master/CODE_OF_CONDUCT.md[code of conduct]
+
+### Reporting Security Vulnerabilities
+
+Please see our https://github.com/spring-projects/spring-integration/security/policy[Security policy].
