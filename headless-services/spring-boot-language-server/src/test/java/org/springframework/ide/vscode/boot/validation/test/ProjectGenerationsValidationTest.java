@@ -16,6 +16,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
+import java.sql.Date;
 import java.util.List;
 
 import org.junit.Before;
@@ -25,22 +26,22 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
 import org.springframework.ide.vscode.boot.bootiful.HoverTestConf;
-import org.springframework.ide.vscode.boot.validation.generations.SpringProjectsCache;
-import org.springframework.ide.vscode.boot.validation.generations.SpringProjectsValidations;
+import org.springframework.ide.vscode.boot.validation.generations.SampleProjectsProvider;
+import org.springframework.ide.vscode.boot.validation.generations.SpringIoProjectsProvider;
 import org.springframework.ide.vscode.boot.validation.generations.SpringProjectsClient;
+import org.springframework.ide.vscode.boot.validation.generations.SpringProjectsProvider;
+import org.springframework.ide.vscode.boot.validation.generations.SpringProjectsValidations;
 import org.springframework.ide.vscode.boot.validation.generations.json.Generation;
 import org.springframework.ide.vscode.boot.validation.generations.json.Generations;
-import org.springframework.ide.vscode.boot.validation.generations.json.GenerationsEmbedded;
-import org.springframework.ide.vscode.boot.validation.generations.json.JsonHalParser;
 import org.springframework.ide.vscode.boot.validation.generations.json.Link;
 import org.springframework.ide.vscode.boot.validation.generations.json.SpringProject;
-import org.springframework.ide.vscode.boot.validation.generations.json.SpringProjects;
-import org.springframework.ide.vscode.boot.validation.generations.json.SpringProjectsEmbedded;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 import org.springframework.test.context.junit4.SpringRunner;
+
+import com.google.common.collect.ImmutableList;
 
 @RunWith(SpringRunner.class)
 @BootLanguageServerTest
@@ -142,7 +143,7 @@ public class ProjectGenerationsValidationTest {
 	public void testProjectsInfoFromSpringIo() throws Exception {
 		String url = "https://spring.io/api/projects";
 		SpringProjectsClient client = new SpringProjectsClient(url);
-		SpringProjectsCache cache = new SpringProjectsCache(client, harness.getServer());
+		SpringProjectsProvider cache = new SpringIoProjectsProvider(client);
 
 		SpringProject project = cache.getProject("spring-boot");
 		assertNotNull(project);
@@ -159,18 +160,21 @@ public class ProjectGenerationsValidationTest {
 		generationsUrl = project.get_links().getGenerations();
 		assertNotNull(generationsUrl);
 		assertEquals("https://spring.io/api/projects/spring-integration/generations", generationsUrl.getHref());
+	
+		// Enable when generations is  actually available  from  spring.io
+//		Generations generations = cache.getGenerations("spring-boot");
+//		assertNotNull(generations);
 	}
 
 	@Test
 	public void testGenerationsFromSample() throws Exception {
-		SpringProjectsClient client = getMockClient();
 
-		SpringProjectsCache cache = new SpringProjectsCache(client, harness.getServer());
+		SampleProjectsProvider provider = new SampleProjectsProvider();
 
-		SpringProject project = cache.getProject("spring-boot");
+		SpringProject project = provider.getProject("spring-boot");
 		assertNotNull(project);
 
-		Generations generations = cache.getGenerations(project);
+		Generations generations = provider.getGenerations("spring-boot");
 		assertNotNull(generations);
 
 		List<Generation> genList = generations.getGenerations();
@@ -188,16 +192,17 @@ public class ProjectGenerationsValidationTest {
 	@Test
 	public void testWarningsFromSample() throws Exception {
 		
-		SpringProjectsClient client = getMockClient();
 		IJavaProject jp = projects.mavenProject("empty-boot-1.3.0-app");
 
-		SpringProjectsCache cache = new SpringProjectsCache(client, harness.getServer());
-		SpringProjectsValidations validation = new SpringProjectsValidations(cache);
-		List<String> messages = validation.getVersionWarnings(jp);
+		SpringProjectsValidations validation = new SpringProjectsValidations(harness.getServer(), 
+				ImmutableList.of( new SampleProjectsProvider())
+		);
+		
+		List<String> messages = validation.getWarningMessages(jp);
 		assertTrue(messages != null && messages.size()  > 0);
 		String msg = messages.get(0);
 		// Check that the message mentions the boot version of the project and the OSS support end date
-		assertTrue(msg.contains("1.3.2") && msg.contains("OSS") &&  msg.contains("2020-01-01"));
+		assertEquals("Using spring-boot version: 1.3.2 - OSS has ended on: 2020-01-01 - Commercial support has ended on: 2021-01-01", msg);
 	}
 
 	/*
@@ -209,38 +214,7 @@ public class ProjectGenerationsValidationTest {
 	 * 
 	 */
 
-	protected SpringProjectsClient getMockClient() throws Exception {
-		return new SpringProjectsClient(null) {
-
-			@Override
-			public SpringProjects getSpringProjects() throws Exception {
-				return getProjectsFromSampleJson();
-			}
-
-			@Override
-			public Generations getGenerations(String generationsUrl) throws Exception {
-				return getGenerationsFromSampleJson(generationsUrl);
-			}
-		};
-	}
-
-	protected SpringProjects getProjectsFromSampleJson() throws Exception {
-		JsonHalParser parser = new JsonHalParser();
-		return parser.getEmbedded(SpringProjectsTestSamples.SPRING_PROJECTS_JSON_SAMPLE, SpringProjectsEmbedded.class);
-	}
-
-	protected Generations getGenerationsFromSampleJson(String genUrl) throws Exception {
-		String json = null;
-		if ("https://spring.io/api/projects/spring-boot/generations".equals(genUrl)) {
-			json = SpringProjectsTestSamples.SPRING_BOOT_PROJECT_GENERATIONS;
-		}
-
-		if (json != null) {
-			JsonHalParser parser = new JsonHalParser();
-			return parser.getEmbedded(json, GenerationsEmbedded.class);
-		}
-		return null;
-	}
+	
 	
 	private File getLib(List<File> springLibs, String slug) {
 		for (File file : springLibs) {
