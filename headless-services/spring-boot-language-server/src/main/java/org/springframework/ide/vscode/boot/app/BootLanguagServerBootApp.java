@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2020 Pivotal, Inc.
+ * Copyright (c) 2018, 2021 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -15,8 +15,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
-import org.springframework.boot.autoconfigure.SpringBootApplication;
-import org.springframework.boot.autoconfigure.admin.SpringApplicationAdminJmxAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
 import org.springframework.boot.autoconfigure.context.ConfigurationPropertiesAutoConfiguration;
 import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration;
@@ -45,10 +43,11 @@ import org.springframework.ide.vscode.boot.metadata.ClassReferenceProvider;
 import org.springframework.ide.vscode.boot.metadata.LoggerNameProvider;
 import org.springframework.ide.vscode.boot.metadata.ProjectBasedPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndex;
-import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.ValueProviderRegistry;
-import org.springframework.ide.vscode.boot.metadata.types.TypeUtilProvider;
 import org.springframework.ide.vscode.boot.properties.completions.SpringPropertiesCompletionEngine;
+import org.springframework.ide.vscode.boot.validation.generations.SampleProjectsProvider;
+import org.springframework.ide.vscode.boot.validation.generations.SpringIoProjectsProvider;
+import org.springframework.ide.vscode.boot.validation.generations.SpringProjectsValidations;
 import org.springframework.ide.vscode.boot.xml.SpringXMLCompletionEngine;
 import org.springframework.ide.vscode.boot.yaml.completions.ApplicationYamlAssistContext;
 import org.springframework.ide.vscode.boot.yaml.completions.SpringYamlCompletionEngine;
@@ -71,6 +70,8 @@ import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureProvid
 import org.springframework.ide.vscode.languageserver.starter.LanguageServerAutoConf;
 import org.springframework.ide.vscode.languageserver.starter.LanguageServerRunnerAutoConf;
 import org.yaml.snakeyaml.Yaml;
+
+import com.google.common.collect.ImmutableList;
 
 import reactor.core.publisher.Hooks;
 
@@ -215,5 +216,11 @@ public class BootLanguagServerBootApp {
 			}
 		};
 	}
-
+	
+	@Bean SpringProjectsValidations springProjectsValidations(SimpleLanguageServer server) {
+		return new SpringProjectsValidations(server, ImmutableList.of(
+				new SpringIoProjectsProvider(),
+				new SampleProjectsProvider()
+		));
+	}
 }

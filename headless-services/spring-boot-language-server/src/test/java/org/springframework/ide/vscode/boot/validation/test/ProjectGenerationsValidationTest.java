@@ -19,6 +19,7 @@ import java.io.File;
 import java.sql.Date;
 import java.util.List;
 
+import org.eclipse.lsp4j.MessageType;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -26,6 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
 import org.springframework.ide.vscode.boot.bootiful.HoverTestConf;
+import org.springframework.ide.vscode.boot.validation.generations.ProjectValidation;
 import org.springframework.ide.vscode.boot.validation.generations.SampleProjectsProvider;
 import org.springframework.ide.vscode.boot.validation.generations.SpringIoProjectsProvider;
 import org.springframework.ide.vscode.boot.validation.generations.SpringProjectsClient;
@@ -198,11 +200,11 @@ public class ProjectGenerationsValidationTest {
 				ImmutableList.of( new SampleProjectsProvider())
 		);
 		
-		List<String> messages = validation.getWarningMessages(jp);
-		assertTrue(messages != null && messages.size()  > 0);
-		String msg = messages.get(0);
+		ProjectValidation versionValidation = validation.validateVersion(jp);
+		assertNotNull(versionValidation != null);
+		assertEquals(versionValidation.getMessageType(), MessageType.Warning);
 		// Check that the message mentions the boot version of the project and the OSS support end date
-		assertEquals("Using spring-boot version: 1.3.2 - OSS has ended on: 2020-01-01 - Commercial support has ended on: 2021-01-01", msg);
+		assertEquals("Using spring-boot version: 1.3.2 - OSS has ended on: 2020-01-01 - Commercial support has ended on: 2021-01-01", versionValidation.getMessage());
 	}
 
 	/*

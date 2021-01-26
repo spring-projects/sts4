@@ -12,25 +12,16 @@ package org.springframework.ide.vscode.boot.validation.generations;
 
 import java.io.File;
 import java.sql.Date;
-import java.time.Duration;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
+import org.eclipse.lsp4j.MessageType;
 import org.springframework.ide.vscode.boot.validation.generations.json.Generation;
 import org.springframework.ide.vscode.boot.validation.generations.json.Generations;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
-import org.springframework.ide.vscode.commons.util.AsyncRunner;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
-
-import reactor.core.publisher.Mono;
 
 public class SpringProjectsValidations {
-
-	private static final long TIMEOUT_SECS = 30;
 
 	private final List<SpringProjectsProvider> projectsProviders;
 	private final SimpleLanguageServer server;
@@ -39,22 +30,9 @@ public class SpringProjectsValidations {
 		this.projectsProviders = projectsProviders;
 		this.server = server;
 	}
-
-	public CompletableFuture<List<String>> getValidationMessagesAsync(IJavaProject jp) {
-		AsyncRunner async = this.server.getAsync();
-		if (async != null) {
-			return async.invoke(Duration.ofSeconds(TIMEOUT_SECS), () -> {
-				return getWarningMessages(jp);
-			});
-		} else {
-			return Mono.fromCallable(() -> getWarningMessages(jp)).timeout(Duration.ofSeconds(TIMEOUT_SECS))
-					.toFuture();
-		}
-	}
-
-	public List<String> getWarningMessages(IJavaProject jp) throws Exception {
-		ImmutableList.Builder<String> messages = ImmutableList.builder();
-
+	
+	public ProjectValidation validateVersion(IJavaProject jp) throws Exception {
+		StringBuilder builder = new StringBuilder();
 		if (jp != null) {
 			List<File> librariesOnClasspath = SpringProjectUtil.getLibrariesOnClasspath(jp, "spring");
 			if (librariesOnClasspath != null) {
@@ -66,7 +44,7 @@ public class SpringProjectsValidations {
 							List<Generation> gens = generations.getGenerations();
 							if (gens != null) {
 								for (Generation gen : gens) {
-									resolveWarnings(gen, messages, versionInfo);
+									resolveWarnings(gen, builder, versionInfo);
 								}
 							}
 						}
@@ -74,32 +52,31 @@ public class SpringProjectsValidations {
 				}
 			}
 		}
-		return messages.build();
+		
+		return builder.length() > 0 ? 
+				new ProjectValidation(builder.toString(), MessageType.Warning)
+				: ProjectValidation.OK;
 	}
 
-	private void resolveWarnings(Generation gen, Builder<String> messages, SpringVersionInfo versionInfo) {
+	private void resolveWarnings(Generation gen, StringBuilder messages, SpringVersionInfo versionInfo) {
 		if (isInGeneration(versionInfo.getMajMin(), gen)) {
 			Date currentDate = new Date(System.currentTimeMillis());
 			Date ossEndDate =  Date.valueOf(gen.getOssSupportEndDate());
 			Date commercialEndDate = Date.valueOf(gen.getCommercialSupportEndDate());
-			
-			StringBuilder msg = new StringBuilder();
-			
-			msg.append("Using ");
-			msg.append(versionInfo.getSlug());
-			msg.append(" version: ");
-			msg.append(versionInfo.getFullVersion());
+						
+			messages.append("Using ");
+			messages.append(versionInfo.getSlug());
+			messages.append(" version: ");
+			messages.append(versionInfo.getFullVersion());
 			
 			if (currentDate.after(ossEndDate)) {
-				msg.append(" - OSS has ended on: ");
-				msg.append(gen.getOssSupportEndDate());
+				messages.append(" - OSS has ended on: ");
+				messages.append(gen.getOssSupportEndDate());
 			}
 			if (currentDate.after(commercialEndDate)) {
-				msg.append(" - Commercial support has ended on: ");
-				msg.append(gen.getCommercialSupportEndDate());
+				messages.append(" - Commercial support has ended on: ");
+				messages.append(gen.getCommercialSupportEndDate());
 			}
-	
-			messages.add(msg.toString());
 		}
 	}
 	
