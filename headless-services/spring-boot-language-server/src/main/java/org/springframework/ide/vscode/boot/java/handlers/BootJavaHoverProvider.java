@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2020 Pivotal, Inc.
+ * Copyright (c) 2017, 2021 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -73,8 +73,9 @@ public class BootJavaHoverProvider implements HoverHandler {
 	@Override
 	public Hover handle(HoverParams params) {
 		SimpleTextDocumentService documents = server.getTextDocumentService();
-		if (documents.get(params) != null) {
-			TextDocument doc = documents.get(params).copy();
+		TextDocument doc = documents.getLatestSnapshot(params);
+		
+		if (doc != null) {
 			// Spring Boot LS get events from boot properties files as well, so filter them out
 			if (server.getInterestingLanguages().contains(doc.getLanguageId())) {
 				try {

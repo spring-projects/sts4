@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2019 Pivotal, Inc.
+ * Copyright (c) 2017, 2021 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -37,10 +37,10 @@ public class SpringProcessLiveHoverUpdater {
 
 	private final SimpleLanguageServer server;
 	private final BootJavaHoverProvider hoverProvider;
+	private final JavaProjectFinder projectFinder;
 
-	private boolean highlightsEnabled = true;
-	private JavaProjectFinder projectFinder;
 	private final Map<String, AtomicReference<IJavaProject>> watchedDocs;
+	private boolean highlightsEnabled = true;
 
 	public SpringProcessLiveHoverUpdater(
 			SimpleLanguageServer server,
@@ -56,11 +56,7 @@ public class SpringProcessLiveHoverUpdater {
 		server.getTextDocumentService().onDidChangeContent(params -> {
 			TextDocument doc = params.getDocument();
 			if (BootJavaLanguageServerComponents.LANGUAGES.contains(doc.getLanguageId())) {
-				try {
-					watchDocument(doc.getUri());
-				} catch (Throwable t) {
-					log.error("", t);
-				}
+				watchDocument(doc.getUri());
 			}
 		});
 		
@@ -81,7 +77,14 @@ public class SpringProcessLiveHoverUpdater {
 
 	public void watchDocument(String docURI) {
 		this.watchedDocs.putIfAbsent(docURI, new AtomicReference<IJavaProject>());
-		updateDoc(docURI);
+		
+		CompletableFuture.runAsync(() -> {
+			try {
+				updateDoc(docURI);
+			} catch (Throwable t) {
+				log.error("", t);
+			}
+		});
 	}
 
 	public void unwatchDocument(String docURI) {
@@ -89,6 +92,7 @@ public class SpringProcessLiveHoverUpdater {
 		cleanupLiveHints(docURI);
 	}
 
+	// runs async
 	private void updateDoc(String docURI) {
 		try {
 			IJavaProject project = getCachedProject(docURI);
@@ -99,6 +103,7 @@ public class SpringProcessLiveHoverUpdater {
 		}
 	}
 
+	// runs async
 	private void update() {
 		if (this.watchedDocs.size() > 0) {
 			try {
@@ -112,10 +117,11 @@ public class SpringProcessLiveHoverUpdater {
 		}
 	}
 
+	// runs async
 	private void update(String docURI, IJavaProject project) {
 		if (highlightsEnabled) {
 			try {
-				TextDocument doc = this.server.getTextDocumentService().get(docURI);
+				TextDocument doc = this.server.getTextDocumentService().getLatestSnapshot(docURI);
 				if (doc != null) {
 					CodeLens[] infos = this.hoverProvider.getLiveHoverHints(doc, project);
 					publishLiveHints(docURI, infos);
@@ -126,6 +132,7 @@ public class SpringProcessLiveHoverUpdater {
 		}
 	}
 
+	// runs async
 	private IJavaProject getCachedProject(String docURI) {
 		AtomicReference<IJavaProject> reference = this.watchedDocs.get(docURI);
 		if (reference != null) {
@@ -141,8 +148,9 @@ public class SpringProcessLiveHoverUpdater {
 		return null;
 	}
 
+	// runs async
 	private IJavaProject identifyProject(String docURI) {
-		TextDocument doc = this.server.getTextDocumentService().get(docURI);
+		TextDocument doc = this.server.getTextDocumentService().getLatestSnapshot(docURI);
 		if (doc != null) {
 			return projectFinder.find(doc.getId()).orElse(null);
 		}
@@ -151,8 +159,9 @@ public class SpringProcessLiveHoverUpdater {
 		}
 	}
 
+	// runs sync or async
 	private void publishLiveHints(String docURI, CodeLens[] codeLenses) {
-		TextDocument doc = server.getTextDocumentService().get(docURI);
+		TextDocument doc = server.getTextDocumentService().getLatestSnapshot(docURI);
 		if (doc != null) {
 			int version = doc.getVersion();
 			VersionedTextDocumentIdentifier id = new VersionedTextDocumentIdentifier(docURI, version);
@@ -160,8 +169,9 @@ public class SpringProcessLiveHoverUpdater {
 		}
 	}
 
+	// runs sync or async
 	private void cleanupLiveHints(String docURI) {
 		publishLiveHints(docURI, new CodeLens[0]);
 	}
-
+	
 }

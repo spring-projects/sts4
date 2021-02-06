@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2020 Pivotal, Inc.
+ * Copyright (c) 2018, 2021 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,9 +11,7 @@
 package org.springframework.ide.vscode.commons.languageserver.composable;
 
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 
@@ -21,8 +19,6 @@ import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.HoverParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ide.vscode.commons.languageserver.completion.CompositeCompletionEngine;
-import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
 import org.springframework.ide.vscode.commons.languageserver.util.HoverHandler;
@@ -86,7 +82,7 @@ public class CompositeLanguageServerComponents implements LanguageServerComponen
 		this.hoverHandler = new HoverHandler() {
 			@Override
 			public Hover handle(HoverParams params) {
-				TextDocument doc = server.getTextDocumentService().get(params.getTextDocument().getUri());
+				TextDocument doc = server.getTextDocumentService().getLatestSnapshot(params.getTextDocument().getUri());
 				LanguageId language = doc.getLanguageId();
 				LanguageServerComponents subComponents = componentsByLanguageId.get(language);
 				if (subComponents!=null) {

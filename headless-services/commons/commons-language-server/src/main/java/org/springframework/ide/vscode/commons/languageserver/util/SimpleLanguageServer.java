@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2020 Pivotal, Inc.
+ * Copyright (c) 2016, 2021 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -534,13 +534,13 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 	public void validateWith(TextDocumentIdentifier docId, IReconcileEngine engine) {
 		SimpleTextDocumentService documents = getTextDocumentService();
 
-		TextDocument document = documents.getDocument(docId.getUri());
-		if (document == null) {
+		TextDocument doc = documents.getLatestSnapshot(docId.getUri());
+		if (doc == null) {
 			log.debug("Reconcile skipped due to document doesn't exist anymore {}", docId.getUri());
 			return;
 		}
 		
-		int requestedVersion = document.getVersion();
+		int requestedVersion = doc.getVersion();
 		VersionedTextDocumentIdentifier request = new VersionedTextDocumentIdentifier(docId.getUri(), requestedVersion);
 		log.debug("Reconcile requested {} - {}", request.getUri(), request.getVersion());
 		if (!queuedReconcileRequests.add(request)) {
@@ -557,13 +557,13 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 			queuedReconcileRequests.remove(request);
 			log.debug("Reconcile starting {} - {}", request.getUri(), request.getVersion());
 
-			TextDocument doc = documents.getDocument(docId.getUri()).copy();
+//			TextDocument doc = documents.getDocument(docId.getUri()).copy();
 
-			if (doc == null) {
-				log.debug("Reconcile aborted due to document doesn't exist {} - {}", request.getUri(), request.getVersion());
-				//Do not bother reconciling if document doesn't exist anymore (got closed in the meantime)
-				return;
-			}
+//			if (doc == null) {
+//				log.debug("Reconcile aborted due to document doesn't exist {} - {}", request.getUri(), request.getVersion());
+//				//Do not bother reconciling if document doesn't exist anymore (got closed in the meantime)
+//				return;
+//			}
 
 			if (requestedVersion != doc.getVersion()) {
 				log.debug("Reconcile aborted due to document being already stale {} - {}", request.getUri(), request.getVersion());

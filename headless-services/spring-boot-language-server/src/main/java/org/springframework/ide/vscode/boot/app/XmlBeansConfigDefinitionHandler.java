@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2020 Pivotal, Inc.
+ * Copyright (c) 2019, 2021 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -99,7 +99,7 @@ public class XmlBeansConfigDefinitionHandler implements DefinitionHandler, Langu
 		
 		JavaTypeHyperlinkProvider javaTypeHyperlinkProvider = new JavaTypeHyperlinkProvider(projectFinder, locationProvider);
 		PropertyNameHyperlinkProvider propertyNameHyperlinkProvider = new PropertyNameHyperlinkProvider(projectFinder, locationProvider);
-		BeanRefHyperlinkProvider beanRefHyperlinkProvider = new BeanRefHyperlinkProvider(projectFinder, symbolIndex, documents);
+		BeanRefHyperlinkProvider beanRefHyperlinkProvider = new BeanRefHyperlinkProvider(projectFinder, symbolIndex);
 		
 		List<JavaTypeHyperlinkProvider> typeHandlersOnly = Arrays.asList(javaTypeHyperlinkProvider);
 		List<PropertyNameHyperlinkProvider> propertyNameHandlers = Arrays.asList(propertyNameHyperlinkProvider);
@@ -143,7 +143,7 @@ public class XmlBeansConfigDefinitionHandler implements DefinitionHandler, Langu
 	public List<LocationLink> handle(DefinitionParams params) {
 		try {
 			if (config.isSpringXMLSupportEnabled() && config.areXmlHyperlinksEnabled()) {
-				TextDocument doc = documents.get(params);
+				TextDocument doc = documents.getLatestSnapshot(params);
 				if (doc != null) {
 					String content = doc.get();
 	

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2020 Pivotal, Inc.
+ * Copyright (c) 2019, 2021 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -63,7 +63,8 @@ public class AppYamlQuickfixes {
 		DEPRECATED_PROPERTY = r.register("DEPRECATED_YAML_PROPERTY", (Object _params) -> {
 			DeprecatedPropertyData params = gson.fromJson((JsonElement)_params, DeprecatedPropertyData.class);
 			try {
-				TextDocument _doc = textDocumentService.getDocument(params.getUri());
+				TextDocument _doc = textDocumentService.getLatestSnapshot(params.getUri());
+
 				if (_doc != null) {
 					YamlDocument doc = new YamlDocument(_doc, structureProvider);
 					SNode root = doc.getStructure();
