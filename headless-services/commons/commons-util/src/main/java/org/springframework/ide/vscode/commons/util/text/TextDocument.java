@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2017 Pivotal, Inc.
+ * Copyright (c) 2016, 2021 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -87,7 +87,7 @@ public class TextDocument implements IDocument {
 
 	public synchronized void apply(DidChangeTextDocumentParams params) throws BadLocationException {
 		int newVersion = params.getTextDocument().getVersion();
-		if (version<newVersion) {
+		if (version < newVersion) {
 			for (TextDocumentContentChangeEvent change : params.getContentChanges()) {
 				apply(change);
 			}
@@ -290,7 +290,7 @@ public class TextDocument implements IDocument {
 	}
 
 	public TextDocumentIdentifier getId() {
-		if (uri!=null) {
+		if (uri != null) {
 			return new TextDocumentIdentifier(uri);
 		}
 		return null;

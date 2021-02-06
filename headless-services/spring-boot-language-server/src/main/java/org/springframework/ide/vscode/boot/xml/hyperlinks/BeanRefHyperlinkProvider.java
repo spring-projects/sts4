@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2020 Pivotal, Inc.
+ * Copyright (c) 2019, 2021 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -24,7 +24,6 @@ import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformati
 import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
-import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 /**
@@ -34,12 +33,10 @@ public class BeanRefHyperlinkProvider implements XMLHyperlinkProvider {
 	
 	private final JavaProjectFinder projectFinder;
 	private final SpringSymbolIndex symbolIndex;
-	private final SimpleTextDocumentService documents;
 
-	public BeanRefHyperlinkProvider(JavaProjectFinder projectFinder, SpringSymbolIndex symbolIndex, SimpleTextDocumentService documents) {
+	public BeanRefHyperlinkProvider(JavaProjectFinder projectFinder, SpringSymbolIndex symbolIndex) {
 		this.projectFinder = projectFinder;
 		this.symbolIndex = symbolIndex;
-		this.documents = documents;
 	}
 
 	@Override
@@ -47,11 +44,26 @@ public class BeanRefHyperlinkProvider implements XMLHyperlinkProvider {
 		Optional<IJavaProject> foundProject = this.projectFinder.find(doc.getId());
 		if (foundProject.isPresent()) {
 			final IJavaProject project = foundProject.get();
+			String projectLocation = project.getLocationUri() != null ? project.getLocationUri().toString() : "";
+			
+			// make sure the project and the symbol location share the same prefix "file:///"
+			// looks like project locations are containing a "file:/" only
+			if (!projectLocation.startsWith("file:///")) {
+				projectLocation = "file:///" + projectLocation.substring("file:/".length());
+			}
+			
+			// make sure that only exact project locations are matched
+			if (!projectLocation.endsWith("/")) {
+				projectLocation = projectLocation + "/";
+			}
+			
 			List<SymbolInformation> symbols = symbolIndex.getSymbols(data -> symbolsFilter(data, attributeAt.getValue())).collect(Collectors.toList());
 			if (!symbols.isEmpty()) {
 				for (SymbolInformation symbol : symbols) {
 					Location location = symbol.getLocation();
-					if (project == documents.get(location.getUri())) {
+					String uri = location.getUri();
+					
+					if (uri != null && uri.startsWith(projectLocation)) {
 						return location;
 					}
 				}
@@ -63,7 +75,7 @@ public class BeanRefHyperlinkProvider implements XMLHyperlinkProvider {
 	
 	private boolean symbolsFilter(EnhancedSymbolInformation data, String beanId) {
 		SymbolAddOnInformation[] additionalInformation = data.getAdditionalInformation();
-		if (additionalInformation != null) {
+		if (beanId != null && additionalInformation != null) {
 			for (SymbolAddOnInformation info : additionalInformation) {
 				if (info instanceof BeansSymbolAddOnInformation) {
 					return beanId.equals(((BeansSymbolAddOnInformation)info).getBeanID());

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016 Pivotal, Inc.
+ * Copyright (c) 2016, 2021 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -142,8 +142,8 @@ public class ConcourseLanguageServerInitializer {
 //		});
 
 		documents.onCompletion(params -> {
-			TextDocument doc = documents.get(params);
-			if (doc!=null) {
+			TextDocument doc = documents.getLatestSnapshot(params);
+			if (doc != null) {
 				if (LanguageId.CONCOURSE_PIPELINE.equals(doc.getLanguageId())) {
 					return forPipelines.completionEngine.getCompletions(params);
 				} else if (LanguageId.CONCOURSE_TASK.equals(doc.getLanguageId())) {
@@ -159,8 +159,8 @@ public class ConcourseLanguageServerInitializer {
 		documents.onHover(params -> {
 			log.debug("Concourse hover handler starting");
 			try {
-				TextDocument doc = documents.get(params);
-				if (doc!=null) {
+				TextDocument doc = documents.getLatestSnapshot(params);
+				if (doc != null) {
 					LanguageId languageId = doc.getLanguageId();
 					if (LanguageId.CONCOURSE_PIPELINE.equals(doc.getLanguageId())) {
 						return forPipelines.hoverEngine.handle(params);

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2020 Pivotal, Inc.
+ * Copyright (c) 2017, 2021 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -18,9 +18,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock.ReadLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 import java.util.function.Function;
 import java.util.stream.Stream;
 
@@ -45,13 +42,11 @@ import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFin
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
-import org.springframework.ide.vscode.commons.util.AsyncRunner;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 
-import reactor.core.scheduler.Schedulers;
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
 
@@ -62,95 +57,94 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 	private static final long CU_ACCESS_EXPIRATION = 1;
 	private JavaProjectFinder projectFinder;
 	private ProjectObserver projectObserver;
-	private Cache<URI, CompilationUnit> uriToCu;
-	private Cache<IJavaProject, Set<URI>> projectToDocs;
-	private Cache<IJavaProject, Tuple2<List<Classpath>, INameEnvironmentWithProgress>> lookupEnvCache;
-	private ProjectObserver.Listener projectListener;
-	private SimpleTextDocumentService documents;
-	private AsyncRunner async;
+	
+	private final ProjectObserver.Listener projectListener;
+	private final SimpleTextDocumentService documentService;
+//	private AsyncRunner async;
 
-	private ReadLock readLock;
-	private WriteLock writeLock;
+	private final Cache<URI, CompilationUnit> uriToCu;
+	private final Cache<IJavaProject, Set<URI>> projectToDocs;
+	private final Cache<IJavaProject, Tuple2<List<Classpath>, INameEnvironmentWithProgress>> lookupEnvCache;
+
+//	private ReadLock readLock;
+//	private WriteLock writeLock;
 
 	public CompilationUnitCache(JavaProjectFinder projectFinder, SimpleLanguageServer server, ProjectObserver projectObserver) {
 		this.projectFinder = projectFinder;
 		this.projectObserver = projectObserver;
-		this.lookupEnvCache = CacheBuilder.newBuilder().build();
 		
 		// PT 154618835 - Avoid retaining the CU in the cache as it consumes memory if it hasn't been
 		// accessed after some time
-		uriToCu = CacheBuilder.newBuilder()
+		this.uriToCu = CacheBuilder.newBuilder()
 				.expireAfterWrite(CU_ACCESS_EXPIRATION, TimeUnit.MINUTES)
 				.build();
-		projectToDocs = CacheBuilder.newBuilder().build();
+		this.projectToDocs = CacheBuilder.newBuilder().build();
+		this.lookupEnvCache = CacheBuilder.newBuilder().build();
 
-		ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
-		readLock = lock.readLock();
-		writeLock = lock.writeLock();
+//		ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
+//		this.readLock = lock.readLock();
+//		this.writeLock = lock.writeLock();
 
-		this.documents = server == null ? null : server.getTextDocumentService();
-		this.async = server == null ? new AsyncRunner(Schedulers.single()) : server.getAsync();
+		this.documentService = server == null ? null : server.getTextDocumentService();
+//		this.async = server == null ? new AsyncRunner(Schedulers.single()) : server.getAsync();
 		
 
-		if (documents != null) {
-			documents.onDidChangeContent(doc -> invalidateCuForJavaFile(doc.getDocument().getId().getUri()));
-			documents.onDidClose(doc -> invalidateCuForJavaFile(doc.getId().getUri()));
+		// IMPORTANT ===> these notifications arrive within the lsp message loop, so reactions to them have to be fast
+		// and not be blocked by waiting for anything
+		if (documentService != null) {
+			documentService.onDidChangeContent(doc -> invalidateCuForJavaFile(doc.getDocument().getId().getUri()));
+			documentService.onDidClose(doc -> invalidateCuForJavaFile(doc.getId().getUri()));
 		}
 
-		async.execute(() -> {
-			writeLock.lock();
-			try {
-				for (IJavaProject project : projectFinder.all()) {
-					loadLookupEnvTuple(project);
-				}
-			} finally {
-				writeLock.unlock();
-			}
-		});
+		for (IJavaProject project : projectFinder.all()) {
+			logger.info("CU Cache: initial lookup env creation for project <{}>", project.getElementName());
+			loadLookupEnvTuple(project);
+		}
+
 
 		projectListener = new ProjectObserver.Listener() {
 			
 			@Override
 			public void deleted(IJavaProject project) {
 				logger.info("CU Cache: deleted project {}", project.getElementName());
-				async.execute(() -> {
-					writeLock.lock();
-					try {
+//				async.execute(() -> {
+//					writeLock.lock();
+//					try {
 						invalidateProject(project);
-					} finally {
-						writeLock.unlock();
-					}
-				});
+//					} finally {
+//						writeLock.unlock();
+//					}
+//				});
 			}
 			
 			@Override
 			public void created(IJavaProject project) {
 				logger.info("CU Cache: created project {}", project.getElementName());
-				async.execute(() -> {
-					writeLock.lock();
-					try {
+//				async.execute(() -> {
+//					writeLock.lock();
+//					try {
 						invalidateProject(project);
 						// Load the new cache the value right away
 						loadLookupEnvTuple(project);
-					} finally {
-						writeLock.unlock();
-					}
-				});
+//					} finally {
+//						writeLock.unlock();
+//					}
+//				});
 			}
 			
 			@Override
 			public void changed(IJavaProject project) {
 				logger.info("CU Cache: changed project {}", project.getElementName());
-				async.execute(() -> {
-					writeLock.lock();
-					try {
+//				async.execute(() -> {
+//					writeLock.lock();
+//					try {
 						invalidateProject(project);
 						// Load the new cache the value right away
 						loadLookupEnvTuple(project);
-					} finally {
-						writeLock.unlock();
-					}
-				});
+//					} finally {
+//						writeLock.unlock();
+//					}
+//				});
 			}
 		};
 
@@ -182,9 +176,10 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 	}
 
 	public <T> T withCompilationUnit(IJavaProject project, URI uri, Function<CompilationUnit, T> requestor) {
+		logger.info("CU Cache: work item for doc {}", uri.toString());
+
 		if (project != null) {
 
-			readLock.lock();
 			CompilationUnit cu = null;
 
 			try {
@@ -193,26 +188,32 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 					String utiStr = uri.toString();
 					String unitName = utiStr.substring(utiStr.lastIndexOf("/"));
 					CompilationUnit cUnit = parse2(fetchContent(uri).toCharArray(), utiStr, unitName, lookupEnvTuple.getT1(), lookupEnvTuple.getT2());
-					projectToDocs.get(project, () -> new HashSet<>()).add(uri);
+					
+					logger.info("CU Cache: created new AST for {}", uri.toString());
+
 					return cUnit;
 				});
+
 				if (cu != null) {
 					projectToDocs.get(project, () -> new HashSet<>()).add(uri);
 				}
+
 			} catch (Exception e) {
 				logger.error("", e);
-			} finally {
-				readLock.unlock();
 			}
 
 			if (cu != null) {
 				try {
+					logger.info("CU Cache: sync start on AST for {}", uri.toString());
 					synchronized (cu.getAST()) {
 						return requestor.apply(cu);
 					}
 				}
 				catch (Exception e) {
 					logger.error("", e);
+				}
+				finally {
+					logger.info("CU Cache: sync end on AST for {}", uri.toString());
 				}
 			}
 		}
@@ -221,51 +222,6 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 	}
 
 
-	private void invalidateCuForJavaFile(String uriStr) {
-		URI uri = URI.create(uriStr);
-		writeLock.lock();
-		try {
-			uriToCu.invalidate(uri);
-		} finally {
-			writeLock.unlock();
-		}
-	}
-
-//	public static CompilationUnit parse(TextDocument document, IJavaProject project) throws Exception {
-//		String[] classpathEntries = getClasspathEntries(project);
-//		String docURI = document.getUri();
-//		String unitName = docURI.substring(docURI.lastIndexOf("/"));
-//		char[] source = document.get(0, document.getLength()).toCharArray();
-//		return parse(source, docURI, unitName, classpathEntries);
-//	}
-//
-//	public CompilationUnit parse(String uri, char[] source, IJavaProject project) throws Exception {
-//		String[] classpathEntries = getClasspathEntries(project);
-//		String unitName = uri.substring(uri.lastIndexOf("/"));
-//		return parse(source, uri, unitName, classpathEntries);
-//	}
-//
-//	public static CompilationUnit parse(char[] source, String docURI, String unitName, String[] classpathEntries) throws Exception {
-//		ASTParser parser = ASTParser.newParser(AST.JLS11);
-//		Map<String, String> options = JavaCore.getOptions();
-//		JavaCore.setComplianceOptions(JavaCore.VERSION_11, options);
-//		parser.setCompilerOptions(options);
-//		parser.setKind(ASTParser.K_COMPILATION_UNIT);
-//		parser.setStatementsRecovery(true);
-//		parser.setBindingsRecovery(true);
-//		parser.setResolveBindings(true);
-//
-//		String[] sourceEntries = new String[] {};
-//		parser.setEnvironment(classpathEntries, sourceEntries, null, false);
-//
-//		parser.setUnitName(unitName);
-//		parser.setSource(source);
-//
-//		CompilationUnit cu = (CompilationUnit) parser.createAST(null);
-//
-//		return cu;
-//	}
-	
 	public static CompilationUnit parse2(char[] source, String docURI, String unitName, IJavaProject project) throws Exception {
 		List<Classpath> classpaths = createClasspath(getClasspathEntries(project));
 		return parse2(source, docURI, unitName, classpaths, null);
@@ -294,7 +250,7 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 			needToResolveBindings = false;
 		}
 		
-		CompilationUnit cu = CUResolver.convert(unit, source, AST.JLS11, options, needToResolveBindings, DefaultWorkingCopyOwner.PRIMARY, flags);
+		CompilationUnit cu = CUResolver.convert(unit, source, AST.JLS14, options, needToResolveBindings, DefaultWorkingCopyOwner.PRIMARY, flags);
 
 		return cu;
 	}
@@ -331,7 +287,16 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 		}
 	}
 
+	private void invalidateCuForJavaFile(String uriStr) {
+		logger.info("CU Cache: invalidate AST for {}", uriStr);
+
+		URI uri = URI.create(uriStr);
+		uriToCu.invalidate(uri);
+	}
+
 	private void invalidateProject(IJavaProject project) {
+		logger.info("CU Cache: invalidate project <{}>", project.getElementName());
+
 		Set<URI> docUris = projectToDocs.getIfPresent(project);
 		if (docUris != null) {
 			uriToCu.invalidateAll(docUris);
@@ -342,13 +307,13 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 
 	@Override
 	public String fetchContent(URI uri) throws Exception {
-		if (documents != null) {
-			TextDocument document = documents.get(uri.toString());
+		if (documentService != null) {
+			TextDocument document = documentService.getLatestSnapshot(uri.toString());
 			if (document != null) {
-				return document.get(0, document.getLength());
+				return document.get();
 			}
 		}
 		return IOUtils.toString(uri);
-
 	}
+
 }

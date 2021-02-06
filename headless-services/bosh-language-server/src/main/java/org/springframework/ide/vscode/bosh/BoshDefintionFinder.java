@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2020 Pivotal, Inc.
+ * Copyright (c) 2017, 2021 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -75,8 +75,9 @@ public class BoshDefintionFinder extends SimpleDefinitionFinder {
 	@Override
 	public List<LocationLink> handle(DefinitionParams params) {
 		try {
-			TextDocument doc = server.getTextDocumentService().get(params.getTextDocument().getUri());
-			if (doc!=null) {
+			TextDocument doc = server.getTextDocumentService().getLatestSnapshot(params);
+
+			if (doc != null) {
 				YamlFileAST ast = asts.getSafeAst(doc, false);
 				if (ast!=null) {
 					Node refNode = ast.findNode(doc.toOffset(params.getPosition()));
