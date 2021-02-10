@@ -91,18 +91,19 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 
 		// IMPORTANT ===> these notifications arrive within the lsp message loop, so reactions to them have to be fast
 		// and not be blocked by waiting for anything
-		if (documentService != null) {
-			documentService.onDidChangeContent(doc -> invalidateCuForJavaFile(doc.getDocument().getId().getUri()));
-			documentService.onDidClose(doc -> invalidateCuForJavaFile(doc.getId().getUri()));
+		if (this.documentService != null) {
+			this.documentService.onDidChangeContent(doc -> invalidateCuForJavaFile(doc.getDocument().getId().getUri()));
+			this.documentService.onDidClose(doc -> invalidateCuForJavaFile(doc.getId().getUri()));
 		}
 
-		for (IJavaProject project : projectFinder.all()) {
-			logger.info("CU Cache: initial lookup env creation for project <{}>", project.getElementName());
-			loadLookupEnvTuple(project);
+		if (this.projectFinder != null) {
+			for (IJavaProject project : this.projectFinder.all()) {
+				logger.info("CU Cache: initial lookup env creation for project <{}>", project.getElementName());
+				loadLookupEnvTuple(project);
+			}
 		}
 
-
-		projectListener = new ProjectObserver.Listener() {
+		this.projectListener = new ProjectObserver.Listener() {
 			
 			@Override
 			public void deleted(IJavaProject project) {
@@ -149,14 +150,14 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 		};
 
 		if (this.projectObserver != null) {
-			this.projectObserver.addListener(projectListener);
+			this.projectObserver.addListener(this.projectListener);
 		}
 		
 	}
 
 	public void dispose() {
-		if (projectObserver != null) {
-			projectObserver.removeListener(projectListener);
+		if (this.projectObserver != null) {
+			this.projectObserver.removeListener(this.projectListener);
 		}
 	}
 
@@ -170,7 +171,8 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 	 */
 	@Deprecated
 	public <T> T withCompilationUnit(TextDocument document, Function<CompilationUnit, T> requestor) {
-		IJavaProject project = projectFinder.find(document.getId()).orElse(null);
+		IJavaProject project = this.projectFinder != null ? projectFinder.find(document.getId()).orElse(null) : null;
+
 		URI uri = URI.create(document.getUri());
 		return withCompilationUnit(project, uri, requestor);
 	}
