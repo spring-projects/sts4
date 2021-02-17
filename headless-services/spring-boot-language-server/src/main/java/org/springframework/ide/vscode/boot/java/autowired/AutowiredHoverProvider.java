@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2020 Pivotal, Inc.
+ * Copyright (c) 2017, 2021 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -268,9 +268,15 @@ public class AutowiredHoverProvider implements HoverProvider {
 		int idx = rawLiveBeanFqName.indexOf('<');
 		// Trim the generic parameters part if it's present
 		String liveBeanTypeFQName = idx < 0 ? rawLiveBeanFqName : rawLiveBeanFqName.substring(0, idx);
+
 		if (liveBeanTypeFQName != null) {
-			return jp.getIndex().allSuperTypesOf(liveBeanTypeFQName, true, false).map(IType::getFullyQualifiedName)
-					.filter(fqn -> bindingQualifiedName.equals(fqn)).blockFirst() != null;
+			if (liveBeanTypeFQName.equals(bindingQualifiedName)) {
+				return true;
+			}
+			else {
+				return jp.getIndex().allSuperTypesOf(liveBeanTypeFQName, true, false).map(IType::getFullyQualifiedName)
+						.filter(fqn -> bindingQualifiedName.equals(fqn)).blockFirst() != null;
+			}
 		}
 		return false;
 	}
