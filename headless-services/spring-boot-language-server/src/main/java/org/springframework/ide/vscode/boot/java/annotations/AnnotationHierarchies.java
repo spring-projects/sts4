@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2018 Pivotal, Inc.
+ * Copyright (c) 2017, 2021 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -38,6 +38,10 @@ import com.google.common.collect.ImmutableList;
 public abstract class AnnotationHierarchies {
 	
 	private static final Logger log = LoggerFactory.getLogger(AnnotationHierarchies.class);
+	
+	// this lock is used to protect multi-threaded access to this helper class
+	// due to https://bugs.eclipse.org/bugs/show_bug.cgi?id=571247
+	private static final Object lock = new Object();
 
 	protected static boolean ignoreAnnotation(String fqname) {
 		return fqname.startsWith("java."); //mostly intended to capture java.lang.annotation.* types. But really it should be
@@ -45,63 +49,73 @@ public abstract class AnnotationHierarchies {
 	};
 
 	public static Collection<ITypeBinding> getDirectSuperAnnotations(ITypeBinding typeBinding) {
-		try {
-			IAnnotationBinding[] annotations = typeBinding.getAnnotations();
-			if (annotations != null && annotations.length != 0) {
-				ImmutableList.Builder<ITypeBinding> superAnnotations = ImmutableList.builder();
-				for (IAnnotationBinding ab : annotations) {
-					ITypeBinding sa = ab.getAnnotationType();
-					if (sa != null) {
-						if (!ignoreAnnotation(sa.getQualifiedName())) {
-							superAnnotations.add(sa);
+		synchronized(lock) {
+			try {
+				IAnnotationBinding[] annotations = typeBinding.getAnnotations();
+				if (annotations != null && annotations.length != 0) {
+					ImmutableList.Builder<ITypeBinding> superAnnotations = ImmutableList.builder();
+					for (IAnnotationBinding ab : annotations) {
+						ITypeBinding sa = ab.getAnnotationType();
+						if (sa != null) {
+							if (!ignoreAnnotation(sa.getQualifiedName())) {
+								superAnnotations.add(sa);
+							}
 						}
 					}
+					return superAnnotations.build();
 				}
-				return superAnnotations.build();
 			}
+			catch (AbortCompilation e) {
+				log.debug("compilation aborted ", e);
+				// ignore this, it is most likely caused by broken source code, a broken classpath, or some optional dependencies not being on the classpath
+			}
+	
+			return ImmutableList.of();
 		}
-		catch (AbortCompilation e) {
-			log.debug("compilation aborted ", e);
-			// ignore this, it is most likely caused by broken source code, a broken classpath, or some optional dependencies not being on the classpath
-		}
-
-		return ImmutableList.of();
 	}
 
 	public static Set<String> getTransitiveSuperAnnotations(ITypeBinding typeBinding) {
-		Set<String> seen = new HashSet<>();
-		findTransitiveSupers(typeBinding, seen).collect(Collectors.toList());
-		return seen;
+		synchronized(lock) {
+			Set<String> seen = new HashSet<>();
+			findTransitiveSupers(typeBinding, seen).collect(Collectors.toList());
+			return seen;
+		}
 	}
 
 	public static Stream<ITypeBinding> findTransitiveSupers(ITypeBinding typeBinding, Set<String> seen) {
-		String qname = typeBinding.getQualifiedName();
-		if (seen.add(qname)) {
-			return Stream.concat(
-				Stream.of(typeBinding),
-				getDirectSuperAnnotations(typeBinding).stream().flatMap(superBinding ->
-					findTransitiveSupers(superBinding, seen)
-				)
-			);
+		synchronized(lock) {
+			String qname = typeBinding.getQualifiedName();
+			if (seen.add(qname)) {
+				return Stream.concat(
+						Stream.of(typeBinding),
+						getDirectSuperAnnotations(typeBinding).stream().flatMap(superBinding ->
+						findTransitiveSupers(superBinding, seen)
+								)
+						);
+			}
+			return Stream.empty();
 		}
-		return Stream.empty();
 	}
 
 	public static boolean isSubtypeOf(Annotation annotation, String fqAnnotationTypeName) {
-		ITypeBinding annotationType = annotation.resolveTypeBinding();
-		if (annotationType!=null) {
-			return findTransitiveSupers(annotationType, new HashSet<>())
-					.anyMatch(superType -> superType.getQualifiedName().equals(fqAnnotationTypeName));
+		synchronized(lock) {
+			ITypeBinding annotationType = annotation.resolveTypeBinding();
+			if (annotationType!=null) {
+				return findTransitiveSupers(annotationType, new HashSet<>())
+						.anyMatch(superType -> superType.getQualifiedName().equals(fqAnnotationTypeName));
+			}
+			return false;
 		}
-		return false;
 	}
 
 	public static Collection<ITypeBinding> getMetaAnnotations(ITypeBinding actualAnnotation, Predicate<String> isKeyAnnotationName) {
-		Stream<ITypeBinding> allSupers = findTransitiveSupers(actualAnnotation, new HashSet<>())
-				.skip(1); //Don't include 'actualAnnotation' itself.
-		return allSupers
-				.filter(candidate -> isMetaAnnotation(candidate, isKeyAnnotationName))
-				.collect(CollectorUtil.toImmutableList());
+		synchronized(lock) {
+			Stream<ITypeBinding> allSupers = findTransitiveSupers(actualAnnotation, new HashSet<>())
+					.skip(1); //Don't include 'actualAnnotation' itself.
+			return allSupers
+					.filter(candidate -> isMetaAnnotation(candidate, isKeyAnnotationName))
+					.collect(CollectorUtil.toImmutableList());
+		}
 	}
 
 	private static boolean isMetaAnnotation(ITypeBinding candidate, Predicate<String> isKeyAnnotationName) {

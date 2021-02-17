@@ -60,14 +60,10 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 	
 	private final ProjectObserver.Listener projectListener;
 	private final SimpleTextDocumentService documentService;
-//	private AsyncRunner async;
 
 	private final Cache<URI, CompilationUnit> uriToCu;
 	private final Cache<IJavaProject, Set<URI>> projectToDocs;
 	private final Cache<IJavaProject, Tuple2<List<Classpath>, INameEnvironmentWithProgress>> lookupEnvCache;
-
-//	private ReadLock readLock;
-//	private WriteLock writeLock;
 
 	public CompilationUnitCache(JavaProjectFinder projectFinder, SimpleLanguageServer server, ProjectObserver projectObserver) {
 		this.projectFinder = projectFinder;
@@ -81,13 +77,7 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 		this.projectToDocs = CacheBuilder.newBuilder().build();
 		this.lookupEnvCache = CacheBuilder.newBuilder().build();
 
-//		ReentrantReadWriteLock lock = new ReentrantReadWriteLock();
-//		this.readLock = lock.readLock();
-//		this.writeLock = lock.writeLock();
-
 		this.documentService = server == null ? null : server.getTextDocumentService();
-//		this.async = server == null ? new AsyncRunner(Schedulers.single()) : server.getAsync();
-		
 
 		// IMPORTANT ===> these notifications arrive within the lsp message loop, so reactions to them have to be fast
 		// and not be blocked by waiting for anything
@@ -108,44 +98,22 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 			@Override
 			public void deleted(IJavaProject project) {
 				logger.info("CU Cache: deleted project {}", project.getElementName());
-//				async.execute(() -> {
-//					writeLock.lock();
-//					try {
-						invalidateProject(project);
-//					} finally {
-//						writeLock.unlock();
-//					}
-//				});
+				invalidateProject(project);
 			}
 			
 			@Override
 			public void created(IJavaProject project) {
 				logger.info("CU Cache: created project {}", project.getElementName());
-//				async.execute(() -> {
-//					writeLock.lock();
-//					try {
-						invalidateProject(project);
-						// Load the new cache the value right away
-						loadLookupEnvTuple(project);
-//					} finally {
-//						writeLock.unlock();
-//					}
-//				});
+				invalidateProject(project);
+				loadLookupEnvTuple(project);
 			}
 			
 			@Override
 			public void changed(IJavaProject project) {
 				logger.info("CU Cache: changed project {}", project.getElementName());
-//				async.execute(() -> {
-//					writeLock.lock();
-//					try {
-						invalidateProject(project);
-						// Load the new cache the value right away
-						loadLookupEnvTuple(project);
-//					} finally {
-//						writeLock.unlock();
-//					}
-//				});
+				invalidateProject(project);
+				// Load the new cache the value right away
+				loadLookupEnvTuple(project);
 			}
 		};
 
@@ -162,9 +130,13 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 	}
 
 	/**
-	 * Retrieves a CompiationUnitn AST from the cache and passes it to a requestor callback, applying
-	 * proper thread synchronization around the requestor.
-	 * <p>
+	 * Never research shows at the AST is thread-safe when used in read-only mode:
+	 * https://bugs.eclipse.org/bugs/show_bug.cgi?id=58314
+	 * 
+	 * This means that the previous implemented synchronization around the requestor
+	 * working on the AST is not necessary as long as the requestor operates in read-only
+	 * mode on the AST nodes.
+	 * 
 	 * Warning: Callers should take care to do all AST processing inside of the requestor callback and
 	 * not pass of AST nodes to helper functions that work aynchronously or store AST nodes or ITypeBindings
 	 * for later use. The JDT ASTs are not thread safe!
@@ -177,8 +149,20 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 		return withCompilationUnit(project, uri, requestor);
 	}
 
+	/**
+	 * Never research shows at the AST is thread-safe when used in read-only mode:
+	 * https://bugs.eclipse.org/bugs/show_bug.cgi?id=58314
+	 * 
+	 * This means that the previous implemented synchronization around the requestor
+	 * working on the AST is not necessary as long as the requestor operates in read-only
+	 * mode on the AST nodes.
+	 * 
+	 * Warning: Callers should take care to do all AST processing inside of the requestor callback and
+	 * not pass of AST nodes to helper functions that work aynchronously or store AST nodes or ITypeBindings
+	 * for later use. The JDT ASTs are not thread safe!
+	 */
 	public <T> T withCompilationUnit(IJavaProject project, URI uri, Function<CompilationUnit, T> requestor) {
-		logger.info("CU Cache: work item for doc {}", uri.toString());
+		logger.info("CU Cache: work item submitted for doc {}", uri.toString());
 
 		if (project != null) {
 
@@ -206,16 +190,14 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 
 			if (cu != null) {
 				try {
-					logger.info("CU Cache: sync start on AST for {}", uri.toString());
-					synchronized (cu.getAST()) {
-						return requestor.apply(cu);
-					}
+					logger.info("CU Cache: start work on AST for {}", uri.toString());
+					return requestor.apply(cu);
 				}
 				catch (Exception e) {
 					logger.error("", e);
 				}
 				finally {
-					logger.info("CU Cache: sync end on AST for {}", uri.toString());
+					logger.info("CU Cache: end work on AST for {}", uri.toString());
 				}
 			}
 		}
