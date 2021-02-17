@@ -86,16 +86,15 @@ public class BootJavaCompletionEngineConfigurer {
 			BootLanguageServerParams params,
 			@Qualifier("adHocProperties") ProjectBasedPropertyIndexProvider adHocProperties,
 			JavaSnippetManager snippetManager, 
-			CompilationUnitCache cuCache
-	) {
+			CompilationUnitCache cuCache) {
 		SpringPropertyIndexProvider indexProvider = params.indexProvider;
 		JavaProjectFinder javaProjectFinder = params.projectFinder;
 		Map<String, CompletionProvider> providers = new HashMap<>();
-		providers.put(org.springframework.ide.vscode.boot.java.scope.Constants.SPRING_SCOPE,
-				new ScopeCompletionProcessor());
-		providers.put(org.springframework.ide.vscode.boot.java.value.Constants.SPRING_VALUE,
-				new ValueCompletionProcessor(javaProjectFinder, indexProvider, adHocProperties));
+		
+		providers.put(org.springframework.ide.vscode.boot.java.scope.Constants.SPRING_SCOPE, new ScopeCompletionProcessor());
+		providers.put(org.springframework.ide.vscode.boot.java.value.Constants.SPRING_VALUE, new ValueCompletionProcessor(javaProjectFinder, indexProvider, adHocProperties));
 		providers.put(Annotations.REPOSITORY, new DataRepositoryCompletionProcessor());
+
 		return new BootJavaCompletionEngine(cuCache, providers, snippetManager);
 	}
 }
