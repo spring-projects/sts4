@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019 Pivotal, Inc.
+ * Copyright (c) 2019, 2021 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -9,6 +9,8 @@
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.app;
+
+import java.io.File;
 
 import org.springframework.boot.context.properties.ConfigurationProperties;
 
@@ -42,4 +44,19 @@ public class BootLsConfigProperties {
 	public void setSymbolCacheEnabled(boolean symbolCacheEnabled) {
 		this.symbolCacheEnabled = symbolCacheEnabled;
 	}
+	
+	/**
+	 * The path to the cache directory where the language server stores
+	 * symbol information
+	 */
+	private String symbolCacheDir = System.getProperty("user.home") + File.separatorChar + ".sts4" + File.separatorChar + ".symbolCache";
+	
+	public String getSymbolCacheDir() {
+		return symbolCacheDir;
+	}
+	
+	public void setSymbolCacheDir(String symbolCacheDir) {
+		this.symbolCacheDir = symbolCacheDir;
+	}
+
 }

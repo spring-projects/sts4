@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.app;
 
+import java.io.File;
+
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.SpringApplication;
@@ -103,7 +105,7 @@ public class BootLanguagServerBootApp {
 	@Bean
 	SymbolCache symbolCache(BootLsConfigProperties props) {
 		if (props.isSymbolCacheEnabled()) {
-			return new SymbolCacheOnDisc();
+			return new SymbolCacheOnDisc(new File(props.getSymbolCacheDir()));
 		} else {
 			return new SymbolCacheVoid();
 		}
