@@ -387,15 +387,15 @@
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/releases/2021-03/</url>
 				</repository>
-<!--				<repository>
+				<repository>
 					<id>2021-03-staging</id>
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/staging/2021-03/</url>
-				</repository> -->
+				</repository>
 				<repository>
 					<id>orbit</id>
 					<layout>p2</layout>
-					<url>https://download.eclipse.org/tools/orbit/downloads/drops/R20201130205003/repository</url>
+					<url>https://download.eclipse.org/tools/orbit/downloads/drops/S20210216215844/repository</url>
 				</repository>
 				<repository>
 					<id>m2e</id>
