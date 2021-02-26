@@ -12,12 +12,14 @@ package org.springframework.ide.vscode.boot.app;
 
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.CancellationException;
 import java.util.stream.Collectors;
 
 import org.eclipse.lsp4j.DefinitionParams;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.LocationLink;
 import org.eclipse.lsp4j.Range;
+import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,18 +70,26 @@ public class YamlPropertiesJavaDefinitionHandler implements DefinitionHandler, L
 	}
 
 	@Override
-	public List<LocationLink> handle(DefinitionParams definitionParams) {
+	public List<LocationLink> handle(CancelChecker cancelToken, DefinitionParams definitionParams) {
 		try {
 			TextDocument doc = documents.getLatestSnapshot(definitionParams);
 			int offset = doc.toOffset(definitionParams.getPosition());
+			
+			cancelToken.checkCanceled();
+			
 			YamlFileAST ast = getAst(doc);
 			if (ast != null) {
+
 				YamlDocument ymlDoc = new YamlDocument(doc, structureProvider);
 				YamlAssistContext assistContext = assistContextProvider.getGlobalAssistContext(ymlDoc);
 				if (assistContext != null) {
+					
 					List<NodeRef<?>> astPath = ast.findPath(offset);
 					final YamlPath path = YamlPath.fromASTPath(astPath);
 					if (path != null) {
+
+						cancelToken.checkCanceled();
+						
 						YamlPath assistPath = path;
 						if (assistPath.pointsAtKey()) {
 							// When a path points at a key we must tramsform it to a
@@ -119,6 +129,8 @@ public class YamlPropertiesJavaDefinitionHandler implements DefinitionHandler, L
 					}
 				}
 			}
+		} catch (CancellationException e) {
+			throw e;
 		} catch (Exception e) {
 			log.error("", e);
 		}

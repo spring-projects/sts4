@@ -319,7 +319,10 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 		DefinitionHandler h = this.definitionHandler;
 		if (h != null) {
 			return CompletableFutures.computeAsync(cancelToken -> {
-				List<LocationLink> locations = h.handle(definitionParams);
+				
+				cancelToken.checkCanceled();
+				
+				List<LocationLink> locations = h.handle(cancelToken, definitionParams);
 				if (locations == null) {
 					// vscode client does not like to receive null result. See: https://github.com/spring-projects/sts4/issues/309
 					locations = ImmutableList.of();

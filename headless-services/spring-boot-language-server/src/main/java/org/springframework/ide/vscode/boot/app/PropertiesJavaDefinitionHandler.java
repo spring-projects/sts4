@@ -17,6 +17,7 @@ import java.util.stream.Collectors;
 import org.eclipse.lsp4j.DefinitionParams;
 import org.eclipse.lsp4j.LocationLink;
 import org.eclipse.lsp4j.Range;
+import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -61,23 +62,32 @@ public class PropertiesJavaDefinitionHandler implements DefinitionHandler, Langu
 	private BootLanguageServerParams params;
 
 	@Override
-	public List<LocationLink> handle(DefinitionParams definitionParams) {
+	public List<LocationLink> handle(CancelChecker cancelToken, DefinitionParams definitionParams) {
 		try {
 			TextDocument doc = documents.getLatestSnapshot(definitionParams);
 			TypeUtil typeUtil = params.typeUtilProvider.getTypeUtil(sourceLinks, doc);
+			
+			cancelToken.checkCanceled();
+			
 			FuzzyMap<PropertyInfo> index = params.indexProvider.getIndex(doc).getProperties();
 			int offset;
 			offset = doc.toOffset(definitionParams.getPosition());
-			return getDefinitions(index, typeUtil, doc, offset);
+			
+			cancelToken.checkCanceled();
+			
+			return getDefinitions(cancelToken, index, typeUtil, doc, offset);
 		} catch (BadLocationException e) {
 			return ImmutableList.of();
 		}
 	}
 
-	private List<LocationLink> getDefinitions(FuzzyMap<PropertyInfo> index, TypeUtil typeUtil, TextDocument doc, int offset) {
+	private List<LocationLink> getDefinitions(CancelChecker cancelToken, FuzzyMap<PropertyInfo> index, TypeUtil typeUtil, TextDocument doc, int offset) {
 		IJavaProject project = typeUtil.getJavaProject();
 		PropertyFinder propertyFinder = new PropertyFinder(index, typeUtil, doc, offset);
 		Node node = propertyFinder.findNode();
+		
+		cancelToken.checkCanceled();
+		
 		try {
 			Range selectionRange = doc.toRange(node.getOffset(), node.getLength());
 			if (node instanceof Key) {

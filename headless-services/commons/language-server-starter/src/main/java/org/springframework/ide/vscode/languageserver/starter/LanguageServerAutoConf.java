@@ -88,14 +88,14 @@ public class LanguageServerAutoConf {
 			}
 
 			ImmutableMap<LanguageId, DefinitionHandler> immutableMap = ImmutableMap.copyOf(handlers);
-			return () -> documents.onDefinition((position) -> {
+			return () -> documents.onDefinition((cancelToken, position) -> {
 				TextDocument doc = documents.getLatestSnapshot(position);
 
 				if (doc != null) {
 					LanguageId language = doc.getLanguageId();
 					DefinitionHandler handler = immutableMap.get(language);
 					if (handler != null) {
-						return handler.handle(position);
+						return handler.handle(cancelToken, position);
 					}
 				}
 				return null;

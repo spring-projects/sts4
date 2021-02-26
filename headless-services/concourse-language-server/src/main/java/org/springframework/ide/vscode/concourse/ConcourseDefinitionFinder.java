@@ -14,12 +14,14 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CancellationException;
 import java.util.stream.Collectors;
 
 import org.eclipse.lsp4j.DefinitionParams;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.LocationLink;
 import org.eclipse.lsp4j.Range;
+import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.languageserver.definition.SimpleDefinitionFinder;
@@ -90,16 +92,26 @@ public class ConcourseDefinitionFinder extends SimpleDefinitionFinder {
 	}
 
 	@Override
-	public List<LocationLink> handle(DefinitionParams params) {
+	public List<LocationLink> handle(CancelChecker cancelToken, DefinitionParams params) {
 		try {
 			TextDocument doc = server.getTextDocumentService().getLatestSnapshot(params);
-			if (doc!=null) {
+			if (doc != null) {
+				
+				cancelToken.checkCanceled();
+
 				YamlFileAST ast = asts.getSafeAst(doc, false);
-				if (ast!=null) {
+				if (ast != null) {
+
 					Node refNode = ast.findNode(doc.toOffset(params.getPosition()));
-					if (refNode!=null) {
+					if (refNode != null) {
+						
+						cancelToken.checkCanceled();
+
 						YType type = astTypes.getType(ast, refNode);
-						if (type!=null) {
+						if (type != null) {
+							
+							cancelToken.checkCanceled();
+
 							Handler handler = handlers.get(type);
 							if (handler!=null) {
 								int start = refNode.getStartMark().getIndex();
@@ -113,6 +125,8 @@ public class ConcourseDefinitionFinder extends SimpleDefinitionFinder {
 					}
 				}
 			}
+		} catch (CancellationException e) {
+			throw e;
 		} catch (Exception e) {
 			log.error("", e);;
 		}

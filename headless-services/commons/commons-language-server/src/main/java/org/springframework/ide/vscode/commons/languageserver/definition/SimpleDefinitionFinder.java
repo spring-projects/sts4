@@ -16,6 +16,7 @@ import java.util.List;
 import org.eclipse.lsp4j.DefinitionParams;
 import org.eclipse.lsp4j.LocationLink;
 import org.eclipse.lsp4j.Range;
+import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.languageserver.util.DefinitionHandler;
@@ -39,7 +40,7 @@ public class SimpleDefinitionFinder implements DefinitionHandler {
 	}
 
 	@Override
-	public List<LocationLink> handle(DefinitionParams params) {
+	public List<LocationLink> handle(CancelChecker cancelToken, DefinitionParams params) {
 		try {
 			TextDocument doc = server.getTextDocumentService().getLatestSnapshot(params.getTextDocument().getUri());
 

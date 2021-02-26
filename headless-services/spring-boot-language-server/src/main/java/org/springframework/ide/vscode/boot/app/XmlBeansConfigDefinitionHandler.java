@@ -46,6 +46,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CancellationException;
 
 import org.eclipse.lemminx.dom.DOMAttr;
 import org.eclipse.lemminx.dom.DOMDocument;
@@ -57,6 +58,7 @@ import org.eclipse.lemminx.dom.parser.XMLScanner;
 import org.eclipse.lsp4j.DefinitionParams;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.LocationLink;
+import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.links.JavaElementLocationProvider;
@@ -140,17 +142,22 @@ public class XmlBeansConfigDefinitionHandler implements DefinitionHandler, Langu
 	}
 
 	@Override
-	public List<LocationLink> handle(DefinitionParams params) {
+	public List<LocationLink> handle(CancelChecker cancelToken, DefinitionParams params) {
 		try {
 			if (config.isSpringXMLSupportEnabled() && config.areXmlHyperlinksEnabled()) {
 				TextDocument doc = documents.getLatestSnapshot(params);
 				if (doc != null) {
+					
+					cancelToken.checkCanceled();
+					
 					String content = doc.get();
 	
 					DOMParser parser = DOMParser.getInstance();
 					DOMDocument dom = parser.parse(content, "", null);
 					
 					int offset = doc.toOffset(params.getPosition());
+					
+					cancelToken.checkCanceled();
 	
 					DOMNode node = dom.findNodeBefore(offset);
 	
@@ -159,6 +166,7 @@ public class XmlBeansConfigDefinitionHandler implements DefinitionHandler, Langu
 	
 						Scanner scanner = XMLScanner.createScanner(content, node.getStart(), false);
 						TokenType token = scanner.scan();
+						
 						while (token != TokenType.EOS && scanner.getTokenOffset() <= offset) {
 							switch (token) {
 							case AttributeValue:
@@ -200,6 +208,8 @@ public class XmlBeansConfigDefinitionHandler implements DefinitionHandler, Langu
 					}
 				}
 			}
+		} catch (CancellationException e) {
+			throw e;
 		} catch (Exception e) {
 			log.error("{}", e);
 		}
