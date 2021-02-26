@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2018 Pivotal, Inc.
+ * Copyright (c) 2017, 2021 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -14,10 +14,11 @@ import java.util.List;
 
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.ReferenceParams;
+import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 
 @FunctionalInterface
 public interface ReferencesHandler {
 
-	List<? extends Location> handle(ReferenceParams params);
+	List<? extends Location> handle(CancelChecker cancelToken, ReferenceParams params);
 
 }
