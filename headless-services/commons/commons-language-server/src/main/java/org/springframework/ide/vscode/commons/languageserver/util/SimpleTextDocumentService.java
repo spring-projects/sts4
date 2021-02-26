@@ -57,6 +57,7 @@ import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.eclipse.lsp4j.TextEdit;
 import org.eclipse.lsp4j.VersionedTextDocumentIdentifier;
 import org.eclipse.lsp4j.WorkspaceEdit;
+import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 import org.eclipse.lsp4j.jsonrpc.CompletableFutures;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.LanguageClient;
@@ -284,7 +285,7 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 		log.debug("hover requested for {}", hoverParams.getPosition());
 		
 		return CompletableFutures.computeAsync(cancelToken -> {
-			return computeHover(hoverParams);
+			return computeHover(cancelToken, hoverParams);
 		});
 		
 		
@@ -296,12 +297,13 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 //		}));
 	}
 	
-	private Hover computeHover(HoverParams hoverParams) {
+	private Hover computeHover(CancelChecker cancelToken, HoverParams hoverParams) {
 		try {
 			log.debug("hover handler starting");
 			HoverHandler h = hoverHandler;
 			if (h != null) {
-				return hoverHandler.handle(hoverParams);
+				cancelToken.checkCanceled();
+				return hoverHandler.handle(cancelToken, hoverParams);
 			}
 			log.debug("no hover because there is no handler");
 			return null;

@@ -16,6 +16,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
@@ -192,6 +193,9 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 				try {
 					logger.info("CU Cache: start work on AST for {}", uri.toString());
 					return requestor.apply(cu);
+				}
+				catch (CancellationException e) {
+					throw e;
 				}
 				catch (Exception e) {
 					logger.error("", e);

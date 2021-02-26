@@ -17,6 +17,7 @@ import java.util.Set;
 
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.HoverParams;
+import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
@@ -81,14 +82,14 @@ public class CompositeLanguageServerComponents implements LanguageServerComponen
 		//Create composite hover handler
 		this.hoverHandler = new HoverHandler() {
 			@Override
-			public Hover handle(HoverParams params) {
+			public Hover handle(CancelChecker cancelToken, HoverParams params) {
 				TextDocument doc = server.getTextDocumentService().getLatestSnapshot(params.getTextDocument().getUri());
 				LanguageId language = doc.getLanguageId();
 				LanguageServerComponents subComponents = componentsByLanguageId.get(language);
-				if (subComponents!=null) {
+				if (subComponents != null) {
 					HoverHandler subEngine = subComponents.getHoverProvider();
 					if (subEngine != null) {
-						return subEngine.handle(params);
+						return subEngine.handle(cancelToken, params);
 					}
 				}
 				//No applicable subEngine...

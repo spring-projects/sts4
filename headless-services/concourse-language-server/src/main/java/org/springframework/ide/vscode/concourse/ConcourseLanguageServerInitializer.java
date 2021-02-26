@@ -17,17 +17,14 @@ import javax.annotation.PostConstruct;
 import org.eclipse.lsp4j.CompletionList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationContext;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.hover.HoverInfoProvider;
 import org.springframework.ide.vscode.commons.languageserver.hover.VscodeHoverEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
-import org.springframework.ide.vscode.commons.languageserver.util.DocumentSymbolHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
-import org.springframework.ide.vscode.commons.util.CollectionUtil;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlASTProvider;
@@ -37,9 +34,8 @@ import org.springframework.ide.vscode.commons.yaml.completion.YamlCompletionEngi
 import org.springframework.ide.vscode.commons.yaml.hover.YamlHoverInfoProvider;
 import org.springframework.ide.vscode.commons.yaml.quickfix.YamlQuickfixes;
 import org.springframework.ide.vscode.commons.yaml.reconcile.ASTTypeCache;
-import org.springframework.ide.vscode.commons.yaml.reconcile.TypeBasedYamlSymbolHandler;
-import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaBasedReconcileEngine;
 import org.springframework.ide.vscode.commons.yaml.reconcile.TypeBasedYamlHierarchicalSymbolHandler.HierarchicalDefType;
+import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaBasedReconcileEngine;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.springframework.ide.vscode.commons.yaml.schema.YamlSchema;
 import org.springframework.ide.vscode.commons.yaml.snippet.SchemaBasedSnippetGenerator;
@@ -156,16 +152,16 @@ public class ConcourseLanguageServerInitializer {
 			server.completionResolver.resolveNow(item);
 			return item;
 		});
-		documents.onHover(params -> {
+		documents.onHover((cancelToken, params) -> {
 			log.debug("Concourse hover handler starting");
 			try {
 				TextDocument doc = documents.getLatestSnapshot(params);
 				if (doc != null) {
 					LanguageId languageId = doc.getLanguageId();
 					if (LanguageId.CONCOURSE_PIPELINE.equals(doc.getLanguageId())) {
-						return forPipelines.hoverEngine.handle(params);
+						return forPipelines.hoverEngine.handle(cancelToken, params);
 					} else if (LanguageId.CONCOURSE_TASK.equals(doc.getLanguageId())) {
-						return forTasks.hoverEngine.handle(params);
+						return forTasks.hoverEngine.handle(cancelToken, params);
 					} else {
 						log.debug("No hovers because language-id = {}", languageId);
 					}

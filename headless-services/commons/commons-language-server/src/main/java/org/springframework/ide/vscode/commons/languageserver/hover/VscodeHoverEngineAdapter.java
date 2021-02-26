@@ -10,9 +10,12 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.languageserver.hover;
 
+import java.util.concurrent.CancellationException;
+
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.HoverParams;
 import org.eclipse.lsp4j.Range;
+import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,13 +60,15 @@ public class VscodeHoverEngineAdapter implements HoverHandler {
 	}
 
 	@Override
-	public Hover handle(HoverParams params) {
+	public Hover handle(CancelChecker cancelToken, HoverParams params) {
 		try {
 			SimpleTextDocumentService documents = server.getTextDocumentService();
 			TextDocument doc = documents.getLatestSnapshot(params.getTextDocument().getUri());
 
 			if (doc != null) {
 				int offset = doc.toOffset(params.getPosition());
+				
+				cancelToken.checkCanceled();
 
 				Tuple2<Renderable, IRegion> hoverTuple = hoverInfoProvider.getHoverInfo(doc, offset);
 				if (hoverTuple != null) {
@@ -84,6 +89,8 @@ public class VscodeHoverEngineAdapter implements HoverHandler {
 			} else {
 				log.debug("No hover because doc is null");
 			}
+		} catch (CancellationException e) {
+			throw e;
 		} catch (Exception e) {
 			log.error("error computing hover", e);
 		}

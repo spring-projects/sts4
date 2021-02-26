@@ -31,6 +31,7 @@ import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.HoverParams;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
+import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,7 +72,7 @@ public class BootJavaHoverProvider implements HoverHandler {
 	}
 	
 	@Override
-	public Hover handle(HoverParams params) {
+	public Hover handle(CancelChecker cancelToken, HoverParams params) {
 		SimpleTextDocumentService documents = server.getTextDocumentService();
 		TextDocument doc = documents.getLatestSnapshot(params);
 		
@@ -80,7 +81,7 @@ public class BootJavaHoverProvider implements HoverHandler {
 			if (server.getInterestingLanguages().contains(doc.getLanguageId())) {
 				try {
 					int offset = doc.toOffset(params.getPosition());
-					Hover hoverResult = provideHover(doc, offset);
+					Hover hoverResult = provideHover(cancelToken, doc, offset);
 					if (hoverResult != null) {
 						return hoverResult;
 					}
@@ -205,15 +206,20 @@ public class BootJavaHoverProvider implements HoverHandler {
 		}
 	}
 
-	private Hover provideHover(TextDocument document, int offset) throws Exception {
+	private Hover provideHover(CancelChecker cancelToken, TextDocument document, int offset) throws Exception {
 		final SpringProcessLiveData[] processLiveData = this.liveDataProvider.getLatestLiveData();
+
+		cancelToken.checkCanceled();
 
 		IJavaProject project = getProject(document).orElse(null);
 		if (project != null) {
 			return server.getCompilationUnitCache().withCompilationUnit(project, URI.create(document.getUri()), cu -> {
+				
+				cancelToken.checkCanceled();
+				
 				ASTNode node = NodeFinder.perform(cu, offset, 0);
 				if (node != null) {
-					return provideHover(node, offset, document, project, processLiveData);
+					return provideHover(cancelToken, node, offset, document, project, processLiveData);
 				}
 				return null;
 			});
@@ -221,7 +227,7 @@ public class BootJavaHoverProvider implements HoverHandler {
 		return null;
 	}
 
-	private Hover provideHover(ASTNode node, int offset, TextDocument doc, IJavaProject project, SpringProcessLiveData[] processLiveData) {
+	private Hover provideHover(CancelChecker cancelToken, ASTNode node, int offset, TextDocument doc, IJavaProject project, SpringProcessLiveData[] processLiveData) {
 
 		// look for spring annotations first
 		ASTNode annotationNode = node;
@@ -229,27 +235,30 @@ public class BootJavaHoverProvider implements HoverHandler {
 			annotationNode = annotationNode.getParent();
 		}
 		if (annotationNode != null) {
-			return provideHoverForAnnotation(node, (Annotation) annotationNode, offset, doc, project, processLiveData);
+			return provideHoverForAnnotation(cancelToken, node, (Annotation) annotationNode, offset, doc, project, processLiveData);
 		}
 
 		// then do additional AST node coverage
 		if (node instanceof SimpleName) {
 			ASTNode parent = node.getParent();
 			if (parent instanceof TypeDeclaration) {
-				return provideHoverForTypeDeclaration(node, (TypeDeclaration) parent, offset, doc, project, processLiveData);
+				return provideHoverForTypeDeclaration(cancelToken, node, (TypeDeclaration) parent, offset, doc, project, processLiveData);
 			} else if (parent instanceof MethodDeclaration) {
-				return provideHoverForMethodDeclaration((MethodDeclaration) parent, offset, doc, project, processLiveData);
+				return provideHoverForMethodDeclaration(cancelToken, (MethodDeclaration) parent, offset, doc, project, processLiveData);
 			} else if (parent instanceof SingleVariableDeclaration && parent.getParent() instanceof MethodDeclaration) {
-				return provideHoverForMethodParameter((SingleVariableDeclaration) parent, offset, doc, project, processLiveData);
+				return provideHoverForMethodParameter(cancelToken, (SingleVariableDeclaration) parent, offset, doc, project, processLiveData);
 			}
 		}
 		return null;
 	}
 
-	private Hover provideHoverForMethodParameter(SingleVariableDeclaration parameter, int offset, TextDocument doc,
+	private Hover provideHoverForMethodParameter(CancelChecker cancelToken, SingleVariableDeclaration parameter, int offset, TextDocument doc,
 			IJavaProject project, SpringProcessLiveData[] processLiveData) {
 		if (processLiveData.length > 0) {
 			for (HoverProvider provider : this.hoverProviders.getAll()) {
+				
+				cancelToken.checkCanceled();
+				
 				Hover hover = provider.provideMethodParameterHover(parameter, offset, doc, project, processLiveData);
 				if (hover != null) {
 					return hover;
@@ -259,10 +268,13 @@ public class BootJavaHoverProvider implements HoverHandler {
 		return null;
 	}
 
-	private Hover provideHoverForMethodDeclaration(MethodDeclaration methodDeclaration, int offset, TextDocument doc,
+	private Hover provideHoverForMethodDeclaration(CancelChecker cancelToken, MethodDeclaration methodDeclaration, int offset, TextDocument doc,
 			IJavaProject project, SpringProcessLiveData[] processLiveData) {
 		if (processLiveData.length > 0) {
 			for (HoverProvider provider : this.hoverProviders.getAll()) {
+				
+				cancelToken.checkCanceled();
+				
 				Hover hover = provider.provideHover(methodDeclaration, offset, doc, project, processLiveData);
 				if (hover != null) {
 					//TODO: compose multiple hovers somehow instead of just returning the first one?
@@ -273,7 +285,7 @@ public class BootJavaHoverProvider implements HoverHandler {
 		return null;
 	}
 
-	private Hover provideHoverForAnnotation(ASTNode exactNode, Annotation annotation, int offset, TextDocument doc, IJavaProject project,
+	private Hover provideHoverForAnnotation(CancelChecker cancelToken, ASTNode exactNode, Annotation annotation, int offset, TextDocument doc, IJavaProject project,
 			SpringProcessLiveData[] processLiveData) {
 		ITypeBinding type = annotation.resolveTypeBinding();
 		if (type != null) {
@@ -282,6 +294,9 @@ public class BootJavaHoverProvider implements HoverHandler {
 			if (processLiveData.length > 0) {
 
 				for (HoverProvider provider : this.hoverProviders.get(type)) {
+					
+					cancelToken.checkCanceled();
+					
 					Hover hover = provider.provideHover(exactNode, annotation, type, offset, doc, project, processLiveData);
 					if (hover != null) {
 						logger.debug("Hover found: "+hover);
@@ -303,12 +318,15 @@ public class BootJavaHoverProvider implements HoverHandler {
 		return null;
 	}
 
-	private Hover provideHoverForTypeDeclaration(ASTNode exactNode, TypeDeclaration typeDeclaration, int offset, TextDocument doc,
+	private Hover provideHoverForTypeDeclaration(CancelChecker cancelToken, ASTNode exactNode, TypeDeclaration typeDeclaration, int offset, TextDocument doc,
 			IJavaProject project, SpringProcessLiveData[] processLiveData) {
 		if (processLiveData.length > 0) {
 			ITypeBinding type = typeDeclaration.resolveBinding();
 
 			for (HoverProvider provider : this.hoverProviders.getAll()) {
+				
+				cancelToken.checkCanceled();
+				
 				Hover hover = provider.provideHover(exactNode, typeDeclaration, type, offset, doc, project, processLiveData);
 				if (hover!=null) {
 					//TODO: compose multiple hovers somehow instead of just returning the first one?
