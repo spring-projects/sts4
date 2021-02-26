@@ -13,10 +13,12 @@ package org.springframework.ide.vscode.boot.java.handlers;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.CodeLensParams;
+import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
 import org.springframework.ide.vscode.commons.languageserver.util.CodeLensHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
@@ -36,7 +38,7 @@ public class BootJavaCodeLensEngine implements CodeLensHandler {
 	}
 
 	@Override
-	public List<? extends CodeLens> handle(CodeLensParams params) {
+	public List<? extends CodeLens> handle(CancelChecker cancelToken, CodeLensParams params) {
 		SimpleTextDocumentService documents = server.getTextDocumentService();
 		String docURI = params.getTextDocument().getUri();
 
@@ -45,10 +47,13 @@ public class BootJavaCodeLensEngine implements CodeLensHandler {
 			// Spring Boot LS get events from boot properties files as well, so filter them out
 			if (server.getInterestingLanguages().contains(doc.getLanguageId())) {
 				try {
-					List<? extends CodeLens> codeLensesResult = provideCodeLenses(doc);
+					List<? extends CodeLens> codeLensesResult = provideCodeLenses(cancelToken, doc);
 					if (codeLensesResult != null) {
 						return codeLensesResult;
 					}
+				}
+				catch (CancellationException e) {
+					throw e;
 				}
 				catch (Exception e) {
 				}
@@ -58,13 +63,13 @@ public class BootJavaCodeLensEngine implements CodeLensHandler {
 		return SimpleTextDocumentService.NO_CODELENS;
 	}
 
-	private List<? extends CodeLens> provideCodeLenses(TextDocument document) {
+	private List<? extends CodeLens> provideCodeLenses(CancelChecker cancelToken, TextDocument document) {
 		return server.getCompilationUnitCache().withCompilationUnit(document, cu -> {
 
 			if (cu != null) {
 				List<CodeLens> result = new ArrayList<>();
 				for (CodeLensProvider codeLensProvider : codelensProviders) {
-					codeLensProvider.provideCodeLenses(document, cu, result);
+					codeLensProvider.provideCodeLenses(cancelToken, document, cu, result);
 				}
 
 				if (result.size() > 0) {

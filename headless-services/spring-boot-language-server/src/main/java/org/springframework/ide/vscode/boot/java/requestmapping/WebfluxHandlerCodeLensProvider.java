@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2019 Pivotal, Inc.
+ * Copyright (c) 2018, 2021 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -18,6 +18,7 @@ import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.Command;
+import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.boot.java.handlers.CodeLensProvider;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
@@ -36,17 +37,19 @@ public class WebfluxHandlerCodeLensProvider implements CodeLensProvider {
 	}
 
 	@Override
-	public void provideCodeLenses(TextDocument document, CompilationUnit cu, List<CodeLens> resultAccumulator) {
+	public void provideCodeLenses(CancelChecker cancelToken, TextDocument document, CompilationUnit cu, List<CodeLens> resultAccumulator) {
 		cu.accept(new ASTVisitor() {
 			@Override
 			public boolean visit(MethodDeclaration node) {
-				provideCodeLens(node, document, resultAccumulator);
+				provideCodeLens(cancelToken, node, document, resultAccumulator);
 				return super.visit(node);
 			}
 		});
 	}
 
-	protected void provideCodeLens(MethodDeclaration node, TextDocument document, List<CodeLens> resultAccumulator) {
+	protected void provideCodeLens(CancelChecker cancelToken, MethodDeclaration node, TextDocument document, List<CodeLens> resultAccumulator) {
+		cancelToken.checkCanceled();
+		
 		IMethodBinding methodBinding = node.resolveBinding();
 
 		if (methodBinding != null && methodBinding.getDeclaringClass() != null && methodBinding.getMethodDeclaration() != null
@@ -54,6 +57,8 @@ public class WebfluxHandlerCodeLensProvider implements CodeLensProvider {
 
 			final String handlerClass = methodBinding.getDeclaringClass().getBinaryName().trim();
 			final String handlerMethod = methodBinding.getMethodDeclaration().toString().trim();
+			
+			cancelToken.checkCanceled();
 
 			List<SymbolAddOnInformation> handlerInfos = this.springIndexer.getAllAdditionalInformation((addon) -> {
 				if (addon instanceof WebfluxHandlerInformation) {

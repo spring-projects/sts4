@@ -422,7 +422,7 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 
 		if (handler != null) {
 			return CompletableFutures.computeAsync(cancelToken -> {
-				return handler.handle(params);
+				return handler.handle(cancelToken, params);
 			});
 		}
 		return CompletableFuture.completedFuture(Collections.emptyList());
