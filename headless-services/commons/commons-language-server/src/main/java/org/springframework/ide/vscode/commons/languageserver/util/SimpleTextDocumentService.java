@@ -473,7 +473,7 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 		DocumentHighlightHandler handler = this.documentHighlightHandler;
 		if (handler != null) {
 			return CompletableFutures.computeAsync(cancelToken -> {
-				return handler.handle(highlightParams);
+				return handler.handle(cancelToken, highlightParams);
 
 			});
 		}

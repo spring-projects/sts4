@@ -15,6 +15,7 @@ import java.util.List;
 
 import org.eclipse.lsp4j.DocumentHighlight;
 import org.eclipse.lsp4j.Position;
+import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
@@ -35,8 +36,10 @@ public class WebfluxRouteHighlightProdivder implements HighlightProvider {
 	}
 
 	@Override
-	public void provideHighlights(TextDocument document, Position position, List<DocumentHighlight> resultAccumulator) {
+	public void provideHighlights(CancelChecker cancelToken, TextDocument document, Position position, List<DocumentHighlight> resultAccumulator) {
 		log.info("PROVIDE HIGHLIGHTS: {} / {}", position.getLine(), position.getCharacter());
+		
+		cancelToken.checkCanceled();
 
 		this.springIndexer.getAdditonalInformation(document.getUri())
 			.stream()

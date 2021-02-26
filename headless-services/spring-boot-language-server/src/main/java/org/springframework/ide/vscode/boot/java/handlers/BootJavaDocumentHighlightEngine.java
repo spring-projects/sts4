@@ -17,6 +17,7 @@ import java.util.List;
 import org.eclipse.lsp4j.DocumentHighlight;
 import org.eclipse.lsp4j.DocumentHighlightParams;
 import org.eclipse.lsp4j.Position;
+import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
@@ -40,7 +41,7 @@ public class BootJavaDocumentHighlightEngine implements DocumentHighlightHandler
 	}
 
 	@Override
-	public List<DocumentHighlight> handle(DocumentHighlightParams params) {
+	public List<DocumentHighlight> handle(CancelChecker cancelToken, DocumentHighlightParams params) {
 		SimpleTextDocumentService documents = server.getTextDocumentService();
 		TextDocument doc = documents.getLatestSnapshot(params);
 		
@@ -48,7 +49,7 @@ public class BootJavaDocumentHighlightEngine implements DocumentHighlightHandler
 			// Spring Boot LS get events from boot properties files as well, so filter them out
 			if (doc != null && server.getInterestingLanguages().contains(doc.getLanguageId())) {
 				try {
-					return provideDocumentHighlights(doc, params.getPosition());
+					return provideDocumentHighlights(cancelToken, doc, params.getPosition());
 				}
 				catch (Exception e) {
 					log.error("", e);
@@ -59,10 +60,10 @@ public class BootJavaDocumentHighlightEngine implements DocumentHighlightHandler
 		return SimpleTextDocumentService.NO_HIGHLIGHTS;
 	}
 
-	private List<DocumentHighlight> provideDocumentHighlights(TextDocument document, Position position) {
+	private List<DocumentHighlight> provideDocumentHighlights(CancelChecker cancelToken, TextDocument document, Position position) {
 		List<DocumentHighlight> result = new ArrayList<>();
 		for (HighlightProvider highlightProvider : highlightProviders) {
-			highlightProvider.provideHighlights(document, position, result);
+			highlightProvider.provideHighlights(cancelToken, document, position, result);
 		}
 
 		return result;
