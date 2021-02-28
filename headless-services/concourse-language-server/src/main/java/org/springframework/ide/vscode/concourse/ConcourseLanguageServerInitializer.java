@@ -45,8 +45,6 @@ import org.springframework.stereotype.Component;
 
 import com.google.common.collect.ImmutableList;
 
-import reactor.core.publisher.Mono;
-
 @Component
 public class ConcourseLanguageServerInitializer {
 
@@ -137,21 +135,23 @@ public class ConcourseLanguageServerInitializer {
 //			}
 //		});
 
-		documents.onCompletion(params -> {
+		documents.onCompletion((cancelToken, params) -> {
 			TextDocument doc = documents.getLatestSnapshot(params);
 			if (doc != null) {
 				if (LanguageId.CONCOURSE_PIPELINE.equals(doc.getLanguageId())) {
-					return forPipelines.completionEngine.getCompletions(params);
+					return forPipelines.completionEngine.getCompletions(cancelToken, params);
 				} else if (LanguageId.CONCOURSE_TASK.equals(doc.getLanguageId())) {
-					return forTasks.completionEngine.getCompletions(params);
+					return forTasks.completionEngine.getCompletions(cancelToken, params);
 				}
 			}
-			return Mono.just(new CompletionList(false, ImmutableList.of()));
+			return new CompletionList(false, ImmutableList.of());
 		});
-		documents.onCompletionResolve(item -> {
-			server.completionResolver.resolveNow(item);
+
+		documents.onCompletionResolve((cancelToken, item) -> {
+			server.completionResolver.resolveNow(cancelToken, item);
 			return item;
 		});
+
 		documents.onHover((cancelToken, params) -> {
 			log.debug("Concourse hover handler starting");
 			try {

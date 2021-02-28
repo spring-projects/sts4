@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
@@ -28,6 +29,7 @@ import org.eclipse.lsp4j.MarkupKind;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.eclipse.lsp4j.TextEdit;
+import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits.TextReplace;
@@ -42,9 +44,6 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.common.collect.ImmutableList;
 import com.google.gson.JsonPrimitive;
-
-import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 
 /**
  * Adapts a {@link ICompletionEngine}, wrapping it, to implement {@link VscodeCompletionEngine}
@@ -77,7 +76,7 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 			return id;
 		}
 
-		public synchronized void resolveNow(CompletionItem unresolved) {
+		public synchronized void resolveNow(CancelChecker cancelToken, CompletionItem unresolved) {
 			Object id = unresolved.getData();
 			if (id!=null) {
 				Consumer<CompletionItem> resolver = resolvers.get(id instanceof JsonPrimitive ? ((JsonPrimitive)id).getAsString() : id);
@@ -122,39 +121,49 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 	}
 
 	@Override
-	public Mono<CompletionList> getCompletions(TextDocumentPositionParams params) {
-		return getCompletionsMono(params);
-	}
-
-	private Mono<CompletionList> getCompletionsMono(TextDocumentPositionParams params) {
+	public CompletionList getCompletions(CancelChecker cancelToken, TextDocumentPositionParams params) {
 		SimpleTextDocumentService documents = server.getTextDocumentService();
 		
 		TextDocument doc = documents.getLatestSnapshot(params);
 		if (doc != null) {
+			
+			CompletionList list = new CompletionList();
 
-			return Mono.fromCallable(() -> {
+			try {
 				log.info("Starting completion handling");
+
 				if (resolver!=null) {
 					//Assumes we don't have more than one completion request in flight from the client.
 					// So when a new request arrives we can forget about the old unresolved items:
 					resolver.clear();
 				}
+				
+				cancelToken.checkCanceled();
+
 				//TODO: This callable is a 'big lump of work' so can't be canceled in pieces.
 				// Should we push using of reactive streams down further and compose this all
 				// using reactive style? If not then this is overkill could just as well use
 				// only standard Java API such as Executor and CompletableFuture directly.
 				int offset = doc.toOffset(params.getPosition());
-				List<ICompletionProposal> completions = filter(engine.getCompletions(doc, offset));
 
+				// get completions
+				Collection<ICompletionProposal> rawCompletions = engine.getCompletions(doc, offset);
+				
+				cancelToken.checkCanceled();
+				
+				List<ICompletionProposal> completions = filter(rawCompletions);
 				Collections.sort(completions, ScoreableProposal.COMPARATOR);
-
-				CompletionList list = new CompletionList();
+				
+				cancelToken.checkCanceled();
+	
 				list.setIsIncomplete(false);
 				List<CompletionItem> items = new ArrayList<>(completions.size());
 				SortKeys sortkeys = new SortKeys();
 				int count = 0;
+
 				for (ICompletionProposal c : completions) {
 					count++;
+
 					if (maxCompletions > 0 && count>maxCompletions) {
 						list.setIsIncomplete(true);
 						break;
@@ -165,21 +174,32 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 						log.error("error computing completion", e);
 					}
 				}
+				
+				cancelToken.checkCanceled();
+				
 				list.setItems(items);
 				//This is a hack is no  longer  needed but keeping it as  a reference:
 				// See: https://bugs.eclipse.org/bugs/show_bug.cgi?id=535823
 				// Reason  hack is not needed is because of the fix in: https://www.pivotaltracker.com/story/show/159667257
-				
-//				if (LspClient.currentClient()==Client.ECLIPSE) {
-//					list.setIsIncomplete(true); 
-//				}
+	
+				//				if (LspClient.currentClient()==Client.ECLIPSE) {
+				//					list.setIsIncomplete(true); 
+				//				}
 				return list;
-			})
-			.doOnNext(x -> log.info("Got {} completions", x.getItems().size()))
-			.doAfterTerminate(() -> log.info("Completion handling terminated!"))
-			.subscribeOn(Schedulers.elastic()); //!!! without this the mono will just be computed on the same thread that calls it.
+			}
+			catch (CancellationException e) {
+				log.info("compututing completions cancellled", e);
+				throw e;
+			}
+			catch (Exception e) {
+				log.info("error while compututing completions", e);
+			}
+			finally {
+				log.info("Got {} completions", list.getItems().size());
+			}
 		}
-		return Mono.just(SimpleTextDocumentService.NO_COMPLETIONS);
+
+		return SimpleTextDocumentService.NO_COMPLETIONS;
 	}
 
 	private CompletionItem adaptItem(TextDocument doc, ICompletionProposal completion, SortKeys sortkeys) throws Exception {
@@ -321,8 +341,8 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 	}
 
 	@Override
-	public CompletionItem resolveCompletion(CompletionItem unresolved) {
-		resolver.resolveNow(unresolved);
+	public CompletionItem resolveCompletion(CancelChecker cancelToken, CompletionItem unresolved) {
+		resolver.resolveNow(cancelToken, unresolved);
 		return unresolved;
 	}
 

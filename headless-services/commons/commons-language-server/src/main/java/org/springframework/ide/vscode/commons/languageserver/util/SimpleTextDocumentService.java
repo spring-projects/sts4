@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.commons.languageserver.util;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -251,13 +252,13 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 	public CompletableFuture<Either<List<CompletionItem>, CompletionList>> completion(CompletionParams position) {
 		log.info("completion request arrived: " + position.getTextDocument().getUri());
 		
-		CompletionHandler h = completionHandler;
-		if (h != null) {
-			return completionHandler.handle(position)
-					.map(Either::<List<CompletionItem>, CompletionList>forRight)
-					.toFuture();
-		}
-		return CompletableFuture.completedFuture(Either.forRight(NO_COMPLETIONS));
+		return CompletableFutures.computeAsync(cancelToken -> {
+			CompletionHandler h = completionHandler;
+			if (h != null) {
+				return Either.forRight(completionHandler.handle(cancelToken, position));
+			}
+			return Either.forRight(NO_COMPLETIONS);
+		});
 	}
 
 	@Override
@@ -269,8 +270,10 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 				CompletionResolveHandler h = completionResolveHandler;
 				if (h != null) {
 					log.info("Completion item resolve request starting {}", unresolved.getLabel());
-					return h.handle(unresolved);
+					return h.handle(cancelToken, unresolved);
 				}
+			} catch (CancellationException e) {
+				throw e;
 			} catch (Exception e) {
 				log.warn("exception resolving completion item", e);
 			} finally {
