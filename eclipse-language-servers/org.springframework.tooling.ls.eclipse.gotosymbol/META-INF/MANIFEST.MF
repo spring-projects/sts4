@@ -24,7 +24,7 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.ui.workbench,
  org.eclipse.ui.ide,
  org.eclipse.ui.editors
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-Activator: org.springframework.tooling.ls.eclipse.gotosymbol.GotoSymbolPlugin
 Bundle-ActivationPolicy: lazy
 Bundle-Vendor: VMware, Inc.
