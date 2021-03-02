@@ -17,6 +17,7 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -287,17 +288,17 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 	public CompletableFuture<Hover> hover(HoverParams hoverParams) {
 		log.debug("hover requested for {}", hoverParams.getPosition());
 		
-		return CompletableFutures.computeAsync(cancelToken -> {
+		CompletableFuture<Hover> result = CompletableFutures.computeAsync(cancelToken -> {
 			return computeHover(cancelToken, hoverParams);
 		});
 		
-		
-		// TODO: timeout still necessary ?????
-		
-//		long timeout = props.getHoverTimeout();
-//		return timeout <= 0 ? async.invoke(() -> computeHover(hoverParams)) : async.invoke(Duration.ofMillis(timeout), () -> computeHover(hoverParams), Mono.fromRunnable(() -> {
-//			log.error("Hover Request handler timed out after {} ms.", timeout);
-//		}));
+		long timeout = props.getHoverTimeout();
+		if (timeout <= 0) {
+			return result;
+		}
+		else {
+			return result.completeOnTimeout(NO_HOVER, timeout, TimeUnit.MILLISECONDS);
+		}
 	}
 	
 	private Hover computeHover(CancelChecker cancelToken, HoverParams hoverParams) {
