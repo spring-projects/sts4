@@ -122,6 +122,8 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 
 	@Override
 	public CompletionList getCompletions(CancelChecker cancelToken, TextDocumentPositionParams params) {
+		long start = System.currentTimeMillis();
+
 		SimpleTextDocumentService documents = server.getTextDocumentService();
 		
 		TextDocument doc = documents.getLatestSnapshot(params);
@@ -195,7 +197,8 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 				log.info("error while compututing completions", e);
 			}
 			finally {
-				log.info("Got {} completions", list.getItems().size());
+				long end = System.currentTimeMillis();
+				log.info("Got {} completions in " + (end - start) + "ms", list.getItems().size());
 			}
 		}
 

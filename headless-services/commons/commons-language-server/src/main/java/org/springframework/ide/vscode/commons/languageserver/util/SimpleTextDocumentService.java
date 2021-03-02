@@ -302,7 +302,10 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 	}
 	
 	private Hover computeHover(CancelChecker cancelToken, HoverParams hoverParams) {
+		long start = System.currentTimeMillis();
+
 		try {
+
 			log.debug("hover handler starting");
 			HoverHandler h = hoverHandler;
 			if (h != null) {
@@ -311,8 +314,10 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 			}
 			log.debug("no hover because there is no handler");
 			return null;
+			
 		} finally {
-			log.debug("hover handler finished");
+			long end = System.currentTimeMillis();
+			log.info("hover computation done in " + (end - start) + "ms");
 		}
 	}
 
