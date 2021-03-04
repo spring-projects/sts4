@@ -184,6 +184,18 @@ public class ConcourseEditorTest {
 		);
 	}
 
+	@Test public void reconcileDisplayType() throws Exception {
+		Editor editor;
+		editor = harness.newEditor(
+				"display:\n" +
+				"  background_image: # <- bad\n"	
+		);
+
+		editor.assertProblems(
+				"^ # <- bad|String should not be empty"
+		);
+	}
+
 	@Test public void testReconcileCatchesParseError() throws Exception {
 		Editor editor = harness.newEditor(
 				"somemap: val\n"+
@@ -492,6 +504,17 @@ public class ConcourseEditorTest {
 		editor.assertHoverContains("on_success", "Any step can have `on_success` tacked onto it");
 		editor.assertHoverContains("ensure", "a second step to execute regardless of the result of the parent step");
 	}
+
+	@Test public void displayHovers() throws Exception {
+		Editor editor;
+		editor = harness.newEditor(
+				"display:\n" +
+				"  background_image: http://google.com/myimage.png\n"	
+		);
+
+		editor.assertHoverContains("background_image", "custom background image");
+	}
+
 
 	@Test
 	public void groupHovers() throws Exception {
@@ -819,6 +842,9 @@ public class ConcourseEditorTest {
 		Editor editor;
 		editor = harness.newEditor(CURSOR);
 		editor.assertCompletions(
+				"display:\n"+
+				"  background_image: <*>"
+				, // ---------------
 				"groups:\n" +
 				"- name: <*>"
 				, // --------------
@@ -890,6 +916,8 @@ public class ConcourseEditorTest {
 	@Test
 	public void topLevelHoverInfos() throws Exception {
 		Editor editor = harness.newEditor(
+			"display:\n" +
+			"  background_image: http://example.com/fakeimage.png\n" +
 			"resource_types:\n" +
 			"- name: s3-multi\n" +
 			"  type: docker-image\n" +
@@ -924,6 +952,7 @@ public class ConcourseEditorTest {
 		editor.assertHoverContains("resources", "A resource is any entity that can be checked for new versions");
 		editor.assertHoverContains("jobs", "At a high level, a job describes some actions to perform");
 		editor.assertHoverContains("groups", "A pipeline may optionally contain a section called `groups`");
+		editor.assertHoverContains("display", "set a background image on your pipeline");
 	}
 
 	@Test
@@ -4003,11 +4032,12 @@ public class ConcourseEditorTest {
 				//For the nested context:
 				"→ uri",
 				// For the top-level context:
+				"← display",
 				"← groups",
 				"← jobs",
 				"← resource_types",
 				"← - Resource Snippet",
-				// For the 'next job' context:
+				// For the 'next job' context
 				"← - name"
 		);
 
@@ -4255,6 +4285,7 @@ public class ConcourseEditorTest {
 				"- try",
 				"- aggregate",
 				//Dedented completions
+				"← display",
 				"← groups",
 				"← resource_types",
 				"← resources",
@@ -4711,6 +4742,7 @@ public class ConcourseEditorTest {
 				"<*>"
 		);
 		editor.assertCompletionLabels(
+				"display",
 				"groups",
 				"jobs",
 				"resource_types",

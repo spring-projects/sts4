@@ -22,6 +22,7 @@ import org.springframework.ide.vscode.commons.util.MimeTypes;
 import org.springframework.ide.vscode.commons.util.PartialCollection;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
+import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.ValueParseException;
 import org.springframework.ide.vscode.commons.util.ValueParser;
 import org.springframework.ide.vscode.commons.util.ValueParsers;
@@ -36,6 +37,7 @@ import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaValuePars
 import org.springframework.ide.vscode.commons.yaml.reconcile.TypeBasedYamlHierarchicalSymbolHandler.HierarchicalDefType;
 import org.springframework.ide.vscode.commons.yaml.schema.BasicYValueHint;
 import org.springframework.ide.vscode.commons.yaml.schema.DynamicSchemaContext;
+import org.springframework.ide.vscode.commons.yaml.schema.SchemaContextAware;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.AbstractType;
@@ -57,6 +59,7 @@ import org.springframework.ide.vscode.concourse.github.GithubValueParsers;
 import org.yaml.snakeyaml.nodes.MappingNode;
 import org.yaml.snakeyaml.nodes.Node;
 
+import com.fasterxml.jackson.databind.jsonschema.SchemaAware;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
@@ -456,6 +459,12 @@ public class PipelineYmlSchema implements YamlSchema {
 		addProp(group, "resources", f.yseq(t_resource_name));
 		addProp(group, "jobs", f.yseq(t_job_name));
 
+		YType t_background_image_def = f.yatomic("Background Image")
+				.parseWith(ValueParsers.NE_STRING);
+
+		AbstractType t_display = f.ybean("Display");
+		addProp(t_display, "background_image", t_background_image_def).isRequired(true);
+
 		YSeqType t_resources = f.yseq(t_resource);
 		YSeqType t_jobs = f.yseq(job);
 		YSeqType t_resourceTypes = f.yseq(resourceType);
@@ -464,12 +473,14 @@ public class PipelineYmlSchema implements YamlSchema {
 		addProp(TOPLEVEL_TYPE, "jobs", t_jobs);
 		addProp(TOPLEVEL_TYPE, "resource_types", t_resourceTypes);
 		addProp(TOPLEVEL_TYPE, "groups", t_groups);
+		addProp(TOPLEVEL_TYPE, "display", t_display);
 
 		definitionTypes = ImmutableList.of(
 				jobNameDef,
 				resourceTypeNameDef,
 				t_resource_name_def,
-				t_group_name_def
+				t_group_name_def,
+				t_background_image_def
 		);
 		hierarchicDefinitions = ImmutableList.of(
 				new HierarchicalDefType(t_resources, null, SymbolKind.File, "Resources"),
@@ -482,7 +493,9 @@ public class PipelineYmlSchema implements YamlSchema {
 				new HierarchicalDefType(resourceType, YamlPath.fromSimpleProperty("name"), SymbolKind.Interface, "Resource Type"),
 
 				new HierarchicalDefType(t_groups, null, SymbolKind.Package, "Groups"),
-				new HierarchicalDefType(group, YamlPath.fromSimpleProperty("name"), SymbolKind.Package, "Groups")
+				new HierarchicalDefType(group, YamlPath.fromSimpleProperty("name"), SymbolKind.Package, "Groups"),
+
+				new HierarchicalDefType(t_display, null, SymbolKind.Package, "Display Settings")
 		);
 
 		initializeDefaultResourceTypes();

@@ -1,0 +1,1 @@
+Allow users to specify a custom background image which is put at 30% opacity, grayscaled and blended into existing background. Must be an http, https, or relative URL.
