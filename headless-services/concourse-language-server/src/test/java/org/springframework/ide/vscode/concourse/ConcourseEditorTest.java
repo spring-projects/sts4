@@ -509,7 +509,7 @@ public class ConcourseEditorTest {
 		Editor editor;
 		editor = harness.newEditor(
 				"display:\n" +
-				"  background_image: http://google.com/myimage.png\n"	
+				"  background_image: https://google.com/myimage.png\n"	
 		);
 
 		editor.assertHoverContains("background_image", "custom background image");
@@ -917,7 +917,7 @@ public class ConcourseEditorTest {
 	public void topLevelHoverInfos() throws Exception {
 		Editor editor = harness.newEditor(
 			"display:\n" +
-			"  background_image: http://example.com/fakeimage.png\n" +
+			"  background_image: https://example.com/fakeimage.png\n" +
 			"resource_types:\n" +
 			"- name: s3-multi\n" +
 			"  type: docker-image\n" +
