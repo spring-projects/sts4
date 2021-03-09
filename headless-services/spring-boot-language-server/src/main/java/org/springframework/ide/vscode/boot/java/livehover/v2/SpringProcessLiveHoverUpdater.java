@@ -14,6 +14,8 @@ import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.eclipse.lsp4j.CodeLens;
@@ -42,6 +44,10 @@ public class SpringProcessLiveHoverUpdater {
 	private final Map<String, AtomicReference<IJavaProject>> watchedDocs;
 	private boolean highlightsEnabled = true;
 
+	// this update executor puts all the updates to live hovers into a sequence
+	// to avoid race conditions among different update operations 
+	private final Executor updateExecutor;
+
 	public SpringProcessLiveHoverUpdater(
 			SimpleLanguageServer server,
 			BootJavaHoverProvider hoverProvider,
@@ -52,6 +58,7 @@ public class SpringProcessLiveHoverUpdater {
 		this.hoverProvider = hoverProvider;
 		this.projectFinder = projectFinder;
 		this.watchedDocs = new ConcurrentHashMap<>();
+		this.updateExecutor = Executors.newSingleThreadExecutor();
 
 		server.getTextDocumentService().onDidChangeContent(params -> {
 			TextDocument doc = params.getDocument();
@@ -67,7 +74,7 @@ public class SpringProcessLiveHoverUpdater {
 		liveDataProvider.addLiveDataChangeListener(event -> {
 			CompletableFuture.runAsync(() -> {
 				update();
-			});
+			}, updateExecutor);
 		});
 	}
 
@@ -84,7 +91,7 @@ public class SpringProcessLiveHoverUpdater {
 			} catch (Throwable t) {
 				log.error("", t);
 			}
-		});
+		}, updateExecutor);
 	}
 
 	public void unwatchDocument(String docURI) {
