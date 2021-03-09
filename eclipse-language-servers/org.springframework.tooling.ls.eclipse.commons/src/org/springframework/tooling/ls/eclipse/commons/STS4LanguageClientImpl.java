@@ -39,6 +39,7 @@ import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
+import org.eclipse.jface.text.IRegion;
 import org.eclipse.jface.text.ITextViewer;
 import org.eclipse.jface.text.Position;
 import org.eclipse.jface.text.TextSelection;
@@ -55,6 +56,7 @@ import org.eclipse.lsp4j.MarkupContent;
 import org.eclipse.lsp4j.MarkupKind;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
@@ -245,6 +247,27 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 				}
 			} else {
 				((ISourceViewerExtension5) sourceViewer).updateCodeMinings();
+			}
+
+			/*
+			 * Hack for Big Sur CodeMining layout issues when toggle CodeMinings on/off
+			 * After 100ms emulate resize editor visible region
+			 */
+			final StyledText textWidget = sourceViewer.getTextWidget();
+			if (textWidget != null && !textWidget.isDisposed()) {
+				textWidget.getDisplay().timerExec(100, () -> {
+					if (!textWidget.isDisposed()) {
+						IRegion visibleRegion = sourceViewer.getVisibleRegion();
+						int offset = visibleRegion.getOffset();
+						int length = visibleRegion.getLength();
+						if (length > 1) {
+							sourceViewer.setVisibleRegion(offset, length - 1);
+							sourceViewer.setVisibleRegion(offset, length);
+						} else {
+							sourceViewer.resetVisibleRegion();
+						}
+					}
+				});
 			}
 		}
 	}
