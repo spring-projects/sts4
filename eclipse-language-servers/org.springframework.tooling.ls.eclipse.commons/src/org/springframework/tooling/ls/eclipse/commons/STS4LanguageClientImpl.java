@@ -271,6 +271,8 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 						Point currentSelection = sourceViewer.getSelectedRange();
 						sourceViewer.setSelectedRange(0, 0);
 						sourceViewer.setSelectedRange(currentSelection.x, currentSelection.y);
+
+						textWidget.forceFocus();
 					}
 				});
 			}
