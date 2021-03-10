@@ -57,6 +57,7 @@ import org.eclipse.lsp4j.MarkupKind;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IEditorReference;
@@ -255,17 +256,21 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 			 */
 			final StyledText textWidget = sourceViewer.getTextWidget();
 			if (textWidget != null && !textWidget.isDisposed()) {
-				textWidget.getDisplay().timerExec(100, () -> {
+				textWidget.getDisplay().timerExec(500, () -> {
 					if (!textWidget.isDisposed()) {
 						IRegion visibleRegion = sourceViewer.getVisibleRegion();
 						int offset = visibleRegion.getOffset();
 						int length = visibleRegion.getLength();
+						textWidget.getParent().layout(true);
 						if (length > 1) {
 							sourceViewer.setVisibleRegion(offset, length - 1);
 							sourceViewer.setVisibleRegion(offset, length);
 						} else {
 							sourceViewer.resetVisibleRegion();
 						}
+						Point currentSelection = sourceViewer.getSelectedRange();
+						sourceViewer.setSelectedRange(0, 0);
+						sourceViewer.setSelectedRange(currentSelection.x, currentSelection.y);
 					}
 				});
 			}
