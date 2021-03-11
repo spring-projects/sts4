@@ -382,11 +382,11 @@
 				<package.qualifierPrefix>e419</package.qualifierPrefix>
 			</properties>
 			<repositories>
-				<repository>
+<!--				<repository>
 					<id>2021-03</id>
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/releases/2021-03/</url>
-				</repository>
+				</repository> -->
 				<repository>
 					<id>2021-03-staging</id>
 					<layout>p2</layout>
