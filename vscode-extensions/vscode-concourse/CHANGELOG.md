@@ -1,3 +1,7 @@
+## 2021-03-17 (4.10.0 RELEASE, incl. language servers version 1.25.0)
+
+* _(Concourse)_ improvement: Add display property to pipeline schema ([#607](https://github.com/spring-projects/sts4/pull/607)) - contributed by [@jghiloni](https://github.com/jghiloni)
+
 ## 2020-12-16 (4.9.0 RELEASE, incl. language servers version 1.24.0)
 
 * _(Concourse)_ fixed: navigation in pipeline files with VSCode Concourse CI extension doesn't work everytime ([#483](https://github.com/spring-projects/sts4/issues/483))

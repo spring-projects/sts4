@@ -1,3 +1,8 @@
+## 2021-03-17 (4.10.0 RELEASE, incl. language servers version 1.25.0)
+
+* _(Spring Boot)_ enhancement: `.sts4` dir location now configurable ([#601](https://github.com/spring-projects/sts4/issues/601))
+* _(Spring Boot)_ fixed: sometimes live hovers do not disappear ([#609](https://github.com/spring-projects/sts4/issues/609))
+
 ## 2020-12-16 (4.9.0 RELEASE, incl. language servers version 1.24.0)
 
 * _(Spring Boot)_ new: show bean startup performance metrics in live hovers and code lenses (details in the user guide)
