@@ -6,7 +6,7 @@ import { workspace } from 'vscode';
 import * as commons from '@pivotal-tools/commons-vscode';
 import * as liveHoverUi from './live-hover-connect-ui';
 
-import {LanguageClient} from "vscode-languageclient";
+import {LanguageClient} from "vscode-languageclient/node";
 
 const PROPERTIES_LANGUAGE_ID = "spring-boot-properties";
 const YAML_LANGUAGE_ID = "spring-boot-properties-yaml";

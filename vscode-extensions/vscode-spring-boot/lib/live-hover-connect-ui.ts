@@ -1,9 +1,8 @@
 'use strict';
 
 import * as VSCode from 'vscode';
-import { LanguageClient } from "vscode-languageclient";
+import { LanguageClient } from "vscode-languageclient/node";
 import { ActivatorOptions } from '@pivotal-tools/commons-vscode';
-import { stringify } from 'querystring';
 
 interface ProcessCommandInfo {
     processKey : string;
@@ -39,7 +38,7 @@ async function liveHoverConnectHandler() {
 /** Called when extension is activated */
 export function activate(
         client: LanguageClient,
-        options: ActivatorOptions, 
+        options: ActivatorOptions,
         context: VSCode.ExtensionContext
 ) {
     context.subscriptions.push(

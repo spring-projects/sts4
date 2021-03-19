@@ -2,16 +2,17 @@
 
 
 import * as VSCode from 'vscode';
-import { LanguageClient, RequestType } from 'vscode-languageclient';
+import { RequestType } from 'vscode-languageclient';
+import { LanguageClient } from 'vscode-languageclient/node';
 
 export function registerClasspathService(client : LanguageClient) : void {
 
-    let addRequest = new RequestType<ClasspathListenerParams, ClasspathListenerResponse, void, void>("sts/addClasspathListener");
+    let addRequest = new RequestType<ClasspathListenerParams, ClasspathListenerResponse, void>("sts/addClasspathListener");
     client.onRequest(addRequest, async (params: ClasspathListenerParams) => {
         return <ClasspathListenerResponse> await VSCode.commands.executeCommand("java.execute.workspaceCommand", "sts.java.addClasspathListener", params.callbackCommandId);
     });
 
-    let removeRequest = new RequestType<ClasspathListenerParams, ClasspathListenerResponse, void, void>("sts/removeClasspathListener");
+    let removeRequest = new RequestType<ClasspathListenerParams, ClasspathListenerResponse, void>("sts/removeClasspathListener");
     client.onRequest(removeRequest, async (params: ClasspathListenerParams) => {
         return <ClasspathListenerResponse> await VSCode.commands.executeCommand("java.execute.workspaceCommand", "sts.java.removeClasspathListener", params.callbackCommandId);
     });

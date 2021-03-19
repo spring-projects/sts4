@@ -12,7 +12,7 @@
   "license": "EPL-1.0",
   "engines": {
     "npm": "^6.0.0",
-    "vscode": "^1.41.0"
+    "vscode": "^1.53.0"
   },
   "categories": [
     "Programming Languages",
@@ -126,13 +126,13 @@
     "vsce-package": "vsce package"
   },
   "dependencies": {
-    "@pivotal-tools/commons-vscode": "file:../commons-vscode/pivotal-tools-commons-vscode-0.2.3.tgz",
-    "vscode-languageclient": "6.0.0"
+    "@pivotal-tools/commons-vscode": "file:../commons-vscode/pivotal-tools-commons-vscode-0.2.4.tgz",
+    "vscode-languageclient": "^7.0.0"
   },
   "devDependencies": {
-    "vsce": "^1.74.0",
-    "typescript": "3.8.3",
     "@types/node": "^12.7.9",
-    "@types/vscode": "^1.41.0"
+    "@types/vscode": "^1.53.0",
+    "typescript": "^4.1.2",
+    "vsce": "^1.87.0"
   }
 }

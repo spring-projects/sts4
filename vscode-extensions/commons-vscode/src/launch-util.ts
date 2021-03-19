@@ -7,7 +7,8 @@ import PortFinder = require('portfinder');
 import * as Net from 'net';
 import * as ChildProcess from 'child_process';
 import * as CommonsCommands from './commands';
-import { TextDocumentIdentifier, RequestType, LanguageClient, LanguageClientOptions, SettingMonitor, ServerOptions, StreamInfo, Position } from 'vscode-languageclient';
+import { RequestType, LanguageClientOptions, Position } from 'vscode-languageclient';
+import {LanguageClient, StreamInfo, ServerOptions} from 'vscode-languageclient/node';
 import {
     Disposable,
     window,
@@ -17,7 +18,7 @@ import {
     Progress,
 } from 'vscode';
 import { Trace, NotificationType } from 'vscode-jsonrpc';
-import * as P2C from 'vscode-languageclient/lib/protocolConverter';
+import * as P2C from 'vscode-languageclient/lib/common/protocolConverter';
 import {HighlightService, HighlightParams} from './highlight-service';
 import { log } from 'util';
 import { JVM, findJvm, findJdk } from '@pivotal-tools/jvm-launch-utils';
@@ -25,7 +26,7 @@ import { registerClasspathService } from './classpath';
 import {HighlightCodeLensProvider} from "./code-lens-service";
 import {registerJavaDataService} from "./java-data";
 
-let p2c = P2C.createConverter();
+const p2c = P2C.createConverter(undefined, undefined);
 
 PortFinder.basePort = 45556;
 
@@ -128,14 +129,14 @@ export function activate(options: ActivatorOptions, context: VSCode.ExtensionCon
             }
             let javaExecutablePath = jvm.getJavaExecutable();
             log("Found java exe: " + javaExecutablePath);
-    
+
             let version = jvm.getMajorVersion();
-            if (version<8) {
-                VSCode.window.showErrorMessage('Java-based Language Server requires Java 8 or higher (using ' + javaExecutablePath + ')');
+            if (version<11) {
+                VSCode.window.showErrorMessage('Java-based Language Server requires Java 11 or higher (using ' + javaExecutablePath + ')', {});
                 return;
             }
             log("isJavaEightOrHigher => true");
-    
+
             function createServer(): Promise<StreamInfo> {
                 return new Promise((resolve, reject) => {
                     PortFinder.getPort((err, port) => {
@@ -220,7 +221,7 @@ function hasHeapArg(vmargs?: string[]) : boolean {
 }
 
 function findServerJar(jarsDir) : string {
-    let serverJars = FS.readdirSync(jarsDir).filter(jar => 
+    let serverJars = FS.readdirSync(jarsDir).filter(jar =>
         jar.indexOf('language-server')>=0 &&
         jar.endsWith(".jar")
     );
@@ -261,9 +262,9 @@ function setupLanguageClient(context: VSCode.ExtensionContext, createServer: Ser
         client.trace = Trace.Verbose;
     }
 
-    let progressNotification = new NotificationType<ProgressParams,void>("sts/progress");
-    let highlightNotification = new NotificationType<HighlightParams,void>("sts/highlight");
-    let moveCursorRequest = new RequestType<MoveCursorParams,MoveCursorResponse,void,void>("sts/moveCursor");
+    let progressNotification = new NotificationType<ProgressParams>("sts/progress");
+    let highlightNotification = new NotificationType<HighlightParams>("sts/highlight");
+    let moveCursorRequest = new RequestType<MoveCursorParams,MoveCursorResponse,void>("sts/moveCursor");
 
     let disposable = client.start();
 
@@ -385,7 +386,7 @@ class ProgressService {
                     title: "",
                     cancellable: false
                 }, progress => new Promise(resolve => {
-					this.status.set(params.id, new ProgressHandle(progress, resolve));
+					this.status.set(params.id, new ProgressHandle(progress, <() => void>resolve));
 					progress.report({
 						message: params.statusMsg,
 						increment: -1

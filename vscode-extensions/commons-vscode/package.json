@@ -1,13 +1,13 @@
 {
   "name": "@pivotal-tools/commons-vscode",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "commons-vscode",
   "license": "MIT",
   "repository": "",
   "author": "Kris De Volder <kdevolder@pivotal.io>",
   "engines": {
     "npm": "^3.0.0",
-    "vscode": "^1.41.0"
+    "vscode": "^1.53.0"
   },
   "keywords": [],
   "files": [
@@ -29,9 +29,9 @@
     "portfinder": "^1.0.25"
   },
   "devDependencies": {
-    "typescript": "3.7.3",
     "@types/node": "^12.7.9",
-    "@types/vscode": "^1.41.0",
-    "vscode-languageclient": "6.0.0"
+    "@types/vscode": "^1.53.0",
+    "typescript": "^4.1.2",
+    "vscode-languageclient": "^7.0.0"
   }
 }
