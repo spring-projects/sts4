@@ -132,7 +132,12 @@ export function activate(options: ActivatorOptions, context: VSCode.ExtensionCon
 
             let version = jvm.getMajorVersion();
             if (version<11) {
-                VSCode.window.showErrorMessage('Java-based Language Server requires Java 11 or higher (using ' + javaExecutablePath + ')', {});
+                VSCode.window.showErrorMessage(
+                    `Spring Tools Language Server requires Java 11 or higher to be launched. Current Java ${javaExecutablePath}.\n
+                    \n
+                    (Note Java 8 can still be used in your own projects. Java 11 is only required to launch the Spring Tools Language Server process)`,
+                    {}
+                );
                 return;
             }
             log("isJavaEightOrHigher => true");

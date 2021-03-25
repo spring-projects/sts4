@@ -1,7 +1,6 @@
 import * as FS from 'fs';
 import * as Path from 'path';
 import * as ChildProcess from 'child_process';
-import { basename } from 'path';
 
 'use strict';
 
@@ -10,7 +9,7 @@ export interface JVM {
      * 8 = Java 1.8.x, 9 = Java 9.x, etc
      */
     getMajorVersion() : number
-    
+
     /**
      * Path to the Java executable
      */
@@ -27,18 +26,7 @@ export interface JVM {
     isJdk() : boolean
 
     /**
-     * Find tools.jar for this JVM.
-     * 
-     * Note that if the JVM is a JRE; or a Java 9 or above JDK;
-     * then this will return null.
-     */
-    getToolsJar() : string | null
-
-    /**
      * Launch an executable jar with this jvm.
-     * This autmatically adds tools.jar to the classpath if available.
-     * WARNING: For adding tools jar to work properly, the jar must be packaged
-     * using spring-boot-maven-plugin ZIP layout.
      */
     jarLaunch(jar: string, vmargs?: string[], execFileOptions?: ChildProcess.ExecFileOptions) : ChildProcess.ChildProcess
 
@@ -47,10 +35,10 @@ export interface JVM {
 
 /**
  * Find a JVM by looking in the JAVA_HOME and PATH environment variables.
- * 
+ *
  * Optionally, a specific javaHome can be passed in. This shortcuts the
  * search logic and uses that javaHome as is.
- * 
+ *
  * The returned JVM may or may not be a JDK. Methods are provided to obtain corresponding
  * toolsjar and to check whether the JVM is a JDK.
  */
@@ -59,8 +47,8 @@ export function findJvm(javaHome?: string) : Promise<JVM | null> {
         let javaExe = findJavaExe(javaHome);
         if (javaExe) {
             return getJavaInfo(javaExe).then(javaProps => new JVMImpl(
-                javaProps.get("java.home"), 
-                javaExe, 
+                javaProps.get("java.home"),
+                javaExe,
                 getMajorVersion(javaProps)
             ));
         }
@@ -72,7 +60,7 @@ export function findJvm(javaHome?: string) : Promise<JVM | null> {
 
 /**
  * Like findJvm, but additionally, if the found JVM is not a JDK tries to
- * find a companion JDK that may be installed alongside it. 
+ * find a companion JDK that may be installed alongside it.
  */
 export function findJdk(javaHome?: string) : Promise<JVM | null> {
     return findJvm(javaHome).then(jvm => {
@@ -82,10 +70,10 @@ export function findJdk(javaHome?: string) : Promise<JVM | null> {
         if (!jvm.isJdk()) {
             console.log("found jvm is not a JDK");
 
-            //Try to find a 'sibling' JDK. 
+            //Try to find a 'sibling' JDK.
             //Mainly for windows where it is common to have side-by-side install of a jre and jdk, instead of a
             //nested jre install inside of a jdk.
-            
+
             //E.g.
             //C:\ProgramFiles\Java\jdk1.8.0_161
             //C:\ProgramFiles\Java\jre1.8.0_161
@@ -136,7 +124,7 @@ function findJavaExe(javaHome?: string) : string | null {
         }
     }
 
-    for (var searchPath of process.env['PATH'].split(Path.delimiter)) {
+    for (let searchPath of process.env['PATH'].split(Path.delimiter)) {
         let javaExe = Path.resolve(searchPath, binName);
         if (FS.existsSync(javaExe)) {
             //Resolve symlinks
@@ -160,40 +148,18 @@ function memoize<T>(getter : Getter<T>) : Getter<T> {
     };
 }
 
-const TOOLS_JAR_PATHS : string[][] = [
-    ["lib", "tools.jar"],
-    ["..", "lib", "tools.jar"]
-];
-
 class JVMImpl implements JVM {
     javaHome : string
     javaExe : string
     version : number
-    toolsJar: () => string | null;
     constructor(javaHome : string, javaExe : string, version : number) {
         this.javaHome = javaHome;
         this.javaExe = javaExe;
         this.version = version;
-        this.toolsJar = memoize(() => this.findToolsJar());
     }
 
     getJavaHome() : string {
         return this.javaHome;
-    }
-
-    findToolsJar() : string | null {
-        if (this.version>=9) {
-            return null;
-        }
-        let javaHome = this.getJavaHome();
-        for (var tjp of TOOLS_JAR_PATHS) {
-            let toolsJar = Path.resolve(javaHome, ...tjp);
-            if (FS.existsSync(toolsJar)) {
-                return toolsJar;
-            }
-        }
-        //Not found.
-        return null;
     }
 
     getMajorVersion() {
@@ -203,22 +169,10 @@ class JVMImpl implements JVM {
         return this.javaExe;
     }
     isJdk(): boolean {
-        //Consider memoizing?
-        if (this.version<9) {
-            return this.getToolsJar()!=null;
-        } else {
-            return FS.existsSync(Path.resolve(this.getJavaHome(), "jmods", "jdk.management.jmod"));
-        }
-    }
-    getToolsJar(): string {
-        return this.toolsJar();
+        return FS.existsSync(Path.resolve(this.getJavaHome(), "jmods", "jdk.management.jmod"));
     }
     jarLaunch(jar: string, vmargs?: [string], execFileOptions?: ChildProcess.ExecFileOptions): ChildProcess.ChildProcess {
         let args = [];
-        let toolsJar = this.getToolsJar();
-        if (toolsJar) {
-            args.push("-Dloader.path="+toolsJar);
-        }
         if (vmargs) {
             args.push(...vmargs);
         }
@@ -232,10 +186,6 @@ class JVMImpl implements JVM {
         // Classpath
         args.push('-cp');
         let classpathStr = classpath.join(Path.delimiter);
-        const toolsJar = this.getToolsJar();
-        if (toolsJar) {
-            classpathStr += Path.delimiter + toolsJar;
-        }
         args.push(classpathStr);
 
         // JVM Arguments

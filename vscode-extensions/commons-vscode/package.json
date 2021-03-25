@@ -24,7 +24,7 @@
     "prepack": "tsc -p ./"
   },
   "dependencies": {
-    "@pivotal-tools/jvm-launch-utils": "0.0.14",
+    "@pivotal-tools/jvm-launch-utils": "0.0.15",
     "deep-equal": "^1.0.1",
     "portfinder": "^1.0.25"
   },
