@@ -10,7 +10,7 @@ def replace(infile, outfile, findword, replaceword):
 
 branch = os.popen("git rev-parse --abbrev-ref HEAD").read().strip()
 
-if branch == 'master':
+if branch == 'main':
     os.system('fly -t tools set-pipeline '+
               '      --var "branch=' + branch + '" ' +
               '      -p sts4-'+ branch +' -c pipeline.yml')
