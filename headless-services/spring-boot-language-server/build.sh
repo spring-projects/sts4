@@ -10,14 +10,14 @@ if command -v xvfb-run ; then
         -f ../pom.xml \
         -pl $modules \
         -am \
-        clean install -DskipTests
+        clean install
 else
     ../mvnw \
         -DtrimStackTrace=false \
         -f ../pom.xml \
         -pl $modules \
         -am \
-        clean install -DskipTests
+        clean install
 fi
 cd ../xml-ls-extension
     ../mvnw \
@@ -25,4 +25,4 @@ cd ../xml-ls-extension
         -f ../pom.xml \
         -pl xml-ls-extension \
         -am \
-        clean install -DskipTests
+        clean install
