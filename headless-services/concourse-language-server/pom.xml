@@ -48,7 +48,7 @@
 		<dependency>
 			<groupId>org.kohsuke</groupId>
 			<artifactId>github-api</artifactId>
-			<version>1.90</version>
+			<version>1.128</version>
 		</dependency>
 		<!-- Test harness -->
 		<dependency>
