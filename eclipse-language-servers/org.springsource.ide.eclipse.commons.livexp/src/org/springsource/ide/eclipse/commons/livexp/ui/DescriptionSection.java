@@ -28,9 +28,6 @@ import org.springsource.ide.eclipse.commons.livexp.core.LiveVariable;
 import org.springsource.ide.eclipse.commons.livexp.core.ValidationResult;
 import org.springsource.ide.eclipse.commons.livexp.core.Validator;
 import org.springsource.ide.eclipse.commons.livexp.core.ValueListener;
-import org.springsource.ide.eclipse.commons.livexp.ui.IPageWithSections;
-import org.springsource.ide.eclipse.commons.livexp.ui.UIConstants;
-import org.springsource.ide.eclipse.commons.livexp.ui.WizardPageSection;
 
 /**
  * Displays a short textual desciption.
@@ -91,7 +88,9 @@ public class DescriptionSection extends WizardPageSection {
 				public void modifyText(ModifyEvent e) {
 					//Cast should succeed because readOnly option can only be disabled
 					//if model is a variable.
-					((LiveVariable<String>)model).setValue(text.getText());
+				    if (model instanceof LiveVariable) {
+				        ((LiveVariable<String>)model).setValue(text.getText());
+				    }
 				}
 			});
 		}

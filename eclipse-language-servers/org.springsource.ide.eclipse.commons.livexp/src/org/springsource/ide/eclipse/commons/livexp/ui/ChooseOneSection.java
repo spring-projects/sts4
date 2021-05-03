@@ -29,6 +29,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.springsource.ide.eclipse.commons.livexp.core.LiveExpression;
 import org.springsource.ide.eclipse.commons.livexp.core.LiveVariable;
+import org.springsource.ide.eclipse.commons.livexp.core.UIValueListener;
 import org.springsource.ide.eclipse.commons.livexp.core.ValidationResult;
 import org.springsource.ide.eclipse.commons.livexp.core.ValueListener;
 
@@ -37,24 +38,32 @@ public class ChooseOneSection<T extends Ilabelable> extends WizardPageSection {
 	private static final boolean DEBUG = (""+Platform.getLocation()).contains("kdvolder");
 
 	private String labelText;
-	private Ilabelable[] validChoices;
+	private LiveExpression<T[]> validChoices;
 	private LiveVariable<T> chosen;
 	private LiveExpression<ValidationResult> validator;
 
 	private boolean vertical = false;
-
+	
+	private Integer heightHint = null;
+	
 	public ChooseOneSection(IPageWithSections owner,
 			String labelText,
 			T[] validChoices,
 			LiveVariable<T> chosen,
 			LiveExpression<ValidationResult> validator
 	) {
-		super(owner);
-		this.labelText = labelText;
-		this.validChoices = validChoices;
-		this.chosen = chosen;
-		this.validator = validator;
+	    this(owner, labelText, LiveExpression.constant(validChoices), chosen, validator);
 	}
+	
+    public ChooseOneSection(IPageWithSections owner, String labelText, LiveExpression<T[]> validChoices,
+            LiveVariable<T> chosen, LiveExpression<ValidationResult> validator) {
+        super(owner);
+        this.labelText = labelText;
+        this.validChoices = validChoices;
+        this.chosen = chosen;
+        this.validator = validator;
+
+    }
 
 	@Override
 	public LiveExpression<ValidationResult> getValidator() {
@@ -80,7 +89,10 @@ public class ChooseOneSection<T extends Ilabelable> extends WizardPageSection {
 		layout.numColumns = (labelText==null||vertical)?1:2;
 		layout.marginWidth = 0;
 		composite.setLayout(layout);
-		GridDataFactory grab = GridDataFactory.fillDefaults().grab(true, true);//.hint(SWT.DEFAULT, 150);
+		GridDataFactory grab = GridDataFactory.fillDefaults().grab(true, true);
+		if (heightHint != null) {
+		    grab = grab.hint(SWT.DEFAULT, heightHint);
+		}
 		grab.applyTo(composite);
 		composite.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
@@ -100,6 +112,11 @@ public class ChooseOneSection<T extends Ilabelable> extends WizardPageSection {
 		tv.setContentProvider(new ContentProvider());
 		tv.setLabelProvider(new SimpleLabelProvider());
 		tv.setInput(validChoices);
+		
+        validChoices.onChange(UIValueListener.from((e, v) -> {
+            tv.refresh(true);
+        }));
+
 		chosen.addListener(new ValueListener<T>() {
 			public void gotValue(LiveExpression<T> exp, T value) {
 				if (value==null) {
@@ -140,7 +157,8 @@ public class ChooseOneSection<T extends Ilabelable> extends WizardPageSection {
 		public void inputChanged(Viewer viewer, Object oldInput, Object newInput) {
 		}
 		public Object[] getElements(Object inputElement) {
-			return validChoices;
+			T[] value  = validChoices.getValue();
+            return value == null ? new Object[0] : value;
 		}
 	}
 
@@ -148,4 +166,9 @@ public class ChooseOneSection<T extends Ilabelable> extends WizardPageSection {
 		vertical = true;
 		return this;
 	}
+
+    public void setHeightHint(int heightHint) {
+        this.heightHint = heightHint;
+    }
+	
 }
