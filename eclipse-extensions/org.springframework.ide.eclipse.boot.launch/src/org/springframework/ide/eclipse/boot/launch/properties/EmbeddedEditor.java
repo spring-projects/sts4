@@ -21,8 +21,11 @@ import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.ListenerList;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jdt.ui.PreferenceConstants;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.jface.preference.PreferenceConverter;
+import org.eclipse.jface.resource.JFaceResources;
 import org.eclipse.jface.text.Document;
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.IRegion;
@@ -41,6 +44,9 @@ import org.eclipse.jface.text.source.SourceViewerConfiguration;
 import org.eclipse.jface.text.source.projection.ProjectionViewer;
 import org.eclipse.jface.viewers.ISelectionProvider;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StyledText;
+import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.FontData;
 import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
@@ -141,6 +147,8 @@ public class EmbeddedEditor implements ITextEditor {
 	private String context;
 
 	private DefaultMarkerAnnotationAccess fileMarkerAnnotationAccess;
+
+	private Font font;
 
 	public EmbeddedEditor(ViewerConfigurationFactory viewerConfigFactory, IPreferenceStore prefStore, boolean withHandlers, boolean withDecorations) {
 		this.viewerConfigFactory = viewerConfigFactory;
@@ -267,6 +275,9 @@ public class EmbeddedEditor implements ITextEditor {
 		IAnnotationModel annotationModel = provider.getAnnotationModel(editorInput);
 		viewer.setDocument(document, annotationModel);
 		viewer.setEditable(this.isEditable());
+		StyledText textWidget = viewer.getTextWidget();
+		Font font = JFaceResources.getTextFont();
+		textWidget.setFont(font);
 	}
 
 	private void updateDocumentProvider(IEditorInput editorInput) {
