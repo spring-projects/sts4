@@ -90,6 +90,25 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 	
 	////////////////////////////////////////////////////////////////////////////////////////
 
+	@Test public void test_GH_615_deprecated_spring_profiles() throws Exception {
+		IJavaProject p = createPredefinedMavenProject("empty-boot-2.4.4-app");
+		useProject(p);
+		Editor editor = newEditor(
+				"logging:\n" +
+				"  file: aaa\n" +
+				"spring:\n" + 
+				"  profiles: frodod,aaacc\n" + 
+				"  config:\n" + 
+				"    activate:\n" + 
+				"      on-profile:\n" + 
+				"      - frodood"
+		);
+		editor.assertProblems(
+				"file|Deprecated",
+				"profiles|Deprecated"
+		);
+	}
+	
 	
 	@Test public void test_GH_534() throws Exception {
 		//See: https://www.pivotaltracker.com/n/projects/1346850/stories/174872660

@@ -174,9 +174,16 @@ public class ApplicationYamlASTReconciler implements YamlASTReconciler {
 			if (match!=null && extension!=null) {
 				//This is an odd situation, the current prefix lands on a propery
 				//but there are also other properties that have it as a prefix.
-				//This ambiguity is hard to deal with and we choose not to do so for now
-				return;
-			} else if (match!=null) {
+				if (asScalar(entry.getValueNode())!=null) {
+					//Since the property value is a 'scalar' let's ignore the extension and just check the 'exact' match here (ignore 'extension').
+					extension = null;
+				} else {
+					//Seems like there is more stuff to be matched in sub node, so ignore exact match.
+					match = null;
+					return;
+				}
+			}
+			if (match!=null) {
 				Type type = TypeParser.parse(match.getType());
 				if (match.isDeprecated()) {
 					deprecatedProperty(root.getDocument().getUri(), match, keyNode, quickFixes.DEPRECATED_PROPERTY);
