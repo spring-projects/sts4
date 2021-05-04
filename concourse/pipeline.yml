@@ -4,6 +4,8 @@ resource_types:
   type: docker-image
   source:
     repository: kdvolder/s3-resource-simple
+    username: ((docker_hub_username))
+    password: ((docker_hub_password))
 - name: slack-notification
   type: docker-image
   source:
@@ -34,14 +36,14 @@ resources:
     private_key: ((rsa_id))
     paths:
     - concourse/docker
-- name: boot-dev-pack-git
-  type: git
-  source:
-    uri: git@github.com:spring-projects/sts4.git
-    branch: ((branch))
-    private_key: ((rsa_id))
-    paths:
-    - vscode-extensions/boot-dev-pack
+# - name: boot-dev-pack-git
+#   type: git
+#   source:
+#     uri: git@github.com:spring-projects/sts4.git
+#     branch: ((branch))
+#     private_key: ((rsa_id))
+#     paths:
+#     - vscode-extensions/boot-dev-pack
 - name: sts4
   type: git
   source:
@@ -290,18 +292,18 @@ resources:
     build_name: spring-tools-4
 ########################################################################################
 jobs:
-- name: boot-dev-pack-ovsx-publish
-  plan:
-  - in_parallel:
-    - get: boot-dev-pack-git
-      trigger: true
-    - get: tasks
-  - task: ovsx-build-and-publish
-    file: tasks/concourse/tasks/ovsx-build-and-publish.yml
-    input_mapping:
-      sts4: boot-dev-pack-git
-    params:
-      ovsx_token: ((ovsx_token))
+# - name: boot-dev-pack-ovsx-publish
+#   plan:
+#   - in_parallel:
+#     - get: boot-dev-pack-git
+#       trigger: true
+#     - get: tasks
+#   - task: ovsx-build-and-publish
+#     file: tasks/concourse/tasks/ovsx-build-and-publish.yml
+#     input_mapping:
+#       sts4: boot-dev-pack-git
+#     params:
+#       ovsx_token: ((ovsx_token))
 - name: vsix-s3-publish
   plan:
   - in_parallel:
@@ -708,24 +710,24 @@ jobs:
         text: |
           Build ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has succeed!
           Release candidate available for testing $TEXT_FILE_CONTENT
-- name: publish-ovsx-releases
-  serial: true
-  plan:
-  - in_parallel:
-    - get: tasks
-    - get: s3-concourse-vsix-snapshot
-      passed:
-      - publish-release
-    - get: s3-manifest-yaml-vsix-snapshot
-      passed:
-      - publish-release
-    - get: s3-bosh-vsix-snapshot
-      passed:
-      - publish-release
-    - get: s3-spring-boot-vsix-snapshot
-      trigger: true
-      passed:
-      - publish-release
+# - name: publish-ovsx-releases
+#   serial: true
+#   plan:
+#   - in_parallel:
+#     - get: tasks
+#     - get: s3-concourse-vsix-snapshot
+#       passed:
+#       - publish-release
+#     - get: s3-manifest-yaml-vsix-snapshot
+#       passed:
+#       - publish-release
+#     - get: s3-bosh-vsix-snapshot
+#       passed:
+#       - publish-release
+#     - get: s3-spring-boot-vsix-snapshot
+#       trigger: true
+#       passed:
+#       - publish-release
   - task: publish-ovsx-releases
     file: tasks/concourse/tasks/publish-ovsx-releases.yml
     input_mapping:
@@ -1032,8 +1034,6 @@ groups:
   - build-bosh-vsix-snapshot
   - build-spring-boot-vsix-snapshot
   - publish-concourse-vsix-release
-  - publish-ovsx-releases
-  - boot-dev-pack-ovsx-publish
   - create-rc-wiki-page
   - vsix-s3-publish
   - create-release-wiki-page
