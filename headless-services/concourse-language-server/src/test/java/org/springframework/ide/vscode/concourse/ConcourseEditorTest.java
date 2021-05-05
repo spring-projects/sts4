@@ -371,6 +371,8 @@ public class ConcourseEditorTest {
 				"in_parallel:\n" +
 				"      <*>"
 				, // ==============
+				"load_var: <*>"
+				, // ==============
 				"put: <*>"
 				, // ==============
 				"set_pipeline: <*>"
@@ -400,7 +402,7 @@ public class ConcourseEditorTest {
 				"    - <*>"
 		);
 	}
-
+	
 	@Test
 	public void primaryStepHovers() throws Exception {
 		Editor editor = harness.newEditor(
@@ -417,7 +419,9 @@ public class ConcourseEditorTest {
 				"  - try:\n" +
 				"      put: test-logs\n" +
 				"  - set_pipeline: configure-the-pipeline\n" +
-				"    file: my-repo/ci/pipeline.yml\n"
+				"    file: my-repo/ci/pipeline.yml\n" +
+				"  - load_var: some-var\n" +
+				"    file: /path/to/var-file\n"
 		);
 
 		editor.assertHoverContains("get", "Fetches a resource");
@@ -469,6 +473,50 @@ public class ConcourseEditorTest {
 		editor.assertHoverContains("file", "The path to the pipeline's configuration file.");
 		editor.assertHoverContains("var_files", "files that will be passed to the pipeline config in the same manner as the --load-vars-from flag");
 		editor.assertHoverContains("vars", "A map of template variables to pass to the pipeline config.");
+	}
+	
+	@Test
+	public void loadVarStepHovers() throws Exception {
+		Editor editor = harness.newEditor(
+			"jobs:\n" +
+			"- name: some-job\n" +
+			"  plan:\n" +
+			"  - get: my-repo\n" +
+			"  - load_var: some-var\n" +
+			"    file: path/to/varfile.json\n" +
+			"    format: json\n" +
+			"    reveal: true\n"
+		);
+
+		editor.assertHoverContains("load_var", "Load the value for a var at runtime");
+		editor.assertHoverContains("file", "file whose content shall be read");
+		editor.assertHoverContains("format", "The format of the file's content");
+		editor.assertHoverContains("reveal", "allow the var's content to be printed");			
+	}
+	
+	@Test
+	public void loadVarStepReconcile() throws Exception {
+		Editor editor = harness.newEditor(
+			"jobs:\n" +
+			"- name: some-job\n" +
+			"  plan:\n" +
+			"  - load_var: some-var\n"
+		);
+		editor.assertProblems("-^ load_var|'file' is required");
+		
+		editor = harness.newEditor(
+			"jobs:\n" +
+			"- name: some-job\n" +
+			"  plan:\n" +
+			"  - load_var: some-var\n" +
+			"    file: path/to/varfile.json\n" +
+			"    format: a-format\n" +
+			"    reveal: show-it\n"
+		);
+		editor.assertProblems(
+				"a-format|Valid values are: [json, raw, trim, yaml, yml]",
+				"show-it|boolean"
+		);
 	}
 
 	@Test
@@ -4283,6 +4331,7 @@ public class ConcourseEditorTest {
 				"- do",
 				"- get",
 				"- in_parallel",
+				"- load_var\n" + 
 				"- put",
 				"- set_pipeline",
 				"- task",

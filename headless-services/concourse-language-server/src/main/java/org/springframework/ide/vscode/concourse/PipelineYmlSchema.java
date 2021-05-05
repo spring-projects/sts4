@@ -367,9 +367,15 @@ public class PipelineYmlSchema implements YamlSchema {
 
 		YBeanType setPipelineStep = f.ybean("SetPipelineStep");
 		addProp(setPipelineStep, "set_pipeline", t_ne_string);
-		addProp(setPipelineStep, "file", t_string).isRequired(true);
+		addProp(setPipelineStep, "file", t_ne_string).isRequired(true);
 		addProp(setPipelineStep, "vars", t_params);
 		addProp(setPipelineStep, "var_files", t_strings);
+
+		YBeanType loadVarStep = f.ybean("LoadVarStep");
+		addProp(loadVarStep, "load_var", t_ne_string); //TODO: t_identifier: see https://concourse-ci.org/config-basics.html#schema.identifier
+		addProp(loadVarStep, "file", t_ne_string).isRequired(true);
+		addProp(loadVarStep, "format", f.yenum("LoadVarFormat", "json", "yaml", "yml", "trim", "raw"));
+		addProp(loadVarStep, "reveal", t_boolean);
 
 		YBeanType aggregateStep = f.ybean("AggregateStep");
 		YBeanType doStep = f.ybean("DoStep");
@@ -381,11 +387,13 @@ public class PipelineYmlSchema implements YamlSchema {
 				putStep,
 				taskStep,
 				setPipelineStep,
+				loadVarStep,
 				aggregateStep,
 				inParallelStep,
 				doStep,
 				tryStep
 		};
+		
 		
 
 		YBeanUnionType step = f.yBeanUnion("Step", stepTypes);

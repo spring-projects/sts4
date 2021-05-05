@@ -1,0 +1,1 @@
+*Required*. The path to a file whose content shall be read and used as the var's value.
