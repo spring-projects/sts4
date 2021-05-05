@@ -38,7 +38,7 @@ export function activate(context: VSCode.ExtensionContext): Thenable<LanguageCli
         },
         explodedLsJarData: {
             lsLocation: 'language-server',
-            mainClass: 'org.springframework.ide.vscode.boot.app.BootLanguagServerBootApp',
+            mainClass: 'org.springframework.ide.vscode.boot.app.BootLanguageServerBootApp',
             configFileName: 'application.properties'
         },
         workspaceOptions: VSCode.workspace.getConfiguration("spring-boot.ls"),
