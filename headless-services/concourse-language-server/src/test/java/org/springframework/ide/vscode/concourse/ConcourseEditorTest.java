@@ -1906,6 +1906,7 @@ public class ConcourseEditorTest {
 				"- name: s3-multi\n" +
 				"  type: docker-image\n" +
 				"  check_every: bad-duration\n" + 
+				"  old_name: was-renamed\n" +
 				"  privileged: is-priviliged\n" +
 				"  tags: tags-list\n" +
 				"  unique_version_history: is-unique-hist\n" +
@@ -1928,6 +1929,7 @@ public class ConcourseEditorTest {
 				"resources:\n" +
 				"- name: sts4\n" +
 				"  type: git\n" +
+				"  old_name: was-renamed\n" +
 				"  icon: foo\n" + 
 				"  check_every: 5m\n" +
 				"  webhook_token: bladayadayaaa\n" +
@@ -1937,6 +1939,7 @@ public class ConcourseEditorTest {
 
 		editor.assertHoverContains("name", "The name of the resource");
 		editor.assertHoverContains("type", "The type of the resource. Each worker advertises");
+		editor.assertHoverContains("old_name", "history of the old resource will be inherited");
 		editor.assertHoverContains("icon", "name of a [Material Design Icon]");
 		editor.assertHoverContains("source", 2, "The location of the resource");
 		editor.assertHoverContains("webhook_token", "web hooks can be sent to trigger an immediate *check* of the resource");
@@ -4024,6 +4027,7 @@ public class ConcourseEditorTest {
 				//For the 'exact' context:
 				"check_every",
 				"icon",
+				"old_name",
 				"tags",
 				"webhook_token",
 				//"name", exists
