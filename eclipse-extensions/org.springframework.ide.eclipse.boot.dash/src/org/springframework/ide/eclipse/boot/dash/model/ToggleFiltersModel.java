@@ -14,17 +14,25 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.eclipse.core.resources.IProject;
-import org.springframework.ide.eclipse.boot.util.Log;
-import org.springsource.ide.eclipse.commons.livexp.core.AsyncLiveExpression.AsyncMode;
+import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.IType;
+import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.core.search.IJavaSearchScope;
+import org.eclipse.jdt.core.search.SearchEngine;
+import org.eclipse.jdt.internal.debug.ui.launcher.MainMethodSearchEngine;
 import org.springsource.ide.eclipse.commons.core.pstore.IPropertyStore;
 import org.springsource.ide.eclipse.commons.core.pstore.PropertyStoreApi;
 import org.springsource.ide.eclipse.commons.core.pstore.PropertyStores;
+import org.springsource.ide.eclipse.commons.livexp.core.AsyncLiveExpression.AsyncMode;
 import org.springsource.ide.eclipse.commons.livexp.core.LiveExpression;
 import org.springsource.ide.eclipse.commons.livexp.core.LiveSetVariable;
 import org.springsource.ide.eclipse.commons.livexp.core.ValueListener;
 import org.springsource.ide.eclipse.commons.livexp.ui.Ilabelable;
 import org.springsource.ide.eclipse.commons.livexp.util.Filter;
 import org.springsource.ide.eclipse.commons.livexp.util.Filters;
+import org.springsource.ide.eclipse.commons.livexp.util.Log;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -35,6 +43,7 @@ import com.google.common.collect.ImmutableSet;
  *
  * @author Kris De Volder
  */
+@SuppressWarnings("restriction")
 public class ToggleFiltersModel {
 
 	private static final Filter<BootDashElement> HIDE_SOLITARY_CONFS = new Filter<BootDashElement>() {
@@ -64,18 +73,50 @@ public class ToggleFiltersModel {
 		}
 	};
 
+	private static final Filter<BootDashElement> HIDE_LOCAL_NOT_RUNNABLE_APPS = new Filter<BootDashElement>() {
+		@Override
+		public boolean accept(BootDashElement t) {
+			if (t instanceof BootProjectDashElement) {
+				if (!t.getCurrentChildren().isEmpty()) {
+					return true;
+				}
+				IProject p = t.getProject();
+				if (p != null && p.exists()) {
+					IJavaProject jp = JavaCore.create(p);
+					if (jp != null) {
+						IJavaSearchScope searchScope = SearchEngine.createJavaSearchScope(new IJavaElement[]{jp}, IJavaSearchScope.SOURCES);
+						MainMethodSearchEngine engine = new MainMethodSearchEngine();
+						IType[] types = null;
+						try {
+							types = engine.searchMainMethods(new NullProgressMonitor(), searchScope, false);
+							return types != null && types.length > 0;
+						}
+						catch (Exception e) {
+							Log.log(e);
+						}
+					}
+				}
+				return false;
+			}
+			return true;
+		}
+	};
+
 	public static final FilterChoice FILTER_CHOICE_HIDE_NON_WORKSPACE_ELEMENTS = new FilterChoice("hide.non-workspace",
 			"Hide non-workspace elements", HIDE_NON_WORKSPACE_ELEMENTS);
 	public static final FilterChoice FILTER_CHOICE_HIDE_SOLITARY_CONFS = new FilterChoice("hide.solitary-launch-config",
 			"Hide solitary launch configs", HIDE_SOLITARY_CONFS, true);
 	public static final FilterChoice FILTER_CHOICE_HIDE_LOCAL_SERVICES = new FilterChoice("hide.local-cloud-services",
 			"Hide local cloud services", HIDE_LOCAL_SERVICES, true);
+	public static final FilterChoice FILTER_CHOICE_HIDE_NOT_RUNNABLE_APPS = new FilterChoice("hide.not-runnable-apps",
+			"Hide local non-runnable apps", HIDE_LOCAL_NOT_RUNNABLE_APPS, true);
 
 	private static final String STORE_ID = "toggle-filters";
 	private static final FilterChoice[] FILTERS = {
 			FILTER_CHOICE_HIDE_NON_WORKSPACE_ELEMENTS,
 			FILTER_CHOICE_HIDE_SOLITARY_CONFS,
-			FILTER_CHOICE_HIDE_LOCAL_SERVICES
+			FILTER_CHOICE_HIDE_LOCAL_SERVICES,
+			FILTER_CHOICE_HIDE_NOT_RUNNABLE_APPS
 	};
 
 	private final PropertyStoreApi persistentProperties;
