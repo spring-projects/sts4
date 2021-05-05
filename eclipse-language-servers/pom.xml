@@ -531,16 +531,6 @@
 								<arch>x86_64</arch>
 							</environment>
 						</environments>
-						<filters>
-							<filter>
-								<type>java-package</type>
-								<id>javax.servlet</id>
-								<restrictTo>
-									<type>eclipse-plugin</type>
-									<id>javax.servlet</id>
-								</restrictTo>
-							</filter>
-						</filters>
 					</configuration>
 				</plugin>
 				<plugin>

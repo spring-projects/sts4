@@ -96,7 +96,7 @@
 
 		<sts4-language-servers-p2-repo>https://dist.springsource.com/${dist.type}/TOOLS/sts4-language-server-integrations/${sts4-language-servers-version}</sts4-language-servers-p2-repo>
 		
-		<tycho-version>1.7.0</tycho-version>
+		<tycho-version>2.3.0</tycho-version>
 		<encoding>UTF-8</encoding>
 
 		<misc.p2.repo.version>3.9.4.202003091750</misc.p2.repo.version>
@@ -849,16 +849,6 @@
 								<arch>x86_64</arch>
 							</environment>
 						</environments>
-						<filters>
-							<filter>
-								<type>java-package</type>
-								<id>javax.servlet</id>
-								<restrictTo>
-									<type>eclipse-plugin</type>
-									<id>javax.servlet</id>
-								</restrictTo>
-							</filter>
-						</filters>
 					</configuration>
 				</plugin>
 				<plugin>
