@@ -14,6 +14,7 @@ import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.swt.SWT;
+import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
 import org.eclipse.swt.graphics.FontMetrics;
@@ -22,12 +23,11 @@ import org.eclipse.swt.layout.GridData;
 import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
-import org.eclipse.swt.widgets.Text;
 import org.springsource.ide.eclipse.commons.livexp.core.LiveExpression;
 import org.springsource.ide.eclipse.commons.livexp.core.LiveVariable;
+import org.springsource.ide.eclipse.commons.livexp.core.UIValueListener;
 import org.springsource.ide.eclipse.commons.livexp.core.ValidationResult;
 import org.springsource.ide.eclipse.commons.livexp.core.Validator;
-import org.springsource.ide.eclipse.commons.livexp.core.ValueListener;
 
 /**
  * Displays a short textual desciption.
@@ -80,7 +80,7 @@ public class DescriptionSection extends WizardPageSection {
 		if (isReadOnly) {
 			swtStyle |= SWT.READ_ONLY;
 		}
-		final Text text = new Text(composite, swtStyle);
+		final StyledText text = new StyledText(composite, swtStyle);
 		configureTextWidget(text);
 		if (!isReadOnly) {
 			text.addModifyListener(new ModifyListener() {
@@ -115,8 +115,8 @@ public class DescriptionSection extends WizardPageSection {
 
 //		GridDataFactory.fillDefaults().align(SWT.BEGINNING, SWT.BEGINNING).applyTo(fieldNameLabel);
 
-		this.model.addListener(new ValueListener<String>() {
-			public void gotValue(LiveExpression<String> exp, String value) {
+		this.model.addListener(new UIValueListener<String>() {
+			public void uiGotValue(LiveExpression<String> exp, String value) {
 				if (!text.isDisposed()) {
 					String oldText = text.getText();
 					if (!oldText.equals(value)) {
@@ -129,7 +129,7 @@ public class DescriptionSection extends WizardPageSection {
 		});
 	}
 
-	protected void configureTextWidget(Text text) {
+	protected void configureTextWidget(StyledText text) {
 	}
 
 	protected int preferredNumberOfLines() {

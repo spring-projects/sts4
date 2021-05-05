@@ -117,8 +117,8 @@ public class ChooseOneSection<T extends Ilabelable> extends WizardPageSection {
             tv.refresh(true);
         }));
 
-		chosen.addListener(new ValueListener<T>() {
-			public void gotValue(LiveExpression<T> exp, T value) {
+		chosen.addListener(new UIValueListener<T>() {
+			public void uiGotValue(LiveExpression<T> exp, T value) {
 				if (value==null) {
 					tv.setSelection(StructuredSelection.EMPTY);
 				} else {

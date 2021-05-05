@@ -19,6 +19,8 @@ import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.springsource.ide.eclipse.commons.livexp.Activator;
+import org.springsource.ide.eclipse.commons.livexp.core.LiveExpression;
+import org.springsource.ide.eclipse.commons.livexp.ui.util.SwtConnect;
 
 /**
  * A section containing a single clickable button.
@@ -30,6 +32,7 @@ public class ButtonSection extends WizardPageSection {
 	private String label;
 	private String tooltip;
 	private Callable<Void> clickHandler;
+    private LiveExpression<Boolean> enabler = LiveExpression.constant(true);
 
 	public ButtonSection(IPageWithSections owner, String label, Runnable clickHandler) {
 		this(owner, label, () -> {
@@ -67,6 +70,8 @@ public class ButtonSection extends WizardPageSection {
 				widgetSelected(arg0);
 			}
 		});
+		
+		SwtConnect.connectEnablement(button, enabler);
 	}
 	
 	public ButtonSection tooltip(String tooltip) {
@@ -82,4 +87,8 @@ public class ButtonSection extends WizardPageSection {
 		GridDataFactory.fillDefaults().align(SWT.END, SWT.CENTER).applyTo(button);
 	}
 
+	public ButtonSection setEnabler(LiveExpression<Boolean> enabler) {
+	    this.enabler = enabler;
+	    return this;
+	}
 }

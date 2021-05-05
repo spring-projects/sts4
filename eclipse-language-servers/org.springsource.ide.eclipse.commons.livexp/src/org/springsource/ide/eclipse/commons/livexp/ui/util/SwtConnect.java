@@ -28,6 +28,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
 import org.eclipse.swt.widgets.Button;
+import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Label;
 import org.eclipse.swt.widgets.Text;
 import org.springsource.ide.eclipse.commons.livexp.core.HighlightedText;
@@ -78,6 +79,18 @@ public class SwtConnect {
 			text.addDisposeListener(de -> disconnect.dispose());
 			model.onDispose(de -> text.removeModifyListener(widgetListener));
 		}
+	}
+	
+	public static void connectEnablement(Control control, LiveExpression<Boolean> enabler) {
+        if (!control.isDisposed()) {
+            control.setEnabled(enabler.getValue());
+            control.addDisposeListener(de -> enabler.dispose());
+            Disposable disconnect = enabler.onChange(UIValueListener.from((e,v) -> {
+                control.setEnabled(e.getValue());
+                System.out.println("Apply enablement changed: " + e.getValue());
+            }));
+            control.addDisposeListener(de -> disconnect.dispose());
+        }
 	}
 	
 	public static void connect(Text text, LiveVariable<String> model) {
