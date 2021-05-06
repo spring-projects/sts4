@@ -11,8 +11,16 @@
 package org.springframework.ide.eclipse.boot.dash.model;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
+import org.eclipse.jdt.core.IJavaElement;
+import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.IType;
+import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.core.search.IJavaSearchScope;
+import org.eclipse.jdt.core.search.SearchEngine;
+import org.eclipse.jdt.internal.debug.ui.launcher.MainMethodSearchEngine;
 import org.eclipse.swt.graphics.Image;
 import org.springframework.ide.eclipse.boot.dash.BootDashActivator;
 import org.springframework.ide.eclipse.boot.dash.liveprocess.LiveDataCapableElement;
@@ -21,16 +29,17 @@ import org.springframework.ide.eclipse.boot.dash.model.BootDashModel.ElementStat
 import org.springframework.ide.eclipse.boot.dash.util.CollectionUtils;
 import org.springframework.ide.eclipse.boot.dash.util.DebugUtil;
 import org.springframework.ide.eclipse.boot.launch.util.BootLaunchUtils;
-import org.springframework.ide.eclipse.boot.util.Log;
 import org.springsource.ide.eclipse.commons.core.pstore.IPropertyStore;
 import org.springsource.ide.eclipse.commons.core.pstore.IScopedPropertyStore;
 import org.springsource.ide.eclipse.commons.core.pstore.PropertyStores;
+import org.springsource.ide.eclipse.commons.livexp.core.AsyncLiveExpression;
 import org.springsource.ide.eclipse.commons.livexp.core.DisposeListener;
 import org.springsource.ide.eclipse.commons.livexp.core.LiveExpression;
 import org.springsource.ide.eclipse.commons.livexp.core.LiveSets;
 import org.springsource.ide.eclipse.commons.livexp.core.ObservableSet;
 import org.springsource.ide.eclipse.commons.livexp.core.ValueListener;
 import org.springsource.ide.eclipse.commons.livexp.ui.Disposable;
+import org.springsource.ide.eclipse.commons.livexp.util.Log;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableSet;
@@ -41,6 +50,7 @@ import com.google.common.collect.ImmutableSortedSet;
  *
  * @author Kris De Volder
  */
+@SuppressWarnings("restriction")
 public class BootProjectDashElement extends AbstractLaunchConfigurationsDashElement<IProject> implements BootDashElement, LiveDataCapableElement {
 
 	private static final boolean DEBUG = DebugUtil.isDevelopment();
@@ -57,11 +67,41 @@ public class BootProjectDashElement extends AbstractLaunchConfigurationsDashElem
 	private ObservableSet<BootDashElement> children;
 	private ObservableSet<Integer> ports;
 
+	private LiveExpression<Boolean> hasMainMethod = new AsyncLiveExpression<Boolean>(false) {
+
+		@Override
+		protected Boolean compute() {
+			IProject p = getProject();
+			Log.info("Has main method computation for project '" + p.getName() + "'");
+			if (p != null && p.exists()) {
+				IJavaProject jp = JavaCore.create(p);
+				if (jp != null) {
+					IJavaSearchScope searchScope = SearchEngine.createJavaSearchScope(new IJavaElement[]{jp}, IJavaSearchScope.SOURCES);
+					MainMethodSearchEngine engine = new MainMethodSearchEngine();
+					IType[] types = null;
+					try {
+						types = engine.searchMainMethods(new NullProgressMonitor(), searchScope, false);
+						return types != null && types.length > 0;
+					}
+					catch (Exception e) {
+						Log.log(e);
+					}
+				}
+			}
+			return false;
+		}
+
+	};
+
 	public BootProjectDashElement(IProject project, LocalBootDashModel context, IScopedPropertyStore<IProject> projectProperties,
 			BootProjectDashElementFactory factory, LaunchConfDashElementFactory childFactory) {
 		super(context, project);
 		this.projectProperties = projectProperties;
 		this.childFactory = childFactory;
+
+		hasMainMethod.refresh();
+		addElementState(hasMainMethod);
+		addDisposableChild(hasMainMethod);
 //		if (DEBUG) {
 //			onDispose((e) -> {
 //				debug("disposed: "+this);
@@ -69,6 +109,9 @@ public class BootProjectDashElement extends AbstractLaunchConfigurationsDashElem
 //		}
 	}
 
+	public boolean hasMainMethod() {
+		return hasMainMethod.getValue();
+	}
 
 	@Override
 	public IProject getProject() {
@@ -219,5 +262,9 @@ public class BootProjectDashElement extends AbstractLaunchConfigurationsDashElem
 	@Override
 	public Image getPropertiesTitleIconImage() {
 		return BootDashActivator.getDefault().getImageRegistry().get(BootDashActivator.BOOT_ICON);
+	}
+
+	public void refreshHasMainMethod() {
+		hasMainMethod.refresh();
 	}
 }

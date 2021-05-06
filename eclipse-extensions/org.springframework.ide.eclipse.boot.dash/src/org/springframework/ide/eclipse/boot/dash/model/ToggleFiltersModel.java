@@ -14,14 +14,6 @@ import java.util.HashSet;
 import java.util.Set;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.jdt.core.IJavaElement;
-import org.eclipse.jdt.core.IJavaProject;
-import org.eclipse.jdt.core.IType;
-import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jdt.core.search.IJavaSearchScope;
-import org.eclipse.jdt.core.search.SearchEngine;
-import org.eclipse.jdt.internal.debug.ui.launcher.MainMethodSearchEngine;
 import org.springsource.ide.eclipse.commons.core.pstore.IPropertyStore;
 import org.springsource.ide.eclipse.commons.core.pstore.PropertyStoreApi;
 import org.springsource.ide.eclipse.commons.core.pstore.PropertyStores;
@@ -43,7 +35,6 @@ import com.google.common.collect.ImmutableSet;
  *
  * @author Kris De Volder
  */
-@SuppressWarnings("restriction")
 public class ToggleFiltersModel {
 
 	private static final Filter<BootDashElement> HIDE_SOLITARY_CONFS = new Filter<BootDashElement>() {
@@ -80,23 +71,7 @@ public class ToggleFiltersModel {
 				if (!t.getCurrentChildren().isEmpty()) {
 					return true;
 				}
-				IProject p = t.getProject();
-				if (p != null && p.exists()) {
-					IJavaProject jp = JavaCore.create(p);
-					if (jp != null) {
-						IJavaSearchScope searchScope = SearchEngine.createJavaSearchScope(new IJavaElement[]{jp}, IJavaSearchScope.SOURCES);
-						MainMethodSearchEngine engine = new MainMethodSearchEngine();
-						IType[] types = null;
-						try {
-							types = engine.searchMainMethods(new NullProgressMonitor(), searchScope, false);
-							return types != null && types.length > 0;
-						}
-						catch (Exception e) {
-							Log.log(e);
-						}
-					}
-				}
-				return false;
+				return ((BootProjectDashElement)t).hasMainMethod();
 			}
 			return true;
 		}

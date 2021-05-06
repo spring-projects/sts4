@@ -229,6 +229,7 @@ public class LocalBootDashModel extends AbstractBootDashModel implements Deletio
 					.map(projectElementFactory::createOrGet)
 					.filter(Objects::nonNull)
 					.collect(Collectors.toSet());
+			newElements.stream().forEach(e -> e.refreshHasMainMethod());
 			apps.replaceAll(newElements);
 			projectElementFactory.disposeAllExcept(newElements);
 		}
