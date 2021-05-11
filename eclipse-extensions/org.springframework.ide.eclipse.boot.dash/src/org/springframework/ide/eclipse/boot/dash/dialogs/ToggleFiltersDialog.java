@@ -15,10 +15,11 @@ import java.util.List;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.swt.widgets.Shell;
-import org.springframework.ide.eclipse.boot.dash.model.ToggleFiltersModel.FilterChoice;
 import org.springsource.ide.eclipse.commons.livexp.core.Validator;
 import org.springsource.ide.eclipse.commons.livexp.ui.ChooseMultipleSection;
+import org.springsource.ide.eclipse.commons.livexp.ui.DescriptionSection;
 import org.springsource.ide.eclipse.commons.livexp.ui.DialogWithSections;
+import org.springsource.ide.eclipse.commons.livexp.ui.StringFieldSection;
 import org.springsource.ide.eclipse.commons.livexp.ui.WizardPageSection;
 
 public class ToggleFiltersDialog extends DialogWithSections {
@@ -38,13 +39,16 @@ public class ToggleFiltersDialog extends DialogWithSections {
 
 	@Override
 	protected List<WizardPageSection> createSections() throws CoreException {
-		ChooseMultipleSection<FilterChoice> chooseFilters =
-				new ChooseMultipleSection<FilterChoice>(this,
+		return Arrays.asList(
+				new StringFieldSection(this, "Regex to match names of the elements to be shown", model.getRegExFilterLiveVar(), Validator.OK).vertical(true),
+				new ChooseMultipleSection<>(this,
 						"Filters",
 						model.getAvailableFilters(),
 						model.getSelectedFilters(),
-						Validator.OK);
-		return Arrays.asList((WizardPageSection)chooseFilters);
+						Validator.OK,
+						model.getSelectedLiveVar()).vertical(true),
+				new DescriptionSection(this, model.getToggleFilterDescription())
+		);
 	}
 
 }

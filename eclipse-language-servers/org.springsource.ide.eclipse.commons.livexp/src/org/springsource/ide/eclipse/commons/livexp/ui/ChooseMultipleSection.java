@@ -19,6 +19,7 @@ import org.eclipse.jface.viewers.ICheckStateListener;
 import org.eclipse.jface.viewers.ILabelProvider;
 import org.eclipse.jface.viewers.ILabelProviderListener;
 import org.eclipse.jface.viewers.IStructuredContentProvider;
+import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Image;
@@ -28,6 +29,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Label;
 import org.springsource.ide.eclipse.commons.livexp.core.LiveExpression;
 import org.springsource.ide.eclipse.commons.livexp.core.LiveSet;
+import org.springsource.ide.eclipse.commons.livexp.core.LiveVariable;
 import org.springsource.ide.eclipse.commons.livexp.core.ValidationResult;
 import org.springsource.ide.eclipse.commons.livexp.core.ValueListener;
 
@@ -39,30 +41,49 @@ public class ChooseMultipleSection<T extends Ilabelable> extends WizardPageSecti
 	private Ilabelable[] validChoices;
 	private LiveSet<T> chosen;
 	private LiveExpression<ValidationResult> validator;
+	private LiveVariable<T> selected;
+	private boolean vertical;
 
 	public ChooseMultipleSection(IPageWithSections owner,
 			String labelText,
 			T[] validChoices,
 			LiveSet<T> chosen,
-			LiveExpression<ValidationResult> validator
+			LiveExpression<ValidationResult> validator,
+			LiveVariable<T> selected
 	) {
 		super(owner);
 		this.labelText = labelText;
 		this.validChoices = validChoices;
 		this.chosen = chosen;
 		this.validator = validator;
+		this.selected = selected;
+	}
+	
+	public ChooseMultipleSection(IPageWithSections owner,
+			String labelText,
+			T[] validChoices,
+			LiveSet<T> chosen,
+			LiveExpression<ValidationResult> validator
+	) {
+		this(owner, labelText, validChoices, chosen, validator, null);
 	}
 
 	@Override
 	public LiveExpression<ValidationResult> getValidator() {
 		return validator;
 	}
+	
+	public  ChooseMultipleSection<T> vertical(boolean vertical) {
+		this.vertical = vertical;
+		return this;
+	}
 
+	@SuppressWarnings("unchecked")
 	@Override
 	public void createContents(Composite page) {
         Composite composite = new Composite(page, SWT.NONE);
         GridLayout layout = new GridLayout();
-        layout.numColumns = 2;
+        layout.numColumns = vertical ? 1 : 2;
         layout.marginWidth = 0;
         composite.setLayout(layout);
         GridDataFactory grab = GridDataFactory.fillDefaults().grab(true, true).hint(SWT.DEFAULT, UIConstants.SCROLLABLE_LIST_HEIGTH);
@@ -72,8 +93,8 @@ public class ChooseMultipleSection<T extends Ilabelable> extends WizardPageSecti
 		Label label = new Label(composite, SWT.NONE);
 		label.setText(labelText);
 		GridDataFactory.fillDefaults()
-			.align(SWT.CENTER, SWT.BEGINNING)
-			.hint(UIConstants.fieldLabelWidthHint(label), SWT.DEFAULT)
+			.align(SWT.BEGINNING, SWT.BEGINNING)
+			.hint(vertical ? SWT.DEFAULT : UIConstants.fieldLabelWidthHint(label), SWT.DEFAULT)
 			.applyTo(label);
 
 		CheckboxTableViewer tv = CheckboxTableViewer.newCheckList(composite, SWT.BORDER);
@@ -95,6 +116,17 @@ public class ChooseMultipleSection<T extends Ilabelable> extends WizardPageSecti
 				}
 			}
 		});
+		
+		if (selected != null) {
+			tv.addSelectionChangedListener(event -> {
+				IStructuredSelection structuredSelection = event.getStructuredSelection();
+				if (structuredSelection.isEmpty()) {
+					selected.setValue(null);
+				} else {
+					selected.setValue((T)structuredSelection.getFirstElement());
+				}
+			});
+		}
 
 		if (DEBUG) {
 			chosen.addListener(new ValueListener<Set<T>>() {

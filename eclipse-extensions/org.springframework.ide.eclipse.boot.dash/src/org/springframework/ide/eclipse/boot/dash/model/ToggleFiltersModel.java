@@ -17,9 +17,11 @@ import org.eclipse.core.resources.IProject;
 import org.springsource.ide.eclipse.commons.core.pstore.IPropertyStore;
 import org.springsource.ide.eclipse.commons.core.pstore.PropertyStoreApi;
 import org.springsource.ide.eclipse.commons.core.pstore.PropertyStores;
+import org.springsource.ide.eclipse.commons.frameworks.core.util.StringUtils;
 import org.springsource.ide.eclipse.commons.livexp.core.AsyncLiveExpression.AsyncMode;
 import org.springsource.ide.eclipse.commons.livexp.core.LiveExpression;
 import org.springsource.ide.eclipse.commons.livexp.core.LiveSetVariable;
+import org.springsource.ide.eclipse.commons.livexp.core.LiveVariable;
 import org.springsource.ide.eclipse.commons.livexp.core.ValueListener;
 import org.springsource.ide.eclipse.commons.livexp.ui.Ilabelable;
 import org.springsource.ide.eclipse.commons.livexp.util.Filter;
@@ -77,14 +79,45 @@ public class ToggleFiltersModel {
 		}
 	};
 
-	public static final FilterChoice FILTER_CHOICE_HIDE_NON_WORKSPACE_ELEMENTS = new FilterChoice("hide.non-workspace",
-			"Hide non-workspace elements", HIDE_NON_WORKSPACE_ELEMENTS);
-	public static final FilterChoice FILTER_CHOICE_HIDE_SOLITARY_CONFS = new FilterChoice("hide.solitary-launch-config",
-			"Hide solitary launch configs", HIDE_SOLITARY_CONFS, true);
-	public static final FilterChoice FILTER_CHOICE_HIDE_LOCAL_SERVICES = new FilterChoice("hide.local-cloud-services",
-			"Hide local cloud services", HIDE_LOCAL_SERVICES, true);
-	public static final FilterChoice FILTER_CHOICE_HIDE_NOT_RUNNABLE_APPS = new FilterChoice("hide.not-runnable-apps",
-			"Hide local non-runnable apps", HIDE_LOCAL_NOT_RUNNABLE_APPS, true);
+	private final Filter<BootDashElement> REGEX_FILTER = new Filter<BootDashElement>() {
+
+		@Override
+		public boolean accept(BootDashElement t) {
+			String regex = regexFilter.getValue();
+			if (t.getName() != null && StringUtils.hasText(regex)) {
+				return t.getName().matches(regex);
+			}
+			return true;
+		}
+
+	};
+
+	public static final FilterChoice FILTER_CHOICE_HIDE_NON_WORKSPACE_ELEMENTS = new FilterChoice(
+			"hide.non-workspace",
+			"Hide non-workspace elements",
+			"Elements not backed by a project in the workspaces will be not shown. For example elements fetched from Cloud Foundry instance.",
+			HIDE_NON_WORKSPACE_ELEMENTS);
+
+	public static final FilterChoice FILTER_CHOICE_HIDE_SOLITARY_CONFS = new FilterChoice(
+			"hide.solitary-launch-config",
+			"Hide solitary launch configs",
+			"Launch configurations will not be shown if it the one and only configuration that exist for a Boot project or any other Boot Dashboard top level element",
+			HIDE_SOLITARY_CONFS,
+			true);
+
+	public static final FilterChoice FILTER_CHOICE_HIDE_LOCAL_SERVICES = new FilterChoice(
+			"hide.local-cloud-services",
+			"Hide local cloud services",
+			"Local Spring Cloud Service coming from Spring Cloud CLI instance pointed to from STS preferences will not be shown",
+			HIDE_LOCAL_SERVICES,
+			true);
+
+	public static final FilterChoice FILTER_CHOICE_HIDE_NOT_RUNNABLE_APPS = new FilterChoice(
+			"hide.not-runnable-apps",
+			"Hide local non-runnable apps",
+			"Spring Boot projects that cannot be laucnhed such as Spring Boot library projects not having a main method will not be shown",
+			HIDE_LOCAL_NOT_RUNNABLE_APPS,
+			true);
 
 	private static final String STORE_ID = "toggle-filters";
 	private static final FilterChoice[] FILTERS = {
@@ -93,6 +126,8 @@ public class ToggleFiltersModel {
 			FILTER_CHOICE_HIDE_LOCAL_SERVICES,
 			FILTER_CHOICE_HIDE_NOT_RUNNABLE_APPS
 	};
+
+	private static final String REGEX_FILTER_ID = "regexFilter";
 
 	private final PropertyStoreApi persistentProperties;
 
@@ -103,13 +138,15 @@ public class ToggleFiltersModel {
 	public ToggleFiltersModel(IPropertyStore propertyStore) {
 		this.persistentProperties = new PropertyStoreApi(propertyStore);
 		this.selectedFilters = new LiveSetVariable<>(restoreFilters(), AsyncMode.SYNC);
+		this.regexFilter = new LiveVariable<>(persistentProperties.get(REGEX_FILTER_ID));
 		this.compositeFilter = new LiveExpression<Filter<BootDashElement>>() {
 			{
 				dependsOn(selectedFilters);
+				dependsOn(regexFilter);
 			}
 			@Override
 			protected Filter<BootDashElement> compute() {
-				Filter<BootDashElement> composed = Filters.acceptAll();
+				Filter<BootDashElement> composed = REGEX_FILTER;
 				for (FilterChoice chosen : selectedFilters.getValues()) {
 					composed = Filters.compose(composed, chosen.getFilter());
 				}
@@ -122,21 +159,36 @@ public class ToggleFiltersModel {
 				saveFilters(value);
 			}
 		});
+
+		regexFilter.addListener((expr, v) -> {
+			try {
+				String value = expr.getValue();
+				if (StringUtils.hasText(value)) {
+					persistentProperties.put(REGEX_FILTER_ID, value);
+				} else {
+					persistentProperties.put(REGEX_FILTER_ID, (String) null);
+				}
+			} catch (Exception e) {
+				Log.log(e);
+			}
+		});
 	}
 
 	public static class FilterChoice implements Ilabelable {
 		private final String id;
 		private final String label;
+		private final String description;
 		private final Filter<BootDashElement> filter;
 		private final boolean defaultEnable;
 
-		public FilterChoice(String id, String label, Filter<BootDashElement> filter) {
-			this(id, label, filter, false);
+		public FilterChoice(String id, String label, String description, Filter<BootDashElement> filter) {
+			this(id, label, description, filter, false);
 		}
 
-		public FilterChoice(String id, String label, Filter<BootDashElement> filter, boolean defaultEnable) {
+		public FilterChoice(String id, String label, String description, Filter<BootDashElement> filter, boolean defaultEnable) {
 			this.id = id;
 			this.label = label;
+			this.description = description;
 			this.filter = filter;
 			this.defaultEnable = defaultEnable;
 		}
@@ -151,6 +203,10 @@ public class ToggleFiltersModel {
 			return label;
 		}
 
+		public String getDescription() {
+			return description;
+		}
+
 		public Filter<BootDashElement> getFilter() {
 			return filter;
 		}
@@ -161,6 +217,7 @@ public class ToggleFiltersModel {
 	}
 
 	private final LiveSetVariable<FilterChoice> selectedFilters;
+	private final LiveVariable<String> regexFilter;
 	private final LiveExpression<Filter<BootDashElement>> compositeFilter;
 
 	/**
@@ -202,5 +259,8 @@ public class ToggleFiltersModel {
 	}
 	public LiveSetVariable<FilterChoice> getSelectedFilters() {
 		return selectedFilters;
+	}
+	public LiveVariable<String> getRegexFilter() {
+		return regexFilter;
 	}
 }

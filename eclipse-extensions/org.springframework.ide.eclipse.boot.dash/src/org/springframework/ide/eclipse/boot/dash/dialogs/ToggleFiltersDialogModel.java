@@ -12,7 +12,9 @@ package org.springframework.ide.eclipse.boot.dash.dialogs;
 
 import org.springframework.ide.eclipse.boot.dash.model.ToggleFiltersModel;
 import org.springframework.ide.eclipse.boot.dash.model.ToggleFiltersModel.FilterChoice;
+import org.springsource.ide.eclipse.commons.livexp.core.LiveExpression;
 import org.springsource.ide.eclipse.commons.livexp.core.LiveSet;
+import org.springsource.ide.eclipse.commons.livexp.core.LiveVariable;
 import org.springsource.ide.eclipse.commons.livexp.ui.OkButtonHandler;
 
 /**
@@ -31,11 +33,24 @@ public class ToggleFiltersDialogModel implements OkButtonHandler {
 	/**
 	 * Filters in the dialog (these get copied to the view when user pressed 'ok').
 	 */
-	private LiveSet<FilterChoice> selectedFilters = new LiveSet<FilterChoice>();
+	private LiveSet<FilterChoice> selectedFilters = new LiveSet<>();
+
+	private LiveVariable<String> regexFilter = new LiveVariable<>();
+
+	private LiveVariable<FilterChoice> selected = new LiveVariable<>();
+
+	private LiveExpression<String> toggleFilterDescription = selected.apply(selected -> {
+		if (selected == null) {
+			return "Select a filter to see the description";
+		} else {
+			return selected.getDescription();
+		}
+	});
 
 	public ToggleFiltersDialogModel(ToggleFiltersModel viewModel) {
 		this.viewModel = viewModel;
 		selectedFilters.replaceAll(viewModel.getSelectedFilters().getValue());
+		regexFilter = new LiveVariable<>(viewModel.getRegexFilter().getValue());
 	}
 
 	public FilterChoice[] getAvailableFilters() {
@@ -46,8 +61,25 @@ public class ToggleFiltersDialogModel implements OkButtonHandler {
 		return selectedFilters;
 	}
 
+	public LiveVariable<String> getRegExFilterLiveVar() {
+		return regexFilter;
+	}
+
+	public String getRegexFilter() {
+		return regexFilter.getValue();
+	}
+
+	public LiveExpression<String> getToggleFilterDescription() {
+		return toggleFilterDescription;
+	}
+
+	public LiveVariable<FilterChoice> getSelectedLiveVar() {
+		return selected;
+	}
+
 	@Override
 	public void performOk() throws Exception {
 		viewModel.getSelectedFilters().replaceAll(selectedFilters.getValue());
+		viewModel.getRegexFilter().setValue(getRegexFilter());
 	}
 }

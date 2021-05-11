@@ -16,7 +16,6 @@ import java.util.List;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.jface.action.Action;
-import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.action.IMenuCreator;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
@@ -189,7 +188,10 @@ public class BootDashTreeView extends ViewPartWithSections implements ITabbedPro
 		manager.add(actions.getOpenInPackageExplorerAction());
 		manager.add(actions.getOpenConfigAction());
 		manager.add(actions.getShowPropertiesViewAction());
+		manager.add(actions.getToggleFiltersDialogAction());
+
 		MenuUtil.addDynamicSubmenu(manager, actions.getLiveDataConnectionManagement());
+
 
 		manager.add(new Separator());
 		manager.add(actions.getExposeRunAppAction());
@@ -199,13 +201,6 @@ public class BootDashTreeView extends ViewPartWithSections implements ITabbedPro
 		addAddRunTargetMenuActions(manager);
 
 		manager.add(new Separator());
-		//manager.add(actions.getToggleFiltersDialogAction());
-		for (ToggleFilterAction a : actions.getToggleFilterActions()) {
-			manager.add(a);
-		}
-
-		manager.add(new Separator());
-		manager.add(actions.getOpenFilterPreferencesAction());
 		manager.add(actions.getOpenBootDashPreferencesAction());
 
 		// manager.add(refreshAction);

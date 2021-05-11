@@ -10,17 +10,17 @@
  *******************************************************************************/
 package org.springframework.ide.eclipse.boot.dash.views;
 
-import org.springframework.ide.eclipse.boot.dash.BootDashActivator;
+import org.eclipse.jdt.internal.ui.JavaPluginImages;
 import org.springframework.ide.eclipse.boot.dash.di.SimpleDIContext;
 import org.springframework.ide.eclipse.boot.dash.dialogs.ToggleFiltersDialogModel;
 import org.springframework.ide.eclipse.boot.dash.livexp.MultiSelection;
 import org.springframework.ide.eclipse.boot.dash.model.BootDashElement;
 import org.springframework.ide.eclipse.boot.dash.model.ToggleFiltersModel;
-import org.springframework.ide.eclipse.boot.dash.model.UserInteractions;
 
 /**
  * @author Kris De Volder
  */
+@SuppressWarnings("restriction")
 public class OpenToggleFiltersDialogAction extends AbstractBootDashAction {
 
 	/**
@@ -32,8 +32,8 @@ public class OpenToggleFiltersDialogAction extends AbstractBootDashAction {
 		super(ui);
 		this.viewModel = model;
 		setText("Filters...");
-		setImageDescriptor(BootDashActivator.getImageDescriptor("icons/filter.png"));
-		setDisabledImageDescriptor(BootDashActivator.getImageDescriptor("icons/filter_disabled.png"));
+		setImageDescriptor(JavaPluginImages.DESC_ELCL_FILTER);
+		setDisabledImageDescriptor(JavaPluginImages.DESC_DLCL_FILTER);
 	}
 
 	@Override

@@ -31,7 +31,6 @@ import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jface.action.IAction;
 import org.springframework.ide.eclipse.boot.core.BootActivator;
-import org.springframework.ide.eclipse.boot.core.BootPreferences;
 import org.springframework.ide.eclipse.boot.dash.BootDashActivator;
 import org.springframework.ide.eclipse.boot.dash.api.RunTargetType;
 import org.springframework.ide.eclipse.boot.dash.cloudfoundry.deployment.DeployToRemoteTargetAction;
@@ -86,7 +85,6 @@ public class BootDashActions {
 	private ExposeAppAction exposeRunAppAction;
 	private ExposeAppAction exposeDebugAppAction;
 
-	private OpenPreferencesAction openFilterPreferencesAction;
 	private OpenPreferencesAction openBootDashPreferencesAction;
 
 	private DuplicateConfigAction duplicateConfigAction;
@@ -95,7 +93,6 @@ public class BootDashActions {
 	private DeleteElementsAction<LocalRunTargetType> deleteConfigsAction;
 
 	private OpenToggleFiltersDialogAction toggleFiltersDialogAction;
-	private ToggleFilterAction[] toggleFilterActions;
 	private CustmomizeTargetLabelAction customizeTargetLabelAction;
 
 	private DisposingFactory<RunTarget, AbstractBootDashAction> debugOnTargetActions;
@@ -296,10 +293,6 @@ public class BootDashActions {
 		showPropertiesViewAction = new ShowViewAction(PROPERTIES_VIEW_ID);
 
 		toggleFiltersDialogAction = new OpenToggleFiltersDialogAction(model.getToggleFilters(), elementsSelection, context);
-		toggleFilterActions = new ToggleFilterAction[model.getToggleFilters().getAvailableFilters().length];
-		for (int i = 0; i < toggleFilterActions.length; i++) {
-			toggleFilterActions[i] = new ToggleFilterAction(model, model.getToggleFilters().getAvailableFilters()[i], context);
-		}
 
 		exposeRunAppAction = new ExposeAppAction(defaultActionParams(), RunState.RUNNING, NGROKInstallManager.getInstance());
 		exposeRunAppAction.setText("(Re)start and Expose via ngrok");
@@ -318,10 +311,6 @@ public class BootDashActions {
 		debugOnTargetActions = createDeployOnTargetActions(RunState.DEBUGGING);
 		runOnTargetActions = createDeployOnTargetActions(RunState.RUNNING);
 
-		openFilterPreferencesAction = new OpenPreferencesAction(context, BootPreferences.BOOT_PREFERENCE_PAGE_ID,
-				"Boot Projects Filters Preferences...",
-				"Open Preferences for Spring Boot projects filters"
-		);
 		openBootDashPreferencesAction = new OpenPreferencesAction(context, BootDashPrefsPage.class.getName(),
 				"Boot Dash UI Preferences...",
 				"Open Preferences for Boot Dash"
@@ -560,12 +549,6 @@ public class BootDashActions {
 			duplicateConfigAction.dispose();
 			duplicateConfigAction = null;
 		}
-		if (toggleFilterActions!=null) {
-			for (ToggleFilterAction a : toggleFilterActions) {
-				a.dispose();
-			}
-			toggleFilterActions = null;
-		}
 		debugOnTargetActions.dispose();
 		runOnTargetActions.dispose();
 		liveDataConnectionManagement.dispose();
@@ -579,10 +562,6 @@ public class BootDashActions {
 		return duplicateConfigAction;
 	}
 
-	public ToggleFilterAction[] getToggleFilterActions() {
-		return toggleFilterActions;
-	}
-
 	public CustmomizeTargetLabelAction getCustomizeTargetLabelAction() {
 		return customizeTargetLabelAction;
 	}
@@ -592,10 +571,6 @@ public class BootDashActions {
 	}
 	public ImmutableList<IAction> getRunOnTargetActions() {
 		return getDeployAndStartOnTargetActions(runOnTargetActions);
-	}
-
-	public OpenPreferencesAction getOpenFilterPreferencesAction() {
-		return openFilterPreferencesAction;
 	}
 
 	public IAction getOpenBootDashPreferencesAction() {

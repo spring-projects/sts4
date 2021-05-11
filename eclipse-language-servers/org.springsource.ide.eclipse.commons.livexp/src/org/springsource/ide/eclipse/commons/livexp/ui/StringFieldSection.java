@@ -26,7 +26,6 @@ import org.springsource.ide.eclipse.commons.livexp.core.LiveVariable;
 import org.springsource.ide.eclipse.commons.livexp.core.UIValueListener;
 import org.springsource.ide.eclipse.commons.livexp.core.ValidationResult;
 import org.springsource.ide.eclipse.commons.livexp.core.Validator;
-import org.springsource.ide.eclipse.commons.livexp.core.ValueListener;
 
 public class StringFieldSection extends WizardPageSection {
 
@@ -42,6 +41,8 @@ public class StringFieldSection extends WizardPageSection {
 	/// UI elements
 	private Text text;
 	private boolean password = false;
+	
+	private boolean vertical = false;
 
 	//////////////////////////////
 
@@ -54,7 +55,15 @@ public class StringFieldSection extends WizardPageSection {
 		this.variable = variable;
 		this.validator = validator;
 	}
-
+	
+	/**
+	 * Should be called before createContents(...) is called, i.e. before SWT controls are created.
+	 */
+	public  StringFieldSection vertical(boolean vertical) {
+		this.vertical = vertical;
+		return this;
+	}
+	
 	public StringFieldSection(IPageWithSections owner, FieldModel<String> f) {
 		this(owner, f.getLabel(), f.getVariable(), f.getValidator());
 	}
@@ -75,19 +84,21 @@ public class StringFieldSection extends WizardPageSection {
 		this.password = enablePasswordBehavior;
 		return this;
 	}
-
+	
 	@Override
 	public void createContents(Composite page) {
         // project specification group
         Composite projectGroup = new Composite(page, SWT.NONE);
-        GridLayout layout = GridLayoutFactory.fillDefaults().numColumns(2).margins(0,2).create();
+        
+        int columns = vertical ? 1 : 2;
+        GridLayout layout = GridLayoutFactory.fillDefaults().numColumns(columns).margins(0,2).create();
         projectGroup.setLayout(layout);
         projectGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
         Label label = new Label(projectGroup, SWT.NONE);
         label.setText(labelText);
         GridDataFactory.fillDefaults()
-        	.hint(UIConstants.fieldLabelWidthHint(label), SWT.DEFAULT)
+        	.hint(vertical ? SWT.DEFAULT : UIConstants.fieldLabelWidthHint(label), SWT.DEFAULT)
         	.align(SWT.BEGINNING, SWT.CENTER)
         	.applyTo(label);
 
