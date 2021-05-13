@@ -27,17 +27,22 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.OverrideAutoConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.ide.vscode.boot.app.BootLanguageServerBootApp;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
-import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
 import org.springframework.ide.vscode.boot.bootiful.XmlBeansTestConf;
 import org.springframework.ide.vscode.boot.test.DefinitionLinkAsserts;
 import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
 import org.springframework.ide.vscode.commons.util.UriUtil;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
+import org.springframework.ide.vscode.languageserver.starter.LanguageServerAutoConf;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.gson.Gson;
@@ -46,8 +51,13 @@ import com.google.gson.Gson;
  * @author Alex Boyko
  */
 @RunWith(SpringRunner.class)
-@BootLanguageServerTest
-@Import(XmlBeansTestConf.class)
+//@BootLanguageServerTest
+@OverrideAutoConfiguration(enabled=false)
+@Import({LanguageServerAutoConf.class, XmlBeansTestConf.class})
+@SpringBootTest(classes={
+		BootLanguageServerBootApp.class
+})
+@DirtiesContext(classMode=ClassMode.AFTER_EACH_TEST_METHOD)
 public class XmlBeansHyperlinkTest {
 	
 	@Autowired private BootLanguageServerHarness harness;

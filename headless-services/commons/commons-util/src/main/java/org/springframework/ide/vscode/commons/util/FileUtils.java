@@ -37,7 +37,7 @@ public class FileUtils {
 	}
 
 	public static File findFile(File folder, String fileNameToFind, boolean recursiveUp) {
-		if (folder != null && folder.exists()) {
+		if (folder != null) {
 			File file = new File(folder, fileNameToFind);
 			if (file.isFile()) {
 				return file;

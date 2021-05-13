@@ -28,6 +28,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -54,6 +55,7 @@ import org.springframework.ide.vscode.boot.java.utils.SymbolHandler;
 import org.springframework.ide.vscode.boot.java.utils.SymbolIndexConfig;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
+import org.springframework.ide.vscode.commons.languageserver.java.FutureProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver.Listener;
@@ -78,6 +80,7 @@ public class SpringSymbolIndex implements InitializingBean {
 	@Autowired BootLanguageServerParams params;
 	@Autowired AnnotationHierarchyAwareLookup<SymbolProvider> specificProviders;
 	@Autowired SymbolCache cache;
+	@Autowired FutureProjectFinder futureProjectFinder;
 
 	private static final String QUERY_PARAM_LOCATION_PREFIX = "locationPrefix:";
 	private static final int MAX_NUMBER_OF_SYMBOLS_IN_RESPONSE = 50;
@@ -120,7 +123,10 @@ public class SpringSymbolIndex implements InitializingBean {
 	private String watchXMLDeleteRegistration;
 	private String watchXMLCreatedRegistration;
 	private String watchXMLChangedRegistration;
-
+	
+	// Futures resolved when project is initialized/indexed
+	private Map<URI, CompletableFuture<Void>> initializedProjects = new HashMap<>();
+	
 
 	private SimpleWorkspaceService getWorkspaceService() {
 		return server.getServer().getWorkspaceService();
@@ -273,8 +279,16 @@ public class SpringSymbolIndex implements InitializingBean {
 			log.error("{}", e);
 		}
 	}
-
+	
 	public CompletableFuture<Void> initializeProject(IJavaProject project) {
+		CompletableFuture<Void> cf = _initializeProject(project);
+		cf.thenAccept( f -> {
+			projectInitializedFuture(project).complete(null);
+		});
+		return cf;
+	}
+	
+	private CompletableFuture<Void> _initializeProject(IJavaProject project) {
 		try {
 			if (SpringProjectUtil.isBootProject(project) || SpringProjectUtil.isSpringProject(project)) {
 				if (project.getElementName() == null) {
@@ -291,7 +305,7 @@ public class SpringSymbolIndex implements InitializingBean {
 						InitializeProject initializeItem = new InitializeProject(project, this.indexers[i]);
 						futures[i] = CompletableFuture.runAsync(initializeItem, this.updateQueue);
 					}
-
+					
 					return CompletableFuture.allOf(futures);
 				}
 			} else {
@@ -520,21 +534,35 @@ public class SpringSymbolIndex implements InitializingBean {
 			.filter(filter)
 			.map(enhanced -> enhanced.getSymbol());
 	}
-
-	public List<? extends SymbolInformation> getSymbols(String docURI) {
-		List<EnhancedSymbolInformation> docSymbols = this.symbolsByDoc.get(docURI);
-		if (docSymbols != null) {
-			synchronized(docSymbols) {
-				ImmutableList.Builder<SymbolInformation> builder = ImmutableList.builder();
-				for (EnhancedSymbolInformation enhanced : docSymbols) {
-					builder.add(enhanced.getSymbol());
-				}
-				return builder.build();
-			}
+	
+	synchronized private CompletableFuture<Void> projectInitializedFuture(IJavaProject project) {
+		if (project == null) {
+			return CompletableFuture.completedFuture(null);
+		} else {
+			URI uri = project.getLocationUri();
+			return initializedProjects.computeIfAbsent(uri, u -> new CompletableFuture<Void>());
 		}
-		else {
+	}
+	
+	public List<? extends SymbolInformation> getSymbols(String docURI) {
+		try {	
+			CompletableFuture<Void> projectInitialized = futureProjectFinder.findFuture(URI.create(docURI)).thenCompose(project -> projectInitializedFuture(project));
+			projectInitialized.get(60, TimeUnit.SECONDS);
+			List<EnhancedSymbolInformation> docSymbols = this.symbolsByDoc.get(docURI);
+			if (docSymbols != null) {
+				synchronized (docSymbols) {
+					ImmutableList.Builder<SymbolInformation> builder = ImmutableList.builder();
+					for (EnhancedSymbolInformation enhanced : docSymbols) {
+						builder.add(enhanced.getSymbol());
+					}
+					return builder.build();
+				}
+			}
+		} catch (Exception e) {
+			log.warn("", e);
 			return Collections.emptyList();
 		}
+		return Collections.emptyList();		 
 	}
 
 	public List<SymbolAddOnInformation> getAllAdditionalInformation(Predicate<SymbolAddOnInformation> filter) {

@@ -20,20 +20,30 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.autoconfigure.OverrideAutoConfiguration;
+import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
-import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
+import org.springframework.ide.vscode.boot.app.BootLanguageServerBootApp;
 import org.springframework.ide.vscode.boot.bootiful.SourceLinksTestConf;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
+import org.springframework.ide.vscode.languageserver.starter.LanguageServerAutoConf;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
+import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.test.annotation.DirtiesContext.ClassMode;
 import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * @author Alex Boyko
  */
 @RunWith(SpringRunner.class)
-@BootLanguageServerTest
-@Import(SourceLinksTestConf.class)
+//@BootLanguageServerTest
+@OverrideAutoConfiguration(enabled=false)
+@Import({LanguageServerAutoConf.class, SourceLinksTestConf.class})
+@SpringBootTest(classes={
+		BootLanguageServerBootApp.class
+})
+@DirtiesContext(classMode=ClassMode.AFTER_EACH_TEST_METHOD)
 public class AdvancedSourceLinksTest {
 	
 	private ProjectsHarness projects = ProjectsHarness.INSTANCE;

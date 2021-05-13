@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.boot.app;
 
 import java.io.File;
+import java.util.Optional;
 
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -54,7 +55,9 @@ import org.springframework.ide.vscode.boot.xml.SpringXMLCompletionEngine;
 import org.springframework.ide.vscode.boot.yaml.completions.ApplicationYamlAssistContext;
 import org.springframework.ide.vscode.boot.yaml.completions.SpringYamlCompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.LanguageServerRunner;
+import org.springframework.ide.vscode.commons.languageserver.java.FutureProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentEventListenerManager;
 import org.springframework.ide.vscode.commons.languageserver.util.LspClient;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
@@ -224,5 +227,9 @@ public class BootLanguageServerBootApp {
 				new SpringIoProjectsProvider(),
 				new SampleProjectsProvider()
 		));
+	}
+	
+	@Bean FutureProjectFinder futureProjectFinder(JavaProjectFinder projectFinder, Optional<ProjectObserver> projectObserver) {
+		return new FutureProjectFinder(projectFinder, projectObserver);
 	}
 }
