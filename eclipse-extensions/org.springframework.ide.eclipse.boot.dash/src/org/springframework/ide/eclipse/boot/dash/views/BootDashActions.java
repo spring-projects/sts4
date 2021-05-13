@@ -374,15 +374,31 @@ public class BootDashActions {
 					public IStatus run(IProgressMonitor monitor) {
 						monitor.beginTask("Restart Boot Dash Elements", selecteds.size());
 						try {
+
+							List<CompletableFuture<Void>> futures = new ArrayList<>(selecteds.size());
 							for (BootDashElement el : selecteds) {
-								monitor.subTask("Restarting: " + el.getName());
-								try {
-									el.restart(goalState, ui());
-								} catch (Exception e) {
-									return BootActivator.createErrorStatus(e);
-								}
-								monitor.worked(1);
+								futures.add(CompletableFuture.runAsync(() -> {
+									monitor.subTask("Restarting: " + el.getName());
+									try {
+										el.restart(goalState, ui());
+										monitor.worked(1);
+									} catch (Exception e) {
+										monitor.worked(1);
+										throw new CompletionException(e);
+									}
+								}));
 							}
+
+							try {
+								CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()])).get(60, TimeUnit.SECONDS);
+							} catch (InterruptedException e) {
+								return BootActivator.createErrorStatus(e);
+							} catch (ExecutionException e) {
+								return BootActivator.createErrorStatus(e);
+							} catch (TimeoutException e) {
+								return BootActivator.createErrorStatus(e);
+							}
+
 							return Status.OK_STATUS;
 						} finally {
 							monitor.done();
