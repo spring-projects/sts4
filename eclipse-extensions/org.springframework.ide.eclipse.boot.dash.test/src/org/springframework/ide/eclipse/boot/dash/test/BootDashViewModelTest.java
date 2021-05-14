@@ -431,7 +431,7 @@ public class BootDashViewModelTest {
 		assertTrue(toggleFilters.getValue().isEmpty());
 		assertFilterAccepts(true, filter, "a-tag");
 
-		FilterChoice toggleFilter = new FilterChoice("foo", "Foo filter", new Filter<BootDashElement>() {
+		FilterChoice toggleFilter = new FilterChoice("foo", "Foo filter", "description", new Filter<BootDashElement>() {
 			public boolean accept(BootDashElement t) {
 				return t.getTags().contains("foo");
 			}
