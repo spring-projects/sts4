@@ -32,6 +32,34 @@
     "onLanguage:xml"
   ],
   "contributes": {
+    "walkthroughs": [
+      {
+        "id": "springBootWelcome",
+        "title": "Getting Started with Spring Boot in VS Code",
+        "description": "An Overview of the Spring Tools in VS Code to get started and to work with existing Spring Boot projects in VS Code",
+        "primary": true,
+        "steps": [
+          {
+            "id": "new-project-using-initializr",
+            "title": "Create a new Spring Boot project",
+            "description": "The easiest way to create new Spring Boot projects in VS Code is to use the Spring Initializr integration. Open the command palette in VS Code, search for __Spring__ and create a new Spring Boot project from there.\n[Create New Spring Boot Project](command:spring.initializr.maven-project)",
+            "media": {
+                "image": "walkthroughs/spring-initializr-integration.png",
+                "altText": "Create a new Maven-based Spring Boot project"
+            }
+          },
+          {
+            "id": "navigate-your-spring-projects",
+            "title": "Navigate your Spring Boot projects",
+            "description": "The Spring Tools in your VS Code installation contribute Spring-specific symbols to help you navigate your projects. All the symbols start with `@`.\nYou can navigate to the symbols using the [Outline View](command:outline.focus) of the current file, via the [Go to Symbol in Editor...](command:workbench.action.gotoSymbol) or globally via [Go to symbol in Workspace...](command:workbench.action.showAllSymbols).\nIf you start your search with an `@`, the list of symbols will show the Spring-specific symbols only.",
+            "media": {
+              "image": "walkthroughs/spring-symbols-navigation.png",
+              "altText": "Go to Symbol in Workspace..."
+            }
+          }
+        ]
+      }
+    ],
     "javaExtensions": [
       "./jars/io.projectreactor.reactor-core.jar",
       "./jars/org.reactivestreams.reactive-streams.jar",
