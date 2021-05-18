@@ -73,11 +73,15 @@ public class EnumValueParser implements ValueParser {
 		PartialCollection<String> values = this.values.get();
 
 		// If values is not fully known then just assume the str is acceptable.
-		if (values == null || !values.isComplete() || values.getElements().contains(str)) {
+		if (values == null || !values.isComplete() || hasMatchingValue(str, values.getElements())) {
 			return str;
 		} else {
 			throw errorOnParse(createErrorMessage(str, values.getElements()));
 		}
+	}
+
+	protected boolean hasMatchingValue(String str, Collection<String> values) {
+		return values.contains(str);
 	}
 
 	protected String createBlankTextErrorMessage() {

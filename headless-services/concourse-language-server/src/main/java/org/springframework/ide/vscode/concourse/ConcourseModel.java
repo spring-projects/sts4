@@ -16,7 +16,9 @@ import static org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment.v
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
@@ -30,6 +32,8 @@ import org.springframework.ide.vscode.commons.languageserver.util.SnippetBuilder
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.CollectorUtil;
 import org.springframework.ide.vscode.commons.util.Log;
+import org.springframework.ide.vscode.commons.util.SimpleGlob;
+import org.springframework.ide.vscode.commons.util.SimpleGlob.Match;
 import org.springframework.ide.vscode.commons.util.Streams;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
@@ -136,10 +140,17 @@ public class ConcourseModel {
 	public final void jobAssignmentIsComplete(DynamicSchemaContext dc, Node parent, Node node, YType type, IProblemCollector problems) {
 		Multiset<String> assignedJobs = getStringsFromAst(dc.getDocument(), JOBS_ASSIGNED_TO_GROUPS);
 		if (assignedJobs!=null && !assignedJobs.isEmpty()) {
+			Map<String, SimpleGlob> assignedJobMatchers = new HashMap<>();
+			for (String jobPattern : assignedJobs) {
+				if (!assignedJobMatchers.containsKey(jobPattern)) {
+					assignedJobMatchers.put(jobPattern, SimpleGlob.create(jobPattern));
+				}
+			}
+			
 			getJobNameNodes(dc).forEach(jobDefName -> {
 				String name = NodeUtil.asScalar(jobDefName);
 				if (StringUtil.hasText(name)) { //'not assigned to a group' errors for empty names are a bit silly, so avoid that
-					if (!assignedJobs.contains(name)) {
+					if (!assignedJobMatchers.values().stream().anyMatch(jobPat -> jobPat.match(name)!=Match.FAIL)) {
 						problems.accept(YamlSchemaProblems.schemaProblem("'"+name+"' belongs to no group", jobDefName));
 					}
 				}

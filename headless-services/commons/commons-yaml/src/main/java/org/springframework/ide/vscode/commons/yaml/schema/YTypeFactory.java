@@ -35,6 +35,8 @@ import org.springframework.ide.vscode.commons.util.EnumValueParser;
 import org.springframework.ide.vscode.commons.util.PartialCollection;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
+import org.springframework.ide.vscode.commons.util.SimpleGlob;
+import org.springframework.ide.vscode.commons.util.SimpleGlob.Match;
 import org.springframework.ide.vscode.commons.util.ValueParser;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST;
 import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems;
@@ -1089,6 +1091,47 @@ public class YTypeFactory {
 
 	public YAtomicType yenum(String name, BiFunction<String, Collection<String>, String> errorMessageFormatter, SchemaContextAware<Collection<String>> values) {
 		return yenum(name, (dc) -> errorMessageFormatter,  values);
+	}
+
+	/**
+	 * Like an enum, checks a given reference matches one of a list of known values. Except that the meaning of 'matching' is based on glob pattern matching 
+	 * instead of simple string equality. 
+	 * <p>
+	 * See: https://github.com/spring-projects/sts4/issues/639
+	 */
+	public AbstractType yGlobEnum(String name, BiFunction<String, Collection<String>, String> errorMessageFormatter , SchemaContextAware<Collection<String>> values) {
+		return yGlobEnum(name, (dc) -> errorMessageFormatter,  values);
+	}
+
+	public YAtomicType yGlobEnum(String name, SchemaContextAware<BiFunction<String, Collection<String>, String>> errorMessageFormatter, SchemaContextAware<Collection<String>> values) {
+		YAtomicType t = yatomic(name);
+		t.setHintProvider((dc) -> {
+			return PartialCollection.compute(() -> values.withContext(dc))
+					.map(BasicYValueHint::new);
+		});
+		t.parseWith((DynamicSchemaContext dc) -> {
+			EnumValueParser enumParser = new EnumValueParser(name, values.withContext(dc)) {
+				@Override
+				protected String createErrorMessage(String parseString, Collection<String> values) {
+					try {
+						return errorMessageFormatter.withContext(dc).apply(parseString, values);
+					} catch (Exception e) {
+						return super.createErrorMessage(parseString, values);
+					}
+				}
+				
+				protected boolean hasMatchingValue(String stringOrGlob, Collection<String> values) {
+					SimpleGlob glob = SimpleGlob.create(stringOrGlob);
+					//Note we accept 'Match.UNKNOWN' as if it is a proper match. This is the conservative thing to do 
+					// in this situation to avoid false positives (i.e. we only report an error if we are *sure* that no
+					// value matches.
+					return values.stream().anyMatch(s -> glob.match(s)!=Match.FAIL);
+				}
+			};
+			return enumParser;
+		});
+		return t;
+
 	}
 
 	public static Collection<String> values(Collection<YValueHint> hints) {

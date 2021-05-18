@@ -74,6 +74,82 @@ public class ConcourseEditorTest {
 		serverInitializer.setMaxCompletions(100);
 	}
 	
+	@Test public void GH_639_globStar() throws Exception {
+		Editor editor = harness.newEditor(
+				"groups:\n" + 
+				"- name: build\n" + 
+				"  jobs:\n" + 
+				"    - \"ci-*\"\n" + 
+				"\n" + 
+				"jobs:\n" + 
+				"- name: ci-project-one\n" + 
+				"  plan:\n" + 
+				"  - task: gradle-build\n" + 
+				"    file: gradle-build-dcind.yml"
+		);
+		editor.assertProblems(/*NONE*/);
+
+		editor = harness.newEditor(
+				"groups:\n" + 
+				"- name: build\n" + 
+				"  jobs:\n" + 
+				"    - one-*\n" + 
+				"    - two-*\n" + 
+				"- name: scan\n" + 
+				"  jobs:\n" + 
+				"    - one-*\n" + 
+				"    - three-*\n" + 
+				"\n" + 
+				"jobs:\n" + 
+				"- name: one-project\n" + 
+				"  plan: []\n" + 
+				"- name: two-project\n" + 
+				"  plan: []\n" + 
+				"- name: three-project\n" + 
+				"  plan: []\n" + 
+				"- name: four-project\n" + 
+				"  plan: []\n" 
+		);
+		editor.assertProblems("four-project|no group");
+
+		editor = harness.newEditor(
+				"groups:\n" + 
+				"- name: build\n" + 
+				"  jobs:\n" + 
+				"    - ci-*\n" + 
+				"\n" + 
+				"jobs:\n" + 
+				"- name: xx-project-one\n" + 
+				"  plan:\n" + 
+				"  - task: gradle-build\n" + 
+				"    file: gradle-build-dcind.yml"
+		);
+		editor.assertProblems(
+				"ci-*|does not match any existing job",
+				"xx-project-one|belongs to no group"
+		);
+		
+		// No errors if patterns are too complex for our SimpleGlob to understand
+		editor = harness.newEditor(
+				"groups:\n" + 
+				"- name: build\n" + 
+				"  jobs:\n" + 
+				"    - \"{one,two,three,four}-project*\"\n" + 
+				"- name: scan\n" + 
+				"\n" + 
+				"jobs:\n" + 
+				"- name: one-project\n" + 
+				"  plan: []\n" + 
+				"- name: two-project\n" + 
+				"  plan: []\n" + 
+				"- name: three-project\n" + 
+				"  plan: []\n" + 
+				"- name: four-project\n" + 
+				"  plan: []\n" 
+		);
+		editor.assertProblems(/*NONE*/);
+	}
+	
 	@Test public void addSingleRequiredPropertiesQuickfix() throws Exception {
 		Editor editor = harness.newEditor(
 				"resources:\n" +
@@ -1327,7 +1403,7 @@ public class ConcourseEditorTest {
 
 		editor.assertProblems(
 				"build-artefact^ # <- bad|should define 'branch'",
-				"bogus-job|does not exist",
+				"bogus-job|does not match",
 				"not-a-resource|does not exist"
 		);
 	}

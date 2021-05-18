@@ -217,6 +217,14 @@ public class PipelineYmlSchema implements YamlSchema {
 					return models.getJobNames(dc);
 				}
 		).require(models::passedJobHasInteractionWithResource);
+		AbstractType t_job_name_pattern = f.yGlobEnum("Job Name Pattern",
+				(parseString, validValues) ->  {
+					return "The '"+parseString+"' Job does not match any existing job: "+validValues;
+				},
+				(DynamicSchemaContext dc) -> {
+					return models.getJobNames(dc);
+				}
+		);
 
 		YAtomicType t_resource_name_def = f.yatomic("Resource Name");
 		t_resource_name_def.parseWith(ConcourseValueParsers.resourceNameDef(models));
@@ -462,7 +470,7 @@ public class PipelineYmlSchema implements YamlSchema {
 		AbstractType group = f.ybean("Group");
 		addProp(group, "name", t_group_name_def).isPrimary(true);
 		addProp(group, "resources", f.yseq(t_resource_name));
-		addProp(group, "jobs", f.yseq(t_job_name));
+		addProp(group, "jobs", f.yseq(t_job_name_pattern));
 
 		YType t_background_image_def = f.yatomic("Background Image")
 				.parseWith(ValueParsers.NE_STRING);
