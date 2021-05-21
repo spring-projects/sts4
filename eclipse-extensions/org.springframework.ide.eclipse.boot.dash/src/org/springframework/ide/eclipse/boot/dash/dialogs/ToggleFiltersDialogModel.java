@@ -1,14 +1,17 @@
 /*******************************************************************************
- * Copyright (c) 2015 Pivotal, Inc.
+ * Copyright (c) 2015, 2021 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * https://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     Pivotal, Inc. - initial API and implementation
+ *     VMware, Inc. - initial API and implementation
  *******************************************************************************/
 package org.springframework.ide.eclipse.boot.dash.dialogs;
+
+import java.util.Arrays;
+import java.util.Collections;
 
 import org.springframework.ide.eclipse.boot.dash.model.ToggleFiltersModel;
 import org.springframework.ide.eclipse.boot.dash.model.ToggleFiltersModel.FilterChoice;
@@ -35,6 +38,8 @@ public class ToggleFiltersDialogModel implements OkButtonHandler {
 	 */
 	private LiveSet<FilterChoice> selectedFilters = new LiveSet<>();
 
+	private LiveVariable<Boolean> enableRegexFilter = new LiveVariable<>();
+
 	private LiveVariable<String> regexFilter = new LiveVariable<>();
 
 	private LiveVariable<FilterChoice> selected = new LiveVariable<>();
@@ -51,6 +56,7 @@ public class ToggleFiltersDialogModel implements OkButtonHandler {
 		this.viewModel = viewModel;
 		selectedFilters.replaceAll(viewModel.getSelectedFilters().getValue());
 		regexFilter = new LiveVariable<>(viewModel.getRegexFilter().getValue());
+		enableRegexFilter = new LiveVariable<>(viewModel.getEnableRegexFilter().getValue());
 	}
 
 	public FilterChoice[] getAvailableFilters() {
@@ -77,9 +83,22 @@ public class ToggleFiltersDialogModel implements OkButtonHandler {
 		return selected;
 	}
 
+	public LiveVariable<Boolean> getEnableRegexFilter() {
+		return enableRegexFilter;
+	}
+
 	@Override
 	public void performOk() throws Exception {
 		viewModel.getSelectedFilters().replaceAll(selectedFilters.getValue());
 		viewModel.getRegexFilter().setValue(getRegexFilter());
+		viewModel.getEnableRegexFilter().setValue(enableRegexFilter.getValue());
+	}
+
+	public void selectAll() {
+		selectedFilters.replaceAll(Arrays.asList(getAvailableFilters()));
+	}
+
+	public void deselectAll() {
+		selectedFilters.replaceAll(Collections.emptyList());
 	}
 }

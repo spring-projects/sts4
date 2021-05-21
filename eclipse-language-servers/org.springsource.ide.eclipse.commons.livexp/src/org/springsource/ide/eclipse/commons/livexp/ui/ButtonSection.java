@@ -1,12 +1,12 @@
 /*******************************************************************************
- * Copyright (c) 2016 Pivotal, Inc.
+ * Copyright (c) 2016, 2021 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * https://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     Pivotal, Inc. - initial API and implementation
+ *     VMware, Inc. - initial API and implementation
  *******************************************************************************/
 package org.springsource.ide.eclipse.commons.livexp.ui;
 
@@ -16,6 +16,7 @@ import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.events.SelectionListener;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Button;
 import org.eclipse.swt.widgets.Composite;
 import org.springsource.ide.eclipse.commons.livexp.Activator;
@@ -84,7 +85,9 @@ public class ButtonSection extends WizardPageSection {
 	 * method to change the layout.
 	 */
 	protected void applyLayoutData(Button button) {
-		GridDataFactory.fillDefaults().align(SWT.END, SWT.CENTER).applyTo(button);
+		if (button.getParent().getLayout() instanceof GridLayout) {
+			GridDataFactory.fillDefaults().align(SWT.END, SWT.CENTER).applyTo(button);
+		}
 	}
 
 	public ButtonSection setEnabler(LiveExpression<Boolean> enabler) {

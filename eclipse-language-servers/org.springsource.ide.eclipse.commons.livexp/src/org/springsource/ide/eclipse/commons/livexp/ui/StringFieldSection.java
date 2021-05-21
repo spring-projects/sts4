@@ -1,12 +1,12 @@
 /*******************************************************************************
- * Copyright (c) 2013 Pivotal Software, Inc.
+ * Copyright (c) 2013, 2021 VMware Software, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * https://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *   Pivotal Software, Inc. - initial API and implementation
+ *   Pivotal VMware, Inc. - initial API and implementation
  *******************************************************************************/
 package org.springsource.ide.eclipse.commons.livexp.ui;
 
@@ -43,6 +43,8 @@ public class StringFieldSection extends WizardPageSection {
 	private boolean password = false;
 	
 	private boolean vertical = false;
+	
+	private boolean labelUnder = false;
 
 	//////////////////////////////
 
@@ -61,6 +63,15 @@ public class StringFieldSection extends WizardPageSection {
 	 */
 	public  StringFieldSection vertical(boolean vertical) {
 		this.vertical = vertical;
+		return this;
+	}
+	
+	/**
+	 * Should be called before createContents(...) is called, i.e. before SWT controls are created.
+	 */
+	public  StringFieldSection labelUnder(boolean under) {
+		this.labelUnder = under;
+		this.vertical = under || this.vertical;
 		return this;
 	}
 	
@@ -85,6 +96,20 @@ public class StringFieldSection extends WizardPageSection {
 		return this;
 	}
 	
+	private Label createLabel(Composite projectGroup) {
+        Label label = new Label(projectGroup, SWT.NONE);
+        label.setText(labelText);
+        GridDataFactory.fillDefaults()
+        	.hint(vertical ? SWT.DEFAULT : UIConstants.fieldLabelWidthHint(label), SWT.DEFAULT)
+        	.align(SWT.BEGINNING, SWT.CENTER)
+        	.applyTo(label);
+        if (tooltip!=null) {
+        	label.setToolTipText(tooltip);
+        	text.setToolTipText(tooltip);
+        }
+        return label;
+	}
+	
 	@Override
 	public void createContents(Composite page) {
         // project specification group
@@ -95,17 +120,19 @@ public class StringFieldSection extends WizardPageSection {
         projectGroup.setLayout(layout);
         projectGroup.setLayoutData(new GridData(GridData.FILL_HORIZONTAL));
 
-        Label label = new Label(projectGroup, SWT.NONE);
-        label.setText(labelText);
-        GridDataFactory.fillDefaults()
-        	.hint(vertical ? SWT.DEFAULT : UIConstants.fieldLabelWidthHint(label), SWT.DEFAULT)
-        	.align(SWT.BEGINNING, SWT.CENTER)
-        	.applyTo(label);
+        if (!labelUnder) {
+        	createLabel(projectGroup);
+        }
 
         text = new Text(projectGroup, SWT.BORDER | (password ? SWT.PASSWORD : 0));
         GridData data = new GridData(GridData.FILL_HORIZONTAL);
         data.widthHint = UIConstants.FIELD_TEXT_AREA_WIDTH;
         text.setLayoutData(data);
+        
+        if (labelUnder) {
+        	createLabel(projectGroup);
+        }
+        
         text.addModifyListener(new ModifyListener() {
 			public void modifyText(ModifyEvent e) {
 				variable.setValue(text.getText());
@@ -125,10 +152,6 @@ public class StringFieldSection extends WizardPageSection {
         enabler.addListener(UIValueListener.from((exp, enable) -> {
         	text.setEnabled(enable);
         }));
-        if (tooltip!=null) {
-        	label.setToolTipText(tooltip);
-        	text.setToolTipText(tooltip);
-        }
 	}
 
 	public StringFieldSection tooltip(String string) {

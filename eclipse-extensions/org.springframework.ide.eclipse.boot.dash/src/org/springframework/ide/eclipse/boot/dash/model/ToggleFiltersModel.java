@@ -1,12 +1,12 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2017 Pivotal, Inc.
+ * Copyright (c) 2015, 2021 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * https://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     Pivotal, Inc. - initial API and implementation
+ *     VMware, Inc. - initial API and implementation
  *******************************************************************************/
 package org.springframework.ide.eclipse.boot.dash.model;
 
@@ -85,7 +85,7 @@ public class ToggleFiltersModel {
 		public boolean accept(BootDashElement t) {
 			String regex = regexFilter.getValue();
 			if (t.getName() != null && StringUtils.hasText(regex)) {
-				return t.getName().matches(regex);
+				return !t.getName().matches(regex);
 			}
 			return true;
 		}
@@ -128,6 +128,7 @@ public class ToggleFiltersModel {
 	};
 
 	private static final String REGEX_FILTER_ID = "regexFilter";
+	private static final String ENABLE_REGEX_FILTER = "enableRegexFilter";
 
 	private final PropertyStoreApi persistentProperties;
 
@@ -139,14 +140,16 @@ public class ToggleFiltersModel {
 		this.persistentProperties = new PropertyStoreApi(propertyStore);
 		this.selectedFilters = new LiveSetVariable<>(restoreFilters(), AsyncMode.SYNC);
 		this.regexFilter = new LiveVariable<>(persistentProperties.get(REGEX_FILTER_ID));
+		this.enableRegexFilter = new LiveVariable<>(persistentProperties.get(ENABLE_REGEX_FILTER, false));
 		this.compositeFilter = new LiveExpression<Filter<BootDashElement>>() {
 			{
 				dependsOn(selectedFilters);
 				dependsOn(regexFilter);
+				dependsOn(enableRegexFilter);
 			}
 			@Override
 			protected Filter<BootDashElement> compute() {
-				Filter<BootDashElement> composed = REGEX_FILTER;
+				Filter<BootDashElement> composed = enableRegexFilter.getValue().booleanValue() ? REGEX_FILTER : Filters.acceptAll();
 				for (FilterChoice chosen : selectedFilters.getValues()) {
 					composed = Filters.compose(composed, chosen.getFilter());
 				}
@@ -154,9 +157,18 @@ public class ToggleFiltersModel {
 			}
 		};
 
+
 		selectedFilters.addListener(new ValueListener<ImmutableSet<FilterChoice>>() {
 			public void gotValue(LiveExpression<ImmutableSet<FilterChoice>> exp, ImmutableSet<FilterChoice> value) {
 				saveFilters(value);
+			}
+		});
+
+		enableRegexFilter.addListener((exp, v) -> {
+			try {
+				persistentProperties.put(ENABLE_REGEX_FILTER, exp.getValue().booleanValue());
+			} catch (Exception e) {
+				Log.log(e);
 			}
 		});
 
@@ -218,6 +230,7 @@ public class ToggleFiltersModel {
 
 	private final LiveSetVariable<FilterChoice> selectedFilters;
 	private final LiveVariable<String> regexFilter;
+	private final LiveVariable<Boolean> enableRegexFilter;
 	private final LiveExpression<Filter<BootDashElement>> compositeFilter;
 
 	/**
@@ -262,5 +275,8 @@ public class ToggleFiltersModel {
 	}
 	public LiveVariable<String> getRegexFilter() {
 		return regexFilter;
+	}
+	public LiveVariable<Boolean> getEnableRegexFilter() {
+		return enableRegexFilter;
 	}
 }

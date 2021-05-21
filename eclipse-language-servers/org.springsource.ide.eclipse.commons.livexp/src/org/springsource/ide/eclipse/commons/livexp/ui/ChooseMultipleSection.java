@@ -128,17 +128,19 @@ public class ChooseMultipleSection<T extends Ilabelable> extends WizardPageSecti
 			});
 		}
 
-		if (DEBUG) {
-			chosen.addListener(new ValueListener<Set<T>>() {
-				public void gotValue(LiveExpression<Set<T>> exp, Set<T> value) {
+		chosen.addListener(new ValueListener<Set<T>>() {
+			public void gotValue(LiveExpression<Set<T>> exp, Set<T> value) {
+				Set<T> values = exp.getValue();
+				tv.setCheckedElements(values.toArray());
+				if (DEBUG) {
 					System.out.println(">>>> starters");
 					for (T e : value) {
 						System.out.println(e.getLabel());
 					}
 					System.out.println("<<<< starters");
 				}
-			});
-		}
+			}
+		});
 
 	}
 

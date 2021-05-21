@@ -1,12 +1,12 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2019 Pivotal, Inc.
+ * Copyright (c) 2017, 2021 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * https://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     Pivotal, Inc. - initial API and implementation
+ *     VMware, Inc. - initial API and implementation
  *******************************************************************************/
 package org.springsource.ide.eclipse.commons.livexp.ui.util;
 
@@ -87,7 +87,6 @@ public class SwtConnect {
             control.addDisposeListener(de -> enabler.dispose());
             Disposable disconnect = enabler.onChange(UIValueListener.from((e,v) -> {
                 control.setEnabled(e.getValue());
-                System.out.println("Apply enablement changed: " + e.getValue());
             }));
             control.addDisposeListener(de -> disconnect.dispose());
         }
