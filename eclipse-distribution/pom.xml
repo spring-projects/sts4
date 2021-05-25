@@ -818,6 +818,7 @@
 					<version>${tycho-version}</version>
 					<configuration>
 						<encoding>UTF-8</encoding>
+						<useProjectSettings>false</useProjectSettings>
 						<compilerArgument>-err:-forbidden</compilerArgument>
 					</configuration>
 				</plugin>
