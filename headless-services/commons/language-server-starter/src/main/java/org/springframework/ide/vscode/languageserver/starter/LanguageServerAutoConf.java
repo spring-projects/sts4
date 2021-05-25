@@ -43,7 +43,8 @@ import com.google.common.collect.ImmutableMap;
 public class LanguageServerAutoConf {
 	
 	@ConditionalOnMissingBean
-	@Bean public SimpleLanguageServer languageServer(
+	@Bean(destroyMethod = "")
+	public SimpleLanguageServer languageServer(
 			LanguageServerProperties props, 
 			Optional<DiagnosticSeverityProvider> severities,
 			Optional<CompletionFilter> completionFilter,

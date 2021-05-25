@@ -26,6 +26,8 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 
 import org.eclipse.lsp4j.ApplyWorkspaceEditParams;
@@ -106,6 +108,9 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 	public static final String WORKSPACE_FOLDERS_CAPABILITY_NAME = "workspace/didChangeWorkspaceFolders";
 
 	private static final Scheduler RECONCILER_SCHEDULER = Schedulers.newSingle("Reconciler");
+
+	private static final int FORCED_EXIT_CODE = 1;
+	private static final int FORCED_EXIT_DELAY_IN_SECONDS = 3;
 
 	public final String EXTENSION_ID;
 	private final String CODE_ACTION_COMMAND_ID;
@@ -474,18 +479,36 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 
 	@Override
 	public CompletableFuture<Object> shutdown() {
-	  return async.invoke(() -> {
-		Runnable h = shutdownHandler;
-		if (h!=null) {
-			h.run();
+		log.info("shutdown: request arrived");
+		
+		// make sure the JVM gets the exit call after some time
+		Executors.newSingleThreadScheduledExecutor().schedule(() -> {
+			log.info("Forcing exit after 3 sec.");
+			System.exit(FORCED_EXIT_CODE);
+		}, FORCED_EXIT_DELAY_IN_SECONDS, TimeUnit.SECONDS);
+
+		// proceed with regular shutdown activities
+		try {
+			Runnable h = shutdownHandler;
+			if (h != null) {
+				log.info("shutdown: call shutdown handler");
+				h.run();
+			}
+
+			getWorkspaceService().dispose();
 		}
-		getWorkspaceService().dispose();
-		return "OK";
-	  });
+		catch (Exception e) {
+			log.info("problem calling shutdown handlers: ", e);
+		}
+			
+		log.info("shutdown: complete");
+
+		return CompletableFuture.completedFuture("OK");
 	}
 
 	@Override
 	public void exit() {
+		log.info("exit: notification received");
 		System.exit(0);
 	}
 
