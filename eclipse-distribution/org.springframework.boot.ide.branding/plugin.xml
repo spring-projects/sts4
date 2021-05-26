@@ -7,7 +7,7 @@
           <property name="windowImages" value="sts4-16.png,sts4-32.png,sts4-48.png"/> 
           <property name="aboutImage" value="sts_lg.gif"/> 
           <property name="aboutText" value="%productBlurb"/> 
-          <property name="appName" value="%productName"/> 
+          <property name="appName" value="SpringToolSuite4"/> 
           <property name="preferenceCustomization" value="plugin_customization.ini"/> 
           <property
                 name="startupForegroundColor"
