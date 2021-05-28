@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2020 Pivotal, Inc.
+ * Copyright (c) 2017, 2021 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -546,7 +546,8 @@ public class SpringSymbolIndex implements InitializingBean {
 	
 	public List<? extends SymbolInformation> getSymbols(String docURI) {
 		try {	
-			CompletableFuture<Void> projectInitialized = futureProjectFinder.findFuture(URI.create(docURI)).thenCompose(project -> projectInitializedFuture(project));
+			URI uri = URI.create(docURI);
+			CompletableFuture<Void> projectInitialized = futureProjectFinder.findFuture(uri).thenCompose(project -> projectInitializedFuture(project));
 			projectInitialized.get(60, TimeUnit.SECONDS);
 			List<EnhancedSymbolInformation> docSymbols = this.symbolsByDoc.get(docURI);
 			if (docSymbols != null) {

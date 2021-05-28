@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2021 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -34,6 +34,11 @@ public class CompositeProjectOvserver implements ProjectObserver {
 	@Override
 	public void removeListener(Listener listener) {
 		observers.forEach(o -> o.removeListener(listener));
+	}
+
+	@Override
+	public boolean isSupported() {
+		return observers.stream().map(o -> o.isSupported()).reduce(false, (a, b) -> a || b);
 	}
 
 }

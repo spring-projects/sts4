@@ -42,6 +42,14 @@ public class FutureProjectFinder implements DisposableBean {
 		@Override
 		public void changed(IJavaProject project) {
 		}
+
+		@Override
+		public void supported() {
+			if (!projectObserver.isSupported()) {
+				resolveAllPendingRquests();
+			}
+		}
+		
 	};
 	
 	
@@ -50,6 +58,14 @@ public class FutureProjectFinder implements DisposableBean {
 		this.projectObserver = projectObserver.orElse(null);
 		if (this.projectObserver != null) {
 			this.projectObserver.addListener(LISTENER);
+		}
+	}
+	
+	synchronized private void resolveAllPendingRquests() {
+		for (Map.Entry<URI, CompletableFuture<IJavaProject>> e : pendingFindProjectRequests.entrySet()) {
+			Optional<IJavaProject> jp = projectFinder.find(new TextDocumentIdentifier(e.getKey().toString()));
+			e.getValue().complete(jp.orElse(null));
+			pendingFindProjectRequests.remove(e.getKey());
 		}
 	}
 
@@ -79,12 +95,16 @@ public class FutureProjectFinder implements DisposableBean {
 			if (projectObserver == null) {
 				throw new IllegalStateException("Future project lookup not supported without ProjectObserver bean present");
 			}
-			CompletableFuture<IJavaProject> cf = pendingFindProjectRequests.get(uri);
-			if (cf == null) {
-				cf = new CompletableFuture<IJavaProject>();
-				pendingFindProjectRequests.put(uri, cf);
+			if (projectObserver.isSupported()) {
+				CompletableFuture<IJavaProject> cf = pendingFindProjectRequests.get(uri);
+				if (cf == null) {
+					cf = new CompletableFuture<IJavaProject>();
+					pendingFindProjectRequests.put(uri, cf);
+				}
+				return cf;
+			} else {
+				return CompletableFuture.completedFuture(null);
 			}
-			return cf;
 		}
 	}
 

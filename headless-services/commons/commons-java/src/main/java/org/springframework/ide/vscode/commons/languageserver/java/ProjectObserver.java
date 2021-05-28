@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2021 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -26,7 +26,9 @@ public interface ProjectObserver {
 		void created(IJavaProject project);
 		void changed(IJavaProject project);
 		void deleted(IJavaProject project);
+		default void supported() { }
 	}
+	default boolean isSupported() { return true; };
 	void addListener(Listener listener);
 	void removeListener(Listener listener);
 
@@ -37,6 +39,11 @@ public interface ProjectObserver {
 
 		@Override
 		public void removeListener(Listener listener) {
+		}
+
+		@Override
+		public boolean isSupported() {
+			return false;
 		}
 	};
 

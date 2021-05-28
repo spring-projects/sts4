@@ -37,14 +37,11 @@ import org.springframework.ide.vscode.commons.javadoc.JdtLsJavadocProvider;
 import org.springframework.ide.vscode.commons.languageserver.java.ls.ClasspathListener;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.protocol.java.Classpath.CPE;
-import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 import org.springframework.ide.vscode.commons.util.FileObserver;
 import org.springframework.ide.vscode.commons.util.UriUtil;
 
 import reactor.core.Disposable;
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.util.context.Context;
 
 public class JdtLsProjectCache implements InitializableJavaProjectsService {
 
@@ -57,6 +54,8 @@ public class JdtLsProjectCache implements InitializableJavaProjectsService {
 	private Map<String, IJavaProject> table = new HashMap<String, IJavaProject>();
 	private Logger log = LoggerFactory.getLogger(JdtLsProjectCache.class);
 	private List<Listener> listeners = new ArrayList<>();
+	
+	private boolean projectWatchingSupported = true;
 
 	public JdtLsProjectCache(SimpleLanguageServer server, boolean isJandexIndex) {
 		this.server = server;
@@ -70,20 +69,13 @@ public class JdtLsProjectCache implements InitializableJavaProjectsService {
 			})
 			.doOnError(error -> {
 				log.error("JDT-based JavaProject service not available!", error);
+				switchOffProjectObserver();
 			})
 			.toFuture();
 	}
 
 	private FileObserver getFileObserver() {
 		return server.getWorkspaceService().getFileObserver();
-	}
-
-	private boolean isOldJdt(Throwable e) {
-		return ExceptionUtil.getMessage(e).contains("'sts.java.addClasspathListener' not supported");
-	}
-
-	private boolean isNoJdtError(Throwable e) {
-		return ExceptionUtil.getMessage(e).contains("command 'java.execute.workspaceCommand' not found");
 	}
 
 	@Override
@@ -136,6 +128,15 @@ public class JdtLsProjectCache implements InitializableJavaProjectsService {
 		synchronized (listeners) {
 			for (Listener listener : listeners) {
 				listener.changed(newProject);
+			}
+		}
+	}
+	
+	private void notifyProjectObserverSupported() {
+		log.info("Project Observer is " + (projectWatchingSupported ? "" : "not ") + "supported");
+		synchronized (listeners) {
+			for (Listener listener : listeners) {
+				listener.supported();
 			}
 		}
 	}
@@ -274,12 +275,24 @@ public class JdtLsProjectCache implements InitializableJavaProjectsService {
 		.doOnSubscribe(x -> log.info("addClasspathListener ..."))
 		.doOnSuccess(x -> log.info("addClasspathListener DONE"))
 		.doOnError(t -> {
-			log.error("Unexpected error registering classpath listener with JDT. Fallback classpath provider will be used instead.", t);
+			log.error("Unexpected error registering classpath listener with JDT.", t);
+			switchOffProjectObserver();
 		}));
+	}
+	
+	private void switchOffProjectObserver() {
+		projectWatchingSupported = false;
+		notifyProjectObserverSupported();
 	}
 
 	@Override
 	public Collection<? extends IJavaProject> all() {
 		return table.values();
 	}
+
+	@Override
+	public boolean isSupported() {
+		return projectWatchingSupported;
+	}
+	
 }
