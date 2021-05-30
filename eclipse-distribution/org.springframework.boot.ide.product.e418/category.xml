@@ -83,7 +83,7 @@
 		id="org.springframework.tooling.concourse.ls.feature.source" version="0.0.0">
 		<category name="Spring Tools - Developer Resources" />
 	</feature>
-
+<!--
 	<feature
 		id="org.springframework.ide.eclipse.xterm.feature" version="0.0.0">
 		<category name="Spring Tools" />
@@ -95,7 +95,7 @@
 	</feature>
 
 	<feature id="com.make.chromium.cef.feature"/>
-	<feature id="org.eclipse.wildwebdeveloper.embedder.node.feature"/>
+-->	<feature id="org.eclipse.wildwebdeveloper.embedder.node.feature"/>
 
 	<bundle id="org.springframework.tooling.ls.eclipse.commons" />
 	<bundle id="org.springframework.tooling.ls.eclipse.commons.source" />

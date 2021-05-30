@@ -237,19 +237,19 @@
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/lsp4e/releases/latest/</url>
 				</repository> -->
-				<repository>
+<!--				<repository>
 					<id>chromium-binaries</id>
 					<layout>p2</layout>
 					<url>https://dl.maketechnology.io/chromium-cef/rls/repository</url>
-				</repository>
+				</repository> -->
 			</repositories>
 			<modules>
 				<!-- Xterm modules -->
-				<module>../eclipse-extensions/org.springframework.ide.eclipse.xterm</module>
+<!--				<module>../eclipse-extensions/org.springframework.ide.eclipse.xterm</module>
 				<module>../eclipse-extensions/org.springframework.ide.eclipse.xterm.feature</module>
 				<module>../eclipse-extensions/org.springframework.ide.eclipse.xterm.linux.x86_64</module>
 				<module>../eclipse-extensions/org.springframework.ide.eclipse.xterm.macosx.x86_64</module>
-				<module>../eclipse-extensions/org.springframework.ide.eclipse.xterm.win32.x86_64</module>
+				<module>../eclipse-extensions/org.springframework.ide.eclipse.xterm.win32.x86_64</module> -->
 						
 				<module>org.springframework.boot.ide.product.e417</module>				
 			</modules>
@@ -352,19 +352,19 @@
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/lsp4e/releases/latest/</url>
 				</repository> -->
-				<repository>
+<!--				<repository>
 					<id>chromium-binaries</id>
 					<layout>p2</layout>
 					<url>https://dl.maketechnology.io/chromium-cef/rls/repository</url>
-				</repository>
+				</repository> -->
 			</repositories>
 			<modules>
 				<!-- Xterm modules -->
-				<module>../eclipse-extensions/org.springframework.ide.eclipse.xterm</module>
+<!--				<module>../eclipse-extensions/org.springframework.ide.eclipse.xterm</module>
 				<module>../eclipse-extensions/org.springframework.ide.eclipse.xterm.feature</module>
 				<module>../eclipse-extensions/org.springframework.ide.eclipse.xterm.linux.x86_64</module>
 				<module>../eclipse-extensions/org.springframework.ide.eclipse.xterm.macosx.x86_64</module>
-				<module>../eclipse-extensions/org.springframework.ide.eclipse.xterm.win32.x86_64</module>
+				<module>../eclipse-extensions/org.springframework.ide.eclipse.xterm.win32.x86_64</module> -->
 				
 				<module>org.springframework.boot.ide.product.e418</module>				
 			</modules>
@@ -467,21 +467,21 @@
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/lsp4e/releases/latest/</url>
 				</repository> -->
-				<repository>
+<!--				<repository>
 					<id>chromium-binaries</id>
 					<layout>p2</layout>
 					<url>https://dl.maketechnology.io/chromium-cef/rls/repository</url>
-				</repository>
+				</repository> -->
 			</repositories>
 			<modules>
 				<!-- Xterm modules -->
-				<module>../eclipse-extensions/org.springframework.ide.eclipse.xterm</module>
+<!--				<module>../eclipse-extensions/org.springframework.ide.eclipse.xterm</module>
 				<module>../eclipse-extensions/org.springframework.ide.eclipse.xterm.feature</module>
 				<module>../eclipse-extensions/org.springframework.ide.eclipse.xterm.linux.x86_64</module>
 				<module>../eclipse-extensions/org.springframework.ide.eclipse.xterm.macosx.x86_64</module>
-				<module>../eclipse-extensions/org.springframework.ide.eclipse.xterm.win32.x86_64</module>
+				<module>../eclipse-extensions/org.springframework.ide.eclipse.xterm.win32.x86_64</module> -->
 				
-				<module>org.springframework.boot.ide.product.e419</module>				
+				<module>org.springframework.boot.ide.product.e419</module>
 			</modules>
 		</profile>
 
@@ -587,21 +587,21 @@
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/lsp4e/releases/latest/</url>
 				</repository> -->
-				<repository>
+<!--				<repository>
 					<id>chromium-binaries</id>
 					<layout>p2</layout>
 					<url>https://dl.maketechnology.io/chromium-cef/rls/repository</url>
-				</repository>
-			</repositories>
+				</repository> -->
+			</repositories> 
 			<modules>
 				<!-- Xterm modules -->
-				<module>../eclipse-extensions/org.springframework.ide.eclipse.xterm</module>
+<!--				<module>../eclipse-extensions/org.springframework.ide.eclipse.xterm</module>
 				<module>../eclipse-extensions/org.springframework.ide.eclipse.xterm.feature</module>
 				<module>../eclipse-extensions/org.springframework.ide.eclipse.xterm.linux.x86_64</module>
 				<module>../eclipse-extensions/org.springframework.ide.eclipse.xterm.macosx.x86_64</module>
 				<module>../eclipse-extensions/org.springframework.ide.eclipse.xterm.win32.x86_64</module>
-				
-				<module>org.springframework.boot.ide.product.e420</module>				
+-->
+				<module>org.springframework.boot.ide.product.e420</module>		
 			</modules>
 
 			<build>
