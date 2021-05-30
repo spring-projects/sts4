@@ -56,6 +56,24 @@
               "image": "walkthroughs/spring-symbols-navigation.png",
               "altText": "Go to Symbol in Workspace..."
             }
+          },
+          {
+            "id": "run-your-spring-projects",
+            "title": "Run your Spring Boot projects",
+            "description": "Running your Spring Boot projects from within VS Code is simple: Open any Java source file from your project and press `Run` at the top right corner.\nThe second option is to [switch to the launch section](command:workbench.view.debug) of VS Code and start the app there.",
+            "media": {
+              "image": "walkthroughs/spring-run-app.png",
+              "altText": "Run your Spring Boot app"
+            }
+          },
+          {
+            "id": "live-information-for-your-running-spring-app",
+            "title": "Show live information from your running Spring Boot application",
+            "description": "A unique feature of the Spring Tools is the ability to vizualize live data from your running app inplace with the source code of the running application.\n",
+            "media": {
+              "markdown": "walkthroughs/live-information.md",
+              "altText": "Run your Spring Boot app"
+            }
           }
         ]
       }
