@@ -705,11 +705,11 @@
 			<layout>p2</layout>
 			<url>https://download.jboss.org/jbosstools/updates/m2e-extensions/m2e-apt/1.5.2-2018-12-24_15-46-05-H18/</url>
 		</repository>
-		<repository>
+<!--		<repository>
 			<id>justj</id>
 			<url>https://download.eclipse.org/justj/jres/15/updates/release/latest/</url>
 			<layout>p2</layout>
-		</repository>
+		</repository> -->
 	</repositories>
 
 	<pluginRepositories>
