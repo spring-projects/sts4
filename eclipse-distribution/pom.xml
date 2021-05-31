@@ -77,8 +77,7 @@
 
 		<!-- Signing -->
 		<signing.skip>true</signing.skip>
-		<signing.alias>pivotal</signing.alias>
-		<signing.keystore>~/.keytool/pivotal.jks</signing.keystore>
+		<signing.alias>vmware</signing.alias>
 
 		<!-- signing and notarizing (win exe signing + macOS app signing and notarizing-->
 		<skip.win.signing>true</skip.win.signing>

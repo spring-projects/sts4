@@ -108,8 +108,7 @@
 		<commons-codec-version>1.13</commons-codec-version>
 
 		<signing.skip>true</signing.skip>
-		<signing.alias>pivotal</signing.alias>
-		<signing.keystore>~/.keytool/pivotal.jks</signing.keystore>
+		<signing.alias>vmware</signing.alias>
 	</properties>
 
 	<build>

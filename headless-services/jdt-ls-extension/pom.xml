@@ -49,8 +49,7 @@
 
 		<!-- Signing -->
 		<signing.skip>true</signing.skip>
-		<signing.alias>pivotal</signing.alias>
-		<signing.keystore>~/.keytool/pivotal.jks</signing.keystore>
+		<signing.alias>vmware</signing.alias>
 		<misc.p2.repo.version>3.9.4.201902271843</misc.p2.repo.version>
 	</properties>
 
