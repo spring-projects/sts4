@@ -10,7 +10,13 @@ The live information is provided by [Spring Boot Actuators](https://docs.spring.
 
 ### Show the live information
 
-In order to connect to a running application, you need to execute the [Manage Live Spring Boot Process Connections](vscode-spring-boot.live-hover.connect) command (e.g. via the command palette). Then, the command shows up a list of running processes, from which you can select the app to connect to.
+In order to connect to a running application, you need to execute the [Manage Live Spring Boot Process Connections](vscode-spring-boot.live-hover.connect) command (e.g. via the command palette).
+
+![](manage-live-connections.png)
+
+Then, the command shows up a list of running processes, from which you can select the app to connect to.
+
+![](manage-live-connections-connect.png)
 
 Once connected, the live information shows up in place with the source code of your application.
 
