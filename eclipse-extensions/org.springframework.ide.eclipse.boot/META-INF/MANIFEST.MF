@@ -39,7 +39,7 @@ Require-Bundle: org.eclipse.core.resources,
  org.reactivestreams.reactive-streams,
  com.google.guava,
  org.eclipse.wst.sse.core
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-RequiredExecutionEnvironment: JavaSE-1.8
 Bundle-ActivationPolicy: lazy
 Export-Package: org.springframework.ide.eclipse.boot.core,
  org.springframework.ide.eclipse.boot.core.cli,
