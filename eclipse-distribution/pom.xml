@@ -242,6 +242,11 @@
 					<layout>p2</layout>
 					<url>https://dl.maketechnology.io/chromium-cef/rls/repository</url>
 				</repository> -->
+				<repository>
+					<id>justj</id>
+					<url>https://download.eclipse.org/justj/jres/15/updates/release/latest/</url>
+					<layout>p2</layout>
+				</repository>
 			</repositories>
 			<modules>
 				<!-- Xterm modules -->
@@ -357,6 +362,11 @@
 					<layout>p2</layout>
 					<url>https://dl.maketechnology.io/chromium-cef/rls/repository</url>
 				</repository> -->
+				<repository>
+					<id>justj</id>
+					<url>https://download.eclipse.org/justj/jres/15/updates/release/latest/</url>
+					<layout>p2</layout>
+				</repository>
 			</repositories>
 			<modules>
 				<!-- Xterm modules -->
@@ -472,6 +482,11 @@
 					<layout>p2</layout>
 					<url>https://dl.maketechnology.io/chromium-cef/rls/repository</url>
 				</repository> -->
+				<repository>
+					<id>justj</id>
+					<url>https://download.eclipse.org/justj/jres/15/updates/release/latest/</url>
+					<layout>p2</layout>
+				</repository>
 			</repositories>
 			<modules>
 				<!-- Xterm modules -->
