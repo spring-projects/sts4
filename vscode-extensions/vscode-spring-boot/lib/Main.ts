@@ -70,9 +70,10 @@ export function activate(context: VSCode.ExtensionContext): Thenable<LanguageCli
             synchronize: {
                 configurationSection: 'boot-java'
             },
-            initializationOptions: {
-                workspaceFolders: workspace.workspaceFolders ? workspace.workspaceFolders.map(f => f.uri.toString()) : null
-            }
+            initializationOptions: () => ({
+                workspaceFolders: workspace.workspaceFolders ? workspace.workspaceFolders.map(f => f.uri.toString()) : null,
+                enableJdtClasspath: VSCode.extensions.getExtension('redhat.java')?.exports?.serverMode === 'Standard'
+            })
         },
         highlightCodeLensSettingKey: 'boot-java.highlight-codelens.on'
     };

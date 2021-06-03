@@ -84,7 +84,6 @@ import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.CollectionUtil;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
-import com.google.common.collect.ImmutableList;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -418,12 +417,12 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 				hasQuickFixes() || 
 				!commands.isEmpty()
 		)) {
-			ImmutableList.Builder<String> supportedCommands = ImmutableList.builder();
+			List<String> supportedCommands = new ArrayList<>();
 			if (hasQuickFixes()) {
 				supportedCommands.add(CODE_ACTION_COMMAND_ID);
 			}
 			supportedCommands.addAll(commands.keySet());
-			c.setExecuteCommandProvider(new ExecuteCommandOptions(supportedCommands.build()));
+			c.setExecuteCommandProvider(new ExecuteCommandOptions(supportedCommands));
 		}
 		if (hasWorkspaceSymbolHandler()) {
 			c.setWorkspaceSymbolProvider(true);

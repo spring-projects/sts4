@@ -24,7 +24,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
+import org.eclipse.lsp4j.InitializeParams;
+import org.eclipse.lsp4j.ServerCapabilities;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,16 +38,23 @@ import org.springframework.ide.vscode.commons.java.JavaProject;
 import org.springframework.ide.vscode.commons.java.JdtLsJavaProject;
 import org.springframework.ide.vscode.commons.javadoc.JdtLsJavadocProvider;
 import org.springframework.ide.vscode.commons.languageserver.java.ls.ClasspathListener;
+import org.springframework.ide.vscode.commons.languageserver.util.ServerCapabilityInitializer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.protocol.java.Classpath.CPE;
 import org.springframework.ide.vscode.commons.util.FileObserver;
 import org.springframework.ide.vscode.commons.util.UriUtil;
 
+import com.google.gson.JsonObject;
+import com.google.gson.JsonPrimitive;
+
 import reactor.core.Disposable;
+import reactor.core.Disposables;
 import reactor.core.publisher.Mono;
 
-public class JdtLsProjectCache implements InitializableJavaProjectsService {
+public class JdtLsProjectCache implements InitializableJavaProjectsService, ServerCapabilityInitializer {
 
+	private static final String CMD_SPRING_BOOT_ENABLE_CLASSPATH_LISTENING = "sts.vscode-spring-boot.enableClasspathListening";
+	
 	private static final Duration INITIALIZE_TIMEOUT = Duration.ofSeconds(10);
 	private static final Object JDT_SCHEME = "jdt";
 
@@ -55,11 +65,20 @@ public class JdtLsProjectCache implements InitializableJavaProjectsService {
 	private Logger log = LoggerFactory.getLogger(JdtLsProjectCache.class);
 	private List<Listener> listeners = new ArrayList<>();
 	
-	private boolean projectWatchingSupported = true;
-
+	final private ClasspathListener CLASSPATH_LISTENER = new JstLsClasspathListener();
+	
+	final private Disposable.Swap DISPOSABLE = Disposables.swap();
+	
+	private Mono<Disposable> classpathListenerRequest;
+	
+	private boolean classpathListenerEnabled;
+	
+	private boolean initialClasspathLisetnerEnable;
+	
 	public JdtLsProjectCache(SimpleLanguageServer server, boolean isJandexIndex) {
 		this.server = server;
 		this.IS_JANDEX_INDEX = isJandexIndex;
+		this.initialClasspathLisetnerEnable = true;
 		this.server
 			.onInitialized(initialize())
 			.doOnSuccess((disposable) -> {
@@ -69,7 +88,7 @@ public class JdtLsProjectCache implements InitializableJavaProjectsService {
 			})
 			.doOnError(error -> {
 				log.error("JDT-based JavaProject service not available!", error);
-				switchOffProjectObserver();
+				enableClasspathListener(false);
 			})
 			.toFuture();
 	}
@@ -133,7 +152,7 @@ public class JdtLsProjectCache implements InitializableJavaProjectsService {
 	}
 	
 	private void notifyProjectObserverSupported() {
-		log.info("Project Observer is " + (projectWatchingSupported ? "" : "not ") + "supported");
+		log.info("Project Observer is " + (classpathListenerEnabled ? "" : "not ") + "supported");
 		synchronized (listeners) {
 			for (Listener listener : listeners) {
 				listener.supported();
@@ -230,61 +249,44 @@ public class JdtLsProjectCache implements InitializableJavaProjectsService {
 
 	@Override
 	public Mono<Disposable> initialize() {
-		return Mono.defer(() -> server.addClasspathListener(new ClasspathListener() {
-			@Override
-			public void changed(Event event) {
-				log.debug("claspath event received {}", event);
-				server.doOnInitialized(() -> {
-					//log.info("initialized.thenRun block entered");
-					try {
-						synchronized (table) {
-							String uri = UriUtil.normalize(event.projectUri);
-							log.debug("uri = {}", uri);
-							if (event.deleted) {
-								log.debug("event.deleted = true");
-								IJavaProject deleted = table.remove(uri);
-								if (deleted!=null) {
-									log.debug("removed from table = true");
-									notifyDelete(deleted);
-								} else {
-									log.warn("Deleted project not removed because uri {} not found in {}", uri, table.keySet());
-								}
-							} else {
-								log.debug("deleted = false");
-								URI projectUri = new URI(uri);
-								ClasspathData classpath = new ClasspathData(event.name, event.classpath.getEntries());
-								IJavaProject newProject = IS_JANDEX_INDEX
-										? new JavaProject(getFileObserver(), projectUri, classpath,
-												JdtLsProjectCache.this)
-										: new JdtLsJavaProject(server.getClient(), projectUri, classpath, JdtLsProjectCache.this);
-								IJavaProject oldProject = table.put(uri, newProject);
-								if (oldProject != null) {
-									notifyChanged(newProject);
-								} else {
-									notifyCreated(newProject);
-								}
-							}
-						}
-					} catch (Exception e) {
-						log.error("", e);
-					}
-				});
-			}
-		})
-		.timeout(INITIALIZE_TIMEOUT)
-		.doOnSubscribe(x -> log.info("addClasspathListener ..."))
-		.doOnSuccess(x -> log.info("addClasspathListener DONE"))
-		.doOnError(t -> {
-			log.error("Unexpected error registering classpath listener with JDT.", t);
-			switchOffProjectObserver();
-		}));
+		return Mono.defer(() -> {
+			log.debug("ADD CLASSPATH LISTENER enableClasspath=" + initialClasspathLisetnerEnable);
+			enableClasspathListener(initialClasspathLisetnerEnable);
+			return Mono.just(DISPOSABLE);
+		});
 	}
 	
-	private void switchOffProjectObserver() {
-		projectWatchingSupported = false;
-		notifyProjectObserverSupported();
+	private synchronized void enableClasspathListener(boolean enabled) {
+		if (classpathListenerEnabled != enabled) {
+			if (enabled) {
+				log.debug("Adding classpath listener enabled=" + enabled);
+				classpathListenerEnabled = true;
+				notifyProjectObserverSupported();
+				classpathListenerRequest = server.addClasspathListener(CLASSPATH_LISTENER).timeout(INITIALIZE_TIMEOUT)
+						.doOnSubscribe(x -> log.info("addClasspathListener ..."))
+						.doOnSuccess(x -> log.info("addClasspathListener DONE"))
+						.doOnError(t -> {
+							log.error("Unexpected error registering classpath listener with JDT.", t);
+							enableClasspathListener(false);
+						});
+				final Mono<Disposable> oldClasspathSubscription = classpathListenerRequest;
+				classpathListenerRequest.subscribe(d -> {
+					if (oldClasspathSubscription != classpathListenerRequest) {
+						d.dispose();
+					} else {
+						DISPOSABLE.update(d);
+					}
+				});
+			} else {
+				log.debug("Removing classpath listener enabled=" + enabled);
+				DISPOSABLE.update(Disposables.single());
+				classpathListenerRequest = null;
+				classpathListenerEnabled = false;
+				notifyProjectObserverSupported();
+			}
+		}
 	}
-
+	
 	@Override
 	public Collection<? extends IJavaProject> all() {
 		return table.values();
@@ -292,7 +294,75 @@ public class JdtLsProjectCache implements InitializableJavaProjectsService {
 
 	@Override
 	public boolean isSupported() {
-		return projectWatchingSupported;
+		return classpathListenerEnabled;
 	}
 	
+	@Override
+	public void initialize(InitializeParams p, ServerCapabilities cap) {
+		server.onCommand(CMD_SPRING_BOOT_ENABLE_CLASSPATH_LISTENING, params -> {
+			log.debug("CLASSPATH ENABLED CMD EXEC");
+			if (params.getArguments().get(0) instanceof JsonPrimitive) {
+				boolean classpathListeningEnabled = ((JsonPrimitive)params.getArguments().get(0)).getAsBoolean();
+				log.debug("Enable classpath listening: " + classpathListeningEnabled);
+				enableClasspathListener(classpathListeningEnabled);
+			}
+			return CompletableFuture.completedFuture(null);
+		});
+
+		log.debug("REGISTER ENABLE CLASSPATH CMD");
+		JsonObject o = (JsonObject) p.getInitializationOptions();
+		if (o != null) {
+			JsonPrimitive enable = o.getAsJsonPrimitive("enableJdtClasspath");
+			if (enable != null) {
+				log.debug("READING INIT VALUE for classpathEnabled=" + enable.getAsBoolean());
+				initialClasspathLisetnerEnable = enable.getAsBoolean();
+			}
+		}
+		log.debug("INIT VALUE for classpathEnabled=" + initialClasspathLisetnerEnable);
+		cap.getExecuteCommandProvider().getCommands().add(CMD_SPRING_BOOT_ENABLE_CLASSPATH_LISTENING);
+	}
+	
+	private class JstLsClasspathListener implements ClasspathListener {
+		
+		@Override
+		public void changed(Event event) {
+			log.debug("claspath event received {}", event);
+			server.doOnInitialized(() -> {
+				//log.info("initialized.thenRun block entered");
+				try {
+					synchronized (table) {
+						String uri = UriUtil.normalize(event.projectUri);
+						log.debug("uri = {}", uri);
+						if (event.deleted) {
+							log.debug("event.deleted = true");
+							IJavaProject deleted = table.remove(uri);
+							if (deleted!=null) {
+								log.debug("removed from table = true");
+								notifyDelete(deleted);
+							} else {
+								log.warn("Deleted project not removed because uri {} not found in {}", uri, table.keySet());
+							}
+						} else {
+							log.debug("deleted = false");
+							URI projectUri = new URI(uri);
+							ClasspathData classpath = new ClasspathData(event.name, event.classpath.getEntries());
+							IJavaProject newProject = IS_JANDEX_INDEX
+									? new JavaProject(getFileObserver(), projectUri, classpath,
+											JdtLsProjectCache.this)
+									: new JdtLsJavaProject(server.getClient(), projectUri, classpath, JdtLsProjectCache.this);
+							IJavaProject oldProject = table.put(uri, newProject);
+							if (oldProject != null) {
+								notifyChanged(newProject);
+							} else {
+								notifyCreated(newProject);
+							}
+						}
+					}
+				} catch (Exception e) {
+					log.error("", e);
+				}
+			});
+		}
+	}
+
 }
