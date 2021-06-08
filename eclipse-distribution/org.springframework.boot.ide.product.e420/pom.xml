@@ -17,6 +17,7 @@
 	<properties>
 		<dist.accessKey>${accessKey}</dist.accessKey>
 		<dist.secretKey>${secretKey}</dist.secretKey>
+		<justj.repository>https://download.eclipse.org/justj/jres/16/updates/release/latest/</justj.repository>
 	</properties>
 
 	<build>
@@ -180,7 +181,7 @@
 							<goal>eclipse-run</goal>
 						</goals>
 						<configuration>
-							<appArgLine>-consoleLog -application org.eclipse.equinox.p2.director -nosplash -destination ${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/macosx/cocoa/x86_64/SpringToolSuite4.app -repository https://download.eclipse.org/justj/jres/15/updates/release/latest/ -installIUs org.eclipse.justj.openjdk.hotspot.jre.full.feature.group</appArgLine>
+							<appArgLine>-consoleLog -application org.eclipse.equinox.p2.director -nosplash -destination ${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/macosx/cocoa/x86_64/SpringToolSuite4.app -repository ${justj.repository} -installIUs org.eclipse.justj.openjdk.hotspot.jre.full.feature.group</appArgLine>
 						</configuration>
 					</execution>
 					<execution>
@@ -190,7 +191,7 @@
 							<goal>eclipse-run</goal>
 						</goals>
 						<configuration>
-							<appArgLine>-consoleLog -application org.eclipse.equinox.p2.director -nosplash -destination ${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/win32/win32/x86_64/sts-${unqualifiedVersion}.${p2.qualifier} -repository https://download.eclipse.org/justj/jres/15/updates/release/latest/ -installIUs org.eclipse.justj.openjdk.hotspot.jre.full.feature.group</appArgLine>
+							<appArgLine>-consoleLog -application org.eclipse.equinox.p2.director -nosplash -destination ${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/win32/win32/x86_64/sts-${unqualifiedVersion}.${p2.qualifier} -repository ${justj.repository} -installIUs org.eclipse.justj.openjdk.hotspot.jre.full.feature.group</appArgLine>
 						</configuration>
 					</execution>
 					<execution>
@@ -200,7 +201,7 @@
 							<goal>eclipse-run</goal>
 						</goals>
 						<configuration>
-							<appArgLine>-consoleLog -application org.eclipse.equinox.p2.director -nosplash -destination ${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/linux/gtk/x86_64/sts-${unqualifiedVersion}.${p2.qualifier} -repository https://download.eclipse.org/justj/jres/15/updates/release/latest/ -installIUs org.eclipse.justj.openjdk.hotspot.jre.full.feature.group</appArgLine>
+							<appArgLine>-consoleLog -application org.eclipse.equinox.p2.director -nosplash -destination ${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/linux/gtk/x86_64/sts-${unqualifiedVersion}.${p2.qualifier} -repository ${justj.repository} -installIUs org.eclipse.justj.openjdk.hotspot.jre.full.feature.group</appArgLine>
 						</configuration>
 					</execution>
 				</executions>
