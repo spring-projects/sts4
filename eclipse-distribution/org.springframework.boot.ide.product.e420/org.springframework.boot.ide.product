@@ -13,6 +13,7 @@
 -Dosgi.dataAreaRequiresExplicitInit=true
 -Xms256m
 -Xmx2048m
+--illegal-access=permit
 --add-modules=ALL-SYSTEM
       </vmArgs>
       <vmArgsLin>
