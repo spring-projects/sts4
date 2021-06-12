@@ -870,16 +870,9 @@
 					<configuration>
 						<encoding>UTF-8</encoding>
 						<useProjectSettings>false</useProjectSettings>
-<!--						<compilerArgument>-err:-forbidden</compilerArgument> -->
-						<compilerArgs>
-							<arg>-err:-forbidden</arg>
-							<arg>--add-modules</arg>
-							<arg>java.base,java.management,java.xml</arg>
-							<arg>--limit-modules</arg>
-							<arg>java.base,java.management,java.xml</arg>
-						</compilerArgs>
+						<compilerArgument>-err:-forbidden</compilerArgument>
 					</configuration>
-					</plugin>
+				</plugin>
 				<plugin>
 					<groupId>org.eclipse.tycho</groupId>
 					<artifactId>target-platform-configuration</artifactId>
