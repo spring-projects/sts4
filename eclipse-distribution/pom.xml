@@ -524,7 +524,7 @@
 				<repository>
 					<id>orbit</id>
 					<layout>p2</layout>
-					<url>https://download.eclipse.org/tools/orbit/downloads/drops/S20210518003616/repository</url>
+					<url>https://download.eclipse.org/tools/orbit/downloads/drops/R20210602031627/repository</url>
 				</repository>
 				<repository>
 					<id>m2e</id>
