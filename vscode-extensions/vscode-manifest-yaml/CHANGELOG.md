@@ -1,3 +1,7 @@
+## 2021-06-18 (4.11.0 RELEASE, incl. language servers version 1.26.0)
+
+* no major changes
+
 ## 2021-03-17 (4.10.0 RELEASE, incl. language servers version 1.25.0)
 
 * _(CF Manifest)_ fixed: Error writing config: `rename ~\.cf\temp-config025076595 ~\.cf\config.json: Access is denied.` ([#577](https://github.com/spring-projects/sts4/issues/577))

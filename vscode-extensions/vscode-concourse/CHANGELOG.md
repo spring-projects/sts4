@@ -1,3 +1,8 @@
+## 2021-06-18 (4.11.0 RELEASE, incl. language servers version 1.26.0)
+
+* _(Concourse)_ improvement: VSCode extension doesn't understand glob patterns in group config ([#639](https://github.com/spring-projects/sts4/issues/639))
+* _(Concourse)_ improvement: Step and properties not recognized ([#633](https://github.com/spring-projects/sts4/issues/633))
+
 ## 2021-03-17 (4.10.0 RELEASE, incl. language servers version 1.25.0)
 
 * _(Concourse)_ improvement: Add display property to pipeline schema ([#607](https://github.com/spring-projects/sts4/pull/607)) - contributed by [@jghiloni](https://github.com/jghiloni)

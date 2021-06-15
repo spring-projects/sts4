@@ -1,3 +1,16 @@
+## 2021-06-18 (4.11.0 RELEASE, incl. language servers version 1.26.0)
+
+* _(Spring Boot)_ fixed: Live data highlights disapearing after closing and reopening editor ([#616](https://github.com/spring-projects/sts4/issues/616))
+* _(Spring Boot)_ fixed: In application.yml deprecated 'spring.profiles' is not showing a warning ([#615](https://github.com/spring-projects/sts4/issues/615))
+* _(Spring Boot)_ fixed: Rename BootLanguagServerBootApp to BootLanguageServerBootApp ([#631](https://github.com/spring-projects/sts4/issues/631))
+* _(VS Code, Spring Boot)_ new: new walkthrough contribution to get started with Spring Boot in VS Code
+* _(VS Code, Spring Boot)_ fixed: not work when change LightWeight mode to Standard ([#628](https://github.com/spring-projects/sts4/issues/628))
+* _(VS Code, Spring Boot)_ fixed: spring boot language server causing long waits for Java outline view when running in lightweight mode ([#642](https://github.com/spring-projects/sts4/issues/642))
+* _(VS Code, Spring Boot)_ fixed: language server processes doesn't get shutdown properly in VSCode ([#636](https://github.com/spring-projects/sts4/issues/636))
+* _(VS Code, Spring Boot)_ fixed: nothing shown in VS Code Outline view ([#627](https://github.com/spring-projects/sts4/issues/627))
+* _(VS Code, Spring Boot)_ fixed: vscode spring boot language server not starting up ([#635](https://github.com/spring-projects/sts4/issues/635))
+* _(VS Code, Spring Boot)_ fixed: VSCode extension JDK version ([#612](https://github.com/spring-projects/sts4/issues/612))
+
 ## 2021-03-17 (4.10.0 RELEASE, incl. language servers version 1.25.0)
 
 * _(Spring Boot)_ enhancement: `.sts4` dir location now configurable ([#601](https://github.com/spring-projects/sts4/issues/601))
