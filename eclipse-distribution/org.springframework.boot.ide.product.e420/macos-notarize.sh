@@ -3,6 +3,9 @@
 DMG=$1
 NOTARIZE_SERVICE_URL=$2
 
+echo "Notarize DMG"
+echo ${DMG}
+
 RESPONSE=\
 $(curl -s -X POST \
   -F file=@${DMG} \
