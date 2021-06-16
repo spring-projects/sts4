@@ -413,7 +413,7 @@
 						<configuration>
 							<skip>${skip.osx.notarizing}</skip>
 							<target>
-<!--
+
 								<property name="dmgName" value="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-macosx.cocoa.x86_64.dmg" />
 
 								<exec executable="/bin/bash" failonerror="true">
@@ -421,8 +421,8 @@
 									<arg value="${dmgName}"/>
 								    <arg value="${env.MACOS_NOTARIZATION_SERVICE_URL}"/>
 								</exec>
--->
-								<property name="dmgName-aarch" value="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-macosx.cocoa.aarch64.dmg" />
+
+								<property name="dmgName-aarch64" value="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-macosx.cocoa.aarch64.dmg" />
 
 								<exec executable="/bin/bash" failonerror="true">
 									<arg value="${project.build.directory}/../macos-notarize.sh"/>
