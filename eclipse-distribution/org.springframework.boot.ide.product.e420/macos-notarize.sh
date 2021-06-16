@@ -20,7 +20,7 @@ echo "Status after submitting"
 echo ${STATUS}
 
 while [[ ${STATUS} == 'IN_PROGRESS' ]]; do
-  sleep 1m
+  sleep 60
   RESPONSE=$(curl -s ${NOTARIZE_SERVICE_URL}/macos-notarization-service/${UUID}/status)
   STATUS=$(echo ${RESPONSE} | jq -r '.notarizationStatus.status')
 

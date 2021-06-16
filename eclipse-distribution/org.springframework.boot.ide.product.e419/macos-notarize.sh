@@ -17,7 +17,7 @@ UUID=$(echo ${RESPONSE} | jq -r '.uuid')
 STATUS=$(echo ${RESPONSE} | jq -r '.notarizationStatus.status')
 
 while [[ ${STATUS} == 'IN_PROGRESS' ]]; do
-  sleep 1m
+  sleep 60
   RESPONSE=$(curl -s ${NOTARIZE_SERVICE_URL}/macos-notarization-service/${UUID}/status)
   STATUS=$(echo ${RESPONSE} | jq -r '.notarizationStatus.status')
 done
