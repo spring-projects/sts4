@@ -6,6 +6,7 @@ cd ../jdt-ls-extension
 if command -v xvfb-run ; then
     echo "Using xvfb to run in headless environment..."
     xvfb-run ../mvnw \
+        -DskipTests \
         -DtrimStackTrace=false \
         -f ../pom.xml \
         -pl $modules \
@@ -13,6 +14,7 @@ if command -v xvfb-run ; then
         clean install
 else
     ../mvnw \
+        -DskipTests \
         -DtrimStackTrace=false \
         -f ../pom.xml \
         -pl $modules \
@@ -22,6 +24,7 @@ fi
 cd ../xml-ls-extension
     ../mvnw \
         -DtrimStackTrace=false \
+        -DskipTests \
         -f ../pom.xml \
         -pl xml-ls-extension \
         -am \
