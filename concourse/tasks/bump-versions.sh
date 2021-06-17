@@ -16,7 +16,7 @@ for extension_id in $(ls -d vscode-*)
 do
     cd $vscode_sources/$extension_id
     echo "Should update version of $extension_id to $version"
-    npm version $version
+    npm version --allow-same-version $version
     git add package.json
     echo ""
 done
