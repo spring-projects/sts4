@@ -728,23 +728,6 @@ jobs:
 #       trigger: true
 #       passed:
 #       - publish-release
-  - task: publish-ovsx-releases
-    file: tasks/concourse/tasks/publish-ovsx-releases.yml
-    input_mapping:
-      sts4: tasks
-    params:
-      ovsx_token: ((ovsx_token))
-    on_failure:
-      put: slack-notification
-      params:
-        text: |
-           Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!      
-    on_success:
-      put: slack-notification
-      params:
-        channel: "#spring-tools-team"
-        text: |
-          STS 4 VScode Extensions released to ovsx.
 - name: publish-release
   serial: true
   plan:
