@@ -44,8 +44,8 @@
             "title": "Create a new Spring Boot project",
             "description": "The easiest way to create new Spring Boot projects in VS Code is to use the Spring Initializr integration. Open the command palette in VS Code, search for __Spring__ and create a new Spring Boot project from there.\n[Create New Spring Boot Project](command:spring.initializr.maven-project)",
             "media": {
-                "image": "walkthroughs/spring-initializr-integration.png",
-                "altText": "Create a new Maven-based Spring Boot project"
+              "image": "walkthroughs/spring-initializr-integration.png",
+              "altText": "Create a new Maven-based Spring Boot project"
             }
           },
           {
