@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2017 Pivotal, Inc.
+ * Copyright (c) 2015, 2021 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -249,6 +249,15 @@ public abstract class WrappingBootDashElement<T> extends AbstractDisposable impl
 	@SuppressWarnings("unchecked")
 	protected void addElementState(LiveExpression<?> state) {
 		state.addListener(elementStateNotifier);
+	}
+
+	/**
+	 * Ensure that model state notifications are fired when a given liveExp's value changes.
+	 */
+	protected void addModelState(LiveExpression<?> state) {
+		state.onChange((e,v) -> {
+			getBootDashModel().notifyModelStateChanged();
+		});
 	}
 
 	@Override
