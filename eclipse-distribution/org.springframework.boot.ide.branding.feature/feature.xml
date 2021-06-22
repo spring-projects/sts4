@@ -2,7 +2,7 @@
 <feature
 	id="org.springframework.boot.ide.branding.feature"
 	label="Spring Tool Suite 4 Branding Feature"
-	version="4.11.0.qualifier"
+	version="4.11.1.qualifier"
 	provider-name="VMware, Inc.">
 
 	<plugin
