@@ -348,14 +348,14 @@
 							<target>
 
 								<exec executable="/usr/local/bin/appdmg" failonerror="true">
-									<arg value="${project.build.directory}/../spring-tool-suite-4-dmg-config-${dist.target.major}.json"/>
+									<arg value="${project.build.directory}/../spring-tool-suite-4-dmg-config-${dist.target.major}-x86.json"/>
 									<arg value="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-macosx.cocoa.x86_64.dmg"/>
 								</exec>
 
 								<delete file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-macosx.cocoa.x86_64.tar.gz"/>
 								
 								<exec executable="/usr/local/bin/appdmg" failonerror="true">
-									<arg value="${project.build.directory}/../spring-tool-suite-4-dmg-config-${dist.target.major}.json"/>
+									<arg value="${project.build.directory}/../spring-tool-suite-4-dmg-config-${dist.target.major}-aarch64.json"/>
 									<arg value="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-macosx.cocoa.aarch64.dmg"/>
 								</exec>
 
