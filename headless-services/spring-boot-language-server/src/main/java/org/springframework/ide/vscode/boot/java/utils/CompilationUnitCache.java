@@ -217,7 +217,7 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 	
 	private static CompilationUnit parse2(char[] source, String docURI, String unitName, List<Classpath> classpaths, INameEnvironmentWithProgress environment) throws Exception {
 		Map<String, String> options = JavaCore.getOptions();
-		String apiLevel = JavaCore.VERSION_15;
+		String apiLevel = JavaCore.VERSION_16;
 		JavaCore.setComplianceOptions(apiLevel, options);
 		if (environment == null) {
 			environment = CUResolver.createLookupEnvironment(classpaths.toArray(new Classpath[classpaths.size()]));
@@ -238,13 +238,13 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 			needToResolveBindings = false;
 		}
 		
-		CompilationUnit cu = CUResolver.convert(unit, source, AST.JLS15, options, needToResolveBindings, DefaultWorkingCopyOwner.PRIMARY, flags);
+		CompilationUnit cu = CUResolver.convert(unit, source, AST.JLS16, options, needToResolveBindings, DefaultWorkingCopyOwner.PRIMARY, flags);
 
 		return cu;
 	}
 	
 	private static List<Classpath> createClasspath(String[] classpathEntries) {
-		ASTParser parser = ASTParser.newParser(AST.JLS15);
+		ASTParser parser = ASTParser.newParser(AST.JLS16);
 		String[] sourceEntries = new String[] {};
 		parser.setEnvironment(classpathEntries, sourceEntries, null, false);
 		return CUResolver.getClasspath(parser);
