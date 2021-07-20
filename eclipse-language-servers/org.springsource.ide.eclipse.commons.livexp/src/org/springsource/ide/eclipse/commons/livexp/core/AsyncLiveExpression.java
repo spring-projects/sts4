@@ -10,12 +10,14 @@
  *******************************************************************************/
 package org.springsource.ide.eclipse.commons.livexp.core;
 
+import static org.springsource.ide.eclipse.commons.livexp.core.AsyncLiveExpression.AsyncMode.ASYNC;
+
+import java.util.function.Consumer;
+
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
-
-import static org.springsource.ide.eclipse.commons.livexp.core.AsyncLiveExpression.AsyncMode.*;
 
 /**
  * Like a LiveExpression but has an option to ensures that its refresh
@@ -88,14 +90,21 @@ public abstract class AsyncLiveExpression<T> extends LiveExpression<T> {
 	 * synchronous) LiveExpression.
 	 */
 	public AsyncLiveExpression(T initialValue, String refreshJobName, String eventsJobName) {
+		this(initialValue, refreshJobName, eventsJobName, null);
+	}
+	
+	public AsyncLiveExpression(T initialValue, String refreshJobName, String eventsJobName, Consumer<Job> refreshJobCustomizer) {
 		super(initialValue);
 		if (refreshJobName!=null) {
 			refreshJob = new Job(refreshJobName) {
 				protected IStatus run(IProgressMonitor monitor) {
 					syncRefresh();
 					return Status.OK_STATUS;
-				};
+				}
 			};
+			if (refreshJobCustomizer != null) {
+				refreshJobCustomizer.accept(refreshJob);
+			}
 		}
 		if (eventsJobName!=null) {
 			eventsJob = new Job(eventsJobName) {

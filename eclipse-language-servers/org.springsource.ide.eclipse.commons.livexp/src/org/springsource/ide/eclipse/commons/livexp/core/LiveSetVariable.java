@@ -15,8 +15,6 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 
-import org.springsource.ide.eclipse.commons.livexp.core.ObservableSet;
-
 import com.google.common.collect.ImmutableSet;
 
 /**
@@ -81,6 +79,7 @@ public class LiveSetVariable<T> extends ObservableSet<T> {
 		synchronized (this) {
 			if (!dirty) return; //bail out fast and don't copy the collection needlessly
 			value = compute();
+			dirty = false;
 		}
 		//Note... we are being careful here to put the 'changed' call outside synch block.
 		// only keep locks for short time while maniping the collection  / dirty state.

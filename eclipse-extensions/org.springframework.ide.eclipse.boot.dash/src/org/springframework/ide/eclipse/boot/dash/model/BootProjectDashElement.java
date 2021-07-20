@@ -12,6 +12,8 @@ package org.springframework.ide.eclipse.boot.dash.model;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.NullProgressMonitor;
+import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.core.runtime.jobs.JobGroup;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.jdt.core.IJavaElement;
@@ -53,6 +55,8 @@ import com.google.common.collect.ImmutableSortedSet;
 @SuppressWarnings("restriction")
 public class BootProjectDashElement extends AbstractLaunchConfigurationsDashElement<IProject> implements BootDashElement, LiveDataCapableElement {
 
+	private static final JobGroup mainMethodJobGroup = new JobGroup("Find 'main' methods in spring boot projects...", 5, 5);
+
 	private static final boolean DEBUG = DebugUtil.isDevelopment();
 
 	private static void debug(String string) {
@@ -67,29 +71,35 @@ public class BootProjectDashElement extends AbstractLaunchConfigurationsDashElem
 	private ObservableSet<BootDashElement> children;
 	private ObservableSet<Integer> ports;
 
-	private LiveExpression<Boolean> hasMainMethod = new AsyncLiveExpression<Boolean>(false) {
+	private AsyncLiveExpression<Boolean> hasMainMethod = new AsyncLiveExpression<Boolean>(
+			false,
+			"Search main' method in project " + (getProject() != null && getProject().getName() != null ? "'" + getProject().getName() + "'": "UNKNOWQN"),
+			null,
+			job -> {
+				job.setPriority(Job.DECORATE);
+				job.setJobGroup(mainMethodJobGroup);
+			}) {
 
-		@Override
-		protected Boolean compute() {
-			IProject p = getProject();
-			Log.info("Has main method computation for project '" + p.getName() + "'");
-			if (p != null && p.exists()) {
-				IJavaProject jp = JavaCore.create(p);
-				if (jp != null) {
-					IJavaSearchScope searchScope = SearchEngine.createJavaSearchScope(new IJavaElement[]{jp}, IJavaSearchScope.SOURCES);
-					MainMethodSearchEngine engine = new MainMethodSearchEngine();
-					IType[] types = null;
-					try {
-						types = engine.searchMainMethods(new NullProgressMonitor(), searchScope, false);
-						return types != null && types.length > 0;
+				@Override
+				protected Boolean compute() {
+					IProject p = getProject();
+					if (p != null && p.exists()) {
+						IJavaProject jp = JavaCore.create(p);
+						if (jp != null) {
+							IJavaSearchScope searchScope = SearchEngine.createJavaSearchScope(new IJavaElement[]{jp}, IJavaSearchScope.SOURCES);
+							MainMethodSearchEngine engine = new MainMethodSearchEngine();
+							IType[] types = null;
+							try {
+								types = engine.searchMainMethods(new NullProgressMonitor(), searchScope, false);
+								return types != null && types.length > 0;
+							}
+							catch (Exception e) {
+								Log.log(e);
+							}
+						}
 					}
-					catch (Exception e) {
-						Log.log(e);
-					}
+					return false;
 				}
-			}
-			return false;
-		}
 
 	};
 
@@ -145,7 +155,7 @@ public class BootProjectDashElement extends AbstractLaunchConfigurationsDashElem
 	private ObservableSet<Integer> getLivePortsExp() {
 		if (ports==null) {
 			ports = createSortedLiveSummary((BootDashElement element) -> {
-				int port = element.getLivePort();
+				int port = CollectionUtils.getAnyOr(getLivePorts(), -1);;
 				if (port>0) {
 					return port;
 				}

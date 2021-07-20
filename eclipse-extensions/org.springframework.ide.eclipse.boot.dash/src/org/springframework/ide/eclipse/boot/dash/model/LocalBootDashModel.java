@@ -12,13 +12,22 @@ package org.springframework.ide.eclipse.boot.dash.model;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.IResource;
+import org.eclipse.core.resources.IResourceChangeEvent;
+import org.eclipse.core.resources.IResourceChangeListener;
+import org.eclipse.core.resources.IResourceDelta;
+import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.resources.IWorkspace;
+import org.eclipse.core.resources.ResourcesPlugin;
+import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.jdt.core.IJavaProject;
 import org.osgi.framework.Bundle;
@@ -141,6 +150,7 @@ public class LocalBootDashModel extends AbstractBootDashModel implements Deletio
 					if (event.getBundle() == bundle && event.getType() == BundleEvent.STARTED) {
 						try {
 							updateElementsFromWorkspace();
+							applications.getValue().stream().forEach(e -> e.refreshHasMainMethod());
 						} catch (Throwable t) {
 							Log.log(t);
 						} finally {
@@ -173,6 +183,31 @@ public class LocalBootDashModel extends AbstractBootDashModel implements Deletio
 
 			this.devtoolsPortRefresher = new DevtoolsPortRefresher(this, projectElementFactory);
 
+			final IResourceChangeListener workspaceBuildListener = new IResourceChangeListener() {
+
+				@Override
+				public void resourceChanged(IResourceChangeEvent event) {
+					if (event.getSource() != null) {
+						BuildDetectorVisitor visitor = new BuildDetectorVisitor();
+						try {
+							event.getDelta().accept(visitor);
+							for (IProject p : visitor.getProjects()) {
+								Optional<BootProjectDashElement> found = applications.getValue().stream()
+										.filter(e -> p.equals(e.getProject())).findFirst();
+								found.ifPresent(bde -> bde.refreshHasMainMethod());
+							}
+						} catch (CoreException e) {
+							Log.log(e);
+						}
+					}
+
+				}
+			};
+
+			IWorkspace workspace = ResourcesPlugin.getWorkspace();
+			workspace.addResourceChangeListener(workspaceBuildListener, IResourceChangeEvent.POST_BUILD);
+			addDisposableChild(() -> workspace.removeResourceChangeListener(workspaceBuildListener));
+
 			addDisposableChild(getViewModel().getToggleFilters().getSelectedFilters().onChange((e, v) -> {
 				if (e.getValue().contains(ToggleFiltersModel.FILTER_CHOICE_HIDE_NOT_RUNNABLE_APPS)) {
 					for (BootProjectDashElement a : applications.getValue()) {
@@ -181,6 +216,26 @@ public class LocalBootDashModel extends AbstractBootDashModel implements Deletio
 				}
 			}));
 		}
+	}
+
+	private static class BuildDetectorVisitor implements IResourceDeltaVisitor {
+
+		private Set<IProject> projects = new HashSet<>();
+
+		@Override
+		public boolean visit(IResourceDelta delta) throws CoreException {
+			IResource resource = delta.getResource();
+			if (resource instanceof IProject) {
+				projects.add((IProject) resource);
+				return false;
+			}
+			return true;
+		}
+
+		public Set<IProject> getProjects() {
+			return projects;
+		}
+
 	}
 
 	/**
@@ -238,7 +293,6 @@ public class LocalBootDashModel extends AbstractBootDashModel implements Deletio
 					.map(projectElementFactory::createOrGet)
 					.filter(Objects::nonNull)
 					.collect(Collectors.toSet());
-			newElements.stream().forEach(e -> e.refreshHasMainMethod());
 			apps.replaceAll(newElements);
 			projectElementFactory.disposeAllExcept(newElements);
 		}
@@ -259,6 +313,7 @@ public class LocalBootDashModel extends AbstractBootDashModel implements Deletio
 	 */
 	public void refresh(UserInteractions ui) {
 		updateElementsFromWorkspace();
+		applications.getValue().stream().forEach(e -> e.refreshHasMainMethod());
 		localServices.refresh();
 	}
 
