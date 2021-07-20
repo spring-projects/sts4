@@ -126,14 +126,6 @@ public class LocalBootDashModel extends AbstractBootDashModel implements Deletio
 		// Listen to M2E JDT plugin active event to refresh local boot project dash elements.
 		addMavenInitializationIssueEventHandling();
 
-		addDisposableChild(parent.getToggleFilters().getSelectedFilters().onChange((e, v) -> {
-			if (e.getValue().contains(ToggleFiltersModel.FILTER_CHOICE_HIDE_NOT_RUNNABLE_APPS)) {
-				for (BootProjectDashElement a : applications.getValue()) {
-					a.refreshHasMainMethod();
-				}
-			}
-		}));
-
 	}
 	/**
 	 * Refresh boot project dash elements once m2e JDT plugin is fully
@@ -180,6 +172,14 @@ public class LocalBootDashModel extends AbstractBootDashModel implements Deletio
 			refresh(null);
 
 			this.devtoolsPortRefresher = new DevtoolsPortRefresher(this, projectElementFactory);
+
+			addDisposableChild(getViewModel().getToggleFilters().getSelectedFilters().onChange((e, v) -> {
+				if (e.getValue().contains(ToggleFiltersModel.FILTER_CHOICE_HIDE_NOT_RUNNABLE_APPS)) {
+					for (BootProjectDashElement a : applications.getValue()) {
+						a.refreshHasMainMethod();
+					}
+				}
+			}));
 		}
 	}
 
