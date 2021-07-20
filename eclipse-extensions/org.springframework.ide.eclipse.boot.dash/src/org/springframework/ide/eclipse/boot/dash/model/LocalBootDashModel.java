@@ -119,12 +119,21 @@ public class LocalBootDashModel extends AbstractBootDashModel implements Deletio
 		this.consoleManager = new LocalElementConsoleManager();
 		this.projectExclusion = context.getBootProjectExclusion();
 
-		RunTargetType type = getRunTarget().getType();
+		RunTargetType<?> type = getRunTarget().getType();
 		IPropertyStore typeStore = PropertyStores.createForScope(type, context.getRunTargetProperties());
 		this.modelStore = PropertyStores.createSubStore(getRunTarget().getId(), typeStore);
 
 		// Listen to M2E JDT plugin active event to refresh local boot project dash elements.
 		addMavenInitializationIssueEventHandling();
+
+		addDisposableChild(parent.getToggleFilters().getSelectedFilters().onChange((e, v) -> {
+			if (e.getValue().contains(ToggleFiltersModel.FILTER_CHOICE_HIDE_NOT_RUNNABLE_APPS)) {
+				for (BootProjectDashElement a : applications.getValue()) {
+					a.refreshHasMainMethod();
+				}
+			}
+		}));
+
 	}
 	/**
 	 * Refresh boot project dash elements once m2e JDT plugin is fully

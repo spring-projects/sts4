@@ -117,7 +117,7 @@ public class ToggleFiltersModel {
 			"Hide local non-runnable apps",
 			"Spring Boot projects that cannot be laucnhed such as Spring Boot library projects not having a main method will not be shown",
 			HIDE_LOCAL_NOT_RUNNABLE_APPS,
-			true);
+			false);
 
 	private static final String STORE_ID = "toggle-filters";
 	private static final FilterChoice[] FILTERS = {

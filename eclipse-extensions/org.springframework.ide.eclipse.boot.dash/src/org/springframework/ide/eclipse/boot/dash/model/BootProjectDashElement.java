@@ -99,7 +99,6 @@ public class BootProjectDashElement extends AbstractLaunchConfigurationsDashElem
 		this.projectProperties = projectProperties;
 		this.childFactory = childFactory;
 
-		hasMainMethod.refresh();
 		addModelState(hasMainMethod);
 		addDisposableChild(hasMainMethod);
 //		if (DEBUG) {
@@ -265,6 +264,8 @@ public class BootProjectDashElement extends AbstractLaunchConfigurationsDashElem
 	}
 
 	public void refreshHasMainMethod() {
-		hasMainMethod.refresh();
+		if (getBootDashModel().getViewModel().getToggleFilters().getSelectedFilters().getValue().contains(ToggleFiltersModel.FILTER_CHOICE_HIDE_NOT_RUNNABLE_APPS)) {
+			hasMainMethod.refresh();
+		}
 	}
 }
