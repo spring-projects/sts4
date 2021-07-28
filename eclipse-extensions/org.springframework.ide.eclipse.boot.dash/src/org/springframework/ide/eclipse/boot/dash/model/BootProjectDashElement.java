@@ -155,7 +155,7 @@ public class BootProjectDashElement extends AbstractLaunchConfigurationsDashElem
 	private ObservableSet<Integer> getLivePortsExp() {
 		if (ports==null) {
 			ports = createSortedLiveSummary((BootDashElement element) -> {
-				int port = CollectionUtils.getAnyOr(getLivePorts(), -1);;
+				int port = CollectionUtils.getAnyOr(element.getLivePorts(), -1);
 				if (port>0) {
 					return port;
 				}
