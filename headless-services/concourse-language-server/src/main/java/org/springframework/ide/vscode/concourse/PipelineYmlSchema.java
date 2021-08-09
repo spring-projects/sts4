@@ -535,6 +535,7 @@ public class PipelineYmlSchema implements YamlSchema {
 			addProp(source, "ignore_paths", t_strings);
 			addProp(source, "skip_ssl_verification", t_boolean);
 			addProp(source, "tag_filter", t_string);
+			addProp(source, "fetch_tags", t_boolean);
 			addProp(source, "git_config", t_pair_list);
 			addProp(source, "disable_ci_skip", t_boolean);
 			addProp(source, "commit_verification_keys", t_strings);

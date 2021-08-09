@@ -1545,7 +1545,8 @@ public class ConcourseEditorTest {
 				"    disable_ci_skip: no_ci_skip\n" +
 				"    commit_verification_keys: not-a-list-of-keys\n" +
 				"    commit_verification_key_ids: not-a-list-of-ids\n" +
-				"    gpg_keyserver: hkp://somekeyserver.net"
+				"    gpg_keyserver: hkp://somekeyserver.net\n" +
+				"    fetch_tags: is-fetch-tags\n"
 		);
 		editor.assertProblems(
 				"sts4-out|Unused",
@@ -1556,7 +1557,8 @@ public class ConcourseEditorTest {
 				"val|Unknown property",
 				"no_ci_skip|'boolean'",
 				"not-a-list-of-keys|Expecting a 'Sequence'",
-				"not-a-list-of-ids|Expecting a 'Sequence'"
+				"not-a-list-of-ids|Expecting a 'Sequence'",
+				"is-fetch-tags|'boolean'"
 		);
 	}
 
@@ -1592,6 +1594,8 @@ public class ConcourseEditorTest {
 				"    - <*>"
 				,
 				"disable_ci_skip: <*>"
+				,
+				"fetch_tags: <*>"
 				,
 				"git_config:\n" +
 				"    - <*>"
@@ -1652,7 +1656,8 @@ public class ConcourseEditorTest {
 				"    disable_ci_skip: no_ci_skip\n" +
 				"    commit_verification_keys: not-a-list-of-keys\n" +
 				"    commit_verification_key_ids: not-a-list-of-ids\n" +
-				"    gpg_keyserver: hkp://somekeyserver.net"
+				"    gpg_keyserver: hkp://somekeyserver.net\n" +
+				"    fetch_tags: is-fetch-tags"
 		);
 		editor.assertHoverContains("uri", "*Required.* The location of the repository.");
 		editor.assertHoverContains("branch", "The branch to track");
@@ -1667,6 +1672,7 @@ public class ConcourseEditorTest {
 		editor.assertHoverContains("disable_ci_skip", "Allows for commits that have been labeled with `[ci skip]`");
 		editor.assertHoverContains("commit_verification_keys", "Array of GPG public keys");
 		editor.assertHoverContains("commit_verification_key_ids", "Array of GPG public key ids");
+		editor.assertHoverContains("fetch_tags", "fetch all tags in the repository");
 	}
 
 	@Test public void gitResourceGetParamsCompletions() throws Exception {
