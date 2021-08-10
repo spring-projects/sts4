@@ -3095,6 +3095,8 @@ public class ConcourseEditorTest {
 				, // =============
 				"    <*>"
 				, // ==>
+				"    commit_message: <*>"
+				,
 				"    git_user: <*>"
 				,
 				"    initial_version: <*>"
@@ -3102,6 +3104,8 @@ public class ConcourseEditorTest {
 				"    password: <*>"
 				,
 				"    private_key: <*>"
+				,
+				"    skip_ssl_verification: <*>"
 				,
 				"    username: <*>"
 		);
@@ -3123,6 +3127,8 @@ public class ConcourseEditorTest {
 				"    branch: version\n" +
 				"    file: version\n" +
 				"    private_key: {{concourse-repo-private-key}}\n" +
+				"    commit_message: '[skip ci] my commit message'\n" +
+				"    skip_ssl_verification: skip-ssl\n" +
 				"    username: jsmith\n" +
 				"    password: s3cre$t\n" +
 				"    git_user: jsmith@mailhost.com\n" +
@@ -3130,6 +3136,7 @@ public class ConcourseEditorTest {
 		);
 		editor.assertProblems(
 				"version|Unused",
+				"skip-ssl|'boolean'",
 				"bogus|Unknown property"
 		);
 
@@ -3142,6 +3149,8 @@ public class ConcourseEditorTest {
 		editor.assertHoverContains("username", "Username for HTTP(S) auth");
 		editor.assertHoverContains("password", "Password for HTTP(S) auth");
 		editor.assertHoverContains("git_user", "The git identity to use");
+		editor.assertHoverContains("commit_message", "overides the default commit message");
+		editor.assertHoverContains("skip_ssl_verification", "Skip SSL verification for git endpoint");
 	}
 
 	@Test public void semverResourceSourcePrimaryContentAssist() throws Exception {
@@ -3256,15 +3265,17 @@ public class ConcourseEditorTest {
 				"    driver: git\n" +
 				"    uri: blah\n" +
 				"    branch: master\n" +
-				"    file: version-file\n"+
+				"    file: version-file\n" +
 				"    <*>"
 				, /////////////
 				"<*>"
 				, // ==>
+				"commit_message: <*>",
 				"git_user: <*>",
 				"initial_version: <*>",
 				"password: <*>",
 				"private_key: <*>",
+				"skip_ssl_verification: <*>",
 				"username: <*>"
 		);
 	}

@@ -734,6 +734,8 @@ public class PipelineYmlSchema implements YamlSchema {
 			addProp(git_source, "username", t_ne_string);
 			addProp(git_source, "password", t_ne_string);
 			addProp(git_source, "git_user", t_ne_string);
+			addProp(git_source, "commit_message", t_ne_string);
+			addProp(git_source, "skip_ssl_verification", t_boolean);
 
 			AbstractType s3_source = f.ybean("S3SemverSource");
 			addProp(s3_source, "bucket", t_ne_string).isPrimary(true);
