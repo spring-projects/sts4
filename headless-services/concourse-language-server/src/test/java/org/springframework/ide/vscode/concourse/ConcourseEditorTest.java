@@ -1911,6 +1911,8 @@ public class ConcourseEditorTest {
 				, // ===>
 				"annotate: <*>"
 				,
+				"branch: <*>"
+				,
 				"force: <*>"
 				,
 				"merge: <*>"
@@ -1920,6 +1922,8 @@ public class ConcourseEditorTest {
 				"only_tag: <*>"
 				,
 				"rebase: <*>"
+				,
+				"returning: <*>"
 				,
 				"tag: <*>"
 				,
@@ -1986,7 +1990,10 @@ public class ConcourseEditorTest {
 				"      only_tag: do-tag\n" +
 				"      force: force-it\n" +
 				"      merge: merge-it\n" +
-				"      notes: whatever"
+				"      returning: returningValue\n" +
+				"      notes: whatever\n" +
+				"      branch: main\n" +
+				"      "
 		);
 		editor.assertProblems(
 				"rebase|Only one of [rebase, merge] should be defined",
@@ -1994,7 +2001,8 @@ public class ConcourseEditorTest {
 				"do-tag|'boolean'",
 				"force-it|'boolean'",
 				"merge|Only one of [rebase, merge] should be defined",
-				"merge-it|'boolean'"
+				"merge-it|'boolean'",
+				"returningValue|Valid values are: [merged, unmerged]"
 		);
 	}
 
@@ -2016,7 +2024,9 @@ public class ConcourseEditorTest {
 				"      force: force-it\n" +
 				"      annotate: release-annotion\n" +
 				"      merge: merge-it\n" +
-				"      notes: /path/to/notes"
+				"      returning: unmerged\n" +
+				"      notes: /path/to/notes\n" +
+				"      branch: main\n"
 		);
 
 		editor.assertHoverContains("repository", "The path of the repository");
@@ -2027,7 +2037,9 @@ public class ConcourseEditorTest {
 		editor.assertHoverContains("force", "pushed regardless of the upstream state");
 		editor.assertHoverContains("annotate", "path to a file containing the annotation message");
 		editor.assertHoverContains("merge", "continuously attempt to merge remote");
+		editor.assertHoverContains("returning", "unmerged commit should be passed");
 		editor.assertHoverContains("notes", "path to a file containing the notes");
+		editor.assertHoverContains("branch", "branch to push commits");
 	}
 
 	@Test public void gitResourcePut_get_params_Hovers() throws Exception {

@@ -583,12 +583,14 @@ public class PipelineYmlSchema implements YamlSchema {
 			addProp(put, "repository", t_ne_string).isPrimary(true);
 			addProp(put, "rebase", t_boolean);
 			addProp(put, "merge", t_boolean);
+			addProp(put, "returning", f.yenum("MergeReturning", "merged", "unmerged"));
 			addProp(put, "tag", t_ne_string);
 			addProp(put, "only_tag", t_boolean);
 			addProp(put, "tag_prefix", t_string);
 			addProp(put, "force", t_boolean);
 			addProp(put, "annotate", t_ne_string);
 			addProp(put, "notes", t_ne_string);
+			addProp(put, "branch", t_ne_string);
 			put.require(Constraints.requireAtMostOneOf("rebase", "merge"));
 			resourceTypes.def("git", source, get, put);
 		}
