@@ -1,0 +1,1 @@
+*Optional.* When populating `.git/short_ref` use this `printf` format. Defaults to `%s`.

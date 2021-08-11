@@ -1780,7 +1780,13 @@ public class ConcourseEditorTest {
 				,
 				"depth: <*>"
 				,
+				"describe_ref_options: <*>"
+				,
 				"disable_git_lfs: <*>"
+				,
+				"fetch_tags: <*>"
+				,
+				"short_ref_format: <*>"
 				,
 				"submodule_recursive: <*>"
 				,
@@ -1788,6 +1794,8 @@ public class ConcourseEditorTest {
 				,
 				"submodules:\n"+
 				"        <*>"
+				,
+				"timestamp_format: <*>"
 				,
 				"fetch:\n" + // Deprecated, so suggested last
 				"      - <*>"
@@ -1817,19 +1825,26 @@ public class ConcourseEditorTest {
 				"  - get: my-git\n" +
 				"    params:\n" +
 				"      depth: -1\n" +
+				"      fetch_tags: is-fetch\n" +
 				"      submodules: none\n" +
 				"      disable_git_lfs: not-bool-a\n" +
 				"      submodule_recursive: not-bool-b\n" +
 				"      submodule_remote: not-bool-c\n" +
-				"      clean_tags: not-bool-d\n"
+				"      clean_tags: not-bool-d\n" +
+				"      short_ref_format: '%s'\n" +
+				"      timestamp_format: iso8601\n" +
+				"      describe_ref_options: '--allways --broken'"
 		);
 
 		editor.assertHoverContains("depth", "using the `--depth` option");
+		editor.assertHoverContains("fetch_tags", "fetch all tags in the repository");
 		editor.assertHoverContains("submodules", "If `none`, submodules will not be fetched");
 		editor.assertHoverContains("submodule_recursive", "If `false`, a flat submodules checkout is performed");
 		editor.assertHoverContains("submodule_remote", "If `true`, the submodules are checked out for");
 		editor.assertHoverContains("disable_git_lfs", "will not fetch Git LFS files");
 		editor.assertHoverContains("clean_tags", "If `true` all incoming tags will be deleted");
+		editor.assertHoverContains("short_ref_format", "`.git/short_ref` use this `printf` format");
+		editor.assertHoverContains("describe_ref_options", "When populating `.git/describe_ref` use these options");
 	}
 
 	@Test public void gitResourceGetParamsReconcile() throws Exception {
@@ -1843,17 +1858,22 @@ public class ConcourseEditorTest {
 				"  - get: my-git\n" +
 				"    params:\n" +
 				"      depth: -1\n" +
-				"      disable_git_lfs: not-bool-a\n" +
-				"      submodule_recursive: not-bool-b\n" +
-				"      submodule_remote: not-bool-c\n" +
-				"      clean_tags: not-bool-d\n"
+				"      fetch_tags: not-bool-a\n" +
+				"      disable_git_lfs: not-bool-b\n" +
+				"      submodule_recursive: not-bool-c\n" +
+				"      submodule_remote: not-bool-d\n" +
+				"      clean_tags: not-bool-e\n" +
+				"      short_ref_format: goo%s\n" +
+				"      timestamp_format: iso8601\n" +
+				"      describe_ref_options: whatever\n"
 		);
 		editor.assertProblems(
 				"-1|must be at least 0",
 				"not-bool-a|'boolean'",
 				"not-bool-b|'boolean'",
 				"not-bool-c|'boolean'",
-				"not-bool-d|'boolean'"
+				"not-bool-d|'boolean'",
+				"not-bool-e|'boolean'"
 		);
 	}
 

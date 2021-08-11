@@ -1,0 +1,1 @@
+*Optional.* When populating `.git/describe_ref` use these options to call [`git describe`](https://git-scm.com/docs/git-describe). Defaults to `--always --dirty --broken`.

@@ -1,0 +1,1 @@
+*Optional.* When populating `.git/commit_timestamp` use this options to pass to [`git log --date`](https://git-scm.com/docs/git-log#Documentation/git-log.txt---dateltformatgt). Defaults to `iso8601`.
