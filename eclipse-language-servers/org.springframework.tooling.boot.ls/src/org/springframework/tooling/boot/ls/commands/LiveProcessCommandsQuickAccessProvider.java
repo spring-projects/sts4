@@ -75,7 +75,6 @@ public class LiveProcessCommandsQuickAccessProvider implements IQuickAccessCompu
 	}
 
 	private void createCommandItems(List<QuickAccessElement> res, Object commandResult) {
-		System.out.println(commandResult);
 		
 		if (commandResult instanceof List<?>) {
 			List<?> allCommands = (List<?>) commandResult;

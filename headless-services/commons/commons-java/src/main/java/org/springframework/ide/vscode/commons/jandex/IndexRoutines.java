@@ -10,11 +10,13 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.jandex;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintStream;
 import java.net.URI;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -190,7 +192,7 @@ public class IndexRoutines {
 	private static IndexView createJarIndex(File indexFile, File jarFile) {
 		try {
 			return JarIndexer.createJarIndex(jarFile, new Indexer(), indexFile, false, false,
-					false, System.out, System.err).getIndex();
+					false, new PrintStream(new ByteArrayOutputStream()), System.err).getIndex();
 		} catch (Exception e) {
 			log.error("Failed to index '" + jarFile + "'", e);
 			return null;

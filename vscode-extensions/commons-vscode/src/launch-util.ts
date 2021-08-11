@@ -8,7 +8,7 @@ import * as Net from 'net';
 import * as ChildProcess from 'child_process';
 import * as CommonsCommands from './commands';
 import { RequestType, LanguageClientOptions, Position } from 'vscode-languageclient';
-import {LanguageClient, StreamInfo, ServerOptions} from 'vscode-languageclient/node';
+import {LanguageClient, StreamInfo, ServerOptions, ExecutableOptions, Executable} from 'vscode-languageclient/node';
 import {
     Disposable,
     window,
@@ -95,29 +95,16 @@ function getJdtUserDefinedJavaHome(): string {
 }
 
 export function activate(options: ActivatorOptions, context: VSCode.ExtensionContext): Thenable<LanguageClient> {
-    let DEBUG = options.DEBUG;
-    let jvmHeap = getUserDefinedJvmHeap(options.workspaceOptions, options.jvmHeap);
-    let jvmArgs = getUserDefinedJvmArgs(options.workspaceOptions);
     if (options.CONNECT_TO_LS) {
         return VSCode.window.showInformationMessage("Start language server")
         .then((x) => connectToLS(context, options));
     } else {
-        let clientOptions = options.clientOptions;
+        const clientOptions = options.clientOptions;
 
-        var log_output = VSCode.window.createOutputChannel(options.extensionId + "-debug-log");
-        log("Activating '" + options.extensionId + "' extension");
-
-        function log(msg: string) {
-            if (log_output) {
-                log_output.append(msg + "\n");
-            }
-        }
-
-        function error(msg: string) {
-            if (log_output) {
-                log_output.append("ERR: " + msg + "\n");
-            }
-        }
+        const outChennalName = options.extensionId + "-debug-log"
+        clientOptions.outputChannel = VSCode.window.createOutputChannel(outChennalName);
+        clientOptions.outputChannelName = outChennalName;
+        clientOptions.outputChannel.appendLine("Activating '" + options.extensionId + "' extension");
 
         let findJRE = options.preferJdk ? findJdk : findJvm;
 
@@ -132,7 +119,7 @@ export function activate(options: ActivatorOptions, context: VSCode.ExtensionCon
                 return;
             }
             let javaExecutablePath = jvm.getJavaExecutable();
-            log("Found java exe: " + javaExecutablePath);
+            clientOptions.outputChannel.appendLine("Found java exe: " + javaExecutablePath);
 
             let version = jvm.getMajorVersion();
             if (version<11) {
@@ -144,82 +131,129 @@ export function activate(options: ActivatorOptions, context: VSCode.ExtensionCon
                 );
                 return;
             }
-            log("isJavaEightOrHigher => true");
+            clientOptions.outputChannel.appendLine("isJavaEightOrHigher => true");
 
-            function createServer(): Promise<StreamInfo> {
-                return new Promise((resolve, reject) => {
-                    PortFinder.getPort((err, port) => {
-                        Net.createServer(socket => {
-                            log('Child process connected on port ' + port);
-
-                            resolve({
-                                reader: socket,
-                                writer: socket
-                            });
-                        })
-                        .listen(port, () => {
-                            let processLaunchoptions = {
-                                cwd: VSCode.workspace.rootPath
-                            };
-                            let logfile : string = options.workspaceOptions.get("logfile") || "/dev/null";
-                            //The logfile = '/dev/null' is handled specifically by the language server process so it works on all OSs.
-                            log('Redirecting server logs to ' + logfile);
-                            const args = [
-                                '-Dspring.lsp.client-port='+port,
-                                '-Dserver.port=' + port,
-                                '-Dsts.lsp.client=vscode',
-                                '-Dsts.log.file=' + logfile,
-                                '-XX:TieredStopAtLevel=1'
-                            ];
-                            if (isCheckingJVM(options.workspaceOptions) && options.checkjvm) {
-                                options.checkjvm(context, jvm);
-                            }
-                            if (jvmHeap && !hasHeapArg(jvmArgs)) {
-                                args.unshift("-Xmx"+jvmHeap);
-                            }
-                            if (jvmArgs) {
-                                args.unshift(...jvmArgs);
-                            }
-                            if (DEBUG) {
-                                args.unshift(DEBUG_ARG);
-                            }
-
-                            let child: ChildProcess.ChildProcess = null;
-                            if (options.explodedLsJarData) {
-                                const explodedLsJarData = options.explodedLsJarData;
-                                const lsRoot = Path.resolve(context.extensionPath, explodedLsJarData.lsLocation);
-
-                                // Add config file if needed
-                                if (explodedLsJarData.configFileName) {
-                                    args.push(`-Dspring.config.location=file:${Path.resolve(lsRoot, `BOOT-INF/classes/${explodedLsJarData.configFileName}`)}`);
-                                }
-
-                                // Add classpath
-                                const classpath: string[] = [];
-                                classpath.push(Path.resolve(lsRoot, 'BOOT-INF/classes'));
-                                classpath.push(`${Path.resolve(lsRoot, 'BOOT-INF/lib')}${Path.sep}*`);
-
-                                child = jvm.mainClassLaunch(explodedLsJarData.mainClass, classpath, args, processLaunchoptions);
-                            } else {
-                                // Start the child java process
-                                const launcher = findServerJar(Path.resolve(context.extensionPath, 'jars'));
-                                child = jvm.jarLaunch(launcher, args, processLaunchoptions);
-                            }
-                            if (child) {
-                                child.stdout.on('data', (data) => {
-                                    log("" + data);
-                                });
-                                child.stderr.on('data', (data) => {
-                                    error("" + data);
-                                })
-                            }
-                        });
-                    });
-                });
+            if (process.env['SPRING_LS_USE_SOCKET']) {
+                return setupLanguageClient(context, createServerOptionsForPortComm(options, context, jvm), options);
+            } else {
+                return setupLanguageClient(context, createServerOptions(options, context, jvm), options);
             }
-            return setupLanguageClient(context, createServer, options);
         });
     }
+}
+
+function createServerOptions(options: ActivatorOptions, context: VSCode.ExtensionContext, jvm: JVM, port? : number): Executable {
+    const executable: Executable = Object.create(null);
+    const execOptions: ExecutableOptions = Object.create(null);
+    execOptions.env = Object.assign(process.env);
+    // execOptions.cwd = VSCode.workspace.rootPath
+    executable.options = execOptions;
+    executable.command = jvm.getJavaExecutable();
+    const vmArgs = prepareJvmArgs(options, context, jvm, port);
+    addCpAndLauncherToJvmArgs(vmArgs, options, context);
+    executable.args = vmArgs;
+    return executable;
+
+}
+
+function createServerOptionsForPortComm(options: ActivatorOptions, context: VSCode.ExtensionContext, jvm: JVM): ServerOptions {
+    return () =>
+        new Promise((resolve, reject) => {
+            PortFinder.getPort((err, port) => {
+                Net.createServer(socket => {
+                    options.clientOptions.outputChannel.appendLine('Child process connected on port ' + port);
+
+                    resolve({
+                        reader: socket,
+                        writer: socket
+                    });
+                })
+                    .listen(port, () => {
+                        let processLaunchoptions = {
+                            cwd: VSCode.workspace.rootPath
+                        };
+                        const args = prepareJvmArgs(options, context, jvm, port);
+                        if (options.explodedLsJarData) {
+                            const explodedLsJarData = options.explodedLsJarData;
+                            const lsRoot = Path.resolve(context.extensionPath, explodedLsJarData.lsLocation);
+
+                            // Add classpath
+                            const classpath: string[] = [];
+                            classpath.push(Path.resolve(lsRoot, 'BOOT-INF/classes'));
+                            classpath.push(`${Path.resolve(lsRoot, 'BOOT-INF/lib')}${Path.sep}*`);
+
+                            jvm.mainClassLaunch(explodedLsJarData.mainClass, classpath, args, processLaunchoptions);
+                        } else {
+                            // Start the child java process
+                            const launcher = findServerJar(Path.resolve(context.extensionPath, 'jars'));
+                            jvm.jarLaunch(launcher, args, processLaunchoptions);
+                        }
+                    });
+            });
+        });
+}
+
+function prepareJvmArgs(options: ActivatorOptions, context: VSCode.ExtensionContext, jvm: JVM, port?: number): string[] {
+    const DEBUG = options.DEBUG;
+    const jvmHeap = getUserDefinedJvmHeap(options.workspaceOptions, options.jvmHeap);
+    const jvmArgs = getUserDefinedJvmArgs(options.workspaceOptions);
+
+    let logfile : string = options.workspaceOptions.get("logfile") || "/dev/null";
+    //The logfile = '/dev/null' is handled specifically by the language server process so it works on all OSs.
+    options.clientOptions.outputChannel.appendLine('Redirecting server logs to ' + logfile);
+    const args = [
+        '-Dsts.lsp.client=vscode',
+        '-Dsts.log.file=' + logfile,
+        '-XX:TieredStopAtLevel=1'
+    ];
+    if (port && port > 0) {
+        args.push('-Dspring.lsp.client-port='+port);
+        args.push('-Dserver.port=' + port);
+    }
+    if (isCheckingJVM(options.workspaceOptions) && options.checkjvm) {
+        options.checkjvm(context, jvm);
+    }
+    if (jvmHeap && !hasHeapArg(jvmArgs)) {
+        args.unshift("-Xmx"+jvmHeap);
+    }
+    if (jvmArgs) {
+        args.unshift(...jvmArgs);
+    }
+    if (DEBUG) {
+        args.unshift(DEBUG_ARG);
+    }
+
+    if (options.explodedLsJarData) {
+        const explodedLsJarData = options.explodedLsJarData;
+        const lsRoot = Path.resolve(context.extensionPath, explodedLsJarData.lsLocation);
+        // Add config file if needed
+        if (explodedLsJarData.configFileName) {
+            args.push(`-Dspring.config.location=file:${Path.resolve(lsRoot, `BOOT-INF/classes/${explodedLsJarData.configFileName}`)}`);
+        }
+    }
+    return args;
+}
+
+function addCpAndLauncherToJvmArgs(args: string[], options: ActivatorOptions, context: VSCode.ExtensionContext) {
+    if (options.explodedLsJarData) {
+        const explodedLsJarData = options.explodedLsJarData;
+        const lsRoot = Path.resolve(context.extensionPath, explodedLsJarData.lsLocation);
+
+        // Add classpath
+        const classpath: string[] = [];
+        classpath.push(Path.resolve(lsRoot, 'BOOT-INF/classes'));
+        classpath.push(`${Path.resolve(lsRoot, 'BOOT-INF/lib')}${Path.sep}*`);
+
+
+        args.unshift(classpath.join(Path.delimiter));
+        args.unshift('-cp');
+        args.push(explodedLsJarData.mainClass);
+    } else {
+        // Start the child java process
+        args.push('-jar');
+        const launcher = findServerJar(Path.resolve(context.extensionPath, 'jars'));
+        args.push(launcher);
+   }
 }
 
 function hasHeapArg(vmargs?: string[]) : boolean {

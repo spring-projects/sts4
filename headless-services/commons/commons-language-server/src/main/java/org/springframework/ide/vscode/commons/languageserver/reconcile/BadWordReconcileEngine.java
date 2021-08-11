@@ -58,9 +58,6 @@ public class BadWordReconcileEngine implements IReconcileEngine {
 	@Override
 	public void reconcile(IDocument doc, IProblemCollector problemCollector) {
 		String text = doc.get();
-		System.out.println(">>>> reconciling for bad words ==========");
-		System.out.println(text);
-		System.out.println("<<<< reconciling for bad words ==========");
 
 		problemCollector.beginCollecting();
 		try {

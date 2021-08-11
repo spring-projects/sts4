@@ -144,7 +144,7 @@ public class AsyncProcess {
 		if (captureStreams) {
 			init(workingDir, cmd, new ByteArrayOutputStream(), new ByteArrayOutputStream());
 		} else {
-			init(workingDir, cmd, System.out, System.err);
+			init(workingDir, cmd, System.err, System.err);
 		}
 	}
 
@@ -197,12 +197,12 @@ public class AsyncProcess {
 			result.append("exitValue = "+exitValue+"\n");
 			String strOut = getOut();
 			if (strOut!=null) {
-				result.append("------- System.out -------\n");
+				result.append("------- System-out -------\n");
 				result.append(strOut);
 			}
 			String strErr = getErr();
 			if (strErr!=null) {
-				result.append("------- System.err -------\n");
+				result.append("------- System-err -------\n");
 				result.append(strErr);
 			}
 			result.append("<<<< ExternalProcess");

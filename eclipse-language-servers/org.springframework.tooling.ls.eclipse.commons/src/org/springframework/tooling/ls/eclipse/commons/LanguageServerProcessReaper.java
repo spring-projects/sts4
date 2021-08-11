@@ -43,7 +43,7 @@ public class LanguageServerProcessReaper extends Thread {
 
 	private static void debug(String string) {
 		if (DEBUG) {
-			System.out.println("LanguageServerProcessReaper: "+string);
+			System.err.println("LanguageServerProcessReaper: "+string);
 		}
 	}
 

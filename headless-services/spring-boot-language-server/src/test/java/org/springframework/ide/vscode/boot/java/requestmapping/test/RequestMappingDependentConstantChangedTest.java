@@ -154,9 +154,6 @@ public class RequestMappingDependentConstantChangedTest {
 
 		{
 			List<? extends SymbolInformation> symbols = indexer.getSymbols(pingUri);
-			for (SymbolInformation s : symbols) {
-				System.out.println(s.getName());
-			}
 			assertSymbolCount(1, symbols);
 			assertSymbol(pingUri, "@/pong -- GET", "@GetMapping(PongConstantRequestMapping.PONG)");
 		}
@@ -190,9 +187,6 @@ public class RequestMappingDependentConstantChangedTest {
 
 		{
 			List<? extends SymbolInformation> symbols = indexer.getSymbols(pingUri);
-			for (SymbolInformation s : symbols) {
-				System.out.println(s.getName());
-			}
 			assertSymbolCount(1, symbols);
 			assertSymbol(pingUri, "@/pong -- GET", "@GetMapping(PongConstantRequestMapping.PONG)");
 		}

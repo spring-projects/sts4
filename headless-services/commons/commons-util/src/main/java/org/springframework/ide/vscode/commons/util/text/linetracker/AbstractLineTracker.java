@@ -34,14 +34,7 @@ import org.springframework.ide.vscode.commons.util.text.IRegion;
  * </p>
  */
 public abstract class AbstractLineTracker implements ILineTracker, ILineTrackerExtension {
-
-	/**
-	 * Tells whether this class is in debug mode.
-	 *
-	 * @since 3.1
-	 */
-	private static final boolean DEBUG= false;
-
+	
 	/**
 	 * Combines the information of the occurrence of a line delimiter. <code>delimiterIndex</code>
 	 * is the index where a line delimiter starts, whereas <code>delimiterLength</code>,
@@ -267,8 +260,6 @@ public abstract class AbstractLineTracker implements ILineTracker, ILineTrackerE
 	 * @since 3.1
 	 */
 	protected final void flushRewriteSession() throws BadLocationException {
-		if (DEBUG)
-			System.out.println("AbstractLineTracker: Flushing rewrite session: " + fActiveRewriteSession); //$NON-NLS-1$
 
 		Iterator<Request> e= fPendingRequests.iterator();
 

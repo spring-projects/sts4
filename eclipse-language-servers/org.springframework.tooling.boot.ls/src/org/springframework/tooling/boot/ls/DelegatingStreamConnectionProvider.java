@@ -53,14 +53,6 @@ import com.google.common.collect.ImmutableSet;
  */
 public class DelegatingStreamConnectionProvider implements StreamConnectionProvider {
 	
-	private static final boolean DEBUG = (""+Platform.getLocation()).contains("kdvolder");
-	private static void debug(String string) {
-		if (DEBUG) {
-			System.out.println(string);
-		}
-	}
-
-
 	private StreamConnectionProvider provider;
 	private ResourceListener fResourceListener;
 	private LanguageServer languageServer;

@@ -126,27 +126,4 @@ public class AnnotationHierarchyAwareLookup<T> {
 		return bindings.containsKey(fqName);
 	}
 
-//	private static int indent = 0;
-//
-//	private static void debug(int indent, String msg) {
-//		for (int i = 0; i < indent; i++) {
-//			System.out.print("  ");
-//		}
-//		System.out.println(msg);
-//	}
-//	private static int debug_in(String msg) {
-//		for (int i = 0; i < indent; i++) {
-//			System.out.print("  ");
-//		}
-//		System.out.println(">> "+msg);
-//		return indent ++;
-//	}
-//	private static void debug_out(String msg) {
-//		indent --;
-//		for (int i = 0; i < indent; i++) {
-//			System.out.print("  ");
-//		}
-//		System.out.println("<< "+msg);
-//	}
-
 }

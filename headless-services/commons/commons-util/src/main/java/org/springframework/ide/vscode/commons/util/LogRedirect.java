@@ -22,8 +22,7 @@ public class LogRedirect {
 		String logfilePath = System.getProperty("sts.log.file");
 		if (StringUtil.hasText(logfilePath)) {
 			PrintStream logFile = logFileStream(logfilePath);
-			System.setErr(logFile);
-			System.setOut(logFile); //Spring boot actually logs on sysout instead of syserr.
+			System.setErr(logFile);			
 		}
 	}
 

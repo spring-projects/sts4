@@ -230,7 +230,6 @@ public class SpringIndexerXML implements SpringIndexer {
 //			List<DOMAttr> attributeNodes = node.getAttributeNodes();
 //			if (attributeNodes != null) {
 //				for (DOMAttr attribute : attributeNodes) {
-//					System.out.println(attribute.getName() + " - " + attribute.getValue());
 //				}
 //			}
 //		}

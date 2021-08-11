@@ -51,7 +51,6 @@ public class InWorkspaceSymbolsProvider implements SymbolsProvider {
 				return LanguageServiceAccessor.getLanguageServers(project,
 						WS_SYMBOL_CAP, true);
 			} else {
-				System.out.println("project = null");
 				return LanguageServiceAccessor.getActiveLanguageServers(WS_SYMBOL_CAP);
 			}
 		});

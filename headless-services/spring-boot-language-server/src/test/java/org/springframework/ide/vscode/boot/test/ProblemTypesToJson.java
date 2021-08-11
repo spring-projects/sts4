@@ -198,7 +198,6 @@ public class ProblemTypesToJson {
 		}
 		
 		String newContent = gson.toJson(parsed);
-		System.out.println(newContent);
 		FileUtils.writeStringToFile(packageJsonFile, newContent);
 	}
 	

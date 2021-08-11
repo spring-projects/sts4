@@ -19,13 +19,10 @@ import org.eclipse.core.filebuffers.IFileBuffer;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
-import org.springframework.tooling.jdt.ls.commons.Logger;
 
 public class ProjectSorter implements Comparator<IProject> {
 
 	private Set<IProject> projectsWithEditors;
-
-	private Logger logger = Logger.forEclipsePlugin(() -> LanguageServerCommonsActivator.getInstance());
 
 	public ProjectSorter() {
 		this.projectsWithEditors = new HashSet<IProject>();
@@ -33,7 +30,6 @@ public class ProjectSorter implements Comparator<IProject> {
 		IFileBuffer[] openBuffers = FileBuffers.getTextFileBufferManager().getFileBuffers();
 		for (IFileBuffer ob : openBuffers) {
 			IPath path = ob.getLocation();
-			System.out.println(path);
 			if (path.segmentCount() >= 1) {
 				IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(path.segment(0));
 				projectsWithEditors.add(project);

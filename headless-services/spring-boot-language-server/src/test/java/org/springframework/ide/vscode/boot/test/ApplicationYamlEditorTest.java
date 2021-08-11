@@ -792,9 +792,6 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		//Probably that is why it fails in CI build?
 		//Let's check:
 //		IType type = project.findType("com.fasterxml.jackson.databind.SerializationFeature");
-//		System.out.println(">>> source for: "+type.getFullyQualifiedName());
-//		System.out.println(downloadSources(type));
-//		System.out.println("<<< source for: "+type.getFullyQualifiedName());
 
 		editor = newEditor(
 				"spring:\n" +
@@ -824,9 +821,6 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		//Probably that is why it fails in CI build?
 		//Let's check:
 //		IType type = project.findType("com.fasterxml.jackson.databind.SerializationFeature");
-//		System.out.println(">>> source for: "+type.getFullyQualifiedName());
-//		System.out.println(downloadSources(type));
-//		System.out.println("<<< source for: "+type.getFullyQualifiedName());
 
 		assertCompletionDetails(
 				"spring:\n" +
@@ -989,7 +983,6 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 				"  no: \n" +
 				"    good: true\n"
 		);
-		System.out.println(editor);
 		editor.assertProblems(
 				"extracrap: 8080|Expecting a 'int' but got a 'Mapping' node",
 				"snuggem|Unknown property",

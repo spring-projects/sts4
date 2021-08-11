@@ -446,7 +446,6 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 	}
 
 	@Test public void testHyperlinkTargets() throws Exception {
-		System.out.println(">>> testHyperlinkTargets");
 		IJavaProject p = createPredefinedMavenProject("tricky-getters-boot-1.3.1-app");
 		useProject(p);
 
@@ -467,13 +466,11 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 
 		definitionLinkAsserts.assertLinkTargets(editor, "flyway", p, editor.rangeOf("flyway.init-sqls", "flyway.init-sqls"),
 				method("org.springframework.boot.autoconfigure.flyway.FlywayProperties", "setInitSqls", "java.util.List"));
-		System.out.println("<<< testHyperlinkTargets");
 	}
 
 
 
 	@Test public void testHyperlinkTargetsLoggingLevel() throws Exception {
-		System.out.println(">>> testHyperlinkTargetsLoggingLevel");
 		IJavaProject p = createPredefinedMavenProject("tricky-getters-boot-1.3.1-app");
 
 		useProject(p);
@@ -484,7 +481,6 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 
 		definitionLinkAsserts.assertLinkTargets(editor, "level", p, editor.rangeOf("logging.level", "logging.level"),
 				"org.springframework.boot.logging.LoggingApplicationListener");
-		System.out.println("<<< testHyperlinkTargetsLoggingLevel");
 	}
 
 	@Test public void testReconcile() throws Exception {
