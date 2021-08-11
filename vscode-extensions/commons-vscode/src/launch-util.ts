@@ -90,6 +90,10 @@ function getUserDefinedJavaHome(wsOpts : VSCode.WorkspaceConfiguration) : string
     return javaOptions && javaOptions.home;
 }
 
+function getJdtUserDefinedJavaHome(): string {
+    return VSCode.workspace.getConfiguration('java')?.get('home');
+}
+
 export function activate(options: ActivatorOptions, context: VSCode.ExtensionContext): Thenable<LanguageClient> {
     let DEBUG = options.DEBUG;
     let jvmHeap = getUserDefinedJvmHeap(options.workspaceOptions, options.jvmHeap);
@@ -117,7 +121,7 @@ export function activate(options: ActivatorOptions, context: VSCode.ExtensionCon
 
         let findJRE = options.preferJdk ? findJdk : findJvm;
 
-        return findJRE(getUserDefinedJavaHome(options.workspaceOptions))
+        return findJRE(getUserDefinedJavaHome(options.workspaceOptions) || getJdtUserDefinedJavaHome())
         .catch(error => {
             VSCode.window.showErrorMessage("Error trying to find JVM: "+error);
             return Promise.reject(error);
