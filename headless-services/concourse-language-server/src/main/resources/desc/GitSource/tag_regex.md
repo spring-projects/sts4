@@ -1,0 +1,2 @@
+*Optional*. If specified, the resource will only detect commits that have a tag matching the expression that have been made against the branch. 
+Patterns are grep compatible (extended matching enabled, matches entire lines only). Ignored if `tag_filter` is also specified.

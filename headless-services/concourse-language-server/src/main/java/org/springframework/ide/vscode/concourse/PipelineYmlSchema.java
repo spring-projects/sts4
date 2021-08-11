@@ -524,23 +524,47 @@ public class PipelineYmlSchema implements YamlSchema {
 			AbstractType t_git_repo_uri = f.yatomic("GitRepoUri");
 			t_git_repo_uri.setCustomContentAssistant(new GithubRepoContentAssistant(github));
 			t_git_repo_uri.parseWith(GithubValueParsers.uri(github));
+			
+			AbstractType t_https_tunnel = f.ybean("HttpsTunnel");
+			addProp(t_https_tunnel, "proxy_host", t_ne_string).isRequired(true);
+			addProp(t_https_tunnel, "proxy_port", t_pos_integer).isRequired(true);
+			addProp(t_https_tunnel, "proxy_user", t_ne_string);
+			addProp(t_https_tunnel, "proxy_password", t_ne_string);
+			
+			AbstractType t_commit_filters = f.ybean("CommitFilters");
+			addProp(t_commit_filters, "exclude", f.yseq(t_ne_string));
+			addProp(t_commit_filters, "include", f.yseq(t_ne_string));
 
 			AbstractType source = f.ybean("GitSource");
 			addProp(source, "uri", t_git_repo_uri).isPrimary(true);
-			addProp(source, "branch", t_ne_string); //It's more complicated than that! Its only required in 'put' step. So we'll check this as a contrain in put steps!
+			addProp(source, "branch", t_ne_string); //It's more complicated than that! Its only required in 'put' step. So we'll check this as a contraint in put steps!
 			addProp(source, "private_key", t_ne_string);
+			addProp(source, "private_key_user", t_ne_string);
+			addProp(source, "private_key_passphrase", t_ne_string);
+			addProp(source, "forward_agent", t_boolean);
 			addProp(source, "username", t_ne_string);
 			addProp(source, "password", t_string);
 			addProp(source, "paths", t_strings);
 			addProp(source, "ignore_paths", t_strings);
 			addProp(source, "skip_ssl_verification", t_boolean);
-			addProp(source, "tag_filter", t_string);
+			addProp(source, "tag_filter", t_ne_string);
+			addProp(source, "tag_regex", t_ne_string);
 			addProp(source, "fetch_tags", t_boolean);
+			addProp(source, "submodule_credentials", f.yseq(f.ybean("SubmoduleCredential", 
+					f.yprop("host", t_ne_string).isRequired(true),
+					f.yprop("username", t_ne_string).isRequired(true),
+					f.yprop("password", t_ne_string).isRequired(true)
+			)));
 			addProp(source, "git_config", t_pair_list);
 			addProp(source, "disable_ci_skip", t_boolean);
 			addProp(source, "commit_verification_keys", t_strings);
 			addProp(source, "commit_verification_key_ids", t_strings);
-			addProp(source, "gpg_keyserver", t_string);
+			addProp(source, "gpg_keyserver", t_ne_string);
+			addProp(source, "git_crypt_key", t_ne_string);
+			addProp(source, "https_tunnel", t_https_tunnel);
+			addProp(source, "commit_filter", t_commit_filters);
+			addProp(source, "version_depth", t_strictly_pos_integer);
+			source.require(Constraints.mutuallyExclusive("tag_filter", "tag_regex"));
 
 			AbstractType get = f.ybean("GitGetParams");
 			addProp(get, "depth", t_pos_integer);

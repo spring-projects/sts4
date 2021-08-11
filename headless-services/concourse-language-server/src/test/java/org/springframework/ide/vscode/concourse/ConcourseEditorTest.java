@@ -1533,12 +1533,24 @@ public class ConcourseEditorTest {
 				"    bogus: bad\n" +
 				"    branch: {{branch}}\n" +
 				"    private_key: {{rsa_id}}\n" +
+				"    private_key_user: pkuser\n" +
+				"    private_key_passphrase: pkpassf\n" +
+				"    forward_agent: isForwardAgent\n" +
 				"    username: jeffy\n" +
 				"    password: {{git_passwords}}\n" +
 				"    paths: not-a-list\n" +
 				"    ignore_paths: also-not-a-list\n" +
 				"    skip_ssl_verification: skip-it\n" +
 				"    tag_filter: RELEASE_*\n" +
+				"    tag_regex: aTagRegExp\n" +
+				"    fetch_tags: is-fetch-tags\n" +
+				"    submodule_credentials:\n" +
+				"    - host: host1\n" +
+				"      username: username1\n" +
+				"      password: pass1\n" +
+				"    - submodbogus: bad\n" +
+				"    - host: host2\n" +
+				"    - username: user2\n" +
 				"    git_config:\n" +
 				"    - name: good\n" +
 				"      val: bad\n" +
@@ -1546,19 +1558,38 @@ public class ConcourseEditorTest {
 				"    commit_verification_keys: not-a-list-of-keys\n" +
 				"    commit_verification_key_ids: not-a-list-of-ids\n" +
 				"    gpg_keyserver: hkp://somekeyserver.net\n" +
-				"    fetch_tags: is-fetch-tags\n"
+				"    git_crypt_key: YXNhc2Zm\n" +
+				"    https_tunnel:\n" +
+				"      proxy_host: proxhost\n" +
+				"      proxy_port: portnum\n" +
+				"      proxy_user: proxuser\n" +
+				"      proxy_password: proxpass\n" +
+				"    commit_filter:\n" +
+				"      exclude: exclude-commit-filters\n" +
+				"      include: include-commit-filters\n" +
+				"    version_depth: verdep\n"
 		);
 		editor.assertProblems(
 				"sts4-out|Unused",
 				"bogus|Unknown property",
+				"isForwardAgent|'boolean'",
 				"not-a-list|Expecting a 'Sequence'",
 				"also-not-a-list|Expecting a 'Sequence'",
 				"skip-it|'boolean'",
+				"tag_filter|Only one of 'tag_filter' and 'tag_regex'",
+				"tag_regex|Only one of 'tag_filter' and 'tag_regex'",
+				"is-fetch-tags|'boolean'",
+				"submodbogus|Unknown property",
+				"-|[password, username] are required",
+				"-|[host, password] are required",
 				"val|Unknown property",
 				"no_ci_skip|'boolean'",
 				"not-a-list-of-keys|Expecting a 'Sequence'",
 				"not-a-list-of-ids|Expecting a 'Sequence'",
-				"is-fetch-tags|'boolean'"
+				"portnum|NumberFormat",
+				"exclude-commit-filters|Expecting a 'Sequence'",
+				"include-commit-filters|Expecting a 'Sequence'",
+				"verdep|NumberFormat"
 		);
 	}
 
@@ -1587,6 +1618,9 @@ public class ConcourseEditorTest {
 				, // ==>
 				"branch: <*>"
 				,
+				"commit_filter:\n" +
+				"      <*>"
+				,
 				"commit_verification_key_ids:\n" +
 				"    - <*>"
 				,
@@ -1597,10 +1631,18 @@ public class ConcourseEditorTest {
 				,
 				"fetch_tags: <*>"
 				,
+				"forward_agent: <*>"
+				,
 				"git_config:\n" +
 				"    - <*>"
 				,
+				"git_crypt_key: <*>"
+				,
 				"gpg_keyserver: <*>"
+				,
+				"https_tunnel:\n" + 
+				"      proxy_host: $1\n" + 
+				"      proxy_port: $2<*>"
 				,
 				"ignore_paths:\n" +
 				"    - <*>"
@@ -1612,11 +1654,24 @@ public class ConcourseEditorTest {
 				,
 				"private_key: <*>"
 				,
+				"private_key_passphrase: <*>"
+				,
+				"private_key_user: <*>"
+				,
 				"skip_ssl_verification: <*>"
+				,
+				"submodule_credentials:\n" + 
+				"    - host: $1\n" + 
+				"      username: $2\n" + 
+				"      password: $3<*>"
 				,
 				"tag_filter: <*>"
 				,
+				"tag_regex: <*>"
+				,
 				"username: <*>"
+				,
+				"version_depth: <*>"
 		);
 
 		assertContextualCompletions(
@@ -1644,12 +1699,18 @@ public class ConcourseEditorTest {
 				"    bogus: bad\n" +
 				"    branch: {{branch}}\n" +
 				"    private_key: {{rsa_id}}\n" +
+				"    private_key_user: pkuser\n" +
+				"    private_key_passphrase: pkpassf\n" +
+				"    forward_agent: isForwardAgent\n" +
 				"    username: jeffy\n" +
 				"    password: {{git_passwords}}\n" +
 				"    paths: not-a-list\n" +
 				"    ignore_paths: also-not-a-list\n" +
 				"    skip_ssl_verification: skip-it\n" +
 				"    tag_filter: RELEASE_*\n" +
+				"    tag_regex: tagRegex\n" +
+				"    fetch_tags: is-fetch-tags\n" +
+				"    submodule_credentials: []\n" +
 				"    git_config:\n" +
 				"    - name: good\n" +
 				"      val: bad\n" +
@@ -1657,22 +1718,46 @@ public class ConcourseEditorTest {
 				"    commit_verification_keys: not-a-list-of-keys\n" +
 				"    commit_verification_key_ids: not-a-list-of-ids\n" +
 				"    gpg_keyserver: hkp://somekeyserver.net\n" +
-				"    fetch_tags: is-fetch-tags"
+				"    git_crypt_key: YXNhc2Zm\n" +
+				"    https_tunnel:\n" +
+				"      proxy_host: proxhost\n" +
+				"      proxy_port: portnum\n" +
+				"      proxy_user: proxuser\n" +
+				"      proxy_password: proxpass\n" +
+				"    commit_filter:\n" +
+				"      include: []\n" +
+				"      exclude: []\n" +
+				"    version_depth: 3\n"
 		);
 		editor.assertHoverContains("uri", "*Required.* The location of the repository.");
 		editor.assertHoverContains("branch", "The branch to track");
 		editor.assertHoverContains("private_key", "Private key to use when pulling/pushing");
+		editor.assertHoverContains("private_key_user", "Enables setting User in the ssh config");
+		editor.assertHoverContains("private_key_passphrase", "unlock `private_key` if it is protected by a passphrase");
+		editor.assertHoverContains("forward_agent", "Enables ForwardAgent SSH option when set to true");
 		editor.assertHoverContains("username", "Username for HTTP(S) auth");
 		editor.assertHoverContains("password", "Password for HTTP(S) auth");
 		editor.assertHoverContains("paths", "a list of glob patterns");
 		editor.assertHoverContains("ignore_paths", "The inverse of `paths`");
 		editor.assertHoverContains("skip_ssl_verification", "Skips git ssl verification");
 		editor.assertHoverContains("tag_filter", "the resource will only detect commits");
+		editor.assertHoverContains("tag_regex", "only detect commits that have a tag matching the expression");
+		editor.assertHoverContains("fetch_tags", "fetch all tags in the repository");
+		editor.assertHoverContains("submodule_credentials", "List of credentials for HTTP(s) auth");
 		editor.assertHoverContains("git_config", "configure git global options");
 		editor.assertHoverContains("disable_ci_skip", "Allows for commits that have been labeled with `[ci skip]`");
 		editor.assertHoverContains("commit_verification_keys", "Array of GPG public keys");
-		editor.assertHoverContains("commit_verification_key_ids", "Array of GPG public key ids");
-		editor.assertHoverContains("fetch_tags", "fetch all tags in the repository");
+		editor.assertHoverContains("gpg_keyserver", "GPG keyserver to download the public keys from");
+		editor.assertHoverContains("git_crypt_key", "will unlock / decrypt the repository");
+		editor.assertHoverContains("https_tunnel", "Information about an HTTPS proxy"); 
+		editor.assertHoverContains("proxy_host", "host name or IP");
+		editor.assertHoverContains("proxy_port", "listening port");
+		editor.assertHoverContains("proxy_user", "use this username");
+		editor.assertHoverContains("proxy_password", "use this password");
+		editor.assertHoverContains("commit_filter", "Object containing commit message filters");
+		editor.assertHoverContains("include", "not be skipped");
+		editor.assertHoverContains("exclude", "cause a commit to be skipped");
+		editor.assertHoverContains("version_depth", "number of versions to return");
 	}
 
 	@Test public void gitResourceGetParamsCompletions() throws Exception {
@@ -4004,6 +4089,11 @@ public class ConcourseEditorTest {
 				"bra<*>"
 				, // ==>
 				"branch: <*>"
+				,
+				"submodule_credentials:\n" + 
+				"    - host: $1\n" + 
+				"      username: $2\n" + 
+				"      password: $3<*>"
 		);
 
 		assertContextualCompletions(
@@ -4018,6 +4108,11 @@ public class ConcourseEditorTest {
 				"bra<*>"
 				, // ==>
 				"branch: <*>"
+				,
+				"submodule_credentials:\n" + 
+				"    - host: $1\n" + 
+				"      username: $2\n" + 
+				"      password: $3<*>"
 		);
 
 		assertContextualCompletions(
@@ -4032,6 +4127,11 @@ public class ConcourseEditorTest {
 				"bra<*>"
 				, // ==>
 				"branch: <*>"
+				,
+				"submodule_credentials:\n" + 
+				"    - host: $1\n" + 
+				"      username: $2\n" + 
+				"      password: $3<*>"
 		);
 	}
 
@@ -4242,7 +4342,7 @@ public class ConcourseEditorTest {
 				"    uri: blah\n" +
 				"  <*>"
 				, // =========
-				"bra"
+				"bran"
 				, //=>
 				"  branch: <*>"
 		);

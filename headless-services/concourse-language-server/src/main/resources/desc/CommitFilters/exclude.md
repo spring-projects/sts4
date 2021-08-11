@@ -1,0 +1,1 @@
+*Optional.* Array containing strings that should cause a commit to be skipped

@@ -1,0 +1,1 @@
+*Optional*. To unlock `private_key` if it is protected by a passphrase
