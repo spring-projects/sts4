@@ -1,6 +1,6 @@
 {
   "name": "@pivotal-tools/jvm-launch-utils",
-  "version": "0.0.15",
+  "version": "0.0.17",
   "description": "Provides utilities useful for launching Java processes from node packages.",
   "files": [
     "src",
@@ -28,7 +28,7 @@
   },
   "homepage": "https://github.com/spring-projects/sts4/nodejs-packages/jvm-launch-utils/README.md",
   "devDependencies": {
-    "@types/node": "^9.4.6",
-    "typescript": "^2.7.2"
+    "@types/node": "^16.6.0",
+    "typescript": "^4.2.4"
   }
 }

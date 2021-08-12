@@ -42,9 +42,12 @@ export interface JVM {
  * The returned JVM may or may not be a JDK. Methods are provided to obtain corresponding
  * toolsjar and to check whether the JVM is a JDK.
  */
-export function findJvm(javaHome?: string) : Promise<JVM | null> {
+export function findJvm(javaHome: string, log?: (msg: string) => void) : Promise<JVM | null> {
+    if (!log) {
+        log = console.log;
+    }
     try {
-        let javaExe = findJavaExe(javaHome);
+        let javaExe = findJavaExe(javaHome, log);
         if (javaExe) {
             return getJavaInfo(javaExe).then(javaProps => new JVMImpl(
                 javaProps.get("java.home"),
@@ -62,13 +65,16 @@ export function findJvm(javaHome?: string) : Promise<JVM | null> {
  * Like findJvm, but additionally, if the found JVM is not a JDK tries to
  * find a companion JDK that may be installed alongside it.
  */
-export function findJdk(javaHome?: string) : Promise<JVM | null> {
-    return findJvm(javaHome).then(jvm => {
+export function findJdk(javaHome: string, log?: (msg: string) => void) : Promise<JVM | null> {
+    if (!log) {
+        log = console.log;
+    }
+    return findJvm(javaHome, log).then(jvm => {
         if(!jvm) {
             return null;
         }
         if (!jvm.isJdk()) {
-            console.log("found jvm is not a JDK");
+            log(`found JVM at location "${jvm.getJavaHome()}" is not a JDK`);
 
             //Try to find a 'sibling' JDK.
             //Mainly for windows where it is common to have side-by-side install of a jre and jdk, instead of a
@@ -79,20 +85,16 @@ export function findJdk(javaHome?: string) : Promise<JVM | null> {
             //C:\ProgramFiles\Java\jre1.8.0_161
 
             let javaExe = jvm.getJavaExecutable();
-            console.log("javaExe = ", javaExe);
             // javaExe example: C:\ProgramFiles\Java\jre1.8.0_161\bin\java.exe
             let jhome = jvm.getJavaHome();
-            console.log("jhome = ", jhome);
             let basename : string = Path.basename(jhome);
-            console.log("basename = ", basename);
             let altBasename : string = basename.replace("jre", "jdk");
-            console.log("altBasename = ", altBasename);
             if (altBasename!==basename) {
                 let altHome = Path.join(Path.dirname(jhome), altBasename);
-                console.log("altHome = ", altHome);
+                log(`Trying to find JDK corresping to currently found JRE. Checking for JDK at ${altHome}`);
                 if (FS.existsSync(altHome)) {
                     let altExe = Path.resolve(altHome, "bin", correctBinname("java"));
-                    console.log("altExe = ", altExe);
+                    log("altExe = " + altExe);
                     return new JVMImpl(altHome, altExe, jvm.getMajorVersion());
                 }
             }
@@ -107,14 +109,20 @@ export function findJdk(javaHome?: string) : Promise<JVM | null> {
  * Optionally, a specific javaHome can be passed in. This shortcuts the
  * search logic and uses that javaHome as is, not looking anywhere else.
  */
-function findJavaExe(javaHome?: string) : string | null {
+function findJavaExe(javaHome: string, log?: (msg: string) => void) : string | null {
+    if (!log) {
+        log = console.log;
+    }
     //Try java home first
     if (!javaHome) {
+        log('No user specified java-home setting. Looking for JAVA_HOME env variable...');
         javaHome = process.env["JAVA_HOME"];
     }
     if (javaHome) {
         //Resolve symlinks
         javaHome = FS.realpathSync(javaHome);
+    } else {
+        log('JAVA_HOME environment variable not set');
     }
     let binName = correctBinname("java");
     if (javaHome) {
@@ -122,8 +130,11 @@ function findJavaExe(javaHome?: string) : string | null {
         if (FS.existsSync(javaExe)) {
             return javaExe;
         }
+        // Fall through invalid JVM specified by JAVA_HOME varable
+        log(`JAVA_HOME env variable points to location that does NOT exist: ${javaHome}`)
     }
 
+    log('Looking for the path to JVM inside PATH env variable');
     for (let searchPath of process.env['PATH'].split(Path.delimiter)) {
         let javaExe = Path.resolve(searchPath, binName);
         if (FS.existsSync(javaExe)) {
@@ -131,6 +142,7 @@ function findJavaExe(javaHome?: string) : string | null {
             return FS.realpathSync(javaExe);
         }
     }
+    log('No valid JVM found on the system!!!');
     return null;
 }
 

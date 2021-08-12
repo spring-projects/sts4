@@ -82,16 +82,34 @@ function getUserDefinedJvmArgs(wsOpts : VSCode.WorkspaceConfiguration) : string[
     return javaOptions && javaOptions.vmargs || dflt;
 }
 
-function getUserDefinedJavaHome(wsOpts : VSCode.WorkspaceConfiguration) : string {
-    if (!wsOpts) {
-        return null;
+function getSpringUserDefinedJavaHome(wsOpts : VSCode.WorkspaceConfiguration, log: VSCode.OutputChannel) : string {
+    let javaHome: string = null;
+    if (wsOpts) {
+        let javaOptions: JavaOptions = wsOpts.get("java");
+        javaHome = javaOptions && javaOptions.home;
     }
-    let javaOptions : JavaOptions = wsOpts.get("java");
-    return javaOptions && javaOptions.home;
+    if (!javaHome) {
+        log.appendLine('"spring-boot.ls.java.home" setting not specified or empty value');
+    } else if (!FS.existsSync(javaHome)) {
+        log.appendLine('"spring-boot.ls.java.home" points to folder that does NOT exist: ' + javaHome);
+        javaHome = null;
+    } else {
+        log.appendLine('Trying to use "spring-boot.ls.java.home" value: ' + javaHome);
+    }
+    return javaHome;
 }
 
-function getJdtUserDefinedJavaHome(): string {
-    return VSCode.workspace.getConfiguration('java')?.get('home');
+function getJdtUserDefinedJavaHome(log: VSCode.OutputChannel): string {
+    let javaHome: string = VSCode.workspace.getConfiguration('java')?.get('home');
+    if (!javaHome) {
+        log.appendLine('"java.home" setting not specified or empty value');
+    } else if (!FS.existsSync(javaHome)) {
+        log.appendLine('"java.home" points to folder that does NOT exist: ' + javaHome);
+        javaHome = null;
+    } else {
+        log.appendLine('Trying to use "java.home" value: ' + javaHome);
+    }
+    return javaHome;
 }
 
 export function activate(options: ActivatorOptions, context: VSCode.ExtensionContext): Thenable<LanguageClient> {
@@ -108,7 +126,9 @@ export function activate(options: ActivatorOptions, context: VSCode.ExtensionCon
 
         let findJRE = options.preferJdk ? findJdk : findJvm;
 
-        return findJRE(getUserDefinedJavaHome(options.workspaceOptions) || getJdtUserDefinedJavaHome())
+        return findJRE(getSpringUserDefinedJavaHome(options.workspaceOptions, clientOptions.outputChannel)
+            || getJdtUserDefinedJavaHome(clientOptions.outputChannel),
+            msg => clientOptions.outputChannel.appendLine(msg))
         .catch(error => {
             VSCode.window.showErrorMessage("Error trying to find JVM: "+error);
             return Promise.reject(error);
@@ -119,7 +139,7 @@ export function activate(options: ActivatorOptions, context: VSCode.ExtensionCon
                 return;
             }
             let javaExecutablePath = jvm.getJavaExecutable();
-            clientOptions.outputChannel.appendLine("Found java exe: " + javaExecutablePath);
+            clientOptions.outputChannel.appendLine("Found java executable: " + javaExecutablePath);
 
             let version = jvm.getMajorVersion();
             if (version<11) {
