@@ -1,6 +1,6 @@
 {
   "name": "vscode-boot-dev-pack",
-  "version": "0.0.9",
+  "version": "0.1.0",
   "publisher": "Pivotal",
   "displayName": "Spring Boot Extension Pack",
   "description": "A collection of extensions for developing Spring Boot applications",
@@ -21,8 +21,6 @@
   "keywords": [
     "spring-boot",
     "java",
-    "concourse",
-    "cloudfoundry",
     "yaml"
   ],
   "categories": [
@@ -35,8 +33,6 @@
   },
   "extensionPack": [
     "Pivotal.vscode-spring-boot",
-    "Pivotal.vscode-concourse",
-    "Pivotal.vscode-manifest-yaml",
     "vscjava.vscode-spring-initializr",
     "vscjava.vscode-spring-boot-dashboard"
   ]
