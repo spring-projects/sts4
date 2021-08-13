@@ -35,5 +35,53 @@
     "Pivotal.vscode-spring-boot",
     "vscjava.vscode-spring-initializr",
     "vscjava.vscode-spring-boot-dashboard"
-  ]
+  ],
+  "contributes": {
+    "walkthroughs": [
+      {
+        "id": "springBootWelcome",
+        "title": "Getting Started with Spring Boot in VS Code",
+        "description": "An Overview of the Spring Tools in VS Code to get started and to work with existing Spring Boot projects in VS Code",
+        "primary": true,
+        "steps": [
+          {
+            "id": "new-project-using-initializr",
+            "title": "Create a new Spring Boot project",
+            "description": "The easiest way to create new Spring Boot projects in VS Code is to use the Spring Initializr integration. Open the command palette in VS Code, search for __Spring__ and create a new Spring Boot project from there.\n[Create New Spring Boot Project](command:spring.initializr.maven-project)",
+            "media": {
+              "image": "walkthroughs/spring-initializr-integration.png",
+              "altText": "Create a new Maven-based Spring Boot project"
+            }
+          },
+          {
+            "id": "navigate-your-spring-projects",
+            "title": "Navigate your Spring Boot projects",
+            "description": "The Spring Tools in your VS Code installation contribute Spring-specific symbols to help you navigate your projects. All the symbols start with `@`.\nYou can navigate to the symbols using the [Outline View](command:outline.focus) of the current file, via the [Go to Symbol in Editor...](command:workbench.action.gotoSymbol) or globally via [Go to symbol in Workspace...](command:workbench.action.showAllSymbols).\nIf you start your search with an `@`, the list of symbols will show the Spring-specific symbols only.",
+            "media": {
+              "image": "walkthroughs/spring-symbols-navigation.png",
+              "altText": "Go to Symbol in Workspace..."
+            }
+          },
+          {
+            "id": "run-your-spring-projects",
+            "title": "Run your Spring Boot projects",
+            "description": "Running your Spring Boot projects from within VS Code is simple: Open any Java source file from your project and press `Run` at the top right corner.\nThe second option is to [switch to the launch section](command:workbench.view.debug) of VS Code and start the app there.",
+            "media": {
+              "image": "walkthroughs/spring-run-app.png",
+              "altText": "Run your Spring Boot app"
+            }
+          },
+          {
+            "id": "live-information-for-your-running-spring-app",
+            "title": "Show live information from your running Spring Boot application",
+            "description": "A unique feature of the Spring Tools is the ability to vizualize live data from your running app inplace with the source code of the running application.\n",
+            "media": {
+              "markdown": "walkthroughs/live-information.md",
+              "altText": "Run your Spring Boot app"
+            }
+          }
+        ]
+      }
+    ]
+  }
 }
