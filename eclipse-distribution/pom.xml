@@ -886,6 +886,11 @@
 		<!-- necessary for Maven and Ant AWS dependency -->
 		<pluginRepository>
 			<id>spring-maven-release</id>
+			<name>Spring Repository</name>
+			<url>https://repo.spring.io/release/</url>
+		</pluginRepository>
+<!--		<pluginRepository>
+			<id>spring-maven-release</id>
 			<name>Spring Maven Release Repository</name>
 			<url>https://maven.springframework.org/release</url>
 		</pluginRepository>
@@ -893,7 +898,7 @@
 			<id>springsource-maven-release</id>
 			<name>SpringSource Maven Release Repository</name>
 			<url>https://repository.springsource.com/maven/bundles/release</url>
-		</pluginRepository>
+		</pluginRepository> -->
 		<pluginRepository>
 			<id>sonatype.snapshots</id>
 			<url>https://repository.sonatype.org/content/repositories/snapshots/</url>
