@@ -1,3 +1,9 @@
+## 2021-08-18 (4.11.1 RELEASE, incl. language servers version 1.27.0)
+
+* _(Concourse)_ improvement: Property 'commit_message' not recognized for semver resources ([#655](https://github.com/spring-projects/sts4/issues/655))
+* _(Concourse)_ improvement: GitResource schema, add missing properties ([#671](https://github.com/spring-projects/sts4/issues/671))
+* _(Concourse)_ improvement: Unknown property 'fetch_tags' for type 'GitSource'(YamlSchemaProblem) ([#668](https://github.com/spring-projects/sts4/issues/668))
+
 ## 2021-06-18 (4.11.0 RELEASE, incl. language servers version 1.26.0)
 
 * _(Concourse)_ improvement: VSCode extension doesn't understand glob patterns in group config ([#639](https://github.com/spring-projects/sts4/issues/639))

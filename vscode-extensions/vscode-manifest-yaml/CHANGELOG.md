@@ -1,3 +1,7 @@
+## 2021-08-18 (4.11.1 RELEASE, incl. language servers version 1.27.0)
+
+* no major changes
+
 ## 2021-06-18 (4.11.0 RELEASE, incl. language servers version 1.26.0)
 
 * no major changes

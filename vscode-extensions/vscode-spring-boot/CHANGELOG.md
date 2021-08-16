@@ -1,3 +1,9 @@
+## 2021-08-18 (4.11.1 RELEASE, incl. language servers version 1.27.0)
+
+* _(VS Code, Spring Boot)_ fixed: [codespaces] spring boot extension starting up multiple times in Codespaces setting ([#669](https://github.com/spring-projects/sts4/issues/669))
+* _(VS Code, Spring Boot)_ fixed: [codespaces] spring boot extension doesn't find the right JDK when connecting to a codespace ([#670](https://github.com/spring-projects/sts4/issues/670))
+* _(VS Code, Spring Boot)_ fixed: JAVA_Home should be right but still shows "Note Java 8 can still be used in your own projects" ([#664](https://github.com/spring-projects/sts4/issues/664))
+
 ## 2021-06-18 (4.11.0 RELEASE, incl. language servers version 1.26.0)
 
 * _(Spring Boot)_ fixed: Live data highlights disapearing after closing and reopening editor ([#616](https://github.com/spring-projects/sts4/issues/616))
