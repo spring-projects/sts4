@@ -458,7 +458,7 @@
 					<dependency>
 						<groupId>org.springframework.build</groupId>
 						<artifactId>org.springframework.build.aws.ant</artifactId>
-						<version>3.1.0.RELEASE</version>
+						<version>3.0.6.RELEASE</version>
 					</dependency>
 					<dependency>
 						<groupId>net.java.dev.jets3t</groupId>
