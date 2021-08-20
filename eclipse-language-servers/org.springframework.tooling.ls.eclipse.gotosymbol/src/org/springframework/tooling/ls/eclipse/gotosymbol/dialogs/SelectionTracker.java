@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2020 Pivotal, Inc.
+ * Copyright (c) 2020, 2021 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -21,6 +21,7 @@ import org.eclipse.jface.text.IDocument;
 import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.lsp4e.LSPEclipseUtils;
 import org.eclipse.lsp4e.LanguageServiceAccessor;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
@@ -89,7 +90,7 @@ public class SelectionTracker extends AbstractDisposable {
 					IDocument document = this.documentProvider.getDocument(input);
 					// This step appears to be necessary to avoid having the current language server shutdown when disconnecting 
 					// a document (see dispose()) and a new one start up again every time a user changes selection and no editor is open
-					LanguageServiceAccessor.getLanguageServers(document, capabilities -> capabilities.getDocumentSymbolProvider()).get();
+					LanguageServiceAccessor.getLanguageServers(document, capabilities -> LSPEclipseUtils.hasCapability(capabilities.getDocumentSymbolProvider())).get();
 				} catch (Exception e) {
 					Log.log(e);
 				}
