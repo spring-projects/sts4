@@ -16,8 +16,10 @@ import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -146,6 +148,7 @@ public class InitializrServiceSpec {
 
 	public static class Type extends Option {
 		private String action;
+		private String build;
 
 		public void setAction(String action) {
 			this.action = action;
@@ -154,7 +157,17 @@ public class InitializrServiceSpec {
 		public String getAction() {
 			return action;
 		}
+
+		public String getBuild() {
+			return build;
+		}
+
+		public void setBuild(String build) {
+			this.build = build;
+		}
+
 	}
+
 
 	public static class Dependency extends Nameable implements IdAble{
 
@@ -373,19 +386,24 @@ public class InitializrServiceSpec {
 			if (obj!=null && "action".equals(obj.optString("type"))) {
 				String defaultValue = obj.optString("default", "");
 				JSONArray arr = obj.getJSONArray("values");
-				Type[] options = new Type[arr.length()];
-				for (int i = 0; i < options.length; i++) {
+				List<Type> options = new ArrayList<>(arr.length());
+				for (int i = 0; i < arr.length(); i++) {
 					JSONObject option = arr.getJSONObject(i);
-					options[i] = new Type();
 					String id = option.getString("id");
 					String name = option.getString("name");
 					String action = option.getString("action");
-					options[i].setId(id);
-					options[i].setName(name);
-					options[i].setAction(action);
-					options[i].setDefault(id.equals(defaultValue));
+					JSONObject tags = option.getJSONObject("tags");
+					if ("project".equals(tags.optString("format", null))) {
+						Type type = new Type();
+						type.setId(id);
+						type.setName(name);
+						type.setAction(action);
+						type.setBuild(tags.optString("build"));
+						type.setDefault(id.equals(defaultValue));
+						options.add(type);
+					}
 				}
-				return options;
+				return options.toArray(new Type[options.size()]);
 			}
 		} catch (JSONException e) {
 			//ignore

@@ -64,7 +64,6 @@ import org.springsource.ide.eclipse.commons.livexp.core.validators.NewProjectNam
 import org.springsource.ide.eclipse.commons.livexp.core.validators.UrlValidator;
 import org.springsource.ide.eclipse.commons.livexp.ui.ProjectLocationSection;
 import org.springsource.ide.eclipse.commons.livexp.util.Filter;
-import org.springsource.ide.eclipse.commons.livexp.util.Log;
 
 import com.google.common.base.Objects;
 
@@ -75,15 +74,6 @@ public class NewSpringBootWizardModel {
 
 	private static final String NAME_PROPRTY_ID = "name";
 	private static final String ARTIFACT_PROPERTY_ID = "artifactId";
-
-	private static final Map<String,BuildType> KNOWN_TYPES = new HashMap<>();
-	static {
-		KNOWN_TYPES.put("gradle-project", BuildType.GRADLE); // New version of initialzr app
-		KNOWN_TYPES.put("maven-project", BuildType.MAVEN); // New versions of initialzr app
-
-		KNOWN_TYPES.put("gradle.zip", BuildType.GRADLE); //Legacy, can remove when new initializr app uses "gradle-project" definitively
-		KNOWN_TYPES.put("starter.zip", BuildType.MAVEN); //Legacy, can remove when initializr app uses "maven-project" definitively
-	}
 
 	/**
 	 * Lists known query parameters that map onto a String input field. The default values for these
@@ -440,14 +430,23 @@ public class NewSpringBootWizardModel {
 			RadioGroup group = radioGroups.ensureGroup(groupName);
 			group.label("Type:");
 			for (Type type : serviceSpec.getTypeOptions(groupName)) {
-				BuildType bt = KNOWN_TYPES.get(type.getId());
+				BuildType bt = BuildType.valueOf(type.getBuild().toUpperCase());
 				if (bt!=null) {
-					for (ImportStrategy is : bt.getImportStrategies()) {
+					List<ImportStrategy> importStrategies = bt.getImportStrategies();
+					if (importStrategies.size() == 1) {
+						ImportStrategy is = importStrategies.get(0);
 						TypeRadioInfo radio = new TypeRadioInfo(groupName, type, is);
-						radio.setLabel(is.displayName());
+						radio.setLabel(type.getName());
 						group.add(radio);
+					} else {
+						for (ImportStrategy is : importStrategies) {
+							TypeRadioInfo radio = new TypeRadioInfo(groupName, type, is);
+							radio.setLabel(type.getName() + " - " + is.displayName());
+							group.add(radio);
+						}
 					}
 				}
+
 			}
 			//When a type is selected the 'baseUrl' should be update according to its action.
 			group.getSelection().selection.addListener(new ValueListener<RadioInfo>() {
