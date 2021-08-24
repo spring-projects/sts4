@@ -29,14 +29,14 @@ public class TagsCellEditor extends StyledTextCellEditor {
 
 	private Stylers stylers;
 
-	public TagsCellEditor(Composite parent, Stylers stylers) {
+	public TagsCellEditor(Composite parent, int style, Stylers stylers) {
 		super(parent);
 		this.stylers = stylers;
 	}
 
-	public TagsCellEditor(Composite parent, Stylers stylers, IContentProposalProvider contentProposalProvider,
+	public TagsCellEditor(Composite parent, int style, Stylers stylers, IContentProposalProvider contentProposalProvider,
 			KeyStroke keyStroke, char[] autoActivationCharacters) {
-		super(parent, contentProposalProvider, keyStroke, autoActivationCharacters);
+		super(parent, style, contentProposalProvider, keyStroke, autoActivationCharacters);
 		setProposalAcceptanceStyle(ContentProposalAdapter.PROPOSAL_REPLACE);
 		this.stylers = stylers;
 	}

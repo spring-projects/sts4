@@ -99,9 +99,9 @@ public abstract class StyledTextCellEditor extends CellEditor {
         super(parent, style);
     }
 
-	public StyledTextCellEditor(Composite parent, IContentProposalProvider contentProposalProvider,
+	public StyledTextCellEditor(Composite parent, int style, IContentProposalProvider contentProposalProvider,
 			KeyStroke keyStroke, char[] autoActivationCharacters) {
-		this(parent);
+		this(parent, style);
 
 		enableContentProposal(contentProposalProvider, keyStroke, autoActivationCharacters);
 	}

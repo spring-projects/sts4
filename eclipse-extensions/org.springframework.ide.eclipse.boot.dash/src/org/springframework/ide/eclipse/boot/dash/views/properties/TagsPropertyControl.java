@@ -15,6 +15,7 @@ import java.util.LinkedHashSet;
 
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.viewers.ICellEditorListener;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.views.properties.tabbed.TabbedPropertySheetPage;
 import org.springframework.ide.eclipse.boot.dash.BootDashActivator;
@@ -39,7 +40,7 @@ public class TagsPropertyControl extends AbstractBdePropertyControl {
 	public void createControl(Composite composite, TabbedPropertySheetPage page) {
 		super.createControl(composite, page);
 		page.getWidgetFactory().createLabel(composite, "Tags:").setLayoutData(GridDataFactory.fillDefaults().create()); //$NON-NLS-1$
-		tags = new TagsEditor(composite, getStylers(), new TagContentProposalProvider(BootDashActivator.getDefault().getModel()), UIUtils.CTRL_SPACE, UIUtils.TAG_CA_AUTO_ACTIVATION_CHARS);
+		tags = new TagsEditor(composite, SWT.SINGLE | SWT.BORDER, getStylers(), new TagContentProposalProvider(BootDashActivator.getDefault().getModel()), UIUtils.CTRL_SPACE, UIUtils.TAG_CA_AUTO_ACTIVATION_CHARS);
 		tags.getControl().setLayoutData(GridDataFactory.fillDefaults().grab(true, false).create());
 		tags.addListener(new ICellEditorListener() {
 			@Override
@@ -47,8 +48,8 @@ public class TagsPropertyControl extends AbstractBdePropertyControl {
 				String str = (String) tags.getValue();
 				BootDashElement element = getBootDashElement();
 				if (element != null) {
-					LinkedHashSet<String> tagsSet = str.isEmpty() ? new LinkedHashSet<String>()
-							: new LinkedHashSet<String>(Arrays.asList(TagUtils.parseTags(str)));
+					LinkedHashSet<String> tagsSet = str.isEmpty() ? new LinkedHashSet<>()
+							: new LinkedHashSet<>(Arrays.asList(TagUtils.parseTags(str)));
 					if (!tagsSet.equals(element.getTags())) {
 						element.setTags(tagsSet);
 					}

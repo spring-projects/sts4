@@ -25,13 +25,13 @@ import org.eclipse.swt.widgets.Composite;
  */
 public abstract class StyledTextEditor extends StyledTextCellEditor {
 
-	public StyledTextEditor(Composite parent) {
-		super(parent);
+	public StyledTextEditor(Composite parent, int style) {
+		super(parent, style);
 	}
 
-	public StyledTextEditor(Composite parent, IContentProposalProvider contentProposalProvider,
+	public StyledTextEditor(Composite parent, int style, IContentProposalProvider contentProposalProvider,
 			KeyStroke keyStroke, char[] autoActivationCharacters) {
-		super(parent, contentProposalProvider, keyStroke, autoActivationCharacters);
+		super(parent, style, contentProposalProvider, keyStroke, autoActivationCharacters);
 		setProposalAcceptanceStyle(ContentProposalAdapter.PROPOSAL_REPLACE);
 	}
 

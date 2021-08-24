@@ -17,6 +17,7 @@ import org.eclipse.jface.fieldassist.IContentProposalProvider;
 import org.eclipse.jface.viewers.CellEditor;
 import org.eclipse.jface.viewers.EditingSupport;
 import org.eclipse.jface.viewers.TableViewer;
+import org.eclipse.swt.SWT;
 import org.springframework.ide.eclipse.boot.dash.model.BootDashElement;
 import org.springframework.ide.eclipse.boot.dash.model.BootDashViewModel;
 import org.springframework.ide.eclipse.boot.dash.model.TagUtils;
@@ -36,13 +37,13 @@ public class TagEditingSupport extends EditingSupport {
 
 	public TagEditingSupport(TableViewer viewer, LiveExpression<BootDashElement> selection, Stylers stylers) {
 		super(viewer);
-		this.editor = new TagsCellEditor(viewer.getTable(), stylers);
+		this.editor = new TagsCellEditor(viewer.getTable(), SWT.SINGLE,  stylers);
 	}
 
 	public TagEditingSupport(TableViewer viewer, LiveExpression<BootDashElement> selection, BootDashViewModel model, Stylers stylers) {
 		super(viewer);
 		IContentProposalProvider proposalProvider = new TagContentProposalProvider(model);
-		this.editor = new TagsCellEditor(viewer.getTable(), stylers, proposalProvider, UIUtils.CTRL_SPACE,
+		this.editor = new TagsCellEditor(viewer.getTable(), SWT.SINGLE, stylers, proposalProvider, UIUtils.CTRL_SPACE,
 				UIUtils.TAG_CA_AUTO_ACTIVATION_CHARS);
 	}
 

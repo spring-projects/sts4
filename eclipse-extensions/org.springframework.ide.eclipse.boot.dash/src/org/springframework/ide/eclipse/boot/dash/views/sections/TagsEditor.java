@@ -29,14 +29,14 @@ public class TagsEditor extends StyledTextEditor {
 
 	private Stylers stylers;
 
-	public TagsEditor(Composite parent, Stylers stylers) {
-		super(parent);
+	public TagsEditor(Composite parent, int style, Stylers stylers) {
+		super(parent, style);
 		this.stylers = stylers;
 	}
 
-	public TagsEditor(Composite parent, Stylers stylers, IContentProposalProvider contentProposalProvider,
+	public TagsEditor(Composite parent, int style, Stylers stylers, IContentProposalProvider contentProposalProvider,
 			KeyStroke keyStroke, char[] autoActivationCharacters) {
-		super(parent, contentProposalProvider, keyStroke, autoActivationCharacters);
+		super(parent, style, contentProposalProvider, keyStroke, autoActivationCharacters);
 		setProposalAcceptanceStyle(ContentProposalAdapter.PROPOSAL_REPLACE);
 		this.stylers = stylers;
 	}
