@@ -53,6 +53,15 @@ public class XtermPlugin extends AbstractUIPlugin {
 	@Override
 	public void start(BundleContext bundle) throws Exception {
 		plugin = this;
+		
+		// TODO: Workaround for SWT browser not able to open HTTP URL while in runtime workbench
+//		if (Platform.OS_MACOSX.equals(Platform.getOS())) {
+//		    NSDictionary allowNonHttps = NSDictionary.dictionaryWithObject(
+//		            NSNumber.numberWithBool(true),
+//		            NSString.stringWith("NSAllowsArbitraryLoads"));
+//		    NSBundle.mainBundle().infoDictionary().setValue(
+//		            allowNonHttps, NSString.stringWith("NSAppTransportSecurity"));
+//		}
 	}
 
 	@Override
