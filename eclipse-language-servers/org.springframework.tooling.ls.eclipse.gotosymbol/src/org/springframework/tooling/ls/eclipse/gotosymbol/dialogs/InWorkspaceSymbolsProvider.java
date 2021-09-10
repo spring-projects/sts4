@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2019, 2020 Pivotal, Inc.
+ * Copyright (c) 2017, 2021 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -21,6 +21,7 @@ import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.viewers.IStructuredSelection;
+import org.eclipse.lsp4e.LSPEclipseUtils;
 import org.eclipse.lsp4e.LanguageServiceAccessor;
 import org.eclipse.lsp4j.DocumentSymbol;
 import org.eclipse.lsp4j.ServerCapabilities;
@@ -42,7 +43,7 @@ import reactor.core.publisher.Mono;
 @SuppressWarnings("restriction")
 public class InWorkspaceSymbolsProvider implements SymbolsProvider {
 
-	private static final Predicate<ServerCapabilities> WS_SYMBOL_CAP = capabilities -> Boolean.TRUE.equals(capabilities.getWorkspaceSymbolProvider());
+	private static final Predicate<ServerCapabilities> WS_SYMBOL_CAP = capabilities -> LSPEclipseUtils.hasCapability(capabilities.getWorkspaceSymbolProvider());
 	
 	public static InWorkspaceSymbolsProvider createFor(Supplier<IProject> _project) {
 		return new InWorkspaceSymbolsProvider(() -> {
@@ -58,7 +59,7 @@ public class InWorkspaceSymbolsProvider implements SymbolsProvider {
 	
 	public static InWorkspaceSymbolsProvider createFor(IProject project) {
 		List<LanguageServer> languageServers = LanguageServiceAccessor.getLanguageServers(project,
-				capabilities -> Boolean.TRUE.equals(capabilities.getWorkspaceSymbolProvider()), true);
+				capabilities -> LSPEclipseUtils.hasCapability(capabilities.getWorkspaceSymbolProvider()), true);
 		if (!languageServers.isEmpty()) {
 			return new InWorkspaceSymbolsProvider(() -> languageServers);
 		}

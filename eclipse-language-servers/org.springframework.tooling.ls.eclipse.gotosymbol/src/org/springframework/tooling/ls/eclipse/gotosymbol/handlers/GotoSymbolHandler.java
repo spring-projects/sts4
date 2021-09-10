@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2019 Rogue Wave Software Inc. and others.
+ * Copyright (c) 2016, 2021 Rogue Wave Software Inc. and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -102,7 +102,7 @@ public class GotoSymbolHandler extends AbstractHandler {
 			debug("activePart instanceof ITextEditor");
 			List<LSPDocumentInfo> infos = LanguageServiceAccessor.getLSPDocumentInfosFor(
 					LSPEclipseUtils.getDocument((ITextEditor) part),
-					(capabilities) -> Boolean.TRUE.equals(capabilities.getDocumentSymbolProvider()));
+					capabilities -> LSPEclipseUtils.hasCapability(capabilities.getDocumentSymbolProvider()));
 			return !infos.isEmpty();
 		}
 		debug("activePart not ITextEditor: "+part);
