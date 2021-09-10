@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2019, 2020 Rogue Wave Software Inc. and others.
+ * Copyright (c) 2016, 2021 Rogue Wave Software Inc. and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -147,7 +147,7 @@ public class GotoSymbolSection extends WizardPageSection {
 		public String getToolTipText(Object element) {
 			if (element instanceof Match) {
 				SymbolInformation si = getSymbolInformation((Match<?>)element);
-				if (si!=null) {
+				if (si != null) {
 					return si.getName();
 				}
 			}
@@ -199,8 +199,7 @@ public class GotoSymbolSection extends WizardPageSection {
 		}
 		
 		protected String getSymbolLocationText(SymbolInformation symbol) {
-			Optional<String> location = GotoSymbolSection.this
-					.getSymbolLocation(symbol);
+			Optional<String> location = GotoSymbolSection.this.getSymbolLocation(symbol);
 			if (location.isPresent()) {
 				return " -- [" + location.get() + "]";
 			}
@@ -262,6 +261,7 @@ public class GotoSymbolSection extends WizardPageSection {
 		disposables.add(model.getSymbols().onChange(UIValueListener.from((e, v) -> {
 			if (!viewer.getControl().isDisposed()) viewer.refresh();
 		})));
+		
 //TODO: somehow show selection in local file, (but not in other file ?)
 //		viewer.addSelectionChangedListener(event -> {
 //			IStructuredSelection selection = (IStructuredSelection) event.getSelection();
@@ -373,7 +373,7 @@ public class GotoSymbolSection extends WizardPageSection {
 			public void run() {
 				InputDialog dlg = new InputDialog(owner.getShell(), dialogTitle, prompt, defaultValue, null);
 				int code = dlg.open();
-				if (code==IDialogConstants.OK_ID) {
+				if (code == IDialogConstants.OK_ID) {
 					result.set(dlg.getValue());
 				}
 			}
@@ -388,7 +388,7 @@ public class GotoSymbolSection extends WizardPageSection {
 					if (list.getTree().getItemCount() > 0) {
 						list.getTree().setFocus();
 						TreeItem[] items = list.getTree().getItems();
-						if (items!=null && items.length>0) {
+						if (items != null && items.length > 0) {
 							list.getTree().setSelection(items[0]);
 							//programatic selection may not fire selection events so...
 							list.getTree().notifyListeners(SWT.Selection,
@@ -452,7 +452,7 @@ public class GotoSymbolSection extends WizardPageSection {
 			Object selected = ss.getFirstElement();
 			if (selected instanceof Match) {
 				SymbolInformation si = getSymbolInformation((Match<?>) selected);
-				if (si!=null) {
+				if (si != null) {
 					return si;
 				}
 			}
@@ -464,12 +464,12 @@ public class GotoSymbolSection extends WizardPageSection {
 
 	private SymbolInformation getFirstElement(TreeViewer list) {
 		TreeItem[] items = list.getTree().getItems();
-		if (items!=null && items.length>0) {
+		if (items != null && items.length>0) {
 			TreeItem item = items[0];
 			Object data = item.getData();
 			if (data instanceof Match) {
 				SymbolInformation si = getSymbolInformation((Match<?>) data);
-				if (si!=null) {
+				if (si != null) {
 					return si;
 				}
 			}
