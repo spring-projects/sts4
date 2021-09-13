@@ -1,3 +1,7 @@
+## 2021-09-15 (4.12.0 RELEASE, incl. language servers version 1.28.0)
+
+* _(VS Code, Spring Boot)_ fixed: [codespaces] vscode extension crashes if specified log output location doesn't work ([#676](https://github.com/spring-projects/sts4/issues/676))
+
 ## 2021-08-18 (4.11.1 RELEASE, incl. language servers version 1.27.0)
 
 * _(VS Code, Spring Boot)_ fixed: [codespaces] spring boot extension starting up multiple times in Codespaces setting ([#669](https://github.com/spring-projects/sts4/issues/669))

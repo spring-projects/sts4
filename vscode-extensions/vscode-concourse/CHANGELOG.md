@@ -1,3 +1,7 @@
+## 2021-09-15 (4.12.0 RELEASE, incl. language servers version 1.28.0)
+
+* no major changes
+
 ## 2021-08-18 (4.11.1 RELEASE, incl. language servers version 1.27.0)
 
 * _(Concourse)_ improvement: Property 'commit_message' not recognized for semver resources ([#655](https://github.com/spring-projects/sts4/issues/655))
