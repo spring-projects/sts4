@@ -663,21 +663,16 @@
 				<package.qualifierPrefix>e421</package.qualifierPrefix>
 			</properties>
 			<repositories>
-<!--				<repository>
+				<repository>
 					<id>2021-09</id>
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/releases/2021-09/</url>
-				</repository> -->
-				<repository>
-					<id>platform-i-builds</id>
-					<layout>p2</layout>
-					<url>https://download.eclipse.org/eclipse/updates/4.21-I-builds/</url>
 				</repository>
-				<repository>
+<!--				<repository>
 					<id>2021-09-staging</id>
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/staging/2021-09/</url>
-				</repository>
+				</repository> -->
 				<repository>
 					<id>orbit</id>
 					<layout>p2</layout>
