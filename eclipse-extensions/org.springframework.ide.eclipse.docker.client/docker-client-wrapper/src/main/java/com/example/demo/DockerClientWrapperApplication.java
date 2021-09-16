@@ -7,7 +7,7 @@ import com.github.dockerjava.api.model.Image;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientImpl;
 import com.github.dockerjava.transport.DockerHttpClient;
-import com.github.dockerjava.zerodep.ConnectionPoolConfig;
+//import com.github.dockerjava.zerodep.ConnectionPoolConfig;
 import com.github.dockerjava.zerodep.ZerodepDockerHttpClient;
 
 public class DockerClientWrapperApplication {
@@ -28,11 +28,11 @@ public class DockerClientWrapperApplication {
 			System.out.println(image.getId());
 		}
 		
-		if (httpClient instanceof ConnectionPoolConfig) {
-			ConnectionPoolConfig cp = (ConnectionPoolConfig) httpClient;
-			System.out.println("max = " +cp.getPoolSizeMax());
-			System.out.println("max per route = "+cp.getPoolSizeDefaultMaxPerRoute());
-		}
+//		if (httpClient instanceof ConnectionPoolConfig) {
+//			ConnectionPoolConfig cp = (ConnectionPoolConfig) httpClient;
+//			System.out.println("max = " +cp.getPoolSizeMax());
+//			System.out.println("max per route = "+cp.getPoolSizeDefaultMaxPerRoute());
+//		}
 
 	}
 

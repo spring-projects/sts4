@@ -4,23 +4,23 @@ Bundle-Name: org.springframework.ide.eclipse.docker.client.wrapper
 Bundle-SymbolicName: org.springframework.ide.eclipse.docker.client;singleton:=true
 Bundle-Version: 4.12.1.qualifier
 Automatic-Module-Name: org.springframework.ide.eclipse.docker.client.wrapper
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-ClassPath: .,
  dependency/bcpkix-jdk15on-1.64.jar,
  dependency/bcprov-jdk15on-1.64.jar,
- dependency/commons-compress-1.20.jar,
+ dependency/commons-compress-1.21.jar,
  dependency/commons-io-2.6.jar,
  dependency/commons-lang-2.6.jar,
  dependency/jackson-annotations-2.11.2.jar,
  dependency/jackson-core-2.11.2.jar,
  dependency/jackson-databind-2.11.2.jar,
- dependency/jna-5.5.0.jar,
+ dependency/jna-5.8.0.jar,
  dependency/slf4j-api-1.7.30.jar,
  dependency/slf4j-simple-1.7.30.jar,
- dependency/docker-java-api-99.99.99-SNAPSHOT.jar,
- dependency/docker-java-core-99.99.99-SNAPSHOT.jar,
- dependency/docker-java-transport-99.99.99-SNAPSHOT.jar,
- dependency/docker-java-transport-zerodep-99.99.99-SNAPSHOT.jar
+ dependency/docker-java-api-3.2.12.jar,
+ dependency/docker-java-core-3.2.12.jar,
+ dependency/docker-java-transport-3.2.12.jar,
+ dependency/docker-java-transport-zerodep-3.2.12.jar
 Export-Package: com.github.dockerjava.api,
  com.github.dockerjava.api.async,
  com.github.dockerjava.api.command,

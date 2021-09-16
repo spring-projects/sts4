@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2020 Pivotal, Inc.
+ * Copyright (c) 2020, 2021 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -34,7 +34,6 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.core.DefaultDockerClientConfig;
 import com.github.dockerjava.core.DockerClientImpl;
 import com.github.dockerjava.transport.DockerHttpClient;
-import com.github.dockerjava.zerodep.ConnectionPoolConfig;
 import com.github.dockerjava.zerodep.ZerodepDockerHttpClient;
 
 public class DockerRunTargetType extends AbstractRemoteRunTargetType<DockerTargetParams> {
@@ -85,9 +84,7 @@ public class DockerRunTargetType extends AbstractRemoteRunTargetType<DockerTarge
 		DockerHttpClient httpClient = new ZerodepDockerHttpClient.Builder()
 				.dockerHost(conf.getDockerHost())
 				.sslConfig(conf.getSSLConfig())
-				.connectionPool(new ConnectionPoolConfig()
-						.setMaxConnections(200)
-				)
+				.maxConnections(200)
 				.build();
 		return DockerClientImpl.getInstance(conf, httpClient);
 	}
