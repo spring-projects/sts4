@@ -17,7 +17,7 @@
 	<properties>
 		<dist.accessKey>${accessKey}</dist.accessKey>
 		<dist.secretKey>${secretKey}</dist.secretKey>
-		<justj.repository>https://download.eclipse.org/justj/jres/16/updates/release/latest/</justj.repository>
+		<justj.repository>https://download.eclipse.org/justj/jres/17/updates/milestone/latest/</justj.repository>
 	</properties>
 
 	<build>
@@ -182,6 +182,16 @@
 						</goals>
 						<configuration>
 							<appArgLine>-consoleLog -application org.eclipse.equinox.p2.director -nosplash -destination ${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/macosx/cocoa/x86_64/SpringToolSuite4.app -repository ${justj.repository} -installIUs org.eclipse.justj.openjdk.hotspot.jre.full.feature.group</appArgLine>
+						</configuration>
+					</execution>
+					<execution>
+						<id>macos-aarch_64</id>
+						<phase>package</phase>
+						<goals>
+							<goal>eclipse-run</goal>
+						</goals>
+						<configuration>
+							<appArgLine>-consoleLog -application org.eclipse.equinox.p2.director -nosplash -destination ${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/macosx/cocoa/aarch64/SpringToolSuite4.app -repository ${justj.repository} -installIUs org.eclipse.justj.openjdk.hotspot.jre.full.feature.group</appArgLine>
 						</configuration>
 					</execution>
 					<execution>
