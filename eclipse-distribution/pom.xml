@@ -678,15 +678,10 @@
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/tools/orbit/downloads/drops/R20210825222808/repository</url>
 				</repository>
-<!--				<repository>
+				<repository>
 					<id>m2e</id>
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/technology/m2e/releases/latest/</url>
-				</repository> -->
-				<repository>
-					<id>m2e-snapshot</id> <!-- to incorporate early builds of m2e 1.18.2 -->
-					<layout>p2</layout>
-					<url>https://download.eclipse.org/technology/m2e/snapshots/latest/</url>
 				</repository>
 				<repository>
 					<id>latest-m2e-wtp</id>
@@ -840,15 +835,10 @@
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/tools/orbit/downloads/drops/R20210825222808/repository</url>
 				</repository>
-<!--				<repository>
+				<repository>
 					<id>m2e</id>
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/technology/m2e/releases/latest/</url>
-				</repository> -->
-				<repository>
-					<id>m2e-snapshot</id> <!-- to incorporate early builds of m2e 1.18.2 -->
-					<layout>p2</layout>
-					<url>https://download.eclipse.org/technology/m2e/snapshots/latest/</url>
 				</repository>
 				<repository>
 					<id>latest-m2e-wtp</id>
