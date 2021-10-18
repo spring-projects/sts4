@@ -17,7 +17,7 @@
 	<properties>
 		<dist.accessKey>${accessKey}</dist.accessKey>
 		<dist.secretKey>${secretKey}</dist.secretKey>
-		<justj.repository>https://download.eclipse.org/justj/jres/17/updates/milestone/latest/</justj.repository>
+		<justj.repository>https://download.eclipse.org/justj/jres/17/updates/release/latest/</justj.repository>
 	</properties>
 
 	<build>
