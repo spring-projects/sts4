@@ -521,11 +521,11 @@
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/tools/orbit/downloads/drops/R20210602031627/repository</url>
 				</repository>
-				<repository>
+<!--				<repository>
 					<id>m2e</id>
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/technology/m2e/releases/latest/</url>
-				</repository>
+				</repository> -->
 				<repository>
 					<id>latest-m2e-wtp</id>
 					<layout>p2</layout>
@@ -585,11 +585,6 @@
 					<id>mylyn-markdown</id>
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/mylyn/docs/releases/3.0/</url>
-				</repository>
-				<repository>
-					<id>wildwebdeveloper</id>
-					<layout>p2</layout>
-					<url>https://download.eclipse.org/wildwebdeveloper/releases/latest</url>
 				</repository>
 				<repository>
 					<id>lsp4e</id>
