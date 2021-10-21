@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2020 Pivotal, Inc.
+ * Copyright (c) 2015, 2021 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -250,7 +250,18 @@ public class CloudFoundryBootDashModel extends RemoteBootDashModel {
 
 		this.unsupportedPushProperties = new UnsupportedPushProperties();
 		addDisposableChild(target.getClientExp().onChange((exp,v) -> {
-			this.refresh(ui());
+
+			// https://github.com/spring-projects/sts4/issues/688
+			// Errors occurring during refresh frequently open a pop-up
+			// dialogue that could be annoying to users.
+			// Since the errors are already logged and shown in the CF
+			// target, there is no need to also open the dialogue.
+			// To supress opening this dialogue, pass a null "UI",
+			// as the error handler in the refresh mechanism will not
+			// open a dialogue if there is no UI
+			UserInteractions ui = null;
+			this.refresh(ui);
+
 			ClientRequests client = exp.getValue();
 			if (client!=null && this.getRunTarget().getTargetProperties().getStoreCredentials()==StoreCredentialsMode.STORE_TOKEN) {
 				activeRefreshTokenListeners.incrementAndGet();
