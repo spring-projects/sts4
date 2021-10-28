@@ -2,7 +2,7 @@ Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Client-side JDT extension for language servers
 Bundle-SymbolicName: org.springframework.tooling.jdt.ls.commons
-Bundle-Version: 4.12.1.qualifier
+Bundle-Version: 4.13.0.qualifier
 Bundle-Vendor: VMware, Inc.
 Automatic-Module-Name: org.springframework.tooling.jdt.ls.commons
 Bundle-RequiredExecutionEnvironment: JavaSE-11
