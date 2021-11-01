@@ -209,7 +209,7 @@ public class DeploymentPropertiesDialogModelTests {
 		if (file.exists()) {
 			ACondition.waitFor(file.toString() + " disconnected from LS", DISCONNECT_TIMEOUT, () -> {
 				LanguageServerWrapper wrapper = getCfLanguageServer(file);
-				assertFalse(wrapper.isConnectedTo(file.getLocation()));
+				assertFalse(wrapper.isConnectedTo(file.getLocationURI()));
 			});
 		}
 		FileEditorInput editorInput = new FileEditorInput(file);
@@ -226,7 +226,7 @@ public class DeploymentPropertiesDialogModelTests {
 		waitForJobsToComplete();
 		ACondition.waitFor(file.toString() + " connected to LS", DISCONNECT_TIMEOUT, () -> {
 			LanguageServerWrapper wrapper = getCfLanguageServer(file);
-			assertTrue(wrapper.isConnectedTo(file.getLocation()));
+			assertTrue(wrapper.isConnectedTo(file.getLocationURI()));
 		});
 		waitForJobsToComplete();
 	}
