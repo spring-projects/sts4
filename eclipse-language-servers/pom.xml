@@ -483,7 +483,7 @@
 			<extension>
 				<groupId>org.springframework.build.aws</groupId>
 				<artifactId>org.springframework.build.aws.maven</artifactId>
-				<version>3.1.0.RELEASE</version>
+				<version>3.0.6.RELEASE</version>
 			</extension>
 		</extensions>
 
