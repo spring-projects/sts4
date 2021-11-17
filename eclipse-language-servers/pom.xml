@@ -472,6 +472,13 @@
 			<name>Spring Repository</name>
 			<url>https://repo.spring.io/plugins-release/</url>
 		</pluginRepository>
+
+		<pluginRepository>
+			<id>springsource-maven-release</id>
+			<name>SpringSource Maven Release Repository</name>
+			<url>https://repository.springsource.com/maven/bundles/release</url>
+		</pluginRepository>
+
 		<pluginRepository>
 			<id>sonatype.snapshots</id>
 			<url>https://repository.sonatype.org/content/repositories/snapshots/</url>
