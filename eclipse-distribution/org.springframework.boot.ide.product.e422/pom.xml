@@ -112,7 +112,7 @@
 							<url>https://download.eclipse.org/releases/2021-06</url>
 						</repository>
 					</repositories>
-					<argLine>-Declipse.p2.mirrors=false</argLine>
+					<argLine>-Declipse.p2.mirrors=false -Dorg.eclipse.ecf.provider.filetransfer.retrieve.readTimeout=100000 -Dorg.eclipse.ecf.provider.filetransfer.retrieve.retryAttempts=30 -Dorg.eclipse.ecf.provider.filetransfer.retrieve.closeTimeout=100000</argLine>
 					<dependencies>
 						<dependency>
 							<artifactId>org.eclipse.pde.api.tools</artifactId>
