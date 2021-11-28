@@ -90,8 +90,9 @@
 		<tycho-version>1.7.0</tycho-version>
 		<encoding>UTF-8</encoding>
 
-		<dist.accessKey>${accessKey}</dist.accessKey>
-		<dist.secretKey>${secretKey}</dist.secretKey>
+		<dist.accessKey>${tools.s3.accesskey.password}</dist.accessKey>
+		<dist.secretKey>${tools.s3.secretkey.password}</dist.secretKey>
+
 		<dist.bucket>dist.springsource.com</dist.bucket>
 		<dist.key>TOOLS</dist.key>
 		<dist.path>${dist.type}/${dist.key}/${dist.project}/${dist.version}</dist.path>

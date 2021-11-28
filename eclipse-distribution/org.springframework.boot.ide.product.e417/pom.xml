@@ -14,11 +14,6 @@
 
 	<packaging>eclipse-repository</packaging>
 
-	<properties>
-		<dist.accessKey>${accessKey}</dist.accessKey>
-		<dist.secretKey>${secretKey}</dist.secretKey>
-	</properties>
-
 	<build>
 		<plugins>
 
