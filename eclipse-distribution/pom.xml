@@ -88,8 +88,8 @@
 
 		<dist.bucket>dist.springsource.com</dist.bucket>
 		<dist.key>TOOLS</dist.key>
-		<dist.accessKey>${env.bamboo.tools.s3.accesskey.password}</dist.accessKey>
-		<dist.secretKey>${env.bamboo.tools.s3.secretkey.password}</dist.secretKey>
+		<dist.accessKey>${env.bamboo_tools_s3_accesskey_password}</dist.accessKey>
+		<dist.secretKey>${env.bamboo_tools_s3_secretkey_password}</dist.secretKey>
 
 		<dist.project>sts4</dist.project>
 

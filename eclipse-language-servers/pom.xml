@@ -90,8 +90,8 @@
 		<tycho-version>1.7.0</tycho-version>
 		<encoding>UTF-8</encoding>
 
-		<dist.accessKey>${env.bamboo.tools.s3.accesskey.password}</dist.accessKey>
-		<dist.secretKey>${env.bamboo.tools.s3.secretkey.password}</dist.secretKey>
+		<dist.accessKey>${env.bamboo_tools_s3_accesskey_password}</dist.accessKey>
+		<dist.secretKey>${env.bamboo_tools_s3_secretkey_password}</dist.secretKey>
 
 		<dist.bucket>dist.springsource.com</dist.bucket>
 		<dist.key>TOOLS</dist.key>
