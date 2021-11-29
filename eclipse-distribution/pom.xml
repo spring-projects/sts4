@@ -88,8 +88,8 @@
 
 		<dist.bucket>dist.springsource.com</dist.bucket>
 		<dist.key>TOOLS</dist.key>
-		<dist.accessKey>${tools.s3.accesskey.password}</dist.accessKey>
-		<dist.secretKey>${tools.s3.secretkey.password}</dist.secretKey>
+		<dist.accessKey>${env.tools.s3.accesskey.password}</dist.accessKey>
+		<dist.secretKey>${env.tools.s3.secretkey.password}</dist.secretKey>
 
 		<dist.project>sts4</dist.project>
 
