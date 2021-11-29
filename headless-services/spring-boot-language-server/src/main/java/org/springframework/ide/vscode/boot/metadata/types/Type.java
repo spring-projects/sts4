@@ -140,7 +140,7 @@ public class Type implements YType {
 		} else if (javaType instanceof IArrayType) {
 			IArrayType arrayType = (IArrayType) javaType;
 			Type elementType = fromJavaType(arrayType.component());
-			if (elementType!=null) {
+			if (elementType != null) {
 				return elementType.asArray(arrayType.dimensions());
 			}
 		}
@@ -149,7 +149,7 @@ public class Type implements YType {
 	}
 
 	public Type asArray(int arrayCount) {
-		Assert.isLegal(arrayCount>0);
+		Assert.isLegal(arrayCount > 0);
 		StringBuilder arrayErasure = new StringBuilder(erasure);
 		for (int i = 0; i < arrayCount; i++) {
 			arrayErasure.append("[]");

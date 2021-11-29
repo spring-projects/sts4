@@ -39,21 +39,27 @@ public class JavaTypeData {
 	public JavaTypeKind getKind() {
 		return kind;
 	}
+	
 	public void setKind(JavaTypeKind kind) {
 		this.kind = kind;
 	}
+	
 	public String getName() {
 		return name;
 	}
+	
 	public void setName(String name) {
 		this.name = name;
 	}
+	
 	public LinkedHashMap<String, Object> getExtras() {
 		return extras;
 	}
+	
 	public void setExtras(LinkedHashMap<String, Object> extras) {
 		this.extras = extras;
 	}
+	
 	@Override
 	public int hashCode() {
 		final int prime = 31;
@@ -63,6 +69,7 @@ public class JavaTypeData {
 		result = prime * result + ((name == null) ? 0 : name.hashCode());
 		return result;
 	}
+	
 	@Override
 	public boolean equals(Object obj) {
 		if (this == obj)
