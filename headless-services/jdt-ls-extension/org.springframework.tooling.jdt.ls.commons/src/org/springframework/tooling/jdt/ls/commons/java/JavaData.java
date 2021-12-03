@@ -365,15 +365,18 @@ public class JavaData {
 	
 	private void fillAnnotationData(IType type, IAnnotation annotation, AnnotationData data) {
 		fillJavaElementData(annotation, data);
+		
 		Map<String, Object> pairs = new HashMap<>();
 		try {
 			data.setFqName(resolveFQName(type, annotation.getElementName()));
+
 			for (IMemberValuePair pair : annotation.getMemberValuePairs()) {
-				pairs.put(pair.getMemberName(), pair.getValue());
+				pairs.put(pair.getMemberName(), pair.getValue().toString());
 			}
 		} catch (JavaModelException e) {
 			logger.log(e);
 		}
+
 		data.setValuePairs(pairs);
 	}
 	
