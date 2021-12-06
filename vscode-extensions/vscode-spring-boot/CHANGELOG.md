@@ -1,3 +1,8 @@
+## 2021-12-08 (4.13.0 RELEASE, incl. language servers version 1.29.0)
+
+* _(Spring Boot)_ fixed: STS 4.12.0 (for eclipse) *.yml can't automatic prompt ([#690](https://github.com/spring-projects/sts4/issues/690))
+* _(Spring Boot)_ fixed: A StackOverFlow error for serializable Kotlin data class for autocompletion in the Eclipse IDE ([#693](https://github.com/spring-projects/sts4/issues/693))
+
 ## 2021-09-15 (4.12.0 RELEASE, incl. language servers version 1.28.0)
 
 * _(VS Code, Spring Boot)_ fixed: [codespaces] vscode extension crashes if specified log output location doesn't work ([#676](https://github.com/spring-projects/sts4/issues/676))
