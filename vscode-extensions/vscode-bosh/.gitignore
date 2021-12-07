@@ -10,3 +10,4 @@ dependency-reduced-pom.xml
 classpath.txt
 *.vsix
 repo
+/package-lock.json
