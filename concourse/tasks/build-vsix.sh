@@ -31,6 +31,7 @@ else
     echo -e "\n\n*Version: ${base_version}-RELEASE*" >> README.md
 fi
 
+./scripts/preinstall.sh
 npm install
 #npm audit
 npm run vsce-package

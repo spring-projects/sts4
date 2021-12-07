@@ -107,7 +107,6 @@
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "clean": "rm -fr node_modules out *.vsix package-lock.json",
-    "preinstall": "./scripts/preinstall.sh",
     "vsce-package": "vsce package"
   },
   "dependencies": {

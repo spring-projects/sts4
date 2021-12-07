@@ -34,7 +34,7 @@ echo -e "\n\n*Version: ${version}*" >> README.md
 # npm install
 
 cd "$sources"
-# npm install ../commons-vscode
+./scripts/preinstall.sh
 npm install
 npm run vsce-package
 

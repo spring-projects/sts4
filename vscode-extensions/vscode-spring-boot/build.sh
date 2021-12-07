@@ -25,6 +25,7 @@ code --install-extension redhat.java
 
 # Build spring boot ls
 cd $workdir
+./scripts/preinstall.sh
 npm install
 rm -fr *.vsix
 npm run vsce-package
