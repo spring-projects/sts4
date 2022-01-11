@@ -525,8 +525,9 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 
 		Editor editor;
 
-		editor = newEditor("");
-		editor.assertContextualCompletions("springactcloti",
+		editor = newEditor("<*>\n");
+		editor.assertContextualCompletions(ci -> ci.getLabel().contains("spring.activemq.close-timeout"),
+				"springactcloti<*>",
 				"spring:\n" +
 				"  activemq:\n" +
 				"    close-timeout: <*>"
@@ -1435,7 +1436,9 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 
 	@Test public void testContentAssistSimple() throws Exception {
 		defaultTestData();
-		assertCompletion("port<*>",
+		Editor editor = newEditor("<*>\n");
+		editor.assertContextualCompletions(ci -> ci.getLabel().contains("server.port"),
+				"port<*>",
 				"server:\n"+
 				"  port: <*>");
 		assertCompletion(
@@ -1461,6 +1464,21 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 				"      <*>"
 				// => nothing
 		);
+	}
+	
+	/**
+	 * https://github.com/spring-projects/sts4/issues/709 
+	 */
+	@Test public void testGH709() throws Exception {
+		data("server.port", "java.lang.Integer", null, "Server http port");
+		
+		Editor editor = newEditor("logging:\r\n"
+				+ "  enabled: true\r\n"
+				+ "ser<*>");
+		editor.assertCompletions("logging:\r\n"
+				+ "  enabled: true\r\n"
+				+ "server:\r\n"
+				+ "  port: <*>");
 	}
 
 	@Test public void testContentAssistNested() throws Exception {
@@ -1893,7 +1911,8 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		defaultTestData();
 
 		//Ensure this test is not trivially passing because of missing test data
-		assertCompletion(
+		Editor editor = newEditor("<*>\n");
+		editor.assertContextualCompletions(ci -> ci.getLabel().contains("server.port"),
 				"po<*>"
 				,
 				"server:\n"+
@@ -2249,7 +2268,9 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		useProject(createPredefinedMavenProject("enums-boot-1.3.2-app"));
 		data("foo.color", "demo.Color", null, "A foonky colour");
 
-		assertCompletion("foo.c<*>",
+		Editor editor = newEditor("<*>\n");
+		editor.assertContextualCompletions(ci -> ci.getLabel().equals("foo.color"),
+				"foo.c<*>",
 				"foo:\n" +
 				"  color: <*>" //Should complete on same line because enums are 'simple' values.
 		);
@@ -2393,11 +2414,12 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 		);
 
 		//Map Enum -> Pojo:
-		assertCompletions("foo.coldat<*>",
+		Editor editor = newEditor("<*>\n");
+		editor.assertContextualCompletions("foo.coldat<*>",
 				"foo:\n" +
 				"  color-data:\n" +
 				"    <*>");
-		assertCompletions(
+		editor.assertContextualCompletions(
 				"foo:\n" +
 				"  color-data:\n" +
 				"    <*>",
@@ -2415,7 +2437,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 				"    red:\n" +
 				"      <*>"
 		);
-		assertCompletions(
+		editor.assertContextualCompletions(
 				"foo:\n" +
 				"  color-data:\n" +
 				"    B<*>",
@@ -2426,7 +2448,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 				"      <*>"
 		);
 
-		assertCompletions(
+		editor.assertContextualCompletions(
 				"foo:\n" +
 				"  color-data:\n" +
 				"    b<*>",
@@ -2437,7 +2459,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 				"      <*>"
 		);
 
-		assertCompletions(
+		editor.assertContextualCompletions(
 				"foo:\n" +
 				"  color-data: b<*>",
 				//=>

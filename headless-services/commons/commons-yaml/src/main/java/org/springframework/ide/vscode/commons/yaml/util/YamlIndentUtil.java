@@ -40,7 +40,7 @@ public class YamlIndentUtil {
 	 */
 	public final String NEWLINE;
 
-	public YamlIndentUtil(String newline) {
+	private YamlIndentUtil(String newline) {
 		this.NEWLINE = newline;
 		Assert.isNotNull(NEWLINE);
 	}

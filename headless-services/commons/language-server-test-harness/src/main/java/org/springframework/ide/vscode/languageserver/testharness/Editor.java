@@ -241,7 +241,7 @@ public class Editor {
 		if (selectionStart<selectionEnd) {
 			text = text.substring(0,selectionStart) + CURSOR + text.substring(selectionStart);
 		}
-		return deWindowsify(text);
+		return text;
 	}
 
 	public void setText(String content) throws Exception {
@@ -269,11 +269,6 @@ public class Editor {
 	public String getText(Range range) {
 		return doc.getText(range);
 	}
-
-	private String deWindowsify(String text) {
-		return text.replaceAll("\\r\\n", "\n");
-	}
-
 
 	private boolean matchProblem(Diagnostic problem, String expect) {
 		String[] parts = expect.split("\\|");
