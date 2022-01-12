@@ -13,6 +13,7 @@ package org.springframework.ide.eclipse.boot.wizard;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.eclipse.core.resources.WorkspaceJob;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
@@ -219,9 +220,9 @@ public class NewSpringBootWizard extends Wizard implements INewWizard, IImportWi
 			return false;
 		}
 		model.getModel().getValue().setWorkingSets(workingSetSection.getWorkingSets()); //must be in ui thread. Don't put in job!
-		Job job = new Job("Import Getting Started Content") {
+		WorkspaceJob job = new WorkspaceJob("Import Getting Started Content") {
 			@Override
-			protected IStatus run(IProgressMonitor mon) {
+			public IStatus runInWorkspace(IProgressMonitor mon) {
 				try {
 					// TODO: maybe the model factory should have a perform finish that does a save, which then calls the underlying model perform finish
 					model.save();
