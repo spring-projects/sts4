@@ -28,7 +28,7 @@ import javolution.text.Text;
 public class TextDocument implements IDocument {
 
 	ILineTracker lineTracker = new DefaultLineTracker();
-	private static final Pattern NEWLINE = Pattern.compile("\\r|\\n|\\r\\n|\\n\\r");
+	private static final Pattern NEWLINE = Pattern.compile("\\n|\\r\\n");
 
 	private final LanguageId languageId;
 	private final String uri;

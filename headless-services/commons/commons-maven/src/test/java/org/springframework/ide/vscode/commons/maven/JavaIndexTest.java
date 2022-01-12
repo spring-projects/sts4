@@ -27,6 +27,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.junit.Ignore;
 import org.junit.Test;
 import org.springframework.ide.vscode.commons.java.IJavaModuleData;
 import org.springframework.ide.vscode.commons.java.IMethod;
@@ -43,6 +44,7 @@ import com.google.common.cache.LoadingCache;
 
 import reactor.util.function.Tuple2;
 
+@Ignore
 public class JavaIndexTest {
 
 	private static BasicFileObserver fileObserver = new BasicFileObserver();

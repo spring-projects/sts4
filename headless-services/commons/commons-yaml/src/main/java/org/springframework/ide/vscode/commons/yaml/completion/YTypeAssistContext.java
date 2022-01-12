@@ -201,7 +201,7 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 								}
 								snippet.append(p.getName());
 								snippet.append(":");
-								snippet.append(appendTextFor(YType));
+								snippet.append(appendTextFor(YType, doc));
 								edits.insert(queryOffset, indenter.applyIndentation(snippet.toString(), referenceIndent));
 							}
 							ICompletionProposal completion = completionFactory().beanProperty(doc.getDocument(),
@@ -262,9 +262,10 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 	/**
 	 * Computes the text that should be appended at the end of a completion
 	 * proposal depending on what type of value is expected.
+	 * @param doc 
 	 */
-	protected String appendTextFor(YType type) {
-		return new AppendTextBuilder(typeUtil).buildFor(type);
+	protected String appendTextFor(YType type, YamlDocument doc) {
+		return new AppendTextBuilder(typeUtil).buildFor(type, doc);
 	}
 
 	private List<ICompletionProposal> getValueCompletions(YamlDocument doc, SNode node, int offset, String query) {
@@ -461,7 +462,7 @@ public class YTypeAssistContext extends AbstractYamlAssistContext {
 						@Override
 						protected DocumentEdits transformEdit(DocumentEdits textEdit) {
 							textEdit.transformFirstNonWhitespaceEdit((Integer offset, String insertText) -> {
-								YamlIndentUtil indenter = new YamlIndentUtil("\n");
+								YamlIndentUtil indenter = new YamlIndentUtil(doc);
 								if (needNewline(textEdit)) {
 									return insertText.substring(0,  offset)
 											+ "\n" +Strings.repeat(" ", node.getIndent())+"- "

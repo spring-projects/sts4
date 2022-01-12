@@ -259,12 +259,12 @@ resources:
     username: ((docker_hub_username))
     password: ((docker_hub_password))
     repository: springci/sts4-build-env
-- name: theia-docker-image
-  type: docker-image
-  source:
-    username: ((docker_hub_username))
-    password: ((docker_hub_password))
-    repository: springci/sts4-theia-snapshot    
+# - name: theia-docker-image
+#   type: docker-image
+#   source:
+#     username: ((docker_hub_username))
+#     password: ((docker_hub_password))
+#     repository: springci/sts4-theia-snapshot    
 - name: maven-cache
   type: s3
   source:
@@ -401,40 +401,40 @@ jobs:
     params:
       rebase: true
       repository: sts4-wiki-out
-- name: build-theia-docker-snapshot-image
-  serial: true
-  on_failure:
-    put: slack-notification
-    params:
-      text: |
-          Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
-          https://ci.spring.io/teams/tools/pipelines/${BUILD_PIPELINE_NAME}/jobs/${BUILD_JOB_NAME}/builds/${BUILD_NAME}
-  plan:
-  - in_parallel:
-    - get: s3-concourse-vsix-snapshot
-      trigger: true
-      passed:
-      - build-consourse-vsix-snapshot
-    - get: s3-spring-boot-vsix-snapshot
-      trigger: true
-      passed:
-      - build-spring-boot-vsix-snapshot
-    - get: s3-bosh-vsix-snapshot
-      trigger: true
-      passed:
-      - build-bosh-vsix-snapshot
-    - get: s3-manifest-yaml-vsix-snapshot
-      trigger: true
-      passed:
-      - build-manifest-yaml-vsix-snapshot
-    - get: sts4
-  - task: prepare-theia-docker-image
-    file: sts4/concourse/tasks/prepare-theia-docker-image.yml
-  - put: theia-docker-image
-    params:
-      build: output
-    get_params:
-      skip_download: true
+# - name: build-theia-docker-snapshot-image
+#   serial: true
+#   on_failure:
+#     put: slack-notification
+#     params:
+#       text: |
+#           Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
+#           https://ci.spring.io/teams/tools/pipelines/${BUILD_PIPELINE_NAME}/jobs/${BUILD_JOB_NAME}/builds/${BUILD_NAME}
+#   plan:
+#   - in_parallel:
+#     - get: s3-concourse-vsix-snapshot
+#       trigger: true
+#       passed:
+#       - build-consourse-vsix-snapshot
+#     - get: s3-spring-boot-vsix-snapshot
+#       trigger: true
+#       passed:
+#       - build-spring-boot-vsix-snapshot
+#     - get: s3-bosh-vsix-snapshot
+#       trigger: true
+#       passed:
+#       - build-bosh-vsix-snapshot
+#     - get: s3-manifest-yaml-vsix-snapshot
+#       trigger: true
+#       passed:
+#       - build-manifest-yaml-vsix-snapshot
+#     - get: sts4
+#   - task: prepare-theia-docker-image
+#     file: sts4/concourse/tasks/prepare-theia-docker-image.yml
+#   - put: theia-docker-image
+#     params:
+#       build: output
+#     get_params:
+#       skip_download: true
 - name: build-docker-image
   serial: true
   plan:
@@ -1025,13 +1025,13 @@ groups:
   - bump-version-patch
   - bump-version-minor
   - bump-version-major
-- name: theia-snapshots
-  jobs:
-  - build-theia-docker-snapshot-image
-  - build-consourse-vsix-snapshot
-  - build-manifest-yaml-vsix-snapshot
-  - build-spring-boot-vsix-snapshot
-  - build-bosh-vsix-snapshot
+# - name: theia-snapshots
+#   jobs:
+#   - build-theia-docker-snapshot-image
+#   - build-consourse-vsix-snapshot
+#   - build-manifest-yaml-vsix-snapshot
+#   - build-spring-boot-vsix-snapshot
+#   - build-bosh-vsix-snapshot
 - name: setup
   jobs:
   - build-mvn-cache

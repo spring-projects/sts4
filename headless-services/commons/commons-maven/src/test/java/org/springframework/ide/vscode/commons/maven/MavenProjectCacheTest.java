@@ -39,6 +39,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
@@ -64,6 +65,7 @@ import com.google.common.collect.ImmutableList;
  * @author Alex Boyko
  *
  */
+@Ignore
 public class MavenProjectCacheTest {
 
 	private static final int TIMEOUT_SECONDS = 60;

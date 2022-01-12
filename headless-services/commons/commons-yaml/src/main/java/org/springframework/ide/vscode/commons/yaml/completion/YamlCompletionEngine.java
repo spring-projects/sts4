@@ -114,7 +114,7 @@ public class YamlCompletionEngine implements ICompletionEngine {
 	protected Collection<? extends ICompletionProposal> getRelaxedCompletions(int offset, YamlDocument doc, SNode current, SNode contextNode, int baseIndent, double deempasizeBy) {
 		try {
 			return fixIndentations(getBaseCompletions(offset, doc, current, contextNode),
-					current, contextNode, baseIndent, deempasizeBy);
+					current, contextNode, baseIndent, deempasizeBy, doc);
 		} catch (Exception e) {
 			Log.log(e);
 		}
@@ -122,14 +122,14 @@ public class YamlCompletionEngine implements ICompletionEngine {
 	}
 
 	protected Collection<? extends ICompletionProposal> fixIndentations(Collection<ICompletionProposal> completions, SNode currentNode,
-			SNode contextNode, int baseIndent, double deempasizeBy) {
+			SNode contextNode, int baseIndent, double deempasizeBy, YamlDocument doc) {
 		if (!completions.isEmpty()) {
 			int dashyIndent = getTargetIndent(contextNode, currentNode, true);
 			int plainIndent = getTargetIndent(contextNode, currentNode, false);
 			List<ICompletionProposal> transformed = new ArrayList<>();
 			for (ICompletionProposal p : completions) {
 				int targetIndent = p.getLabel().startsWith("- ") ? dashyIndent : plainIndent;
-				ScoreableProposal p_fixed = indentFix((ScoreableProposal)p, targetIndent - baseIndent, currentNode, contextNode);
+				ScoreableProposal p_fixed = indentFix((ScoreableProposal)p, targetIndent - baseIndent, currentNode, contextNode, doc);
 				if (p_fixed!=null) {
 					p_fixed.deemphasize(deempasizeBy);
 					transformed.add(p_fixed);
@@ -140,12 +140,12 @@ public class YamlCompletionEngine implements ICompletionEngine {
 		return Collections.emptyList();
 	}
 
-	protected ScoreableProposal indentFix(ScoreableProposal p, int fixIndentBy, SNode currentNode, SNode contextNode) {
+	protected ScoreableProposal indentFix(ScoreableProposal p, int fixIndentBy, SNode currentNode, SNode contextNode, YamlDocument doc) {
 		if (fixIndentBy==0) {
 			return p;
 		} else if (fixIndentBy>0) {
 			if (isExtraIndentRelaxable(contextNode, fixIndentBy)) {
-				return indented(p, Strings.repeat(" ", fixIndentBy));
+				return indented(p, Strings.repeat(" ", fixIndentBy), doc);
 			}
 		} else { // fixIndentBy < 0
 			if (isLesserIndentRelaxable(currentNode, contextNode)) {
@@ -228,7 +228,7 @@ public class YamlCompletionEngine implements ICompletionEngine {
 		return null;
 	}
 
-	public ScoreableProposal indented(ICompletionProposal proposal, String indentStr) {
+	public ScoreableProposal indented(ICompletionProposal proposal, String indentStr, YamlDocument doc) {
 		int numArrows = (indentStr.length()+1)/2;
 		ScoreableProposal transformed = new TransformedCompletion(proposal) {
 			@Override public String tranformLabel(String originalLabel) {
@@ -236,7 +236,7 @@ public class YamlCompletionEngine implements ICompletionEngine {
 			}
 			@Override public DocumentEdits transformEdit(DocumentEdits originalEdit) {
 //				originalEdit.indentFirstEdit(indentStr);
-				YamlIndentUtil indenter = new YamlIndentUtil("\n");
+				YamlIndentUtil indenter = new YamlIndentUtil(doc);
 				if (originalEdit.hasRelativeIndents()) {
 					originalEdit.transformFirstNonWhitespaceEdit((Integer offset, String insertText) -> {
 						String prefix = insertText.substring(0, offset);
