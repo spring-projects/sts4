@@ -326,10 +326,12 @@ public class LanguageServerHarness {
 				public CompletableFuture<Void> registerCapability(RegistrationParams params) {
 					return CompletableFuture.completedFuture(null);
 				}
+				
+				
 
 				@Override
-				public void progress(ProgressParams progressEvent) {
-					// TODO Auto-generated method stub
+				public void notifyProgress(org.eclipse.lsp4j.ProgressParams params) {
+					// nothing
 				}
 
 				@Override

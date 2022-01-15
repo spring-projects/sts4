@@ -32,7 +32,7 @@ public class ProgressTask {
 	}
 	
 	public void progressDone() {
-		this.service.progressDone(taskId);
+		this.service.progressEvent(taskId, null);
 	}
 
 }

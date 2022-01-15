@@ -30,6 +30,7 @@ import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.eclipse.lsp4j.TextEdit;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits.TextReplace;
@@ -254,7 +255,7 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 		AtomicBoolean usedSnippets = new AtomicBoolean();
 		Optional<TextEdit> mainEdit = adaptEdits(doc, completion.getTextEdit(), usedSnippets);
 		if (mainEdit.isPresent()) {
-			item.setTextEdit(mainEdit.get());
+			item.setTextEdit(Either.forLeft(mainEdit.get()));
 			if (server.hasCompletionSnippetSupport()) {
 				item.setInsertTextFormat(usedSnippets.get() ? InsertTextFormat.Snippet : InsertTextFormat.PlainText);
 			} else {

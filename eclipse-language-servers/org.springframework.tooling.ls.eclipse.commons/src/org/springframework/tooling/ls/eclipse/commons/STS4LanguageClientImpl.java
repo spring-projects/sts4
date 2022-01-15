@@ -55,6 +55,9 @@ import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.MarkupContent;
 import org.eclipse.lsp4j.MarkupKind;
 import org.eclipse.lsp4j.Range;
+import org.eclipse.lsp4j.WorkDoneProgressBegin;
+import org.eclipse.lsp4j.WorkDoneProgressNotification;
+import org.eclipse.lsp4j.WorkDoneProgressReport;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.widgets.Display;
@@ -356,10 +359,28 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 		}
 	}
 
+
+
 	@Override
-	public void progress(ProgressParams progressEvent) {
-		String status = progressEvent.getStatusMsg() != null ? progressEvent.getStatusMsg() : "";
-		showStatusMessage(status);
+	public void notifyProgress(org.eclipse.lsp4j.ProgressParams params) {
+		if (params.getValue().isLeft()) {
+			WorkDoneProgressNotification progressNotification = params.getValue().getLeft();
+			switch (progressNotification.getKind()) {
+			case begin:
+				WorkDoneProgressBegin begin = (WorkDoneProgressBegin) progressNotification;
+				showStatusMessage(begin.getMessage());
+				break;
+			case report:
+				WorkDoneProgressReport report = (WorkDoneProgressReport) progressNotification;
+				showStatusMessage(report.getMessage());
+				break;
+			case end:
+				showStatusMessage("");
+				break;
+			default:
+				break;
+			}
+		}
 	}
 
 	private void showStatusMessage(final String status) {

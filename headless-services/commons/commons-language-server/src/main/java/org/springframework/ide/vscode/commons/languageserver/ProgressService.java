@@ -20,10 +20,6 @@ public interface ProgressService {
 			
 		}
 		
-		@Override
-		public void progressDone(String taskId) {
-		
-		}
 	};
 	
 	/**
@@ -43,9 +39,7 @@ public interface ProgressService {
 	 * @param statusMsg
 	 */
 	void progressEvent(String taskId, String statusMsg);
-	
-	void progressDone(String taskId);
-	
+		
 	default ProgressTask createProgressTask(String taskId) {
 		return new ProgressTask(taskId, this);
 	}

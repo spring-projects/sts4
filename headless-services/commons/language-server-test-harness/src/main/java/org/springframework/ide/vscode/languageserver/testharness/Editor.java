@@ -451,7 +451,7 @@ public class Editor {
 
 	public void apply(CompletionItem completion) throws Exception {
 		completion = harness.resolveCompletionItem(completion);
-		TextEdit edit = completion.getTextEdit();
+		TextEdit edit = completion.getTextEdit().getLeft();
 		String docText = doc.getText();
 		if (edit!=null) {
 			String replaceWith = edit.getNewText();

@@ -184,7 +184,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 				"long.foobar.more"
 		);
 		for (CompletionItem c : completions) {
-			TextEdit edit = c.getTextEdit();
+			TextEdit edit = c.getTextEdit().getLeft();
 			assertEquals("bar", editor.getText(edit.getRange()));
 		}
 		
@@ -202,7 +202,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 				"very.long.foofoo.more"
 		);
 		for (CompletionItem c : completions) {
-			TextEdit edit = c.getTextEdit();
+			TextEdit edit = c.getTextEdit().getLeft();
 			assertEquals("vr", editor.getText(edit.getRange()));
 		}
 
@@ -230,7 +230,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 				"long.foofoo.more"
 		);
 		for (CompletionItem c : completions) {
-			TextEdit edit = c.getTextEdit();
+			TextEdit edit = c.getTextEdit().getLeft();
 			assertEquals("", editor.getText(edit.getRange()));
 		}
 		

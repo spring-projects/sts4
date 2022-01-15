@@ -26,6 +26,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
@@ -42,6 +43,7 @@ import org.eclipse.lsp4j.InitializeParams;
 import org.eclipse.lsp4j.InitializeResult;
 import org.eclipse.lsp4j.MessageParams;
 import org.eclipse.lsp4j.MessageType;
+import org.eclipse.lsp4j.ProgressParams;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.Registration;
 import org.eclipse.lsp4j.RegistrationParams;
@@ -49,9 +51,14 @@ import org.eclipse.lsp4j.ServerCapabilities;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.eclipse.lsp4j.VersionedTextDocumentIdentifier;
+import org.eclipse.lsp4j.WorkDoneProgressBegin;
+import org.eclipse.lsp4j.WorkDoneProgressCreateParams;
+import org.eclipse.lsp4j.WorkDoneProgressEnd;
+import org.eclipse.lsp4j.WorkDoneProgressReport;
 import org.eclipse.lsp4j.WorkspaceFolder;
 import org.eclipse.lsp4j.WorkspaceFoldersOptions;
 import org.eclipse.lsp4j.WorkspaceServerCapabilities;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.LanguageClient;
 import org.eclipse.lsp4j.services.LanguageClientAware;
 import org.slf4j.Logger;
@@ -76,7 +83,6 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.Diagnosti
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblem;
-import org.springframework.ide.vscode.commons.protocol.ProgressParams;
 import org.springframework.ide.vscode.commons.protocol.STS4LanguageClient;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.AsyncRunner;
@@ -121,18 +127,51 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 	private final LanguageServerProperties props;
 
 	private ProgressService progressService = new ProgressService()  {
-
+		
+		private ConcurrentHashMap<String, Boolean> activeTaskIDs = new ConcurrentHashMap<>();
+		
 		@Override
 		public void progressEvent(String taskId, String statusMsg) {
 			STS4LanguageClient client = SimpleLanguageServer.this.client;
 			if (client!=null) {
-				client.progress(new ProgressParams(taskId, statusMsg));
+				if (statusMsg == null) {
+					progressDone(taskId);
+					return;
+				}
+				boolean isNew = activeTaskIDs.put(taskId, true) == null;
+				if (isNew) {
+					// New taskId, new progress
+					WorkDoneProgressCreateParams params = new WorkDoneProgressCreateParams();
+					params.setToken(taskId);
+					SimpleLanguageServer.this.client.createProgress(params).thenAccept((p) -> {
+						ProgressParams progressParams = new ProgressParams();
+						progressParams.setToken(taskId);
+						WorkDoneProgressBegin report = new WorkDoneProgressBegin();
+						report.setCancellable(false);
+						progressParams.setValue(Either.forLeft(report));
+						report.setMessage(statusMsg);
+						SimpleLanguageServer.this.client.notifyProgress(progressParams);
+					});
+				} else {
+					// Already exists
+					ProgressParams progressParams = new ProgressParams();
+					progressParams.setToken(taskId);
+					WorkDoneProgressReport report = new WorkDoneProgressReport();
+					progressParams.setValue(Either.forLeft(report));
+					report.setMessage(statusMsg);
+					SimpleLanguageServer.this.client.notifyProgress(progressParams);
+				}
 			}
 		}
 
-		@Override
-		public void progressDone(String taskId) {
-			progressEvent(taskId, null);
+		private void progressDone(String taskId) {
+			if (activeTaskIDs.remove(taskId)) {
+				ProgressParams progressParams = new ProgressParams();
+				progressParams.setToken(taskId);
+				WorkDoneProgressEnd report = new WorkDoneProgressEnd();
+				progressParams.setValue(Either.forLeft(report));
+				SimpleLanguageServer.this.client.notifyProgress(progressParams);
+			}
 		}
 	};
 

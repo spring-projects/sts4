@@ -5,17 +5,13 @@ import * as Path from 'path';
 import * as FS from 'fs';
 import PortFinder = require('portfinder');
 import * as Net from 'net';
-import * as ChildProcess from 'child_process';
 import * as CommonsCommands from './commands';
 import { RequestType, LanguageClientOptions, Position } from 'vscode-languageclient';
 import {LanguageClient, StreamInfo, ServerOptions, ExecutableOptions, Executable} from 'vscode-languageclient/node';
 import {
     Disposable,
-    window,
     Event,
-    EventEmitter,
-    ProgressLocation,
-    Progress,
+    EventEmitter
 } from 'vscode';
 import { Trace, NotificationType } from 'vscode-jsonrpc';
 import * as P2C from 'vscode-languageclient/lib/common/protocolConverter';
@@ -115,7 +111,7 @@ function getJdtUserDefinedJavaHome(log: VSCode.OutputChannel): string {
 export function activate(options: ActivatorOptions, context: VSCode.ExtensionContext): Thenable<LanguageClient> {
     if (options.CONNECT_TO_LS) {
         return VSCode.window.showInformationMessage("Start language server")
-        .then((x) => connectToLS(context, options));
+        .then((_) => connectToLS(context, options));
     } else {
         const clientOptions = options.clientOptions;
 
@@ -178,7 +174,7 @@ function createServerOptions(options: ActivatorOptions, context: VSCode.Extensio
 
 function createServerOptionsForPortComm(options: ActivatorOptions, context: VSCode.ExtensionContext, jvm: JVM): ServerOptions {
     return () =>
-        new Promise((resolve, reject) => {
+        new Promise((resolve) => {
             PortFinder.getPort((err, port) => {
                 Net.createServer(socket => {
                     options.clientOptions.outputChannel.appendLine('Child process connected on port ' + port);
@@ -325,7 +321,6 @@ function setupLanguageClient(context: VSCode.ExtensionContext, createServer: Ser
         client.trace = Trace.Verbose;
     }
 
-    let progressNotification = new NotificationType<ProgressParams>("sts/progress");
     let highlightNotification = new NotificationType<HighlightParams>("sts/highlight");
     let moveCursorRequest = new RequestType<MoveCursorParams,MoveCursorResponse,void>("sts/moveCursor");
 
@@ -333,7 +328,6 @@ function setupLanguageClient(context: VSCode.ExtensionContext, createServer: Ser
 
     const codeLensListanableSetting = options.highlightCodeLensSettingKey ? new ListenablePreferenceSetting<boolean>(options.highlightCodeLensSettingKey) : undefined;
 
-    let progressService = new ProgressService();
     let highlightService = new HighlightService();
     const codelensService = new HighlightCodeLensProvider();
     let codeLensProviderSubscription: Disposable;
@@ -341,7 +335,6 @@ function setupLanguageClient(context: VSCode.ExtensionContext, createServer: Ser
     CommonsCommands.registerCommands(context);
 
     context.subscriptions.push(disposable);
-    context.subscriptions.push(progressService);
     context.subscriptions.push(highlightService);
 
     function toggleHighlightCodeLens() {
@@ -364,9 +357,6 @@ function setupLanguageClient(context: VSCode.ExtensionContext, createServer: Ser
     }
 
     return  client.onReady().then(() => {
-        client.onNotification(progressNotification, (params: ProgressParams) => {
-            progressService.handle(params);
-        });
         client.onNotification(highlightNotification, (params: HighlightParams) => {
             highlightService.handle(params);
             if (codeLensListanableSetting && codeLensListanableSetting.value) {
@@ -374,8 +364,7 @@ function setupLanguageClient(context: VSCode.ExtensionContext, createServer: Ser
             }
         });
         client.onRequest(moveCursorRequest, (params: MoveCursorParams) => {
-            let editors = VSCode.window.visibleTextEditors;
-            for (let editor of editors) {
+            for (let editor of VSCode.window.visibleTextEditors) {
                 if (editor.document.uri.toString() == params.uri) {
                     let cursor = p2c.asPosition(params.position);
                     let selection : VSCode.Selection = new VSCode.Selection(cursor, cursor);
@@ -390,13 +379,6 @@ function setupLanguageClient(context: VSCode.ExtensionContext, createServer: Ser
     });
 }
 
-function correctBinname(binname: string) {
-    if (process.platform === 'win32')
-        return binname + '.exe';
-    else
-        return binname;
-}
-
 interface MoveCursorParams {
     uri: string
     position: Position
@@ -404,70 +386,6 @@ interface MoveCursorParams {
 
 interface MoveCursorResponse {
     applied: boolean
-}
-
-interface ProgressParams {
-	id: string
-	title: string
-    statusMsg?: string
-}
-
-class ProgressHandle {
-    constructor(
-        private progress: Progress<{ message?: string; increment?: number }>,
-        private finish: () => void
-    ) {}
-
-    updateStatus(message: string, increment: number) {
-        this.progress.report({
-            message,
-            increment
-        });
-    }
-
-    complete() {
-        this.finish();
-    }
-}
-
-class ProgressService {
-
-    private status = new Map<String, ProgressHandle>();
-
-    handle(params: ProgressParams) {
-        const progressHandler = this.status.get(params.id);
-        if (progressHandler) {
-			if(params.statusMsg) {
-				progressHandler.updateStatus(params.statusMsg, -1);
-			} else {
-				progressHandler.complete();
-			}
-        } else {
-            if (params.statusMsg) {
-                window.withProgress({
-                    location: ProgressLocation.Notification,
-                    title: "",
-                    cancellable: false
-                }, progress => new Promise(resolve => {
-					this.status.set(params.id, new ProgressHandle(progress, <() => void>resolve));
-					progress.report({
-						message: params.statusMsg,
-						increment: -1
-					})
-				}));
-            }
-        }
-
-    }
-
-    dispose() {
-        if (this.status) {
-            for (let handler of this.status.values()) {
-                handler.complete();
-            }
-        }
-        this.status = null;
-    }
 }
 
 export interface ListenableSetting<T> {
