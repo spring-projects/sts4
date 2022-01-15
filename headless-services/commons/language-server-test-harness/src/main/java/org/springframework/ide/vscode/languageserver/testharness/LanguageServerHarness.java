@@ -98,6 +98,7 @@ import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.eclipse.lsp4j.TextDocumentSyncOptions;
 import org.eclipse.lsp4j.TextEdit;
 import org.eclipse.lsp4j.VersionedTextDocumentIdentifier;
+import org.eclipse.lsp4j.WorkDoneProgressCreateParams;
 import org.eclipse.lsp4j.WorkspaceClientCapabilities;
 import org.eclipse.lsp4j.WorkspaceEdit;
 import org.eclipse.lsp4j.WorkspaceEditCapabilities;
@@ -327,7 +328,10 @@ public class LanguageServerHarness {
 					return CompletableFuture.completedFuture(null);
 				}
 				
-				
+				@Override
+				public CompletableFuture<Void> createProgress(WorkDoneProgressCreateParams params) {
+					return CompletableFuture.completedFuture(null);
+				}
 
 				@Override
 				public void notifyProgress(org.eclipse.lsp4j.ProgressParams params) {
