@@ -41,6 +41,7 @@ import org.eclipse.lsp4j.DefinitionParams;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DocumentSymbol;
 import org.eclipse.lsp4j.Hover;
+import org.eclipse.lsp4j.InsertReplaceEdit;
 import org.eclipse.lsp4j.LocationLink;
 import org.eclipse.lsp4j.MarkedString;
 import org.eclipse.lsp4j.MarkupContent;
@@ -451,38 +452,42 @@ public class Editor {
 
 	public void apply(CompletionItem completion) throws Exception {
 		completion = harness.resolveCompletionItem(completion);
-		TextEdit edit = completion.getTextEdit().getLeft();
+		Either<TextEdit,InsertReplaceEdit> edit = completion.getTextEdit();
 		String docText = doc.getText();
-		if (edit!=null) {
-			String replaceWith = edit.getNewText();
-			int cursorReplaceOffset = 0;
+		if (edit != null) {
+			if (edit.isLeft()) {
+				String replaceWith = edit.getLeft().getNewText();
+				int cursorReplaceOffset = 0;
 
-			if (!Boolean.getBoolean("lsp.completions.indentation.enable")) {
-				//Apply indentfix, this is magic vscode seems to apply to edits returned by language server. So our harness has to
-				// mimick that behavior. See https://github.com/Microsoft/language-server-protocol/issues/83
-				int referenceLine = edit.getRange().getStart().getLine();
-				int cursorOffset = edit.getRange().getStart().getCharacter();
-				String referenceIndent = doc.getLineIndentString(referenceLine);
-				if (cursorOffset<referenceIndent.length()) {
-					referenceIndent = referenceIndent.substring(0, cursorOffset);
+				if (!Boolean.getBoolean("lsp.completions.indentation.enable")) {
+					//Apply indentfix, this is magic vscode seems to apply to edits returned by language server. So our harness has to
+					// mimick that behavior. See https://github.com/Microsoft/language-server-protocol/issues/83
+					int referenceLine = edit.getLeft().getRange().getStart().getLine();
+					int cursorOffset = edit.getLeft().getRange().getStart().getCharacter();
+					String referenceIndent = doc.getLineIndentString(referenceLine);
+					if (cursorOffset<referenceIndent.length()) {
+						referenceIndent = referenceIndent.substring(0, cursorOffset);
+					}
+					replaceWith = replaceWith.replaceAll("\\n", "\n"+referenceIndent);
 				}
-				replaceWith = replaceWith.replaceAll("\\n", "\n"+referenceIndent);
-			}
 
-			// Replace the cursor string
-			cursorReplaceOffset = replaceWith.indexOf(VS_CODE_CURSOR_MARKER);
-			if (cursorReplaceOffset >= 0) {
-				replaceWith = replaceWith.substring(0, cursorReplaceOffset)
-						+ replaceWith.substring(cursorReplaceOffset + VS_CODE_CURSOR_MARKER.length());
+				// Replace the cursor string
+				cursorReplaceOffset = replaceWith.indexOf(VS_CODE_CURSOR_MARKER);
+				if (cursorReplaceOffset >= 0) {
+					replaceWith = replaceWith.substring(0, cursorReplaceOffset)
+							+ replaceWith.substring(cursorReplaceOffset + VS_CODE_CURSOR_MARKER.length());
+				} else {
+					cursorReplaceOffset = replaceWith.length();
+				}
+
+				Range rng = edit.getLeft().getRange();
+				int start = doc.toOffset(rng.getStart());
+				int end = doc.toOffset(rng.getEnd());
+				replaceText(start, end, replaceWith);
+				selectionStart = selectionEnd = start+cursorReplaceOffset;
 			} else {
-				cursorReplaceOffset = replaceWith.length();
+				throw new UnsupportedOperationException("InsertReplaceEdit edits not supported");
 			}
-
-			Range rng = edit.getRange();
-			int start = doc.toOffset(rng.getStart());
-			int end = doc.toOffset(rng.getEnd());
-			replaceText(start, end, replaceWith);
-			selectionStart = selectionEnd = start+cursorReplaceOffset;
 		} else {
 			String insertText = getInsertText(completion);
 			String newText = docText.substring(0, selectionStart) + insertText + docText.substring(selectionStart);
