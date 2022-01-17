@@ -108,6 +108,21 @@ function getJdtUserDefinedJavaHome(log: VSCode.OutputChannel): string {
     return javaHome;
 }
 
+function findJdtEmbeddedJRE(): string | undefined{
+    const javaExtension = VSCode.extensions.getExtension('redhat.java');
+    if (javaExtension) {
+        const jreHome = Path.resolve(javaExtension.extensionPath, 'jre');
+        if (FS.existsSync(jreHome) && FS.statSync(jreHome).isDirectory()) {
+            const candidates = FS.readdirSync(jreHome);
+            for (const candidate of candidates) {
+                if (FS.existsSync(Path.join(jreHome, candidate, "bin"))) {
+                    return Path.join(jreHome, candidate);
+                }
+            }
+        }
+    }
+}
+
 export function activate(options: ActivatorOptions, context: VSCode.ExtensionContext): Thenable<LanguageClient> {
     if (options.CONNECT_TO_LS) {
         return VSCode.window.showInformationMessage("Start language server")
@@ -123,6 +138,7 @@ export function activate(options: ActivatorOptions, context: VSCode.ExtensionCon
         let findJRE = options.preferJdk ? findJdk : findJvm;
 
         return findJRE(getSpringUserDefinedJavaHome(options.workspaceOptions, clientOptions.outputChannel)
+            || findJdtEmbeddedJRE()
             || getJdtUserDefinedJavaHome(clientOptions.outputChannel),
             msg => clientOptions.outputChannel.appendLine(msg))
         .catch(error => {
