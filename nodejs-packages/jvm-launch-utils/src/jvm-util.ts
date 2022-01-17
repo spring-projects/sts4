@@ -181,7 +181,9 @@ class JVMImpl implements JVM {
         return this.javaExe;
     }
     isJdk(): boolean {
-        return FS.existsSync(Path.resolve(this.getJavaHome(), "jmods", "jdk.management.jmod"));
+        const javaExecutable = this.getJavaExecutable();
+        const str = ChildProcess.execSync(javaExecutable + ' --list-modules', {windowsHide: true, encoding: 'utf8'});
+        return str.search(/^jdk.management@.*$/m) >= 0;
     }
     jarLaunch(jar: string, vmargs?: [string], execFileOptions?: ChildProcess.ExecFileOptions): ChildProcess.ChildProcess {
         let args = [];
