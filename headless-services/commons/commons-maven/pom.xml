@@ -16,7 +16,7 @@
 
 	<properties>
 		<!-- maven core version -->
-		<maven-core.version>3.3.9</maven-core.version>
+		<maven-core.version>3.8.1</maven-core.version>
 		<maven-wagon.version>2.10</maven-wagon.version>
 	</properties>
 
