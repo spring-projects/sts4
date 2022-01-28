@@ -43,13 +43,6 @@ public class ResourceHintProvider implements ValueProviderStrategy {
 
 	@Override
 	public Flux<StsValueHint> getValues(IJavaProject javaProject, String query) {
-		for (String prefix : CLASSPATH_PREFIXES) {
-			if (query.startsWith(prefix)) {
-				return classpathHints
-				.getValues(javaProject, query.substring(prefix.length()))
-				.map((hint) -> hint.prefixWith(prefix));
-			}
-		}
 		return Flux.fromIterable(urlPrefixHints);
 	}
 
@@ -58,19 +51,5 @@ public class ResourceHintProvider implements ValueProviderStrategy {
 			.map(StsValueHint::create)
 			.collect(Collectors.toList())
 	);
-
-	private ClasspathHints classpathHints = new ClasspathHints();
-
-	private static class ClasspathHints extends CachingValueProvider {
-		@Override
-		protected Flux<StsValueHint> getValuesAsync(IJavaProject javaProject, String query) {
-			return Flux.fromStream(
-				IClasspathUtil.getClasspathResources(javaProject.getClasspath()).stream()
-				.distinct().map(r -> r.replaceAll("\\\\", "/"))
-				.map(StsValueHint::create)
-			);
-		}
-	}
-
 
 }

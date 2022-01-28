@@ -79,6 +79,23 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		projectContents.createFile("src/main/resources/application.yml", "");
 	};
 	
+	@Test public void configImportClasspathCompletions() throws Exception {
+		MavenJavaProject p = createPredefinedMavenProject("demo-conf-import");
+		useProject(p);
+		
+//		assertCompletions("spring.config.import=<*>", 
+//				// ==>
+//				"spring.config.import=classpath:<*>",
+//				"spring.config.import=configtree:<*>",
+//				"spring.config.import=file:<*>"
+//		);
+		
+		assertCompletions("spring.config.import=classpath:ex<*>", 
+				// ==>
+				"spring.config.import=classpath:extra.properties<*>"
+		);
+	}
+	
 	@Test public void reconcilesWithMultiDocuments() throws Exception {
 		//See: https://github.com/spring-projects/sts4/issues/533
 		
@@ -1601,8 +1618,8 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		assertCompletionsDisplayString(
 				"my.nice.resource=classpath:app<*>\n"
 				,// =>
-				"classpath:application.properties",
-				"classpath:application.yml"
+				"application.properties",
+				"application.yml"
 		);
 
 		//Test 'list item' context:
@@ -1620,14 +1637,14 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		assertCompletionsDisplayString(
 				"my.nice.list[0]=classpath:app<*>\n"
 				,// =>
-				"classpath:application.properties",
-				"classpath:application.yml"
+				"application.properties",
+				"application.yml"
 		);
 
 		assertCompletionWithLabel(
 				"my.nice.list[0]=classpath:app<*>\n"
 				,// ==========
-				"classpath:application.yml"
+				"application.yml"
 				, // =>
 				"my.nice.list[0]=classpath:application.yml<*>\n"
 		);
@@ -1635,7 +1652,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		assertCompletionWithLabel(
 				"my.nice.list[0]=  classpath:app<*>\n"
 				,// ==========
-				"classpath:application.yml"
+				"application.yml"
 				, // =>
 				"my.nice.list[0]=  classpath:application.yml<*>\n"
 		);
@@ -1643,7 +1660,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		assertCompletionWithLabel(
 				"my.nice.list[0]=classpath:<*>\n"
 				,// ==========
-				"classpath:application.yml"
+				"application.yml"
 				, // =>
 				"my.nice.list[0]=classpath:application.yml<*>\n"
 		);
@@ -1654,7 +1671,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 		assertCompletionWithLabel(
 				"my.nice.resource=classpath:word<*>\n"
 				,//===============
-				"classpath:stuff/wordlist.txt"
+				"stuff/wordlist.txt"
 				,// =>
 				"my.nice.resource=classpath:stuff/wordlist.txt<*>\n"
 		);
@@ -1671,7 +1688,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 			assertCompletionWithLabel(
 				"my.nice."+kind+"=classpath:<*>"
 				,//===========
-				"classpath:stuff/wordlist.txt"
+				"stuff/wordlist.txt"
 				,//=>
 				"my.nice."+kind+"=classpath:stuff/wordlist.txt<*>"
 			);
@@ -1689,7 +1706,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 			assertCompletionWithLabel(
 				"my.nice."+kind+"=classpath:stuff/wordlist.txt,classpath:app<*>"
 				,//===========
-				"classpath:application.yml"
+				"application.yml"
 				,//=>
 				"my.nice."+kind+"=classpath:stuff/wordlist.txt,classpath:application.yml<*>"
 			);

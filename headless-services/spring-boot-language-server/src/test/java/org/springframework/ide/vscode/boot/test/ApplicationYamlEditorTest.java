@@ -4064,7 +4064,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 				"    list:\n"+
 				"    - classpath:<*>\n"
 				,// ==========
-				"classpath:application.yml"
+				"application.yml"
 				, // =>
 				"my:\n" +
 				"  nice:\n" +
@@ -4089,8 +4089,8 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 				"  nice:\n" +
 				"    resource: classpath:app<*>\n"
 				,// =>
-				"classpath:application.properties",
-				"classpath:application.yml"
+				"application.properties",
+				"application.yml"
 		);
 
 		//Test 'list item' context:
@@ -4101,8 +4101,8 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 				"    list:\n"+
 				"    - classpath:app<*>\n"
 				,// =>
-				"classpath:application.properties",
-				"classpath:application.yml"
+				"application.properties",
+				"application.yml"
 		);
 
 		assertCompletionWithLabel(
@@ -4111,7 +4111,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 				"    list:\n"+
 				"    - classpath:app<*>\n"
 				,// ==========
-				"classpath:application.yml"
+				"application.yml"
 				, // =>
 				"my:\n" +
 				"  nice:\n" +
@@ -4125,7 +4125,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 				"    list:\n"+
 				"    - classpath:<*>\n"
 				,// ==========
-				"classpath:application.yml"
+				"application.yml"
 				, // =>
 				"my:\n" +
 				"  nice:\n" +
@@ -4141,8 +4141,8 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 				"    resource:\n"+
 				"      classpath:app<*>\n"
 				,// =>
-				"classpath:application.properties",
-				"classpath:application.yml"
+				"application.properties",
+				"application.yml"
 		);
 
 		assertCompletionWithLabel(
@@ -4151,7 +4151,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 				"    resource:\n"+
 				"      classpath:app<*>\n"
 				,//===============
-				"classpath:application.properties"
+				"application.properties"
 				,// =>
 				"my:\n" +
 				"  nice:\n" +
@@ -4165,7 +4165,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 				"    resource:\n"+
 				"      classpath:<*>\n"
 				,//===============
-				"classpath:application.properties"
+				"application.properties"
 				,// =>
 				"my:\n" +
 				"  nice:\n" +
@@ -4180,7 +4180,7 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 				"    resource:\n"+
 				"      classpath:word<*>\n"
 				,//===============
-				"classpath:stuff/wordlist.txt"
+				"stuff/wordlist.txt"
 				,// =>
 				"my:\n" +
 				"  nice:\n" +
