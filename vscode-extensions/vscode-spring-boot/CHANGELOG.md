@@ -1,3 +1,10 @@
+## 2022-02-02 (4.13.1 RELEASE, incl. language servers version 1.30.0)
+
+* _(Spring Boot)_ improvement: Consider if content assist can be offered for spring.config.import property keys ([#536](https://github.com/spring-projects/sts4/issues/536))
+* _(Spring Boot)_ fixed: YAML editor generates wrong EOL characters in Windows ([#709](https://github.com/spring-projects/sts4/issues/709))
+* _(VSCode)_ fixed: Always pop up a prompt box: indexing spring boot properties ([#697](https://github.com/spring-projects/sts4/issues/697))
+* _(VSCode)_ fixed: Spring Boot Tools for VS Code incorrectly misidentifies internal JDK for Language Support for Java as a JRE ([#715](https://github.com/spring-projects/sts4/issues/715))
+
 ## 2021-12-08 (4.13.0 RELEASE, incl. language servers version 1.29.0)
 
 * _(Spring Boot)_ fixed: STS 4.12.0 (for eclipse) *.yml can't automatic prompt ([#690](https://github.com/spring-projects/sts4/issues/690))
