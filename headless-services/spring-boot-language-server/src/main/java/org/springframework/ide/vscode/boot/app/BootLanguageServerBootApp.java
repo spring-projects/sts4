@@ -18,6 +18,10 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 
+import org.eclipse.lsp4j.CodeActionKind;
+import org.eclipse.lsp4j.CodeActionOptions;
+import org.eclipse.lsp4j.InitializeParams;
+import org.eclipse.lsp4j.ServerCapabilities;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.SpringApplication;
@@ -27,6 +31,7 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClas
 import org.springframework.boot.autoconfigure.context.ConfigurationPropertiesAutoConfiguration;
 import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
+import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.ide.vscode.boot.common.PropertyCompletionFactory;
@@ -43,6 +48,9 @@ import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessConnec
 import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessConnectorRemote.RemoteBootAppData;
 import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessConnectorService;
 import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveDataProvider;
+import org.springframework.ide.vscode.boot.java.rewrite.ORCompilationUnitCache;
+import org.springframework.ide.vscode.boot.java.rewrite.RewriteRefactorings;
+import org.springframework.ide.vscode.boot.java.rewrite.RewriteRecipeRepository;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.boot.java.utils.SymbolCache;
 import org.springframework.ide.vscode.boot.java.utils.SymbolCacheOnDisc;
@@ -68,6 +76,7 @@ import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFin
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentEventListenerManager;
 import org.springframework.ide.vscode.commons.languageserver.util.LspClient;
+import org.springframework.ide.vscode.commons.languageserver.util.ServerCapabilityInitializer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.FileObserver;
 import org.springframework.ide.vscode.commons.util.LogRedirect;
@@ -210,6 +219,10 @@ public class BootLanguageServerBootApp {
 		return SourceLinkFactory.createSourceLinks(server, cuCache, params.projectFinder);
 	}
 
+	@Bean ORCompilationUnitCache orcuCache(SimpleLanguageServer server, BootLanguageServerParams params) {
+		return new ORCompilationUnitCache(params.projectFinder, server, params.projectObserver);
+	}
+	
 	@Bean CompilationUnitCache cuCache(SimpleLanguageServer server, BootLanguageServerParams params) {
 		return new CompilationUnitCache(params.projectFinder, server, params.projectObserver);
 	}
@@ -287,5 +300,24 @@ public class BootLanguageServerBootApp {
 	
 	@Bean FutureProjectFinder futureProjectFinder(JavaProjectFinder projectFinder, Optional<ProjectObserver> projectObserver) {
 		return new FutureProjectFinder(projectFinder, projectObserver);
+	}
+	
+	@Bean RewriteRefactorings rewriteRefactorings(ApplicationContext appContext) {
+		return new RewriteRefactorings();
+	}
+	
+	@Bean
+	ServerCapabilityInitializer bootServerCapabilitiesInitializer() {
+		return (InitializeParams params, ServerCapabilities cap) -> {
+			CodeActionOptions codeActionOptions = new CodeActionOptions();
+			codeActionOptions.setCodeActionKinds(List.of(CodeActionKind.Refactor, CodeActionKind.QuickFix));
+			codeActionOptions.setResolveProvider(true);
+			codeActionOptions.setWorkDoneProgress(true);
+			cap.setCodeActionProvider(codeActionOptions);
+		};
+	}
+	
+	@Bean RewriteRecipeRepository rewriteRecipesRepository(SimpleLanguageServer server, JavaProjectFinder projectFinder) {
+		return new RewriteRecipeRepository(server, projectFinder);
 	}
 }

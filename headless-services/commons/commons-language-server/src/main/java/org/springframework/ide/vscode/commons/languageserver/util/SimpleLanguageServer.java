@@ -34,6 +34,8 @@ import java.util.function.Consumer;
 import org.eclipse.lsp4j.ApplyWorkspaceEditParams;
 import org.eclipse.lsp4j.ApplyWorkspaceEditResponse;
 import org.eclipse.lsp4j.ClientCapabilities;
+import org.eclipse.lsp4j.CodeActionKind;
+import org.eclipse.lsp4j.CodeActionOptions;
 import org.eclipse.lsp4j.CodeLensOptions;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticSeverity;
@@ -262,7 +264,7 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 			);
 			return quickfixResolve(quickfixParams)
 			.flatMap((QuickfixEdit edit) -> {
-				Mono<ApplyWorkspaceEditResponse> applyEdit = Mono.fromFuture(client.applyEdit(new ApplyWorkspaceEditParams(edit.workspaceEdit)));
+				Mono<ApplyWorkspaceEditResponse> applyEdit = Mono.fromFuture(client.applyEdit(new ApplyWorkspaceEditParams(edit.workspaceEdit, quickfixParams.getType())));
 				return applyEdit.flatMap(r -> {
 					if (r.isApplied()) {
 						if (edit.cursorMovement!=null) {
@@ -436,7 +438,10 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 		c.setHoverProvider(true);
 
 		if (hasQuickFixes()) {
-			c.setCodeActionProvider(true);
+			CodeActionOptions codeActionOptions = new CodeActionOptions();
+			codeActionOptions.setCodeActionKinds(List.of(CodeActionKind.QuickFix));
+			codeActionOptions.setWorkDoneProgress(true);
+			c.setCodeActionProvider(codeActionOptions);
 		}
 		if (hasDefinitionHandler()) {
 			c.setDefinitionProvider(true);
@@ -464,7 +469,9 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 				supportedCommands.add(CODE_ACTION_COMMAND_ID);
 			}
 			supportedCommands.addAll(commands.keySet());
-			c.setExecuteCommandProvider(new ExecuteCommandOptions(supportedCommands));
+			ExecuteCommandOptions executeCommandOptions = new ExecuteCommandOptions(supportedCommands);
+			executeCommandOptions.setWorkDoneProgress(true);
+			c.setExecuteCommandProvider(executeCommandOptions);
 		}
 		if (hasWorkspaceSymbolHandler()) {
 			c.setWorkspaceSymbolProvider(true);
@@ -566,7 +573,7 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 	}
 
 	protected SimpleTextDocumentService createTextDocumentService() {
-		return new SimpleTextDocumentService(this, props);
+		return new SimpleTextDocumentService(this, props, appContext);
 	}
 
 	public SimpleWorkspaceService createWorkspaceService() {

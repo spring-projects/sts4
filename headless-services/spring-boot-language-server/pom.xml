@@ -38,6 +38,17 @@
 				<enabled>true</enabled>
 			</releases>
 		</repository>
+		
+		<repository>
+			<id>rewrite-snapshots</id>
+			<url>https://oss.sonatype.org/content/repositories/snapshots/</url>
+			<snapshots>
+				<enabled>true</enabled>
+			</snapshots>
+			<releases>
+				<enabled>false</enabled>
+			</releases>
+		</repository>
 	</repositories>
 
 	<dependencies>
@@ -92,6 +103,64 @@
 			<groupId>org.eclipse.jdt</groupId>
 			<artifactId>org.eclipse.jdt.core</artifactId>
 			<version>${jdt.core.version}</version>
+		</dependency>
+		<dependency>
+		    <groupId>org.openrewrite</groupId>
+		    <artifactId>rewrite-properties</artifactId>
+		    <version>${rewrite-version}</version>
+		</dependency>
+		<dependency>
+		    <groupId>org.openrewrite</groupId>
+		    <artifactId>rewrite-maven</artifactId>
+		    <version>${rewrite-version}</version>
+		</dependency>
+		<dependency>
+		    <groupId>org.openrewrite</groupId>
+		    <artifactId>rewrite-yaml</artifactId>
+		    <version>${rewrite-version}</version>
+		</dependency>
+		<dependency>
+		    <groupId>org.openrewrite</groupId>
+		    <artifactId>rewrite-java</artifactId>
+		    <version>${rewrite-version}</version>
+		</dependency>
+
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-core</artifactId>
+                <version>${rewrite-jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-databind</artifactId>
+                <version>${rewrite-jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.core</groupId>
+                <artifactId>jackson-annotations</artifactId>
+                <version>${rewrite-jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.datatype</groupId>
+                <artifactId>jackson-datatype-jdk8</artifactId>
+                <version>${rewrite-jackson.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.dataformat</groupId>
+                <artifactId>jackson-dataformat-yaml</artifactId>
+                <version>${rewrite-jackson.version}</version>
+            </dependency>
+
+			<dependency>
+				<groupId>org.openrewrite.recipe</groupId>
+				<artifactId>rewrite-spring</artifactId>
+				<version>${rewrite-spring-version}</version>
+			</dependency>
+            
+		<dependency>
+		    <groupId>org.openrewrite</groupId>
+		    <artifactId>rewrite-java-11</artifactId>
+		    <version>${rewrite-version}</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-io</groupId>

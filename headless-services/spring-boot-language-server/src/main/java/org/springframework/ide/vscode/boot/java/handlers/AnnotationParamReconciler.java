@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.boot.java.handlers;
 import java.util.List;
 import java.util.Set;
 
+import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MemberValuePair;
@@ -21,11 +22,12 @@ import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
 import org.eclipse.jdt.core.dom.StringLiteral;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
+import org.springframework.ide.vscode.commons.util.text.IDocument;
 
 /**
  * @author Martin Lippert
  */
-public class AnnotationParamReconciler {
+public class AnnotationParamReconciler implements AnnotationReconciler {
 	
 	private final String annotationType;
 	private final String paramName;
@@ -41,8 +43,16 @@ public class AnnotationParamReconciler {
 		this.paramValuePostfix = paramValuePostfix;
 		this.reconciler = reconciler;
 	}
+	
+	public void visit(IDocument doc, Annotation node, ITypeBinding typeBinding, IProblemCollector problemCollector) {
+		if (node instanceof SingleMemberAnnotation) {
+			visitSingleMemberAnnotation((SingleMemberAnnotation) node, typeBinding, problemCollector);
+		} else if (node instanceof NormalAnnotation) {
+			visitNornalAnnotation((NormalAnnotation) node, typeBinding, problemCollector);
+		}
+	}
 
-	public void visit(SingleMemberAnnotation node, ITypeBinding typeBinding, IProblemCollector problemCollector) {
+	protected void visitSingleMemberAnnotation(SingleMemberAnnotation node, ITypeBinding typeBinding, IProblemCollector problemCollector) {
 		if (this.paramName != null) {
 			return;
 		}
@@ -59,7 +69,7 @@ public class AnnotationParamReconciler {
 		}
 	}
 
-	public void visit(NormalAnnotation node, ITypeBinding typeBinding, IProblemCollector problemCollector) {
+	protected void visitNornalAnnotation(NormalAnnotation node, ITypeBinding typeBinding, IProblemCollector problemCollector) {
 		if (paramName == null) {
 			return;
 		}

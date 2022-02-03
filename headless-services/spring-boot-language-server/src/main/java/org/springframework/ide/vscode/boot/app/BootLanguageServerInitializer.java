@@ -120,6 +120,8 @@ public class BootLanguageServerInitializer implements InitializingBean {
 		HoverHandler hoverHandler = components.getHoverProvider();
 		documents.onHover(hoverHandler);
 		
+		components.getCodeActionProvider().ifPresent(documents::onCodeAction);
+		
 		config.addListener(evt -> {
 			components.getReconcileEngine().ifPresent(reconciler -> {
 				log.info("A configuration changed, triggering reconcile on all open documents");

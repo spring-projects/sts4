@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.commons.languageserver.util;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -23,7 +24,9 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import org.eclipse.lsp4j.ClientCapabilities;
 import org.eclipse.lsp4j.CodeAction;
+import org.eclipse.lsp4j.CodeActionCapabilities;
 import org.eclipse.lsp4j.CodeActionParams;
 import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.CodeLensParams;
@@ -54,6 +57,7 @@ import org.eclipse.lsp4j.RenameParams;
 import org.eclipse.lsp4j.SignatureHelp;
 import org.eclipse.lsp4j.SignatureHelpParams;
 import org.eclipse.lsp4j.SymbolInformation;
+import org.eclipse.lsp4j.TextDocumentClientCapabilities;
 import org.eclipse.lsp4j.TextDocumentContentChangeEvent;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.TextDocumentItem;
@@ -68,12 +72,13 @@ import org.eclipse.lsp4j.services.LanguageClient;
 import org.eclipse.lsp4j.services.TextDocumentService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationContext;
 import org.springframework.ide.vscode.commons.languageserver.config.LanguageServerProperties;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.Quickfix;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
-import org.springframework.ide.vscode.commons.util.CollectorUtil;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
+import org.springframework.ide.vscode.commons.util.text.Region;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.common.collect.ImmutableList;
@@ -104,10 +109,14 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 	private DocumentHighlightHandler documentHighlightHandler;
 	private CodeLensHandler codeLensHandler;
 	private CodeLensResolveHandler codeLensResolveHandler;
+	private CodeActionHandler codeActionHandler;
 
-	public SimpleTextDocumentService(SimpleLanguageServer server, LanguageServerProperties props) {
+	final private ApplicationContext appContext;
+
+	public SimpleTextDocumentService(SimpleLanguageServer server, LanguageServerProperties props, ApplicationContext appContext) {
 		this.server = server;
 		this.props = props;
+		this.appContext = appContext;
 		
 		this.messageWorkerThreadPool = Executors.newCachedThreadPool();
 	}
@@ -414,6 +423,36 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 			return CompletableFuture.completedFuture(ImmutableList.of());
 		}
 	}
+	
+	private List<Either<Command, CodeAction>> computeCodeActions(CancelChecker cancelToken, CodeActionCapabilities capabilities, TrackedDocument doc, CodeActionParams params) {
+		List<Either<Command,CodeAction>> list = doc.getQuickfixes().stream()
+				.filter((fix) -> fix.appliesTo(params.getRange(), params.getContext()))
+				.map(f -> f.getCodeAction(params.getContext()))
+				.map(command -> Either.<Command, CodeAction>forRight(command))
+				.collect(Collectors.toList());
+
+		if (codeActionHandler != null) {
+			try {
+				int start = doc.getDocument().toOffset(params.getRange().getStart());
+				int end = doc.getDocument().toOffset(params.getRange().getEnd());
+				list.addAll(codeActionHandler.handle(cancelToken, capabilities, doc.getDocument(), new Region(start, end - start)));
+			} catch (Exception e) {
+				log.error("Failed to compute quick refactorings", e);
+			}
+		}
+		
+		return list;
+	}
+	
+	private static CodeActionCapabilities getCodeActionCapabilities(ClientCapabilities capabilities) {
+		if (capabilities != null) {
+			TextDocumentClientCapabilities docs = capabilities.getTextDocument();
+			if (docs != null) {
+				return docs.getCodeAction();
+			}
+		}
+		return null;
+	}
 
 	@Override
 	public CompletableFuture<List<Either<Command, CodeAction>>> codeAction(CodeActionParams params) {
@@ -423,17 +462,16 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 		TrackedDocument doc = documents.get(params.getTextDocument().getUri());
 
 		if (doc != null) {
-			ImmutableList<Either<Command,CodeAction>> list = doc.getQuickfixes().stream()
-					.filter((fix) -> fix.appliesTo(params.getRange(), params.getContext()))
-					.map(Quickfix::getCodeAction)
-					.map(command -> Either.<Command, CodeAction>forLeft(command))
-					.collect(CollectorUtil.toImmutableList());
-			return CompletableFuture.completedFuture(list);
+			
+			return server.getClientCapabilities()
+					.thenApply(SimpleTextDocumentService::getCodeActionCapabilities)
+					.thenComposeAsync(capabilities -> 
+						CompletableFutures.computeAsync(messageWorkerThreadPool, cancelToken -> computeCodeActions(cancelToken, capabilities, doc, params)));
 		} else {
 			return CompletableFuture.completedFuture(ImmutableList.of());
 		}
 	}
-
+	
 	@Override
 	public CompletableFuture<List<? extends CodeLens>> codeLens(CodeLensParams params) {
 		CodeLensHandler handler = this.codeLensHandler;
@@ -459,6 +497,22 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 		else {
 			return CompletableFuture.completedFuture(null);
 		}
+	}
+
+	@Override
+	public CompletableFuture<CodeAction> resolveCodeAction(CodeAction ca) {
+		return CompletableFutures.computeAsync(messageWorkerThreadPool, cancelToken -> {
+			if (appContext!=null) {
+				Map<String, CodeActionResolver> resolvers = appContext.getBeansOfType(CodeActionResolver.class);
+				for (CodeActionResolver r : resolvers.values()) {
+					r.resolve(ca);
+					if (ca.getEdit() != null) {
+						return ca;
+					}
+				}
+			}
+			return ca;
+		});
 	}
 
 	@Override
@@ -558,6 +612,11 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 	public synchronized void onCodeLens(CodeLensHandler h) {
 		Assert.isNull("A code lens handler is already set, multiple handlers not supported yet", codeLensHandler);
 		this.codeLensHandler = h;
+	}
+	
+	public synchronized void onCodeAction(CodeActionHandler h) {
+		Assert.isNull("A code action handler is already set, multiple handlers not supported yet", codeActionHandler);
+		this.codeActionHandler = h;
 	}
 
 	public boolean hasCodeLensHandler() {

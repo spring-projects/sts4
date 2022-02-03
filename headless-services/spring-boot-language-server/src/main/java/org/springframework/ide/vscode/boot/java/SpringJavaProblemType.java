@@ -14,7 +14,7 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSe
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
 import org.springframework.ide.vscode.commons.util.Assert;
 
-import static org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity.ERROR;;
+import static org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity.*;
 
 /**
  * This enum is supposed to represent *all* the different types of problems SpringBoot language server
@@ -22,7 +22,9 @@ import static org.springframework.ide.vscode.commons.languageserver.reconcile.Pr
  */
 public enum SpringJavaProblemType implements ProblemType {
 	
-	JAVA_SPEL_EXPRESSION_SYNTAX(ERROR, "SpEL parser raised a ParseException", "SpEL Expression Syntax");
+	JAVA_SPEL_EXPRESSION_SYNTAX(ERROR, "SpEL parser raised a ParseException", "SpEL Expression Syntax"),
+	
+	JAVA_AUTOWIRED_CONSTRUCTOR(WARNING, "Unnecessary @Autowired over the only constructor", "Unnecessary @Autowired");
 
 	private final ProblemSeverity defaultSeverity;
 	private String description;

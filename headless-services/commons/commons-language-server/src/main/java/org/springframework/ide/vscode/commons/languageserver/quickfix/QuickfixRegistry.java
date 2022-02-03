@@ -49,6 +49,22 @@ public class QuickfixRegistry {
 			}
 		};
 	}
+	
+	public synchronized QuickfixType getQuickfixType(String typeName) {
+		QuickfixHandler handler = registry.get(typeName);
+		return new QuickfixType() {
+
+			@Override
+			public QuickfixEdit createEdits(Object params) {
+				return handler.createEdits(params);
+			}
+
+			@Override
+			public String getId() {
+				return typeName;
+			}
+		};
+	}
 
 	public Mono<QuickfixEdit> handle(QuickfixResolveParams params) {
 		QuickfixHandler handler = registry.get(params.getType());

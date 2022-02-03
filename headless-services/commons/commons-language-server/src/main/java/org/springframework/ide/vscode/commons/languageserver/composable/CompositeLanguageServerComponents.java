@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2021 Pivotal, Inc.
+ * Copyright (c) 2018, 2022 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,31 +10,35 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.languageserver.composable;
 
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import org.eclipse.lsp4j.CodeAction;
+import org.eclipse.lsp4j.CodeActionCapabilities;
+import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.HoverParams;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
+import org.springframework.ide.vscode.commons.languageserver.util.CodeActionHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.HoverHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
+import org.springframework.ide.vscode.commons.util.text.IRegion;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.common.collect.ImmutableMap;
 
 public class CompositeLanguageServerComponents implements LanguageServerComponents {
-
-	private static Logger log = LoggerFactory.getLogger(CompositeLanguageServerComponents.class);
 
 	public static class Builder {
 		private Map<LanguageId, LanguageServerComponents> componentsByLanguageId = new HashMap<>();
@@ -55,6 +59,7 @@ public class CompositeLanguageServerComponents implements LanguageServerComponen
 	private final Map<LanguageId, LanguageServerComponents> componentsByLanguageId;
 	private final IReconcileEngine reconcileEngine;
 	private final HoverHandler hoverHandler;
+	private final CodeActionHandler codeActionHandler;
 
 	public CompositeLanguageServerComponents(SimpleLanguageServer server, Builder builder) {
 		this.componentsByLanguageId = ImmutableMap.copyOf(builder.componentsByLanguageId);
@@ -96,6 +101,23 @@ public class CompositeLanguageServerComponents implements LanguageServerComponen
 				return SimpleTextDocumentService.NO_HOVER;
 			}
 		};
+		
+		this.codeActionHandler = new CodeActionHandler() {
+			
+			@Override
+			public List<Either<Command, CodeAction>> handle(CancelChecker cancelToken, CodeActionCapabilities capabilities, TextDocument doc,
+					IRegion region) {
+				LanguageId language = doc.getLanguageId();
+				LanguageServerComponents subComponents = componentsByLanguageId.get(language);
+				if (subComponents != null) {
+					return subComponents.getCodeActionProvider()
+							.map(subEngine -> subEngine.handle(cancelToken, capabilities, doc, region))
+							.orElse(Collections.emptyList());
+				}
+				//No applicable subEngine...
+				return Collections.emptyList();
+			}
+		};
 	}
 
 	@Override
@@ -121,6 +143,11 @@ public class CompositeLanguageServerComponents implements LanguageServerComponen
 			}
 		}
 		return null;
+	}
+
+	@Override
+	public Optional<CodeActionHandler> getCodeActionProvider() {
+		return Optional.of(codeActionHandler);
 	}
 
 }

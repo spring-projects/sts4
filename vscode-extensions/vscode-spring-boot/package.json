@@ -30,7 +30,8 @@
     "onLanguage:spring-boot-properties-yaml",
     "onLanguage:java",
     "onLanguage:xml",
-    "onDebugResolve:java"
+    "onDebugResolve:java",
+    "onCommand:vscode-spring-boot.rewrite.list"
   ],
   "contributes": {
     "javaExtensions": [
@@ -65,16 +66,44 @@
         "configuration": "./properties-support/language-configuration.json"
       }
     ],
+    "menus": {
+      "editor/context": [
+        {
+          "when": "resourceFilename == pom.xml",
+          "command": "vscode-spring-boot.rewrite.list",
+          "group": "SpringBoot"
+        }
+      ],
+      "explorer/context": [
+        {
+          "when": "resourceFilename == pom.xml && config.boot-java.rewrite.globa-commands.on == true",
+          "command": "vscode-spring-boot.rewrite.list",
+          "group": "SpringBoot"
+        }
+      ]
+    },
     "commands": [
       {
         "command": "vscode-spring-boot.live-hover.connect",
-        "title": "Manage Live Spring Boot Process Connections"
+        "title": "Manage Live Spring Boot Process Connections",
+        "category": "Spring Boot"
+      },
+      {
+        "enablement": "config.boot-java.rewrite.globa-commands.on == true",
+        "command": "vscode-spring-boot.rewrite.list",
+        "category": "Spring Boot",
+        "title": "Rewrite Refactorings..."
       }
     ],
     "configuration": {
       "type": "object",
       "title": "Boot-Java Configuration",
       "properties": {
+        "boot-java.rewrite.globa-commands.on": {
+          "type": "boolean",
+          "default": false,
+          "description": "Experimental support for Rewrite recipes refactoring the whole maven projects via commands"
+        },
         "boot-java.live-information.automatic-connection.on": {
           "type": "boolean",
           "default": true,

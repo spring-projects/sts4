@@ -13,10 +13,9 @@ package org.springframework.ide.vscode.commons.languageserver.composable;
 import java.util.Optional;
 import java.util.Set;
 
-import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
+import org.springframework.ide.vscode.commons.languageserver.util.CodeActionHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.HoverHandler;
-import org.springframework.ide.vscode.commons.languageserver.util.LanguageSpecific;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 
 public interface LanguageServerComponents {
@@ -24,4 +23,5 @@ public interface LanguageServerComponents {
 	Set<LanguageId> getInterestingLanguages();
 	default Optional<IReconcileEngine> getReconcileEngine() { return Optional.empty(); }
 	HoverHandler getHoverProvider();
+	default Optional<CodeActionHandler> getCodeActionProvider() { return Optional.empty(); }
 }

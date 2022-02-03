@@ -143,7 +143,7 @@ public class ValueSpelExpressionValidationTest {
 		docUri = directory.toPath().resolve("src/main/java/org/test/TestValueCompletion.java").toUri().toString();
 
 		problemCollector = new TestProblemCollector();
-		reconcileEngine = new BootJavaReconcileEngine(compilationUnitCache, projectFinder);
+		reconcileEngine = new BootJavaReconcileEngine(server, compilationUnitCache, projectFinder);
 	}
 	
 	@After

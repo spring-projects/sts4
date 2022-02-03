@@ -27,6 +27,7 @@ import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchyAwareLookup;
 import org.springframework.ide.vscode.boot.java.autowired.AutowiredHoverProvider;
 import org.springframework.ide.vscode.boot.java.conditionals.ConditionalsLiveHoverProvider;
+import org.springframework.ide.vscode.boot.java.handlers.BootJavaCodeActionProvider;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaCodeLensEngine;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaDocumentHighlightEngine;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaDocumentSymbolHandler;
@@ -37,6 +38,7 @@ import org.springframework.ide.vscode.boot.java.handlers.BootJavaWorkspaceSymbol
 import org.springframework.ide.vscode.boot.java.handlers.CodeLensProvider;
 import org.springframework.ide.vscode.boot.java.handlers.HighlightProvider;
 import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
+import org.springframework.ide.vscode.boot.java.handlers.JavaCodeAction;
 import org.springframework.ide.vscode.boot.java.handlers.ReferenceProvider;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.java.livehover.ActiveProfilesProvider;
@@ -62,6 +64,7 @@ import org.springframework.ide.vscode.commons.languageserver.composable.Language
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
+import org.springframework.ide.vscode.commons.languageserver.util.CodeActionHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.CodeLensHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentHighlightHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.HoverHandler;
@@ -107,6 +110,7 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 	private CodeLensHandler codeLensHandler;
 	private DocumentHighlightHandler highlightsEngine;
 	private BootJavaReconcileEngine reconcileEngine;
+	private BootJavaCodeActionProvider codeActionProvider;
 
 	private SpringProcessTracker liveProcessTracker;
 
@@ -175,7 +179,12 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		highlightsEngine = createDocumentHighlightEngine(indexer);
 		documents.onDocumentHighlight(highlightsEngine);
 		
-		reconcileEngine = new BootJavaReconcileEngine(cuCache, projectFinder);
+		reconcileEngine = new BootJavaReconcileEngine(server, cuCache, projectFinder);
+		
+		codeActionProvider = new BootJavaCodeActionProvider(
+				projectFinder,
+				cuCache,
+				appContext.getBeansOfType(JavaCodeAction.class).values());
 		
 		config.addListener(ignore -> {
 			log.info("update live process tracker settings - start");
@@ -200,7 +209,7 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 			
 			log.info("update live process tracker settings - done");
 		});
-
+		
 		server.doOnInitialized(this::initialized);
 		server.onShutdown(this::shutdown);
 	}
@@ -339,4 +348,10 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		return LANGUAGES;
 	}
 
+	@Override
+	public Optional<CodeActionHandler> getCodeActionProvider() {
+		return Optional.ofNullable(codeActionProvider);
+	}
+
+	
 }

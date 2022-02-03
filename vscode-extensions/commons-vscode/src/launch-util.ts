@@ -40,6 +40,7 @@ export interface ActivatorOptions {
     preferJdk?: boolean;
     highlightCodeLensSettingKey?: string;
     explodedLsJarData?: ExplodedLsJarData;
+    vmArgs?: string[];
 }
 
 export interface ExplodedLsJarData {
@@ -229,6 +230,10 @@ function prepareJvmArgs(options: ActivatorOptions, context: VSCode.ExtensionCont
     const DEBUG = options.DEBUG;
     const jvmHeap = getUserDefinedJvmHeap(options.workspaceOptions, options.jvmHeap);
     const jvmArgs = getUserDefinedJvmArgs(options.workspaceOptions);
+
+    if (Array.isArray(options.vmArgs)) {
+        jvmArgs.push(...options.vmArgs);
+    }
 
     let logfile : string = options.workspaceOptions.get("logfile") || "/dev/null";
     //The logfile = '/dev/null' is handled specifically by the language server process so it works on all OSs.

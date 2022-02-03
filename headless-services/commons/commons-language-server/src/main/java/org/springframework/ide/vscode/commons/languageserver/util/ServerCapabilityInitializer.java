@@ -18,6 +18,7 @@ import org.eclipse.lsp4j.ServerCapabilities;
  * in the application context and call on them during language server initialization to allow
  * it to participate in initializing the ServerCapability the server returns to the client.
  */
+@FunctionalInterface
 public interface ServerCapabilityInitializer {
 	void initialize(InitializeParams params, ServerCapabilities cap);
 }

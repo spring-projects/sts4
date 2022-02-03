@@ -6,8 +6,8 @@ import { workspace } from 'vscode';
 
 import * as commons from '@pivotal-tools/commons-vscode';
 import * as liveHoverUi from './live-hover-connect-ui';
+import * as rewrite from './rewrite';
 
-import {LanguageClient} from "vscode-languageclient/node";
 import { startDebugSupport } from './debug-config-provider';
 import { ApiManager } from "./apiManager";
 import { ExtensionAPI } from "./api";
@@ -103,7 +103,22 @@ export function activate(context: VSCode.ExtensionContext): Thenable<ExtensionAP
                 enableJdtClasspath: VSCode.extensions.getExtension('redhat.java')?.exports?.serverMode === 'Standard'
             })
         },
-        highlightCodeLensSettingKey: 'boot-java.highlight-codelens.on'
+        highlightCodeLensSettingKey: 'boot-java.highlight-codelens.on',
+        vmArgs: [
+            '--add-modules=ALL-SYSTEM',
+            '--add-exports',
+            'jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED',
+            '--add-exports',
+            'jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED',
+            '--add-exports',
+            'jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED',
+            '--add-exports',
+            'jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED',
+            '--add-exports',
+            'jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED',
+            '--add-exports',
+            'jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED'
+        ]
     };
 
     // Register launch config contributior to java debug launch to be able to connect to JMX
@@ -111,6 +126,7 @@ export function activate(context: VSCode.ExtensionContext): Thenable<ExtensionAP
 
     return commons.activate(options, context).then(client => {
         liveHoverUi.activate(client, options, context);
+        rewrite.activate(client, options, context);
         return new ApiManager(client).api;
     });
 }

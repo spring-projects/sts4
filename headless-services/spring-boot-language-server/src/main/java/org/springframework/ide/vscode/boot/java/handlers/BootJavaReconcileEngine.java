@@ -13,8 +13,10 @@ package org.springframework.ide.vscode.boot.java.handlers;
 import java.net.URI;
 
 import org.eclipse.jdt.core.dom.ASTVisitor;
+import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.ITypeBinding;
+import org.eclipse.jdt.core.dom.MarkerAnnotation;
 import org.eclipse.jdt.core.dom.NormalAnnotation;
 import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
@@ -24,8 +26,10 @@ import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.boot.java.value.Constants;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixRegistry;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
+import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 
 /**
@@ -50,16 +54,18 @@ public class BootJavaReconcileEngine implements IReconcileEngine {
 
 	private final JavaProjectFinder projectFinder; 
 	private final CompilationUnitCache compilationUnitCache;
-	private final AnnotationParamReconciler[] reconcilers;
+	private final AnnotationReconciler[] reconcilers;
 	private final SpelExpressionReconciler spelExpressionReconciler;
+	private final QuickfixRegistry quickfixRegistry;
 	
-	public BootJavaReconcileEngine(CompilationUnitCache compilationUnitCache, JavaProjectFinder projectFinder) {
+	public BootJavaReconcileEngine(SimpleLanguageServer server, CompilationUnitCache compilationUnitCache, JavaProjectFinder projectFinder) {
 		this.compilationUnitCache = compilationUnitCache;
 		this.projectFinder = projectFinder;
+		this.quickfixRegistry = server.getQuickfixRegistry();
 		
 		this.spelExpressionReconciler = new SpelExpressionReconciler();
 		
-		this.reconcilers = new AnnotationParamReconciler[] {
+		this.reconcilers = new AnnotationReconciler[] {
 
 				new AnnotationParamReconciler(Constants.SPRING_VALUE, null, "#{", "}", spelExpressionReconciler),
 				new AnnotationParamReconciler(Constants.SPRING_VALUE, "value", "#{", "}", spelExpressionReconciler),
@@ -83,7 +89,9 @@ public class BootJavaReconcileEngine implements IReconcileEngine {
 				new AnnotationParamReconciler(SPRING_POST_FILTER, "value", "", "", spelExpressionReconciler),
 
 				new AnnotationParamReconciler(SPRING_CONDITIONAL_ON_EXPRESSION, null, "", "", spelExpressionReconciler),
-				new AnnotationParamReconciler(SPRING_CONDITIONAL_ON_EXPRESSION, "value", "", "", spelExpressionReconciler)
+				new AnnotationParamReconciler(SPRING_CONDITIONAL_ON_EXPRESSION, "value", "", "", spelExpressionReconciler),
+				
+				new AutowiredConstructorReconciler(quickfixRegistry)
 		};
 	}
 
@@ -103,7 +111,7 @@ public class BootJavaReconcileEngine implements IReconcileEngine {
 				
 				compilationUnitCache.withCompilationUnit(project, uri, cu -> {
 					if (cu != null) {
-						reconcileAST(cu, problemCollector);
+						reconcileAST(doc, cu, problemCollector);
 					}
 					
 					return null;
@@ -115,13 +123,13 @@ public class BootJavaReconcileEngine implements IReconcileEngine {
 		}
 	}
 
-	private void reconcileAST(CompilationUnit cu, IProblemCollector problemCollector) {
+	private void reconcileAST(IDocument doc, CompilationUnit cu, IProblemCollector problemCollector) {
 		cu.accept(new ASTVisitor() {
 			
 			@Override
 			public boolean visit(SingleMemberAnnotation node) {
 				try {
-					visitAnnotationWithDefaultParam(node, problemCollector);
+					visitAnnotation(doc, node, problemCollector);
 				}
 				catch (Exception e) {
 				}
@@ -131,32 +139,32 @@ public class BootJavaReconcileEngine implements IReconcileEngine {
 			@Override
 			public boolean visit(NormalAnnotation node) {
 				try {
-					visitAnnotationWithParams(node, problemCollector);
+					visitAnnotation(doc, node, problemCollector);
 				}
 				catch (Exception e) {
 				}
 				return super.visit(node);
 			}
+
+			@Override
+			public boolean visit(MarkerAnnotation node) {
+				try {
+					visitAnnotation(doc, node, problemCollector);
+				}
+				catch (Exception e) {
+				}
+				return super.visit(node);
+			}			
 			
 		});
 	}
 
-	protected void visitAnnotationWithDefaultParam(SingleMemberAnnotation node, IProblemCollector problemCollector) {
+	protected void visitAnnotation(IDocument doc, Annotation node, IProblemCollector problemCollector) {
 		ITypeBinding typeBinding = node.resolveTypeBinding();
 
 		if (typeBinding != null) {
 			for (int i = 0; i < reconcilers.length; i++) {
-				reconcilers[i].visit(node, typeBinding, problemCollector);
-			}
-		}
-	}
-
-	protected void visitAnnotationWithParams(NormalAnnotation node, IProblemCollector problemCollector) {
-		ITypeBinding typeBinding = node.resolveTypeBinding();
-
-		if (typeBinding != null) {
-			for (int i = 0; i < reconcilers.length; i++) {
-				reconcilers[i].visit(node, typeBinding, problemCollector);
+				reconcilers[i].visit(doc, node, typeBinding, problemCollector);
 			}
 		}
 	}

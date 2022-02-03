@@ -10,7 +10,12 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.languageserver.quickfix;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
+import org.eclipse.lsp4j.CodeAction;
 import org.eclipse.lsp4j.CodeActionContext;
+import org.eclipse.lsp4j.CodeActionKind;
 import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.Range;
@@ -51,12 +56,17 @@ public class Quickfix<T> {
 		return range;
 	}
 
-	public Command getCodeAction() {
-		return new Command(
+	public CodeAction getCodeAction(CodeActionContext context) {
+		CodeAction ca = new CodeAction();
+		ca.setKind(CodeActionKind.QuickFix);
+		ca.setTitle(data.title);
+		ca.setDiagnostics(appliesToDiagnostics(context));
+		ca.setCommand(new Command(
 				data.title,
 				CODE_ACTION_CMD_ID,
 				ImmutableList.of(data.type.getId(), data.params)
-		);
+		));
+		return ca;
 	}
 
 	public boolean appliesTo(Range range, CodeActionContext context) {
@@ -70,5 +80,11 @@ public class Quickfix<T> {
 			);
 		}
 		return true;
+	}
+	
+	private List<Diagnostic> appliesToDiagnostics(CodeActionContext context) {
+		return context.getDiagnostics().stream()
+				.filter(diag -> this.diagMsg == null || this.diagMsg.equals(diag.getMessage()))
+				.collect(Collectors.toList());
 	}
 }
