@@ -17,15 +17,13 @@ import java.nio.file.Path;
 import java.util.Optional;
 import java.util.Stack;
 
-import org.eclipse.jdt.core.dom.ASTVisitor;
-import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
-import org.eclipse.jdt.core.dom.AnnotationTypeDeclaration;
-import org.eclipse.jdt.core.dom.CompilationUnit;
-import org.eclipse.jdt.core.dom.EnumDeclaration;
-import org.eclipse.jdt.core.dom.TypeDeclaration;
+import org.openrewrite.java.JavaIsoVisitor;
+import org.openrewrite.java.tree.J.CompilationUnit;
+import org.openrewrite.java.tree.TypeUtils;
+import org.openrewrite.marker.Position;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
+import org.springframework.ide.vscode.boot.java.utils.ORCompilationUnitCache;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaModuleData;
@@ -44,11 +42,11 @@ public abstract class AbstractSourceLinks implements SourceLinks {
 
 	private static final Logger log = LoggerFactory.getLogger(AbstractSourceLinks.class);
 
-	private CompilationUnitCache cuCache;
+	private ORCompilationUnitCache cuCache;
 
 	private JavaProjectFinder projectFinder;
 
-	protected AbstractSourceLinks(CompilationUnitCache cuCache, JavaProjectFinder projectFinder) {
+	protected AbstractSourceLinks(ORCompilationUnitCache cuCache, JavaProjectFinder projectFinder) {
 		this.cuCache = cuCache;
 		this.projectFinder = projectFinder;
 	}
@@ -142,55 +140,30 @@ public abstract class AbstractSourceLinks implements SourceLinks {
 		int lastDotIndex = fqName.lastIndexOf('.');
 		String packageName = fqName.substring(0, lastDotIndex);
 		String typeName = fqName.substring(lastDotIndex + 1);
-		if (packageName.equals(cu.getPackage().getName().getFullyQualifiedName())) {
+		if (packageName.equals(TypeUtils.asFullyQualified(cu.getPackageDeclaration().getExpression().getType()).getFullyQualifiedName())) {
 			Stack<String> visitedType = new Stack<>();
-			cu.accept(new ASTVisitor() {
+			new JavaIsoVisitor<>() {
 
-				private boolean visitDeclaration(AbstractTypeDeclaration node) {
-					visitedType.push(node.getName().getIdentifier());
+				public org.openrewrite.java.tree.J.ClassDeclaration visitClassDeclaration(org.openrewrite.java.tree.J.ClassDeclaration classDecl, Object p) {
+					String fqName = classDecl.getType().getFullyQualifiedName();
+					visitedType.push(fqName);
 					if (values[1] < 0) {
 						if (String.join("$", visitedType.toArray(new String[visitedType.size()])).equals(typeName)) {
-							values[0] = node.getName().getStartPosition();
-							values[1] = node.getName().getLength();
+							Position pos = classDecl.getName().getMarkers().findFirst(Position.class).orElseThrow();
+							values[0] = pos.getStartPosition();
+							values[1] = pos.getLength();
 						}
 					}
-					return values[1] < 0;
-				}
-
-				@Override
-				public boolean visit(TypeDeclaration node) {
-					return visitDeclaration(node);
-				}
-
-				@Override
-				public boolean visit(AnnotationTypeDeclaration node) {
-					return visitDeclaration(node);
-				}
-
-				@Override
-				public boolean visit(EnumDeclaration node) {
-					return visitDeclaration(node);
-				}
-
-				@Override
-				public void endVisit(EnumDeclaration node) {
-					visitedType.pop();
-					super.endVisit(node);
-				}
-
-				@Override
-				public void endVisit(AnnotationTypeDeclaration node) {
-					visitedType.pop();
-					super.endVisit(node);
-				}
-
-				@Override
-				public void endVisit(TypeDeclaration node) {
-					visitedType.pop();
-					super.endVisit(node);
-				}
-
-			});
+					if (values[1] < 0) {
+						return super.visitClassDeclaration(classDecl, visitedType);
+					} else {
+						return classDecl; 
+					}
+					
+				};
+				
+				
+			}.visitNonNull(cu, visitedType);
 		}
 		return values[1] < 0 ? null : new Region(values[0], values[1]);
 	}

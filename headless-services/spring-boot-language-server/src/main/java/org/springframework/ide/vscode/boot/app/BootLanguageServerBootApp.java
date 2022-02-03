@@ -36,6 +36,7 @@ import org.springframework.ide.vscode.boot.java.links.SourceLinkFactory;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveDataProvider;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
+import org.springframework.ide.vscode.boot.java.utils.ORCompilationUnitCache;
 import org.springframework.ide.vscode.boot.java.utils.SymbolCache;
 import org.springframework.ide.vscode.boot.java.utils.SymbolCacheOnDisc;
 import org.springframework.ide.vscode.boot.java.utils.SymbolCacheVoid;
@@ -150,12 +151,12 @@ public class BootLanguageServerBootApp {
 	}
 
 	@ConditionalOnMissingClass("org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness")
-	@Bean SourceLinks sourceLinks(SimpleLanguageServer server, CompilationUnitCache cuCache, BootLanguageServerParams params) {
+	@Bean SourceLinks sourceLinks(SimpleLanguageServer server, ORCompilationUnitCache cuCache, BootLanguageServerParams params) {
 		return SourceLinkFactory.createSourceLinks(server, cuCache, params.projectFinder);
 	}
 
-	@Bean CompilationUnitCache cuCache(SimpleLanguageServer server, BootLanguageServerParams params) {
-		return new CompilationUnitCache(params.projectFinder, server, params.projectObserver);
+	@Bean ORCompilationUnitCache cuCache(SimpleLanguageServer server, BootLanguageServerParams params) {
+		return new ORCompilationUnitCache(params.projectFinder, server, params.projectObserver);
 	}
 	
 	@Bean SpringXMLCompletionEngine xmlCompletionEngine(SimpleLanguageServer server, JavaProjectFinder projectFinder, SpringSymbolIndex symbolIndex, BootJavaConfig config) {

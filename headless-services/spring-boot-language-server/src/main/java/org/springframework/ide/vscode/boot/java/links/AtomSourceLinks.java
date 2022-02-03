@@ -15,10 +15,10 @@ import java.net.URLEncoder;
 import java.nio.file.Path;
 import java.util.Optional;
 
-import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.openrewrite.java.tree.J.CompilationUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
+import org.springframework.ide.vscode.boot.java.utils.ORCompilationUnitCache;
 import org.springframework.ide.vscode.commons.java.IJavaModuleData;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
@@ -37,7 +37,7 @@ public class AtomSourceLinks extends AbstractSourceLinks {
 
 	private static Supplier<Logger> LOG = Suppliers.memoize(() -> LoggerFactory.getLogger(AbstractSourceLinks.class));
 
-	public AtomSourceLinks(CompilationUnitCache cuCache, JavaProjectFinder projectFinder) {
+	public AtomSourceLinks(ORCompilationUnitCache cuCache, JavaProjectFinder projectFinder) {
 		super(cuCache, projectFinder);
 	}
 

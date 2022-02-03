@@ -13,7 +13,7 @@ package org.springframework.ide.vscode.boot.java.links;
 import java.nio.file.Path;
 import java.util.Optional;
 
-import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
+import org.springframework.ide.vscode.boot.java.utils.ORCompilationUnitCache;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.util.LspClient;
@@ -51,7 +51,7 @@ public final class SourceLinkFactory {
 	 * @param server the boot LS
 	 * @return appropriate source links object
 	 */
-	public static SourceLinks createSourceLinks(SimpleLanguageServer server, CompilationUnitCache cuCache, JavaProjectFinder projectFinder) {
+	public static SourceLinks createSourceLinks(SimpleLanguageServer server, ORCompilationUnitCache cuCache, JavaProjectFinder projectFinder) {
 		switch (LspClient.currentClient()) {
 		case VSCODE:
 		case THEIA:
