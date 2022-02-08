@@ -24,7 +24,7 @@ import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.gradle.internal.impldep.com.google.common.collect.ImmutableList;
 import org.junit.Test;
 import org.springframework.ide.vscode.boot.java.links.VSCodeSourceLinks;
-import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
+import org.springframework.ide.vscode.boot.java.utils.ORCompilationUnitCache;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.javadoc.JavaDocProviders;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
@@ -61,7 +61,7 @@ public class VSCodeSourceLinksTest {
 	@Test
 	public void testJavaSourceUrl() throws Exception {
 		MavenJavaProject project = mavenProjectsCache.get("empty-boot-15-web-app");
-		Optional<String> url = new VSCodeSourceLinks(new CompilationUnitCache(null, null, null), null).sourceLinkUrlForFQName(project, "com.example.EmptyBoot15WebAppApplication");
+		Optional<String> url = new VSCodeSourceLinks(new ORCompilationUnitCache(null, null, null), null).sourceLinkUrlForFQName(project, "com.example.EmptyBoot15WebAppApplication");
 		assertTrue(url.isPresent());
 		Path projectPath = Paths.get(project.pom().getParent());
 		URI uri = URI.create(url.get());
@@ -78,7 +78,7 @@ public class VSCodeSourceLinksTest {
 	@Test
 	public void testClasspathResourceOnTomcatUrl() throws Exception {
 		MavenJavaProject project = mavenProjectsCache.get("empty-boot-15-web-app");
-		Optional<String> url = new VSCodeSourceLinks(new CompilationUnitCache(null, null, null), new JavaProjectFinder() {
+		Optional<String> url = new VSCodeSourceLinks(new ORCompilationUnitCache(null, null, null), new JavaProjectFinder() {
 
 			@Override
 			public Optional<IJavaProject> find(TextDocumentIdentifier doc) {
@@ -107,7 +107,7 @@ public class VSCodeSourceLinksTest {
 	@Test
 	public void testJarUrl() throws Exception {
 		MavenJavaProject project = mavenProjectsCache.get("empty-boot-15-web-app");
-		Optional<String> url = new VSCodeSourceLinks(new CompilationUnitCache(null, null, null), null).sourceLinkUrlForFQName(project, "org.springframework.boot.autoconfigure.SpringBootApplication");
+		Optional<String> url = new VSCodeSourceLinks(new ORCompilationUnitCache(null, null, null), null).sourceLinkUrlForFQName(project, "org.springframework.boot.autoconfigure.SpringBootApplication");
 		assertTrue(url.isPresent());
 		String headerPart = url.get().substring(0, url.get().indexOf('?'));
 		assertEquals("jdt://contents/spring-boot-autoconfigure-1.5.8.RELEASE.jar/org.springframework.boot.autoconfigure/SpringBootApplication.class", headerPart);
@@ -118,7 +118,7 @@ public class VSCodeSourceLinksTest {
 	@Test
 	public void testJarUrlInnerType() throws Exception {
 		MavenJavaProject project = mavenProjectsCache.get("empty-boot-15-web-app");
-		Optional<String> url = new VSCodeSourceLinks(new CompilationUnitCache(null, null, null), null).sourceLinkUrlForFQName(project, "org.springframework.web.client.RestTemplate$AcceptHeaderRequestCallback");
+		Optional<String> url = new VSCodeSourceLinks(new ORCompilationUnitCache(null, null, null), null).sourceLinkUrlForFQName(project, "org.springframework.web.client.RestTemplate$AcceptHeaderRequestCallback");
 		assertTrue(url.isPresent());
 		String headerPart = url.get().substring(0, url.get().indexOf('?'));
 		assertEquals("jdt://contents/spring-web-4.3.12.RELEASE.jar/org.springframework.web.client/RestTemplate$AcceptHeaderRequestCallback.class", headerPart);

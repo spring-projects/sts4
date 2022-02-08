@@ -19,12 +19,13 @@ import java.util.Optional;
 import java.util.Set;
 
 import org.eclipse.jdt.core.dom.ASTNode;
-import org.eclipse.jdt.core.dom.Annotation;
-import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MemberValuePair;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
+import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.J.Annotation;
+import org.openrewrite.marker.Range;
 import org.springframework.ide.vscode.boot.java.handlers.CompletionProvider;
 import org.springframework.ide.vscode.boot.metadata.ProjectBasedPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
@@ -54,7 +55,7 @@ public class ValueCompletionProcessor implements CompletionProvider {
 	}
 
 	@Override
-	public void provideCompletions(ASTNode node, Annotation annotation, ITypeBinding type,
+	public void provideCompletions(J node, Annotation annotation,
 			int offset, IDocument doc, Collection<ICompletionProposal> completions) {
 
 		try {
@@ -75,28 +76,29 @@ public class ValueCompletionProcessor implements CompletionProvider {
 					completions.add(proposal);
 				}
 			}
+			// TODO: Get these cases fixed for OR AST
 			// case: @Value(prefix<*>)
-			else if (node instanceof SimpleName && node.getParent() instanceof Annotation) {
-				computeProposalsForSimpleName(node, completions, offset, doc);
-			}
-			// case: @Value(value=<*>)
-			else if (node instanceof SimpleName && node.getParent() instanceof MemberValuePair
-					&& "value".equals(((MemberValuePair)node.getParent()).getName().toString())) {
-				computeProposalsForSimpleName(node, completions, offset, doc);
-			}
-			// case: @Value("prefix<*>")
-			else if (node instanceof StringLiteral && node.getParent() instanceof Annotation) {
-				if (node.toString().startsWith("\"") && node.toString().endsWith("\"")) {
-					computeProposalsForStringLiteral(node, completions, offset, doc);
-				}
-			}
-			// case: @Value(value="prefix<*>")
-			else if (node instanceof StringLiteral && node.getParent() instanceof MemberValuePair
-					&& "value".equals(((MemberValuePair)node.getParent()).getName().toString())) {
-				if (node.toString().startsWith("\"") && node.toString().endsWith("\"")) {
-					computeProposalsForStringLiteral(node, completions, offset, doc);
-				}
-			}
+//			else if (node instanceof SimpleName && node.getParent() instanceof Annotation) {
+//				computeProposalsForSimpleName(node, completions, offset, doc);
+//			}
+//			// case: @Value(value=<*>)
+//			else if (node instanceof SimpleName && node.getParent() instanceof MemberValuePair
+//					&& "value".equals(((MemberValuePair)node.getParent()).getName().toString())) {
+//				computeProposalsForSimpleName(node, completions, offset, doc);
+//			}
+//			// case: @Value("prefix<*>")
+//			else if (node instanceof StringLiteral && node.getParent() instanceof Annotation) {
+//				if (node.toString().startsWith("\"") && node.toString().endsWith("\"")) {
+//					computeProposalsForStringLiteral(node, completions, offset, doc);
+//				}
+//			}
+//			// case: @Value(value="prefix<*>")
+//			else if (node instanceof StringLiteral && node.getParent() instanceof MemberValuePair
+//					&& "value".equals(((MemberValuePair)node.getParent()).getName().toString())) {
+//				if (node.toString().startsWith("\"") && node.toString().endsWith("\"")) {
+//					computeProposalsForStringLiteral(node, completions, offset, doc);
+//				}
+//			}
 		}
 		catch (Exception e) {
 			e.printStackTrace();
@@ -104,7 +106,7 @@ public class ValueCompletionProcessor implements CompletionProvider {
 	}
 
 	@Override
-	public void provideCompletions(ASTNode node, int offset, IDocument doc, Collection<ICompletionProposal> completions) {
+	public void provideCompletions(J node, int offset, IDocument doc, Collection<ICompletionProposal> completions) {
 	}
 
 	private void computeProposalsForSimpleName(ASTNode node, Collection<ICompletionProposal> completions, int offset,
@@ -130,14 +132,17 @@ public class ValueCompletionProcessor implements CompletionProvider {
 		}
 	}
 
-	private void computeProposalsForStringLiteral(ASTNode node, Collection<ICompletionProposal> completions, int offset,
+	private void computeProposalsForStringLiteral(J node, Collection<ICompletionProposal> completions, int offset,
 			IDocument doc) throws BadLocationException {
-		String prefix = identifyPropertyPrefix(doc.get(node.getStartPosition() + 1, offset - (node.getStartPosition() + 1)), offset - (node.getStartPosition() + 1));
+		Range r = node.getMarkers().findFirst(Range.class).orElseThrow();
+		int nodeStartOffset = r.getStart().getOffset();
+		int nodeLength = r.length();
+		String prefix = identifyPropertyPrefix(doc.get(nodeStartOffset + 1, offset - (nodeStartOffset + 1)), offset - (nodeStartOffset + 1));
 
 		int startOffset = offset - prefix.length();
 		int endOffset = offset;
 
-		String prePrefix = doc.get(node.getStartPosition() + 1, offset - prefix.length() - node.getStartPosition() - 1);
+		String prePrefix = doc.get(nodeStartOffset + 1, offset - prefix.length() - nodeStartOffset - 1);
 
 		String preCompletion;
 		if (prePrefix.endsWith("${")) {
@@ -150,7 +155,7 @@ public class ValueCompletionProcessor implements CompletionProvider {
 			preCompletion = "${";
 		}
 
-		String fullNodeContent = doc.get(node.getStartPosition(), node.getLength());
+		String fullNodeContent = doc.get(nodeStartOffset, nodeLength);
 		String postCompletion = isClosingBracketMissing(fullNodeContent + preCompletion) ? "}" : "";
 
 		List<Match<PropertyInfo>> matches = findMatches(prefix, doc);

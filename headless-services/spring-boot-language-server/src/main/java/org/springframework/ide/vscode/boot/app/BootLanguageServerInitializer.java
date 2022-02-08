@@ -11,7 +11,6 @@
 package org.springframework.ide.vscode.boot.app;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.eclipse.lsp4j.MessageType;
 import org.slf4j.Logger;

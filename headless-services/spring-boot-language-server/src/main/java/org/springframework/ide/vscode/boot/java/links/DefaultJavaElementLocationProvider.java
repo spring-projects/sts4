@@ -26,21 +26,22 @@ import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
+import org.springframework.ide.vscode.boot.java.utils.ORCompilationUnitCache;
 import org.springframework.ide.vscode.commons.java.IField;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.IMember;
 import org.springframework.ide.vscode.commons.java.IMethod;
 import org.springframework.ide.vscode.commons.java.IType;
+import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 public class DefaultJavaElementLocationProvider implements JavaElementLocationProvider {
 
 	private static final Logger log = LoggerFactory.getLogger(DefaultJavaElementLocationProvider.class);
 
-	private CompilationUnitCache cuCache;
+	private ORCompilationUnitCache cuCache;
 	private JavaDocumentUriProvider javaDocUriProvider;
 
-	public DefaultJavaElementLocationProvider(CompilationUnitCache cuCache, JavaDocumentUriProvider javaDocUriProvider) {
+	public DefaultJavaElementLocationProvider(ORCompilationUnitCache cuCache, JavaDocumentUriProvider javaDocUriProvider) {
 		this.cuCache = cuCache;
 		this.javaDocUriProvider = javaDocUriProvider;
 	}
@@ -63,67 +64,68 @@ public class DefaultJavaElementLocationProvider implements JavaElementLocationPr
 							if (cu == null) {
 								return new Range(new Position(0, 0), new Position(0, 0));
 							}
-							cu.accept(new ASTVisitor() {
-
-								private Range nameRange(SimpleName nameNode) {
-									int startOffset = nameNode.getStartPosition();
-									int endOffset = nameNode.getLength() + startOffset;
-
-									// Line -1 because for CU lines are starting from 1
-									return new Range(
-											new Position(cu.getLineNumber(startOffset) - 1, cu.getColumnNumber(startOffset)),
-											new Position(cu.getLineNumber(endOffset) - 1, cu.getColumnNumber(endOffset)));
-								}
-
-								@Override
-								public boolean visit(MethodDeclaration node) {
-									if (member instanceof IMethod) {
-										String bindingKey = node.resolveBinding().getKey();
-										if (matchMethodBindingKeys(memberBindingKey, bindingKey)) {
-											range.set(nameRange(node.getName()));
-											return false;
-										}
-									}
-									return true;
-								}
-
-								@Override
-								public boolean visit(EnumConstantDeclaration node) {
-									if (member instanceof IField) {
-										String bindingKey = node.resolveVariable().getKey();
-										if (memberBindingKey.equals(bindingKey)) {
-											range.set(nameRange(node.getName()));
-											return false;
-										}
-									}
-									return true;
-								}
-
-								@Override
-								public boolean visit(EnumDeclaration node) {
-									if (member instanceof IType) {
-										String bindingKey = node.resolveBinding().getKey();
-										if (memberBindingKey.equals(bindingKey)) {
-											range.set(nameRange(node.getName()));
-											return false;
-										}
-									}
-									return true;
-								}
-
-								@Override
-								public boolean visit(TypeDeclaration node) {
-									if (member instanceof IType) {
-										String bindingKey = node.resolveBinding().getKey();
-										if (memberBindingKey.equals(bindingKey)) {
-											range.set(nameRange(node.getName()));
-											return false;
-										}
-									}
-									return true;
-								}
-
-							});
+							// TODO: Fix for OR AST
+//							cu.accept(new ASTVisitor() {
+//
+//								private Range nameRange(SimpleName nameNode) {
+//									int startOffset = nameNode.getStartPosition();
+//									int endOffset = nameNode.getLength() + startOffset;
+//
+//									// Line -1 because for CU lines are starting from 1
+//									return new Range(
+//											new Position(cu.getLineNumber(startOffset) - 1, cu.getColumnNumber(startOffset)),
+//											new Position(cu.getLineNumber(endOffset) - 1, cu.getColumnNumber(endOffset)));
+//								}
+//
+//								@Override
+//								public boolean visit(MethodDeclaration node) {
+//									if (member instanceof IMethod) {
+//										String bindingKey = node.resolveBinding().getKey();
+//										if (matchMethodBindingKeys(memberBindingKey, bindingKey)) {
+//											range.set(nameRange(node.getName()));
+//											return false;
+//										}
+//									}
+//									return true;
+//								}
+//
+//								@Override
+//								public boolean visit(EnumConstantDeclaration node) {
+//									if (member instanceof IField) {
+//										String bindingKey = node.resolveVariable().getKey();
+//										if (memberBindingKey.equals(bindingKey)) {
+//											range.set(nameRange(node.getName()));
+//											return false;
+//										}
+//									}
+//									return true;
+//								}
+//
+//								@Override
+//								public boolean visit(EnumDeclaration node) {
+//									if (member instanceof IType) {
+//										String bindingKey = node.resolveBinding().getKey();
+//										if (memberBindingKey.equals(bindingKey)) {
+//											range.set(nameRange(node.getName()));
+//											return false;
+//										}
+//									}
+//									return true;
+//								}
+//
+//								@Override
+//								public boolean visit(TypeDeclaration node) {
+//									if (member instanceof IType) {
+//										String bindingKey = node.resolveBinding().getKey();
+//										if (memberBindingKey.equals(bindingKey)) {
+//											range.set(nameRange(node.getName()));
+//											return false;
+//										}
+//									}
+//									return true;
+//								}
+//
+//							});
 							return range.get();
 						});
 						if (r == null) {

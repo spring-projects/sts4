@@ -17,7 +17,7 @@ import org.springframework.ide.vscode.boot.app.BootLanguageServerParams;
 import org.springframework.ide.vscode.boot.editor.harness.PropertyIndexHarness;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.java.links.VSCodeSourceLinks;
-import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
+import org.springframework.ide.vscode.boot.java.utils.ORCompilationUnitCache;
 import org.springframework.ide.vscode.boot.java.utils.SymbolCache;
 import org.springframework.ide.vscode.boot.java.utils.SymbolCacheVoid;
 import org.springframework.ide.vscode.boot.java.utils.test.MockProjectObserver;
@@ -65,7 +65,7 @@ public class SourceLinksTestConf {
 		return (DefaultSpringPropertyIndexProvider) serverParams.indexProvider;
 	}
 
-	@Bean SourceLinks sourceLinks(CompilationUnitCache cuCache, JavaProjectFinder projectFinder) {
+	@Bean SourceLinks sourceLinks(ORCompilationUnitCache cuCache, JavaProjectFinder projectFinder) {
 		return new VSCodeSourceLinks(cuCache, projectFinder);
 	}
 

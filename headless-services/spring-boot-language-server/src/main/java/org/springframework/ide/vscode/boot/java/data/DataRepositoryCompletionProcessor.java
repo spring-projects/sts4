@@ -11,15 +11,18 @@
 package org.springframework.ide.vscode.boot.java.data;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
-import org.eclipse.jdt.core.dom.ASTNode;
-import org.eclipse.jdt.core.dom.Annotation;
-import org.eclipse.jdt.core.dom.ITypeBinding;
-import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.CompletionItemKind;
+import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.J.Annotation;
+import org.openrewrite.java.tree.J.ClassDeclaration;
+import org.openrewrite.java.tree.JavaType.FullyQualified;
+import org.openrewrite.java.tree.TypeUtils;
 import org.springframework.ide.vscode.boot.java.handlers.CompletionProvider;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
+import org.springframework.ide.vscode.boot.java.utils.ORAstUtils;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
@@ -33,14 +36,14 @@ import org.springframework.util.StringUtils;
 public class DataRepositoryCompletionProcessor implements CompletionProvider {
 
 	@Override
-	public void provideCompletions(ASTNode node, Annotation annotation, ITypeBinding type,
+	public void provideCompletions(J node, Annotation annotation,
 			int offset, IDocument doc, Collection<ICompletionProposal> completions) {
 	}
 
 	@Override
-	public void provideCompletions(ASTNode node, int offset, IDocument doc, Collection<ICompletionProposal> completions) {
-		TypeDeclaration type = ASTUtils.findDeclaringType(node);
-		DataRepositoryDefinition repo = getDataRepositoryDefinition(type);
+	public void provideCompletions(J node, int offset, IDocument doc, Collection<ICompletionProposal> completions) {
+		ClassDeclaration declaration = ORAstUtils.findNode(node, ClassDeclaration.class);
+		DataRepositoryDefinition repo = getDataRepositoryDefinition(declaration, declaration.getType());
 		if (repo != null) {
 			DomainType domainType = repo.getDomainType();
 			if (domainType != null) {
@@ -100,41 +103,27 @@ public class DataRepositoryCompletionProcessor implements CompletionProvider {
 		return new FindByCompletionProposal(label.toString(), CompletionItemKind.Method, edits, null, null, Optional.of(additionalEdits), filter);
 	}
 
-	private DataRepositoryDefinition getDataRepositoryDefinition(TypeDeclaration type) {
+	private DataRepositoryDefinition getDataRepositoryDefinition(ClassDeclaration declaration, FullyQualified type) {
 		if (type != null) {
-			ITypeBinding resolvedType = type.resolveBinding();
-			return getDataRepositoryDefinition(type, resolvedType);
-		}
-
-		return null;
-	}
-
-	private DataRepositoryDefinition getDataRepositoryDefinition(TypeDeclaration type, ITypeBinding resolvedType) {
-		if (resolvedType != null) {
 
 			// interface analysis
-			ITypeBinding[] interfaces = resolvedType.getInterfaces();
-			for (ITypeBinding resolvedInterface : interfaces) {
-				String simplifiedType = null;
-				if (resolvedInterface.isParameterizedType()) {
-					simplifiedType = resolvedInterface.getBinaryName();
-				}
-				else {
-					simplifiedType = resolvedType.getQualifiedName();
-				}
+			List<FullyQualified> interfaces = type.getInterfaces();
+			for (FullyQualified resolvedInterface : interfaces) {
+				String simplifiedType = resolvedInterface.getFullyQualifiedName();
 
 				if (Constants.REPOSITORY_TYPE.equals(simplifiedType)) {
 					DomainType domainType = null;
-					if (resolvedInterface.isParameterizedType()) {
-						ITypeBinding[] typeParameters = resolvedInterface.getTypeArguments();
-						if (typeParameters != null && typeParameters.length > 0) {
-							domainType = new DomainType(typeParameters[0]);
-						}
-					}
+					// TODO Fix for OR AST
+//					if (resolvedInterface.isParameterizedType()) {
+//						ITypeBinding[] typeParameters = resolvedInterface.getTypeArguments();
+//						if (typeParameters != null && typeParameters.length > 0) {
+//							domainType = new DomainType(typeParameters[0]);
+//						}
+//					}
 					return createDataRepositoryDefinitionFromType(domainType);
 				}
 				else {
-					DataRepositoryDefinition repo = getDataRepositoryDefinition(type, resolvedInterface);
+					DataRepositoryDefinition repo = getDataRepositoryDefinition(declaration, resolvedInterface);
 					if (repo != null) {
 						return repo;
 					}
@@ -142,9 +131,9 @@ public class DataRepositoryCompletionProcessor implements CompletionProvider {
 			}
 
 			// super type analysis
-			ITypeBinding superclass = resolvedType.getSuperclass();
+			FullyQualified superclass = type.getSupertype();
 			if (superclass != null) {
-				return getDataRepositoryDefinition(type, superclass);
+				return getDataRepositoryDefinition(declaration, superclass);
 			}
 		}
 		return null;

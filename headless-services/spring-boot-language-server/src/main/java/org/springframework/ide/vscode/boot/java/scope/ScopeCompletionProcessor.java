@@ -12,13 +12,14 @@ package org.springframework.ide.vscode.boot.java.scope;
 
 import java.util.Collection;
 
-import org.eclipse.jdt.core.dom.ASTNode;
-import org.eclipse.jdt.core.dom.Annotation;
-import org.eclipse.jdt.core.dom.ITypeBinding;
-import org.eclipse.jdt.core.dom.MemberValuePair;
-import org.eclipse.jdt.core.dom.SimpleName;
-import org.eclipse.jdt.core.dom.StringLiteral;
+import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.J.Annotation;
+import org.openrewrite.java.tree.J.Assignment;
+import org.openrewrite.java.tree.J.Empty;
+import org.openrewrite.java.tree.J.Literal;
+import org.openrewrite.marker.Range;
 import org.springframework.ide.vscode.boot.java.handlers.CompletionProvider;
+import org.springframework.ide.vscode.boot.java.utils.ORAstUtils;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 
@@ -28,15 +29,15 @@ import org.springframework.ide.vscode.commons.util.text.IDocument;
 public class ScopeCompletionProcessor implements CompletionProvider {
 
 	@Override
-	public void provideCompletions(ASTNode node, Annotation annotation, ITypeBinding type,
+	public void provideCompletions(J node, Annotation annotation,
 			int offset, IDocument doc, Collection<ICompletionProposal> completions) {
 
 		try {
-			if (node instanceof SimpleName && node.getParent() instanceof MemberValuePair) {
-				MemberValuePair memberPair = (MemberValuePair) node.getParent();
+			if (node instanceof Assignment) {
+				Assignment assignment = (Assignment) node;
 
 				// case: @Scope(value=<*>)
-				if ("value".equals(memberPair.getName().toString()) && memberPair.getValue().toString().equals("$missing$")) {
+				if ("value".equals(assignment.getVariable().toString()) && assignment.getAssignment() == null) {
 					for (ScopeNameCompletion completion : ScopeNameCompletionProposal.COMPLETIONS) {
 						ICompletionProposal proposal = new ScopeNameCompletionProposal(completion, doc, offset, offset, "");
 						completions.add(proposal);
@@ -44,33 +45,38 @@ public class ScopeCompletionProcessor implements CompletionProvider {
 				}
 			}
 			// case: @Scope(<*>)
-			else if (node == annotation && doc.get(offset - 1, 2).endsWith("()")) {
+			else if (node instanceof Empty && ORAstUtils.getParent(node) == annotation) {
 				for (ScopeNameCompletion completion : ScopeNameCompletionProposal.COMPLETIONS) {
 					ICompletionProposal proposal = new ScopeNameCompletionProposal(completion, doc, offset, offset, "");
 					completions.add(proposal);
 				}
 			}
-			else if (node instanceof StringLiteral && node.getParent() instanceof Annotation) {
-				// case: @Scope("...")
-				if (node.toString().startsWith("\"") && node.toString().endsWith("\"")) {
-					String prefix = doc.get(node.getStartPosition(), offset - node.getStartPosition());
+			else if (node instanceof Literal && ORAstUtils.getParent(node) == annotation) {
+				String nodeStr = node.printTrimmed();
+				if (nodeStr.startsWith("\"") && nodeStr.endsWith("\"")) {
+					// case: @Scope("...")
+					Range range = node.getMarkers().findFirst(Range.class).orElseThrow();
+					String prefix = doc.get(range.getStart().getOffset(), offset - range.getStart().getOffset());
 					for (ScopeNameCompletion completion : ScopeNameCompletionProposal.COMPLETIONS) {
 						if (completion.getValue().startsWith(prefix)) {
-							ICompletionProposal proposal = new ScopeNameCompletionProposal(completion, doc, node.getStartPosition(), node.getStartPosition() + node.getLength(), prefix);
+							ICompletionProposal proposal = new ScopeNameCompletionProposal(completion, doc, range.getStart().getOffset(), range.getStart().getOffset() + range.length(), prefix);
 							completions.add(proposal);
 						}
 					}
+
 				}
 			}
-			else if (node instanceof StringLiteral && node.getParent() instanceof MemberValuePair) {
-				MemberValuePair memberPair = (MemberValuePair) node.getParent();
-
-				// case: @Scope(value=<*>)
-				if ("value".equals(memberPair.getName().toString()) && node.toString().startsWith("\"") && node.toString().endsWith("\"")) {
-					String prefix = doc.get(node.getStartPosition(), offset - node.getStartPosition());
+			// case: @Scope(value=<*>)
+			else if (node instanceof Literal && ORAstUtils.getParent(node) instanceof Assignment) {
+				Assignment assignment = (Assignment) ORAstUtils.getParent(node);
+				String nodeStr = node.printTrimmed();
+				
+				if ("value".equals(assignment.getVariable().printTrimmed()) && nodeStr.startsWith("\"") && nodeStr.endsWith("\"")) {
+					Range range = node.getMarkers().findFirst(Range.class).orElseThrow();
+					String prefix = doc.get(range.getStart().getOffset(), offset - range.getStart().getOffset());
 					for (ScopeNameCompletion completion : ScopeNameCompletionProposal.COMPLETIONS) {
 						if (completion.getValue().startsWith(prefix)) {
-							ICompletionProposal proposal = new ScopeNameCompletionProposal(completion, doc, node.getStartPosition(), node.getStartPosition() + node.getLength(), prefix);
+							ICompletionProposal proposal = new ScopeNameCompletionProposal(completion, doc, range.getStart().getOffset(), range.getStart().getOffset() + range.length(), prefix);
 							completions.add(proposal);
 						}
 					}
@@ -83,7 +89,7 @@ public class ScopeCompletionProcessor implements CompletionProvider {
 	}
 
 	@Override
-	public void provideCompletions(ASTNode node, int offset, IDocument doc, Collection<ICompletionProposal> completions) {
+	public void provideCompletions(J node, int offset, IDocument doc, Collection<ICompletionProposal> completions) {
 	}
 
 }

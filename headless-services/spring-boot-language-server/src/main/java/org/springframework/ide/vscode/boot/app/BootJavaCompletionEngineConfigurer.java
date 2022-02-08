@@ -25,7 +25,7 @@ import org.springframework.ide.vscode.boot.java.scope.ScopeCompletionProcessor;
 import org.springframework.ide.vscode.boot.java.snippets.JavaSnippet;
 import org.springframework.ide.vscode.boot.java.snippets.JavaSnippetContext;
 import org.springframework.ide.vscode.boot.java.snippets.JavaSnippetManager;
-import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
+import org.springframework.ide.vscode.boot.java.utils.ORCompilationUnitCache;
 import org.springframework.ide.vscode.boot.java.value.ValueCompletionProcessor;
 import org.springframework.ide.vscode.boot.metadata.ProjectBasedPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
@@ -86,7 +86,7 @@ public class BootJavaCompletionEngineConfigurer {
 			BootLanguageServerParams params,
 			@Qualifier("adHocProperties") ProjectBasedPropertyIndexProvider adHocProperties,
 			JavaSnippetManager snippetManager, 
-			CompilationUnitCache cuCache) {
+			ORCompilationUnitCache cuCache) {
 		SpringPropertyIndexProvider indexProvider = params.indexProvider;
 		JavaProjectFinder javaProjectFinder = params.projectFinder;
 		Map<String, CompletionProvider> providers = new HashMap<>();

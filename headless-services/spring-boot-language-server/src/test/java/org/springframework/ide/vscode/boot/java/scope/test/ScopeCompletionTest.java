@@ -68,6 +68,19 @@ public class ScopeCompletionTest {
 	}
 
 	@Test
+	public void testBracketsWithSpacesInsideCompletion() throws Exception {
+		prepareCase("@Scope(\"onClass\")", "@Scope(     <*>)");
+		assertAnnotationCompletions(
+				"@Scope(     \"application\"<*>)",
+				"@Scope(     \"globalSession\"<*>)",
+				"@Scope(     \"prototype\"<*>)",
+				"@Scope(     \"request\"<*>)",
+				"@Scope(     \"session\"<*>)",
+				"@Scope(     \"singleton\"<*>)",
+				"@Scope(     \"websocket\"<*>)");
+	}
+	
+	@Test
 	public void testEmptyStringLiteralCompletion() throws Exception {
 		prepareCase("@Scope(\"onClass\")", "@Scope(\"<*>\")");
 		assertAnnotationCompletions(

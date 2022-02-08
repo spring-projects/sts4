@@ -15,12 +15,13 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 
-import org.eclipse.jdt.core.dom.ASTNode;
-import org.eclipse.jdt.core.dom.Annotation;
-import org.eclipse.jdt.core.dom.ITypeBinding;
-import org.eclipse.jdt.core.dom.NodeFinder;
+import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.J.Annotation;
+import org.openrewrite.java.tree.JavaType.FullyQualified;
+import org.openrewrite.java.tree.TypeUtils;
 import org.springframework.ide.vscode.boot.java.snippets.JavaSnippetManager;
-import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
+import org.springframework.ide.vscode.boot.java.utils.ORAstUtils;
+import org.springframework.ide.vscode.boot.java.utils.ORCompilationUnitCache;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.languageserver.util.LanguageSpecific;
@@ -37,9 +38,9 @@ public class BootJavaCompletionEngine implements ICompletionEngine, LanguageSpec
 
 	private Map<String, CompletionProvider> completionProviders;
 	private JavaSnippetManager snippets;
-	private CompilationUnitCache cuCache;
+	private ORCompilationUnitCache cuCache;
 
-	public BootJavaCompletionEngine(CompilationUnitCache cuCache, Map<String, CompletionProvider> specificProviders, JavaSnippetManager snippets) {
+	public BootJavaCompletionEngine(ORCompilationUnitCache cuCache, Map<String, CompletionProvider> specificProviders, JavaSnippetManager snippets) {
 		this.cuCache = cuCache;
 		this.completionProviders = specificProviders;
 		this.snippets = snippets;
@@ -49,7 +50,7 @@ public class BootJavaCompletionEngine implements ICompletionEngine, LanguageSpec
 	public Collection<ICompletionProposal> getCompletions(TextDocument document, int offset) throws Exception {
 		return cuCache.withCompilationUnit(document, cu -> {
 			if (cu != null) {
-				ASTNode node = NodeFinder.perform(cu, offset, 0);
+				J node = ORAstUtils.findAstNodeAt(cu, offset);
 
 				if (node != null) {
 					Collection<ICompletionProposal> completions = new ArrayList<ICompletionProposal>();
@@ -64,30 +65,25 @@ public class BootJavaCompletionEngine implements ICompletionEngine, LanguageSpec
 		});
 	}
 
-	private void collectCompletionsForAnnotations(ASTNode node, int offset, IDocument doc, Collection<ICompletionProposal> completions) {
-		Annotation annotation = null;
-		ASTNode exactNode = node;
+	private void collectCompletionsForAnnotations(J node, int offset, IDocument doc, Collection<ICompletionProposal> completions) {
+		Annotation annotation = ORAstUtils.findNode(node, Annotation.class);
+		J exactNode = node;
 
-		while (node != null && !(node instanceof Annotation)) {
-			node = node.getParent();
-		}
-
-		if (node != null) {
-			annotation = (Annotation) node;
-			ITypeBinding type = annotation.resolveTypeBinding();
+		if (annotation != null) {
+			FullyQualified type = TypeUtils.asFullyQualified(annotation.getType());
 			if (type != null) {
-				String qualifiedName = type.getQualifiedName();
+				String qualifiedName = type.getFullyQualifiedName();
 				if (qualifiedName != null) {
 					CompletionProvider provider = this.completionProviders.get(qualifiedName);
 					if (provider != null) {
-						provider.provideCompletions(exactNode, annotation, type, offset, doc, completions);
+						provider.provideCompletions(exactNode, annotation, offset, doc, completions);
 					}
 				}
 			}
 		}
 	}
 
-	private void collectCompletions(ASTNode node, int offset, TextDocument document, Collection<ICompletionProposal> completions) {
+	private void collectCompletions(J node, int offset, TextDocument document, Collection<ICompletionProposal> completions) {
 		if (node != null) {
 			for (CompletionProvider completionProvider : this.completionProviders.values()) {
 				completionProvider.provideCompletions(node, offset, document, completions);

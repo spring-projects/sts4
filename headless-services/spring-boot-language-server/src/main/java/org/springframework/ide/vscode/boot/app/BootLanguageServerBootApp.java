@@ -155,8 +155,12 @@ public class BootLanguageServerBootApp {
 		return SourceLinkFactory.createSourceLinks(server, cuCache, params.projectFinder);
 	}
 
-	@Bean ORCompilationUnitCache cuCache(SimpleLanguageServer server, BootLanguageServerParams params) {
+	@Bean ORCompilationUnitCache orcuCache(SimpleLanguageServer server, BootLanguageServerParams params) {
 		return new ORCompilationUnitCache(params.projectFinder, server, params.projectObserver);
+	}
+	
+	@Bean CompilationUnitCache cuCache(SimpleLanguageServer server, BootLanguageServerParams params) {
+		return new CompilationUnitCache(params.projectFinder, server, params.projectObserver);
 	}
 	
 	@Bean SpringXMLCompletionEngine xmlCompletionEngine(SimpleLanguageServer server, JavaProjectFinder projectFinder, SpringSymbolIndex symbolIndex, BootJavaConfig config) {
@@ -188,7 +192,7 @@ public class BootLanguageServerBootApp {
 		}
 	}
 
-	@Bean JavaElementLocationProvider javaElementLocationProvider(SimpleLanguageServer server, CompilationUnitCache cuCache, JavaDocumentUriProvider javaDocUriProvider) {
+	@Bean JavaElementLocationProvider javaElementLocationProvider(SimpleLanguageServer server, ORCompilationUnitCache cuCache, JavaDocumentUriProvider javaDocUriProvider) {
 		switch (LspClient.currentClient()) {
 		case ECLIPSE:
 		case VSCODE:

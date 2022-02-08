@@ -27,6 +27,8 @@ import org.springframework.ide.vscode.commons.util.text.Region;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 
+import reactor.util.function.Tuple2;
+
 /**
  * Source links for Atom client
  *
@@ -54,10 +56,10 @@ public class AtomSourceLinks extends AbstractSourceLinks {
 	@Override
 	protected String positionLink(CompilationUnit cu, String fqName) {
 		if (cu != null) {
-			Region region = findTypeRegion(cu, fqName);
+			Tuple2<Integer, Integer> region = findTypeRegion(cu, fqName);
 			if (region != null) {
-				int column = cu.getColumnNumber(region.getOffset());
-				int line = cu.getLineNumber(region.getOffset());
+				int column = region.getT2();
+				int line = region.getT1();
 				StringBuilder sb = new StringBuilder();
 				sb.append("&line=");
 				sb.append(line);

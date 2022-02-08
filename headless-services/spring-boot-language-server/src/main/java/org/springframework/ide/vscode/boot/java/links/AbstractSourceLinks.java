@@ -16,11 +16,12 @@ import java.net.URISyntaxException;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.Stack;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.tree.J.CompilationUnit;
 import org.openrewrite.java.tree.TypeUtils;
-import org.openrewrite.marker.Position;
+import org.openrewrite.marker.Range;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.utils.ORCompilationUnitCache;
@@ -30,7 +31,9 @@ import org.springframework.ide.vscode.commons.java.IJavaModuleData;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.javadoc.TypeUrlProviderFromContainerUrl;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
-import org.springframework.ide.vscode.commons.util.text.Region;
+
+import reactor.util.function.Tuple2;
+import reactor.util.function.Tuples;
 
 /**
  * Base logic for {@link SourceLinks} independent of any client
@@ -132,11 +135,12 @@ public abstract class AbstractSourceLinks implements SourceLinks {
 		}).map(sourcePath -> findCU(project, sourcePath).orElse(null));
 	}
 
-	protected Region findTypeRegion(CompilationUnit cu, String fqName) {
+	protected Tuple2<Integer, Integer> findTypeRegion(CompilationUnit cu, String fqName) {
 		if (cu == null) {
 			return null;
 		}
 		int[] values = new int[] {0, -1};
+		AtomicReference<Range> range = new AtomicReference<>();
 		int lastDotIndex = fqName.lastIndexOf('.');
 		String packageName = fqName.substring(0, lastDotIndex);
 		String typeName = fqName.substring(lastDotIndex + 1);
@@ -147,11 +151,9 @@ public abstract class AbstractSourceLinks implements SourceLinks {
 				public org.openrewrite.java.tree.J.ClassDeclaration visitClassDeclaration(org.openrewrite.java.tree.J.ClassDeclaration classDecl, Object p) {
 					String fqName = classDecl.getType().getFullyQualifiedName();
 					visitedType.push(fqName);
-					if (values[1] < 0) {
+					if (range.get() == null) {
 						if (String.join("$", visitedType.toArray(new String[visitedType.size()])).equals(typeName)) {
-							Position pos = classDecl.getName().getMarkers().findFirst(Position.class).orElseThrow();
-							values[0] = pos.getStartPosition();
-							values[1] = pos.getLength();
+							range.set(classDecl.getName().getMarkers().findFirst(Range.class).orElseThrow());
 						}
 					}
 					if (values[1] < 0) {
@@ -165,7 +167,7 @@ public abstract class AbstractSourceLinks implements SourceLinks {
 				
 			}.visitNonNull(cu, visitedType);
 		}
-		return values[1] < 0 ? null : new Region(values[0], values[1]);
+		return Optional.of(range.get()).map(r -> r.getStart()).map(start -> Tuples.of(start.getLine(), start.getColumn())).orElse(null);
 	}
 
 }

@@ -3,7 +3,9 @@ package org.springframework.ide.vscode.boot.java.utils;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.net.URI;
+import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -11,6 +13,7 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.IOUtils;
@@ -118,22 +121,27 @@ public class ORCompilationUnitCache implements DocumentContentProvider, Disposab
 
 	private JavaParser loadJavaParser(IJavaProject project) {
 		try {
-			return javaParsers.get(project, () -> JavaParser.fromJavaVersion().classpath(getClasspathEntries(project)).build());
+			return javaParsers.get(project, () -> {
+				List<Path> classpath = getClasspathEntries(project).stream().map(s -> new File(s).toPath()).collect(Collectors.toList());
+				JavaParser jp = JavaParser.fromJavaVersion().build();
+				jp.setClasspath(classpath);
+				return jp;
+			});
 		} catch (ExecutionException e) {
 			logger.error("{}", e);
 			return null;
 		}
 	}
 	
-	private static String[] getClasspathEntries(IJavaProject project) throws Exception {
+	private static Set<String> getClasspathEntries(IJavaProject project) throws Exception {
 		if (project == null) {
-			return new String[0];
+			return Collections.emptySet();
 		} else {
 			IClasspath classpath = project.getClasspath();
 			Stream<File> classpathEntries = IClasspathUtil.getAllBinaryRoots(classpath).stream();
 			return classpathEntries
 					.filter(file -> file.exists())
-					.map(file -> file.getAbsolutePath()).toArray(String[]::new);
+					.map(file -> file.getAbsolutePath()).collect(Collectors.toSet());
 		}
 	}
 	
@@ -200,7 +208,8 @@ public class ORCompilationUnitCache implements DocumentContentProvider, Disposab
 						}
 					});
 					
-					Result result = new UpdateSourcePositions().run(javaParser.parseInputs(List.of(input), null, new InMemoryExecutionContext())).get(0);
+					List<CompilationUnit> parseInputs = javaParser.parseInputs(List.of(input), null, new InMemoryExecutionContext());
+					Result result = new UpdateSourcePositions().run(parseInputs).get(0);
 										
 					logger.info("CU Cache: created new AST for {}", uri.toString());
 
@@ -234,5 +243,26 @@ public class ORCompilationUnitCache implements DocumentContentProvider, Disposab
 
 		return requestor.apply(null);
 	}
+	
+	/**
+	 * Never research shows at the AST is thread-safe when used in read-only mode:
+	 * https://bugs.eclipse.org/bugs/show_bug.cgi?id=58314
+	 * 
+	 * This means that the previous implemented synchronization around the requestor
+	 * working on the AST is not necessary as long as the requestor operates in read-only
+	 * mode on the AST nodes.
+	 * 
+	 * Warning: Callers should take care to do all AST processing inside of the requestor callback and
+	 * not pass of AST nodes to helper functions that work aynchronously or store AST nodes or ITypeBindings
+	 * for later use. The JDT ASTs are not thread safe!
+	 */
+	@Deprecated
+	public <T> T withCompilationUnit(TextDocument document, Function<CompilationUnit, T> requestor) {
+		IJavaProject project = this.projectFinder != null ? projectFinder.find(document.getId()).orElse(null) : null;
+
+		URI uri = URI.create(document.getUri());
+		return withCompilationUnit(project, uri, requestor);
+	}
+
 
 }

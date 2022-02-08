@@ -14,8 +14,8 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-import org.eclipse.jdt.core.dom.ASTNode;
-import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.J.CompilationUnit;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.languageserver.util.PrefixFinder;
 import org.springframework.ide.vscode.commons.languageserver.util.SnippetBuilder;
@@ -47,7 +47,7 @@ public class JavaSnippetManager {
 
 	}
 
-	public void getCompletions(IDocument doc, int offset, ASTNode node, CompilationUnit cu, Collection<ICompletionProposal> completions) {
+	public void getCompletions(IDocument doc, int offset, J node, CompilationUnit cu, Collection<ICompletionProposal> completions) {
 		DocumentRegion query = PREFIX_FINDER.getPrefixRegion(doc, offset);
 
 		for (JavaSnippet javaSnippet : snippets) {
