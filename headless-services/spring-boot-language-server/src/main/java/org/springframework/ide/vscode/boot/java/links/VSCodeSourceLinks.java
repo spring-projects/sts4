@@ -49,7 +49,7 @@ public class VSCodeSourceLinks extends AbstractSourceLinks {
 				sb.append('#');
 				sb.append(line);
 				sb.append(',');
-				sb.append(column + 1); // 1-based columns?
+				sb.append(column);
 				return sb.toString();
 			}
 		}

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Pivotal, Inc.
+ * Copyright (c) 2018, 2022 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,8 +13,9 @@ package org.springframework.ide.vscode.boot.java.data;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.jdt.core.dom.IMethodBinding;
-import org.eclipse.jdt.core.dom.ITypeBinding;
+import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.java.tree.JavaType.FullyQualified;
+import org.openrewrite.java.tree.JavaType.Method;
 
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
@@ -35,22 +36,25 @@ public class DomainType {
 		this.simpleName = simpleName;
 	}
 
-	public DomainType(ITypeBinding typeBinding) {
-		this.packageName = typeBinding.getPackage().getName();
-		this.fullName = typeBinding.getQualifiedName();
-		this.simpleName = typeBinding.getName();
+	public DomainType(FullyQualified type) {
+		this.packageName = type.getPackageName();
+		this.fullName = type.getFullyQualifiedName();
+		this.simpleName = type.getClassName();
 
 		this.properties = Suppliers.memoize(() -> {
 			if (!this.packageName.startsWith("java")) {
-				IMethodBinding[] methods = typeBinding.getDeclaredMethods();
-				if (methods != null && methods.length > 0) {
+				List<Method> methods = type.getMethods();
+				if (methods != null && !methods.isEmpty()) {
 					List<DomainProperty> properties = new ArrayList<>();
 
-					for (IMethodBinding method : methods) {
+					for (Method method : methods) {
 						String methodName = method.getName();
 						if (methodName != null && methodName.startsWith("get")) {
 							String propertyName = methodName.substring(3);
-							properties.add(new DomainProperty(propertyName, new DomainType(method.getReturnType())));
+							JavaType returnType = method.getReturnType();
+							if (returnType instanceof FullyQualified) {
+								properties.add(new DomainProperty(propertyName, new DomainType((FullyQualified) returnType)));
+							}
 						}
 					}
 					return (DomainProperty[]) properties.toArray(new DomainProperty[properties.size()]);

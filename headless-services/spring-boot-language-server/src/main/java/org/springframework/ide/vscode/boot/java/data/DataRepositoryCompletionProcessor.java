@@ -15,13 +15,15 @@ import java.util.List;
 import java.util.Optional;
 
 import org.eclipse.lsp4j.CompletionItemKind;
+import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.J.Annotation;
 import org.openrewrite.java.tree.J.ClassDeclaration;
+import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.JavaType.FullyQualified;
+import org.openrewrite.java.tree.JavaType.Parameterized;
 import org.openrewrite.java.tree.TypeUtils;
 import org.springframework.ide.vscode.boot.java.handlers.CompletionProvider;
-import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.boot.java.utils.ORAstUtils;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
@@ -104,42 +106,32 @@ public class DataRepositoryCompletionProcessor implements CompletionProvider {
 	}
 
 	private DataRepositoryDefinition getDataRepositoryDefinition(ClassDeclaration declaration, FullyQualified type) {
-		if (type != null) {
-
-			// interface analysis
-			List<FullyQualified> interfaces = type.getInterfaces();
-			for (FullyQualified resolvedInterface : interfaces) {
-				String simplifiedType = resolvedInterface.getFullyQualifiedName();
-
-				if (Constants.REPOSITORY_TYPE.equals(simplifiedType)) {
-					DomainType domainType = null;
-					// TODO Fix for OR AST
-//					if (resolvedInterface.isParameterizedType()) {
-//						ITypeBinding[] typeParameters = resolvedInterface.getTypeArguments();
-//						if (typeParameters != null && typeParameters.length > 0) {
-//							domainType = new DomainType(typeParameters[0]);
-//						}
-//					}
-					return createDataRepositoryDefinitionFromType(domainType);
-				}
-				else {
-					DataRepositoryDefinition repo = getDataRepositoryDefinition(declaration, resolvedInterface);
-					if (repo != null) {
-						return repo;
-					}
-				}
+		if (type != null && TypeUtils.isAssignableTo(Constants.REPOSITORY_TYPE, type)) {
+			JavaType domainType = getFirstParameterType(type);
+			return new DataRepositoryDefinition(domainType instanceof FullyQualified ? new DomainType((FullyQualified) domainType) : null);
+		}
+		return null;
+	}
+	
+	private JavaType getFirstParameterType(FullyQualified type) {
+		if (type instanceof Parameterized) {
+			List<JavaType> params = ((Parameterized) type).getTypeParameters();
+			if (!params.isEmpty()) {
+				return params.get(0);
 			}
-
-			// super type analysis
-			FullyQualified superclass = type.getSupertype();
-			if (superclass != null) {
-				return getDataRepositoryDefinition(declaration, superclass);
+		}
+		for (FullyQualified i : type.getInterfaces()) {
+			JavaType parameType = getFirstParameterType(i);
+			if (parameType != null) {
+				return parameType;
 			}
+		}
+		@Nullable
+		FullyQualified superclass = type.getSupertype();
+		if (superclass != null) {
+			return getFirstParameterType(superclass);
 		}
 		return null;
 	}
 
-	private DataRepositoryDefinition createDataRepositoryDefinitionFromType(DomainType domainType) {
-		return new DataRepositoryDefinition(domainType);
-	}
 }

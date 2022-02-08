@@ -139,24 +139,22 @@ public abstract class AbstractSourceLinks implements SourceLinks {
 		if (cu == null) {
 			return null;
 		}
-		int[] values = new int[] {0, -1};
 		AtomicReference<Range> range = new AtomicReference<>();
 		int lastDotIndex = fqName.lastIndexOf('.');
 		String packageName = fqName.substring(0, lastDotIndex);
 		String typeName = fqName.substring(lastDotIndex + 1);
-		if (packageName.equals(TypeUtils.asFullyQualified(cu.getPackageDeclaration().getExpression().getType()).getFullyQualifiedName())) {
+		if (packageName.equals(cu.getPackageDeclaration().getExpression().printTrimmed())) {
 			Stack<String> visitedType = new Stack<>();
 			new JavaIsoVisitor<>() {
 
 				public org.openrewrite.java.tree.J.ClassDeclaration visitClassDeclaration(org.openrewrite.java.tree.J.ClassDeclaration classDecl, Object p) {
-					String fqName = classDecl.getType().getFullyQualifiedName();
-					visitedType.push(fqName);
+					visitedType.push(classDecl.getSimpleName());
 					if (range.get() == null) {
 						if (String.join("$", visitedType.toArray(new String[visitedType.size()])).equals(typeName)) {
 							range.set(classDecl.getName().getMarkers().findFirst(Range.class).orElseThrow());
 						}
 					}
-					if (values[1] < 0) {
+					if (range.get() == null) {
 						return super.visitClassDeclaration(classDecl, visitedType);
 					} else {
 						return classDecl; 
