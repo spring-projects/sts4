@@ -670,6 +670,7 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 							Range rng = doc.toRange(problem.getOffset(), problem.getLength());
 							d.setRange(rng);
 							d.setSeverity(severity);
+							d.setSource(getServer().EXTENSION_ID);
 							List<QuickfixData<?>> fixes = problem.getQuickfixes();
 							if (CollectionUtil.hasElements(fixes)) {
 								for (QuickfixData<?> fix : fixes) {
