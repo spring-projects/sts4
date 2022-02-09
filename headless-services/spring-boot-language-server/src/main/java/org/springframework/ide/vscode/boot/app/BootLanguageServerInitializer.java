@@ -22,7 +22,7 @@ import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents
 import org.springframework.ide.vscode.boot.java.links.JavaElementLocationProvider;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveDataProvider;
-import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
+import org.springframework.ide.vscode.boot.java.utils.ORCompilationUnitCache;
 import org.springframework.ide.vscode.boot.java.utils.SymbolCache;
 import org.springframework.ide.vscode.boot.metadata.ProjectBasedPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.properties.BootPropertiesLanguageServerComponents;
@@ -54,7 +54,7 @@ public class BootLanguageServerInitializer implements InitializingBean {
 	@Autowired SimpleLanguageServer server;
 	@Autowired BootLanguageServerParams params;
 	@Autowired SourceLinks sourceLinks;
-	@Autowired CompilationUnitCache cuCache;
+	@Autowired ORCompilationUnitCache cuCache;
 	@Autowired JavaElementLocationProvider javaElementLocationProvider;
 	@Autowired YamlASTProvider parser;
 	@Autowired YamlStructureProvider yamlStructureProvider;

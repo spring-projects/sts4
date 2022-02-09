@@ -18,13 +18,12 @@ import java.util.Optional;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.eclipse.jdt.core.dom.ASTNode;
-import org.eclipse.jdt.core.dom.Annotation;
-import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
+import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.J.Annotation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.autowired.AutowiredHoverProvider;
@@ -33,7 +32,7 @@ import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.java.livehover.v2.LiveBean;
 import org.springframework.ide.vscode.boot.java.livehover.v2.LiveBeansModel;
 import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveData;
-import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
+import org.springframework.ide.vscode.boot.java.utils.ORAstUtils;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
@@ -69,7 +68,7 @@ public abstract class AbstractInjectedIntoHoverProvider implements HoverProvider
 				LiveBean definedBean = getDefinedBean(annotation);
 				if (definedBean != null) {
 					if (Stream.of(processLiveData).anyMatch(app -> LiveHoverUtils.hasRelevantBeans(app, definedBean))) {
-						Optional<Range> nameRange = ASTUtils.nameRange(doc, annotation);
+						Optional<Range> nameRange = ORAstUtils.nameRange(doc, annotation);
 						if (nameRange.isPresent()) {
 							List<CodeLens> codeLenses = assembleCodeLenses(project, processLiveData, app -> definedBean, doc, nameRange.get(), annotation);
 							return codeLenses;
@@ -84,7 +83,7 @@ public abstract class AbstractInjectedIntoHoverProvider implements HoverProvider
 	}
 
 	@Override
-	public Hover provideHover(ASTNode node, Annotation annotation, ITypeBinding type, int offset, TextDocument doc,
+	public Hover provideHover(J node, Annotation annotation, int offset, TextDocument doc,
 			IJavaProject project, SpringProcessLiveData[] processLiveData) {
 		if (processLiveData.length > 0) {
 
@@ -92,7 +91,7 @@ public abstract class AbstractInjectedIntoHoverProvider implements HoverProvider
 			if (definedBean != null) {
 				Hover hover = assembleHover(project, processLiveData, app -> definedBean, annotation, true, true);
 				if (hover != null) {
-					Optional<Range> nameRange = ASTUtils.nameRange(doc, annotation);
+					Optional<Range> nameRange = ORAstUtils.nameRange(doc, annotation);
 					if (nameRange.isPresent()) {
 						hover.setRange(nameRange.get());
 					}
@@ -104,7 +103,7 @@ public abstract class AbstractInjectedIntoHoverProvider implements HoverProvider
 	}
 
 	protected List<CodeLens> assembleCodeLenses(IJavaProject project, SpringProcessLiveData[] processLiveData, DefinedBeanProvider definedBeanProvider,
-			TextDocument doc, Range range, ASTNode node) {
+			TextDocument doc, Range range, J node) {
 		List<CodeLens> codeLenses = null;
 		boolean beanFound = false;
 		for (SpringProcessLiveData liveData : processLiveData) {
@@ -156,17 +155,17 @@ public abstract class AbstractInjectedIntoHoverProvider implements HoverProvider
 		return null;
 	}
 
-	protected List<CodeLens> assembleCodeLenseForAutowired(List<LiveBean> wiredBeans, IJavaProject project, SpringProcessLiveData processLiveData, TextDocument doc, Range nameRange, ASTNode astNode) {
+	protected List<CodeLens> assembleCodeLenseForAutowired(List<LiveBean> wiredBeans, IJavaProject project, SpringProcessLiveData processLiveData, TextDocument doc, Range nameRange, J astNode) {
 		return LiveHoverUtils.createCodeLensesForBeans(nameRange, wiredBeans,
 				AutowiredHoverProvider.BEANS_PREFIX_PLAIN_TEXT, MAX_INLINE_BEANS_STRING_LENGTH,
 				INLINE_BEANS_STRING_SEPARATOR);
 	}
 
-	protected List<LiveBean> findWiredBeans(IJavaProject project, SpringProcessLiveData liveData, List<LiveBean> relevantBeans, ASTNode astNode) {
+	protected List<LiveBean> findWiredBeans(IJavaProject project, SpringProcessLiveData liveData, List<LiveBean> relevantBeans, J astNode) {
 		return Collections.emptyList();
 	}
 
-	protected Hover assembleHover(IJavaProject project, SpringProcessLiveData[] processLiveData, DefinedBeanProvider definedBeanProvider, ASTNode astNode, boolean injected, boolean wired) {
+	protected Hover assembleHover(IJavaProject project, SpringProcessLiveData[] processLiveData, DefinedBeanProvider definedBeanProvider, J astNode, boolean injected, boolean wired) {
 		StringBuilder hover = new StringBuilder();
 
 		for (SpringProcessLiveData liveData : processLiveData) {

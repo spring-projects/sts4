@@ -10,15 +10,14 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.handlers;
 
-import java.util.List;
 import java.util.Set;
 
-import org.eclipse.jdt.core.dom.Expression;
-import org.eclipse.jdt.core.dom.ITypeBinding;
-import org.eclipse.jdt.core.dom.MemberValuePair;
-import org.eclipse.jdt.core.dom.NormalAnnotation;
-import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
-import org.eclipse.jdt.core.dom.StringLiteral;
+import org.openrewrite.java.tree.Expression;
+import org.openrewrite.java.tree.J.Annotation;
+import org.openrewrite.java.tree.J.Assignment;
+import org.openrewrite.java.tree.J.Literal;
+import org.openrewrite.java.tree.TypeUtils;
+import org.openrewrite.marker.Range;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 
@@ -42,56 +41,58 @@ public class AnnotationParamReconciler {
 		this.reconciler = reconciler;
 	}
 
-	public void visit(SingleMemberAnnotation node, ITypeBinding typeBinding, IProblemCollector problemCollector) {
-		if (this.paramName != null) {
-			return;
-		}
-		
-		Set<String> allAnnotations = AnnotationHierarchies.getTransitiveSuperAnnotations(typeBinding);
-		if (!allAnnotations.contains(this.annotationType)) {
-			return;
-		}
-		
-		Expression valueExp = node.getValue();
-
-		if (valueExp instanceof StringLiteral) {
-			reconcileStringLiteral((StringLiteral) valueExp, problemCollector);
-		}
-	}
-
-	public void visit(NormalAnnotation node, ITypeBinding typeBinding, IProblemCollector problemCollector) {
+//	public void visit(SingleMemberAnnotation node, ITypeBinding typeBinding, IProblemCollector problemCollector) {
+//		if (this.paramName != null) {
+//			return;
+//		}
+//		
+//		Set<String> allAnnotations = AnnotationHierarchies.getTransitiveSuperAnnotations(typeBinding);
+//		if (!allAnnotations.contains(this.annotationType)) {
+//			return;
+//		}
+//		
+//		Expression valueExp = node.getValue();
+//
+//		if (valueExp instanceof StringLiteral) {
+//			reconcileStringLiteral((StringLiteral) valueExp, problemCollector);
+//		}
+//	}
+//
+	public void visit(Annotation annotation, IProblemCollector problemCollector) {
 		if (paramName == null) {
 			return;
 		}
 		
-		Set<String> allAnnotations = AnnotationHierarchies.getTransitiveSuperAnnotations(typeBinding);
+		Set<String> allAnnotations = AnnotationHierarchies.getTransitiveSuperAnnotations(TypeUtils.asFullyQualified(annotation.getType()));
 		if (!allAnnotations.contains(this.annotationType)) {
 			return;
 		}
 			
-		List<?> values = node.values();
-		
-		for (Object value : values) {
-			if (value instanceof MemberValuePair) {
-				MemberValuePair pair = (MemberValuePair) value;
-				String name = pair.getName().getFullyQualifiedName();
+		for (Expression value : annotation.getArguments()) {
+			if (value instanceof Literal) {
+				reconcileStringLiteral((Literal) value, problemCollector);
+			}
+			else if (value instanceof Assignment) {
+				Assignment assignment = (Assignment) value;
+				String name = assignment.getVariable().printTrimmed();
 				if (name != null && name.equals(paramName)) {
-					Expression expression = pair.getValue();
-					if (expression instanceof StringLiteral) {
-						reconcileStringLiteral((StringLiteral) expression, problemCollector);
+					Expression expression = assignment.getAssignment();
+					if (expression instanceof Literal) {
+						reconcileStringLiteral((Literal) expression, problemCollector);
 					}
 				}
 			}
 		}
 	}
 
-	private void reconcileStringLiteral(StringLiteral valueExp, IProblemCollector problemCollector) {
-		String value = valueExp.getLiteralValue();
+	private void reconcileStringLiteral(Literal valueExp, IProblemCollector problemCollector) {
+		String value = valueExp.printTrimmed();
 		
 		if (value != null && value.startsWith(paramValuePrefix) && value.endsWith(paramValuePostfix)) {
 			String valueToReconcile = value.substring(paramValuePrefix.length(), value.length() - paramValuePostfix.length());
 			
-			reconciler.reconcile(valueToReconcile, valueExp.getStartPosition() + paramValuePrefix.length() + 1, problemCollector);
+			Range r = valueExp.getMarkers().findFirst(Range.class).orElseThrow();
+			reconciler.reconcile(valueToReconcile, r.getStart().getOffset() + paramValuePrefix.length() + 1, problemCollector);
 		}
 	}
 

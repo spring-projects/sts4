@@ -10,27 +10,24 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.livehover;
 
-import static org.springframework.ide.vscode.boot.java.utils.ASTUtils.nameRange;
-
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Optional;
 import java.util.Set;
 
-import org.eclipse.jdt.core.dom.ASTNode;
-import org.eclipse.jdt.core.dom.ASTVisitor;
-import org.eclipse.jdt.core.dom.Annotation;
-import org.eclipse.jdt.core.dom.ITypeBinding;
-import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
+import org.openrewrite.java.JavaIsoVisitor;
+import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.J.Annotation;
+import org.openrewrite.java.tree.J.Literal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
 import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveData;
-import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
+import org.springframework.ide.vscode.boot.java.utils.ORAstUtils;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
@@ -46,7 +43,7 @@ public class ActiveProfilesProvider implements HoverProvider {
 	private static final Logger log = LoggerFactory.getLogger(ActiveProfilesProvider.class);
 
 	@Override
-	public Hover provideHover(ASTNode node, Annotation annotation, ITypeBinding type, int offset,
+	public Hover provideHover(J node, Annotation annotation, int offset,
 			TextDocument doc, IJavaProject project, SpringProcessLiveData[] processLiveData) {
 
 		if (processLiveData.length > 0) {
@@ -75,7 +72,7 @@ public class ActiveProfilesProvider implements HoverProvider {
 						ImmutableList.of(Either.forLeft(markdown.toString()))
 				);
 				if (hover != null) {
-					Optional<Range> optional = nameRange(doc, annotation);
+					Optional<Range> optional = ORAstUtils.nameRange(doc, annotation);
 					if (optional.isPresent()) {
 						hover.setRange(optional.get());
 					}
@@ -93,19 +90,19 @@ public class ActiveProfilesProvider implements HoverProvider {
 
 			Set<String> allActiveProfiles = getAllActiveProfiles(processLiveData);
 			if (allActiveProfiles != null && allActiveProfiles.size() > 0) {
-				nameRange(doc, annotation).map(CodeLens::new).ifPresent(codeLenses::add);
+				ORAstUtils.nameRange(doc, annotation).map(CodeLens::new).ifPresent(codeLenses::add);
 			}
-
-			annotation.accept(new ASTVisitor() {
-				@Override
-				public boolean visit(StringLiteral node) {
-					String value = ASTUtils.getLiteralValue(node);
-					if (value!=null && allActiveProfiles.contains(value)) {
-						rangeOf(doc, node).map(CodeLens::new).ifPresent(codeLenses::add);
+			
+			new JavaIsoVisitor<Builder<CodeLens>>() {
+				public Literal visitLiteral(Literal literal, Builder<CodeLens> cl) {
+					String value = ORAstUtils.getLiteralValue(literal);
+					if (value != null && allActiveProfiles.contains(value)) {
+						rangeOf(doc, literal).map(CodeLens::new).ifPresent(cl::add);
 					}
-					return true;
-				}
-			});
+					return super.visitLiteral(literal, cl);
+				};
+			}.visitNonNull(annotation, codeLenses);
+
 			return codeLenses.build();
 		}
 		return ImmutableList.of();
@@ -122,10 +119,11 @@ public class ActiveProfilesProvider implements HoverProvider {
 		return builder.build();
 	}
 
-	private static Optional<Range> rangeOf(TextDocument doc, StringLiteral node) {
+	private static Optional<Range> rangeOf(TextDocument doc, Literal node) {
 		try {
-			int start = node.getStartPosition();
-			int end = start + node.getLength();
+			org.openrewrite.marker.Range r = ORAstUtils.getRange(node);
+			int start = r.getStart().getOffset();
+			int end = r.getEnd().getOffset();
 			if (doc.getSafeChar(start)=='"') {
 				start++;
 			}

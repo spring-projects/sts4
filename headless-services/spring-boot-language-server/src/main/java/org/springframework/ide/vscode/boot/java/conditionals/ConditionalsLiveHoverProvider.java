@@ -16,23 +16,24 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
-import org.eclipse.jdt.core.dom.ASTNode;
-import org.eclipse.jdt.core.dom.Annotation;
-import org.eclipse.jdt.core.dom.IMethodBinding;
-import org.eclipse.jdt.core.dom.ITypeBinding;
-import org.eclipse.jdt.core.dom.MethodDeclaration;
-import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.MarkedString;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
+import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.J.Annotation;
+import org.openrewrite.java.tree.J.ClassDeclaration;
+import org.openrewrite.java.tree.J.MethodDeclaration;
+import org.openrewrite.java.tree.JavaType.FullyQualified;
+import org.openrewrite.java.tree.TypeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
 import org.springframework.ide.vscode.boot.java.livehover.LiveHoverUtils;
 import org.springframework.ide.vscode.boot.java.livehover.v2.LiveConditional;
 import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveData;
+import org.springframework.ide.vscode.boot.java.utils.ORAstUtils;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
@@ -48,7 +49,7 @@ public class ConditionalsLiveHoverProvider implements HoverProvider {
 	private static final Logger log = LoggerFactory.getLogger(ConditionalsLiveHoverProvider.class);
 
 	@Override
-	public Hover provideHover(ASTNode node, Annotation annotation, ITypeBinding type, int offset,
+	public Hover provideHover(J node, Annotation annotation, int offset,
 			TextDocument doc, IJavaProject project, SpringProcessLiveData[] processLiveData) {
 		return provideHover(annotation, doc, processLiveData);
 	}
@@ -58,7 +59,8 @@ public class ConditionalsLiveHoverProvider implements HoverProvider {
 		try {
 			Optional<List<LiveConditional>> val = getMatchedLiveConditionals(annotation, processLiveData);
 			if (val.isPresent()) {
-				Range hoverRange = doc.toRange(annotation.getStartPosition(), annotation.getLength());
+				org.openrewrite.marker.Range r = ORAstUtils.getRange(annotation);
+				Range hoverRange = doc.toRange(r.getStart().getOffset(), r.length());
 				return ImmutableList.of(new CodeLens(hoverRange));
 			}
 		} catch (Exception e) {
@@ -101,7 +103,8 @@ public class ConditionalsLiveHoverProvider implements HoverProvider {
 				addHoverContent(val.get(), hoverContent);
 			}
 
-			Range hoverRange = doc.toRange(annotation.getStartPosition(), annotation.getLength());
+			org.openrewrite.marker.Range r = ORAstUtils.getRange(annotation);
+			Range hoverRange = doc.toRange(r.getStart().getOffset(), r.length());
 			Hover hover = new Hover();
 
 			hover.setContents(hoverContent);
@@ -134,24 +137,31 @@ public class ConditionalsLiveHoverProvider implements HoverProvider {
 	protected boolean matchesAnnotation(Annotation annotation, LiveConditional liveConditional) {
 
 		// First check that the annotation matches the live conditional annotation
-		String annotationName = annotation.resolveTypeBinding().getName();
+		FullyQualified type = TypeUtils.asFullyQualified(annotation.getType());
+		if (type == null) {
+			return false;
+		}
+		
+		String annotationName = type.getClassName();
 		if (!liveConditional.getMessage().contains(annotationName)) {
 			return false;
 		}
 
 		// Check that Java type in annotation in editor matches Java information in the live Conditional
-		ASTNode parent = annotation.getParent();
+		J parent = ORAstUtils.getParent(annotation);
 		String typeInfo = liveConditional.getTypeInfo();
 
 		if (parent instanceof MethodDeclaration) {
 			MethodDeclaration methodDec = (MethodDeclaration) parent;
-			IMethodBinding binding = methodDec.resolveBinding();
-			String annotationDeclaringClassName = binding.getDeclaringClass().getName();
-			String annotationMethodName = binding.getName();
-			return typeInfo.contains(annotationDeclaringClassName) && typeInfo.contains(annotationMethodName);
-		} else if (parent instanceof TypeDeclaration) {
-			TypeDeclaration typeDec = (TypeDeclaration) parent;
-			String annotationDeclaringClassName = typeDec.resolveBinding().getName();
+			ClassDeclaration declaringType = ORAstUtils.findNode(methodDec, ClassDeclaration.class);
+			if (declaringType == null) {
+				return false;
+			}
+			String annotationMethodName = methodDec.getSimpleName();
+			return typeInfo.contains(declaringType.getType().getClassName()) && typeInfo.contains(annotationMethodName);
+		} else if (parent instanceof ClassDeclaration) {
+			ClassDeclaration typeDec = (ClassDeclaration) parent;
+			String annotationDeclaringClassName = typeDec.getType().getClassName();
 			return typeInfo.contains(annotationDeclaringClassName);
 		}
 		return false;

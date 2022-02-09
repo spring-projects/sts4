@@ -16,19 +16,21 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-import org.eclipse.jdt.core.dom.ASTNode;
-import org.eclipse.jdt.core.dom.Annotation;
-import org.eclipse.jdt.core.dom.FieldDeclaration;
-import org.eclipse.jdt.core.dom.ITypeBinding;
-import org.eclipse.jdt.core.dom.MarkerAnnotation;
-import org.eclipse.jdt.core.dom.MethodDeclaration;
-import org.eclipse.jdt.core.dom.SimpleName;
-import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
-import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
+import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.J.Annotation;
+import org.openrewrite.java.tree.J.ClassDeclaration;
+import org.openrewrite.java.tree.J.Identifier;
+import org.openrewrite.java.tree.J.MethodDeclaration;
+import org.openrewrite.java.tree.J.VariableDeclarations;
+import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.java.tree.JavaType.Array;
+import org.openrewrite.java.tree.JavaType.FullyQualified;
+import org.openrewrite.java.tree.JavaType.Parameterized;
+import org.openrewrite.java.tree.TypeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.Annotations;
@@ -40,7 +42,7 @@ import org.springframework.ide.vscode.boot.java.livehover.ComponentInjectionsHov
 import org.springframework.ide.vscode.boot.java.livehover.LiveHoverUtils;
 import org.springframework.ide.vscode.boot.java.livehover.v2.LiveBean;
 import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveData;
-import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
+import org.springframework.ide.vscode.boot.java.utils.ORAstUtils;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.IType;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
@@ -76,12 +78,13 @@ public class AutowiredHoverProvider implements HoverProvider {
 			SpringProcessLiveData[] processLiveData) {
 		ImmutableList.Builder<CodeLens> builder = ImmutableList.builder();
 		if (processLiveData.length > 0) {
-			LiveBean definedBean = getDefinedBeanForTypeDeclaration(ASTUtils.findDeclaringType(annotation));
+			LiveBean definedBean = getDefinedBeanForTypeDeclaration(ORAstUtils.findDeclaringType(annotation));
 			// Annotation is MarkerNode, parent is some field, method, variable declaration
 			// node.
-			ASTNode declarationNode = annotation.getParent();
+			J declarationNode = ORAstUtils.getParent(annotation);
 			try {
-				Range hoverRange = doc.toRange(annotation.getStartPosition(), annotation.getLength());
+				org.openrewrite.marker.Range r = ORAstUtils.getRange(annotation);
+				Range hoverRange = doc.toRange(r.getStart().getOffset(), r.length());
 				for (SpringProcessLiveData liveData : processLiveData) {
 					List<LiveBean> relevantBeans = getRelevantAutowiredBeans(project, declarationNode, liveData,
 							definedBean);
@@ -99,16 +102,17 @@ public class AutowiredHoverProvider implements HoverProvider {
 	}
 
 	@Override
-	public Hover provideHover(ASTNode node, Annotation annotation, ITypeBinding type, int offset,
+	public Hover provideHover(J node, Annotation annotation, int offset,
 			TextDocument doc, IJavaProject project, SpringProcessLiveData[] processLiveData) {
 		if (processLiveData.length > 0) {
-			LiveBean definedBean = getDefinedBeanForTypeDeclaration(ASTUtils.findDeclaringType(annotation));
+			LiveBean definedBean = getDefinedBeanForTypeDeclaration(ORAstUtils.findDeclaringType(annotation));
 			// Annotation is MarkerNode, parent is some field, method, variable declaration node.
-			ASTNode declarationNode = annotation.getParent();
+			J declarationNode = ORAstUtils.getParent(annotation);
 			Hover hover = provideHover(definedBean, declarationNode, offset, doc, project, processLiveData);
 			if (hover != null) {
+				org.openrewrite.marker.Range r = ORAstUtils.getRange(annotation);
 				try {
-					hover.setRange(doc.toRange(annotation.getStartPosition(), annotation.getLength()));
+					hover.setRange(doc.toRange(r.getStart().getOffset(), r.length()));
 				} catch (BadLocationException e) {
 					log.error("", e);
 				}
@@ -118,7 +122,7 @@ public class AutowiredHoverProvider implements HoverProvider {
 		return null;
 	}
 
-	private Hover provideHover(LiveBean definedBean, ASTNode declarationNode, int offset, TextDocument doc,
+	private Hover provideHover(LiveBean definedBean, J declarationNode, int offset, TextDocument doc,
 			IJavaProject project, SpringProcessLiveData[] processLiveData) {
 		if (definedBean != null) {
 
@@ -158,12 +162,12 @@ public class AutowiredHoverProvider implements HoverProvider {
 		hover.append("\n  \n");
 	}
 
-	public static List<LiveBean> getRelevantAutowiredBeans(IJavaProject project, ASTNode declarationNode, SpringProcessLiveData liveData, LiveBean definedBean) {
+	public static List<LiveBean> getRelevantAutowiredBeans(IJavaProject project, J declarationNode, SpringProcessLiveData liveData, LiveBean definedBean) {
 		List<LiveBean> relevantBeans = LiveHoverUtils.findRelevantBeans(liveData, definedBean);
 		return getRelevantAutowiredBeans(project, declarationNode, liveData, relevantBeans);
 	}
 
-	public static List<LiveBean> getRelevantAutowiredBeans(IJavaProject project, ASTNode declarationNode, SpringProcessLiveData liveData, List<LiveBean> relevantBeans) {
+	public static List<LiveBean> getRelevantAutowiredBeans(IJavaProject project, J declarationNode, SpringProcessLiveData liveData, List<LiveBean> relevantBeans) {
 		if (!relevantBeans.isEmpty()) {
 			List<LiveBean> allDependencyBeans = LiveHoverUtils.findAllDependencyBeans(liveData, relevantBeans);
 
@@ -184,32 +188,26 @@ public class AutowiredHoverProvider implements HoverProvider {
 	}
 
 	@SuppressWarnings("unchecked")
-	public static List<LiveBean> findAutowiredBeans(IJavaProject project, ASTNode declarationNode, Collection<LiveBean> beans) {
+	public static List<LiveBean> findAutowiredBeans(IJavaProject project, J declarationNode, Collection<LiveBean> beans) {
 		if (declarationNode instanceof MethodDeclaration) {
 			MethodDeclaration methodDeclaration = (MethodDeclaration)declarationNode;
-			return ((List<Object>)methodDeclaration.parameters()).stream()
-					.filter(p -> p instanceof SingleVariableDeclaration)
-					.map(p -> (SingleVariableDeclaration)p)
-					.flatMap(singleVariableDeclaration -> findAutowiredBeans(project, singleVariableDeclaration, beans).stream())
-					.collect(Collectors.toList());
-		} else if (declarationNode instanceof FieldDeclaration) {
-			FieldDeclaration fieldDeclaration = (FieldDeclaration)declarationNode;
-			ITypeBinding fieldType = fieldDeclaration.getType().resolveBinding();
-			if (fieldType != null) {
-				return matchBeans(project, beans, fieldType, fieldDeclaration.modifiers());
-			}
-		} else if (declarationNode instanceof SingleVariableDeclaration) {
-			SingleVariableDeclaration singleVariableDeclaration = (SingleVariableDeclaration)declarationNode;
-			ITypeBinding varType = singleVariableDeclaration.getType().resolveBinding();
+			return methodDeclaration.getParameters().stream()
+				.filter(VariableDeclarations.class::isInstance)
+				.map(VariableDeclarations.class::cast)
+				.flatMap(v -> findAutowiredBeans(project, v, beans).stream())
+				.collect(Collectors.toList());
+		} else if (declarationNode instanceof VariableDeclarations) {
+			VariableDeclarations varDeclaration = (VariableDeclarations) declarationNode;
+			JavaType varType = varDeclaration.getType();
 			if (varType != null) {
-				return matchBeans(project, beans, varType, singleVariableDeclaration.modifiers());
+				return matchBeans(project, beans, varType, varDeclaration.getLeadingAnnotations());
 			}
 		}
 		return Collections.emptyList();
 	}
 
-	private static List<LiveBean> matchBeans(IJavaProject project, Collection<LiveBean> beans, ITypeBinding typeBinding, List<Object> modifiers) {
-		Optional<String> beanId = ASTUtils.beanId(modifiers);
+	private static List<LiveBean> matchBeans(IJavaProject project, Collection<LiveBean> beans, JavaType type, List<Annotation> annotations) {
+		Optional<String> beanId = ORAstUtils.beanId(annotations);
 		Collection<LiveBean> searchScope = beanId.isPresent() ?
 				beans.stream()
 					.filter(b -> beanId.get().equals(b.getId()))
@@ -217,34 +215,33 @@ public class AutowiredHoverProvider implements HoverProvider {
 					.map(bean -> (Collection<LiveBean>) ImmutableList.of(bean))
 					.orElse(ImmutableList.of())
 				: beans;
-		return matchBeansByTypeOrCollection(project, searchScope, typeBinding);
+		return matchBeansByTypeOrCollection(project, searchScope, type);
 	}
 
-	private static boolean isInstanceOfCollection(ITypeBinding typeBinding) {
-		if (typeBinding == null) {
-			return false;
-		} else {
-			if (JAVA_COLLECTION.equals(typeBinding.getTypeDeclaration().getQualifiedName())) {
-				return true;
-			} else {
-				for (ITypeBinding superInterface : typeBinding.getInterfaces()) {
-					if (isInstanceOfCollection(superInterface)) {
-						return true;
-					}
-				}
-				return isInstanceOfCollection(typeBinding.getSuperclass());
-			}
-		}
+	private static boolean isInstanceOfCollection(JavaType type) {
+		return type == null ? false : TypeUtils.isAssignableTo(JAVA_COLLECTION, type);
 	}
 
-	private static List<LiveBean> matchBeansByTypeOrCollection(IJavaProject project, Collection<LiveBean> beans, ITypeBinding type) {
+	private static List<LiveBean> matchBeansByTypeOrCollection(IJavaProject project, Collection<LiveBean> beans, JavaType type) {
 		if (isInstanceOfCollection(type)) {
 			// Raw collections shouldn't match any beans
-			return type.getTypeArguments().length == 1 ? matchBeansByType(project, beans, type.getTypeArguments()[0].getQualifiedName(), false) : ImmutableList.of();
-		} else if (type.isArray() && type.getDimensions() == 1) {
-			return matchBeansByType(project, beans, type.getElementType().getErasure().getBinaryName(), false);
+			if (type instanceof Parameterized) {
+				Parameterized parameterized = (Parameterized) type;
+				if (parameterized.getTypeParameters().size() == 1) {
+					FullyQualified parameterType = TypeUtils.asFullyQualified(parameterized.getTypeParameters().get(0));
+					if (parameterType != null) {
+						return matchBeansByType(project, beans, parameterType.getFullyQualifiedName(), false);
+					}
+				}
+			}
+			return ImmutableList.of();
+		} else if (type instanceof Array && ((Array) type).getManagedReference() == 1) {
+			Array array = (Array) type;
+			FullyQualified arrayType = TypeUtils.asFullyQualified(array.getElemType()); 
+			return matchBeansByType(project, beans, arrayType == null ? null : arrayType.getFullyQualifiedName(), false);
 		} else {
-			return matchBeansByType(project, beans, type.getErasure().getBinaryName(), true);
+			FullyQualified fq = TypeUtils.asFullyQualified(type); 
+			return matchBeansByType(project, beans, fq == null ? null : fq.getFullyQualifiedName(), true);
 		}
 	}
 
@@ -281,9 +278,9 @@ public class AutowiredHoverProvider implements HoverProvider {
 		return false;
 	}
 
-	private LiveBean getDefinedBeanForTypeDeclaration(TypeDeclaration declaringType) {
+	private LiveBean getDefinedBeanForTypeDeclaration(ClassDeclaration declaringType) {
 		if (declaringType != null) {
-			for (Annotation annotation : ASTUtils.getAnnotations(declaringType)) {
+			for (Annotation annotation : ORAstUtils.getAnnotations(declaringType)) {
 				if (AnnotationHierarchies.isSubtypeOf(annotation, Annotations.COMPONENT)) {
 					return ComponentInjectionsHoverProvider.getDefinedBeanForComponent(annotation);
 				}
@@ -292,9 +289,9 @@ public class AutowiredHoverProvider implements HoverProvider {
 			// cases, but is probably
 			// missing logics for special cases where annotation attributes on the declaring
 			// type matter.
-			ITypeBinding beanType = declaringType.resolveBinding();
+			FullyQualified beanType = declaringType.getType();
 			if (beanType != null) {
-				String beanTypeName = beanType.getName();
+				String beanTypeName = beanType.getClassName();
 				if (StringUtil.hasText(beanTypeName)) {
 					return LiveBean.builder()
 							.id(getId(beanTypeName))
@@ -314,9 +311,10 @@ public class AutowiredHoverProvider implements HoverProvider {
 		LiveBean definedBean = getDefinedBeanForImplicitAutowiredConstructor(methodDeclaration);
 		Hover hover = provideHover(definedBean, methodDeclaration, offset, doc, project, processLiveData);
 		if (hover != null) {
-			SimpleName name = methodDeclaration.getName();
+			Identifier name = methodDeclaration.getName();
 			try {
-				hover.setRange(doc.toRange(name.getStartPosition(), name.getLength()));
+				org.openrewrite.marker.Range r = ORAstUtils.getRange(name);
+				hover.setRange(doc.toRange(r.getStart().getOffset(), r.length()));
 			} catch (BadLocationException e) {
 				log.error("", e);
 			}
@@ -325,15 +323,16 @@ public class AutowiredHoverProvider implements HoverProvider {
 	}
 
 	@Override
-	public Hover provideMethodParameterHover(SingleVariableDeclaration parameter, int offset, TextDocument doc,
+	public Hover provideMethodParameterHover(VariableDeclarations parameter, int offset, TextDocument doc,
 			IJavaProject project, SpringProcessLiveData[] processLiveData) {
-		MethodDeclaration method = (MethodDeclaration) parameter.getParent();
+		MethodDeclaration method = (MethodDeclaration) ORAstUtils.getParent(parameter);
 		LiveBean definedBean = getDefinedBeanForImplicitAutowiredConstructor(method);
 		Hover hover = provideHover(definedBean, parameter, offset, doc, project, processLiveData);
 		if (hover != null) {
-			SimpleName name = parameter.getName();
+			Identifier name = parameter.getVariables().get(0).getName();
 			try {
-				hover.setRange(doc.toRange(name.getStartPosition(), name.getLength()));
+				org.openrewrite.marker.Range r = ORAstUtils.getRange(name);
+				hover.setRange(doc.toRange(r.getStart().getOffset(), r.length()));
 			} catch (BadLocationException e) {
 				log.error("", e);
 			}
@@ -348,8 +347,8 @@ public class AutowiredHoverProvider implements HoverProvider {
 		LiveBean definedBean = getDefinedBeanForImplicitAutowiredConstructor(methodDeclaration);
 		if (definedBean != null) {
 			try {
-				Range hoverRange = doc.toRange(methodDeclaration.getName().getStartPosition(),
-						methodDeclaration.getName().getLength());
+				org.openrewrite.marker.Range r = ORAstUtils.getRange(methodDeclaration.getName());
+				Range hoverRange = doc.toRange(r.getStart().getOffset(), r.length());
 
 				for (SpringProcessLiveData liveData : processLiveData) {
 					List<LiveBean> relevantBeans = getRelevantAutowiredBeans(project, methodDeclaration, liveData,
@@ -376,9 +375,9 @@ public class AutowiredHoverProvider implements HoverProvider {
 	}
 
 	private LiveBean getDefinedBeanForImplicitAutowiredConstructor(MethodDeclaration methodDeclaration) {
-		if (methodDeclaration.isConstructor() && !methodDeclaration.parameters().isEmpty()) {
-			TypeDeclaration typeDeclaration = ASTUtils.findDeclaringType(methodDeclaration);
-			if (typeDeclaration != null && ASTUtils.hasExactlyOneConstructor(typeDeclaration) && !hasAutowiredAnnotation(methodDeclaration)) {
+		if (methodDeclaration.isConstructor() && !methodDeclaration.getParameters().isEmpty()) {
+			ClassDeclaration typeDeclaration = ORAstUtils.findDeclaringType(methodDeclaration);
+			if (typeDeclaration != null && ORAstUtils.hasExactlyOneConstructor(typeDeclaration) && !hasAutowiredAnnotation(methodDeclaration)) {
 				return getDefinedBeanForTypeDeclaration(typeDeclaration);
 			}
 		}
@@ -386,13 +385,12 @@ public class AutowiredHoverProvider implements HoverProvider {
 	}
 
 	private boolean hasAutowiredAnnotation(MethodDeclaration constructor) {
-		List<?> modifiers = constructor.modifiers();
-		for (Object modifier : modifiers) {
-			if (modifier instanceof MarkerAnnotation) {
-				ITypeBinding typeBinding = ((MarkerAnnotation) modifier).resolveTypeBinding();
-				if (typeBinding != null) {
-					String fqName = typeBinding.getQualifiedName();
-					return Annotations.AUTOWIRED.equals(fqName) || Annotations.INJECT.equals(fqName);
+		for (Annotation a : constructor.getLeadingAnnotations()) {
+			FullyQualified type = TypeUtils.asFullyQualified(a.getType());
+			if (type != null) {
+				String fqName = type.getFullyQualifiedName();
+				if (Annotations.AUTOWIRED.equals(fqName) || Annotations.INJECT.equals(fqName)) {
+					return true;
 				}
 			}
 		}

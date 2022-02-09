@@ -10,36 +10,33 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.handlers;
 
+import java.beans.Statement;
 import java.net.URI;
 import java.util.Collection;
 import java.util.LinkedHashSet;
 import java.util.Optional;
 
-import org.eclipse.jdt.core.dom.ASTNode;
-import org.eclipse.jdt.core.dom.ASTVisitor;
-import org.eclipse.jdt.core.dom.Annotation;
-import org.eclipse.jdt.core.dom.ITypeBinding;
-import org.eclipse.jdt.core.dom.MarkerAnnotation;
-import org.eclipse.jdt.core.dom.MethodDeclaration;
-import org.eclipse.jdt.core.dom.NodeFinder;
-import org.eclipse.jdt.core.dom.NormalAnnotation;
-import org.eclipse.jdt.core.dom.SimpleName;
-import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
-import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
-import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.HoverParams;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
+import org.openrewrite.java.JavaIsoVisitor;
+import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.J.Annotation;
+import org.openrewrite.java.tree.J.ClassDeclaration;
+import org.openrewrite.java.tree.J.MethodDeclaration;
+import org.openrewrite.java.tree.J.VariableDeclarations;
+import org.openrewrite.java.tree.JavaType.FullyQualified;
+import org.openrewrite.java.tree.TypeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchyAwareLookup;
 import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveData;
 import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveDataProvider;
-import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
+import org.springframework.ide.vscode.boot.java.utils.ORAstUtils;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
@@ -104,65 +101,37 @@ public class BootJavaHoverProvider implements HoverHandler {
 			Collection<CodeLens> result = new LinkedHashSet<>();
 			try {
 				if (cu != null) {
-					cu.accept(new ASTVisitor() {
-
-						@Override
-						public boolean visit(TypeDeclaration node) {
+					new JavaIsoVisitor<Collection<CodeLens>>() {
+						
+						public ClassDeclaration visitClassDeclaration(ClassDeclaration classDecl, Collection<CodeLens> p) {
 							try {
-								extractLiveHintsForType(node, document, project, processLiveData, result);
+								extractLiveHintsForType(classDecl, document, project, processLiveData, result);
 							}
 							catch (Exception e) {
-								logger.error("error extracting live hint information for docURI '" + document.getUri() + "' - on node: " + node.toString(), e);
+								logger.error("error extracting live hint information for docURI '" + document.getUri() + "' - on node: " + classDecl.printTrimmed(), e);
 							}
-							return super.visit(node);
-						}
-
-						@Override
-						public boolean visit(SingleMemberAnnotation node) {
+							return super.visitClassDeclaration(classDecl, p);
+						};
+						
+						public Annotation visitAnnotation(Annotation annotation, Collection<CodeLens> p) {
 							try {
-								extractLiveHintsForAnnotation(node, document, project, processLiveData, result);
+								extractLiveHintsForAnnotation(annotation, document, project, processLiveData, result);
 							} catch (Exception e) {
-								logger.error("error extracting live hint information for docURI '" + document.getUri() + "' - on node: " + node.toString(), e);
+								logger.error("error extracting live hint information for docURI '" + document.getUri() + "' - on node: " + annotation.printTrimmed(), e);
 							}
-
-							return super.visit(node);
-						}
-
-						@Override
-						public boolean visit(NormalAnnotation node) {
+							return super.visitAnnotation(annotation, p);
+						};
+						
+						public MethodDeclaration visitMethodDeclaration(MethodDeclaration method, Collection<CodeLens> p) {
 							try {
-								extractLiveHintsForAnnotation(node, document, project, processLiveData, result);
+								extractLiveHintsForMethod(method, document, project, processLiveData, result);
 							} catch (Exception e) {
-								logger.error("error extracting live hint information for docURI '" + document.getUri() + "' - on node: " + node.toString(), e);
+								logger.error("error extracting live hint information for docURI '" + document.getUri() + "' - on node: " + method.printTrimmed(), e);
 							}
-
-							return super.visit(node);
-						}
-
-						@Override
-						public boolean visit(MarkerAnnotation node) {
-							try {
-								extractLiveHintsForAnnotation(node, document, project, processLiveData, result);
-							} catch (Exception e) {
-								logger.error("error extracting live hint information for docURI '" + document.getUri() + "' - on node: " + node.toString(), e);
-							}
-
-							return super.visit(node);
-						}
-
-						@Override
-						public boolean visit(MethodDeclaration node) {
-							try {
-								extractLiveHintsForMethod(node, document, project, processLiveData, result);
-							} catch (Exception e) {
-								logger.error("error extracting live hint information for docURI '" + document.getUri() + "' - on node: " + node.toString(), e);
-							}
-
-							return super.visit(node);
-						}
-
-
-					});
+							return super.visitMethodDeclaration(method, p);
+						};
+						
+					}.visitNonNull(cu, result);
 				}
 			} catch (Exception e) {
 				logger.error("error extracting live hint information for docURI '" + document.getUri(), e);
@@ -182,7 +151,7 @@ public class BootJavaHoverProvider implements HoverHandler {
 		}
 	}
 
-	protected void extractLiveHintsForType(TypeDeclaration typeDeclaration, TextDocument doc, IJavaProject project,
+	protected void extractLiveHintsForType(ClassDeclaration typeDeclaration, TextDocument doc, IJavaProject project,
 			SpringProcessLiveData[] processLiveData, Collection<CodeLens> result) {
 		Collection<HoverProvider> providers = this.hoverProviders.getAll();
 		for (HoverProvider provider : providers) {
@@ -195,7 +164,7 @@ public class BootJavaHoverProvider implements HoverHandler {
 
 	protected void extractLiveHintsForAnnotation(Annotation annotation, TextDocument doc, IJavaProject project,
 			SpringProcessLiveData[] processLiveData, Collection<CodeLens> result) {
-		ITypeBinding type = annotation.resolveTypeBinding();
+		FullyQualified type = TypeUtils.asFullyQualified(annotation.getType());
 		if (type != null) {
 			for (HoverProvider provider : this.hoverProviders.get(type)) {
 				Collection<CodeLens> hints = provider.getLiveHintCodeLenses(project, annotation, doc, processLiveData);
@@ -217,7 +186,7 @@ public class BootJavaHoverProvider implements HoverHandler {
 				
 				cancelToken.checkCanceled();
 				
-				ASTNode node = NodeFinder.perform(cu, offset, 0);
+				J node = ORAstUtils.findAstNodeAt(cu, offset);
 				if (node != null) {
 					return provideHover(cancelToken, node, offset, document, project, processLiveData);
 				}
@@ -227,32 +196,29 @@ public class BootJavaHoverProvider implements HoverHandler {
 		return null;
 	}
 
-	private Hover provideHover(CancelChecker cancelToken, ASTNode node, int offset, TextDocument doc, IJavaProject project, SpringProcessLiveData[] processLiveData) {
+	private Hover provideHover(CancelChecker cancelToken, J node, int offset, TextDocument doc, IJavaProject project, SpringProcessLiveData[] processLiveData) {
 
 		// look for spring annotations first
-		ASTNode annotationNode = node;
-		while (annotationNode != null && !(annotationNode instanceof Annotation)) {
-			annotationNode = annotationNode.getParent();
-		}
+		Annotation annotationNode = ORAstUtils.findNode(node, Annotation.class);
 		if (annotationNode != null) {
-			return provideHoverForAnnotation(cancelToken, node, (Annotation) annotationNode, offset, doc, project, processLiveData);
+			return provideHoverForAnnotation(cancelToken, node, annotationNode, offset, doc, project, processLiveData);
 		}
 
 		// then do additional AST node coverage
-		if (node instanceof SimpleName) {
-			ASTNode parent = node.getParent();
-			if (parent instanceof TypeDeclaration) {
-				return provideHoverForTypeDeclaration(cancelToken, node, (TypeDeclaration) parent, offset, doc, project, processLiveData);
+		if (node instanceof Statement) {
+			J parent = ORAstUtils.getParent(node);
+			if (parent instanceof ClassDeclaration) {
+				return provideHoverForTypeDeclaration(cancelToken, node, (ClassDeclaration) parent, offset, doc, project, processLiveData);
 			} else if (parent instanceof MethodDeclaration) {
 				return provideHoverForMethodDeclaration(cancelToken, (MethodDeclaration) parent, offset, doc, project, processLiveData);
-			} else if (parent instanceof SingleVariableDeclaration && parent.getParent() instanceof MethodDeclaration) {
-				return provideHoverForMethodParameter(cancelToken, (SingleVariableDeclaration) parent, offset, doc, project, processLiveData);
+			} else if (parent instanceof VariableDeclarations && ORAstUtils.getParent(parent) instanceof MethodDeclaration) {
+				return provideHoverForMethodParameter(cancelToken, (VariableDeclarations) parent, offset, doc, project, processLiveData);
 			}
 		}
 		return null;
 	}
 
-	private Hover provideHoverForMethodParameter(CancelChecker cancelToken, SingleVariableDeclaration parameter, int offset, TextDocument doc,
+	private Hover provideHoverForMethodParameter(CancelChecker cancelToken, VariableDeclarations parameter, int offset, TextDocument doc,
 			IJavaProject project, SpringProcessLiveData[] processLiveData) {
 		if (processLiveData.length > 0) {
 			for (HoverProvider provider : this.hoverProviders.getAll()) {
@@ -285,11 +251,11 @@ public class BootJavaHoverProvider implements HoverHandler {
 		return null;
 	}
 
-	private Hover provideHoverForAnnotation(CancelChecker cancelToken, ASTNode exactNode, Annotation annotation, int offset, TextDocument doc, IJavaProject project,
+	private Hover provideHoverForAnnotation(CancelChecker cancelToken, J exactNode, Annotation annotation, int offset, TextDocument doc, IJavaProject project,
 			SpringProcessLiveData[] processLiveData) {
-		ITypeBinding type = annotation.resolveTypeBinding();
+		FullyQualified type = TypeUtils.asFullyQualified(annotation.getType());
 		if (type != null) {
-			logger.debug("Hover requested for "+type.getName());
+			logger.debug("Hover requested for "+type.getClassName());
 
 			if (processLiveData.length > 0) {
 
@@ -297,7 +263,7 @@ public class BootJavaHoverProvider implements HoverHandler {
 					
 					cancelToken.checkCanceled();
 					
-					Hover hover = provider.provideHover(exactNode, annotation, type, offset, doc, project, processLiveData);
+					Hover hover = provider.provideHover(exactNode, annotation, offset, doc, project, processLiveData);
 					if (hover != null) {
 						logger.debug("Hover found: "+hover);
 						//TODO: compose multiple hovers somehow instead of just returning the first one?
@@ -308,7 +274,7 @@ public class BootJavaHoverProvider implements HoverHandler {
 
 				//Only reaching here if we didn't get a hover.
 				if (!SpringProjectUtil.hasBootActuators(project)) {
-					DocumentRegion region = ASTUtils.nameRegion(doc, annotation);
+					DocumentRegion region = ORAstUtils.nameRegion(doc, annotation);
 					if (region.containsOffset(offset)) {
 						return liveHoverWarning(project);
 					}
@@ -318,16 +284,15 @@ public class BootJavaHoverProvider implements HoverHandler {
 		return null;
 	}
 
-	private Hover provideHoverForTypeDeclaration(CancelChecker cancelToken, ASTNode exactNode, TypeDeclaration typeDeclaration, int offset, TextDocument doc,
+	private Hover provideHoverForTypeDeclaration(CancelChecker cancelToken, J exactNode, ClassDeclaration typeDeclaration, int offset, TextDocument doc,
 			IJavaProject project, SpringProcessLiveData[] processLiveData) {
 		if (processLiveData.length > 0) {
-			ITypeBinding type = typeDeclaration.resolveBinding();
 
 			for (HoverProvider provider : this.hoverProviders.getAll()) {
 				
 				cancelToken.checkCanceled();
 				
-				Hover hover = provider.provideHover(exactNode, typeDeclaration, type, offset, doc, project, processLiveData);
+				Hover hover = provider.provideHover(exactNode, typeDeclaration, offset, doc, project, processLiveData);
 				if (hover!=null) {
 					//TODO: compose multiple hovers somehow instead of just returning the first one?
 					return hover;

@@ -12,15 +12,14 @@ package org.springframework.ide.vscode.boot.java.handlers;
 
 import java.net.URI;
 
-import org.eclipse.jdt.core.dom.ASTVisitor;
-import org.eclipse.jdt.core.dom.CompilationUnit;
-import org.eclipse.jdt.core.dom.ITypeBinding;
-import org.eclipse.jdt.core.dom.NormalAnnotation;
-import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
+import org.openrewrite.java.JavaIsoVisitor;
+import org.openrewrite.java.tree.J.Annotation;
+import org.openrewrite.java.tree.J.CompilationUnit;
+import org.openrewrite.java.tree.JavaType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
+import org.springframework.ide.vscode.boot.java.utils.ORCompilationUnitCache;
 import org.springframework.ide.vscode.boot.java.value.Constants;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
@@ -49,11 +48,11 @@ public class BootJavaReconcileEngine implements IReconcileEngine {
 	private static final Logger log = LoggerFactory.getLogger(BootJavaReconcileEngine.class);
 
 	private final JavaProjectFinder projectFinder; 
-	private final CompilationUnitCache compilationUnitCache;
+	private final ORCompilationUnitCache compilationUnitCache;
 	private final AnnotationParamReconciler[] reconcilers;
 	private final SpelExpressionReconciler spelExpressionReconciler;
 	
-	public BootJavaReconcileEngine(CompilationUnitCache compilationUnitCache, JavaProjectFinder projectFinder) {
+	public BootJavaReconcileEngine(ORCompilationUnitCache compilationUnitCache, JavaProjectFinder projectFinder) {
 		this.compilationUnitCache = compilationUnitCache;
 		this.projectFinder = projectFinder;
 		
@@ -116,49 +115,21 @@ public class BootJavaReconcileEngine implements IReconcileEngine {
 	}
 
 	private void reconcileAST(CompilationUnit cu, IProblemCollector problemCollector) {
-		cu.accept(new ASTVisitor() {
-			
-			@Override
-			public boolean visit(SingleMemberAnnotation node) {
-				try {
-					visitAnnotationWithDefaultParam(node, problemCollector);
+		
+		new JavaIsoVisitor<IProblemCollector>() {
+			public Annotation visitAnnotation(Annotation annotation, IProblemCollector p) {
+				if (!annotation.getArguments().isEmpty()) {
+					JavaType type = annotation.getType();
+					
+					if (type != null) {
+						for (int i = 0; i < reconcilers.length; i++) {
+							reconcilers[i].visit(annotation, problemCollector);
+						}
+					}
 				}
-				catch (Exception e) {
-				}
-				return super.visit(node);
-			}
-			
-			@Override
-			public boolean visit(NormalAnnotation node) {
-				try {
-					visitAnnotationWithParams(node, problemCollector);
-				}
-				catch (Exception e) {
-				}
-				return super.visit(node);
-			}
-			
-		});
+				return super.visitAnnotation(annotation, p);
+			};
+		}.visitNonNull(cu, problemCollector);
 	}
-
-	protected void visitAnnotationWithDefaultParam(SingleMemberAnnotation node, IProblemCollector problemCollector) {
-		ITypeBinding typeBinding = node.resolveTypeBinding();
-
-		if (typeBinding != null) {
-			for (int i = 0; i < reconcilers.length; i++) {
-				reconcilers[i].visit(node, typeBinding, problemCollector);
-			}
-		}
-	}
-
-	protected void visitAnnotationWithParams(NormalAnnotation node, IProblemCollector problemCollector) {
-		ITypeBinding typeBinding = node.resolveTypeBinding();
-
-		if (typeBinding != null) {
-			for (int i = 0; i < reconcilers.length; i++) {
-				reconcilers[i].visit(node, typeBinding, problemCollector);
-			}
-		}
-	}
-
+	
 }

@@ -17,7 +17,7 @@ import java.util.LinkedHashSet;
 import java.util.Map;
 import java.util.function.Consumer;
 
-import org.eclipse.jdt.core.dom.ITypeBinding;
+import org.openrewrite.java.tree.JavaType.FullyQualified;
 import org.springframework.ide.vscode.commons.util.Assert;
 
 import com.google.common.collect.ImmutableList;
@@ -85,7 +85,7 @@ public class AnnotationHierarchyAwareLookup<T> {
 	 * a symbol provider for Components should be asked to produce symbols for Component, Controller and RestController,
 	 * so should result in 3 separate calls to the symbols provider.
 	 */
-	public Collection<T> get(ITypeBinding annotationType) {
+	public Collection<T> get(FullyQualified annotationType) {
 		ImmutableList.Builder<T> found = ImmutableList.builder();
 		findElements(annotationType, new LinkedHashSet<>(), found::add);
 		return found.build();
@@ -98,8 +98,8 @@ public class AnnotationHierarchyAwareLookup<T> {
 		return found.build();
 	}
 
-	private void findElements(ITypeBinding typeBinding, HashSet<String> seen, Consumer<T> requestor) {
-		String qname = typeBinding.getQualifiedName();
+	private void findElements(FullyQualified type, HashSet<String> seen, Consumer<T> requestor) {
+		String qname = type.getFullyQualifiedName();
 		if (seen.add(qname)) {
 			Binding<T> binding = bindings.get(qname);
 			
@@ -110,8 +110,8 @@ public class AnnotationHierarchyAwareLookup<T> {
 			}
 
 			if (!isOverriding) {
-				Collection<ITypeBinding> directSuperAnnotations = AnnotationHierarchies.getDirectSuperAnnotations(typeBinding);
-				for (ITypeBinding superAnnotation : directSuperAnnotations) {
+				Collection<FullyQualified> directSuperAnnotations = AnnotationHierarchies.getDirectSuperAnnotations(type);
+				for (FullyQualified superAnnotation : directSuperAnnotations) {
 					findElements(superAnnotation, seen, requestor);
 				}
 			}

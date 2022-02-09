@@ -19,11 +19,13 @@ import java.util.Optional;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.Range;
+import org.openrewrite.java.tree.J.MethodDeclaration;
+import org.openrewrite.java.tree.J.VariableDeclarations;
+import org.openrewrite.java.tree.Statement;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.autowired.AutowiredHoverProvider;
@@ -32,6 +34,7 @@ import org.springframework.ide.vscode.boot.java.livehover.v2.LiveBean;
 import org.springframework.ide.vscode.boot.java.livehover.v2.LiveBeansModel;
 import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveData;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
+import org.springframework.ide.vscode.boot.java.utils.ORAstUtils;
 import org.springframework.ide.vscode.boot.java.utils.SpringResource;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
@@ -230,21 +233,24 @@ public class LiveHoverUtils {
 	@SuppressWarnings("unchecked")
 	public static List<CodeLens> createCodeLensForMethodParameters(SpringProcessLiveData liveData, IJavaProject project, MethodDeclaration method, TextDocument doc, List<LiveBean> wiredBeans) {
 		ImmutableList.Builder<CodeLens> builder = ImmutableList.builder();
-		method.parameters().forEach(p -> {
-			if (p instanceof SingleVariableDeclaration) {
-				SingleVariableDeclaration parameter = (SingleVariableDeclaration) p;
-				List<LiveBean> parameterMatchingBean = AutowiredHoverProvider.findAutowiredBeans(project, parameter, wiredBeans);
-				if (parameterMatchingBean.size() == 0) {
-					log.warn("No Live Bean matching parameter `" + parameter.getName().getIdentifier() + " for method " + method);
-				} else {
-					try {
-						builder.add(new CodeLens(ASTUtils.nodeRegion(doc, parameter.getName()).asRange()));
-					} catch (BadLocationException e) {
-						// ignore
+		List<Statement> params = method.getParameters();
+		if (params != null) {
+			for (Statement p : params) {
+				if (p instanceof VariableDeclarations) {
+					VariableDeclarations parameter = (VariableDeclarations) p;
+					List<LiveBean> parameterMatchingBean = AutowiredHoverProvider.findAutowiredBeans(project, parameter, wiredBeans);
+					if (parameterMatchingBean.size() == 0) {
+						log.warn("No Live Bean matching parameter `" + parameter.printTrimmed() + " for method " + method);
+					} else {
+						try {
+							builder.add(new CodeLens(ORAstUtils.nodeRegion(doc, parameter.getVariables().get(0)).asRange()));
+						} catch (BadLocationException e) {
+							// ignore
+						}
 					}
 				}
 			}
-		});
+		}
 		return builder.build();
 	}
 

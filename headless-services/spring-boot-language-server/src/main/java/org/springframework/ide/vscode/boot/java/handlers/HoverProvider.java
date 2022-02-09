@@ -12,14 +12,13 @@ package org.springframework.ide.vscode.boot.java.handlers;
 
 import java.util.Collection;
 
-import org.eclipse.jdt.core.dom.ASTNode;
-import org.eclipse.jdt.core.dom.Annotation;
-import org.eclipse.jdt.core.dom.ITypeBinding;
-import org.eclipse.jdt.core.dom.MethodDeclaration;
-import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
-import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.Hover;
+import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.J.Annotation;
+import org.openrewrite.java.tree.J.ClassDeclaration;
+import org.openrewrite.java.tree.J.MethodDeclaration;
+import org.openrewrite.java.tree.J.VariableDeclarations;
 import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveData;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -29,11 +28,11 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
  */
 public interface HoverProvider {
 
-	default Hover provideHover(ASTNode node, Annotation annotation, ITypeBinding type, int offset, TextDocument doc, IJavaProject project, SpringProcessLiveData[] processLiveData) {
+	default Hover provideHover(J node, Annotation annotation, int offset, TextDocument doc, IJavaProject project, SpringProcessLiveData[] processLiveData) {
 		return null;
 	}
 
-	default Hover provideHover(ASTNode node, TypeDeclaration typeDeclaration, ITypeBinding type, int offset, TextDocument doc, IJavaProject project, SpringProcessLiveData[] processLiveData) {
+	default Hover provideHover(J node, ClassDeclaration typeDeclaration, int offset, TextDocument doc, IJavaProject project, SpringProcessLiveData[] processLiveData) {
 		return null;
 	}
 
@@ -41,7 +40,7 @@ public interface HoverProvider {
 		return null;
 	}
 
-	default Hover provideMethodParameterHover(SingleVariableDeclaration parameter, int offset, TextDocument doc, IJavaProject project, SpringProcessLiveData[] processLiveData) {
+	default Hover provideMethodParameterHover(VariableDeclarations parameter, int offset, TextDocument doc, IJavaProject project, SpringProcessLiveData[] processLiveData) {
 		return null;
 	}
 
@@ -49,7 +48,7 @@ public interface HoverProvider {
 		return null;
 	}
 
-	default Collection<CodeLens> getLiveHintCodeLenses(IJavaProject project,TypeDeclaration typeDeclaration, TextDocument doc, SpringProcessLiveData[] processLiveData) {
+	default Collection<CodeLens> getLiveHintCodeLenses(IJavaProject project, ClassDeclaration typeDeclaration, TextDocument doc, SpringProcessLiveData[] processLiveData) {
 		return null;
 	}
 

@@ -14,13 +14,14 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import org.eclipse.jdt.core.dom.ASTNode;
-import org.eclipse.jdt.core.dom.Annotation;
-import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.Range;
+import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.J.Annotation;
+import org.openrewrite.java.tree.J.MethodDeclaration;
+import org.openrewrite.java.tree.J.VariableDeclarations;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.autowired.AutowiredHoverProvider;
@@ -28,6 +29,7 @@ import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.java.livehover.v2.LiveBean;
 import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveData;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
+import org.springframework.ide.vscode.boot.java.utils.ORAstUtils;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.util.Optionals;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -44,7 +46,7 @@ public class BeanInjectedIntoHoverProvider extends AbstractInjectedIntoHoverProv
 
 	@Override
 	protected LiveBean getDefinedBean(Annotation annotation) {
-		MethodDeclaration beanMethod = ASTUtils.getAnnotatedMethod(annotation);
+		MethodDeclaration beanMethod = ORAstUtils.getAnnotatedMethod(annotation);
 		if (beanMethod!=null) {
 			Optional<String> beanId = getBeanId(annotation, beanMethod);
 			if (beanId.isPresent()) {
@@ -77,21 +79,21 @@ public class BeanInjectedIntoHoverProvider extends AbstractInjectedIntoHoverProv
 		//  @Bean(name="beanId", ...)
 		//  @Bean(name={"beanId", "alias1"}, ...)
 		return Optionals.tryInOrder(
-				() -> ASTUtils.getAttribute(annotation, "value").flatMap(ASTUtils::getFirstString),
-				() -> ASTUtils.getAttribute(annotation, "name").flatMap(ASTUtils::getFirstString),
-				() -> Optional.ofNullable(beanMethod.getName().getIdentifier())
+				() -> ORAstUtils.getAttribute(annotation, "value").flatMap(ORAstUtils::getFirstString),
+				() -> ORAstUtils.getAttribute(annotation, "name").flatMap(ORAstUtils::getFirstString),
+				() -> Optional.ofNullable(beanMethod.getName().getSimpleName())
 		);
 	}
 
 	@Override
-	protected List<LiveBean> findWiredBeans(IJavaProject project, SpringProcessLiveData liveData, List<LiveBean> relevantBeans, ASTNode astNode) {
+	protected List<LiveBean> findWiredBeans(IJavaProject project, SpringProcessLiveData liveData, List<LiveBean> relevantBeans, J astNode) {
 		if (astNode instanceof Annotation) {
 			// @Bean annotation case
-			MethodDeclaration beanMethod = ASTUtils.getAnnotatedMethod((Annotation) astNode);
+			MethodDeclaration beanMethod = ORAstUtils.getAnnotatedMethod((Annotation) astNode);
 			if (beanMethod != null) {
 				return AutowiredHoverProvider.getRelevantAutowiredBeans(project, beanMethod, liveData, relevantBeans);
 			}
-		} else if (astNode instanceof SingleVariableDeclaration) {
+		} else if (astNode instanceof VariableDeclarations) {
 			// Bean method parameter case
 			return AutowiredHoverProvider.getRelevantAutowiredBeans(project, astNode, liveData, relevantBeans);
 		}
@@ -100,7 +102,7 @@ public class BeanInjectedIntoHoverProvider extends AbstractInjectedIntoHoverProv
 
 	@Override
 	protected List<CodeLens> assembleCodeLenseForAutowired(List<LiveBean> wiredBeans, IJavaProject project,
-			SpringProcessLiveData liveData, TextDocument doc, Range nameRange, ASTNode astNode) {
+			SpringProcessLiveData liveData, TextDocument doc, Range nameRange, J astNode) {
 		ImmutableList.Builder<CodeLens> builder = ImmutableList.builder();
 
 		// Code lens for the @Bean annotation
@@ -108,7 +110,7 @@ public class BeanInjectedIntoHoverProvider extends AbstractInjectedIntoHoverProv
 
 		if (astNode instanceof Annotation) {
 			// Add code lenses for method parameters
-			MethodDeclaration beanMethod = ASTUtils.getAnnotatedMethod((Annotation) astNode);
+			MethodDeclaration beanMethod = ORAstUtils.getAnnotatedMethod((Annotation) astNode);
 			if (beanMethod != null) {
 				builder.addAll(LiveHoverUtils.createCodeLensForMethodParameters(liveData, project, beanMethod, doc, wiredBeans));
 			}
@@ -118,13 +120,13 @@ public class BeanInjectedIntoHoverProvider extends AbstractInjectedIntoHoverProv
 	}
 
 	@Override
-	public Hover provideMethodParameterHover(SingleVariableDeclaration parameter, int offset, TextDocument doc,
+	public Hover provideMethodParameterHover(VariableDeclarations parameter, int offset, TextDocument doc,
 			IJavaProject project, SpringProcessLiveData[] processLiveData) {
 		try {
 			if (processLiveData.length > 0) {
-				Range range = ASTUtils.nodeRegion(doc, parameter.getName()).asRange();
-				MethodDeclaration method = (MethodDeclaration) parameter.getParent();
-				Annotation beanAnnotation = ASTUtils.getBeanAnnotation(method);
+				Range range = ORAstUtils.nodeRegion(doc, parameter.getVariables().get(0)).asRange();
+				MethodDeclaration method = (MethodDeclaration) ORAstUtils.getParent(parameter);
+				Annotation beanAnnotation = ORAstUtils.getBeanAnnotation(method);
 				if (beanAnnotation != null) {
 					LiveBean definedBean = getDefinedBean(beanAnnotation);
 					if (definedBean != null) {
@@ -134,7 +136,6 @@ public class BeanInjectedIntoHoverProvider extends AbstractInjectedIntoHoverProv
 						}
 						return hover;
 					}
-
 				}
 			}
 		} catch (Exception e) {
