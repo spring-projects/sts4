@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2019 Pivotal, Inc.
+ * Copyright (c) 2015, 2022 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -9,8 +9,6 @@
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
 package org.springframework.ide.eclipse.boot.dash;
-
-import java.util.function.Supplier;
 
 import org.eclipse.core.net.proxy.IProxyService;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
@@ -25,8 +23,6 @@ import org.springframework.ide.eclipse.boot.dash.model.BootDashModelContext;
 import org.springframework.ide.eclipse.boot.dash.model.BootDashViewModel;
 import org.springframework.ide.eclipse.boot.dash.model.DefaultBootDashModelContext;
 import org.springsource.ide.eclipse.commons.livexp.util.Log;
-
-import com.google.common.base.Suppliers;
 
 /**
  * The activator class controls the plug-in life cycle
@@ -50,6 +46,8 @@ public class BootDashActivator extends AbstractUIPlugin {
 	private static BootDashActivator plugin;
 
 	private BootDashViewModel model;
+
+	private BootDashModelContext context;
 
 	/**
 	 * The constructor
@@ -133,11 +131,9 @@ public class BootDashActivator extends AbstractUIPlugin {
 		Log.warn(message);
 	}
 
-	private final Supplier<BootDashModelContext> context = Suppliers.memoize(() -> DefaultBootDashModelContext.create());
-
 	public synchronized BootDashViewModel getModel() {
 		if (model==null) {
-			model = context.get().injections.getBean(BootDashViewModel.class);
+			model = getInjections().getBean(BootDashViewModel.class);
 
 //			DebugSelectionListener debugSelectionListener = new DebugSelectionListener(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getSelectionService());
 //			model.addDisposableChild(debugSelectionListener);
@@ -145,8 +141,11 @@ public class BootDashActivator extends AbstractUIPlugin {
 		return model;
 	}
 
-	public SimpleDIContext getInjections() {
-		return context.get().injections;
+	public synchronized SimpleDIContext getInjections() {
+		if (context == null) {
+			context = DefaultBootDashModelContext.create();
+		}
+		return context.injections;
 	}
 
 	@Override
