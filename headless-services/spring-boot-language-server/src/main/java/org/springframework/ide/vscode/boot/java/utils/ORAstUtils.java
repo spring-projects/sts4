@@ -1,17 +1,34 @@
 package org.springframework.ide.vscode.boot.java.utils;
 
-import java.util.ArrayList;
+import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import org.openrewrite.Cursor;
-import org.openrewrite.SourceFile;
+import org.eclipse.jdt.core.dom.ArrayInitializer;
+import org.eclipse.jdt.core.dom.IBinding;
+import org.eclipse.jdt.core.dom.ITypeBinding;
+import org.eclipse.jdt.core.dom.IVariableBinding;
+import org.eclipse.jdt.core.dom.Name;
+import org.eclipse.jdt.core.dom.QualifiedName;
+import org.eclipse.jdt.core.dom.SimpleName;
+import org.eclipse.jdt.core.dom.StringLiteral;
+import org.openrewrite.ExecutionContext;
+import org.openrewrite.InMemoryExecutionContext;
+import org.openrewrite.Parser;
+import org.openrewrite.Recipe;
+import org.openrewrite.Result;
 import org.openrewrite.Tree;
+import org.openrewrite.TreeVisitor;
+import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.JavaIsoVisitor;
+import org.openrewrite.java.JavaParser;
+import org.openrewrite.java.UpdateSourcePositions;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.J.Annotation;
@@ -19,6 +36,8 @@ import org.openrewrite.java.tree.J.Assignment;
 import org.openrewrite.java.tree.J.ClassDeclaration;
 import org.openrewrite.java.tree.J.CompilationUnit;
 import org.openrewrite.java.tree.J.EnumValueSet;
+import org.openrewrite.java.tree.J.FieldAccess;
+import org.openrewrite.java.tree.J.Identifier;
 import org.openrewrite.java.tree.J.Literal;
 import org.openrewrite.java.tree.J.MethodDeclaration;
 import org.openrewrite.java.tree.J.NewArray;
@@ -37,39 +56,108 @@ public class ORAstUtils {
 	
 	private static final Logger log = LoggerFactory.getLogger(ORAstUtils.class);
 	
-	private static class AncestersMarker implements Marker {
+	private static class ParentMarker implements Marker {
 		
 		private UUID uuid;
-		private List<J> ancesters = List.of();
+		private J parent;
 		
-		public AncestersMarker(List<J> ancesters) {
+		public ParentMarker(J parent) {
 			this.uuid = Tree.randomId();
-			this.ancesters = ancesters;
+			this.parent = parent;
 		}
-
+		
 		@Override
 		public UUID getId() {
 			return uuid;
 		}
 		
-		@SuppressWarnings("unchecked")
-		public <T> T getFirstAnsector(Class<T> clazz) {
-			if (ancesters != null) {
-				for (J node : ancesters) {
-					if (clazz.isInstance(node)) {
-						return (T) node;
-					}
-				}
+		public J getParent() {
+			return parent;
+		}
+		
+		public J getGrandParent() {
+			if (parent != null) {
+				return parent.getMarkers().findFirst(ParentMarker.class).map(m -> m.getParent()).orElse(null);
 			}
 			return null;
 		}
 		
-		public J getParent() {
-			if (ancesters != null && !ancesters.isEmpty()) {
-				return ancesters.get(0);
+		public <T> T getFirstAnsector(Class<T> clazz) {
+			if (clazz.isInstance(parent)) {
+				return clazz.cast(parent);
+			} else if (parent != null) {
+				return parent.getMarkers().findFirst(ParentMarker.class).map(m -> m.getFirstAnsector(clazz)).orElse(null);
 			}
 			return null;
 		}
+	}
+	
+//	private static class AncestersMarker implements Marker {
+//		
+//		private UUID uuid;
+//		private List<J> ancesters = List.of();
+//		
+//		public AncestersMarker(List<J> ancesters) {
+//			this.uuid = Tree.randomId();
+//			this.ancesters = ancesters;
+//		}
+//
+//		@Override
+//		public UUID getId() {
+//			return uuid;
+//		}
+//		
+//		@SuppressWarnings("unchecked")
+//		public <T> T getFirstAnsector(Class<T> clazz) {
+//			if (ancesters != null) {
+//				for (J node : ancesters) {
+//					if (clazz.isInstance(node)) {
+//						return (T) node;
+//					}
+//				}
+//			}
+//			return null;
+//		}
+//		
+//		public J getParent() {
+//			if (ancesters != null && !ancesters.isEmpty()) {
+//				return ancesters.get(0);
+//			}
+//			return null;
+//		}
+//
+//		public J getGrandParent() {
+//			if (ancesters != null && ancesters.size() > 1) {
+//				return ancesters.get(1);
+//			}
+//			return null;
+//		}
+//	}
+	
+	private static class MarkParentRecipe extends Recipe {
+
+		@Override
+		public String getDisplayName() {
+			return "Create parent AST node references via markers";
+		}
+		
+		@Override
+		protected TreeVisitor<?, ExecutionContext> getVisitor() {
+			return new JavaIsoVisitor<>() {
+				@Override
+				public @Nullable J visit(@Nullable Tree tree, ExecutionContext p) {
+					if (tree instanceof J) {
+						J j = (J) tree;
+						J parent = getCursor().getParent() == null ? null : getCursor().getParent().getValue();
+						J newJ = j.withMarkers(j.getMarkers().addIfAbsent(new ParentMarker(parent)));
+						super.visit(newJ, p);
+						return newJ;
+					}
+					return (J) tree; 
+				}
+			};
+		}
+		
 	}
 	
 	public static J findAstNodeAt(CompilationUnit cu, int offset) {
@@ -87,16 +175,18 @@ public class ORAstUtils {
 							&& offset <= range.getEnd().getOffset()) {
 						super.visit(tree, found);
 						if (found.get() == null) {
-							List<J> ancesters = new ArrayList<>();
-							for (Cursor c = getCursor(); c != null && !(c.getValue() instanceof SourceFile); c = c.getParent()) {
-								Object o = c.getValue();
-								if (o instanceof J) {
-									ancesters.add((J) o);
-								}
-							}
-							J n = node.withMarkers(node.getMarkers().addIfAbsent(new AncestersMarker(ancesters)));
-							found.set(n);
-							return n;
+//							List<J> ancesters = new ArrayList<>();
+//							for (Cursor c = getCursor(); c != null && !(c.getValue() instanceof SourceFile); c = c.getParent()) {
+//								Object o = c.getValue();
+//								if (o instanceof J) {
+//									ancesters.add((J) o);
+//								}
+//							}
+//							J n = node.withMarkers(node.getMarkers().addIfAbsent(new AncestersMarker(ancesters)));
+//							found.set(n);
+//							return n;
+							found.set(node);
+							return node;
 						}
 					} else {
 						return (J) tree;
@@ -113,13 +203,15 @@ public class ORAstUtils {
 		if (clazz.isInstance(node)) {
 			return (T) node;
 		}
-		AncestersMarker ancestry = node.getMarkers().findFirst(AncestersMarker.class).orElseThrow();
-		return ancestry.getFirstAnsector(clazz);
+//		AncestersMarker ancestry = node.getMarkers().findFirst(AncestersMarker.class).orElseThrow();
+//		return ancestry.getFirstAnsector(clazz);
+		return node.getMarkers().findFirst(ParentMarker.class).map(m -> m.getFirstAnsector(clazz)).orElse(null); 
 	}
 	
 	public static J getParent(J node) {
-		AncestersMarker ancestry = node.getMarkers().findFirst(AncestersMarker.class).orElseThrow();
-		return ancestry.getParent();
+//		AncestersMarker ancestry = node.getMarkers().findFirst(AncestersMarker.class).orElseThrow();
+//		return ancestry.getParent();
+		return node.getMarkers().findFirst(ParentMarker.class).map(m -> m.getParent()).orElse(null);
 	}
 	
     public static EnumValueSet getEnumValues(ClassDeclaration classDecl) {
@@ -293,5 +385,48 @@ public class ORAstUtils {
 		return null;
 	}
 
+	public static J getGrandParent(J j) {
+		return j.getMarkers().findFirst(ParentMarker.class).map(m -> m.getGrandParent()).orElse(null);
+	}
+	
+	public static String[] getExpressionValueAsArray(Expression exp, Consumer<FullyQualified> dependencies) {
+		if (exp instanceof NewArray) {
+			NewArray array = (NewArray) exp;
+			return array.getInitializer().stream().map(e -> getExpressionValueAsString(e, dependencies))
+					.filter(Objects::nonNull).toArray(String[]::new);
+		} else {
+			String rm = getExpressionValueAsString(exp, dependencies);
+			if (rm != null) {
+				return new String[] { rm };
+			}
+		}
+		return null;
+	}
+		
+	public static String getExpressionValueAsString(Expression exp, Consumer<FullyQualified> dependencies) {
+		// TODO: OR AST need to check if there is  way to extract constant values from variables
+		if (exp instanceof Literal) {
+			return getLiteralValue((Literal) exp);
+		} else if (exp instanceof Identifier) {
+			Identifier id = (Identifier) exp;
+			return id.getSimpleName();
+		} else if (exp instanceof FieldAccess) {
+			FieldAccess fa = (FieldAccess) exp;
+			return getExpressionValueAsString(fa.getName(), dependencies);	
+		} else {
+			return null;
+		}
+	}
 
+	public static List<CompilationUnit> parse(JavaParser parser, Iterable<Path> sourceFiles) {
+		List<CompilationUnit> cus = parser.parse(sourceFiles, null, new InMemoryExecutionContext());
+		List<Result> results = new UpdateSourcePositions().doNext(new MarkParentRecipe()).run(cus);
+		return results.stream().map(r -> r.getAfter() == null ? r.getBefore() : r.getAfter()).map(CompilationUnit.class::cast).collect(Collectors.toList());
+	}
+	
+	public static List<CompilationUnit> parseInputs(JavaParser parser, Iterable<Parser.Input> inputs) {
+		List<CompilationUnit> cus = parser.parseInputs(inputs, null, new InMemoryExecutionContext());
+		List<Result> results = new UpdateSourcePositions().doNext(new MarkParentRecipe()).run(cus);
+		return results.stream().map(r -> r.getAfter() == null ? r.getBefore() : r.getAfter()).map(CompilationUnit.class::cast).collect(Collectors.toList());
+	}
 }

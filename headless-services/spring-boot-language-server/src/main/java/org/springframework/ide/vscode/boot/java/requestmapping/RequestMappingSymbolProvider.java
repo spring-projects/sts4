@@ -17,20 +17,20 @@ import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
 
-import org.eclipse.jdt.core.dom.ASTNode;
-import org.eclipse.jdt.core.dom.Annotation;
-import org.eclipse.jdt.core.dom.Expression;
-import org.eclipse.jdt.core.dom.ITypeBinding;
-import org.eclipse.jdt.core.dom.MemberValuePair;
-import org.eclipse.jdt.core.dom.MethodDeclaration;
-import org.eclipse.jdt.core.dom.NormalAnnotation;
-import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
-import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.Location;
+import org.openrewrite.internal.lang.Nullable;
+import org.openrewrite.java.tree.Expression;
+import org.openrewrite.java.tree.TypeUtils;
+import org.openrewrite.java.tree.J.Annotation;
+import org.openrewrite.java.tree.J.Assignment;
+import org.openrewrite.java.tree.J.MethodDeclaration;
+import org.openrewrite.java.tree.JavaType.FullyQualified;
+import org.openrewrite.marker.Range;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.handlers.AbstractSymbolProvider;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.boot.java.utils.CachedSymbol;
+import org.springframework.ide.vscode.boot.java.utils.ORAstUtils;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJavaContext;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
@@ -40,11 +40,12 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
 public class RequestMappingSymbolProvider extends AbstractSymbolProvider {
 
 	@Override
-	protected void addSymbolsPass1(Annotation node, ITypeBinding annotationType, Collection<ITypeBinding> metaAnnotations, SpringIndexerJavaContext context, TextDocument doc) {
+	protected void addSymbolsPass1(Annotation node, FullyQualified annotationType, Collection<FullyQualified> metaAnnotations, SpringIndexerJavaContext context, TextDocument doc) {
 
-		if (node.getParent() instanceof MethodDeclaration) {
+		if (ORAstUtils.getParent(node) instanceof MethodDeclaration) {
 			try {
-				Location location = new Location(doc.getUri(), doc.toRange(node.getStartPosition(), node.getLength()));
+				Range r = ORAstUtils.getRange(node);
+				Location location = new Location(doc.getUri(), doc.toRange(r.getStart().getOffset(), r.length()));
 				String[] path = getPath(node, context);
 				String[] parentPath = getParentPath(node, context);
 				String[] methods = getMethod(node, context);
@@ -69,9 +70,40 @@ public class RequestMappingSymbolProvider extends AbstractSymbolProvider {
 			}
 		}
 	}
+	
+	private String[] getRequestMethodFromMultiArgs(Annotation annotation, SpringIndexerJavaContext context) {
+		FullyQualified type = TypeUtils.asFullyQualified(annotation.getType());
+		if (type != null && Annotations.SPRING_REQUEST_MAPPING.equals(type.getFullyQualifiedName())) {
+			for (Expression arg : annotation.getArguments()) {
+				if (arg instanceof Assignment) {
+					Assignment assign = (Assignment) arg;
+					if ("method".equals(assign.getVariable().printTrimmed())) {
+						return ORAstUtils.getExpressionValueAsArray(assign.getAssignment(), context::addDependency);
+					}
+				}
+			}
+		}
+		return null;
+	}
 
 	private String[] getMethod(Annotation node, SpringIndexerJavaContext context) {
 		String[] methods = null;
+		
+		
+		List<Expression> args = node.getArguments();
+		
+		// TODO: OR AST Annotation parameter
+		if (args == null || (args.size() == 1 
+				&& (!(args.get(0) instanceof Assignment)) || "value".equals(((Assignment)args.get(0)).getVariable().printTrimmed()) )
+		) {
+			methods = getRequestMethod(node);
+		} else if () {
+			for (Expression arg : args) {
+				if (arg instanceof Assignment && "method".equals(((Assignment) arg).getVariable().printTrimmed())) {
+				
+				}
+			}
+		}
 
 		if (node.isNormalAnnotation()) {
 			NormalAnnotation normNode = (NormalAnnotation) node;
@@ -156,10 +188,10 @@ public class RequestMappingSymbolProvider extends AbstractSymbolProvider {
 		return null;
 	}
 
-	private String[] getRequestMethod(SingleMemberAnnotation annotation) {
-		ITypeBinding type = annotation.resolveTypeBinding();
+	private String[] getRequestMethod(Annotation annotation) {
+		FullyQualified type = TypeUtils.asFullyQualified(annotation.getType());
 		if (type != null) {
-			switch (type.getQualifiedName()) {
+			switch (type.getFullyQualifiedName()) {
 			case Annotations.SPRING_GET_MAPPING:
 				return new String[] { "GET" };
 			case Annotations.SPRING_POST_MAPPING:
@@ -170,6 +202,8 @@ public class RequestMappingSymbolProvider extends AbstractSymbolProvider {
 				return new String[] { "PUT" };
 			case Annotations.SPRING_PATCH_MAPPING:
 				return new String[] { "PATCH" };
+			case Annotations.SPRING_REQUEST_MAPPING:
+				return new String[] { "GET" };
 			}
 		}
 		return null;

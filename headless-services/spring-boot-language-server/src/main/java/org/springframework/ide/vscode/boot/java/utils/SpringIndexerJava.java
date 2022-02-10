@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.utils;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
@@ -31,20 +32,19 @@ import java.util.stream.Stream;
 import org.apache.commons.codec.digest.DigestUtils;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.tuple.Pair;
-import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jdt.core.dom.AST;
-import org.eclipse.jdt.core.dom.ASTParser;
-import org.eclipse.jdt.core.dom.ASTVisitor;
-import org.eclipse.jdt.core.dom.Annotation;
-import org.eclipse.jdt.core.dom.CompilationUnit;
-import org.eclipse.jdt.core.dom.FileASTRequestor;
-import org.eclipse.jdt.core.dom.ITypeBinding;
-import org.eclipse.jdt.core.dom.MarkerAnnotation;
-import org.eclipse.jdt.core.dom.MethodDeclaration;
-import org.eclipse.jdt.core.dom.NormalAnnotation;
-import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
-import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.SymbolInformation;
+import org.openrewrite.InMemoryExecutionContext;
+import org.openrewrite.Parser;
+import org.openrewrite.internal.lang.Nullable;
+import org.openrewrite.java.JavaIsoVisitor;
+import org.openrewrite.java.JavaParser;
+import org.openrewrite.java.JavaParser.Builder;
+import org.openrewrite.java.tree.J.Annotation;
+import org.openrewrite.java.tree.J.ClassDeclaration;
+import org.openrewrite.java.tree.J.CompilationUnit;
+import org.openrewrite.java.tree.J.MethodDeclaration;
+import org.openrewrite.java.tree.JavaType.FullyQualified;
+import org.openrewrite.java.tree.TypeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
@@ -191,22 +191,20 @@ public class SpringIndexerJava implements SpringIndexer {
 	}
 
 	private void scanFile(IJavaProject project, DocumentDescriptor updatedDoc, String content) throws Exception {
-		ASTParser parser = createParser(project, false);
+		JavaParser parser = createParser(project, false);
 		
 		String docURI = updatedDoc.getDocURI();
 		long lastModified = updatedDoc.getLastModified();
+		Path path = new File(new URI(docURI)).toPath();
 		
 		if (content == null) {
-			Path path = new File(new URI(docURI)).toPath();
 			content = new String(Files.readAllBytes(path));
 		}
 		
 		String unitName = docURI.substring(docURI.lastIndexOf("/"));
-		parser.setUnitName(unitName);
 		log.debug("Scan file: {}", unitName);
-		parser.setSource(content.toCharArray());
-
-		CompilationUnit cu = (CompilationUnit) parser.createAST(null);
+		byte[] contentBytes = content.getBytes();
+		CompilationUnit cu = ORAstUtils.parseInputs(parser, List.of(new Parser.Input(path, () -> new ByteArrayInputStream(contentBytes)))).get(0);
 
 		if (cu != null) {
 			List<CachedSymbol> generatedSymbols = new ArrayList<CachedSymbol>();
@@ -232,7 +230,7 @@ public class SpringIndexerJava implements SpringIndexer {
 	}
 
 	private Set<String> scanFilesInternally(IJavaProject project, DocumentDescriptor[] docs) throws Exception {
-		ASTParser parser = createParser(project, false);
+		JavaParser parser = createParser(project, false);
 		
 		// this is to keep track of already scanned files to avoid endless loops due to circular dependencies
 		Set<String> scannedTypes = new HashSet<>();
@@ -253,31 +251,30 @@ public class SpringIndexerJava implements SpringIndexer {
 		List<CachedSymbol> generatedSymbols = new ArrayList<CachedSymbol>();
 		Multimap<String, String> dependencies = MultimapBuilder.hashKeys().hashSetValues().build();
 
-		FileASTRequestor requestor = new FileASTRequestor() {
-			@Override
-			public void acceptAST(String sourceFilePath, CompilationUnit cu) {
-				File file = new File(sourceFilePath);
-				String docURI = UriUtil.toUri(file).toString();
-				
-				DocumentDescriptor updatedDoc = updatedDocs.get(docURI);
-				long lastModified = updatedDoc.getLastModified();
-				
-				AtomicReference<TextDocument> docRef = new AtomicReference<>();
-
-				SpringIndexerJavaContext context = new SpringIndexerJavaContext(project, cu, docURI, sourceFilePath,
-						lastModified, docRef, null, generatedSymbols, SCAN_PASS.ONE, new ArrayList<>());
-				
-				scanAST(context);
-				
-				dependencies.putAll(sourceFilePath, context.getDependencies());
-				scannedTypes.addAll(context.getScannedTypes());
-
-				fileScannedEvent(sourceFilePath);
-			}
-		};
-
-		parser.createASTs(javaFiles, null, new String[0], requestor, null);
+		Collection<Path> javaPaths = Arrays.stream(javaFiles).map(p -> Path.of(p)).collect(Collectors.toList());
+		List<CompilationUnit> cus = ORAstUtils.parse(parser, javaPaths);
 		
+		for (CompilationUnit cu : cus) {
+			File file = cu.getSourcePath().toFile();
+			String sourceFilePath = file.getPath(); 
+			String docURI = UriUtil.toUri(file).toString();
+			
+			DocumentDescriptor updatedDoc = updatedDocs.get(docURI);
+			long lastModifiedStamp = updatedDoc.getLastModified();
+			
+			AtomicReference<TextDocument> docRef = new AtomicReference<>();
+
+			SpringIndexerJavaContext context = new SpringIndexerJavaContext(project, cu, docURI, sourceFilePath,
+					lastModifiedStamp, docRef, null, generatedSymbols, SCAN_PASS.ONE, new ArrayList<>());
+			
+			scanAST(context);
+			
+			dependencies.putAll(sourceFilePath, context.getDependencies());
+			scannedTypes.addAll(context.getScannedTypes());
+
+			fileScannedEvent(sourceFilePath);
+		}
+				
 		for (CachedSymbol symbol : generatedSymbols) {
 			symbolHandler.addSymbol(project, symbol.getDocURI(), symbol.getEnhancedSymbol());
 		}
@@ -361,96 +358,69 @@ public class SpringIndexerJava implements SpringIndexer {
 
 	private String[] scanFiles(IJavaProject project, String[] javaFiles, List<CachedSymbol> generatedSymbols, SCAN_PASS pass)
 			throws Exception {
-		ASTParser parser = createParser(project, SCAN_PASS.ONE.equals(pass));
+		JavaParser parser = createParser(project, SCAN_PASS.ONE.equals(pass));
 		List<String> nextPassFiles = new ArrayList<>();
+		
+		Collection<Path> javaPaths = Arrays.stream(javaFiles).map(p -> Path.of(p)).collect(Collectors.toList());
+		List<CompilationUnit> cus = ORAstUtils.parse(parser, javaPaths);
 
-		FileASTRequestor requestor = new FileASTRequestor() {
-			@Override
-			public void acceptAST(String sourceFilePath, CompilationUnit cu) {
-				File file = new File(sourceFilePath);
-				String docURI = UriUtil.toUri(file).toString();
-				long lastModified = file.lastModified();
-				AtomicReference<TextDocument> docRef = new AtomicReference<>();
+		for (CompilationUnit cu : cus) {
+			File file = cu.getSourcePath().toFile();
+			String sourceFilePath = file.getPath();
+			String docURI = UriUtil.toUri(file).toString();
+			long lastModified = file.lastModified();
+			AtomicReference<TextDocument> docRef = new AtomicReference<>();
 
-				SpringIndexerJavaContext context = new SpringIndexerJavaContext(project, cu, docURI, sourceFilePath,
-						lastModified, docRef, null, generatedSymbols, pass, nextPassFiles);
+			SpringIndexerJavaContext context = new SpringIndexerJavaContext(project, cu, docURI, sourceFilePath,
+					lastModified, docRef, null, generatedSymbols, pass, nextPassFiles);
 
-				scanAST(context);
-			}
-		};
-
-		parser.createASTs(javaFiles, null, new String[0], requestor, null);
+			scanAST(context);
+		}
 
 		return (String[]) nextPassFiles.toArray(new String[nextPassFiles.size()]);
 	}
 
 	private void scanAST(final SpringIndexerJavaContext context) {
-		context.getCu().accept(new ASTVisitor() {
-
-			@Override
-			public boolean visit(TypeDeclaration node) {
+		new JavaIsoVisitor<SpringIndexerJavaContext>() {
+			
+			public ClassDeclaration visitClassDeclaration(ClassDeclaration classDecl, SpringIndexerJavaContext indexer) {
 				try {
-					context.addScannedType(node.resolveBinding());
-					extractSymbolInformation(node, context);
+					context.addScannedType(classDecl.getType());
+					extractSymbolInformation(classDecl, indexer);
 				}
 				catch (Exception e) {
-					log.error("error extracting symbol information in project '" + context.getProject().getElementName() + "' - for docURI '" + context.getDocURI() + "' - on node: " + node.toString(), e);
+					log.error("error extracting symbol information in project '" + context.getProject().getElementName() + "' - for docURI '" + context.getDocURI() + "' - on node: " + classDecl.getSimpleName(), e);
 				}
-				return super.visit(node);
+				return super.visitClassDeclaration(classDecl, indexer);
 			}
-
-			@Override
-			public boolean visit(MethodDeclaration node) {
+			
+			public MethodDeclaration visitMethodDeclaration(MethodDeclaration method, SpringIndexerJavaContext indexer) {
 				try {
-					extractSymbolInformation(node, context);
+					extractSymbolInformation(method, indexer);
 				}
 				catch (Exception e) {
-					log.error("error extracting symbol information in project '" + context.getProject().getElementName() + "' - for docURI '" + context.getDocURI() + "' - on node: " + node.toString(), e);
+					log.error("error extracting symbol information in project '" + context.getProject().getElementName() + "' - for docURI '" + context.getDocURI() + "' - on node: " + method.getSimpleName(), e);
 				}
-				return super.visit(node);
+				return super.visitMethodDeclaration(method, indexer);
 			}
-
-			@Override
-			public boolean visit(SingleMemberAnnotation node) {
+			
+			public Annotation visitAnnotation(Annotation annotation, SpringIndexerJavaContext indexer) {
 				try {
-					extractSymbolInformation(node, context);
+					extractSymbolInformation(annotation, context);
 				}
 				catch (Exception e) {
-					log.error("error extracting symbol information in project '" + context.getProject().getElementName() + "' - for docURI '" + context.getDocURI() + "' - on node: " + node.toString(), e);
+					log.error("error extracting symbol information in project '" + context.getProject().getElementName() + "' - for docURI '" + context.getDocURI() + "' - on node: " + annotation.printTrimmed(), e);
 				}
-
-				return super.visit(node);
+				return super.visitAnnotation(annotation, context);
 			}
-
-			@Override
-			public boolean visit(NormalAnnotation node) {
-				try {
-					extractSymbolInformation(node, context);
-				}
-				catch (Exception e) {
-					log.error("error extracting symbol information in project '" + context.getProject().getElementName() + "' - for docURI '" + context.getDocURI() + "' - on node: " + node.toString(), e);
-				}
-
-				return super.visit(node);
-			}
-
-			@Override
-			public boolean visit(MarkerAnnotation node) {
-				try {
-					extractSymbolInformation(node, context);
-				}
-				catch (Exception e) {
-					log.error("error extracting symbol information in project '" + context.getProject().getElementName() + "' - for docURI '" + context.getDocURI() + "' - on node: " + node.toString(), e);
-				}
-
-				return super.visit(node);
-			}
-		});
+			
+		}.visitNonNull(context.getCu(), context);
+		
 		
 		dependencyTracker.update(context.getFile(), context.getDependencies());;
 	}
 
-	private void extractSymbolInformation(TypeDeclaration typeDeclaration, final SpringIndexerJavaContext context) throws Exception {
+	private void extractSymbolInformation(ClassDeclaration typeDeclaration, final SpringIndexerJavaContext context) throws Exception {
 		Collection<SymbolProvider> providers = symbolProviders.getAll();
 		if (!providers.isEmpty()) {
 			TextDocument doc = DocumentUtils.getTempTextDocument(context.getDocURI(), context.getDocRef(), context.getContent());
@@ -471,16 +441,16 @@ public class SpringIndexerJava implements SpringIndexer {
 	}
 
 	private void extractSymbolInformation(Annotation node, final SpringIndexerJavaContext context) throws Exception {
-		ITypeBinding typeBinding = node.resolveTypeBinding();
+		FullyQualified type = TypeUtils.asFullyQualified(node.getType());
 
-		if (typeBinding != null) {
-			Collection<SymbolProvider> providers = symbolProviders.get(typeBinding);
-			Collection<ITypeBinding> metaAnnotations = AnnotationHierarchies.getMetaAnnotations(typeBinding, symbolProviders::containsKey);
+		if (type != null) {
+			Collection<SymbolProvider> providers = symbolProviders.get(type);
+			Collection<FullyQualified> metaAnnotations = AnnotationHierarchies.getMetaAnnotations(type, symbolProviders::containsKey);
 			
 			if (!providers.isEmpty()) {
 				TextDocument doc = DocumentUtils.getTempTextDocument(context.getDocURI(), context.getDocRef(), context.getContent());
 				for (SymbolProvider provider : providers) {
-					provider.addSymbols(node, typeBinding, metaAnnotations, context, doc);
+					provider.addSymbols(node, type, metaAnnotations, context, doc);
 				}
 			} else {
 				SymbolInformation symbol = provideDefaultSymbol(node, context);
@@ -497,9 +467,9 @@ public class SpringIndexerJava implements SpringIndexer {
 
 	private SymbolInformation provideDefaultSymbol(Annotation node, final SpringIndexerJavaContext context) {
 		try {
-			ITypeBinding type = node.resolveTypeBinding();
+			FullyQualified type = TypeUtils.asFullyQualified(node.getType());
 			if (type != null) {
-				String qualifiedName = type.getQualifiedName();
+				String qualifiedName = type.getFullyQualifiedName();
 				if (qualifiedName != null && qualifiedName.startsWith("org.springframework")) {
 					TextDocument doc = DocumentUtils.getTempTextDocument(context.getDocURI(), context.getDocRef(), context.getContent());
 					return DefaultSymbolProvider.provideDefaultSymbol(node, doc);
@@ -513,31 +483,20 @@ public class SpringIndexerJava implements SpringIndexer {
 		return null;
 	}
 
-	private ASTParser createParser(IJavaProject project, boolean ignoreMethodBodies) throws Exception {
-		String[] classpathEntries = getClasspathEntries(project);
-		String[] sourceEntries = getSourceEntries(project);
-		
-		ASTParser parser = ASTParser.newParser(AST.JLS16);
-		Map<String, String> options = JavaCore.getOptions();
-		JavaCore.setComplianceOptions(JavaCore.VERSION_16, options);
-		parser.setCompilerOptions(options);
-		parser.setKind(ASTParser.K_COMPILATION_UNIT);
-		parser.setStatementsRecovery(true);
-		parser.setBindingsRecovery(true);
-		parser.setResolveBindings(true);
-		parser.setIgnoreMethodBodies(ignoreMethodBodies);
-
-		parser.setEnvironment(classpathEntries, sourceEntries, null, false);
-		return parser;
+	private JavaParser createParser(IJavaProject project, boolean ignoreMethodBodies) throws Exception {
+		JavaParser jp = JavaParser.fromJavaVersion().build();
+		jp.setClasspath(getClasspathEntries(project));
+		return jp;
 	}
 
-	private String[] getClasspathEntries(IJavaProject project) throws Exception {
+	private Collection<Path> getClasspathEntries(IJavaProject project) throws Exception {
 		IClasspath classpath = project.getClasspath();
 		Stream<File> classpathEntries = IClasspathUtil.getAllBinaryRoots(classpath).stream();
 		return classpathEntries
 				.filter(file -> file.exists())
-				.map(file -> file.getAbsolutePath())
-				.toArray(String[]::new);
+				.map(file -> file.getAbsoluteFile())
+				.map(file -> file.toPath())
+				.collect(Collectors.toSet());
 	}
 
 	private String[] getSourceEntries(IJavaProject project) throws Exception {

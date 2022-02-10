@@ -15,8 +15,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.ITypeBinding;
+import org.openrewrite.java.tree.J.CompilationUnit;
+import org.openrewrite.java.tree.JavaType.FullyQualified;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJava.SCAN_PASS;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -123,9 +124,9 @@ public class SpringIndexerJavaContext {
 		return scannedTypes;
 	}
 	
-	public void addScannedType(ITypeBinding scannedType) {
+	public void addScannedType(FullyQualified scannedType) {
 		if (scannedType != null) {
-			String type = scannedType.getKey();
+			String type = scannedType.getFullyQualifiedName();
 			scannedTypes.add(type);
 			dependencies.remove(type);
 		}

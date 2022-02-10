@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2019 Pivotal, Inc.
+ * Copyright (c) 2017, 2022 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -18,18 +18,16 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.eclipse.jdt.core.dom.ASTNode;
-import org.eclipse.jdt.core.dom.ASTVisitor;
-import org.eclipse.jdt.core.dom.Annotation;
-import org.eclipse.jdt.core.dom.ITypeBinding;
-import org.eclipse.jdt.core.dom.MemberValuePair;
-import org.eclipse.jdt.core.dom.NodeFinder;
-import org.eclipse.jdt.core.dom.StringLiteral;
-import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
+import org.openrewrite.java.JavaIsoVisitor;
+import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.J.Annotation;
+import org.openrewrite.java.tree.J.Assignment;
+import org.openrewrite.java.tree.J.ClassDeclaration;
+import org.openrewrite.java.tree.J.Literal;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
@@ -37,6 +35,7 @@ import org.springframework.ide.vscode.boot.java.livehover.LiveHoverUtils;
 import org.springframework.ide.vscode.boot.java.livehover.v2.LiveProperties;
 import org.springframework.ide.vscode.boot.java.livehover.v2.LiveProperty;
 import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveData;
+import org.springframework.ide.vscode.boot.java.utils.ORAstUtils;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.Renderable;
@@ -59,16 +58,18 @@ public class ValueHoverProvider implements HoverProvider {
 
 
 	@Override
-	public Hover provideHover(ASTNode node, Annotation annotation, ITypeBinding type, int offset, TextDocument doc,
+	public Hover provideHover(J node, Annotation annotation, int offset, TextDocument doc,
 			IJavaProject project, SpringProcessLiveData[] processLiveData) {
 
 		try {
-			ASTNode foundNode = NodeFinder.perform(node, offset, 0);
-			ASTNode exactNode = getExactNode(foundNode);
+			if (node instanceof Literal) {
+				Literal literal = (Literal) node;
 
-			if (exactNode != null) {
-				return provideHover(exactNode.toString(), offset - exactNode.getStartPosition(),
-						exactNode.getStartPosition(), doc, processLiveData);
+				if (isProperLiteral(literal, annotation)) {
+					org.openrewrite.marker.Range r = ORAstUtils.getRange(literal);
+					return provideHover(literal.printTrimmed(), offset - r.getStart().getOffset(),
+							r.getStart().getOffset(), doc, processLiveData);
+				}
 			}
 		} catch (Exception e) {
 			logger.error("Error while generating live hovers for @Value", e);
@@ -77,23 +78,26 @@ public class ValueHoverProvider implements HoverProvider {
 		return null;
 	}
 
-	private ASTNode getExactNode(ASTNode exactNode) {
-		if (exactNode != null) {
-			// case: @Value("prefix<*>")
-			if (exactNode instanceof StringLiteral && exactNode.getParent() instanceof Annotation) {
-				if (exactNode.toString().startsWith("\"") && exactNode.toString().endsWith("\"")) {
-					return exactNode;
-				}
+	private boolean isProperLiteral(Literal l, Annotation a) {
+		// case: @Value("prefix<*>")
+		if (ORAstUtils.getParent(l) == a) {
+			String str = ORAstUtils.getLiteralValue(l);
+			if (str.startsWith("\"") && str.endsWith("\"")) {
+				return true;
 			}
-			// case: @Value(value="prefix<*>")
-			else if (exactNode instanceof StringLiteral && exactNode.getParent() instanceof MemberValuePair
-					&& "value".equals(((MemberValuePair) exactNode.getParent()).getName().toString())) {
-				if (exactNode.toString().startsWith("\"") && exactNode.toString().endsWith("\"")) {
-					return exactNode;
+		}
+		// case: @Value(value="prefix<*>")
+		else if (ORAstUtils.getParent(l) instanceof Assignment && ORAstUtils.getGrandParent(l) == a) {
+			Assignment assign = (Assignment) ORAstUtils.getParent(l);
+			if ("value".equals(assign.getVariable().printTrimmed())) {
+				String str = ORAstUtils.getLiteralValue(l);
+				if (str.startsWith("\"") && str.endsWith("\"")) {
+					return true;
 				}
 			}
 		}
-		return null;
+
+		return false;
 	}
 
 	private Hover provideHover(String value, int offset, int nodeStartOffset, TextDocument doc, SpringProcessLiveData[] processLiveData) {
@@ -153,10 +157,7 @@ public class ValueHoverProvider implements HoverProvider {
 	 * @param processLiveData
 	 * @return
 	 */
-	private List<CodeLens> provideHighlightHints(TextDocument doc, StringLiteral node, SpringProcessLiveData[] processLiveData) {
-		ASTNode exactNode = getExactNode(node);
-
-		if (exactNode != null) {
+	private List<CodeLens> provideHighlightHints(TextDocument doc, Literal l, SpringProcessLiveData[] processLiveData) {
 			Map<String, List<LocalRange>> propertiesWithRanges = new HashMap<>();
 
 			// Get the escaped value that INCLUDES the quotes as we want to compute
@@ -166,7 +167,7 @@ public class ValueHoverProvider implements HoverProvider {
 			// to highlight a.prop we need to take into account the starting '"' after the
 			// '='
 			// to get the correct range of a.prop
-			String nodeValue = node.getEscapedValue();
+			String nodeValue = ORAstUtils.getLiteralValue(l);
 			if (nodeValue != null) {
 				// Get property names with ranges highlight
 				propertiesWithRanges = parseProperties(nodeValue);
@@ -188,7 +189,8 @@ public class ValueHoverProvider implements HoverProvider {
 
 						propRanges.stream().forEach(propRange -> {
 							try {
-								Range hoverRange = doc.toRange(exactNode.getStartPosition() + propRange.getStart(),
+								org.openrewrite.marker.Range r = ORAstUtils.getRange(l);
+								Range hoverRange = doc.toRange(r.getStart().getOffset() + propRange.getStart(),
 										propRange.getEnd() - propRange.getStart());
 								lenses.add(new CodeLens(hoverRange));
 							} catch (BadLocationException e) {
@@ -202,7 +204,6 @@ public class ValueHoverProvider implements HoverProvider {
 				}
 				return lenses;
 			}
-		}
 		return ImmutableList.of();
 	}
 
@@ -360,7 +361,7 @@ public class ValueHoverProvider implements HoverProvider {
 	}
 
 	@Override
-	public Hover provideHover(ASTNode node, TypeDeclaration typeDeclaration, ITypeBinding type, int offset,
+	public Hover provideHover(J node, ClassDeclaration typeDeclaration, int offset,
 			TextDocument doc, IJavaProject project, SpringProcessLiveData[] processLiveData) {
 		return null;
 	}
@@ -370,15 +371,18 @@ public class ValueHoverProvider implements HoverProvider {
 		// Show highlight hints for properties in @Value that have live information
 
 		List<CodeLens> lenses = new ArrayList<>();
-		annotation.accept(new ASTVisitor() {
-			@Override
-			public boolean visit(StringLiteral node) {
-				List<CodeLens> provideHighlightHints = provideHighlightHints(doc, node, processLiveData);
-				lenses.addAll(provideHighlightHints);
-				return super.visit(node);
-			}
-		});
-
+		
+		new JavaIsoVisitor<List<CodeLens>>() {
+			
+			public Literal visitLiteral(Literal literal, List<CodeLens> cl) {
+				if (isProperLiteral(literal, annotation)) {
+					cl.addAll(provideHighlightHints(doc, literal, processLiveData));
+				}
+				return super.visitLiteral(literal, cl);
+			};
+			
+		}.visitNonNull(annotation, lenses);
+		
 		return lenses;
 	}
 

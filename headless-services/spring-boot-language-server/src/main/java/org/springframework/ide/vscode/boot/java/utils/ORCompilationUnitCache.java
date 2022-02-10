@@ -208,12 +208,10 @@ public class ORCompilationUnitCache implements DocumentContentProvider, Disposab
 						}
 					});
 					
-					List<CompilationUnit> parseInputs = javaParser.parseInputs(List.of(input), null, new InMemoryExecutionContext());
-					Result result = new UpdateSourcePositions().run(parseInputs).get(0);
-										
 					logger.info("CU Cache: created new AST for {}", uri.toString());
-
-					return (CompilationUnit) (result.getAfter() == null ? result.getBefore() : result.getAfter());
+					
+					return ORAstUtils.parseInputs(javaParser, List.of(input)).get(0);
+										
 				});
 
 				if (cu != null) {

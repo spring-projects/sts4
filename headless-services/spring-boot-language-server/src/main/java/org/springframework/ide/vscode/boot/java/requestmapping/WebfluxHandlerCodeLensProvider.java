@@ -12,16 +12,18 @@ package org.springframework.ide.vscode.boot.java.requestmapping;
 
 import java.util.List;
 
-import org.eclipse.jdt.core.dom.ASTVisitor;
-import org.eclipse.jdt.core.dom.CompilationUnit;
-import org.eclipse.jdt.core.dom.IMethodBinding;
-import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
+import org.openrewrite.java.JavaIsoVisitor;
+import org.openrewrite.java.tree.J.ClassDeclaration;
+import org.openrewrite.java.tree.J.CompilationUnit;
+import org.openrewrite.java.tree.J.MethodDeclaration;
+import org.openrewrite.marker.Range;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.boot.java.handlers.CodeLensProvider;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
+import org.springframework.ide.vscode.boot.java.utils.ORAstUtils;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
@@ -38,25 +40,23 @@ public class WebfluxHandlerCodeLensProvider implements CodeLensProvider {
 
 	@Override
 	public void provideCodeLenses(CancelChecker cancelToken, TextDocument document, CompilationUnit cu, List<CodeLens> resultAccumulator) {
-		cu.accept(new ASTVisitor() {
-			@Override
-			public boolean visit(MethodDeclaration node) {
-				provideCodeLens(cancelToken, node, document, resultAccumulator);
-				return super.visit(node);
-			}
-		});
+		new JavaIsoVisitor<List<CodeLens>>() {
+			public MethodDeclaration visitMethodDeclaration(MethodDeclaration method, List<CodeLens> cl) {
+				provideCodeLens(cancelToken, method, document, cl);
+				return method;
+			};
+		}.visitNonNull(cu, resultAccumulator);		
 	}
 
-	protected void provideCodeLens(CancelChecker cancelToken, MethodDeclaration node, TextDocument document, List<CodeLens> resultAccumulator) {
+	protected void provideCodeLens(CancelChecker cancelToken, MethodDeclaration method, TextDocument document, List<CodeLens> resultAccumulator) {
 		cancelToken.checkCanceled();
 		
-		IMethodBinding methodBinding = node.resolveBinding();
+		ClassDeclaration declaringType = ORAstUtils.findDeclaringType(method);
+		
+		if (method != null && ORAstUtils.findDeclaringType(method) != null) {
 
-		if (methodBinding != null && methodBinding.getDeclaringClass() != null && methodBinding.getMethodDeclaration() != null
-				&& methodBinding.getDeclaringClass().getBinaryName() != null && methodBinding.getMethodDeclaration().toString() != null) {
-
-			final String handlerClass = methodBinding.getDeclaringClass().getBinaryName().trim();
-			final String handlerMethod = methodBinding.getMethodDeclaration().toString().trim();
+			final String handlerClass = declaringType.getType().getFullyQualifiedName();
+			final String handlerMethod = method.getMethodType().toString(); // TODO: OR AST likely a problem
 			
 			cancelToken.checkCanceled();
 
@@ -75,7 +75,8 @@ public class WebfluxHandlerCodeLensProvider implements CodeLensProvider {
 						WebfluxHandlerInformation handlerInfo = (WebfluxHandlerInformation) object;
 
 						CodeLens codeLens = new CodeLens();
-						codeLens.setRange(document.toRange(node.getName().getStartPosition(), node.getName().getLength()));
+						Range r = ORAstUtils.getRange(method.getName());
+						codeLens.setRange(document.toRange(r.getStart().getOffset(), r.length()));
 
 						String httpMethod = WebfluxUtils.getStringRep(handlerInfo.getHttpMethods(), string -> string);
 						String codeLensCommand = httpMethod != null ? httpMethod + " " : "";

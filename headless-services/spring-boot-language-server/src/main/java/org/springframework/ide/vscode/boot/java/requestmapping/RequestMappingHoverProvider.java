@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2020 Pivotal, Inc.
+ * Copyright (c) 2017, 2022 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -18,16 +18,17 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.eclipse.jdt.core.dom.ASTNode;
-import org.eclipse.jdt.core.dom.Annotation;
-import org.eclipse.jdt.core.dom.IMethodBinding;
-import org.eclipse.jdt.core.dom.ITypeBinding;
-import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
+import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.J.Annotation;
+import org.openrewrite.java.tree.J.ClassDeclaration;
+import org.openrewrite.java.tree.J.MethodDeclaration;
+import org.openrewrite.java.tree.J.VariableDeclarations;
+import org.openrewrite.java.tree.JavaType.FullyQualified;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
@@ -35,6 +36,7 @@ import org.springframework.ide.vscode.boot.java.livehover.LiveHoverUtils;
 import org.springframework.ide.vscode.boot.java.livehover.v2.LiveRequestMapping;
 import org.springframework.ide.vscode.boot.java.livehover.v2.RequestMappingMetrics;
 import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveData;
+import org.springframework.ide.vscode.boot.java.utils.ORAstUtils;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
@@ -58,8 +60,8 @@ public class RequestMappingHoverProvider implements HoverProvider {
 	private static final int CODE_LENS_LIMIT = 3;
 
 	@Override
-	public Hover provideHover(ASTNode node, Annotation annotation,
-			ITypeBinding type, int offset, TextDocument doc, IJavaProject project, SpringProcessLiveData[] processLiveData) {
+	public Hover provideHover(J node, Annotation annotation,
+			int offset, TextDocument doc, IJavaProject project, SpringProcessLiveData[] processLiveData) {
 		return provideHover(annotation, doc, processLiveData);
 	}
 
@@ -69,7 +71,8 @@ public class RequestMappingHoverProvider implements HoverProvider {
 			if (processLiveData.length > 0) {
 				List<Tuple2<LiveRequestMapping, SpringProcessLiveData>> val = getRequestMappingMethodFromRunningApp(annotation, processLiveData);
 				if (!val.isEmpty()) {
-					Range hoverRange = doc.toRange(annotation.getStartPosition(), annotation.getLength());
+					org.openrewrite.marker.Range r = ORAstUtils.getRange(annotation);
+					Range hoverRange = doc.toRange(r.getStart().getOffset(), r.length());
 					return assembleCodeLenses(hoverRange, val);
 				}
 			}
@@ -175,7 +178,8 @@ public class RequestMappingHoverProvider implements HoverProvider {
 
 			if (!val.isEmpty()) {
 				Hover hover = createHoverWithContent(val);
-				Range hoverRange = doc.toRange(annotation.getStartPosition(), annotation.getLength());
+				org.openrewrite.marker.Range r = ORAstUtils.getRange(annotation);
+				Range hoverRange = doc.toRange(r.getStart().getOffset(), r.length());
 				hover.setRange(hoverRange);
 				return hover;
 			} else {
@@ -220,21 +224,26 @@ public class RequestMappingHoverProvider implements HoverProvider {
 
 			rqClassName = rqClassName.replace('$', '.');
 
-			ASTNode parent = annotation.getParent();
+			J parent = ORAstUtils.getParent(annotation);
 			if (parent instanceof MethodDeclaration) {
 				MethodDeclaration methodDec = (MethodDeclaration) parent;
-				IMethodBinding binding = methodDec.resolveBinding();
-				if (binding != null) {
-					return binding.getDeclaringClass().getQualifiedName().equals(rqClassName)
-							&& binding.getName().equals(rm.getMethodName())
-							&& Arrays.equals(Arrays.stream(binding.getParameterTypes())
-									.map(t -> t.getTypeDeclaration().getQualifiedName())
-									.toArray(String[]::new),
-								rm.getMethodParameters());
+				ClassDeclaration declaringClass = ORAstUtils.findNode(methodDec, ClassDeclaration.class);
+				if (declaringClass != null) {
+					FullyQualified type = declaringClass.getType();
+					return type != null && type.getFullyQualifiedName().equals(rqClassName)
+							&& methodDec.getSimpleName().equals(rm.getMethodName())
+							&& Arrays.equals(rm.getMethodParameters(),
+									methodDec.getParameters().stream()
+										.filter(VariableDeclarations.class::isInstance)
+										.map(VariableDeclarations.class::cast)
+										.map(v -> v.getTypeAsFullyQualified()) // what about primitive types, arrays etc???
+										.map(fq -> fq == null ? "" : fq.getFullyQualifiedName()) 
+										.toArray(String[]::new)
+								);
 				}
-	//		} else if (parent instanceof TypeDeclaration) {
-	//			TypeDeclaration typeDec = (TypeDeclaration) parent;
-	//			return typeDec.resolveBinding().getQualifiedName().equals(rqClassName);
+			} else if (parent instanceof ClassDeclaration) {
+				ClassDeclaration typeDec = (ClassDeclaration) parent;
+				return typeDec.getType() == null ? false : rqClassName.equals(typeDec.getType().getFullyQualifiedName());
 			}
 		}
 		return false;
