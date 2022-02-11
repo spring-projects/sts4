@@ -1,7 +1,9 @@
 package org.springframework.ide.vscode.boot.java.utils;
 
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -10,11 +12,13 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import org.openrewrite.Cursor;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.Parser;
 import org.openrewrite.Recipe;
 import org.openrewrite.Result;
+import org.openrewrite.SourceFile;
 import org.openrewrite.Tree;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.internal.lang.Nullable;
@@ -139,13 +143,39 @@ public class ORAstUtils {
 		@Override
 		protected TreeVisitor<?, ExecutionContext> getVisitor() {
 			return new JavaIsoVisitor<>() {
+				
+				private Cursor parentCursor(Class<?> clazz) {
+					for (Cursor c = getCursor(); c != null
+							&& !(c.getValue() instanceof SourceFile); c = c.getParent()) {
+						Object o = c.getValue();
+						if (clazz.isInstance(o)) {
+							return c;
+						}
+					}
+					return null;
+				}
+				
 				@Override
 				public @Nullable J visit(@Nullable Tree tree, ExecutionContext p) {
 					if (tree instanceof J) {
 						J j = (J) tree;
-						J parent = getCursor().getParent() == null ? null : getCursor().getParent().getValue();
-						J newJ = j.withMarkers(j.getMarkers().addIfAbsent(new ParentMarker(parent)));
-						super.visit(newJ, p);
+						J newJ = super.visit(j, p).withMarkers(j.getMarkers().addIfAbsent(new ParentMarker(null)));
+						
+						List<J> children = p.pollMessage(j.getId().toString(), Collections.emptyList());
+						for (J child : children) {
+							child.getMarkers().findFirst(ParentMarker.class).map(m -> m.parent = newJ);
+						}
+						
+						// Prepare myself for the parent;
+
+						Cursor parentCursor = parentCursor(J.class);
+						if (parentCursor != null) {
+							J parent = parentCursor.getValue();
+							String parentId = parent.getId().toString();
+							List<J> siblings = p.pollMessage(parentId, new ArrayList<J>());
+							siblings.add(newJ);
+							p.putMessage(parentId, siblings);
+						}
 						return newJ;
 					}
 					return (J) tree; 
