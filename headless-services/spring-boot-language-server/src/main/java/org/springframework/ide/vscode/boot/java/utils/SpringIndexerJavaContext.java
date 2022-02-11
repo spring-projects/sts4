@@ -110,12 +110,12 @@ public class SpringIndexerJavaContext {
 		return dependencies;
 	}
 	
-	public void addDependency(ITypeBinding dependsOn) {
-		if (dependsOn != null && dependsOn.isFromSource()) {
-			String type = dependsOn.getKey();
+	public void addDependency(FullyQualified type) {
+		if (type != null && false/*dependsOn.isFromSource()*/ ) { // TODO: OR AST can't tell if type has a source
+			String fqName = type.getFullyQualifiedName();
 		
 			if (type != null && !scannedTypes.contains(type)) {
-				dependencies.add(type);
+				dependencies.add(fqName);
 			}
 		}
 	}

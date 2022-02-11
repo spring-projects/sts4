@@ -10,14 +10,6 @@ import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
-import org.eclipse.jdt.core.dom.ArrayInitializer;
-import org.eclipse.jdt.core.dom.IBinding;
-import org.eclipse.jdt.core.dom.ITypeBinding;
-import org.eclipse.jdt.core.dom.IVariableBinding;
-import org.eclipse.jdt.core.dom.Name;
-import org.eclipse.jdt.core.dom.QualifiedName;
-import org.eclipse.jdt.core.dom.SimpleName;
-import org.eclipse.jdt.core.dom.StringLiteral;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.Parser;
@@ -49,8 +41,11 @@ import org.openrewrite.marker.Range;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.Annotations;
+import org.springframework.ide.vscode.commons.util.CollectorUtil;
 import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
+
+import com.google.common.collect.ImmutableList;
 
 public class ORAstUtils {
 	
@@ -402,6 +397,21 @@ public class ORAstUtils {
 		}
 		return null;
 	}
+	
+	public static List<Literal> getExpressionValueAsListOfLiterals(Expression exp) {
+		if (exp instanceof NewArray) {
+			NewArray array = (NewArray) exp;
+			return array.getInitializer().stream()
+					.filter(Literal.class::isInstance)
+					.map(Literal.class::cast)
+					.collect(CollectorUtil.toImmutableList());
+		} else if (exp instanceof Literal){
+			return ImmutableList.of((Literal)exp);
+		}
+		return ImmutableList.of();
+	}
+
+
 		
 	public static String getExpressionValueAsString(Expression exp, Consumer<FullyQualified> dependencies) {
 		// TODO: OR AST need to check if there is  way to extract constant values from variables
@@ -416,6 +426,17 @@ public class ORAstUtils {
 		} else {
 			return null;
 		}
+	}
+	
+	public static DocumentRegion stringRegion(TextDocument doc, Literal node) {
+		DocumentRegion nodeRegion = nodeRegion(doc, node);
+		if (nodeRegion.startsWith("\"")) {
+			nodeRegion = nodeRegion.subSequence(1);
+		}
+		if (nodeRegion.endsWith("\"")) {
+			nodeRegion = nodeRegion.subSequence(0, nodeRegion.getLength()-1);
+		}
+		return nodeRegion;
 	}
 
 	public static List<CompilationUnit> parse(JavaParser parser, Iterable<Path> sourceFiles) {

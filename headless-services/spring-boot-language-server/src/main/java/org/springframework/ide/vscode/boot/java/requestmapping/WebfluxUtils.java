@@ -16,11 +16,10 @@ import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
 
-import org.eclipse.jdt.core.dom.IMethodBinding;
-import org.eclipse.jdt.core.dom.MethodInvocation;
-import org.eclipse.jdt.core.dom.QualifiedName;
-import org.eclipse.jdt.core.dom.SimpleName;
-import org.eclipse.jdt.core.dom.StringLiteral;
+import org.openrewrite.java.tree.Expression;
+import org.openrewrite.java.tree.J.Literal;
+import org.openrewrite.java.tree.J.MethodInvocation;
+import org.openrewrite.java.tree.JavaType.Method;
 
 /**
  * @author Martin Lippert
@@ -41,53 +40,30 @@ public class WebfluxUtils {
 	public static final Set<String> REQUEST_PREDICATE_ALL_PATH_METHODS = new HashSet<>(Arrays.asList(REQUEST_PREDICATE_PATH_METHOD, "GET", "POST", "DELETE", "PUT", "PATCH", "HEAD", "OPTIONS"));
 
 
-	public static StringLiteral extractStringLiteralArgument(MethodInvocation node) {
-		List<?> arguments = node.arguments();
-		if (arguments != null && arguments.size() > 0) {
-			Object object = arguments.get(0);
-			if (object instanceof StringLiteral) {
-				return (StringLiteral) object;
+	public static <T> T extractArgument(MethodInvocation node, Class<T> clazz) {
+		if (node.getArguments() != null) {
+			for (Expression e : node.getArguments()) {
+				if (clazz.isInstance(e)) {
+					return clazz.cast(e);
+				}
 			}
 		}
 		return null;
 	}
 	
-	public static QualifiedName extractQualifiedNameArgument(MethodInvocation node) {
-		List<?> arguments = node.arguments();
-		if (arguments != null && arguments.size() > 0) {
-			Object object = arguments.get(0);
-			if (object instanceof QualifiedName) {
-				return (QualifiedName) object;
-			}
-		}
-		return null;
-	}
-	
-	public static SimpleName extractSimpleNameArgument(MethodInvocation node) {
-		List<?> arguments = node.arguments();
-		if (arguments != null && arguments.size() > 0) {
-			Object object = arguments.get(0);
-			if (object instanceof SimpleName) {
-				return (SimpleName) object;
-			}
-		}
-		return null;
-	}
-
-	public static boolean isRouteMethodInvocation(IMethodBinding methodBinding) {
-		if (ROUTER_FUNCTIONS_TYPE.equals(methodBinding.getDeclaringClass().getBinaryName())) {
-			String name = methodBinding.getName();
-			if ("route".equals(name)) {
+	public static boolean isRouteMethodInvocation(Method method) {
+		switch (method.getDeclaringType().getFullyQualifiedName()) {
+		case ROUTER_FUNCTIONS_TYPE:
+			if ("route".equals(method.getName())) {
 				return true;
 			}
-		}
-		else if (ROUTER_FUNCTION_TYPE.equals(methodBinding.getDeclaringClass().getBinaryName())) {
-			String name = methodBinding.getName();
-			if ("andRoute".equals(name)) {
+			break;
+		case ROUTER_FUNCTION_TYPE:
+			if ("andRoute".equals(method.getName())) {
 				return true;
 			}
+			break;
 		}
-		
 		return false;
 	}
 	

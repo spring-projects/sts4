@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2019 Pivotal, Inc.
+ * Copyright (c) 2018, 2022 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -15,25 +15,28 @@ import java.util.Collection;
 import java.util.List;
 import java.util.function.Function;
 
-import org.eclipse.jdt.core.dom.ASTNode;
-import org.eclipse.jdt.core.dom.ASTVisitor;
-import org.eclipse.jdt.core.dom.Block;
-import org.eclipse.jdt.core.dom.ExpressionMethodReference;
-import org.eclipse.jdt.core.dom.IMethodBinding;
-import org.eclipse.jdt.core.dom.ITypeBinding;
-import org.eclipse.jdt.core.dom.MethodDeclaration;
-import org.eclipse.jdt.core.dom.MethodInvocation;
-import org.eclipse.jdt.core.dom.QualifiedName;
-import org.eclipse.jdt.core.dom.SimpleName;
-import org.eclipse.jdt.core.dom.StringLiteral;
-import org.eclipse.jdt.core.dom.Type;
-import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.Range;
+import org.openrewrite.ExecutionContext;
+import org.openrewrite.InMemoryExecutionContext;
+import org.openrewrite.java.JavaIsoVisitor;
+import org.openrewrite.java.tree.Expression;
+import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.J.Block;
+import org.openrewrite.java.tree.J.ClassDeclaration;
+import org.openrewrite.java.tree.J.FieldAccess;
+import org.openrewrite.java.tree.J.Literal;
+import org.openrewrite.java.tree.J.MethodDeclaration;
+import org.openrewrite.java.tree.J.MethodInvocation;
+import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.java.tree.JavaType.FullyQualified;
+import org.openrewrite.java.tree.JavaType.Method;
+import org.openrewrite.java.tree.TypeUtils;
 import org.springframework.ide.vscode.boot.java.handlers.AbstractSymbolProvider;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
 import org.springframework.ide.vscode.boot.java.utils.CachedSymbol;
+import org.springframework.ide.vscode.boot.java.utils.ORAstUtils;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJava.SCAN_PASS;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJavaContext;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
@@ -46,15 +49,15 @@ public class WebfluxRouterSymbolProvider extends AbstractSymbolProvider {
 
 	@Override
 	public void addSymbols(MethodDeclaration methodDeclaration, SpringIndexerJavaContext context, TextDocument doc) {
-		Type returnType = methodDeclaration.getReturnType2();
+		JavaType returnType = methodDeclaration.getMethodType().getReturnType();
 		if (returnType != null) {
 
-			ITypeBinding resolvedBinding = returnType.resolveBinding();
+			FullyQualified fqType = TypeUtils.asFullyQualified(returnType);
 
-			if (resolvedBinding != null && WebfluxUtils.ROUTER_FUNCTION_TYPE.equals(resolvedBinding.getBinaryName())) {
+			if (fqType != null && WebfluxUtils.ROUTER_FUNCTION_TYPE.equals(fqType.getFullyQualifiedName())) {
 
 				Block methodBody = methodDeclaration.getBody();
-				if (methodBody != null && methodBody.statements() != null && methodBody.statements().size() > 0) {
+				if (methodBody != null && methodBody.getStatements() != null && methodBody.getStatements().size() > 0) {
 					addSymbolsForRouterFunction(methodBody, context, doc);
 				}
 				else if (SCAN_PASS.ONE.equals(context.getPass())) {
@@ -66,20 +69,15 @@ public class WebfluxRouterSymbolProvider extends AbstractSymbolProvider {
 	}
 
 	private void addSymbolsForRouterFunction(Block methodBody, SpringIndexerJavaContext context, TextDocument doc) {
-		methodBody.accept(new ASTVisitor() {
-
-			@Override
-			public boolean visit(MethodInvocation node) {
-				IMethodBinding methodBinding = node.resolveMethodBinding();
-
-				if (methodBinding != null && WebfluxUtils.isRouteMethodInvocation(methodBinding)) {
-					extractMappingSymbol(node, doc, context);
+		new JavaIsoVisitor<ExecutionContext>() {
+			public MethodInvocation visitMethodInvocation(MethodInvocation method, ExecutionContext p) {
+				Method m = method.getMethodType();
+				if (m != null && WebfluxUtils.isRouteMethodInvocation(m)) {
+					extractMappingSymbol(method, doc, context);
 				}
-
-				return super.visit(node);
+				return super.visitMethodInvocation(method, p);
 			}
-
-		});
+		}.visitNonNull(methodBody, new InMemoryExecutionContext());		
 	}
 
 	protected void extractMappingSymbol(MethodInvocation node, TextDocument doc, SpringIndexerJavaContext context) {
@@ -88,8 +86,10 @@ public class WebfluxRouterSymbolProvider extends AbstractSymbolProvider {
 		WebfluxRouteElement[] contentTypes = extractContentTypes(node, doc);
 		WebfluxRouteElement[] acceptTypes = extractAcceptTypes(node, doc);
 
-		int methodNameStart = node.getName().getStartPosition();
-		int invocationStart = node.getStartPosition();
+		org.openrewrite.marker.Range methodInvocationRange = ORAstUtils.getRange(node);
+		org.openrewrite.marker.Range methodNameRange = ORAstUtils.getRange(node.getName());
+		int methodNameStart = methodInvocationRange.getStart().getOffset();
+		int invocationStart = methodNameRange.getStart().getOffset();
 
 		StringBuilder pathBuilder = new StringBuilder();
 		for (WebfluxRouteElement pathElement : pathElements) {
@@ -101,7 +101,7 @@ public class WebfluxRouterSymbolProvider extends AbstractSymbolProvider {
 		if (path.length() > 0) {
 			try {
 
-				Location location = new Location(doc.getUri(), doc.toRange(methodNameStart, node.getLength() - (methodNameStart - invocationStart)));
+				Location location = new Location(doc.getUri(), doc.toRange(methodNameStart, methodInvocationRange.length() - (methodNameStart - invocationStart)));
 				WebfluxHandlerInformation handler = extractHandlerInformation(node, path, httpMethods, contentTypes, acceptTypes);
 				WebfluxElementsInformation elements = extractElementsInformation(pathElements, httpMethods, contentTypes, acceptTypes);
 				
@@ -136,24 +136,25 @@ public class WebfluxRouterSymbolProvider extends AbstractSymbolProvider {
 
 	private WebfluxRouteElement[] extractPath(MethodInvocation routerInvocation, TextDocument doc) {
 		WebfluxPathFinder pathFinder = new WebfluxPathFinder(routerInvocation, doc);
-		List<?> arguments = routerInvocation.arguments();
-		for (Object argument : arguments) {
-			if (argument != null && argument instanceof ASTNode) {
-				((ASTNode)argument).accept(pathFinder);
+		InMemoryExecutionContext ctx = new InMemoryExecutionContext();
+		for (Expression argument : routerInvocation.getArguments()) {
+			if (argument != null) {
+				pathFinder.visitNonNull(argument, ctx);
 			}
 		}
 
 		List<WebfluxRouteElement> path = pathFinder.getPath();
 
 		extractNestedValue(routerInvocation, path, (methodInvocation) -> {
-			IMethodBinding methodBinding = methodInvocation.resolveMethodBinding();
+			Method method = methodInvocation.getMethodType();
 
 			try {
-				if (methodBinding != null && WebfluxUtils.REQUEST_PREDICATE_PATH_METHOD.equals(methodBinding.getName())) {
-					StringLiteral stringLiteral = WebfluxUtils.extractStringLiteralArgument(methodInvocation);
+				if (method != null && WebfluxUtils.REQUEST_PREDICATE_PATH_METHOD.equals(method.getName())) {
+					Literal stringLiteral = WebfluxUtils.extractArgument(methodInvocation, Literal.class);
 					if (stringLiteral != null) {
-						Range range = doc.toRange(stringLiteral.getStartPosition(), stringLiteral.getLength());
-						return new WebfluxRouteElement(stringLiteral.getLiteralValue(), range);
+						org.openrewrite.marker.Range r = ORAstUtils.getRange(stringLiteral);
+						Range range = doc.toRange(r.getStart().getOffset(), r.length());
+						return new WebfluxRouteElement(ORAstUtils.getLiteralValue(stringLiteral), range);
 					}
 				}
 			}
@@ -168,23 +169,24 @@ public class WebfluxRouterSymbolProvider extends AbstractSymbolProvider {
 
 	private WebfluxRouteElement[] extractMethods(MethodInvocation routerInvocation, TextDocument doc) {
 		WebfluxMethodFinder methodFinder = new WebfluxMethodFinder(routerInvocation, doc);
-		List<?> arguments = routerInvocation.arguments();
-		for (Object argument : arguments) {
-			if (argument != null && argument instanceof ASTNode) {
-				((ASTNode)argument).accept(methodFinder);
+		InMemoryExecutionContext ctx = new InMemoryExecutionContext();
+		for (Expression argument : routerInvocation.getArguments()) {
+			if (argument != null) {
+				methodFinder.visitNonNull(argument, ctx);
 			}
 		}
 
 		final List<WebfluxRouteElement> methods = methodFinder.getMethods();
 
 		extractNestedValue(routerInvocation, methods, (methodInvocation) -> {
-			IMethodBinding methodBinding = methodInvocation.resolveMethodBinding();
+			Method method = methodInvocation.getMethodType();
 
 			try {
-				if (methodBinding != null && WebfluxUtils.REQUEST_PREDICATE_METHOD_METHOD.equals(methodBinding.getName())) {
-					QualifiedName qualifiedName = WebfluxUtils.extractQualifiedNameArgument(methodInvocation);
-					if (qualifiedName.getName() != null) {
-						Range range = doc.toRange(qualifiedName.getStartPosition(), qualifiedName.getLength());
+				if (method != null && WebfluxUtils.REQUEST_PREDICATE_METHOD_METHOD.equals(method.getName())) {
+					FieldAccess qualifiedName = WebfluxUtils.extractArgument(methodInvocation, FieldAccess.class);
+					if (qualifiedName != null) {
+						org.openrewrite.marker.Range r = ORAstUtils.getRange(qualifiedName);
+						Range range = doc.toRange(r.getStart().getOffset(), r.length());
 						return new WebfluxRouteElement(qualifiedName.getName().toString(), range);
 					}
 				}
@@ -201,24 +203,25 @@ public class WebfluxRouterSymbolProvider extends AbstractSymbolProvider {
 
 	private WebfluxRouteElement[] extractAcceptTypes(MethodInvocation routerInvocation, TextDocument doc) {
 		WebfluxAcceptTypeFinder typeFinder = new WebfluxAcceptTypeFinder(doc);
-		List<?> arguments = routerInvocation.arguments();
-		for (Object argument : arguments) {
-			if (argument != null && argument instanceof ASTNode) {
-				((ASTNode)argument).accept(typeFinder);
+		InMemoryExecutionContext ctx = new InMemoryExecutionContext();
+		for (Expression argument : routerInvocation.getArguments()) {
+			if (argument != null) {
+				typeFinder.visitNonNull(argument, ctx);
 			}
 		}
 
 		final List<WebfluxRouteElement> acceptTypes = typeFinder.getAcceptTypes();
 
 		extractNestedValue(routerInvocation, acceptTypes, (methodInvocation) -> {
-			IMethodBinding methodBinding = methodInvocation.resolveMethodBinding();
+			Method methodBinding = methodInvocation.getMethodType();
 
 			try {
 				if (methodBinding != null && WebfluxUtils.REQUEST_PREDICATE_ACCEPT_TYPE_METHOD.equals(methodBinding.getName())) {
-					SimpleName nameArgument = WebfluxUtils.extractSimpleNameArgument(methodInvocation);
-					if (nameArgument != null && nameArgument.getFullyQualifiedName() != null) {
-						Range range = doc.toRange(nameArgument.getStartPosition(),  nameArgument.getLength());
-						return new WebfluxRouteElement(nameArgument.getFullyQualifiedName().toString(), range);
+					FieldAccess nameArgument = WebfluxUtils.extractArgument(methodInvocation, FieldAccess.class);
+					if (nameArgument != null) {
+						org.openrewrite.marker.Range r = ORAstUtils.getRange(nameArgument);
+						Range range = doc.toRange(r.getStart().getOffset(), r.length());
+						return new WebfluxRouteElement(nameArgument.getSimpleName(), range);
 					}
 				}
 			}
@@ -234,24 +237,27 @@ public class WebfluxRouterSymbolProvider extends AbstractSymbolProvider {
 
 	private WebfluxRouteElement[] extractContentTypes(MethodInvocation routerInvocation, TextDocument doc) {
 		WebfluxContentTypeFinder contentTypeFinder = new WebfluxContentTypeFinder(doc);
-		List<?> arguments = routerInvocation.arguments();
-		for (Object argument : arguments) {
-			if (argument != null && argument instanceof ASTNode) {
-				((ASTNode)argument).accept(contentTypeFinder);
+		InMemoryExecutionContext ctx = new InMemoryExecutionContext();
+		for (Expression argument : routerInvocation.getArguments()) {
+			if (argument != null) {
+				contentTypeFinder.visitNonNull(argument, ctx);
 			}
 		}
 
 		final List<WebfluxRouteElement> contentTypes = contentTypeFinder.getContentTypes();
 
 		extractNestedValue(routerInvocation, contentTypes, (methodInvocation) -> {
-			IMethodBinding methodBinding = methodInvocation.resolveMethodBinding();
+			Method methodBinding = methodInvocation.getMethodType();
 
 			try {
 				if (methodBinding != null && WebfluxUtils.REQUEST_PREDICATE_CONTENT_TYPE_METHOD.equals(methodBinding.getName())) {
-					SimpleName nameArgument = WebfluxUtils.extractSimpleNameArgument(methodInvocation);
-					if (nameArgument != null && nameArgument.getFullyQualifiedName() != null) {
-						Range range = doc.toRange(nameArgument.getStartPosition(),  nameArgument.getLength());
-						return new WebfluxRouteElement(nameArgument.getFullyQualifiedName().toString(), range);
+					// TODO: OR AST FieldAcess? So we need FQ name of something? See above a lot of similar places
+
+					FieldAccess nameArgument = WebfluxUtils.extractArgument(methodInvocation, FieldAccess.class);
+					if (nameArgument != null) {
+						org.openrewrite.marker.Range r = ORAstUtils.getRange(nameArgument);
+						Range range = doc.toRange(r.getStart().getOffset(), r.length());
+						return new WebfluxRouteElement(nameArgument.getSimpleName(), range);
 					}
 				}
 			}
@@ -265,22 +271,21 @@ public class WebfluxRouterSymbolProvider extends AbstractSymbolProvider {
 		return (WebfluxRouteElement[]) contentTypes.toArray(new WebfluxRouteElement[contentTypes.size()]);
 	}
 
-	private void extractNestedValue(ASTNode node, Collection<WebfluxRouteElement> values, Function<MethodInvocation, WebfluxRouteElement> extractor) {
-		if (node == null || node instanceof TypeDeclaration) {
+	private void extractNestedValue(J node, Collection<WebfluxRouteElement> values, Function<MethodInvocation, WebfluxRouteElement> extractor) {
+		if (node == null || node instanceof ClassDeclaration) {
 			return;
 		}
 
 		if (node instanceof MethodInvocation) {
 			MethodInvocation methodInvocation = (MethodInvocation) node;
-			IMethodBinding methodBinding = methodInvocation.resolveMethodBinding();
+			Method method = methodInvocation.getMethodType();
 
-			if (methodBinding != null && methodBinding.getDeclaringClass() != null
-					&& WebfluxUtils.ROUTER_FUNCTIONS_TYPE.equals(methodBinding.getDeclaringClass().getBinaryName())) {
+			if (method != null && method.getDeclaringType() != null
+					&& WebfluxUtils.ROUTER_FUNCTIONS_TYPE.equals(method.getDeclaringType().getFullyQualifiedName())) {
 
-				String name = methodBinding.getName();
+				String name = method.getName();
 				if (WebfluxUtils.REQUEST_PREDICATE_NEST_METHOD.equals(name)) {
-					List<?> arguments = methodInvocation.arguments();
-					for (Object argument : arguments) {
+					for (Expression argument : methodInvocation.getArguments()) {
 						if (argument instanceof MethodInvocation) {
 							MethodInvocation nestedMethod = (MethodInvocation) argument;
 							WebfluxRouteElement value = extractor.apply(nestedMethod);
@@ -293,32 +298,30 @@ public class WebfluxRouterSymbolProvider extends AbstractSymbolProvider {
 			}
 		}
 
-		extractNestedValue(node.getParent(), values, extractor);
+		extractNestedValue(ORAstUtils.getParent(node), values, extractor);
 	}
 
 	private WebfluxHandlerInformation extractHandlerInformation(MethodInvocation node, String path, WebfluxRouteElement[] httpMethods,
 			WebfluxRouteElement[] contentTypes, WebfluxRouteElement[] acceptTypes) {
 
-		List<?> arguments = node.arguments();
-
-		if (arguments != null) {
-			for (Object argument : arguments) {
-				if (argument instanceof ExpressionMethodReference) {
-					ExpressionMethodReference methodReference = (ExpressionMethodReference) argument;
-					IMethodBinding methodBinding = methodReference.resolveMethodBinding();
-
-					if (methodBinding != null && methodBinding.getDeclaringClass() != null && methodBinding.getMethodDeclaration() != null) {
-						String handlerClass = methodBinding.getDeclaringClass().getBinaryName();
-						if (handlerClass != null) handlerClass = handlerClass.trim();
-
-						String handlerMethod = methodBinding.getMethodDeclaration().toString();
-						if (handlerMethod != null) handlerMethod = handlerMethod.trim();
-
-						return new WebfluxHandlerInformation(handlerClass, handlerMethod, path, getElementStrings(httpMethods), getElementStrings(contentTypes), getElementStrings(acceptTypes));
-					}
-				}
+			for (Expression e : node.getArguments()) {
+				// TODO: OR AST Method references!!!
+				
+//				if (argument instanceof ExpressionMethodReference) {
+//					ExpressionMethodReference methodReference = (ExpressionMethodReference) argument;
+//					IMethodBinding methodBinding = methodReference.resolveMethodBinding();
+//
+//					if (methodBinding != null && methodBinding.getDeclaringClass() != null && methodBinding.getMethodDeclaration() != null) {
+//						String handlerClass = methodBinding.getDeclaringClass().getBinaryName();
+//						if (handlerClass != null) handlerClass = handlerClass.trim();
+//
+//						String handlerMethod = methodBinding.getMethodDeclaration().toString();
+//						if (handlerMethod != null) handlerMethod = handlerMethod.trim();
+//
+//						return new WebfluxHandlerInformation(handlerClass, handlerMethod, path, getElementStrings(httpMethods), getElementStrings(contentTypes), getElementStrings(acceptTypes));
+//					}
+//				}
 			}
-		}
 
 		return null;
 	}

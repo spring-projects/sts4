@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2019 Pivotal, Inc.
+ * Copyright (c) 2017, 2022 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,19 +13,20 @@ package org.springframework.ide.vscode.boot.java.beans;
 import java.util.Collection;
 import java.util.List;
 
-import org.eclipse.jdt.core.dom.ASTNode;
-import org.eclipse.jdt.core.dom.Annotation;
-import org.eclipse.jdt.core.dom.IAnnotationBinding;
-import org.eclipse.jdt.core.dom.ITypeBinding;
-import org.eclipse.jdt.core.dom.MethodDeclaration;
-import org.eclipse.jdt.core.dom.Modifier;
-import org.eclipse.jdt.core.dom.ParameterizedType;
-import org.eclipse.jdt.core.dom.StringLiteral;
-import org.eclipse.jdt.core.dom.Type;
-import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.SymbolKind;
+import org.openrewrite.internal.lang.Nullable;
+import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.J.Annotation;
+import org.openrewrite.java.tree.J.ClassDeclaration;
+import org.openrewrite.java.tree.J.Literal;
+import org.openrewrite.java.tree.J.MethodDeclaration;
+import org.openrewrite.java.tree.J.Modifier;
+import org.openrewrite.java.tree.JavaType.FullyQualified;
+import org.openrewrite.java.tree.JavaType.Method;
+import org.openrewrite.java.tree.JavaType.Parameterized;
+import org.openrewrite.java.tree.TypeUtils;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.handlers.AbstractSymbolProvider;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
@@ -33,6 +34,7 @@ import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.boot.java.utils.CachedSymbol;
 import org.springframework.ide.vscode.boot.java.utils.FunctionUtils;
+import org.springframework.ide.vscode.boot.java.utils.ORAstUtils;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJavaContext;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.Log;
@@ -40,6 +42,7 @@ import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.reflect.Parameter;
 
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuple3;
@@ -54,7 +57,7 @@ public class BeansSymbolProvider extends AbstractSymbolProvider {
 	private static final String[] NAME_ATTRIBUTES = {"value", "name"};
 
 	@Override
-	protected void addSymbolsPass1(Annotation node, ITypeBinding annotationType, Collection<ITypeBinding> metaAnnotations, SpringIndexerJavaContext context, TextDocument doc) {
+	protected void addSymbolsPass1(Annotation node, FullyQualified annotationType, Collection<FullyQualified> metaAnnotations, SpringIndexerJavaContext context, TextDocument doc) {
 		if (isMethodAbstract(node)) return;
 
 		boolean isFunction = isFunctionBean(node);
@@ -79,7 +82,7 @@ public class BeansSymbolProvider extends AbstractSymbolProvider {
 	}
 
 	@Override
-	protected void addSymbolsPass1(TypeDeclaration typeDeclaration, SpringIndexerJavaContext context, TextDocument doc) {
+	protected void addSymbolsPass1(ClassDeclaration typeDeclaration, SpringIndexerJavaContext context, TextDocument doc) {
 		// this checks function beans that are defined as implementations of Function interfaces
 		Tuple3<String, String, DocumentRegion> functionBean = FunctionUtils.getFunctionBean(typeDeclaration, doc);
 		if (functionBean != null) {
@@ -99,23 +102,23 @@ public class BeansSymbolProvider extends AbstractSymbolProvider {
 	}
 
 	protected Collection<Tuple2<String, DocumentRegion>> getBeanNames(Annotation node, TextDocument doc) {
-		Collection<StringLiteral> beanNameNodes = getBeanNameLiterals(node);
+		Collection<Literal> beanNameNodes = getBeanNameLiterals(node);
 
 		if (beanNameNodes != null && !beanNameNodes.isEmpty()) {
 			ImmutableList.Builder<Tuple2<String,DocumentRegion>> namesAndRegions = ImmutableList.builder();
-			for (StringLiteral nameNode : beanNameNodes) {
-				String name = ASTUtils.getLiteralValue(nameNode);
-				namesAndRegions.add(Tuples.of(name, ASTUtils.stringRegion(doc, nameNode)));
+			for (Literal nameNode : beanNameNodes) {
+				String name = ORAstUtils.getLiteralValue(nameNode);
+				namesAndRegions.add(Tuples.of(name, ORAstUtils.stringRegion(doc, nameNode)));
 			}
 			return namesAndRegions.build();
 		}
 		else {
-			ASTNode parent = node.getParent();
+			J parent = ORAstUtils.getParent(node);
 			if (parent instanceof MethodDeclaration) {
 				MethodDeclaration method = (MethodDeclaration) parent;
 				return ImmutableList.of(Tuples.of(
 						method.getName().toString(),
-						ASTUtils.nameRegion(doc, node)
+						ORAstUtils.nameRegion(doc, node)
 				));
 			}
 			return ImmutableList.of();
@@ -138,81 +141,71 @@ public class BeansSymbolProvider extends AbstractSymbolProvider {
 		return symbolLabel.toString();
 	}
 
-	protected Collection<StringLiteral> getBeanNameLiterals(Annotation node) {
-		ImmutableList.Builder<StringLiteral> literals = ImmutableList.builder();
+	protected Collection<Literal> getBeanNameLiterals(Annotation node) {
+		ImmutableList.Builder<Literal> literals = ImmutableList.builder();
 		for (String attrib : NAME_ATTRIBUTES) {
-			ASTUtils.getAttribute(node, attrib).ifPresent((valueExp) -> {
-				literals.addAll(ASTUtils.getExpressionValueAsListOfLiterals(valueExp));
+			ORAstUtils.getAttribute(node, attrib).ifPresent((valueExp) -> {
+				literals.addAll(ORAstUtils.getExpressionValueAsListOfLiterals(valueExp));
 			});
 		}
 		return literals.build();
 	}
 
 	protected String getBeanType(Annotation node) {
-		ASTNode parent = node.getParent();
+		J parent = ORAstUtils.getParent(node);
 		if (parent instanceof MethodDeclaration) {
-			MethodDeclaration method = (MethodDeclaration) parent;
-			String returnType = method.getReturnType2().resolveBinding().getName();
-			return returnType;
+			Method method = ((MethodDeclaration) parent).getMethodType();
+			if (method != null) {
+				FullyQualified returnType = TypeUtils.asFullyQualified(method.getReturnType());
+				if (returnType != null) {
+					return returnType.getFullyQualifiedName();
+				}
+			}
 		}
 		return null;
 	}
 
 	private boolean isFunctionBean(Annotation node) {
-		ASTNode parent = node.getParent();
+		J parent = ORAstUtils.getParent(node);
 		if (parent instanceof MethodDeclaration) {
-			MethodDeclaration method = (MethodDeclaration) parent;
-			String returnType = null;
-
-			if (method.getReturnType2().isParameterizedType()) {
-				ParameterizedType paramType = (ParameterizedType) method.getReturnType2();
-				Type type = paramType.getType();
-				ITypeBinding typeBinding = type.resolveBinding();
-				returnType = typeBinding.getBinaryName();
+			Method method = ((MethodDeclaration) parent).getMethodType();
+			if (method != null) {
+				FullyQualified returnType = TypeUtils.asFullyQualified(method.getReturnType());
+				if (returnType != null) {
+					String fqName = returnType.getFullyQualifiedName();
+					
+					return FunctionUtils.FUNCTION_FUNCTION_TYPE.equals(fqName) || FunctionUtils.FUNCTION_CONSUMER_TYPE.equals(fqName)
+							|| FunctionUtils.FUNCTION_SUPPLIER_TYPE.equals(fqName);
+				}
 			}
-			else {
-				returnType = method.getReturnType2().resolveBinding().getQualifiedName();
-			}
-
-			return FunctionUtils.FUNCTION_FUNCTION_TYPE.equals(returnType) || FunctionUtils.FUNCTION_CONSUMER_TYPE.equals(returnType)
-					|| FunctionUtils.FUNCTION_SUPPLIER_TYPE.equals(returnType);
 		}
 		return false;
 	}
 
 	private String getAnnotations(Annotation node) {
 		StringBuilder result = new StringBuilder();
-
-		ASTNode parent = node.getParent();
+		J parent = ORAstUtils.getParent(node);
 		if (parent instanceof MethodDeclaration) {
 			MethodDeclaration method = (MethodDeclaration) parent;
-
-			List<?> modifiers = method.modifiers();
-			for (Object modifier : modifiers) {
-				if (modifier instanceof Annotation) {
-					Annotation annotation = (Annotation) modifier;
-					IAnnotationBinding annotationBinding = annotation.resolveAnnotationBinding();
-					String type = annotationBinding.getAnnotationType().getBinaryName();
-
-					if (type != null && !Annotations.BEAN.equals(type)) {
-						result.append(' ');
-						result.append(annotation.toString());
-					}
+			
+			for (Annotation a : method.getLeadingAnnotations()) {
+				FullyQualified type = TypeUtils.asFullyQualified(a.getType());
+				if (type != null && !Annotations.BEAN.equals(type.getFullyQualifiedName())) {
+					result.append(' ');
+					result.append(a.printTrimmed());
 				}
 			}
+			
 		}
-
 		return result.toString();
 	}
 
 	private boolean isMethodAbstract(Annotation node) {
-		if (node != null && node.getParent() != null && node.getParent() instanceof MethodDeclaration) {
-			MethodDeclaration method = (MethodDeclaration) node.getParent();
-			List<?> modifiers = method.modifiers();
-			for (Object modifier : modifiers) {
-				if (modifier instanceof Modifier && ((Modifier) modifier).isAbstract()) {
-					return true;
-				}
+		if (node != null) {
+			J parent = ORAstUtils.getParent(node);
+			if (parent instanceof MethodDeclaration) {
+				MethodDeclaration method = (MethodDeclaration) parent;
+				return Modifier.hasModifier(method.getModifiers(), Modifier.Type.Abstract);
 			}
 		}
 		return false;

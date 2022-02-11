@@ -13,18 +13,20 @@ package org.springframework.ide.vscode.boot.java.requestmapping;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.jdt.core.dom.ASTVisitor;
-import org.eclipse.jdt.core.dom.IMethodBinding;
-import org.eclipse.jdt.core.dom.MethodInvocation;
-import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.lsp4j.Range;
+import org.openrewrite.ExecutionContext;
+import org.openrewrite.java.JavaIsoVisitor;
+import org.openrewrite.java.tree.J.FieldAccess;
+import org.openrewrite.java.tree.J.MethodInvocation;
+import org.openrewrite.java.tree.JavaType.Method;
+import org.springframework.ide.vscode.boot.java.utils.ORAstUtils;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 /**
  * @author Martin Lippert
  */
-public class WebfluxAcceptTypeFinder extends ASTVisitor {
+public class WebfluxAcceptTypeFinder extends JavaIsoVisitor<ExecutionContext> {
 	
 	private List<WebfluxRouteElement> acceptTypes;
 	private TextDocument doc;
@@ -39,26 +41,28 @@ public class WebfluxAcceptTypeFinder extends ASTVisitor {
 	}
 	
 	@Override
-	public boolean visit(MethodInvocation node) {
-		IMethodBinding methodBinding = node.resolveMethodBinding();
-		
-		try {
-			if (WebfluxUtils.REQUEST_PREDICATES_TYPE.equals(methodBinding.getDeclaringClass().getBinaryName())) {
-				String name = methodBinding.getName();
-				if (name != null && WebfluxUtils.REQUEST_PREDICATE_ACCEPT_TYPE_METHOD.equals(name)) {
-					SimpleName nameArgument = WebfluxUtils.extractSimpleNameArgument(node);
-					if (nameArgument != null && nameArgument.getFullyQualifiedName() != null) {
-						Range range = doc.toRange(nameArgument.getStartPosition(),  nameArgument.getLength());
-						acceptTypes.add(new WebfluxRouteElement(nameArgument.getFullyQualifiedName().toString(), range));
+	public MethodInvocation visitMethodInvocation(MethodInvocation methodInvocation, ExecutionContext p) {
+		Method method = methodInvocation.getMethodType();
+		if (method != null && WebfluxUtils.isRouteMethodInvocation(method) && method.getDeclaringType() != null) {
+			try {
+				if (WebfluxUtils.REQUEST_PREDICATES_TYPE.equals(method.getDeclaringType().getFullyQualifiedName())) {
+					String name = method.getName();
+					if (name != null && WebfluxUtils.REQUEST_PREDICATE_ACCEPT_TYPE_METHOD.equals(name)) {
+						FieldAccess nameArgument = WebfluxUtils.extractArgument(methodInvocation, FieldAccess.class);
+						if (nameArgument != null) {
+							org.openrewrite.marker.Range r = ORAstUtils.getRange(nameArgument);
+							Range range = doc.toRange(r.getStart().getOffset(),  r.length());
+							acceptTypes.add(new WebfluxRouteElement(nameArgument.getSimpleName(), range));
+						}
 					}
 				}
 			}
+			catch (BadLocationException e) {
+				// ignore
+			}
+			
 		}
-		catch (BadLocationException e) {
-			// ignore
-		}
-
-		return !WebfluxUtils.isRouteMethodInvocation(methodBinding);
+		return super.visitMethodInvocation(methodInvocation, p);
 	}
-
+	
 }

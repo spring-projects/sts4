@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2019 Pivotal, Inc.
+ * Copyright (c) 2017, 2022 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -12,23 +12,21 @@ package org.springframework.ide.vscode.boot.java.requestmapping;
 
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Stream;
 
 import org.eclipse.lsp4j.Location;
-import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.tree.Expression;
-import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.java.tree.J.Annotation;
 import org.openrewrite.java.tree.J.Assignment;
+import org.openrewrite.java.tree.J.ClassDeclaration;
 import org.openrewrite.java.tree.J.MethodDeclaration;
 import org.openrewrite.java.tree.JavaType.FullyQualified;
+import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.marker.Range;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.handlers.AbstractSymbolProvider;
-import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.boot.java.utils.CachedSymbol;
 import org.springframework.ide.vscode.boot.java.utils.ORAstUtils;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJavaContext;
@@ -89,7 +87,6 @@ public class RequestMappingSymbolProvider extends AbstractSymbolProvider {
 	private String[] getMethod(Annotation node, SpringIndexerJavaContext context) {
 		String[] methods = null;
 		
-		
 		List<Expression> args = node.getArguments();
 		
 		// TODO: OR AST Annotation parameter
@@ -97,34 +94,11 @@ public class RequestMappingSymbolProvider extends AbstractSymbolProvider {
 				&& (!(args.get(0) instanceof Assignment)) || "value".equals(((Assignment)args.get(0)).getVariable().printTrimmed()) )
 		) {
 			methods = getRequestMethod(node);
-		} else if () {
-			for (Expression arg : args) {
-				if (arg instanceof Assignment && "method".equals(((Assignment) arg).getVariable().printTrimmed())) {
-				
-				}
-			}
+		} else {
+			methods = getRequestMethodFromMultiArgs(node, context);
 		}
 
-		if (node.isNormalAnnotation()) {
-			NormalAnnotation normNode = (NormalAnnotation) node;
-			List<?> values = normNode.values();
-			for (Iterator<?> iterator = values.iterator(); iterator.hasNext();) {
-				Object object = iterator.next();
-				if (object instanceof MemberValuePair) {
-					MemberValuePair pair = (MemberValuePair) object;
-					String valueName = pair.getName().getIdentifier();
-					if (valueName != null && valueName.equals("method")) {
-						Expression expression = pair.getValue();
-						methods = ASTUtils.getExpressionValueAsArray(expression, context::addDependency);
-						break;
-					}
-				}
-			}
-		} else if (node instanceof SingleMemberAnnotation) {
-			methods = getRequestMethod((SingleMemberAnnotation)node);
-		}
-
-		if (methods == null && node.getParent() instanceof MethodDeclaration) {
+		if (methods == null && ORAstUtils.getParent(node) instanceof MethodDeclaration) {
 			Annotation parentAnnotation = getParentAnnotation(node);
 			if (parentAnnotation != null) {
 				methods = getMethod(parentAnnotation, context);
@@ -135,26 +109,25 @@ public class RequestMappingSymbolProvider extends AbstractSymbolProvider {
 	}
 
 	private String[] getPath(Annotation node, SpringIndexerJavaContext context) {
-		if (node.isNormalAnnotation()) {
-			NormalAnnotation normNode = (NormalAnnotation) node;
-			List<?> values = normNode.values();
-			for (Iterator<?> iterator = values.iterator(); iterator.hasNext();) {
-				Object object = iterator.next();
-				if (object instanceof MemberValuePair) {
-					MemberValuePair pair = (MemberValuePair) object;
-					String valueName = pair.getName().getIdentifier();
-					if (valueName != null && (valueName.equals("value") || valueName.equals("path"))) {
-						Expression expression = pair.getValue();
-						return ASTUtils.getExpressionValueAsArray(expression, context::addDependency);
+		
+		List<Expression> args = node.getArguments();
+		
+		if (args != null) {
+			if (args.size() == 1 && !(args.get(0) instanceof Assignment)) {
+				return ORAstUtils.getExpressionValueAsArray(args.get(0), context::addDependency);
+			} else {
+				for (Expression e : args) {
+					if (e instanceof Assignment) {
+						Assignment assign = (Assignment) e;
+						String varName = assign.getVariable().printTrimmed();
+						if ("value".equals(varName) || "path".equals(varName)) {
+							return ORAstUtils.getExpressionValueAsArray(assign.getAssignment(), context::addDependency);
+						}
 					}
 				}
 			}
-		} else if (node.isSingleMemberAnnotation()) {
-			SingleMemberAnnotation singleNode = (SingleMemberAnnotation) node;
-			Expression expression = singleNode.getValue();
-			return ASTUtils.getExpressionValueAsArray(expression, context::addDependency);
 		}
-
+		
 		return new String[] { "" };
 	}
 
@@ -164,26 +137,14 @@ public class RequestMappingSymbolProvider extends AbstractSymbolProvider {
 	}
 
 	private Annotation getParentAnnotation(Annotation node) {
-		ASTNode parent = node.getParent() != null ? node.getParent().getParent() : null;
-		while (parent != null && !(parent instanceof TypeDeclaration)) {
-			parent = parent.getParent();
-		}
-
-		if (parent != null) {
-			TypeDeclaration type = (TypeDeclaration) parent;
-			List<?> modifiers = type.modifiers();
-			Iterator<?> iterator = modifiers.iterator();
-			while (iterator.hasNext()) {
-				Object modifier = iterator.next();
-				if (modifier instanceof Annotation) {
-					Annotation annotation = (Annotation) modifier;
-					ITypeBinding resolvedType = annotation.resolveTypeBinding();
-					String annotationType = resolvedType.getQualifiedName();
-					if (annotationType != null && Annotations.SPRING_REQUEST_MAPPING.equals(annotationType)) {
-						return annotation;
-					}
+		ClassDeclaration classDecl = ORAstUtils.findNode(node, ClassDeclaration.class);
+		if (classDecl != null) {
+			for (Annotation a : classDecl.getLeadingAnnotations()) {
+				FullyQualified annotationType = TypeUtils.asFullyQualified(a.getType());
+				if (annotationType != null && Annotations.SPRING_REQUEST_MAPPING.equals(annotationType.getFullyQualifiedName())) {
+					return a;
 				}
-			}
+			}			
 		}
 		return null;
 	}
@@ -210,40 +171,26 @@ public class RequestMappingSymbolProvider extends AbstractSymbolProvider {
 	}
 
 	private String[] getAcceptTypes(Annotation node, SpringIndexerJavaContext context) {
-		if (node.isNormalAnnotation()) {
-			NormalAnnotation normNode = (NormalAnnotation) node;
-			List<?> values = normNode.values();
-			for (Iterator<?> iterator = values.iterator(); iterator.hasNext();) {
-				Object object = iterator.next();
-				if (object instanceof MemberValuePair) {
-					MemberValuePair pair = (MemberValuePair) object;
-					String valueName = pair.getName().getIdentifier();
-					if (valueName != null && valueName.equals("consumes")) {
-						Expression expression = pair.getValue();
-						return ASTUtils.getExpressionValueAsArray(expression, context::addDependency);
-					}
+		for (Expression e : node.getArguments()) {
+			if (e instanceof Assignment) {
+				Assignment assign = (Assignment) e;
+				if ("consumes".equals(assign.getVariable().printTrimmed())) {
+					return ORAstUtils.getExpressionValueAsArray(assign.getAssignment(), context::addDependency);
 				}
 			}
-		}
+		}		
 		return new String[0];
 	}
 
 	private String[] getContentTypes(Annotation node, SpringIndexerJavaContext context) {
-		if (node.isNormalAnnotation()) {
-			NormalAnnotation normNode = (NormalAnnotation) node;
-			List<?> values = normNode.values();
-			for (Iterator<?> iterator = values.iterator(); iterator.hasNext();) {
-				Object object = iterator.next();
-				if (object instanceof MemberValuePair) {
-					MemberValuePair pair = (MemberValuePair) object;
-					String valueName = pair.getName().getIdentifier();
-					if (valueName != null && valueName.equals("produces")) {
-						Expression expression = pair.getValue();
-						return ASTUtils.getExpressionValueAsArray(expression, context::addDependency);
-					}
+		for (Expression e : node.getArguments()) {
+			if (e instanceof Assignment) {
+				Assignment assign = (Assignment) e;
+				if ("produces".equals(assign.getVariable().printTrimmed())) {
+					return ORAstUtils.getExpressionValueAsArray(assign.getAssignment(), context::addDependency);
 				}
 			}
-		}
+		}		
 		return new String[0];
 	}
 

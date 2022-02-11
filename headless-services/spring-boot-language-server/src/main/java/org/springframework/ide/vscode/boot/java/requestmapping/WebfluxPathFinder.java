@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Pivotal, Inc.
+ * Copyright (c) 2018, 2022 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,25 +13,27 @@ package org.springframework.ide.vscode.boot.java.requestmapping;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.jdt.core.dom.ASTNode;
-import org.eclipse.jdt.core.dom.ASTVisitor;
-import org.eclipse.jdt.core.dom.IMethodBinding;
-import org.eclipse.jdt.core.dom.MethodInvocation;
-import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.lsp4j.Range;
+import org.openrewrite.ExecutionContext;
+import org.openrewrite.java.JavaIsoVisitor;
+import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.J.Literal;
+import org.openrewrite.java.tree.J.MethodInvocation;
+import org.openrewrite.java.tree.JavaType.Method;
+import org.springframework.ide.vscode.boot.java.utils.ORAstUtils;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 /**
  * @author Martin Lippert
  */
-public class WebfluxPathFinder extends ASTVisitor {
+public class WebfluxPathFinder extends JavaIsoVisitor<ExecutionContext> {
 
 	private List<WebfluxRouteElement> path;
-	private ASTNode root;
+	private J root;
 	private TextDocument doc;
 
-	public WebfluxPathFinder(ASTNode root, TextDocument doc) {
+	public WebfluxPathFinder(J root, TextDocument doc) {
 		this.root = root;
 		this.doc = doc;
 		this.path = new ArrayList<>();
@@ -40,24 +42,25 @@ public class WebfluxPathFinder extends ASTVisitor {
 	public List<WebfluxRouteElement> getPath() {
 		return path;
 	}
-
+	
 	@Override
-	public boolean visit(MethodInvocation node) {
+	public MethodInvocation visitMethodInvocation(MethodInvocation methodInvocation, ExecutionContext p) {
 		boolean visitChildren = true;
 
-		if (node != this.root) {
-			IMethodBinding methodBinding = node.resolveMethodBinding();
+		if (methodInvocation != this.root) {
+			Method method = methodInvocation.getMethodType();
 
 			try {
-				if (methodBinding != null && methodBinding.getDeclaringClass() != null
-						&& WebfluxUtils.REQUEST_PREDICATES_TYPE.equals(methodBinding.getDeclaringClass().getBinaryName())) {
+				if (method != null && method.getDeclaringType() != null
+						&& WebfluxUtils.REQUEST_PREDICATES_TYPE.equals(method.getDeclaringType().getFullyQualifiedName())) {
 
-					String name = methodBinding.getName();
+					String name = method.getName();
 					if (name != null && WebfluxUtils.REQUEST_PREDICATE_ALL_PATH_METHODS.contains(name)) {
-						StringLiteral stringLiteral = WebfluxUtils.extractStringLiteralArgument(node);
+						Literal stringLiteral = WebfluxUtils.extractArgument(methodInvocation, Literal.class);
 						if (stringLiteral != null) {
-							Range range = doc.toRange(stringLiteral.getStartPosition(), stringLiteral.getLength());
-							path.add(new WebfluxRouteElement(stringLiteral.getLiteralValue(), range));
+							org.openrewrite.marker.Range r = ORAstUtils.getRange(stringLiteral);
+							Range range = doc.toRange(r.getStart().getOffset(), r.length());
+							path.add(new WebfluxRouteElement(ORAstUtils.getLiteralValue(stringLiteral), range));
 						}
 					}
 				}
@@ -66,12 +69,14 @@ public class WebfluxPathFinder extends ASTVisitor {
 				// ignore
 			}
 
-			if (WebfluxUtils.isRouteMethodInvocation(methodBinding)) {
+			if (WebfluxUtils.isRouteMethodInvocation(method)) {
 				visitChildren = false;
 			}
 
 		}
-		return visitChildren;
+
+		return visitChildren ? super.visitMethodInvocation(methodInvocation, p) : methodInvocation;
 	}
+
 
 }

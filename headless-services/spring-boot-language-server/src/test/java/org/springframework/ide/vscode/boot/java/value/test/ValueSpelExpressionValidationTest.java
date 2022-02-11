@@ -43,6 +43,7 @@ import org.springframework.ide.vscode.boot.java.handlers.BootJavaReconcileEngine
 import org.springframework.ide.vscode.boot.java.links.SourceLinkFactory;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
+import org.springframework.ide.vscode.boot.java.utils.ORCompilationUnitCache;
 import org.springframework.ide.vscode.boot.java.utils.SymbolCache;
 import org.springframework.ide.vscode.boot.java.utils.SymbolCacheVoid;
 import org.springframework.ide.vscode.boot.metadata.ValueProviderRegistry;
@@ -71,7 +72,7 @@ public class ValueSpelExpressionValidationTest {
 	@Autowired private BootLanguageServerHarness harness;
 	@Autowired private IJavaProject testProject;
 	@Autowired private JavaProjectFinder projectFinder;
-	@Autowired private CompilationUnitCache compilationUnitCache;
+	@Autowired private ORCompilationUnitCache compilationUnitCache;
 	@Autowired private SimpleLanguageServer server;
 
 	private File directory;

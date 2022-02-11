@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2019 Pivotal, Inc.
+ * Copyright (c) 2017, 2022 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,17 +13,19 @@ package org.springframework.ide.vscode.boot.java.beans;
 import java.util.Collection;
 import java.util.stream.Collectors;
 
-import org.eclipse.jdt.core.dom.ASTNode;
-import org.eclipse.jdt.core.dom.Annotation;
-import org.eclipse.jdt.core.dom.ITypeBinding;
-import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.SymbolKind;
+import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.J.Annotation;
+import org.openrewrite.java.tree.J.ClassDeclaration;
+import org.openrewrite.java.tree.JavaType.FullyQualified;
+import org.openrewrite.marker.Range;
 import org.springframework.ide.vscode.boot.java.handlers.AbstractSymbolProvider;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
 import org.springframework.ide.vscode.boot.java.utils.CachedSymbol;
+import org.springframework.ide.vscode.boot.java.utils.ORAstUtils;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJavaContext;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.Log;
@@ -36,7 +38,7 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
 public class ComponentSymbolProvider extends AbstractSymbolProvider {
 
 	@Override
-	protected void addSymbolsPass1(Annotation node, ITypeBinding annotationType, Collection<ITypeBinding> metaAnnotations, SpringIndexerJavaContext context, TextDocument doc) {
+	protected void addSymbolsPass1(Annotation node, FullyQualified annotationType, Collection<FullyQualified> metaAnnotations, SpringIndexerJavaContext context, TextDocument doc) {
 		try {
 			EnhancedSymbolInformation enhancedSymbol = createSymbol(node, annotationType, metaAnnotations, doc);
 			context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), enhancedSymbol));
@@ -46,17 +48,18 @@ public class ComponentSymbolProvider extends AbstractSymbolProvider {
 		}
 	}
 
-	protected EnhancedSymbolInformation createSymbol(Annotation node, ITypeBinding annotationType, Collection<ITypeBinding> metaAnnotations, TextDocument doc) throws BadLocationException {
-		String annotationTypeName = annotationType.getName();
+	protected EnhancedSymbolInformation createSymbol(Annotation node, FullyQualified annotationType, Collection<FullyQualified> metaAnnotations, TextDocument doc) throws BadLocationException {
+		String annotationTypeName = annotationType.getFullyQualifiedName();
 		Collection<String> metaAnnotationNames = metaAnnotations.stream()
-				.map(ITypeBinding::getName)
+				.map(FullyQualified::getFullyQualifiedName)
 				.collect(Collectors.toList());
 		String beanName = getBeanName(node);
 		String beanType = getBeanType(node);
 
+		Range r = ORAstUtils.getRange(node);
 		SymbolInformation symbol = new SymbolInformation(
 				beanLabel("+", annotationTypeName, metaAnnotationNames, beanName, beanType), SymbolKind.Interface,
-				new Location(doc.getUri(), doc.toRange(node.getStartPosition(), node.getLength())));
+				new Location(doc.getUri(), doc.toRange(r.getStart().getOffset(), r.length())));
 
 		SymbolAddOnInformation[] addon = new SymbolAddOnInformation[] {new BeansSymbolAddOnInformation(beanName)};
 
@@ -91,21 +94,21 @@ public class ComponentSymbolProvider extends AbstractSymbolProvider {
 	}
 
 	private String getBeanName(Annotation node) {
-		ASTNode parent = node.getParent();
-		if (parent instanceof TypeDeclaration) {
-			TypeDeclaration type = (TypeDeclaration) parent;
+		J parent = ORAstUtils.getParent(node);
+		if (parent instanceof ClassDeclaration) {
+			ClassDeclaration type = (ClassDeclaration) parent;
 
-			String beanName = type.getName().toString();
+			String beanName = type.getSimpleName();
 			return BeanUtils.getBeanNameFromType(beanName);
 		}
 		return null;
 	}
 
 	private String getBeanType(Annotation node) {
-		ASTNode parent = node.getParent();
-		if (parent instanceof TypeDeclaration) {
-			TypeDeclaration type = (TypeDeclaration) parent;
-			String returnType = type.resolveBinding().getName();
+		J parent = ORAstUtils.getParent(node);
+		if (parent instanceof ClassDeclaration) {
+			ClassDeclaration type = (ClassDeclaration) parent;
+			String returnType = type.getType().getFullyQualifiedName();
 			return returnType;
 		}
 		return null;

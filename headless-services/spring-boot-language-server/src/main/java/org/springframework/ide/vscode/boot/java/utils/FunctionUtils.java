@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Pivotal, Inc.
+ * Copyright (c) 2018, 2022 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,14 +10,14 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.utils;
 
-import java.util.List;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-import org.eclipse.jdt.core.dom.ITypeBinding;
-import org.eclipse.jdt.core.dom.Modifier;
-import org.eclipse.jdt.core.dom.TypeDeclaration;
+import org.openrewrite.java.tree.J.ClassDeclaration;
+import org.openrewrite.java.tree.J.Modifier;
+import org.openrewrite.java.tree.JavaType.FullyQualified;
+import org.openrewrite.java.tree.JavaType.FullyQualified.Kind;
 import org.springframework.ide.vscode.boot.java.beans.BeanUtils;
 import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -34,10 +34,10 @@ public class FunctionUtils {
 	public static final String FUNCTION_CONSUMER_TYPE = Consumer.class.getName();
 	public static final String FUNCTION_SUPPLIER_TYPE = Supplier.class.getName();
 
-	public static Tuple3<String, String, DocumentRegion> getFunctionBean(TypeDeclaration typeDeclaration, TextDocument doc) {
-		ITypeBinding resolvedType = typeDeclaration.resolveBinding();
+	public static Tuple3<String, String, DocumentRegion> getFunctionBean(ClassDeclaration typeDeclaration, TextDocument doc) {
+		FullyQualified resolvedType = typeDeclaration.getType();
 
-		if (resolvedType != null && !resolvedType.isInterface() && !isAbstractClass(typeDeclaration, resolvedType)) {
+		if (resolvedType != null && resolvedType.getKind() == Kind.Class  && !isAbstractClass(typeDeclaration)) {
 			return getFunctionBean(typeDeclaration, doc, resolvedType);
 		}
 		else {
@@ -45,24 +45,16 @@ public class FunctionUtils {
 		}
 	}
 
-	private static Tuple3<String, String, DocumentRegion> getFunctionBean(TypeDeclaration typeDeclaration, TextDocument doc,
-			ITypeBinding resolvedType) {
-
-		ITypeBinding[] interfaces = resolvedType.getInterfaces();
-		for (ITypeBinding resolvedInterface : interfaces) {
-			String simplifiedType = null;
-			if (resolvedInterface.isParameterizedType()) {
-				simplifiedType = resolvedInterface.getBinaryName();
-			}
-			else {
-				simplifiedType = resolvedType.getQualifiedName();
-			}
+	private static Tuple3<String, String, DocumentRegion> getFunctionBean(ClassDeclaration typeDeclaration, TextDocument doc,
+			FullyQualified resolvedType) {
+		for (FullyQualified resolvedInterface : resolvedType.getInterfaces()) {
+			String simplifiedType = resolvedInterface.getFullyQualifiedName();
 
 			if (FUNCTION_FUNCTION_TYPE.equals(simplifiedType) || FUNCTION_CONSUMER_TYPE.equals(simplifiedType)
 					|| FUNCTION_SUPPLIER_TYPE.equals(simplifiedType)) {
 				String beanName = getBeanName(typeDeclaration);
-				String beanType = resolvedInterface.getName();
-				DocumentRegion region = ASTUtils.nodeRegion(doc, typeDeclaration.getName());
+				String beanType = resolvedInterface.toString();
+				DocumentRegion region = ORAstUtils.nodeRegion(doc, typeDeclaration.getName());
 
 				return Tuples.of(beanName, beanType, region);
 			}
@@ -74,7 +66,7 @@ public class FunctionUtils {
 			}
 		}
 
-		ITypeBinding superclass = resolvedType.getSuperclass();
+		FullyQualified superclass = resolvedType.getSupertype();
 		if (superclass != null) {
 			return getFunctionBean(typeDeclaration, doc, superclass);
 		}
@@ -83,22 +75,13 @@ public class FunctionUtils {
 		}
 	}
 
-	protected static String getBeanName(TypeDeclaration typeDeclaration) {
-		String beanName = typeDeclaration.getName().toString();
+	protected static String getBeanName(ClassDeclaration typeDeclaration) {
+		String beanName = typeDeclaration.getSimpleName();
 		return BeanUtils.getBeanNameFromType(beanName);
 	}
 
-	protected static boolean isAbstractClass(TypeDeclaration typeDeclaration, ITypeBinding resolvedType) {
-		List<?> modifiers = typeDeclaration.modifiers();
-		for (Object object : modifiers) {
-			if (object instanceof Modifier) {
-				if (((Modifier) object).isAbstract()) {
-					return true;
-				}
-			}
-		}
-
-		return false;
+	protected static boolean isAbstractClass(ClassDeclaration typeDeclaration) {
+		return Modifier.hasModifier(typeDeclaration.getModifiers(), Modifier.Type.Abstract);
 	}
 
 }

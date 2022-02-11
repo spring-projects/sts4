@@ -10,11 +10,16 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.data;
 
-import org.eclipse.jdt.core.dom.ITypeBinding;
-import org.eclipse.jdt.core.dom.TypeDeclaration;
+import java.util.List;
+
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.SymbolKind;
+import org.openrewrite.java.tree.J.ClassDeclaration;
+import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.java.tree.JavaType.FullyQualified;
+import org.openrewrite.java.tree.JavaType.Parameterized;
+import org.openrewrite.java.tree.TypeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.beans.BeanUtils;
@@ -22,8 +27,8 @@ import org.springframework.ide.vscode.boot.java.beans.BeansSymbolAddOnInformatio
 import org.springframework.ide.vscode.boot.java.handlers.AbstractSymbolProvider;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
-import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.boot.java.utils.CachedSymbol;
+import org.springframework.ide.vscode.boot.java.utils.ORAstUtils;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJavaContext;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
@@ -40,7 +45,7 @@ public class DataRepositorySymbolProvider extends AbstractSymbolProvider {
 	private static final Logger log = LoggerFactory.getLogger(DataRepositorySymbolProvider.class);
 
 	@Override
-	protected void addSymbolsPass1(TypeDeclaration typeDeclaration, SpringIndexerJavaContext context, TextDocument doc) {
+	protected void addSymbolsPass1(ClassDeclaration typeDeclaration, SpringIndexerJavaContext context, TextDocument doc) {
 		// this checks spring data repository beans that are defined as extensions of the repository interface
 		Tuple4<String, String, String, DocumentRegion> repositoryBean = getRepositoryBean(typeDeclaration, doc);
 		if (repositoryBean != null) {
@@ -75,8 +80,8 @@ public class DataRepositorySymbolProvider extends AbstractSymbolProvider {
 		return symbolLabel.toString();
 	}
 
-	private static Tuple4<String, String, String, DocumentRegion> getRepositoryBean(TypeDeclaration typeDeclaration, TextDocument doc) {
-		ITypeBinding resolvedType = typeDeclaration.resolveBinding();
+	private static Tuple4<String, String, String, DocumentRegion> getRepositoryBean(ClassDeclaration typeDeclaration, TextDocument doc) {
+		FullyQualified resolvedType = typeDeclaration.getType();
 
 		if (resolvedType != null) {
 			return getRepositoryBean(typeDeclaration, doc, resolvedType);
@@ -86,53 +91,46 @@ public class DataRepositorySymbolProvider extends AbstractSymbolProvider {
 		}
 	}
 
-	private static Tuple4<String, String, String, DocumentRegion> getRepositoryBean(TypeDeclaration typeDeclaration, TextDocument doc,
-			ITypeBinding resolvedType) {
-
-		ITypeBinding[] interfaces = resolvedType.getInterfaces();
-		for (ITypeBinding resolvedInterface : interfaces) {
-			String simplifiedType = null;
-			if (resolvedInterface.isParameterizedType()) {
-				simplifiedType = resolvedInterface.getBinaryName();
-			}
-			else {
-				simplifiedType = resolvedType.getQualifiedName();
-			}
-
-			if (Constants.REPOSITORY_TYPE.equals(simplifiedType)) {
+	private static Tuple4<String, String, String, DocumentRegion> getRepositoryBean(ClassDeclaration typeDeclaration, TextDocument doc,
+			FullyQualified resolvedType) {
+		
+		for (FullyQualified resolvedInterface : resolvedType.getInterfaces()) {
+			if (Constants.REPOSITORY_TYPE.equals(resolvedInterface.getFullyQualifiedName())) {
 				String beanName = getBeanName(typeDeclaration);
-				String beanType = resolvedInterface.getName();
-
+				String beanType = resolvedInterface.toString();
+				
 				String domainType = null;
-				if (resolvedInterface.isParameterizedType()) {
-					ITypeBinding[] typeParameters = resolvedInterface.getTypeArguments();
-					if (typeParameters != null && typeParameters.length > 0) {
-						domainType = typeParameters[0].getName();
+				if (resolvedType instanceof Parameterized) {
+					List<JavaType> typeParams = ((Parameterized)resolvedType).getTypeParameters();
+					if (typeParams != null && !typeParams.isEmpty()) {
+						FullyQualified typeParam = TypeUtils.asFullyQualified(typeParams.get(0));
+						domainType = typeParam == null ? null : typeParam.getFullyQualifiedName();
 					}
 				}
-				DocumentRegion region = ASTUtils.nodeRegion(doc, typeDeclaration.getName());
 
+				DocumentRegion region = ORAstUtils.nodeRegion(doc, typeDeclaration.getName());
+				
 				return Tuples.of(beanName, beanType, domainType, region);
-			}
-			else {
+			} else {
 				Tuple4<String, String, String, DocumentRegion> result = getRepositoryBean(typeDeclaration, doc, resolvedInterface);
 				if (result != null) {
 					return result;
 				}
 			}
 		}
-
-		ITypeBinding superclass = resolvedType.getSuperclass();
+		
+		FullyQualified superclass = resolvedType.getSupertype();
 		if (superclass != null) {
 			return getRepositoryBean(typeDeclaration, doc, superclass);
-		}
-		else {
+		} else {
 			return null;
 		}
+
+
 	}
 
-	private static String getBeanName(TypeDeclaration typeDeclaration) {
-		String beanName = typeDeclaration.getName().toString();
+	private static String getBeanName(ClassDeclaration typeDeclaration) {
+		String beanName = typeDeclaration.getSimpleName();
 		return BeanUtils.getBeanNameFromType(beanName);
 	}
 
