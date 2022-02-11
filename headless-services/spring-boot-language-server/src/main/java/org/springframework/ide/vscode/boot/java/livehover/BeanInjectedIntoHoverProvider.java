@@ -14,7 +14,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
-import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.Range;
@@ -28,7 +27,6 @@ import org.springframework.ide.vscode.boot.java.autowired.AutowiredHoverProvider
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.java.livehover.v2.LiveBean;
 import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveData;
-import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.boot.java.utils.ORAstUtils;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.util.Optionals;

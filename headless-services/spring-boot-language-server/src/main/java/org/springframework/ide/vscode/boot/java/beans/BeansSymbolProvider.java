@@ -11,12 +11,10 @@
 package org.springframework.ide.vscode.boot.java.beans;
 
 import java.util.Collection;
-import java.util.List;
 
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.SymbolKind;
-import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.J.Annotation;
 import org.openrewrite.java.tree.J.ClassDeclaration;
@@ -25,13 +23,11 @@ import org.openrewrite.java.tree.J.MethodDeclaration;
 import org.openrewrite.java.tree.J.Modifier;
 import org.openrewrite.java.tree.JavaType.FullyQualified;
 import org.openrewrite.java.tree.JavaType.Method;
-import org.openrewrite.java.tree.JavaType.Parameterized;
 import org.openrewrite.java.tree.TypeUtils;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.handlers.AbstractSymbolProvider;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
-import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.boot.java.utils.CachedSymbol;
 import org.springframework.ide.vscode.boot.java.utils.FunctionUtils;
 import org.springframework.ide.vscode.boot.java.utils.ORAstUtils;
@@ -42,7 +38,6 @@ import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.reflect.Parameter;
 
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuple3;

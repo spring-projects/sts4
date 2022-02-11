@@ -13,7 +13,7 @@ package org.springframework.ide.vscode.boot.java.utils;
 import java.util.Collection;
 import java.util.Set;
 
-import org.eclipse.jdt.core.dom.ITypeBinding;
+import org.openrewrite.java.tree.JavaType.FullyQualified;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,8 +26,8 @@ public class SpringIndexerJavaDependencyTracker {
 
 	private Multimap<String, String> dependencies = MultimapBuilder.hashKeys().hashSetValues().build();
 	
-	public void addDependency(String sourceFile, ITypeBinding dependsOn) {
-		dependencies.put(sourceFile, dependsOn.getKey());
+	public void addDependency(String sourceFile, FullyQualified dependsOn) {
+		dependencies.put(sourceFile, dependsOn.getFullyQualifiedName());
 	}
 	
 	public void dump() {

@@ -99,12 +99,12 @@
 			<artifactId>commons-language-server</artifactId>
 			<version>${dependencies.version}</version>
 		</dependency>
-		<dependency>
+<!-- 		<dependency>
 			<groupId>org.eclipse.jdt</groupId>
 			<artifactId>org.eclipse.jdt.core</artifactId>
 			<version>${jdt.core.version}</version>
 		</dependency>
-		<dependency>
+ -->		<dependency>
 		    <groupId>org.openrewrite</groupId>
 		    <artifactId>rewrite-java</artifactId>
 		    <version>${rewrite-version}</version>

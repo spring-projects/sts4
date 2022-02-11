@@ -17,11 +17,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.IOUtils;
-import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.Parser.Input;
-import org.openrewrite.Result;
 import org.openrewrite.java.JavaParser;
-import org.openrewrite.java.UpdateSourcePositions;
 import org.openrewrite.java.tree.J.CompilationUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +38,7 @@ import reactor.core.Disposable;
 
 public class ORCompilationUnitCache implements DocumentContentProvider, Disposable {
 	
-	private static final Logger logger = LoggerFactory.getLogger(CompilationUnitCache.class);
+	private static final Logger logger = LoggerFactory.getLogger(ORCompilationUnitCache.class);
 
 	private static final long CU_ACCESS_EXPIRATION = 1;
 	private JavaProjectFinder projectFinder;

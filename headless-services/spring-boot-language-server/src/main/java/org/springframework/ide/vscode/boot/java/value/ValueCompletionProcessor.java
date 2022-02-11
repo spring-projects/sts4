@@ -18,15 +18,12 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
-import org.eclipse.jdt.core.dom.ASTNode;
-import org.eclipse.jdt.core.dom.MemberValuePair;
-import org.eclipse.jdt.core.dom.SimpleName;
-import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.J.Annotation;
 import org.openrewrite.marker.Range;
 import org.springframework.ide.vscode.boot.java.handlers.CompletionProvider;
+import org.springframework.ide.vscode.boot.java.utils.ORAstUtils;
 import org.springframework.ide.vscode.boot.metadata.ProjectBasedPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
 import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
@@ -109,12 +106,13 @@ public class ValueCompletionProcessor implements CompletionProvider {
 	public void provideCompletions(J node, int offset, IDocument doc, Collection<ICompletionProposal> completions) {
 	}
 
-	private void computeProposalsForSimpleName(ASTNode node, Collection<ICompletionProposal> completions, int offset,
+	private void computeProposalsForSimpleName(J node, Collection<ICompletionProposal> completions, int offset,
 			IDocument doc) {
-		String prefix = identifyPropertyPrefix(node.toString(), offset - node.getStartPosition());
+		Range r = ORAstUtils.getRange(node);
+		int startOffset = r.getStart().getOffset();
+		int endOffset = r.getEnd().getOffset();
 
-		int startOffset = node.getStartPosition();
-		int endOffset = node.getStartPosition() + node.getLength();
+		String prefix = identifyPropertyPrefix(node.toString(), offset - startOffset);
 
 		String proposalPrefix = "\"";
 		String proposalPostfix = "\"";

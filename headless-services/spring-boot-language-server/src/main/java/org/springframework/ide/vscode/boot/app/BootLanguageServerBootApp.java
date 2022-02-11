@@ -35,7 +35,6 @@ import org.springframework.ide.vscode.boot.java.links.JdtJavaDocumentUriProvider
 import org.springframework.ide.vscode.boot.java.links.SourceLinkFactory;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveDataProvider;
-import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.boot.java.utils.ORCompilationUnitCache;
 import org.springframework.ide.vscode.boot.java.utils.SymbolCache;
 import org.springframework.ide.vscode.boot.java.utils.SymbolCacheOnDisc;
@@ -159,8 +158,8 @@ public class BootLanguageServerBootApp {
 		return new ORCompilationUnitCache(params.projectFinder, server, params.projectObserver);
 	}
 	
-	@Bean CompilationUnitCache cuCache(SimpleLanguageServer server, BootLanguageServerParams params) {
-		return new CompilationUnitCache(params.projectFinder, server, params.projectObserver);
+	@Bean ORCompilationUnitCache cuCache(SimpleLanguageServer server, BootLanguageServerParams params) {
+		return new ORCompilationUnitCache(params.projectFinder, server, params.projectObserver);
 	}
 	
 	@Bean SpringXMLCompletionEngine xmlCompletionEngine(SimpleLanguageServer server, JavaProjectFinder projectFinder, SpringSymbolIndex symbolIndex, BootJavaConfig config) {

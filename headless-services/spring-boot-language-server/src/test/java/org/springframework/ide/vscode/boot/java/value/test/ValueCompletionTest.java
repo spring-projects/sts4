@@ -37,7 +37,7 @@ import org.springframework.ide.vscode.boot.editor.harness.AdHocPropertyHarness;
 import org.springframework.ide.vscode.boot.editor.harness.PropertyIndexHarness;
 import org.springframework.ide.vscode.boot.java.links.SourceLinkFactory;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
-import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
+import org.springframework.ide.vscode.boot.java.utils.ORCompilationUnitCache;
 import org.springframework.ide.vscode.boot.java.utils.SymbolCache;
 import org.springframework.ide.vscode.boot.java.utils.SymbolCacheVoid;
 import org.springframework.ide.vscode.boot.java.value.ValueCompletionProcessor;
@@ -121,7 +121,7 @@ public class ValueCompletionTest {
 			return new SymbolCacheVoid();
 		}
 
-		@Bean SourceLinks sourceLinks(SimpleTextDocumentService documents, CompilationUnitCache cuCache) {
+		@Bean SourceLinks sourceLinks(SimpleTextDocumentService documents, ORCompilationUnitCache cuCache) {
 			return SourceLinkFactory.NO_SOURCE_LINKS;
 		}
 

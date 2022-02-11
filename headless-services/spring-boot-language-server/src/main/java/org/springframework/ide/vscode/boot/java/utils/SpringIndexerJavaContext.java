@@ -15,7 +15,6 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.openrewrite.java.tree.J.CompilationUnit;
 import org.openrewrite.java.tree.JavaType.FullyQualified;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJava.SCAN_PASS;

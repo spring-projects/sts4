@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2021 Pivotal, Inc.
+ * Copyright (c) 2017, 2022 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -24,17 +24,18 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
-import org.eclipse.jdt.core.dom.ASTNode;
-import org.eclipse.jdt.core.dom.Annotation;
-import org.eclipse.jdt.core.dom.ITypeBinding;
-import org.eclipse.jdt.core.dom.MemberValuePair;
-import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.WorkspaceFolder;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
+import org.openrewrite.java.tree.J;
+import org.openrewrite.java.tree.J.Annotation;
+import org.openrewrite.java.tree.J.Assignment;
+import org.openrewrite.java.tree.J.Literal;
+import org.openrewrite.java.tree.JavaType.FullyQualified;
 import org.springframework.ide.vscode.boot.java.handlers.ReferenceProvider;
+import org.springframework.ide.vscode.boot.java.utils.ORAstUtils;
 import org.springframework.ide.vscode.boot.properties.BootPropertiesLanguageServerComponents;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
@@ -63,23 +64,27 @@ public class ValuePropertyReferencesProvider implements ReferenceProvider {
 	}
 
 	@Override
-	public List<? extends Location> provideReferences(CancelChecker cancelToken, ASTNode node, Annotation annotation,
-			ITypeBinding type, int offset, TextDocument doc) {
+	public List<? extends Location> provideReferences(CancelChecker cancelToken, J node, Annotation annotation,
+			FullyQualified type, int offset, TextDocument doc) {
 		
 		cancelToken.checkCanceled();
 
 		try {
 			// case: @Value("prefix<*>")
-			if (node instanceof StringLiteral && node.getParent() instanceof Annotation) {
-				if (node.toString().startsWith("\"") && node.toString().endsWith("\"")) {
-					return provideReferences(node.toString(), offset - node.getStartPosition(), node.getStartPosition(), doc);
+			if (node instanceof Literal && ORAstUtils.getParent(node) instanceof Annotation) {
+				String nodeStr = node.printTrimmed();
+				if (nodeStr.startsWith("\"") && nodeStr.endsWith("\"")) {
+					org.openrewrite.marker.Range r = ORAstUtils.getRange(node);
+					return provideReferences(node.toString(), offset - r.getStart().getOffset(), r.getStart().getOffset(), doc);
 				}
 			}
 			// case: @Value(value="prefix<*>")
-			else if (node instanceof StringLiteral && node.getParent() instanceof MemberValuePair
-					&& "value".equals(((MemberValuePair)node.getParent()).getName().toString())) {
-				if (node.toString().startsWith("\"") && node.toString().endsWith("\"")) {
-					return provideReferences(node.toString(), offset - node.getStartPosition(), node.getStartPosition(), doc);
+			else if (node instanceof Literal && ORAstUtils.getParent(node) instanceof Assignment
+					&& "value".equals(((Assignment)ORAstUtils.getParent(node)).getVariable().printTrimmed())) {
+				String nodeStr = node.printTrimmed();
+				if (nodeStr.startsWith("\"") && nodeStr.endsWith("\"")) {
+					org.openrewrite.marker.Range r = ORAstUtils.getRange(node);
+					return provideReferences(node.toString(), offset - r.getStart().getOffset(), r.getStart().getOffset(), doc);
 				}
 			}
 		}

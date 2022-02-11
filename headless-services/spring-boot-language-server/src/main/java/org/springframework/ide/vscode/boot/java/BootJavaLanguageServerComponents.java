@@ -302,7 +302,7 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		providers.put(org.springframework.ide.vscode.boot.java.value.Constants.SPRING_VALUE,
 				new ValuePropertyReferencesProvider(server));
 
-		return new BootJavaReferencesHandler(this, projectFinder, providers);
+		return new BootJavaReferencesHandler(this, projectFinder, providers, cuCache);
 	}
 
 	protected BootJavaCodeLensEngine createCodeLensEngine(SpringSymbolIndex index) {

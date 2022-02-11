@@ -18,7 +18,7 @@ import org.springframework.ide.vscode.boot.editor.harness.PropertyIndexHarness;
 import org.springframework.ide.vscode.boot.java.links.JavaDocumentUriProvider;
 import org.springframework.ide.vscode.boot.java.links.SourceLinkFactory;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
-import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
+import org.springframework.ide.vscode.boot.java.utils.ORCompilationUnitCache;
 import org.springframework.ide.vscode.boot.java.utils.SymbolCache;
 import org.springframework.ide.vscode.boot.java.utils.SymbolCacheVoid;
 import org.springframework.ide.vscode.boot.java.utils.test.MockProjectObserver;
@@ -64,7 +64,7 @@ public class XmlBeansTestConf {
 		return (DefaultSpringPropertyIndexProvider) serverParams.indexProvider;
 	}
 
-	@Bean DefinitionLinkAsserts definitionLinkAsserts(JavaDocumentUriProvider javaDocumentUriProvider, CompilationUnitCache cuCache) {
+	@Bean DefinitionLinkAsserts definitionLinkAsserts(JavaDocumentUriProvider javaDocumentUriProvider, ORCompilationUnitCache cuCache) {
 		return new DefinitionLinkAsserts(javaDocumentUriProvider, cuCache);
 	}
 

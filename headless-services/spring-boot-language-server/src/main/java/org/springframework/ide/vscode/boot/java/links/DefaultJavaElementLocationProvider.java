@@ -15,24 +15,14 @@ import java.net.URL;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.eclipse.jdt.core.dom.ASTVisitor;
-import org.eclipse.jdt.core.dom.EnumConstantDeclaration;
-import org.eclipse.jdt.core.dom.EnumDeclaration;
-import org.eclipse.jdt.core.dom.MethodDeclaration;
-import org.eclipse.jdt.core.dom.SimpleName;
-import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.utils.ORCompilationUnitCache;
-import org.springframework.ide.vscode.commons.java.IField;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.IMember;
-import org.springframework.ide.vscode.commons.java.IMethod;
-import org.springframework.ide.vscode.commons.java.IType;
-import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 public class DefaultJavaElementLocationProvider implements JavaElementLocationProvider {
 

@@ -18,7 +18,6 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.eclipse.jdt.internal.compiler.problem.AbortCompilation;
 import org.openrewrite.java.tree.J.Annotation;
 import org.openrewrite.java.tree.JavaType.FullyQualified;
 import org.openrewrite.java.tree.TypeUtils;
@@ -48,21 +47,15 @@ public abstract class AnnotationHierarchies {
 	};
 
 	public static Collection<FullyQualified> getDirectSuperAnnotations(FullyQualified type) {
-		try {
-			List<FullyQualified> annotations = type.getAnnotations();
-			if (annotations != null && !annotations.isEmpty()) {
-				ImmutableList.Builder<FullyQualified> superAnnotations = ImmutableList.builder();
-				for (FullyQualified ab : annotations) {
-					if (!ignoreAnnotation(ab.getFullyQualifiedName())) {
-						superAnnotations.add(ab);
-					}
+		List<FullyQualified> annotations = type.getAnnotations();
+		if (annotations != null && !annotations.isEmpty()) {
+			ImmutableList.Builder<FullyQualified> superAnnotations = ImmutableList.builder();
+			for (FullyQualified ab : annotations) {
+				if (!ignoreAnnotation(ab.getFullyQualifiedName())) {
+					superAnnotations.add(ab);
 				}
-				return superAnnotations.build();
 			}
-		} catch (AbortCompilation e) {
-			log.debug("compilation aborted ", e);
-			// ignore this, it is most likely caused by broken source code, a broken
-			// classpath, or some optional dependencies not being on the classpath
+			return superAnnotations.build();
 		}
 
 		return ImmutableList.of();
