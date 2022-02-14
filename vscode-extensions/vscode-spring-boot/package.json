@@ -29,7 +29,8 @@
     "onLanguage:spring-boot-properties",
     "onLanguage:spring-boot-properties-yaml",
     "onLanguage:java",
-    "onLanguage:xml"
+    "onLanguage:xml",
+    "onDebugResolve:java"
   ],
   "contributes": {
     "javaExtensions": [

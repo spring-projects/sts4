@@ -4,7 +4,7 @@ import * as VSCode from 'vscode';
 import { LanguageClient } from "vscode-languageclient/node";
 import { ActivatorOptions } from '@pivotal-tools/commons-vscode';
 
-interface ProcessCommandInfo {
+export interface ProcessCommandInfo {
     processKey : string;
 	label: string;
 	action: string
