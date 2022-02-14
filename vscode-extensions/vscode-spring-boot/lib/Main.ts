@@ -7,6 +7,7 @@ import * as commons from '@pivotal-tools/commons-vscode';
 import * as liveHoverUi from './live-hover-connect-ui';
 
 import {LanguageClient} from "vscode-languageclient/node";
+import { startDebugSupport } from './debug-config-provider';
 
 const PROPERTIES_LANGUAGE_ID = "spring-boot-properties";
 const YAML_LANGUAGE_ID = "spring-boot-properties-yaml";
@@ -77,6 +78,9 @@ export function activate(context: VSCode.ExtensionContext): Thenable<LanguageCli
         },
         highlightCodeLensSettingKey: 'boot-java.highlight-codelens.on'
     };
+
+    // Register launch config contributior to java debug launch to be able to connect to JMX
+    context.subscriptions.push(startDebugSupport());
 
     return commons.activate(options, context).then(client => {
         liveHoverUi.activate(client, options, context);
