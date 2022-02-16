@@ -28,7 +28,7 @@ export interface JVM {
     /**
      * Launch an executable jar with this jvm.
      */
-    jarLaunch(jar: string, vmargs?: string[], execFileOptions?: ChildProcess.ExecFileOptions) : ChildProcess.ChildProcess
+    jarLaunch(jar: string, vmargs?: string[], execFileOptions?: ChildProcess.ExecFileOptions, pargs?: [string]) : ChildProcess.ChildProcess
 
     mainClassLaunch(mainClass: string, classpath: string[], jvmArgs: string[], execFileOptions?: ChildProcess.ExecFileOptions): ChildProcess.ChildProcess
 }
