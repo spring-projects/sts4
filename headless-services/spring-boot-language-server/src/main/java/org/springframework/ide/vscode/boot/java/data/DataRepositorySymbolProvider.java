@@ -95,39 +95,46 @@ public class DataRepositorySymbolProvider extends AbstractSymbolProvider {
 	private static Tuple4<String, String, String, DocumentRegion> getRepositoryBean(ClassDeclaration typeDeclaration, TextDocument doc,
 			FullyQualified resolvedType) {
 		
-		for (FullyQualified resolvedInterface : resolvedType.getInterfaces()) {
-			if (Constants.REPOSITORY_TYPE.equals(resolvedInterface.getFullyQualifiedName())) {
-				String beanName = getBeanName(typeDeclaration);
-				String beanType = ORAstUtils.getSimpleNameWithParamTypes(resolvedInterface);
-				
-				String domainType = null;
-				if (resolvedInterface instanceof Parameterized) {
-					List<JavaType> typeParams = ((Parameterized)resolvedInterface).getTypeParameters();
-					if (typeParams != null && !typeParams.isEmpty()) {
-						FullyQualified typeParam = TypeUtils.asFullyQualified(typeParams.get(0));
-						domainType = typeParam == null ? null : ORAstUtils.getSimpleNameWithParamTypes(typeParam);
-					}
-				}
-
-				DocumentRegion region = ORAstUtils.nodeRegion(doc, typeDeclaration.getName());
-				
-				return Tuples.of(beanName, beanType.toString(), domainType, region);
-			} else {
-				Tuple4<String, String, String, DocumentRegion> result = getRepositoryBean(typeDeclaration, doc, resolvedInterface);
-				if (result != null) {
-					return result;
+		if (TypeUtils.isAssignableTo(Constants.REPOSITORY_TYPE, resolvedType)) {
+			List<JavaType> typeParams = calculateTypeParams(resolvedType);
+			
+			String domainType = null; 
+			String beanName = getBeanName(typeDeclaration);
+			StringBuilder beanType = new StringBuilder(Constants.REPOSITORY_TYPE.substring(Constants.REPOSITORY_TYPE.lastIndexOf('.') + 1));
+			if (typeParams != null) {
+				beanType.append(typeParams.stream().map(ORAstUtils::getSimpleNameWithParamTypes).collect(Collectors.joining(",", "<", ">")));
+				if (!typeParams.isEmpty()) {
+					FullyQualified typeParam = TypeUtils.asFullyQualified(typeParams.get(0));
+					domainType = typeParam == null ? null : ORAstUtils.getSimpleNameWithParamTypes(typeParam);
 				}
 			}
+			
+			DocumentRegion region = ORAstUtils.nodeRegion(doc, typeDeclaration.getName());
+			
+			return Tuples.of(beanName, beanType.toString(), domainType, region);
 		}
 		
-		FullyQualified superclass = resolvedType.getSupertype();
-		if (superclass != null) {
-			return getRepositoryBean(typeDeclaration, doc, superclass);
-		} else {
-			return null;
+		return null;
+	}
+	
+	private static List<JavaType> calculateTypeParams(JavaType type) {
+		if (type instanceof FullyQualified) {
+			if (type instanceof Parameterized) {
+				return ((Parameterized) type).getTypeParameters();
+			}
+			FullyQualified fqType = (FullyQualified) type;
+			for (FullyQualified i : fqType.getInterfaces()) {
+				List<JavaType> res = calculateTypeParams(i);
+				if (res != null) {
+					return res;
+				}
+			}
+			FullyQualified superType = fqType.getSupertype();
+			if (superType != null) {
+				return calculateTypeParams(superType);
+			}
 		}
-
-
+		return null;
 	}
 
 	private static String getBeanName(ClassDeclaration typeDeclaration) {

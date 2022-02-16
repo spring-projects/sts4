@@ -61,7 +61,7 @@ public class DataRepositorySymbolProviderTest {
 		projectFinder.find(new TextDocumentIdentifier(projectDir)).get();
 
 		CompletableFuture<Void> initProject = indexer.waitOperation();
-		initProject.get(25000000L, TimeUnit.SECONDS);
+		initProject.get(20, TimeUnit.SECONDS);
 	}
 
 	@Test
