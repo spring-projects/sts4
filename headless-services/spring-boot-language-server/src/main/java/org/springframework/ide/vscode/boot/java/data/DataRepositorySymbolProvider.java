@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.boot.java.data;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.SymbolInformation;
@@ -97,20 +98,20 @@ public class DataRepositorySymbolProvider extends AbstractSymbolProvider {
 		for (FullyQualified resolvedInterface : resolvedType.getInterfaces()) {
 			if (Constants.REPOSITORY_TYPE.equals(resolvedInterface.getFullyQualifiedName())) {
 				String beanName = getBeanName(typeDeclaration);
-				String beanType = resolvedInterface.toString();
+				String beanType = ORAstUtils.getSimpleNameWithParamTypes(resolvedInterface);
 				
 				String domainType = null;
-				if (resolvedType instanceof Parameterized) {
-					List<JavaType> typeParams = ((Parameterized)resolvedType).getTypeParameters();
+				if (resolvedInterface instanceof Parameterized) {
+					List<JavaType> typeParams = ((Parameterized)resolvedInterface).getTypeParameters();
 					if (typeParams != null && !typeParams.isEmpty()) {
 						FullyQualified typeParam = TypeUtils.asFullyQualified(typeParams.get(0));
-						domainType = typeParam == null ? null : typeParam.getFullyQualifiedName();
+						domainType = typeParam == null ? null : ORAstUtils.getSimpleNameWithParamTypes(typeParam);
 					}
 				}
 
 				DocumentRegion region = ORAstUtils.nodeRegion(doc, typeDeclaration.getName());
 				
-				return Tuples.of(beanName, beanType, domainType, region);
+				return Tuples.of(beanName, beanType.toString(), domainType, region);
 			} else {
 				Tuple4<String, String, String, DocumentRegion> result = getRepositoryBean(typeDeclaration, doc, resolvedInterface);
 				if (result != null) {

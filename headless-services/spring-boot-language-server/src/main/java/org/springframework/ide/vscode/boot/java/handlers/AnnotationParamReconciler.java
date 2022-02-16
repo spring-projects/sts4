@@ -12,10 +12,12 @@ package org.springframework.ide.vscode.boot.java.handlers;
 
 import java.util.Set;
 
+import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.tree.Expression;
 import org.openrewrite.java.tree.J.Annotation;
 import org.openrewrite.java.tree.J.Assignment;
 import org.openrewrite.java.tree.J.Literal;
+import org.openrewrite.java.tree.JavaType.FullyQualified;
 import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.marker.Range;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
@@ -62,8 +64,14 @@ public class AnnotationParamReconciler {
 		if (paramName == null) {
 			return;
 		}
+				
+		FullyQualified type = TypeUtils.asFullyQualified(annotation.getType());
 		
-		Set<String> allAnnotations = AnnotationHierarchies.getTransitiveSuperAnnotations(TypeUtils.asFullyQualified(annotation.getType()));
+		if (type == null) {
+			return;
+		}
+		
+		Set<String> allAnnotations = AnnotationHierarchies.getTransitiveSuperAnnotations(type);
 		if (!allAnnotations.contains(this.annotationType)) {
 			return;
 		}

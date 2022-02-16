@@ -118,16 +118,22 @@ public class BootJavaReconcileEngine implements IReconcileEngine {
 		
 		new JavaIsoVisitor<IProblemCollector>() {
 			public Annotation visitAnnotation(Annotation annotation, IProblemCollector p) {
-				if (!annotation.getArguments().isEmpty()) {
-					JavaType type = annotation.getType();
-					
-					if (type != null) {
-						for (int i = 0; i < reconcilers.length; i++) {
-							reconcilers[i].visit(annotation, problemCollector);
+				try {
+					if (annotation.getArguments() != null && !annotation.getArguments().isEmpty()) {
+						JavaType type = annotation.getType();
+						
+						if (type != null) {
+							for (int i = 0; i < reconcilers.length; i++) {
+								reconcilers[i].visit(annotation, problemCollector);
+							}
 						}
 					}
+					return super.visitAnnotation(annotation, p);
+				} catch (Exception e) {
+					// TODO: OR AST - uncomment later to fix in OR
+//					log.error("Failed to visit annotation. Fix in OR.", e);
+					return annotation;
 				}
-				return super.visitAnnotation(annotation, p);
 			};
 		}.visitNonNull(cu, problemCollector);
 	}

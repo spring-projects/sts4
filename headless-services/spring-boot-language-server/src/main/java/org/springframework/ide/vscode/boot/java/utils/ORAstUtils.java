@@ -38,7 +38,10 @@ import org.openrewrite.java.tree.J.Literal;
 import org.openrewrite.java.tree.J.MethodDeclaration;
 import org.openrewrite.java.tree.J.NewArray;
 import org.openrewrite.java.tree.J.VariableDeclarations;
+import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.java.tree.JavaType.Array;
 import org.openrewrite.java.tree.JavaType.FullyQualified;
+import org.openrewrite.java.tree.JavaType.Parameterized;
 import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.marker.Marker;
 import org.openrewrite.marker.Range;
@@ -312,14 +315,16 @@ public class ORAstUtils {
 		if (annotation != null) {
 			try {
 				List<Expression> args = annotation.getArguments();
-				if (name.equals("value") && args.size() == 1 && !(args.get(0) instanceof Assignment)) {
-					return Optional.ofNullable(args.get(0));
-				} else {
-					for (Expression arg : args) {
-						if (arg instanceof Assignment) {
-							Assignment assignment  = (Assignment) arg;
-							if (name.equals(assignment.getVariable().printTrimmed())) {
-								return Optional.ofNullable(assignment.getAssignment());
+				if (args != null) {
+					if (name.equals("value") && args.size() == 1 && !(args.get(0) instanceof Assignment)) {
+						return Optional.ofNullable(args.get(0));
+					} else {
+						for (Expression arg : args) {
+							if (arg instanceof Assignment) {
+								Assignment assignment  = (Assignment) arg;
+								if (name.equals(assignment.getVariable().printTrimmed())) {
+									return Optional.ofNullable(assignment.getAssignment());
+								}
 							}
 						}
 					}
@@ -467,6 +472,24 @@ public class ORAstUtils {
 			nodeRegion = nodeRegion.subSequence(0, nodeRegion.getLength()-1);
 		}
 		return nodeRegion;
+	}
+	
+	public static String getSimpleNameWithParamTypes(JavaType type) {
+		if (type instanceof FullyQualified) {
+			StringBuilder sb = new StringBuilder(((FullyQualified)type).getClassName());
+			if (type instanceof Parameterized) {
+				List<JavaType> paramTypes = ((Parameterized) type).getTypeParameters();
+				if (paramTypes != null) {
+					sb.append(paramTypes.stream().map(p -> getSimpleNameWithParamTypes(p)).collect(Collectors.joining(",", "<", ">")));
+				}
+			}
+			return sb.toString();
+			
+		} else if (type instanceof Array) {
+			return getSimpleNameWithParamTypes(((Array) type).getElemType()) + "[]";
+		} else {
+			return type.toString();
+		}
 	}
 
 	public static List<CompilationUnit> parse(JavaParser parser, Iterable<Path> sourceFiles) {
