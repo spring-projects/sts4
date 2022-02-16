@@ -493,13 +493,17 @@ public class ORAstUtils {
 	}
 
 	public static List<CompilationUnit> parse(JavaParser parser, Iterable<Path> sourceFiles) {
-		List<CompilationUnit> cus = parser.parse(sourceFiles, null, new InMemoryExecutionContext());
+		InMemoryExecutionContext ctx = new InMemoryExecutionContext();
+		ctx.putMessage(JavaParser.SKIP_SOURCE_SET_TYPE_GENERATION, true);
+		List<CompilationUnit> cus = parser.parse(sourceFiles, null, ctx);
 		List<Result> results = new UpdateSourcePositions().doNext(new MarkParentRecipe()).run(cus);
 		return results.stream().map(r -> r.getAfter() == null ? r.getBefore() : r.getAfter()).map(CompilationUnit.class::cast).collect(Collectors.toList());
 	}
 	
 	public static List<CompilationUnit> parseInputs(JavaParser parser, Iterable<Parser.Input> inputs) {
-		List<CompilationUnit> cus = parser.parseInputs(inputs, null, new InMemoryExecutionContext());
+		InMemoryExecutionContext ctx = new InMemoryExecutionContext();
+		ctx.putMessage(JavaParser.SKIP_SOURCE_SET_TYPE_GENERATION, true);
+		List<CompilationUnit> cus = parser.parseInputs(inputs, null, ctx);
 		List<Result> results = new UpdateSourcePositions().doNext(new MarkParentRecipe()).run(cus);
 		return results.stream().map(r -> r.getAfter() == null ? r.getBefore() : r.getAfter()).map(CompilationUnit.class::cast).collect(Collectors.toList());
 	}

@@ -119,6 +119,7 @@ public class ORCompilationUnitCache implements DocumentContentProvider, Disposab
 	private JavaParser loadJavaParser(IJavaProject project) {
 		try {
 			return javaParsers.get(project, () -> {
+				logger.info("CU Cache: Creating new Java parser for project " + project.getElementName());
 				List<Path> classpath = getClasspathEntries(project).stream().map(s -> new File(s).toPath()).collect(Collectors.toList());
 				JavaParser jp = JavaParser.fromJavaVersion().build();
 				jp.setClasspath(classpath);
@@ -205,9 +206,13 @@ public class ORCompilationUnitCache implements DocumentContentProvider, Disposab
 						}
 					});
 					
+					long start = System.currentTimeMillis();
+					CompilationUnit compilationUnit = ORAstUtils.parseInputs(javaParser, List.of(input)).get(0);
+					System.out.println("Parse took: " + (System.currentTimeMillis() - start) + " for " + uri);
+					
 					logger.info("CU Cache: created new AST for {}", uri.toString());
 					
-					return ORAstUtils.parseInputs(javaParser, List.of(input)).get(0);
+					return compilationUnit;
 										
 				});
 
