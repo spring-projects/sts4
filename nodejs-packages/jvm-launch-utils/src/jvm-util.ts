@@ -185,12 +185,15 @@ class JVMImpl implements JVM {
         const str = ChildProcess.execFileSync(javaExecutable, ['--list-modules'], {windowsHide: true, encoding: 'utf8'});
         return str.search(/^jdk.management@.*$/m) >= 0;
     }
-    jarLaunch(jar: string, vmargs?: [string], execFileOptions?: ChildProcess.ExecFileOptions): ChildProcess.ChildProcess {
+    jarLaunch(jar: string, vmargs?: [string], execFileOptions?: ChildProcess.ExecFileOptions, pargs?: [string]): ChildProcess.ChildProcess {
         let args = [];
         if (vmargs) {
             args.push(...vmargs);
         }
         args.push("-jar", jar);
+        if (pargs) {
+            args.push(...pargs);
+        }
         return ChildProcess.execFile(this.getJavaExecutable(), args, execFileOptions);
     }
 
