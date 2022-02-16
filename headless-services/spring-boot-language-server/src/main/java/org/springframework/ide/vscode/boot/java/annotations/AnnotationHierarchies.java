@@ -63,7 +63,9 @@ public abstract class AnnotationHierarchies {
 
 	public static Set<String> getTransitiveSuperAnnotations(FullyQualified type) {
 		Set<String> seen = new HashSet<>();
-		findTransitiveSupers(type, seen).collect(Collectors.toList());
+		if (type != null) {
+			findTransitiveSupers(type, seen).collect(Collectors.toList());
+		}
 		return seen;
 	}
 
