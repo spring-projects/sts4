@@ -77,7 +77,7 @@
       "properties": {
         "boot-java.live-information.automatic-tracking.on": {
           "type": "boolean",
-          "default": false,
+          "default": true,
           "description": "Live Information - Automatic Process Tracking Enabled"
         },
         "boot-java.live-information.automatic-tracking.delay": {
