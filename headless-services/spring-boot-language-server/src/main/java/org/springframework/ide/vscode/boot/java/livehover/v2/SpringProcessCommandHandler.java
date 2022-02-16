@@ -17,7 +17,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.stream.Collector;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -93,6 +92,8 @@ public class SpringProcessCommandHandler {
 			
 			// try local processes
 			if (SpringProcessConnectorLocal.isAvailable()) {
+				
+				// Try cached processes.
 				SpringProcessDescriptor[] processes = localProcessConnector.getProcesses(false, SpringProcessStatus.REGULAR, SpringProcessStatus.AUTO_CONNECT);
 				for (SpringProcessDescriptor process : processes) {
 					if (process.getProcessKey().equals(processKey)) {
@@ -100,6 +101,15 @@ public class SpringProcessCommandHandler {
 						return CompletableFuture.completedFuture(null);
 					}
 				}
+				
+				processes = localProcessConnector.getProcesses(true, SpringProcessStatus.REGULAR, SpringProcessStatus.AUTO_CONNECT);
+				for (SpringProcessDescriptor process : processes) {
+					if (process.getProcessKey().equals(processKey)) {
+						localProcessConnector.connectProcess(process);
+						return CompletableFuture.completedFuture(null);
+					}
+				}
+				
 			}
 			
 			// try remote processes
