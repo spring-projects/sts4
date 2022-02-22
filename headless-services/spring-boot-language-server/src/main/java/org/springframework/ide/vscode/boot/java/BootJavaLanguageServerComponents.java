@@ -177,7 +177,7 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		//
 
 		
-		documents.onDocumentSymbol(new BootJavaDocumentSymbolHandler(indexer));
+		documents.onDocumentSymbol(new BootJavaDocumentSymbolHandler(this, indexer));
 		workspaceService.onWorkspaceSymbol(new BootJavaWorkspaceSymbolHandler(indexer,
 				new LiveAppURLSymbolProvider(liveDataProvider)));
 

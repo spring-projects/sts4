@@ -548,7 +548,7 @@ public class SpringSymbolIndex implements InitializingBean {
 		try {	
 			URI uri = URI.create(docURI);
 			CompletableFuture<Void> projectInitialized = futureProjectFinder.findFuture(uri).thenCompose(project -> projectInitializedFuture(project));
-			projectInitialized.get(60, TimeUnit.SECONDS);
+			projectInitialized.get(15, TimeUnit.SECONDS);
 			List<EnhancedSymbolInformation> docSymbols = this.symbolsByDoc.get(docURI);
 			if (docSymbols != null) {
 				synchronized (docSymbols) {
