@@ -983,7 +983,7 @@
 				<repository>
 					<id>orbit</id>
 					<layout>p2</layout>
-					<url>https://download.eclipse.org/tools/orbit/downloads/drops/I20220106214959/repository</url>
+					<url>https://download.eclipse.org/tools/orbit/downloads/drops/S20220215213605/repository</url>
 				</repository>
 				<repository>
 					<id>m2e</id>
