@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2010, 2011 Spring IDE Developers
+ * Copyright (c) 2010, 2022 Spring IDE Developers
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -23,6 +23,7 @@ import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import org.apache.commons.io.IOUtils;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.Preferences.IPropertyChangeListener;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences.IPreferenceChangeListener;
@@ -40,7 +41,6 @@ import org.springframework.ide.eclipse.xml.namespaces.model.NamespaceDefinition;
 import org.springframework.ide.eclipse.xml.namespaces.util.TargetNamespaceScanner;
 import org.springsource.ide.eclipse.commons.core.SpringCorePreferences;
 import org.springsource.ide.eclipse.commons.core.util.CollectionUtils;
-import org.springsource.ide.eclipse.commons.core.util.FileCopyUtils;
 import org.springsource.ide.eclipse.commons.frameworks.core.util.StringUtils;
 
 /**
@@ -208,7 +208,13 @@ public class ProjectClasspathNamespaceDefinitionResolver implements INamespaceDe
 					return iconFile;
 				}
 
-				FileCopyUtils.copy(cls.getResourceAsStream(icon), new FileOutputStream(iconFile));
+				try (
+					InputStream is = cls.getResourceAsStream(icon);
+					FileOutputStream os = new FileOutputStream(iconFile);
+				) {
+					IOUtils.copy(is, os);
+				}
+				
 				return iconFile;
 			}
 			catch (Exception e) {

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012, 2013 Pivotal Software, Inc.
+ * Copyright (c) 2012, 2021 VMware Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -21,10 +21,10 @@ import java.io.Writer;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.apache.log4j.Logger;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.springsource.ide.eclipse.commons.core.FileUtil;
+import org.springsource.ide.eclipse.commons.internal.core.CorePlugin;
 
 /**
  * @author Terry Denney
@@ -34,8 +34,6 @@ import org.springsource.ide.eclipse.commons.core.FileUtil;
  * @author Kris De Volder (Add recursion over directories).
  */
 public class TemplateProcessor {
-
-	private static Logger logger = Logger.getLogger(TemplateProcessor.class);
 
 	protected Map<String, String> replacementContext = new HashMap<String, String>();
 
@@ -55,14 +53,13 @@ public class TemplateProcessor {
 
 	public void process(File source, File target) throws IOException {
 		if (FileUtil.isBinaryFile(source)) {
-			logger.debug("Copying binary file " + source);
 			FileUtil.copy(source, target);
 		} else if (source.isDirectory()) {
 			try {
 				FileUtil.copyDirectory(source, target, new NullProgressMonitor());
 			}
 			catch (CoreException e) {
-				logger.error("Problem while attempting to copy template directory", e);
+				CorePlugin.log("Problem while attempting to copy template directory", e);
 			}
 			String[] names = source.list();
 			if (names!=null) {
@@ -74,7 +71,6 @@ public class TemplateProcessor {
 			}
 		}
 		else {
-			logger.debug("Template processing text file " + source);
 			process(new FileReader(source), new FileWriter(target));
 		}
 	}
@@ -125,7 +121,7 @@ public class TemplateProcessor {
 		}
 
 		if (input.indexOf("my") >= 0) {
-			logger.warn("May have failed to replace token " + input);
+			CorePlugin.log("May have failed to replace token " + input, null);
 		}
 		return input;
 	}
