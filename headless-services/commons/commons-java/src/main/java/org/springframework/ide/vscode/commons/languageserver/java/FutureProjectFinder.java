@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2021 VMware, Inc.
+ * Copyright (c) 2021, 2022 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -26,6 +26,7 @@ public class FutureProjectFinder implements DisposableBean {
 	private JavaProjectFinder projectFinder;
 	private ProjectObserver projectObserver;
 	
+	final private Object LOCK = new Object();
 	private WeakHashMap<URI, CompletableFuture<IJavaProject>> pendingFindProjectRequests = new WeakHashMap<>();
 	
 	private final Listener LISTENER = new Listener() {
@@ -61,20 +62,24 @@ public class FutureProjectFinder implements DisposableBean {
 		}
 	}
 	
-	synchronized private void resolveAllPendingRquests() {
-		for (Map.Entry<URI, CompletableFuture<IJavaProject>> e : pendingFindProjectRequests.entrySet()) {
-			Optional<IJavaProject> jp = projectFinder.find(new TextDocumentIdentifier(e.getKey().toString()));
-			e.getValue().complete(jp.orElse(null));
-			pendingFindProjectRequests.remove(e.getKey());
+	private void resolveAllPendingRquests() {
+		synchronized(LOCK) {
+			for (Map.Entry<URI, CompletableFuture<IJavaProject>> e : pendingFindProjectRequests.entrySet()) {
+				Optional<IJavaProject> jp = projectFinder.find(new TextDocumentIdentifier(e.getKey().toString()));
+				e.getValue().complete(jp.orElse(null));
+				pendingFindProjectRequests.remove(e.getKey());
+			}
 		}
 	}
 
-	synchronized private void resolvePendingRequests(IJavaProject project) {
-		for (Map.Entry<URI, CompletableFuture<IJavaProject>> e : pendingFindProjectRequests.entrySet()) {
-			Optional<IJavaProject> jp = projectFinder.find(new TextDocumentIdentifier(e.getKey().toString()));
-			if (jp.isPresent()) {
-				e.getValue().complete(jp.get());
-				pendingFindProjectRequests.remove(e.getKey());
+	private void resolvePendingRequests(IJavaProject project) {
+		synchronized(LOCK) {
+			for (Map.Entry<URI, CompletableFuture<IJavaProject>> e : pendingFindProjectRequests.entrySet()) {
+				Optional<IJavaProject> jp = projectFinder.find(new TextDocumentIdentifier(e.getKey().toString()));
+				if (jp.isPresent()) {
+					e.getValue().complete(jp.get());
+					pendingFindProjectRequests.remove(e.getKey());
+				}
 			}
 		}
 	}
@@ -86,7 +91,7 @@ public class FutureProjectFinder implements DisposableBean {
 		}
 	}
 	
-	synchronized public CompletableFuture<IJavaProject> findFuture(URI uri) {		
+	public CompletableFuture<IJavaProject> findFuture(URI uri) {		
 		TextDocumentIdentifier id = new TextDocumentIdentifier(uri.toString());
 		Optional<IJavaProject> jp = projectFinder.find(id);
 		if (jp.isPresent()) {
@@ -96,12 +101,14 @@ public class FutureProjectFinder implements DisposableBean {
 				throw new IllegalStateException("Future project lookup not supported without ProjectObserver bean present");
 			}
 			if (projectObserver.isSupported()) {
-				CompletableFuture<IJavaProject> cf = pendingFindProjectRequests.get(uri);
-				if (cf == null) {
-					cf = new CompletableFuture<IJavaProject>();
-					pendingFindProjectRequests.put(uri, cf);
+				synchronized(LOCK) {
+					CompletableFuture<IJavaProject> cf = pendingFindProjectRequests.get(uri);
+					if (cf == null) {
+						cf = new CompletableFuture<IJavaProject>();
+						pendingFindProjectRequests.put(uri, cf);
+					}
+					return cf;
 				}
-				return cf;
 			} else {
 				return CompletableFuture.completedFuture(null);
 			}
