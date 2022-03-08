@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2021 Pivotal, Inc.
+ * Copyright (c) 2017, 2022 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,6 +13,8 @@ package org.springframework.ide.vscode.boot.app;
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URLDecoder;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -64,6 +66,7 @@ import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocu
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleWorkspaceService;
 import org.springframework.ide.vscode.commons.util.Futures;
 import org.springframework.ide.vscode.commons.util.StringUtil;
+import org.springframework.ide.vscode.commons.util.UriUtil;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import org.springframework.stereotype.Component;
 
@@ -469,7 +472,7 @@ public class SpringSymbolIndex implements InitializingBean {
 		try {
 			File file = new File(new URI(docURI));
 			long lastModified = file.lastModified();
-			return new DocumentDescriptor(docURI, lastModified);
+			return new DocumentDescriptor(UriUtil.toUri(file).toString(), lastModified);
 		} catch (URISyntaxException e) {
 			throw new RuntimeException(e);
 		}
@@ -547,9 +550,35 @@ public class SpringSymbolIndex implements InitializingBean {
 	public List<? extends SymbolInformation> getSymbols(String docURI) {
 		try {	
 			URI uri = URI.create(docURI);
+			
+			/*
+			 * Workaround for docUri coming from vscode-languageclient on Windows
+			 * 
+			 * It comes in as "file:///c%3A/Users/ab/spring-petclinic/src/main/java/org/springframework/samples/petclinic/owner/PetRepository.java"
+			 * 
+			 * While symbols index would have this uri instead:
+			 * - "file:///C:/Users/ab/spring-petclinic/src/main/java/org/springframework/samples/petclinic/owner/PetRepository.java"
+			 * 
+			 * i.e. lower vs upper case drive letter and escaped drive colon  
+			 */
+			if ("file".equals(uri.getScheme())) {
+				String path = URLDecoder.decode(uri.getPath(), StandardCharsets.UTF_8);
+				int colonIdx = path.indexOf(':');
+				if (colonIdx > 0 && colonIdx < 3) {
+					int driveIdx = colonIdx - 1;
+					if (Character.isLowerCase(path.charAt(driveIdx))) {
+						StringBuilder sb = new StringBuilder(path.substring(0, driveIdx));
+						sb.append(Character.toUpperCase(path.charAt(driveIdx)));
+						sb.append(path.substring(driveIdx + 1));
+						path = sb.toString();
+					}
+				}
+				uri = UriUtil.toUri(new File(path));
+			}
+			
 			CompletableFuture<Void> projectInitialized = futureProjectFinder.findFuture(uri).thenCompose(project -> projectInitializedFuture(project));
 			projectInitialized.get(15, TimeUnit.SECONDS);
-			List<EnhancedSymbolInformation> docSymbols = this.symbolsByDoc.get(docURI);
+			List<EnhancedSymbolInformation> docSymbols = this.symbolsByDoc.get(uri.toString());
 			if (docSymbols != null) {
 				synchronized (docSymbols) {
 					ImmutableList.Builder<SymbolInformation> builder = ImmutableList.builder();
