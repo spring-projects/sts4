@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2021 Pivotal, Inc.
+ * Copyright (c) 2018, 2022 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,7 +11,6 @@
 package org.springframework.ide.vscode.boot.app;
 
 import java.util.List;
-import java.util.Optional;
 
 import org.eclipse.lsp4j.MessageType;
 import org.slf4j.Logger;
@@ -19,6 +18,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.context.ApplicationContext;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
 import org.springframework.ide.vscode.boot.java.links.JavaElementLocationProvider;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
@@ -62,6 +62,7 @@ public class BootLanguageServerInitializer implements InitializingBean {
 	@Autowired YamlAssistContextProvider yamlAssistContextProvider;
 	@Autowired SymbolCache symbolCache;
 	@Autowired SpringProcessLiveDataProvider liveDataProvider;
+	@Autowired ApplicationContext appContext;
 	@Autowired BootJavaConfig config;
 	@Autowired SpringSymbolIndex springIndexer;
 	@Autowired(required = false) List<ICompletionEngine> completionEngines;
@@ -93,7 +94,7 @@ public class BootLanguageServerInitializer implements InitializingBean {
 		// some server intialization code. Migrate that code and get rid of the ComposableLanguageServer class
 		CompositeLanguageServerComponents.Builder builder = new CompositeLanguageServerComponents.Builder();
 		builder.add(new BootPropertiesLanguageServerComponents(server, params, javaElementLocationProvider, parser, yamlStructureProvider, yamlAssistContextProvider, sourceLinks));
-		builder.add(new BootJavaLanguageServerComponents(server, params, sourceLinks, cuCache, adHocProperties, symbolCache, liveDataProvider, config, springIndexer));
+		builder.add(new BootJavaLanguageServerComponents(appContext));
 		builder.add(new SpringXMLLanguageServerComponents(server, springIndexer, params, config));
 		components = builder.build(server);
 		params.projectObserver.addListener(reconcileOpenDocumentsForProjectChange(server, components, params.projectFinder));

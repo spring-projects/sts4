@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2020 Pivotal, Inc.
+ * Copyright (c) 2016, 2022 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -18,18 +18,16 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
-import org.eclipse.lsp4j.CompletionItemKind;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.context.ApplicationContext;
 import org.springframework.ide.vscode.boot.app.BootJavaConfig;
 import org.springframework.ide.vscode.boot.app.BootLanguageServerParams;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchyAwareLookup;
 import org.springframework.ide.vscode.boot.java.autowired.AutowiredHoverProvider;
 import org.springframework.ide.vscode.boot.java.conditionals.ConditionalsLiveHoverProvider;
-import org.springframework.ide.vscode.boot.java.data.DataRepositoryCompletionProcessor;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaCodeLensEngine;
-import org.springframework.ide.vscode.boot.java.handlers.BootJavaCompletionEngine;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaDocumentHighlightEngine;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaDocumentSymbolHandler;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaHoverProvider;
@@ -37,7 +35,6 @@ import org.springframework.ide.vscode.boot.java.handlers.BootJavaReconcileEngine
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaReferencesHandler;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaWorkspaceSymbolHandler;
 import org.springframework.ide.vscode.boot.java.handlers.CodeLensProvider;
-import org.springframework.ide.vscode.boot.java.handlers.CompletionProvider;
 import org.springframework.ide.vscode.boot.java.handlers.HighlightProvider;
 import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
 import org.springframework.ide.vscode.boot.java.handlers.ReferenceProvider;
@@ -56,19 +53,11 @@ import org.springframework.ide.vscode.boot.java.requestmapping.LiveAppURLSymbolP
 import org.springframework.ide.vscode.boot.java.requestmapping.RequestMappingHoverProvider;
 import org.springframework.ide.vscode.boot.java.requestmapping.WebfluxHandlerCodeLensProvider;
 import org.springframework.ide.vscode.boot.java.requestmapping.WebfluxRouteHighlightProdivder;
-import org.springframework.ide.vscode.boot.java.scope.ScopeCompletionProcessor;
-import org.springframework.ide.vscode.boot.java.snippets.JavaSnippet;
-import org.springframework.ide.vscode.boot.java.snippets.JavaSnippetContext;
-import org.springframework.ide.vscode.boot.java.snippets.JavaSnippetManager;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.boot.java.utils.SpringLiveChangeDetectionWatchdog;
-import org.springframework.ide.vscode.boot.java.utils.SymbolCache;
-import org.springframework.ide.vscode.boot.java.value.ValueCompletionProcessor;
 import org.springframework.ide.vscode.boot.java.value.ValueHoverProvider;
 import org.springframework.ide.vscode.boot.java.value.ValuePropertyReferencesProvider;
-import org.springframework.ide.vscode.boot.metadata.ProjectBasedPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
-import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.composable.LanguageServerComponents;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
@@ -76,14 +65,12 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcil
 import org.springframework.ide.vscode.commons.languageserver.util.CodeLensHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentHighlightHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.HoverHandler;
-import org.springframework.ide.vscode.commons.languageserver.util.LspClient;
 import org.springframework.ide.vscode.commons.languageserver.util.ReferencesHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleWorkspaceService;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 /**
@@ -124,22 +111,14 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 	private SpringProcessTracker liveProcessTracker;
 
 	public BootJavaLanguageServerComponents(
-			SimpleLanguageServer server,
-			BootLanguageServerParams serverParams,
-			SourceLinks sourceLinks,
-			CompilationUnitCache cuCache,
-			ProjectBasedPropertyIndexProvider adHocIndexProvider,
-			SymbolCache symbolCache,
-			SpringProcessLiveDataProvider liveDataProvider,
-			BootJavaConfig config,
-			SpringSymbolIndex indexer
+			ApplicationContext appContext
 	) {
-		this.server = server;
-		this.serverParams = serverParams;
+		this.server = appContext.getBean(SimpleLanguageServer.class);
+		this.serverParams = appContext.getBean(BootLanguageServerParams.class);
 
 		projectFinder = serverParams.projectFinder;
 		projectObserver = serverParams.projectObserver;
-		this.cuCache = cuCache;
+		this.cuCache = appContext.getBean(CompilationUnitCache.class);
 
 		propertyIndexProvider = serverParams.indexProvider;
 
@@ -154,29 +133,29 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		//
 
 		// central live data components (to coordinate live data flow)
-		liveDataService = new SpringProcessConnectorService(server, liveDataProvider);
+		liveDataService = appContext.getBean(SpringProcessConnectorService.class);
 
 		// connect the live data provider with the hovers (for data extraction and live updates)
+		SpringProcessLiveDataProvider liveDataProvider = appContext.getBean(SpringProcessLiveDataProvider.class);
+		SourceLinks sourceLinks = appContext.getBean(SourceLinks.class);
 		hoverProvider = createHoverHandler(projectFinder, sourceLinks, liveDataProvider);
 		new SpringProcessLiveHoverUpdater(server, hoverProvider, projectFinder, liveDataProvider);
 
 		// deal with locally running processes and their connections
 		SpringProcessConnectorLocal liveDataLocalProcessConnector = new SpringProcessConnectorLocal(liveDataService, projectObserver);
 
-		// deal with configured remote connections
-		SpringProcessConnectorRemote liveDataRemoteProcessConnector = new SpringProcessConnectorRemote(server, liveDataService);
-
 		// create and handle commands
-		new SpringProcessCommandHandler(server, liveDataService, liveDataLocalProcessConnector, liveDataRemoteProcessConnector);
+		new SpringProcessCommandHandler(server, liveDataService, liveDataLocalProcessConnector, appContext.getBeansOfType(SpringProcessConnectorRemote.class).values());
 
 		// track locally running processes and automatically connect to them if configured to do so
+		BootJavaConfig config = appContext.getBean(BootJavaConfig.class);
 		liveProcessTracker = new SpringProcessTracker(liveDataLocalProcessConnector, Duration.ofMillis(config.getLiveInformationAutomaticTrackingDelay()));
 		
 		//
 		//
 		//
 
-		
+		SpringSymbolIndex indexer = appContext.getBean(SpringSymbolIndex.class);
 		documents.onDocumentSymbol(new BootJavaDocumentSymbolHandler(this, indexer));
 		workspaceService.onWorkspaceSymbol(new BootJavaWorkspaceSymbolHandler(indexer,
 				new LiveAppURLSymbolProvider(liveDataProvider)));

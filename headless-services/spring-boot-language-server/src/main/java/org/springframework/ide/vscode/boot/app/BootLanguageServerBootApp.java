@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2021 Pivotal, Inc.
+ * Copyright (c) 2018, 2022 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,7 +11,12 @@
 package org.springframework.ide.vscode.boot.app;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.concurrent.CompletableFuture;
 
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -34,6 +39,9 @@ import org.springframework.ide.vscode.boot.java.links.JavaServerElementLocationP
 import org.springframework.ide.vscode.boot.java.links.JdtJavaDocumentUriProvider;
 import org.springframework.ide.vscode.boot.java.links.SourceLinkFactory;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
+import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessConnectorRemote;
+import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessConnectorRemote.RemoteBootAppData;
+import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessConnectorService;
 import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveDataProvider;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.boot.java.utils.SymbolCache;
@@ -77,6 +85,8 @@ import org.springframework.ide.vscode.languageserver.starter.LanguageServerRunne
 import org.yaml.snakeyaml.Yaml;
 
 import com.google.common.collect.ImmutableList;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 
 import reactor.core.publisher.Hooks;
 
@@ -118,7 +128,53 @@ public class BootLanguageServerBootApp {
 	SpringProcessLiveDataProvider liveDataProvider() {
 		return new SpringProcessLiveDataProvider();
 	}
+	
+	@Bean
+	SpringProcessConnectorService processConnectorService(SimpleLanguageServer server, SpringProcessLiveDataProvider liveDataProvider) {
+		return new SpringProcessConnectorService(server, liveDataProvider);
+	}
+	
+	@Bean
+	SpringProcessConnectorRemote remoteAppsFromSettingsConnector(SimpleLanguageServer server, SpringProcessConnectorService liveDataService) {
+		SpringProcessConnectorRemote bean = new SpringProcessConnectorRemote(server, liveDataService);
+		server.getWorkspaceService().onDidChangeConfiguraton(settings -> {
+			RemoteBootAppData[] appData = settings.getAs(RemoteBootAppData[].class, "boot-java", "remote-apps");
+			if (appData == null) {
+				//Avoid NPE
+				appData = new RemoteBootAppData[0];
+			}
+			bean.updateApps(appData);
+		});
 
+		return bean;
+	}
+	
+	@Bean
+	SpringProcessConnectorRemote remoteAppsFromCommandsConnector(SimpleLanguageServer server, SpringProcessConnectorService liveDataService) {
+		SpringProcessConnectorRemote bean = new SpringProcessConnectorRemote(server, liveDataService);
+		final Map<String, RemoteBootAppData[]> allRemoteApps = new HashMap<>();
+		final Gson gson = new Gson();
+		server.onCommand("sts/livedata/remoteConnect", params -> {
+			List<Object> args = params.getArguments();
+			String owner = ((JsonElement) args.get(0)).getAsString();
+			RemoteBootAppData[] data = gson.fromJson((JsonElement) args.get(1), RemoteBootAppData[].class);
+			if (data.length > 0) {
+				allRemoteApps.put(owner, data);
+			} else {
+				allRemoteApps.remove(owner);
+			}
+			List<RemoteBootAppData> all = new ArrayList<>();
+			for (RemoteBootAppData[] remoteBootAppData : allRemoteApps.values()) {
+				for (RemoteBootAppData r : remoteBootAppData) {
+					all.add(r);
+				}
+			}
+			bean.updateApps(all.toArray(new RemoteBootAppData[all.size()]));
+			return CompletableFuture.completedFuture(null);
+		});
+		return bean;
+	}
+	
 	@ConditionalOnMissingClass("org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness")
 	@Bean AdHocSpringPropertyIndexProvider adHocProperties(BootLanguageServerParams params, FileObserver fileObserver, DocumentEventListenerManager documentEvents) {
 		return new AdHocSpringPropertyIndexProvider(params.projectFinder, params.projectObserver, fileObserver, documentEvents);

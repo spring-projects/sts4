@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2020 Pivotal, Inc.
+ * Copyright (c) 2019, 2022 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -20,7 +20,6 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ide.vscode.commons.languageserver.util.Settings;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.util.StringUtils;
 
@@ -169,28 +168,26 @@ public class SpringProcessConnectorRemote {
 	private static Logger logger = LoggerFactory.getLogger(SpringProcessConnectorRemote.class);
 
 	/**
-	 * We keep the remote app instances in a Map indexed by the json daya. This allows us to
+	 * We keep the remote app instances in a Map indexed by the json data. This allows us to
 	 * return the same instance(s) repeatedly as long as the data does not change.
 	 */
 	private final Map<RemoteBootAppData, String> remoteAppInstances;
+	
 	private final SpringProcessConnectorService processConnectorService;
 
 	public SpringProcessConnectorRemote(SimpleLanguageServer server, SpringProcessConnectorService processConnector) {
 		this.processConnectorService = processConnector;
 		this.remoteAppInstances = new HashMap<>();
-
-		server.getWorkspaceService().onDidChangeConfiguraton(this::handleSettings);
 	}
-
-	private synchronized void handleSettings(Settings settings) {
+	
+	/**
+	 * Replaces existing remote app data map with the new remote app data. Empty array of appData will result in no remote apps. 
+	 * @param appData new remote app data
+	 */
+	final public synchronized void updateApps(RemoteBootAppData[] appData) {
 		logger.info("updating settings for remote processses to track - start");
 		
-		RemoteBootAppData[] appData = settings.getAs(RemoteBootAppData[].class, "boot-java", "remote-apps");
-		if (appData == null) {
-			//Avoid NPE
-			appData = new RemoteBootAppData[0];
-		}
-
+		
 		// remove outdated remote apps
 		Set<RemoteBootAppData> newAppData = new HashSet<>(Arrays.asList(appData));
 
@@ -221,7 +218,7 @@ public class SpringProcessConnectorRemote {
 		
 		logger.info("updating settings for remote processses to track - done");
 	}
-
+	
 	public static String getProcessName(RemoteBootAppData appData) {
 		if (StringUtils.hasText(appData.getProcessName())) {
 			return appData.getProcessName();
@@ -247,8 +244,13 @@ public class SpringProcessConnectorRemote {
 		String urlScheme = remoteProcess.getUrlScheme();
 //		boolean keepChecking = _appData.isKeepChecking();
 		
-		SpringProcessConnectorOverJMX connector = new SpringProcessConnectorOverJMX(processKey, jmxURL, urlScheme, processID, processName, null, host, port);
-		processConnectorService.connectProcess(processKey, connector);
+		if (jmxURL.startsWith("http")) {
+			SpringProcessConnectorOverHttp connector = new SpringProcessConnectorOverHttp(processKey, jmxURL, urlScheme, processID, processName, urlScheme, host, port);
+			processConnectorService.connectProcess(processKey, connector);
+		} else {
+			SpringProcessConnectorOverJMX connector = new SpringProcessConnectorOverJMX(processKey, jmxURL, urlScheme, processID, processName, null, host, port);
+			processConnectorService.connectProcess(processKey, connector);
+		}
 	}
 	
 	public RemoteBootAppData[] getProcesses() {

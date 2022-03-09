@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2020 Pivotal, Inc.
+ * Copyright (c) 2019, 2022 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.boot.java.livehover.v2;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -40,13 +41,13 @@ public class SpringProcessCommandHandler {
 	
 	private final SpringProcessConnectorService connectorService;
 	private final SpringProcessConnectorLocal localProcessConnector;
-	private final SpringProcessConnectorRemote remoteProcessConnector;
+	private final Collection<SpringProcessConnectorRemote> remoteProcessConnectors;
 
 	public SpringProcessCommandHandler(SimpleLanguageServer server, SpringProcessConnectorService connectorService,
-			SpringProcessConnectorLocal localProcessConnector, SpringProcessConnectorRemote remoteProcessConnector) {
+			SpringProcessConnectorLocal localProcessConnector, Collection<SpringProcessConnectorRemote> remoteProcessConnectors) {
 		this.connectorService = connectorService;
 		this.localProcessConnector = localProcessConnector;
-		this.remoteProcessConnector = remoteProcessConnector;
+		this.remoteProcessConnectors = remoteProcessConnectors;
 
 		server.onCommand(COMMAND_LIST_PROCESSES, (params) -> {
 			return getProcessCommands();
@@ -85,12 +86,14 @@ public class SpringProcessCommandHandler {
 			}
 			
 			// try remote processes
-			RemoteBootAppData[] remoteProcesses = remoteProcessConnector.getProcesses();
-			for (RemoteBootAppData remoteProcess : remoteProcesses) {
-				String key = SpringProcessConnectorRemote.getProcessKey(remoteProcess);
-				if (processKey.equals(key)) {
-					remoteProcessConnector.connectProcess(remoteProcess);
-					return CompletableFuture.completedFuture(null);
+			for (SpringProcessConnectorRemote remoteProcessConnector : remoteProcessConnectors) {
+				RemoteBootAppData[] remoteProcesses = remoteProcessConnector.getProcesses();
+				for (RemoteBootAppData remoteProcess : remoteProcesses) {
+					String key = SpringProcessConnectorRemote.getProcessKey(remoteProcess);
+					if (processKey.equals(key)) {
+						remoteProcessConnector.connectProcess(remoteProcess);
+						return CompletableFuture.completedFuture(null);
+					}
 				}
 			}
 		}
@@ -146,14 +149,17 @@ public class SpringProcessCommandHandler {
 		}
 		
 		// other available remote processes
-		RemoteBootAppData[] remoteProcesses = remoteProcessConnector.getProcesses();
-		for (RemoteBootAppData remoteProcess : remoteProcesses) {
-			String processKey = SpringProcessConnectorRemote.getProcessKey(remoteProcess);
-			if (!alreadyConnected.contains(processKey)) {
-				String label = createLabel(remoteProcess.getProcessID(), SpringProcessConnectorRemote.getProcessName(remoteProcess));
-				result.add(new LiveProcessCommand(COMMAND_CONNECT, processKey, label, null, remoteProcess.getProcessID()));
+		for (SpringProcessConnectorRemote remoteProcessConnector : remoteProcessConnectors) {
+			RemoteBootAppData[] remoteProcesses = remoteProcessConnector.getProcesses();
+			for (RemoteBootAppData remoteProcess : remoteProcesses) {
+				String processKey = SpringProcessConnectorRemote.getProcessKey(remoteProcess);
+				if (!alreadyConnected.contains(processKey)) {
+					String label = createLabel(remoteProcess.getProcessID(), SpringProcessConnectorRemote.getProcessName(remoteProcess));
+					result.add(new LiveProcessCommand(COMMAND_CONNECT, processKey, label, null, remoteProcess.getProcessID()));
+				}
 			}
 		}
+
 		log.debug("getProcessCommands => {}", result);
 		return CompletableFuture.completedFuture((Object[]) result.toArray(new Object[result.size()]));
 	}
