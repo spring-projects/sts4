@@ -125,6 +125,8 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 	private SimpleWorkspaceService workspace;
 	private STS4LanguageClient client;
 	private final LanguageServerProperties props;
+	
+	private Integer parentProcessId;
 
 	private ProgressService progressService = new ProgressService()  {
 		
@@ -284,6 +286,7 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 	@Override
 	public CompletableFuture<InitializeResult> initialize(InitializeParams params) {
 		log.info("Initializing");
+		parentProcessId = params.getProcessId();
 		clientCapabilities.complete(params.getCapabilities());
 
 		// multi-root workspace handling
@@ -805,6 +808,10 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 
 	final public boolean hasCompletionSnippetSupport() {
 		return hasCompletionSnippetSupport;
+	}
+	
+	final public Integer getParentProcessId() {
+		return parentProcessId;
 	}
 
 }
