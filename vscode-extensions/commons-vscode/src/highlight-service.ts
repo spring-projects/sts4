@@ -43,7 +43,7 @@ export class HighlightService {
     }
 
     handle(params : HighlightParams) : void {
-        this.highlights.set(params.doc.uri, params);
+        this.highlights.set(VSCode.Uri.parse(params.doc.uri).toString(), params);
         this.refresh(params.doc);
     }
 
@@ -52,7 +52,7 @@ export class HighlightService {
         for (let editor of editors) {
             const activeUri = editor.document.uri.toString();
             const activeVersion = editor.document.version;
-            if (docId.uri === activeUri && docId.version === activeVersion) {
+            if (VSCode.Uri.parse(docId.uri).toString() === activeUri && docId.version === activeVersion) {
                 //We only update highlights in the active editor for now
                 this.updateHighlightsForEditor(editor);
             }

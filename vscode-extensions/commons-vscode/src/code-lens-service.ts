@@ -6,7 +6,8 @@ import {
     Event,
     EventEmitter,
     ProviderResult,
-    TextDocument
+    TextDocument,
+    Uri
 } from "vscode";
 import {HighlightParams, toVSRange} from './highlight-service';
 import * as Lsp from 'vscode-languageclient';
@@ -22,7 +23,7 @@ export class HighlightCodeLensProvider implements CodeLensProvider {
 
     handle(highlghtParams: HighlightParams) {
         if (!deepEqual(this.highlights.get(highlghtParams.doc.uri), highlghtParams)) {
-            this.highlights.set(highlghtParams.doc.uri, highlghtParams);
+            this.highlights.set(Uri.parse(highlghtParams.doc.uri).toString(), highlghtParams);
             this._onDidChangeCodeLenses.fire();
         }
     }

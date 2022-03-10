@@ -13,8 +13,6 @@ package org.springframework.ide.vscode.boot.app;
 import java.io.File;
 import java.net.URI;
 import java.net.URISyntaxException;
-import java.net.URLDecoder;
-import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -128,7 +126,7 @@ public class SpringSymbolIndex implements InitializingBean {
 	private String watchXMLChangedRegistration;
 	
 	// Futures resolved when project is initialized/indexed
-	private Map<URI, CompletableFuture<Void>> initializedProjects = new HashMap<>();
+	private Map<URI, CompletableFuture<IJavaProject>> initializedProjects = new HashMap<>();
 	
 
 	private SimpleWorkspaceService getWorkspaceService() {
@@ -538,61 +536,52 @@ public class SpringSymbolIndex implements InitializingBean {
 			.map(enhanced -> enhanced.getSymbol());
 	}
 	
-	synchronized private CompletableFuture<Void> projectInitializedFuture(IJavaProject project) {
+	synchronized private CompletableFuture<IJavaProject> projectInitializedFuture(IJavaProject project) {
 		if (project == null) {
 			return CompletableFuture.completedFuture(null);
 		} else {
 			URI uri = project.getLocationUri();
-			return initializedProjects.computeIfAbsent(uri, u -> new CompletableFuture<Void>());
+			return initializedProjects.computeIfAbsent(uri, u -> CompletableFuture.completedFuture(project));
 		}
 	}
 	
 	public List<? extends SymbolInformation> getSymbols(String docURI) {
-		try {	
+		try {
+			TextDocument doc = server.getTextDocumentService().getLatestSnapshot(docURI);
 			URI uri = URI.create(docURI);
-			
-			/*
-			 * Workaround for docUri coming from vscode-languageclient on Windows
-			 * 
-			 * It comes in as "file:///c%3A/Users/ab/spring-petclinic/src/main/java/org/springframework/samples/petclinic/owner/PetRepository.java"
-			 * 
-			 * While symbols index would have this uri instead:
-			 * - "file:///C:/Users/ab/spring-petclinic/src/main/java/org/springframework/samples/petclinic/owner/PetRepository.java"
-			 * 
-			 * i.e. lower vs upper case drive letter and escaped drive colon  
-			 */
-			if ("file".equals(uri.getScheme())) {
-				String path = URLDecoder.decode(uri.getPath(), StandardCharsets.UTF_8);
-				int colonIdx = path.indexOf(':');
-				if (colonIdx > 0 && colonIdx < 3) {
-					int driveIdx = colonIdx - 1;
-					if (Character.isLowerCase(path.charAt(driveIdx))) {
-						StringBuilder sb = new StringBuilder(path.substring(0, driveIdx));
-						sb.append(Character.toUpperCase(path.charAt(driveIdx)));
-						sb.append(path.substring(driveIdx + 1));
-						path = sb.toString();
+			CompletableFuture<IJavaProject> projectInitialized = futureProjectFinder.findFuture(uri).thenCompose(project -> projectInitializedFuture(project));
+			IJavaProject project = projectInitialized.get(15, TimeUnit.SECONDS);
+			ImmutableList.Builder<SymbolInformation> builder = ImmutableList.builder();
+			if (project != null && doc != null) {
+				// Collect symbols from the opened document
+				for (SpringIndexer indexer : this.indexers) {
+					if (indexer.isInterestedIn(docURI)) {
+						try {
+							for (EnhancedSymbolInformation enhanced : indexer.computeSymbols(project, docURI,
+									doc.get())) {
+								builder.add(enhanced.getSymbol());
+							}
+						} catch (Exception e) {
+							log.error("{}", e);
+						}
 					}
 				}
-				uri = UriUtil.toUri(new File(path));
-			}
-			
-			CompletableFuture<Void> projectInitialized = futureProjectFinder.findFuture(uri).thenCompose(project -> projectInitializedFuture(project));
-			projectInitialized.get(15, TimeUnit.SECONDS);
-			List<EnhancedSymbolInformation> docSymbols = this.symbolsByDoc.get(uri.toString());
-			if (docSymbols != null) {
-				synchronized (docSymbols) {
-					ImmutableList.Builder<SymbolInformation> builder = ImmutableList.builder();
-					for (EnhancedSymbolInformation enhanced : docSymbols) {
-						builder.add(enhanced.getSymbol());
+			} else {
+				// Take symbols from the index if there is no opened document.
+				List<EnhancedSymbolInformation> docSymbols = this.symbolsByDoc.get(uri.toString());
+				if (docSymbols != null) {
+					synchronized (docSymbols) {
+						for (EnhancedSymbolInformation enhanced : docSymbols) {
+							builder.add(enhanced.getSymbol());
+						}
 					}
-					return builder.build();
 				}
 			}
+			return builder.build();
 		} catch (Exception e) {
 			log.warn("", e);
 			return Collections.emptyList();
 		}
-		return Collections.emptyList();		 
 	}
 
 	public List<SymbolAddOnInformation> getAllAdditionalInformation(Predicate<SymbolAddOnInformation> filter) {

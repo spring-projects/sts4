@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2020 Pivotal, Inc.
+ * Copyright (c) 2017, 2022 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -19,6 +19,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -229,6 +230,35 @@ public class SpringIndexerJava implements SpringIndexer {
 			fileScannedEvent(file);
 			scanAffectedFiles(project, context.getScannedTypes(), scannedFiles);
 		}
+	}
+	
+	public List<EnhancedSymbolInformation> computeSymbols(IJavaProject project, String docURI, String content) throws Exception {
+		ASTParser parser = createParser(project, false);
+		
+		if (content != null) {
+			String unitName = docURI.substring(docURI.lastIndexOf("/"));
+			parser.setUnitName(unitName);
+			log.debug("Scan file: {}", unitName);
+			parser.setSource(content.toCharArray());
+
+			CompilationUnit cu = (CompilationUnit) parser.createAST(null);
+
+			if (cu != null) {
+				List<CachedSymbol> generatedSymbols = new ArrayList<CachedSymbol>();
+				AtomicReference<TextDocument> docRef = new AtomicReference<>();
+				String file = UriUtil.toFileString(docURI);
+				SpringIndexerJavaContext context = new SpringIndexerJavaContext(project, cu, docURI, file,
+						0, docRef, content, generatedSymbols, SCAN_PASS.ONE, new ArrayList<>());
+
+				scanAST(context);
+				
+				return generatedSymbols.stream().map(s -> s.getEnhancedSymbol()).collect(Collectors.toList());
+			}
+			
+		}
+		
+		return Collections.emptyList();
+		
 	}
 
 	private Set<String> scanFilesInternally(IJavaProject project, DocumentDescriptor[] docs) throws Exception {

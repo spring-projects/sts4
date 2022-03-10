@@ -1,5 +1,6 @@
 'use strict';
 
+import * as OS from "os";
 import * as VSCode from 'vscode';
 import { workspace } from 'vscode';
 
@@ -44,6 +45,30 @@ export function activate(context: VSCode.ExtensionContext): Thenable<LanguageCli
         },
         workspaceOptions: VSCode.workspace.getConfiguration("spring-boot.ls"),
         clientOptions: {
+            uriConverters: {
+                code2Protocol: (uri) => {
+           		        			/*
+                    * Workaround for docUri coming from vscode-languageclient on Windows
+                    * 
+                    * It comes in as "file:///c%3A/Users/ab/spring-petclinic/src/main/java/org/springframework/samples/petclinic/owner/PetRepository.java"
+                    * 
+                    * While symbols index would have this uri instead:
+                    * - "file:///C:/Users/ab/spring-petclinic/src/main/java/org/springframework/samples/petclinic/owner/PetRepository.java"
+                    * 
+                    * i.e. lower vs upper case drive letter and escaped drive colon  
+                    */
+                    if (OS.platform() === "win32" && uri.scheme === 'file') {
+                        let uriStr = uri.toString(true);
+                        const idx = uriStr.indexOf(':', 5);
+                        if (idx > 5 && idx < 10) {
+                            uriStr = `${uriStr.substring(0, idx - 1)}${uriStr.charAt(idx - 1).toUpperCase()}${uriStr.substring(idx)}`
+                        }
+                        return uriStr;
+                    }
+                    return uri.toString();
+                },
+                protocol2Code: uri => VSCode.Uri.file(uri)
+            },
             // See PT-158992999 as to why a scheme is added to the document selector
             // documentSelector: [ PROPERTIES_LANGUAGE_ID, YAML_LANGUAGE_ID, JAVA_LANGUAGE_ID ],
             documentSelector: [
