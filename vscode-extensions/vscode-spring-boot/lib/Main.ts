@@ -67,7 +67,7 @@ export function activate(context: VSCode.ExtensionContext): Thenable<LanguageCli
                     }
                     return uri.toString();
                 },
-                protocol2Code: uri => VSCode.Uri.file(uri)
+                protocol2Code: uri => VSCode.Uri.parse(uri)
             },
             // See PT-158992999 as to why a scheme is added to the document selector
             // documentSelector: [ PROPERTIES_LANGUAGE_ID, YAML_LANGUAGE_ID, JAVA_LANGUAGE_ID ],
