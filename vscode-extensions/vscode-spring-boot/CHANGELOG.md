@@ -1,3 +1,13 @@
+## 2022-03-16 (4.14.0 RELEASE, incl. language servers version 1.32.0)
+
+* _(VSCode)_ fixed: VSCode Spring boot tools 1.30.0 error trying to find JVM ([#726](https://github.com/spring-projects/sts4/issues/726))
+* _(VSCode)_ fixed: vscode "Problems" diagnostic entries lack "source" field ([#725](https://github.com/spring-projects/sts4/issues/725))
+* _(VSCode)_ fixed: orphan vscode extension processes left running ([#704](https://github.com/spring-projects/sts4/issues/704))
+* _(VSCode)_ fixed: deadlock in language server process avoids process to be shutdown ([#741](https://github.com/spring-projects/sts4/issues/741))
+* _(VSCode)_ fixed: Outline View is broken again on Windows ([#742](https://github.com/spring-projects/sts4/issues/742))
+* _(VSCode)_ fixed: boot-java.live-information.automatic-tracking.on is not working on vscode ([#733](https://github.com/spring-projects/sts4/issues/733))
+* _(VSCode)_ fixed: Java 17 is mis-identified as Java 8 ([#713](https://github.com/spring-projects/sts4/issues/713))
+
 ## 2022-02-02 (4.13.1 RELEASE, incl. language servers version 1.30.0)
 
 * _(Spring Boot)_ improvement: Consider if content assist can be offered for spring.config.import property keys ([#536](https://github.com/spring-projects/sts4/issues/536))

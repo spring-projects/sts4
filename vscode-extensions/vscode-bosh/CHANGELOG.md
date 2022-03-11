@@ -1,3 +1,7 @@
+## 2022-03-16 (4.14.0 RELEASE, incl. language servers version 1.32.0)
+
+* no major changes
+
 ## 2022-02-02 (4.13.1 RELEASE, incl. language servers version 1.30.0)
 
 * _(VSCode)_ fixed: Spring Boot Tools for VS Code incorrectly misidentifies internal JDK for Language Support for Java as a JRE ([#715](https://github.com/spring-projects/sts4/issues/715))
