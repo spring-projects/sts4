@@ -9,6 +9,8 @@ import * as liveHoverUi from './live-hover-connect-ui';
 
 import {LanguageClient} from "vscode-languageclient/node";
 import { startDebugSupport } from './debug-config-provider';
+import { ApiManager } from "./apiManager";
+import { ExtensionAPI } from "./api";
 
 const PROPERTIES_LANGUAGE_ID = "spring-boot-properties";
 const YAML_LANGUAGE_ID = "spring-boot-properties-yaml";
@@ -18,7 +20,7 @@ const XML_LANGUAGE_ID = "xml";
 const NEVER_SHOW_AGAIN = "Do not show again";
 
 /** Called when extension is activated */
-export function activate(context: VSCode.ExtensionContext): Thenable<LanguageClient> {
+export function activate(context: VSCode.ExtensionContext): Thenable<ExtensionAPI> {
 
     // registerPipelineGenerator(context);
     let options : commons.ActivatorOptions = {
@@ -109,6 +111,6 @@ export function activate(context: VSCode.ExtensionContext): Thenable<LanguageCli
 
     return commons.activate(options, context).then(client => {
         liveHoverUi.activate(client, options, context);
-        return client;
+        return new ApiManager(client).api;
     });
 }

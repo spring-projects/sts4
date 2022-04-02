@@ -110,6 +110,10 @@ public class SpringProcessConnectorService {
 		}
 	}
 
+	public SpringProcessLiveData getLiveData(String processKey) {
+		return this.liveDataProvider.getCurrent(processKey);
+	}
+
 	public void disconnectProcess(String processKey) {
 		log.info("disconnect from process: " + processKey);
 

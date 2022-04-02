@@ -38,6 +38,7 @@ public class SpringProcessCommandHandler {
 	private static final String COMMAND_CONNECT = "sts/livedata/connect";
 	private static final String COMMAND_REFRESH = "sts/livedata/refresh";
 	private static final String COMMAND_DISCONNECT = "sts/livedata/disconnect";
+	private static final String COMMAND_GET = "sts/livedata/get";
 	
 	private final SpringProcessConnectorService connectorService;
 	private final SpringProcessConnectorLocal localProcessConnector;
@@ -68,6 +69,11 @@ public class SpringProcessCommandHandler {
 			return disconnect(params);
 		});
 		log.info("Registered command handler: {}",COMMAND_DISCONNECT);
+		
+		server.onCommand(COMMAND_GET, (params) -> {
+			return get(params);
+		});
+		log.info("Registered command handler: {}",COMMAND_GET);
 	}
 
 	private CompletableFuture<Object> connect(ExecuteCommandParams params) {
@@ -174,16 +180,20 @@ public class SpringProcessCommandHandler {
 	}
 
 	private String getProcessKey(ExecuteCommandParams params) {
+		return getArgumentByKey(params, "processKey");
+	}
+	
+	private String getArgumentByKey(ExecuteCommandParams params, String name) {
 		List<Object> arguments = params.getArguments();
 		for (Object arg : arguments) {
 			if (arg instanceof Map<?, ?>) {
-				Object value = ((Map<?, ?>) arg).get("processKey");
+				Object value = ((Map<?, ?>) arg).get(name);
 				if (value != null) {
 					return value.toString();
 				}
 			}
 			else if (arg instanceof JsonObject) {
-				JsonElement element = ((JsonObject) arg).get("processKey");
+				JsonElement element = ((JsonObject) arg).get(name);
 				if (element != null) {
 					return element.getAsString();
 				}
@@ -191,6 +201,43 @@ public class SpringProcessCommandHandler {
 		}
 		
 		return null;
+	}
+	
+	private CompletableFuture<Object> get(ExecuteCommandParams params) {
+		String processKey = getProcessKey(params);
+		String dataKey = getArgumentByKey(params, "dataKey");
+		if (processKey != null) {
+			SpringProcessLiveData data = connectorService.getLiveData(processKey);
+			switch(dataKey) {
+				case "properties": {
+					return CompletableFuture.completedFuture(data.getLiveProperties());
+				}
+				case "beans": {
+					String beanName = getArgumentByKey(params, "beanName");
+					if (beanName != null) {
+						return CompletableFuture.completedFuture(data.getBeans().getBeansOfName(beanName));
+					}
+					String dependingOn = getArgumentByKey(params, "dependingOn");
+					if (dependingOn != null) {
+						return CompletableFuture.completedFuture(data.getBeans().getBeansDependingOn(dependingOn));	
+					}
+					return CompletableFuture.completedFuture(data.getBeans().getBeanNames());
+					
+				}
+				case "mappings": {
+					return CompletableFuture.completedFuture(data.getRequestMappings());
+				}
+				case "contextPath": {
+					return CompletableFuture.completedFuture(data.getContextPath());
+				}
+				case "port": {
+					return CompletableFuture.completedFuture(data.getPort());
+				}
+				default: {}
+			}
+		}
+		
+		return CompletableFuture.completedFuture(null);
 	}
 
 }
