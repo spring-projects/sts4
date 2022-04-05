@@ -125,8 +125,8 @@ public class BootLanguageServerBootApp {
 	}
 
 	@Bean
-	SpringProcessLiveDataProvider liveDataProvider() {
-		return new SpringProcessLiveDataProvider();
+	SpringProcessLiveDataProvider liveDataProvider(SimpleLanguageServer server) {
+		return new SpringProcessLiveDataProvider(server);
 	}
 	
 	@Bean

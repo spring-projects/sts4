@@ -14,11 +14,15 @@ export interface ExtensionAPI {
      */
     readonly onDidLiveProcessDisconnect: Event<string>
 
+	/**
+     * An event which fires on live process data change. Payload is processKey.
+     */
+	readonly onDidLiveProcessUpdate: Event<string>
+
     /**
      * A command to get live process data.
      */
     readonly getLiveProcessData: (query: SimpleQuery | BeansQuery) => Promise<any>
-
 }
 
 interface LiveProcessDataQuery {

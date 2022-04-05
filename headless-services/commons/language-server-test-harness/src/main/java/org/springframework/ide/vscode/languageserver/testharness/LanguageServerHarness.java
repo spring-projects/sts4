@@ -296,7 +296,6 @@ public class LanguageServerHarness {
 				@Override
 				public void showMessage(MessageParams messageParams) {
 					// TODO Auto-generated method stub
-
 				}
 
 				@Override
@@ -406,6 +405,17 @@ public class LanguageServerHarness {
 					return CompletableFuture.completedFuture(Collections.emptyList());
 				}
 
+				@Override
+				public void liveProcessConnected(String processKey) {
+				}
+
+				@Override
+				public void liveProcessDisconnected(String processKey) {
+				}
+
+				@Override
+				public void liveProcessDataUpdated(String processKey) {
+				}
 			});
 
 		}

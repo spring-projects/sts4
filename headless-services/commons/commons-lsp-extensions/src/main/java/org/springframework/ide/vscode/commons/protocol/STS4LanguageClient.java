@@ -36,6 +36,16 @@ import org.springframework.ide.vscode.commons.protocol.java.TypeDescriptorData;
  */
 public interface STS4LanguageClient extends LanguageClient {
 
+	
+	@JsonNotification("sts/liveprocess/connected")
+	void liveProcessConnected(String processKey);
+
+	@JsonNotification("sts/liveprocess/disconnected")
+	void liveProcessDisconnected(String processKey);
+
+	@JsonNotification("sts/liveprocess/updated")
+	void liveProcessDataUpdated(String processKey);
+
 	@JsonNotification("sts/highlight")
 	void highlight(HighlightParams highlights);
 
@@ -76,5 +86,6 @@ public interface STS4LanguageClient extends LanguageClient {
 
 	@JsonRequest("sts/javaCodeComplete")
 	CompletableFuture<List<JavaCodeCompleteData>> javaCodeComplete(JavaCodeCompleteParams params);
+
 	
 }

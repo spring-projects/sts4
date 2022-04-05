@@ -229,8 +229,8 @@ public class SpringProcessConnectorLocal {
 		}
 	}
 	
-	public boolean isConnected(String processKey) {
-		return this.processConnectorService.isConnected(processKey);
+	public boolean isKnownProcessKey(String processKey) {
+		return this.processConnectorService.isKnownProcessKey(processKey);
 	}
 
 	private String getProcessID(VirtualMachineDescriptor descriptor) {

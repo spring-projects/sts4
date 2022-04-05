@@ -7,3 +7,7 @@ export namespace LiveProcessConnectedNotification {
 export namespace LiveProcessDisconnectedNotification {
 	export const type = new NotificationType<string>('sts/liveprocess/disconnected');
 }
+
+export namespace LiveProcessUpdatedNotification {
+	export const type = new NotificationType<string>('sts/liveprocess/updated');
+}

@@ -45,7 +45,6 @@ public class SpringProcessConnectorService {
 	private int progressIdKey = 0;
 	private int maxRetryCount;
 	private int retryDelayInSeconds;
-
 		
 	public SpringProcessConnectorService(SimpleLanguageServer server, SpringProcessLiveDataProvider liveDataProvider) {
 		this.liveDataProvider = liveDataProvider;
@@ -135,7 +134,7 @@ public class SpringProcessConnectorService {
 				.filter((connector) -> connectedSuccess.get(connector.getProcessKey())).toArray(SpringProcessConnector[]::new);
 	}
 	
-	public boolean isConnected(String processKey) {
+	public boolean isKnownProcessKey(String processKey) {
 		return this.connectors.containsKey(processKey);
 	}
 
@@ -162,13 +161,13 @@ public class SpringProcessConnectorService {
 			catch (Exception e) {
 				log.info("problem occured during process connect", e);
 
-				if (retryNo < maxRetryCount && isConnected(processKey)) {
+				if (retryNo < maxRetryCount && isKnownProcessKey(processKey)) {
 					scheduleConnect(progressTask, processKey, connector, retryDelayInSeconds, TimeUnit.SECONDS, retryNo + 1);
 				} else {
 					progressTask.progressDone();
 					
 					// Send message to client if maximum retries reached on error
-					if (isConnected(processKey)) {
+					if (isKnownProcessKey(processKey)) {
 						diagnosticService.diagnosticEvent(ShowMessageException
 									.error("Failed to connect to process " + processKey + " after retries: " + retryNo, e));	
 					}
@@ -229,7 +228,7 @@ public class SpringProcessConnectorService {
 
 				log.info("problem occured during process live data refresh", e);
 				
-				if (retryNo < maxRetryCount && isConnected(processKey)) {
+				if (retryNo < maxRetryCount && isKnownProcessKey(processKey)) {
 					scheduleRefresh(progressTask, processKey, connector, retryDelayInSeconds, TimeUnit.SECONDS,
 							retryNo + 1);
 				}
@@ -237,7 +236,7 @@ public class SpringProcessConnectorService {
 					progressTask.progressDone();
 					
 					// Send message to client if maximum retries reached on error
-					if (isConnected(processKey)) {
+					if (isKnownProcessKey(processKey)) {
 						diagnosticService.diagnosticEvent(ShowMessageException
 								.error("Failed to refresh live data from process " + processKey + " after retries: " + retryNo, e));
 	

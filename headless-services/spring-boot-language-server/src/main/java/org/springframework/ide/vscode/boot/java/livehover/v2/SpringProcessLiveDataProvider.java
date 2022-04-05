@@ -16,6 +16,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
+import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
+
 /**
  * @author Martin Lippert
  */
@@ -23,8 +25,10 @@ public class SpringProcessLiveDataProvider {
 	
 	private final ConcurrentMap<String, SpringProcessLiveData> liveData;
 	private final List<SpringProcessLiveDataChangeListener> listeners;
+	private final SimpleLanguageServer server;
 	
-	public SpringProcessLiveDataProvider() {
+	public SpringProcessLiveDataProvider(SimpleLanguageServer server) {
+		this.server = server;
 		this.liveData = new ConcurrentHashMap<>();
 		this.listeners = new CopyOnWriteArrayList<>();
 	}
@@ -40,25 +44,25 @@ public class SpringProcessLiveDataProvider {
 	 */
 	public boolean add(String processKey, SpringProcessLiveData liveData) {
 		SpringProcessLiveData oldData = this.liveData.putIfAbsent(processKey, liveData);
-		
 		if (oldData == null) {
 			announceChangedLiveData();
+			server.getClient().liveProcessConnected(processKey);
 		}
-		
 		return oldData == null;
 	}
 	
 	public void remove(String processKey) {
 		SpringProcessLiveData removed = this.liveData.remove(processKey);
-
 		if (removed != null) {
 			announceChangedLiveData();
+			server.getClient().liveProcessDisconnected(processKey);
 		}
 	}
 	
 	public void update(String processKey, SpringProcessLiveData liveData) {
 		this.liveData.put(processKey, liveData);
 		announceChangedLiveData();
+		server.getClient().liveProcessDataUpdated(processKey);
 	}
 	
 	
@@ -73,7 +77,6 @@ public class SpringProcessLiveDataProvider {
 	private void announceChangedLiveData() {
 		SpringProcessLiveData[] latestLiveData = getLatestLiveData();
 		SpringProcessLiveDataChangeEvent event = new SpringProcessLiveDataChangeEvent(latestLiveData);
-		
 		for (SpringProcessLiveDataChangeListener listener : this.listeners) {
 			listener.liveDataChanged(event);
 		}
