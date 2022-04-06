@@ -17,6 +17,8 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
+import org.springframework.ide.vscode.commons.protocol.STS4LanguageClient;
+import org.springframework.ide.vscode.commons.util.Assert;
 
 /**
  * @author Martin Lippert
@@ -46,23 +48,29 @@ public class SpringProcessLiveDataProvider {
 		SpringProcessLiveData oldData = this.liveData.putIfAbsent(processKey, liveData);
 		if (oldData == null) {
 			announceChangedLiveData();
-			server.getClient().liveProcessConnected(processKey);
+			getClient().liveProcessConnected(processKey);
 		}
 		return oldData == null;
 	}
 	
+	private STS4LanguageClient getClient() {
+		STS4LanguageClient client = server.getClient();
+		Assert.isLegal(client!=null, "Client is null. Language server not yet initialized?");
+		return client;
+	}
+
 	public void remove(String processKey) {
 		SpringProcessLiveData removed = this.liveData.remove(processKey);
 		if (removed != null) {
 			announceChangedLiveData();
-			server.getClient().liveProcessDisconnected(processKey);
+			getClient().liveProcessDisconnected(processKey);
 		}
 	}
 	
 	public void update(String processKey, SpringProcessLiveData liveData) {
 		this.liveData.put(processKey, liveData);
 		announceChangedLiveData();
-		server.getClient().liveProcessDataUpdated(processKey);
+		getClient().liveProcessDataUpdated(processKey);
 	}
 	
 	
