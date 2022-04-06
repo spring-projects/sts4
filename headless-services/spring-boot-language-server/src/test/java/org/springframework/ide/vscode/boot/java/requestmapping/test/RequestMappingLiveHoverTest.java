@@ -74,9 +74,8 @@ public class RequestMappingLiveHoverTest {
 				.requestMappingsJson(
 				"{\"/webjars/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**/favicon.ico\":{\"bean\":\"faviconHandlerMapping\"},\"{[/hello-world],methods=[GET]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public example.Greeting example.HelloWorldController.sayHello(java.lang.String)\"},\"{[/goodbye]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.goodbye()\"},\"{[/hello]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.hello()\"},\"{[/error]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.http.ResponseEntity<java.util.Map<java.lang.String, java.lang.Object>> org.springframework.boot.autoconfigure.web.BasicErrorController.error(javax.servlet.http.HttpServletRequest)\"},\"{[/error],produces=[text/html]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.web.servlet.ModelAndView org.springframework.boot.autoconfigure.web.BasicErrorController.errorHtml(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse)\"}}")
 				.build();
-		liveDataProvider.add("processkey", liveData);
-
 		harness.intialize(directory);
+		liveDataProvider.add("processkey", liveData);
 
 		Editor editor = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
 		editor.assertHighlights("@RequestMapping(method=RequestMethod.GET)");
@@ -107,9 +106,8 @@ public class RequestMappingLiveHoverTest {
 						.paths()
 						)
 				.build();
-		liveDataProvider.add("processkey", liveData);
-
 		harness.intialize(directory);
+		liveDataProvider.add("processkey", liveData);
 
 		Editor editor = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
 		editor.assertHighlights("@RequestMapping(method=RequestMethod.GET)");
@@ -160,9 +158,8 @@ public class RequestMappingLiveHoverTest {
 				.requestMappingsJson(
 						"{\"/webjars/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**/favicon.ico\":{\"bean\":\"faviconHandlerMapping\"},\"{[/hello-world],methods=[GET]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public example.Greeting example.HelloWorldController.sayHello(java.lang.String)\"},\"{[/goodbye]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.goodbye()\"},\"{[/hello]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.hello()\"},\"{[/error]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.http.ResponseEntity<java.util.Map<java.lang.String, java.lang.Object>> org.springframework.boot.autoconfigure.web.BasicErrorController.error(javax.servlet.http.HttpServletRequest)\"},\"{[/error],produces=[text/html]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.web.servlet.ModelAndView org.springframework.boot.autoconfigure.web.BasicErrorController.errorHtml(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse)\"}}")
 				.build();
-		liveDataProvider.add("processkey", liveData);
-
 		harness.intialize(directory);
+		liveDataProvider.add("processkey", liveData);
 
 		Editor editor = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
 		editor.assertHighlights("@RequestMapping(\"/hello\")", "@RequestMapping(\"/goodbye\")");
@@ -224,9 +221,8 @@ public class RequestMappingLiveHoverTest {
 					}
 				})
 				.build();
-		liveDataProvider.add("processkey", liveData);
-
 		harness.intialize(directory);
+		liveDataProvider.add("processkey", liveData);
 
 		Editor editor = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
 		editor.assertHighlights("@RequestMapping(\"/hello\")", "@RequestMapping(\"/goodbye\")");
@@ -288,9 +284,8 @@ public class RequestMappingLiveHoverTest {
 					}
 				})
 				.build();
-		liveDataProvider.add("processkey", liveData);
-
 		harness.intialize(directory);
+		liveDataProvider.add("processkey", liveData);
 
 		Editor editor = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
 		editor.assertHighlights("@RequestMapping(\"/hello\")", "@RequestMapping(\"/goodbye\")");
@@ -350,9 +345,8 @@ public class RequestMappingLiveHoverTest {
 				.requestMappingsJson(
 						"{\"{[/greetings],methods=[DELETE]}\": {\"bean\": \"requestMappingHandlerMapping\", \"method\":\"public void com.example.RestApi.deleteGreetings()\"}}")
 				.build();
-		liveDataProvider.add("processkey", liveData);
-
 		harness.intialize(directory);
+		liveDataProvider.add("processkey", liveData);
 
 		Editor editor = harness.newEditor(LanguageId.JAVA,
                 "package com.example;\n" +
@@ -396,9 +390,8 @@ public class RequestMappingLiveHoverTest {
 			.requestMappingsJson(
 				"{\"{[/greetings],methods=[DELETE]}\": {\"bean\": \"requestMappingHandlerMapping\", \"method\":\"public void com.example.RestApi.deleteGreetings()\"}}")
 			.build();
-		liveDataProvider.add("processkey", liveData);
-
 		harness.intialize(directory);
+		liveDataProvider.add("processkey", liveData);
 
 		Editor editor = harness.newEditor(LanguageId.JAVA,
                 "package com.example;\n" +
@@ -439,9 +432,8 @@ public class RequestMappingLiveHoverTest {
 			.requestMappingsJson(
 				"{\"{[/greetings],methods=[PUT]}\": {\"bean\": \"requestMappingHandlerMapping\", \"method\":\"public java.lang.String com.example.RestApi.updateGreetings()\"}}")
 			.build();
-		liveDataProvider.add("processkey", liveData);
-
 		harness.intialize(directory);
+		liveDataProvider.add("processkey", liveData);
 
 		Editor editor = harness.newEditor(LanguageId.JAVA,
                 "package com.example;\n" +
@@ -484,9 +476,8 @@ public class RequestMappingLiveHoverTest {
 			.requestMappingsJson(
 				"{\"{[/greetings || /hello],methods=[GET]}\": {\"bean\": \"requestMappingHandlerMapping\", \"method\":\"public java.lang.String com.example.RestApi.greetings()\"}}")
 			.build();
-		liveDataProvider.add("processkey", liveData);
-
 		harness.intialize(directory);
+		liveDataProvider.add("processkey", liveData);
 
 		Editor editor = harness.newEditor(LanguageId.JAVA,
                 "package com.example;\n" +
@@ -532,9 +523,8 @@ public class RequestMappingLiveHoverTest {
 			.requestMappingsJson(
 				"{\"{[/find],methods=[GET]}\": {\"bean\": \"requestMappingHandlerMapping\", \"method\":\"public org.springframework.http.ResponseEntity<?> com.example.RestApi.find(java.lang.String,java.util.Date,java.lang.String)\"}}")
 			.build();
-		liveDataProvider.add("processkey", liveData);
-
 		harness.intialize(directory);
+		liveDataProvider.add("processkey", liveData);
 
 		Editor editor = harness.newEditor(LanguageId.JAVA,
                 "package com.example;\n" +
@@ -583,9 +573,8 @@ public class RequestMappingLiveHoverTest {
 			.requestMappingsJson(
 				"{\"{[/find],methods=[GET]}\": {\"bean\": \"requestMappingHandlerMapping\", \"method\":\"public java.lang.Object com.example.RestApi.set(java.lang.String,java.util.Map<java.lang.String, java.lang.String>)\"}}")
 			.build();
-		liveDataProvider.add("processkey", liveData);
-
 		harness.intialize(directory);
+		liveDataProvider.add("processkey", liveData);
 
 		Editor editor = harness.newEditor(LanguageId.JAVA,
                 "package com.example;\n" +
@@ -633,9 +622,8 @@ public class RequestMappingLiveHoverTest {
 			.requestMappingsJson(
 				"{\"{[/find],methods=[GET]}\": {\"bean\": \"requestMappingHandlerMapping\", \"method\":\"public java.lang.Object com.example.RestApi.set(java.lang.String,java.util.Map<java.lang.String, java.util.Map<java.lang.String, java.lang.Integer>>)\"}}")
 			.build();
-		liveDataProvider.add("processkey", liveData);
-
 		harness.intialize(directory);
+		liveDataProvider.add("processkey", liveData);
 
 		Editor editor = harness.newEditor(LanguageId.JAVA,
                 "package com.example;\n" +
@@ -684,9 +672,8 @@ public class RequestMappingLiveHoverTest {
 			.requestMappingsJson(
 				"{\"{[/find],methods=[GET]}\": {\"bean\": \"requestMappingHandlerMapping\", \"method\":\"public java.lang.Object com.example.RestApi.set(java.lang.String,java.util.Map<java.lang.String, java.util.Map<java.lang.String, ? extends java.lang.Integer>>)\"}}")
 			.build();
-		liveDataProvider.add("processkey", liveData);
-
 		harness.intialize(directory);
+		liveDataProvider.add("processkey", liveData);
 
 		Editor editor = harness.newEditor(LanguageId.JAVA,
                 "package com.example;\n" +
@@ -735,9 +722,8 @@ public class RequestMappingLiveHoverTest {
 			.requestMappingsJson(
 				"{\"{[/find],methods=[GET]}\": {\"bean\": \"requestMappingHandlerMapping\", \"method\":\"public java.lang.Object com.example.RestApi.set(java.lang.String[])\"}}")
 			.build();
-		liveDataProvider.add("processkey", liveData);
-
 		harness.intialize(directory);
+		liveDataProvider.add("processkey", liveData);
 
 		Editor editor = harness.newEditor(LanguageId.JAVA,
                 "package com.example;\n" +
@@ -784,9 +770,8 @@ public class RequestMappingLiveHoverTest {
 			.requestMappingsJson(
 				"{\"{[/find],methods=[GET]}\": {\"bean\": \"requestMappingHandlerMapping\", \"method\":\"public java.lang.Object com.example.RestApi.set(java.lang.String[][])\"}}")
 			.build();
-		liveDataProvider.add("processkey", liveData);
-
 		harness.intialize(directory);
+		liveDataProvider.add("processkey", liveData);
 
 		Editor editor = harness.newEditor(LanguageId.JAVA,
                 "package com.example;\n" +
@@ -832,9 +817,8 @@ public class RequestMappingLiveHoverTest {
 			.requestMappingsJson(
 				"{\"{[/find],methods=[GET]}\": {\"bean\": \"requestMappingHandlerMapping\", \"method\":\"public java.lang.Object com.example.RestApi.set(java.lang.String...)\"}}")
 			.build();
-		liveDataProvider.add("processkey", liveData);
-
 		harness.intialize(directory);
+		liveDataProvider.add("processkey", liveData);
 
 		Editor editor = harness.newEditor(LanguageId.JAVA,
                 "package com.example;\n" +
@@ -867,7 +851,8 @@ public class RequestMappingLiveHoverTest {
 				ProjectsHarness.class.getResource("/test-projects/test-request-mapping-live-hover/").toURI());
 		String docUri = directory.toPath().resolve("src/main/java/example/RestApi.java").toUri()
 				.toString();
-
+		harness.intialize(directory);
+		
 		// Build three different instances of the same app running on different ports with different process IDs
 		SpringProcessLiveData liveData1 = new SpringProcessLiveDataBuilder()
 			.port("1000")
@@ -908,8 +893,6 @@ public class RequestMappingLiveHoverTest {
 			.build();
 		liveDataProvider.add("processkey3", liveData3);
 		
-		harness.intialize(directory);
-
 		Editor editor = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
 		editor.assertHoverContains("@RequestMapping(\"/hello\")", "[https://cfapps.io:1000/hello](https://cfapps.io:1000/hello)  \n" +
 				"Process [PID=70000, name=`test-request-mapping-live-hover`]\n" +
@@ -942,9 +925,8 @@ public class RequestMappingLiveHoverTest {
 			.requestMappingsJson(
 						"{\"/webjars/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**/favicon.ico\":{\"bean\":\"faviconHandlerMapping\"},\"{[/goodbye]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.goodbye()\"},\"{[/delete/{id}],methods=[DELETE]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.removeMe(int)\"},\"{[/hello]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.hello()\"},\"{[/postHello],methods=[POST]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.postMethod(java.lang.String)\"},\"{[/put/{id}],methods=[PUT]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.putMethod(int,java.lang.String)\"},\"{[/person/{name}],methods=[GET]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.getMapping(java.lang.String)\"},\"{[/error]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.http.ResponseEntity<java.util.Map<java.lang.String, java.lang.Object>> org.springframework.boot.autoconfigure.web.servlet.error.BasicErrorController.error(javax.servlet.http.HttpServletRequest)\"},\"{[/error],produces=[text/html]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.web.servlet.ModelAndView org.springframework.boot.autoconfigure.web.servlet.error.BasicErrorController.errorHtml(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse)\"},\"{[/application/status],methods=[GET],produces=[application/vnd.spring-boot.actuator.v2+json || application/json]}\":{\"bean\":\"webEndpointServletHandlerMapping\",\"method\":\"public java.lang.Object org.springframework.boot.actuate.endpoint.web.servlet.WebMvcEndpointHandlerMapping$OperationHandler.handle(javax.servlet.http.HttpServletRequest,java.util.Map<java.lang.String, java.lang.String>)\"},\"{[/application/info],methods=[GET],produces=[application/vnd.spring-boot.actuator.v2+json || application/json]}\":{\"bean\":\"webEndpointServletHandlerMapping\",\"method\":\"public java.lang.Object org.springframework.boot.actuate.endpoint.web.servlet.WebMvcEndpointHandlerMapping$OperationHandler.handle(javax.servlet.http.HttpServletRequest,java.util.Map<java.lang.String, java.lang.String>)\"},\"{[/application],methods=[GET]}\":{\"bean\":\"webEndpointServletHandlerMapping\",\"method\":\"private java.util.Map<java.lang.String, java.util.Map<java.lang.String, org.springframework.boot.actuate.endpoint.web.Link>> org.springframework.boot.actuate.endpoint.web.servlet.WebMvcEndpointHandlerMapping.links(javax.servlet.http.HttpServletRequest)\"}}")
 			.build();
-		liveDataProvider.add("processkey", liveData);
-
 		harness.intialize(directory);
+		liveDataProvider.add("processkey", liveData);
 
 		Editor editor = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
 
@@ -975,9 +957,8 @@ public class RequestMappingLiveHoverTest {
 			.requestMappingsJson(
 				"{\"/webjars/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**\":{\"bean\":\"resourceHandlerMapping\"},\"/**/favicon.ico\":{\"bean\":\"faviconHandlerMapping\"},\"{[/hello-world],methods=[GET]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public example.Greeting example.HelloWorldController.sayHello(java.lang.String)\"},\"{[/inner-inner-class]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.InnerClassController$InnerController$InnerInnerController.saySomethingSuperInnerClass()\"},\"{[/inner-class]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.InnerClassController$InnerController.saySomething()\"},\"{[/person/{name}],methods=[GET]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.getMapping(java.lang.String)\"},\"{[/delete/{id}],methods=[DELETE]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.removeMe(int)\"},\"{[/goodbye]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.goodbye()\"},\"{[/hello]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.hello()\"},\"{[/postHello],methods=[POST]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.postMethod(java.lang.String)\"},\"{[/put/{id}],methods=[PUT]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public java.lang.String example.RestApi.putMethod(int,java.lang.String)\"},\"{[/error]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.http.ResponseEntity<java.util.Map<java.lang.String, java.lang.Object>> org.springframework.boot.autoconfigure.web.BasicErrorController.error(javax.servlet.http.HttpServletRequest)\"},\"{[/error],produces=[text/html]}\":{\"bean\":\"requestMappingHandlerMapping\",\"method\":\"public org.springframework.web.servlet.ModelAndView org.springframework.boot.autoconfigure.web.BasicErrorController.errorHtml(javax.servlet.http.HttpServletRequest,javax.servlet.http.HttpServletResponse)\"}}")
 			.build();
-		liveDataProvider.add("processkey", liveData);
-
 		harness.intialize(directory);
+		liveDataProvider.add("processkey", liveData);
 
 		Editor editor = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
 		editor.assertHighlights("@RequestMapping(\"/inner-class\")", "@RequestMapping(\"/inner-inner-class\")");

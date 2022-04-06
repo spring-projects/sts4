@@ -84,9 +84,8 @@ public class ConditionalsLiveHoverTest {
 				.liveConditionalsJson(
 						"{\"positiveMatches\":{\"ConditionalOnBeanConfig#hi\":[{\"condition\":\"OnBeanCondition\",\"message\":\"@ConditionalOnBean (types: example.Hello; SearchStrategy: all) found bean 'missing'\"}]}}")
 				.build();
-		liveDataProvider.add("processkey", liveData);
-
 		harness.intialize(directory);
+		liveDataProvider.add("processkey", liveData);
 
 		Editor editor = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
 		editor.assertHoverContains("@ConditionalOnBean",
@@ -111,9 +110,8 @@ public class ConditionalsLiveHoverTest {
 				.liveConditionalsJson(
 						"{\"positiveMatches\":{\"ConditionalOnMissingBeanConfig#missing\":[{\"condition\":\"OnBeanCondition\",\"message\":\"@ConditionalOnMissingBean (types: example.Hello; SearchStrategy: all) did not find any beans\"}]}}")
 				.build();
-		liveDataProvider.add("proesskey", liveData);
-
 		harness.intialize(directory);
+		liveDataProvider.add("proesskey", liveData);
 
 		Editor editor = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
 		editor.assertHoverContains("@ConditionalOnMissingBean",
@@ -139,9 +137,8 @@ public class ConditionalsLiveHoverTest {
 				.liveConditionalsJson(
 						"{\"positiveMatches\":{\"HelloConfig#missing\":[{\"condition\":\"OnBeanCondition\",\"message\":\"@ConditionalOnMissingBean (types: example.Hello; SearchStrategy: all) did not find any beans\"}],\"HelloConfig2#hi\":[{\"condition\":\"OnBeanCondition\",\"message\":\"@ConditionalOnBean (types: example.Hello; SearchStrategy: all) found bean 'missing'\"}],\"MultipleConditionals#hi\":[{\"condition\":\"OnClassCondition\",\"message\":\"@ConditionalOnClass found required class; @ConditionalOnMissingClass did not find unwanted class\"},{\"condition\":\"OnWebApplicationCondition\",\"message\":\"@ConditionalOnWebApplication (required) found StandardServletEnvironment\"},{\"condition\":\"OnJavaCondition\",\"message\":\"@ConditionalOnJava (1.8 or newer) found 1.8\"},{\"condition\":\"OnExpressionCondition\",\"message\":\"@ConditionalOnExpression (#{true}) resulted in true\"},{\"condition\":\"OnBeanCondition\",\"message\":\"@ConditionalOnBean (types: example.Hello; SearchStrategy: all) found beans 'hi', 'missing'\"}]}}")
 				.build();
-		liveDataProvider.add("proesskey", liveData);
-
 		harness.intialize(directory);
+		liveDataProvider.add("proesskey", liveData);
 
 		Editor editor = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
 
@@ -173,6 +170,7 @@ public class ConditionalsLiveHoverTest {
 				ProjectsHarness.class.getResource("/test-projects/test-conditionals-live-hover/").toURI());
 		String docUri = directory.toPath().resolve("src/main/java/example/ConditionalOnMissingBeanConfig.java").toUri()
 				.toString();
+		harness.intialize(directory);
 
 		// Build a mock running boot app
 		SpringProcessLiveData liveData1 = new SpringProcessLiveDataBuilder()
@@ -204,8 +202,6 @@ public class ConditionalsLiveHoverTest {
 						"{\"positiveMatches\":{\"ConditionalOnMissingBeanConfig#missing\":[{\"condition\":\"OnBeanCondition\",\"message\":\"@ConditionalOnMissingBean (types: example.Hello; SearchStrategy: all) did not find any beans\"}]}}")
 				.build();
 		liveDataProvider.add("processkey3", liveData3);
-
-		harness.intialize(directory);
 
 		Editor editor = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
 
@@ -247,9 +243,8 @@ public class ConditionalsLiveHoverTest {
 				.liveConditionalsJson(
 						"{\"positiveMatches\":{\"HelloConfig#missing\":[{\"condition\":\"OnBeanCondition\",\"message\":\"@ConditionalOnMissingBean (types: example.Hello; SearchStrategy: all) did not find any beans\"}],\"HelloConfig2#hi\":[{\"condition\":\"OnBeanCondition\",\"message\":\"@ConditionalOnBean (types: example.Hello; SearchStrategy: all) found bean 'missing'\"}],\"MultipleConditionals#hi\":[{\"condition\":\"OnClassCondition\",\"message\":\"@ConditionalOnClass found required class; @ConditionalOnMissingClass did not find unwanted class\"},{\"condition\":\"OnWebApplicationCondition\",\"message\":\"@ConditionalOnWebApplication (required) found StandardServletEnvironment\"},{\"condition\":\"OnJavaCondition\",\"message\":\"@ConditionalOnJava (1.8 or newer) found 1.8\"},{\"condition\":\"OnExpressionCondition\",\"message\":\"@ConditionalOnExpression (#{true}) resulted in true\"},{\"condition\":\"OnBeanCondition\",\"message\":\"@ConditionalOnBean (types: example.Hello; SearchStrategy: all) found beans 'hi', 'missing'\"}]}}")
 				.build();
-		liveDataProvider.add("processkey", liveData);
-
 		harness.intialize(directory);
+		liveDataProvider.add("processkey", liveData);
 
 		Editor editor = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
 
@@ -299,9 +294,8 @@ public class ConditionalsLiveHoverTest {
 				.liveConditionalsJson(
 						"{\"positiveMatches\":{\"MultipleConditionalsPT152535713#hi\":[{\"condition\":\"OnWebApplicationCondition\",\"message\":\"@ConditionalOnWebApplication (required) found StandardServletEnvironment\"},{\"condition\":\"OnJavaCondition\",\"message\":\"@ConditionalOnJava (1.8 or newer) found 1.8\"}]}}")
 				.build();
-		liveDataProvider.add("processkey", liveData);
-
 		harness.intialize(directory);
+		liveDataProvider.add("processkey", liveData);
 
 		Editor editor = harness.newEditorFromFileUri(docUri, LanguageId.JAVA);
 
@@ -340,9 +334,8 @@ public class ConditionalsLiveHoverTest {
 				.liveConditionalsJson(
 						"{\"positiveMatches\":{\"HelloConfig#missing\":[{\"condition\":\"OnBeanCondition\",\"message\":\"@ConditionalOnMissingBean (types: example.Hello; SearchStrategy: all) did not find any beans\"}],\"HelloConfig2#hi\":[{\"condition\":\"OnBeanCondition\",\"message\":\"@ConditionalOnBean (types: example.Hello; SearchStrategy: all) found bean 'missing'\"}],\"MultipleConditionals#hi\":[{\"condition\":\"OnClassCondition\",\"message\":\"@ConditionalOnClass found required class; @ConditionalOnMissingClass did not find unwanted class\"},{\"condition\":\"OnWebApplicationCondition\",\"message\":\"@ConditionalOnWebApplication (required) found StandardServletEnvironment\"},{\"condition\":\"OnJavaCondition\",\"message\":\"@ConditionalOnJava (1.8 or newer) found 1.8\"},{\"condition\":\"OnExpressionCondition\",\"message\":\"@ConditionalOnExpression (#{true}) resulted in true\"},{\"condition\":\"OnBeanCondition\",\"message\":\"@ConditionalOnBean (types: example.Hello; SearchStrategy: all) found beans 'hi', 'missing'\"}]}}")
 				.build();
-		liveDataProvider.add("processkey", liveData);
-
 		harness.intialize(directory);
+		liveDataProvider.add("processkey", liveData);
 
 		String content = "package example;\n" + "\n"
 				+ "import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;\n"
@@ -388,9 +381,8 @@ public class ConditionalsLiveHoverTest {
 						+ "                }\n" + "            ],\n" + "            \"matched\": []\n" + "        }\n"
 						+ "}\n" + "}")
 				.build();
-		liveDataProvider.add("processkey", liveData);
-
 		harness.intialize(directory);
+		liveDataProvider.add("processkey", liveData);
 
 		String content = "package com.example;\n" + "\n"
 				+ "import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;\n"
@@ -424,9 +416,8 @@ public class ConditionalsLiveHoverTest {
 						+ "                }\n" + "            ],\n" + "            \"matched\": []\n" + "        }\n"
 						+ "}\n" + "}")
 				.build();
-		liveDataProvider.add("processkey", liveData);
-
 		harness.intialize(directory);
+		liveDataProvider.add("processkey", liveData);
 
 		String content = "package com.example;\n" + "\n"
 				+ "import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;\n"

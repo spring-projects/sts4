@@ -45,6 +45,11 @@ public class ActuatorWarningHoverTest {
 	}
 
 	@Test public void showWarningIf_NoActuator_and_RunningApp() throws Exception {
+		//No actuator on classpath:
+		String projectName = NO_ACTUATOR_PROJECT;
+		IJavaProject project = projects.mavenProject(projectName);
+		harness.useProject(project);
+		harness.intialize(null);
 		
 		SpringProcessLiveData liveData = new SpringProcessLiveDataBuilder()
 			.processID("22022")
@@ -52,12 +57,6 @@ public class ActuatorWarningHoverTest {
 			.activeProfiles((String[]) null)
 			.build();
 		liveDataProvider.add("processkey", liveData);
-
-		//No actuator on classpath:
-		String projectName = NO_ACTUATOR_PROJECT;
-		IJavaProject project = projects.mavenProject(projectName);
-		harness.useProject(project);
-		harness.intialize(null);
 
 		Editor editor = harness.newEditor(LanguageId.JAVA,
 				"package hello;\n" +
@@ -104,6 +103,12 @@ public class ActuatorWarningHoverTest {
 	}
 
 	@Test public void noWarningIf_ActuatorOnClasspath() throws Exception {
+		//Actuator on classpath:
+		String projectName = ACTUATOR_PROJECT;
+		IJavaProject project = projects.mavenProject(projectName);
+		harness.useProject(project);
+		harness.intialize(null);
+
 		//Has running app:
 		SpringProcessLiveData liveData = new SpringProcessLiveDataBuilder()
 			.processID("22022")
@@ -111,12 +116,6 @@ public class ActuatorWarningHoverTest {
 			.activeProfiles((String[]) null)
 			.build();
 		liveDataProvider.add("processkey", liveData);
-
-		//Actuator on classpath:
-		String projectName = ACTUATOR_PROJECT;
-		IJavaProject project = projects.mavenProject(projectName);
-		harness.useProject(project);
-		harness.intialize(null);
 
 		Editor editor = harness.newEditor(LanguageId.JAVA,
 				"package hello;\n" +
@@ -142,6 +141,12 @@ public class ActuatorWarningHoverTest {
 		// It will be less annoying if limit the area the hover responds to, to just inside the
 		// annotation name rather than the whole range of the ast node.
 
+		//No actuator on classpath:
+		String projectName = NO_ACTUATOR_PROJECT;
+		IJavaProject project = projects.mavenProject(projectName);
+		harness.useProject(project);
+		harness.intialize(null);
+
 		//Has running app:
 		SpringProcessLiveData liveData = new SpringProcessLiveDataBuilder()
 			.processID("22022")
@@ -149,12 +154,6 @@ public class ActuatorWarningHoverTest {
 			.activeProfiles((String[]) null)
 			.build();
 		liveDataProvider.add("processkey", liveData);
-
-		//No actuator on classpath:
-		String projectName = NO_ACTUATOR_PROJECT;
-		IJavaProject project = projects.mavenProject(projectName);
-		harness.useProject(project);
-		harness.intialize(null);
 
 		Editor editor = harness.newEditor(LanguageId.JAVA,
 				"package hello;\n" +
