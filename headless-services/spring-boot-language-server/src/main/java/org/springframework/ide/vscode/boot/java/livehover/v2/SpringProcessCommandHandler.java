@@ -205,10 +205,10 @@ public class SpringProcessCommandHandler {
 	
 	private CompletableFuture<Object> get(ExecuteCommandParams params) {
 		String processKey = getProcessKey(params);
-		String dataKey = getArgumentByKey(params, "dataKey");
+		String endpoint = getArgumentByKey(params, "endpoint");
 		if (processKey != null) {
 			SpringProcessLiveData data = connectorService.getLiveData(processKey);
-			switch(dataKey) {
+			switch(endpoint) {
 				case "properties": {
 					return CompletableFuture.completedFuture(data.getLiveProperties());
 				}
