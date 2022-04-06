@@ -9,17 +9,16 @@ export class ApiManager {
     private onDidLiveProcessDisconnectEmitter: Emitter<string> = new Emitter<string>();
     private onDidLiveProcessUpdateEmitter: Emitter<string> = new Emitter<string>();
 
-    public constructor(private client: LanguageClient) {
+    public constructor(client: LanguageClient) {
         const onDidLiveProcessConnect = this.onDidLiveProcessConnectEmitter.event;
         const onDidLiveProcessDisconnect = this.onDidLiveProcessDisconnectEmitter.event;
         const onDidLiveProcessUpdate = this.onDidLiveProcessUpdateEmitter.event;
 
         const COMMAND_LIVEDATA_GET = "sts/livedata/get";
         const getLiveProcessData = async (query) => {
-            await commands.executeCommand(COMMAND_LIVEDATA_GET, query);
+            return await commands.executeCommand(COMMAND_LIVEDATA_GET, query);
         }
 
-        // TODO: STS server should send corresponding notification back.
         client.onNotification(LiveProcessConnectedNotification.type, (processKey: string) => this.onDidLiveProcessConnectEmitter.fire(processKey));
         client.onNotification(LiveProcessDisconnectedNotification.type, (processKey: string) => this.onDidLiveProcessDisconnectEmitter.fire(processKey));
         client.onNotification(LiveProcessUpdatedNotification.type, (processKey: string) => this.onDidLiveProcessUpdateEmitter.fire(processKey));
