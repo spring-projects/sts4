@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2020 Pivotal, Inc.
+ * Copyright (c) 2017, 2022 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -71,7 +71,6 @@ import org.eclipse.ui.progress.UIJob;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.springframework.ide.vscode.commons.protocol.CursorMovement;
 import org.springframework.ide.vscode.commons.protocol.HighlightParams;
-import org.springframework.ide.vscode.commons.protocol.ProgressParams;
 import org.springframework.ide.vscode.commons.protocol.STS4LanguageClient;
 import org.springframework.ide.vscode.commons.protocol.java.ClasspathListenerParams;
 import org.springframework.ide.vscode.commons.protocol.java.JavaCodeCompleteData;
@@ -586,6 +585,18 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 				return Collections.emptyList();
 			}
 		});
+	}
+
+	@Override
+	public void liveProcessConnected(String processKey) {
+	}
+
+	@Override
+	public void liveProcessDataUpdated(String processKey) {
+	}
+
+	@Override
+	public void liveProcessDisconnected(String processKey) {
 	}
 
 }
