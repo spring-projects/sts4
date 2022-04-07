@@ -23,6 +23,13 @@ export interface ExtensionAPI {
      * A command to get live process data.
      */
     readonly getLiveProcessData: (query: SimpleQuery | BeansQuery) => Promise<any>
+
+    /**
+     * A command to list all currently connected processes.
+     * 
+     * Returns a list of processKeys.
+     */
+    readonly listConnectedProcesses: () => Promise<string[]>
 }
 
 interface LiveProcessDataQuery {

@@ -17,6 +17,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.stream.Collector;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.eclipse.lsp4j.ExecuteCommandParams;
 import org.slf4j.Logger;
@@ -39,6 +42,7 @@ public class SpringProcessCommandHandler {
 	private static final String COMMAND_REFRESH = "sts/livedata/refresh";
 	private static final String COMMAND_DISCONNECT = "sts/livedata/disconnect";
 	private static final String COMMAND_GET = "sts/livedata/get";
+	private static final String COMMAND_LIST_CONNECTED = "sts/livedata/listConnected";
 	
 	private final SpringProcessConnectorService connectorService;
 	private final SpringProcessConnectorLocal localProcessConnector;
@@ -74,6 +78,13 @@ public class SpringProcessCommandHandler {
 			return get(params);
 		});
 		log.info("Registered command handler: {}",COMMAND_GET);
+		
+		server.onCommand(COMMAND_LIST_CONNECTED, (params) -> {
+			return CompletableFuture.completedFuture(Stream.of(connectorService.getConnectedProcesses())
+					.map(process -> process.getProcessKey())
+					.collect(Collectors.toList())
+			);
+		});
 	}
 
 	private CompletableFuture<Object> connect(ExecuteCommandParams params) {

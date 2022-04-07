@@ -19,6 +19,11 @@ export class ApiManager {
             return await commands.executeCommand(COMMAND_LIVEDATA_GET, query);
         }
 
+        const COMMAND_LIVEDATA_LIST_CONNECTED = "sts/livedata/listConnected"
+        const listConnectedProcesses = async () : Promise<string[]> => {
+            return await commands.executeCommand(COMMAND_LIVEDATA_LIST_CONNECTED);
+        }
+
         client.onNotification(LiveProcessConnectedNotification.type, (processKey: string) => this.onDidLiveProcessConnectEmitter.fire(processKey));
         client.onNotification(LiveProcessDisconnectedNotification.type, (processKey: string) => this.onDidLiveProcessDisconnectEmitter.fire(processKey));
         client.onNotification(LiveProcessUpdatedNotification.type, (processKey: string) => this.onDidLiveProcessUpdateEmitter.fire(processKey));
@@ -28,7 +33,8 @@ export class ApiManager {
             onDidLiveProcessConnect,
             onDidLiveProcessDisconnect,
             onDidLiveProcessUpdate,
-            getLiveProcessData
+            getLiveProcessData,
+            listConnectedProcesses,
         };
     }
 }
