@@ -169,7 +169,7 @@ public class SpringProcessLiveDataExtractorOverJMX {
 			return currentStartup;
 		}
 		try {
-			Map<?,?> result = (Map<?,?>) getActuatorDataFromOperation(connection, getObjectName(domain, "type=Endpoint,name=Startup"), "startup");
+			Map<?,?> result = (Map<?,?>) getActuatorDataFromOperation(connection, getObjectName(domain, "type=Endpoint,name=Startup"), "startupSnapshot");
 			if (result != null) {
 				return StartupMetricsModel.parse(result);
 			}
