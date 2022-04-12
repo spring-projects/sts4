@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2021 Pivotal, Inc.
+ * Copyright (c) 2016, 2022 VMware Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -255,9 +255,12 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 		
 		return CompletableFutures.computeAsync(cancelToken -> {
 			CompletionHandler h = completionHandler;
+
 			if (h != null) {
 				return Either.forRight(completionHandler.handle(cancelToken, position));
 			}
+			
+			log.info("no completions computed due to no completion handler registered for: " + position.getTextDocument().getUri());
 			return Either.forRight(NO_COMPLETIONS);
 		});
 	}
