@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2020 Pivotal, Inc.
+ * Copyright (c) 2019, 2022 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.boot.java.livehover.v2;
 
 import java.util.Properties;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Executor;
 import java.util.function.Predicate;
 
 import org.slf4j.Logger;
@@ -57,7 +58,7 @@ public class SpringProcessDescriptor {
 	
 	private SpringProcessStatus status;
 	private String projectName;
-	
+
 	public SpringProcessDescriptor(String processKey, String processID, String processName, VirtualMachineDescriptor vm) {
 		this.processKey = processKey;
 		this.processID = processID;
@@ -109,11 +110,11 @@ public class SpringProcessDescriptor {
 		return true;
 	}
 
-	public CompletableFuture<Void> updateStatus(Predicate<String> projectIsKnown, Predicate<String> projectHasActuators) {
+	public CompletableFuture<Void> updateStatus(Predicate<String> projectIsKnown, Predicate<String> projectHasActuators, Executor statusUpdateThreadPool) {
 		return CompletableFuture.supplyAsync(() -> {
 			this.status = checkStatus(projectIsKnown, projectHasActuators);
 			return null;
-		});
+		}, statusUpdateThreadPool);
 	}
 	
 	private SpringProcessStatus checkStatus(Predicate<String> projectIsKnown, Predicate<String> projectHasActuators) {
