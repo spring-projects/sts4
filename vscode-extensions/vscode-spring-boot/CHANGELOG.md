@@ -1,3 +1,15 @@
+## 2022-04-27 (4.14.1 RELEASE, incl. language servers version 1.33.0)
+
+#### import changes
+
+* _(VSCode)_ enhancement: live hovers are now automatically show up when you launch a Spring Boot application in VSCode. Additional JVM args for the Spring Boot app to enable JMX are added to the launch automatically. More details can be found in the user guide section about [Live Application Information](https://github.com/spring-projects/sts4/wiki/Live-Application-Information).
+
+#### fixes and improvements
+
+* _(Spring Boot)_ fixed: use `startupSnapshot` instead of `startup` timer call to avoid wiping out the underlying data
+* _(Spring Boot, VSCode)_ fixed: When vscode opens a Java project for about 2 hours, the suggestion function will fail ([#750](https://github.com/spring-projects/sts4/issues/750))
+* _(VSCode)_ improvement: add extension APIs to get live data ([#751](https://github.com/spring-projects/sts4/pull/751)) - contributed by @Eskibear
+
 ## 2022-03-16 (4.14.0 RELEASE, incl. language servers version 1.32.0)
 
 * _(VSCode)_ fixed: VSCode Spring boot tools 1.30.0 error trying to find JVM ([#726](https://github.com/spring-projects/sts4/issues/726))
