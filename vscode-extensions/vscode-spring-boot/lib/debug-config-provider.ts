@@ -3,6 +3,7 @@ import * as path from "path";
 import * as VSCode from "vscode";
 import { Disposable } from "vscode";
 import psList from 'ps-list';
+import { ListenablePreferenceSetting } from "@pivotal-tools/commons-vscode/lib/launch-util";
 
 const JMX_VM_ARG = '-Dspring.jmx.enabled='
 const ADMIN_VM_ARG = '-Dspring.application.admin.enabled='
@@ -11,7 +12,7 @@ const BOOT_PROJECT_ARG = '-Dspring.boot.project.name=';
 class SpringBootDebugConfigProvider implements DebugConfigurationProvider {
 
     resolveDebugConfigurationWithSubstitutedVariables(folder: WorkspaceFolder | undefined, debugConfiguration: DebugConfiguration, token?: CancellationToken): ProviderResult<DebugConfiguration> {
-        if (isAutoConnect() && isActuatorOnClasspath(debugConfiguration)) {
+        if (isActuatorOnClasspath(debugConfiguration)) {
             if (debugConfiguration.vmArgs) {
                 if (debugConfiguration.vmArgs.indexOf(JMX_VM_ARG) < 0) {
                     debugConfiguration.vmArgs += ` ${JMX_VM_ARG}true`;
@@ -37,21 +38,50 @@ interface ProcessEvent {
     shellProcessId: number
 }
 
+function hookListenerToBooleanPreference(setting: string, listenerCreator: () => Disposable): Disposable {
+    const listenableSetting =  new ListenablePreferenceSetting<boolean>(setting);
+    let listener: Disposable | undefined = listenableSetting.value ? listenerCreator() : undefined;
+    listenableSetting.onDidChangeValue(() => {
+        if (listenableSetting.value) {
+            if (!listener) {
+                listener = listenerCreator();
+            }
+        } else {
+            if (listener) {
+                listener.dispose();
+                listener = undefined;
+            }
+        }
+    });
+
+    return {
+        dispose: () => {
+            if (listener) {
+                listener.dispose();
+            }
+            listenableSetting.dispose();
+        }
+    };
+}
+
 export function startDebugSupport(): Disposable {
-    VSCode.debug.onDidReceiveDebugSessionCustomEvent(handleCustomDebugEvent);
-    return VSCode.debug.registerDebugConfigurationProvider('java', new SpringBootDebugConfigProvider(), VSCode.DebugConfigurationProviderTriggerKind.Initial);
+    return hookListenerToBooleanPreference(
+            'boot-java.live-information.automatic-connection.on',
+             () => Disposable.from(
+                 VSCode.debug.onDidReceiveDebugSessionCustomEvent(handleCustomDebugEvent),
+                 VSCode.debug.registerDebugConfigurationProvider('java', new SpringBootDebugConfigProvider(), VSCode.DebugConfigurationProviderTriggerKind.Initial)
+             )
+    );
 }
 
 async function handleCustomDebugEvent(e: VSCode.DebugSessionCustomEvent): Promise<void> {
     if (e.session?.type === 'java' && e?.body?.type === 'processid') {
         const debugConfiguration: DebugConfiguration = e.session.configuration;
-        if (isBootAppWithJmxSetup(debugConfiguration)) {
-            setTimeout(async () => {
-                const pid = await getAppPid(e.body as ProcessEvent);
-                const processKey = pid.toString();
-                VSCode.commands.executeCommand('sts/livedata/connect', { processKey });
-            }, 500);
-        }
+        setTimeout(async () => {
+            const pid = await getAppPid(e.body as ProcessEvent);
+            const processKey = pid.toString();
+            VSCode.commands.executeCommand('sts/livedata/connect', { processKey });
+        }, 500);
     }
 }
 
@@ -83,15 +113,4 @@ function isActuatorJarFile(f: string): boolean {
         return true;
     }
     return false;
-}
-
-function isBootAppWithJmxSetup(debugConfiguration: DebugConfiguration): boolean {
-    return debugConfiguration.vmArgs.indexOf(`${JMX_VM_ARG}true`) >= 0
-        && debugConfiguration.vmArgs.indexOf(`${ADMIN_VM_ARG}true`) >= 0
-        && debugConfiguration.vmArgs.indexOf(`${BOOT_PROJECT_ARG}${debugConfiguration.projectName}`) >= 0
-        && isActuatorOnClasspath(debugConfiguration);
-}
-
-function isAutoConnect(): boolean {
-    return VSCode.workspace.getConfiguration("boot-java.live-information.automatic-connection")?.get('on');
 }

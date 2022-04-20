@@ -78,7 +78,7 @@
         "boot-java.live-information.automatic-connection.on": {
           "type": "boolean",
           "default": true,
-          "description": "Live Information - Automatic Process Connection Enabled"
+          "description": "Live Information - Automatic addition of JVM arguments enabling JMX and Process Connection via JMX Enabled"
         },
         "boot-java.live-information.fetch-data.max-retries": {
           "type": "number",
