@@ -1,4 +1,4 @@
 #!/bin/bash
 set -e
-workdir=`pwd`
-vsce verify-pat -p Pivotal
+cd sts4/vscode-extensions/vscode-concourse/
+vsce verify-pat -p "${vsce_token}" Pivotal

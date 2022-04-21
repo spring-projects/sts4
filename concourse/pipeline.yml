@@ -735,6 +735,8 @@ jobs:
   - get: sts4
   - task: verify-vsce-token
     file: sts4/concourse/tasks/verify-vsce-token.yml
+    params:
+      vsce_token: ((vsce_token))
 - name: publish-release
   serial: true
   plan:
