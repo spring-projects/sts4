@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2021 Pivotal, Inc.
+ * Copyright (c) 2016, 2022 VMware Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -17,6 +17,8 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
@@ -90,6 +92,8 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 	private final ListenerList<TextDocument> documentCloseListeners = new ListenerList<>();
 	private final ListenerList<TextDocument> documentOpenListeners = new ListenerList<>();
 	private List<Consumer<TextDocumentSaveChange>> documentSaveListeners = ImmutableList.of();
+	
+	private final Executor messageWorkerThreadPool;
 
 	private CompletionHandler completionHandler;
 	private CompletionResolveHandler completionResolveHandler;
@@ -104,6 +108,8 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 	public SimpleTextDocumentService(SimpleLanguageServer server, LanguageServerProperties props) {
 		this.server = server;
 		this.props = props;
+		
+		this.messageWorkerThreadPool = Executors.newCachedThreadPool();
 	}
 
 	/**
@@ -253,11 +259,14 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 	public CompletableFuture<Either<List<CompletionItem>, CompletionList>> completion(CompletionParams position) {
 		log.info("completion request arrived: " + position.getTextDocument().getUri());
 		
-		return CompletableFutures.computeAsync(cancelToken -> {
+		return CompletableFutures.computeAsync(messageWorkerThreadPool, cancelToken -> {
 			CompletionHandler h = completionHandler;
+
 			if (h != null) {
 				return Either.forRight(completionHandler.handle(cancelToken, position));
 			}
+			
+			log.info("no completions computed due to no completion handler registered for: " + position.getTextDocument().getUri());
 			return Either.forRight(NO_COMPLETIONS);
 		});
 	}
@@ -266,7 +275,7 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 	public CompletableFuture<CompletionItem> resolveCompletionItem(CompletionItem unresolved) {
 		log.info("Completion item resolve request received: {}", unresolved.getLabel());
 		
-		return CompletableFutures.computeAsync(cancelToken -> {
+		return CompletableFutures.computeAsync(messageWorkerThreadPool, cancelToken -> {
 			try {
 				CompletionResolveHandler h = completionResolveHandler;
 				if (h != null) {
@@ -288,7 +297,7 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 	public CompletableFuture<Hover> hover(HoverParams hoverParams) {
 		log.debug("hover requested for {}", hoverParams.getPosition());
 		
-		CompletableFuture<Hover> result = CompletableFutures.computeAsync(cancelToken -> {
+		CompletableFuture<Hover> result = CompletableFutures.computeAsync(messageWorkerThreadPool, cancelToken -> {
 			return computeHover(cancelToken, hoverParams);
 		});
 		
@@ -327,7 +336,7 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 
 		DefinitionHandler h = this.definitionHandler;
 		if (h != null) {
-			return CompletableFutures.computeAsync(cancelToken -> {
+			return CompletableFutures.computeAsync(messageWorkerThreadPool, cancelToken -> {
 				
 				cancelToken.checkCanceled();
 				
@@ -358,7 +367,7 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 		ReferencesHandler h = this.referencesHandler;
 		if (h != null) {
 
-			return CompletableFutures.computeAsync(cancelToken -> {
+			return CompletableFutures.computeAsync(messageWorkerThreadPool, cancelToken -> {
 				List<? extends Location> list = h.handle(cancelToken, params);
 				return list != null && list.isEmpty() ? null : list;
 			});
@@ -373,7 +382,7 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 		DocumentSymbolHandler h = this.documentSymbolHandler;
 		if (h != null) {
 			
-			return CompletableFutures.computeAsync(cancelToken -> {
+			return CompletableFutures.computeAsync(messageWorkerThreadPool, cancelToken -> {
 				cancelToken.checkCanceled();
 
 				try {
@@ -430,7 +439,7 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 		CodeLensHandler handler = this.codeLensHandler;
 
 		if (handler != null) {
-			return CompletableFutures.computeAsync(cancelToken -> {
+			return CompletableFutures.computeAsync(messageWorkerThreadPool, cancelToken -> {
 				return handler.handle(cancelToken, params);
 			});
 		}
@@ -442,7 +451,7 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 		CodeLensResolveHandler handler = this.codeLensResolveHandler;
 		if (handler != null) {
 			
-			return CompletableFutures.computeAsync(cancelToken -> {
+			return CompletableFutures.computeAsync(messageWorkerThreadPool, cancelToken -> {
 				return handler.handle(unresolved);
 			});
 
@@ -473,7 +482,7 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 						}
 					}
 				}
-			});
+			}, messageWorkerThreadPool);
 		}
 	}
 
@@ -481,7 +490,7 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 	public CompletableFuture<List<? extends DocumentHighlight>> documentHighlight(DocumentHighlightParams highlightParams) {
 		DocumentHighlightHandler handler = this.documentHighlightHandler;
 		if (handler != null) {
-			return CompletableFutures.computeAsync(cancelToken -> {
+			return CompletableFutures.computeAsync(messageWorkerThreadPool, cancelToken -> {
 				return handler.handle(cancelToken, highlightParams);
 
 			});

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2019 Pivotal, Inc.
+ * Copyright (c) 2017, 2022 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -30,7 +30,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class BootJavaConfig implements InitializingBean {
 	
-	public static final boolean LIVE_INFORMATION_AUTOMATIC_TRACKING_ENABLED_DEFAULT = true;
+	public static final boolean LIVE_INFORMATION_AUTOMATIC_TRACKING_ENABLED_DEFAULT = false;
 	public static final int LIVE_INFORMATION_AUTOMATIC_TRACKING_DELAY_DEFAULT = 5000;
 	
 	public static final int LIVE_INFORMATION_FETCH_DATA_RETRY_MAX_NO_DEFAULT = 10;

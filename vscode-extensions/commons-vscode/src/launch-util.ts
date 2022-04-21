@@ -412,10 +412,10 @@ export interface ListenableSetting<T> {
 export class ListenablePreferenceSetting<T> implements ListenableSetting<T> {
 
     private _onDidChangeValue = new EventEmitter<void>();
+    private _disposable: Disposable;
 
     constructor(private section: string) {
-        VSCode.workspace.onDidChangeConfiguration(e => {
-           console.log('Settings changed! value = ' + this.value);
+        this._disposable = VSCode.workspace.onDidChangeConfiguration(e => {
            if (e.affectsConfiguration(this.section)) {
                this._onDidChangeValue.fire();
            }
@@ -428,6 +428,10 @@ export class ListenablePreferenceSetting<T> implements ListenableSetting<T> {
 
     get onDidChangeValue(): Event<void> {
         return this._onDidChangeValue.event;
+    }
+
+    dispose(): any {
+        return this._disposable.dispose();
     }
 
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2021 Pivotal, Inc.
+ * Copyright (c) 2016, 2022 VMware Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -559,7 +559,7 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 
 	@Override
 	public synchronized SimpleTextDocumentService getTextDocumentService() {
-		if (tds==null) {
+		if (tds == null) {
 			tds = createTextDocumentService();
 		}
 		return tds;
@@ -575,7 +575,7 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 
 	@Override
 	public synchronized SimpleWorkspaceService getWorkspaceService() {
-		if (workspace==null) {
+		if (workspace == null) {
 			workspace = createWorkspaceService();
 		}
 		return workspace;

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2021 Pivotal, Inc.
+ * Copyright (c) 2016, 2022 VMware Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -127,13 +127,15 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 
 		SimpleTextDocumentService documents = server.getTextDocumentService();
 		
+		log.info("completion handling - retrieve lastest snapshot for: " + params.getTextDocument().getUri());
+
 		TextDocument doc = documents.getLatestSnapshot(params);
 		if (doc != null) {
 			
 			CompletionList list = new CompletionList();
 
 			try {
-				log.info("Starting completion handling");
+				log.info("Starting completion handling for: " + params.getTextDocument().getUri());
 
 				if (resolver!=null) {
 					//Assumes we don't have more than one completion request in flight from the client.
@@ -203,6 +205,7 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 			}
 		}
 
+		log.info("no completions computed due to missing document snapshot for: ", params.getTextDocument().getUri());
 		return SimpleTextDocumentService.NO_COMPLETIONS;
 	}
 

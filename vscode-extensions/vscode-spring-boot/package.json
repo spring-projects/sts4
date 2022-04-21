@@ -75,15 +75,10 @@
       "type": "object",
       "title": "Boot-Java Configuration",
       "properties": {
-        "boot-java.live-information.automatic-tracking.on": {
+        "boot-java.live-information.automatic-connection.on": {
           "type": "boolean",
           "default": true,
-          "description": "Live Information - Automatic Process Tracking Enabled"
-        },
-        "boot-java.live-information.automatic-tracking.delay": {
-          "type": "number",
-          "default": 5000,
-          "description": "Live Information - Automatic Process Tracking Delay in ms"
+          "description": "Live Information - Automatic addition of JVM arguments enabling JMX and Process Connection via JMX Enabled"
         },
         "boot-java.live-information.fetch-data.max-retries": {
           "type": "number",
@@ -518,13 +513,14 @@
   },
   "dependencies": {
     "@pivotal-tools/commons-vscode": "file:../commons-vscode/pivotal-tools-commons-vscode-0.2.4.tgz",
+    "ps-list": "^7.2.0",
     "vscode-languageclient": "^7.0.0"
   },
   "devDependencies": {
     "@types/node": "^16.11.11",
     "@types/vscode": "^1.53.0",
     "typescript": "^4.1.2",
-    "vsce": "^2.5.1"
+    "vsce": "^2.6.7"
   },
   "extensionDependencies": [
     "redhat.java"

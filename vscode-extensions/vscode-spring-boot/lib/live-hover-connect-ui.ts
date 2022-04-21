@@ -7,7 +7,8 @@ import { ActivatorOptions } from '@pivotal-tools/commons-vscode';
 interface ProcessCommandInfo {
     processKey : string;
 	label: string;
-	action: string
+	action: string;
+    projectName: string;
 }
 
 async function liveHoverConnectHandler() {

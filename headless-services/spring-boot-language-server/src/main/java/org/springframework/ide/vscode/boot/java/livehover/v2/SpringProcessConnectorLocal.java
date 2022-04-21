@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2020 Pivotal, Inc.
+ * Copyright (c) 2019, 2022 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -20,6 +20,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
@@ -36,7 +38,6 @@ import com.sun.tools.attach.VirtualMachineDescriptor;
  */
 @SuppressWarnings("restriction")
 public class SpringProcessConnectorLocal {
-	
 
 	private static final Logger log = LoggerFactory.getLogger(SpringProcessConnectorLocal.class);
 	
@@ -47,12 +48,16 @@ public class SpringProcessConnectorLocal {
 	private final Set<SpringProcessDescriptor> processes;
 	
 	private final SpringProcessConnectorService processConnectorService;
+	private final Executor statusUpdateThreadPool;
 	
 	private boolean projectsChanged;
+
 	
 	public SpringProcessConnectorLocal(SpringProcessConnectorService processConnector, ProjectObserver projectObserver) {
 		this.projects = new ConcurrentHashMap<>();
 		this.processes = Collections.synchronizedSet(new HashSet<>());
+		this.statusUpdateThreadPool = Executors.newFixedThreadPool(10);
+
 		this.projectsChanged = false;
 		
 		this.processConnectorService = processConnector;
@@ -168,7 +173,7 @@ public class SpringProcessConnectorLocal {
 			List<CompletableFuture<Void>> futures = new ArrayList<>();
 	
 			for (SpringProcessDescriptor process : processes) {
-				futures.add(process.updateStatus(projects::containsKey, projects::get));
+				futures.add(process.updateStatus(projects::containsKey, projects::get, statusUpdateThreadPool));
 			}
 			
 			CompletableFuture<Void> allStatusUpdates = CompletableFuture.allOf((CompletableFuture[]) futures.toArray(new CompletableFuture[futures.size()]));

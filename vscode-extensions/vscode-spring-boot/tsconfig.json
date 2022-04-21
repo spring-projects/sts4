@@ -9,7 +9,8 @@
 		"declaration": true,
 		"outDir": "out",
 		"sourceMap": true,
-		"rootDir": "."
+		"rootDir": ".",
+		"esModuleInterop": true
 	},
 	"include": [
 		"typings/*.d.ts",
