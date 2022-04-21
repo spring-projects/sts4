@@ -20,6 +20,6 @@ a single string, you have to enter it like so:
 }
 ```
 
-See also the `put-secret-in-vaulr.sh` script for an
-example of how to use vault CLI instead.cat 
+See also the `put-secret-in-vault.sh` script for an
+example of how to use vault CLI instead.
 
