@@ -10,6 +10,8 @@ resource_types:
   type: docker-image
   source:
     repository: cfcommunity/slack-notification-resource
+    username: ((docker_hub_username))
+    password: ((docker_hub_password))
     tag: latest
 - name: artifactory-resource
   type: docker-image
@@ -728,6 +730,11 @@ jobs:
 #       trigger: true
 #       passed:
 #       - publish-release
+- name: verify-vsce-token
+  plan: 
+  - get: sts4
+  - task: verify-vsce-token
+    file: sts4/concourse/tasks/verify-vsce-token.yml
 - name: publish-release
   serial: true
   plan:
@@ -1006,6 +1013,7 @@ groups:
   - build-manifest-yaml-vsix-snapshot
 - name: vscode-release
   jobs:
+  - verify-vsce-token
   - build-bosh-rc
   - build-concourse-rc
   - build-manifest-yaml-rc
