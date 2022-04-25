@@ -6,8 +6,13 @@ Bundle-Version: 4.15.0.qualifier
 Bundle-ActivationPolicy: lazy
 Bundle-Vendor: VMware, Inc.
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Require-Bundle: org.eclipse.swtbot.go,
- org.springsource.ide.eclipse.commons.tests.util,
+Require-Bundle: org.springsource.ide.eclipse.commons.tests.util,
  org.eclipse.debug.core,
- org.hamcrest.library
+ org.hamcrest.library,
+ org.eclipse.swtbot.eclipse.finder,
+ org.eclipse.core.runtime,
+ org.eclipse.swt,
+ org.eclipse.ui,
+ org.apache.log4j,
+ org.junit
 Export-Package: org.springsource.ide.eclipse.commons.frameworks.test.util
