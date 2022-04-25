@@ -1138,11 +1138,11 @@
 					<url>https://download.eclipse.org/staging/2022-06/</url>
 				</repository>
 
-				<repository>
+<!--				<repository>
 					<id>platform-i-build</id>
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/eclipse/updates/4.24-I-builds/</url>
-				</repository>
+				</repository> -->
 
 				<repository>
 					<id>orbit</id>
