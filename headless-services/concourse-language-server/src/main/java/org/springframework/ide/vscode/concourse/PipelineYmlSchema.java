@@ -48,6 +48,7 @@ import org.springframework.ide.vscode.commons.yaml.schema.YTypeUtil;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypedProperty;
 import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
 import org.springframework.ide.vscode.commons.yaml.schema.YamlSchema;
+import org.springframework.ide.vscode.commons.yaml.schema.constraints.Constraint;
 import org.springframework.ide.vscode.commons.yaml.schema.constraints.Constraints;
 import org.springframework.ide.vscode.concourse.ConcourseModel.ResourceModel;
 import org.springframework.ide.vscode.concourse.ConcourseModel.StepModel;
@@ -596,6 +597,12 @@ public class PipelineYmlSchema implements YamlSchema {
 		}
 		//docker-image:
 		{
+			
+			AbstractType registry_mirror = f.ybean("RegistryMirror");
+			addProp(registry_mirror, "host", t_ne_string).isPrimary(true);
+			addProp(registry_mirror, "username", t_ne_string);
+			addProp(registry_mirror, "password", t_ne_string);
+			
 			AbstractType source = f.ybean("DockerImageSource");
 			addProp(source, "repository", t_ne_string).isPrimary(true);
 			addProp(source, "tag", t_ne_string);
@@ -605,7 +612,7 @@ public class PipelineYmlSchema implements YamlSchema {
 			addProp(source, "aws_secret_access_key", t_ne_string);
 			addProp(source, "aws_session_token", t_ne_string);
 			addProp(source, "insecure_registries", t_strings);
-			addProp(source, "registry_mirror", t_ne_string);
+			addProp(source, "registry_mirror", registry_mirror);
 			addProp(source, "ca_certs", f.yseq(f.ybean("CaCertsEntry",
 					f.yprop("domain", t_ne_string),
 					f.yprop("cert", t_ne_string)

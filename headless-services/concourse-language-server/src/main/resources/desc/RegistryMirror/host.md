@@ -1,0 +1,1 @@
+A hostname pointing to a Docker registry mirror service. Note that this is only used if no registry hostname prefix is specified in the `repository` key. If the `repository` contains a registry hostname, such as `my-registry.com/foo/bar`, the `registry_mirror` is ignored and the explicitly declared registry in the `repository` key is used.

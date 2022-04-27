@@ -74,6 +74,31 @@ public class ConcourseEditorTest {
 		serverInitializer.setMaxCompletions(100);
 	}
 	
+	@Test public void GH_752_repo_mirror() throws Exception {
+		//See: 
+		//  - https://github.com/concourse/registry-image-resource#:~:text=registry_mirror%3A%20Optional.
+		//  - https://github.com/spring-projects/sts4/issues/752
+		Editor editor = harness.newEditor(LanguageId.CONCOURSE_TASK,
+				"platform: linux\n" + 
+				"image_resource:\n" + 
+				"  type: docker-image\n" + 
+				"  source:\n" + 
+				"    repository: alpine\n" + 
+				"    tag: latest\n" + 
+				"    registry_mirror:\n" + 
+				"      host: my-registry.com\n" + 
+				"      username: myuser\n" + 
+				"      password: mypass\n" + 
+				"      bad: unknown\n" + 
+				"run:\n" + 
+				"    path: sh\n" + 
+				"    args:\n" + 
+				"    - -exc\n" + 
+				"    - sleep 60\n"
+		);
+		editor.assertProblems("bad|Unknown");
+	}
+	
 	@Test public void GH_639_globStar() throws Exception {
 		Editor editor = harness.newEditor(
 				"groups:\n" + 
@@ -2351,12 +2376,15 @@ public class ConcourseEditorTest {
 				"    repository: kdvolder/sts4-build-env\n" +
 				"    tag: latest\n" +
 				"    username: kdvolder\n" +
-				"    password: {{docker_password}}\n" +
+				"    password: {{docker_pass}}\n" +
 				"    aws_access_key_id: {{aws_access_key}}\n" +
 				"    aws_secret_access_key: {{aws_secret_key}}\n" +
 				"    aws_session_token: ((aws_token))\n" +
 				"    insecure_registries: no-list\n" +
-				"    registry_mirror: https://my-docker-registry.com\n" +
+				"    registry_mirror:\n" +
+				"      host: dockermirror.com\n" +
+				"      username: mirroruser\n" +
+				"      password: ((mirror_pass))\n" +
 				"    max_concurrent_downloads: num-down\n" +
 				"    max_concurrent_uploads: num-up\n" +
 				"    ca_certs:\n" +
@@ -2395,7 +2423,11 @@ public class ConcourseEditorTest {
 		editor.assertHoverContains("aws_secret_access_key", "AWS secret key to use");
 		editor.assertHoverContains("aws_session_token", "AWS session token (assumed role)");
 		editor.assertHoverContains("insecure_registries", "array of CIDRs");
-		editor.assertHoverContains("registry_mirror", "URL pointing to a docker registry");
+		editor.assertHoverContains("registry_mirror", "Hostname and credentials pointing to a docker registry mirror service");
+		editor.assertHoverContains("host", "hostname pointing to a Docker registry mirror service");
+		editor.assertHoverContains("username", 2, "username to use when authenticating to the mirror");
+		editor.assertHoverContains("password", 2, "password to use when authenticating to the mirror");
+		
 		editor.assertHoverContains("ca_certs", "Each entry specifies the x509 CA certificate for");
 		editor.assertHoverContains("client_certs", "Each entry specifies the x509 certificate and key");
 		editor.assertHoverContains("max_concurrent_downloads", "Limits the number of concurrent download threads");

@@ -1,0 +1,16 @@
+platform: linux
+image_resource:
+  type: docker-image
+  source:
+    repository: alpine
+    tag: latest
+    registry_mirror:
+      host: my-registry.com
+      username: myuser
+      password: mypass
+      bad: unknown
+run:
+    path: sh
+    args:
+    - -exc
+    - sleep 60
