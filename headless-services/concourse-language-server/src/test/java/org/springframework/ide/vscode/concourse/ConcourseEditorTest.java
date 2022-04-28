@@ -74,6 +74,42 @@ public class ConcourseEditorTest {
 		serverInitializer.setMaxCompletions(100);
 	}
 	
+	@Test public void GH_752_accross_step_modifier() throws Exception {
+		//See: https://github.com/spring-projects/sts4/issues/752
+		//See: https://concourse-ci.org/across-step.html#schema.across
+		Editor editor = harness.newEditor(
+				"jobs:\n" + 
+				"- name: job\n" + 
+				"  plan:\n" + 
+				"  - across:\n" + 
+				"    - var: some-text\n" + 
+				"      values: some_values\n" + 
+				"      max_in_flight: bad_flight\n" +
+				"      fail_fast: is_fail_fast\n" +
+				"    task: running-((.:some-text))\n" + 
+				"    config:\n" + 
+				"      platform: linux\n" + 
+				"      image_resource:\n" + 
+				"        type: docker-image\n" + 
+				"        source:\n" + 
+				"          repository: ubuntu\n" + 
+				"      run:\n" + 
+				"        path: echo\n" + 
+				"        args: [\"((.:some-text))\"]"
+		);
+		editor.assertProblems(
+				"some_values|Expecting a 'Sequence'",
+				"bad_flight|'all' or an integer greater than 0",
+				"is_fail_fast|boolean"
+		);
+		
+		editor.assertHoverContains("across", "Run a step multiple times with different combinations of variable values");
+		editor.assertHoverContains("var", "The name of the variable that will be added");
+		editor.assertHoverContains("values", "will iterate over");
+		editor.assertHoverContains("max_in_flight", "number of substeps may run in parallel");
+		editor.assertHoverContains("fail_fast", "steps will be interrupted and pending steps");
+	}
+	
 	@Test public void GH_752_repo_mirror() throws Exception {
 		//See: 
 		//  - https://github.com/concourse/registry-image-resource#:~:text=registry_mirror%3A%20Optional.
@@ -4569,6 +4605,7 @@ public class ConcourseEditorTest {
 				//"plan", exists
 				//"public", exists
 				//Completions for nested context (i.e. task step)
+				"→ across",
 				"→ attempts",
 				"→ config",
 				"→ ensure",

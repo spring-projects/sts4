@@ -26,6 +26,8 @@ public class ValueParsers {
 	};
 	
 	public static final ValueParser POS_INTEGER = integerRange(0, null);
+	
+	public static final ValueParser STRICTLY_POS_INTEGER = integerAtLeast(1);
 
 	public static ValueParser integerAtLeast(final Integer lowerBound) {
 		return integerRange(lowerBound, null);

@@ -94,6 +94,8 @@ public class PipelineYmlSchema implements YamlSchema {
 	public final YType t_string = f.yatomic("String");
 	public final YType t_ne_string = f.yatomic("String")
 			.parseWith(ValueParsers.NE_STRING);
+	public final YType t_identifier = f.yatomic("Identifier")
+			.parseWith(ConcourseValueParsers.IDENTIFIER);
 	public final YType t_opt_string = f.yatomic("String")
 			.parseWith(YamlSchemaValueParsers.OPT_STRING);
 
@@ -381,7 +383,7 @@ public class PipelineYmlSchema implements YamlSchema {
 		addProp(setPipelineStep, "var_files", t_strings);
 
 		YBeanType loadVarStep = f.ybean("LoadVarStep");
-		addProp(loadVarStep, "load_var", t_ne_string); //TODO: t_identifier: see https://concourse-ci.org/config-basics.html#schema.identifier
+		addProp(loadVarStep, "load_var", t_identifier);
 		addProp(loadVarStep, "file", t_ne_string).isRequired(true);
 		addProp(loadVarStep, "format", f.yenum("LoadVarFormat", "json", "yaml", "yml", "trim", "raw"));
 		addProp(loadVarStep, "reveal", t_boolean);
@@ -418,6 +420,12 @@ public class PipelineYmlSchema implements YamlSchema {
 		addProp(doStep, "do", f.yseq(step));
 		addProp(tryStep, "try", step);
 
+		YBeanType acrossVar = f.ybean("AcrossVar");
+		addProp(acrossVar, "var", t_identifier).isPrimary(true);
+		addProp(acrossVar, "values", f.yseq(t_any)).isRequired(true);
+		addProp(acrossVar, "max_in_flight", f.yatomic("AcrossVarMaxInFlight").parseWith(ConcourseValueParsers.MAX_IN_FLIGHT_OR_ALL));
+		addProp(acrossVar, "fail_fast", t_boolean);
+		
 		// shared properties applicable for any subtype of Step:
 		for (AbstractType subStep : stepTypes) {
 			addProp(step, subStep, "on_success", step);
@@ -427,6 +435,9 @@ public class PipelineYmlSchema implements YamlSchema {
 			addProp(step, subStep, "tags", t_strings);
 			addProp(step, subStep, "timeout", t_duration);
 			addProp(step, subStep, "attempts", t_strictly_pos_integer);
+			if (subStep!=getStep && subStep!=putStep) { // doc says 'across' doesn't work with put and get
+				addProp(step, subStep, "across", f.yseq(acrossVar)); //TODO: create proper schema
+			}
 		}
 		models.setStepType(step);
 

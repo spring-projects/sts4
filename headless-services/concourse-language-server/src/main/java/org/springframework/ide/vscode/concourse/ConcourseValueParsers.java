@@ -16,6 +16,7 @@ import org.springframework.ide.vscode.commons.util.RegexpParser;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.ValueParseException;
 import org.springframework.ide.vscode.commons.util.ValueParser;
+import org.springframework.ide.vscode.commons.util.ValueParsers;
 import org.springframework.ide.vscode.commons.yaml.schema.DynamicSchemaContext;
 import org.springframework.ide.vscode.commons.yaml.schema.SchemaContextAware;
 
@@ -95,6 +96,23 @@ public class ConcourseValueParsers {
 			+ "Deprecation: an offset may be appended, e.g. +0700 or -0400, but "
 			+ "you should use location instead."
 	);
+
+	public static final ValueParser IDENTIFIER = new RegexpParser(
+			"(\\d|[\\p{L}&&[^\\p{Lu}]]|\\-|_|\\.)*",
+			"Identifier", 
+			"An identifier is a string value comprised of Unicode lowercase letters, Decimal numbers, hyphens (`-`)" +
+			" underscores (`_`) and periods (`.`)");
+
+	public static final ValueParser MAX_IN_FLIGHT_OR_ALL = (str) -> {
+		if (str.equals("all")) {
+			return str;
+		}
+		try {
+			return ValueParsers.STRICTLY_POS_INTEGER.parse(str);
+		} catch (Exception e ) {
+			throw new IllegalArgumentException("Expecting either 'all' or an integer greater than 0");
+		}
+	};
 
 	private static String createTimeRegexp() {
 		String hours = "([0-2]?[0-9])";
