@@ -229,6 +229,18 @@
             "ERROR"
           ]
         },
+        "spring-boot.ls.problem.java.JAVA_AUTOWIRED_CONSTRUCTOR": {
+          "type": "string",
+          "default": "WARNING",
+          "description": "Unnecessary @Autowired over the only constructor",
+          "enum": [
+            "IGNORE",
+            "INFO",
+            "WARNING",
+            "HINT",
+            "ERROR"
+          ]
+        },
         "spring-boot.ls.problem.application-yaml.YAML_SYNTAX_ERROR": {
           "type": "string",
           "default": "ERROR",
