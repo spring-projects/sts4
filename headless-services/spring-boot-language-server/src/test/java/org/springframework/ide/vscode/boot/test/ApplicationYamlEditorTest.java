@@ -24,6 +24,7 @@ import java.util.List;
 import java.util.Optional;
 
 import org.apache.commons.io.FileUtils;
+import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.junit.After;
@@ -3286,9 +3287,10 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 	}
 	
 	private String getMissingPropertyName(CodeAction fix) {
-		String cmd = fix.command.getCommand();
+		Command command = fix.getCommand();
+		String cmd = command.getCommand();
 		assertEquals("sts.vscode-spring-boot.codeAction", cmd);
-		List<Object> args = fix.command.getArguments();
+		List<Object> args = command.getArguments();
 		assertEquals("MISSING_PROPERTY_APP", args.get(0));
 		MissingPropertyData data = (MissingPropertyData) args.get(1);
 		return data.getProperty();

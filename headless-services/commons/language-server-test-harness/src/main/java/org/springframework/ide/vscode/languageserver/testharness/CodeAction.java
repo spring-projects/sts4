@@ -53,5 +53,9 @@ public class CodeAction {
 			}
 		}
 	}
+	
+	public Command getCommand() {
+		return ca.isLeft() ? ca.getLeft() : ca.getRight().getCommand();
+	}
 
 }
