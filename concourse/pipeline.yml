@@ -3,7 +3,7 @@ resource_types:
 - name: s3-multi
   type: registry-image
   source:
-    repository: kdvolder/s3-resource-simple
+    repository: springci/s3-resource-simple
     username: ((docker_hub_username))
     password: ((docker_hub_password))
 - name: slack-notification
