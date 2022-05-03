@@ -10,7 +10,7 @@ run:
 params:
   extension_id: undefined_extension_id
 image_resource:
-  type: docker-image
+  type: registry-image
   source:
     username: ((docker_hub_username))
     password: ((docker_hub_password))

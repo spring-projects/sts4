@@ -1,20 +1,20 @@
 ##########################################################
 resource_types:
 - name: s3-multi
-  type: docker-image
+  type: registry-image
   source:
     repository: kdvolder/s3-resource-simple
     username: ((docker_hub_username))
     password: ((docker_hub_password))
 - name: slack-notification
-  type: docker-image
+  type: registry-image
   source:
     repository: cfcommunity/slack-notification-resource
     username: ((docker_hub_username))
     password: ((docker_hub_password))
     tag: latest
 - name: artifactory-resource
-  type: docker-image
+  type: registry-image
   source:
     repository: springio/artifactory-resource
     tag: 0.0.10
@@ -241,16 +241,6 @@ resources:
     path: snapshot/STS4/vscode-extensions
     options:
     - "--acl public-read"
-# - name: atom-snapshot-website
-#   type: s3-multi
-#   source:
-#     bucket: ((s3_prod_bucket))
-#     access_key_id: ((s3_prod_accesskey))
-#     secret_access_key: ((s3_prod_secretkey))
-#     region_name: ((s3_region))
-#     path: snapshot/STS4/atom-packages
-#     options:
-#     - "--acl public-read"
 - name: slack-notification
   type: slack-notification
   source:
@@ -261,12 +251,6 @@ resources:
     username: ((docker_hub_username))
     password: ((docker_hub_password))
     repository: springci/sts4-build-env
-# - name: theia-docker-image
-#   type: docker-image
-#   source:
-#     username: ((docker_hub_username))
-#     password: ((docker_hub_password))
-#     repository: springci/sts4-theia-snapshot    
 - name: maven-cache
   type: s3
   source:

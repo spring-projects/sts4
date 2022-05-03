@@ -1,6 +1,6 @@
 platform: linux
 image_resource:
-  type: docker-image
+  type: registry-image
   source:
     username: ((docker_hub_username))
     password: ((docker_hub_password))
