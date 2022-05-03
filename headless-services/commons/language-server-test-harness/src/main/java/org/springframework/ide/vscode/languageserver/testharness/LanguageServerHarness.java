@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2020 Pivotal, Inc.
+ * Copyright (c) 2016, 2022 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -748,8 +748,7 @@ public class LanguageServerHarness {
 		List<Either<Command, org.eclipse.lsp4j.CodeAction>> actions =
 				getServer().getTextDocumentService().codeAction(new CodeActionParams(doc.getId(), problem.getRange(), context)).get();
 		return actions.stream()
-				.map(e -> e.getLeft())
-				.map((command) -> new CodeAction(this, command))
+				.map(e -> new CodeAction(this, e))
 				.collect(Collectors.toList());
 	}
 
