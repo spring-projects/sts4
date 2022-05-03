@@ -5,6 +5,12 @@
       "label": "SpEL Expression Syntax",
       "description": "SpEL parser raised a ParseException",
       "defaultSeverity": "ERROR"
+    },
+    {
+      "code": "JAVA_AUTOWIRED_CONSTRUCTOR",
+      "label": "Unnecessary @Autowired",
+      "description": "Unnecessary @Autowired over the only constructor",
+      "defaultSeverity": "WARNING"
     }
   ],
   "application-yaml": [

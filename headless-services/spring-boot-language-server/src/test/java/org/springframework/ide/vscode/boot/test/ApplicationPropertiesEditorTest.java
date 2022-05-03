@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2019 Pivotal, Inc.
+ * Copyright (c) 2016, 2022 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -23,7 +23,6 @@ import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.time.Duration;
 import java.util.List;
-import java.util.Properties;
 
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.Diagnostic;
@@ -256,7 +255,7 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 	@Test
 	public void testReconcileCatchesParseError() throws Exception {
 		Editor editor = newEditor("key\n");
-		editor.assertProblems("key|extraneous input");
+		editor.assertProblems("key|{':', '=', Space}");
 	}
 
 	@Test public void bug_GH_STS4_314() throws Exception {
