@@ -246,7 +246,7 @@ resources:
   source:
     url: ((slack_webhook))
 - name: docker-image
-  type: docker-image
+  type: registry-image
   source:
     username: ((docker_hub_username))
     password: ((docker_hub_password))
@@ -428,11 +428,26 @@ jobs:
     trigger: true
   - get: docker-git
     trigger: true
+  - task: build-docker-image
+    privileged: true
+    config:
+      platform: linux
+      image_resource:
+        type: registry-image
+        source:
+          repository: concourse/oci-build-task
+      params:
+        CONTEXT: docker-git/concourse/docker
+        REGISTRY_MIRRORS: harbor-mirror.spring.vmware.com
+      inputs:
+      - name: docker-git
+      outputs:
+      - name: image
+      run:
+        path: build
   - put: docker-image
     params:
-      build: docker-git/concourse/docker
-    get_params: 
-      skip_download: true
+      image: image/image.tar
 - name: build-mvn-cache
   serial: true
   plan:
@@ -441,6 +456,8 @@ jobs:
   - task: build-mvn-cache
     file: sts4/concourse/tasks/build-mvn-cache.yml
   - put: maven-cache
+    get_params:
+      skip_download: true
     params:
       file: out/*.tar.gz
 - name: build-consourse-vsix-snapshot
