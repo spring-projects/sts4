@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2020 Pivotal, Inc.
+ * Copyright (c) 2017, 2022 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -21,12 +21,14 @@ import org.slf4j.LoggerFactory;
 
 public class SpringProjectUtil {
 
+	private static final String VERION_PATTERN_STR = "(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?";
+
 	public static final Logger log = LoggerFactory.getLogger(SpringProjectUtil.class);
 		
 	private static final Pattern MAJOR_MINOR_VERSION = Pattern.compile("(0|[1-9]\\d*)\\.(0|[1-9]\\d*)");
 
 	// Pattern copied from https://semver.org/
-	private static final Pattern VERSION = Pattern.compile("(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?");
+	private static final Pattern VERSION = Pattern.compile(VERION_PATTERN_STR);
 
 	private static final Pattern SPRING_NAME = Pattern.compile("([a-z]+)(-[a-z]+)*");
 	
@@ -106,5 +108,39 @@ public class SpringProjectUtil {
 	private static boolean isEntry(File cpe, String libNamePrefix, boolean onlyLibs) {
 		String name = cpe.getName();
 		return name.startsWith(libNamePrefix) && (!onlyLibs || name.endsWith(".jar"));
+	}
+	
+	public static Version getDependencyVersion(IJavaProject jp, String dependency) {		
+		try {
+			for (File f : IClasspathUtil.getBinaryRoots(jp.getClasspath(), (cpe) -> !cpe.isSystem())) {
+				String fileName = f.getName();
+				if (fileName.startsWith(dependency)) {
+					StringBuilder sb = new StringBuilder();
+					sb.append('^');
+					sb.append(dependency);
+					sb.append('-');
+					sb.append(VERION_PATTERN_STR);
+					sb.append(".jar$");
+					Pattern pattern = Pattern.compile(sb.toString());
+
+					Matcher matcher = pattern.matcher(fileName);
+					if (matcher.find() && matcher.groupCount() == 5) {
+						String major = matcher.group(1);
+						String minor = matcher.group(2);
+						String patch = matcher.group(3);
+						String qualifier = matcher.group(4);
+						return new Version(
+								Integer.parseInt(major),
+								Integer.parseInt(minor),
+								Integer.parseInt(patch),
+								qualifier
+						);
+					}
+				}
+			}
+		} catch (Exception e) {
+			log.error("", e);
+		}
+		return null;
 	}
 }

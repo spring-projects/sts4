@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2020 Pivotal, Inc.
+ * Copyright (c) 2020, 2022 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -21,6 +21,7 @@ import org.eclipse.jdt.core.dom.NormalAnnotation;
 import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
 import org.eclipse.jdt.core.dom.StringLiteral;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
+import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 
@@ -44,7 +45,7 @@ public class AnnotationParamReconciler implements AnnotationReconciler {
 		this.reconciler = reconciler;
 	}
 	
-	public void visit(IDocument doc, Annotation node, ITypeBinding typeBinding, IProblemCollector problemCollector) {
+	public void visit(IJavaProject project, IDocument doc, Annotation node, ITypeBinding typeBinding, IProblemCollector problemCollector) {
 		if (node instanceof SingleMemberAnnotation) {
 			visitSingleMemberAnnotation((SingleMemberAnnotation) node, typeBinding, problemCollector);
 		} else if (node instanceof NormalAnnotation) {

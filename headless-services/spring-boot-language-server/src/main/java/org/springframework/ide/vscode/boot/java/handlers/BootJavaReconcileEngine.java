@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2020 Pivotal, Inc.
+ * Copyright (c) 2016, 2022 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -20,8 +20,6 @@ import org.eclipse.jdt.core.dom.MarkerAnnotation;
 import org.eclipse.jdt.core.dom.NormalAnnotation;
 import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.boot.java.value.Constants;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
@@ -50,8 +48,6 @@ public class BootJavaReconcileEngine implements IReconcileEngine {
 	
 	public static final String SPRING_CONDITIONAL_ON_EXPRESSION = "org.springframework.boot.autoconfigure.condition.ConditionalOnExpression";
 	
-	private static final Logger log = LoggerFactory.getLogger(BootJavaReconcileEngine.class);
-
 	private final JavaProjectFinder projectFinder; 
 	private final CompilationUnitCache compilationUnitCache;
 	private final AnnotationReconciler[] reconcilers;
@@ -111,7 +107,7 @@ public class BootJavaReconcileEngine implements IReconcileEngine {
 				
 				compilationUnitCache.withCompilationUnit(project, uri, cu -> {
 					if (cu != null) {
-						reconcileAST(doc, cu, problemCollector);
+						reconcileAST(project, doc, cu, problemCollector);
 					}
 					
 					return null;
@@ -123,13 +119,13 @@ public class BootJavaReconcileEngine implements IReconcileEngine {
 		}
 	}
 
-	private void reconcileAST(IDocument doc, CompilationUnit cu, IProblemCollector problemCollector) {
+	private void reconcileAST(IJavaProject project, IDocument doc, CompilationUnit cu, IProblemCollector problemCollector) {
 		cu.accept(new ASTVisitor() {
 			
 			@Override
 			public boolean visit(SingleMemberAnnotation node) {
 				try {
-					visitAnnotation(doc, node, problemCollector);
+					visitAnnotation(project, doc, node, problemCollector);
 				}
 				catch (Exception e) {
 				}
@@ -139,7 +135,7 @@ public class BootJavaReconcileEngine implements IReconcileEngine {
 			@Override
 			public boolean visit(NormalAnnotation node) {
 				try {
-					visitAnnotation(doc, node, problemCollector);
+					visitAnnotation(project, doc, node, problemCollector);
 				}
 				catch (Exception e) {
 				}
@@ -149,7 +145,7 @@ public class BootJavaReconcileEngine implements IReconcileEngine {
 			@Override
 			public boolean visit(MarkerAnnotation node) {
 				try {
-					visitAnnotation(doc, node, problemCollector);
+					visitAnnotation(project, doc, node, problemCollector);
 				}
 				catch (Exception e) {
 				}
@@ -159,12 +155,12 @@ public class BootJavaReconcileEngine implements IReconcileEngine {
 		});
 	}
 
-	protected void visitAnnotation(IDocument doc, Annotation node, IProblemCollector problemCollector) {
+	protected void visitAnnotation(IJavaProject project, IDocument doc, Annotation node, IProblemCollector problemCollector) {
 		ITypeBinding typeBinding = node.resolveTypeBinding();
 
 		if (typeBinding != null) {
 			for (int i = 0; i < reconcilers.length; i++) {
-				reconcilers[i].visit(doc, node, typeBinding, problemCollector);
+				reconcilers[i].visit(project, doc, node, typeBinding, problemCollector);
 			}
 		}
 	}

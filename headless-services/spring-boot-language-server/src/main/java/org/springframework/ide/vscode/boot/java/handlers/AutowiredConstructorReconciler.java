@@ -19,6 +19,9 @@ import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.SpringJavaProblemType;
+import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
+import org.springframework.ide.vscode.commons.java.Version;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.Quickfix.QuickfixData;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixRegistry;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixType;
@@ -37,19 +40,24 @@ public class AutowiredConstructorReconciler implements AnnotationReconciler {
 	}
 
 	@Override
-	public void visit(IDocument doc, Annotation node, ITypeBinding typeBinding, IProblemCollector problemCollector) {
-		getSingleAutowiredConstructorDeclaringType(node, typeBinding).ifPresent(type -> {
-			ReconcileProblemImpl problem = new ReconcileProblemImpl(SpringJavaProblemType.JAVA_AUTOWIRED_CONSTRUCTOR, "Unnecesary @Autowired", node.getStartPosition(), node.getLength());
-			QuickfixType quickfixType = quickfixRegistry.getQuickfixType(AutowiredConstructorReconciler.REMOVE_UNNECESSARY_AUTOWIRED_FROM_CONSTRUCTOR);
-			if (quickfixType != null) {
-				problem.addQuickfix(new QuickfixData<>(
-						quickfixType,
-						List.of(doc.getUri(), type.getQualifiedName()),
-						"Remove unnecessary @Autowired"
-				));
-			}
-			problemCollector.accept(problem);
-		});
+	public void visit(IJavaProject project, IDocument doc, Annotation node, ITypeBinding typeBinding, IProblemCollector problemCollector) {
+		Version version = SpringProjectUtil.getDependencyVersion(project, "spring-boot");
+		
+		if (version.getMajor() >= 2) {
+			getSingleAutowiredConstructorDeclaringType(node, typeBinding).ifPresent(type -> {
+				ReconcileProblemImpl problem = new ReconcileProblemImpl(SpringJavaProblemType.JAVA_AUTOWIRED_CONSTRUCTOR, "Unnecesary @Autowired", node.getStartPosition(), node.getLength());
+				QuickfixType quickfixType = quickfixRegistry.getQuickfixType(AutowiredConstructorReconciler.REMOVE_UNNECESSARY_AUTOWIRED_FROM_CONSTRUCTOR);
+				if (quickfixType != null) {
+					problem.addQuickfix(new QuickfixData<>(
+							quickfixType,
+							List.of(doc.getUri(), type.getQualifiedName()),
+							"Remove unnecessary @Autowired"
+					));
+				}
+				problemCollector.accept(problem);
+			});
+		}
+		
 	}
 	
 	static Optional<ITypeBinding> getSingleAutowiredConstructorDeclaringType(Annotation a, ITypeBinding type) {
