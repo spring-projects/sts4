@@ -292,6 +292,10 @@ public class ORAstUtils {
     	}
 	}
 	
+	public static Recipe nodeRecipe(JavaVisitor<ExecutionContext> v, Predicate<J> condition) {
+    	return new NodeRecipe((JavaVisitor<ExecutionContext>) v, condition);
+    }
+	
     @SuppressWarnings("unchecked")
 	public static Recipe nodeRecipe(Recipe r, Predicate<J> condition) {
     	return new NodeRecipe((JavaVisitor<ExecutionContext>) getVisitor(r), condition);

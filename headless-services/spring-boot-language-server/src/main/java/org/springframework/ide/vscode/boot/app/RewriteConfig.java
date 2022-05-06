@@ -15,14 +15,17 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.ide.vscode.boot.java.handlers.AutowiredConstructorReconciler;
+import org.springframework.ide.vscode.boot.java.reconcilers.AutowiredConstructorReconciler;
+import org.springframework.ide.vscode.boot.java.reconcilers.BeanMethodNotPublicReconciler;
 import org.springframework.ide.vscode.boot.java.rewrite.ORCompilationUnitCache;
 import org.springframework.ide.vscode.boot.java.rewrite.RewriteRecipeRepository;
 import org.springframework.ide.vscode.boot.java.rewrite.RewriteRefactorings;
+import org.springframework.ide.vscode.boot.java.rewrite.codeaction.BeanMethodsNoPublicCodeAction;
 import org.springframework.ide.vscode.boot.java.rewrite.codeaction.ConvertAutowiredField;
 import org.springframework.ide.vscode.boot.java.rewrite.codeaction.NoRequestMapping;
 import org.springframework.ide.vscode.boot.java.rewrite.codeaction.NoRequestMappings;
 import org.springframework.ide.vscode.boot.java.rewrite.quickfix.AutowiredConstructorQuickFixHandler;
+import org.springframework.ide.vscode.boot.java.rewrite.quickfix.BeanMethodNoPublicQuickFixHandler;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixRegistry;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
@@ -62,11 +65,20 @@ public class RewriteConfig implements InitializingBean {
 		return new NoRequestMappings(server, projectFinder, rewriteRefactorings, orCuCache);
 	}
 
+	@ConditionalOnClass({org.openrewrite.java.spring.BeanMethodsNotPublic.class})
+	@Bean
+	BeanMethodsNoPublicCodeAction beanMethodsNoPublic(SimpleLanguageServer server, JavaProjectFinder projectFinder,
+			RewriteRefactorings rewriteRefactorings, RewriteRecipeRepository recipesRepo,
+			ORCompilationUnitCache orCuCache) {
+		return new BeanMethodsNoPublicCodeAction(server, projectFinder, rewriteRefactorings, orCuCache);
+	}
+	
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		QuickfixRegistry registry = server.getQuickfixRegistry();
 		
 		registry.register(AutowiredConstructorReconciler.REMOVE_UNNECESSARY_AUTOWIRED_FROM_CONSTRUCTOR, new AutowiredConstructorQuickFixHandler(server, projectFinder, orCuCache));
+		registry.register(BeanMethodNotPublicReconciler.REMOVE_PUBLIC_FROM_BEAN_METHOD, new BeanMethodNoPublicQuickFixHandler(server, projectFinder, orCuCache));
 		
 	}
 

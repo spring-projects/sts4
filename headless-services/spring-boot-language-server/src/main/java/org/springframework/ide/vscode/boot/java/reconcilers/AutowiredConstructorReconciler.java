@@ -8,7 +8,7 @@
  * Contributors:
  *     VMware, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.java.handlers;
+package org.springframework.ide.vscode.boot.java.reconcilers;
 
 import java.util.List;
 import java.util.Optional;
@@ -41,7 +41,7 @@ public class AutowiredConstructorReconciler implements AnnotationReconciler {
 
 	@Override
 	public void visit(IJavaProject project, IDocument doc, Annotation node, ITypeBinding typeBinding, IProblemCollector problemCollector) {
-		Version version = SpringProjectUtil.getDependencyVersion(project, "spring-boot");
+		Version version = SpringProjectUtil.getDependencyVersion(project, SpringProjectUtil.SPRING_BOOT);
 		
 		if (version.getMajor() >= 2) {
 			getSingleAutowiredConstructorDeclaringType(node, typeBinding).ifPresent(type -> {

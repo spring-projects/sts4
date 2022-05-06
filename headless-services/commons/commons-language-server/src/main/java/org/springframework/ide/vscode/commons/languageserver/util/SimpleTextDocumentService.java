@@ -27,6 +27,8 @@ import java.util.stream.Collectors;
 import org.eclipse.lsp4j.ClientCapabilities;
 import org.eclipse.lsp4j.CodeAction;
 import org.eclipse.lsp4j.CodeActionCapabilities;
+import org.eclipse.lsp4j.CodeActionContext;
+import org.eclipse.lsp4j.CodeActionKind;
 import org.eclipse.lsp4j.CodeActionParams;
 import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.CodeLensParams;
@@ -82,6 +84,7 @@ import org.springframework.ide.vscode.commons.util.text.Region;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
 
 public class SimpleTextDocumentService implements TextDocumentService, DocumentEventListenerManager {
 
@@ -425,23 +428,27 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 	}
 	
 	private List<Either<Command, CodeAction>> computeCodeActions(CancelChecker cancelToken, CodeActionCapabilities capabilities, TrackedDocument doc, CodeActionParams params) {
-		List<Either<Command,CodeAction>> list = doc.getQuickfixes().stream()
-				.filter((fix) -> fix.appliesTo(params.getRange(), params.getContext()))
-				.map(f -> f.getCodeAction(params.getContext()))
-				.map(command -> Either.<Command, CodeAction>forRight(command))
-				.collect(Collectors.toList());
+		Builder<Either<Command,CodeAction>> listBuilder = ImmutableList.builder();
+		CodeActionContext context = params.getContext();
+		if (!context.getDiagnostics().isEmpty() || (context.getOnly() != null && context.getOnly().contains(CodeActionKind.QuickFix))) {
+			doc.getQuickfixes().stream()
+					.filter((fix) -> fix.appliesTo(params.getRange(), context))
+					.map(f -> f.getCodeAction(params.getContext()))
+					.map(command -> Either.<Command, CodeAction>forRight(command))
+					.forEach(listBuilder::add);
+		}
 
 		if (codeActionHandler != null) {
 			try {
 				int start = doc.getDocument().toOffset(params.getRange().getStart());
 				int end = doc.getDocument().toOffset(params.getRange().getEnd());
-				list.addAll(codeActionHandler.handle(cancelToken, capabilities, doc.getDocument(), new Region(start, end - start)));
+				listBuilder.addAll(codeActionHandler.handle(cancelToken, capabilities, context, doc.getDocument(), new Region(start, end - start)));
 			} catch (Exception e) {
 				log.error("Failed to compute quick refactorings", e);
 			}
 		}
 		
-		return list;
+		return listBuilder.build();
 	}
 	
 	private static CodeActionCapabilities getCodeActionCapabilities(ClientCapabilities capabilities) {

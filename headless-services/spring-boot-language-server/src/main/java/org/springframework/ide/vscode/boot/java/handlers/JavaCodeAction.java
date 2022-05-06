@@ -16,6 +16,7 @@ import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.lsp4j.CodeAction;
 import org.eclipse.lsp4j.CodeActionCapabilities;
+import org.eclipse.lsp4j.CodeActionContext;
 import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.WorkspaceEdit;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
@@ -27,6 +28,6 @@ public interface JavaCodeAction {
 
 	default WorkspaceEdit perform(List<?> args) { return null; }
 	
-	List<Either<Command, CodeAction>> getCodeActions(CodeActionCapabilities capabilities, TextDocument doc, IRegion region, IJavaProject project, CompilationUnit cu, ASTNode node);
+	List<Either<Command, CodeAction>> getCodeActions(CodeActionCapabilities capabilities, CodeActionContext context, TextDocument doc, IRegion region, IJavaProject project, CompilationUnit cu, ASTNode node);
 	
 }

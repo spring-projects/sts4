@@ -21,6 +21,7 @@ import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.NodeFinder;
 import org.eclipse.lsp4j.CodeAction;
 import org.eclipse.lsp4j.CodeActionCapabilities;
+import org.eclipse.lsp4j.CodeActionContext;
 import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
@@ -44,14 +45,14 @@ public class BootJavaCodeActionProvider implements CodeActionHandler {
 	}
 
 	@Override
-	public List<Either<Command, CodeAction>> handle(CancelChecker cancelToken, CodeActionCapabilities capabilities, TextDocument doc, IRegion region) {
+	public List<Either<Command, CodeAction>> handle(CancelChecker cancelToken, CodeActionCapabilities capabilities, CodeActionContext context, TextDocument doc, IRegion region) {
 		Optional<IJavaProject> project = projectFinder.find(doc.getId());
 		if (project.isPresent()) {
 			return cuCache.withCompilationUnit(project.get(), URI.create(doc.getId().getUri()), cu -> {
 				ASTNode found = NodeFinder.perform(cu, region.getOffset(), region.getLength());
 				List<Either<Command, CodeAction>> codeActions = new ArrayList<>();
 				for (JavaCodeAction jca : javaCodeActions) {
-					List<Either<Command, CodeAction>> cas = jca.getCodeActions(capabilities, doc, region, project.get(), cu, found);
+					List<Either<Command, CodeAction>> cas = jca.getCodeActions(capabilities, context, doc, region, project.get(), cu, found);
 					if (cas != null) {
 						codeActions.addAll(cas);
 					}

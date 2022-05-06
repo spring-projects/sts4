@@ -19,6 +19,7 @@ import java.util.Set;
 
 import org.eclipse.lsp4j.CodeAction;
 import org.eclipse.lsp4j.CodeActionCapabilities;
+import org.eclipse.lsp4j.CodeActionContext;
 import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.HoverParams;
@@ -105,16 +106,16 @@ public class CompositeLanguageServerComponents implements LanguageServerComponen
 		this.codeActionHandler = new CodeActionHandler() {
 			
 			@Override
-			public List<Either<Command, CodeAction>> handle(CancelChecker cancelToken, CodeActionCapabilities capabilities, TextDocument doc,
-					IRegion region) {
+			public List<Either<Command, CodeAction>> handle(CancelChecker cancelToken,
+					CodeActionCapabilities capabilities, CodeActionContext context, TextDocument doc, IRegion region) {
 				LanguageId language = doc.getLanguageId();
 				LanguageServerComponents subComponents = componentsByLanguageId.get(language);
 				if (subComponents != null) {
 					return subComponents.getCodeActionProvider()
-							.map(subEngine -> subEngine.handle(cancelToken, capabilities, doc, region))
+							.map(subEngine -> subEngine.handle(cancelToken, capabilities, context, doc, region))
 							.orElse(Collections.emptyList());
 				}
-				//No applicable subEngine...
+				// No applicable subEngine...
 				return Collections.emptyList();
 			}
 		};

@@ -21,7 +21,7 @@ import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.lsp4j.CodeAction;
-import org.eclipse.lsp4j.CodeActionCapabilities;
+import org.eclipse.lsp4j.CodeActionContext;
 import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.WorkspaceEdit;
@@ -34,7 +34,6 @@ import org.springframework.ide.vscode.boot.java.rewrite.RewriteRefactorings;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
-import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.util.text.IRegion;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
@@ -49,10 +48,8 @@ public class NoRequestMapping extends NoRequestMappings {
 
 	@Override
 	public WorkspaceEdit perform(List<?> args) {
-		SimpleTextDocumentService documents = server.getTextDocumentService();
 		String docUri = (String) args.get(0);
 		String matchStr = (String) args.get(1);
-		TextDocument doc = documents.getLatestSnapshot(docUri);
 		
 		Optional<IJavaProject> project = projectFinder.find(new TextDocumentIdentifier(docUri));
 		
@@ -69,19 +66,15 @@ public class NoRequestMapping extends NoRequestMappings {
 						return macther.matches(m.getMethodType());
 					}
 					return false;
-				}), doc, cu);
+				}), project.get(), List.of(cu));
 			});
 		}
 		return null;
 	}
 
 	@Override
-	public List<Either<Command, CodeAction>> getCodeActions(CodeActionCapabilities capabilities, TextDocument doc, IRegion region, IJavaProject project,
+	protected List<Either<Command, CodeAction>> provideCodeActions(CodeActionContext context, TextDocument doc, IRegion region, IJavaProject project,
 			CompilationUnit cu, ASTNode node) {
-		// Only supports resolvable code action for now
-		if (!isResolve(capabilities, "edit")) {
-			return Collections.emptyList();
-		}
 		return findAppropriateMethodDeclaration(node).map(method -> {
 			String methodMatcher = "* " + method.getName().getIdentifier() + "(*)";
 			IMethodBinding methodBinding = method.resolveBinding();

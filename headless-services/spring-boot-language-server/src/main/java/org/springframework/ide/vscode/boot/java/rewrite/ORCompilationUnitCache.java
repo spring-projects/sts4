@@ -12,7 +12,9 @@ package org.springframework.ide.vscode.boot.java.rewrite;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.Collections;
@@ -262,6 +264,19 @@ public class ORCompilationUnitCache implements DocumentContentProvider, Disposab
 		}
 
 		return requestor.apply(null);
+	}
+	
+	public List<CompilationUnit> getCompiulationUnits(IJavaProject project) {
+		List<Path> javaFiles = IClasspathUtil.getProjectJavaSourceFolders(project.getClasspath()).flatMap(folder -> {
+			try {
+				return Files.walk(folder.toPath());
+			} catch (IOException e) {
+				logger.error("", e);
+			}
+			return Stream.empty();
+		}).filter(Files::isRegularFile).filter(p -> p.getFileName().toString().endsWith(".java")).collect(Collectors.toList());
+		JavaParser javaParser = loadJavaParser(project);
+		return ORAstUtils.parse(javaParser, javaFiles);
 	}
 	
 }

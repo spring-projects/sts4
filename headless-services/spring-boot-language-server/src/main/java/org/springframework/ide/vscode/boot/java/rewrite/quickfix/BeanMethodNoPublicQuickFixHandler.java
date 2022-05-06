@@ -15,7 +15,8 @@ import java.util.Optional;
 
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.WorkspaceEdit;
-import org.openrewrite.java.spring.NoAutowiredOnConstructor;
+import org.openrewrite.java.MethodMatcher;
+import org.openrewrite.java.spring.BeanMethodsNotPublic;
 import org.springframework.ide.vscode.boot.java.rewrite.ORCompilationUnitCache;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
@@ -23,42 +24,43 @@ import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguage
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
-public class AutowiredConstructorQuickFixHandler extends RewriteQuickFixHandler {
-	
+public class BeanMethodNoPublicQuickFixHandler extends RewriteQuickFixHandler {
+
 	final private SimpleLanguageServer server;
 	final private JavaProjectFinder projectFinder;
 	final private ORCompilationUnitCache orCuCache;
 
-	public AutowiredConstructorQuickFixHandler(SimpleLanguageServer server, JavaProjectFinder projectFinder, ORCompilationUnitCache orCuCache) {
-		super();
+
+	public BeanMethodNoPublicQuickFixHandler(SimpleLanguageServer server, JavaProjectFinder projectFinder,
+			ORCompilationUnitCache orCuCache) {
 		this.server = server;
 		this.projectFinder = projectFinder;
 		this.orCuCache = orCuCache;
 	}
 
+
+	@Override
 	protected WorkspaceEdit perform(List<?> args) {
 		SimpleTextDocumentService documents = server.getTextDocumentService();
 		String docUri = (String) args.get(0);
-		String classFqName = (String) args.get(1);
+		String methodMatch = (String) args.get(1);
 		TextDocument doc = documents.getLatestSnapshot(docUri);
 		
 		Optional<IJavaProject> project = projectFinder.find(new TextDocumentIdentifier(docUri));
 		
 		if (project.isPresent()) {
-			return removeUnnecessaryAutowiredFromConstructor(project.get(), doc, classFqName);
+			MethodMatcher matcher = new MethodMatcher(methodMatch);
+			return applyRecipe(orCuCache, new BeanMethodsNotPublic(), project.get(), doc, t -> {
+				if (t instanceof org.openrewrite.java.tree.J.MethodDeclaration) {
+					org.openrewrite.java.tree.J.MethodDeclaration m = (org.openrewrite.java.tree.J.MethodDeclaration) t;
+					return matcher.matches(m.getMethodType());
+				}
+				return false;
+			});
 		}
 		
 		return null;
 	}
-	
-	private WorkspaceEdit removeUnnecessaryAutowiredFromConstructor(IJavaProject project, TextDocument doc, String classFqName) {
-		return applyRecipe(orCuCache, new NoAutowiredOnConstructor(), project, doc, t -> {
-			if (t instanceof org.openrewrite.java.tree.J.ClassDeclaration) {
-				org.openrewrite.java.tree.J.ClassDeclaration c = (org.openrewrite.java.tree.J.ClassDeclaration) t;
-				return c.getType() != null && classFqName.equals(c.getType().getFullyQualifiedName());
-			}
-			return false;
-		});
-	}
+
 
 }

@@ -24,8 +24,10 @@ public enum SpringJavaProblemType implements ProblemType {
 	
 	JAVA_SPEL_EXPRESSION_SYNTAX(ERROR, "SpEL parser raised a ParseException", "SpEL Expression Syntax"),
 	
-	JAVA_AUTOWIRED_CONSTRUCTOR(WARNING, "Unnecessary @Autowired over the only constructor", "Unnecessary @Autowired");
+	JAVA_AUTOWIRED_CONSTRUCTOR(WARNING, "Unnecessary @Autowired over the only constructor", "Unnecessary @Autowired"),
 
+	JAVA_PUBLIC_BEAN_METHOD(HINT, "Public modifier on @Bean method. They no longer have to be public visibility to be usable by Spring.", "public @Bean method");
+	
 	private final ProblemSeverity defaultSeverity;
 	private String description;
 	private String label;

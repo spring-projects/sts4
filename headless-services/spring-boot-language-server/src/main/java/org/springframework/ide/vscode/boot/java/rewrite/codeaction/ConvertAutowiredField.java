@@ -23,7 +23,7 @@ import org.eclipse.jdt.core.dom.IAnnotationBinding;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 import org.eclipse.lsp4j.CodeAction;
-import org.eclipse.lsp4j.CodeActionCapabilities;
+import org.eclipse.lsp4j.CodeActionContext;
 import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.WorkspaceEdit;
@@ -35,7 +35,6 @@ import org.springframework.ide.vscode.boot.java.rewrite.RewriteRefactorings;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
-import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.util.text.IRegion;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
@@ -50,11 +49,9 @@ public class ConvertAutowiredField extends AbstractRewriteJavaCodeAction {
 
 	@Override
 	public WorkspaceEdit perform(List<?> args) {
-		SimpleTextDocumentService documents = server.getTextDocumentService();
 		String docUri = (String) args.get(0);
 		String classFqName = (String) args.get(1);
 		String fieldName = (String) args.get(2);
-		TextDocument doc = documents.getLatestSnapshot(docUri);
 
 		Optional<IJavaProject> project = projectFinder.find(new TextDocumentIdentifier(docUri));
 
@@ -63,20 +60,15 @@ public class ConvertAutowiredField extends AbstractRewriteJavaCodeAction {
 				if (cu == null) {
 					throw new IllegalStateException("Cannot parse Java file: " + docUri);
 				}
-				return applyRecipe(new ConvertAutowiredParameterIntoConstructorParameter(classFqName, fieldName), doc, cu);
+				return applyRecipe(new ConvertAutowiredParameterIntoConstructorParameter(classFqName, fieldName), project.get(), List.of(cu));
 			});
 		}
 		return null;
 	}
 
 	@Override
-	public List<Either<Command, CodeAction>> getCodeActions(CodeActionCapabilities capabilities, TextDocument doc, IRegion region, IJavaProject project,
-			CompilationUnit cu, ASTNode node) {
-		// Only supports resolvable code action for now
-		if (!isResolve(capabilities, "edit")) {
-			return Collections.emptyList();
-		}
-				
+	protected List<Either<Command, CodeAction>> provideCodeActions(CodeActionContext context, TextDocument doc, IRegion region, IJavaProject project,
+			CompilationUnit cu, ASTNode node) {				
 		for (; node != null && !(node instanceof FieldDeclaration); node = node.getParent()) {
 			// nothing
 		}

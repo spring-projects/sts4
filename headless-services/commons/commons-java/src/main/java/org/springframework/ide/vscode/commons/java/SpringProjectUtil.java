@@ -21,6 +21,8 @@ import org.slf4j.LoggerFactory;
 
 public class SpringProjectUtil {
 
+	public static final String SPRING_BOOT = "spring-boot";
+
 	private static final String VERION_PATTERN_STR = "(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?";
 
 	public static final Logger log = LoggerFactory.getLogger(SpringProjectUtil.class);
@@ -37,7 +39,7 @@ public class SpringProjectUtil {
 	}
 
 	public static boolean isBootProject(IJavaProject jp) {
-		return hasSpecificLibraryOnClasspath(jp, "spring-boot", true);
+		return hasSpecificLibraryOnClasspath(jp, SPRING_BOOT, true);
 	}
 
 	public static boolean hasBootActuators(IJavaProject jp) {
