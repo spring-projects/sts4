@@ -76,7 +76,8 @@ public class RewriteRecipeRepository {
 			"org.openrewrite.java.spring.boot2.SpringBoot1To2Migration",
 			"org.openrewrite.java.testing.junit5.JUnit5BestPractices",
 			"org.openrewrite.java.testing.junit5.JUnit4to5Migration",
-			"org.openrewrite.java.spring.boot2.UpgradeSpringBoot_2_6"
+			"org.openrewrite.java.spring.boot2.UpgradeSpringBoot_2_6",
+			"org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_0"
 	);
 	
 	public RewriteRecipeRepository(SimpleLanguageServer server, JavaProjectFinder projectFinder) {
@@ -175,8 +176,10 @@ public class RewriteRecipeRepository {
 									return CompletableFuture.completedFuture(null);
 								}
 							});
+						} else {
+							server.getProgressService().progressEvent(progressToken, null);
+							return CompletableFuture.completedFuture(null);
 						}
-						return CompletableFuture.completedFuture(null);
 					});
 				}
 				return CompletableFuture.completedFuture(null);
