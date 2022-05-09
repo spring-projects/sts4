@@ -21,6 +21,7 @@ import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.lsp4j.CodeAction;
 import org.eclipse.lsp4j.CodeActionContext;
+import org.eclipse.lsp4j.CodeActionKind;
 import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.WorkspaceEdit;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
@@ -65,8 +66,8 @@ public class BeanMethodsNoPublicCodeAction extends AbstractRewriteJavaCodeAction
 					Version version = SpringProjectUtil.getDependencyVersion(project, SpringProjectUtil.SPRING_BOOT);
 					if (version.getMajor() >= 2) {
 						return List.of(
-								Either.forRight(createCodeAction(REMOVE_PUBLIC_FROM_BEAN_METHODS_IN_FILE, List.of(doc.getUri(), false))),
-								Either.forRight(createCodeAction(REMOVE_PUBLIC_FROM_BEAN_METHODS_IN_PROJECT, List.of(doc.getUri(), true)))
+								Either.forRight(createCodeAction(CodeActionKind.Refactor, REMOVE_PUBLIC_FROM_BEAN_METHODS_IN_FILE, List.of(doc.getUri(), false))),
+								Either.forRight(createCodeAction(CodeActionKind.Refactor, REMOVE_PUBLIC_FROM_BEAN_METHODS_IN_PROJECT, List.of(doc.getUri(), true)))
 						);
 					}
 				}

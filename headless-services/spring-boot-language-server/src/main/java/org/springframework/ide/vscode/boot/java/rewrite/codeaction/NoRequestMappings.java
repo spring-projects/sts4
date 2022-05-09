@@ -21,6 +21,7 @@ import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.lsp4j.CodeAction;
 import org.eclipse.lsp4j.CodeActionContext;
+import org.eclipse.lsp4j.CodeActionKind;
 import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.WorkspaceEdit;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
@@ -74,8 +75,8 @@ public class NoRequestMappings extends AbstractRewriteJavaCodeAction {
 	protected List<Either<Command, CodeAction>> provideCodeActions(CodeActionContext context, TextDocument doc, IRegion region, IJavaProject project,
 			CompilationUnit cu, ASTNode node) {
 		return findAppropriateMethodDeclaration(node).map(m -> List.of(
-				Either.<Command, CodeAction>forRight(createCodeAction("Replace @RequestMapping with @GetMapping etc. in file", List.of(doc.getId().getUri(), false))),
-				Either.<Command, CodeAction>forRight(createCodeAction("Replace @RequestMapping with @GetMapping etc. in project", List.of(doc.getId().getUri(), true)))
+				Either.<Command, CodeAction>forRight(createCodeAction(CodeActionKind.Refactor, "Replace @RequestMapping with @GetMapping etc. in file", List.of(doc.getId().getUri(), false))),
+				Either.<Command, CodeAction>forRight(createCodeAction(CodeActionKind.Refactor, "Replace @RequestMapping with @GetMapping etc. in project", List.of(doc.getId().getUri(), true)))
 		)).orElse(Collections.emptyList());
 	}
 	

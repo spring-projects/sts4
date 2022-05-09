@@ -24,6 +24,7 @@ import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 import org.eclipse.lsp4j.CodeAction;
 import org.eclipse.lsp4j.CodeActionContext;
+import org.eclipse.lsp4j.CodeActionKind;
 import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.WorkspaceEdit;
@@ -88,7 +89,7 @@ public class ConvertAutowiredField extends AbstractRewriteJavaCodeAction {
 
 				if (autowired.isPresent()) {
 
-					return List.of(Either.forRight(createCodeAction("Convert into Constructor Parameter",
+					return List.of(Either.forRight(createCodeAction(CodeActionKind.Refactor, "Convert into Constructor Parameter",
 							List.of(doc.getId().getUri(),
 									((TypeDeclaration) fd.getParent()).resolveBinding().getQualifiedName(),
 									((VariableDeclarationFragment) fd.fragments().get(0)).getName().getIdentifier()))));

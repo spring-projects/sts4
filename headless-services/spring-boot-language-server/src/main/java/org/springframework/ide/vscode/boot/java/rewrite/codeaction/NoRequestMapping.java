@@ -22,6 +22,7 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.lsp4j.CodeAction;
 import org.eclipse.lsp4j.CodeActionContext;
+import org.eclipse.lsp4j.CodeActionKind;
 import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.WorkspaceEdit;
@@ -92,7 +93,7 @@ public class NoRequestMapping extends NoRequestMappings {
 				sb.append(')');
 				methodMatcher = sb.toString();
 			}
-			return createCodeAction("Replace single @RequestMapping with @GetMapping etc.", List.of(
+			return createCodeAction(CodeActionKind.Refactor, "Replace single @RequestMapping with @GetMapping etc.", List.of(
 					doc.getId().getUri(),
 					methodMatcher
 			));

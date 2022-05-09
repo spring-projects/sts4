@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2020 Pivotal, Inc.
+ * Copyright (c) 2020, 2022 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -24,9 +24,11 @@ public enum SpringJavaProblemType implements ProblemType {
 	
 	JAVA_SPEL_EXPRESSION_SYNTAX(ERROR, "SpEL parser raised a ParseException", "SpEL Expression Syntax"),
 	
-	JAVA_AUTOWIRED_CONSTRUCTOR(WARNING, "Unnecessary @Autowired over the only constructor", "Unnecessary @Autowired"),
+	JAVA_AUTOWIRED_CONSTRUCTOR(WARNING, "Unnecessary `@Autowired` over the only constructor", "Unnecessary `@Autowired`"),
 
-	JAVA_PUBLIC_BEAN_METHOD(HINT, "Public modifier on @Bean method. They no longer have to be public visibility to be usable by Spring.", "public @Bean method");
+	JAVA_PUBLIC_BEAN_METHOD(HINT, "Public modifier on `@Bean` method. They no longer have to be public visibility to be usable by Spring.", "public `@Bean` method"),
+	
+	JAVA_TEST_SPRING_EXTENSION(WARNING, "`@SpringBootTest` and all test slice annotations already applies `@SpringExtension` as of Spring Boot 2.1.0.", "Unnecessary `@SpringExtension`");
 	
 	private final ProblemSeverity defaultSeverity;
 	private String description;

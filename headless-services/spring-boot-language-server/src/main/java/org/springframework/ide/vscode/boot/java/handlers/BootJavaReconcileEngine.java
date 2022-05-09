@@ -24,6 +24,7 @@ import org.springframework.ide.vscode.boot.java.reconcilers.AnnotationParamRecon
 import org.springframework.ide.vscode.boot.java.reconcilers.AnnotationReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.AutowiredConstructorReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.BeanMethodNotPublicReconciler;
+import org.springframework.ide.vscode.boot.java.reconcilers.UnnecessarySpringExtensionReconciler;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.boot.java.value.Constants;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
@@ -92,7 +93,8 @@ public class BootJavaReconcileEngine implements IReconcileEngine {
 				new AnnotationParamReconciler(SPRING_CONDITIONAL_ON_EXPRESSION, "value", "", "", spelExpressionReconciler),
 				
 				new AutowiredConstructorReconciler(quickfixRegistry),
-				new BeanMethodNotPublicReconciler(quickfixRegistry)
+				new BeanMethodNotPublicReconciler(quickfixRegistry),
+				new UnnecessarySpringExtensionReconciler()
 		};
 	}
 

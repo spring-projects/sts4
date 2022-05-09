@@ -24,6 +24,7 @@ import org.springframework.ide.vscode.boot.java.rewrite.codeaction.BeanMethodsNo
 import org.springframework.ide.vscode.boot.java.rewrite.codeaction.ConvertAutowiredField;
 import org.springframework.ide.vscode.boot.java.rewrite.codeaction.NoRequestMapping;
 import org.springframework.ide.vscode.boot.java.rewrite.codeaction.NoRequestMappings;
+import org.springframework.ide.vscode.boot.java.rewrite.codeaction.UnnecessarySpringExtensionCodeAction;
 import org.springframework.ide.vscode.boot.java.rewrite.quickfix.AutowiredConstructorQuickFixHandler;
 import org.springframework.ide.vscode.boot.java.rewrite.quickfix.BeanMethodNoPublicQuickFixHandler;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
@@ -71,6 +72,14 @@ public class RewriteConfig implements InitializingBean {
 			RewriteRefactorings rewriteRefactorings, RewriteRecipeRepository recipesRepo,
 			ORCompilationUnitCache orCuCache) {
 		return new BeanMethodsNoPublicCodeAction(server, projectFinder, rewriteRefactorings, orCuCache);
+	}
+	
+	@ConditionalOnClass({org.openrewrite.java.spring.boot2.UnnecessarySpringExtension.class})
+	@Bean
+	UnnecessarySpringExtensionCodeAction unnecessarySpringExtension(SimpleLanguageServer server, JavaProjectFinder projectFinder,
+			RewriteRefactorings rewriteRefactorings, RewriteRecipeRepository recipesRepo,
+			ORCompilationUnitCache orCuCache) {
+		return new UnnecessarySpringExtensionCodeAction(server, projectFinder, rewriteRefactorings, orCuCache);
 	}
 	
 	@Override

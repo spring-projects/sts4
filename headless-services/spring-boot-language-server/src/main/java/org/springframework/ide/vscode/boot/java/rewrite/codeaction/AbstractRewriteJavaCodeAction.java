@@ -61,9 +61,9 @@ public abstract class AbstractRewriteJavaCodeAction implements JavaCodeAction {
 		rewriteRefactorings.addRefactoring(codeActionId, this::perform);
 	}
 
-	protected CodeAction createCodeAction(String title, List<?> arguments) {
+	protected CodeAction createCodeAction(String kind, String title, List<?> arguments) {
 		CodeAction ca = new CodeAction();
-		ca.setKind(CodeActionKind.Refactor);
+		ca.setKind(kind);
 		ca.setTitle(title);
 		ca.setData(new RewriteRefactorings.Data(codeActionId, arguments));
 		return ca;
