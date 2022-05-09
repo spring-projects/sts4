@@ -213,7 +213,7 @@ public class SpringProcessConnectorLocal {
 				String processName = getProcessName(vmDescriptor);
 				String urlScheme = "http";
 				
-				SpringProcessConnectorOverJMX connector = new SpringProcessConnectorOverJMX(
+				SpringProcessConnectorOverJMX connector = new SpringProcessConnectorOverJMX(ProcessType.LOCAL,
 						descriptor.getProcessKey(), jmxAddress, urlScheme, processID, processName, descriptor.getProjectName(), null, null);
 
 				this.processConnectorService.connectProcess(descriptor.getProcessKey(), connector);

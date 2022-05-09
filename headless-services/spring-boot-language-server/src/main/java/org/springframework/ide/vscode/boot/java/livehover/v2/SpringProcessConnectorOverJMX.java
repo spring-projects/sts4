@@ -53,9 +53,11 @@ public class SpringProcessConnectorOverJMX implements SpringProcessConnector {
 
 	private final NotificationListener notificationListener;
 
-	public SpringProcessConnectorOverJMX(String processKey, String jmxURL,
-			String urlScheme, String processID, String processName, String projectName, String host, String port) {
+	private final ProcessType processType;
 
+	public SpringProcessConnectorOverJMX(ProcessType processType, String processKey, String jmxURL,
+			String urlScheme, String processID, String processName, String projectName, String host, String port) {
+		this.processType = processType;
 		this.processKey = processKey;
 
 		this.jmxURL = jmxURL;
@@ -91,6 +93,11 @@ public class SpringProcessConnectorOverJMX implements SpringProcessConnector {
 	}
 	
 	@Override
+	public ProcessType getProcessType() {
+		return processType;
+	}
+
+	@Override
 	public String getProcessKey() {
 		return processKey;
 	}
@@ -119,7 +126,7 @@ public class SpringProcessConnectorOverJMX implements SpringProcessConnector {
 				}
 				
 				log.info("retrieve live data from: " + jmxURL);
-				SpringProcessLiveData liveData = springJMXConnector.retrieveLiveData(jmxConnection, processID, processName, urlScheme, host, null, port, currentData);
+				SpringProcessLiveData liveData = springJMXConnector.retrieveLiveData(getProcessType(), jmxConnection, processID, processName, urlScheme, host, null, port, currentData);
 				
 				if (this.processID == null) {
 					this.processID = liveData.getProcessID();
@@ -194,5 +201,5 @@ public class SpringProcessConnectorOverJMX implements SpringProcessConnector {
 				+ processName + ", listeners=" + listeners + ", jmxConnection=" + jmxConnection + ", jmxServiceURL="
 				+ jmxServiceURL + ", notificationListener=" + notificationListener + "]";
 	}
-	
+
 }

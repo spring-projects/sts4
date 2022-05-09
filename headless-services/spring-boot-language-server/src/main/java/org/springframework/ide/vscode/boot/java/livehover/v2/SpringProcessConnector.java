@@ -15,6 +15,7 @@ package org.springframework.ide.vscode.boot.java.livehover.v2;
  */
 public interface SpringProcessConnector {
 	
+	ProcessType getProcessType();
 	String getProcessKey();
 
 	void connect() throws Exception;

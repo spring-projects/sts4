@@ -15,6 +15,7 @@ package org.springframework.ide.vscode.boot.java.livehover.v2;
  */
 public class SpringProcessLiveData {
 	
+	private final ProcessType processType;
 	private final String processName;
 	private final String processID;
 	
@@ -31,11 +32,12 @@ public class SpringProcessLiveData {
 	private final LiveMetricsModel metrics;
 	private StartupMetricsModel startup;
 	
-	public SpringProcessLiveData(String processName, String processID, String contextPath, String urlScheme,
+	public SpringProcessLiveData(ProcessType processType, String processName, String processID, String contextPath, String urlScheme,
 			String port, String host, LiveBeansModel beansModel, String[] activeProfiles,
 			LiveRequestMapping[] requestMappings, LiveConditional[] conditionals, LiveProperties properties,
 			LiveMetricsModel metrics, StartupMetricsModel startup) {
 		super();
+		this.processType = processType;
 		this.processName = processName;
 		this.processID = processID;
 		this.contextPath = contextPath;
@@ -50,6 +52,10 @@ public class SpringProcessLiveData {
 		this.metrics = metrics;
 		this.startup = startup;
 		
+	}
+	
+	public ProcessType getProcessType() {
+		return processType;
 	}
 
 	public String getProcessName() {

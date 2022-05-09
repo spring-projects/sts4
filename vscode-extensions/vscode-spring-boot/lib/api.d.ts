@@ -1,5 +1,6 @@
 import { Event } from "vscode";
 import { LanguageClient } from "vscode-languageclient/node";
+import { LiveProcess } from "./notification";
 
 export interface ExtensionAPI {
     readonly client: LanguageClient;
@@ -7,17 +8,17 @@ export interface ExtensionAPI {
     /**
      * An event which fires on live process is connected. Payload is processKey.
      */
-    readonly onDidLiveProcessConnect: Event<string>
+    readonly onDidLiveProcessConnect: Event<LiveProcess>
 
     /**
      * An event which fires on live process is disconnected. Payload is processKey.
      */
-    readonly onDidLiveProcessDisconnect: Event<string>
+    readonly onDidLiveProcessDisconnect: Event<LiveProcess>
 
 	/**
      * An event which fires on live process data change. Payload is processKey.
      */
-	readonly onDidLiveProcessUpdate: Event<string>
+	readonly onDidLiveProcessUpdate: Event<LiveProcess>
 
     /**
      * A command to get live process data.
@@ -29,7 +30,7 @@ export interface ExtensionAPI {
      * 
      * Returns a list of processKeys.
      */
-    readonly listConnectedProcesses: () => Promise<string[]>
+    readonly listConnectedProcesses: () => Promise<LiveProcess[]>
 }
 
 interface LiveProcessDataQuery {

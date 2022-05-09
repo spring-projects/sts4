@@ -17,6 +17,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
+import org.springframework.ide.vscode.commons.protocol.LiveProcessSummary;
 import org.springframework.ide.vscode.commons.protocol.STS4LanguageClient;
 import org.springframework.ide.vscode.commons.util.Assert;
 
@@ -48,7 +49,7 @@ public class SpringProcessLiveDataProvider {
 		SpringProcessLiveData oldData = this.liveData.putIfAbsent(processKey, liveData);
 		if (oldData == null) {
 			announceChangedLiveData();
-			getClient().liveProcessConnected(processKey);
+			getClient().liveProcessConnected(createProcessSummary(processKey, liveData));
 		}
 		return oldData == null;
 	}
@@ -63,16 +64,15 @@ public class SpringProcessLiveDataProvider {
 		SpringProcessLiveData removed = this.liveData.remove(processKey);
 		if (removed != null) {
 			announceChangedLiveData();
-			getClient().liveProcessDisconnected(processKey);
+			getClient().liveProcessDisconnected(createProcessSummary(processKey, removed));
 		}
 	}
 	
 	public void update(String processKey, SpringProcessLiveData liveData) {
 		this.liveData.put(processKey, liveData);
 		announceChangedLiveData();
-		getClient().liveProcessDataUpdated(processKey);
+		getClient().liveProcessDataUpdated(createProcessSummary(processKey, liveData));
 	}
-	
 	
 	public void addLiveDataChangeListener(SpringProcessLiveDataChangeListener listener) {
 		this.listeners.add(listener);
@@ -90,8 +90,17 @@ public class SpringProcessLiveDataProvider {
 		}
 	}
 	
-	SpringProcessLiveData getCurrent(String processKey) {
+	public SpringProcessLiveData getCurrent(String processKey) {
 		return this.liveData.get(processKey);
+	}
+
+	public static LiveProcessSummary createProcessSummary(String processKey, SpringProcessLiveData liveData) {
+		LiveProcessSummary p = new LiveProcessSummary();
+		p.setType(liveData.getProcessType().jsonName());
+		p.setProcessKey(processKey);
+		p.setProcessName(liveData.getProcessName());
+		p.setPid(liveData.getProcessID());
+		return p;
 	}
 
 }

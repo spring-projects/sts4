@@ -2,6 +2,7 @@ package org.springframework.ide.vscode.boot.java.livehover.v2;
 
 public class SpringProcessConnectorOverHttp implements SpringProcessConnector {
 
+	private final ProcessType processType;
 	private final String processKey;
 	private final String actuatorUrl;
 	private final String urlScheme;
@@ -15,10 +16,10 @@ public class SpringProcessConnectorOverHttp implements SpringProcessConnector {
 	
 	private HttpActuatorConnection actuatorConnection;
 	
-
-	public SpringProcessConnectorOverHttp(String processKey, String actuatorUrl,
+	public SpringProcessConnectorOverHttp(ProcessType processType, String processKey, String actuatorUrl,
 			String urlScheme, String processID, String processName, String projectName, String host, String port) {
-
+		
+		this.processType = processType;
 		this.processKey = processKey;
 
 		this.actuatorUrl = actuatorUrl;
@@ -29,7 +30,13 @@ public class SpringProcessConnectorOverHttp implements SpringProcessConnector {
 		this.host = host;
 		this.port = port;
 	}
-	
+
+
+	@Override
+	public ProcessType getProcessType() {
+		return processType;
+	}
+
 	@Override
 	public String getProcessKey() {
 		return processKey;
@@ -43,7 +50,7 @@ public class SpringProcessConnectorOverHttp implements SpringProcessConnector {
 	@Override
 	public SpringProcessLiveData refresh(SpringProcessLiveData currentData) throws Exception {
 		if (actuatorConnection != null) {
-			SpringProcessLiveData liveData = new SpringProcessLiveDataExtractorOverHttp().retrieveLiveData(actuatorConnection, processID, processName, urlScheme, host, null, port, currentData);
+			SpringProcessLiveData liveData = new SpringProcessLiveDataExtractorOverHttp().retrieveLiveData(getProcessType(), actuatorConnection, processID, processName, urlScheme, host, null, port, currentData);
 			
 			if (this.processID == null) {
 				this.processID = liveData.getProcessID();
