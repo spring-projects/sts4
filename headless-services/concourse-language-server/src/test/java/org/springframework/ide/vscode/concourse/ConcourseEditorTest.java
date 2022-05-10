@@ -2973,8 +2973,11 @@ public class ConcourseEditorTest {
 		assertContextualCompletions(conText,
 				"content_type: json<*>"
 				, //=>
+				"content_type: application/geo+json<*>",
+				"content_type: application/hal+json<*>",
 				"content_type: application/json; charset=utf-8<*>",
-				"content_type: application/manifest+json; charset=utf-8<*>"
+				"content_type: application/manifest+json; charset=utf-8<*>",
+				"content_type: application/jose+json<*>"
 		);
 
 		String[] expectedAclCompletions = new String[cannedAcls.length];
