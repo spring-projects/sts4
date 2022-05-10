@@ -59,6 +59,7 @@ import org.eclipse.lsp4j.WorkDoneProgressBegin;
 import org.eclipse.lsp4j.WorkDoneProgressNotification;
 import org.eclipse.lsp4j.WorkDoneProgressReport;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
+import org.eclipse.lsp4j.jsonrpc.services.JsonNotification;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
@@ -71,6 +72,7 @@ import org.eclipse.ui.progress.UIJob;
 import org.eclipse.ui.texteditor.AbstractTextEditor;
 import org.springframework.ide.vscode.commons.protocol.CursorMovement;
 import org.springframework.ide.vscode.commons.protocol.HighlightParams;
+import org.springframework.ide.vscode.commons.protocol.LiveProcessSummary;
 import org.springframework.ide.vscode.commons.protocol.STS4LanguageClient;
 import org.springframework.ide.vscode.commons.protocol.java.ClasspathListenerParams;
 import org.springframework.ide.vscode.commons.protocol.java.JavaCodeCompleteData;
@@ -587,16 +589,16 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 		});
 	}
 
+
 	@Override
-	public void liveProcessConnected(String processKey) {
+	public void liveProcessConnected(LiveProcessSummary processKey) {
 	}
 
 	@Override
-	public void liveProcessDataUpdated(String processKey) {
+	public void liveProcessDisconnected(LiveProcessSummary processKey) {
 	}
 
 	@Override
-	public void liveProcessDisconnected(String processKey) {
+	public void liveProcessDataUpdated(LiveProcessSummary processKey) {
 	}
-
 }
