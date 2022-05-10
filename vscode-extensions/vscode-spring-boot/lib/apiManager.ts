@@ -1,13 +1,13 @@
 import { commands, Uri } from "vscode";
 import { Emitter, LanguageClient } from "vscode-languageclient/node";
 import { ExtensionAPI } from "./api";
-import { LiveProcessConnectedNotification, LiveProcessDisconnectedNotification, LiveProcessUpdatedNotification } from "./notification";
+import { LiveProcess, LiveProcessConnectedNotification, LiveProcessDisconnectedNotification, LiveProcessUpdatedNotification } from "./notification";
 
 export class ApiManager {
     public api: ExtensionAPI;
-    private onDidLiveProcessConnectEmitter: Emitter<string> = new Emitter<string>();
-    private onDidLiveProcessDisconnectEmitter: Emitter<string> = new Emitter<string>();
-    private onDidLiveProcessUpdateEmitter: Emitter<string> = new Emitter<string>();
+    private onDidLiveProcessConnectEmitter: Emitter<LiveProcess> = new Emitter<LiveProcess>();
+    private onDidLiveProcessDisconnectEmitter: Emitter<LiveProcess> = new Emitter<LiveProcess>();
+    private onDidLiveProcessUpdateEmitter: Emitter<LiveProcess> = new Emitter<LiveProcess>();
 
     public constructor(client: LanguageClient) {
         const onDidLiveProcessConnect = this.onDidLiveProcessConnectEmitter.event;
@@ -20,13 +20,13 @@ export class ApiManager {
         }
 
         const COMMAND_LIVEDATA_LIST_CONNECTED = "sts/livedata/listConnected"
-        const listConnectedProcesses = async () : Promise<string[]> => {
+        const listConnectedProcesses = async () : Promise<LiveProcess[]> => {
             return await commands.executeCommand(COMMAND_LIVEDATA_LIST_CONNECTED);
         }
 
-        client.onNotification(LiveProcessConnectedNotification.type, (processKey: string) => this.onDidLiveProcessConnectEmitter.fire(processKey));
-        client.onNotification(LiveProcessDisconnectedNotification.type, (processKey: string) => this.onDidLiveProcessDisconnectEmitter.fire(processKey));
-        client.onNotification(LiveProcessUpdatedNotification.type, (processKey: string) => this.onDidLiveProcessUpdateEmitter.fire(processKey));
+        client.onNotification(LiveProcessConnectedNotification.type, (process: LiveProcess) => this.onDidLiveProcessConnectEmitter.fire(process));
+        client.onNotification(LiveProcessDisconnectedNotification.type, (process: LiveProcess) => this.onDidLiveProcessDisconnectEmitter.fire(process));
+        client.onNotification(LiveProcessUpdatedNotification.type, (process: LiveProcess) => this.onDidLiveProcessUpdateEmitter.fire(process));
 
         this.api = {
             client,

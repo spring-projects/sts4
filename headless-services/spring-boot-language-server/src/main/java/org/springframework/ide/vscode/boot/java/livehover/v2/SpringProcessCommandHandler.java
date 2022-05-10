@@ -25,6 +25,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessConnectorRemote.RemoteBootAppData;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
+import org.springframework.ide.vscode.commons.protocol.LiveProcessSummary;
 
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -74,15 +75,20 @@ public class SpringProcessCommandHandler {
 		log.info("Registered command handler: {}",COMMAND_DISCONNECT);
 		
 		server.onCommand(COMMAND_GET, (params) -> {
-			return get(params);
+			return handleLiveProcessRequest(params);
 		});
 		log.info("Registered command handler: {}",COMMAND_GET);
 		
 		server.onCommand(COMMAND_LIST_CONNECTED, (params) -> {
-			return CompletableFuture.completedFuture(Stream.of(connectorService.getConnectedProcesses())
-					.map(process -> process.getProcessKey())
-					.collect(Collectors.toList())
-			);
+			List<LiveProcessSummary> result = new ArrayList<>();
+			for (SpringProcessConnector process : connectorService.getConnectedProcesses()) {
+				String processKey = process.getProcessKey();
+				SpringProcessLiveData liveData = connectorService.getLiveData(processKey);
+				if (liveData!=null) {
+					result.add(SpringProcessLiveDataProvider.createProcessSummary(processKey, liveData));
+				}
+			}
+			return CompletableFuture.completedFuture(result);
 		});
 	}
 
@@ -224,7 +230,7 @@ public class SpringProcessCommandHandler {
 		return null;
 	}
 	
-	private CompletableFuture<Object> get(ExecuteCommandParams params) {
+	private CompletableFuture<Object> handleLiveProcessRequest(ExecuteCommandParams params) {
 		String processKey = getProcessKey(params);
 		String endpoint = getArgumentByKey(params, "endpoint");
 		if (processKey != null) {

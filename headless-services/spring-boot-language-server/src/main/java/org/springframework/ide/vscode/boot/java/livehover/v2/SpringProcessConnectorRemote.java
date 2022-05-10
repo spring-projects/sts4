@@ -245,10 +245,10 @@ public class SpringProcessConnectorRemote {
 //		boolean keepChecking = _appData.isKeepChecking();
 		
 		if (jmxURL.startsWith("http")) {
-			SpringProcessConnectorOverHttp connector = new SpringProcessConnectorOverHttp(processKey, jmxURL, urlScheme, processID, processName, urlScheme, host, port);
+			SpringProcessConnectorOverHttp connector = new SpringProcessConnectorOverHttp(ProcessType.REMOTE, processKey, jmxURL, urlScheme, processID, processName, urlScheme, host, port);
 			processConnectorService.connectProcess(processKey, connector);
 		} else {
-			SpringProcessConnectorOverJMX connector = new SpringProcessConnectorOverJMX(processKey, jmxURL, urlScheme, processID, processName, null, host, port);
+			SpringProcessConnectorOverJMX connector = new SpringProcessConnectorOverJMX(ProcessType.REMOTE, processKey, jmxURL, urlScheme, processID, processName, null, host, port);
 			processConnectorService.connectProcess(processKey, connector);
 		}
 	}

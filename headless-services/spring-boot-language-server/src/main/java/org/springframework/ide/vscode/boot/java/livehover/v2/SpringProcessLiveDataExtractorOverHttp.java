@@ -40,6 +40,7 @@ public class SpringProcessLiveDataExtractorOverHttp {
 							.create();
 	
 	/**
+	 * @param processType distinguish different types of processes (i.e. local vs remote)
 	 * @param processID if null, will be determined searching existing mbeans for that information (for remote processes via platform beans runtime name)
 	 * @param processName if null, will be determined searching existing mbeans for that information (for remote processes infering the java command from the system properties)
 	 * @param urlScheme should always be != null
@@ -48,7 +49,7 @@ public class SpringProcessLiveDataExtractorOverHttp {
 	 * @param port if null, will be determined searching existing mbeans for that information (for local processes)
 	 * @param currentData currently stored live data
 	 */
-	public SpringProcessLiveData retrieveLiveData(ActuatorConnection connection, String processID, String processName,
+	public SpringProcessLiveData retrieveLiveData(ProcessType processType, ActuatorConnection connection, String processID, String processName,
 			String urlScheme, String host, String contextPath, String port, SpringProcessLiveData currentData) {
 		
 		try {
@@ -85,6 +86,7 @@ public class SpringProcessLiveDataExtractorOverHttp {
 //			}
 			
 			return new SpringProcessLiveData(
+					processType,
 					processName,
 					processID,
 					contextPath,

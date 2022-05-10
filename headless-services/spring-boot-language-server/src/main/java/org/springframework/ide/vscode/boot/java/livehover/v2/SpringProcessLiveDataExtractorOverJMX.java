@@ -56,6 +56,7 @@ public class SpringProcessLiveDataExtractorOverJMX {
 							.create();
 	
 	/**
+	 * @param processType 
 	 * @param processID if null, will be determined searching existing mbeans for that information (for remote processes via platform beans runtime name)
 	 * @param processName if null, will be determined searching existing mbeans for that information (for remote processes infering the java command from the system properties)
 	 * @param urlScheme should always be != null
@@ -64,7 +65,7 @@ public class SpringProcessLiveDataExtractorOverJMX {
 	 * @param port if null, will be determined searching existing mbeans for that information (for local processes)
 	 * @param currentData currently stored live data
 	 */
-	public SpringProcessLiveData retrieveLiveData(JMXConnector jmxConnector, String processID, String processName,
+	public SpringProcessLiveData retrieveLiveData(ProcessType processType, JMXConnector jmxConnector, String processID, String processName,
 			String urlScheme, String host, String contextPath, String port, SpringProcessLiveData currentData) {
 		
 		try {
@@ -104,6 +105,7 @@ public class SpringProcessLiveDataExtractorOverJMX {
 			}
 			
 			return new SpringProcessLiveData(
+					processType,
 					processName,
 					processID,
 					contextPath,

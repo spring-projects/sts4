@@ -38,13 +38,13 @@ public interface STS4LanguageClient extends LanguageClient {
 
 	
 	@JsonNotification("sts/liveprocess/connected")
-	void liveProcessConnected(String processKey);
+	void liveProcessConnected(LiveProcessSummary processKey);
 
 	@JsonNotification("sts/liveprocess/disconnected")
-	void liveProcessDisconnected(String processKey);
+	void liveProcessDisconnected(LiveProcessSummary processKey);
 
 	@JsonNotification("sts/liveprocess/updated")
-	void liveProcessDataUpdated(String processKey);
+	void liveProcessDataUpdated(LiveProcessSummary processKey);
 
 	@JsonNotification("sts/highlight")
 	void highlight(HighlightParams highlights);
