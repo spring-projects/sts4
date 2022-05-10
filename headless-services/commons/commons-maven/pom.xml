@@ -36,11 +36,13 @@
 		<dependency>
 			<groupId>org.eclipse.aether</groupId>
 			<artifactId>aether-connector-basic</artifactId>
+			<version>1.0.2.v20150114</version>
 		</dependency>
 		
 		<dependency>
 			<groupId>org.eclipse.aether</groupId>
 			<artifactId>aether-transport-wagon</artifactId>
+			<version>1.0.2.v20150114</version>
 		</dependency>
 		
 		<dependency>
