@@ -76,7 +76,6 @@ public class CompletionServerCapabilityRegistration implements ServerCapabilityI
 			completionProvider.setTriggerCharacters(getMergedTriggerCharacters());
 			cap.setCompletionProvider(completionProvider);
 			log.info("Registering Completion Capability Statically");
-			log.debug("completionProvider = {}", completionProvider);
 		} else {
 			//Register completion provider and triggerCharacters dynamically, one registration per
 			//language
