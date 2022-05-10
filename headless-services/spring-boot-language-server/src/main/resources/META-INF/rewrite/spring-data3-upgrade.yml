@@ -1,0 +1,24 @@
+########################################################################################################################
+# Spring Data 3.0
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.spring.data.UpgradeSpringData_3_0
+displayName: Upgrade to Spring Data 3.0
+description: 'Upgrade to Spring Data to 3.0 from any prior version.'
+recipeList:
+  - org.springframework.ide.vscode.boot.rewrite.maven.ChangeDependencyClassifier:
+      groupId: org.ehcache
+      artifactId: ehcache
+      newClassifier: jakarta
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: javax.persistence
+      newPackageName: jakarta.persistence
+      recursive: true
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: javax.validation
+      newPackageName: jakarta.validation
+      recursive: true
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: javax.xml.bind
+      newPackageName: jakarta.xml.bind
+      recursive: true
+      

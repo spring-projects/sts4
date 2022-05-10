@@ -156,31 +156,37 @@ public class RewriteRecipeRepository {
 	private String createGlobalCommand(Recipe r) {
 		String commandId = "sts/rewrite/recipe/" + r.getName();
 		server.onCommand(commandId, params -> {
-			String progressToken = params.getWorkDoneToken() == null || params.getWorkDoneToken().getLeft() == null ? r.getName() : params.getWorkDoneToken().getLeft();
+			final String progressToken = params.getWorkDoneToken() == null || params.getWorkDoneToken().getLeft() == null ? r.getName() : params.getWorkDoneToken().getLeft();
 			return CompletableFuture.supplyAsync(() -> {
 				JsonElement uri = (JsonElement) params.getArguments().get(0);
 				server.getProgressService().progressEvent(progressToken, r.getDisplayName() + ": initiated...");
 				return projectFinder.find(new TextDocumentIdentifier(uri.getAsString()));
 			}).thenCompose(p -> {
 				if (p.isPresent()) {
-					return CompletableFuture.completedFuture(apply(r, p.get())).thenCompose(we -> {
-						if (we.isPresent()) {
-							server.getProgressService().progressEvent(progressToken,
-									r.getDisplayName() + ": applying document changes...");
-							return server.getClient().applyEdit(new ApplyWorkspaceEditParams(we.get(), r.getDisplayName())).thenCompose(res -> {
-								if (res.isApplied()) {
-									server.getProgressService().progressEvent(progressToken, null);
-									return CompletableFuture.completedFuture("success");
-								} else {
-									server.getProgressService().progressEvent(progressToken, null);
-									return CompletableFuture.completedFuture(null);
-								}
-							});
-						} else {
-							server.getProgressService().progressEvent(progressToken, null);
-							return CompletableFuture.completedFuture(null);
-						}
-					});
+					try {
+						Optional<WorkspaceEdit> edit = apply(r, p.get());
+						return CompletableFuture.completedFuture(edit).thenCompose(we -> {
+							if (we.isPresent()) {
+								server.getProgressService().progressEvent(progressToken,
+										r.getDisplayName() + ": applying document changes...");
+								return server.getClient().applyEdit(new ApplyWorkspaceEditParams(we.get(), r.getDisplayName())).thenCompose(res -> {
+									if (res.isApplied()) {
+										server.getProgressService().progressEvent(progressToken, null);
+										return CompletableFuture.completedFuture("success");
+									} else {
+										server.getProgressService().progressEvent(progressToken, null);
+										return CompletableFuture.completedFuture(null);
+									}
+								});
+							} else {
+								server.getProgressService().progressEvent(progressToken, null);
+								return CompletableFuture.completedFuture(null);
+							}
+						});
+					} catch (Throwable t) {
+						server.getProgressService().progressEvent(progressToken, null);
+						throw t;
+					}
 				}
 				return CompletableFuture.completedFuture(null);
 			});

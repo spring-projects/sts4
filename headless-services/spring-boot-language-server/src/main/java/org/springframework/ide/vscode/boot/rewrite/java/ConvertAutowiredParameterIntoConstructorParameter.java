@@ -8,7 +8,7 @@
  * Contributors:
  *     VMware, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.java.rewrite;
+package org.springframework.ide.vscode.boot.rewrite.java;
 
 import java.util.List;
 import java.util.Objects;
@@ -36,6 +36,7 @@ import org.openrewrite.java.tree.Statement;
 import org.openrewrite.java.tree.TypeTree;
 import org.openrewrite.java.tree.TypeUtils;
 import org.springframework.ide.vscode.boot.java.Annotations;
+import org.springframework.ide.vscode.boot.java.rewrite.ORAstUtils;
 
 public class ConvertAutowiredParameterIntoConstructorParameter extends Recipe {
 
