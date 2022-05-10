@@ -163,7 +163,7 @@ public class IndexRoutines {
 
 	private static IndexView indexFolder(File folder) {
 		Indexer indexer = new Indexer();
-		for (Iterator<File> itr = com.google.common.io.Files.fileTreeTraverser().breadthFirstTraversal(folder)
+		for (Iterator<File> itr = com.google.common.io.Files.fileTraverser().breadthFirst(folder)
 				.iterator(); itr.hasNext();) {
 			File file = itr.next();
 			if (file.isFile() && file.getName().endsWith(".class")) {
