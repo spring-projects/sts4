@@ -1,4 +1,5 @@
-<project xmlns="https://maven.apache.org/POM/4.0.0" xmlns:xsi="https://www.w3.org/2001/XMLSchema-instance"
+<project xmlns="https://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="https://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="https://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 
@@ -16,58 +17,48 @@
 
 	<properties>
 		<!-- maven core version -->
+		<!-- <maven-core.version>3.3.9</maven-core.version> -->
+
 		<maven-core.version>3.8.1</maven-core.version>
-		<maven-wagon.version>2.10</maven-wagon.version>
+		<maven-wagon.version>3.5.1</maven-wagon.version>
 	</properties>
 
-	<dependencies>	
-	
-		<!--  Maven Runtime -->
+	<dependencies>
+
+		<!-- Maven Runtime -->
 		<dependency>
 			<groupId>org.apache.maven</groupId>
 			<artifactId>maven-core</artifactId>
 		</dependency>
-		
- 		<dependency>
+
+		<dependency>
 			<groupId>org.apache.maven</groupId>
 			<artifactId>maven-embedder</artifactId>
-			</dependency>
-	
-		<dependency>
-			<groupId>org.eclipse.aether</groupId>
-			<artifactId>aether-connector-basic</artifactId>
-			<version>1.0.2.v20150114</version>
 		</dependency>
-		
-		<dependency>
-			<groupId>org.eclipse.aether</groupId>
-			<artifactId>aether-transport-wagon</artifactId>
-			<version>1.0.2.v20150114</version>
-		</dependency>
-		
+
 		<dependency>
 			<groupId>org.apache.maven.wagon</groupId>
 			<artifactId>wagon-http</artifactId>
-			<version>2.8</version>
+			<version>${maven-wagon.version}</version>
 		</dependency>
-		
+
 		<dependency>
-		    <groupId>org.apache.maven.wagon</groupId>
-		    <artifactId>wagon-file</artifactId>
+			<groupId>org.apache.maven.wagon</groupId>
+			<artifactId>wagon-file</artifactId>
 		</dependency>
-		
+
 		<dependency>
 			<groupId>org.apache.maven.wagon</groupId>
 			<artifactId>wagon-provider-api</artifactId>
 		</dependency>
-	    
+
 		<!-- Java Model -->
 		<dependency>
 			<groupId>org.springframework.ide.vscode</groupId>
 			<artifactId>commons-java</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-		
+
 		<!-- Test harness -->
 		<dependency>
 			<groupId>org.springframework.ide.vscode</groupId>
@@ -102,6 +93,6 @@
 			</dependency>
 		</dependencies>
 	</dependencyManagement>
-	
+
 
 </project>
