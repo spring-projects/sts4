@@ -8,8 +8,20 @@
     },
     {
       "code": "JAVA_AUTOWIRED_CONSTRUCTOR",
-      "label": "Unnecessary @Autowired",
-      "description": "Unnecessary @Autowired over the only constructor",
+      "label": "Unnecessary `@Autowired`",
+      "description": "Unnecessary `@Autowired` over the only constructor",
+      "defaultSeverity": "WARNING"
+    },
+    {
+      "code": "JAVA_PUBLIC_BEAN_METHOD",
+      "label": "public `@Bean` method",
+      "description": "Public modifier on `@Bean` method. They no longer have to be public visibility to be usable by Spring.",
+      "defaultSeverity": "HINT"
+    },
+    {
+      "code": "JAVA_TEST_SPRING_EXTENSION",
+      "label": "Unnecessary `@SpringExtension`",
+      "description": "`@SpringBootTest` and all test slice annotations already applies `@SpringExtension` as of Spring Boot 2.1.0.",
       "defaultSeverity": "WARNING"
     }
   ],

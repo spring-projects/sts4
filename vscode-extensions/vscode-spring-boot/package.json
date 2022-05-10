@@ -232,7 +232,31 @@
         "spring-boot.ls.problem.java.JAVA_AUTOWIRED_CONSTRUCTOR": {
           "type": "string",
           "default": "WARNING",
-          "description": "Unnecessary @Autowired over the only constructor",
+          "description": "Unnecessary `@Autowired` over the only constructor",
+          "enum": [
+            "IGNORE",
+            "INFO",
+            "WARNING",
+            "HINT",
+            "ERROR"
+          ]
+        },
+        "spring-boot.ls.problem.java.JAVA_PUBLIC_BEAN_METHOD": {
+          "type": "string",
+          "default": "HINT",
+          "description": "Public modifier on `@Bean` method. They no longer have to be public visibility to be usable by Spring.",
+          "enum": [
+            "IGNORE",
+            "INFO",
+            "WARNING",
+            "HINT",
+            "ERROR"
+          ]
+        },
+        "spring-boot.ls.problem.java.JAVA_TEST_SPRING_EXTENSION": {
+          "type": "string",
+          "default": "WARNING",
+          "description": "`@SpringBootTest` and all test slice annotations already applies `@SpringExtension` as of Spring Boot 2.1.0.",
           "enum": [
             "IGNORE",
             "INFO",
