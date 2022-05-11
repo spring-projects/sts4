@@ -11,7 +11,7 @@
           class="org.springframework.ide.eclipse.boot.core.BootPropertyTester"
           id="org.springsource.ide.eclipse.boot.BootPropertyTester"
           namespace="org.springsource.ide.eclipse.boot"
-          properties="isBootProject,isBootResource,hasBootDevTools"
+          properties="isBootProject,isBootResource,hasBootDevTools,isBoot2Project,isBoot2Resource"
           type="org.eclipse.core.resources.IResource">
     <!--       type="java.lang.Object" -->
     </propertyTester>
@@ -19,7 +19,7 @@
           class="org.springframework.ide.eclipse.boot.core.BootJavaElementPropertyTester"
           id="org.springframework.ide.eclipse.boot.core.BootJavaElementPropertyTester"
           namespace="org.springsource.ide.eclipse.boot.javaelement"
-          properties="isInBootProject,isInBootProjectWithDevTools"
+          properties="isInBootProject,isInBootProjectWithDevTools,isInBoot2Project"
           type="org.eclipse.jdt.core.IJavaElement">
     <!--       type="java.lang.Object" -->
     </propertyTester>

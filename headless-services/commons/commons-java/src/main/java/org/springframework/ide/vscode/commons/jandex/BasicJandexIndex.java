@@ -45,7 +45,7 @@ public class BasicJandexIndex {
 
 	private static final Logger log = LoggerFactory.getLogger(BasicJandexIndex.class);
 
-	private static final String JAVA_IO_TMPDIR = "java.io.tmpdir";
+	private static final String USER_HOME = "user.home";
 
 	@FunctionalInterface
 	public static interface IndexFileFinder {
@@ -53,7 +53,7 @@ public class BasicJandexIndex {
 	}
 
 	public static File getIndexFolder() {
-		File folder = new File(System.getProperty(JAVA_IO_TMPDIR), "jandex");
+		File folder = new File(System.getProperty(USER_HOME), ".sts-jandex");
 		if (!folder.isDirectory()) {
 			folder.mkdirs();
 		}

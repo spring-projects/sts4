@@ -173,6 +173,10 @@
               </with>
             </activeWhen>
       </handler>
+      <handler
+            class="org.springframework.tooling.boot.ls.commands.UpgradeToBoot3Handler"
+            commandId="org.springframework.tooling.boot.ls.UpgradeToBoot3">
+      </handler>
    </extension>
    <extension
          point="org.eclipse.ui.commands">
@@ -186,6 +190,12 @@
             id="org.springframework.tooling.boot.ls.ToggleComment"
             categoryId="org.springframework.ide.eclipse.commands"
             name="Toggle Comment">
+      </command>
+      <command
+            categoryId="org.springframework.ide.eclipse.commands"
+            description="Upgrade Spring Boot 2.x prohect to Spring Boot 3.x"
+            id="org.springframework.tooling.boot.ls.UpgradeToBoot3"
+            name="Upgrade to Boot 3">
       </command>
    </extension>
 
@@ -354,6 +364,70 @@
       <injection
             class="org.springframework.tooling.boot.ls.prefs.RemoteAppsFromPrefsDataContributor">
       </injection>
+   </extension>
+   <extension
+         point="org.eclipse.ui.menus">
+      <menuContribution
+            allPopups="false"
+            locationURI="popup:org.springframework.ide.eclipse.ui.tools?after=boot">
+         <command
+               commandId="org.springframework.tooling.boot.ls.UpgradeToBoot3"
+               id="org.springframework.tooling.boot.ls.UpgradeToBoot3"
+               label="Upgrade to Boot 3"
+               style="push">
+            <visibleWhen
+                  checkEnabled="false">
+               <and>
+                  <count
+                        value="1">
+                  </count>
+                  <iterate>
+                     <or>
+                        <adapt
+                              type="org.eclipse.core.resources.IResource">
+                           <and>
+                              <test
+                                    forcePluginActivation="true"
+                                    property="org.springsource.ide.eclipse.boot.isBoot2Resource">
+                              </test>
+                              <or>
+                                 <test
+                                       property="org.eclipse.core.resources.name"
+                                       value="pom.xml">
+                                 </test>
+                                 <adapt
+                                       type="org.eclipse.core.resources.IProject">
+                                    <test
+                                          property="org.eclipse.core.resources.projectNature"
+                                          value="org.eclipse.m2e.core.maven2Nature">
+                                    </test>
+                                 </adapt>
+                              </or>
+                           </and>
+                        </adapt>
+                        <and>
+                           <instanceof
+                                 value="org.eclipse.jdt.core.IJavaProject">
+                           </instanceof>
+                           <test
+                                 property="org.springsource.ide.eclipse.commons.java.projectNature"
+                                 value="org.eclipse.m2e.core.maven2Nature">
+                           </test>
+                           <test
+                                 forcePluginActivation="true"
+                                 property="org.springsource.ide.eclipse.boot.javaelement.isInBoot2Project">
+                           </test>
+                        </and>
+                     </or>
+                  </iterate>
+                  <systemTest
+                        property="sts.rewrite.recipes"
+                        value="true">
+                  </systemTest>
+               </and>
+            </visibleWhen>
+         </command>
+      </menuContribution>
    </extension>
 <!--
    <extension

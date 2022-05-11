@@ -70,6 +70,12 @@ public class BootPropertyTester extends PropertyTester {
 		if (rsrc instanceof IResource && "hasBootDevTools".equals(property)) {
 			return hasBootDevTools(((IResource) rsrc).getProject());
 		}
+		if (rsrc instanceof IProject && "isBoot2Project".equals(property)) {
+			return expectedValue.equals(isBoot2Project((IProject)rsrc));
+		}
+		if (rsrc instanceof IResource && "isBoot2Resource".equals(property)) {
+			return expectedValue.equals(isBoot2Resource((IResource) rsrc));
+		}
 		return false;
 	}
 
@@ -117,6 +123,30 @@ public class BootPropertyTester extends PropertyTester {
 
 					for (IClasspathEntry e : classpath) {
 						if (isBootJar(e) || isBootProject(e)) {
+							return true;
+						}
+					}
+				}
+			}
+		} catch (Exception e) {
+			CorePlugin.log(e);
+		}
+		return false;
+	}
+
+	public static boolean isBoot2Project(IProject project) {
+		if (project==null || ! project.isAccessible()) {
+			return false;
+		}
+		try {
+			if (project.hasNature(JavaCore.NATURE_ID)) {
+				if (!isExcludedProject(project)) {
+					IJavaProject jp = JavaCore.create(project);
+					IClasspathEntry[] classpath = jp.getResolvedClasspath(true);
+					//Look for a 'spring-boot' jar or project entry
+
+					for (IClasspathEntry e : classpath) {
+						if ((isBootJar(e) || isBootProject(e)) && isVersion(e, "2.")) {
 							return true;
 						}
 					}
@@ -231,11 +261,29 @@ public class BootPropertyTester extends PropertyTester {
 		return result;
 	}
 
+	private Object isBoot2Resource(IResource rsrc) {
+		if (rsrc==null || ! rsrc.isAccessible()) {
+			return false;
+		}
+		boolean result = isBoot2Project(rsrc.getProject());
+		return result;
+	}
+
 	public static boolean isBootProject(IClasspathEntry e) {
 		if (e.getEntryKind()==IClasspathEntry.CPE_PROJECT) {
 			IPath path = e.getPath();
 			String name = path.lastSegment();
 			return name.startsWith("spring-boot");
+		}
+		return false;
+	}
+
+	public static boolean isVersion(IClasspathEntry e, String v) {
+		if (e.getEntryKind() == IClasspathEntry.CPE_LIBRARY) {
+			IPath path = e.getPath();
+			String name = path.lastSegment();
+			String version = getVersionFromJarName(name);
+			return version.startsWith(v);
 		}
 		return false;
 	}

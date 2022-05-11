@@ -31,6 +31,19 @@ public class BootJavaElementPropertyTester extends PropertyTester {
 		if (je instanceof IJavaElement && "isInBootProjectWithDevTools".equals(property)) {
 			return hasBootDevTools((IJavaElement) je);
 		}
+		if (je instanceof IJavaElement && "isInBoot2Project".equals(property)) {
+			return isInBoot2Project((IJavaElement) je);
+		}
+		return false;
+	}
+
+	private boolean isInBoot2Project(IJavaElement je) {
+		if (je!=null) {
+			IJavaProject jp = je.getJavaProject();
+			if (jp!=null) {
+				return BootPropertyTester.isBoot2Project(jp.getProject());
+			}
+		}
 		return false;
 	}
 
