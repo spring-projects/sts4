@@ -89,7 +89,7 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 
 		if (this.projectFinder != null) {
 			for (IJavaProject project : this.projectFinder.all()) {
-				logger.info("CU Cache: initial lookup env creation for project <{}>", project.getElementName());
+				logger.debug("CU Cache: initial lookup env creation for project <{}>", project.getElementName());
 				loadLookupEnvTuple(project);
 			}
 		}
@@ -98,20 +98,20 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 			
 			@Override
 			public void deleted(IJavaProject project) {
-				logger.info("CU Cache: deleted project {}", project.getElementName());
+				logger.debug("CU Cache: deleted project {}", project.getElementName());
 				invalidateProject(project);
 			}
 			
 			@Override
 			public void created(IJavaProject project) {
-				logger.info("CU Cache: created project {}", project.getElementName());
+				logger.debug("CU Cache: created project {}", project.getElementName());
 				invalidateProject(project);
 				loadLookupEnvTuple(project);
 			}
 			
 			@Override
 			public void changed(IJavaProject project) {
-				logger.info("CU Cache: changed project {}", project.getElementName());
+				logger.debug("CU Cache: changed project {}", project.getElementName());
 				invalidateProject(project);
 				// Load the new cache the value right away
 				loadLookupEnvTuple(project);
@@ -163,7 +163,7 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 	 * for later use. The JDT ASTs are not thread safe!
 	 */
 	public <T> T withCompilationUnit(IJavaProject project, URI uri, Function<CompilationUnit, T> requestor) {
-		logger.info("CU Cache: work item submitted for doc {}", uri.toString());
+		logger.debug("CU Cache: work item submitted for doc {}", uri.toString());
 
 		if (project != null) {
 
@@ -176,7 +176,7 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 					String unitName = utiStr.substring(utiStr.lastIndexOf("/"));
 					CompilationUnit cUnit = parse2(fetchContent(uri).toCharArray(), utiStr, unitName, lookupEnvTuple.getT1(), lookupEnvTuple.getT2());
 					
-					logger.info("CU Cache: created new AST for {}", uri.toString());
+					logger.debug("CU Cache: created new AST for {}", uri.toString());
 
 					return cUnit;
 				});
@@ -191,7 +191,7 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 
 			if (cu != null) {
 				try {
-					logger.info("CU Cache: start work on AST for {}", uri.toString());
+					logger.debug("CU Cache: start work on AST for {}", uri.toString());
 					return requestor.apply(cu);
 				}
 				catch (CancellationException e) {
@@ -201,7 +201,7 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 					logger.error("", e);
 				}
 				finally {
-					logger.info("CU Cache: end work on AST for {}", uri.toString());
+					logger.debug("CU Cache: end work on AST for {}", uri.toString());
 				}
 			}
 		}
@@ -276,14 +276,14 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 	}
 
 	private void invalidateCuForJavaFile(String uriStr) {
-		logger.info("CU Cache: invalidate AST for {}", uriStr);
+		logger.debug("CU Cache: invalidate AST for {}", uriStr);
 
 		URI uri = URI.create(uriStr);
 		uriToCu.invalidate(uri);
 	}
 
 	private void invalidateProject(IJavaProject project) {
-		logger.info("CU Cache: invalidate project <{}>", project.getElementName());
+		logger.debug("CU Cache: invalidate project <{}>", project.getElementName());
 
 		Set<URI> docUris = projectToDocs.getIfPresent(project);
 		if (docUris != null) {
