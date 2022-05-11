@@ -42,7 +42,6 @@ import org.junit.Test;
  * 1. Takes 40 mins to execute for the concourse build
  * 2. The project is only used by tests and highly unlikely to be changed
  */
-@Ignore
 public class DependencyTreeTest {
 	
 	private void testMavenClasspath(String projectName) throws Exception {

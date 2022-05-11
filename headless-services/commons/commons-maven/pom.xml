@@ -21,6 +21,7 @@
 
 		<maven-core.version>3.8.1</maven-core.version>
 		<maven-wagon.version>3.5.1</maven-wagon.version>
+		<eather-connector-version>1.1.0</eather-connector-version>
 	</properties>
 
 	<dependencies>
@@ -34,6 +35,18 @@
 		<dependency>
 			<groupId>org.apache.maven</groupId>
 			<artifactId>maven-embedder</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.eclipse.aether</groupId>
+			<artifactId>aether-connector-basic</artifactId>
+			<version>1.1.0</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.eclipse.aether</groupId>
+			<artifactId>aether-transport-wagon</artifactId>
+			<version>1.1.0</version>
 		</dependency>
 
 		<dependency>
@@ -57,10 +70,10 @@
 			<artifactId>wagon-provider-api</artifactId>
 		</dependency>
 
-		<dependency>
+<!-- 		<dependency>
 			<groupId>org.eclipse.sisu</groupId>
 			<artifactId>org.eclipse.sisu.inject</artifactId>
-		</dependency>
+		</dependency> -->
 
 		<!-- Java Model -->
 		<dependency>
