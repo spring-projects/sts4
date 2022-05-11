@@ -3,7 +3,7 @@ set -e
 workdir=`pwd`
 
 cd ${workdir}/sts4/headless-services
-./mvnw -Dtycho.disableP2Mirrors=true -DskipTests package
+./mvnw -Dtycho.disableP2Mirrors=true package
 
 timestamp=`date +%s`
 tarfile=${workdir}/out/sts4-mvn-cache-${timestamp}.tar.gz
