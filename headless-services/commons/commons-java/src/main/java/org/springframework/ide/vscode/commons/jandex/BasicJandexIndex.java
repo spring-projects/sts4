@@ -77,13 +77,9 @@ public class BasicJandexIndex {
 
 	Tuple2<IJavaModuleData, ClassInfo> getClassByName(DotName fqName) {
 		for (ModuleJandexIndex m : modules) {
-			log.info("Looking for classpath container in module " + m.getModule() + " conatiner: " + m.getContainer());
+			log.info("Looking for classpath container for type " + (fqName == null ? "null" : fqName) + " conatiner: " + (m.getContainer() == null ? "null" : m.getContainer()));
 			IndexView indexView = m.getIndex().get();
-			if (indexView == null) {
-				log.info("No index for module " + m.getModule());
-			}
 			if (indexView != null) {
-				log.info("Index present for module " + m.getModule());
 				ClassInfo info = indexView.getClassByName(fqName);
 				if (info != null) {
 					log.info("Info found");
@@ -97,13 +93,7 @@ public class BasicJandexIndex {
 	}
 
 	public IJavaModuleData findClasspathResourceForType(String fqName) {
-		log.info("Computing classpath conatiner for " + fqName);
 		Tuple2<IJavaModuleData, ClassInfo> match = getClassByName(DotName.createSimple(fqName));
-		if (match == null) {
-			log.info("No match found");
-		} else {
-			log.info("Match found");
-		}
 		return match == null ? null : match.getT1();
 	}
 

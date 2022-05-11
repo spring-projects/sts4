@@ -84,12 +84,9 @@ public interface SourceLinks {
 
 	public static Optional<URL> source(IJavaProject project, String fqName) {
 		// Try to find in a source JAR
-		log.info("Getting source URL for " + fqName + " project: " + project.getElementName());
 		IJavaModuleData classpathResourceContainer = project.getIndex().findClasspathResourceContainer(fqName);
 		if (classpathResourceContainer == null) {
 			log.info("No classpath resource container found!!!");
-		} else {
-			log.info("Classpath container found. " + classpathResourceContainer.getContainer());
 		}
 		if (classpathResourceContainer != null) {
 			Optional<URL> url = IClasspathUtil.sourceContainer(project.getClasspath(), classpathResourceContainer.getContainer()).map(file -> {
