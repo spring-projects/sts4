@@ -108,8 +108,8 @@
 		<commons-codec-version>1.13</commons-codec-version>
 		
 		<!--  Rewrite specific properties -->
-		<rewrite-version>7.21.3</rewrite-version>
-		<rewrite-spring-version>4.19.3</rewrite-spring-version>
+		<rewrite-version>7.23.0</rewrite-version>
+		<rewrite-spring-version>4.21.0</rewrite-spring-version>
 		<rewrite-jackson.version>2.13.2</rewrite-jackson.version>
 
 		<signing.skip>true</signing.skip>
