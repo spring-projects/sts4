@@ -150,6 +150,11 @@
                 <artifactId>jackson-dataformat-yaml</artifactId>
                 <version>${rewrite-jackson.version}</version>
             </dependency>
+            <dependency>
+                <groupId>com.fasterxml.jackson.dataformat</groupId>
+                <artifactId>jackson-dataformat-xml</artifactId>
+                <version>${rewrite-jackson.version}</version>
+            </dependency>
 
 			<dependency>
 				<groupId>org.openrewrite.recipe</groupId>
