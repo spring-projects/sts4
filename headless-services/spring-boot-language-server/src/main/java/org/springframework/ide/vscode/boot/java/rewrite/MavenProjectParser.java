@@ -48,6 +48,7 @@ import org.openrewrite.maven.tree.ResolvedPom;
 import org.openrewrite.properties.PropertiesParser;
 import org.openrewrite.xml.XmlParser;
 import org.openrewrite.xml.tree.Xml;
+import org.openrewrite.xml.tree.Xml.Document;
 import org.openrewrite.yaml.YamlParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -98,7 +99,10 @@ public class MavenProjectParser {
      */
     public List<SourceFile> parse(Path projectDirectory, List<Path> dependencies) {
         List<Xml.Document> mavens = mavenParser.parse(getMavenPoms(projectDirectory, ctx), projectDirectory, ctx);
-        mavens = sort(mavens);
+        List<Document> sorted = sort(mavens);
+        
+        // Filter out pom files inside target folders. (Naive implementation.)
+        mavens = sorted.stream().filter(m -> !isInsideBuildFolderOfOtherMavenProjects(sorted, m)).collect(Collectors.toList());
 
         JavaParser javaParser = javaParserBuilder.build();
 
@@ -265,6 +269,16 @@ public class MavenProjectParser {
         }
 
         return sorted;
+    }
+    
+    private static boolean isInsideBuildFolderOfOtherMavenProjects(List<Xml.Document> all, Xml.Document current) {
+    	return all.stream().filter(m -> {
+    		if (m != current) {
+    			Path pomPath = m.getSourcePath();
+    			return current.getSourcePath().startsWith((pomPath.getParent() == null ? Paths.get("") : pomPath.getParent()) .resolve("target"));
+    		}
+    		return false;
+    	}).findFirst().isPresent();
     }
     
     private static List<Path> getSources(Path srcDir, ExecutionContext ctx, String... fileTypes) {
