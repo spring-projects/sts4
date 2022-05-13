@@ -88,8 +88,8 @@
 
 		<dist.bucket>dist.springsource.com</dist.bucket>
 		<dist.key>TOOLS</dist.key>
-		<dist.accessKey>${env.bamboo_tools_s3_accesskey_password}</dist.accessKey>
-		<dist.secretKey>${env.bamboo_tools_s3_secretkey_password}</dist.secretKey>
+		<dist.accessKey>${env.bamboo_vault_tools_s3_accesskey_password}</dist.accessKey>
+		<dist.secretKey>${env.bamboo_vault_tools_s3_secretkey_password}</dist.secretKey>
 
 		<dist.project>sts4</dist.project>
 
@@ -1304,8 +1304,8 @@
 		<profile>
 			<id>bamboo-signing</id>
 			<properties>
-				<signing.store.password>${env.bamboo_signing_store_password}</signing.store.password>
-				<signing.key.password>${env.bamboo_signing_store_password}</signing.key.password>
+				<signing.store.password>${env.bamboo_vault_signing_store_password}</signing.store.password>
+				<signing.key.password>${env.bamboo_vault_signing_store_password}</signing.key.password>
 			</properties>
 		</profile>
 
