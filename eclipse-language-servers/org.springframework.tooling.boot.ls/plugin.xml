@@ -6,9 +6,10 @@
          point="org.eclipse.lsp4e.languageServer">
       <server
             class="org.springframework.tooling.boot.ls.DelegatingStreamConnectionProvider"
-            id="org.eclipse.languageserver.languages.springboot"
             clientImpl="org.springframework.tooling.ls.eclipse.commons.STS4LanguageClientImpl"
-            label="Spring Boot Language Server">
+            id="org.eclipse.languageserver.languages.springboot"
+            label="Spring Boot Language Server"
+            lastDocumentDisconnectedTimeout="10">
       </server>
 
       <contentTypeMapping
