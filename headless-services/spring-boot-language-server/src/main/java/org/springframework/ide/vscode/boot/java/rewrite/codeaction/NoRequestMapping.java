@@ -29,12 +29,12 @@ import org.eclipse.lsp4j.WorkspaceEdit;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.spring.NoRequestMappingAnnotation;
-import org.springframework.ide.vscode.boot.java.rewrite.ORAstUtils;
 import org.springframework.ide.vscode.boot.java.rewrite.ORCompilationUnitCache;
 import org.springframework.ide.vscode.boot.java.rewrite.RewriteRefactorings;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
+import org.springframework.ide.vscode.commons.rewrite.java.ORAstUtils;
 import org.springframework.ide.vscode.commons.util.text.IRegion;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 

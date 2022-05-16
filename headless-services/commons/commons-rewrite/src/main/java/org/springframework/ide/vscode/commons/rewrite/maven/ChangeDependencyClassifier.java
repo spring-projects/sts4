@@ -8,7 +8,7 @@
  * Contributors:
  *     VMware, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.rewrite.maven;
+package org.springframework.ide.vscode.commons.rewrite.maven;
 
 import java.util.Objects;
 import java.util.Optional;

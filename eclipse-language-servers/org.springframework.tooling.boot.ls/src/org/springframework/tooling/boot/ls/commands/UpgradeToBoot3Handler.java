@@ -59,6 +59,7 @@ public class UpgradeToBoot3Handler extends AbstractHandler {
 							.toArray(CompletableFuture[]::new));
 				} catch (Exception e) {
 					Log.log(e);
+					throw new ExecutionException("Failed to perform Upgarde to Spring Boot 3", e);
 				}
 			}
 

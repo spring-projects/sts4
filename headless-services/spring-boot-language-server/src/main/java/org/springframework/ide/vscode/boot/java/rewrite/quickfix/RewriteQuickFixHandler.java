@@ -23,12 +23,12 @@ import org.openrewrite.Recipe;
 import org.openrewrite.Result;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.tree.J;
-import org.springframework.ide.vscode.boot.java.rewrite.ORAstUtils;
 import org.springframework.ide.vscode.boot.java.rewrite.ORCompilationUnitCache;
-import org.springframework.ide.vscode.boot.java.rewrite.ORDocUtils;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixEdit;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixHandler;
+import org.springframework.ide.vscode.commons.rewrite.ORDocUtils;
+import org.springframework.ide.vscode.commons.rewrite.java.ORAstUtils;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.gson.Gson;

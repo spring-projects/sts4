@@ -100,73 +100,16 @@
 			<version>${dependencies.version}</version>
 		</dependency>
 		<dependency>
+			<groupId>org.springframework.ide.vscode</groupId>
+			<artifactId>commons-rewrite</artifactId>
+			<version>${dependencies.version}</version>
+		</dependency>
+		<dependency>
 			<groupId>org.eclipse.jdt</groupId>
 			<artifactId>org.eclipse.jdt.core</artifactId>
 			<version>${jdt.core.version}</version>
 		</dependency>
-		<dependency>
-		    <groupId>org.openrewrite</groupId>
-		    <artifactId>rewrite-properties</artifactId>
-		    <version>${rewrite-version}</version>
-		</dependency>
-		<dependency>
-		    <groupId>org.openrewrite</groupId>
-		    <artifactId>rewrite-maven</artifactId>
-		    <version>${rewrite-version}</version>
-		</dependency>
-		<dependency>
-		    <groupId>org.openrewrite</groupId>
-		    <artifactId>rewrite-yaml</artifactId>
-		    <version>${rewrite-version}</version>
-		</dependency>
-		<dependency>
-		    <groupId>org.openrewrite</groupId>
-		    <artifactId>rewrite-java</artifactId>
-		    <version>${rewrite-version}</version>
-		</dependency>
 
-            <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-core</artifactId>
-                <version>${rewrite-jackson.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-databind</artifactId>
-                <version>2.13.2.2</version>
-            </dependency>
-            <dependency>
-                <groupId>com.fasterxml.jackson.core</groupId>
-                <artifactId>jackson-annotations</artifactId>
-                <version>${rewrite-jackson.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.fasterxml.jackson.datatype</groupId>
-                <artifactId>jackson-datatype-jdk8</artifactId>
-                <version>${rewrite-jackson.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.fasterxml.jackson.dataformat</groupId>
-                <artifactId>jackson-dataformat-yaml</artifactId>
-                <version>${rewrite-jackson.version}</version>
-            </dependency>
-            <dependency>
-                <groupId>com.fasterxml.jackson.dataformat</groupId>
-                <artifactId>jackson-dataformat-xml</artifactId>
-                <version>${rewrite-jackson.version}</version>
-            </dependency>
-
-			<dependency>
-				<groupId>org.openrewrite.recipe</groupId>
-				<artifactId>rewrite-spring</artifactId>
-				<version>${rewrite-spring-version}</version>
-			</dependency>
-            
-		<dependency>
-		    <groupId>org.openrewrite</groupId>
-		    <artifactId>rewrite-java-11</artifactId>
-		    <version>${rewrite-version}</version>
-		</dependency>
 		<dependency>
 			<groupId>commons-io</groupId>
 			<artifactId>commons-io</artifactId>
@@ -197,7 +140,40 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-
+		
+		<!-- Rewrite compatible jackson version (need to override managed version coming from spring -->
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-core</artifactId>
+			<version>${rewrite-jackson.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-databind</artifactId>
+			<version>2.13.2.2</version>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.core</groupId>
+			<artifactId>jackson-annotations</artifactId>
+			<version>${rewrite-jackson.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.datatype</groupId>
+			<artifactId>jackson-datatype-jdk8</artifactId>
+			<version>${rewrite-jackson.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.dataformat</groupId>
+			<artifactId>jackson-dataformat-yaml</artifactId>
+			<version>${rewrite-jackson.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>com.fasterxml.jackson.dataformat</groupId>
+			<artifactId>jackson-dataformat-xml</artifactId>
+			<version>${rewrite-jackson.version}</version>
+		</dependency>
+	
+	
 		<!-- Test harness -->
 		<dependency>
 			<groupId>org.springframework.boot</groupId>

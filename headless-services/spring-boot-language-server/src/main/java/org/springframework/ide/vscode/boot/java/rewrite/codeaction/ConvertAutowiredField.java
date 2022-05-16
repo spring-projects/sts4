@@ -32,10 +32,10 @@ import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.rewrite.ORCompilationUnitCache;
 import org.springframework.ide.vscode.boot.java.rewrite.RewriteRefactorings;
-import org.springframework.ide.vscode.boot.rewrite.java.ConvertAutowiredParameterIntoConstructorParameter;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
+import org.springframework.ide.vscode.commons.rewrite.java.ConvertAutowiredParameterIntoConstructorParameter;
 import org.springframework.ide.vscode.commons.util.text.IRegion;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 

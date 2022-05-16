@@ -8,7 +8,7 @@
  * Contributors:
  *     VMware, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.java.rewrite;
+package org.springframework.ide.vscode.commons.rewrite;
 
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -29,7 +29,6 @@ import org.openrewrite.shaded.jgit.diff.Edit;
 import org.openrewrite.shaded.jgit.diff.EditList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ide.vscode.boot.java.utils.JGitUtils;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.util.BadLocationException;

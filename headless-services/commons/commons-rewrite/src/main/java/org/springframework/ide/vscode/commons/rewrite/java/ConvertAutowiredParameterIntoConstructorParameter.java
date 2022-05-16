@@ -8,7 +8,7 @@
  * Contributors:
  *     VMware, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.rewrite.java;
+package org.springframework.ide.vscode.commons.rewrite.java;
 
 import java.util.List;
 import java.util.Objects;
@@ -35,10 +35,10 @@ import org.openrewrite.java.tree.JavaType.FullyQualified;
 import org.openrewrite.java.tree.Statement;
 import org.openrewrite.java.tree.TypeTree;
 import org.openrewrite.java.tree.TypeUtils;
-import org.springframework.ide.vscode.boot.java.Annotations;
-import org.springframework.ide.vscode.boot.java.rewrite.ORAstUtils;
 
 public class ConvertAutowiredParameterIntoConstructorParameter extends Recipe {
+	
+	private static final String AUTOWIRED = "org.springframework.beans.factory.annotation.Autowired";
 
 	private String classFqName;
 	private String fieldName;
@@ -74,7 +74,7 @@ public class ConvertAutowiredParameterIntoConstructorParameter extends Recipe {
 						&& multiVariable.getVariables().size() == 1
 						&& fieldName.equals(multiVariable.getVariables().get(0).getName().printTrimmed())) {
 					
-					mv = (VariableDeclarations) new RemoveAnnotationVisitor(new AnnotationMatcher("@" + Annotations.AUTOWIRED)).visit(multiVariable, p);
+					mv = (VariableDeclarations) new RemoveAnnotationVisitor(new AnnotationMatcher("@" + AUTOWIRED)).visit(multiVariable, p);
 					doAfterVisit(new AddContructorParameterVisitor(classFqName, fieldName, multiVariable.getTypeExpression()));
 				}
 				return mv;
@@ -108,7 +108,7 @@ public class ConvertAutowiredParameterIntoConstructorParameter extends Recipe {
 							.map(a -> TypeUtils.asFullyQualified(a.getType()))
 							.filter(Objects::nonNull)
 							.map(fq -> fq.getFullyQualifiedName())
-							.filter(fqn -> Annotations.AUTOWIRED.equals(fqn))
+							.filter(fqn -> AUTOWIRED.equals(fqn))
 							.findFirst()
 							.isPresent()
 						)

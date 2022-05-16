@@ -8,7 +8,7 @@
  * Contributors:
  *     VMware, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.java.rewrite;
+package org.springframework.ide.vscode.commons.rewrite.maven;
 
 import static org.openrewrite.Tree.randomId;
 

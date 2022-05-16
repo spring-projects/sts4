@@ -1,4 +1,4 @@
-package org.springframework.ide.vscode.boot.java.utils;
+package org.springframework.ide.vscode.commons.rewrite;
 
 import java.nio.charset.StandardCharsets;
 
@@ -7,7 +7,7 @@ import org.openrewrite.shaded.jgit.diff.HistogramDiff;
 import org.openrewrite.shaded.jgit.diff.RawText;
 import org.openrewrite.shaded.jgit.diff.RawTextComparator;
 
-public class JGitUtils {
+class JGitUtils {
 
 	public static EditList getDiff(String txt1, String txt2) {
 		RawText rt1 = new RawText(txt1.getBytes(StandardCharsets.UTF_8));
