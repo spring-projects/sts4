@@ -1,0 +1,26 @@
+---
+########################################################################################################################
+# SpringBoot 3_0
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_0
+displayName: Upgrade to Spring Boot 3.0 from 2.x
+description: 'Upgrade to Spring Boot 3.0 from prior 2.x version.'
+recipeList:
+  # Upgrade 3.0.x from 2.x
+  - org.openrewrite.maven.UpgradeDependencyVersion:
+      groupId: org.springframework.boot
+      artifactId: "*"
+      newVersion: 3.0.0-SNAPSHOT
+      trustParent: true
+  - org.openrewrite.maven.UpgradeParentVersion:
+      groupId: org.springframework.boot
+      artifactId: spring-boot-starter-parent
+      newVersion: 3.0.0-SNAPSHOT
+  - org.openrewrite.maven.ChangePropertyValue:
+      key: 'java.version'
+      newValue: 17
+      addIfMissing: true
+  
+  - org.openrewrite.java.spring.data.UpgradeSpringData_3_0
+  - org.openrewrite.java.spring.boot2.SpringBootProperties_3_0
+      
