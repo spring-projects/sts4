@@ -62,6 +62,7 @@ import com.google.common.collect.ImmutableList;
 
 /**
  * @author Kris De Volder
+ * @author LukeBalizet
  */
 public class PipelineYmlSchema implements YamlSchema {
 
@@ -674,10 +675,27 @@ public class PipelineYmlSchema implements YamlSchema {
 		{
 			AbstractType source = f.ybean("RegistryImageSource");
 			addProp(source, "repository", t_ne_string).isPrimary(true);
+			addProp(source, "insecure", t_boolean);
 			addProp(source, "tag", t_ne_string);
+			addProp(source, "variant", t_ne_string);
+			addProp(source, "semver_constraint", t_ne_string);
 			addProp(source, "username", t_ne_string);
 			addProp(source, "password", t_ne_string);
+			addProp(source, "aws_access_key_id", t_ne_string);
+			addProp(source, "aws_secret_access_key", t_ne_string);
+			addProp(source, "aws_session_token", t_ne_string);
+			addProp(source, "aws_region", t_ne_string);
+			addProp(source, "aws_role_arn", t_ne_string);
+			addProp(source, "aws_role_arns", t_strings);
 			addProp(source, "debug", t_boolean);
+			{
+				AbstractType registry_mirror = f.ybean("RegistryMirror");
+				addProp(registry_mirror, "host", t_ne_string).isPrimary(true);
+				addProp(registry_mirror, "username", t_ne_string);
+				addProp(registry_mirror, "password", t_ne_string);
+
+				addProp(source, "registry_mirror", registry_mirror);
+			}
 			{
 				AbstractType contentTrust = f.ybean("RegistryImageContentTrust");
 				addProp(contentTrust, "server", t_ne_string);
@@ -689,6 +707,7 @@ public class PipelineYmlSchema implements YamlSchema {
 				
 				addProp(source, "content_trust", contentTrust);
 			}
+			addProp(source, "ca_certs", t_strings);
 			
 			AbstractType get = f.ybean("RegistryImageGetParams");
 			addProp(get, "format", f.yenum("RegistryImageFormat", "rootfs", "oci"));
@@ -696,6 +715,8 @@ public class PipelineYmlSchema implements YamlSchema {
 			
 			AbstractType put = f.ybean("RegistryImagePutParams");
 			addProp(put, "image", t_ne_string).isPrimary(true);
+			addProp(put, "version", t_ne_string);
+			addProp(get, "bump_aliases", t_boolean);
 			addProp(put, "additional_tags", t_ne_string);
 
 			resourceTypes.def("registry-image", source, get, put);
