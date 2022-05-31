@@ -77,11 +77,13 @@ export function startDebugSupport(): Disposable {
 async function handleCustomDebugEvent(e: VSCode.DebugSessionCustomEvent): Promise<void> {
     if (e.session?.type === 'java' && e?.body?.type === 'processid') {
         const debugConfiguration: DebugConfiguration = e.session.configuration;
-        setTimeout(async () => {
-            const pid = await getAppPid(e.body as ProcessEvent);
-            const processKey = pid.toString();
-            VSCode.commands.executeCommand('sts/livedata/connect', { processKey });
-        }, 500);
+        if (canConnect(debugConfiguration)) {
+            setTimeout(async () => {
+                const pid = await getAppPid(e.body as ProcessEvent);
+                const processKey = pid.toString();
+                VSCode.commands.executeCommand('sts/livedata/connect', { processKey });
+            }, 500);
+        }
     }
 }
 
@@ -111,6 +113,15 @@ function isActuatorJarFile(f: string): boolean {
     const fileName = path.basename(f || "");
     if (/^spring-boot-actuator-\d+\.\d+\.\d+(.*)?.jar$/.test(fileName)) {
         return true;
+    }
+    return false;
+}
+
+function canConnect(debugConfiguration: DebugConfiguration): boolean {
+    if (isActuatorOnClasspath(debugConfiguration)) {
+        return debugConfiguration.vmArgs
+            && debugConfiguration.vmArgs.indexOf(`${JMX_VM_ARG}true`) >= 0
+            && debugConfiguration.vmArgs.indexOf(`${ADMIN_VM_ARG}true`) >= 0
     }
     return false;
 }
