@@ -15,7 +15,7 @@
 # 
 # ---
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.spring.boot2.SpringBootProperties_3_0
+name: org.openrewrite.java.spring.boot3.SpringBootProperties_3_0
 displayName: Migrate Spring Boot properties to 3.0
 description: Migrate properties found in `application.properties` and `application.yml`.
 recipeList:
