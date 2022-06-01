@@ -145,6 +145,7 @@
 					<skip>${signing.skip}</skip>
 					<alias>${signing.alias}</alias>
 					<keystore>${signing.keystore}</keystore>
+					<storetype>${signing.storetype}</storetype>
 					<storepass>${signing.store.password}</storepass>
 					<keypass>${signing.key.password}</keypass>
 <!--					<tsa>http://sha256timestamp.ws.symantec.com/sha256/timestamp</tsa> -->
