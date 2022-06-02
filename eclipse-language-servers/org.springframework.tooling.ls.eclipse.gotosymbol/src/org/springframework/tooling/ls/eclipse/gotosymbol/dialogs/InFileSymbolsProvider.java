@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2021 Pivotal, Inc.
+ * Copyright (c) 2017, 2022 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -14,6 +14,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
+import java.util.stream.Collectors;
 
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.lsp4e.LSPEclipseUtils;
@@ -47,16 +48,21 @@ public class InFileSymbolsProvider implements SymbolsProvider {
 	}
 
 	@Override
-	public List<Either<SymbolInformation, DocumentSymbol>> fetchFor(String query) throws Exception {
+	public List<SymbolContainer> fetchFor(String query) throws Exception {
 		CompletableFuture<LanguageServer> server = getServer();
 		String uri = getUri();
+		
 		if (server != null && uri != null) {
-			DocumentSymbolParams params = new DocumentSymbolParams(
-					new TextDocumentIdentifier(uri));
+			DocumentSymbolParams params = new DocumentSymbolParams(new TextDocumentIdentifier(uri));
+
 			CompletableFuture<List<Either<SymbolInformation, DocumentSymbol>>> symbolsFuture = server
 					.get()
 					.getTextDocumentService().documentSymbol(params);
-			List<Either<SymbolInformation, DocumentSymbol>> symbols = symbolsFuture.get();
+			
+			List<SymbolContainer> symbols = symbolsFuture.get().stream()
+					.map(either -> either.isLeft() ? SymbolContainer.fromSymbolInformation(either.getLeft()) : SymbolContainer.fromDocumentSymbol(either.getRight()))
+					.collect(Collectors.toList());
+
 			return symbols == null ? ImmutableList.of() : ImmutableList.copyOf(symbols);
 		}
 		return ImmutableList.of();

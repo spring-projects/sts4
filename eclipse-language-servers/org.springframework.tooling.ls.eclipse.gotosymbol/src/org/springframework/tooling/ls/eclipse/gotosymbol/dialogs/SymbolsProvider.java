@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2022 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,10 +11,10 @@
 package org.springframework.tooling.ls.eclipse.gotosymbol.dialogs;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
-import org.eclipse.lsp4j.DocumentSymbol;
 import org.eclipse.lsp4j.SymbolInformation;
-import org.eclipse.lsp4j.jsonrpc.messages.Either;
+import org.eclipse.lsp4j.WorkspaceSymbol;
 
 /**
  * An SymbolsProvider can fetch symbols from a service (typically, a language server
@@ -24,7 +24,7 @@ import org.eclipse.lsp4j.jsonrpc.messages.Either;
 public interface SymbolsProvider {
 	String getName();
 	
-	List<Either<SymbolInformation, DocumentSymbol>> fetchFor(String query) throws Exception;
+	List<SymbolContainer> fetchFor(String query) throws Exception;
 	/**
 	 * True if the symbol information is provided from a file provider (a file is the provider of the symbols). False otherwise
 	 * @param symbol
@@ -32,4 +32,15 @@ public interface SymbolsProvider {
 
 	 */
 	boolean fromFile(SymbolInformation symbol);
+	
+
+	// helper methods for symbol providers to convert lists
+	static List<SymbolContainer> toSymbolContainerFromSymbolInformation(List<? extends SymbolInformation> symbols) {
+		return symbols.stream().map(sym -> SymbolContainer.fromSymbolInformation(sym)).collect(Collectors.toList());
+	}
+
+	static List<SymbolContainer> toSymbolContainerFromWorkspaceSymbols(List<? extends WorkspaceSymbol> symbols) {
+		return symbols.stream().map(sym -> SymbolContainer.fromWorkspaceSymbol(sym)).collect(Collectors.toList());
+	}
+
 }

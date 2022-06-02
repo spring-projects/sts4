@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2021 Rogue Wave Software Inc. and others.
+ * Copyright (c) 2016, 2022 Rogue Wave Software Inc. and others.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -464,7 +464,7 @@ public class GotoSymbolSection extends WizardPageSection {
 
 	private SymbolInformation getFirstElement(TreeViewer list) {
 		TreeItem[] items = list.getTree().getItems();
-		if (items != null && items.length>0) {
+		if (items != null && items.length > 0) {
 			TreeItem item = items[0];
 			Object data = item.getData();
 			if (data instanceof Match) {
@@ -478,16 +478,11 @@ public class GotoSymbolSection extends WizardPageSection {
 	}
 
 	private SymbolInformation getSymbolInformation(Match<?> element) {
-		if (element.value instanceof SymbolInformation) {
-			return (SymbolInformation) element.value;
-		}
-		if (element.value instanceof Either) {
-			Either<?,?> either = (Either<?, ?>)element.value;
-			if (either.isLeft()) {
-				Object left = either.getLeft();
-				if (left instanceof SymbolInformation) {
-					return (SymbolInformation) left;
-				}
+		if (element.value instanceof SymbolContainer) {
+			SymbolContainer symbolContainer = (SymbolContainer) element.value;
+			
+			if (symbolContainer.isSymbolInformation()) {
+				return symbolContainer.getSymbolInformation();
 			}
 		}
 		return null;

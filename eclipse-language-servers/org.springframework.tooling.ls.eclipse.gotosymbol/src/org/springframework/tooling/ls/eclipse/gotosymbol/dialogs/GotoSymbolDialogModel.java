@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2019 Pivotal, Inc.
+ * Copyright (c) 2017, 2022 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -19,10 +19,8 @@ import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.lsp4e.LSPEclipseUtils;
-import org.eclipse.lsp4j.DocumentSymbol;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.SymbolInformation;
-import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
 import org.springframework.tooling.ls.eclipse.gotosymbol.GotoSymbolPlugin;
@@ -70,12 +68,12 @@ public class GotoSymbolDialogModel {
 		
 	}
 	
-	public static Comparator<Match<Either<SymbolInformation, DocumentSymbol>>> MATCH_COMPARATOR = (m1, m2) -> {
+	public static Comparator<Match<SymbolContainer>> MATCH_COMPARATOR = (m1, m2) -> {
 		int comp = Double.compare(m2.score, m1.score);
-		if (comp!=0) return comp;
+		if (comp != 0) return comp;
 		
-		String m1Name = m1.value.isLeft() ? m1.value.getLeft().getName() : m1.value.getRight().getName();
-		String m2Name = m2.value.isLeft() ? m2.value.getLeft().getName() : m2.value.getRight().getName();
+		String m1Name = m1.value.getName();
+		String m2Name = m2.value.getName();
 		
 		return m1Name.compareTo(m2Name);
 	};
@@ -113,7 +111,7 @@ public class GotoSymbolDialogModel {
 	private int currentSymbolsProviderIndex;
 	public final LiveVariable<SymbolsProvider> currentSymbolsProvider = new LiveVariable<>(null);
 	private final LiveVariable<String> searchBox = new LiveVariable<>("");
-	public final ObservableSet<Either<SymbolInformation, DocumentSymbol>> unfilteredSymbols = new ObservableSet<Either<SymbolInformation, DocumentSymbol>>(ImmutableSet.of(), AsyncMode.ASYNC, AsyncMode.SYNC) {
+	public final ObservableSet<SymbolContainer> unfilteredSymbols = new ObservableSet<SymbolContainer>(ImmutableSet.of(), AsyncMode.ASYNC, AsyncMode.SYNC) {
 		//Note: fetching is 'slow' so is done asynchronously
 		{
 			setRefreshDelay(100);
@@ -122,7 +120,7 @@ public class GotoSymbolDialogModel {
 		}
 		
 		@Override
-		protected ImmutableSet<Either<SymbolInformation, DocumentSymbol>> compute() {
+		protected ImmutableSet<SymbolContainer> compute() {
 			status.setValue(HighlightedText.plain("Fetching symbols..."));
 			try {
 				SymbolsProvider sp = currentSymbolsProvider.getValue();
@@ -131,7 +129,7 @@ public class GotoSymbolDialogModel {
 					debug("Fetching "+currentProviderName);
 					String query = searchBox.getValue();
 					debug("Fetching symbols... from symbol provider, for '"+query+"'");
-					Collection<Either<SymbolInformation, DocumentSymbol>> fetched = sp.fetchFor(query);
+					Collection<SymbolContainer> fetched = sp.fetchFor(query);
 					if (keyBindings==null) {
 						status.setValue(HighlightedText.plain(currentProviderName));
 					} else {
@@ -160,7 +158,7 @@ public class GotoSymbolDialogModel {
 		}
 	};
 	
-	private LiveExpression<Collection<Match<Either<SymbolInformation, DocumentSymbol>>>> filteredSymbols = new LiveExpression<Collection<Match<Either<SymbolInformation, DocumentSymbol>>>>() {
+	private LiveExpression<Collection<Match<SymbolContainer>>> filteredSymbols = new LiveExpression<Collection<Match<SymbolContainer>>>() {
 		//Note: filtering is 'fast' so is done synchronously
 		{
 			dependsOn(searchBox);
@@ -168,25 +166,23 @@ public class GotoSymbolDialogModel {
 		}
 		
 		@Override
-		protected Collection<Match<Either<SymbolInformation, DocumentSymbol>>> compute() {
+		protected Collection<Match<SymbolContainer>> compute() {
 			String query = searchBox.getValue();
 			if (!StringUtil.hasText(query)) {
 				query = "";
 			}
 			query = query.toLowerCase();
-			List<Match<Either<SymbolInformation, DocumentSymbol>>> matches = new ArrayList<>();
-			for (Either<SymbolInformation, DocumentSymbol> symbol : unfilteredSymbols.getValues()) {
-				String name = null;
-				if (symbol.isLeft()) {
-					name = symbol.getLeft().getName().toLowerCase();
-				}
-				else if (symbol.isRight()) {
-					name = symbol.getRight().getName().toLowerCase();
+			List<Match<SymbolContainer>> matches = new ArrayList<>();
+			for (SymbolContainer symbol : unfilteredSymbols.getValues()) {
+				String name = symbol.getName();
+				
+				if (name != null) {
+					name = name.toLowerCase();
 				}
 				
 				double score = FuzzyMatcher.matchScore(query, name);
-				if (score!=0.0) {
-					matches.add(new Match<Either<SymbolInformation, DocumentSymbol>>(score, query, symbol));
+				if (score != 0.0) {
+					matches.add(new Match<SymbolContainer>(score, query, symbol));
 				}
 			}
 			Collections.sort(matches, MATCH_COMPARATOR);
@@ -223,11 +219,11 @@ public class GotoSymbolDialogModel {
 		return favourites;
 	}
 
-	private List<String> summary(Collection<Match<Either<SymbolInformation, DocumentSymbol>>> collection) {
-		return collection.stream().map(match -> match.value.isLeft() ? match.value.getLeft().getName() : match.value.getRight().getName()).collect(Collectors.toList());
+	private List<String> summary(Collection<Match<SymbolContainer>> collection) {
+		return collection.stream().map(match -> match.value.getName()).collect(Collectors.toList());
 	}
 
-	public LiveExpression<Collection<Match<Either<SymbolInformation, DocumentSymbol>>>> getSymbols() {
+	public LiveExpression<Collection<Match<SymbolContainer>>> getSymbols() {
 		return filteredSymbols;
 	}
 
@@ -270,7 +266,8 @@ public class GotoSymbolDialogModel {
 
 	public boolean fromFileProvider(SymbolInformation symbolInformation) {
 		SymbolsProvider sp = currentSymbolsProvider.getValue();
-		if (sp!=null) {
+
+		if (sp != null) {
 			return sp.fromFile(symbolInformation);
 		}
 		return false;

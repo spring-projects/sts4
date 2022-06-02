@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2021 Pivotal, Inc.
+ * Copyright (c) 2017, 2022 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -23,16 +23,15 @@ import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.lsp4e.LSPEclipseUtils;
 import org.eclipse.lsp4e.LanguageServiceAccessor;
-import org.eclipse.lsp4j.DocumentSymbol;
 import org.eclipse.lsp4j.ServerCapabilities;
 import org.eclipse.lsp4j.SymbolInformation;
+import org.eclipse.lsp4j.WorkspaceSymbol;
 import org.eclipse.lsp4j.WorkspaceSymbolParams;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.LanguageServer;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.springframework.tooling.ls.eclipse.gotosymbol.GotoSymbolPlugin;
-import org.springsource.ide.eclipse.commons.livexp.ui.Ilabelable;
 import org.springsource.ide.eclipse.commons.livexp.util.ExceptionUtil;
 
 import com.google.common.collect.ImmutableList;
@@ -81,7 +80,7 @@ public class InWorkspaceSymbolsProvider implements SymbolsProvider {
 	}
 
 	@Override
-	public List<Either<SymbolInformation, DocumentSymbol>> fetchFor(String query) throws Exception {
+	public List<SymbolContainer> fetchFor(String query) throws Exception {
 		//TODO: if we want decent support for multiple language servers...
 		// consider changing SymbolsProvider api and turning the stuff in here into something producing a 
 		// Flux<Collection<SymbolInformation>>
@@ -93,14 +92,20 @@ public class InWorkspaceSymbolsProvider implements SymbolsProvider {
 		// really use this with a single language server anyways.
 		WorkspaceSymbolParams params = new WorkspaceSymbolParams(query);
 		
-		Flux<Either<SymbolInformation, DocumentSymbol>> symbols = Flux.fromIterable(this.languageServers.get())
-				.flatMap(server -> Mono.fromFuture(server.getWorkspaceService().symbol(params))
-					.timeout(TIMEOUT)
-					.doOnError(e -> log(e))
-					.onErrorReturn(ImmutableList.of())
-					.flatMapMany(Flux::fromIterable)
-					.map(symbol -> Either.forLeft(symbol))
-		);
+		List<LanguageServer> servers = this.languageServers.get();
+
+		Flux<Either<List<? extends SymbolInformation>, List<? extends WorkspaceSymbol>>> first = Flux.fromIterable(servers)
+				.flatMap(server -> Mono.fromFuture(server.getWorkspaceService().symbol(params)))
+				.timeout(TIMEOUT);
+		
+		Flux<SymbolContainer> symbols = first
+				.doOnError(e -> log(e))
+				.onErrorReturn(Either.forLeft(ImmutableList.of()))
+				.map(eitherList -> (eitherList.isLeft()
+						? SymbolsProvider.toSymbolContainerFromSymbolInformation(eitherList.getLeft())
+						: SymbolsProvider.toSymbolContainerFromWorkspaceSymbols(eitherList.getRight())))
+				.flatMap(Flux::fromIterable);
+
 		//Consider letting the Flux go out from here instead of blocking and collecting elements.
 		return symbols.take(MAX_RESULTS).collect(Collectors.toList()).block();
 	}
@@ -141,4 +146,5 @@ public class InWorkspaceSymbolsProvider implements SymbolsProvider {
 	private static void log(Throwable e) {
 		GotoSymbolPlugin.getInstance().getLog().log(ExceptionUtil.status(e));
 	}
+
 }
