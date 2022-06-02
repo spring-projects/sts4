@@ -13,6 +13,7 @@ Require-Bundle: org.springsource.ide.eclipse.commons.tests.util,
  org.eclipse.core.runtime,
  org.eclipse.swt,
  org.eclipse.ui,
- org.apache.log4j,
  org.junit
 Export-Package: org.springsource.ide.eclipse.commons.frameworks.test.util
+Import-Package: org.apache.log4j;resolution:=optional,
+ org.slf4j;resolution:=optional

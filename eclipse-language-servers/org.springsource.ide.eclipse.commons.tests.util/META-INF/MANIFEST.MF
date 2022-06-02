@@ -17,4 +17,5 @@ Require-Bundle: org.eclipse.core.runtime,
 Bundle-RequiredExecutionEnvironment: JavaSE-1.7
 Export-Package: org.springsource.ide.eclipse.commons.tests.util,
  org.springsource.ide.eclipse.commons.tests.util.swtbot
-Import-Package: org.apache.log4j
+Import-Package: org.apache.log4j;resolution:=optional,
+ org.slf4j;resolution:=optional
