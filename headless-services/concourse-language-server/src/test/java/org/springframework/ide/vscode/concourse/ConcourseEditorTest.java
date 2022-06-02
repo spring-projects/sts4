@@ -2603,30 +2603,6 @@ public class ConcourseEditorTest {
 			"my-docker-image|Unused 'Resource'",
 			"source|'repository' is required"
 		);
-
-		editor = harness.newEditor(
-				"resources:\n" +
-				"- name: my-docker-image\n" +
-				"  type: registry-image\n" +
-				"  source:\n" +
-				"    repository: kdvolder/sts4-build-env\n" +
-				"    tag: latest\n" +
-				"    username: kdvolder\n" +
-				"    password: {{docker_password}}\n" +
-				"    debug: no-bool\n" +
-				"    content_trust: {}\n"
-		);
-		editor.assertProblems(
-				"my-docker-image|Unused 'Resource'",
-				"no-bool|boolean",
-				"content_trust|Properties [repository_key, repository_key_id, repository_passphrase] are required"
-		);
-
-		editor.assertHoverContains("repository", "The name of the repository");
-		editor.assertHoverContains("tag", "name of the tag");
-		editor.assertHoverContains("username", "username to use");
-		editor.assertHoverContains("password", "password to use");
-		editor.assertHoverContains("debug",  "debugging output will be printed");
 		
 		editor = harness.newEditor(
 				"resources:\n" +
@@ -2634,6 +2610,68 @@ public class ConcourseEditorTest {
 				"  type: registry-image\n" +
 				"  source:\n" +
 				"    repository: kdvolder/sts4-build-env\n" +
+				"    insecure: this-is-not-safe\n" +
+				"    tag: latest\n" +
+				"    variant: some-suffix\n" +
+				"    semver_constraint: invalid-semver-exp\n" +
+				"    username: kdvolder\n" +
+				"    password: {{docker_password}}\n" +
+				"    aws_access_key_id: the-key-to-aws\n" +
+				"    aws_secret_access_key: the-aws-secret\n" +
+				"    aws_session_token: aws-is-in-session\n" +
+				"    aws_region: bad-aws-region\n" +
+				"    aws_role_arn: some-arn\n" +
+				"    aws_role_arns: a-list-of-arns\n" +
+				"    debug: no-bool\n" +
+				"    registry_mirror: {}\n" +
+				"    content_trust: {}\n" +
+				"    ca_certs: some-certs\n"
+		);
+		
+		editor.assertProblems(
+				"my-docker-image|Unused 'Resource'",
+				"this-is-not-safe|boolean",
+				//"invalid-semver-exp|Invalid semver constraint", //TODO: parse / check this?
+				"bad-aws-region|AWSRegion",
+				"aws_role_arn|Only one of 'aws_role_arn' and 'aws_role_arns'",
+				"aws_role_arns|Only one of 'aws_role_arn' and 'aws_role_arns'",
+				"a-list-of-arns|Expecting a 'Sequence'",
+				"no-bool|boolean",
+				"registry_mirror|'host' is required",
+				"content_trust|Properties [repository_key, repository_key_id, repository_passphrase] are required",
+				"some-certs|Expecting a 'Sequence'"
+		);
+
+		editor.assertHoverContains("repository", "The name of the repository");
+		editor.assertHoverContains("insecure", "Allow insecure registry");
+		editor.assertHoverContains("tag", "name of the tag");
+		editor.assertHoverContains("variant", "variant suffix");
+		editor.assertHoverContains("semver_constraint", "Constrain the returned semver");
+		editor.assertHoverContains("username", "username to use");
+		editor.assertHoverContains("password", "password to use");
+		editor.assertHoverContains("aws_access_key_id", "access key ID to use for authenticating with ECR");
+		editor.assertHoverContains("aws_secret_access_key", "secret access key to use for authenticating with ECR");
+		editor.assertHoverContains("aws_session_token", "session token to use");
+		editor.assertHoverContains("aws_region", "region to use");
+		editor.assertHoverContains("aws_role_arn", "this role will");
+		editor.assertHoverContains("aws_role_arns", "assumed in the specified order");
+		editor.assertHoverContains("debug",  "debugging output will be printed");
+		editor.assertHoverContains("registry_mirror", "pointing to a docker registry mirror service");
+		
+		editor = harness.newEditor(
+				"resources:\n" +
+				"- name: my-docker-image\n" +
+				"  type: registry-image\n" +
+				"  source:\n" +
+				"    repository: kdvolder/sts4-build-env\n" +
+				"    ca_certs:\n" +
+				"    - cert1\n" +
+				"    - cert2\n" +
+				"    registry_mirror:\n" +
+				"      host: mirrorhost\n" +
+				"      username: mirroruser\n" +
+				"      password: mirrorpass\n" +
+				"      not_expected_in_mirror: bad\n" +
 				"    content_trust:\n"+
 				"      server: notary.server\n" +
 				"      repository_key: repokey\n" +
@@ -2645,8 +2683,12 @@ public class ConcourseEditorTest {
 		);
 		editor.assertProblems(
 				"my-docker-image|Unused 'Resource'",
+				"not_expected_in_mirror|Unknown property",
 				"bogus_prop|Unknown property"
 		);
+		editor.assertHoverContains("host", "hostname pointing to a Docker registry");
+		editor.assertHoverContains("username", "username to use");
+		editor.assertHoverContains("password", "password to use");
 		editor.assertHoverContains("server", "URL for the notary server");
 		editor.assertHoverContains("repository_key_id", "ID used to sign the trusted collection");
 		editor.assertHoverContains("repository_key", "Target key used to sign");
@@ -2684,7 +2726,11 @@ public class ConcourseEditorTest {
 
 	@Test public void registryImageResourcePutParamsReconcileAndHovers() throws Exception {
 		Editor editor;
-
+		
+		//TODO: new properties 
+		// version
+		// bump_aliases
+		
 		editor = harness.newEditor(
 				"resources:\n" +
 				"- name: my-docker-image\n" +
@@ -2695,6 +2741,8 @@ public class ConcourseEditorTest {
 				"  - put: my-docker-image\n" +
 				"    params:\n" +
 				"      image: path/to/image/tarball\n" +
+				"      version: some-version\n" +
+				"      bump_aliases: is-bump\n" +
 				"      additional_tags: path/to/tagsfiles\n" +
 				"      bogus: bad\n" +
 				"    get_params:\n" +
@@ -2702,11 +2750,14 @@ public class ConcourseEditorTest {
 		);
 
 		editor.assertProblems(
+				"is-bump|boolean",
 				"bogus|Unknown property",
 				"bad-format|Valid values are: [oci, rootfs]"
 		);
 
 		editor.assertHoverContains("image", 4, "path to the OCI image tarball");
+		editor.assertHoverContains("version", "version number to use as a tag");
+		editor.assertHoverContains("bump_aliases", "automatically bump alias tags");
 		editor.assertHoverContains("additional_tags", "list of tag values");
 		editor.assertHoverContains("format", "The format to fetch as");
 	}
@@ -2794,7 +2845,7 @@ public class ConcourseEditorTest {
 		);
 		editor.assertProblems(
 				"s3-snapshots|Unused 'Resource'",
-				"bogus-region|unknown 'S3Region'",
+				"bogus-region|unknown 'AWSRegion'",
 				"is-private|'boolean'",
 				"no_ssl_checking|'boolean'",
 				"skipping-ssl|'boolean'",
@@ -2834,12 +2885,30 @@ public class ConcourseEditorTest {
 
 	@Test public void s3ResourceRegionCompletions() throws Exception {
 		String[] validRegions = {
-				//See: https://docs.aws.amazon.com/AmazonS3/latest/API/RESTBucketPUT.html
-				"us-west-1", "us-west-2", "ca-central-1",
-				"EU", "eu-west-1", "eu-west-2", "eu-central-1",
-				"ap-south-1", "ap-southeast-1", "ap-southeast-2",
-				"ap-northeast-1", "ap-northeast-2",
-				"sa-east-1", "us-east-2"
+				"af-south-1",
+				"ap-east-1",
+				"ap-southeast-3",
+				"ap-south-1",
+				"ap-northeast-3",
+				"ap-northeast-2",
+				"ap-southeast-1",
+				"ap-southeast-2",
+				"ap-northeast-1",
+				"ca-central-1",
+				"cn-north-1",
+				"cn-northwest-1",
+				"eu-central-1",
+				"eu-west-1",
+				"eu-west-2",
+				"eu-south-1",
+				"eu-west-3",
+				"eu-north-1",
+				"me-south-1",
+				"us-east-1",
+				"us-east-2",
+				"us-west-1",
+				"us-west-2",
+				"sa-east-1"
 		};
 		Arrays.sort(validRegions);
 
@@ -3489,7 +3558,7 @@ public class ConcourseEditorTest {
 		);
 		editor.assertProblems(
 				"version|Unused 'Resource'",
-				"bogus-region|'S3Region'",
+				"bogus-region|'AWSRegion'",
 				"no-use-ssl|'boolean'",
 				"bogus-prop|Unknown property"
 		);
@@ -3514,7 +3583,7 @@ public class ConcourseEditorTest {
 		);
 		editor.assertProblems(
 				"version|Unused 'Resource'",
-				"bogus-region|'S3Region'",
+				"bogus-region|'AWSRegion'",
 				"no-use-ssl|'boolean'",
 				"bogus-prop|Unknown property"
 		);
