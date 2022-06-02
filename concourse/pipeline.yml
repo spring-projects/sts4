@@ -456,8 +456,6 @@ jobs:
   - task: build-mvn-cache
     file: sts4/concourse/tasks/build-mvn-cache.yml
   - put: maven-cache
-    get_params:
-      skip_download: true
     params:
       file: out/*.tar.gz
 - name: build-consourse-vsix-snapshot
