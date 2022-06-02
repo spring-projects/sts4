@@ -157,14 +157,32 @@ public class PipelineYmlSchema implements YamlSchema {
 	public final YType t_semver = f.yatomic("Semver")
 			.parseWith(ValueParsers.NE_STRING); //TODO: use real semver parser.
 
-	public final YType t_s3_region = f.yenum("S3Region",
-			//See: https://docs.aws.amazon.com/AmazonS3/latest/API/RESTBucketPUT.html
-			 "us-west-1", "us-west-2",
-			 "ca-central-1", "EU", "eu-west-1",
-			 "eu-west-2", "eu-central-1",
-			 "ap-south-1", "ap-southeast-1", "ap-southeast-2", "ap-northeast-1", "ap-northeast-2",
-			 "sa-east-1",
-			 "us-east-2"
+	public final YType t_aws_region = f.yenum("AWSRegion",
+			//See https://docs.aws.amazon.com/general/latest/gr/rande.html
+			"af-south-1",
+			"ap-east-1",
+			"ap-southeast-3",
+			"ap-south-1",
+			"ap-northeast-3",
+			"ap-northeast-2",
+			"ap-southeast-1",
+			"ap-southeast-2",
+			"ap-northeast-1",
+			"ca-central-1",
+			"cn-north-1",
+			"cn-northwest-1",
+			"eu-central-1",
+			"eu-west-1",
+			"eu-west-2",
+			"eu-south-1",
+			"eu-west-3",
+			"eu-north-1",
+			"me-south-1",
+			"us-east-1",
+			"us-east-2",
+			"us-west-1",
+			"us-west-2",
+			"sa-east-1"
 	);
 
 	public final YType t_day = f.yenum("Day",
@@ -673,7 +691,7 @@ public class PipelineYmlSchema implements YamlSchema {
 
 			resourceTypes.def("docker-image", source, get, put);
 		}
-		//registry_image
+		//registry-image
 		{
 			AbstractType source = f.ybean("RegistryImageSource");
 			addProp(source, "repository", t_ne_string).isPrimary(true);
@@ -686,7 +704,7 @@ public class PipelineYmlSchema implements YamlSchema {
 			addProp(source, "aws_access_key_id", t_ne_string);
 			addProp(source, "aws_secret_access_key", t_ne_string);
 			addProp(source, "aws_session_token", t_ne_string);
-			addProp(source, "aws_region", t_ne_string);
+			addProp(source, "aws_region", t_aws_region);
 			addProp(source, "aws_role_arn", t_ne_string);
 			addProp(source, "aws_role_arns", t_strings);
 			addProp(source, "debug", t_boolean);
@@ -715,6 +733,8 @@ public class PipelineYmlSchema implements YamlSchema {
 			addProp(put, "additional_tags", t_ne_string);
 
 			resourceTypes.def("registry-image", source, get, put);
+			
+			source.require(Constraints.mutuallyExclusive("aws_role_arn", "aws_role_arns"));
 		}
 		//s3
 		{
@@ -730,7 +750,7 @@ public class PipelineYmlSchema implements YamlSchema {
 			addProp(source, "access_key_id", t_ne_string);
 			addProp(source, "secret_access_key", t_ne_string);
 			addProp(source, "session_token", t_ne_string);
-			addProp(source, "region_name", t_s3_region);
+			addProp(source, "region_name", t_aws_region);
 			addProp(source, "private", t_boolean);
 			addProp(source, "cloudfront_url", t_ne_string);
 			addProp(source, "endpoint", t_ne_string);
@@ -806,7 +826,7 @@ public class PipelineYmlSchema implements YamlSchema {
 			addProp(s3_source, "key", t_ne_string).isRequired(true);
 			addProp(s3_source, "access_key_id", t_ne_string).isRequired(true);
 			addProp(s3_source, "secret_access_key", t_ne_string).isRequired(true);
-			addProp(s3_source, "region_name", t_s3_region);
+			addProp(s3_source, "region_name", t_aws_region);
 			addProp(s3_source, "endpoint", t_ne_string);
 			addProp(s3_source, "disable_ssl", t_boolean);
 

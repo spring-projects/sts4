@@ -2603,30 +2603,6 @@ public class ConcourseEditorTest {
 			"my-docker-image|Unused 'Resource'",
 			"source|'repository' is required"
 		);
-
-		editor = harness.newEditor(
-				"resources:\n" +
-				"- name: my-docker-image\n" +
-				"  type: registry-image\n" +
-				"  source:\n" +
-				"    repository: kdvolder/sts4-build-env\n" +
-				"    tag: latest\n" +
-				"    username: kdvolder\n" +
-				"    password: {{docker_password}}\n" +
-				"    debug: no-bool\n" +
-				"    content_trust: {}\n"
-		);
-		editor.assertProblems(
-				"my-docker-image|Unused 'Resource'",
-				"no-bool|boolean",
-				"content_trust|Properties [repository_key, repository_key_id, repository_passphrase] are required"
-		);
-
-		editor.assertHoverContains("repository", "The name of the repository");
-		editor.assertHoverContains("tag", "name of the tag");
-		editor.assertHoverContains("username", "username to use");
-		editor.assertHoverContains("password", "password to use");
-		editor.assertHoverContains("debug",  "debugging output will be printed");
 		
 		editor = harness.newEditor(
 				"resources:\n" +
@@ -2634,6 +2610,63 @@ public class ConcourseEditorTest {
 				"  type: registry-image\n" +
 				"  source:\n" +
 				"    repository: kdvolder/sts4-build-env\n" +
+				"    insecure: this-is-not-safe\n" +
+				"    tag: latest\n" +
+				"    variant: some-suffix\n" +
+				"    semver_constraint: invalid-semver-exp\n" +
+				"    username: kdvolder\n" +
+				"    password: {{docker_password}}\n" +
+				"    aws_access_key_id: the-key-to-aws\n" +
+				"    aws_secret_access_key: the-aws-secret\n" +
+				"    aws_session_token: aws-is-in-session\n" +
+				"    aws_region: bad-aws-region\n" +
+				"    aws_role_arn: some-arn\n" +
+				"    aws_role_arns: a-list-of-arns\n" +
+				"    debug: no-bool\n" +
+				"    registry_mirror: {}\n" +
+				"    content_trust: {}\n"
+		);
+		
+		editor.assertProblems(
+				"my-docker-image|Unused 'Resource'",
+				"this-is-not-safe|boolean",
+				//"invalid-semver-exp|Invalid semver constraint", //TODO: parse / check this?
+				"bad-aws-region|AWSRegion",
+				"aws_role_arn|Only one of 'aws_role_arn' and 'aws_role_arns'",
+				"aws_role_arns|Only one of 'aws_role_arn' and 'aws_role_arns'",
+				"a-list-of-arns|Expecting a 'Sequence'",
+				"no-bool|boolean",
+				"registry_mirror|'host' is required",
+				"content_trust|Properties [repository_key, repository_key_id, repository_passphrase] are required"
+		);
+
+		editor.assertHoverContains("repository", "The name of the repository");
+		editor.assertHoverContains("insecure", "Allow insecure registry");
+		editor.assertHoverContains("tag", "name of the tag");
+		editor.assertHoverContains("variant", "variant suffix");
+		editor.assertHoverContains("semver_constraint", "Constrain the returned semver");
+		editor.assertHoverContains("username", "username to use");
+		editor.assertHoverContains("password", "password to use");
+		editor.assertHoverContains("aws_access_key_id", "access key ID to use for authenticating with ECR");
+		editor.assertHoverContains("aws_secret_access_key", "secret access key to use for authenticating with ECR");
+		editor.assertHoverContains("aws_session_token", "session token to use");
+		editor.assertHoverContains("aws_region", "region to use");
+		editor.assertHoverContains("aws_role_arn", "this role will");
+		editor.assertHoverContains("aws_role_arns", "assumed in the specified order");
+		editor.assertHoverContains("debug",  "debugging output will be printed");
+		editor.assertHoverContains("registry_mirror", "pointing to a docker registry mirror service");
+		
+		editor = harness.newEditor(
+				"resources:\n" +
+				"- name: my-docker-image\n" +
+				"  type: registry-image\n" +
+				"  source:\n" +
+				"    repository: kdvolder/sts4-build-env\n" +
+				"    registry_mirror:\n" +
+				"      host: mirrorhost\n" +
+				"      username: mirroruser\n" +
+				"      password: mirrorpass\n" +
+				"      not_expected_in_mirror: bad\n" +
 				"    content_trust:\n"+
 				"      server: notary.server\n" +
 				"      repository_key: repokey\n" +
@@ -2645,8 +2678,12 @@ public class ConcourseEditorTest {
 		);
 		editor.assertProblems(
 				"my-docker-image|Unused 'Resource'",
+				"not_expected_in_mirror|Unknown property",
 				"bogus_prop|Unknown property"
 		);
+		editor.assertHoverContains("host", "hostname pointing to a Docker registry");
+		editor.assertHoverContains("username", "username to use");
+		editor.assertHoverContains("password", "password to use");
 		editor.assertHoverContains("server", "URL for the notary server");
 		editor.assertHoverContains("repository_key_id", "ID used to sign the trusted collection");
 		editor.assertHoverContains("repository_key", "Target key used to sign");
