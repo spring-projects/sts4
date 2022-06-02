@@ -729,7 +729,7 @@ public class PipelineYmlSchema implements YamlSchema {
 			AbstractType put = f.ybean("RegistryImagePutParams");
 			addProp(put, "image", t_ne_string).isPrimary(true);
 			addProp(put, "version", t_ne_string);
-			addProp(get, "bump_aliases", t_boolean);
+			addProp(put, "bump_aliases", t_boolean);
 			addProp(put, "additional_tags", t_ne_string);
 
 			resourceTypes.def("registry-image", source, get, put);
