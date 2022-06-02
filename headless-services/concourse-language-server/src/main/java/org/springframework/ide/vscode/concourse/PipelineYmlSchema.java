@@ -607,13 +607,15 @@ public class PipelineYmlSchema implements YamlSchema {
 			put.require(Constraints.requireAtMostOneOf("rebase", "merge"));
 			resourceTypes.def("git", source, get, put);
 		}
+
+		// Shared by docker-image and registry-image
+		AbstractType registry_mirror = f.ybean("RegistryMirror");
+		addProp(registry_mirror, "host", t_ne_string).isPrimary(true);
+		addProp(registry_mirror, "username", t_ne_string);
+		addProp(registry_mirror, "password", t_ne_string);
+		
 		//docker-image:
 		{
-			
-			AbstractType registry_mirror = f.ybean("RegistryMirror");
-			addProp(registry_mirror, "host", t_ne_string).isPrimary(true);
-			addProp(registry_mirror, "username", t_ne_string);
-			addProp(registry_mirror, "password", t_ne_string);
 			
 			AbstractType source = f.ybean("DockerImageSource");
 			addProp(source, "repository", t_ne_string).isPrimary(true);
@@ -688,14 +690,7 @@ public class PipelineYmlSchema implements YamlSchema {
 			addProp(source, "aws_role_arn", t_ne_string);
 			addProp(source, "aws_role_arns", t_strings);
 			addProp(source, "debug", t_boolean);
-			{
-				AbstractType registry_mirror = f.ybean("RegistryMirror");
-				addProp(registry_mirror, "host", t_ne_string).isPrimary(true);
-				addProp(registry_mirror, "username", t_ne_string);
-				addProp(registry_mirror, "password", t_ne_string);
-
-				addProp(source, "registry_mirror", registry_mirror);
-			}
+			addProp(source, "registry_mirror", registry_mirror);
 			{
 				AbstractType contentTrust = f.ybean("RegistryImageContentTrust");
 				addProp(contentTrust, "server", t_ne_string);
