@@ -81,8 +81,10 @@
           "Concourse Task"
         ],
         "filenamePatterns": [
-          "*task.yml",
-          "**/tasks/*.yml"
+          "**/ci/*task.yml",
+          "**/ci/**/tasks/*.yml",
+          "**/concourse/*task.yml",
+          "**/concourse/**/tasks/*.yml"
         ],
         "firstLine": "^#(\\s)*task(\\s)*",
         "configuration": "./yaml-support/language-configuration.json"
