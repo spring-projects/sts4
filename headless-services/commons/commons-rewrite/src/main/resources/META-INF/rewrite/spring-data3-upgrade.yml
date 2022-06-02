@@ -1,9 +1,19 @@
 ########################################################################################################################
 # Spring Data 3.0
 type: specs.openrewrite.org/v1beta/recipe
-name: org.openrewrite.java.spring.data.UpgradeSpringData_3_0
+name: org.openrewrite.java.spring.boot3.data.UpgradeSpringData_3_0
 displayName: Upgrade to Spring Data 3.0
 description: 'Upgrade to Spring Data to 3.0 from any prior version.'
+recipeList:
+  - org.openrewrite.java.spring.boot3.data.SwitchToJakarta
+  
+---
+########################################################################################################################
+# Spring Data 3.0 javax -> jakarta
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.spring.boot3.data.SwitchToJakarta
+displayName: Switch to Jakarta JPA 
+description: 'Switch to Jakarta JPA from Javax'
 recipeList:
   - org.springframework.ide.vscode.commons.rewrite.maven.ChangeDependencyClassifier:
       groupId: org.ehcache

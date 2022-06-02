@@ -14,6 +14,7 @@ import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -38,6 +39,7 @@ import org.openrewrite.Recipe;
 import org.openrewrite.Result;
 import org.openrewrite.SourceFile;
 import org.openrewrite.Validated;
+import org.openrewrite.config.DeclarativeRecipe;
 import org.openrewrite.config.Environment;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.maven.MavenParser;
@@ -54,6 +56,7 @@ import org.springframework.ide.vscode.commons.rewrite.maven.MavenProjectParser;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableMap;
+import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 
 public class RewriteRecipeRepository {
@@ -135,6 +138,39 @@ public class RewriteRecipeRepository {
 		});
 		listBuilder.add("sts/rewrite/list");
 		
+		server.onCommand("sts/rewrite/execute", params -> {
+			String uri = ((JsonElement) params.getArguments().get(0)).getAsString();
+			JsonElement recipesJson = ((JsonElement) params.getArguments().get(1));
+			RecipeDescriptor[] recipeDescriptors = new Gson().fromJson(recipesJson, RecipeDescriptor[].class);
+			List<Recipe> convertedRecipes = Arrays.stream(recipeDescriptors)
+					.filter(rd -> rd.selected)
+					.filter(rd -> recipes.containsKey(rd.id))
+					.map(rd -> convert(recipes.get(rd.id), rd))
+					.collect(Collectors.toList());
+			if (convertedRecipes.isEmpty()) {
+				throw new RuntimeException("Not recipes to execute!");
+			} else if (convertedRecipes.size() == 1) {
+				Recipe r = convertedRecipes.get(0);
+				String progressToken = params.getWorkDoneToken() == null || params.getWorkDoneToken().getLeft() == null ? r.getName() : params.getWorkDoneToken().getLeft();
+				return apply(r, uri, progressToken);
+			} else {
+				Recipe multiRecipe = new Recipe() {
+
+					@Override
+					public String getDisplayName() {
+						return convertedRecipes.size() + " recipes";
+					}
+					
+				};
+				for (Recipe r : convertedRecipes) {
+					multiRecipe.doNext(r);
+				}
+				String progressToken = params.getWorkDoneToken() == null || params.getWorkDoneToken().getLeft() == null ? multiRecipe.getName() : params.getWorkDoneToken().getLeft();
+				return apply(multiRecipe, uri, progressToken);
+			}
+		});
+		listBuilder.add("sts/rewrite/execute");
+		
 		for (Recipe r : globalCommandRecipes) {
 			listBuilder.add(createGlobalCommand(r));
 		}
@@ -159,42 +195,45 @@ public class RewriteRecipeRepository {
 		String commandId = "sts/rewrite/recipe/" + r.getName();
 		server.onCommand(commandId, params -> {
 			final String progressToken = params.getWorkDoneToken() == null || params.getWorkDoneToken().getLeft() == null ? r.getName() : params.getWorkDoneToken().getLeft();
-			return CompletableFuture.supplyAsync(() -> {
-				JsonElement uri = (JsonElement) params.getArguments().get(0);
-				server.getProgressService().progressEvent(progressToken, r.getDisplayName() + ": initiated...");
-				return projectFinder.find(new TextDocumentIdentifier(uri.getAsString()));
-			}).thenCompose(p -> {
-				if (p.isPresent()) {
-					try {
-						Optional<WorkspaceEdit> edit = apply(r, p.get());
-						return CompletableFuture.completedFuture(edit).thenCompose(we -> {
-							if (we.isPresent()) {
-								server.getProgressService().progressEvent(progressToken,
-										r.getDisplayName() + ": applying document changes...");
-								return server.getClient().applyEdit(new ApplyWorkspaceEditParams(we.get(), r.getDisplayName())).thenCompose(res -> {
-									if (res.isApplied()) {
-										server.getProgressService().progressEvent(progressToken, null);
-										return CompletableFuture.completedFuture("success");
-									} else {
-										server.getProgressService().progressEvent(progressToken, null);
-										return CompletableFuture.completedFuture(null);
-									}
-								});
-							} else {
-								server.getProgressService().progressEvent(progressToken, null);
-								return CompletableFuture.completedFuture(null);
-							}
-						});
-					} catch (Throwable t) {
-						server.getProgressService().progressEvent(progressToken, null);
-						throw t;
-					}
-				}
-				return CompletableFuture.completedFuture(null);
-			});
-			
+			String uri = ((JsonElement) params.getArguments().get(0)).getAsString();
+			return apply(r, uri, progressToken);	
 		});
 		return commandId;
+	}
+	
+	private CompletableFuture<Object> apply(Recipe r, String uri, String progressToken) {
+		return CompletableFuture.supplyAsync(() -> {
+			server.getProgressService().progressEvent(progressToken, r.getDisplayName() + ": initiated...");
+			return projectFinder.find(new TextDocumentIdentifier(uri));
+		}).thenCompose(p -> {
+			if (p.isPresent()) {
+				try {
+					Optional<WorkspaceEdit> edit = apply(r, p.get());
+					return CompletableFuture.completedFuture(edit).thenCompose(we -> {
+						if (we.isPresent()) {
+							server.getProgressService().progressEvent(progressToken,
+									r.getDisplayName() + ": applying document changes...");
+							return server.getClient().applyEdit(new ApplyWorkspaceEditParams(we.get(), r.getDisplayName())).thenCompose(res -> {
+								if (res.isApplied()) {
+									server.getProgressService().progressEvent(progressToken, null);
+									return CompletableFuture.completedFuture("success");
+								} else {
+									server.getProgressService().progressEvent(progressToken, null);
+									return CompletableFuture.completedFuture(null);
+								}
+							});
+						} else {
+							server.getProgressService().progressEvent(progressToken, null);
+							return CompletableFuture.completedFuture(null);
+						}
+					});
+				} catch (Throwable t) {
+					server.getProgressService().progressEvent(progressToken, null);
+					throw t;
+				}
+			}
+			return CompletableFuture.completedFuture(null);
+		});
 	}
 	
 	private Optional<WorkspaceEdit> apply(Recipe r, IJavaProject project) {
@@ -215,7 +254,7 @@ public class RewriteRecipeRepository {
 			if (projectOpt.isPresent()) {
 				List<RecipeDescriptor> commandDescriptors = new ArrayList<>(globalCommandRecipes.size()); 
 				for (Recipe r : globalCommandRecipes) {
-					commandDescriptors.add(new RecipeDescriptor(r.getName(), r.getDisplayName(), r.getDescription()));
+					commandDescriptors.add(new RecipeDescriptor(r));
 				}
 				return commandDescriptors;
 			}
@@ -247,17 +286,48 @@ public class RewriteRecipeRepository {
 					.map(file -> file.getAbsoluteFile().toPath()).collect(Collectors.toList());
 		}
 	}
+	
+	private static Recipe convert(Recipe r, RecipeDescriptor d) {
+		try {
+			if (d.selected) {
+				if (d.children != null && !d.children.isEmpty()) {
+					Recipe recipe = r instanceof DeclarativeRecipe ? new DeclarativeRecipe(r.getName(), r.getDisplayName(), r.getDescription(), r.getTags(), r.getEstimatedEffortPerOccurrence(), null)
+							: r.getClass().getDeclaredConstructor().newInstance();
+					int i = 0;
+					for (Recipe sr : r.getRecipeList()) {
+						Recipe convertedSubRecipe = convert(sr, d.children.get(i++));
+						if (convertedSubRecipe != null) {
+							recipe.doNext(convertedSubRecipe);
+						}
+					}
+					return recipe;
+				} else {
+					return r;
+				}
+			}
+		} catch (Exception e) {
+			log.error("", e);
+		}
+		return null;
+	}
 
 	@SuppressWarnings("unused")
 	private static class RecipeDescriptor {
 		String id;
 		String label;
-		String description;
-		public RecipeDescriptor(String id, String label, String description) {
-			this.id = id;
-			this.label = label;
-			this.description = description;
-		}		
+		String detail;
+		List<RecipeDescriptor> children;
+		boolean selected;
+		
+		RecipeDescriptor(Recipe r) {
+			this.id = r.getName();
+			this.label = r.getDisplayName();
+			this.detail = r.getDescription();
+			List<Recipe> subRecipes = r.getRecipeList();
+			if (r instanceof DeclarativeRecipe && !subRecipes.isEmpty() && (subRecipes.size() > 1 || subRecipes.get(0) instanceof DeclarativeRecipe)) {
+				this.children = r.getRecipeList().stream().map(sr -> new RecipeDescriptor(sr)).collect(Collectors.toList());
+			}
+		}
 	}
-
+	
 }
