@@ -2624,7 +2624,8 @@ public class ConcourseEditorTest {
 				"    aws_role_arns: a-list-of-arns\n" +
 				"    debug: no-bool\n" +
 				"    registry_mirror: {}\n" +
-				"    content_trust: {}\n"
+				"    content_trust: {}\n" +
+				"    ca_certs: some-certs\n"
 		);
 		
 		editor.assertProblems(
@@ -2637,7 +2638,8 @@ public class ConcourseEditorTest {
 				"a-list-of-arns|Expecting a 'Sequence'",
 				"no-bool|boolean",
 				"registry_mirror|'host' is required",
-				"content_trust|Properties [repository_key, repository_key_id, repository_passphrase] are required"
+				"content_trust|Properties [repository_key, repository_key_id, repository_passphrase] are required",
+				"some-certs|Expecting a 'Sequence'"
 		);
 
 		editor.assertHoverContains("repository", "The name of the repository");
@@ -2662,6 +2664,9 @@ public class ConcourseEditorTest {
 				"  type: registry-image\n" +
 				"  source:\n" +
 				"    repository: kdvolder/sts4-build-env\n" +
+				"    ca_certs:\n" +
+				"    - cert1\n" +
+				"    - cert2\n" +
 				"    registry_mirror:\n" +
 				"      host: mirrorhost\n" +
 				"      username: mirroruser\n" +
@@ -2721,7 +2726,11 @@ public class ConcourseEditorTest {
 
 	@Test public void registryImageResourcePutParamsReconcileAndHovers() throws Exception {
 		Editor editor;
-
+		
+		//TODO: new properties 
+		// version
+		// bump_aliases
+		
 		editor = harness.newEditor(
 				"resources:\n" +
 				"- name: my-docker-image\n" +
@@ -2732,6 +2741,8 @@ public class ConcourseEditorTest {
 				"  - put: my-docker-image\n" +
 				"    params:\n" +
 				"      image: path/to/image/tarball\n" +
+				"      version: some-version\n" +
+				"      bump_aliases: is-bump\n" +
 				"      additional_tags: path/to/tagsfiles\n" +
 				"      bogus: bad\n" +
 				"    get_params:\n" +
@@ -2739,11 +2750,14 @@ public class ConcourseEditorTest {
 		);
 
 		editor.assertProblems(
+				"is-bump|boolean",
 				"bogus|Unknown property",
 				"bad-format|Valid values are: [oci, rootfs]"
 		);
 
 		editor.assertHoverContains("image", 4, "path to the OCI image tarball");
+		editor.assertHoverContains("version", "version number to use as a tag");
+		editor.assertHoverContains("bump_aliases", "automatically bump alias tags");
 		editor.assertHoverContains("additional_tags", "list of tag values");
 		editor.assertHoverContains("format", "The format to fetch as");
 	}
