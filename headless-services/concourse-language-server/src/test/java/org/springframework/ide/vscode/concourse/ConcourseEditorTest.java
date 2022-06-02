@@ -2831,7 +2831,7 @@ public class ConcourseEditorTest {
 		);
 		editor.assertProblems(
 				"s3-snapshots|Unused 'Resource'",
-				"bogus-region|unknown 'S3Region'",
+				"bogus-region|unknown 'AWSRegion'",
 				"is-private|'boolean'",
 				"no_ssl_checking|'boolean'",
 				"skipping-ssl|'boolean'",
@@ -2871,12 +2871,30 @@ public class ConcourseEditorTest {
 
 	@Test public void s3ResourceRegionCompletions() throws Exception {
 		String[] validRegions = {
-				//See: https://docs.aws.amazon.com/AmazonS3/latest/API/RESTBucketPUT.html
-				"us-west-1", "us-west-2", "ca-central-1",
-				"EU", "eu-west-1", "eu-west-2", "eu-central-1",
-				"ap-south-1", "ap-southeast-1", "ap-southeast-2",
-				"ap-northeast-1", "ap-northeast-2",
-				"sa-east-1", "us-east-2"
+				"af-south-1",
+				"ap-east-1",
+				"ap-southeast-3",
+				"ap-south-1",
+				"ap-northeast-3",
+				"ap-northeast-2",
+				"ap-southeast-1",
+				"ap-southeast-2",
+				"ap-northeast-1",
+				"ca-central-1",
+				"cn-north-1",
+				"cn-northwest-1",
+				"eu-central-1",
+				"eu-west-1",
+				"eu-west-2",
+				"eu-south-1",
+				"eu-west-3",
+				"eu-north-1",
+				"me-south-1",
+				"us-east-1",
+				"us-east-2",
+				"us-west-1",
+				"us-west-2",
+				"sa-east-1"
 		};
 		Arrays.sort(validRegions);
 
@@ -3526,7 +3544,7 @@ public class ConcourseEditorTest {
 		);
 		editor.assertProblems(
 				"version|Unused 'Resource'",
-				"bogus-region|'S3Region'",
+				"bogus-region|'AWSRegion'",
 				"no-use-ssl|'boolean'",
 				"bogus-prop|Unknown property"
 		);
@@ -3551,7 +3569,7 @@ public class ConcourseEditorTest {
 		);
 		editor.assertProblems(
 				"version|Unused 'Resource'",
-				"bogus-region|'S3Region'",
+				"bogus-region|'AWSRegion'",
 				"no-use-ssl|'boolean'",
 				"bogus-prop|Unknown property"
 		);
