@@ -86,4 +86,19 @@ public class SymbolContainer {
 		return null;
 	}
 
+	/**
+	 * convenience method to get the underlying LSP object for the symbol
+	 */
+	public Object get() {
+		if (symbolInformation != null) {
+			return symbolInformation;
+		}
+		else if (documentSymbol != null) { 
+			return documentSymbol;
+		}
+		else {
+			return workspaceSymbol;
+		}
+	}
+
 }

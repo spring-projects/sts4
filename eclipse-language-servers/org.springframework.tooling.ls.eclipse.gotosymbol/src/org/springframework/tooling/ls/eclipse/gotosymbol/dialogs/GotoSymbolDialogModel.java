@@ -20,7 +20,8 @@ import java.util.stream.Collectors;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.lsp4e.LSPEclipseUtils;
 import org.eclipse.lsp4j.Location;
-import org.eclipse.lsp4j.SymbolInformation;
+import org.eclipse.lsp4j.WorkspaceSymbolLocation;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.PlatformUI;
 import org.springframework.tooling.ls.eclipse.gotosymbol.GotoSymbolPlugin;
@@ -92,25 +93,46 @@ public class GotoSymbolDialogModel {
 		 * Called by the ui to perform the dialog's action. The dialog will be
 		 * closed by the ui this returns true, otherwise it remains open.
 		 */
-		boolean performOk(SymbolInformation selection);
+		boolean performOk(SymbolContainer selection);
 	}
 	
 	private static final OKHandler DEFAULT_OK_HANDLER = (selection) -> true;
 	
 	public static final OKHandler OPEN_IN_EDITOR_OK_HANDLER = symbolInformation -> {
-		if (symbolInformation!=null) {
-			Location location = symbolInformation.getLocation();
+
+		if (symbolInformation != null && symbolInformation.isSymbolInformation()) {
+			Location location = symbolInformation.getSymbolInformation().getLocation();
+
+			IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
+			LSPEclipseUtils.openInEditor(location, page);
+		}
+
+		else if (symbolInformation != null && symbolInformation.isWorkspaceSymbol()) {
+			Location location = null;
+			Either<Location, WorkspaceSymbolLocation> symbolLocation = symbolInformation.getWorkspaceSymbol().getLocation();
+
+			if (symbolLocation.isLeft()) {
+				location = symbolLocation.getLeft();
+			}
+			else {
+				WorkspaceSymbolLocation workspaceSymbolLocation = symbolLocation.getRight();
+				location = new Location(workspaceSymbolLocation.getUri(), null);
+			}
+
 			IWorkbenchPage page = PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage();
 			LSPEclipseUtils.openInEditor(location, page);
 		}
 		return true;
 	};
 
-	private SymbolsProvider[] symbolsProviders;
+	private final SymbolsProvider[] symbolsProviders;
 	private final LiveVariable<HighlightedText> status = new LiveVariable<>();
-	private int currentSymbolsProviderIndex;
-	public final LiveVariable<SymbolsProvider> currentSymbolsProvider = new LiveVariable<>(null);
 	private final LiveVariable<String> searchBox = new LiveVariable<>("");
+	
+	private int currentSymbolsProviderIndex;
+
+	public final LiveVariable<SymbolsProvider> currentSymbolsProvider = new LiveVariable<>(null);
+
 	public final ObservableSet<SymbolContainer> unfilteredSymbols = new ObservableSet<SymbolContainer>(ImmutableSet.of(), AsyncMode.ASYNC, AsyncMode.SYNC) {
 		//Note: fetching is 'slow' so is done asynchronously
 		{
@@ -260,11 +282,11 @@ public class GotoSymbolDialogModel {
 		return this;
 	}
 	
-	public boolean performOk(SymbolInformation selection) {
+	public boolean performOk(SymbolContainer selection) {
 		return this.okHandler.performOk(selection);
 	}
 
-	public boolean fromFileProvider(SymbolInformation symbolInformation) {
+	public boolean fromFileProvider(SymbolContainer symbolInformation) {
 		SymbolsProvider sp = currentSymbolsProvider.getValue();
 
 		if (sp != null) {

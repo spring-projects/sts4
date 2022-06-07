@@ -22,8 +22,10 @@ import org.eclipse.lsp4e.LanguageServiceAccessor;
 import org.eclipse.lsp4e.LanguageServiceAccessor.LSPDocumentInfo;
 import org.eclipse.lsp4j.DocumentSymbol;
 import org.eclipse.lsp4j.DocumentSymbolParams;
+import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
+import org.eclipse.lsp4j.WorkspaceSymbolLocation;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.LanguageServer;
 import org.eclipse.ui.texteditor.ITextEditor;
@@ -125,12 +127,30 @@ public class InFileSymbolsProvider implements SymbolsProvider {
 	}
 
 	@Override
-	public boolean fromFile(SymbolInformation symbol) {
-		if (symbol != null && symbol.getLocation() != null) {
-			String symbolUri = symbol.getLocation().getUri();
-			String uri = getUri();
-			if (uri != null) {
-				return uri.toString().equals(symbolUri);
+	public boolean fromFile(SymbolContainer symbol) {
+		if (symbol != null) {
+			if (symbol.isSymbolInformation() && symbol.getSymbolInformation().getLocation() != null) {
+				String symbolUri = symbol.getSymbolInformation().getLocation().getUri();
+
+				String uri = getUri();
+				if (uri != null) {
+					return uri.toString().equals(symbolUri);
+				}
+			}
+			else if (symbol.isWorkspaceSymbol()) {
+				Either<Location, WorkspaceSymbolLocation> location = symbol.getWorkspaceSymbol().getLocation();
+				if (location.isLeft()) {
+					String uri = getUri();
+					if (uri != null) {
+						return uri.toString().equals(location.getLeft().getUri());
+					}
+				}
+				else {
+					String uri = getUri();
+					if (uri != null) {
+						return uri.toString().equals(location.getRight().getUri());
+					}
+				}
 			}
 		}
 		return false;

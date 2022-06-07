@@ -139,7 +139,7 @@ public class InWorkspaceSymbolsProvider implements SymbolsProvider {
 	}
 	
 	@Override
-	public boolean fromFile(SymbolInformation symbol) {
+	public boolean fromFile(SymbolContainer symbol) {
 		return false;
 	}
 	

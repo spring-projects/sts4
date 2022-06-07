@@ -44,6 +44,7 @@ import org.eclipse.lsp4e.outline.SymbolsLabelProvider;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.SymbolInformation;
+import org.eclipse.lsp4j.WorkspaceSymbolLocation;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.custom.StyledText;
@@ -117,7 +118,8 @@ public class GotoSymbolSection extends WizardPageSection {
 			stylers = new Stylers(base);
 			boolean showSymbolsLabelProviderLocation  = false; /* dont show full location. we show relative location in our own implementation below */
 			boolean showKindInformation = false;
-			symbolsLabelProvider = new SymbolsLabelProvider(showSymbolsLabelProviderLocation , showKindInformation) {
+			
+			symbolsLabelProvider = new SymbolsLabelProvider(showSymbolsLabelProviderLocation, showKindInformation) {
 				@Override
 				protected int getMaxSeverity(IResource resource, IDocument doc, Range range)
 						throws CoreException, BadLocationException {
@@ -146,9 +148,9 @@ public class GotoSymbolSection extends WizardPageSection {
 		@Override
 		public String getToolTipText(Object element) {
 			if (element instanceof Match) {
-				SymbolInformation si = getSymbolInformation((Match<?>)element);
-				if (si != null) {
-					return si.getName();
+				SymbolContainer symbol = getSymbolContainer((Match<?>)element);
+				if (symbol != null) {
+					return symbol.getName();
 				}
 			}
 			return null;
@@ -173,21 +175,26 @@ public class GotoSymbolSection extends WizardPageSection {
 		}
 
 		private StyledString getStyledText(Match<?> element) {
-			SymbolInformation symbolInformation = getSymbolInformation(element);
-			if (symbolInformation != null) {
-				String name = symbolInformation.getName();
+			SymbolContainer symbol = getSymbolContainer(element);
+
+			if (symbol != null) {
+				String name = symbol.getName();
 				StyledString s = new StyledString(name);
 				Collection<IRegion> highlights = FuzzyMatcher.highlights(element.query, name.toLowerCase());
+
 				for (IRegion hl : highlights) {
 					s.setStyle(hl.getOffset(), hl.getLength(), stylers.bold());
 				}
-				String locationText = getSymbolLocationText(symbolInformation);
+
+				String locationText = getSymbolLocationText(symbol);
 				if (locationText != null) {
 					s = s.append(locationText, stylers.italicColoured(SWT.COLOR_DARK_GRAY));
 				}
 				return s;
 			} else {
-				return symbolsLabelProvider.getStyledText(element.value);
+				return null;
+//				Object symbolObject = symbol.get();
+//				return symbolsLabelProvider.getStyledText(symbolObject);
 			}
 		}	
 
@@ -198,7 +205,7 @@ public class GotoSymbolSection extends WizardPageSection {
 			super.dispose();
 		}
 		
-		protected String getSymbolLocationText(SymbolInformation symbol) {
+		protected String getSymbolLocationText(SymbolContainer symbol) {
 			Optional<String> location = GotoSymbolSection.this.getSymbolLocation(symbol);
 			if (location.isPresent()) {
 				return " -- [" + location.get() + "]";
@@ -445,15 +452,18 @@ public class GotoSymbolSection extends WizardPageSection {
 	/**
 	 * Determine the 'target' for the dialog's action.
 	 */
-	private SymbolInformation getTarget(TreeViewer list) {
+	private SymbolContainer getTarget(TreeViewer list) {
 		ISelection sel = list.getSelection();
+		
 		if (sel instanceof IStructuredSelection) {
+
 			IStructuredSelection ss = (IStructuredSelection) sel;
 			Object selected = ss.getFirstElement();
+
 			if (selected instanceof Match) {
-				SymbolInformation si = getSymbolInformation((Match<?>) selected);
-				if (si != null) {
-					return si;
+				SymbolContainer symbol = getSymbolContainer((Match<?>) selected);
+				if (symbol != null) {
+					return symbol;
 				}
 			}
 		}
@@ -462,39 +472,49 @@ public class GotoSymbolSection extends WizardPageSection {
 		return getFirstElement(list);
 	}
 
-	private SymbolInformation getFirstElement(TreeViewer list) {
+	private SymbolContainer getFirstElement(TreeViewer list) {
 		TreeItem[] items = list.getTree().getItems();
+
 		if (items != null && items.length > 0) {
 			TreeItem item = items[0];
 			Object data = item.getData();
+
 			if (data instanceof Match) {
-				SymbolInformation si = getSymbolInformation((Match<?>) data);
-				if (si != null) {
-					return si;
+				SymbolContainer symbol = getSymbolContainer((Match<?>) data);
+				if (symbol != null) {
+					return symbol;
 				}
 			}
 		}
 		return null;
 	}
 
-	private SymbolInformation getSymbolInformation(Match<?> element) {
+	private SymbolContainer getSymbolContainer(Match<?> element) {
 		if (element.value instanceof SymbolContainer) {
-			SymbolContainer symbolContainer = (SymbolContainer) element.value;
-			
-			if (symbolContainer.isSymbolInformation()) {
-				return symbolContainer.getSymbolInformation();
-			}
+			return (SymbolContainer) element.value;
 		}
 		return null;
 	}
 	
-	private Optional<String> getSymbolLocation(SymbolInformation symbolInformation) {
+	private Optional<String> getSymbolLocation(SymbolContainer symbolInformation) {
 		String val = null;
 
 		if (!model.fromFileProvider(symbolInformation)) {
-			Location location = symbolInformation.getLocation();
-
-			IResource targetResource = LSPEclipseUtils.findResourceFor(location.getUri());
+			String uri = null;
+			if (symbolInformation.isSymbolInformation()) {
+				uri = symbolInformation.getSymbolInformation().getLocation().getUri();
+			}
+			else if (symbolInformation.isWorkspaceSymbol()) {
+				Either<Location, WorkspaceSymbolLocation> location = symbolInformation.getWorkspaceSymbol().getLocation();
+				if (location.isLeft()) {
+					uri = location.getLeft().getUri();
+				}
+				else {
+					location.getRight().getUri();
+				}
+			}
+			
+			IResource targetResource = LSPEclipseUtils.findResourceFor(uri);
 			if (targetResource != null && targetResource.getFullPath() != null) {
 				val = targetResource.getFullPath().toString();
 			}	

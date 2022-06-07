@@ -31,8 +31,7 @@ public interface SymbolsProvider {
 	 * @return True if the symbol information is provided from a file provider (a file is the provider of the symbols). False otherwise
 
 	 */
-	boolean fromFile(SymbolInformation symbol);
-	
+	boolean fromFile(SymbolContainer symbol);
 
 	// helper methods for symbol providers to convert lists
 	static List<SymbolContainer> toSymbolContainerFromSymbolInformation(List<? extends SymbolInformation> symbols) {
