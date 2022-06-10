@@ -1,3 +1,8 @@
+## 2022-06-15 (4.15.0 RELEASE, incl. language servers version 1.34.0)
+
+* _(Concourse)_ fixed: Update Concourse registry-image schema ([#777](https://github.com/spring-projects/sts4/issues/777))
+* _(Concourse)_ fixed: Add registry_mirror & across as a known properties ([#752](https://github.com/spring-projects/sts4/issues/752))
+
 ## 2022-04-27 (4.14.1 RELEASE, incl. language servers version 1.33.0)
 
 * no major changes

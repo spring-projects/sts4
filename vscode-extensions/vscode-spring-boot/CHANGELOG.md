@@ -1,3 +1,8 @@
+## 2022-06-15 (4.15.0 RELEASE, incl. language servers version 1.34.0)
+
+* _(Spring Boot)_ fixed: vscode-sts: an edge case of workspace symbol for @PutMapping ([#781](https://github.com/spring-projects/sts4/issues/781))
+* _(VSCode)_ fixed: Failed to refresh live data from process 12704 - com.xxxx.xx.xxx.BillingServiceApp after retries: 10 ([#748](https://github.com/spring-projects/sts4/issues/748))
+
 ## 2022-04-27 (4.14.1 RELEASE, incl. language servers version 1.33.0)
 
 #### import changes
