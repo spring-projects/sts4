@@ -44,6 +44,7 @@ import org.eclipse.lsp4e.outline.SymbolsLabelProvider;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.SymbolInformation;
+import org.eclipse.lsp4j.WorkspaceSymbol;
 import org.eclipse.lsp4j.WorkspaceSymbolLocation;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.swt.SWT;
@@ -54,6 +55,7 @@ import org.eclipse.swt.events.SelectionAdapter;
 import org.eclipse.swt.events.SelectionEvent;
 import org.eclipse.swt.graphics.Color;
 import org.eclipse.swt.graphics.Font;
+import org.eclipse.swt.graphics.Image;
 import org.eclipse.swt.graphics.Point;
 import org.eclipse.swt.graphics.Rectangle;
 import org.eclipse.swt.layout.GridData;
@@ -160,9 +162,10 @@ public class GotoSymbolSection extends WizardPageSection {
 		public void update(ViewerCell cell) {
 			super.update(cell);
 			Object obj = cell.getElement();
+			
 			if (obj instanceof Match) {
 				Match<?> match = (Match<?>) obj;
-				cell.setImage(symbolsLabelProvider.getImage(match.value));
+				cell.setImage(getImage(match.value));
 				StyledString styledString = getStyledText(match);
 				cell.setText(styledString.getString());
 				cell.setStyleRanges(styledString.getStyleRanges());
@@ -196,7 +199,37 @@ public class GotoSymbolSection extends WizardPageSection {
 //				Object symbolObject = symbol.get();
 //				return symbolsLabelProvider.getStyledText(symbolObject);
 			}
-		}	
+		}
+		
+		/**
+		 * this is a workaround because LSP4Es symbol label provider does not support workspace symbols yet.
+		 * Once LSP4Es symbol label provider has support for workspace symbols, this can be removed again
+		 * and replaced by a simple call to LSP4E label provider.getImage(SymbolContainer.get())
+		 */
+		private Image getImage(Object element) {
+			if (element instanceof SymbolContainer) {
+				SymbolContainer container = (SymbolContainer) element;
+				if (container.isSymbolInformation()) {
+					return symbolsLabelProvider.getImage(container.getSymbolInformation());
+				}
+				else if (container.isDocumentSymbol()) {
+					return symbolsLabelProvider.getImage(container.getDocumentSymbol());
+				}
+				else if (container.isWorkspaceSymbol()) {
+					WorkspaceSymbol workspaceSymbol = container.getWorkspaceSymbol();
+					
+					Location location = workspaceSymbol.getLocation().isLeft() ? workspaceSymbol.getLocation().getLeft() : new Location();
+					SymbolInformation tempSymbol = new SymbolInformation(workspaceSymbol.getName(), workspaceSymbol.getKind(), location, workspaceSymbol.getContainerName());
+					return symbolsLabelProvider.getImage(tempSymbol);
+				}
+				else {
+					return null;
+				}
+			}
+			else {
+				return symbolsLabelProvider.getImage(element);
+			}
+		}
 
 		@Override
 		public void dispose() {
