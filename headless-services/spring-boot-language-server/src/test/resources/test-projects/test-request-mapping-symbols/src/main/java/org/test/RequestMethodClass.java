@@ -37,4 +37,14 @@ public class RequestMethodClass {
 	@RequestMapping(path="/postAndPutHello", method= {RequestMethod.POST, PUT})
 	public void updateHello() {
 	}
+
+	@GetMapping("")
+	public void getDataWithoutPath() {
+	}
+	
+	@GetMapping()
+	public void getDataWithoutAnything() {
+	}
+	
+
 }

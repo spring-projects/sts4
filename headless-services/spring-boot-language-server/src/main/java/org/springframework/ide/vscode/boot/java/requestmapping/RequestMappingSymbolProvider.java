@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2019 Pivotal, Inc.
+ * Copyright (c) 2017, 2022 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -73,6 +73,7 @@ public class RequestMappingSymbolProvider extends AbstractSymbolProvider {
 	private String[] getMethod(Annotation node, SpringIndexerJavaContext context) {
 		String[] methods = null;
 
+		// extract from annotation params
 		if (node.isNormalAnnotation()) {
 			NormalAnnotation normNode = (NormalAnnotation) node;
 			List<?> values = normNode.values();
@@ -88,10 +89,14 @@ public class RequestMappingSymbolProvider extends AbstractSymbolProvider {
 					}
 				}
 			}
-		} else if (node instanceof SingleMemberAnnotation) {
-			methods = getRequestMethod((SingleMemberAnnotation)node);
+		}
+		
+		// extract from annotation type
+		if (methods == null) {
+			methods = getRequestMethod(node);
 		}
 
+		// extract from parent annotations
 		if (methods == null && node.getParent() instanceof MethodDeclaration) {
 			Annotation parentAnnotation = getParentAnnotation(node);
 			if (parentAnnotation != null) {
@@ -156,7 +161,7 @@ public class RequestMappingSymbolProvider extends AbstractSymbolProvider {
 		return null;
 	}
 
-	private String[] getRequestMethod(SingleMemberAnnotation annotation) {
+	private String[] getRequestMethod(Annotation annotation) {
 		ITypeBinding type = annotation.resolveTypeBinding();
 		if (type != null) {
 			switch (type.getQualifiedName()) {

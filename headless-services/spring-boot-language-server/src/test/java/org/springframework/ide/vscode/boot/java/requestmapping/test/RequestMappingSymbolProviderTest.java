@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2020 Pivotal, Inc.
+ * Copyright (c) 2017, 2022 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -209,6 +209,20 @@ public class RequestMappingSymbolProviderTest {
 		String docUri = directory.toPath().resolve("src/main/java/org/test/RequestMethodClass.java").toUri().toString();
 		List<? extends SymbolInformation> symbols =  indexer.getSymbols(docUri);
 		assertTrue(containsSymbol(symbols, "@/getData -- GET", docUri, 12, 1, 12, 24));
+	}
+
+	@Test
+	public void testGetMappingSymbolWithoutPath() throws Exception {
+		String docUri = directory.toPath().resolve("src/main/java/org/test/RequestMethodClass.java").toUri().toString();
+		List<? extends SymbolInformation> symbols =  indexer.getSymbols(docUri);
+		assertTrue(containsSymbol(symbols, "@/ -- GET", docUri, 40, 1, 40, 16));
+	}
+
+	@Test
+	public void testGetMappingSymbolWithoutAnything() throws Exception {
+		String docUri = directory.toPath().resolve("src/main/java/org/test/RequestMethodClass.java").toUri().toString();
+		List<? extends SymbolInformation> symbols =  indexer.getSymbols(docUri);
+		assertTrue(containsSymbol(symbols, "@/ -- GET", docUri, 44, 1, 44, 14));
 	}
 
 	@Test
