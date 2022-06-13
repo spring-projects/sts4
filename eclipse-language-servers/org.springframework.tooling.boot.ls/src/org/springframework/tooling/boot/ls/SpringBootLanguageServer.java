@@ -47,6 +47,20 @@ public class SpringBootLanguageServer extends STS4LanguageServerProcessStreamCon
 		args.add("-Xmx1024m");
 		args.add("-XX:TieredStopAtLevel=1");
 		
+        args.add("--add-modules=ALL-SYSTEM");
+        args.add("--add-exports");
+        args.add("jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED");
+        args.add("--add-exports");
+        args.add("jdk.compiler/com.sun.tools.javac.util=ALL-UNNAMED");
+        args.add("--add-exports");
+        args.add("jdk.compiler/com.sun.tools.javac.comp=ALL-UNNAMED");
+        args.add("--add-exports");
+        args.add("jdk.compiler/com.sun.tools.javac.main=ALL-UNNAMED");
+        args.add("--add-exports");
+        args.add("jdk.compiler/com.sun.tools.javac.tree=ALL-UNNAMED");
+        args.add("--add-exports");
+        args.add("jdk.compiler/com.sun.tools.javac.code=ALL-UNNAMED");
+		
 		addCustomJVMArgs(args);
 		
 		return args;
