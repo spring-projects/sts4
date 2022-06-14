@@ -268,6 +268,7 @@
 			</plugin>
 
 			<!-- generate and package license information for included dependencies -->
+
 			<plugin>
 				<groupId>org.codehaus.mojo</groupId>
 				<artifactId>license-maven-plugin</artifactId>
@@ -343,7 +344,7 @@
 							</resources>
 						</configuration>
 					</execution>
-
+<!--
 					<execution>
 						<id>copy-license-files</id>
 						<phase>process-classes</phase>
@@ -360,6 +361,7 @@
 							</resources>
 						</configuration>
 					</execution>
+				-->
 				</executions>
 			</plugin>
 
