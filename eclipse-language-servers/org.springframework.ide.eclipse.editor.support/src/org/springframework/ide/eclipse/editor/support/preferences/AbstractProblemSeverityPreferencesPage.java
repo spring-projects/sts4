@@ -75,6 +75,8 @@ public abstract class AbstractProblemSeverityPreferencesPage extends FieldEditor
 	private static final String[][] SEVERITY_NAMES_AND_VALUES = {
 			{"Error", ProblemSeverity.ERROR.toString()},
 			{"Warning", ProblemSeverity.WARNING.toString()},
+			{"Info", ProblemSeverity.INFO.toString()},
+			{"Hint", ProblemSeverity.HINT.toString()},
 			{"Ignore", ProblemSeverity.IGNORE.toString()}
 	};
 

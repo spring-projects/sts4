@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2021 Pivotal, Inc.
+ * Copyright (c) 2017, 2022 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -122,5 +122,42 @@ public abstract class AnnotationHierarchies {
 		return findTransitiveSupers(candidate, new HashSet<>())
 				.anyMatch(sa -> isKeyAnnotationName.test(sa.getQualifiedName()));
 	}
+	
+	public static Collection<IAnnotationBinding> getDirectSuperAnnotationBindings(IAnnotationBinding annotationBinding) {
+		synchronized(lock) {
+			try {
+				if (annotationBinding.getAnnotationType() != null) {
+					IAnnotationBinding[] annotations = annotationBinding.getAnnotationType().getAnnotations();
+					if (annotations != null && annotations.length != 0) {
+						ImmutableList.Builder<IAnnotationBinding> superAnnotations = ImmutableList.builder();
+						for (IAnnotationBinding ab : annotations) {
+							ITypeBinding sa = ab.getAnnotationType();
+							if (sa != null) {
+								if (!ignoreAnnotation(sa.getQualifiedName())) {
+									superAnnotations.add(ab);
+								}
+							}
+						}
+						return superAnnotations.build();
+					}
+				}
+			}
+			catch (AbortCompilation e) {
+				log.debug("compilation aborted ", e);
+				// ignore this, it is most likely caused by broken source code, a broken classpath, or some optional dependencies not being on the classpath
+			}
+	
+			return ImmutableList.of();
+		}
+	}
+	
+	public static Stream<IAnnotationBinding> findTransitiveSuperAnnotationBindings(
+			IAnnotationBinding annotationBinding) {
+		synchronized (lock) {
+			return Stream.concat(Stream.of(annotationBinding), getDirectSuperAnnotationBindings(annotationBinding)
+					.stream().flatMap(superBinding -> findTransitiveSuperAnnotationBindings(superBinding)));
+		}
+	}
+
 
 }

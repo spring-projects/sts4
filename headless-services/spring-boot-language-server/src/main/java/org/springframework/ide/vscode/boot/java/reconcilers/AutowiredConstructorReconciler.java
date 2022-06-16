@@ -14,11 +14,14 @@ import java.util.List;
 import java.util.Optional;
 
 import org.eclipse.jdt.core.dom.Annotation;
+import org.eclipse.jdt.core.dom.IAnnotationBinding;
+import org.eclipse.jdt.core.dom.IMemberValuePairBinding;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.SpringJavaProblemType;
+import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
 import org.springframework.ide.vscode.commons.java.Version;
@@ -65,9 +68,9 @@ public class AutowiredConstructorReconciler implements AnnotationReconciler {
 			if (a.getParent() instanceof MethodDeclaration) {
 				MethodDeclaration method = (MethodDeclaration) a.getParent();
 				IMethodBinding methodBinding = method.resolveBinding();
-				if (methodBinding != null) {
+				if (methodBinding != null && methodBinding.isConstructor()) {
 					ITypeBinding declaringType = methodBinding.getDeclaringClass();
-					if (declaringType != null && isOnlyOneConstructor(declaringType)) {
+					if (declaringType != null && !isBootTestClass(declaringType) && isOnlyOneConstructor(declaringType)) {
 						return Optional.of(declaringType);
 					}
 				}
@@ -89,6 +92,31 @@ public class AutowiredConstructorReconciler implements AnnotationReconciler {
 			}
 		}
 		return numberOfConstructors == 1;
+	}
+	
+	private static boolean isBootTestClass(ITypeBinding typeBinding) {
+		for (IAnnotationBinding annotation : typeBinding.getAnnotations()) {
+			boolean found = AnnotationHierarchies.findTransitiveSuperAnnotationBindings(annotation).anyMatch(a -> {
+				if (a.getAnnotationType() != null) {
+					if ("org.springframework.test.context.BootstrapWith".equals(a.getAnnotationType().getQualifiedName())) {
+						for (IMemberValuePairBinding pair : a.getAllMemberValuePairs()) {
+							if (pair.getValue() instanceof ITypeBinding) {
+								ITypeBinding type = (ITypeBinding) pair.getValue();
+								if ("value".equals(pair.getName())
+										&& "org.springframework.boot.test.context.SpringBootTestContextBootstrapper".equals(type.getQualifiedName())) {
+									return true;
+								}
+							}
+						}
+					}
+				}
+				return false;
+			});
+			if (found) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 
