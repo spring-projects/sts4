@@ -4,7 +4,7 @@
 
 	<groupId>org.springframework.boot.ide</groupId>
 	<artifactId>org.springframework.boot.ide</artifactId>
-	<version>4.15.0-SNAPSHOT</version>
+	<version>4.15.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<organization>
@@ -1127,23 +1127,11 @@
 				<package.qualifierPrefix>e424</package.qualifierPrefix>
 			</properties>
 			<repositories>
-<!--				<repository>
+				<repository>
 					<id>2022-06</id>
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/releases/2022-06/</url>
-				</repository> -->
-				<repository>
-					<id>2022-06-staging</id>
-					<layout>p2</layout>
-					<url>https://download.eclipse.org/staging/2022-06/</url>
 				</repository>
-<!--
-				<repository>
-					<id>platform-i-build</id>
-					<layout>p2</layout>
-					<url>https://download.eclipse.org/eclipse/updates/4.24-I-builds/</url>
-				</repository>
--->
 				<repository>
 					<id>orbit</id>
 					<layout>p2</layout>
