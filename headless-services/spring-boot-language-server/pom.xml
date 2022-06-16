@@ -15,7 +15,7 @@
 
 	<properties>
 		<dependencies.version>${project.version}</dependencies.version>
-		<jdt.core.version>3.26.0</jdt.core.version>
+		<jdt.core.version>3.30.0</jdt.core.version>
 		<lsp4xml.version>0.13.1</lsp4xml.version>
 	</properties>
 
@@ -108,6 +108,18 @@
 			<groupId>org.eclipse.jdt</groupId>
 			<artifactId>org.eclipse.jdt.core</artifactId>
 			<version>${jdt.core.version}</version>
+ 		    <exclusions>
+		        <exclusion>
+		            <groupId>org.eclipse.platform</groupId>
+		            <artifactId>org.eclipse.equinox.preferences</artifactId>
+		        </exclusion>
+		    </exclusions>
+    	</dependency>
+		<!-- the 3.10.1 org.eclipse.platform fixed the pb -->
+		<dependency>
+		    <groupId>org.eclipse.platform</groupId>
+		    <artifactId>org.eclipse.equinox.preferences</artifactId>
+		    <version>3.10.1</version>
 		</dependency>
 
 		<dependency>
@@ -244,6 +256,7 @@
 				<configuration>
 					<layout>ZIP</layout>
 					<classifier>exec</classifier>
+					<mainClass>org.springframework.ide.vscode.boot.app.BootLanguageServerBootApp</mainClass>
 				</configuration>
 				<executions>
 					<execution>
