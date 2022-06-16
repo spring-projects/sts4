@@ -1,0 +1,164 @@
+/*******************************************************************************
+ * Copyright (c) 2022 VMware, Inc.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     VMware, Inc. - initial API and implementation
+ *******************************************************************************/
+package org.springframework.ide.vscode.commons.rewrite;
+
+import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Type;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
+
+import org.openrewrite.Recipe;
+import org.openrewrite.config.DeclarativeRecipe;
+import org.openrewrite.config.OptionDescriptor;
+import org.openrewrite.config.RecipeDescriptor;
+import org.openrewrite.config.RecipeIntrospectionException;
+import org.openrewrite.internal.RecipeIntrospectionUtils;
+
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonPrimitive;
+import com.google.gson.JsonSerializationContext;
+import com.google.gson.JsonSerializer;
+
+public class LoadUtils {
+
+	public static class DurationTypeConverter implements JsonSerializer<Duration>, JsonDeserializer<Duration> {
+		@Override
+		public JsonElement serialize(Duration src, Type srcType, JsonSerializationContext context) {
+			return new JsonPrimitive(src.toNanos());
+		}
+	
+		@Override
+		public Duration deserialize(JsonElement json, Type type, JsonDeserializationContext context)
+				throws JsonParseException {
+			return Duration.ofNanos(json.getAsLong());
+		}
+	}
+	
+	@SuppressWarnings("unchecked")
+	public static Recipe createRecipe(RecipeDescriptor d) {
+		try {
+			Class<? extends Recipe> recipeClazz = (Class<? extends Recipe>) Class.forName(d.getName());
+			Recipe recipe = constructRecipe(recipeClazz, d.getOptions());
+			return recipe;
+		} catch (ClassNotFoundException e) {
+			DeclarativeRecipe recipe = new DeclarativeRecipe(d.getName(), d.getDisplayName(), d.getDescription(), d.getTags(), d.getEstimatedEffortPerOccurrence(), d.getSource());
+			for (RecipeDescriptor subDescriptor : d.getRecipeList()) {
+				recipe.doNext(createRecipe(subDescriptor));
+			}
+			return recipe;
+		}
+	}
+	
+    public static Recipe constructRecipe(Class<?> recipeClass, List<OptionDescriptor> options) {
+        Constructor<?> primaryConstructor = RecipeIntrospectionUtils.getZeroArgsConstructor(recipeClass);
+        if (primaryConstructor == null) {
+            primaryConstructor = RecipeIntrospectionUtils.getPrimaryConstructor(recipeClass);
+        }
+        Object[] constructorArgs = new Object[primaryConstructor.getParameterCount()];
+        List<OptionDescriptor> remainingOptions = new ArrayList<>(options);
+        for (int i = 0; i < primaryConstructor.getParameters().length; i++) {
+            java.lang.reflect.Parameter param = primaryConstructor.getParameters()[i];
+            int j = 0;
+            for (; j < remainingOptions.size() && !param.getName().equals(remainingOptions.get(j).getName()); j++) {
+            	// nothing
+            }
+            if (j < remainingOptions.size()) {
+            	// found in option descriptors
+            	OptionDescriptor optionDescriptor = remainingOptions.remove(j);
+            	constructorArgs[i] = getOptionValueForType(param.getType(), optionDescriptor);
+            } else {
+            	// param not found in option descriptors
+                if (param.getType().isPrimitive()) {
+                    constructorArgs[i] = getPrimitiveDefault(param.getType());
+                } else {
+                    constructorArgs[i] = null;
+                }
+            }
+        }
+        primaryConstructor.setAccessible(true);
+        try {
+            Recipe recipe = (Recipe) primaryConstructor.newInstance(constructorArgs);
+			for (OptionDescriptor option : remainingOptions) {
+				if (option.getValue() != null) {
+					Field f = recipe.getClass().getDeclaredField(option.getName());
+					f.setAccessible(true);
+					f.set(recipe, getOptionValueForType(f.getType(), option));
+				}
+			}
+			return recipe;
+        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchFieldException | SecurityException e) {
+            // Should never happen
+            throw new RecipeIntrospectionException("Unable to call primary constructor for Recipe " + recipeClass, e);
+        }
+    }
+    
+    private static Object getOptionValueForType(Class<?> type, OptionDescriptor option) {
+    	if (option.getValue() instanceof Collection && type.isArray()) {
+    		Collection<?> arrayValue = (Collection<?>) option.getValue();
+    		Object[] valueToSet = (Object[]) Array.newInstance(type.getComponentType(), arrayValue.size());
+    		int k = 0;
+    		for (Object v : arrayValue) {
+    			valueToSet[k] = getOptionValue(type.getComponentType().getSimpleName(), v);
+    		}
+    		return valueToSet;
+    	} else {
+    		return getOptionValue(option.getType(), option.getValue());
+    	}
+    }
+    
+    private static Object getOptionValue(String type, Object v) {
+    	switch (type) {
+    	case "int":
+    		return ((Number) v).intValue();
+    	case "long":
+    		return ((Number) v).longValue();
+    	case "short":
+    		return ((Number) v).shortValue();
+    	case "float":
+    		return ((Number) v).floatValue();
+    	case "double":
+    		return ((Number) v).doubleValue();
+    	default:
+    		return v;
+    	}
+    }
+    
+    private static Object getPrimitiveDefault(Class<?> t) {
+        if (t.equals(byte.class)) {
+            return (byte) 0;
+        } else if (t.equals(short.class)) {
+            return (short) 0;
+        } else if (t.equals(int.class)) {
+            return 0;
+        } else if (t.equals(long.class)) {
+            return 0L;
+        } else if (t.equals(float.class)) {
+            return 0.0f;
+        } else if (t.equals(double.class)) {
+            return 0.0d;
+        } else if (t.equals(char.class)) {
+            return '\u0000';
+        } else if (t.equals(boolean.class)) {
+            return false;
+        } else {
+            throw new RecipeIntrospectionException(t.getCanonicalName() + " is not a supported primitive type");
+        }
+    }
+
+}

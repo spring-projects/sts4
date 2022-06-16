@@ -3,18 +3,34 @@ import { LanguageClient } from "vscode-languageclient/node";
 import * as VSCode from 'vscode';
 import * as path from "path";
 
-interface RewriteCommandInfo {
-    id: string;
-    label: string;
-    detail?: string;
-    children: RewriteCommandInfo[];
-    selected: boolean;
+interface RecipeDescriptor {
+    name: string;
+    displayName: string;
+    description: string;
+    tags: string[];
+    estimatedEffortPerOccurrence: number;
+    options: OptionDescriptor[];
+    languages: string[];
+    recipeList: RecipeDescriptor[];
+    source: string;
+}
+
+interface OptionDescriptor {
+    name: string;
+    type: string;
+    displayName: string;
+    description: string;
+    example: string;
+    valid: string[] | undefined;
+    required: boolean;
+    value: any;
 }
 
 interface RecipeQuickPickItem extends VSCode.QuickPickItem{
-    id: string;
-    children: RecipeQuickPickItem[];
+    readonly id: string;
     selected: boolean;
+    children: RecipeQuickPickItem[],
+    readonly recipeDescriptor: RecipeDescriptor;
 }
 
 function getWorkspaceFolderName(file: VSCode.Uri): string {
@@ -73,34 +89,47 @@ async function liveHoverConnectHandler(uri: VSCode.Uri) {
     if (!uri) {
         uri = await getTargetPomXml();
     }
-    const cmds: RewriteCommandInfo[] = await VSCode.commands.executeCommand('sts/rewrite/list', uri.toString(true));
+    const cmds: RecipeDescriptor[] = await VSCode.commands.executeCommand('sts/rewrite/list', uri.toString(true));
     const choices = cmds.map(convertToQuickPickItem);
     await showCurrentPathQuickPick(choices, []);
-    const recipesInfo = choices.filter(i => i.selected).map(convertToRecipeDescriptor);
-    if (recipesInfo.length) {
-        VSCode.commands.executeCommand('sts/rewrite/execute', uri.toString(true), recipesInfo); 
+    const recipeDescriptors = choices.filter(i => i.selected).map(convertToRecipeDescriptor);
+    if (recipeDescriptors.length) {
+        const aggregateRecipeDescriptor = recipeDescriptors.length === 1 ? recipeDescriptors[0] : {
+            name: `${recipeDescriptors.length} recipes`,
+            displayName:  `${recipeDescriptors.length} recipes`,
+            description: recipeDescriptors.map(d => d.description).join('\n'),
+            tags: [...new Set<string>(recipeDescriptors.flatMap(d => d.tags))],
+            languages: [...new Set<string>(recipeDescriptors.flatMap(d => d.languages))],
+            options: [],
+            recipeList: recipeDescriptors,
+            estimatedEffortPerOccurrence: recipeDescriptors.filter(d => d.estimatedEffortPerOccurrence).map(d => d.estimatedEffortPerOccurrence).reduce((p, c) => p + c, 0)
+        };
+        if (aggregateRecipeDescriptor.estimatedEffortPerOccurrence === 0) {
+            delete aggregateRecipeDescriptor.estimatedEffortPerOccurrence;
+        }
+        VSCode.commands.executeCommand('sts/rewrite/execute', uri.toString(true), aggregateRecipeDescriptor); 
     } else {
         VSCode.window.showErrorMessage('No Recipes were selected!');
     }
 }
 
-function convertToRecipeDescriptor(i: RecipeQuickPickItem): RewriteCommandInfo {
+function convertToRecipeDescriptor(i: RecipeQuickPickItem): RecipeDescriptor {
     return {
-        id: i.id,
-        label: i.label,
-        selected: i.selected,
-        children: i.children.map(convertToRecipeDescriptor)
+        ...i.recipeDescriptor,
+        recipeList: i.children.filter(c => c.selected).map(convertToRecipeDescriptor)
     };
 }
 
-function convertToQuickPickItem(i: RewriteCommandInfo): RecipeQuickPickItem {
+function convertToQuickPickItem(i: RecipeDescriptor): RecipeQuickPickItem {
     return {
-        id: i.id,
-        label: i.label,
-        detail: i.detail,
-        selected: i.selected,
-        children: i.children ? i.children.map(convertToQuickPickItem) : [],
-        buttons: i.children && i.children.length ? [ SUB_RECIPES_BUTTON ] : undefined,
+        id: i.name,
+        label: i.displayName,
+        detail: i.options.filter(o => !!o.value).map(o => `${o.name}: ${JSON.stringify(o.value)}`).join('\n\n'),
+        description: i.description,
+        selected: false,
+        children: i.recipeList ? i.recipeList.map(convertToQuickPickItem) : [],
+        buttons: i.recipeList && i.recipeList.length ? [ SUB_RECIPES_BUTTON ] : undefined,
+        recipeDescriptor: i
     };
 }
 
@@ -112,7 +141,7 @@ function showCurrentPathQuickPick(items: RecipeQuickPickItem[], itemsPath: Recip
             parent = currentItems.find(i => i === p);
             currentItems = parent.children;
         });
-        const quickPick = VSCode.window.createQuickPick<RewriteCommandInfo & VSCode.QuickPickItem>();
+        const quickPick = VSCode.window.createQuickPick<RecipeQuickPickItem>();
         quickPick.items = currentItems;
         quickPick.title = 'Select Recipes';
         quickPick.canSelectMany = true;

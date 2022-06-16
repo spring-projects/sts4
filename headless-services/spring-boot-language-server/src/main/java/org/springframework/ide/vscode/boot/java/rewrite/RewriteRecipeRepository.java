@@ -13,8 +13,8 @@ package org.springframework.ide.vscode.boot.java.rewrite;
 import java.io.File;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -39,8 +39,8 @@ import org.openrewrite.Recipe;
 import org.openrewrite.Result;
 import org.openrewrite.SourceFile;
 import org.openrewrite.Validated;
-import org.openrewrite.config.DeclarativeRecipe;
 import org.openrewrite.config.Environment;
+import org.openrewrite.config.RecipeDescriptor;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.maven.MavenParser;
 import org.slf4j.Logger;
@@ -50,6 +50,8 @@ import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
+import org.springframework.ide.vscode.commons.rewrite.LoadUtils;
+import org.springframework.ide.vscode.commons.rewrite.LoadUtils.DurationTypeConverter;
 import org.springframework.ide.vscode.commons.rewrite.ORDocUtils;
 import org.springframework.ide.vscode.commons.rewrite.maven.MavenProjectParser;
 
@@ -57,6 +59,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 
 public class RewriteRecipeRepository {
@@ -75,7 +78,7 @@ public class RewriteRecipeRepository {
 	
 	final public CompletableFuture<Void> loaded;
 	
-	private static final Set<String> TOP_LEVEL_RECIPES = Set.of(
+	static final Set<String> TOP_LEVEL_RECIPES = Set.of(
 			"org.openrewrite.java.spring.boot2.SpringBoot2JUnit4to5Migration",
 			"org.openrewrite.java.spring.boot2.SpringBoot2BestPractices",
 			"org.openrewrite.java.spring.boot2.SpringBoot1To2Migration",
@@ -85,6 +88,10 @@ public class RewriteRecipeRepository {
 			"org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_0"
 	);
 	
+	private static Gson serializationGson = new GsonBuilder()
+			.registerTypeAdapter(Duration.class, new DurationTypeConverter())
+			.create();
+		
 	public RewriteRecipeRepository(SimpleLanguageServer server, JavaProjectFinder projectFinder) {
 		this.server = server;
 		this.projectFinder = projectFinder;
@@ -95,6 +102,7 @@ public class RewriteRecipeRepository {
 	
 	private void loadRecipes() {
 		try {
+			server.getProgressService().progressEvent(RECIPES_LOADING_PROGRESS, "Loading Rewrite Recipes...");
 			log.info("Loading Rewrite Recipes...");
 			for (Recipe r : Environment.builder().scanRuntimeClasspath().build().listRecipes()) {
 				if (r.getName() != null) {
@@ -119,6 +127,7 @@ public class RewriteRecipeRepository {
 			log.info("Done loading Rewrite Recipes");
 			server.doOnInitialized(() -> registerCommands());
 		} catch (Throwable t) {
+			server.getProgressService().progressEvent(RECIPES_LOADING_PROGRESS, null);
 			log.error("", t);
 		}
 	}
@@ -127,46 +136,39 @@ public class RewriteRecipeRepository {
 		return Optional.ofNullable(recipes.get(name));
 	}
 	
+	private static JsonElement recipeToJson(Recipe r) {
+		JsonElement jsonElement = serializationGson.toJsonTree(r.getDescriptor());
+		return jsonElement;
+	}
+	
 	private void registerCommands() {
 		log.info("Registering commands for rewrite recipes...");
 		
 		Builder<Object> listBuilder = ImmutableList.builder();
-				
+		
 		server.onCommand("sts/rewrite/list", params -> {
 			JsonElement uri = (JsonElement) params.getArguments().get(0);
-			return CompletableFuture.completedFuture(uri == null ? Collections.emptyList() : listProjectRefactoringCommands(uri.getAsString()));
+			return CompletableFuture.completedFuture(uri == null ? Collections.emptyList() : listProjectRefactoringRecipes(uri.getAsString()).stream().map(RewriteRecipeRepository::recipeToJson).collect(Collectors.toList()));
 		});
 		listBuilder.add("sts/rewrite/list");
 		
 		server.onCommand("sts/rewrite/execute", params -> {
 			String uri = ((JsonElement) params.getArguments().get(0)).getAsString();
 			JsonElement recipesJson = ((JsonElement) params.getArguments().get(1));
-			RecipeDescriptor[] recipeDescriptors = new Gson().fromJson(recipesJson, RecipeDescriptor[].class);
-			List<Recipe> convertedRecipes = Arrays.stream(recipeDescriptors)
-					.filter(rd -> rd.selected)
-					.filter(rd -> recipes.containsKey(rd.id))
-					.map(rd -> convert(recipes.get(rd.id), rd))
-					.collect(Collectors.toList());
-			if (convertedRecipes.isEmpty()) {
+			
+			RecipeDescriptor d = serializationGson.fromJson(recipesJson, RecipeDescriptor.class);
+			
+			Recipe aggregateRecipe = LoadUtils.createRecipe(d);
+			
+			if (aggregateRecipe.getRecipeList().isEmpty()) {
 				throw new RuntimeException("Not recipes to execute!");
-			} else if (convertedRecipes.size() == 1) {
-				Recipe r = convertedRecipes.get(0);
+			} else if (aggregateRecipe.getRecipeList().size() == 1) {
+				Recipe r = aggregateRecipe.getRecipeList().get(0);
 				String progressToken = params.getWorkDoneToken() == null || params.getWorkDoneToken().getLeft() == null ? r.getName() : params.getWorkDoneToken().getLeft();
 				return apply(r, uri, progressToken);
 			} else {
-				Recipe multiRecipe = new Recipe() {
-
-					@Override
-					public String getDisplayName() {
-						return convertedRecipes.size() + " recipes";
-					}
-					
-				};
-				for (Recipe r : convertedRecipes) {
-					multiRecipe.doNext(r);
-				}
-				String progressToken = params.getWorkDoneToken() == null || params.getWorkDoneToken().getLeft() == null ? multiRecipe.getName() : params.getWorkDoneToken().getLeft();
-				return apply(multiRecipe, uri, progressToken);
+				String progressToken = params.getWorkDoneToken() == null || params.getWorkDoneToken().getLeft() == null ? aggregateRecipe.getName() : params.getWorkDoneToken().getLeft();
+				return apply(aggregateRecipe, uri, progressToken);
 			}
 		});
 		listBuilder.add("sts/rewrite/execute");
@@ -248,13 +250,13 @@ public class RewriteRecipeRepository {
 		return ORDocUtils.createWorkspaceEdit(absoluteProjectDir, server.getTextDocumentService(), results);
 	}
 	
-	private List<RecipeDescriptor> listProjectRefactoringCommands(String uri) {
+	private List<Recipe> listProjectRefactoringRecipes(String uri) {
 		if (uri != null) {
 			Optional<IJavaProject> projectOpt = projectFinder.find(new TextDocumentIdentifier(uri));
 			if (projectOpt.isPresent()) {
-				List<RecipeDescriptor> commandDescriptors = new ArrayList<>(globalCommandRecipes.size()); 
+				List<Recipe> commandDescriptors = new ArrayList<>(globalCommandRecipes.size()); 
 				for (Recipe r : globalCommandRecipes) {
-					commandDescriptors.add(new RecipeDescriptor(r));
+					commandDescriptors.add(r);
 				}
 				return commandDescriptors;
 			}
@@ -287,47 +289,47 @@ public class RewriteRecipeRepository {
 		}
 	}
 	
-	private static Recipe convert(Recipe r, RecipeDescriptor d) {
-		try {
-			if (d.selected) {
-				if (d.children != null && !d.children.isEmpty()) {
-					Recipe recipe = r instanceof DeclarativeRecipe ? new DeclarativeRecipe(r.getName(), r.getDisplayName(), r.getDescription(), r.getTags(), r.getEstimatedEffortPerOccurrence(), null)
-							: r.getClass().getDeclaredConstructor().newInstance();
-					int i = 0;
-					for (Recipe sr : r.getRecipeList()) {
-						Recipe convertedSubRecipe = convert(sr, d.children.get(i++));
-						if (convertedSubRecipe != null) {
-							recipe.doNext(convertedSubRecipe);
-						}
-					}
-					return recipe;
-				} else {
-					return r;
-				}
-			}
-		} catch (Exception e) {
-			log.error("", e);
-		}
-		return null;
-	}
+//	private static Recipe convert(Recipe r, RecipeDescriptor d) {
+//		try {
+//			if (d.selected) {
+//				if (d.children != null && !d.children.isEmpty()) {
+//					Recipe recipe = r instanceof DeclarativeRecipe ? new DeclarativeRecipe(r.getName(), r.getDisplayName(), r.getDescription(), r.getTags(), r.getEstimatedEffortPerOccurrence(), null)
+//							: r.getClass().getDeclaredConstructor().newInstance();
+//					int i = 0;
+//					for (Recipe sr : r.getRecipeList()) {
+//						Recipe convertedSubRecipe = convert(sr, d.children.get(i++));
+//						if (convertedSubRecipe != null) {
+//							recipe.doNext(convertedSubRecipe);
+//						}
+//					}
+//					return recipe;
+//				} else {
+//					return r;
+//				}
+//			}
+//		} catch (Exception e) {
+//			log.error("", e);
+//		}
+//		return null;
+//	}
 
-	@SuppressWarnings("unused")
-	private static class RecipeDescriptor {
-		String id;
-		String label;
-		String detail;
-		List<RecipeDescriptor> children;
-		boolean selected;
-		
-		RecipeDescriptor(Recipe r) {
-			this.id = r.getName();
-			this.label = r.getDisplayName();
-			this.detail = r.getDescription();
-			List<Recipe> subRecipes = r.getRecipeList();
-			if (r instanceof DeclarativeRecipe && !subRecipes.isEmpty() && (subRecipes.size() > 1 || subRecipes.get(0) instanceof DeclarativeRecipe)) {
-				this.children = r.getRecipeList().stream().map(sr -> new RecipeDescriptor(sr)).collect(Collectors.toList());
-			}
-		}
-	}
+//	@SuppressWarnings("unused")
+//	private static class RecipeDescriptor {
+//		String id;
+//		String label;
+//		String detail;
+//		List<RecipeDescriptor> children;
+//		boolean selected;
+//		
+//		RecipeDescriptor(Recipe r) {
+//			this.id = r.getName();
+//			this.label = r.getDisplayName();
+//			this.detail = r.getDescription();
+//			List<Recipe> subRecipes = r.getRecipeList();
+//			if (r instanceof DeclarativeRecipe && !subRecipes.isEmpty() && (subRecipes.size() > 1 || subRecipes.get(0) instanceof DeclarativeRecipe)) {
+//				this.children = r.getRecipeList().stream().map(sr -> new RecipeDescriptor(sr)).collect(Collectors.toList());
+//			}
+//		}
+//	}
 	
 }

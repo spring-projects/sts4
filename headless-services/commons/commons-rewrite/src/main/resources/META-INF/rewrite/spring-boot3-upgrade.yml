@@ -9,7 +9,7 @@ recipeList:
   # Upgrade 3.0.x from 2.x
   - org.openrewrite.java.spring.boot3.MavenPomUpgrade
   - org.openrewrite.java.spring.boot3.data.UpgradeSpringData_3_0
-#  - org.openrewrite.java.spring.boot3.SpringBootProperties_3_0
+  - org.openrewrite.java.spring.boot3.Micrometer_3_0
 ---
 ########################################################################################################################
 # SpringBoot 3_0 Maven Pom
@@ -31,5 +31,17 @@ recipeList:
       key: 'java.version'
       newValue: 17
       addIfMissing: true
+---
+########################################################################################################################
+# Spring Data 3.0 io.micrometer.core.instrument.binder -> io.micrometer.binder
+type: specs.openrewrite.org/v1beta/recipe
+name: org.openrewrite.java.spring.boot3.Micrometer_3_0
+displayName: Micrometer compatible with Boot 3.x 
+description: Switch to Micrometer compatible with Boot 3.x
+recipeList:
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: io.micrometer.core.instrument.binder
+      newPackageName: io.micrometer.binder
+      recursive: true
 
       
