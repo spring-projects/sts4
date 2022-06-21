@@ -1,3 +1,12 @@
+## 2022-06-17 (1.36.0)
+
+* _(Spring Boot)_ fixed: VScode incorrectly suggests removing @Autowired annotation from methods ([#787](https://github.com/spring-projects/sts4/issues/787))
+* _(Spring Boot)_ fixed: VScode quick fix should not suggest removing @Autowired annotation from JUnit tests ([#786](https://github.com/spring-projects/sts4/issues/786))
+
+## 2022-06-15 (1.35.0)
+
+* _(VSCode)_ fixed: Cannot update vscode plugin to 1.34.0 ([#784](https://github.com/spring-projects/sts4/issues/784))
+
 ## 2022-06-15 (4.15.0 RELEASE, incl. language servers version 1.34.0)
 
 * _(Spring Boot)_ fixed: vscode-sts: an edge case of workspace symbol for @PutMapping ([#781](https://github.com/spring-projects/sts4/issues/781))
