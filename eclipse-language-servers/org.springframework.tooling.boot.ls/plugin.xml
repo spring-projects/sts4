@@ -175,8 +175,8 @@
             </activeWhen>
       </handler>
       <handler
-            class="org.springframework.tooling.boot.ls.commands.UpgradeToBoot3Handler"
-            commandId="org.springframework.tooling.boot.ls.UpgradeToBoot3">
+            class="org.springframework.tooling.boot.ls.commands.RewriteRefactoringsHandler"
+            commandId="org.springframework.tooling.boot.ls.Rewrite">
       </handler>
    </extension>
    <extension
@@ -194,9 +194,9 @@
       </command>
       <command
             categoryId="org.springframework.ide.eclipse.commands"
-            description="Upgrade Spring Boot 2.x prohect to Spring Boot 3.x"
-            id="org.springframework.tooling.boot.ls.UpgradeToBoot3"
-            name="Upgrade to Boot 3">
+            description="Rewrite Refactorings for Spring Boot projects"
+            id="org.springframework.tooling.boot.ls.Rewrite"
+            name="Rewrite Refactorings...">
       </command>
    </extension>
 
@@ -372,9 +372,9 @@
             allPopups="false"
             locationURI="popup:org.springframework.ide.eclipse.ui.tools?after=boot">
          <command
-               commandId="org.springframework.tooling.boot.ls.UpgradeToBoot3"
-               id="org.springframework.tooling.boot.ls.UpgradeToBoot3"
-               label="Upgrade to Boot 3"
+               commandId="org.springframework.tooling.boot.ls.Rewrite"
+               id="org.springframework.tooling.boot.ls.Rewrite"
+               label="Rewrite Refactorings..."
                style="push">
             <visibleWhen
                   checkEnabled="false">
@@ -389,7 +389,7 @@
                            <and>
                               <test
                                     forcePluginActivation="true"
-                                    property="org.springsource.ide.eclipse.boot.isBoot2Resource">
+                                    property="org.springsource.ide.eclipse.boot.isBootResource">
                               </test>
                               <or>
                                  <test
@@ -416,7 +416,7 @@
                            </test>
                            <test
                                  forcePluginActivation="true"
-                                 property="org.springsource.ide.eclipse.boot.javaelement.isInBoot2Project">
+                                 property="org.springsource.ide.eclipse.boot.javaelement.isBootProject">
                            </test>
                         </and>
                      </or>
