@@ -1,0 +1,655 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="https://maven.apache.org/POM/4.0.0" xmlns:xsi="https://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="https://maven.apache.org/POM/4.0.0 https://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+
+	<parent>
+		<groupId>org.springframework.boot.ide</groupId>
+		<artifactId>org.springframework.boot.ide</artifactId>
+		<version>4.15.2-SNAPSHOT</version>
+		<relativePath>../pom.xml</relativePath>
+	</parent>
+
+	<artifactId>org.springframework.boot.ide.product</artifactId>
+
+	<packaging>eclipse-repository</packaging>
+
+	<properties>
+		<justj.repository>https://download.eclipse.org/justj/jres/17/updates/release/latest/</justj.repository>
+	</properties>
+
+	<build>
+		<plugins>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-install-plugin</artifactId>
+				<version>2.5.2</version>
+				<executions>
+					<execution>
+						<id>default-install</id>
+						<phase>none</phase>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-p2-repository-plugin</artifactId>
+				<version>${tycho-version}</version>
+				<configuration>
+					<includeAllDependencies>false</includeAllDependencies>
+				</configuration>
+			</plugin>
+			  
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-p2-publisher-plugin</artifactId>
+				<version>${tycho-version}</version>
+				<configuration>
+					<publishArtifacts>true</publishArtifacts>
+				</configuration>
+			</plugin>
+<!--
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>target-platform-configuration</artifactId>
+				<version>${tycho-version}</version>
+				<configuration>
+					<executionEnvironment>none</executionEnvironment>
+				</configuration>
+			</plugin>
+-->
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-p2-director-plugin</artifactId>
+				<version>${tycho-version}</version>
+				<executions>
+					<execution>
+						<id>materialize-products</id>
+						<goals>
+							<goal>materialize-products</goal>
+						</goals>
+						<phase>package</phase>
+					</execution>
+					<execution>
+						<id>archive-products</id>
+						<goals>
+							<goal>archive-products</goal>
+						</goals>
+						<phase>verify</phase>
+					</execution>
+				</executions>
+				<configuration>
+					<products>
+						<product>
+							<id>org.springframework.boot.ide.branding.sts4</id>
+							<rootFolder>sts-${unqualifiedVersion}.${p2.qualifier}</rootFolder>
+							<rootFolders>
+								<macosx>SpringToolSuite4.app</macosx>
+							</rootFolders>
+							<archiveFileName>spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}</archiveFileName>
+						</product>
+					</products>
+					<formats>
+						<linux>tar.gz</linux>
+						<macosx>tar.gz</macosx>
+					</formats>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.eclipse.tycho.extras</groupId>
+				<artifactId>tycho-eclipserun-plugin</artifactId>
+				<version>${tycho-version}</version>
+				<configuration>
+					<repositories>
+						<repository>
+							<id>2022-03</id>
+							<layout>p2</layout>
+							<url>https://download.eclipse.org/releases/2022-03</url>
+						</repository>
+					</repositories>
+					<argLine>-Declipse.p2.mirrors=false -Dorg.eclipse.ecf.provider.filetransfer.retrieve.readTimeout=100000 -Dorg.eclipse.ecf.provider.filetransfer.retrieve.retryAttempts=30 -Dorg.eclipse.ecf.provider.filetransfer.retrieve.closeTimeout=100000</argLine>
+					<dependencies>
+						<dependency>
+							<artifactId>org.eclipse.pde.api.tools</artifactId>
+							<type>eclipse-plugin</type>
+						</dependency>
+						<dependency>
+							<artifactId>org.eclipse.pde.build</artifactId>
+							<type>eclipse-plugin</type>
+						</dependency>
+						<dependency>
+							<artifactId>org.eclipse.pde.core</artifactId>
+							<type>eclipse-plugin</type>
+						</dependency>
+						<dependency>
+							<artifactId>org.eclipse.equinox.launcher</artifactId>
+							<type>eclipse-plugin</type>
+						</dependency>
+						<dependency>
+							<artifactId>org.eclipse.osgi.compatibility.state</artifactId>
+							<type>eclipse-plugin</type>
+						</dependency>
+						<dependency>
+							<artifactId>javax.annotation</artifactId>
+							<type>eclipse-plugin</type>
+						</dependency>
+						<dependency>
+							<artifactId>org.eclipse.equinox.p2.transport.ecf</artifactId>
+							<type>eclipse-plugin</type>
+						</dependency>
+						<dependency>
+							<artifactId>org.eclipse.equinox.p2.repository</artifactId>
+							<type>eclipse-plugin</type>
+						</dependency>
+						<dependency>
+							<artifactId>org.eclipse.equinox.p2.touchpoint.natives</artifactId>
+							<type>eclipse-plugin</type>
+						</dependency>
+						<dependency>
+							<artifactId>org.eclipse.equinox.p2.touchpoint.eclipse</artifactId>
+							<type>eclipse-plugin</type>
+						</dependency>
+						<dependency>
+							<artifactId>org.eclipse.equinox.p2.artifact.repository
+							</artifactId>
+							<type>eclipse-plugin</type>
+						</dependency>
+						<dependency>
+							<artifactId>org.eclipse.equinox.p2.director.app</artifactId>
+							<type>eclipse-plugin</type>
+						</dependency>
+						<dependency>
+							<artifactId>org.eclipse.equinox.ds</artifactId>
+							<type>eclipse-plugin</type>
+						</dependency>
+						<dependency>
+							<artifactId>org.eclipse.core.net</artifactId>
+							<type>eclipse-plugin</type>
+						</dependency>
+					</dependencies>
+				</configuration>
+				<executions>
+					<execution>
+						<id>macos-x86_64</id>
+						<phase>package</phase>
+						<goals>
+							<goal>eclipse-run</goal>
+						</goals>
+						<configuration>
+							<appArgLine>-consoleLog -application org.eclipse.equinox.p2.director -nosplash -destination ${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/macosx/cocoa/x86_64/SpringToolSuite4.app -repository ${justj.repository} -installIUs org.eclipse.justj.openjdk.hotspot.jre.full.feature.group</appArgLine>
+						</configuration>
+					</execution>
+					<execution>
+						<id>macos-aarch_64</id>
+						<phase>package</phase>
+						<goals>
+							<goal>eclipse-run</goal>
+						</goals>
+						<configuration>
+							<appArgLine>-consoleLog -application org.eclipse.equinox.p2.director -nosplash -destination ${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/macosx/cocoa/aarch64/SpringToolSuite4.app -repository ${justj.repository} -installIUs org.eclipse.justj.openjdk.hotspot.jre.full.feature.group</appArgLine>
+						</configuration>
+					</execution>
+					<execution>
+						<id>windows-x86_64</id>
+						<phase>package</phase>
+						<goals>
+							<goal>eclipse-run</goal>
+						</goals>
+						<configuration>
+							<appArgLine>-consoleLog -application org.eclipse.equinox.p2.director -nosplash -destination ${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/win32/win32/x86_64/sts-${unqualifiedVersion}.${p2.qualifier} -repository ${justj.repository} -installIUs org.eclipse.justj.openjdk.hotspot.jre.full.feature.group</appArgLine>
+						</configuration>
+					</execution>
+					<execution>
+						<id>linux_x86_64</id>
+						<phase>package</phase>
+						<goals>
+							<goal>eclipse-run</goal>
+						</goals>
+						<configuration>
+							<appArgLine>-consoleLog -application org.eclipse.equinox.p2.director -nosplash -destination ${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/linux/gtk/x86_64/sts-${unqualifiedVersion}.${p2.qualifier} -repository ${justj.repository} -installIUs org.eclipse.justj.openjdk.hotspot.jre.full.feature.group</appArgLine>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>exec-maven-plugin</artifactId>
+				<version>1.6.0</version>
+				<executions>
+					<execution>
+	                    <id>generate-license-files</id>
+						<phase>package</phase>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+						<configuration>
+					        <executable>java</executable>
+							<arguments>
+								<argument>-jar</argument>
+								<argument>${project.build.directory}/../../common/eclipse-distribution-license-file-generator.jar</argument>
+								<argument>${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/macosx/cocoa/x86_64/SpringToolSuite4.app/Contents/Eclipse/plugins/</argument>
+								<argument>${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/macosx/cocoa/x86_64/SpringToolSuite4.app/Contents/Eclipse/open-source-licenses.txt</argument>
+								<argument>${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/macosx/cocoa/aarch64/SpringToolSuite4.app/Contents/Eclipse/plugins/</argument>
+								<argument>${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/macosx/cocoa/aarch64/SpringToolSuite4.app/Contents/Eclipse/open-source-licenses.txt</argument>
+								<argument>${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/linux/gtk/x86_64/sts-${unqualifiedVersion}.${p2.qualifier}/plugins/</argument>
+								<argument>${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/linux/gtk/x86_64/sts-${unqualifiedVersion}.${p2.qualifier}/open-source-licenses.txt</argument>
+								<argument>${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/win32/win32/x86_64/sts-${unqualifiedVersion}.${p2.qualifier}/plugins/</argument>
+								<argument>${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/win32/win32/x86_64/sts-${unqualifiedVersion}.${p2.qualifier}/open-source-licenses.txt</argument>
+							</arguments>
+						</configuration>
+					</execution>
+
+					<execution>
+	                    <id>generate-self-extracting-jar</id>
+						<phase>verify</phase>
+						<goals>
+							<goal>exec</goal>
+						</goals>
+						<configuration>
+					        <executable>java</executable>
+							<arguments>
+								<argument>-jar</argument>
+								<argument>${project.build.directory}/../../common/self-extracting-jar-creator.jar</argument>
+								<argument>${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-win32.win32.x86_64.zip</argument>
+							</arguments>
+						</configuration>
+					</execution>
+
+				</executions>
+			</plugin>
+
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<version>1.7</version>
+				<executions>
+
+					<!-- win exe signing reguires the npm module osslsigncode to be installed on the build machine and the corresponding keys to be around in PKCS#12 format -->
+					<execution>
+						<id>win-exe-signing</id>
+						<phase>package</phase>
+						<configuration>
+							<skip>${skip.win.signing}</skip>
+							<target>
+
+								<taskdef resource="net/sf/antcontrib/antcontrib.properties" />
+
+								<exec executable="osslsigncode" failonerror="true">
+									<arg value="sign"/>
+									<arg value="-pkcs12"/>
+									<arg value="${env.WIN_KEY_LOCATION}"/>
+									<arg value="-pass"/>
+									<arg value="${env.bamboo_vault_signing_passphrase}"/>
+									<arg value="-n"/>
+									<arg value="Spring Tools 4"/>
+								    <arg value="-i"/>
+								    <arg value="https://spring.io"/>
+								    <arg value="-t"/>
+								    <arg value="http://timestamp.digicert.com"/>
+									<arg value="-in"/>
+									<arg value="${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/win32/win32/x86_64/sts-${unqualifiedVersion}.${p2.qualifier}/SpringToolSuite4.exe"/>
+									<arg value="-out"/>
+								    <arg value="${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/win32/win32/x86_64/sts-${unqualifiedVersion}.${p2.qualifier}/SpringToolSuite4.exe"/>
+								</exec>
+
+							</target>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+
+					<!-- macos code signing requires the build to run on a macOS machine with Xcode installed, including the appropriate Apple Developer certificates for code signing -->
+					<execution>
+						<id>osx-app-signing</id>
+						<phase>package</phase>
+						<configuration>
+							<skip>${skip.osx.signing}</skip>
+							<target>
+
+								<taskdef resource="net/sf/antcontrib/antcontrib.properties" />
+
+								<exec executable="codesign" failonerror="true">
+									<arg value="--verbose"/>
+									<arg value="--deep"/>
+									<arg value="--force"/>
+									<arg value="--entitlements"/>
+									<arg value="${project.build.directory}/../entitlements.plist"/>
+									<arg value="--options=runtime"/>
+								    <arg value="--keychain"/>
+								    <arg value="${env.KEYCHAIN}"/>
+								    <arg value="-s"/>
+								    <arg value="${env.MACOS_CERTIFICATE_ID}"/>
+								    <arg value="${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/macosx/cocoa/x86_64/SpringToolSuite4.app"/>
+								</exec>
+
+								<exec executable="codesign" failonerror="true">
+									<arg value="--verbose"/>
+									<arg value="--deep"/>
+									<arg value="--force"/>
+									<arg value="--entitlements"/>
+									<arg value="${project.build.directory}/../entitlements.plist"/>
+									<arg value="--options=runtime"/>
+								    <arg value="--keychain"/>
+								    <arg value="${env.KEYCHAIN}"/>
+								    <arg value="-s"/>
+								    <arg value="${env.MACOS_CERTIFICATE_ID}"/>
+								    <arg value="${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/macosx/cocoa/aarch64/SpringToolSuite4.app"/>
+								</exec>
+
+							</target>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+
+					<!-- the creation of the DMG file is based on appdmg: https://www.npmjs.com/package/appdmg -->
+					<execution>
+						<id>osx-dmg-creation</id>
+						<phase>verify</phase>
+						<configuration>
+							<target>
+
+								<exec executable="/usr/local/bin/appdmg" failonerror="true">
+									<arg value="${project.build.directory}/../spring-tool-suite-4-dmg-config-${dist.target.major}-x86.json"/>
+									<arg value="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-macosx.cocoa.x86_64.dmg"/>
+								</exec>
+
+								<delete file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-macosx.cocoa.x86_64.tar.gz"/>
+								
+								<exec executable="/usr/local/bin/appdmg" failonerror="true">
+									<arg value="${project.build.directory}/../spring-tool-suite-4-dmg-config-${dist.target.major}-aarch64.json"/>
+									<arg value="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-macosx.cocoa.aarch64.dmg"/>
+								</exec>
+
+								<delete file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-macosx.cocoa.aarch64.tar.gz"/>
+								
+							</target>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+
+					<execution>
+						<id>osx-dmg-signing</id>
+						<phase>verify</phase>
+						<configuration>
+							<skip>${skip.osx.signing}</skip>
+							<target>
+
+								<taskdef resource="net/sf/antcontrib/antcontrib.properties" />
+
+								<property name="dmgName" value="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-macosx.cocoa.x86_64.dmg" />
+
+								<exec executable="codesign" failonerror="true">
+									<arg value="--verbose"/>
+								    <arg value="--keychain"/>
+								    <arg value="${env.KEYCHAIN}"/>
+								    <arg value="-s"/>
+								    <arg value="${env.MACOS_CERTIFICATE_ID}"/>
+								    <arg value="${dmgName}"/>
+								</exec>
+
+								<property name="dmgName-aarch" value="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-macosx.cocoa.aarch64.dmg" />
+
+								<exec executable="codesign" failonerror="true">
+									<arg value="--verbose"/>
+								    <arg value="--keychain"/>
+								    <arg value="${env.KEYCHAIN}"/>
+								    <arg value="-s"/>
+								    <arg value="${env.MACOS_CERTIFICATE_ID}"/>
+								    <arg value="${dmgName-aarch}"/>
+								</exec>
+
+							</target>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+
+					<!-- the notarizing of the DMG file needs this service running somewhere: https://github.com/eclipse-cbi/macos-notarization-service -->
+					<execution>
+						<id>osx-dmg-notarizing</id>
+						<phase>verify</phase>
+						<configuration>
+							<skip>${skip.osx.notarizing}</skip>
+							<target>
+
+								<property name="dmgName" value="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-macosx.cocoa.x86_64.dmg" />
+
+								<exec executable="/bin/bash" failonerror="true">
+									<arg value="${project.build.directory}/../macos-notarize.sh"/>
+									<arg value="${dmgName}"/>
+								    <arg value="${env.MACOS_NOTARIZATION_SERVICE_URL}"/>
+								</exec>
+
+								<property name="dmgName-aarch64" value="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-macosx.cocoa.aarch64.dmg" />
+
+								<exec executable="/bin/bash" failonerror="true">
+									<arg value="${project.build.directory}/../macos-notarize.sh"/>
+									<arg value="${dmgName-aarch64}"/>
+								    <arg value="${env.MACOS_NOTARIZATION_SERVICE_URL}"/>
+								</exec>
+
+							</target>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+
+					<execution>
+						<id>upload-product-bundles</id>
+						<phase>deploy</phase>
+						<configuration>
+							<target>
+
+								<taskdef resource="net/sf/antcontrib/antcontrib.properties" />
+								<taskdef resource="org/springframework/build/aws/ant/antlib.xml" />
+
+								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-macosx.cocoa.x86_64.dmg" algorithm="SHA1" fileext=".sha1" />
+								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-macosx.cocoa.x86_64.dmg" algorithm="MD5" fileext=".md5" />
+								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-macosx.cocoa.aarch64.dmg" algorithm="SHA1" fileext=".sha1" />
+								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-macosx.cocoa.aarch64.dmg" algorithm="MD5" fileext=".md5" />
+								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-linux.gtk.x86_64.tar.gz" algorithm="SHA1" fileext=".sha1" />
+								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-linux.gtk.x86_64.tar.gz" algorithm="MD5" fileext=".md5" />
+								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-win32.win32.x86_64.zip" algorithm="SHA1" fileext=".sha1" />
+								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-win32.win32.x86_64.zip" algorithm="MD5" fileext=".md5" />
+								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-win32.win32.x86_64.self-extracting.jar" algorithm="SHA1" fileext=".sha1" />
+								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-win32.win32.x86_64.self-extracting.jar" algorithm="MD5" fileext=".md5" />
+
+								<s3 accessKey="${dist.accessKey}" secretKey="${dist.secretKey}">
+
+									<delete bucketName="${dist.bucket}">
+										<fileset dir="${dist.path.product}">
+											<include name="spring-tool-suite-4*.zip" />
+											<include name="spring-tool-suite-4*.zip.md5" />
+											<include name="spring-tool-suite-4*.zip.sha1" />
+											<include name="spring-tool-suite-4*.jar" />
+											<include name="spring-tool-suite-4*.jar.md5" />
+											<include name="spring-tool-suite-4*.jar.sha1" />
+											<include name="spring-tool-suite-4*.tar.gz" />
+											<include name="spring-tool-suite-4*.tar.gz.md5" />
+											<include name="spring-tool-suite-4*.tar.gz.sha1" />
+											<include name="spring-tool-suite-4*.dmg" />
+											<include name="spring-tool-suite-4*.dmg.md5" />
+											<include name="spring-tool-suite-4*.dmg.sha1" />
+										</fileset>
+									</delete>
+
+									<upload bucketName="${dist.bucket}" toDir="${dist.path.product}"
+										publicRead="true">
+										<fileset dir="${project.build.directory}/products">
+											<include name="spring-tool-suite-4*.zip" />
+											<include name="spring-tool-suite-4*.zip.md5" />
+											<include name="spring-tool-suite-4*.zip.sha1" />
+											<include name="spring-tool-suite-4*.jar" />
+											<include name="spring-tool-suite-4*.jar.md5" />
+											<include name="spring-tool-suite-4*.jar.sha1" />
+											<include name="spring-tool-suite-4*.tar.gz" />
+											<include name="spring-tool-suite-4*.tar.gz.md5" />
+											<include name="spring-tool-suite-4*.tar.gz.sha1" />
+											<include name="spring-tool-suite-4*.dmg" />
+											<include name="spring-tool-suite-4*.dmg.md5" />
+											<include name="spring-tool-suite-4*.dmg.sha1" />
+										</fileset>
+									</upload>
+
+								</s3>
+
+							</target>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+
+					<execution>
+						<id>update-nightly-downloads</id>
+						<phase>deploy</phase>
+						<configuration>
+							<skip>${skip.update-nightly-download-page}</skip>
+							<target>
+								<taskdef resource="net/sf/antcontrib/antcontrib.properties" />
+								<taskdef resource="org/springframework/build/aws/ant/antlib.xml" />
+
+								<copy file="${project.build.directory}/../../common/html/nightly-generic-snippet-incl-apple-m1.html" tofile="${project.build.directory}/../../common/html/sts4-nightly-${dist.target.major}.html" overwrite="true"/>
+		
+								<replace file="${project.build.directory}/../../common/html/sts4-nightly-${dist.target.major}.html" token="@QUALIFIER@" value="${unqualifiedVersion}.${p2.qualifier}" summary="yes" />
+								<replace file="${project.build.directory}/../../common/html/sts4-nightly-${dist.target.major}.html" token="@TARGET@" value="${dist.target}" summary="yes" />
+								<replace file="${project.build.directory}/../../common/html/sts4-nightly-${dist.target.major}.html" token="@MAJOR-TARGET@" value="${dist.target.major}" summary="yes" />
+
+								<s3 accessKey="${dist.accessKey}" secretKey="${dist.secretKey}">
+									<upload bucketName="${dist.bucket}" file="${project.build.directory}/../../common/html/sts4-nightly-${dist.target.major}.html"
+										toFile="snapshot/STS4/sts4-nightly-${dist.target.major}.html" publicRead="true">
+									</upload>
+								</s3>
+							</target>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+
+					<execution>
+						<id>zip-sts-repository</id>
+						<phase>install</phase>
+						<configuration>
+							<target>
+
+								<taskdef resource="net/sf/antcontrib/antcontrib.properties" />
+								<taskdef resource="org/springframework/build/aws/ant/antlib.xml" />
+
+								<property name="dist.full.version" value="${unqualifiedVersion}.${p2.qualifier}-${dist.target}" />
+								<property name="dist.file.name" value="${dist.project}-${dist.full.version}-updatesite.zip" />
+
+								<zip zipfile="${project.build.directory}/repository/${dist.file.name}" filesonly="true">
+									<zipfileset
+										dir="${project.build.directory}/repository">
+										<exclude name="*.zip" />
+										<exclude name="**/*.gz" />
+									</zipfileset>
+								</zip>
+
+								<checksum file="${project.build.directory}/repository/${dist.file.name}" algorithm="SHA1" fileext=".sha1" />
+								<checksum file="${project.build.directory}/repository/${dist.file.name}" algorithm="MD5" fileext=".md5" />
+
+							</target>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+
+					<execution>
+						<id>upload-sts-repository</id>
+						<phase>deploy</phase>
+						<configuration>
+							<target>
+
+								<taskdef resource="net/sf/antcontrib/antcontrib.properties" />
+								<taskdef resource="org/springframework/build/aws/ant/antlib.xml" />
+
+								<s3 accessKey="${dist.accessKey}" secretKey="${dist.secretKey}">
+
+									<delete bucketName="${dist.bucket}">
+										<fileset dir="${dist.path.repo}">
+											<include name="p2.index" />
+											<include name="site.xml" />
+											<include name="content.jar" />
+											<include name="artifacts.xml.xz" />
+											<include name="content.jar" />
+											<include name="content.xml.xz" />
+											<include name="plugins/**" />
+											<include name="features/**" />
+											<include name="binary/**" />
+											<include name="*.zip" />
+											<include name="*.sha1" />
+											<include name="*.md5" />
+										</fileset>
+									</delete>
+
+									<upload bucketName="${dist.bucket}" toDir="${dist.path.repo}" publicRead="true">
+										<fileset
+											dir="${project.build.directory}/repository">
+											<include name="**/*" />
+											<include name="**" />
+										</fileset>
+									</upload>
+
+								</s3>
+
+							</target>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+
+				</executions>
+				<dependencies>
+					<dependency>
+						<groupId>org.springframework.build</groupId>
+						<artifactId>org.springframework.build.aws.ant</artifactId>
+						<version>3.0.6.RELEASE</version>
+					</dependency>
+					<dependency>
+						<groupId>net.java.dev.jets3t</groupId>
+						<artifactId>jets3t</artifactId>
+						<version>0.8.1</version>
+					</dependency>
+					<dependency>
+						<groupId>ant-contrib</groupId>
+						<artifactId>ant-contrib</artifactId>
+						<version>20020829</version>
+					</dependency>
+				</dependencies>
+			</plugin>
+
+		</plugins>
+<!--
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<groupId>org.eclipse.tycho</groupId>
+					<artifactId>target-platform-configuration</artifactId>
+					<version>${tycho-version}</version>
+					<configuration>
+						<dependency-resolution>
+							<profileProperties>
+								<org.eclipse.justj.buildtime>true</org.eclipse.justj.buildtime>
+							</profileProperties>
+						</dependency-resolution>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement> -->
+	</build>
+</project>
