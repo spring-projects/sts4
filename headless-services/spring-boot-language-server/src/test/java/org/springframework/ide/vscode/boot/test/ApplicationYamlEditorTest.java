@@ -90,6 +90,27 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
 	}
 	
 	////////////////////////////////////////////////////////////////////////////////////////
+	
+	@Test public void test_GH_711_error_on_extra_empty_yaml_document() throws Exception {
+		//https://github.com/spring-projects/sts4/issues/711
+		defaultTestData();
+		Editor editor = newEditor(
+				"spring:\n" +
+				"  application:\n" +
+				"    name: demo\n" +
+				"---\n" +
+				"spring:\n" + 
+				"  profiles:\n" + 
+				"    active: dev\n" + 
+				"services:\n" + 
+				"  common:\n" + 
+				"    url: https://getguid.azurewebsites.net\n" + 
+				"---\n"
+		);
+		editor.assertProblems(
+				"services|Unknown"
+		);
+	}
 
 	@Test public void test_GH_615_deprecated_spring_profiles() throws Exception {
 		IJavaProject p = createPredefinedMavenProject("empty-boot-2.4.4-app");

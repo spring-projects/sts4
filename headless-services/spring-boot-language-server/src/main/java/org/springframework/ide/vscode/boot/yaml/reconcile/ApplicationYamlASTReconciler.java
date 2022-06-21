@@ -58,6 +58,7 @@ import org.springframework.ide.vscode.commons.yaml.ast.NodeUtil;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
 import org.springframework.ide.vscode.commons.yaml.reconcile.YamlASTReconciler;
+import org.springframework.ide.vscode.commons.yaml.util.YamlUtil;
 import org.yaml.snakeyaml.nodes.MappingNode;
 import org.yaml.snakeyaml.nodes.Node;
 import org.yaml.snakeyaml.nodes.NodeId;
@@ -95,7 +96,12 @@ public class ApplicationYamlASTReconciler implements YamlASTReconciler {
 		List<Node> nodes = root.getNodes();
 		if (nodes!=null && !nodes.isEmpty()) {
 			for (Node node : nodes) {
-				reconcile(root, node, nav);
+				if (!"".equals(NodeUtil.asScalar(node))) {
+					//^^^ ignore completely empty yaml (sub)documents. Checking them results in 
+					//spurious errors/warnings.
+					//See https://github.com/spring-projects/sts4/issues/711
+					reconcile(root, node, nav);
+				}
 			}
 		}
 	}
