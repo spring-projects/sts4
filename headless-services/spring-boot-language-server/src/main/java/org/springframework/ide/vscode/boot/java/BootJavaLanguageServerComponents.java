@@ -38,7 +38,7 @@ import org.springframework.ide.vscode.boot.java.handlers.BootJavaWorkspaceSymbol
 import org.springframework.ide.vscode.boot.java.handlers.CodeLensProvider;
 import org.springframework.ide.vscode.boot.java.handlers.HighlightProvider;
 import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
-import org.springframework.ide.vscode.boot.java.handlers.JavaCodeAction;
+import org.springframework.ide.vscode.boot.java.handlers.JavaCodeActionHandler;
 import org.springframework.ide.vscode.boot.java.handlers.ReferenceProvider;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.java.livehover.ActiveProfilesProvider;
@@ -51,10 +51,15 @@ import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessConnec
 import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveDataProvider;
 import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveHoverUpdater;
 import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessTracker;
+import org.springframework.ide.vscode.boot.java.reconcilers.JavaReconciler;
+import org.springframework.ide.vscode.boot.java.reconcilers.JdtReconciler;
 import org.springframework.ide.vscode.boot.java.requestmapping.LiveAppURLSymbolProvider;
 import org.springframework.ide.vscode.boot.java.requestmapping.RequestMappingHoverProvider;
 import org.springframework.ide.vscode.boot.java.requestmapping.WebfluxHandlerCodeLensProvider;
 import org.springframework.ide.vscode.boot.java.requestmapping.WebfluxRouteHighlightProdivder;
+import org.springframework.ide.vscode.boot.java.rewrite.RewriteCompilationUnitCache;
+import org.springframework.ide.vscode.boot.java.rewrite.RewriteRecipeRepository;
+import org.springframework.ide.vscode.boot.java.rewrite.RewriteReconciler;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.boot.java.utils.SpringLiveChangeDetectionWatchdog;
 import org.springframework.ide.vscode.boot.java.value.ValueHoverProvider;
@@ -179,12 +184,24 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		highlightsEngine = createDocumentHighlightEngine(indexer);
 		documents.onDocumentHighlight(highlightsEngine);
 		
-		reconcileEngine = new BootJavaReconcileEngine(server, cuCache, projectFinder);
+		JdtReconciler jdtReconciler = new JdtReconciler(cuCache);
+		
+		RewriteCompilationUnitCache orCompilationUnitCache = appContext.getBean(RewriteCompilationUnitCache.class);
+		
+		RewriteReconciler rewriteJavaReconciler = new RewriteReconciler(
+				appContext.getBean(RewriteRecipeRepository.class),
+				orCompilationUnitCache,
+				server.getQuickfixRegistry()
+		);
+		
+		reconcileEngine = new BootJavaReconcileEngine(projectFinder, new JavaReconciler[] {
+				jdtReconciler,
+				rewriteJavaReconciler
+		});
 		
 		codeActionProvider = new BootJavaCodeActionProvider(
 				projectFinder,
-				cuCache,
-				appContext.getBeansOfType(JavaCodeAction.class).values());
+				appContext.getBeansOfType(JavaCodeActionHandler.class).values());
 		
 		config.addListener(ignore -> {
 			log.info("update live process tracker settings - start");
@@ -205,7 +222,7 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 				liveChangeDetectionWatchdog.disableHighlights();
 			}
 			
-			reconcileEngine.setSpelExpressionSyntaxValidationEnabled(config.isSpelExpressionValidationEnabled());
+			jdtReconciler.setSpelExpressionSyntaxValidationEnabled(config.isSpelExpressionValidationEnabled());
 			
 			log.info("update live process tracker settings - done");
 		});

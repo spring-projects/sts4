@@ -38,13 +38,24 @@ import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.Result;
 import org.openrewrite.SourceFile;
+import org.openrewrite.TreeVisitor;
 import org.openrewrite.Validated;
 import org.openrewrite.config.Environment;
 import org.openrewrite.config.RecipeDescriptor;
+import org.openrewrite.internal.RecipeIntrospectionUtils;
 import org.openrewrite.java.JavaParser;
+import org.openrewrite.java.tree.J.CompilationUnit;
 import org.openrewrite.maven.MavenParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.boot.java.rewrite.codeaction.AutowiredFieldIntoConstructorParameterCodeAction;
+import org.springframework.ide.vscode.boot.java.rewrite.codeaction.BeanMethodsNotPublicCodeAction;
+import org.springframework.ide.vscode.boot.java.rewrite.codeaction.NoRequestMappingAnnotationCodeAction;
+import org.springframework.ide.vscode.boot.java.rewrite.codeaction.UnnecessarySpringExtensionCodeAction;
+import org.springframework.ide.vscode.boot.java.rewrite.reconcile.BeanMethodNotPublicProblem;
+import org.springframework.ide.vscode.boot.java.rewrite.reconcile.NoAutowiredOnConstructorProblem;
+import org.springframework.ide.vscode.boot.java.rewrite.reconcile.RecipeSpringJavaProblemDescriptor;
+import org.springframework.ide.vscode.boot.java.rewrite.reconcile.UnnecessarySpringExtensionProblem;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
@@ -91,7 +102,20 @@ public class RewriteRecipeRepository {
 	private static Gson serializationGson = new GsonBuilder()
 			.registerTypeAdapter(Duration.class, new DurationTypeConverter())
 			.create();
-		
+	
+	private List<RecipeCodeActionDescriptor> codeActionDescriptors = List.of(
+			new AutowiredFieldIntoConstructorParameterCodeAction(),
+			new BeanMethodsNotPublicCodeAction(),
+			new NoRequestMappingAnnotationCodeAction(),
+			new UnnecessarySpringExtensionCodeAction()
+	);
+	
+	private List<RecipeSpringJavaProblemDescriptor> javaProblemDescriptors = List.of(
+			new BeanMethodNotPublicProblem(),
+			new NoAutowiredOnConstructorProblem(),
+			new UnnecessarySpringExtensionProblem()
+	);
+	
 	public RewriteRecipeRepository(SimpleLanguageServer server, JavaProjectFinder projectFinder) {
 		this.server = server;
 		this.projectFinder = projectFinder;
@@ -134,6 +158,57 @@ public class RewriteRecipeRepository {
 	
 	public Optional<Recipe> getRecipe(String name) {
 		return Optional.ofNullable(recipes.get(name));
+	}
+	
+	public RecipeSpringJavaProblemDescriptor getProblemRecipeDescriptor(String id) {
+		for (RecipeSpringJavaProblemDescriptor d : javaProblemDescriptors) {
+			if (id.equals(d.getRecipeId())) {
+				return d;
+			}
+		}
+		return null;
+	}
+	
+	public RecipeCodeActionDescriptor getCodeActionRecipeDescriptor(String id) {
+		for (RecipeCodeActionDescriptor d : codeActionDescriptors) {
+			if (id.equals(d.getRecipeId())) {
+				return d;
+			}
+		}
+		return null;
+	}
+	
+	public List<RecipeSpringJavaProblemDescriptor> getProblemRecipeDescriptors() {
+		return javaProblemDescriptors;
+	}
+	
+	public List<RecipeCodeActionDescriptor> getCodeActionRecipeDescriptors() {
+		return codeActionDescriptors;
+	}
+	
+	public List<RecipeCodeActionDescriptor> getApplicableCodeActionRecipeDescriptors(IJavaProject project, List<RecipeCodeActionDescriptor> descriptors) {
+		List<RecipeCodeActionDescriptor> filtered = new ArrayList<>(descriptors.size());
+		for (RecipeCodeActionDescriptor d : descriptors) {
+			if (d.isApplicable(project)) {
+				filtered.add(d);
+			}
+		}
+		return filtered;
+	}
+	
+	public CompilationUnit mark(List<? extends RecipeCodeActionDescriptor> descriptors, CompilationUnit compilationUnit) {
+		CompilationUnit cu = compilationUnit;
+		for (RecipeCodeActionDescriptor d : descriptors) {
+			Recipe recipe = getRecipe(d.getRecipeId()).orElse(null);
+			if (recipe != null) {
+				TreeVisitor<?, ExecutionContext> isApplicableVisitor = RecipeIntrospectionUtils.recipeSingleSourceApplicableTest(recipe);
+				TreeVisitor<?, ExecutionContext> markVisitor = d.getMarkerVisitor();
+				if (markVisitor != null && (isApplicableVisitor == null || isApplicableVisitor.visit(cu, new InMemoryExecutionContext(e -> log.error("", e))) != cu)) {
+					cu = (CompilationUnit) markVisitor.visit(cu, new InMemoryExecutionContext(e -> log.error("", e)));
+				}
+			}
+		}
+		return cu;
 	}
 	
 	private static JsonElement recipeToJson(Recipe r) {

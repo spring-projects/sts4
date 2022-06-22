@@ -48,7 +48,7 @@ import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessConnec
 import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessConnectorRemote.RemoteBootAppData;
 import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessConnectorService;
 import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveDataProvider;
-import org.springframework.ide.vscode.boot.java.rewrite.ORCompilationUnitCache;
+import org.springframework.ide.vscode.boot.java.rewrite.RewriteCompilationUnitCache;
 import org.springframework.ide.vscode.boot.java.rewrite.RewriteRefactorings;
 import org.springframework.ide.vscode.boot.java.rewrite.RewriteRecipeRepository;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
@@ -219,8 +219,8 @@ public class BootLanguageServerBootApp {
 		return SourceLinkFactory.createSourceLinks(server, cuCache, params.projectFinder);
 	}
 
-	@Bean ORCompilationUnitCache orcuCache(SimpleLanguageServer server, BootLanguageServerParams params) {
-		return new ORCompilationUnitCache(params.projectFinder, server, params.projectObserver);
+	@Bean RewriteCompilationUnitCache orcuCache(SimpleLanguageServer server, BootLanguageServerParams params, RewriteRecipeRepository repo) {
+		return new RewriteCompilationUnitCache(params.projectFinder, server, params.projectObserver);
 	}
 	
 	@Bean CompilationUnitCache cuCache(SimpleLanguageServer server, BootLanguageServerParams params) {
@@ -302,8 +302,8 @@ public class BootLanguageServerBootApp {
 		return new FutureProjectFinder(projectFinder, projectObserver);
 	}
 	
-	@Bean RewriteRefactorings rewriteRefactorings(ApplicationContext appContext) {
-		return new RewriteRefactorings();
+	@Bean RewriteRefactorings rewriteRefactorings(SimpleLanguageServer server, JavaProjectFinder projectFinder, RewriteRecipeRepository recipeRepo, RewriteCompilationUnitCache cuCache) {
+		return new RewriteRefactorings(server.getTextDocumentService(), projectFinder, recipeRepo, cuCache);
 	}
 	
 	@Bean

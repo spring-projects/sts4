@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.commons.java;
 
 import java.io.File;
 import java.util.List;
+import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -144,5 +145,26 @@ public class SpringProjectUtil {
 			log.error("", e);
 		}
 		return null;
+	}
+	
+	public static Predicate<IJavaProject> springBootVersionGreaterOrEqual(int major, int minor, int patch) {
+		return project -> {
+			Version version = getDependencyVersion(project, SPRING_BOOT);
+			if (version == null) {
+				return false;
+			}
+			if (major > version.getMajor()) {
+				return false;
+			}
+			if (major == version.getMajor()) {
+				if (minor > version.getMinor()) {
+					return false;
+				}
+				if (minor == version.getMinor()) {
+					return patch <= version.getPatch();
+				}
+			}
+			return true;
+		};
 	}
 }

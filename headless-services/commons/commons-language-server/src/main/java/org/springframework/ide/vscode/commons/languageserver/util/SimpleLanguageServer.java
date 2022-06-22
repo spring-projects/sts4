@@ -666,7 +666,9 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 				@Override
 				public void checkPointCollecting() {
 					// publish what has been collected so far
+					documents.setQuickfixes(docId, quickfixes);
 					documents.publishDiagnostics(docId, diagnostics);
+					log.debug("Reconcile checkpoint sent {} diagnostics", diagnostics.size());
 				}
 
 				@Override

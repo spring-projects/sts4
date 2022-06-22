@@ -16,6 +16,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -23,12 +24,17 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.Parser;
 import org.openrewrite.Recipe;
+import org.openrewrite.Result;
 import org.openrewrite.Tree;
 import org.openrewrite.TreeVisitor;
+import org.openrewrite.internal.RecipeIntrospectionUtils;
+import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaVisitor;
+import org.openrewrite.java.UpdateSourcePositions;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.J.CompilationUnit;
+import org.openrewrite.marker.Range;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -172,34 +178,34 @@ public class ORAstUtils {
 //		
 //	}
 //	
-//	public static J findAstNodeAt(CompilationUnit cu, int offset) {
-//		AtomicReference<J> f = new AtomicReference<>();
-//		new JavaIsoVisitor<AtomicReference<J>>() {
-//			public J visit(Tree tree, AtomicReference<J> found) {
-//				if (tree == null) {
-//					return null;
-//				}
-//				if (found.get() == null && tree instanceof J) {
-//					J node = (J) tree;
-//					Range range = node.getMarkers().findFirst(Range.class).orElse(null);
-//					if (range != null
-//							&& range.getStart().getOffset() <= offset
-//							&& offset <= range.getEnd().getOffset()) {
-//						super.visit(tree, found);
-//						if (found.get() == null) {
-//							found.set(node);
-//							return node;
-//						}
-//					} else {
-//						return (J) tree;
-//					}
-//				}
-//				return (J) tree;
-//			};
-//		}.visitNonNull(cu, f);
-//		return f.get();
-//	}
-//	
+	public static J findAstNodeAt(CompilationUnit cu, int offset) {
+		AtomicReference<J> f = new AtomicReference<>();
+		new JavaIsoVisitor<AtomicReference<J>>() {
+			public J visit(Tree tree, AtomicReference<J> found) {
+				if (tree == null) {
+					return null;
+				}
+				if (found.get() == null && tree instanceof J) {
+					J node = (J) tree;
+					Range range = node.getMarkers().findFirst(Range.class).orElse(null);
+					if (range != null
+							&& range.getStart().getOffset() <= offset
+							&& offset <= range.getEnd().getOffset()) {
+						super.visit(tree, found);
+						if (found.get() == null) {
+							found.set(node);
+							return node;
+						}
+					} else {
+						return (J) tree;
+					}
+				}
+				return (J) tree;
+			};
+		}.visitNonNull(cu, f);
+		return f.get();
+	}
+	
 //	@SuppressWarnings("unchecked")
 //	public static <T> T findNode(J node, Class<T> clazz) {
 //		if (clazz.isInstance(node)) {
@@ -214,20 +220,18 @@ public class ORAstUtils {
 	
 	public static List<CompilationUnit> parse(JavaParser parser, Iterable<Path> sourceFiles) {
 		InMemoryExecutionContext ctx = new InMemoryExecutionContext(e -> log.error("", e));
-		ctx.putMessage(JavaParser.SKIP_SOURCE_SET_TYPE_GENERATION, true);
+//		ctx.putMessage(JavaParser.SKIP_SOURCE_SET_TYPE_GENERATION, true);
 		List<CompilationUnit> cus = parser.parse(sourceFiles, null, ctx);
-		return cus;
-//		List<Result> results = new UpdateSourcePositions().doNext(new MarkParentRecipe()).run(cus);
-//		return results.stream().map(r -> r.getAfter() == null ? r.getBefore() : r.getAfter()).map(CompilationUnit.class::cast).collect(Collectors.toList());
+		List<Result> results = new UpdateSourcePositions()/*.doNext(new MarkParentRecipe())*/.run(cus);
+		return results.stream().map(r -> r.getAfter() == null ? r.getBefore() : r.getAfter()).map(CompilationUnit.class::cast).collect(Collectors.toList());
 	}
 	
 	public static List<CompilationUnit> parseInputs(JavaParser parser, Iterable<Parser.Input> inputs) {
 		InMemoryExecutionContext ctx = new InMemoryExecutionContext(e -> log.error("", e));
-		ctx.putMessage(JavaParser.SKIP_SOURCE_SET_TYPE_GENERATION, true);
+//		ctx.putMessage(JavaParser.SKIP_SOURCE_SET_TYPE_GENERATION, true);
 		List<CompilationUnit> cus = parser.parseInputs(inputs, null, ctx);
-		return cus;
-//		List<Result> results = new UpdateSourcePositions().doNext(new MarkParentRecipe()).run(cus);
-//		return results.stream().map(r -> r.getAfter() == null ? r.getBefore() : r.getAfter()).map(CompilationUnit.class::cast).collect(Collectors.toList());
+		List<Result> results = new UpdateSourcePositions()/*.doNext(new MarkParentRecipe())*/.run(cus);
+		return results.stream().map(r -> r.getAfter() == null ? r.getBefore() : r.getAfter()).map(CompilationUnit.class::cast).collect(Collectors.toList());
 	}
 
     public static J.EnumValueSet getEnumValues(J.ClassDeclaration classDecl) {
@@ -261,17 +265,6 @@ public class ORAstUtils {
     }
     
     @SuppressWarnings("unchecked")
-	private static TreeVisitor<?, ExecutionContext> getVisitor(Recipe r) {
-    	try {
-	    	Method m = Recipe.class.getDeclaredMethod("getVisitor");
-	    	m.setAccessible(true);
-	    	return (TreeVisitor<?, ExecutionContext>) m.invoke(r);
-    	} catch (Exception e) {
-    		return null;
-    	}
-    }
-    
-    @SuppressWarnings("unchecked")
 	private static List<TreeVisitor<J, ExecutionContext>> getAfterVisitors(TreeVisitor<J, ExecutionContext> visitor) {
     	try {
 	    	Method m = TreeVisitor.class.getDeclaredMethod("getAfterVisit");
@@ -298,7 +291,7 @@ public class ORAstUtils {
 	
     @SuppressWarnings("unchecked")
 	public static Recipe nodeRecipe(Recipe r, Predicate<J> condition) {
-    	return new NodeRecipe((JavaVisitor<ExecutionContext>) getVisitor(r), condition);
+    	return new NodeRecipe((JavaVisitor<ExecutionContext>) RecipeIntrospectionUtils.recipeVisitor(r), condition);
     }
     
     private static class NodeRecipe extends Recipe {

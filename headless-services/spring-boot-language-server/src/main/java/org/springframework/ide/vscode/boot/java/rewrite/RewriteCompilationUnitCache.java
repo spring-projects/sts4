@@ -24,7 +24,6 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -50,16 +49,14 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.RemovalListener;
-import com.google.common.cache.RemovalNotification;
 
 import reactor.core.Disposable;
 
-public class ORCompilationUnitCache implements DocumentContentProvider, Disposable {
+public class RewriteCompilationUnitCache implements DocumentContentProvider, Disposable {
 	
 	private static final Logger logger = LoggerFactory.getLogger(CompilationUnitCache.class);
 
-	private static final long CU_ACCESS_EXPIRATION = 1;
+	private static final long CU_ACCESS_EXPIRATION = 5;
 	private JavaProjectFinder projectFinder;
 	private ProjectObserver projectObserver;
 	
@@ -69,22 +66,22 @@ public class ORCompilationUnitCache implements DocumentContentProvider, Disposab
 	private final Cache<URI, CompilationUnit> uriToCu;
 	private final Cache<IJavaProject, Set<URI>> projectToDocs;
 	private final Cache<IJavaProject, JavaParser> javaParsers;
-	
-	public ORCompilationUnitCache(JavaProjectFinder projectFinder, SimpleLanguageServer server, ProjectObserver projectObserver) {
+
+	public RewriteCompilationUnitCache(JavaProjectFinder projectFinder, SimpleLanguageServer server, ProjectObserver projectObserver) {
 		this.projectFinder = projectFinder;
 		this.projectObserver = projectObserver;
 		
 		// PT 154618835 - Avoid retaining the CU in the cache as it consumes memory if it hasn't been
 		// accessed after some time
 		this.uriToCu = CacheBuilder.newBuilder()
-				.expireAfterWrite(CU_ACCESS_EXPIRATION, TimeUnit.MINUTES)
-				.removalListener(new RemovalListener<URI, CompilationUnit>() {
-
-					@Override
-					public void onRemoval(RemovalNotification<URI, CompilationUnit> notification) {
-						invalidateCuForJavaFile(notification.getKey().toString());
-					}
-				})
+//				.expireAfterWrite(CU_ACCESS_EXPIRATION, TimeUnit.MINUTES)
+//				.removalListener(new RemovalListener<URI, CompilationUnit>() {
+//
+//					@Override
+//					public void onRemoval(RemovalNotification<URI, CompilationUnit> notification) {
+//						invalidateCuForJavaFile(notification.getKey().toString());
+//					}
+//				})
 				.build();
 		this.projectToDocs = CacheBuilder.newBuilder().build();
 		this.javaParsers = CacheBuilder.newBuilder().build();
@@ -211,19 +208,11 @@ public class ORCompilationUnitCache implements DocumentContentProvider, Disposab
 		return IOUtils.toString(uri);
 	}
 	
-	/**
-	 * Does not need to be via callback - kept the same in order to keep the same API to replace JDT with Rewrite in distant future
-	 */
-	public <T> T withCompilationUnit(IJavaProject project, URI uri, Function<CompilationUnit, T> requestor) {
-		logger.info("CU Cache: work item submitted for doc {}", uri.toString());
-
-		if (project != null) {
-
-			CompilationUnit cu = null;
-
-			try {
-				cu = uriToCu.get(uri, () -> {
-					JavaParser javaParser = loadJavaParser(project);
+	public CompilationUnit getCU(IJavaProject project, URI uri) {
+		try {
+			if (project != null) {
+				return uriToCu.get(uri, () -> {
+					JavaParser javaParser = /*loadJavaParser(project)*/createJavaParser(project);
 					Input input = new Input(Paths.get(uri), () -> {
 						try {
 							return new ByteArrayInputStream(fetchContent(uri).getBytes());
@@ -234,36 +223,40 @@ public class ORCompilationUnitCache implements DocumentContentProvider, Disposab
 					
 					List<CompilationUnit> cus = ORAstUtils.parseInputs(javaParser, List.of(input));
 										
-					logger.info("CU Cache: created new AST for {}", uri.toString());
+					CompilationUnit cu = cus.get(0);
+					
+		
+					if (cu != null) {						
+						projectToDocs.get(project, () -> new HashSet<>()).add(uri);
+					}
 
-					return cus.get(0);
+					return cu;
 				});
-
-				if (cu != null) {
-					projectToDocs.get(project, () -> new HashSet<>()).add(uri);
-				}
-
+			}
+		} catch (Exception e) {
+			logger.error("", e);
+		}
+		return null;
+	}
+	
+	/**
+	 * Does not need to be via callback - kept the same in order to keep the same API to replace JDT with Rewrite in distant future
+	 */
+	public <T> T withCompilationUnit(IJavaProject project, URI uri, Function<CompilationUnit, T> requestor) {
+		logger.info("CU Cache: work item submitted for doc {}", uri.toString());
+		CompilationUnit cu = getCU(project, uri);
+		if (cu != null) {
+			try {
+				logger.info("CU Cache: start work on AST for {}", uri.toString());
+				return requestor.apply(cu);
+			} catch (CancellationException e) {
+				throw e;
 			} catch (Exception e) {
 				logger.error("", e);
-			}
-
-			if (cu != null) {
-				try {
-					logger.info("CU Cache: start work on AST for {}", uri.toString());
-					return requestor.apply(cu);
-				}
-				catch (CancellationException e) {
-					throw e;
-				}
-				catch (Exception e) {
-					logger.error("", e);
-				}
-				finally {
-					logger.info("CU Cache: end work on AST for {}", uri.toString());
-				}
+			} finally {
+				logger.info("CU Cache: end work on AST for {}", uri.toString());
 			}
 		}
-
 		return requestor.apply(null);
 	}
 	

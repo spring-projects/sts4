@@ -42,6 +42,8 @@ import org.springframework.ide.vscode.boot.editor.harness.PropertyIndexHarness;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaReconcileEngine;
 import org.springframework.ide.vscode.boot.java.links.SourceLinkFactory;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
+import org.springframework.ide.vscode.boot.java.reconcilers.JavaReconciler;
+import org.springframework.ide.vscode.boot.java.reconcilers.JdtReconciler;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.boot.java.utils.SymbolCache;
 import org.springframework.ide.vscode.boot.java.utils.SymbolCacheVoid;
@@ -143,7 +145,9 @@ public class ValueSpelExpressionValidationTest {
 		docUri = directory.toPath().resolve("src/main/java/org/test/TestValueCompletion.java").toUri().toString();
 
 		problemCollector = new TestProblemCollector();
-		reconcileEngine = new BootJavaReconcileEngine(server, compilationUnitCache, projectFinder);
+		reconcileEngine = new BootJavaReconcileEngine(projectFinder, new JavaReconciler[] {
+				new JdtReconciler(compilationUnitCache)
+		});
 	}
 	
 	@After

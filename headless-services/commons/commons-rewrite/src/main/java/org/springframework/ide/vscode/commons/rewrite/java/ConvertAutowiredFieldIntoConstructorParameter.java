@@ -25,6 +25,7 @@ import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.RemoveAnnotationVisitor;
+import org.openrewrite.java.search.UsesType;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.J.Block;
 import org.openrewrite.java.tree.J.ClassDeclaration;
@@ -36,15 +37,14 @@ import org.openrewrite.java.tree.Statement;
 import org.openrewrite.java.tree.TypeTree;
 import org.openrewrite.java.tree.TypeUtils;
 
-public class ConvertAutowiredParameterIntoConstructorParameter extends Recipe {
+public class ConvertAutowiredFieldIntoConstructorParameter extends Recipe {
 	
 	private static final String AUTOWIRED = "org.springframework.beans.factory.annotation.Autowired";
 
 	private String classFqName;
 	private String fieldName;
-
-	public ConvertAutowiredParameterIntoConstructorParameter(String classFqName, String fieldName) {
-		super();
+	
+	public ConvertAutowiredFieldIntoConstructorParameter(String classFqName, String fieldName) {
 		this.classFqName = classFqName;
 		this.fieldName = fieldName;
 	}
@@ -52,6 +52,11 @@ public class ConvertAutowiredParameterIntoConstructorParameter extends Recipe {
 	@Override
 	public String getDisplayName() {
 		return "Convert autowired field into constructor parameter";
+	}
+	
+	@Override
+	protected TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
+		return new UsesType<ExecutionContext>(AUTOWIRED);
 	}
 
 	@Override
@@ -72,7 +77,7 @@ public class ConvertAutowiredParameterIntoConstructorParameter extends Recipe {
 				VariableDeclarations mv = multiVariable;
 				if (blockCursor != null && blockCursor.getParent().getValue() instanceof ClassDeclaration
 						&& multiVariable.getVariables().size() == 1
-						&& fieldName.equals(multiVariable.getVariables().get(0).getName().printTrimmed())) {
+						&& fieldName.equals(multiVariable.getVariables().get(0).getSimpleName())) {
 					
 					mv = (VariableDeclarations) new RemoveAnnotationVisitor(new AnnotationMatcher("@" + AUTOWIRED)).visit(multiVariable, p);
 					doAfterVisit(new AddContructorParameterVisitor(classFqName, fieldName, multiVariable.getTypeExpression()));

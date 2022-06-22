@@ -10,22 +10,21 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.handlers;
 
-import java.net.URI;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
-import org.eclipse.jdt.core.dom.ASTNode;
-import org.eclipse.jdt.core.dom.NodeFinder;
 import org.eclipse.lsp4j.CodeAction;
 import org.eclipse.lsp4j.CodeActionCapabilities;
 import org.eclipse.lsp4j.CodeActionContext;
 import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
-import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.util.CodeActionHandler;
@@ -34,31 +33,28 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 public class BootJavaCodeActionProvider implements CodeActionHandler {
 	
+	private static final Logger log = LoggerFactory.getLogger(BootJavaCodeActionProvider.class);
+		
 	final private JavaProjectFinder projectFinder;
-	final private CompilationUnitCache cuCache;
-	private Collection<JavaCodeAction> javaCodeActions;
+	final private Collection<JavaCodeActionHandler> handlers;
 	
-	public BootJavaCodeActionProvider(JavaProjectFinder projectFinder, CompilationUnitCache cuCache, Collection<JavaCodeAction> javaCodeActions) {
+	public BootJavaCodeActionProvider(JavaProjectFinder projectFinder, Collection<JavaCodeActionHandler> handlers) {
 		this.projectFinder = projectFinder;
-		this.cuCache = cuCache;
-		this.javaCodeActions = javaCodeActions;
+		this.handlers = handlers;
 	}
-
+	
 	@Override
 	public List<Either<Command, CodeAction>> handle(CancelChecker cancelToken, CodeActionCapabilities capabilities, CodeActionContext context, TextDocument doc, IRegion region) {
 		Optional<IJavaProject> project = projectFinder.find(doc.getId());
 		if (project.isPresent()) {
-			return cuCache.withCompilationUnit(project.get(), URI.create(doc.getId().getUri()), cu -> {
-				ASTNode found = NodeFinder.perform(cu, region.getOffset(), region.getLength());
-				List<Either<Command, CodeAction>> codeActions = new ArrayList<>();
-				for (JavaCodeAction jca : javaCodeActions) {
-					List<Either<Command, CodeAction>> cas = jca.getCodeActions(capabilities, context, doc, region, project.get(), cu, found);
-					if (cas != null) {
-						codeActions.addAll(cas);
-					}
+			return handlers.stream().flatMap(handler -> {
+				try {
+					return handler.handle(project.get(), cancelToken, capabilities, context, doc, region).stream();
+				} catch (Exception e) {
+					log.error("", e);
+					return Stream.empty();
 				}
-				return codeActions;
-			});
+			}).collect(Collectors.toList());
 		}
 		return Collections.emptyList();
 	}

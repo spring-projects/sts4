@@ -57,7 +57,7 @@ public class LoadUtils {
 			Recipe recipe = constructRecipe(recipeClazz, d.getOptions());
 			return recipe;
 		} catch (ClassNotFoundException e) {
-			DeclarativeRecipe recipe = new DeclarativeRecipe(d.getName(), d.getDisplayName(), d.getDescription(), d.getTags(), d.getEstimatedEffortPerOccurrence(), d.getSource());
+			DeclarativeRecipe recipe = new DeclarativeRecipe(d.getName(), d.getDisplayName(), d.getDescription(), d.getTags(), d.getEstimatedEffortPerOccurrence(), d.getSource(), false);
 			for (RecipeDescriptor subDescriptor : d.getRecipeList()) {
 				recipe.doNext(createRecipe(subDescriptor));
 			}

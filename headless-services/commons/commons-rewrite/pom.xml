@@ -43,6 +43,16 @@
 			<artifactId>rewrite-java</artifactId>
 			<version>${rewrite-version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.openrewrite</groupId>
+			<artifactId>rewrite-java-11</artifactId>
+			<version>${rewrite-version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.openrewrite</groupId>
+			<artifactId>rewrite-java-17</artifactId>
+			<version>${rewrite-version}</version>
+		</dependency>
 
 		<dependency>
 			<groupId>com.fasterxml.jackson.core</groupId>
@@ -81,11 +91,6 @@
 			<version>${rewrite-spring-version}</version>
 		</dependency>
 
-		<dependency>
-			<groupId>org.openrewrite</groupId>
-			<artifactId>rewrite-java-11</artifactId>
-			<version>${rewrite-version}</version>
-		</dependency>
 
 	</dependencies>
 
