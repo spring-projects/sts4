@@ -18,7 +18,6 @@ import org.eclipse.jdt.ui.PreferenceConstants;
 import org.eclipse.jface.dialogs.IDialogSettings;
 import org.eclipse.jface.dialogs.StatusDialog;
 import org.eclipse.jface.internal.text.html.HTMLPrinter;
-import org.eclipse.jface.layout.FillLayoutFactory;
 import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.resource.JFaceResources;
