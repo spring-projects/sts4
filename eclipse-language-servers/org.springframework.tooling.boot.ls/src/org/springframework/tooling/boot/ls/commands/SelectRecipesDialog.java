@@ -66,7 +66,10 @@ public class SelectRecipesDialog extends StatusDialog {
 	    form.setLayout(new FillLayout());
 
 	    Composite left = new Composite(form, SWT.NONE);
-	    left.setLayout(FillLayoutFactory.fillDefaults().margins(MARGIN, MARGIN).create());
+	    FillLayout layout = new FillLayout();
+	    layout.marginHeight = MARGIN;
+	    layout.marginWidth = MARGIN;
+	    left.setLayout(layout);
 	    CheckboxTreeViewer treeViewer = new CheckboxTreeViewer(left);
 	    treeViewer.setContentProvider(new ITreeContentProvider() {
 
@@ -147,7 +150,10 @@ public class SelectRecipesDialog extends StatusDialog {
 	    treeViewer.setInput(model);
 	    
 	    Composite right = new Composite(form, SWT.NONE);
-	    right.setLayout(FillLayoutFactory.fillDefaults().extendedMargins(MARGIN, MARGIN).create());
+	    layout = new FillLayout();
+	    layout.marginHeight = MARGIN;
+	    layout.marginWidth = MARGIN;
+	    right.setLayout(layout);
 	    Browser docViewer = new Browser(right, SWT.NONE);
 	    docViewer.setJavascriptEnabled(false);
 
