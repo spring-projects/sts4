@@ -257,6 +257,12 @@ public class BootDashActions {
 			}
 
 			@Override
+			protected boolean isVisibleForElement(BootDashElement e) {
+				// Only show Resume action for elements that can be paused explicitly
+				return e.supportedGoalStates().contains(RunState.PAUSED) && super.isVisibleForElement(e);
+			}
+
+			@Override
 			public boolean showInToolbar() {
 				return false;
 			}
