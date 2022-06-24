@@ -53,6 +53,7 @@ import org.springframework.ide.eclipse.boot.dash.docker.exceptions.MissingBuildS
 import org.springframework.ide.eclipse.boot.dash.docker.exceptions.MissingBuildTagException;
 import org.springframework.ide.eclipse.boot.dash.docker.jmx.JmxSupport;
 import org.springframework.ide.eclipse.boot.dash.docker.runtarget.BuildScriptLocator.BuildKind;
+import org.springframework.ide.eclipse.boot.dash.docker.runtarget.DockerApp.BuildCommand;
 import org.springframework.ide.eclipse.boot.dash.labels.BootDashLabels;
 import org.springframework.ide.eclipse.boot.dash.model.RunState;
 import org.springframework.ide.eclipse.boot.dash.model.remote.ChildBearing;
@@ -61,6 +62,7 @@ import org.springframework.ide.eclipse.boot.dash.util.LineBasedStreamGobler;
 import org.springframework.ide.eclipse.boot.launch.util.PortFinder;
 import org.springframework.ide.eclipse.boot.util.JavaProjectUtil;
 import org.springsource.ide.eclipse.commons.core.pstore.PropertyStoreApi;
+import org.springsource.ide.eclipse.commons.core.pstore.PropertyStores;
 import org.springsource.ide.eclipse.commons.frameworks.core.util.JobUtil;
 import org.springsource.ide.eclipse.commons.frameworks.core.util.StringUtils;
 import org.springsource.ide.eclipse.commons.livexp.core.AbstractDisposable;
@@ -87,7 +89,19 @@ import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
-public class DockerApp extends AbstractDisposable implements App, ChildBearing, Deletable, ProjectRelatable, DesiredInstanceCount, SystemPropertySupport, LogSource, DevtoolsConnectable {
+public class DockerApp extends AbstractDisposable implements App, ChildBearing, Deletable, ProjectRelatable, DesiredInstanceCount, 
+	SystemPropertySupport, LogSource, DevtoolsConnectable {
+
+	public class BuildCommand {
+		String[] command;
+		boolean builtWithDevToolsArgs;
+		public BuildCommand(String[] command, boolean builtWithDevToolsArgs) {
+			super();
+			this.command = command;
+			this.builtWithDevToolsArgs = builtWithDevToolsArgs;
+		}
+		
+	}
 
 	private static final String DOCKER_IO_LIBRARY = "docker.io/library/";
 	private static final String[] NO_STRINGS = new String[0];
@@ -389,14 +403,14 @@ Successfully tagged fui:latest
 	private String build(AppConsole console) throws Exception {
 		String[] imageIds = new String[BUILT_IMAGE_MESSAGE_PATS.length];
 		File directory = new File(project.getLocation().toString());
-		String[] command = getBuildCommand(directory);
+		BuildCommand command = getBuildCommand(directory);
 
-		ProcessBuilder builder = new ProcessBuilder(command).directory(directory);
+		ProcessBuilder builder = new ProcessBuilder(command.command).directory(directory);
 		String jhome = getJavaHome();
 		builder.environment().put("JAVA_HOME", jhome);
 		console.write("build.env.JAVA_HOME="+jhome, LogType.STDOUT);
 		console.write("build.directory="+directory, LogType.STDOUT);
-		console.logCommand(CommandUtil.escape(command));
+		console.logCommand(CommandUtil.escape(command.command));
 		Process process = builder.start();
 		LineBasedStreamGobler outputGobler = new LineBasedStreamGobler(process.getInputStream(), (line) -> {
 			System.out.println(line);
@@ -447,10 +461,10 @@ Successfully tagged fui:latest
 		if (images.isEmpty()) {
 			// maybe the 'imageTag' is not actually a tag but an id/hash.
 			InspectImageResponse inspect = client.inspectImageCmd(imageTag).exec();
-			addPersistedImage(inspect.getId());
+			addPersistedImage(inspect.getId(), command);
 		} else {
 			for (Image img : images) {
-				addPersistedImage(img.getId());
+				addPersistedImage(img.getId(), command);
 			}
 		}
 		return imageTag;
@@ -461,19 +475,22 @@ Successfully tagged fui:latest
 		return jvm.getInstallLocation().toString();
 	}
 	
-	private String[] getBuildCommand(File directory) throws MissingBuildScriptException {
+	private BuildCommand getBuildCommand(File directory) throws MissingBuildScriptException {
 		BuildScriptLocator buildScriptLocator = new BuildScriptLocator(directory);
 		BuildKind buildKind = buildScriptLocator.getBuildKind();
 		if (buildKind==null) {
 			throw new MissingBuildScriptException(buildScriptLocator.checkedLocations);
 		}
 		boolean wantsDevtools = deployment().getSystemProperties().getOrDefault(DevtoolsUtil.REMOTE_SECRET_PROP, null)!=null;
+		boolean withDevtoolsArgs = false;
 		List<String> command = buildScriptLocator.command;
 		if (wantsDevtools) {
 			if (buildKind==BuildKind.MAVEN) {
+				withDevtoolsArgs = true;
 				command.add("-Dspring-boot.repackage.excludeDevtools=false");
 			} else if (buildKind==BuildKind.GRADLE) {
 				try {
+					withDevtoolsArgs = true;
 					command.addAll(gradle_initScript(
 							"allprojects {\n" + 
 							"    afterEvaluate {\n" + 
@@ -488,7 +505,7 @@ Successfully tagged fui:latest
 				}
 			}
 		}
-		return command.toArray(new String[command.size()]);
+		return new BuildCommand(command.toArray(new String[command.size()]), withDevtoolsArgs);
     }
 
 	private synchronized static List<String> gradle_initScript(String script) throws IOException {
@@ -503,7 +520,7 @@ Successfully tagged fui:latest
 		);
 	}
 
-	synchronized private void addPersistedImage(String imageId) {
+	synchronized private void addPersistedImage(String imageId, BuildCommand command) {
 		String key = imagesKey();
 		try {
 			ImmutableSet.Builder<String> builder = ImmutableSet.builder();
@@ -511,12 +528,12 @@ Successfully tagged fui:latest
 			builder.addAll(Arrays.asList(props.get(key, NO_STRINGS)));
 			builder.add(imageId);
 			props.put(key, builder.build().toArray(NO_STRINGS));
-
+			props.put(DockerImage.hasDevtoolsKey(imageId), context.projectHasDevtoolsDependency() && command.builtWithDevToolsArgs);
 		} catch (Exception e) {
 			Log.log(e);
 		}
 	}
-	
+
 	private void setPersistedImages(Set<String> existingImages) {
 		try {
 			getTarget().getPersistentProperties().put(imagesKey(), existingImages.toArray(NO_STRINGS));

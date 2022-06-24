@@ -15,7 +15,6 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.core.resources.IProject;
@@ -90,8 +89,6 @@ public class GenericRemoteAppElement extends WrappingBootDashElement<String> imp
 
 	private static final boolean DEBUG = false;
 
-	private static AtomicInteger instances = new AtomicInteger();
-
 	private LiveVariable<App> app = new LiveVariable<>();
 
 	private final Object parent;
@@ -123,6 +120,17 @@ public class GenericRemoteAppElement extends WrappingBootDashElement<String> imp
 			}
 		}
 		return super.getCustomRunStateIcon();
+	}
+
+	@Override
+	public <T extends App> T getParent(Class<T> expectedType) {
+		if (parent instanceof GenericRemoteAppElement) {
+			App parentApp = ((GenericRemoteAppElement) parent).getAppData();
+			if (parentApp!=null) {
+				return expectedType.cast(parentApp);
+			}
+		}
+		return null;
 	}
 
 	private ObservableSet<BootDashElement> children = ObservableSet.<BootDashElement>builder().refresh(AsyncMode.ASYNC).compute(() -> {

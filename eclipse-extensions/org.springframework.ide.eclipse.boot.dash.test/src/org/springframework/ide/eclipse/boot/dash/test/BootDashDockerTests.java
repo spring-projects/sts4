@@ -22,7 +22,7 @@ import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.springframework.ide.eclipse.boot.test.BootProjectTestHarness.bootVersionAtLeast;
+import static org.springframework.ide.eclipse.boot.test.BootProjectTestHarness.*;
 import static org.springframework.ide.eclipse.boot.test.BootProjectTestHarness.withImportStrategy;
 import static org.springframework.ide.eclipse.boot.test.BootProjectTestHarness.withStarters;
 import static org.springsource.ide.eclipse.commons.tests.util.StsTestCase.assertContains;
@@ -128,7 +128,10 @@ public class BootDashDockerTests {
 	@Test
 	public void projectWithdDockerFile() throws Exception {
 		GenericRemoteBootDashModel<DockerClient, DockerTargetParams> model = createDockerTarget();
-		IProject project = projects.createBootWebProject("webby", bootVersionAtLeast("2.3.0"));
+		IProject project = projects.createBootWebProject("webby",
+				bootVersionAtLeast("2.3.0"),
+				withJavaVersion("11")
+		);
 		createExeFile(project, "sts-docker-build.sh",
 				"#!/bin/bash\n" +
 				"docker build -t webby ."
@@ -163,7 +166,10 @@ public class BootDashDockerTests {
 	@Test
 	public void missingBuildTagException() throws Exception {
 		GenericRemoteBootDashModel<DockerClient, DockerTargetParams> model = createDockerTarget();
-		IProject project = projects.createBootWebProject("webby", bootVersionAtLeast("2.3.0"));
+		IProject project = projects.createBootWebProject("webby",
+				bootVersionAtLeast("2.3.0"),
+				withJavaVersion("11")
+		);
 		createExeFile(project, "sts-docker-build.sh",
 				"#!/bin/bash\n" +
 				"# do nothing"
@@ -180,7 +186,10 @@ public class BootDashDockerTests {
 	@Test
 	public void projectWithdDockerFileNoTag() throws Exception {
 		GenericRemoteBootDashModel<DockerClient, DockerTargetParams> model = createDockerTarget();
-		IProject project = projects.createBootWebProject("webby", bootVersionAtLeast("2.3.0"));
+		IProject project = projects.createBootWebProject("webby",
+				bootVersionAtLeast("2.3.0"),
+				withJavaVersion("11")
+		);
 		createExeFile(project, "sts-docker-build.sh",
 				"#!/bin/bash\n" +
 				"docker build ."

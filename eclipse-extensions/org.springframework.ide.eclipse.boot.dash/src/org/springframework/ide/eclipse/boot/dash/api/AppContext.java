@@ -26,7 +26,6 @@ public interface AppContext {
 	 * somewhere in the boot dash ui.
 	 */
 	RefreshStateTracker getRefreshTracker();
-
 	boolean projectHasDevtoolsDependency();
-
+	<T extends App> T getParent(Class<T> expectedType);
 }

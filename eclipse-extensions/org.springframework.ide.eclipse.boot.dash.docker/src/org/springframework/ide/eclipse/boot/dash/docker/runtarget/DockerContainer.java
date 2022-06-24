@@ -25,7 +25,6 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -54,8 +53,6 @@ import org.springframework.ide.eclipse.boot.dash.docker.util.Ownable;
 import org.springframework.ide.eclipse.boot.dash.model.RunState;
 import org.springframework.ide.eclipse.boot.dash.model.remote.RefreshStateTracker;
 import org.springframework.ide.eclipse.boot.util.RetryUtil;
-import org.springframework.ide.eclipse.editor.support.yaml.path.JavaObjectNav;
-import org.springframework.ide.eclipse.editor.support.yaml.path.YamlNavigable;
 import org.springframework.ide.eclipse.editor.support.yaml.path.YamlPath;
 import org.springframework.ide.eclipse.editor.support.yaml.path.YamlTraversal;
 import org.springsource.ide.eclipse.commons.core.util.StringUtil;
@@ -72,8 +69,6 @@ import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.Frame;
 import com.github.dockerjava.api.model.StreamType;
-import com.google.common.base.Supplier;
-import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
@@ -89,33 +84,12 @@ public class DockerContainer implements App, RunStateProvider, JmxConnectable, S
 	
 	private static Map<RunState, ImageDescriptor> RUNSTATE_ICONS = null;
 	private DockerApp app;
+	private AppContext context;
 
 	public DockerContainer(DockerRunTarget target, DockerApp app, Container container) {
 		this.target = target;
 		this.app = app;
 		this.container = container;
-		this.hasDevtoolsDep = hasDevtoolsDependency(container::getLabels);
-	}
-
-	public static Supplier<Boolean> hasDevtoolsDependency(Supplier<Map<String,String>> labelsSupplier) {
-		return Suppliers.memoize(() ->{
-			Map<String, String> labels = labelsSupplier.get();
-			try {
-				if (labels!=null) {
-					String buildpackMetadata = labels.get("io.buildpacks.build.metadata");
-					if (buildpackMetadata!=null) {
-						Map<?,?> bpmd = new ObjectMapper().readValue(buildpackMetadata, Map.class);
-						Set<String> deps =  dependencyNamePath
-								.traverseAmbiguously(YamlNavigable.javaObject(bpmd))
-								.flatMap(JavaObjectNav::asStringMaybe).collect(Collectors.toSet());
-						return deps.contains("spring-boot-devtools");
-					}
-				}
-			} catch (Exception e) {
-				Log.log(e);
-			}
-			return false;
-		});
 	}
 
 	@Override
@@ -285,6 +259,7 @@ public class DockerContainer implements App, RunStateProvider, JmxConnectable, S
 	@Override
 	public void setContext(AppContext context) {
 		this.refreshTracker.complete(context.getRefreshTracker());
+		this.context = context;
 	}
 
 	@Override
@@ -362,12 +337,16 @@ public class DockerContainer implements App, RunStateProvider, JmxConnectable, S
 			.thenValAt("name");
 	
 	private static final boolean USE_DEDICATED_CLIENT = false;
-
-	private Supplier<Boolean> hasDevtoolsDep;
 	
+	
+
 	@Override
 	public boolean hasDevtoolsDependency() {
-		return this.hasDevtoolsDep.get();
+		if (context!=null) {
+			DockerImage image = context.getParent(DockerImage.class);
+			return image.hasDevtoolsDependency();
+		}
+		return false;
 	}
 
 	// for debugging... keep in comments for now

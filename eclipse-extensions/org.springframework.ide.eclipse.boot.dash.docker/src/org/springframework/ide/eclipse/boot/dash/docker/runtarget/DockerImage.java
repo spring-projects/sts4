@@ -38,6 +38,7 @@ import org.springframework.ide.eclipse.boot.dash.model.RunState;
 import org.springframework.ide.eclipse.boot.dash.model.remote.ChildBearing;
 import org.springframework.ide.eclipse.boot.dash.model.remote.RefreshStateTracker;
 import org.springframework.ide.eclipse.boot.util.RetryUtil;
+import org.springsource.ide.eclipse.commons.core.pstore.PropertyStoreApi;
 import org.springsource.ide.eclipse.commons.core.util.StringUtil;
 import org.springsource.ide.eclipse.commons.frameworks.core.util.JobUtil;
 import org.springsource.ide.eclipse.commons.livexp.ui.Stylers;
@@ -47,7 +48,6 @@ import com.github.dockerjava.api.DockerClient;
 import com.github.dockerjava.api.exception.NotFoundException;
 import com.github.dockerjava.api.model.Container;
 import com.github.dockerjava.api.model.Image;
-import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableMap;
@@ -59,14 +59,12 @@ public class DockerImage implements App, ChildBearing, Styleable, ProjectRelatab
 	private final DockerApp app;
 	private final Image image;
 	public final CompletableFuture<RefreshStateTracker> refreshTracker = new CompletableFuture<>();
-	private final Supplier<Boolean> hasDevtoolsDependency;
 
 	private static Map<RunState, ImageDescriptor> RUNSTATE_ICONS = null;
 
 	public DockerImage(DockerApp app, Image image) {
 		this.app = app;
 		this.image = image;
-		this.hasDevtoolsDependency = DockerContainer.hasDevtoolsDependency(image::getLabels);
 	}
 
 	@Override
@@ -249,11 +247,16 @@ public class DockerImage implements App, ChildBearing, Styleable, ProjectRelatab
 
 	@Override
 	public boolean hasDevtoolsDependency() {
-		return this.hasDevtoolsDependency.get();
+		PropertyStoreApi props = getTarget().getPersistentProperties();
+		return props.get(hasDevtoolsKey(image.getId()), false);
 	}
 	
 	@Override
 	public TemporalBoolean isDevtoolsConnectable() {
 		return TemporalBoolean.NEVER;
+	}
+
+	public static String hasDevtoolsKey(String imageId) {
+		return imageId +".hasDevtoolsDependency";
 	}
 }
