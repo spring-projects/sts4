@@ -27,7 +27,6 @@ import java.util.stream.Collectors;
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticSeverity;
-import org.eclipse.lsp4j.DocumentSymbol;
 import org.eclipse.lsp4j.InsertTextFormat;
 import org.junit.Before;
 import org.junit.Ignore;
@@ -72,6 +71,39 @@ public class ConcourseEditorTest {
 
 	@Before public void setup() throws Exception {
 		serverInitializer.setMaxCompletions(100);
+	}
+	
+	@Test public void GH_737_support_on_error_in_steps() throws Exception {
+		//See: https://github.com/spring-projects/sts4/issues/737
+		Editor editor = harness.newEditor(
+				"jobs:\n" + 
+				"- name: myjob\n" + 
+				"  serial: false\n" + 
+				"  plan:\n" + 
+				"    - task: build-app\n" + 
+				"      params:\n" + 
+				"        STAGE: dev\n" + 
+				"        APP: app\n" + 
+				"      file: build.xml\n" + 
+				"      on_success:\n" + 
+				"        put: buildstatus\n" + 
+				"        params:\n" + 
+				"          context: build\n" + 
+				"          repo: src\n" + 
+				"          state: SUCCESSFUL\n" + 
+				"      on_error:\n" + 
+				"        put: buildstatus\n" + 
+				"        params:\n" + 
+				"          context: build\n" + 
+				"          repo: src\n" + 
+				"          state: FAILED"
+		);
+		editor.assertProblems(
+				"buildstatus|does not exist",
+				"buildstatus|does not exist"
+		);
+		
+		editor.assertHoverContains("on_error", "execute after the parent step if the parent step terminates abnormally");
 	}
 	
 	@Test public void GH_752_accross_step_modifier() throws Exception {
@@ -4685,6 +4717,7 @@ public class ConcourseEditorTest {
 				"→ image",
 				"→ input_mapping",
 				"→ on_abort",
+				"→ on_error",
 				"→ on_failure",
 				"→ on_success",
 				"→ output_mapping",

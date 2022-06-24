@@ -450,6 +450,7 @@ public class PipelineYmlSchema implements YamlSchema {
 			addProp(step, subStep, "on_success", step);
 			addProp(step, subStep, "on_failure", step);
 			addProp(step, subStep, "on_abort", step);
+			addProp(step, subStep, "on_error", step);
 			addProp(step, subStep, "ensure", step);
 			addProp(step, subStep, "tags", t_strings);
 			addProp(step, subStep, "timeout", t_duration);
