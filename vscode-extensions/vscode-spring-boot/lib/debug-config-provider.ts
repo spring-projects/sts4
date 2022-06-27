@@ -34,7 +34,7 @@ class SpringBootDebugConfigProvider implements DebugConfigurationProvider {
 
 interface ProcessEvent {
     type: string;
-    pid: number;
+    processId: number;
     shellProcessId: number
 }
 
@@ -88,8 +88,8 @@ async function handleCustomDebugEvent(e: VSCode.DebugSessionCustomEvent): Promis
 }
 
 async function getAppPid(e: ProcessEvent): Promise<number> {
-    if (e.pid) {
-        return e.pid;
+    if (e.processId && e.processId > 0) {
+        return e.processId;
     } else if (e.shellProcessId) {
         const processes = await psList();
         const appProcess = processes.find(p => p.ppid === e.shellProcessId);
