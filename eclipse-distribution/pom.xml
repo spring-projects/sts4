@@ -607,6 +607,14 @@
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/lsp4e/snapshots/</url>
 				</repository>
+
+				<!-- add corresponding lsp4j release here to ensure all dependencies are around, specifically com.google.gson; version="[2.8.9,2.9.0) -->
+				<repository>
+					<id>lsp4j</id>
+					<layout>p2</layout>
+					<url>https://download.eclipse.org/lsp4j/updates/releases/0.14.0/</url>
+				</repository>
+				
 				<!--				<repository>
 					<id>lsp4e</id>
 					<layout>p2</layout>
