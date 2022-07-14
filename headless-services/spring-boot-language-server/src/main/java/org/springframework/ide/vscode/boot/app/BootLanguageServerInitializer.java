@@ -78,7 +78,7 @@ public class BootLanguageServerInitializer implements InitializingBean {
 	private static ProjectObserver.Listener reconcileOpenDocumentsForProjectChange(SimpleLanguageServer s, CompositeLanguageServerComponents c, JavaProjectFinder projectFinder) {
 		return ProjectObserver.onAny(project -> {
 			c.getReconcileEngine().ifPresent(reconciler -> {
-				log.info("A project changed {}, triggering reconcile on all project's open documents", project.getElementName());
+				log.debug("A project changed {}, triggering reconcile on all project's open documents", project.getElementName());
 				for (TextDocument doc : s.getTextDocumentService().getAll()) {
 					if (projectFinder.find(doc.getId()).orElse(null) == project) {
 						s.validateWith(doc.getId(), reconciler);

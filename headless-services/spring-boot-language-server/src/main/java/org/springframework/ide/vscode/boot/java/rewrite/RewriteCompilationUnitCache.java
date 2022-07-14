@@ -35,7 +35,6 @@ import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.tree.J.CompilationUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.boot.java.utils.DocumentContentProvider;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IClasspathUtil;
@@ -54,9 +53,11 @@ import reactor.core.Disposable;
 
 public class RewriteCompilationUnitCache implements DocumentContentProvider, Disposable {
 	
-	private static final Logger logger = LoggerFactory.getLogger(CompilationUnitCache.class);
+	private static final Logger logger = LoggerFactory.getLogger(RewriteCompilationUnitCache.class);
+	
+	private final Object URI_TO_CU_LOCK = new Object(); 
 
-	private static final long CU_ACCESS_EXPIRATION = 5;
+//	private static final long CU_ACCESS_EXPIRATION = 5;
 	private JavaProjectFinder projectFinder;
 	private ProjectObserver projectObserver;
 	
@@ -106,20 +107,20 @@ public class RewriteCompilationUnitCache implements DocumentContentProvider, Dis
 			
 			@Override
 			public void deleted(IJavaProject project) {
-				logger.info("CU Cache: deleted project {}", project.getElementName());
+				logger.debug("CU Cache: deleted project {}", project.getElementName());
 				invalidateProject(project);
 			}
 			
 			@Override
 			public void created(IJavaProject project) {
-				logger.info("CU Cache: created project {}", project.getElementName());
+				logger.debug("CU Cache: created project {}", project.getElementName());
 				invalidateProject(project);
 //				loadJavaParser(project);
 			}
 			
 			@Override
 			public void changed(IJavaProject project) {
-				logger.info("CU Cache: changed project {}", project.getElementName());
+				logger.debug("CU Cache: changed project {}", project.getElementName());
 				invalidateProject(project);
 				// Load the new cache the value right away
 //				loadJavaParser(project);
@@ -173,15 +174,17 @@ public class RewriteCompilationUnitCache implements DocumentContentProvider, Dis
 	}
 	
 	private void invalidateCuForJavaFile(String uriStr) {
-		logger.info("CU Cache: invalidate AST for {}", uriStr);
-
 		URI uri = URI.create(uriStr);
-		uriToCu.invalidate(uri);
-		Optional<IJavaProject> project = projectFinder.find(new TextDocumentIdentifier(uriStr));
-		if (project.isPresent()) {
-			JavaParser parser = javaParsers.getIfPresent(project.get());
-			if (parser != null) {
-				parser.reset();
+		synchronized (URI_TO_CU_LOCK) {
+			if (uriToCu.getIfPresent(uri) != null) {
+				uriToCu.invalidate(uri);
+				Optional<IJavaProject> project = projectFinder.find(new TextDocumentIdentifier(uriStr));
+				if (project.isPresent()) {
+					JavaParser parser = javaParsers.getIfPresent(project.get());
+					if (parser != null) {
+						parser.reset();
+					}
+				}
 			}
 		}
 	}
@@ -189,12 +192,14 @@ public class RewriteCompilationUnitCache implements DocumentContentProvider, Dis
 	private void invalidateProject(IJavaProject project) {
 		logger.info("CU Cache: invalidate project <{}>", project.getElementName());
 
-		Set<URI> docUris = projectToDocs.getIfPresent(project);
-		if (docUris != null) {
-			uriToCu.invalidateAll(docUris);
-			projectToDocs.invalidate(project);
+		synchronized (URI_TO_CU_LOCK) {
+			Set<URI> docUris = projectToDocs.getIfPresent(project);
+			if (docUris != null) {
+				uriToCu.invalidateAll(docUris);
+				projectToDocs.invalidate(project);
+			}
+			javaParsers.invalidate(project);
 		}
-		javaParsers.invalidate(project);
 	}
 
 	@Override
@@ -211,27 +216,30 @@ public class RewriteCompilationUnitCache implements DocumentContentProvider, Dis
 	public CompilationUnit getCU(IJavaProject project, URI uri) {
 		try {
 			if (project != null) {
-				return uriToCu.get(uri, () -> {
-					JavaParser javaParser = /*loadJavaParser(project)*/createJavaParser(project);
-					Input input = new Input(Paths.get(uri), () -> {
-						try {
-							return new ByteArrayInputStream(fetchContent(uri).getBytes());
-						} catch (Exception e) {
-							throw new IllegalStateException("Unexpected error fetching document content");
+				synchronized (URI_TO_CU_LOCK) {
+					return uriToCu.get(uri, () -> {
+						logger.debug("Parsing CU {}", uri);
+						JavaParser javaParser = loadJavaParser(project);
+						Input input = new Input(Paths.get(uri), () -> {
+							try {
+								return new ByteArrayInputStream(fetchContent(uri).getBytes());
+							} catch (Exception e) {
+								throw new IllegalStateException("Unexpected error fetching document content");
+							}
+						});
+						
+						List<CompilationUnit> cus = ORAstUtils.parseInputs(javaParser, List.of(input));
+											
+						CompilationUnit cu = cus.get(0);
+						
+			
+						if (cu != null) {						
+							projectToDocs.get(project, () -> new HashSet<>()).add(uri);
 						}
-					});
-					
-					List<CompilationUnit> cus = ORAstUtils.parseInputs(javaParser, List.of(input));
-										
-					CompilationUnit cu = cus.get(0);
-					
-		
-					if (cu != null) {						
-						projectToDocs.get(project, () -> new HashSet<>()).add(uri);
-					}
 
-					return cu;
-				});
+						return cu;
+					});
+				}
 			}
 		} catch (Exception e) {
 			logger.error("", e);

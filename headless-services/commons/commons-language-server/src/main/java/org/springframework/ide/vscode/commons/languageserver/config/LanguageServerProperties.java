@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Pivotal, Inc.
+ * Copyright (c) 2018, 2022 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -46,6 +46,11 @@ public class LanguageServerProperties {
 	 * Hover request handler timeout in milliseconds
 	 */
 	private long hoverTimeout = -1;
+	
+	/**
+	 * Reconciling delay time interval. Maximum reconcile rate.
+	 */
+	private long reconcileDelay = 0;
 
 	public boolean isStandalone() {
 		return standalone;
@@ -85,6 +90,14 @@ public class LanguageServerProperties {
 
 	public void setHoverTimeout(long hoverTimeout) {
 		this.hoverTimeout = hoverTimeout;
+	}
+
+	public long getReconcileDelay() {
+		return reconcileDelay;
+	}
+
+	public void setReconcileDelay(long reconcileDelay) {
+		this.reconcileDelay = reconcileDelay;
 	}
 
 }

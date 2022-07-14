@@ -13,16 +13,15 @@ package org.springframework.ide.vscode.commons.languageserver.util;
 import java.lang.management.ManagementFactory;
 import java.net.URI;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
@@ -52,7 +51,6 @@ import org.eclipse.lsp4j.RegistrationParams;
 import org.eclipse.lsp4j.ServerCapabilities;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
-import org.eclipse.lsp4j.VersionedTextDocumentIdentifier;
 import org.eclipse.lsp4j.WorkDoneProgressBegin;
 import org.eclipse.lsp4j.WorkDoneProgressCreateParams;
 import org.eclipse.lsp4j.WorkDoneProgressEnd;
@@ -594,7 +592,7 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 	 * in a burst. Rather than execute the same request repeatedly we can avoid queuing
 	 * up more requests if the previous request has not yet been started.
 	 */
-	private Set<VersionedTextDocumentIdentifier> queuedReconcileRequests = Collections.synchronizedSet(new HashSet<>());
+	private Map<String, CompletableFuture<Void>> reconcileRequests = new ConcurrentHashMap<>();
 
 	private DiagnosticSeverityProvider severityProvider = DiagnosticSeverityProvider.DEFAULT;
 
@@ -605,40 +603,36 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 	public void validateWith(TextDocumentIdentifier docId, IReconcileEngine engine) {
 		SimpleTextDocumentService documents = getTextDocumentService();
 
-		TextDocument doc = documents.getLatestSnapshot(docId.getUri());
-		if (doc == null) {
+		if (documents.getLatestSnapshot(docId.getUri()) == null) {
 			log.debug("Reconcile skipped due to document doesn't exist anymore {}", docId.getUri());
 			return;
 		}
 		
-		int requestedVersion = doc.getVersion();
-		VersionedTextDocumentIdentifier request = new VersionedTextDocumentIdentifier(docId.getUri(), requestedVersion);
-		log.debug("Reconcile requested {} - {}", request.getUri(), request.getVersion());
-		if (!queuedReconcileRequests.add(request)) {
-			log.debug("Reconcile skipped {} - {}", request.getUri(), request.getVersion());
+		String uri = docId.getUri();
+		CompletableFuture<Void> newFuture = new CompletableFuture<Void>();
+		CompletableFuture<Void> oldFuture = reconcileRequests.putIfAbsent(uri, newFuture);
+		if (oldFuture != null && oldFuture != newFuture) {
+			log.debug("Reconcile skipped {}", uri);
 			return;
 		}
 
-		CompletableFuture<Void> reconcileSession = this.busyReconcile = new CompletableFuture<Void>();
+		CompletableFuture<Void> reconcileSession = this.busyReconcile = oldFuture == null ? newFuture : oldFuture; 
 //		Log.debug("Reconciling BUSY");
 
 		// Avoid running in the same thread as lsp4j as it can result
 		// in long "hangs" for slow reconcile providers
-		Mono.fromRunnable(() -> {
-			queuedReconcileRequests.remove(request);
-			log.debug("Reconcile starting {} - {}", request.getUri(), request.getVersion());
+		Mono<?> mono = props.getReconcileDelay() > 0
+				? Mono.delay(Duration.ofMillis(props.getReconcileDelay())).publishOn(RECONCILER_SCHEDULER)
+				: Mono.empty().publishOn(RECONCILER_SCHEDULER);
+		
+		mono.then(Mono.fromRunnable(() -> {
+			reconcileRequests.remove(uri);
+			log.debug("Reconcile starting {}", uri);
 
-//			TextDocument doc = documents.getDocument(docId.getUri()).copy();
-
-//			if (doc == null) {
-//				log.debug("Reconcile aborted due to document doesn't exist {} - {}", request.getUri(), request.getVersion());
-//				//Do not bother reconciling if document doesn't exist anymore (got closed in the meantime)
-//				return;
-//			}
-
-			if (requestedVersion != doc.getVersion()) {
-				log.debug("Reconcile aborted due to document being already stale {} - {}", request.getUri(), request.getVersion());
-				//Do not bother reconciling if document contents is already stale.
+			TextDocument doc = documents.getLatestSnapshot(docId.getUri());
+			
+			if (doc == null) {
+				//Do not bother reconciling if document doesn't exist anymore (got closed in the meantime)
 				return;
 			}
 
@@ -698,7 +692,7 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 			};
 
 			engine.reconcile(doc, problems);
-		})
+		}))
 		.onErrorResume(error -> {
 			log.error("", error);
 			return Mono.empty();
@@ -707,7 +701,6 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 			reconcileSession.complete(null);
 //			Log.debug("Reconciler DONE : "+this.busyReconcile.isDone());
 		})
-		.subscribeOn(RECONCILER_SCHEDULER)
 		.subscribe();
 	}
 
