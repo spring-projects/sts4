@@ -109,8 +109,9 @@
 		<commons-codec-version>1.13</commons-codec-version>
 		
 		<!--  Rewrite specific properties -->
-		<rewrite-version>7.24.1</rewrite-version>
-		<rewrite-spring-version>4.22.1</rewrite-spring-version>
+		<rewrite-version>7.26.1</rewrite-version>
+		<rewrite-spring-version>4.23.0</rewrite-spring-version>
+		<rewrite-java-migration.version>1.8.0</rewrite-java-migration.version>
 		<rewrite-jackson.version>2.13.2</rewrite-jackson.version>
 
 		<signing.skip>true</signing.skip>

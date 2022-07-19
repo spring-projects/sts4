@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2022 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.test;
 
-import static org.mockito.ArgumentMatchers.anyObject;
+import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.atLeastOnce;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -64,13 +64,13 @@ public class SpringPropertiesIndexTest {
 		ProgressService progressService = mock(ProgressService.class);
 		propertyIndexProvider.setProgressService(progressService);
 		propertyIndexProvider.getIndex(doc);
-		verify(progressService, atLeastOnce()).progressEvent(anyObject(), anyObject());
+		verify(progressService, atLeastOnce()).progressBegin(any(), any(), any());
 
 		// Should be cached now, so progress service should not be touched
 		progressService = mock(ProgressService.class);
 		propertyIndexProvider.setProgressService(progressService);
 		propertyIndexProvider.getIndex(doc);
-		verify(progressService, never()).progressEvent(anyObject(), anyObject());
+		verify(progressService, never()).progressBegin(any(), any(), any());
 
 		// Change POM file for the project
 		harness.changeFile(new File(directory, MavenCore.POM_XML).toURI().toString());
@@ -79,7 +79,7 @@ public class SpringPropertiesIndexTest {
 		progressService = mock(ProgressService.class);
 		propertyIndexProvider.setProgressService(progressService);
 		propertyIndexProvider.getIndex(doc);
-		verify(progressService, atLeastOnce()).progressEvent(anyObject(), anyObject());
+		verify(progressService, atLeastOnce()).progressBegin(any(), any(), any());
 	}
 
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019 Pivotal, Inc.
+ * Copyright (c) 2019, 2022 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -26,13 +26,17 @@ public class ProgressTask {
 		this.taskId = taskId;
 		this.service = service;
 	}
+	
+	public void progressBegin(String title, String statusMsg) {
+		this.service.progressBegin(taskId, title, statusMsg);
+	}
 
 	public void progressEvent(String statusMsg) {
 		this.service.progressEvent(taskId, statusMsg);
 	}
 	
 	public void progressDone() {
-		this.service.progressEvent(taskId, null);
+		this.service.progressDone(taskId);
 	}
 
 }

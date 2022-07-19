@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2017 Pivotal, Inc.
+ * Copyright (c) 2014, 2022 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -12,13 +12,14 @@ package org.springframework.ide.vscode.boot.metadata;
 
 import java.util.concurrent.ExecutionException;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.metadata.util.Listener;
 import org.springframework.ide.vscode.boot.metadata.util.ListenerManager;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.ProgressService;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 import org.springframework.ide.vscode.commons.util.FileObserver;
-import org.springframework.ide.vscode.commons.util.Log;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
@@ -33,6 +34,8 @@ import com.google.common.collect.ImmutableList;
  * @author Kris De Volder
  */
 public class SpringPropertiesIndexManager extends ListenerManager<Listener<SpringPropertiesIndexManager>> {
+		
+	private static final Logger log = LoggerFactory.getLogger(SpringPropertiesIndexManager.class);
 
 	private Cache<IJavaProject, SpringPropertyIndex> indexes;
 	private final ValueProviderRegistry valueProviders;
@@ -56,27 +59,27 @@ public class SpringPropertiesIndexManager extends ListenerManager<Listener<Sprin
 		try {
 			return indexes.get(project, () -> initIndex(project, progressService));
 		} catch (ExecutionException e) {
-			Log.log(e);
+			log.error("", e);
 			return null;
 		}
 	}
 
 	private SpringPropertyIndex initIndex(IJavaProject project, ProgressService progressService) {
-		Log.info("Indexing Spring Boot Properties for "+project.getElementName());
+		log.info("Indexing Spring Boot Properties for {}", project.getElementName());
 
 		String progressId = getProgressId();
 		if (progressService != null) {
-			progressService.progressEvent(progressId, "Indexing Spring Boot Properties...");
+			progressService.progressBegin(progressId, "Indexing Spring Boot Properties", null);
 		}
 
 		SpringPropertyIndex index = new SpringPropertyIndex(valueProviders, project.getClasspath());
 
 		if (progressService != null) {
-			progressService.progressEvent(progressId, null);
+			progressService.progressDone(progressId);
 		}
 
-		Log.info("Indexing Spring Boot Properties for "+project.getElementName()+" DONE");
-		Log.info("Indexed "+index.size()+" properties.");
+		log.info("Indexing Spring Boot Properties for {} DONE", project.getElementName());
+		log.info("Indexed {} properties.", index.size());
 
 		return index;
 	}

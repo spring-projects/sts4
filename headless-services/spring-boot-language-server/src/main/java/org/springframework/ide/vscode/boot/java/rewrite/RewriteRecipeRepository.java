@@ -126,7 +126,7 @@ public class RewriteRecipeRepository {
 	
 	private void loadRecipes() {
 		try {
-			server.getProgressService().progressEvent(RECIPES_LOADING_PROGRESS, "Loading Rewrite Recipes...");
+			server.getProgressService().progressBegin(RECIPES_LOADING_PROGRESS, "Loading Rewrite Recipes", null);
 			log.info("Loading Rewrite Recipes...");
 			for (Recipe r : Environment.builder().scanRuntimeClasspath().build().listRecipes()) {
 				if (r.getName() != null) {
@@ -151,7 +151,7 @@ public class RewriteRecipeRepository {
 			log.info("Done loading Rewrite Recipes");
 			server.doOnInitialized(() -> registerCommands());
 		} catch (Throwable t) {
-			server.getProgressService().progressEvent(RECIPES_LOADING_PROGRESS, null);
+			server.getProgressService().progressDone(RECIPES_LOADING_PROGRESS);
 			log.error("", t);
 		}
 	}
@@ -263,7 +263,7 @@ public class RewriteRecipeRepository {
 		server.getClient().registerCapability(params).thenAccept((v) -> {
 			server.onShutdown(() -> server.getClient().unregisterCapability(new UnregistrationParams(List.of(new Unregistration(registrationId, WORKSPACE_EXECUTE_COMMAND)))));			
 			log.info("Done registering commands for rewrite recipes");
-			server.getProgressService().progressEvent(RECIPES_LOADING_PROGRESS, null);
+			server.getProgressService().progressDone(RECIPES_LOADING_PROGRESS);
 		});
 		
 	}
@@ -280,7 +280,7 @@ public class RewriteRecipeRepository {
 	
 	private CompletableFuture<Object> apply(Recipe r, String uri, String progressToken) {
 		return CompletableFuture.supplyAsync(() -> {
-			server.getProgressService().progressEvent(progressToken, r.getDisplayName() + ": initiated...");
+			server.getProgressService().progressBegin(progressToken, r.getDisplayName(), "Initiated...");
 			return projectFinder.find(new TextDocumentIdentifier(uri));
 		}).thenCompose(p -> {
 			if (p.isPresent()) {
@@ -288,24 +288,23 @@ public class RewriteRecipeRepository {
 					Optional<WorkspaceEdit> edit = apply(r, p.get());
 					return CompletableFuture.completedFuture(edit).thenCompose(we -> {
 						if (we.isPresent()) {
-							server.getProgressService().progressEvent(progressToken,
-									r.getDisplayName() + ": applying document changes...");
+							server.getProgressService().progressEvent(progressToken, "Applying document changes...");
 							return server.getClient().applyEdit(new ApplyWorkspaceEditParams(we.get(), r.getDisplayName())).thenCompose(res -> {
 								if (res.isApplied()) {
-									server.getProgressService().progressEvent(progressToken, null);
+									server.getProgressService().progressDone(progressToken);
 									return CompletableFuture.completedFuture("success");
 								} else {
-									server.getProgressService().progressEvent(progressToken, null);
+									server.getProgressService().progressDone(progressToken);
 									return CompletableFuture.completedFuture(null);
 								}
 							});
 						} else {
-							server.getProgressService().progressEvent(progressToken, null);
+							server.getProgressService().progressDone(progressToken);
 							return CompletableFuture.completedFuture(null);
 						}
 					});
 				} catch (Throwable t) {
-					server.getProgressService().progressEvent(progressToken, null);
+					server.getProgressService().progressDone(progressToken);
 					throw t;
 				}
 			}
@@ -315,12 +314,11 @@ public class RewriteRecipeRepository {
 	
 	private Optional<WorkspaceEdit> apply(Recipe r, IJavaProject project) {
 		Path absoluteProjectDir = Paths.get(project.getLocationUri());
-		server.getProgressService().progressEvent(r.getName(), r.getDisplayName() + ": parsing files...");
+		server.getProgressService().progressEvent(r.getName(), "Parsing files...");
 		MavenProjectParser projectParser = createRewriteMavenParser(absoluteProjectDir,
 				new InMemoryExecutionContext());
 		List<SourceFile> sources = projectParser.parse(absoluteProjectDir, getClasspathEntries(project));
-		server.getProgressService().progressEvent(r.getName(),
-				r.getDisplayName() + ": computing changes...");
+		server.getProgressService().progressEvent(r.getName(), "Computing changes...");
 		List<Result> results = r.run(sources, new InMemoryExecutionContext(e -> log.error("", e)));
 		return ORDocUtils.createWorkspaceEdit(absoluteProjectDir, server.getTextDocumentService(), results);
 	}

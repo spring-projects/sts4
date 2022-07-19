@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2020 Pivotal, Inc.
+ * Copyright (c) 2017, 2022 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -71,7 +71,7 @@ public abstract class AbstractFileToProjectCache<P extends IJavaProject> extends
 		final String taskId = getProgressId();
 		final ProgressService progressService = server.getProgressService();
 		if (progressService != null) {
-			progressService.progressEvent(taskId, "Updating data for project `" + project.getElementName() + "'");
+			progressService.progressBegin(taskId, "Updating data for project", "'" + project.getElementName() + "'");
 		}
 		if (async) {
 			CompletableFuture.supplyAsync(() -> update(project)).thenAccept((changed) -> afterUpdate(project, changed, notify, taskId));
@@ -84,7 +84,7 @@ public abstract class AbstractFileToProjectCache<P extends IJavaProject> extends
 	private void afterUpdate(P project, boolean changed, boolean notify, String taskId) {
 		final ProgressService progressService = server.getProgressService();
 		if (progressService != null) {
-			progressService.progressEvent(taskId, null);
+			progressService.progressDone(taskId);
 		}
 		if (changed || alwaysFireEventOnUpdate) {
 			if (notify) {

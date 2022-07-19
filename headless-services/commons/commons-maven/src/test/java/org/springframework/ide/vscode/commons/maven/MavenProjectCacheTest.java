@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2019 Pivotal, Inc.
+ * Copyright (c) 2017, 2022 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -16,7 +16,6 @@ import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.isNull;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
@@ -174,7 +173,7 @@ public class MavenProjectCacheTest {
 				progressDone.set(true);
 				return null;
 			}
-		}).when(progressService).progressEvent(any(String.class), (String) isNull());
+		}).when(progressService).progressDone(any(String.class));
 
 		when(server.getProgressService()).thenReturn(progressService);
 
@@ -223,7 +222,7 @@ public class MavenProjectCacheTest {
 				progressDone.set(true);
 				return null;
 			}
-		}).when(progressService).progressEvent(any(String.class), (String) isNull());
+		}).when(progressService).progressDone(any(String.class));
 
 		when(server.getProgressService()).thenReturn(progressService);
 

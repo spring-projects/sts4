@@ -91,6 +91,13 @@
 			<version>${rewrite-spring-version}</version>
 		</dependency>
 
+		<!-- https://mvnrepository.com/artifact/org.openrewrite.recipe/rewrite-migrate-java -->
+		<dependency>
+		    <groupId>org.openrewrite.recipe</groupId>
+		    <artifactId>rewrite-migrate-java</artifactId>
+		    <version>${rewrite-java-migration.version}</version>
+		</dependency>
+
 
 	</dependencies>
 

@@ -133,46 +133,54 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 		private ConcurrentHashMap<String, Boolean> activeTaskIDs = new ConcurrentHashMap<>();
 		
 		@Override
-		public void progressEvent(String taskId, String statusMsg) {
+		public void progressBegin(String taskId, String title, String message) {
 			STS4LanguageClient client = SimpleLanguageServer.this.client;
-			if (client!=null) {
-				if (statusMsg == null) {
-					progressDone(taskId);
-					return;
-				}
+			if (client != null) {
 				boolean isNew = activeTaskIDs.put(taskId, true) == null;
-				if (isNew) {
-					// New taskId, new progress
-					WorkDoneProgressCreateParams params = new WorkDoneProgressCreateParams();
-					params.setToken(taskId);
-					SimpleLanguageServer.this.client.createProgress(params).thenAccept((p) -> {
-						ProgressParams progressParams = new ProgressParams();
-						progressParams.setToken(taskId);
-						WorkDoneProgressBegin report = new WorkDoneProgressBegin();
-						report.setCancellable(false);
-						progressParams.setValue(Either.forLeft(report));
-						report.setMessage(statusMsg);
-						SimpleLanguageServer.this.client.notifyProgress(progressParams);
-					});
-				} else {
-					// Already exists
+				if (!isNew) {
+					log.error("Progress for task id '{}' already exists", taskId);
+				}
+				WorkDoneProgressCreateParams params = new WorkDoneProgressCreateParams();
+				params.setToken(taskId);
+				client.createProgress(params).thenAccept((p) -> {
 					ProgressParams progressParams = new ProgressParams();
 					progressParams.setToken(taskId);
-					WorkDoneProgressReport report = new WorkDoneProgressReport();
+					WorkDoneProgressBegin report = new WorkDoneProgressBegin();
+					report.setCancellable(false);
 					progressParams.setValue(Either.forLeft(report));
-					report.setMessage(statusMsg);
-					SimpleLanguageServer.this.client.notifyProgress(progressParams);
-				}
+					report.setMessage(message);
+					report.setTitle(title);
+					client.notifyProgress(progressParams);
+				});
 			}
 		}
 
-		private void progressDone(String taskId) {
-			if (activeTaskIDs.remove(taskId)) {
+		@Override
+		public void progressEvent(String taskId, String statusMsg) {
+			STS4LanguageClient client = SimpleLanguageServer.this.client;
+			if (client != null) {
+				if (!activeTaskIDs.containsKey(taskId)) {
+					log.error("Progress for task id '{}' does NOT exist!", taskId);
+					return;
+				}
+				ProgressParams progressParams = new ProgressParams();
+				progressParams.setToken(taskId);
+				WorkDoneProgressReport report = new WorkDoneProgressReport();
+				progressParams.setValue(Either.forLeft(report));
+				report.setMessage(statusMsg);
+				client.notifyProgress(progressParams);
+			}
+		}
+
+		@Override
+		public void progressDone(String taskId) {
+			STS4LanguageClient client = SimpleLanguageServer.this.client;
+			if (client != null && activeTaskIDs.remove(taskId)) {
 				ProgressParams progressParams = new ProgressParams();
 				progressParams.setToken(taskId);
 				WorkDoneProgressEnd report = new WorkDoneProgressEnd();
 				progressParams.setValue(Either.forLeft(report));
-				SimpleLanguageServer.this.client.notifyProgress(progressParams);
+				client.notifyProgress(progressParams);
 			}
 		}
 	};
