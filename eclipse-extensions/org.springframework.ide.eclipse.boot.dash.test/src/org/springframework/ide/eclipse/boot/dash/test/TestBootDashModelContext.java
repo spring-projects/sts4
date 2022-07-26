@@ -36,10 +36,12 @@ import org.springframework.ide.eclipse.boot.dash.di.SimpleDIContext;
 import org.springframework.ide.eclipse.boot.dash.model.BootDashModelContext;
 import org.springframework.ide.eclipse.boot.dash.model.BootDashViewModel;
 import org.springframework.ide.eclipse.boot.dash.model.SecuredCredentialsStore;
+import org.springframework.ide.eclipse.boot.dash.model.remote.GenericRemoteAppElementDataContributor;
 import org.springframework.ide.eclipse.boot.dash.test.mocks.MockScopedPropertyStore;
 import org.springframework.ide.eclipse.boot.dash.test.mocks.MockSecuredCredentialStore;
 import org.springframework.ide.eclipse.boot.dash.test.mocks.MockSshTunnel;
 import org.springframework.ide.eclipse.boot.dash.views.BootDashActions;
+import org.springsource.ide.eclipse.commons.boot.ls.remoteapps.RemoteBootAppsDataHolder.Contributor;
 import org.springsource.ide.eclipse.commons.core.pstore.IPropertyStore;
 import org.springsource.ide.eclipse.commons.core.pstore.IScopedPropertyStore;
 import org.springsource.ide.eclipse.commons.core.pstore.InMemoryPropertyStore;
@@ -87,6 +89,7 @@ public class TestBootDashModelContext extends BootDashModelContext {
 		injections.defInstance(SshTunnelFactory.class, MockSshTunnel::new);
 		injections.defInstance(JmxSshTunnelManager.class, new JmxSshTunnelManager());
 		injections.def(CloudAppLogManager.class, CloudAppLogManager::new); //TODO: replace with a mock?
+		injections.def(GenericRemoteAppElementDataContributor.class, GenericRemoteAppElementDataContributor::new);
 		return injections;
 	}
 

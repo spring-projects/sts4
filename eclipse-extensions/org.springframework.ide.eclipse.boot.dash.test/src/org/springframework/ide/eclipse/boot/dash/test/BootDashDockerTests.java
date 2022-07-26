@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.eclipse.boot.dash.test;
 
+import static org.hamcrest.MatcherAssert.assertThat;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
@@ -37,6 +38,7 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 
 import org.apache.commons.io.IOUtils;
@@ -57,6 +59,7 @@ import org.junit.Test;
 import org.mockito.Matchers;
 import org.mockito.Mockito;
 import org.springframework.ide.eclipse.beans.ui.live.model.LiveBeansModel;
+import org.springframework.ide.eclipse.boot.dash.BootDashActivator;
 import org.springframework.ide.eclipse.boot.dash.api.App;
 import org.springframework.ide.eclipse.boot.dash.api.RunTargetType;
 import org.springframework.ide.eclipse.boot.dash.cloudfoundry.RemoteBootDashModel;
@@ -75,6 +78,7 @@ import org.springframework.ide.eclipse.boot.dash.docker.ui.SelectDockerDaemonDia
 import org.springframework.ide.eclipse.boot.dash.labels.BootDashLabels;
 import org.springframework.ide.eclipse.boot.dash.model.BootDashElement;
 import org.springframework.ide.eclipse.boot.dash.model.BootDashModel;
+import org.springframework.ide.eclipse.boot.dash.model.BootDashViewModel;
 import org.springframework.ide.eclipse.boot.dash.model.BootProjectDashElement;
 import org.springframework.ide.eclipse.boot.dash.model.Failable;
 import org.springframework.ide.eclipse.boot.dash.model.RefreshState;
@@ -99,8 +103,13 @@ import org.springframework.ide.eclipse.boot.dash.views.RunStateAction;
 import org.springframework.ide.eclipse.boot.launch.devtools.BootDevtoolsClientLaunchConfigurationDelegate;
 import org.springframework.ide.eclipse.boot.test.BootProjectTestHarness;
 import org.springframework.ide.eclipse.boot.test.util.TestBracketter;
+import org.springsource.ide.eclipse.commons.boot.ls.remoteapps.RemoteBootAppsDataHolder;
+import org.springsource.ide.eclipse.commons.boot.ls.remoteapps.RemoteBootAppsDataHolder.Contributor;
+import org.springsource.ide.eclipse.commons.boot.ls.remoteapps.RemoteBootAppsDataHolder.RemoteAppData;
 import org.springsource.ide.eclipse.commons.core.util.StringUtil;
 import org.springsource.ide.eclipse.commons.frameworks.test.util.ACondition;
+import org.springsource.ide.eclipse.commons.livexp.core.LiveSets;
+import org.springsource.ide.eclipse.commons.livexp.core.ObservableSet;
 import org.springsource.ide.eclipse.commons.tests.util.StsTestCase;
 
 import com.github.dockerjava.api.DockerClient;
@@ -217,6 +226,64 @@ public class BootDashDockerTests {
 			assertEquals(RunState.RUNNING, con.getRunState());
 		});
 	}
+
+	@Test
+	public void noAutoLiveHoverConnectWithoutActuator() throws Exception {
+		IProject project = projects.createBootWebProject("webby-no-actuators",
+				withJavaVersion("11")
+		);
+		GenericRemoteBootDashModel<DockerClient, DockerTargetParams> model = createDockerTarget();
+		dragAndDrop(project, model);
+		GenericRemoteAppElement dep = waitForDeployment(model, project);
+		GenericRemoteAppElement img = waitForChild(dep, d -> d instanceof DockerImage);
+		GenericRemoteAppElement con = waitForChild(img, d -> d instanceof DockerContainer);
+
+		List<RemoteBootAppsDataHolder.Contributor> remoteAppDataProviders = harness.context.injections.getBeans(RemoteBootAppsDataHolder.Contributor.class);
+		ObservableSet<RemoteAppData> remoteAppDataExp = RemoteBootAppsDataHolder.union(remoteAppDataProviders);
+		DockerContainer conData = (DockerContainer) con.getAppData();
+		String conName = conData.getName();
+		AtomicReference<RemoteAppData> found = new AtomicReference<>();
+		ACondition.waitFor("Remote app data", 2000, () -> {
+			for (RemoteAppData remoteApp : remoteAppDataExp.getValues()) {
+				String pid = remoteApp.getProcessId();
+				if (pid.equals(conName)) {
+					found.set(remoteApp);
+				}
+			}
+			assertThat("remoteApp data not found", found.get()!=null);
+		});
+		assertThat("manual connect should be enabled", found.get().isManualConnect());
+	}
+
+	@Test
+	public void autoLiveHoverConnectWithActuator() throws Exception {
+		IProject project = projects.createBootWebProject("webby-with-actuators",
+				withJavaVersion("11"),
+				withStarters("actuator")
+		);
+		GenericRemoteBootDashModel<DockerClient, DockerTargetParams> model = createDockerTarget();
+		dragAndDrop(project, model);
+		GenericRemoteAppElement dep = waitForDeployment(model, project);
+		GenericRemoteAppElement img = waitForChild(dep, d -> d instanceof DockerImage);
+		GenericRemoteAppElement con = waitForChild(img, d -> d instanceof DockerContainer);
+
+		List<RemoteBootAppsDataHolder.Contributor> remoteAppDataProviders = harness.context.injections.getBeans(RemoteBootAppsDataHolder.Contributor.class);
+		ObservableSet<RemoteAppData> remoteAppDataExp = RemoteBootAppsDataHolder.union(remoteAppDataProviders);
+		DockerContainer conData = (DockerContainer) con.getAppData();
+		String conName = conData.getName();
+		AtomicReference<RemoteAppData> found = new AtomicReference<>();
+		ACondition.waitFor("Remote app data", 2000, () -> {
+			for (RemoteAppData remoteApp : remoteAppDataExp.getValues()) {
+				String pid = remoteApp.getProcessId();
+				if (pid.equals(conName)) {
+					found.set(remoteApp);
+				}
+			}
+			assertThat("remoteApp data not found", found.get()!=null);
+		});
+		assertThat("manual connect should NOT be enabled", !found.get().isManualConnect());
+	}
+
 
 	@Test
 	public void devtoolsFullScenario() throws Exception {
@@ -499,10 +566,10 @@ public class BootDashDockerTests {
 			assertEquals(RunState.INACTIVE, con.getRunState());
 		});
 
-		assertConsoleContains(con, "[extShutdownHook]");
+//		assertConsoleContains(con, "[extShutdownHook]");
 		assertConsoleNotContains(con, "Starting WebbyApplication");
 		assertNoConsole(img);
-		assertConsoleContains(dep, "[extShutdownHook]");
+//		assertConsoleContains(dep, "[extShutdownHook]");
 		assertConsoleNotContains(dep, "Starting WebbyApplication");
 
 		RunStateAction startAction = restartAction();

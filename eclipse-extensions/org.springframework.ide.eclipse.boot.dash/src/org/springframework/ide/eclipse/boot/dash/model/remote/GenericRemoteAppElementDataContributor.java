@@ -15,6 +15,7 @@ import org.springframework.ide.eclipse.boot.dash.model.BootDashElement;
 import org.springframework.ide.eclipse.boot.dash.model.BootDashModel;
 import org.springframework.ide.eclipse.boot.dash.model.BootDashModel.ElementStateListener;
 import org.springframework.ide.eclipse.boot.dash.model.BootDashViewModel;
+import org.springframework.ide.eclipse.boot.dash.model.ClasspathPropertyTester;
 import org.springsource.ide.eclipse.commons.boot.ls.remoteapps.RemoteBootAppsDataHolder.Contributor;
 import org.springsource.ide.eclipse.commons.boot.ls.remoteapps.RemoteBootAppsDataHolder.RemoteAppData;
 import org.springsource.ide.eclipse.commons.livexp.core.AsyncLiveExpression.AsyncMode;
@@ -75,6 +76,7 @@ public class GenericRemoteAppElementDataContributor implements Contributor, Elem
 			data.setUrlScheme("http");
 			data.setPort(""+child.getLivePort());
 			data.setKeepChecking(false);
+			data.setManualConnect(!child.hasClasspathProperty(ClasspathPropertyTester.HAS_ACTUATORS));
 			data.setProcessId(child.getAppData().getName());
 			data.setProcessName(child.getConsoleDisplayName());
 			allApps.add(data);

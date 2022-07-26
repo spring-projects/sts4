@@ -11,9 +11,13 @@
 package org.springframework.ide.eclipse.boot.dash.model;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.LinkedHashSet;
+import java.util.Map;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.debug.core.ILaunchConfiguration;
+import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.springframework.ide.eclipse.beans.ui.live.model.TypeLookup;
@@ -32,6 +36,7 @@ import org.springsource.ide.eclipse.commons.livexp.core.LiveExpression;
 import org.springsource.ide.eclipse.commons.livexp.core.LiveSets;
 import org.springsource.ide.eclipse.commons.livexp.core.ObservableSet;
 import org.springsource.ide.eclipse.commons.livexp.core.ValueListener;
+import org.springsource.ide.eclipse.commons.livexp.util.Log;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -166,32 +171,57 @@ public abstract class WrappingBootDashElement<T> extends AbstractDisposable impl
 		}
 	}
 
-	private LiveExpression<Boolean> hasDevtools = null;
+	private Map<ClasspathPropertyTester, LiveExpression<Boolean>> classpathProperties = new HashMap<>();
+
+	@Override
+	public boolean projectHasClasspathProperty(ClasspathPropertyTester tester) {
+		LiveExpression<Boolean> exp;
+		synchronized (classpathProperties) {
+			exp = classpathProperties.computeIfAbsent(tester, t -> {
+				LiveExpression<Boolean> propertyExp = new LiveExpression<Boolean>(false) {
+					@Override
+					protected Boolean compute() {
+						IProject p = getProject();
+						try {
+							if (p!=null && p.isAccessible()) {
+								IJavaProject jp = JavaCore.create(p);
+								if (jp.exists()) {
+									IClasspathEntry[] classpath = jp.getResolvedClasspath(true);
+									if (classpath!=null) {
+										return tester.test(classpath);
+									}
+								}
+							}
+						} catch (Exception e) {
+							Log.log(e);
+						}
+						//Reaching here means we couldn't apply the tester, e.g. because classpath not (yet) available.
+						return false;
+					}
+				};
+				propertyExp.refresh();
+				ClasspathListenerManager classpathListener = new ClasspathListenerManager(new ClasspathListener() {
+					public void classpathChanged(IJavaProject jp) {
+						if (jp.getProject().equals(getProject())) {
+							propertyExp.refresh();
+						}
+					}
+				});
+				this.dependsOn(propertyExp);
+				this.addDisposableChild(classpathListener);
+				this.addDisposableChild(propertyExp);
+				return propertyExp;
+			});
+		}
+		return exp.getValue();
+	}
 
 	@Override
 	public final boolean projectHasDevtoolsDependency() {
-		if (hasDevtools==null) {
-			hasDevtools = new LiveExpression<Boolean>(false) {
-				@Override
-				protected Boolean compute() {
-					boolean val = BootPropertyTester.hasDevtools(getProject());
-					return val;
-				}
-			};
-			hasDevtools.refresh();
-			ClasspathListenerManager classpathListener = new ClasspathListenerManager(new ClasspathListener() {
-				public void classpathChanged(IJavaProject jp) {
-					if (jp.getProject().equals(getProject())) {
-						hasDevtools.refresh();
-					}
-				}
-			});
-			this.dependsOn(hasDevtools);
-			this.addDisposableChild(classpathListener);
-			this.addDisposableChild(hasDevtools);
-		}
-		return hasDevtools.getValue();
+		return projectHasClasspathProperty(ClasspathPropertyTester.HAS_DEVTOOLS);
 	}
+
+
 
 	@SuppressWarnings({ "rawtypes", "unchecked" })
 	protected void dependsOn(LiveExpression<?> liveProperty) {

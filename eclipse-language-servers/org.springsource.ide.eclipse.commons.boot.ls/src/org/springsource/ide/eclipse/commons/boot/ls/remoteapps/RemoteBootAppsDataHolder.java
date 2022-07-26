@@ -11,6 +11,7 @@
 package org.springsource.ide.eclipse.commons.boot.ls.remoteapps;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.function.Supplier;
 
 import org.springsource.ide.eclipse.commons.livexp.core.LiveSets;
@@ -63,6 +64,11 @@ public class RemoteBootAppsDataHolder {
 		private String host;
 		private String urlScheme = "https";
 		private String port = "443";
+		private boolean manualConnect = false;
+		    //manualConnect defaults to false to be 'backwards compatible'. I.e the 'old'
+		    //behavior was to autoconnect. This flag was added to allow disabling autconnect
+			//under some circumstances (e.g. a docker app that has no actuators).
+
 		private boolean keepChecking = true;
 			//keepChecking defaults to true. Boot dash automatic remote apps should override this explicitly.
 			//Reason. All other 'sources' of remote apps are 'manual' and we want them to default to
@@ -119,6 +125,14 @@ public class RemoteBootAppsDataHolder {
 			this.keepChecking = keepChecking;
 		}
 
+		public boolean isManualConnect() {
+			return manualConnect;
+		}
+
+		public void setManualConnect(boolean manualConnect) {
+			this.manualConnect = manualConnect;
+		}
+
 		public String getProcessId() {
 			return processId;
 		}
@@ -136,18 +150,15 @@ public class RemoteBootAppsDataHolder {
 		}
 
 		@Override
+		public String toString() {
+			return "RemoteAppData [jmxurl=" + jmxurl + ", host=" + host + ", urlScheme=" + urlScheme + ", port=" + port
+					+ ", manualConnect=" + manualConnect + ", keepChecking=" + keepChecking + ", processId=" + processId
+					+ ", processName=" + processName + "]";
+		}
+
+		@Override
 		public int hashCode() {
-			final int prime = 31;
-			int result = 1;
-			result = prime * result + ((host == null) ? 0 : host.hashCode());
-			result = prime * result + ((jmxurl == null) ? 0 : jmxurl.hashCode());
-			result = prime * result + (keepChecking ? 1231 : 1237);
-			result = prime * result + ((port == null) ? 0 : port.hashCode());
-			result = prime * result + ((processId == null) ? 0 : processId.hashCode());
-			result = prime * result + ((urlScheme == null) ? 0 : urlScheme.hashCode());
-			result = prime * result + ((processId == null) ? 0 : processId.hashCode());
-			result = prime * result + ((processName == null) ? 0 : processName.hashCode());
-			return result;
+			return Objects.hash(host, jmxurl, keepChecking, manualConnect, port, processId, processName, urlScheme);
 		}
 
 		@Override
@@ -162,58 +173,10 @@ public class RemoteBootAppsDataHolder {
 				return false;
 			}
 			RemoteAppData other = (RemoteAppData) obj;
-			if (host == null) {
-				if (other.host != null) {
-					return false;
-				}
-			} else if (!host.equals(other.host)) {
-				return false;
-			}
-			if (jmxurl == null) {
-				if (other.jmxurl != null) {
-					return false;
-				}
-			} else if (!jmxurl.equals(other.jmxurl)) {
-				return false;
-			}
-			if (keepChecking != other.keepChecking) {
-				return false;
-			}
-			if (port == null) {
-				if (other.port != null) {
-					return false;
-				}
-			} else if (!port.equals(other.port)) {
-				return false;
-			}
-			if (processId == null) {
-				if (other.processId != null) {
-					return false;
-				}
-			} else if (!processId.equals(other.processId)) {
-				return false;
-			}
-			if (processName == null) {
-				if (other.processName != null) {
-					return false;
-				}
-			} else if (!processName.equals(other.processName)) {
-				return false;
-			}
-			if (urlScheme == null) {
-				if (other.urlScheme != null) {
-					return false;
-				}
-			} else if (!urlScheme.equals(other.urlScheme)) {
-				return false;
-			}
-			return true;
-		}
-
-		@Override
-		public String toString() {
-			return "RemoteAppData [jmxurl=" + jmxurl + ", host=" + host + ", urlScheme=" + urlScheme + ", port=" + port
-					+ ", keepChecking=" + keepChecking + ", processId=" + processId + ", processName=" + processName + "]";
+			return Objects.equals(host, other.host) && Objects.equals(jmxurl, other.jmxurl)
+					&& keepChecking == other.keepChecking && manualConnect == other.manualConnect
+					&& Objects.equals(port, other.port) && Objects.equals(processId, other.processId)
+					&& Objects.equals(processName, other.processName) && Objects.equals(urlScheme, other.urlScheme);
 		}
 
 	}

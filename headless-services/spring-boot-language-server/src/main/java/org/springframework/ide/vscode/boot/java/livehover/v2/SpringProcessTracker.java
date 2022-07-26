@@ -96,7 +96,8 @@ public class SpringProcessTracker {
 
 	private void update() {
 		try {
-			SpringProcessDescriptor[] autoConnectProcesses = this.localProcessConnector.getProcesses(true, SpringProcessStatus.AUTO_CONNECT);
+			SpringProcessDescriptor[] autoConnectProcesses = this.localProcessConnector
+					.getProcesses(true, SpringProcessStatus.AUTO_CONNECT);
 			
 			Set<String> autoConnectProcessKeys = new HashSet<>();
 			

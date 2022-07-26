@@ -41,3 +41,4 @@ Import-Package: com.google.common.base,
 Bundle-Activator: org.springframework.tooling.boot.ls.BootLanguageServerPlugin
 Bundle-ActivationPolicy: lazy
 Eclipse-BundleShape: dir
+Automatic-Module-Name: org.springframework.tooling.boot.ls

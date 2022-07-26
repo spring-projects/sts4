@@ -88,6 +88,15 @@ public class BootPropertyTester extends PropertyTester {
 		return false;
 	}
 
+	public static boolean isActuatorJar(IClasspathEntry e) {
+		if (e.getEntryKind()==IClasspathEntry.CPE_LIBRARY) {
+			IPath path = e.getPath();
+			String name = path.lastSegment();
+			return name.endsWith(".jar") && name.startsWith("spring-boot-actuator-");
+		}
+		return false;
+	}
+
 
 	public static boolean hasDevtools(IProject p) {
 		try {

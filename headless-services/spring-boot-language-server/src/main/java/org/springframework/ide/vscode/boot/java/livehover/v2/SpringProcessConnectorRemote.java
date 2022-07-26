@@ -16,6 +16,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -34,6 +35,7 @@ public class SpringProcessConnectorRemote {
 		private String host;
 		private String urlScheme = "https";
 		private String port = "443";
+		private boolean manualConnect = false;
 		private boolean keepChecking = true;
 			//keepChecking defaults to true. Boot dash automatic remote apps should override this explicitly.
 			//Reason. All other 'sources' of remote apps are 'manual' and we want them to default to
@@ -97,28 +99,27 @@ public class SpringProcessConnectorRemote {
 		public void setProcessName(String processName) {
 			this.processName = processName;
 		}
-
+		
 		@Override
 		public String toString() {
-			return "RemoteBootAppData [jmxurl=" + jmxurl + ", host=" + host + ", urlScheme=" + urlScheme + ", port=" + port
-					+ ", keepChecking=" + keepChecking + ", processId=" + processId + ", processName=" + processName + "]";
+			return "RemoteBootAppData [jmxurl=" + jmxurl + ", host=" + host + ", urlScheme=" + urlScheme + ", port="
+					+ port + ", manualConnect=" + manualConnect + ", keepChecking=" + keepChecking + ", processId="
+					+ processId + ", processName=" + processName + "]";
+		}
+
+		public void setManualConnection(boolean manualConnect) {
+			this.manualConnect = manualConnect;
+		}
+		
+		public boolean isManualConnect() {
+			return manualConnect;
 		}
 
 		@Override
 		public int hashCode() {
-			final int prime = 31;
-			int result = 1;
-			result = prime * result + ((host == null) ? 0 : host.hashCode());
-			result = prime * result + ((jmxurl == null) ? 0 : jmxurl.hashCode());
-			result = prime * result + (keepChecking ? 1231 : 1237);
-			result = prime * result + ((port == null) ? 0 : port.hashCode());
-			result = prime * result + ((processId == null) ? 0 : processId.hashCode());
-			result = prime * result + ((urlScheme == null) ? 0 : urlScheme.hashCode());
-			result = prime * result + ((processId == null) ? 0 : processId.hashCode());
-			result = prime * result + ((processName == null) ? 0 : processName.hashCode());
-			return result;
+			return Objects.hash(host, jmxurl, keepChecking, manualConnect, port, processId, processName, urlScheme);
 		}
-		
+
 		@Override
 		public boolean equals(Object obj) {
 			if (this == obj)
@@ -128,39 +129,10 @@ public class SpringProcessConnectorRemote {
 			if (getClass() != obj.getClass())
 				return false;
 			RemoteBootAppData other = (RemoteBootAppData) obj;
-			if (host == null) {
-				if (other.host != null)
-					return false;
-			} else if (!host.equals(other.host))
-				return false;
-			if (jmxurl == null) {
-				if (other.jmxurl != null)
-					return false;
-			} else if (!jmxurl.equals(other.jmxurl))
-				return false;
-			if (keepChecking != other.keepChecking)
-				return false;
-			if (port == null) {
-				if (other.port != null)
-					return false;
-			} else if (!port.equals(other.port))
-				return false;
-			if (processId == null) {
-				if (other.processId != null)
-					return false;
-			} else if (!processId.equals(other.processId))
-				return false;
-			if (processName == null) {
-				if (other.processName != null)
-					return false;
-			} else if (!processName.equals(other.processName))
-				return false;
-			if (urlScheme == null) {
-				if (other.urlScheme != null)
-					return false;
-			} else if (!urlScheme.equals(other.urlScheme))
-				return false;
-			return true;
+			return Objects.equals(host, other.host) && Objects.equals(jmxurl, other.jmxurl)
+					&& keepChecking == other.keepChecking && manualConnect == other.manualConnect
+					&& Objects.equals(port, other.port) && Objects.equals(processId, other.processId)
+					&& Objects.equals(processName, other.processName) && Objects.equals(urlScheme, other.urlScheme);
 		}
 		
 	}
@@ -211,7 +183,9 @@ public class SpringProcessConnectorRemote {
 			remoteAppInstances.computeIfAbsent(data, (_appData) -> {
 				logger.info("Creating RemoteStringBootApp: " + _appData);
 				String processKey = getProcessKey(_appData);
-				connectProcess(_appData);
+				if (!_appData.isManualConnect()) {
+					connectProcess(_appData);
+				}
 				return processKey;
 			});
 		}

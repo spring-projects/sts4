@@ -21,7 +21,7 @@ Require-Bundle: org.eclipse.core.resources,
  org.eclipse.jface,
  org.apache.commons.lang3
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Export-Package: org.springsource.ide.eclipse.commons.core,
  org.springsource.ide.eclipse.commons.core.preferences,
  org.springsource.ide.eclipse.commons.core.process,
@@ -36,3 +36,4 @@ Import-Package: org.eclipse.core.runtime,
  org.eclipse.osgi.util,
  org.osgi.framework,
  org.osgi.service.prefs
+Automatic-Module-Name: org.springsource.ide.eclipse.commons.core

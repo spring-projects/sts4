@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.eclipse.boot.dash.api;
 
+import org.springframework.ide.eclipse.boot.dash.model.ClasspathPropertyTester;
 import org.springframework.ide.eclipse.boot.dash.model.remote.RefreshStateTracker;
 
 /**
@@ -28,4 +29,5 @@ public interface AppContext {
 	RefreshStateTracker getRefreshTracker();
 	boolean projectHasDevtoolsDependency();
 	<T extends App> T getParent(Class<T> expectedType);
+	boolean projectHasClasspathProperty(ClasspathPropertyTester tester);
 }

@@ -1,10 +1,11 @@
 package org.springframework.ide.eclipse.boot.dash.api;
 
-public interface DevtoolsConnectable {
+import org.springframework.ide.eclipse.boot.dash.model.ClasspathPropertyTester;
+
+public interface DevtoolsConnectable extends ClasspathBearing {
 	String getDevtoolsSecret();
-	boolean hasDevtoolsDependency();
 
 	default TemporalBoolean isDevtoolsConnectable() {
-		return TemporalBoolean.now(hasDevtoolsDependency() && getDevtoolsSecret()!=null);
+		return TemporalBoolean.now(hasClasspathProperty(ClasspathPropertyTester.HAS_DEVTOOLS) && getDevtoolsSecret()!=null);
 	}
 }

@@ -118,6 +118,8 @@ public interface BootDashElement extends App, Taggable {
 	Object getParent();
 	BootDashColumn[] getColumns();
 	boolean projectHasDevtoolsDependency();
+	boolean projectHasClasspathProperty(ClasspathPropertyTester tester);
+
 
 	String getUrl();
 
@@ -136,5 +138,5 @@ public interface BootDashElement extends App, Taggable {
 	default String getProtocol() { return "http"; }
 	default boolean isDevtoolsGreenColor() { return projectHasDevtoolsDependency(); }
 	default RefreshState getRefreshState() { return RefreshState.READY; }
-	default boolean hasDevtoolsDependency() { return projectHasDevtoolsDependency(); }
+	default boolean hasClasspathProperty(ClasspathPropertyTester tester) { return projectHasClasspathProperty(tester); }
 }
