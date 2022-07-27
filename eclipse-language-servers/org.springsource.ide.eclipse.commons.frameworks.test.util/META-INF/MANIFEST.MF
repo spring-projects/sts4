@@ -5,7 +5,7 @@ Bundle-SymbolicName: org.springsource.ide.eclipse.commons.frameworks.test.util;s
 Bundle-Version: 4.15.2.qualifier
 Bundle-ActivationPolicy: lazy
 Bundle-Vendor: VMware, Inc.
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Require-Bundle: org.springsource.ide.eclipse.commons.tests.util,
  org.eclipse.debug.core,
  org.hamcrest.library,
@@ -17,3 +17,4 @@ Require-Bundle: org.springsource.ide.eclipse.commons.tests.util,
 Export-Package: org.springsource.ide.eclipse.commons.frameworks.test.util
 Import-Package: org.apache.log4j;resolution:=optional,
  org.slf4j;resolution:=optional
+Automatic-Module-Name: org.springsource.ide.eclipse.commons.frameworks.test.util

@@ -100,7 +100,8 @@ public class SpringProcessCommandHandler {
 			if (SpringProcessConnectorLocal.isAvailable()) {
 				
 				// Try cached processes.
-				SpringProcessDescriptor[] processes = localProcessConnector.getProcesses(false, SpringProcessStatus.REGULAR, SpringProcessStatus.AUTO_CONNECT);
+				SpringProcessDescriptor[] processes = localProcessConnector
+						.getProcesses(false, SpringProcessStatus.REGULAR, SpringProcessStatus.AUTO_CONNECT);
 				for (SpringProcessDescriptor process : processes) {
 					if (process.getProcessKey().equals(processKey)) {
 						localProcessConnector.connectProcess(process);
@@ -108,7 +109,8 @@ public class SpringProcessCommandHandler {
 					}
 				}
 				
-				processes = localProcessConnector.getProcesses(true, SpringProcessStatus.REGULAR, SpringProcessStatus.AUTO_CONNECT);
+				processes = localProcessConnector
+						.getProcesses(true, SpringProcessStatus.REGULAR, SpringProcessStatus.AUTO_CONNECT);
 				for (SpringProcessDescriptor process : processes) {
 					if (process.getProcessKey().equals(processKey)) {
 						localProcessConnector.connectProcess(process);

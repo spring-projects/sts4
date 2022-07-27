@@ -53,8 +53,8 @@ import org.springframework.ide.eclipse.boot.dash.docker.exceptions.MissingBuildS
 import org.springframework.ide.eclipse.boot.dash.docker.exceptions.MissingBuildTagException;
 import org.springframework.ide.eclipse.boot.dash.docker.jmx.JmxSupport;
 import org.springframework.ide.eclipse.boot.dash.docker.runtarget.BuildScriptLocator.BuildKind;
-import org.springframework.ide.eclipse.boot.dash.docker.runtarget.DockerApp.BuildCommand;
 import org.springframework.ide.eclipse.boot.dash.labels.BootDashLabels;
+import org.springframework.ide.eclipse.boot.dash.model.ClasspathPropertyTester;
 import org.springframework.ide.eclipse.boot.dash.model.RunState;
 import org.springframework.ide.eclipse.boot.dash.model.remote.ChildBearing;
 import org.springframework.ide.eclipse.boot.dash.model.remote.RefreshStateTracker;
@@ -62,7 +62,6 @@ import org.springframework.ide.eclipse.boot.dash.util.LineBasedStreamGobler;
 import org.springframework.ide.eclipse.boot.launch.util.PortFinder;
 import org.springframework.ide.eclipse.boot.util.JavaProjectUtil;
 import org.springsource.ide.eclipse.commons.core.pstore.PropertyStoreApi;
-import org.springsource.ide.eclipse.commons.core.pstore.PropertyStores;
 import org.springsource.ide.eclipse.commons.frameworks.core.util.JobUtil;
 import org.springsource.ide.eclipse.commons.frameworks.core.util.StringUtils;
 import org.springsource.ide.eclipse.commons.livexp.core.AbstractDisposable;
@@ -528,7 +527,10 @@ Successfully tagged fui:latest
 			builder.addAll(Arrays.asList(props.get(key, NO_STRINGS)));
 			builder.add(imageId);
 			props.put(key, builder.build().toArray(NO_STRINGS));
-			props.put(DockerImage.hasDevtoolsKey(imageId), context.projectHasDevtoolsDependency() && command.builtWithDevToolsArgs);
+			props.put(DockerImage.storageKey(imageId, ClasspathPropertyTester.HAS_DEVTOOLS), 
+					context.projectHasClasspathProperty(ClasspathPropertyTester.HAS_DEVTOOLS) && command.builtWithDevToolsArgs);
+			props.put(DockerImage.storageKey(imageId, ClasspathPropertyTester.HAS_ACTUATORS), 
+					context.projectHasClasspathProperty(ClasspathPropertyTester.HAS_ACTUATORS));
 		} catch (Exception e) {
 			Log.log(e);
 		}
@@ -637,7 +639,7 @@ Successfully tagged fui:latest
 	}
 
 	@Override
-	public boolean hasDevtoolsDependency() {
-		return context!=null && context.projectHasDevtoolsDependency();
-	}
+	public boolean hasClasspathProperty(ClasspathPropertyTester tester) {
+		return context!=null && context.projectHasClasspathProperty(tester);
+	}	
 }

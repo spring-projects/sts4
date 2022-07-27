@@ -50,6 +50,7 @@ import org.springframework.ide.eclipse.boot.dash.console.LogType;
 import org.springframework.ide.eclipse.boot.dash.devtools.DevtoolsUtil;
 import org.springframework.ide.eclipse.boot.dash.docker.jmx.JmxSupport;
 import org.springframework.ide.eclipse.boot.dash.docker.util.Ownable;
+import org.springframework.ide.eclipse.boot.dash.model.ClasspathPropertyTester;
 import org.springframework.ide.eclipse.boot.dash.model.RunState;
 import org.springframework.ide.eclipse.boot.dash.model.remote.RefreshStateTracker;
 import org.springframework.ide.eclipse.boot.util.RetryUtil;
@@ -338,13 +339,12 @@ public class DockerContainer implements App, RunStateProvider, JmxConnectable, S
 	
 	private static final boolean USE_DEDICATED_CLIENT = false;
 	
-	
 
 	@Override
-	public boolean hasDevtoolsDependency() {
+	public boolean hasClasspathProperty(ClasspathPropertyTester tester) {
 		if (context!=null) {
 			DockerImage image = context.getParent(DockerImage.class);
-			return image.hasDevtoolsDependency();
+			return image.hasClasspathProperty(tester);
 		}
 		return false;
 	}

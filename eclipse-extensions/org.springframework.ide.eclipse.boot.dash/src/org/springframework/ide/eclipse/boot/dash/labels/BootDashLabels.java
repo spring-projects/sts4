@@ -36,6 +36,7 @@ import org.springframework.ide.eclipse.boot.dash.model.AbstractLaunchConfigurati
 import org.springframework.ide.eclipse.boot.dash.model.BootDashElement;
 import org.springframework.ide.eclipse.boot.dash.model.BootDashModel;
 import org.springframework.ide.eclipse.boot.dash.model.ButtonModel;
+import org.springframework.ide.eclipse.boot.dash.model.ClasspathPropertyTester;
 import org.springframework.ide.eclipse.boot.dash.model.RefreshState;
 import org.springframework.ide.eclipse.boot.dash.model.RunState;
 import org.springframework.ide.eclipse.boot.dash.model.TagUtils;
@@ -407,7 +408,7 @@ public class BootDashLabels implements Disposable {
 					styledLabel = new StyledString("- " + "Fetching runstate from JMX", stylers.italicColoured(muted));
 				}
 			} else if (column==DEVTOOLS) {
-				if (element.hasDevtoolsDependency()) {
+				if (element.hasClasspathProperty(ClasspathPropertyTester.HAS_DEVTOOLS)) {
 					Color grey = colorGrey();
 					Color green = colorGreen();
 					Color color = element.isDevtoolsGreenColor() ? green : grey;

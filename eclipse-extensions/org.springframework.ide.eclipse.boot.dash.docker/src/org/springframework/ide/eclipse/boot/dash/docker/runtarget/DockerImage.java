@@ -34,6 +34,7 @@ import org.springframework.ide.eclipse.boot.dash.api.ProjectRelatable;
 import org.springframework.ide.eclipse.boot.dash.api.RunStateIconProvider;
 import org.springframework.ide.eclipse.boot.dash.api.Styleable;
 import org.springframework.ide.eclipse.boot.dash.api.TemporalBoolean;
+import org.springframework.ide.eclipse.boot.dash.model.ClasspathPropertyTester;
 import org.springframework.ide.eclipse.boot.dash.model.RunState;
 import org.springframework.ide.eclipse.boot.dash.model.remote.ChildBearing;
 import org.springframework.ide.eclipse.boot.dash.model.remote.RefreshStateTracker;
@@ -246,9 +247,10 @@ public class DockerImage implements App, ChildBearing, Styleable, ProjectRelatab
 	}
 
 	@Override
-	public boolean hasDevtoolsDependency() {
+	public boolean hasClasspathProperty(ClasspathPropertyTester tester) {
 		PropertyStoreApi props = getTarget().getPersistentProperties();
-		return props.get(hasDevtoolsKey(image.getId()), false);
+		boolean result = props.get(storageKey(image.getId(), tester), false);
+		return result;
 	}
 	
 	@Override
@@ -256,7 +258,7 @@ public class DockerImage implements App, ChildBearing, Styleable, ProjectRelatab
 		return TemporalBoolean.NEVER;
 	}
 
-	public static String hasDevtoolsKey(String imageId) {
-		return imageId +".hasDevtoolsDependency";
+	public static String storageKey(String imageId, ClasspathPropertyTester tester) {
+		return imageId + "." + tester.getId();
 	}
 }

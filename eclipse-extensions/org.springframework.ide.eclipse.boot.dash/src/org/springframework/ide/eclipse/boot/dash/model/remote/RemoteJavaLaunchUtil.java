@@ -25,6 +25,7 @@ import org.eclipse.debug.core.Launch;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 import org.eclipse.jdt.launching.JavaRuntime;
+import org.springframework.ide.eclipse.boot.dash.model.ClasspathPropertyTester;
 import org.springframework.ide.eclipse.boot.util.RetryUtil;
 import org.springsource.ide.eclipse.commons.livexp.util.Log;
 
@@ -53,7 +54,7 @@ public class RemoteJavaLaunchUtil {
 	public synchronized static void synchronizeWith(GenericRemoteAppElement app) {
 		if (isDebuggable(app)) {
 			 ILaunch l = ensureDebuggerAttached(app);
-			 if (app.hasDevtoolsDependency()) {
+			 if (app.hasClasspathProperty(ClasspathPropertyTester.HAS_DEVTOOLS)) {
 				 l.setAttribute(DISABLE_HCR_LAUNCH_ATTRIBUTE, "true");
 			 }
 			 if (l!=null) {

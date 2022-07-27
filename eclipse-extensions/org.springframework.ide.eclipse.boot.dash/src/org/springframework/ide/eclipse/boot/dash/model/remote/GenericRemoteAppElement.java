@@ -15,7 +15,6 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.Assert;
@@ -34,6 +33,7 @@ import org.springframework.ide.eclipse.boot.dash.api.ActualInstanceCount;
 import org.springframework.ide.eclipse.boot.dash.api.App;
 import org.springframework.ide.eclipse.boot.dash.api.AppConsole;
 import org.springframework.ide.eclipse.boot.dash.api.AppContext;
+import org.springframework.ide.eclipse.boot.dash.api.ClasspathBearing;
 import org.springframework.ide.eclipse.boot.dash.api.DebuggableApp;
 import org.springframework.ide.eclipse.boot.dash.api.Deletable;
 import org.springframework.ide.eclipse.boot.dash.api.DesiredInstanceCount;
@@ -54,6 +54,7 @@ import org.springframework.ide.eclipse.boot.dash.liveprocess.LiveDataCapableElem
 import org.springframework.ide.eclipse.boot.dash.liveprocess.LiveDataConnectionManagementActions.ExecuteCommandAction;
 import org.springframework.ide.eclipse.boot.dash.livexp.DisposingFactory;
 import org.springframework.ide.eclipse.boot.dash.model.BootDashElement;
+import org.springframework.ide.eclipse.boot.dash.model.ClasspathPropertyTester;
 import org.springframework.ide.eclipse.boot.dash.model.BootDashModel.ElementStateListener;
 import org.springframework.ide.eclipse.boot.dash.model.Failable;
 import org.springframework.ide.eclipse.boot.dash.model.MissingLiveInfoMessages;
@@ -877,15 +878,6 @@ public class GenericRemoteAppElement extends WrappingBootDashElement<String> imp
 	}
 
 	@Override
-	public boolean hasDevtoolsDependency() {
-		App data = getAppData();
-		if (data instanceof DevtoolsConnectable) {
-			return ((DevtoolsConnectable) data).hasDevtoolsDependency();
-		}
-		return super.hasDevtoolsDependency();
-	}
-
-	@Override
 	public boolean isDevtoolsGreenColor() {
 		App data = getAppData();
 		if (data instanceof DevtoolsConnectable) {
@@ -905,6 +897,15 @@ public class GenericRemoteAppElement extends WrappingBootDashElement<String> imp
 		App data = getAppData();
 		boolean selfMatch = data.getName() != null&& data.getName().equals(action.getProcessId());
 		return selfMatch || childMatch(action);
+	}
+
+	@Override
+	public boolean hasClasspathProperty(ClasspathPropertyTester tester) {
+		App data = getAppData();
+		if (data instanceof ClasspathBearing) {
+			return ((ClasspathBearing) data).hasClasspathProperty(tester);
+		}
+		return projectHasClasspathProperty(tester);
 	}
 
 	private boolean childMatch(ExecuteCommandAction action) {

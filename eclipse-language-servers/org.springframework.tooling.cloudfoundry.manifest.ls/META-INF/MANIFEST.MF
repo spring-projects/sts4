@@ -28,4 +28,5 @@ Bundle-ClassPath: icons/,
  syntaxes/,
  .
 Eclipse-BundleShape: dir
+Automatic-Module-Name: org.springframework.tooling.cloudfoundry.manifest.ls
 

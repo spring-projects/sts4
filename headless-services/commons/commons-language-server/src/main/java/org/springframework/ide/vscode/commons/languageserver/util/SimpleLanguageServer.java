@@ -175,7 +175,7 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 		@Override
 		public void progressDone(String taskId) {
 			STS4LanguageClient client = SimpleLanguageServer.this.client;
-			if (client != null && activeTaskIDs.remove(taskId)) {
+			if (client != null && activeTaskIDs.remove(taskId) != null) {
 				ProgressParams progressParams = new ProgressParams();
 				progressParams.setToken(taskId);
 				WorkDoneProgressEnd report = new WorkDoneProgressEnd();
