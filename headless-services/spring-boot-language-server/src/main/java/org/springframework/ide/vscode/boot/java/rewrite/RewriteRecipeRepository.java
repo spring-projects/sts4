@@ -223,7 +223,13 @@ public class RewriteRecipeRepository {
 		
 		server.onCommand("sts/rewrite/list", params -> {
 			JsonElement uri = (JsonElement) params.getArguments().get(0);
-			return CompletableFuture.completedFuture(uri == null ? Collections.emptyList() : listProjectRefactoringRecipes(uri.getAsString()).stream().map(RewriteRecipeRepository::recipeToJson).collect(Collectors.toList()));
+			return loaded.thenApply(v -> {
+				if (uri == null) {
+					return Collections.emptyList();
+				} else {
+					return listProjectRefactoringRecipes(uri.getAsString()).stream().map(RewriteRecipeRepository::recipeToJson).collect(Collectors.toList());
+				}
+			});
 		});
 		listBuilder.add("sts/rewrite/list");
 		

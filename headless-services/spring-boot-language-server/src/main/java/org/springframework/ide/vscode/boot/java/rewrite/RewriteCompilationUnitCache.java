@@ -219,7 +219,7 @@ public class RewriteCompilationUnitCache implements DocumentContentProvider, Dis
 				synchronized (URI_TO_CU_LOCK) {
 					return uriToCu.get(uri, () -> {
 						logger.debug("Parsing CU {}", uri);
-						JavaParser javaParser = loadJavaParser(project);
+						JavaParser javaParser = /*loadJavaParser(project)*/createJavaParser(project);
 						Input input = new Input(Paths.get(uri), () -> {
 							try {
 								return new ByteArrayInputStream(fetchContent(uri).getBytes());
@@ -228,13 +228,18 @@ public class RewriteCompilationUnitCache implements DocumentContentProvider, Dis
 							}
 						});
 						
-						List<CompilationUnit> cus = ORAstUtils.parseInputs(javaParser, List.of(input));
-											
-						CompilationUnit cu = cus.get(0);
-						
-			
-						if (cu != null) {						
-							projectToDocs.get(project, () -> new HashSet<>()).add(uri);
+						CompilationUnit cu = null;
+						try {
+							List<CompilationUnit> cus = ORAstUtils.parseInputs(javaParser, List.of(input));
+												
+							cu = cus.get(0);
+							
+				
+							if (cu != null) {						
+								projectToDocs.get(project, () -> new HashSet<>()).add(uri);
+							}
+						} catch (Exception e) {
+							// ignore rewrite parse errors
 						}
 
 						return cu;
