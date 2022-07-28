@@ -15,7 +15,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Consumer;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
+import org.springframework.ide.vscode.boot.common.SpringProblemCategories;
+import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemCategory.Toggle;
+import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
 import org.springframework.ide.vscode.commons.languageserver.util.ListenerList;
 import org.springframework.ide.vscode.commons.languageserver.util.Settings;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
@@ -29,6 +34,8 @@ import org.springframework.stereotype.Component;
  */
 @Component
 public class BootJavaConfig implements InitializingBean {
+	
+	private static final Logger log = LoggerFactory.getLogger(BootJavaConfig.class);
 	
 	public static final boolean LIVE_INFORMATION_AUTOMATIC_TRACKING_ENABLED_DEFAULT = false;
 	public static final int LIVE_INFORMATION_AUTOMATIC_TRACKING_DELAY_DEFAULT = 5000;
@@ -110,8 +117,17 @@ public class BootJavaConfig implements InitializingBean {
 	}
 
 	public boolean isSpelExpressionValidationEnabled() {
-		Boolean enabled = settings.getBoolean("boot-java", "validation", "spel", "on");
-		return enabled != null ? enabled.booleanValue() : VALIDAITON_SPEL_EXPRESSIONS_ENABLED_DEFAULT;
+		Toggle categorySwitch = SpringProblemCategories.SPEL.getToggle();
+		String enabled = settings.getString(categorySwitch.getPreferenceKey().split("\\."));
+		if (enabled == null) {
+			return categorySwitch.getDefaultValue() == Toggle.Option.ON;
+		} else {
+			// Legacy case
+			if ("true".equalsIgnoreCase(enabled)) {
+				return true;
+			}
+			return Toggle.Option.valueOf(enabled) == Toggle.Option.ON;
+		}
 	}
 
 	public boolean areXmlHyperlinksEnabled() {
@@ -147,4 +163,18 @@ public class BootJavaConfig implements InitializingBean {
 	public Settings getRawSettings() {
 		return settings;
 	}
+	
+	public Toggle.Option getProblemApplicability(ProblemType problem) {
+		try {
+			if (problem != null && problem.getCategory() != null && problem.getCategory().getToggle() != null) {
+				Toggle toggle = problem.getCategory().getToggle();
+				String s = settings.getString((toggle.getPreferenceKey()).split("\\."));
+				return s == null || s.isEmpty() ? toggle.getDefaultValue() : Toggle.Option.valueOf(s);
+			}
+		} catch (Exception e) {
+			log.error("", e);
+		}
+		return Toggle.Option.AUTO;
+	}
+
 }

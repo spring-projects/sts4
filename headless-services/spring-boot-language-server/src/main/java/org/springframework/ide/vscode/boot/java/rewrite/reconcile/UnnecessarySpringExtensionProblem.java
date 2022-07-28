@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.rewrite.reconcile;
 
-import org.springframework.ide.vscode.boot.java.SpringJavaProblemType;
+import org.springframework.ide.vscode.boot.java.Boot2JavaProblemType;
 import org.springframework.ide.vscode.boot.java.rewrite.RecipeScope;
 import org.springframework.ide.vscode.boot.java.rewrite.codeaction.UnnecessarySpringExtensionCodeAction;
 
@@ -23,8 +23,8 @@ public class UnnecessarySpringExtensionProblem extends UnnecessarySpringExtensio
 	}
 
 	@Override
-	public SpringJavaProblemType getProblemType() {
-		return SpringJavaProblemType.JAVA_TEST_SPRING_EXTENSION;
+	public Boot2JavaProblemType getProblemType() {
+		return Boot2JavaProblemType.JAVA_TEST_SPRING_EXTENSION;
 	}
 
 }

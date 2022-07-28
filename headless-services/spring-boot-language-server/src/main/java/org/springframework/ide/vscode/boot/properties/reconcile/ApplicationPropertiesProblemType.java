@@ -13,7 +13,8 @@ package org.springframework.ide.vscode.boot.properties.reconcile;
 import static org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity.ERROR;
 import static org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity.WARNING;
 
-import org.springframework.boot.SpringApplication;
+import org.springframework.ide.vscode.boot.common.SpringProblemCategories;
+import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemCategory;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
 
@@ -75,6 +76,11 @@ public enum ApplicationPropertiesProblemType implements ProblemType {
 	@Override
 	public String getCode() {
 		return name();
+	}
+
+	@Override
+	public ProblemCategory getCategory() {
+		return SpringProblemCategories.PROPERTIES;
 	}
 
 }

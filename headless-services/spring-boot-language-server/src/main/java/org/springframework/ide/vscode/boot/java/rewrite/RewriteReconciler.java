@@ -19,7 +19,6 @@ import java.util.stream.Collectors;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.Tree;
-import org.openrewrite.internal.lang.Nullable;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.J.CompilationUnit;
@@ -27,15 +26,16 @@ import org.openrewrite.marker.Range;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.app.BootJavaConfig;
-import org.springframework.ide.vscode.boot.java.SpringJavaProblemType;
 import org.springframework.ide.vscode.boot.java.reconcilers.JavaReconciler;
 import org.springframework.ide.vscode.boot.java.rewrite.RewriteRefactorings.Data;
 import org.springframework.ide.vscode.boot.java.rewrite.reconcile.RecipeSpringJavaProblemDescriptor;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.Quickfix.QuickfixData;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixRegistry;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixType;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
+import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblem;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblemImpl;
 import org.springframework.ide.vscode.commons.rewrite.java.FixAssistMarker;
@@ -52,20 +52,20 @@ public class RewriteReconciler implements JavaReconciler {
 	private RewriteRecipeRepository recipeRepo;
 
 	private BootJavaConfig config;
-	
+
 	public RewriteReconciler(RewriteRecipeRepository recipeRepo, RewriteCompilationUnitCache cuCache, QuickfixRegistry quickfixRegistry, BootJavaConfig config) {
 		this.recipeRepo = recipeRepo;
 		this.cuCache = cuCache;
 		this.quickfixRegistry = quickfixRegistry;
 		this.config = config;
 	}
-	
+
 	@Override
 	public void reconcile(IJavaProject project, IDocument doc, IProblemCollector problemCollector) {
 		if (!config.isRewriteReconcileEnabled()) {
 			return;
 		}
-		
+
 		try {
 			problemCollector.beginCollecting();
 			
@@ -73,7 +73,17 @@ public class RewriteReconciler implements JavaReconciler {
 			recipeRepo.loaded.get();
 			
 			List<RecipeSpringJavaProblemDescriptor> descriptors = recipeRepo.getProblemRecipeDescriptors().stream()
-				.filter(d -> d.isApplicable(project))
+				.filter(d -> d.getProblemType() != null)
+				.filter(d -> {
+					switch (config.getProblemApplicability(d.getProblemType())) {
+					case ON:
+						return SpringProjectUtil.isBootProject(project);
+					case OFF:
+						return false;
+					default: // AUTO
+						return d.isApplicable(project);
+					}
+				})
 				.collect(Collectors.toList());
 			
 			if (!descriptors.isEmpty()) {
@@ -86,7 +96,7 @@ public class RewriteReconciler implements JavaReconciler {
 					new JavaIsoVisitor<ExecutionContext>() {
 						
 			            @Override
-			            public @Nullable J visit(@Nullable Tree tree, ExecutionContext context) {
+			            public J visit(Tree tree, ExecutionContext context) {
 							J t = super.visit(tree, context);
 			            	if (t instanceof J) {
 			            		List<FixAssistMarker> markers = t.getMarkers().findAll(FixAssistMarker.class);
@@ -125,7 +135,7 @@ public class RewriteReconciler implements JavaReconciler {
 	
 	private ReconcileProblemImpl createProblemFromScope(IDocument doc, RecipeSpringJavaProblemDescriptor recipeFixDescriptor, RecipeScope s,
 			FixAssistMarker m, Range range) {
-		SpringJavaProblemType problemType = recipeFixDescriptor.getProblemType();
+		ProblemType problemType = recipeFixDescriptor.getProblemType();
 		ReconcileProblemImpl problem = new ReconcileProblemImpl(problemType, problemType.getLabel(), range.getStart().getOffset(), range.getEnd().getOffset() - range.getStart().getOffset());
 		QuickfixType quickfixType = quickfixRegistry.getQuickfixType(m.getRecipeId());
 		if (quickfixType != null) {

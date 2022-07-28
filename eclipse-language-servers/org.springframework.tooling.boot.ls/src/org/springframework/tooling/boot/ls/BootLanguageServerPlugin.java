@@ -21,6 +21,7 @@ import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.keys.IBindingService;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
+import org.springframework.tooling.boot.ls.prefs.CategoryProblemsSeverityPrefsPage;
 
 /**
  * Boot-Java LS extension plugin
@@ -51,7 +52,11 @@ public class BootLanguageServerPlugin extends AbstractUIPlugin {
 		super.start(context);
 		deactivateDuplicateKeybindings();
 		BootJavaPreferencesPage.manageCodeMiningPreferences();
+		
+		CategoryProblemsSeverityPrefsPage.loadProblemCategoriesIntoPreferences();
 	}
+	
+	
 
 	@Override
 	public void stop(BundleContext context) throws Exception {

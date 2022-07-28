@@ -20,7 +20,7 @@ import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.springframework.ide.vscode.boot.java.Annotations;
-import org.springframework.ide.vscode.boot.java.SpringJavaProblemType;
+import org.springframework.ide.vscode.boot.java.Boot2JavaProblemType;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
@@ -48,7 +48,7 @@ public class AutowiredConstructorReconciler implements AnnotationReconciler {
 		
 		if (version.getMajor() >= 2) {
 			getSingleAutowiredConstructorDeclaringType(node, typeBinding).ifPresent(type -> {
-				ReconcileProblemImpl problem = new ReconcileProblemImpl(SpringJavaProblemType.JAVA_AUTOWIRED_CONSTRUCTOR, "Unnecesary @Autowired", node.getStartPosition(), node.getLength());
+				ReconcileProblemImpl problem = new ReconcileProblemImpl(Boot2JavaProblemType.JAVA_AUTOWIRED_CONSTRUCTOR, "Unnecesary @Autowired", node.getStartPosition(), node.getLength());
 				QuickfixType quickfixType = quickfixRegistry.getQuickfixType(AutowiredConstructorReconciler.REMOVE_UNNECESSARY_AUTOWIRED_FROM_CONSTRUCTOR);
 				if (quickfixType != null) {
 					problem.addQuickfix(new QuickfixData<>(

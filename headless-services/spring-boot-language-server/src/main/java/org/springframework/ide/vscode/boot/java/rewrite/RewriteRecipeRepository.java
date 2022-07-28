@@ -53,6 +53,7 @@ import org.springframework.ide.vscode.boot.java.rewrite.codeaction.BeanMethodsNo
 import org.springframework.ide.vscode.boot.java.rewrite.codeaction.NoRequestMappingAnnotationCodeAction;
 import org.springframework.ide.vscode.boot.java.rewrite.codeaction.UnnecessarySpringExtensionCodeAction;
 import org.springframework.ide.vscode.boot.java.rewrite.reconcile.BeanMethodNotPublicProblem;
+import org.springframework.ide.vscode.boot.java.rewrite.reconcile.PreciseBeanTypeProblem;
 import org.springframework.ide.vscode.boot.java.rewrite.reconcile.NoAutowiredOnConstructorProblem;
 import org.springframework.ide.vscode.boot.java.rewrite.reconcile.RecipeSpringJavaProblemDescriptor;
 import org.springframework.ide.vscode.boot.java.rewrite.reconcile.UnnecessarySpringExtensionProblem;
@@ -113,7 +114,8 @@ public class RewriteRecipeRepository {
 	private List<RecipeSpringJavaProblemDescriptor> javaProblemDescriptors = List.of(
 			new BeanMethodNotPublicProblem(),
 			new NoAutowiredOnConstructorProblem(),
-			new UnnecessarySpringExtensionProblem()
+			new UnnecessarySpringExtensionProblem(),
+			new PreciseBeanTypeProblem()
 	);
 	
 	public RewriteRecipeRepository(SimpleLanguageServer server, JavaProjectFinder projectFinder) {

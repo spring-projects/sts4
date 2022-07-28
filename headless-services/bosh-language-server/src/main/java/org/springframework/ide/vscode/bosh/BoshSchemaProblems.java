@@ -10,12 +10,15 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.bosh;
 
+import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemCategory;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
 import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems;
 
 public class BoshSchemaProblems {
+	
+	public static final ProblemCategory CATEGORY = new ProblemCategory("bosh", "Bosh YAML Validation", null);
 
-	public static final ProblemType MISSING_SHA1_PROPERTY = YamlSchemaProblems.problemType("MISSING_SHA1_PROPERTY", ProblemSeverity.WARNING);
+	public static final ProblemType MISSING_SHA1_PROPERTY = YamlSchemaProblems.problemType("MISSING_SHA1_PROPERTY", ProblemSeverity.WARNING, CATEGORY);
 
 }

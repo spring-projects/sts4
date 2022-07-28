@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.rewrite.reconcile;
 
-import org.springframework.ide.vscode.boot.java.SpringJavaProblemType;
+import org.springframework.ide.vscode.boot.java.Boot2JavaProblemType;
 import org.springframework.ide.vscode.boot.java.rewrite.RecipeScope;
 import org.springframework.ide.vscode.boot.java.rewrite.codeaction.BeanMethodsNotPublicCodeAction;
 
@@ -22,8 +22,8 @@ public class BeanMethodNotPublicProblem extends BeanMethodsNotPublicCodeAction i
 	}
 
 	@Override
-	public SpringJavaProblemType getProblemType() {
-		return SpringJavaProblemType.JAVA_PUBLIC_BEAN_METHOD;
+	public Boot2JavaProblemType getProblemType() {
+		return Boot2JavaProblemType.JAVA_PUBLIC_BEAN_METHOD;
 	}
 
 }

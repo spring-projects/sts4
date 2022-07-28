@@ -321,7 +321,7 @@ public class BoshDeploymentManifestSchema extends SchemaSupport implements YamlS
 		}
 
 		for (YType defType : getDefinitionTypes()) {
-			v2Schema.require(Constraints.uniqueDefinition(this.astTypes, defType, YamlSchemaProblems.problemType("BOSH_DUPLICATE_"+defType)));
+			v2Schema.require(Constraints.uniqueDefinition(this.astTypes, defType, YamlSchemaProblems.problemType("BOSH_DUPLICATE_"+defType, BoshSchemaProblems.CATEGORY)));
 		}
 		return v2Schema;
 	}

@@ -11,7 +11,9 @@
 package org.springframework.ide.vscode.boot.test;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.ide.vscode.boot.java.SpringJavaProblemType;
+import org.springframework.ide.vscode.boot.java.Boot2JavaProblemType;
+import org.springframework.ide.vscode.boot.java.Boot3JavaProblemType;
+import org.springframework.ide.vscode.boot.java.SpelProblemType;
 import org.springframework.ide.vscode.boot.properties.reconcile.ApplicationPropertiesProblemType;
 import org.springframework.ide.vscode.boot.yaml.reconcile.ApplicationYamlProblemType;
 
@@ -25,7 +27,9 @@ public class ProblemTypesMetadataTest {
 		ProblemTypesToJson reader = new ProblemTypesToJson().read();
 		reader.validate("application-properties", ApplicationPropertiesProblemType.values());
 		reader.validate("application-yaml", ApplicationYamlProblemType.values());
-		reader.validate("java", SpringJavaProblemType.values());
+		reader.validate("boot2", Boot2JavaProblemType.values());
+		reader.validate("boot3", Boot3JavaProblemType.values());
+		reader.validate("spel", SpelProblemType.values());
 	}
 
 }

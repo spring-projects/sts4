@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2020 Pivotal, Inc.
+ * Copyright (c) 2020, 2022 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -17,19 +17,26 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Map.Entry;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
-import org.springframework.ide.vscode.boot.java.SpringJavaProblemType;
+import org.springframework.ide.vscode.boot.java.Boot2JavaProblemType;
+import org.springframework.ide.vscode.boot.java.Boot3JavaProblemType;
+import org.springframework.ide.vscode.boot.java.SpelProblemType;
 import org.springframework.ide.vscode.boot.properties.reconcile.ApplicationPropertiesProblemType;
 import org.springframework.ide.vscode.boot.yaml.reconcile.ApplicationYamlProblemType;
+import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemCategory;
+import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemCategory.Toggle;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
+import org.springframework.ide.vscode.commons.util.Streams;
 import org.springframework.ide.vscode.commons.yaml.path.YamlPath;
 import org.springframework.ide.vscode.commons.yaml.util.JSONCursor;
 
@@ -58,6 +65,7 @@ public class ProblemTypesToJson {
 	public static final String packageJsonPath = "../../vscode-extensions/vscode-spring-boot/package.json";
 	public static final String resourcesPath = "src/main/resources";
 	public static final String metaDataFileName = "problem-types.json";
+	public static final String problemCategoriesFileName = "problem-categories.json";
 	
 	public static class ProblemTypeData {
 		String code;
@@ -70,7 +78,7 @@ public class ProblemTypesToJson {
 		public ProblemTypeData(ProblemType type) {
 			this.code = type.getCode();
 			this.description = type.getDescription();
-			this.defaultSeverity =type.getDefaultSeverity().toString();
+			this.defaultSeverity =type.getDefaultSeverity().name();
 			this.label = type.getLabel();
 		}
 		
@@ -108,46 +116,106 @@ public class ProblemTypesToJson {
 			this.label = label;
 		}
 	}
+	
+	public static class ProblemCategoryData implements Comparable<ProblemCategoryData> {
+		private String id;
+		private String label;
+		private Toggle toggle;
+		private int order;
+		private List<ProblemTypeData> problemTypes;
+		
+		ProblemCategoryData(ProblemCategory category, Collection<ProblemType> problemTypes) {
+			this.id = category.getId();
+			this.label = category.getLabel();
+			this.toggle = category.getToggle();
+			this.order = category.order;
+			this.problemTypes = problemTypes.stream().map(ProblemTypeData::new).collect(Collectors.toList());
+		}
+		
+		ProblemCategoryData(ProblemCategory category) {
+			this(category, Collections.emptyList());
+		}
 
-	Map<String, ProblemTypeData[]> problemTypes = new HashMap<>();
+		public String getLabel() {
+			return label;
+		}
+
+		public Toggle getToggle() {
+			return toggle;
+		}
+
+		public int getOrder() {
+			return order;
+		}
+
+		public String getId() {
+			return id;
+		}
+
+		public List<ProblemTypeData> getProblemTypes() {
+			return problemTypes;
+		}
+
+		@Override
+		public int compareTo(ProblemCategoryData o) {
+			return getOrder() - o.getOrder();
+		}
+		
+	}
+	
+
+	private List<ProblemCategoryData> problemCategories = new ArrayList<>();
 
 	public static void main(String[] args) throws Exception {
 		ProblemTypesToJson writer = new ProblemTypesToJson();
-		writer.problemsFor("application-yaml", ApplicationYamlProblemType.values());
-		writer.problemsFor("application-properties", ApplicationPropertiesProblemType.values());
-		writer.problemsFor("java", SpringJavaProblemType.values());
-		writer.dump();
 		
+		writer.collectProblemTypeData(SpelProblemType.values());
+		writer.collectProblemTypeData(ApplicationYamlProblemType.values());
+		writer.collectProblemTypeData(Boot2JavaProblemType.values());
+		writer.collectProblemTypeData(ApplicationPropertiesProblemType.values());
+		writer.collectProblemTypeData(Boot3JavaProblemType.values());
+		
+		Collections.sort(writer.problemCategories);
+		
+		writer.dump();
 		
 		writer.updatePackageJson(new File(packageJsonPath), "spring-boot.ls.problem");
 	}
 
 	private void dump() throws IOException {
-		Gson gson = new GsonBuilder().setPrettyPrinting().create();
-		String json = gson.toJson(problemTypes);
-		FileUtils.writeStringToFile(new File(resourcesPath+"/"+metaDataFileName), json);
+		Gson gson = new GsonBuilder().setPrettyPrinting().disableHtmlEscaping().create();
+		String json = gson.toJson(problemCategories);
+		FileUtils.writeStringToFile(new File(resourcesPath+"/"+metaDataFileName), json);		
 	}
-
-	private void problemsFor(String string, ProblemType[] values) {
-		ProblemTypeData[] data = new ProblemTypeData[values.length];
-		for (int i = 0; i < data.length; i++) {
-			data[i] = new ProblemTypeData(values[i]);
+	
+	private void collectProblemTypeData(ProblemType[] problems) {
+		for (int i = 0; i < problems.length; i++) {
+			ProblemCategory category = problems[i].getCategory();
+			if (category != null) {
+				ProblemCategoryData categoryData = problemCategories.stream().filter(c -> c.getId().equals(category.getId())).findFirst().orElseGet(() -> {
+					ProblemCategoryData d = new ProblemCategoryData(category);
+					problemCategories.add(d);
+					return d;
+				});
+				categoryData.getProblemTypes().add(new ProblemTypeData(problems[i]));
+			} else {
+				throw new IllegalStateException("No category for problem " + problems[i].getCode());
+			}
 		}
-		problemTypes.put(string, data);
 	}
-
+	
 	public ProblemTypesToJson read() throws IOException {
 		try (InputStream input = this.getClass().getResourceAsStream("/"+metaDataFileName)) {
 			Gson gson = new GsonBuilder().setPrettyPrinting().create();
-			TypeToken<Map<String, ProblemTypeData[]>> tt = new TypeToken<Map<String, ProblemTypeData[]>>() {};
-			problemTypes = gson.fromJson(new InputStreamReader(input), tt.getType());
+			TypeToken<List<ProblemCategoryData>> tt = new TypeToken<List<ProblemCategoryData>>() {};
+			problemCategories = gson.fromJson(new InputStreamReader(input), tt.getType());
 		}
 		return this;
 	}
 
 	public void validate(String name, ProblemType[] actualProblemTypes) {
-		ProblemTypeData[] metadataProblemTypes = problemTypes.get(name);
-		Set<String> metadataHas = Stream.of(metadataProblemTypes).map(x -> x.getCode()).collect(Collectors.toSet());
+		List<ProblemTypeData> metadataProblemTypes = problemCategories.stream().filter(c -> c.getId().equals(name)).findFirst().map(c -> c.getProblemTypes()).orElse(Collections.emptyList());
+		Set<String> metadataHas = metadataProblemTypes.stream().map(x -> x.getCode()).collect(Collectors.toSet());
 		Set<String> actualHas = Stream.of(actualProblemTypes).map(x-> x.getCode()).collect(Collectors.toSet());
 		for (String string : actualHas) {
 			if (!metadataHas.contains(string)) {
@@ -160,8 +228,8 @@ public class ProblemTypesToJson {
 			}
 		}
 		
-		for (int i = 0; i < metadataProblemTypes.length; i++) {
-			ProblemTypeData metadata = metadataProblemTypes[i];
+		for (int i = 0; i < metadataProblemTypes.size(); i++) {
+			ProblemTypeData metadata = metadataProblemTypes.get(i);
 			ProblemType actual = actualProblemTypes[i];
 			assertEquals(actual.getCode(), metadata.getCode());
 			assertEquals(actual.getDescription(), metadata.getDescription());
@@ -170,33 +238,99 @@ public class ProblemTypesToJson {
 		}
 	}
 
-	public void updatePackageJson(File packageJsonFile, String propertyPrefix) throws Exception {
+	public void updatePackageJson(File packageJsonFile, String propertyPrefix, String id, ProblemType[] problemTypes) throws Exception {
 		Gson gson = new GsonBuilder()
 				.setPrettyPrinting()
 				.serializeNulls()
 				.create();
 		JsonElement parsed = gson.fromJson(new FileReader(packageJsonFile), JsonElement.class);
-		JsonObject configProps = (JsonObject) YamlPath.fromProperty("contributes.configuration.properties").traverse(new JSONCursor(parsed)).target;
-		Set<String> removeProps = configProps.keySet().stream().filter(s -> s.startsWith(propertyPrefix)).collect(Collectors.toSet());
-		for (String rp : removeProps) {
-			configProps.remove(rp);
-		}
-		JsonArray severities = new JsonArray();
-		for (ProblemSeverity severity : ProblemSeverity.values()) {
-			severities.add(severity.name());
-		}
-		for (Entry<String, ProblemTypeData[]> e : problemTypes.entrySet()) {
-			String editorType = e.getKey();
-			for (ProblemTypeData data : e.getValue()) {
+		JsonArray allProps = (JsonArray) YamlPath.fromProperty("contributes.configuration.properties").traverse(new JSONCursor(parsed)).target;
+		JsonObject configProps = Streams.fromIterable(allProps).filter(JsonObject.class::isInstance).map(JsonObject.class::cast).filter(o -> {
+			JsonElement element = o.get("id");
+			return element != null && id.equals(element.getAsString());
+		}).findFirst().orElse(null);
+		if (configProps != null) {
+			Set<String> removeProps = configProps.keySet().stream().filter(s -> s.startsWith(propertyPrefix)).collect(Collectors.toSet());
+			for (String rp : removeProps) {
+				configProps.remove(rp);
+			}
+			JsonArray severities = new JsonArray();
+			for (ProblemSeverity severity : ProblemSeverity.values()) {
+				severities.add(severity.name());
+			}
+			for (ProblemType problemType : problemTypes) {
+				ProblemTypeData data = new ProblemTypeData(problemType);
 				JsonObject schema = new JsonObject();
 				schema.addProperty("type", "string");
 				schema.addProperty("default", data.defaultSeverity);
 				schema.addProperty("description", data.description);
 				schema.add("enum", severities);
-				configProps.add(propertyPrefix+"."+editorType+"."+data.code, schema);
+				configProps.add(propertyPrefix + "." + id + "." + data.code, schema);
+			}
+			
+			String newContent = gson.toJson(parsed);
+			FileUtils.writeStringToFile(packageJsonFile, newContent);
+		} else {
+			throw new IllegalStateException("Cannot find config object with 'id' property equal to '" + id + "'");
+		}
+	}
+	
+	public void updatePackageJson(File packageJsonFile, String propertyPrefix) throws Exception {
+		Gson gson = new GsonBuilder()
+				.setPrettyPrinting()
+				.disableHtmlEscaping()
+				.serializeNulls()
+				.create();
+		JsonElement parsed = gson.fromJson(new FileReader(packageJsonFile), JsonElement.class);
+		JsonArray allProps = (JsonArray) YamlPath.fromProperty("contributes.configuration").traverse(new JSONCursor(parsed)).target;
+		
+		JsonArray severities = new JsonArray();
+		for (ProblemSeverity severity : ProblemSeverity.values()) {
+			severities.add(severity.name());
+		}
+
+		for (ProblemCategoryData category : problemCategories) {
+			JsonObject configProps = Streams.fromIterable(allProps).filter(JsonObject.class::isInstance).map(JsonObject.class::cast).filter(o -> {
+				JsonElement element = o.get("id");
+				return element != null && category.getId().equals(element.getAsString());
+			}).findFirst().orElse(null);
+			
+			if (configProps != null) {
+				allProps.remove(configProps);
 			}
 		}
 		
+		for (ProblemCategoryData category : problemCategories) {
+			JsonObject configProps = new JsonObject();
+			configProps.addProperty("id", category.getId());
+			configProps.addProperty("title", category.getLabel());
+			configProps.addProperty("order", 400 + category.order);
+			JsonObject props = new JsonObject();
+			if (category.getToggle() != null) {
+				Toggle categorySwitch = category.getToggle();
+				JsonObject switchObj = new JsonObject();
+				switchObj.addProperty("type", "string");
+				switchObj.addProperty("default", categorySwitch.getDefaultValue().name());
+				switchObj.addProperty("description", categorySwitch.getLabel());
+				JsonArray vals = new JsonArray();
+				for (Toggle.Option s : categorySwitch.getValues()) {
+					vals.add(s.name());
+				}
+				switchObj.add("enum", vals);
+				props.add(categorySwitch.getPreferenceKey(), switchObj);
+			}
+			for (ProblemTypeData data : category.getProblemTypes()) {
+				JsonObject schema = new JsonObject();
+				schema.addProperty("type", "string");
+				schema.addProperty("default", data.defaultSeverity);
+				schema.addProperty("description", data.description);
+				schema.add("enum", severities);
+				props.add(propertyPrefix + "." + category.getId() + "." + data.code, schema);
+			}
+			configProps.add("properties", props);
+			allProps.add(configProps);
+		}
+			
 		String newContent = gson.toJson(parsed);
 		FileUtils.writeStringToFile(packageJsonFile, newContent);
 	}

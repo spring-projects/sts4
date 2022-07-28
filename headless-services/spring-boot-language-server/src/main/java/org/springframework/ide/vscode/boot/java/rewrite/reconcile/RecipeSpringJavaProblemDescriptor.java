@@ -10,11 +10,11 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.rewrite.reconcile;
 
-import org.springframework.ide.vscode.boot.java.SpringJavaProblemType;
 import org.springframework.ide.vscode.boot.java.rewrite.RecipeCodeActionDescriptor;
+import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
 
 public interface RecipeSpringJavaProblemDescriptor extends RecipeCodeActionDescriptor {
 	
-	SpringJavaProblemType getProblemType();
-
+	ProblemType getProblemType();
+	
 }

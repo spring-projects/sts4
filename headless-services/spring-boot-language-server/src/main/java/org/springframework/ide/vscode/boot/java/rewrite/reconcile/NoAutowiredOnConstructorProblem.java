@@ -18,13 +18,13 @@ import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.tree.J;
-import org.openrewrite.java.tree.Statement;
-import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.java.tree.J.ClassDeclaration;
 import org.openrewrite.java.tree.J.MethodDeclaration;
 import org.openrewrite.java.tree.JavaType.FullyQualified;
+import org.openrewrite.java.tree.Statement;
+import org.openrewrite.java.tree.TypeUtils;
 import org.springframework.ide.vscode.boot.java.Annotations;
-import org.springframework.ide.vscode.boot.java.SpringJavaProblemType;
+import org.springframework.ide.vscode.boot.java.Boot2JavaProblemType;
 import org.springframework.ide.vscode.boot.java.rewrite.RecipeScope;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.rewrite.java.AnnotationHierarchies;
@@ -105,8 +105,8 @@ public class NoAutowiredOnConstructorProblem implements RecipeSpringJavaProblemD
 	}
 
 	@Override
-	public SpringJavaProblemType getProblemType() {
-		return SpringJavaProblemType.JAVA_AUTOWIRED_CONSTRUCTOR;
+	public Boot2JavaProblemType getProblemType() {
+		return Boot2JavaProblemType.JAVA_AUTOWIRED_CONSTRUCTOR;
 	}
 	
     private static boolean isConstructor(Statement s) {

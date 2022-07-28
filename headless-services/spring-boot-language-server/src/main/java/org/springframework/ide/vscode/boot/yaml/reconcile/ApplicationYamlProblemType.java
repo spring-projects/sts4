@@ -13,6 +13,8 @@ package org.springframework.ide.vscode.boot.yaml.reconcile;
 import static org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity.ERROR;
 import static org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity.WARNING;
 
+import org.springframework.ide.vscode.boot.common.SpringProblemCategories;
+import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemCategory;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
 
@@ -78,6 +80,11 @@ public enum ApplicationYamlProblemType implements ProblemType {
 	@Override
 	public String getCode() {
 		return name();
+	}
+
+	@Override
+	public ProblemCategory getCategory() {
+		return SpringProblemCategories.YAML;
 	}
 
 }

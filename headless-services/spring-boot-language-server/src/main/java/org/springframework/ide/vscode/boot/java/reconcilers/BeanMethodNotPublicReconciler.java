@@ -23,7 +23,7 @@ import org.eclipse.jdt.core.dom.Modifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.Annotations;
-import org.springframework.ide.vscode.boot.java.SpringJavaProblemType;
+import org.springframework.ide.vscode.boot.java.Boot2JavaProblemType;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
 import org.springframework.ide.vscode.commons.java.Version;
@@ -63,10 +63,10 @@ public class BeanMethodNotPublicReconciler implements AnnotationReconciler {
 							.filter(modifier -> modifier.isPublic())
 							.findFirst()
 							.map(modifier -> new ReconcileProblemImpl(
-									SpringJavaProblemType.JAVA_PUBLIC_BEAN_METHOD, "public @Bean method",
+									Boot2JavaProblemType.JAVA_PUBLIC_BEAN_METHOD, "public @Bean method",
 									modifier.getStartPosition(), modifier.getLength()))
 							.orElse(new ReconcileProblemImpl(
-									SpringJavaProblemType.JAVA_PUBLIC_BEAN_METHOD, "public @Bean method",
+									Boot2JavaProblemType.JAVA_PUBLIC_BEAN_METHOD, "public @Bean method",
 									m.getName().getStartPosition(), m.getName().getLength()));
 					
 					QuickfixType quickfixType = quickfixRegistry.getQuickfixType(REMOVE_PUBLIC_FROM_BEAN_METHOD);

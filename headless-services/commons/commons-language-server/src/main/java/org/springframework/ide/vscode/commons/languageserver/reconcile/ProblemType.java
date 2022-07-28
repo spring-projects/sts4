@@ -28,4 +28,5 @@ public interface ProblemType {
 	String getCode();
 	String getLabel();
 	String getDescription();
+	ProblemCategory getCategory();
 }

@@ -46,6 +46,11 @@ public class BadWordReconcileEngine implements IReconcileEngine {
 		public String getLabel() {
 			return "Bad label";
 		}
+
+		@Override
+		public ProblemCategory getCategory() {
+			return null;
+		}
 	}
 
 	private final String[] BADWORDS = {

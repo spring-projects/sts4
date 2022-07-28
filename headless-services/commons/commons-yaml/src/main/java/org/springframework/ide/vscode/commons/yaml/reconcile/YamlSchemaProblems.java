@@ -17,6 +17,7 @@ import java.util.stream.Stream;
 
 import org.springframework.ide.vscode.commons.languageserver.quickfix.Quickfix.QuickfixData;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixType;
+import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemCategory;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemTypes;
@@ -46,25 +47,27 @@ import com.google.common.collect.ImmutableSet;
  * @author Kris De Volder
  */
 public class YamlSchemaProblems {
+	
+	public static final ProblemCategory CATEGORY = new ProblemCategory("yaml-schema-problems", "YAML Shema Problems", null);
 
-	public static final ProblemType SYNTAX_PROBLEM = problemType("YamlSyntaxProblem");
-	public static final ProblemType SCHEMA_PROBLEM = problemType("YamlSchemaProblem");
-	public static final ProblemType DEPRECATED_PROPERTY = problemType("DeprecatedProperty", ProblemSeverity.WARNING);
-	public static final ProblemType DEPRECATED_VALUE = problemType("DeprecatedValue", ProblemSeverity.WARNING);
-	public static final ProblemType MISSING_PROPERTY = problemType("MissingProperty", ProblemSeverity.ERROR);
-	public static final ProblemType EXTRA_PROPERTY = problemType("ExtraProperty", ProblemSeverity.ERROR);
-	public static final ProblemType EMPTY_OPTIONAL_STRING = problemType("EmptyOptionalString", ProblemSeverity.WARNING);
+	public static final ProblemType SYNTAX_PROBLEM = problemType("YamlSyntaxProblem", CATEGORY);
+	public static final ProblemType SCHEMA_PROBLEM = problemType("YamlSchemaProblem", CATEGORY);
+	public static final ProblemType DEPRECATED_PROPERTY = problemType("DeprecatedProperty", ProblemSeverity.WARNING, CATEGORY);
+	public static final ProblemType DEPRECATED_VALUE = problemType("DeprecatedValue", ProblemSeverity.WARNING, CATEGORY);
+	public static final ProblemType MISSING_PROPERTY = problemType("MissingProperty", ProblemSeverity.ERROR, CATEGORY);
+	public static final ProblemType EXTRA_PROPERTY = problemType("ExtraProperty", ProblemSeverity.ERROR, CATEGORY);
+	public static final ProblemType EMPTY_OPTIONAL_STRING = problemType("EmptyOptionalString", ProblemSeverity.WARNING, CATEGORY);
 
 	public static final Set<ProblemType> PROPERTY_CONSTRAINT = ImmutableSet.of(
 			MISSING_PROPERTY, EXTRA_PROPERTY
 	);
 
-	public static ProblemType problemType(final String typeName, ProblemSeverity defaultSeverity) {
-		return ProblemTypes.create(typeName, defaultSeverity);
+	public static ProblemType problemType(final String typeName, ProblemSeverity defaultSeverity, ProblemCategory category) {
+		return ProblemTypes.create(typeName, defaultSeverity, category);
 	}
 
-	public static ProblemType problemType(final String typeName) {
-		return problemType(typeName, ProblemSeverity.ERROR);
+	public static ProblemType problemType(final String typeName, ProblemCategory category) {
+		return problemType(typeName, ProblemSeverity.ERROR, category);
 	}
 
 	public static ReconcileProblem syntaxProblem(String msg, int offset, int len) {

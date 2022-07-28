@@ -10,12 +10,15 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.concourse;
 
+import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemCategory;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
 
 import static org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems.*;
 
 public class PipelineYmlSchemaProblems {
-	public static final ProblemType UNUSED_RESOURCE = problemType("PipelineYamlUnusedResource", ProblemSeverity.ERROR);
-	public static final ProblemType UNKNOWN_GITHUB_ENTITY = problemType("UnknownGithubEntitity", ProblemSeverity.WARNING);
+	
+	public static final ProblemCategory CATEGORY = new ProblemCategory("concourse", "Concource YAML Validation", null);
+	public static final ProblemType UNUSED_RESOURCE = problemType("PipelineYamlUnusedResource", ProblemSeverity.ERROR, CATEGORY);
+	public static final ProblemType UNKNOWN_GITHUB_ENTITY = problemType("UnknownGithubEntitity", ProblemSeverity.WARNING, CATEGORY);
 }

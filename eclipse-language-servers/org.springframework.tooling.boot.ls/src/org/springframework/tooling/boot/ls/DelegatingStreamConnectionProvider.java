@@ -22,7 +22,6 @@ import java.util.Map;
 
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Assert;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.IPropertyChangeListener;
@@ -32,6 +31,9 @@ import org.eclipse.lsp4j.InitializeResult;
 import org.eclipse.lsp4j.jsonrpc.messages.Message;
 import org.eclipse.lsp4j.jsonrpc.messages.ResponseMessage;
 import org.eclipse.lsp4j.services.LanguageServer;
+import org.springframework.tooling.boot.ls.prefs.CategoryProblemsSeverityPrefsPage;
+import org.springframework.tooling.boot.ls.prefs.ProblemCategoryData;
+import org.springframework.tooling.boot.ls.prefs.ProblemCategoryData.CategoryToggleData;
 import org.springframework.tooling.ls.eclipse.commons.LanguageServerCommonsActivator;
 import org.springsource.ide.eclipse.commons.boot.ls.remoteapps.RemoteBootAppsDataHolder;
 import org.springsource.ide.eclipse.commons.boot.ls.remoteapps.RemoteBootAppsDataHolder.RemoteAppData;
@@ -194,6 +196,7 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 		settings.put("boot-java", bootJavaObj);
 		
 		putValidationPreferences(settings);
+		putValidationCategoryToggles(settings);
 
 		this.languageServer.getWorkspaceService().didChangeConfiguration(new DidChangeConfigurationParams(settings));
 	}
@@ -206,6 +209,23 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 					String val = prefs.get(key, null);
 					if (val!=null) {
 						dotPut(settings, "spring-boot.ls."+key, val);
+					}
+				}
+			}
+		} catch (Exception e) {
+			Log.log(e);
+		}
+	}
+	
+	private void putValidationCategoryToggles(Map<String, Object> settings) {
+		try {
+			IEclipsePreferences prefs = BootLanguageServerPlugin.getPreferences();
+			for (ProblemCategoryData category : CategoryProblemsSeverityPrefsPage.ALL_PROBLEM_CATEGORIES) {
+				if (category.getToggle() != null) {
+					CategoryToggleData toggle = category.getToggle();
+					String val = prefs.get(toggle.getPreferenceKey(), null);
+					if (val != null) {
+						dotPut(settings, toggle.getPreferenceKey(), val);
 					}
 				}
 			}

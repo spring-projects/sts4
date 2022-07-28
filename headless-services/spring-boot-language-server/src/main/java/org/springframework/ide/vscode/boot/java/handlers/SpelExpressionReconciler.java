@@ -12,10 +12,8 @@ package org.springframework.ide.vscode.boot.java.handlers;
 
 import org.springframework.expression.ParseException;
 import org.springframework.expression.spel.standard.SpelExpressionParser;
-import org.springframework.ide.vscode.boot.java.SpringJavaProblemType;
+import org.springframework.ide.vscode.boot.java.SpelProblemType;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
-import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity;
-import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemTypes;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblem;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblemImpl;
 import org.springframework.util.SystemPropertyUtils;
@@ -58,7 +56,7 @@ public class SpelExpressionReconciler implements Reconciler {
 	private void createProblem(String spelExpression, String message, int startPosition, int position, IProblemCollector problemCollector) {
 		int start = startPosition + position;
 		int length = spelExpression.length() - position;
-		ReconcileProblem problem = new ReconcileProblemImpl(SpringJavaProblemType.JAVA_SPEL_EXPRESSION_SYNTAX, message, start, length);
+		ReconcileProblem problem = new ReconcileProblemImpl(SpelProblemType.JAVA_SPEL_EXPRESSION_SYNTAX, message, start, length);
 		problemCollector.accept(problem);
 	}
 

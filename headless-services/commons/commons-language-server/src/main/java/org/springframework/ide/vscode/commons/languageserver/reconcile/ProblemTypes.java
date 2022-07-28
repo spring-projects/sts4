@@ -10,10 +10,6 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.languageserver.reconcile;
 
-import java.util.HashSet;
-
-import org.springframework.ide.vscode.commons.util.Assert;
-
 public class ProblemTypes {
 	
 	/**
@@ -28,7 +24,7 @@ public class ProblemTypes {
 	 * @return A newly create problem type.
 	 */
 	@Deprecated
-	public static ProblemType create(String typeName, ProblemSeverity defaultSeverity) {
+	public static ProblemType create(String typeName, ProblemSeverity defaultSeverity, ProblemCategory category) {
 		return new ProblemType() {
 			@Override
 			public String toString() {
@@ -49,6 +45,10 @@ public class ProblemTypes {
 			@Override
 			public String getLabel() {
 				return typeName;
+			}
+			@Override
+			public ProblemCategory getCategory() {
+				return category;
 			}
 		};
 	}
