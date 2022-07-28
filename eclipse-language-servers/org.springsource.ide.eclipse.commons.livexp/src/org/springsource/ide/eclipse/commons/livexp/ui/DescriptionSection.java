@@ -95,38 +95,48 @@ public class DescriptionSection extends WizardPageSection {
 			});
 		}
 
-		//Determine vertical space so there's enough room for about X lines of text
-		GC gc = new GC(text);
-		FontMetrics fm = gc.getFontMetrics();
-		int preferredHeight = fm.getHeight()*preferredNumberOfLines();
-
-//		GridDataFactory grab = GridDataFactory
-//				.fillDefaults().align(SWT.FILL, SWT.FILL) //without this SWT.WRAP doesn't work?
-//				.grab(true, false)
-//				.minSize(SWT.DEFAULT, preferredHeight)
-//				.hint(SWT.DEFAULT, preferredHeight);
-//		grab.applyTo(field);
-//		grab.applyTo(text);
-		GridData data = new GridData(GridData.FILL_HORIZONTAL); //Without this, SWT.WRAP doesn't work!
-		  //See: https://vzurczak.wordpress.com/2012/08/28/force-a-swt-text-to-wrap/
-		data.heightHint = preferredHeight;
-		data.widthHint = UIConstants.FIELD_TEXT_AREA_WIDTH;
-		text.setLayoutData(data);
-
-//		GridDataFactory.fillDefaults().align(SWT.BEGINNING, SWT.BEGINNING).applyTo(fieldNameLabel);
-
-		this.model.addListener(new UIValueListener<String>() {
-			public void uiGotValue(LiveExpression<String> exp, String value) {
-				if (!text.isDisposed()) {
-					String oldText = text.getText();
-					if (!oldText.equals(value)) {
-						text.setText(value==null?"":value);
+	//		GridDataFactory grab = GridDataFactory
+	//				.fillDefaults().align(SWT.FILL, SWT.FILL) //without this SWT.WRAP doesn't work?
+	//				.grab(true, false)
+	//				.minSize(SWT.DEFAULT, preferredHeight)
+	//				.hint(SWT.DEFAULT, preferredHeight);
+	//		grab.applyTo(field);
+	//		grab.applyTo(text);
+			GridData data = new GridData(GridData.FILL_HORIZONTAL); //Without this, SWT.WRAP doesn't work!
+			  //See: https://vzurczak.wordpress.com/2012/08/28/force-a-swt-text-to-wrap/
+			data.heightHint = getPreferredHeight(text);
+			data.widthHint = UIConstants.FIELD_TEXT_AREA_WIDTH;
+			text.setLayoutData(data);
+	
+	//		GridDataFactory.fillDefaults().align(SWT.BEGINNING, SWT.BEGINNING).applyTo(fieldNameLabel);
+	
+			this.model.addListener(new UIValueListener<String>() {
+				public void uiGotValue(LiveExpression<String> exp, String value) {
+					if (!text.isDisposed()) {
+						String oldText = text.getText();
+						if (!oldText.equals(value)) {
+							text.setText(value==null?"":value);
+						}
+					} else {
+						exp.removeListener(this);
 					}
-				} else {
-					exp.removeListener(this);
 				}
-			}
-		});
+			});
+	}
+
+	/**
+	 * Determine vertical space so there's enough room for about X lines of text
+	 */
+	private int getPreferredHeight(final StyledText text) {
+		int preferredHeight;
+		GC gc = new GC(text);
+		try {
+			FontMetrics fm = gc.getFontMetrics();
+			preferredHeight = fm.getHeight()*preferredNumberOfLines();
+			return preferredHeight;
+		} finally {
+			gc.dispose();
+		}
 	}
 
 	protected void configureTextWidget(StyledText text) {
