@@ -59,7 +59,6 @@ public class ReusableClasspathListenerHandler {
 		this.projectSorterFactory = projectSorterFactory;
 		this.conn = conn;
 		this.notificationsSentCallbacks = new ListenerList<>();
-		logger.log("Instantiating ReusableClasspathListenerHandler");
 	}
 	
 	private class CallbackJob extends Job {
@@ -128,7 +127,7 @@ public class ReusableClasspathListenerHandler {
 		}
 		
 		private void sendInitialEvents(String callbackCommandId, IProject[] projects) {
-			logger.log("Scheduling initial event for all projects ...");
+			logger.debug("Scheduling initial event for all projects ...");
 			
 			Set<String> callbackIds = Collections.singleton(callbackCommandId);
 
@@ -146,7 +145,7 @@ public class ReusableClasspathListenerHandler {
 					logger.log(e);
 				}
 			}
-			logger.log("Scheduling initial event for all projects DONE");
+			logger.debug("Scheduling initial event for all projects DONE");
 		}
 		
 		private IProject[] getSortedProjects() {
@@ -167,7 +166,7 @@ public class ReusableClasspathListenerHandler {
 		}
 
 		public synchronized void unsubscribe(String callbackCommandId) {
-			logger.log("unsubscribing from classpath changes: " + callbackCommandId);
+			logger.debug("unsubscribing from classpath changes: " + callbackCommandId);
 			subscribers.remove(callbackCommandId);
 
 			if (subscribers.isEmpty() && classpathListener != null) {
@@ -175,7 +174,7 @@ public class ReusableClasspathListenerHandler {
 				classpathListener = null;
 			}
 
-			logger.log("subsribers = " + subscribers);
+			logger.debug("subsribers = " + subscribers);
 		}
 
 		public boolean isEmpty() {
@@ -186,9 +185,9 @@ public class ReusableClasspathListenerHandler {
 	private Subscriptions subscriptions = new Subscriptions();
 
 	public Object removeClasspathListener(String callbackCommandId) {
-		logger.log("ClasspathListenerHandler removeClasspathListener " + callbackCommandId);
+		logger.debug("ClasspathListenerHandler removeClasspathListener " + callbackCommandId);
 		subscriptions.unsubscribe(callbackCommandId);
-		logger.log("ClasspathListenerHandler removeClasspathListener " + callbackCommandId + " => OK");
+		logger.debug("ClasspathListenerHandler removeClasspathListener " + callbackCommandId + " => OK");
 		return "ok";
 	}
 
@@ -198,9 +197,9 @@ public class ReusableClasspathListenerHandler {
 	}
 
 	public Object addClasspathListener(String callbackCommandId, boolean isBatched) {
-		logger.log("ClasspathListenerHandler addClasspathListener " + callbackCommandId + "isBatched = "+isBatched);
+		logger.debug("ClasspathListenerHandler addClasspathListener " + callbackCommandId + "isBatched = "+isBatched);
 		subscriptions.subscribe(callbackCommandId, isBatched);
-		logger.log("ClasspathListenerHandler addClasspathListener " + callbackCommandId + " => OK");
+		logger.debug("ClasspathListenerHandler addClasspathListener " + callbackCommandId + " => OK");
 		return "ok";
 	}
 

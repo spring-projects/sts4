@@ -87,7 +87,7 @@ public class ClasspathUtil {
 			}
 		}
 		Classpath classpath = new Classpath(cpEntries);
-		logger.log("classpath=" + classpath.getEntries().size() + " entries");
+		logger.debug("classpath=" + classpath.getEntries().size() + " entries");
 		return classpath;
 	}
 	

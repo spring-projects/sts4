@@ -56,15 +56,30 @@ public interface Logger {
 		public void log(Exception e) {
 			e.printStackTrace(printwriter);
 		}
+		@Override
+		public void debug(String message) {
+			log("DEBUG:" + message);
+		}
 	}
 
-	static Logger forEclipsePlugin(Supplier<Plugin> instance) {
+	static Logger forEclipsePlugin(Supplier<Plugin> _plugin) {
 		return new Logger() {
+			
+			private Plugin plugin = null;
+			private boolean DEBUG = false;
+			
+			@Override
+			public void debug(String message) {
+				init();
+				if (DEBUG) {
+					log(message);
+				}
+			}
 
 			@Override
 			public void log(String message) {
+				init();
 				try {
-					Plugin plugin = instance.get();
 					plugin.getLog().log(new Status(IStatus.INFO, plugin.getBundle().getSymbolicName(), message));
 				} catch (Exception ignore) {
 					//Eclipse state is fubar... send log message someplace else.
@@ -74,18 +89,27 @@ public interface Logger {
 
 			@Override
 			public void log(Exception e) {
+				init();
 				try {
-					Plugin plugin = instance.get();
 					plugin.getLog().log(new Status(IStatus.ERROR, plugin.getBundle().getSymbolicName(), "", e));
 				} catch (Exception ignore) {
 					//Eclipse state is fubar... send log message someplace else.
 					DEFAULT.log(e);
 				}
 			}
+
+			private void init() {
+				if (plugin==null) {
+					plugin = _plugin.get();
+					DEBUG = Boolean.getBoolean(plugin.getBundle().getSymbolicName() + ".DEBUG");
+				}
+			}
 			
 		};
 	}
 	
+
+	void debug(String message);
 
 	public static class TestLogger extends DefaultLogger {
 

@@ -118,7 +118,6 @@ public class SendClasspathNotificationsJob extends Job {
 											// So we will just pretend / assume project is always open. If resolving classpath fails because it is not
 											// open... so be it (there will be no classpath... this is expected for closed project, so that is fine).
 						boolean deleted = !(exists && open);
-						logger.log("exists = "+exists +" open = "+open +" => deleted = "+deleted);
 						String projectName = jp.getElementName();
 
 						Classpath classpath = Classpath.EMPTY;
@@ -156,14 +155,14 @@ public class SendClasspathNotificationsJob extends Job {
 
 	protected void bufferMessage(URI projectLoc, boolean deleted, String projectName, Classpath classpath) {
 		if (buffer!=null) {
-			logger.log("buffering callback "+callbackCommandId+" "+projectName+" "+deleted+" "+ classpath.getEntries().size());
+			logger.debug("buffering callback "+callbackCommandId+" "+projectName+" "+deleted+" "+ classpath.getEntries().size());
 			buffer.add(ImmutableList.of(projectLoc.toString(), projectName, deleted, classpath));
 		} else {
 			try {
-				logger.log("executing callback "+callbackCommandId+" "+projectName+" "+deleted+" "+ classpath.getEntries().size());
+				logger.debug("executing callback "+callbackCommandId+" "+projectName+" "+deleted+" "+ classpath.getEntries().size());
 				Object r = conn.executeClientCommand(callbackCommandId, projectLoc.toString(), projectName, deleted, classpath);
 				notificationsSentForProjects = ImmutableList.of(projectName);
-				logger.log("executing callback "+callbackCommandId+" SUCCESS ["+r+"]");
+				logger.debug("executing callback "+callbackCommandId+" SUCCESS ["+r+"]");
 			} catch (Exception e) {
 				logger.log("executing callback "+callbackCommandId+" FAILED");
 				logger.log(e);
@@ -174,11 +173,11 @@ public class SendClasspathNotificationsJob extends Job {
 	protected void flush() {
 		if (buffer!=null && !buffer.isEmpty()) {
 			try {
-				logger.log("executing callback "+callbackCommandId+" "+buffer.size()+" batched events");
+				logger.debug("executing callback "+callbackCommandId+" "+buffer.size()+" batched events");
 				Object r = conn.executeClientCommand(callbackCommandId, buffer.toArray(new Object[buffer.size()]));
 				notificationsSentForProjects = ImmutableList.copyOf(buffer.stream().filter(l -> l instanceof List)
 						.map(l -> (List<?>) l).map(l -> (String) l.get(1)).collect(Collectors.toList()));
-				logger.log("executing callback "+callbackCommandId+" SUCCESS ["+r+"]");
+				logger.debug("executing callback "+callbackCommandId+" SUCCESS ["+r+"]");
 			} catch (Exception e) {
 				logger.log("executing callback "+callbackCommandId+" FAILED");
 				logger.log(e);

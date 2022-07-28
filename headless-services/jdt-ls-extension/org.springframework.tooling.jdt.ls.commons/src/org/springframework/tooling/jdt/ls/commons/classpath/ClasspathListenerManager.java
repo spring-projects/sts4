@@ -165,7 +165,7 @@ public class ClasspathListenerManager {
 	
 	public ClasspathListenerManager(Logger logger, ClasspathListener listener) {
 		this.logger = logger;
-		this.logger.log("Setting up ClasspathListenerManager");
+		this.logger.debug("Setting up ClasspathListenerManager");
 		this.listener = listener;
 		JavaCore.addElementChangedListener(myListener=new MyListener(), ElementChangedEvent.POST_CHANGE);
 	}
