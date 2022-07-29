@@ -98,7 +98,7 @@
 
 		<sts4-language-servers-p2-repo>https://dist.springsource.com/${dist.type}/TOOLS/sts4-language-server-integrations/${sts4-language-servers-version}</sts4-language-servers-p2-repo>
 		
-		<tycho-version>2.7.3</tycho-version>
+		<tycho-version>2.7.4</tycho-version>
 		<encoding>UTF-8</encoding>
 
 		<misc.p2.repo.version>3.9.4.202003091750</misc.p2.repo.version>
@@ -527,16 +527,16 @@
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/releases/2022-09/</url>
 				</repository> -->
-<!--				<repository>
+				<repository>
 					<id>2022-09-staging</id>
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/staging/2022-09/</url>
-				</repository> -->
-				<repository>
+				</repository>
+<!--				<repository>
 					<id>2022-06</id>
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/releases/2022-06/</url>
-				</repository>
+				</repository> -->
 				<repository>
 					<id>2022-09-platform-i-builds</id>
 					<layout>p2</layout>
@@ -622,7 +622,12 @@
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/lsp4e/snapshots/</url>
 				</repository>
-
+				<repository>
+					<id>tm4e-snapshots</id>
+					<layout>p2</layout>
+					<url>https://download.eclipse.org/tm4e/snapshots/</url>
+				</repository>
+				
 				<!--				<repository>
 					<id>lsp4e</id>
 					<layout>p2</layout>
@@ -883,7 +888,7 @@
 					<version>${tycho-version}</version>
 					<configuration>
 						<resolver>p2</resolver>
-						<pomDependencies>consider</pomDependencies>
+						<pomDependencies>ignore</pomDependencies>
 						<ignoreTychoRepositories>true</ignoreTychoRepositories>
 						<!--						<dependency-resolution>
 							<optionalDependencies>ignore</optionalDependencies>
