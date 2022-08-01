@@ -1,3 +1,8 @@
+## 2022-08-03 (4.15.2 RELEASE, incl. language servers version 1.37.0)
+
+* _(Spring Boot)_ fixed: Validation errors on @@ placeholders in YAML editor ([#711](https://github.com/spring-projects/sts4/issues/711))
+* _(VSCode)_ fixed: Live process is not auto connected when app is launched in internalConsole ([#794](https://github.com/spring-projects/sts4/issues/794))
+
 ## 2022-06-17 (1.36.0)
 
 * _(Spring Boot)_ fixed: VScode incorrectly suggests removing @Autowired annotation from methods ([#787](https://github.com/spring-projects/sts4/issues/787))

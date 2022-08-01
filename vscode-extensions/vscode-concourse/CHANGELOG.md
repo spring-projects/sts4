@@ -1,3 +1,7 @@
+## 2022-08-03 (4.15.2 RELEASE, incl. language servers version 1.37.0)
+
+* _(Concourse)_ fixed: Concourse extension (in vscode) doesn't allow on_error in Steps ([#737](https://github.com/spring-projects/sts4/issues/737))
+
 ## 2022-06-17 (1.36.0)
 
 * no major changes

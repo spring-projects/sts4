@@ -1,3 +1,7 @@
+## 2022-08-03 (4.15.2 RELEASE, incl. language servers version 1.37.0)
+
+* no major changes
+
 ## 2022-06-17 (1.36.0)
 
 * no major changes
