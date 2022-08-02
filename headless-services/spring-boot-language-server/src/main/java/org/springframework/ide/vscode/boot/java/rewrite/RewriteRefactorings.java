@@ -113,7 +113,7 @@ public class RewriteRefactorings implements CodeActionResolver, QuickfixHandler 
 	private WorkspaceEdit applyRecipe(Recipe r, IJavaProject project, List<J.CompilationUnit> cus) {
 		List<Result> results = r.run(cus);
 		List<Either<TextDocumentEdit, ResourceOperation>> edits = results.stream().filter(res -> res.getAfter() != null).map(res -> {
-			URI docUri = project.getLocationUri().resolve(res.getAfter().getSourcePath().toString());
+			URI docUri = res.getAfter().getSourcePath().isAbsolute() ? res.getAfter().getSourcePath().toUri() : project.getLocationUri().resolve(res.getAfter().getSourcePath().toString());
 			TextDocument doc = documents.getLatestSnapshot(docUri.toString());
 			if (doc == null) {
 				doc = new TextDocument(docUri.toString(), LanguageId.JAVA, 0, res.getBefore() == null ? "" : res.getBefore().printAll());
