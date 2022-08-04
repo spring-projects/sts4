@@ -15,8 +15,11 @@ import static org.junit.Assert.fail;
 import static org.springsource.ide.eclipse.commons.livexp.ui.ProjectLocationSection.getDefaultProjectLocation;
 
 import java.io.File;
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
@@ -359,14 +362,43 @@ public class BootProjectTestHarness {
 		boolean refreshFromLocal = true;
 		boolean cleanProjects = true;
 		boolean updateConfig = true;
-		IProject[] projects = {project};
 		boolean offline = false;
 		boolean forceUpdateDeps = true;
-		UpdateMavenProjectJob job = new UpdateMavenProjectJob(projects, offline, forceUpdateDeps,
-				updateConfig, cleanProjects, refreshFromLocal);
+
+		UpdateMavenProjectJob job = createUpdateMavenProjectJob(project, offline, forceUpdateDeps, updateConfig, cleanProjects, refreshFromLocal);
+
 		job.schedule();
 		job.join();
 //		debug("updateMavenProjectDependencies("+project.getName()+") DONE");
+	}
+
+	/**
+	 * Helper method to create the job to update maven projects.
+	 *
+	 * Due to m2e 2.0 changing the signature of the constructor (parameter from IProject[] to Collection<IProject>)
+	 * we need to call the constructor via reflection to allow this code to work with m2e 1.x and m2e 2.x at the same time
+	 */
+	private static UpdateMavenProjectJob createUpdateMavenProjectJob(IProject project, boolean offline,
+			boolean forceUpdateDeps, boolean updateConfig, boolean cleanProjects, boolean refreshFromLocal) {
+		Object args = new IProject[] {project};
+
+		try {
+			// check for m2e 1.x version (public UpdateMavenProjectJob(IProject[] projects, ...)
+			Constructor<UpdateMavenProjectJob> constructor = UpdateMavenProjectJob.class.getConstructor(
+					IProject[].class, boolean.class, boolean.class, boolean.class, boolean.class, boolean.class);
+			return constructor.newInstance(args, offline, forceUpdateDeps, updateConfig, cleanProjects, refreshFromLocal);
+		} catch (Exception e) {
+		}
+
+		try {
+			// check for m2e 2.x version (public UpdateMavenProjectJob(Collection<IProject> projects, ...)
+			Constructor<UpdateMavenProjectJob> constructor = UpdateMavenProjectJob.class.getConstructor(
+					Collection.class, boolean.class, boolean.class, boolean.class, boolean.class, boolean.class);
+			return constructor.newInstance(Collections.singleton(project), offline, forceUpdateDeps, updateConfig, cleanProjects, refreshFromLocal);
+		} catch (Exception e) {
+		}
+
+		return null;
 	}
 
 	public static IProject createPredefinedMavenProject(final String projectName, final String bundleName)
