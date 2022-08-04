@@ -28,7 +28,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.jobs.Job;
 import org.gradle.tooling.ModelBuilder;
 import org.gradle.tooling.model.GradleModuleVersion;
 import org.gradle.tooling.model.eclipse.EclipseExternalDependency;
@@ -171,13 +170,12 @@ public class GradleSpringBootProject extends SpringBootProject {
 	}
 
 	@Override
-	public Job updateProjectConfiguration() {
-		return GradleCore.getWorkspace().getBuild(project).map(build -> {
+	public void updateProjectConfiguration() {
+		GradleCore.getWorkspace().getBuild(project).ifPresent(build -> {
 			SynchronizationJob job = new SynchronizationJob(NewProjectHandler.IMPORT_AND_MERGE,
 					Collections.singleton(build));
 			job.schedule();
-			return job;
-		}).orElse(null);
+		});
 	}
 
 	@Override

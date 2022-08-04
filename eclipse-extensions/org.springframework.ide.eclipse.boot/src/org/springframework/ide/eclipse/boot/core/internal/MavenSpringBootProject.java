@@ -34,7 +34,10 @@ import static org.eclipse.m2e.core.ui.internal.editing.PomEdits.getTextValue;
 import static org.eclipse.m2e.core.ui.internal.editing.PomEdits.performOnDOMDocument;
 
 import java.io.File;
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -319,27 +322,32 @@ public class MavenSpringBootProject extends SpringBootProject {
 	}
 
 	@Override
-	public Job updateProjectConfiguration() {
+	public void updateProjectConfiguration() {
 		//We wrap the UpdateMavenProjectJob in another job to avoid a race condition
 		//that causes a deadlock. The race condition is avoided by have the
 		//waitForWorkspaceLock wrapper which ensures that pending workspace jobs
 		//are finished before triggering maven project update.
 		//See: https://github.com/spring-projects/sts4/issues/780
-		Job waitForWorkspaceLock = new Job("Wait for for workspace") {
+		Job waitForWorkspaceLock = new Job("Wait for workspace") {
 			{
 				setRule(ResourcesPlugin.getWorkspace().getRuleFactory().buildRule());
 			}
 
 			@Override
 			protected IStatus run(IProgressMonitor arg0) {
-				Job job = new UpdateMavenProjectJob(new IProject[] {
-						getProject()
-				});
-				job.schedule();
-				return Status.OK_STATUS;
+				Job job = createUpdateMavenProjectJob(getProject());
+				if (job != null) {
+					job.schedule();
+					return Status.OK_STATUS;
+				}
+				else {
+					return Status.error("internal error creating update job for maven project");
+				}
 			}
+
 		};
-		return waitForWorkspaceLock;
+
+		waitForWorkspaceLock.schedule();
  	}
 
 	@Override
@@ -362,6 +370,32 @@ public class MavenSpringBootProject extends SpringBootProject {
 			}
 		}
 		return SpringBootCore.getDefaultBootVersion();
+	}
+
+	/**
+	 * Helper method to create the job to update maven projects.
+	 *
+	 * Due to m2e 2.0 changing the signature of the constructor (parameter from IProject[] to Collection<IProject>)
+	 * we need to call the constructor via reflection to allow this code to work with m2e 1.x and m2e 2.x at the same time
+	 */
+	private UpdateMavenProjectJob createUpdateMavenProjectJob(IProject project) {
+		Object args = new IProject[] {project};
+
+		try {
+			// check for m2e 1.x version (public UpdateMavenProjectJob(IProject[] projects)
+			Constructor<UpdateMavenProjectJob> constructor = UpdateMavenProjectJob.class.getConstructor(IProject[].class);
+			return constructor.newInstance(args);
+		} catch (Exception e) {
+		}
+
+		try {
+			// check for m2e 2.x version (public UpdateMavenProjectJob(Collection<IProject> projects)
+			Constructor<UpdateMavenProjectJob> constructor = UpdateMavenProjectJob.class.getConstructor(Collection.class);
+			return constructor.newInstance(Collections.singleton(project));
+		} catch (Exception e) {
+		}
+
+		return null;
 	}
 
 	private void createRepoIfNeeded(Document pom, Repo repo) {

@@ -95,9 +95,8 @@ public interface ISpringBootProject {
 	 * Equivalent of triggering a 'update project' operation on a Maven project. I.e. re-apply whatever configuration
 	 * gets done based on pom.xml or its equivalent. Client calling this should beware that this operation may be
 	 * asynchronous.
-	 * @return Job if the operation is asynchronous or null otherwise.
 	 */
-	Job updateProjectConfiguration();
+	public void updateProjectConfiguration();
 
 	/**
 	 * Remove a dependency with given group-id and artifact-id from project's pom or build script.
