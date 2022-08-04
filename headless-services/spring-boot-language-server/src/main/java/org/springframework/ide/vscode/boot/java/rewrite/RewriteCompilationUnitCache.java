@@ -48,6 +48,7 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.util.concurrent.UncheckedExecutionException;
 
 import reactor.core.Disposable;
 
@@ -180,10 +181,14 @@ public class RewriteCompilationUnitCache implements DocumentContentProvider, Dis
 				uriToCu.invalidate(uri);
 				Optional<IJavaProject> project = projectFinder.find(new TextDocumentIdentifier(uriStr));
 				if (project.isPresent()) {
-					JavaParser parser = javaParsers.getIfPresent(project.get());
-					if (parser != null) {
-						parser.reset();
-					}
+					
+					//TODO There seems to be an issue with java parser #reset() call. After resetting it
+					// still complains that it needs to be reset
+//					JavaParser parser = javaParsers.getIfPresent(project.get());
+//					if (parser != null) {
+//						parser.reset();
+//					}
+					javaParsers.invalidate(project.get());
 				}
 			}
 		}
@@ -217,33 +222,50 @@ public class RewriteCompilationUnitCache implements DocumentContentProvider, Dis
 		try {
 			if (project != null) {
 				synchronized (URI_TO_CU_LOCK) {
-					return uriToCu.get(uri, () -> {
-						logger.debug("Parsing CU {}", uri);
-						JavaParser javaParser = /*loadJavaParser(project)*/createJavaParser(project);
-						Input input = new Input(Paths.get(uri), () -> {
+					try {
+						return uriToCu.get(uri, () -> {
+							boolean newParser = javaParsers.getIfPresent(project) == null;
 							try {
-								return new ByteArrayInputStream(fetchContent(uri).getBytes());
+								logger.debug("Parsing CU {}", uri);
+								JavaParser javaParser = loadJavaParser(project);
+								Input input = new Input(Paths.get(uri), () -> {
+									try {
+										return new ByteArrayInputStream(fetchContent(uri).getBytes());
+									} catch (Exception e) {
+										throw new IllegalStateException("Unexpected error fetching document content");
+									}
+								});
+								
+								List<CompilationUnit> cus = ORAstUtils.parseInputs(javaParser, List.of(input));
+														
+								CompilationUnit cu = cus.get(0);
+									
+								if (cu != null) {						
+									projectToDocs.get(project, () -> new HashSet<>()).add(uri);
+									return cu;
+								} else {
+									throw new IllegalStateException("Failed to parse Java source");
+								}
 							} catch (Exception e) {
-								throw new IllegalStateException("Unexpected error fetching document content");
+								if (newParser) {
+									javaParsers.invalidate(project);
+								}
+								throw e;
 							}
-						});
-						
-						CompilationUnit cu = null;
-						try {
-							List<CompilationUnit> cus = ORAstUtils.parseInputs(javaParser, List.of(input));
-												
-							cu = cus.get(0);
 							
-				
-							if (cu != null) {						
-								projectToDocs.get(project, () -> new HashSet<>()).add(uri);
-							}
-						} catch (Exception e) {
-							// ignore rewrite parse errors
+						});
+					} catch (UncheckedExecutionException e1) {
+						if (e1.getCause() instanceof IllegalStateException) {
+							logger.error("", e1);
+						} else {
+							// ignore errors from rewrite parser. There could be many parser exceptions due to
+							// user incrementally typing code's text
 						}
-
-						return cu;
-					});
+						return null;
+					} catch (Exception e) {
+						logger.error("", e);
+						return null;
+					}
 				}
 			}
 		} catch (Exception e) {

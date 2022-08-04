@@ -30,6 +30,7 @@ import org.openrewrite.TreeVisitor;
 import org.openrewrite.internal.RecipeIntrospectionUtils;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaParser;
+import org.openrewrite.java.JavaParsingException;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.UpdateSourcePositions;
 import org.openrewrite.java.tree.J;
@@ -219,7 +220,7 @@ public class ORAstUtils {
 //	}
 	
 	public static List<CompilationUnit> parse(JavaParser parser, Iterable<Path> sourceFiles) {
-		InMemoryExecutionContext ctx = new InMemoryExecutionContext(e -> log.error("", e));
+		InMemoryExecutionContext ctx = new InMemoryExecutionContext(ORAstUtils::logExceptionWhileParsing);
 //		ctx.putMessage(JavaParser.SKIP_SOURCE_SET_TYPE_GENERATION, true);
 		List<CompilationUnit> cus = parser.parse(sourceFiles, null, ctx);
 		List<Result> results = new UpdateSourcePositions()/*.doNext(new MarkParentRecipe())*/.run(cus);
@@ -227,11 +228,18 @@ public class ORAstUtils {
 	}
 	
 	public static List<CompilationUnit> parseInputs(JavaParser parser, Iterable<Parser.Input> inputs) {
-		InMemoryExecutionContext ctx = new InMemoryExecutionContext(e -> log.error("", e));
+		InMemoryExecutionContext ctx = new InMemoryExecutionContext(ORAstUtils::logExceptionWhileParsing);
 //		ctx.putMessage(JavaParser.SKIP_SOURCE_SET_TYPE_GENERATION, true);
 		List<CompilationUnit> cus = parser.parseInputs(inputs, null, ctx);
 		List<Result> results = new UpdateSourcePositions()/*.doNext(new MarkParentRecipe())*/.run(cus);
 		return results.stream().map(r -> r.getAfter() == null ? r.getBefore() : r.getAfter()).map(CompilationUnit.class::cast).collect(Collectors.toList());
+	}
+	
+	private static void logExceptionWhileParsing(Throwable t) {
+		if (!(t instanceof JavaParsingException || t instanceof StringIndexOutOfBoundsException)) {
+			// Do not log parse exceptions. Can be too many while user is typing code
+			log.error("", t);
+		}
 	}
 
     public static J.EnumValueSet getEnumValues(J.ClassDeclaration classDecl) {
