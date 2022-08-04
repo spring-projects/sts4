@@ -1,14 +1,16 @@
 /*******************************************************************************
- * Copyright (c) 2022 VMware, Inc.
+ * Copyright (c) 2017 Red Hat Inc. and others.
  * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
+ * are made available under the terms of the Eclipse Public License 2.0
  * which accompanies this distribution, and is available at
- * https://www.eclipse.org/legal/epl-v10.html
+ * https://www.eclipse.org/legal/epl-2.0/
+ *
+ * SPDX-License-Identifier: EPL-2.0
  *
  * Contributors:
- *     VMware, Inc. - initial API and implementation
+ *     Red Hat Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.commons.languageserver.util;
+ package org.springframework.ide.vscode.commons.languageserver.util;
 
 import java.io.IOException;
 import java.util.concurrent.Executors;
@@ -26,6 +28,7 @@ import com.google.common.io.Closeables;
 /**
  * Watches the parent process PID and invokes exit if it is no longer available.
  * This implementation waits for periods of inactivity to start querying the PIDs.
+
  * Copied from JDT LS:
  * https://github.com/eclipse/eclipse.jdt.ls/blob/64b15c5a9e5b11f62ceb5163ceb6930d5dea7129/org.eclipse.jdt.ls.core/src/org/eclipse/jdt/ls/core/internal/ParentProcessWatcher.java
  */
