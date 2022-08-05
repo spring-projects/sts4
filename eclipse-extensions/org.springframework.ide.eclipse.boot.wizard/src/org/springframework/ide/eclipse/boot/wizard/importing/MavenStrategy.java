@@ -69,6 +69,7 @@ public class MavenStrategy extends ImportStrategy {
 			this.codeset = conf.getCodeSet();
 		}
 
+		@Override
 		public void run(IProgressMonitor mon) throws InvocationTargetException, InterruptedException {
 			mon.beginTask("Create maven project "+projectName, 5);
 			Job.getJobManager().beginRule(getRule(), new SubProgressMonitor(mon, 1));
@@ -104,7 +105,7 @@ public class MavenStrategy extends ImportStrategy {
 	public IRunnableWithProgress createOperation(ImportConfiguration conf) {
 		return new MavenCodeSetImport(conf);
 	}
-	
+
 	protected static void createEclipseProjectFromExistingMavenProject(File pomFile, IProgressMonitor monitor) throws CoreException {
 		Model model = MavenPlugin.getMavenModelManager().readMavenModel(pomFile);
 		String derivedProjectName = model.getName();
@@ -127,13 +128,13 @@ public class MavenStrategy extends ImportStrategy {
 		projectInfos.add(projectInfo);
 		ResolverConfiguration resolverConfiguration = new ResolverConfiguration();
 		String activeProfiles = "pom.xml";
-		resolverConfiguration.setActiveProfiles(activeProfiles);
+		resolverConfiguration.setSelectedProfiles(activeProfiles);
 		ProjectImportConfiguration configuration = new ProjectImportConfiguration(resolverConfiguration);
 
 		List<IMavenProjectImportResult> importResults = MavenPlugin.getProjectConfigurationManager().importProjects(projectInfos, configuration,
 				monitor);
 		for (IMavenProjectImportResult importResult : importResults) {
-			// skip projects which have not been properly imported 
+			// skip projects which have not been properly imported
 			if (importResult.getProject() != null)
 				MavenPlugin.getProjectConfigurationManager().updateProjectConfiguration(importResult.getProject(), monitor);
 		}
