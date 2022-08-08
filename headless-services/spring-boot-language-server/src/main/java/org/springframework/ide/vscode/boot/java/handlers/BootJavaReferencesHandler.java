@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2021 Pivotal, Inc.
+ * Copyright (c) 2017, 2022 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -83,9 +83,9 @@ public class BootJavaReferencesHandler implements ReferencesHandler {
 	}
 
 	private List<? extends Location> provideReferences(CancelChecker cancelToken, TextDocument document, int offset) throws Exception {
-		ASTParser parser = ASTParser.newParser(AST.JLS16);
+		ASTParser parser = ASTParser.newParser(AST.JLS18);
 		Map<String, String> options = JavaCore.getOptions();
-		JavaCore.setComplianceOptions(JavaCore.VERSION_16, options);
+		JavaCore.setComplianceOptions(JavaCore.VERSION_18, options);
 		parser.setCompilerOptions(options);
 		parser.setKind(ASTParser.K_COMPILATION_UNIT);
 		parser.setStatementsRecovery(true);
