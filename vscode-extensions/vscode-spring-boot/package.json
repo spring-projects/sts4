@@ -552,6 +552,11 @@
             "HINT",
             "ERROR"
           ]
+        },
+        "boot-java.rewrite.reconcile": {
+          "type": "boolean",
+          "default": false,
+          "description": "Experimental reconciling for Java source based on Rewrite project"
         }
       }
     },

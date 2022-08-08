@@ -93,14 +93,11 @@ public class RewriteCompilationUnitCache implements DocumentContentProvider, Dis
 							Optional<IJavaProject> project = projectFinder.find(new TextDocumentIdentifier(uri.toString()));
 							if (project.isPresent()) {
 
-								// TODO There seems to be an issue with java parser #reset() call. After
-								// resetting it
-								// still complains that it needs to be reset
-//											JavaParser parser = javaParsers.getIfPresent(project.get());
-//											if (parser != null) {
-//												parser.reset();
-//											}
-								javaParsers.invalidate(project.get());
+								JavaParser parser = javaParsers.getIfPresent(project.get());
+								if (parser != null) {
+									parser.reset();
+								}
+//								javaParsers.invalidate(project.get());
 							}
 						}
 					}
