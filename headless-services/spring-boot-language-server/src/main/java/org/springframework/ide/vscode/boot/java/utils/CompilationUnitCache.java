@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2021 Pivotal, Inc.
+ * Copyright (c) 2017, 2022 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -217,7 +217,7 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 	
 	private static CompilationUnit parse2(char[] source, String docURI, String unitName, List<Classpath> classpaths, INameEnvironmentWithProgress environment) throws Exception {
 		Map<String, String> options = JavaCore.getOptions();
-		String apiLevel = JavaCore.VERSION_16;
+		String apiLevel = JavaCore.VERSION_18;
 		JavaCore.setComplianceOptions(apiLevel, options);
 		if (environment == null) {
 			environment = CUResolver.createLookupEnvironment(classpaths.toArray(new Classpath[classpaths.size()]));
@@ -238,13 +238,13 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 			needToResolveBindings = false;
 		}
 		
-		CompilationUnit cu = CUResolver.convert(unit, source, AST.JLS16, options, needToResolveBindings, DefaultWorkingCopyOwner.PRIMARY, flags);
+		CompilationUnit cu = CUResolver.convert(unit, source, AST.JLS18, options, needToResolveBindings, DefaultWorkingCopyOwner.PRIMARY, flags);
 
 		return cu;
 	}
 	
 	private static List<Classpath> createClasspath(String[] classpathEntries) {
-		ASTParser parser = ASTParser.newParser(AST.JLS16);
+		ASTParser parser = ASTParser.newParser(AST.JLS18);
 		String[] sourceEntries = new String[] {};
 		parser.setEnvironment(classpathEntries, sourceEntries, null, false);
 		return CUResolver.getClasspath(parser);
