@@ -34,8 +34,8 @@ public class RewriteConfig implements InitializingBean {
 	private RewriteRefactorings rewriteRefactorings;
 	
 	@Bean
-	RewriteCodeActionHandler rewriteCodeActionHandler(RewriteCompilationUnitCache cuCache, RewriteRecipeRepository recipeRepo) {
-		return new RewriteCodeActionHandler(cuCache, recipeRepo);
+	RewriteCodeActionHandler rewriteCodeActionHandler(RewriteCompilationUnitCache cuCache, RewriteRecipeRepository recipeRepo, BootJavaConfig config) {
+		return new RewriteCodeActionHandler(cuCache, recipeRepo, config);
 	}
 	
 	@Override

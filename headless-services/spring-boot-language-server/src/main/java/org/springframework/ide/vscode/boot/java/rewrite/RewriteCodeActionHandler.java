@@ -35,6 +35,7 @@ import org.openrewrite.java.tree.J.CompilationUnit;
 import org.openrewrite.marker.Range;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.boot.app.BootJavaConfig;
 import org.springframework.ide.vscode.boot.java.handlers.JavaCodeActionHandler;
 import org.springframework.ide.vscode.boot.java.rewrite.reconcile.RecipeSpringJavaProblemDescriptor;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
@@ -52,9 +53,12 @@ public class RewriteCodeActionHandler implements JavaCodeActionHandler {
 	final private RewriteCompilationUnitCache cuCache;
 	final private RewriteRecipeRepository recipeRepo;
 
-	public RewriteCodeActionHandler(RewriteCompilationUnitCache cuCache, RewriteRecipeRepository recipeRepo) {
+	private BootJavaConfig config;
+
+	public RewriteCodeActionHandler(RewriteCompilationUnitCache cuCache, RewriteRecipeRepository recipeRepo, BootJavaConfig config) {
 		this.cuCache = cuCache;
 		this.recipeRepo = recipeRepo;
+		this.config = config;
 	}
 
 	protected static boolean isResolve(CodeActionCapabilities capabilities, String property) {
@@ -89,6 +93,10 @@ public class RewriteCodeActionHandler implements JavaCodeActionHandler {
 	@Override
 	public List<Either<Command, CodeAction>> handle(IJavaProject project, CancelChecker cancelToken,
 			CodeActionCapabilities capabilities, CodeActionContext context, TextDocument doc, IRegion region) {
+		if (!config.isRewriteReconcileEnabled()) {
+			return Collections.emptyList();
+		}
+		
 		try {
 			
 			// Wait for recipe repo to load if not loaded - should be loaded by the time we get here.

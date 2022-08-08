@@ -119,6 +119,12 @@ public class BootJavaConfig implements InitializingBean {
 		return enabled != null && enabled.booleanValue();
 	}
 	
+	public boolean isRewriteReconcileEnabled() {
+		Boolean enabled = getRawSettings().getBoolean("boot-java", "rewrite", "reconcile");
+		return enabled == null ? false : enabled.booleanValue();
+	}
+
+	
 	public boolean isXmlContentAssistEnabled() {
 		Boolean enabled = settings.getBoolean("boot-java", "support-spring-xml-config", "content-assist");
 		return enabled != null && enabled.booleanValue();

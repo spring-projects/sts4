@@ -191,7 +191,8 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		RewriteReconciler rewriteJavaReconciler = new RewriteReconciler(
 				appContext.getBean(RewriteRecipeRepository.class),
 				orCompilationUnitCache,
-				server.getQuickfixRegistry()
+				server.getQuickfixRegistry(),
+				config
 		);
 		
 		reconcileEngine = new BootJavaReconcileEngine(projectFinder, new JavaReconciler[] {

@@ -190,6 +190,7 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 		bootJavaObj.put("change-detection", bootChangeDetection);
 		bootJavaObj.put("validation", validation);
 		bootJavaObj.put("remote-apps", getAllRemoteApps());
+		bootJavaObj.put("rewrite", Map.of("reconcile", preferenceStore.getBoolean(Constants.PREF_REWRITE_RECONCILE)));
 		settings.put("boot-java", bootJavaObj);
 		
 		putValidationPreferences(settings);

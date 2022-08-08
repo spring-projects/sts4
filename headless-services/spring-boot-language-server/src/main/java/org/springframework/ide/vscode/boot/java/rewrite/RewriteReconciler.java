@@ -26,6 +26,7 @@ import org.openrewrite.java.tree.J.CompilationUnit;
 import org.openrewrite.marker.Range;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.boot.app.BootJavaConfig;
 import org.springframework.ide.vscode.boot.java.SpringJavaProblemType;
 import org.springframework.ide.vscode.boot.java.reconcilers.JavaReconciler;
 import org.springframework.ide.vscode.boot.java.rewrite.RewriteRefactorings.Data;
@@ -49,15 +50,22 @@ public class RewriteReconciler implements JavaReconciler {
 	private QuickfixRegistry quickfixRegistry;
 
 	private RewriteRecipeRepository recipeRepo;
+
+	private BootJavaConfig config;
 	
-	public RewriteReconciler(RewriteRecipeRepository recipeRepo, RewriteCompilationUnitCache cuCache, QuickfixRegistry quickfixRegistry) {
+	public RewriteReconciler(RewriteRecipeRepository recipeRepo, RewriteCompilationUnitCache cuCache, QuickfixRegistry quickfixRegistry, BootJavaConfig config) {
 		this.recipeRepo = recipeRepo;
 		this.cuCache = cuCache;
 		this.quickfixRegistry = quickfixRegistry;
+		this.config = config;
 	}
-
+	
 	@Override
 	public void reconcile(IJavaProject project, IDocument doc, IProblemCollector problemCollector) {
+		if (!config.isRewriteReconcileEnabled()) {
+			return;
+		}
+		
 		try {
 			problemCollector.beginCollecting();
 			

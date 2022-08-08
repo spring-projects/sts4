@@ -33,5 +33,7 @@ public class Constants {
 	public static final String PREF_XML_CONFIGS_CONTENT_ASSIST = "boot-java.support-spring-xml-config.content-assist";
 
 	public static final String PREF_CHANGE_DETECTION = "boot-java.change-detection.on";
+	
+	public static final String PREF_REWRITE_RECONCILE = "boot-java.rewrite.reconcile";
 
 }

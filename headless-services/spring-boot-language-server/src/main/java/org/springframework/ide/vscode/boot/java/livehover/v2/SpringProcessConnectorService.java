@@ -151,10 +151,9 @@ public class SpringProcessConnectorService {
 		
 	
 		this.scheduler.schedule(() -> {
+			progressTask.progressEvent(progressMessage);
 			try {
-				progressTask.progressEvent(progressMessage);
 				connector.connect();
-				progressTask.progressDone();
 				
 				refreshProcess(processKey);
 			}
@@ -172,6 +171,8 @@ public class SpringProcessConnectorService {
 									.error("Failed to connect to process " + processKey + " after retries: " + retryNo, e));	
 					}
 				}
+			} finally {
+				progressTask.progressDone();
 			}
 		}, delay, unit);
 	}
@@ -182,10 +183,9 @@ public class SpringProcessConnectorService {
 	
 		
 		this.scheduler.schedule(() -> {
+			progressTask.progressEvent(message);
 			try {
-				progressTask.progressEvent(message);
 				connector.disconnect();
-				progressTask.progressDone();
 			}
 			catch (Exception e) {
 				log.info("problem occured during process disconnect", e);
@@ -200,6 +200,8 @@ public class SpringProcessConnectorService {
 							.error("Failed to disconnect from process " + processKey + " after retries: " + retryNo, e));
 				
 				}
+			} finally {
+				progressTask.progressDone();
 			}
 		}, delay, unit);
 	}
@@ -209,10 +211,9 @@ public class SpringProcessConnectorService {
 		log.info(progressMessage);
 		
 		
-		this.scheduler.schedule(() -> {
-			
+		this.scheduler.schedule(() -> {			
+			progressTask.progressEvent(progressMessage);
 			try {
-				progressTask.progressEvent(progressMessage);
 				SpringProcessLiveData newLiveData = connector.refresh(this.liveDataProvider.getCurrent(processKey));
 
 				if (newLiveData != null) {
@@ -222,7 +223,6 @@ public class SpringProcessConnectorService {
 					
 					this.connectedSuccess.put(processKey, true);
 				}
-				progressTask.progressDone();
 			}
 			catch (Exception e) {
 
@@ -243,6 +243,8 @@ public class SpringProcessConnectorService {
 						disconnectProcess(processKey);
 					}
 				}
+			} finally {
+				progressTask.progressDone();
 			}
 		}, delay, unit);
 	}

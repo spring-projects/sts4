@@ -42,6 +42,8 @@ public class PrefsInitializer extends AbstractPreferenceInitializer {
 		preferenceStore.setDefault(Constants.PREF_VALIDATION_SPEL_EXPRESSIONS, true);
 
 		preferenceStore.setDefault(Constants.PREF_SCAN_JAVA_TEST_SOURCES, false);
+		
+		preferenceStore.setDefault(Constants.PREF_REWRITE_RECONCILE, false);
 	}
 
 }
