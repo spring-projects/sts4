@@ -18,7 +18,6 @@ public final class Version {
 	private String qualifier;
 	
 	public Version(int major, int minor, int patch, String qualifier) {
-		super();
 		this.major = major;
 		this.minor = minor;
 		this.patch = patch;
@@ -40,5 +39,20 @@ public final class Version {
 	public String getQualifier() {
 		return qualifier;
 	}
+
+	@Override
+	public String toString() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(major);
+		sb.append('.');
+		sb.append(minor);
+		sb.append('.');
+		sb.append(patch);
+		if (qualifier != null) {
+			sb.append('.');
+			sb.append(qualifier);
+		}
+		return sb.toString();
+	}	
 
 }

@@ -24,7 +24,7 @@ public class SpringProjectUtil {
 
 	public static final String SPRING_BOOT = "spring-boot";
 
-	private static final String VERION_PATTERN_STR = "(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?";
+	private static final String VERION_PATTERN_STR = "(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)((\\.|-).+)?";
 
 	public static final Logger log = LoggerFactory.getLogger(SpringProjectUtil.class);
 		
@@ -131,7 +131,10 @@ public class SpringProjectUtil {
 						String major = matcher.group(1);
 						String minor = matcher.group(2);
 						String patch = matcher.group(3);
-						String qualifier = matcher.group(4);
+						String qualifier = null;
+						if (matcher.group(4) != null && matcher.group(4).length() > 1) {
+							qualifier = matcher.group(4).substring(1);
+						}
 						return new Version(
 								Integer.parseInt(major),
 								Integer.parseInt(minor),
