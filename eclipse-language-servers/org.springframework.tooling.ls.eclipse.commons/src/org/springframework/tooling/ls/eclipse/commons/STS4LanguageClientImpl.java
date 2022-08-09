@@ -27,7 +27,6 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.ILocalVariable;
@@ -35,7 +34,6 @@ import org.eclipse.jdt.internal.ui.javaeditor.JavaSourceViewer;
 import org.eclipse.jdt.internal.ui.viewsupport.JavaElementLinks;
 import org.eclipse.jdt.ui.JavaElementLabelProvider;
 import org.eclipse.jdt.ui.JavaElementLabels;
-import org.eclipse.jface.action.IStatusLineManager;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.text.BadLocationException;
 import org.eclipse.jface.text.IDocument;
@@ -55,11 +53,7 @@ import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.MarkupContent;
 import org.eclipse.lsp4j.MarkupKind;
 import org.eclipse.lsp4j.Range;
-import org.eclipse.lsp4j.WorkDoneProgressBegin;
-import org.eclipse.lsp4j.WorkDoneProgressNotification;
-import org.eclipse.lsp4j.WorkDoneProgressReport;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
-import org.eclipse.lsp4j.jsonrpc.services.JsonNotification;
 import org.eclipse.swt.custom.StyledText;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IEditorPart;
@@ -362,56 +356,56 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 
 
 
-	@Override
-	public void notifyProgress(org.eclipse.lsp4j.ProgressParams params) {
-		if (params.getValue().isLeft()) {
-			WorkDoneProgressNotification progressNotification = params.getValue().getLeft();
-			switch (progressNotification.getKind()) {
-			case begin:
-				WorkDoneProgressBegin begin = (WorkDoneProgressBegin) progressNotification;
-				showStatusMessage(begin.getMessage());
-				break;
-			case report:
-				WorkDoneProgressReport report = (WorkDoneProgressReport) progressNotification;
-				showStatusMessage(report.getMessage());
-				break;
-			case end:
-				showStatusMessage("");
-				break;
-			default:
-				break;
-			}
-		}
-	}
-
-	private void showStatusMessage(final String status) {
-		PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
-			@Override
-			public void run() {
-				IStatusLineManager statusLineManager = getStatusLineManager();
-				if (statusLineManager != null) {
-					// PT 169821181 - Show progress in progress status line
-					IProgressMonitor progressMonitor = statusLineManager.getProgressMonitor();
-
-					if (progressMonitor != null) {
-						SubMonitor sub = SubMonitor.convert(progressMonitor);
-						// language server will send empty status when progress sequence terminates so
-						// this takes care of clearing the status line from the previous displayed message
-						sub.subTask(status);
-					}
-				}
-			}
-		});
-	}
-
-	private IStatusLineManager getStatusLineManager() {
-		try {
-			return PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor().getEditorSite().getActionBars().getStatusLineManager();
-		}
-		catch (NullPointerException e) {
-			return null;
-		}
-	}
+//	@Override
+//	public void notifyProgress(org.eclipse.lsp4j.ProgressParams params) {
+//		if (params.getValue().isLeft()) {
+//			WorkDoneProgressNotification progressNotification = params.getValue().getLeft();
+//			switch (progressNotification.getKind()) {
+//			case begin:
+//				WorkDoneProgressBegin begin = (WorkDoneProgressBegin) progressNotification;
+//				showStatusMessage(begin.getMessage());
+//				break;
+//			case report:
+//				WorkDoneProgressReport report = (WorkDoneProgressReport) progressNotification;
+//				showStatusMessage(report.getMessage());
+//				break;
+//			case end:
+//				showStatusMessage("");
+//				break;
+//			default:
+//				break;
+//			}
+//		}
+//	}
+//
+//	private void showStatusMessage(final String status) {
+//		PlatformUI.getWorkbench().getDisplay().asyncExec(new Runnable() {
+//			@Override
+//			public void run() {
+//				IStatusLineManager statusLineManager = getStatusLineManager();
+//				if (statusLineManager != null) {
+//					// PT 169821181 - Show progress in progress status line
+//					IProgressMonitor progressMonitor = statusLineManager.getProgressMonitor();
+//
+//					if (progressMonitor != null) {
+//						SubMonitor sub = SubMonitor.convert(progressMonitor);
+//						// language server will send empty status when progress sequence terminates so
+//						// this takes care of clearing the status line from the previous displayed message
+//						sub.subTask(status);
+//					}
+//				}
+//			}
+//		});
+//	}
+//
+//	private IStatusLineManager getStatusLineManager() {
+//		try {
+//			return PlatformUI.getWorkbench().getActiveWorkbenchWindow().getActivePage().getActiveEditor().getEditorSite().getActionBars().getStatusLineManager();
+//		}
+//		catch (NullPointerException e) {
+//			return null;
+//		}
+//	}
 
 
 
