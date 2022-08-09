@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2020 Pivotal, Inc.
+ * Copyright (c) 2020, 2022 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -16,7 +16,6 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
-import java.sql.Date;
 import java.util.List;
 
 import org.eclipse.lsp4j.MessageType;
@@ -88,7 +87,7 @@ public class ProjectGenerationsValidationTest {
 	@Test
 	public void testVersionParsing() throws Exception {
 		String version = SpringProjectUtil.getVersion("spring-boot-starter-batch-2.3.0.RELEASE");
-		assertEquals("2.3.0", version);
+		assertEquals("2.3.0.RELEASE", version);
 		
 		version = SpringProjectUtil.getVersion("spring-batch-core-2.4.0-M4");
 		assertEquals("2.4.0-M4", version);
@@ -97,7 +96,7 @@ public class ProjectGenerationsValidationTest {
 		assertEquals("4.4.0-RC2", version);
 		
 		version = SpringProjectUtil.getVersion("spring-integration-70.811.0.RELEASE");
-		assertEquals("70.811.0", version);
+		assertEquals("70.811.0.RELEASE", version);
 
 		version = SpringProjectUtil.getVersion("another-java-");
 		assertNull(version);
@@ -204,7 +203,7 @@ public class ProjectGenerationsValidationTest {
 		assertNotNull(versionValidation != null);
 		assertEquals(versionValidation.getMessageType(), MessageType.Warning);
 		// Check that the message mentions the boot version of the project and the OSS support end date
-		assertEquals("Using spring-boot version: 1.3.2 - OSS has ended on: 2020-01-01 - Commercial support has ended on: 2021-01-01", versionValidation.getMessage());
+		assertEquals("Using spring-boot version: 1.3.2.RELEASE - OSS has ended on: 2020-01-01 - Commercial support has ended on: 2021-01-01", versionValidation.getMessage());
 	}
 
 	/*

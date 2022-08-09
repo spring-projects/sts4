@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2021 Pivotal, Inc.
+ * Copyright (c) 2021, 2022 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.boot.validation.generations;
 
 import java.io.File;
 
+import org.apache.commons.io.FilenameUtils;
 import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
 
 /**
@@ -32,7 +33,7 @@ public class SpringVersionInfo {
 	 * @param file spring for dependency, e.g. spring-boot-2.4.0-M4.jar
 	 */
 	public SpringVersionInfo(File file) {
-		String fileName = file.getName();
+		String fileName = FilenameUtils.getBaseName(file.getName());
 		this.slug = SpringProjectUtil.getProjectSlug(fileName);
 		this.majMin = SpringProjectUtil.getMajMinVersion(fileName);
 		this.fullVersion = SpringProjectUtil.getVersion(fileName);

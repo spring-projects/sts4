@@ -24,14 +24,14 @@ public class SpringProjectUtil {
 
 	public static final String SPRING_BOOT = "spring-boot";
 
-	private static final String VERION_PATTERN_STR = "(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)((\\.|-).+)?";
+	private static final String VERSION_PATTERN_STR = "(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:(-|\\.)((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?";
 
 	public static final Logger log = LoggerFactory.getLogger(SpringProjectUtil.class);
 		
 	private static final Pattern MAJOR_MINOR_VERSION = Pattern.compile("(0|[1-9]\\d*)\\.(0|[1-9]\\d*)");
 
 	// Pattern copied from https://semver.org/
-	private static final Pattern VERSION = Pattern.compile(VERION_PATTERN_STR);
+	private static final Pattern VERSION = Pattern.compile(VERSION_PATTERN_STR);
 
 	private static final Pattern SPRING_NAME = Pattern.compile("([a-z]+)(-[a-z]+)*");
 	
@@ -122,7 +122,7 @@ public class SpringProjectUtil {
 					sb.append('^');
 					sb.append(dependency);
 					sb.append('-');
-					sb.append(VERION_PATTERN_STR);
+					sb.append(VERSION_PATTERN_STR);
 					sb.append(".jar$");
 					Pattern pattern = Pattern.compile(sb.toString());
 
@@ -132,9 +132,9 @@ public class SpringProjectUtil {
 						String minor = matcher.group(2);
 						String patch = matcher.group(3);
 						String qualifier = null;
-						if (matcher.group(4) != null && matcher.group(4).length() > 1) {
-							qualifier = matcher.group(4).substring(1);
-						}
+//						if (matcher.group(4) != null && matcher.group(4).length() > 1) {
+							qualifier = matcher.group(4);
+//						}
 						return new Version(
 								Integer.parseInt(major),
 								Integer.parseInt(minor),
