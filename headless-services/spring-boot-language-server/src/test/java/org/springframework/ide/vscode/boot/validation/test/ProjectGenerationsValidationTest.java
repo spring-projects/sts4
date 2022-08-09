@@ -38,6 +38,7 @@ import org.springframework.ide.vscode.boot.validation.generations.json.Link;
 import org.springframework.ide.vscode.boot.validation.generations.json.SpringProject;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
+import org.springframework.ide.vscode.commons.java.Version;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -92,6 +93,9 @@ public class ProjectGenerationsValidationTest {
 		version = SpringProjectUtil.getVersion("spring-batch-core-2.4.0-M4");
 		assertEquals("2.4.0-M4", version);
 
+		version = SpringProjectUtil.getVersion("spring-batch-core-2.4.0");
+		assertEquals("2.4.0", version);
+		
 		version = SpringProjectUtil.getVersion("spring-boot-4.4.0-RC2");
 		assertEquals("4.4.0-RC2", version);
 		
@@ -106,6 +110,7 @@ public class ProjectGenerationsValidationTest {
 
 		version = SpringProjectUtil.getVersion("springcore.f.b");
 		assertNull(version);
+		
 	}
 	
 	@Test
@@ -204,6 +209,36 @@ public class ProjectGenerationsValidationTest {
 		assertEquals(versionValidation.getMessageType(), MessageType.Warning);
 		// Check that the message mentions the boot version of the project and the OSS support end date
 		assertEquals("Using spring-boot version: 1.3.2.RELEASE - OSS has ended on: 2020-01-01 - Commercial support has ended on: 2021-01-01", versionValidation.getMessage());
+	}
+	
+	@Test
+	public void testDependencyVersionCalculation() throws Exception {
+		Version version = SpringProjectUtil.getDependencyVersion("spring-boot-1.2.3.jar", "spring-boot");
+		assertEquals(1, version.getMajor(), 1);
+		assertEquals(2, version.getMinor(), 2);
+		assertEquals(3, version.getPatch());
+		assertNull(version.getQualifier());
+
+		version = SpringProjectUtil.getDependencyVersion("spring-boot-1.2.3-RELEASE.jar", "spring-boot");
+		assertEquals(version.getMajor(), 1);
+		assertEquals(version.getMinor(), 2);
+		assertEquals(version.getPatch(), 3);
+		assertEquals(version.getQualifier(), "RELEASE");
+
+		version = SpringProjectUtil.getDependencyVersion("spring-boot-1.2.3.RELEASE.jar", "spring-boot");
+		assertEquals(1, version.getMajor(), 1);
+		assertEquals(2, version.getMinor(), 2);
+		assertEquals(3, version.getPatch());
+		assertEquals("RELEASE", version.getQualifier());
+
+		version = SpringProjectUtil.getDependencyVersion("spring-boot-1.2.3.BUILD-SNAPSHOT.jar", "spring-boot");
+		assertEquals(1, version.getMajor(), 1);
+		assertEquals(2, version.getMinor(), 2);
+		assertEquals(3, version.getPatch());
+		assertEquals("BUILD-SNAPSHOT", version.getQualifier());
+
+		version = SpringProjectUtil.getDependencyVersion("spring-boot-actuator-1.2.3.BUILD-SNAPSHOT.jar", "spring-boot");
+		assertNull(version);
 	}
 
 	/*

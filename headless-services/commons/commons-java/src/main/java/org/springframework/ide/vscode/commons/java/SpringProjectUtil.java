@@ -116,36 +116,40 @@ public class SpringProjectUtil {
 	public static Version getDependencyVersion(IJavaProject jp, String dependency) {		
 		try {
 			for (File f : IClasspathUtil.getBinaryRoots(jp.getClasspath(), (cpe) -> !cpe.isSystem())) {
-				String fileName = f.getName();
-				if (fileName.startsWith(dependency)) {
-					StringBuilder sb = new StringBuilder();
-					sb.append('^');
-					sb.append(dependency);
-					sb.append('-');
-					sb.append(VERSION_PATTERN_STR);
-					sb.append(".jar$");
-					Pattern pattern = Pattern.compile(sb.toString());
-
-					Matcher matcher = pattern.matcher(fileName);
-					if (matcher.find() && matcher.groupCount() == 5) {
-						String major = matcher.group(1);
-						String minor = matcher.group(2);
-						String patch = matcher.group(3);
-						String qualifier = null;
-//						if (matcher.group(4) != null && matcher.group(4).length() > 1) {
-							qualifier = matcher.group(4);
-//						}
-						return new Version(
-								Integer.parseInt(major),
-								Integer.parseInt(minor),
-								Integer.parseInt(patch),
-								qualifier
-						);
-					}
+				Version version = getDependencyVersion(f.getName(), dependency);
+				if (version != null) {
+					return version;
 				}
 			}
 		} catch (Exception e) {
 			log.error("", e);
+		}
+		return null;
+	}
+	
+	public static Version getDependencyVersion(String fileName, String dependency) {
+		if (fileName.startsWith(dependency)) {
+			StringBuilder sb = new StringBuilder();
+			sb.append('^');
+			sb.append(dependency);
+			sb.append('-');
+			sb.append(VERSION_PATTERN_STR);
+			sb.append("\\.jar$");
+			Pattern pattern = Pattern.compile(sb.toString());
+
+			Matcher matcher = pattern.matcher(fileName);
+			if (matcher.find() && matcher.groupCount() >= 5) {
+				String major = matcher.group(1);
+				String minor = matcher.group(2);
+				String patch = matcher.group(3);
+				String qualifier = matcher.group(5);
+				return new Version(
+						Integer.parseInt(major),
+						Integer.parseInt(minor),
+						Integer.parseInt(patch),
+						qualifier
+				);
+			}
 		}
 		return null;
 	}
