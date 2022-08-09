@@ -138,7 +138,7 @@ public class SpringProjectUtil {
 			Pattern pattern = Pattern.compile(sb.toString());
 
 			Matcher matcher = pattern.matcher(fileName);
-			if (matcher.find() && matcher.groupCount() >= 5) {
+			if (matcher.find() && matcher.groupCount() > 5) {
 				String major = matcher.group(1);
 				String minor = matcher.group(2);
 				String patch = matcher.group(3);
