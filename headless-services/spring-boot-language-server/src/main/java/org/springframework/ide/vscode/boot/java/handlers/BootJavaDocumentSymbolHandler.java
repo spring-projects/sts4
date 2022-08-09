@@ -14,7 +14,7 @@ import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.lsp4j.DocumentSymbolParams;
-import org.eclipse.lsp4j.SymbolInformation;
+import org.eclipse.lsp4j.WorkspaceSymbol;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentSymbolHandler;
@@ -35,7 +35,7 @@ public class BootJavaDocumentSymbolHandler implements DocumentSymbolHandler {
 	}
 
 	@Override
-	public List<? extends SymbolInformation> handle(DocumentSymbolParams params) {
+	public List<? extends WorkspaceSymbol> handle(DocumentSymbolParams params) {
 		SimpleTextDocumentService documents = server.getTextDocumentService();
 		TextDocument doc = documents.getLatestSnapshot(params.getTextDocument().getUri());
 

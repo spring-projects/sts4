@@ -16,8 +16,9 @@ import java.util.List;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
-import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.SymbolKind;
+import org.eclipse.lsp4j.WorkspaceSymbol;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.livehover.v2.LiveRequestMapping;
@@ -37,8 +38,8 @@ public class LiveAppURLSymbolProvider {
 		this.liveDataProvider = liveDataProvider;
 	}
 
-	public List<? extends SymbolInformation> getSymbols(String query) {
-		List<SymbolInformation> result = new ArrayList<>();
+	public List<? extends WorkspaceSymbol> getSymbols(String query) {
+		List<WorkspaceSymbol> result = new ArrayList<>();
 
 		try {
 			SpringProcessLiveData[] liveData = liveDataProvider.getLatestLiveData();
@@ -59,7 +60,7 @@ public class LiveAppURLSymbolProvider {
 						}
 						for (String path : paths) {
 							String url = UrlUtil.createUrl(urlScheme, host, port, path, contextPath);
-							result.add(new SymbolInformation(url, SymbolKind.Method, new Location(url, new Range(new Position(0, 0), new Position(0, 1)))));
+							result.add(new WorkspaceSymbol(url, SymbolKind.Method, Either.forLeft(new Location(url, new Range(new Position(0, 0), new Position(0, 1))))));
 						}
 					}
 				}

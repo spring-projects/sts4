@@ -13,7 +13,7 @@ package org.springframework.ide.vscode.commons.languageserver.util;
 import java.util.List;
 
 import org.eclipse.lsp4j.DocumentSymbolParams;
-import org.eclipse.lsp4j.SymbolInformation;
+import org.eclipse.lsp4j.WorkspaceSymbol;
 
 import com.google.common.collect.ImmutableList;
 
@@ -22,6 +22,6 @@ public interface DocumentSymbolHandler {
 
 	DocumentSymbolHandler NO_SYMBOLS = (params) -> ImmutableList.of();
 
-	List<? extends SymbolInformation> handle(DocumentSymbolParams params);
+	List<? extends WorkspaceSymbol> handle(DocumentSymbolParams params);
 
 }

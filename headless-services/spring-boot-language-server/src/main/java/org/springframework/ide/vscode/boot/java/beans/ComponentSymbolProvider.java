@@ -18,15 +18,17 @@ import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.Location;
-import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.SymbolKind;
+import org.eclipse.lsp4j.WorkspaceSymbol;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.handlers.AbstractSymbolProvider;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
 import org.springframework.ide.vscode.boot.java.utils.CachedSymbol;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJavaContext;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
-import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 /**
@@ -34,6 +36,8 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
  * @author Kris De Volder
  */
 public class ComponentSymbolProvider extends AbstractSymbolProvider {
+	
+	private static final Logger log = LoggerFactory.getLogger(ComponentSymbolProvider.class);
 
 	@Override
 	protected void addSymbolsPass1(Annotation node, ITypeBinding annotationType, Collection<ITypeBinding> metaAnnotations, SpringIndexerJavaContext context, TextDocument doc) {
@@ -42,7 +46,7 @@ public class ComponentSymbolProvider extends AbstractSymbolProvider {
 			context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), enhancedSymbol));
 		}
 		catch (Exception e) {
-			Log.log(e);
+			log.error("", e);
 		}
 	}
 
@@ -54,9 +58,9 @@ public class ComponentSymbolProvider extends AbstractSymbolProvider {
 		String beanName = getBeanName(node);
 		String beanType = getBeanType(node);
 
-		SymbolInformation symbol = new SymbolInformation(
+		WorkspaceSymbol symbol = new WorkspaceSymbol(
 				beanLabel("+", annotationTypeName, metaAnnotationNames, beanName, beanType), SymbolKind.Interface,
-				new Location(doc.getUri(), doc.toRange(node.getStartPosition(), node.getLength())));
+				Either.forLeft(new Location(doc.getUri(), doc.toRange(node.getStartPosition(), node.getLength()))));
 
 		SymbolAddOnInformation[] addon = new SymbolAddOnInformation[] {new BeansSymbolAddOnInformation(beanName)};
 

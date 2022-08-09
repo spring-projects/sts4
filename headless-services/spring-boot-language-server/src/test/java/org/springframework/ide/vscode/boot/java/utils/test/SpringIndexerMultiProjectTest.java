@@ -18,8 +18,8 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
-import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
+import org.eclipse.lsp4j.WorkspaceSymbol;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -67,23 +67,23 @@ public class SpringIndexerMultiProjectTest {
 
 	@Test
 	public void testQueryingAllSymbolsWithRegularLimit() throws Exception {
-		List<? extends SymbolInformation> symbols = indexer.getAllSymbols("");
+		List<? extends WorkspaceSymbol> symbols = indexer.getAllSymbols("");
 		assertEquals(50, symbols.size());
 	}
 
 	@Test
 	public void testQueryingAllSymbolsWithNoLimit() throws Exception {
-		List<? extends SymbolInformation> symbols = indexer.getAllSymbols("*");
+		List<? extends WorkspaceSymbol> symbols = indexer.getAllSymbols("*");
 		assertEquals(220, symbols.size());
 
 		int count1 = 0;
 		int count2 = 0;
 
-		for (SymbolInformation symbol : symbols) {
-			if (symbol.getLocation().getUri().startsWith(projectUri1)) {
+		for (WorkspaceSymbol symbol : symbols) {
+			if (symbol.getLocation().getLeft().getUri().startsWith(projectUri1)) {
 				count1++;
 			}
-			else if (symbol.getLocation().getUri().startsWith(projectUri2)) {
+			else if (symbol.getLocation().getLeft().getUri().startsWith(projectUri2)) {
 				count2++;
 			}
 		}
@@ -94,31 +94,31 @@ public class SpringIndexerMultiProjectTest {
 
 	@Test
 	public void testQueryingSymbolsForSpecificProjectWithRegularLimit() throws Exception {
-		List<? extends SymbolInformation> symbols = indexer.getAllSymbols("locationPrefix:" + projectUri2);
+		List<? extends WorkspaceSymbol> symbols = indexer.getAllSymbols("locationPrefix:" + projectUri2);
 		assertEquals(50, symbols.size());
 
-		for (SymbolInformation symbol : symbols) {
-			assertTrue(symbol.getLocation().getUri().startsWith(projectUri2));
+		for (WorkspaceSymbol symbol : symbols) {
+			assertTrue(symbol.getLocation().getLeft().getUri().startsWith(projectUri2));
 		}
 	}
 
 	@Test
 	public void testQueryingSymbolsForSpecificProjectWithNoLimit() throws Exception {
-		List<? extends SymbolInformation> symbols = indexer.getAllSymbols("locationPrefix:" + projectUri2 + "?*");
+		List<? extends WorkspaceSymbol> symbols = indexer.getAllSymbols("locationPrefix:" + projectUri2 + "?*");
 		assertEquals(110, symbols.size());
 
-		for (SymbolInformation symbol : symbols) {
-			assertTrue(symbol.getLocation().getUri().startsWith(projectUri2));
+		for (WorkspaceSymbol symbol : symbols) {
+			assertTrue(symbol.getLocation().getLeft().getUri().startsWith(projectUri2));
 		}
 	}
 
 	@Test
 	public void testQueryingSymbolsForSpecificProjectWithQuery() throws Exception {
-		List<? extends SymbolInformation> symbols = indexer.getAllSymbols("locationPrefix:" + projectUri2 + "?seventhWowSuperBean");
+		List<? extends WorkspaceSymbol> symbols = indexer.getAllSymbols("locationPrefix:" + projectUri2 + "?seventhWowSuperBean");
 		assertEquals(10, symbols.size());
 
-		for (SymbolInformation symbol : symbols) {
-			assertTrue(symbol.getLocation().getUri().startsWith(projectUri2));
+		for (WorkspaceSymbol symbol : symbols) {
+			assertTrue(symbol.getLocation().getLeft().getUri().startsWith(projectUri2));
 		}
 	}
 

@@ -15,12 +15,11 @@ import static org.junit.Assert.assertTrue;
 
 import java.io.File;
 import java.nio.file.Paths;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
-import org.eclipse.lsp4j.SymbolInformation;
+import org.eclipse.lsp4j.WorkspaceSymbol;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -84,15 +83,15 @@ public class SpringIndexerXMLProjectTest {
 
 	@Test
 	public void testScanningSimpleSpringXMLConfig() throws Exception {
-		List<? extends SymbolInformation> allSymbols = indexer.getAllSymbols("");
+		List<? extends WorkspaceSymbol> allSymbols = indexer.getAllSymbols("");
 
 		assertEquals(5, allSymbols.size());
 
 		String docUri = directory.toPath().resolve("config/simple-spring-config.xml").toUri().toString();
-		assertTrue(containsSymbol(allSymbols, "@+ 'transactionManager' DataSourceTransactionManager", docUri, 6, 14, 6, 37));
-		assertTrue(containsSymbol(allSymbols, "@+ 'jdbcTemplate' JdbcTemplate", docUri, 8, 14, 8, 31));
-		assertTrue(containsSymbol(allSymbols, "@+ 'namedParameterJdbcTemplate' NamedParameterJdbcTemplate", docUri, 12, 14, 12, 45));
-		assertTrue(containsSymbol(allSymbols, "@+ 'persistenceExceptionTranslationPostProcessor' PersistenceExceptionTranslationPostProcessor", docUri, 18, 10, 18, 97));
+		assertTrue(SpringIndexerTest.containsSymbol(allSymbols, "@+ 'transactionManager' DataSourceTransactionManager", docUri, 6, 14, 6, 37));
+		assertTrue(SpringIndexerTest.containsSymbol(allSymbols, "@+ 'jdbcTemplate' JdbcTemplate", docUri, 8, 14, 8, 31));
+		assertTrue(SpringIndexerTest.containsSymbol(allSymbols, "@+ 'namedParameterJdbcTemplate' NamedParameterJdbcTemplate", docUri, 12, 14, 12, 45));
+		assertTrue(SpringIndexerTest.containsSymbol(allSymbols, "@+ 'persistenceExceptionTranslationPostProcessor' PersistenceExceptionTranslationPostProcessor", docUri, 18, 10, 18, 97));
 
 		List<? extends SymbolAddOnInformation> addon = indexer.getAdditonalInformation(docUri);
 		assertEquals(4, addon.size());
@@ -119,7 +118,7 @@ public class SpringIndexerXMLProjectTest {
 
 
 		String beansOnClasspathDocUri = directory.toPath().resolve("src/main/resources/beans.xml").toUri().toString();
-		assertTrue(containsSymbol(allSymbols, "@+ 'sb' SimpleBean", beansOnClasspathDocUri, 6, 14, 6, 21));
+		assertTrue(SpringIndexerTest.containsSymbol(allSymbols, "@+ 'sb' SimpleBean", beansOnClasspathDocUri, 6, 14, 6, 21));
 
 		addon = indexer.getAdditonalInformation(beansOnClasspathDocUri);
 		assertEquals(1, addon.size());
@@ -128,7 +127,7 @@ public class SpringIndexerXMLProjectTest {
 	
 	@Test
 	public void testReindexXMLConfig() throws Exception {
-		List<? extends SymbolInformation> allSymbols = indexer.getAllSymbols("");
+		List<? extends WorkspaceSymbol> allSymbols = indexer.getAllSymbols("");
 		assertEquals(5, allSymbols.size());
 		
 		indexer.configureIndexer(SymbolIndexConfig.builder()
@@ -185,23 +184,6 @@ public class SpringIndexerXMLProjectTest {
 				.build());
 		allSymbols = indexer.getAllSymbols("    ");
 		assertEquals(0, allSymbols.size());
-	}
-
-	private boolean containsSymbol(List<? extends SymbolInformation> symbols, String name, String uri, int startLine, int startCHaracter, int endLine, int endCharacter) {
-		for (Iterator<? extends SymbolInformation> iterator = symbols.iterator(); iterator.hasNext();) {
-			SymbolInformation symbol = iterator.next();
-
-			if (symbol.getName().equals(name)
-					&& symbol.getLocation().getUri().equals(uri)
-					&& symbol.getLocation().getRange().getStart().getLine() == startLine
-					&& symbol.getLocation().getRange().getStart().getCharacter() == startCHaracter
-					&& symbol.getLocation().getRange().getEnd().getLine() == endLine
-					&& symbol.getLocation().getRange().getEnd().getCharacter() == endCharacter) {
-				return true;
-			}
- 		}
-
-		return false;
 	}
 
 }

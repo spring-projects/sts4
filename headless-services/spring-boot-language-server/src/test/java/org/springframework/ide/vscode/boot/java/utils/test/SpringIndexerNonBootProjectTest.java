@@ -14,13 +14,12 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import java.io.File;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
-import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
+import org.eclipse.lsp4j.WorkspaceSymbol;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -65,33 +64,16 @@ public class SpringIndexerNonBootProjectTest {
 
 	@Test
 	public void testScanningSimpleRegularSpringProject() throws Exception {
-		List<? extends SymbolInformation> allSymbols = indexer.getAllSymbols("");
+		List<? extends WorkspaceSymbol> allSymbols = indexer.getAllSymbols("");
 
 		assertEquals(3, allSymbols.size());
 
 		String docUri = directory.toPath().resolve("src/main/java/org/test/SimpleMappingClass.java").toUri().toString();
-		assertTrue(containsSymbol(allSymbols, "@/mapping1", docUri, 6, 1, 6, 28));
-		assertTrue(containsSymbol(allSymbols, "@/mapping2", docUri, 11, 1, 11, 28));
+		assertTrue(SpringIndexerTest.containsSymbol(allSymbols, "@/mapping1", docUri, 6, 1, 6, 28));
+		assertTrue(SpringIndexerTest.containsSymbol(allSymbols, "@/mapping2", docUri, 11, 1, 11, 28));
 
 		docUri = directory.toPath().resolve("src/main/java/org/test/ClassWithDefaultSymbol.java").toUri().toString();
-		assertTrue(containsSymbol(allSymbols, "@Configurable", docUri, 4, 0, 4, 13));
-	}
-
-	private boolean containsSymbol(List<? extends SymbolInformation> symbols, String name, String uri, int startLine, int startCHaracter, int endLine, int endCharacter) {
-		for (Iterator<? extends SymbolInformation> iterator = symbols.iterator(); iterator.hasNext();) {
-			SymbolInformation symbol = iterator.next();
-
-			if (symbol.getName().equals(name)
-					&& symbol.getLocation().getUri().equals(uri)
-					&& symbol.getLocation().getRange().getStart().getLine() == startLine
-					&& symbol.getLocation().getRange().getStart().getCharacter() == startCHaracter
-					&& symbol.getLocation().getRange().getEnd().getLine() == endLine
-					&& symbol.getLocation().getRange().getEnd().getCharacter() == endCharacter) {
-				return true;
-			}
- 		}
-
-		return false;
+		assertTrue(SpringIndexerTest.containsSymbol(allSymbols, "@Configurable", docUri, 4, 0, 4, 13));
 	}
 
 }

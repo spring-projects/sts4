@@ -29,8 +29,9 @@ import org.apache.commons.lang3.tuple.Pair;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
-import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.SymbolKind;
+import org.eclipse.lsp4j.WorkspaceSymbol;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -84,7 +85,7 @@ public class SymbolCacheOnDiscTest {
 		String[] files = {file1.toString(), file2.toString(), file3.toString()};
 
 		List<CachedSymbol> generatedSymbols = new ArrayList<>();
-		SymbolInformation symbol = new SymbolInformation("symbol1", SymbolKind.Field, new Location("docURI", new Range(new Position(3, 10), new Position(3, 20))));
+		WorkspaceSymbol symbol = new WorkspaceSymbol("symbol1", SymbolKind.Field, Either.forLeft(new Location("docURI", new Range(new Position(3, 10), new Position(3, 20)))));
 		EnhancedSymbolInformation enhancedSymbol = new EnhancedSymbolInformation(symbol, null);
 		generatedSymbols.add(new CachedSymbol("", timeFile1.toMillis(), enhancedSymbol));
 
@@ -102,7 +103,7 @@ public class SymbolCacheOnDiscTest {
 
 		assertEquals("symbol1", cachedSymbols[0].getEnhancedSymbol().getSymbol().getName());
 		assertEquals(SymbolKind.Field, cachedSymbols[0].getEnhancedSymbol().getSymbol().getKind());
-		assertEquals(new Location("docURI", new Range(new Position(3, 10), new Position(3, 20))), cachedSymbols[0].getEnhancedSymbol().getSymbol().getLocation());
+		assertEquals(new Location("docURI", new Range(new Position(3, 10), new Position(3, 20))), cachedSymbols[0].getEnhancedSymbol().getSymbol().getLocation().getLeft());
 		assertNull(cachedSymbols[0].getEnhancedSymbol().getAdditionalInformation());
 		
 		Multimap<String, String> dependencies = result.getRight();
@@ -128,7 +129,7 @@ public class SymbolCacheOnDiscTest {
 		String[] files = {file1.toString(), file2.toString(), file3.toString()};
 
 		List<CachedSymbol> generatedSymbols = new ArrayList<>();
-		SymbolInformation symbol = new SymbolInformation("symbol1", SymbolKind.Field, new Location("docURI", new Range(new Position(3, 10), new Position(3, 20))));
+		WorkspaceSymbol symbol = new WorkspaceSymbol("symbol1", SymbolKind.Field, Either.forLeft(new Location("docURI", new Range(new Position(3, 10), new Position(3, 20)))));
 		EnhancedSymbolInformation enhancedSymbol = new EnhancedSymbolInformation(symbol, null);
 		generatedSymbols.add(new CachedSymbol("", timeFile1.toMillis(), enhancedSymbol));
 
@@ -152,7 +153,7 @@ public class SymbolCacheOnDiscTest {
 		String[] files = {file1.toString(), file2.toString(), file3.toString()};
 
 		List<CachedSymbol> generatedSymbols = new ArrayList<>();
-		SymbolInformation symbol = new SymbolInformation("symbol1", SymbolKind.Field, new Location("docURI", new Range(new Position(3, 10), new Position(3, 20))));
+		WorkspaceSymbol symbol = new WorkspaceSymbol("symbol1", SymbolKind.Field, Either.forLeft(new Location("docURI", new Range(new Position(3, 10), new Position(3, 20)))));
 		EnhancedSymbolInformation enhancedSymbol = new EnhancedSymbolInformation(symbol, null);
 		generatedSymbols.add(new CachedSymbol("", timeFile1.toMillis(), enhancedSymbol));
 
@@ -224,7 +225,7 @@ public class SymbolCacheOnDiscTest {
 
 		List<CachedSymbol> generatedSymbols = new ArrayList<>();
 
-		SymbolInformation symbol = new SymbolInformation("symbol1", SymbolKind.Field, new Location(doc1URI, new Range(new Position(3, 10), new Position(3, 20))));
+		WorkspaceSymbol symbol = new WorkspaceSymbol("symbol1", SymbolKind.Field, Either.forLeft(new Location(doc1URI, new Range(new Position(3, 10), new Position(3, 20)))));
 		WebfluxElementsInformation addon = new WebfluxElementsInformation(new Range(new Position(4, 4), new Position(5, 5)), new Range(new Position(6, 6), new Position(7, 7)));
 		EnhancedSymbolInformation enhancedSymbol = new EnhancedSymbolInformation(symbol, new SymbolAddOnInformation[] {addon});
 
@@ -238,7 +239,7 @@ public class SymbolCacheOnDiscTest {
 
 		assertEquals("symbol1", cachedSymbols[0].getEnhancedSymbol().getSymbol().getName());
 		assertEquals(SymbolKind.Field, cachedSymbols[0].getEnhancedSymbol().getSymbol().getKind());
-		assertEquals(new Location(doc1URI, new Range(new Position(3, 10), new Position(3, 20))), cachedSymbols[0].getEnhancedSymbol().getSymbol().getLocation());
+		assertEquals(new Location(doc1URI, new Range(new Position(3, 10), new Position(3, 20))), cachedSymbols[0].getEnhancedSymbol().getSymbol().getLocation().getLeft());
 
 		SymbolAddOnInformation[] retrievedAddOns = cachedSymbols[0].getEnhancedSymbol().getAdditionalInformation();
 		assertNotNull(retrievedAddOns);
@@ -263,17 +264,17 @@ public class SymbolCacheOnDiscTest {
 		String doc1URI = UriUtil.toUri(file1.toFile()).toString();
 
 		List<CachedSymbol> generatedSymbols1 = new ArrayList<>();
-		SymbolInformation symbol1 = new SymbolInformation("symbol1", SymbolKind.Field, new Location("docURI", new Range(new Position(3, 10), new Position(3, 20))));
+		WorkspaceSymbol symbol1 = new WorkspaceSymbol("symbol1", SymbolKind.Field, Either.forLeft(new Location("docURI", new Range(new Position(3, 10), new Position(3, 20)))));
 		EnhancedSymbolInformation enhancedSymbol1 = new EnhancedSymbolInformation(symbol1, null);
 		generatedSymbols1.add(new CachedSymbol(doc1URI, timeFile1.toMillis(), enhancedSymbol1));
 
 		cache.store(new SymbolCacheKey("somekey", "1"), files, generatedSymbols1, null);
 
 		List<CachedSymbol> generatedSymbols2 = new ArrayList<>();
-		symbol1 = new SymbolInformation("symbol1", SymbolKind.Field, new Location(doc1URI, new Range(new Position(3, 10), new Position(3, 20))));
+		symbol1 = new WorkspaceSymbol("symbol1", SymbolKind.Field, Either.forLeft(new Location(doc1URI, new Range(new Position(3, 10), new Position(3, 20)))));
 		enhancedSymbol1 = new EnhancedSymbolInformation(symbol1, null);
 
-		SymbolInformation symbol2 = new SymbolInformation("symbol2", SymbolKind.Interface, new Location(doc1URI, new Range(new Position(5, 5), new Position(5, 10))));
+		WorkspaceSymbol symbol2 = new WorkspaceSymbol("symbol2", SymbolKind.Interface, Either.forLeft(new Location(doc1URI, new Range(new Position(5, 5), new Position(5, 10)))));
 		EnhancedSymbolInformation enhancedSymbol2 = new EnhancedSymbolInformation(symbol2, null);
 
 		generatedSymbols2.add(new CachedSymbol(doc1URI, timeFile1.toMillis() + 2000, enhancedSymbol1));
@@ -312,15 +313,15 @@ public class SymbolCacheOnDiscTest {
 		String doc3URI = UriUtil.toUri(file3.toFile()).toString();
 
 		List<CachedSymbol> generatedSymbols = new ArrayList<>();
-		SymbolInformation symbol1 = new SymbolInformation("symbol1", SymbolKind.Field, new Location(doc1URI, new Range(new Position(3, 10), new Position(3, 20))));
+		WorkspaceSymbol symbol1 = new WorkspaceSymbol("symbol1", SymbolKind.Field, Either.forLeft(new Location(doc1URI, new Range(new Position(3, 10), new Position(3, 20)))));
 		EnhancedSymbolInformation enhancedSymbol1 = new EnhancedSymbolInformation(symbol1, null);
 		generatedSymbols.add(new CachedSymbol(doc1URI, timeFile1.toMillis(), enhancedSymbol1));
 
-		SymbolInformation symbol2 = new SymbolInformation("symbol2", SymbolKind.Field, new Location(doc2URI, new Range(new Position(3, 10), new Position(3, 20))));
+		WorkspaceSymbol symbol2 = new WorkspaceSymbol("symbol2", SymbolKind.Field, Either.forLeft(new Location(doc2URI, new Range(new Position(3, 10), new Position(3, 20)))));
 		EnhancedSymbolInformation enhancedSymbol2 = new EnhancedSymbolInformation(symbol2, null);
 		generatedSymbols.add(new CachedSymbol(doc2URI, timeFile2.toMillis(), enhancedSymbol2));
 
-		SymbolInformation symbol3 = new SymbolInformation("symbol3", SymbolKind.Field, new Location(doc3URI, new Range(new Position(3, 10), new Position(3, 20))));
+		WorkspaceSymbol symbol3 = new WorkspaceSymbol("symbol3", SymbolKind.Field, Either.forLeft(new Location(doc3URI, new Range(new Position(3, 10), new Position(3, 20)))));
 		EnhancedSymbolInformation enhancedSymbol3 = new EnhancedSymbolInformation(symbol3, null);
 		generatedSymbols.add(new CachedSymbol(doc3URI, timeFile3.toMillis(), enhancedSymbol3));
 
@@ -331,17 +332,17 @@ public class SymbolCacheOnDiscTest {
 		// create updated and new symbols
 		List<CachedSymbol> updatedSymbols = new ArrayList<>();
 		
-		SymbolInformation updatedSymbol1 = new SymbolInformation("symbol1", SymbolKind.Field, new Location(doc1URI, new Range(new Position(3, 10), new Position(3, 20))));
+		WorkspaceSymbol updatedSymbol1 = new WorkspaceSymbol("symbol1", SymbolKind.Field, Either.forLeft(new Location(doc1URI, new Range(new Position(3, 10), new Position(3, 20)))));
 		EnhancedSymbolInformation updatedEnhancedSymbol1 = new EnhancedSymbolInformation(updatedSymbol1, null);
 
-		SymbolInformation newSymbol1 = new SymbolInformation("symbol1-new", SymbolKind.Interface, new Location(doc1URI, new Range(new Position(5, 5), new Position(5, 10))));
+		WorkspaceSymbol newSymbol1 = new WorkspaceSymbol("symbol1-new", SymbolKind.Interface, Either.forLeft(new Location(doc1URI, new Range(new Position(5, 5), new Position(5, 10)))));
 		EnhancedSymbolInformation newEnhancedSymbol1 = new EnhancedSymbolInformation(newSymbol1, null);
 
 		updatedSymbols.add(new CachedSymbol(doc1URI, timeFile1.toMillis() + 2000, updatedEnhancedSymbol1));
 		updatedSymbols.add(new CachedSymbol(doc1URI, timeFile1.toMillis() + 2000, newEnhancedSymbol1));
 		assertTrue(file1.toFile().setLastModified(timeFile1.toMillis() + 2000));
 
-		SymbolInformation updatedSymbol2 = new SymbolInformation("symbol2-updated", SymbolKind.Field, new Location(doc2URI, new Range(new Position(3, 10), new Position(3, 20))));
+		WorkspaceSymbol updatedSymbol2 = new WorkspaceSymbol("symbol2-updated", SymbolKind.Field, Either.forLeft(new Location(doc2URI, new Range(new Position(3, 10), new Position(3, 20)))));
 		EnhancedSymbolInformation updatedEnhancedSymbol2 = new EnhancedSymbolInformation(updatedSymbol2, null);
 		updatedSymbols.add(new CachedSymbol(doc2URI, timeFile2.toMillis() + 3000, updatedEnhancedSymbol2));
 		assertTrue(file2.toFile().setLastModified(timeFile2.toMillis() + 3000));
@@ -369,7 +370,7 @@ public class SymbolCacheOnDiscTest {
 
 	private void assertSymbol(EnhancedSymbolInformation enhancedSymbol, CachedSymbol[] cachedSymbols) {
 		for (CachedSymbol cachedSymbol : cachedSymbols) {
-			SymbolInformation symbol = cachedSymbol.getEnhancedSymbol().getSymbol();
+			WorkspaceSymbol symbol = cachedSymbol.getEnhancedSymbol().getSymbol();
 			
 			if (symbol.toString().equals(enhancedSymbol.getSymbol().toString())) {
 				return;
@@ -415,7 +416,7 @@ public class SymbolCacheOnDiscTest {
 		String doc1URI = UriUtil.toUri(file1.toFile()).toString();
 
 		List<CachedSymbol> generatedSymbols1 = new ArrayList<>();
-		SymbolInformation symbol1 = new SymbolInformation("symbol1", SymbolKind.Field, new Location("docURI", new Range(new Position(3, 10), new Position(3, 20))));
+		WorkspaceSymbol symbol1 = new WorkspaceSymbol("symbol1", SymbolKind.Field, Either.forLeft(new Location("docURI", new Range(new Position(3, 10), new Position(3, 20)))));
 		EnhancedSymbolInformation enhancedSymbol1 = new EnhancedSymbolInformation(symbol1, null);
 		generatedSymbols1.add(new CachedSymbol(doc1URI, timeFile1.toMillis(), enhancedSymbol1));
 
@@ -476,14 +477,14 @@ public class SymbolCacheOnDiscTest {
 		String doc2URI = UriUtil.toUri(file2.toFile()).toString();
 
 		List<CachedSymbol> generatedSymbols1 = new ArrayList<>();
-		SymbolInformation symbol1 = new SymbolInformation("symbol1", SymbolKind.Field, new Location(doc1URI, new Range(new Position(3, 10), new Position(3, 20))));
+		WorkspaceSymbol symbol1 = new WorkspaceSymbol("symbol1", SymbolKind.Field, Either.forLeft(new Location(doc1URI, new Range(new Position(3, 10), new Position(3, 20)))));
 		EnhancedSymbolInformation enhancedSymbol1 = new EnhancedSymbolInformation(symbol1, null);
 		generatedSymbols1.add(new CachedSymbol(doc1URI, timeFile1.toMillis(), enhancedSymbol1));
 
 		cache.store(new SymbolCacheKey("somekey", "1"), files, generatedSymbols1, null);
 
 		List<CachedSymbol> generatedSymbols2 = new ArrayList<>();
-		SymbolInformation symbol2 = new SymbolInformation("symbol2", SymbolKind.Interface, new Location(doc2URI, new Range(new Position(5, 5), new Position(5, 10))));
+		WorkspaceSymbol symbol2 = new WorkspaceSymbol("symbol2", SymbolKind.Interface, Either.forLeft(new Location(doc2URI, new Range(new Position(5, 5), new Position(5, 10)))));
 		EnhancedSymbolInformation enhancedSymbol2 = new EnhancedSymbolInformation(symbol2, null);
 
 		generatedSymbols2.add(new CachedSymbol(doc2URI, timeFile2.toMillis(), enhancedSymbol2));
@@ -548,10 +549,10 @@ public class SymbolCacheOnDiscTest {
 
 		List<CachedSymbol> generatedSymbols = new ArrayList<>();
 
-		SymbolInformation symbol1 = new SymbolInformation("symbol1", SymbolKind.Field, new Location(doc1URI, new Range(new Position(3, 10), new Position(3, 20))));
+		WorkspaceSymbol symbol1 = new WorkspaceSymbol("symbol1", SymbolKind.Field, Either.forLeft(new Location(doc1URI, new Range(new Position(3, 10), new Position(3, 20)))));
 		EnhancedSymbolInformation enhancedSymbol1 = new EnhancedSymbolInformation(symbol1, null);
 
-		SymbolInformation symbol2 = new SymbolInformation("symbol2", SymbolKind.Field, new Location(doc2URI, new Range(new Position(5, 10), new Position(5, 20))));
+		WorkspaceSymbol symbol2 = new WorkspaceSymbol("symbol2", SymbolKind.Field, Either.forLeft(new Location(doc2URI, new Range(new Position(5, 10), new Position(5, 20)))));
 		EnhancedSymbolInformation enhancedSymbol2 = new EnhancedSymbolInformation(symbol2, null);
 
 		generatedSymbols.add(new CachedSymbol(doc1URI, timeFile1.toMillis(), enhancedSymbol1));
@@ -572,7 +573,7 @@ public class SymbolCacheOnDiscTest {
 
 		assertEquals("symbol2", cachedSymbols[0].getEnhancedSymbol().getSymbol().getName());
 		assertEquals(SymbolKind.Field, cachedSymbols[0].getEnhancedSymbol().getSymbol().getKind());
-		assertEquals(new Location(doc2URI, new Range(new Position(5, 10), new Position(5, 20))), cachedSymbols[0].getEnhancedSymbol().getSymbol().getLocation());
+		assertEquals(new Location(doc2URI, new Range(new Position(5, 10), new Position(5, 20))), cachedSymbols[0].getEnhancedSymbol().getSymbol().getLocation().getLeft());
 		assertNull(cachedSymbols[0].getEnhancedSymbol().getAdditionalInformation());
 		
 		Multimap<String, String> cachedDependencies = result.getRight();

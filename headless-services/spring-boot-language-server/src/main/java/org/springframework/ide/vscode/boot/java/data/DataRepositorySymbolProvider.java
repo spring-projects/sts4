@@ -13,8 +13,9 @@ package org.springframework.ide.vscode.boot.java.data;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.Location;
-import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.SymbolKind;
+import org.eclipse.lsp4j.WorkspaceSymbol;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.beans.BeanUtils;
@@ -45,10 +46,10 @@ public class DataRepositorySymbolProvider extends AbstractSymbolProvider {
 		Tuple4<String, String, String, DocumentRegion> repositoryBean = getRepositoryBean(typeDeclaration, doc);
 		if (repositoryBean != null) {
 			try {
-				SymbolInformation symbol = new SymbolInformation(
+				WorkspaceSymbol symbol = new WorkspaceSymbol(
 						beanLabel(true, repositoryBean.getT1(), repositoryBean.getT2(), repositoryBean.getT3()),
 						SymbolKind.Interface,
-						new Location(doc.getUri(), doc.toRange(repositoryBean.getT4())));
+						Either.forLeft(new Location(doc.getUri(), doc.toRange(repositoryBean.getT4()))));
 
 				SymbolAddOnInformation[] addon = new SymbolAddOnInformation[] {new BeansSymbolAddOnInformation(repositoryBean.getT1())};
 				EnhancedSymbolInformation enhancedSymbol = new EnhancedSymbolInformation(symbol, addon);

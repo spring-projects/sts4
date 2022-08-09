@@ -12,7 +12,7 @@ package org.springframework.ide.vscode.boot.java.handlers;
 
 import java.util.List;
 
-import org.eclipse.lsp4j.SymbolInformation;
+import org.eclipse.lsp4j.WorkspaceSymbol;
 import org.eclipse.lsp4j.WorkspaceSymbolParams;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.boot.java.requestmapping.LiveAppURLSymbolProvider;
@@ -32,7 +32,7 @@ public class BootJavaWorkspaceSymbolHandler implements WorkspaceSymbolHandler {
 	}
 
 	@Override
-	public List<? extends SymbolInformation> handle(WorkspaceSymbolParams params) {
+	public List<? extends WorkspaceSymbol> handle(WorkspaceSymbolParams params) {
 		if (params.getQuery() != null && params.getQuery().startsWith("//")) {
 			return liveAppSymbolProvider.getSymbols(params.getQuery());
 		}

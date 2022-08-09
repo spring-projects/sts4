@@ -19,8 +19,8 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
-import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
+import org.eclipse.lsp4j.WorkspaceSymbol;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -67,7 +67,7 @@ public class DataRepositorySymbolProviderTest {
 	@Test
 	public void testSimpleRepositorySymbol() throws Exception {
 		String docUri = directory.toPath().resolve("src/main/java/org/test/CustomerRepository.java").toUri().toString();
-		List<? extends SymbolInformation> symbols = indexer.getSymbols(docUri);
+		List<? extends WorkspaceSymbol> symbols = indexer.getSymbols(docUri);
 		assertEquals(1, symbols.size());
 		assertTrue(containsSymbol(symbols, "@+ 'customerRepository' (Customer) Repository<Customer,Long>", docUri, 6, 17, 6, 35));
 
@@ -77,16 +77,16 @@ public class DataRepositorySymbolProviderTest {
 		assertEquals("customerRepository", ((BeansSymbolAddOnInformation)addon.get(0)).getBeanID());
 	}
 
-	private boolean containsSymbol(List<? extends SymbolInformation> symbols, String name, String uri, int startLine, int startCHaracter, int endLine, int endCharacter) {
-		for (Iterator<? extends SymbolInformation> iterator = symbols.iterator(); iterator.hasNext();) {
-			SymbolInformation symbol = iterator.next();
+	private boolean containsSymbol(List<? extends WorkspaceSymbol> symbols, String name, String uri, int startLine, int startCHaracter, int endLine, int endCharacter) {
+		for (Iterator<? extends WorkspaceSymbol> iterator = symbols.iterator(); iterator.hasNext();) {
+			WorkspaceSymbol symbol = iterator.next();
 
 			if (symbol.getName().equals(name)
-					&& symbol.getLocation().getUri().equals(uri)
-					&& symbol.getLocation().getRange().getStart().getLine() == startLine
-					&& symbol.getLocation().getRange().getStart().getCharacter() == startCHaracter
-					&& symbol.getLocation().getRange().getEnd().getLine() == endLine
-					&& symbol.getLocation().getRange().getEnd().getCharacter() == endCharacter) {
+					&& symbol.getLocation().getLeft().getUri().equals(uri)
+					&& symbol.getLocation().getLeft().getRange().getStart().getLine() == startLine
+					&& symbol.getLocation().getLeft().getRange().getStart().getCharacter() == startCHaracter
+					&& symbol.getLocation().getLeft().getRange().getEnd().getLine() == endLine
+					&& symbol.getLocation().getLeft().getRange().getEnd().getCharacter() == endCharacter) {
 				return true;
 			}
  		}

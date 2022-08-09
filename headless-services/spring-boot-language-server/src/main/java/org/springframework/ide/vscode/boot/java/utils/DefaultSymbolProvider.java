@@ -12,8 +12,9 @@ package org.springframework.ide.vscode.boot.java.utils;
 
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.lsp4j.Location;
-import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.SymbolKind;
+import org.eclipse.lsp4j.WorkspaceSymbol;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 /**
@@ -21,9 +22,9 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
  */
 public class DefaultSymbolProvider {
 
-	public static SymbolInformation provideDefaultSymbol(Annotation node, TextDocument doc) throws Exception {
-		SymbolInformation symbol = new SymbolInformation(node.toString(), SymbolKind.Interface,
-				new Location(doc.getUri(), doc.toRange(node.getStartPosition(), node.getLength())));
+	public static WorkspaceSymbol provideDefaultSymbol(Annotation node, TextDocument doc) throws Exception {
+		WorkspaceSymbol symbol = new WorkspaceSymbol(node.toString(), SymbolKind.Interface,
+				Either.forLeft(new Location(doc.getUri(), doc.toRange(node.getStartPosition(), node.getLength()))));
 		return symbol;
 	}
 

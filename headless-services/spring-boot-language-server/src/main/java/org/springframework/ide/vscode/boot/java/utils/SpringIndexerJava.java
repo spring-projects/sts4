@@ -45,7 +45,7 @@ import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.NormalAnnotation;
 import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
-import org.eclipse.lsp4j.SymbolInformation;
+import org.eclipse.lsp4j.WorkspaceSymbol;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
@@ -513,7 +513,7 @@ public class SpringIndexerJava implements SpringIndexer {
 					provider.addSymbols(node, typeBinding, metaAnnotations, context, doc);
 				}
 			} else {
-				SymbolInformation symbol = provideDefaultSymbol(node, context);
+				WorkspaceSymbol symbol = provideDefaultSymbol(node, context);
 				if (symbol != null) {
 					EnhancedSymbolInformation enhancedSymbol = new EnhancedSymbolInformation(symbol, null);
 					context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), enhancedSymbol));
@@ -525,7 +525,7 @@ public class SpringIndexerJava implements SpringIndexer {
 		}
 	}
 
-	private SymbolInformation provideDefaultSymbol(Annotation node, final SpringIndexerJavaContext context) {
+	private WorkspaceSymbol provideDefaultSymbol(Annotation node, final SpringIndexerJavaContext context) {
 		try {
 			ITypeBinding type = node.resolveTypeBinding();
 			if (type != null) {

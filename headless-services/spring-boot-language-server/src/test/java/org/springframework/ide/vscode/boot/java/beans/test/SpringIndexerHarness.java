@@ -21,7 +21,7 @@ import java.util.List;
 
 import org.apache.commons.io.IOUtils;
 import org.eclipse.lsp4j.Range;
-import org.eclipse.lsp4j.SymbolInformation;
+import org.eclipse.lsp4j.WorkspaceSymbol;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -82,14 +82,14 @@ public class SpringIndexerHarness {
 	}
 
 	private static final Comparator<Range> RANGE_COMPARATOR = Editor.RANGE_COMPARATOR;
-	private static final Comparator<SymbolInformation> SYMBOL_COMPARATOR = new Comparator<SymbolInformation>() {
+	private static final Comparator<WorkspaceSymbol> SYMBOL_COMPARATOR = new Comparator<WorkspaceSymbol>() {
 
 		@Override
-		public int compare(SymbolInformation o1, SymbolInformation o2) {
-			int r = o1.getLocation().getUri().compareTo(o2.getLocation().getUri());
+		public int compare(WorkspaceSymbol o1, WorkspaceSymbol o2) {
+			int r = o1.getLocation().getLeft().getUri().compareTo(o2.getLocation().getLeft().getUri());
 			if (r!=0) return r;
 
-			r = RANGE_COMPARATOR.compare(o1.getLocation().getRange(), o2.getLocation().getRange());
+			r = RANGE_COMPARATOR.compare(o1.getLocation().getLeft().getRange(), o2.getLocation().getLeft().getRange());
 			if (r!=0) return r;
 
 			return o1.getName().compareTo(o2.getName());
@@ -115,15 +115,15 @@ public class SpringIndexerHarness {
 	}
 
 	public static List<TestSymbolInfo> getSymbolsInFile(SpringSymbolIndex indexer, String docURI) throws Exception {
-		List<? extends SymbolInformation> symbols = indexer.getSymbols(docURI);
+		List<? extends WorkspaceSymbol> symbols = indexer.getSymbols(docURI);
 		if (symbols!=null) {
 			symbols = new ArrayList<>(symbols);
 			Collections.sort(symbols, SYMBOL_COMPARATOR);
 			TextDocument doc = new TextDocument(docURI, LanguageId.JAVA, 1, IOUtils.toString(new URI(docURI)));
 			ImmutableList.Builder<TestSymbolInfo> symbolInfos = ImmutableList.builder();
-			for (SymbolInformation s : symbols) {
-				int start = doc.toOffset(s.getLocation().getRange().getStart());
-				int end = doc.toOffset(s.getLocation().getRange().getEnd());
+			for (WorkspaceSymbol s : symbols) {
+				int start = doc.toOffset(s.getLocation().getLeft().getRange().getStart());
+				int end = doc.toOffset(s.getLocation().getLeft().getRange().getEnd());
 				symbolInfos.add(new TestSymbolInfo(doc.textBetween(start, end), s.getName()));
 			}
 			return symbolInfos.build();

@@ -17,14 +17,13 @@ import java.io.File;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.attribute.FileTime;
-import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
-import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
+import org.eclipse.lsp4j.WorkspaceSymbol;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -90,8 +89,8 @@ public class SpringIndexerMultipleFilesTest {
 
 		try {
 			// update document and update index
-			List<? extends SymbolInformation> symbols = indexer.getSymbols(changedDocURI);
-			assertTrue(containsSymbol(symbols, "@/mapping1", changedDocURI));
+			List<? extends WorkspaceSymbol> symbols = indexer.getSymbols(changedDocURI);
+			assertTrue(SpringIndexerTest.containsSymbol(symbols, "@/mapping1", changedDocURI));
 			
 			String newContent = originalContent.replace("mapping1", "mapping1-CHANGED");
 			FileUtils.writeStringToFile(new File(new URI(changedDocURI)), newContent);
@@ -106,8 +105,8 @@ public class SpringIndexerMultipleFilesTest {
 			// check for updated index per document
 			symbols = indexer.getSymbols(changedDocURI);
 			assertEquals(2, symbols.size());
-			assertTrue(containsSymbol(symbols, "@/mapping1-CHANGED", changedDocURI, 6, 1, 6, 36));
-			assertTrue(containsSymbol(symbols, "@/mapping2", changedDocURI, 11, 1, 11, 28));
+			assertTrue(SpringIndexerTest.containsSymbol(symbols, "@/mapping1-CHANGED", changedDocURI, 6, 1, 6, 36));
+			assertTrue(SpringIndexerTest.containsSymbol(symbols, "@/mapping2", changedDocURI, 11, 1, 11, 28));
 			
 			fileScanListener.assertScannedUris(changedDocURI);
 			fileScanListener.assertScannedUri(changedDocURI, 1);
@@ -152,18 +151,18 @@ public class SpringIndexerMultipleFilesTest {
 			updateFuture.get(5, TimeUnit.SECONDS);
 	
 			// check for updated index per document
-			List<? extends SymbolInformation> symbols1 = indexer.getSymbols(doc1URI);
+			List<? extends WorkspaceSymbol> symbols1 = indexer.getSymbols(doc1URI);
 			assertEquals(2, symbols1.size());
-			assertTrue(containsSymbol(symbols1, "@/mapping1-CHANGED", doc1URI, 6, 1, 6, 36));
-			assertTrue(containsSymbol(symbols1, "@/mapping2", doc1URI, 11, 1, 11, 28));
+			assertTrue(SpringIndexerTest.containsSymbol(symbols1, "@/mapping1-CHANGED", doc1URI, 6, 1, 6, 36));
+			assertTrue(SpringIndexerTest.containsSymbol(symbols1, "@/mapping2", doc1URI, 11, 1, 11, 28));
 			
-			List<? extends SymbolInformation> symbols2 = indexer.getSymbols(doc2URI);
-			assertTrue(containsSymbol(symbols2, "@+ 'mainClass' (@SpringBootApplication <: @SpringBootConfiguration, @Configuration, @Component) MainClass", doc2URI, 6, 0, 6, 22));
-			assertTrue(containsSymbol(symbols2, "@/embedded-foo-mapping-CHANGED", doc2URI, 17, 1, 17, 49));
-			assertTrue(containsSymbol(symbols2, "@/foo-root-mapping/embedded-foo-mapping-with-root", doc2URI, 27, 1, 27, 51));
+			List<? extends WorkspaceSymbol> symbols2 = indexer.getSymbols(doc2URI);
+			assertTrue(SpringIndexerTest.containsSymbol(symbols2, "@+ 'mainClass' (@SpringBootApplication <: @SpringBootConfiguration, @Configuration, @Component) MainClass", doc2URI, 6, 0, 6, 22));
+			assertTrue(SpringIndexerTest.containsSymbol(symbols2, "@/embedded-foo-mapping-CHANGED", doc2URI, 17, 1, 17, 49));
+			assertTrue(SpringIndexerTest.containsSymbol(symbols2, "@/foo-root-mapping/embedded-foo-mapping-with-root", doc2URI, 27, 1, 27, 51));
 
-			List<? extends SymbolInformation> symbols3 = indexer.getSymbols(doc3URI);
-			assertTrue(containsSymbol(symbols3, "@/classlevel-CHANGED/mapping-subpackage", doc3URI, 7, 1, 7, 38));
+			List<? extends WorkspaceSymbol> symbols3 = indexer.getSymbols(doc3URI);
+			assertTrue(SpringIndexerTest.containsSymbol(symbols3, "@/classlevel-CHANGED/mapping-subpackage", doc3URI, 7, 1, 7, 38));
 		}
 		finally {
 			FileUtils.writeStringToFile(new File(new URI(doc1URI)), original1Content);
@@ -185,7 +184,7 @@ public class SpringIndexerMultipleFilesTest {
 		fileScanListener.assertScannedUris();
 		fileScanListener.assertScannedUri(unchangedDocURI, 0);
 		
-		List<? extends SymbolInformation> symbols = indexer.getSymbols(unchangedDocURI);
+		List<? extends WorkspaceSymbol> symbols = indexer.getSymbols(unchangedDocURI);
 		assertEquals(2, symbols.size());
 	}
 
@@ -220,16 +219,16 @@ public class SpringIndexerMultipleFilesTest {
 			updateFuture.get(5, TimeUnit.SECONDS);
 	
 			// check for updated index per document
-			List<? extends SymbolInformation> symbols1 = indexer.getSymbols(doc1URI);
+			List<? extends WorkspaceSymbol> symbols1 = indexer.getSymbols(doc1URI);
 			assertEquals(2, symbols1.size());
-			assertTrue(containsSymbol(symbols1, "@/mapping1-CHANGED", doc1URI, 6, 1, 6, 36));
-			assertTrue(containsSymbol(symbols1, "@/mapping2", doc1URI, 11, 1, 11, 28));
+			assertTrue(SpringIndexerTest.containsSymbol(symbols1, "@/mapping1-CHANGED", doc1URI, 6, 1, 6, 36));
+			assertTrue(SpringIndexerTest.containsSymbol(symbols1, "@/mapping2", doc1URI, 11, 1, 11, 28));
 			
-			List<? extends SymbolInformation> symbols2 = indexer.getSymbols(doc2URI);
+			List<? extends WorkspaceSymbol> symbols2 = indexer.getSymbols(doc2URI);
 			assertEquals(3, symbols2.size());
 
-			List<? extends SymbolInformation> symbols3 = indexer.getSymbols(doc3URI);
-			assertTrue(containsSymbol(symbols3, "@/classlevel-CHANGED/mapping-subpackage", doc3URI, 7, 1, 7, 38));
+			List<? extends WorkspaceSymbol> symbols3 = indexer.getSymbols(doc3URI);
+			assertTrue(SpringIndexerTest.containsSymbol(symbols3, "@/classlevel-CHANGED/mapping-subpackage", doc3URI, 7, 1, 7, 38));
 			
 			fileScanListener.assertScannedUris(doc1URI, doc3URI);
 			fileScanListener.assertScannedUri(doc1URI, 1);
@@ -240,38 +239,6 @@ public class SpringIndexerMultipleFilesTest {
 			FileUtils.writeStringToFile(file1, original1Content);
 			FileUtils.writeStringToFile(new File(new URI(doc3URI)), original3Content);
 		}
-	}
-
-	private boolean containsSymbol(List<? extends SymbolInformation> symbols, String name, String uri) {
-		for (Iterator<? extends SymbolInformation> iterator = symbols.iterator(); iterator.hasNext();) {
-			SymbolInformation symbol = iterator.next();
-
-			if (
-					symbol.getName().equals(name) &&
-					symbol.getLocation().getUri().equals(uri)
-			) {
-				return true;
-			}
- 		}
-
-		return false;
-	}
-
-	private boolean containsSymbol(List<? extends SymbolInformation> symbols, String name, String uri, int startLine, int startCHaracter, int endLine, int endCharacter) {
-		for (Iterator<? extends SymbolInformation> iterator = symbols.iterator(); iterator.hasNext();) {
-			SymbolInformation symbol = iterator.next();
-
-			if (symbol.getName().equals(name)
-					&& symbol.getLocation().getUri().equals(uri)
-					&& symbol.getLocation().getRange().getStart().getLine() == startLine
-					&& symbol.getLocation().getRange().getStart().getCharacter() == startCHaracter
-					&& symbol.getLocation().getRange().getEnd().getLine() == endLine
-					&& symbol.getLocation().getRange().getEnd().getCharacter() == endCharacter) {
-				return true;
-			}
- 		}
-
-		return false;
 	}
 
 }

@@ -36,8 +36,6 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import java.util.stream.Collectors;
 
 import org.assertj.core.api.Condition;
@@ -102,6 +100,7 @@ import org.eclipse.lsp4j.WorkDoneProgressCreateParams;
 import org.eclipse.lsp4j.WorkspaceClientCapabilities;
 import org.eclipse.lsp4j.WorkspaceEdit;
 import org.eclipse.lsp4j.WorkspaceEditCapabilities;
+import org.eclipse.lsp4j.WorkspaceSymbol;
 import org.eclipse.lsp4j.WorkspaceSymbolParams;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.LanguageClientAware;
@@ -111,11 +110,9 @@ import org.springframework.ide.vscode.commons.languageserver.completion.Document
 import org.springframework.ide.vscode.commons.languageserver.util.LanguageServerTestListener;
 import org.springframework.ide.vscode.commons.languageserver.util.Settings;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
-import org.springframework.ide.vscode.commons.languageserver.util.SimpleWorkspaceService;
 import org.springframework.ide.vscode.commons.protocol.CursorMovement;
 import org.springframework.ide.vscode.commons.protocol.HighlightParams;
 import org.springframework.ide.vscode.commons.protocol.LiveProcessSummary;
-import org.springframework.ide.vscode.commons.protocol.ProgressParams;
 import org.springframework.ide.vscode.commons.protocol.STS4LanguageClient;
 import org.springframework.ide.vscode.commons.protocol.java.ClasspathListenerParams;
 import org.springframework.ide.vscode.commons.protocol.java.JavaCodeCompleteData;
@@ -949,9 +946,9 @@ public class LanguageServerHarness {
 		this.enableHierarchicalDocumentSymbols = b;
 	}
 
-	public Collection<SymbolInformation> getWorkspaceSymbols(String query) throws Exception {
+	public Collection<WorkspaceSymbol> getWorkspaceSymbols(String query) throws Exception {
 		WorkspaceSymbolParams params = new WorkspaceSymbolParams(query);
-		List<? extends SymbolInformation> r = server.getWorkspaceService().symbol(params).get();
+		List<? extends WorkspaceSymbol> r = server.getWorkspaceService().symbol(params).get().getRight();
 		return ImmutableList.copyOf(r);
 	}
 

@@ -17,7 +17,7 @@ import java.util.stream.Collectors;
 import org.eclipse.lemminx.dom.DOMAttr;
 import org.eclipse.lemminx.dom.DOMNode;
 import org.eclipse.lsp4j.Location;
-import org.eclipse.lsp4j.SymbolInformation;
+import org.eclipse.lsp4j.WorkspaceSymbol;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.boot.java.beans.BeansSymbolAddOnInformation;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
@@ -57,17 +57,24 @@ public class BeanRefHyperlinkProvider implements XMLHyperlinkProvider {
 				projectLocation = projectLocation + "/";
 			}
 			
-			List<SymbolInformation> symbols = symbolIndex.getSymbols(data -> symbolsFilter(data, attributeAt.getValue())).collect(Collectors.toList());
+			List<WorkspaceSymbol> symbols = symbolIndex.getSymbols(data -> symbolsFilter(data, attributeAt.getValue())).collect(Collectors.toList());
 			if (!symbols.isEmpty()) {
-				for (SymbolInformation symbol : symbols) {
-					Location location = symbol.getLocation();
-					String uri = location.getUri();
-					
-					if (uri != null && uri.startsWith(projectLocation)) {
-						return location;
+				for (WorkspaceSymbol symbol : symbols) {
+					if (symbol.getLocation().isLeft()) {
+						Location location = symbol.getLocation().getLeft();
+						String uri = location.getUri();
+						
+						if (uri != null && uri.startsWith(projectLocation)) {
+							return location;
+						}
 					}
 				}
-				return symbols.get(0).getLocation();
+				// TODO: need better handling for the WorkspaceSymbolLocation case
+				for (WorkspaceSymbol symbol : symbols) {
+					if (symbol.getLocation().isLeft()) {
+						return symbol.getLocation().getLeft();
+					}
+				}
 			}
 		}
 		return null;

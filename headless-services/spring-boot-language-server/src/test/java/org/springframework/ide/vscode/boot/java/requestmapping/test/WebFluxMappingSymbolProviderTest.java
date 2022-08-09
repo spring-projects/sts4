@@ -21,8 +21,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
+import org.eclipse.lsp4j.WorkspaceSymbol;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -35,7 +35,6 @@ import org.springframework.ide.vscode.boot.java.beans.BeansSymbolAddOnInformatio
 import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
 import org.springframework.ide.vscode.boot.java.requestmapping.WebfluxHandlerInformation;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
-import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 import org.springframework.test.context.junit4.SpringRunner;
@@ -75,7 +74,7 @@ public class WebFluxMappingSymbolProviderTest {
 	@Test
 	public void testSimpleRequestMappingSymbol() throws Exception {
 		String docUri = directory.toPath().resolve("src/main/java/org/test/UserController.java").toUri().toString();
-		List<? extends SymbolInformation> symbols = indexer.getSymbols(docUri);
+		List<? extends WorkspaceSymbol> symbols = indexer.getSymbols(docUri);
 		assertEquals(4, symbols.size());
 		assertTrue(containsSymbol(symbols, "@/users -- GET - Content-Type: application/json", docUri, 13, 1, 13, 74));
 		assertTrue(containsSymbol(symbols, "@/users/{username} -- GET - Content-Type: application/json", docUri, 18, 1, 18, 85));
@@ -88,7 +87,7 @@ public class WebFluxMappingSymbolProviderTest {
 	@Test
 	public void testRoutesMappingSymbols() throws Exception {
 		String docUri = directory.toPath().resolve("src/main/java/org/test/QuoteRouter.java").toUri().toString();
-		List<? extends SymbolInformation> symbols = indexer.getSymbols(docUri);
+		List<? extends WorkspaceSymbol> symbols = indexer.getSymbols(docUri);
 		assertEquals(6, symbols.size());
 		assertTrue(containsSymbol(symbols, "@/hello -- GET - Accept: text/plain", docUri, 22, 5, 22, 70));
 		assertTrue(containsSymbol(symbols, "@/echo -- POST - Accept: text/plain - Content-Type: text/plain", docUri, 23, 5, 23, 101));
@@ -134,7 +133,7 @@ public class WebFluxMappingSymbolProviderTest {
 	@Test
 	public void testNestedRoutesMappingSymbols1() throws Exception {
 		String docUri = directory.toPath().resolve("src/main/java/org/test/NestedRouter1.java").toUri().toString();
-		List<? extends SymbolInformation> symbols = indexer.getSymbols(docUri);
+		List<? extends WorkspaceSymbol> symbols = indexer.getSymbols(docUri);
 		assertEquals(5, symbols.size());
 		assertTrue(containsSymbol(symbols, "@/person/{id} -- GET - Accept: application/json", docUri, 27, 6, 27, 45));
 		assertTrue(containsSymbol(symbols, "@/person/ -- POST - Content-Type: application/json", docUri, 29, 6, 29, 83));
@@ -171,7 +170,7 @@ public class WebFluxMappingSymbolProviderTest {
 	@Test
 	public void testNestedRoutesMappingSymbols2() throws Exception {
 		String docUri = directory.toPath().resolve("src/main/java/org/test/NestedRouter2.java").toUri().toString();
-		List<? extends SymbolInformation> symbols = indexer.getSymbols(docUri);
+		List<? extends WorkspaceSymbol> symbols = indexer.getSymbols(docUri);
 		assertEquals(5, symbols.size());
 		assertTrue(containsSymbol(symbols, "@/person/{id} -- GET - Accept: application/json", docUri, 29, 6, 29, 45));
 		assertTrue(containsSymbol(symbols, "@/ -- POST - Accept: application/json - Content-Type: application/json,application/pdf", docUri, 31, 6, 31, 117));
@@ -208,7 +207,7 @@ public class WebFluxMappingSymbolProviderTest {
 	@Test
 	public void testNestedRoutesMappingSymbols3() throws Exception {
 		String docUri = directory.toPath().resolve("src/main/java/org/test/NestedRouter3.java").toUri().toString();
-		List<? extends SymbolInformation> symbols = indexer.getSymbols(docUri);
+		List<? extends WorkspaceSymbol> symbols = indexer.getSymbols(docUri);
 		assertEquals(8, symbols.size());
 
 		assertTrue(containsSymbol(symbols, "@/person/sub1/sub2/{id} -- GET - Accept: application/json", docUri, 29, 7, 29, 46));
@@ -270,16 +269,16 @@ public class WebFluxMappingSymbolProviderTest {
 		assertEquals("public Mono<org.springframework.web.reactive.function.server.ServerResponse> deletePerson(org.springframework.web.reactive.function.server.ServerRequest)", handlerInfo6.getHandlerMethod());
 	}
 
-	private boolean containsSymbol(List<? extends SymbolInformation> symbols, String name, String uri, int startLine, int startCHaracter, int endLine, int endCharacter) {
-		for (Iterator<? extends SymbolInformation> iterator = symbols.iterator(); iterator.hasNext();) {
-			SymbolInformation symbol = iterator.next();
+	private boolean containsSymbol(List<? extends WorkspaceSymbol> symbols, String name, String uri, int startLine, int startCHaracter, int endLine, int endCharacter) {
+		for (Iterator<? extends WorkspaceSymbol> iterator = symbols.iterator(); iterator.hasNext();) {
+			WorkspaceSymbol symbol = iterator.next();
 
 			if (symbol.getName().equals(name)
-					&& symbol.getLocation().getUri().equals(uri)
-					&& symbol.getLocation().getRange().getStart().getLine() == startLine
-					&& symbol.getLocation().getRange().getStart().getCharacter() == startCHaracter
-					&& symbol.getLocation().getRange().getEnd().getLine() == endLine
-					&& symbol.getLocation().getRange().getEnd().getCharacter() == endCharacter) {
+					&& symbol.getLocation().getLeft().getUri().equals(uri)
+					&& symbol.getLocation().getLeft().getRange().getStart().getLine() == startLine
+					&& symbol.getLocation().getLeft().getRange().getStart().getCharacter() == startCHaracter
+					&& symbol.getLocation().getLeft().getRange().getEnd().getLine() == endLine
+					&& symbol.getLocation().getLeft().getRange().getEnd().getCharacter() == endCharacter) {
 				return true;
 			}
  		}

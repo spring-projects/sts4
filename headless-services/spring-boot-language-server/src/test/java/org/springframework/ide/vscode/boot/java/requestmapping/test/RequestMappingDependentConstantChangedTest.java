@@ -23,8 +23,8 @@ import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
 import org.eclipse.lsp4j.Location;
-import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
+import org.eclipse.lsp4j.WorkspaceSymbol;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -81,7 +81,7 @@ public class RequestMappingDependentConstantChangedTest {
 	public void testSimpleRequestMappingSymbolFromConstantInDifferentClass() throws Exception {
 		String docUri = directory.resolve("src/main/java/org/test/SimpleMappingClassWithConstantInDifferentClass.java").toUri().toString();
 		String constantsUri = directory.resolve("src/main/java/org/test/Constants.java").toUri().toString();
-		List<? extends SymbolInformation> symbols = indexer.getSymbols(docUri);
+		List<? extends WorkspaceSymbol> symbols = indexer.getSymbols(docUri);
 		assertEquals(1, symbols.size());
 		assertSymbol(docUri, "@/path/from/constant", "@RequestMapping(Constants.REQUEST_MAPPING_PATH)");
 
@@ -104,7 +104,7 @@ public class RequestMappingDependentConstantChangedTest {
 	public void testSimpleRequestMappingSymbolFromConstantInDifferentClassViaMultipleFilesUpdate() throws Exception {
 		String docUri = directory.resolve("src/main/java/org/test/SimpleMappingClassWithConstantInDifferentClass.java").toUri().toString();
 		String constantsUri = directory.resolve("src/main/java/org/test/Constants.java").toUri().toString();
-		List<? extends SymbolInformation> symbols = indexer.getSymbols(docUri);
+		List<? extends WorkspaceSymbol> symbols = indexer.getSymbols(docUri);
 		assertEquals(1, symbols.size());
 		assertSymbol(docUri, "@/path/from/constant", "@RequestMapping(Constants.REQUEST_MAPPING_PATH)");
 
@@ -128,7 +128,7 @@ public class RequestMappingDependentConstantChangedTest {
 		String docUri = directory.resolve("src/main/java/org/test/ChainedRequestMappingPathOverMultipleClasses.java").toUri().toString();
 		String chainConstantsUri_2 = directory.resolve("src/main/java/org/test/ChainElement2.java").toUri().toString();
 
-		List<? extends SymbolInformation> symbols = indexer.getSymbols(docUri);
+		List<? extends WorkspaceSymbol> symbols = indexer.getSymbols(docUri);
 		assertEquals(1, symbols.size());
 		assertSymbol(docUri, "@/path/from/chain", "@RequestMapping(ChainElement1.MAPPING_PATH_1)");
 
@@ -153,12 +153,12 @@ public class RequestMappingDependentConstantChangedTest {
 		String pongUri = directory.resolve("src/main/java/org/test/PongConstantRequestMapping.java").toUri().toString();
 
 		{
-			List<? extends SymbolInformation> symbols = indexer.getSymbols(pingUri);
+			List<? extends WorkspaceSymbol> symbols = indexer.getSymbols(pingUri);
 			assertSymbolCount(1, symbols);
 			assertSymbol(pingUri, "@/pong -- GET", "@GetMapping(PongConstantRequestMapping.PONG)");
 		}
 		{
-			List<? extends SymbolInformation> symbols = indexer.getSymbols(pongUri);
+			List<? extends WorkspaceSymbol> symbols = indexer.getSymbols(pongUri);
 			assertSymbolCount(1, symbols);
 			assertSymbol(pongUri, "@/ping -- GET", "@GetMapping(PingConstantRequestMapping.PING)");
 		}
@@ -167,12 +167,12 @@ public class RequestMappingDependentConstantChangedTest {
 		indexer.updateDocument(pingUri, null, "triggered by test code").get();
 
 		{
-			List<? extends SymbolInformation> symbols = indexer.getSymbols(pingUri);
+			List<? extends WorkspaceSymbol> symbols = indexer.getSymbols(pingUri);
 			assertSymbolCount(1, symbols);
 			assertSymbol(pingUri, "@/pong -- GET", "@GetMapping(PongConstantRequestMapping.PONG)");
 		}
 		{
-			List<? extends SymbolInformation> symbols = indexer.getSymbols(pongUri);
+			List<? extends WorkspaceSymbol> symbols = indexer.getSymbols(pongUri);
 			assertSymbolCount(1, symbols);
 			assertSymbol(pongUri, "@/changed -- GET", "@GetMapping(PingConstantRequestMapping.PING)");
 		}
@@ -186,12 +186,12 @@ public class RequestMappingDependentConstantChangedTest {
 		String pongUri = directory.resolve("src/main/java/org/test/PongConstantRequestMapping.java").toUri().toString();
 
 		{
-			List<? extends SymbolInformation> symbols = indexer.getSymbols(pingUri);
+			List<? extends WorkspaceSymbol> symbols = indexer.getSymbols(pingUri);
 			assertSymbolCount(1, symbols);
 			assertSymbol(pingUri, "@/pong -- GET", "@GetMapping(PongConstantRequestMapping.PONG)");
 		}
 		{
-			List<? extends SymbolInformation> symbols = indexer.getSymbols(pongUri);
+			List<? extends WorkspaceSymbol> symbols = indexer.getSymbols(pongUri);
 			assertSymbolCount(1, symbols);
 			assertSymbol(pongUri, "@/ping -- GET", "@GetMapping(PingConstantRequestMapping.PING)");
 		}
@@ -200,12 +200,12 @@ public class RequestMappingDependentConstantChangedTest {
 		indexer.updateDocuments(new String[] {pingUri}, "triggered by test code").get();
 
 		{
-			List<? extends SymbolInformation> symbols = indexer.getSymbols(pingUri);
+			List<? extends WorkspaceSymbol> symbols = indexer.getSymbols(pingUri);
 			assertSymbolCount(1, symbols);
 			assertSymbol(pingUri, "@/pong -- GET", "@GetMapping(PongConstantRequestMapping.PONG)");
 		}
 		{
-			List<? extends SymbolInformation> symbols = indexer.getSymbols(pongUri);
+			List<? extends WorkspaceSymbol> symbols = indexer.getSymbols(pongUri);
 			assertSymbolCount(1, symbols);
 			assertSymbol(pongUri, "@/changed -- GET", "@GetMapping(PingConstantRequestMapping.PING)");
 		}
@@ -213,10 +213,10 @@ public class RequestMappingDependentConstantChangedTest {
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////
 	
-	private void assertSymbolCount(int expectedCount, List<? extends SymbolInformation> symbols) {
+	private void assertSymbolCount(int expectedCount, List<? extends WorkspaceSymbol> symbols) {
 		if (symbols.size()!=expectedCount) {
 			StringBuilder found = new StringBuilder();
-			for (SymbolInformation s : symbols) {
+			for (WorkspaceSymbol s : symbols) {
 				found.append(s.getName());
 				found.append("\n");
 			}
@@ -225,15 +225,15 @@ public class RequestMappingDependentConstantChangedTest {
 	}
 
 	private void assertSymbol(String docUri, String name, String coveredText) throws Exception {
-		List<? extends SymbolInformation> symbols = indexer.getSymbols(docUri);
-		Optional<? extends SymbolInformation> maybeSymbol = symbols.stream().filter(s -> name.equals(s.getName())).findFirst();
+		List<? extends WorkspaceSymbol> symbols = indexer.getSymbols(docUri);
+		Optional<? extends WorkspaceSymbol> maybeSymbol = symbols.stream().filter(s -> name.equals(s.getName())).findFirst();
 		assertTrue(maybeSymbol.isPresent());
 		
 		TextDocument doc = new TextDocument(docUri, LanguageId.JAVA);
 		doc.setText(FileUtils.readFileToString(UriUtil.toFile(docUri)));
 		
-		SymbolInformation symbol = maybeSymbol.get();
-		Location loc = symbol.getLocation();
+		WorkspaceSymbol symbol = maybeSymbol.get();
+		Location loc = symbol.getLocation().getLeft();
 		assertEquals(docUri, loc.getUri());
 		int start = doc.toOffset(loc.getRange().getStart());
 		int end = doc.toOffset(loc.getRange().getEnd());

@@ -10,22 +10,22 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.handlers;
 
-import org.eclipse.lsp4j.SymbolInformation;
+import org.eclipse.lsp4j.WorkspaceSymbol;
 
 /**
  * @author Martin Lippert
  */
 public class EnhancedSymbolInformation {
 	
-	private final SymbolInformation symbol;
+	private final WorkspaceSymbol symbol;
 	private final SymbolAddOnInformation[] additionalInformation;
 
-	public EnhancedSymbolInformation(SymbolInformation symbol, SymbolAddOnInformation[] additionalInformation) {
+	public EnhancedSymbolInformation(WorkspaceSymbol symbol, SymbolAddOnInformation[] additionalInformation) {
 		this.symbol = symbol;
 		this.additionalInformation = additionalInformation;
 	}
 	
-	public SymbolInformation getSymbol() {
+	public WorkspaceSymbol getSymbol() {
 		return symbol;
 	}
 	

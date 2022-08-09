@@ -23,8 +23,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.apache.commons.io.FileUtils;
-import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
+import org.eclipse.lsp4j.WorkspaceSymbol;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -74,7 +74,7 @@ public class SpringIndexerTest {
 
 	@Test
 	public void testScanningAllAnnotationsSimpleProjectUpfront() throws Exception {
-		List<? extends SymbolInformation> allSymbols = indexer.getAllSymbols("");
+		List<? extends WorkspaceSymbol> allSymbols = indexer.getAllSymbols("");
 
 		assertEquals(7, allSymbols.size());
 
@@ -98,7 +98,7 @@ public class SpringIndexerTest {
 	public void testScanTestJavaSources() throws Exception {
 		indexer.configureIndexer(SymbolIndexConfig.builder().scanTestJavaSources(true).build());
 		
-		List<? extends SymbolInformation> allSymbols = indexer.getAllSymbols("");
+		List<? extends WorkspaceSymbol> allSymbols = indexer.getAllSymbols("");
 		assertEquals(8, allSymbols.size());
 		String docUri = directory.toPath().resolve("src/test/java/demo/ApplicationTests.java").toUri().toString();
 		assertTrue(containsSymbol(allSymbols, "@SpringBootTest", docUri, 8, 0, 8, 15));
@@ -112,7 +112,7 @@ public class SpringIndexerTest {
 	@Test
 	public void testRetrievingSymbolsPerDocument() throws Exception {
 		String docUri = directory.toPath().resolve("src/main/java/org/test/MainClass.java").toUri().toString();
-		List<? extends SymbolInformation> symbols = indexer.getSymbols(docUri);
+		List<? extends WorkspaceSymbol> symbols = indexer.getSymbols(docUri);
 		assertEquals(3, symbols.size());
 		assertTrue(containsSymbol(symbols, "@+ 'mainClass' (@SpringBootApplication <: @SpringBootConfiguration, @Configuration, @Component) MainClass", docUri, 6, 0, 6, 22));
 		assertTrue(containsSymbol(symbols, "@/embedded-foo-mapping", docUri, 17, 1, 17, 41));
@@ -132,7 +132,7 @@ public class SpringIndexerTest {
 
 	@Test
 	public void testScanningAllAnnotationsMultiModuleProjectUpfront() throws Exception {
-		List<? extends SymbolInformation> allSymbols = indexer.getAllSymbols("");
+		List<? extends WorkspaceSymbol> allSymbols = indexer.getAllSymbols("");
 
 		assertEquals(7, allSymbols.size());
 
@@ -165,13 +165,13 @@ public class SpringIndexerTest {
 		updateFuture.get(5, TimeUnit.SECONDS);
 
 		// check for updated index per document
-		List<? extends SymbolInformation> symbols = indexer.getSymbols(changedDocURI);
+		List<? extends WorkspaceSymbol> symbols = indexer.getSymbols(changedDocURI);
 		assertEquals(2, symbols.size());
 		assertTrue(containsSymbol(symbols, "@/mapping1-CHANGED", changedDocURI, 6, 1, 6, 36));
 		assertTrue(containsSymbol(symbols, "@/mapping2", changedDocURI, 11, 1, 11, 28));
 
 		// check for updated index in all symbols
-		List<? extends SymbolInformation> allSymbols = indexer.getAllSymbols("");
+		List<? extends WorkspaceSymbol> allSymbols = indexer.getAllSymbols("");
 		assertEquals(7, allSymbols.size());
 
 		String docUri = directory.toPath().resolve("src/main/java/org/test/MainClass.java").toUri().toString();
@@ -194,11 +194,11 @@ public class SpringIndexerTest {
 	public void testNewDocumentCreated() throws Exception {
 		String createdDocURI = directory.toPath().resolve("src/main/java/org/test/CreatedClass.java").toUri().toString();
 		// check for document to not be created yet
-		List<? extends SymbolInformation> symbols = indexer.getSymbols(createdDocURI);
+		List<? extends WorkspaceSymbol> symbols = indexer.getSymbols(createdDocURI);
 		assertNotNull(symbols);
 		assertEquals(0, symbols.size());
 
-		List<? extends SymbolInformation> allSymbols = indexer.getAllSymbols("");
+		List<? extends WorkspaceSymbol> allSymbols = indexer.getAllSymbols("");
 		assertEquals(7, allSymbols.size());
 
 		try {
@@ -271,7 +271,7 @@ public class SpringIndexerTest {
 		Assert.noElements(indexer.getSymbols(deletedDocURI));
 
 		// check for updated index in all symbols
-		List<? extends SymbolInformation> allSymbols = indexer.getAllSymbols("");
+		List<? extends WorkspaceSymbol> allSymbols = indexer.getAllSymbols("");
 		assertEquals(5, allSymbols.size());
 
 		String docUri = directory.toPath().resolve("src/main/java/org/test/MainClass.java").toUri().toString();
@@ -288,7 +288,7 @@ public class SpringIndexerTest {
 
 	@Test
 	public void testFilterSymbolsUsingQueryString() throws Exception {
-		List<? extends SymbolInformation> allSymbols = indexer.getAllSymbols("mapp");
+		List<? extends WorkspaceSymbol> allSymbols = indexer.getAllSymbols("mapp");
 
 		assertEquals(6, allSymbols.size());
 
@@ -306,7 +306,7 @@ public class SpringIndexerTest {
 
 	@Test
 	public void testFilterSymbolsUsingQueryStringSplittedResult() throws Exception {
-		List<? extends SymbolInformation> allSymbols = indexer.getAllSymbols("@/foo-root-mapping");
+		List<? extends WorkspaceSymbol> allSymbols = indexer.getAllSymbols("@/foo-root-mapping");
 
 		assertEquals(1, allSymbols.size());
 
@@ -317,7 +317,7 @@ public class SpringIndexerTest {
 
 	@Test
 	public void testFilterSymbolsUsingQueryStringFullSymbolString() throws Exception {
-		List<? extends SymbolInformation> allSymbols = indexer.getAllSymbols("@/foo-root-mapping/embedded-foo-mapping-with-root");
+		List<? extends WorkspaceSymbol> allSymbols = indexer.getAllSymbols("@/foo-root-mapping/embedded-foo-mapping-with-root");
 
 		assertEquals(1, allSymbols.size());
 
@@ -328,7 +328,7 @@ public class SpringIndexerTest {
 
 	@Test
 	public void testDeleteProject() throws Exception {
-		List<? extends SymbolInformation> allSymbols = indexer.getAllSymbols("");
+		List<? extends WorkspaceSymbol> allSymbols = indexer.getAllSymbols("");
 		assertEquals(7, allSymbols.size());
 
 		CompletableFuture<Void> deleteProject = indexer.deleteProject(project);
@@ -338,13 +338,13 @@ public class SpringIndexerTest {
 		assertEquals(0, allSymbols.size());
 	}
 
-	private boolean containsSymbol(List<? extends SymbolInformation> symbols, String name, String uri) {
-		for (Iterator<? extends SymbolInformation> iterator = symbols.iterator(); iterator.hasNext();) {
-			SymbolInformation symbol = iterator.next();
+	static boolean containsSymbol(List<? extends WorkspaceSymbol> symbols, String name, String uri) {
+		for (Iterator<? extends WorkspaceSymbol> iterator = symbols.iterator(); iterator.hasNext();) {
+			WorkspaceSymbol symbol = iterator.next();
 
 			if (
 					symbol.getName().equals(name) &&
-					symbol.getLocation().getUri().equals(uri)
+					symbol.getLocation().getLeft().getUri().equals(uri)
 			) {
 				return true;
 			}
@@ -353,16 +353,16 @@ public class SpringIndexerTest {
 		return false;
 	}
 
-	private boolean containsSymbol(List<? extends SymbolInformation> symbols, String name, String uri, int startLine, int startCHaracter, int endLine, int endCharacter) {
-		for (Iterator<? extends SymbolInformation> iterator = symbols.iterator(); iterator.hasNext();) {
-			SymbolInformation symbol = iterator.next();
+	static boolean containsSymbol(List<? extends WorkspaceSymbol> symbols, String name, String uri, int startLine, int startCHaracter, int endLine, int endCharacter) {
+		for (Iterator<? extends WorkspaceSymbol> iterator = symbols.iterator(); iterator.hasNext();) {
+			WorkspaceSymbol symbol = iterator.next();
 
 			if (symbol.getName().equals(name)
-					&& symbol.getLocation().getUri().equals(uri)
-					&& symbol.getLocation().getRange().getStart().getLine() == startLine
-					&& symbol.getLocation().getRange().getStart().getCharacter() == startCHaracter
-					&& symbol.getLocation().getRange().getEnd().getLine() == endLine
-					&& symbol.getLocation().getRange().getEnd().getCharacter() == endCharacter) {
+					&& symbol.getLocation().getLeft().getUri().equals(uri)
+					&& symbol.getLocation().getLeft().getRange().getStart().getLine() == startLine
+					&& symbol.getLocation().getLeft().getRange().getStart().getCharacter() == startCHaracter
+					&& symbol.getLocation().getLeft().getRange().getEnd().getLine() == endLine
+					&& symbol.getLocation().getLeft().getRange().getEnd().getCharacter() == endCharacter) {
 				return true;
 			}
  		}

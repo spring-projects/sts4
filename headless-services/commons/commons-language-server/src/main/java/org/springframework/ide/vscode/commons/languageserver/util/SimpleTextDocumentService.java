@@ -67,6 +67,7 @@ import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.eclipse.lsp4j.TextEdit;
 import org.eclipse.lsp4j.VersionedTextDocumentIdentifier;
 import org.eclipse.lsp4j.WorkspaceEdit;
+import org.eclipse.lsp4j.WorkspaceSymbol;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 import org.eclipse.lsp4j.jsonrpc.CompletableFutures;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
@@ -413,11 +414,11 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 							: r.stream().map(symbolInfo -> Either.<SymbolInformation, DocumentSymbol>forRight(symbolInfo))
 										.collect(Collectors.toList());
 				} else {
-					List<? extends SymbolInformation> r = h.handle(params);
+					List<? extends WorkspaceSymbol> r = h.handle(params);
 					//handle it when symbolHandler is sloppy and returns null instead of empty list.
 					return r == null
 							? ImmutableList.of()
-							: r.stream().map(symbolInfo -> Either.<SymbolInformation, DocumentSymbol>forLeft(symbolInfo))
+							: r.stream().map(symbolInfo -> Either.<SymbolInformation, DocumentSymbol>forLeft(new SymbolInformation(symbolInfo.getName(), symbolInfo.getKind(), symbolInfo.getLocation().getLeft(), symbolInfo.getContainerName())))
 										.collect(Collectors.toList());
 				}
 			});

@@ -18,8 +18,8 @@ import java.util.Stack;
 
 import org.eclipse.lsp4j.DocumentSymbol;
 import org.eclipse.lsp4j.DocumentSymbolParams;
-import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.SymbolKind;
+import org.eclipse.lsp4j.WorkspaceSymbol;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.languageserver.util.HierarchicalDocumentSymbolHandler;
@@ -153,7 +153,7 @@ public class TypeBasedYamlHierarchicalSymbolHandler implements HierarchicalDocum
 	}
 
 	@Override
-	public List<? extends SymbolInformation> handle(DocumentSymbolParams params) {
+	public List<? extends WorkspaceSymbol> handle(DocumentSymbolParams params) {
 		return baseHandler.handle(params);
 	}
 

@@ -14,7 +14,7 @@ import java.util.List;
 
 import org.eclipse.lsp4j.DocumentSymbol;
 import org.eclipse.lsp4j.DocumentSymbolParams;
-import org.eclipse.lsp4j.SymbolInformation;
+import org.eclipse.lsp4j.WorkspaceSymbol;
 
 import com.google.common.collect.ImmutableList;
 
@@ -27,7 +27,7 @@ public interface HierarchicalDocumentSymbolHandler extends DocumentSymbolHandler
 
 	HierarchicalDocumentSymbolHandler NO_SYMBOLS = new HierarchicalDocumentSymbolHandler() {
 		@Override
-		public List<? extends SymbolInformation> handle(DocumentSymbolParams params) {
+		public List<? extends WorkspaceSymbol> handle(DocumentSymbolParams params) {
 			return ImmutableList.of();
 		}
 

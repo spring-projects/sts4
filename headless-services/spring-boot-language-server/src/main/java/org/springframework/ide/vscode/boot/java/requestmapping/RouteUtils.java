@@ -11,8 +11,9 @@
 package org.springframework.ide.vscode.boot.java.requestmapping;
 
 import org.eclipse.lsp4j.Location;
-import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.SymbolKind;
+import org.eclipse.lsp4j.WorkspaceSymbol;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
 
@@ -34,7 +35,7 @@ public class RouteUtils {
 			String contentType = WebfluxUtils.getStringRep(contentTypes, WebfluxUtils::getMediaType);
 			label += contentType != null ? " - Content-Type: " + contentType : "";
 
-			return new EnhancedSymbolInformation(new SymbolInformation(label, SymbolKind.Interface, location), enhancedInformation);
+			return new EnhancedSymbolInformation(new WorkspaceSymbol(label, SymbolKind.Interface, Either.forLeft(location)), enhancedInformation);
 		}
 		else {
 			return null;

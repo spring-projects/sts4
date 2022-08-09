@@ -33,8 +33,11 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.eclipse.lsp4j.SymbolInformation;
+import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
+import org.eclipse.lsp4j.WorkspaceSymbol;
+import org.eclipse.lsp4j.WorkspaceSymbolLocation;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -518,7 +521,7 @@ public class SpringSymbolIndex implements InitializingBean {
 		}
 	}
 
-	public List<SymbolInformation> getAllSymbols(String query) {
+	public List<WorkspaceSymbol> getAllSymbols(String query) {
 		if (query != null && query.length() > 0) {
 			synchronized(this.symbols) {
 				return searchMatchingSymbols(this.symbols, query, MAX_NUMBER_OF_SYMBOLS_IN_RESPONSE);
@@ -530,7 +533,7 @@ public class SpringSymbolIndex implements InitializingBean {
 		}
 	}
 	
-	public Stream<SymbolInformation> getSymbols(Predicate<EnhancedSymbolInformation> filter) {
+	public Stream<WorkspaceSymbol> getSymbols(Predicate<EnhancedSymbolInformation> filter) {
 		return symbols.parallelStream()
 			.filter(filter)
 			.map(enhanced -> enhanced.getSymbol());
@@ -545,13 +548,13 @@ public class SpringSymbolIndex implements InitializingBean {
 		}
 	}
 	
-	public List<? extends SymbolInformation> getSymbols(String docURI) {
+	public List<? extends WorkspaceSymbol> getSymbols(String docURI) {
 		try {
 			TextDocument doc = server.getTextDocumentService().getLatestSnapshot(docURI);
 			URI uri = URI.create(docURI);
 			CompletableFuture<IJavaProject> projectInitialized = futureProjectFinder.findFuture(uri).thenCompose(project -> projectInitializedFuture(project));
 			IJavaProject project = projectInitialized.get(15, TimeUnit.SECONDS);
-			ImmutableList.Builder<SymbolInformation> builder = ImmutableList.builder();
+			ImmutableList.Builder<WorkspaceSymbol> builder = ImmutableList.builder();
 			if (project != null && doc != null) {
 				// Collect symbols from the opened document
 				for (SpringIndexer indexer : this.indexers) {
@@ -633,7 +636,7 @@ public class SpringSymbolIndex implements InitializingBean {
 		}, this.updateQueue);
 	}
 
-	private List<SymbolInformation> searchMatchingSymbols(List<EnhancedSymbolInformation> allsymbols, String query, int maxNumberOfSymbolsInResponse) {
+	private List<WorkspaceSymbol> searchMatchingSymbols(List<EnhancedSymbolInformation> allsymbols, String query, int maxNumberOfSymbolsInResponse) {
 		long limit = maxNumberOfSymbolsInResponse;
 		String locationPrefix = "";
 
@@ -660,7 +663,16 @@ public class SpringSymbolIndex implements InitializingBean {
 
 		return allsymbols.stream()
 				.map(enhanced -> enhanced.getSymbol())
-				.filter(symbol -> symbol.getLocation().getUri().startsWith(finalLocationPrefix))
+				.filter(symbol -> {
+					Either<Location, WorkspaceSymbolLocation> eitherLocation = symbol.getLocation();
+					if (eitherLocation.isLeft()) {
+						return eitherLocation.getLeft().getUri().startsWith(finalLocationPrefix);
+					}
+					if (eitherLocation.isRight()) {
+						return symbol.getLocation().getRight().getUri().startsWith(finalLocationPrefix);
+					}
+					return false;
+				})
 				.filter(symbol -> StringUtil.containsCharactersCaseInsensitive(symbol.getName(), finalQuery))
 				.limit(limit)
 				.collect(Collectors.toList());

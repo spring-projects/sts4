@@ -24,8 +24,11 @@ import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.Location;
-import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.SymbolKind;
+import org.eclipse.lsp4j.WorkspaceSymbol;
+import org.eclipse.lsp4j.jsonrpc.messages.Either;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.handlers.AbstractSymbolProvider;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
@@ -35,7 +38,6 @@ import org.springframework.ide.vscode.boot.java.utils.CachedSymbol;
 import org.springframework.ide.vscode.boot.java.utils.FunctionUtils;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJavaContext;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
-import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
@@ -50,6 +52,9 @@ import reactor.util.function.Tuples;
  * @author Kris De Volder
  */
 public class BeansSymbolProvider extends AbstractSymbolProvider {
+	
+	
+	private static final Logger log = LoggerFactory.getLogger(BeansSymbolProvider.class);
 
 	private static final String[] NAME_ATTRIBUTES = {"value", "name"};
 
@@ -63,17 +68,17 @@ public class BeansSymbolProvider extends AbstractSymbolProvider {
 		for (Tuple2<String, DocumentRegion> nameAndRegion : getBeanNames(node, doc)) {
 			try {
 				EnhancedSymbolInformation enhancedSymbol = new EnhancedSymbolInformation(
-						new SymbolInformation(
+						new WorkspaceSymbol(
 								beanLabel(isFunction, nameAndRegion.getT1(), beanType, "@Bean" + markerString),
 								SymbolKind.Interface,
-								new Location(doc.getUri(), doc.toRange(nameAndRegion.getT2()))),
+								Either.forLeft(new Location(doc.getUri(), doc.toRange(nameAndRegion.getT2())))),
 						new SymbolAddOnInformation[] {new BeansSymbolAddOnInformation(nameAndRegion.getT1())}
 				);
 
 				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), enhancedSymbol));
 
 			} catch (BadLocationException e) {
-				Log.log(e);
+				log.error("", e);
 			}
 		}
 	}
@@ -84,16 +89,16 @@ public class BeansSymbolProvider extends AbstractSymbolProvider {
 		Tuple3<String, String, DocumentRegion> functionBean = FunctionUtils.getFunctionBean(typeDeclaration, doc);
 		if (functionBean != null) {
 			try {
-				SymbolInformation symbol = new SymbolInformation(
+				WorkspaceSymbol symbol = new WorkspaceSymbol(
 						beanLabel(true, functionBean.getT1(), functionBean.getT2(), null),
 						SymbolKind.Interface,
-						new Location(doc.getUri(), doc.toRange(functionBean.getT3())));
+						Either.forLeft(new Location(doc.getUri(), doc.toRange(functionBean.getT3()))));
 
 				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(),
 						new EnhancedSymbolInformation(symbol, new SymbolAddOnInformation[] {new BeansSymbolAddOnInformation(functionBean.getT1())})));
 
 			} catch (BadLocationException e) {
-				Log.log(e);
+				log.error("", e);
 			}
 		}
 	}
