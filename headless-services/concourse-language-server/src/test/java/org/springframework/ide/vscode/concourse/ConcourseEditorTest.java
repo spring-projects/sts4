@@ -19,8 +19,11 @@ import static org.springframework.ide.vscode.languageserver.testharness.TestAsse
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -50,6 +53,9 @@ import org.springframework.test.context.junit4.SpringRunner;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+
+import reactor.core.Disposable;
+import reactor.core.publisher.Mono;
 
 @RunWith(SpringRunner.class)
 @ConcourseLanguageServerTest
@@ -4803,8 +4809,29 @@ public class ConcourseEditorTest {
 				"  group-two::Groups\n"
 		);
 	}
+	
+	private static StringBuffer getStackDumps() {
+		StringBuffer sb = new StringBuffer();
+		Map<Thread, StackTraceElement[]> traces = Thread.getAllStackTraces();
+		for (Map.Entry<Thread, StackTraceElement[]> entry : traces.entrySet()) {
+			sb.append(entry.getKey().toString());
+			sb.append("\n");
+			for (StackTraceElement element : entry.getValue()) {
+				sb.append("  ");
+				sb.append(element.toString());
+				sb.append("\n");
+			}
+			sb.append("\n");
+		}
+		return sb;
+	}
+
 
 	@Test public void reconcilerRaceCondition() throws Exception {
+		Disposable future = Mono.fromRunnable(() -> {
+			System.out.println(getStackDumps());
+		}).delaySubscription(Duration.ofSeconds(60)).subscribe();
+		
 		Editor editor = harness.newEditor("garbage");
 		System.out.println("Editor created");
 		SynchronizationPoint reconcilerThreadStart = harness.reconcilerThreadStart();
@@ -4829,6 +4856,8 @@ public class ConcourseEditorTest {
 				"garbage"
 		);
 		editor.assertProblems("garbage|Expecting a 'Map'");
+		
+		future.dispose();
 	}
 
 	@Test public void noAutoInsertRequiredSourcePropertiesIfPresent() throws Exception {
