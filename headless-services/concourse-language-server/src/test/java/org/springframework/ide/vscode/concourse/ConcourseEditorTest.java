@@ -4805,10 +4805,10 @@ public class ConcourseEditorTest {
 	}
 
 	@Test public void reconcilerRaceCondition() throws Exception {
-		SynchronizationPoint reconcilerThreadStart = harness.reconcilerThreadStart();
-		System.out.println("Reconcile thread started");
 		Editor editor = harness.newEditor("garbage");
 		System.out.println("Editor created");
+		SynchronizationPoint reconcilerThreadStart = harness.reconcilerThreadStart();
+		System.out.println("Reconcile thread started");
 		try {
 			String editorContents = editor.getRawText();
 			for (int i = 0; i < 4; i++) {
