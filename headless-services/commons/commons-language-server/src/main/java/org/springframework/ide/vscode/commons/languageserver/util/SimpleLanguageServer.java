@@ -615,7 +615,11 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 			log.debug("Reconcile skipped due to document doesn't exist anymore {}", docId.getUri());
 			return;
 		}
-		
+
+		if (reconcileRequests.isEmpty()) {
+			busyReconcile = new CompletableFuture<>();
+		}
+
 		String uri = docId.getUri();
 		CompletableFuture<Void> newFuture = new CompletableFuture<Void>();
 		CompletableFuture<Void> oldFuture = reconcileRequests.putIfAbsent(uri, newFuture);
@@ -624,7 +628,7 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 			return;
 		}
 
-		CompletableFuture<Void> reconcileSession = this.busyReconcile = oldFuture == null ? newFuture : oldFuture; 
+		CompletableFuture<Void> reconcileSession = oldFuture == null ? newFuture : oldFuture;
 //		Log.debug("Reconciling BUSY");
 
 		// Avoid running in the same thread as lsp4j as it can result
@@ -707,6 +711,9 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 		})
 		.doFinally(ignore -> {
 			reconcileSession.complete(null);
+			if (reconcileRequests.isEmpty()) {
+				busyReconcile.complete(null);
+			}
 //			Log.debug("Reconciler DONE : "+this.busyReconcile.isDone());
 		})
 		.subscribe();
