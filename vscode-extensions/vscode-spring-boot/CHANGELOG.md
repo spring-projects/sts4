@@ -1,3 +1,8 @@
+## 2022-08-11 (4.15.3 RELEASE, incl. language servers version 1.38.0)
+
+* _(Spring Boot)_ fixed: Spring Boot Tools slow down code complete ([#808](https://github.com/spring-projects/sts4/issues/808))
+* _(Language Server)_ fixed: Copied files should retain copyright ownership ([#807](https://github.com/spring-projects/sts4/issues/807))
+
 ## 2022-08-03 (4.15.2 RELEASE, incl. language servers version 1.37.0)
 
 * _(Spring Boot)_ fixed: Validation errors on @@ placeholders in YAML editor ([#711](https://github.com/spring-projects/sts4/issues/711))
