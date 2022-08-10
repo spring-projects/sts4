@@ -2,7 +2,7 @@
 <feature
 	id="org.springframework.tooling.boot.ls.feature"
 	label="Spring Boot Language Server Feature"
-	version="4.16.0.qualifier"
+	version="4.15.3.qualifier"
 	provider-name="VMware, Inc.">
 
     <description>
