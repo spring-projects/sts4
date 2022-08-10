@@ -630,7 +630,7 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 		// in long "hangs" for slow reconcile providers
 		Mono<?> mono = props.getReconcileDelay() > 0
 				? Mono.delay(Duration.ofMillis(props.getReconcileDelay())).publishOn(RECONCILER_SCHEDULER)
-				: Mono.empty().publishOn(RECONCILER_SCHEDULER);
+				: Mono.empty().subscribeOn(RECONCILER_SCHEDULER);
 		
 		mono.then(Mono.fromRunnable(() -> {
 			reconcileRequests.remove(uri);
