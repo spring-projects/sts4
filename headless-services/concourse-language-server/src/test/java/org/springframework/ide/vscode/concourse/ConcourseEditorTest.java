@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2019 Pivotal, Inc.
+ * Copyright (c) 2016, 2022 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -4806,14 +4806,16 @@ public class ConcourseEditorTest {
 
 	@Test public void reconcilerRaceCondition() throws Exception {
 		SynchronizationPoint reconcilerThreadStart = harness.reconcilerThreadStart();
+		System.out.println("Reconcile thread started");
 		Editor editor = harness.newEditor("garbage");
-
-		reconcilerThreadStart.reached(); // Blocks until the reconciler thread is reached.
+		System.out.println("Editor created");
 		try {
 			String editorContents = editor.getRawText();
 			for (int i = 0; i < 4; i++) {
+				System.out.println("Perfroming change: " + i);
 				editorContents = "\n" +editorContents;
 				editor.setText(editorContents);
+				System.out.println("Text changed: " + i);
 			}
 		} finally {
 			reconcilerThreadStart.unblock();

@@ -18,10 +18,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
@@ -600,7 +602,7 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 	 * in a burst. Rather than execute the same request repeatedly we can avoid queuing
 	 * up more requests if the previous request has not yet been started.
 	 */
-	private Map<String, CompletableFuture<Void>> reconcileRequests = new ConcurrentHashMap<>();
+	private Set<String> reconcileRequests = Collections.synchronizedSet(new HashSet<>());
 
 	private DiagnosticSeverityProvider severityProvider = DiagnosticSeverityProvider.DEFAULT;
 
@@ -616,21 +618,14 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 			return;
 		}
 
-		if (reconcileRequests.isEmpty()) {
-			busyReconcile = new CompletableFuture<>();
-		}
-
 		String uri = docId.getUri();
-		CompletableFuture<Void> newFuture = new CompletableFuture<Void>();
-		CompletableFuture<Void> oldFuture = reconcileRequests.putIfAbsent(uri, newFuture);
-		if (oldFuture != null && oldFuture != newFuture) {
+		if (!reconcileRequests.add(uri)) {
 			log.debug("Reconcile skipped {}", uri);
 			return;
 		}
-
-		CompletableFuture<Void> reconcileSession = oldFuture == null ? newFuture : oldFuture;
 //		Log.debug("Reconciling BUSY");
 
+		CompletableFuture<Void> currentSession = this.busyReconcile = new CompletableFuture<>();
 		// Avoid running in the same thread as lsp4j as it can result
 		// in long "hangs" for slow reconcile providers
 		Mono<?> mono = props.getReconcileDelay() > 0
@@ -710,10 +705,7 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 			return Mono.empty();
 		})
 		.doFinally(ignore -> {
-			reconcileSession.complete(null);
-			if (reconcileRequests.isEmpty()) {
-				busyReconcile.complete(null);
-			}
+			currentSession.complete(null);
 //			Log.debug("Reconciler DONE : "+this.busyReconcile.isDone());
 		})
 		.subscribe();
