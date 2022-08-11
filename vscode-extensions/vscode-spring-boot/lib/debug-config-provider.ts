@@ -8,6 +8,7 @@ import { ListenablePreferenceSetting } from "@pivotal-tools/commons-vscode/lib/l
 const JMX_VM_ARG = '-Dspring.jmx.enabled='
 const ADMIN_VM_ARG = '-Dspring.application.admin.enabled='
 const BOOT_PROJECT_ARG = '-Dspring.boot.project.name=';
+const RMI_HOSTNAME = '-Djava.rmi.server.hostname=localhost';
 
 class SpringBootDebugConfigProvider implements DebugConfigurationProvider {
 
@@ -23,8 +24,11 @@ class SpringBootDebugConfigProvider implements DebugConfigurationProvider {
                 if (debugConfiguration.vmArgs.indexOf(BOOT_PROJECT_ARG) < 0) {
                     debugConfiguration.vmArgs += ` ${BOOT_PROJECT_ARG}${debugConfiguration.projectName}`;
                 }
+                if (debugConfiguration.vmArgs.indexOf(RMI_HOSTNAME) < 0) {
+                    debugConfiguration.vmArgs += ` ${RMI_HOSTNAME}`;
+                }
             } else {
-                debugConfiguration.vmArgs = `${JMX_VM_ARG}true ${ADMIN_VM_ARG}true ${BOOT_PROJECT_ARG}${debugConfiguration.projectName}`;
+                debugConfiguration.vmArgs = `${JMX_VM_ARG}true ${ADMIN_VM_ARG}true ${BOOT_PROJECT_ARG}${debugConfiguration.projectName} ${RMI_HOSTNAME}`;
             }
         }
         return debugConfiguration;
