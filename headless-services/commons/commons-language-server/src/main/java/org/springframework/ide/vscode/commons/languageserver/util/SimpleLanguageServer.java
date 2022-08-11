@@ -625,14 +625,9 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 		}
 //		Log.debug("Reconciling BUSY");
 
-		CompletableFuture<Void> currentSession = this.busyReconcile = new CompletableFuture<>();
-		// Avoid running in the same thread as lsp4j as it can result
-		// in long "hangs" for slow reconcile providers
-		Mono<?> mono = props.getReconcileDelay() > 0
-				? Mono.delay(Duration.ofMillis(props.getReconcileDelay())).publishOn(RECONCILER_SCHEDULER)
-				: Mono.empty().publishOn(RECONCILER_SCHEDULER);
+		CompletableFuture<Void> currentSession = this.busyReconcile = new CompletableFuture<>();	
 		
-		mono.then(Mono.fromRunnable(() -> {
+		Mono<Object> doReconcile = Mono.fromRunnable(() -> {
 			reconcileRequests.remove(uri);
 			log.debug("Reconcile starting {}", uri);
 
@@ -699,7 +694,7 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 			};
 
 			engine.reconcile(doc, problems);
-		}))
+		})
 		.onErrorResume(error -> {
 			log.error("", error);
 			return Mono.empty();
@@ -707,8 +702,18 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 		.doFinally(ignore -> {
 			currentSession.complete(null);
 //			Log.debug("Reconciler DONE : "+this.busyReconcile.isDone());
-		})
-		.subscribe();
+		});
+		
+		// Use RECONCILER_SCHEDULER to avoid running in the same thread as lsp4j as it can result
+		// in long "hangs" for slow reconcile providers
+		if (props.getReconcileDelay() > 0) {
+			Mono.delay(Duration.ofMillis(props.getReconcileDelay()))
+			.publishOn(RECONCILER_SCHEDULER)
+			.then(doReconcile)
+			.subscribe();
+		} else {
+			doReconcile.subscribeOn(RECONCILER_SCHEDULER).subscribe();
+		}
 	}
 
 	public DiagnosticSeverity getDiagnosticSeverity(ReconcileProblem problem) {
