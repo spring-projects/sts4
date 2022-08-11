@@ -352,7 +352,8 @@ public class JdtLsProjectCache implements InitializableJavaProjectsService, Serv
 									: new JdtLsJavaProject(server.getClient(), projectUri, classpath, JdtLsProjectCache.this);
 							IJavaProject oldProject = table.put(uri, newProject);
 							if (oldProject != null) {
-								notifyChanged(newProject);
+								notifyDelete(oldProject);
+								notifyCreated(newProject);
 							} else {
 								notifyCreated(newProject);
 							}
