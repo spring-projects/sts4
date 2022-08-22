@@ -96,7 +96,7 @@ export function activate(context: VSCode.ExtensionContext): Thenable<ExtensionAP
                 }
             ],
             synchronize: {
-                configurationSection: 'boot-java'
+                configurationSection: ['boot-java', 'spring-boot']
             },
             initializationOptions: () => ({
                 workspaceFolders: workspace.workspaceFolders ? workspace.workspaceFolders.map(f => f.uri.toString()) : null,
