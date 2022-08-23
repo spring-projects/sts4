@@ -12,7 +12,7 @@
   "license": "EPL-1.0",
   "engines": {
     "npm": ">=6.0.0",
-    "vscode": ">=1.53.0"
+    "vscode": ">=1.70.0"
   },
   "categories": [
     "Programming Languages",
@@ -113,7 +113,7 @@
   },
   "dependencies": {
     "@pivotal-tools/commons-vscode": "file:../commons-vscode/pivotal-tools-commons-vscode-0.2.4.tgz",
-    "vscode-languageclient": "^7.0.0"
+    "vscode-languageclient": "^8.0.2"
   },
   "devDependencies": {
     "@types/node": "^16.11.11",

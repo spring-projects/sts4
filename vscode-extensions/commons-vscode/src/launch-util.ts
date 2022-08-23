@@ -22,7 +22,7 @@ import { registerClasspathService } from './classpath';
 import {HighlightCodeLensProvider} from "./code-lens-service";
 import {registerJavaDataService} from "./java-data";
 
-const p2c = P2C.createConverter(undefined, undefined);
+const p2c = P2C.createConverter(undefined, false, false);
 
 PortFinder.basePort = 45556;
 
@@ -339,13 +339,11 @@ function setupLanguageClient(context: VSCode.ExtensionContext, createServer: Ser
     client.registerProposedFeatures();
     log("Proposed protocol extensions loaded!");
     if (options.TRACE) {
-        client.trace = Trace.Verbose;
+        client.setTrace(Trace.Verbose);
     }
 
     let highlightNotification = new NotificationType<HighlightParams>("sts/highlight");
     let moveCursorRequest = new RequestType<MoveCursorParams,MoveCursorResponse,void>("sts/moveCursor");
-
-    let disposable = client.start();
 
     const codeLensListanableSetting = options.highlightCodeLensSettingKey ? new ListenablePreferenceSetting<boolean>(options.highlightCodeLensSettingKey) : undefined;
 
@@ -355,7 +353,7 @@ function setupLanguageClient(context: VSCode.ExtensionContext, createServer: Ser
 
     CommonsCommands.registerCommands(context);
 
-    context.subscriptions.push(disposable);
+    context.subscriptions.push({dispose: () => client.stop()});
     context.subscriptions.push(highlightService);
 
     function toggleHighlightCodeLens() {
@@ -377,7 +375,7 @@ function setupLanguageClient(context: VSCode.ExtensionContext, createServer: Ser
         codeLensListanableSetting.onDidChangeValue(() => toggleHighlightCodeLens())
     }
 
-    return  client.onReady().then(() => {
+    return  client.start().then(() => {
         client.onNotification(highlightNotification, (params: HighlightParams) => {
             highlightService.handle(params);
             if (codeLensListanableSetting && codeLensListanableSetting.value) {
