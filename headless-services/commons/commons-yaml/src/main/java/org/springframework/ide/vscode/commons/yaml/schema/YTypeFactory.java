@@ -38,7 +38,6 @@ import org.springframework.ide.vscode.commons.util.SimpleGlob;
 import org.springframework.ide.vscode.commons.util.SimpleGlob.Match;
 import org.springframework.ide.vscode.commons.util.ValueParser;
 import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems;
-import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YBeanType;
 import org.springframework.ide.vscode.commons.yaml.schema.constraints.Constraint;
 import org.springframework.ide.vscode.commons.yaml.schema.constraints.Constraints;
 import org.springframework.ide.vscode.commons.yaml.snippet.TypeBasedSnippetProvider;
@@ -683,7 +682,7 @@ public class YTypeFactory {
 		}
 
 	}
-
+	
 	public static class YAtomicType extends AbstractType {
 		private final String name;
 		private YAtomicType(String name) {
@@ -809,7 +808,7 @@ public class YTypeFactory {
 		}
 	}
 
-	public class AbstractUnionType extends AbstractType {
+	public static class AbstractUnionType extends AbstractType {
 		protected final String name;
 		protected final YType[] subtypes;
 		

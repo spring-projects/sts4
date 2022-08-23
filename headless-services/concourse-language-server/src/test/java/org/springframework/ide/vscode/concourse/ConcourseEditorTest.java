@@ -3202,6 +3202,52 @@ public class ConcourseEditorTest {
 		editor.assertHoverContains("add_claimed", "in the *claimed* state");
 		editor.assertHoverContains("remove", "remove the given lock from the pool");
 	}
+	
+	@Test public void resourceCheckEveryValidation() throws Exception {
+		//See: https://github.com/spring-projects/sts4/issues/816
+		Editor editor = harness.newEditor(
+				"resources:\n" +
+				"- name: git\n" +
+				"  type: git\n" +
+				"  check_every: bad-duration\n"
+		);
+
+		editor.assertProblems(
+				"git|Unused 'Resource'",
+				"bad-duration|not a valid 'Duration'"
+		);
+		
+		editor = harness.newEditor(
+				"resources:\n" +
+				"- name: git\n" +
+				"  type: git\n" +
+				"  check_every:  never\n"
+		); 
+		editor.assertProblems(
+				"git|Unused 'Resource'"
+		);
+		
+		editor = harness.newEditor(
+				"resources:\n" +
+				"- name: git\n" +
+				"  type: git\n" +
+				"  check_every:  1h\n"
+		); 
+		editor.assertProblems(
+				"git|Unused 'Resource'"
+		);
+	}
+	
+	@Test public void resourceCheckEveryCompletion() throws Exception {
+		//See: https://github.com/spring-projects/sts4/issues/816
+		Editor editor = harness.newEditor(
+				"resources:\n" +
+				"- name: git\n" +
+				"  type: git\n" +
+				"  check_every:  <*>"
+		); 
+		editor.assertContainsCompletions("<*>", "never<*>");
+	}
 
 	@Test public void semverResourceSourceReconcileAtomNotAllowed() throws Exception {
 		Editor editor = harness.newEditor(

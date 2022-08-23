@@ -130,6 +130,10 @@ public class PipelineYmlSchema implements YamlSchema {
 
 	public final YType t_duration = f.yatomic("Duration")
 			.parseWith(ConcourseValueParsers.DURATION);
+	public final YType t_duration_or_never = f.yatomic("DurationOrNever")
+			.parseWith(ConcourseValueParsers.DURATION)
+			.alsoAccept("never")
+			.addHints("never");
 	public final YType t_time_of_day = f.yatomic("TimeOfDay")
 			.parseWith(ConcourseValueParsers.TIME_OF_DAY);
 	public final YType t_location = f.yatomic("Location")
@@ -264,7 +268,7 @@ public class PipelineYmlSchema implements YamlSchema {
 		addProp(t_resource, "name", t_resource_name_def).isPrimary(true);
 		addProp(t_resource, "type", t_resource_type_name).isRequired(true);
 		addProp(t_resource, "source", resourceSource);
-		addProp(t_resource, "check_every", t_duration);
+		addProp(t_resource, "check_every", t_duration_or_never);
 		addProp(t_resource, "tags", t_strings);
 		addProp(t_resource, "webhook_token", t_ne_string);
 		addProp(t_resource, "icon", t_ne_string);
