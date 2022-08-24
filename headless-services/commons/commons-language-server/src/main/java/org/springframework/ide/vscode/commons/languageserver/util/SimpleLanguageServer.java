@@ -51,9 +51,11 @@ import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.Registration;
 import org.eclipse.lsp4j.RegistrationParams;
 import org.eclipse.lsp4j.ServerCapabilities;
+import org.eclipse.lsp4j.SetTraceParams;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.eclipse.lsp4j.WorkDoneProgressBegin;
+import org.eclipse.lsp4j.WorkDoneProgressCancelParams;
 import org.eclipse.lsp4j.WorkDoneProgressCreateParams;
 import org.eclipse.lsp4j.WorkDoneProgressEnd;
 import org.eclipse.lsp4j.WorkDoneProgressReport;
@@ -531,6 +533,16 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 
 	private boolean hasWorkspaceSymbolHandler() {
 		return getWorkspaceService().hasWorkspaceSymbolHandler();
+	}
+	
+	@Override
+	public void cancelProgress(WorkDoneProgressCancelParams params) {
+		// TODO: Implement cancel progress message handling! 
+	}
+
+	@Override
+	public void setTrace(SetTraceParams params) {
+		// TODO: Implement set trace message for LS. Should be something about changing log level probably
 	}
 
 	@Override
