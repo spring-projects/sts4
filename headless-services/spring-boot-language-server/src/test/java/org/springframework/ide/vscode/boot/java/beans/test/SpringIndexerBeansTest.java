@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2019 Pivotal, Inc.
+ * Copyright (c) 2017, 2022 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -162,6 +162,14 @@ public class SpringIndexerBeansTest {
 		String docUri = directory.toPath().resolve("src/main/java/org/test/SimpleRestController.java").toUri().toString();
 		SpringIndexerHarness.assertDocumentSymbols(indexer, docUri,
 				SpringIndexerHarness.symbol("@RestController", "@+ 'simpleRestController' (@RestController <: @Controller, @Component) SimpleRestController")
+		);
+	}
+
+	@Test
+	public void testCustomAnnotationClass() throws Exception {
+		String docUri = directory.toPath().resolve("src/main/java/org/test/CustomAnnotation.java").toUri().toString();
+		SpringIndexerHarness.assertDocumentSymbols(indexer, docUri,
+				SpringIndexerHarness.symbol("@AliasFor(annotation = Component.class)", "@AliasFor(annotation=Component.class)")
 		);
 	}
 
