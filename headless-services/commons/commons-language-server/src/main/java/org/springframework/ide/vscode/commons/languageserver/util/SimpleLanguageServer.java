@@ -654,56 +654,7 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 				testListener.reconcileStarted(docId.getUri(), doc.getVersion());
 			}
 
-			IProblemCollector problems = new IProblemCollector() {
-
-				private LinkedHashSet<Diagnostic> diagnostics = new LinkedHashSet<>();
-				private List<Quickfix<?>> quickfixes = new ArrayList<>();
-
-				@Override
-				public void endCollecting() {
-					documents.setQuickfixes(docId, quickfixes);
-					documents.publishDiagnostics(docId, diagnostics);
-					log.debug("Reconcile done sent {} diagnostics", diagnostics.size());
-				}
-
-				@Override
-				public void beginCollecting() {
-					diagnostics.clear();
-				}
-
-				@Override
-				public void checkPointCollecting() {
-					// publish what has been collected so far
-					documents.setQuickfixes(docId, quickfixes);
-					documents.publishDiagnostics(docId, diagnostics);
-					log.debug("Reconcile checkpoint sent {} diagnostics", diagnostics.size());
-				}
-
-				@Override
-				public void accept(ReconcileProblem problem) {
-					try {
-						DiagnosticSeverity severity = getDiagnosticSeverity(problem);
-						if (severity!=null) {
-							Diagnostic d = new Diagnostic();
-							d.setCode(problem.getCode());
-							d.setMessage(problem.getMessage());
-							Range rng = doc.toRange(problem.getOffset(), problem.getLength());
-							d.setRange(rng);
-							d.setSeverity(severity);
-							d.setSource(getServer().EXTENSION_ID);
-							List<QuickfixData<?>> fixes = problem.getQuickfixes();
-							if (CollectionUtil.hasElements(fixes)) {
-								for (QuickfixData<?> fix : fixes) {
-									quickfixes.add(new Quickfix<>(CODE_ACTION_COMMAND_ID, d, fix));
-								}
-							}
-							diagnostics.add(d);
-						}
-					} catch (BadLocationException e) {
-						log.warn("Invalid reconcile problem ignored", e);
-					}
-				}
-			};
+			IProblemCollector problems = createProblemCollector(doc);
 
 			engine.reconcile(doc, problems);
 		})
@@ -727,7 +678,62 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 			doReconcile.subscribeOn(RECONCILER_SCHEDULER).subscribe();
 		}
 	}
+	
+	public IProblemCollector createProblemCollector(TextDocument doc) {
+		SimpleTextDocumentService documents = getTextDocumentService();
+		TextDocumentIdentifier docId = doc.getId();
+		return new IProblemCollector() {
 
+			private LinkedHashSet<Diagnostic> diagnostics = new LinkedHashSet<>();
+			private List<Quickfix<?>> quickfixes = new ArrayList<>();
+
+			@Override
+			public void endCollecting() {
+				documents.setQuickfixes(docId, quickfixes);
+				documents.publishDiagnostics(docId, diagnostics);
+				log.debug("Reconcile done sent {} diagnostics", diagnostics.size());
+			}
+
+			@Override
+			public void beginCollecting() {
+				diagnostics.clear();
+			}
+
+			@Override
+			public void checkPointCollecting() {
+				// publish what has been collected so far
+				documents.setQuickfixes(docId, quickfixes);
+				documents.publishDiagnostics(docId, diagnostics);
+				log.debug("Reconcile checkpoint sent {} diagnostics", diagnostics.size());
+			}
+
+			@Override
+			public void accept(ReconcileProblem problem) {
+				try {
+					DiagnosticSeverity severity = getDiagnosticSeverity(problem);
+					if (severity!=null) {
+						Diagnostic d = new Diagnostic();
+						d.setCode(problem.getCode());
+						d.setMessage(problem.getMessage());
+						Range rng = doc.toRange(problem.getOffset(), problem.getLength());
+						d.setRange(rng);
+						d.setSeverity(severity);
+						d.setSource(getServer().EXTENSION_ID);
+						List<QuickfixData<?>> fixes = problem.getQuickfixes();
+						if (CollectionUtil.hasElements(fixes)) {
+							for (QuickfixData<?> fix : fixes) {
+								quickfixes.add(new Quickfix<>(CODE_ACTION_COMMAND_ID, d, fix));
+							}
+						}
+						diagnostics.add(d);
+					}
+				} catch (BadLocationException e) {
+					log.warn("Invalid reconcile problem ignored", e);
+				}
+			}
+		};
+	}
+	
 	public DiagnosticSeverity getDiagnosticSeverity(ReconcileProblem problem) {
 		return severityProvider.getDiagnosticSeverity(problem);
 	}

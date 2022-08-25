@@ -208,10 +208,12 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 					TextDocument lastSnapshot = documentSnapshots.remove(url);
 
 					log.info("Closed: "+url);
-					//Clear diagnostics when a file is closed. This makes the errors disapear when the language is changed for
-					// a document (this resulst in a dicClose even as being sent to the language server if that changes make the
-					// document go 'out of scope'.
-					publishDiagnostics(params.getTextDocument(), ImmutableList.of());
+					if (props.isReconcileOnlyOpenedDocs()) {
+						//Clear diagnostics when a file is closed. This makes the errors disapear when the language is changed for
+						// a document (this resulst in a dicClose even as being sent to the language server if that changes make the
+						// document go 'out of scope'.
+						publishDiagnostics(params.getTextDocument(), ImmutableList.of());
+					}
 
 					documentCloseListeners.fire(lastSnapshot);
 				} else {

@@ -222,15 +222,21 @@ public class ORAstUtils {
 	public static List<CompilationUnit> parse(JavaParser parser, Iterable<Path> sourceFiles) {
 		InMemoryExecutionContext ctx = new InMemoryExecutionContext(ORAstUtils::logExceptionWhileParsing);
 //		ctx.putMessage(JavaParser.SKIP_SOURCE_SET_TYPE_GENERATION, true);
-		List<CompilationUnit> cus = parser.parse(sourceFiles, null, ctx);
+		List<CompilationUnit> cus = Collections.emptyList();
+		synchronized(parser) {
+			cus = parser.parse(sourceFiles, null, ctx);
+		}
 		List<Result> results = new UpdateSourcePositions()/*.doNext(new MarkParentRecipe())*/.run(cus);
-		return results.stream().map(r -> r.getAfter() == null ? r.getBefore() : r.getAfter()).map(CompilationUnit.class::cast).collect(Collectors.toList());
+		return results.stream().map(r -> r.getAfter() == null ? r.getBefore() : r.getAfter()).map(CompilationUnit.class::cast).collect(Collectors.toList());	
 	}
 	
 	public static List<CompilationUnit> parseInputs(JavaParser parser, Iterable<Parser.Input> inputs) {
 		InMemoryExecutionContext ctx = new InMemoryExecutionContext(ORAstUtils::logExceptionWhileParsing);
 //		ctx.putMessage(JavaParser.SKIP_SOURCE_SET_TYPE_GENERATION, true);
-		List<CompilationUnit> cus = parser.parseInputs(inputs, null, ctx);
+		List<CompilationUnit> cus = Collections.emptyList();
+		synchronized (parser) {
+			cus = parser.parseInputs(inputs, null, ctx);
+		}
 		List<Result> results = new UpdateSourcePositions()/*.doNext(new MarkParentRecipe())*/.run(cus);
 		return results.stream().map(r -> r.getAfter() == null ? r.getBefore() : r.getAfter()).map(CompilationUnit.class::cast).collect(Collectors.toList());
 	}

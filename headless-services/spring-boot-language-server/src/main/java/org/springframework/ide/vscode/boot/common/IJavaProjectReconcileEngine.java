@@ -8,24 +8,16 @@
  * Contributors:
  *     VMware, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.java.reconcilers;
+package org.springframework.ide.vscode.boot.common;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
 
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
-import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblem;
-import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
-public interface JavaReconciler {
-	
-	void reconcile(IJavaProject project, IDocument doc, IProblemCollector problemCollector);
+public interface IJavaProjectReconcileEngine {
 
-	Map<IDocument, Collection<ReconcileProblem>> reconcile(IJavaProject project, List<TextDocument> docs,
-			Function<TextDocument, IProblemCollector> problemCollectorFactory);
+	void reconcile(IJavaProject project, Function<TextDocument, IProblemCollector> problemCollectorFactory);
 
 }

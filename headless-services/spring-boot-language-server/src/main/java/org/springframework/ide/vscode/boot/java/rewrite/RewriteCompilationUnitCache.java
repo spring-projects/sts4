@@ -25,6 +25,7 @@ import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -60,7 +61,7 @@ public class RewriteCompilationUnitCache implements DocumentContentProvider, Dis
 	
 	private static final Logger logger = LoggerFactory.getLogger(RewriteCompilationUnitCache.class);
 	
-//	private static final long CU_ACCESS_EXPIRATION = 1;
+	private static final long CU_ACCESS_EXPIRATION = 1;
 //	private JavaProjectFinder projectFinder;
 	private ProjectObserver projectObserver;
 	
@@ -78,7 +79,8 @@ public class RewriteCompilationUnitCache implements DocumentContentProvider, Dis
 		// PT 154618835 - Avoid retaining the CU in the cache as it consumes memory if it hasn't been
 		// accessed after some time
 		this.uriToCu = CacheBuilder.newBuilder()
-//				.expireAfterAccess(CU_ACCESS_EXPIRATION, TimeUnit.MINUTES)
+				.maximumSize(100)
+				.expireAfterAccess(CU_ACCESS_EXPIRATION, TimeUnit.MINUTES)
 				.removalListener(new RemovalListener<URI, CompletableFuture<CompilationUnit>>() {
 
 					@Override
@@ -159,7 +161,7 @@ public class RewriteCompilationUnitCache implements DocumentContentProvider, Dis
 		}
 	}
 	
-	private JavaParser createJavaParser(IJavaProject project) {
+	public static JavaParser createJavaParser(IJavaProject project) {
 		try {
 			List<Path> classpath = getClasspathEntries(project).stream().map(s -> new File(s).toPath()).collect(Collectors.toList());
 			JavaParser jp = JavaParser.fromJavaVersion().build();
@@ -246,7 +248,7 @@ public class RewriteCompilationUnitCache implements DocumentContentProvider, Dis
 					}
 				}
 		} catch (Exception e) {
-			logger.error("", e);
+			logger.error("Failed to parse {}", uri, e);
 		}
 		return null;
 	}
@@ -256,6 +258,7 @@ public class RewriteCompilationUnitCache implements DocumentContentProvider, Dis
 		try {
 			logger.debug("Parsing CU {}", uri);
 			JavaParser javaParser = loadJavaParser(project);
+			
 			Input input = new Input(Paths.get(uri), () -> {
 				try {
 					return new ByteArrayInputStream(fetchContent(uri).getBytes());
@@ -263,11 +266,9 @@ public class RewriteCompilationUnitCache implements DocumentContentProvider, Dis
 					throw new IllegalStateException("Unexpected error fetching document content");
 				}
 			});
-			
-			List<CompilationUnit> cus = ORAstUtils.parseInputs(javaParser, List.of(input));
-									
+			List<CompilationUnit> cus = ORAstUtils.parseInputs(javaParser, List.of(input));					
 			CompilationUnit cu = cus.get(0);
-				
+			
 			if (cu != null) {
 				projectToDocs.get(project, () -> new HashSet<>()).add(uri);
 				return cu;

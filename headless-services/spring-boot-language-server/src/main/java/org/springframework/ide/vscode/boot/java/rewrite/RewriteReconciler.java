@@ -10,16 +10,27 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.rewrite;
 
+import java.io.ByteArrayInputStream;
 import java.net.URI;
+import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.InMemoryExecutionContext;
+import org.openrewrite.Parser;
 import org.openrewrite.Tree;
 import org.openrewrite.java.JavaIsoVisitor;
+import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.J.CompilationUnit;
 import org.openrewrite.marker.Range;
@@ -39,7 +50,9 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemTy
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblem;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblemImpl;
 import org.springframework.ide.vscode.commons.rewrite.java.FixAssistMarker;
+import org.springframework.ide.vscode.commons.rewrite.java.ORAstUtils;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
+import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 public class RewriteReconciler implements JavaReconciler {
 	
@@ -69,50 +82,14 @@ public class RewriteReconciler implements JavaReconciler {
 		try {
 			problemCollector.beginCollecting();
 			
-			// Wait for recipe repo to load if not loaded - should be loaded by the time we get here.
-			recipeRepo.loaded.get();
-			
-			List<RecipeSpringJavaProblemDescriptor> descriptors = recipeRepo.getProblemRecipeDescriptors().stream()
-				.filter(d -> d.getProblemType() != null)
-				.filter(d -> {
-					switch (config.getProblemApplicability(d.getProblemType())) {
-					case ON:
-						return SpringProjectUtil.isBootProject(project);
-					case OFF:
-						return false;
-					default: // AUTO
-						return d.isApplicable(project);
-					}
-				})
-				.collect(Collectors.toList());
+			List<RecipeSpringJavaProblemDescriptor> descriptors = getProblemRecipeDescriptors(project);
 			
 			if (!descriptors.isEmpty()) {
 				CompilationUnit cu = cuCache.getCU(project, URI.create(doc.getUri()));
-				
 				if (cu != null) {
-					
-					cu = recipeRepo.mark(descriptors, cu);
-					
-					new JavaIsoVisitor<ExecutionContext>() {
-						
-			            @Override
-			            public J visit(Tree tree, ExecutionContext context) {
-							J t = super.visit(tree, context);
-			            	if (t instanceof J) {
-			            		List<FixAssistMarker> markers = t.getMarkers().findAll(FixAssistMarker.class);
-			            		for (FixAssistMarker m : markers) {
-									for (ReconcileProblem problem : createProblems(doc, m, t)) {
-										problemCollector.accept(problem);
-									}
-			            		}
-			            	}
-			            	return t;
-			            }
-
-					}.visit(cu, new InMemoryExecutionContext(e -> log.error("", e)));
+					collectProblems(descriptors, doc, cu, problemCollector::accept);
 				}
 			}			
-			
 		} catch (Exception e) {
 			log.error("", e);
 		} finally {
@@ -146,6 +123,79 @@ public class RewriteReconciler implements JavaReconciler {
 			));
 		}
 		return problem;
+	}
+
+	@Override
+	public Map<IDocument, Collection<ReconcileProblem>> reconcile(IJavaProject project, List<TextDocument> docs,
+			Function<TextDocument, IProblemCollector> problemCollectorFactory) {
+		Map<IDocument, Collection<ReconcileProblem>> allProblems = new HashMap<>();
+		
+		if (config.isRewriteReconcileEnabled()) {
+			try {
+				List<RecipeSpringJavaProblemDescriptor> descriptors = getProblemRecipeDescriptors(project);
+	
+				JavaParser javaParser = RewriteCompilationUnitCache.createJavaParser(project);
+				List<CompilationUnit> cus = ORAstUtils.parseInputs(javaParser, docs.stream().map(d -> new Parser.Input(Path.of(d.getUri()), () -> {
+					return new ByteArrayInputStream(d.get().getBytes());
+				})).collect(Collectors.toList()));
+				
+				if (!descriptors.isEmpty()) {
+					
+					for(int i = 0; i < cus.size(); i++) {
+						final IDocument doc = docs.get(i);
+						List<ReconcileProblem> problems = new ArrayList<>();						
+						collectProblems(descriptors, doc, cus.get(i), problems::add);
+						if (!problems.isEmpty()) {
+							allProblems.put(doc, problems);
+						}	
+					}
+				}
+			} catch (Exception e) {
+				log.error("", e);
+			}
+		}
+		return allProblems;
+	}
+	
+	private List<RecipeSpringJavaProblemDescriptor> getProblemRecipeDescriptors(IJavaProject project)
+			throws InterruptedException, ExecutionException {
+		// Wait for recipe repo to load if not loaded - should be loaded by the time we
+		// get here.
+		recipeRepo.loaded.get();
+
+		return recipeRepo.getProblemRecipeDescriptors().stream().filter(d -> d.getProblemType() != null).filter(d -> {
+			switch (config.getProblemApplicability(d.getProblemType())) {
+			case ON:
+				return SpringProjectUtil.isBootProject(project);
+			case OFF:
+				return false;
+			default: // AUTO
+				return d.isApplicable(project);
+			}
+		}).collect(Collectors.toList());
+	}
+	
+	private void collectProblems(List<RecipeSpringJavaProblemDescriptor> descriptors, IDocument doc, CompilationUnit compilationUnit, Consumer<ReconcileProblem> problemHandler) {
+		CompilationUnit cu = recipeRepo.mark(descriptors, compilationUnit);
+		
+		new JavaIsoVisitor<ExecutionContext>() {
+			
+            @Override
+            public J visit(Tree tree, ExecutionContext context) {
+				J t = super.visit(tree, context);
+            	if (t instanceof J) {
+            		List<FixAssistMarker> markers = t.getMarkers().findAll(FixAssistMarker.class);
+            		for (FixAssistMarker m : markers) {
+						for (ReconcileProblem problem : createProblems(doc, m, t)) {
+							problemHandler.accept(problem);;
+						}
+            		}
+            	}
+            	return t;
+            }
+
+		}.visit(cu, new InMemoryExecutionContext(e -> log.error("", e)));
+
 	}
 		
 }

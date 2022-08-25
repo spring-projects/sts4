@@ -147,7 +147,7 @@ public class ValueSpelExpressionValidationTest {
 		problemCollector = new TestProblemCollector();
 		reconcileEngine = new BootJavaReconcileEngine(projectFinder, new JavaReconciler[] {
 				new JdtReconciler(compilationUnitCache)
-		});
+		}, server.getTextDocumentService());
 	}
 	
 	@After

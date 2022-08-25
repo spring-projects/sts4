@@ -103,7 +103,7 @@
 		<lsp4j-version>0.14.0</lsp4j-version>
 		<!-- NOTE: Reactor version must match version used by the CF client -->
 		<cloudfoundry-client-version>3.8.0.RELEASE</cloudfoundry-client-version>
-		<reactor-version>3.1.5.RELEASE</reactor-version>
+		<reactor-version>3.3.11.RELEASE</reactor-version>
 		<reactor-netty>0.7.5.RELEASE</reactor-netty>
 		<commons-io-version>2.4</commons-io-version>
 		<commons-codec-version>1.13</commons-codec-version>

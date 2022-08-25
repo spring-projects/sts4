@@ -11,6 +11,11 @@
 package org.springframework.ide.vscode.boot.java.reconcilers;
 
 import java.net.URI;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.function.Function;
 
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.Annotation;
@@ -24,7 +29,9 @@ import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.boot.java.value.Constants;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
+import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblem;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
+import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 public class JdtReconciler implements JavaReconciler {
 	// annotations with SpEL expression params 
@@ -136,4 +143,13 @@ public class JdtReconciler implements JavaReconciler {
 			}
 		}
 	}
+
+	@Override
+	public Map<IDocument, Collection<ReconcileProblem>> reconcile(IJavaProject project, List<TextDocument> docs,
+			Function<TextDocument, IProblemCollector> problemCollectorFactory) {
+		// TODO Auto-generated method stub
+		return Collections.emptyMap();
+	}
+	
+	
 }

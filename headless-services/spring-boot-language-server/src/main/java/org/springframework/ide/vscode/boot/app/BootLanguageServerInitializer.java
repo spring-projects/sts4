@@ -10,15 +10,24 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.app;
 
+import java.net.URI;
+import java.nio.file.Path;
+import java.time.Duration;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.eclipse.lsp4j.MessageType;
+import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
+import org.springframework.ide.vscode.boot.common.IJavaProjectReconcileEngine;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
 import org.springframework.ide.vscode.boot.java.links.JavaElementLocationProvider;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
@@ -36,8 +45,10 @@ import org.springframework.ide.vscode.commons.languageserver.completion.Composit
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.composable.CompositeLanguageServerComponents;
+import org.springframework.ide.vscode.commons.languageserver.config.LanguageServerProperties;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
+import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
 import org.springframework.ide.vscode.commons.languageserver.util.HoverHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.ShowMessageException;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
@@ -49,8 +60,15 @@ import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureProvid
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
+import reactor.core.Disposable;
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Scheduler;
+import reactor.core.scheduler.Schedulers;
+
 @Component
 public class BootLanguageServerInitializer implements InitializingBean {
+	
+	private static final List<String> FILES_TO_WATCH_GLOB = List.of("**/*.java");
 
 	@Autowired SimpleLanguageServer server;
 	@Autowired BootLanguageServerParams params;
@@ -67,25 +85,51 @@ public class BootLanguageServerInitializer implements InitializingBean {
 	@Autowired SpringSymbolIndex springIndexer;
 	@Autowired(required = false) List<ICompletionEngine> completionEngines;
 	@Autowired SpringProjectsValidations springProjectsValidations;
+	@Autowired private JavaProjectFinder projectFinder;
+	@Autowired private LanguageServerProperties configProps;
 
 	@Qualifier("adHocProperties") @Autowired ProjectBasedPropertyIndexProvider adHocProperties;
 
 	private CompositeLanguageServerComponents components;
 	private VscodeCompletionEngineAdapter completionEngineAdapter;
-
+	private IJavaProjectReconcileEngine projectReconciler;
+	private Scheduler projectReconcileScheduler = Schedulers.newBoundedElastic(5, Integer.MAX_VALUE, "Project-Reconciler", 10);
+	private Map<URI, Disposable> projectReconcileRequests = new ConcurrentHashMap<>();
+	
 	private static final Logger log = LoggerFactory.getLogger(BootLanguageServerInitializer.class);
 
-	private static ProjectObserver.Listener reconcileOpenDocumentsForProjectChange(SimpleLanguageServer s, CompositeLanguageServerComponents c, JavaProjectFinder projectFinder) {
-		return ProjectObserver.onAny(project -> {
-			c.getReconcileEngine().ifPresent(reconciler -> {
-				log.debug("A project changed {}, triggering reconcile on all project's open documents", project.getElementName());
-				for (TextDocument doc : s.getTextDocumentService().getAll()) {
-					if (projectFinder.find(doc.getId()).orElse(null) == project) {
-						s.validateWith(doc.getId(), reconciler);
+	private ProjectObserver.Listener reconcileDocumentsForProjectChange(SimpleLanguageServer s, CompositeLanguageServerComponents c, JavaProjectFinder projectFinder) {
+		return new ProjectObserver.Listener() {
+			
+			@Override
+			public void deleted(IJavaProject project) {
+				doNotValidateProject(project.getLocationUri());
+			}
+			
+			@Override
+			public void created(IJavaProject project) {
+				validateAll(project);
+			}
+			
+			@Override
+			public void changed(IJavaProject project) {
+				validateAll(project);
+			}
+			
+			private void validateAll(IJavaProject project) {
+				c.getReconcileEngine().ifPresent(reconciler -> {
+					log.debug("A project changed {}, triggering reconcile on all project's open documents",
+							project.getElementName());
+					for (TextDocument doc : s.getTextDocumentService().getAll()) {
+						if (projectFinder.find(doc.getId()).orElse(null) == project) {
+							s.validateWith(doc.getId(), reconciler);
+						}
 					}
-				}
-			});
-		});
+					validateProject(project, reconciler);
+
+				});
+			}
+		};
 	}
 	
 	@Override
@@ -94,10 +138,14 @@ public class BootLanguageServerInitializer implements InitializingBean {
 		// some server intialization code. Migrate that code and get rid of the ComposableLanguageServer class
 		CompositeLanguageServerComponents.Builder builder = new CompositeLanguageServerComponents.Builder();
 		builder.add(new BootPropertiesLanguageServerComponents(server, params, javaElementLocationProvider, parser, yamlStructureProvider, yamlAssistContextProvider, sourceLinks));
-		builder.add(new BootJavaLanguageServerComponents(appContext));
+		BootJavaLanguageServerComponents bootJavaLanguageServerComponent = new BootJavaLanguageServerComponents(appContext);
+		builder.add(bootJavaLanguageServerComponent);
 		builder.add(new SpringXMLLanguageServerComponents(server, springIndexer, params, config));
 		components = builder.build(server);
-		params.projectObserver.addListener(reconcileOpenDocumentsForProjectChange(server, components, params.projectFinder));
+		
+		projectReconciler = (IJavaProjectReconcileEngine) bootJavaLanguageServerComponent.getReconcileEngine().get();
+		
+		params.projectObserver.addListener(reconcileDocumentsForProjectChange(server, components, params.projectFinder));
 
 		SimpleTextDocumentService documents = server.getTextDocumentService();
 
@@ -128,10 +176,14 @@ public class BootLanguageServerInitializer implements InitializingBean {
 				for (TextDocument doc : server.getTextDocumentService().getAll()) {
 					server.validateWith(doc.getId(), reconciler);
 				}
+				params.projectFinder.all().forEach(p -> validateProject(p, reconciler));
 			});
 		});
 		
 		addSpringProjectsVersionValidation(params);
+		
+		server.getWorkspaceService().getFileObserver().onFilesChanged(FILES_TO_WATCH_GLOB, this::handleFiles);
+		server.getWorkspaceService().getFileObserver().onFilesCreated(FILES_TO_WATCH_GLOB, this::handleFiles);
 	}
 
 	public CompositeLanguageServerComponents getComponents() {
@@ -189,5 +241,66 @@ public class BootLanguageServerInitializer implements InitializingBean {
 					}
 				});
 	}
+	
+	private void validateProject(IJavaProject project, IReconcileEngine reconcileEngine) {
+		if (configProps.isReconcileOnlyOpenedDocs()) {
+			return;
+		}
+		
+		URI uri = project.getLocationUri();
+		
+		doNotValidateProject(uri);
+		
+		projectReconcileRequests.put(uri, Mono.delay(Duration.ofMillis(100))
+				.publishOn(projectReconcileScheduler)
+				.doOnSuccess(l -> {
+					projectFinder.find(new TextDocumentIdentifier(uri.toString())).ifPresent(p -> {
+						projectReconciler.reconcile(p, doc -> server.createProblemCollector(doc));
+					});
+					projectReconcileRequests.remove(uri);
+				})
+				.subscribe());
+	}
+	
+	private void doNotValidateProject(URI uri) {
+		if (configProps.isReconcileOnlyOpenedDocs()) {
+			return;
+		}
 
+		Disposable request = projectReconcileRequests.remove(uri);
+		if (request != null) {
+			request.dispose();
+		}
+	}
+	
+	private void handleFiles(String[] files) {
+		if (configProps.isReconcileOnlyOpenedDocs()) {
+			return;
+		}
+		
+		components.getReconcileEngine().ifPresent(reconcileEngine -> {
+			Map<IJavaProject, List<TextDocumentIdentifier>> projectsToDocs = new HashMap<>();
+			for (String f : files) {
+				URI uri = Path.of(f).toUri();
+				TextDocumentIdentifier docId = new TextDocumentIdentifier(uri.toString());
+				TextDocument doc = server.getTextDocumentService().getLatestSnapshot(docId.getUri());
+				if (doc == null) {
+					projectFinder.find(docId).ifPresent(project -> {
+						List<TextDocumentIdentifier> docIds = projectsToDocs.get(project);
+						if (docIds == null) {
+							docIds = new ArrayList<>();
+							projectsToDocs.put(project, docIds);
+						}
+						docIds.add(docId);
+					});
+				}
+			}
+			
+			for (IJavaProject p : projectsToDocs.keySet()) {
+				validateProject(p, reconcileEngine);
+			}
+		});
+		
+	}
+	
 }

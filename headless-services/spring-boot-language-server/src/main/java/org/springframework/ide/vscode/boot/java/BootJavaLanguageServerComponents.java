@@ -198,7 +198,7 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		reconcileEngine = new BootJavaReconcileEngine(projectFinder, new JavaReconciler[] {
 				jdtReconciler,
 				rewriteJavaReconciler
-		});
+		}, documents);
 		
 		codeActionProvider = new BootJavaCodeActionProvider(
 				projectFinder,

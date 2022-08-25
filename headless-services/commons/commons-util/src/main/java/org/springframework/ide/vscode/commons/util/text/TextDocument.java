@@ -64,7 +64,7 @@ public class TextDocument implements IDocument {
 		return getText().toString();
 	}
 
-	private synchronized Text getText() {
+	protected synchronized Text getText() {
 		return text;
 	}
 
@@ -148,13 +148,13 @@ public class TextDocument implements IDocument {
 
 	@Override
 	public int getLength() {
-		return text.length();
+		return getText().length();
 	}
 
 	@Override
 	public String get(int start, int len) throws BadLocationException {
 		try {
-			return text.subtext(start, start+len).toString();
+			return getText().subtext(start, start+len).toString();
 		} catch (Exception e) {
 			throw new BadLocationException(e);
 		}
@@ -167,17 +167,17 @@ public class TextDocument implements IDocument {
 
 	@Override
 	public String getDefaultLineDelimiter() {
-		Matcher newlineFinder = NEWLINE.matcher(text);
+		Matcher newlineFinder = NEWLINE.matcher(getText());
 		if (newlineFinder.find()) {
-			return text.subtext(newlineFinder.start(), newlineFinder.end()).toString();
+			return getText().subtext(newlineFinder.start(), newlineFinder.end()).toString();
 		}
 		return System.getProperty("line.separator");
 	}
 
 	@Override
 	public char getChar(int offset) throws BadLocationException {
-		if (offset>=0 && offset<text.length()) {
-			return text.charAt(offset);
+		if (offset>=0 && offset<getText().length()) {
+			return getText().charAt(offset);
 		}
 		throw new BadLocationException();
 	}
@@ -211,7 +211,7 @@ public class TextDocument implements IDocument {
 	@Override
 	public synchronized void replace(int start, int len, String ins) throws BadLocationException {
 		int end = start+len;
-		text = text
+		text = getText()
 			.delete(start, end)
 			.insert(start, new Text(ins));
 		lineTracker.replace(start, len, ins);
@@ -228,7 +228,7 @@ public class TextDocument implements IDocument {
 
 	@Override
 	public String toString() {
-		return "TextDocument(uri="+uri+"["+version+"],\n"+this.text+"\n)";
+		return "TextDocument(uri="+uri+"["+version+"],\n"+this.getText()+"\n)";
 	}
 
 	/**

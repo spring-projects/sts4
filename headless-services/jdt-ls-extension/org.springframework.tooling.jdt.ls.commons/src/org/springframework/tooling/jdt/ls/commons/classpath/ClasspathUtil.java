@@ -136,7 +136,7 @@ public class ClasspathUtil {
 					cpe.setTest(entry.isTest());
 					// If any package fragment roots from classpath entry has children then there is java content in the source folder
 					for (IPackageFragmentRoot root : ((JavaProject)javaProject).computePackageFragmentRoots(entry)) {
-						if (root.hasChildren()) {
+						if (root.getChildren().length > 0) {
 							cpe.setJavaContent(true);
 							break;
 						}
