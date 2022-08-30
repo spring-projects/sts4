@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
@@ -47,6 +48,10 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader.InvalidCacheLoadException;
+import com.google.common.cache.RemovalListener;
+import com.google.common.cache.RemovalNotification;
+import com.google.common.util.concurrent.UncheckedExecutionException;
 
 import reactor.util.function.Tuple2;
 import reactor.util.function.Tuples;
@@ -62,7 +67,7 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 	private final ProjectObserver.Listener projectListener;
 	private final SimpleTextDocumentService documentService;
 
-	private final Cache<URI, CompilationUnit> uriToCu;
+	private final Cache<URI, CompletableFuture<CompilationUnit>> uriToCu;
 	private final Cache<IJavaProject, Set<URI>> projectToDocs;
 	private final Cache<IJavaProject, Tuple2<List<Classpath>, INameEnvironmentWithProgress>> lookupEnvCache;
 
@@ -74,7 +79,23 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 		// accessed after some time
 		this.uriToCu = CacheBuilder.newBuilder()
 				.expireAfterWrite(CU_ACCESS_EXPIRATION, TimeUnit.MINUTES)
+				.removalListener(new RemovalListener<URI, CompletableFuture<CompilationUnit>>() {
+
+					@Override
+					public void onRemoval(RemovalNotification<URI, CompletableFuture<CompilationUnit>> notification) {
+						URI uri = notification.getKey();
+						CompletableFuture<CompilationUnit> future = notification.getValue();
+						
+						if (future != null) {
+							if (!future.isCancelled()) {
+								logger.debug("cancel jdt cu cache for: " + uri);
+								future.cancel(true);
+							}
+						}
+					}
+				})
 				.build();
+		
 		this.projectToDocs = CacheBuilder.newBuilder().build();
 		this.lookupEnvCache = CacheBuilder.newBuilder().build();
 
@@ -163,7 +184,7 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 	 * for later use. The JDT ASTs are not thread safe!
 	 */
 	public <T> T withCompilationUnit(IJavaProject project, URI uri, Function<CompilationUnit, T> requestor) {
-		logger.debug("CU Cache: work item submitted for doc {}", uri.toString());
+		logger.info("CU Cache: work item submitted for doc {}", uri.toString());
 
 		if (project != null) {
 
@@ -171,26 +192,40 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 
 			try {
 				cu = uriToCu.get(uri, () -> {
-					Tuple2<List<Classpath>, INameEnvironmentWithProgress> lookupEnvTuple = loadLookupEnvTuple(project);
-					String utiStr = uri.toString();
-					String unitName = utiStr.substring(utiStr.lastIndexOf("/"));
-					CompilationUnit cUnit = parse2(fetchContent(uri).toCharArray(), utiStr, unitName, lookupEnvTuple.getT1(), lookupEnvTuple.getT2());
-					
-					logger.debug("CU Cache: created new AST for {}", uri.toString());
-
-					return cUnit;
-				});
-
-				if (cu != null) {
-					projectToDocs.get(project, () -> new HashSet<>()).add(uri);
-				}
-
+					CompletableFuture<CompilationUnit> future = CompletableFuture.supplyAsync(() -> {
+						
+						try {
+							Tuple2<List<Classpath>, INameEnvironmentWithProgress> lookupEnvTuple = loadLookupEnvTuple(project);
+							String utiStr = uri.toString();
+							String unitName = utiStr.substring(utiStr.lastIndexOf("/"));
+							CompilationUnit cUnit = parse2(fetchContent(uri).toCharArray(), utiStr, unitName, lookupEnvTuple.getT1(), lookupEnvTuple.getT2());
+		
+							logger.debug("CU Cache: created new AST for {}", uri.toString());
+		
+							return cUnit;
+						} catch (Exception e) {
+							logger.info("exception happened during parsing: " + e);
+							return null;
+						}
+					});
+					return future;
+	
+				}).get();
+			} catch (UncheckedExecutionException e1) {
+				// ignore errors from rewrite parser. There could be many parser exceptions due to
+				// user incrementally typing code's text
+				return null;
+			} catch (InvalidCacheLoadException | CancellationException e) {
+				// ignore
 			} catch (Exception e) {
 				logger.error("", e);
+				return requestor.apply(null);
 			}
 
 			if (cu != null) {
 				try {
+					projectToDocs.get(project, () -> new HashSet<>()).add(uri);
+
 					logger.debug("CU Cache: start work on AST for {}", uri.toString());
 					return requestor.apply(cu);
 				}
@@ -276,7 +311,7 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 	}
 
 	private void invalidateCuForJavaFile(String uriStr) {
-		logger.debug("CU Cache: invalidate AST for {}", uriStr);
+		logger.info("CU Cache: invalidate AST for {}", uriStr);
 
 		URI uri = URI.create(uriStr);
 		uriToCu.invalidate(uri);
