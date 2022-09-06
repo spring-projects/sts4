@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2020 Pivotal Software, Inc.
+ * Copyright (c) 2015, 2022 Pivotal Software, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -43,6 +43,8 @@ import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 import org.eclipse.jdt.launching.IRuntimeClasspathEntry;
 import org.eclipse.jdt.launching.JavaRuntime;
+import org.eclipse.jface.preference.IPreferenceStore;
+import org.eclipse.ui.console.ConsolePlugin;
 import org.osgi.framework.Bundle;
 import org.springframework.ide.eclipse.boot.core.BootActivator;
 import org.springframework.ide.eclipse.boot.core.BootPreferences;
@@ -131,6 +133,12 @@ public class BootLaunchConfigurationDelegate extends AbstractBootLaunchConfigura
 	public static final boolean DEFAULT_USE_THIN_WRAPPER = false;
 
 	public static final String SPRING_PROJECT_NAME_ATTRIBUTE = "spring.boot.project.name";
+
+	// Preference for Eclipse ANSI Console support.
+	// See org.eclipse.ui.internal.console.ansi.preferences.AnsiConsolePreferenceConstants
+	// Because this class is only available in Eclipse 4.25 and higher, we cannot add a
+	// direct reference to this type for backward compatibility
+	public static final String PREF_ANSI_CONSOLE_ENABLED = "ANSI_support_enabled";
 
 	private ProfileHistory profileHistory = new ProfileHistory();
 
@@ -542,9 +550,27 @@ public class BootLaunchConfigurationDelegate extends AbstractBootLaunchConfigura
 		return BootLaunchConfigurationDelegate.DEFAULT_TERMINATION_TIMEOUT;
 	}
 
-	public static boolean supportsAnsiConsoleOutput() {
+	/**
+	 * This is for STS based on Eclipse 4.24 and older.
+	 *
+	 * @return true if "Legacy" ANSI plugin is available.
+	 */
+	private static boolean isLegacyAnsiPluginInstalled() {
 		Bundle bundle = Platform.getBundle("net.mihai-nita.ansicon.plugin");
 		return bundle != null && bundle.getState() != Bundle.UNINSTALLED;
+	}
+
+	public static boolean supportsAnsiConsoleOutput() {
+		return isPlatformAnsiSupportEnabled() || isLegacyAnsiPluginInstalled();
+	}
+
+	/**
+	 *
+	 * @return true if ANSI plugin support in Eclipse platform is enabled. This applies for Eclipse 4.25 and higher
+	 */
+	private static boolean isPlatformAnsiSupportEnabled() {
+		IPreferenceStore prefStore = ConsolePlugin.getDefault().getPreferenceStore();
+		return prefStore.getBoolean(PREF_ANSI_CONSOLE_ENABLED);
 	}
 
 	public static boolean getEnableAnsiConsoleOutput(ILaunchConfiguration conf) {
