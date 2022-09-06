@@ -26,6 +26,7 @@ const p2c = P2C.createConverter(undefined, false, false);
 
 PortFinder.basePort = 45556;
 
+const LOG_RESOLVE_VM_ARG_PREFIX = '-Xlog:jni+resolve=';
 const DEBUG_ARG = '-agentlib:jdwp=transport=dt_socket,server=y,address=8000,suspend=y';
 
 export interface ActivatorOptions {
@@ -259,6 +260,10 @@ function prepareJvmArgs(options: ActivatorOptions, context: VSCode.ExtensionCont
     if (DEBUG) {
         args.unshift(DEBUG_ARG);
     }
+    // Below is to fix: https://github.com/spring-projects/sts4/issues/811
+    if (!hasVmArg(LOG_RESOLVE_VM_ARG_PREFIX, args)) {
+        args.push(`${LOG_RESOLVE_VM_ARG_PREFIX}off`);
+    }
 
     if (options.explodedLsJarData) {
         const explodedLsJarData = options.explodedLsJarData;
@@ -294,10 +299,15 @@ function addCpAndLauncherToJvmArgs(args: string[], options: ActivatorOptions, co
 }
 
 function hasHeapArg(vmargs?: string[]) : boolean {
+    return hasVmArg('-Xmx');
+}
+
+function hasVmArg(argPrefix: string, vmargs?: string[]): boolean {
     if (vmargs) {
-        return vmargs.some(a => a.startsWith("-Xmx"));
+        return vmargs.some(a => a.startsWith(argPrefix));
     }
     return false;
+
 }
 
 function findServerJar(jarsDir) : string {

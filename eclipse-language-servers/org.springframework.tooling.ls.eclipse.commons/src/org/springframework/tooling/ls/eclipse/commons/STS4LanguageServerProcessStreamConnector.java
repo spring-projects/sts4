@@ -15,6 +15,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.core.runtime.Assert;
@@ -33,11 +34,12 @@ import org.springsource.ide.eclipse.commons.core.util.IOUtil;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Supplier;
-import com.google.common.collect.ImmutableList;
 
 public abstract class STS4LanguageServerProcessStreamConnector extends ProcessStreamConnectionProvider {
 
 	private static LanguageServerProcessReaper processReaper = new LanguageServerProcessReaper();
+
+	private static final String LOG_RESOLVE_VM_ARG_PREFIX = "-Xlog:jni+resolve=";
 
 	private Supplier<Console> consoles = null;
 	private String connectorId;
@@ -83,7 +85,7 @@ public abstract class STS4LanguageServerProcessStreamConnector extends ProcessSt
 			Assert.isNotNull(lsFolder);
 			Assert.isNotNull(mainClass);
 
-			ImmutableList.Builder<String> command = ImmutableList.builder();
+			List<String> command = new ArrayList<>();
 
 			command.add(runtime.getJavaExecutable());
 			command.add("-cp");
@@ -112,6 +114,10 @@ public abstract class STS4LanguageServerProcessStreamConnector extends ProcessSt
 
 			command.addAll(extraVmArgs);
 
+			if (!hasVmArgStartingWith(command, LOG_RESOLVE_VM_ARG_PREFIX)) {
+				command.add(LOG_RESOLVE_VM_ARG_PREFIX + "off");
+			}
+
 			if (configFileName != null) {
 				command.add("-Dspring.config.location=file:" + languageServerRoot.resolve("BOOT-INF/classes").resolve(configFileName).toFile());
 			}
@@ -120,11 +126,20 @@ public abstract class STS4LanguageServerProcessStreamConnector extends ProcessSt
 
 			command.add("--languageserver.hover-timeout=225");
 
-			setCommands(command.build());
+			setCommands(command);
 		}
 		catch (Exception e) {
 			LanguageServerCommonsActivator.logError(e, "Failed to assemble exploded LS JAR launch command");
 		}
+	}
+
+	protected static boolean hasVmArgStartingWith(List<String> vmargs, String prefix) {
+		for (String vmarg : vmargs) {
+			if (vmarg.startsWith(prefix)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	@Override
