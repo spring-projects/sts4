@@ -13,7 +13,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.3.6.RELEASE</version>
+		<version>2.7.3</version>
 		<relativePath></relativePath>
 	</parent>
 
@@ -107,8 +107,8 @@
 		<reactor-netty>0.7.5.RELEASE</reactor-netty>
 		<commons-io-version>2.4</commons-io-version>
 		<commons-codec-version>1.13</commons-codec-version>
-		
-		<!--  Rewrite specific properties -->
+
+		<!-- Rewrite specific properties -->
 		<rewrite-version>7.26.1</rewrite-version>
 		<rewrite-spring-version>4.23.0</rewrite-spring-version>
 		<rewrite-java-migration.version>1.8.0</rewrite-java-migration.version>
@@ -149,11 +149,18 @@
 					<storetype>${signing.storetype}</storetype>
 					<storepass>${signing.store.password}</storepass>
 					<keypass>${signing.key.password}</keypass>
-<!--					<tsa>http://sha256timestamp.ws.symantec.com/sha256/timestamp</tsa> -->
+					<!-- <tsa>http://sha256timestamp.ws.symantec.com/sha256/timestamp</tsa> -->
 					<tsa>http://timestamp.digicert.com</tsa>
 				</configuration>
 			</plugin>
 
+			<plugin>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration combine.self="append">
+					<argLine>--add-opens app/app=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED --add-opens jdk.management/com.sun.management.internal=ALL-UNNAMED</argLine>
+				</configuration>
+			</plugin>
+	
 		</plugins>
 	</build>
 
