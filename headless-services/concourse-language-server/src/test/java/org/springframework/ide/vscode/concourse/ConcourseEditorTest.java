@@ -1983,7 +1983,7 @@ public class ConcourseEditorTest {
 				"      describe_ref_options: whatever\n"
 		);
 		editor.assertProblems(
-				"-1|must be at least 0",
+				"-1|must be at least 1",
 				"not-bool-a|'boolean'",
 				"not-bool-b|'boolean'",
 				"not-bool-c|'boolean'",
@@ -3448,6 +3448,8 @@ public class ConcourseEditorTest {
 				, // ==>
 				"    commit_message: <*>"
 				,
+				"    depth: <*>"
+				,
 				"    git_user: <*>"
 				,
 				"    initial_version: <*>"
@@ -3483,14 +3485,15 @@ public class ConcourseEditorTest {
 				"    username: jsmith\n" +
 				"    password: s3cre$t\n" +
 				"    git_user: jsmith@mailhost.com\n" +
+				"    depth: 0\n" +
 				"    bogus: bad"
 		);
 		editor.assertProblems(
 				"version|Unused",
 				"skip-ssl|'boolean'",
+				"0|must be at least 1",
 				"bogus|Unknown property"
 		);
-
 		editor.assertHoverContains("initial_version", "version number to use when bootstrapping");
 		editor.assertHoverContains("driver", "The driver to use");
 		editor.assertHoverContains("uri", "The repository URL");
@@ -3502,6 +3505,7 @@ public class ConcourseEditorTest {
 		editor.assertHoverContains("git_user", "The git identity to use");
 		editor.assertHoverContains("commit_message", "overides the default commit message");
 		editor.assertHoverContains("skip_ssl_verification", "Skip SSL verification for git endpoint");
+		editor.assertHoverContains("depth", "shallow clone the repository using the `--depth` option");
 	}
 
 	@Test public void semverResourceSourcePrimaryContentAssist() throws Exception {
@@ -3622,6 +3626,7 @@ public class ConcourseEditorTest {
 				"<*>"
 				, // ==>
 				"commit_message: <*>",
+				"depth: <*>",
 				"git_user: <*>",
 				"initial_version: <*>",
 				"password: <*>",

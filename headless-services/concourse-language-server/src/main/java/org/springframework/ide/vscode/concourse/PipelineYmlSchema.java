@@ -603,7 +603,7 @@ public class PipelineYmlSchema implements YamlSchema {
 			source.require(Constraints.mutuallyExclusive("tag_filter", "tag_regex"));
 
 			AbstractType get = f.ybean("GitGetParams");
-			addProp(get, "depth", t_pos_integer);
+			addProp(get, "depth", t_strictly_pos_integer);
 			addProp(get, "fetch_tags", t_boolean);
 			addProp(get, "submodules", f.yany("GitSubmodules").addHints("all", "none"));
 			addProp(get, "submodule_recursive", t_boolean);
@@ -823,6 +823,7 @@ public class PipelineYmlSchema implements YamlSchema {
 			addProp(git_source, "username", t_ne_string);
 			addProp(git_source, "password", t_ne_string);
 			addProp(git_source, "git_user", t_ne_string);
+			addProp(git_source, "depth", t_strictly_pos_integer);
 			addProp(git_source, "commit_message", t_ne_string);
 			addProp(git_source, "skip_ssl_verification", t_boolean);
 
