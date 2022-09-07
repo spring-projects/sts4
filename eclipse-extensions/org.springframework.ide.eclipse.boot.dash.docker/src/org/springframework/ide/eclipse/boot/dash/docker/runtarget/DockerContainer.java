@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2020 Pivotal Software, Inc.
+ * Copyright (c) 2020, 2022 Pivotal Software, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -235,6 +235,16 @@ public class DockerContainer implements App, RunStateProvider, JmxConnectable, S
 			System.out.println("DockerContainer " + getShortHash() + ": " + message);
 		}
 	}
+	
+	/**
+	 * For debugging purposes, logs to Eclipse Error log if Debugging is enabled.
+	 * @param message to log
+	 */
+	private static void logOnDebug(String message) {
+		if (DEBUG) {
+			Log.info("Debugging: " + message);
+		}
+	}
 
 	@Override
 	public void restart(RunState runingOrDebugging) {
@@ -442,14 +452,15 @@ public class DockerContainer implements App, RunStateProvider, JmxConnectable, S
 			this.client = client;
 			consoleOut = console.getOutputStream(LogType.APP_OUT);
 			consoleErr = console.getOutputStream(LogType.APP_OUT);
-			Log.info("Creating log handler. Now active: "+activeLogHandlers.incrementAndGet());
+			logOnDebug("Creating log handler. Now active: "+activeLogHandlers.incrementAndGet());
 		}
+
 
 		@Override
 		public void close() {
 			if (isClosed.compareAndSet(false, true)) {
 				closeable.thenAccept(c -> {
-					Log.info("Closing ResultCallback. Now active: "+startedLogHandlers.decrementAndGet());
+					logOnDebug("Closing ResultCallback. Now active: "+startedLogHandlers.decrementAndGet());
 					try {
 						c.close();
 					} catch (IOException e) {
@@ -469,13 +480,13 @@ public class DockerContainer implements App, RunStateProvider, JmxConnectable, S
 					}
 				} catch (IOException e) {
 				}
-				Log.info("Closing log handler. Now active: "+activeLogHandlers.decrementAndGet());
+				logOnDebug("Closing log handler. Now active: "+activeLogHandlers.decrementAndGet());
 			}
 		}
 
 		@Override
 		public void onStart(Closeable closeable) {
-			Log.info("ResultCallback.onStart. Now active: "+startedLogHandlers.incrementAndGet());
+			logOnDebug("ResultCallback.onStart. Now active: "+startedLogHandlers.incrementAndGet());
 			this.closeable.complete(closeable);
 		}
 
