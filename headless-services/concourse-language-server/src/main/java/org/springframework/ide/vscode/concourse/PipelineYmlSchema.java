@@ -649,7 +649,7 @@ public class PipelineYmlSchema implements YamlSchema {
 			addProp(source, "aws_secret_access_key", t_ne_string);
 			addProp(source, "aws_session_token", t_ne_string);
 			addProp(source, "insecure_registries", t_strings);
-			addProp(source, "registry_mirror", registry_mirror);
+			addProp(source, "registry_mirror", t_ne_string);
 			addProp(source, "ca_certs", f.yseq(f.ybean("CaCertsEntry",
 					f.yprop("domain", t_ne_string),
 					f.yprop("cert", t_ne_string)

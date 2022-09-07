@@ -23,7 +23,6 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
@@ -159,6 +158,22 @@ public class ConcourseEditorTest {
 				"  source:\n" + 
 				"    repository: alpine\n" + 
 				"    tag: latest\n" + 
+				"    registry_mirror: https://my-registry.com\n" + 
+				"run:\n" + 
+				"    path: sh\n" + 
+				"    args:\n" + 
+				"    - -exc\n" + 
+				"    - sleep 60\n"
+		);
+		editor.assertProblems(/*NONE*/);
+		
+		editor = harness.newEditor(LanguageId.CONCOURSE_TASK,
+				"platform: linux\n" + 
+				"image_resource:\n" + 
+				"  type: registry-image\n" + 
+				"  source:\n" + 
+				"    repository: alpine\n" + 
+				"    tag: latest\n" + 
 				"    registry_mirror:\n" + 
 				"      host: my-registry.com\n" + 
 				"      username: myuser\n" + 
@@ -171,6 +186,7 @@ public class ConcourseEditorTest {
 				"    - sleep 60\n"
 		);
 		editor.assertProblems("bad|Unknown");
+		
 	}
 	
 	@Test public void GH_639_globStar() throws Exception {
@@ -2455,10 +2471,7 @@ public class ConcourseEditorTest {
 				"    aws_secret_access_key: {{aws_secret_key}}\n" +
 				"    aws_session_token: ((aws_token))\n" +
 				"    insecure_registries: no-list\n" +
-				"    registry_mirror:\n" +
-				"      host: dockermirror.com\n" +
-				"      username: mirroruser\n" +
-				"      password: ((mirror_pass))\n" +
+				"    registry_mirror: https://some.registry.host\n" +
 				"    max_concurrent_downloads: num-down\n" +
 				"    max_concurrent_uploads: num-up\n" +
 				"    ca_certs:\n" +
@@ -2497,10 +2510,7 @@ public class ConcourseEditorTest {
 		editor.assertHoverContains("aws_secret_access_key", "AWS secret key to use");
 		editor.assertHoverContains("aws_session_token", "AWS session token (assumed role)");
 		editor.assertHoverContains("insecure_registries", "array of CIDRs");
-		editor.assertHoverContains("registry_mirror", "Hostname and credentials pointing to a docker registry mirror service");
-		editor.assertHoverContains("host", "hostname pointing to a Docker registry mirror service");
-		editor.assertHoverContains("username", 2, "username to use when authenticating to the mirror");
-		editor.assertHoverContains("password", 2, "password to use when authenticating to the mirror");
+		editor.assertHoverContains("registry_mirror", "URL pointing to a docker registry mirror service");
 		
 		editor.assertHoverContains("ca_certs", "Each entry specifies the x509 CA certificate for");
 		editor.assertHoverContains("client_certs", "Each entry specifies the x509 certificate and key");
