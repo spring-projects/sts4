@@ -567,21 +567,11 @@
 					<layout>p2</layout>
 					<url>https://repo1.maven.org/maven2/.m2e/connectors/m2eclipse-egit/0.15.1/N/LATEST</url>
 				</repository>
-				<!--				<repository>
-									<id>maven-wro4j</id>
-									<layout>p2</layout>
-									<url>https://download.jboss.org/jbosstools/updates/m2e-wro4j/</url>
-								</repository> -->
 				<repository>
 					<id>maven-wro4j</id>
 					<layout>p2</layout>
-					<url>https://download.jboss.org/jbosstools/updates/m2e-extensions/m2e-wro4j/1.1.0-2014-06-25_06-16-31-H26/</url>
+					<url>https://github.com/jbosstools/m2e-wro4j/releases/download/1.2.0/</url>
 				</repository>
-<!--				<repository>
-					<id>m2e-chromatic</id>
-					<layout>p2</layout>
-					<url>https://sidespin.github.io/m2e-chromatic/update/</url>
-				</repository> -->
 				<repository>
 					<id>maven-devtools</id>
 					<layout>p2</layout>
@@ -592,11 +582,6 @@
 					<layout>p2</layout>
 					<url>https://ianbrandt.github.io/m2e-maven-dependency-plugin/</url>
 				</repository>
-<!--				<repository>
-					<id>ansi-console</id>
-					<layout>p2</layout>
-					<url>https://www.mihai-nita.net/eclipse</url>
-				</repository> -->
 				<!--				<repository>
 					<id>xtext-base</id>
 					<layout>p2</layout>
