@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2020 Pivotal, Inc.
+ * Copyright (c) 2017, 2022 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -156,7 +156,6 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 		Map<String, Object> settings = new HashMap<>();
 		Map<String, Object> bootJavaObj = new HashMap<>();
 		Map<String, Object> liveInformation = new HashMap<>();
-		Map<String, Object> liveInformationAutomaticTracking = new HashMap<>();
 		Map<String, Object> liveInformationFetchData = new HashMap<>();
 		Map<String, Object> supportXML = new HashMap<>();
 		Map<String, Object> bootChangeDetection = new HashMap<>();
@@ -166,13 +165,9 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 
 		IPreferenceStore preferenceStore = BootLanguageServerPlugin.getDefault().getPreferenceStore();
 
-		liveInformationAutomaticTracking.put("on", preferenceStore.getBoolean(Constants.PREF_LIVE_INFORMATION_AUTOMATIC_TRACKING_ENABLED));
-		liveInformationAutomaticTracking.put("delay", preferenceStore.getInt(Constants.PREF_LIVE_INFORMATION_AUTOMATIC_TRACKING_DELAY));
-		
 		liveInformationFetchData.put("max-retries", preferenceStore.getInt(Constants.PREF_LIVE_INFORMATION_FETCH_DATA_RETRY_MAX_NO));
 		liveInformationFetchData.put("retry-delay-in-seconds", preferenceStore.getInt(Constants.PREF_LIVE_INFORMATION_FETCH_DATA_RETRY_DELAY_IN_SECONDS));
 		
-		liveInformation.put("automatic-tracking", liveInformationAutomaticTracking);
 		liveInformation.put("fetch-data", liveInformationFetchData);
 		
 		supportXML.put("on", preferenceStore.getBoolean(Constants.PREF_SUPPORT_SPRING_XML_CONFIGS));

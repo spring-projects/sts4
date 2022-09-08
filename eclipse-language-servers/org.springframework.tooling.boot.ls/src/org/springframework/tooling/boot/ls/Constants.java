@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2019 Pivotal, Inc.
+ * Copyright (c) 2017, 2022 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -17,9 +17,6 @@ public class Constants {
 	
 	public static final String PLUGIN_ID = "org.springframework.tooling.boot.ls";
 	
-	public static final String PREF_LIVE_INFORMATION_AUTOMATIC_TRACKING_ENABLED = "boot-java.live-information.automatic-tracking.on";
-	public static final String PREF_LIVE_INFORMATION_AUTOMATIC_TRACKING_DELAY = "boot-java.live-information.automatic-tracking.delay";
-
 	public static final String PREF_LIVE_INFORMATION_FETCH_DATA_RETRY_MAX_NO = "boot-java.live-information.fetch-data.max-retries";
 	public static final String PREF_LIVE_INFORMATION_FETCH_DATA_RETRY_DELAY_IN_SECONDS = "boot-java.live-information.fetch-data.retry-delay-in-seconds";
 

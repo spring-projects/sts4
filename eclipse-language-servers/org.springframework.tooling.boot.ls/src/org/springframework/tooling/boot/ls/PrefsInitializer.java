@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2019 Pivotal, Inc.
+ * Copyright (c) 2017, 2022 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -28,8 +28,6 @@ public class PrefsInitializer extends AbstractPreferenceInitializer {
 	public void initializeDefaultPreferences() {
 		IPreferenceStore preferenceStore = BootLanguageServerPlugin.getDefault().getPreferenceStore();
 
-		preferenceStore.setDefault(Constants.PREF_LIVE_INFORMATION_AUTOMATIC_TRACKING_ENABLED, true);
-		preferenceStore.setDefault(Constants.PREF_LIVE_INFORMATION_AUTOMATIC_TRACKING_DELAY, 5000);
 		preferenceStore.setDefault(Constants.PREF_LIVE_INFORMATION_FETCH_DATA_RETRY_MAX_NO, 10);
 		preferenceStore.setDefault(Constants.PREF_LIVE_INFORMATION_FETCH_DATA_RETRY_DELAY_IN_SECONDS, 3);
 

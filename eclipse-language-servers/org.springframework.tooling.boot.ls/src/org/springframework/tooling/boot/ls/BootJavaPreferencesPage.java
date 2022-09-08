@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2019 Pivotal, Inc.
+ * Copyright (c) 2017, 2022 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -82,9 +82,6 @@ public class BootJavaPreferencesPage extends FieldEditorPreferencePage implement
 		Composite fieldEditorParent = getFieldEditorParent();
 		
 		addField(new BooleanFieldEditor(Constants.PREF_SCAN_JAVA_TEST_SOURCES, "Scan Java test sources", fieldEditorParent));
-		
-		addField(new BooleanFieldEditor(Constants.PREF_LIVE_INFORMATION_AUTOMATIC_TRACKING_ENABLED, "Live Information - Automatic Process Tracking Enabled", fieldEditorParent));
-		addField(new StringFieldEditor(Constants.PREF_LIVE_INFORMATION_AUTOMATIC_TRACKING_DELAY, "Live Information - Automatic Process Tracking Delay in ms", fieldEditorParent));
 		
 		addField(new StringFieldEditor(Constants.PREF_LIVE_INFORMATION_FETCH_DATA_RETRY_MAX_NO, "Live Information - Max number of retries (before giving up)", fieldEditorParent));
 		addField(new StringFieldEditor(Constants.PREF_LIVE_INFORMATION_FETCH_DATA_RETRY_DELAY_IN_SECONDS, "Live Information - Delay between retries in seconds", fieldEditorParent));

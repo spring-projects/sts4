@@ -10,19 +10,41 @@
  *******************************************************************************/
 package org.springframework.ide.eclipse.boot.dash;
 
+import java.time.Duration;
+import java.util.List;
+import java.util.Map;
+
 import org.eclipse.core.net.proxy.IProxyService;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.InstanceScope;
+import org.eclipse.debug.core.DebugPlugin;
+import org.eclipse.debug.core.ILaunch;
+import org.eclipse.debug.core.ILaunchConfiguration;
+import org.eclipse.debug.core.model.IProcess;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
+import org.eclipse.jface.util.IPropertyChangeListener;
+import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
 import org.springframework.ide.eclipse.boot.dash.di.SimpleDIContext;
+import org.springframework.ide.eclipse.boot.dash.liveprocess.CommandInfo;
+import org.springframework.ide.eclipse.boot.dash.liveprocess.LiveProcessCommandsExecutor;
+import org.springframework.ide.eclipse.boot.dash.liveprocess.LiveProcessCommandsExecutor.Server;
 import org.springframework.ide.eclipse.boot.dash.model.BootDashModelContext;
 import org.springframework.ide.eclipse.boot.dash.model.BootDashViewModel;
 import org.springframework.ide.eclipse.boot.dash.model.DefaultBootDashModelContext;
+import org.springframework.ide.eclipse.boot.dash.model.LocalBootDashModel;
+import org.springframework.ide.eclipse.boot.dash.model.RunState;
+import org.springframework.ide.eclipse.boot.dash.model.RunTargets;
+import org.springframework.ide.eclipse.boot.dash.util.LaunchConfRunStateTracker;
+import org.springframework.ide.eclipse.boot.dash.util.RunStateTracker.RunStateListener;
+import org.springframework.ide.eclipse.boot.launch.BootLaunchConfigurationDelegate;
 import org.springsource.ide.eclipse.commons.livexp.util.Log;
+
+import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 /**
  * The activator class controls the plug-in life cycle
@@ -31,6 +53,8 @@ public class BootDashActivator extends AbstractUIPlugin {
 
 	// The plug-in ID
 	public static final String PLUGIN_ID = "org.springframework.ide.eclipse.boot.dash"; //$NON-NLS-1$
+
+	public static final String PREF_LIVE_INFORMATION_AUTO_CONNECT = "boot-java.live-information.automatic-connection.on";
 
 	public static final String DT_ICON_ID = "devttools";
 	public static final String MANIFEST_ICON = "manifest";
@@ -80,6 +104,7 @@ public class BootDashActivator extends AbstractUIPlugin {
 		super.start(context);
 		plugin = this;
 		new M2ELogbackCustomizer().schedule();
+		connectToLaunchedBootApps();
 	}
 
 	/*
@@ -164,6 +189,66 @@ public class BootDashActivator extends AbstractUIPlugin {
 
 	public static IEclipsePreferences getPreferences() {
 		return InstanceScope.INSTANCE.getNode(PLUGIN_ID);
+	}
+
+	private final RunStateListener<ILaunchConfiguration> RUN_STATE_LISTENER = new RunStateListener<ILaunchConfiguration>() {
+
+		@Override
+		public void stateChanged(ILaunchConfiguration owner) {
+			if (BootLaunchConfigurationDelegate.getEnableJmx(owner)) {
+				LocalBootDashModel localModel = (LocalBootDashModel) getModel().getSectionByTargetId(RunTargets.LOCAL.getId());
+				LaunchConfRunStateTracker tracker = localModel.getLaunchConfRunStateTracker();
+				RunState state = tracker.getState(owner);
+				if (state == RunState.RUNNING || state == RunState.DEBUGGING) {
+					for (ILaunch l : DebugPlugin.getDefault().getLaunchManager().getLaunches()) {
+						if (l.getLaunchConfiguration() == owner) {
+							for (IProcess p : l.getProcesses()) {
+								String pid = p.getAttribute(IProcess.ATTR_PROCESS_ID);
+								if (pid != null) {
+									List<Server> servers = LiveProcessCommandsExecutor.getDefault()
+											.getLanguageServers();
+
+									CommandInfo cmd = new CommandInfo("sts/livedata/connect",
+											Map.of("processKey", pid));
+
+									// The delay seems to be necessary for the moment. Although the process is created VM attach API may not work at early stages of the process run.
+									// "VirtualMachine.list()" call may not list the newly created process which means the process is gone and triggers disconnect.
+									// If lifecycle management is enabled the ready state seem to be a great indicator of a boot process fully started.
+									// TODO: explore health endpoint perhaps instead of ready state under Admin endpoint.
+									Flux.fromIterable(servers).flatMap(s -> Mono.delay(Duration.ofMillis(500)).then(s.executeCommand(cmd))).subscribe();
+
+								}
+							}
+						}
+					}
+				}
+
+			}
+		}
+	};
+
+	private void connectToLaunchedBootApps() {
+		updateRunStateListening();
+
+		getPreferenceStore().addPropertyChangeListener(new IPropertyChangeListener() {
+			@Override
+			public void propertyChange(PropertyChangeEvent event) {
+				if (PREF_LIVE_INFORMATION_AUTO_CONNECT.equals(event.getProperty())) {
+					updateRunStateListening();
+				}
+			}
+		});
+
+	}
+
+	private void updateRunStateListening() {
+		LocalBootDashModel localModel = (LocalBootDashModel) getModel().getSectionByTargetId(RunTargets.LOCAL.getId());
+		LaunchConfRunStateTracker tracker = localModel.getLaunchConfRunStateTracker();
+		if (getPreferenceStore().getBoolean(PREF_LIVE_INFORMATION_AUTO_CONNECT)) {
+			tracker.addListener(RUN_STATE_LISTENER);
+		} else {
+			tracker.removeListener(RUN_STATE_LISTENER);
+		}
 	}
 
 }

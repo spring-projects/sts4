@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019 Pivotal Software, Inc.
+ * Copyright (c) 2019, 2022 Pivotal Software, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -50,11 +50,10 @@ public final class DefaultLiveProcessCommandExecutor implements LiveProcessComma
 
 		@Override
 		public Mono<Void> executeCommand(CommandInfo cmd) {
-			return Mono.fromFuture(ls.getWorkspaceService().executeCommand(new ExecuteCommandParams(
+			return Mono.fromRunnable(() -> ls.getWorkspaceService().executeCommand(new ExecuteCommandParams(
 						cmd.command,
 						ImmutableList.of(cmd.info)
-			)))
-			.then();
+			)));
 		}
 	}
 
