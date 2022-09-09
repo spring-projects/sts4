@@ -70,7 +70,9 @@
         ],
         "filenamePatterns": [
           "*pipeline*.yml",
-          "**/pipeline/*.yml"
+          "**/pipeline/*.yml",
+          "*pipeline*.yaml",
+          "**/pipeline/*.yaml"
         ],
         "firstLine": "^#(\\s)*pipeline(\\s)*",
         "configuration": "./yaml-support/language-configuration.json"
@@ -84,7 +86,11 @@
           "**/ci/*task.yml",
           "**/ci/**/tasks/*.yml",
           "**/concourse/*task.yml",
-          "**/concourse/**/tasks/*.yml"
+          "**/concourse/**/tasks/*.yml",
+          "**/ci/*task.yaml",
+          "**/ci/**/tasks/*.yaml",
+          "**/concourse/*task.yaml",
+          "**/concourse/**/tasks/*.yaml"
         ],
         "firstLine": "^#(\\s)*task(\\s)*",
         "configuration": "./yaml-support/language-configuration.json"
