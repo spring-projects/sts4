@@ -52,7 +52,7 @@ Require-Bundle: org.eclipse.ui,
  com.google.gson,
  org.eclipse.jdt.debug,
  org.springsource.ide.eclipse.commons.boot.ls
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-ActivationPolicy: lazy
 Bundle-ClassPath: .
 Export-Package: org.springframework.ide.eclipse.boot.dash,
