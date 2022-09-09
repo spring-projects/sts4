@@ -125,8 +125,11 @@ public class BootJavaConfig implements InitializingBean {
 			// Legacy case
 			if ("true".equalsIgnoreCase(enabled)) {
 				return true;
+			} else if ("false".equalsIgnoreCase(enabled)) {
+				return false;
+			} else {
+				return Toggle.Option.valueOf(enabled) == Toggle.Option.ON;
 			}
-			return Toggle.Option.valueOf(enabled) == Toggle.Option.ON;
 		}
 	}
 
