@@ -73,7 +73,11 @@
           "**/pipeline/*.yml"
         ],
         "firstLine": "^#(\\s)*pipeline(\\s)*",
-        "configuration": "./yaml-support/language-configuration.json"
+        "configuration": "./yaml-support/language-configuration.json",
+        "icon": {
+          "light": "./icon.png",
+          "dark": "./icon-white.svg"
+        }
       },
       {
         "id": "concourse-task-yaml",
@@ -87,7 +91,11 @@
           "**/concourse/**/tasks/*.yml"
         ],
         "firstLine": "^#(\\s)*task(\\s)*",
-        "configuration": "./yaml-support/language-configuration.json"
+        "configuration": "./yaml-support/language-configuration.json",
+        "icon": {
+          "light": "./icon.png",
+          "dark": "./icon-white.svg"
+        }
       }
     ],
     "grammars": [
