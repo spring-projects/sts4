@@ -8,8 +8,8 @@ for editing [Concourse](https://concourse-ci.org/) Pipeline and Task configurati
 The Concourse editor automatically activates when the name of the  `.yml` file you are editing 
 follows a certain pattern:
 
-  - `**/*pipeline*.yml` | `**/pipeline/*.yml` : activates support for editing pipelines
-  - `**/ci/**/tasks/*.yml` | `**/*task.yml` : activates support for editing tasks.
+  - `**/*pipeline*.yml` | `**/pipeline/*.yml` | `**/*pipeline*.yaml` | `**/pipeline/*.yaml`: activates support for editing pipelines
+  - `**/ci/**/tasks/*.yml` | `**/*task.yml` |  `**/ci/**/tasks/*.yaml` | `**/*task.yaml` : activates support for editing tasks.
   
 You can also define your own patterns and map them to the language-ids `concourse-pipeline-yaml` 
 or `concourse-task-yaml` by defining `files.associations` in workspace settings. 
