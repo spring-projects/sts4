@@ -67,14 +67,14 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 	private long timestampWhenInitialized;
 	
 	public DelegatingStreamConnectionProvider() {
-		LanguageServerCommonsActivator.logInfo("Entering DelegatingStreamConnectionProvider()");
+//		LanguageServerCommonsActivator.logInfo("Entering DelegatingStreamConnectionProvider()");
 		String port = System.getProperty("boot-java-ls-port");
 		if (port != null) {
 			this.provider = new SpringBootLanguageServerViaSocket(Integer.parseInt(port));
 		} else {
-			LanguageServerCommonsActivator.logInfo("DelegatingStreamConnectionProvider classloader = "+this.getClass().getClassLoader());
+//			LanguageServerCommonsActivator.logInfo("DelegatingStreamConnectionProvider classloader = "+this.getClass().getClassLoader());
 			Assert.isNotNull(SpringBootLanguageServer.class);
-			LanguageServerCommonsActivator.logInfo("SpringBootLanguageServer exists!");
+//			LanguageServerCommonsActivator.logInfo("SpringBootLanguageServer exists!");
 			Assert.isLegal(SpringBootLanguageServer.class.getClassLoader().equals(DelegatingStreamConnectionProvider.class.getClassLoader()), "OSGI bug messing up our classloaders?");
 			this.provider = new SpringBootLanguageServer();
 		}
@@ -126,7 +126,7 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 				this.languageServer = languageServer;
 				
 				this.timestampWhenInitialized = System.currentTimeMillis();
-				LanguageServerCommonsActivator.logInfo("Boot LS startup time from start to initialized: " + (timestampWhenInitialized - timestampBeforeStart) + "ms");
+//				LanguageServerCommonsActivator.logInfo("Boot LS startup time from start to initialized: " + (timestampWhenInitialized - timestampBeforeStart) + "ms");
 
 				sendConfiguration();
 				
