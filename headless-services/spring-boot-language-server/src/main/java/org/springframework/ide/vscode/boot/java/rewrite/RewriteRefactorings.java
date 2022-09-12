@@ -25,6 +25,7 @@ import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.WorkspaceEdit;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.openrewrite.Recipe;
+import org.openrewrite.RecipeRun;
 import org.openrewrite.Result;
 import org.openrewrite.config.DeclarativeRecipe;
 import org.openrewrite.internal.RecipeIntrospectionUtils;
@@ -114,7 +115,8 @@ public class RewriteRefactorings implements CodeActionResolver, QuickfixHandler 
 	}
 	
 	private WorkspaceEdit applyRecipe(Recipe r, IJavaProject project, List<J.CompilationUnit> cus) {
-		List<Result> results = r.run(cus);
+		RecipeRun reciperun = r.run(cus);
+		List<Result> results = reciperun.getResults();
 		List<Either<TextDocumentEdit, ResourceOperation>> edits = results.stream().filter(res -> res.getAfter() != null).map(res -> {
 			URI docUri = res.getAfter().getSourcePath().isAbsolute() ? res.getAfter().getSourcePath().toUri() : project.getLocationUri().resolve(res.getAfter().getSourcePath().toString());
 			TextDocument doc = documents.getLatestSnapshot(docUri.toString());

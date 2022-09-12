@@ -12,15 +12,20 @@ package org.springframework.ide.vscode.boot.java.rewrite.codeaction;
 
 import static org.springframework.ide.vscode.commons.java.SpringProjectUtil.springBootVersionGreaterOrEqual;
 
+import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.stream.Collectors;
 
 import org.openrewrite.Cursor;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Tree;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaVisitor;
+import org.openrewrite.java.spring.AutowiredFieldIntoConstructorParameterVisitor;
 import org.openrewrite.java.tree.J.Block;
 import org.openrewrite.java.tree.J.ClassDeclaration;
+import org.openrewrite.java.tree.J.MethodDeclaration;
 import org.openrewrite.java.tree.J.VariableDeclarations;
 import org.openrewrite.java.tree.JavaType.FullyQualified;
 import org.openrewrite.java.tree.TypeUtils;
@@ -30,6 +35,7 @@ import org.springframework.ide.vscode.commons.rewrite.config.RecipeCodeActionDes
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
 import org.springframework.ide.vscode.commons.rewrite.java.AnnotationHierarchies;
 import org.springframework.ide.vscode.commons.rewrite.java.FixAssistMarker;
+import org.springframework.ide.vscode.commons.rewrite.java.ORAstUtils;
 
 public class AutowiredFieldIntoConstructorParameterCodeAction implements RecipeCodeActionDescriptor {
 	
@@ -67,10 +73,29 @@ public class AutowiredFieldIntoConstructorParameterCodeAction implements RecipeC
 					ClassDeclaration classDeclaration = (ClassDeclaration) blockCursor.getParent().getValue();
 					FullyQualified fqType = TypeUtils.asFullyQualified(classDeclaration.getType());
 					if (fqType != null && isApplicableType(fqType)) {
-						m = m.withMarkers(m.getMarkers().add(new FixAssistMarker(Tree.randomId())
+						List<MethodDeclaration> constructors = ORAstUtils.getMethods(classDeclaration).stream().filter(c -> c.isConstructor()).limit(2).collect(Collectors.toList());
+						String fieldName = multiVariable.getVariables().get(0).getSimpleName();
+						FixAssistMarker marker = new FixAssistMarker(Tree.randomId())
 								.withRecipeId(getRecipeId())
 								.withScope(classDeclaration.getMarkers().findFirst(Range.class).get())
-								.withParameters(Map.of("classFqName", fqType.getFullyQualifiedName(), "fieldName", multiVariable.getVariables().get(0).getSimpleName()))));
+								.withParameters(Map.of("classFqName", fqType.getFullyQualifiedName(), "fieldName", fieldName));
+						if (constructors.size() == 0) {
+							m = m.withMarkers(m.getMarkers().add(marker));							
+						} else if (constructors.size() == 1 && !AutowiredFieldIntoConstructorParameterVisitor.isConstructorInitializingField(constructors.get(0), fieldName)) {
+							m = m.withMarkers(m.getMarkers().add(marker));							
+						} else {
+			                List<MethodDeclaration> autowiredConstructors = constructors.stream().filter(constr -> constr.getLeadingAnnotations().stream()
+	                                .map(a -> TypeUtils.asFullyQualified(a.getType()))
+	                                .filter(Objects::nonNull)
+	                                .map(FullyQualified::getFullyQualifiedName)
+	                                .anyMatch(AUTOWIRED::equals)
+	                        )
+	                        .limit(2)
+	                        .collect(Collectors.toList());
+			                if (autowiredConstructors.size() == 1 && !AutowiredFieldIntoConstructorParameterVisitor.isConstructorInitializingField(autowiredConstructors.get(0), fieldName)) {
+								m = m.withMarkers(m.getMarkers().add(marker));							
+			                }
+						}
 					}
 				}
 				return m;

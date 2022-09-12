@@ -455,8 +455,11 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 				int start = doc.toOffset(params.getRange().getStart());
 				int end = doc.toOffset(params.getRange().getEnd());
 				listBuilder.addAll(codeActionHandler.handle(cancelToken, capabilities, context, doc, new Region(start, end - start)));
+			} catch (BadLocationException e) {
+				// ignore bad location. Might come from stale doc version
+				log.debug("Stale range", e);
 			} catch (Exception e) {
-				log.error("Failed to compute quick refactorings", e);
+				log.error("Failed to compute quick refactorings", e);				
 			}
 		}
 		

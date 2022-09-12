@@ -42,6 +42,7 @@ import org.eclipse.lsp4j.WorkspaceEdit;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.Recipe;
+import org.openrewrite.RecipeRun;
 import org.openrewrite.Result;
 import org.openrewrite.SourceFile;
 import org.openrewrite.TreeVisitor;
@@ -399,7 +400,8 @@ public class RewriteRecipeRepository {
 				new InMemoryExecutionContext());
 		List<SourceFile> sources = projectParser.parse(absoluteProjectDir, getClasspathEntries(project));
 		server.getProgressService().progressEvent(r.getName(), "Computing changes...");
-		List<Result> results = r.run(sources, new InMemoryExecutionContext(e -> log.error("", e)));
+		RecipeRun reciperun = r.run(sources, new InMemoryExecutionContext(e -> log.error("", e)));
+		List<Result> results = reciperun.getResults();
 		return ORDocUtils.createWorkspaceEdit(absoluteProjectDir, server.getTextDocumentService(), results);
 	}
 	

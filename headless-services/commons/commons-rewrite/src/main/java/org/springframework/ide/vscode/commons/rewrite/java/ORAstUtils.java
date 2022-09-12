@@ -24,6 +24,7 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.Parser;
 import org.openrewrite.Recipe;
+import org.openrewrite.RecipeRun;
 import org.openrewrite.Result;
 import org.openrewrite.Tree;
 import org.openrewrite.TreeVisitor;
@@ -226,7 +227,8 @@ public class ORAstUtils {
 		synchronized(parser) {
 			cus = parser.parse(sourceFiles, null, ctx);
 		}
-		List<Result> results = new UpdateSourcePositions()/*.doNext(new MarkParentRecipe())*/.run(cus);
+		RecipeRun reciperun = new UpdateSourcePositions()/*.doNext(new MarkParentRecipe())*/.run(cus);
+		List<Result> results = reciperun.getResults();
 		return results.stream().map(r -> r.getAfter() == null ? r.getBefore() : r.getAfter()).map(CompilationUnit.class::cast).collect(Collectors.toList());	
 	}
 	
@@ -237,7 +239,8 @@ public class ORAstUtils {
 		synchronized (parser) {
 			cus = parser.parseInputs(inputs, null, ctx);
 		}
-		List<Result> results = new UpdateSourcePositions()/*.doNext(new MarkParentRecipe())*/.run(cus);
+		RecipeRun reciperun = new UpdateSourcePositions()/*.doNext(new MarkParentRecipe())*/.run(cus);
+		List<Result> results = reciperun.getResults();
 		return results.stream().map(r -> r.getAfter() == null ? r.getBefore() : r.getAfter()).map(CompilationUnit.class::cast).collect(Collectors.toList());
 	}
 	

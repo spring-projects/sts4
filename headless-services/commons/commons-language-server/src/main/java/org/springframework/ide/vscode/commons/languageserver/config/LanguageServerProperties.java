@@ -56,7 +56,7 @@ public class LanguageServerProperties {
 	 * Reconcile sources regardless whether source is opened in an editor or not.
 	 * If on only opened documents will be reconciled
 	 */
-	private boolean reconcileOnlyOpenedDocs = true;
+	private boolean reconcileOnlyOpenedDocs = false;
 	
 	public boolean isStandalone() {
 		return standalone;
