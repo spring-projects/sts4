@@ -1,3 +1,11 @@
+## 2022-09-14 (4.16.0 RELEASE, incl. language servers version 1.39.0)
+
+* _(Spring Boot)_ fixed: Workspace symbol null on custom annotations ([#818](https://github.com/spring-projects/sts4/issues/818))
+* _(Spring Boot)_ fixed: organize imports causes communication issues with the language server ([#806](https://github.com/spring-projects/sts4/issues/806))
+* _(Spring Boot)_ enhancement: Quick fix action to refactor field injection to constructor injection ([#522](https://github.com/spring-projects/sts4/issues/522))
+* _(Spring Boot)_ fixed: Workspace symbol null on custom annotations ([#818](https://github.com/spring-projects/sts4/issues/818))
+* _(VSCode)_ fixed: Extension never activates, throwing error "Header must provide a Content-Length property" ([#811](https://github.com/spring-projects/sts4/issues/811))
+
 ## 2022-08-11 (4.15.3 RELEASE, incl. language servers version 1.38.0)
 
 * _(Spring Boot)_ fixed: Spring Boot Tools slow down code complete ([#808](https://github.com/spring-projects/sts4/issues/808))

@@ -1,3 +1,7 @@
+## 2022-09-14 (4.16.0 RELEASE, incl. language servers version 1.39.0)
+
+* _(VSCode)_ fixed: Extension never activates, throwing error "Header must provide a Content-Length property" ([#811](https://github.com/spring-projects/sts4/issues/811))
+
 ## 2022-08-11 (4.15.3 RELEASE, incl. language servers version 1.38.0)
 
 * _(Language Server)_ fixed: Copied files should retain copyright ownership ([#807](https://github.com/spring-projects/sts4/issues/807))

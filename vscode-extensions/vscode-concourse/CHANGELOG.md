@@ -1,3 +1,12 @@
+## 2022-09-14 (4.16.0 RELEASE, incl. language servers version 1.39.0)
+
+* _(VSCode)_ fixed: Extension never activates, throwing error "Header must provide a Content-Length property" ([#811](https://github.com/spring-projects/sts4/issues/811))
+* _(Concourse)_ fixed: Concourse extension doesn't know about "check_every: never" for a resource ([#816](https://github.com/spring-projects/sts4/issues/816))
+* _(Concourse)_ fixed: Concourse extension doesn't know about "depth" for a semver resource ([#830](https://github.com/spring-projects/sts4/issues/830))
+* _(Concourse)_ fixed: Concourse extension doesn't recognize URL for "registry_mirror" with a docker-image resource ([#831](https://github.com/spring-projects/sts4/issues/831))
+* _(Concourse)_ fixed: vscode-concourse: support both .yml and .yaml files ([#838](https://github.com/spring-projects/sts4/issues/838)) - contributed by [bmalehorn](https://github.com/bmalehorn)
+* _(Concourse)_ fixed: vscode-concourse: add language icon for pipelines & tasks ([#839](https://github.com/spring-projects/sts4/issues/839)) - contributed by [bmalehorn](https://github.com/bmalehorn)
+
 ## 2022-08-11 (4.15.3 RELEASE, incl. language servers version 1.38.0)
 
 * _(Language Server)_ fixed: Copied files should retain copyright ownership ([#807](https://github.com/spring-projects/sts4/issues/807))
