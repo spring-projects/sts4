@@ -212,6 +212,16 @@
 							<appArgLine>-consoleLog -application org.eclipse.equinox.p2.director -nosplash -destination ${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/linux/gtk/x86_64/sts-${unqualifiedVersion}.${p2.qualifier} -repository ${justj.repository} -installIUs org.eclipse.justj.openjdk.hotspot.jre.full.feature.group</appArgLine>
 						</configuration>
 					</execution>
+					<execution>
+						<id>linux_aarch_64</id>
+						<phase>package</phase>
+						<goals>
+							<goal>eclipse-run</goal>
+						</goals>
+						<configuration>
+							<appArgLine>-consoleLog -application org.eclipse.equinox.p2.director -nosplash -destination ${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/linux/gtk/aarch64/sts-${unqualifiedVersion}.${p2.qualifier} -repository ${justj.repository} -installIUs org.eclipse.justj.openjdk.hotspot.jre.full.feature.group</appArgLine>
+						</configuration>
+					</execution>
 				</executions>
 			</plugin>
 			
@@ -237,6 +247,8 @@
 								<argument>${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/macosx/cocoa/aarch64/SpringToolSuite4.app/Contents/Eclipse/open-source-licenses.txt</argument>
 								<argument>${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/linux/gtk/x86_64/sts-${unqualifiedVersion}.${p2.qualifier}/plugins/</argument>
 								<argument>${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/linux/gtk/x86_64/sts-${unqualifiedVersion}.${p2.qualifier}/open-source-licenses.txt</argument>
+								<argument>${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/linux/gtk/aarch64/sts-${unqualifiedVersion}.${p2.qualifier}/plugins/</argument>
+								<argument>${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/linux/gtk/aarch64/sts-${unqualifiedVersion}.${p2.qualifier}/open-source-licenses.txt</argument>
 								<argument>${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/win32/win32/x86_64/sts-${unqualifiedVersion}.${p2.qualifier}/plugins/</argument>
 								<argument>${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/win32/win32/x86_64/sts-${unqualifiedVersion}.${p2.qualifier}/open-source-licenses.txt</argument>
 							</arguments>
@@ -460,6 +472,8 @@
 								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-macosx.cocoa.aarch64.dmg" algorithm="MD5" fileext=".md5" />
 								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-linux.gtk.x86_64.tar.gz" algorithm="SHA1" fileext=".sha1" />
 								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-linux.gtk.x86_64.tar.gz" algorithm="MD5" fileext=".md5" />
+								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-linux.gtk.aarch64.tar.gz" algorithm="SHA1" fileext=".sha1" />
+								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-linux.gtk.aarch64.tar.gz" algorithm="MD5" fileext=".md5" />
 								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-win32.win32.x86_64.zip" algorithm="SHA1" fileext=".sha1" />
 								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-win32.win32.x86_64.zip" algorithm="MD5" fileext=".md5" />
 								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-win32.win32.x86_64.self-extracting.jar" algorithm="SHA1" fileext=".sha1" />
