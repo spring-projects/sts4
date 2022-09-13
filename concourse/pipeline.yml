@@ -64,24 +64,24 @@ resources:
     uri: git@github.com:spring-projects/sts4.wiki.git
     branch: master
     private_key: ((rsa_id))
-- name: mirror-vscode-spring-boot
-  type: git
-  source:
-    branch: ((branch))
-    private_key: ((rsa_id))
-    uri: git@github.com:pivotal/sts4-vscode-spring-boot-mirror.git
-- name: mirror-vscode-concourse
-  type: git
-  source:
-    branch: ((branch))
-    private_key: ((rsa_id))
-    uri: git@github.com:pivotal/sts4-vscode-concourse-mirror.git
-- name: mirror-vscode-bosh
-  type: git
-  source:
-    branch: ((branch))
-    private_key: ((rsa_id))
-    uri: git@github.com:pivotal/sts4-vscode-bosh-mirror.git
+# - name: mirror-vscode-spring-boot
+#   type: git
+#   source:
+#     branch: ((branch))
+#     private_key: ((rsa_id))
+#     uri: git@github.com:pivotal/sts4-vscode-spring-boot-mirror.git
+# - name: mirror-vscode-concourse
+#   type: git
+#   source:
+#     branch: ((branch))
+#     private_key: ((rsa_id))
+#     uri: git@github.com:pivotal/sts4-vscode-concourse-mirror.git
+# - name: mirror-vscode-bosh
+#   type: git
+#   source:
+#     branch: ((branch))
+#     private_key: ((rsa_id))
+#     uri: git@github.com:pivotal/sts4-vscode-bosh-mirror.git
 - name: jvm-launch-utils-git
   type: git
   source:
@@ -478,9 +478,9 @@ jobs:
       params: 
         file: out/vscode-concourse-*.vsix
         acl: public-read
-    - put: mirror-vscode-concourse
-      params:
-        repository: sts4
+    # - put: mirror-vscode-concourse
+    #   params:
+    #     repository: sts4
 - name: build-bosh-vsix-snapshot
   plan:
   - in_parallel:
@@ -501,9 +501,9 @@ jobs:
       params: 
         file: out/vscode-bosh-*.vsix
         acl: public-read
-    - put: mirror-vscode-bosh
-      params:
-        repository: sts4
+    # - put: mirror-vscode-bosh
+    #   params:
+    #     repository: sts4
 - name: build-manifest-yaml-vsix-snapshot
   plan:
   - in_parallel:
@@ -544,9 +544,9 @@ jobs:
       params: 
         file: out/vscode-spring-boot-*.vsix
         acl: public-read
-    - put: mirror-vscode-spring-boot
-      params:
-        repository: sts4
+    # - put: mirror-vscode-spring-boot
+    #   params:
+    #     repository: sts4
 - name: trigger-rc-build
   serial: true
   plan: 
