@@ -327,11 +327,5 @@
          class="org.springframework.ide.eclipse.boot.dash.remoteapps.RemoteAppsFromBootDash">
    </injection>
 </extension>
-<extension
-      point="org.eclipse.core.runtime.preferences">
-   <initializer
-         class="org.springframework.ide.eclipse.boot.dash.prefs.PrefsInitializer">
-   </initializer>
-</extension>
 
 </plugin>

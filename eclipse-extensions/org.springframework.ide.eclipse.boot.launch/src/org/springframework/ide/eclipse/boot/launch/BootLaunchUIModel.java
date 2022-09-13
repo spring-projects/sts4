@@ -71,6 +71,7 @@ public class BootLaunchUIModel {
 	public final LaunchTabSelectionModel<Boolean> enableDebug;
 	public final EnableJmxFeaturesModel enableJmx;
 	public final LaunchTabSelectionModel<Boolean> hideFromDash;
+	public final LaunchTabSelectionModel<Boolean> autoConnect;
 	public final LaunchTabSelectionModel<Boolean> ansiConsoleOutput;
 	public final LaunchTabSelectionModel<Boolean> fastStartup;
 	public final LaunchTabSelectionModel<Boolean> useThinWrapper;
@@ -82,6 +83,7 @@ public class BootLaunchUIModel {
 		enableDebug = CheckboxLaunchTabModel.create(ENABLE_DEBUG_OUTPUT, DEFAULT_ENABLE_DEBUG_OUTPUT);
 		enableJmx = new EnableJmxFeaturesModel();
 		hideFromDash = CheckboxLaunchTabModel.create(HIDE_FROM_BOOT_DASH, DEFAULT_HIDE_FROM_BOOT_DASH);
+		autoConnect = CheckboxLaunchTabModel.create(AUTO_CONNECT, DEFAULT_AUTO_CONNECT);
 		ansiConsoleOutput = CheckboxLaunchTabModel.create(ANSI_CONSOLE_OUTPUT, BootLaunchConfigurationDelegate.supportsAnsiConsoleOutput());
 		fastStartup = CheckboxLaunchTabModel.create(FAST_STARTUP, BootActivator.getDefault().getPreferenceStore()
 				.getBoolean(BootPreferences.PREF_BOOT_FAST_STARTUP_DEFAULT));

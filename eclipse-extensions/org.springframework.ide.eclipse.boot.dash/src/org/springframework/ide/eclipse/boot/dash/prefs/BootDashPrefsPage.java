@@ -36,7 +36,6 @@ public class BootDashPrefsPage extends FieldEditorPreferencePage implements IWor
 	@Override
 	protected void createFieldEditors() {
 		Composite parent = getFieldEditorParent();
-		addField(new BooleanFieldEditor(BootDashActivator.PREF_LIVE_INFORMATION_AUTO_CONNECT, "Auto Connect to launched Boot app to show Live Information", parent));
 		for (RunTargetType rtt : BootDashActivator.getDefault().getModel().getRunTargetTypes()) {
 			if (rtt.supportsDeletion()) {
 				addField(new BooleanFieldEditor(DeleteElementsAction.PREF_SKIP_CONFIRM_DELETE(rtt), "Skip Delete Element Confirmation ("+rtt.getName()+")", parent));

@@ -134,6 +134,9 @@ public class BootLaunchConfigurationDelegate extends AbstractBootLaunchConfigura
 
 	public static final String SPRING_PROJECT_NAME_ATTRIBUTE = "spring.boot.project.name";
 
+	public static final String AUTO_CONNECT = "spring.boot.auto-connect";
+	public static final boolean DEFAULT_AUTO_CONNECT = true;
+
 	// Preference for Eclipse ANSI Console support.
 	// See org.eclipse.ui.internal.console.ansi.preferences.AnsiConsolePreferenceConstants
 	// Because this class is only available in Eclipse 4.25 and higher, we cannot add a
@@ -363,6 +366,7 @@ public class BootLaunchConfigurationDelegate extends AbstractBootLaunchConfigura
 			setMainType(wc, mainType);
 		}
 		setEnableJMX(wc, DEFAULT_ENABLE_JMX);
+		setAutoConnect(wc, false);
 		setEnableLiveBeanSupport(wc, DEFAULT_ENABLE_LIVE_BEAN_SUPPORT());
 		setEnableLifeCycle(wc, DEFAULT_ENABLE_LIFE_CYCLE);
 		setTerminationTimeout(wc,""+DEFAULT_TERMINATION_TIMEOUT);
@@ -440,6 +444,19 @@ public class BootLaunchConfigurationDelegate extends AbstractBootLaunchConfigura
 			Log.log(e);
 		}
 		return "";
+	}
+
+	public static boolean getAutoConnect(ILaunchConfiguration conf) {
+		try {
+			return conf.getAttribute(AUTO_CONNECT, DEFAULT_AUTO_CONNECT);
+		} catch (CoreException e) {
+			Log.log(e);
+		}
+		return false;
+	}
+
+	public static void setAutoConnect(ILaunchConfigurationWorkingCopy conf, boolean autoConnect) {
+		conf.setAttribute(AUTO_CONNECT, autoConnect);
 	}
 
 	public static void setEnableLiveBeanSupport(ILaunchConfigurationWorkingCopy conf, boolean value) {

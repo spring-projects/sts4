@@ -11,6 +11,7 @@
 package org.springframework.ide.eclipse.boot.dash;
 
 import java.time.Duration;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -21,13 +22,14 @@ import org.eclipse.debug.core.DebugPlugin;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.model.IProcess;
+import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.jface.resource.ImageRegistry;
-import org.eclipse.jface.util.IPropertyChangeListener;
-import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
+import org.springframework.ide.eclipse.boot.core.BootPropertyTester;
 import org.springframework.ide.eclipse.boot.dash.di.SimpleDIContext;
 import org.springframework.ide.eclipse.boot.dash.liveprocess.CommandInfo;
 import org.springframework.ide.eclipse.boot.dash.liveprocess.LiveProcessCommandsExecutor;
@@ -104,7 +106,7 @@ public class BootDashActivator extends AbstractUIPlugin {
 		super.start(context);
 		plugin = this;
 		new M2ELogbackCustomizer().schedule();
-		connectToLaunchedBootApps();
+		listenToLaunchedBootApps();
 	}
 
 	/*
@@ -114,6 +116,7 @@ public class BootDashActivator extends AbstractUIPlugin {
 	 * BundleContext)
 	 */
 	public void stop(BundleContext context) throws Exception {
+		stopListeningToLaunchedBootApps();
 		plugin = null;
 		super.stop(context);
 		if (model!=null) {
@@ -195,60 +198,56 @@ public class BootDashActivator extends AbstractUIPlugin {
 
 		@Override
 		public void stateChanged(ILaunchConfiguration owner) {
-			if (BootLaunchConfigurationDelegate.getEnableJmx(owner)) {
-				LocalBootDashModel localModel = (LocalBootDashModel) getModel().getSectionByTargetId(RunTargets.LOCAL.getId());
-				LaunchConfRunStateTracker tracker = localModel.getLaunchConfRunStateTracker();
-				RunState state = tracker.getState(owner);
-				if (state == RunState.RUNNING || state == RunState.DEBUGGING) {
-					for (ILaunch l : DebugPlugin.getDefault().getLaunchManager().getLaunches()) {
-						if (l.getLaunchConfiguration() == owner) {
-							for (IProcess p : l.getProcesses()) {
-								String pid = p.getAttribute(IProcess.ATTR_PROCESS_ID);
-								if (pid != null) {
-									List<Server> servers = LiveProcessCommandsExecutor.getDefault()
-											.getLanguageServers();
+			if (BootLaunchConfigurationDelegate.getEnableJmx(owner) && BootLaunchConfigurationDelegate.getAutoConnect(owner)) {
+				IJavaProject project = JavaCore.create(BootLaunchConfigurationDelegate.getProject(owner));
+				try {
+					if (project != null && Arrays.stream(project.getResolvedClasspath(true)).anyMatch(BootPropertyTester::isActuatorJar)) {
+						LocalBootDashModel localModel = (LocalBootDashModel) getModel().getSectionByTargetId(RunTargets.LOCAL.getId());
+						LaunchConfRunStateTracker tracker = localModel.getLaunchConfRunStateTracker();
+						RunState state = tracker.getState(owner);
+						if (state == RunState.RUNNING || state == RunState.DEBUGGING) {
+							for (ILaunch l : DebugPlugin.getDefault().getLaunchManager().getLaunches()) {
+								if (l.getLaunchConfiguration() == owner) {
+									for (IProcess p : l.getProcesses()) {
+										String pid = p.getAttribute(IProcess.ATTR_PROCESS_ID);
+										if (pid != null) {
+											List<Server> servers = LiveProcessCommandsExecutor.getDefault()
+													.getLanguageServers();
 
-									CommandInfo cmd = new CommandInfo("sts/livedata/connect",
-											Map.of("processKey", pid));
+											CommandInfo cmd = new CommandInfo("sts/livedata/connect",
+													Map.of("processKey", pid));
 
-									// The delay seems to be necessary for the moment. Although the process is created VM attach API may not work at early stages of the process run.
-									// "VirtualMachine.list()" call may not list the newly created process which means the process is gone and triggers disconnect.
-									// If lifecycle management is enabled the ready state seem to be a great indicator of a boot process fully started.
-									// TODO: explore health endpoint perhaps instead of ready state under Admin endpoint.
-									Flux.fromIterable(servers).flatMap(s -> Mono.delay(Duration.ofMillis(500)).then(s.executeCommand(cmd))).subscribe();
+											// The delay seems to be necessary for the moment. Although the process is created VM attach API may not work at early stages of the process run.
+											// "VirtualMachine.list()" call may not list the newly created process which means the process is gone and triggers disconnect.
+											// If lifecycle management is enabled the ready state seem to be a great indicator of a boot process fully started.
+											// TODO: explore health endpoint perhaps instead of ready state under Admin endpoint.
+											Flux.fromIterable(servers).flatMap(s -> Mono.delay(Duration.ofMillis(500)).then(s.executeCommand(cmd))).subscribe();
 
+										}
+									}
 								}
 							}
 						}
-					}
-				}
 
+					}
+				} catch (Exception e) {
+					getLog().error("Failed to connect to Boot app", e);
+				}
 			}
 		}
 	};
 
-	private void connectToLaunchedBootApps() {
-		updateRunStateListening();
-
-		getPreferenceStore().addPropertyChangeListener(new IPropertyChangeListener() {
-			@Override
-			public void propertyChange(PropertyChangeEvent event) {
-				if (PREF_LIVE_INFORMATION_AUTO_CONNECT.equals(event.getProperty())) {
-					updateRunStateListening();
-				}
-			}
-		});
+	private void listenToLaunchedBootApps() {
+		LocalBootDashModel localModel = (LocalBootDashModel) getModel().getSectionByTargetId(RunTargets.LOCAL.getId());
+		LaunchConfRunStateTracker tracker = localModel.getLaunchConfRunStateTracker();
+		tracker.addListener(RUN_STATE_LISTENER);
 
 	}
 
-	private void updateRunStateListening() {
+	private void stopListeningToLaunchedBootApps() {
 		LocalBootDashModel localModel = (LocalBootDashModel) getModel().getSectionByTargetId(RunTargets.LOCAL.getId());
 		LaunchConfRunStateTracker tracker = localModel.getLaunchConfRunStateTracker();
-		if (getPreferenceStore().getBoolean(PREF_LIVE_INFORMATION_AUTO_CONNECT)) {
-			tracker.addListener(RUN_STATE_LISTENER);
-		} else {
-			tracker.removeListener(RUN_STATE_LISTENER);
-		}
+		tracker.removeListener(RUN_STATE_LISTENER);
 	}
 
 }

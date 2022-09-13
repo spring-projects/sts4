@@ -54,6 +54,7 @@ public class BootMainTab extends LaunchConfigurationTabWithSections implements I
 		jvmArgsSections.add(new EnableDebugSection(this, model.enableDebug));
 		jvmArgsSections.add(new HideFromBootDashSection(this, model.hideFromDash));
 		jvmArgsSections.add(new FastStartupLaunchTabSection(this, model.fastStartup));
+		jvmArgsSections.add(new DelegatingLaunchConfigurationTabSection(this, model.autoConnect, new CheckboxSection(this, model.autoConnect, "Auto-connect to fetch Live Data")));
 		/*
 		 * Show UI for enabling/disabling ANSI console output only if
 		 * IDE supports ANSI console output
