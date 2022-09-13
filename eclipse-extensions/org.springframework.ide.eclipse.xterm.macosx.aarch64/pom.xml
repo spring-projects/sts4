@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="https://maven.apache.org/POM/4.0.0"
+	xmlns:xsi="https://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="https://maven.apache.org/POM/4.0.0 https://maven.apache.org/maven-v4_0_0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.springframework.boot.ide</groupId>
+		<artifactId>org.springframework.boot.ide</artifactId>
+		<version>4.16.0-SNAPSHOT</version>
+		<relativePath>../../eclipse-distribution/pom.xml</relativePath>
+	</parent>
+	<packaging>eclipse-plugin</packaging>
+	<artifactId>org.springframework.ide.eclipse.xterm.macosx.aarch64</artifactId>
+
+	<properties>
+		<archive-file>node-xterm-0.0.2-macosx-aarch64.zip</archive-file>
+	</properties>
+
+	<build>
+		<plugins>
+					
+			<plugin>
+				<artifactId>maven-clean-plugin</artifactId>
+				<version>3.1.0</version>
+				<configuration>
+					<filesets>
+						<fileset>
+							<directory>${project.basedir}</directory>
+							<includes>
+								<include>**/lib/**</include>
+							</includes>
+							<followSymlinks>false</followSymlinks>
+						</fileset>
+					</filesets>
+				</configuration>				
+    		</plugin>
+		
+			<!-- download-maven-plugin fails to download archive files for mac and linux some times. Use
+			 - wagon-maven-plugin for downloading
+			 - maven-antrun-plugin for unpacking and deleting the archive
+			-->
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>wagon-maven-plugin</artifactId>
+				<version>2.0.0</version>
+				<executions>
+					<execution>
+						<id>download-nodejs-app</id>
+						<phase>generate-resources</phase>
+						<goals>
+							<goal>download-single</goal>
+						</goals>
+						<configuration>
+							<serverId>s3</serverId>
+							<url>https://dist.springsource.com/release/TOOLS/node-xterm</url>
+							<fromFile>${archive-file}</fromFile>
+							<toFile>${project.basedir}/lib/node-xterm.zip</toFile>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
+				<artifactId>maven-antrun-plugin</artifactId>
+				<executions>
+					<execution>
+						<phase>process-resources</phase>
+						<configuration>
+							<tasks>
+								<echo message="unzipping node-xterm.zip" />
+								<unzip src="${project.basedir}/lib/node-xterm.zip"
+									dest="lib/" />
+								<delete>
+									<fileset dir="${project.basedir}/lib"
+										includes="node-xterm.zip" />
+								</delete>
+							</tasks>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+   
+   			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>target-platform-configuration</artifactId>
+				<version>${tycho-version}</version>
+				<configuration>
+					<resolver>p2</resolver>
+					<pomDependencies>ignore</pomDependencies>
+					<environments>
+						<environment>
+							<os>macosx</os>
+							<ws>cocoa</ws>
+							<arch>x86_64</arch>
+						</environment>
+					</environments>
+				</configuration>
+			</plugin>			
+
+		</plugins>
+	</build>
+</project>

@@ -13,7 +13,10 @@ Require-Bundle: org.eclipse.ui;bundle-version="3.115.0",
  org.apache.httpcomponents.httpcore,
  org.eclipse.wildwebdeveloper.embedder.node
 Import-Package: javax.inject
-Bundle-ClassPath: .
+Bundle-ClassPath: .,
+ lib/ipcsocket-1.4.0.jar,
+ lib/jna-5.8.0.jar,
+ lib/jna-platform-5.8.0.jar
 Bundle-ActivationPolicy: lazy
 Export-Package: org.springframework.ide.eclipse.xterm,
  org.springframework.ide.eclipse.xterm.views

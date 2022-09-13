@@ -20,16 +20,20 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IMenuManager;
 import org.eclipse.jface.action.IToolBarManager;
 import org.eclipse.jface.dialogs.MessageDialog;
+import org.eclipse.jface.layout.GridDataFactory;
+import org.eclipse.jface.layout.GridLayoutFactory;
 import org.eclipse.jface.resource.ColorRegistry;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.SWT;
-import org.eclipse.swt.browser.Browser;
 import org.eclipse.swt.graphics.Font;
 import org.eclipse.swt.graphics.RGB;
 import org.eclipse.swt.graphics.RGBA;
+import org.eclipse.swt.layout.GridData;
+import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Display;
+import org.eclipse.swt.widgets.Text;
 import org.eclipse.ui.IActionBars;
 import org.eclipse.ui.IMemento;
 import org.eclipse.ui.IViewSite;
@@ -38,6 +42,7 @@ import org.eclipse.ui.PartInitException;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.part.ViewPart;
 import org.eclipse.ui.themes.ITheme;
+import org.springframework.ide.eclipse.chromium.browser.ElectronBrowserCanvas;
 import org.springframework.ide.eclipse.xterm.XtermPlugin;
 
 public class TerminalView extends ViewPart {
@@ -58,7 +63,8 @@ public class TerminalView extends ViewPart {
 	
 	private Action refreshAction;
 
-	private Browser browser;
+	private ElectronBrowserCanvas browser;
+	private Text addressBar;
 	
 	private String terminalId = DEFAULT_TERMINAL_ID;
 
@@ -67,6 +73,8 @@ public class TerminalView extends ViewPart {
 	private String cwd;
 	
 	private boolean isNewView;
+	
+	private Composite parent;
 	
 	private final IPropertyChangeListener PROPERTY_LISTENER = new IPropertyChangeListener() {
 
@@ -89,8 +97,41 @@ public class TerminalView extends ViewPart {
 
 	@Override
 	public void createPartControl(Composite parent) {
+		this.parent = parent;
 		PlatformUI.getWorkbench().getThemeManager().addPropertyChangeListener(PROPERTY_LISTENER);
-		browser = new Browser(parent, SWT.CHROMIUM);
+		
+		Composite shell = new Composite(parent, SWT.None);
+	     GridLayout layout = new GridLayout(1, false);
+	      layout.marginHeight = 0;
+	      layout.marginWidth = 0;
+	      shell.setLayout(layout);
+
+
+	      String url = "https://google.com";
+	      addressBar = new Text(shell, SWT.SINGLE);
+	      addressBar.setText(url);
+	      GridData layoutData1 = new GridData(SWT.FILL, SWT.CENTER, true, false);
+	      addressBar.setLayoutData(layoutData1);
+
+	      browser = new ElectronBrowserCanvas(shell, false);
+	      GridData layoutData2 = new GridData(SWT.FILL, SWT.FILL, true, true);
+	      browser.setLayoutData(layoutData2);
+
+	      addressBar.addListener(SWT.Traverse, event -> {
+	         if (event.detail == SWT.TRAVERSE_RETURN)
+	         {
+	            String text = addressBar.getText();
+	            if (!text.startsWith("http") && !text.isEmpty())
+	            {
+	               text = "http://" + text;
+	               addressBar.setText(text);
+	            }
+	            browser.browse(text);
+	         }
+	      });
+		
+//		browser = new ElectronBrowserCanvas(parent, false);
+//		browser.setLayoutData(GridDataFactory.fillDefaults().grab(true, true).create());
 		makeActions();
 		contributeToActionBars();
 		if (isNewView) {
@@ -147,7 +188,10 @@ public class TerminalView extends ViewPart {
 				String serviceUrl = XtermPlugin.getDefault().xtermUrl(10_000).get();
 				if (Display.getCurrent() != null) {
 					if (browser != null && !browser.isDisposed() && terminalId.equals(TerminalView.this.terminalId)) {
-						browser.setUrl(createUrl(serviceUrl, terminalId, cmd, cwd));
+						String url = createUrl(serviceUrl, terminalId, cmd, cwd);
+						addressBar.setText(url);
+						XtermPlugin.getDefault().getLog().info("Navigating to " + url);
+						browser.browse(url);
 					}
 				} else {
 					Display display = PlatformUI.getWorkbench().getDisplay();
@@ -155,7 +199,9 @@ public class TerminalView extends ViewPart {
 						display.asyncExec(() -> {
 							if (browser != null && !browser.isDisposed() && terminalId.equals(TerminalView.this.terminalId)) {
 								String url = createUrl(serviceUrl, terminalId, cmd, cwd);
-								browser.setUrl(url);
+								addressBar.setText(url);
+								XtermPlugin.getDefault().getLog().info("Navigating to " + url);
+								browser.browse(url);
 							}
 						});
 					}

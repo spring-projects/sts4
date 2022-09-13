@@ -1,0 +1,5 @@
+{
+  "dependencies": {
+    "node-xterm": "^0.0.4"
+  }
+}

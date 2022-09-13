@@ -11,6 +11,14 @@
 	</parent>
 	<packaging>eclipse-plugin</packaging>
 	<artifactId>org.springframework.ide.eclipse.xterm</artifactId>
+	
+	<dependencies>
+      <dependency>
+         <groupId>org.scala-sbt.ipcsocket</groupId>
+         <artifactId>ipcsocket</artifactId>
+         <version>1.4.0</version>
+      </dependency>
+	</dependencies>
 
 	<build>
 		<plugins>
@@ -59,6 +67,48 @@
 					</execution>
 				</executions>
 			</plugin>
+
+			
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-dependency-plugin</artifactId>
+				<executions>
+					<execution>
+						<?m2e execute onConfiguration?>
+						<id>get-libs</id>
+						<goals>
+							<goal>copy</goal>
+						</goals>
+						<phase>validate</phase>
+					</execution>
+				</executions>
+				<configuration>
+					<skip>false</skip>
+					<artifactItems>
+						<artifactItem>
+							<groupId>org.scala-sbt.ipcsocket</groupId>
+							<artifactId>ipcsocket</artifactId>
+							<version>1.4.0</version>
+							<overWrite>true</overWrite>
+						</artifactItem>
+						<artifactItem>
+							<groupId>net.java.dev.jna</groupId>
+							<artifactId>jna-platform</artifactId>
+							<version>5.8.0</version>
+    					</artifactItem>
+    					<artifactItem>
+							<groupId>net.java.dev.jna</groupId>
+							<artifactId>jna</artifactId>
+							<version>5.8.0</version>
+       					</artifactItem>
+					</artifactItems>
+					<outputDirectory>${basedir}/lib/</outputDirectory>
+					<!-- baseVersion is to avoid SNAPSHOT dependencies being copied with
+						ever daily changing timestamp -->
+					<useBaseVersion>true</useBaseVersion>
+				</configuration>
+			</plugin>
+
 
 		</plugins>
 	</build>
