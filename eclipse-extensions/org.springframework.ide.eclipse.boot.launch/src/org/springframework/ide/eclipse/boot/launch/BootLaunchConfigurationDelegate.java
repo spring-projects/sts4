@@ -366,7 +366,7 @@ public class BootLaunchConfigurationDelegate extends AbstractBootLaunchConfigura
 			setMainType(wc, mainType);
 		}
 		setEnableJMX(wc, DEFAULT_ENABLE_JMX);
-		setAutoConnect(wc, false);
+		setAutoConnect(wc, DEFAULT_AUTO_CONNECT);
 		setEnableLiveBeanSupport(wc, DEFAULT_ENABLE_LIVE_BEAN_SUPPORT());
 		setEnableLifeCycle(wc, DEFAULT_ENABLE_LIFE_CYCLE);
 		setTerminationTimeout(wc,""+DEFAULT_TERMINATION_TIMEOUT);

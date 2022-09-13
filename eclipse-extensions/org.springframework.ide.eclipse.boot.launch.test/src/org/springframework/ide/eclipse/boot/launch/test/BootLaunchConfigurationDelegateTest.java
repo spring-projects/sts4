@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2018 Pivotal Software, Inc.
+ * Copyright (c) 2015, 2022 Pivotal Software, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -16,12 +16,9 @@ import java.io.File;
 import java.net.URL;
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Properties;
 import java.util.function.Predicate;
-
-import javax.xml.transform.stream.StreamResult;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -41,7 +38,6 @@ import org.springframework.ide.eclipse.boot.launch.livebean.JmxBeanSupport;
 import org.springframework.ide.eclipse.boot.launch.process.BootProcessFactory;
 import org.springframework.ide.eclipse.boot.test.util.LaunchResult;
 import org.springframework.ide.eclipse.boot.test.util.LaunchUtil;
-import org.springsource.ide.eclipse.commons.frameworks.test.util.ACondition;
 import org.springsource.ide.eclipse.commons.frameworks.test.util.Timewatch;
 import org.springsource.ide.eclipse.commons.tests.util.StsTestUtil;
 
@@ -164,6 +160,21 @@ public class BootLaunchConfigurationDelegateTest extends BootLaunchTestCase {
 
 		BootLaunchConfigurationDelegate.setFastStartup(wc, false);
 		assertEquals(false, BootLaunchConfigurationDelegate.getFastStartup(wc));
+	}
+
+	public void testSetGetAutoConnect() throws Exception {
+		ILaunchConfigurationWorkingCopy wc = createWorkingCopy();
+		assertEquals(true, BootLaunchConfigurationDelegate.getAutoConnect(wc));
+
+		BootLaunchConfigurationDelegate.setAutoConnect(wc, false);
+		assertEquals(false, BootLaunchConfigurationDelegate.getAutoConnect(wc));
+
+		IProject project = createLaunchReadyProject(TEST_PROJECT);
+
+		//Creates a launch conf similar to that created by 'Run As' menu.
+		wc = createWorkingCopy();
+		BootLaunchConfigurationDelegate.setDefaults(wc, project, TEST_MAIN_CLASS);
+		assertEquals(true, BootLaunchConfigurationDelegate.getAutoConnect(wc));
 	}
 
 	public void testClearProperties() throws Exception {
