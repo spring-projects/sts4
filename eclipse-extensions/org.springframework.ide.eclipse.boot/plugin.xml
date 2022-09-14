@@ -272,5 +272,7 @@
       point="org.springframework.ide.eclipse.boot.project">
       <project nature="org.eclipse.m2e.core.maven2Nature" projectClass="org.springframework.ide.eclipse.boot.core.internal.MavenSpringBootProject"></project>
 </extension>
-
+  <extension point="org.eclipse.ui.startup">
+     <startup class="org.springframework.ide.eclipse.boot.ui.preferences.MavenAptPreferenceInitializer"/>
+   </extension>
 </plugin>

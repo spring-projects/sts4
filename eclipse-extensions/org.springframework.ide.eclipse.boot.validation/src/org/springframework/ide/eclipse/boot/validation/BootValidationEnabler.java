@@ -109,7 +109,7 @@ public class BootValidationEnabler implements org.eclipse.ui.IStartup {
 	@Override
 	public void earlyStartup() {
 		//Don't do this stuff actually during startup. Its not critical and it can wait.
-		new ValidationEnablerStartupJob().schedule(Duration.ofMinutes(1).toMillis());
+		new ValidationEnablerStartupJob().schedule(Duration.ofSeconds(10).toMillis());
 	}
 
 }

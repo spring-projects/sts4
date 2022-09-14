@@ -10,6 +10,10 @@
  *******************************************************************************/
 package org.springsource.ide.eclipse.commons.frameworks.core.workspace;
 
+import java.util.Collections;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
@@ -37,6 +41,8 @@ public class ClasspathListenerManager implements Disposable {
 
 	private class MyListener implements IElementChangedListener {
 
+		private Set<String> knownProjectNames = Collections.synchronizedSet(new HashSet<>());
+
 		//@Override
 		public void elementChanged(ElementChangedEvent event) {
 			visit(event.getDelta());
@@ -49,13 +55,18 @@ public class ClasspathListenerManager implements Disposable {
 				visitChildren(delta);
 				break;
 			case IJavaElement.JAVA_PROJECT:
-				if (isClasspathChanged(delta.getFlags())) {
-					listener.classpathChanged((IJavaProject)el);
+				IJavaProject jp = (IJavaProject) el;
+				if (isNewProject(jp) || isClasspathChanged(delta.getFlags())) {
+					listener.classpathChanged(jp);
 				}
 				break;
 			default:
 				break;
 			}
+		}
+
+		private boolean isNewProject(IJavaProject jp) {
+			return knownProjectNames.add(jp.getElementName());
 		}
 
 		private boolean isClasspathChanged(int flags) {
@@ -70,6 +81,10 @@ public class ClasspathListenerManager implements Disposable {
 				visit(c);
 			}
 		}
+
+		public void addKnownProject(IJavaProject jp) {
+			this.knownProjectNames.add(jp.getElementName());
+		}
 	}
 
 	private ClasspathListener listener;
@@ -83,19 +98,21 @@ public class ClasspathListenerManager implements Disposable {
 	 */
 	public ClasspathListenerManager(ClasspathListener listener, boolean initialEvent) {
 		this.listener = listener;
+		myListener=new MyListener();
 		if (initialEvent) {
 			for (IProject p : ResourcesPlugin.getWorkspace().getRoot().getProjects()) {
 				try {
 					if (p.isAccessible() && p.hasNature(JavaCore.NATURE_ID)) {
 						IJavaProject jp = JavaCore.create(p);
 						listener.classpathChanged(jp);
+						myListener.addKnownProject(jp);
 					}
 				} catch (CoreException e) {
 					FrameworkCoreActivator.log(e);
 				}
 			}
 		}
-		JavaCore.addElementChangedListener(myListener=new MyListener(), ElementChangedEvent.POST_CHANGE);
+		JavaCore.addElementChangedListener(myListener, ElementChangedEvent.POST_CHANGE);
 	}
 
 	public ClasspathListenerManager(ClasspathListener listener) {

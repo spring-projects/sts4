@@ -36,7 +36,6 @@ import static org.eclipse.m2e.core.ui.internal.editing.PomEdits.performOnDOMDocu
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -337,7 +336,11 @@ public class MavenSpringBootProject extends SpringBootProject {
 			protected IStatus run(IProgressMonitor arg0) {
 				Job job = createUpdateMavenProjectJob(getProject());
 				if (job != null) {
-					job.schedule();
+					job.schedule(2000); //Without 2000ms delay, we tend to get deadlocks.
+					// TODO:              ^^^^ debug this and find a better solution (suspect this actually bug in m2e,
+					//                        but it rarely happens when a user invokes the operation from the UI.
+					//                        It happens here presumably because some updates happen in quick succession
+					//                        and this causes some sort of a race condition causing a deadlock situation.
 					return Status.OK_STATUS;
 				}
 				else {
