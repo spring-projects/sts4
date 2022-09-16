@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.languageserver.util;
 
+import java.lang.reflect.Type;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -81,11 +82,15 @@ import org.springframework.ide.vscode.commons.languageserver.quickfix.Quickfix;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
+import org.springframework.ide.vscode.commons.util.text.LazyTextDocument;
 import org.springframework.ide.vscode.commons.util.text.Region;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonElement;
+import com.google.gson.reflect.TypeToken;
 
 public class SimpleTextDocumentService implements TextDocumentService, DocumentEventListenerManager {
 
@@ -430,22 +435,26 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 		}
 	}
 	
-	private List<Either<Command, CodeAction>> computeCodeActions(CancelChecker cancelToken, CodeActionCapabilities capabilities, TrackedDocument doc, CodeActionParams params) {
+	private List<Either<Command, CodeAction>> computeCodeActions(CancelChecker cancelToken, CodeActionCapabilities capabilities, TextDocument doc, CodeActionParams params) {
 		Builder<Either<Command,CodeAction>> listBuilder = ImmutableList.builder();
 		CodeActionContext context = params.getContext();
 		if (!context.getDiagnostics().isEmpty() || (context.getOnly() != null && context.getOnly().contains(CodeActionKind.QuickFix))) {
-			doc.getQuickfixes().stream()
-					.filter((fix) -> fix.appliesTo(params.getRange(), context))
-					.map(f -> f.getCodeAction(params.getContext()))
-					.map(command -> Either.<Command, CodeAction>forRight(command))
-					.forEach(listBuilder::add);
+			params.getContext().getDiagnostics().forEach(d -> {
+				if (d.getData() != null) {
+					Type type = new TypeToken<List<CodeAction>>(){}.getType();
+					List<CodeAction> codeActions = new GsonBuilder().create().fromJson((JsonElement)d.getData(), type);
+					for (CodeAction ca : codeActions) {
+						listBuilder.add(Either.forRight(ca));
+					}
+				}
+			});
 		}
 
 		if (codeActionHandler != null) {
 			try {
-				int start = doc.getDocument().toOffset(params.getRange().getStart());
-				int end = doc.getDocument().toOffset(params.getRange().getEnd());
-				listBuilder.addAll(codeActionHandler.handle(cancelToken, capabilities, context, doc.getDocument(), new Region(start, end - start)));
+				int start = doc.toOffset(params.getRange().getStart());
+				int end = doc.toOffset(params.getRange().getEnd());
+				listBuilder.addAll(codeActionHandler.handle(cancelToken, capabilities, context, doc, new Region(start, end - start)));
 			} catch (Exception e) {
 				log.error("Failed to compute quick refactorings", e);
 			}
@@ -469,14 +478,22 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 		// this doesn't happen async, because it accesses the internal documents structure
 		// and therefore needs to be executed as part of the main LSP message queue
 
-		TrackedDocument doc = documents.get(params.getTextDocument().getUri());
+		String uri = params.getTextDocument().getUri();
+		TrackedDocument trackedDoc = documents.get(uri);
+		TextDocument doc = trackedDoc == null ? null : trackedDoc.getDocument();
+		
+		if (doc == null) {
+			if (uri.endsWith(".java")) {
+				doc = new LazyTextDocument(uri, LanguageId.JAVA);
+			}
+		}
 
 		if (doc != null) {
-			
+			final TextDocument d = doc;
 			return server.getClientCapabilities()
 					.thenApply(SimpleTextDocumentService::getCodeActionCapabilities)
 					.thenComposeAsync(capabilities -> 
-						CompletableFutures.computeAsync(messageWorkerThreadPool, cancelToken -> computeCodeActions(cancelToken, capabilities, doc, params)));
+						CompletableFutures.computeAsync(messageWorkerThreadPool, cancelToken -> computeCodeActions(cancelToken, capabilities, d, params)));
 		} else {
 			return CompletableFuture.completedFuture(ImmutableList.of());
 		}

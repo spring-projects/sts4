@@ -24,9 +24,10 @@ import org.openrewrite.java.tree.J.ClassDeclaration;
 import org.openrewrite.java.tree.J.VariableDeclarations;
 import org.openrewrite.java.tree.JavaType.FullyQualified;
 import org.openrewrite.java.tree.TypeUtils;
-import org.springframework.ide.vscode.boot.java.rewrite.RecipeCodeActionDescriptor;
-import org.springframework.ide.vscode.boot.java.rewrite.RecipeScope;
+import org.openrewrite.marker.Range;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.rewrite.config.RecipeCodeActionDescriptor;
+import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
 import org.springframework.ide.vscode.commons.rewrite.java.AnnotationHierarchies;
 import org.springframework.ide.vscode.commons.rewrite.java.FixAssistMarker;
 
@@ -68,7 +69,7 @@ public class AutowiredFieldIntoConstructorParameterCodeAction implements RecipeC
 					if (fqType != null && isApplicableType(fqType)) {
 						m = m.withMarkers(m.getMarkers().add(new FixAssistMarker(Tree.randomId())
 								.withRecipeId(getRecipeId())
-								.withScope(classDeclaration.getId())
+								.withScope(classDeclaration.getMarkers().findFirst(Range.class).get())
 								.withParameters(Map.of("classFqName", fqType.getFullyQualifiedName(), "fieldName", multiVariable.getVariables().get(0).getSimpleName()))));
 					}
 				}

@@ -14,7 +14,6 @@ import static org.springframework.ide.vscode.commons.java.SpringProjectUtil.spri
 
 import java.util.Arrays;
 import java.util.List;
-import java.util.UUID;
 
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Tree;
@@ -22,12 +21,13 @@ import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.AnnotationMatcher;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaVisitor;
-import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.java.tree.J.ClassDeclaration;
 import org.openrewrite.java.tree.JavaType.FullyQualified;
-import org.springframework.ide.vscode.boot.java.rewrite.RecipeCodeActionDescriptor;
-import org.springframework.ide.vscode.boot.java.rewrite.RecipeScope;
+import org.openrewrite.java.tree.TypeUtils;
+import org.openrewrite.marker.Range;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.rewrite.config.RecipeCodeActionDescriptor;
+import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
 import org.springframework.ide.vscode.commons.rewrite.java.FixAssistMarker;
 
 public class UnnecessarySpringExtensionCodeAction implements RecipeCodeActionDescriptor {
@@ -80,10 +80,10 @@ public class UnnecessarySpringExtensionCodeAction implements RecipeCodeActionDes
 					FullyQualified fq = TypeUtils.asFullyQualified(a.getType());
 					return fq != null && SPRING_BOOT_TEST_ANNOTATIONS.contains(fq.getFullyQualifiedName());
 				})) {
-					UUID id = c.getId();
+					Range range = c.getMarkers().findFirst(Range.class).get();
 					c = c.withLeadingAnnotations(ListUtils.map(c.getLeadingAnnotations(), a -> {
 						if (SPRING_EXTENSION_ANNOTATIN_MATCHER.matches(a)) {
-							return a.withMarkers(a.getMarkers().add(new FixAssistMarker(Tree.randomId()).withRecipeId(ID).withScope(id)));
+							return a.withMarkers(a.getMarkers().add(new FixAssistMarker(Tree.randomId()).withRecipeId(ID).withScope(range)));
 						}
 						return a;
 					}));

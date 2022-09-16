@@ -45,6 +45,7 @@ import org.osgi.framework.FrameworkUtil;
 import org.springframework.tooling.boot.ls.commands.RecipeDescriptor.OptionDescriptor;
 import org.springframework.tooling.boot.ls.commands.RecipeTreeModel.CheckedState;
 
+@SuppressWarnings("restriction")
 public class SelectRecipesDialog extends StatusDialog {
 	
 	private static final int MARGIN = 5;

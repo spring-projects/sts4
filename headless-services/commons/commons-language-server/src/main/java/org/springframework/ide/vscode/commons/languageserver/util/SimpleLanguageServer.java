@@ -31,13 +31,16 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 import org.eclipse.lsp4j.ApplyWorkspaceEditParams;
 import org.eclipse.lsp4j.ApplyWorkspaceEditResponse;
 import org.eclipse.lsp4j.ClientCapabilities;
+import org.eclipse.lsp4j.CodeAction;
 import org.eclipse.lsp4j.CodeActionKind;
 import org.eclipse.lsp4j.CodeActionOptions;
 import org.eclipse.lsp4j.CodeLensOptions;
+import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.eclipse.lsp4j.ExecuteCommandOptions;
@@ -94,6 +97,7 @@ import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.CollectionUtil;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
+import com.google.common.collect.ImmutableList;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -720,10 +724,21 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 						d.setSeverity(severity);
 						d.setSource(getServer().EXTENSION_ID);
 						List<QuickfixData<?>> fixes = problem.getQuickfixes();
+						// Copy original diagnsotic without the data field to avoid stackoverflow is hashCode() method call
+						Diagnostic refDiagnostic = new Diagnostic(d.getRange(), d.getMessage(), d.getSeverity(), d.getSource()); 
 						if (CollectionUtil.hasElements(fixes)) {
-							for (QuickfixData<?> fix : fixes) {
-								quickfixes.add(new Quickfix<>(CODE_ACTION_COMMAND_ID, d, fix));
-							}
+							d.setData(fixes.stream().map(fix -> {
+								CodeAction ca = new CodeAction();
+								ca.setKind(CodeActionKind.QuickFix);
+								ca.setTitle(fix.title);
+								ca.setDiagnostics(List.of(refDiagnostic));
+								ca.setCommand(new Command(
+										fix.title,
+										CODE_ACTION_COMMAND_ID,
+										ImmutableList.of(fix.type.getId(), fix.params)
+								));
+								return ca;
+							}).collect(Collectors.toList()));
 						}
 						diagnostics.add(d);
 					}

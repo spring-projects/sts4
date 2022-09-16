@@ -6,12 +6,13 @@ import java.util.Objects;
 import java.util.UUID;
 
 import org.openrewrite.marker.Marker;
+import org.openrewrite.marker.Range;
 
 public class FixAssistMarker implements Marker {
 	
 	private UUID id;
 	
-	private UUID scope;
+	private Range scope;
 	
 	private String recipeId;
 	
@@ -34,12 +35,12 @@ public class FixAssistMarker implements Marker {
 		return this;
 	}
 	
-	public FixAssistMarker withScope(UUID scope) {
+	public FixAssistMarker withScope(Range scope) {
 		this.scope = scope;
 		return this;
 	}
 
-	public UUID getScope() {
+	public Range getScope() {
 		return scope;
 	}
 	

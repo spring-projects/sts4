@@ -317,7 +317,7 @@ public class BootLanguageServerBootApp {
 		};
 	}
 	
-	@Bean RewriteRecipeRepository rewriteRecipesRepository(SimpleLanguageServer server, JavaProjectFinder projectFinder) {
-		return new RewriteRecipeRepository(server, projectFinder);
+	@Bean RewriteRecipeRepository rewriteRecipesRepository(SimpleLanguageServer server, JavaProjectFinder projectFinder, BootJavaConfig config) {
+		return new RewriteRecipeRepository(server, projectFinder, config);
 	}
 }

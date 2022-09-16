@@ -28,9 +28,6 @@ public class RewriteConfig implements InitializingBean {
 	private SimpleLanguageServer server;
 
 	@Autowired
-	private RewriteRecipeRepository recipeRepo;
-	
-	@Autowired
 	private RewriteRefactorings rewriteRefactorings;
 	
 	@Bean
@@ -41,15 +38,7 @@ public class RewriteConfig implements InitializingBean {
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		QuickfixRegistry registry = server.getQuickfixRegistry();
-		
-		recipeRepo.loaded.thenAccept(v ->
-			recipeRepo.getProblemRecipeDescriptors().forEach(d -> {
-				if (recipeRepo.getRecipe(d.getRecipeId()).isPresent()) {
-					registry.register(d.getRecipeId(), rewriteRefactorings);
-				}
-			})
-		);
-		
+		registry.register(RewriteRefactorings.REWRITE_RECIPE_QUICKFIX, rewriteRefactorings);
 	}
 
 }

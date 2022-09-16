@@ -37,10 +37,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.app.BootJavaConfig;
 import org.springframework.ide.vscode.boot.java.handlers.JavaCodeActionHandler;
-import org.springframework.ide.vscode.boot.java.rewrite.reconcile.RecipeSpringJavaProblemDescriptor;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.util.LspClient;
 import org.springframework.ide.vscode.commons.languageserver.util.LspClient.Client;
+import org.springframework.ide.vscode.commons.rewrite.config.RecipeCodeActionDescriptor;
+import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
+import org.springframework.ide.vscode.commons.rewrite.config.RecipeSpringJavaProblemDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.java.FixAssistMarker;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.util.text.IRegion;
@@ -98,9 +100,6 @@ public class RewriteCodeActionHandler implements JavaCodeActionHandler {
 		}
 		
 		try {
-			
-			// Wait for recipe repo to load if not loaded - should be loaded by the time we get here.
-			recipeRepo.loaded.get();
 			
 			List<RecipeCodeActionDescriptor> descriptors = recipeRepo.getCodeActionRecipeDescriptors().stream()
 				// If Recipe not present - don't show quick assist as it won't be handled without the Rewrite recipe present	
@@ -177,7 +176,7 @@ public class RewriteCodeActionHandler implements JavaCodeActionHandler {
 				m.getRecipeId(),
 				doc.getUri(), 
 				s,
-				m.getScope() == null ? null : m.getScope().toString(),
+				m.getScope() == null ? null : m.getScope(),
 				m.getParameters() == null ? Collections.emptyMap() : m.getParameters()
 		));
 		return ca;

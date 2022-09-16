@@ -48,6 +48,7 @@ import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
 
+@SuppressWarnings("restriction")
 public class RewriteRefactoringsHandler extends AbstractHandler {
 	
 	private static class DurationTypeConverter implements JsonSerializer<Duration>, JsonDeserializer<Duration> {

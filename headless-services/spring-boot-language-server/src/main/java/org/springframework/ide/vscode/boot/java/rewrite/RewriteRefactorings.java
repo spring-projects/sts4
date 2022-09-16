@@ -16,7 +16,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.eclipse.lsp4j.CodeAction;
@@ -31,6 +30,7 @@ import org.openrewrite.config.DeclarativeRecipe;
 import org.openrewrite.internal.RecipeIntrospectionUtils;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.J.CompilationUnit;
+import org.openrewrite.marker.Range;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
@@ -40,6 +40,7 @@ import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixHa
 import org.springframework.ide.vscode.commons.languageserver.util.CodeActionResolver;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.rewrite.ORDocUtils;
+import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
 import org.springframework.ide.vscode.commons.rewrite.java.ORAstUtils;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -50,6 +51,8 @@ import com.google.gson.JsonDeserializer;
 import com.google.gson.JsonElement;
 
 public class RewriteRefactorings implements CodeActionResolver, QuickfixHandler {
+	
+	public static final String REWRITE_RECIPE_QUICKFIX = "org.openrewrite.rewrite";
 		
 	private static final Logger log = LoggerFactory.getLogger(RewriteRefactorings.class);
 	
@@ -163,11 +166,18 @@ public class RewriteRefactorings implements CodeActionResolver, QuickfixHandler 
 			}
 		}
 		if (d.recipeScope == RecipeScope.NODE) {
-			UUID astNodeId = UUID.fromString(d.scope);
-			if (astNodeId == null) {
+			if (d.scope == null) {
 				throw new IllegalArgumentException("Missing scope AST node!");
 			} else {
-				r = ORAstUtils.nodeRecipe(r, j -> j != null && astNodeId.equals(j.getId()));
+				r = ORAstUtils.nodeRecipe(r, j -> {
+					if (j != null) {
+						 Range range = j.getMarkers().findFirst(Range.class).orElse(null);
+						 if (range != null) {
+							 return d.scope.getStart().getOffset() <= range.getStart().getOffset() && range.getEnd().getOffset() <= d.scope.getEnd().getOffset();  
+						 }
+					}
+					return false;
+				});
 			}
 		}
 		return r;
@@ -177,9 +187,9 @@ public class RewriteRefactorings implements CodeActionResolver, QuickfixHandler 
 		public String id;
 		public String docUri;
 		public RecipeScope recipeScope;
-		public String scope;
+		public Range scope;
 		public Map<String, Object> params;
-		public Data(String id, String docUri, RecipeScope recipeScope, String scope, Map<String, Object> params) {
+		public Data(String id, String docUri, RecipeScope recipeScope, Range scope, Map<String, Object> params) {
 			this.id = id;
 			this.docUri = docUri;
 			this.recipeScope = recipeScope;

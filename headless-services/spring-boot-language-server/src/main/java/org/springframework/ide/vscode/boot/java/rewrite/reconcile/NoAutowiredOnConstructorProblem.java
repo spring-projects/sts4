@@ -21,12 +21,14 @@ import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.J.ClassDeclaration;
 import org.openrewrite.java.tree.J.MethodDeclaration;
 import org.openrewrite.java.tree.JavaType.FullyQualified;
+import org.openrewrite.marker.Range;
 import org.openrewrite.java.tree.Statement;
 import org.openrewrite.java.tree.TypeUtils;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.Boot2JavaProblemType;
-import org.springframework.ide.vscode.boot.java.rewrite.RecipeScope;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
+import org.springframework.ide.vscode.commons.rewrite.config.RecipeSpringJavaProblemDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.java.AnnotationHierarchies;
 import org.springframework.ide.vscode.commons.rewrite.java.FixAssistMarker;
 
@@ -76,7 +78,7 @@ public class NoAutowiredOnConstructorProblem implements RecipeSpringJavaProblemD
                                 MethodDeclaration constructor = (MethodDeclaration) s;
                         		FixAssistMarker fixAssistMarker = new FixAssistMarker(Tree.randomId())
     	                        	.withRecipeId(ID)
-    	                        	.withScope(getCursor().firstEnclosing(ClassDeclaration.class).getId());
+    	                        	.withScope(getCursor().firstEnclosing(ClassDeclaration.class).getMarkers().findFirst(Range.class).get());
                                 constructor = constructor.withLeadingAnnotations(ListUtils.map(constructor.getLeadingAnnotations(), a -> {
                                 	if (TypeUtils.isOfClassType(a.getType(), Annotations.AUTOWIRED)) {
     									a = a.withMarkers(a.getMarkers().add(fixAssistMarker)); 

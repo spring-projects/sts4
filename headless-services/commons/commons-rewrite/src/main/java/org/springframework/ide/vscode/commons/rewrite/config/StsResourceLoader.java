@@ -8,10 +8,15 @@
  * Contributors:
  *     VMware, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.java.rewrite;
+package org.springframework.ide.vscode.commons.rewrite.config;
 
-public enum RecipeScope {
-	NODE,
-	FILE,
-	PROJECT
+import java.util.List;
+
+import org.openrewrite.config.ResourceLoader;
+
+public interface StsResourceLoader extends ResourceLoader {
+	
+	List<CodeActionRepository> listCodeActionDescriptorsRepositories();
+	
+
 }

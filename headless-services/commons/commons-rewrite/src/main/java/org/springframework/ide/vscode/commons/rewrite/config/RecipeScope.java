@@ -8,13 +8,10 @@
  * Contributors:
  *     VMware, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.java.rewrite.reconcile;
+package org.springframework.ide.vscode.commons.rewrite.config;
 
-import org.springframework.ide.vscode.boot.java.rewrite.RecipeCodeActionDescriptor;
-import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
-
-public interface RecipeSpringJavaProblemDescriptor extends RecipeCodeActionDescriptor {
-	
-	ProblemType getProblemType();
-	
+public enum RecipeScope {
+	NODE,
+	FILE,
+	PROJECT
 }

@@ -211,6 +211,7 @@ export function activate(
     context: VSCode.ExtensionContext
 ) {
     context.subscriptions.push(
-        VSCode.commands.registerCommand('vscode-spring-boot.rewrite.list', liveHoverConnectHandler)
+        VSCode.commands.registerCommand('vscode-spring-boot.rewrite.list', liveHoverConnectHandler),
+        VSCode.commands.registerCommand('vscode-spring-boot.rewrite.reload', () => VSCode.commands.executeCommand('sts/rewrite/reload'))
     );
 }

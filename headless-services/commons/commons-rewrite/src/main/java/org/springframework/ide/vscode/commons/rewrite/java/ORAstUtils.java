@@ -329,15 +329,18 @@ public class ORAstUtils {
     			
     			@Override
     			public J visit(Tree tree, ExecutionContext ctx) {
-    				J t = super.visit(tree, ctx);
-    				if (condition.test(t)) {
-    					makeVisitorNonTopLevel(visitor);
-    					t = visitor.visit(t, ctx, getCursor());
-    					for (TreeVisitor<J, ExecutionContext> v : getAfterVisitors(visitor)) {
-    						doAfterVisit(v);
-    					}
+    				if (tree instanceof J) {
+    					J t = (J) tree;
+        				if (condition.test(t)) {
+        					makeVisitorNonTopLevel(visitor);
+        					t = visitor.visit(t, ctx, getCursor());
+        					for (TreeVisitor<J, ExecutionContext> v : getAfterVisitors(visitor)) {
+        						doAfterVisit(v);
+        					}
+            				return t;
+        				}
     				}
-    				return t;
+    				return super.visit(tree, ctx);
     			}
 
     		};

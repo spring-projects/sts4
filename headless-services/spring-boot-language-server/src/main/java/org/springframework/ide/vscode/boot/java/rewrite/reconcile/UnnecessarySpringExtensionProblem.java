@@ -11,8 +11,9 @@
 package org.springframework.ide.vscode.boot.java.rewrite.reconcile;
 
 import org.springframework.ide.vscode.boot.java.Boot2JavaProblemType;
-import org.springframework.ide.vscode.boot.java.rewrite.RecipeScope;
 import org.springframework.ide.vscode.boot.java.rewrite.codeaction.UnnecessarySpringExtensionCodeAction;
+import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
+import org.springframework.ide.vscode.commons.rewrite.config.RecipeSpringJavaProblemDescriptor;
 
 public class UnnecessarySpringExtensionProblem extends UnnecessarySpringExtensionCodeAction
 		implements RecipeSpringJavaProblemDescriptor {

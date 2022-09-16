@@ -14,7 +14,6 @@ import java.io.ByteArrayInputStream;
 import java.net.URI;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -39,7 +38,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.app.BootJavaConfig;
 import org.springframework.ide.vscode.boot.java.reconcilers.JavaReconciler;
 import org.springframework.ide.vscode.boot.java.rewrite.RewriteRefactorings.Data;
-import org.springframework.ide.vscode.boot.java.rewrite.reconcile.RecipeSpringJavaProblemDescriptor;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.Quickfix.QuickfixData;
@@ -49,6 +47,8 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemC
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblem;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblemImpl;
+import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
+import org.springframework.ide.vscode.commons.rewrite.config.RecipeSpringJavaProblemDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.java.FixAssistMarker;
 import org.springframework.ide.vscode.commons.rewrite.java.ORAstUtils;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
@@ -103,24 +103,26 @@ public class RewriteReconciler implements JavaReconciler {
 			if (range != null) {
 				RecipeSpringJavaProblemDescriptor recipeFixDescriptor = recipeRepo.getProblemRecipeDescriptor(m.getRecipeId());
 				if (recipeFixDescriptor != null && recipeFixDescriptor.getScopes() != null && recipeRepo.getRecipe(recipeFixDescriptor.getRecipeId()).isPresent()) {
-					return Arrays.stream(recipeFixDescriptor.getScopes()).map(s -> createProblemFromScope(doc, recipeFixDescriptor, s, m, range)).collect(Collectors.toList());
+					return List.of(createProblemFromScope(doc, recipeFixDescriptor, m, range));
 				}
 			}
 		}
 		return Collections.emptyList();
 	}
 	
-	private ReconcileProblemImpl createProblemFromScope(IDocument doc, RecipeSpringJavaProblemDescriptor recipeFixDescriptor, RecipeScope s,
+	private ReconcileProblemImpl createProblemFromScope(IDocument doc, RecipeSpringJavaProblemDescriptor recipeFixDescriptor,
 			FixAssistMarker m, Range range) {
 		ProblemType problemType = recipeFixDescriptor.getProblemType();
 		ReconcileProblemImpl problem = new ReconcileProblemImpl(problemType, problemType.getLabel(), range.getStart().getOffset(), range.getEnd().getOffset() - range.getStart().getOffset());
-		QuickfixType quickfixType = quickfixRegistry.getQuickfixType(m.getRecipeId());
-		if (quickfixType != null) {
-			problem.addQuickfix(new QuickfixData<>(
-					quickfixType,
-					new Data(m.getRecipeId(), doc.getUri(), s, m.getScope().toString(), m.getParameters()),
-					recipeFixDescriptor.getLabel(s)
-			));
+		QuickfixType quickfixType = quickfixRegistry.getQuickfixType(RewriteRefactorings.REWRITE_RECIPE_QUICKFIX);
+		if (quickfixType != null && m.getRecipeId() != null) {
+			for (RecipeScope s : recipeFixDescriptor.getScopes()) {
+				problem.addQuickfix(new QuickfixData<>(
+						quickfixType,
+						new Data(m.getRecipeId(), doc.getUri(), s, m.getScope(), m.getParameters()),
+						recipeFixDescriptor.getLabel(s)
+				));
+			}
 		}
 		return problem;
 	}
@@ -159,10 +161,6 @@ public class RewriteReconciler implements JavaReconciler {
 	
 	private List<RecipeSpringJavaProblemDescriptor> getProblemRecipeDescriptors(IJavaProject project)
 			throws InterruptedException, ExecutionException {
-		// Wait for recipe repo to load if not loaded - should be loaded by the time we
-		// get here.
-		recipeRepo.loaded.get();
-
 		return recipeRepo.getProblemRecipeDescriptors().stream().filter(d -> d.getProblemType() != null).filter(d -> {
 			switch (config.getProblemApplicability(d.getProblemType())) {
 			case ON:

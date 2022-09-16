@@ -131,6 +131,12 @@
             id="org.springframework.tooling.boot.ls.preferences"
             name="Spring Boot Language Server">
       </page>
+      <page
+            category="org.springframework.tooling.boot.ls.preferences"
+            class="org.springframework.tooling.boot.ls.RewritePreferencePage"
+            id="org.springframework.tooling.boot.ls.rewrite"
+            name="Rewrite">
+      </page>
       
    </extension>
    
@@ -338,9 +344,13 @@
    <extension
          point="org.eclipse.ui.quickAccess">
       <computer
-            class="org.springframework.tooling.boot.ls.commands.LiveProcessCommandsQuickAccessProvider"
+            class="org.springframework.tooling.boot.ls.commands.RewriteCommandsQuickAccessProvider"
             name="Spring - Live Process Information"
             requiresUIAccess="false"/>
+      <computer
+            class="org.springframework.tooling.boot.ls.QuickAccessComputer1"
+            name="Spring - Rewrite Recipes">
+      </computer>
    </extension>
    <extension
          point="org.springsource.ide.eclipse.commons.boot.ls.remoteapps.RemoteBootAppsDataHolder.Contributor">

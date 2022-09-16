@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.boot.app;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.function.Consumer;
 
 import org.slf4j.Logger;
@@ -162,7 +163,15 @@ public class BootJavaConfig implements InitializingBean {
 	public void afterPropertiesSet() throws Exception {
 		workspace.onDidChangeConfiguraton(this::handleConfigurationChange);
 	}
+	
+	public Set<String> getRecipeDirectories() {
+		return settings.getStringSet("boot-java", "rewrite", "scan-directories");
+	}
 
+	public Set<String> getRecipeFiles() {
+		return settings.getStringSet("boot-java", "rewrite", "scan-files");
+	}
+	
 	public Settings getRawSettings() {
 		return settings;
 	}

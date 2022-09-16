@@ -11,6 +11,10 @@
 package org.springframework.ide.vscode.boot.java.rewrite;
 
 import java.io.File;
+import java.io.FileInputStream;
+import java.net.URL;
+import java.net.URLClassLoader;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
@@ -20,9 +24,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Properties;
 import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -40,31 +46,27 @@ import org.openrewrite.Result;
 import org.openrewrite.SourceFile;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.Validated;
-import org.openrewrite.config.Environment;
 import org.openrewrite.config.RecipeDescriptor;
+import org.openrewrite.config.YamlResourceLoader;
 import org.openrewrite.internal.RecipeIntrospectionUtils;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.tree.J.CompilationUnit;
 import org.openrewrite.maven.MavenParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ide.vscode.boot.java.rewrite.codeaction.AutowiredFieldIntoConstructorParameterCodeAction;
-import org.springframework.ide.vscode.boot.java.rewrite.codeaction.BeanMethodsNotPublicCodeAction;
-import org.springframework.ide.vscode.boot.java.rewrite.codeaction.NoRequestMappingAnnotationCodeAction;
-import org.springframework.ide.vscode.boot.java.rewrite.codeaction.UnnecessarySpringExtensionCodeAction;
-import org.springframework.ide.vscode.boot.java.rewrite.reconcile.BeanMethodNotPublicProblem;
-import org.springframework.ide.vscode.boot.java.rewrite.reconcile.PreciseBeanTypeProblem;
-import org.springframework.ide.vscode.boot.java.rewrite.reconcile.NoAutowiredOnConstructorProblem;
-import org.springframework.ide.vscode.boot.java.rewrite.reconcile.RecipeSpringJavaProblemDescriptor;
-import org.springframework.ide.vscode.boot.java.rewrite.reconcile.UnnecessarySpringExtensionProblem;
+import org.springframework.ide.vscode.boot.app.BootJavaConfig;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.commons.languageserver.util.ListenerList;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.rewrite.LoadUtils;
 import org.springframework.ide.vscode.commons.rewrite.LoadUtils.DurationTypeConverter;
 import org.springframework.ide.vscode.commons.rewrite.ORDocUtils;
+import org.springframework.ide.vscode.commons.rewrite.config.RecipeCodeActionDescriptor;
+import org.springframework.ide.vscode.commons.rewrite.config.RecipeSpringJavaProblemDescriptor;
+import org.springframework.ide.vscode.commons.rewrite.config.StsEnvironment;
 import org.springframework.ide.vscode.commons.rewrite.maven.MavenProjectParser;
 
 import com.google.common.collect.ImmutableList;
@@ -76,6 +78,9 @@ import com.google.gson.JsonElement;
 
 public class RewriteRecipeRepository {
 		
+	private static final String CMD_REWRITE_RELOAD = "sts/rewrite/reload";
+	private static final String CMD_REWRITE_EXECUTE = "sts/rewrite/execute";
+	private static final String CMD_REWRITE_LIST = "sts/rewrite/list";
 	private static final Logger log = LoggerFactory.getLogger(RewriteRecipeRepository.class);
 	private static final String WORKSPACE_EXECUTE_COMMAND = "workspace/executeCommand";
 	
@@ -84,11 +89,21 @@ public class RewriteRecipeRepository {
 	final private SimpleLanguageServer server;
 	
 	final private Map<String, Recipe> recipes;
+	
 	final private List<Recipe> globalCommandRecipes;
 
 	final private JavaProjectFinder projectFinder;
 	
-	final public CompletableFuture<Void> loaded;
+	final private List<RecipeCodeActionDescriptor> codeActionDescriptors;
+	
+	final private List<RecipeSpringJavaProblemDescriptor> javaProblemDescriptors;
+	
+	final private ListenerList<Void> loadListeners;
+	
+	private CompletableFuture<Void> loaded;
+	
+	private Set<String> scanFiles = Collections.emptySet();
+	private Set<String> scanDirs = Collections.emptySet();
 	
 	static final Set<String> TOP_LEVEL_RECIPES = Set.of(
 			"org.openrewrite.java.spring.boot2.SpringBoot2JUnit4to5Migration",
@@ -104,40 +119,62 @@ public class RewriteRecipeRepository {
 			.registerTypeAdapter(Duration.class, new DurationTypeConverter())
 			.create();
 	
-	private List<RecipeCodeActionDescriptor> codeActionDescriptors = List.of(
-			new AutowiredFieldIntoConstructorParameterCodeAction(),
-			new BeanMethodsNotPublicCodeAction(),
-			new NoRequestMappingAnnotationCodeAction(),
-			new UnnecessarySpringExtensionCodeAction()
-	);
-	
-	private List<RecipeSpringJavaProblemDescriptor> javaProblemDescriptors = List.of(
-			new BeanMethodNotPublicProblem(),
-			new NoAutowiredOnConstructorProblem(),
-			new UnnecessarySpringExtensionProblem(),
-			new PreciseBeanTypeProblem()
-	);
-	
-	public RewriteRecipeRepository(SimpleLanguageServer server, JavaProjectFinder projectFinder) {
+	public RewriteRecipeRepository(SimpleLanguageServer server, JavaProjectFinder projectFinder, BootJavaConfig config) {
 		this.server = server;
 		this.projectFinder = projectFinder;
 		this.recipes = new HashMap<>();
 		this.globalCommandRecipes = new ArrayList<>();
-		this.loaded = CompletableFuture.runAsync(this::loadRecipes);
+		this.codeActionDescriptors = new ArrayList<>();
+		this.javaProblemDescriptors = new ArrayList<>();
+		this.loadListeners = new ListenerList<>();
+		
+		server.doOnInitialized(() -> {
+			this.scanDirs = config.getRecipeDirectories();
+			this.scanFiles = config.getRecipeFiles();
+			load().thenAccept(v -> registerCommands());
+			config.addListener(l -> {
+				if (!scanDirs.equals(config.getRecipeDirectories())
+						|| !scanFiles.equals(config.getRecipeFiles())) {
+					// Eclipse client sends one event for init and the other config changed event due to remote app value expr listener.
+					// Therefore it is best to store the scanDirs here right after it is received, not during scan process or anything else done async
+					scanDirs = config.getRecipeDirectories();
+					scanFiles = config.getRecipeFiles();
+					load();
+				}
+			});
+		});
 	}
 	
-	private void loadRecipes() {
+	public CompletableFuture<Void> load() {
+		return this.loaded = CompletableFuture.runAsync(() -> {
+			clearRecipes();
+			loadRecipes();
+			loadListeners.fire(null);
+		});
+	}
+	
+	private synchronized void clearRecipes() {
+		recipes.clear();
+		globalCommandRecipes.clear();
+		codeActionDescriptors.clear();
+		javaProblemDescriptors.clear();
+	}
+	
+	private synchronized void loadRecipes() {
 		try {
 			server.getProgressService().progressBegin(RECIPES_LOADING_PROGRESS, "Loading Rewrite Recipes", null);
 			log.info("Loading Rewrite Recipes...");
-			for (Recipe r : Environment.builder().scanRuntimeClasspath().build().listRecipes()) {
+			StsEnvironment env = createRewriteEnvironment();
+			for (Recipe r : env.listRecipes()) {
 				if (r.getName() != null) {
 					if (recipes.containsKey(r.getName())) {
 						log.error("Duplicate ids: '" + r.getName() + "'");
 					}
 					recipes.put(r.getName(), r);
 					
-					if (TOP_LEVEL_RECIPES.contains(r.getName())) {
+					if (TOP_LEVEL_RECIPES.contains(r.getName()) || r.getName().startsWith("rewrite.test.")
+							|| r.getName().startsWith("org.rewrite.java.security")
+							|| r.getName().startsWith("org.springframework.rewrite.test")) {
 						Validated validation = Validated.invalid(null, null, null);
 						try {
 							validation = r.validate();
@@ -150,12 +187,45 @@ public class RewriteRecipeRepository {
 					}
 				}
 			}
+			javaProblemDescriptors.addAll(env.listProblemDescriptors());
+			codeActionDescriptors.addAll(env.listCodeActionDescriptors());
 			log.info("Done loading Rewrite Recipes");
-			server.doOnInitialized(() -> registerCommands());
 		} catch (Throwable t) {
-			server.getProgressService().progressDone(RECIPES_LOADING_PROGRESS);
 			log.error("", t);
+		} finally {
+			server.getProgressService().progressDone(RECIPES_LOADING_PROGRESS);
 		}
+	}
+	
+	private StsEnvironment createRewriteEnvironment() {
+		StsEnvironment.Builder builder = (StsEnvironment.Builder) StsEnvironment.builder().scanRuntimeClasspath();
+		for (String p : scanFiles) {
+			try {
+				Path f = Path.of(p);
+				String pathStr = f.toString();
+				if (pathStr.endsWith(".jar")) {
+					URLClassLoader classLoader = new URLClassLoader(new URL[] { f.toUri().toURL() },
+							getClass().getClassLoader());
+					builder.scanJar(f, classLoader);
+				} else if (pathStr.endsWith(".yml") || pathStr.endsWith(".yaml")) {
+					builder.load(new YamlResourceLoader(new FileInputStream(f.toFile()), f.toUri(), new Properties()));
+				}
+			} catch (Exception e) {
+				log.error("Skipping folder " + p, e);
+			}
+		}
+		for (String p : scanDirs) {
+			try {
+				Path d = Path.of(p);
+				if (Files.isDirectory(d)) {
+					URLClassLoader classLoader = new URLClassLoader(new URL[] { d.toUri().toURL()}, getClass().getClassLoader());
+					builder.scanPath(d, classLoader);
+				}
+			} catch (Exception e) {
+				log.error("Skipping folder " + p, e);
+			}
+		}
+		return (StsEnvironment) builder.build();
 	}
 	
 	public Optional<Recipe> getRecipe(String name) {
@@ -223,7 +293,7 @@ public class RewriteRecipeRepository {
 		
 		Builder<Object> listBuilder = ImmutableList.builder();
 		
-		server.onCommand("sts/rewrite/list", params -> {
+		server.onCommand(CMD_REWRITE_LIST, params -> {
 			JsonElement uri = (JsonElement) params.getArguments().get(0);
 			return loaded.thenApply(v -> {
 				if (uri == null) {
@@ -233,9 +303,9 @@ public class RewriteRecipeRepository {
 				}
 			});
 		});
-		listBuilder.add("sts/rewrite/list");
+		listBuilder.add(CMD_REWRITE_LIST);
 		
-		server.onCommand("sts/rewrite/execute", params -> {
+		server.onCommand(CMD_REWRITE_EXECUTE, params -> {
 			String uri = ((JsonElement) params.getArguments().get(0)).getAsString();
 			JsonElement recipesJson = ((JsonElement) params.getArguments().get(1));
 			
@@ -254,7 +324,10 @@ public class RewriteRecipeRepository {
 				return apply(aggregateRecipe, uri, progressToken);
 			}
 		});
-		listBuilder.add("sts/rewrite/execute");
+		listBuilder.add(CMD_REWRITE_EXECUTE);
+		
+		server.onCommand(CMD_REWRITE_RELOAD, params -> load().thenApply((v) -> "executed"));
+		listBuilder.add(CMD_REWRITE_RELOAD);
 		
 		for (Recipe r : globalCommandRecipes) {
 			listBuilder.add(createGlobalCommand(r));
@@ -271,7 +344,6 @@ public class RewriteRecipeRepository {
 		server.getClient().registerCapability(params).thenAccept((v) -> {
 			server.onShutdown(() -> server.getClient().unregisterCapability(new UnregistrationParams(List.of(new Unregistration(registrationId, WORKSPACE_EXECUTE_COMMAND)))));			
 			log.info("Done registering commands for rewrite recipes");
-			server.getProgressService().progressDone(RECIPES_LOADING_PROGRESS);
 		});
 		
 	}
@@ -368,6 +440,10 @@ public class RewriteRecipeRepository {
 					.filter(file -> file.getName().endsWith(".jar"))
 					.map(file -> file.getAbsoluteFile().toPath()).collect(Collectors.toList());
 		}
+	}
+	
+	public void onRecipesLoaded(Consumer<Void> l) {
+		loadListeners.add(l);
 	}
 	
 //	private static Recipe convert(Recipe r, RecipeDescriptor d) {

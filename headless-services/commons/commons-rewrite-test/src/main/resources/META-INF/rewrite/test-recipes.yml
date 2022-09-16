@@ -1,0 +1,11 @@
+########################################################################################################################
+# Spring Data 3.0 io.micrometer.core.instrument.binder -> io.micrometer.binder
+type: specs.openrewrite.org/v1beta/recipe
+name: rewrite.test.jar.oss-package
+displayName: Example with OSS packages from YAML
+description: Switches app to OSS app
+recipeList:
+  - org.openrewrite.java.ChangePackage:
+      oldPackageName: com.example
+      newPackageName: org.example
+      recursive: true

@@ -8,23 +8,25 @@
  * Contributors:
  *     VMware, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.java.rewrite.reconcile;
+package org.springframework.rewrite.test;
 
-import org.springframework.ide.vscode.boot.java.Boot2JavaProblemType;
-import org.springframework.ide.vscode.boot.java.rewrite.codeaction.BeanMethodsNotPublicCodeAction;
-import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
+import java.util.Collections;
+import java.util.List;
+
+import org.springframework.ide.vscode.commons.rewrite.config.CodeActionRepository;
+import org.springframework.ide.vscode.commons.rewrite.config.RecipeCodeActionDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeSpringJavaProblemDescriptor;
 
-public class BeanMethodNotPublicProblem extends BeanMethodsNotPublicCodeAction implements RecipeSpringJavaProblemDescriptor {
+public class StsTestCodeActionRepo extends CodeActionRepository {
 
 	@Override
-	public RecipeScope[] getScopes() {
-		return new RecipeScope[] { RecipeScope.NODE };
+	public List<RecipeCodeActionDescriptor> getCodeActionDescriptors() {
+		return Collections.emptyList();
 	}
 
 	@Override
-	public Boot2JavaProblemType getProblemType() {
-		return Boot2JavaProblemType.JAVA_PUBLIC_BEAN_METHOD;
+	public List<RecipeSpringJavaProblemDescriptor> getProblemDescriptors() {
+		return List.of(new HelloMethodRenameProblemDescriptor());
 	}
 
 }

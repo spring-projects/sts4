@@ -32,6 +32,7 @@ import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents
 import org.springframework.ide.vscode.boot.java.links.JavaElementLocationProvider;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveDataProvider;
+import org.springframework.ide.vscode.boot.java.rewrite.RewriteRecipeRepository;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.boot.java.utils.SymbolCache;
 import org.springframework.ide.vscode.boot.metadata.ProjectBasedPropertyIndexProvider;
@@ -87,6 +88,7 @@ public class BootLanguageServerInitializer implements InitializingBean {
 	@Autowired SpringProjectsValidations springProjectsValidations;
 	@Autowired private JavaProjectFinder projectFinder;
 	@Autowired private LanguageServerProperties configProps;
+	@Autowired(required = false) private RewriteRecipeRepository recipesRepo;
 
 	@Qualifier("adHocProperties") @Autowired ProjectBasedPropertyIndexProvider adHocProperties;
 
@@ -170,20 +172,26 @@ public class BootLanguageServerInitializer implements InitializingBean {
 		
 		components.getCodeActionProvider().ifPresent(documents::onCodeAction);
 		
-		config.addListener(evt -> {
-			components.getReconcileEngine().ifPresent(reconciler -> {
-				log.info("A configuration changed, triggering reconcile on all open documents");
-				for (TextDocument doc : server.getTextDocumentService().getAll()) {
-					server.validateWith(doc.getId(), reconciler);
-				}
-				params.projectFinder.all().forEach(p -> validateProject(p, reconciler));
-			});
-		});
+		config.addListener(evt -> reconcile());
+		
+		if (recipesRepo != null) {
+			recipesRepo.onRecipesLoaded(v -> reconcile());
+		}
 		
 		addSpringProjectsVersionValidation(params);
 		
 		server.getWorkspaceService().getFileObserver().onFilesChanged(FILES_TO_WATCH_GLOB, this::handleFiles);
 		server.getWorkspaceService().getFileObserver().onFilesCreated(FILES_TO_WATCH_GLOB, this::handleFiles);
+	}
+	
+	private void reconcile() {
+		components.getReconcileEngine().ifPresent(reconciler -> {
+			log.info("A configuration changed, triggering reconcile on all open documents");
+			for (TextDocument doc : server.getTextDocumentService().getAll()) {
+				server.validateWith(doc.getId(), reconciler);
+			}
+			params.projectFinder.all().forEach(p -> validateProject(p, reconciler));
+		});
 	}
 
 	public CompositeLanguageServerComponents getComponents() {

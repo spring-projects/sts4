@@ -93,6 +93,11 @@
         "command": "vscode-spring-boot.rewrite.list",
         "category": "Spring Boot",
         "title": "Rewrite Refactorings..."
+      },
+      {
+        "command": "vscode-spring-boot.rewrite.reload",
+        "title": "Reload Rewrite Recipes, Code Actions, Problem and Quick Fix Descriptors",
+        "category": "Spring Boot"
       }
     ],
     "configuration": [
@@ -105,11 +110,6 @@
             "type": "boolean",
             "default": false,
             "description": "Experimental support for Rewrite recipes refactoring the whole maven projects via commands"
-          },
-          "boot-java.rewrite.reconcile": {
-            "type": "boolean",
-            "default": false,
-            "description": "Experimental reconciling for Java source based on Rewrite project"
           },
           "boot-java.live-information.automatic-connection.on": {
             "type": "boolean",
@@ -185,6 +185,34 @@
               ]
             },
             "description": "Array of jmx urls pointing to remote spring boot applications to poll for live hover information. A typical url looks something like this: `service:jmx:rmi://localhost:9111/jndi/rmi://localhost:9111/jmxrmi`"
+          }
+        }
+      },
+      {
+        "id": "rewrite",
+        "title": "Rewrite",
+        "order": 400,
+        "properties": {
+          "boot-java.rewrite.reconcile": {
+            "type": "boolean",
+            "default": false,
+            "description": "Experimental reconciling for Java source based on Rewrite project"
+          },
+          "boot-java.rewrite.scan-files": {
+            "type": "array",
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "description": "JAR and YAML files to scan for recipes, code actions, problem and quick fix descriptors"
+          },
+          "boot-java.rewrite.scan-dirs": {
+            "type": "array",
+            "default": [],
+            "items": {
+              "type": "string"
+            },
+            "description": "Java project output folders to scan for recipes"
           }
         }
       },

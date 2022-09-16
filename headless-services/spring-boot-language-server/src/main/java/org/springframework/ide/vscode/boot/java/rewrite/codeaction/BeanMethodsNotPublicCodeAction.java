@@ -18,10 +18,11 @@ import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.TypeUtils;
-import org.springframework.ide.vscode.boot.java.rewrite.RecipeCodeActionDescriptor;
-import org.springframework.ide.vscode.boot.java.rewrite.RecipeScope;
+import org.openrewrite.marker.Range;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
+import org.springframework.ide.vscode.commons.rewrite.config.RecipeCodeActionDescriptor;
+import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
 import org.springframework.ide.vscode.commons.rewrite.java.FixAssistMarker;
 
 public class BeanMethodsNotPublicCodeAction implements RecipeCodeActionDescriptor {
@@ -60,7 +61,7 @@ public class BeanMethodsNotPublicCodeAction implements RecipeCodeActionDescripto
 	                // mark public modifier
 	        		FixAssistMarker fixAssistMarker = new FixAssistMarker(Tree.randomId())
 	        				.withRecipeId(ID)
-	        				.withScope(m.getId());
+	        				.withScope(m.getMarkers().findFirst(Range.class).get());
 	            	m = m.withModifiers(ListUtils.map(m.getModifiers(), modifier -> {
 	            		if (modifier.getType() == J.Modifier.Type.Public) {
 	            			return modifier.withMarkers(modifier.getMarkers().add(fixAssistMarker));

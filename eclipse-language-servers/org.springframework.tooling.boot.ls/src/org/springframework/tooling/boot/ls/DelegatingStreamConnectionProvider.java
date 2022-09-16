@@ -32,9 +32,9 @@ import org.eclipse.lsp4j.jsonrpc.messages.Message;
 import org.eclipse.lsp4j.jsonrpc.messages.ResponseMessage;
 import org.eclipse.lsp4j.services.LanguageServer;
 import org.springframework.tooling.boot.ls.prefs.CategoryProblemsSeverityPrefsPage;
+import org.springframework.tooling.boot.ls.prefs.FileListEditor;
 import org.springframework.tooling.boot.ls.prefs.ProblemCategoryData;
 import org.springframework.tooling.boot.ls.prefs.ProblemCategoryData.CategoryToggleData;
-import org.springframework.tooling.ls.eclipse.commons.LanguageServerCommonsActivator;
 import org.springsource.ide.eclipse.commons.boot.ls.remoteapps.RemoteBootAppsDataHolder;
 import org.springsource.ide.eclipse.commons.boot.ls.remoteapps.RemoteBootAppsDataHolder.RemoteAppData;
 import org.springsource.ide.eclipse.commons.livexp.core.ValueListener;
@@ -187,7 +187,12 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 		bootJavaObj.put("change-detection", bootChangeDetection);
 		bootJavaObj.put("validation", validation);
 		bootJavaObj.put("remote-apps", getAllRemoteApps());
-		bootJavaObj.put("rewrite", Map.of("reconcile", preferenceStore.getBoolean(Constants.PREF_REWRITE_RECONCILE)));
+		
+		bootJavaObj.put("rewrite", Map.of(
+				"reconcile", preferenceStore.getBoolean(Constants.PREF_REWRITE_RECONCILE),
+				"scan-directories", FileListEditor.getValuesFromPreference(preferenceStore.getString(Constants.PREF_REWRITE_RECIPES_SCAN_DIRS)),
+				"scan-files", FileListEditor.getValuesFromPreference(preferenceStore.getString(Constants.PREF_REWRITE_RECIPES_SCAN_FILES))
+		));
 		settings.put("boot-java", bootJavaObj);
 		
 		putValidationPreferences(settings);
