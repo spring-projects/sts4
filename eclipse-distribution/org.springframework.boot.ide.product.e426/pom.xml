@@ -15,7 +15,7 @@
 	<packaging>eclipse-repository</packaging>
 
 	<properties>
-		<justj.repository>https://download.eclipse.org/justj/jres/16/updates/release/latest/</justj.repository>
+		<justj.repository>https://download.eclipse.org/justj/jres/17/updates/release/latest/</justj.repository>
 	</properties>
 
 	<build>
@@ -105,12 +105,12 @@
 				<configuration>
 					<repositories>
 						<repository>
-							<id>2021-06</id>
+							<id>2022-03</id>
 							<layout>p2</layout>
-							<url>https://download.eclipse.org/releases/2021-06</url>
+							<url>https://download.eclipse.org/releases/2022-03</url>
 						</repository>
 					</repositories>
-					<argLine>-Declipse.p2.mirrors=false</argLine>
+					<argLine>-Declipse.p2.mirrors=false -Dorg.eclipse.ecf.provider.filetransfer.retrieve.readTimeout=100000 -Dorg.eclipse.ecf.provider.filetransfer.retrieve.retryAttempts=30 -Dorg.eclipse.ecf.provider.filetransfer.retrieve.closeTimeout=100000</argLine>
 					<dependencies>
 						<dependency>
 							<artifactId>org.eclipse.pde.api.tools</artifactId>
@@ -183,6 +183,16 @@
 						</configuration>
 					</execution>
 					<execution>
+						<id>macos-aarch_64</id>
+						<phase>package</phase>
+						<goals>
+							<goal>eclipse-run</goal>
+						</goals>
+						<configuration>
+							<appArgLine>-consoleLog -application org.eclipse.equinox.p2.director -nosplash -destination ${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/macosx/cocoa/aarch64/SpringToolSuite4.app -repository ${justj.repository} -installIUs org.eclipse.justj.openjdk.hotspot.jre.full.feature.group</appArgLine>
+						</configuration>
+					</execution>
+					<execution>
 						<id>windows-x86_64</id>
 						<phase>package</phase>
 						<goals>
@@ -200,6 +210,16 @@
 						</goals>
 						<configuration>
 							<appArgLine>-consoleLog -application org.eclipse.equinox.p2.director -nosplash -destination ${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/linux/gtk/x86_64/sts-${unqualifiedVersion}.${p2.qualifier} -repository ${justj.repository} -installIUs org.eclipse.justj.openjdk.hotspot.jre.full.feature.group</appArgLine>
+						</configuration>
+					</execution>
+					<execution>
+						<id>linux_aarch_64</id>
+						<phase>package</phase>
+						<goals>
+							<goal>eclipse-run</goal>
+						</goals>
+						<configuration>
+							<appArgLine>-consoleLog -application org.eclipse.equinox.p2.director -nosplash -destination ${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/linux/gtk/aarch64/sts-${unqualifiedVersion}.${p2.qualifier} -repository ${justj.repository} -installIUs org.eclipse.justj.openjdk.hotspot.jre.full.feature.group</appArgLine>
 						</configuration>
 					</execution>
 				</executions>
@@ -227,6 +247,8 @@
 								<argument>${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/macosx/cocoa/aarch64/SpringToolSuite4.app/Contents/Eclipse/open-source-licenses.txt</argument>
 								<argument>${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/linux/gtk/x86_64/sts-${unqualifiedVersion}.${p2.qualifier}/plugins/</argument>
 								<argument>${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/linux/gtk/x86_64/sts-${unqualifiedVersion}.${p2.qualifier}/open-source-licenses.txt</argument>
+								<argument>${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/linux/gtk/aarch64/sts-${unqualifiedVersion}.${p2.qualifier}/plugins/</argument>
+								<argument>${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/linux/gtk/aarch64/sts-${unqualifiedVersion}.${p2.qualifier}/open-source-licenses.txt</argument>
 								<argument>${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/win32/win32/x86_64/sts-${unqualifiedVersion}.${p2.qualifier}/plugins/</argument>
 								<argument>${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/win32/win32/x86_64/sts-${unqualifiedVersion}.${p2.qualifier}/open-source-licenses.txt</argument>
 							</arguments>
@@ -273,7 +295,7 @@
 									<arg value="-pkcs12"/>
 									<arg value="${env.WIN_KEY_LOCATION}"/>
 									<arg value="-pass"/>
-									<arg value="${env.bamboo_signing_store_password}"/>
+									<arg value="${env.bamboo_vault_signing_passphrase}"/>
 									<arg value="-n"/>
 									<arg value="Spring Tools 4"/>
 								    <arg value="-i"/>
@@ -450,6 +472,8 @@
 								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-macosx.cocoa.aarch64.dmg" algorithm="MD5" fileext=".md5" />
 								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-linux.gtk.x86_64.tar.gz" algorithm="SHA1" fileext=".sha1" />
 								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-linux.gtk.x86_64.tar.gz" algorithm="MD5" fileext=".md5" />
+								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-linux.gtk.aarch64.tar.gz" algorithm="SHA1" fileext=".sha1" />
+								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-linux.gtk.aarch64.tar.gz" algorithm="MD5" fileext=".md5" />
 								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-win32.win32.x86_64.zip" algorithm="SHA1" fileext=".sha1" />
 								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-win32.win32.x86_64.zip" algorithm="MD5" fileext=".md5" />
 								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-win32.win32.x86_64.self-extracting.jar" algorithm="SHA1" fileext=".sha1" />

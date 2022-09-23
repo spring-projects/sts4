@@ -127,14 +127,14 @@
 	<feature id="org.eclipse.tm4e.feature"/>
 
 	<bundle id="javassist"/>
-	<bundle id="javassist.source"/>
+<!--	<bundle id="javassist.source"/> -->
 	<bundle id="javax.activation"/>
 	<bundle id="javax.activation.source"/>
 	<bundle id="javax.annotation"/>
 	<bundle id="javax.annotation.source"/>
 	<bundle id="javax.ws.rs"/>
-	<bundle id="javax.xml.bind"/>
-	<bundle id="javax.xml.bind.source"/>
+<!--	<bundle id="javax.xml.bind"/> -->
+<!--	<bundle id="javax.xml.bind.source"/> -->
 	<bundle id="javax.xml.stream"/>
 	<bundle id="org.aopalliance"/>
 	<bundle id="org.apache.log4j"/>

@@ -13,6 +13,7 @@
 -Dosgi.dataAreaRequiresExplicitInit=true
 -Xms256m
 -Xmx2048m
+--illegal-access=permit
 --add-modules=ALL-SYSTEM
       </vmArgs>
       <vmArgsLin>
@@ -68,7 +69,7 @@
       <feature id="org.eclipse.m2e.wtp.feature" installMode="root"/>
 <!--      <feature id="org.eclipse.m2e.wtp.jaxrs.feature" installMode="root"/> -->
 <!--      <feature id="org.eclipse.m2e.wtp.jsf.feature" installMode="root"/> -->
-      <feature id="org.jboss.tools.maven.apt.feature" installMode="root"/>
+<!--      <feature id="org.jboss.tools.maven.apt.feature" installMode="root"/> -->
 
 <!--      <feature id="org.eclipse.wst.web_ui.feature" installMode="root"/> -->
 <!--      <feature id="org.eclipse.wst.xml_ui.feature" installMode="root"/> -->
@@ -91,14 +92,14 @@
 	  
       <feature id="org.eclipse.epp.mpc" installMode="root"/>
 
-      <feature id="org.sonatype.m2e.buildhelper.feature" installMode="root"/>
-      <feature id="org.sonatype.m2e.mavenarchiver.feature" installMode="root"/>
-      <feature id="org.sonatype.m2e.egit.feature" installMode="root"/>
+<!--      <feature id="org.sonatype.m2e.buildhelper.feature" installMode="root"/> -->
+<!--      <feature id="org.sonatype.m2e.mavenarchiver.feature" installMode="root"/> -->
+<!--      <feature id="org.sonatype.m2e.egit.feature" installMode="root"/> -->
       <feature id="org.jboss.tools.m2e.wro4j.feature" installMode="root"/>
-      <feature id="com.ianbrandt.tools.m2e.mdp.feature" installMode="root"/>
-      <feature id="m2e.chromatic.feature" installMode="root"/>
+<!--      <feature id="com.ianbrandt.tools.m2e.mdp.feature" installMode="root"/> -->
+<!--      <feature id="m2e.chromatic.feature" installMode="root"/> -->
 
-      <feature id="net.mihai-nita.ansicon" installMode="root"/>
+<!--      <feature id="net.mihai-nita.ansicon" installMode="root"/> -->
 
       <feature id="org.eclipse.linuxtools.docker.feature" installMode="root"/>
       <feature id="org.eclipse.linuxtools.jdt.docker.launcher.feature" installMode="root"/>
@@ -114,7 +115,7 @@
       <feature id="org.springframework.tooling.bosh.ls.feature" installMode="root"/>
       <feature id="org.springframework.tooling.concourse.ls.feature" installMode="root"/>
 
-      <feature id="org.eclipse.justj.openjdk.hotspot.jre.full" installMode="root"/>
+<!--      <feature id="org.eclipse.justj.openjdk.hotspot.jre.full" installMode="root"/> -->
       
 <!--      <feature id="com.make.chromium.cef.feature" installMode="root"/> -->
 </features>
