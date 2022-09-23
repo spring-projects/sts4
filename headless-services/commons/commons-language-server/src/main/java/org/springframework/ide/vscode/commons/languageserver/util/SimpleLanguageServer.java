@@ -43,6 +43,10 @@ import org.eclipse.lsp4j.CodeLensOptions;
 import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticSeverity;
+import org.eclipse.lsp4j.DidChangeNotebookDocumentParams;
+import org.eclipse.lsp4j.DidCloseNotebookDocumentParams;
+import org.eclipse.lsp4j.DidOpenNotebookDocumentParams;
+import org.eclipse.lsp4j.DidSaveNotebookDocumentParams;
 import org.eclipse.lsp4j.ExecuteCommandOptions;
 import org.eclipse.lsp4j.ExecuteCommandParams;
 import org.eclipse.lsp4j.InitializeParams;
@@ -68,6 +72,7 @@ import org.eclipse.lsp4j.WorkspaceServerCapabilities;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.LanguageClient;
 import org.eclipse.lsp4j.services.LanguageClientAware;
+import org.eclipse.lsp4j.services.NotebookDocumentService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
@@ -130,6 +135,7 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 	public final LazyCompletionResolver completionResolver = createCompletionResolver();
 
 	private SimpleTextDocumentService tds;
+	private NotebookDocumentService nts;
 	private SimpleWorkspaceService workspace;
 	private STS4LanguageClient client;
 	private final LanguageServerProperties props;
@@ -594,6 +600,39 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 			tds = createTextDocumentService();
 		}
 		return tds;
+	}
+
+	@Override
+	public NotebookDocumentService getNotebookDocumentService() {
+		if (nts == null) {
+			nts = createNotebookDocumentService();
+		}
+		return nts;
+	}
+
+	private NotebookDocumentService createNotebookDocumentService() {
+		return new NotebookDocumentService() {
+			
+			@Override
+			public void didSave(DidSaveNotebookDocumentParams params) {
+				throw new UnsupportedOperationException();
+			}
+			
+			@Override
+			public void didOpen(DidOpenNotebookDocumentParams params) {
+				throw new UnsupportedOperationException();
+			}
+			
+			@Override
+			public void didClose(DidCloseNotebookDocumentParams params) {
+				throw new UnsupportedOperationException();
+			}
+			
+			@Override
+			public void didChange(DidChangeNotebookDocumentParams params) {
+				throw new UnsupportedOperationException();
+			}
+		};
 	}
 
 	protected SimpleTextDocumentService createTextDocumentService() {

@@ -37,7 +37,7 @@ public class PreciseBeanTypeProblem implements RecipeSpringJavaProblemDescriptor
 
 	@Override
 	public String getRecipeId() {
-		return "org.springframework.ide.vscode.commons.rewrite.java.PreciseBeanType";
+		return "org.openrewrite.java.spring.boot3.PreciseBeanType";
 	}
 
 	@Override

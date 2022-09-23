@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.commons.rewrite.java;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.nio.channels.ClosedByInterruptException;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -246,6 +247,14 @@ public class ORAstUtils {
 	
 	private static void logExceptionWhileParsing(Throwable t) {
 		if (!(t instanceof JavaParsingException || t instanceof StringIndexOutOfBoundsException)) {
+			if (t instanceof RuntimeException) {
+				RuntimeException re = (RuntimeException) t;
+				if (re.getCause() instanceof ClosedByInterruptException) {
+					// Parse or scan interrupted
+					log.debug("", t);
+					return;
+				}
+			}
 			// Do not log parse exceptions. Can be too many while user is typing code
 			log.error("", t);
 		}
