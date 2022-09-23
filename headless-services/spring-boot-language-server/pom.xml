@@ -15,7 +15,7 @@
 
 	<properties>
 		<dependencies.version>${project.version}</dependencies.version>
-		<jdt.core.version>3.30.0</jdt.core.version>
+		<jdt.core.version>3.31.0</jdt.core.version>
 		<lsp4xml.version>0.13.1</lsp4xml.version>
 	</properties>
 
