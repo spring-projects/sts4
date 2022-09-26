@@ -10,6 +10,11 @@ const ADMIN_VM_ARG = '-Dspring.application.admin.enabled='
 const BOOT_PROJECT_ARG = '-Dspring.boot.project.name=';
 const RMI_HOSTNAME = '-Djava.rmi.server.hostname=localhost';
 
+const TEST_RUNNER_MAIN_CLASSES = [
+    'org.eclipse.jdt.internal.junit.runner.RemoteTestRunner',
+    'com.microsoft.java.test.runner.Launcher'
+];
+
 class SpringBootDebugConfigProvider implements DebugConfigurationProvider {
 
     resolveDebugConfigurationWithSubstitutedVariables(folder: WorkspaceFolder | undefined, debugConfiguration: DebugConfiguration, token?: CancellationToken): ProviderResult<DebugConfiguration> {
@@ -122,7 +127,7 @@ function isActuatorJarFile(f: string): boolean {
 }
 
 function canConnect(debugConfiguration: DebugConfiguration): boolean {
-    if (isActuatorOnClasspath(debugConfiguration)) {
+    if (!TEST_RUNNER_MAIN_CLASSES.includes(debugConfiguration.mainClass) && isActuatorOnClasspath(debugConfiguration)) {
         return debugConfiguration.vmArgs
             && debugConfiguration.vmArgs.indexOf(`${JMX_VM_ARG}true`) >= 0
             && debugConfiguration.vmArgs.indexOf(`${ADMIN_VM_ARG}true`) >= 0
