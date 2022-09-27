@@ -71,7 +71,8 @@
 	</modules>
 
 	<properties>
-		<p2.qualifier>SNAPSHOT</p2.qualifier>
+<!--		<p2.qualifier>SNAPSHOT</p2.qualifier> -->
+		<p2.qualifier>${buildQualifier}-SNAPSHOT</p2.qualifier>
 		<p2.sign>false</p2.sign>
 		<p2.repository.name>Spring Tool Suite</p2.repository.name>
 
@@ -750,7 +751,7 @@
 			</modules>
 
 		</profile>
-
+<!--
 		<profile>
 			<id>build.springsource.com</id>
 			<activation>
@@ -759,15 +760,11 @@
 				</property>
 			</activation>
 			<properties>
-				<!-- <test.vmargs>-Dhttp.proxyHost=proxy.eng.vmware.com -Dhttp.proxyPort=3128 
-					-Dhttps.proxyHost=proxy.eng.vmware.com -Dhttps.proxyPort=3128 ${test.osvmargs}</test.vmargs> -->
 				<p2.qualifier>CI-B${bamboo.buildNumber}</p2.qualifier>
 				<p2.replaceQualifier>true</p2.replaceQualifier>
-				<!-- <http_proxy>https://proxy.eng.vmware.com:3128</http_proxy> -->
-				<!-- <https_proxy>https://proxy.eng.vmware.com:3128</https_proxy> -->
 			</properties>
 		</profile>
-
+	-->
 		<profile>
 			<id>bamboo-signing</id>
 			<properties>
