@@ -289,7 +289,7 @@ public class BootLanguageServerInitializer implements InitializingBean {
 		components.getReconcileEngine().ifPresent(reconcileEngine -> {
 			Map<IJavaProject, List<TextDocumentIdentifier>> projectsToDocs = new HashMap<>();
 			for (String f : files) {
-				URI uri = Path.of(f).toUri();
+				URI uri = URI.create(f);
 				TextDocumentIdentifier docId = new TextDocumentIdentifier(uri.toString());
 				TextDocument doc = server.getTextDocumentService().getLatestSnapshot(docId.getUri());
 				if (doc == null) {

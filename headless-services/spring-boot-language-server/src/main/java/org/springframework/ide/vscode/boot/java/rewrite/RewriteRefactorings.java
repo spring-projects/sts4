@@ -139,7 +139,7 @@ public class RewriteRefactorings implements CodeActionResolver, QuickfixHandler 
 			boolean projectWide = data.recipeScope == RecipeScope.PROJECT;
 			Recipe r = createRecipe(data); 
 			if (projectWide) {
-				return applyRecipe(r, project.get(), cuCache.getCompiulationUnits(project.get()));
+				return applyRecipe(r, project.get(), ORAstUtils.parse(documents, project.get()));
 			} else {
 				CompilationUnit cu = cuCache.getCU(project.get(), URI.create(data.docUri));
 				if (cu == null) {
@@ -150,6 +150,7 @@ public class RewriteRefactorings implements CodeActionResolver, QuickfixHandler 
 		}
 		return null;
 	}
+	
 
 	private Recipe createRecipe(Data d) {
 		Recipe r = recipeRepo.getRecipe(d.id).orElse(null);

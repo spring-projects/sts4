@@ -136,7 +136,7 @@ public class RewriteReconciler implements JavaReconciler {
 			try {
 				List<RecipeSpringJavaProblemDescriptor> descriptors = getProblemRecipeDescriptors(project);
 	
-				JavaParser javaParser = RewriteCompilationUnitCache.createJavaParser(project);
+				JavaParser javaParser = ORAstUtils.createJavaParser(project);
 				List<CompilationUnit> cus = ORAstUtils.parseInputs(javaParser, docs.stream().map(d -> new Parser.Input(Path.of(d.getUri()), () -> {
 					return new ByteArrayInputStream(d.get().getBytes());
 				})).collect(Collectors.toList()));

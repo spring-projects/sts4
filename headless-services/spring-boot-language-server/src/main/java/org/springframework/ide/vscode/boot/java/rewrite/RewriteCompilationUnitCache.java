@@ -11,13 +11,8 @@
 package org.springframework.ide.vscode.boot.java.rewrite;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
-import java.io.IOException;
 import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -27,8 +22,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.apache.commons.io.IOUtils;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
@@ -38,8 +31,6 @@ import org.openrewrite.java.tree.J.CompilationUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.utils.DocumentContentProvider;
-import org.springframework.ide.vscode.commons.java.IClasspath;
-import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
@@ -161,37 +152,12 @@ public class RewriteCompilationUnitCache implements DocumentContentProvider, Dis
 		}
 	}
 	
-	public static JavaParser createJavaParser(IJavaProject project) {
-		try {
-			List<Path> classpath = getClasspathEntries(project).stream().map(s -> new File(s).toPath()).collect(Collectors.toList());
-			JavaParser jp = JavaParser.fromJavaVersion().build();
-			jp.setClasspath(classpath);
-			return jp;
-		} catch (Exception e) {
-			logger.error("{}", e);
-			return null;
-		}
-	}
-
-
 	private JavaParser loadJavaParser(IJavaProject project) {
 		try {
-			return javaParsers.get(project, () -> createJavaParser(project));
+			return javaParsers.get(project, () -> ORAstUtils.createJavaParser(project));
 		} catch (ExecutionException e) {
 			logger.error("{}", e);
 			return null;
-		}
-	}
-	
-	private static Set<String> getClasspathEntries(IJavaProject project) throws Exception {
-		if (project == null) {
-			return Collections.emptySet();
-		} else {
-			IClasspath classpath = project.getClasspath();
-			Stream<File> classpathEntries = IClasspathUtil.getAllBinaryRoots(classpath).stream();
-			return classpathEntries
-					.filter(file -> file.exists())
-					.map(file -> file.getAbsolutePath()).collect(Collectors.toSet());
 		}
 	}
 	
@@ -302,19 +268,6 @@ public class RewriteCompilationUnitCache implements DocumentContentProvider, Dis
 			}
 		}
 		return requestor.apply(null);
-	}
-	
-	public List<CompilationUnit> getCompiulationUnits(IJavaProject project) {
-		List<Path> javaFiles = IClasspathUtil.getProjectJavaSourceFolders(project.getClasspath()).flatMap(folder -> {
-			try {
-				return Files.walk(folder.toPath());
-			} catch (IOException e) {
-				logger.error("", e);
-			}
-			return Stream.empty();
-		}).filter(Files::isRegularFile).filter(p -> p.getFileName().toString().endsWith(".java")).collect(Collectors.toList());
-		JavaParser javaParser = loadJavaParser(project);
-		return ORAstUtils.parse(javaParser, javaFiles);
 	}
 	
 }
