@@ -560,7 +560,7 @@
 				<repository>
 					<id>maven-egit</id>
 					<layout>p2</layout>
-					<url>https://repo1.maven.org/maven2/.m2e/connectors/m2eclipse-egit/0.15.1/N/LATEST</url>
+					<url>https://github.com/tesla/m2eclipse-egit/releases/download/0.17.0/</url>
 				</repository>
 				<repository>
 					<id>maven-wro4j</id>
@@ -683,7 +683,7 @@
 				<repository>
 					<id>maven-egit</id>
 					<layout>p2</layout>
-					<url>https://repo1.maven.org/maven2/.m2e/connectors/m2eclipse-egit/0.15.1/N/LATEST</url>
+					<url>https://github.com/tesla/m2eclipse-egit/releases/download/0.17.0/</url>
 				</repository>
 				<repository>
 					<id>maven-wro4j</id>
