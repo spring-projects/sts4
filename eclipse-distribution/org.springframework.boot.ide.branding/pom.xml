@@ -30,20 +30,13 @@
 							<target>
 								<taskdef resource="net/sf/antcontrib/antcontrib.properties" />
 
-								<if>
-									<equals arg1="${p2.replaceQualifier}" arg2="true" />
-									<then>
-										<propertyregex property="shortQualifier" input="${buildQualifier}" regexp="[0-9a-z.A-Z]*\-(.*)" select="\1" casesensitive="false" />
-										<propertyregex property="build.id" input="${buildQualifier}" regexp="([0-9a-z.A-Z]*)\-.*" select="\1" casesensitive="false" />
+								<property name="qualifier" value="${unqualifiedVersion}.${p2.qualifier}" />
+								<property name="build.id" value="${buildQualifier}" />
 
-										<property name="qualifier" value="${unqualifiedVersion}.${shortQualifier}" />
-
-										<replace file="about.properties" token="@QUALIFIER@" value="${qualifier}" summary="yes" />
-										<replace file="about.properties" token="@BUILD_ID@" value="${build.id}" summary="yes" />
-										<replace file="plugin.properties" token="@QUALIFIER@" value="${qualifier}" summary="yes" />
-										<replace file="plugin.properties" token="@BUILD_ID@" value="${build.id}" summary="yes" />
-									</then>
-								</if>
+								<replace file="about.properties" token="@QUALIFIER@" value="${qualifier}" summary="yes" />
+								<replace file="about.properties" token="@BUILD_ID@" value="${build.id}" summary="yes" />
+								<replace file="plugin.properties" token="@QUALIFIER@" value="${qualifier}" summary="yes" />
+								<replace file="plugin.properties" token="@BUILD_ID@" value="${build.id}" summary="yes" />
 							</target>
 						</configuration>
 						<goals>
@@ -59,7 +52,6 @@
 				<version>${tycho-version}</version>
 				<configuration>
 					<format>yyyyMMddHHmm</format>
-<!--					<format>yyyyMMddHHmm-'${p2.qualifier}'</format> -->
 					<archiveSite>false</archiveSite>
 					<archive>
 						<addMavenDescriptor>false</addMavenDescriptor>

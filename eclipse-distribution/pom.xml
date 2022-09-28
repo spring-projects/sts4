@@ -71,7 +71,6 @@
 	</modules>
 
 	<properties>
-<!--		<p2.qualifier>SNAPSHOT</p2.qualifier> -->
 		<p2.qualifier>${buildQualifier}-SNAPSHOT</p2.qualifier>
 		<p2.sign>false</p2.sign>
 		<p2.repository.name>Spring Tool Suite</p2.repository.name>
@@ -751,20 +750,7 @@
 			</modules>
 
 		</profile>
-<!--
-		<profile>
-			<id>build.springsource.com</id>
-			<activation>
-				<property>
-					<name>bamboo.buildNumber</name>
-				</property>
-			</activation>
-			<properties>
-				<p2.qualifier>CI-B${bamboo.buildNumber}</p2.qualifier>
-				<p2.replaceQualifier>true</p2.replaceQualifier>
-			</properties>
-		</profile>
-	-->
+
 		<profile>
 			<id>bamboo-signing</id>
 			<properties>
