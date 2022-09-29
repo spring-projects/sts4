@@ -4,7 +4,7 @@ Bundle-Name: org.springframework.ide.eclipse.xterm
 Bundle-SymbolicName: org.springframework.ide.eclipse.xterm;singleton:=true
 Bundle-Version: 4.16.0.qualifier
 Automatic-Module-Name: org.springframework.ide.eclipse.xterm
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-Activator: org.springframework.ide.eclipse.xterm.XtermPlugin
 Require-Bundle: org.eclipse.ui;bundle-version="3.115.0",
  org.eclipse.core.runtime,

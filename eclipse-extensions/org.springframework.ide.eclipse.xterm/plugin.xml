@@ -4,6 +4,7 @@
    <extension
          point="org.eclipse.ui.views">
       <view
+            allowMultiple="true"
             category="org.eclipse.ui"
             class="org.springframework.ide.eclipse.xterm.views.TerminalView"
             icon="icons/terminal.png"
@@ -12,6 +13,7 @@
             name="Xterm">
       </view>
    </extension>
+   
    <extension
          point="org.eclipse.e4.ui.css.swt.theme">
       <stylesheet

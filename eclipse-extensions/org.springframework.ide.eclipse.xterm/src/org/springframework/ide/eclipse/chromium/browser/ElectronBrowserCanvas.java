@@ -3,6 +3,7 @@ package org.springframework.ide.eclipse.chromium.browser;
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
@@ -57,10 +58,10 @@ public class ElectronBrowserCanvas extends Canvas
    private Image createImage(int width, int height)
    {
       ImageData data = new ImageData(width, height, 32, new PaletteData(0xff0000,0x00ff00, 0x0000ff));
-      data.setAlpha(0, 0, 0);
-      Arrays.fill(data.alphaData, (byte) -1);
-      Arrays.fill(data.data, (byte) -1);
-      return new Image(null, data);
+//      data.setAlpha(0, 0, 0);
+//      Arrays.fill(data.alphaData, (byte) -1);
+//      Arrays.fill(data.data, (byte) -1);
+      return new Image(getDisplay(), data);
    }
 
    public ElectronBrowserCanvas(Composite parent)
@@ -564,8 +565,9 @@ public class ElectronBrowserCanvas extends Canvas
       try
       {
          // TODO add Linux and Mac
-         unzip(getClass().getResourceAsStream("/headless-electron-darwin-x64-0.0.1.zip"), tempDir);
-         ProcessBuilder processBuilder = new ProcessBuilder(tempDir + File.separator + "headless-electron.app/Contents/MacOS/headless-electron");
+//         unzip(getClass().getResourceAsStream("/headless-electron-darwin-x64-0.0.1.zip"), tempDir);
+    	 unzip(new FileInputStream(new File(System.getProperty("user.home") + "/headless-electron-win32-x64-0.0.1.zip")), tempDir); 
+         ProcessBuilder processBuilder = new ProcessBuilder(tempDir + File.separator + "headless-electron.exe");
          process = processBuilder.start();
       }
       catch (IOException e1)

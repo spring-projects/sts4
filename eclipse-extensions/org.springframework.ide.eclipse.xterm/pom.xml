@@ -12,6 +12,12 @@
 	<packaging>eclipse-plugin</packaging>
 	<artifactId>org.springframework.ide.eclipse.xterm</artifactId>
 	
+	<properties>
+		<maven.compiler.target>11</maven.compiler.target>
+		<maven.compiler.source>11</maven.compiler.source>
+	</properties>
+
+	
 	<dependencies>
       <dependency>
          <groupId>org.scala-sbt.ipcsocket</groupId>
