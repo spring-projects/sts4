@@ -335,6 +335,18 @@
               "HINT",
               "ERROR"
             ]
+          },
+          "spring-boot.ls.problem.boot3.JAVA_BEAN_NOT_REGISTERED_IN_AOT": {
+            "type": "string",
+            "default": "WARNING",
+            "description": "'BeanPostProcessor' behaviour is ignored in Spring 6 AOT",
+            "enum": [
+              "IGNORE",
+              "INFO",
+              "WARNING",
+              "HINT",
+              "ERROR"
+            ]
           }
         }
       },

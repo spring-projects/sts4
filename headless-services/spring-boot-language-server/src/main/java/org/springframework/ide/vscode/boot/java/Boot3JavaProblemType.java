@@ -23,7 +23,9 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemTy
  */
 public enum Boot3JavaProblemType implements ProblemType {
 	
-	JAVA_CONCRETE_BEAN_TYPE(WARNING, "Bean definition should have precise type for Spring 6 AOT", "Not precise bean defintion type");
+	JAVA_CONCRETE_BEAN_TYPE(WARNING, "Bean definition should have precise type for Spring 6 AOT", "Not precise bean defintion type"),
+	
+	JAVA_BEAN_NOT_REGISTERED_IN_AOT(WARNING, "'BeanPostProcessor' behaviour is ignored in Spring 6 AOT", "'BeanPostProcessor' behaviour is ignored in AOT");
 	
 	private final ProblemSeverity defaultSeverity;
 	private String description;
