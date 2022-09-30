@@ -35,8 +35,10 @@
 
 								<replace file="about.properties" token="@QUALIFIER@" value="${qualifier}" summary="yes" />
 								<replace file="about.properties" token="@BUILD_ID@" value="${build.id}" summary="yes" />
+								<replace file="about.properties" token="@REVISION@" value="${git.commit.id}" summary="yes" />
 								<replace file="plugin.properties" token="@QUALIFIER@" value="${qualifier}" summary="yes" />
 								<replace file="plugin.properties" token="@BUILD_ID@" value="${build.id}" summary="yes" />
+								<replace file="plugin.properties" token="@REVISION@" value="${git.commit.id}" summary="yes" />
 							</target>
 						</configuration>
 						<goals>
