@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2000, 2018, 2019 IBM Corporation and others.
+ * Copyright (c) 2000, 2018, 2019, 2022 IBM Corporation and others.
  *
  * This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License 2.0
@@ -14,12 +14,14 @@
  *     Martin Oberhuber (Wind River) - [327446] Avoid unnecessary wait-for-build dialog.
  *     Mohamed Hussein - bug 381175
  *     Pivotal Inc - allow synchronizing with backgroundLaunch
+ *     VMware - Prompt to save editors
  *******************************************************************************/
 package org.springframework.ide.eclipse.boot.launch.util;
 
 import java.text.MessageFormat;
 import java.util.concurrent.CompletableFuture;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
@@ -180,6 +182,59 @@ public class BootDebugUITools {
 			progressService.showInDialog(workbench.getActiveWorkbenchWindow().getShell(), job);
 		}
 		job.schedule();
+	}
+
+	/*
+	 *
+	 * The following constants are copied from LaunchConfigurationDelegate
+	 *
+	 *
+	 */
+
+	/**
+	 * Constant to define debug.core for the status codes
+	 *
+	 * @since 3.2
+	 */
+	private static final String DEBUG_CORE = "org.eclipse.debug.core";
+
+	/**
+	 * Constant to define debug.ui for the status codes
+	 *
+	 * @since 3.2
+	 */
+	private static final String DEBUG_UI = "org.eclipse.debug.ui";
+
+	/**
+	 * Status code for which a UI prompter is registered.
+	 */
+	protected static final IStatus promptStatus = new Status(IStatus.INFO, DEBUG_UI, 200, "", null);
+
+	/**
+	 * Status code for which a prompter will ask the user to save any/all of the dirty editors which have only to do
+	 * with this launch (scoping them to the current launch/build)
+	 *
+	 * @since 3.2
+	 */
+	protected static final IStatus saveScopedDirtyEditors = new Status(IStatus.INFO, DEBUG_CORE, 222, "", null);
+
+	/**
+	 * Derived from {@link LaunchConfigurationDelegate}
+	 * @param project
+	 * @return true if project was saved. False if canceled
+	 * @throws Exception
+	 */
+	public static boolean promptForProjectSave(IProject project) throws Exception {
+		IStatusHandler prompter = DebugPlugin.getDefault().getStatusHandler(promptStatus);
+
+		if(prompter != null) {
+			IProject[] projects = new IProject[] {project};
+			ILaunchConfiguration configuration = null;
+			if(!((Boolean)prompter.handleStatus(saveScopedDirtyEditors, new Object[]{configuration, projects})).booleanValue()) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 }
