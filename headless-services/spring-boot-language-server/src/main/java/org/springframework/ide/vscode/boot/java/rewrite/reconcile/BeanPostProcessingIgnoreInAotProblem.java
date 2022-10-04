@@ -22,6 +22,7 @@ import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.tree.J.ClassDeclaration;
 import org.openrewrite.java.tree.J.MethodDeclaration;
 import org.openrewrite.marker.Range;
+import org.springframework.context.ApplicationContext;
 import org.springframework.ide.vscode.boot.java.Boot3JavaProblemType;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
@@ -51,7 +52,7 @@ public class BeanPostProcessingIgnoreInAotProblem implements RecipeSpringJavaPro
 	}
 
 	@Override
-	public JavaVisitor<ExecutionContext> getMarkerVisitor() {
+	public JavaVisitor<ExecutionContext> getMarkerVisitor(ApplicationContext applicationContext) {
 		return new JavaIsoVisitor<ExecutionContext>() {
 
 			@Override
@@ -62,7 +63,7 @@ public class BeanPostProcessingIgnoreInAotProblem implements RecipeSpringJavaPro
 							.filter(MethodDeclaration.class::isInstance).map(MethodDeclaration.class::cast)
 							.filter(BeanPostProcessingIgnoreInAot::isApplicableMethod)
 							.collect(Collectors.toList());
-					FixAssistMarker marker = new FixAssistMarker(Tree.randomId())
+					FixAssistMarker marker = new FixAssistMarker(Tree.randomId(), getId())
 							.withRecipeId(getRecipeId())
 							.withScope(classDecl.getMarkers().findFirst(Range.class).orElse(null));
 					if (methods.isEmpty()) {
@@ -89,7 +90,7 @@ public class BeanPostProcessingIgnoreInAotProblem implements RecipeSpringJavaPro
 
 	@Override
 	public ProblemType getProblemType() {
-		return Boot3JavaProblemType.JAVA_BEAN_NOT_REGISTERED_IN_AOT;
+		return Boot3JavaProblemType.JAVA_BEAN_POST_PROCESSOR_IGNORED_IN_AOT;
 	}
 
 }

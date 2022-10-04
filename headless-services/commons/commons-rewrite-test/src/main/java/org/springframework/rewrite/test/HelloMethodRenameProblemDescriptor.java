@@ -16,6 +16,7 @@ import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.tree.J.MethodDeclaration;
 import org.openrewrite.marker.Range;
+import org.springframework.context.ApplicationContext;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemCategory;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity;
@@ -44,14 +45,14 @@ public class HelloMethodRenameProblemDescriptor implements RecipeSpringJavaProbl
 	}
 
 	@Override
-	public JavaVisitor<ExecutionContext> getMarkerVisitor() {
+	public JavaVisitor<ExecutionContext> getMarkerVisitor(ApplicationContext applicationContext) {
 		return new JavaIsoVisitor<>() {
 
 			@Override
 			public MethodDeclaration visitMethodDeclaration(MethodDeclaration method, ExecutionContext p) {
 				MethodDeclaration m = super.visitMethodDeclaration(method, p);
 				if ("hello".equals(method.getSimpleName())) {
-					FixAssistMarker marker = new FixAssistMarker(Tree.randomId()).withRecipeId(getRecipeId()).withScope(m.getMarkers().findFirst(Range.class).get());
+					FixAssistMarker marker = new FixAssistMarker(Tree.randomId(), getId()).withRecipeId(getRecipeId()).withScope(m.getMarkers().findFirst(Range.class).get());
 					m = m.withName(m.getName().withMarkers(m.getName().getMarkers().add(marker)));
 				}
 				return m;

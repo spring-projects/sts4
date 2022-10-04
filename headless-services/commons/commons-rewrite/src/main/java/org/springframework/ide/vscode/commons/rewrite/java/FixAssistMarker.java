@@ -16,11 +16,14 @@ public class FixAssistMarker implements Marker {
 	
 	private String recipeId;
 	
+	private String descriptorId;
+	
 	private Map<String, Object> parameters = Collections.emptyMap();
 	
-	public FixAssistMarker(UUID id) {
+	public FixAssistMarker(UUID id, String descriptorId) {
 		super();
 		this.id = id;
+		this.descriptorId = descriptorId;
 	}
 
 	@Override
@@ -62,9 +65,13 @@ public class FixAssistMarker implements Marker {
 		return parameters;
 	}
 
+	public String getDescriptorId() {
+		return descriptorId;
+	}
+
 	@Override
 	public int hashCode() {
-		return Objects.hash(id);
+		return Objects.hash(descriptorId, id, parameters, recipeId, scope);
 	}
 
 	@Override
@@ -76,7 +83,10 @@ public class FixAssistMarker implements Marker {
 		if (getClass() != obj.getClass())
 			return false;
 		FixAssistMarker other = (FixAssistMarker) obj;
-		return Objects.equals(id, other.id);
+		return Objects.equals(descriptorId, other.descriptorId) && Objects.equals(id, other.id)
+				&& Objects.equals(parameters, other.parameters) && Objects.equals(recipeId, other.recipeId)
+				&& Objects.equals(scope, other.scope);
 	}
+
 
 }

@@ -19,6 +19,7 @@ import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.marker.Range;
+import org.springframework.context.ApplicationContext;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeCodeActionDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
@@ -46,13 +47,13 @@ public class NoRequestMappingAnnotationCodeAction implements RecipeCodeActionDes
 	}
 
 	@Override
-	public JavaVisitor<ExecutionContext> getMarkerVisitor() {
+	public JavaVisitor<ExecutionContext> getMarkerVisitor(ApplicationContext applicationContext) {
 		return new JavaIsoVisitor<ExecutionContext>() {
 	        @Override
 	        public J.Annotation visitAnnotation(J.Annotation annotation, ExecutionContext ctx) {
 	            J.Annotation a = super.visitAnnotation(annotation, ctx);
 	            if (REQUEST_MAPPING_ANNOTATION_MATCHER.matches(a) && getCursor().getParentOrThrow().getValue() instanceof J.MethodDeclaration) {
-            		FixAssistMarker fixAssistMarker = new FixAssistMarker(Tree.randomId())
+            		FixAssistMarker fixAssistMarker = new FixAssistMarker(Tree.randomId(), getId())
             				.withRecipeId(getRecipeId())
             				.withScope(a.getMarkers().findFirst(Range.class).get());
 	            	a = a.withMarkers(a.getMarkers().add(fixAssistMarker));

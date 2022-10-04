@@ -19,6 +19,7 @@ import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.marker.Range;
+import org.springframework.context.ApplicationContext;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeCodeActionDescriptor;
@@ -49,7 +50,7 @@ public class BeanMethodsNotPublicCodeAction implements RecipeCodeActionDescripto
 	}
 
 	@Override
-	public JavaVisitor<ExecutionContext> getMarkerVisitor() {
+	public JavaVisitor<ExecutionContext> getMarkerVisitor(ApplicationContext applicationContext) {
 		return new JavaIsoVisitor<ExecutionContext>() {
 
 	        @Override
@@ -59,7 +60,7 @@ public class BeanMethodsNotPublicCodeAction implements RecipeCodeActionDescripto
 	            if (m.getAllAnnotations().stream().anyMatch(BEAN_ANNOTATION_MATCHER::matches)
 	                    && Boolean.FALSE.equals(TypeUtils.isOverride(method.getMethodType()))) {
 	                // mark public modifier
-	        		FixAssistMarker fixAssistMarker = new FixAssistMarker(Tree.randomId())
+	        		FixAssistMarker fixAssistMarker = new FixAssistMarker(Tree.randomId(), getId())
 	        				.withRecipeId(ID)
 	        				.withScope(m.getMarkers().findFirst(Range.class).get());
 	            	m = m.withModifiers(ListUtils.map(m.getModifiers(), modifier -> {

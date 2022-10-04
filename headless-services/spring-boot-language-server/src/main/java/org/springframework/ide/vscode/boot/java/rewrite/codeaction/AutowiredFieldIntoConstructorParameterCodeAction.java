@@ -30,6 +30,7 @@ import org.openrewrite.java.tree.J.VariableDeclarations;
 import org.openrewrite.java.tree.JavaType.FullyQualified;
 import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.marker.Range;
+import org.springframework.context.ApplicationContext;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeCodeActionDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
@@ -59,7 +60,7 @@ public class AutowiredFieldIntoConstructorParameterCodeAction implements RecipeC
 	}
 
 	@Override
-	public JavaVisitor<ExecutionContext> getMarkerVisitor() {
+	public JavaVisitor<ExecutionContext> getMarkerVisitor(ApplicationContext applicationContext) {
 		return new JavaIsoVisitor<>() {
 
 			@Override
@@ -75,7 +76,7 @@ public class AutowiredFieldIntoConstructorParameterCodeAction implements RecipeC
 					if (fqType != null && isApplicableType(fqType)) {
 						List<MethodDeclaration> constructors = ORAstUtils.getMethods(classDeclaration).stream().filter(c -> c.isConstructor()).limit(2).collect(Collectors.toList());
 						String fieldName = multiVariable.getVariables().get(0).getSimpleName();
-						FixAssistMarker marker = new FixAssistMarker(Tree.randomId())
+						FixAssistMarker marker = new FixAssistMarker(Tree.randomId(), getId())
 								.withRecipeId(getRecipeId())
 								.withScope(classDeclaration.getMarkers().findFirst(Range.class).get())
 								.withParameters(Map.of("classFqName", fqType.getFullyQualifiedName(), "fieldName", fieldName));

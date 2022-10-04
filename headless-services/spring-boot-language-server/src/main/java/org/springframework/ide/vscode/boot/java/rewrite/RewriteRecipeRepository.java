@@ -49,12 +49,14 @@ import org.openrewrite.TreeVisitor;
 import org.openrewrite.Validated;
 import org.openrewrite.config.RecipeDescriptor;
 import org.openrewrite.config.YamlResourceLoader;
-import org.openrewrite.internal.RecipeIntrospectionUtils;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.tree.J.CompilationUnit;
 import org.openrewrite.maven.MavenParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.ide.vscode.boot.app.BootJavaConfig;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IClasspathUtil;
@@ -77,7 +79,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 
-public class RewriteRecipeRepository {
+public class RewriteRecipeRepository implements ApplicationContextAware {
 		
 	private static final String CMD_REWRITE_RELOAD = "sts/rewrite/reload";
 	private static final String CMD_REWRITE_EXECUTE = "sts/rewrite/execute";
@@ -100,6 +102,8 @@ public class RewriteRecipeRepository {
 	final private List<RecipeSpringJavaProblemDescriptor> javaProblemDescriptors;
 	
 	final private ListenerList<Void> loadListeners;
+	
+	private ApplicationContext applicationContext;
 	
 	private CompletableFuture<Void> loaded;
 	
@@ -235,7 +239,7 @@ public class RewriteRecipeRepository {
 	
 	public RecipeSpringJavaProblemDescriptor getProblemRecipeDescriptor(String id) {
 		for (RecipeSpringJavaProblemDescriptor d : javaProblemDescriptors) {
-			if (id.equals(d.getRecipeId())) {
+			if (id.equals(d.getId())) {
 				return d;
 			}
 		}
@@ -244,7 +248,7 @@ public class RewriteRecipeRepository {
 	
 	public RecipeCodeActionDescriptor getCodeActionRecipeDescriptor(String id) {
 		for (RecipeCodeActionDescriptor d : codeActionDescriptors) {
-			if (id.equals(d.getRecipeId())) {
+			if (id.equals(d.getId())) {
 				return d;
 			}
 		}
@@ -272,13 +276,9 @@ public class RewriteRecipeRepository {
 	public CompilationUnit mark(List<? extends RecipeCodeActionDescriptor> descriptors, CompilationUnit compilationUnit) {
 		CompilationUnit cu = compilationUnit;
 		for (RecipeCodeActionDescriptor d : descriptors) {
-			Recipe recipe = getRecipe(d.getRecipeId()).orElse(null);
-			if (recipe != null) {
-				TreeVisitor<?, ExecutionContext> isApplicableVisitor = RecipeIntrospectionUtils.recipeSingleSourceApplicableTest(recipe);
-				TreeVisitor<?, ExecutionContext> markVisitor = d.getMarkerVisitor();
-				if (markVisitor != null && (isApplicableVisitor == null || isApplicableVisitor.visit(cu, new InMemoryExecutionContext(e -> log.error("", e))) != cu)) {
-					cu = (CompilationUnit) markVisitor.visit(cu, new InMemoryExecutionContext(e -> log.error("", e)));
-				}
+			TreeVisitor<?, ExecutionContext> markVisitor = d.getMarkerVisitor(applicationContext);
+			if (markVisitor != null) {
+				cu = (CompilationUnit) markVisitor.visit(cu, new InMemoryExecutionContext(e -> log.error("", e)));
 			}
 		}
 		return cu;
@@ -446,6 +446,11 @@ public class RewriteRecipeRepository {
 	
 	public void onRecipesLoaded(Consumer<Void> l) {
 		loadListeners.add(l);
+	}
+
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+		this.applicationContext = applicationContext;
 	}
 	
 //	private static Recipe convert(Recipe r, RecipeDescriptor d) {

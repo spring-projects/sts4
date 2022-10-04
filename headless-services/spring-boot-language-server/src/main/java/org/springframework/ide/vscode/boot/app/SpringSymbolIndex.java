@@ -29,6 +29,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -62,6 +63,7 @@ import org.springframework.ide.vscode.commons.languageserver.java.FutureProjectF
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver.Listener;
+import org.springframework.ide.vscode.commons.languageserver.util.ListenerList;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleWorkspaceService;
@@ -97,8 +99,8 @@ public class SpringSymbolIndex implements InitializingBean {
 
 	private final ExecutorService updateQueue = Executors.newSingleThreadExecutor();
 	private SpringIndexer[] indexers;
-
-
+	private ListenerList<Void> listeners = new ListenerList<Void>();
+	
 	private static final Logger log = LoggerFactory.getLogger(SpringSymbolIndex.class);
 
 	private final Listener projectListener = new Listener() {
@@ -310,7 +312,9 @@ public class SpringSymbolIndex implements InitializingBean {
 						futures[i] = CompletableFuture.runAsync(initializeItem, this.updateQueue);
 					}
 					
-					return CompletableFuture.allOf(futures);
+					CompletableFuture<Void> future = CompletableFuture.allOf(futures);
+					future.thenAccept(v -> listeners.fire(v));
+					return future;
 				}
 			} else {
 				return deleteProject(project);
@@ -388,7 +392,9 @@ public class SpringSymbolIndex implements InitializingBean {
 				}
 			}
 
-			return CompletableFuture.allOf((CompletableFuture[]) futures.toArray(new CompletableFuture[futures.size()]));
+			CompletableFuture<Void> future = CompletableFuture.allOf((CompletableFuture[]) futures.toArray(new CompletableFuture[futures.size()]));
+			future.thenAccept(v -> listeners.fire(v));
+			return future;
 		}
 	}
 
@@ -445,7 +451,9 @@ public class SpringSymbolIndex implements InitializingBean {
 					}
 				}
 			}
-			return CompletableFuture.allOf((CompletableFuture[]) futures.toArray(new CompletableFuture[futures.size()]));
+			CompletableFuture<Void> future = CompletableFuture.allOf((CompletableFuture[]) futures.toArray(new CompletableFuture[futures.size()]));
+			future.thenAccept(v -> listeners.fire(v));
+			return future;
 		}
 	}
 	
@@ -512,7 +520,9 @@ public class SpringSymbolIndex implements InitializingBean {
 					futures.add(CompletableFuture.runAsync(deleteItems, this.updateQueue));
 				}
 
-				return CompletableFuture.allOf((CompletableFuture[]) futures.toArray(new CompletableFuture[futures.size()]));
+				CompletableFuture<Void> future = CompletableFuture.allOf((CompletableFuture[]) futures.toArray(new CompletableFuture[futures.size()]));
+				future.thenAccept(v -> listeners.fire(v));
+				return future;
 			}
 			catch (Exception e) {
 				log.error("", e);
@@ -868,5 +878,9 @@ public class SpringSymbolIndex implements InitializingBean {
 			}
 		}
 
+	}
+	
+	public void onUpdate(Consumer<Void> listener) {
+		listeners.add(listener);
 	}
 }

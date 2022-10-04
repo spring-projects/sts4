@@ -182,6 +182,8 @@ public class BootLanguageServerInitializer implements InitializingBean {
 		
 		server.getWorkspaceService().getFileObserver().onFilesChanged(FILES_TO_WATCH_GLOB, this::handleFiles);
 		server.getWorkspaceService().getFileObserver().onFilesCreated(FILES_TO_WATCH_GLOB, this::handleFiles);
+		
+		springIndexer.onUpdate(v -> reconcile());
 	}
 	
 	private void reconcile() {

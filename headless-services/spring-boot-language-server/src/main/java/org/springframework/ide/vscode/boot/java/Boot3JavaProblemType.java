@@ -25,7 +25,9 @@ public enum Boot3JavaProblemType implements ProblemType {
 	
 	JAVA_CONCRETE_BEAN_TYPE(WARNING, "Bean definition should have precise type for Spring 6 AOT", "Not precise bean defintion type"),
 	
-	JAVA_BEAN_NOT_REGISTERED_IN_AOT(WARNING, "'BeanPostProcessor' behaviour is ignored in Spring 6 AOT", "'BeanPostProcessor' behaviour is ignored in AOT");
+	JAVA_BEAN_POST_PROCESSOR_IGNORED_IN_AOT(WARNING, "'BeanPostProcessor' behaviour is ignored in Spring 6 AOT", "'BeanPostProcessor' behaviour is ignored in AOT"),
+	
+	JAVA_BEAN_NOT_REGISTERED_IN_AOT(WARNING, "Not registered as Bean", "Not registered as a Bean");
 	
 	private final ProblemSeverity defaultSeverity;
 	private String description;

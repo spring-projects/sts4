@@ -156,7 +156,7 @@ public class RewriteCodeActionHandler implements JavaCodeActionHandler {
 			if (descriptor != null && descriptor.getScopes() != null) {
 				// Fix descriptor code actions may have the overlapping scopes with assist descriptors. Quick fixes are provided separately hence overlapping scopes will produces duplicates quick assist.
 				// Therefore, need to compute recipe scopes that don't overlap with quick fix descriptor recipe scopes. 
-				RecipeSpringJavaProblemDescriptor fixDescriptor = recipeRepo.getProblemRecipeDescriptor(m.getRecipeId());
+				RecipeSpringJavaProblemDescriptor fixDescriptor = recipeRepo.getProblemRecipeDescriptor(m.getDescriptorId());
 				return Arrays.stream(descriptor.getScopes())
 						.filter(s -> fixDescriptor == null || !Arrays.asList(fixDescriptor.getScopes()).contains(s))
 						.map(s -> createCodeActionFromScope(doc, descriptor, s, m, range))

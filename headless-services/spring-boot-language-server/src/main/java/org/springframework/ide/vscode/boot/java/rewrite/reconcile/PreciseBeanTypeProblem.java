@@ -22,6 +22,7 @@ import org.openrewrite.java.tree.J.Return;
 import org.openrewrite.marker.Range;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeUtils;
+import org.springframework.context.ApplicationContext;
 import org.springframework.ide.vscode.boot.java.Boot3JavaProblemType;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeCodeActionDescriptor;
@@ -51,7 +52,7 @@ public class PreciseBeanTypeProblem implements RecipeSpringJavaProblemDescriptor
 	}
 
 	@Override
-	public JavaVisitor<ExecutionContext> getMarkerVisitor() {
+	public JavaVisitor<ExecutionContext> getMarkerVisitor(ApplicationContext applicationContext) {
 		return new JavaIsoVisitor<>() {
 			
             public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext executionContext) {
@@ -62,7 +63,7 @@ public class PreciseBeanTypeProblem implements RecipeSpringJavaProblemDescriptor
                     	if ((o instanceof JavaType.FullyQualified && m.getReturnTypeExpression().getType() instanceof JavaType.FullyQualified)
                     			|| (o instanceof JavaType.Array && m.getReturnTypeExpression().getType() instanceof JavaType.Array)) {
                         	m = m.withReturnTypeExpression(m.getReturnTypeExpression().withMarkers(m.getReturnTypeExpression().getMarkers().add(
-                        			new FixAssistMarker(Tree.randomId()).withScope(m.getMarkers().findFirst(Range.class).get()).withRecipeId(getRecipeId()))));
+                        			new FixAssistMarker(Tree.randomId(), getId()).withScope(m.getMarkers().findFirst(Range.class).get()).withRecipeId(getRecipeId()))));
                     	}
                     }
                 }

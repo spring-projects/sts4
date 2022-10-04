@@ -24,6 +24,7 @@ import org.openrewrite.java.tree.JavaType.FullyQualified;
 import org.openrewrite.marker.Range;
 import org.openrewrite.java.tree.Statement;
 import org.openrewrite.java.tree.TypeUtils;
+import org.springframework.context.ApplicationContext;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.Boot2JavaProblemType;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
@@ -53,7 +54,7 @@ public class NoAutowiredOnConstructorProblem implements RecipeSpringJavaProblemD
 	}
 
 	@Override
-	public JavaVisitor<ExecutionContext> getMarkerVisitor() {
+	public JavaVisitor<ExecutionContext> getMarkerVisitor(ApplicationContext applicationContext) {
 		return new JavaIsoVisitor<ExecutionContext>() {
             public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext context) {
                 J.ClassDeclaration cd =  super.visitClassDeclaration(classDecl, context);
@@ -76,7 +77,7 @@ public class NoAutowiredOnConstructorProblem implements RecipeSpringJavaProblemD
                                     return s;
                                 }
                                 MethodDeclaration constructor = (MethodDeclaration) s;
-                        		FixAssistMarker fixAssistMarker = new FixAssistMarker(Tree.randomId())
+                        		FixAssistMarker fixAssistMarker = new FixAssistMarker(Tree.randomId(), getId())
     	                        	.withRecipeId(ID)
     	                        	.withScope(getCursor().firstEnclosing(ClassDeclaration.class).getMarkers().findFirst(Range.class).get());
                                 constructor = constructor.withLeadingAnnotations(ListUtils.map(constructor.getLeadingAnnotations(), a -> {

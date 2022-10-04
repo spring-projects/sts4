@@ -59,13 +59,13 @@ public class ComponentSymbolProvider extends AbstractSymbolProvider {
 				.map(ITypeBinding::getName)
 				.collect(Collectors.toList());
 		String beanName = getBeanName(node);
-		String beanType = getBeanType(node);
+		ITypeBinding beanType = getBeanType(node);
 
 		WorkspaceSymbol symbol = new WorkspaceSymbol(
-				beanLabel("+", annotationTypeName, metaAnnotationNames, beanName, beanType), SymbolKind.Interface,
+				beanLabel("+", annotationTypeName, metaAnnotationNames, beanName, beanType.getName()), SymbolKind.Interface,
 				Either.forLeft(new Location(doc.getUri(), doc.toRange(node.getStartPosition(), node.getLength()))));
 
-		SymbolAddOnInformation[] addon = new SymbolAddOnInformation[] {new BeansSymbolAddOnInformation(beanName)};
+		SymbolAddOnInformation[] addon = new SymbolAddOnInformation[] {new BeansSymbolAddOnInformation(beanName, beanType.getQualifiedName())};
 
 		return new EnhancedSymbolInformation(symbol, addon);
 	}
@@ -108,12 +108,11 @@ public class ComponentSymbolProvider extends AbstractSymbolProvider {
 		return null;
 	}
 
-	private String getBeanType(Annotation node) {
+	private ITypeBinding getBeanType(Annotation node) {
 		ASTNode parent = node.getParent();
 		if (parent instanceof TypeDeclaration) {
 			TypeDeclaration type = (TypeDeclaration) parent;
-			String returnType = type.resolveBinding().getName();
-			return returnType;
+			return type.resolveBinding();
 		}
 		return null;
 	}

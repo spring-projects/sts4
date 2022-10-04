@@ -25,6 +25,7 @@ import org.openrewrite.java.tree.J.ClassDeclaration;
 import org.openrewrite.java.tree.JavaType.FullyQualified;
 import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.marker.Range;
+import org.springframework.context.ApplicationContext;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeCodeActionDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
@@ -70,7 +71,7 @@ public class UnnecessarySpringExtensionCodeAction implements RecipeCodeActionDes
 	}
 
 	@Override
-	public JavaVisitor<ExecutionContext> getMarkerVisitor() {
+	public JavaVisitor<ExecutionContext> getMarkerVisitor(ApplicationContext applicationContext) {
 		return new JavaIsoVisitor<>() {
 
 			@Override
@@ -83,7 +84,7 @@ public class UnnecessarySpringExtensionCodeAction implements RecipeCodeActionDes
 					Range range = c.getMarkers().findFirst(Range.class).get();
 					c = c.withLeadingAnnotations(ListUtils.map(c.getLeadingAnnotations(), a -> {
 						if (SPRING_EXTENSION_ANNOTATIN_MATCHER.matches(a)) {
-							return a.withMarkers(a.getMarkers().add(new FixAssistMarker(Tree.randomId()).withRecipeId(ID).withScope(range)));
+							return a.withMarkers(a.getMarkers().add(new FixAssistMarker(Tree.randomId(), getId()).withRecipeId(ID).withScope(range)));
 						}
 						return a;
 					}));

@@ -101,21 +101,21 @@ public class RewriteReconciler implements JavaReconciler {
 		if (astNode != null) {
 			Range range = astNode.getMarkers().findFirst(Range.class).orElse(null);
 			if (range != null) {
-				RecipeSpringJavaProblemDescriptor recipeFixDescriptor = recipeRepo.getProblemRecipeDescriptor(m.getRecipeId());
-				if (recipeFixDescriptor != null && recipeFixDescriptor.getScopes() != null && recipeRepo.getRecipe(recipeFixDescriptor.getRecipeId()).isPresent()) {
-					return List.of(createProblemFromScope(doc, recipeFixDescriptor, m, range));
+				RecipeSpringJavaProblemDescriptor recipeFixDescriptor = recipeRepo.getProblemRecipeDescriptor(m.getDescriptorId());
+				if (recipeFixDescriptor != null) {
+					return List.of(createProblem(doc, recipeFixDescriptor, m, range));
 				}
 			}
 		}
 		return Collections.emptyList();
 	}
 	
-	private ReconcileProblemImpl createProblemFromScope(IDocument doc, RecipeSpringJavaProblemDescriptor recipeFixDescriptor,
+	private ReconcileProblemImpl createProblem(IDocument doc, RecipeSpringJavaProblemDescriptor recipeFixDescriptor,
 			FixAssistMarker m, Range range) {
 		ProblemType problemType = recipeFixDescriptor.getProblemType();
 		ReconcileProblemImpl problem = new ReconcileProblemImpl(problemType, problemType.getLabel(), range.getStart().getOffset(), range.getEnd().getOffset() - range.getStart().getOffset());
 		QuickfixType quickfixType = quickfixRegistry.getQuickfixType(RewriteRefactorings.REWRITE_RECIPE_QUICKFIX);
-		if (quickfixType != null && m.getRecipeId() != null) {
+		if (quickfixType != null && m.getRecipeId() != null && recipeRepo.getRecipe(recipeFixDescriptor.getRecipeId()).isPresent()) {
 			for (RecipeScope s : recipeFixDescriptor.getScopes()) {
 				problem.addQuickfix(new QuickfixData<>(
 						quickfixType,
