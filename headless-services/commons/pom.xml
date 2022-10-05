@@ -112,7 +112,6 @@
 		<rewrite-version>7.30.0</rewrite-version>
 		<rewrite-spring-version>4.27.0</rewrite-spring-version>
 		<rewrite-java-migration.version>1.11.0</rewrite-java-migration.version>
-		<rewrite-jackson.version>2.13.3</rewrite-jackson.version>
 
 		<signing.skip>true</signing.skip>
 		<signing.alias>vmware</signing.alias>
