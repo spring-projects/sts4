@@ -1,3 +1,13 @@
+/*******************************************************************************
+ * Copyright (c) 2022 VMware, Inc.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     VMware, Inc. - initial API and implementation
+ *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.rewrite.reconcile;
 
 import static org.springframework.ide.vscode.commons.java.SpringProjectUtil.springBootVersionGreaterOrEqual;
@@ -13,8 +23,6 @@ import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.tree.J.ClassDeclaration;
 import org.openrewrite.java.tree.JavaType.FullyQualified;
 import org.openrewrite.java.tree.TypeUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.boot.java.Boot3JavaProblemType;
@@ -22,37 +30,16 @@ import org.springframework.ide.vscode.boot.java.beans.BeansSymbolAddOnInformatio
 import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
-import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeSpringJavaProblemDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.java.FixAssistMarker;
 
 public class NotRegisteredBeansProblem implements RecipeSpringJavaProblemDescriptor {
 		
-	private static final Logger log = LoggerFactory.getLogger(NotRegisteredBeansProblem.class);
-	
 	private static final List<String> AOT_BEANS = List.of(
 			"org.springframework.beans.factory.aot.BeanFactoryInitializationAotProcessor",
 			"org.springframework.beans.factory.aot.BeanRegistrationAotProcessor",
 			"org.springframework.beans.factory.aot.RuntimeHintsRegistrar"
 	);
-
-	@Override
-	public String getRecipeId() {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public String getLabel(RecipeScope s) {
-		// TODO Auto-generated method stub
-		return null;
-	}
-
-	@Override
-	public RecipeScope[] getScopes() {
-		// TODO Auto-generated method stub
-		return new RecipeScope[0];
-	}
 
 	@Override
 	public JavaVisitor<ExecutionContext> getMarkerVisitor(ApplicationContext applicationContext) {
@@ -73,7 +60,6 @@ public class NotRegisteredBeansProblem implements RecipeSpringJavaProblemDescrip
 								for (SymbolAddOnInformation info : additionalInformation) {
 									if (info instanceof BeansSymbolAddOnInformation) {
 										BeansSymbolAddOnInformation info2 = (BeansSymbolAddOnInformation) info;
-//										log.info("Bean: id=" + info2.getBeanID() + ", type=" + info2.getBeanType());
 										return beanClassName.equals(info2.getBeanType()); 
 									}
 								}

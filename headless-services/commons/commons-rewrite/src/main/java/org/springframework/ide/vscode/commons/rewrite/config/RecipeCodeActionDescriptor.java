@@ -21,12 +21,6 @@ public interface RecipeCodeActionDescriptor {
 		return getClass().getName();
 	}
 	
-	String getRecipeId();
-	
-	String getLabel(RecipeScope s);
-	
-	RecipeScope[] getScopes();
-	
 	JavaVisitor<ExecutionContext> getMarkerVisitor(ApplicationContext applicationContext);
 	
 	boolean isApplicable(IJavaProject project);

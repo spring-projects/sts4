@@ -13,8 +13,8 @@ package org.springframework.ide.vscode.boot.java.rewrite;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
@@ -42,6 +42,7 @@ import org.springframework.ide.vscode.commons.languageserver.util.CodeActionReso
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.rewrite.ORDocUtils;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
+import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.java.ORAstUtils;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -107,8 +108,8 @@ public class RewriteRefactorings implements CodeActionResolver, QuickfixHandler 
 	}
 	
 	public WorkspaceEdit createEdit(JsonElement o) {
-		Data data = gson.fromJson(o, Data.class);
-		if (data != null && data.id != null) {
+		FixDescriptor data = gson.fromJson(o, FixDescriptor.class);
+		if (data != null && data.getRecipeId() != null) {
 			return perform(data);
 		}
 		return null;
@@ -133,32 +134,29 @@ public class RewriteRefactorings implements CodeActionResolver, QuickfixHandler 
 		return workspaceEdit;
 	}
 	
-	private WorkspaceEdit perform(Data data) {
-		Optional<IJavaProject> project = projectFinder.find(new TextDocumentIdentifier(data.docUri));
+	private WorkspaceEdit perform(FixDescriptor data) {
+		Optional<IJavaProject> project = projectFinder.find(new TextDocumentIdentifier(data.getDocUris().get(0)));
 		if (project.isPresent()) {
-			boolean projectWide = data.recipeScope == RecipeScope.PROJECT;
+			boolean projectWide = data.getRecipeScope() == RecipeScope.PROJECT;
 			Recipe r = createRecipe(data); 
 			if (projectWide) {
 				return applyRecipe(r, project.get(), ORAstUtils.parse(documents, project.get()));
 			} else {
-				CompilationUnit cu = cuCache.getCU(project.get(), URI.create(data.docUri));
-				if (cu == null) {
-					throw new IllegalStateException("Cannot parse Java file: " + data.docUri);
-				}
-				return applyRecipe(r, project.get(), List.of(cu));
+				List<CompilationUnit> cus = data.getDocUris().stream().map(docUri -> cuCache.getCU(project.get(), URI.create(docUri))).filter(Objects::nonNull).collect(Collectors.toList());
+				return applyRecipe(r, project.get(), cus);
 			}
 		}
 		return null;
 	}
 	
 
-	private Recipe createRecipe(Data d) {
-		Recipe r = recipeRepo.getRecipe(d.id).orElse(null);
+	private Recipe createRecipe(FixDescriptor d) {
+		Recipe r = recipeRepo.getRecipe(d.getRecipeId()).orElse(null);
 		if (!(r instanceof DeclarativeRecipe)) {
 			r = RecipeIntrospectionUtils.constructRecipe(r.getClass());
 		}
-		if (d.params != null) {
-			for (Entry<String, Object> entry : d.params.entrySet()) {
+		if (d.getParameters() != null) {
+			for (Entry<String, Object> entry : d.getParameters().entrySet()) {
 				try {
 					Field f = r.getClass().getDeclaredField(entry.getKey());
 					f.setAccessible(true);
@@ -168,15 +166,15 @@ public class RewriteRefactorings implements CodeActionResolver, QuickfixHandler 
 				}
 			}
 		}
-		if (d.recipeScope == RecipeScope.NODE) {
-			if (d.scope == null) {
+		if (d.getRecipeScope() == RecipeScope.NODE) {
+			if (d.getRangeScope() == null) {
 				throw new IllegalArgumentException("Missing scope AST node!");
 			} else {
 				r = ORAstUtils.nodeRecipe(r, j -> {
 					if (j != null) {
 						 Range range = j.getMarkers().findFirst(Range.class).orElse(null);
 						 if (range != null) {
-							 return d.scope.getStart().getOffset() <= range.getStart().getOffset() && range.getEnd().getOffset() <= d.scope.getEnd().getOffset();  
+							 return d.getRangeScope().getStart().getOffset() <= range.getStart().getOffset() && range.getEnd().getOffset() <= d.getRangeScope().getEnd().getOffset();  
 						 }
 					}
 					return false;
@@ -185,21 +183,4 @@ public class RewriteRefactorings implements CodeActionResolver, QuickfixHandler 
 		}
 		return r;
 	}
-
-	public static class Data {
-		public String id;
-		public String docUri;
-		public RecipeScope recipeScope;
-		public Range scope;
-		public Map<String, Object> params;
-		public Data(String id, String docUri, RecipeScope recipeScope, Range scope, Map<String, Object> params) {
-			this.id = id;
-			this.docUri = docUri;
-			this.recipeScope = recipeScope;
-			this.scope = scope;
-			this.params = params;
-		}
-		
-	}
-	
 }

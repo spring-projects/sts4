@@ -13,9 +13,7 @@ package org.springframework.ide.vscode.boot.java.rewrite;
 import java.util.List;
 
 import org.springframework.ide.vscode.boot.java.rewrite.codeaction.AutowiredFieldIntoConstructorParameterCodeAction;
-import org.springframework.ide.vscode.boot.java.rewrite.codeaction.BeanMethodsNotPublicCodeAction;
 import org.springframework.ide.vscode.boot.java.rewrite.codeaction.NoRequestMappingAnnotationCodeAction;
-import org.springframework.ide.vscode.boot.java.rewrite.codeaction.UnnecessarySpringExtensionCodeAction;
 import org.springframework.ide.vscode.boot.java.rewrite.reconcile.BeanMethodNotPublicProblem;
 import org.springframework.ide.vscode.boot.java.rewrite.reconcile.BeanPostProcessingIgnoreInAotProblem;
 import org.springframework.ide.vscode.boot.java.rewrite.reconcile.NoAutowiredOnConstructorProblem;
@@ -32,9 +30,7 @@ public class BootCodeActionRepository extends CodeActionRepository {
 	public List<RecipeCodeActionDescriptor> getCodeActionDescriptors() {
 		return List.of(
 				new AutowiredFieldIntoConstructorParameterCodeAction(),
-				new BeanMethodsNotPublicCodeAction(),
-				new NoRequestMappingAnnotationCodeAction(),
-				new UnnecessarySpringExtensionCodeAction()
+				new NoRequestMappingAnnotationCodeAction()
 		);
 	}
 

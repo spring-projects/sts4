@@ -37,7 +37,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.app.BootJavaConfig;
 import org.springframework.ide.vscode.boot.java.reconcilers.JavaReconciler;
-import org.springframework.ide.vscode.boot.java.rewrite.RewriteRefactorings.Data;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.Quickfix.QuickfixData;
@@ -47,9 +46,9 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemC
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblem;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblemImpl;
-import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeSpringJavaProblemDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.java.FixAssistMarker;
+import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.java.ORAstUtils;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -115,13 +114,15 @@ public class RewriteReconciler implements JavaReconciler {
 		ProblemType problemType = recipeFixDescriptor.getProblemType();
 		ReconcileProblemImpl problem = new ReconcileProblemImpl(problemType, problemType.getLabel(), range.getStart().getOffset(), range.getEnd().getOffset() - range.getStart().getOffset());
 		QuickfixType quickfixType = quickfixRegistry.getQuickfixType(RewriteRefactorings.REWRITE_RECIPE_QUICKFIX);
-		if (quickfixType != null && m.getRecipeId() != null && recipeRepo.getRecipe(recipeFixDescriptor.getRecipeId()).isPresent()) {
-			for (RecipeScope s : recipeFixDescriptor.getScopes()) {
-				problem.addQuickfix(new QuickfixData<>(
-						quickfixType,
-						new Data(m.getRecipeId(), doc.getUri(), s, m.getScope(), m.getParameters()),
-						recipeFixDescriptor.getLabel(s)
-				));
+		if (quickfixType != null) {
+			for (FixDescriptor f : m.getFixes()) {
+				if (recipeRepo.getRecipe(f.getRecipeId()) != null) {
+					problem.addQuickfix(new QuickfixData<>(
+							quickfixType,
+							f,
+							f.getLabel()
+					));
+				}
 			}
 		}
 		return problem;
@@ -137,19 +138,21 @@ public class RewriteReconciler implements JavaReconciler {
 				List<RecipeSpringJavaProblemDescriptor> descriptors = getProblemRecipeDescriptors(project);
 	
 				JavaParser javaParser = ORAstUtils.createJavaParser(project);
-				List<CompilationUnit> cus = ORAstUtils.parseInputs(javaParser, docs.stream().map(d -> new Parser.Input(Path.of(d.getUri()), () -> {
-					return new ByteArrayInputStream(d.get().getBytes());
-				})).collect(Collectors.toList()));
-				
-				if (!descriptors.isEmpty()) {
+				if (javaParser != null) {
+					List<CompilationUnit> cus = ORAstUtils.parseInputs(javaParser, docs.stream().map(d -> new Parser.Input(Path.of(d.getUri()), () -> {
+						return new ByteArrayInputStream(d.get().getBytes());
+					})).collect(Collectors.toList()));
 					
-					for(int i = 0; i < cus.size(); i++) {
-						final IDocument doc = docs.get(i);
-						List<ReconcileProblem> problems = new ArrayList<>();						
-						collectProblems(descriptors, doc, cus.get(i), problems::add);
-						if (!problems.isEmpty()) {
-							allProblems.put(doc, problems);
-						}	
+					if (!descriptors.isEmpty()) {
+						
+						for(int i = 0; i < cus.size(); i++) {
+							final IDocument doc = docs.get(i);
+							List<ReconcileProblem> problems = new ArrayList<>();						
+							collectProblems(descriptors, doc, cus.get(i), problems::add);
+							if (!problems.isEmpty()) {
+								allProblems.put(doc, problems);
+							}	
+						}
 					}
 				}
 			} catch (Exception e) {

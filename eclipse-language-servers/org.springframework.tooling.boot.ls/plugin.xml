@@ -344,11 +344,11 @@
    <extension
          point="org.eclipse.ui.quickAccess">
       <computer
-            class="org.springframework.tooling.boot.ls.commands.RewriteCommandsQuickAccessProvider"
+            class="org.springframework.tooling.boot.ls.commands.LiveProcessCommandsQuickAccessProvider"
             name="Spring - Live Process Information"
             requiresUIAccess="false"/>
       <computer
-            class="org.springframework.tooling.boot.ls.QuickAccessComputer1"
+            class="org.springframework.tooling.boot.ls.commands.RewriteCommandsQuickAccessProvider"
             name="Spring - Rewrite Recipes">
       </computer>
    </extension>

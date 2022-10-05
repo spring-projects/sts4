@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 
 import org.openrewrite.Cursor;
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.SourceFile;
 import org.openrewrite.Tree;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaVisitor;
@@ -36,6 +37,7 @@ import org.springframework.ide.vscode.commons.rewrite.config.RecipeCodeActionDes
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
 import org.springframework.ide.vscode.commons.rewrite.java.AnnotationHierarchies;
 import org.springframework.ide.vscode.commons.rewrite.java.FixAssistMarker;
+import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.java.ORAstUtils;
 
 public class AutowiredFieldIntoConstructorParameterCodeAction implements RecipeCodeActionDescriptor {
@@ -43,21 +45,6 @@ public class AutowiredFieldIntoConstructorParameterCodeAction implements RecipeC
 	private static final String LABEL = "Convert @Autowired field into Constructor Parameter";
 	private static final String ID = "org.springframework.ide.vscode.commons.rewrite.java.ConvertAutowiredFieldIntoConstructorParameter";
 	private static final String AUTOWIRED = "org.springframework.beans.factory.annotation.Autowired";
-
-	@Override
-	public String getRecipeId() {
-		return ID;
-	}
-
-	@Override
-	public String getLabel(RecipeScope s) {
-		return RecipeCodeActionDescriptor.buildLabel(LABEL, s);
-	}
-
-	@Override
-	public RecipeScope[] getScopes() {
-		return new RecipeScope[] { RecipeScope.NODE };
-	}
 
 	@Override
 	public JavaVisitor<ExecutionContext> getMarkerVisitor(ApplicationContext applicationContext) {
@@ -76,10 +63,14 @@ public class AutowiredFieldIntoConstructorParameterCodeAction implements RecipeC
 					if (fqType != null && isApplicableType(fqType)) {
 						List<MethodDeclaration> constructors = ORAstUtils.getMethods(classDeclaration).stream().filter(c -> c.isConstructor()).limit(2).collect(Collectors.toList());
 						String fieldName = multiVariable.getVariables().get(0).getSimpleName();
+						String uri = getCursor().firstEnclosing(SourceFile.class).getSourcePath().toUri().toString();
 						FixAssistMarker marker = new FixAssistMarker(Tree.randomId(), getId())
-								.withRecipeId(getRecipeId())
-								.withScope(classDeclaration.getMarkers().findFirst(Range.class).get())
-								.withParameters(Map.of("classFqName", fqType.getFullyQualifiedName(), "fieldName", fieldName));
+								.withFix(
+									new FixDescriptor(ID, List.of(uri), LABEL)
+										.withRangeScope(classDeclaration.getMarkers().findFirst(Range.class).get())
+										.withParameters(Map.of("classFqName", fqType.getFullyQualifiedName(), "fieldName", fieldName))
+										.withRecipeScope(RecipeScope.NODE)
+								);
 						if (constructors.size() == 0) {
 							m = m.withMarkers(m.getMarkers().add(marker));							
 						} else if (constructors.size() == 1 && !AutowiredFieldIntoConstructorParameterVisitor.isConstructorInitializingField(constructors.get(0), fieldName)) {

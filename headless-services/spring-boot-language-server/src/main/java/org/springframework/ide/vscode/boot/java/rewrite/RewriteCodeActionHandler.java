@@ -12,10 +12,8 @@ package org.springframework.ide.vscode.boot.java.rewrite;
 
 import java.net.URI;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Objects;
 import java.util.stream.Collectors;
 
 import org.eclipse.lsp4j.CodeAction;
@@ -41,9 +39,8 @@ import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.util.LspClient;
 import org.springframework.ide.vscode.commons.languageserver.util.LspClient.Client;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeCodeActionDescriptor;
-import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
-import org.springframework.ide.vscode.commons.rewrite.config.RecipeSpringJavaProblemDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.java.FixAssistMarker;
+import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.util.text.IRegion;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -103,7 +100,6 @@ public class RewriteCodeActionHandler implements JavaCodeActionHandler {
 			
 			List<RecipeCodeActionDescriptor> descriptors = recipeRepo.getCodeActionRecipeDescriptors().stream()
 				// If Recipe not present - don't show quick assist as it won't be handled without the Rewrite recipe present	
-				.filter(d -> recipeRepo.getRecipe(d.getRecipeId()).isPresent())
 				.filter(d -> d.isApplicable(project))
 				.collect(Collectors.toList());
 
@@ -151,34 +147,20 @@ public class RewriteCodeActionHandler implements JavaCodeActionHandler {
 
 	private CodeAction[] createCodeActions(IDocument doc, FixAssistMarker m, J astNode) {
 		if (astNode != null) {
-			Range range = astNode.getMarkers().findFirst(Range.class).orElse(null);
-			RecipeCodeActionDescriptor descriptor = recipeRepo.getCodeActionRecipeDescriptor(m.getRecipeId());
-			if (descriptor != null && descriptor.getScopes() != null) {
-				// Fix descriptor code actions may have the overlapping scopes with assist descriptors. Quick fixes are provided separately hence overlapping scopes will produces duplicates quick assist.
-				// Therefore, need to compute recipe scopes that don't overlap with quick fix descriptor recipe scopes. 
-				RecipeSpringJavaProblemDescriptor fixDescriptor = recipeRepo.getProblemRecipeDescriptor(m.getDescriptorId());
-				return Arrays.stream(descriptor.getScopes())
-						.filter(s -> fixDescriptor == null || !Arrays.asList(fixDescriptor.getScopes()).contains(s))
-						.map(s -> createCodeActionFromScope(doc, descriptor, s, m, range))
-						.filter(Objects::nonNull)
-						.toArray(CodeAction[]::new);
-			}
+			return m.getFixes().stream()
+					.filter(d -> recipeRepo.getRecipe(d.getRecipeId()) != null)
+					.map(d -> createCodeActionFromScope(doc, d))
+					.toArray(CodeAction[]::new);
 		}
 		return new CodeAction[0];
 	}
 
-	private CodeAction createCodeActionFromScope(IDocument doc, RecipeCodeActionDescriptor descriptor,
-			RecipeScope s, FixAssistMarker m, Range range) {
+	private CodeAction createCodeActionFromScope(IDocument doc,
+			FixDescriptor d) {
 		CodeAction ca = new CodeAction();
 		ca.setKind(CodeActionKind.Refactor);
-		ca.setTitle(descriptor.getLabel(s));
-		ca.setData(new RewriteRefactorings.Data(
-				m.getRecipeId(),
-				doc.getUri(), 
-				s,
-				m.getScope() == null ? null : m.getScope(),
-				m.getParameters() == null ? Collections.emptyMap() : m.getParameters()
-		));
+		ca.setTitle(d.getLabel());
+		ca.setData(d);
 		return ca;
 	}
 	

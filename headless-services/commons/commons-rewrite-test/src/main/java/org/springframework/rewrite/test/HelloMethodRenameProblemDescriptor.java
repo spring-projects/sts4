@@ -10,7 +10,10 @@
  *******************************************************************************/
 package org.springframework.rewrite.test;
 
+import java.util.List;
+
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.SourceFile;
 import org.openrewrite.Tree;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaVisitor;
@@ -26,23 +29,12 @@ import org.springframework.ide.vscode.commons.rewrite.config.RecipeCodeActionDes
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeSpringJavaProblemDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.java.FixAssistMarker;
+import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
 
 public class HelloMethodRenameProblemDescriptor implements RecipeSpringJavaProblemDescriptor {
 
-	@Override
-	public String getRecipeId() {
-		return "org.springframework.rewrite.test.HelloMethodRenameRecipe";
-	}
-
-	@Override
-	public String getLabel(RecipeScope s) {
-		return RecipeCodeActionDescriptor.buildLabel("Switch hello method into bye", s);
-	}
-
-	@Override
-	public RecipeScope[] getScopes() {
-		return RecipeScope.values();
-	}
+	private static final String LABEL = "Switch hello method into bye";
+	private static final String RECIPE_ID = "org.springframework.rewrite.test.HelloMethodRenameRecipe";
 
 	@Override
 	public JavaVisitor<ExecutionContext> getMarkerVisitor(ApplicationContext applicationContext) {
@@ -52,7 +44,17 @@ public class HelloMethodRenameProblemDescriptor implements RecipeSpringJavaProbl
 			public MethodDeclaration visitMethodDeclaration(MethodDeclaration method, ExecutionContext p) {
 				MethodDeclaration m = super.visitMethodDeclaration(method, p);
 				if ("hello".equals(method.getSimpleName())) {
-					FixAssistMarker marker = new FixAssistMarker(Tree.randomId(), getId()).withRecipeId(getRecipeId()).withScope(m.getMarkers().findFirst(Range.class).get());
+					String uri = getCursor().firstEnclosing(SourceFile.class).getSourcePath().toUri().toString();
+					FixAssistMarker marker = new FixAssistMarker(Tree.randomId(), getId())
+							.withFixes(
+									new FixDescriptor(RECIPE_ID, List.of(uri), RecipeCodeActionDescriptor.buildLabel(LABEL, RecipeScope.NODE))
+										.withRecipeScope(RecipeScope.NODE)
+										.withRangeScope(m.getMarkers().findFirst(Range.class).get()),
+									new FixDescriptor(RECIPE_ID, List.of(uri), RecipeCodeActionDescriptor.buildLabel(LABEL, RecipeScope.FILE))
+										.withRecipeScope(RecipeScope.FILE),
+									new FixDescriptor(RECIPE_ID, List.of(uri), RecipeCodeActionDescriptor.buildLabel(LABEL, RecipeScope.PROJECT))
+										.withRecipeScope(RecipeScope.PROJECT)
+							);
 					m = m.withName(m.getName().withMarkers(m.getName().getMarkers().add(marker)));
 				}
 				return m;
