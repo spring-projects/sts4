@@ -87,8 +87,6 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 	private static final Logger log = LoggerFactory.getLogger(RewriteRecipeRepository.class);
 	private static final String WORKSPACE_EXECUTE_COMMAND = "workspace/executeCommand";
 	
-	private static final String RECIPES_LOADING_PROGRESS = "loading-rewrite-recipes";
-
 	final private SimpleLanguageServer server;
 	
 	final private Map<String, Recipe> recipes;
@@ -166,8 +164,9 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 	}
 	
 	private synchronized void loadRecipes() {
+		String taskId = UUID.randomUUID().toString();
 		try {
-			server.getProgressService().progressBegin(RECIPES_LOADING_PROGRESS, "Loading Rewrite Recipes", null);
+			server.getProgressService().progressBegin(taskId, "Loading Rewrite Recipes", null);
 			log.info("Loading Rewrite Recipes...");
 			StsEnvironment env = createRewriteEnvironment();
 			for (Recipe r : env.listRecipes()) {
@@ -198,7 +197,7 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 		} catch (Throwable t) {
 			log.error("", t);
 		} finally {
-			server.getProgressService().progressDone(RECIPES_LOADING_PROGRESS);
+			server.getProgressService().progressDone(taskId);
 		}
 	}
 	

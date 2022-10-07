@@ -47,6 +47,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
+import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 public class ORAstUtils {
@@ -236,7 +237,11 @@ public class ORAstUtils {
 			jp.setClasspath(classpath);
 			return jp;
 		} catch (Exception e) {
-			log.error("{}", e);
+			if (isExceptionFromInterrupedThread(e)) {
+				log.debug("", e);
+			} else {
+				log.error("{}", e);
+			}
 			return null;
 		}
 	}
@@ -293,16 +298,10 @@ public class ORAstUtils {
 	}
 	
 	private static void logExceptionWhileParsing(Throwable t) {
-		if (!(t instanceof JavaParsingException || t instanceof StringIndexOutOfBoundsException)) {
-			if (t instanceof RuntimeException) {
-				RuntimeException re = (RuntimeException) t;
-				if (re.getCause() instanceof ClosedByInterruptException) {
-					// Parse or scan interrupted
-					log.debug("", t);
-					return;
-				}
-			}
+		if (t instanceof JavaParsingException || t instanceof StringIndexOutOfBoundsException || isExceptionFromInterrupedThread(t)) {
 			// Do not log parse exceptions. Can be too many while user is typing code
+			log.debug("", t);
+		} else {
 			log.error("", t);
 		}
 	}
@@ -405,6 +404,19 @@ public class ORAstUtils {
     		};
     	}	
     }
-
+    
+	public static boolean isExceptionFromInterrupedThread(Throwable t) {
+		if (ExceptionUtil.getDeepestCause(t) instanceof InterruptedException) {
+			return true;
+		}
+		if (t instanceof RuntimeException && "Relative paths only".equals(t.getMessage())) {
+			return true;
+		}
+		if (ExceptionUtil.getDeepestCause(t) instanceof ClosedByInterruptException) {
+			return true;
+		}	
+		return false;
+	}
+	
 
 }

@@ -90,12 +90,16 @@ public class RewriteReconciler implements JavaReconciler {
 				}
 			}			
 		} catch (Exception e) {
-			log.error("", e);
+			if (ORAstUtils.isExceptionFromInterrupedThread(e)) {
+				log.debug("", e);
+			} else {
+				log.error("", e);
+			}
 		} finally {
 			problemCollector.endCollecting();
 		}		
 	}
-
+	
 	private List<ReconcileProblem> createProblems(IDocument doc, FixAssistMarker m, J astNode) {
 		if (astNode != null) {
 			Range range = astNode.getMarkers().findFirst(Range.class).orElse(null);
@@ -156,7 +160,11 @@ public class RewriteReconciler implements JavaReconciler {
 					}
 				}
 			} catch (Exception e) {
-				log.error("", e);
+				if (ORAstUtils.isExceptionFromInterrupedThread(e)) {
+					log.debug("", e);
+				} else {
+					log.error("", e);
+				}
 			}
 		}
 		return allProblems;
