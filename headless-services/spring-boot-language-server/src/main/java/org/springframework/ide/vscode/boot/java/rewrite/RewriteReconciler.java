@@ -12,7 +12,7 @@ package org.springframework.ide.vscode.boot.java.rewrite;
 
 import java.io.ByteArrayInputStream;
 import java.net.URI;
-import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -139,7 +139,7 @@ public class RewriteReconciler implements JavaReconciler {
 	
 				JavaParser javaParser = ORAstUtils.createJavaParser(project);
 				if (javaParser != null) {
-					List<CompilationUnit> cus = ORAstUtils.parseInputs(javaParser, docs.stream().map(d -> new Parser.Input(Path.of(d.getUri()), () -> {
+					List<CompilationUnit> cus = ORAstUtils.parseInputs(javaParser, docs.stream().map(d -> new Parser.Input(Paths.get(URI.create(d.getUri())), () -> {
 						return new ByteArrayInputStream(d.get().getBytes());
 					})).collect(Collectors.toList()));
 					

@@ -24,6 +24,7 @@ import org.eclipse.lsp4j.WorkspaceSymbol;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.handlers.AbstractSymbolProvider;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
@@ -64,8 +65,14 @@ public class ComponentSymbolProvider extends AbstractSymbolProvider {
 		WorkspaceSymbol symbol = new WorkspaceSymbol(
 				beanLabel("+", annotationTypeName, metaAnnotationNames, beanName, beanType.getName()), SymbolKind.Interface,
 				Either.forLeft(new Location(doc.getUri(), doc.toRange(node.getStartPosition(), node.getLength()))));
-
-		SymbolAddOnInformation[] addon = new SymbolAddOnInformation[] {new BeansSymbolAddOnInformation(beanName, beanType.getQualifiedName())};
+		
+		SymbolAddOnInformation[] addon = new SymbolAddOnInformation[0];
+		if (Annotations.CONFIGURATION.equals(annotationType.getQualifiedName())
+				|| metaAnnotations.stream().anyMatch(t -> Annotations.CONFIGURATION.equals(t.getQualifiedName()))) {
+			addon = new SymbolAddOnInformation[] {new ConfigBeanSymbolAddOnInformation(beanName, beanType.getQualifiedName())};
+		} else {
+			addon = new SymbolAddOnInformation[] {new BeansSymbolAddOnInformation(beanName, beanType.getQualifiedName())};
+		}
 
 		return new EnhancedSymbolInformation(symbol, addon);
 	}

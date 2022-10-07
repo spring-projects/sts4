@@ -549,6 +549,11 @@ public class SpringSymbolIndex implements InitializingBean {
 			.map(enhanced -> enhanced.getSymbol());
 	}
 	
+	public List<EnhancedSymbolInformation> getEnhancedSymbols(IJavaProject project) {
+		List<EnhancedSymbolInformation> list = symbolsByProject.get(project.getElementName());
+		return list == null ? Collections.emptyList() : Collections.unmodifiableList(list);
+	}
+	
 	synchronized private CompletableFuture<IJavaProject> projectInitializedFuture(IJavaProject project) {
 		if (project == null) {
 			return CompletableFuture.completedFuture(null);

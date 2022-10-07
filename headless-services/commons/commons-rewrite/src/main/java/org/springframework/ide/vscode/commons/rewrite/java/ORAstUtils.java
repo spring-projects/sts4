@@ -11,7 +11,6 @@
 package org.springframework.ide.vscode.commons.rewrite.java;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -232,7 +231,7 @@ public class ORAstUtils {
 	
 	public static JavaParser createJavaParser(IJavaProject project) {
 		try {
-			List<Path> classpath = IClasspathUtil.getBinaryClasspathEntries(project).stream().map(s -> new File(s).toPath()).collect(Collectors.toList());
+			List<Path> classpath = IClasspathUtil.getAllBinaryRoots(project.getClasspath()).stream().map(f -> f.toPath()).collect(Collectors.toList());
 			JavaParser jp = JavaParser.fromJavaVersion().build();
 			jp.setClasspath(classpath);
 			return jp;
