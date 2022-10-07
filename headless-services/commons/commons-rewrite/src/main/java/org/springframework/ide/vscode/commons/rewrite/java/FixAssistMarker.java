@@ -24,7 +24,9 @@ public class FixAssistMarker implements Marker {
 	
 	private String descriptorId;
 	
-	private List<FixDescriptor> fixes = new ArrayList<>();;
+	private List<FixDescriptor> fixes = new ArrayList<>();
+	
+	private String label;
 	
 	public FixAssistMarker(UUID id, String descriptorId) {
 		super();
@@ -60,6 +62,15 @@ public class FixAssistMarker implements Marker {
 
 	public List<FixDescriptor> getFixes() {
 		return fixes;
+	}
+	
+	public FixAssistMarker withLabel(String label) {
+		this.label = label;
+		return this;
+	}
+	
+	public String getLabel() {
+		return label;
 	}
 
 	@Override

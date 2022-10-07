@@ -112,7 +112,7 @@ public class RewriteReconciler implements JavaReconciler {
 	private ReconcileProblemImpl createProblem(IDocument doc, RecipeSpringJavaProblemDescriptor recipeFixDescriptor,
 			FixAssistMarker m, Range range) {
 		ProblemType problemType = recipeFixDescriptor.getProblemType();
-		ReconcileProblemImpl problem = new ReconcileProblemImpl(problemType, problemType.getLabel(), range.getStart().getOffset(), range.getEnd().getOffset() - range.getStart().getOffset());
+		ReconcileProblemImpl problem = new ReconcileProblemImpl(problemType, m.getLabel() == null ? problemType.getLabel() : m.getLabel(), range.getStart().getOffset(), range.getEnd().getOffset() - range.getStart().getOffset());
 		QuickfixType quickfixType = quickfixRegistry.getQuickfixType(RewriteRefactorings.REWRITE_RECIPE_QUICKFIX);
 		if (quickfixType != null) {
 			for (FixDescriptor f : m.getFixes()) {

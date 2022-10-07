@@ -16,6 +16,7 @@ import org.springframework.ide.vscode.boot.java.rewrite.codeaction.AutowiredFiel
 import org.springframework.ide.vscode.boot.java.rewrite.codeaction.NoRequestMappingAnnotationCodeAction;
 import org.springframework.ide.vscode.boot.java.rewrite.reconcile.BeanMethodNotPublicProblem;
 import org.springframework.ide.vscode.boot.java.rewrite.reconcile.BeanPostProcessingIgnoreInAotProblem;
+import org.springframework.ide.vscode.boot.java.rewrite.reconcile.Boot3NotSupportedTypeProblem;
 import org.springframework.ide.vscode.boot.java.rewrite.reconcile.NoAutowiredOnConstructorProblem;
 import org.springframework.ide.vscode.boot.java.rewrite.reconcile.NotRegisteredBeansProblem;
 import org.springframework.ide.vscode.boot.java.rewrite.reconcile.PreciseBeanTypeProblem;
@@ -42,7 +43,8 @@ public class BootCodeActionRepository extends CodeActionRepository {
 				new UnnecessarySpringExtensionProblem(),
 				new PreciseBeanTypeProblem(),
 				new BeanPostProcessingIgnoreInAotProblem(),
-				new NotRegisteredBeansProblem()
+				new NotRegisteredBeansProblem(),
+				new Boot3NotSupportedTypeProblem()
 		);
 	}
 

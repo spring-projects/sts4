@@ -359,6 +359,18 @@
               "HINT",
               "ERROR"
             ]
+          },
+          "spring-boot.ls.problem.boot3.JAVA_TYPE_NOT_SUPPORTED": {
+            "type": "string",
+            "default": "ERROR",
+            "description": "Type no supported as of Spring Boot 3",
+            "enum": [
+              "IGNORE",
+              "INFO",
+              "WARNING",
+              "HINT",
+              "ERROR"
+            ]
           }
         }
       },

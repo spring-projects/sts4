@@ -66,6 +66,12 @@
         "label": "Not registered as a Bean",
         "description": "Not registered as Bean",
         "defaultSeverity": "WARNING"
+      },
+      {
+        "code": "JAVA_TYPE_NOT_SUPPORTED",
+        "label": "Type not supported as of Spring Boot 3",
+        "description": "Type no supported as of Spring Boot 3",
+        "defaultSeverity": "ERROR"
       }
     ]
   },

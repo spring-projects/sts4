@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java;
 
+import static org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity.ERROR;
 import static org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity.WARNING;
 
 import org.springframework.ide.vscode.boot.common.SpringProblemCategories;
@@ -27,7 +28,9 @@ public enum Boot3JavaProblemType implements ProblemType {
 	
 	JAVA_BEAN_POST_PROCESSOR_IGNORED_IN_AOT(WARNING, "'BeanPostProcessor' behaviour is ignored in Spring 6 AOT", "'BeanPostProcessor' behaviour is ignored in AOT"),
 	
-	JAVA_BEAN_NOT_REGISTERED_IN_AOT(WARNING, "Not registered as Bean", "Not registered as a Bean");
+	JAVA_BEAN_NOT_REGISTERED_IN_AOT(WARNING, "Not registered as Bean", "Not registered as a Bean"),
+	
+	JAVA_TYPE_NOT_SUPPORTED(ERROR, "Type no supported as of Spring Boot 3", "Type not supported as of Spring Boot 3");
 	
 	private final ProblemSeverity defaultSeverity;
 	private String description;
