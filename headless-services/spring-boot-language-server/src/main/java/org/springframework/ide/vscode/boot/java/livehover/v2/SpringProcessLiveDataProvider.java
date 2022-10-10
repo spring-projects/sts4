@@ -27,12 +27,16 @@ import org.springframework.ide.vscode.commons.util.Assert;
 public class SpringProcessLiveDataProvider {
 	
 	private final ConcurrentMap<String, SpringProcessLiveData> liveData;
+	private final ConcurrentMap<String, SpringProcessMemoryMetricsLiveData> memoryMetricsLiveData;
+	private final ConcurrentMap<String, SpringProcessGcPausesMetricsLiveData> gcPausesMetricsLiveData;
 	private final List<SpringProcessLiveDataChangeListener> listeners;
 	private final SimpleLanguageServer server;
 	
 	public SpringProcessLiveDataProvider(SimpleLanguageServer server) {
 		this.server = server;
 		this.liveData = new ConcurrentHashMap<>();
+		this.memoryMetricsLiveData = new ConcurrentHashMap<>();
+		this.gcPausesMetricsLiveData = new ConcurrentHashMap<>();
 		this.listeners = new CopyOnWriteArrayList<>();
 	}
 	
@@ -54,6 +58,22 @@ public class SpringProcessLiveDataProvider {
 		return oldData == null;
 	}
 	
+	public boolean addMemoryMetrics(String processKey, SpringProcessMemoryMetricsLiveData liveData) {
+		SpringProcessMemoryMetricsLiveData oldData = this.memoryMetricsLiveData.putIfAbsent(processKey, liveData);		
+		if (oldData == null) {
+			getClient().liveProcessMemoryMetricsDataUpdated(createProcessSummaryForMetrics(processKey, liveData.getProcessType().jsonName(),liveData.getProcessName(),liveData.getProcessID()));
+		}
+		return oldData == null;
+	}
+	
+	public boolean addGcPausesMetrics(String processKey, SpringProcessGcPausesMetricsLiveData liveData) {
+		SpringProcessGcPausesMetricsLiveData oldData = this.gcPausesMetricsLiveData.putIfAbsent(processKey, liveData);
+		if (oldData == null) {
+			getClient().liveProcessGcPausesMetricsDataUpdated(createProcessSummaryForMetrics(processKey, liveData.getProcessType().jsonName(),liveData.getProcessName(),liveData.getProcessID()));
+		}
+		return oldData == null;
+	}
+
 	private STS4LanguageClient getClient() {
 		STS4LanguageClient client = server.getClient();
 		Assert.isLegal(client!=null, "Client is null. Language server not yet initialized?");
@@ -72,6 +92,16 @@ public class SpringProcessLiveDataProvider {
 		this.liveData.put(processKey, liveData);
 		announceChangedLiveData();
 		getClient().liveProcessDataUpdated(createProcessSummary(processKey, liveData));
+	}
+	
+	public void updateMemoryMetrics(String processKey, SpringProcessMemoryMetricsLiveData liveData) {
+		this.memoryMetricsLiveData.put(processKey, liveData);
+		getClient().liveProcessMemoryMetricsDataUpdated(createProcessSummaryForMetrics(processKey, liveData.getProcessType().jsonName(),liveData.getProcessName(),liveData.getProcessID()));
+	}
+	
+	public void updateGcPausesMetrics(String processKey, SpringProcessGcPausesMetricsLiveData liveData) {
+		this.gcPausesMetricsLiveData.put(processKey, liveData);
+		getClient().liveProcessGcPausesMetricsDataUpdated(createProcessSummaryForMetrics(processKey, liveData.getProcessType().jsonName(),liveData.getProcessName(),liveData.getProcessID()));
 	}
 	
 	public void addLiveDataChangeListener(SpringProcessLiveDataChangeListener listener) {
@@ -93,6 +123,14 @@ public class SpringProcessLiveDataProvider {
 	public SpringProcessLiveData getCurrent(String processKey) {
 		return this.liveData.get(processKey);
 	}
+	
+	public SpringProcessMemoryMetricsLiveData getMemoryMetrics(String processKey) {
+		return this.memoryMetricsLiveData.get(processKey);
+	}
+	
+	public SpringProcessGcPausesMetricsLiveData getGcPausesMetrics(String processKey) {
+		return this.gcPausesMetricsLiveData.get(processKey);
+	}
 
 	public static LiveProcessSummary createProcessSummary(String processKey, SpringProcessLiveData liveData) {
 		LiveProcessSummary p = new LiveProcessSummary();
@@ -100,6 +138,16 @@ public class SpringProcessLiveDataProvider {
 		p.setProcessKey(processKey);
 		p.setProcessName(liveData.getProcessName());
 		p.setPid(liveData.getProcessID());
+		return p;
+	}
+	
+	public static LiveProcessSummary createProcessSummaryForMetrics(String processKey, String processType, String processName,
+			String processID) {
+		LiveProcessSummary p = new LiveProcessSummary();
+		p.setType(processType);
+		p.setProcessKey(processKey);
+		p.setProcessName(processName);
+		p.setPid(processID);
 		return p;
 	}
 

@@ -45,6 +45,12 @@ public interface STS4LanguageClient extends LanguageClient {
 
 	@JsonNotification("sts/liveprocess/updated")
 	void liveProcessDataUpdated(LiveProcessSummary processKey);
+	
+	@JsonNotification("sts/liveprocess/memory/metrics/updated")
+	void liveProcessMemoryMetricsDataUpdated(LiveProcessSummary processKey);
+	
+	@JsonNotification("sts/liveprocess/gcpauses/metrics/updated")
+	void liveProcessGcPausesMetricsDataUpdated(LiveProcessSummary processKey);
 
 	@JsonNotification("sts/highlight")
 	void highlight(HighlightParams highlights);

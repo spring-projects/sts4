@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.lang.management.ManagementFactory;
 import java.lang.management.RuntimeMXBean;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.List;
@@ -36,6 +37,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -95,6 +97,8 @@ public class SpringProcessLiveDataExtractorOverJMX {
 			LiveBeansModel beans = getBeans(connection, domain);
 			LiveMetricsModel metrics = getMetrics(connection, domain);
 			StartupMetricsModel startup = getStartupMetrics(connection, domain, currentData == null ? null : currentData.getStartupMetrics());
+//			LiveMemoryMetricsModel[] memoryMetrics = getLiveMemoryMetrics(connection, domain);
+//			LiveMemoryMetricsModel gcPausesMetrics = getGcPausesMetrics(connection, domain);
 			
 			if (contextPath == null) {
 				contextPath = getContextPath(connection, domain, environment);
@@ -118,10 +122,115 @@ public class SpringProcessLiveDataExtractorOverJMX {
 					conditionals,
 					properties,
 					metrics,
-					startup);
+					startup
+//					memoryMetrics,
+//					gcPausesMetrics
+					);
 		}
 		catch (Exception e) {
 			log.error("error reading live data from: " + processID + " - " + processName, e);
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * @param processType 
+	 * @param processID if null, will be determined searching existing mbeans for that information (for remote processes via platform beans runtime name)
+	 * @param processName if null, will be determined searching existing mbeans for that information (for remote processes inferring the java command from the system properties)
+	 * @param currentData currently stored live data
+	 * @param metricName 
+	 */
+	public SpringProcessMemoryMetricsLiveData retrieveLiveMemoryMetricsData(ProcessType processType, JMXConnector jmxConnector, String processID, String processName,
+			 SpringProcessLiveData currentData, String metricName) {
+		
+		List<String> memoryTags = Arrays.asList( "jvm.memory.used", "jvm.memory.committed", "jvm.memory.max");	
+		
+		try {
+			MBeanServerConnection connection = jmxConnector.getMBeanServerConnection();
+			List<LiveMemoryMetricsModel> memoryMetricsList = new ArrayList<>();
+			String domain = getDomainForActuator(connection);
+			
+			if (processID == null) {
+				processID = getProcessID(connection);
+			}
+			
+			if (processName == null) {
+				Properties systemProperties = getSystemProperties(connection);
+				if (systemProperties != null) {
+					String javaCommand = getJavaCommand(systemProperties);
+					processName = getProcessName(javaCommand);
+				}
+			}
+			
+//			if(metricName.equals("memory")) {
+				for(String metric : memoryTags) {
+					LiveMemoryMetricsModel metrics = getLiveMetrics(connection, domain, metric);
+					if(metrics != null) {
+						memoryMetricsList.add(metrics);
+					}
+				}
+				
+//			}
+
+			LiveMemoryMetricsModel[] res = (LiveMemoryMetricsModel[]) memoryMetricsList.toArray(new LiveMemoryMetricsModel[memoryMetricsList.size()]);
+			return new SpringProcessMemoryMetricsLiveData(
+					processType,
+					processName,
+					processID,
+					res
+					);
+		}
+		catch (Exception e) {
+			log.error("error reading live metrics data from: " + processID + " - " + processName, e);
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * @param processType 
+	 * @param processID if null, will be determined searching existing mbeans for that information (for remote processes via platform beans runtime name)
+	 * @param processName if null, will be determined searching existing mbeans for that information (for remote processes inferring the java command from the system properties)
+	 * @param currentData currently stored live data
+	 * @param metricName 
+	 */
+	public SpringProcessGcPausesMetricsLiveData retrieveLiveGcPausesMetricsData(ProcessType processType, JMXConnector jmxConnector, String processID, String processName,
+			 SpringProcessLiveData currentData, String metricName) {
+				
+		try {
+			MBeanServerConnection connection = jmxConnector.getMBeanServerConnection();
+			List<LiveMemoryMetricsModel> memoryMetricsList = new ArrayList<>();
+			String domain = getDomainForActuator(connection);
+			
+			if (processID == null) {
+				processID = getProcessID(connection);
+			}
+			
+			if (processName == null) {
+				Properties systemProperties = getSystemProperties(connection);
+				if (systemProperties != null) {
+					String javaCommand = getJavaCommand(systemProperties);
+					processName = getProcessName(javaCommand);
+				}
+			}
+			
+			LiveMemoryMetricsModel metrics = getLiveMetrics(connection, domain, "jvm.gc.pause");
+			if(metrics != null) {
+				memoryMetricsList.add(getLiveMetrics(connection, domain, "jvm.gc.pause"));
+			}
+			
+
+			LiveMemoryMetricsModel[] res = (LiveMemoryMetricsModel[]) memoryMetricsList.toArray(new LiveMemoryMetricsModel[memoryMetricsList.size()]);
+			return new SpringProcessGcPausesMetricsLiveData(
+					processType,
+					processName,
+					processID,
+					res
+					);
+		}
+		catch (Exception e) {
+			log.error("error reading live metrics data from: " + processID + " - " + processName, e);
 		}
 		
 		return null;
@@ -256,6 +365,31 @@ public class SpringProcessLiveDataExtractorOverJMX {
 			log.error("Error parsing beans", e);
 		}
 		return LiveBeansModel.builder().build();
+	}
+	
+	
+	public LiveMemoryMetricsModel getLiveMetrics(MBeanServerConnection connection, String domain, String metricName) {
+		
+		List<Object> tags = new ArrayList<>();		
+		Object[] params1 = new Object[] {metricName, tags};
+		String[] signature =  new String[] {String.class.getName(), List.class.getName()};
+		
+		try {
+			Object metricsData = getActuatorDataFromOperation(connection,
+					getObjectName(domain, "type=Endpoint,name=Metrics"), 
+					"metric", 
+					params1, 
+					signature);
+			if (metricsData instanceof String) {
+				return gson.fromJson((String)metricsData, LiveMemoryMetricsModel.class);
+			} else if(metricsData != null){
+				ObjectMapper mapper = new ObjectMapper();
+				return mapper.convertValue(metricsData, LiveMemoryMetricsModel.class);
+			}
+		} catch (Exception e) {
+			log.error("", e);
+		}
+		return null;	
 	}
 
 	protected Object getBeansFromNonBootMBean(MBeanServerConnection connection) throws Exception {
