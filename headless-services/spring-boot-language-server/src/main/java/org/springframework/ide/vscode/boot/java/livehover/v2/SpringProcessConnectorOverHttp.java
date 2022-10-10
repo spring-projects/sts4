@@ -102,4 +102,18 @@ public class SpringProcessConnectorOverHttp implements SpringProcessConnector {
 	public String toString() {
 		return "SpringProcessConnectorOverHttp [actuatorURL=" + actuatorUrl + "]";
 	}
+
+	@Override
+	public SpringProcessGcPausesMetricsLiveData refreshGcPausesMetrics(SpringProcessLiveData current, String metricName)
+			throws Exception {
+		return null;
+	}
+
+	@Override
+	public SpringProcessMemoryMetricsLiveData refreshMemoryMetrics(SpringProcessLiveData current, String metricName)
+			throws Exception {
+		return null;
+	}
+
+	
 }

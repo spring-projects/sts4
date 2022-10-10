@@ -147,6 +147,52 @@ public class SpringProcessConnectorOverJMX implements SpringProcessConnector {
 		
 		throw new Exception("no live data received, lets try again");
 	}
+	
+	@Override
+	public SpringProcessMemoryMetricsLiveData refreshMemoryMetrics(SpringProcessLiveData currentData, String metricName) throws Exception {
+		log.info("try to open JMX connection to: " + jmxURL);
+		
+		if (jmxConnection != null) {
+			try {
+				SpringProcessLiveDataExtractorOverJMX springJMXConnector = new SpringProcessLiveDataExtractorOverJMX();
+	
+				log.info("retrieve live data from: " + jmxURL);
+				SpringProcessMemoryMetricsLiveData liveData = springJMXConnector.retrieveLiveMemoryMetricsData(getProcessType(), jmxConnection, processID, processName, currentData, metricName);
+				
+				if (liveData != null && liveData.getMemoryMetrics() != null && liveData.getMemoryMetrics().length > 0) {
+					return liveData;
+				}
+			}
+			catch (Exception e) {
+				log.error("exception while connecting to jmx: " + jmxURL, e);
+			}
+		}
+		
+		throw new Exception("no live data received, lets try again");
+	}
+	
+	@Override
+	public SpringProcessGcPausesMetricsLiveData refreshGcPausesMetrics(SpringProcessLiveData currentData, String metricName) throws Exception {
+		log.info("try to open JMX connection to: " + jmxURL);
+		
+		if (jmxConnection != null) {
+			try {
+				SpringProcessLiveDataExtractorOverJMX springJMXConnector = new SpringProcessLiveDataExtractorOverJMX();
+	
+				log.info("retrieve live data from: " + jmxURL);
+				SpringProcessGcPausesMetricsLiveData liveData = springJMXConnector.retrieveLiveGcPausesMetricsData(getProcessType(), jmxConnection, processID, processName, currentData, metricName);
+				
+				if (liveData != null && liveData.getGcPausesMetrics() != null && liveData.getGcPausesMetrics().length > 0) {
+					return liveData;
+				}
+			}
+			catch (Exception e) {
+				log.error("exception while connecting to jmx: " + jmxURL, e);
+			}
+		}
+		
+		throw new Exception("no live data received, lets try again");
+	}
 
 	@Override
 	public void disconnect() throws Exception {

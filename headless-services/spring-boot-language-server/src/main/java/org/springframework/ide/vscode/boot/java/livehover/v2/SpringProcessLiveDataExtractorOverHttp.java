@@ -76,6 +76,8 @@ public class SpringProcessLiveDataExtractorOverHttp {
 			LiveBeansModel beans = getBeans(connection);
 			LiveMetricsModel metrics = getMetrics(connection);
 			StartupMetricsModel startup = getStartupMetrics(connection, currentData == null ? null : currentData.getStartupMetrics());
+//			LiveMemoryMetricsModel[] memoryMetrics = getMemoryMetrics(connection);
+//			LiveMemoryMetricsModel gcPausesMetrics = getGcPausesMetrics(connection);
 			
 			if (contextPath == null) {
 				contextPath = getContextPath(environment);
@@ -99,7 +101,10 @@ public class SpringProcessLiveDataExtractorOverHttp {
 					conditionals,
 					properties,
 					metrics,
-					startup);
+					startup
+					);
+//					memoryMetrics,
+//					gcPausesMetrics);
 		}
 		catch (Exception e) {
 			log.error("error reading live data from: " + processID + " - " + processName, e);

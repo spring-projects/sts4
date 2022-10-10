@@ -99,7 +99,7 @@ public class SpringProcessConnectorService {
 		}
 	}
 	
-	public void refreshProcess(String processKey) {
+	public void refreshProcess(String processKey, String endpoint, String metricName) {
 		log.info("refresh process: " + processKey);
 		
 		SpringProcessConnector connector = this.connectors.get(processKey);
@@ -109,12 +109,20 @@ public class SpringProcessConnectorService {
 
 			progressTask.progressBegin("Refresh", null);
 
-			scheduleRefresh(progressTask, processKey, connector, 0, TimeUnit.SECONDS, 0);
+			scheduleRefresh(progressTask, processKey, connector, 0, TimeUnit.SECONDS, 0, endpoint, metricName);
 		}
 	}
 
 	public SpringProcessLiveData getLiveData(String processKey) {
 		return this.liveDataProvider.getCurrent(processKey);
+	}
+	
+	public SpringProcessMemoryMetricsLiveData getMemoryMetricsLiveData(String processKey) {
+		return this.liveDataProvider.getMemoryMetrics(processKey);
+	}
+	
+	public SpringProcessGcPausesMetricsLiveData getGcPausesMetricsLiveData(String processKey) {
+		return this.liveDataProvider.getGcPausesMetrics(processKey);
 	}
 
 	public void disconnectProcess(String processKey) {
@@ -162,7 +170,9 @@ public class SpringProcessConnectorService {
 				connector.connect();
 				progressTask.progressDone();
 				
-				refreshProcess(processKey);
+				refreshProcess(processKey, "", "");
+				refreshProcess(processKey, "metrics", "memory");
+				refreshProcess(processKey, "metrics", "gcPauses");
 			}
 			catch (Exception e) {
 				log.info("problem occured during process connect", e);
@@ -210,7 +220,7 @@ public class SpringProcessConnectorService {
 		}, delay, unit);
 	}
 
-	private void scheduleRefresh(ProgressTask progressTask, String processKey, SpringProcessConnector connector, long delay, TimeUnit unit, int retryNo) {
+	private void scheduleRefresh(ProgressTask progressTask, String processKey, SpringProcessConnector connector, long delay, TimeUnit unit, int retryNo, String endpoint, String metricName) {
 		String progressMessage = "Refreshing data from Spring process: " + processKey + " - retry no: " + retryNo;
 		log.info(progressMessage);
 		
@@ -219,14 +229,38 @@ public class SpringProcessConnectorService {
 			
 			try {
 				progressTask.progressEvent(progressMessage);
-				SpringProcessLiveData newLiveData = connector.refresh(this.liveDataProvider.getCurrent(processKey));
-
-				if (newLiveData != null) {
-					if (!this.liveDataProvider.add(processKey, newLiveData)) {
-						this.liveDataProvider.update(processKey, newLiveData);
+				if(endpoint.equals("metrics") && metricName.equals("memory")) {
+					SpringProcessMemoryMetricsLiveData newMetricsLiveData = connector.refreshMemoryMetrics(this.liveDataProvider.getCurrent(processKey), metricName);
+					
+					if (newMetricsLiveData != null) {
+						if (!this.liveDataProvider.addMemoryMetrics(processKey, newMetricsLiveData)) {
+							this.liveDataProvider.updateMemoryMetrics(processKey, newMetricsLiveData);
+						}
+						
+						this.connectedSuccess.put(processKey, true);
 					}
 					
-					this.connectedSuccess.put(processKey, true);
+				} else if(endpoint.equals("metrics") && metricName.equals("gcPauses")) {
+					SpringProcessGcPausesMetricsLiveData newMetricsLiveData = connector.refreshGcPausesMetrics(this.liveDataProvider.getCurrent(processKey), metricName);
+					
+					if (newMetricsLiveData != null) {
+						if (!this.liveDataProvider.addGcPausesMetrics(processKey, newMetricsLiveData)) {
+							this.liveDataProvider.updateGcPausesMetrics(processKey, newMetricsLiveData);
+						}
+						
+						this.connectedSuccess.put(processKey, true);
+					}
+					
+				} else {
+					SpringProcessLiveData newLiveData = connector.refresh(this.liveDataProvider.getCurrent(processKey));
+	
+					if (newLiveData != null) {
+						if (!this.liveDataProvider.add(processKey, newLiveData)) {
+							this.liveDataProvider.update(processKey, newLiveData);
+						}
+						
+						this.connectedSuccess.put(processKey, true);
+					}
 				}
 				progressTask.progressDone();
 			}
@@ -236,7 +270,7 @@ public class SpringProcessConnectorService {
 				
 				if (retryNo < maxRetryCount && isKnownProcessKey(processKey)) {
 					scheduleRefresh(progressTask, processKey, connector, retryDelayInSeconds, TimeUnit.SECONDS,
-							retryNo + 1);
+							retryNo + 1, endpoint, metricName);
 				}
 				else {
 					progressTask.progressDone();
