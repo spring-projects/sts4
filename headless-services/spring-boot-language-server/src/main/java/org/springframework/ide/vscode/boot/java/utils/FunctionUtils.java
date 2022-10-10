@@ -34,7 +34,7 @@ public class FunctionUtils {
 	public static final String FUNCTION_CONSUMER_TYPE = Consumer.class.getName();
 	public static final String FUNCTION_SUPPLIER_TYPE = Supplier.class.getName();
 
-	public static Tuple3<String, String, DocumentRegion> getFunctionBean(TypeDeclaration typeDeclaration, TextDocument doc) {
+	public static Tuple3<String, ITypeBinding, DocumentRegion> getFunctionBean(TypeDeclaration typeDeclaration, TextDocument doc) {
 		ITypeBinding resolvedType = typeDeclaration.resolveBinding();
 
 		if (resolvedType != null && !resolvedType.isInterface() && !isAbstractClass(typeDeclaration, resolvedType)) {
@@ -45,7 +45,7 @@ public class FunctionUtils {
 		}
 	}
 
-	private static Tuple3<String, String, DocumentRegion> getFunctionBean(TypeDeclaration typeDeclaration, TextDocument doc,
+	private static Tuple3<String, ITypeBinding, DocumentRegion> getFunctionBean(TypeDeclaration typeDeclaration, TextDocument doc,
 			ITypeBinding resolvedType) {
 
 		ITypeBinding[] interfaces = resolvedType.getInterfaces();
@@ -61,13 +61,12 @@ public class FunctionUtils {
 			if (FUNCTION_FUNCTION_TYPE.equals(simplifiedType) || FUNCTION_CONSUMER_TYPE.equals(simplifiedType)
 					|| FUNCTION_SUPPLIER_TYPE.equals(simplifiedType)) {
 				String beanName = getBeanName(typeDeclaration);
-				String beanType = resolvedInterface.getName();
 				DocumentRegion region = ASTUtils.nodeRegion(doc, typeDeclaration.getName());
 
-				return Tuples.of(beanName, beanType, region);
+				return Tuples.of(beanName, resolvedInterface, region);
 			}
 			else {
-				Tuple3<String, String, DocumentRegion> result = getFunctionBean(typeDeclaration, doc, resolvedInterface);
+				Tuple3<String, ITypeBinding, DocumentRegion> result = getFunctionBean(typeDeclaration, doc, resolvedInterface);
 				if (result != null) {
 					return result;
 				}

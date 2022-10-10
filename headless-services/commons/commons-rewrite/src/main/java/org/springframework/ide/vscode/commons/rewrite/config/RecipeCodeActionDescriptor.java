@@ -12,17 +12,16 @@ package org.springframework.ide.vscode.commons.rewrite.config;
 
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.java.JavaVisitor;
+import org.springframework.context.ApplicationContext;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 
 public interface RecipeCodeActionDescriptor {
 	
-	String getRecipeId();
+	default String getId() {
+		return getClass().getName();
+	}
 	
-	String getLabel(RecipeScope s);
-	
-	RecipeScope[] getScopes();
-	
-	JavaVisitor<ExecutionContext> getMarkerVisitor();
+	JavaVisitor<ExecutionContext> getMarkerVisitor(ApplicationContext applicationContext);
 	
 	boolean isApplicable(IJavaProject project);
 

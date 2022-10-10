@@ -98,14 +98,14 @@ resources:
     paths:
     - concourse/tasks
     private_key: ((rsa_id))
-- name: s3-headless-maven-out
-  type: s3
-  source:
-    bucket: ((s3_bucket))
-    access_key_id: ((s3_accesskey))
-    secret_access_key: ((s3_secretkey))
-    region_name: ((s3_region))
-    regexp: sts4/snapshots/headless-maven-out-(.*).tar.gz
+# - name: s3-headless-maven-out
+#   type: s3
+#   source:
+#     bucket: ((s3_bucket))
+#     access_key_id: ((s3_accesskey))
+#     secret_access_key: ((s3_secretkey))
+#     region_name: ((s3_region))
+#     regexp: sts4/snapshots/headless-maven-out-(.*).tar.gz
 - name: s3-concourse-vsix-snapshot
   type: s3
   source:
@@ -167,14 +167,14 @@ resources:
     secret_access_key: ((s3_secretkey))
     #region_name: ((s3_region))
     regexp: release/STS4/vscode/vscode-spring-boot-(.*).vsix
-- name: s3-manifest-yaml-fatjar-snapshot
-  type: s3
-  source:
-    bucket: ((s3_bucket))
-    access_key_id: ((s3_accesskey))
-    secret_access_key: ((s3_secretkey))
-    region_name: ((s3_region))
-    regexp: sts4/fatjars/snapshots/manifest-yaml-language-server-(.*).jar
+# - name: s3-manifest-yaml-fatjar-snapshot
+#   type: s3
+#   source:
+#     bucket: ((s3_bucket))
+#     access_key_id: ((s3_accesskey))
+#     secret_access_key: ((s3_secretkey))
+#     region_name: ((s3_region))
+#     regexp: sts4/fatjars/snapshots/manifest-yaml-language-server-(.*).jar
 # - name: s3-manifest-yaml-fatjar--rc
 #   type: s3
 #   source:
@@ -183,14 +183,14 @@ resources:
 #     secret_access_key: ((s3_prod_secretkey))
 #     region_name: ((s3_prod_region))
 #     regexp: release/STS4/fatjars/manifest-yaml-language-server-(.*).jar
-- name: s3-concourse-fatjar-snapshot
-  type: s3
-  source:
-    bucket: ((s3_bucket))
-    access_key_id: ((s3_accesskey))
-    secret_access_key: ((s3_secretkey))
-    region_name: ((s3_region))
-    regexp: sts4/fatjars/snapshots/concourse-language-server-(.*).jar
+# - name: s3-concourse-fatjar-snapshot
+#   type: s3
+#   source:
+#     bucket: ((s3_bucket))
+#     access_key_id: ((s3_accesskey))
+#     secret_access_key: ((s3_secretkey))
+#     region_name: ((s3_region))
+#     regexp: sts4/fatjars/snapshots/concourse-language-server-(.*).jar
 # - name: s3-concourse-fatjar--rc
 #   type: s3
 #   source:
@@ -199,14 +199,14 @@ resources:
 #     secret_access_key: ((s3_prod_secretkey))
 #     region_name: ((s3_prod_region))
 #     regexp: release/STS4/fatjars/concourse-language-server-(.*).jar
-- name: s3-bosh-fatjar-snapshot
-  type: s3
-  source:
-    bucket: ((s3_bucket))
-    access_key_id: ((s3_accesskey))
-    secret_access_key: ((s3_secretkey))
-    region_name: ((s3_region))
-    regexp: sts4/fatjars/snapshots/bosh-language-server-(.*).jar
+# - name: s3-bosh-fatjar-snapshot
+#   type: s3
+#   source:
+#     bucket: ((s3_bucket))
+#     access_key_id: ((s3_accesskey))
+#     secret_access_key: ((s3_secretkey))
+#     region_name: ((s3_region))
+#     regexp: sts4/fatjars/snapshots/bosh-language-server-(.*).jar
 # - name: s3-bosh-fatjar--rc
 #   type: s3
 #   source:
@@ -215,14 +215,14 @@ resources:
 #     secret_access_key: ((s3_prod_secretkey))
 #     region_name: ((s3_prod_region))
 #     regexp: release/STS4/fatjars/bosh-language-server-(.*).jar
-- name: s3-spring-boot-fatjar-snapshot
-  type: s3
-  source:
-    bucket: ((s3_bucket))
-    access_key_id: ((s3_accesskey))
-    secret_access_key: ((s3_secretkey))
-    region_name: ((s3_region))
-    regexp: sts4/fatjars/snapshots/spring-boot-language-server-(.*).jar
+# - name: s3-spring-boot-fatjar-snapshot
+#   type: s3
+#   source:
+#     bucket: ((s3_bucket))
+#     access_key_id: ((s3_accesskey))
+#     secret_access_key: ((s3_secretkey))
+#     region_name: ((s3_region))
+#     regexp: sts4/fatjars/snapshots/spring-boot-language-server-(.*).jar
 # - name: s3-spring-boot-fatjar--rc
 #   type: s3
 #   source:
@@ -269,13 +269,13 @@ resources:
     secret_access_key: ((s3_secretkey))
     region_name: ((s3_region))
     initial_version: 0.0.5-RC.6
-- name: artifactory
-  type: artifactory-resource
-  source:
-    uri: "https://repo.spring.io"
-    username: ((artifactory_user))
-    password: ((artifactory_password))
-    build_name: spring-tools-4
+# - name: artifactory
+#   type: artifactory-resource
+#   source:
+#     uri: "https://repo.spring.io"
+#     username: ((artifactory_user))
+#     password: ((artifactory_password))
+#     build_name: spring-tools-4
 ########################################################################################
 jobs:
 # - name: boot-dev-pack-ovsx-publish
@@ -924,51 +924,51 @@ jobs:
   - put: vscode-snapshot-website
     params:
       path: website
-- name: build-fatjars
-  plan:
-  - in_parallel:
-    - get: sts4
-      trigger: true
-    - get: maven-cache
-  - task: build-fatjars
-    file: sts4/concourse/tasks/fatjars-language-servers.yml
-    attempts: 3
-    on_failure:
-      put: slack-notification
-      params:
-        text: |
-          Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
-    on_success:
-      in_parallel:
-      - put: s3-headless-maven-out
-        params:
-          file: out/headless-maven-out-*.tar.gz
-      - put: s3-manifest-yaml-fatjar-snapshot
-        params:
-          file: out/manifest-yaml-language-server-*.jar
-          acl: public-read
-      - put: s3-concourse-fatjar-snapshot
-        params:
-          file: out/concourse-language-server-*.jar
-          acl: public-read
-      - put: s3-bosh-fatjar-snapshot
-        params:
-          file: out/bosh-language-server-*.jar
-          acl: public-read
-      - put: s3-spring-boot-fatjar-snapshot
-        params:
-          file: out/spring-boot-language-server-*.jar
-          acl: public-read
-      - put: artifactory
-        params:
-          debug: true
-          disable_checksum_uploads: true
-          build_uri: "https://ci.spring.io/teams/${BUILD_TEAM_NAME}/pipelines/${BUILD_PIPELINE_NAME}/jobs/${BUILD_JOB_NAME}/builds/${BUILD_ID}"
-          build_number: "${BUILD_PIPELINE_NAME}-${BUILD_JOB_NAME}-${BUILD_NAME}"
-          repo: libs-snapshot-local
-          folder: maven-out
-          exclude: 
-          - "**/_remote.repositories"
+# - name: build-fatjars
+#   plan:
+#   - in_parallel:
+#     - get: sts4
+#       trigger: true
+#     - get: maven-cache
+#   - task: build-fatjars
+#     file: sts4/concourse/tasks/fatjars-language-servers.yml
+#     attempts: 3
+#     on_failure:
+#       put: slack-notification
+#       params:
+#         text: |
+#           Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
+#     on_success:
+#       in_parallel:
+#       - put: s3-headless-maven-out
+#         params:
+#           file: out/headless-maven-out-*.tar.gz
+#       - put: s3-manifest-yaml-fatjar-snapshot
+#         params:
+#           file: out/manifest-yaml-language-server-*.jar
+#           acl: public-read
+#       - put: s3-concourse-fatjar-snapshot
+#         params:
+#           file: out/concourse-language-server-*.jar
+#           acl: public-read
+#       - put: s3-bosh-fatjar-snapshot
+#         params:
+#           file: out/bosh-language-server-*.jar
+#           acl: public-read
+#       - put: s3-spring-boot-fatjar-snapshot
+#         params:
+#           file: out/spring-boot-language-server-*.jar
+#           acl: public-read
+#       - put: artifactory
+#         params:
+#           debug: true
+#           disable_checksum_uploads: true
+#           build_uri: "https://ci.spring.io/teams/${BUILD_TEAM_NAME}/pipelines/${BUILD_PIPELINE_NAME}/jobs/${BUILD_JOB_NAME}/builds/${BUILD_ID}"
+#           build_number: "${BUILD_PIPELINE_NAME}-${BUILD_JOB_NAME}-${BUILD_NAME}"
+#           repo: libs-snapshot-local
+#           folder: maven-out
+#           exclude: 
+#           - "**/_remote.repositories"
 # - name: publish-headless-snapshots
 #   plan:
 #   - in_parallel:
@@ -1046,9 +1046,9 @@ groups:
   jobs:
   - build-mvn-cache
   - build-docker-image
-- name: artifactory
-  jobs:
-  - build-fatjars
+#- name: artifactory
+#  jobs:
+#  - build-fatjars
 #  - publish-headless-snapshots
 # - name: debugging
 #   jobs:

@@ -43,15 +43,15 @@ public class DataRepositorySymbolProvider extends AbstractSymbolProvider {
 	@Override
 	protected void addSymbolsPass1(TypeDeclaration typeDeclaration, SpringIndexerJavaContext context, TextDocument doc) {
 		// this checks spring data repository beans that are defined as extensions of the repository interface
-		Tuple4<String, String, String, DocumentRegion> repositoryBean = getRepositoryBean(typeDeclaration, doc);
+		Tuple4<String, ITypeBinding, String, DocumentRegion> repositoryBean = getRepositoryBean(typeDeclaration, doc);
 		if (repositoryBean != null) {
 			try {
 				WorkspaceSymbol symbol = new WorkspaceSymbol(
-						beanLabel(true, repositoryBean.getT1(), repositoryBean.getT2(), repositoryBean.getT3()),
+						beanLabel(true, repositoryBean.getT1(), repositoryBean.getT2().getName(), repositoryBean.getT3()),
 						SymbolKind.Interface,
 						Either.forLeft(new Location(doc.getUri(), doc.toRange(repositoryBean.getT4()))));
 
-				SymbolAddOnInformation[] addon = new SymbolAddOnInformation[] {new BeansSymbolAddOnInformation(repositoryBean.getT1())};
+				SymbolAddOnInformation[] addon = new SymbolAddOnInformation[] {new BeansSymbolAddOnInformation(repositoryBean.getT1(), repositoryBean.getT2().getQualifiedName())};
 				EnhancedSymbolInformation enhancedSymbol = new EnhancedSymbolInformation(symbol, addon);
 
 				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), enhancedSymbol));
@@ -76,7 +76,7 @@ public class DataRepositorySymbolProvider extends AbstractSymbolProvider {
 		return symbolLabel.toString();
 	}
 
-	private static Tuple4<String, String, String, DocumentRegion> getRepositoryBean(TypeDeclaration typeDeclaration, TextDocument doc) {
+	private static Tuple4<String, ITypeBinding, String, DocumentRegion> getRepositoryBean(TypeDeclaration typeDeclaration, TextDocument doc) {
 		ITypeBinding resolvedType = typeDeclaration.resolveBinding();
 
 		if (resolvedType != null) {
@@ -87,7 +87,7 @@ public class DataRepositorySymbolProvider extends AbstractSymbolProvider {
 		}
 	}
 
-	private static Tuple4<String, String, String, DocumentRegion> getRepositoryBean(TypeDeclaration typeDeclaration, TextDocument doc,
+	private static Tuple4<String, ITypeBinding, String, DocumentRegion> getRepositoryBean(TypeDeclaration typeDeclaration, TextDocument doc,
 			ITypeBinding resolvedType) {
 
 		ITypeBinding[] interfaces = resolvedType.getInterfaces();
@@ -102,7 +102,6 @@ public class DataRepositorySymbolProvider extends AbstractSymbolProvider {
 
 			if (Constants.REPOSITORY_TYPE.equals(simplifiedType)) {
 				String beanName = getBeanName(typeDeclaration);
-				String beanType = resolvedInterface.getName();
 
 				String domainType = null;
 				if (resolvedInterface.isParameterizedType()) {
@@ -113,10 +112,10 @@ public class DataRepositorySymbolProvider extends AbstractSymbolProvider {
 				}
 				DocumentRegion region = ASTUtils.nodeRegion(doc, typeDeclaration.getName());
 
-				return Tuples.of(beanName, beanType, domainType, region);
+				return Tuples.of(beanName, resolvedInterface, domainType, region);
 			}
 			else {
-				Tuple4<String, String, String, DocumentRegion> result = getRepositoryBean(typeDeclaration, doc, resolvedInterface);
+				Tuple4<String, ITypeBinding, String, DocumentRegion> result = getRepositoryBean(typeDeclaration, doc, resolvedInterface);
 				if (result != null) {
 					return result;
 				}

@@ -12,7 +12,10 @@ package org.springframework.ide.vscode.boot.java.rewrite.reconcile;
 
 import static org.springframework.ide.vscode.commons.java.SpringProjectUtil.springBootVersionGreaterOrEqual;
 
+import java.util.List;
+
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.SourceFile;
 import org.openrewrite.Tree;
 import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaIsoVisitor;
@@ -24,6 +27,7 @@ import org.openrewrite.java.tree.JavaType.FullyQualified;
 import org.openrewrite.marker.Range;
 import org.openrewrite.java.tree.Statement;
 import org.openrewrite.java.tree.TypeUtils;
+import org.springframework.context.ApplicationContext;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.Boot2JavaProblemType;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
@@ -31,6 +35,7 @@ import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeSpringJavaProblemDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.java.AnnotationHierarchies;
 import org.springframework.ide.vscode.commons.rewrite.java.FixAssistMarker;
+import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
 
 public class NoAutowiredOnConstructorProblem implements RecipeSpringJavaProblemDescriptor {
 
@@ -38,22 +43,7 @@ public class NoAutowiredOnConstructorProblem implements RecipeSpringJavaProblemD
 	private static final String LABEL = "Remove Unnecessary @Autowired";
 
 	@Override
-	public String getRecipeId() {
-		return ID;
-	}
-
-	@Override
-	public String getLabel(RecipeScope s) {
-		return LABEL;
-	}
-
-	@Override
-	public RecipeScope[] getScopes() {
-		return new RecipeScope[] { RecipeScope.NODE };
-	}
-
-	@Override
-	public JavaVisitor<ExecutionContext> getMarkerVisitor() {
+	public JavaVisitor<ExecutionContext> getMarkerVisitor(ApplicationContext applicationContext) {
 		return new JavaIsoVisitor<ExecutionContext>() {
             public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext context) {
                 J.ClassDeclaration cd =  super.visitClassDeclaration(classDecl, context);
@@ -76,9 +66,13 @@ public class NoAutowiredOnConstructorProblem implements RecipeSpringJavaProblemD
                                     return s;
                                 }
                                 MethodDeclaration constructor = (MethodDeclaration) s;
-                        		FixAssistMarker fixAssistMarker = new FixAssistMarker(Tree.randomId())
-    	                        	.withRecipeId(ID)
-    	                        	.withScope(getCursor().firstEnclosing(ClassDeclaration.class).getMarkers().findFirst(Range.class).get());
+            					String uri = getCursor().firstEnclosing(SourceFile.class).getSourcePath().toUri().toString();
+                        		FixAssistMarker fixAssistMarker = new FixAssistMarker(Tree.randomId(), getId())
+                        			.withFix(
+                        					new FixDescriptor(ID, List.of(uri), LABEL)
+                        						.withRecipeScope(RecipeScope.NODE)
+                        						.withRangeScope(getCursor().firstEnclosing(ClassDeclaration.class).getMarkers().findFirst(Range.class).get())
+                        			);
                                 constructor = constructor.withLeadingAnnotations(ListUtils.map(constructor.getLeadingAnnotations(), a -> {
                                 	if (TypeUtils.isOfClassType(a.getType(), Annotations.AUTOWIRED)) {
     									a = a.withMarkers(a.getMarkers().add(fixAssistMarker)); 

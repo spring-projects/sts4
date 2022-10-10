@@ -14,13 +14,10 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
-import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.slf4j.Logger;
@@ -168,19 +165,5 @@ public class IClasspathUtil {
 		})
 		.collect(CollectorUtil.toImmutableList());
 	}
-
-
-	public static Set<String> getBinaryClasspathEntries(IJavaProject project) throws Exception {
-		if (project == null) {
-			return Collections.emptySet();
-		} else {
-			IClasspath classpath = project.getClasspath();
-			Stream<File> classpathEntries = IClasspathUtil.getAllBinaryRoots(classpath).stream();
-			return classpathEntries
-					.filter(file -> file.exists())
-					.map(file -> file.getAbsolutePath()).collect(Collectors.toSet());
-		}
-	}
-	
 
 }

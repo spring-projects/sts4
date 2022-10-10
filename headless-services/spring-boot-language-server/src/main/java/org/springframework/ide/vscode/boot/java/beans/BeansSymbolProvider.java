@@ -63,16 +63,16 @@ public class BeansSymbolProvider extends AbstractSymbolProvider {
 		if (isMethodAbstract(node)) return;
 
 		boolean isFunction = isFunctionBean(node);
-		String beanType = getBeanType(node);
+		ITypeBinding beanType = getBeanType(node);
 		String markerString = getAnnotations(node);
 		for (Tuple2<String, DocumentRegion> nameAndRegion : getBeanNames(node, doc)) {
 			try {
 				EnhancedSymbolInformation enhancedSymbol = new EnhancedSymbolInformation(
 						new WorkspaceSymbol(
-								beanLabel(isFunction, nameAndRegion.getT1(), beanType, "@Bean" + markerString),
+								beanLabel(isFunction, nameAndRegion.getT1(), beanType.getName(), "@Bean" + markerString),
 								SymbolKind.Interface,
 								Either.forLeft(new Location(doc.getUri(), doc.toRange(nameAndRegion.getT2())))),
-						new SymbolAddOnInformation[] {new BeansSymbolAddOnInformation(nameAndRegion.getT1())}
+						new SymbolAddOnInformation[] {new BeansSymbolAddOnInformation(nameAndRegion.getT1(), beanType.getQualifiedName())}
 				);
 
 				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), enhancedSymbol));
@@ -86,16 +86,16 @@ public class BeansSymbolProvider extends AbstractSymbolProvider {
 	@Override
 	protected void addSymbolsPass1(TypeDeclaration typeDeclaration, SpringIndexerJavaContext context, TextDocument doc) {
 		// this checks function beans that are defined as implementations of Function interfaces
-		Tuple3<String, String, DocumentRegion> functionBean = FunctionUtils.getFunctionBean(typeDeclaration, doc);
+		Tuple3<String, ITypeBinding, DocumentRegion> functionBean = FunctionUtils.getFunctionBean(typeDeclaration, doc);
 		if (functionBean != null) {
 			try {
 				WorkspaceSymbol symbol = new WorkspaceSymbol(
-						beanLabel(true, functionBean.getT1(), functionBean.getT2(), null),
+						beanLabel(true, functionBean.getT1(), functionBean.getT2().getName(), null),
 						SymbolKind.Interface,
 						Either.forLeft(new Location(doc.getUri(), doc.toRange(functionBean.getT3()))));
 
 				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(),
-						new EnhancedSymbolInformation(symbol, new SymbolAddOnInformation[] {new BeansSymbolAddOnInformation(functionBean.getT1())})));
+						new EnhancedSymbolInformation(symbol, new SymbolAddOnInformation[] {new BeansSymbolAddOnInformation(functionBean.getT1(), functionBean.getT2().getQualifiedName())})));
 
 			} catch (BadLocationException e) {
 				log.error("", e);
@@ -153,12 +153,11 @@ public class BeansSymbolProvider extends AbstractSymbolProvider {
 		return literals.build();
 	}
 
-	protected String getBeanType(Annotation node) {
+	protected ITypeBinding getBeanType(Annotation node) {
 		ASTNode parent = node.getParent();
 		if (parent instanceof MethodDeclaration) {
 			MethodDeclaration method = (MethodDeclaration) parent;
-			String returnType = method.getReturnType2().resolveBinding().getName();
-			return returnType;
+			return method.getReturnType2().resolveBinding();
 		}
 		return null;
 	}
