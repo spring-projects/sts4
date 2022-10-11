@@ -1,4 +1,4 @@
-#!/usr/bin/python
+#!/usr/bin/python3
 
 import os
 
@@ -18,8 +18,8 @@ else:
     fname = "pipeline-"+branch+".yml"
     replace("pipeline.yml", "pipeline-"+branch+".yml", "snapshot", branch)
     with open(fname, 'r') as fin:
-        print fin.read()
+        print(fin.read())
     cmd = ('fly -t tools set-pipeline ' + 
         '--var "branch=' + branch + '" ' + '-p sts4-' +branch+' -c '+fname)
-    print cmd
+    print(cmd)
     os.system(cmd)
