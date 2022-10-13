@@ -27,6 +27,6 @@ public interface SpringProcessConnector {
 	String getProjectName();
 	String getProcessId();
 	String getProcessName();
-	SpringProcessGcPausesMetricsLiveData refreshGcPausesMetrics(SpringProcessLiveData current, String metricName) throws Exception;
-	SpringProcessMemoryMetricsLiveData refreshMemoryMetrics(SpringProcessLiveData current, String metricName) throws Exception;
+	SpringProcessGcPausesMetricsLiveData refreshGcPausesMetrics(SpringProcessLiveData current, String metricName, String tags) throws Exception;
+	SpringProcessMemoryMetricsLiveData refreshMemoryMetrics(SpringProcessLiveData current, String metricName, String tags) throws Exception;
 }

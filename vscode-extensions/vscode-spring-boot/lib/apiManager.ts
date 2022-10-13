@@ -35,14 +35,11 @@ export class ApiManager {
 
         const COMMAND_LIVEDATA_GET_METRICS = "sts/livedata/get/metrics"
         const getLiveProcessMetricsData = async (query) : Promise<LiveProcess[]> => {
-            console.log(query);
-            console.log("in get live metrics function");
             return await commands.executeCommand(COMMAND_LIVEDATA_GET_METRICS, query);
         }
 
         const COMMAND_LIVEDATA_REFRESH_METRICS = "sts/livedata/refresh/metrics";
         const refreshLiveProcessMetricsData = async (query) => {
-            console.log("in get live metrics refresh function");
             return await commands.executeCommand(COMMAND_LIVEDATA_REFRESH_METRICS, query);
         }
 

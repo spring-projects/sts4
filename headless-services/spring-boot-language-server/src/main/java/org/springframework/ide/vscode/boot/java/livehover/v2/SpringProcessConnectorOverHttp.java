@@ -104,13 +104,13 @@ public class SpringProcessConnectorOverHttp implements SpringProcessConnector {
 	}
 
 	@Override
-	public SpringProcessGcPausesMetricsLiveData refreshGcPausesMetrics(SpringProcessLiveData current, String metricName)
+	public SpringProcessGcPausesMetricsLiveData refreshGcPausesMetrics(SpringProcessLiveData current, String metricName, String tags)
 			throws Exception {
 		return null;
 	}
 
 	@Override
-	public SpringProcessMemoryMetricsLiveData refreshMemoryMetrics(SpringProcessLiveData current, String metricName)
+	public SpringProcessMemoryMetricsLiveData refreshMemoryMetrics(SpringProcessLiveData current, String metricName, String tags)
 			throws Exception {
 		return null;
 	}

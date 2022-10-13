@@ -149,7 +149,7 @@ public class SpringProcessConnectorOverJMX implements SpringProcessConnector {
 	}
 	
 	@Override
-	public SpringProcessMemoryMetricsLiveData refreshMemoryMetrics(SpringProcessLiveData currentData, String metricName) throws Exception {
+	public SpringProcessMemoryMetricsLiveData refreshMemoryMetrics(SpringProcessLiveData currentData, String metricName, String tags) throws Exception {
 		log.info("try to open JMX connection to: " + jmxURL);
 		
 		if (jmxConnection != null) {
@@ -157,7 +157,7 @@ public class SpringProcessConnectorOverJMX implements SpringProcessConnector {
 				SpringProcessLiveDataExtractorOverJMX springJMXConnector = new SpringProcessLiveDataExtractorOverJMX();
 	
 				log.info("retrieve live data from: " + jmxURL);
-				SpringProcessMemoryMetricsLiveData liveData = springJMXConnector.retrieveLiveMemoryMetricsData(getProcessType(), jmxConnection, processID, processName, currentData, metricName);
+				SpringProcessMemoryMetricsLiveData liveData = springJMXConnector.retrieveLiveMemoryMetricsData(getProcessType(), jmxConnection, processID, processName, currentData, metricName, tags);
 				
 				if (liveData != null && liveData.getMemoryMetrics() != null && liveData.getMemoryMetrics().length > 0) {
 					return liveData;
@@ -172,7 +172,7 @@ public class SpringProcessConnectorOverJMX implements SpringProcessConnector {
 	}
 	
 	@Override
-	public SpringProcessGcPausesMetricsLiveData refreshGcPausesMetrics(SpringProcessLiveData currentData, String metricName) throws Exception {
+	public SpringProcessGcPausesMetricsLiveData refreshGcPausesMetrics(SpringProcessLiveData currentData, String metricName, String tags) throws Exception {
 		log.info("try to open JMX connection to: " + jmxURL);
 		
 		if (jmxConnection != null) {
@@ -180,7 +180,7 @@ public class SpringProcessConnectorOverJMX implements SpringProcessConnector {
 				SpringProcessLiveDataExtractorOverJMX springJMXConnector = new SpringProcessLiveDataExtractorOverJMX();
 	
 				log.info("retrieve live data from: " + jmxURL);
-				SpringProcessGcPausesMetricsLiveData liveData = springJMXConnector.retrieveLiveGcPausesMetricsData(getProcessType(), jmxConnection, processID, processName, currentData, metricName);
+				SpringProcessGcPausesMetricsLiveData liveData = springJMXConnector.retrieveLiveGcPausesMetricsData(getProcessType(), jmxConnection, processID, processName, currentData, metricName, tags);
 				
 				if (liveData != null && liveData.getGcPausesMetrics() != null && liveData.getGcPausesMetrics().length > 0) {
 					return liveData;

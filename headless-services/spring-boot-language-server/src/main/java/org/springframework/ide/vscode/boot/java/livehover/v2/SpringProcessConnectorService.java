@@ -99,7 +99,7 @@ public class SpringProcessConnectorService {
 		}
 	}
 	
-	public void refreshProcess(String processKey, String endpoint, String metricName) {
+	public void refreshProcess(String processKey, String endpoint, String metricName, String tags) {
 		log.info("refresh process: " + processKey);
 		
 		SpringProcessConnector connector = this.connectors.get(processKey);
@@ -109,7 +109,7 @@ public class SpringProcessConnectorService {
 
 			progressTask.progressBegin("Refresh", null);
 
-			scheduleRefresh(progressTask, processKey, connector, 0, TimeUnit.SECONDS, 0, endpoint, metricName);
+			scheduleRefresh(progressTask, processKey, connector, 0, TimeUnit.SECONDS, 0, endpoint, metricName, tags);
 		}
 	}
 
@@ -170,9 +170,9 @@ public class SpringProcessConnectorService {
 				connector.connect();
 				progressTask.progressDone();
 				
-				refreshProcess(processKey, "", "");
-				refreshProcess(processKey, "metrics", "memory");
-				refreshProcess(processKey, "metrics", "gcPauses");
+				refreshProcess(processKey, "", "", "");
+				refreshProcess(processKey, "metrics", "memory", "area:heap");
+				refreshProcess(processKey, "metrics", "gcPauses", "");
 			}
 			catch (Exception e) {
 				log.info("problem occured during process connect", e);
@@ -220,7 +220,7 @@ public class SpringProcessConnectorService {
 		}, delay, unit);
 	}
 
-	private void scheduleRefresh(ProgressTask progressTask, String processKey, SpringProcessConnector connector, long delay, TimeUnit unit, int retryNo, String endpoint, String metricName) {
+	private void scheduleRefresh(ProgressTask progressTask, String processKey, SpringProcessConnector connector, long delay, TimeUnit unit, int retryNo, String endpoint, String metricName, String tags) {
 		String progressMessage = "Refreshing data from Spring process: " + processKey + " - retry no: " + retryNo;
 		log.info(progressMessage);
 		
@@ -230,7 +230,7 @@ public class SpringProcessConnectorService {
 			try {
 				progressTask.progressEvent(progressMessage);
 				if(endpoint.equals("metrics") && metricName.equals("memory")) {
-					SpringProcessMemoryMetricsLiveData newMetricsLiveData = connector.refreshMemoryMetrics(this.liveDataProvider.getCurrent(processKey), metricName);
+					SpringProcessMemoryMetricsLiveData newMetricsLiveData = connector.refreshMemoryMetrics(this.liveDataProvider.getCurrent(processKey), metricName, tags);
 					
 					if (newMetricsLiveData != null) {
 						if (!this.liveDataProvider.addMemoryMetrics(processKey, newMetricsLiveData)) {
@@ -241,7 +241,7 @@ public class SpringProcessConnectorService {
 					}
 					
 				} else if(endpoint.equals("metrics") && metricName.equals("gcPauses")) {
-					SpringProcessGcPausesMetricsLiveData newMetricsLiveData = connector.refreshGcPausesMetrics(this.liveDataProvider.getCurrent(processKey), metricName);
+					SpringProcessGcPausesMetricsLiveData newMetricsLiveData = connector.refreshGcPausesMetrics(this.liveDataProvider.getCurrent(processKey), metricName, tags);
 					
 					if (newMetricsLiveData != null) {
 						if (!this.liveDataProvider.addGcPausesMetrics(processKey, newMetricsLiveData)) {
@@ -270,7 +270,7 @@ public class SpringProcessConnectorService {
 				
 				if (retryNo < maxRetryCount && isKnownProcessKey(processKey)) {
 					scheduleRefresh(progressTask, processKey, connector, retryDelayInSeconds, TimeUnit.SECONDS,
-							retryNo + 1, endpoint, metricName);
+							retryNo + 1, endpoint, metricName, tags);
 				}
 				else {
 					progressTask.progressDone();
