@@ -10,30 +10,26 @@
  *******************************************************************************/
 package org.springframework.tooling.boot.ls;
 
-import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
+import org.springframework.tooling.boot.ls.prefs.StringListEditor;
 
-public class RewritePreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
+public class RecipeFiltersPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
 
 	@Override
 	public void init(IWorkbench workbench) {
 		setPreferenceStore(BootLanguageServerPlugin.getDefault().getPreferenceStore());
 	}
-	
+
 	@Override
 	protected void createFieldEditors() {
 		Composite fieldEditorParent = getFieldEditorParent();
 		
-		addField(new BooleanFieldEditor(Constants.PREF_REWRITE_PROJECT_REFACTORINGS,
-				"Project refactoring actions", fieldEditorParent));
-		
-		addField(new BooleanFieldEditor(Constants.PREF_REWRITE_RECONCILE,
-				"Experimental reconciling for Java source based on Rewrite project", fieldEditorParent));
-				
+		addField(new StringListEditor(fieldEditorParent, Constants.PREF_REWRITE_RECIPE_FILTERS,
+				"Recipe filter IDs and patterns", "Filter Value",
+				"Either exact ID or pattern with '*' as the wild-card:", text -> text.isBlank() ? "Cannot be blank" : null));
 	}
-
 
 }

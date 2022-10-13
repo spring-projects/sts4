@@ -137,6 +137,18 @@
             id="org.springframework.tooling.boot.ls.rewrite"
             name="Rewrite">
       </page>
+      <page
+            category="org.springframework.tooling.boot.ls.rewrite"
+            class="org.springframework.tooling.boot.ls.RecipeFiltersPreferencePage"
+            id="org.springframework.tooling.boot.ls.rewrite.filters"
+            name="Filter Recipes">
+      </page>
+      <page
+            category="org.springframework.tooling.boot.ls.rewrite"
+            class="org.springframework.tooling.boot.ls.PlugRecipesPreferencePage"
+            id="org.springframework.tooling.boot.ls.rewrite.load"
+            name="Plug Recipes">
+      </page>
       
    </extension>
    
@@ -413,14 +425,23 @@
                         </and>
                      </or>
                   </iterate>
-                  <systemTest
-                        property="sts.rewrite.recipes"
-                        value="true">
-                  </systemTest>
+                  <test
+                        property="org.springframework.tooling.boot.ls.areRewriteProjectRefactoringsOn">
+                  </test>
                </and>
             </visibleWhen>
          </command>
       </menuContribution>
+   </extension>
+   <extension
+         point="org.eclipse.core.expressions.propertyTesters">
+      <propertyTester
+            class="org.springframework.tooling.boot.ls.prefs.PrefsPropertyTester"
+            id="org.springframework.tooling.boot.ls"
+            namespace="org.springframework.tooling.boot.ls"
+            properties="areRewriteProjectRefactoringsOn"
+            type="java.lang.Object">
+      </propertyTester>
    </extension>
 <!--
    <extension

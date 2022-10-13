@@ -76,7 +76,7 @@
       ],
       "explorer/context": [
         {
-          "when": "resourceFilename == pom.xml && config.boot-java.rewrite.globa-commands.on == true",
+          "when": "resourceFilename == pom.xml && config.boot-java.rewrite.refactorings.on == true",
           "command": "vscode-spring-boot.rewrite.list",
           "group": "SpringBoot"
         }
@@ -89,7 +89,7 @@
         "category": "Spring Boot"
       },
       {
-        "enablement": "config.boot-java.rewrite.globa-commands.on == true",
+        "enablement": "config.boot-java.rewrite.refactorings.on == true",
         "command": "vscode-spring-boot.rewrite.list",
         "category": "Spring Boot",
         "title": "Rewrite Refactorings..."
@@ -106,11 +106,6 @@
         "title": "Features",
         "order": 100,
         "properties": {
-          "boot-java.rewrite.globa-commands.on": {
-            "type": "boolean",
-            "default": false,
-            "description": "Experimental support for Rewrite recipes refactoring the whole maven projects via commands"
-          },
           "boot-java.live-information.automatic-connection.on": {
             "type": "boolean",
             "default": true,
@@ -193,6 +188,11 @@
         "title": "Rewrite",
         "order": 400,
         "properties": {
+          "boot-java.rewrite.refactorings.on": {
+            "type": "boolean",
+            "default": true,
+            "description": "Recipes refactoring entire Maven project via commands"
+          },
           "boot-java.rewrite.reconcile": {
             "type": "boolean",
             "default": false,
