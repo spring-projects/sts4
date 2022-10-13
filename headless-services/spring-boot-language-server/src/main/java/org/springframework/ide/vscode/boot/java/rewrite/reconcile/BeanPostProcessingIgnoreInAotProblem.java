@@ -56,11 +56,7 @@ public class BeanPostProcessingIgnoreInAotProblem implements RecipeSpringJavaPro
 							.withFixes(
 									new FixDescriptor(RECIPE_ID, List.of(uri), RecipeCodeActionDescriptor.buildLabel(LABEL, RecipeScope.NODE))
 										.withRangeScope(classDecl.getMarkers().findFirst(Range.class).orElse(null))
-										.withRecipeScope(RecipeScope.NODE),
-									new FixDescriptor(RECIPE_ID, List.of(uri), RecipeCodeActionDescriptor.buildLabel(LABEL, RecipeScope.FILE))
-										.withRecipeScope(RecipeScope.FILE),
-									new FixDescriptor(RECIPE_ID, List.of(uri), RecipeCodeActionDescriptor.buildLabel(LABEL, RecipeScope.PROJECT))
-										.withRecipeScope(RecipeScope.PROJECT)
+										.withRecipeScope(RecipeScope.NODE)
 							);
 					if (methods.isEmpty()) {
 						// Didn't find a method. Default implementation return true therefore mark it.

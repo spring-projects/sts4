@@ -55,8 +55,7 @@ public class NotRegisteredBeansProblem implements RecipeSpringJavaProblemDescrip
 		
 	private static final List<String> AOT_BEANS = List.of(
 			"org.springframework.beans.factory.aot.BeanFactoryInitializationAotProcessor",
-			"org.springframework.beans.factory.aot.BeanRegistrationAotProcessor",
-			"org.springframework.beans.factory.aot.RuntimeHintsRegistrar"
+			"org.springframework.beans.factory.aot.BeanRegistrationAotProcessor"
 	);
 
 	@Override

@@ -49,6 +49,7 @@ import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformati
 import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.boot.java.utils.DocumentDescriptor;
+import org.springframework.ide.vscode.boot.java.utils.SpringFactoriesIndexer;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexer;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJava;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexerXML;
@@ -125,6 +126,7 @@ public class SpringSymbolIndex implements InitializingBean {
 
 	private SpringIndexerXML springIndexerXML;
 	private SpringIndexerJava springIndexerJava;
+	private SpringFactoriesIndexer factoriesIndexer;
 
 	private String watchXMLDeleteRegistration;
 	private String watchXMLCreatedRegistration;
@@ -163,8 +165,9 @@ public class SpringSymbolIndex implements InitializingBean {
 		namespaceHandler.put("http://www.springframework.org/schema/beans", new SpringIndexerXMLNamespaceHandlerBeans());
 		springIndexerXML = new SpringIndexerXML(handler, namespaceHandler, this.cache, projectFinder());
 		springIndexerJava = new SpringIndexerJava(handler, specificProviders, this.cache, projectFinder());
+		factoriesIndexer = new SpringFactoriesIndexer(handler, cache);
 
-		this.indexers = new SpringIndexer[] {springIndexerJava};
+		this.indexers = new SpringIndexer[] {springIndexerJava, factoriesIndexer};
 
 
 		getWorkspaceService().onDidChangeWorkspaceFolders(evt -> {
@@ -206,7 +209,8 @@ public class SpringSymbolIndex implements InitializingBean {
 	}
 
 	public void serverInitialized() {
-		List<String> globPattern = Arrays.asList(springIndexerJava.getFileWatchPatterns());
+		List<String> globPattern = Stream.concat(Arrays.stream(springIndexerJava.getFileWatchPatterns()), Arrays.stream(factoriesIndexer.getFileWatchPatterns()))
+				.collect(Collectors.toList());
 
 		getWorkspaceService().getFileObserver().onFilesDeleted(globPattern, (files) -> {
 			deleteDocuments(files);
@@ -222,11 +226,11 @@ public class SpringSymbolIndex implements InitializingBean {
 	public void configureIndexer(SymbolIndexConfig config) {
 		synchronized (this) {
 			if (config.isScanXml() && !(Arrays.asList(this.indexers).contains(springIndexerXML))) {
-				this.indexers = new SpringIndexer[] { springIndexerJava, springIndexerXML };
+				this.indexers = new SpringIndexer[] { springIndexerJava, factoriesIndexer, springIndexerXML };
 				springIndexerXML.updateScanFolders(config.getXmlScanFolders());
 				addXmlFileListeners(Arrays.asList(springIndexerXML.getFileWatchPatterns()));
 			} else if (!config.isScanXml() && Arrays.asList(this.indexers).contains(springIndexerXML)) {
-				this.indexers = new SpringIndexer[] { springIndexerJava };
+				this.indexers = new SpringIndexer[] { springIndexerJava, factoriesIndexer };
 				springIndexerXML.updateScanFolders(new String[0]);
 				removeXmlFileListeners();
 			} else if (config.isScanXml()) {

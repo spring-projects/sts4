@@ -264,10 +264,10 @@ public class BootLanguageServerInitializer implements InitializingBean {
 		projectReconcileRequests.put(uri, Mono.delay(Duration.ofMillis(100))
 				.publishOn(projectReconcileScheduler)
 				.doOnSuccess(l -> {
+					projectReconcileRequests.remove(uri);
 					projectFinder.find(new TextDocumentIdentifier(uri.toString())).ifPresent(p -> {
 						projectReconciler.reconcile(p, doc -> server.createProblemCollector(doc));
 					});
-					projectReconcileRequests.remove(uri);
 				})
 				.subscribe());
 	}
