@@ -81,6 +81,5 @@ interface BeansQuery extends LiveProcessDataQuery {
 interface MetricsQuery extends LiveProcessDataQuery {
     endpoint: "metrics";
     metricName: string;
-    tag?: { key: string; value: string };
-
+    tags?: string;
 }

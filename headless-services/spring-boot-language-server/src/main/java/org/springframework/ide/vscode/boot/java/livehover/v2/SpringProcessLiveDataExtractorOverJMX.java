@@ -97,8 +97,6 @@ public class SpringProcessLiveDataExtractorOverJMX {
 			LiveBeansModel beans = getBeans(connection, domain);
 			LiveMetricsModel metrics = getMetrics(connection, domain);
 			StartupMetricsModel startup = getStartupMetrics(connection, domain, currentData == null ? null : currentData.getStartupMetrics());
-//			LiveMemoryMetricsModel[] memoryMetrics = getLiveMemoryMetrics(connection, domain);
-//			LiveMemoryMetricsModel gcPausesMetrics = getGcPausesMetrics(connection, domain);
 			
 			if (contextPath == null) {
 				contextPath = getContextPath(connection, domain, environment);
@@ -123,8 +121,6 @@ public class SpringProcessLiveDataExtractorOverJMX {
 					properties,
 					metrics,
 					startup
-//					memoryMetrics,
-//					gcPausesMetrics
 					);
 		}
 		catch (Exception e) {
@@ -142,9 +138,9 @@ public class SpringProcessLiveDataExtractorOverJMX {
 	 * @param metricName 
 	 */
 	public SpringProcessMemoryMetricsLiveData retrieveLiveMemoryMetricsData(ProcessType processType, JMXConnector jmxConnector, String processID, String processName,
-			 SpringProcessLiveData currentData, String metricName) {
+			 SpringProcessLiveData currentData, String metricName, String tags) {
 		
-		List<String> memoryTags = Arrays.asList( "jvm.memory.used", "jvm.memory.committed", "jvm.memory.max");	
+		List<String> memoryMetrics = Arrays.asList("jvm.memory.committed", "jvm.memory.max");
 		
 		try {
 			MBeanServerConnection connection = jmxConnector.getMBeanServerConnection();
@@ -163,16 +159,26 @@ public class SpringProcessLiveDataExtractorOverJMX {
 				}
 			}
 			
-//			if(metricName.equals("memory")) {
-				for(String metric : memoryTags) {
-					LiveMemoryMetricsModel metrics = getLiveMetrics(connection, domain, metric);
-					if(metrics != null) {
-						memoryMetricsList.add(metrics);
-					}
-				}
-				
-//			}
-
+			LiveMemoryMetricsModel jvmMemUsedMetrics = getLiveMetrics(connection, domain, "jvm.memory.used", tags);
+			if(jvmMemUsedMetrics != null ) {
+			    String[] memoryZones =  jvmMemUsedMetrics.getAvailableTags()[0].getValues();
+			    Arrays.sort(memoryZones);
+			    for(String zone : memoryZones) {
+			        String tag = tags+",id:"+zone;
+	                LiveMemoryMetricsModel metrics = getLiveMetrics(connection, domain, "jvm.memory.used", tag );
+	                if(metrics != null) {
+	                    memoryMetricsList.add(metrics);
+	                }
+	            }
+			    
+			    for(String metric : memoryMetrics) {
+                    LiveMemoryMetricsModel metrics = getLiveMetrics(connection, domain, metric, tags );
+                    if(metrics != null) {
+                        memoryMetricsList.add(metrics);
+                    }
+                }	    
+			}
+			
 			LiveMemoryMetricsModel[] res = (LiveMemoryMetricsModel[]) memoryMetricsList.toArray(new LiveMemoryMetricsModel[memoryMetricsList.size()]);
 			return new SpringProcessMemoryMetricsLiveData(
 					processType,
@@ -196,7 +202,7 @@ public class SpringProcessLiveDataExtractorOverJMX {
 	 * @param metricName 
 	 */
 	public SpringProcessGcPausesMetricsLiveData retrieveLiveGcPausesMetricsData(ProcessType processType, JMXConnector jmxConnector, String processID, String processName,
-			 SpringProcessLiveData currentData, String metricName) {
+			 SpringProcessLiveData currentData, String metricName, String tags) {
 				
 		try {
 			MBeanServerConnection connection = jmxConnector.getMBeanServerConnection();
@@ -215,9 +221,9 @@ public class SpringProcessLiveDataExtractorOverJMX {
 				}
 			}
 			
-			LiveMemoryMetricsModel metrics = getLiveMetrics(connection, domain, "jvm.gc.pause");
+			LiveMemoryMetricsModel metrics = getLiveMetrics(connection, domain, "jvm.gc.pause", tags);
 			if(metrics != null) {
-				memoryMetricsList.add(getLiveMetrics(connection, domain, "jvm.gc.pause"));
+				memoryMetricsList.add(getLiveMetrics(connection, domain, "jvm.gc.pause", tags));
 			}
 			
 
@@ -368,9 +374,8 @@ public class SpringProcessLiveDataExtractorOverJMX {
 	}
 	
 	
-	public LiveMemoryMetricsModel getLiveMetrics(MBeanServerConnection connection, String domain, String metricName) {
+	public LiveMemoryMetricsModel getLiveMetrics(MBeanServerConnection connection, String domain, String metricName, String tags) {
 		
-		List<Object> tags = new ArrayList<>();		
 		Object[] params1 = new Object[] {metricName, tags};
 		String[] signature =  new String[] {String.class.getName(), List.class.getName()};
 		

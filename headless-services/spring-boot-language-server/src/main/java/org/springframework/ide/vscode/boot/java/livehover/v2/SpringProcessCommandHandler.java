@@ -150,7 +150,7 @@ public class SpringProcessCommandHandler {
 		String processKey = getProcessKey(params);
 		String endpoint = getArgumentByKey(params, "endpoint");
 		if (processKey != null) {
-			connectorService.refreshProcess(processKey, endpoint, "");
+			connectorService.refreshProcess(processKey, endpoint, "", null);
 		}
 
 		return CompletableFuture.completedFuture(null);
@@ -160,8 +160,9 @@ public class SpringProcessCommandHandler {
 		String processKey = getProcessKey(params);
 		String endpoint = getArgumentByKey(params, "endpoint");
 		String metricName = getArgumentByKey(params, "metricName");
+		String tags = getArgumentByKey(params, "tags");
 		if (processKey != null) {
-			connectorService.refreshProcess(processKey, endpoint, metricName);
+			connectorService.refreshProcess(processKey, endpoint, metricName, tags);
 		}
 
 		return CompletableFuture.completedFuture(null);
@@ -245,8 +246,10 @@ public class SpringProcessCommandHandler {
 			}
 			else if (arg instanceof JsonObject) {
 				JsonElement element = ((JsonObject) arg).get(name);
-				if (element != null) {
-					return element.getAsString();
+				if (element != null && element instanceof JsonObject) {
+					return element.toString();
+				} else if ( element != null) {
+				    return element.getAsString();
 				}
 			}
 		}
