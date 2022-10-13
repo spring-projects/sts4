@@ -9,6 +9,7 @@ import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
 import org.springframework.tooling.boot.ls.prefs.FileListEditor;
+import org.springframework.tooling.boot.ls.prefs.StringListEditor;
 
 public class RewritePreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
 
@@ -21,11 +22,18 @@ public class RewritePreferencePage extends FieldEditorPreferencePage implements 
 	protected void createFieldEditors() {
 		Composite fieldEditorParent = getFieldEditorParent();
 		
-		addField(new BooleanFieldEditor(Constants.PREF_REWRITE_RECONCILE, "Experimental reconciling for Java source based on Rewrite project", fieldEditorParent));
+		addField(new BooleanFieldEditor(Constants.PREF_REWRITE_RECONCILE,
+				"Experimental reconciling for Java source based on Rewrite project", fieldEditorParent));
 		
-		addField(new FileListEditor(Constants.PREF_REWRITE_RECIPES_SCAN_FILES, "JAR and YAML files to scan for Recipes", "Select JARs and YAML files:", fieldEditorParent, List.of("jar", "yml", "yaml")));
+		addField(new StringListEditor(fieldEditorParent, Constants.PREF_REWRITE_RECIPE_FILTERS,
+				"Recipe filter IDs and patterns", "Filter Value",
+				"Either exact ID or pattern with '*' as the wild-card:", text -> text.isBlank() ? "Cannot be blank" : null));
 		
-		addField(new PathEditor(Constants.PREF_REWRITE_RECIPES_SCAN_DIRS, "Directories to scan for Recipes", "Select directory to scan for Recipes", fieldEditorParent));
+		addField(new FileListEditor(Constants.PREF_REWRITE_RECIPES_SCAN_FILES, "JAR and YAML files to scan for Recipes",
+				"Select JARs and YAML files:", fieldEditorParent, List.of("jar", "yml", "yaml")));
+
+		addField(new PathEditor(Constants.PREF_REWRITE_RECIPES_SCAN_DIRS, "Directories to scan for Recipes",
+				"Select directory to scan for Recipes", fieldEditorParent));
 
 	}
 

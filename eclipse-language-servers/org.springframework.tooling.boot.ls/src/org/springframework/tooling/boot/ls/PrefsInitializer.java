@@ -12,6 +12,7 @@ package org.springframework.tooling.boot.ls;
 
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.eclipse.jface.preference.IPreferenceStore;
+import org.springframework.tooling.boot.ls.prefs.StringListEditor;
 
 /**
  * Preferences initializer for Boot-Java LS extension
@@ -42,6 +43,19 @@ public class PrefsInitializer extends AbstractPreferenceInitializer {
 		preferenceStore.setDefault(Constants.PREF_SCAN_JAVA_TEST_SOURCES, false);
 		
 		preferenceStore.setDefault(Constants.PREF_REWRITE_RECONCILE, false);
+		
+		preferenceStore.setDefault(Constants.PREF_REWRITE_RECIPE_FILTERS, StringListEditor.encode(new String[] {
+				"org.openrewrite.java.spring.boot2.SpringBoot2JUnit4to5Migration",
+				"org.openrewrite.java.spring.boot2.SpringBoot2BestPractices",
+				"org.openrewrite.java.spring.boot2.SpringBoot1To2Migration",
+				"org.openrewrite.java.testing.junit5.JUnit5BestPractices",
+				"org.openrewrite.java.testing.junit5.JUnit4to5Migration",
+				"org.openrewrite.java.spring.boot2.UpgradeSpringBoot_2_6",
+				"org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_0",
+				"org.rewrite.java.security.*",
+				"org.springframework.rewrite.test.*",
+				"rewrite.test.*"
+		}));
 	}
 
 }

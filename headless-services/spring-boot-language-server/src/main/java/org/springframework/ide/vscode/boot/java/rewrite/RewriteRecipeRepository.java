@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -107,17 +108,8 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 	
 	private Set<String> scanFiles = Collections.emptySet();
 	private Set<String> scanDirs = Collections.emptySet();
-	
-	static final Set<String> TOP_LEVEL_RECIPES = Set.of(
-			"org.openrewrite.java.spring.boot2.SpringBoot2JUnit4to5Migration",
-			"org.openrewrite.java.spring.boot2.SpringBoot2BestPractices",
-			"org.openrewrite.java.spring.boot2.SpringBoot1To2Migration",
-			"org.openrewrite.java.testing.junit5.JUnit5BestPractices",
-			"org.openrewrite.java.testing.junit5.JUnit4to5Migration",
-			"org.openrewrite.java.spring.boot2.UpgradeSpringBoot_2_6",
-			"org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_0"
-	);
-	
+	private Set<String> recipeFilters = Collections.emptySet();
+		
 	private static Gson serializationGson = new GsonBuilder()
 			.registerTypeAdapter(Duration.class, new DurationTypeConverter())
 			.create();
@@ -134,6 +126,7 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 		server.doOnInitialized(() -> {
 			this.scanDirs = config.getRecipeDirectories();
 			this.scanFiles = config.getRecipeFiles();
+			this.recipeFilters = config.getRecipesFilters();
 			load().thenAccept(v -> registerCommands());
 			config.addListener(l -> {
 				if (!scanDirs.equals(config.getRecipeDirectories())
@@ -143,6 +136,11 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 					scanDirs = config.getRecipeDirectories();
 					scanFiles = config.getRecipeFiles();
 					load();
+				}
+				Set<String> recipeFilterFromConfig = config.getRecipesFilters();
+				if (!recipeFilters.equals(recipeFilterFromConfig)) {
+					recipeFilters = recipeFilterFromConfig;
+					updateGlobalCommandRecipes();
 				}
 			});
 		});
@@ -176,19 +174,9 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 					}
 					recipes.put(r.getName(), r);
 					
-					if (TOP_LEVEL_RECIPES.contains(r.getName()) || r.getName().startsWith("rewrite.test.")
-							|| r.getName().startsWith("org.rewrite.java.security")
-							|| r.getName().startsWith("org.springframework.rewrite.test")) {
-						Validated validation = Validated.invalid(null, null, null);
-						try {
-							validation = r.validate();
-						} catch (Exception e) {
-							// ignore
-						}
-						if (validation.isValid()) {
-							globalCommandRecipes.add(r);
-						}
-					}
+					if (isAcceptableGlobalCommandRecipe(r)) {
+						globalCommandRecipes.add(r);
+					}					
 				}
 			}
 			javaProblemDescriptors.addAll(env.listProblemDescriptors());
@@ -199,6 +187,45 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 		} finally {
 			server.getProgressService().progressDone(taskId);
 		}
+	}
+	
+	private void updateGlobalCommandRecipes() {
+		globalCommandRecipes.clear();
+		for (Recipe r : recipes.values()) {
+			if (isAcceptableGlobalCommandRecipe(r)) {
+				globalCommandRecipes.add(r);
+			}
+		}
+	}
+	
+	private boolean isAcceptableGlobalCommandRecipe(Recipe r) {
+		for (String filter : recipeFilters) {
+			if (!filter.isBlank()) {
+				// Check if wild-card character present
+				if (filter.indexOf('*') < 0) {
+					// No wild-card - direct equality 
+					if (filter.equals(r.getName())) {
+						return isRecipeValid(r);
+					}
+				} else {
+					// Wild-card present - convert to regular expression
+					if (Pattern.matches(filter.replaceAll("\\*", "\\.*"), r.getName())) {
+						return isRecipeValid(r);
+					}
+				}
+			}
+		}
+		return false;
+	}
+	
+	private static boolean isRecipeValid(Recipe r) {
+		Validated validation = Validated.invalid(null, null, null);
+		try {
+			validation = r.validate();
+		} catch (Exception e) {
+			// ignore
+		}
+		return validation.isValid();
 	}
 	
 	private StsEnvironment createRewriteEnvironment() {

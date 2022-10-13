@@ -198,6 +198,25 @@
             "default": false,
             "description": "Experimental reconciling for Java source based on Rewrite project"
           },
+          "boot-java.rewrite.recipe-filters": {
+            "type": "array",
+            "default": [
+              "org.openrewrite.java.spring.boot2.SpringBoot2JUnit4to5Migration",
+              "org.openrewrite.java.spring.boot2.SpringBoot2BestPractices",
+              "org.openrewrite.java.spring.boot2.SpringBoot1To2Migration",
+              "org.openrewrite.java.testing.junit5.JUnit5BestPractices",
+              "org.openrewrite.java.testing.junit5.JUnit4to5Migration",
+              "org.openrewrite.java.spring.boot2.UpgradeSpringBoot_2_6",
+              "org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_0",
+              "org.rewrite.java.security.*",
+              "org.springframework.rewrite.test.*",
+              "rewrite.test.*"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "description": "Recipe ID filter patterns. Either exact ids or patterns with '*' as the wild-card"
+          },
           "boot-java.rewrite.scan-files": {
             "type": "array",
             "default": [],

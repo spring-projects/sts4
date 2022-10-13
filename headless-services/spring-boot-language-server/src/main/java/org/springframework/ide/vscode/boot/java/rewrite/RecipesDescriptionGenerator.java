@@ -16,6 +16,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.openrewrite.config.Environment;
@@ -23,10 +24,21 @@ import org.openrewrite.config.OptionDescriptor;
 import org.openrewrite.config.RecipeDescriptor;
 
 public class RecipesDescriptionGenerator {
+	
+	private static final Set<String> TOP_LEVEL_RECIPES = Set.of(
+			"org.openrewrite.java.spring.boot2.SpringBoot2JUnit4to5Migration",
+			"org.openrewrite.java.spring.boot2.SpringBoot2BestPractices",
+			"org.openrewrite.java.spring.boot2.SpringBoot1To2Migration",
+			"org.openrewrite.java.testing.junit5.JUnit5BestPractices",
+			"org.openrewrite.java.testing.junit5.JUnit4to5Migration",
+			"org.openrewrite.java.spring.boot2.UpgradeSpringBoot_2_6",
+			"org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_0"
+	);
+
 
 	public static void main(String[] args) throws IOException {
 		String s = Environment.builder().scanRuntimeClasspath().build().listRecipeDescriptors().stream()
-			.filter(d -> RewriteRecipeRepository.TOP_LEVEL_RECIPES.contains(d.getName()))
+			.filter(d -> TOP_LEVEL_RECIPES.contains(d.getName()))
 			.map(d -> convertToMarkdown(d, 1))
 			.collect(Collectors.joining("\n\n"));
 		
