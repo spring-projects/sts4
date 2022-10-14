@@ -19,6 +19,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Function;
 
 import org.openrewrite.Recipe;
 import org.openrewrite.config.DeclarativeRecipe;
@@ -50,18 +51,17 @@ public class LoadUtils {
 		}
 	}
 	
-	@SuppressWarnings("unchecked")
-	public static Recipe createRecipe(RecipeDescriptor d) {
-		try {
-			Class<? extends Recipe> recipeClazz = (Class<? extends Recipe>) Class.forName(d.getName());
-			Recipe recipe = constructRecipe(recipeClazz, d.getOptions());
-			return recipe;
-		} catch (ClassNotFoundException e) {
-			DeclarativeRecipe recipe = new DeclarativeRecipe(d.getName(), d.getDisplayName(), d.getDescription(), d.getTags(), d.getEstimatedEffortPerOccurrence(), d.getSource(), false);
+	public static Recipe createRecipe(RecipeDescriptor d, Function<String, Class<? extends Recipe>> getRecipeClass) {
+		Class<? extends Recipe> recipeClazz = getRecipeClass.apply(d.getName());
+		if (recipeClazz == null) {
+			DeclarativeRecipe recipe = new DeclarativeRecipe(d.getName(), d.getDisplayName(), d.getDescription(),
+					d.getTags(), d.getEstimatedEffortPerOccurrence(), d.getSource(), false);
 			for (RecipeDescriptor subDescriptor : d.getRecipeList()) {
-				recipe.doNext(createRecipe(subDescriptor));
+				recipe.doNext(createRecipe(subDescriptor, getRecipeClass));
 			}
 			return recipe;
+		} else {
+			return constructRecipe(recipeClazz, d.getOptions());
 		}
 	}
 	

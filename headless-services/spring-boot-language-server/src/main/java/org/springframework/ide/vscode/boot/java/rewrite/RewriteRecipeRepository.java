@@ -48,6 +48,7 @@ import org.openrewrite.Result;
 import org.openrewrite.SourceFile;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.Validated;
+import org.openrewrite.config.DeclarativeRecipe;
 import org.openrewrite.config.RecipeDescriptor;
 import org.openrewrite.config.YamlResourceLoader;
 import org.openrewrite.java.JavaParser;
@@ -338,10 +339,10 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 			
 			RecipeDescriptor d = serializationGson.fromJson(recipesJson, RecipeDescriptor.class);
 			
-			Recipe aggregateRecipe = LoadUtils.createRecipe(d);
+			Recipe aggregateRecipe = LoadUtils.createRecipe(d, id -> getRecipe(id).map(r -> r.getClass()).orElse(null));
 			
-			if (aggregateRecipe.getRecipeList().isEmpty()) {
-				throw new RuntimeException("Not recipes to execute!");
+			if (aggregateRecipe instanceof DeclarativeRecipe && aggregateRecipe.getRecipeList().isEmpty()) {
+				throw new RuntimeException("No recipes found to perform!");
 			} else if (aggregateRecipe.getRecipeList().size() == 1) {
 				Recipe r = aggregateRecipe.getRecipeList().get(0);
 				String progressToken = params.getWorkDoneToken() == null || params.getWorkDoneToken().getLeft() == null ? r.getName() : params.getWorkDoneToken().getLeft();
