@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2017 Pivotal, Inc.
+ * Copyright (c) 2015, 2022 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -49,6 +49,7 @@ import org.springsource.ide.eclipse.commons.livexp.util.ExceptionUtil;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.DumperOptions.FlowStyle;
 import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.SafeConstructor;
 
 import com.google.common.collect.ImmutableList;
 
@@ -984,7 +985,7 @@ public class ApplicationManifestHandler {
 		InputStream inputStream = getInputStream();
 
 		if (inputStream != null) {
-			Yaml yaml = new Yaml();
+			Yaml yaml = new Yaml(new SafeConstructor());
 
 			try {
 				Object results = yaml.load(inputStream);
