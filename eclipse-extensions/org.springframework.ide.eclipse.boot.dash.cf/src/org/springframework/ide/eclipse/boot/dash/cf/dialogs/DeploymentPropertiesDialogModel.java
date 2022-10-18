@@ -58,6 +58,8 @@ import org.springsource.ide.eclipse.commons.livexp.util.ExceptionUtil;
 import org.springsource.ide.eclipse.commons.livexp.util.Log;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.DumperOptions.FlowStyle;
+import org.yaml.snakeyaml.constructor.SafeConstructor;
+import org.yaml.snakeyaml.representer.Representer;
 import org.yaml.snakeyaml.Yaml;
 
 @SuppressWarnings("restriction")
@@ -919,7 +921,7 @@ public class DeploymentPropertiesDialogModel extends AbstractDisposable {
 		options.setCanonical(false);
 		options.setPrettyFlow(true);
 		options.setDefaultFlowStyle(FlowStyle.BLOCK);
-		return new Yaml(options).dump(yaml);
+		return new Yaml(new SafeConstructor(), new Representer(options), options).dump(yaml);
 	}
 
 

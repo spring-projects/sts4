@@ -19,7 +19,9 @@ import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.SafeConstructor;
 import org.yaml.snakeyaml.nodes.Node;
+import org.yaml.snakeyaml.representer.Representer;
 
 import com.google.common.collect.ImmutableList;
 
@@ -36,7 +38,7 @@ public class YamlParser implements YamlASTProvider {
 		reader.setInput(atTokenTransformHack(doc.get()));
 		LoaderOptions loaderOpts = new LoaderOptions();
 		loaderOpts.setMaxAliasesForCollections(1000);
-		Iterable<Node> nodes = new Yaml(loaderOpts).composeAll(reader);
+		Iterable<Node> nodes = new Yaml(new SafeConstructor(loaderOpts), new Representer(), new DumperOptions(), loaderOpts).composeAll(reader);
 		return new YamlFileAST(doc, ImmutableList.copyOf(nodes));
 	}
 

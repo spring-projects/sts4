@@ -16,6 +16,7 @@ import org.eclipse.jface.text.reconciler.Reconciler;
 import org.eclipse.jface.text.source.ISourceViewer;
 import org.springframework.ide.eclipse.editor.support.yaml.ast.YamlASTProvider;
 import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.SafeConstructor;
 
 /**
  * Reconciler for Application names in CF deployment manifest YAML
@@ -29,7 +30,7 @@ public class ApplicationNameReconciler extends Reconciler {
 
 	public ApplicationNameReconciler() {
 		super();
-		YamlASTProvider parser = new YamlASTProvider(new Yaml());
+		YamlASTProvider parser = new YamlASTProvider(new Yaml(new SafeConstructor()));
 		strategy= new AppNameReconcilingStrategy(parser);
 		this.setReconcilingStrategy(strategy, IDocument.DEFAULT_CONTENT_TYPE);
 	}

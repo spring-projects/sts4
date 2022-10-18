@@ -42,6 +42,7 @@ import org.yaml.snakeyaml.DumperOptions.LineBreak;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.composer.Composer;
 import org.yaml.snakeyaml.constructor.Constructor;
+import org.yaml.snakeyaml.constructor.SafeConstructor;
 import org.yaml.snakeyaml.nodes.MappingNode;
 import org.yaml.snakeyaml.nodes.Node;
 import org.yaml.snakeyaml.nodes.NodeTuple;
@@ -50,6 +51,7 @@ import org.yaml.snakeyaml.nodes.SequenceNode;
 import org.yaml.snakeyaml.nodes.Tag;
 import org.yaml.snakeyaml.parser.ParserImpl;
 import org.yaml.snakeyaml.reader.StreamReader;
+import org.yaml.snakeyaml.representer.Representer;
 import org.yaml.snakeyaml.resolver.Resolver;
 
 import com.google.common.base.Objects;
@@ -98,7 +100,8 @@ public class YamlGraphDeploymentProperties implements DeploymentProperties {
 			appNode = (MappingNode) root;
 		}
 
-		this.yaml = new Yaml(createDumperOptions());
+		DumperOptions options = createDumperOptions();
+		this.yaml = new Yaml(new SafeConstructor(), new Representer(options), options);
 	}
 
 	private static MappingNode findAppNode(SequenceNode seq, String name) {
@@ -252,7 +255,7 @@ public class YamlGraphDeploymentProperties implements DeploymentProperties {
 				options.setPrettyFlow(true);
 				options.setDefaultFlowStyle(FlowStyle.BLOCK);
 				options.setLineBreak(LineBreak.getPlatformLineBreak());
-				edits.addChild(new ReplaceEdit(0, content.length(), new Yaml(options).dump(obj)));
+				edits.addChild(new ReplaceEdit(0, content.length(), new Yaml(new SafeConstructor(), new Representer(options), options).dump(obj)));
 			} else {
 				edit = addLineBreakIfMissing(applicationsValueNode.getEndMark().getIndex());
 				if (edit != null) {

@@ -103,7 +103,10 @@ import org.springsource.ide.eclipse.commons.livexp.core.ObservableSet;
 import org.springsource.ide.eclipse.commons.livexp.util.ExceptionUtil;
 import org.springsource.ide.eclipse.commons.livexp.util.Log;
 import org.springsource.ide.eclipse.commons.livexp.util.OldValueDisposer;
+import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.SafeConstructor;
+import org.yaml.snakeyaml.representer.Representer;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -557,6 +560,7 @@ public class CloudFoundryBootDashModel extends RemoteBootDashModel {
 					final String yamlContents = IOUtil.toString(manifestFile.getContents());
 					String errorMessage = null;
 					TextEdit edit = null;
+					DumperOptions options = YamlGraphDeploymentProperties.createDumperOptions();
 					try {
 						YamlGraphDeploymentProperties yamlGraph = new YamlGraphDeploymentProperties(yamlContents, deploymentProperties.getAppName(), cloudData);
 						MultiTextEdit me = yamlGraph.getDifferences(deploymentProperties);
@@ -568,13 +572,13 @@ public class CloudFoundryBootDashModel extends RemoteBootDashModel {
 						Log.log(e);
 						errorMessage = "Failed to create text differences between local manifest file and deployment properties on CF. Merge with caution.";
 						edit = new ReplaceEdit(0, yamlContents.length(),
-								new Yaml(YamlGraphDeploymentProperties.createDumperOptions())
+								new Yaml(new SafeConstructor(), new Representer(options), options)
 										.dump(ApplicationManifestHandler.toYaml(deploymentProperties, cloudData)));
 					} catch (Throwable t) {
 						Log.log(t);
 						errorMessage = "Failed to parse local manifest file YAML contents. Merge with caution.";
 						edit = new ReplaceEdit(0, yamlContents.length(),
-								new Yaml(YamlGraphDeploymentProperties.createDumperOptions())
+								new Yaml(new SafeConstructor(), new Representer(options), options)
 										.dump(ApplicationManifestHandler.toYaml(deploymentProperties, cloudData)));
 					}
 

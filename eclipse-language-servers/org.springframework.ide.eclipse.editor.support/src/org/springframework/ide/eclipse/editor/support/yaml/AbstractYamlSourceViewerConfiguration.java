@@ -49,6 +49,7 @@ import org.springframework.ide.eclipse.editor.support.yaml.ast.YamlASTProvider;
 import org.springframework.ide.eclipse.editor.support.yaml.hover.YamlHoverInfoProvider;
 import org.springframework.ide.eclipse.editor.support.yaml.structure.YamlStructureProvider;
 import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.SafeConstructor;
 
 /**
  * @author Kris De Volder
@@ -76,7 +77,7 @@ public abstract class AbstractYamlSourceViewerConfiguration extends YEditSourceV
 
 	private Provider<Shell> shellProvider;
 	private final String DIALOG_SETTINGS_KEY = this.getClass().getName();
-	private final YamlASTProvider astProvider = new YamlASTProvider(new Yaml());
+	private final YamlASTProvider astProvider = new YamlASTProvider(new Yaml(new SafeConstructor()));
 	private YamlCompletionEngine completionEngine;
 	protected ForceableReconciler fReconciler;
 
