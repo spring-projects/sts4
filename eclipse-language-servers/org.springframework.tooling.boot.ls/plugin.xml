@@ -34,6 +34,12 @@
             id="org.eclipse.languageserver.languages.springboot">
       </contentTypeMapping>
 
+      <contentTypeMapping
+            contentType="org.springframework.boot.ide.boot.factories"
+            id="org.eclipse.languageserver.languages.springboot"
+            languageId="spring-factories">
+      </contentTypeMapping>
+      
    </extension>
 
    <extension
@@ -87,6 +93,16 @@
       </content-type>
 
       <content-type
+            base-type="org.eclipse.core.runtime.text"
+            default-charset="UTF-8"
+            file-names="spring.factories,aot.factories"
+            file-patterns="*.factories"
+            id="org.springframework.boot.ide.boot.factories"
+            name="Spring Factories File"
+            priority="high">
+      </content-type>
+      
+      <content-type
             base-type="org.eclipse.core.runtime.xml"
             default-charset="UTF-8"
             id="org.springframework.boot.ide.xmlconfig"
@@ -109,6 +125,11 @@
             file-patterns="application-*.yml,application-*.yaml">
       </file-association>
 
+      <file-association
+            content-type="org.springframework.boot.ide.boot.factories"
+            file-names="spring.factories,aot.factories"
+            file-patterns="*.factories">
+      </file-association>
    </extension>
    
    <extension
@@ -270,6 +291,21 @@
    </extension>
 
    <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            class="org.eclipse.ui.internal.genericeditor.ExtensionBasedTextEditor"
+            contributorClass="org.eclipse.ui.editors.text.TextEditorActionContributor"
+            icon="icons/spring_obj.gif"
+            id="SpringFactoriesEditor"
+            name="Generic Editor - Spring Factories"
+            symbolicFontName="org.eclipse.jdt.ui.PropertiesFileEditor.textfont">
+            <contentTypeBinding
+               contentTypeId="org.springframework.boot.ide.boot.factories"
+            /> 
+      </editor>
+   </extension>
+   
+   <extension
          point="org.eclipse.ui.genericeditor.presentationReconcilers">
       <presentationReconciler
             class="org.eclipse.tm4e.ui.text.TMPresentationReconciler"
@@ -282,6 +318,14 @@
       <presentationReconciler
             class="org.eclipse.tm4e.ui.text.TMPresentationReconciler"
             contentType="org.springframework.boot.ide.properties.application.yml">
+      </presentationReconciler>
+   </extension>
+
+   <extension
+         point="org.eclipse.ui.genericeditor.presentationReconcilers">
+      <presentationReconciler
+            class="org.eclipse.tm4e.ui.text.TMPresentationReconciler"
+            contentType="org.springframework.boot.ide.boot.factories">
       </presentationReconciler>
    </extension>
 
@@ -309,6 +353,13 @@
       </scopeNameContentTypeBinding>
    </extension>
    
+   <extension
+         point="org.eclipse.tm4e.registry.grammars">
+      <scopeNameContentTypeBinding
+            contentTypeId="org.springframework.boot.ide.boot.factories"
+            scopeName="source.java-properties">
+      </scopeNameContentTypeBinding>
+   </extension>
    
    <extension
       id="springxml-completion-computer"

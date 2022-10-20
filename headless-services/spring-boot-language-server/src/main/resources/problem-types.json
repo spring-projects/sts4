@@ -72,6 +72,12 @@
         "label": "Type not supported as of Spring Boot 3",
         "description": "Type no supported as of Spring Boot 3",
         "defaultSeverity": "ERROR"
+      },
+      {
+        "code": "FACTORIES_KEY_NOT_SUPPORTED",
+        "label": "Spring factories key not supported",
+        "description": "Spring factories key not supported",
+        "defaultSeverity": "ERROR"
       }
     ]
   },

@@ -30,7 +30,9 @@ public enum Boot3JavaProblemType implements ProblemType {
 	
 	JAVA_BEAN_NOT_REGISTERED_IN_AOT(WARNING, "Not registered as Bean", "Not registered as a Bean"),
 	
-	JAVA_TYPE_NOT_SUPPORTED(ERROR, "Type no supported as of Spring Boot 3", "Type not supported as of Spring Boot 3");
+	JAVA_TYPE_NOT_SUPPORTED(ERROR, "Type no supported as of Spring Boot 3", "Type not supported as of Spring Boot 3"),
+	
+	FACTORIES_KEY_NOT_SUPPORTED(ERROR, "Spring factories key not supported", "Spring factories key not supported");
 	
 	private final ProblemSeverity defaultSeverity;
 	private String description;

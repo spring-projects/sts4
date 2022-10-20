@@ -33,7 +33,7 @@ public class ListenerList<T> {
 		}
 	}
 
-	public void add(Consumer<T> l) {
+	public synchronized void add(Consumer<T> l) {
 		listeners.add(l);
 	}
 

@@ -30,6 +30,7 @@
     "onLanguage:spring-boot-properties-yaml",
     "onLanguage:java",
     "onLanguage:xml",
+    "onLanguage:spring-factories",
     "onDebugResolve:java",
     "onCommand:vscode-spring-boot.rewrite.list"
   ],
@@ -62,6 +63,16 @@
         "filenamePatterns": [
           "application*.properties",
           "bootstrap*.properties"
+        ],
+        "configuration": "./properties-support/language-configuration.json"
+      },
+      {
+        "id": "spring-factories",
+        "aliases": [
+          "Spring Factories"
+        ],
+        "filenamePatterns": [
+          "*.factories"
         ],
         "configuration": "./properties-support/language-configuration.json"
       }
@@ -383,6 +394,18 @@
             "type": "string",
             "default": "ERROR",
             "description": "Type no supported as of Spring Boot 3",
+            "enum": [
+              "IGNORE",
+              "INFO",
+              "WARNING",
+              "HINT",
+              "ERROR"
+            ]
+          },
+          "spring-boot.ls.problem.boot3.FACTORIES_KEY_NOT_SUPPORTED": {
+            "type": "string",
+            "default": "ERROR",
+            "description": "Spring factories key not supported",
             "enum": [
               "IGNORE",
               "INFO",
@@ -732,6 +755,11 @@
       },
       {
         "language": "spring-boot-properties",
+        "scopeName": "source.java-properties",
+        "path": "./properties-support/java-properties.tmLanguage"
+      },
+      {
+        "language": "spring-factories",
         "scopeName": "source.java-properties",
         "path": "./properties-support/java-properties.tmLanguage"
       }

@@ -11,7 +11,6 @@
 package org.springframework.ide.vscode.boot.app;
 
 import java.net.URI;
-import java.nio.file.Path;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,6 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.ide.vscode.boot.common.IJavaProjectReconcileEngine;
+import org.springframework.ide.vscode.boot.factories.SpringFactoriesLanguageServerComponents;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
 import org.springframework.ide.vscode.boot.java.links.JavaElementLocationProvider;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
@@ -143,6 +143,7 @@ public class BootLanguageServerInitializer implements InitializingBean {
 		BootJavaLanguageServerComponents bootJavaLanguageServerComponent = new BootJavaLanguageServerComponents(appContext);
 		builder.add(bootJavaLanguageServerComponent);
 		builder.add(new SpringXMLLanguageServerComponents(server, springIndexer, params, config));
+		builder.add(new SpringFactoriesLanguageServerComponents(projectFinder, springIndexer));
 		components = builder.build(server);
 		
 		projectReconciler = (IJavaProjectReconcileEngine) bootJavaLanguageServerComponent.getReconcileEngine().get();
