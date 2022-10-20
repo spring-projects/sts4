@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019 Pivotal, Inc.
+ * Copyright (c) 2019, 2022 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -19,6 +19,7 @@ import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.commons.languageserver.composable.LanguageServerComponents;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
+import org.springframework.ide.vscode.commons.languageserver.util.DocumentSymbolHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.HoverHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
@@ -34,6 +35,7 @@ public class SpringXMLLanguageServerComponents implements LanguageServerComponen
 
 	private final JavaProjectFinder projectFinder;
 	private final SpringXMLReconcileEngine reconcileEngine;
+	private final DocumentSymbolHandler docSymbolProvider;
 
 	public SpringXMLLanguageServerComponents(
 			SimpleLanguageServer server,
@@ -42,6 +44,7 @@ public class SpringXMLLanguageServerComponents implements LanguageServerComponen
 			BootJavaConfig config) {
 
 		this.projectFinder = serverParams.projectFinder;
+		this.docSymbolProvider = params -> springIndexer.getSymbols(params.getTextDocument().getUri());
 
 		server.doOnInitialized(this::initialized);
 		server.onShutdown(this::shutdown);
@@ -62,6 +65,11 @@ public class SpringXMLLanguageServerComponents implements LanguageServerComponen
 	@Override
 	public Optional<IReconcileEngine> getReconcileEngine() {
 		return Optional.of(this.reconcileEngine);
+	}
+	
+	@Override
+	public Optional<DocumentSymbolHandler> getDocumentSymbolProvider() {
+		return Optional.of(docSymbolProvider);
 	}
 
 	@Override

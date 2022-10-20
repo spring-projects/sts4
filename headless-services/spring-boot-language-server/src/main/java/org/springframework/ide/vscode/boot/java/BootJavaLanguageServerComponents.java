@@ -30,7 +30,6 @@ import org.springframework.ide.vscode.boot.java.conditionals.ConditionalsLiveHov
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaCodeActionProvider;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaCodeLensEngine;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaDocumentHighlightEngine;
-import org.springframework.ide.vscode.boot.java.handlers.BootJavaDocumentSymbolHandler;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaHoverProvider;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaReconcileEngine;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaReferencesHandler;
@@ -72,6 +71,7 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcil
 import org.springframework.ide.vscode.commons.languageserver.util.CodeActionHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.CodeLensHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentHighlightHandler;
+import org.springframework.ide.vscode.commons.languageserver.util.DocumentSymbolHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.HoverHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.ReferencesHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
@@ -116,6 +116,7 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 	private DocumentHighlightHandler highlightsEngine;
 	private BootJavaReconcileEngine reconcileEngine;
 	private BootJavaCodeActionProvider codeActionProvider;
+	private DocumentSymbolHandler docSymbolProvider;
 
 	private SpringProcessTracker liveProcessTracker;
 
@@ -165,7 +166,9 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		//
 
 		SpringSymbolIndex indexer = appContext.getBean(SpringSymbolIndex.class);
-		documents.onDocumentSymbol(new BootJavaDocumentSymbolHandler(this, indexer));
+		
+		docSymbolProvider = params -> indexer.getSymbols(params.getTextDocument().getUri());
+		
 		workspaceService.onWorkspaceSymbol(new BootJavaWorkspaceSymbolHandler(indexer,
 				new LiveAppURLSymbolProvider(liveDataProvider)));
 
@@ -252,6 +255,11 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 	@Override
 	public Optional<IReconcileEngine> getReconcileEngine() {
 		return Optional.of(reconcileEngine);
+	}
+
+	@Override
+	public Optional<DocumentSymbolHandler> getDocumentSymbolProvider() {
+		return Optional.of(docSymbolProvider);
 	}
 
 	private void initialized() {

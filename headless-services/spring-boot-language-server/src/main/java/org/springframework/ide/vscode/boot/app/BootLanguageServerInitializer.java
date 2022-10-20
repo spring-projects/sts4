@@ -172,6 +172,8 @@ public class BootLanguageServerInitializer implements InitializingBean {
 		
 		components.getCodeActionProvider().ifPresent(documents::onCodeAction);
 		
+		components.getDocumentSymbolProvider().ifPresent(documents::onDocumentSymbol);
+		
 		config.addListener(evt -> reconcile());
 		
 		if (recipesRepo != null) {

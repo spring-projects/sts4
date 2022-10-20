@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Pivotal, Inc.
+ * Copyright (c) 2018, 2022 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -15,6 +15,7 @@ import java.util.Set;
 
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
 import org.springframework.ide.vscode.commons.languageserver.util.CodeActionHandler;
+import org.springframework.ide.vscode.commons.languageserver.util.DocumentSymbolHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.HoverHandler;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 
@@ -24,4 +25,5 @@ public interface LanguageServerComponents {
 	default Optional<IReconcileEngine> getReconcileEngine() { return Optional.empty(); }
 	HoverHandler getHoverProvider();
 	default Optional<CodeActionHandler> getCodeActionProvider() { return Optional.empty(); }
+	default Optional<DocumentSymbolHandler> getDocumentSymbolProvider() { return Optional.empty(); }
 }
