@@ -27,11 +27,10 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemTy
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemTypes;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeCodeActionDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
-import org.springframework.ide.vscode.commons.rewrite.config.RecipeSpringJavaProblemDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.java.FixAssistMarker;
 import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
 
-public class HelloMethodRenameProblemDescriptor implements RecipeSpringJavaProblemDescriptor {
+public class HelloMethodRenameProblemDescriptor implements RecipeCodeActionDescriptor {
 
 	private static final String LABEL = "Switch hello method into bye";
 	private static final String RECIPE_ID = "org.springframework.rewrite.test.HelloMethodRenameRecipe";

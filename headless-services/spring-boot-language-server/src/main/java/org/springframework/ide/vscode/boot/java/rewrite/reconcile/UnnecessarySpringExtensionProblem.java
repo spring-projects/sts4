@@ -30,11 +30,10 @@ import org.springframework.ide.vscode.boot.java.Boot2JavaProblemType;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeCodeActionDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
-import org.springframework.ide.vscode.commons.rewrite.config.RecipeSpringJavaProblemDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.java.FixAssistMarker;
 import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
 
-public class UnnecessarySpringExtensionProblem implements RecipeSpringJavaProblemDescriptor {
+public class UnnecessarySpringExtensionProblem implements RecipeCodeActionDescriptor {
 
 	private static final String LABEL = "Remove unnecessary @SpringExtension";
 	private static final String ID = "org.openrewrite.java.spring.boot2.UnnecessarySpringExtension";

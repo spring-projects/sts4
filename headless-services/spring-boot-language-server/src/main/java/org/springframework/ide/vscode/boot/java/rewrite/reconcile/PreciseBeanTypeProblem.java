@@ -30,11 +30,10 @@ import org.springframework.ide.vscode.boot.java.Boot3JavaProblemType;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeCodeActionDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
-import org.springframework.ide.vscode.commons.rewrite.config.RecipeSpringJavaProblemDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.java.FixAssistMarker;
 import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
 
-public class PreciseBeanTypeProblem implements RecipeSpringJavaProblemDescriptor {
+public class PreciseBeanTypeProblem implements RecipeCodeActionDescriptor {
 
 	private static final String RECIPE_ID = "org.openrewrite.java.spring.boot3.PreciseBeanType";
 

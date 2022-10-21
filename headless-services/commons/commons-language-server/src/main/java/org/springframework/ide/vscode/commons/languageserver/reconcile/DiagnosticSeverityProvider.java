@@ -32,10 +32,15 @@ public interface DiagnosticSeverityProvider {
 		}
 	}
 	
-	DiagnosticSeverity getDiagnosticSeverity(ReconcileProblem problem);
+	DiagnosticSeverity getDiagnosticSeverity(ProblemType problem);
 
+	default DiagnosticSeverity getDiagnosticSeverity(ReconcileProblem problem) {
+		return getDiagnosticSeverity(problem.getType());
+	}
+	
 	static final DiagnosticSeverityProvider DEFAULT = (problem) -> {
-		ProblemSeverity severity = problem.getType().getDefaultSeverity();
+		ProblemSeverity severity = problem.getDefaultSeverity();
 		return diagnosticSeverity(severity);
 	};
+	
 }

@@ -24,20 +24,20 @@ import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.J.ClassDeclaration;
 import org.openrewrite.java.tree.J.MethodDeclaration;
 import org.openrewrite.java.tree.JavaType.FullyQualified;
-import org.openrewrite.marker.Range;
 import org.openrewrite.java.tree.Statement;
 import org.openrewrite.java.tree.TypeUtils;
+import org.openrewrite.marker.Range;
 import org.springframework.context.ApplicationContext;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.Boot2JavaProblemType;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.rewrite.config.RecipeCodeActionDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
-import org.springframework.ide.vscode.commons.rewrite.config.RecipeSpringJavaProblemDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.java.AnnotationHierarchies;
 import org.springframework.ide.vscode.commons.rewrite.java.FixAssistMarker;
 import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
 
-public class NoAutowiredOnConstructorProblem implements RecipeSpringJavaProblemDescriptor {
+public class NoAutowiredOnConstructorProblem implements RecipeCodeActionDescriptor {
 
 	private static final String ID = "org.openrewrite.java.spring.NoAutowiredOnConstructor";
 	private static final String LABEL = "Remove Unnecessary @Autowired";

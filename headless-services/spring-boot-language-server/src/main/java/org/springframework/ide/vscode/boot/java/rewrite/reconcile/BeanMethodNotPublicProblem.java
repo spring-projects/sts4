@@ -28,11 +28,10 @@ import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeCodeActionDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
-import org.springframework.ide.vscode.commons.rewrite.config.RecipeSpringJavaProblemDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.java.FixAssistMarker;
 import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
 
-public class BeanMethodNotPublicProblem implements RecipeSpringJavaProblemDescriptor {
+public class BeanMethodNotPublicProblem implements RecipeCodeActionDescriptor {
 	
     private static final String ID = "org.openrewrite.java.spring.BeanMethodsNotPublic";
     

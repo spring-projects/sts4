@@ -46,7 +46,7 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemC
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblem;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblemImpl;
-import org.springframework.ide.vscode.commons.rewrite.config.RecipeSpringJavaProblemDescriptor;
+import org.springframework.ide.vscode.commons.rewrite.config.RecipeCodeActionDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.java.FixAssistMarker;
 import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.java.ORAstUtils;
@@ -81,7 +81,7 @@ public class RewriteReconciler implements JavaReconciler {
 		try {
 			problemCollector.beginCollecting();
 			
-			List<RecipeSpringJavaProblemDescriptor> descriptors = getProblemRecipeDescriptors(project);
+			List<RecipeCodeActionDescriptor> descriptors = getProblemRecipeDescriptors(project);
 			
 			if (!descriptors.isEmpty()) {
 				CompilationUnit cu = cuCache.getCU(project, URI.create(doc.getUri()));
@@ -104,7 +104,7 @@ public class RewriteReconciler implements JavaReconciler {
 		if (astNode != null) {
 			Range range = astNode.getMarkers().findFirst(Range.class).orElse(null);
 			if (range != null) {
-				RecipeSpringJavaProblemDescriptor recipeFixDescriptor = recipeRepo.getProblemRecipeDescriptor(m.getDescriptorId());
+				RecipeCodeActionDescriptor recipeFixDescriptor = recipeRepo.getCodeActionRecipeDescriptor(m.getDescriptorId());
 				if (recipeFixDescriptor != null) {
 					return List.of(createProblem(doc, recipeFixDescriptor, m, range));
 				}
@@ -113,7 +113,7 @@ public class RewriteReconciler implements JavaReconciler {
 		return Collections.emptyList();
 	}
 	
-	private ReconcileProblemImpl createProblem(IDocument doc, RecipeSpringJavaProblemDescriptor recipeFixDescriptor,
+	private ReconcileProblemImpl createProblem(IDocument doc, RecipeCodeActionDescriptor recipeFixDescriptor,
 			FixAssistMarker m, Range range) {
 		ProblemType problemType = recipeFixDescriptor.getProblemType();
 		ReconcileProblemImpl problem = new ReconcileProblemImpl(problemType, m.getLabel() == null ? problemType.getLabel() : m.getLabel(), range.getStart().getOffset(), range.getEnd().getOffset() - range.getStart().getOffset());
@@ -139,7 +139,7 @@ public class RewriteReconciler implements JavaReconciler {
 		
 		if (config.isRewriteReconcileEnabled()) {
 			try {
-				List<RecipeSpringJavaProblemDescriptor> descriptors = getProblemRecipeDescriptors(project);
+				List<RecipeCodeActionDescriptor> descriptors = getProblemRecipeDescriptors(project);
 	
 				JavaParser javaParser = ORAstUtils.createJavaParser(project);
 				if (javaParser != null) {
@@ -170,7 +170,7 @@ public class RewriteReconciler implements JavaReconciler {
 		return allProblems;
 	}
 	
-	private List<RecipeSpringJavaProblemDescriptor> getProblemRecipeDescriptors(IJavaProject project)
+	private List<RecipeCodeActionDescriptor> getProblemRecipeDescriptors(IJavaProject project)
 			throws InterruptedException, ExecutionException {
 		return recipeRepo.getProblemRecipeDescriptors().stream().filter(d -> d.getProblemType() != null).filter(d -> {
 			switch (config.getProblemApplicability(d.getProblemType())) {
@@ -184,7 +184,7 @@ public class RewriteReconciler implements JavaReconciler {
 		}).collect(Collectors.toList());
 	}
 	
-	private void collectProblems(List<RecipeSpringJavaProblemDescriptor> descriptors, IDocument doc, CompilationUnit compilationUnit, Consumer<ReconcileProblem> problemHandler) {
+	private void collectProblems(List<RecipeCodeActionDescriptor> descriptors, IDocument doc, CompilationUnit compilationUnit, Consumer<ReconcileProblem> problemHandler) {
 		CompilationUnit cu = recipeRepo.mark(descriptors, compilationUnit);
 		
 		new JavaIsoVisitor<ExecutionContext>() {

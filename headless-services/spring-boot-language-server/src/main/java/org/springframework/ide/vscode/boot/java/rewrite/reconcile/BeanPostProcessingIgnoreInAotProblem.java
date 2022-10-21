@@ -29,12 +29,11 @@ import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeCodeActionDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
-import org.springframework.ide.vscode.commons.rewrite.config.RecipeSpringJavaProblemDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.java.BeanPostProcessingIgnoreInAot;
 import org.springframework.ide.vscode.commons.rewrite.java.FixAssistMarker;
 import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
 
-public class BeanPostProcessingIgnoreInAotProblem implements RecipeSpringJavaProblemDescriptor {
+public class BeanPostProcessingIgnoreInAotProblem implements RecipeCodeActionDescriptor {
 	
 	private static final String RECIPE_ID = "org.springframework.ide.vscode.commons.rewrite.java.BeanPostProcessingIgnoreInAot";
 	private static final String LABEL = "Add method 'isBeanExcludedFromAotProcessing' that returns 'false'";

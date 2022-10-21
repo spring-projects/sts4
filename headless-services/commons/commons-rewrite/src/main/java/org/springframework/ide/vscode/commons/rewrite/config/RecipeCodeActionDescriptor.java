@@ -14,6 +14,7 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.java.JavaVisitor;
 import org.springframework.context.ApplicationContext;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
 
 public interface RecipeCodeActionDescriptor {
 	
@@ -24,6 +25,10 @@ public interface RecipeCodeActionDescriptor {
 	JavaVisitor<ExecutionContext> getMarkerVisitor(ApplicationContext applicationContext);
 	
 	boolean isApplicable(IJavaProject project);
+	
+	default ProblemType getProblemType() {
+		return null;
+	}
 
 	static String buildLabel(String label, RecipeScope s) {
 		switch (s) {

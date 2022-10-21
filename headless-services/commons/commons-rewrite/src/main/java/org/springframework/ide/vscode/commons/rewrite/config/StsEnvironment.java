@@ -77,10 +77,6 @@ public class StsEnvironment extends Environment {
 		return codeActionRepos.get().flatMap(r -> r.getCodeActionDescriptors().stream()).collect(Collectors.toList());
 	}
 	
-	public List<RecipeSpringJavaProblemDescriptor> listProblemDescriptors() {
-		return codeActionRepos.get().flatMap(r -> r.getProblemDescriptors().stream()).collect(Collectors.toList());
-	}
-
     public static Builder builder() {
         return new Builder(new Properties());
     }

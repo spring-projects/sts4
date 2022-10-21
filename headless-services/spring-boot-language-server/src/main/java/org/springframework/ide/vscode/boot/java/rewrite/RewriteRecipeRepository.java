@@ -70,7 +70,6 @@ import org.springframework.ide.vscode.commons.rewrite.LoadUtils;
 import org.springframework.ide.vscode.commons.rewrite.LoadUtils.DurationTypeConverter;
 import org.springframework.ide.vscode.commons.rewrite.ORDocUtils;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeCodeActionDescriptor;
-import org.springframework.ide.vscode.commons.rewrite.config.RecipeSpringJavaProblemDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.config.StsEnvironment;
 import org.springframework.ide.vscode.commons.rewrite.maven.MavenProjectParser;
 
@@ -99,8 +98,6 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 	
 	final private List<RecipeCodeActionDescriptor> codeActionDescriptors;
 	
-	final private List<RecipeSpringJavaProblemDescriptor> javaProblemDescriptors;
-	
 	final private ListenerList<Void> loadListeners;
 	
 	private ApplicationContext applicationContext;
@@ -121,7 +118,6 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 		this.recipes = new HashMap<>();
 		this.globalCommandRecipes = new ArrayList<>();
 		this.codeActionDescriptors = new ArrayList<>();
-		this.javaProblemDescriptors = new ArrayList<>();
 		this.loadListeners = new ListenerList<>();
 		
 		server.doOnInitialized(() -> {
@@ -159,7 +155,6 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 		recipes.clear();
 		globalCommandRecipes.clear();
 		codeActionDescriptors.clear();
-		javaProblemDescriptors.clear();
 	}
 	
 	private synchronized void loadRecipes() {
@@ -180,7 +175,6 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 					}					
 				}
 			}
-			javaProblemDescriptors.addAll(env.listProblemDescriptors());
 			codeActionDescriptors.addAll(env.listCodeActionDescriptors());
 			log.info("Done loading Rewrite Recipes");
 		} catch (Throwable t) {
@@ -264,15 +258,6 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 		return Optional.ofNullable(recipes.get(name));
 	}
 	
-	public RecipeSpringJavaProblemDescriptor getProblemRecipeDescriptor(String id) {
-		for (RecipeSpringJavaProblemDescriptor d : javaProblemDescriptors) {
-			if (id.equals(d.getId())) {
-				return d;
-			}
-		}
-		return null;
-	}
-	
 	public RecipeCodeActionDescriptor getCodeActionRecipeDescriptor(String id) {
 		for (RecipeCodeActionDescriptor d : codeActionDescriptors) {
 			if (id.equals(d.getId())) {
@@ -282,12 +267,24 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 		return null;
 	}
 	
-	public List<RecipeSpringJavaProblemDescriptor> getProblemRecipeDescriptors() {
-		return javaProblemDescriptors;
+	public List<RecipeCodeActionDescriptor> getProblemRecipeDescriptors() {
+		List<RecipeCodeActionDescriptor> l = new ArrayList<>(codeActionDescriptors.size());
+		for (RecipeCodeActionDescriptor d : codeActionDescriptors) {
+			if (d.getProblemType() != null && server.getDiagnosticSeverityProvider().getDiagnosticSeverity(d.getProblemType()) != null) {
+				l.add(d);
+			}
+		}
+		return l;
 	}
 	
 	public List<RecipeCodeActionDescriptor> getCodeActionRecipeDescriptors() {
-		return codeActionDescriptors;
+		List<RecipeCodeActionDescriptor> l = new ArrayList<>(codeActionDescriptors.size());
+		for (RecipeCodeActionDescriptor d : codeActionDescriptors) {
+			if (d.getProblemType() == null || server.getDiagnosticSeverityProvider().getDiagnosticSeverity(d.getProblemType()) == null) {
+				l.add(d);
+			}
+		}
+		return l;
 	}
 	
 	public List<RecipeCodeActionDescriptor> getApplicableCodeActionRecipeDescriptors(IJavaProject project, List<RecipeCodeActionDescriptor> descriptors) {

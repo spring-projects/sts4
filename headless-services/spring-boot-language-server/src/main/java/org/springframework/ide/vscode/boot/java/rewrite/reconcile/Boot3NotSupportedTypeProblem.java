@@ -29,10 +29,10 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.ide.vscode.boot.java.Boot3JavaProblemType;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
-import org.springframework.ide.vscode.commons.rewrite.config.RecipeSpringJavaProblemDescriptor;
+import org.springframework.ide.vscode.commons.rewrite.config.RecipeCodeActionDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.java.FixAssistMarker;
 
-public class Boot3NotSupportedTypeProblem implements RecipeSpringJavaProblemDescriptor {
+public class Boot3NotSupportedTypeProblem implements RecipeCodeActionDescriptor {
 	
 	private static final List<String> TYPE_FQNAMES = List.of(
 			"org.springframework.web.multipart.commons.CommonsMultipartResolver",

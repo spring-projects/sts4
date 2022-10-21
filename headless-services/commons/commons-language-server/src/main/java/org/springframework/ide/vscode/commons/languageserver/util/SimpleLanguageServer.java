@@ -753,7 +753,7 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 			@Override
 			public void accept(ReconcileProblem problem) {
 				try {
-					DiagnosticSeverity severity = getDiagnosticSeverity(problem);
+					DiagnosticSeverity severity = severityProvider.getDiagnosticSeverity(problem);
 					if (severity!=null) {
 						Diagnostic d = new Diagnostic();
 						d.setCode(problem.getCode());
@@ -788,10 +788,6 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 		};
 	}
 	
-	public DiagnosticSeverity getDiagnosticSeverity(ReconcileProblem problem) {
-		return severityProvider.getDiagnosticSeverity(problem);
-	}
-
 	/**
 	 * If reconciling is in progress, waits until reconciling has caught up to
 	 * all the document changes.
@@ -823,6 +819,10 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 	@Override
 	public DiagnosticService getDiagnosticService() {
 		return diagnosticService;
+	}
+	
+	public DiagnosticSeverityProvider getDiagnosticSeverityProvider() {
+		return severityProvider;
 	}
 
 	@Override

@@ -13,7 +13,6 @@ package org.springframework.ide.vscode.concourse;
 import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.DiagnosticSeverityProvider;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
-import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblem;
 import org.springframework.ide.vscode.commons.yaml.reconcile.YamlSchemaProblems;
 import org.springframework.stereotype.Component;
 
@@ -21,12 +20,11 @@ import org.springframework.stereotype.Component;
 public class ConcourseDiagnosticSeverities implements DiagnosticSeverityProvider {
 
 	@Override
-	public DiagnosticSeverity getDiagnosticSeverity(ReconcileProblem problem) {
-		ProblemType type = problem.getType();
+	public DiagnosticSeverity getDiagnosticSeverity(ProblemType type) {
 		if (YamlSchemaProblems.PROPERTY_CONSTRAINT.contains(type)) {
 			return DiagnosticSeverity.Warning;
 		}
-		return DEFAULT.getDiagnosticSeverity(problem);
+		return DEFAULT.getDiagnosticSeverity(type);
 	}
 
 }

@@ -336,6 +336,30 @@
               "HINT",
               "ERROR"
             ]
+          },
+          "spring-boot.ls.problem.boot2.JAVA_CONSTRUCTOR_PARAMETER_INJECTION": {
+            "type": "string",
+            "default": "IGNORE",
+            "description": "Use constrcutor parameter injection",
+            "enum": [
+              "IGNORE",
+              "INFO",
+              "WARNING",
+              "HINT",
+              "ERROR"
+            ]
+          },
+          "spring-boot.ls.problem.boot2.JAVA_PRECISE_REQUEST_MAPPING": {
+            "type": "string",
+            "default": "HINT",
+            "description": "Use precise mapping annotation, i.e. '@GetMapping', '@PostMapping', etc.",
+            "enum": [
+              "IGNORE",
+              "INFO",
+              "WARNING",
+              "HINT",
+              "ERROR"
+            ]
           }
         }
       },

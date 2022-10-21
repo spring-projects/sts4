@@ -8,7 +8,7 @@
  * Contributors:
  *     VMware, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.java.rewrite.codeaction;
+package org.springframework.ide.vscode.boot.java.rewrite.reconcile;
 
 import static org.springframework.ide.vscode.commons.java.SpringProjectUtil.springBootVersionGreaterOrEqual;
 
@@ -32,7 +32,9 @@ import org.openrewrite.java.tree.JavaType.FullyQualified;
 import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.marker.Range;
 import org.springframework.context.ApplicationContext;
+import org.springframework.ide.vscode.boot.java.Boot2JavaProblemType;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeCodeActionDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
 import org.springframework.ide.vscode.commons.rewrite.java.AnnotationHierarchies;
@@ -105,6 +107,11 @@ public class AutowiredFieldIntoConstructorParameterCodeAction implements RecipeC
 	@Override
 	public boolean isApplicable(IJavaProject project) {
 		return springBootVersionGreaterOrEqual(2, 0, 0).test(project);
+	}
+
+	@Override
+	public ProblemType getProblemType() {
+		return Boot2JavaProblemType.JAVA_CONSTRUCTOR_PARAMETER_INJECTION;
 	}
 
 }

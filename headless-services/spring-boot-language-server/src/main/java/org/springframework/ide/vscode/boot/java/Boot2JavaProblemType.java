@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java;
 
+import static org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity.IGNORE;
 import static org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity.HINT;
 import static org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity.WARNING;
 
@@ -24,7 +25,11 @@ public enum Boot2JavaProblemType implements ProblemType {
 
 	JAVA_PUBLIC_BEAN_METHOD(HINT, "Public modifier on `@Bean` method. They no longer have to be public visibility to be usable by Spring.", "public `@Bean` method"),
 	
-	JAVA_TEST_SPRING_EXTENSION(WARNING, "`@SpringBootTest` and all test slice annotations already applies `@SpringExtension` as of Spring Boot 2.1.0.", "Unnecessary `@SpringExtension`");
+	JAVA_TEST_SPRING_EXTENSION(WARNING, "`@SpringBootTest` and all test slice annotations already applies `@SpringExtension` as of Spring Boot 2.1.0.", "Unnecessary `@SpringExtension`"),
+	
+	JAVA_CONSTRUCTOR_PARAMETER_INJECTION(IGNORE, "Use constrcutor parameter injection", "Use constrcutor parameter injection"),
+	
+	JAVA_PRECISE_REQUEST_MAPPING(HINT, "Use precise mapping annotation, i.e. '@GetMapping', '@PostMapping', etc.", "Use precise mapping annotation, i.e. '@GetMapping', '@PostMapping', etc.");
 	
 	private final ProblemSeverity defaultSeverity;
 	private String description;

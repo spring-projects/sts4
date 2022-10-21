@@ -31,6 +31,18 @@
         "label": "Unnecessary `@SpringExtension`",
         "description": "`@SpringBootTest` and all test slice annotations already applies `@SpringExtension` as of Spring Boot 2.1.0.",
         "defaultSeverity": "WARNING"
+      },
+      {
+        "code": "JAVA_CONSTRUCTOR_PARAMETER_INJECTION",
+        "label": "Use constrcutor parameter injection",
+        "description": "Use constrcutor parameter injection",
+        "defaultSeverity": "IGNORE"
+      },
+      {
+        "code": "JAVA_PRECISE_REQUEST_MAPPING",
+        "label": "Use precise mapping annotation, i.e. '@GetMapping', '@PostMapping', etc.",
+        "description": "Use precise mapping annotation, i.e. '@GetMapping', '@PostMapping', etc.",
+        "defaultSeverity": "HINT"
       }
     ]
   },
