@@ -1,3 +1,7 @@
+## 2022-10-26 (4.16.1 RELEASE, incl. language servers version 1.40.0)
+
+* no major changes
+
 ## 2022-09-14 (4.16.0 RELEASE, incl. language servers version 1.39.0)
 
 * _(VSCode)_ fixed: Extension never activates, throwing error "Header must provide a Content-Length property" ([#811](https://github.com/spring-projects/sts4/issues/811))

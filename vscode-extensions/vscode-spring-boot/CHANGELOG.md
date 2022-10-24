@@ -1,3 +1,10 @@
+## 2022-10-26 (4.16.1 RELEASE, incl. language servers version 1.40.0)
+
+* _(Spring Boot)_ fixed: Spring XML Config support does not show symbols with scope "File" ([#860](https://github.com/spring-projects/sts4/issues/860))
+* _(Spring Boot)_ fixed: [open-rewrite] exception when executing quick fix for project ([#853](https://github.com/spring-projects/sts4/issues/853))
+* _(Spring Boot)_ fixed: [refactoring] quick fix to convert autowired field to constructor param shows up even if the constructor param already exists ([#815](https://github.com/spring-projects/sts4/issues/815))
+* _(VSCode)_ fixed: Vscode Spring Boot Tools 1.39.0 prevents Java project from Running/Debugging ([#847](https://github.com/spring-projects/sts4/issues/847))
+
 ## 2022-09-14 (4.16.0 RELEASE, incl. language servers version 1.39.0)
 
 * _(Spring Boot)_ fixed: Workspace symbol null on custom annotations ([#818](https://github.com/spring-projects/sts4/issues/818))
