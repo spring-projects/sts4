@@ -76,6 +76,16 @@ public class HttpActuatorConnection implements ActuatorConnection {
 	public String getBeans() throws IOException {
 		return restTemplate.getForObject("/beans", String.class);
 	}
+	
+	@Override
+	public String getLiveMetrics(String metricName, String tags) throws IOException {
+		UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromPath("/metrics/"+metricName);
+		if (tags != null) {
+		    uriBuilder.queryParam("tag", tags);
+		}
+		String url = uriBuilder.encode().toUriString();
+		return restTemplate.getForObject(url, String.class);
+	}
 
 	@Override
 	public String getMetrics(String metric, Map<String, String> tags) throws IOException {

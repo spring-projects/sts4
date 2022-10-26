@@ -61,7 +61,7 @@ public class SpringProcessLiveDataProvider {
 	public boolean addMemoryMetrics(String processKey, SpringProcessMemoryMetricsLiveData liveData) {
 		SpringProcessMemoryMetricsLiveData oldData = this.memoryMetricsLiveData.putIfAbsent(processKey, liveData);		
 		if (oldData == null) {
-			getClient().liveProcessMemoryMetricsDataUpdated(createProcessSummaryForMetrics(processKey, liveData.getProcessType().jsonName(),liveData.getProcessName(),liveData.getProcessID()));
+			getClient().liveProcessMemoryMetricsDataUpdated(createMemoryMetricsSummary(processKey, liveData));
 		}
 		return oldData == null;
 	}
@@ -69,7 +69,7 @@ public class SpringProcessLiveDataProvider {
 	public boolean addGcPausesMetrics(String processKey, SpringProcessGcPausesMetricsLiveData liveData) {
 		SpringProcessGcPausesMetricsLiveData oldData = this.gcPausesMetricsLiveData.putIfAbsent(processKey, liveData);
 		if (oldData == null) {
-			getClient().liveProcessGcPausesMetricsDataUpdated(createProcessSummaryForMetrics(processKey, liveData.getProcessType().jsonName(),liveData.getProcessName(),liveData.getProcessID()));
+			getClient().liveProcessGcPausesMetricsDataUpdated(createGcPausesMetricsSummary(processKey, liveData));
 		}
 		return oldData == null;
 	}
@@ -96,12 +96,12 @@ public class SpringProcessLiveDataProvider {
 	
 	public void updateMemoryMetrics(String processKey, SpringProcessMemoryMetricsLiveData liveData) {
 		this.memoryMetricsLiveData.put(processKey, liveData);
-		getClient().liveProcessMemoryMetricsDataUpdated(createProcessSummaryForMetrics(processKey, liveData.getProcessType().jsonName(),liveData.getProcessName(),liveData.getProcessID()));
+		getClient().liveProcessMemoryMetricsDataUpdated(createMemoryMetricsSummary(processKey, liveData));
 	}
 	
 	public void updateGcPausesMetrics(String processKey, SpringProcessGcPausesMetricsLiveData liveData) {
 		this.gcPausesMetricsLiveData.put(processKey, liveData);
-		getClient().liveProcessGcPausesMetricsDataUpdated(createProcessSummaryForMetrics(processKey, liveData.getProcessType().jsonName(),liveData.getProcessName(),liveData.getProcessID()));
+		getClient().liveProcessGcPausesMetricsDataUpdated(createGcPausesMetricsSummary(processKey, liveData));
 	}
 	
 	public void addLiveDataChangeListener(SpringProcessLiveDataChangeListener listener) {
@@ -141,14 +141,22 @@ public class SpringProcessLiveDataProvider {
 		return p;
 	}
 	
-	public static LiveProcessSummary createProcessSummaryForMetrics(String processKey, String processType, String processName,
-			String processID) {
+	public static LiveProcessSummary createMemoryMetricsSummary(String processKey, SpringProcessMemoryMetricsLiveData liveData) {
 		LiveProcessSummary p = new LiveProcessSummary();
-		p.setType(processType);
+		p.setType(liveData.getProcessType().jsonName());
 		p.setProcessKey(processKey);
-		p.setProcessName(processName);
-		p.setPid(processID);
+		p.setProcessName(liveData.getProcessName());
+		p.setPid(liveData.getProcessID());
 		return p;
 	}
+	
+	public static LiveProcessSummary createGcPausesMetricsSummary(String processKey, SpringProcessGcPausesMetricsLiveData liveData) {
+        LiveProcessSummary p = new LiveProcessSummary();
+        p.setType(liveData.getProcessType().jsonName());
+        p.setProcessKey(processKey);
+        p.setProcessName(liveData.getProcessName());
+        p.setPid(liveData.getProcessID());
+        return p;
+    }
 
 }
