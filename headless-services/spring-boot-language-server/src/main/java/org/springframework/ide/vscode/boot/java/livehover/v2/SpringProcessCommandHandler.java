@@ -147,22 +147,24 @@ public class SpringProcessCommandHandler {
 	}
 
 	private CompletableFuture<Object> refresh(ExecuteCommandParams params) {
-		String processKey = getProcessKey(params);
-		String endpoint = getArgumentByKey(params, "endpoint");
-		if (processKey != null) {
-			connectorService.refreshProcess(processKey, endpoint, "", null);
+	    SpringProcessParams springProcessParams = new SpringProcessParams();
+        springProcessParams.setProcessKey(getProcessKey(params));    
+        springProcessParams.setEndpoint(getArgumentByKey(params, "endpoint"));
+		if (springProcessParams.getProcessKey() != null) {
+			connectorService.refreshProcess(springProcessParams);
 		}
 
 		return CompletableFuture.completedFuture(null);
 	}
 	
 	private CompletableFuture<Object> refreshMetrics(ExecuteCommandParams params) {
-		String processKey = getProcessKey(params);
-		String endpoint = getArgumentByKey(params, "endpoint");
-		String metricName = getArgumentByKey(params, "metricName");
-		String tags = getArgumentByKey(params, "tags");
-		if (processKey != null) {
-			connectorService.refreshProcess(processKey, endpoint, metricName, tags);
+	    SpringProcessParams springProcessParams = new SpringProcessParams();
+	    springProcessParams.setProcessKey(getProcessKey(params));    
+	    springProcessParams.setEndpoint(getArgumentByKey(params, "endpoint"));
+	    springProcessParams.setMetricName(getArgumentByKey(params, "metricName"));
+	    springProcessParams.setTags(getArgumentByKey(params, "tags"));  // Convert tags to a map
+		if (springProcessParams.getProcessKey() != null) {
+			connectorService.refreshProcess(springProcessParams);
 		}
 
 		return CompletableFuture.completedFuture(null);

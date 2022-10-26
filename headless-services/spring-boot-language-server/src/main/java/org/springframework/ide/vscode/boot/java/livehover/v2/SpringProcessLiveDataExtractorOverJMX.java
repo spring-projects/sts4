@@ -135,7 +135,8 @@ public class SpringProcessLiveDataExtractorOverJMX {
 	 * @param processID if null, will be determined searching existing mbeans for that information (for remote processes via platform beans runtime name)
 	 * @param processName if null, will be determined searching existing mbeans for that information (for remote processes inferring the java command from the system properties)
 	 * @param currentData currently stored live data
-	 * @param metricName 
+	 * @param metricName
+	 * @param tags 
 	 */
 	public SpringProcessMemoryMetricsLiveData retrieveLiveMemoryMetricsData(ProcessType processType, JMXConnector jmxConnector, String processID, String processName,
 			 SpringProcessLiveData currentData, String metricName, String tags) {
@@ -161,8 +162,9 @@ public class SpringProcessLiveDataExtractorOverJMX {
 			
 			LiveMemoryMetricsModel jvmMemUsedMetrics = getLiveMetrics(connection, domain, "jvm.memory.used", tags);
 			if(jvmMemUsedMetrics != null ) {
+			    memoryMetricsList.add(jvmMemUsedMetrics);
+			    Arrays.sort(jvmMemUsedMetrics.getAvailableTags()[0].getValues());
 			    String[] memoryZones =  jvmMemUsedMetrics.getAvailableTags()[0].getValues();
-			    Arrays.sort(memoryZones);
 			    for(String zone : memoryZones) {
 			        String tag = tags+",id:"+zone;
 	                LiveMemoryMetricsModel metrics = getLiveMetrics(connection, domain, "jvm.memory.used", tag );
@@ -200,6 +202,7 @@ public class SpringProcessLiveDataExtractorOverJMX {
 	 * @param processName if null, will be determined searching existing mbeans for that information (for remote processes inferring the java command from the system properties)
 	 * @param currentData currently stored live data
 	 * @param metricName 
+	 * @param tags 
 	 */
 	public SpringProcessGcPausesMetricsLiveData retrieveLiveGcPausesMetricsData(ProcessType processType, JMXConnector jmxConnector, String processID, String processName,
 			 SpringProcessLiveData currentData, String metricName, String tags) {

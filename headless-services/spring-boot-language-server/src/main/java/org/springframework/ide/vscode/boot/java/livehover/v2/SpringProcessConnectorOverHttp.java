@@ -106,13 +106,45 @@ public class SpringProcessConnectorOverHttp implements SpringProcessConnector {
 	@Override
 	public SpringProcessGcPausesMetricsLiveData refreshGcPausesMetrics(SpringProcessLiveData current, String metricName, String tags)
 			throws Exception {
-		return null;
+	    if (actuatorConnection != null) {
+	        SpringProcessGcPausesMetricsLiveData liveData = new SpringProcessLiveDataExtractorOverHttp().retrieveLiveGcPausesMetricsData(getProcessType(), actuatorConnection, processID, processName, current, metricName, tags);
+            
+            if (this.processID == null) {
+                this.processID = liveData.getProcessID();
+            }
+
+            if (this.processName == null) {
+                this.processName = liveData.getProcessName();
+            }
+
+            if (liveData != null && liveData.getGcPausesMetrics() != null && liveData.getGcPausesMetrics().length > 0) {
+                return liveData;
+            }
+        }
+        
+        throw new Exception("no live gc pauses metric data received, lets try again");
 	}
 
 	@Override
 	public SpringProcessMemoryMetricsLiveData refreshMemoryMetrics(SpringProcessLiveData current, String metricName, String tags)
 			throws Exception {
-		return null;
+	    if (actuatorConnection != null) {
+	        SpringProcessMemoryMetricsLiveData liveData = new SpringProcessLiveDataExtractorOverHttp().retrieveLiveMemoryMetricsData(getProcessType(), actuatorConnection, processID, processName, current, metricName, tags);
+            
+            if (this.processID == null) {
+                this.processID = liveData.getProcessID();
+            }
+
+            if (this.processName == null) {
+                this.processName = liveData.getProcessName();
+            }
+
+            if (liveData != null && liveData.getMemoryMetrics() != null && liveData.getMemoryMetrics().length > 0) {
+                return liveData;
+            }
+        }
+        
+        throw new Exception("no live memory metrics data received, lets try again");
 	}
 
 	
