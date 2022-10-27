@@ -595,4 +595,13 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 	@Override
 	public void liveProcessDataUpdated(LiveProcessSummary processKey) {
 	}
+
+	@Override
+	public void liveProcessGcPausesMetricsDataUpdated(LiveProcessSummary arg0) {
+	}
+
+	@Override
+	public void liveProcessMemoryMetricsDataUpdated(LiveProcessSummary arg0) {
+	}
+
 }
