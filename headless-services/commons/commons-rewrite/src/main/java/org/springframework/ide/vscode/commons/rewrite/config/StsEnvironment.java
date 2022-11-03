@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.commons.rewrite.config;
 
 import java.lang.reflect.Field;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Properties;
@@ -19,8 +20,11 @@ import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.openrewrite.config.ClasspathScanningLoader;
 import org.openrewrite.config.Environment;
 import org.openrewrite.config.ResourceLoader;
+
+import static java.util.Collections.emptyList;
 
 public class StsEnvironment extends Environment {
 	
@@ -51,12 +55,22 @@ public class StsEnvironment extends Environment {
 		}
 
 		@Override
-		public org.openrewrite.config.Environment.Builder scanJar(Path jar, ClassLoader classLoader) {
-			return load(new StsClasspathScanningLoader(jar, props, classLoader));
+		public Environment.Builder scanJar(Path jar, Collection<Path> dependencies, ClassLoader classLoader) {
+			List<ClasspathScanningLoader> list = new ArrayList<>();
+			for (Path dep : dependencies) {
+				ClasspathScanningLoader classpathScanningLoader = new ClasspathScanningLoader(dep, props, emptyList(), classLoader);
+				list.add(classpathScanningLoader);
+			}
+			return load(new StsClasspathScanningLoader(jar, props, list, classLoader), list);
 		}
-		
-		public org.openrewrite.config.Environment.Builder scanPath(Path dir, ClassLoader classLoader) {
-			return load(new StsClasspathScanningLoader(dir, props, classLoader));
+
+		public org.openrewrite.config.Environment.Builder scanPath(Path dir, Collection<Path> dependencies, ClassLoader classLoader) {
+			List<ClasspathScanningLoader> list = new ArrayList<>();
+			for (Path dep : dependencies) {
+				ClasspathScanningLoader classpathScanningLoader = new ClasspathScanningLoader(dep, props, emptyList(), classLoader);
+				list.add(classpathScanningLoader);
+			}
+			return load(new StsClasspathScanningLoader(dir, props, list, classLoader));
 		}
 		
         @SuppressWarnings("unchecked")

@@ -232,7 +232,7 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 				if (pathStr.endsWith(".jar")) {
 					URLClassLoader classLoader = new URLClassLoader(new URL[] { f.toUri().toURL() },
 							getClass().getClassLoader());
-					builder.scanJar(f, classLoader);
+					builder.scanJar(f, Collections.emptyList(), classLoader);
 				} else if (pathStr.endsWith(".yml") || pathStr.endsWith(".yaml")) {
 					builder.load(new YamlResourceLoader(new FileInputStream(f.toFile()), f.toUri(), new Properties()));
 				}
@@ -245,7 +245,7 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 				Path d = Path.of(p);
 				if (Files.isDirectory(d)) {
 					URLClassLoader classLoader = new URLClassLoader(new URL[] { d.toUri().toURL()}, getClass().getClassLoader());
-					builder.scanPath(d, classLoader);
+					builder.scanPath(d, Collections.emptyList(), classLoader);
 				}
 			} catch (Exception e) {
 				log.error("Skipping folder " + p, e);
