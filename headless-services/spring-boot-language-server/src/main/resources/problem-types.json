@@ -62,24 +62,6 @@
     "order": 2,
     "problemTypes": [
       {
-        "code": "JAVA_CONCRETE_BEAN_TYPE",
-        "label": "Not precise bean defintion type",
-        "description": "Bean definition should have precise type for Spring 6 AOT",
-        "defaultSeverity": "WARNING"
-      },
-      {
-        "code": "JAVA_BEAN_POST_PROCESSOR_IGNORED_IN_AOT",
-        "label": "'BeanPostProcessor' behaviour is ignored in AOT",
-        "description": "'BeanPostProcessor' behaviour is ignored in Spring 6 AOT",
-        "defaultSeverity": "WARNING"
-      },
-      {
-        "code": "JAVA_BEAN_NOT_REGISTERED_IN_AOT",
-        "label": "Not registered as a Bean",
-        "description": "Not registered as Bean",
-        "defaultSeverity": "WARNING"
-      },
-      {
         "code": "JAVA_TYPE_NOT_SUPPORTED",
         "label": "Type not supported as of Spring Boot 3",
         "description": "Type no supported as of Spring Boot 3",
@@ -94,9 +76,43 @@
     ]
   },
   {
+    "id": "spring-aot",
+    "label": "Spring AOT Validation",
+    "toggle": {
+      "label": "Enablement",
+      "values": [
+        "OFF",
+        "ON"
+      ],
+      "preferenceKey": "boot-java.validation.java.spring-aot",
+      "defaultValue": "OFF"
+    },
+    "order": 3,
+    "problemTypes": [
+      {
+        "code": "JAVA_CONCRETE_BEAN_TYPE",
+        "label": "Not precise bean defintion type",
+        "description": "Bean definition should have precise type",
+        "defaultSeverity": "WARNING"
+      },
+      {
+        "code": "JAVA_BEAN_POST_PROCESSOR_IGNORED_IN_AOT",
+        "label": "'BeanPostProcessor' behaviour is ignored in AOT",
+        "description": "'BeanPostProcessor' behaviour is ignored",
+        "defaultSeverity": "WARNING"
+      },
+      {
+        "code": "JAVA_BEAN_NOT_REGISTERED_IN_AOT",
+        "label": "Not registered as a Bean",
+        "description": "Not registered as Bean",
+        "defaultSeverity": "WARNING"
+      }
+    ]
+  },
+  {
     "id": "application-properties",
     "label": "Properties Validation",
-    "order": 3,
+    "order": 4,
     "problemTypes": [
       {
         "code": "PROP_INVALID_BEAN_NAVIGATION",
@@ -169,7 +185,7 @@
   {
     "id": "application-yaml",
     "label": "YAML Properties Validation",
-    "order": 4,
+    "order": 5,
     "problemTypes": [
       {
         "code": "YAML_SYNTAX_ERROR",
@@ -263,7 +279,7 @@
       "preferenceKey": "boot-java.validation.spel.on",
       "defaultValue": "ON"
     },
-    "order": 5,
+    "order": 6,
     "problemTypes": [
       {
         "code": "JAVA_SPEL_EXPRESSION_SYNTAX",
