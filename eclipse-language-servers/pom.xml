@@ -349,11 +349,6 @@
 			<layout>p2</layout>
 			<url>https://dist.springsource.com/release/TOOLS/third-party/misc-p2-repo/${misc.p2.repo.version}</url>
 		</repository>
-        <repository>
-            <id>yedit</id>
-            <layout>p2</layout>
-            <url>https://dist.springsource.com/release/TOOLS/third-party/yedit</url>
-        </repository>
 	</repositories>
 
 	<pluginRepositories>
