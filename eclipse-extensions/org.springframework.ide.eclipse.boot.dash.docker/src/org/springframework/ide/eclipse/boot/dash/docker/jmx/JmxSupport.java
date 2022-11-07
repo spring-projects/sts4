@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018,2020 Pivotal, Inc.
+ * Copyright (c) 2018, 2022 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,14 +10,10 @@
  *******************************************************************************/
 package org.springframework.ide.eclipse.boot.dash.docker.jmx;
 
-import java.util.EnumSet;
 import java.util.Map;
 
-import org.springframework.ide.eclipse.boot.launch.livebean.JmxBeanSupport;
 import org.springframework.ide.eclipse.boot.launch.util.PortFinder;
 import org.springsource.ide.eclipse.commons.livexp.util.Log;
-
-import static org.springframework.ide.eclipse.boot.launch.livebean.JmxBeanSupport.Feature.*;
 
 /**
  * Helper class providing functionality to connect to JMX on a remote spring boot app
@@ -45,7 +41,8 @@ public class JmxSupport {
 			   "-Djava.rmi.server.hostname=localhost " +
 			   "-Dcom.sun.management.jmxremote.local.only=false "+
 			   "-Dspring.jmx.enabled=true " +
-			   "-Dspring.application.admin.enabled=true";
+			   "-Dspring.application.admin.enabled=true " +
+			   "-Dmanagement.endpoints.jmx.exposure.include=*";
 	}
 	
 	int port;

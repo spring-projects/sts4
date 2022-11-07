@@ -25,6 +25,8 @@ import org.springframework.ide.eclipse.editor.support.yaml.path.YamlPathSegment;
 import org.springframework.ide.eclipse.editor.support.yaml.path.YamlPathSegment.AtIndex;
 import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.SafeConstructor;
+import org.yaml.snakeyaml.representer.Representer;
 
 import com.google.common.collect.Multimap;
 
@@ -159,7 +161,7 @@ public class PropertiesToYamlConverter {
 		options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
 		options.setPrettyFlow(true);
 
-		Yaml yaml = new Yaml(options);
+		Yaml yaml = new Yaml(new SafeConstructor(), new Representer(options), options);
 		this.output = yaml.dump(object);
 	}
 

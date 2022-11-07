@@ -31,4 +31,6 @@ public interface ActuatorConnection {
 	String getMetrics(String metric, Map<String, String> tags) throws IOException;
 
 	Map<?, ?> getStartup() throws IOException;
+
+	String getLiveMetrics(String metricName, String tags) throws IOException;
 }

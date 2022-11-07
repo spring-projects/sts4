@@ -10,9 +10,12 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.rewrite.java;
 
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.nio.channels.ClosedByInterruptException;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -20,6 +23,7 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.InMemoryExecutionContext;
@@ -40,6 +44,11 @@ import org.openrewrite.java.tree.J.CompilationUnit;
 import org.openrewrite.marker.Range;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.commons.java.IClasspathUtil;
+import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
+import org.springframework.ide.vscode.commons.util.ExceptionUtil;
+import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 public class ORAstUtils {
 		
@@ -221,6 +230,49 @@ public class ORAstUtils {
 //		return node.getMarkers().findFirst(ParentMarker.class).map(m -> m.getParent()).orElse(null);
 //	}
 	
+	public static JavaParser createJavaParser(IJavaProject project) {
+		try {
+			List<Path> classpath = IClasspathUtil.getAllBinaryRoots(project.getClasspath()).stream().map(f -> f.toPath()).collect(Collectors.toList());
+			JavaParser jp = JavaParser.fromJavaVersion().build();
+			jp.setClasspath(classpath);
+			return jp;
+		} catch (Exception e) {
+			if (isExceptionFromInterrupedThread(e)) {
+				log.debug("", e);
+			} else {
+				log.error("{}", e);
+			}
+			return null;
+		}
+	}
+
+	public static List<CompilationUnit> parse(SimpleTextDocumentService documents, IJavaProject project) {
+		List<Parser.Input> inputs = IClasspathUtil.getProjectJavaSourceFolders(project.getClasspath()).flatMap(folder -> {
+			try {
+				return Files.walk(folder.toPath());
+			} catch (IOException e) {
+				log.error("", e);
+			}
+			return Stream.empty();
+		}).filter(Files::isRegularFile).filter(p -> p.getFileName().toString().endsWith(".java")).map(p -> {
+			TextDocument doc = documents.getLatestSnapshot(p.toUri().toString());
+			if (doc == null) {
+				return new Parser.Input(p, () -> {
+					try {
+						return Files.newInputStream(p);
+					} catch (IOException e) {
+						log.error("", e);
+						return new ByteArrayInputStream(new byte[0]);
+					}
+				});
+			} else {
+				return new Parser.Input(p, () -> new ByteArrayInputStream(doc.get().getBytes()));
+			}
+		}).collect(Collectors.toList());
+		JavaParser javaParser = createJavaParser(project);
+		return ORAstUtils.parseInputs(javaParser, inputs);
+	}
+
 	public static List<CompilationUnit> parse(JavaParser parser, Iterable<Path> sourceFiles) {
 		InMemoryExecutionContext ctx = new InMemoryExecutionContext(ORAstUtils::logExceptionWhileParsing);
 //		ctx.putMessage(JavaParser.SKIP_SOURCE_SET_TYPE_GENERATION, true);
@@ -246,16 +298,10 @@ public class ORAstUtils {
 	}
 	
 	private static void logExceptionWhileParsing(Throwable t) {
-		if (!(t instanceof JavaParsingException || t instanceof StringIndexOutOfBoundsException)) {
-			if (t instanceof RuntimeException) {
-				RuntimeException re = (RuntimeException) t;
-				if (re.getCause() instanceof ClosedByInterruptException) {
-					// Parse or scan interrupted
-					log.debug("", t);
-					return;
-				}
-			}
+		if (t instanceof JavaParsingException || t instanceof StringIndexOutOfBoundsException || isExceptionFromInterrupedThread(t)) {
 			// Do not log parse exceptions. Can be too many while user is typing code
+			log.debug("", t);
+		} else {
 			log.error("", t);
 		}
 	}
@@ -358,6 +404,19 @@ public class ORAstUtils {
     		};
     	}	
     }
-
+    
+	public static boolean isExceptionFromInterrupedThread(Throwable t) {
+		if (ExceptionUtil.getDeepestCause(t) instanceof InterruptedException) {
+			return true;
+		}
+		if (t instanceof RuntimeException && "Relative paths only".equals(t.getMessage())) {
+			return true;
+		}
+		if (ExceptionUtil.getDeepestCause(t) instanceof ClosedByInterruptException) {
+			return true;
+		}	
+		return false;
+	}
+	
 
 }

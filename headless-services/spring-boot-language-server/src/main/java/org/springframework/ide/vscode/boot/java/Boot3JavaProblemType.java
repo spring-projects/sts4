@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java;
 
-import static org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity.WARNING;
+import static org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity.ERROR;
 
 import org.springframework.ide.vscode.boot.common.SpringProblemCategories;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemCategory;
@@ -23,7 +23,9 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemTy
  */
 public enum Boot3JavaProblemType implements ProblemType {
 	
-	JAVA_CONCRETE_BEAN_TYPE(WARNING, "Bean definition should have precise type for Spring 6 AOT", "Not precise bean defintion type");
+	JAVA_TYPE_NOT_SUPPORTED(ERROR, "Type no supported as of Spring Boot 3", "Type not supported as of Spring Boot 3"),
+	
+	FACTORIES_KEY_NOT_SUPPORTED(ERROR, "Spring factories key not supported", "Spring factories key not supported");
 	
 	private final ProblemSeverity defaultSeverity;
 	private String description;

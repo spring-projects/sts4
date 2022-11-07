@@ -24,6 +24,7 @@ import org.springframework.ide.eclipse.boot.dash.cf.deployment.AppNameAnnotation
 import org.springframework.ide.eclipse.boot.dash.cf.deployment.AppNameReconciler;
 import org.springframework.ide.eclipse.editor.support.yaml.ast.YamlASTProvider;
 import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.SafeConstructor;
 
 /**
  * Tests for application name reconciler
@@ -34,7 +35,7 @@ import org.yaml.snakeyaml.Yaml;
 public class AppNameReconcilerTest {
 
 	private void testAppNames(String manifest, String...expectedAppNames) throws Exception {
-		AppNameReconciler reconciler = new AppNameReconciler(new YamlASTProvider(new Yaml()));
+		AppNameReconciler reconciler = new AppNameReconciler(new YamlASTProvider(new Yaml(new SafeConstructor())));
 		AppNameAnnotationModel annotationModel = new AppNameAnnotationModel("test");
 		Document doc = new Document(manifest);
 		reconciler.reconcile(doc, annotationModel, new NullProgressMonitor());

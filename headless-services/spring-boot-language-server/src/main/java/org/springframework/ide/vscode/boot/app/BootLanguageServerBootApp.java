@@ -31,7 +31,6 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClas
 import org.springframework.boot.autoconfigure.context.ConfigurationPropertiesAutoConfiguration;
 import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
-import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.ide.vscode.boot.common.PropertyCompletionFactory;
@@ -49,8 +48,8 @@ import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessConnec
 import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessConnectorService;
 import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveDataProvider;
 import org.springframework.ide.vscode.boot.java.rewrite.RewriteCompilationUnitCache;
-import org.springframework.ide.vscode.boot.java.rewrite.RewriteRefactorings;
 import org.springframework.ide.vscode.boot.java.rewrite.RewriteRecipeRepository;
+import org.springframework.ide.vscode.boot.java.rewrite.RewriteRefactorings;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.boot.java.utils.SymbolCache;
 import org.springframework.ide.vscode.boot.java.utils.SymbolCacheOnDisc;
@@ -92,6 +91,7 @@ import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureProvid
 import org.springframework.ide.vscode.languageserver.starter.LanguageServerAutoConf;
 import org.springframework.ide.vscode.languageserver.starter.LanguageServerRunnerAutoConf;
 import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.SafeConstructor;
 
 import com.google.common.collect.ImmutableList;
 import com.google.gson.Gson;
@@ -269,7 +269,7 @@ public class BootLanguageServerBootApp {
 
 	@Bean Yaml yaml() {
 		//TODO: Yaml is not re-entrant. So its a bit fishy to create a 're-usable' bean for this!
-		return new Yaml();
+		return new Yaml(new SafeConstructor());
 	}
 
 	@Bean YamlASTProvider yamlAstProvider() {

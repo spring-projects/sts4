@@ -3,7 +3,7 @@
   "displayName": "Spring Boot Tools",
   "description": "Provides validation and content assist for Spring Boot `application.properties`, `application.yml` properties files. As well as Boot-specific support for `.java` files.",
   "icon": "spring-boot-logo.png",
-  "version": "1.40.0",
+  "version": "1.41.0",
   "publisher": "Pivotal",
   "repository": {
     "type": "git",
@@ -30,6 +30,7 @@
     "onLanguage:spring-boot-properties-yaml",
     "onLanguage:java",
     "onLanguage:xml",
+    "onLanguage:spring-factories",
     "onDebugResolve:java",
     "onCommand:vscode-spring-boot.rewrite.list"
   ],
@@ -64,6 +65,16 @@
           "bootstrap*.properties"
         ],
         "configuration": "./properties-support/language-configuration.json"
+      },
+      {
+        "id": "spring-factories",
+        "aliases": [
+          "Spring Factories"
+        ],
+        "filenamePatterns": [
+          "*.factories"
+        ],
+        "configuration": "./properties-support/language-configuration.json"
       }
     ],
     "menus": {
@@ -76,7 +87,7 @@
       ],
       "explorer/context": [
         {
-          "when": "resourceFilename == pom.xml && config.boot-java.rewrite.globa-commands.on == true",
+          "when": "resourceFilename == pom.xml && config.boot-java.rewrite.refactorings.on == true",
           "command": "vscode-spring-boot.rewrite.list",
           "group": "SpringBoot"
         }
@@ -89,7 +100,7 @@
         "category": "Spring Boot"
       },
       {
-        "enablement": "config.boot-java.rewrite.globa-commands.on == true",
+        "enablement": "config.boot-java.rewrite.refactorings.on == true",
         "command": "vscode-spring-boot.rewrite.list",
         "category": "Spring Boot",
         "title": "Rewrite Refactorings..."
@@ -106,11 +117,6 @@
         "title": "Features",
         "order": 100,
         "properties": {
-          "boot-java.rewrite.globa-commands.on": {
-            "type": "boolean",
-            "default": false,
-            "description": "Experimental support for Rewrite recipes refactoring the whole maven projects via commands"
-          },
           "boot-java.live-information.automatic-connection.on": {
             "type": "boolean",
             "default": true,
@@ -193,10 +199,34 @@
         "title": "Rewrite",
         "order": 400,
         "properties": {
+          "boot-java.rewrite.refactorings.on": {
+            "type": "boolean",
+            "default": true,
+            "description": "Recipes refactoring entire Maven project via commands"
+          },
           "boot-java.rewrite.reconcile": {
             "type": "boolean",
             "default": false,
             "description": "Experimental reconciling for Java source based on Rewrite project"
+          },
+          "boot-java.rewrite.recipe-filters": {
+            "type": "array",
+            "default": [
+              "org.openrewrite.java.spring.boot2.SpringBoot2JUnit4to5Migration",
+              "org.openrewrite.java.spring.boot2.SpringBoot2BestPractices",
+              "org.openrewrite.java.spring.boot2.SpringBoot1To2Migration",
+              "org.openrewrite.java.testing.junit5.JUnit5BestPractices",
+              "org.openrewrite.java.testing.junit5.JUnit4to5Migration",
+              "org.openrewrite.java.spring.boot2.UpgradeSpringBoot_2_6",
+              "org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_0",
+              "org.rewrite.java.security.*",
+              "org.springframework.rewrite.test.*",
+              "rewrite.test.*"
+            ],
+            "items": {
+              "type": "string"
+            },
+            "description": "Recipe ID filter patterns. Either exact ids or patterns with '*' as the wild-card"
           },
           "boot-java.rewrite.scan-files": {
             "type": "array",
@@ -306,6 +336,30 @@
               "HINT",
               "ERROR"
             ]
+          },
+          "spring-boot.ls.problem.boot2.JAVA_CONSTRUCTOR_PARAMETER_INJECTION": {
+            "type": "string",
+            "default": "IGNORE",
+            "description": "Use constrcutor parameter injection",
+            "enum": [
+              "IGNORE",
+              "INFO",
+              "WARNING",
+              "HINT",
+              "ERROR"
+            ]
+          },
+          "spring-boot.ls.problem.boot2.JAVA_PRECISE_REQUEST_MAPPING": {
+            "type": "string",
+            "default": "HINT",
+            "description": "Use precise mapping annotation, i.e. '@GetMapping', '@PostMapping', etc.",
+            "enum": [
+              "IGNORE",
+              "INFO",
+              "WARNING",
+              "HINT",
+              "ERROR"
+            ]
           }
         }
       },
@@ -324,10 +378,74 @@
               "ON"
             ]
           },
-          "spring-boot.ls.problem.boot3.JAVA_CONCRETE_BEAN_TYPE": {
+          "spring-boot.ls.problem.boot3.JAVA_TYPE_NOT_SUPPORTED": {
+            "type": "string",
+            "default": "ERROR",
+            "description": "Type no supported as of Spring Boot 3",
+            "enum": [
+              "IGNORE",
+              "INFO",
+              "WARNING",
+              "HINT",
+              "ERROR"
+            ]
+          },
+          "spring-boot.ls.problem.boot3.FACTORIES_KEY_NOT_SUPPORTED": {
+            "type": "string",
+            "default": "ERROR",
+            "description": "Spring factories key not supported",
+            "enum": [
+              "IGNORE",
+              "INFO",
+              "WARNING",
+              "HINT",
+              "ERROR"
+            ]
+          }
+        }
+      },
+      {
+        "id": "spring-aot",
+        "title": "Spring AOT Validation",
+        "order": 403,
+        "properties": {
+          "boot-java.validation.java.spring-aot": {
+            "type": "string",
+            "default": "OFF",
+            "description": "Enablement",
+            "enum": [
+              "OFF",
+              "ON"
+            ]
+          },
+          "spring-boot.ls.problem.spring-aot.JAVA_CONCRETE_BEAN_TYPE": {
             "type": "string",
             "default": "WARNING",
-            "description": "Bean definition should have precise type for Spring 6 AOT",
+            "description": "Bean definition should have precise type",
+            "enum": [
+              "IGNORE",
+              "INFO",
+              "WARNING",
+              "HINT",
+              "ERROR"
+            ]
+          },
+          "spring-boot.ls.problem.spring-aot.JAVA_BEAN_POST_PROCESSOR_IGNORED_IN_AOT": {
+            "type": "string",
+            "default": "WARNING",
+            "description": "'BeanPostProcessor' behaviour is ignored",
+            "enum": [
+              "IGNORE",
+              "INFO",
+              "WARNING",
+              "HINT",
+              "ERROR"
+            ]
+          },
+          "spring-boot.ls.problem.spring-aot.JAVA_BEAN_NOT_REGISTERED_IN_AOT": {
+            "type": "string",
+            "default": "WARNING",
+            "description": "Not registered as Bean",
             "enum": [
               "IGNORE",
               "INFO",
@@ -341,7 +459,7 @@
       {
         "id": "application-properties",
         "title": "Properties Validation",
-        "order": 403,
+        "order": 404,
         "properties": {
           "spring-boot.ls.problem.application-properties.PROP_INVALID_BEAN_NAVIGATION": {
             "type": "string",
@@ -480,7 +598,7 @@
       {
         "id": "application-yaml",
         "title": "YAML Properties Validation",
-        "order": 404,
+        "order": 405,
         "properties": {
           "spring-boot.ls.problem.application-yaml.YAML_SYNTAX_ERROR": {
             "type": "string",
@@ -643,7 +761,7 @@
       {
         "id": "spel",
         "title": "SPEL Validation",
-        "order": 405,
+        "order": 406,
         "properties": {
           "boot-java.validation.spel.on": {
             "type": "string",
@@ -679,6 +797,11 @@
         "language": "spring-boot-properties",
         "scopeName": "source.java-properties",
         "path": "./properties-support/java-properties.tmLanguage"
+      },
+      {
+        "language": "spring-factories",
+        "scopeName": "source.java-properties",
+        "path": "./properties-support/java-properties.tmLanguage"
       }
     ]
   },
@@ -696,10 +819,10 @@
     "vscode-languageclient": "^8.0.2"
   },
   "devDependencies": {
-    "@types/node": "^16.11.11",
-    "@types/vscode": "^1.53.0",
-    "typescript": "^4.1.2",
-    "vsce": "^2.6.7"
+    "@types/node": "^18.8.0",
+    "@types/vscode": "^1.70.0",
+    "typescript": "^4.8.0",
+    "vsce": "^2.11.0"
   },
   "extensionDependencies": [
     "redhat.java"

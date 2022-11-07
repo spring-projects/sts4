@@ -1,26 +1,37 @@
+/*******************************************************************************
+ * Copyright (c) 2022 VMware, Inc.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     VMware, Inc. - initial API and implementation
+ *******************************************************************************/
 package org.springframework.ide.vscode.commons.rewrite.java;
 
-import java.util.Collections;
-import java.util.Map;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
 import org.openrewrite.marker.Marker;
-import org.openrewrite.marker.Range;
 
 public class FixAssistMarker implements Marker {
 	
 	private UUID id;
 	
-	private Range scope;
+	private String descriptorId;
 	
-	private String recipeId;
+	private List<FixDescriptor> fixes = new ArrayList<>();
 	
-	private Map<String, Object> parameters = Collections.emptyMap();
+	private String label;
 	
-	public FixAssistMarker(UUID id) {
+	public FixAssistMarker(UUID id, String descriptorId) {
 		super();
 		this.id = id;
+		this.descriptorId = descriptorId;
 	}
 
 	@Override
@@ -35,36 +46,36 @@ public class FixAssistMarker implements Marker {
 		return this;
 	}
 	
-	public FixAssistMarker withScope(Range scope) {
-		this.scope = scope;
-		return this;
-	}
-
-	public Range getScope() {
-		return scope;
+	public String getDescriptorId() {
+		return descriptorId;
 	}
 	
-	public FixAssistMarker withRecipeId(String recipeId) {
-		this.recipeId = recipeId;
+	public FixAssistMarker withFix(FixDescriptor f) {
+		fixes.add(f);
 		return this;
-	}
-
-	public String getRecipeId() {
-		return recipeId;
 	}
 	
-	public FixAssistMarker withParameters(Map<String, Object> parameters) {
-		this.parameters = parameters;
+	public FixAssistMarker withFixes(FixDescriptor... fixes) {
+		this.fixes.addAll(Arrays.asList(fixes));
 		return this;
 	}
 
-	public Map<String, Object> getParameters() {
-		return parameters;
+	public List<FixDescriptor> getFixes() {
+		return fixes;
+	}
+	
+	public FixAssistMarker withLabel(String label) {
+		this.label = label;
+		return this;
+	}
+	
+	public String getLabel() {
+		return label;
 	}
 
 	@Override
 	public int hashCode() {
-		return Objects.hash(id);
+		return Objects.hash(descriptorId, fixes, id);
 	}
 
 	@Override
@@ -76,7 +87,9 @@ public class FixAssistMarker implements Marker {
 		if (getClass() != obj.getClass())
 			return false;
 		FixAssistMarker other = (FixAssistMarker) obj;
-		return Objects.equals(id, other.id);
+		return Objects.equals(descriptorId, other.descriptorId) && Objects.equals(fixes, other.fixes)
+				&& Objects.equals(id, other.id);
 	}
+	
 
 }

@@ -29,3 +29,11 @@ export namespace LiveProcessDisconnectedNotification {
 export namespace LiveProcessUpdatedNotification {
 	export const type = new NotificationType<LiveProcess>('sts/liveprocess/updated');
 }
+
+export namespace LiveProcessGcPausesMetricsUpdatedNotification {
+	export const type = new NotificationType<LiveProcess>('sts/liveprocess/gcpauses/metrics/updated');
+}
+
+export namespace LiveProcessMemoryMetricsUpdatedNotification {
+	export const type = new NotificationType<LiveProcess>('sts/liveprocess/memory/metrics/updated');
+}

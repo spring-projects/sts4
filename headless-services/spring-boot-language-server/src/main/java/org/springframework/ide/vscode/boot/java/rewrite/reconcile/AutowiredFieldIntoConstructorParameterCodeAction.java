@@ -8,7 +8,7 @@
  * Contributors:
  *     VMware, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.java.rewrite.codeaction;
+package org.springframework.ide.vscode.boot.java.rewrite.reconcile;
 
 import static org.springframework.ide.vscode.commons.java.SpringProjectUtil.springBootVersionGreaterOrEqual;
 
@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 
 import org.openrewrite.Cursor;
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.SourceFile;
 import org.openrewrite.Tree;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaVisitor;
@@ -30,11 +31,15 @@ import org.openrewrite.java.tree.J.VariableDeclarations;
 import org.openrewrite.java.tree.JavaType.FullyQualified;
 import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.marker.Range;
+import org.springframework.context.ApplicationContext;
+import org.springframework.ide.vscode.boot.java.Boot2JavaProblemType;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeCodeActionDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
 import org.springframework.ide.vscode.commons.rewrite.java.AnnotationHierarchies;
 import org.springframework.ide.vscode.commons.rewrite.java.FixAssistMarker;
+import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.java.ORAstUtils;
 
 public class AutowiredFieldIntoConstructorParameterCodeAction implements RecipeCodeActionDescriptor {
@@ -44,22 +49,7 @@ public class AutowiredFieldIntoConstructorParameterCodeAction implements RecipeC
 	private static final String AUTOWIRED = "org.springframework.beans.factory.annotation.Autowired";
 
 	@Override
-	public String getRecipeId() {
-		return ID;
-	}
-
-	@Override
-	public String getLabel(RecipeScope s) {
-		return RecipeCodeActionDescriptor.buildLabel(LABEL, s);
-	}
-
-	@Override
-	public RecipeScope[] getScopes() {
-		return new RecipeScope[] { RecipeScope.NODE };
-	}
-
-	@Override
-	public JavaVisitor<ExecutionContext> getMarkerVisitor() {
+	public JavaVisitor<ExecutionContext> getMarkerVisitor(ApplicationContext applicationContext) {
 		return new JavaIsoVisitor<>() {
 
 			@Override
@@ -75,10 +65,14 @@ public class AutowiredFieldIntoConstructorParameterCodeAction implements RecipeC
 					if (fqType != null && isApplicableType(fqType)) {
 						List<MethodDeclaration> constructors = ORAstUtils.getMethods(classDeclaration).stream().filter(c -> c.isConstructor()).limit(2).collect(Collectors.toList());
 						String fieldName = multiVariable.getVariables().get(0).getSimpleName();
-						FixAssistMarker marker = new FixAssistMarker(Tree.randomId())
-								.withRecipeId(getRecipeId())
-								.withScope(classDeclaration.getMarkers().findFirst(Range.class).get())
-								.withParameters(Map.of("classFqName", fqType.getFullyQualifiedName(), "fieldName", fieldName));
+						String uri = getCursor().firstEnclosing(SourceFile.class).getSourcePath().toUri().toString();
+						FixAssistMarker marker = new FixAssistMarker(Tree.randomId(), getId())
+								.withFix(
+									new FixDescriptor(ID, List.of(uri), LABEL)
+										.withRangeScope(classDeclaration.getMarkers().findFirst(Range.class).get())
+										.withParameters(Map.of("classFqName", fqType.getFullyQualifiedName(), "fieldName", fieldName))
+										.withRecipeScope(RecipeScope.NODE)
+								);
 						if (constructors.size() == 0) {
 							m = m.withMarkers(m.getMarkers().add(marker));							
 						} else if (constructors.size() == 1 && !AutowiredFieldIntoConstructorParameterVisitor.isConstructorInitializingField(constructors.get(0), fieldName)) {
@@ -113,6 +107,11 @@ public class AutowiredFieldIntoConstructorParameterCodeAction implements RecipeC
 	@Override
 	public boolean isApplicable(IJavaProject project) {
 		return springBootVersionGreaterOrEqual(2, 0, 0).test(project);
+	}
+
+	@Override
+	public ProblemType getProblemType() {
+		return Boot2JavaProblemType.JAVA_CONSTRUCTOR_PARAMETER_INJECTION;
 	}
 
 }

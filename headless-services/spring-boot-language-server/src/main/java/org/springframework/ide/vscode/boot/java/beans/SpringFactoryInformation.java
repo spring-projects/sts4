@@ -8,12 +8,20 @@
  * Contributors:
  *     VMware, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.commons.rewrite.config;
+package org.springframework.ide.vscode.boot.java.beans;
 
-import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
+import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
 
-public interface RecipeSpringJavaProblemDescriptor extends RecipeCodeActionDescriptor {
+public class SpringFactoryInformation implements SymbolAddOnInformation {
 	
-	ProblemType getProblemType();
+	private String key;
 	
+	public SpringFactoryInformation(String key) {
+		this.key = key;
+	}
+	
+	public String getKey() {
+		return key;
+	}
+
 }

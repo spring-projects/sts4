@@ -47,6 +47,7 @@ public class SpringIndexerXMLNamespaceHandlerBeans implements SpringIndexerXMLNa
 		int symbolEnd = 0;
 
 		String beanClass = null;
+		String fqBeanClass = null;
 
 		List<DOMAttr> attributes = node.getAttributeNodes();
 		for (DOMAttr attribute : attributes) {
@@ -59,8 +60,8 @@ public class SpringIndexerXMLNamespaceHandlerBeans implements SpringIndexerXMLNa
 				symbolEnd = attribute.getEnd();
 			}
 			else if (name != null && name.equals("class")) {
-				String value = attribute.getValue();
-				beanClass = value.substring(value.lastIndexOf(".") + 1);
+				fqBeanClass = attribute.getValue();
+				beanClass = fqBeanClass.substring(fqBeanClass.lastIndexOf(".") + 1);
 
 				if (symbolStart == 0 && symbolEnd == 0) {
 					symbolStart = attribute.getStart();
@@ -89,7 +90,7 @@ public class SpringIndexerXMLNamespaceHandlerBeans implements SpringIndexerXMLNa
 			}
 
 			WorkspaceSymbol symbol = new WorkspaceSymbol("@+ '" + beanID + "' " + beanClass, SymbolKind.Interface, Either.forLeft(new Location(docURI, range)));
-			SymbolAddOnInformation[] addon = new SymbolAddOnInformation[] {new BeansSymbolAddOnInformation(beanID)};
+			SymbolAddOnInformation[] addon = new SymbolAddOnInformation[] {new BeansSymbolAddOnInformation(beanID, fqBeanClass)};
 
 			EnhancedSymbolInformation fullSymbol = new EnhancedSymbolInformation(symbol, addon);
 

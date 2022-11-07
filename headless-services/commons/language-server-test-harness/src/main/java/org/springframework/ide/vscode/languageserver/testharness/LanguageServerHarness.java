@@ -414,6 +414,15 @@ public class LanguageServerHarness {
 				@Override
 				public void liveProcessDataUpdated(LiveProcessSummary process) {
 				}
+
+				@Override
+				public void liveProcessMemoryMetricsDataUpdated(LiveProcessSummary processKey) {
+				}
+
+				@Override
+				public void liveProcessGcPausesMetricsDataUpdated(LiveProcessSummary processKey) {
+				}
+
 			});
 
 		}

@@ -34,6 +34,12 @@
             id="org.eclipse.languageserver.languages.springboot">
       </contentTypeMapping>
 
+      <contentTypeMapping
+            contentType="org.springframework.boot.ide.boot.factories"
+            id="org.eclipse.languageserver.languages.springboot"
+            languageId="spring-factories">
+      </contentTypeMapping>
+      
    </extension>
 
    <extension
@@ -87,6 +93,16 @@
       </content-type>
 
       <content-type
+            base-type="org.eclipse.core.runtime.text"
+            default-charset="UTF-8"
+            file-names="spring.factories,aot.factories"
+            file-patterns="*.factories"
+            id="org.springframework.boot.ide.boot.factories"
+            name="Spring Factories File"
+            priority="high">
+      </content-type>
+      
+      <content-type
             base-type="org.eclipse.core.runtime.xml"
             default-charset="UTF-8"
             id="org.springframework.boot.ide.xmlconfig"
@@ -109,6 +125,11 @@
             file-patterns="application-*.yml,application-*.yaml">
       </file-association>
 
+      <file-association
+            content-type="org.springframework.boot.ide.boot.factories"
+            file-names="spring.factories,aot.factories"
+            file-patterns="*.factories">
+      </file-association>
    </extension>
    
    <extension
@@ -136,6 +157,18 @@
             class="org.springframework.tooling.boot.ls.RewritePreferencePage"
             id="org.springframework.tooling.boot.ls.rewrite"
             name="Rewrite">
+      </page>
+      <page
+            category="org.springframework.tooling.boot.ls.rewrite"
+            class="org.springframework.tooling.boot.ls.RecipeFiltersPreferencePage"
+            id="org.springframework.tooling.boot.ls.rewrite.filters"
+            name="Filter Recipes">
+      </page>
+      <page
+            category="org.springframework.tooling.boot.ls.rewrite"
+            class="org.springframework.tooling.boot.ls.PlugRecipesPreferencePage"
+            id="org.springframework.tooling.boot.ls.rewrite.load"
+            name="Plug Recipes">
       </page>
       
    </extension>
@@ -258,6 +291,21 @@
    </extension>
 
    <extension
+         point="org.eclipse.ui.editors">
+      <editor
+            class="org.eclipse.ui.internal.genericeditor.ExtensionBasedTextEditor"
+            contributorClass="org.eclipse.ui.editors.text.TextEditorActionContributor"
+            icon="icons/spring_obj.gif"
+            id="SpringFactoriesEditor"
+            name="Generic Editor - Spring Factories"
+            symbolicFontName="org.eclipse.jdt.ui.PropertiesFileEditor.textfont">
+            <contentTypeBinding
+               contentTypeId="org.springframework.boot.ide.boot.factories"
+            /> 
+      </editor>
+   </extension>
+   
+   <extension
          point="org.eclipse.ui.genericeditor.presentationReconcilers">
       <presentationReconciler
             class="org.eclipse.tm4e.ui.text.TMPresentationReconciler"
@@ -270,6 +318,14 @@
       <presentationReconciler
             class="org.eclipse.tm4e.ui.text.TMPresentationReconciler"
             contentType="org.springframework.boot.ide.properties.application.yml">
+      </presentationReconciler>
+   </extension>
+
+   <extension
+         point="org.eclipse.ui.genericeditor.presentationReconcilers">
+      <presentationReconciler
+            class="org.eclipse.tm4e.ui.text.TMPresentationReconciler"
+            contentType="org.springframework.boot.ide.boot.factories">
       </presentationReconciler>
    </extension>
 
@@ -297,6 +353,13 @@
       </scopeNameContentTypeBinding>
    </extension>
    
+   <extension
+         point="org.eclipse.tm4e.registry.grammars">
+      <scopeNameContentTypeBinding
+            contentTypeId="org.springframework.boot.ide.boot.factories"
+            scopeName="source.java-properties">
+      </scopeNameContentTypeBinding>
+   </extension>
    
    <extension
       id="springxml-completion-computer"
@@ -344,11 +407,11 @@
    <extension
          point="org.eclipse.ui.quickAccess">
       <computer
-            class="org.springframework.tooling.boot.ls.commands.RewriteCommandsQuickAccessProvider"
+            class="org.springframework.tooling.boot.ls.commands.LiveProcessCommandsQuickAccessProvider"
             name="Spring - Live Process Information"
             requiresUIAccess="false"/>
       <computer
-            class="org.springframework.tooling.boot.ls.QuickAccessComputer1"
+            class="org.springframework.tooling.boot.ls.commands.RewriteCommandsQuickAccessProvider"
             name="Spring - Rewrite Recipes">
       </computer>
    </extension>
@@ -413,14 +476,23 @@
                         </and>
                      </or>
                   </iterate>
-                  <systemTest
-                        property="sts.rewrite.recipes"
-                        value="true">
-                  </systemTest>
+                  <test
+                        property="org.springframework.tooling.boot.ls.areRewriteProjectRefactoringsOn">
+                  </test>
                </and>
             </visibleWhen>
          </command>
       </menuContribution>
+   </extension>
+   <extension
+         point="org.eclipse.core.expressions.propertyTesters">
+      <propertyTester
+            class="org.springframework.tooling.boot.ls.prefs.PrefsPropertyTester"
+            id="org.springframework.tooling.boot.ls"
+            namespace="org.springframework.tooling.boot.ls"
+            properties="areRewriteProjectRefactoringsOn"
+            type="java.lang.Object">
+      </propertyTester>
    </extension>
 <!--
    <extension

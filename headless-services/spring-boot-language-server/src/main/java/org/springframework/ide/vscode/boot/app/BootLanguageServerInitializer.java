@@ -11,7 +11,6 @@
 package org.springframework.ide.vscode.boot.app;
 
 import java.net.URI;
-import java.nio.file.Path;
 import java.time.Duration;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -28,6 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.ide.vscode.boot.common.IJavaProjectReconcileEngine;
+import org.springframework.ide.vscode.boot.factories.SpringFactoriesLanguageServerComponents;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
 import org.springframework.ide.vscode.boot.java.links.JavaElementLocationProvider;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
@@ -143,6 +143,7 @@ public class BootLanguageServerInitializer implements InitializingBean {
 		BootJavaLanguageServerComponents bootJavaLanguageServerComponent = new BootJavaLanguageServerComponents(appContext);
 		builder.add(bootJavaLanguageServerComponent);
 		builder.add(new SpringXMLLanguageServerComponents(server, springIndexer, params, config));
+		builder.add(new SpringFactoriesLanguageServerComponents(projectFinder, springIndexer));
 		components = builder.build(server);
 		
 		projectReconciler = (IJavaProjectReconcileEngine) bootJavaLanguageServerComponent.getReconcileEngine().get();
@@ -172,6 +173,8 @@ public class BootLanguageServerInitializer implements InitializingBean {
 		
 		components.getCodeActionProvider().ifPresent(documents::onCodeAction);
 		
+		components.getDocumentSymbolProvider().ifPresent(documents::onDocumentSymbol);
+		
 		config.addListener(evt -> reconcile());
 		
 		if (recipesRepo != null) {
@@ -182,6 +185,8 @@ public class BootLanguageServerInitializer implements InitializingBean {
 		
 		server.getWorkspaceService().getFileObserver().onFilesChanged(FILES_TO_WATCH_GLOB, this::handleFiles);
 		server.getWorkspaceService().getFileObserver().onFilesCreated(FILES_TO_WATCH_GLOB, this::handleFiles);
+		
+		springIndexer.onUpdate(v -> reconcile());
 	}
 	
 	private void reconcile() {
@@ -262,10 +267,10 @@ public class BootLanguageServerInitializer implements InitializingBean {
 		projectReconcileRequests.put(uri, Mono.delay(Duration.ofMillis(100))
 				.publishOn(projectReconcileScheduler)
 				.doOnSuccess(l -> {
+					projectReconcileRequests.remove(uri);
 					projectFinder.find(new TextDocumentIdentifier(uri.toString())).ifPresent(p -> {
 						projectReconciler.reconcile(p, doc -> server.createProblemCollector(doc));
 					});
-					projectReconcileRequests.remove(uri);
 				})
 				.subscribe());
 	}
@@ -289,7 +294,7 @@ public class BootLanguageServerInitializer implements InitializingBean {
 		components.getReconcileEngine().ifPresent(reconcileEngine -> {
 			Map<IJavaProject, List<TextDocumentIdentifier>> projectsToDocs = new HashMap<>();
 			for (String f : files) {
-				URI uri = Path.of(f).toUri();
+				URI uri = URI.create(f);
 				TextDocumentIdentifier docId = new TextDocumentIdentifier(uri.toString());
 				TextDocument doc = server.getTextDocumentService().getLatestSnapshot(docId.getUri());
 				if (doc == null) {

@@ -27,6 +27,7 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.annotation.NonNull;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.window.Window;
 import org.eclipse.lsp4e.LanguageServiceAccessor;
@@ -36,7 +37,6 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.springframework.tooling.boot.ls.BootLanguageServerPlugin;
-import org.springsource.ide.eclipse.commons.livexp.util.Log;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -130,7 +130,7 @@ public class RewriteRefactoringsHandler extends AbstractHandler {
 																	.toArray(CompletableFuture[]::new)).get();
 														}
 													} catch (Exception e) {
-														Log.log(e);
+														throw new InvocationTargetException(e);
 													} finally {
 														monitor.done();
 													}
@@ -138,6 +138,7 @@ public class RewriteRefactoringsHandler extends AbstractHandler {
 												
 											} catch (CoreException | InvocationTargetException | InterruptedException e) {
 												BootLanguageServerPlugin.getDefault().getLog().error(e.getMessage(), e);
+												MessageDialog.openError(Display.getCurrent().getActiveShell(), "Error", "Failed to apply Rewrite recipe(s). See error log for more details.");
 											}
 										}
 									});

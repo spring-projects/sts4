@@ -35,6 +35,7 @@ import org.springframework.tooling.boot.ls.prefs.CategoryProblemsSeverityPrefsPa
 import org.springframework.tooling.boot.ls.prefs.FileListEditor;
 import org.springframework.tooling.boot.ls.prefs.ProblemCategoryData;
 import org.springframework.tooling.boot.ls.prefs.ProblemCategoryData.CategoryToggleData;
+import org.springframework.tooling.boot.ls.prefs.StringListEditor;
 import org.springsource.ide.eclipse.commons.boot.ls.remoteapps.RemoteBootAppsDataHolder;
 import org.springsource.ide.eclipse.commons.boot.ls.remoteapps.RemoteBootAppsDataHolder.RemoteAppData;
 import org.springsource.ide.eclipse.commons.livexp.core.ValueListener;
@@ -142,7 +143,8 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 						FileSystems.getDefault().getPathMatcher("glob:**/*.java"),
 						FileSystems.getDefault().getPathMatcher("glob:**/*.json"),
 						FileSystems.getDefault().getPathMatcher("glob:**/*.yml"),
-						FileSystems.getDefault().getPathMatcher("glob:**/*.properties")
+						FileSystems.getDefault().getPathMatcher("glob:**/*.properties"),
+						FileSystems.getDefault().getPathMatcher("glob:**/META-INF/spring/*.factories")
 				)));
 				
 				//Add remote boot apps listener
@@ -190,6 +192,7 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 		
 		bootJavaObj.put("rewrite", Map.of(
 				"reconcile", preferenceStore.getBoolean(Constants.PREF_REWRITE_RECONCILE),
+				"recipe-filters", StringListEditor.decode(preferenceStore.getString(Constants.PREF_REWRITE_RECIPE_FILTERS)),
 				"scan-directories", FileListEditor.getValuesFromPreference(preferenceStore.getString(Constants.PREF_REWRITE_RECIPES_SCAN_DIRS)),
 				"scan-files", FileListEditor.getValuesFromPreference(preferenceStore.getString(Constants.PREF_REWRITE_RECIPES_SCAN_FILES))
 		));

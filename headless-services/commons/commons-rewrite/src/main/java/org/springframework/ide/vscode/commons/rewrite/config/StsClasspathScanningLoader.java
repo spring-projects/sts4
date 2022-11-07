@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.rewrite.config;
 
+import static java.util.Collections.emptyList;
 import static org.openrewrite.internal.RecipeIntrospectionUtils.constructRecipe;
 import static org.openrewrite.internal.RecipeIntrospectionUtils.recipeDescriptorFromRecipe;
 
@@ -48,7 +49,7 @@ public class StsClasspathScanningLoader implements ResourceLoader, StsResourceLo
     
     private final List<CodeActionRepository> codeActionRepos = new ArrayList<>(); 
 
-	public StsClasspathScanningLoader(Path p, Properties properties, ClassLoader classLoader) {
+	public StsClasspathScanningLoader(Path p, Properties properties, Collection<? extends ResourceLoader> dependencyResourceLoaders, ClassLoader classLoader) {
 		if (Files.isDirectory(p)) {
 			String dir = p.toString();
 			
@@ -61,7 +62,7 @@ public class StsClasspathScanningLoader implements ResourceLoader, StsResourceLo
 	                .acceptPaths(dir)
 	                .ignoreParentClassLoaders()
 	                .overrideClassLoaders(classLoader)
-	                .acceptPaths("META-INF/rewrite"), properties, classLoader);
+	                .acceptPaths("META-INF/rewrite"), properties, dependencyResourceLoaders, classLoader);
 
 		} else {
 	        String jarName = p.toFile().getName();
@@ -75,14 +76,14 @@ public class StsClasspathScanningLoader implements ResourceLoader, StsResourceLo
 	                .acceptJars(jarName)
 	                .ignoreParentClassLoaders()
 	                .overrideClassLoaders(classLoader)
-	                .acceptPaths("META-INF/rewrite"), properties, classLoader);
+	                .acceptPaths("META-INF/rewrite"), properties, dependencyResourceLoaders, classLoader);
 		}
 		
 	}
 	
     public StsClasspathScanningLoader(Properties properties, String[] acceptPackages) {
         scanClasses(new ClassGraph().acceptPackages(acceptPackages), getClass().getClassLoader());
-        scanYaml(new ClassGraph().acceptPaths("META-INF/rewrite"), properties, null);
+        scanYaml(new ClassGraph().acceptPaths("META-INF/rewrite"), properties, emptyList(), null);
     }
 
     /**
@@ -99,19 +100,19 @@ public class StsClasspathScanningLoader implements ResourceLoader, StsResourceLo
         scanYaml(new ClassGraph()
                  .ignoreParentClassLoaders()
                  .overrideClassLoaders(classLoader)
-                 .acceptPaths("META-INF/rewrite"), properties, classLoader);
+                 .acceptPaths("META-INF/rewrite"), properties, emptyList(), classLoader);
     }
     
     /**
      * This must be called _after_ scanClasses or the descriptors of declarative recipes will be missing any
      * non-declarative recipes they depend on that would be discovered by scanClasses
      */
-    private void scanYaml(ClassGraph classGraph, Properties properties, @Nullable ClassLoader classLoader) {
+    private void scanYaml(ClassGraph classGraph, Properties properties, Collection<? extends ResourceLoader> dependencyResourceLoaders, @Nullable ClassLoader classLoader) {
         try (ScanResult scanResult = classGraph.enableMemoryMapping().scan()) {
             List<YamlResourceLoader> yamlResourceLoaders = new ArrayList<>();
 
             scanResult.getResourcesWithExtension("yml").forEachInputStreamIgnoringIOException((res, input) -> {
-                yamlResourceLoaders.add(new YamlResourceLoader(input, res.getURI(), properties, classLoader));
+                yamlResourceLoaders.add(new YamlResourceLoader(input, res.getURI(), properties, classLoader, dependencyResourceLoaders));
             });
             // Extract in two passes so that the full list of recipes from all sources are known when computing recipe descriptors
             // Otherwise recipes which include recipes from other sources in their recipeList will have incomplete descriptors

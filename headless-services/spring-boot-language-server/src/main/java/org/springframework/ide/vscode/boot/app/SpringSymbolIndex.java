@@ -29,6 +29,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -48,6 +49,7 @@ import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformati
 import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.boot.java.utils.DocumentDescriptor;
+import org.springframework.ide.vscode.boot.java.utils.SpringFactoriesIndexer;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexer;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJava;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexerXML;
@@ -62,6 +64,7 @@ import org.springframework.ide.vscode.commons.languageserver.java.FutureProjectF
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver.Listener;
+import org.springframework.ide.vscode.commons.languageserver.util.ListenerList;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleWorkspaceService;
@@ -97,8 +100,8 @@ public class SpringSymbolIndex implements InitializingBean {
 
 	private final ExecutorService updateQueue = Executors.newSingleThreadExecutor();
 	private SpringIndexer[] indexers;
-
-
+	private ListenerList<Void> listeners = new ListenerList<Void>();
+	
 	private static final Logger log = LoggerFactory.getLogger(SpringSymbolIndex.class);
 
 	private final Listener projectListener = new Listener() {
@@ -123,6 +126,7 @@ public class SpringSymbolIndex implements InitializingBean {
 
 	private SpringIndexerXML springIndexerXML;
 	private SpringIndexerJava springIndexerJava;
+	private SpringFactoriesIndexer factoriesIndexer;
 
 	private String watchXMLDeleteRegistration;
 	private String watchXMLCreatedRegistration;
@@ -161,8 +165,9 @@ public class SpringSymbolIndex implements InitializingBean {
 		namespaceHandler.put("http://www.springframework.org/schema/beans", new SpringIndexerXMLNamespaceHandlerBeans());
 		springIndexerXML = new SpringIndexerXML(handler, namespaceHandler, this.cache, projectFinder());
 		springIndexerJava = new SpringIndexerJava(handler, specificProviders, this.cache, projectFinder());
+		factoriesIndexer = new SpringFactoriesIndexer(handler, cache);
 
-		this.indexers = new SpringIndexer[] {springIndexerJava};
+		this.indexers = new SpringIndexer[] {springIndexerJava, factoriesIndexer};
 
 
 		getWorkspaceService().onDidChangeWorkspaceFolders(evt -> {
@@ -204,7 +209,8 @@ public class SpringSymbolIndex implements InitializingBean {
 	}
 
 	public void serverInitialized() {
-		List<String> globPattern = Arrays.asList(springIndexerJava.getFileWatchPatterns());
+		List<String> globPattern = Stream.concat(Arrays.stream(springIndexerJava.getFileWatchPatterns()), Arrays.stream(factoriesIndexer.getFileWatchPatterns()))
+				.collect(Collectors.toList());
 
 		getWorkspaceService().getFileObserver().onFilesDeleted(globPattern, (files) -> {
 			deleteDocuments(files);
@@ -220,11 +226,11 @@ public class SpringSymbolIndex implements InitializingBean {
 	public void configureIndexer(SymbolIndexConfig config) {
 		synchronized (this) {
 			if (config.isScanXml() && !(Arrays.asList(this.indexers).contains(springIndexerXML))) {
-				this.indexers = new SpringIndexer[] { springIndexerJava, springIndexerXML };
+				this.indexers = new SpringIndexer[] { springIndexerJava, factoriesIndexer, springIndexerXML };
 				springIndexerXML.updateScanFolders(config.getXmlScanFolders());
 				addXmlFileListeners(Arrays.asList(springIndexerXML.getFileWatchPatterns()));
 			} else if (!config.isScanXml() && Arrays.asList(this.indexers).contains(springIndexerXML)) {
-				this.indexers = new SpringIndexer[] { springIndexerJava };
+				this.indexers = new SpringIndexer[] { springIndexerJava, factoriesIndexer };
 				springIndexerXML.updateScanFolders(new String[0]);
 				removeXmlFileListeners();
 			} else if (config.isScanXml()) {
@@ -310,7 +316,9 @@ public class SpringSymbolIndex implements InitializingBean {
 						futures[i] = CompletableFuture.runAsync(initializeItem, this.updateQueue);
 					}
 					
-					return CompletableFuture.allOf(futures);
+					CompletableFuture<Void> future = CompletableFuture.allOf(futures);
+					future.thenAccept(v -> listeners.fire(v));
+					return future;
 				}
 			} else {
 				return deleteProject(project);
@@ -388,7 +396,9 @@ public class SpringSymbolIndex implements InitializingBean {
 				}
 			}
 
-			return CompletableFuture.allOf((CompletableFuture[]) futures.toArray(new CompletableFuture[futures.size()]));
+			CompletableFuture<Void> future = CompletableFuture.allOf((CompletableFuture[]) futures.toArray(new CompletableFuture[futures.size()]));
+			future.thenAccept(v -> listeners.fire(v));
+			return future;
 		}
 	}
 
@@ -445,7 +455,9 @@ public class SpringSymbolIndex implements InitializingBean {
 					}
 				}
 			}
-			return CompletableFuture.allOf((CompletableFuture[]) futures.toArray(new CompletableFuture[futures.size()]));
+			CompletableFuture<Void> future = CompletableFuture.allOf((CompletableFuture[]) futures.toArray(new CompletableFuture[futures.size()]));
+			future.thenAccept(v -> listeners.fire(v));
+			return future;
 		}
 	}
 	
@@ -512,7 +524,9 @@ public class SpringSymbolIndex implements InitializingBean {
 					futures.add(CompletableFuture.runAsync(deleteItems, this.updateQueue));
 				}
 
-				return CompletableFuture.allOf((CompletableFuture[]) futures.toArray(new CompletableFuture[futures.size()]));
+				CompletableFuture<Void> future = CompletableFuture.allOf((CompletableFuture[]) futures.toArray(new CompletableFuture[futures.size()]));
+				future.thenAccept(v -> listeners.fire(v));
+				return future;
 			}
 			catch (Exception e) {
 				log.error("", e);
@@ -537,6 +551,11 @@ public class SpringSymbolIndex implements InitializingBean {
 		return symbols.parallelStream()
 			.filter(filter)
 			.map(enhanced -> enhanced.getSymbol());
+	}
+	
+	public List<EnhancedSymbolInformation> getEnhancedSymbols(IJavaProject project) {
+		List<EnhancedSymbolInformation> list = symbolsByProject.get(project.getElementName());
+		return list == null ? Collections.emptyList() : Collections.unmodifiableList(list);
 	}
 	
 	synchronized private CompletableFuture<IJavaProject> projectInitializedFuture(IJavaProject project) {
@@ -868,5 +887,9 @@ public class SpringSymbolIndex implements InitializingBean {
 			}
 		}
 
+	}
+	
+	public void onUpdate(Consumer<Void> listener) {
+		listeners.add(listener);
 	}
 }

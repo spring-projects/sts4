@@ -31,17 +31,24 @@ public class LoadUtilsTest {
 		env = Environment.builder().scanRuntimeClasspath().build();
 	}
 	
+	@SuppressWarnings("unchecked")
 	@Test
 	public void createRecipeTest() throws Exception {
 		Recipe r = env.listRecipes().stream().filter(d -> "org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_0".equals(d.getName())).findFirst().orElse(null);
 		RecipeDescriptor recipeDescriptor = r.getDescriptor();
 		assertNotNull(recipeDescriptor);
-		r = LoadUtils.createRecipe(recipeDescriptor);
+		r = LoadUtils.createRecipe(recipeDescriptor, id -> {
+			try {
+				return (Class<Recipe>) Class.forName(id);
+			} catch (ClassNotFoundException e) {
+				return null;
+			}
+		});
 		
 		assertTrue(r instanceof DeclarativeRecipe);
 		assertEquals("org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_0", r.getName());
 		assertEquals("Upgrade to Spring Boot 3.0 from prior 2.x version.", r.getDescription());
-		assertEquals("Upgrade to Spring Boot 3.0 from 2.x", r.getDisplayName());
+		assertEquals("Upgrade to Spring Boot 3.0 from 2.7", r.getDisplayName());
 		assertEquals(3, r.getRecipeList().size());
 		
 		Recipe pomRecipe = r.getRecipeList().get(0);
@@ -49,11 +56,9 @@ public class LoadUtilsTest {
 		assertEquals("org.openrewrite.java.spring.boot3.MavenPomUpgrade", pomRecipe.getName());
 		assertEquals("Upgrade Maven Pom to Spring Boot 3.0 from prior 2.x version.", pomRecipe.getDescription());
 		assertEquals("Upgrade Maven Pom to Spring Boot 3.0 from 2.x", pomRecipe.getDisplayName());
-		assertEquals(4, pomRecipe.getRecipeList().size());
+		assertTrue(pomRecipe.getRecipeList().size() >= 4);
 		
-		r = pomRecipe.getRecipeList().get(1);
-		assertTrue(r instanceof UpgradeDependencyVersion);
-		UpgradeDependencyVersion upgradeDependencyRecipe = (UpgradeDependencyVersion) r;
+		UpgradeDependencyVersion upgradeDependencyRecipe = pomRecipe.getRecipeList().stream().filter(UpgradeDependencyVersion.class::isInstance).map(UpgradeDependencyVersion.class::cast).findFirst().get();
 		assertEquals("org.openrewrite.maven.UpgradeDependencyVersion", upgradeDependencyRecipe.getName());
 		assertEquals("Upgrade Maven dependency version", upgradeDependencyRecipe.getDisplayName());
 		assertEquals(0, upgradeDependencyRecipe.getRecipeList().size());

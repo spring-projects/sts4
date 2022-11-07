@@ -50,7 +50,7 @@
 		<!-- Signing -->
 		<signing.skip>true</signing.skip>
 		<signing.alias>vmware</signing.alias>
-		<misc.p2.repo.version>3.9.4.201902271843</misc.p2.repo.version>
+		<misc.p2.repo.version>3.9.4.202211021051</misc.p2.repo.version>
 	</properties>
 
 	<profiles>

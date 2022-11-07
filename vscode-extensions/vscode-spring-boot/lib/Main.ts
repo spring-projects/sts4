@@ -16,6 +16,7 @@ const PROPERTIES_LANGUAGE_ID = "spring-boot-properties";
 const YAML_LANGUAGE_ID = "spring-boot-properties-yaml";
 const JAVA_LANGUAGE_ID = "java";
 const XML_LANGUAGE_ID = "xml";
+const FACTORIES_LANGUAGE_ID = "spring-factories";
 
 const NEVER_SHOW_AGAIN = "Do not show again";
 
@@ -92,6 +93,10 @@ export function activate(context: VSCode.ExtensionContext): Thenable<ExtensionAP
                 },
                 {
                     language: XML_LANGUAGE_ID,
+                    scheme: 'file'
+                },
+                {
+                    language: FACTORIES_LANGUAGE_ID,
                     scheme: 'file'
                 }
             ],

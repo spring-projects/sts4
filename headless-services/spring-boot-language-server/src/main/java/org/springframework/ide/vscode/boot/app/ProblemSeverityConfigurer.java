@@ -17,7 +17,7 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.DiagnosticSeverityProvider;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity;
-import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblem;
+import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
 import org.springframework.ide.vscode.commons.languageserver.util.Settings;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.Assert;
@@ -51,10 +51,10 @@ public class ProblemSeverityConfigurer implements InitializingBean {
 				severityOverrides.put(code, ProblemSeverity.valueOf(severity));
 			}
 		}
-		server.setDiagnosticSeverityProvider((ReconcileProblem problem) -> {
-			ProblemSeverity severity = severityOverrides.get(problem.getType().getCode());
+		server.setDiagnosticSeverityProvider((ProblemType problem) -> {
+			ProblemSeverity severity = severityOverrides.get(problem.getCode());
 			if (severity==null) {
-				severity = problem.getType().getDefaultSeverity();
+				severity = problem.getDefaultSeverity();
 			}
 			return DiagnosticSeverityProvider.diagnosticSeverity(severity);
 		});

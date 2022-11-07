@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2020 Pivotal, Inc.
+ * Copyright (c) 2020, 2022 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -59,6 +59,7 @@ import org.springframework.ide.eclipse.boot.dash.model.RunState;
 import org.springframework.ide.eclipse.boot.dash.model.remote.ChildBearing;
 import org.springframework.ide.eclipse.boot.dash.model.remote.RefreshStateTracker;
 import org.springframework.ide.eclipse.boot.dash.util.LineBasedStreamGobler;
+import org.springframework.ide.eclipse.boot.launch.util.BootDebugUITools;
 import org.springframework.ide.eclipse.boot.launch.util.PortFinder;
 import org.springframework.ide.eclipse.boot.util.JavaProjectUtil;
 import org.springsource.ide.eclipse.commons.core.pstore.PropertyStoreApi;
@@ -190,6 +191,18 @@ public class DockerApp extends AbstractDisposable implements App, ChildBearing, 
 	}
 	
 	public CompletableFuture<Void> synchronizeWithDeployment() {
+		// GH-803: Prompt to save dirty editors prior to
+		// building the project.
+		try {
+			DockerDeployment deployment = deployment();
+			RunState desiredRunState = deployment.getRunState();
+			if (desiredRunState.isActive() 
+					&& !BootDebugUITools.promptForProjectSave(project)) {
+				return new CompletableFuture<Void>();
+			}
+		} catch (Exception e) {
+			Log.log(e);
+		}
 		return this.refreshTracker.thenComposeAsync(refreshTracker -> {
 			DockerDeployment deployment = deployment();
 			return refreshTracker.runAsync("Synchronizing deployment "+deployment.getName(), () -> {

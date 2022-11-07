@@ -25,6 +25,8 @@ import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.DumperOptions.FlowStyle;
 import org.yaml.snakeyaml.DumperOptions.LineBreak;
 import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.SafeConstructor;
+import org.yaml.snakeyaml.representer.Representer;
 
 /**
  * Tests for generating YAML files from {@link CloudApplicationDeploymentProperties}
@@ -44,7 +46,7 @@ public class DeploymentProperties2YamlTest {
 		options.setDefaultFlowStyle(FlowStyle.BLOCK);
 		options.setLineBreak(LineBreak.getPlatformLineBreak());
 
-		String generatedManifest = new Yaml(options).dump(map);
+		String generatedManifest = new Yaml(new SafeConstructor(), new Representer(options), options).dump(map);
 
 		File yamlFile = ManifestCompareMergeTests.getTestFile(expectedYamlFilePath);
 		FileInputStream inputStream = null;

@@ -18,13 +18,19 @@ import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
 public class BeansSymbolAddOnInformation implements SymbolAddOnInformation {
 
 	private final String beanID;
+	private final String beanType;
 
-	public BeansSymbolAddOnInformation(String beanID) {
+	public BeansSymbolAddOnInformation(String beanID, String beanType) {
 		this.beanID = beanID;
+		this.beanType = beanType;
 	}
 
 	public String getBeanID() {
 		return beanID;
 	}
-
+	
+	public String getBeanType() {
+		return beanType;
+	}
+	
 }

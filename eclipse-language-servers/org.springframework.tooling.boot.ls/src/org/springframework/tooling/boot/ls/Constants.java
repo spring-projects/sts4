@@ -33,7 +33,11 @@ public class Constants {
 	
 	public static final String PREF_REWRITE_RECONCILE = "boot-java.rewrite.reconcile";
 
+	public static final String PREF_REWRITE_RECIPE_FILTERS = "boot-java.rewrite.recipe-filters";
+	
 	public static final String PREF_REWRITE_RECIPES_SCAN_FILES = "boot-java.rewrite.scan-files";
 	
 	public static final String PREF_REWRITE_RECIPES_SCAN_DIRS = "boot-java.rewrite.scan-directories";
+	
+	public static final String PREF_REWRITE_PROJECT_REFACTORINGS = "boot-java.rewrite.project-refactorings";
 }

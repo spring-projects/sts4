@@ -10,22 +10,15 @@
  *******************************************************************************/
 package org.springframework.rewrite.test;
 
-import java.util.Collections;
 import java.util.List;
 
 import org.springframework.ide.vscode.commons.rewrite.config.CodeActionRepository;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeCodeActionDescriptor;
-import org.springframework.ide.vscode.commons.rewrite.config.RecipeSpringJavaProblemDescriptor;
 
 public class StsTestCodeActionRepo extends CodeActionRepository {
 
 	@Override
 	public List<RecipeCodeActionDescriptor> getCodeActionDescriptors() {
-		return Collections.emptyList();
-	}
-
-	@Override
-	public List<RecipeSpringJavaProblemDescriptor> getProblemDescriptors() {
 		return List.of(new HelloMethodRenameProblemDescriptor());
 	}
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2019 Pivotal, Inc.
+ * Copyright (c) 2017, 2022 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -31,6 +31,7 @@ public class LanguageId {
 	public static final LanguageId BOSH_CLOUD_CONFIG = of("bosh-cloud-config");
 	public static final LanguageId BOOT_PROPERTIES = of("spring-boot-properties");
 	public static final LanguageId BOOT_PROPERTIES_YAML = of("spring-boot-properties-yaml");
+	public static final LanguageId SPRING_FACTORIES = of("spring-factories");
 
 	private final String id;
 

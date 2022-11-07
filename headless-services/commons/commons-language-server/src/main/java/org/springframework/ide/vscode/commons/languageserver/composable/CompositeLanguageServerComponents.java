@@ -21,13 +21,16 @@ import org.eclipse.lsp4j.CodeAction;
 import org.eclipse.lsp4j.CodeActionCapabilities;
 import org.eclipse.lsp4j.CodeActionContext;
 import org.eclipse.lsp4j.Command;
+import org.eclipse.lsp4j.DocumentSymbolParams;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.HoverParams;
+import org.eclipse.lsp4j.WorkspaceSymbol;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
 import org.springframework.ide.vscode.commons.languageserver.util.CodeActionHandler;
+import org.springframework.ide.vscode.commons.languageserver.util.DocumentSymbolHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.HoverHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
@@ -61,6 +64,7 @@ public class CompositeLanguageServerComponents implements LanguageServerComponen
 	private final IReconcileEngine reconcileEngine;
 	private final HoverHandler hoverHandler;
 	private final CodeActionHandler codeActionHandler;
+	private final DocumentSymbolHandler docSymbolHandler;
 
 	public CompositeLanguageServerComponents(SimpleLanguageServer server, Builder builder) {
 		this.componentsByLanguageId = ImmutableMap.copyOf(builder.componentsByLanguageId);
@@ -119,6 +123,24 @@ public class CompositeLanguageServerComponents implements LanguageServerComponen
 				return Collections.emptyList();
 			}
 		};
+		
+		this.docSymbolHandler = new DocumentSymbolHandler() {
+			
+			@Override
+			public List<? extends WorkspaceSymbol> handle(DocumentSymbolParams params) {
+				TextDocument doc = server.getTextDocumentService().getLatestSnapshot(params.getTextDocument().getUri());
+				LanguageId language = doc.getLanguageId();
+				LanguageServerComponents subComponents = componentsByLanguageId.get(language);
+				if (subComponents != null) {
+					DocumentSymbolHandler subHandler = subComponents.getDocumentSymbolProvider().orElse(null);
+					if (subHandler != null) {
+						return subHandler.handle(params);
+					}
+				}
+				//No applicable subEngine...
+				return Collections.emptyList();
+			}
+		};
 	}
 
 	@Override
@@ -130,10 +152,15 @@ public class CompositeLanguageServerComponents implements LanguageServerComponen
 	public HoverHandler getHoverProvider() {
 		return hoverHandler;
 	}
-
+	
 	@Override
 	public Optional<IReconcileEngine> getReconcileEngine() {
 		return Optional.ofNullable(reconcileEngine);
+	}
+
+	@Override
+	public Optional<DocumentSymbolHandler> getDocumentSymbolProvider() {
+		return Optional.ofNullable(docSymbolHandler);
 	}
 
 	@SuppressWarnings("unchecked")

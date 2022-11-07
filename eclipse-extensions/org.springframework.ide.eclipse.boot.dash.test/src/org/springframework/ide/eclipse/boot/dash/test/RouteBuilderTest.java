@@ -31,8 +31,8 @@ import org.springframework.ide.eclipse.editor.support.yaml.ast.NodeUtil;
 import org.springframework.ide.eclipse.editor.support.yaml.ast.YamlASTProvider;
 import org.springframework.ide.eclipse.editor.support.yaml.ast.YamlFileAST;
 import org.springframework.ide.eclipse.editor.support.yaml.path.YamlPath;
-import org.springframework.ide.eclipse.editor.support.yaml.path.YamlTraversal;
 import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.constructor.SafeConstructor;
 import org.yaml.snakeyaml.nodes.Node;
 
 import com.google.common.collect.ImmutableList;
@@ -293,7 +293,7 @@ public class RouteBuilderTest {
 	 */
 	private RouteAttributes parse(List<CFCloudDomain> domains, String manifestText) {
 		IDocument doc = new Document(manifestText);
-		YamlASTProvider parser = new YamlASTProvider(new Yaml());
+		YamlASTProvider parser = new YamlASTProvider(new Yaml(new SafeConstructor()));
 		YamlFileAST ast = parser.getAST(doc);
 		List<Node> names = YamlPath.EMPTY
 				.thenAnyChild()

@@ -41,6 +41,8 @@ public class SpringProcessCommandHandler {
 	private static final String COMMAND_DISCONNECT = "sts/livedata/disconnect";
 	private static final String COMMAND_GET = "sts/livedata/get";
 	private static final String COMMAND_LIST_CONNECTED = "sts/livedata/listConnected";
+	private static final String COMMAND_GET_METRICS = "sts/livedata/get/metrics";
+	private static final String COMMAND_GET_REFRESH_METRICS = "sts/livedata/refresh/metrics";
 	
 	private final SpringProcessConnectorService connectorService;
 	private final SpringProcessConnectorLocal localProcessConnector;
@@ -76,6 +78,16 @@ public class SpringProcessCommandHandler {
 			return handleLiveProcessRequest(params);
 		});
 		log.info("Registered command handler: {}",COMMAND_GET);
+		
+		server.onCommand(COMMAND_GET_METRICS, (params) -> {
+			return handleLiveMetricsProcessRequest(params);
+		});
+		log.info("Registered command handler: {}",COMMAND_GET_METRICS);
+		
+		server.onCommand(COMMAND_GET_REFRESH_METRICS, (params) -> {
+			return refreshMetrics(params);
+		});
+		log.info("Registered command handler: {}",COMMAND_GET_METRICS);
 		
 		server.onCommand(COMMAND_LIST_CONNECTED, (params) -> {
 			List<LiveProcessSummary> result = new ArrayList<>();
@@ -135,9 +147,24 @@ public class SpringProcessCommandHandler {
 	}
 
 	private CompletableFuture<Object> refresh(ExecuteCommandParams params) {
-		String processKey = getProcessKey(params);
-		if (processKey != null) {
-			connectorService.refreshProcess(processKey);
+	    SpringProcessParams springProcessParams = new SpringProcessParams();
+        springProcessParams.setProcessKey(getProcessKey(params));    
+        springProcessParams.setEndpoint(getArgumentByKey(params, "endpoint"));
+		if (springProcessParams.getProcessKey() != null) {
+			connectorService.refreshProcess(springProcessParams);
+		}
+
+		return CompletableFuture.completedFuture(null);
+	}
+	
+	private CompletableFuture<Object> refreshMetrics(ExecuteCommandParams params) {
+	    SpringProcessParams springProcessParams = new SpringProcessParams();
+	    springProcessParams.setProcessKey(getProcessKey(params));    
+	    springProcessParams.setEndpoint(getArgumentByKey(params, "endpoint"));
+	    springProcessParams.setMetricName(getArgumentByKey(params, "metricName"));
+	    springProcessParams.setTags(getArgumentByKey(params, "tags"));  // Convert tags to a map
+		if (springProcessParams.getProcessKey() != null) {
+			connectorService.refreshProcess(springProcessParams);
 		}
 
 		return CompletableFuture.completedFuture(null);
@@ -221,8 +248,10 @@ public class SpringProcessCommandHandler {
 			}
 			else if (arg instanceof JsonObject) {
 				JsonElement element = ((JsonObject) arg).get(name);
-				if (element != null) {
-					return element.getAsString();
+				if (element != null && element instanceof JsonObject) {
+					return element.toString();
+				} else if ( element != null) {
+				    return element.getAsString();
 				}
 			}
 		}
@@ -260,6 +289,30 @@ public class SpringProcessCommandHandler {
 				case "port": {
 					return CompletableFuture.completedFuture(data.getPort());
 				}
+				default: {}
+			}
+		}
+		
+		return CompletableFuture.completedFuture(null);
+	}
+	
+	private CompletableFuture<Object> handleLiveMetricsProcessRequest(ExecuteCommandParams params) {
+		String processKey = getProcessKey(params);
+		String metricName = getArgumentByKey(params, "metricName");
+		if (processKey != null) {
+			switch(metricName) {
+				case "gcPauses": {
+					SpringProcessGcPausesMetricsLiveData data = connectorService.getGcPausesMetricsLiveData(processKey);
+					return CompletableFuture.completedFuture(data.getGcPausesMetrics());
+				}
+				case "heapMemory": {
+					SpringProcessMemoryMetricsLiveData data = connectorService.getMemoryMetricsLiveData(processKey);
+					return CompletableFuture.completedFuture(data.getHeapMemoryMetrics());
+				}
+				case "nonHeapMemory": {
+                    SpringProcessMemoryMetricsLiveData data = connectorService.getMemoryMetricsLiveData(processKey);
+                    return CompletableFuture.completedFuture(data.getNonHeapMemoryMetrics());
+                }
 				default: {}
 			}
 		}

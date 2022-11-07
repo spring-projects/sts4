@@ -167,6 +167,10 @@ public class BootJavaConfig implements InitializingBean {
 	public Set<String> getRecipeDirectories() {
 		return settings.getStringSet("boot-java", "rewrite", "scan-directories");
 	}
+	
+	public Set<String> getRecipesFilters() {
+		return settings.getStringSet("boot-java", "rewrite", "recipe-filters");
+	}
 
 	public Set<String> getRecipeFiles() {
 		return settings.getStringSet("boot-java", "rewrite", "scan-files");

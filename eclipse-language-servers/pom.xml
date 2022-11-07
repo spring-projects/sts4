@@ -4,7 +4,7 @@
 
 	<groupId>org.springframework.boot.ide</groupId>
 	<artifactId>org.springframework.boot.ide.servers</artifactId>
-	<version>4.16.1-SNAPSHOT</version>
+	<version>4.17.0-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<organization>
@@ -97,7 +97,7 @@
 		<dist.key>TOOLS</dist.key>
 		<dist.path>${dist.type}/${dist.key}/${dist.project}/${dist.version}</dist.path>
 
-		<misc.p2.repo.version>3.9.4.202003091750</misc.p2.repo.version>
+		<misc.p2.repo.version>3.9.4.202211021051</misc.p2.repo.version>
 	</properties>
 
 	<profiles>

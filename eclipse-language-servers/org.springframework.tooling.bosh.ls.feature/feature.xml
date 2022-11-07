@@ -2,7 +2,7 @@
 <feature
 	id="org.springframework.tooling.bosh.ls.feature"
 	label="BOSH Language Server Feature"
-	version="4.16.1.qualifier"
+	version="4.17.0.qualifier"
 	provider-name="VMware, Inc.">
 
     <description>

@@ -12,46 +12,37 @@ package org.springframework.ide.vscode.boot.java.rewrite.reconcile;
 
 import static org.springframework.ide.vscode.commons.java.SpringProjectUtil.springBootVersionGreaterOrEqual;
 
+import java.util.List;
+
 import org.openrewrite.Cursor;
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.SourceFile;
 import org.openrewrite.Tree;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.J.Return;
-import org.openrewrite.marker.Range;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeUtils;
-import org.springframework.ide.vscode.boot.java.Boot3JavaProblemType;
+import org.openrewrite.marker.Range;
+import org.springframework.context.ApplicationContext;
+import org.springframework.ide.vscode.boot.java.SpringAotJavaProblemType;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeCodeActionDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
-import org.springframework.ide.vscode.commons.rewrite.config.RecipeSpringJavaProblemDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.java.FixAssistMarker;
+import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
 
-public class PreciseBeanTypeProblem implements RecipeSpringJavaProblemDescriptor {
+public class PreciseBeanTypeProblem implements RecipeCodeActionDescriptor {
+
+	private static final String RECIPE_ID = "org.openrewrite.java.spring.boot3.PreciseBeanType";
 
 	private static final String LABEL = "Ensure concrete bean type";
 	
 	private static final String MSG_KEY = "returnType";
 
 	@Override
-	public String getRecipeId() {
-		return "org.openrewrite.java.spring.boot3.PreciseBeanType";
-	}
-
-	@Override
-	public String getLabel(RecipeScope s) {
-		return RecipeCodeActionDescriptor.buildLabel(LABEL, s);
-	}
-
-	@Override
-	public RecipeScope[] getScopes() {
-		return RecipeScope.values();
-	}
-
-	@Override
-	public JavaVisitor<ExecutionContext> getMarkerVisitor() {
+	public JavaVisitor<ExecutionContext> getMarkerVisitor(ApplicationContext applicationContext) {
 		return new JavaIsoVisitor<>() {
 			
             public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext executionContext) {
@@ -61,8 +52,19 @@ public class PreciseBeanTypeProblem implements RecipeSpringJavaProblemDescriptor
                     if (o != null && !o.equals(m.getReturnTypeExpression().getType())) {
                     	if ((o instanceof JavaType.FullyQualified && m.getReturnTypeExpression().getType() instanceof JavaType.FullyQualified)
                     			|| (o instanceof JavaType.Array && m.getReturnTypeExpression().getType() instanceof JavaType.Array)) {
-                        	m = m.withReturnTypeExpression(m.getReturnTypeExpression().withMarkers(m.getReturnTypeExpression().getMarkers().add(
-                        			new FixAssistMarker(Tree.randomId()).withScope(m.getMarkers().findFirst(Range.class).get()).withRecipeId(getRecipeId()))));
+                    		
+							String uri = getCursor().firstEnclosing(SourceFile.class).getSourcePath().toUri().toString();
+							FixAssistMarker marker = new FixAssistMarker(Tree.randomId(), getId())
+									.withFixes(
+										new FixDescriptor(RECIPE_ID, List.of(uri), RecipeCodeActionDescriptor.buildLabel(LABEL, RecipeScope.NODE))
+											.withRecipeScope(RecipeScope.NODE)
+											.withRangeScope(m.getMarkers().findFirst(Range.class).get()),
+										new FixDescriptor(RECIPE_ID, List.of(uri), RecipeCodeActionDescriptor.buildLabel(LABEL, RecipeScope.FILE))
+											.withRecipeScope(RecipeScope.FILE),
+										new FixDescriptor(RECIPE_ID, List.of(uri), RecipeCodeActionDescriptor.buildLabel(LABEL, RecipeScope.PROJECT))
+											.withRecipeScope(RecipeScope.PROJECT)
+									);
+                        	m = m.withReturnTypeExpression(m.getReturnTypeExpression().withMarkers(m.getReturnTypeExpression().getMarkers().add(marker)));
                     	}
                     }
                 }
@@ -93,8 +95,8 @@ public class PreciseBeanTypeProblem implements RecipeSpringJavaProblemDescriptor
 	}
 
 	@Override
-	public Boot3JavaProblemType getProblemType() {
-		return Boot3JavaProblemType.JAVA_CONCRETE_BEAN_TYPE;
+	public SpringAotJavaProblemType getProblemType() {
+		return SpringAotJavaProblemType.JAVA_CONCRETE_BEAN_TYPE;
 	}
 
 }

@@ -16,6 +16,4 @@ public abstract class CodeActionRepository {
 	
 	public abstract List<RecipeCodeActionDescriptor> getCodeActionDescriptors();
 	
-	public abstract List<RecipeSpringJavaProblemDescriptor> getProblemDescriptors();
-
 }

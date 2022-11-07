@@ -99,22 +99,30 @@ public class SpringProcessConnectorService {
 		}
 	}
 	
-	public void refreshProcess(String processKey) {
-		log.info("refresh process: " + processKey);
+	public void refreshProcess(SpringProcessParams springProcessParams) {
+		log.info("refresh process: " + springProcessParams.getProcessKey());
 		
-		SpringProcessConnector connector = this.connectors.get(processKey);
+		SpringProcessConnector connector = this.connectors.get(springProcessParams.getProcessKey());
 		if (connector != null) {
 			final ProgressTask progressTask = getProgressTask(
-					"spring-process-connector-service-refresh-data-" + processKey);
+					"spring-process-connector-service-refresh-data-" + springProcessParams.getProcessKey());
 
 			progressTask.progressBegin("Refresh", null);
 
-			scheduleRefresh(progressTask, processKey, connector, 0, TimeUnit.SECONDS, 0);
+			scheduleRefresh(progressTask, springProcessParams, connector, 0, TimeUnit.SECONDS, 0);
 		}
 	}
 
 	public SpringProcessLiveData getLiveData(String processKey) {
 		return this.liveDataProvider.getCurrent(processKey);
+	}
+	
+	public SpringProcessMemoryMetricsLiveData getMemoryMetricsLiveData(String processKey) {
+		return this.liveDataProvider.getMemoryMetrics(processKey);
+	}
+	
+	public SpringProcessGcPausesMetricsLiveData getGcPausesMetricsLiveData(String processKey) {
+		return this.liveDataProvider.getGcPausesMetrics(processKey);
 	}
 
 	public void disconnectProcess(String processKey) {
@@ -162,7 +170,9 @@ public class SpringProcessConnectorService {
 				connector.connect();
 				progressTask.progressDone();
 				
-				refreshProcess(processKey);
+				refreshProcess(new SpringProcessParams(processKey, "", "", ""));
+				refreshProcess(new SpringProcessParams(processKey, "metrics", "memory", "area:heap"));
+				refreshProcess(new SpringProcessParams(processKey, "metrics", "gcPauses", ""));
 			}
 			catch (Exception e) {
 				log.info("problem occured during process connect", e);
@@ -210,8 +220,11 @@ public class SpringProcessConnectorService {
 		}, delay, unit);
 	}
 
-	private void scheduleRefresh(ProgressTask progressTask, String processKey, SpringProcessConnector connector, long delay, TimeUnit unit, int retryNo) {
-		String progressMessage = "Refreshing data from Spring process: " + processKey + " - retry no: " + retryNo;
+	private void scheduleRefresh(ProgressTask progressTask, SpringProcessParams springProcessParams, SpringProcessConnector connector, long delay, TimeUnit unit, int retryNo) {
+		String processKey = springProcessParams.getProcessKey();
+		String endpoint = springProcessParams.getEndpoint();
+		String metricName = springProcessParams.getMetricName();
+	    String progressMessage = "Refreshing data from Spring process: " + processKey + " - retry no: " + retryNo;
 		log.info(progressMessage);
 		
 		
@@ -219,14 +232,38 @@ public class SpringProcessConnectorService {
 			
 			try {
 				progressTask.progressEvent(progressMessage);
-				SpringProcessLiveData newLiveData = connector.refresh(this.liveDataProvider.getCurrent(processKey));
-
-				if (newLiveData != null) {
-					if (!this.liveDataProvider.add(processKey, newLiveData)) {
-						this.liveDataProvider.update(processKey, newLiveData);
+				if(endpoint.equals("metrics") && metricName.equals("memory")) {
+					SpringProcessMemoryMetricsLiveData newMetricsLiveData = connector.refreshMemoryMetrics(this.liveDataProvider.getCurrent(processKey), metricName, springProcessParams.getTags());
+					
+					if (newMetricsLiveData != null) {
+						if (!this.liveDataProvider.addMemoryMetrics(processKey, newMetricsLiveData)) {
+							this.liveDataProvider.updateMemoryMetrics(processKey, newMetricsLiveData);
+						}
+						
+						this.connectedSuccess.put(processKey, true);
 					}
 					
-					this.connectedSuccess.put(processKey, true);
+				} else if(endpoint.equals("metrics") && metricName.equals("gcPauses")) {
+					SpringProcessGcPausesMetricsLiveData newMetricsLiveData = connector.refreshGcPausesMetrics(this.liveDataProvider.getCurrent(processKey), metricName, springProcessParams.getTags());
+					
+					if (newMetricsLiveData != null) {
+						if (!this.liveDataProvider.addGcPausesMetrics(processKey, newMetricsLiveData)) {
+							this.liveDataProvider.updateGcPausesMetrics(processKey, newMetricsLiveData);
+						}
+						
+						this.connectedSuccess.put(processKey, true);
+					}
+					
+				} else {
+					SpringProcessLiveData newLiveData = connector.refresh(this.liveDataProvider.getCurrent(processKey));
+	
+					if (newLiveData != null) {
+						if (!this.liveDataProvider.add(processKey, newLiveData)) {
+							this.liveDataProvider.update(processKey, newLiveData);
+						}
+						
+						this.connectedSuccess.put(processKey, true);
+					}
 				}
 				progressTask.progressDone();
 			}
@@ -235,7 +272,7 @@ public class SpringProcessConnectorService {
 				log.info("problem occured during process live data refresh", e);
 				
 				if (retryNo < maxRetryCount && isKnownProcessKey(processKey)) {
-					scheduleRefresh(progressTask, processKey, connector, retryDelayInSeconds, TimeUnit.SECONDS,
+					scheduleRefresh(progressTask, springProcessParams, connector, retryDelayInSeconds, TimeUnit.SECONDS,
 							retryNo + 1);
 				}
 				else {

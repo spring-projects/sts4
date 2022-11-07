@@ -29,6 +29,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -47,14 +48,17 @@ import org.openrewrite.Result;
 import org.openrewrite.SourceFile;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.Validated;
+import org.openrewrite.config.DeclarativeRecipe;
 import org.openrewrite.config.RecipeDescriptor;
 import org.openrewrite.config.YamlResourceLoader;
-import org.openrewrite.internal.RecipeIntrospectionUtils;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.tree.J.CompilationUnit;
 import org.openrewrite.maven.MavenParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
 import org.springframework.ide.vscode.boot.app.BootJavaConfig;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IClasspathUtil;
@@ -66,7 +70,6 @@ import org.springframework.ide.vscode.commons.rewrite.LoadUtils;
 import org.springframework.ide.vscode.commons.rewrite.LoadUtils.DurationTypeConverter;
 import org.springframework.ide.vscode.commons.rewrite.ORDocUtils;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeCodeActionDescriptor;
-import org.springframework.ide.vscode.commons.rewrite.config.RecipeSpringJavaProblemDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.config.StsEnvironment;
 import org.springframework.ide.vscode.commons.rewrite.maven.MavenProjectParser;
 
@@ -77,7 +80,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 
-public class RewriteRecipeRepository {
+public class RewriteRecipeRepository implements ApplicationContextAware {
 		
 	private static final String CMD_REWRITE_RELOAD = "sts/rewrite/reload";
 	private static final String CMD_REWRITE_EXECUTE = "sts/rewrite/execute";
@@ -85,8 +88,6 @@ public class RewriteRecipeRepository {
 	private static final Logger log = LoggerFactory.getLogger(RewriteRecipeRepository.class);
 	private static final String WORKSPACE_EXECUTE_COMMAND = "workspace/executeCommand";
 	
-	private static final String RECIPES_LOADING_PROGRESS = "loading-rewrite-recipes";
-
 	final private SimpleLanguageServer server;
 	
 	final private Map<String, Recipe> recipes;
@@ -97,25 +98,16 @@ public class RewriteRecipeRepository {
 	
 	final private List<RecipeCodeActionDescriptor> codeActionDescriptors;
 	
-	final private List<RecipeSpringJavaProblemDescriptor> javaProblemDescriptors;
-	
 	final private ListenerList<Void> loadListeners;
+	
+	private ApplicationContext applicationContext;
 	
 	private CompletableFuture<Void> loaded;
 	
 	private Set<String> scanFiles = Collections.emptySet();
 	private Set<String> scanDirs = Collections.emptySet();
-	
-	static final Set<String> TOP_LEVEL_RECIPES = Set.of(
-			"org.openrewrite.java.spring.boot2.SpringBoot2JUnit4to5Migration",
-			"org.openrewrite.java.spring.boot2.SpringBoot2BestPractices",
-			"org.openrewrite.java.spring.boot2.SpringBoot1To2Migration",
-			"org.openrewrite.java.testing.junit5.JUnit5BestPractices",
-			"org.openrewrite.java.testing.junit5.JUnit4to5Migration",
-			"org.openrewrite.java.spring.boot2.UpgradeSpringBoot_2_6",
-			"org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_0"
-	);
-	
+	private Set<String> recipeFilters = Collections.emptySet();
+		
 	private static Gson serializationGson = new GsonBuilder()
 			.registerTypeAdapter(Duration.class, new DurationTypeConverter())
 			.create();
@@ -126,12 +118,12 @@ public class RewriteRecipeRepository {
 		this.recipes = new HashMap<>();
 		this.globalCommandRecipes = new ArrayList<>();
 		this.codeActionDescriptors = new ArrayList<>();
-		this.javaProblemDescriptors = new ArrayList<>();
 		this.loadListeners = new ListenerList<>();
 		
 		server.doOnInitialized(() -> {
 			this.scanDirs = config.getRecipeDirectories();
 			this.scanFiles = config.getRecipeFiles();
+			this.recipeFilters = config.getRecipesFilters();
 			load().thenAccept(v -> registerCommands());
 			config.addListener(l -> {
 				if (!scanDirs.equals(config.getRecipeDirectories())
@@ -141,6 +133,11 @@ public class RewriteRecipeRepository {
 					scanDirs = config.getRecipeDirectories();
 					scanFiles = config.getRecipeFiles();
 					load();
+				}
+				Set<String> recipeFilterFromConfig = config.getRecipesFilters();
+				if (!recipeFilters.equals(recipeFilterFromConfig)) {
+					recipeFilters = recipeFilterFromConfig;
+					updateGlobalCommandRecipes();
 				}
 			});
 		});
@@ -158,12 +155,12 @@ public class RewriteRecipeRepository {
 		recipes.clear();
 		globalCommandRecipes.clear();
 		codeActionDescriptors.clear();
-		javaProblemDescriptors.clear();
 	}
 	
 	private synchronized void loadRecipes() {
+		String taskId = UUID.randomUUID().toString();
 		try {
-			server.getProgressService().progressBegin(RECIPES_LOADING_PROGRESS, "Loading Rewrite Recipes", null);
+			server.getProgressService().progressBegin(taskId, "Loading Rewrite Recipes", null);
 			log.info("Loading Rewrite Recipes...");
 			StsEnvironment env = createRewriteEnvironment();
 			for (Recipe r : env.listRecipes()) {
@@ -173,29 +170,57 @@ public class RewriteRecipeRepository {
 					}
 					recipes.put(r.getName(), r);
 					
-					if (TOP_LEVEL_RECIPES.contains(r.getName()) || r.getName().startsWith("rewrite.test.")
-							|| r.getName().startsWith("org.rewrite.java.security")
-							|| r.getName().startsWith("org.springframework.rewrite.test")) {
-						Validated validation = Validated.invalid(null, null, null);
-						try {
-							validation = r.validate();
-						} catch (Exception e) {
-							// ignore
-						}
-						if (validation.isValid()) {
-							globalCommandRecipes.add(r);
-						}
-					}
+					if (isAcceptableGlobalCommandRecipe(r)) {
+						globalCommandRecipes.add(r);
+					}					
 				}
 			}
-			javaProblemDescriptors.addAll(env.listProblemDescriptors());
 			codeActionDescriptors.addAll(env.listCodeActionDescriptors());
 			log.info("Done loading Rewrite Recipes");
 		} catch (Throwable t) {
 			log.error("", t);
 		} finally {
-			server.getProgressService().progressDone(RECIPES_LOADING_PROGRESS);
+			server.getProgressService().progressDone(taskId);
 		}
+	}
+	
+	private void updateGlobalCommandRecipes() {
+		globalCommandRecipes.clear();
+		for (Recipe r : recipes.values()) {
+			if (isAcceptableGlobalCommandRecipe(r)) {
+				globalCommandRecipes.add(r);
+			}
+		}
+	}
+	
+	private boolean isAcceptableGlobalCommandRecipe(Recipe r) {
+		for (String filter : recipeFilters) {
+			if (!filter.isBlank()) {
+				// Check if wild-card character present
+				if (filter.indexOf('*') < 0) {
+					// No wild-card - direct equality 
+					if (filter.equals(r.getName())) {
+						return isRecipeValid(r);
+					}
+				} else {
+					// Wild-card present - convert to regular expression
+					if (Pattern.matches(filter.replaceAll("\\*", "\\.*"), r.getName())) {
+						return isRecipeValid(r);
+					}
+				}
+			}
+		}
+		return false;
+	}
+	
+	private static boolean isRecipeValid(Recipe r) {
+		Validated validation = Validated.invalid(null, null, null);
+		try {
+			validation = r.validate();
+		} catch (Exception e) {
+			// ignore
+		}
+		return validation.isValid();
 	}
 	
 	private StsEnvironment createRewriteEnvironment() {
@@ -207,7 +232,7 @@ public class RewriteRecipeRepository {
 				if (pathStr.endsWith(".jar")) {
 					URLClassLoader classLoader = new URLClassLoader(new URL[] { f.toUri().toURL() },
 							getClass().getClassLoader());
-					builder.scanJar(f, classLoader);
+					builder.scanJar(f, Collections.emptyList(), classLoader);
 				} else if (pathStr.endsWith(".yml") || pathStr.endsWith(".yaml")) {
 					builder.load(new YamlResourceLoader(new FileInputStream(f.toFile()), f.toUri(), new Properties()));
 				}
@@ -220,7 +245,7 @@ public class RewriteRecipeRepository {
 				Path d = Path.of(p);
 				if (Files.isDirectory(d)) {
 					URLClassLoader classLoader = new URLClassLoader(new URL[] { d.toUri().toURL()}, getClass().getClassLoader());
-					builder.scanPath(d, classLoader);
+					builder.scanPath(d, Collections.emptyList(), classLoader);
 				}
 			} catch (Exception e) {
 				log.error("Skipping folder " + p, e);
@@ -233,30 +258,33 @@ public class RewriteRecipeRepository {
 		return Optional.ofNullable(recipes.get(name));
 	}
 	
-	public RecipeSpringJavaProblemDescriptor getProblemRecipeDescriptor(String id) {
-		for (RecipeSpringJavaProblemDescriptor d : javaProblemDescriptors) {
-			if (id.equals(d.getRecipeId())) {
-				return d;
-			}
-		}
-		return null;
-	}
-	
 	public RecipeCodeActionDescriptor getCodeActionRecipeDescriptor(String id) {
 		for (RecipeCodeActionDescriptor d : codeActionDescriptors) {
-			if (id.equals(d.getRecipeId())) {
+			if (id.equals(d.getId())) {
 				return d;
 			}
 		}
 		return null;
 	}
 	
-	public List<RecipeSpringJavaProblemDescriptor> getProblemRecipeDescriptors() {
-		return javaProblemDescriptors;
+	public List<RecipeCodeActionDescriptor> getProblemRecipeDescriptors() {
+		List<RecipeCodeActionDescriptor> l = new ArrayList<>(codeActionDescriptors.size());
+		for (RecipeCodeActionDescriptor d : codeActionDescriptors) {
+			if (d.getProblemType() != null && server.getDiagnosticSeverityProvider().getDiagnosticSeverity(d.getProblemType()) != null) {
+				l.add(d);
+			}
+		}
+		return l;
 	}
 	
 	public List<RecipeCodeActionDescriptor> getCodeActionRecipeDescriptors() {
-		return codeActionDescriptors;
+		List<RecipeCodeActionDescriptor> l = new ArrayList<>(codeActionDescriptors.size());
+		for (RecipeCodeActionDescriptor d : codeActionDescriptors) {
+			if (d.getProblemType() == null || server.getDiagnosticSeverityProvider().getDiagnosticSeverity(d.getProblemType()) == null) {
+				l.add(d);
+			}
+		}
+		return l;
 	}
 	
 	public List<RecipeCodeActionDescriptor> getApplicableCodeActionRecipeDescriptors(IJavaProject project, List<RecipeCodeActionDescriptor> descriptors) {
@@ -272,13 +300,9 @@ public class RewriteRecipeRepository {
 	public CompilationUnit mark(List<? extends RecipeCodeActionDescriptor> descriptors, CompilationUnit compilationUnit) {
 		CompilationUnit cu = compilationUnit;
 		for (RecipeCodeActionDescriptor d : descriptors) {
-			Recipe recipe = getRecipe(d.getRecipeId()).orElse(null);
-			if (recipe != null) {
-				TreeVisitor<?, ExecutionContext> isApplicableVisitor = RecipeIntrospectionUtils.recipeSingleSourceApplicableTest(recipe);
-				TreeVisitor<?, ExecutionContext> markVisitor = d.getMarkerVisitor();
-				if (markVisitor != null && (isApplicableVisitor == null || isApplicableVisitor.visit(cu, new InMemoryExecutionContext(e -> log.error("", e))) != cu)) {
-					cu = (CompilationUnit) markVisitor.visit(cu, new InMemoryExecutionContext(e -> log.error("", e)));
-				}
+			TreeVisitor<?, ExecutionContext> markVisitor = d.getMarkerVisitor(applicationContext);
+			if (markVisitor != null) {
+				cu = (CompilationUnit) markVisitor.visit(cu, new InMemoryExecutionContext(e -> log.error("", e)));
 			}
 		}
 		return cu;
@@ -312,10 +336,10 @@ public class RewriteRecipeRepository {
 			
 			RecipeDescriptor d = serializationGson.fromJson(recipesJson, RecipeDescriptor.class);
 			
-			Recipe aggregateRecipe = LoadUtils.createRecipe(d);
+			Recipe aggregateRecipe = LoadUtils.createRecipe(d, id -> getRecipe(id).map(r -> r.getClass()).orElse(null));
 			
-			if (aggregateRecipe.getRecipeList().isEmpty()) {
-				throw new RuntimeException("Not recipes to execute!");
+			if (aggregateRecipe instanceof DeclarativeRecipe && aggregateRecipe.getRecipeList().isEmpty()) {
+				throw new RuntimeException("No recipes found to perform!");
 			} else if (aggregateRecipe.getRecipeList().size() == 1) {
 				Recipe r = aggregateRecipe.getRecipeList().get(0);
 				String progressToken = params.getWorkDoneToken() == null || params.getWorkDoneToken().getLeft() == null ? r.getName() : params.getWorkDoneToken().getLeft();
@@ -446,6 +470,11 @@ public class RewriteRecipeRepository {
 	
 	public void onRecipesLoaded(Consumer<Void> l) {
 		loadListeners.add(l);
+	}
+
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+		this.applicationContext = applicationContext;
 	}
 	
 //	private static Recipe convert(Recipe r, RecipeDescriptor d) {

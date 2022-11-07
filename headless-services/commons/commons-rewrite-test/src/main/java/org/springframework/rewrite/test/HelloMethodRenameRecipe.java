@@ -23,6 +23,11 @@ public class HelloMethodRenameRecipe extends Recipe {
 	public String getDisplayName() {
 		return "Rename hello method into bye";
 	}
+	
+	@Override
+	public String getDescription() {
+		return "Renames methods with name 'hello' into same signature methods named 'bye'";
+	}
 
 	@Override
 	protected TreeVisitor<?, ExecutionContext> getVisitor() {

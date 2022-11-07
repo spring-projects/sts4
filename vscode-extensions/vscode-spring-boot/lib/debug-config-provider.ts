@@ -6,9 +6,15 @@ import psList from 'ps-list';
 import { ListenablePreferenceSetting } from "@pivotal-tools/commons-vscode/lib/launch-util";
 
 const JMX_VM_ARG = '-Dspring.jmx.enabled='
+const ACTUATOR_JMX_EXPOSURE_ARG = '-Dmanagement.endpoints.jmx.exposure.include='
 const ADMIN_VM_ARG = '-Dspring.application.admin.enabled='
 const BOOT_PROJECT_ARG = '-Dspring.boot.project.name=';
 const RMI_HOSTNAME = '-Djava.rmi.server.hostname=localhost';
+
+const TEST_RUNNER_MAIN_CLASSES = [
+    'org.eclipse.jdt.internal.junit.runner.RemoteTestRunner',
+    'com.microsoft.java.test.runner.Launcher'
+];
 
 class SpringBootDebugConfigProvider implements DebugConfigurationProvider {
 
@@ -17,6 +23,9 @@ class SpringBootDebugConfigProvider implements DebugConfigurationProvider {
             if (debugConfiguration.vmArgs) {
                 if (debugConfiguration.vmArgs.indexOf(JMX_VM_ARG) < 0) {
                     debugConfiguration.vmArgs += ` ${JMX_VM_ARG}true`;
+                }
+                if (debugConfiguration.vmArgs.indexOf(ACTUATOR_JMX_EXPOSURE_ARG) < 0) {
+                    debugConfiguration.vmArgs += ` ${ACTUATOR_JMX_EXPOSURE_ARG}*`;
                 }
                 if (debugConfiguration.vmArgs.indexOf(ADMIN_VM_ARG) < 0) {
                     debugConfiguration.vmArgs += ` ${ADMIN_VM_ARG}true`;
@@ -28,7 +37,7 @@ class SpringBootDebugConfigProvider implements DebugConfigurationProvider {
                     debugConfiguration.vmArgs += ` ${RMI_HOSTNAME}`;
                 }
             } else {
-                debugConfiguration.vmArgs = `${JMX_VM_ARG}true ${ADMIN_VM_ARG}true ${BOOT_PROJECT_ARG}${debugConfiguration.projectName} ${RMI_HOSTNAME}`;
+                debugConfiguration.vmArgs = `${JMX_VM_ARG}true ${ACTUATOR_JMX_EXPOSURE_ARG}* ${ADMIN_VM_ARG}true ${BOOT_PROJECT_ARG}${debugConfiguration.projectName} ${RMI_HOSTNAME}`;
             }
         }
         return debugConfiguration;
@@ -122,7 +131,7 @@ function isActuatorJarFile(f: string): boolean {
 }
 
 function canConnect(debugConfiguration: DebugConfiguration): boolean {
-    if (isActuatorOnClasspath(debugConfiguration)) {
+    if (!TEST_RUNNER_MAIN_CLASSES.includes(debugConfiguration.mainClass) && isActuatorOnClasspath(debugConfiguration)) {
         return debugConfiguration.vmArgs
             && debugConfiguration.vmArgs.indexOf(`${JMX_VM_ARG}true`) >= 0
             && debugConfiguration.vmArgs.indexOf(`${ADMIN_VM_ARG}true`) >= 0
