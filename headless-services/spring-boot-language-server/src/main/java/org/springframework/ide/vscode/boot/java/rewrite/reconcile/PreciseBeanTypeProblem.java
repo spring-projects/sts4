@@ -26,7 +26,7 @@ import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.marker.Range;
 import org.springframework.context.ApplicationContext;
-import org.springframework.ide.vscode.boot.java.Boot3JavaProblemType;
+import org.springframework.ide.vscode.boot.java.SpringAotJavaProblemType;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeCodeActionDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
@@ -95,8 +95,8 @@ public class PreciseBeanTypeProblem implements RecipeCodeActionDescriptor {
 	}
 
 	@Override
-	public Boot3JavaProblemType getProblemType() {
-		return Boot3JavaProblemType.JAVA_CONCRETE_BEAN_TYPE;
+	public SpringAotJavaProblemType getProblemType() {
+		return SpringAotJavaProblemType.JAVA_CONCRETE_BEAN_TYPE;
 	}
 
 }

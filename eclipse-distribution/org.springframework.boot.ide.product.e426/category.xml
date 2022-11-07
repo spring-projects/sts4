@@ -138,7 +138,6 @@
 	<bundle id="javax.xml.stream"/>
 	<bundle id="org.aopalliance"/>
 	<bundle id="org.apache.log4j"/>
-	<bundle id="org.dadacoalition.yedit"/>
 	<bundle id="org.yaml.snakeyaml"/>
 	<bundle id="org.eclipse.lsp4e"/>
 	<bundle id="org.eclipse.lsp4e.jdt"/>

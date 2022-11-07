@@ -101,7 +101,7 @@
 		<tycho-version>2.7.5</tycho-version>
 		<encoding>UTF-8</encoding>
 
-		<misc.p2.repo.version>3.9.4.202003091750</misc.p2.repo.version>
+		<misc.p2.repo.version>3.9.4.202211021051</misc.p2.repo.version>
 	</properties>
 
 	<profiles>
@@ -766,11 +766,6 @@
 			<id>spring-boot-language-server-integrations</id>
 			<layout>p2</layout>
 			<url>${sts4-language-servers-p2-repo}</url>
-		</repository>
-		<repository>
-			<id>yedit</id>
-			<layout>p2</layout>
-			<url>https://dist.springsource.com/release/TOOLS/third-party/yedit</url>
 		</repository>
 		<repository>
 			<id>p2-thirdparty-bundles</id>

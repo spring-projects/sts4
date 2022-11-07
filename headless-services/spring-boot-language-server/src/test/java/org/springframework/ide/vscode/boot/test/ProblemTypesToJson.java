@@ -20,7 +20,6 @@ import java.io.InputStreamReader;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -28,6 +27,7 @@ import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
 import org.springframework.ide.vscode.boot.java.Boot2JavaProblemType;
+import org.springframework.ide.vscode.boot.java.SpringAotJavaProblemType;
 import org.springframework.ide.vscode.boot.java.Boot3JavaProblemType;
 import org.springframework.ide.vscode.boot.java.SpelProblemType;
 import org.springframework.ide.vscode.boot.properties.reconcile.ApplicationPropertiesProblemType;
@@ -174,6 +174,7 @@ public class ProblemTypesToJson {
 		writer.collectProblemTypeData(Boot2JavaProblemType.values());
 		writer.collectProblemTypeData(ApplicationPropertiesProblemType.values());
 		writer.collectProblemTypeData(Boot3JavaProblemType.values());
+		writer.collectProblemTypeData(SpringAotJavaProblemType.values());
 		
 		Collections.sort(writer.problemCategories);
 		

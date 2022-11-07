@@ -25,6 +25,9 @@ public class SpringProblemCategories {
 	public static final ProblemCategory BOOT_3 = new ProblemCategory("boot3", "Boot 3.x Validation", 
 			new Toggle("Enablement", EnumSet.allOf(Toggle.Option.class), AUTO, "boot-java.validation.java.boot3"));
 	
+	public static final ProblemCategory SPRING_AOT = new ProblemCategory("spring-aot", "Spring AOT Validation", 
+			new Toggle("Enablement", EnumSet.of(OFF, ON), OFF, "boot-java.validation.java.spring-aot"));
+	
 	public static final ProblemCategory PROPERTIES = new ProblemCategory("application-properties", "Properties Validation", null);
 	
 	public static final ProblemCategory YAML = new ProblemCategory("application-yaml", "YAML Properties Validation", null);

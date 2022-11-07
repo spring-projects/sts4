@@ -97,7 +97,7 @@
 		<dist.key>TOOLS</dist.key>
 		<dist.path>${dist.type}/${dist.key}/${dist.project}/${dist.version}</dist.path>
 
-		<misc.p2.repo.version>3.9.4.202003091750</misc.p2.repo.version>
+		<misc.p2.repo.version>3.9.4.202211021051</misc.p2.repo.version>
 	</properties>
 
 	<profiles>
@@ -349,11 +349,6 @@
 			<layout>p2</layout>
 			<url>https://dist.springsource.com/release/TOOLS/third-party/misc-p2-repo/${misc.p2.repo.version}</url>
 		</repository>
-        <repository>
-            <id>yedit</id>
-            <layout>p2</layout>
-            <url>https://dist.springsource.com/release/TOOLS/third-party/yedit</url>
-        </repository>
 	</repositories>
 
 	<pluginRepositories>

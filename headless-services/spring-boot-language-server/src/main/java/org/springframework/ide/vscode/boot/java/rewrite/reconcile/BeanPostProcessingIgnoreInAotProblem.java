@@ -24,7 +24,7 @@ import org.openrewrite.java.tree.J.ClassDeclaration;
 import org.openrewrite.java.tree.J.MethodDeclaration;
 import org.openrewrite.marker.Range;
 import org.springframework.context.ApplicationContext;
-import org.springframework.ide.vscode.boot.java.Boot3JavaProblemType;
+import org.springframework.ide.vscode.boot.java.SpringAotJavaProblemType;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeCodeActionDescriptor;
@@ -81,7 +81,7 @@ public class BeanPostProcessingIgnoreInAotProblem implements RecipeCodeActionDes
 
 	@Override
 	public ProblemType getProblemType() {
-		return Boot3JavaProblemType.JAVA_BEAN_POST_PROCESSOR_IGNORED_IN_AOT;
+		return SpringAotJavaProblemType.JAVA_BEAN_POST_PROCESSOR_IGNORED_IN_AOT;
 	}
 
 }

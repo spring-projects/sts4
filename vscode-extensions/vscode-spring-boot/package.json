@@ -378,42 +378,6 @@
               "ON"
             ]
           },
-          "spring-boot.ls.problem.boot3.JAVA_CONCRETE_BEAN_TYPE": {
-            "type": "string",
-            "default": "WARNING",
-            "description": "Bean definition should have precise type for Spring 6 AOT",
-            "enum": [
-              "IGNORE",
-              "INFO",
-              "WARNING",
-              "HINT",
-              "ERROR"
-            ]
-          },
-          "spring-boot.ls.problem.boot3.JAVA_BEAN_POST_PROCESSOR_IGNORED_IN_AOT": {
-            "type": "string",
-            "default": "WARNING",
-            "description": "'BeanPostProcessor' behaviour is ignored in Spring 6 AOT",
-            "enum": [
-              "IGNORE",
-              "INFO",
-              "WARNING",
-              "HINT",
-              "ERROR"
-            ]
-          },
-          "spring-boot.ls.problem.boot3.JAVA_BEAN_NOT_REGISTERED_IN_AOT": {
-            "type": "string",
-            "default": "WARNING",
-            "description": "Not registered as Bean",
-            "enum": [
-              "IGNORE",
-              "INFO",
-              "WARNING",
-              "HINT",
-              "ERROR"
-            ]
-          },
           "spring-boot.ls.problem.boot3.JAVA_TYPE_NOT_SUPPORTED": {
             "type": "string",
             "default": "ERROR",
@@ -441,9 +405,61 @@
         }
       },
       {
+        "id": "spring-aot",
+        "title": "Spring AOT Validation",
+        "order": 403,
+        "properties": {
+          "boot-java.validation.java.spring-aot": {
+            "type": "string",
+            "default": "OFF",
+            "description": "Enablement",
+            "enum": [
+              "OFF",
+              "ON"
+            ]
+          },
+          "spring-boot.ls.problem.spring-aot.JAVA_CONCRETE_BEAN_TYPE": {
+            "type": "string",
+            "default": "WARNING",
+            "description": "Bean definition should have precise type",
+            "enum": [
+              "IGNORE",
+              "INFO",
+              "WARNING",
+              "HINT",
+              "ERROR"
+            ]
+          },
+          "spring-boot.ls.problem.spring-aot.JAVA_BEAN_POST_PROCESSOR_IGNORED_IN_AOT": {
+            "type": "string",
+            "default": "WARNING",
+            "description": "'BeanPostProcessor' behaviour is ignored",
+            "enum": [
+              "IGNORE",
+              "INFO",
+              "WARNING",
+              "HINT",
+              "ERROR"
+            ]
+          },
+          "spring-boot.ls.problem.spring-aot.JAVA_BEAN_NOT_REGISTERED_IN_AOT": {
+            "type": "string",
+            "default": "WARNING",
+            "description": "Not registered as Bean",
+            "enum": [
+              "IGNORE",
+              "INFO",
+              "WARNING",
+              "HINT",
+              "ERROR"
+            ]
+          }
+        }
+      },
+      {
         "id": "application-properties",
         "title": "Properties Validation",
-        "order": 403,
+        "order": 404,
         "properties": {
           "spring-boot.ls.problem.application-properties.PROP_INVALID_BEAN_NAVIGATION": {
             "type": "string",
@@ -582,7 +598,7 @@
       {
         "id": "application-yaml",
         "title": "YAML Properties Validation",
-        "order": 404,
+        "order": 405,
         "properties": {
           "spring-boot.ls.problem.application-yaml.YAML_SYNTAX_ERROR": {
             "type": "string",
@@ -745,7 +761,7 @@
       {
         "id": "spel",
         "title": "SPEL Validation",
-        "order": 405,
+        "order": 406,
         "properties": {
           "boot-java.validation.spel.on": {
             "type": "string",

@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.boot.test;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.ide.vscode.boot.java.Boot2JavaProblemType;
+import org.springframework.ide.vscode.boot.java.SpringAotJavaProblemType;
 import org.springframework.ide.vscode.boot.java.Boot3JavaProblemType;
 import org.springframework.ide.vscode.boot.java.SpelProblemType;
 import org.springframework.ide.vscode.boot.properties.reconcile.ApplicationPropertiesProblemType;
@@ -29,6 +30,7 @@ public class ProblemTypesMetadataTest {
 		reader.validate("application-yaml", ApplicationYamlProblemType.values());
 		reader.validate("boot2", Boot2JavaProblemType.values());
 		reader.validate("boot3", Boot3JavaProblemType.values());
+		reader.validate("spring-aot", SpringAotJavaProblemType.values());
 		reader.validate("spel", SpelProblemType.values());
 	}
 

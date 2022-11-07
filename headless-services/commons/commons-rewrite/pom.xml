@@ -27,13 +27,21 @@
 			<artifactId>commons-java</artifactId>
 			<version>${project.version}</version>
 		</dependency>
-	
-		<!-- https://mvnrepository.com/artifact/io.github.classgraph/classgraph -->
+		
+		<!-- ObjectDiff object becomes unresolved all of a sudden for JDT compiler as of rewrite 7.32.1. The dependency should come from rewrite -->
+		<!-- Try to remove in the future as it only seems to be required by Eclipse JDT. Maven build is happy without it -->
 		<dependency>
-		    <groupId>io.github.classgraph</groupId>
-		    <artifactId>classgraph</artifactId>
-		    <version>4.8.149</version>
+			<groupId>de.danielbechler</groupId>
+			<artifactId>java-object-diff</artifactId>
+			<version>0.95</version>
 		</dependency>
+		
+		<dependency>
+			<groupId>io.github.classgraph</groupId>
+			<artifactId>classgraph</artifactId>
+			<version>4.8.149</version>
+		</dependency>
+		
 		<dependency>
 			<groupId>org.openrewrite</groupId>
 			<artifactId>rewrite-properties</artifactId>

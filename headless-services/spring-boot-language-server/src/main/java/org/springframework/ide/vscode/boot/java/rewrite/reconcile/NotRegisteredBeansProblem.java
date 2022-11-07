@@ -31,7 +31,7 @@ import org.openrewrite.java.tree.JavaType.FullyQualified;
 import org.openrewrite.java.tree.TypeUtils;
 import org.springframework.context.ApplicationContext;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
-import org.springframework.ide.vscode.boot.java.Boot3JavaProblemType;
+import org.springframework.ide.vscode.boot.java.SpringAotJavaProblemType;
 import org.springframework.ide.vscode.boot.java.beans.BeansSymbolAddOnInformation;
 import org.springframework.ide.vscode.boot.java.beans.ConfigBeanSymbolAddOnInformation;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
@@ -169,7 +169,7 @@ public class NotRegisteredBeansProblem implements RecipeCodeActionDescriptor {
 
 	@Override
 	public ProblemType getProblemType() {
-		return Boot3JavaProblemType.JAVA_BEAN_NOT_REGISTERED_IN_AOT;
+		return SpringAotJavaProblemType.JAVA_BEAN_NOT_REGISTERED_IN_AOT;
 	}
 	
     private static String typePattern(JavaType type) {
