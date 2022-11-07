@@ -10,10 +10,9 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.validation.generations;
 
-import java.io.File;
-
-import org.apache.commons.io.FilenameUtils;
+import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
+import org.springframework.ide.vscode.commons.java.Version;
 
 /**
  * Version info for a spring dependency.
@@ -22,33 +21,25 @@ import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
  * "spring-boot", the fullVersion "2.4.0-M4", and the majMin "2.4"
  *
  */
-public class SpringVersionInfo {
+public class SpringDependencyInfo {
 
 	private final String slug;
-	private final String majMin;
-	private final String fullVersion;
+	private final Version version;
 
 	/**
 	 * 
 	 * @param file spring for dependency, e.g. spring-boot-2.4.0-M4.jar
 	 */
-	public SpringVersionInfo(File file) {
-		String fileName = FilenameUtils.getBaseName(file.getName());
-		this.slug = SpringProjectUtil.getProjectSlug(fileName);
-		this.majMin = SpringProjectUtil.getMajMinVersion(fileName);
-		this.fullVersion = SpringProjectUtil.getVersion(fileName);
+	public SpringDependencyInfo(IJavaProject project, String slug) {
+		this.slug = slug;
+		this.version = SpringProjectUtil.getDependencyVersion(project, slug);
 	}
 
 	public String getSlug() {
 		return slug;
 	}
 
-	public String getMajMin() {
-		return majMin;
+	public Version getVersion() {
+		return version;
 	}
-
-	public String getFullVersion() {
-		return fullVersion;
-	}
-
 }

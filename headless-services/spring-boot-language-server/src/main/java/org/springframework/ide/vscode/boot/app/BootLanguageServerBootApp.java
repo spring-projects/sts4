@@ -63,9 +63,6 @@ import org.springframework.ide.vscode.boot.metadata.ProjectBasedPropertyIndexPro
 import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndex;
 import org.springframework.ide.vscode.boot.metadata.ValueProviderRegistry;
 import org.springframework.ide.vscode.boot.properties.completions.SpringPropertiesCompletionEngine;
-import org.springframework.ide.vscode.boot.validation.generations.SampleProjectsProvider;
-import org.springframework.ide.vscode.boot.validation.generations.SpringIoProjectsProvider;
-import org.springframework.ide.vscode.boot.validation.generations.SpringProjectsValidations;
 import org.springframework.ide.vscode.boot.xml.SpringXMLCompletionEngine;
 import org.springframework.ide.vscode.boot.yaml.completions.ApplicationYamlAssistContext;
 import org.springframework.ide.vscode.boot.yaml.completions.SpringYamlCompletionEngine;
@@ -93,7 +90,6 @@ import org.springframework.ide.vscode.languageserver.starter.LanguageServerRunne
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
 
-import com.google.common.collect.ImmutableList;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 
@@ -289,13 +285,6 @@ public class BootLanguageServerBootApp {
 				return ApplicationYamlAssistContext.global(ydoc, index, new PropertyCompletionFactory(), params.typeUtilProvider.getTypeUtil(sourceLinks, doc), RelaxedNameConfig.COMPLETION_DEFAULTS, javaElementLocationProvider);
 			}
 		};
-	}
-	
-	@Bean SpringProjectsValidations springProjectsValidations(SimpleLanguageServer server) {
-		return new SpringProjectsValidations(server, ImmutableList.of(
-				new SpringIoProjectsProvider(),
-				new SampleProjectsProvider()
-		));
 	}
 	
 	@Bean FutureProjectFinder futureProjectFinder(JavaProjectFinder projectFinder, Optional<ProjectObserver> projectObserver) {

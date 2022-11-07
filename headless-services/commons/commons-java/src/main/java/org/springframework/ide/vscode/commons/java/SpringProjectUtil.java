@@ -23,17 +23,14 @@ import org.slf4j.LoggerFactory;
 public class SpringProjectUtil {
 
 	public static final String SPRING_BOOT = "spring-boot";
-
+	
+	// Pattern copied from https://semver.org/
 	private static final String VERSION_PATTERN_STR = "(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:(-|\\.)((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?";
+	private static final String GENERATION_VERSION_STR = "([0-9]+)";
 
 	public static final Logger log = LoggerFactory.getLogger(SpringProjectUtil.class);
 		
-	private static final Pattern MAJOR_MINOR_VERSION = Pattern.compile("(0|[1-9]\\d*)\\.(0|[1-9]\\d*)");
-
-	// Pattern copied from https://semver.org/
-	private static final Pattern VERSION = Pattern.compile(VERSION_PATTERN_STR);
-
-	private static final Pattern SPRING_NAME = Pattern.compile("([a-z]+)(-[a-z]+)*");
+	private static final Pattern GENERATION_VERSION = Pattern.compile(GENERATION_VERSION_STR);
 	
 	public static boolean isSpringProject(IJavaProject jp) {
 		return hasSpecificLibraryOnClasspath(jp, "spring-core", true);
@@ -46,40 +43,40 @@ public class SpringProjectUtil {
 	public static boolean hasBootActuators(IJavaProject jp) {
 		return hasSpecificLibraryOnClasspath(jp, "spring-boot-actuator-", true);
 	}
-
-	public static String getMajMinVersion(String name) {
-		Matcher matcher = MAJOR_MINOR_VERSION.matcher(name);
-		if (matcher.find()) {
-			int start = matcher.start();
-			int end = matcher.end();
-			return name.substring(start, end);
-		}
-		return null;
-	}
-	
-	public static String getVersion(String name) {
-		Matcher matcher = VERSION.matcher(name);
-		if (matcher.find()) {
-			int start = matcher.start();
-			int end = matcher.end();
-			return name.substring(start, end);
-		}
-		return null;
-	}
 	
 	/**
-	 * 
-	 * @param libName e.g. spring-boot-3.0.0.RELEASE.jar
-	 * @return "slug" portion: "spring-boot"
+	 *  Parses version from the given generation name (e.g. "2.1.x"
+	 * @param name
+	 * @return Version if valid generation name with major and minor components
+	 * @throws Exception if invalid generation name
 	 */
-	public static String getProjectSlug(String libName) {
-		Matcher matcher = SPRING_NAME.matcher(libName);
+	public static Version getVersionFromGeneration(String name) throws Exception {
+		Matcher matcher = GENERATION_VERSION.matcher(name);
+		String major = null;
+		String minor = null;
+		
 		if (matcher.find()) {
 			int start = matcher.start();
 			int end = matcher.end();
-			return libName.substring(start, end);
+			major =  name.substring(start, end);
 		}
-		return null;
+		
+		if (matcher.find()) {
+			int start = matcher.start();
+			int end = matcher.end();
+			minor =  name.substring(start, end);
+		}
+		
+		if (major != null && minor != null) {
+			return new Version(
+					Integer.parseInt(major),
+					Integer.parseInt(minor),
+					0,
+					null
+			);
+		}
+
+		throw new IllegalArgumentException("Invalid semver. Unable to parse major and minor version from: " + name);
 	}
 
 	public static List<File> getLibrariesOnClasspath(IJavaProject jp, String libraryNamePrefix) {
