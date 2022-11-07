@@ -50,7 +50,8 @@ public class JmxSupportTest {
 				+ "-Dcom.sun.management.jmxremote.rmi.port=1234 "
 				+ "-Djava.rmi.server.hostname=localhost "
 				+ "-Dcom.sun.management.jmxremote.local.only=false "
-				+ "-Dspring.jmx.enabled=true",
+				+ "-Dspring.jmx.enabled=true"
+				+ "-Dmanagement.endpoints.jmx.exposure.include=*",
 				env.get("JAVA_OPTS"));
 
 		jmx.setupEnvVars(env); // should erase old and recreate
@@ -61,7 +62,8 @@ public class JmxSupportTest {
 				+ "-Dcom.sun.management.jmxremote.rmi.port=1234 "
 				+ "-Djava.rmi.server.hostname=localhost "
 				+ "-Dcom.sun.management.jmxremote.local.only=false "
-				+ "-Dspring.jmx.enabled=true",
+				+ "-Dspring.jmx.enabled=true"
+				+ "-Dmanagement.endpoints.jmx.exposure.include=*",
 				env.get("JAVA_OPTS"));
 	}
 
@@ -84,7 +86,8 @@ public class JmxSupportTest {
 				+ "-Dcom.sun.management.jmxremote.rmi.port=1234 "
 				+ "-Djava.rmi.server.hostname=localhost "
 				+ "-Dcom.sun.management.jmxremote.local.only=false "
-				+ "-Dspring.jmx.enabled=true",
+				+ "-Dspring.jmx.enabled=true"
+				+ "-Dmanagement.endpoints.jmx.exposure.include=*",
 				env.get("JAVA_OPTS"));
 
 		jmx.setupEnvVars(env); // should erase old and recreate
@@ -95,7 +98,8 @@ public class JmxSupportTest {
 				+ "-Dcom.sun.management.jmxremote.rmi.port=1234 "
 				+ "-Djava.rmi.server.hostname=localhost "
 				+ "-Dcom.sun.management.jmxremote.local.only=false "
-				+ "-Dspring.jmx.enabled=true",
+				+ "-Dspring.jmx.enabled=true"
+				+ "-Dmanagement.endpoints.jmx.exposure.include=*",
 				env.get("JAVA_OPTS"));
 
 	}

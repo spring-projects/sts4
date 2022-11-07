@@ -66,10 +66,17 @@ public class JmxBeanSupport {
 				"-Dcom.sun.management.jmxremote.authenticate=false",
 				"-Dcom.sun.management.jmxremote.ssl=false",
 				"-Djava.rmi.server.hostname=localhost",
+				//
 				// PT 164402781 - For Boot 2.2 and above, jmx is no longer enabled by default.
 				// We explicitly enable it here. Adding this doesn't seem to affect older boot versions
 				// and we get live information from JMX for those too.
-				"-Dspring.jmx.enabled=true"
+				//
+				"-Dspring.jmx.enabled=true",
+				//
+				// GH-862: Spring Boot 3 doesn't expose all actuators over JMX anymore by default
+				// therefore we need to set this for live hovers here
+				//
+				"-Dmanagement.endpoints.jmx.exposure.include=*"
 		};
 	}
 
