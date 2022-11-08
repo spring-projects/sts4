@@ -29,6 +29,10 @@ import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguage
  */
 public class SpringProcessConnectorService {
 
+	private static final String METRICS = "metrics";
+	public static final String GC_PAUSES = "gcPauses";
+	public static final String MEMORY = "memory";
+
 	private static final Logger log = LoggerFactory.getLogger(SpringProcessConnectorService.class);
 
 	private final SpringProcessLiveDataProvider liveDataProvider;
@@ -171,8 +175,8 @@ public class SpringProcessConnectorService {
 				progressTask.progressDone();
 				
 				refreshProcess(new SpringProcessParams(processKey, "", "", ""));
-				refreshProcess(new SpringProcessParams(processKey, "metrics", "memory", "area:heap"));
-				refreshProcess(new SpringProcessParams(processKey, "metrics", "gcPauses", ""));
+				refreshProcess(new SpringProcessParams(processKey, METRICS, MEMORY, "area:heap"));
+				refreshProcess(new SpringProcessParams(processKey, METRICS, GC_PAUSES, ""));
 			}
 			catch (Exception e) {
 				log.info("problem occured during process connect", e);
@@ -232,7 +236,7 @@ public class SpringProcessConnectorService {
 			
 			try {
 				progressTask.progressEvent(progressMessage);
-				if(endpoint.equals("metrics") && metricName.equals("memory")) {
+				if(METRICS.equals(endpoint) && MEMORY.equals(metricName)) {
 					SpringProcessMemoryMetricsLiveData newMetricsLiveData = connector.refreshMemoryMetrics(this.liveDataProvider.getCurrent(processKey), metricName, springProcessParams.getTags());
 					
 					if (newMetricsLiveData != null) {
@@ -243,7 +247,7 @@ public class SpringProcessConnectorService {
 						this.connectedSuccess.put(processKey, true);
 					}
 					
-				} else if(endpoint.equals("metrics") && metricName.equals("gcPauses")) {
+				} else if(METRICS.equals(endpoint) && GC_PAUSES.equals(metricName)) {
 					SpringProcessGcPausesMetricsLiveData newMetricsLiveData = connector.refreshGcPausesMetrics(this.liveDataProvider.getCurrent(processKey), metricName, springProcessParams.getTags());
 					
 					if (newMetricsLiveData != null) {
