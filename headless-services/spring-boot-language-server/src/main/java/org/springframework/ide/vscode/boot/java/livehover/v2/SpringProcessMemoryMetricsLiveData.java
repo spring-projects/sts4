@@ -11,25 +11,28 @@
 package org.springframework.ide.vscode.boot.java.livehover.v2;
 
 /**
- * @author V Udayani 
+ * @author V Udayani
  */
 public class SpringProcessMemoryMetricsLiveData {
-	
+
 	private final ProcessType processType;
 	private final String processName;
 	private final String processID;
-	
-	private final LiveMemoryMetricsModel[] memoryMetrics;
-	
-	public SpringProcessMemoryMetricsLiveData(ProcessType processType, String processName, String processID, LiveMemoryMetricsModel[] memoryMetrics) {
+
+	private final LiveMemoryMetricsModel[] heapMemoryMetrics;
+
+	private final LiveMemoryMetricsModel[] nonHeapMemoryMetrics;
+
+	public SpringProcessMemoryMetricsLiveData(ProcessType processType, String processName, String processID,
+			LiveMemoryMetricsModel[] heapMemoryMetrics, LiveMemoryMetricsModel[] nonHeapMemoryMetrics) {
 		super();
 		this.processType = processType;
 		this.processName = processName;
 		this.processID = processID;
-		this.memoryMetrics = memoryMetrics;
-		
+		this.heapMemoryMetrics = heapMemoryMetrics;
+		this.nonHeapMemoryMetrics = nonHeapMemoryMetrics;
 	}
-	
+
 	public ProcessType getProcessType() {
 		return processType;
 	}
@@ -41,9 +44,13 @@ public class SpringProcessMemoryMetricsLiveData {
 	public String getProcessID() {
 		return this.processID;
 	}
-	
-	public LiveMemoryMetricsModel[] getMemoryMetrics() {
-		return this.memoryMetrics;
+
+	public LiveMemoryMetricsModel[] getHeapMemoryMetrics() {
+		return this.heapMemoryMetrics;
+	}
+
+	public LiveMemoryMetricsModel[] getNonHeapMemoryMetrics() {
+		return nonHeapMemoryMetrics;
 	}
 
 }

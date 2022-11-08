@@ -305,10 +305,14 @@ public class SpringProcessCommandHandler {
 					SpringProcessGcPausesMetricsLiveData data = connectorService.getGcPausesMetricsLiveData(processKey);
 					return CompletableFuture.completedFuture(data.getGcPausesMetrics());
 				}
-				case SpringProcessConnectorService.MEMORY: {
+				case SpringProcessConnectorService.HEAP_MEMORY: {
 					SpringProcessMemoryMetricsLiveData data = connectorService.getMemoryMetricsLiveData(processKey);
-					return CompletableFuture.completedFuture(data.getMemoryMetrics());
+					return CompletableFuture.completedFuture(data.getHeapMemoryMetrics());
 				}
+				case SpringProcessConnectorService.NON_HEAP_MEMORY: {
+                    SpringProcessMemoryMetricsLiveData data = connectorService.getMemoryMetricsLiveData(processKey);
+                    return CompletableFuture.completedFuture(data.getNonHeapMemoryMetrics());
+                }
 				default: {}
 			}
 		}

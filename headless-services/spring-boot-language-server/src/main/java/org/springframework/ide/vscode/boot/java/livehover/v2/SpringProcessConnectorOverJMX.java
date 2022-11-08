@@ -159,7 +159,8 @@ public class SpringProcessConnectorOverJMX implements SpringProcessConnector {
 				log.info("retrieve live data from: " + jmxURL);
 				SpringProcessMemoryMetricsLiveData liveData = springJMXConnector.retrieveLiveMemoryMetricsData(getProcessType(), jmxConnection, processID, processName, currentData, metricName, tags);
 				
-				if (liveData != null && liveData.getMemoryMetrics() != null && liveData.getMemoryMetrics().length > 0) {
+				if (liveData != null && liveData.getHeapMemoryMetrics() != null && liveData.getHeapMemoryMetrics().length > 0 &&
+				        liveData.getNonHeapMemoryMetrics() != null && liveData.getNonHeapMemoryMetrics().length > 0) {
 					return liveData;
 				}
 			}

@@ -141,11 +141,10 @@ public class SpringProcessLiveDataExtractorOverJMX {
 	public SpringProcessMemoryMetricsLiveData retrieveLiveMemoryMetricsData(ProcessType processType, JMXConnector jmxConnector, String processID, String processName,
 			 SpringProcessLiveData currentData, String metricName, String tags) {
 		
-		List<String> memoryMetrics = Arrays.asList("jvm.memory.committed", "jvm.memory.max");
-		
 		try {
 			MBeanServerConnection connection = jmxConnector.getMBeanServerConnection();
-			List<LiveMemoryMetricsModel> memoryMetricsList = new ArrayList<>();
+			List<LiveMemoryMetricsModel> heapMemoryMetricsList = new ArrayList<>();
+			List<LiveMemoryMetricsModel> nonHeapMemoryMetricsList = new ArrayList<>();
 			String domain = getDomainForActuator(connection);
 			
 			if (processID == null) {
@@ -160,34 +159,19 @@ public class SpringProcessLiveDataExtractorOverJMX {
 				}
 			}
 			
-			LiveMemoryMetricsModel jvmMemUsedMetrics = getLiveMetrics(connection, domain, "jvm.memory.used", tags);
-			if(jvmMemUsedMetrics != null ) {
-			    memoryMetricsList.add(jvmMemUsedMetrics);
-			    Arrays.sort(jvmMemUsedMetrics.getAvailableTags()[0].getValues());
-			    String[] memoryZones =  jvmMemUsedMetrics.getAvailableTags()[0].getValues();
-			    for(String zone : memoryZones) {
-			        String tag = tags+",id:"+zone;
-	                LiveMemoryMetricsModel metrics = getLiveMetrics(connection, domain, "jvm.memory.used", tag );
-	                if(metrics != null) {
-	                    memoryMetricsList.add(metrics);
-	                }
-	            }
-			    
-			    for(String metric : memoryMetrics) {
-                    LiveMemoryMetricsModel metrics = getLiveMetrics(connection, domain, metric, tags );
-                    if(metrics != null) {
-                        memoryMetricsList.add(metrics);
-                    }
-                }	    
-			}
+			LiveMemoryMetricsModel[] heapMemResults = getMemoryMetrics(connection, heapMemoryMetricsList,
+                    domain, "area:heap");
+
+			LiveMemoryMetricsModel[] nonHeapMemResults = getMemoryMetrics(connection, nonHeapMemoryMetricsList,
+                    domain, "area:nonheap");
 			
-			LiveMemoryMetricsModel[] res = (LiveMemoryMetricsModel[]) memoryMetricsList.toArray(new LiveMemoryMetricsModel[memoryMetricsList.size()]);
 			return new SpringProcessMemoryMetricsLiveData(
 					processType,
 					processName,
 					processID,
-					res
-					);
+					heapMemResults,
+					nonHeapMemResults
+			);
 		}
 		catch (Exception e) {
 			log.error("error reading live metrics data from: " + processID + " - " + processName, e);
@@ -195,6 +179,37 @@ public class SpringProcessLiveDataExtractorOverJMX {
 		
 		return null;
 	}
+	
+
+    private LiveMemoryMetricsModel[] getMemoryMetrics(MBeanServerConnection connection, 
+            List<LiveMemoryMetricsModel> memoryMetricsList, String domain, String tags) {
+
+        List<String> memoryMetrics = Arrays.asList("jvm.memory.committed", "jvm.memory.max");
+
+        LiveMemoryMetricsModel jvmMemUsedMetrics = getLiveMetrics(connection, domain, "jvm.memory.used", tags);
+        if(jvmMemUsedMetrics != null ) {
+            memoryMetricsList.add(jvmMemUsedMetrics);
+            Arrays.sort(jvmMemUsedMetrics.getAvailableTags()[0].getValues());
+            String[] memoryZones =  jvmMemUsedMetrics.getAvailableTags()[0].getValues();
+            for(String zone : memoryZones) {
+                String tag = tags+",id:"+zone;
+                LiveMemoryMetricsModel metrics = getLiveMetrics(connection, domain, "jvm.memory.used", tag );
+                if(metrics != null) {
+                    memoryMetricsList.add(metrics);
+                }
+            }
+
+            for(String metric : memoryMetrics) {
+                LiveMemoryMetricsModel metrics = getLiveMetrics(connection, domain, metric, tags );
+                if(metrics != null) {
+                    memoryMetricsList.add(metrics);
+                }
+            }	    
+        }
+
+        LiveMemoryMetricsModel[] res = (LiveMemoryMetricsModel[]) memoryMetricsList.toArray(new LiveMemoryMetricsModel[memoryMetricsList.size()]);
+        return res;
+    }
 	
 	/**
 	 * @param processType 
