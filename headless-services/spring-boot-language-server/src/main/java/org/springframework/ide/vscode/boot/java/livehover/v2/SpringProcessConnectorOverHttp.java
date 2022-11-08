@@ -149,7 +149,8 @@ public class SpringProcessConnectorOverHttp implements SpringProcessConnector {
                 this.processName = liveData.getProcessName();
             }
 
-            if (liveData != null && liveData.getHeapMemoryMetrics() != null && liveData.getHeapMemoryMetrics().length > 0 && liveData.getNonHeapMemoryMetrics().length > 0) {
+            if (liveData != null && liveData.getHeapMemoryMetrics() != null && liveData.getHeapMemoryMetrics().length > 0 &&
+                    liveData.getNonHeapMemoryMetrics() != null && liveData.getNonHeapMemoryMetrics().length > 0) {
                 return liveData;
             }
         }
