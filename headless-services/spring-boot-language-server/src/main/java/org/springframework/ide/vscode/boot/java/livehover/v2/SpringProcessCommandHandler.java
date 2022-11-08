@@ -301,11 +301,11 @@ public class SpringProcessCommandHandler {
 		String metricName = getArgumentByKey(params, "metricName");
 		if (processKey != null) {
 			switch(metricName) {
-				case "gcPauses": {
+				case SpringProcessConnectorService.GC_PAUSES: {
 					SpringProcessGcPausesMetricsLiveData data = connectorService.getGcPausesMetricsLiveData(processKey);
 					return CompletableFuture.completedFuture(data.getGcPausesMetrics());
 				}
-				case "memory": {
+				case SpringProcessConnectorService.MEMORY: {
 					SpringProcessMemoryMetricsLiveData data = connectorService.getMemoryMetricsLiveData(processKey);
 					return CompletableFuture.completedFuture(data.getMemoryMetrics());
 				}

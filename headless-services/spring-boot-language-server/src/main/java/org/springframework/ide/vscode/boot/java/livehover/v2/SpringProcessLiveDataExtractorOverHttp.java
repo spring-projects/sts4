@@ -23,6 +23,8 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
+import org.springframework.web.client.HttpClientErrorException;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
@@ -198,7 +200,7 @@ public class SpringProcessLiveDataExtractorOverHttp {
                 }
             }
             
-            LiveMemoryMetricsModel metrics = getLiveMetrics(connection, metricName, tags);
+            LiveMemoryMetricsModel metrics = getLiveMetrics(connection, "jvm.gc.pause", tags);
             if(metrics != null) {
                 memoryMetricsList.add(metrics);
             }
@@ -240,7 +242,12 @@ public class SpringProcessLiveDataExtractorOverHttp {
 
 					return RequestMappingMetrics.parse(metricsData);
 				} catch (IOException e) {
-					// ignore
+				} catch (HttpClientErrorException e) {
+					if (e.getStatusCode() != null && e.getStatusCode() == HttpStatus.NOT_FOUND) {
+						// not found 404 - don't log it - means metric is unavailable 
+					} else {
+						log.error("", e);
+					}
 				} catch (Exception e) {
 					log.error("", e);
 				}

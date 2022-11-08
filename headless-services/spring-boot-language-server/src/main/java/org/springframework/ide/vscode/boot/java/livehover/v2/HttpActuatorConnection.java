@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.boot.java.livehover.v2;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Properties;
@@ -28,8 +29,10 @@ public class HttpActuatorConnection implements ActuatorConnection {
 	
 	private Gson gson;
 	private RestTemplate restTemplate;
+	private String actuatorUrl;
 
 	public HttpActuatorConnection(String actuatorUrl) {
+		this.actuatorUrl = actuatorUrl;
 		this.restTemplate = new RestTemplateBuilder().rootUri(actuatorUrl).build();
 		this.gson = new Gson();
 	}
@@ -80,11 +83,12 @@ public class HttpActuatorConnection implements ActuatorConnection {
 	@Override
 	public String getLiveMetrics(String metricName, String tags) throws IOException {
 		UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromPath("/metrics/"+metricName);
-		if (tags != null) {
+		if (tags != null && !tags.isBlank()) {
 		    uriBuilder.queryParam("tag", tags);
 		}
-		String url = uriBuilder.encode().toUriString();
-		return restTemplate.getForObject(url, String.class);
+		// /{ownerId}/new cases make REST Template URI template handler to think that {ownerId} is a URI parameter which it is not.
+		String url = actuatorUrl + uriBuilder.toUriString();
+		return restTemplate.getForObject(URI.create(url), String.class);
 	}
 
 	@Override
@@ -95,8 +99,9 @@ public class HttpActuatorConnection implements ActuatorConnection {
 				uriBuilder.queryParam("tag", e.getKey() + ":" + e.getValue());
 			}
 		}
-		String url = uriBuilder.encode().toUriString();
-		return restTemplate.getForObject(url, String.class);
+		// /{ownerId}/new cases make REST Template URI template handler to think that {ownerId} is a URI parameter which it is not.
+		String url = actuatorUrl + uriBuilder.toUriString();
+		return restTemplate.getForObject(URI.create(url), String.class);
 	}
 
 	@Override
