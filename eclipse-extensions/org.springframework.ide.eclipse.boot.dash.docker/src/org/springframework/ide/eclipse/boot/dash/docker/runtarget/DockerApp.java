@@ -59,9 +59,9 @@ import org.springframework.ide.eclipse.boot.dash.model.RunState;
 import org.springframework.ide.eclipse.boot.dash.model.remote.ChildBearing;
 import org.springframework.ide.eclipse.boot.dash.model.remote.RefreshStateTracker;
 import org.springframework.ide.eclipse.boot.dash.util.LineBasedStreamGobler;
-import org.springframework.ide.eclipse.boot.launch.util.BootDebugUITools;
 import org.springframework.ide.eclipse.boot.launch.util.PortFinder;
 import org.springframework.ide.eclipse.boot.util.JavaProjectUtil;
+import org.springsource.ide.eclipse.commons.core.CoreUtil;
 import org.springsource.ide.eclipse.commons.core.pstore.PropertyStoreApi;
 import org.springsource.ide.eclipse.commons.frameworks.core.util.JobUtil;
 import org.springsource.ide.eclipse.commons.frameworks.core.util.StringUtils;
@@ -197,7 +197,7 @@ public class DockerApp extends AbstractDisposable implements App, ChildBearing, 
 			DockerDeployment deployment = deployment();
 			RunState desiredRunState = deployment.getRunState();
 			if (desiredRunState.isActive() 
-					&& !BootDebugUITools.promptForProjectSave(project)) {
+					&& !CoreUtil.promptForProjectSave(project)) {
 				return new CompletableFuture<Void>();
 			}
 		} catch (Exception e) {

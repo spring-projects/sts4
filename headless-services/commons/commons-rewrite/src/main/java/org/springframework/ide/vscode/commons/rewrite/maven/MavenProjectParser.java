@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.commons.rewrite.maven;
 
 import static org.openrewrite.Tree.randomId;
 
+import java.io.ByteArrayInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.nio.file.Files;
@@ -26,12 +27,14 @@ import java.util.Map;
 import java.util.Properties;
 import java.util.Set;
 import java.util.function.BiPredicate;
+import java.util.function.Function;
 import java.util.function.UnaryOperator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Parser;
 import org.openrewrite.SourceFile;
 import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaParser;
@@ -65,13 +68,16 @@ public class MavenProjectParser {
     private final MavenParser mavenParser;
     private final JavaParser.Builder<?, ?> javaParserBuilder;
     private final ExecutionContext ctx;
+    private final Function<Path, Parser.Input> parserInputProvider;
 
     public MavenProjectParser(MavenParser.Builder mavenParserBuilder,
                               JavaParser.Builder<?, ?> javaParserBuilder,
-                              ExecutionContext ctx) {
+                              ExecutionContext ctx,
+                              Function<Path, Parser.Input> parserInputProvider) {
         this.mavenParser = mavenParserBuilder.build();
         this.javaParserBuilder = javaParserBuilder;
         this.ctx = ctx;
+        this.parserInputProvider = parserInputProvider;
     }
 
     /**
@@ -98,7 +104,7 @@ public class MavenProjectParser {
      * @return A list of source files that have been parsed from the root folder
      */
     public List<SourceFile> parse(Path projectDirectory, List<Path> dependencies) {
-        List<Xml.Document> mavens = mavenParser.parse(getMavenPoms(projectDirectory, ctx), projectDirectory, ctx);
+        List<Xml.Document> mavens = mavenParser.parseInputs(getMavenPoms(projectDirectory, ctx, parserInputProvider), projectDirectory, ctx);
         List<Document> sorted = sort(mavens);
         
         // Filter out pom files inside target folders. (Naive implementation.)
@@ -119,18 +125,18 @@ public class MavenProjectParser {
 //            List<Path> dependencies = downloadArtifacts(getResolvedPom(maven).getDependencies().get(Scope.Compile));
             javaParser.setSourceSet("main");
             javaParser.setClasspath(dependencies);
-            sourceFiles.addAll(ListUtils.map(javaParser.parse(
-            		getJavaSources(getModel(maven).getRequested(), projectDirectory, ctx), projectDirectory, ctx), addProvenance(projectProvenance)));
+            sourceFiles.addAll(ListUtils.map(javaParser.parseInputs(
+            		getJavaSources(getModel(maven).getRequested(), projectDirectory, ctx, parserInputProvider), projectDirectory, ctx), addProvenance(projectProvenance)));
             //Resources in the src/main should also have the main source set attached to them.
-            parseResources(getResources(getModel(maven).getRequested(), projectDirectory, ctx), projectDirectory, sourceFiles, projectProvenance, javaParser.getSourceSet(ctx));
+            parseResources(getResources(getModel(maven).getRequested(), projectDirectory, ctx, parserInputProvider), projectDirectory, sourceFiles, projectProvenance, javaParser.getSourceSet(ctx));
 
 //            List<Path> testDependencies = downloadArtifacts(maven.getModel().getDependencies(Scope.Test));
             javaParser.setSourceSet("test");
 //            javaParser.setClasspath(testDependencies);
-            sourceFiles.addAll(ListUtils.map(javaParser.parse(
-                    getTestJavaSources(getModel(maven).getRequested(), projectDirectory, ctx), projectDirectory, ctx), addProvenance(projectProvenance)));
+            sourceFiles.addAll(ListUtils.map(javaParser.parseInputs(
+                    getTestJavaSources(getModel(maven).getRequested(), projectDirectory, ctx, parserInputProvider), projectDirectory, ctx), addProvenance(projectProvenance)));
             //Resources in the src/test should also have the test source set attached to them.
-            parseResources(getTestResources(getModel(maven).getRequested(), projectDirectory, ctx), projectDirectory, sourceFiles, projectProvenance, javaParser.getSourceSet(ctx));
+            parseResources(getTestResources(getModel(maven).getRequested(), projectDirectory, ctx, parserInputProvider), projectDirectory, sourceFiles, projectProvenance, javaParser.getSourceSet(ctx));
         }
 
         return sourceFiles;
@@ -180,34 +186,34 @@ public class MavenProjectParser {
         );
     }
 
-    private void parseResources(List<Path> resources, Path projectDirectory, List<SourceFile> sourceFiles, List<Marker> projectProvenance, JavaSourceSet sourceSet) {
+    private void parseResources(List<Parser.Input> resources, Path projectDirectory, List<SourceFile> sourceFiles, List<Marker> projectProvenance, JavaSourceSet sourceSet) {
         List<Marker> provenance = new ArrayList<>(projectProvenance);
         provenance.add(sourceSet);
 
-        sourceFiles.addAll(ListUtils.map(new XmlParser().parse(
+        sourceFiles.addAll(ListUtils.map(new XmlParser().parseInputs(
                 resources.stream()
-                        .filter(p -> p.getFileName().toString().endsWith(".xml") ||
-                                p.getFileName().toString().endsWith(".wsdl") ||
-                                p.getFileName().toString().endsWith(".xhtml") ||
-                                p.getFileName().toString().endsWith(".xsd") ||
-                                p.getFileName().toString().endsWith(".xsl") ||
-                                p.getFileName().toString().endsWith(".xslt"))
+                        .filter(p -> p.getPath().getFileName().toString().endsWith(".xml") ||
+                                p.getPath().getFileName().toString().endsWith(".wsdl") ||
+                                p.getPath().getFileName().toString().endsWith(".xhtml") ||
+                                p.getPath().getFileName().toString().endsWith(".xsd") ||
+                                p.getPath().getFileName().toString().endsWith(".xsl") ||
+                                p.getPath().getFileName().toString().endsWith(".xslt"))
                         .collect(Collectors.toList()),
                 projectDirectory,
                 ctx
         ), addProvenance(provenance)));
 
-        sourceFiles.addAll(ListUtils.map(new YamlParser().parse(
+        sourceFiles.addAll(ListUtils.map(new YamlParser().parseInputs(
                 resources.stream()
-                        .filter(p -> p.getFileName().toString().endsWith(".yml") || p.getFileName().toString().endsWith(".yaml"))
+                        .filter(p -> p.getPath().getFileName().toString().endsWith(".yml") || p.getPath().getFileName().toString().endsWith(".yaml"))
                         .collect(Collectors.toList()),
                 projectDirectory,
                 ctx
         ), addProvenance(provenance)));
 
-        sourceFiles.addAll(ListUtils.map(new PropertiesParser().parse(
+        sourceFiles.addAll(ListUtils.map(new PropertiesParser().parseInputs(
                 resources.stream()
-                        .filter(p -> p.getFileName().toString().endsWith(".properties"))
+                        .filter(p -> p.getPath().getFileName().toString().endsWith(".properties"))
                         .collect(Collectors.toList()),
                 projectDirectory,
                 ctx
@@ -281,7 +287,7 @@ public class MavenProjectParser {
     	}).findFirst().isPresent();
     }
     
-    private static List<Path> getSources(Path srcDir, ExecutionContext ctx, String... fileTypes) {
+    private static List<Parser.Input> getSources(Path srcDir, ExecutionContext ctx, Function<Path, Parser.Input> parserInputProvider, String... fileTypes) {
         if (!srcDir.toFile().exists()) {
             return List.of();
         }
@@ -289,16 +295,31 @@ public class MavenProjectParser {
         BiPredicate<Path, java.nio.file.attribute.BasicFileAttributes> predicate = (p, bfa) ->
                 bfa.isRegularFile() && Arrays.stream(fileTypes).anyMatch(type -> p.getFileName().toString().endsWith(type));
         try {
-            return Files.find(srcDir, 999, predicate).collect(Collectors.toList());
+            return Files.find(srcDir, 999, predicate).map(p -> {
+            	Parser.Input in = null;
+            	if (parserInputProvider != null) {
+            		in = parserInputProvider.apply(p);
+            	}
+            	if (in == null) {            		
+            		in = new Parser.Input(p, () -> {
+						try {
+							return Files.newInputStream(p);
+						} catch (IOException e) {
+							return new ByteArrayInputStream(new byte[0]);
+						}
+					});
+            	}
+            	return in;
+            }).collect(Collectors.toList());
         } catch (IOException e) {
             ctx.getOnError().accept(e);
             return List.of();
         }
     }
     
-    public static List<Path> getMavenPoms(Path projectDir, ExecutionContext ctx) {
-        return getSources(projectDir, ctx, "pom.xml").stream()
-                .filter(p -> p.getFileName().toString().equals("pom.xml") &&
+    public static List<Parser.Input> getMavenPoms(Path projectDir, ExecutionContext ctx, Function<Path, Parser.Input> parserInputProvider) {
+        return getSources(projectDir, ctx, parserInputProvider, "pom.xml").stream()
+                .filter(p -> p.getPath().getFileName().toString().equals("pom.xml") &&
                         !p.toString().contains("/src/"))
                 .collect(Collectors.toList());
     }
@@ -312,36 +333,36 @@ public class MavenProjectParser {
     	return maven.getMarkers().findFirst(MavenResolutionResult.class).orElse(null);
     }
     
-    private static List<Path> getJavaSources(Pom pom, Path projectDir, ExecutionContext ctx) {
+    private static List<Parser.Input> getJavaSources(Pom pom, Path projectDir, ExecutionContext ctx, Function<Path, Parser.Input> parserInputProvider) {
         if (pom.getPackaging() != null && !"jar".equals(pom.getPackaging()) && !"bundle".equals(pom.getPackaging())) {
             return List.of();
         }
         return getSources(projectDir.resolve(pom.getSourcePath()).getParent().resolve(Paths.get("src", "main", "java")),
-                ctx, ".java");
+                ctx, parserInputProvider, ".java");
     }
     
-    private static List<Path> getTestJavaSources(Pom pom, Path projectDir, ExecutionContext ctx) {
+    private static List<Parser.Input> getTestJavaSources(Pom pom, Path projectDir, ExecutionContext ctx, Function<Path, Parser.Input> parserInputProvider) {
         if (pom.getPackaging() != null && !"jar".equals(pom.getPackaging()) && !"bundle".equals(pom.getPackaging())) {
             return List.of();
         }
         return getSources(projectDir.resolve(pom.getSourcePath()).getParent().resolve(Paths.get("src", "test", "java")),
-                ctx, ".java");
+                ctx, parserInputProvider, ".java");
     }
 
-    private static List<Path> getResources(Pom pom, Path projectDir, ExecutionContext ctx) {
+    private static List<Parser.Input> getResources(Pom pom, Path projectDir, ExecutionContext ctx, Function<Path, Parser.Input> parserInputProvider) {
         if (pom.getPackaging() != null && !"jar".equals(pom.getPackaging()) && !"bundle".equals(pom.getPackaging())) {
             return List.of();
         }
         return getSources(projectDir.resolve(pom.getSourcePath()).getParent().resolve(Paths.get("src", "main", "resources")),
-                ctx, ".properties", ".xml", ".yml", ".yaml");
+                ctx, parserInputProvider, ".properties", ".xml", ".yml", ".yaml");
     }
     
-    private static List<Path> getTestResources(Pom pom, Path projectDir, ExecutionContext ctx) {
+    private static List<Parser.Input> getTestResources(Pom pom, Path projectDir, ExecutionContext ctx, Function<Path, Parser.Input> parserInputProvider) {
         if (pom.getPackaging() != null && !"jar".equals(pom.getPackaging()) && !"bundle".equals(pom.getPackaging())) {
             return List.of();
         }
         return getSources(projectDir.resolve(pom.getSourcePath()).getParent().resolve(Paths.get("src", "test", "resources")),
-                ctx, ".properties", ".xml", ".yml", ".yaml");
+                ctx, parserInputProvider, ".properties", ".xml", ".yml", ".yaml");
     }
 
 
