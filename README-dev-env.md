@@ -3,11 +3,11 @@
 ## Running the STS4 Boot Java Language Server locally
 
 Import the headless-services modules into your workspace as existing Maven projects.
-Startup the boot java language server with:
-Main Class: org.springframework.ide.vscode.boot.java.Main
-Vmargs: -Dstandalone-startup=true
+Startup the Boot Language Server with:
+Main Class: `org.springframework.ide.vscode.boot.app.BootLanguageServerBootApp` (or a corresponding class for other language servers)
+Vmargs: `-Dstandalone-startup=true`
 This starts up the language server and it listens on port 5007
-(this is implemented in LaunguageServerApp)
+Use STS or a dedicated instance of VSCode to launch `org.springframework.ide.vscode.boot.app.BootLanguageServerBootApp` in run or debug mode (or another Language Server app)
 
 @ Connect local STS4 Boot Java LS to VSCode
 
@@ -16,7 +16,8 @@ You should run the extension from vscode as a 'runtime workbench' with some smal
 Start by opening the extension for the server you want to work on in vscode:
 
 ```
-$ cd vscode-extensions/vscode-concourse
+$ cd vscode-extensions/vscode-spring-boot
+$ ./build.sh
 $ code .
 ```
 
@@ -40,7 +41,7 @@ Import the projects under `eclipse-language-servers` into your workspace.
 
 Startup a runtime workbench of the Eclipse STS4 distribution
 The language server plugin is: org.springframework.tooling.boot.java.ls
-Add Vmargs: -Dboot-java-ls-port=5007
+Add Vmargs: `-Dboot-java-ls-port=5007`
 This lets the Eclipse language server extension connect to the locally running language server on port 5007
 
 ## Additional Resources:
