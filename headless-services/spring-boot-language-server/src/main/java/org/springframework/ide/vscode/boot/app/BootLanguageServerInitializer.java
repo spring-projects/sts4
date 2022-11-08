@@ -18,7 +18,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-import org.eclipse.lsp4j.MessageType;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -37,11 +36,8 @@ import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.boot.java.utils.SymbolCache;
 import org.springframework.ide.vscode.boot.metadata.ProjectBasedPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.properties.BootPropertiesLanguageServerComponents;
-import org.springframework.ide.vscode.boot.validation.generations.ProjectValidation;
-import org.springframework.ide.vscode.boot.validation.generations.SpringProjectsValidations;
 import org.springframework.ide.vscode.boot.xml.SpringXMLLanguageServerComponents;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.languageserver.DiagnosticService;
 import org.springframework.ide.vscode.commons.languageserver.completion.CompositeCompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
@@ -51,7 +47,6 @@ import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFin
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
 import org.springframework.ide.vscode.commons.languageserver.util.HoverHandler;
-import org.springframework.ide.vscode.commons.languageserver.util.ShowMessageException;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -85,7 +80,6 @@ public class BootLanguageServerInitializer implements InitializingBean {
 	@Autowired BootJavaConfig config;
 	@Autowired SpringSymbolIndex springIndexer;
 	@Autowired(required = false) List<ICompletionEngine> completionEngines;
-	@Autowired SpringProjectsValidations springProjectsValidations;
 	@Autowired private JavaProjectFinder projectFinder;
 	@Autowired private LanguageServerProperties configProps;
 	@Autowired(required = false) private RewriteRecipeRepository recipesRepo;
@@ -180,9 +174,7 @@ public class BootLanguageServerInitializer implements InitializingBean {
 		if (recipesRepo != null) {
 			recipesRepo.onRecipesLoaded(v -> reconcile());
 		}
-		
-		addSpringProjectsVersionValidation(params);
-		
+				
 		server.getWorkspaceService().getFileObserver().onFilesChanged(FILES_TO_WATCH_GLOB, this::handleFiles);
 		server.getWorkspaceService().getFileObserver().onFilesCreated(FILES_TO_WATCH_GLOB, this::handleFiles);
 		
@@ -208,51 +200,6 @@ public class BootLanguageServerInitializer implements InitializingBean {
 		if (completionEngineAdapter!=null) {
 			completionEngineAdapter.setMaxCompletions(number);
 		}
-	}
-	
-	private void addSpringProjectsVersionValidation(BootLanguageServerParams params2) {
-		params.projectObserver.addListener(
-				new ProjectObserver.Listener() {
-					
-					@Override
-					public void deleted(IJavaProject project) {
-						// TODO Auto-generated method stub
-					}
-					
-					@Override
-					public void created(IJavaProject project) {
-						
-						// TODO: PT 173730396 - As of 4.9.1,  Spring Project Version validation is not yet
-						// available from https://spring.io/api/projects
-						// Commented out to disable this feature. Uncomment to test if necessary
-//						validateProjectVersion(project); 
-					}
-					
-					@Override
-					public void changed(IJavaProject project) {
-						// TODO Auto-generated method stub
-					}
-
-					private void validateProjectVersion(IJavaProject project) {
-						try {
-							ProjectValidation validation = springProjectsValidations.validateVersion(project);
-							if (validation != null && validation.getMessageType() == MessageType.Warning) {
-
-								// TODO: replace this with a diagnostic message that has project-scope.
-								// At the moment of implementing this, it doesnt look like sending a diagnostic
-								// message to LSP4E without a resource context is possible.
-								DiagnosticService diagnosticService = server.getDiagnosticService();
-								if (diagnosticService != null) {
-									diagnosticService.diagnosticEvent(
-											ShowMessageException.warning(validation.getMessage(), null));
-								}
-								log.warn(validation.getMessage());
-							}
-						} catch (Exception e) {
-							log.error("Failed validating Spring Project version", e);
-						}
-					}
-				});
 	}
 	
 	private void validateProject(IJavaProject project, IReconcileEngine reconcileEngine) {

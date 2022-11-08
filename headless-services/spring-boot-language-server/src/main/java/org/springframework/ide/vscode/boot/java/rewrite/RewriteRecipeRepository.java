@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.rewrite;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.net.URL;
@@ -29,6 +30,7 @@ import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -42,6 +44,7 @@ import org.eclipse.lsp4j.UnregistrationParams;
 import org.eclipse.lsp4j.WorkspaceEdit;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.InMemoryExecutionContext;
+import org.openrewrite.Parser;
 import org.openrewrite.Recipe;
 import org.openrewrite.RecipeRun;
 import org.openrewrite.Result;
@@ -72,6 +75,7 @@ import org.springframework.ide.vscode.commons.rewrite.ORDocUtils;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeCodeActionDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.config.StsEnvironment;
 import org.springframework.ide.vscode.commons.rewrite.maven.MavenProjectParser;
+import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
@@ -421,7 +425,13 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 		Path absoluteProjectDir = Paths.get(project.getLocationUri());
 		server.getProgressService().progressEvent(r.getName(), "Parsing files...");
 		MavenProjectParser projectParser = createRewriteMavenParser(absoluteProjectDir,
-				new InMemoryExecutionContext());
+				new InMemoryExecutionContext(), p -> {
+					TextDocument doc = server.getTextDocumentService().getLatestSnapshot(p.toUri().toString());
+					if (doc != null) {
+						return new Parser.Input(p, () -> new ByteArrayInputStream(doc.get().getBytes()));
+					}
+					return null;
+				});
 		List<SourceFile> sources = projectParser.parse(absoluteProjectDir, getClasspathEntries(project));
 		server.getProgressService().progressEvent(r.getName(), "Computing changes...");
 		RecipeRun reciperun = r.run(sources, new InMemoryExecutionContext(e -> log.error("", e)));
@@ -443,14 +453,15 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 		return Collections.emptyList();
 	}
 	
-    private static MavenProjectParser createRewriteMavenParser(Path absoluteProjectDir, ExecutionContext context) {
+    private static MavenProjectParser createRewriteMavenParser(Path absoluteProjectDir, ExecutionContext context, Function<Path, Parser.Input> inputProvider) {
         MavenParser.Builder mavenParserBuilder = MavenParser.builder()
                 .mavenConfig(absoluteProjectDir.resolve(".mvn/maven.config"));
 
         MavenProjectParser mavenProjectParser = new MavenProjectParser(
                 mavenParserBuilder,
                 JavaParser.fromJavaVersion(),
-                context
+                context,
+                inputProvider
         );
         return mavenProjectParser;
     }
