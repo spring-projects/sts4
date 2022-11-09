@@ -56,7 +56,7 @@
           {
             "id": "navigate-your-spring-projects",
             "title": "Navigate your Spring Boot projects",
-            "description": "The Spring Tools in your VS Code installation contribute Spring-specific symbols to help you navigate your projects. All the symbols start with `@`.\nYou can navigate to the symbols using the [Outline View](command:outline.focus) of the current file, via the [Go to Symbol in Editor...](command:workbench.action.gotoSymbol) or globally via [Go to symbol in Workspace...](command:workbench.action.showAllSymbols).\nIf you start your search with an `@`, the list of symbols will show the Spring-specific symbols only.",
+            "description": "The Spring Tools in your VS Code installation contribute Spring-specific symbols to help you navigate your projects. All the symbols start with `@`.\nYou can navigate to the symbols using the [Outline View](command:outline.focus) of the current file, via the [Go to Symbol in Editor...](command:workbench.action.gotoSymbol) or globally via [Go to symbol in Workspace...](command:workbench.action.showAllSymbols).\nIf you start your search with an `@`, the list of symbols will show the Spring-specific symbols only.\nSome of the symbols are also shown as part of the Spring Boot Dashboard perspective, like all your Spring bean definitions and Spring MVC request mappings.\n[Reveal in Spring Boot Dashboard](command:spring.apps.focus)",
             "media": {
               "image": "walkthroughs/spring-symbols-navigation.png",
               "altText": "Go to Symbol in Workspace..."
