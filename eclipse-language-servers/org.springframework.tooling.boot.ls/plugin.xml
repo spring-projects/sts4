@@ -9,7 +9,7 @@
             clientImpl="org.springframework.tooling.ls.eclipse.commons.STS4LanguageClientImpl"
             id="org.eclipse.languageserver.languages.springboot"
             label="Spring Boot Language Server"
-            lastDocumentDisconnectedTimeout="10">
+            lastDocumentDisconnectedTimeout="2147483647">
       </server>
 
       <contentTypeMapping
@@ -493,6 +493,12 @@
             properties="areRewriteProjectRefactoringsOn"
             type="java.lang.Object">
       </propertyTester>
+   </extension>
+   <extension
+         point="org.eclipse.ui.startup">
+      <startup
+            class="org.springframework.tooling.boot.ls.Startup">
+      </startup>
    </extension>
 <!--
    <extension
