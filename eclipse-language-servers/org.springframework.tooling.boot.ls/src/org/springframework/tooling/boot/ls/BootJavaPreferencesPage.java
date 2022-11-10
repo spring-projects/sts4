@@ -81,6 +81,7 @@ public class BootJavaPreferencesPage extends FieldEditorPreferencePage implement
 		
 		Composite fieldEditorParent = getFieldEditorParent();
 		
+		addField(new BooleanFieldEditor(Constants.PREF_START_LS_EARLY, "Start Language Server at startup if Spring Boot is a dependency", fieldEditorParent));
 		addField(new BooleanFieldEditor(Constants.PREF_SCAN_JAVA_TEST_SOURCES, "Scan Java test sources", fieldEditorParent));
 		
 		addField(new StringFieldEditor(Constants.PREF_LIVE_INFORMATION_FETCH_DATA_RETRY_MAX_NO, "Live Information - Max number of retries (before giving up)", fieldEditorParent));

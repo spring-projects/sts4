@@ -385,27 +385,25 @@ function setupLanguageClient(context: VSCode.ExtensionContext, createServer: Ser
         codeLensListanableSetting.onDidChangeValue(() => toggleHighlightCodeLens())
     }
 
-    return  client.start().then(() => {
-        client.onNotification(highlightNotification, (params: HighlightParams) => {
-            highlightService.handle(params);
-            if (codeLensListanableSetting && codeLensListanableSetting.value) {
-                codelensService.handle(params);
-            }
-        });
-        client.onRequest(moveCursorRequest, (params: MoveCursorParams) => {
-            for (let editor of VSCode.window.visibleTextEditors) {
-                if (editor.document.uri.toString() == params.uri) {
-                    let cursor = p2c.asPosition(params.position);
-                    let selection : VSCode.Selection = new VSCode.Selection(cursor, cursor);
-                    editor.selections = [ selection ];
-                }
-            }
-            return { applied: true};
-        });
-        registerClasspathService(client);
-        registerJavaDataService(client);
-        return client;
+    client.onNotification(highlightNotification, (params: HighlightParams) => {
+        highlightService.handle(params);
+        if (codeLensListanableSetting && codeLensListanableSetting.value) {
+            codelensService.handle(params);
+        }
     });
+    client.onRequest(moveCursorRequest, (params: MoveCursorParams) => {
+        for (let editor of VSCode.window.visibleTextEditors) {
+            if (editor.document.uri.toString() == params.uri) {
+                let cursor = p2c.asPosition(params.position);
+                let selection: VSCode.Selection = new VSCode.Selection(cursor, cursor);
+                editor.selections = [selection];
+            }
+        }
+        return {applied: true};
+    });
+    registerClasspathService(client);
+    registerJavaDataService(client);
+    return Promise.resolve(client);
 }
 
 interface MoveCursorParams {

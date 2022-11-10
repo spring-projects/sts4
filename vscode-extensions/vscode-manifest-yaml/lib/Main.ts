@@ -42,6 +42,6 @@ export function activate(context: VSCode.ExtensionContext) {
             ]
         }
     };
-    commons.activate(options, context);
+    commons.activate(options, context).then(client => client.start());
 }
 

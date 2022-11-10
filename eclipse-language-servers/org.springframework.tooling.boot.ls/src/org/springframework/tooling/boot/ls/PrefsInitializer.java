@@ -28,6 +28,8 @@ public class PrefsInitializer extends AbstractPreferenceInitializer {
 	@Override
 	public void initializeDefaultPreferences() {
 		IPreferenceStore preferenceStore = BootLanguageServerPlugin.getDefault().getPreferenceStore();
+		
+		preferenceStore.setDefault(Constants.PREF_START_LS_EARLY, true);
 
 		preferenceStore.setDefault(Constants.PREF_LIVE_INFORMATION_FETCH_DATA_RETRY_MAX_NO, 10);
 		preferenceStore.setDefault(Constants.PREF_LIVE_INFORMATION_FETCH_DATA_RETRY_DELAY_IN_SECONDS, 3);

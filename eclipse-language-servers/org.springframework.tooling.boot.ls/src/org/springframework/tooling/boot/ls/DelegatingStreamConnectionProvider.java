@@ -18,6 +18,7 @@ import java.nio.file.FileSystems;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -60,7 +61,12 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 	private ResourceListener fResourceListener;
 	private LanguageServer languageServer;
 	
-	private final IPropertyChangeListener configListener = (e) -> sendConfiguration();
+	private static final List<String> PREFS_EXCLUSIONS = List.of(Constants.PREF_START_LS_EARLY);
+	private final IPropertyChangeListener configListener = (e) -> {
+		if (!PREFS_EXCLUSIONS.contains(e.getProperty())) {
+			sendConfiguration();
+		}
+	};
 	
 	private final ValueListener<ImmutableSet<RemoteAppData>> remoteAppsListener = (e, v) -> sendConfiguration();
 	

@@ -115,6 +115,8 @@ export function activate(context: VSCode.ExtensionContext): Thenable<ExtensionAP
     context.subscriptions.push(startDebugSupport());
 
     return commons.activate(options, context).then(client => {
+        VSCode.commands.registerCommand('vscode-spring-boot.ls.start', () => client.start());
+        VSCode.commands.registerCommand('vscode-spring-boot.ls.stop', () => client.stop());
         liveHoverUi.activate(client, options, context);
         rewrite.activate(client, options, context);
         return new ApiManager(client).api;

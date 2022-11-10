@@ -214,7 +214,19 @@ export function activate(
     context: VSCode.ExtensionContext
 ) {
     context.subscriptions.push(
-        VSCode.commands.registerCommand('vscode-spring-boot.rewrite.list', liveHoverConnectHandler),
-        VSCode.commands.registerCommand('vscode-spring-boot.rewrite.reload', () => VSCode.commands.executeCommand('sts/rewrite/reload'))
+        VSCode.commands.registerCommand('vscode-spring-boot.rewrite.list', params => {
+            if (client.isRunning()) {
+                return liveHoverConnectHandler(params[0]);
+            } else {
+                VSCode.window.showErrorMessage("No Spring Boot project found. Action is only available for Spring Boot Projects");
+            }
+        }),
+        VSCode.commands.registerCommand('vscode-spring-boot.rewrite.reload', () => {
+            if (client.isRunning()) {
+                return VSCode.commands.executeCommand('sts/rewrite/reload');
+            } else {
+                VSCode.window.showErrorMessage("No Spring Boot project found. Action is only available for Spring Boot Projects");
+            }
+        })
     );
 }

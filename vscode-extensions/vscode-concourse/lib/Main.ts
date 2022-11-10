@@ -49,6 +49,6 @@ export function activate(context: VSCode.ExtensionContext) {
             ]
         }
     };
-    let clientPromise = commons.activate(options, context);
+    let clientPromise = commons.activate(options, context).then(client => client.start());
 }
 

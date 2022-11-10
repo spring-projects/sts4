@@ -40,4 +40,6 @@ public class Constants {
 	public static final String PREF_REWRITE_RECIPES_SCAN_DIRS = "boot-java.rewrite.scan-directories";
 	
 	public static final String PREF_REWRITE_PROJECT_REFACTORINGS = "boot-java.rewrite.project-refactorings";
+	
+	public static final String PREF_START_LS_EARLY = "start.boot-ls.early";
 }

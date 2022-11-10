@@ -12,7 +12,6 @@ interface ProcessCommandInfo {
 }
 
 async function liveHoverConnectHandler() {
-
     //sts.vscode-spring-boot.codeAction
     const processData : ProcessCommandInfo[] = await VSCode.commands.executeCommand('sts/livedata/listProcesses');
     const choiceMap = new Map<string, ProcessCommandInfo>();
@@ -43,6 +42,12 @@ export function activate(
         context: VSCode.ExtensionContext
 ) {
     context.subscriptions.push(
-        VSCode.commands.registerCommand('vscode-spring-boot.live-hover.connect', liveHoverConnectHandler)
+        VSCode.commands.registerCommand('vscode-spring-boot.live-hover.connect', () => {
+            if (client.isRunning()) {
+                return liveHoverConnectHandler();
+            } else {
+                VSCode.window.showErrorMessage("No Spring Boot project found. Action is only available for Spring Boot Projects");
+            }
+        })
     );
 }

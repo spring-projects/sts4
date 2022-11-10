@@ -32,7 +32,20 @@
     "onLanguage:xml",
     "onLanguage:spring-factories",
     "onDebugResolve:java",
-    "onCommand:vscode-spring-boot.rewrite.list"
+    "onCommand:vscode-spring-boot.rewrite.list",
+    "onCommand:vscode-spring-boot.ls.start",
+    "workspaceContains:pom.xml",
+    "workspaceContains:*/pom.xml",
+    "workspaceContains:build.gradle",
+    "workspaceContains:*/build.gradle",
+    "workspaceContains:settings.gradle",
+    "workspaceContains:*/settings.gradle",
+    "workspaceContains:build.gradle.kts",
+    "workspaceContains:*/build.gradle.kts",
+    "workspaceContains:settings.gradle.kts",
+    "workspaceContains:*/settings.gradle.kts",
+    "workspaceContains:.classpath",
+    "workspaceContains:*/.classpath"
   ],
   "contributes": {
     "javaExtensions": [

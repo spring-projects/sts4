@@ -9,35 +9,75 @@
             clientImpl="org.springframework.tooling.ls.eclipse.commons.STS4LanguageClientImpl"
             id="org.eclipse.languageserver.languages.springboot"
             label="Spring Boot Language Server"
-            lastDocumentDisconnectedTimeout="10">
+            lastDocumentDisconnectedTimeout="2147483647">
       </server>
 
       <contentTypeMapping
             contentType="org.eclipse.jdt.core.javaSource"
             id="org.eclipse.languageserver.languages.springboot">
+<!--
+         <enabledInputWhen
+               description="Resource belongs to a project with Spring Boot on Classpath">
+            <test
+                  property="org.springframework.tooling.boot.isBootResource">
+            </test>
+         </enabledInputWhen>
+-->
       </contentTypeMapping>
 
       <contentTypeMapping
             contentType="org.springframework.boot.ide.properties.application.properties"
             id="org.eclipse.languageserver.languages.springboot"
             languageId="spring-boot-properties">
+<!--
+         <enabledInputWhen
+               description="Resource belongs to a project with Spring Boot on Classpath">
+            <test
+                  property="org.springframework.tooling.boot.isBootResource">
+            </test>
+         </enabledInputWhen>
+-->
       </contentTypeMapping>
 
       <contentTypeMapping
             contentType="org.springframework.boot.ide.properties.application.yml"
             id="org.eclipse.languageserver.languages.springboot"
             languageId="spring-boot-properties-yaml">
+<!--
+         <enabledInputWhen
+               description="Resource belongs to a project with Spring Boot on Classpath">
+            <test
+                  property="org.springframework.tooling.boot.isBootResource">
+            </test>
+         </enabledInputWhen>
+-->
       </contentTypeMapping>
 
       <contentTypeMapping
             contentType="org.springframework.boot.ide.xmlconfig"
             id="org.eclipse.languageserver.languages.springboot">
+<!--
+         <enabledInputWhen
+               description="Resource belongs to a project with Spring Boot on Classpath">
+            <test
+                  property="org.springframework.tooling.boot.isBootResource">
+            </test>
+         </enabledInputWhen>
+-->
       </contentTypeMapping>
 
       <contentTypeMapping
             contentType="org.springframework.boot.ide.boot.factories"
             id="org.eclipse.languageserver.languages.springboot"
             languageId="spring-factories">
+<!--
+         <enabledInputWhen
+               description="Resource belongs to a project with Spring Boot on Classpath">
+            <test
+                  property="org.springframework.tooling.boot.isBootResource">
+            </test>
+         </enabledInputWhen>
+-->
       </contentTypeMapping>
       
    </extension>
@@ -493,6 +533,19 @@
             properties="areRewriteProjectRefactoringsOn"
             type="java.lang.Object">
       </propertyTester>
+      <propertyTester
+            class="org.springframework.tooling.boot.ls.BootProjectTester"
+            id="org.springframework.tooling.boot"
+            namespace="org.springframework.tooling.boot"
+            properties="isBootResource"
+            type="java.lang.Object">
+      </propertyTester>
+   </extension>
+   <extension
+         point="org.eclipse.ui.startup">
+      <startup
+            class="org.springframework.tooling.boot.ls.Startup">
+      </startup>
    </extension>
 <!--
    <extension
