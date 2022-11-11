@@ -22,8 +22,8 @@ import org.springframework.ide.vscode.commons.java.Version;
 
 public abstract class BootDiagnosticProvider {
 	
-	public static final String BOOT_VERSION_VALIDATION_CODE = "BOOT_VERSION_VALIDATION_CODE";;
-
+	public static final String BOOT_VERSION_VALIDATION_CODE = "BOOT_VERSION_VALIDATION_CODE";
+	private static final String[] BUILD_FILES = new String[] {"pom.xml", "build.gradle",  "build.gradle.kts"};
 	
 	/**
 	 * 
@@ -35,13 +35,16 @@ public abstract class BootDiagnosticProvider {
 	abstract SpringProjectDiagnostic getDiagnostic(IJavaProject javaProject, SpringDependencyInfo info, Generations generations) throws Exception;
 	
 	protected URI getBuildFileUri(IJavaProject javaProject) throws Exception {
-		// TODO: add gradle support here
-		return getPomUri(javaProject);
-		
-	}
-	
-	private URI getPomUri(IJavaProject project) throws Exception {
-		return new URI(project.getLocationUri().toString() + "/pom.xml");
+
+		File file = null;
+		for (String fileName : BUILD_FILES) {
+			file = SpringProjectUtil.getFile(javaProject, fileName);
+			if (file != null) {
+				return file.toURI();
+			}
+		}
+
+		return null;
 	}
 	
 	protected File getSpringBootDependency(IJavaProject project) {
@@ -52,5 +55,4 @@ public abstract class BootDiagnosticProvider {
 	protected Version getVersion(Generation generation) throws Exception {
 		return SpringProjectUtil.getVersionFromGeneration(generation.getName());
 	}
-	
 }
