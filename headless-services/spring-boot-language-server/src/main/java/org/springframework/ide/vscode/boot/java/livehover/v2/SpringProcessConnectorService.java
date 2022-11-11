@@ -31,6 +31,7 @@ public class SpringProcessConnectorService {
 
 	private static final String METRICS = "metrics";
 	public static final String GC_PAUSES = "gcPauses";
+	public static final String MEMORY = "memory";
 	public static final String HEAP_MEMORY = "heapMemory";
 	public static final String NON_HEAP_MEMORY = "nonHeapMemory";
 
@@ -176,7 +177,7 @@ public class SpringProcessConnectorService {
 				progressTask.progressDone();
 				
 				refreshProcess(new SpringProcessParams(processKey, "", "", ""));
-				refreshProcess(new SpringProcessParams(processKey, METRICS, HEAP_MEMORY, "area:heap"));
+				refreshProcess(new SpringProcessParams(processKey, METRICS, MEMORY, ""));
 				refreshProcess(new SpringProcessParams(processKey, METRICS, GC_PAUSES, ""));
 			}
 			catch (Exception e) {
@@ -237,7 +238,7 @@ public class SpringProcessConnectorService {
 			
 			try {
 				progressTask.progressEvent(progressMessage);
-				if(METRICS.equals(endpoint) && (HEAP_MEMORY.equals(metricName) || NON_HEAP_MEMORY.equals(metricName))) {
+				if(METRICS.equals(endpoint) && (MEMORY.equals(metricName))) {
 					SpringProcessMemoryMetricsLiveData newMetricsLiveData = connector.refreshMemoryMetrics(this.liveDataProvider.getCurrent(processKey), metricName, springProcessParams.getTags());
 					
 					if (newMetricsLiveData != null) {
