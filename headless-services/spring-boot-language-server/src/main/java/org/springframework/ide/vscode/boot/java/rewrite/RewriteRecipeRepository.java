@@ -36,11 +36,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.eclipse.lsp4j.ApplyWorkspaceEditParams;
-import org.eclipse.lsp4j.Registration;
-import org.eclipse.lsp4j.RegistrationParams;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
-import org.eclipse.lsp4j.Unregistration;
-import org.eclipse.lsp4j.UnregistrationParams;
 import org.eclipse.lsp4j.WorkspaceEdit;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.InMemoryExecutionContext;
@@ -77,9 +73,6 @@ import org.springframework.ide.vscode.commons.rewrite.config.StsEnvironment;
 import org.springframework.ide.vscode.commons.rewrite.maven.MavenProjectParser;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
-import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
@@ -89,15 +82,15 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 	private static final String CMD_REWRITE_RELOAD = "sts/rewrite/reload";
 	private static final String CMD_REWRITE_EXECUTE = "sts/rewrite/execute";
 	private static final String CMD_REWRITE_LIST = "sts/rewrite/list";
+	private static final String CMD_REWRITE_RECIPE_EXECUTE = "sts/rewrite/recipe/execute";
 	private static final Logger log = LoggerFactory.getLogger(RewriteRecipeRepository.class);
-	private static final String WORKSPACE_EXECUTE_COMMAND = "workspace/executeCommand";
+	
+	private static final Set<String> UNINITIALIZED_SET = Collections.emptySet();
 	
 	final private SimpleLanguageServer server;
 	
 	final private Map<String, Recipe> recipes;
 	
-	final private List<Recipe> globalCommandRecipes;
-
 	final private JavaProjectFinder projectFinder;
 	
 	final private List<RecipeCodeActionDescriptor> codeActionDescriptors;
@@ -108,9 +101,9 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 	
 	private CompletableFuture<Void> loaded;
 	
-	private Set<String> scanFiles = Collections.emptySet();
-	private Set<String> scanDirs = Collections.emptySet();
-	private Set<String> recipeFilters = Collections.emptySet();
+	private Set<String> scanFiles;
+	private Set<String> scanDirs;
+	private Set<String> recipeFilters;
 		
 	private static Gson serializationGson = new GsonBuilder()
 			.registerTypeAdapter(Duration.class, new DurationTypeConverter())
@@ -120,32 +113,30 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 		this.server = server;
 		this.projectFinder = projectFinder;
 		this.recipes = new HashMap<>();
-		this.globalCommandRecipes = new ArrayList<>();
 		this.codeActionDescriptors = new ArrayList<>();
 		this.loadListeners = new ListenerList<>();
+		this.scanDirs = UNINITIALIZED_SET;
+		this.scanFiles = UNINITIALIZED_SET;
+		this.recipeFilters = UNINITIALIZED_SET;
 		
-		server.doOnInitialized(() -> {
-			this.scanDirs = config.getRecipeDirectories();
-			this.scanFiles = config.getRecipeFiles();
-			this.recipeFilters = config.getRecipesFilters();
-			load().thenAccept(v -> registerCommands());
-			config.addListener(l -> {
-				if (!scanDirs.equals(config.getRecipeDirectories())
-						|| !scanFiles.equals(config.getRecipeFiles())) {
-					// Eclipse client sends one event for init and the other config changed event due to remote app value expr listener.
-					// Therefore it is best to store the scanDirs here right after it is received, not during scan process or anything else done async
-					scanDirs = config.getRecipeDirectories();
-					scanFiles = config.getRecipeFiles();
-					load();
-				}
-				Set<String> recipeFilterFromConfig = config.getRecipesFilters();
-				if (!recipeFilters.equals(recipeFilterFromConfig)) {
-					recipeFilters = recipeFilterFromConfig;
-					updateGlobalCommandRecipes();
-				}
-			});
+		config.addListener(l -> {
+			Set<String> recipeFilterFromConfig = config.getRecipesFilters();
+			if (recipeFilters == UNINITIALIZED_SET || recipeFilters.equals(recipeFilterFromConfig)) {
+				recipeFilters = recipeFilterFromConfig;
+			}
+			if (scanDirs == UNINITIALIZED_SET || !scanDirs.equals(config.getRecipeDirectories())
+					|| scanFiles == UNINITIALIZED_SET || !scanFiles.equals(config.getRecipeFiles())) {
+				// Eclipse client sends one event for init and the other config changed event due to remote app value expr listener.
+				// Therefore it is best to store the scanDirs here right after it is received, not during scan process or anything else done async
+				scanDirs = config.getRecipeDirectories();
+				scanFiles = config.getRecipeFiles();
+				load();
+			}
 		});
+		
+		registerCommands();
 	}
+	
 	
 	public CompletableFuture<Void> load() {
 		return this.loaded = CompletableFuture.runAsync(() -> {
@@ -157,7 +148,6 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 	
 	private synchronized void clearRecipes() {
 		recipes.clear();
-		globalCommandRecipes.clear();
 		codeActionDescriptors.clear();
 	}
 	
@@ -172,11 +162,7 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 					if (recipes.containsKey(r.getName())) {
 						log.error("Duplicate ids: '" + r.getName() + "'");
 					}
-					recipes.put(r.getName(), r);
-					
-					if (isAcceptableGlobalCommandRecipe(r)) {
-						globalCommandRecipes.add(r);
-					}					
+					recipes.put(r.getName(), r);					
 				}
 			}
 			codeActionDescriptors.addAll(env.listCodeActionDescriptors());
@@ -185,15 +171,6 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 			log.error("", t);
 		} finally {
 			server.getProgressService().progressDone(taskId);
-		}
-	}
-	
-	private void updateGlobalCommandRecipes() {
-		globalCommandRecipes.clear();
-		for (Recipe r : recipes.values()) {
-			if (isAcceptableGlobalCommandRecipe(r)) {
-				globalCommandRecipes.add(r);
-			}
 		}
 	}
 	
@@ -318,10 +295,6 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 	}
 	
 	private void registerCommands() {
-		log.info("Registering commands for rewrite recipes...");
-		
-		Builder<Object> listBuilder = ImmutableList.builder();
-		
 		server.onCommand(CMD_REWRITE_LIST, params -> {
 			JsonElement uri = (JsonElement) params.getArguments().get(0);
 			return loaded.thenApply(v -> {
@@ -332,59 +305,38 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 				}
 			});
 		});
-		listBuilder.add(CMD_REWRITE_LIST);
 		
 		server.onCommand(CMD_REWRITE_EXECUTE, params -> {
-			String uri = ((JsonElement) params.getArguments().get(0)).getAsString();
-			JsonElement recipesJson = ((JsonElement) params.getArguments().get(1));
-			
-			RecipeDescriptor d = serializationGson.fromJson(recipesJson, RecipeDescriptor.class);
-			
-			Recipe aggregateRecipe = LoadUtils.createRecipe(d, id -> getRecipe(id).map(r -> r.getClass()).orElse(null));
-			
-			if (aggregateRecipe instanceof DeclarativeRecipe && aggregateRecipe.getRecipeList().isEmpty()) {
-				throw new RuntimeException("No recipes found to perform!");
-			} else if (aggregateRecipe.getRecipeList().size() == 1) {
-				Recipe r = aggregateRecipe.getRecipeList().get(0);
-				String progressToken = params.getWorkDoneToken() == null || params.getWorkDoneToken().getLeft() == null ? r.getName() : params.getWorkDoneToken().getLeft();
-				return apply(r, uri, progressToken);
-			} else {
-				String progressToken = params.getWorkDoneToken() == null || params.getWorkDoneToken().getLeft() == null ? aggregateRecipe.getName() : params.getWorkDoneToken().getLeft();
-				return apply(aggregateRecipe, uri, progressToken);
-			}
+			return loaded.thenCompose(v -> {
+				String uri = ((JsonElement) params.getArguments().get(0)).getAsString();
+				JsonElement recipesJson = ((JsonElement) params.getArguments().get(1));
+				
+				RecipeDescriptor d = serializationGson.fromJson(recipesJson, RecipeDescriptor.class);
+				
+				Recipe aggregateRecipe = LoadUtils.createRecipe(d, id -> getRecipe(id).map(r -> r.getClass()).orElse(null));
+				
+				if (aggregateRecipe instanceof DeclarativeRecipe && aggregateRecipe.getRecipeList().isEmpty()) {
+					throw new RuntimeException("No recipes found to perform!");
+				} else if (aggregateRecipe.getRecipeList().size() == 1) {
+					Recipe r = aggregateRecipe.getRecipeList().get(0);
+					String progressToken = params.getWorkDoneToken() == null || params.getWorkDoneToken().getLeft() == null ? r.getName() : params.getWorkDoneToken().getLeft();
+					return apply(r, uri, progressToken);
+				} else {
+					String progressToken = params.getWorkDoneToken() == null || params.getWorkDoneToken().getLeft() == null ? aggregateRecipe.getName() : params.getWorkDoneToken().getLeft();
+					return apply(aggregateRecipe, uri, progressToken);
+				}
+			});
 		});
-		listBuilder.add(CMD_REWRITE_EXECUTE);
 		
 		server.onCommand(CMD_REWRITE_RELOAD, params -> load().thenApply((v) -> "executed"));
-		listBuilder.add(CMD_REWRITE_RELOAD);
 		
-		for (Recipe r : globalCommandRecipes) {
-			listBuilder.add(createGlobalCommand(r));
-		}
-		
-		String registrationId = UUID.randomUUID().toString();
-		RegistrationParams params = new RegistrationParams(ImmutableList.of(
-				new Registration(registrationId,
-						WORKSPACE_EXECUTE_COMMAND,
-						ImmutableMap.of("commands", listBuilder.build())
-				)
-		));
-				
-		server.getClient().registerCapability(params).thenAccept((v) -> {
-			server.onShutdown(() -> server.getClient().unregisterCapability(new UnregistrationParams(List.of(new Unregistration(registrationId, WORKSPACE_EXECUTE_COMMAND)))));			
-			log.info("Done registering commands for rewrite recipes");
-		});
-		
-	}
-	
-	private String createGlobalCommand(Recipe r) {
-		String commandId = "sts/rewrite/recipe/" + r.getName();
-		server.onCommand(commandId, params -> {
+		server.onCommand(CMD_REWRITE_RECIPE_EXECUTE, params -> {
+			String recipeId = ((JsonElement) params.getArguments().get(0)).getAsString();
+			Recipe r = getRecipe(recipeId).orElseThrow(() -> new IllegalArgumentException("No such recipe exists with name " + recipeId));
 			final String progressToken = params.getWorkDoneToken() == null || params.getWorkDoneToken().getLeft() == null ? r.getName() : params.getWorkDoneToken().getLeft();
-			String uri = ((JsonElement) params.getArguments().get(0)).getAsString();
+			String uri = ((JsonElement) params.getArguments().get(1)).getAsString();
 			return apply(r, uri, progressToken);	
-		});
-		return commandId;
+		});		
 	}
 	
 	private CompletableFuture<Object> apply(Recipe r, String uri, String progressToken) {
@@ -416,8 +368,9 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 					server.getProgressService().progressDone(progressToken);
 					throw t;
 				}
+			} else {
+				return CompletableFuture.failedFuture(new IllegalArgumentException("Cannot find Spring Boot project for uri: " + uri));
 			}
-			return CompletableFuture.completedFuture(null);
 		});
 	}
 	
@@ -441,14 +394,15 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 	
 	private List<Recipe> listProjectRefactoringRecipes(String uri) {
 		if (uri != null) {
-			Optional<IJavaProject> projectOpt = projectFinder.find(new TextDocumentIdentifier(uri));
-			if (projectOpt.isPresent()) {
-				List<Recipe> commandDescriptors = new ArrayList<>(globalCommandRecipes.size()); 
-				for (Recipe r : globalCommandRecipes) {
-					commandDescriptors.add(r);
-				}
-				return commandDescriptors;
-			}
+			/*
+			 * When LS started on listing rewrite recipes project lookup may not find any projects as classpath might still be resolving.
+			 * Therefore, it is best probably to list the available recipes and figure out if it is a Spring Boot project recipes is applied to
+			 * and if not throw an exception.
+			 */
+//			Optional<IJavaProject> projectOpt = projectFinder.find(new TextDocumentIdentifier(uri));
+//			if (projectOpt.isPresent()) {
+				return recipes.values().stream().filter(this::isAcceptableGlobalCommandRecipe).collect(Collectors.toList());
+//			}
 		}
 		return Collections.emptyList();
 	}

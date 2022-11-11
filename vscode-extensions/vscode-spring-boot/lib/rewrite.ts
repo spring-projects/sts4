@@ -89,9 +89,7 @@ async function liveHoverConnectHandler(uri: VSCode.Uri) {
     if (!uri) {
         uri = await getTargetPomXml();
     }
-    const cmds: RecipeDescriptor[] = await VSCode.commands.executeCommand('sts/rewrite/list', uri.toString(true));
-    const choices = cmds.map(convertToQuickPickItem);
-    await showCurrentPathQuickPick(choices, []);
+    const choices = await showCurrentPathQuickPick(VSCode.commands.executeCommand('sts/rewrite/list', uri.toString(true)).then((cmds: RecipeDescriptor[]) => cmds.map(convertToQuickPickItem)), []);
     const recipeDescriptors = choices.filter(i => i.selected).map(convertToRecipeDescriptor);
     if (recipeDescriptors.length) {
         const aggregateRecipeDescriptor = recipeDescriptors.length === 1 ? recipeDescriptors[0] : {
@@ -133,56 +131,61 @@ function convertToQuickPickItem(i: RecipeDescriptor): RecipeQuickPickItem {
     };
 }
 
-function showCurrentPathQuickPick(items: RecipeQuickPickItem[], itemsPath: RecipeQuickPickItem[]): Promise<void> {
-    return new Promise((resolve, reject) => {
-        let currentItems = items;
-        let parent: RecipeQuickPickItem | undefined;
-        itemsPath.forEach(p => {
-            parent = currentItems.find(i => i === p);
-            currentItems = parent.children;
-        });
-        const quickPick = VSCode.window.createQuickPick<RecipeQuickPickItem>();
-        quickPick.items = currentItems;
-        quickPick.title = 'Select Recipes';
-        quickPick.canSelectMany = true;
-        if (itemsPath.length) {
-            quickPick.buttons = [ ROOT_RECIPES_BUTTON ];
-        }
-        quickPick.selectedItems = currentItems.filter(i => i.selected);
-        quickPick.onDidTriggerItemButton(e => {
-            if (e.button === SUB_RECIPES_BUTTON) {
-                currentItems.forEach(i => i.selected = quickPick.selectedItems.includes(i));
-                itemsPath.push(e.item);
-                showCurrentPathQuickPick(items, itemsPath).then(resolve, reject);
-            }
-        });
-        quickPick.onDidTriggerButton(b => {
-            if (b === ROOT_RECIPES_BUTTON) {
-                currentItems.forEach(i => i.selected = quickPick.selectedItems.includes(i));
-                itemsPath.splice(0, itemsPath.length);
-                showCurrentPathQuickPick(items, itemsPath).then(resolve, reject);
-            }
-        });
-        quickPick.onDidAccept(() => {
-            currentItems.forEach(i => i.selected = quickPick.selectedItems.includes(i));
+function showCurrentPathQuickPick(itemsPromise: Thenable<RecipeQuickPickItem[]>, itemsPath: RecipeQuickPickItem[]): Thenable<RecipeQuickPickItem[]> {
+    const quickPick = VSCode.window.createQuickPick<RecipeQuickPickItem>();
+    quickPick.title = 'Loading Recipes...';
+    quickPick.canSelectMany = true;
+    quickPick.busy = true;
+    quickPick.show();
+    return itemsPromise.then(items => {
+        return new Promise((resolve, reject) => {
+            let currentItems = items;
+            let parent: RecipeQuickPickItem | undefined;
+            itemsPath.forEach(p => {
+                parent = currentItems.find(i => i === p);
+                currentItems = parent.children;
+            });
+            quickPick.items = currentItems;
             if (itemsPath.length) {
-                itemsPath.pop();
-                showCurrentPathQuickPick(items, itemsPath).then(resolve, reject);
-            } else {
-                quickPick.hide();
-                resolve();
+                quickPick.buttons = [ ROOT_RECIPES_BUTTON ];
             }
-        });
-        quickPick.onDidChangeSelection(selected => {
-            currentItems.forEach(i => {
-                const isSelectedItem = selected.includes(i);
-                if (i.selected !== isSelectedItem) {
-                    selectItemRecursively(i, isSelectedItem);
+            quickPick.selectedItems = currentItems.filter(i => i.selected);
+            quickPick.onDidTriggerItemButton(e => {
+                if (e.button === SUB_RECIPES_BUTTON) {
+                    currentItems.forEach(i => i.selected = quickPick.selectedItems.includes(i));
+                    itemsPath.push(e.item);
+                    showCurrentPathQuickPick(Promise.resolve(items), itemsPath).then(resolve, reject);
                 }
             });
-            updateParentSelection(itemsPath.slice());
+            quickPick.onDidTriggerButton(b => {
+                if (b === ROOT_RECIPES_BUTTON) {
+                    currentItems.forEach(i => i.selected = quickPick.selectedItems.includes(i));
+                    itemsPath.splice(0, itemsPath.length);
+                    showCurrentPathQuickPick(Promise.resolve(items), itemsPath).then(resolve, reject);
+                }
+            });
+            quickPick.onDidAccept(() => {
+                currentItems.forEach(i => i.selected = quickPick.selectedItems.includes(i));
+                if (itemsPath.length) {
+                    itemsPath.pop();
+                    showCurrentPathQuickPick(Promise.resolve(items), itemsPath).then(resolve, reject);
+                } else {
+                    quickPick.hide();
+                    resolve(items);
+                }
+            });
+            quickPick.onDidChangeSelection(selected => {
+                currentItems.forEach(i => {
+                    const isSelectedItem = selected.includes(i);
+                    if (i.selected !== isSelectedItem) {
+                        selectItemRecursively(i, isSelectedItem);
+                    }
+                });
+                updateParentSelection(itemsPath.slice());
+            });
+            quickPick.title = 'Select Recipes';
+            quickPick.busy = false;
         });
-        quickPick.show();
     });
 }
 
