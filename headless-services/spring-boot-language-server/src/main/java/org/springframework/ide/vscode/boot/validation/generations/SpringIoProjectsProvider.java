@@ -14,8 +14,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.ide.vscode.boot.validation.generations.json.Generations;
-import org.springframework.ide.vscode.boot.validation.generations.json.Link;
-import org.springframework.ide.vscode.boot.validation.generations.json.Links;
 import org.springframework.ide.vscode.boot.validation.generations.json.SpringProject;
 import org.springframework.ide.vscode.boot.validation.generations.json.SpringProjects;
 
@@ -32,7 +30,7 @@ import com.google.common.collect.ImmutableMap.Builder;
 public class SpringIoProjectsProvider implements SpringProjectsProvider {
 
 	private final SpringProjectsClient client;
-	private Map<String, SpringIoProject> cache;
+	private Map<String, SpringProject> cache;
 
 	public SpringIoProjectsProvider(SpringProjectsClient client) {
 		this.client = client;
@@ -50,20 +48,20 @@ public class SpringIoProjectsProvider implements SpringProjectsProvider {
 	 */
 	@Override
 	public SpringProject getProject(String projectSlug) throws Exception {
-		SpringIoProject prj = cache().get(projectSlug);
-		return prj != null ? prj.getProject() : null;
+		SpringProject prj = cache().get(projectSlug);
+		return prj;
 	}
 	
 	@Override
 	public Generations getGenerations(String projectSlug) throws Exception {
-		SpringIoProject project = cache().get(projectSlug);
+		SpringProject project = cache().get(projectSlug);
 		if (project != null) {
-			return project.getGenerations();
+			return project.getGenerations(client);
 		}
 		return null;
 	}
 
-	private Map<String, SpringIoProject> cache() throws Exception {
+	private Map<String, SpringProject> cache() throws Exception {
 		if (cache == null) {
 			SpringProjects springProjects = client.getSpringProjects();
 			cache = asMap(springProjects);
@@ -71,14 +69,14 @@ public class SpringIoProjectsProvider implements SpringProjectsProvider {
 		return cache != null ? cache : ImmutableMap.of();
 	}
 
-	private Map<String, SpringIoProject> asMap(SpringProjects springProjects) {
-		Builder<String, SpringIoProject> builder = ImmutableMap.builder();
+	private Map<String, SpringProject> asMap(SpringProjects springProjects) {
+		Builder<String, SpringProject> builder = ImmutableMap.builder();
 
 		if (springProjects != null) {
 			List<SpringProject> projects = springProjects.getProjects();
 			if (projects != null) {
 				for (SpringProject project : projects) {
-					builder.put(project.getSlug(), new SpringIoProject(project, this.client));
+					builder.put(project.getSlug(), project);
 				}
 			}
 		}
@@ -90,38 +88,4 @@ public class SpringIoProjectsProvider implements SpringProjectsProvider {
 		return  new SpringProjectsClient(url);
 	}
 	
-	/**
-	 * Wrapper around the JSON SpringProject that also contains its generations
-	 *
-	 */
-	private final static class SpringIoProject {
-
-		private final SpringProject project;
-		private final SpringProjectsClient client;
-		private Generations generations;
-		
-
-		public SpringIoProject(SpringProject project, SpringProjectsClient  client) {
-			this.project = project;
-			this.client = client;
-		}
-
-		public SpringProject getProject() {
-			return this.project;
-		}
-
-		public Generations getGenerations() throws Exception {
-			// cache the generations to prevent frequent calls to the client
-			if (this.generations == null) {
-				Links _links = project.get_links();
-				if (_links != null) {
-					Link genLink = _links.getGenerations();
-					if (genLink != null) {
-						this.generations = client.getGenerations(genLink.getHref());
-					}
-				}
-			}
-			return this.generations;
-		}
-	}
 }

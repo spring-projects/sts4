@@ -10,7 +10,12 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.validation.generations.json;
 
+import org.springframework.ide.vscode.boot.validation.generations.SpringProjectsClient;
+
 public class SpringProject extends JsonHalLinks {
+	
+	private Generations generations;
+
 
 	private String name;
 	private String slug;
@@ -21,31 +26,30 @@ public class SpringProject extends JsonHalLinks {
 		return name;
 	}
 
-	public void setName(String name) {
-		this.name = name;
-	}
-
 	public String getSlug() {
 		return slug;
 	}
 
-	public void setSlug(String slug) {
-		this.slug = slug;
-	}
 
 	public String getStatus() {
 		return status;
 	}
 
-	public void setStatus(String status) {
-		this.status = status;
-	}
-
 	public String getRepositoryUrl() {
 		return repositoryUrl;
 	}
-
-	public void setRepositoryUrl(String repositoryUrl) {
-		this.repositoryUrl = repositoryUrl;
+	
+	public Generations getGenerations(SpringProjectsClient client) throws Exception {
+		// cache the generations to prevent frequent calls to the client
+		if (this.generations == null) {
+			Links _links = get_links();
+			if (_links != null) {
+				Link genLink = _links.getGenerations();
+				if (genLink != null) {
+					this.generations = client.getGenerations(genLink.getHref());
+				}
+			}
+		}
+		return this.generations;
 	}
 }
