@@ -19,8 +19,4 @@ public class Generations {
 	public List<Generation> getGenerations() {
 		return generations;
 	}
-
-	public void setGenerations(List<Generation> generations) {
-		this.generations = generations;
-	}
 }

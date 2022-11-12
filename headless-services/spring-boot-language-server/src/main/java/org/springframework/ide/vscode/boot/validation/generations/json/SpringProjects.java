@@ -18,8 +18,4 @@ public class SpringProjects {
 	public List<SpringProject> getProjects() {
 		return projects;
 	}
-
-	public void setProjects(List<SpringProject> projects) {
-		this.projects = projects;
-	}
 }

@@ -8,16 +8,18 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.validation.generations;
+package org.springframework.ide.vscode.boot.validation.test;
 
 import java.util.List;
+import java.util.Map;
 
+import org.springframework.ide.vscode.boot.validation.generations.SpringProjectsProvider;
 import org.springframework.ide.vscode.boot.validation.generations.json.Generations;
-import org.springframework.ide.vscode.boot.validation.generations.json.GenerationsEmbedded;
-import org.springframework.ide.vscode.boot.validation.generations.json.JsonHalParser;
 import org.springframework.ide.vscode.boot.validation.generations.json.SpringProject;
 import org.springframework.ide.vscode.boot.validation.generations.json.SpringProjects;
-import org.springframework.ide.vscode.boot.validation.generations.json.SpringProjectsEmbedded;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 
 
 /**
@@ -32,8 +34,7 @@ public class SampleProjectsProvider implements SpringProjectsProvider {
 	@Override
 	public SpringProject getProject(String projectSlug) throws Exception {
 		if (this.projects == null) {
-			JsonHalParser parser = new JsonHalParser();
-			this.projects = parser.getEmbedded(SPRING_PROJECTS_JSON_SAMPLE, SpringProjectsEmbedded.class);
+			this.projects = parse(SPRING_PROJECTS_JSON_SAMPLE, SpringProjects.class);
 		}
 		List<SpringProject> projectList = this.projects.getProjects();
 		for (SpringProject springProject : projectList) {
@@ -48,8 +49,20 @@ public class SampleProjectsProvider implements SpringProjectsProvider {
 	public Generations getGenerations(String projectSlug) throws Exception {
 		SpringProject project = getProject(projectSlug);
 		if (project != null && project.getSlug().equals("spring-boot")) {
-			JsonHalParser parser = new JsonHalParser();
-			return parser.getEmbedded(SPRING_BOOT_PROJECT_GENERATIONS, GenerationsEmbedded.class);
+			return parse(SPRING_BOOT_PROJECT_GENERATIONS, Generations.class);
+		}
+		return null;
+	}
+	
+	private <T> T parse(String json, Class<T> clazz) throws Exception {
+		ObjectMapper mapper = new ObjectMapper();
+
+		Map<?, ?> result = mapper.readValue(json, Map.class);
+		if (result != null) {
+			Object obj = result.get("_embedded");
+			if (obj != null) {
+				return mapper.convertValue(obj, clazz);
+			}
 		}
 		return null;
 	}

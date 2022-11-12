@@ -10,17 +10,18 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.validation.generations;
 
+import java.util.Map;
+
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.ide.vscode.boot.validation.generations.json.Generations;
-import org.springframework.ide.vscode.boot.validation.generations.json.GenerationsEmbedded;
-import org.springframework.ide.vscode.boot.validation.generations.json.JsonHalEmbedded;
 import org.springframework.ide.vscode.boot.validation.generations.json.SpringProjects;
-import org.springframework.ide.vscode.boot.validation.generations.json.SpringProjectsEmbedded;
 import org.springframework.web.client.RestTemplate;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class SpringProjectsClient {
 
@@ -31,23 +32,27 @@ public class SpringProjectsClient {
 	}
 
 	public SpringProjects getSpringProjects() throws Exception {
-		return getEmbedded(url, SpringProjectsEmbedded.class);
+		return fromEmbedded(url, SpringProjects.class);
 	}
 
 	public Generations getGenerations(String generationsUrl) throws Exception {
-		return getEmbedded(generationsUrl, GenerationsEmbedded.class);
+		return fromEmbedded(generationsUrl, Generations.class);
 	}
-
-	private <T> T getEmbedded(String url, Class<? extends JsonHalEmbedded<T>> clazz) throws Exception {
+	
+	private <T> T fromEmbedded(String url, Class<T> clazz) throws Exception {
 		if (url != null) {
-			JsonHalEmbedded<T> embedded = get(url, clazz);
-			if (embedded != null) {
-				return embedded.get_embedded();
+			Map<?, ?> result = get(url, Map.class);
+			if (result != null) {
+				Object obj = result.get("_embedded");
+				if (obj != null) {
+					ObjectMapper mapper = new ObjectMapper();
+					return mapper.convertValue(obj, clazz);
+				}
 			}
 		}
 		return null;
 	}
-
+	
 	private <T> T get(String url, Class<T> clazz) throws Exception {
 		HttpHeaders headers = new HttpHeaders();
 

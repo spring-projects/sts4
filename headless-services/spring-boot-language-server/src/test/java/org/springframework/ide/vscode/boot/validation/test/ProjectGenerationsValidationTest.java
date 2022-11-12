@@ -24,7 +24,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
 import org.springframework.ide.vscode.boot.bootiful.HoverTestConf;
-import org.springframework.ide.vscode.boot.validation.generations.SampleProjectsProvider;
 import org.springframework.ide.vscode.boot.validation.generations.SpringIoProjectsProvider;
 import org.springframework.ide.vscode.boot.validation.generations.SpringProjectsClient;
 import org.springframework.ide.vscode.boot.validation.generations.SpringProjectsProvider;
