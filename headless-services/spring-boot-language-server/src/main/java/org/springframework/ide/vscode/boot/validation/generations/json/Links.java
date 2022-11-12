@@ -22,39 +22,19 @@ public class Links {
 		return self;
 	}
 
-	public void setSelf(Link self) {
-		this.self = self;
-	}
-
 	public Link getReleases() {
 		return releases;
-	}
-
-	public void setReleases(Link releases) {
-		this.releases = releases;
 	}
 
 	public Link getGenerations() {
 		return generations;
 	}
 
-	public void setGenerations(Link generations) {
-		this.generations = generations;
-	}
-
 	public Link getParent() {
 		return parent;
 	}
 
-	public void setParent(Link parent) {
-		this.parent = parent;
-	}
-
 	public Link getProject() {
 		return project;
-	}
-
-	public void setProject(Link project) {
-		this.project = project;
 	}
 }

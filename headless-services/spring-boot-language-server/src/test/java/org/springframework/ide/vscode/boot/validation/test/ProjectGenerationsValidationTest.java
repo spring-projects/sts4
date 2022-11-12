@@ -134,4 +134,26 @@ public class ProjectGenerationsValidationTest {
 		version = SpringProjectUtil.getDependencyVersion("spring-boot-actuator-1.2.3.BUILD-SNAPSHOT.jar", "spring-boot");
 		assertNull(version);
 	}
+	
+	@Test
+	public void testVersionCalculation() throws Exception {
+		Version version = SpringProjectUtil.getVersion("2.7.5");
+		assertEquals(2, version.getMajor());
+		assertEquals(7, version.getMinor());
+		assertEquals(5, version.getPatch());
+		assertNull(version.getQualifier());
+
+		version = SpringProjectUtil.getVersion("3.0.0-SNAPSHOT");		
+		assertEquals(3, version.getMajor());
+		assertEquals(0, version.getMinor());
+		assertEquals(0, version.getPatch());
+		assertEquals(version.getQualifier(), "SNAPSHOT");
+
+		
+		version = SpringProjectUtil.getVersion("2.6.14-RC2");		
+		assertEquals(2, version.getMajor());
+		assertEquals(6, version.getMinor());
+		assertEquals(14, version.getPatch());
+		assertEquals(version.getQualifier(), "RC2");
+	}
 }

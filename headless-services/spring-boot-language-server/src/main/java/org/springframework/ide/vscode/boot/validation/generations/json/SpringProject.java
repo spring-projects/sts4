@@ -15,6 +15,7 @@ import org.springframework.ide.vscode.boot.validation.generations.SpringProjects
 public class SpringProject extends JsonHalLinks {
 	
 	private Generations generations;
+	private Releases releases;
 
 
 	private String name;
@@ -51,5 +52,19 @@ public class SpringProject extends JsonHalLinks {
 			}
 		}
 		return this.generations;
+	}
+	
+	public Releases getReleases(SpringProjectsClient client) throws Exception {
+		// cache the releases to prevent frequent calls to the client
+		if (this.releases == null) {
+			Links _links = get_links();
+			if (_links != null) {
+				Link genLink = _links.getReleases();
+				if (genLink != null) {
+//					this.releases = client.getGenerations(genLink.getHref());
+				}
+			}
+		}
+		return this.releases;
 	}
 }

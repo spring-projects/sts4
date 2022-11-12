@@ -18,8 +18,4 @@ public class GenerationsEmbedded extends JsonHalLinks implements JsonHalEmbedded
 	public Generations get_embedded() {
 		return _embedded;
 	}
-
-	public void set_embedded(Generations _embedded) {
-		this._embedded = _embedded;
-	}
 }

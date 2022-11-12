@@ -186,4 +186,22 @@ public class SpringProjectUtil {
 		}
 		return null;
 	}
+
+	public static Version getVersion(String version) {
+		Pattern pattern = Pattern.compile(VERSION_PATTERN_STR);
+		Matcher matcher = pattern.matcher(version);
+		if (matcher.find() && matcher.groupCount() > 4) {
+			String major = matcher.group(1);
+			String minor = matcher.group(2);
+			String patch = matcher.group(3);
+			String qualifier = matcher.group(5);
+			return new Version(
+					Integer.parseInt(major),
+					Integer.parseInt(minor),
+					Integer.parseInt(patch),
+					qualifier
+			);
+		}
+		return null;
+	}
 }

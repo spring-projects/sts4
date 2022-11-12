@@ -17,8 +17,4 @@ public class SpringProjectsEmbedded extends JsonHalLinks implements JsonHalEmbed
 	public SpringProjects get_embedded() {
 		return _embedded;
 	}
-
-	public void set_embedded(SpringProjects _embedded) {
-		this._embedded = _embedded;
-	}
 }

@@ -13,6 +13,4 @@ package org.springframework.ide.vscode.boot.validation.generations.json;
 public interface JsonHalEmbedded<T> {
 
 	T get_embedded();
-
-	void set_embedded(T _embedded);
 }
