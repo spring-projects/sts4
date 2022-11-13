@@ -46,7 +46,7 @@ public class ProjectVersionDiagnosticProvider {
 
 	/**
 	 * 
-	 * @return Non-null list of Diagnostics. Can be empty if no diagnostics are
+	 * @return Non-null list of Diagnostics for the given Java project. Can be empty if no diagnostics are
 	 *         applicable.
 	 * @throws If error encountered while getting diagnostics
 	 */
@@ -64,19 +64,20 @@ public class ProjectVersionDiagnosticProvider {
 			throw new Exception("Unable to resolve version for project: " + javaProject.getLocationUri().toString());
 		}
 
-		// The generation of the current dependency
 		Generation javaProjectGeneration = getGenerationForJavaProject(javaProject, springProject);
 
 		if (javaProjectGeneration == null) {
-			throw new Exception("Unable to find Spring Generation for project: " + javaProjectVersion.toString());
+			throw new Exception("Unable to find Spring Project Generation for project: " + javaProjectVersion.toString());
 		}
 
 		VersionValidation validation = null;
 
 		for (VersionValidator validator : validators.getValidators()) {
-			validation = validator.getValidation(springProject, javaProjectGeneration, javaProjectVersion);
-			if (validation != null) {
-				break;
+			if (validator.isEnabled()) {
+				validation = validator.getValidation(springProject, javaProjectGeneration, javaProjectVersion);
+				if (validation != null) {
+					break;
+				}
 			}
 		}
 

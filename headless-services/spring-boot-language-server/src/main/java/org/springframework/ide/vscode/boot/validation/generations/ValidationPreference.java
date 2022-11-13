@@ -11,30 +11,23 @@
 package org.springframework.ide.vscode.boot.validation.generations;
 
 import org.eclipse.lsp4j.DiagnosticSeverity;
-import org.springframework.ide.vscode.commons.java.Version;
 
-public class VersionValidation {
-
-	private final Version versionToUpgrade;
+public class ValidationPreference {
+	
+	private final boolean enabled;
 	private final DiagnosticSeverity severity;
-	private final String message;
-
-	public VersionValidation(Version versionToUpgrade,  DiagnosticSeverity severity, String message) {
-		this.versionToUpgrade = versionToUpgrade;
+	
+	public ValidationPreference(boolean enabled, DiagnosticSeverity severity) {
+		super();
+		this.enabled = enabled;
 		this.severity = severity;
-		this.message = message;
+	}
+
+	public boolean isEnabled() {
+		return enabled;
 	}
 
 	public DiagnosticSeverity getSeverity() {
-		return this.severity;
+		return severity;
 	}
-
-	public Version getVersionToUprade() {
-		return this.versionToUpgrade;
-	}
-
-	public String getMessage() {
-		return this.message;
-	}
-
 }

@@ -27,5 +27,7 @@ public interface VersionValidator {
 	 */
 	VersionValidation getValidation(ResolvedSpringProject springProject, Generation generation, Version version)
 			throws Exception;
+	
+	boolean isEnabled();
 
 }

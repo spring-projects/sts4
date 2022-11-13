@@ -20,6 +20,7 @@ import org.springframework.ide.vscode.boot.validation.generations.SpringIoProjec
 import org.springframework.ide.vscode.boot.validation.generations.SpringProjectDiagnostic;
 import org.springframework.ide.vscode.boot.validation.generations.SpringProjectsClient;
 import org.springframework.ide.vscode.boot.validation.generations.SpringProjectsProvider;
+import org.springframework.ide.vscode.boot.validation.generations.VersionValidationPreferences;
 import org.springframework.ide.vscode.boot.validation.generations.VersionValidators;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
@@ -42,11 +43,13 @@ public class BootVersionValidator {
 			
 			@Override
 			public void created(IJavaProject project) {
-				
-				String url = getSpringProjectsUrl();
+				VersionValidationPreferences preferences = new VersionValidationPreferences();
+
+				String url = getSpringProjectsUrl(preferences);
 				SpringProjectsClient client = new SpringProjectsClient(url);
 				SpringProjectsProvider provider = new SpringIoProjectsProvider(client);
-				VersionValidators validators = new VersionValidators();
+				VersionValidators validators = new VersionValidators(preferences);
+				
 				ProjectVersionDiagnosticProvider diagnosticProvider = new ProjectVersionDiagnosticProvider(provider, validators);
 				
 				try {
@@ -69,10 +72,7 @@ public class BootVersionValidator {
 		});
 	}
 	
-
-	private String getSpringProjectsUrl() {
-		// TODO: Read from preferences
-		return "https://spring.io/api/projects";
+	private String getSpringProjectsUrl(VersionValidationPreferences preferences) {
+		return preferences.getSpringProjectsUrl();
 	}
-
 }
