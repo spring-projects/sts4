@@ -14,25 +14,48 @@ import java.util.List;
 import java.util.Map;
 
 import org.springframework.ide.vscode.boot.validation.generations.SpringProjectsProvider;
+import org.springframework.ide.vscode.boot.validation.generations.json.Generation;
 import org.springframework.ide.vscode.boot.validation.generations.json.Generations;
+import org.springframework.ide.vscode.boot.validation.generations.json.Release;
+import org.springframework.ide.vscode.boot.validation.generations.json.ResolvedSpringProject;
 import org.springframework.ide.vscode.boot.validation.generations.json.SpringProject;
 import org.springframework.ide.vscode.boot.validation.generations.json.SpringProjects;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-
-
 /**
- * Spring-boot sample json. Used for testing or providing a hardcoded fall-back to spring.io, when
- * the latter is not available.
- *  
+ * Spring-boot sample json. Used for testing or providing a hardcoded fall-back
+ * to spring.io, when the latter is not available.
+ * 
  */
 public class SampleProjectsProvider implements SpringProjectsProvider {
 
 	private SpringProjects projects;
 
 	@Override
-	public SpringProject getProject(String projectSlug) throws Exception {
+	public ResolvedSpringProject getProject(String projectSlug) throws Exception {
+		ResolvedSpringProject project = new ResolvedSpringProject(getSpringProject(projectSlug), null) {
+
+			@Override
+			public List<Generation> getGenerations() throws Exception {
+				SpringProject project = getSpringProject(projectSlug);
+				if (project != null && project.getSlug().equals("spring-boot")) {
+					return parse(SPRING_BOOT_PROJECT_GENERATIONS, Generations.class).getGenerations();
+				}
+				return null;
+			}
+
+			@Override
+			public List<Release> getReleases() throws Exception {
+				return null;
+			}
+
+		};
+
+		return project;
+	}
+
+	private SpringProject getSpringProject(String projectSlug) throws Exception {
 		if (this.projects == null) {
 			this.projects = parse(SPRING_PROJECTS_JSON_SAMPLE, SpringProjects.class);
 		}
@@ -45,15 +68,6 @@ public class SampleProjectsProvider implements SpringProjectsProvider {
 		return null;
 	}
 
-	@Override
-	public Generations getGenerations(String projectSlug) throws Exception {
-		SpringProject project = getProject(projectSlug);
-		if (project != null && project.getSlug().equals("spring-boot")) {
-			return parse(SPRING_BOOT_PROJECT_GENERATIONS, Generations.class);
-		}
-		return null;
-	}
-	
 	private <T> T parse(String json, Class<T> clazz) throws Exception {
 		ObjectMapper mapper = new ObjectMapper();
 
@@ -112,5 +126,4 @@ public class SampleProjectsProvider implements SpringProjectsProvider {
 			+ "        },\n" + "        \"parent\" : {\n"
 			+ "          \"href\" : \"https://spring.io/api/projects/spring-data\"\n" + "        }\n" + "      }\n"
 			+ "    } ]\n" + "  }\n" + "}";
-
 }

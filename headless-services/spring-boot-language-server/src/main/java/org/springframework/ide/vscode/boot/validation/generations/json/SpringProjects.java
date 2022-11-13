@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.boot.validation.generations.json;
 import java.util.List;
 
 public class SpringProjects {
+	
 	private List<SpringProject> projects;
 
 	public List<SpringProject> getProjects() {

@@ -10,8 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.validation.generations;
 
-import org.springframework.ide.vscode.boot.validation.generations.json.Generations;
-import org.springframework.ide.vscode.boot.validation.generations.json.SpringProject;
+import org.springframework.ide.vscode.boot.validation.generations.json.ResolvedSpringProject;
 
 public interface SpringProjectsProvider {
 
@@ -21,8 +20,6 @@ public interface SpringProjectsProvider {
 	 * @return
 	 * @throws Exception
 	 */
-	SpringProject getProject(String projectSlug) throws Exception;
-
-	Generations getGenerations(String projectSlug) throws Exception;
+	ResolvedSpringProject getProject(String projectSlug) throws Exception;
 
 }

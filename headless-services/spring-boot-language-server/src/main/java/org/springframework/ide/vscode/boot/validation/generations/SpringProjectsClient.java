@@ -18,6 +18,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.ide.vscode.boot.validation.generations.json.Generations;
+import org.springframework.ide.vscode.boot.validation.generations.json.Releases;
 import org.springframework.ide.vscode.boot.validation.generations.json.SpringProjects;
 import org.springframework.web.client.RestTemplate;
 
@@ -37,6 +38,10 @@ public class SpringProjectsClient {
 
 	public Generations getGenerations(String generationsUrl) throws Exception {
 		return fromEmbedded(generationsUrl, Generations.class);
+	}
+	
+	public Releases getReleases(String releasesUrl) throws Exception {
+		return fromEmbedded(releasesUrl, Releases.class);
 	}
 	
 	private <T> T fromEmbedded(String url, Class<T> clazz) throws Exception {

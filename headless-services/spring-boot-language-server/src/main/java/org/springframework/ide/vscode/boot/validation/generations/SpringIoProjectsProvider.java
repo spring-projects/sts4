@@ -13,7 +13,7 @@ package org.springframework.ide.vscode.boot.validation.generations;
 import java.util.List;
 import java.util.Map;
 
-import org.springframework.ide.vscode.boot.validation.generations.json.Generations;
+import org.springframework.ide.vscode.boot.validation.generations.json.ResolvedSpringProject;
 import org.springframework.ide.vscode.boot.validation.generations.json.SpringProject;
 import org.springframework.ide.vscode.boot.validation.generations.json.SpringProjects;
 
@@ -21,23 +21,20 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 
 /**
- * Provides Spring project definitions from a source like "https://spring.io/api/projects"
+ * Provides Spring project definitions from a source like
+ * "https://spring.io/api/projects"
  * <p/>
- * If a client is not provided, a default client
- * will be used instead that will point to "https://spring.io/api/projects"
+ * If a client is not provided, a default client will be used instead that will
+ * point to "https://spring.io/api/projects"
  *
  */
 public class SpringIoProjectsProvider implements SpringProjectsProvider {
 
 	private final SpringProjectsClient client;
-	private Map<String, SpringProject> cache;
+	private Map<String, ResolvedSpringProject> cache;
 
 	public SpringIoProjectsProvider(SpringProjectsClient client) {
 		this.client = client;
-	}
-	
-	public SpringIoProjectsProvider() {
-		this(getDefaultClient());
 	}
 
 	/**
@@ -47,21 +44,12 @@ public class SpringIoProjectsProvider implements SpringProjectsProvider {
 	 * @throws Exception
 	 */
 	@Override
-	public SpringProject getProject(String projectSlug) throws Exception {
-		SpringProject prj = cache().get(projectSlug);
+	public ResolvedSpringProject getProject(String projectSlug) throws Exception {
+		ResolvedSpringProject prj = cache().get(projectSlug);
 		return prj;
 	}
-	
-	@Override
-	public Generations getGenerations(String projectSlug) throws Exception {
-		SpringProject project = cache().get(projectSlug);
-		if (project != null) {
-			return project.getGenerations(client);
-		}
-		return null;
-	}
 
-	private Map<String, SpringProject> cache() throws Exception {
+	private Map<String, ResolvedSpringProject> cache() throws Exception {
 		if (cache == null) {
 			SpringProjects springProjects = client.getSpringProjects();
 			cache = asMap(springProjects);
@@ -69,23 +57,18 @@ public class SpringIoProjectsProvider implements SpringProjectsProvider {
 		return cache != null ? cache : ImmutableMap.of();
 	}
 
-	private Map<String, SpringProject> asMap(SpringProjects springProjects) {
-		Builder<String, SpringProject> builder = ImmutableMap.builder();
+	private Map<String, ResolvedSpringProject> asMap(SpringProjects springProjects) {
+		Builder<String, ResolvedSpringProject> builder = ImmutableMap.builder();
 
 		if (springProjects != null) {
 			List<SpringProject> projects = springProjects.getProjects();
 			if (projects != null) {
 				for (SpringProject project : projects) {
-					builder.put(project.getSlug(), project);
+					builder.put(project.getSlug(), new ResolvedSpringProject(project, client));
 				}
 			}
 		}
 		return builder.build();
 	}
-	
-	private static SpringProjectsClient getDefaultClient() {
-		String url = "https://spring.io/api/projects";
-		return  new SpringProjectsClient(url);
-	}
-	
+
 }

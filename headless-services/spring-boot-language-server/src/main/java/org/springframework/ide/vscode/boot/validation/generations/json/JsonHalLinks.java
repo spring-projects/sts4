@@ -17,4 +17,8 @@ public class JsonHalLinks {
 	public Links get_links() {
 		return _links;
 	}
+	
+	protected void set_links(Links links) {
+		this._links = links;
+	}
 }

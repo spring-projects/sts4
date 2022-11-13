@@ -28,8 +28,8 @@ import org.springframework.ide.vscode.boot.validation.generations.SpringIoProjec
 import org.springframework.ide.vscode.boot.validation.generations.SpringProjectsClient;
 import org.springframework.ide.vscode.boot.validation.generations.SpringProjectsProvider;
 import org.springframework.ide.vscode.boot.validation.generations.json.Generation;
-import org.springframework.ide.vscode.boot.validation.generations.json.Generations;
 import org.springframework.ide.vscode.boot.validation.generations.json.Link;
+import org.springframework.ide.vscode.boot.validation.generations.json.ResolvedSpringProject;
 import org.springframework.ide.vscode.boot.validation.generations.json.SpringProject;
 import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
 import org.springframework.ide.vscode.commons.java.Version;
@@ -86,13 +86,10 @@ public class ProjectGenerationsValidationTest {
 
 		SampleProjectsProvider provider = new SampleProjectsProvider();
 
-		SpringProject project = provider.getProject("spring-boot");
+		ResolvedSpringProject project = provider.getProject("spring-boot");
 		assertNotNull(project);
 
-		Generations generations = provider.getGenerations("spring-boot");
-		assertNotNull(generations);
-
-		List<Generation> genList = generations.getGenerations();
+		List<Generation> genList = project.getGenerations();
 
 		assertNotNull(genList);
 		assertTrue(genList.size() > 0);

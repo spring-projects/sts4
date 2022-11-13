@@ -15,11 +15,12 @@ import java.util.List;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ide.vscode.boot.validation.generations.SpringBootProjectValidations;
+import org.springframework.ide.vscode.boot.validation.generations.ProjectVersionDiagnosticProvider;
 import org.springframework.ide.vscode.boot.validation.generations.SpringIoProjectsProvider;
 import org.springframework.ide.vscode.boot.validation.generations.SpringProjectDiagnostic;
 import org.springframework.ide.vscode.boot.validation.generations.SpringProjectsClient;
 import org.springframework.ide.vscode.boot.validation.generations.SpringProjectsProvider;
+import org.springframework.ide.vscode.boot.validation.generations.VersionValidators;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
@@ -42,13 +43,14 @@ public class BootVersionValidator {
 			@Override
 			public void created(IJavaProject project) {
 				
-				String url = "https://spring.io/api/projects";
+				String url = getSpringProjectsUrl();
 				SpringProjectsClient client = new SpringProjectsClient(url);
 				SpringProjectsProvider provider = new SpringIoProjectsProvider(client);
+				VersionValidators validators = new VersionValidators();
+				ProjectVersionDiagnosticProvider diagnosticProvider = new ProjectVersionDiagnosticProvider(provider, validators);
 				
-				SpringBootProjectValidations validations = new SpringBootProjectValidations(provider);
 				try {
-					List<SpringProjectDiagnostic> diagnostics = validations.validateBootVersion(project);
+					List<SpringProjectDiagnostic> diagnostics = diagnosticProvider.getDiagnostics(project);
 					if (diagnostics != null) {
 						for (SpringProjectDiagnostic springProjectDiagnostic : diagnostics) {
 							server.getTextDocumentService().publishDiagnostics(new TextDocumentIdentifier(springProjectDiagnostic.getUri().toString()), List.of(springProjectDiagnostic.getDiagnostic()));
@@ -65,6 +67,12 @@ public class BootVersionValidator {
 				
 			}
 		});
+	}
+	
+
+	private String getSpringProjectsUrl() {
+		// TODO: Read from preferences
+		return "https://spring.io/api/projects";
 	}
 
 }

@@ -10,14 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.validation.generations.json;
 
-import org.springframework.ide.vscode.boot.validation.generations.SpringProjectsClient;
-
 public class SpringProject extends JsonHalLinks {
 	
-	private Generations generations;
-	private Releases releases;
-
-
 	private String name;
 	private String slug;
 	private String status;
@@ -31,7 +25,6 @@ public class SpringProject extends JsonHalLinks {
 		return slug;
 	}
 
-
 	public String getStatus() {
 		return status;
 	}
@@ -40,31 +33,19 @@ public class SpringProject extends JsonHalLinks {
 		return repositoryUrl;
 	}
 	
-	public Generations getGenerations(SpringProjectsClient client) throws Exception {
-		// cache the generations to prevent frequent calls to the client
-		if (this.generations == null) {
-			Links _links = get_links();
-			if (_links != null) {
-				Link genLink = _links.getGenerations();
-				if (genLink != null) {
-					this.generations = client.getGenerations(genLink.getHref());
-				}
-			}
-		}
-		return this.generations;
+	protected void setName(String name) {
+		this.name = name;
 	}
-	
-	public Releases getReleases(SpringProjectsClient client) throws Exception {
-		// cache the releases to prevent frequent calls to the client
-		if (this.releases == null) {
-			Links _links = get_links();
-			if (_links != null) {
-				Link genLink = _links.getReleases();
-				if (genLink != null) {
-//					this.releases = client.getGenerations(genLink.getHref());
-				}
-			}
-		}
-		return this.releases;
+
+	protected void setSlug(String slug) {
+		this.slug = slug;
+	}
+
+	protected void setStatus(String status) {
+		this.status = status;
+	}
+
+	protected void setRepositoryUrl(String repositoryUrl) {
+		this.repositoryUrl = repositoryUrl;
 	}
 }

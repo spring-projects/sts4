@@ -17,6 +17,7 @@ public class Links {
 	private Link generations;
 	private Link parent;
 	private Link project;
+	private Link repository;
 
 	public Link getSelf() {
 		return self;
@@ -36,5 +37,9 @@ public class Links {
 
 	public Link getProject() {
 		return project;
+	}
+	
+	public Link getRepository() {
+		return repository;
 	}
 }
