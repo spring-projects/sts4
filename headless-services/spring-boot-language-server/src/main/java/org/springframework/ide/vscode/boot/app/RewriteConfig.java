@@ -18,6 +18,8 @@ import org.springframework.ide.vscode.boot.java.rewrite.RewriteCodeActionHandler
 import org.springframework.ide.vscode.boot.java.rewrite.RewriteCompilationUnitCache;
 import org.springframework.ide.vscode.boot.java.rewrite.RewriteRecipeRepository;
 import org.springframework.ide.vscode.boot.java.rewrite.RewriteRefactorings;
+import org.springframework.ide.vscode.boot.java.rewrite.SpringBootUpgrade;
+import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixRegistry;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 
@@ -33,6 +35,10 @@ public class RewriteConfig implements InitializingBean {
 	@Bean
 	RewriteCodeActionHandler rewriteCodeActionHandler(RewriteCompilationUnitCache cuCache, RewriteRecipeRepository recipeRepo, BootJavaConfig config) {
 		return new RewriteCodeActionHandler(cuCache, recipeRepo, config);
+	}
+	
+	@Bean SpringBootUpgrade springBootUpgrade(SimpleLanguageServer server, RewriteRecipeRepository recipeRepo, JavaProjectFinder projectFinder) {
+		return new SpringBootUpgrade(server, recipeRepo, projectFinder);
 	}
 	
 	@Override
