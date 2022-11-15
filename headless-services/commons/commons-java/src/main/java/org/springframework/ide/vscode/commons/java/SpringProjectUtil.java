@@ -11,9 +11,6 @@
 package org.springframework.ide.vscode.commons.java;
 
 import java.io.File;
-import java.nio.file.Files;
-import java.nio.file.LinkOption;
-import java.nio.file.Path;
 import java.util.List;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
@@ -127,6 +124,20 @@ public class SpringProjectUtil {
 		return null;
 	}
 	
+	public static Version getSpringBootVersion(IJavaProject jp) {		
+		try {
+			for (File f : IClasspathUtil.getBinaryRoots(jp.getClasspath(), (cpe) -> !cpe.isSystem())) {
+				Version version = getDependencyVersion(f.getName(), SPRING_BOOT);
+				if (version != null) {
+					return version;
+				}
+			}
+		} catch (Exception e) {
+			log.error("", e);
+		}
+		return null;
+	}
+	
 	public static Version getDependencyVersion(String fileName, String dependency) {
 		if (fileName.startsWith(dependency)) {
 			StringBuilder sb = new StringBuilder();
@@ -173,18 +184,6 @@ public class SpringProjectUtil {
 			}
 			return true;
 		};
-	}
-	
-	public static File getFile(IJavaProject project, String fileName) throws Exception {
-		Path projectPath = new File(project.getLocationUri()).toPath();
-		if (Files.isDirectory(projectPath, new LinkOption[] {LinkOption.NOFOLLOW_LINKS})) {
-			List<Path>results = Files.walk(projectPath).filter(Files::isRegularFile)
-			.filter(file -> file.toFile().getName().equals(fileName)).collect(Collectors.toList());
-			if (results != null && !results.isEmpty()) {
-				return results.get(0).toFile();
-			}
-		}
-		return null;
 	}
 
 	public static Version getVersion(String version) {

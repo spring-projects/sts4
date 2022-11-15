@@ -12,7 +12,11 @@ package org.springframework.ide.vscode.boot.validation.generations;
 
 import java.io.File;
 import java.net.URI;
+import java.nio.file.Files;
+import java.nio.file.LinkOption;
+import java.nio.file.Path;
 import java.util.List;
+import java.util.stream.Collectors;
 
 import org.eclipse.lsp4j.CodeAction;
 import org.eclipse.lsp4j.CodeActionKind;
@@ -29,12 +33,13 @@ import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
 import org.springframework.ide.vscode.commons.java.Version;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+
 
 public class ProjectVersionDiagnosticProvider {
 
 	public static final String BOOT_VERSION_VALIDATION_CODE = "BOOT_VERSION_VALIDATION_CODE";
 	private static final String[] BUILD_FILES = new String[] { "pom.xml", "build.gradle", "build.gradle.kts" };
-	private static final String SPRING_BOOT_PROJECT_SLUG = "spring-boot";
 
 	private final SpringProjectsProvider provider;
 	private final VersionValidators validators;
@@ -57,8 +62,8 @@ public class ProjectVersionDiagnosticProvider {
 			return ImmutableList.of();
 		}
 
-		ResolvedSpringProject springProject = provider.getProject(SPRING_BOOT_PROJECT_SLUG);
-		Version javaProjectVersion = SpringProjectUtil.getDependencyVersion(javaProject, springProject.getSlug());
+		ResolvedSpringProject springProject = provider.getProject(SpringProjectUtil.SPRING_BOOT);
+		Version javaProjectVersion = SpringProjectUtil.getSpringBootVersion(javaProject);
 
 		if (javaProjectVersion == null) {
 			throw new Exception("Unable to resolve version for project: " + javaProject.getLocationUri().toString());
@@ -111,7 +116,7 @@ public class ProjectVersionDiagnosticProvider {
 			diagnostic.setRange(range);
 			diagnostic.setSeverity(severity);
 
-			setQuickfix(diagnostic);
+			setQuickfix(diagnostic, toUpgrade, javaProject.getLocationUri().toString());
 
 			return ImmutableList.of(new SpringProjectDiagnostic(diagnostic, uri));
 
@@ -136,30 +141,33 @@ public class ProjectVersionDiagnosticProvider {
 		return null;
 	}
 
-	private void setQuickfix(Diagnostic diagnostic) {
-		// TODO: Fix this when open rewrite recipe quickfix becomes available.
+	private void setQuickfix(Diagnostic diagnostic, Version toUpgrade, String projectUri) {
 		Diagnostic refDiagnostic = new Diagnostic(diagnostic.getRange(), diagnostic.getMessage(),
 				diagnostic.getSeverity(), diagnostic.getSource());
 		CodeAction ca = new CodeAction();
 		ca.setKind(CodeActionKind.QuickFix);
-		ca.setTitle("Validation FIX");
+		ca.setTitle("Upgrade To Target Version");
 		ca.setDiagnostics(List.of(refDiagnostic));
-		String commandId = "";
-		ca.setCommand(new Command("Validation FIX", commandId, ImmutableList.of()));
+		String commandId = "sts/upgrade/spring-boot";
+		ca.setCommand(new Command("Upgrade To Target Version", commandId, ImmutableList.of(projectUri, toUpgrade.toString())));
 		diagnostic.setData(ca);
 	}
 
 	protected URI getBuildFileUri(IJavaProject javaProject) throws Exception {
+		File buildFile = null;
+		Path projectPath = new File(javaProject.getLocationUri()).toPath();
+		if (Files.isDirectory(projectPath, new LinkOption[] { LinkOption.NOFOLLOW_LINKS })) {
+			ImmutableSet<String> buildFileNames = ImmutableSet.copyOf(BUILD_FILES);
 
-		File file = null;
-		for (String fileName : BUILD_FILES) {
-			file = SpringProjectUtil.getFile(javaProject, fileName);
-			if (file != null) {
-				return file.toURI();
+			List<Path> results = Files.list(projectPath).filter(Files::isRegularFile)
+					.filter(file -> buildFileNames.contains(file.toFile().getName()))
+							.collect(Collectors.toList());
+
+			if (results != null && results.size() == 1) {
+				buildFile = results.get(0).toFile();
 			}
 		}
-
-		return null;
+		return buildFile != null ? buildFile.toURI() : null;
 	}
 
 	protected File getSpringBootDependency(IJavaProject project) {
