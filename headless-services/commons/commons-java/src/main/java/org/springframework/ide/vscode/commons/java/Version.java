@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.java;
 
-public final class Version {
+public final class Version implements Comparable<Version> {
 	
 	private int major;
 	private int minor;
@@ -39,6 +39,14 @@ public final class Version {
 	public String getQualifier() {
 		return qualifier;
 	}
+	
+	public String toMajorMinorVersionStr() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(major);
+		sb.append('.');
+		sb.append(minor);
+		return sb.toString();
+	}
 
 	@Override
 	public String toString() {
@@ -53,6 +61,19 @@ public final class Version {
 			sb.append(qualifier);
 		}
 		return sb.toString();
+	}
+
+	@Override
+	public int compareTo(Version o) {
+		if (major == o.major) {
+			if (minor == o.minor) {
+				return patch - o.patch;
+			} else {
+				return minor - o.minor;
+			}
+		} else {
+			return major - o.major;
+		}
 	}	
 
 }

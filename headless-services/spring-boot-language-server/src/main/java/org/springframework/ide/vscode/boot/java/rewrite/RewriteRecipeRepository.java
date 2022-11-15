@@ -99,7 +99,7 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 	
 	private ApplicationContext applicationContext;
 	
-	private CompletableFuture<Void> loaded;
+	CompletableFuture<Void> loaded;
 	
 	private Set<String> scanFiles;
 	private Set<String> scanDirs;
@@ -336,10 +336,10 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 			final String progressToken = params.getWorkDoneToken() == null || params.getWorkDoneToken().getLeft() == null ? r.getName() : params.getWorkDoneToken().getLeft();
 			String uri = ((JsonElement) params.getArguments().get(1)).getAsString();
 			return apply(r, uri, progressToken);	
-		});		
+		});	
 	}
 	
-	private CompletableFuture<Object> apply(Recipe r, String uri, String progressToken) {
+	CompletableFuture<Object> apply(Recipe r, String uri, String progressToken) {
 		return CompletableFuture.supplyAsync(() -> {
 			server.getProgressService().progressBegin(progressToken, r.getDisplayName(), "Initiated...");
 			return projectFinder.find(new TextDocumentIdentifier(uri));
