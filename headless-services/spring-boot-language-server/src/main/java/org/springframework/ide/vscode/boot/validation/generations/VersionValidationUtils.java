@@ -47,7 +47,7 @@ public class VersionValidationUtils {
 		return null;
 	}
 
-	public static Version getLatestSupportedRelease(ResolvedSpringProject springProject, Version version)
+	public static Version getLatestSupportedRelease(ResolvedSpringProject springProject)
 			throws Exception {
 		List<Release> rls = springProject.getReleases();
 		for (Release release : rls) {

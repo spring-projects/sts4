@@ -8,27 +8,14 @@
  * Contributors:
  *     VMware, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.validation.generations;
+package org.springframework.ide.vscode.boot.validation.generations.preferences;
 
-import java.net.URI;
+// TODO: integrate with actual LS preferences
+public class VersionValidationPreferences {
 
-import org.eclipse.lsp4j.Diagnostic;
+	private static final String DEFAULT_SPRING_PROJECT_URL = "https://spring.io/api/projects";
 
-public class SpringProjectDiagnostic {
-
-	private final Diagnostic diagnostic;
-	private final URI uri;
-
-	public SpringProjectDiagnostic(Diagnostic diagnostic, URI uri) {
-		this.diagnostic = diagnostic;
-		this.uri = uri;
-	}
-
-	public Diagnostic getDiagnostic() {
-		return diagnostic;
-	}
-
-	public URI getUri() {
-		return uri;
+	public String getSpringProjectsUrl() {
+		return DEFAULT_SPRING_PROJECT_URL;
 	}
 }

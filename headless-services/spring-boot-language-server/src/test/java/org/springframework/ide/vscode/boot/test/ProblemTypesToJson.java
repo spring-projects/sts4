@@ -27,10 +27,11 @@ import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
 import org.springframework.ide.vscode.boot.java.Boot2JavaProblemType;
-import org.springframework.ide.vscode.boot.java.SpringAotJavaProblemType;
 import org.springframework.ide.vscode.boot.java.Boot3JavaProblemType;
 import org.springframework.ide.vscode.boot.java.SpelProblemType;
+import org.springframework.ide.vscode.boot.java.SpringAotJavaProblemType;
 import org.springframework.ide.vscode.boot.properties.reconcile.ApplicationPropertiesProblemType;
+import org.springframework.ide.vscode.boot.validation.generations.preferences.VersionValidationProblemType;
 import org.springframework.ide.vscode.boot.yaml.reconcile.ApplicationYamlProblemType;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemCategory;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemCategory.Toggle;
@@ -175,6 +176,7 @@ public class ProblemTypesToJson {
 		writer.collectProblemTypeData(ApplicationPropertiesProblemType.values());
 		writer.collectProblemTypeData(Boot3JavaProblemType.values());
 		writer.collectProblemTypeData(SpringAotJavaProblemType.values());
+		writer.collectProblemTypeData(VersionValidationProblemType.values());
 		
 		Collections.sort(writer.problemCategories);
 		

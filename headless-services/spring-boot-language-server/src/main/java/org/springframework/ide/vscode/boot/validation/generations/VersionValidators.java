@@ -13,171 +13,158 @@ package org.springframework.ide.vscode.boot.validation.generations;
 import java.util.Arrays;
 import java.util.List;
 
-import org.eclipse.lsp4j.DiagnosticSeverity;
+import org.eclipse.lsp4j.CodeAction;
+import org.eclipse.lsp4j.CodeActionKind;
+import org.eclipse.lsp4j.Command;
+import org.eclipse.lsp4j.Diagnostic;
 import org.springframework.ide.vscode.boot.validation.generations.json.Generation;
 import org.springframework.ide.vscode.boot.validation.generations.json.ResolvedSpringProject;
+import org.springframework.ide.vscode.boot.validation.generations.preferences.VersionValidationProblemType;
+import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.Version;
+import org.springframework.ide.vscode.commons.languageserver.reconcile.DiagnosticSeverityProvider;
+
+import com.google.common.collect.ImmutableList;
 
 public class VersionValidators {
-	
+
+	public static final String BOOT_VERSION_VALIDATION_CODE = "BOOT_VERSION_VALIDATION_CODE";
+
 	private final VersionValidator[] validators;
 
-	public VersionValidators(VersionValidationPreferences preferences) {
-		this.validators = new VersionValidator[] {
-				new SupportedValidator(preferences), new UnsupportedCommercialValidator(preferences),
-				new UnsupportedOssValidator(preferences), new UnsupportedValidator(preferences)
-		};
+	public VersionValidators(DiagnosticSeverityProvider diagnosticSeverityProvider) {
+		this.validators = new VersionValidator[] { new SupportedOssValidator(diagnosticSeverityProvider),
+				new UnsupportedCommercialValidator(diagnosticSeverityProvider),
+				new UnsupportedOssValidator(diagnosticSeverityProvider),
+				new SupportedCommercialValidator(diagnosticSeverityProvider),
+				new UpdateLatestMajorVersion(diagnosticSeverityProvider) };
 	}
 
 	public List<VersionValidator> getValidators() {
 		return Arrays.asList(this.validators);
 	}
 
-	private static class SupportedValidator implements VersionValidator {
+	private static class SupportedOssValidator extends AbstractDiagnosticValidator {
 
-		private final VersionValidationPreferences preferences;
-
-		public SupportedValidator(VersionValidationPreferences preferences) {
-			this.preferences = preferences;
+		public SupportedOssValidator(DiagnosticSeverityProvider diagnosticSeverityProvider) {
+			super(diagnosticSeverityProvider);
 		}
 
 		@Override
-		public VersionValidation getValidation(ResolvedSpringProject springProject, Generation generation,
-				Version version) throws Exception {
+		public Diagnostic validate(ResolvedSpringProject springProject, IJavaProject javaProject,
+				Generation javaProjectGen, Version javaProjectVersion) throws Exception {
 
-			if (VersionValidationUtils.isCommercialValid(generation) && VersionValidationUtils.isOssValid(generation)) {
-				DiagnosticSeverity severity = preferences.getSupportedPreference().getSeverity();
-
-				StringBuffer message = new StringBuffer();
-
-				message.append("OSS support ends on: ");
-				message.append(generation.getOssSupportEndDate());
-				message.append('\n');
-				message.append("Commercial supports ends on: ");
-				message.append(generation.getCommercialSupportEndDate());
-				
-				Version toUpdate = VersionValidationUtils.getLatestSupportedRelease(springProject, version);
-				return new VersionValidation(toUpdate, severity, message.toString());
-			}
-			return null;
-		}
-
-		@Override
-		public boolean isEnabled() {
-			return preferences.getSupportedPreference().isEnabled();
-		}
-	}
-
-	private static class UnsupportedValidator implements VersionValidator {
-
-		private final VersionValidationPreferences preferences;
-
-		public UnsupportedValidator(VersionValidationPreferences preferences) {
-			this.preferences = preferences;
-		}
-
-		@Override
-		public VersionValidation getValidation(ResolvedSpringProject springProject, Generation generation,
-				Version version) throws Exception {
-
-			if (!VersionValidationUtils.isCommercialValid(generation)
-					&& !VersionValidationUtils.isOssValid(generation)) {
-				DiagnosticSeverity severity = preferences.getUnsupportedPreference().getSeverity();
-				StringBuffer message = new StringBuffer();
-
-				message.append("Unsupported OSS. Support ended on: ");
-				message.append(generation.getOssSupportEndDate());
-				message.append('\n');
-				message.append("Unsupported Commercial. Support ended on: ");
-				message.append(generation.getCommercialSupportEndDate());
-
-				return new VersionValidation(
-						toUpdateForUnsupported(springProject, version), severity, message.toString());
-			}
-			return null;
-		}
-
-		@Override
-		public boolean isEnabled() {
-			return preferences.getUnsupportedPreference().isEnabled();
-		}
-	}
-
-	private static class UnsupportedOssValidator implements VersionValidator {
-
-		private final VersionValidationPreferences preferences;
-
-		public UnsupportedOssValidator(VersionValidationPreferences preferences) {
-			this.preferences = preferences;
-		}
-
-		@Override
-		public VersionValidation getValidation(ResolvedSpringProject springProject, Generation generation,
-				Version version) throws Exception {
-			if (!VersionValidationUtils.isOssValid(generation)
-					&& VersionValidationUtils.isCommercialValid(generation)) {
-				
-				DiagnosticSeverity severity = preferences.getUnsupportedOssPreference().getSeverity();
-
-				StringBuffer message = new StringBuffer();
-				message.append("Unsupported OSS. Support ended on: ");
-				message.append(generation.getOssSupportEndDate());
-				message.append('\n');
-				message.append("Commercial supports ends on: ");
-				message.append(generation.getCommercialSupportEndDate());
-				return new VersionValidation(toUpdateForUnsupported(springProject, version), severity, message.toString());
-
-			}
-			return null;
-		}
-
-		@Override
-		public boolean isEnabled() {
-			return preferences.getUnsupportedOssPreference().isEnabled();
-		}
-	}
-
-	private static class UnsupportedCommercialValidator implements VersionValidator {
-		
-		private final VersionValidationPreferences preferences;
-
-		public UnsupportedCommercialValidator(VersionValidationPreferences preferences) {
-			this.preferences = preferences;
-		}
-
-		@Override
-		public VersionValidation getValidation(ResolvedSpringProject springProject, Generation generation,
-				Version version) throws Exception {
-			if (!VersionValidationUtils.isCommercialValid(generation)
-					&& VersionValidationUtils.isOssValid(generation)) {
-
-				DiagnosticSeverity severity = preferences.getUnsupportedCommercialPreference().getSeverity();
+			if (VersionValidationUtils.isOssValid(javaProjectGen)) {
+				VersionValidationProblemType problemType = VersionValidationProblemType.SUPPORTED_OSS_VERSION;
 
 				StringBuffer message = new StringBuffer();
 				message.append("OSS support ends on: ");
-				message.append(generation.getOssSupportEndDate());
-				message.append('\n');
-				message.append("Unsupported Commercial. Support ended on: ");
-				message.append(generation.getCommercialSupportEndDate());
-				
-				return new VersionValidation(toUpdateForUnsupported(springProject, version), severity, message.toString());
+				message.append(javaProjectGen.getOssSupportEndDate());
+
+				return createDiagnostic(problemType, message.toString());
 			}
 			return null;
 		}
+	}
+
+	private static class SupportedCommercialValidator extends AbstractDiagnosticValidator {
+
+		public SupportedCommercialValidator(DiagnosticSeverityProvider diagnosticSeverityProvider) {
+			super(diagnosticSeverityProvider);
+		}
 
 		@Override
-		public boolean isEnabled() {
-			return preferences.getUnsupportedCommercialPreference().isEnabled();
+		public Diagnostic validate(ResolvedSpringProject springProject, IJavaProject javaProject,
+				Generation javaProjectGen, Version javaProjectVersion) throws Exception {
+
+			if (VersionValidationUtils.isCommercialValid(javaProjectGen)) {
+
+				VersionValidationProblemType problemType = VersionValidationProblemType.SUPPORTED_COMMERCIAL_VERSION;
+
+				StringBuffer message = new StringBuffer();
+				message.append("Commercial support ends on: ");
+				message.append(javaProjectGen.getCommercialSupportEndDate());
+
+				return createDiagnostic(problemType, message.toString());
+			}
+			return null;
 		}
 	}
 
-	private static Version toUpdateForUnsupported(ResolvedSpringProject springProject, Version version)
-			throws Exception {
-		Version toUpdate = VersionValidationUtils.getLatestSupportedInSameMajor(springProject, version);
-		if (toUpdate == null) {
-			toUpdate = VersionValidationUtils.getLatestSupportedRelease(springProject, version);
+	private static class UnsupportedOssValidator extends AbstractDiagnosticValidator {
+
+		public UnsupportedOssValidator(DiagnosticSeverityProvider diagnosticSeverityProvider) {
+			super(diagnosticSeverityProvider);
 		}
-		return toUpdate;
+
+		@Override
+		public Diagnostic validate(ResolvedSpringProject springProject, IJavaProject javaProject,
+				Generation javaProjectGen, Version javaProjectVersion) throws Exception {
+			if (!VersionValidationUtils.isOssValid(javaProjectGen)) {
+
+				VersionValidationProblemType problemType = VersionValidationProblemType.UNSUPPORTED_OSS_VERSION;
+
+				StringBuffer message = new StringBuffer();
+				message.append("Unsupported OSS. Support ended on: ");
+				message.append(javaProjectGen.getOssSupportEndDate());
+
+				return createDiagnostic(problemType, message.toString());
+			}
+			return null;
+		}
 	}
-	
+
+	private static class UnsupportedCommercialValidator extends AbstractDiagnosticValidator {
+
+		public UnsupportedCommercialValidator(DiagnosticSeverityProvider diagnosticSeverityProvider) {
+			super(diagnosticSeverityProvider);
+		}
+
+		@Override
+		public Diagnostic validate(ResolvedSpringProject springProject, IJavaProject javaProject,
+				Generation javaProjectGen, Version javaProjectVersion) throws Exception {
+			if (!VersionValidationUtils.isCommercialValid(javaProjectGen)) {
+
+				VersionValidationProblemType problemType = VersionValidationProblemType.UNSUPPORTED_COMMERCIAL_VERSION;
+
+				StringBuffer message = new StringBuffer();
+				message.append("Unsupported Commercial. Support ended on: ");
+				message.append(javaProjectGen.getCommercialSupportEndDate());
+
+				return createDiagnostic(problemType, message.toString());
+			}
+			return null;
+		}
+	}
+
+	private static class UpdateLatestMajorVersion extends AbstractDiagnosticValidator {
+
+		public UpdateLatestMajorVersion(DiagnosticSeverityProvider diagnosticSeverityProvider) {
+			super(diagnosticSeverityProvider);
+		}
+
+		@Override
+		public Diagnostic validate(ResolvedSpringProject springProject, IJavaProject javaProject,
+				Generation javaProjectGen, Version javaProjectVersion) throws Exception {
+			Version latest = VersionValidationUtils.getLatestSupportedInSameMajor(springProject, javaProjectVersion);
+			if (latest != null) {
+				VersionValidationProblemType problemType = VersionValidationProblemType.UPDATE_LATEST_MAJOR_VERSION;
+
+				StringBuffer message = new StringBuffer();
+				message.append("Newer Major Boot Version Available:  ");
+				message.append(latest.toString());
+
+				CodeAction ca = new CodeAction();
+				ca.setKind(CodeActionKind.QuickFix);
+				ca.setTitle("Upgrade To Target Version");
+				String commandId = "sts/upgrade/spring-boot";
+				ca.setCommand(new Command("Upgrade To Target Version", commandId,
+						ImmutableList.of(javaProject.getLocationUri().toString(), latest.toString())));
+
+				
+				return createDiagnostic(ca, problemType, message.toString());
+			}
+			return null;
+		}
+	}
 }

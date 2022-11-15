@@ -288,5 +288,51 @@
         "defaultSeverity": "ERROR"
       }
     ]
+  },
+  {
+    "id": "version-validation",
+    "label": "Spring Boot Version Validation",
+    "toggle": {
+      "label": "Enablement",
+      "values": [
+        "OFF",
+        "ON"
+      ],
+      "preferenceKey": "boot-java.validation.java.version-validation",
+      "defaultValue": "ON"
+    },
+    "order": 7,
+    "problemTypes": [
+      {
+        "code": "SUPPORTED_OSS_VERSION",
+        "label": "Supported OSS Boot Version",
+        "description": "Supported OSS Boot Version",
+        "defaultSeverity": "HINT"
+      },
+      {
+        "code": "UNSUPPORTED_OSS_VERSION",
+        "label": "Unsupported OSS Version",
+        "description": "Unsupported OSS Version",
+        "defaultSeverity": "ERROR"
+      },
+      {
+        "code": "UNSUPPORTED_COMMERCIAL_VERSION",
+        "label": "Unsupported Commercial Version",
+        "description": "Unsupported Commercial Version",
+        "defaultSeverity": "ERROR"
+      },
+      {
+        "code": "SUPPORTED_COMMERCIAL_VERSION",
+        "label": "Supported Commercial Version",
+        "description": "Supported Commercial Version",
+        "defaultSeverity": "HINT"
+      },
+      {
+        "code": "UPDATE_LATEST_MAJOR_VERSION",
+        "label": "Update to Latest Boot Version",
+        "description": "Update to Latest Boot Version",
+        "defaultSeverity": "HINT"
+      }
+    ]
   }
 ]

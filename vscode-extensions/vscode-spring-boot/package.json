@@ -785,6 +785,82 @@
             ]
           }
         }
+      },
+      {
+        "id": "version-validation",
+        "title": "Spring Boot Version Validation",
+        "order": 407,
+        "properties": {
+          "boot-java.validation.java.version-validation": {
+            "type": "string",
+            "default": "ON",
+            "description": "Enablement",
+            "enum": [
+              "OFF",
+              "ON"
+            ]
+          },
+          "spring-boot.ls.problem.version-validation.SUPPORTED_OSS_VERSION": {
+            "type": "string",
+            "default": "HINT",
+            "description": "Supported OSS Boot Version",
+            "enum": [
+              "IGNORE",
+              "INFO",
+              "WARNING",
+              "HINT",
+              "ERROR"
+            ]
+          },
+          "spring-boot.ls.problem.version-validation.UNSUPPORTED_OSS_VERSION": {
+            "type": "string",
+            "default": "ERROR",
+            "description": "Unsupported OSS Version",
+            "enum": [
+              "IGNORE",
+              "INFO",
+              "WARNING",
+              "HINT",
+              "ERROR"
+            ]
+          },
+          "spring-boot.ls.problem.version-validation.UNSUPPORTED_COMMERCIAL_VERSION": {
+            "type": "string",
+            "default": "ERROR",
+            "description": "Unsupported Commercial Version",
+            "enum": [
+              "IGNORE",
+              "INFO",
+              "WARNING",
+              "HINT",
+              "ERROR"
+            ]
+          },
+          "spring-boot.ls.problem.version-validation.SUPPORTED_COMMERCIAL_VERSION": {
+            "type": "string",
+            "default": "HINT",
+            "description": "Supported Commercial Version",
+            "enum": [
+              "IGNORE",
+              "INFO",
+              "WARNING",
+              "HINT",
+              "ERROR"
+            ]
+          },
+          "spring-boot.ls.problem.version-validation.UPDATE_LATEST_MAJOR_VERSION": {
+            "type": "string",
+            "default": "HINT",
+            "description": "Update to Latest Boot Version",
+            "enum": [
+              "IGNORE",
+              "INFO",
+              "WARNING",
+              "HINT",
+              "ERROR"
+            ]
+          }
+        }
       }
     ],
     "grammars": [

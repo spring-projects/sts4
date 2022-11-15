@@ -35,6 +35,7 @@ public class SpringProblemCategories {
 	public static final ProblemCategory SPEL = new ProblemCategory("spel", "SPEL Validation",
 			new Toggle("Enablement", EnumSet.of(OFF, ON), ON, "boot-java.validation.spel.on"));
 	
-
+	public static final ProblemCategory VERSION_VALIDATION = new ProblemCategory("version-validation", "Spring Boot Version Validation",
+			new Toggle("Enablement", EnumSet.of(OFF, ON), ON, "boot-java.validation.java.version-validation"));
 	
 }

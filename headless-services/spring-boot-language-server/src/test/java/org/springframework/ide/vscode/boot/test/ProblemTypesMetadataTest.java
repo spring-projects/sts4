@@ -16,6 +16,7 @@ import org.springframework.ide.vscode.boot.java.SpringAotJavaProblemType;
 import org.springframework.ide.vscode.boot.java.Boot3JavaProblemType;
 import org.springframework.ide.vscode.boot.java.SpelProblemType;
 import org.springframework.ide.vscode.boot.properties.reconcile.ApplicationPropertiesProblemType;
+import org.springframework.ide.vscode.boot.validation.generations.preferences.VersionValidationProblemType;
 import org.springframework.ide.vscode.boot.yaml.reconcile.ApplicationYamlProblemType;
 
 public class ProblemTypesMetadataTest {
@@ -32,6 +33,7 @@ public class ProblemTypesMetadataTest {
 		reader.validate("boot3", Boot3JavaProblemType.values());
 		reader.validate("spring-aot", SpringAotJavaProblemType.values());
 		reader.validate("spel", SpelProblemType.values());
+		reader.validate("version-validation", VersionValidationProblemType.values());
 	}
 
 }

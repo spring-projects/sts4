@@ -10,24 +10,15 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.validation.generations;
 
+import org.eclipse.lsp4j.Diagnostic;
 import org.springframework.ide.vscode.boot.validation.generations.json.Generation;
 import org.springframework.ide.vscode.boot.validation.generations.json.ResolvedSpringProject;
+import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.Version;
 
 public interface VersionValidator {
 
-	/**
-	 * 
-	 * @param springProject contains information about the spring project associated
-	 *                      with the generation and version to validate
-	 * @param generation    to validate
-	 * @param version       to validate
-	 * @return validation if application. Null otherwise
-	 * @throws Exception
-	 */
-	VersionValidation getValidation(ResolvedSpringProject springProject, Generation generation, Version version)
+	Diagnostic validate(ResolvedSpringProject springProject, IJavaProject javaProject, Generation javaProjectGen, Version javaProjectVersion)
 			throws Exception;
 	
-	boolean isEnabled();
-
 }
