@@ -10,7 +10,9 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.rewrite;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -75,19 +77,30 @@ public class SpringBootUpgrade {
 		});
 	}
 	
-	private Recipe createUpgradeRecipe(int major, int minor, int targetMajor, int targetMinor) {
-		Recipe recipe = new DeclarativeRecipe("upgrade-spring-boot", "Upgrade Spring Boot from " + createVersionString(major, minor) + " to " + createVersionString(targetMajor, targetMinor),
-				"", Collections.emptySet(), null, null, false);
-		for (int currentMajor = major, currentMinor = minor + 1; targetMajor != currentMajor && currentMinor != targetMinor;) {
+	static List<String> createRecipeIdsChain(int major, int minor, int targetMajor, int targetMinor) {
+		List<String> ids = new ArrayList<>();
+		for (int currentMajor = major, currentMinor = minor + 1; targetMajor >  currentMajor || (targetMajor == currentMajor && currentMinor <= targetMinor);) {
 			String recipeId = VERSION_TO_RECIPE_ID.get(createVersionString(currentMajor, currentMinor));
 			if (recipeId == null) {
 				currentMajor++;
 				currentMinor = 0;
 			} else {
-				recipeRepo.getRecipe(recipeId).ifPresent(recipe::doNext);
+				ids.add(recipeId);
 				currentMinor++;
 			}
 		}
+		return ids;
+	}
+	
+	private Recipe createUpgradeRecipe(int major, int minor, int targetMajor, int targetMinor) {
+		Recipe recipe = new DeclarativeRecipe("upgrade-spring-boot", "Upgrade Spring Boot from " + createVersionString(major, minor) + " to " + createVersionString(targetMajor, targetMinor),
+				"", Collections.emptySet(), null, null, false);
+		
+		createRecipeIdsChain(major, minor, targetMajor, targetMinor).stream()
+				.map(recipeRepo::getRecipe)
+				.filter(o -> o.isPresent())
+				.forEach(o -> recipe.doNext(o.get()));
+
 		if (recipe.getRecipeList().isEmpty()) {
 			throw new IllegalStateException("No upgrade recipes found!");
 		} else if (recipe.getRecipeList().size() == 1) {
