@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2019 Pivotal, Inc.
+ * Copyright (c) 2018, 2022 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -24,6 +24,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.protocol.java.Classpath;
 import org.springframework.ide.vscode.commons.protocol.java.ClasspathListenerParams;
+import org.springframework.ide.vscode.commons.protocol.java.ProjectBuild;
 import org.springframework.ide.vscode.commons.util.AsyncRunner;
 
 import com.google.common.collect.ImmutableList;
@@ -73,7 +74,14 @@ public class ClasspathListenerManager {
 
 					Classpath classpath = gson.fromJson((JsonElement)event.get(3), Classpath.class);
 					log.debug("classpath = {}", classpath);
-					classpathListener.changed(new ClasspathListener.Event(projectUri, name, deleted, classpath));
+					
+					ProjectBuild projectBuild = null;
+					if (event.size() > 4) {
+						projectBuild = gson.fromJson((JsonElement)event.get(4), ProjectBuild.class);
+						log.debug("projectBuild = {}", projectBuild);
+					}
+
+					classpathListener.changed(new ClasspathListener.Event(projectUri, name, deleted, classpath, projectBuild));
 				}
 			} else {
 				//Still support non-batched events for backwards compatibility with clients
@@ -88,7 +96,14 @@ public class ClasspathListenerManager {
 
 				Classpath classpath = gson.fromJson((JsonElement)args.get(3), Classpath.class);
 				log.debug("classpath = {}", classpath);
-				classpathListener.changed(new ClasspathListener.Event(projectUri, name, deleted, classpath));
+				
+				ProjectBuild projectBuild = null;
+				if (args.size() > 4) {
+					projectBuild = gson.fromJson((JsonElement)args.get(4), ProjectBuild.class);
+					log.debug("projectBuild = {}", projectBuild);
+				}
+				
+				classpathListener.changed(new ClasspathListener.Event(projectUri, name, deleted, classpath, projectBuild));
 			}
 			return "done";
 		}));

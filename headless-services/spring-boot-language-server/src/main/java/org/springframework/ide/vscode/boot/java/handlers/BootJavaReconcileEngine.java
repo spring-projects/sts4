@@ -24,6 +24,7 @@ import java.util.stream.Stream;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.boot.app.BootVersionValidator;
 import org.springframework.ide.vscode.boot.common.IJavaProjectReconcileEngine;
 import org.springframework.ide.vscode.boot.java.reconcilers.JavaReconciler;
 import org.springframework.ide.vscode.commons.java.IClasspathUtil;
@@ -48,11 +49,14 @@ public class BootJavaReconcileEngine implements IReconcileEngine, IJavaProjectRe
 	private final SimpleTextDocumentService documents;
 	private final JavaProjectFinder projectFinder; 
 	private JavaReconciler[] javaReconcilers;
+
+	private BootVersionValidator bootVersionValidator;
 	
-	public BootJavaReconcileEngine(JavaProjectFinder projectFinder, JavaReconciler[] javaReconcilers, SimpleTextDocumentService documents) {
+	public BootJavaReconcileEngine(JavaProjectFinder projectFinder, JavaReconciler[] javaReconcilers, SimpleTextDocumentService documents, BootVersionValidator bootVersionValidator) {
 		this.documents = documents;
 		this.projectFinder = projectFinder;
 		this.javaReconcilers = javaReconcilers;
+		this.bootVersionValidator = bootVersionValidator;
 	}
 
 	@Override
@@ -113,6 +117,9 @@ public class BootJavaReconcileEngine implements IReconcileEngine, IJavaProjectRe
 
 	@Override
 	public void reconcile(IJavaProject project, Function<TextDocument, IProblemCollector> problemCollectorFactory) {
+		if (bootVersionValidator != null) {
+			bootVersionValidator.validate(project);
+		}
 		Stream<Path> files = IClasspathUtil.getProjectJavaSourceFolders(project.getClasspath()).flatMap(folder -> {
 			try {
 				return Files.walk(folder.toPath());

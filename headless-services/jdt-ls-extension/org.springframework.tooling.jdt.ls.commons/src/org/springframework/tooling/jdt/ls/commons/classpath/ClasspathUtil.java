@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2019 Pivotal, Inc.
+ * Copyright (c) 2018, 2022 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -21,6 +21,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IPath;
@@ -34,12 +35,15 @@ import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.core.JavaProject;
 import org.springframework.ide.vscode.commons.protocol.java.Classpath;
 import org.springframework.ide.vscode.commons.protocol.java.Classpath.CPE;
+import org.springframework.ide.vscode.commons.protocol.java.ProjectBuild;
 import org.springframework.tooling.jdt.ls.commons.Logger;
 
 public class ClasspathUtil {
 
 	private static final Object JRE_CONTAINER_ID = "org.eclipse.jdt.launching.JRE_CONTAINER";
-
+	private static final String GRADLE_CONTAINER_ID = "org.eclipse.buildship.core.gradleclasspathcontainer";
+	private static final String MAVEN_CONTAINER_ID = "org.eclipse.m2e.MAVEN2_CLASSPATH_CONTAINER";
+	
 	private static Set<String> getSystemLibraryPaths(IJavaProject javaProject) {
 		try {
 			IClasspathEntry jreContainer = getJreContainer(javaProject.getRawClasspath());
@@ -212,5 +216,26 @@ public class ClasspathUtil {
 		default:
 			return "unknown: " + entry.getContentKind();
 		}
+	}
+	
+	public static ProjectBuild createProjectBuild(IJavaProject jp) {
+		try {
+			for (IClasspathEntry e : jp.getRawClasspath()) {
+				switch (e.getPath().segment(0)) {
+				case MAVEN_CONTAINER_ID:
+					IFile f = jp.getProject().getFile("pom.xml");
+					return new ProjectBuild(ProjectBuild.MAVEN_PROJECT_TYPE, f.exists() ? f.getLocationURI().toString() : null);
+				case GRADLE_CONTAINER_ID:
+					IFile g = jp.getProject().getFile("build.gradle");
+					if (!g.exists()) {
+						g = jp.getProject().getFile("build.gradle.kts");
+					}
+					return new ProjectBuild(ProjectBuild.GRADLE_PROJECT_TYPE, g.exists() ? g.getLocationURI().toString() : null);
+				}
+			}
+		} catch (JavaModelException e) {
+			// ignore
+		}
+		return new ProjectBuild(null, null);
 	}
 }

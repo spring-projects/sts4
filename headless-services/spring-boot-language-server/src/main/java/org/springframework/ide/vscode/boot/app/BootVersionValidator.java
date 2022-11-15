@@ -29,9 +29,10 @@ import org.springframework.stereotype.Component;
 public class BootVersionValidator {
 
 	private static final Logger log = LoggerFactory.getLogger(BootVersionValidator.class);
-
+	private SimpleLanguageServer server;
+	
 	public BootVersionValidator(SimpleLanguageServer server, ProjectObserver observer) {
-
+		this.server = server;
 		observer.addListener(new ProjectObserver.Listener() {
 
 			@Override
@@ -40,28 +41,7 @@ public class BootVersionValidator {
 
 			@Override
 			public void created(IJavaProject project) {
-				VersionValidationPreferences preferences = new VersionValidationPreferences();
-
-				String url = getSpringProjectsUrl(preferences);
-				SpringProjectsClient client = new SpringProjectsClient(url);
-				SpringProjectsProvider provider = new SpringIoProjectsProvider(client);
-				VersionValidators validators = new VersionValidators(server.getDiagnosticSeverityProvider());
-
-				ProjectVersionDiagnosticProvider diagnosticProvider = new ProjectVersionDiagnosticProvider(provider,
-						validators);
-
-				try {
-					DiagnosticResult result = diagnosticProvider.getDiagnostics(project);
-					if (result != null && !result.getDiagnostics().isEmpty()) {
-						server.getTextDocumentService().publishDiagnostics(
-								new TextDocumentIdentifier(result.getDocumentUri().toString()),
-								result.getDiagnostics());
-
-					}
-				} catch (Exception e) {
-					log.error("Failed validating Spring Project version", e);
-				}
-
+				validate(project);
 			}
 
 			@Override
@@ -69,6 +49,30 @@ public class BootVersionValidator {
 
 			}
 		});
+	}
+	
+	public void validate(IJavaProject project) {
+		VersionValidationPreferences preferences = new VersionValidationPreferences();
+
+		String url = getSpringProjectsUrl(preferences);
+		SpringProjectsClient client = new SpringProjectsClient(url);
+		SpringProjectsProvider provider = new SpringIoProjectsProvider(client);
+		VersionValidators validators = new VersionValidators(server.getDiagnosticSeverityProvider());
+
+		ProjectVersionDiagnosticProvider diagnosticProvider = new ProjectVersionDiagnosticProvider(provider,
+				validators);
+
+		try {
+			DiagnosticResult result = diagnosticProvider.getDiagnostics(project);
+			if (result != null && !result.getDiagnostics().isEmpty()) {
+				server.getTextDocumentService().publishDiagnostics(
+						new TextDocumentIdentifier(result.getDocumentUri().toString()),
+						result.getDiagnostics());
+
+			}
+		} catch (Exception e) {
+			log.error("Failed validating Spring Project version", e);
+		}
 	}
 
 	private String getSpringProjectsUrl(VersionValidationPreferences preferences) {

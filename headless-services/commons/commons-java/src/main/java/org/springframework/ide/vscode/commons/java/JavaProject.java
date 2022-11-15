@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2019 Pivotal, Inc.
+ * Copyright (c) 2018, 2022 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -23,8 +23,8 @@ public class JavaProject extends AbstractJavaProject {
 	private final FileObserver fileObserver;
 	private final JavadocProviderFactory javadocProviderFactory;
 
-	public JavaProject(FileObserver fileObserver, URI uri, IClasspath classpath, JavadocService javadocService) {
-		super(uri, classpath);
+	public JavaProject(FileObserver fileObserver, URI uri, IClasspath classpath, JavadocService javadocService, IProjectBuild projectBuild) {
+		super(uri, classpath, projectBuild);
 		this.fileObserver = fileObserver;
 		this.javadocProviderFactory = (classpathResource) -> {
 			CPE cpe = IClasspathUtil.findEntryForBinaryRoot(classpath, classpathResource);

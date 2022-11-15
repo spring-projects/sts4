@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2018 Pivotal, Inc.
+ * Copyright (c) 2016, 2022 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -18,9 +18,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.java.ClasspathFileBasedCache;
 import org.springframework.ide.vscode.commons.java.DelegatingCachedClasspath;
 import org.springframework.ide.vscode.commons.java.IClasspath;
+import org.springframework.ide.vscode.commons.java.IProjectBuild;
 import org.springframework.ide.vscode.commons.java.LegacyJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavadocService;
 import org.springframework.ide.vscode.commons.maven.MavenCore;
+import org.springframework.ide.vscode.commons.protocol.java.ProjectBuild;
 import org.springframework.ide.vscode.commons.util.FileObserver;
 
 /**
@@ -36,7 +38,7 @@ public class MavenJavaProject extends LegacyJavaProject {
 	private final File pom;
 
 	private MavenJavaProject(FileObserver fileObserver, Path projectDataCache, IClasspath classpath, File pom, JavadocService javadocService) {
-		super(fileObserver, pom.getParentFile().toURI(), projectDataCache, classpath, javadocService);
+		super(fileObserver, pom.getParentFile().toURI(), projectDataCache, classpath, javadocService, IProjectBuild.create(ProjectBuild.MAVEN_PROJECT_TYPE, pom.toURI()));
 		this.pom = pom;
 	}
 

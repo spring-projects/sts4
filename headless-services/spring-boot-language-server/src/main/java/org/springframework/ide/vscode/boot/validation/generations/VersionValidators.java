@@ -17,6 +17,7 @@ import org.eclipse.lsp4j.CodeAction;
 import org.eclipse.lsp4j.CodeActionKind;
 import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.Diagnostic;
+import org.springframework.ide.vscode.boot.java.rewrite.SpringBootUpgrade;
 import org.springframework.ide.vscode.boot.validation.generations.json.Generation;
 import org.springframework.ide.vscode.boot.validation.generations.json.ResolvedSpringProject;
 import org.springframework.ide.vscode.boot.validation.generations.preferences.VersionValidationProblemType;
@@ -157,7 +158,7 @@ public class VersionValidators {
 				CodeAction ca = new CodeAction();
 				ca.setKind(CodeActionKind.QuickFix);
 				ca.setTitle("Upgrade To Target Version");
-				String commandId = "sts/upgrade/spring-boot";
+				String commandId = SpringBootUpgrade.CMD_UPGRADE_SPRING_BOOT;
 				ca.setCommand(new Command("Upgrade To Target Version", commandId,
 						ImmutableList.of(javaProject.getLocationUri().toString(), latest.toString())));
 

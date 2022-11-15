@@ -12,12 +12,8 @@ package org.springframework.ide.vscode.boot.validation.generations;
 
 import java.io.File;
 import java.net.URI;
-import java.nio.file.Files;
-import java.nio.file.LinkOption;
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.eclipse.lsp4j.Diagnostic;
 import org.springframework.ide.vscode.boot.validation.generations.json.Generation;
@@ -26,11 +22,7 @@ import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
 import org.springframework.ide.vscode.commons.java.Version;
 
-import com.google.common.collect.ImmutableSet;
-
 public class ProjectVersionDiagnosticProvider {
-
-	private static final String[] BUILD_FILES = new String[] { "pom.xml", "build.gradle", "build.gradle.kts" };
 
 	private final SpringProjectsProvider provider;
 	private final VersionValidators validators;
@@ -43,7 +35,7 @@ public class ProjectVersionDiagnosticProvider {
 
 	public DiagnosticResult getDiagnostics(IJavaProject javaProject) throws Exception {
 
-		URI buildFileUri = getBuildFileUri(javaProject);
+		URI buildFileUri = javaProject.getProjectBuild() == null ? null : javaProject.getProjectBuild().getBuildFile();
 		if (buildFileUri == null) {
 			throw new Exception("Unable to find build file in project while computing version validation for: ");
 		}
@@ -89,22 +81,6 @@ public class ProjectVersionDiagnosticProvider {
 			}
 		}
 		return null;
-	}
-
-	protected URI getBuildFileUri(IJavaProject javaProject) throws Exception {
-		File buildFile = null;
-		Path projectPath = new File(javaProject.getLocationUri()).toPath();
-		if (Files.isDirectory(projectPath, new LinkOption[] { LinkOption.NOFOLLOW_LINKS })) {
-			ImmutableSet<String> buildFileNames = ImmutableSet.copyOf(BUILD_FILES);
-
-			List<Path> results = Files.list(projectPath).filter(Files::isRegularFile)
-					.filter(file -> buildFileNames.contains(file.toFile().getName())).collect(Collectors.toList());
-
-			if (results != null && results.size() == 1) {
-				buildFile = results.get(0).toFile();
-			}
-		}
-		return buildFile != null ? buildFile.toURI() : null;
 	}
 
 	protected File getSpringBootDependency(IJavaProject project) {

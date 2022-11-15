@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2020 Pivotal, Inc.
+ * Copyright (c) 2018, 2022 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -34,6 +34,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.java.ClasspathData;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.IJavadocProvider;
+import org.springframework.ide.vscode.commons.java.IProjectBuild;
 import org.springframework.ide.vscode.commons.java.JavaProject;
 import org.springframework.ide.vscode.commons.java.JdtLsJavaProject;
 import org.springframework.ide.vscode.commons.javadoc.JdtLsJavadocProvider;
@@ -41,6 +42,7 @@ import org.springframework.ide.vscode.commons.languageserver.java.ls.ClasspathLi
 import org.springframework.ide.vscode.commons.languageserver.util.ServerCapabilityInitializer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.protocol.java.Classpath.CPE;
+import org.springframework.ide.vscode.commons.protocol.java.ProjectBuild;
 import org.springframework.ide.vscode.commons.util.FileObserver;
 import org.springframework.ide.vscode.commons.util.UriUtil;
 
@@ -346,10 +348,11 @@ public class JdtLsProjectCache implements InitializableJavaProjectsService, Serv
 							log.debug("deleted = false");
 							URI projectUri = new URI(uri);
 							ClasspathData classpath = new ClasspathData(event.name, event.classpath.getEntries());
+							IProjectBuild projectBuild = from(event.projectBuild);
 							IJavaProject newProject = IS_JANDEX_INDEX
 									? new JavaProject(getFileObserver(), projectUri, classpath,
-											JdtLsProjectCache.this)
-									: new JdtLsJavaProject(server.getClient(), projectUri, classpath, JdtLsProjectCache.this);
+											JdtLsProjectCache.this, projectBuild)
+									: new JdtLsJavaProject(server.getClient(), projectUri, classpath, JdtLsProjectCache.this, projectBuild);
 							IJavaProject oldProject = table.put(uri, newProject);
 							if (oldProject != null) {
 								notifyDelete(oldProject);
@@ -364,6 +367,10 @@ public class JdtLsProjectCache implements InitializableJavaProjectsService, Serv
 				}
 			});
 		}
+	}
+	
+	private static IProjectBuild from(ProjectBuild projectBuild) {
+		return projectBuild == null ? null : IProjectBuild.create(projectBuild.getType(), projectBuild.getBuildFile() == null ? null : URI.create(projectBuild.getBuildFile()));
 	}
 
 }

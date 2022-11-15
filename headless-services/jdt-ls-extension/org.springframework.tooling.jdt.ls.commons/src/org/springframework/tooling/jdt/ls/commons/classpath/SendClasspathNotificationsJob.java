@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2020 Pivotal, Inc.
+ * Copyright (c) 2018, 2022 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -28,6 +28,7 @@ import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.JavaCore;
 import org.springframework.ide.vscode.commons.protocol.java.Classpath;
 import org.springframework.ide.vscode.commons.protocol.java.Classpath.CPE;
+import org.springframework.ide.vscode.commons.protocol.java.ProjectBuild;
 import org.springframework.tooling.jdt.ls.commons.Logger;
 
 import com.google.common.collect.ImmutableList;
@@ -142,7 +143,7 @@ public class SendClasspathNotificationsJob extends Job {
 								logger.log(e);
 							}
 						}
-						bufferMessage(projectLoc, deleted, projectName, classpath);
+						bufferMessage(projectLoc, deleted, projectName, classpath, ClasspathUtil.createProjectBuild(jp));
 					}
 				}
 				flush();
@@ -153,14 +154,14 @@ public class SendClasspathNotificationsJob extends Job {
 		}
 	}
 
-	protected void bufferMessage(URI projectLoc, boolean deleted, String projectName, Classpath classpath) {
+	protected void bufferMessage(URI projectLoc, boolean deleted, String projectName, Classpath classpath, ProjectBuild projectBuild) {
 		if (buffer!=null) {
 			logger.debug("buffering callback "+callbackCommandId+" "+projectName+" "+deleted+" "+ classpath.getEntries().size());
-			buffer.add(ImmutableList.of(projectLoc.toString(), projectName, deleted, classpath));
+			buffer.add(ImmutableList.of(projectLoc.toString(), projectName, deleted, classpath, projectBuild));
 		} else {
 			try {
 				logger.debug("executing callback "+callbackCommandId+" "+projectName+" "+deleted+" "+ classpath.getEntries().size());
-				Object r = conn.executeClientCommand(callbackCommandId, projectLoc.toString(), projectName, deleted, classpath);
+				Object r = conn.executeClientCommand(callbackCommandId, projectLoc.toString(), projectName, deleted, classpath, projectBuild);
 				notificationsSentForProjects = ImmutableList.of(projectName);
 				logger.debug("executing callback "+callbackCommandId+" SUCCESS ["+r+"]");
 			} catch (Exception e) {

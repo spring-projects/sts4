@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019 Pivotal, Inc.
+ * Copyright (c) 2019, 2022 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -19,12 +19,14 @@ public abstract class AbstractJavaProject implements IJavaProject, Disposable {
 
 	private final IClasspath classpath;
 	private final URI uri;
+	private final IProjectBuild projectBuild;
 
 	private ClasspathIndex index;
 
-	public AbstractJavaProject(URI uri, IClasspath classpath) {
+	public AbstractJavaProject(URI uri, IClasspath classpath, IProjectBuild projectBuild) {
 		this.uri = uri;
 		this.classpath = classpath;
+		this.projectBuild = projectBuild;
 	}
 	@Override
 	public IClasspath getClasspath() {
@@ -66,6 +68,11 @@ public abstract class AbstractJavaProject implements IJavaProject, Disposable {
 	@Override
 	public String toString() {
 		return "JavaProject("+uri+")";
+	}
+	
+	@Override
+	public IProjectBuild getProjectBuild() {
+		return projectBuild;
 	}
 
 }
