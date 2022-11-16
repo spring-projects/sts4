@@ -33,6 +33,11 @@ abstract public class AbstractDiagnosticValidator implements VersionValidator {
 	protected Diagnostic createDiagnostic(CodeAction action, VersionValidationProblemType problemType, String diagnosticMessage) {
 		DiagnosticSeverity severity = diagnosticSeverityProvider.getDiagnosticSeverity(problemType);
 
+		// No severity means that this validator is set to "IGNORE" in the preferences
+		if (severity == null) {
+			return null;
+		}
+		
 		Diagnostic diagnostic = new Diagnostic();
 		diagnostic.setCode(VersionValidators.BOOT_VERSION_VALIDATION_CODE);
 		diagnostic.setMessage(diagnosticMessage.toString());
