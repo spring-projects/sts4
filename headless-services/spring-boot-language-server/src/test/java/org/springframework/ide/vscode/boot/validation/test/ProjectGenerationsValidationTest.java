@@ -132,7 +132,7 @@ public class ProjectGenerationsValidationTest {
 	}
 	
 	@Test
-	public void testVersionCalculation() throws Exception {
+	public void testVersionCalculation1() throws Exception {
 		Version version = SpringProjectUtil.getVersion("2.7.5");
 		assertEquals(2, version.getMajor());
 		assertEquals(7, version.getMinor());
@@ -150,6 +150,21 @@ public class ProjectGenerationsValidationTest {
 		assertEquals(2, version.getMajor());
 		assertEquals(6, version.getMinor());
 		assertEquals(14, version.getPatch());
-		assertEquals(version.getQualifier(), "RC2");
+		assertEquals(version.getQualifier(), "RC2");		
+	}
+
+	@Test
+	public void testVersionCalculation2() throws Exception {
+		Version version = SpringProjectUtil.getVersion("2.7");		
+		assertEquals(2, version.getMajor());
+		assertEquals(7, version.getMinor());
+		assertEquals(0, version.getPatch());
+		assertNull(version.getQualifier());
+
+		version = SpringProjectUtil.getVersion("2");		
+		assertEquals(2, version.getMajor());
+		assertEquals(0, version.getMinor());
+		assertEquals(0, version.getPatch());
+		assertNull(version.getQualifier());
 	}
 }

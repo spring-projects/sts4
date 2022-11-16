@@ -157,9 +157,9 @@ public class VersionValidators {
 
 				CodeAction ca = new CodeAction();
 				ca.setKind(CodeActionKind.QuickFix);
-				ca.setTitle("Upgrade To Target Version");
+				ca.setTitle("Upgrade to Version " + latest.toString());
 				String commandId = SpringBootUpgrade.CMD_UPGRADE_SPRING_BOOT;
-				ca.setCommand(new Command("Upgrade To Target Version", commandId,
+				ca.setCommand(new Command("Upgrade to Version " + latest.toString(), commandId,
 						ImmutableList.of(javaProject.getLocationUri().toString(), latest.toString())));
 
 				

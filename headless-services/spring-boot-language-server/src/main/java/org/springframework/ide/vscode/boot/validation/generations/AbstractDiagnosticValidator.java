@@ -53,7 +53,7 @@ abstract public class AbstractDiagnosticValidator implements VersionValidator {
 			Diagnostic refDiagnostic = new Diagnostic(diagnostic.getRange(), diagnostic.getMessage(),
 					diagnostic.getSeverity(), diagnostic.getSource());
 			action.setDiagnostics(List.of(refDiagnostic));
-			diagnostic.setData(action);
+			diagnostic.setData(List.of(action));
 		}
 		return diagnostic;
 	}

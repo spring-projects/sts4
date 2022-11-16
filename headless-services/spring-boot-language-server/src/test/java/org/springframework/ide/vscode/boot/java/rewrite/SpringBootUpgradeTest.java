@@ -33,6 +33,7 @@ public class SpringBootUpgradeTest {
 	@Test
 	public void recipeIdChain2() throws Exception {
 		assertEquals(List.of(
+				"org.openrewrite.java.spring.boot2.UpgradeSpringBoot_2_2",
 				"org.openrewrite.java.spring.boot2.UpgradeSpringBoot_2_3",
 				"org.openrewrite.java.spring.boot2.UpgradeSpringBoot_2_4",
 				"org.openrewrite.java.spring.boot2.UpgradeSpringBoot_2_5",
@@ -59,6 +60,7 @@ public class SpringBootUpgradeTest {
 	@Test
 	public void recipeIdChain4() throws Exception {
 		assertEquals(List.of(
+				"org.openrewrite.java.spring.boot2.UpgradeSpringBoot_2_2"
 		), SpringBootUpgrade.createRecipeIdsChain(2, 2, 2, 2));
 	}
 

@@ -16,6 +16,7 @@ import java.nio.file.Path;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -39,12 +40,18 @@ import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.LazyTextDocument;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
+import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Scheduler;
+import reactor.core.scheduler.Schedulers;
+
 /**
  * @author Martin Lippert
  */
 public class BootJavaReconcileEngine implements IReconcileEngine, IJavaProjectReconcileEngine {
 		
 	private static final Logger log = LoggerFactory.getLogger(BootJavaReconcileEngine.class);
+	private Scheduler bootVersionValidationScheduler = Schedulers.newBoundedElastic(3, Integer.MAX_VALUE, "Boot-Version-Validation", 10);
+
 
 	private final SimpleTextDocumentService documents;
 	private final JavaProjectFinder projectFinder; 
@@ -118,7 +125,7 @@ public class BootJavaReconcileEngine implements IReconcileEngine, IJavaProjectRe
 	@Override
 	public void reconcile(IJavaProject project, Function<TextDocument, IProblemCollector> problemCollectorFactory) {
 		if (bootVersionValidator != null) {
-			bootVersionValidator.validate(project);
+			Mono.fromFuture(CompletableFuture.runAsync(() -> bootVersionValidator.validate(project))).publishOn(bootVersionValidationScheduler).subscribe();
 		}
 		Stream<Path> files = IClasspathUtil.getProjectJavaSourceFolders(project.getClasspath()).flatMap(folder -> {
 			try {

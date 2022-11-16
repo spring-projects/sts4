@@ -119,6 +119,15 @@ public class BootJavaConfig implements InitializingBean {
 
 	public boolean isSpelExpressionValidationEnabled() {
 		Toggle categorySwitch = SpringProblemCategories.SPEL.getToggle();
+		return isProblemCategoryEnabled(categorySwitch);
+	}
+	
+	public boolean isBootVersionValidationEnabled() {
+		Toggle categorySwitch = SpringProblemCategories.VERSION_VALIDATION.getToggle();
+		return isProblemCategoryEnabled(categorySwitch);
+	}
+	
+	private boolean isProblemCategoryEnabled(Toggle categorySwitch) {
 		String enabled = settings.getString(categorySwitch.getPreferenceKey().split("\\."));
 		if (enabled == null) {
 			return categorySwitch.getDefaultValue() == Toggle.Option.ON;
@@ -133,7 +142,7 @@ public class BootJavaConfig implements InitializingBean {
 			}
 		}
 	}
-
+	
 	public boolean areXmlHyperlinksEnabled() {
 		Boolean enabled = settings.getBoolean("boot-java", "support-spring-xml-config", "hyperlinks");
 		return enabled != null && enabled.booleanValue();

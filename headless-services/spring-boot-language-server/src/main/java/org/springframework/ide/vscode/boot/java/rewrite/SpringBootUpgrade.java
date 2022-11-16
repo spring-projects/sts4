@@ -63,10 +63,9 @@ public class SpringBootUpgrade {
 			// Version upgrade is not supposed to work for patch version. Only for the major and minor versions.
 			
 			Assert.isLegal(
-					version.getMajor() < targetVersion.getMajor() || (version.getMajor() == targetVersion.getMajor()
-							&& version.getMinor() < targetVersion.getMinor()),
+					version.compareTo(targetVersion) < 0,
 					"Cannot upgrade Spring Boot Project '" + project.getElementName() + "' because its version '"
-							+ version.toMajorMinorVersionStr() + "' is newer than target version '"
+							+ version.toMajorMinorVersionStr() + "' is newer or same as the target version '"
 							+ targetVersion.toMajorMinorVersionStr() + "'");
 			
 			return recipeRepo.loaded.thenComposeAsync(loade -> recipeRepo.apply(
@@ -79,7 +78,7 @@ public class SpringBootUpgrade {
 	
 	static List<String> createRecipeIdsChain(int major, int minor, int targetMajor, int targetMinor) {
 		List<String> ids = new ArrayList<>();
-		for (int currentMajor = major, currentMinor = minor + 1; targetMajor >  currentMajor || (targetMajor == currentMajor && currentMinor <= targetMinor);) {
+		for (int currentMajor = major, currentMinor = minor; targetMajor >  currentMajor || (targetMajor == currentMajor && currentMinor <= targetMinor);) {
 			String recipeId = VERSION_TO_RECIPE_ID.get(createVersionString(currentMajor, currentMinor));
 			if (recipeId == null) {
 				currentMajor++;

@@ -30,9 +30,11 @@ public class BootVersionValidator {
 
 	private static final Logger log = LoggerFactory.getLogger(BootVersionValidator.class);
 	private SimpleLanguageServer server;
+	private BootJavaConfig config;
 	
-	public BootVersionValidator(SimpleLanguageServer server, ProjectObserver observer) {
+	public BootVersionValidator(SimpleLanguageServer server, ProjectObserver observer, BootJavaConfig config) {
 		this.server = server;
+		this.config = config;
 		observer.addListener(new ProjectObserver.Listener() {
 
 			@Override
@@ -52,26 +54,28 @@ public class BootVersionValidator {
 	}
 	
 	public void validate(IJavaProject project) {
-		VersionValidationPreferences preferences = new VersionValidationPreferences();
+		if (config.isBootVersionValidationEnabled()) {
+			VersionValidationPreferences preferences = new VersionValidationPreferences();
 
-		String url = getSpringProjectsUrl(preferences);
-		SpringProjectsClient client = new SpringProjectsClient(url);
-		SpringProjectsProvider provider = new SpringIoProjectsProvider(client);
-		VersionValidators validators = new VersionValidators(server.getDiagnosticSeverityProvider());
+			String url = getSpringProjectsUrl(preferences);
+			SpringProjectsClient client = new SpringProjectsClient(url);
+			SpringProjectsProvider provider = new SpringIoProjectsProvider(client);
+			VersionValidators validators = new VersionValidators(server.getDiagnosticSeverityProvider());
 
-		ProjectVersionDiagnosticProvider diagnosticProvider = new ProjectVersionDiagnosticProvider(provider,
-				validators);
+			ProjectVersionDiagnosticProvider diagnosticProvider = new ProjectVersionDiagnosticProvider(provider,
+					validators);
 
-		try {
-			DiagnosticResult result = diagnosticProvider.getDiagnostics(project);
-			if (result != null && !result.getDiagnostics().isEmpty()) {
-				server.getTextDocumentService().publishDiagnostics(
-						new TextDocumentIdentifier(result.getDocumentUri().toString()),
-						result.getDiagnostics());
+			try {
+				DiagnosticResult result = diagnosticProvider.getDiagnostics(project);
+				if (result != null && !result.getDiagnostics().isEmpty()) {
+					server.getTextDocumentService().publishDiagnostics(
+							new TextDocumentIdentifier(result.getDocumentUri().toString()),
+							result.getDiagnostics());
 
+				}
+			} catch (Exception e) {
+				log.error("Failed validating Spring Project version", e);
 			}
-		} catch (Exception e) {
-			log.error("Failed validating Spring Project version", e);
 		}
 	}
 

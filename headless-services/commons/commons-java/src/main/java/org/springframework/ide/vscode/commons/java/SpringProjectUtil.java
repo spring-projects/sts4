@@ -200,6 +200,24 @@ public class SpringProjectUtil {
 					Integer.parseInt(patch),
 					qualifier
 			);
+		} else {
+			String[] tokens = version.split("\\.");
+			if (tokens.length <= 3) {
+				if (tokens.length >= 1) {
+					int major = Integer.parseInt(tokens[0]);
+					if (tokens.length >= 2) {
+						int minor = Integer.parseInt(tokens[1]);
+						if (tokens.length == 3) {
+							int patch = Integer.parseInt(tokens[2]);
+							return new Version(major, minor, patch, null);
+						} else {
+							return new Version(major, minor, 0, null);
+						}
+					} else {
+						return new Version(major, 0, 0, null);
+					}
+				}
+			}
 		}
 		return null;
 	}
