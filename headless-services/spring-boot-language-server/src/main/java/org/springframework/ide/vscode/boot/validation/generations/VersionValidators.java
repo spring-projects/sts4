@@ -151,7 +151,7 @@ public class VersionValidators {
 				Generation javaProjectGen, Version javaProjectVersion) throws Exception {
 			Version latest = VersionValidationUtils.getNewerMinorVersion(springProject, javaProjectVersion);
 			if (latest != null) {
-				VersionValidationProblemType problemType = VersionValidationProblemType.UPDATE_LATEST_MAJOR_VERSION;
+				VersionValidationProblemType problemType = VersionValidationProblemType.UPDATE_LATEST_MINOR_VERSION;
 
 				StringBuffer message = new StringBuffer();
 				message.append("Newer minor version of Spring Boot available: ");
@@ -182,7 +182,7 @@ public class VersionValidators {
 				Generation javaProjectGen, Version javaProjectVersion) throws Exception {
 			Version latest = VersionValidationUtils.getNewerPatchVersion(springProject, javaProjectVersion);
 			if (latest != null) {
-				VersionValidationProblemType problemType = VersionValidationProblemType.UPDATE_LATEST_MAJOR_VERSION;
+				VersionValidationProblemType problemType = VersionValidationProblemType.UPDATE_LATEST_PATCH_VERSION;
 
 				StringBuffer message = new StringBuffer();
 				message.append("Newer patch version of Spring Boot available: ");

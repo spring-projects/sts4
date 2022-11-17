@@ -852,7 +852,31 @@
           "spring-boot.ls.problem.version-validation.UPDATE_LATEST_MAJOR_VERSION": {
             "type": "string",
             "default": "HINT",
-            "description": "Update to Latest Boot Version",
+            "description": "Update to Latest Major Version",
+            "enum": [
+              "IGNORE",
+              "INFO",
+              "WARNING",
+              "HINT",
+              "ERROR"
+            ]
+          },
+          "spring-boot.ls.problem.version-validation.UPDATE_LATEST_MINOR_VERSION": {
+            "type": "string",
+            "default": "HINT",
+            "description": "Update to Latest Minor Version",
+            "enum": [
+              "IGNORE",
+              "INFO",
+              "WARNING",
+              "HINT",
+              "ERROR"
+            ]
+          },
+          "spring-boot.ls.problem.version-validation.UPDATE_LATEST_PATCH_VERSION": {
+            "type": "string",
+            "default": "HINT",
+            "description": "Update to Latest Patch Version",
             "enum": [
               "IGNORE",
               "INFO",
