@@ -59,7 +59,7 @@ public class VersionValidators {
 				VersionValidationProblemType problemType = VersionValidationProblemType.SUPPORTED_OSS_VERSION;
 
 				StringBuffer message = new StringBuffer();
-				message.append("OSS support ends on: ");
+				message.append("OSS support for Spring Boot " + javaProjectGen.getName() + " ends on: ");
 				message.append(javaProjectGen.getOssSupportEndDate());
 
 				return createDiagnostic(problemType, message.toString());
@@ -83,7 +83,7 @@ public class VersionValidators {
 				VersionValidationProblemType problemType = VersionValidationProblemType.SUPPORTED_COMMERCIAL_VERSION;
 
 				StringBuffer message = new StringBuffer();
-				message.append("Commercial support ends on: ");
+				message.append("Commercial support for Spring Boot " + javaProjectGen.getName() + " ends on: ");
 				message.append(javaProjectGen.getCommercialSupportEndDate());
 
 				return createDiagnostic(problemType, message.toString());
@@ -106,7 +106,7 @@ public class VersionValidators {
 				VersionValidationProblemType problemType = VersionValidationProblemType.UNSUPPORTED_OSS_VERSION;
 
 				StringBuffer message = new StringBuffer();
-				message.append("Unsupported OSS. Support ended on: ");
+				message.append("OSS support for Spring Boot " + javaProjectGen.getName() + " no longer available, ended on: ");
 				message.append(javaProjectGen.getOssSupportEndDate());
 
 				return createDiagnostic(problemType, message.toString());
@@ -129,7 +129,7 @@ public class VersionValidators {
 				VersionValidationProblemType problemType = VersionValidationProblemType.UNSUPPORTED_COMMERCIAL_VERSION;
 
 				StringBuffer message = new StringBuffer();
-				message.append("Unsupported Commercial. Support ended on: ");
+				message.append("Commercial support for Spring Boot " + javaProjectGen.getName() + " no longer available, ended on: ");
 				message.append(javaProjectGen.getCommercialSupportEndDate());
 
 				return createDiagnostic(problemType, message.toString());
@@ -152,7 +152,7 @@ public class VersionValidators {
 				VersionValidationProblemType problemType = VersionValidationProblemType.UPDATE_LATEST_MAJOR_VERSION;
 
 				StringBuffer message = new StringBuffer();
-				message.append("Newer Major Boot Version Available:  ");
+				message.append("Newer minor version of Spring Boot available: ");
 				message.append(latest.toString());
 
 				CodeAction ca = new CodeAction();
