@@ -11,6 +11,9 @@
 package org.springframework.ide.vscode.boot.app;
 
 import java.io.File;
+import java.net.URI;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -71,12 +74,14 @@ import org.springframework.ide.vscode.commons.languageserver.java.FutureProjectF
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentEventListenerManager;
+import org.springframework.ide.vscode.commons.languageserver.util.LanguageComputer;
 import org.springframework.ide.vscode.commons.languageserver.util.LspClient;
 import org.springframework.ide.vscode.commons.languageserver.util.ServerCapabilityInitializer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.FileObserver;
 import org.springframework.ide.vscode.commons.util.LogRedirect;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
+import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlASTProvider;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlParser;
 import org.springframework.ide.vscode.commons.yaml.completion.YamlAssistContext;
@@ -90,6 +95,7 @@ import org.springframework.ide.vscode.languageserver.starter.LanguageServerRunne
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
 
+import com.google.common.io.Files;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 
@@ -308,5 +314,31 @@ public class BootLanguageServerBootApp {
 	
 	@Bean RewriteRecipeRepository rewriteRecipesRepository(SimpleLanguageServer server, JavaProjectFinder projectFinder, BootJavaConfig config) {
 		return new RewriteRecipeRepository(server, projectFinder, config);
+	}
+	
+	@Bean
+	LanguageComputer languageComputer() {
+		return new LanguageComputer() {
+
+			@Override
+			public LanguageId computeLanguage(URI uri) {
+				Path path = Paths.get(uri);
+				String fileName = path.getFileName().toString();
+				switch (Files.getFileExtension(fileName)) {
+				case "properties":
+					return LanguageId.BOOT_PROPERTIES;
+				case "yml":
+					return LanguageId.BOOT_PROPERTIES_YAML;
+				case "java":
+					return LanguageId.JAVA;
+				case "xml":
+					return LanguageId.XML;
+				case "factories":
+					return LanguageId.SPRING_FACTORIES;
+				default:
+					return LanguageId.PLAINTEXT;
+				}
+			}
+		};
 	}
 }

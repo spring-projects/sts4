@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.commons.languageserver.util;
 
 import java.lang.reflect.Type;
+import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
@@ -486,8 +487,12 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 		TextDocument doc = trackedDoc == null ? null : trackedDoc.getDocument();
 		
 		if (doc == null) {
-			if (uri.endsWith(".java")) {
-				doc = new LazyTextDocument(uri, LanguageId.JAVA);
+			LanguageComputer languageComputer = appContext.getBean(LanguageComputer.class);
+			if (languageComputer != null) {
+				LanguageId language = languageComputer.computeLanguage(URI.create(uri));
+				if (language != null) {
+					doc = new LazyTextDocument(uri, language);
+				}
 			}
 		}
 
