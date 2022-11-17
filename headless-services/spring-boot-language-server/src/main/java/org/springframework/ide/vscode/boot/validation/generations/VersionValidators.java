@@ -38,7 +38,9 @@ public class VersionValidators {
 				new UnsupportedCommercialValidator(diagnosticSeverityProvider),
 				new UnsupportedOssValidator(diagnosticSeverityProvider),
 				new SupportedCommercialValidator(diagnosticSeverityProvider),
-				new UpdateLatestMajorVersion(diagnosticSeverityProvider) };
+				new UpdateLatestMajorVersion(diagnosticSeverityProvider),
+				new UpdateLatestMinorVersion(diagnosticSeverityProvider),
+				new UpdateLatestPatchVersion(diagnosticSeverityProvider) };
 	}
 
 	public List<VersionValidator> getValidators() {
@@ -138,16 +140,16 @@ public class VersionValidators {
 		}
 	}
 
-	private static class UpdateLatestMajorVersion extends AbstractDiagnosticValidator {
+	private static class UpdateLatestMinorVersion extends AbstractDiagnosticValidator {
 
-		public UpdateLatestMajorVersion(DiagnosticSeverityProvider diagnosticSeverityProvider) {
+		public UpdateLatestMinorVersion(DiagnosticSeverityProvider diagnosticSeverityProvider) {
 			super(diagnosticSeverityProvider);
 		}
 
 		@Override
 		public Diagnostic validate(ResolvedSpringProject springProject, IJavaProject javaProject,
 				Generation javaProjectGen, Version javaProjectVersion) throws Exception {
-			Version latest = VersionValidationUtils.getLatestSupportedInSameMajor(springProject, javaProjectVersion);
+			Version latest = VersionValidationUtils.getNewerMinorVersion(springProject, javaProjectVersion);
 			if (latest != null) {
 				VersionValidationProblemType problemType = VersionValidationProblemType.UPDATE_LATEST_MAJOR_VERSION;
 
@@ -168,4 +170,69 @@ public class VersionValidators {
 			return null;
 		}
 	}
+
+	private static class UpdateLatestPatchVersion extends AbstractDiagnosticValidator {
+
+		public UpdateLatestPatchVersion(DiagnosticSeverityProvider diagnosticSeverityProvider) {
+			super(diagnosticSeverityProvider);
+		}
+
+		@Override
+		public Diagnostic validate(ResolvedSpringProject springProject, IJavaProject javaProject,
+				Generation javaProjectGen, Version javaProjectVersion) throws Exception {
+			Version latest = VersionValidationUtils.getNewerPatchVersion(springProject, javaProjectVersion);
+			if (latest != null) {
+				VersionValidationProblemType problemType = VersionValidationProblemType.UPDATE_LATEST_MAJOR_VERSION;
+
+				StringBuffer message = new StringBuffer();
+				message.append("Newer patch version of Spring Boot available: ");
+				message.append(latest.toString());
+
+				CodeAction ca = new CodeAction();
+				ca.setKind(CodeActionKind.QuickFix);
+				ca.setTitle("Upgrade to Version " + latest.toString());
+				String commandId = SpringBootUpgrade.CMD_UPGRADE_SPRING_BOOT;
+				ca.setCommand(new Command("Upgrade to Version " + latest.toString(), commandId,
+						ImmutableList.of(javaProject.getLocationUri().toString(), latest.toString())));
+
+				
+				return createDiagnostic(ca, problemType, message.toString());
+			}
+			return null;
+		}
+	}
+
+	private static class UpdateLatestMajorVersion extends AbstractDiagnosticValidator {
+
+		public UpdateLatestMajorVersion(DiagnosticSeverityProvider diagnosticSeverityProvider) {
+			super(diagnosticSeverityProvider);
+		}
+
+		@Override
+		public Diagnostic validate(ResolvedSpringProject springProject, IJavaProject javaProject,
+				Generation javaProjectGen, Version javaProjectVersion) throws Exception {
+			Version latest = VersionValidationUtils.getNewerMajorVersion(springProject, javaProjectVersion);
+			if (latest != null) {
+				VersionValidationProblemType problemType = VersionValidationProblemType.UPDATE_LATEST_MAJOR_VERSION;
+
+				StringBuffer message = new StringBuffer();
+				message.append("Newer major version of Spring Boot available: ");
+				message.append(latest.toString());
+
+				CodeAction ca = new CodeAction();
+				ca.setKind(CodeActionKind.QuickFix);
+				ca.setTitle("Upgrade to Version " + latest.toString());
+				String commandId = SpringBootUpgrade.CMD_UPGRADE_SPRING_BOOT;
+				ca.setCommand(new Command("Upgrade to Version " + latest.toString(), commandId,
+						ImmutableList.of(javaProject.getLocationUri().toString(), latest.toString())));
+
+				
+				return createDiagnostic(ca, problemType, message.toString());
+			}
+			return null;
+		}
+	}
+
+
+
 }

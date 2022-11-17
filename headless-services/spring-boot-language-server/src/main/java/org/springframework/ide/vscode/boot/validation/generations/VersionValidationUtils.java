@@ -34,17 +34,55 @@ public class VersionValidationUtils {
 		return currentDate.before(commercialEndDate);
 	}
 
-	public static Version getLatestSupportedInSameMajor(ResolvedSpringProject springProject, Version version)
-			throws Exception {
+	public static Version getNewerPatchVersion(ResolvedSpringProject springProject, Version version) throws Exception {
+		Version result = version;
+		
 		List<Release> rls = springProject.getReleases();
 		for (Release release : rls) {
 			Version rlVersion = release.getVersion();
+			
 			if (GENERAL_AVAILABILITY_STATUS.equals(release.getStatus())
-					&& rlVersion.getMajor() == version.getMajor()) {
-				return rlVersion;
+					&& rlVersion.getMajor() == result.getMajor()
+					&& rlVersion.getMinor() == result.getMinor()
+					&& rlVersion.getPatch() > result.getPatch()) {
+				result = rlVersion;
 			}
 		}
-		return null;
+
+		return result.equals(version) ? null : result;
+	}
+
+	public static Version getNewerMinorVersion(ResolvedSpringProject springProject, Version version) throws Exception {
+		Version result = version;
+		
+		List<Release> rls = springProject.getReleases();
+		for (Release release : rls) {
+			Version rlVersion = release.getVersion();
+			
+			if (GENERAL_AVAILABILITY_STATUS.equals(release.getStatus())
+					&& rlVersion.getMajor() == result.getMajor()
+					&& rlVersion.getMinor() > result.getMinor()) {
+				result = rlVersion;
+			}
+		}
+
+		return result.equals(version) ? null : result;
+	}
+
+	public static Version getNewerMajorVersion(ResolvedSpringProject springProject, Version version) throws Exception {
+		Version result = version;
+		
+		List<Release> rls = springProject.getReleases();
+		for (Release release : rls) {
+			Version rlVersion = release.getVersion();
+			
+			if (GENERAL_AVAILABILITY_STATUS.equals(release.getStatus())
+					&& rlVersion.getMajor() > result.getMajor()) {
+				result = rlVersion;
+			}
+		}
+
+		return result.equals(version) ? null : result;
 	}
 
 	public static Version getLatestSupportedRelease(ResolvedSpringProject springProject)
