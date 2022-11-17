@@ -77,7 +77,7 @@
         "firstLine": "^#(\\s)*pipeline(\\s)*",
         "configuration": "./yaml-support/language-configuration.json",
         "icon": {
-          "light": "./icon-white-on-black.svg",
+          "light": "./icon-black.svg",
           "dark": "./icon-white.svg"
         }
       },
@@ -99,7 +99,7 @@
         "firstLine": "^#(\\s)*task(\\s)*",
         "configuration": "./yaml-support/language-configuration.json",
         "icon": {
-          "light": "./icon-white-on-black.svg",
+          "light": "./icon-black.svg",
           "dark": "./icon-white.svg"
         }
       }
