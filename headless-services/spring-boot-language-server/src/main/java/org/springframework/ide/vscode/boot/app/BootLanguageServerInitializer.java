@@ -99,7 +99,7 @@ public class BootLanguageServerInitializer implements InitializingBean {
 			
 			@Override
 			public void deleted(IJavaProject project) {
-				doNotValidateProject(project.getLocationUri());
+				doNotValidateProject(project);
 			}
 			
 			@Override
@@ -209,7 +209,7 @@ public class BootLanguageServerInitializer implements InitializingBean {
 		
 		URI uri = project.getLocationUri();
 		
-		doNotValidateProject(uri);
+		doNotValidateProject(project);
 		
 		projectReconcileRequests.put(uri, Mono.delay(Duration.ofMillis(100))
 				.publishOn(projectReconcileScheduler)
@@ -222,15 +222,18 @@ public class BootLanguageServerInitializer implements InitializingBean {
 				.subscribe());
 	}
 	
-	private void doNotValidateProject(URI uri) {
+	private void doNotValidateProject(IJavaProject project) {
 		if (configProps.isReconcileOnlyOpenedDocs()) {
 			return;
 		}
-
+		
+		URI uri = project.getLocationUri();
 		Disposable request = projectReconcileRequests.remove(uri);
 		if (request != null) {
 			request.dispose();
 		}
+		
+		projectReconciler.clear(project);
 	}
 	
 	private void handleFiles(String[] files) {

@@ -14,6 +14,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -129,14 +130,14 @@ public class BootJavaReconcileEngine implements IReconcileEngine, IJavaProjectRe
 		}
 		Stream<Path> files = IClasspathUtil.getProjectJavaSourceFolders(project.getClasspath()).flatMap(folder -> {
 			try {
-				return Files.walk(folder.toPath());
+				return Files.walk(folder.toPath()).filter(Files::isRegularFile);
 			} catch (IOException e) {
 				return Stream.empty();
 			}
 		});
-		Stream<TextDocumentIdentifier> docIds = files.filter(f -> {
-			return Files.isRegularFile(f) && f.getFileName().toString().endsWith(".java");
-		}).map(f -> new TextDocumentIdentifier(f.toUri().toString()));
+		Stream<TextDocumentIdentifier> docIds = files
+				.filter(f -> f.getFileName().toString().endsWith(".java"))
+				.map(f -> new TextDocumentIdentifier(f.toUri().toString()));
 
 		List<TextDocument> docs = docIds.filter(docId -> documents.getLatestSnapshot(docId.getUri()) == null)
 				.map(docId -> new LazyTextDocument(docId.getUri(), LanguageId.JAVA)).collect(Collectors.toList());
@@ -161,6 +162,25 @@ public class BootJavaReconcileEngine implements IReconcileEngine, IJavaProjectRe
 
 		problemCollectors.values().forEach(c -> c.endCollecting());
 
+	}
+
+	@Override
+	public void clear(IJavaProject project) {
+		// Build file
+		if (project.getProjectBuild() != null && project.getProjectBuild().getBuildFile() != null) {
+			documents.publishDiagnostics(new TextDocumentIdentifier(project.getProjectBuild().getBuildFile().toString()), Collections.emptyList());
+		}
+		// Rest of the files
+		IClasspathUtil.getProjectJavaSourceFolders(project.getClasspath()).flatMap(folder -> {
+			try {
+				return Files.walk(folder.toPath()).filter(Files::isRegularFile);
+			} catch (IOException e) {
+				return Stream.empty();
+			}
+		})
+		.filter(f -> f.getFileName().toString().endsWith(".java"))
+		.forEach(p -> documents.publishDiagnostics(new TextDocumentIdentifier(p.toUri().toString()), Collections.emptyList()));
+		
 	}
 
 }

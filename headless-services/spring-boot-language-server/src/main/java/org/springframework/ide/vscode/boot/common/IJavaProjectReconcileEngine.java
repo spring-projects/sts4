@@ -19,5 +19,7 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
 public interface IJavaProjectReconcileEngine {
 
 	void reconcile(IJavaProject project, Function<TextDocument, IProblemCollector> problemCollectorFactory);
+	
+	void clear(IJavaProject project);
 
 }
