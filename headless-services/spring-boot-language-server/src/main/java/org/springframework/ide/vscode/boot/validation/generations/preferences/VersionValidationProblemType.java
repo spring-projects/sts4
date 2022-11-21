@@ -28,8 +28,12 @@ public enum VersionValidationProblemType implements ProblemType {
 	
 	SUPPORTED_COMMERCIAL_VERSION(HINT, "Supported Commercial Version", "Supported Commercial Version"),
 		
-	UPDATE_LATEST_MAJOR_VERSION(HINT, "Update to Latest Boot Version", "Update to Latest Boot Version");
+	UPDATE_LATEST_MAJOR_VERSION(HINT, "Update to Latest Major Version", "Update to Latest Major Version"),
 	
+	UPDATE_LATEST_MINOR_VERSION(HINT, "Update to Latest Minor Version", "Update to Latest Minor Version"),
+
+	UPDATE_LATEST_PATCH_VERSION(HINT, "Update to Latest Patch Version", "Update to Latest Patch Version");
+
 	private final ProblemSeverity defaultSeverity;
 	private String description;
 	private String label;

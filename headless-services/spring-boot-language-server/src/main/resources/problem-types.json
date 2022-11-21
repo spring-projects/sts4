@@ -329,8 +329,20 @@
       },
       {
         "code": "UPDATE_LATEST_MAJOR_VERSION",
-        "label": "Update to Latest Boot Version",
-        "description": "Update to Latest Boot Version",
+        "label": "Update to Latest Major Version",
+        "description": "Update to Latest Major Version",
+        "defaultSeverity": "HINT"
+      },
+      {
+        "code": "UPDATE_LATEST_MINOR_VERSION",
+        "label": "Update to Latest Minor Version",
+        "description": "Update to Latest Minor Version",
+        "defaultSeverity": "HINT"
+      },
+      {
+        "code": "UPDATE_LATEST_PATCH_VERSION",
+        "label": "Update to Latest Patch Version",
+        "description": "Update to Latest Patch Version",
         "defaultSeverity": "HINT"
       }
     ]
