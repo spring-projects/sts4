@@ -16,23 +16,24 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.core.commands.AbstractHandler;
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.IResource;
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.jface.window.Window;
+import org.eclipse.lsp4e.LanguageServerWrapper;
+import org.eclipse.lsp4e.LanguageServersRegistry;
+import org.eclipse.lsp4e.LanguageServersRegistry.LanguageServerDefinition;
 import org.eclipse.lsp4e.LanguageServiceAccessor;
 import org.eclipse.lsp4j.ExecuteCommandParams;
-import org.eclipse.lsp4j.services.LanguageServer;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
@@ -88,70 +89,63 @@ public class RewriteRefactoringsHandler extends AbstractHandler {
 		}
 		try {
 			if (project != null && CoreUtil.promptForProjectSave(project)) {
-				List<@NonNull LanguageServer> usedLanguageServers = LanguageServiceAccessor
-						.getActiveLanguageServers(serverCapabilities -> true);
+				LanguageServerDefinition def = LanguageServersRegistry.getInstance().getDefinition(BootLanguageServerPlugin.BOOT_LS_DEFINITION_ID);
+				Assert.isLegal(def != null, "No definition found for Boot Language Server");
+				LanguageServerWrapper wrapper = LanguageServiceAccessor.getLSWrapper(project, def);
 
-				if (!usedLanguageServers.isEmpty()) {
-					final String uri = project.getLocationURI().toString();
-					ExecuteCommandParams commandParams = new ExecuteCommandParams();
-					commandParams.setCommand(REWRITE_REFACTORINGS_LIST);
-					commandParams.setArguments(List.of(uri));
+				final String uri = project.getLocationURI().toString();
+				ExecuteCommandParams commandParams = new ExecuteCommandParams();
+				commandParams.setCommand(REWRITE_REFACTORINGS_LIST);
+				commandParams.setArguments(List.of(uri));
 
-					try {
-						List<Object> allRewriteRecipesJson = new ArrayList<>();
-						List<Object> syncRecipesJson = Collections.synchronizedList(allRewriteRecipesJson);
-						CompletableFuture.allOf(usedLanguageServers.stream()
-								.map(ls -> ls.getWorkspaceService().executeCommand(commandParams).thenAccept(or -> {
-									if (or != null) {
-										syncRecipesJson.add(or);
-									}
-								}).exceptionally(t -> null))
-								.toArray(CompletableFuture[]::new)).thenRun(() -> {
-									allRewriteRecipesJson.stream().filter(List.class::isInstance).map(List.class::cast).findFirst().ifPresent(obj -> {
-										RecipeDescriptor[] descriptors = serializationGson.fromJson(serializationGson.toJson(obj), RecipeDescriptor[].class);
-										
-										PlatformUI.getWorkbench().getDisplay().asyncExec(() -> {
-											RecipeTreeModel recipesModel = new RecipeTreeModel(descriptors);
-											int returnCode = new SelectRecipesDialog(Display.getCurrent().getActiveShell(), recipesModel).open();
-											if (returnCode == Window.OK) {
+				try {
+					List<Object> allRewriteRecipesJson = new ArrayList<>();
+					List<Object> syncRecipesJson = Collections.synchronizedList(allRewriteRecipesJson);
+					wrapper.getInitializedServer().thenComposeAsync(ls -> ls.getWorkspaceService().executeCommand(commandParams).thenAccept(or -> {
+							if (or != null) {
+								syncRecipesJson.add(or);
+							}
+						}))
+						.thenRun(() -> {
+							allRewriteRecipesJson.stream().filter(List.class::isInstance).map(List.class::cast).findFirst().ifPresent(obj -> {
+								RecipeDescriptor[] descriptors = serializationGson.fromJson(serializationGson.toJson(obj), RecipeDescriptor[].class);
+								
+								PlatformUI.getWorkbench().getDisplay().asyncExec(() -> {
+									RecipeTreeModel recipesModel = new RecipeTreeModel(descriptors);
+									int returnCode = new SelectRecipesDialog(Display.getCurrent().getActiveShell(), recipesModel).open();
+									if (returnCode == Window.OK) {
+										try {
+											RecipeDescriptor recipeToApply = recipesModel.getSelectedRecipeDescriptors();
+											PlatformUI.getWorkbench().getProgressService().run(true, false, monitor -> {
 												try {
-													RecipeDescriptor recipeToApply = recipesModel.getSelectedRecipeDescriptors();
-													PlatformUI.getWorkbench().getProgressService().run(true, false, monitor -> {
-														try {
-															if (!usedLanguageServers.isEmpty()) {
-																monitor.beginTask("Applying recipe '" + recipeToApply.displayName + "'", IProgressMonitor.UNKNOWN);
-																ExecuteCommandParams cmdParams = new ExecuteCommandParams();
-																cmdParams.setCommand(REWRITE_REFACTORINGS_EXEC);
-																cmdParams.setArguments(List.of(
-																		uri,
-																		serializationGson.toJsonTree(recipeToApply)
-																));
-
-																CompletableFuture.allOf(usedLanguageServers.stream()
-																		.map(ls -> ls.getWorkspaceService().executeCommand(cmdParams))
-																		.toArray(CompletableFuture[]::new)).get();
-															}
-														} catch (Exception e) {
-															throw new InvocationTargetException(e);
-														} finally {
-															monitor.done();
-														}
-													});
+													monitor.beginTask("Applying recipe '" + recipeToApply.displayName + "'", IProgressMonitor.UNKNOWN);
+													ExecuteCommandParams cmdParams = new ExecuteCommandParams();
+													cmdParams.setCommand(REWRITE_REFACTORINGS_EXEC);
+													cmdParams.setArguments(List.of(
+														uri,
+														serializationGson.toJsonTree(recipeToApply)
+													));
 													
-												} catch (CoreException | InvocationTargetException | InterruptedException e) {
-													BootLanguageServerPlugin.getDefault().getLog().error(e.getMessage(), e);
-													MessageDialog.openError(Display.getCurrent().getActiveShell(), "Error", "Failed to apply Rewrite recipe(s). See error log for more details.");
+													wrapper.getInitializedServer()
+														.thenComposeAsync(ls -> ls.getWorkspaceService().executeCommand(cmdParams)).get();
+												} catch (Exception e) {
+													throw new InvocationTargetException(e);
+												} finally {
+													monitor.done();
 												}
-											}
-										});
-									});
-									
+											});
+											
+										} catch (CoreException | InvocationTargetException | InterruptedException e) {
+											BootLanguageServerPlugin.getDefault().getLog().error(e.getMessage(), e);
+											MessageDialog.openError(Display.getCurrent().getActiveShell(), "Error", "Failed to apply Rewrite recipe(s). See error log for more details.");
+										}
+									}
 								});
-					} catch (Exception e) {
-						throw new ExecutionException("Failed to apply Rewrite recipe(s)", e);
-					}
+							});
+						});
+				} catch (Exception e) {
+					throw new ExecutionException("Failed to apply Rewrite recipe(s)", e);
 				}
-
 			}
 		} catch (Exception e) {
 			throw new ExecutionException("Failed to save project resource(s)", e);

@@ -118,9 +118,11 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 		this.scanDirs = UNINITIALIZED_SET;
 		this.scanFiles = UNINITIALIZED_SET;
 		this.recipeFilters = UNINITIALIZED_SET;
+		CompletableFuture<Void> firstConfigLoaded = new CompletableFuture<>();
 		
 		config.addListener(l -> {
 			Set<String> recipeFilterFromConfig = config.getRecipesFilters();
+			boolean firstTimeConfig = recipeFilters == UNINITIALIZED_SET && scanDirs == UNINITIALIZED_SET && scanFiles == UNINITIALIZED_SET;
 			if (recipeFilters == UNINITIALIZED_SET || recipeFilters.equals(recipeFilterFromConfig)) {
 				recipeFilters = recipeFilterFromConfig;
 			}
@@ -130,9 +132,18 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 				// Therefore it is best to store the scanDirs here right after it is received, not during scan process or anything else done async
 				scanDirs = config.getRecipeDirectories();
 				scanFiles = config.getRecipeFiles();
-				load();
+				if (!firstTimeConfig) {
+					load();
+				}
+			}
+			// First time config loaded. Received when server fully initialized. Start load after the firstConfigLoaded then and assign it to loaded field such that it is never null
+			if (firstTimeConfig) {
+				firstConfigLoaded.complete(null);
 			}
 		});
+		
+		// Initial configuration is followed by load() as a special case to have 'loaded' future value to never be null
+		this.loaded = firstConfigLoaded.thenCompose(v -> load());
 		
 		registerCommands();
 	}
