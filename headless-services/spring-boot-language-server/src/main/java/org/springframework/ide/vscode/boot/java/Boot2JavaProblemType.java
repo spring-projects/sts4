@@ -27,7 +27,7 @@ public enum Boot2JavaProblemType implements ProblemType {
 	
 	JAVA_TEST_SPRING_EXTENSION(WARNING, "`@SpringBootTest` and all test slice annotations already applies `@SpringExtension` as of Spring Boot 2.1.0.", "Unnecessary `@SpringExtension`"),
 	
-	JAVA_CONSTRUCTOR_PARAMETER_INJECTION(IGNORE, "Use constrcutor parameter injection", "Use constrcutor parameter injection"),
+	JAVA_CONSTRUCTOR_PARAMETER_INJECTION(IGNORE, "Use constructor parameter injection", "Use constructor parameter injection"),
 	
 	JAVA_PRECISE_REQUEST_MAPPING(HINT, "Use precise mapping annotation, i.e. '@GetMapping', '@PostMapping', etc.", "Use precise mapping annotation, i.e. '@GetMapping', '@PostMapping', etc.");
 	
