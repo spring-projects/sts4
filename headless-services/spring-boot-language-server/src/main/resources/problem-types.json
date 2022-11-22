@@ -34,8 +34,8 @@
       },
       {
         "code": "JAVA_CONSTRUCTOR_PARAMETER_INJECTION",
-        "label": "Use constrcutor parameter injection",
-        "description": "Use constrcutor parameter injection",
+        "label": "Use constructor parameter injection",
+        "description": "Use constructor parameter injection",
         "defaultSeverity": "IGNORE"
       },
       {
