@@ -16,9 +16,10 @@ import java.util.List;
 import java.util.Objects;
 import java.util.UUID;
 
-import org.openrewrite.marker.Marker;
+import org.openrewrite.internal.lang.Nullable;
+import org.openrewrite.marker.Markup;
 
-public class FixAssistMarker implements Marker {
+public class FixAssistMarker implements Markup {
 	
 	private UUID id;
 	
@@ -89,6 +90,16 @@ public class FixAssistMarker implements Marker {
 		FixAssistMarker other = (FixAssistMarker) obj;
 		return Objects.equals(descriptorId, other.descriptorId) && Objects.equals(fixes, other.fixes)
 				&& Objects.equals(id, other.id);
+	}
+
+	@Override
+	public String getMessage() {
+		return getLabel();
+	}
+
+	@Override
+	public @Nullable String getDetail() {
+		return null;
 	}
 	
 
