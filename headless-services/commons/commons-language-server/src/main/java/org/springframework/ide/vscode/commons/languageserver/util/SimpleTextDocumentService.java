@@ -406,14 +406,14 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 			return CompletableFutures.computeAsync(messageWorkerThreadPool, cancelToken -> {
 				cancelToken.checkCanceled();
 
-				try {
-					server.waitForReconcile();
-				} catch (Exception e) {
-					log.warn("error while waiting for reconcile", e);
-				}
-
-				cancelToken.checkCanceled();
-
+//				try {
+//					server.waitForReconcile();
+//				} catch (Exception e) {
+//					log.warn("error while waiting for reconcile", e);
+//				}
+//
+//				cancelToken.checkCanceled();
+//
 				if (server.hasHierarchicalDocumentSymbolSupport() && h instanceof HierarchicalDocumentSymbolHandler) {
 					List<? extends DocumentSymbol> r = ((HierarchicalDocumentSymbolHandler)h).handleHierarchic(params);
 					//handle it when symbolHandler is sloppy and returns null instead of empty list.

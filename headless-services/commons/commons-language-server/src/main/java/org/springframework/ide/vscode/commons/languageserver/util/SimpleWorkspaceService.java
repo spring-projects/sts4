@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2018 Pivotal, Inc.
+ * Copyright (c) 2016, 2022 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -16,6 +16,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -30,12 +32,12 @@ import org.eclipse.lsp4j.WorkspaceFolder;
 import org.eclipse.lsp4j.WorkspaceFoldersChangeEvent;
 import org.eclipse.lsp4j.WorkspaceSymbol;
 import org.eclipse.lsp4j.WorkspaceSymbolParams;
+import org.eclipse.lsp4j.jsonrpc.CompletableFutures;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.WorkspaceService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.util.Assert;
-import org.springframework.ide.vscode.commons.util.AsyncRunner;
 import org.springframework.ide.vscode.commons.util.FileObserver;
 
 import com.google.common.collect.ImmutableList;
@@ -45,35 +47,41 @@ public class SimpleWorkspaceService implements WorkspaceService {
 
 	private static Logger log = LoggerFactory.getLogger(SimpleWorkspaceService.class);
 
-	private SimpleLanguageServer server;
+	private final ExecutorService messageWorkerThreadPool;
+
 	private Set<WorkspaceFolder> workspaceRoots = new HashSet<>();
 
 	private ListenerList<Settings> configurationListeners = new ListenerList<>();
 	private ExecuteCommandHandler executeCommandHandler;
 	private WorkspaceSymbolHandler workspaceSymbolHandler;
 	private SimpleServerFileObserver fileObserver;
-
+	
 	private ListenerList<DidChangeWorkspaceFoldersParams> workspaceFolderListeners = new ListenerList<>();
 
-	private AsyncRunner async;
 
 	public SimpleWorkspaceService(SimpleLanguageServer server) {
-		this.server = server;
-		this.async = server.getAsync();
 		this.fileObserver = new SimpleServerFileObserver(server);
+		this.messageWorkerThreadPool = Executors.newCachedThreadPool();
 	}
 
 	@Override
 	public CompletableFuture<Either<List<? extends SymbolInformation>, List<? extends WorkspaceSymbol>>> symbol(WorkspaceSymbolParams params) {
-	  return async.invoke(() -> {
-		WorkspaceSymbolHandler workspaceSymbolHandler = this.workspaceSymbolHandler;
-		if (workspaceSymbolHandler==null) {
-			return Either.forRight(ImmutableList.of());
-		}
-		server.waitForReconcile();
-		List<? extends WorkspaceSymbol> symbols = workspaceSymbolHandler.handle(params);
-		return Either.forRight(symbols == null ? ImmutableList.<WorkspaceSymbol>of() : symbols);
-	  });
+		log.info("request for workspace symbols arrived: " + params.getQuery());
+
+		return CompletableFutures.computeAsync(messageWorkerThreadPool, cancelToken -> {
+			WorkspaceSymbolHandler workspaceSymbolHandler = this.workspaceSymbolHandler;
+
+			if (workspaceSymbolHandler == null) {
+				return Either.forRight(ImmutableList.of());
+			}
+			else {
+				cancelToken.checkCanceled();
+				
+				List<? extends WorkspaceSymbol> symbols = workspaceSymbolHandler.handle(params);
+				log.info("workspace symbol computation done: " + symbols.size());
+				return Either.forRight(symbols == null ? ImmutableList.<WorkspaceSymbol>of() : symbols);
+			}
+		});
 	}
 
 	@Override
