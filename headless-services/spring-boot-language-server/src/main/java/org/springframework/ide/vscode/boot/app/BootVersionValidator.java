@@ -14,14 +14,13 @@ import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.validation.generations.ProjectVersionDiagnosticProvider;
-import org.springframework.ide.vscode.boot.validation.generations.ProjectVersionDiagnosticProvider.DiagnosticResult;
 import org.springframework.ide.vscode.boot.validation.generations.SpringIoProjectsProvider;
 import org.springframework.ide.vscode.boot.validation.generations.SpringProjectsClient;
 import org.springframework.ide.vscode.boot.validation.generations.SpringProjectsProvider;
 import org.springframework.ide.vscode.boot.validation.generations.VersionValidators;
+import org.springframework.ide.vscode.boot.validation.generations.ProjectVersionDiagnosticProvider.DiagnosticResult;
 import org.springframework.ide.vscode.boot.validation.generations.preferences.VersionValidationPreferences;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.stereotype.Component;
 
@@ -32,25 +31,9 @@ public class BootVersionValidator {
 	private SimpleLanguageServer server;
 	private BootJavaConfig config;
 	
-	public BootVersionValidator(SimpleLanguageServer server, ProjectObserver observer, BootJavaConfig config) {
+	public BootVersionValidator(SimpleLanguageServer server, BootJavaConfig config) {
 		this.server = server;
 		this.config = config;
-		observer.addListener(new ProjectObserver.Listener() {
-
-			@Override
-			public void deleted(IJavaProject project) {
-			}
-
-			@Override
-			public void created(IJavaProject project) {
-				validate(project);
-			}
-
-			@Override
-			public void changed(IJavaProject project) {
-
-			}
-		});
 	}
 	
 	public void validate(IJavaProject project) {

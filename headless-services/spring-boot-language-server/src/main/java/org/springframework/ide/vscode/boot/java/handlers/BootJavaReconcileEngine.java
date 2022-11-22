@@ -17,7 +17,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -26,7 +25,7 @@ import java.util.stream.Stream;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ide.vscode.boot.app.BootVersionValidator;
+import org.springframework.ide.vscode.boot.app.BootVersionValidationEngine;
 import org.springframework.ide.vscode.boot.common.IJavaProjectReconcileEngine;
 import org.springframework.ide.vscode.boot.java.reconcilers.JavaReconciler;
 import org.springframework.ide.vscode.commons.java.IClasspathUtil;
@@ -41,30 +40,24 @@ import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.LazyTextDocument;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
-import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Scheduler;
-import reactor.core.scheduler.Schedulers;
-
 /**
  * @author Martin Lippert
  */
 public class BootJavaReconcileEngine implements IReconcileEngine, IJavaProjectReconcileEngine {
 		
 	private static final Logger log = LoggerFactory.getLogger(BootJavaReconcileEngine.class);
-	private Scheduler bootVersionValidationScheduler = Schedulers.newBoundedElastic(3, Integer.MAX_VALUE, "Boot-Version-Validation", 10);
-
 
 	private final SimpleTextDocumentService documents;
 	private final JavaProjectFinder projectFinder; 
 	private JavaReconciler[] javaReconcilers;
 
-	private BootVersionValidator bootVersionValidator;
+	private BootVersionValidationEngine bootVersionValidationEngine;
 	
-	public BootJavaReconcileEngine(JavaProjectFinder projectFinder, JavaReconciler[] javaReconcilers, SimpleTextDocumentService documents, BootVersionValidator bootVersionValidator) {
+	public BootJavaReconcileEngine(JavaProjectFinder projectFinder, JavaReconciler[] javaReconcilers, SimpleTextDocumentService documents, BootVersionValidationEngine bootVersionValidator) {
 		this.documents = documents;
 		this.projectFinder = projectFinder;
 		this.javaReconcilers = javaReconcilers;
-		this.bootVersionValidator = bootVersionValidator;
+		this.bootVersionValidationEngine = bootVersionValidator;
 	}
 
 	@Override
@@ -125,9 +118,10 @@ public class BootJavaReconcileEngine implements IReconcileEngine, IJavaProjectRe
 
 	@Override
 	public void reconcile(IJavaProject project, Function<TextDocument, IProblemCollector> problemCollectorFactory) {
-		if (bootVersionValidator != null) {
-			Mono.fromFuture(CompletableFuture.runAsync(() -> bootVersionValidator.validate(project))).publishOn(bootVersionValidationScheduler).subscribe();
+		if (bootVersionValidationEngine != null) {
+			bootVersionValidationEngine.validate(project);
 		}
+
 		Stream<Path> files = IClasspathUtil.getProjectJavaSourceFolders(project.getClasspath()).flatMap(folder -> {
 			try {
 				return Files.walk(folder.toPath()).filter(Files::isRegularFile);
@@ -135,6 +129,7 @@ public class BootJavaReconcileEngine implements IReconcileEngine, IJavaProjectRe
 				return Stream.empty();
 			}
 		});
+
 		Stream<TextDocumentIdentifier> docIds = files
 				.filter(f -> f.getFileName().toString().endsWith(".java"))
 				.map(f -> new TextDocumentIdentifier(f.toUri().toString()));
