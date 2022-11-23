@@ -276,7 +276,7 @@ public class ORAstUtils {
 
 	public static List<CompilationUnit> parse(JavaParser parser, Iterable<Path> sourceFiles) {
 		InMemoryExecutionContext ctx = new InMemoryExecutionContext(ORAstUtils::logExceptionWhileParsing);
-//		ctx.putMessage(JavaParser.SKIP_SOURCE_SET_TYPE_GENERATION, true);
+		ctx.putMessage(JavaParser.SKIP_SOURCE_SET_TYPE_GENERATION, true);
 		List<CompilationUnit> cus = Collections.emptyList();
 		synchronized(parser) {
 			cus = parser.parse(sourceFiles, null, ctx);
@@ -288,7 +288,7 @@ public class ORAstUtils {
 	
 	public static List<CompilationUnit> parseInputs(JavaParser parser, Iterable<Parser.Input> inputs) {
 		InMemoryExecutionContext ctx = new InMemoryExecutionContext(ORAstUtils::logExceptionWhileParsing);
-//		ctx.putMessage(JavaParser.SKIP_SOURCE_SET_TYPE_GENERATION, true);
+		ctx.putMessage(JavaParser.SKIP_SOURCE_SET_TYPE_GENERATION, true);
 		List<CompilationUnit> cus = Collections.emptyList();
 		synchronized (parser) {
 			cus = parser.parseInputs(inputs, null, ctx);
