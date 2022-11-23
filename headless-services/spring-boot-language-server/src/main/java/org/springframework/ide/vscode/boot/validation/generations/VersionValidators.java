@@ -34,10 +34,11 @@ public class VersionValidators {
 	private final VersionValidator[] validators;
 
 	public VersionValidators(DiagnosticSeverityProvider diagnosticSeverityProvider) {
-		this.validators = new VersionValidator[] { new SupportedOssValidator(diagnosticSeverityProvider),
-				new UnsupportedCommercialValidator(diagnosticSeverityProvider),
-				new UnsupportedOssValidator(diagnosticSeverityProvider),
-				new SupportedCommercialValidator(diagnosticSeverityProvider),
+		this.validators = new VersionValidator[] {
+//				new SupportedOssValidator(diagnosticSeverityProvider),
+//				new UnsupportedCommercialValidator(diagnosticSeverityProvider),
+//				new UnsupportedOssValidator(diagnosticSeverityProvider),
+//				new SupportedCommercialValidator(diagnosticSeverityProvider),
 				new UpdateLatestMajorVersion(diagnosticSeverityProvider),
 				new UpdateLatestMinorVersion(diagnosticSeverityProvider),
 				new UpdateLatestPatchVersion(diagnosticSeverityProvider) };
