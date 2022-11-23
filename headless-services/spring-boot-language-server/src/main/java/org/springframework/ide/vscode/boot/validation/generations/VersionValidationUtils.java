@@ -11,17 +11,15 @@
 package org.springframework.ide.vscode.boot.validation.generations;
 
 import java.sql.Date;
+import java.util.Collections;
 import java.util.List;
 
 import org.springframework.ide.vscode.boot.validation.generations.json.Generation;
-import org.springframework.ide.vscode.boot.validation.generations.json.Release;
 import org.springframework.ide.vscode.boot.validation.generations.json.ResolvedSpringProject;
 import org.springframework.ide.vscode.commons.java.Version;
 
 public class VersionValidationUtils {
 	
-	private static final String GENERAL_AVAILABILITY_STATUS = "GENERAL_AVAILABILITY";
-
 	public static boolean isOssValid(Generation gen) {
 		Date currentDate = new Date(System.currentTimeMillis());
 		Date ossEndDate = Date.valueOf(gen.getOssSupportEndDate());
@@ -35,65 +33,28 @@ public class VersionValidationUtils {
 	}
 
 	public static Version getNewerPatchVersion(ResolvedSpringProject springProject, Version version) throws Exception {
-		Version result = version;
-		
-		List<Release> rls = springProject.getReleases();
-		for (Release release : rls) {
-			Version rlVersion = release.getVersion();
-			
-			if (GENERAL_AVAILABILITY_STATUS.equals(release.getStatus())
-					&& rlVersion.getMajor() == result.getMajor()
-					&& rlVersion.getMinor() == result.getMinor()
-					&& rlVersion.getPatch() > result.getPatch()) {
-				result = rlVersion;
-			}
+		Version result = null;
+		List<Version> releases = springProject.getReleases();
+		int found = Collections.binarySearch(releases, version);
+		int index = found < 0 ? -found - 1 : found + 1;
+		for (int i = index; i < releases.size() && releases.get(i).getMajor() == version.getMajor() && releases.get(i).getMinor() == version.getMinor(); i++) {
+			result = releases.get(i);
 		}
-
-		return result.equals(version) ? null : result;
+		return result;
 	}
 
 	public static Version getNewerMinorVersion(ResolvedSpringProject springProject, Version version) throws Exception {
-		Version result = version;
-		
-		List<Release> rls = springProject.getReleases();
-		for (Release release : rls) {
-			Version rlVersion = release.getVersion();
-			
-			if (GENERAL_AVAILABILITY_STATUS.equals(release.getStatus())
-					&& rlVersion.getMajor() == result.getMajor()
-					&& rlVersion.getMinor() > result.getMinor()) {
-				result = rlVersion;
-			}
-		}
-
-		return result.equals(version) ? null : result;
+		return getNewerPatchVersion(springProject, new Version(version.getMajor(), version.getMinor() + 1, 0, null));
 	}
 
 	public static Version getNewerMajorVersion(ResolvedSpringProject springProject, Version version) throws Exception {
-		Version result = version;
-		
-		List<Release> rls = springProject.getReleases();
-		for (Release release : rls) {
-			Version rlVersion = release.getVersion();
-			
-			if (GENERAL_AVAILABILITY_STATUS.equals(release.getStatus())
-					&& rlVersion.getMajor() > result.getMajor()) {
-				result = rlVersion;
-			}
-		}
-
-		return result.equals(version) ? null : result;
+		return getNewerPatchVersion(springProject, new Version(version.getMajor() + 1, 0, 0, null));
 	}
 
 	public static Version getLatestSupportedRelease(ResolvedSpringProject springProject)
 			throws Exception {
-		List<Release> rls = springProject.getReleases();
-		for (Release release : rls) {
-			if (release.isCurrent()) {
-				return release.getVersion();
-			}
-		}
-		return null;
+		List<Version> rls = springProject.getReleases();
+		return rls.isEmpty() ? null : rls.get(rls.size() - 1);
 	}
 
 }

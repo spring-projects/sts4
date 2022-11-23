@@ -12,7 +12,9 @@ package org.springframework.ide.vscode.boot.validation.generations.json;
 
 import java.util.List;
 
+import org.springframework.ide.vscode.boot.validation.generations.BootVersionsFromMavenCentral;
 import org.springframework.ide.vscode.boot.validation.generations.SpringProjectsClient;
+import org.springframework.ide.vscode.commons.java.Version;
 
 import com.google.common.collect.ImmutableList;
 
@@ -20,7 +22,7 @@ public class ResolvedSpringProject extends SpringProject {
 
 	private final SpringProjectsClient client;
 	private Generations generations;
-	private Releases releases;
+	private List<Version> releases;
 
 	public ResolvedSpringProject(SpringProject project, SpringProjectsClient client) {
 		this.client = client;
@@ -45,17 +47,16 @@ public class ResolvedSpringProject extends SpringProject {
 		return this.generations != null ? this.generations.getGenerations() : ImmutableList.of();
 	}
 
-	public List<Release> getReleases() throws Exception {
+	/**
+	 * Sorted list of released versions
+	 * @return
+	 * @throws Exception
+	 */
+	public List<Version> getReleases() throws Exception {
 		// cache the releases to prevent frequent calls to the client
 		if (this.releases == null) {
-			Links _links = get_links();
-			if (_links != null) {
-				Link genLink = _links.getReleases();
-				if (genLink != null) {
-					this.releases = client.getReleases(genLink.getHref());
-				}
-			}
+			this.releases = BootVersionsFromMavenCentral.getBootVersions();
 		}
-		return this.releases != null ? this.releases.getReleases() : ImmutableList.of();
+		return this.releases != null ? this.releases : ImmutableList.of();
 	}
 }

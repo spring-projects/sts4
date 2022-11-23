@@ -16,10 +16,10 @@ import java.util.Map;
 import org.springframework.ide.vscode.boot.validation.generations.SpringProjectsProvider;
 import org.springframework.ide.vscode.boot.validation.generations.json.Generation;
 import org.springframework.ide.vscode.boot.validation.generations.json.Generations;
-import org.springframework.ide.vscode.boot.validation.generations.json.Release;
 import org.springframework.ide.vscode.boot.validation.generations.json.ResolvedSpringProject;
 import org.springframework.ide.vscode.boot.validation.generations.json.SpringProject;
 import org.springframework.ide.vscode.boot.validation.generations.json.SpringProjects;
+import org.springframework.ide.vscode.commons.java.Version;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
@@ -46,7 +46,7 @@ public class SampleProjectsProvider implements SpringProjectsProvider {
 			}
 
 			@Override
-			public List<Release> getReleases() throws Exception {
+			public List<Version> getReleases() throws Exception {
 				return null;
 			}
 
