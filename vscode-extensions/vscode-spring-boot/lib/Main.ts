@@ -30,6 +30,11 @@ export function activate(context: VSCode.ExtensionContext): Thenable<ExtensionAP
         extensionId: 'vscode-spring-boot',
         preferJdk: true,
         checkjvm: (context: VSCode.ExtensionContext, jvm: commons.JVM) => {
+            let version = jvm.getMajorVersion();
+            if (version < 17) {
+                throw Error(`Spring Tools Language Server requires Java 17 or higher to be launched. Current Java version is ${version}`);
+            }
+
             if (!jvm.isJdk()) {
                 VSCode.window.showWarningMessage(
                     'JAVA_HOME or PATH environment variable seems to point to a JRE. A JDK is required, hence Boot Hints are unavailable.',

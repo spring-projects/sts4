@@ -47,6 +47,12 @@ export function activate(context: VSCode.ExtensionContext) {
             synchronize: {
                 configurationSection: "bosh"
             }
+        },
+        checkjvm: (context: VSCode.ExtensionContext, jvm: commons.JVM) => {
+            let version = jvm.getMajorVersion();
+            if (version < 17) {
+                throw Error(`Bosh Language Server requires Java 17 or higher to be launched. Current Java version is ${version}`);
+            }
         }
     };
     let clientPromise = commons.activate(options, context).then(client => client.start());
