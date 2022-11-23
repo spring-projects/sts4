@@ -279,16 +279,6 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 		return l;
 	}
 	
-	public List<RecipeCodeActionDescriptor> getApplicableCodeActionRecipeDescriptors(IJavaProject project, List<RecipeCodeActionDescriptor> descriptors) {
-		List<RecipeCodeActionDescriptor> filtered = new ArrayList<>(descriptors.size());
-		for (RecipeCodeActionDescriptor d : descriptors) {
-			if (d.isApplicable(project)) {
-				filtered.add(d);
-			}
-		}
-		return filtered;
-	}
-	
 	public CompilationUnit mark(List<? extends RecipeCodeActionDescriptor> descriptors, CompilationUnit compilationUnit) {
 		CompilationUnit cu = compilationUnit;
 		for (RecipeCodeActionDescriptor d : descriptors) {

@@ -62,7 +62,9 @@ import org.slf4j.LoggerFactory;
  */
 public class MavenProjectParser {
 
-    private static final Pattern mavenWrapperVersionPattern = Pattern.compile(".*apache-maven/(.*?)/.*");
+    public static final String TEST = "test";
+	public static final String MAIN = "main";
+	private static final Pattern mavenWrapperVersionPattern = Pattern.compile(".*apache-maven/(.*?)/.*");
     private static final Logger logger = LoggerFactory.getLogger(MavenProjectParser.class);
 
     private final MavenParser mavenParser;
@@ -123,7 +125,7 @@ public class MavenProjectParser {
             sourceFiles.add(addProjectProvenance(maven, projectProvenance));
 
 //            List<Path> dependencies = downloadArtifacts(getResolvedPom(maven).getDependencies().get(Scope.Compile));
-            javaParser.setSourceSet("main");
+            javaParser.setSourceSet(MAIN);
             javaParser.setClasspath(dependencies);
             sourceFiles.addAll(ListUtils.map(javaParser.parseInputs(
             		getJavaSources(getModel(maven).getRequested(), projectDirectory, ctx, parserInputProvider), projectDirectory, ctx), addProvenance(projectProvenance)));
@@ -131,7 +133,7 @@ public class MavenProjectParser {
             parseResources(getResources(getModel(maven).getRequested(), projectDirectory, ctx, parserInputProvider), projectDirectory, sourceFiles, projectProvenance, javaParser.getSourceSet(ctx));
 
 //            List<Path> testDependencies = downloadArtifacts(maven.getModel().getDependencies(Scope.Test));
-            javaParser.setSourceSet("test");
+            javaParser.setSourceSet(TEST);
 //            javaParser.setClasspath(testDependencies);
             sourceFiles.addAll(ListUtils.map(javaParser.parseInputs(
                     getTestJavaSources(getModel(maven).getRequested(), projectDirectory, ctx, parserInputProvider), projectDirectory, ctx), addProvenance(projectProvenance)));

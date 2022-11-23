@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.boot.java.rewrite;
 
 import java.io.ByteArrayInputStream;
 import java.net.URI;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.HashSet;
 import java.util.List;
@@ -225,14 +226,17 @@ public class RewriteCompilationUnitCache implements DocumentContentProvider, Dis
 			logger.debug("Parsing CU {}", uri);
 			JavaParser javaParser = loadJavaParser(project);
 			
-			Input input = new Input(Paths.get(uri), () -> {
+			Path sourcePath = Paths.get(uri);
+			javaParser.setSourceSet(ORAstUtils.getSourceSetName(project, sourcePath));
+			
+			Input input = new Input(sourcePath, () -> {
 				try {
 					return new ByteArrayInputStream(fetchContent(uri).getBytes());
 				} catch (Exception e) {
 					throw new IllegalStateException("Unexpected error fetching document content");
 				}
 			});
-			List<CompilationUnit> cus = ORAstUtils.parseInputs(javaParser, List.of(input));					
+			List<CompilationUnit> cus = ORAstUtils.parseInputs(javaParser, List.of(input));
 			CompilationUnit cu = cus.get(0);
 			
 			if (cu != null) {

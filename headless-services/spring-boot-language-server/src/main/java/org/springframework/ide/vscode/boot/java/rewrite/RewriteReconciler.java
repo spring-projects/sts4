@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.boot.java.rewrite;
 
 import java.io.ByteArrayInputStream;
 import java.net.URI;
+import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -37,6 +38,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.app.BootJavaConfig;
 import org.springframework.ide.vscode.boot.java.reconcilers.JavaReconciler;
+import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.Quickfix.QuickfixData;
@@ -50,6 +52,7 @@ import org.springframework.ide.vscode.commons.rewrite.config.RecipeCodeActionDes
 import org.springframework.ide.vscode.commons.rewrite.java.FixAssistMarker;
 import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.java.ORAstUtils;
+import org.springframework.ide.vscode.commons.rewrite.maven.MavenProjectParser;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
@@ -136,26 +139,46 @@ public class RewriteReconciler implements JavaReconciler {
 	public Map<IDocument, Collection<ReconcileProblem>> reconcile(IJavaProject project, List<TextDocument> docs,
 			Function<TextDocument, IProblemCollector> problemCollectorFactory) {
 		Map<IDocument, Collection<ReconcileProblem>> allProblems = new HashMap<>();
+		List<Path> testSourceFolders = IClasspathUtil.getProjectTestJavaSources(project.getClasspath()).map(f -> f.toPath()).collect(Collectors.toList());
+		List<TextDocument> testSources = new ArrayList<>(docs.size());
+		List<TextDocument> mainSources = new ArrayList<>(docs.size());
+		for (TextDocument d : docs) {
+			Path p = Paths.get(URI.create(d.getUri()));
+			if (testSourceFolders.stream().anyMatch(t -> p.startsWith(t))) {
+				testSources.add(d);
+			} else {
+				mainSources.add(d);
+			}
+		}
+		JavaParser javaParser = ORAstUtils.createJavaParser(project);
+		javaParser.setSourceSet(MavenProjectParser.MAIN);
+		allProblems.putAll(doReconcile(project, mainSources, problemCollectorFactory, javaParser));
+		javaParser.setSourceSet(MavenProjectParser.TEST);
+		allProblems.putAll(doReconcile(project, testSources, problemCollectorFactory, javaParser));
+		return allProblems;
+	}
+	
+	private Map<IDocument, Collection<ReconcileProblem>> doReconcile(IJavaProject project, List<TextDocument> docs,
+			Function<TextDocument, IProblemCollector> problemCollectorFactory, JavaParser javaParser) {
+		Map<IDocument, Collection<ReconcileProblem>> allProblems = new HashMap<>();
 		
-		if (config.isRewriteReconcileEnabled()) {
+		if (javaParser != null && config.isRewriteReconcileEnabled()) {
 			try {
 				List<RecipeCodeActionDescriptor> descriptors = getProblemRecipeDescriptors(project);
-	
-				JavaParser javaParser = ORAstUtils.createJavaParser(project);
-				if (javaParser != null) {
-					List<CompilationUnit> cus = ORAstUtils.parseInputs(javaParser, docs.stream().map(d -> new Parser.Input(Paths.get(URI.create(d.getUri())), () -> {
-						return new ByteArrayInputStream(d.get().getBytes());
-					})).collect(Collectors.toList()));
-					
-					if (!descriptors.isEmpty()) {
-						
-						for(int i = 0; i < cus.size(); i++) {
-							final IDocument doc = docs.get(i);
-							List<ReconcileProblem> problems = new ArrayList<>();						
-							collectProblems(descriptors, doc, cus.get(i), problems::add);
-							if (!problems.isEmpty()) {
-								allProblems.put(doc, problems);
-							}	
+
+				List<CompilationUnit> cus = ORAstUtils.parseInputs(javaParser,
+						docs.stream().map(d -> new Parser.Input(Paths.get(URI.create(d.getUri())), () -> {
+							return new ByteArrayInputStream(d.get().getBytes());
+						})).collect(Collectors.toList()));
+
+				if (!descriptors.isEmpty()) {
+
+					for (int i = 0; i < cus.size(); i++) {
+						final IDocument doc = docs.get(i);
+						List<ReconcileProblem> problems = new ArrayList<>();
+						collectProblems(descriptors, doc, cus.get(i), problems::add);
+						if (!problems.isEmpty()) {
+							allProblems.put(doc, problems);
 						}
 					}
 				}
@@ -196,7 +219,7 @@ public class RewriteReconciler implements JavaReconciler {
             		List<FixAssistMarker> markers = t.getMarkers().findAll(FixAssistMarker.class);
             		for (FixAssistMarker m : markers) {
 						for (ReconcileProblem problem : createProblems(doc, m, t)) {
-							problemHandler.accept(problem);;
+							problemHandler.accept(problem);
 						}
             		}
             	}

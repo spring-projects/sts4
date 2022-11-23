@@ -47,6 +47,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
+import org.springframework.ide.vscode.commons.rewrite.maven.MavenProjectParser;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
@@ -418,5 +419,11 @@ public class ORAstUtils {
 		return false;
 	}
 	
-
+	public static String getSourceSetName(IJavaProject project, Path sourcePath) {
+		if (IClasspathUtil.getProjectTestJavaSources(project.getClasspath()).anyMatch(f -> sourcePath.startsWith(f.toPath()))) {
+			return MavenProjectParser.TEST;
+		} else {
+			return MavenProjectParser.MAIN;
+		}
+	}
 }

@@ -23,9 +23,11 @@ import org.openrewrite.SourceFile;
 import org.openrewrite.Tree;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaVisitor;
+import org.openrewrite.java.marker.JavaSourceSet;
 import org.openrewrite.java.spring.AutowiredFieldIntoConstructorParameterVisitor;
 import org.openrewrite.java.tree.J.Block;
 import org.openrewrite.java.tree.J.ClassDeclaration;
+import org.openrewrite.java.tree.J.CompilationUnit;
 import org.openrewrite.java.tree.J.MethodDeclaration;
 import org.openrewrite.java.tree.J.VariableDeclarations;
 import org.openrewrite.java.tree.JavaType.FullyQualified;
@@ -41,6 +43,7 @@ import org.springframework.ide.vscode.commons.rewrite.java.AnnotationHierarchies
 import org.springframework.ide.vscode.commons.rewrite.java.FixAssistMarker;
 import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.java.ORAstUtils;
+import org.springframework.ide.vscode.commons.rewrite.maven.MavenProjectParser;
 
 public class AutowiredFieldIntoConstructorParameterCodeAction implements RecipeCodeActionDescriptor {
 	
@@ -51,6 +54,15 @@ public class AutowiredFieldIntoConstructorParameterCodeAction implements RecipeC
 	@Override
 	public JavaVisitor<ExecutionContext> getMarkerVisitor(ApplicationContext applicationContext) {
 		return new JavaIsoVisitor<>() {
+
+			@Override
+			public CompilationUnit visitCompilationUnit(CompilationUnit cu, ExecutionContext p) {
+				JavaSourceSet sourceSet = cu.getMarkers().findFirst(JavaSourceSet.class).orElse(null);
+				if (sourceSet != null && MavenProjectParser.TEST.equals(sourceSet.getName())) {
+					return cu;
+				}
+				return super.visitCompilationUnit(cu, p);
+			}
 
 			@Override
 			public VariableDeclarations visitVariableDeclarations(VariableDeclarations multiVariable,
