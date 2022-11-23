@@ -179,6 +179,12 @@ public class BootLanguageServerInitializer implements InitializingBean {
 		server.getWorkspaceService().getFileObserver().onFilesCreated(FILES_TO_WATCH_GLOB, this::handleFiles);
 		
 		springIndexer.onUpdate(v -> reconcile());
+		
+		server.onShutdown(() -> {
+			for (IJavaProject p : projectFinder.all()) {
+				doNotValidateProject(p);
+			}
+		});
 	}
 	
 	private void reconcile() {

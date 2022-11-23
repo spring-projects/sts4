@@ -129,6 +129,12 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 		this.appContext = appContext;
 		
 		this.messageWorkerThreadPool = Executors.newCachedThreadPool();
+		
+		server.onShutdown(() -> {
+			for (TextDocument d : getAll()) {
+				publishDiagnostics(d.getId(), Collections.emptyList());
+			}
+		});
 	}
 
 	/**
