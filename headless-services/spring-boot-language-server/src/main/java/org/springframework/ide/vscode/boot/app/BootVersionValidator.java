@@ -28,6 +28,7 @@ import org.springframework.stereotype.Component;
 public class BootVersionValidator {
 
 	private static final Logger log = LoggerFactory.getLogger(BootVersionValidator.class);
+
 	private SimpleLanguageServer server;
 	private BootJavaConfig config;
 	

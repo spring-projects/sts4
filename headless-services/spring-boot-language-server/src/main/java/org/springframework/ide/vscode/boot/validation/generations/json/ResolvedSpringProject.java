@@ -12,7 +12,7 @@ package org.springframework.ide.vscode.boot.validation.generations.json;
 
 import java.util.List;
 
-import org.springframework.ide.vscode.boot.validation.generations.BootVersionsFromMavenCentral;
+import org.springframework.ide.vscode.boot.validation.generations.CachedBootVersionsFromMavenCentral;
 import org.springframework.ide.vscode.boot.validation.generations.SpringProjectsClient;
 import org.springframework.ide.vscode.commons.java.Version;
 
@@ -22,7 +22,6 @@ public class ResolvedSpringProject extends SpringProject {
 
 	private final SpringProjectsClient client;
 	private Generations generations;
-	private List<Version> releases;
 
 	public ResolvedSpringProject(SpringProject project, SpringProjectsClient client) {
 		this.client = client;
@@ -53,10 +52,7 @@ public class ResolvedSpringProject extends SpringProject {
 	 * @throws Exception
 	 */
 	public List<Version> getReleases() throws Exception {
-		// cache the releases to prevent frequent calls to the client
-		if (this.releases == null) {
-			this.releases = BootVersionsFromMavenCentral.getBootVersions();
-		}
-		return this.releases != null ? this.releases : ImmutableList.of();
+		return CachedBootVersionsFromMavenCentral.getBootVersions();
 	}
+
 }

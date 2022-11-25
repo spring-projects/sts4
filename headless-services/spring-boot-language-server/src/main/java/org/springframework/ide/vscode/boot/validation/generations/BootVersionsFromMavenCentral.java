@@ -15,6 +15,8 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpMethod;
@@ -26,26 +28,32 @@ import org.springframework.web.client.RestTemplate;
 
 public class BootVersionsFromMavenCentral {
 	
+	private static final Logger log = LoggerFactory.getLogger(BootVersionsFromMavenCentral.class);
 	private static final String URL = "https://search.maven.org/solrsearch/select?q=g:org.springframework.boot+AND+a:spring-boot-starter-parent&core=gav&rows=200&wt=json";
 	
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public static List<Version> getBootVersions() {
+	public static List<Version> getBootVersions() throws Exception {
 		HttpHeaders headers = new HttpHeaders();
-
 		headers.setAccept(MediaType.parseMediaTypes("application/json"));
 
 		HttpEntity<?> entity = new HttpEntity(headers);
-
 		RestTemplate restTemplate = new RestTemplate();
-		try {
-			ResponseEntity<Map> responseEntity = restTemplate.exchange(URL, HttpMethod.GET, entity, Map.class);
+		
+		log.info("search maven central for Spring Boot release information via: " + URL);
+
+		ResponseEntity<Map> responseEntity = restTemplate.exchange(URL, HttpMethod.GET, entity, Map.class);
+		int status = responseEntity.getStatusCodeValue();
+
+		log.info("search maven central response code: " + status);
+
+		if (status == 200) {
 			Map<String, Object> json = responseEntity.getBody();
 			Map<String, Object> response = (Map<String, Object>) json.get("response");
 			if (response != null) {
 				List<Version> versions = new ArrayList<>();
 				Object docs = response.get("docs");
+
 				if (docs instanceof List) {
-					
 					for (Object o : (List<?>) docs) {
 						if (o instanceof Map) {
 							Map<String, Object> e = (Map<String, Object>) o;
@@ -62,10 +70,13 @@ public class BootVersionsFromMavenCentral {
 				Collections.sort(versions);
 				return versions;
 			}
-		} catch (Exception e) {
-			// Error case
+			else {
+				throw new Exception("unable to access Spring Boot versions from Maven Central, empty response");
+			}
 		}
-		return null;
+		else {
+			throw new Exception("unable to access Spring Boot versions from Maven Central, query returned " + status);
+		}
 	}
 	
 }
