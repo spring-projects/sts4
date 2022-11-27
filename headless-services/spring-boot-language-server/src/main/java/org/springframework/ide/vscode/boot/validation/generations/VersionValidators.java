@@ -141,21 +141,22 @@ public class VersionValidators {
 		}
 	}
 
-	private static class UpdateLatestMinorVersion extends AbstractDiagnosticValidator {
+	private static class UpdateLatestPatchVersion extends AbstractDiagnosticValidator {
 
-		public UpdateLatestMinorVersion(DiagnosticSeverityProvider diagnosticSeverityProvider) {
+		public UpdateLatestPatchVersion(DiagnosticSeverityProvider diagnosticSeverityProvider) {
 			super(diagnosticSeverityProvider);
 		}
 
 		@Override
 		public Diagnostic validate(ResolvedSpringProject springProject, IJavaProject javaProject,
 				Generation javaProjectGen, Version javaProjectVersion) throws Exception {
-			Version latest = VersionValidationUtils.getNewerMinorVersion(springProject, javaProjectVersion);
+			Version latest = VersionValidationUtils.getNewerLatestPatchRelease(springProject.getReleases(), javaProjectVersion);
+
 			if (latest != null) {
-				VersionValidationProblemType problemType = VersionValidationProblemType.UPDATE_LATEST_MINOR_VERSION;
+				VersionValidationProblemType problemType = VersionValidationProblemType.UPDATE_LATEST_PATCH_VERSION;
 
 				StringBuffer message = new StringBuffer();
-				message.append("Newer minor version of Spring Boot available: ");
+				message.append("Newer patch version of Spring Boot available: ");
 				message.append(latest.toString());
 
 				CodeAction ca = new CodeAction();
@@ -172,21 +173,22 @@ public class VersionValidators {
 		}
 	}
 
-	private static class UpdateLatestPatchVersion extends AbstractDiagnosticValidator {
+	private static class UpdateLatestMinorVersion extends AbstractDiagnosticValidator {
 
-		public UpdateLatestPatchVersion(DiagnosticSeverityProvider diagnosticSeverityProvider) {
+		public UpdateLatestMinorVersion(DiagnosticSeverityProvider diagnosticSeverityProvider) {
 			super(diagnosticSeverityProvider);
 		}
 
 		@Override
 		public Diagnostic validate(ResolvedSpringProject springProject, IJavaProject javaProject,
 				Generation javaProjectGen, Version javaProjectVersion) throws Exception {
-			Version latest = VersionValidationUtils.getNewerPatchVersion(springProject, javaProjectVersion);
+			Version latest = VersionValidationUtils.getNewerLatestMinorRelease(springProject.getReleases(), javaProjectVersion);
+
 			if (latest != null) {
-				VersionValidationProblemType problemType = VersionValidationProblemType.UPDATE_LATEST_PATCH_VERSION;
+				VersionValidationProblemType problemType = VersionValidationProblemType.UPDATE_LATEST_MINOR_VERSION;
 
 				StringBuffer message = new StringBuffer();
-				message.append("Newer patch version of Spring Boot available: ");
+				message.append("Newer minor version of Spring Boot available: ");
 				message.append(latest.toString());
 
 				CodeAction ca = new CodeAction();
@@ -212,7 +214,8 @@ public class VersionValidators {
 		@Override
 		public Diagnostic validate(ResolvedSpringProject springProject, IJavaProject javaProject,
 				Generation javaProjectGen, Version javaProjectVersion) throws Exception {
-			Version latest = VersionValidationUtils.getNewerMajorVersion(springProject, javaProjectVersion);
+			Version latest = VersionValidationUtils.getNewerLatestMajorRelease(springProject.getReleases(), javaProjectVersion);
+
 			if (latest != null) {
 				VersionValidationProblemType problemType = VersionValidationProblemType.UPDATE_LATEST_MAJOR_VERSION;
 

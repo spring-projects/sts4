@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.java;
 
+import java.util.Objects;
+
 public final class Version implements Comparable<Version> {
 	
 	private int major;
@@ -74,6 +76,24 @@ public final class Version implements Comparable<Version> {
 		} else {
 			return major - o.major;
 		}
-	}	
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(major, minor, patch, qualifier);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		Version other = (Version) obj;
+		return major == other.major && minor == other.minor && patch == other.patch
+				&& Objects.equals(qualifier, other.qualifier);
+	}
 
 }
