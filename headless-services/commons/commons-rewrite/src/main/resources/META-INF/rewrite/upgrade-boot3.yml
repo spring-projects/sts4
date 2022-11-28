@@ -16,18 +16,18 @@
 ---
 ########################################################################################################################
 # SpringBoot 3_0
-type: specs.openrewrite.org/v1beta/recipe
-name: org.springframework.sts.java.spring.boot3.UpgradeSpringBoot_3_0
-displayName: Upgrade to Spring Boot 3.0 from 2.7
-description: 'Upgrade to Spring Boot 3.0 from prior 2.x version.'
-recipeList:
-  - org.openrewrite.maven.AddRepository:
-      id: spring-snapshots
-      url: https://repo.spring.io/snapshot
-      snapshotsEnabled: true
-  - org.openrewrite.maven.AddRepository:
-      id: spring-milestones
-      url: https://repo.spring.io/milestone
-      snapshotsEnabled: false
-  - org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_0
----
+#type: specs.openrewrite.org/v1beta/recipe
+#name: org.springframework.sts.java.spring.boot3.UpgradeSpringBoot_3_0
+#displayName: Upgrade to Spring Boot 3.0 from 2.7
+#description: 'Upgrade to Spring Boot 3.0 from prior 2.x version.'
+#recipeList:
+#  - org.openrewrite.maven.AddRepository:
+#      id: spring-snapshots
+#      url: https://repo.spring.io/snapshot
+#      snapshotsEnabled: true
+#  - org.openrewrite.maven.AddRepository:
+#      id: spring-milestones
+#      url: https://repo.spring.io/milestone
+#      snapshotsEnabled: false
+#  - org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_0
+#---
