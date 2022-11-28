@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.boot.validation.generations;
 import java.util.Arrays;
 import java.util.List;
 
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.lsp4j.CodeAction;
 import org.eclipse.lsp4j.CodeActionKind;
 import org.eclipse.lsp4j.Command;
@@ -22,6 +23,7 @@ import org.springframework.ide.vscode.boot.validation.generations.json.Generatio
 import org.springframework.ide.vscode.boot.validation.generations.json.ResolvedSpringProject;
 import org.springframework.ide.vscode.boot.validation.generations.preferences.VersionValidationProblemType;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
 import org.springframework.ide.vscode.commons.java.Version;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.DiagnosticSeverityProvider;
 
@@ -47,99 +49,126 @@ public class VersionValidators {
 	public List<VersionValidator> getValidators() {
 		return Arrays.asList(this.validators);
 	}
-
-	private static class SupportedOssValidator extends AbstractDiagnosticValidator {
-
-		public SupportedOssValidator(DiagnosticSeverityProvider diagnosticSeverityProvider) {
-			super(diagnosticSeverityProvider);
-		}
-
-		@Override
-		public Diagnostic validate(ResolvedSpringProject springProject, IJavaProject javaProject,
-				Generation javaProjectGen, Version javaProjectVersion) throws Exception {
-
-			if (VersionValidationUtils.isOssValid(javaProjectGen)) {
-				VersionValidationProblemType problemType = VersionValidationProblemType.SUPPORTED_OSS_VERSION;
-
-				StringBuffer message = new StringBuffer();
-				message.append("OSS support for Spring Boot " + javaProjectGen.getName() + " ends on: ");
-				message.append(javaProjectGen.getOssSupportEndDate());
-
-				return createDiagnostic(problemType, message.toString());
-			}
-			return null;
-		}
-	}
-
-	private static class SupportedCommercialValidator extends AbstractDiagnosticValidator {
-
-		public SupportedCommercialValidator(DiagnosticSeverityProvider diagnosticSeverityProvider) {
-			super(diagnosticSeverityProvider);
-		}
-
-		@Override
-		public Diagnostic validate(ResolvedSpringProject springProject, IJavaProject javaProject,
-				Generation javaProjectGen, Version javaProjectVersion) throws Exception {
-
-			if (VersionValidationUtils.isCommercialValid(javaProjectGen)) {
-
-				VersionValidationProblemType problemType = VersionValidationProblemType.SUPPORTED_COMMERCIAL_VERSION;
-
-				StringBuffer message = new StringBuffer();
-				message.append("Commercial support for Spring Boot " + javaProjectGen.getName() + " ends on: ");
-				message.append(javaProjectGen.getCommercialSupportEndDate());
-
-				return createDiagnostic(problemType, message.toString());
-			}
-			return null;
-		}
-	}
-
-	private static class UnsupportedOssValidator extends AbstractDiagnosticValidator {
-
-		public UnsupportedOssValidator(DiagnosticSeverityProvider diagnosticSeverityProvider) {
-			super(diagnosticSeverityProvider);
-		}
-
-		@Override
-		public Diagnostic validate(ResolvedSpringProject springProject, IJavaProject javaProject,
-				Generation javaProjectGen, Version javaProjectVersion) throws Exception {
-			if (!VersionValidationUtils.isOssValid(javaProjectGen)) {
-
-				VersionValidationProblemType problemType = VersionValidationProblemType.UNSUPPORTED_OSS_VERSION;
-
-				StringBuffer message = new StringBuffer();
-				message.append("OSS support for Spring Boot " + javaProjectGen.getName() + " no longer available, ended on: ");
-				message.append(javaProjectGen.getOssSupportEndDate());
-
-				return createDiagnostic(problemType, message.toString());
-			}
-			return null;
-		}
-	}
-
-	private static class UnsupportedCommercialValidator extends AbstractDiagnosticValidator {
-
-		public UnsupportedCommercialValidator(DiagnosticSeverityProvider diagnosticSeverityProvider) {
-			super(diagnosticSeverityProvider);
-		}
-
-		@Override
-		public Diagnostic validate(ResolvedSpringProject springProject, IJavaProject javaProject,
-				Generation javaProjectGen, Version javaProjectVersion) throws Exception {
-			if (!VersionValidationUtils.isCommercialValid(javaProjectGen)) {
-
-				VersionValidationProblemType problemType = VersionValidationProblemType.UNSUPPORTED_COMMERCIAL_VERSION;
-
-				StringBuffer message = new StringBuffer();
-				message.append("Commercial support for Spring Boot " + javaProjectGen.getName() + " no longer available, ended on: ");
-				message.append(javaProjectGen.getCommercialSupportEndDate());
-
-				return createDiagnostic(problemType, message.toString());
-			}
-			return null;
-		}
-	}
+	
+//	private static Generation getGenerationForJavaProject(IJavaProject javaProject, ResolvedSpringProject springProject)
+//			throws Exception {
+//		List<Generation> genList = springProject.getGenerations();
+//		Version javaProjectVersion = SpringProjectUtil.getDependencyVersion(javaProject, springProject.getSlug());
+//
+//		// Find the generation belonging to the dependency
+//		for (Generation gen : genList) {
+//			Version genVersion = SpringProjectUtil.getVersionFromGeneration(gen.getName());
+//			if (genVersion.getMajor() == javaProjectVersion.getMajor()
+//					&& genVersion.getMinor() == javaProjectVersion.getMinor()) {
+//				return gen;
+//			}
+//		}
+//		return null;
+//	}
+//
+//	private static class SupportedOssValidator extends AbstractDiagnosticValidator {
+//
+//		public SupportedOssValidator(DiagnosticSeverityProvider diagnosticSeverityProvider) {
+//			super(diagnosticSeverityProvider);
+//		}
+//
+//		@Override
+//		public Diagnostic validate(ResolvedSpringProject springProject, IJavaProject javaProject,
+//				Version javaProjectVersion) throws Exception {
+//			
+//			Generation javaProjectGen = getGenerationForJavaProject(javaProject, springProject);
+//			Assert.isLegal(javaProjectGen != null, "Unable to find Spring Project Generation for project: " + javaProjectVersion.toString());
+//			if (VersionValidationUtils.isOssValid(javaProjectGen)) {
+//				VersionValidationProblemType problemType = VersionValidationProblemType.SUPPORTED_OSS_VERSION;
+//
+//				StringBuffer message = new StringBuffer();
+//				message.append("OSS support for Spring Boot " + javaProjectGen.getName() + " ends on: ");
+//				message.append(javaProjectGen.getOssSupportEndDate());
+//
+//				return createDiagnostic(problemType, message.toString());
+//			}
+//			return null;
+//		}
+//	}
+//
+//	private static class SupportedCommercialValidator extends AbstractDiagnosticValidator {
+//
+//		public SupportedCommercialValidator(DiagnosticSeverityProvider diagnosticSeverityProvider) {
+//			super(diagnosticSeverityProvider);
+//		}
+//
+//		@Override
+//		public Diagnostic validate(ResolvedSpringProject springProject, IJavaProject javaProject,
+//				Version javaProjectVersion) throws Exception {
+//
+//			Generation javaProjectGen = getGenerationForJavaProject(javaProject, springProject);
+//			Assert.isLegal(javaProjectGen != null, "Unable to find Spring Project Generation for project: " + javaProjectVersion.toString());
+//
+//			if (VersionValidationUtils.isCommercialValid(javaProjectGen)) {
+//
+//				VersionValidationProblemType problemType = VersionValidationProblemType.SUPPORTED_COMMERCIAL_VERSION;
+//
+//				StringBuffer message = new StringBuffer();
+//				message.append("Commercial support for Spring Boot " + javaProjectGen.getName() + " ends on: ");
+//				message.append(javaProjectGen.getCommercialSupportEndDate());
+//
+//				return createDiagnostic(problemType, message.toString());
+//			}
+//			return null;
+//		}
+//	}
+//
+//	private static class UnsupportedOssValidator extends AbstractDiagnosticValidator {
+//
+//		public UnsupportedOssValidator(DiagnosticSeverityProvider diagnosticSeverityProvider) {
+//			super(diagnosticSeverityProvider);
+//		}
+//
+//		@Override
+//		public Diagnostic validate(ResolvedSpringProject springProject, IJavaProject javaProject,
+//				Version javaProjectVersion) throws Exception {
+//			Generation javaProjectGen = getGenerationForJavaProject(javaProject, springProject);
+//			Assert.isLegal(javaProjectGen != null, "Unable to find Spring Project Generation for project: " + javaProjectVersion.toString());
+//
+//			if (!VersionValidationUtils.isOssValid(javaProjectGen)) {
+//
+//				VersionValidationProblemType problemType = VersionValidationProblemType.UNSUPPORTED_OSS_VERSION;
+//
+//				StringBuffer message = new StringBuffer();
+//				message.append("OSS support for Spring Boot " + javaProjectGen.getName() + " no longer available, ended on: ");
+//				message.append(javaProjectGen.getOssSupportEndDate());
+//
+//				return createDiagnostic(problemType, message.toString());
+//			}
+//			return null;
+//		}
+//	}
+//
+//	private static class UnsupportedCommercialValidator extends AbstractDiagnosticValidator {
+//
+//		public UnsupportedCommercialValidator(DiagnosticSeverityProvider diagnosticSeverityProvider) {
+//			super(diagnosticSeverityProvider);
+//		}
+//
+//		@Override
+//		public Diagnostic validate(ResolvedSpringProject springProject, IJavaProject javaProject,
+//				Version javaProjectVersion) throws Exception {
+//			Generation javaProjectGen = getGenerationForJavaProject(javaProject, springProject);
+//			Assert.isLegal(javaProjectGen != null, "Unable to find Spring Project Generation for project: " + javaProjectVersion.toString());
+//
+//			if (!VersionValidationUtils.isCommercialValid(javaProjectGen)) {
+//
+//				VersionValidationProblemType problemType = VersionValidationProblemType.UNSUPPORTED_COMMERCIAL_VERSION;
+//
+//				StringBuffer message = new StringBuffer();
+//				message.append("Commercial support for Spring Boot " + javaProjectGen.getName() + " no longer available, ended on: ");
+//				message.append(javaProjectGen.getCommercialSupportEndDate());
+//
+//				return createDiagnostic(problemType, message.toString());
+//			}
+//			return null;
+//		}
+//	}
 
 	private static class UpdateLatestPatchVersion extends AbstractDiagnosticValidator {
 
@@ -149,7 +178,7 @@ public class VersionValidators {
 
 		@Override
 		public Diagnostic validate(ResolvedSpringProject springProject, IJavaProject javaProject,
-				Generation javaProjectGen, Version javaProjectVersion) throws Exception {
+				Version javaProjectVersion) throws Exception {
 			Version latest = VersionValidationUtils.getNewerLatestPatchRelease(springProject.getReleases(), javaProjectVersion);
 
 			if (latest != null) {
@@ -181,7 +210,7 @@ public class VersionValidators {
 
 		@Override
 		public Diagnostic validate(ResolvedSpringProject springProject, IJavaProject javaProject,
-				Generation javaProjectGen, Version javaProjectVersion) throws Exception {
+				Version javaProjectVersion) throws Exception {
 			Version latest = VersionValidationUtils.getNewerLatestMinorRelease(springProject.getReleases(), javaProjectVersion);
 
 			if (latest != null) {
@@ -213,7 +242,7 @@ public class VersionValidators {
 
 		@Override
 		public Diagnostic validate(ResolvedSpringProject springProject, IJavaProject javaProject,
-				Generation javaProjectGen, Version javaProjectVersion) throws Exception {
+				Version javaProjectVersion) throws Exception {
 			Version latest = VersionValidationUtils.getNewerLatestMajorRelease(springProject.getReleases(), javaProjectVersion);
 
 			if (latest != null) {

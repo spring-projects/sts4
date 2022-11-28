@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.lsp4j.Diagnostic;
-import org.springframework.ide.vscode.boot.validation.generations.json.Generation;
 import org.springframework.ide.vscode.boot.validation.generations.json.ResolvedSpringProject;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
@@ -47,18 +46,10 @@ public class ProjectVersionDiagnosticProvider {
 			throw new Exception("Unable to resolve version for project: " + javaProject.getLocationUri().toString());
 		}
 
-		Generation javaProjectGeneration = getGenerationForJavaProject(javaProject, springProject);
-
-		if (javaProjectGeneration == null) {
-			throw new Exception(
-					"Unable to find Spring Project Generation for project: " + javaProjectVersion.toString());
-		}
-
 		List<Diagnostic> diagnostics = new ArrayList<Diagnostic>();
 
 		for (VersionValidator validator : validators.getValidators()) {
-			Diagnostic diagnostic = validator.validate(springProject, javaProject, javaProjectGeneration,
-					javaProjectVersion);
+			Diagnostic diagnostic = validator.validate(springProject, javaProject, javaProjectVersion);
 			if (diagnostic != null) {
 				diagnostics.add(diagnostic);
 			}
@@ -67,31 +58,11 @@ public class ProjectVersionDiagnosticProvider {
 		return new DiagnosticResult(buildFileUri, diagnostics);
 	}
 
-	private Generation getGenerationForJavaProject(IJavaProject javaProject, ResolvedSpringProject springProject)
-			throws Exception {
-		List<Generation> genList = springProject.getGenerations();
-		Version javaProjectVersion = SpringProjectUtil.getDependencyVersion(javaProject, springProject.getSlug());
-
-		// Find the generation belonging to the dependency
-		for (Generation gen : genList) {
-			Version genVersion = getVersion(gen);
-			if (genVersion.getMajor() == javaProjectVersion.getMajor()
-					&& genVersion.getMinor() == javaProjectVersion.getMinor()) {
-				return gen;
-			}
-		}
-		return null;
-	}
-
 	protected File getSpringBootDependency(IJavaProject project) {
 		List<File> libs = SpringProjectUtil.getLibrariesOnClasspath(project, "spring-boot");
 		return libs != null && libs.size() > 0 ? libs.get(0) : null;
 	}
 
-	protected Version getVersion(Generation generation) throws Exception {
-		return SpringProjectUtil.getVersionFromGeneration(generation.getName());
-	}
-	
 	public static class DiagnosticResult {
 		
 		private final URI documentUri;

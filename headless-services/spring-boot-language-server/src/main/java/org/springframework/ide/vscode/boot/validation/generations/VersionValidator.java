@@ -11,14 +11,13 @@
 package org.springframework.ide.vscode.boot.validation.generations;
 
 import org.eclipse.lsp4j.Diagnostic;
-import org.springframework.ide.vscode.boot.validation.generations.json.Generation;
 import org.springframework.ide.vscode.boot.validation.generations.json.ResolvedSpringProject;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.Version;
 
 public interface VersionValidator {
 
-	Diagnostic validate(ResolvedSpringProject springProject, IJavaProject javaProject, Generation javaProjectGen, Version javaProjectVersion)
+	Diagnostic validate(ResolvedSpringProject springProject, IJavaProject javaProject, Version javaProjectVersion)
 			throws Exception;
 	
 }

@@ -814,54 +814,6 @@
               "ON"
             ]
           },
-          "spring-boot.ls.problem.version-validation.SUPPORTED_OSS_VERSION": {
-            "type": "string",
-            "default": "HINT",
-            "description": "Supported OSS Boot Version",
-            "enum": [
-              "IGNORE",
-              "INFO",
-              "WARNING",
-              "HINT",
-              "ERROR"
-            ]
-          },
-          "spring-boot.ls.problem.version-validation.UNSUPPORTED_OSS_VERSION": {
-            "type": "string",
-            "default": "ERROR",
-            "description": "Unsupported OSS Version",
-            "enum": [
-              "IGNORE",
-              "INFO",
-              "WARNING",
-              "HINT",
-              "ERROR"
-            ]
-          },
-          "spring-boot.ls.problem.version-validation.UNSUPPORTED_COMMERCIAL_VERSION": {
-            "type": "string",
-            "default": "ERROR",
-            "description": "Unsupported Commercial Version",
-            "enum": [
-              "IGNORE",
-              "INFO",
-              "WARNING",
-              "HINT",
-              "ERROR"
-            ]
-          },
-          "spring-boot.ls.problem.version-validation.SUPPORTED_COMMERCIAL_VERSION": {
-            "type": "string",
-            "default": "HINT",
-            "description": "Supported Commercial Version",
-            "enum": [
-              "IGNORE",
-              "INFO",
-              "WARNING",
-              "HINT",
-              "ERROR"
-            ]
-          },
           "spring-boot.ls.problem.version-validation.UPDATE_LATEST_MAJOR_VERSION": {
             "type": "string",
             "default": "HINT",

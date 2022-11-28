@@ -20,13 +20,13 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemTy
 
 public enum VersionValidationProblemType implements ProblemType {
 
-	SUPPORTED_OSS_VERSION(HINT, "Supported OSS Boot Version", "Supported OSS Boot Version"),
-
-	UNSUPPORTED_OSS_VERSION(ERROR, "Unsupported OSS Version", "Unsupported OSS Version"),
-	
-	UNSUPPORTED_COMMERCIAL_VERSION(ERROR, "Unsupported Commercial Version", "Unsupported Commercial Version"),
-	
-	SUPPORTED_COMMERCIAL_VERSION(HINT, "Supported Commercial Version", "Supported Commercial Version"),
+//	SUPPORTED_OSS_VERSION(HINT, "Supported OSS Boot Version", "Supported OSS Boot Version"),
+//
+//	UNSUPPORTED_OSS_VERSION(ERROR, "Unsupported OSS Version", "Unsupported OSS Version"),
+//	
+//	UNSUPPORTED_COMMERCIAL_VERSION(ERROR, "Unsupported Commercial Version", "Unsupported Commercial Version"),
+//	
+//	SUPPORTED_COMMERCIAL_VERSION(HINT, "Supported Commercial Version", "Supported Commercial Version"),
 		
 	UPDATE_LATEST_MAJOR_VERSION(HINT, "Update to Latest Major Version", "Update to Latest Major Version"),
 	
