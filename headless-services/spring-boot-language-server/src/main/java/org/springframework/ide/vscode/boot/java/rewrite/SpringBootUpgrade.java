@@ -19,6 +19,8 @@ import java.util.UUID;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.openrewrite.Recipe;
 import org.openrewrite.config.DeclarativeRecipe;
+import org.openrewrite.maven.UpgradeDependencyVersion;
+import org.openrewrite.maven.UpgradeParentVersion;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
 import org.springframework.ide.vscode.commons.java.Version;
@@ -69,7 +71,7 @@ public class SpringBootUpgrade {
 							+ targetVersion.toMajorMinorVersionStr() + "'");
 			
 			return recipeRepo.loaded.thenComposeAsync(loade -> recipeRepo.apply(
-					createUpgradeRecipe(version.getMajor(), version.getMinor(), targetVersion.getMajor(), targetVersion.getMinor()),
+					createUpgradeRecipe(version, targetVersion),
 					uri,
 					UUID.randomUUID().toString()
 			));
@@ -91,14 +93,20 @@ public class SpringBootUpgrade {
 		return ids;
 	}
 	
-	private Recipe createUpgradeRecipe(int major, int minor, int targetMajor, int targetMinor) {
-		Recipe recipe = new DeclarativeRecipe("upgrade-spring-boot", "Upgrade Spring Boot from " + createVersionString(major, minor) + " to " + createVersionString(targetMajor, targetMinor),
+	private Recipe createUpgradeRecipe(Version version, Version targetVersion) {
+		Recipe recipe = new DeclarativeRecipe("upgrade-spring-boot", "Upgrade Spring Boot from " + version + " to " + targetVersion,
 				"", Collections.emptySet(), null, null, false);
 		
-		createRecipeIdsChain(major, minor, targetMajor, targetMinor).stream()
+		if (version.getMajor() == targetVersion.getMajor() && version.getMinor() == targetVersion.getMinor()) {
+			// patch version upgrade - treat as pom versions only upgrade
+			recipe.doNext(new UpgradeDependencyVersion("org.springframework.boot", "*", version.getMajor() + "." + version.getMinor() + ".x", null, null));
+			recipe.doNext(new UpgradeParentVersion("org.springframework.boot", "spring-boot-starter-parent", version.getMajor() + "." + version.getMinor() + ".x", null));
+		} else {
+			createRecipeIdsChain(version.getMajor(), version.getMinor(), targetVersion.getMajor(), targetVersion.getMinor()).stream()
 				.map(recipeRepo::getRecipe)
 				.filter(o -> o.isPresent())
 				.forEach(o -> recipe.doNext(o.get()));
+		}
 
 		if (recipe.getRecipeList().isEmpty()) {
 			throw new IllegalStateException("No upgrade recipes found!");
