@@ -35,12 +35,12 @@ public class VersionValidators {
 
 	private final VersionValidator[] validators;
 
-	public VersionValidators(DiagnosticSeverityProvider diagnosticSeverityProvider) {
+	public VersionValidators(DiagnosticSeverityProvider diagnosticSeverityProvider, SpringProjectsProvider provider) {
 		this.validators = new VersionValidator[] {
-//				new SupportedOssValidator(diagnosticSeverityProvider),
-//				new UnsupportedCommercialValidator(diagnosticSeverityProvider),
-//				new UnsupportedOssValidator(diagnosticSeverityProvider),
-//				new SupportedCommercialValidator(diagnosticSeverityProvider),
+//				new SupportedOssValidator(diagnosticSeverityProvider, provider),
+//				new UnsupportedCommercialValidator(diagnosticSeverityProvider, provider),
+//				new UnsupportedOssValidator(diagnosticSeverityProvider, provider),
+//				new SupportedCommercialValidator(diagnosticSeverityProvider, provider),
 				new UpdateLatestMajorVersion(diagnosticSeverityProvider),
 				new UpdateLatestMinorVersion(diagnosticSeverityProvider),
 				new UpdateLatestPatchVersion(diagnosticSeverityProvider) };
@@ -68,14 +68,16 @@ public class VersionValidators {
 //
 //	private static class SupportedOssValidator extends AbstractDiagnosticValidator {
 //
-//		public SupportedOssValidator(DiagnosticSeverityProvider diagnosticSeverityProvider) {
+//		private SpringProjectsProvider provider;
+//
+//		public SupportedOssValidator(DiagnosticSeverityProvider diagnosticSeverityProvider, SpringProjectsProvider provider) {
 //			super(diagnosticSeverityProvider);
+//			this.provider = provider;
 //		}
 //
 //		@Override
-//		public Diagnostic validate(ResolvedSpringProject springProject, IJavaProject javaProject,
-//				Version javaProjectVersion) throws Exception {
-//			
+//		public Diagnostic validate(IJavaProject javaProject, Version javaProjectVersion) throws Exception {
+//			ResolvedSpringProject springProject = provider.getProject(SpringProjectUtil.SPRING_BOOT);
 //			Generation javaProjectGen = getGenerationForJavaProject(javaProject, springProject);
 //			Assert.isLegal(javaProjectGen != null, "Unable to find Spring Project Generation for project: " + javaProjectVersion.toString());
 //			if (VersionValidationUtils.isOssValid(javaProjectGen)) {
@@ -93,14 +95,16 @@ public class VersionValidators {
 //
 //	private static class SupportedCommercialValidator extends AbstractDiagnosticValidator {
 //
-//		public SupportedCommercialValidator(DiagnosticSeverityProvider diagnosticSeverityProvider) {
+//		private SpringProjectsProvider provider;
+//
+//		public SupportedCommercialValidator(DiagnosticSeverityProvider diagnosticSeverityProvider, SpringProjectsProvider provider) {
 //			super(diagnosticSeverityProvider);
+//			this.provider = provider;
 //		}
 //
 //		@Override
-//		public Diagnostic validate(ResolvedSpringProject springProject, IJavaProject javaProject,
-//				Version javaProjectVersion) throws Exception {
-//
+//		public Diagnostic validate(IJavaProject javaProject, Version javaProjectVersion) throws Exception {
+//			ResolvedSpringProject springProject = provider.getProject(SpringProjectUtil.SPRING_BOOT);
 //			Generation javaProjectGen = getGenerationForJavaProject(javaProject, springProject);
 //			Assert.isLegal(javaProjectGen != null, "Unable to find Spring Project Generation for project: " + javaProjectVersion.toString());
 //
@@ -120,13 +124,16 @@ public class VersionValidators {
 //
 //	private static class UnsupportedOssValidator extends AbstractDiagnosticValidator {
 //
-//		public UnsupportedOssValidator(DiagnosticSeverityProvider diagnosticSeverityProvider) {
+//		private SpringProjectsProvider provider;
+//
+//		public UnsupportedOssValidator(DiagnosticSeverityProvider diagnosticSeverityProvider, SpringProjectsProvider provider) {
 //			super(diagnosticSeverityProvider);
+//			this.provider = provider;
 //		}
 //
 //		@Override
-//		public Diagnostic validate(ResolvedSpringProject springProject, IJavaProject javaProject,
-//				Version javaProjectVersion) throws Exception {
+//		public Diagnostic validate(IJavaProject javaProject, Version javaProjectVersion) throws Exception {
+//			ResolvedSpringProject springProject = provider.getProject(SpringProjectUtil.SPRING_BOOT);
 //			Generation javaProjectGen = getGenerationForJavaProject(javaProject, springProject);
 //			Assert.isLegal(javaProjectGen != null, "Unable to find Spring Project Generation for project: " + javaProjectVersion.toString());
 //
@@ -146,13 +153,16 @@ public class VersionValidators {
 //
 //	private static class UnsupportedCommercialValidator extends AbstractDiagnosticValidator {
 //
-//		public UnsupportedCommercialValidator(DiagnosticSeverityProvider diagnosticSeverityProvider) {
+//		private SpringProjectsProvider provider;
+//
+//		public UnsupportedCommercialValidator(DiagnosticSeverityProvider diagnosticSeverityProvider, SpringProjectsProvider provider) {
 //			super(diagnosticSeverityProvider);
+//			this.provider = provider;
 //		}
 //
 //		@Override
-//		public Diagnostic validate(ResolvedSpringProject springProject, IJavaProject javaProject,
-//				Version javaProjectVersion) throws Exception {
+//		public Diagnostic validate(IJavaProject javaProject, Version javaProjectVersion) throws Exception {
+//			ResolvedSpringProject springProject = provider.getProject(SpringProjectUtil.SPRING_BOOT);
 //			Generation javaProjectGen = getGenerationForJavaProject(javaProject, springProject);
 //			Assert.isLegal(javaProjectGen != null, "Unable to find Spring Project Generation for project: " + javaProjectVersion.toString());
 //
@@ -177,9 +187,8 @@ public class VersionValidators {
 		}
 
 		@Override
-		public Diagnostic validate(ResolvedSpringProject springProject, IJavaProject javaProject,
-				Version javaProjectVersion) throws Exception {
-			Version latest = VersionValidationUtils.getNewerLatestPatchRelease(springProject.getReleases(), javaProjectVersion);
+		public Diagnostic validate(IJavaProject javaProject, Version javaProjectVersion) throws Exception {
+			Version latest = VersionValidationUtils.getNewerLatestPatchRelease(CachedBootVersionsFromMavenCentral.getBootVersions(), javaProjectVersion);
 
 			if (latest != null) {
 				VersionValidationProblemType problemType = VersionValidationProblemType.UPDATE_LATEST_PATCH_VERSION;
@@ -209,9 +218,8 @@ public class VersionValidators {
 		}
 
 		@Override
-		public Diagnostic validate(ResolvedSpringProject springProject, IJavaProject javaProject,
-				Version javaProjectVersion) throws Exception {
-			Version latest = VersionValidationUtils.getNewerLatestMinorRelease(springProject.getReleases(), javaProjectVersion);
+		public Diagnostic validate(IJavaProject javaProject, Version javaProjectVersion) throws Exception {
+			Version latest = VersionValidationUtils.getNewerLatestMinorRelease(CachedBootVersionsFromMavenCentral.getBootVersions(), javaProjectVersion);
 
 			if (latest != null) {
 				VersionValidationProblemType problemType = VersionValidationProblemType.UPDATE_LATEST_MINOR_VERSION;
@@ -241,9 +249,8 @@ public class VersionValidators {
 		}
 
 		@Override
-		public Diagnostic validate(ResolvedSpringProject springProject, IJavaProject javaProject,
-				Version javaProjectVersion) throws Exception {
-			Version latest = VersionValidationUtils.getNewerLatestMajorRelease(springProject.getReleases(), javaProjectVersion);
+		public Diagnostic validate(IJavaProject javaProject, Version javaProjectVersion) throws Exception {
+			Version latest = VersionValidationUtils.getNewerLatestMajorRelease(CachedBootVersionsFromMavenCentral.getBootVersions(), javaProjectVersion);
 
 			if (latest != null) {
 				VersionValidationProblemType problemType = VersionValidationProblemType.UPDATE_LATEST_MAJOR_VERSION;

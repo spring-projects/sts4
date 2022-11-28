@@ -46,10 +46,9 @@ public class BootVersionValidator {
 			String url = getSpringProjectsUrl(preferences);
 			SpringProjectsClient client = new SpringProjectsClient(url);
 			SpringProjectsProvider provider = new SpringIoProjectsProvider(client);
-			VersionValidators validators = new VersionValidators(server.getDiagnosticSeverityProvider());
+			VersionValidators validators = new VersionValidators(server.getDiagnosticSeverityProvider(), provider);
 
-			ProjectVersionDiagnosticProvider diagnosticProvider = new ProjectVersionDiagnosticProvider(provider,
-					validators);
+			ProjectVersionDiagnosticProvider diagnosticProvider = new ProjectVersionDiagnosticProvider(validators);
 
 			try {
 				DiagnosticResult result = diagnosticProvider.getDiagnostics(project);

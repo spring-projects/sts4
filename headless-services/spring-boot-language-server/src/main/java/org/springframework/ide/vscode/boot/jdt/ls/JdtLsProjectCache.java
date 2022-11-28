@@ -46,6 +46,7 @@ import org.springframework.ide.vscode.commons.protocol.java.ProjectBuild;
 import org.springframework.ide.vscode.commons.util.FileObserver;
 import org.springframework.ide.vscode.commons.util.UriUtil;
 
+import com.google.common.collect.ImmutableList;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonPrimitive;
 
@@ -291,7 +292,7 @@ public class JdtLsProjectCache implements InitializableJavaProjectsService, Serv
 	
 	@Override
 	public Collection<? extends IJavaProject> all() {
-		return table.values();
+		return ImmutableList.copyOf(table.values());
 	}
 
 	@Override

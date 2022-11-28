@@ -16,19 +16,20 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.eclipse.lsp4j.Diagnostic;
-import org.springframework.ide.vscode.boot.validation.generations.json.ResolvedSpringProject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
 import org.springframework.ide.vscode.commons.java.Version;
 
 public class ProjectVersionDiagnosticProvider {
+	
+	private static final Logger log = LoggerFactory.getLogger(ProjectVersionDiagnosticProvider.class);
 
-	private final SpringProjectsProvider provider;
 	private final VersionValidators validators;
 
-	public ProjectVersionDiagnosticProvider(SpringProjectsProvider provider, VersionValidators validators) {
+	public ProjectVersionDiagnosticProvider(VersionValidators validators) {
 		this.validators = validators;
-		this.provider = provider;
 	}
 
 
@@ -39,7 +40,6 @@ public class ProjectVersionDiagnosticProvider {
 			throw new Exception("Unable to find build file in project while computing version validation for: ");
 		}
 
-		ResolvedSpringProject springProject = provider.getProject(SpringProjectUtil.SPRING_BOOT);
 		Version javaProjectVersion = SpringProjectUtil.getSpringBootVersion(javaProject);
 
 		if (javaProjectVersion == null) {
@@ -49,9 +49,13 @@ public class ProjectVersionDiagnosticProvider {
 		List<Diagnostic> diagnostics = new ArrayList<Diagnostic>();
 
 		for (VersionValidator validator : validators.getValidators()) {
-			Diagnostic diagnostic = validator.validate(springProject, javaProject, javaProjectVersion);
-			if (diagnostic != null) {
-				diagnostics.add(diagnostic);
+			try {
+				Diagnostic diagnostic = validator.validate(javaProject, javaProjectVersion);
+				if (diagnostic != null) {
+					diagnostics.add(diagnostic);
+				}
+			} catch (Exception e) {
+				log.error("", e);
 			}
 		}
 
