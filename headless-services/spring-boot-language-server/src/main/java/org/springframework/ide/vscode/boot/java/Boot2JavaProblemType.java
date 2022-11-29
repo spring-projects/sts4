@@ -29,7 +29,9 @@ public enum Boot2JavaProblemType implements ProblemType {
 	
 	JAVA_CONSTRUCTOR_PARAMETER_INJECTION(IGNORE, "Use constructor parameter injection", "Use constructor parameter injection"),
 	
-	JAVA_PRECISE_REQUEST_MAPPING(HINT, "Use precise mapping annotation, i.e. '@GetMapping', '@PostMapping', etc.", "Use precise mapping annotation, i.e. '@GetMapping', '@PostMapping', etc.");
+	JAVA_PRECISE_REQUEST_MAPPING(HINT, "Use precise mapping annotation, i.e. '@GetMapping', '@PostMapping', etc.", "Use precise mapping annotation, i.e. '@GetMapping', '@PostMapping', etc."),
+	
+	JAVA_REPOSITORY(WARNING, "Unnecessary `@Repository`", "Unnecessary `@Repository`");
 	
 	private final ProblemSeverity defaultSeverity;
 	private String description;

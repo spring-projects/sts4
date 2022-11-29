@@ -17,6 +17,7 @@ import org.springframework.ide.vscode.boot.java.rewrite.reconcile.BeanMethodNotP
 import org.springframework.ide.vscode.boot.java.rewrite.reconcile.BeanPostProcessingIgnoreInAotProblem;
 import org.springframework.ide.vscode.boot.java.rewrite.reconcile.Boot3NotSupportedTypeProblem;
 import org.springframework.ide.vscode.boot.java.rewrite.reconcile.NoAutowiredOnConstructorProblem;
+import org.springframework.ide.vscode.boot.java.rewrite.reconcile.NoRepoAnnotationProblem;
 import org.springframework.ide.vscode.boot.java.rewrite.reconcile.NoRequestMappingAnnotationCodeAction;
 import org.springframework.ide.vscode.boot.java.rewrite.reconcile.NotRegisteredBeansProblem;
 import org.springframework.ide.vscode.boot.java.rewrite.reconcile.PreciseBeanTypeProblem;
@@ -37,7 +38,8 @@ public class BootCodeActionRepository extends CodeActionRepository {
 				new NotRegisteredBeansProblem(),
 				new Boot3NotSupportedTypeProblem(),
 				new NoRequestMappingAnnotationCodeAction(),
-				new AutowiredFieldIntoConstructorParameterCodeAction()
+				new AutowiredFieldIntoConstructorParameterCodeAction(),
+				new NoRepoAnnotationProblem()
 		);
 	}
 

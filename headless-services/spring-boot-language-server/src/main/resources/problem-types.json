@@ -43,6 +43,12 @@
         "label": "Use precise mapping annotation, i.e. '@GetMapping', '@PostMapping', etc.",
         "description": "Use precise mapping annotation, i.e. '@GetMapping', '@PostMapping', etc.",
         "defaultSeverity": "HINT"
+      },
+      {
+        "code": "JAVA_REPOSITORY",
+        "label": "Unnecessary `@Repository`",
+        "description": "Unnecessary `@Repository`",
+        "defaultSeverity": "WARNING"
       }
     ]
   },

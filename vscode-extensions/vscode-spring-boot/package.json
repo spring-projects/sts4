@@ -391,6 +391,18 @@
               "HINT",
               "ERROR"
             ]
+          },
+          "spring-boot.ls.problem.boot2.JAVA_REPOSITORY": {
+            "type": "string",
+            "default": "WARNING",
+            "description": "Unnecessary `@Repository`",
+            "enum": [
+              "IGNORE",
+              "INFO",
+              "WARNING",
+              "HINT",
+              "ERROR"
+            ]
           }
         }
       },

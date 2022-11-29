@@ -123,7 +123,7 @@ public class RewriteReconciler implements JavaReconciler {
 		QuickfixType quickfixType = quickfixRegistry.getQuickfixType(RewriteRefactorings.REWRITE_RECIPE_QUICKFIX);
 		if (quickfixType != null) {
 			for (FixDescriptor f : m.getFixes()) {
-				if (recipeRepo.getRecipe(f.getRecipeId()) != null) {
+				if (recipeRepo.getRecipe(f.getRecipeId()).isPresent()) {
 					problem.addQuickfix(new QuickfixData<>(
 							quickfixType,
 							f,
