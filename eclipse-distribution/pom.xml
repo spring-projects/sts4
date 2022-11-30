@@ -760,6 +760,23 @@
 			</properties>
 		</profile>
 
+		<profile>
+			<id>bundle-tests</id>
+			<activation>
+				<property>
+					<name>maven.test.skip</name>
+					<value>!true</value>
+				</property>
+			</activation>
+			<modules>
+				<module>../eclipse-extensions/org.springframework.ide.eclipse.boot.test</module>
+				<module>../eclipse-extensions/org.springframework.ide.eclipse.boot.dash.test</module>
+				<module>../eclipse-extensions/org.springframework.ide.eclipse.boot.launch.test</module>
+				<module>../eclipse-extensions/org.springframework.ide.eclipse.boot.refactoring.test</module>
+				<module>../eclipse-extensions/org.springframework.ide.eclipse.maven.pom.tests</module>
+			</modules>
+		</profile>
+
 	</profiles>
 
 	<repositories>
