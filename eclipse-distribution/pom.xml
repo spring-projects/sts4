@@ -52,19 +52,14 @@
 		<module>../eclipse-extensions/org.springframework.ide.eclipse.boot.refactoring</module>
 		<module>../eclipse-extensions/org.springframework.ide.eclipse.boot.restart</module>
 		<module>../eclipse-extensions/org.springframework.ide.eclipse.boot.templates</module>
-		<module>../eclipse-extensions/org.springframework.ide.eclipse.boot.test</module>
 		<module>../eclipse-extensions/org.springframework.ide.eclipse.boot.validation</module>
 		<module>../eclipse-extensions/org.springframework.ide.eclipse.boot.wizard</module>
 		<module>../eclipse-extensions/org.springframework.ide.eclipse.boot.dash.azure</module>
 		<module>../eclipse-extensions/org.springframework.ide.eclipse.boot.dash.cf</module>
 		<module>../eclipse-extensions/org.springframework.ide.eclipse.boot.dash.docker</module>
 		<module>../eclipse-extensions/org.springframework.ide.eclipse.boot.dash.feature</module>
-		<module>../eclipse-extensions/org.springframework.ide.eclipse.boot.dash.test</module>
-		<module>../eclipse-extensions/org.springframework.ide.eclipse.boot.launch.test</module>
-		<module>../eclipse-extensions/org.springframework.ide.eclipse.boot.refactoring.test</module>
 		<module>../eclipse-extensions/org.springframework.ide.eclipse.docker.client</module>
 		<module>../eclipse-extensions/org.springframework.ide.eclipse.maven.pom</module>
-		<module>../eclipse-extensions/org.springframework.ide.eclipse.maven.pom.tests</module>
 		<module>../eclipse-extensions/org.springframework.ide.eclipse.xml.namespaces</module>
 		<module>../eclipse-extensions/org.springframework.ide.eclipse.xml.namespaces.feature</module>
 		<module>../eclipse-extensions/org.springsource.ide.eclipse.commons.cloudfoundry.client.v2</module>
