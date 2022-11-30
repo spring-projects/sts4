@@ -169,7 +169,7 @@
     <bundle id="net.i2p.crypto.eddsa.source"/>
 
 	<!-- additional test bundles, required for other tests that might reuse this, e.g. from STS3 -->
-	<bundle id="org.springframework.ide.eclipse.boot.dash.test"/>
+<!--	<bundle id="org.springframework.ide.eclipse.boot.dash.test"/>
 	<bundle id="org.springframework.ide.eclipse.boot.dash.test.source"/>
 	<bundle id="org.springframework.ide.eclipse.boot.launch.test"/>
 	<bundle id="org.springframework.ide.eclipse.boot.launch.test.source"/>
@@ -178,6 +178,6 @@
 	<bundle id="org.springframework.ide.eclipse.boot.test"/>
 	<bundle id="org.springframework.ide.eclipse.boot.test.source"/>
 	<bundle id="org.springframework.ide.eclipse.maven.pom.tests"/>
-	<bundle id="org.springframework.ide.eclipse.maven.pom.tests.source"/>
+	<bundle id="org.springframework.ide.eclipse.maven.pom.tests.source"/> -->
 
 </site>
