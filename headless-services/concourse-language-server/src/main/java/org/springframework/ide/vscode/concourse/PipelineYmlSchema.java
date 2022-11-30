@@ -873,6 +873,9 @@ public class PipelineYmlSchema implements YamlSchema {
 			AbstractType get = f.ybean("SemverGetParams");
 			addProp(get, "bump", f.yenum("SemverBump", "major", "minor", "patch", "final"));
 			addProp(get, "pre", t_ne_string);
+			addProp(get, "pre_without_version", t_boolean);
+			addProp(get, "build_without_version", t_boolean);
+
 
 			AbstractType put = f.ybean("SemverPutParams");
 			for (YTypedProperty p : get.getProperties()) {

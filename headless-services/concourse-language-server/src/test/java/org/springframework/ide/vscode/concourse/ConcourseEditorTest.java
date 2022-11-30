@@ -3714,7 +3714,67 @@ public class ConcourseEditorTest {
 		editor.assertProblems("version|Unused 'Resource'");
 		editor.assertHoverContains("openstack", "All openstack configuration");
 	}
+	
+	@Test public void GH_849_pre_without_version() throws Exception {
+		Editor editor = harness.newEditor(
+				"resources:\n" + 
+				"- name: test\n" + 
+				"  type: semver\n" + 
+				"  source:\n" + 
+				"    driver: git\n" + 
+				"    uri: some-git-url\n" + 
+				"    branch: main\n" + 
+				"    file: VERSION\n" + 
+				"jobs:\n" + 
+				"- name: test\n" + 
+				"  plan:\n" + 
+				"  - get: test\n" + 
+				"    params:\n" + 
+				"      pre_without_version: not-a-bool\n" + 
+				"  - put: test\n" + 
+				"    params:\n" + 
+				"      pre_without_version: not-b-bool\n"
+		);
+		editor.assertProblems(
+				"not-a-bool|boolean",
+				"not-b-bool|boolean"
+		);
+		
+		editor.assertHoverContains("pre_without_version", 1, "PreRelease will be bumped");
+		editor.assertHoverContains("pre_without_version", 2, "PreRelease will be bumped");	
+	}
 
+	
+	@Test public void GH_849_build_without_version() throws Exception {
+		Editor editor = harness.newEditor(
+				"resources:\n" + 
+				"- name: test\n" + 
+				"  type: semver\n" + 
+				"  source:\n" + 
+				"    driver: git\n" + 
+				"    uri: some-git-url\n" + 
+				"    branch: main\n" + 
+				"    file: VERSION\n" + 
+				"jobs:\n" + 
+				"- name: test\n" + 
+				"  plan:\n" + 
+				"  - get: test\n" + 
+				"    params:\n" + 
+				"      build_without_version: not-a-bool\n" + 
+				"  - put: test\n" + 
+				"    params:\n" + 
+				"      build_without_version: not-b-bool\n"
+		);
+		editor.assertProblems(
+				"not-a-bool|boolean",
+				"not-b-bool|boolean"
+		);
+		
+		editor.assertHoverContains("build_without_version", 1, "Same as pre_without_version but for build labels");
+		editor.assertHoverContains("build_without_version", 2, "Same as pre_without_version but for build labels");
+	
+	}
+	
 	@Test public void semverResourceGetParamsReconcileAndHovers() throws Exception {
 		Editor editor = harness.newEditor(
 				"resources:\n" +
