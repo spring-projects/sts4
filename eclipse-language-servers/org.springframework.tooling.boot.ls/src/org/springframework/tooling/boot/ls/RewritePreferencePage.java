@@ -31,7 +31,7 @@ public class RewritePreferencePage extends FieldEditorPreferencePage implements 
 				"Project refactoring actions", fieldEditorParent));
 		
 		addField(new BooleanFieldEditor(Constants.PREF_REWRITE_RECONCILE,
-				"Experimental reconciling for Java source based on Rewrite project", fieldEditorParent));
+				"Reconciling of Java Sources", fieldEditorParent));
 				
 	}
 

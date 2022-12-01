@@ -307,19 +307,19 @@
         "code": "UPDATE_LATEST_MAJOR_VERSION",
         "label": "Update to Latest Major Version",
         "description": "Update to Latest Major Version",
-        "defaultSeverity": "HINT"
+        "defaultSeverity": "IGNORE"
       },
       {
         "code": "UPDATE_LATEST_MINOR_VERSION",
         "label": "Update to Latest Minor Version",
         "description": "Update to Latest Minor Version",
-        "defaultSeverity": "HINT"
+        "defaultSeverity": "INFO"
       },
       {
         "code": "UPDATE_LATEST_PATCH_VERSION",
         "label": "Update to Latest Patch Version",
         "description": "Update to Latest Patch Version",
-        "defaultSeverity": "HINT"
+        "defaultSeverity": "WARNING"
       }
     ]
   }

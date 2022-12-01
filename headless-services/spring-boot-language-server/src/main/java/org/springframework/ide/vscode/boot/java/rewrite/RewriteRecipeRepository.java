@@ -31,6 +31,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 import java.util.function.Function;
+import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -78,6 +79,26 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 
 public class RewriteRecipeRepository implements ApplicationContextAware {
+	
+	enum RecipeFilter {
+		ALL,
+		BOOT_UPGRADE,
+		NON_BOOT_UPGRADE
+	}
+
+	private static final Pattern P1 = Pattern.compile("(Upgrade|Migrate)SpringBoot_\\d+_\\d+");
+	
+	private static final Map<RecipeFilter, Predicate<Recipe>> RECIPE_LIST_FILTERS = new HashMap<>();
+	static {
+		RECIPE_LIST_FILTERS.put(RecipeFilter.ALL, r -> true);
+		RECIPE_LIST_FILTERS.put(RecipeFilter.BOOT_UPGRADE, r -> {
+			String n = lastTokenAfterDot(r.getName());
+			return P1.matcher(n).matches();
+		});
+		RECIPE_LIST_FILTERS.put(RecipeFilter.NON_BOOT_UPGRADE, r -> {
+			return RECIPE_LIST_FILTERS.get(RecipeFilter.BOOT_UPGRADE).negate().test(r);
+		});
+	}
 		
 	private static final String CMD_REWRITE_RELOAD = "sts/rewrite/reload";
 	private static final String CMD_REWRITE_EXECUTE = "sts/rewrite/execute";
@@ -123,7 +144,7 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 		config.addListener(l -> {
 			Set<String> recipeFilterFromConfig = config.getRecipesFilters();
 			boolean firstTimeConfig = recipeFilters == UNINITIALIZED_SET && scanDirs == UNINITIALIZED_SET && scanFiles == UNINITIALIZED_SET;
-			if (recipeFilters == UNINITIALIZED_SET || recipeFilters.equals(recipeFilterFromConfig)) {
+			if (recipeFilters == UNINITIALIZED_SET || !recipeFilters.equals(recipeFilterFromConfig)) {
 				recipeFilters = recipeFilterFromConfig;
 			}
 			if (scanDirs == UNINITIALIZED_SET || !scanDirs.equals(config.getRecipeDirectories())
@@ -186,23 +207,27 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 	}
 	
 	private boolean isAcceptableGlobalCommandRecipe(Recipe r) {
-		for (String filter : recipeFilters) {
-			if (!filter.isBlank()) {
-				// Check if wild-card character present
-				if (filter.indexOf('*') < 0) {
-					// No wild-card - direct equality 
-					if (filter.equals(r.getName())) {
-						return isRecipeValid(r);
-					}
-				} else {
-					// Wild-card present - convert to regular expression
-					if (Pattern.matches(filter.replaceAll("\\*", "\\.*"), r.getName())) {
-						return isRecipeValid(r);
+		if (recipeFilters.isEmpty()) {
+			return isRecipeValid(r);
+		} else {
+			for (String filter : recipeFilters) {
+				if (!filter.isBlank()) {
+					// Check if wild-card character present
+					if (filter.indexOf('*') < 0) {
+						// No wild-card - direct equality 
+						if (filter.equals(r.getName())) {
+							return isRecipeValid(r);
+						}
+					} else {
+						// Wild-card present - convert to regular expression
+						if (Pattern.matches(filter.replaceAll("\\*", "\\.*"), r.getName())) {
+							return isRecipeValid(r);
+						}
 					}
 				}
 			}
+			return false;
 		}
-		return false;
 	}
 	
 	private static boolean isRecipeValid(Recipe r) {
@@ -298,11 +323,15 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 	private void registerCommands() {
 		server.onCommand(CMD_REWRITE_LIST, params -> {
 			JsonElement uri = (JsonElement) params.getArguments().get(0);
+			RecipeFilter f = params.getArguments().size() > 1 ? RecipeFilter.valueOf(((JsonElement) params.getArguments().get(1)).getAsString()) : RecipeFilter.ALL;
 			return loaded.thenApply(v -> {
 				if (uri == null) {
 					return Collections.emptyList();
 				} else {
-					return listProjectRefactoringRecipes(uri.getAsString()).stream().map(RewriteRecipeRepository::recipeToJson).collect(Collectors.toList());
+					return listProjectRefactoringRecipes(uri.getAsString()).stream()
+							.filter(RECIPE_LIST_FILTERS.get(f))
+							.map(RewriteRecipeRepository::recipeToJson)
+							.collect(Collectors.toList());
 				}
 			});
 		});
@@ -441,6 +470,14 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 	@Override
 	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
 		this.applicationContext = applicationContext;
+	}
+	
+	private static String lastTokenAfterDot(String s) {
+		int idx = s.lastIndexOf('.');
+		if (idx >= 0 && idx < s.length() - 1) {
+			return s.substring(idx + 1);
+		}
+		return s;
 	}
 	
 //	private static Recipe convert(Recipe r, RecipeDescriptor d) {

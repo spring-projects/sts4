@@ -3,6 +3,9 @@ import { LanguageClient } from "vscode-languageclient/node";
 import * as VSCode from 'vscode';
 import * as path from "path";
 
+const BOOT_UPGRADE = 'BOOT_UPGRADE';
+const OTHER_REFACTORINGS = 'NON_BOOT_UPGRADE';
+
 interface RecipeDescriptor {
     name: string;
     displayName: string;
@@ -85,11 +88,11 @@ const SUB_RECIPES_BUTTON: VSCode.QuickInputButton = {
     tooltip: 'Sub-Recipes'
 }
 
-async function liveHoverConnectHandler(uri: VSCode.Uri) {
+async function showRefactorings(uri: VSCode.Uri, filter: string) {
     if (!uri) {
         uri = await getTargetPomXml();
     }
-    const choices = await showCurrentPathQuickPick(VSCode.commands.executeCommand('sts/rewrite/list', uri.toString(true)).then((cmds: RecipeDescriptor[]) => cmds.map(convertToQuickPickItem)), []);
+    const choices = await showCurrentPathQuickPick(VSCode.commands.executeCommand('sts/rewrite/list', uri.toString(true), filter).then((cmds: RecipeDescriptor[]) => cmds.map(convertToQuickPickItem)), []);
     const recipeDescriptors = choices.filter(i => i.selected).map(convertToRecipeDescriptor);
     if (recipeDescriptors.length) {
         const aggregateRecipeDescriptor = recipeDescriptors.length === 1 ? recipeDescriptors[0] : {
@@ -214,9 +217,16 @@ export function activate(
     context: VSCode.ExtensionContext
 ) {
     context.subscriptions.push(
-        VSCode.commands.registerCommand('vscode-spring-boot.rewrite.list', params => {
+        VSCode.commands.registerCommand('vscode-spring-boot.rewrite.list.boot-upgrades', param => {
             if (client.isRunning()) {
-                return liveHoverConnectHandler(params[0]);
+                return showRefactorings(param, BOOT_UPGRADE);
+            } else {
+                VSCode.window.showErrorMessage("No Spring Boot project found. Action is only available for Spring Boot Projects");
+            }
+        }),
+        VSCode.commands.registerCommand('vscode-spring-boot.rewrite.list.refactorings', param => {
+            if (client.isRunning()) {
+                return showRefactorings(param, OTHER_REFACTORINGS);
             } else {
                 VSCode.window.showErrorMessage("No Spring Boot project found. Action is only available for Spring Boot Projects");
             }

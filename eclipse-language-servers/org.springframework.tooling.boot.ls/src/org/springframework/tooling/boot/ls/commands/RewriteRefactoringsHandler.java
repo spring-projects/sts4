@@ -53,6 +53,12 @@ import com.google.gson.JsonSerializer;
 @SuppressWarnings("restriction")
 public class RewriteRefactoringsHandler extends AbstractHandler {
 	
+	public enum RecipeFilter {
+		ALL,
+		BOOT_UPGRADE,
+		NON_BOOT_UPGRADE
+	}
+	
 	private static class DurationTypeConverter implements JsonSerializer<Duration>, JsonDeserializer<Duration> {
 		@Override
 		public JsonElement serialize(Duration src, Type srcType, JsonSerializationContext context) {
@@ -73,6 +79,16 @@ public class RewriteRefactoringsHandler extends AbstractHandler {
 
 	private static final String REWRITE_REFACTORINGS_LIST = "sts/rewrite/list";
 	private static final String REWRITE_REFACTORINGS_EXEC = "sts/rewrite/execute";
+	
+	private RecipeFilter recipeFilter;
+	
+	public RewriteRefactoringsHandler() {
+		this(RecipeFilter.ALL);
+	}
+	
+	public RewriteRefactoringsHandler(RecipeFilter recipeFilter) {
+		this.recipeFilter = recipeFilter;
+	}
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
@@ -96,7 +112,7 @@ public class RewriteRefactoringsHandler extends AbstractHandler {
 				final String uri = project.getLocationURI().toString();
 				ExecuteCommandParams commandParams = new ExecuteCommandParams();
 				commandParams.setCommand(REWRITE_REFACTORINGS_LIST);
-				commandParams.setArguments(List.of(uri));
+				commandParams.setArguments(List.of(uri, recipeFilter.toString()));
 
 				try {
 					List<Object> allRewriteRecipesJson = new ArrayList<>();
@@ -152,5 +168,16 @@ public class RewriteRefactoringsHandler extends AbstractHandler {
 		}
 		return null;
 	}
-
+	
+	public static class UpgradeBootVersion extends RewriteRefactoringsHandler {
+		public UpgradeBootVersion() {
+			super(RecipeFilter.BOOT_UPGRADE);
+		}
+	}
+	
+	public static class RefactorBootProject extends RewriteRefactoringsHandler {
+		public RefactorBootProject() {
+			super(RecipeFilter.NON_BOOT_UPGRADE);
+		}
+	}
 }

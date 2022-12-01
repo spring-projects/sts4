@@ -199,7 +199,7 @@ public class VersionValidators {
 
 				CodeAction ca = new CodeAction();
 				ca.setKind(CodeActionKind.QuickFix);
-				ca.setTitle("Upgrade to Version " + latest.toString());
+				ca.setTitle("Upgrade to Spring Boot " + latest.toString() + " (Maven dependency version changes only)");
 				String commandId = SpringBootUpgrade.CMD_UPGRADE_SPRING_BOOT;
 				ca.setCommand(new Command("Upgrade to Version " + latest.toString(), commandId,
 						ImmutableList.of(javaProject.getLocationUri().toString(), latest.toString())));
@@ -230,7 +230,7 @@ public class VersionValidators {
 
 				CodeAction ca = new CodeAction();
 				ca.setKind(CodeActionKind.QuickFix);
-				ca.setTitle("Upgrade to Version " + latest.toString());
+				ca.setTitle("Upgrade to Spring Boot " + latest.toString() + " (executes the full project conversion recipe from OpenRewrite)");
 				String commandId = SpringBootUpgrade.CMD_UPGRADE_SPRING_BOOT;
 				ca.setCommand(new Command("Upgrade to Version " + latest.toString(), commandId,
 						ImmutableList.of(javaProject.getLocationUri().toString(), latest.toString())));
@@ -261,7 +261,7 @@ public class VersionValidators {
 
 				CodeAction ca = new CodeAction();
 				ca.setKind(CodeActionKind.QuickFix);
-				ca.setTitle("Upgrade to Version " + latest.toString());
+				ca.setTitle("Upgrade to Spring Boot " + latest.toString() + " (executes the full project conversion recipe from OpenRewrite)");
 				String commandId = SpringBootUpgrade.CMD_UPGRADE_SPRING_BOOT;
 				ca.setCommand(new Command("Upgrade to Version " + latest.toString(), commandId,
 						ImmutableList.of(javaProject.getLocationUri().toString(), latest.toString())));

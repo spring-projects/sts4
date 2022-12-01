@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.boot.validation.generations;
 import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.lsp4j.Diagnostic;
@@ -43,7 +44,8 @@ public class ProjectVersionDiagnosticProvider {
 		Version javaProjectVersion = SpringProjectUtil.getSpringBootVersion(javaProject);
 
 		if (javaProjectVersion == null) {
-			throw new Exception("Unable to resolve version for project: " + javaProject.getLocationUri().toString());
+			log.warn("Unable to resolve version for project: " + javaProject.getLocationUri().toString());
+			return new DiagnosticResult(buildFileUri, Collections.emptyList());
 		}
 
 		List<Diagnostic> diagnostics = new ArrayList<Diagnostic>();

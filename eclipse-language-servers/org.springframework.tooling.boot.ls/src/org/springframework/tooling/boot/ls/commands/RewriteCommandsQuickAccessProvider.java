@@ -37,7 +37,7 @@ public class RewriteCommandsQuickAccessProvider implements IQuickAccessComputer,
 				
 				@Override
 				public String getLabel() {
-					return "Reload Rewrite Recipes";
+					return "Reload OpenRewrite Recipes, Code Actions, Problem and Quick Fix Descriptors";
 				}
 				
 				@Override
@@ -68,7 +68,7 @@ public class RewriteCommandsQuickAccessProvider implements IQuickAccessComputer,
 							ls.getWorkspaceService().executeCommand(commandParams)).toArray(CompletableFuture[]::new)).get(2, TimeUnit.SECONDS);
 					}
 					catch (Exception e) {
-						BootLanguageServerPlugin.getDefault().getLog().error("Failed to reload Rewrite Recipes!", e);
+						BootLanguageServerPlugin.getDefault().getLog().error("Failed to reload OpenRewrite Recipes!", e);
 					}
 				}
 			}

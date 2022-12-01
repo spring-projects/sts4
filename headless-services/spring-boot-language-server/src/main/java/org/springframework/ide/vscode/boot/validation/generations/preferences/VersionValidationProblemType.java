@@ -12,6 +12,9 @@ package org.springframework.ide.vscode.boot.validation.generations.preferences;
 
 import static org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity.HINT;
 import static org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity.ERROR;
+import static org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity.INFO;
+import static org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity.WARNING;
+import static org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity.IGNORE;
 
 import org.springframework.ide.vscode.boot.common.SpringProblemCategories;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemCategory;
@@ -28,11 +31,11 @@ public enum VersionValidationProblemType implements ProblemType {
 //	
 //	SUPPORTED_COMMERCIAL_VERSION(HINT, "Supported Commercial Version", "Supported Commercial Version"),
 		
-	UPDATE_LATEST_MAJOR_VERSION(HINT, "Update to Latest Major Version", "Update to Latest Major Version"),
+	UPDATE_LATEST_MAJOR_VERSION(IGNORE, "Update to Latest Major Version", "Update to Latest Major Version"),
 	
-	UPDATE_LATEST_MINOR_VERSION(HINT, "Update to Latest Minor Version", "Update to Latest Minor Version"),
+	UPDATE_LATEST_MINOR_VERSION(INFO, "Update to Latest Minor Version", "Update to Latest Minor Version"),
 
-	UPDATE_LATEST_PATCH_VERSION(HINT, "Update to Latest Patch Version", "Update to Latest Patch Version");
+	UPDATE_LATEST_PATCH_VERSION(WARNING, "Update to Latest Patch Version", "Update to Latest Patch Version");
 
 	private final ProblemSeverity defaultSeverity;
 	private String description;

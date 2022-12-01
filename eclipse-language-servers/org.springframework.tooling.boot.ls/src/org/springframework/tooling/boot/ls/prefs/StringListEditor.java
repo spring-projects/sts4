@@ -29,6 +29,9 @@ public class StringListEditor extends ListEditor {
 	}
 	
 	public static String[] decode(String value) {
+		if (value.isEmpty()) {
+			return new String[0];
+		}
 		return value.split(DELIMITER);
 	}
 

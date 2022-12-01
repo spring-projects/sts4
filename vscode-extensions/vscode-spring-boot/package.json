@@ -32,7 +32,8 @@
     "onLanguage:xml",
     "onLanguage:spring-factories",
     "onDebugResolve:java",
-    "onCommand:vscode-spring-boot.rewrite.list",
+    "onCommand:vscode-spring-boot.rewrite.list.refactorings",
+    "onCommand:vscode-spring-boot.rewrite.list.boot-upgrades",
     "onCommand:vscode-spring-boot.ls.start",
     "workspaceContains:pom.xml",
     "workspaceContains:*/pom.xml",
@@ -94,14 +95,24 @@
       "editor/context": [
         {
           "when": "resourceFilename == pom.xml",
-          "command": "vscode-spring-boot.rewrite.list",
+          "command": "vscode-spring-boot.rewrite.list.refactorings",
+          "group": "SpringBoot"
+        },
+        {
+          "when": "resourceFilename == pom.xml",
+          "command": "vscode-spring-boot.rewrite.list.boot-upgrades",
           "group": "SpringBoot"
         }
       ],
       "explorer/context": [
         {
           "when": "resourceFilename == pom.xml && config.boot-java.rewrite.refactorings.on == true",
-          "command": "vscode-spring-boot.rewrite.list",
+          "command": "vscode-spring-boot.rewrite.list.refactorings",
+          "group": "SpringBoot"
+        },
+        {
+          "when": "resourceFilename == pom.xml && config.boot-java.rewrite.refactorings.on == true",
+          "command": "vscode-spring-boot.rewrite.list.boot-upgrades",
           "group": "SpringBoot"
         }
       ]
@@ -114,13 +125,19 @@
       },
       {
         "enablement": "config.boot-java.rewrite.refactorings.on == true",
-        "command": "vscode-spring-boot.rewrite.list",
+        "command": "vscode-spring-boot.rewrite.list.boot-upgrades",
         "category": "Spring Boot",
-        "title": "Rewrite Refactorings..."
+        "title": "Upgrade Spring Boot Version..."
+      },
+      {
+        "enablement": "config.boot-java.rewrite.refactorings.on == true",
+        "command": "vscode-spring-boot.rewrite.list.refactorings",
+        "category": "Spring Boot",
+        "title": "Refactor Spring Boot Project..."
       },
       {
         "command": "vscode-spring-boot.rewrite.reload",
-        "title": "Reload Rewrite Recipes, Code Actions, Problem and Quick Fix Descriptors",
+        "title": "Reload OpenRewrite Recipes, Code Actions, Problem and Quick Fix Descriptors",
         "category": "Spring Boot"
       }
     ],
@@ -209,7 +226,7 @@
       },
       {
         "id": "rewrite",
-        "title": "Rewrite",
+        "title": "OpenRewrite",
         "order": 400,
         "properties": {
           "boot-java.rewrite.refactorings.on": {
@@ -220,7 +237,7 @@
           "boot-java.rewrite.reconcile": {
             "type": "boolean",
             "default": false,
-            "description": "Experimental reconciling for Java source based on Rewrite project"
+            "description": "Reconciling Java Sources"
           },
           "boot-java.rewrite.recipe-filters": {
             "type": "array",
@@ -816,7 +833,7 @@
           },
           "spring-boot.ls.problem.version-validation.UPDATE_LATEST_MAJOR_VERSION": {
             "type": "string",
-            "default": "HINT",
+            "default": "IGNORE",
             "description": "Update to Latest Major Version",
             "enum": [
               "IGNORE",
@@ -828,7 +845,7 @@
           },
           "spring-boot.ls.problem.version-validation.UPDATE_LATEST_MINOR_VERSION": {
             "type": "string",
-            "default": "HINT",
+            "default": "INFO",
             "description": "Update to Latest Minor Version",
             "enum": [
               "IGNORE",
@@ -840,7 +857,7 @@
           },
           "spring-boot.ls.problem.version-validation.UPDATE_LATEST_PATCH_VERSION": {
             "type": "string",
-            "default": "HINT",
+            "default": "WARNING",
             "description": "Update to Latest Patch Version",
             "enum": [
               "IGNORE",

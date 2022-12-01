@@ -87,7 +87,7 @@ public class AutowiredFieldIntoConstructorParameterCodeAction implements RecipeC
 								);
 						if (constructors.size() == 0) {
 							m = m.withMarkers(m.getMarkers().add(marker));							
-						} else if (constructors.size() == 1 && !AutowiredFieldIntoConstructorParameterVisitor.isConstructorInitializingField(constructors.get(0), fieldName)) {
+						} else if (constructors.size() == 1 && AutowiredFieldIntoConstructorParameterVisitor.isNotConstructorInitializingField(constructors.get(0), fieldName)) {
 							m = m.withMarkers(m.getMarkers().add(marker));							
 						} else {
 			                List<MethodDeclaration> autowiredConstructors = constructors.stream().filter(constr -> constr.getLeadingAnnotations().stream()
@@ -98,7 +98,7 @@ public class AutowiredFieldIntoConstructorParameterCodeAction implements RecipeC
 	                        )
 	                        .limit(2)
 	                        .collect(Collectors.toList());
-			                if (autowiredConstructors.size() == 1 && !AutowiredFieldIntoConstructorParameterVisitor.isConstructorInitializingField(autowiredConstructors.get(0), fieldName)) {
+			                if (autowiredConstructors.size() == 1 && AutowiredFieldIntoConstructorParameterVisitor.isNotConstructorInitializingField(autowiredConstructors.get(0), fieldName)) {
 								m = m.withMarkers(m.getMarkers().add(marker));							
 			                }
 						}
