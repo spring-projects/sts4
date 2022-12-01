@@ -95,7 +95,8 @@
 	</feature>
 
 	<feature id="com.make.chromium.cef.feature"/>
--->	<feature id="org.eclipse.wildwebdeveloper.embedder.node.feature"/>
+-->	
+	<feature id="org.eclipse.wildwebdeveloper.embedder.node.feature"/>
 
 	<bundle id="org.springframework.tooling.ls.eclipse.commons" />
 	<bundle id="org.springframework.tooling.ls.eclipse.commons.source" />
@@ -150,6 +151,7 @@
 	<bundle id="org.jcodings"/>
 	<bundle id="org.joni"/>
 	<bundle id="org.json"/>
+	<bundle id="org.jsoup"/>
 	<bundle id="org.apache.commons.lang3"/>
 	<bundle id="org.apache.commons.collections"/>
     <bundle id="org.bouncycastle.bcpg"/>
