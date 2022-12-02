@@ -239,6 +239,11 @@
             "default": false,
             "description": "Reconciling Java Sources"
           },
+          "vscode-spring-boot.rewrite.reconcile-prompt": {
+            "type": "boolean",
+            "default": true,
+            "description": "Reconciling Java Sources Prompt enabled"
+          },
           "boot-java.rewrite.recipe-filters": {
             "type": "array",
             "default": [

@@ -18,7 +18,11 @@ const JAVA_LANGUAGE_ID = "java";
 const XML_LANGUAGE_ID = "xml";
 const FACTORIES_LANGUAGE_ID = "spring-factories";
 
+const YES = 'Yes';
+const NO = 'No';
 const NEVER_SHOW_AGAIN = "Do not show again";
+const RECONCILING_PREF_KEY = 'boot-java.rewrite.reconcile';
+const RECONCILING_PROMPT_PREF_KEY = 'vscode-spring-boot.rewrite.reconcile-prompt';
 
 /** Called when extension is activated */
 export function activate(context: VSCode.ExtensionContext): Thenable<ExtensionAPI> {
@@ -120,7 +124,22 @@ export function activate(context: VSCode.ExtensionContext): Thenable<ExtensionAP
     context.subscriptions.push(startDebugSupport());
 
     return commons.activate(options, context).then(client => {
-        VSCode.commands.registerCommand('vscode-spring-boot.ls.start', () => client.start());
+        VSCode.commands.registerCommand('vscode-spring-boot.ls.start', () => client.start().then(() => {
+            if (VSCode.workspace.getConfiguration().get(RECONCILING_PROMPT_PREF_KEY) && !VSCode.workspace.getConfiguration().get(RECONCILING_PREF_KEY)) {
+                VSCode.window.showInformationMessage('Do you wish to enable Spring Boot Java sources reconciling?', YES, NO, NEVER_SHOW_AGAIN).then(answer => {
+                    switch (answer) {
+                        case YES:
+                            VSCode.workspace.getConfiguration().update(RECONCILING_PREF_KEY, true, true);
+                            break;
+                        case NEVER_SHOW_AGAIN:
+                            VSCode.workspace.getConfiguration().update(RECONCILING_PROMPT_PREF_KEY, false, true);
+                            break;
+                        default:
+                            break;   
+                    }
+                });
+            }
+        }));
         VSCode.commands.registerCommand('vscode-spring-boot.ls.stop', () => client.stop());
         liveHoverUi.activate(client, options, context);
         rewrite.activate(client, options, context);

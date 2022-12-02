@@ -24,6 +24,7 @@ import java.util.Map;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.lsp4e.server.StreamConnectionProvider;
@@ -32,6 +33,9 @@ import org.eclipse.lsp4j.InitializeResult;
 import org.eclipse.lsp4j.jsonrpc.messages.Message;
 import org.eclipse.lsp4j.jsonrpc.messages.ResponseMessage;
 import org.eclipse.lsp4j.services.LanguageServer;
+import org.eclipse.swt.SWT;
+import org.eclipse.swt.widgets.Display;
+import org.eclipse.ui.PlatformUI;
 import org.springframework.tooling.boot.ls.prefs.CategoryProblemsSeverityPrefsPage;
 import org.springframework.tooling.boot.ls.prefs.FileListEditor;
 import org.springframework.tooling.boot.ls.prefs.ProblemCategoryData;
@@ -155,6 +159,25 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 				
 				//Add remote boot apps listener
 				RemoteBootAppsDataHolder.getDefault().getRemoteApps().addListener(remoteAppsListener);
+				
+				IPreferenceStore preferenceStore = BootLanguageServerPlugin.getDefault().getPreferenceStore();
+				
+				if (preferenceStore.getBoolean(Constants.PREF_REWRITE_RECONCILE_PROMPT) && !preferenceStore.getBoolean(Constants.PREF_REWRITE_RECONCILE)) {
+					PlatformUI.getWorkbench().getDisplay().asyncExec(() -> {
+						int result = MessageDialog.open(MessageDialog.INFORMATION, Display.getCurrent().getActiveShell(),
+								"Spring Boot Java Reconciling", "Do you wish to enable Spring Boot Java Reconciling?", SWT.NONE, "Yes", "No", "Do not show again");
+						switch (result) {
+						case 0:
+							preferenceStore.setValue(Constants.PREF_REWRITE_RECONCILE, true);
+							break;
+						case 2:
+							preferenceStore.setValue(Constants.PREF_REWRITE_RECONCILE_PROMPT, false);
+							break;
+						default:
+							break;
+						}
+					});
+				}
 			}
 		}
 	}
