@@ -165,7 +165,9 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 				if (preferenceStore.getBoolean(Constants.PREF_REWRITE_RECONCILE_PROMPT) && !preferenceStore.getBoolean(Constants.PREF_REWRITE_RECONCILE)) {
 					PlatformUI.getWorkbench().getDisplay().asyncExec(() -> {
 						int result = MessageDialog.open(MessageDialog.INFORMATION, Display.getCurrent().getActiveShell(),
-								"Spring Boot Java Reconciling", "Do you wish to enable Spring Boot Java Reconciling?", SWT.NONE, "Yes", "No", "Do not show again");
+								"Spring Boot Java Reconciling",
+								"Do you wish to enable additional Java sources reconciling to get Spring specific validations and suggestions?",
+								SWT.NONE, "Yes", "No", "Do not show again");
 						switch (result) {
 						case 0:
 							preferenceStore.setValue(Constants.PREF_REWRITE_RECONCILE, true);

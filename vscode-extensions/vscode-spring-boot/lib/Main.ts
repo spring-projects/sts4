@@ -126,7 +126,7 @@ export function activate(context: VSCode.ExtensionContext): Thenable<ExtensionAP
     return commons.activate(options, context).then(client => {
         VSCode.commands.registerCommand('vscode-spring-boot.ls.start', () => client.start().then(() => {
             if (VSCode.workspace.getConfiguration().get(RECONCILING_PROMPT_PREF_KEY) && !VSCode.workspace.getConfiguration().get(RECONCILING_PREF_KEY)) {
-                VSCode.window.showInformationMessage('Do you wish to enable Spring Boot Java sources reconciling?', YES, NO, NEVER_SHOW_AGAIN).then(answer => {
+                VSCode.window.showInformationMessage('Do you wish to enable additional Java sources reconciling to get Spring specific validations and suggestions?', YES, NO, NEVER_SHOW_AGAIN).then(answer => {
                     switch (answer) {
                         case YES:
                             VSCode.workspace.getConfiguration().update(RECONCILING_PREF_KEY, true, true);
