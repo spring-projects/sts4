@@ -12,17 +12,17 @@ package org.springframework.ide.vscode.boot.xml;
 
 import static org.springframework.ide.vscode.boot.xml.XmlConfigConstants.BEANS_NAMESPACE;
 import static org.springframework.ide.vscode.boot.xml.XmlConfigConstants.BEAN_ELEMENT;
-import static org.springframework.ide.vscode.boot.xml.XmlConfigConstants.VALUE_ATTRIBUTE;
 import static org.springframework.ide.vscode.boot.xml.XmlConfigConstants.PROPERTY_ELEMENT;
+import static org.springframework.ide.vscode.boot.xml.XmlConfigConstants.VALUE_ATTRIBUTE;
 
 import java.net.URI;
+import java.nio.file.Paths;
 
 import org.eclipse.lemminx.dom.DOMDocument;
 import org.eclipse.lemminx.dom.DOMNode;
 import org.eclipse.lemminx.dom.DOMParser;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.boot.app.BootJavaConfig;
 import org.springframework.ide.vscode.boot.java.handlers.SpelExpressionReconciler;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
@@ -35,14 +35,14 @@ import org.springframework.ide.vscode.commons.util.text.IDocument;
  */
 public class SpringXMLReconcileEngine implements IReconcileEngine {
 
-	private static final Logger log = LoggerFactory.getLogger(SpringXMLReconcileEngine.class);
-
 	private final JavaProjectFinder projectFinder;
 	private final SpelExpressionReconciler spelExpressionReconciler;
 	private final XMLElementReconciler[] reconcilers;
+	private final BootJavaConfig config;
 
-	public SpringXMLReconcileEngine(JavaProjectFinder projectFinder) {
+	public SpringXMLReconcileEngine(JavaProjectFinder projectFinder, BootJavaConfig config) {
 		this.projectFinder = projectFinder;
+		this.config = config;
 		
 		this.spelExpressionReconciler = new SpelExpressionReconciler();
 
@@ -61,7 +61,10 @@ public class SpringXMLReconcileEngine implements IReconcileEngine {
 	public void reconcile(final IDocument doc, final IProblemCollector problemCollector) {
 		IJavaProject project = projectFinder.find(new TextDocumentIdentifier(doc.getUri())).orElse(null);
 		URI uri = URI.create(doc.getUri());
-		
+		if (!config.isSpringXMLSupportEnabled() || "pom.xml".equals(Paths.get(uri).getFileName().toString())) {
+			return;
+		}
+
 		if (project != null) {
 			
 			try {

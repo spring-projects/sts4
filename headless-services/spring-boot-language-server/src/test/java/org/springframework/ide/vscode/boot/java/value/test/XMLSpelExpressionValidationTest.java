@@ -34,6 +34,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.OverrideAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.context.annotation.Import;
+import org.springframework.ide.vscode.boot.app.BootJavaConfig;
 import org.springframework.ide.vscode.boot.app.BootLanguageServerBootApp;
 import org.springframework.ide.vscode.boot.bootiful.XmlBeansTestConf;
 import org.springframework.ide.vscode.boot.xml.SpringXMLReconcileEngine;
@@ -69,6 +70,7 @@ public class XMLSpelExpressionValidationTest {
 	@Autowired private BootLanguageServerHarness harness;
 	@Autowired private SimpleLanguageServer server;
 	@Autowired private JavaProjectFinder projectFinder;
+	@Autowired private BootJavaConfig config;
 	
 	private ProjectsHarness projects = ProjectsHarness.INSTANCE;
 	private MavenJavaProject project;
@@ -99,7 +101,7 @@ public class XMLSpelExpressionValidationTest {
 		docUri = directory.toPath().resolve("src/main/webapp/WEB-INF/spring/root-context.xml").toUri().toString();
 
 		problemCollector = new TestProblemCollector();
-		reconcileEngine = new SpringXMLReconcileEngine(projectFinder);
+		reconcileEngine = new SpringXMLReconcileEngine(projectFinder, config);
 	}
 	
 	@After
