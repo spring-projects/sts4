@@ -289,7 +289,9 @@ public class SpringProcessConnectorService {
 						diagnosticService.diagnosticEvent(ShowMessageException
 								.error("Failed to refresh live data from process " + processKey + " after retries: " + retryNo, e));
 	
-						disconnectProcess(processKey);
+						if (!connectedSuccess.containsKey(connector.getProcessKey())) {
+							disconnectProcess(processKey);
+						}
 					}
 				}
 			}

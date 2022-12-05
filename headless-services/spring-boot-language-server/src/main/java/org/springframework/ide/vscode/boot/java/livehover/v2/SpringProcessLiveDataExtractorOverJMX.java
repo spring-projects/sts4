@@ -241,7 +241,7 @@ public class SpringProcessLiveDataExtractorOverJMX {
 			
 			LiveMemoryMetricsModel metrics = getLiveMetrics(connection, domain, "jvm.gc.pause", tags);
 			if(metrics != null) {
-				memoryMetricsList.add(getLiveMetrics(connection, domain, "jvm.gc.pause", tags));
+				memoryMetricsList.add(metrics);
 			}
 			
 

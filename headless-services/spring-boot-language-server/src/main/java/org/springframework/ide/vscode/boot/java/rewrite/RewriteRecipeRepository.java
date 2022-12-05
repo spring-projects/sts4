@@ -376,7 +376,7 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 		}).thenCompose(p -> {
 			if (p.isPresent()) {
 				try {
-					Optional<WorkspaceEdit> edit = apply(r, p.get());
+					Optional<WorkspaceEdit> edit = computeWorkspaceEdit(r, p.get(), progressToken);
 					return CompletableFuture.completedFuture(edit).thenCompose(we -> {
 						if (we.isPresent()) {
 							server.getProgressService().progressEvent(progressToken, "Applying document changes...");
@@ -404,9 +404,9 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 		});
 	}
 	
-	private Optional<WorkspaceEdit> apply(Recipe r, IJavaProject project) {
+	private Optional<WorkspaceEdit> computeWorkspaceEdit(Recipe r, IJavaProject project, String progressToken) {
 		Path absoluteProjectDir = Paths.get(project.getLocationUri());
-		server.getProgressService().progressEvent(r.getName(), "Parsing files...");
+		server.getProgressService().progressEvent(progressToken, "Parsing files...");
 		MavenProjectParser projectParser = createRewriteMavenParser(absoluteProjectDir,
 				new InMemoryExecutionContext(), p -> {
 					TextDocument doc = server.getTextDocumentService().getLatestSnapshot(p.toUri().toString());
@@ -416,7 +416,7 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 					return null;
 				});
 		List<SourceFile> sources = projectParser.parse(absoluteProjectDir, getClasspathEntries(project));
-		server.getProgressService().progressEvent(r.getName(), "Computing changes...");
+		server.getProgressService().progressEvent(progressToken, "Computing changes...");
 		RecipeRun reciperun = r.run(sources, new InMemoryExecutionContext(e -> log.error("", e)));
 		List<Result> results = reciperun.getResults();
 		return ORDocUtils.createWorkspaceEdit(absoluteProjectDir, server.getTextDocumentService(), results);
