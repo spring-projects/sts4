@@ -1,3 +1,9 @@
+## 2022-12-07 (4.17.0 RELEASE, incl. language servers version 1.41.0)
+
+* (_VSCode)_ fixed: make sure VSCode shows an error message when running on a JDK <17 ([#903](https://github.com/spring-projects/sts4/issues/903))
+* _(Concourse)_ fixed: vscode-concourse: add dark background to light mode icon ([#845](https://github.com/spring-projects/sts4/issues/845)) - contributed by [bmalehorn](https://github.com/bmalehorn)
+* _(Concourse)_ fixed: Concourse extension doesn't know about "pre_without_version" and "build_without_version" for a semver resource ([#849](https://github.com/spring-projects/sts4/issues/849))
+
 ## 2022-10-26 (4.16.1 RELEASE, incl. language servers version 1.40.0)
 
 * no major changes
