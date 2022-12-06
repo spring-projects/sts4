@@ -22,8 +22,11 @@
 * _(Spring Boot)_ fixed: [refactoring] open rewrite refactoring menu item is broken when no language server is running ([#865](https://github.com/spring-projects/sts4/issues/865))
 * _(Spring Boot)_ fixed: [refactoring] enhance Spring Boot version validation with quick fix to update ([#886](https://github.com/spring-projects/sts4/issues/886))
 * _(Spring Boot)_ fixed: [refactoring] converting petclinic to Spring Boot 3 results in broken project ([#864](https://github.com/spring-projects/sts4/issues/864))
-* (_VSCode)_ fixed: make sure VSCode shows an error message when running on a JDK <17 ([#903](https://github.com/spring-projects/sts4/issues/903))
+* _(Spring Boot)_ fixed: [refactoring] Migrate Boot 2 auto-config to Boot ([#908](https://github.com/spring-projects/sts4/issues/908))
+* _(VSCode)_ fixed: make sure VSCode shows an error message when running on a JDK <17 ([#903](https://github.com/spring-projects/sts4/issues/903))
 * _(VSCode)_ enhancement: Add shortcut to dashboard ([#876](https://github.com/spring-projects/sts4/issues/876)) - contributed by [Eskibear](https://github.com/Eskibear))
+* _(VSCode)_ enhancement: refine walkthrough steps ([#907](https://github.com/spring-projects/sts4/issues/907)) - contributed by [Eskibear](https://github.com/Eskibear))
+* _(VSCode)_ enhancement: update walkthrough about creating projects ([#916](https://github.com/spring-projects/sts4/issues/916)) - contributed by [Eskibear](https://github.com/Eskibear))
 
 ## 2022-10-26 (4.16.1 RELEASE, incl. language servers version 1.40.0)
 
