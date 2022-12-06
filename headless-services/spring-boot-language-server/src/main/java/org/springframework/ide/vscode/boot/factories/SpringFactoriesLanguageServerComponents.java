@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.boot.factories;
 import java.util.Optional;
 import java.util.Set;
 
+import org.springframework.ide.vscode.boot.app.BootJavaConfig;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.commons.languageserver.composable.LanguageServerComponents;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
@@ -26,9 +27,9 @@ public class SpringFactoriesLanguageServerComponents implements LanguageServerCo
 	private SpringFactoriesReconcileEngine reconciler;
 	private SpringSymbolIndex springIndex;
 	
-	public SpringFactoriesLanguageServerComponents(JavaProjectFinder projectFinder, SpringSymbolIndex springIndex) {
+	public SpringFactoriesLanguageServerComponents(JavaProjectFinder projectFinder, SpringSymbolIndex springIndex, BootJavaConfig config) {
 		this.springIndex = springIndex;
-		reconciler = new SpringFactoriesReconcileEngine(projectFinder);
+		reconciler = new SpringFactoriesReconcileEngine(projectFinder, config);
 	}
 
 	@Override

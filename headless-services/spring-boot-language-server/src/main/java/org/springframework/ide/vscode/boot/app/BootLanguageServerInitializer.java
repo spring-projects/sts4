@@ -137,7 +137,7 @@ public class BootLanguageServerInitializer implements InitializingBean {
 		BootJavaLanguageServerComponents bootJavaLanguageServerComponent = new BootJavaLanguageServerComponents(appContext);
 		builder.add(bootJavaLanguageServerComponent);
 		builder.add(new SpringXMLLanguageServerComponents(server, springIndexer, params, config));
-		builder.add(new SpringFactoriesLanguageServerComponents(projectFinder, springIndexer));
+		builder.add(new SpringFactoriesLanguageServerComponents(projectFinder, springIndexer, config));
 		components = builder.build(server);
 		
 		projectReconciler = (IJavaProjectReconcileEngine) bootJavaLanguageServerComponent.getReconcileEngine().get();

@@ -1,5 +1,3 @@
-package org.springframework.ide.vscode.boot.factories;
-
 /*******************************************************************************
  * Copyright (c) 2022 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
@@ -10,15 +8,19 @@ package org.springframework.ide.vscode.boot.factories;
  * Contributors:
  *     VMware, Inc. - initial API and implementation
  *******************************************************************************/
+package org.springframework.ide.vscode.boot.factories;
+
 import java.util.Map;
 
 import org.eclipse.lsp4j.TextDocumentIdentifier;
+import org.springframework.ide.vscode.boot.app.BootJavaConfig;
 import org.springframework.ide.vscode.boot.java.Boot3JavaProblemType;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
+import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemCategory.Toggle.Option;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblemImpl;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.java.properties.antlr.parser.AntlrParser;
@@ -33,23 +35,25 @@ public class SpringFactoriesReconcileEngine implements IReconcileEngine {
 	}
 	
 	private final JavaProjectFinder projectFinder;
-	private AntlrParser parser = new AntlrParser();
-	
-	private final Map<String, KeyValuePairReconciler> keyValuePairReconcilers = Map.of(
-			"org.springframework.boot.autoconfigure.EnableAutoConfiguration", (project, pair, problemCollector) -> {
-				if (SpringProjectUtil.springBootVersionGreaterOrEqual(3, 0, 0).test(project)) {
-					ReconcileProblemImpl problem = new ReconcileProblemImpl(
-							Boot3JavaProblemType.FACTORIES_KEY_NOT_SUPPORTED,
-							"Key is not supported as of Spring Boot 3. See Boot 3 documentation topic \"Locating Auto-configuration Candidates\"",
-							pair.getOffset(),
-							pair.getLength());
-					problemCollector.accept(problem);
-				}
-			}
-	);
+	private final AntlrParser parser = new AntlrParser();	
+	private final Map<String, KeyValuePairReconciler> keyValuePairReconcilers;
 
-	public SpringFactoriesReconcileEngine(JavaProjectFinder projectFinder) {
+	public SpringFactoriesReconcileEngine(JavaProjectFinder projectFinder, BootJavaConfig config) {
 		this.projectFinder = projectFinder;
+		
+		keyValuePairReconcilers = Map.of(
+				"org.springframework.boot.autoconfigure.EnableAutoConfiguration", (project, pair, problemCollector) -> {
+					Option applicability = config.getProblemApplicability(Boot3JavaProblemType.FACTORIES_KEY_NOT_SUPPORTED);
+					if (applicability == Option.ON || (applicability == Option.AUTO && SpringProjectUtil.springBootVersionGreaterOrEqual(3, 0, 0).test(project))) {
+						ReconcileProblemImpl problem = new ReconcileProblemImpl(
+								Boot3JavaProblemType.FACTORIES_KEY_NOT_SUPPORTED,
+								"Key is not supported as of Spring Boot 3. See Boot 3 documentation topic \"Locating Auto-configuration Candidates\"",
+								pair.getOffset(),
+								pair.getLength());
+						problemCollector.accept(problem);
+					}
+				}
+		);
 	}
 
 	@Override
