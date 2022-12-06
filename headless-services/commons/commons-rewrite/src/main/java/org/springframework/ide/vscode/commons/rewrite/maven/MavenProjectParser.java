@@ -49,6 +49,7 @@ import org.openrewrite.maven.tree.MavenResolutionResult;
 import org.openrewrite.maven.tree.Pom;
 import org.openrewrite.maven.tree.ResolvedPom;
 import org.openrewrite.properties.PropertiesParser;
+import org.openrewrite.text.PlainTextParser;
 import org.openrewrite.xml.XmlParser;
 import org.openrewrite.xml.tree.Xml;
 import org.openrewrite.xml.tree.Xml.Document;
@@ -220,6 +221,14 @@ public class MavenProjectParser {
                 projectDirectory,
                 ctx
         ), addProvenance(provenance)));
+        
+        sourceFiles.addAll(ListUtils.map(new PlainTextParser().parseInputs(
+                resources.stream()
+                        .filter(p -> p.getPath().getFileName().toString().endsWith(".factories"))
+                        .collect(Collectors.toList()),
+                projectDirectory,
+                ctx
+        ), addProvenance(provenance)));
     }
 
     private <S extends SourceFile> S addProjectProvenance(S s, List<Marker> projectProvenance) {
@@ -319,12 +328,14 @@ public class MavenProjectParser {
         }
     }
     
-    public static List<Parser.Input> getMavenPoms(Path projectDir, ExecutionContext ctx, Function<Path, Parser.Input> parserInputProvider) {
-        return getSources(projectDir, ctx, parserInputProvider, "pom.xml").stream()
-                .filter(p -> p.getPath().getFileName().toString().equals("pom.xml") &&
-                        !p.toString().contains("/src/"))
-                .collect(Collectors.toList());
-    }
+	public static List<Parser.Input> getMavenPoms(Path projectDir, ExecutionContext ctx,
+			Function<Path, Parser.Input> parserInputProvider) {
+		return getSources(projectDir, ctx, parserInputProvider, "pom.xml").stream().filter(p -> {
+			String pathStr = p.getPath().toString();
+			return p.getPath().getFileName().toString().equals("pom.xml") && !pathStr.contains("/src/")
+					&& !pathStr.contains("/bin/") && !pathStr.contains("/target/");
+		}).collect(Collectors.toList());
+	}
     
     private static ResolvedPom getModel(Xml.Document maven) {
     	MavenResolutionResult pom = getResolvedPom(maven);
@@ -356,7 +367,7 @@ public class MavenProjectParser {
             return List.of();
         }
         return getSources(projectDir.resolve(pom.getSourcePath()).getParent().resolve(Paths.get("src", "main", "resources")),
-                ctx, parserInputProvider, ".properties", ".xml", ".yml", ".yaml");
+                ctx, parserInputProvider, ".properties", ".xml", ".yml", ".yaml", ".factories");
     }
     
     private static List<Parser.Input> getTestResources(Pom pom, Path projectDir, ExecutionContext ctx, Function<Path, Parser.Input> parserInputProvider) {
