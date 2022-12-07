@@ -349,10 +349,17 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 					throw new RuntimeException("No recipes found to perform!");
 				} else if (aggregateRecipe.getRecipeList().size() == 1) {
 					Recipe r = aggregateRecipe.getRecipeList().get(0);
-					String progressToken = params.getWorkDoneToken() == null || params.getWorkDoneToken().getLeft() == null ? r.getName() : params.getWorkDoneToken().getLeft();
+					String progressToken = params.getWorkDoneToken() == null
+							|| params.getWorkDoneToken().getLeft() == null
+									? (r.getName() == null ? UUID.randomUUID().toString() : r.getName())
+									: params.getWorkDoneToken().getLeft();
 					return apply(r, uri, progressToken);
 				} else {
-					String progressToken = params.getWorkDoneToken() == null || params.getWorkDoneToken().getLeft() == null ? aggregateRecipe.getName() : params.getWorkDoneToken().getLeft();
+					String progressToken = params.getWorkDoneToken() == null
+							|| params.getWorkDoneToken().getLeft() == null
+									? (aggregateRecipe.getName() == null ? UUID.randomUUID().toString()
+											: aggregateRecipe.getName())
+									: params.getWorkDoneToken().getLeft();
 					return apply(aggregateRecipe, uri, progressToken);
 				}
 			});

@@ -124,6 +124,7 @@ public class RecipeTreeModel {
 			return recipes[0];
 		} else {
 			RecipeDescriptor aggregate = new RecipeDescriptor();
+			aggregate.name = recipes.length + " recipes";
 			aggregate.displayName = recipes.length + " recipes";
 			aggregate.description = "Multiple recipes to be applied. Number of recipes " + recipes.length;
 			aggregate.tags = Arrays.stream(recipes).flatMap(r -> r.tags.stream()).collect(Collectors.toSet());
