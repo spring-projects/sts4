@@ -114,7 +114,7 @@ export function activate(context: VSCode.ExtensionContext): Thenable<ExtensionAP
             },
             initializationOptions: () => ({
                 workspaceFolders: workspace.workspaceFolders ? workspace.workspaceFolders.map(f => f.uri.toString()) : null,
-                enableJdtClasspath: VSCode.extensions.getExtension('redhat.java')?.exports?.serverMode === 'Standard'
+                enableJdtClasspath: true
             })
         },
         highlightCodeLensSettingKey: 'boot-java.highlight-codelens.on'
@@ -125,6 +125,12 @@ export function activate(context: VSCode.ExtensionContext): Thenable<ExtensionAP
 
     return commons.activate(options, context).then(client => {
         VSCode.commands.registerCommand('vscode-spring-boot.ls.start', () => client.start().then(() => {
+            // Boot LS is fully started
+
+            // Force classpath listener to be enabled. Boot LS can only be launched iff classpath is available and there Spring-Boot on the classpath somewhere.
+            VSCode.commands.executeCommand('sts.vscode-spring-boot.enableClasspathListening', true);
+
+            // Ask user to enable Boot java source reconciling feature if disabled
             if (VSCode.workspace.getConfiguration().get(RECONCILING_PROMPT_PREF_KEY) && !VSCode.workspace.getConfiguration().get(RECONCILING_PREF_KEY)) {
                 VSCode.window.showInformationMessage('Do you wish to enable additional Java sources reconciling to get Spring specific validations and suggestions?', YES, NO, NEVER_SHOW_AGAIN).then(answer => {
                     switch (answer) {
