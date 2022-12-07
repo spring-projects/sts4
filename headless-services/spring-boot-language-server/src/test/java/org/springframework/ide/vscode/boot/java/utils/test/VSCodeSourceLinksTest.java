@@ -10,8 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.utils.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.net.URI;
@@ -22,7 +22,7 @@ import java.util.Optional;
 
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.gradle.internal.impldep.com.google.common.collect.ImmutableList;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.ide.vscode.boot.java.links.VSCodeSourceLinks;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
@@ -58,72 +58,72 @@ public class VSCodeSourceLinksTest {
 
 	});
 
-	@Test
-	public void testJavaSourceUrl() throws Exception {
-		MavenJavaProject project = mavenProjectsCache.get("empty-boot-15-web-app");
-		Optional<String> url = new VSCodeSourceLinks(new CompilationUnitCache(null, null, null), null).sourceLinkUrlForFQName(project, "com.example.EmptyBoot15WebAppApplication");
-		assertTrue(url.isPresent());
-		Path projectPath = Paths.get(project.pom().getParent());
-		URI uri = URI.create(url.get());
+    @Test
+    void testJavaSourceUrl() throws Exception {
+        MavenJavaProject project = mavenProjectsCache.get("empty-boot-15-web-app");
+        Optional<String> url = new VSCodeSourceLinks(new CompilationUnitCache(null, null, null), null).sourceLinkUrlForFQName(project, "com.example.EmptyBoot15WebAppApplication");
+        assertTrue(url.isPresent());
+        Path projectPath = Paths.get(project.pom().getParent());
+        URI uri = URI.create(url.get());
 
-		// Use File to get rid of the fragment parts of the URL. The URL may have fragments that indicate line and column numbers
-		uri = new File(uri.getPath()).toURI();
+        // Use File to get rid of the fragment parts of the URL. The URL may have fragments that indicate line and column numbers
+        uri = new File(uri.getPath()).toURI();
 
-		Path relativePath = projectPath.relativize(Paths.get(uri));
-		assertEquals(Paths.get("src/main/java/com/example/EmptyBoot15WebAppApplication.java"), relativePath);
-		String positionPart = url.get().substring(url.get().lastIndexOf('#'));
-		assertEquals("#7,14", positionPart);
-	}
+        Path relativePath = projectPath.relativize(Paths.get(uri));
+        assertEquals(Paths.get("src/main/java/com/example/EmptyBoot15WebAppApplication.java"), relativePath);
+        String positionPart = url.get().substring(url.get().lastIndexOf('#'));
+        assertEquals("#7,14", positionPart);
+    }
 
-	@Test
-	public void testClasspathResourceOnTomcatUrl() throws Exception {
-		MavenJavaProject project = mavenProjectsCache.get("empty-boot-15-web-app");
-		Optional<String> url = new VSCodeSourceLinks(new CompilationUnitCache(null, null, null), new JavaProjectFinder() {
+    @Test
+    void testClasspathResourceOnTomcatUrl() throws Exception {
+        MavenJavaProject project = mavenProjectsCache.get("empty-boot-15-web-app");
+        Optional<String> url = new VSCodeSourceLinks(new CompilationUnitCache(null, null, null), new JavaProjectFinder() {
 
-			@Override
-			public Optional<IJavaProject> find(TextDocumentIdentifier doc) {
-				return Optional.of(project);
-			}
+            @Override
+            public Optional<IJavaProject> find(TextDocumentIdentifier doc) {
+                return Optional.of(project);
+            }
 
-			@Override
-			public Collection<? extends IJavaProject> all() {
-				return ImmutableList.of(project);
-			}
-		})
-			.sourceLinkUrlForClasspathResource("Users/aboyko/pivotal-tc-server/instances/base/wtpwebapps/empty-boot-15-web-app/WEB-INF/classes/com/example/EmptyBoot15WebAppApplication.class");
-		assertTrue(url.isPresent());
-		Path projectPath = Paths.get(project.pom().getParent());
-		URI uri = URI.create(url.get());
+            @Override
+            public Collection<? extends IJavaProject> all() {
+                return ImmutableList.of(project);
+            }
+        })
+                .sourceLinkUrlForClasspathResource("Users/aboyko/pivotal-tc-server/instances/base/wtpwebapps/empty-boot-15-web-app/WEB-INF/classes/com/example/EmptyBoot15WebAppApplication.class");
+        assertTrue(url.isPresent());
+        Path projectPath = Paths.get(project.pom().getParent());
+        URI uri = URI.create(url.get());
 
-		// Use File to get rid of the fragment parts of the URL. The URL may have fragments that indicate line and column numbers
-		uri = new File(uri.getPath()).toURI();
+        // Use File to get rid of the fragment parts of the URL. The URL may have fragments that indicate line and column numbers
+        uri = new File(uri.getPath()).toURI();
 
-		Path relativePath = projectPath.relativize(Paths.get(uri));
-		assertEquals(Paths.get("src/main/java/com/example/EmptyBoot15WebAppApplication.java"), relativePath);
-		String positionPart = url.get().substring(url.get().lastIndexOf('#'));
-		assertEquals("#7,14", positionPart);
-	}
+        Path relativePath = projectPath.relativize(Paths.get(uri));
+        assertEquals(Paths.get("src/main/java/com/example/EmptyBoot15WebAppApplication.java"), relativePath);
+        String positionPart = url.get().substring(url.get().lastIndexOf('#'));
+        assertEquals("#7,14", positionPart);
+    }
 
-	@Test
-	public void testJarUrl() throws Exception {
-		MavenJavaProject project = mavenProjectsCache.get("empty-boot-15-web-app");
-		Optional<String> url = new VSCodeSourceLinks(new CompilationUnitCache(null, null, null), null).sourceLinkUrlForFQName(project, "org.springframework.boot.autoconfigure.SpringBootApplication");
-		assertTrue(url.isPresent());
-		String headerPart = url.get().substring(0, url.get().indexOf('?'));
-		assertEquals("jdt://contents/spring-boot-autoconfigure-1.5.8.RELEASE.jar/org.springframework.boot.autoconfigure/SpringBootApplication.class", headerPart);
-		String positionPart = url.get().substring(url.get().lastIndexOf('#'));
-		assertEquals("#55,19", positionPart);
-	}
+    @Test
+    void testJarUrl() throws Exception {
+        MavenJavaProject project = mavenProjectsCache.get("empty-boot-15-web-app");
+        Optional<String> url = new VSCodeSourceLinks(new CompilationUnitCache(null, null, null), null).sourceLinkUrlForFQName(project, "org.springframework.boot.autoconfigure.SpringBootApplication");
+        assertTrue(url.isPresent());
+        String headerPart = url.get().substring(0, url.get().indexOf('?'));
+        assertEquals("jdt://contents/spring-boot-autoconfigure-1.5.8.RELEASE.jar/org.springframework.boot.autoconfigure/SpringBootApplication.class", headerPart);
+        String positionPart = url.get().substring(url.get().lastIndexOf('#'));
+        assertEquals("#55,19", positionPart);
+    }
 
-	@Test
-	public void testJarUrlInnerType() throws Exception {
-		MavenJavaProject project = mavenProjectsCache.get("empty-boot-15-web-app");
-		Optional<String> url = new VSCodeSourceLinks(new CompilationUnitCache(null, null, null), null).sourceLinkUrlForFQName(project, "org.springframework.web.client.RestTemplate$AcceptHeaderRequestCallback");
-		assertTrue(url.isPresent());
-		String headerPart = url.get().substring(0, url.get().indexOf('?'));
-		assertEquals("jdt://contents/spring-web-4.3.12.RELEASE.jar/org.springframework.web.client/RestTemplate$AcceptHeaderRequestCallback.class", headerPart);
-		String positionPart = url.get().substring(url.get().lastIndexOf('#'));
-		assertEquals("#747,16", positionPart);
-	}
+    @Test
+    void testJarUrlInnerType() throws Exception {
+        MavenJavaProject project = mavenProjectsCache.get("empty-boot-15-web-app");
+        Optional<String> url = new VSCodeSourceLinks(new CompilationUnitCache(null, null, null), null).sourceLinkUrlForFQName(project, "org.springframework.web.client.RestTemplate$AcceptHeaderRequestCallback");
+        assertTrue(url.isPresent());
+        String headerPart = url.get().substring(0, url.get().indexOf('?'));
+        assertEquals("jdt://contents/spring-web-4.3.12.RELEASE.jar/org.springframework.web.client/RestTemplate$AcceptHeaderRequestCallback.class", headerPart);
+        String positionPart = url.get().substring(url.get().lastIndexOf('#'));
+        assertEquals("#747,16", positionPart);
+    }
 
 }

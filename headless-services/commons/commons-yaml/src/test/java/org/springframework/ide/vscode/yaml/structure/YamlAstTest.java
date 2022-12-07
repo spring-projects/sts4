@@ -10,11 +10,11 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.yaml.structure;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeRef;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST;
 import org.yaml.snakeyaml.nodes.Node;

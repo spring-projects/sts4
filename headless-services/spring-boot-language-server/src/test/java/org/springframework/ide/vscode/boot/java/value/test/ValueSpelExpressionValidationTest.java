@@ -10,8 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.value.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 import java.io.File;
 import java.net.URI;
@@ -27,10 +27,10 @@ import org.eclipse.lsp4j.DidOpenTextDocumentParams;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.TextDocumentItem;
 import org.gradle.internal.impldep.com.google.common.collect.ImmutableList;
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -60,12 +60,12 @@ import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 /**
  * @author Martin Lippert
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @BootLanguageServerTest
 @Import({AdHocPropertyHarnessTestConf.class, ValueSpelExpressionValidationTest.TestConf.class})
 public class ValueSpelExpressionValidationTest {
@@ -137,7 +137,7 @@ public class ValueSpelExpressionValidationTest {
 
 	}
 
-	@Before
+	@BeforeEach
 	public void setup() throws Exception {
 		harness.intialize(null);
 		
@@ -150,167 +150,167 @@ public class ValueSpelExpressionValidationTest {
 		}, server.getTextDocumentService(), null);
 	}
 	
-	@After
+	@AfterEach
 	public void closeDoc() throws Exception {
 		TextDocumentIdentifier identifier = new TextDocumentIdentifier(docUri);
 		DidCloseTextDocumentParams closeParams = new DidCloseTextDocumentParams(identifier);
 		server.getTextDocumentService().didClose(closeParams);
 		server.getAsync().waitForAll();
 	}
-	
-	@Test
-	public void testNoSpelExpressionFound() throws Exception {
-		TextDocument doc = prepareDocument("@Value(\"onField\")", "@Value(\"something\")");
-		assertNotNull(doc);
-		
-		reconcileEngine.reconcile(doc, problemCollector);
-		
-		List<ReconcileProblem> problems = problemCollector.getCollectedProblems();
-		assertEquals(0, problems.size());
-	}
 
-	@Test
-	public void testCorrectSpelExpressionFound() throws Exception {
-		TextDocument doc = prepareDocument("@Value(\"onField\")", "@Value(\"#{new String('hello world').toUpperCase()}\")");
-		assertNotNull(doc);
-		
-		reconcileEngine.reconcile(doc, problemCollector);
-		
-		List<ReconcileProblem> problems = problemCollector.getCollectedProblems();
-		assertEquals(0, problems.size());
-	}
+    @Test
+    void testNoSpelExpressionFound() throws Exception {
+        TextDocument doc = prepareDocument("@Value(\"onField\")", "@Value(\"something\")");
+        assertNotNull(doc);
 
-	@Test
-	public void testCorrectSpelExpressionFoundWithParamName() throws Exception {
-		TextDocument doc = prepareDocument("@Value(\"onField\")", "@Value(value=\"#{new String('hello world').toUpperCase()}\")");
-		assertNotNull(doc);
-		
-		reconcileEngine.reconcile(doc, problemCollector);
-		
-		List<ReconcileProblem> problems = problemCollector.getCollectedProblems();
-		assertEquals(0, problems.size());
-	}
+        reconcileEngine.reconcile(doc, problemCollector);
 
-	@Test
-	public void testIncorrectSpelExpressionFound() throws Exception {
-		TextDocument doc = prepareDocument("@Value(\"onField\")", "@Value(\"#{new String('hello world).toUpperCase()}\")");
-		assertNotNull(doc);
-		
-		reconcileEngine.reconcile(doc, problemCollector);
-		
-		List<ReconcileProblem> problems = problemCollector.getCollectedProblems();
-		assertEquals(1, problems.size());
-	}
-	
-	@Test
-	public void testIncorrectSpelExpressionFoundWithParamName() throws Exception {
-		TextDocument doc = prepareDocument("@Value(\"onField\")", "@Value(value=\"#{new String('hello world).toUpperCase()}\")");
-		assertNotNull(doc);
-		
-		reconcileEngine.reconcile(doc, problemCollector);
-		
-		List<ReconcileProblem> problems = problemCollector.getCollectedProblems();
-		assertEquals(1, problems.size());
-	}
-	
-	@Test
-	public void testIncorrectSpelExpressionFoundOnMethodParameter() throws Exception {
-		TextDocument doc = prepareDocument("@Value(\"onParameter\")", "@Value(\"#{new String('hello world).toUpperCase()}\")");
-		assertNotNull(doc);
-		
-		reconcileEngine.reconcile(doc, problemCollector);
-		
-		List<ReconcileProblem> problems = problemCollector.getCollectedProblems();
-		assertEquals(1, problems.size());
-	}
-	
-	@Test
-	public void testIncorrectSpelExpressionFoundOnMethodParameterWithParamName() throws Exception {
-		TextDocument doc = prepareDocument("@Value(\"onParameter\")", "@Value(value=\"#{new String('hello world).toUpperCase()}\")");
-		assertNotNull(doc);
-		
-		reconcileEngine.reconcile(doc, problemCollector);
-		
-		List<ReconcileProblem> problems = problemCollector.getCollectedProblems();
-		assertEquals(1, problems.size());
-	}
-	
-	@Test
-	public void testIncorrectSpelExpressionFoundOnSpelParamOfCachableAnnotation() throws Exception {
-		TextDocument doc = prepareDocument("@Value(\"onField\")", "@Cacheable(condition=\"new String('hello world).toUpperCase()\")");
-		assertNotNull(doc);
-		
-		reconcileEngine.reconcile(doc, problemCollector);
-		
-		List<ReconcileProblem> problems = problemCollector.getCollectedProblems();
-		assertEquals(1, problems.size());
-	}
-	
-	@Test
-	public void testIncorrectSpelExpressionNotFoundOnNonSpelParamOfCachableAnnotation() throws Exception {
-		TextDocument doc = prepareDocument("@Value(\"onField\")", "@Cacheable(keyGenerator=\"new String('hello world).toUpperCase()\")");
-		assertNotNull(doc);
-		
-		reconcileEngine.reconcile(doc, problemCollector);
-		
-		List<ReconcileProblem> problems = problemCollector.getCollectedProblems();
-		assertEquals(0, problems.size());
-	}
-	
-	@Test
-	public void testIncorrectSpelExpressionFoundOnSpelParamOfCachableAnnotationAmongOtherParams() throws Exception {
-		TextDocument doc = prepareDocument("@Value(\"onField\")", "@Cacheable(keyGenerator=\"somekey\", condition=\"new String('hello world).toUpperCase()\")");
-		assertNotNull(doc);
-		
-		reconcileEngine.reconcile(doc, problemCollector);
-		
-		List<ReconcileProblem> problems = problemCollector.getCollectedProblems();
-		assertEquals(1, problems.size());
-	}
-	
-	@Test
-	public void testIncorrectSpelExpressionFoundOnMultipleSpelParamsOfCachableAnnotation() throws Exception {
-		TextDocument doc = prepareDocument("@Value(\"onField\")", "@Cacheable(unless=\"new String('hello world).toUpperCase()\", condition=\"new String('hello world).toUpperCase()\")");
-		assertNotNull(doc);
-		
-		reconcileEngine.reconcile(doc, problemCollector);
-		
-		List<ReconcileProblem> problems = problemCollector.getCollectedProblems();
-		assertEquals(2, problems.size());
-	}
-	
-	@Test
-	public void testCorrectSpelExpressionFoundOnCustomAnnotation() throws Exception {
-		TextDocument doc = prepareDocument("@Value(\"onMethod\")", "@CustomEventListener(condition=\"new String('hello world').toUpperCase()\")");
-		assertNotNull(doc);
-		
-		reconcileEngine.reconcile(doc, problemCollector);
-		
-		List<ReconcileProblem> problems = problemCollector.getCollectedProblems();
-		assertEquals(0, problems.size());
-	}
+        List<ReconcileProblem> problems = problemCollector.getCollectedProblems();
+        assertEquals(0, problems.size());
+    }
 
-	@Test
-	public void testIncorrectSpelExpressionFoundOnCustomAnnotation() throws Exception {
-		TextDocument doc = prepareDocument("@Value(\"onMethod\")", "@CustomEventListener(condition=\"new String('hello world).toUpperCase()\")");
-		assertNotNull(doc);
-		
-		reconcileEngine.reconcile(doc, problemCollector);
-		
-		List<ReconcileProblem> problems = problemCollector.getCollectedProblems();
-		assertEquals(1, problems.size());
-	}
-	
-	@Test
-	public void testIgnoreSpelExpressionsWithPropertyPlaceholder() throws Exception {
-		TextDocument doc = prepareDocument("@Value(\"onField\")", "@Value(value=\"#{${property.hello:false}}\")");
-		assertNotNull(doc);
-		
-		reconcileEngine.reconcile(doc, problemCollector);
-		
-		List<ReconcileProblem> problems = problemCollector.getCollectedProblems();
-		assertEquals(0, problems.size());
-	}
+    @Test
+    void testCorrectSpelExpressionFound() throws Exception {
+        TextDocument doc = prepareDocument("@Value(\"onField\")", "@Value(\"#{new String('hello world').toUpperCase()}\")");
+        assertNotNull(doc);
+
+        reconcileEngine.reconcile(doc, problemCollector);
+
+        List<ReconcileProblem> problems = problemCollector.getCollectedProblems();
+        assertEquals(0, problems.size());
+    }
+
+    @Test
+    void testCorrectSpelExpressionFoundWithParamName() throws Exception {
+        TextDocument doc = prepareDocument("@Value(\"onField\")", "@Value(value=\"#{new String('hello world').toUpperCase()}\")");
+        assertNotNull(doc);
+
+        reconcileEngine.reconcile(doc, problemCollector);
+
+        List<ReconcileProblem> problems = problemCollector.getCollectedProblems();
+        assertEquals(0, problems.size());
+    }
+
+    @Test
+    void testIncorrectSpelExpressionFound() throws Exception {
+        TextDocument doc = prepareDocument("@Value(\"onField\")", "@Value(\"#{new String('hello world).toUpperCase()}\")");
+        assertNotNull(doc);
+
+        reconcileEngine.reconcile(doc, problemCollector);
+
+        List<ReconcileProblem> problems = problemCollector.getCollectedProblems();
+        assertEquals(1, problems.size());
+    }
+
+    @Test
+    void testIncorrectSpelExpressionFoundWithParamName() throws Exception {
+        TextDocument doc = prepareDocument("@Value(\"onField\")", "@Value(value=\"#{new String('hello world).toUpperCase()}\")");
+        assertNotNull(doc);
+
+        reconcileEngine.reconcile(doc, problemCollector);
+
+        List<ReconcileProblem> problems = problemCollector.getCollectedProblems();
+        assertEquals(1, problems.size());
+    }
+
+    @Test
+    void testIncorrectSpelExpressionFoundOnMethodParameter() throws Exception {
+        TextDocument doc = prepareDocument("@Value(\"onParameter\")", "@Value(\"#{new String('hello world).toUpperCase()}\")");
+        assertNotNull(doc);
+
+        reconcileEngine.reconcile(doc, problemCollector);
+
+        List<ReconcileProblem> problems = problemCollector.getCollectedProblems();
+        assertEquals(1, problems.size());
+    }
+
+    @Test
+    void testIncorrectSpelExpressionFoundOnMethodParameterWithParamName() throws Exception {
+        TextDocument doc = prepareDocument("@Value(\"onParameter\")", "@Value(value=\"#{new String('hello world).toUpperCase()}\")");
+        assertNotNull(doc);
+
+        reconcileEngine.reconcile(doc, problemCollector);
+
+        List<ReconcileProblem> problems = problemCollector.getCollectedProblems();
+        assertEquals(1, problems.size());
+    }
+
+    @Test
+    void testIncorrectSpelExpressionFoundOnSpelParamOfCachableAnnotation() throws Exception {
+        TextDocument doc = prepareDocument("@Value(\"onField\")", "@Cacheable(condition=\"new String('hello world).toUpperCase()\")");
+        assertNotNull(doc);
+
+        reconcileEngine.reconcile(doc, problemCollector);
+
+        List<ReconcileProblem> problems = problemCollector.getCollectedProblems();
+        assertEquals(1, problems.size());
+    }
+
+    @Test
+    void testIncorrectSpelExpressionNotFoundOnNonSpelParamOfCachableAnnotation() throws Exception {
+        TextDocument doc = prepareDocument("@Value(\"onField\")", "@Cacheable(keyGenerator=\"new String('hello world).toUpperCase()\")");
+        assertNotNull(doc);
+
+        reconcileEngine.reconcile(doc, problemCollector);
+
+        List<ReconcileProblem> problems = problemCollector.getCollectedProblems();
+        assertEquals(0, problems.size());
+    }
+
+    @Test
+    void testIncorrectSpelExpressionFoundOnSpelParamOfCachableAnnotationAmongOtherParams() throws Exception {
+        TextDocument doc = prepareDocument("@Value(\"onField\")", "@Cacheable(keyGenerator=\"somekey\", condition=\"new String('hello world).toUpperCase()\")");
+        assertNotNull(doc);
+
+        reconcileEngine.reconcile(doc, problemCollector);
+
+        List<ReconcileProblem> problems = problemCollector.getCollectedProblems();
+        assertEquals(1, problems.size());
+    }
+
+    @Test
+    void testIncorrectSpelExpressionFoundOnMultipleSpelParamsOfCachableAnnotation() throws Exception {
+        TextDocument doc = prepareDocument("@Value(\"onField\")", "@Cacheable(unless=\"new String('hello world).toUpperCase()\", condition=\"new String('hello world).toUpperCase()\")");
+        assertNotNull(doc);
+
+        reconcileEngine.reconcile(doc, problemCollector);
+
+        List<ReconcileProblem> problems = problemCollector.getCollectedProblems();
+        assertEquals(2, problems.size());
+    }
+
+    @Test
+    void testCorrectSpelExpressionFoundOnCustomAnnotation() throws Exception {
+        TextDocument doc = prepareDocument("@Value(\"onMethod\")", "@CustomEventListener(condition=\"new String('hello world').toUpperCase()\")");
+        assertNotNull(doc);
+
+        reconcileEngine.reconcile(doc, problemCollector);
+
+        List<ReconcileProblem> problems = problemCollector.getCollectedProblems();
+        assertEquals(0, problems.size());
+    }
+
+    @Test
+    void testIncorrectSpelExpressionFoundOnCustomAnnotation() throws Exception {
+        TextDocument doc = prepareDocument("@Value(\"onMethod\")", "@CustomEventListener(condition=\"new String('hello world).toUpperCase()\")");
+        assertNotNull(doc);
+
+        reconcileEngine.reconcile(doc, problemCollector);
+
+        List<ReconcileProblem> problems = problemCollector.getCollectedProblems();
+        assertEquals(1, problems.size());
+    }
+
+    @Test
+    void testIgnoreSpelExpressionsWithPropertyPlaceholder() throws Exception {
+        TextDocument doc = prepareDocument("@Value(\"onField\")", "@Value(value=\"#{${property.hello:false}}\")");
+        assertNotNull(doc);
+
+        reconcileEngine.reconcile(doc, problemCollector);
+
+        List<ReconcileProblem> problems = problemCollector.getCollectedProblems();
+        assertEquals(0, problems.size());
+    }
 	
 	private TextDocument prepareDocument(String selectedAnnotation, String annotationStatementBeforeTest) throws Exception {
 		String content = IOUtils.toString(new URI(docUri));

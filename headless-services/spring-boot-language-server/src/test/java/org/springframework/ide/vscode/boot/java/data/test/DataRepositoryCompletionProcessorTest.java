@@ -10,16 +10,16 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.data.test;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.InputStream;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.eclipse.lsp4j.CompletionItem;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
@@ -30,12 +30,12 @@ import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.languageserver.testharness.TestAsserts;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 /**
  * @author Martin Lippert
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @BootLanguageServerTest
 @Import(HoverTestConf.class)
 public class DataRepositoryCompletionProcessorTest {
@@ -43,20 +43,20 @@ public class DataRepositoryCompletionProcessorTest {
 	@Autowired private BootLanguageServerHarness harness;
 	private Editor editor;
 
-	@Before
+	@BeforeEach
 	public void setup() throws Exception {
 		IJavaProject testProject = ProjectsHarness.INSTANCE.mavenProject("test-spring-data-symbols");
 		harness.useProject(testProject);
 		harness.intialize(null);
 	}
 
-	@Test
-	public void testStandardFindByCompletions() throws Exception {
-		prepareCase("{", "{<*>");
-		assertContainsAnnotationCompletions(
-				"List<Customer> findByFirstName(String firstName);",
-				"List<Customer> findByLastName(String lastName);");
-	}
+    @Test
+    void testStandardFindByCompletions() throws Exception {
+        prepareCase("{", "{<*>");
+        assertContainsAnnotationCompletions(
+                "List<Customer> findByFirstName(String firstName);",
+                "List<Customer> findByLastName(String lastName);");
+    }
 
 	private void prepareCase(String selectedAnnotation, String annotationStatementBeforeTest) throws Exception {
 		InputStream resource = this.getClass().getResourceAsStream("/test-projects/test-spring-data-symbols/src/main/java/org/test/TestCustomerRepositoryForCompletions.java");

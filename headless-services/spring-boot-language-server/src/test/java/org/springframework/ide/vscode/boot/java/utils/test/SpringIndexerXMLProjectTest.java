@@ -10,8 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.utils.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.nio.file.Paths;
@@ -20,9 +20,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.lsp4j.WorkspaceSymbol;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.OverrideAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -39,13 +38,10 @@ import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
-import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * @author Martin Lippert
  */
-@RunWith(SpringRunner.class)
-//@BootLanguageServerTest
 @OverrideAutoConfiguration(enabled=false)
 @Import({LanguageServerAutoConf.class, XmlBeansTestConf.class})
 @SpringBootTest(classes={
@@ -62,7 +58,7 @@ public class SpringIndexerXMLProjectTest {
 	private File directory;
 	private IJavaProject project;
 
-	@Before
+	@BeforeEach
 	public void setup() throws Exception {
 		harness.intialize(null);
 		indexer.configureIndexer(SymbolIndexConfig.builder()
@@ -81,109 +77,109 @@ public class SpringIndexerXMLProjectTest {
 		initProject.get(5, TimeUnit.SECONDS);
 	}
 
-	@Test
-	public void testScanningSimpleSpringXMLConfig() throws Exception {
-		List<? extends WorkspaceSymbol> allSymbols = indexer.getAllSymbols("");
+    @Test
+    void testScanningSimpleSpringXMLConfig() throws Exception {
+        List<? extends WorkspaceSymbol> allSymbols = indexer.getAllSymbols("");
 
-		assertEquals(5, allSymbols.size());
+        assertEquals(5, allSymbols.size());
 
-		String docUri = directory.toPath().resolve("config/simple-spring-config.xml").toUri().toString();
-		assertTrue(SpringIndexerTest.containsSymbol(allSymbols, "@+ 'transactionManager' DataSourceTransactionManager", docUri, 6, 14, 6, 37));
-		assertTrue(SpringIndexerTest.containsSymbol(allSymbols, "@+ 'jdbcTemplate' JdbcTemplate", docUri, 8, 14, 8, 31));
-		assertTrue(SpringIndexerTest.containsSymbol(allSymbols, "@+ 'namedParameterJdbcTemplate' NamedParameterJdbcTemplate", docUri, 12, 14, 12, 45));
-		assertTrue(SpringIndexerTest.containsSymbol(allSymbols, "@+ 'persistenceExceptionTranslationPostProcessor' PersistenceExceptionTranslationPostProcessor", docUri, 18, 10, 18, 97));
+        String docUri = directory.toPath().resolve("config/simple-spring-config.xml").toUri().toString();
+        assertTrue(SpringIndexerTest.containsSymbol(allSymbols, "@+ 'transactionManager' DataSourceTransactionManager", docUri, 6, 14, 6, 37));
+        assertTrue(SpringIndexerTest.containsSymbol(allSymbols, "@+ 'jdbcTemplate' JdbcTemplate", docUri, 8, 14, 8, 31));
+        assertTrue(SpringIndexerTest.containsSymbol(allSymbols, "@+ 'namedParameterJdbcTemplate' NamedParameterJdbcTemplate", docUri, 12, 14, 12, 45));
+        assertTrue(SpringIndexerTest.containsSymbol(allSymbols, "@+ 'persistenceExceptionTranslationPostProcessor' PersistenceExceptionTranslationPostProcessor", docUri, 18, 10, 18, 97));
 
-		List<? extends SymbolAddOnInformation> addon = indexer.getAdditonalInformation(docUri);
-		assertEquals(4, addon.size());
+        List<? extends SymbolAddOnInformation> addon = indexer.getAdditonalInformation(docUri);
+        assertEquals(4, addon.size());
 
-		assertEquals(1, addon.stream()
-			.filter(info -> info instanceof BeansSymbolAddOnInformation)
-			.filter(info -> "transactionManager".equals(((BeansSymbolAddOnInformation)info).getBeanID()))
-			.count());
+        assertEquals(1, addon.stream()
+                .filter(info -> info instanceof BeansSymbolAddOnInformation)
+                .filter(info -> "transactionManager".equals(((BeansSymbolAddOnInformation) info).getBeanID()))
+                .count());
 
-		assertEquals(1, addon.stream()
-			.filter(info -> info instanceof BeansSymbolAddOnInformation)
-			.filter(info -> "jdbcTemplate".equals(((BeansSymbolAddOnInformation)info).getBeanID()))
-			.count());
+        assertEquals(1, addon.stream()
+                .filter(info -> info instanceof BeansSymbolAddOnInformation)
+                .filter(info -> "jdbcTemplate".equals(((BeansSymbolAddOnInformation) info).getBeanID()))
+                .count());
 
-		assertEquals(1, addon.stream()
-				.filter(info -> info instanceof BeansSymbolAddOnInformation)
-				.filter(info -> "namedParameterJdbcTemplate".equals(((BeansSymbolAddOnInformation)info).getBeanID()))
-				.count());
+        assertEquals(1, addon.stream()
+                .filter(info -> info instanceof BeansSymbolAddOnInformation)
+                .filter(info -> "namedParameterJdbcTemplate".equals(((BeansSymbolAddOnInformation) info).getBeanID()))
+                .count());
 
-		assertEquals(1, addon.stream()
-				.filter(info -> info instanceof BeansSymbolAddOnInformation)
-				.filter(info -> "persistenceExceptionTranslationPostProcessor".equals(((BeansSymbolAddOnInformation)info).getBeanID()))
-				.count());
+        assertEquals(1, addon.stream()
+                .filter(info -> info instanceof BeansSymbolAddOnInformation)
+                .filter(info -> "persistenceExceptionTranslationPostProcessor".equals(((BeansSymbolAddOnInformation) info).getBeanID()))
+                .count());
 
 
-		String beansOnClasspathDocUri = directory.toPath().resolve("src/main/resources/beans.xml").toUri().toString();
-		assertTrue(SpringIndexerTest.containsSymbol(allSymbols, "@+ 'sb' SimpleBean", beansOnClasspathDocUri, 6, 14, 6, 21));
+        String beansOnClasspathDocUri = directory.toPath().resolve("src/main/resources/beans.xml").toUri().toString();
+        assertTrue(SpringIndexerTest.containsSymbol(allSymbols, "@+ 'sb' SimpleBean", beansOnClasspathDocUri, 6, 14, 6, 21));
 
-		addon = indexer.getAdditonalInformation(beansOnClasspathDocUri);
-		assertEquals(1, addon.size());
-		assertEquals("sb", ((BeansSymbolAddOnInformation)addon.get(0)).getBeanID());
-	}
-	
-	@Test
-	public void testReindexXMLConfig() throws Exception {
-		List<? extends WorkspaceSymbol> allSymbols = indexer.getAllSymbols("");
-		assertEquals(5, allSymbols.size());
-		
-		indexer.configureIndexer(SymbolIndexConfig.builder()
-				.scanXml(true)
-				.build());
-		allSymbols = indexer.getAllSymbols("");
-		assertEquals(0, allSymbols.size());
-		
-		indexer.configureIndexer(SymbolIndexConfig.builder()
-				.scanXml(true)
-				.xmlScanFolders(new String[] {  "src/main" })
-				.build());
-		allSymbols = indexer.getAllSymbols("");
-		assertEquals(1, allSymbols.size());
-		
-		indexer.configureIndexer(SymbolIndexConfig.builder()
-				.scanXml(true)
-				.xmlScanFolders(new String[] { "config", "src/main" })
-				.build());
-		allSymbols = indexer.getAllSymbols("");
-		assertEquals(5, allSymbols.size());
+        addon = indexer.getAdditonalInformation(beansOnClasspathDocUri);
+        assertEquals(1, addon.size());
+        assertEquals("sb", ((BeansSymbolAddOnInformation) addon.get(0)).getBeanID());
+    }
 
-		indexer.configureIndexer(SymbolIndexConfig.builder()
-				.scanXml(true)
-				.xmlScanFolders(new String[] { "config" })
-				.build());
-		allSymbols = indexer.getAllSymbols("");
-		assertEquals(4, allSymbols.size());
-		
-		indexer.configureIndexer(SymbolIndexConfig.builder()
-				.scanXml(false)
-				.xmlScanFolders(new String[] { "config", "src/main" })
-				.build());
-		allSymbols = indexer.getAllSymbols("");
-		assertEquals(0, allSymbols.size());
-		
-		indexer.configureIndexer(SymbolIndexConfig.builder()
-				.scanXml(true)
-				.xmlScanFolders(new String[] { "config", "src/main" })
-				.build());
-		allSymbols = indexer.getAllSymbols("");
-		assertEquals(5, allSymbols.size());
-		
-		indexer.configureIndexer(SymbolIndexConfig.builder()
-				.scanXml(true)
-				.xmlScanFolders(new String[0])
-				.build());
-		allSymbols = indexer.getAllSymbols("");
-		assertEquals(0, allSymbols.size());
+    @Test
+    void testReindexXMLConfig() throws Exception {
+        List<? extends WorkspaceSymbol> allSymbols = indexer.getAllSymbols("");
+        assertEquals(5, allSymbols.size());
 
-		indexer.configureIndexer(SymbolIndexConfig.builder()
-				.scanXml(true)
-				.xmlScanFolders(new String[0])
-				.build());
-		allSymbols = indexer.getAllSymbols("    ");
-		assertEquals(0, allSymbols.size());
-	}
+        indexer.configureIndexer(SymbolIndexConfig.builder()
+                .scanXml(true)
+                .build());
+        allSymbols = indexer.getAllSymbols("");
+        assertEquals(0, allSymbols.size());
+
+        indexer.configureIndexer(SymbolIndexConfig.builder()
+                .scanXml(true)
+                .xmlScanFolders(new String[]{  "src/main"})
+                .build());
+        allSymbols = indexer.getAllSymbols("");
+        assertEquals(1, allSymbols.size());
+
+        indexer.configureIndexer(SymbolIndexConfig.builder()
+                .scanXml(true)
+                .xmlScanFolders(new String[]{"config", "src/main"})
+                .build());
+        allSymbols = indexer.getAllSymbols("");
+        assertEquals(5, allSymbols.size());
+
+        indexer.configureIndexer(SymbolIndexConfig.builder()
+                .scanXml(true)
+                .xmlScanFolders(new String[]{"config"})
+                .build());
+        allSymbols = indexer.getAllSymbols("");
+        assertEquals(4, allSymbols.size());
+
+        indexer.configureIndexer(SymbolIndexConfig.builder()
+                .scanXml(false)
+                .xmlScanFolders(new String[]{"config", "src/main"})
+                .build());
+        allSymbols = indexer.getAllSymbols("");
+        assertEquals(0, allSymbols.size());
+
+        indexer.configureIndexer(SymbolIndexConfig.builder()
+                .scanXml(true)
+                .xmlScanFolders(new String[]{"config", "src/main"})
+                .build());
+        allSymbols = indexer.getAllSymbols("");
+        assertEquals(5, allSymbols.size());
+
+        indexer.configureIndexer(SymbolIndexConfig.builder()
+                .scanXml(true)
+                .xmlScanFolders(new String[0])
+                .build());
+        allSymbols = indexer.getAllSymbols("");
+        assertEquals(0, allSymbols.size());
+
+        indexer.configureIndexer(SymbolIndexConfig.builder()
+                .scanXml(true)
+                .xmlScanFolders(new String[0])
+                .build());
+        allSymbols = indexer.getAllSymbols("    ");
+        assertEquals(0, allSymbols.size());
+    }
 
 }

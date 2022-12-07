@@ -447,11 +447,17 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 		CodeActionContext context = params.getContext();
 		if (!context.getDiagnostics().isEmpty() || (context.getOnly() != null && context.getOnly().contains(CodeActionKind.QuickFix))) {
 			params.getContext().getDiagnostics().forEach(d -> {
-				if (d.getData() != null) {
+				if (d.getData() instanceof JsonElement) {
 					Type type = new TypeToken<List<CodeAction>>(){}.getType();
 					List<CodeAction> codeActions = new GsonBuilder().create().fromJson((JsonElement)d.getData(), type);
 					for (CodeAction ca : codeActions) {
 						listBuilder.add(Either.forRight(ca));
+					}
+				} else if (d.getData() instanceof List) {
+					for (Object ca : (List<?>) d.getData()) {
+						if (ca instanceof CodeAction) {
+							listBuilder.add(Either.forRight((CodeAction)ca));
+						}
 					}
 				}
 			});

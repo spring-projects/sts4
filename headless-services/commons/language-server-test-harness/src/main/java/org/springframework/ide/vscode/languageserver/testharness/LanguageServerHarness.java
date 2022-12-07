@@ -10,11 +10,11 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.languageserver.testharness;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.File;
 import java.io.InputStream;
@@ -777,7 +777,7 @@ public class LanguageServerHarness {
 			for (Entry<String, List<TextEdit>> entry : workspaceEdit.getChanges().entrySet()) {
 				String uri = entry.getKey();
 				TextDocumentInfo document = documents.get(uri);
-				assertNotNull("Can't apply edits to non-existing document: "+uri, document);
+				assertNotNull(document, "Can't apply edits to non-existing document: "+uri);
 
 				TextDocument workingDocument = new TextDocument(uri, document.getLanguageId());
 				workingDocument.setText(document.getText());
@@ -935,8 +935,8 @@ public class LanguageServerHarness {
 	 */
 	public Editor newEditorFromFileUri(String docUri, LanguageId languageId) throws Exception {
 		URI fileUri = new URI(docUri);
-		assertTrue("Document URI is missing 'file' scheme: " + docUri,
-				fileUri.getScheme() != null && fileUri.getScheme().contains("file"));
+		assertTrue(fileUri.getScheme() != null && fileUri.getScheme().contains("file"),
+				"Document URI is missing 'file' scheme: " + docUri);
 
 		Path path = Paths.get(fileUri);
 		String content = new String(Files.readAllBytes(path));

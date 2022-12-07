@@ -10,10 +10,9 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.utils.test;
 
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.net.URI;
@@ -22,8 +21,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 import org.eclipse.jdt.core.dom.CompilationUnit;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -48,7 +47,7 @@ import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 /**
  * CU Cache tests
@@ -56,7 +55,7 @@ import org.springframework.test.context.junit4.SpringRunner;
  * @author Alex Boyko
  *
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @BootLanguageServerTest
 @Import({AdHocPropertyHarnessTestConf.class, CompilationUnitCacheTest.TestConf.class})
 public class CompilationUnitCacheTest {
@@ -110,138 +109,138 @@ public class CompilationUnitCacheTest {
 
 	}
 
-	@Test
-	public void cu_cached() throws Exception {
-		harness.useProject(ProjectsHarness.dummyProject());
-		harness.intialize(null);
+    @Test
+    void cu_cached() throws Exception {
+        harness.useProject(ProjectsHarness.dummyProject());
+        harness.intialize(null);
 
-		TextDocument doc = new TextDocument(harness.createTempUri(null), LanguageId.JAVA, 0, "package my.package\n" +
-				"\n" +
-				"public class SomeClass {\n" +
-				"\n" +
-				"}\n");
-		CompilationUnit cu = getCompilationUnit(doc);
-		assertNotNull(cu);
+        TextDocument doc = new TextDocument(harness.createTempUri(null), LanguageId.JAVA, 0, "package my.package\n" +
+                "\n" +
+                "public class SomeClass {\n" +
+                "\n" +
+                "}\n");
+        CompilationUnit cu = getCompilationUnit(doc);
+        assertNotNull(cu);
 
-		CompilationUnit cuAnother = getCompilationUnit(doc);
-		assertTrue(cu == cuAnother);
-	}
+        CompilationUnit cuAnother = getCompilationUnit(doc);
+        assertTrue(cu == cuAnother);
+    }
 
-	@Test
-	public void cu_not_generated_without_project() throws Exception {
-		harness.intialize(null);
+    @Test
+    void cu_not_generated_without_project() throws Exception {
+        harness.intialize(null);
 
-		TextDocument doc = new TextDocument(harness.createTempUri(null), LanguageId.JAVA, 0, "package my.package\n" +
-				"\n" +
-				"public class SomeClass {\n" +
-				"\n" +
-				"}\n");
-		CompilationUnit cu = getCompilationUnit(doc);
-		assertNull(cu);
-	}
+        TextDocument doc = new TextDocument(harness.createTempUri(null), LanguageId.JAVA, 0, "package my.package\n" +
+                "\n" +
+                "public class SomeClass {\n" +
+                "\n" +
+                "}\n");
+        CompilationUnit cu = getCompilationUnit(doc);
+        assertNull(cu);
+    }
 
 	private CompilationUnit getCompilationUnit(TextDocument doc) {
 		harness.getServer().getAsync().waitForAll();
 		return serverInit.getComponents().get(BootJavaLanguageServerComponents.class).getCompilationUnitCache().withCompilationUnit(doc, cu -> cu);
 	}
 
-	@Test
-	public void cu_cache_invalidated_by_doc_change() throws Exception {
-		harness.useProject(ProjectsHarness.dummyProject());
-		harness.intialize(null);
+    @Test
+    void cu_cache_invalidated_by_doc_change() throws Exception {
+        harness.useProject(ProjectsHarness.dummyProject());
+        harness.intialize(null);
 
-		TextDocument doc = new TextDocument(harness.createTempUri(null), LanguageId.JAVA, 0, "package my.package\n" +
-				"\n" +
-				"public class SomeClass {\n" +
-				"\n" +
-				"}\n");
+        TextDocument doc = new TextDocument(harness.createTempUri(null), LanguageId.JAVA, 0, "package my.package\n" +
+                "\n" +
+                "public class SomeClass {\n" +
+                "\n" +
+                "}\n");
 
-		harness.newEditorFromFileUri(doc.getUri(), doc.getLanguageId());
-		CompilationUnit cu = getCompilationUnit(doc);
-		assertNotNull(cu);
+        harness.newEditorFromFileUri(doc.getUri(), doc.getLanguageId());
+        CompilationUnit cu = getCompilationUnit(doc);
+        assertNotNull(cu);
 
-		harness.changeDocument(doc.getUri(), 0, 0, "     ");
-		CompilationUnit cuAnother = getCompilationUnit(doc);
-		assertNotNull(cuAnother);
-		assertFalse(cu == cuAnother);
+        harness.changeDocument(doc.getUri(), 0, 0, "     ");
+        CompilationUnit cuAnother = getCompilationUnit(doc);
+        assertNotNull(cuAnother);
+        assertNotNull(cuAnother);
 
-		CompilationUnit cuYetAnother = getCompilationUnit(doc);
-		assertTrue(cuAnother == cuYetAnother);
-	}
+        CompilationUnit cuYetAnother = getCompilationUnit(doc);
+        assertTrue(cuAnother == cuYetAnother);
+    }
 
-	@Test
-	public void cu_cache_invalidated_by_doc_close() throws Exception {
-		harness.useProject(ProjectsHarness.dummyProject());
-		harness.intialize(null);
+    @Test
+    void cu_cache_invalidated_by_doc_close() throws Exception {
+        harness.useProject(ProjectsHarness.dummyProject());
+        harness.intialize(null);
 
-		TextDocument doc = new TextDocument(harness.createTempUri(null), LanguageId.JAVA, 0, "package my.package\n" +
-				"\n" +
-				"public class SomeClass {\n" +
-				"\n" +
-				"}\n");
+        TextDocument doc = new TextDocument(harness.createTempUri(null), LanguageId.JAVA, 0, "package my.package\n" +
+                "\n" +
+                "public class SomeClass {\n" +
+                "\n" +
+                "}\n");
 
-		harness.newEditorFromFileUri(doc.getUri(), doc.getLanguageId());
-		CompilationUnit cu = getCompilationUnit(doc);
-		assertNotNull(cu);
+        harness.newEditorFromFileUri(doc.getUri(), doc.getLanguageId());
+        CompilationUnit cu = getCompilationUnit(doc);
+        assertNotNull(cu);
 
-		harness.closeDocument(doc.getId());
-		CompilationUnit cuAnother = getCompilationUnit(doc);
-		assertNotNull(cuAnother);
-		assertFalse(cu == cuAnother);
+        harness.closeDocument(doc.getId());
+        CompilationUnit cuAnother = getCompilationUnit(doc);
+        assertNotNull(cuAnother);
+        assertNotNull(cuAnother);
 
-		CompilationUnit cuYetAnother = getCompilationUnit(doc);
-		assertTrue(cuAnother == cuYetAnother);
-	}
+        CompilationUnit cuYetAnother = getCompilationUnit(doc);
+        assertTrue(cuAnother == cuYetAnother);
+    }
 
-	@Test
-	public void cu_cache_invalidated_by_project_change() throws Exception {
-		File directory = new File(
-				ProjectsHarness.class.getResource("/test-projects/test-request-mapping-live-hover/").toURI());
-		String docUri = directory.toPath().resolve("src/main/java/example/HelloWorldController.java").toUri().toString();
-		MavenJavaProject project = projects.mavenProject("test-request-mapping-live-hover");
-		harness.useProject(project);
-		harness.intialize(directory);
+    @Test
+    void cu_cache_invalidated_by_project_change() throws Exception {
+        File directory = new File(
+                ProjectsHarness.class.getResource("/test-projects/test-request-mapping-live-hover/").toURI());
+        String docUri = directory.toPath().resolve("src/main/java/example/HelloWorldController.java").toUri().toString();
+        MavenJavaProject project = projects.mavenProject("test-request-mapping-live-hover");
+        harness.useProject(project);
+        harness.intialize(directory);
 
-		URI fileUri = new URI(docUri);
-		Path path = Paths.get(fileUri);
-		String content = new String(Files.readAllBytes(path));
+        URI fileUri = new URI(docUri);
+        Path path = Paths.get(fileUri);
+        String content = new String(Files.readAllBytes(path));
 
-		TextDocument document = new TextDocument(docUri, LanguageId.JAVA, 0, content);
+        TextDocument document = new TextDocument(docUri, LanguageId.JAVA, 0, content);
 
-		CompilationUnit cu = getCompilationUnit(document);
-		assertNotNull(cu);
-		CompilationUnit cuAnother = getCompilationUnit(document);
-		assertTrue(cu == cuAnother);
+        CompilationUnit cu = getCompilationUnit(document);
+        assertNotNull(cu);
+        CompilationUnit cuAnother = getCompilationUnit(document);
+        assertTrue(cu == cuAnother);
 
-		projectObserver.doWithListeners(l -> l.changed(project));
-		cuAnother = getCompilationUnit(document);
-		assertNotNull(cuAnother);
-		assertFalse(cu == cuAnother);
-	}
+        projectObserver.doWithListeners(l -> l.changed(project));
+        cuAnother = getCompilationUnit(document);
+        assertNotNull(cuAnother);
+        assertNotNull(cuAnother);
+    }
 
-	@Test
-	public void cu_cache_invalidated_by_project_deletion() throws Exception {
-		File directory = new File(
-				ProjectsHarness.class.getResource("/test-projects/test-request-mapping-live-hover/").toURI());
-		String docUri = directory.toPath().resolve("src/main/java/example/HelloWorldController.java").toUri().toString();
-		MavenJavaProject project = projects.mavenProject("test-request-mapping-live-hover");
-		harness.useProject(project);
-		harness.intialize(directory);
+    @Test
+    void cu_cache_invalidated_by_project_deletion() throws Exception {
+        File directory = new File(
+                ProjectsHarness.class.getResource("/test-projects/test-request-mapping-live-hover/").toURI());
+        String docUri = directory.toPath().resolve("src/main/java/example/HelloWorldController.java").toUri().toString();
+        MavenJavaProject project = projects.mavenProject("test-request-mapping-live-hover");
+        harness.useProject(project);
+        harness.intialize(directory);
 
-		URI fileUri = new URI(docUri);
-		Path path = Paths.get(fileUri);
-		String content = new String(Files.readAllBytes(path));
+        URI fileUri = new URI(docUri);
+        Path path = Paths.get(fileUri);
+        String content = new String(Files.readAllBytes(path));
 
-		TextDocument document = new TextDocument(docUri, LanguageId.JAVA, 0, content);
+        TextDocument document = new TextDocument(docUri, LanguageId.JAVA, 0, content);
 
-		CompilationUnit cu = getCompilationUnit(document);
-		assertNotNull(cu);
-		CompilationUnit cuAnother = getCompilationUnit(document);
-		assertTrue(cu == cuAnother);
+        CompilationUnit cu = getCompilationUnit(document);
+        assertNotNull(cu);
+        CompilationUnit cuAnother = getCompilationUnit(document);
+        assertTrue(cu == cuAnother);
 
-		projectObserver.doWithListeners(l -> l.deleted(project));
-		cuAnother = getCompilationUnit(document);
-		assertNotNull(cuAnother);
-		assertFalse(cu == cuAnother);
-	}
+        projectObserver.doWithListeners(l -> l.deleted(project));
+        cuAnother = getCompilationUnit(document);
+        assertNotNull(cuAnother);
+        assertNotNull(cuAnother);
+    }
 }

@@ -13,7 +13,7 @@
 	<parent>
 		<groupId>org.springframework.boot</groupId>
 		<artifactId>spring-boot-starter-parent</artifactId>
-		<version>2.7.3</version>
+		<version>3.0.0</version>
 		<relativePath></relativePath>
 	</parent>
 
@@ -93,7 +93,6 @@
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<junit-version>4.13.1</junit-version>
 		<assertj-version>3.5.2</assertj-version>
 		<slf4j-version>1.7.25</slf4j-version>
 		<guava-version>31.1-jre</guava-version>
@@ -103,15 +102,15 @@
 		<lsp4j-version>0.19.0</lsp4j-version>
 		<!-- NOTE: Reactor version must match version used by the CF client -->
 		<cloudfoundry-client-version>3.8.0.RELEASE</cloudfoundry-client-version>
-		<reactor-version>3.3.11.RELEASE</reactor-version>
-		<reactor-netty>0.7.5.RELEASE</reactor-netty>
+		<reactor-version>3.5.0</reactor-version>
+		<reactor-netty>0.7.15.RELEASE</reactor-netty>
 		<commons-io-version>2.4</commons-io-version>
 		<commons-codec-version>1.13</commons-codec-version>
 
 		<!-- Rewrite specific properties -->
-		<rewrite-version>7.34.0-SNAPSHOT</rewrite-version>
-		<rewrite-spring-version>4.31.0-SNAPSHOT</rewrite-spring-version>
-		<rewrite-java-migration.version>1.15.0-SNAPSHOT</rewrite-java-migration.version>
+		<rewrite-version>7.34.0</rewrite-version>
+		<rewrite-spring-version>4.31.0</rewrite-spring-version>
+		<rewrite-java-migration.version>1.15.0</rewrite-java-migration.version>
 
 		<signing.skip>true</signing.skip>
 		<signing.alias>vmware</signing.alias>
@@ -124,8 +123,8 @@
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-compiler-plugin</artifactId>
 				<configuration>
-					<source>11</source>
-					<target>11</target>
+					<source>17</source>
+					<target>17</target>
 				</configuration>
 			</plugin>
 
@@ -154,6 +153,7 @@
 			</plugin>
 
 			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-surefire-plugin</artifactId>
 				<configuration combine.self="append">
 					<argLine>--add-opens app/app=ALL-UNNAMED --add-opens java.base/java.lang=ALL-UNNAMED --add-opens jdk.management/com.sun.management.internal=ALL-UNNAMED</argLine>
@@ -177,20 +177,22 @@
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-			<version>${slf4j-version}</version>
 		</dependency>
 		<!-- <dependency> <groupId>org.slf4j</groupId> <artifactId>slf4j-simple</artifactId> 
 			<version>${slf4j-version}</version> </dependency> -->
 		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>${junit-version}</version>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-api</artifactId>
+			<scope>test</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.junit.jupiter</groupId>
+			<artifactId>junit-jupiter-engine</artifactId>
 			<scope>test</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.assertj</groupId>
 			<artifactId>assertj-core</artifactId>
-			<version>${assertj-version}</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>

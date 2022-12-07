@@ -10,9 +10,9 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.editor.harness;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.fail;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
-import org.junit.Before;
+import org.junit.jupiter.api.BeforeEach;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ide.vscode.boot.app.BootLanguageServerInitializer;
 import org.springframework.ide.vscode.boot.configurationmetadata.Deprecation.Level;
@@ -54,7 +54,7 @@ public abstract class AbstractPropsEditorTest {
 	@Autowired protected LanguageServerHarness harness;
 	@Autowired BootLanguageServerInitializer serverInit;
 
-	@Before public void setup() throws Exception {
+	@BeforeEach public void setup() throws Exception {
 		serverInit.setMaxCompletions(-1);
 		harness.intialize(null);
 	}

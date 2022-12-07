@@ -10,8 +10,6 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.test;
 
-import static org.junit.Assert.assertEquals;
-
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -26,6 +24,8 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.apache.commons.io.FileUtils;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.springframework.ide.vscode.boot.java.Boot2JavaProblemType;
 import org.springframework.ide.vscode.boot.java.Boot3JavaProblemType;
 import org.springframework.ide.vscode.boot.java.SpelProblemType;

@@ -10,13 +10,14 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.manifest.yaml;
 
-import static org.junit.Assert.assertTrue;
+
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFBuildpack;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.ClientTimeouts;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CloudFoundryClientFactory;
@@ -33,7 +34,7 @@ public class ManifestYamlActualCfClientTest {
 	private CFTargetCache cfTargetCache;
 	private CfJson cfJson;
 
-	@Before
+	@BeforeEach
 	public void setup() throws Exception {
 		cfJson = new CfJson();
 		CfTargetsInfo info = getTargetsInfoFromEnv();
@@ -59,7 +60,7 @@ public class ManifestYamlActualCfClientTest {
 		return cfJson.from(rawJson);
 	}
 
-	@Ignore @Test
+	@Disabled @Test
 	public void testGetBuildpacks() throws Exception {
 		List<CFTarget> targets = cfTargetCache.getOrCreate();
 		assertTrue(targets.size() == 1);

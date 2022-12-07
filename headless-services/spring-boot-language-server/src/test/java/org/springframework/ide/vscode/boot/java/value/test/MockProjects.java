@@ -27,7 +27,10 @@ import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
 
 import org.eclipse.lsp4j.TextDocumentIdentifier;
-import org.junit.Assert;
+
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
+
 import org.springframework.ide.vscode.commons.java.ClasspathIndex;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
@@ -101,7 +104,7 @@ public class MockProjects {
 
 		public MockProject(String name) {
 			synchronized (projectsByName) {
-				Assert.assertFalse(projectsByName.containsKey(name));
+				assertFalse(projectsByName.containsKey(name));
 				this.name = name;
 				this.root = Files.createTempDir();
 				createSourceFolder("src/main/java");
@@ -121,7 +124,7 @@ public class MockProjects {
 		}
 
 		private void createOutputFolder(String projectRelativePath) {
-			Assert.assertNull("Output folder already created", this.defaultOutputFolder);
+			assertNull(this.defaultOutputFolder, "Output folder already created");
 			File outFolder = new File(root, projectRelativePath);
 			outFolder.mkdirs();
 			this.defaultOutputFolder = outFolder;

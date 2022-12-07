@@ -10,12 +10,13 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.manifest.yaml;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.when;
+import static org.springframework.ide.vscode.languageserver.testharness.Editor.PLAIN_COMPLETION;
 import static org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness.assertDocumentation;
 
 import java.io.IOException;
@@ -24,10 +25,9 @@ import java.util.List;
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.DiagnosticSeverity;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mockito;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFBuildpack;
@@ -36,18 +36,15 @@ import org.springframework.ide.vscode.commons.cloudfoundry.client.CFServiceInsta
 import org.springframework.ide.vscode.commons.cloudfoundry.client.CFStack;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.ClientRequests;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.NoTargetsException;
-import org.springframework.ide.vscode.commons.util.Unicodes;
 import org.springframework.ide.vscode.languageserver.testharness.CodeAction;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
 import org.springframework.ide.vscode.manifest.yaml.bootiful.ManifestLanguageServerTest;
-import org.springframework.test.context.junit4.SpringRunner;
-
-import static org.springframework.ide.vscode.languageserver.testharness.Editor.*;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import com.google.common.collect.ImmutableList;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @ManifestLanguageServerTest
 public class ManifestYamlEditorTest {
 
@@ -57,7 +54,7 @@ public class ManifestYamlEditorTest {
 	@Autowired
 	LanguageServerHarness harness;
 
-	@Before
+	@BeforeEach
 	public void initHarness() throws Exception {
 		harness.intialize(null);
 		System.setProperty("lsp.yaml.completions.errors.disable", "false"); //Yuck! Do we really need this??

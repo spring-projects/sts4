@@ -11,17 +11,17 @@
 
 package org.springframework.ide.vscode.commons.maven;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.stream.Stream;
 
-import org.junit.Assume;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Assumptions;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.springframework.ide.vscode.commons.java.IField;
 import org.springframework.ide.vscode.commons.java.IMethod;
 import org.springframework.ide.vscode.commons.java.IType;
@@ -34,7 +34,7 @@ import org.springframework.ide.vscode.commons.util.FileObserver;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 
-@Ignore
+@Disabled
 //@EnabledOnJre(JAVA_8)
 public class HtmlJavadocTest {
 
@@ -52,7 +52,7 @@ public class HtmlJavadocTest {
 
 	@Test
 	public void html_testClassJavadoc() throws Exception {
-		Assume.assumeTrue(javaVersionHigherThan(6));
+		Assumptions.assumeTrue(javaVersionHigherThan(6));
 
 		MavenJavaProject project = projectSupplier.get();
 
@@ -69,7 +69,7 @@ public class HtmlJavadocTest {
 
 	@Test
 	public void html_testConstructorJavadoc() throws Exception {
-		Assume.assumeTrue(javaVersionHigherThan(6));
+		Assumptions.assumeTrue(javaVersionHigherThan(6));
 		MavenJavaProject project = projectSupplier.get();
 
 		IType type = project.getIndex().findType("java.util.ArrayList");
@@ -237,7 +237,7 @@ public class HtmlJavadocTest {
 
 	@Test
 	public void html_testMethodJavadoc() throws Exception {
-		Assume.assumeTrue(javaVersionHigherThan(6));
+		Assumptions.assumeTrue(javaVersionHigherThan(6));
 
 		MavenJavaProject project = projectSupplier.get();
 
@@ -258,7 +258,7 @@ public class HtmlJavadocTest {
 
 	@Test
 	public void html_testNestedClassJavadoc() throws Exception {
-		Assume.assumeTrue(javaVersionHigherThan(6));
+		Assumptions.assumeTrue(javaVersionHigherThan(6));
 
 		MavenJavaProject project = projectSupplier.get();
 

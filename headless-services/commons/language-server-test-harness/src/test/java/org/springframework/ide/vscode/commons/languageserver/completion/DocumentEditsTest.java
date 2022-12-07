@@ -10,11 +10,11 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.languageserver.completion;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.ide.vscode.commons.languageserver.config.LanguageServerProperties;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
@@ -35,7 +35,7 @@ public class DocumentEditsTest {
 
 	private LanguageServerHarness harness;
 
-	@Before
+	@BeforeEach
 	public void setup() throws Exception {
 		SimpleLanguageServer server = new SimpleLanguageServer("dont-care", null, new LanguageServerProperties());
 		harness = new LanguageServerHarness(server, LanguageId.PLAINTEXT);

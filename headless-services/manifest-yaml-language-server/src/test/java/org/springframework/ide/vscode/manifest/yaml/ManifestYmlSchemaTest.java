@@ -10,23 +10,22 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.manifest.yaml;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Callable;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.util.StringUtil;
-import org.springframework.ide.vscode.commons.yaml.schema.YTypedProperty;
-import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.AbstractType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypeFactory.YSeqType;
-import org.springframework.ide.vscode.manifest.yaml.ManifestYmlSchema;
+import org.springframework.ide.vscode.commons.yaml.schema.YTypedProperty;
+import org.springframework.ide.vscode.commons.yaml.schema.YValueHint;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
@@ -127,15 +126,15 @@ public class ManifestYmlSchemaTest {
 			String noDescriptionText = Renderables.NO_DESCRIPTION.toHtml();
 			String actual = p.getDescription().toHtml();
 			String msg = "Description missing for '"+p.getName()+"'";
-			assertTrue(msg, StringUtil.hasText(actual));
-			assertFalse(msg, noDescriptionText.equals(actual));
+			assertTrue(StringUtil.hasText(actual), msg);
+			assertFalse(noDescriptionText.equals(actual), msg);
 		}
 		{
 			String noDescriptionText = Renderables.NO_DESCRIPTION.toMarkdown();
 			String actual = p.getDescription().toMarkdown();
 			String msg = "Description missing for '"+p.getName()+"'";
-			assertTrue(msg, StringUtil.hasText(actual));
-			assertFalse(msg, noDescriptionText.equals(actual));
+			assertTrue(StringUtil.hasText(actual), msg);
+			assertFalse(noDescriptionText.equals(actual), msg);
 		}
 	}
 

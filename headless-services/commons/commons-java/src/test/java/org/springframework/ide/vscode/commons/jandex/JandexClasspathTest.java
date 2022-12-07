@@ -10,17 +10,18 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.jandex;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import java.io.File;
+import java.nio.file.Path;
 import java.util.function.BiConsumer;
 import java.util.stream.Stream;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 import org.springframework.ide.vscode.commons.java.ClasspathData;
 import org.springframework.ide.vscode.commons.java.IField;
 import org.springframework.ide.vscode.commons.java.IMethod;
@@ -33,7 +34,8 @@ import com.google.common.io.Files;
 
 public class JandexClasspathTest {
 
-	@Rule public TemporaryFolder folder = new TemporaryFolder();
+	@TempDir
+	File folder;
 
 	class TestProject {
 		String name;
@@ -46,7 +48,7 @@ public class JandexClasspathTest {
 			this.name = name;
 			this.root = new File(JandexClasspathTest.class.getResource("/" + name ).toURI());
 			testClassesFolder = new File(root, "bin");
-			this.outputFolder = folder.newFolder().getCanonicalFile();
+			this.outputFolder = folder;
 		}
 
 		void createClass(String fqName) throws Exception {

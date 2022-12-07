@@ -10,9 +10,9 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.livehover.test;
 
-import org.junit.After;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
@@ -25,9 +25,9 @@ import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 import org.springframework.ide.vscode.project.harness.SpringProcessLiveDataBuilder;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @BootLanguageServerTest
 @Import(HoverTestConf.class)
 public class ActuatorWarningHoverTest {
@@ -39,141 +39,145 @@ public class ActuatorWarningHoverTest {
 	@Autowired private BootLanguageServerHarness harness;
 	@Autowired private SpringProcessLiveDataProvider liveDataProvider;
 	
-	@After
+	@AfterEach
 	public void tearDown() throws Exception {
 		liveDataProvider.remove("processkey");
 	}
 
-	@Test public void showWarningIf_NoActuator_and_RunningApp() throws Exception {
-		//No actuator on classpath:
-		String projectName = NO_ACTUATOR_PROJECT;
-		IJavaProject project = projects.mavenProject(projectName);
-		harness.useProject(project);
-		harness.intialize(null);
-		
-		SpringProcessLiveData liveData = new SpringProcessLiveDataBuilder()
-			.processID("22022")
-			.processName("foo.bar.RunningApp")
-			.activeProfiles((String[]) null)
-			.build();
-		liveDataProvider.add("processkey", liveData);
+    @Test
+    void showWarningIf_NoActuator_and_RunningApp() throws Exception {
+        //No actuator on classpath:
+        String projectName = NO_ACTUATOR_PROJECT;
+        IJavaProject project = projects.mavenProject(projectName);
+        harness.useProject(project);
+        harness.intialize(null);
 
-		Editor editor = harness.newEditor(LanguageId.JAVA,
-				"package hello;\n" +
-				"\n" +
-				"import org.springframework.context.annotation.Configuration;\n" +
-				"import org.springframework.context.annotation.Profile;\n" +
-				"\n" +
-				"@Configuration\n" +
-				"@Profile({\"local-profile\", \"inactive\", \"testing-profile\"})\n" +
-				"public class LocalConfig {\n" +
-				"}"
-		);
+        SpringProcessLiveData liveData = new SpringProcessLiveDataBuilder()
+                .processID("22022")
+                .processName("foo.bar.RunningApp")
+                .activeProfiles((String[]) null)
+                .build();
+        liveDataProvider.add("processkey", liveData);
 
-		editor.assertHighlights(/*NONE*/);
-		editor.assertHoverContains("@Profile", "No live hover information");
-		editor.assertHoverContains("@Profile", "Consider adding `spring-boot-actuator` as a dependency to your project `"+projectName+"`");
-	}
+        Editor editor = harness.newEditor(LanguageId.JAVA,
+                "package hello;\n" +
+                        "\n" +
+                        "import org.springframework.context.annotation.Configuration;\n" +
+                        "import org.springframework.context.annotation.Profile;\n" +
+                        "\n" +
+                        "@Configuration\n" +
+                        "@Profile({\"local-profile\", \"inactive\", \"testing-profile\"})\n" +
+                        "public class LocalConfig {\n" +
+                        "}"
+        );
 
-	@Test public void noWarningIf_NoRunningApps() throws Exception {
+        editor.assertHighlights(/*NONE*/);
+        editor.assertHoverContains("@Profile", "No live hover information");
+        editor.assertHoverContains("@Profile", "Consider adding `spring-boot-actuator` as a dependency to your project `" + projectName + "`");
+    }
 
-		//No running app:
-		// actaully... no code needed to set that up. mockAppBuilder is 'empty' by default.
+    @Test
+    void noWarningIf_NoRunningApps() throws Exception {
 
-		//No actuator on classpath:
-		String projectName = NO_ACTUATOR_PROJECT;
-		IJavaProject project = projects.mavenProject(projectName);
-		harness.useProject(project);
-		harness.intialize(null);
+        //No running app:
+        // actaully... no code needed to set that up. mockAppBuilder is 'empty' by default.
 
-		Editor editor = harness.newEditor(LanguageId.JAVA,
-				"package hello;\n" +
-				"\n" +
-				"import org.springframework.context.annotation.Configuration;\n" +
-				"import org.springframework.context.annotation.Profile;\n" +
-				"\n" +
-				"@Configuration\n" +
-				"@Profile({\"local-profile\", \"inactive\", \"testing-profile\"})\n" +
-				"public class LocalConfig {\n" +
-				"}"
-		);
+        //No actuator on classpath:
+        String projectName = NO_ACTUATOR_PROJECT;
+        IJavaProject project = projects.mavenProject(projectName);
+        harness.useProject(project);
+        harness.intialize(null);
 
-		editor.assertHighlights(/*NONE*/);
-		editor.assertNoHover("@Profile");
-	}
+        Editor editor = harness.newEditor(LanguageId.JAVA,
+                "package hello;\n" +
+                        "\n" +
+                        "import org.springframework.context.annotation.Configuration;\n" +
+                        "import org.springframework.context.annotation.Profile;\n" +
+                        "\n" +
+                        "@Configuration\n" +
+                        "@Profile({\"local-profile\", \"inactive\", \"testing-profile\"})\n" +
+                        "public class LocalConfig {\n" +
+                        "}"
+        );
 
-	@Test public void noWarningIf_ActuatorOnClasspath() throws Exception {
-		//Actuator on classpath:
-		String projectName = ACTUATOR_PROJECT;
-		IJavaProject project = projects.mavenProject(projectName);
-		harness.useProject(project);
-		harness.intialize(null);
+        editor.assertHighlights(/*NONE*/);
+        editor.assertNoHover("@Profile");
+    }
 
-		//Has running app:
-		SpringProcessLiveData liveData = new SpringProcessLiveDataBuilder()
-			.processID("22022")
-			.processName("foo.bar.RunningApp")
-			.activeProfiles((String[]) null)
-			.build();
-		liveDataProvider.add("processkey", liveData);
+    @Test
+    void noWarningIf_ActuatorOnClasspath() throws Exception {
+        //Actuator on classpath:
+        String projectName = ACTUATOR_PROJECT;
+        IJavaProject project = projects.mavenProject(projectName);
+        harness.useProject(project);
+        harness.intialize(null);
 
-		Editor editor = harness.newEditor(LanguageId.JAVA,
-				"package hello;\n" +
-				"\n" +
-				"import org.springframework.context.annotation.Bean;\n" +
-				"import org.springframework.context.annotation.Configuration;\n" +
-				"import org.springframework.context.annotation.Profile;\n" +
-				"\n" +
-				"@Configuration\n" +
-				"public class LocalConfig {\n" +
-				"	\n" +
-				"	@Bean\n" +
-				"	Foo myFoo() {\n" +
-				"		return new FooImplementation();\n" +
-				"	}\n" +
-				"}"
-		);
-		editor.assertHighlights(/*NONE*/);
-		editor.assertNoHover("@Bean");
-	}
+        //Has running app:
+        SpringProcessLiveData liveData = new SpringProcessLiveDataBuilder()
+                .processID("22022")
+                .processName("foo.bar.RunningApp")
+                .activeProfiles((String[]) null)
+                .build();
+        liveDataProvider.add("processkey", liveData);
 
-	@Test public void warningHoverHasPreciseLocation() throws Exception {
-		// It will be less annoying if limit the area the hover responds to, to just inside the
-		// annotation name rather than the whole range of the ast node.
+        Editor editor = harness.newEditor(LanguageId.JAVA,
+                "package hello;\n" +
+                        "\n" +
+                        "import org.springframework.context.annotation.Bean;\n" +
+                        "import org.springframework.context.annotation.Configuration;\n" +
+                        "import org.springframework.context.annotation.Profile;\n" +
+                        "\n" +
+                        "@Configuration\n" +
+                        "public class LocalConfig {\n" +
+                        "	\n" +
+                        "	@Bean\n" +
+                        "	Foo myFoo() {\n" +
+                        "		return new FooImplementation();\n" +
+                        "	}\n" +
+                        "}"
+        );
+        editor.assertHighlights(/*NONE*/);
+        editor.assertNoHover("@Bean");
+    }
 
-		//No actuator on classpath:
-		String projectName = NO_ACTUATOR_PROJECT;
-		IJavaProject project = projects.mavenProject(projectName);
-		harness.useProject(project);
-		harness.intialize(null);
+    @Test
+    void warningHoverHasPreciseLocation() throws Exception {
+        // It will be less annoying if limit the area the hover responds to, to just inside the
+        // annotation name rather than the whole range of the ast node.
 
-		//Has running app:
-		SpringProcessLiveData liveData = new SpringProcessLiveDataBuilder()
-			.processID("22022")
-			.processName("foo.bar.RunningApp")
-			.activeProfiles((String[]) null)
-			.build();
-		liveDataProvider.add("processkey", liveData);
+        //No actuator on classpath:
+        String projectName = NO_ACTUATOR_PROJECT;
+        IJavaProject project = projects.mavenProject(projectName);
+        harness.useProject(project);
+        harness.intialize(null);
 
-		Editor editor = harness.newEditor(LanguageId.JAVA,
-				"package hello;\n" +
-				"\n" +
-				"import org.springframework.context.annotation.Bean;\n" +
-				"import org.springframework.context.annotation.Configuration;\n" +
-				"import org.springframework.context.annotation.Profile;\n" +
-				"\n" +
-				"@Configuration\n" +
-				"public class LocalConfig {\n" +
-				"	\n" +
-				"	@Bean(\"the-bean-name\")\n" +
-				"	Foo myFoo() {\n" +
-				"		return new FooImplementation();\n" +
-				"	}\n" +
-				"}"
-		);
-		editor.assertHighlights(/*NONE*/);
-		editor.assertHoverContains("@Bean", "No live hover information");
-		editor.assertNoHover("the-bean-name");
-	}
+        //Has running app:
+        SpringProcessLiveData liveData = new SpringProcessLiveDataBuilder()
+                .processID("22022")
+                .processName("foo.bar.RunningApp")
+                .activeProfiles((String[]) null)
+                .build();
+        liveDataProvider.add("processkey", liveData);
+
+        Editor editor = harness.newEditor(LanguageId.JAVA,
+                "package hello;\n" +
+                        "\n" +
+                        "import org.springframework.context.annotation.Bean;\n" +
+                        "import org.springframework.context.annotation.Configuration;\n" +
+                        "import org.springframework.context.annotation.Profile;\n" +
+                        "\n" +
+                        "@Configuration\n" +
+                        "public class LocalConfig {\n" +
+                        "	\n" +
+                        "	@Bean(\"the-bean-name\")\n" +
+                        "	Foo myFoo() {\n" +
+                        "		return new FooImplementation();\n" +
+                        "	}\n" +
+                        "}"
+        );
+        editor.assertHighlights(/*NONE*/);
+        editor.assertHoverContains("@Bean", "No live hover information");
+        editor.assertNoHover("the-bean-name");
+    }
 
 }

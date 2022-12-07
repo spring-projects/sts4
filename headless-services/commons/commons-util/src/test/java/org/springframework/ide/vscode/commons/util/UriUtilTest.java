@@ -10,24 +10,23 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 
-import org.junit.Rule;
-import org.junit.Test;
-import org.junit.rules.TemporaryFolder;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.io.TempDir;
 
 public class UriUtilTest {
 	
-	@Rule
-	public TemporaryFolder temp = new TemporaryFolder();
+	@TempDir
+	File temp;
 
 	@Test
 	public void normalize_deleted_folder_uri() throws Exception {
-		File folder = temp.newFolder();
+		File folder = temp;
 		assertTrue(folder.exists());
 		
 		String folderUri = folder.toURI().toString();

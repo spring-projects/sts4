@@ -10,8 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.utils.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.util.List;
@@ -20,9 +20,9 @@ import java.util.concurrent.TimeUnit;
 
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.WorkspaceSymbol;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
@@ -33,12 +33,12 @@ import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFin
 import org.springframework.ide.vscode.commons.util.UriUtil;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 /**
  * @author Martin Lippert
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @BootLanguageServerTest
 @Import(SymbolProviderTestConf.class)
 public class SpringIndexerMultiProjectTest {
@@ -50,7 +50,7 @@ public class SpringIndexerMultiProjectTest {
 	private String projectUri1;
 	private String projectUri2;
 
-	@Before
+	@BeforeEach
 	public void setup() throws Exception {
 		harness.intialize(null);
 		indexer.configureIndexer(SymbolIndexConfig.builder().scanXml(false).build());
@@ -65,61 +65,60 @@ public class SpringIndexerMultiProjectTest {
 		initProject.get(5, TimeUnit.SECONDS);
 	}
 
-	@Test
-	public void testQueryingAllSymbolsWithRegularLimit() throws Exception {
-		List<? extends WorkspaceSymbol> symbols = indexer.getAllSymbols("");
-		assertEquals(50, symbols.size());
-	}
+    @Test
+    void testQueryingAllSymbolsWithRegularLimit() throws Exception {
+        List<? extends WorkspaceSymbol> symbols = indexer.getAllSymbols("");
+        assertEquals(50, symbols.size());
+    }
 
-	@Test
-	public void testQueryingAllSymbolsWithNoLimit() throws Exception {
-		List<? extends WorkspaceSymbol> symbols = indexer.getAllSymbols("*");
-		assertEquals(220, symbols.size());
+    @Test
+    void testQueryingAllSymbolsWithNoLimit() throws Exception {
+        List<? extends WorkspaceSymbol> symbols = indexer.getAllSymbols("*");
+        assertEquals(220, symbols.size());
 
-		int count1 = 0;
-		int count2 = 0;
+        int count1 = 0;
+        int count2 = 0;
 
-		for (WorkspaceSymbol symbol : symbols) {
-			if (symbol.getLocation().getLeft().getUri().startsWith(projectUri1)) {
-				count1++;
-			}
-			else if (symbol.getLocation().getLeft().getUri().startsWith(projectUri2)) {
-				count2++;
-			}
-		}
+        for (WorkspaceSymbol symbol : symbols) {
+            if (symbol.getLocation().getLeft().getUri().startsWith(projectUri1)) {
+                count1++;
+            } else if (symbol.getLocation().getLeft().getUri().startsWith(projectUri2)) {
+                count2++;
+            }
+        }
 
-		assertEquals(110, count1);
-		assertEquals(110, count2);
-	}
+        assertEquals(110, count1);
+        assertEquals(110, count2);
+    }
 
-	@Test
-	public void testQueryingSymbolsForSpecificProjectWithRegularLimit() throws Exception {
-		List<? extends WorkspaceSymbol> symbols = indexer.getAllSymbols("locationPrefix:" + projectUri2);
-		assertEquals(50, symbols.size());
+    @Test
+    void testQueryingSymbolsForSpecificProjectWithRegularLimit() throws Exception {
+        List<? extends WorkspaceSymbol> symbols = indexer.getAllSymbols("locationPrefix:" + projectUri2);
+        assertEquals(50, symbols.size());
 
-		for (WorkspaceSymbol symbol : symbols) {
-			assertTrue(symbol.getLocation().getLeft().getUri().startsWith(projectUri2));
-		}
-	}
+        for (WorkspaceSymbol symbol : symbols) {
+            assertTrue(symbol.getLocation().getLeft().getUri().startsWith(projectUri2));
+        }
+    }
 
-	@Test
-	public void testQueryingSymbolsForSpecificProjectWithNoLimit() throws Exception {
-		List<? extends WorkspaceSymbol> symbols = indexer.getAllSymbols("locationPrefix:" + projectUri2 + "?*");
-		assertEquals(110, symbols.size());
+    @Test
+    void testQueryingSymbolsForSpecificProjectWithNoLimit() throws Exception {
+        List<? extends WorkspaceSymbol> symbols = indexer.getAllSymbols("locationPrefix:" + projectUri2 + "?*");
+        assertEquals(110, symbols.size());
 
-		for (WorkspaceSymbol symbol : symbols) {
-			assertTrue(symbol.getLocation().getLeft().getUri().startsWith(projectUri2));
-		}
-	}
+        for (WorkspaceSymbol symbol : symbols) {
+            assertTrue(symbol.getLocation().getLeft().getUri().startsWith(projectUri2));
+        }
+    }
 
-	@Test
-	public void testQueryingSymbolsForSpecificProjectWithQuery() throws Exception {
-		List<? extends WorkspaceSymbol> symbols = indexer.getAllSymbols("locationPrefix:" + projectUri2 + "?seventhWowSuperBean");
-		assertEquals(10, symbols.size());
+    @Test
+    void testQueryingSymbolsForSpecificProjectWithQuery() throws Exception {
+        List<? extends WorkspaceSymbol> symbols = indexer.getAllSymbols("locationPrefix:" + projectUri2 + "?seventhWowSuperBean");
+        assertEquals(10, symbols.size());
 
-		for (WorkspaceSymbol symbol : symbols) {
-			assertTrue(symbol.getLocation().getLeft().getUri().startsWith(projectUri2));
-		}
-	}
+        for (WorkspaceSymbol symbol : symbols) {
+            assertTrue(symbol.getLocation().getLeft().getUri().startsWith(projectUri2));
+        }
+    }
 
 }

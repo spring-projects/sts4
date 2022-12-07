@@ -10,9 +10,9 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.languageserver.testharness;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.fail;
 import static org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness.HIGHLIGHTS_TIMEOUT;
 import static org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness.getDocString;
 import static org.springframework.ide.vscode.languageserver.testharness.TestAsserts.assertContains;
@@ -52,7 +52,6 @@ import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.TextEdit;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
-import org.junit.Assert;
 import org.springframework.ide.vscode.commons.protocol.HighlightParams;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.Unicodes;
@@ -277,7 +276,7 @@ public class Editor {
 		String snippetBefore;
 		String snippetAfter;
 		String[] badParts = StringUtil.split(badSnippet, '^');
-		Assert.assertTrue(badParts.length<=3);
+		assertTrue(badParts.length<=3);
 		if (badParts.length == 1) {
 			snippetBefore = "";
 			snippetAfter = "";
@@ -654,7 +653,7 @@ public class Editor {
 		int hoverPosition = getHoverPosition(hoverOver,occurence);
 		Hover hover = harness.getHover(doc, doc.toPosition(hoverPosition));
 		List<Either<String, MarkedString>> contents = hover.getContents().getLeft();
-		assertTrue(contents.toString(), contents.isEmpty());
+		assertTrue(contents.isEmpty(), contents.toString());
 	}
 
 	public void assertNoHover(String hoverOver) throws Exception {
@@ -762,9 +761,9 @@ public class Editor {
 	}
 
 	public void setSelection(int start, int end) {
-		Assert.assertTrue(start>=0);
-		Assert.assertTrue(end>=start);
-		Assert.assertTrue(end<=doc.getText().length());
+		assertTrue(start>=0);
+		assertTrue(end>=start);
+		assertTrue(end<=doc.getText().length());
 		this.selectionStart = start;
 		this.selectionEnd = end;
 	}
@@ -779,7 +778,7 @@ public class Editor {
 		if (pos>=0) {
 			pos += hoverOver.length() / 2;
 		}
-		assertTrue("Not found in editor: '"+hoverOver+"'", pos>=0);
+		assertTrue(pos>=0, "Not found in editor: '"+hoverOver+"'");
 
 		DefinitionParams params = new DefinitionParams(new TextDocumentIdentifier(getUri()), doc.toPosition(pos));
 		List<? extends LocationLink> definitions = harness.getDefinitions(params);
@@ -792,7 +791,7 @@ public class Editor {
 		if (pos>=0) {
 			pos += hoverOver.length() / 2;
 		}
-		assertTrue("Not found in editor: '"+hoverOver+"'", pos>=0);
+		assertTrue(pos>=0, "Not found in editor: '"+hoverOver+"'");
 
 		DefinitionParams params = new DefinitionParams(new TextDocumentIdentifier(getUri()), doc.toPosition(pos));
 		List<? extends LocationLink> definitions = harness.getDefinitions(params);
@@ -907,7 +906,7 @@ public class Editor {
 	public Range rangeOf(String longSnippet, String focusSnippet) throws Exception {
 		int relativeOffset = longSnippet.indexOf(focusSnippet);
 		int contextStart = getRawText().indexOf(longSnippet);
-		Assert.assertTrue("'"+longSnippet+"' not found in editor", contextStart>=0);
+		assertTrue(contextStart>=0, "'"+longSnippet+"' not found in editor");
 		int start = contextStart+relativeOffset;
 		return new Range(doc.toPosition(start), doc.toPosition(start+focusSnippet.length()));
 	}
@@ -922,7 +921,7 @@ public class Editor {
 
 	public CodeAction assertCodeAction(Diagnostic problem) throws Exception {
 		List<CodeAction> actions = getCodeActions(problem);
-		assertEquals("Number of codeActions", 1, actions.size());
+		assertEquals(1, actions.size(), "Number of codeActions");
 		return actions.get(0);
 	}
 

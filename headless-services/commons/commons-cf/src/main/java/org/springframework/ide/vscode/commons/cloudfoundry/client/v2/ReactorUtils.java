@@ -292,7 +292,7 @@ public class ReactorUtils {
 		.doOnError((Throwable e) -> {
 			future.completeExceptionally(e);
 		})
-		.subscribeOn(Schedulers.elastic())
+		.subscribeOn(Schedulers.boundedElastic())
 		.subscribe();
 	}
 }

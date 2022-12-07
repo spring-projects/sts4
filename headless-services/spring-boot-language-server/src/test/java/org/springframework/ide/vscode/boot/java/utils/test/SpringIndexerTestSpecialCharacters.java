@@ -10,8 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.utils.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.util.List;
@@ -20,9 +20,9 @@ import java.util.concurrent.TimeUnit;
 
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.WorkspaceSymbol;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
@@ -34,12 +34,12 @@ import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFin
 import org.springframework.ide.vscode.commons.util.UriUtil;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 /**
  * @author Martin Lippert
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @BootLanguageServerTest
 @Import(SymbolProviderTestConf.class)
 public class SpringIndexerTestSpecialCharacters {
@@ -52,7 +52,7 @@ public class SpringIndexerTestSpecialCharacters {
 	private String projectDir;
 	private IJavaProject project;
 
-	@Before
+	@BeforeEach
 	public void setup() throws Exception {
 		harness.intialize(null);
 		indexer.configureIndexer(SymbolIndexConfig.builder().scanXml(false).build());
@@ -67,18 +67,18 @@ public class SpringIndexerTestSpecialCharacters {
 		initProject.get(5, TimeUnit.SECONDS);
 	}
 
-	@Test
-	public void testScanningAllAnnotationsSimpleProjectUpfront() throws Exception {
-		List<? extends WorkspaceSymbol> allSymbols = indexer.getAllSymbols("");
+    @Test
+    void testScanningAllAnnotationsSimpleProjectUpfront() throws Exception {
+        List<? extends WorkspaceSymbol> allSymbols = indexer.getAllSymbols("");
 
-		assertEquals(8, allSymbols.size());
+        assertEquals(8, allSymbols.size());
 
-		// TODO: the direct path to URI conversion changes the é into an %-encoded character, so maybe we should switch to that entirely
+        // TODO: the direct path to URI conversion changes the é into an %-encoded character, so maybe we should switch to that entirely
 
 //		String docUri = directory.toPath().resolve("src/main/java/org/test/ClassWithSpécialCharacter.java").toUri().toString();
-		String docUri = UriUtil.toUri(directory.toPath().resolve("src/main/java/org/test/ClassWithSpécialCharacter.java").toFile()).toString();
-		
-		assertTrue(SpringIndexerTest.containsSymbol(allSymbols, "@Configurable", docUri, 4, 0, 4, 13));
-	}
+        String docUri = UriUtil.toUri(directory.toPath().resolve("src/main/java/org/test/ClassWithSpécialCharacter.java").toFile()).toString();
+
+        assertTrue(SpringIndexerTest.containsSymbol(allSymbols, "@Configurable", docUri, 4, 0, 4, 13));
+    }
 	
 }

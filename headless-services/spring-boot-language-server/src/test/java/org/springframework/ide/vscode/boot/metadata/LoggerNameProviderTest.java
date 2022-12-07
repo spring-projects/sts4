@@ -10,8 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.metadata;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -22,9 +22,9 @@ import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.ide.vscode.boot.metadata.CachingValueProvider;
 import org.springframework.ide.vscode.boot.metadata.LoggerNameProvider;
 import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
@@ -56,69 +56,69 @@ public class LoggerNameProviderTest {
 	private ProjectsHarness projects = ProjectsHarness.INSTANCE;
 	private MavenJavaProject project;
 
-	@Before
+	@BeforeEach
 	public void setup() throws Exception {
 		CachingValueProvider.TIMEOUT = Duration.ofSeconds(20);
 		project = projects.mavenProject("tricky-getters-boot-1.3.1-app");
 	}
 
-	@After
+	@AfterEach
 	public void teardown() throws Exception {
 		CachingValueProvider.restoreDefaults();
 	}
 
-	@Test
-	public void directResults() throws Exception {
-		LoggerNameProvider p = create();
-		String query = "jboss";
-		List<String> directQueryResults = getResults(p, query);
+    @Test
+    void directResults() throws Exception {
+        LoggerNameProvider p = create();
+        String query = "jboss";
+        List<String> directQueryResults = getResults(p, query);
 
 //		dumpResults("jboss - DIRECT", directQueryResults);
 
-		/*
-		 * Commented out due to search results from JDK present
-		 */
-//		assertElements(directQueryResults, JBOSS_RESULTS);
-		assertElementsAtLeast(directQueryResults, JBOSS_RESULTS);
-	}
+        /*
+         * Commented out due to search results from JDK present
+         */
+        //		assertElements(directQueryResults, JBOSS_RESULTS);
+        assertElementsAtLeast(directQueryResults, JBOSS_RESULTS);
+    }
 
-	@Test
-	public void cachedResults() throws Exception {
-		LoggerNameProvider p = create();
-		for (int i = 0; i < 10; i++) {
-			long startTime = System.currentTimeMillis();
-			String query = "jboss";
-			List<String> directQueryResults = getResults(p, query);
+    @Test
+    void cachedResults() throws Exception {
+        LoggerNameProvider p = create();
+        for (int i = 0; i < 10; i++) {
+            long startTime = System.currentTimeMillis();
+            String query = "jboss";
+            List<String> directQueryResults = getResults(p, query);
 
-			/*
-			 * Commented out due to search results from JDK present
-			 */
+            /*
+             * Commented out due to search results from JDK present
+             */
 //			assertElements(directQueryResults, JBOSS_RESULTS);
-			assertElementsAtLeast(directQueryResults, JBOSS_RESULTS);
+            assertElementsAtLeast(directQueryResults, JBOSS_RESULTS);
 
-			long duration = System.currentTimeMillis() - startTime;
-			System.out.println(i+": "+duration+" ms");
-		}
-	}
+            long duration = System.currentTimeMillis() - startTime;
+            System.out.println(i + ": " + duration + " ms");
+        }
+    }
 
-	@Test
-	public void incrementalResults() throws Exception {
-		String fullQuery = "jboss";
+    @Test
+    void incrementalResults() throws Exception {
+        String fullQuery = "jboss";
 
-		LoggerNameProvider p = create();
-		for (int i = 0; i <= fullQuery.length(); i++) {
-			String query = fullQuery.substring(0, i);
-			List<String> results = getResults(p, query);
+        LoggerNameProvider p = create();
+        for (int i = 0; i <= fullQuery.length(); i++) {
+            String query = fullQuery.substring(0, i);
+            List<String> results = getResults(p, query);
 //			dumpResults(query, results);
-			if (i==fullQuery.length()) {
-				System.out.println("Verifying final result!");
-				//Not checking for exact equals because... quircks of JDT search engine means it
-				// will actually finds less results than if we derive them by filtering incrementally.
-				//If all works well, we should never find fewer results than Eclipse does.
-				assertElementsAtLeast(results, JBOSS_RESULTS);
-			}
-		}
-	}
+            if (i == fullQuery.length()) {
+                System.out.println("Verifying final result!");
+                //Not checking for exact equals because... quircks of JDT search engine means it
+                // will actually finds less results than if we derive them by filtering incrementally.
+                //If all works well, we should never find fewer results than Eclipse does.
+                assertElementsAtLeast(results, JBOSS_RESULTS);
+            }
+        }
+    }
 
 	private LoggerNameProvider create() {
 		return (LoggerNameProvider) LoggerNameProvider.factory(null, null).apply(ImmutableMap.of());
@@ -134,7 +134,7 @@ public class LoggerNameProviderTest {
 				hasMissing = true;
 			}
 		}
-		assertFalse("Missing elements:\n"+missing, hasMissing);
+		assertFalse(hasMissing, "Missing elements:\n"+missing);
 	}
 
 	@SuppressWarnings("unused")

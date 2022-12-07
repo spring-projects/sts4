@@ -10,15 +10,14 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.utils.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.URI;
 import java.util.Optional;
 
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.OverrideAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -31,13 +30,10 @@ import org.springframework.ide.vscode.languageserver.starter.LanguageServerAutoC
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
-import org.springframework.test.context.junit4.SpringRunner;
 
 /**
  * @author Alex Boyko
  */
-@RunWith(SpringRunner.class)
-//@BootLanguageServerTest
 @OverrideAutoConfiguration(enabled=false)
 @Import({LanguageServerAutoConf.class, SourceLinksTestConf.class})
 @SpringBootTest(classes={
@@ -57,7 +53,7 @@ public class AdvancedSourceLinksTest {
 	private MavenJavaProject appProject;
 	private MavenJavaProject libraryProject;
 	
-	@Before
+	@BeforeEach
 	public void setup() throws Exception {
 		// Build parent project
 		projects.mavenProject("gs-multi-module-complete");
@@ -67,14 +63,14 @@ public class AdvancedSourceLinksTest {
 		projectObserver.doWithListeners(l -> l.created(appProject));
 	}
 
-	@Test
-	public void linkFromApptoLibrarySource() throws Exception {
-		Optional<String> link = sourceLinks.sourceLinkUrlForFQName(appProject, "hello.service.MyService");
-		assertTrue(link.isPresent());
-		String linkUri = link.get();
-		URI uri = URI.create(linkUri);
-		assertEquals("file", uri.getScheme());
-		assertTrue(linkUri.endsWith("gs-multi-module-complete/library/src/main/java/hello/service/MyService.java#8,14"));
-	}
+    @Test
+    void linkFromApptoLibrarySource() throws Exception {
+        Optional<String> link = sourceLinks.sourceLinkUrlForFQName(appProject, "hello.service.MyService");
+        assertTrue(link.isPresent());
+        String linkUri = link.get();
+        URI uri = URI.create(linkUri);
+        assertEquals("file", uri.getScheme());
+        assertTrue(linkUri.endsWith("gs-multi-module-complete/library/src/main/java/hello/service/MyService.java#8,14"));
+    }
 
 }

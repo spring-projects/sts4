@@ -10,8 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.utils.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.util.List;
@@ -20,9 +20,9 @@ import java.util.concurrent.TimeUnit;
 
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.WorkspaceSymbol;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
@@ -31,12 +31,12 @@ import org.springframework.ide.vscode.boot.bootiful.SymbolProviderTestConf;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 /**
  * @author Martin Lippert
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @BootLanguageServerTest
 @Import(SymbolProviderTestConf.class)
 public class SpringIndexerNonBootProjectTest {
@@ -48,7 +48,7 @@ public class SpringIndexerNonBootProjectTest {
 	private File directory;
 	private String projectDir;
 
-	@Before
+	@BeforeEach
 	public void setup() throws Exception {
 		harness.intialize(null);
 
@@ -62,18 +62,18 @@ public class SpringIndexerNonBootProjectTest {
 		initProject.get(5, TimeUnit.SECONDS);
 	}
 
-	@Test
-	public void testScanningSimpleRegularSpringProject() throws Exception {
-		List<? extends WorkspaceSymbol> allSymbols = indexer.getAllSymbols("");
+    @Test
+    void testScanningSimpleRegularSpringProject() throws Exception {
+        List<? extends WorkspaceSymbol> allSymbols = indexer.getAllSymbols("");
 
-		assertEquals(3, allSymbols.size());
+        assertEquals(3, allSymbols.size());
 
-		String docUri = directory.toPath().resolve("src/main/java/org/test/SimpleMappingClass.java").toUri().toString();
-		assertTrue(SpringIndexerTest.containsSymbol(allSymbols, "@/mapping1", docUri, 6, 1, 6, 28));
-		assertTrue(SpringIndexerTest.containsSymbol(allSymbols, "@/mapping2", docUri, 11, 1, 11, 28));
+        String docUri = directory.toPath().resolve("src/main/java/org/test/SimpleMappingClass.java").toUri().toString();
+        assertTrue(SpringIndexerTest.containsSymbol(allSymbols, "@/mapping1", docUri, 6, 1, 6, 28));
+        assertTrue(SpringIndexerTest.containsSymbol(allSymbols, "@/mapping2", docUri, 11, 1, 11, 28));
 
-		docUri = directory.toPath().resolve("src/main/java/org/test/ClassWithDefaultSymbol.java").toUri().toString();
-		assertTrue(SpringIndexerTest.containsSymbol(allSymbols, "@Configurable", docUri, 4, 0, 4, 13));
-	}
+        docUri = directory.toPath().resolve("src/main/java/org/test/ClassWithDefaultSymbol.java").toUri().toString();
+        assertTrue(SpringIndexerTest.containsSymbol(allSymbols, "@Configurable", docUri, 4, 0, 4, 13));
+    }
 
 }

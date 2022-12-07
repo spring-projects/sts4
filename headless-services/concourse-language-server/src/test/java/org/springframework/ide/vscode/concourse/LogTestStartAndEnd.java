@@ -1,17 +1,33 @@
+/*******************************************************************************
+ * Copyright (c) 2022 Pivotal, Inc.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * https://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ *     Pivotal, Inc. - initial API and implementation
+ *******************************************************************************/
 package org.springframework.ide.vscode.concourse;
 
-import org.junit.rules.TestWatcher;
-import org.junit.runner.Description;
+import org.junit.jupiter.api.extension.AfterEachCallback;
+import org.junit.jupiter.api.extension.BeforeEachCallback;
+import org.junit.jupiter.api.extension.Extension;
+import org.junit.jupiter.api.extension.ExtensionContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-public class LogTestStartAndEnd extends TestWatcher {
+public class LogTestStartAndEnd implements Extension, BeforeEachCallback, AfterEachCallback {
+		
+	private static final Logger log = LoggerFactory.getLogger(LogTestStartAndEnd.class);
 	
 	@Override
-	protected void starting(Description description) {
-		System.out.println(">>>> starting test: "+description.getClassName()+" . "+description.getMethodName());
+	public void afterEach(ExtensionContext context) throws Exception {
+		log.info("<<<< finished test: "+context.getTestClass().map(c -> c.getName()).orElseThrow()+" . "+context.getTestMethod().orElseThrow());
 	}
 
 	@Override
-	protected void finished(Description description) {
-		System.out.println("<<<< finished test: "+description.getClassName()+" . "+description.getMethodName());
+	public void beforeEach(ExtensionContext context) throws Exception {
+		log.info(">>>> starting test: "+context.getTestClass().map(c -> c.getName()).orElseThrow()+" . "+context.getTestMethod().orElseThrow());
 	}
 }

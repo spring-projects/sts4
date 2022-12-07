@@ -16,6 +16,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.eclipse.lsp4j.TextDocumentIdentifier;
@@ -99,7 +100,7 @@ public class BootLanguageServerInitializer implements InitializingBean {
 			
 			@Override
 			public void deleted(IJavaProject project) {
-				doNotValidateProject(project);
+				doNotValidateProject(project, true);
 			}
 			
 			@Override
@@ -182,7 +183,7 @@ public class BootLanguageServerInitializer implements InitializingBean {
 		
 		server.onShutdown(() -> {
 			for (IJavaProject p : projectFinder.all()) {
-				doNotValidateProject(p);
+				doNotValidateProject(p, false);
 			}
 		});
 	}
@@ -215,7 +216,7 @@ public class BootLanguageServerInitializer implements InitializingBean {
 		
 		URI uri = project.getLocationUri();
 		
-		doNotValidateProject(project);
+		doNotValidateProject(project, true);
 		
 		projectReconcileRequests.put(uri, Mono.delay(Duration.ofMillis(100))
 				.publishOn(projectReconcileScheduler)
@@ -228,7 +229,7 @@ public class BootLanguageServerInitializer implements InitializingBean {
 				.subscribe());
 	}
 	
-	private void doNotValidateProject(IJavaProject project) {
+	private void doNotValidateProject(IJavaProject project, boolean asyncClear) {
 		if (configProps.isReconcileOnlyOpenedDocs()) {
 			return;
 		}
@@ -239,7 +240,17 @@ public class BootLanguageServerInitializer implements InitializingBean {
 			request.dispose();
 		}
 		
-		projectReconciler.clear(project);
+		/*
+		 * TODO: Look at LanguageServerHarness to fix the deadlock that occurs every 2 second time maven build is ran
+		 * If #clear(IJavaProject) is synchronous then the locked LanguageServerHarness instance is attempted to call publishDiagnostic()
+		 * which is caused by the #clear(...) call. In the LS reality this will never happen as #publishDiagnsotics() is always a future
+		 */
+		if (asyncClear) {
+			Mono.fromFuture(CompletableFuture.runAsync(() -> projectReconciler.clear(project)))
+					.publishOn(projectReconcileScheduler);
+		} else {
+			projectReconciler.clear(project);
+		}
 	}
 	
 	private void handleFiles(String[] files) {

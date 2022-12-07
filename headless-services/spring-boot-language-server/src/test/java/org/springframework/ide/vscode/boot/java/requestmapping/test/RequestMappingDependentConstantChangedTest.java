@@ -10,9 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.requestmapping.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.*;
 
 import java.io.File;
 import java.nio.file.Path;
@@ -25,9 +23,9 @@ import org.apache.commons.io.FileUtils;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.WorkspaceSymbol;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
@@ -42,9 +40,9 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness.CustomizableProjectContent;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @BootLanguageServerTest
 @Import(SymbolProviderTestConf.class)
 public class RequestMappingDependentConstantChangedTest {
@@ -57,7 +55,7 @@ public class RequestMappingDependentConstantChangedTest {
 	private MavenJavaProject project;
 	private Path directory;
 	
-	@Before
+	@BeforeEach
 	public void setup() throws Exception {
 		harness.intialize(null);
 
@@ -77,139 +75,139 @@ public class RequestMappingDependentConstantChangedTest {
 		initProject.get(5, TimeUnit.SECONDS);
 	}
 
-	@Test
-	public void testSimpleRequestMappingSymbolFromConstantInDifferentClass() throws Exception {
-		String docUri = directory.resolve("src/main/java/org/test/SimpleMappingClassWithConstantInDifferentClass.java").toUri().toString();
-		String constantsUri = directory.resolve("src/main/java/org/test/Constants.java").toUri().toString();
-		List<? extends WorkspaceSymbol> symbols = indexer.getSymbols(docUri);
-		assertEquals(1, symbols.size());
-		assertSymbol(docUri, "@/path/from/constant", "@RequestMapping(Constants.REQUEST_MAPPING_PATH)");
+    @Test
+    void testSimpleRequestMappingSymbolFromConstantInDifferentClass() throws Exception {
+        String docUri = directory.resolve("src/main/java/org/test/SimpleMappingClassWithConstantInDifferentClass.java").toUri().toString();
+        String constantsUri = directory.resolve("src/main/java/org/test/Constants.java").toUri().toString();
+        List<? extends WorkspaceSymbol> symbols = indexer.getSymbols(docUri);
+        assertEquals(1, symbols.size());
+        assertSymbol(docUri, "@/path/from/constant", "@RequestMapping(Constants.REQUEST_MAPPING_PATH)");
 
-		TestFileScanListener fileScanListener = new TestFileScanListener();
-		indexer.getJavaIndexer().setFileScanListener(fileScanListener);
-		
-		replaceInFile(constantsUri, "path/from/constant", "/changed-path");
-		indexer.updateDocument(constantsUri, null, "triggered by test code").get();
-		
-		fileScanListener.assertScannedUris(constantsUri, docUri);
-		fileScanListener.assertScannedUri(constantsUri, 1);
-		fileScanListener.assertScannedUri(docUri, 1);
-		
-		symbols = indexer.getSymbols(docUri);
-		assertSymbolCount(1, symbols);
-		assertSymbol(docUri, "@/changed-path", "@RequestMapping(Constants.REQUEST_MAPPING_PATH)");
-	}
-	
-	@Test
-	public void testSimpleRequestMappingSymbolFromConstantInDifferentClassViaMultipleFilesUpdate() throws Exception {
-		String docUri = directory.resolve("src/main/java/org/test/SimpleMappingClassWithConstantInDifferentClass.java").toUri().toString();
-		String constantsUri = directory.resolve("src/main/java/org/test/Constants.java").toUri().toString();
-		List<? extends WorkspaceSymbol> symbols = indexer.getSymbols(docUri);
-		assertEquals(1, symbols.size());
-		assertSymbol(docUri, "@/path/from/constant", "@RequestMapping(Constants.REQUEST_MAPPING_PATH)");
+        TestFileScanListener fileScanListener = new TestFileScanListener();
+        indexer.getJavaIndexer().setFileScanListener(fileScanListener);
 
-		TestFileScanListener fileScanListener = new TestFileScanListener();
-		indexer.getJavaIndexer().setFileScanListener(fileScanListener);
-		
-		replaceInFile(constantsUri, "path/from/constant", "/changed-path");
-		indexer.updateDocuments(new String[] {constantsUri}, "triggered by test code").get();
+        replaceInFile(constantsUri, "path/from/constant", "/changed-path");
+        indexer.updateDocument(constantsUri, null, "triggered by test code").get();
 
-		fileScanListener.assertScannedUris(constantsUri, docUri);
-		fileScanListener.assertScannedUri(constantsUri, 1);
-		fileScanListener.assertScannedUri(docUri, 1);
-		
-		symbols = indexer.getSymbols(docUri);
-		assertSymbolCount(1, symbols);
-		assertSymbol(docUri, "@/changed-path", "@RequestMapping(Constants.REQUEST_MAPPING_PATH)");
-	}
-	
-	@Test
-	public void testRequestMappingSymbolFromConstantChained() throws Exception {
-		String docUri = directory.resolve("src/main/java/org/test/ChainedRequestMappingPathOverMultipleClasses.java").toUri().toString();
-		String chainConstantsUri_2 = directory.resolve("src/main/java/org/test/ChainElement2.java").toUri().toString();
+        fileScanListener.assertScannedUris(constantsUri, docUri);
+        fileScanListener.assertScannedUri(constantsUri, 1);
+        fileScanListener.assertScannedUri(docUri, 1);
 
-		List<? extends WorkspaceSymbol> symbols = indexer.getSymbols(docUri);
-		assertEquals(1, symbols.size());
-		assertSymbol(docUri, "@/path/from/chain", "@RequestMapping(ChainElement1.MAPPING_PATH_1)");
+        symbols = indexer.getSymbols(docUri);
+        assertSymbolCount(1, symbols);
+        assertSymbol(docUri, "@/changed-path", "@RequestMapping(Constants.REQUEST_MAPPING_PATH)");
+    }
 
-		replaceInFile(chainConstantsUri_2, "path/from/chain", "/changed-path");
-		indexer.updateDocument(chainConstantsUri_2, null, "triggered by test code").get();
+    @Test
+    void testSimpleRequestMappingSymbolFromConstantInDifferentClassViaMultipleFilesUpdate() throws Exception {
+        String docUri = directory.resolve("src/main/java/org/test/SimpleMappingClassWithConstantInDifferentClass.java").toUri().toString();
+        String constantsUri = directory.resolve("src/main/java/org/test/Constants.java").toUri().toString();
+        List<? extends WorkspaceSymbol> symbols = indexer.getSymbols(docUri);
+        assertEquals(1, symbols.size());
+        assertSymbol(docUri, "@/path/from/constant", "@RequestMapping(Constants.REQUEST_MAPPING_PATH)");
 
-		symbols = indexer.getSymbols(docUri);
-		assertSymbolCount(1, symbols);
-		assertSymbol(docUri, "@/path/from/chain", "@RequestMapping(ChainElement1.MAPPING_PATH_1)");
-		
-		// You would expect here that the symbol got updated from "path/from/chain" to the changed value "/changed-path",
-		// but the mechanism doesn't know anything about this chained dependendy. This is a limitation of the current
-		// implementation, since the AST has no idea about the chain, therefore we are only aware of the first
-		// element in this chained dependency, which comes from ChainElement1.java
-	}
-	
-	@Test
-	public void testCyclicalDependency() throws Exception {
-		//cyclical dependency between two files (ping refers pong and vice versa)
-		
-		String pingUri = directory.resolve("src/main/java/org/test/PingConstantRequestMapping.java").toUri().toString();
-		String pongUri = directory.resolve("src/main/java/org/test/PongConstantRequestMapping.java").toUri().toString();
+        TestFileScanListener fileScanListener = new TestFileScanListener();
+        indexer.getJavaIndexer().setFileScanListener(fileScanListener);
 
-		{
-			List<? extends WorkspaceSymbol> symbols = indexer.getSymbols(pingUri);
-			assertSymbolCount(1, symbols);
-			assertSymbol(pingUri, "@/pong -- GET", "@GetMapping(PongConstantRequestMapping.PONG)");
-		}
-		{
-			List<? extends WorkspaceSymbol> symbols = indexer.getSymbols(pongUri);
-			assertSymbolCount(1, symbols);
-			assertSymbol(pongUri, "@/ping -- GET", "@GetMapping(PingConstantRequestMapping.PING)");
-		}
+        replaceInFile(constantsUri, "path/from/constant", "/changed-path");
+        indexer.updateDocuments(new String[]{constantsUri}, "triggered by test code").get();
 
-		replaceInFile(pingUri, "/ping", "/changed");
-		indexer.updateDocument(pingUri, null, "triggered by test code").get();
+        fileScanListener.assertScannedUris(constantsUri, docUri);
+        fileScanListener.assertScannedUri(constantsUri, 1);
+        fileScanListener.assertScannedUri(docUri, 1);
 
-		{
-			List<? extends WorkspaceSymbol> symbols = indexer.getSymbols(pingUri);
-			assertSymbolCount(1, symbols);
-			assertSymbol(pingUri, "@/pong -- GET", "@GetMapping(PongConstantRequestMapping.PONG)");
-		}
-		{
-			List<? extends WorkspaceSymbol> symbols = indexer.getSymbols(pongUri);
-			assertSymbolCount(1, symbols);
-			assertSymbol(pongUri, "@/changed -- GET", "@GetMapping(PingConstantRequestMapping.PING)");
-		}
-	}
+        symbols = indexer.getSymbols(docUri);
+        assertSymbolCount(1, symbols);
+        assertSymbol(docUri, "@/changed-path", "@RequestMapping(Constants.REQUEST_MAPPING_PATH)");
+    }
 
-	@Test
-	public void testCyclicalDependencyViaMultipleFilesUpdate() throws Exception {
-		//cyclical dependency between two files (ping refers pong and vice versa)
-		
-		String pingUri = directory.resolve("src/main/java/org/test/PingConstantRequestMapping.java").toUri().toString();
-		String pongUri = directory.resolve("src/main/java/org/test/PongConstantRequestMapping.java").toUri().toString();
+    @Test
+    void testRequestMappingSymbolFromConstantChained() throws Exception {
+        String docUri = directory.resolve("src/main/java/org/test/ChainedRequestMappingPathOverMultipleClasses.java").toUri().toString();
+        String chainConstantsUri_2 = directory.resolve("src/main/java/org/test/ChainElement2.java").toUri().toString();
 
-		{
-			List<? extends WorkspaceSymbol> symbols = indexer.getSymbols(pingUri);
-			assertSymbolCount(1, symbols);
-			assertSymbol(pingUri, "@/pong -- GET", "@GetMapping(PongConstantRequestMapping.PONG)");
-		}
-		{
-			List<? extends WorkspaceSymbol> symbols = indexer.getSymbols(pongUri);
-			assertSymbolCount(1, symbols);
-			assertSymbol(pongUri, "@/ping -- GET", "@GetMapping(PingConstantRequestMapping.PING)");
-		}
+        List<? extends WorkspaceSymbol> symbols = indexer.getSymbols(docUri);
+        assertEquals(1, symbols.size());
+        assertSymbol(docUri, "@/path/from/chain", "@RequestMapping(ChainElement1.MAPPING_PATH_1)");
 
-		replaceInFile(pingUri, "/ping", "/changed");
-		indexer.updateDocuments(new String[] {pingUri}, "triggered by test code").get();
+        replaceInFile(chainConstantsUri_2, "path/from/chain", "/changed-path");
+        indexer.updateDocument(chainConstantsUri_2, null, "triggered by test code").get();
 
-		{
-			List<? extends WorkspaceSymbol> symbols = indexer.getSymbols(pingUri);
-			assertSymbolCount(1, symbols);
-			assertSymbol(pingUri, "@/pong -- GET", "@GetMapping(PongConstantRequestMapping.PONG)");
-		}
-		{
-			List<? extends WorkspaceSymbol> symbols = indexer.getSymbols(pongUri);
-			assertSymbolCount(1, symbols);
-			assertSymbol(pongUri, "@/changed -- GET", "@GetMapping(PingConstantRequestMapping.PING)");
-		}
-	}
+        symbols = indexer.getSymbols(docUri);
+        assertSymbolCount(1, symbols);
+        assertSymbol(docUri, "@/path/from/chain", "@RequestMapping(ChainElement1.MAPPING_PATH_1)");
+
+        // You would expect here that the symbol got updated from "path/from/chain" to the changed value "/changed-path",
+        // but the mechanism doesn't know anything about this chained dependendy. This is a limitation of the current
+        // implementation, since the AST has no idea about the chain, therefore we are only aware of the first
+        // element in this chained dependency, which comes from ChainElement1.java
+    }
+
+    @Test
+    void testCyclicalDependency() throws Exception {
+        //cyclical dependency between two files (ping refers pong and vice versa)
+        
+        String pingUri = directory.resolve("src/main/java/org/test/PingConstantRequestMapping.java").toUri().toString();
+        String pongUri = directory.resolve("src/main/java/org/test/PongConstantRequestMapping.java").toUri().toString();
+
+        {
+            List<? extends WorkspaceSymbol> symbols = indexer.getSymbols(pingUri);
+            assertSymbolCount(1, symbols);
+            assertSymbol(pingUri, "@/pong -- GET", "@GetMapping(PongConstantRequestMapping.PONG)");
+        }
+        {
+            List<? extends WorkspaceSymbol> symbols = indexer.getSymbols(pongUri);
+            assertSymbolCount(1, symbols);
+            assertSymbol(pongUri, "@/ping -- GET", "@GetMapping(PingConstantRequestMapping.PING)");
+        }
+
+        replaceInFile(pingUri, "/ping", "/changed");
+        indexer.updateDocument(pingUri, null, "triggered by test code").get();
+
+        {
+            List<? extends WorkspaceSymbol> symbols = indexer.getSymbols(pingUri);
+            assertSymbolCount(1, symbols);
+            assertSymbol(pingUri, "@/pong -- GET", "@GetMapping(PongConstantRequestMapping.PONG)");
+        }
+        {
+            List<? extends WorkspaceSymbol> symbols = indexer.getSymbols(pongUri);
+            assertSymbolCount(1, symbols);
+            assertSymbol(pongUri, "@/changed -- GET", "@GetMapping(PingConstantRequestMapping.PING)");
+        }
+    }
+
+    @Test
+    void testCyclicalDependencyViaMultipleFilesUpdate() throws Exception {
+        //cyclical dependency between two files (ping refers pong and vice versa)
+        
+        String pingUri = directory.resolve("src/main/java/org/test/PingConstantRequestMapping.java").toUri().toString();
+        String pongUri = directory.resolve("src/main/java/org/test/PongConstantRequestMapping.java").toUri().toString();
+
+        {
+            List<? extends WorkspaceSymbol> symbols = indexer.getSymbols(pingUri);
+            assertSymbolCount(1, symbols);
+            assertSymbol(pingUri, "@/pong -- GET", "@GetMapping(PongConstantRequestMapping.PONG)");
+        }
+        {
+            List<? extends WorkspaceSymbol> symbols = indexer.getSymbols(pongUri);
+            assertSymbolCount(1, symbols);
+            assertSymbol(pongUri, "@/ping -- GET", "@GetMapping(PingConstantRequestMapping.PING)");
+        }
+
+        replaceInFile(pingUri, "/ping", "/changed");
+        indexer.updateDocuments(new String[]{pingUri}, "triggered by test code").get();
+
+        {
+            List<? extends WorkspaceSymbol> symbols = indexer.getSymbols(pingUri);
+            assertSymbolCount(1, symbols);
+            assertSymbol(pingUri, "@/pong -- GET", "@GetMapping(PongConstantRequestMapping.PONG)");
+        }
+        {
+            List<? extends WorkspaceSymbol> symbols = indexer.getSymbols(pongUri);
+            assertSymbolCount(1, symbols);
+            assertSymbol(pongUri, "@/changed -- GET", "@GetMapping(PingConstantRequestMapping.PING)");
+        }
+    }
 
 	/////////////////////////////////////////////////////////////////////////////////////////////////////
 	

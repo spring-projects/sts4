@@ -11,16 +11,14 @@
 package org.springframework.ide.vscode.bosh;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.Mockito.mock;
-
 import java.io.File;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
 
 import org.eclipse.lsp4j.InitializeResult;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.ide.vscode.bosh.bootiful.BoshLanguageServerTest;
@@ -31,9 +29,9 @@ import org.springframework.ide.vscode.bosh.models.ReleasesModel;
 import org.springframework.ide.vscode.bosh.models.StemcellsModel;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @BoshLanguageServerTest
 public class BoshLanguageServerInitializerTest {
 
@@ -48,17 +46,17 @@ public class BoshLanguageServerInitializerTest {
 	@Autowired
 	LanguageServerHarness harness;
 
-	@Test
-	public void createAndInitializeServerWithWorkspace() throws Exception {
-		File workspaceRoot = getTestResource("/workspace/");
-		assertExpectedInitResult(harness.intialize(workspaceRoot));
-	}
+    @Test
+    void createAndInitializeServerWithWorkspace() throws Exception {
+        File workspaceRoot = getTestResource("/workspace/");
+        assertExpectedInitResult(harness.intialize(workspaceRoot));
+    }
 
-	@Test
-	public void createAndInitializeServerWithoutWorkspace() throws Exception {
-		File workspaceRoot = null;
-		assertExpectedInitResult(harness.intialize(workspaceRoot));
-	}
+    @Test
+    void createAndInitializeServerWithoutWorkspace() throws Exception {
+        File workspaceRoot = null;
+        assertExpectedInitResult(harness.intialize(workspaceRoot));
+    }
 
 	private void assertExpectedInitResult(InitializeResult initResult) {
 		if (Boolean.getBoolean("lsp.lazy.completions.disable")) {

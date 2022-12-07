@@ -10,10 +10,10 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.metadata;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.ide.vscode.boot.editor.harness.PropertyIndexHarness;
 
 /**
@@ -24,57 +24,57 @@ import org.springframework.ide.vscode.boot.editor.harness.PropertyIndexHarness;
  *
  */
 public class IndexNavigatorTest {
-	
-	@Test
-	public void testSimple() throws Exception {
-		PropertyIndexHarness harness = indexHarness();
-		harness.defaultTestData();
 
-		start(harness);
-		assertContinuable();
+    @Test
+    void testSimple() throws Exception {
+        PropertyIndexHarness harness = indexHarness();
+        harness.defaultTestData();
 
-		navigate("server");
-		assertContinuable();
+        start(harness);
+        assertContinuable();
 
-		navigate("port");
-		assertProperty();
+        navigate("server");
+        assertContinuable();
 
-		navigate("extracrap");
-		assertEmpty();
-	}
+        navigate("port");
+        assertProperty();
+
+        navigate("extracrap");
+        assertEmpty();
+    }
 
 	private PropertyIndexHarness indexHarness() {
 		return new PropertyIndexHarness(new ValueProviderRegistry());
 	}
 
-	@Test
-	public void testPartialName() throws Exception {
-		PropertyIndexHarness harness = indexHarness();
-		harness.defaultTestData();
+    @Test
+    void testPartialName() throws Exception {
+        PropertyIndexHarness harness = indexHarness();
+        harness.defaultTestData();
 
-		start(harness);
-		assertContinuable();
+        start(harness);
+        assertContinuable();
 
-		navigate("serv");
-		// As a plain string 'serv' is a prefix of 'server'
-		// but it shouldn't be treated as such since it doesn't continue with
-		// a '.'
-		assertEmpty();
-	}
+        navigate("serv");
+        // As a plain string 'serv' is a prefix of 'server'
+        // but it shouldn't be treated as such since it doesn't continue with
+        // a '.'
+        assertEmpty();
+    }
 
-	@Test
-	public void testAmbiguous() throws Exception {
-		PropertyIndexHarness harness = indexHarness();
-		harness.defaultTestData();
+    @Test
+    void testAmbiguous() throws Exception {
+        PropertyIndexHarness harness = indexHarness();
+        harness.defaultTestData();
 
-		harness.data("foo.bar", "java.lang.String", null, "Foo dot bar");
-		harness.data("foo", "java.lang.String", null, "Just foo");
-		harness.data("fooaaaa", "java.lang.String", null, "Confuse the foo match");
+        harness.data("foo.bar", "java.lang.String", null, "Foo dot bar");
+        harness.data("foo", "java.lang.String", null, "Just foo");
+        harness.data("fooaaaa", "java.lang.String", null, "Confuse the foo match");
 
-		start(harness);
-		navigate("foo");
-		assertAmbiguous();
-	}
+        start(harness);
+        navigate("foo");
+        assertAmbiguous();
+    }
 
 	/////////////// test harnes /////////////////////////////////////
 

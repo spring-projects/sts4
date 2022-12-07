@@ -19,17 +19,17 @@ import java.nio.file.Paths;
 
 import org.eclipse.lsp4j.InitializeResult;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.mock.mockito.MockBean;
 import org.springframework.ide.vscode.concourse.bootiful.ConcourseLanguageServerTest;
 import org.springframework.ide.vscode.concourse.github.GithubInfoProvider;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @ConcourseLanguageServerTest
 public class ConcourseLanguageServerInitializerTest {
 
@@ -40,17 +40,17 @@ public class ConcourseLanguageServerInitializerTest {
 	@Autowired LanguageServerHarness harness;
 	@MockBean GithubInfoProvider github;
 
-	@Test
-	public void createAndInitializeServerWithWorkspace() throws Exception {
-		File workspaceRoot = getTestResource("/workspace/");
-		assertExpectedInitResult(harness.intialize(workspaceRoot));
-	}
+    @Test
+    void createAndInitializeServerWithWorkspace() throws Exception {
+        File workspaceRoot = getTestResource("/workspace/");
+        assertExpectedInitResult(harness.intialize(workspaceRoot));
+    }
 
-	@Test
-	public void createAndInitializeServerWithoutWorkspace() throws Exception {
-		File workspaceRoot = null;
-		assertExpectedInitResult(harness.intialize(workspaceRoot));
-	}
+    @Test
+    void createAndInitializeServerWithoutWorkspace() throws Exception {
+        File workspaceRoot = null;
+        assertExpectedInitResult(harness.intialize(workspaceRoot));
+    }
 
 	private void assertExpectedInitResult(InitializeResult initResult) {
 		if (Boolean.getBoolean("lsp.lazy.completions.disable")) {

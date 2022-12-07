@@ -11,8 +11,8 @@
 
 package org.springframework.ide.vscode.languageserver.testharness;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.util.Collection;
 
@@ -31,7 +31,7 @@ public class TestAsserts {
 	}
 
 	public static <T> T assertOneElement(Collection<T> collection) {
-		assertEquals("Wrong number of elements in "+ collection, 1, collection.size());
+		assertEquals(1, collection.size(), "Wrong number of elements in "+ collection);
 		for (T t : collection) {
 			return t;
 		}

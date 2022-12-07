@@ -10,7 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.yaml.structure;
 
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -43,7 +43,7 @@ class MockYamlEditor {
 
 	@Override
 	public String toString() {
-		return "YamlEditor("+text+")";
+		return "YamlEditor(" + text + ")";
 	}
 
 	public SRootNode parseStructure() throws Exception {
@@ -69,28 +69,28 @@ class MockYamlEditor {
 	}
 
 	public String getText() {
-		//No cursor support, not needed for these tests.
+		// No cursor support, not needed for these tests.
 		return getRawText();
 	}
 
 	public int startOf(String snippet) {
 		int start = text.indexOf(snippet);
-		assertTrue("Snippet not found in editor '"+snippet+"'", start>=0);
+		assertTrue(start >= 0, "Snippet not found in editor '" + snippet + "'");
 		return start;
 	}
 
 	public int middleOf(String nodeText) {
 		int start = startOf(nodeText);
-		if (start>=0) {
-			return start + nodeText.length()/2;
+		if (start >= 0) {
+			return start + nodeText.length() / 2;
 		}
 		return -1;
 	}
 
 	public int endOf(String nodeText) {
 		int start = startOf(nodeText);
-		if (start>=0) {
-			return start+nodeText.length();
+		if (start >= 0) {
+			return start + nodeText.length();
 		}
 		return -1;
 	}

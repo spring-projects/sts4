@@ -18,8 +18,8 @@ import static org.mockito.Mockito.verify;
 
 import java.io.File;
 
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
@@ -31,14 +31,14 @@ import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 /**
  * Tests for Spring properties index in Boot Java server
  *
  * @author Alex Boyko
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @BootLanguageServerTest
 @Import(SymbolProviderTestConf.class)
 public class SpringPropertyIndexTest {
@@ -49,36 +49,36 @@ public class SpringPropertyIndexTest {
 	@Autowired
 	private DefaultSpringPropertyIndexProvider propertyIndexProvider;
 
-	@Test
-	public void testPropertiesIndexRefreshOnProjectChange() throws Exception {
-		harness.intialize(new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-parent/test-annotation-indexing/").toURI()));
+    @Test
+    void testPropertiesIndexRefreshOnProjectChange() throws Exception {
+        harness.intialize(new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-parent/test-annotation-indexing/").toURI()));
 
-		File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-parent/test-annotation-indexing/").toURI());
+        File directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotation-indexing-parent/test-annotation-indexing/").toURI());
 
-		File javaFile = new File(directory, "/src/main/java/org/test/SimpleMappingClass.java");
+        File javaFile = new File(directory, "/src/main/java/org/test/SimpleMappingClass.java");
 
-		TextDocument doc = new TextDocument(javaFile.toURI().toString(), LanguageId.JAVA);
+        TextDocument doc = new TextDocument(javaFile.toURI().toString(), LanguageId.JAVA);
 
-		// Not cached yet, hence progress service invoked
-		ProgressService progressService = mock(ProgressService.class);
-		propertyIndexProvider.setProgressService(progressService);
-		propertyIndexProvider.getIndex(doc);
-		verify(progressService, atLeastOnce()).progressBegin(any(), any(), any());
+        // Not cached yet, hence progress service invoked
+        ProgressService progressService = mock(ProgressService.class);
+        propertyIndexProvider.setProgressService(progressService);
+        propertyIndexProvider.getIndex(doc);
+        verify(progressService, atLeastOnce()).progressBegin(any(), any(), any());
 
-		// Should be cached now, so progress service should not be touched
-		progressService = mock(ProgressService.class);
-		propertyIndexProvider.setProgressService(progressService);
-		propertyIndexProvider.getIndex(doc);
-		verify(progressService, never()).progressBegin(any(), any(), any());
+        // Should be cached now, so progress service should not be touched
+        progressService = mock(ProgressService.class);
+        propertyIndexProvider.setProgressService(progressService);
+        propertyIndexProvider.getIndex(doc);
+        verify(progressService, never()).progressBegin(any(), any(), any());
 
-		// Change POM file for the project
-		harness.changeFile(new File(directory, MavenCore.POM_XML).toURI().toString());
+        // Change POM file for the project
+        harness.changeFile(new File(directory, MavenCore.POM_XML).toURI().toString());
 
-		// POM has changed, hence project needs to be reloaded, cached value is cleared
-		progressService = mock(ProgressService.class);
-		propertyIndexProvider.setProgressService(progressService);
-		propertyIndexProvider.getIndex(doc);
-		verify(progressService, atLeastOnce()).progressBegin(any(), any(), any());
-	}
+        // POM has changed, hence project needs to be reloaded, cached value is cleared
+        progressService = mock(ProgressService.class);
+        propertyIndexProvider.setProgressService(progressService);
+        propertyIndexProvider.getIndex(doc);
+        verify(progressService, atLeastOnce()).progressBegin(any(), any(), any());
+    }
 
 }

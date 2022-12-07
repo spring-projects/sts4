@@ -10,14 +10,15 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.util;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.ide.vscode.commons.util.FuzzyMap.Match;
 
 public class FuzzyMapTest {
@@ -163,7 +164,7 @@ public class FuzzyMapTest {
 		for (int i = 1; i < datas.length; i++) {
 			String data = datas[i];
 			double score = found.get(i).score;
-			assertTrue("Wrong score order: '"+datas[i-1]+"'["+previousScore+"] '"+data+"' ["+score+"]", previousScore>=score);
+			assertTrue(previousScore>=score, "Wrong score order: '"+datas[i-1]+"'["+previousScore+"] '"+data+"' ["+score+"]");
 			previousScore = score;
 		}
 	}

@@ -13,11 +13,13 @@ package org.springframework.ide.vscode.boot.app;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 import org.springframework.stereotype.Component;
 
 @Component
+@ConditionalOnMissingClass("org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness")
 public class BootVersionValidationEngine {
 
 	private final BootVersionValidator bootVersionValidator;

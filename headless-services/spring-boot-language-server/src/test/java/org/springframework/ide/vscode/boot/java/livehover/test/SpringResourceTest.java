@@ -10,14 +10,14 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.livehover.test;
 
-import static org.junit.Assert.assertEquals;
-
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.ide.vscode.boot.java.links.SourceLinkFactory;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.java.utils.SpringResource;
 import org.springframework.ide.vscode.boot.java.value.test.MockProjects;
 import org.springframework.ide.vscode.boot.java.value.test.MockProjects.MockProject;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class SpringResourceTest {
 
@@ -26,12 +26,13 @@ public class SpringResourceTest {
 
 	private SourceLinks sourceLinks = SourceLinkFactory.NO_SOURCE_LINKS;
 
-	@Test public void vcapResourceToMarkdown() throws Exception {
-		assertEquals(
-				"`com/github/kdvolder/helloworldservice/Greeter.class`",
-				toMarkdown("file [/home/vcap/app/com/github/kdvolder/helloworldservice/Greeter.class]")
-		);
-	}
+    @Test
+    void vcapResourceToMarkdown() throws Exception {
+        assertEquals(
+                "`com/github/kdvolder/helloworldservice/Greeter.class`",
+                toMarkdown("file [/home/vcap/app/com/github/kdvolder/helloworldservice/Greeter.class]")
+        );
+    }
 
 	private String toMarkdown(String beanResourceString) {
 		return new SpringResource(sourceLinks, beanResourceString, project).toMarkdown();

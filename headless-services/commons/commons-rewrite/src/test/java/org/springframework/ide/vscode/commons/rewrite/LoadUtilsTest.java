@@ -10,12 +10,12 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.rewrite;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
 import org.openrewrite.Recipe;
 import org.openrewrite.config.DeclarativeRecipe;
 import org.openrewrite.config.Environment;
@@ -26,7 +26,7 @@ public class LoadUtilsTest {
 	
 	private static Environment env;
 	
-	@BeforeClass
+	@BeforeAll
 	public static void setupAll() {
 		env = Environment.builder().scanRuntimeClasspath().build();
 	}
@@ -47,16 +47,19 @@ public class LoadUtilsTest {
 		
 		assertTrue(r instanceof DeclarativeRecipe);
 		assertEquals("org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_0", r.getName());
-		assertEquals("Upgrade to Spring Boot 3.0 from prior 2.x version.", r.getDescription());
-		assertEquals("Upgrade to Spring Boot 3.0 from 2.7", r.getDisplayName());
-		assertEquals(3, r.getRecipeList().size());
+		assertEquals(
+				"Migrate applications built on Spring Boot 2.7 to the latest Spring Boot 3.0 release. This recipe will modify an application's build files, make changes to deprecated/preferred APIs, and migrate configuration settings that have changes between versions. This recipe will also chain additional framework migrations (Spring Framework, Spring Data, etc) that are required as part of the migration to Spring Boot 2.7.\n"
+						+ "",
+				r.getDescription());
+		assertEquals("Migrate to Spring Boot 3.0 from Spring Boot 2.7", r.getDisplayName());
+		assertEquals(7, r.getRecipeList().size());
 		
 		Recipe pomRecipe = r.getRecipeList().get(0);
 		assertTrue(pomRecipe instanceof DeclarativeRecipe);
 		assertEquals("org.openrewrite.java.spring.boot3.MavenPomUpgrade", pomRecipe.getName());
 		assertEquals("Upgrade Maven Pom to Spring Boot 3.0 from prior 2.x version.", pomRecipe.getDescription());
 		assertEquals("Upgrade Maven Pom to Spring Boot 3.0 from 2.x", pomRecipe.getDisplayName());
-		assertTrue(pomRecipe.getRecipeList().size() >= 4);
+		assertTrue(pomRecipe.getRecipeList().size() >= 3);
 		
 		UpgradeDependencyVersion upgradeDependencyRecipe = pomRecipe.getRecipeList().stream().filter(UpgradeDependencyVersion.class::isInstance).map(UpgradeDependencyVersion.class::cast).findFirst().get();
 		assertEquals("org.openrewrite.maven.UpgradeDependencyVersion", upgradeDependencyRecipe.getName());

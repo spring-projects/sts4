@@ -15,7 +15,8 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 
 import org.eclipse.lsp4j.TextDocumentIdentifier;
-import org.junit.Assert;
+
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import org.springframework.ide.vscode.boot.app.BootLanguageServerParams;
 import org.springframework.ide.vscode.boot.editor.harness.PropertyIndexHarness;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
@@ -142,7 +143,7 @@ public class BootLanguageServerHarness extends LanguageServerHarness {
 	}
 
 	public PropertyIndexHarness getPropertyIndexHarness() {
-		Assert.assertNotNull(indexHarness); //only supported in some types of instantations of the harness (i.e. when indexer is controlled by indexer harness.
+		assertNotNull(indexHarness); //only supported in some types of instantations of the harness (i.e. when indexer is controlled by indexer harness.
 		return indexHarness;
 	}
 

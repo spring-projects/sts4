@@ -1,8 +1,8 @@
 package org.springframework.ide.vscode.commons.util;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.ide.vscode.commons.util.SimpleGlob.Match;
 
 public class SimpleGlobTests {

@@ -10,8 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.data.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.util.Iterator;
@@ -21,9 +21,9 @@ import java.util.concurrent.TimeUnit;
 
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.WorkspaceSymbol;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
@@ -34,12 +34,12 @@ import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 /**
  * @author Martin Lippert
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @BootLanguageServerTest
 @Import(SymbolProviderTestConf.class)
 public class DataRepositorySymbolProviderTest {
@@ -50,7 +50,7 @@ public class DataRepositorySymbolProviderTest {
 
 	private File directory;
 
-	@Before
+	@BeforeEach
 	public void setup() throws Exception {
 		harness.intialize(null);
 
@@ -64,18 +64,18 @@ public class DataRepositorySymbolProviderTest {
 		initProject.get(5, TimeUnit.SECONDS);
 	}
 
-	@Test
-	public void testSimpleRepositorySymbol() throws Exception {
-		String docUri = directory.toPath().resolve("src/main/java/org/test/CustomerRepository.java").toUri().toString();
-		List<? extends WorkspaceSymbol> symbols = indexer.getSymbols(docUri);
-		assertEquals(1, symbols.size());
-		assertTrue(containsSymbol(symbols, "@+ 'customerRepository' (Customer) Repository<Customer,Long>", docUri, 6, 17, 6, 35));
+    @Test
+    void testSimpleRepositorySymbol() throws Exception {
+        String docUri = directory.toPath().resolve("src/main/java/org/test/CustomerRepository.java").toUri().toString();
+        List<? extends WorkspaceSymbol> symbols = indexer.getSymbols(docUri);
+        assertEquals(1, symbols.size());
+        assertTrue(containsSymbol(symbols, "@+ 'customerRepository' (Customer) Repository<Customer,Long>", docUri, 6, 17, 6, 35));
 
-		List<? extends SymbolAddOnInformation> addon = indexer.getAdditonalInformation(docUri);
-		assertEquals(1, addon.size());
+        List<? extends SymbolAddOnInformation> addon = indexer.getAdditonalInformation(docUri);
+        assertEquals(1, addon.size());
 
-		assertEquals("customerRepository", ((BeansSymbolAddOnInformation)addon.get(0)).getBeanID());
-	}
+        assertEquals("customerRepository", ((BeansSymbolAddOnInformation) addon.get(0)).getBeanID());
+    }
 
 	private boolean containsSymbol(List<? extends WorkspaceSymbol> symbols, String name, String uri, int startLine, int startCHaracter, int endLine, int endCharacter) {
 		for (Iterator<? extends WorkspaceSymbol> iterator = symbols.iterator(); iterator.hasNext();) {

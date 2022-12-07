@@ -14,18 +14,18 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 import java.util.concurrent.TimeUnit;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.ide.vscode.boot.java.livehover.v2.RequestMappingMetrics;
 
 public class RequestMappingMetricsTest {
-	
-	@Test
-	public void testParser1() throws Exception {
-		RequestMappingMetrics mappingMetrics = RequestMappingMetrics.parse("{\"name\":\"http.server.requests\",\"description\":null,\"baseUnit\":\"seconds\",\"measurements\":[{\"statistic\":\"COUNT\",\"value\":1.0},{\"statistic\":\"TOTAL_TIME\",\"value\":0.03465965},{\"statistic\":\"MAX\",\"value\":0.47461985}],\"availableTags\":[{\"tag\":\"exception\",\"values\":[\"None\"]},{\"tag\":\"outcome\",\"values\":[\"SUCCESS\"]},{\"tag\":\"status\",\"values\":[\"200\"]}]}");
-		assertEquals(TimeUnit.SECONDS, mappingMetrics.getTimeUnit());
-		assertEquals(1, mappingMetrics.getCallsCount());
-		assertEquals(0.47461985, mappingMetrics.getMaxTime());
-		assertEquals(0.03465965, mappingMetrics.getTotalTime());
-	}
+
+    @Test
+    void testParser1() throws Exception {
+        RequestMappingMetrics mappingMetrics = RequestMappingMetrics.parse("{\"name\":\"http.server.requests\",\"description\":null,\"baseUnit\":\"seconds\",\"measurements\":[{\"statistic\":\"COUNT\",\"value\":1.0},{\"statistic\":\"TOTAL_TIME\",\"value\":0.03465965},{\"statistic\":\"MAX\",\"value\":0.47461985}],\"availableTags\":[{\"tag\":\"exception\",\"values\":[\"None\"]},{\"tag\":\"outcome\",\"values\":[\"SUCCESS\"]},{\"tag\":\"status\",\"values\":[\"200\"]}]}");
+        assertEquals(TimeUnit.SECONDS, mappingMetrics.getTimeUnit());
+        assertEquals(1, mappingMetrics.getCallsCount());
+        assertEquals(0.47461985, mappingMetrics.getMaxTime());
+        assertEquals(0.03465965, mappingMetrics.getTotalTime());
+    }
 
 }

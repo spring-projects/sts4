@@ -10,8 +10,6 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.beans.test;
 
-import static org.junit.Assert.assertEquals;
-
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -20,6 +18,8 @@ import java.util.Comparator;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.WorkspaceSymbol;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;

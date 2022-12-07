@@ -10,8 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.value.test;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import java.io.InputStream;
 import java.util.Collection;
@@ -23,9 +23,9 @@ import org.apache.commons.io.IOUtils;
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.gradle.internal.impldep.com.google.common.collect.ImmutableList;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -52,12 +52,12 @@ import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
-import org.springframework.test.context.junit4.SpringRunner;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 /**
  * @author Martin Lippert
  */
-@RunWith(SpringRunner.class)
+@ExtendWith(SpringExtension.class)
 @BootLanguageServerTest
 @Import({AdHocPropertyHarnessTestConf.class, ValueCompletionTest.TestConf.class})
 public class ValueCompletionTest {
@@ -127,7 +127,7 @@ public class ValueCompletionTest {
 
 	}
 
-	@Before
+	@BeforeEach
 	public void setup() throws Exception {
 		harness.intialize(null);
 	}
@@ -136,252 +136,252 @@ public class ValueCompletionTest {
 		return testProject;
 	}
 
-	@Test
-	public void testPrefixIdentification() {
-		ValueCompletionProcessor processor = new ValueCompletionProcessor(projectFinder, null, null);
+    @Test
+    void testPrefixIdentification() {
+        ValueCompletionProcessor processor = new ValueCompletionProcessor(projectFinder, null, null);
 
-		assertEquals("pre", processor.identifyPropertyPrefix("pre", 3));
-		assertEquals("pre", processor.identifyPropertyPrefix("prefix", 3));
-		assertEquals("", processor.identifyPropertyPrefix("", 0));
-		assertEquals("pre", processor.identifyPropertyPrefix("$pre", 4));
+        assertEquals("pre", processor.identifyPropertyPrefix("pre", 3));
+        assertEquals("pre", processor.identifyPropertyPrefix("prefix", 3));
+        assertEquals("", processor.identifyPropertyPrefix("", 0));
+        assertEquals("pre", processor.identifyPropertyPrefix("$pre", 4));
 
-		assertEquals("", processor.identifyPropertyPrefix("${pre", 0));
-		assertEquals("", processor.identifyPropertyPrefix("${pre", 1));
-		assertEquals("", processor.identifyPropertyPrefix("${pre", 2));
-		assertEquals("p", processor.identifyPropertyPrefix("${pre", 3));
-		assertEquals("pr", processor.identifyPropertyPrefix("${pre", 4));
-	}
+        assertEquals("", processor.identifyPropertyPrefix("${pre", 0));
+        assertEquals("", processor.identifyPropertyPrefix("${pre", 1));
+        assertEquals("", processor.identifyPropertyPrefix("${pre", 2));
+        assertEquals("p", processor.identifyPropertyPrefix("${pre", 3));
+        assertEquals("pr", processor.identifyPropertyPrefix("${pre", 4));
+    }
 
-	@Test
-	public void testEmptyBracketsCompletion() throws Exception {
-		prepareCase("@Value(\"onField\")", "@Value(<*>)");
-		prepareDefaultIndexData();
+    @Test
+    void testEmptyBracketsCompletion() throws Exception {
+        prepareCase("@Value(\"onField\")", "@Value(<*>)");
+        prepareDefaultIndexData();
 
-		assertAnnotationCompletions(
-				"@Value(\"${data.prop2}\"<*>)",
-				"@Value(\"${else.prop3}\"<*>)",
-				"@Value(\"${spring.prop1}\"<*>)");
-	}
+        assertAnnotationCompletions(
+                "@Value(\"${data.prop2}\"<*>)",
+                "@Value(\"${else.prop3}\"<*>)",
+                "@Value(\"${spring.prop1}\"<*>)");
+    }
 
-	@Test
-	public void testEmptyBracketsCompletionWithParamName() throws Exception {
-		prepareCase("@Value(\"onField\")", "@Value(value=<*>)");
-		prepareDefaultIndexData();
+    @Test
+    void testEmptyBracketsCompletionWithParamName() throws Exception {
+        prepareCase("@Value(\"onField\")", "@Value(value=<*>)");
+        prepareDefaultIndexData();
 
-		assertAnnotationCompletions(
-				"@Value(value=\"${data.prop2}\"<*>)",
-				"@Value(value=\"${else.prop3}\"<*>)",
-				"@Value(value=\"${spring.prop1}\"<*>)");
-	}
+        assertAnnotationCompletions(
+                "@Value(value=\"${data.prop2}\"<*>)",
+                "@Value(value=\"${else.prop3}\"<*>)",
+                "@Value(value=\"${spring.prop1}\"<*>)");
+    }
 
-	@Test
-	public void testEmptyBracketsCompletionWithWrongParamName() throws Exception {
-		prepareCase("@Value(\"onField\")", "@Value(another=<*>)");
-		prepareDefaultIndexData();
-		assertAnnotationCompletions();
-	}
+    @Test
+    void testEmptyBracketsCompletionWithWrongParamName() throws Exception {
+        prepareCase("@Value(\"onField\")", "@Value(another=<*>)");
+        prepareDefaultIndexData();
+        assertAnnotationCompletions();
+    }
 
-	@Test
-	public void testOnlyDollarNoQoutesCompletion() throws Exception {
-		prepareCase("@Value(\"onField\")", "@Value($<*>)");
-		prepareDefaultIndexData();
+    @Test
+    void testOnlyDollarNoQoutesCompletion() throws Exception {
+        prepareCase("@Value(\"onField\")", "@Value($<*>)");
+        prepareDefaultIndexData();
 
-		assertAnnotationCompletions(
-				"@Value(\"${data.prop2}\"<*>)",
-				"@Value(\"${else.prop3}\"<*>)",
-				"@Value(\"${spring.prop1}\"<*>)");
-	}
+        assertAnnotationCompletions(
+                "@Value(\"${data.prop2}\"<*>)",
+                "@Value(\"${else.prop3}\"<*>)",
+                "@Value(\"${spring.prop1}\"<*>)");
+    }
 
-	@Test
-	public void testOnlyDollarNoQoutesWithParamCompletion() throws Exception {
-		prepareCase("@Value(\"onField\")", "@Value(value=$<*>)");
-		prepareDefaultIndexData();
+    @Test
+    void testOnlyDollarNoQoutesWithParamCompletion() throws Exception {
+        prepareCase("@Value(\"onField\")", "@Value(value=$<*>)");
+        prepareDefaultIndexData();
 
-		assertAnnotationCompletions(
-				"@Value(value=\"${data.prop2}\"<*>)",
-				"@Value(value=\"${else.prop3}\"<*>)",
-				"@Value(value=\"${spring.prop1}\"<*>)");
-	}
+        assertAnnotationCompletions(
+                "@Value(value=\"${data.prop2}\"<*>)",
+                "@Value(value=\"${else.prop3}\"<*>)",
+                "@Value(value=\"${spring.prop1}\"<*>)");
+    }
 
-	@Test
-	public void testOnlyDollarCompletion() throws Exception {
-		prepareCase("@Value(\"onField\")", "@Value(\"$<*>\")");
-		prepareDefaultIndexData();
+    @Test
+    void testOnlyDollarCompletion() throws Exception {
+        prepareCase("@Value(\"onField\")", "@Value(\"$<*>\")");
+        prepareDefaultIndexData();
 
-		assertAnnotationCompletions(
-				"@Value(\"${data.prop2}<*>\")",
-				"@Value(\"${else.prop3}<*>\")",
-				"@Value(\"${spring.prop1}<*>\")");
-	}
+        assertAnnotationCompletions(
+                "@Value(\"${data.prop2}<*>\")",
+                "@Value(\"${else.prop3}<*>\")",
+                "@Value(\"${spring.prop1}<*>\")");
+    }
 
-	@Test
-	public void testOnlyDollarWithParamCompletion() throws Exception {
-		prepareCase("@Value(\"onField\")", "@Value(value=\"$<*>\")");
-		prepareDefaultIndexData();
+    @Test
+    void testOnlyDollarWithParamCompletion() throws Exception {
+        prepareCase("@Value(\"onField\")", "@Value(value=\"$<*>\")");
+        prepareDefaultIndexData();
 
-		assertAnnotationCompletions(
-				"@Value(value=\"${data.prop2}<*>\")",
-				"@Value(value=\"${else.prop3}<*>\")",
-				"@Value(value=\"${spring.prop1}<*>\")");
-	}
+        assertAnnotationCompletions(
+                "@Value(value=\"${data.prop2}<*>\")",
+                "@Value(value=\"${else.prop3}<*>\")",
+                "@Value(value=\"${spring.prop1}<*>\")");
+    }
 
-	@Test
-	public void testDollarWithBracketsCompletion() throws Exception {
-		prepareCase("@Value(\"onField\")", "@Value(\"${<*>}\")");
-		prepareDefaultIndexData();
+    @Test
+    void testDollarWithBracketsCompletion() throws Exception {
+        prepareCase("@Value(\"onField\")", "@Value(\"${<*>}\")");
+        prepareDefaultIndexData();
 
-		assertAnnotationCompletions(
-				"@Value(\"${data.prop2<*>}\")",
-				"@Value(\"${else.prop3<*>}\")",
-				"@Value(\"${spring.prop1<*>}\")");
-	}
+        assertAnnotationCompletions(
+                "@Value(\"${data.prop2<*>}\")",
+                "@Value(\"${else.prop3<*>}\")",
+                "@Value(\"${spring.prop1<*>}\")");
+    }
 
-	@Test
-	public void testDollarWithBracketsWithParamCompletion() throws Exception {
-		prepareCase("@Value(\"onField\")", "@Value(value=\"${<*>}\")");
-		prepareDefaultIndexData();
+    @Test
+    void testDollarWithBracketsWithParamCompletion() throws Exception {
+        prepareCase("@Value(\"onField\")", "@Value(value=\"${<*>}\")");
+        prepareDefaultIndexData();
 
-		assertAnnotationCompletions(
-				"@Value(value=\"${data.prop2<*>}\")",
-				"@Value(value=\"${else.prop3<*>}\")",
-				"@Value(value=\"${spring.prop1<*>}\")");
-	}
+        assertAnnotationCompletions(
+                "@Value(value=\"${data.prop2<*>}\")",
+                "@Value(value=\"${else.prop3<*>}\")",
+                "@Value(value=\"${spring.prop1<*>}\")");
+    }
 
-	@Test
-	public void testEmptyStringLiteralCompletion() throws Exception {
-		prepareCase("@Value(\"onField\")", "@Value(\"<*>\")");
-		prepareDefaultIndexData();
+    @Test
+    void testEmptyStringLiteralCompletion() throws Exception {
+        prepareCase("@Value(\"onField\")", "@Value(\"<*>\")");
+        prepareDefaultIndexData();
 
-		assertAnnotationCompletions(
-				"@Value(\"${data.prop2}<*>\")",
-				"@Value(\"${else.prop3}<*>\")",
-				"@Value(\"${spring.prop1}<*>\")");
-	}
+        assertAnnotationCompletions(
+                "@Value(\"${data.prop2}<*>\")",
+                "@Value(\"${else.prop3}<*>\")",
+                "@Value(\"${spring.prop1}<*>\")");
+    }
 
-	@Test
-	public void testPlainPrefixCompletion() throws Exception {
-		prepareCase("@Value(\"onField\")", "@Value(spri<*>)");
-		prepareDefaultIndexData();
+    @Test
+    void testPlainPrefixCompletion() throws Exception {
+        prepareCase("@Value(\"onField\")", "@Value(spri<*>)");
+        prepareDefaultIndexData();
 
-		assertAnnotationCompletions(
-				"@Value(\"${spring.prop1}\"<*>)");
-	}
+        assertAnnotationCompletions(
+                "@Value(\"${spring.prop1}\"<*>)");
+    }
 
-	@Test
-	public void testQoutedPrefixCompletion() throws Exception {
-		prepareCase("@Value(\"onField\")", "@Value(\"spri<*>\")");
-		prepareDefaultIndexData();
+    @Test
+    void testQoutedPrefixCompletion() throws Exception {
+        prepareCase("@Value(\"onField\")", "@Value(\"spri<*>\")");
+        prepareDefaultIndexData();
 
-		assertAnnotationCompletions(
-				"@Value(\"${spring.prop1}<*>\")");
-	}
+        assertAnnotationCompletions(
+                "@Value(\"${spring.prop1}<*>\")");
+    }
 
-	@Test
-	public void testRandomSpelExpressionNoCompletion() throws Exception {
-		prepareCase("@Value(\"onField\")", "@Value(\"#{<*>}\")");
-		prepareDefaultIndexData();
+    @Test
+    void testRandomSpelExpressionNoCompletion() throws Exception {
+        prepareCase("@Value(\"onField\")", "@Value(\"#{<*>}\")");
+        prepareDefaultIndexData();
 
-		assertAnnotationCompletions(
-				"@Value(\"#{${data.prop2}<*>}\")",
-				"@Value(\"#{${else.prop3}<*>}\")",
-				"@Value(\"#{${spring.prop1}<*>}\")");
-	}
+        assertAnnotationCompletions(
+                "@Value(\"#{${data.prop2}<*>}\")",
+                "@Value(\"#{${else.prop3}<*>}\")",
+                "@Value(\"#{${spring.prop1}<*>}\")");
+    }
 
-	@Test
-	public void testRandomSpelExpressionWithPropertyDollar() throws Exception {
-		prepareCase("@Value(\"onField\")", "@Value(\"#{345$<*>}\")");
-		prepareDefaultIndexData();
+    @Test
+    void testRandomSpelExpressionWithPropertyDollar() throws Exception {
+        prepareCase("@Value(\"onField\")", "@Value(\"#{345$<*>}\")");
+        prepareDefaultIndexData();
 
-		assertAnnotationCompletions(
-				"@Value(\"#{345${data.prop2}<*>}\")",
-				"@Value(\"#{345${else.prop3}<*>}\")",
-				"@Value(\"#{345${spring.prop1}<*>}\")");
-	}
+        assertAnnotationCompletions(
+                "@Value(\"#{345${data.prop2}<*>}\")",
+                "@Value(\"#{345${else.prop3}<*>}\")",
+                "@Value(\"#{345${spring.prop1}<*>}\")");
+    }
 
-	@Test
-	public void testRandomSpelExpressionWithPropertyDollerWithoutClosindBracket() throws Exception {
-		prepareCase("@Value(\"onField\")", "@Value(\"#{345${<*>}\")");
-		prepareDefaultIndexData();
+    @Test
+    void testRandomSpelExpressionWithPropertyDollerWithoutClosindBracket() throws Exception {
+        prepareCase("@Value(\"onField\")", "@Value(\"#{345${<*>}\")");
+        prepareDefaultIndexData();
 
-		assertAnnotationCompletions(
-				"@Value(\"#{345${data.prop2}<*>}\")",
-				"@Value(\"#{345${else.prop3}<*>}\")",
-				"@Value(\"#{345${spring.prop1}<*>}\")");
-	}
+        assertAnnotationCompletions(
+                "@Value(\"#{345${data.prop2}<*>}\")",
+                "@Value(\"#{345${else.prop3}<*>}\")",
+                "@Value(\"#{345${spring.prop1}<*>}\")");
+    }
 
-	@Test
-	public void testRandomSpelExpressionWithPropertyDollerWithClosingBracket() throws Exception {
-		prepareCase("@Value(\"onField\")", "@Value(\"#{345${<*>}}\")");
-		prepareDefaultIndexData();
+    @Test
+    void testRandomSpelExpressionWithPropertyDollerWithClosingBracket() throws Exception {
+        prepareCase("@Value(\"onField\")", "@Value(\"#{345${<*>}}\")");
+        prepareDefaultIndexData();
 
-		assertAnnotationCompletions(
-				"@Value(\"#{345${data.prop2<*>}}\")",
-				"@Value(\"#{345${else.prop3<*>}}\")",
-				"@Value(\"#{345${spring.prop1<*>}}\")");
-	}
+        assertAnnotationCompletions(
+                "@Value(\"#{345${data.prop2<*>}}\")",
+                "@Value(\"#{345${else.prop3<*>}}\")",
+                "@Value(\"#{345${spring.prop1<*>}}\")");
+    }
 
-	@Test
-	public void testRandomSpelExpressionWithPropertyPrefixWithoutClosingBracket() throws Exception {
-		prepareCase("@Value(\"onField\")", "@Value(\"#{345${spri<*>}\")");
-		prepareDefaultIndexData();
+    @Test
+    void testRandomSpelExpressionWithPropertyPrefixWithoutClosingBracket() throws Exception {
+        prepareCase("@Value(\"onField\")", "@Value(\"#{345${spri<*>}\")");
+        prepareDefaultIndexData();
 
-		assertAnnotationCompletions(
-				"@Value(\"#{345${spring.prop1}<*>}\")");
-	}
+        assertAnnotationCompletions(
+                "@Value(\"#{345${spring.prop1}<*>}\")");
+    }
 
-	@Test
-	public void testRandomSpelExpressionWithPropertyPrefixWithClosingBracket() throws Exception {
-		prepareCase("@Value(\"onField\")", "@Value(\"#{345${spri<*>}}\")");
-		prepareDefaultIndexData();
+    @Test
+    void testRandomSpelExpressionWithPropertyPrefixWithClosingBracket() throws Exception {
+        prepareCase("@Value(\"onField\")", "@Value(\"#{345${spri<*>}}\")");
+        prepareDefaultIndexData();
 
-		assertAnnotationCompletions(
-				"@Value(\"#{345${spring.prop1<*>}}\")");
-	}
+        assertAnnotationCompletions(
+                "@Value(\"#{345${spring.prop1<*>}}\")");
+    }
 
-	@Test
-	public void adHoc() throws Exception {
-		prepareDefaultIndexData();
-		Editor editor = harness.newEditor(LanguageId.JAVA,
-				"package org.test;\n" +
-				"\n" +
-				"import org.springframework.beans.factory.annotation.Value;\n" +
-				"\n" +
-				"public class TestValueCompletion {\n" +
-				"	\n" +
-				"	@Value(\"<*>\")\n" +
-				"	private String value1;\n" +
-				"}"
-		);
+    @Test
+    void adHoc() throws Exception {
+        prepareDefaultIndexData();
+        Editor editor = harness.newEditor(LanguageId.JAVA,
+                "package org.test;\n" +
+                        "\n" +
+                        "import org.springframework.beans.factory.annotation.Value;\n" +
+                        "\n" +
+                        "public class TestValueCompletion {\n" +
+                        "	\n" +
+                        "	@Value(\"<*>\")\n" +
+                        "	private String value1;\n" +
+                        "}"
+        );
 
-		//There are no 'ad-hoc' properties yet. So should only suggest the default ones.
-		editor.assertContextualCompletions(
-				"<*>"
-				, //==>
-				"${data.prop2}<*>",
-				"${else.prop3}<*>",
-				"${spring.prop1}<*>"
-		);
+        //There are no 'ad-hoc' properties yet. So should only suggest the default ones.
+        editor.assertContextualCompletions(
+                "<*>"
+        , //==>
+                "${data.prop2}<*>",
+                "${else.prop3}<*>",
+                "${spring.prop1}<*>"
+        );
 
-		adHocProperties.add("spring.ad-hoc.thingy");
-		adHocProperties.add("spring.ad-hoc.other-thingy");
-		adHocProperties.add("spring.prop1"); //should not suggest this twice!
-		editor.assertContextualCompletions(
-				"<*>"
-				, //==>
-				"${data.prop2}<*>",
-				"${else.prop3}<*>",
-				"${spring.ad-hoc.other-thingy}<*>",
-				"${spring.ad-hoc.thingy}<*>",
-				"${spring.prop1}<*>"
-		);
+        adHocProperties.add("spring.ad-hoc.thingy");
+        adHocProperties.add("spring.ad-hoc.other-thingy");
+        adHocProperties.add("spring.prop1"); //should not suggest this twice!
+        editor.assertContextualCompletions(
+                "<*>"
+        , //==>
+                "${data.prop2}<*>",
+                "${else.prop3}<*>",
+                "${spring.ad-hoc.other-thingy}<*>",
+                "${spring.ad-hoc.thingy}<*>",
+                "${spring.prop1}<*>"
+        );
 
-		editor.assertContextualCompletions(
-				"adhoc<*>"
-				, //==>
-				"${spring.ad-hoc.thingy}<*>",
-				"${spring.ad-hoc.other-thingy}<*>"
-		);
-	}
+        editor.assertContextualCompletions(
+                "adhoc<*>"
+        , //==>
+                "${spring.ad-hoc.thingy}<*>",
+                "${spring.ad-hoc.other-thingy}<*>"
+        );
+    }
 
 
 	private void prepareDefaultIndexData() {

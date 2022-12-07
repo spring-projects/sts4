@@ -12,8 +12,11 @@ package org.springframework.ide.vscode.boot.bootiful;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.ide.vscode.boot.app.BootVersionValidationEngine;
 import org.springframework.ide.vscode.boot.editor.harness.AdHocPropertyHarness;
+import org.springframework.ide.vscode.boot.java.utils.test.MockProjectObserver;
 import org.springframework.ide.vscode.boot.metadata.ProjectBasedPropertyIndexProvider;
+import org.springframework.ide.vscode.commons.java.IJavaProject;
 
 @Configuration
 public class AdHocPropertyHarnessTestConf {
@@ -24,4 +27,16 @@ public class AdHocPropertyHarnessTestConf {
 	@Bean ProjectBasedPropertyIndexProvider adHocProperties(AdHocPropertyHarness adHocProperties) {
 		return adHocProperties.getIndexProvider();
 	}
+	
+	@Bean BootVersionValidationEngine versionValidator() {
+		return new BootVersionValidationEngine(new MockProjectObserver(), null) {
+
+			@Override
+			public void validate(IJavaProject project) {
+				// do not validate anything
+			}
+			
+		};
+	}
+
 }

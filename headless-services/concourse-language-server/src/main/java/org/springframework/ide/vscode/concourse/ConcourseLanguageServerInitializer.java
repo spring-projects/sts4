@@ -12,7 +12,7 @@ package org.springframework.ide.vscode.concourse;
 
 import java.util.List;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 
 import org.eclipse.lsp4j.CompletionList;
 import org.slf4j.Logger;

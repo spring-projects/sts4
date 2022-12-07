@@ -10,17 +10,17 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.cloudfoundry.client;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Mockito.when;
 
 import java.net.UnknownHostException;
 import java.util.concurrent.Callable;
 
 import org.cloudfoundry.uaa.UaaException;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTarget;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFTargetCache;
@@ -39,7 +39,7 @@ public class CFClientTest {
 	CFTargetCache targetCache;
 	TargetDiagnosticMessages expectedMessages = CfCliParamsProvider.CLI_PROVIDER_MESSAGES;
 
-	@Before
+	@BeforeEach
 	public void setup() throws Exception {
 		targetCache = new CFTargetCache(ImmutableList.of(cloudfoundry.paramsProvider), cloudfoundry.factory, timeouts);
 	}

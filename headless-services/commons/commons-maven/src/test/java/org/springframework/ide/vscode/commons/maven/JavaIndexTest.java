@@ -11,10 +11,10 @@
 
 package org.springframework.ide.vscode.commons.maven;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.ide.vscode.languageserver.testharness.ClasspathTestUtil.getOutputFolder;
 
 import java.nio.file.Path;
@@ -27,8 +27,8 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.springframework.ide.vscode.commons.java.IJavaModuleData;
 import org.springframework.ide.vscode.commons.java.IMethod;
 import org.springframework.ide.vscode.commons.java.IPrimitiveType;
@@ -44,7 +44,7 @@ import com.google.common.cache.LoadingCache;
 
 import reactor.util.function.Tuple2;
 
-@Ignore
+@Disabled
 public class JavaIndexTest {
 
 	private static BasicFileObserver fileObserver = new BasicFileObserver();

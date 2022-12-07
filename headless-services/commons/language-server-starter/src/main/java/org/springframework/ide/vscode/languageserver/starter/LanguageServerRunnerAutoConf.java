@@ -13,15 +13,15 @@ package org.springframework.ide.vscode.languageserver.starter;
 import java.util.function.Function;
 
 import org.eclipse.lsp4j.jsonrpc.MessageConsumer;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
 import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 import org.springframework.ide.vscode.commons.languageserver.LanguageServerRunner;
 import org.springframework.ide.vscode.commons.languageserver.config.LanguageServerProperties;
 import org.springframework.ide.vscode.commons.languageserver.util.ParentProcessWatcher;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 
-@Configuration(proxyBeanMethods = false)
+@AutoConfiguration
 public class LanguageServerRunnerAutoConf {
 	
 	@ConditionalOnMissingClass("org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness")

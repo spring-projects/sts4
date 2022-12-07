@@ -10,10 +10,10 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.bosh;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import org.springframework.ide.vscode.bosh.BoshValueParsers;
 import org.springframework.ide.vscode.commons.util.ValueParseException;
 import org.springframework.ide.vscode.commons.util.ValueParser;
@@ -22,35 +22,39 @@ public class BoshValueParserTest {
 
 	private static final String MARKER = "<*>";
 
-	@Test public void integerOrRangeOkay() throws Exception {
-		BoshValueParsers.INTEGER_OR_RANGE.parse("123");
-		BoshValueParsers.INTEGER_OR_RANGE.parse("123-456");
-	}
+    @Test
+    void integerOrRangeOkay() throws Exception {
+        BoshValueParsers.INTEGER_OR_RANGE.parse("123");
+        BoshValueParsers.INTEGER_OR_RANGE.parse("123-456");
+    }
 
-	@Test public void integerOrRangeGarbage() throws Exception {
-		assertProblem(BoshValueParsers.INTEGER_OR_RANGE, "<*>garbage<*>", "Should be either a Integer, or a range (of the form '<integer>-<integer>')");
-		assertProblem(BoshValueParsers.INTEGER_OR_RANGE, "<*>123--456<*>", "Should be either a Integer, or a range (of the form '<integer>-<integer>')");
-		assertProblem(BoshValueParsers.INTEGER_OR_RANGE, "<*>garbage<*>-123", "Should be a Integer");
-		assertProblem(BoshValueParsers.INTEGER_OR_RANGE, "123-<*>garbage<*>", "Should be a Integer");
-		assertProblem(BoshValueParsers.INTEGER_OR_RANGE, "<*>123-122<*>", "123 should be smaller than 122");
-	}
+    @Test
+    void integerOrRangeGarbage() throws Exception {
+        assertProblem(BoshValueParsers.INTEGER_OR_RANGE, "<*>garbage<*>", "Should be either a Integer, or a range (of the form '<integer>-<integer>')");
+        assertProblem(BoshValueParsers.INTEGER_OR_RANGE, "<*>123--456<*>", "Should be either a Integer, or a range (of the form '<integer>-<integer>')");
+        assertProblem(BoshValueParsers.INTEGER_OR_RANGE, "<*>garbage<*>-123", "Should be a Integer");
+        assertProblem(BoshValueParsers.INTEGER_OR_RANGE, "123-<*>garbage<*>", "Should be a Integer");
+        assertProblem(BoshValueParsers.INTEGER_OR_RANGE, "<*>123-122<*>", "123 should be smaller than 122");
+    }
 
-	@Test public void urlOkay() throws Exception {
-		ValueParser urlParser = BoshValueParsers.url("http", "https", "file");
-		urlParser.parse("https://foobar.com/munhings.tar.gz");
-		urlParser.parse("https://foobar.com/munhings.tar.gz");
-		urlParser.parse("hTTp://foobar.com/munhings.tar.gz");
-		urlParser.parse("HTTPS://foobar.com/munhings.tar.gz");
-		urlParser.parse("file://local/file");
-		urlParser.parse("file:///local/file");
-		urlParser.parse("FILE:///local/file");
-	}
+    @Test
+    void urlOkay() throws Exception {
+        ValueParser urlParser = BoshValueParsers.url("http", "https", "file");
+        urlParser.parse("https://foobar.com/munhings.tar.gz");
+        urlParser.parse("https://foobar.com/munhings.tar.gz");
+        urlParser.parse("hTTp://foobar.com/munhings.tar.gz");
+        urlParser.parse("HTTPS://foobar.com/munhings.tar.gz");
+        urlParser.parse("file://local/file");
+        urlParser.parse("file:///local/file");
+        urlParser.parse("FILE:///local/file");
+    }
 
-	@Test public void urlGarbage() throws Exception {
-		ValueParser urlParser = BoshValueParsers.url("http", "https", "file");
-		assertProblem(urlParser, "<*>woot<*>://foobar.com", "Url scheme must be one of [http, https, file]");
-		assertProblem(urlParser, "<*>wOOt<*>://foobar.com", "Url scheme must be one of [http, https, file]");
-	}
+    @Test
+    void urlGarbage() throws Exception {
+        ValueParser urlParser = BoshValueParsers.url("http", "https", "file");
+        assertProblem(urlParser, "<*>woot<*>://foobar.com", "Url scheme must be one of [http, https, file]");
+        assertProblem(urlParser, "<*>wOOt<*>://foobar.com", "Url scheme must be one of [http, https, file]");
+    }
 
 	private void assertProblem(ValueParser parser, String input, String expectedMessage) throws Exception {
 		String unmarkedInput = input.replace(MARKER, "");

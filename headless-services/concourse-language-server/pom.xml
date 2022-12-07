@@ -32,11 +32,6 @@
 			<artifactId>commons-yaml</artifactId>
 			<version>${dependencies.version}</version>
 		</dependency>
-		<!-- spring boot -->
-		<dependency>
-			<groupId>org.springframework.boot</groupId>
-			<artifactId>spring-boot-starter-actuator</artifactId>
-		</dependency>
 
 		<!-- Language Servers -->
 		<dependency>

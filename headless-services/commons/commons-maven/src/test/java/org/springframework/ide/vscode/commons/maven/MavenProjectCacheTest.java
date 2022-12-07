@@ -10,11 +10,11 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.maven;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.doAnswer;
 import static org.mockito.Mockito.mock;
@@ -36,10 +36,10 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Ignore;
-import org.junit.Test;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 import org.mockito.invocation.InvocationOnMock;
 import org.mockito.stubbing.Answer;
 import org.springframework.ide.vscode.commons.java.ClasspathFileBasedCache;
@@ -64,7 +64,7 @@ import com.google.common.collect.ImmutableList;
  * @author Alex Boyko
  *
  */
-@Ignore
+@Disabled
 public class MavenProjectCacheTest {
 
 	private static final int TIMEOUT_SECONDS = 60;
@@ -75,7 +75,7 @@ public class MavenProjectCacheTest {
 	private File pomFile;
 	private String pomFileContents;
 
-	@Before
+	@BeforeEach
 	public void setup() throws Exception {
 		fileObserver = new BasicFileObserver();
 		server = mock(Sts4LanguageServer.class);
@@ -95,7 +95,7 @@ public class MavenProjectCacheTest {
 		}
 	}
 
-	@After
+	@AfterEach
 	public void tearDown() throws Exception {
 		// restore original content
 		writeContent(pomFile, pomFileContents);

@@ -10,11 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.gradle;
 
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 import static org.springframework.ide.vscode.languageserver.testharness.ClasspathTestUtil.getOutputFolder;
@@ -29,8 +25,8 @@ import java.util.List;
 import java.util.Optional;
 
 import org.assertj.core.util.Files;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.javadoc.JavaDocProviders;
@@ -50,7 +46,7 @@ public class GradleProjectTest {
 	private Sts4LanguageServer server;
 	private BasicFileObserver fileObserver;
 
-	@Before
+	@BeforeEach
 	public void setup() throws Exception {
 		fileObserver = new BasicFileObserver();
 		server = mock(Sts4LanguageServer.class);
@@ -74,101 +70,102 @@ public class GradleProjectTest {
 		return GradleJavaProject.create(fileObserver, GradleCore.getDefault(), testProjectPath.toFile(), (uri, cpe) -> JavaDocProviders.createFor(cpe));
 	}
 
-	@Test
-	public void testEclipseGradleProject() throws Exception {
-		GradleJavaProject project = getGradleProject("empty-gradle-project");
-		List<File> nonSystemClasspathEntries = IClasspathUtil.getBinaryRoots(project.getClasspath(), (cpe) -> !cpe.isSystem());
-		assertEquals(51, nonSystemClasspathEntries.size());
-	}
+    @Test
+    void testEclipseGradleProject() throws Exception {
+        GradleJavaProject project = getGradleProject("empty-gradle-project");
+        List<File> nonSystemClasspathEntries = IClasspathUtil.getBinaryRoots(project.getClasspath(), (cpe) -> !cpe.isSystem());
+        assertEquals(51, nonSystemClasspathEntries.size());
+    }
 
-	@Test
-	public void outputFolder() throws Exception {
-		GradleJavaProject project = getGradleProject("test-app-1");
-		String of = getOutputFolder(project).toString();
-		assertTrue(of.endsWith("/bin") || of.endsWith("/bin/main"));
-	}
+    @Test
+    void outputFolder() throws Exception {
+        GradleJavaProject project = getGradleProject("test-app-1");
+        String of = getOutputFolder(project).toString();
+        assertTrue(of.endsWith("/bin") || of.endsWith("/bin/main"));
+    }
 
-	@Test
-	public void gradleClasspathResource() throws Exception {
-		GradleJavaProject project = getGradleProject("test-app-1");
-		List<String> resources = IClasspathUtil.getClasspathResources(project.getClasspath());
-		assertArrayEquals(new String[] {"test-resource-1.txt"}, resources.toArray(new String[resources.size()]));
-	}
+    @Test
+    void gradleClasspathResource() throws Exception {
+        GradleJavaProject project = getGradleProject("test-app-1");
+        List<String> resources = IClasspathUtil.getClasspathResources(project.getClasspath());
+        assertArrayEquals(new String[]{"test-resource-1.txt"}, resources.toArray(new String[resources.size()]));
+    }
 
-	@Test
-	public void testGradleFileChanges() throws Exception {
-		Path testProjectPath = Paths.get(GradleProjectTest.class.getResource("/empty-gradle-project").toURI());
-		File gradleFile = testProjectPath.resolve(GradleCore.GRADLE_BUILD_FILE).toFile();
+    @Test
+    void testGradleFileChanges() throws Exception {
+        Path testProjectPath = Paths.get(GradleProjectTest.class.getResource("/empty-gradle-project").toURI());
+        File gradleFile = testProjectPath.resolve(GradleCore.GRADLE_BUILD_FILE).toFile();
 
-		String gradelFileContents = Files.contentOf(gradleFile, Charset.defaultCharset());
+        String gradelFileContents = Files.contentOf(gradleFile, Charset.defaultCharset());
 
-		try {
-			GradleProjectCache manager = createProjectCache();
-			IJavaProject[] projectChanged = new IJavaProject[] { null };
-			IJavaProject[] projectDeleted = new IJavaProject[] { null };
-			manager.addListener(new Listener() {
-				@Override
-				public void created(IJavaProject project) {}
+        try {
+            GradleProjectCache manager = createProjectCache();
+            IJavaProject[] projectChanged = new IJavaProject[]{null};
+            IJavaProject[] projectDeleted = new IJavaProject[]{null};
+            manager.addListener(new Listener() {
+                @Override
+                public void created(IJavaProject project) {
+                }
 
-				@Override
-				public void changed(IJavaProject project) {
-					projectChanged[0] = project;
-				}
-				@Override
-				public void deleted(IJavaProject project) {
-					projectDeleted[0] = project;
-				}
-			});
+                @Override
+                public void changed(IJavaProject project) {
+                    projectChanged[0] = project;
+                }
+                @Override
+                public void deleted(IJavaProject project) {
+                    projectDeleted[0] = project;
+                }
+            });
 
-			// Get the project from cache
-			GradleJavaProject cachedProject = manager.project(gradleFile);
-			assertNotNull(cachedProject);
+            // Get the project from cache
+            GradleJavaProject cachedProject = manager.project(gradleFile);
+            assertNotNull(cachedProject);
 
-			List<File> nonSystemClasspathEntries = IClasspathUtil.getBinaryRoots(cachedProject.getClasspath(), (cpe) -> !cpe.isSystem());
-			assertEquals(51, nonSystemClasspathEntries.size());
+            List<File> nonSystemClasspathEntries = IClasspathUtil.getBinaryRoots(cachedProject.getClasspath(), (cpe) -> !cpe.isSystem());
+            assertEquals(51, nonSystemClasspathEntries.size());
 
-			fileObserver.notifyFileChanged(gradleFile.toURI().toString());
-			assertNull(projectChanged[0]);
+            fileObserver.notifyFileChanged(gradleFile.toURI().toString());
+            assertNull(projectChanged[0]);
 
-			writeContent(gradleFile, Files.contentOf(testProjectPath.resolve("build.newgradle").toFile(), Charset.defaultCharset()));
-			fileObserver.notifyFileChanged(gradleFile.toURI().toString());
-			assertNotNull(projectChanged[0]);
-			assertEquals(cachedProject, projectChanged[0]);
-			nonSystemClasspathEntries = IClasspathUtil.getBinaryRoots(cachedProject.getClasspath(), (cpe) -> !cpe.isSystem());
-			assertEquals(52, nonSystemClasspathEntries.size());
+            writeContent(gradleFile, Files.contentOf(testProjectPath.resolve("build.newgradle").toFile(), Charset.defaultCharset()));
+            fileObserver.notifyFileChanged(gradleFile.toURI().toString());
+            assertNotNull(projectChanged[0]);
+            assertEquals(cachedProject, projectChanged[0]);
+            nonSystemClasspathEntries = IClasspathUtil.getBinaryRoots(cachedProject.getClasspath(), (cpe) -> !cpe.isSystem());
+            assertEquals(52, nonSystemClasspathEntries.size());
 
 
-			fileObserver.notifyFileDeleted(gradleFile.toURI().toString());
-			assertEquals(cachedProject, projectDeleted[0]);
-		} finally {
-			writeContent(gradleFile, gradelFileContents);
-		}
-	}
+            fileObserver.notifyFileDeleted(gradleFile.toURI().toString());
+            assertEquals(cachedProject, projectDeleted[0]);
+        } finally {
+            writeContent(gradleFile, gradelFileContents);
+        }
+    }
 
 	private GradleProjectCache createProjectCache() {
 		return new GradleProjectCache(server, GradleCore.getDefault(), false, null, (uri, cpe) -> JavaDocProviders.createFor(cpe));
 	}
 
-	@Test
-	public void findGradleProjectWithStandardBuildFile() throws Exception {
-		GradleProjectFinder finder = new GradleProjectFinder(createProjectCache());
-		File sourceFile = new File(GradleProjectTest.class.getResource("/test-app-1/src/main/java/Library.java").toURI());
-		Optional<IJavaProject> project = finder.find(sourceFile);
-		assertTrue(project.isPresent());
-		assertTrue(project.get() instanceof GradleJavaProject);
-		GradleJavaProject gradleProject = (GradleJavaProject) project.get();
-		assertEquals(new File(GradleProjectTest.class.getResource("/test-app-1").toURI()), new File(gradleProject.getLocationUri()));
-	}
+    @Test
+    void findGradleProjectWithStandardBuildFile() throws Exception {
+        GradleProjectFinder finder = new GradleProjectFinder(createProjectCache());
+        File sourceFile = new File(GradleProjectTest.class.getResource("/test-app-1/src/main/java/Library.java").toURI());
+        Optional<IJavaProject> project = finder.find(sourceFile);
+        assertTrue(project.isPresent());
+        assertTrue(project.get() instanceof GradleJavaProject);
+        GradleJavaProject gradleProject = (GradleJavaProject) project.get();
+        assertEquals(new File(GradleProjectTest.class.getResource("/test-app-1").toURI()), new File(gradleProject.getLocationUri()));
+    }
 
-	@Test
-	public void findGradleProjectWithNonStandardBuildFile() throws Exception {
-		GradleProjectFinder finder = new GradleProjectFinder(createProjectCache());
-		File sourceFile = new File(GradleProjectTest.class.getResource("/test-app-2/src/main/java/Library.java").toURI());
-		Optional<IJavaProject> project = finder.find(sourceFile);
-		assertTrue(project.isPresent());
-		assertTrue(project.get() instanceof GradleJavaProject);
-		GradleJavaProject gradleProject = (GradleJavaProject) project.get();
-		assertEquals(new File(GradleProjectTest.class.getResource("/test-app-2").toURI()), new File(gradleProject.getLocationUri()));
-	}
+    @Test
+    void findGradleProjectWithNonStandardBuildFile() throws Exception {
+        GradleProjectFinder finder = new GradleProjectFinder(createProjectCache());
+        File sourceFile = new File(GradleProjectTest.class.getResource("/test-app-2/src/main/java/Library.java").toURI());
+        Optional<IJavaProject> project = finder.find(sourceFile);
+        assertTrue(project.isPresent());
+        assertTrue(project.get() instanceof GradleJavaProject);
+        GradleJavaProject gradleProject = (GradleJavaProject) project.get();
+        assertEquals(new File(GradleProjectTest.class.getResource("/test-app-2").toURI()), new File(gradleProject.getLocationUri()));
+    }
 
 }

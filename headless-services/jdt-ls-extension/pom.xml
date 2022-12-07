@@ -41,7 +41,7 @@
 	<modules>
 		<module>org.springframework.tooling.jdt.ls.extension</module>
 		<module>org.springframework.tooling.jdt.ls.commons</module>
-		<module>org.springframework.tooling.jdt.ls.commons.test</module>
+		<!--<module>org.springframework.tooling.jdt.ls.commons.test</module>-->
 	</modules>
 
 	<properties>
@@ -68,14 +68,14 @@
 		<repository>
 			<id>eclipse-2020-09</id>
 			<layout>p2</layout>
-			<url>https://download.eclipse.org/releases/2020-09</url>
+			<url>https://download.eclipse.org/releases/2022-12</url>
 		</repository>
 
 		<repository>
 			<id>JDT.LS</id>
 			<layout>p2</layout>
 			<!-- <url>${jdt.ls.updatesite}</url> -->
-			<url>https://download.eclipse.org/jdtls/milestones/1.12.0/repository/</url>
+			<url>https://download.eclipse.org/jdtls/milestones/1.17.0/repository/</url>
 <!--			<url>https://download.eclipse.org/jdtls/snapshots/repository/latest/</url> -->
 <!-- The latest JDT LS requires a JDK 17, so we need to run builds on a JDK 17 and raise the minimum level to JDK 17 -->
 <!-- In order to avoid this for the 2022-06-based release, I set the JDK LS version here to the latest milestone that does NOT require JDK 17 yet -->
