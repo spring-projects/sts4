@@ -1,3 +1,8 @@
+## 2022-12-08 (1.42.0)
+
+* _(Spring Boot)_ fixed: [vscode] Boot LS is broken if Java LS launch mode is 'Hybrid' ([#919](https://github.com/spring-projects/sts4/issues/919))
+* _(Spring Boot)_ fixed: [validation] spring.factories EnableAutoConfiguration key for boot 3.0 ignores 'on' setting ([#917](https://github.com/spring-projects/sts4/issues/917))
+
 ## 2022-12-07 (4.17.0 RELEASE, incl. language servers version 1.41.0)
 
 * _(Spring Boot)_ fixed: Refreshing Live Data over HTTP is not working on VS Code ([#872](https://github.com/spring-projects/sts4/issues/872))

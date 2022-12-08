@@ -1,3 +1,7 @@
+## 2022-12-08 (1.42.0)
+
+* no major changes
+
 ## 2022-12-07 (4.17.0 RELEASE, incl. language servers version 1.41.0)
 
 * (_VSCode)_ fixed: make sure VSCode shows an error message when running on a JDK <17 ([#903](https://github.com/spring-projects/sts4/issues/903))
