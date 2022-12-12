@@ -158,6 +158,78 @@ public class RewriteReconciler implements JavaReconciler {
 		return allProblems;
 	}
 	
+	// Parse all at once	
+//	private Map<IDocument, Collection<ReconcileProblem>> doReconcile(IJavaProject project, List<TextDocument> docs,
+//			Function<TextDocument, IProblemCollector> problemCollectorFactory, JavaParser javaParser) {
+//		Map<IDocument, Collection<ReconcileProblem>> allProblems = new HashMap<>();
+//		
+//		if (javaParser != null && config.isRewriteReconcileEnabled()) {
+//			try {
+//				List<RecipeCodeActionDescriptor> descriptors = getProblemRecipeDescriptors(project);
+//
+//				List<CompilationUnit> cus = ORAstUtils.parseInputs(javaParser,
+//						docs.stream().map(d -> new Parser.Input(Paths.get(URI.create(d.getUri())), () -> {
+//							return new ByteArrayInputStream(d.get().getBytes());
+//						})).collect(Collectors.toList()));
+//
+//				if (!descriptors.isEmpty()) {
+//
+//					for (int i = 0; i < cus.size(); i++) {
+//						final IDocument doc = docs.get(i);
+//						List<ReconcileProblem> problems = new ArrayList<>();
+//						collectProblems(descriptors, doc, cus.get(i), problems::add);
+//						if (!problems.isEmpty()) {
+//							allProblems.put(doc, problems);
+//						}
+//					}
+//				}
+//			} catch (Exception e) {
+//				if (ORAstUtils.isExceptionFromInterrupedThread(e)) {
+//					log.debug("", e);
+//				} else {
+//					log.error("", e);
+//				}
+//			}
+//		}
+//		return allProblems;
+//	}
+	
+	// Parse One-by-one and share the parser
+//	private Map<IDocument, Collection<ReconcileProblem>> doReconcile(IJavaProject project, List<TextDocument> docs,
+//			Function<TextDocument, IProblemCollector> problemCollectorFactory, JavaParser javaParser) {
+//		Map<IDocument, Collection<ReconcileProblem>> allProblems = new HashMap<>();
+//		
+//		if (javaParser != null && config.isRewriteReconcileEnabled()) {
+//			try {
+//				List<RecipeCodeActionDescriptor> descriptors = getProblemRecipeDescriptors(project);
+//
+//				if (!descriptors.isEmpty()) {
+//
+//					for (IDocument doc : docs) {
+//						List<ReconcileProblem> problems = new ArrayList<>();
+//						CompilationUnit source = ORAstUtils.parseInputs(javaParser, List.of(new Parser.Input(Paths.get(URI.create(doc.getUri())), () -> {
+//							return new ByteArrayInputStream(doc.get().getBytes());
+//						}))).get(0);
+//						collectProblems(descriptors, doc, source, problems::add);
+//						if (!problems.isEmpty()) {
+//							allProblems.put(doc, problems);
+//						}
+//					}
+//				}
+//			} catch (Exception e) {
+//				if (ORAstUtils.isExceptionFromInterrupedThread(e)) {
+//					log.debug("", e);
+//				} else {
+//					log.error("", e);
+//				}
+//			}
+//		}
+//		return allProblems;
+//	}
+	
+	private static final int BATCH = 10;
+
+	// Parse in batches and share the parser
 	private Map<IDocument, Collection<ReconcileProblem>> doReconcile(IJavaProject project, List<TextDocument> docs,
 			Function<TextDocument, IProblemCollector> problemCollectorFactory, JavaParser javaParser) {
 		Map<IDocument, Collection<ReconcileProblem>> allProblems = new HashMap<>();
@@ -166,20 +238,26 @@ public class RewriteReconciler implements JavaReconciler {
 			try {
 				List<RecipeCodeActionDescriptor> descriptors = getProblemRecipeDescriptors(project);
 
-				List<CompilationUnit> cus = ORAstUtils.parseInputs(javaParser,
-						docs.stream().map(d -> new Parser.Input(Paths.get(URI.create(d.getUri())), () -> {
-							return new ByteArrayInputStream(d.get().getBytes());
-						})).collect(Collectors.toList()));
 
 				if (!descriptors.isEmpty()) {
 
-					for (int i = 0; i < cus.size(); i++) {
-						final IDocument doc = docs.get(i);
-						List<ReconcileProblem> problems = new ArrayList<>();
-						collectProblems(descriptors, doc, cus.get(i), problems::add);
-						if (!problems.isEmpty()) {
-							allProblems.put(doc, problems);
+					for (int i = 0; i < docs.size(); i+=BATCH) {
+						List<TextDocument> batchList = docs.subList(i, Math.min(i + BATCH, docs.size()));
+						
+						List<CompilationUnit> cus = ORAstUtils.parseInputs(javaParser,
+								batchList.stream().map(d -> new Parser.Input(Paths.get(URI.create(d.getUri())), () -> {
+									return new ByteArrayInputStream(d.get().getBytes());
+								})).collect(Collectors.toList()));
+						
+						for (int j = 0; j < batchList.size(); j++) {
+							final IDocument doc = docs.get(j);
+							List<ReconcileProblem> problems = new ArrayList<>();
+							collectProblems(descriptors, doc, cus.get(j), problems::add);
+							if (!problems.isEmpty()) {
+								allProblems.put(doc, problems);
+							}
 						}
+
 					}
 				}
 			} catch (Exception e) {
@@ -192,7 +270,7 @@ public class RewriteReconciler implements JavaReconciler {
 		}
 		return allProblems;
 	}
-	
+
 	private List<RecipeCodeActionDescriptor> getProblemRecipeDescriptors(IJavaProject project)
 			throws InterruptedException, ExecutionException {
 		return recipeRepo.getProblemRecipeDescriptors().stream().filter(d -> d.getProblemType() != null).filter(d -> {
