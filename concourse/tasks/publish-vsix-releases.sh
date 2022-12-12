@@ -21,5 +21,5 @@ do
     echo ""
     echo "     vsce publish -p vsce_token --packagePath $vsix_file"
     echo ""
-    vsce publish -p $vsce_token --packagePath $vsix_file
+    vsce publish -p $vsce_token --packagePath --noVerify $vsix_file
 done
