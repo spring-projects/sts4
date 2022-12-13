@@ -15,7 +15,7 @@ RUN apt-get update && apt-get install -y \
   xvfb \
   icewm
   
-RUN curl -sL https://deb.nodesource.com/setup_18.x | bash - \
+RUN curl -sL https://deb.nodesource.com/setup_16.x | bash - \
   && apt-get install -y nodejs
 
 RUN curl -sS https://dl.yarnpkg.com/debian/pubkey.gpg | apt-key add - \
