@@ -138,6 +138,7 @@ public class RewriteReconciler implements JavaReconciler {
 	@Override
 	public Map<IDocument, Collection<ReconcileProblem>> reconcile(IJavaProject project, List<TextDocument> docs,
 			Function<TextDocument, IProblemCollector> problemCollectorFactory) {
+		log.info("Validating project " + project.getElementName());
 		Map<IDocument, Collection<ReconcileProblem>> allProblems = new HashMap<>();
 		List<Path> testSourceFolders = IClasspathUtil.getProjectTestJavaSources(project.getClasspath()).map(f -> f.toPath()).collect(Collectors.toList());
 		List<TextDocument> testSources = new ArrayList<>(docs.size());
@@ -233,7 +234,6 @@ public class RewriteReconciler implements JavaReconciler {
 	private Map<IDocument, Collection<ReconcileProblem>> doReconcile(IJavaProject project, List<TextDocument> docs,
 			Function<TextDocument, IProblemCollector> problemCollectorFactory, JavaParser javaParser) {
 		Map<IDocument, Collection<ReconcileProblem>> allProblems = new HashMap<>();
-		
 		if (javaParser != null && config.isRewriteReconcileEnabled()) {
 			try {
 				List<RecipeCodeActionDescriptor> descriptors = getProblemRecipeDescriptors(project);

@@ -220,13 +220,14 @@ public class BootLanguageServerInitializer implements InitializingBean {
 		
 		doNotValidateProject(project, true);
 		
-		projectReconcileRequests.put(uri, Mono.delay(Duration.ofMillis(100))
+		projectReconcileRequests.put(uri, Mono.delay(Duration.ofMillis(500))
 				.publishOn(projectReconcileScheduler)
 				.doOnSuccess(l -> {
-					projectReconcileRequests.remove(uri);
-					projectFinder.find(new TextDocumentIdentifier(uri.toString())).ifPresent(p -> {
-						projectReconciler.reconcile(p, doc -> server.createProblemCollector(doc));
-					});
+					if (projectReconcileRequests.remove(uri) != null) {
+						projectFinder.find(new TextDocumentIdentifier(uri.toString())).ifPresent(p -> {
+							projectReconciler.reconcile(p, doc -> server.createProblemCollector(doc));
+						});
+					}
 				})
 				.subscribe());
 	}
