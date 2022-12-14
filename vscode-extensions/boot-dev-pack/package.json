@@ -1,6 +1,6 @@
 {
   "name": "vscode-boot-dev-pack",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "publisher": "Pivotal",
   "displayName": "Spring Boot Extension Pack",
   "description": "A collection of extensions for developing Spring Boot applications",
