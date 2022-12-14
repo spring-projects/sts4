@@ -178,8 +178,10 @@ public class BootLanguageServerInitializer implements InitializingBean {
 				
 		server.getWorkspaceService().getFileObserver().onFilesChanged(FILES_TO_WATCH_GLOB, this::handleFiles);
 		server.getWorkspaceService().getFileObserver().onFilesCreated(FILES_TO_WATCH_GLOB, this::handleFiles);
-		
-		springIndexer.onUpdate(v -> reconcile());
+
+		// TODO: index update even happens on every file save. Very expensive to blindly reconcile all projects.
+		// Need to figure out a check if spring index has any changes 
+//		springIndexer.onUpdate(v -> reconcile());
 		
 		server.onShutdown(() -> {
 			for (IJavaProject p : projectFinder.all()) {
