@@ -74,7 +74,7 @@ public class GradleProjectTest {
     void testEclipseGradleProject() throws Exception {
         GradleJavaProject project = getGradleProject("empty-gradle-project");
         List<File> nonSystemClasspathEntries = IClasspathUtil.getBinaryRoots(project.getClasspath(), (cpe) -> !cpe.isSystem());
-        assertEquals(51, nonSystemClasspathEntries.size());
+        assertEquals(69, nonSystemClasspathEntries.size());
     }
 
     @Test
@@ -122,7 +122,7 @@ public class GradleProjectTest {
             assertNotNull(cachedProject);
 
             List<File> nonSystemClasspathEntries = IClasspathUtil.getBinaryRoots(cachedProject.getClasspath(), (cpe) -> !cpe.isSystem());
-            assertEquals(51, nonSystemClasspathEntries.size());
+            assertEquals(69, nonSystemClasspathEntries.size());
 
             fileObserver.notifyFileChanged(gradleFile.toURI().toString());
             assertNull(projectChanged[0]);
@@ -132,7 +132,7 @@ public class GradleProjectTest {
             assertNotNull(projectChanged[0]);
             assertEquals(cachedProject, projectChanged[0]);
             nonSystemClasspathEntries = IClasspathUtil.getBinaryRoots(cachedProject.getClasspath(), (cpe) -> !cpe.isSystem());
-            assertEquals(52, nonSystemClasspathEntries.size());
+            assertEquals(70, nonSystemClasspathEntries.size());
 
 
             fileObserver.notifyFileDeleted(gradleFile.toURI().toString());

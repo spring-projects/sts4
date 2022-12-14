@@ -14,7 +14,7 @@
 	</parent>
 
 	<properties>
-		<gradle-tooling.version>7.3</gradle-tooling.version>
+		<gradle-tooling.version>7.6</gradle-tooling.version>
 	</properties>
 
 	<repositories>

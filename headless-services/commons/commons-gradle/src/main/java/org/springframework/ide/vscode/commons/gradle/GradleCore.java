@@ -77,7 +77,7 @@ public class GradleCore {
 			((DefaultGradleConnector) gradleConnector).daemonMaxIdleTime(1, TimeUnit.SECONDS);
 			configuration.configure(gradleConnector);
 			// Use patched Gradle 4.4 distribution or higher as a workaround for https://github.com/gradle/gradle/issues/2483
-			gradleConnector.useGradleVersion("6.7");
+			gradleConnector.useGradleVersion("7.3");
 			connection = gradleConnector.connect();
 			return connection.getModel(modelType);
 		} catch (GradleConnectionException e) {

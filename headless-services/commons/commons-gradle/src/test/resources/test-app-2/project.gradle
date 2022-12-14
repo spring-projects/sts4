@@ -16,13 +16,15 @@ repositories {
     jcenter()
 }
 
+sourceCompatibility = 11
+
 dependencies {
     // The production code uses Guava
-    compile 'com.google.guava:guava:20.0'
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: '1.5.1.RELEASE'
-    compile group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '1.5.1.RELEASE'
+    implementation 'com.google.guava:guava:20.0'
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-actuator', version: '2.5.1'
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.5.1'
 
     // Use JUnit test framework
-    testCompile 'junit:junit:4.12'
+    testImplementation 'junit:junit:4.12'
 }
 
