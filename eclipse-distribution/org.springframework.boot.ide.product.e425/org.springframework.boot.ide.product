@@ -9,7 +9,7 @@
       <programArgs>-product org.springframework.boot.ide.branding.sts4
 --launcher.defaultAction openFile
 </programArgs>
-      <vmArgs>-Dosgi.requiredJavaVersion=11
+      <vmArgs>-Dosgi.requiredJavaVersion=17
 -Dosgi.dataAreaRequiresExplicitInit=true
 -Xms256m
 -Xmx2048m
