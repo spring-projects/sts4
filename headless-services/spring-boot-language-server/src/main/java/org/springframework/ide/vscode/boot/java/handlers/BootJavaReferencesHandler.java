@@ -83,9 +83,9 @@ public class BootJavaReferencesHandler implements ReferencesHandler {
 	}
 
 	private List<? extends Location> provideReferences(CancelChecker cancelToken, TextDocument document, int offset) throws Exception {
-		ASTParser parser = ASTParser.newParser(AST.JLS18);
+		ASTParser parser = ASTParser.newParser(AST.JLS19);
 		Map<String, String> options = JavaCore.getOptions();
-		JavaCore.setComplianceOptions(JavaCore.VERSION_18, options);
+		JavaCore.setComplianceOptions(JavaCore.VERSION_19, options);
 		parser.setCompilerOptions(options);
 		parser.setKind(ASTParser.K_COMPILATION_UNIT);
 		parser.setStatementsRecovery(true);

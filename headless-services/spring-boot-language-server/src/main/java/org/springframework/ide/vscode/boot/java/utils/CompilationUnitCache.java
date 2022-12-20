@@ -273,13 +273,13 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 			needToResolveBindings = false;
 		}
 		
-		CompilationUnit cu = CUResolver.convert(unit, source, AST.JLS18, options, needToResolveBindings, DefaultWorkingCopyOwner.PRIMARY, flags);
+		CompilationUnit cu = CUResolver.convert(unit, source, AST.JLS19, options, needToResolveBindings, DefaultWorkingCopyOwner.PRIMARY, flags);
 
 		return cu;
 	}
 	
 	private static List<Classpath> createClasspath(String[] classpathEntries) {
-		ASTParser parser = ASTParser.newParser(AST.JLS18);
+		ASTParser parser = ASTParser.newParser(AST.JLS19);
 		String[] sourceEntries = new String[] {};
 		parser.setEnvironment(classpathEntries, sourceEntries, null, false);
 		return CUResolver.getClasspath(parser);
