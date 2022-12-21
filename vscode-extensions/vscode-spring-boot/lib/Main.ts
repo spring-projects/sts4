@@ -117,7 +117,8 @@ export function activate(context: VSCode.ExtensionContext): Thenable<ExtensionAP
                 enableJdtClasspath: true
             })
         },
-        highlightCodeLensSettingKey: 'boot-java.highlight-codelens.on'
+        highlightCodeLensSettingKey: 'boot-java.highlight-codelens.on',
+        requiresJavaLs: true
     };
 
     // Register launch config contributior to java debug launch to be able to connect to JMX

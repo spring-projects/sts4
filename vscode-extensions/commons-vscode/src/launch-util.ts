@@ -42,6 +42,7 @@ export interface ActivatorOptions {
     highlightCodeLensSettingKey?: string;
     explodedLsJarData?: ExplodedLsJarData;
     vmArgs?: string[];
+    requiresJavaLs?: boolean;
 }
 
 export interface ExplodedLsJarData {
@@ -391,8 +392,10 @@ function setupLanguageClient(context: VSCode.ExtensionContext, createServer: Ser
         }
         return {applied: true};
     });
-    registerClasspathService(client);
-    registerJavaDataService(client);
+    if (options.requiresJavaLs) {
+        registerClasspathService(client);
+        registerJavaDataService(client);
+    }
     return Promise.resolve(client);
 }
 
