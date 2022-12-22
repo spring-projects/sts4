@@ -13,7 +13,6 @@ package org.springframework.tooling.boot.ls;
 import java.io.IOException;
 import java.util.List;
 
-import org.eclipse.lsp4e.LanguageServerWrapper;
 import org.eclipse.lsp4e.LanguageServersRegistry;
 import org.eclipse.lsp4e.LanguageServersRegistry.LanguageServerDefinition;
 import org.eclipse.lsp4e.LanguageServiceAccessor;
@@ -25,33 +24,26 @@ import org.springframework.tooling.jdt.ls.commons.Logger;
 public class Startup implements IStartup {
 
 	private static final String BOOT_LS_DEFINITION_ID = "org.eclipse.languageserver.languages.springboot";
-
-	private LanguageServerWrapper lsWrapper = null;
+	private boolean started;
 
 	@Override
 	public void earlyStartup() {
 		if (BootLanguageServerPlugin.getDefault().getPreferenceStore().getBoolean(Constants.PREF_START_LS_EARLY)) {
+			
 			new BootProjectTracker(Logger.forEclipsePlugin(() -> BootLanguageServerPlugin.getDefault()),
 					List.of(springProjects -> {
-						if (springProjects.isEmpty()) {
-							if (lsWrapper != null) {
-								lsWrapper.stop();
-								lsWrapper = null;
-							}
-						} else {
-							if (lsWrapper == null) {
-								LanguageServerDefinition serverDefinition = LanguageServersRegistry.getInstance()
-										.getDefinition(BOOT_LS_DEFINITION_ID);
-								try {
-									lsWrapper = LanguageServiceAccessor.getLSWrapper(
-											springProjects.iterator().next().getProject(), serverDefinition);
-									lsWrapper.start();
-								} catch (IOException e1) {
-									BootLanguageServerPlugin.getDefault().getLog()
-											.error("Failed to launch Boot Language Server", e1);
-								}
+						if (!started && !springProjects.isEmpty()) {
 
+							LanguageServerDefinition serverDefinition = LanguageServersRegistry.getInstance()
+									.getDefinition(BOOT_LS_DEFINITION_ID);
+
+							try {
+								LanguageServiceAccessor.startLanguageServer(serverDefinition);
+								started = true;
+							} catch (IOException e1) {
+								BootLanguageServerPlugin.getDefault().getLog().error("Failed to launch Boot Language Server", e1);
 							}
+
 						}
 					}));
 		}
