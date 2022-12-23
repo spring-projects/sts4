@@ -14,6 +14,14 @@
 	<artifactId>org.springframework.ide.eclipse.boot.refactoring.test</artifactId>
 	<packaging>eclipse-test-plugin</packaging>
 	
+	<repositories>
+		<repository>
+			<id>orbit</id>
+			<layout>p2</layout>
+			<url>https://download.eclipse.org/tools/orbit/downloads/drops/R20220830213456/repository</url>
+		</repository>
+	</repositories>
+
 	<build>
 		<plugins>
 			<plugin>
