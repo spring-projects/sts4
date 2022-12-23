@@ -754,7 +754,8 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 			public void accept(ReconcileProblem problem) {
 				try {
 					DiagnosticSeverity severity = severityProvider.getDiagnosticSeverity(problem);
-					if (severity!=null) {
+					
+					if (severity != null) {
 						Diagnostic d = new Diagnostic();
 						d.setCode(problem.getCode());
 						d.setMessage(problem.getMessage());
@@ -763,6 +764,7 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 						d.setSeverity(severity);
 						d.setSource(getServer().EXTENSION_ID);
 						List<QuickfixData<?>> fixes = problem.getQuickfixes();
+
 						// Copy original diagnsotic without the data field to avoid stackoverflow is hashCode() method call
 						Diagnostic refDiagnostic = new Diagnostic(d.getRange(), d.getMessage(), d.getSeverity(), d.getSource()); 
 						if (CollectionUtil.hasElements(fixes)) {
@@ -782,7 +784,7 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 						diagnostics.add(d);
 					}
 				} catch (BadLocationException e) {
-					log.warn("Invalid reconcile problem ignored", e);
+					log.warn("Invalid reconcile problem ignored: " + doc.getUri() + " - problem position: " + problem.getOffset() + "/" + problem.getLength(), e);
 				}
 			}
 		};

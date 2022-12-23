@@ -38,7 +38,7 @@ public class ProjectVersionDiagnosticProvider {
 
 		URI buildFileUri = javaProject.getProjectBuild() == null ? null : javaProject.getProjectBuild().getBuildFile();
 		if (buildFileUri == null) {
-			throw new Exception("Unable to find build file in project while computing version validation for: ");
+			throw new Exception("Unable to find build file in project while computing version validation for: " + javaProject.getElementName());
 		}
 
 		Version javaProjectVersion = SpringProjectUtil.getSpringBootVersion(javaProject);
