@@ -252,7 +252,7 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 	
 	private static CompilationUnit parse2(char[] source, String docURI, String unitName, List<Classpath> classpaths, INameEnvironmentWithProgress environment) throws Exception {
 		Map<String, String> options = JavaCore.getOptions();
-		String apiLevel = JavaCore.VERSION_18;
+		String apiLevel = JavaCore.VERSION_19;
 		JavaCore.setComplianceOptions(apiLevel, options);
 		if (environment == null) {
 			environment = CUResolver.createLookupEnvironment(classpaths.toArray(new Classpath[classpaths.size()]));
