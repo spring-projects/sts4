@@ -61,11 +61,8 @@ public class RewriteReconciler implements JavaReconciler {
 	private static final Logger log = LoggerFactory.getLogger(RewriteReconciler.class);
 	
 	private RewriteCompilationUnitCache cuCache;
-
 	private QuickfixRegistry quickfixRegistry;
-
 	private RewriteRecipeRepository recipeRepo;
-
 	private BootJavaConfig config;
 
 	public RewriteReconciler(RewriteRecipeRepository recipeRepo, RewriteCompilationUnitCache cuCache, QuickfixRegistry quickfixRegistry, BootJavaConfig config) {
@@ -77,9 +74,13 @@ public class RewriteReconciler implements JavaReconciler {
 
 	@Override
 	public void reconcile(IJavaProject project, IDocument doc, IProblemCollector problemCollector) {
+
 		if (!config.isRewriteReconcileEnabled()) {
 			return;
 		}
+
+		log.info("reconciling (OpenRewrite): " + project.getElementName() + " - " + doc.getUri());
+		long start = System.currentTimeMillis();
 
 		try {
 			problemCollector.beginCollecting();
@@ -100,7 +101,10 @@ public class RewriteReconciler implements JavaReconciler {
 			}
 		} finally {
 			problemCollector.endCollecting();
-		}		
+		}	
+		
+		long end = System.currentTimeMillis();
+		log.info("reconciling (OpenRewrite): " + project.getElementName() + " done in " + (end - start) + "ms");
 	}
 	
 	private List<ReconcileProblem> createProblems(IDocument doc, FixAssistMarker m, J astNode) {
@@ -138,7 +142,10 @@ public class RewriteReconciler implements JavaReconciler {
 	@Override
 	public Map<IDocument, Collection<ReconcileProblem>> reconcile(IJavaProject project, List<TextDocument> docs,
 			Function<TextDocument, IProblemCollector> problemCollectorFactory) {
-		log.info("Validating project " + project.getElementName());
+		
+		log.info("reconciling (OpenRewrite, multiple docs): " + project.getElementName() + " - " + docs.size());
+		long start = System.currentTimeMillis();
+
 		Map<IDocument, Collection<ReconcileProblem>> allProblems = new HashMap<>();
 		List<Path> testSourceFolders = IClasspathUtil.getProjectTestJavaSources(project.getClasspath()).map(f -> f.toPath()).collect(Collectors.toList());
 		List<TextDocument> testSources = new ArrayList<>(docs.size());
@@ -156,6 +163,10 @@ public class RewriteReconciler implements JavaReconciler {
 		allProblems.putAll(doReconcile(project, mainSources, problemCollectorFactory, javaParser));
 		javaParser.setSourceSet(MavenProjectParser.TEST);
 		allProblems.putAll(doReconcile(project, testSources, problemCollectorFactory, javaParser));
+		
+		long end = System.currentTimeMillis();
+		log.info("reconciling (OpenRewrite, multiple docs): " + project.getElementName() + " - " + docs.size() + " done in " + (end - start) + "ms");
+
 		return allProblems;
 	}
 	
@@ -241,7 +252,7 @@ public class RewriteReconciler implements JavaReconciler {
 
 				if (!descriptors.isEmpty()) {
 
-					for (int i = 0; i < docs.size(); i+=BATCH) {
+					for (int i = 0; i < docs.size(); i += BATCH) {
 						List<TextDocument> batchList = docs.subList(i, Math.min(i + BATCH, docs.size()));
 						
 						List<CompilationUnit> cus = ORAstUtils.parseInputs(javaParser,

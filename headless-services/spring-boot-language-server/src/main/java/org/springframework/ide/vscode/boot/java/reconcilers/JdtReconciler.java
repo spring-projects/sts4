@@ -24,6 +24,8 @@ import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MarkerAnnotation;
 import org.eclipse.jdt.core.dom.NormalAnnotation;
 import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.handlers.SpelExpressionReconciler;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.boot.java.value.Constants;
@@ -34,6 +36,9 @@ import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 public class JdtReconciler implements JavaReconciler {
+	
+	private static final Logger log = LoggerFactory.getLogger(JdtReconciler.class);
+	
 	// annotations with SpEL expression params 
 	public static final String SPRING_CACHEABLE = "org.springframework.cache.annotation.Cacheable";
 	public static final String SPRING_CACHE_EVICT = "org.springframework.cache.annotation.CacheEvict";
@@ -89,6 +94,10 @@ public class JdtReconciler implements JavaReconciler {
 
 	@Override
 	public void reconcile(IJavaProject project, final IDocument doc, final IProblemCollector problemCollector) {
+
+		log.info("reconciling (JDT): " + project.getElementName() + " - " + doc.getUri());
+		long start = System.currentTimeMillis();
+		
 		URI uri = URI.create(doc.getUri());
 		compilationUnitCache.withCompilationUnit(project, uri, cu -> {
 			if (cu != null) {
@@ -96,6 +105,9 @@ public class JdtReconciler implements JavaReconciler {
 			}
 			return null;
 		});
+		
+		long end = System.currentTimeMillis();
+		log.info("reconciling (JDT): " + project.getElementName() + " done in " + (end - start) + "ms");
 	}
 	
 	private void reconcileAST(IJavaProject project, IDocument doc, CompilationUnit cu, IProblemCollector problemCollector) {
@@ -147,7 +159,8 @@ public class JdtReconciler implements JavaReconciler {
 	@Override
 	public Map<IDocument, Collection<ReconcileProblem>> reconcile(IJavaProject project, List<TextDocument> docs,
 			Function<TextDocument, IProblemCollector> problemCollectorFactory) {
-		// TODO Auto-generated method stub
+		log.info("reconciling (JDT, multiple docs): " + project.getElementName() + " - " + docs.size());
+		
 		return Collections.emptyMap();
 	}
 	
