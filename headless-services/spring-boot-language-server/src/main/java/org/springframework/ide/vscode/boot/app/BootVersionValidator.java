@@ -39,7 +39,8 @@ public class BootVersionValidator {
 	
 	public void validate(IJavaProject project) {
 		if (config.isBootVersionValidationEnabled()) {
-			log.debug("Validating Spring Boot version on project: " + project.getElementName());
+			log.debug("validating Spring Boot version on project: " + project.getElementName());
+			long start = System.currentTimeMillis();
 			
 			VersionValidationPreferences preferences = new VersionValidationPreferences();
 
@@ -61,6 +62,9 @@ public class BootVersionValidator {
 			} catch (Exception e) {
 				log.error("Failed validating Spring Project version", e);
 			}
+			
+			long end = System.currentTimeMillis();
+			log.info("validating Spring Boot version on project: " + project.getElementName() + " done in " + (end - start) + "ms");
 		}
 	}
 
