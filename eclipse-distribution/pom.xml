@@ -479,8 +479,8 @@
 				<repository>
 					<id>lsp4e</id>
 					<layout>p2</layout>
-					<url>https://download.eclipse.org/lsp4e/releases/0.21.0/</url>
-<!--					<url>https://download.eclipse.org/lsp4e/snapshots/</url> -->
+<!--					<url>https://download.eclipse.org/lsp4e/releases/0.21.0/</url> -->
+					<url>https://download.eclipse.org/lsp4e/snapshots/</url>
 				</repository>
 				<repository>
 					<id>tm4e-snapshots</id>
@@ -592,8 +592,8 @@
 				<repository>
 					<id>lsp4e</id>
 					<layout>p2</layout>
-					<url>https://download.eclipse.org/lsp4e/releases/0.21.0/</url>
-<!--					<url>https://download.eclipse.org/lsp4e/snapshots/</url> -->
+<!--					<url>https://download.eclipse.org/lsp4e/releases/0.21.0/</url> -->
+					<url>https://download.eclipse.org/lsp4e/snapshots/</url>
 				</repository>
 				<repository>
 					<id>tm4e-snapshots</id>
