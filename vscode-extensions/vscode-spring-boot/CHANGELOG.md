@@ -1,3 +1,13 @@
+## 2023-01-03 (4.17.1 RELEASE, incl. language servers version 1.43.0)
+
+* _(Spring Boot)_ fixed: Eclipse STS 4.17 takes 96 % processor time on Intel i9 ([#934](https://github.com/spring-projects/sts4/issues/934))
+* _(Spring Boot)_ fixed: BootLanguageServerBootApp class is taking all available cpu continuously ([#932](https://github.com/spring-projects/sts4/issues/932))
+* _(Spring Boot)_ fixed: OpenRewrite unchecked，but always Language Server Background Job(Loading Rewrite Recipes) ([#925](https://github.com/spring-projects/sts4/issues/925))
+
+#### known issues
+
+* _(Spring Boot)_: The newly introduced additional reconciling for Java source files which is used to show up additional validations and quick fixes can cause increased memory and CPU consumption. In case you stumble upon issues in this area, feel free to disable the reconciling via `Preferences -> Extensions -> Spring Boot Tools -> Open Rewrite` (in VSCode) or `Preferences -> Language Servers -> Spring Language Servers -> Spring Boot Language Server -> Open Rewrite` (in Eclipse).
+
 ## 2022-12-08 (1.42.0)
 
 * _(Spring Boot)_ fixed: [vscode] Boot LS is broken if Java LS launch mode is 'Hybrid' ([#919](https://github.com/spring-projects/sts4/issues/919))
