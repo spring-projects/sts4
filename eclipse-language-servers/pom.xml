@@ -87,7 +87,7 @@
 		<!-- OSX app signing -->
 		<skip.osx.signing>true</skip.osx.signing>
 
-		<tycho-version>2.7.5</tycho-version>
+		<tycho-version>3.0.1</tycho-version>
 		<encoding>UTF-8</encoding>
 
 		<dist.accessKey>${env.bamboo_tools_s3_accesskey_password}</dist.accessKey>
@@ -282,16 +282,16 @@
 				<package.qualifierPrefix>e426</package.qualifierPrefix>
 			</properties>
 			<repositories>
-<!--				<repository>
+				<repository>
 					<id>2022-12</id>
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/releases/2022-12/</url>
-				</repository> -->
-				<repository>
+				</repository>
+<!--				<repository>
 					<id>2022-12-staging</id>
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/staging/2022-12/</url>
-				</repository>
+				</repository> -->
 				<repository>
 					<id>orbit</id>
 					<layout>p2</layout>
@@ -368,11 +368,11 @@
 			<name>Spring Repository</name>
 			<url>https://repo.spring.io/release/</url>
 		</pluginRepository>
-		<pluginRepository>
+<!--		<pluginRepository>
 			<id>spring-maven-plugin-release</id>
 			<name>Spring Repository</name>
 			<url>https://repo.spring.io/plugins-release/</url>
-		</pluginRepository>
+		</pluginRepository> -->
 
 		<pluginRepository>
 			<id>springsource-maven-release</id>
@@ -380,10 +380,10 @@
 			<url>https://repository.springsource.com/maven/bundles/release</url>
 		</pluginRepository>
 
-		<pluginRepository>
+<!--		<pluginRepository>
 			<id>sonatype.snapshots</id>
 			<url>https://repository.sonatype.org/content/repositories/snapshots/</url>
-		</pluginRepository>
+		</pluginRepository> -->
 	</pluginRepositories>
 
 	<build>
@@ -398,21 +398,6 @@
 		<plugins>
 
 			<plugin>
-				<groupId>org.eclipse.tycho.extras</groupId>
-				<artifactId>tycho-source-feature-plugin</artifactId>
-				<version>${tycho-version}</version>
-				<executions>
-					<execution>
-						<id>source-feature</id>
-						<phase>package</phase>
-						<goals>
-							<goal>source-feature</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-
-			<plugin>
 				<groupId>org.eclipse.tycho</groupId>
 				<artifactId>tycho-source-plugin</artifactId>
 				<version>${tycho-version}</version>
@@ -421,6 +406,12 @@
 						<id>plugin-source</id>
 						<goals>
 							<goal>plugin-source</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>feature-source</id>
+						<goals>
+							<goal>feature-source</goal>
 						</goals>
 					</execution>
 				</executions>

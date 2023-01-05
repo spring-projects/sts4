@@ -1032,7 +1032,7 @@
 								<arch>aarch64</arch>
 							</environment>
 						</environments>
-			</configuration>
+					</configuration>
 				</plugin>
 
 				<plugin>
