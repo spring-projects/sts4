@@ -93,7 +93,7 @@
 
 		<sts4-language-servers-p2-repo>https://dist.springsource.com/${dist.type}/TOOLS/sts4-language-server-integrations/${sts4-language-servers-version}</sts4-language-servers-p2-repo>
 		
-		<tycho-version>2.7.5</tycho-version>
+		<tycho-version>3.0.1</tycho-version>
 		<encoding>UTF-8</encoding>
 
 		<misc.p2.repo.version>3.9.4.202211021051</misc.p2.repo.version>
@@ -416,11 +416,6 @@
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/m2e-wtp/releases/1.4/</url>
 				</repository>
-<!--				<repository>
-					<id>latest-m2e-wtp</id>
-					<layout>p2</layout>
-					<url>https://download.eclipse.org/m2e-wtp/milestones/1.4/1.4.4.20200220-1005/</url>
-				</repository> -->
 				<repository>
 					<id>maven-extras-mirror</id>
 					<layout>p2</layout>
@@ -431,11 +426,6 @@
 					<layout>p2</layout>
 					<url>https://repo1.maven.org/maven2/.m2e/connectors/m2eclipse-egit/0.15.1/N/LATEST</url>
 				</repository>
-				<!--				<repository>
-									<id>maven-wro4j</id>
-									<layout>p2</layout>
-									<url>https://download.jboss.org/jbosstools/updates/m2e-wro4j/</url>
-								</repository> -->
 				<repository>
 					<id>maven-wro4j</id>
 					<layout>p2</layout>
@@ -447,11 +437,6 @@
 					<url>https://sidespin.github.io/m2e-chromatic/update/</url>
 				</repository>
 				<repository>
-					<id>maven-devtools</id>
-					<layout>p2</layout>
-					<url>https://dist.springsource.com/release/TOOLS/mavendevtools/</url>
-				</repository>
-				<repository>
 					<id>maven-dependency-support</id>
 					<layout>p2</layout>
 					<url>https://ianbrandt.github.io/m2e-maven-dependency-plugin/</url>
@@ -461,11 +446,6 @@
 					<layout>p2</layout>
 					<url>https://www.mihai-nita.net/eclipse</url>
 				</repository>
-				<!--				<repository>
-					<id>xtext-base</id>
-					<layout>p2</layout>
-					<url>https://download.eclipse.org/modeling/tmf/xtext/updates/milestones/</url>
-				</repository> -->
 				<repository>
 					<id>mylyn-markdown</id>
 					<layout>p2</layout>
@@ -539,16 +519,6 @@
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/m2e-wtp/releases/1.5.1/</url>
 				</repository>
-<!--				<repository>
-					<id>latest-m2e-wtp</id>
-					<layout>p2</layout>
-					<url>https://download.eclipse.org/m2e-wtp/snapshots/</url>
-				</repository> -->
-<!--				<repository>
-					<id>latest-m2e-wtp</id>
-					<layout>p2</layout>
-					<url>https://download.eclipse.org/m2e-wtp/milestones/1.4/1.4.4.20200220-1005/</url>
-				</repository> -->
 				<repository>
 					<id>maven-extras-mirror</id>
 					<layout>p2</layout>
@@ -562,23 +532,14 @@
 				<repository>
 					<id>maven-wro4j</id>
 					<layout>p2</layout>
-					<url>https://github.com/jbosstools/m2e-wro4j/releases/download/1.2.0/</url>
-				</repository>
-				<repository>
-					<id>maven-devtools</id>
-					<layout>p2</layout>
-					<url>https://dist.springsource.com/release/TOOLS/mavendevtools/</url>
+<!--					<url>https://github.com/jbosstools/m2e-wro4j/releases/download/1.2.0/</url> -->
+					<url>https://dist.springsource.com/release/TOOLS/third-party/wro4j</url>
 				</repository>
 				<repository>
 					<id>maven-dependency-support</id>
 					<layout>p2</layout>
 					<url>https://ianbrandt.github.io/m2e-maven-dependency-plugin/</url>
 				</repository>
-				<!--				<repository>
-					<id>xtext-base</id>
-					<layout>p2</layout>
-					<url>https://download.eclipse.org/modeling/tmf/xtext/updates/milestones/</url>
-				</repository> -->
 				<repository>
 					<id>mylyn-markdown</id>
 					<layout>p2</layout>
@@ -601,12 +562,6 @@
 					<url>https://download.eclipse.org/tm4e/releases/0.6.2/</url>
 <!--					<url>https://download.eclipse.org/tm4e/snapshots/</url> -->
 				</repository>
-				
-				<!--				<repository>
-					<id>lsp4e</id>
-					<layout>p2</layout>
-					<url>https://download.eclipse.org/lsp4e/releases/latest/</url>
-				</repository> -->
 <!--				<repository>
 					<id>chromium-binaries</id>
 					<layout>p2</layout>
@@ -643,11 +598,6 @@
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/releases/2022-12/</url>
 				</repository>
-<!--				<repository>
-					<id>2022-12-staging</id>
-					<layout>p2</layout>
-					<url>https://download.eclipse.org/staging/2022-12/</url>
-				</repository> -->
 				<repository>
 					<id>orbit</id>
 					<layout>p2</layout>
@@ -663,16 +613,6 @@
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/m2e-wtp/releases/latest/</url>
 				</repository>
-<!--				<repository>
-					<id>latest-m2e-wtp</id>
-					<layout>p2</layout>
-					<url>https://download.eclipse.org/m2e-wtp/snapshots/</url>
-				</repository> -->
-<!--				<repository>
-					<id>latest-m2e-wtp</id>
-					<layout>p2</layout>
-					<url>https://download.eclipse.org/m2e-wtp/milestones/1.4/1.4.4.20200220-1005/</url>
-				</repository> -->
 				<repository>
 					<id>maven-extras-mirror</id>
 					<layout>p2</layout>
@@ -686,23 +626,14 @@
 				<repository>
 					<id>maven-wro4j</id>
 					<layout>p2</layout>
-					<url>https://github.com/jbosstools/m2e-wro4j/releases/download/1.2.0/</url>
-				</repository>
-				<repository>
-					<id>maven-devtools</id>
-					<layout>p2</layout>
-					<url>https://dist.springsource.com/release/TOOLS/mavendevtools/</url>
+<!--					<url>https://github.com/jbosstools/m2e-wro4j/releases/download/1.2.0/</url> -->
+					<url>https://dist.springsource.com/release/TOOLS/third-party/wro4j</url>
 				</repository>
 				<repository>
 					<id>maven-dependency-support</id>
 					<layout>p2</layout>
 					<url>https://ianbrandt.github.io/m2e-maven-dependency-plugin/</url>
 				</repository>
-				<!--				<repository>
-					<id>xtext-base</id>
-					<layout>p2</layout>
-					<url>https://download.eclipse.org/modeling/tmf/xtext/updates/milestones/</url>
-				</repository> -->
 				<repository>
 					<id>mylyn-markdown</id>
 					<layout>p2</layout>
@@ -725,12 +656,6 @@
 					<url>https://download.eclipse.org/tm4e/releases/0.6.2/</url>
 <!--					<url>https://download.eclipse.org/tm4e/snapshots/</url> -->
 				</repository>
-				
-				<!--				<repository>
-					<id>lsp4e</id>
-					<layout>p2</layout>
-					<url>https://download.eclipse.org/lsp4e/releases/latest/</url>
-				</repository> -->
 <!--				<repository>
 					<id>chromium-binaries</id>
 					<layout>p2</layout>
@@ -826,11 +751,11 @@
 			<name>Spring Repository</name>
 			<url>https://repo.spring.io/release/</url>
 		</pluginRepository>
-		<pluginRepository>
+<!--		<pluginRepository>
 			<id>spring-maven-plugin-release</id>
 			<name>Spring Repository</name>
 			<url>https://repo.spring.io/plugins-release/</url>
-		</pluginRepository>
+		</pluginRepository> -->
 <!--		<pluginRepository>
 			<id>spring-maven-release</id>
 			<name>Spring Maven Release Repository</name>
@@ -843,10 +768,10 @@
 			<url>https://repository.springsource.com/maven/bundles/release</url>
 		</pluginRepository>
 
-		<pluginRepository>
+<!--		<pluginRepository>
 			<id>sonatype.snapshots</id>
 			<url>https://repository.sonatype.org/content/repositories/snapshots/</url>
-		</pluginRepository>
+		</pluginRepository> -->
 	</pluginRepositories>
 
 	<build>
@@ -861,21 +786,6 @@
 		<plugins>
 
 			<plugin>
-				<groupId>org.eclipse.tycho.extras</groupId>
-				<artifactId>tycho-source-feature-plugin</artifactId>
-				<version>${tycho-version}</version>
-				<executions>
-					<execution>
-						<id>source-feature</id>
-						<phase>package</phase>
-						<goals>
-							<goal>source-feature</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-
-			<plugin>
 				<groupId>org.eclipse.tycho</groupId>
 				<artifactId>tycho-source-plugin</artifactId>
 				<version>${tycho-version}</version>
@@ -884,6 +794,12 @@
 						<id>plugin-source</id>
 						<goals>
 							<goal>plugin-source</goal>
+						</goals>
+					</execution>
+					<execution>
+						<id>feature-source</id>
+						<goals>
+							<goal>feature-source</goal>
 						</goals>
 					</execution>
 				</executions>

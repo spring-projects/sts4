@@ -110,7 +110,12 @@
 							<url>https://download.eclipse.org/releases/2022-03</url>
 						</repository>
 					</repositories>
-					<argLine>-Declipse.p2.mirrors=false -Dorg.eclipse.ecf.provider.filetransfer.retrieve.readTimeout=100000 -Dorg.eclipse.ecf.provider.filetransfer.retrieve.retryAttempts=30 -Dorg.eclipse.ecf.provider.filetransfer.retrieve.closeTimeout=100000</argLine>
+					<jvmArgs>
+						<arg>-Declipse.p2.mirrors=false</arg>
+						<arg>-Dorg.eclipse.ecf.provider.filetransfer.retrieve.readTimeout=100000</arg>
+						<arg>-Dorg.eclipse.ecf.provider.filetransfer.retrieve.retryAttempts=30</arg>
+						<arg>-Dorg.eclipse.ecf.provider.filetransfer.retrieve.closeTimeout=100000</arg>
+					</jvmArgs>
 					<dependencies>
 						<dependency>
 							<artifactId>org.eclipse.pde.api.tools</artifactId>
@@ -179,7 +184,18 @@
 							<goal>eclipse-run</goal>
 						</goals>
 						<configuration>
-							<appArgLine>-consoleLog -application org.eclipse.equinox.p2.director -nosplash -destination ${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/macosx/cocoa/x86_64/SpringToolSuite4.app -repository ${justj.repository} -installIUs org.eclipse.justj.openjdk.hotspot.jre.full.feature.group</appArgLine>
+							<applicationArgs>
+								<arg>-consoleLog</arg>
+								<arg>-application</arg>
+								<arg>org.eclipse.equinox.p2.director</arg>
+								<arg>-nosplash</arg>
+								<arg>-destination</arg>
+								<arg>${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/macosx/cocoa/x86_64/SpringToolSuite4.app</arg>
+								<arg>-repository</arg>
+								<arg>${justj.repository}</arg>
+								<arg>-installIUs</arg>
+								<arg>org.eclipse.justj.openjdk.hotspot.jre.full.feature.group</arg>
+							</applicationArgs>
 						</configuration>
 					</execution>
 					<execution>
@@ -189,7 +205,18 @@
 							<goal>eclipse-run</goal>
 						</goals>
 						<configuration>
-							<appArgLine>-consoleLog -application org.eclipse.equinox.p2.director -nosplash -destination ${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/macosx/cocoa/aarch64/SpringToolSuite4.app -repository ${justj.repository} -installIUs org.eclipse.justj.openjdk.hotspot.jre.full.feature.group</appArgLine>
+							<applicationArgs>
+								<arg>-consoleLog</arg>
+								<arg>-application</arg>
+								<arg>org.eclipse.equinox.p2.director</arg>
+								<arg>-nosplash</arg>
+								<arg>-destination</arg>
+								<arg>${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/macosx/cocoa/aarch64/SpringToolSuite4.app</arg>
+								<arg>-repository</arg>
+								<arg>${justj.repository}</arg>
+								<arg>-installIUs</arg>
+								<arg>org.eclipse.justj.openjdk.hotspot.jre.full.feature.group</arg>
+							</applicationArgs>
 						</configuration>
 					</execution>
 					<execution>
@@ -199,7 +226,18 @@
 							<goal>eclipse-run</goal>
 						</goals>
 						<configuration>
-							<appArgLine>-consoleLog -application org.eclipse.equinox.p2.director -nosplash -destination ${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/win32/win32/x86_64/sts-${unqualifiedVersion}.${p2.qualifier} -repository ${justj.repository} -installIUs org.eclipse.justj.openjdk.hotspot.jre.full.feature.group</appArgLine>
+							<applicationArgs>
+								<arg>-consoleLog</arg>
+								<arg>-application</arg>
+								<arg>org.eclipse.equinox.p2.director</arg>
+								<arg>-nosplash</arg>
+								<arg>-destination</arg>
+								<arg>${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/win32/win32/x86_64/sts-${unqualifiedVersion}.${p2.qualifier}</arg>
+								<arg>-repository</arg>
+								<arg>${justj.repository}</arg>
+								<arg>-installIUs</arg>
+								<arg>org.eclipse.justj.openjdk.hotspot.jre.full.feature.group</arg>
+							</applicationArgs>
 						</configuration>
 					</execution>
 					<execution>
@@ -209,7 +247,18 @@
 							<goal>eclipse-run</goal>
 						</goals>
 						<configuration>
-							<appArgLine>-consoleLog -application org.eclipse.equinox.p2.director -nosplash -destination ${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/linux/gtk/x86_64/sts-${unqualifiedVersion}.${p2.qualifier} -repository ${justj.repository} -installIUs org.eclipse.justj.openjdk.hotspot.jre.full.feature.group</appArgLine>
+							<applicationArgs>
+								<arg>-consoleLog</arg>
+								<arg>-application</arg>
+								<arg>org.eclipse.equinox.p2.director</arg>
+								<arg>-nosplash</arg>
+								<arg>-destination</arg>
+								<arg>${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/linux/gtk/x86_64/sts-${unqualifiedVersion}.${p2.qualifier}</arg>
+								<arg>-repository</arg>
+								<arg>${justj.repository}</arg>
+								<arg>-installIUs</arg>
+								<arg>org.eclipse.justj.openjdk.hotspot.jre.full.feature.group</arg>
+							</applicationArgs>
 						</configuration>
 					</execution>
 					<execution>
@@ -219,7 +268,18 @@
 							<goal>eclipse-run</goal>
 						</goals>
 						<configuration>
-							<appArgLine>-consoleLog -application org.eclipse.equinox.p2.director -nosplash -destination ${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/linux/gtk/aarch64/sts-${unqualifiedVersion}.${p2.qualifier} -repository ${justj.repository} -installIUs org.eclipse.justj.openjdk.hotspot.jre.full.feature.group</appArgLine>
+							<applicationArgs>
+								<arg>-consoleLog</arg>
+								<arg>-application</arg>
+								<arg>org.eclipse.equinox.p2.director</arg>
+								<arg>-nosplash</arg>
+								<arg>-destination</arg>
+								<arg>${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/linux/gtk/aarch64/sts-${unqualifiedVersion}.${p2.qualifier}</arg>
+								<arg>-repository</arg>
+								<arg>${justj.repository}</arg>
+								<arg>-installIUs</arg>
+								<arg>org.eclipse.justj.openjdk.hotspot.jre.full.feature.group</arg>
+							</applicationArgs>
 						</configuration>
 					</execution>
 				</executions>
