@@ -21,5 +21,7 @@ public interface IPageSection {
 
 	public void createContents(Composite page);
 	public LiveExpression<ValidationResult> getValidator();
+	default void setFocus() {};
+
 
 }

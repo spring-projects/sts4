@@ -127,6 +127,7 @@ public class GSImportWizard extends Wizard implements IImportWizard, INewWizard 
 //		}
 //	}
 
+	@Override
 	public void init(IWorkbench workbench, IStructuredSelection selection) {
 //		this.workbench = workbench;
 //		super.init(workbench, selection);

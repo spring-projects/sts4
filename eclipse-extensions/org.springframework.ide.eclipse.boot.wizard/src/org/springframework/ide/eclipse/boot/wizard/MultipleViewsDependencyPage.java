@@ -15,7 +15,6 @@ import java.util.List;
 
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.graphics.Point;
-import org.eclipse.ui.PlatformUI;
 import org.springframework.ide.eclipse.boot.core.initializr.InitializrServiceSpec.Dependency;
 import org.springframework.ide.eclipse.boot.livexp.ui.DynamicSection;
 import org.springframework.ide.eclipse.boot.wizard.CheckBoxesSection.CheckBoxModel;
@@ -74,12 +73,12 @@ public  class MultipleViewsDependencyPage extends WizardPageWithSections {
 
 		sections.add(createFrequentlyUsedSection(model));
 		sections.add(createTwoColumnSection(model));
-		return new GroupSection(this, null, sections.toArray(new WizardPageSection[0])).grabVertical(true);
+		return new GroupSection(this, null, 2, sections.toArray(new WizardPageSection[0])).grabVertical(true);
 	}
 
 	public WizardPageSection createTwoColumnSection(final NewSpringBootWizardModel model) {
-		return new GroupSection(this,null,
-				new GroupSection(this, null,
+		return new GroupSection(this, null, 0,
+				new GroupSection(this, null, 1,
 						new CommentSection(this, "Available:"),
 						getSearchSection(model),
 						new GroupSection(this, "",
@@ -113,14 +112,12 @@ public  class MultipleViewsDependencyPage extends WizardPageWithSections {
 	}
 
 	protected WizardPageSection getSearchSection(final NewSpringBootWizardModel model) {
-		final SearchBoxSection searchBoxSection = new SearchBoxSection(this, model.getDependencyFilterBoxText()) {
+		return new SearchBoxSection(this, model.getDependencyFilterBoxText()) {
 			@Override
 				protected String getSearchHint() {
 					return "Type to search dependencies";
 				}
 		};
-		PlatformUI.getWorkbench().getDisplay().asyncExec(() -> getControl().addListener(SWT.Show, event -> searchBoxSection.focusControl()));
-		return new GroupSection(this, null, searchBoxSection.grabFocus(true));
 	}
 
 	protected WizardPageSection createFrequentlyUsedSection(NewSpringBootWizardModel model) {
@@ -132,6 +129,14 @@ public  class MultipleViewsDependencyPage extends WizardPageWithSections {
 				new GroupSection(this, "", frequentlyUsedCheckboxes));
 		frequentlyUsedSection.isVisible.setValue(!frequentDependencies.isEmpty());
 		return frequentlyUsedSection;
+	}
+
+	@Override
+	public void setVisible(boolean visible) {
+		super.setVisible(visible);
+		if (visible) {
+			getSections().get(0).setFocus();
+		}
 	}
 
 }

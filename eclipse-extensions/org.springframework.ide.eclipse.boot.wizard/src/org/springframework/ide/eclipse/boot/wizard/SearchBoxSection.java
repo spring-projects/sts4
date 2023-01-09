@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2020 Pivotal Software, Inc.
+ * Copyright (c) 2015, 2023 Pivotal Software, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -14,8 +14,6 @@ import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.events.ModifyEvent;
 import org.eclipse.swt.events.ModifyListener;
-import org.eclipse.swt.events.PaintEvent;
-import org.eclipse.swt.events.PaintListener;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Text;
@@ -39,7 +37,6 @@ public class SearchBoxSection extends WizardPageSection implements Disposable {
 	private Text searchBox;
 	private LiveVariable<String> model;
 	private ValueListener<String> modelListener;
-	private boolean grabFocus;
 
 	public SearchBoxSection(IPageWithSections owner, LiveVariable<String> model) {
 		super(owner);
@@ -76,9 +73,6 @@ public class SearchBoxSection extends WizardPageSection implements Disposable {
 				}
 			}
 		});
-		if (grabFocus) {
-			focusControl();
-		}
 //		IContentProposalProvider proposalProvider = new TagContentProposalProvider(viewModel);
 //		ContentProposalAdapter caAdapter = new ContentProposalAdapter(searchBox, new TextContentAdapter(), proposalProvider, UIUtils.CTRL_SPACE, null);
 //		caAdapter.setProposalAcceptanceStyle(ContentProposalAdapter.PROPOSAL_REPLACE);
@@ -97,31 +91,15 @@ public class SearchBoxSection extends WizardPageSection implements Disposable {
 		searchBox.dispose();
 	}
 
-	/**
-	 * When the control for this section is created, it will attempt to immediately grab
-	 * keyboard focus.
-	 */
-	public SearchBoxSection grabFocus(boolean grab) {
-		this.grabFocus = grab;
-		return this;
-	}
-
-	public void focusControl() {
-		if (searchBox != null) {
-			if (!searchBox.setFocus()) {
-				searchBox.addPaintListener(new PaintListener() {
-					@Override
-					public void paintControl(PaintEvent e) {
-						if (searchBox.setFocus()) {
-							searchBox.removePaintListener(this);
-						}
-					}
-				});
-			}
-		}
-	}
-
 	protected Control getControl() {
 		return searchBox;
 	}
+
+	@Override
+	public void setFocus() {
+		if (searchBox != null && !searchBox.isDisposed()) {
+			searchBox.setFocus();
+		}
+	}
+
 }

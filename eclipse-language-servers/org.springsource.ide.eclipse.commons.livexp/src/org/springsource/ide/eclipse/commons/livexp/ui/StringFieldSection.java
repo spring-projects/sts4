@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2021 VMware Software, Inc.
+ * Copyright (c) 2013, 2023 VMware Software, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -162,6 +162,13 @@ public class StringFieldSection extends WizardPageSection {
 	public StringFieldSection setEnabler(LiveExpression<Boolean> enable) {
 		this.enabler = enable;
 		return this;
+	}
+
+	@Override
+	public void setFocus() {
+		if (text != null && !text.isDisposed()) {
+			text.setFocus();
+		}
 	}
 
 }

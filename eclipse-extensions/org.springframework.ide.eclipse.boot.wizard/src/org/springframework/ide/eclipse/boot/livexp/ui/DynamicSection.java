@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -39,6 +39,8 @@ public class DynamicSection extends ReflowableSection {
 	private Point minSize = DEFAULT_MIN_SIZE;
 	private Integer widthHint = DEFAULT_MIN_SIZE.y;
 	private Integer heightHint = DEFAULT_MIN_SIZE.x;
+
+	private boolean isFocused;
 
 	public DynamicSection(IPageWithSections owner, LiveExpression<IPageSection> content) {
 		super(owner);
@@ -90,6 +92,9 @@ public class DynamicSection extends ReflowableSection {
 		} else {
 			validator.setDelegate(null);
 		}
+		if (isFocused) {
+			newContents.setFocus();
+		}
 	}
 
 	@Override
@@ -102,6 +107,14 @@ public class DynamicSection extends ReflowableSection {
 		//Detach validator wiring from nested validator (if any is still attached).
 		validator.setDelegate(null);
 		super.dispose();
+	}
+
+	@Override
+	public void setFocus() {
+		isFocused = true;
+		if (content.getValue() != null) {
+			content.getValue().setFocus();
+		}
 	}
 
 }

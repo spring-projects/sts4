@@ -288,8 +288,6 @@ public class ChooseTypedContentSection extends WizardPageSection {
 			}
 		};
 
-		// PT 164654725 - IMPORTANT: set grab focus BEFORE creating content
-		searchBox.grabFocus(true);
 		searchBox.createContents(field);
 
 		Label fieldNameLabel = null;
@@ -431,6 +429,14 @@ public class ChooseTypedContentSection extends WizardPageSection {
 	}
 
 
+	@Override
+	public void setFocus() {
+		if (searchBox != null) {
+			searchBox.setFocus();
+		}
+	}
+
+
 //	private String[] getLabels() {
 //		String[] labels = new String[options.length];
 //		for (int i = 0; i < labels.length; i++) {
@@ -438,5 +444,7 @@ public class ChooseTypedContentSection extends WizardPageSection {
 //		}
 //		return labels;
 //	}
+
+
 
 }

@@ -12,7 +12,6 @@ package org.springsource.ide.eclipse.commons.livexp.ui;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Consumer;
 
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.jface.layout.GridDataFactory;
@@ -23,7 +22,6 @@ import org.eclipse.swt.layout.GridLayout;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.swt.widgets.Control;
 import org.eclipse.swt.widgets.Group;
-import org.eclipse.swt.widgets.Layout;
 import org.eclipse.swt.widgets.Shell;
 import org.springsource.ide.eclipse.commons.livexp.core.CompositeValidator;
 import org.springsource.ide.eclipse.commons.livexp.core.LiveExpression;
@@ -56,6 +54,8 @@ public class GroupSection extends WizardPageSection {
 
 	private boolean noMargins;
 
+	protected int focusSectionIndex = 0;
+
 	/**
 	 * If title is null then it creates a normal composite without a box around it. Otherwise
 	 * it creates a 'group' and uses the title as label for the group.
@@ -67,6 +67,14 @@ public class GroupSection extends WizardPageSection {
 		addSections(_sections);
 	}
 
+	public GroupSection(IPageWithSections owner, String title, int focusSectionIndex, WizardPageSection... _sections) {
+		super(owner);
+		this.groupTitle = title;
+		this.sections = new ArrayList<>();
+		addSections(_sections);
+		this.focusSectionIndex = focusSectionIndex;
+	}
+	
 	public void addSections(WizardPageSection... _sections) {
 		Assert.isLegal(!contentsCreated);
 		for (WizardPageSection s : _sections) {
@@ -178,6 +186,13 @@ public class GroupSection extends WizardPageSection {
 	public GroupSection background(Color c) {
 		this.background = c;
 		return this;
+	}
+	
+	@Override
+	public void setFocus() {
+		if (focusSectionIndex >= 0 && focusSectionIndex < sections.size()) {
+			sections.get(focusSectionIndex).setFocus();
+		}
 	}
 
 }

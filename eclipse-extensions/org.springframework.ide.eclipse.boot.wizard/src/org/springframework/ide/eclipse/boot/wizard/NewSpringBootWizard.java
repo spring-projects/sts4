@@ -101,6 +101,7 @@ public class NewSpringBootWizard extends Wizard implements INewWizard, IImportWi
 			super(owner, null);
 			this.model = model;
 			addSections(createSections().toArray(new WizardPageSection[0]));
+			focusSectionIndex = 0;
 		}
 
 		protected  List<WizardPageSection> createSections() {
@@ -174,10 +175,19 @@ public class NewSpringBootWizard extends Wizard implements INewWizard, IImportWi
 					return new ProjectDetailsSection(this, dynamicModel);
 				}
 				return new CommentSection(this, NO_CONTENT_AVAILABLE);
-			} ));
+			}));
 
 			return ImmutableList.of(comboSection, dynamicSection);
 		}
+
+		@Override
+		public void setVisible(boolean visible) {
+			super.setVisible(visible);
+			if (visible) {
+				getSections().get(1).setFocus();
+			}
+		}
+
 	}
 
 

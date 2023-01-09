@@ -97,9 +97,10 @@ public class DependencyPage extends WizardPageWithSections {
 				createDynamicSections(model, sections);
 			}
 
-			GroupSection groupSection = new GroupSection(DependencyPage.this, null,
+			GroupSection groupSection = new GroupSection(DependencyPage.this, null, 1,
 					sections.toArray(new WizardPageSection[0]));
 			groupSection.grabVertical(true);
+			groupSection.setFocus();
 			return groupSection;
 		}
 	};
@@ -193,6 +194,12 @@ public class DependencyPage extends WizardPageWithSections {
 				String message = ExceptionUtil.getMessage(e);
 				setErrorMessage(message);
 				Log.log(e);
+			} finally {
+				// After loading of starters data is completed set the focus to the search box.
+				// It is highly unlikely that use had the time to switch focus to anything else.
+				if (dynamicControlCreation.getValue() != null) {
+					dynamicControlCreation.getValue().setFocus();
+				}
 			}
 		});
 	}
@@ -204,8 +211,8 @@ public class DependencyPage extends WizardPageWithSections {
 
 	@SuppressWarnings("resource")
 	public WizardPageSection createTwoColumnSection(final InitializrModel model) {
-		return new GroupSection(this,null,
-				new GroupSection(this, null,
+		return new GroupSection(this, null, 0,
+				new GroupSection(this, null, 1,
 						new CommentSection(this, "Available:"),
 						getSearchSection(model),
 						new GroupSection(this, "",
@@ -239,39 +246,13 @@ public class DependencyPage extends WizardPageWithSections {
 	}
 
 	protected WizardPageSection getSearchSection(final InitializrModel model) {
-		final SearchBoxSection searchBoxSection = new SearchBoxSection(this, model.searchBox.getText()) {
+		return new SearchBoxSection(this, model.searchBox.getText()) {
 			@Override
 			protected String getSearchHint() {
 				return "Type to search dependencies";
 			}
 
-			@Override
-			public void focusControl() {
-				Control searchControl = getControl();
-				if (searchControl != null && !searchControl.isDisposed()) {
-					searchControl.setFocus();
-				}
-			}
-		}.grabFocus(true);
-
-
-		// PT 174313406 - Async focus on search box. Dynamic creation seems to interfere with grabbing focus on the search box upon control creation
-		// therefore set it asynchronously
-		asyncSetFocus(searchBoxSection);
-		return searchBoxSection;
-	}
-
-	private void asyncSetFocus(SearchBoxSection searchBoxSection) {
-		UIJob showJob = new UIJob("Focus search box") {
-
-			@Override
-			public IStatus runInUIThread(IProgressMonitor monitor) {
-				searchBoxSection.focusControl();
-				return Status.OK_STATUS;
-			}
 		};
-		showJob.setSystem(true);
-		showJob.schedule(1000);
 	}
 
 	@SuppressWarnings("resource")
@@ -322,6 +303,17 @@ public class DependencyPage extends WizardPageWithSections {
 			IWizardContainer container = wizard.getContainer();
 			if (container != null) {
 				container.updateButtons();
+			}
+		}
+	}
+
+	@Override
+	public void setVisible(boolean visible) {
+		super.setVisible(visible);
+		if (visible) {
+			// Restore focus to search box when going back a page. There is no control that has the focus going back hence set it.
+			if (dynamicControlCreation.getValue() != null) {
+				dynamicControlCreation.getValue().setFocus();
 			}
 		}
 	}
