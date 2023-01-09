@@ -66,9 +66,9 @@ public class SpringIndexerMultiProjectTest {
 	}
 
     @Test
-    void testQueryingAllSymbolsWithRegularLimit() throws Exception {
+    void testQueryingAllSymbols() throws Exception {
         List<? extends WorkspaceSymbol> symbols = indexer.getAllSymbols("");
-        assertEquals(50, symbols.size());
+        assertEquals(220, symbols.size());
     }
 
     @Test
@@ -92,9 +92,9 @@ public class SpringIndexerMultiProjectTest {
     }
 
     @Test
-    void testQueryingSymbolsForSpecificProjectWithRegularLimit() throws Exception {
+    void testQueryingSymbolsForSpecificProject() throws Exception {
         List<? extends WorkspaceSymbol> symbols = indexer.getAllSymbols("locationPrefix:" + projectUri2);
-        assertEquals(50, symbols.size());
+        assertEquals(110, symbols.size());
 
         for (WorkspaceSymbol symbol : symbols) {
             assertTrue(symbol.getLocation().getLeft().getUri().startsWith(projectUri2));
