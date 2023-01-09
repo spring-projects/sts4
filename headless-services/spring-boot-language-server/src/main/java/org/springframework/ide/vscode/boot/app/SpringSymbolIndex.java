@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2022 Pivotal, Inc.
+ * Copyright (c) 2017, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -90,7 +90,6 @@ public class SpringSymbolIndex implements InitializingBean {
 	@Autowired FutureProjectFinder futureProjectFinder;
 
 	private static final String QUERY_PARAM_LOCATION_PREFIX = "locationPrefix:";
-	private static final int MAX_NUMBER_OF_SYMBOLS_IN_RESPONSE = 50;
 
 	private final List<EnhancedSymbolInformation> symbols = new ArrayList<>();
 
@@ -538,11 +537,11 @@ public class SpringSymbolIndex implements InitializingBean {
 	public List<WorkspaceSymbol> getAllSymbols(String query) {
 		if (query != null && query.length() > 0) {
 			synchronized(this.symbols) {
-				return searchMatchingSymbols(this.symbols, query, MAX_NUMBER_OF_SYMBOLS_IN_RESPONSE);
+				return searchMatchingSymbols(this.symbols, query);
 			}
 		} else {
 			synchronized(this.symbols) {
-				return this.symbols.stream().map(s -> s.getSymbol()).limit(Math.min(MAX_NUMBER_OF_SYMBOLS_IN_RESPONSE, this.symbols.size())).collect(Collectors.toList());
+				return this.symbols.stream().map(s -> s.getSymbol()).collect(Collectors.toList());
 			}
 		}
 	}
@@ -655,8 +654,7 @@ public class SpringSymbolIndex implements InitializingBean {
 		}, this.updateQueue);
 	}
 
-	private List<WorkspaceSymbol> searchMatchingSymbols(List<EnhancedSymbolInformation> allsymbols, String query, int maxNumberOfSymbolsInResponse) {
-		long limit = maxNumberOfSymbolsInResponse;
+	private List<WorkspaceSymbol> searchMatchingSymbols(List<EnhancedSymbolInformation> allsymbols, String query) {
 		String locationPrefix = "";
 
 		if (query.startsWith(QUERY_PARAM_LOCATION_PREFIX)) {
@@ -673,7 +671,6 @@ public class SpringSymbolIndex implements InitializingBean {
 		}
 
 		if (query.startsWith("*")) {
-			limit = Long.MAX_VALUE;
 			query = query.substring(1);
 		}
 
@@ -693,7 +690,6 @@ public class SpringSymbolIndex implements InitializingBean {
 					return false;
 				})
 				.filter(symbol -> StringUtil.containsCharactersCaseInsensitive(symbol.getName(), finalQuery))
-				.limit(limit)
 				.collect(Collectors.toList());
 	}
 
