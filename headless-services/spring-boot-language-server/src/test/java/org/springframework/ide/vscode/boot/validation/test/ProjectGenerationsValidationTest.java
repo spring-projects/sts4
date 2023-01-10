@@ -10,12 +10,14 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.validation.test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -53,7 +55,6 @@ public class ProjectGenerationsValidationTest {
 
 
     @Test
-    @Disabled
     void testProjectsInfoFromSpringIo() throws Exception {
         String url = "https://spring.io/api/projects";
         SpringProjectsClient client = new SpringProjectsClient(url);
