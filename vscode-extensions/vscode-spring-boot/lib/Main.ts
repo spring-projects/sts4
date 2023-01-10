@@ -11,6 +11,8 @@ import * as rewrite from './rewrite';
 import { startDebugSupport } from './debug-config-provider';
 import { ApiManager } from "./apiManager";
 import { ExtensionAPI } from "./api";
+import {registerClasspathService} from "@pivotal-tools/commons-vscode/lib/classpath";
+import {registerJavaDataService} from "@pivotal-tools/commons-vscode/lib/java-data";
 
 const PROPERTIES_LANGUAGE_ID = "spring-boot-properties";
 const YAML_LANGUAGE_ID = "spring-boot-properties-yaml";
@@ -114,11 +116,13 @@ export function activate(context: VSCode.ExtensionContext): Thenable<ExtensionAP
             },
             initializationOptions: () => ({
                 workspaceFolders: workspace.workspaceFolders ? workspace.workspaceFolders.map(f => f.uri.toString()) : null,
-                enableJdtClasspath: true
+                // Do not enable JDT classpath listeners at the startup - classpath service would enable it later if needed based on the Java extension mode
+                // Classpath service registration requires commands to be registered and Boot LS needs to register classpath 
+                // listeners when client has callbacks for STS4 extension java related messages registered via JDT classpath and Data Service registration
+                enableJdtClasspath: false
             })
         },
-        highlightCodeLensSettingKey: 'boot-java.highlight-codelens.on',
-        requiresJavaLs: true
+        highlightCodeLensSettingKey: 'boot-java.highlight-codelens.on'
     };
 
     // Register launch config contributior to java debug launch to be able to connect to JMX
@@ -127,6 +131,8 @@ export function activate(context: VSCode.ExtensionContext): Thenable<ExtensionAP
     return commons.activate(options, context).then(client => {
         VSCode.commands.registerCommand('vscode-spring-boot.ls.start', () => client.start().then(() => {
             // Boot LS is fully started
+            registerClasspathService(client);
+            registerJavaDataService(client);
 
             // Force classpath listener to be enabled. Boot LS can only be launched iff classpath is available and there Spring-Boot on the classpath somewhere.
             VSCode.commands.executeCommand('sts.vscode-spring-boot.enableClasspathListening', true);

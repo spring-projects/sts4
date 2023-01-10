@@ -66,9 +66,9 @@ public class ClasspathListenerManager {
 					JsonArray event = (JsonArray) arg;
 
 					String projectUri = event.get(0).getAsString();
-					log.debug("projectUri = {}", event);
+					log.debug("projectUri = {}", projectUri);
 					String name = event.get(1).getAsString();
-					log.debug("name = {}", event);
+					log.debug("name = {}", name);
 					boolean deleted = event.get(2).getAsBoolean();
 					log.debug("deleted = {}", deleted);
 
@@ -88,9 +88,9 @@ public class ClasspathListenerManager {
 				// that don't provide batched event support (e.g. IDEA client may only adopt this
 				// later, or not adopt it at all).
 				String projectUri = ((JsonElement) args.get(0)).getAsString();
-				log.debug("projectUri = {}", args);
+				log.debug("projectUri = {}", projectUri);
 				String name = ((JsonElement) args.get(1)).getAsString();
-				log.debug("name = {}", args);
+				log.debug("name = {}", name);
 				boolean deleted = ((JsonElement)args.get(2)).getAsBoolean();
 				log.debug("deleted = {}", deleted);
 

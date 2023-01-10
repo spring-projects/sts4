@@ -18,9 +18,7 @@ import * as P2C from 'vscode-languageclient/lib/common/protocolConverter';
 import {HighlightService, HighlightParams} from './highlight-service';
 import { log } from 'util';
 import { JVM, findJvm, findJdk } from '@pivotal-tools/jvm-launch-utils';
-import { registerClasspathService } from './classpath';
 import {HighlightCodeLensProvider} from "./code-lens-service";
-import {registerJavaDataService} from "./java-data";
 
 const p2c = P2C.createConverter(undefined, false, false);
 
@@ -42,7 +40,6 @@ export interface ActivatorOptions {
     highlightCodeLensSettingKey?: string;
     explodedLsJarData?: ExplodedLsJarData;
     vmArgs?: string[];
-    requiresJavaLs?: boolean;
 }
 
 export interface ExplodedLsJarData {
@@ -392,10 +389,6 @@ function setupLanguageClient(context: VSCode.ExtensionContext, createServer: Ser
         }
         return {applied: true};
     });
-    if (options.requiresJavaLs) {
-        registerClasspathService(client);
-        registerJavaDataService(client);
-    }
     return Promise.resolve(client);
 }
 

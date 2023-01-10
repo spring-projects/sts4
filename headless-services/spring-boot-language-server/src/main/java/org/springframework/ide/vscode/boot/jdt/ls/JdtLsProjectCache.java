@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2022 Pivotal, Inc.
+ * Copyright (c) 2018, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -55,6 +55,8 @@ import reactor.core.Disposables;
 import reactor.core.publisher.Mono;
 
 public class JdtLsProjectCache implements InitializableJavaProjectsService, ServerCapabilityInitializer {
+		
+	private static final Logger log = LoggerFactory.getLogger(JdtLsProjectCache.class);
 
 	private static final String CMD_SPRING_BOOT_ENABLE_CLASSPATH_LISTENING = "sts.vscode-spring-boot.enableClasspathListening";
 	
@@ -65,7 +67,6 @@ public class JdtLsProjectCache implements InitializableJavaProjectsService, Serv
 
 	private SimpleLanguageServer server;
 	private Map<String, IJavaProject> table = new HashMap<String, IJavaProject>();
-	private Logger log = LoggerFactory.getLogger(JdtLsProjectCache.class);
 	private List<Listener> listeners = new ArrayList<>();
 	
 	final private ClasspathListener CLASSPATH_LISTENER = new JstLsClasspathListener();

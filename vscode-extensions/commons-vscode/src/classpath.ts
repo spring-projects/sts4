@@ -12,11 +12,6 @@ export function registerClasspathService(client : LanguageClient) : void {
     const javaExt = VSCode.extensions.getExtension('redhat.java');
     const javaApi = javaExt?.exports;
 
-    if (javaApi) {
-        VSCode.commands.executeCommand(CMD_STS_ENABLE_CLASSPATH_LISTENER, javaApi.serverMode === JDT_SERVER_STANDARD_MODE);
-        javaApi.onDidServerModeChange(e => VSCode.commands.executeCommand(CMD_STS_ENABLE_CLASSPATH_LISTENER, javaApi.serverMode === JDT_SERVER_STANDARD_MODE));
-    }
-
     let addRequest = new RequestType<ClasspathListenerParams, ClasspathListenerResponse, void>("sts/addClasspathListener");
     client.onRequest(addRequest, async (params: ClasspathListenerParams) => {
         if (javaApi?.serverMode === 'LightWeight') {
@@ -29,6 +24,11 @@ export function registerClasspathService(client : LanguageClient) : void {
     client.onRequest(removeRequest, async (params: ClasspathListenerParams) => {
         return <ClasspathListenerResponse> await VSCode.commands.executeCommand("java.execute.workspaceCommand", "sts.java.removeClasspathListener", params.callbackCommandId);
     });
+
+    if (javaApi) {
+        VSCode.commands.executeCommand(CMD_STS_ENABLE_CLASSPATH_LISTENER, javaApi.serverMode === JDT_SERVER_STANDARD_MODE);
+        javaApi.onDidServerModeChange(e => VSCode.commands.executeCommand(CMD_STS_ENABLE_CLASSPATH_LISTENER, javaApi.serverMode === JDT_SERVER_STANDARD_MODE));
+    }
 
 }
 
