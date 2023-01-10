@@ -26,27 +26,9 @@
     "application-yaml"
   ],
   "activationEvents": [
-    "onLanguage:spring-boot-properties",
-    "onLanguage:spring-boot-properties-yaml",
-    "onLanguage:java",
-    "onLanguage:xml",
-    "onLanguage:spring-factories",
-    "onDebugResolve:java",
     "onCommand:vscode-spring-boot.rewrite.list.refactorings",
     "onCommand:vscode-spring-boot.rewrite.list.boot-upgrades",
-    "onCommand:vscode-spring-boot.ls.start",
-    "workspaceContains:pom.xml",
-    "workspaceContains:*/pom.xml",
-    "workspaceContains:build.gradle",
-    "workspaceContains:*/build.gradle",
-    "workspaceContains:settings.gradle",
-    "workspaceContains:*/settings.gradle",
-    "workspaceContains:build.gradle.kts",
-    "workspaceContains:*/build.gradle.kts",
-    "workspaceContains:settings.gradle.kts",
-    "workspaceContains:*/settings.gradle.kts",
-    "workspaceContains:.classpath",
-    "workspaceContains:*/.classpath"
+    "onCommand:vscode-spring-boot.ls.start"
   ],
   "contributes": {
     "javaExtensions": [
