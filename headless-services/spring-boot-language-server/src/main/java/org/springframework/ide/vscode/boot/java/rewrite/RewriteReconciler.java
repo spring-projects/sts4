@@ -268,12 +268,15 @@ public class RewriteReconciler implements JavaReconciler {
 							final IDocument doc = docs.get(j);
 							List<ReconcileProblem> problems = new ArrayList<>();
 							CompilationUnit cu = cus.get(k);
-							if (cu.getSourcePath().equals(Paths.get(URI.create(doc.getUri())))) {
+							Path sourcePath = Paths.get(URI.create(doc.getUri()));
+							if (cu.getSourcePath().equals(sourcePath)) {
 								k++;
 								collectProblems(descriptors, doc, cu, problems::add);
 								if (!problems.isEmpty()) {
 									allProblems.put(doc, problems);
 								}
+							} else {
+								log.warn("Failed to parse source for " + sourcePath);
 							}
 						}
 
