@@ -260,12 +260,20 @@ public class RewriteReconciler implements JavaReconciler {
 									return new ByteArrayInputStream(d.get().getBytes());
 								})).collect(Collectors.toList()));
 						
-						for (int j = 0; j < batchList.size(); j++) {
+						/*
+						 * If exception occurs during parsing inputs the list of inputs would become shorter than the list of corresponding documents
+						 */
+						
+						for (int j = 0, k = 0; j < batchList.size(); j++) {
 							final IDocument doc = docs.get(j);
 							List<ReconcileProblem> problems = new ArrayList<>();
-							collectProblems(descriptors, doc, cus.get(j), problems::add);
-							if (!problems.isEmpty()) {
-								allProblems.put(doc, problems);
+							CompilationUnit cu = cus.get(k);
+							if (cu.getSourcePath().equals(Paths.get(URI.create(doc.getUri())))) {
+								k++;
+								collectProblems(descriptors, doc, cu, problems::add);
+								if (!problems.isEmpty()) {
+									allProblems.put(doc, problems);
+								}
 							}
 						}
 
