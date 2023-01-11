@@ -166,6 +166,8 @@ public class RewriteReconciler implements JavaReconciler {
 		
 		long end = System.currentTimeMillis();
 		log.info("reconciling (OpenRewrite, multiple docs): " + project.getElementName() + " - " + docs.size() + " done in " + (end - start) + "ms");
+		
+		System.gc();
 
 		return allProblems;
 	}
@@ -265,7 +267,7 @@ public class RewriteReconciler implements JavaReconciler {
 						 */
 						
 						for (int j = 0, k = 0; j < batchList.size(); j++) {
-							final IDocument doc = docs.get(j);
+							final IDocument doc = batchList.get(j);
 							List<ReconcileProblem> problems = new ArrayList<>();
 							CompilationUnit cu = cus.get(k);
 							Path sourcePath = Paths.get(URI.create(doc.getUri()));
@@ -276,7 +278,7 @@ public class RewriteReconciler implements JavaReconciler {
 									allProblems.put(doc, problems);
 								}
 							} else {
-								log.warn("Failed to parse source for " + sourcePath);
+								log.warn("(OpenRewrite) Failed to parse source for " + sourcePath);
 							}
 						}
 
