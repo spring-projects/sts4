@@ -39,7 +39,7 @@ public class PropertiesAntlrParserTest {
 		assertEquals(1, commentLines.size());
 		
 		Comment comment = commentLines.get(0);
-		assertEquals(expectedComment, text.substring(comment.getOffset(), comment.getOffset() + comment.getLength()));
+		assertEquals(expectedComment, text.substring(comment.getOffset(), comment.getOffset() + comment.getLength() - 1));
 	}
 	
 	private void testPropertyLine(String text, 
