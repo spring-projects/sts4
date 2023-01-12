@@ -44,7 +44,7 @@ public class ProjectVersionDiagnosticProvider {
 		Version javaProjectVersion = SpringProjectUtil.getSpringBootVersion(javaProject);
 
 		if (javaProjectVersion == null) {
-			log.warn("Unable to resolve version for project: " + javaProject.getLocationUri().toString());
+			log.warn("Unable to resolve version for project: " + javaProject.getLocationUri().toASCIIString());
 			return new DiagnosticResult(buildFileUri, Collections.emptyList());
 		}
 

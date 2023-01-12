@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2020 Pivotal, Inc.
+ * Copyright (c) 2019, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -71,7 +71,7 @@ public class JdtLsIndex implements ClasspathIndex {
 		this.client = client;
 		this.projectUri = projectUri;
 		this.projectObserver = projectObserver;
-		this.javadocProvider = new JdtLsJavadocProvider(client, projectUri.toString());
+		this.javadocProvider = new JdtLsJavadocProvider(client, projectUri);
 		
 		this.projectListener = ProjectObserver.onAny(project -> {
 			if (Objects.equals(project.getLocationUri(), projectUri)) {
@@ -103,7 +103,7 @@ public class JdtLsIndex implements ClasspathIndex {
 	}
 
 	private TypeData findTypeData(String fqName) throws InterruptedException, ExecutionException {
-		JavaDataParams params = new JavaDataParams(projectUri.toString(), "L" + fqName.replace('.', '/') + ";", false);
+		JavaDataParams params = new JavaDataParams(projectUri.toASCIIString(), "L" + fqName.replace('.', '/') + ";", false);
 		return client.javaType(params).get();
 	}
 
@@ -138,7 +138,7 @@ public class JdtLsIndex implements ClasspathIndex {
 
 	@Override
 	public Flux<Tuple2<IType, Double>> fuzzySearchTypes(String searchTerm, boolean includeBinaries, boolean includeSystemLibs) {
-		JavaSearchParams searchParams = new JavaSearchParams(projectUri.toString(), searchTerm, SearchType.FUZZY, includeBinaries, includeSystemLibs, SEARCH_TIMEOUT);
+		JavaSearchParams searchParams = new JavaSearchParams(projectUri.toASCIIString(), searchTerm, SearchType.FUZZY, includeBinaries, includeSystemLibs, SEARCH_TIMEOUT);
 		return Mono.fromFuture(client.javaSearchTypes(searchParams))
 				.flatMapMany(results -> Flux.fromIterable(results).publishOn(Schedulers.parallel()))
 				.filter(Objects::nonNull)
@@ -148,7 +148,7 @@ public class JdtLsIndex implements ClasspathIndex {
 
 	@Override
 	public Flux<Tuple2<String, Double>> fuzzySearchPackages(String searchTerm, boolean includeBinaries, boolean includeSystemLibs) {
-		JavaSearchParams searchParams = new JavaSearchParams(projectUri.toString(), searchTerm, SearchType.FUZZY, includeBinaries, includeSystemLibs, SEARCH_TIMEOUT);
+		JavaSearchParams searchParams = new JavaSearchParams(projectUri.toASCIIString(), searchTerm, SearchType.FUZZY, includeBinaries, includeSystemLibs, SEARCH_TIMEOUT);
 		return Mono.fromFuture(client.javaSearchPackages(searchParams))
 				.flatMapMany(results -> Flux.fromIterable(results).publishOn(Schedulers.parallel()))
 				.filter(Objects::nonNull)
@@ -159,7 +159,7 @@ public class JdtLsIndex implements ClasspathIndex {
 	@Override
 	public Flux<Tuple2<IType, Double>> camelcaseSearchTypes(String searchTerm, boolean includeBinaries,
 			boolean includeSystemLibs) {
-		JavaSearchParams searchParams = new JavaSearchParams(projectUri.toString(), searchTerm, SearchType.CAMELCASE, includeBinaries, includeSystemLibs, SEARCH_TIMEOUT);
+		JavaSearchParams searchParams = new JavaSearchParams(projectUri.toASCIIString(), searchTerm, SearchType.CAMELCASE, includeBinaries, includeSystemLibs, SEARCH_TIMEOUT);
 		return Mono.fromFuture(client.javaSearchTypes(searchParams))
 				.flatMapMany(results -> Flux.fromIterable(results).publishOn(Schedulers.parallel()))
 				.filter(Objects::nonNull)
@@ -169,7 +169,7 @@ public class JdtLsIndex implements ClasspathIndex {
 
 	@Override
 	public Flux<IType> allSubtypesOf(String fqName, boolean includeFocusType, boolean detailed) {
-		JavaTypeHierarchyParams searchParams = new JavaTypeHierarchyParams(projectUri.toString(), fqName, includeFocusType, detailed);
+		JavaTypeHierarchyParams searchParams = new JavaTypeHierarchyParams(projectUri.toASCIIString(), fqName, includeFocusType, detailed);
 		try {
 			CompletableFuture<List<IType>> future = subtypesCache.get(searchParams, () -> client
 					.javaSubTypes(searchParams)
@@ -184,7 +184,7 @@ public class JdtLsIndex implements ClasspathIndex {
 
 	@Override
 	public Flux<IType> allSuperTypesOf(String fqName, boolean includeFocusType, boolean detailed) {
-		JavaTypeHierarchyParams searchParams = new JavaTypeHierarchyParams(projectUri.toString(), fqName, includeFocusType, detailed);
+		JavaTypeHierarchyParams searchParams = new JavaTypeHierarchyParams(projectUri.toASCIIString(), fqName, includeFocusType, detailed);
 		try {
 			CompletableFuture<List<IType>> future = supertypesCache.get(searchParams, () -> client
 					.javaSuperTypes(searchParams)

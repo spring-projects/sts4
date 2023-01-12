@@ -287,7 +287,7 @@ public class SpringIndexerJava implements SpringIndexer {
 			@Override
 			public void acceptAST(String sourceFilePath, CompilationUnit cu) {
 				File file = new File(sourceFilePath);
-				String docURI = UriUtil.toUri(file).toString();
+				String docURI = UriUtil.toUri(file).toASCIIString();
 				
 				DocumentDescriptor updatedDoc = updatedDocs.get(docURI);
 				long lastModified = updatedDoc.getLastModified();
@@ -335,7 +335,7 @@ public class SpringIndexerJava implements SpringIndexer {
 		
 		DocumentDescriptor[] docsToScan = filesToScan.stream().map(file -> {
 			File realFile = new File(file);
-			String docURI = UriUtil.toUri(realFile).toString();
+			String docURI = UriUtil.toUri(realFile).toASCIIString();
 			long lastModified = realFile.lastModified();
 			return new DocumentDescriptor(docURI, lastModified);
 		}).toArray(DocumentDescriptor[]::new);
@@ -398,7 +398,7 @@ public class SpringIndexerJava implements SpringIndexer {
 			@Override
 			public void acceptAST(String sourceFilePath, CompilationUnit cu) {
 				File file = new File(sourceFilePath);
-				String docURI = UriUtil.toUri(file).toString();
+				String docURI = UriUtil.toUri(file).toASCIIString();
 				long lastModified = file.lastModified();
 				AtomicReference<TextDocument> docRef = new AtomicReference<>();
 
@@ -640,7 +640,7 @@ public class SpringIndexerJava implements SpringIndexer {
 			try {
 				for (Path path : testJavaFiles) {
 					URI docUri = UriUtil.toUri(path.toFile());
-					symbolHandler.removeSymbols(project, docUri.toString()); 
+					symbolHandler.removeSymbols(project, docUri.toASCIIString()); 
 				}
 			} catch (Exception e) {
 				log.error("{}", e);
@@ -666,7 +666,7 @@ public class SpringIndexerJava implements SpringIndexer {
 					File file = path.toFile();
 					URI docUri = UriUtil.toUri(file);
 					String content = FileUtils.readFileToString(file);
-					scanFile(project, new DocumentDescriptor(docUri.toString(), file.lastModified()), content);
+					scanFile(project, new DocumentDescriptor(docUri.toASCIIString(), file.lastModified()), content);
 				}
 			} catch (Exception e) {
 				log.error("{}", e);

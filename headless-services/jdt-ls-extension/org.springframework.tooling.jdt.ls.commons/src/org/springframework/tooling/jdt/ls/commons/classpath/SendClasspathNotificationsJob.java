@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2022 Pivotal, Inc.
+ * Copyright (c) 2018, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -157,11 +157,11 @@ public class SendClasspathNotificationsJob extends Job {
 	protected void bufferMessage(URI projectLoc, boolean deleted, String projectName, Classpath classpath, ProjectBuild projectBuild) {
 		if (buffer!=null) {
 			logger.debug("buffering callback "+callbackCommandId+" "+projectName+" "+deleted+" "+ classpath.getEntries().size());
-			buffer.add(ImmutableList.of(projectLoc.toString(), projectName, deleted, classpath, projectBuild));
+			buffer.add(ImmutableList.of(projectLoc.toASCIIString(), projectName, deleted, classpath, projectBuild));
 		} else {
 			try {
 				logger.debug("executing callback "+callbackCommandId+" "+projectName+" "+deleted+" "+ classpath.getEntries().size());
-				Object r = conn.executeClientCommand(callbackCommandId, projectLoc.toString(), projectName, deleted, classpath, projectBuild);
+				Object r = conn.executeClientCommand(callbackCommandId, projectLoc.toASCIIString(), projectName, deleted, classpath, projectBuild);
 				notificationsSentForProjects = ImmutableList.of(projectName);
 				logger.debug("executing callback "+callbackCommandId+" SUCCESS ["+r+"]");
 			} catch (Exception e) {

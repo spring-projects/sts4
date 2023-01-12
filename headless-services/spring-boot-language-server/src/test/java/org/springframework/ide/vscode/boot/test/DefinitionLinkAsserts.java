@@ -124,7 +124,7 @@ public class DefinitionLinkAsserts {
 		if (sourceUrl.isPresent()) {
 
 			URI docUri = javaDocumentUriProvider.docUri(project, fqName);
-			loc.setUri(docUri.toString());
+			loc.setUri(docUri.toASCIIString());
 
 			String typeName = fqName.substring(fqName.lastIndexOf('.') + 1);
 			URI sourceUri = sourceUrl.get().toURI();
@@ -179,7 +179,7 @@ public class DefinitionLinkAsserts {
 		if (sourceUrl.isPresent()) {
 
 			URI docUri = javaDocumentUriProvider.docUri(project, method.fqName);
-			loc.setUri(docUri.toString());
+			loc.setUri(docUri.toASCIIString());
 
 			URI sourceUri = sourceUrl.get().toURI();
 			Range r = cuCache.withCompilationUnit(project, sourceUri, (cu) -> {
@@ -240,7 +240,7 @@ public class DefinitionLinkAsserts {
 			URI sourceUri = sourceUrl.get().toURI();
 
 			URI docUri = javaDocumentUriProvider.docUri(project, field.fqName);
-			loc.setUri(docUri.toString());
+			loc.setUri(docUri.toASCIIString());
 
 			Range r = cuCache.withCompilationUnit(project, sourceUri, (cu) -> {
 				try {

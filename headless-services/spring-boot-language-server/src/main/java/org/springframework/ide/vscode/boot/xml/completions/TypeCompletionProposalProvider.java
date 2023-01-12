@@ -85,7 +85,7 @@ public class TypeCompletionProposalProvider implements XMLCompletionProvider {
 			
 			log.info("Prefix is '{}'", prefix);
 			
-			JavaCodeCompleteParams params = new JavaCodeCompleteParams(project.getLocationUri().toString(), prefix, true, true);
+			JavaCodeCompleteParams params = new JavaCodeCompleteParams(project.getLocationUri().toASCIIString(), prefix, true, true);
 			CompletableFuture<List<JavaCodeCompleteData>> completions = server.getClient().javaCodeComplete(params);
 
 			final String finalPrefix = prefix;

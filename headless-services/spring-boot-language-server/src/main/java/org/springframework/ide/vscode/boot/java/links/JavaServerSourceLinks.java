@@ -38,7 +38,7 @@ public class JavaServerSourceLinks implements SourceLinks {
 		bindingKey.append('L');
 		bindingKey.append(fqName.replace('.',  '/'));
 		bindingKey.append(';');
-		String projectUri = project == null ? null : project.getLocationUri().toString();
+		String projectUri = project == null ? null : project.getLocationUri().toASCIIString();
 		CompletableFuture<Optional<String>> link = server.getClient().javadocHoverLink(new JavaDataParams(projectUri, bindingKey.toString(), true))
 				.thenApply(l -> Optional.ofNullable(l));
 		try {
@@ -56,7 +56,7 @@ public class JavaServerSourceLinks implements SourceLinks {
 
 	@Override
 	public Optional<String> sourceLinkForResourcePath(Path path) {
-		return Optional.ofNullable(path).map(p -> p.toUri().toString());
+		return Optional.ofNullable(path).map(p -> p.toUri().toASCIIString());
 	}
 
 }

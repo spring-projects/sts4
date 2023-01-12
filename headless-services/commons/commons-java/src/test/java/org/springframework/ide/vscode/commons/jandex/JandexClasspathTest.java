@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2019 Pivotal, Inc.
+ * Copyright (c) 2018, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -57,7 +57,7 @@ public class JandexClasspathTest {
 			File target = new File(outputFolder, relativePath);
 			target.getParentFile().mkdirs();
 			Files.copy(classFile, target);
-			fileObserver.notifyFileCreated(target.toURI().toString());
+			fileObserver.notifyFileCreated(target.toURI().toASCIIString());
 		}
 
 		ClasspathData getClasspath() {
@@ -74,7 +74,7 @@ public class JandexClasspathTest {
 			String relativePath = fqName.replace('.', '/')+".class";
 			File classFile = new File(outputFolder, relativePath);
 			classFile.delete();
-			eventNoficator.accept(fileObserver, classFile.toURI().toString());
+			eventNoficator.accept(fileObserver, classFile.toURI().toASCIIString());
 		}
 
 		public void deleteClass(String fqName) {

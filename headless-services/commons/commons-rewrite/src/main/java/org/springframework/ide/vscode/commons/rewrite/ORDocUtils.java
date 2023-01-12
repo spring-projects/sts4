@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2022 VMware, Inc.
+ * Copyright (c) 2023 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -159,7 +159,7 @@ public class ORDocUtils {
 		we.setDocumentChanges(new ArrayList<>());
 		for (Result result : results) {
 			if (result.getBefore() == null) {
-				String docUri = absoluteProjectDir.resolve(result.getAfter().getSourcePath()).toUri().toString();
+				String docUri = absoluteProjectDir.resolve(result.getAfter().getSourcePath()).toUri().toASCIIString();
 				CreateFile ro = new CreateFile();
 				ro.setUri(docUri);
 				we.getDocumentChanges().add(Either.forRight(ro));
@@ -170,10 +170,10 @@ public class ORDocUtils {
 				te.setEdits(List.of(new TextEdit(new Range(cursor, cursor), result.getAfter().printAll())));
 				we.getDocumentChanges().add(Either.forLeft(te));
 			} else if (result.getAfter() == null) {
-				String docUri = absoluteProjectDir.resolve(result.getBefore().getSourcePath()).toUri().toString();
+				String docUri = absoluteProjectDir.resolve(result.getBefore().getSourcePath()).toUri().toASCIIString();
 				we.getDocumentChanges().add(Either.forRight(new DeleteFile(docUri)));
 			} else {
-				String docUri = absoluteProjectDir.resolve(result.getBefore().getSourcePath()).toUri().toString();
+				String docUri = absoluteProjectDir.resolve(result.getBefore().getSourcePath()).toUri().toASCIIString();
 				TextDocument doc = documents.getLatestSnapshot(docUri);
 				if (doc == null) {
 					doc = new TextDocument(docUri, null, 0, result.getBefore().printAll());

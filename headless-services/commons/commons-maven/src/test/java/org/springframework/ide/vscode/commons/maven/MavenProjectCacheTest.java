@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2022 Pivotal, Inc.
+ * Copyright (c) 2017, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -139,18 +139,18 @@ public class MavenProjectCacheTest {
 		ImmutableList<CPE> calculatedClassPath = cachedProject.getClasspath().getClasspathEntries();
 		assertEquals(51, calculatedClassPath.stream().filter(cpe -> !cpe.isSystem()).count());
 
-		fileObserver.notifyFileChanged(pomFile.toURI().toString());
+		fileObserver.notifyFileChanged(pomFile.toURI().toASCIIString());
 		assertNull(projectChanged[0]);
 
 		writeContent(pomFile,
 				new String(Files.readAllBytes(testProjectPath.resolve("pom.newxml")), Charset.defaultCharset()));
-		fileObserver.notifyFileChanged(pomFile.toURI().toString());
+		fileObserver.notifyFileChanged(pomFile.toURI().toASCIIString());
 		assertNotNull(projectChanged[0]);
 		assertEquals(cachedProject, projectChanged[0]);
 		calculatedClassPath = cachedProject.getClasspath().getClasspathEntries();
 		assertEquals(52, calculatedClassPath.stream().filter(cpe -> !cpe.isSystem()).count());
 
-		fileObserver.notifyFileDeleted(pomFile.toURI().toString());
+		fileObserver.notifyFileDeleted(pomFile.toURI().toASCIIString());
 		assertEquals(cachedProject, projectDeleted[0]);
 	}
 
@@ -246,7 +246,7 @@ public class MavenProjectCacheTest {
 		verify(diagnosticService, never()).diagnosticEvent(any(ShowMessageException.class));
 
 		writeContent(pomFile, "");
-		fileObserver.notifyFileChanged(pomFile.toURI().toString());
+		fileObserver.notifyFileChanged(pomFile.toURI().toASCIIString());
 		CompletableFuture.runAsync(() -> {
 			while (!progressDone.get()) {
 				try {

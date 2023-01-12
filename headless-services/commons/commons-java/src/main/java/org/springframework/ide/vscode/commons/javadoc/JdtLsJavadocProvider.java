@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.javadoc;
 
+import java.net.URI;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -33,9 +34,9 @@ public class JdtLsJavadocProvider implements IJavadocProvider {
 	private static final Logger log = LoggerFactory.getLogger(JdtLsJavadocProvider.class);
 
 	private STS4LanguageClient client;
-	private String projectUri;
+	private URI projectUri;
 
-	public JdtLsJavadocProvider(STS4LanguageClient client, String projectUri) {
+	public JdtLsJavadocProvider(STS4LanguageClient client, URI projectUri) {
 		super();
 		this.client = client;
 		this.projectUri = projectUri;
@@ -60,7 +61,7 @@ public class JdtLsJavadocProvider implements IJavadocProvider {
 		long start = System.currentTimeMillis();
 		try {
 			log.info("Fetching javadoc {}", element.getBindingKey());
-			MarkupContent md = client.javadoc(new JavaDataParams(projectUri, element.getBindingKey(), false)).get(10, TimeUnit.SECONDS);
+			MarkupContent md = client.javadoc(new JavaDataParams(projectUri.toASCIIString(), element.getBindingKey(), false)).get(10, TimeUnit.SECONDS);
 			log.info("Fetching javadoc {} took {} ms", element.getBindingKey(), System.currentTimeMillis()-start);
 			return produceJavadocFromMd(md == null ? null : md.getValue());
 		} catch (InterruptedException | ExecutionException | TimeoutException e) {

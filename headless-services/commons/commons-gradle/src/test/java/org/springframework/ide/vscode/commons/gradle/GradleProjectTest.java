@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2022 Pivotal, Inc.
+ * Copyright (c) 2017, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -124,18 +124,18 @@ public class GradleProjectTest {
             List<File> nonSystemClasspathEntries = IClasspathUtil.getBinaryRoots(cachedProject.getClasspath(), (cpe) -> !cpe.isSystem());
             assertEquals(69, nonSystemClasspathEntries.size());
 
-            fileObserver.notifyFileChanged(gradleFile.toURI().toString());
+            fileObserver.notifyFileChanged(gradleFile.toURI().toASCIIString());
             assertNull(projectChanged[0]);
 
             writeContent(gradleFile, Files.contentOf(testProjectPath.resolve("build.newgradle").toFile(), Charset.defaultCharset()));
-            fileObserver.notifyFileChanged(gradleFile.toURI().toString());
+            fileObserver.notifyFileChanged(gradleFile.toURI().toASCIIString());
             assertNotNull(projectChanged[0]);
             assertEquals(cachedProject, projectChanged[0]);
             nonSystemClasspathEntries = IClasspathUtil.getBinaryRoots(cachedProject.getClasspath(), (cpe) -> !cpe.isSystem());
             assertEquals(70, nonSystemClasspathEntries.size());
 
 
-            fileObserver.notifyFileDeleted(gradleFile.toURI().toString());
+            fileObserver.notifyFileDeleted(gradleFile.toURI().toASCIIString());
             assertEquals(cachedProject, projectDeleted[0]);
         } finally {
             writeContent(gradleFile, gradelFileContents);

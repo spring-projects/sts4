@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2022 Pivotal, Inc.
+ * Copyright (c) 2018, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -224,13 +224,13 @@ public class ClasspathUtil {
 				switch (e.getPath().segment(0)) {
 				case MAVEN_CONTAINER_ID:
 					IFile f = jp.getProject().getFile("pom.xml");
-					return new ProjectBuild(ProjectBuild.MAVEN_PROJECT_TYPE, f.exists() ? f.getLocationURI().toString() : null);
+					return new ProjectBuild(ProjectBuild.MAVEN_PROJECT_TYPE, f.exists() ? f.getLocationURI().toASCIIString() : null);
 				case GRADLE_CONTAINER_ID:
 					IFile g = jp.getProject().getFile("build.gradle");
 					if (!g.exists()) {
 						g = jp.getProject().getFile("build.gradle.kts");
 					}
-					return new ProjectBuild(ProjectBuild.GRADLE_PROJECT_TYPE, g.exists() ? g.getLocationURI().toString() : null);
+					return new ProjectBuild(ProjectBuild.GRADLE_PROJECT_TYPE, g.exists() ? g.getLocationURI().toASCIIString() : null);
 				}
 			}
 		} catch (JavaModelException e) {

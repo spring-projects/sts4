@@ -105,7 +105,7 @@ public class ProjectResourceLoaderCache {
 	private static void addFile(List<URL> paths, File file) throws MalformedURLException {
 		if (file.exists()) {
 			if (file.isDirectory()) {
-				paths.add(new URL(file.toURI().toString() + File.separator));
+				paths.add(new URL(file.toURI().toASCIIString() + File.separator));
 			}
 			else {
 				paths.add(file.toURI().toURL());

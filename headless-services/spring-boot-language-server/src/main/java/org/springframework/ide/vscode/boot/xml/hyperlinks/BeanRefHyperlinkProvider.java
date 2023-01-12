@@ -44,7 +44,7 @@ public class BeanRefHyperlinkProvider implements XMLHyperlinkProvider {
 		Optional<IJavaProject> foundProject = this.projectFinder.find(doc.getId());
 		if (foundProject.isPresent()) {
 			final IJavaProject project = foundProject.get();
-			String projectLocation = project.getLocationUri() != null ? project.getLocationUri().toString() : "";
+			String projectLocation = project.getLocationUri() != null ? project.getLocationUri().toASCIIString() : "";
 			
 			// make sure the project and the symbol location share the same prefix "file:///"
 			// looks like project locations are containing a "file:/" only

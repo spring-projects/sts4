@@ -10,11 +10,13 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.languageserver.java;
 
+import java.net.URI;
+
 import org.springframework.ide.vscode.commons.java.IJavadocProvider;
 import org.springframework.ide.vscode.commons.protocol.java.Classpath.CPE;
 
 public interface JavadocService {
 
-	IJavadocProvider javadocProvider(String projectUri, CPE classpathEntry);
+	IJavadocProvider javadocProvider(URI projectUri, CPE classpathEntry);
 
 }

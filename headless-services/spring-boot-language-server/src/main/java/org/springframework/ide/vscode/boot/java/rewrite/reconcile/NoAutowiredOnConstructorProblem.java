@@ -66,7 +66,7 @@ public class NoAutowiredOnConstructorProblem implements RecipeCodeActionDescript
                                     return s;
                                 }
                                 MethodDeclaration constructor = (MethodDeclaration) s;
-            					String uri = getCursor().firstEnclosing(SourceFile.class).getSourcePath().toUri().toString();
+            					String uri = getCursor().firstEnclosing(SourceFile.class).getSourcePath().toUri().toASCIIString();
                         		FixAssistMarker fixAssistMarker = new FixAssistMarker(Tree.randomId(), getId())
                         			.withFix(
                         					new FixDescriptor(ID, List.of(uri), LABEL)

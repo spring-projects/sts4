@@ -84,8 +84,11 @@ public class SpringFactoriesIndexer implements SpringIndexer {
 
 	@Override
 	public boolean isInterestedIn(String docURI) {
-		Path path = Paths.get(URI.create(docURI));
-		return FILE_GLOB_PATTERN.matches(path);
+		if (docURI.endsWith(".factories")) {
+			Path path = Paths.get(URI.create(docURI));
+			return FILE_GLOB_PATTERN.matches(path);
+		}
+		return false;
 	}
 
 	@Override
@@ -197,8 +200,8 @@ public class SpringFactoriesIndexer implements SpringIndexer {
 			String content = Files.readString(file);
 			ImmutableList.Builder<CachedSymbol> builder = ImmutableList.builder();
 			long lastModified = Files.getLastModifiedTime(file).toMillis();
-			String docUri = file.toUri().toString();
-			for (EnhancedSymbolInformation s : computeSymbols(file.toUri().toString(), content)) {
+			String docUri = file.toUri().toASCIIString();
+			for (EnhancedSymbolInformation s : computeSymbols(docUri, content)) {
 				builder.add(new CachedSymbol(docUri, lastModified, s));
 			}
 			return builder.build();

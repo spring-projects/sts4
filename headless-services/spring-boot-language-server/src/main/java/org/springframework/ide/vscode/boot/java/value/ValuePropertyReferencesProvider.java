@@ -171,7 +171,7 @@ public class ValuePropertyReferencesProvider implements ReferenceProvider {
 			YamlASTProvider parser = new YamlParser();
 
 			URI docURI = Paths.get(filePath).toUri();
-			TextDocument doc = new TextDocument(docURI.toString(), null);
+			TextDocument doc = new TextDocument(docURI.toASCIIString(), null);
 			doc.setText(fileContent);
 			YamlFileAST ast = parser.getAST(doc);
 
@@ -193,7 +193,7 @@ public class ValuePropertyReferencesProvider implements ReferenceProvider {
 						range.setStart(start);
 						range.setEnd(end);
 
-						Location location = new Location(docURI.toString(), range);
+						Location location = new Location(docURI.toASCIIString(), range);
 						foundLocations.add(location);
 					}
 				}
@@ -243,7 +243,7 @@ public class ValuePropertyReferencesProvider implements ReferenceProvider {
 				parseResults.ast.getNodes(KeyValuePair.class).forEach(pair -> {
 					if (pair.getKey() != null && pair.getKey().decode().equals(propertyKey)) {
 						URI docURI = Paths.get(filePath).toUri();
-						TextDocument doc = new TextDocument(docURI.toString(), null);
+						TextDocument doc = new TextDocument(docURI.toASCIIString(), null);
 						doc.setText(fileContent);
 
 						try {
@@ -263,7 +263,7 @@ public class ValuePropertyReferencesProvider implements ReferenceProvider {
 							range.setStart(start);
 							range.setEnd(end);
 
-							Location location = new Location(docURI.toString(), range);
+							Location location = new Location(docURI.toASCIIString(), range);
 							foundLocations.add(location);
 
 						} catch (BadLocationException e) {

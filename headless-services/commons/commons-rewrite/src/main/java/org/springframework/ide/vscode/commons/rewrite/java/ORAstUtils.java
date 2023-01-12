@@ -256,7 +256,7 @@ public class ORAstUtils {
 			}
 			return Stream.empty();
 		}).filter(Files::isRegularFile).filter(p -> p.getFileName().toString().endsWith(".java")).map(p -> {
-			TextDocument doc = documents.getLatestSnapshot(p.toUri().toString());
+			TextDocument doc = documents.getLatestSnapshot(p.toUri().toASCIIString());
 			if (doc == null) {
 				return new Parser.Input(p, () -> {
 					try {

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019 Pivotal, Inc.
+ * Copyright (c) 2019, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -109,7 +109,7 @@ public class CommonQuickfixes {
 							Path metadataFilePath = sourceFolders.stream().map(f -> f.toPath()).map(path -> path.resolve(METADATA_PATH)).filter(path -> Files.exists(path)).findFirst().orElse(null);
 							if (metadataFilePath == null) {
 								metadataFilePath = preferredSourceFolder.toPath().resolve(METADATA_PATH);
-								we.getDocumentChanges().add(Either.forRight(new CreateFile(metadataFilePath.toUri().toString())));
+								we.getDocumentChanges().add(Either.forRight(new CreateFile(metadataFilePath.toUri().toASCIIString())));
 							}
 							if (metadataFilePath != null) {
 								String content = Files.exists(metadataFilePath) ? IOUtil.toString(Files.newInputStream(metadataFilePath)) : "";
@@ -120,10 +120,10 @@ public class CommonQuickfixes {
 								} else {
 									metadata.addDefaultInfo(params.getProperty());
 									TextDocumentEdit edit = new TextDocumentEdit();
-									edit.setTextDocument(new VersionedTextDocumentIdentifier(metadataFilePath.toUri().toString(), null));
+									edit.setTextDocument(new VersionedTextDocumentIdentifier(metadataFilePath.toUri().toASCIIString(), null));
 									TextEdit textEdit = new TextEdit();
 									textEdit.setNewText(metadata.getTextContent());
-									TextDocument doc = new TextDocument(metadataFilePath.toUri().toString(), null);
+									TextDocument doc = new TextDocument(metadataFilePath.toUri().toASCIIString(), null);
 									doc.setText(content);
 									textEdit.setRange(doc.toRange(new Region(0, content.length())));
 									edit.setEdits(ImmutableList.of(textEdit));

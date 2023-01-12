@@ -50,7 +50,7 @@ public class BeanPostProcessingIgnoreInAotProblem implements RecipeCodeActionDes
 							.filter(MethodDeclaration.class::isInstance).map(MethodDeclaration.class::cast)
 							.filter(BeanPostProcessingIgnoreInAot::isApplicableMethod)
 							.collect(Collectors.toList());
-					String uri = getCursor().firstEnclosing(SourceFile.class).getSourcePath().toUri().toString();
+					String uri = getCursor().firstEnclosing(SourceFile.class).getSourcePath().toUri().toASCIIString();
 					FixAssistMarker marker = new FixAssistMarker(Tree.randomId(), getId())
 							.withFixes(
 									new FixDescriptor(RECIPE_ID, List.of(uri), RecipeCodeActionDescriptor.buildLabel(LABEL, RecipeScope.NODE))

@@ -184,7 +184,7 @@ public class FilteringURLResourceLoader extends ResourceLoader {
 					if (attrs.isRegularFile()) {
 						String name = rootDir.relativize(file).toString();
 						if (interesttingResourceNames.test(name)) {
-							resources.put(name, file.toUri().toString());
+							resources.put(name, file.toUri().toASCIIString());
 						}
 					}
 					return fvr;

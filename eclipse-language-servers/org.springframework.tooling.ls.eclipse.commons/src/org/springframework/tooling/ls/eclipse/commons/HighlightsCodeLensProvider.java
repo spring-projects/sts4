@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2019 Pivotal, Inc.
+ * Copyright (c) 2018, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -79,7 +79,7 @@ public class HighlightsCodeLensProvider extends AbstractCodeMiningProvider {
 					List<LSPDocumentInfo> docInfos = LanguageServiceAccessor.getLSPDocumentInfosFor(document, (x) -> true);
 					if (!docInfos.isEmpty()) {
 						LSPDocumentInfo info = docInfos.get(0);
-						HighlightParams highlights = STS4LanguageClientImpl.currentHighlights.get(info.getFileUri().toString());
+						HighlightParams highlights = STS4LanguageClientImpl.currentHighlights.get(info.getFileUri().toASCIIString());
 						if (highlights != null) {
 							return highlights.getCodeLenses().stream()
 									.filter(codeLens -> codeLens.getCommand() != null)

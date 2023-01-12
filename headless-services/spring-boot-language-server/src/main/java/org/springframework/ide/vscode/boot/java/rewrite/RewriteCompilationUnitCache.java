@@ -84,7 +84,7 @@ public class RewriteCompilationUnitCache implements DocumentContentProvider, Dis
 							if (!future.isCancelled()) {
 								future.cancel(true);
 							}
-							Optional<IJavaProject> project = projectFinder.find(new TextDocumentIdentifier(uri.toString()));
+							Optional<IJavaProject> project = projectFinder.find(new TextDocumentIdentifier(uri.toASCIIString()));
 							if (project.isPresent()) {
 
 								JavaParser parser = javaParsers.getIfPresent(project.get().getLocationUri());
@@ -180,7 +180,7 @@ public class RewriteCompilationUnitCache implements DocumentContentProvider, Dis
 	@Override
 	public String fetchContent(URI uri) throws Exception {
 		if (documentService != null) {
-			TextDocument document = documentService.getLatestSnapshot(uri.toString());
+			TextDocument document = documentService.getLatestSnapshot(uri.toASCIIString());
 			if (document != null) {
 				return document.get();
 			}
@@ -256,18 +256,18 @@ public class RewriteCompilationUnitCache implements DocumentContentProvider, Dis
 	 * Does not need to be via callback - kept the same in order to keep the same API to replace JDT with Rewrite in distant future
 	 */
 	public <T> T withCompilationUnit(IJavaProject project, URI uri, Function<CompilationUnit, T> requestor) {
-		logger.info("CU Cache: work item submitted for doc {}", uri.toString());
+		logger.info("CU Cache: work item submitted for doc {}", uri.toASCIIString());
 		CompilationUnit cu = getCU(project, uri);
 		if (cu != null) {
 			try {
-				logger.info("CU Cache: start work on AST for {}", uri.toString());
+				logger.info("CU Cache: start work on AST for {}", uri.toASCIIString());
 				return requestor.apply(cu);
 			} catch (CancellationException e) {
 				throw e;
 			} catch (Exception e) {
 				logger.error("", e);
 			} finally {
-				logger.info("CU Cache: end work on AST for {}", uri.toString());
+				logger.info("CU Cache: end work on AST for {}", uri.toASCIIString());
 			}
 		}
 		return requestor.apply(null);

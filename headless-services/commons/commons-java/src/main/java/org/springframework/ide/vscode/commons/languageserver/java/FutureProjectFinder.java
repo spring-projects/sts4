@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2021, 2022 VMware, Inc.
+ * Copyright (c) 2021, 2023 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -65,7 +65,7 @@ public class FutureProjectFinder implements DisposableBean {
 	private void resolveAllPendingRquests() {
 		synchronized(LOCK) {
 			for (Map.Entry<URI, CompletableFuture<IJavaProject>> e : pendingFindProjectRequests.entrySet()) {
-				Optional<IJavaProject> jp = projectFinder.find(new TextDocumentIdentifier(e.getKey().toString()));
+				Optional<IJavaProject> jp = projectFinder.find(new TextDocumentIdentifier(e.getKey().toASCIIString()));
 				e.getValue().complete(jp.orElse(null));
 				pendingFindProjectRequests.remove(e.getKey());
 			}
@@ -75,7 +75,7 @@ public class FutureProjectFinder implements DisposableBean {
 	private void resolvePendingRequests(IJavaProject project) {
 		synchronized(LOCK) {
 			for (Map.Entry<URI, CompletableFuture<IJavaProject>> e : pendingFindProjectRequests.entrySet()) {
-				Optional<IJavaProject> jp = projectFinder.find(new TextDocumentIdentifier(e.getKey().toString()));
+				Optional<IJavaProject> jp = projectFinder.find(new TextDocumentIdentifier(e.getKey().toASCIIString()));
 				if (jp.isPresent()) {
 					e.getValue().complete(jp.get());
 					pendingFindProjectRequests.remove(e.getKey());
@@ -92,7 +92,7 @@ public class FutureProjectFinder implements DisposableBean {
 	}
 	
 	public CompletableFuture<IJavaProject> findFuture(URI uri) {		
-		TextDocumentIdentifier id = new TextDocumentIdentifier(uri.toString());
+		TextDocumentIdentifier id = new TextDocumentIdentifier(uri.toASCIIString());
 		Optional<IJavaProject> jp = projectFinder.find(id);
 		if (jp.isPresent()) {
 			return CompletableFuture.completedFuture(jp.get());

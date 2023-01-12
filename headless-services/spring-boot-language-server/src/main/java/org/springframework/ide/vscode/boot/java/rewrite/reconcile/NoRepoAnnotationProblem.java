@@ -62,7 +62,7 @@ public class NoRepoAnnotationProblem implements RecipeCodeActionDescriptor {
 						c = c.withLeadingAnnotations(ListUtils.map(c.getLeadingAnnotations(), a -> {
 							if (a == repoAnnotation) {
 								String uri = getCursor().firstEnclosing(SourceFile.class).getSourcePath().toUri()
-										.toString();
+										.toASCIIString();
 								FixAssistMarker fixAssistMarker = new FixAssistMarker(Tree.randomId(), getId()).withFixes(
 										new FixDescriptor(ID, List.of(uri), LABEL)
 												.withRangeScope(classDecl.getMarkers().findFirst(Range.class).get())

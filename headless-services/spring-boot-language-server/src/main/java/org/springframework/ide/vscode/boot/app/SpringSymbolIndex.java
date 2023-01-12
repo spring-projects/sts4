@@ -484,7 +484,7 @@ public class SpringSymbolIndex implements InitializingBean {
 		try {
 			File file = new File(new URI(docURI));
 			long lastModified = file.lastModified();
-			return new DocumentDescriptor(UriUtil.toUri(file).toString(), lastModified);
+			return new DocumentDescriptor(UriUtil.toUri(file).toASCIIString(), lastModified);
 		} catch (URISyntaxException e) {
 			throw new RuntimeException(e);
 		}
@@ -589,7 +589,7 @@ public class SpringSymbolIndex implements InitializingBean {
 				}
 			} else {
 				// Take symbols from the index if there is no opened document.
-				List<EnhancedSymbolInformation> docSymbols = this.symbolsByDoc.get(uri.toString());
+				List<EnhancedSymbolInformation> docSymbols = this.symbolsByDoc.get(uri.toASCIIString());
 				if (docSymbols != null) {
 					synchronized (docSymbols) {
 						for (EnhancedSymbolInformation enhanced : docSymbols) {

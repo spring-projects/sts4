@@ -94,7 +94,7 @@ public class XMLSpelExpressionValidationTest {
 		harness.useProject(project);
 		
 		directory = new File(ProjectsHarness.class.getResource("/test-projects/test-xml-validations/").toURI());
-		docUri = directory.toPath().resolve("src/main/webapp/WEB-INF/spring/root-context.xml").toUri().toString();
+		docUri = directory.toPath().resolve("src/main/webapp/WEB-INF/spring/root-context.xml").toUri().toASCIIString();
 
 		problemCollector = new TestProblemCollector();
 		reconcileEngine = new SpringXMLReconcileEngine(projectFinder, config);

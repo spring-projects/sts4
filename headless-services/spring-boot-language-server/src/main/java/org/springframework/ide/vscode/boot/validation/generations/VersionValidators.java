@@ -202,7 +202,7 @@ public class VersionValidators {
 				ca.setTitle("Upgrade to Spring Boot " + latest.toString() + " (Maven dependency version changes only)");
 				String commandId = SpringBootUpgrade.CMD_UPGRADE_SPRING_BOOT;
 				ca.setCommand(new Command("Upgrade to Version " + latest.toString(), commandId,
-						ImmutableList.of(javaProject.getLocationUri().toString(), latest.toString())));
+						ImmutableList.of(javaProject.getLocationUri().toASCIIString(), latest.toString())));
 
 				
 				return createDiagnostic(ca, problemType, message.toString());
@@ -233,7 +233,7 @@ public class VersionValidators {
 				ca.setTitle("Upgrade to Spring Boot " + latest.toString() + " (executes the full project conversion recipe from OpenRewrite)");
 				String commandId = SpringBootUpgrade.CMD_UPGRADE_SPRING_BOOT;
 				ca.setCommand(new Command("Upgrade to Version " + latest.toString(), commandId,
-						ImmutableList.of(javaProject.getLocationUri().toString(), latest.toString())));
+						ImmutableList.of(javaProject.getLocationUri().toASCIIString(), latest.toString())));
 
 				
 				return createDiagnostic(ca, problemType, message.toString());
@@ -264,7 +264,7 @@ public class VersionValidators {
 				ca.setTitle("Upgrade to Spring Boot " + latest.toString() + " (executes the full project conversion recipe from OpenRewrite)");
 				String commandId = SpringBootUpgrade.CMD_UPGRADE_SPRING_BOOT;
 				ca.setCommand(new Command("Upgrade to Version " + latest.toString(), commandId,
-						ImmutableList.of(javaProject.getLocationUri().toString(), latest.toString())));
+						ImmutableList.of(javaProject.getLocationUri().toASCIIString(), latest.toString())));
 
 				
 				return createDiagnostic(ca, problemType, message.toString());

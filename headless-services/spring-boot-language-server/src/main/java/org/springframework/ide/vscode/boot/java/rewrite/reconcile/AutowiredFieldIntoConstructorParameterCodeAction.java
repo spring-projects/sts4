@@ -77,7 +77,7 @@ public class AutowiredFieldIntoConstructorParameterCodeAction implements RecipeC
 					if (fqType != null && isApplicableType(fqType)) {
 						List<MethodDeclaration> constructors = ORAstUtils.getMethods(classDeclaration).stream().filter(c -> c.isConstructor()).limit(2).collect(Collectors.toList());
 						String fieldName = multiVariable.getVariables().get(0).getSimpleName();
-						String uri = getCursor().firstEnclosing(SourceFile.class).getSourcePath().toUri().toString();
+						String uri = getCursor().firstEnclosing(SourceFile.class).getSourcePath().toUri().toASCIIString();
 						FixAssistMarker marker = new FixAssistMarker(Tree.randomId(), getId())
 								.withFix(
 									new FixDescriptor(ID, List.of(uri), LABEL)

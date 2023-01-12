@@ -44,7 +44,7 @@ public class NoRequestMappingAnnotationCodeAction implements RecipeCodeActionDes
 	        public J.Annotation visitAnnotation(J.Annotation annotation, ExecutionContext ctx) {
 	            J.Annotation a = super.visitAnnotation(annotation, ctx);
 	            if (REQUEST_MAPPING_ANNOTATION_MATCHER.matches(a) && getCursor().getParentOrThrow().getValue() instanceof J.MethodDeclaration) {
-					String uri = getCursor().firstEnclosing(SourceFile.class).getSourcePath().toUri().toString();
+					String uri = getCursor().firstEnclosing(SourceFile.class).getSourcePath().toUri().toASCIIString();
             		FixAssistMarker fixAssistMarker = new FixAssistMarker(Tree.randomId(), getId())
             				.withFixes(
             					new FixDescriptor(ID, List.of(uri), RecipeCodeActionDescriptor.buildLabel(LABEL, RecipeScope.NODE))

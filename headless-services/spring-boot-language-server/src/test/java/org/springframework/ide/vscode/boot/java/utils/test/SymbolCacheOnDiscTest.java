@@ -539,8 +539,8 @@ public class SymbolCacheOnDiscTest {
         FileTime timeFile2 = Files.getLastModifiedTime(file2);
         String[] files = {file1.toAbsolutePath().toString(), file2.toAbsolutePath().toString()};
 
-        String doc1URI = UriUtil.toUri(file1.toFile()).toString();
-        String doc2URI = UriUtil.toUri(file2.toFile()).toString();
+        String doc1URI = UriUtil.toUri(file1.toFile()).toASCIIString();
+        String doc2URI = UriUtil.toUri(file2.toFile()).toASCIIString();
 
         List<CachedSymbol> generatedSymbols = new ArrayList<>();
 

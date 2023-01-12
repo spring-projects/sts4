@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2019 Pivotal, Inc.
+ * Copyright (c) 2017, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -119,6 +119,6 @@ public class ResourceListener implements IResourceChangeListener {
 			throw new IllegalStateException("Unsupported resource delta kind: " + delta.getKind()); //$NON-NLS-1$
 		}
 
-		return new FileEvent(locationURI.toString(), changeType);
+		return new FileEvent(locationURI.toASCIIString(), changeType);
 	}
 }

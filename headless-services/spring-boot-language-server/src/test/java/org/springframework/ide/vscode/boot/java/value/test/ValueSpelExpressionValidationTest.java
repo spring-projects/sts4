@@ -144,7 +144,7 @@ public class ValueSpelExpressionValidationTest {
 		harness.intialize(null);
 		
 		directory = new File(ProjectsHarness.class.getResource("/test-projects/test-annotations/").toURI());
-		docUri = directory.toPath().resolve("src/main/java/org/test/TestValueCompletion.java").toUri().toString();
+		docUri = directory.toPath().resolve("src/main/java/org/test/TestValueCompletion.java").toUri().toASCIIString();
 
 		problemCollector = new TestProblemCollector();
 		reconcileEngine = new BootJavaReconcileEngine(projectFinder, new JavaReconciler[] {

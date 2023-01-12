@@ -182,7 +182,7 @@ public class ProjectClasspathUriResolverExtension implements URIResolverExtensio
 	
 	private IJavaProjectData getBestMatchingProject(String file) {
 		try {
-			String fileUri = new URL(file).toURI().toString();
+			String fileUri = new URL(file).toURI().toASCIIString();
 			return javaProjectProvider.findProject(fileUri);
 		} catch (MalformedURLException | URISyntaxException e) {
 			throw new IllegalStateException(e); 

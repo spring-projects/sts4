@@ -184,7 +184,7 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 	 * for later use. The JDT ASTs are not thread safe!
 	 */
 	public <T> T withCompilationUnit(IJavaProject project, URI uri, Function<CompilationUnit, T> requestor) {
-		logger.info("CU Cache: work item submitted for doc {}", uri.toString());
+		logger.info("CU Cache: work item submitted for doc {}", uri.toASCIIString());
 
 		if (project != null) {
 
@@ -196,11 +196,11 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 						
 						try {
 							Tuple2<List<Classpath>, INameEnvironmentWithProgress> lookupEnvTuple = loadLookupEnvTuple(project);
-							String utiStr = uri.toString();
+							String utiStr = uri.toASCIIString();
 							String unitName = utiStr.substring(utiStr.lastIndexOf("/"));
 							CompilationUnit cUnit = parse2(fetchContent(uri).toCharArray(), utiStr, unitName, lookupEnvTuple.getT1(), lookupEnvTuple.getT2());
 		
-							logger.debug("CU Cache: created new AST for {}", uri.toString());
+							logger.debug("CU Cache: created new AST for {}", uri.toASCIIString());
 		
 							return cUnit;
 						} catch (Exception e) {
@@ -331,7 +331,7 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 	@Override
 	public String fetchContent(URI uri) throws Exception {
 		if (documentService != null) {
-			TextDocument document = documentService.getLatestSnapshot(uri.toString());
+			TextDocument document = documentService.getLatestSnapshot(uri.toASCIIString());
 			if (document != null) {
 				return document.get();
 			}

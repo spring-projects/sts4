@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.bootiful;
 
+import java.net.URI;
 import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.Collection;
@@ -68,7 +69,7 @@ public class JavaTestConf {
 			}
 
 			@Override
-			public IJavadocProvider javadocProvider(String projectUri, CPE cpe) {
+			public IJavadocProvider javadocProvider(URI projectUri, CPE cpe) {
 				return javadocService.javadocProvider(projectUri, cpe);
 			}
 

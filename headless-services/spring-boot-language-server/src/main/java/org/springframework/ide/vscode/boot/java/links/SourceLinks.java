@@ -130,7 +130,7 @@ public interface SourceLinks {
 					return sourceLinkUrlForClasspathResourceOnTomcat(sourceLinks, projectFinder, path);
 				}
 				Path filePath = Paths.get(path.substring(0, idx));
-				IJavaProject project = projectFinder.find(new TextDocumentIdentifier(filePath.toUri().toString())).orElse(null);
+				IJavaProject project = projectFinder.find(new TextDocumentIdentifier(filePath.toUri().toASCIIString())).orElse(null);
 				if (project == null) {
 					try {
 						// URL for CF resources looks like jar:file:/home/vcap/app/lib/gs-rest-service-complete.jar!/hello/MyService.class

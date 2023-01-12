@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2022 VMware, Inc.
+ * Copyright (c) 2022, 2023 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -120,9 +120,9 @@ public class RewriteRefactorings implements CodeActionResolver, QuickfixHandler 
 		List<Result> results = reciperun.getResults();
 		List<Either<TextDocumentEdit, ResourceOperation>> edits = results.stream().filter(res -> res.getAfter() != null).map(res -> {
 			URI docUri = res.getAfter().getSourcePath().isAbsolute() ? res.getAfter().getSourcePath().toUri() : project.getLocationUri().resolve(res.getAfter().getSourcePath().toString());
-			TextDocument doc = documents.getLatestSnapshot(docUri.toString());
+			TextDocument doc = documents.getLatestSnapshot(docUri.toASCIIString());
 			if (doc == null) {
-				doc = new TextDocument(docUri.toString(), LanguageId.JAVA, 0, res.getBefore() == null ? "" : res.getBefore().printAll());
+				doc = new TextDocument(docUri.toASCIIString(), LanguageId.JAVA, 0, res.getBefore() == null ? "" : res.getBefore().printAll());
 			}
 			return ORDocUtils.computeTextDocEdit(doc, res);
 		}).filter(e -> e.isPresent()).map(e -> e.get()).map(e -> Either.<TextDocumentEdit, ResourceOperation>forLeft(e)).collect(Collectors.toList());

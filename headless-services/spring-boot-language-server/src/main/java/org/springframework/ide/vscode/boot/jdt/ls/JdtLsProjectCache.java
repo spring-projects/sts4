@@ -247,7 +247,7 @@ public class JdtLsProjectCache implements InitializableJavaProjectsService, Serv
 	}
 
 	@Override
-	public IJavadocProvider javadocProvider(String projectUri, CPE classpathEntry) {
+	public IJavadocProvider javadocProvider(URI projectUri, CPE classpathEntry) {
 		return new JdtLsJavadocProvider(server.getClient(), projectUri);
 	}
 

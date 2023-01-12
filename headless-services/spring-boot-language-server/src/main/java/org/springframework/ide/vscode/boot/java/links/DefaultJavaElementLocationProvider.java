@@ -53,7 +53,7 @@ public class DefaultJavaElementLocationProvider implements JavaElementLocationPr
 		String fqName = member.getDeclaringType().getFullyQualifiedName();
 		URI docUri = javaDocUriProvider.docUri(project, fqName);
 		if (docUri != null) {
-			loc.setUri(docUri.toString());
+			loc.setUri(docUri.toASCIIString());
 			Optional<URL> url = SourceLinks.source(project, fqName);
 			if (url.isPresent()) {
 					String memberBindingKey = member.getBindingKey();

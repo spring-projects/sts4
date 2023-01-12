@@ -225,7 +225,7 @@ public class BootLanguageServerInitializer implements InitializingBean {
 				.publishOn(projectReconcileScheduler)
 				.doOnSuccess(l -> {
 					if (projectReconcileRequests.remove(uri) != null) {
-						projectFinder.find(new TextDocumentIdentifier(uri.toString())).ifPresent(p -> {
+						projectFinder.find(new TextDocumentIdentifier(uri.toASCIIString())).ifPresent(p -> {
 							projectReconciler.reconcile(p, doc -> server.createProblemCollector(doc));
 						});
 					}
@@ -265,7 +265,7 @@ public class BootLanguageServerInitializer implements InitializingBean {
 		components.getReconcileEngine().ifPresent(reconcileEngine -> {
 			for (String f : files) {
 				URI uri = URI.create(f);
-				TextDocumentIdentifier docId = new TextDocumentIdentifier(uri.toString());
+				TextDocumentIdentifier docId = new TextDocumentIdentifier(uri.toASCIIString());
 				TextDocument doc = server.getTextDocumentService().getLatestSnapshot(docId.getUri());
 				if (doc == null) {
 					projectFinder.find(docId).ifPresent(project -> {

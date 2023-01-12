@@ -199,7 +199,7 @@ public class SpringIndexerXML implements SpringIndexer {
 			File file = new File(fileName);
 			long lastModified = file.lastModified();
 
-			String docURI = UriUtil.toUri(file).toString();
+			String docURI = UriUtil.toUri(file).toASCIIString();
 			String fileContent = FileUtils.readFileToString(file);
 
 	        scanFile(project, fileContent, docURI, lastModified, generatedSymbols);
@@ -288,7 +288,7 @@ public class SpringIndexerXML implements SpringIndexer {
 					String[] docURIs = new String[files.length];
 					for (int i = 0; i < files.length; i++) {
 
-						String docURI = UriUtil.toUri(new File(files[i])).toString();
+						String docURI = UriUtil.toUri(new File(files[i])).toASCIIString();
 						symbolHandler.removeSymbols(project, docURI);
 						docURIs[i] = docURI;
 					}

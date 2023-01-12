@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2022 Pivotal, Inc.
+ * Copyright (c) 2017, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -213,7 +213,7 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 						} else {
 							URI uri = Utils.findDocUri(doc);
 							if (uri != null) {
-								updateHighlightAnnotations(editor, sourceViewer, annotationModel, uri.toString(), updateCodeMinings);
+								updateHighlightAnnotations(editor, sourceViewer, annotationModel, uri.toASCIIString(), updateCodeMinings);
 							}
 						}
 					}
@@ -472,7 +472,7 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 					IDocument doc = editor.getDocumentProvider().getDocument(editor.getEditorInput());
 					if (doc!=null) {
 						URI uri = Utils.findDocUri(doc);
-						if (cursorMovement.getUri().equals(uri.toString())) {
+						if (cursorMovement.getUri().equals(uri.toASCIIString())) {
 							org.eclipse.lsp4j.Position pos = cursorMovement.getPosition();
 							int offset = LSPEclipseUtils.toOffset(pos, doc);
 							Display.getDefault().asyncExec(() -> {
@@ -520,7 +520,7 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 					if (project != null) {
 						Location location = new Location();
 						String label = javaLabelProvider.getText(element);
-						location.setUri(Utils.eclipseIntroUri(project.getElementName(), params.getBindingKey(), label).toString());
+						location.setUri(Utils.eclipseIntroUri(project.getElementName(), params.getBindingKey(), label).toASCIIString());
 						// Set the range because LocationLink needs it to be non-null. The target range
 						// would highlighted by the eclipse intro URL navigation anyway
 						location.setRange(new Range());

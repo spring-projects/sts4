@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2022 VMware, Inc.
+ * Copyright (c) 2022, 2023 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -43,7 +43,7 @@ public class HelloMethodRenameProblemDescriptor implements RecipeCodeActionDescr
 			public MethodDeclaration visitMethodDeclaration(MethodDeclaration method, ExecutionContext p) {
 				MethodDeclaration m = super.visitMethodDeclaration(method, p);
 				if ("hello".equals(method.getSimpleName())) {
-					String uri = getCursor().firstEnclosing(SourceFile.class).getSourcePath().toUri().toString();
+					String uri = getCursor().firstEnclosing(SourceFile.class).getSourcePath().toUri().toASCIIString();
 					FixAssistMarker marker = new FixAssistMarker(Tree.randomId(), getId())
 							.withFixes(
 									new FixDescriptor(RECIPE_ID, List.of(uri), RecipeCodeActionDescriptor.buildLabel(LABEL, RecipeScope.NODE))

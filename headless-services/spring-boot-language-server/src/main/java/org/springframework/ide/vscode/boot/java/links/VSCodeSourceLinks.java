@@ -34,7 +34,7 @@ public class VSCodeSourceLinks extends AbstractSourceLinks {
 
 	@Override
 	public Optional<String> sourceLinkForResourcePath(Path path) {
-		return Optional.of(path.toUri().toString());
+		return Optional.of(path.toUri().toASCIIString());
 	}
 
 	@Override
@@ -57,7 +57,7 @@ public class VSCodeSourceLinks extends AbstractSourceLinks {
 
 	@Override
 	protected Optional<String> jarLinkUrl(IJavaProject project, String fqName, IJavaModuleData jarModuleData) {
-		return Optional.ofNullable(JdtJavaDocumentUriProvider.uri(project, fqName)).map(uri -> uri.toString());
+		return Optional.ofNullable(JdtJavaDocumentUriProvider.uri(project, fqName)).map(uri -> uri.toASCIIString());
 	}
 
 }

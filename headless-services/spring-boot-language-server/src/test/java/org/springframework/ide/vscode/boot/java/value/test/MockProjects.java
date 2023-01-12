@@ -187,7 +187,7 @@ public class MockProjects {
 		}
 
 		public String uri(String projectRelativePath) {
-			return new File(root, projectRelativePath).toURI().toString();
+			return new File(root, projectRelativePath).toURI().toASCIIString();
 		}
 
 		@Override
@@ -274,7 +274,7 @@ public class MockProjects {
 			synchronized (listeners) {
 				for (FileListener l : listeners.values()) {
 					if (l.matcher.matches(path)) {
-						l.handler.accept(new String[] {target.toURI().toString()});
+						l.handler.accept(new String[] {target.toURI().toASCIIString()});
 					}
 				}
 			}

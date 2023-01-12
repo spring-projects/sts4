@@ -416,7 +416,7 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 		server.getProgressService().progressEvent(progressToken, "Parsing files...");
 		MavenProjectParser projectParser = createRewriteMavenParser(absoluteProjectDir,
 				new InMemoryExecutionContext(), p -> {
-					TextDocument doc = server.getTextDocumentService().getLatestSnapshot(p.toUri().toString());
+					TextDocument doc = server.getTextDocumentService().getLatestSnapshot(p.toUri().toASCIIString());
 					if (doc != null) {
 						return new Parser.Input(p, () -> new ByteArrayInputStream(doc.get().getBytes()));
 					}

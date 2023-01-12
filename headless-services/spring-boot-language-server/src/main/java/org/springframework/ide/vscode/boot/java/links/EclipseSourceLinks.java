@@ -54,7 +54,7 @@ public class EclipseSourceLinks implements SourceLinks {
 
 	@Override
 	public Optional<String> sourceLinkUrlForFQName(IJavaProject project, String fqName) {
-		return findProjectForFQName(project, fqName).map(p -> eclipseIntroUri(p, fqName)).map(uri -> uri.toString());
+		return findProjectForFQName(project, fqName).map(p -> eclipseIntroUri(p, fqName)).map(uri -> uri.toASCIIString());
 	}
 
 	private Optional<IJavaProject> findProjectForFQName(IJavaProject project, String fqName) {
@@ -79,7 +79,7 @@ public class EclipseSourceLinks implements SourceLinks {
 
 	@Override
 	public Optional<String> sourceLinkForResourcePath(Path path) {
-		return Optional.ofNullable(eclipseIntroUri(path)).map(uri -> uri.toString());
+		return Optional.ofNullable(eclipseIntroUri(path)).map(uri -> uri.toASCIIString());
 	}
 
 	public static URI eclipseIntroUri(Path path) {

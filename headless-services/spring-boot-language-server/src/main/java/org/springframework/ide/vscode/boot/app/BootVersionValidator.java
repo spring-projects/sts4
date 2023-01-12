@@ -55,7 +55,7 @@ public class BootVersionValidator {
 				DiagnosticResult result = diagnosticProvider.getDiagnostics(project);
 				if (result != null && !result.getDiagnostics().isEmpty()) {
 					server.getTextDocumentService().publishDiagnostics(
-							new TextDocumentIdentifier(result.getDocumentUri().toString()),
+							new TextDocumentIdentifier(result.getDocumentUri().toASCIIString()),
 							result.getDiagnostics());
 
 				}

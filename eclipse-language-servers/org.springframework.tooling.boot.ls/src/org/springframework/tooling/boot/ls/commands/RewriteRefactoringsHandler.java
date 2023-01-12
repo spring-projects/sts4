@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2022 VMware, Inc.
+ * Copyright (c) 2022, 2023 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -109,7 +109,7 @@ public class RewriteRefactoringsHandler extends AbstractHandler {
 				Assert.isLegal(def != null, "No definition found for Boot Language Server");
 				LanguageServerWrapper wrapper = LanguageServiceAccessor.getLSWrapper(project, def);
 
-				final String uri = project.getLocationURI().toString();
+				final String uri = project.getLocationURI().toASCIIString();
 				ExecuteCommandParams commandParams = new ExecuteCommandParams();
 				commandParams.setCommand(REWRITE_REFACTORINGS_LIST);
 				commandParams.setArguments(List.of(uri, recipeFilter.toString()));

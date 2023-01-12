@@ -76,7 +76,7 @@ public class SpringIndexerTestSpecialCharacters {
         // TODO: the direct path to URI conversion changes the é into an %-encoded character, so maybe we should switch to that entirely
 
 //		String docUri = directory.toPath().resolve("src/main/java/org/test/ClassWithSpécialCharacter.java").toUri().toString();
-        String docUri = UriUtil.toUri(directory.toPath().resolve("src/main/java/org/test/ClassWithSpécialCharacter.java").toFile()).toString();
+        String docUri = UriUtil.toUri(directory.toPath().resolve("src/main/java/org/test/ClassWithSpécialCharacter.java").toFile()).toASCIIString();
 
         assertTrue(SpringIndexerTest.containsSymbol(allSymbols, "@Configurable", docUri, 4, 0, 4, 13));
     }

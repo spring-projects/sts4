@@ -148,7 +148,7 @@ public class AdHocSpringPropertyIndexProviderTest {
         assertProperties(indexer.getIndex(project),
                 "initial-property" //not changed yet because didn't fire change events.
         );
-        documents.fire(new TextDocumentSaveChange(new TextDocument(propsFile.toURI().toString(), LanguageId.BOOT_PROPERTIES)));
+        documents.fire(new TextDocumentSaveChange(new TextDocument(propsFile.toURI().toASCIIString(), LanguageId.BOOT_PROPERTIES)));
         assertProperties(indexer.getIndex(project),
                 "from-properties"
         );
@@ -157,7 +157,7 @@ public class AdHocSpringPropertyIndexProviderTest {
         assertProperties(indexer.getIndex(project),
                 "from-properties"
         );
-        documents.fire(new TextDocumentSaveChange(new TextDocument(propsFile.toURI().toString(), LanguageId.BOOT_PROPERTIES_YAML)));
+        documents.fire(new TextDocumentSaveChange(new TextDocument(propsFile.toURI().toASCIIString(), LanguageId.BOOT_PROPERTIES_YAML)));
         assertProperties(indexer.getIndex(project),
                 "from-properties",
                 "from-yaml"

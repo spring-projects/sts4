@@ -34,7 +34,7 @@ public class JavaServerElementLocationProvider implements JavaElementLocationPro
 
 	@Override
 	public Location findLocation(IJavaProject project, IMember member) {
-		String projectUri = project == null ? null : project.getLocationUri().toString();
+		String projectUri = project == null ? null : project.getLocationUri().toASCIIString();
 		String bindingKey = member.getBindingKey();
 		try {
 			Location location = server.getClient().javaLocation(new JavaDataParams(projectUri, bindingKey, true)).get(500, TimeUnit.MILLISECONDS);

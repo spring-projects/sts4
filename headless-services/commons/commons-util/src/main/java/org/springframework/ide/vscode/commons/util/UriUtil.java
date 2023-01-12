@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2018 Pivotal, Inc.
+ * Copyright (c) 2016, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -29,7 +29,7 @@ public class UriUtil {
 		try {
 			if (uriVal != null && uriVal.startsWith("file:")) {
 				File file = new File(URI.create(uriVal)).getCanonicalFile();
-				uriVal = file.toURI().toString();
+				uriVal = file.toURI().toASCIIString();
 				//Careful!!! If the project uri points to a existing project... then it will be
 				//a directory and then the uri we computed will get a slash at the end.
 				//If, on the other hand, it doesn't exist because it got deleted. Then it will not get a slash 

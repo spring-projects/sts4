@@ -70,7 +70,7 @@ public class UnnecessarySpringExtensionProblem implements RecipeCodeActionDescri
 				})) {
 					c = c.withLeadingAnnotations(ListUtils.map(c.getLeadingAnnotations(), a -> {
 						if (SPRING_EXTENSION_ANNOTATIN_MATCHER.matches(a)) {
-							String uri = getCursor().firstEnclosing(SourceFile.class).getSourcePath().toUri().toString();
+							String uri = getCursor().firstEnclosing(SourceFile.class).getSourcePath().toUri().toASCIIString();
 							FixAssistMarker fixMarker = new FixAssistMarker(Tree.randomId(), getId())
 									.withFix(new FixDescriptor(ID, List.of(uri), RecipeCodeActionDescriptor.buildLabel(LABEL, RecipeScope.PROJECT)));
 							return a.withMarkers(a.getMarkers().add(fixMarker));

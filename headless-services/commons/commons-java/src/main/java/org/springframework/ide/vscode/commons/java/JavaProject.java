@@ -28,7 +28,7 @@ public class JavaProject extends AbstractJavaProject {
 		this.fileObserver = fileObserver;
 		this.javadocProviderFactory = (classpathResource) -> {
 			CPE cpe = IClasspathUtil.findEntryForBinaryRoot(classpath, classpathResource);
-			return javadocService.javadocProvider(uri.toString(), cpe);
+			return javadocService.javadocProvider(uri, cpe);
 		};
 	}
 

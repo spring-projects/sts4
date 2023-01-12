@@ -58,7 +58,7 @@ public class AstParserTest {
 
         char[] content = IOUtils.toString(uri).toCharArray();
 
-        CompilationUnit cu = CompilationUnitCache.parse2(content, uri.toString(), unitName, jp);
+        CompilationUnit cu = CompilationUnitCache.parse2(content, uri.toASCIIString(), unitName, jp);
 
         assertNotNull(cu);
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2022 Pivotal, Inc.
+ * Copyright (c) 2016, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -132,7 +132,7 @@ public class BootJavaReconcileEngine implements IReconcileEngine, IJavaProjectRe
 
 		Stream<TextDocumentIdentifier> docIds = files
 				.filter(f -> f.getFileName().toString().endsWith(".java"))
-				.map(f -> new TextDocumentIdentifier(f.toUri().toString()));
+				.map(f -> new TextDocumentIdentifier(f.toUri().toASCIIString()));
 
 		List<TextDocument> docs = docIds.filter(docId -> documents.getLatestSnapshot(docId.getUri()) == null)
 				.map(docId -> new LazyTextDocument(docId.getUri(), LanguageId.JAVA)).collect(Collectors.toList());
@@ -163,7 +163,7 @@ public class BootJavaReconcileEngine implements IReconcileEngine, IJavaProjectRe
 	public void clear(IJavaProject project) {
 		// Build file
 		if (project.getProjectBuild() != null && project.getProjectBuild().getBuildFile() != null) {
-			documents.publishDiagnostics(new TextDocumentIdentifier(project.getProjectBuild().getBuildFile().toString()), Collections.emptyList());
+			documents.publishDiagnostics(new TextDocumentIdentifier(project.getProjectBuild().getBuildFile().toASCIIString()), Collections.emptyList());
 		}
 		// Rest of the files
 		IClasspathUtil.getProjectJavaSourceFolders(project.getClasspath()).flatMap(folder -> {
@@ -174,7 +174,7 @@ public class BootJavaReconcileEngine implements IReconcileEngine, IJavaProjectRe
 			}
 		})
 		.filter(f -> f.getFileName().toString().endsWith(".java"))
-		.forEach(p -> documents.publishDiagnostics(new TextDocumentIdentifier(p.toUri().toString()), Collections.emptyList()));
+		.forEach(p -> documents.publishDiagnostics(new TextDocumentIdentifier(p.toUri().toASCIIString()), Collections.emptyList()));
 		
 	}
 

@@ -53,7 +53,7 @@ public class PreciseBeanTypeProblem implements RecipeCodeActionDescriptor {
                     	if ((o instanceof JavaType.FullyQualified && m.getReturnTypeExpression().getType() instanceof JavaType.FullyQualified)
                     			|| (o instanceof JavaType.Array && m.getReturnTypeExpression().getType() instanceof JavaType.Array)) {
                     		
-							String uri = getCursor().firstEnclosing(SourceFile.class).getSourcePath().toUri().toString();
+							String uri = getCursor().firstEnclosing(SourceFile.class).getSourcePath().toUri().toASCIIString();
 							FixAssistMarker marker = new FixAssistMarker(Tree.randomId(), getId())
 									.withFixes(
 										new FixDescriptor(RECIPE_ID, List.of(uri), RecipeCodeActionDescriptor.buildLabel(LABEL, RecipeScope.NODE))

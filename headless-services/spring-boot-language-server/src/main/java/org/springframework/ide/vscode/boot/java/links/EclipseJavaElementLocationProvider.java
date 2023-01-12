@@ -26,7 +26,7 @@ public class EclipseJavaElementLocationProvider implements JavaElementLocationPr
 			return null;
 		} else {
 			Location location = new Location();
-			location.setUri(uri.toString());
+			location.setUri(uri.toASCIIString());
 			location.setRange(new Range());
 			return location;
 		}

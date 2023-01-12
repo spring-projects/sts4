@@ -87,7 +87,7 @@ public class NotRegisteredBeansProblem implements RecipeCodeActionDescriptor {
 						List<JavaType.Method> constructors = c.getType().getMethods().stream().filter(m -> m.isConstructor()).collect(Collectors.toList());
 						if (beanSymbols.isEmpty()) {
 							SourceFile source = getCursor().firstEnclosing(SourceFile.class);
-        					String uri = source.getSourcePath().toUri().toString();
+        					String uri = source.getSourcePath().toUri().toASCIIString();
         					FixAssistMarker marker = new FixAssistMarker(Tree.randomId(), getId());
         					JavaProjectFinder projectFinder = applicationContext.getBean(JavaProjectFinder.class);
         					if (projectFinder != null) {

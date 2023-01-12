@@ -50,7 +50,7 @@ public class BeanMethodNotPublicProblem implements RecipeCodeActionDescriptor {
 	            if (m.getAllAnnotations().stream().anyMatch(BEAN_ANNOTATION_MATCHER::matches)
 	                    && Boolean.FALSE.equals(TypeUtils.isOverride(method.getMethodType()))) {
 	                // mark public modifier
-					String uri = getCursor().firstEnclosing(SourceFile.class).getSourcePath().toUri().toString();
+					String uri = getCursor().firstEnclosing(SourceFile.class).getSourcePath().toUri().toASCIIString();
 	        		FixAssistMarker fixAssistMarker = new FixAssistMarker(Tree.randomId(), getId())
 	        				.withFixes(
 	        						new FixDescriptor(ID, List.of(uri), LABEL)

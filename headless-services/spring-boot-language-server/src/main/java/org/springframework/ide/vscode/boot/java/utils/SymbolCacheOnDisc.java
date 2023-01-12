@@ -142,7 +142,7 @@ public class SymbolCacheOnDisc implements SymbolCache {
 	public void removeFile(SymbolCacheKey cacheKey, String file) {
 		CacheStore cacheStore = this.stores.get(cacheKey);
 		if (cacheStore != null) {
-			String docURI = UriUtil.toUri(new File(file)).toString();
+			String docURI = UriUtil.toUri(new File(file)).toASCIIString();
 
 			SortedMap<String, Long> timestampedFiles = new TreeMap<>(cacheStore.getTimestampedFiles());
 			timestampedFiles.remove(file);
@@ -174,7 +174,7 @@ public class SymbolCacheOnDisc implements SymbolCache {
 		CacheStore cacheStore = this.stores.get(cacheKey);
 
 		if (cacheStore != null) {
-			String docURI = UriUtil.toUri(new File(file)).toString();
+			String docURI = UriUtil.toUri(new File(file)).toASCIIString();
 
 			SortedMap<String, Long> timestampedFiles = new TreeMap<>(cacheStore.getTimestampedFiles());
 			timestampedFiles.put(file, lastModified);
@@ -212,7 +212,7 @@ public class SymbolCacheOnDisc implements SymbolCache {
 			for (int i = 0; i < files.length; i++) {
 				
 				// update cache internal map of timestamps per file
-				String docURI = UriUtil.toUri(new File(files[i])).toString();
+				String docURI = UriUtil.toUri(new File(files[i])).toASCIIString();
 				allDocURIs.add(docURI);
 				
 				timestampedFiles.put(files[i], lastModified[i]);

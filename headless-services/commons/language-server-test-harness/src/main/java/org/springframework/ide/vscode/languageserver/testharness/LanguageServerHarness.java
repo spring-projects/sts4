@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2022 Pivotal, Inc.
+ * Copyright (c) 2016, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -181,7 +181,7 @@ public class LanguageServerHarness {
 //	}
 
 	public synchronized TextDocumentInfo getOrReadFile(File file, String languageId) throws Exception {
-		String uri = file.toURI().toString();
+		String uri = file.toURI().toASCIIString();
 		TextDocumentInfo d = documents.get(uri);
 		if (d==null) {
 			documents.put(uri, d = readFile(file, languageId));
@@ -194,7 +194,7 @@ public class LanguageServerHarness {
 		String content = new String(encoded, getEncoding());
 		TextDocumentItem document = new TextDocumentItem();
 		document.setText(content);
-		document.setUri(file.toURI().toString());
+		document.setUri(file.toURI().toASCIIString());
 		document.setVersion(getFirstVersion());
 		document.setLanguageId(languageId);
 		return new TextDocumentInfo(document);
@@ -254,7 +254,7 @@ public class LanguageServerHarness {
 		InitializeParams initParams = new InitializeParams();
 		if (workspaceRoot!=null) {
 			initParams.setRootPath(workspaceRoot.toString());
-			initParams.setRootUri(UriUtil.toUri(workspaceRoot).toString());
+			initParams.setRootUri(UriUtil.toUri(workspaceRoot).toASCIIString());
 		}
 		initParams.setProcessId(parentPid);
 		ClientCapabilities clientCap = new ClientCapabilities();
@@ -690,7 +690,7 @@ public class LanguageServerHarness {
 		if (extension == null) {
 			extension = getFileExtension();
 		}
-		return File.createTempFile("workingcopy", extension).toURI().toString();
+		return File.createTempFile("workingcopy", extension).toURI().toASCIIString();
 	}
 
 	public void assertCompletion(String textBefore, String expectTextAfter) throws Exception {
