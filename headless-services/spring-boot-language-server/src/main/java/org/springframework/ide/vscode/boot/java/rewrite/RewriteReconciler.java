@@ -266,7 +266,7 @@ public class RewriteReconciler implements JavaReconciler {
 						 * If exception occurs during parsing inputs the list of inputs would become shorter than the list of corresponding documents
 						 */
 						
-						for (int j = 0, k = 0; j < batchList.size(); j++) {
+						for (int j = 0, k = 0; j < batchList.size() && k < cus.size(); j++) {
 							final IDocument doc = batchList.get(j);
 							List<ReconcileProblem> problems = new ArrayList<>();
 							CompilationUnit cu = cus.get(k);

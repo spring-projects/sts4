@@ -90,7 +90,7 @@ public class BootLanguageServerInitializer implements InitializingBean {
 	private CompositeLanguageServerComponents components;
 	private VscodeCompletionEngineAdapter completionEngineAdapter;
 	private IJavaProjectReconcileEngine projectReconciler;
-	private Scheduler projectReconcileScheduler = Schedulers.newBoundedElastic(5, Integer.MAX_VALUE, "Project-Reconciler", 10);
+	private Scheduler projectReconcileScheduler = Schedulers.newBoundedElastic(1, Integer.MAX_VALUE, "Project-Reconciler", 10);
 	private Map<URI, Disposable> projectReconcileRequests = new ConcurrentHashMap<>();
 	
 	private static final Logger log = LoggerFactory.getLogger(BootLanguageServerInitializer.class);
