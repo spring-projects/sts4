@@ -110,7 +110,12 @@
 							<url>https://download.eclipse.org/releases/2022-03</url>
 						</repository>
 					</repositories>
-					<argLine>-Declipse.p2.mirrors=false -Dorg.eclipse.ecf.provider.filetransfer.retrieve.readTimeout=100000 -Dorg.eclipse.ecf.provider.filetransfer.retrieve.retryAttempts=30 -Dorg.eclipse.ecf.provider.filetransfer.retrieve.closeTimeout=100000</argLine>
+					<jvmArgs>
+						<arg>-Declipse.p2.mirrors=false</arg>
+						<arg>-Dorg.eclipse.ecf.provider.filetransfer.retrieve.readTimeout=100000</arg>
+						<arg>-Dorg.eclipse.ecf.provider.filetransfer.retrieve.retryAttempts=30</arg>
+						<arg>-Dorg.eclipse.ecf.provider.filetransfer.retrieve.closeTimeout=100000</arg>
+					</jvmArgs>
 					<dependencies>
 						<dependency>
 							<artifactId>org.eclipse.pde.api.tools</artifactId>
@@ -179,7 +184,18 @@
 							<goal>eclipse-run</goal>
 						</goals>
 						<configuration>
-							<appArgLine>-consoleLog -application org.eclipse.equinox.p2.director -nosplash -destination ${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/macosx/cocoa/x86_64/SpringToolSuite4.app -repository ${justj.repository} -installIUs org.eclipse.justj.openjdk.hotspot.jre.full.feature.group</appArgLine>
+							<applicationArgs>
+								<arg>-consoleLog</arg>
+								<arg>-application</arg>
+								<arg>org.eclipse.equinox.p2.director</arg>
+								<arg>-nosplash</arg>
+								<arg>-destination</arg>
+								<arg>${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/macosx/cocoa/x86_64/SpringToolSuite4.app</arg>
+								<arg>-repository</arg>
+								<arg>${justj.repository}</arg>
+								<arg>-installIUs</arg>
+								<arg>org.eclipse.justj.openjdk.hotspot.jre.full.feature.group</arg>
+							</applicationArgs>
 						</configuration>
 					</execution>
 					<execution>
@@ -189,7 +205,18 @@
 							<goal>eclipse-run</goal>
 						</goals>
 						<configuration>
-							<appArgLine>-consoleLog -application org.eclipse.equinox.p2.director -nosplash -destination ${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/macosx/cocoa/aarch64/SpringToolSuite4.app -repository ${justj.repository} -installIUs org.eclipse.justj.openjdk.hotspot.jre.full.feature.group</appArgLine>
+							<applicationArgs>
+								<arg>-consoleLog</arg>
+								<arg>-application</arg>
+								<arg>org.eclipse.equinox.p2.director</arg>
+								<arg>-nosplash</arg>
+								<arg>-destination</arg>
+								<arg>${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/macosx/cocoa/aarch64/SpringToolSuite4.app</arg>
+								<arg>-repository</arg>
+								<arg>${justj.repository}</arg>
+								<arg>-installIUs</arg>
+								<arg>org.eclipse.justj.openjdk.hotspot.jre.full.feature.group</arg>
+							</applicationArgs>
 						</configuration>
 					</execution>
 					<execution>
@@ -199,7 +226,18 @@
 							<goal>eclipse-run</goal>
 						</goals>
 						<configuration>
-							<appArgLine>-consoleLog -application org.eclipse.equinox.p2.director -nosplash -destination ${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/win32/win32/x86_64/sts-${unqualifiedVersion}.${p2.qualifier} -repository ${justj.repository} -installIUs org.eclipse.justj.openjdk.hotspot.jre.full.feature.group</appArgLine>
+							<applicationArgs>
+								<arg>-consoleLog</arg>
+								<arg>-application</arg>
+								<arg>org.eclipse.equinox.p2.director</arg>
+								<arg>-nosplash</arg>
+								<arg>-destination</arg>
+								<arg>${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/win32/win32/x86_64/sts-${unqualifiedVersion}.${p2.qualifier}</arg>
+								<arg>-repository</arg>
+								<arg>${justj.repository}</arg>
+								<arg>-installIUs</arg>
+								<arg>org.eclipse.justj.openjdk.hotspot.jre.full.feature.group</arg>
+							</applicationArgs>
 						</configuration>
 					</execution>
 					<execution>
@@ -209,7 +247,18 @@
 							<goal>eclipse-run</goal>
 						</goals>
 						<configuration>
-							<appArgLine>-consoleLog -application org.eclipse.equinox.p2.director -nosplash -destination ${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/linux/gtk/x86_64/sts-${unqualifiedVersion}.${p2.qualifier} -repository ${justj.repository} -installIUs org.eclipse.justj.openjdk.hotspot.jre.full.feature.group</appArgLine>
+							<applicationArgs>
+								<arg>-consoleLog</arg>
+								<arg>-application</arg>
+								<arg>org.eclipse.equinox.p2.director</arg>
+								<arg>-nosplash</arg>
+								<arg>-destination</arg>
+								<arg>${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/linux/gtk/x86_64/sts-${unqualifiedVersion}.${p2.qualifier}</arg>
+								<arg>-repository</arg>
+								<arg>${justj.repository}</arg>
+								<arg>-installIUs</arg>
+								<arg>org.eclipse.justj.openjdk.hotspot.jre.full.feature.group</arg>
+							</applicationArgs>
 						</configuration>
 					</execution>
 					<execution>
@@ -219,7 +268,18 @@
 							<goal>eclipse-run</goal>
 						</goals>
 						<configuration>
-							<appArgLine>-consoleLog -application org.eclipse.equinox.p2.director -nosplash -destination ${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/linux/gtk/aarch64/sts-${unqualifiedVersion}.${p2.qualifier} -repository ${justj.repository} -installIUs org.eclipse.justj.openjdk.hotspot.jre.full.feature.group</appArgLine>
+							<applicationArgs>
+								<arg>-consoleLog</arg>
+								<arg>-application</arg>
+								<arg>org.eclipse.equinox.p2.director</arg>
+								<arg>-nosplash</arg>
+								<arg>-destination</arg>
+								<arg>${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/linux/gtk/aarch64/sts-${unqualifiedVersion}.${p2.qualifier}</arg>
+								<arg>-repository</arg>
+								<arg>${justj.repository}</arg>
+								<arg>-installIUs</arg>
+								<arg>org.eclipse.justj.openjdk.hotspot.jre.full.feature.group</arg>
+							</applicationArgs>
 						</configuration>
 					</execution>
 				</executions>
@@ -466,17 +526,17 @@
 								<taskdef resource="net/sf/antcontrib/antcontrib.properties" />
 								<taskdef resource="org/springframework/build/aws/ant/antlib.xml" />
 
-								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-macosx.cocoa.x86_64.dmg" algorithm="SHA1" fileext=".sha1" />
+								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-macosx.cocoa.x86_64.dmg" algorithm="SHA-256" fileext=".sha256" />
 								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-macosx.cocoa.x86_64.dmg" algorithm="MD5" fileext=".md5" />
-								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-macosx.cocoa.aarch64.dmg" algorithm="SHA1" fileext=".sha1" />
+								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-macosx.cocoa.aarch64.dmg" algorithm="SHA-256" fileext=".sha256" />
 								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-macosx.cocoa.aarch64.dmg" algorithm="MD5" fileext=".md5" />
-								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-linux.gtk.x86_64.tar.gz" algorithm="SHA1" fileext=".sha1" />
+								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-linux.gtk.x86_64.tar.gz" algorithm="SHA-256" fileext=".sha256" />
 								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-linux.gtk.x86_64.tar.gz" algorithm="MD5" fileext=".md5" />
-								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-linux.gtk.aarch64.tar.gz" algorithm="SHA1" fileext=".sha1" />
+								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-linux.gtk.aarch64.tar.gz" algorithm="SHA-256" fileext=".sha256" />
 								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-linux.gtk.aarch64.tar.gz" algorithm="MD5" fileext=".md5" />
-								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-win32.win32.x86_64.zip" algorithm="SHA1" fileext=".sha1" />
+								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-win32.win32.x86_64.zip" algorithm="SHA-256" fileext=".sha256" />
 								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-win32.win32.x86_64.zip" algorithm="MD5" fileext=".md5" />
-								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-win32.win32.x86_64.self-extracting.jar" algorithm="SHA1" fileext=".sha1" />
+								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-win32.win32.x86_64.self-extracting.jar" algorithm="SHA-256" fileext=".sha256" />
 								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-win32.win32.x86_64.self-extracting.jar" algorithm="MD5" fileext=".md5" />
 
 								<s3 accessKey="${dist.accessKey}" secretKey="${dist.secretKey}">
@@ -486,15 +546,19 @@
 											<include name="spring-tool-suite-4*.zip" />
 											<include name="spring-tool-suite-4*.zip.md5" />
 											<include name="spring-tool-suite-4*.zip.sha1" />
+											<include name="spring-tool-suite-4*.zip.sha256" />
 											<include name="spring-tool-suite-4*.jar" />
 											<include name="spring-tool-suite-4*.jar.md5" />
 											<include name="spring-tool-suite-4*.jar.sha1" />
+											<include name="spring-tool-suite-4*.jar.sha256" />
 											<include name="spring-tool-suite-4*.tar.gz" />
 											<include name="spring-tool-suite-4*.tar.gz.md5" />
 											<include name="spring-tool-suite-4*.tar.gz.sha1" />
+											<include name="spring-tool-suite-4*.tar.gz.sha256" />
 											<include name="spring-tool-suite-4*.dmg" />
 											<include name="spring-tool-suite-4*.dmg.md5" />
 											<include name="spring-tool-suite-4*.dmg.sha1" />
+											<include name="spring-tool-suite-4*.dmg.sha256" />
 										</fileset>
 									</delete>
 
@@ -503,16 +567,16 @@
 										<fileset dir="${project.build.directory}/products">
 											<include name="spring-tool-suite-4*.zip" />
 											<include name="spring-tool-suite-4*.zip.md5" />
-											<include name="spring-tool-suite-4*.zip.sha1" />
+											<include name="spring-tool-suite-4*.zip.sha256" />
 											<include name="spring-tool-suite-4*.jar" />
 											<include name="spring-tool-suite-4*.jar.md5" />
-											<include name="spring-tool-suite-4*.jar.sha1" />
+											<include name="spring-tool-suite-4*.jar.sha256" />
 											<include name="spring-tool-suite-4*.tar.gz" />
 											<include name="spring-tool-suite-4*.tar.gz.md5" />
-											<include name="spring-tool-suite-4*.tar.gz.sha1" />
+											<include name="spring-tool-suite-4*.tar.gz.sha256" />
 											<include name="spring-tool-suite-4*.dmg" />
 											<include name="spring-tool-suite-4*.dmg.md5" />
-											<include name="spring-tool-suite-4*.dmg.sha1" />
+											<include name="spring-tool-suite-4*.dmg.sha256" />
 										</fileset>
 									</upload>
 
@@ -572,7 +636,7 @@
 									</zipfileset>
 								</zip>
 
-								<checksum file="${project.build.directory}/repository/${dist.file.name}" algorithm="SHA1" fileext=".sha1" />
+								<checksum file="${project.build.directory}/repository/${dist.file.name}" algorithm="SHA-256" fileext=".sha256" />
 								<checksum file="${project.build.directory}/repository/${dist.file.name}" algorithm="MD5" fileext=".md5" />
 
 							</target>
@@ -605,7 +669,7 @@
 											<include name="features/**" />
 											<include name="binary/**" />
 											<include name="*.zip" />
-											<include name="*.sha1" />
+											<include name="*.sha256" />
 											<include name="*.md5" />
 										</fileset>
 									</delete>
