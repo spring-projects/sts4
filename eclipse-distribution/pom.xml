@@ -532,8 +532,7 @@
 				<repository>
 					<id>maven-wro4j</id>
 					<layout>p2</layout>
-<!--					<url>https://github.com/jbosstools/m2e-wro4j/releases/download/1.2.0/</url> -->
-					<url>https://dist.springsource.com/release/TOOLS/third-party/wro4j</url>
+					<url>https://github.com/jbosstools/m2e-wro4j/releases/download/1.2.1/</url>
 				</repository>
 				<repository>
 					<id>maven-dependency-support</id>
@@ -626,8 +625,7 @@
 				<repository>
 					<id>maven-wro4j</id>
 					<layout>p2</layout>
-<!--					<url>https://github.com/jbosstools/m2e-wro4j/releases/download/1.2.0/</url> -->
-					<url>https://dist.springsource.com/release/TOOLS/third-party/wro4j</url>
+					<url>https://github.com/jbosstools/m2e-wro4j/releases/download/1.2.1/</url>
 				</repository>
 				<repository>
 					<id>maven-dependency-support</id>
