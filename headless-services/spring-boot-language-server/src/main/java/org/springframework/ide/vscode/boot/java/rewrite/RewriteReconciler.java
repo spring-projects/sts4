@@ -167,8 +167,6 @@ public class RewriteReconciler implements JavaReconciler {
 		long end = System.currentTimeMillis();
 		log.info("reconciling (OpenRewrite, multiple docs): " + project.getElementName() + " - " + docs.size() + " done in " + (end - start) + "ms");
 		
-		System.gc();
-
 		return allProblems;
 	}
 	
@@ -241,7 +239,7 @@ public class RewriteReconciler implements JavaReconciler {
 //		return allProblems;
 //	}
 	
-	private static final int BATCH = 10;
+	private static final int BATCH = 50;
 
 	// Parse in batches and share the parser
 	private Map<IDocument, Collection<ReconcileProblem>> doReconcile(IJavaProject project, List<TextDocument> docs,
@@ -290,6 +288,8 @@ public class RewriteReconciler implements JavaReconciler {
 				} else {
 					log.error("", e);
 				}
+			} finally {
+				System.gc();
 			}
 		}
 		return allProblems;
