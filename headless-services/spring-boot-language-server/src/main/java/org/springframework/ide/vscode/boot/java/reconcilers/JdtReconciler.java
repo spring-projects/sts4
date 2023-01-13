@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2022 VMware, Inc.
+ * Copyright (c) 2022, 2023 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -26,6 +26,7 @@ import org.eclipse.jdt.core.dom.NormalAnnotation;
 import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.boot.app.BootJavaConfig;
 import org.springframework.ide.vscode.boot.java.handlers.SpelExpressionReconciler;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.boot.java.value.Constants;
@@ -55,9 +56,12 @@ public class JdtReconciler implements JavaReconciler {
 	private final CompilationUnitCache compilationUnitCache;
 	private final AnnotationReconciler[] reconcilers;
 	private final SpelExpressionReconciler spelExpressionReconciler;
+
+	private BootJavaConfig config;
 	
-	public JdtReconciler(CompilationUnitCache compilationUnitCache) {
-		this.compilationUnitCache = compilationUnitCache;		
+	public JdtReconciler(CompilationUnitCache compilationUnitCache, BootJavaConfig config) {
+		this.compilationUnitCache = compilationUnitCache;
+		this.config = config;		
 		this.spelExpressionReconciler = new SpelExpressionReconciler();
 		
 		this.reconcilers = new AnnotationReconciler[] {
@@ -95,7 +99,6 @@ public class JdtReconciler implements JavaReconciler {
 	@Override
 	public void reconcile(IJavaProject project, final IDocument doc, final IProblemCollector problemCollector) {
 
-		log.info("reconciling (JDT): " + project.getElementName() + " - " + doc.getUri());
 		long start = System.currentTimeMillis();
 		
 		URI uri = URI.create(doc.getUri());
@@ -107,7 +110,7 @@ public class JdtReconciler implements JavaReconciler {
 		});
 		
 		long end = System.currentTimeMillis();
-		log.info("reconciling (JDT): " + project.getElementName() + " done in " + (end - start) + "ms");
+		log.info("reconciling (JDT): " + doc.getUri() + " done in " + (end - start) + "ms");
 	}
 	
 	private void reconcileAST(IJavaProject project, IDocument doc, CompilationUnit cu, IProblemCollector problemCollector) {
@@ -159,7 +162,15 @@ public class JdtReconciler implements JavaReconciler {
 	@Override
 	public Map<IDocument, Collection<ReconcileProblem>> reconcile(IJavaProject project, List<TextDocument> docs,
 			Function<TextDocument, IProblemCollector> problemCollectorFactory) {
-		log.info("reconciling (JDT, multiple docs): " + project.getElementName() + " - " + docs.size());
+		
+		if (config.isRewriteReconcileEnabled()) {
+//			long start = System.currentTimeMillis();
+//
+//			
+//				
+//			long end = System.currentTimeMillis();
+//			log.info("reconciling project (JDT): " + project.getElementName() + " - " + docs.size() + " done in " + (end - start) + "ms");			
+		}
 		
 		return Collections.emptyMap();
 	}

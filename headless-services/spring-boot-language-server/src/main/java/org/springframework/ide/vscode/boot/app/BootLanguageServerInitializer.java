@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2022 Pivotal, Inc.
+ * Copyright (c) 2018, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,9 +11,9 @@
 package org.springframework.ide.vscode.boot.app;
 
 import java.net.URI;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.time.Duration;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
@@ -38,6 +38,7 @@ import org.springframework.ide.vscode.boot.java.utils.SymbolCache;
 import org.springframework.ide.vscode.boot.metadata.ProjectBasedPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.properties.BootPropertiesLanguageServerComponents;
 import org.springframework.ide.vscode.boot.xml.SpringXMLLanguageServerComponents;
+import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.completion.CompositeCompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
@@ -262,25 +263,18 @@ public class BootLanguageServerInitializer implements InitializingBean {
 		}
 		
 		components.getReconcileEngine().ifPresent(reconcileEngine -> {
-			Map<IJavaProject, List<TextDocumentIdentifier>> projectsToDocs = new HashMap<>();
 			for (String f : files) {
 				URI uri = URI.create(f);
 				TextDocumentIdentifier docId = new TextDocumentIdentifier(uri.toString());
 				TextDocument doc = server.getTextDocumentService().getLatestSnapshot(docId.getUri());
 				if (doc == null) {
 					projectFinder.find(docId).ifPresent(project -> {
-						List<TextDocumentIdentifier> docIds = projectsToDocs.get(project);
-						if (docIds == null) {
-							docIds = new ArrayList<>();
-							projectsToDocs.put(project, docIds);
+						Path p = Paths.get(uri);
+						if (IClasspathUtil.getSourceFolders(project.getClasspath()).filter(folder -> p.startsWith(folder.toPath())).findFirst().isPresent()) {
+							validateProject(project, reconcileEngine);
 						}
-						docIds.add(docId);
 					});
 				}
-			}
-			
-			for (IJavaProject p : projectsToDocs.keySet()) {
-				validateProject(p, reconcileEngine);
 			}
 		});
 		

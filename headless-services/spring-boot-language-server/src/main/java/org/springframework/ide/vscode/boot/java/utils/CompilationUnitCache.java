@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2022 Pivotal, Inc.
+ * Copyright (c) 2017, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -68,8 +68,8 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 	private final SimpleTextDocumentService documentService;
 
 	private final Cache<URI, CompletableFuture<CompilationUnit>> uriToCu;
-	private final Cache<IJavaProject, Set<URI>> projectToDocs;
-	private final Cache<IJavaProject, Tuple2<List<Classpath>, INameEnvironmentWithProgress>> lookupEnvCache;
+	private final Cache<URI, Set<URI>> projectToDocs;
+	private final Cache<URI, Tuple2<List<Classpath>, INameEnvironmentWithProgress>> lookupEnvCache;
 
 	public CompilationUnitCache(JavaProjectFinder projectFinder, SimpleLanguageServer server, ProjectObserver projectObserver) {
 		this.projectFinder = projectFinder;
@@ -224,7 +224,7 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 
 			if (cu != null) {
 				try {
-					projectToDocs.get(project, () -> new HashSet<>()).add(uri);
+					projectToDocs.get(project.getLocationUri(), () -> new HashSet<>()).add(uri);
 
 					logger.debug("CU Cache: start work on AST for {}", uri.toString());
 					return requestor.apply(cu);
@@ -287,7 +287,7 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 	
 	private Tuple2<List<Classpath>, INameEnvironmentWithProgress> loadLookupEnvTuple(IJavaProject project) {
 		try {
-			return lookupEnvCache.get(project, () -> {
+			return lookupEnvCache.get(project.getLocationUri(), () -> {
 				List<Classpath> classpaths = createClasspath(getClasspathEntries(project));
 				INameEnvironmentWithProgress environment = CUResolver.createLookupEnvironment(classpaths.toArray(new Classpath[classpaths.size()]));
 				return Tuples.of(classpaths, environment);
@@ -320,12 +320,12 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 	private void invalidateProject(IJavaProject project) {
 		logger.debug("CU Cache: invalidate project <{}>", project.getElementName());
 
-		Set<URI> docUris = projectToDocs.getIfPresent(project);
+		Set<URI> docUris = projectToDocs.getIfPresent(project.getLocationUri());
 		if (docUris != null) {
 			uriToCu.invalidateAll(docUris);
-			projectToDocs.invalidate(project);
+			projectToDocs.invalidate(project.getLocationUri());
 		}
-		lookupEnvCache.invalidate(project);
+		lookupEnvCache.invalidate(project.getLocationUri());
 	}
 
 	@Override

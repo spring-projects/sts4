@@ -61,8 +61,8 @@ public class RewriteCompilationUnitCache implements DocumentContentProvider, Dis
 	private final SimpleTextDocumentService documentService;
 
 	private final Cache<URI, CompletableFuture<CompilationUnit>> uriToCu;
-	private final Cache<IJavaProject, Set<URI>> projectToDocs;
-	private final Cache<IJavaProject, JavaParser> javaParsers;
+	private final Cache<URI, Set<URI>> projectToDocs;
+	private final Cache<URI, JavaParser> javaParsers;
 	
 	public RewriteCompilationUnitCache(JavaProjectFinder projectFinder, SimpleLanguageServer server, ProjectObserver projectObserver) {
 //		this.projectFinder = projectFinder;
@@ -87,11 +87,10 @@ public class RewriteCompilationUnitCache implements DocumentContentProvider, Dis
 							Optional<IJavaProject> project = projectFinder.find(new TextDocumentIdentifier(uri.toString()));
 							if (project.isPresent()) {
 
-								JavaParser parser = javaParsers.getIfPresent(project.get());
+								JavaParser parser = javaParsers.getIfPresent(project.get().getLocationUri());
 								if (parser != null) {
 									parser.reset();
 								}
-//								javaParsers.invalidate(project.get());
 							}
 						}
 					}
@@ -155,7 +154,7 @@ public class RewriteCompilationUnitCache implements DocumentContentProvider, Dis
 	
 	private JavaParser loadJavaParser(IJavaProject project) {
 		try {
-			return javaParsers.get(project, () -> ORAstUtils.createJavaParser(project));
+			return javaParsers.get(project.getLocationUri(), () -> ORAstUtils.createJavaParser(project));
 		} catch (ExecutionException e) {
 			logger.error("{}", e);
 			return null;
@@ -170,12 +169,12 @@ public class RewriteCompilationUnitCache implements DocumentContentProvider, Dis
 	private void invalidateProject(IJavaProject project) {
 		logger.info("CU Cache: invalidate project <{}>", project.getElementName());
 
-		Set<URI> docUris = projectToDocs.getIfPresent(project);
+		Set<URI> docUris = projectToDocs.getIfPresent(project.getLocationUri());
 		if (docUris != null) {
 			uriToCu.invalidateAll(docUris);
-			projectToDocs.invalidate(project);
+			projectToDocs.invalidate(project.getLocationUri());
 		}
-		javaParsers.invalidate(project);
+		javaParsers.invalidate(project.getLocationUri());
 	}
 
 	@Override
@@ -240,7 +239,7 @@ public class RewriteCompilationUnitCache implements DocumentContentProvider, Dis
 			CompilationUnit cu = cus.get(0);
 			
 			if (cu != null) {
-				projectToDocs.get(project, () -> new HashSet<>()).add(uri);
+				projectToDocs.get(project.getLocationUri(), () -> new HashSet<>()).add(uri);
 				return cu;
 			} else {
 				throw new IllegalStateException("Failed to parse Java source");

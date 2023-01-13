@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2022 VMware, Inc.
+ * Copyright (c) 2022, 2023 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -79,7 +79,6 @@ public class RewriteReconciler implements JavaReconciler {
 			return;
 		}
 
-		log.info("reconciling (OpenRewrite): " + project.getElementName() + " - " + doc.getUri());
 		long start = System.currentTimeMillis();
 
 		try {
@@ -104,7 +103,7 @@ public class RewriteReconciler implements JavaReconciler {
 		}	
 		
 		long end = System.currentTimeMillis();
-		log.info("reconciling (OpenRewrite): " + project.getElementName() + " done in " + (end - start) + "ms");
+		log.info("reconciling (OpenRewrite): " + doc.getUri() + " done in " + (end - start) + "ms");
 	}
 	
 	private List<ReconcileProblem> createProblems(IDocument doc, FixAssistMarker m, J astNode) {
@@ -143,7 +142,10 @@ public class RewriteReconciler implements JavaReconciler {
 	public Map<IDocument, Collection<ReconcileProblem>> reconcile(IJavaProject project, List<TextDocument> docs,
 			Function<TextDocument, IProblemCollector> problemCollectorFactory) {
 		
-		log.info("reconciling (OpenRewrite, multiple docs): " + project.getElementName() + " - " + docs.size());
+		if (!config.isRewriteReconcileEnabled()) {
+			return Collections.emptyMap();
+		}
+		
 		long start = System.currentTimeMillis();
 
 		Map<IDocument, Collection<ReconcileProblem>> allProblems = new HashMap<>();
@@ -165,7 +167,7 @@ public class RewriteReconciler implements JavaReconciler {
 		allProblems.putAll(doReconcile(project, testSources, problemCollectorFactory, javaParser));
 		
 		long end = System.currentTimeMillis();
-		log.info("reconciling (OpenRewrite, multiple docs): " + project.getElementName() + " - " + docs.size() + " done in " + (end - start) + "ms");
+		log.info("reconciling project (OpenRewrite): " + project.getElementName() + " - " + docs.size() + " done in " + (end - start) + "ms");
 		
 		return allProblems;
 	}

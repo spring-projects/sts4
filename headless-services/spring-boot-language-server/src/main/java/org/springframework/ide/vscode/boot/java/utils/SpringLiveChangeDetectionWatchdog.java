@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2019 Pivotal, Inc.
+ * Copyright (c) 2018, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.utils;
 
+import java.net.URI;
 import java.time.Duration;
 import java.util.HashSet;
 import java.util.Set;
@@ -41,7 +42,7 @@ public class SpringLiveChangeDetectionWatchdog {
 	private final SourceLinks sourceLinks;
 
 	private final ChangeDetectionHistory changeHistory;
-	private final Set<IJavaProject> observedProjects;
+	private final Set<URI> observedProjects;
 
 	private boolean changeDetectionEnabled = false;
 	private ScheduledThreadPoolExecutor timer;
@@ -54,7 +55,7 @@ public class SpringLiveChangeDetectionWatchdog {
 			Duration pollingInterval,
 			SourceLinks sourceLinks
 	) {
-		this.observedProjects = new HashSet<>();
+		this.observedProjects = new HashSet<URI>();
 
 		this.server = server;
 
@@ -68,12 +69,12 @@ public class SpringLiveChangeDetectionWatchdog {
 
 				@Override
 				public void deleted(IJavaProject project) {
-					observedProjects.remove(project);
+					observedProjects.remove(project.getLocationUri());
 				}
 
 				@Override
 				public void created(IJavaProject project) {
-					observedProjects.add(project);
+					observedProjects.add(project.getLocationUri());
 				}
 
 				@Override

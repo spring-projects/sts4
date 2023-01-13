@@ -350,15 +350,19 @@ public class JdtLsProjectCache implements InitializableJavaProjectsService, Serv
 							log.debug("deleted = false");
 							URI projectUri = new URI(uri);
 							ClasspathData classpath = new ClasspathData(event.name, event.classpath.getEntries());
-							IProjectBuild projectBuild = from(event.projectBuild);
+							IJavaProject oldProject = table.get(uri);
+							if (oldProject != null && classpath.equals(oldProject.getClasspath())) {
+								// nothing has changed
+								return;
+							}
+							IProjectBuild projectBuild = from(event.projectBuild);							
 							IJavaProject newProject = IS_JANDEX_INDEX
 									? new JavaProject(getFileObserver(), projectUri, classpath,
 											JdtLsProjectCache.this, projectBuild)
 									: new JdtLsJavaProject(server.getClient(), projectUri, classpath, JdtLsProjectCache.this, projectBuild);
-							IJavaProject oldProject = table.put(uri, newProject);
+							table.put(uri, newProject);
 							if (oldProject != null) {
-								notifyDelete(oldProject);
-								notifyCreated(newProject);
+								notifyChanged(newProject);
 							} else {
 								notifyCreated(newProject);
 							}

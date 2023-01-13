@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2020, 2022 Pivotal, Inc.
+ * Copyright (c) 2020, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -35,6 +35,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.ide.vscode.boot.app.BootJavaConfig;
 import org.springframework.ide.vscode.boot.app.BootLanguageServerParams;
 import org.springframework.ide.vscode.boot.bootiful.AdHocPropertyHarnessTestConf;
 import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
@@ -75,6 +76,7 @@ public class ValueSpelExpressionValidationTest {
 	@Autowired private JavaProjectFinder projectFinder;
 	@Autowired private CompilationUnitCache compilationUnitCache;
 	@Autowired private SimpleLanguageServer server;
+	@Autowired private BootJavaConfig config;
 
 	private File directory;
 	private String docUri;
@@ -146,7 +148,7 @@ public class ValueSpelExpressionValidationTest {
 
 		problemCollector = new TestProblemCollector();
 		reconcileEngine = new BootJavaReconcileEngine(projectFinder, new JavaReconciler[] {
-				new JdtReconciler(compilationUnitCache)
+				new JdtReconciler(compilationUnitCache, config)
 		}, server.getTextDocumentService(), null);
 	}
 	
