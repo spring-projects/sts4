@@ -288,8 +288,6 @@ public class RewriteReconciler implements JavaReconciler {
 				} else {
 					log.error("", e);
 				}
-			} finally {
-				System.gc();
 			}
 		}
 		return allProblems;
