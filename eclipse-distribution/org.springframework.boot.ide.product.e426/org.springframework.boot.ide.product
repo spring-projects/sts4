@@ -11,6 +11,7 @@
 </programArgs>
       <vmArgs>-Dosgi.requiredJavaVersion=17
 -Dosgi.dataAreaRequiresExplicitInit=true
+-Dsun.java.command=SpringToolSuite4
 -Xms256m
 -Xmx2048m
 --illegal-access=permit
