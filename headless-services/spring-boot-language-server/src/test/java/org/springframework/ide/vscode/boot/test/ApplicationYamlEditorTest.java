@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2019 Pivotal, Inc.
+ * Copyright (c) 2016, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -4044,6 +4044,71 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
                 null
         );
     }
+    
+    @Test
+    void testRecordReconcile() throws Exception {
+        MavenJavaProject p = createPredefinedMavenProject("record-props");
+		useProject(p);
+
+        Editor editor = newEditor(
+                "application:\n" +
+                "  temp:\n" + 
+                "    user:\n" +
+                "      name: something\n"
+        );
+        editor.assertProblems();
+        
+        definitionLinkAsserts.assertLinkTargets(editor, "name", p, editor.rangeOf("name"),
+                field("com.record.props.UserProperties", "name")
+        );
+
+    }
+
+    @Test
+    void testRecordReconcileExtra() throws Exception {
+        MavenJavaProject p = createPredefinedMavenProject("record-props");
+		useProject(p);
+
+        Editor editor = newEditor(
+                "application:\n" + 
+                "  security:\n" +
+                "    users:\n" +
+                "    - name: something\n"
+        );
+        editor.assertProblems();
+
+        definitionLinkAsserts.assertLinkTargets(editor, "name", p, editor.rangeOf("name"),
+                field("com.record.props.UserProperties", "name")
+        );
+    }
+    
+    @Test
+    void testRecordCompletions() throws Exception {
+        useProject(createPredefinedMavenProject("record-props"));
+
+        assertCompletionsDisplayString(
+        		"application:\n" +
+        		"  temp:\n" +
+        		"    user:\n" +
+        		"      <*>"
+        , // =>
+                "name",
+                "password",
+                "roles"
+        );
+
+        assertCompletionsDisplayString(
+        		"application:\n" +
+        		"  security:\n" +
+        		"    users:\n" +
+        		"    - <*>"
+        , // =>
+                "name",
+                "password",
+                "roles"
+        );
+    }
+
 
     @Test
     void testEscapeStringValueStartingWithStar() throws Exception {

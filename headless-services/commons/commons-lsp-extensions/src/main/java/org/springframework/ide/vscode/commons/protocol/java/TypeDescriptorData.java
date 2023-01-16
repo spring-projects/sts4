@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.commons.protocol.java;
 
 import java.util.Arrays;
+import java.util.Objects;
 
 public class TypeDescriptorData extends MemberData {
 	
@@ -19,6 +20,7 @@ public class TypeDescriptorData extends MemberData {
 	private boolean annotation;
 	private boolean interfaze;
 	private boolean enam;
+	private boolean record;
 	private String superClassName;
 	private String[] superInterfaceNames;
 
@@ -78,17 +80,20 @@ public class TypeDescriptorData extends MemberData {
 		this.superInterfaceNames = superInterfaceNames;
 	}
 
+	public boolean isRecord() {
+		return record;
+	}
+
+	public void setRecord(boolean record) {
+		this.record = record;
+	}
+
 	@Override
 	public int hashCode() {
 		final int prime = 31;
 		int result = super.hashCode();
-		result = prime * result + (annotation ? 1231 : 1237);
-		result = prime * result + (clazz ? 1231 : 1237);
-		result = prime * result + (enam ? 1231 : 1237);
-		result = prime * result + ((fqName == null) ? 0 : fqName.hashCode());
-		result = prime * result + (interfaze ? 1231 : 1237);
-		result = prime * result + ((superClassName == null) ? 0 : superClassName.hashCode());
 		result = prime * result + Arrays.hashCode(superInterfaceNames);
+		result = prime * result + Objects.hash(annotation, clazz, enam, fqName, interfaze, record, superClassName);
 		return result;
 	}
 
@@ -101,27 +106,10 @@ public class TypeDescriptorData extends MemberData {
 		if (getClass() != obj.getClass())
 			return false;
 		TypeDescriptorData other = (TypeDescriptorData) obj;
-		if (annotation != other.annotation)
-			return false;
-		if (clazz != other.clazz)
-			return false;
-		if (enam != other.enam)
-			return false;
-		if (fqName == null) {
-			if (other.fqName != null)
-				return false;
-		} else if (!fqName.equals(other.fqName))
-			return false;
-		if (interfaze != other.interfaze)
-			return false;
-		if (superClassName == null) {
-			if (other.superClassName != null)
-				return false;
-		} else if (!superClassName.equals(other.superClassName))
-			return false;
-		if (!Arrays.equals(superInterfaceNames, other.superInterfaceNames))
-			return false;
-		return true;
+		return annotation == other.annotation && clazz == other.clazz && enam == other.enam
+				&& Objects.equals(fqName, other.fqName) && interfaze == other.interfaze && record == other.record
+				&& Objects.equals(superClassName, other.superClassName)
+				&& Arrays.equals(superInterfaceNames, other.superInterfaceNames);
 	}
 
 }

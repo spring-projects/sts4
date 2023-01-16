@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2022 Pivotal, Inc.
+ * Copyright (c) 2016, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -663,6 +663,55 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
                 // ==>
                 "age=<*>",
                 "name=<*>"
+        );
+    }
+    
+    @Test
+    void testRecordReconcile() throws Exception {
+        MavenJavaProject p = createPredefinedMavenProject("record-props");
+		useProject(p);
+
+        Editor editor = newEditor(
+                "application.temp.user.name=something"
+        );
+        editor.assertProblems();
+        
+        definitionLinkAsserts.assertLinkTargets(editor, "name", p, editor.rangeOf("application.temp.user.name"),
+                field("com.record.props.UserProperties", "name")
+        );
+
+
+    }
+
+    @Test
+    void testRecordReconcileExtra() throws Exception {
+        useProject(createPredefinedMavenProject("record-props"));
+
+        Editor editor = newEditor(
+                "application.security.users[0].name=something"
+        );
+        editor.assertProblems();
+
+    }
+    
+    @Test
+    void testRecordCompletions() throws Exception {
+        useProject(createPredefinedMavenProject("record-props"));
+
+        assertCompletionsDisplayString(
+        		"application.temp.user.<*>"
+        , // =>
+                "name",
+                "password",
+                "roles"
+        );
+
+        assertCompletionsDisplayString(
+        		"application.security.users[0].<*>"
+        , // =>
+                "name",
+                "password",
+                "roles"
         );
     }
 

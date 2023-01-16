@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2019 Pivotal, Inc.
+ * Copyright (c) 2018, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,9 +10,10 @@
  *******************************************************************************/
 package org.springframework.tooling.jdt.ls.commons.test;
 
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
+import static org.springframework.tooling.jdt.ls.commons.test.TestUtils.deleteAllProjects;
+import static org.springframework.tooling.jdt.ls.commons.test.TestUtils.safe;
 
 import java.io.File;
 import java.net.URI;
@@ -20,24 +21,11 @@ import java.time.Duration;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.CompletableFuture;
 
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.IProjectDescription;
 import org.eclipse.core.resources.IResource;
-import org.eclipse.core.resources.ResourcesPlugin;
-import org.eclipse.core.resources.WorkspaceJob;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.FileLocator;
-import org.eclipse.core.runtime.IProgressMonitor;
-import org.eclipse.core.runtime.IStatus;
-import org.eclipse.core.runtime.NullProgressMonitor;
-import org.eclipse.core.runtime.Path;
-import org.eclipse.core.runtime.Platform;
-import org.eclipse.core.runtime.Status;
-import org.eclipse.jdt.core.JavaCore;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Ignore;
@@ -51,7 +39,6 @@ import org.springframework.tooling.jdt.ls.commons.classpath.ClasspathUtil;
 import org.springframework.tooling.jdt.ls.commons.classpath.ClientCommandExecutor;
 import org.springframework.tooling.jdt.ls.commons.classpath.ReusableClasspathListenerHandler;
 import org.springsource.ide.eclipse.commons.frameworks.test.util.ACondition;
-import org.springsource.ide.eclipse.commons.frameworks.test.util.Asserter;
 
 import com.google.common.collect.ImmutableList;
 
@@ -69,7 +56,7 @@ public class ClasspathListenerHandlerTest {
 		IProject project = createTestProject(projectName);
 		File loc = project.getLocation().toFile();
 
-		service.addClasspathListener(classpaths.commandId);
+		service.addClasspathListener(classpaths.commandId, false);
 		ACondition.waitFor("Project with classpath to appear", Duration.ofSeconds(50), () -> {
 			Classpath cp = classpaths.getFor(loc).classpath;
 			for (CPE cpe : cp.getEntries()) {
@@ -83,7 +70,7 @@ public class ClasspathListenerHandlerTest {
 
 	@Ignore //TODO: fails randomly for unknown reason.
 	@Test public void classpathIsSentForNewProject_and_removedForDeletedProject() throws Exception {
-		service.addClasspathListener(classpaths.commandId);
+		service.addClasspathListener(classpaths.commandId, false);
 
 		String projectName = "classpath-test-simple-java-project";
 		IProject project = createTestProject(projectName);
@@ -112,7 +99,7 @@ public class ClasspathListenerHandlerTest {
 			IProject project = createTestProject(projectName);
 			File loc = project.getLocation().toFile();
 
-			service.addClasspathListener(classpaths.commandId);
+			service.addClasspathListener(classpaths.commandId, false);
 			ACondition.waitFor("Project with classpath to appear", Duration.ofSeconds(5), () -> {
 				Classpath cp = classpaths.getFor(loc).classpath;
 				for (CPE cpe : cp.getEntries()) {
@@ -146,7 +133,7 @@ public class ClasspathListenerHandlerTest {
 		IProject project = createTestProject(projectName);
 		File loc = project.getLocation().toFile();
 
-		service.addClasspathListener(classpaths.commandId);
+		service.addClasspathListener(classpaths.commandId, false);
 		ACondition.waitFor("Project with classpath to appear", Duration.ofSeconds(5), () -> {
 			Classpath cp = classpaths.getFor(loc).classpath;
 			for (CPE cpe : cp.getEntries()) {
@@ -171,7 +158,7 @@ public class ClasspathListenerHandlerTest {
 		IProject project = createTestProject(projectName);
 		File loc = project.getLocation().toFile();
 
-		service.addClasspathListener(classpaths.commandId);
+		service.addClasspathListener(classpaths.commandId, false);
 		ACondition.waitFor("Project with classpath to appear", Duration.ofSeconds(50), () -> {
 			Classpath cp = classpaths.getFor(loc).classpath;
 			for (CPE cpe : cp.getEntries()) {
@@ -286,56 +273,8 @@ public class ClasspathListenerHandlerTest {
 	}
 
 	private IProject createTestProject(String name) throws Exception {
-		File testProjectSourceLocation = new File(FileLocator.toFileURL(Platform.getBundle("org.springframework.tooling.jdt.ls.commons.test").getEntry("test-projects/"+name)).toURI());
-
-		File testProjectLocation = tmp.newFolder(name);
-		FileUtils.copyDirectory(testProjectSourceLocation, testProjectLocation);
-
-		IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(name);
-		IProjectDescription desc = ResourcesPlugin.getWorkspace().newProjectDescription(null);
-		desc.setName(name);
-		desc.setLocation(Path.fromOSString(testProjectLocation.toString()));
-		project.create(desc, null);
-		project.open(null);
-
-		assertTrue(project.hasNature(JavaCore.NATURE_ID));
-		return project;
+		return TestUtils.createTestProject(name, tmp);
 	}
 
-
-	public static void deleteAllProjects() throws Exception {
-		CompletableFuture<Void> done = new CompletableFuture<Void>();
-		WorkspaceJob job = new WorkspaceJob("Delete projects") {
-			@Override public IStatus runInWorkspace(IProgressMonitor arg0) throws CoreException {
-				try {
-					ACondition.waitFor("Deleting all projects", Duration.ofMinutes(1), () -> {
-						ResourcesPlugin.getWorkspace().getRuleFactory().buildRule();
-						IProject[] allProjects = ResourcesPlugin.getWorkspace().getRoot().getProjects();
-						for (IProject project : allProjects) {
-							project.refreshLocal(IResource.DEPTH_INFINITE, null);
-							safe(() -> project.close(null));
-							project.delete(false, true, new NullProgressMonitor());
-							assertFalse(project.exists());
-						}
-					});
-					done.complete(null);
-				} catch (Throwable e) {
-					done.completeExceptionally(e);
-				}
-				return Status.OK_STATUS;
-			}
-
-		};
-		job.setRule(ResourcesPlugin.getWorkspace().getRuleFactory().buildRule());
-		job.schedule();
-		done.get();
-	}
-	private static void safe(Asserter doit) {
-		try {
-			doit.execute();
-		} catch (Throwable e) {
-			System.err.println("Ignore exception: "+e.getMessage());
-		}
-	}
 
 }

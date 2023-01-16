@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Pivotal, Inc.
+ * Copyright (c) 2018, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -18,6 +18,7 @@ import org.jboss.jandex.ClassInfo;
 import org.jboss.jandex.ClassType;
 import org.jboss.jandex.FieldInfo;
 import org.jboss.jandex.MethodInfo;
+import org.jboss.jandex.MethodParameterInfo;
 import org.jboss.jandex.ParameterizedType;
 import org.jboss.jandex.PrimitiveType;
 import org.jboss.jandex.Type;
@@ -25,6 +26,7 @@ import org.jboss.jandex.TypeVariable;
 import org.jboss.jandex.UnresolvedTypeVariable;
 import org.jboss.jandex.VoidType;
 import org.jboss.jandex.WildcardType;
+import org.springframework.ide.vscode.commons.java.Flags;
 
 class BindingKeyUtils {
 
@@ -43,10 +45,15 @@ class BindingKeyUtils {
 	public static String getBindingKey(FieldInfo field) {
 		StringBuilder sb = new StringBuilder();
 		sb.append(getBindingKey(field.declaringClass()));
-		sb.append('.');
-		sb.append(field.name());
-		sb.append(')');
-		sb.append(getGeneralTypeBindingKey(field.type()));
+		if (field.declaringClass().isRecord() && !Flags.isStatic(field.flags())) {
+			sb.append('#');
+			sb.append(field.name());
+		} else {
+			sb.append('.');
+			sb.append(field.name());
+			sb.append(')');
+			sb.append(getGeneralTypeBindingKey(field.type()));
+		}
 		return sb.toString();
 	}
 
@@ -56,8 +63,8 @@ class BindingKeyUtils {
 		sb.append('.');
 		sb.append(method.name());
 		sb.append('(');
-		for (Type parameter : method.parameters()) {
-			sb.append(getGeneralTypeBindingKey(parameter));
+		for (MethodParameterInfo parameter : method.parameters()) {
+			sb.append(getGeneralTypeBindingKey(parameter.type()));
 		}
 		sb.append(')');
 		sb.append(getGeneralTypeBindingKey(method.returnType()));

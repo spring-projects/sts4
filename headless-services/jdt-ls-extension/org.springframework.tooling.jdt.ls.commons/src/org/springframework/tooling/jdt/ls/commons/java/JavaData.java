@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2019 Pivotal, Inc.
+ * Copyright (c) 2018, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -291,6 +291,7 @@ public class JavaData {
 			data.setClass(type.isClass());
 			data.setEnum(type.isEnum());
 			data.setInterface(type.isInterface());
+			data.setRecord(type.isRecord());
 			data.setSuperClassName(resolveFQName(type, type.getSuperclassName()));
 			data.setSuperInterfaceNames(resolveFQNames(type, type.getSuperInterfaceNames()));
 		} catch (JavaModelException e) {
@@ -307,11 +308,17 @@ public class JavaData {
 		ImmutableList.Builder<MethodData> methodsBuilder = ImmutableList.builder();
 		ImmutableList.Builder<AnnotationData> annotationsBuilder = ImmutableList.builder();
 		try {
-			for (IField field : type.getFields()) {
-				fieldsBuilder.add(createFieldData(type, field));
-			}
-			for (IMethod method : type.getMethods()) {
-				methodsBuilder.add(createMethodData(type, method));
+			if (type.isRecord()) {
+				for (IField field : type.getRecordComponents()) {
+					fieldsBuilder.add(createFieldData(type, field));
+				}
+			} else {
+				for (IField field : type.getFields()) {
+					fieldsBuilder.add(createFieldData(type, field));
+				}
+				for (IMethod method : type.getMethods()) {
+					methodsBuilder.add(createMethodData(type, method));
+				}
 			}
 			for (IAnnotation annotation : type.getAnnotations()) {
 				annotationsBuilder.add(createAnnotationData(type, annotation));

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2019 Pivotal, Inc.
+ * Copyright (c) 2018, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -138,10 +138,17 @@ public class PropertiesDefinitionCalculator {
 							}
 						}
 					}
-				} 
-				IMethod method = getPropertyMethod(typeUtil, type, property.getName());
-				if (method!=null) {
-					elements.add(method);
+				}
+				if (type != null && type.isRecord()) {
+					IField field = getPropertyField(type, property.getName());
+					if (field != null) {
+						elements.add(field);
+					}
+				} else {
+					IMethod method = getPropertyMethod(typeUtil, type, property.getName());
+					if (method!=null) {
+						elements.add(method);
+					}
 				}
 			}
 		}
@@ -165,7 +172,7 @@ public class PropertiesDefinitionCalculator {
 				.findFirst()
 				.orElse(null);
 	}
-
+	
 	private static String getMethodName(String methodSig) {
 		String name;
 		int nameEnd = methodSig.indexOf('(');
@@ -300,6 +307,11 @@ public class PropertiesDefinitionCalculator {
 		}
 
 		return ImmutableList.of();
+	}
+
+	public static IField getPropertyField(IType javaType, String propName) {
+		String name = StringUtil.hyphensToCamelCase(propName, false);
+		return javaType.getFields().filter(f -> name.equals(f.getElementName())).findFirst().orElse(null);
 	}
 
 }

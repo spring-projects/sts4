@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Pivotal, Inc.
+ * Copyright (c) 2018, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -19,7 +19,9 @@ import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.EnumConstantDeclaration;
 import org.eclipse.jdt.core.dom.EnumDeclaration;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
+import org.eclipse.jdt.core.dom.RecordDeclaration;
 import org.eclipse.jdt.core.dom.SimpleName;
+import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.Position;
@@ -122,6 +124,22 @@ public class DefaultJavaElementLocationProvider implements JavaElementLocationPr
 									}
 									return true;
 								}
+
+								@Override
+								public boolean visit(RecordDeclaration node) {
+									for (Object o : node.recordComponents()) {
+										if (o instanceof SingleVariableDeclaration) {
+											SingleVariableDeclaration rc = (SingleVariableDeclaration) o;
+											if (memberBindingKey.equals(rc.resolveBinding().getKey())) {
+												range.set(nameRange(rc.getName()));
+												return false;
+											}
+										}
+									}
+									return true;
+								}
+								
+								
 
 							});
 							return range.get();

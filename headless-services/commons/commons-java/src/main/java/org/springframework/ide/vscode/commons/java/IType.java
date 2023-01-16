@@ -24,6 +24,7 @@ public interface IType extends IMember {
 	boolean isEnum();
 	boolean isInterface();
 	boolean isAnnotation();
+	boolean isRecord();
 
 	/**
 	 * Returns the fully qualified name of this type,

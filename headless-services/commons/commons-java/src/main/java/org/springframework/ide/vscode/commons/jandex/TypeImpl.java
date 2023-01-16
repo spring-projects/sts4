@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2018 Pivotal, Inc.
+ * Copyright (c) 2016, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -73,8 +73,7 @@ class TypeImpl implements IType {
 
 	@Override
 	public Stream<IAnnotation> getAnnotations() {
-		// TODO: check correctness!
-		List<AnnotationInstance> annotations = info.annotations().get(info.name());
+		List<AnnotationInstance> annotations = info.annotations();
 		return annotations == null ? Stream.empty() : annotations.stream().map(a -> Wrappers.wrap(a, javadocProvider));
 	}
 
@@ -97,6 +96,10 @@ class TypeImpl implements IType {
 	public boolean isAnnotation() {
 		return Flags.isAnnotation(info.flags());
 	}
+	
+	public boolean isRecord() {
+		return info.isRecord();
+	}
 
 	@Override
 	public String getFullyQualifiedName() {
@@ -111,9 +114,15 @@ class TypeImpl implements IType {
 
 	@Override
 	public Stream<IField> getFields() {
-		return info.fields().stream().map(f -> {
-			return Wrappers.wrap(this, f, javadocProvider);
-		});
+		if (info.isRecord()) {
+			return info.recordComponents().stream().map(rc -> {
+				return Wrappers.wrap(this, rc.field(), javadocProvider);
+			});
+		} else {
+			return info.fields().stream().map(f -> {
+				return Wrappers.wrap(this, f, javadocProvider);
+			});
+		}
 	}
 
 	@Override

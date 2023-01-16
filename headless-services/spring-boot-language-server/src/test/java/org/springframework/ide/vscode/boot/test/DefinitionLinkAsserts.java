@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2019 Pivotal, Inc.
+ * Copyright (c) 2018, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -17,13 +17,13 @@ import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
-import java.util.stream.Collectors;
 
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.AbstractTypeDeclaration;
 import org.eclipse.jdt.core.dom.EnumConstantDeclaration;
 import org.eclipse.jdt.core.dom.EnumDeclaration;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
+import org.eclipse.jdt.core.dom.RecordDeclaration;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
@@ -273,8 +273,27 @@ public class DefinitionLinkAsserts {
 								foundType = true;
 								return true;
 							}
-							return false;
+							return super.visit(node);
 						}
+
+						@Override
+						public boolean visit(RecordDeclaration node) {
+							for (Object o : node.recordComponents()) {
+								if (o instanceof SingleVariableDeclaration) {
+									SingleVariableDeclaration rc = (SingleVariableDeclaration) o;
+									if (field.fieldName.equals(new String(rc.getName().getIdentifier()))) {
+										try {
+											range.set(doc.toRange(rc.getName().getStartPosition(), rc.getName().getLength()));
+										} catch (BadLocationException e) {
+											throw new IllegalStateException(e);
+										}
+										return true;
+									}
+								}
+							}
+							return super.visit(node);
+						}
+						
 
 					});
 					return range.get();

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2019 Pivotal, Inc.
+ * Copyright (c) 2015, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -416,11 +416,21 @@ public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistCon
 				} else {
 					IType javaType = javaProject.getIndex().findType(parentType.getErasure());
 					if (javaType != null) {
-						IMethod method = PropertiesDefinitionCalculator.getPropertyMethod(typeUtil, javaType, propName);
-						if (method != null) {
-							Location location = javaElementLocationProvider.findLocation(javaProject, method);
-							if (location != null) {
-								return ImmutableList.of(location);
+						if (javaType.isRecord()) {
+							IField field = PropertiesDefinitionCalculator.getPropertyField(javaType, propName);
+							if (field != null) {
+								Location location = javaElementLocationProvider.findLocation(javaProject, field);
+								if (location != null) {
+									return ImmutableList.of(location);
+								}
+							}
+						} else {
+							IMethod method = PropertiesDefinitionCalculator.getPropertyMethod(typeUtil, javaType, propName);
+							if (method != null) {
+								Location location = javaElementLocationProvider.findLocation(javaProject, method);
+								if (location != null) {
+									return ImmutableList.of(location);
+								}
 							}
 						}
 					}

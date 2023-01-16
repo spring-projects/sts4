@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2019 Pivotal, Inc.
+ * Copyright (c) 2016, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -58,7 +58,6 @@ import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.CollectionUtil;
 import org.springframework.ide.vscode.commons.util.EnumValueParser;
 import org.springframework.ide.vscode.commons.util.LazyProvider;
-import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.MimeTypes;
 import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.util.StringUtil;
@@ -766,6 +765,12 @@ public class TypeUtil {
 						));
 					}
 					return properties;
+				} else if (typeFromIndex.isRecord()) {
+					typeFromIndex.getFields().forEach(f -> properties.add(new TypedProperty(
+							StringUtil.camelCaseToHyphens(f.getElementName()),
+							Type.fromJavaType(f.type()),
+							DeprecationUtil.extract(f)
+					)));
 				} else {
 					getGetterMethods(typeFromIndex).forEach(m -> {
 						Deprecation deprecation = DeprecationUtil.extract(m);
