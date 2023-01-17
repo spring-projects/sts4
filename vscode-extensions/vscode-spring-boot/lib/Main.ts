@@ -35,6 +35,10 @@ export function activate(context: VSCode.ExtensionContext): Thenable<ExtensionAP
         CONNECT_TO_LS: false,
         extensionId: 'vscode-spring-boot',
         preferJdk: true,
+        jvmHeap: '1024m',
+        vmArgs: [
+            '-XX:+HeapDumpOnOutOfMemoryError'
+        ],
         checkjvm: (context: VSCode.ExtensionContext, jvm: commons.JVM) => {
             let version = jvm.getMajorVersion();
             if (version < 17) {
