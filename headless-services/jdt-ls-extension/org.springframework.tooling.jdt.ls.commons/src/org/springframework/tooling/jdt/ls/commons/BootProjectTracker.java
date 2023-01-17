@@ -84,16 +84,18 @@ public class BootProjectTracker {
 	}
 	
 	private boolean isSpringProject(IJavaProject jp) {
-		try {
-			IClasspathEntry[] classpath = jp.getResolvedClasspath(true);
-			//Look for a 'spring-core' jar or project entry
-			for (IClasspathEntry e : classpath) {
-				if (isBootJar(e) || isBootProject(e)) {
-					return true;
+		if (jp.exists()) {
+			try {
+				IClasspathEntry[] classpath = jp.getResolvedClasspath(true);
+				//Look for a 'spring-core' jar or project entry
+				for (IClasspathEntry e : classpath) {
+					if (isBootJar(e) || isBootProject(e)) {
+						return true;
+					}
 				}
+			} catch (JavaModelException e) {
+				logger.log(e);
 			}
-		} catch (JavaModelException e) {
-			logger.log(e);
 		}
 		return false;
 	}
