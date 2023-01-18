@@ -18,12 +18,10 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
@@ -84,6 +82,7 @@ import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCo
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter.CompletionFilter;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter.LazyCompletionResolver;
 import org.springframework.ide.vscode.commons.languageserver.config.LanguageServerProperties;
+import org.springframework.ide.vscode.commons.languageserver.config.LanguageServerProperties.ReconcileStrategy;
 import org.springframework.ide.vscode.commons.languageserver.java.ls.ClasspathListener;
 import org.springframework.ide.vscode.commons.languageserver.java.ls.ClasspathListenerManager;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.Quickfix;
@@ -651,15 +650,15 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 		return workspace;
 	}
 
+	private DiagnosticSeverityProvider severityProvider = DiagnosticSeverityProvider.DEFAULT;
+	
 	/**
 	 * Keeps track of reconcile requests that have been requested but not yet started.
 	 * This is used to more efficiently deal with situation where many requests are fired
 	 * in a burst. Rather than execute the same request repeatedly we can avoid queuing
 	 * up more requests if the previous request has not yet been started.
 	 */
-	private Set<String> reconcileRequests = Collections.synchronizedSet(new HashSet<>());
-
-	private DiagnosticSeverityProvider severityProvider = DiagnosticSeverityProvider.DEFAULT;
+	private ConcurrentHashMap<URI, Disposable> reconcileRequests = new ConcurrentHashMap<>();
 
 	/**
 	 * Convenience method. Subclasses can call this to use a {@link IReconcileEngine} ported
@@ -672,19 +671,23 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 			log.debug("Reconcile skipped due to document doesn't exist anymore {}", docId.getUri());
 			return;
 		}
-
-		String uri = docId.getUri();
-		if (!reconcileRequests.add(uri)) {
-			log.debug("Reconcile skipped {}", uri);
-			return;
+		
+		final URI uri = URI.create(docId.getUri());
+		
+		log.debug("Validate doc {}", uri);
+		
+		if (props.getReconcileStrategy() != ReconcileStrategy.DEBOUNCE || props.getReconcileDelay() == 0) {
+			if (reconcileRequests.containsKey(uri)) {
+				log.debug("Reconcile skipped {}", uri);
+				return;
+			}
 		}
-//		Log.debug("Reconciling BUSY");
-
+		
 		CompletableFuture<Void> currentSession = this.busyReconcile = new CompletableFuture<>();	
 		
 		Mono<Object> doReconcile = Mono.fromRunnable(() -> {
 			reconcileRequests.remove(uri);
-			log.debug("Reconcile starting {}", uri);
+			log.debug("Starting reconcile for {}", uri);
 
 			TextDocument doc = documents.getLatestSnapshot(docId.getUri());
 			
@@ -712,13 +715,31 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 		
 		// Use RECONCILER_SCHEDULER to avoid running in the same thread as lsp4j as it can result
 		// in long "hangs" for slow reconcile providers
-		if (props.getReconcileDelay() > 0) {
-			Mono.delay(Duration.ofMillis(props.getReconcileDelay()))
-			.publishOn(RECONCILER_SCHEDULER)
-			.then(doReconcile)
-			.subscribe();
+		if (props.getReconcileDelay() > 0 && props.getReconcileStrategy() != ReconcileStrategy.NONE) {
+			Disposable old = reconcileRequests.put(uri, Mono.delay(Duration.ofMillis(props.getReconcileDelay()))
+					.publishOn(RECONCILER_SCHEDULER)
+					.then(doReconcile)
+					.subscribe()
+			);
+			if (old != null) {
+				old.dispose();
+				log.debug("Re-scheduled requested reconcile for {}", uri);
+				// Should reach this point only for the case of Debounce strategy
+				Assert.isTrue(props.getReconcileStrategy() == ReconcileStrategy.DEBOUNCE);
+			} else {
+				log.debug("Requested reconcile for {}", uri);
+			}
 		} else {
-			doReconcile.subscribeOn(RECONCILER_SCHEDULER).subscribe();
+			// No debounce or throttling case. Either delay is <= 0 or strategy is none. 
+			Disposable old = reconcileRequests.put(uri, doReconcile.subscribeOn(RECONCILER_SCHEDULER).subscribe());
+			if (old != null) {
+				old.dispose();
+				log.debug("Re-scheduled requested reconcile for {}", uri);
+				// Should reach this point only for the case of Debounce strategy
+				Assert.isTrue(props.getReconcileStrategy() == ReconcileStrategy.DEBOUNCE);
+			} else {
+				log.debug("Requested reconcile for {}", uri);
+			}
 		}
 	}
 	

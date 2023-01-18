@@ -53,6 +53,11 @@ public class LanguageServerProperties {
 	private long reconcileDelay = 0;
 	
 	/**
+	 * Strategy for performing document reconciling once document changes.
+	 */
+	private ReconcileStrategy reconcileStrategy = ReconcileStrategy.THROTTLE;
+	
+	/**
 	 * Reconcile sources regardless whether source is opened in an editor or not.
 	 * If on only opened documents will be reconciled
 	 */
@@ -114,4 +119,28 @@ public class LanguageServerProperties {
 		this.reconcileOnlyOpenedDocs = reconcileOnlyOpenedDocs;
 	}
 
+	public ReconcileStrategy getReconcileStrategy() {
+		return reconcileStrategy;
+	}
+
+	public void setReconcileStrategy(ReconcileStrategy reconcileStrategy) {
+		this.reconcileStrategy = reconcileStrategy;
+	}
+
+	public enum ReconcileStrategy {
+		/**
+		 * Reconcile right after document has changed.
+		 */
+		NONE,
+		
+		/**
+		 * Perform reconcile not more often than once in "reconcile delay" ms.
+		 */
+		THROTTLE,
+		
+		/**
+		 * Perform reconcile once "reconcile delay" ms has elapsed since the last document change.
+		 */
+		DEBOUNCE
+	}
 }
