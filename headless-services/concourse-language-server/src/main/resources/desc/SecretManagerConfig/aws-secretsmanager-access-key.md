@@ -1,0 +1,1 @@
+*Optional.* A valid AWS access key.

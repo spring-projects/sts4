@@ -1,0 +1,1 @@
+*Required.* A mapping of **var** name to **var** value. An arbitrary object representing key-value definitions for **((vars))**.

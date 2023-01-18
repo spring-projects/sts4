@@ -1,0 +1,1 @@
+*Optional.* The base path used when attempting to locate a team-level secret.

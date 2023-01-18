@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2022 Pivotal, Inc.
+ * Copyright (c) 2016, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -1113,6 +1113,12 @@ public class ConcourseEditorTest {
                 "resources:\n" +
                         "- name: $1\n" +
                         "  type: $2<*>"
+        , // ---------------
+        		"var_sources:\n" +
+        		       "- name: $1\n" +
+        		       "  type: $2\n" +
+        		       "  config:\n" +
+        		       "    $3<*>"
         );
 
         editor = harness.newEditor("rety<*>");
@@ -4689,6 +4695,7 @@ public class ConcourseEditorTest {
                 "← groups",
                 "← jobs",
                 "← resource_types",
+                "← var_sources",
                 "← - Resource Snippet",
                 // For the 'next job' context
                 "← - name"
@@ -4949,6 +4956,7 @@ public class ConcourseEditorTest {
                 "← groups",
                 "← resource_types",
                 "← resources",
+                "← var_sources",
                 "← - Job Snippet",
                 "← - name"
         );
@@ -5443,6 +5451,7 @@ public class ConcourseEditorTest {
                 "groups",
                 "jobs",
                 "resource_types",
+                "var_sources",
                 "→ type",
                 "- Resource Snippet",
                 "- name"
@@ -6811,6 +6820,178 @@ public class ConcourseEditorTest {
             editor.assertCompletionLabels(c -> c.getLabel().startsWith("cache"), "cache", "cache_from", "cache_tag");
         }
     }
+    
+    @Test
+    void var_source_AttributeHovers() throws Exception {
+        Editor editor = harness.newEditor(
+                "var_sources:\n" +
+                        "- name: sts4\n" +
+                        "  type: ssm\n" +
+                        "  config:\n" +
+                        "    region: east\n"
+        );
+        editor.assertProblems();
+
+        editor.assertHoverContains("name", "The name of the **((var))** source");
+        editor.assertHoverContains("type", "Expected one of:");
+        editor.assertHoverContains("config", "Depending on the chosen `type` corresponding config:");
+    }
+    
+    @Test
+    void var_source_AttributeReconcile() throws Exception {
+        Editor editor = harness.newEditor(
+                "var_sources:\n" +
+                        "- name: "
+        );
+        editor.assertProblems(
+                "-|[config, type] are required",
+                "|String should not be empty"
+        );
+
+        editor = harness.newEditor(
+                "var_sources:\n" +
+                        "- type: blah"
+        );
+        editor.assertProblems(
+                "-|[config, name] are required",
+                "blah|Valid values are: [dummy, secretmanager, ssm, vault]"
+        );
+    }
+
+    @Test
+    void var_source_SSMConfig_Attrs_Hovers() throws Exception {
+        Editor editor = harness.newEditor(
+                "var_sources:\n" +
+                        "- name: sts4\n" +
+                        "  type: ssm\n" +
+                        "  config:\n" +
+                        "    region: east\n"
+        );
+        editor.assertProblems();
+
+        editor.assertHoverContains("region", "The AWS region to read secrets from.");
+    }
+
+    @Test
+    void var_source_DummyConfig_Attrs_Hovers() throws Exception {
+        Editor editor = harness.newEditor(
+                "var_sources:\n" +
+                        "- name: sts4\n" +
+                        "  type: dummy\n" +
+                        "  config:\n" +
+                        "    vars: east\n"
+        );
+        
+        editor.assertProblems();
+
+        editor.assertHoverContains("vars", "A mapping of **var** name to **var** value.");
+    }
+
+    @Test
+    void var_source_SecretManagerConfig_Attrs_Hovers() throws Exception {
+        Editor editor = harness.newEditor(
+                "var_sources:\n" +
+                        "- name: sts4\n" +
+                        "  type: secretmanager\n" +
+                        "  config:\n" +
+                        "    aws-secretsmanager-access-key: access-key\n" +
+                        "    aws-secretsmanager-secret-key: secret-key\n" +
+                        "    aws-secretsmanager-session-token: token\n" +
+                        "    aws-secretsmanager-region: region\n" +
+                        "    aws-secretsmanager-pipeline-secret-template: pipeline\n" +
+                        "    aws-secretsmanager-team-secret-template: team\n"
+        );
+        
+        editor.assertProblems();
+
+        editor.assertHoverContains("aws-secretsmanager-access-key", "A valid AWS access key.");
+        editor.assertHoverContains("aws-secretsmanager-secret-key", "The secret key that corresponds to the access key defined above.");
+        editor.assertHoverContains("aws-secretsmanager-session-token", "A valid AWS session token.");
+        editor.assertHoverContains("aws-secretsmanager-region", "The AWS region that requests to Secrets Manager will be sent to.");
+        editor.assertHoverContains("aws-secretsmanager-pipeline-secret-template", "The base path used when attempting to locate a pipeline-level secret.");
+        editor.assertHoverContains("aws-secretsmanager-team-secret-template", "The base path used when attempting to locate a team-level secret.");
+    }
+
+    @Test
+    void var_source_SecretManagerConfig_Attrs_Reconcile() throws Exception {
+        Editor editor = harness.newEditor(
+                "var_sources:\n" +
+                        "- name: sts4\n" +
+                        "  type: secretmanager\n" +
+                        "  config:\n" +
+                        "    aws-secretsmanager-access-key: access-key\n"
+        );
+        
+        editor.assertProblems(
+                "config|'aws-secretsmanager-region' is required"
+        );
+    }
+    
+    @Test
+    void var_source_VaultConfig_Attrs_Hovers() throws Exception {
+        Editor editor = harness.newEditor(
+                "var_sources:\n" +
+                        "- name: sts4\n" +
+                        "  type: vault\n" +
+                        "  config:\n" +
+                        "    uri: some_uri\n" +
+                        "    auth_backend: backend\n" +
+                        "    auth_max_ttl: 10s\n" +
+                        "    auth_params: \n" +
+                        "      p1: v1\n" +
+                        "      p2: v2\n" +
+                        "    auth_retry_initial: 1s\n" +
+                        "    auth_retry_max: 60s\n" +
+                        "    ca_cert: ca\n" +
+                        "    client_cert: client\n" +
+                        "    client_key: client-key\n" +
+                        "    client_name: client-name\n" +
+                        "    client_token: client-token\n" +
+                        "    insecure_skip_verify: true\n" +
+                        "    lookup_templates:\n" +
+                        "      - t1\n" +
+                        "      - t2\n" +
+                        "    namespace: awesomes\n" +
+                        "    path_prefix: prefix\n" +
+                        "    shared_path: shared\n"
+        );
+        
+        editor.assertProblems();
+
+        editor.assertHoverContains("uri", "The URL of the Vault API.");
+        editor.assertHoverContains("auth_backend", "Authenticate using an auth backend, e.g. cert or approle.");
+        editor.assertHoverContains("auth_max_ttl", "Maximum duration to elapse before forcing the client to log in again.");
+        editor.assertHoverContains("auth_params", "A key-value map of parameters to pass during authentication.");
+        editor.assertHoverContains("auth_retry_initial", "When retrying during authentication, start with this retry interval.");
+        editor.assertHoverContains("auth_retry_max", "When failing to authenticate, give up after this amount of time.");
+
+        editor.assertHoverContains("ca_cert", "The PEM encoded contents of a CA certificate to use when connecting to the API.");
+        editor.assertHoverContains("client_cert", "A PEM encoded client certificate, for use with TLS based auth.");
+        editor.assertHoverContains("client_key", "A PEM encoded client key, for use with TLS based auth.");
+        editor.assertHoverContains("client_name", "The expected name of the server when connecting through TLS.");
+        editor.assertHoverContains("client_token", "Authenticate via a periodic client token.");
+        editor.assertHoverContains("insecure_skip_verify", "Skip TLS validation. Not recommended. Don't do it. No really, don't.");
+        editor.assertHoverContains("lookup_templates", "A list of path templates to be expanded in a team and pipeline context subject to the `path_prefix` and `namespace`.");
+        editor.assertHoverContains("namespace", "Vault namespace");
+        editor.assertHoverContains("path_prefix", "A prefix under which to look for all credential values.");
+        editor.assertHoverContains("shared_path", "An additional path under which credentials will be looked up.");
+    }
+
+    @Test
+    void var_source_VaultConfig_Attrs_Reconcile() throws Exception {
+        Editor editor = harness.newEditor(
+                "var_sources:\n" +
+                        "- name: sts4\n" +
+                        "  type: vault\n" +
+                        "  config:\n" +
+                        "    namespace: awesome\n"
+        );
+        
+        editor.assertProblems(
+                "config|'uri' is required"
+        );
+    }
+    
 	
 	//////////////////////////////////////////////////////////////////////////////
 

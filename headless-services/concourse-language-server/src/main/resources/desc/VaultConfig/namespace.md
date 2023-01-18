@@ -1,0 +1,1 @@
+*Optional.* A [Vault namespace](https://www.vaultproject.io/docs/enterprise/namespaces/index.html) to operate under.

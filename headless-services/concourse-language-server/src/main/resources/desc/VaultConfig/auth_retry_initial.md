@@ -1,0 +1,1 @@
+*Optional.* When retrying during authentication, start with this retry interval. The interval will increase exponentially until `auth_retry_max` is reached.

@@ -1,0 +1,1 @@
+*Optional.* Skip TLS validation. Not recommended. Don't do it. No really, don't.

@@ -1,0 +1,1 @@
+*Required.* The name of the **((var))** source. This should be short and simple. This name will be referenced **((var))** [syntax](https://concourse-ci.org/vars.html#var-syntax) throughout the config.

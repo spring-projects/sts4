@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016 Pivotal, Inc.
+ * Copyright (c) 2016, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -502,6 +502,63 @@ public class PipelineYmlSchema implements YamlSchema {
 
 		YType t_group_name_def= f.yatomic("Group Name")
 				.parseWith(ValueParsers.NE_STRING);
+		
+		/**
+		 * VAR_SOURCE definition
+		 */
+		YBeanType t_var_source_type = f.ybean("VarSource");
+		addProp(t_var_source_type, "name", t_ne_string).isPrimary(true);
+		addProp(t_var_source_type, "type", f.yenum("VarSourceTypes", "vault", "ssm", "dummy", "secretmanager")).isRequired(true);
+		addProp(t_var_source_type, "config", f.contextAware("VarSourceConfig", (dc) -> {
+			YamlPath path = dc.getPath();
+			if (path != null) {
+				YamlFileAST root = asts.getSafeAst(dc.getDocument());
+				if (root!=null) {
+					String value = NodeUtil.asScalar(path.dropLast().append(YamlPathSegment.valueAt("type")).traverseToNode(root));
+					switch (value) {
+					case "vault":
+						YBeanType vaultConfig = f.ybean("VaultConfig");
+						addProp(vaultConfig, "uri", t_ne_string).isPrimary(true);
+						addProp(vaultConfig, "ca_cert", t_string);
+						addProp(vaultConfig, "path_prefix", t_string);
+						addProp(vaultConfig, "lookup_templates", f.yseq(t_string));
+						addProp(vaultConfig, "shared_path", t_string);
+						addProp(vaultConfig, "namespace", t_string);
+						addProp(vaultConfig, "client_cert", t_string);
+						addProp(vaultConfig, "client_key", t_string);
+						addProp(vaultConfig, "client_name", t_string);
+						addProp(vaultConfig, "insecure_skip_verify", t_boolean);
+						addProp(vaultConfig, "client_token", t_string);
+						addProp(vaultConfig, "auth_backend", t_string);
+						addProp(vaultConfig, "auth_params", f.ymap(t_ne_string, t_string));
+						addProp(vaultConfig, "auth_max_ttl", t_duration);
+						addProp(vaultConfig, "auth_retry_max", t_duration);
+						addProp(vaultConfig, "auth_retry_initial", t_duration);
+						return vaultConfig;
+					case "ssm":
+						YBeanType ssmConfig = f.ybean("SSMConfig");
+						addProp(ssmConfig, "region", t_string).isPrimary(true);
+						return ssmConfig;
+					case "dummy":
+						YBeanType dummyConfig = f.ybean("DummyConfig");
+						addProp(dummyConfig, "vars", t_any).isPrimary(true);
+						return dummyConfig;
+					case "secretmanager":
+						YBeanType smcConfig = f.ybean("SecretManagerConfig");
+						addProp(smcConfig, "aws-secretsmanager-region", t_ne_string).isPrimary(true);
+						addProp(smcConfig, "aws-secretsmanager-access-key", t_ne_string);
+						addProp(smcConfig, "aws-secretsmanager-secret-key", t_ne_string);
+						addProp(smcConfig, "aws-secretsmanager-session-token", t_ne_string);
+						addProp(smcConfig, "aws-secretsmanager-pipeline-secret-template", t_string);
+						addProp(smcConfig, "aws-secretsmanager-team-secret-template", t_string);
+						return smcConfig;
+					default:
+						return null;
+					}
+				}
+			}
+			return null;
+		}).treatAsBean()).isRequired(true);
 
 		AbstractType group = f.ybean("Group");
 		addProp(group, "name", t_group_name_def).isPrimary(true);
@@ -520,6 +577,7 @@ public class PipelineYmlSchema implements YamlSchema {
 		AbstractType t_groups = f.yseq(group).require(models::jobAssignmentIsComplete);
 		addProp(TOPLEVEL_TYPE, "resources", t_resources);
 		addProp(TOPLEVEL_TYPE, "jobs", t_jobs);
+		addProp(TOPLEVEL_TYPE, "var_sources", f.yseq(t_var_source_type));
 		addProp(TOPLEVEL_TYPE, "resource_types", t_resourceTypes);
 		addProp(TOPLEVEL_TYPE, "groups", t_groups);
 		addProp(TOPLEVEL_TYPE, "display", t_display);

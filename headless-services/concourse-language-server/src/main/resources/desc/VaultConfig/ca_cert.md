@@ -1,0 +1,1 @@
+*Optional.* The PEM encoded contents of a CA certificate to use when connecting to the API.
