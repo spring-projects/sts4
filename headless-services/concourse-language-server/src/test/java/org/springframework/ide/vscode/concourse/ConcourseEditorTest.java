@@ -668,6 +668,7 @@ public class ConcourseEditorTest {
                         "  - get: my-repo\n" +
                         "  - set_pipeline: configure-the-pipeline\n" +
                         "    file: my-repo/ci/pipeline.yml\n" +
+                        "    instance_vars:\n" +
                         "    var_files:\n" +
                         "    - my-repo/ci/dev.yml\n" +
                         "    vars:\n" +
@@ -675,8 +676,9 @@ public class ConcourseEditorTest {
         );
 
         editor.assertHoverContains("file", "The path to the pipeline's configuration file.");
+        editor.assertHoverContains("instance_vars", "A map of instance vars used to identify");
         editor.assertHoverContains("var_files", "files that will be passed to the pipeline config in the same manner as the --load-vars-from flag");
-        editor.assertHoverContains("vars", "A map of template variables to pass to the pipeline config.");
+        editor.assertHoverContains("vars", 2, "A map of template variables to pass to the pipeline config.");
     }
 
     @Test
@@ -6879,7 +6881,8 @@ public class ConcourseEditorTest {
                         "- name: sts4\n" +
                         "  type: dummy\n" +
                         "  config:\n" +
-                        "    vars: east\n"
+                        "    vars:\n" +
+                        "      k1: v1\n"
         );
         
         editor.assertProblems();

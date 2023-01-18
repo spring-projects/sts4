@@ -1,0 +1,5 @@
+*Optional.* A map of instance vars used to identify [instanced pipelines](https://concourse-ci.org/instanced-pipelines.html). These vars will also be [interpolated into the pipeline config](https://concourse-ci.org/setting-pipelines.html#pipeline-static-vars).
+
+Note that variables set with this field will not propagate to tasks configured via [task step file](https://concourse-ci.org/task-step.html#schema.task.file). If you want those variables to be determined at the time the pipeline is set, use [task step vars](https://concourse-ci.org/task-step.html#schema.task.vars) as well.
+
+[Instance pipelines](https://concourse-ci.org/instanced-pipelines.html) are experimental and need to be enabled by setting the `--enable-pipeline-instances` flag on the [web node](https://concourse-ci.org/concourse-web.html).

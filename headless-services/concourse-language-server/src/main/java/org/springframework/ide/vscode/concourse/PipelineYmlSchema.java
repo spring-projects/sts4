@@ -402,6 +402,7 @@ public class PipelineYmlSchema implements YamlSchema {
 		YBeanType setPipelineStep = f.ybean("SetPipelineStep");
 		addProp(setPipelineStep, "set_pipeline", t_ne_string);
 		addProp(setPipelineStep, "file", t_ne_string).isRequired(true);
+		addProp(setPipelineStep, "instance_vars", t_params);
 		addProp(setPipelineStep, "vars", t_params);
 		addProp(setPipelineStep, "var_files", t_strings);
 
@@ -541,7 +542,7 @@ public class PipelineYmlSchema implements YamlSchema {
 						return ssmConfig;
 					case "dummy":
 						YBeanType dummyConfig = f.ybean("DummyConfig");
-						addProp(dummyConfig, "vars", t_any).isPrimary(true);
+						addProp(dummyConfig, "vars", t_params).isPrimary(true);
 						return dummyConfig;
 					case "secretmanager":
 						YBeanType smcConfig = f.ybean("SecretManagerConfig");
