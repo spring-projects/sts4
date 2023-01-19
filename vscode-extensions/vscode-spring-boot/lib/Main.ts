@@ -22,7 +22,7 @@ const FACTORIES_LANGUAGE_ID = "spring-factories";
 
 const YES = 'Yes';
 const NO = 'No';
-const NEVER_SHOW_AGAIN = "Do not show again";
+const STOP_ASKING = "Stop Asking";
 const RECONCILING_PREF_KEY = 'boot-java.rewrite.reconcile';
 const RECONCILING_PROMPT_PREF_KEY = 'vscode-spring-boot.rewrite.reconcile-prompt';
 
@@ -48,8 +48,8 @@ export function activate(context: VSCode.ExtensionContext): Thenable<ExtensionAP
             if (!jvm.isJdk()) {
                 VSCode.window.showWarningMessage(
                     'JAVA_HOME or PATH environment variable seems to point to a JRE. A JDK is required, hence Boot Hints are unavailable.',
-                    NEVER_SHOW_AGAIN).then(selection => {
-                        if (selection === NEVER_SHOW_AGAIN) {
+                    STOP_ASKING).then(selection => {
+                        if (selection === STOP_ASKING) {
                             options.workspaceOptions.update('checkJVM', false);
                         }
                     }
@@ -143,12 +143,13 @@ export function activate(context: VSCode.ExtensionContext): Thenable<ExtensionAP
 
             // Ask user to enable Boot java source reconciling feature if disabled
             if (VSCode.workspace.getConfiguration().get(RECONCILING_PROMPT_PREF_KEY) && !VSCode.workspace.getConfiguration().get(RECONCILING_PREF_KEY)) {
-                VSCode.window.showInformationMessage('Do you wish to enable additional Java sources reconciling to get Spring specific validations and suggestions?', YES, NO, NEVER_SHOW_AGAIN).then(answer => {
+                VSCode.window.showInformationMessage('Do you wish to enable additional Java sources reconciling to get Spring specific validations and suggestions?\n\n' +
+                    'For more details see [Validations And Quick Fixes](https://github.com/spring-projects/sts4/wiki/Validations-And-Quick-Fixes)', YES, NO, STOP_ASKING).then(answer => {
                     switch (answer) {
                         case YES:
                             VSCode.workspace.getConfiguration().update(RECONCILING_PREF_KEY, true, true);
                             break;
-                        case NEVER_SHOW_AGAIN:
+                        case STOP_ASKING:
                             VSCode.workspace.getConfiguration().update(RECONCILING_PROMPT_PREF_KEY, false, true);
                             break;
                         default:

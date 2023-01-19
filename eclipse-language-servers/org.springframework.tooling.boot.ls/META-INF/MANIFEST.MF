@@ -36,7 +36,8 @@ Require-Bundle: org.eclipse.jdt.launching;bundle-version="3.9.0",
  com.google.guava,
  org.eclipse.core.expressions,
  org.springsource.ide.eclipse.commons.core;bundle-version="4.17.0",
- org.springframework.tooling.jdt.ls.commons;bundle-version="4.17.0"
+ org.springframework.tooling.jdt.ls.commons;bundle-version="4.17.0",
+ org.eclipse.jface.notifications
 Import-Package: com.google.common.base,
  com.google.common.collect,
  com.google.gson;version="2.7.0",
