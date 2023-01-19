@@ -18,10 +18,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
@@ -659,6 +661,13 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 	 * up more requests if the previous request has not yet been started.
 	 */
 	private ConcurrentHashMap<URI, Disposable> reconcileRequests = new ConcurrentHashMap<>();
+	
+	/**
+	 * Aux structure to quickly check if doc is queued for reconcile. Handles case that `reconcileRequests` alone cannot:
+	 * Doc URI came in not queued then go on and below add it `reconcileRequests`, but if the same URI comes in again and reaches the
+	 * "isQueued" check while the first URI didn't reach the code adding to `reconcileRequests` then there is a race condition :-\
+	 */
+	private Set<URI> reconcileDocUris = Collections.synchronizedSet(new HashSet<>());
 
 	/**
 	 * Convenience method. Subclasses can call this to use a {@link IReconcileEngine} ported
@@ -677,7 +686,7 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 		log.debug("Validate doc {}", uri);
 		
 		if (props.getReconcileStrategy() != ReconcileStrategy.DEBOUNCE || props.getReconcileDelay() == 0) {
-			if (reconcileRequests.containsKey(uri)) {
+			if (!reconcileDocUris.add(uri)) {
 				log.debug("Reconcile skipped {}", uri);
 				return;
 			}
@@ -687,6 +696,7 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 		
 		Mono<Object> doReconcile = Mono.fromRunnable(() -> {
 			reconcileRequests.remove(uri);
+			reconcileDocUris.remove(uri);
 			log.debug("Starting reconcile for {}", uri);
 
 			TextDocument doc = documents.getLatestSnapshot(docId.getUri());
