@@ -409,6 +409,8 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 					stopAskingHandler.run();
 				}
 			});
+			
+			parent.setBackground(link.getBackground());
 		}
 
 		@Override
