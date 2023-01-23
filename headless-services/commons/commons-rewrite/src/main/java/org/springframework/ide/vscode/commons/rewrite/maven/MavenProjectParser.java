@@ -331,9 +331,12 @@ public class MavenProjectParser {
 	public static List<Parser.Input> getMavenPoms(Path projectDir, ExecutionContext ctx,
 			Function<Path, Parser.Input> parserInputProvider) {
 		return getSources(projectDir, ctx, parserInputProvider, "pom.xml").stream().filter(p -> {
-			String pathStr = p.getPath().toString();
-			return p.getPath().getFileName().toString().equals("pom.xml") && !pathStr.contains("/src/")
-					&& !pathStr.contains("/bin/") && !pathStr.contains("/target/");
+			Path relativeToProject = projectDir.relativize(p.getPath());
+			String relativePathStr = relativeToProject.toString();
+			return relativeToProject.getFileName().toString().equals("pom.xml") 
+					&& !relativePathStr.contains("/src/") && !relativePathStr.startsWith("src/")
+					&& !relativePathStr.contains("/bin/") && !relativePathStr.startsWith("bin/") 
+					&& !relativePathStr.contains("/target/") && !relativePathStr.startsWith("target/");
 		}).collect(Collectors.toList());
 	}
     
