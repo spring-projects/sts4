@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2022 VMware, Inc.
+ * Copyright (c) 2022, 2023 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -48,11 +48,12 @@ public class LoadUtilsTest {
 		assertTrue(r instanceof DeclarativeRecipe);
 		assertEquals("org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_0", r.getName());
 		assertEquals(
-				"Migrate applications built on Spring Boot 2.7 to the latest Spring Boot 3.0 release. This recipe will modify an application's build files, make changes to deprecated/preferred APIs, and migrate configuration settings that have changes between versions. This recipe will also chain additional framework migrations (Spring Framework, Spring Data, etc) that are required as part of the migration to Spring Boot 2.7.\n"
+				"Migrate applications to the latest Spring Boot 3.0 release. This recipe will modify an application's build files, make changes to deprecated/preferred APIs, and migrate configuration settings that have changes between versions. This recipe will also chain additional framework migrations (Spring Framework, Spring Data, etc) that are required as part of the migration to Spring Boot 2.7.\n"
+				+ ""
 						+ "",
 				r.getDescription());
-		assertEquals("Migrate to Spring Boot 3.0 from Spring Boot 2.7", r.getDisplayName());
-		assertEquals(7, r.getRecipeList().size());
+		assertEquals("Migrate to Spring Boot 3.0", r.getDisplayName());
+		assertEquals(9, r.getRecipeList().size());
 		
 		Recipe pomRecipe = r.getRecipeList().get(0);
 		assertTrue(pomRecipe instanceof DeclarativeRecipe);

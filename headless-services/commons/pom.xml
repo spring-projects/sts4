@@ -108,9 +108,9 @@
 		<commons-codec-version>1.13</commons-codec-version>
 
 		<!-- Rewrite specific properties -->
-		<rewrite-version>7.34.0</rewrite-version>
-		<rewrite-spring-version>4.31.0</rewrite-spring-version>
-		<rewrite-java-migration.version>1.15.0</rewrite-java-migration.version>
+		<rewrite-version>7.35.0</rewrite-version>
+		<rewrite-spring-version>4.32.0</rewrite-spring-version>
+		<rewrite-java-migration.version>1.16.0</rewrite-java-migration.version>
 
 		<signing.skip>true</signing.skip>
 		<signing.alias>vmware</signing.alias>
