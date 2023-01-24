@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Pivotal, Inc.
+ * Copyright (c) 2018, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -12,11 +12,8 @@ package org.springframework.ide.vscode.boot.bootiful;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.ide.vscode.boot.app.BootVersionValidationEngine;
 import org.springframework.ide.vscode.boot.editor.harness.AdHocPropertyHarness;
-import org.springframework.ide.vscode.boot.java.utils.test.MockProjectObserver;
 import org.springframework.ide.vscode.boot.metadata.ProjectBasedPropertyIndexProvider;
-import org.springframework.ide.vscode.commons.java.IJavaProject;
 
 @Configuration
 public class AdHocPropertyHarnessTestConf {
@@ -28,15 +25,4 @@ public class AdHocPropertyHarnessTestConf {
 		return adHocProperties.getIndexProvider();
 	}
 	
-	@Bean BootVersionValidationEngine versionValidator() {
-		return new BootVersionValidationEngine(new MockProjectObserver(), null) {
-
-			@Override
-			public void validate(IJavaProject project) {
-				// do not validate anything
-			}
-			
-		};
-	}
-
 }

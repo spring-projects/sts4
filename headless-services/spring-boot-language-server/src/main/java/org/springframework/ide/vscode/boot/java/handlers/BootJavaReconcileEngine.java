@@ -25,7 +25,6 @@ import java.util.stream.Stream;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ide.vscode.boot.app.BootVersionValidationEngine;
 import org.springframework.ide.vscode.boot.common.IJavaProjectReconcileEngine;
 import org.springframework.ide.vscode.boot.java.reconcilers.JavaReconciler;
 import org.springframework.ide.vscode.commons.java.IClasspathUtil;
@@ -51,13 +50,10 @@ public class BootJavaReconcileEngine implements IReconcileEngine, IJavaProjectRe
 	private final JavaProjectFinder projectFinder; 
 	private JavaReconciler[] javaReconcilers;
 
-	private BootVersionValidationEngine bootVersionValidationEngine;
-	
-	public BootJavaReconcileEngine(JavaProjectFinder projectFinder, JavaReconciler[] javaReconcilers, SimpleTextDocumentService documents, BootVersionValidationEngine bootVersionValidator) {
+	public BootJavaReconcileEngine(JavaProjectFinder projectFinder, JavaReconciler[] javaReconcilers, SimpleTextDocumentService documents) {
 		this.documents = documents;
 		this.projectFinder = projectFinder;
 		this.javaReconcilers = javaReconcilers;
-		this.bootVersionValidationEngine = bootVersionValidator;
 	}
 
 	@Override
@@ -118,10 +114,6 @@ public class BootJavaReconcileEngine implements IReconcileEngine, IJavaProjectRe
 
 	@Override
 	public void reconcile(IJavaProject project, Function<TextDocument, IProblemCollector> problemCollectorFactory) {
-		if (bootVersionValidationEngine != null) {
-			bootVersionValidationEngine.validate(project);
-		}
-
 		Stream<Path> files = IClasspathUtil.getProjectJavaSourceFolders(project.getClasspath()).flatMap(folder -> {
 			try {
 				return Files.walk(folder.toPath()).filter(Files::isRegularFile);
@@ -161,11 +153,6 @@ public class BootJavaReconcileEngine implements IReconcileEngine, IJavaProjectRe
 
 	@Override
 	public void clear(IJavaProject project) {
-		// Build file
-		if (project.getProjectBuild() != null && project.getProjectBuild().getBuildFile() != null) {
-			documents.publishDiagnostics(new TextDocumentIdentifier(project.getProjectBuild().getBuildFile().toASCIIString()), Collections.emptyList());
-		}
-		// Rest of the files
 		IClasspathUtil.getProjectJavaSourceFolders(project.getClasspath()).flatMap(folder -> {
 			try {
 				return Files.walk(folder.toPath()).filter(Files::isRegularFile);

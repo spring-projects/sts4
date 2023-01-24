@@ -37,6 +37,7 @@ import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.boot.java.utils.SymbolCache;
 import org.springframework.ide.vscode.boot.metadata.ProjectBasedPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.properties.BootPropertiesLanguageServerComponents;
+import org.springframework.ide.vscode.boot.validation.BootVersionValidationEngine;
 import org.springframework.ide.vscode.boot.xml.SpringXMLLanguageServerComponents;
 import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
@@ -90,7 +91,7 @@ public class BootLanguageServerInitializer implements InitializingBean {
 
 	private CompositeLanguageServerComponents components;
 	private VscodeCompletionEngineAdapter completionEngineAdapter;
-	private IJavaProjectReconcileEngine projectReconciler;
+	private List<IJavaProjectReconcileEngine> projectReconcilers;
 	private Scheduler projectReconcileScheduler = Schedulers.newBoundedElastic(1, Integer.MAX_VALUE, "Project-Reconciler", 10);
 	private Map<URI, Disposable> projectReconcileRequests = new ConcurrentHashMap<>();
 	
@@ -142,10 +143,11 @@ public class BootLanguageServerInitializer implements InitializingBean {
 		builder.add(new SpringFactoriesLanguageServerComponents(projectFinder, springIndexer, config));
 		components = builder.build(server);
 		
-		projectReconciler = (IJavaProjectReconcileEngine) bootJavaLanguageServerComponent.getReconcileEngine().get();
+		projectReconcilers = List.of(
+				(IJavaProjectReconcileEngine) bootJavaLanguageServerComponent.getReconcileEngine().get(),
+				new BootVersionValidationEngine(server, config)
+		);
 		
-		params.projectObserver.addListener(reconcileDocumentsForProjectChange(server, components, params.projectFinder));
-
 		SimpleTextDocumentService documents = server.getTextDocumentService();
 
 		components.getReconcileEngine().ifPresent(reconcileEngine -> {
@@ -171,24 +173,36 @@ public class BootLanguageServerInitializer implements InitializingBean {
 		
 		components.getDocumentSymbolProvider().ifPresent(documents::onDocumentSymbol);
 		
-		config.addListener(evt -> reconcile());
-		
 		if (recipesRepo != null) {
-			recipesRepo.onRecipesLoaded(v -> reconcile());
+			recipesRepo.onRecipesLoaded(v -> {
+				// Recipes will start loading only after config has been received. Therefore safe to start listening to config changes now
+				// and launch initial project reconcile since both config and recipes are present
+				startListeningToPerformReconcile();			
+				reconcile();
+			});
+		} else {
+			startListeningToPerformReconcile();			
+			reconcile();
 		}
-				
-		server.getWorkspaceService().getFileObserver().onFilesChanged(FILES_TO_WATCH_GLOB, this::handleFiles);
-		server.getWorkspaceService().getFileObserver().onFilesCreated(FILES_TO_WATCH_GLOB, this::handleFiles);
-
-		// TODO: index update even happens on every file save. Very expensive to blindly reconcile all projects.
-		// Need to figure out a check if spring index has any changes 
-//		springIndexer.onUpdate(v -> reconcile());
 		
 		server.onShutdown(() -> {
 			for (IJavaProject p : projectFinder.all()) {
 				doNotValidateProject(p, false);
 			}
 		});
+	}
+	
+	private void startListeningToPerformReconcile() {
+		config.addListener(evt -> reconcile());
+		
+		params.projectObserver.addListener(reconcileDocumentsForProjectChange(server, components, params.projectFinder));
+		
+		server.getWorkspaceService().getFileObserver().onFilesChanged(FILES_TO_WATCH_GLOB, this::handleFiles);
+		server.getWorkspaceService().getFileObserver().onFilesCreated(FILES_TO_WATCH_GLOB, this::handleFiles);
+		
+		// TODO: index update even happens on every file save. Very expensive to blindly reconcile all projects.
+		// Need to figure out a check if spring index has any changes 
+//		springIndexer.onUpdate(v -> reconcile());
 	}
 	
 	private void reconcile() {
@@ -226,7 +240,9 @@ public class BootLanguageServerInitializer implements InitializingBean {
 				.doOnSuccess(l -> {
 					if (projectReconcileRequests.remove(uri) != null) {
 						projectFinder.find(new TextDocumentIdentifier(uri.toASCIIString())).ifPresent(p -> {
-							projectReconciler.reconcile(p, doc -> server.createProblemCollector(doc));
+							for (IJavaProjectReconcileEngine projectReconciler : projectReconcilers) {
+								projectReconciler.reconcile(p, doc -> server.createProblemCollector(doc));
+							}
 						});
 					}
 				})
@@ -250,10 +266,12 @@ public class BootLanguageServerInitializer implements InitializingBean {
 		 * which is caused by the #clear(...) call. In the LS reality this will never happen as #publishDiagnsotics() is always a future
 		 */
 		if (asyncClear) {
-			Mono.fromFuture(CompletableFuture.runAsync(() -> projectReconciler.clear(project)))
+			Mono.fromFuture(CompletableFuture.runAsync(() -> projectReconcilers.forEach(projectReconciler -> projectReconciler.clear(project))))
 					.publishOn(projectReconcileScheduler);
 		} else {
-			projectReconciler.clear(project);
+			for (IJavaProjectReconcileEngine projectReconciler : projectReconcilers) {
+				projectReconciler.clear(project);
+			}
 		}
 	}
 	

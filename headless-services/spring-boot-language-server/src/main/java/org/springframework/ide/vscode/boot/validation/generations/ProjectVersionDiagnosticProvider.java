@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2022 VMware, Inc.
+ * Copyright (c) 2022, 2023 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.boot.validation.generations;
 import java.io.File;
 import java.net.URI;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 
@@ -52,9 +53,9 @@ public class ProjectVersionDiagnosticProvider {
 
 		for (VersionValidator validator : validators.getValidators()) {
 			try {
-				Diagnostic diagnostic = validator.validate(javaProject, javaProjectVersion);
-				if (diagnostic != null) {
-					diagnostics.add(diagnostic);
+				Collection<Diagnostic> batch = validator.validate(javaProject, javaProjectVersion);
+				if (batch != null) {
+					diagnostics.addAll(batch);
 				}
 			} catch (Exception e) {
 				log.error("", e);

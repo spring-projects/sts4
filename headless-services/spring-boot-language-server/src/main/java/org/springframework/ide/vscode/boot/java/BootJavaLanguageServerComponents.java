@@ -23,7 +23,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.ide.vscode.boot.app.BootJavaConfig;
 import org.springframework.ide.vscode.boot.app.BootLanguageServerParams;
-import org.springframework.ide.vscode.boot.app.BootVersionValidationEngine;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchyAwareLookup;
 import org.springframework.ide.vscode.boot.java.autowired.AutowiredHoverProvider;
@@ -202,7 +201,7 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		reconcileEngine = new BootJavaReconcileEngine(projectFinder, new JavaReconciler[] {
 				jdtReconciler,
 				rewriteJavaReconciler
-		}, documents, appContext.getBean(BootVersionValidationEngine.class));
+		}, documents);
 		
 		codeActionProvider = new BootJavaCodeActionProvider(
 				projectFinder,
