@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2022 VMware, Inc.
+ * Copyright (c) 2022, 2023 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -114,29 +114,33 @@ public class LoadUtils {
     		Object[] valueToSet = (Object[]) Array.newInstance(type.getComponentType(), arrayValue.size());
     		int k = 0;
     		for (Object v : arrayValue) {
-    			valueToSet[k] = getOptionValue(type.getComponentType().getSimpleName(), v);
+    			valueToSet[k] = getOptionValue(type.getComponentType(), v);
     		}
     		return valueToSet;
     	} else {
-    		return getOptionValue(option.getType(), option.getValue());
+    		return getOptionValue(type, option.getValue());
     	}
     }
     
-    private static Object getOptionValue(String type, Object v) {
-    	switch (type) {
-    	case "int":
+    private static Object getOptionValue(Class<?> type, Object v) {
+    	if (type.equals(int.class) || type.equals(Integer.class)) {
     		return ((Number) v).intValue();
-    	case "long":
+    	} else if (type.equals(long.class) || type.equals(Long.class)) {
     		return ((Number) v).longValue();
-    	case "short":
+    	} else if (type.equals(short.class) || type.equals(Short.class)) {
     		return ((Number) v).shortValue();
-    	case "float":
+    	} else if (type.equals(float.class) || type.equals(Float.class)) {
     		return ((Number) v).floatValue();
-    	case "double":
-    		return ((Number) v).doubleValue();
-    	default:
-    		return v;
+    	} else if (type.equals(double.class) || type.equals(Double.class)) {
+    		return ((Number) v).shortValue();
+    	} else if (Enum.class.isAssignableFrom(type) && v instanceof String) {
+            try {
+                return type.getMethod("valueOf").invoke(v);
+            } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+                throw new RuntimeException(e);
+            }
     	}
+    	return v;
     }
     
     private static Object getPrimitiveDefault(Class<?> t) {
