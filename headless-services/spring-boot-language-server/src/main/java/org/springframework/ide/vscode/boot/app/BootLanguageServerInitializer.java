@@ -67,6 +67,8 @@ import reactor.core.scheduler.Schedulers;
 @Component
 public class BootLanguageServerInitializer implements InitializingBean {
 	
+	private static final long DEBOUNCE_PERIOD_PROJECT_RECONCILE = 500;
+
 	private static final List<String> FILES_TO_WATCH_GLOB = List.of("**/*.java");
 
 	@Autowired SimpleLanguageServer server;
@@ -235,7 +237,7 @@ public class BootLanguageServerInitializer implements InitializingBean {
 		
 		doNotValidateProject(project, true);
 		
-		projectReconcileRequests.put(uri, Mono.delay(Duration.ofMillis(500))
+		Disposable previousRequest = projectReconcileRequests.put(uri, Mono.delay(Duration.ofMillis(DEBOUNCE_PERIOD_PROJECT_RECONCILE))
 				.publishOn(projectReconcileScheduler)
 				.doOnSuccess(l -> {
 					if (projectReconcileRequests.remove(uri) != null) {
@@ -247,6 +249,10 @@ public class BootLanguageServerInitializer implements InitializingBean {
 					}
 				})
 				.subscribe());
+		// Dispose previous request to debounce project reconcile requests.
+		if (previousRequest != null) {
+			previousRequest.dispose();
+		}
 	}
 	
 	private void doNotValidateProject(IJavaProject project, boolean asyncClear) {
