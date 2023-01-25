@@ -14,6 +14,7 @@ import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
@@ -187,23 +188,24 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		highlightsEngine = createDocumentHighlightEngine(indexer);
 		documents.onDocumentHighlight(highlightsEngine);
 		
+		List<JavaReconciler> javaReconcilers = new ArrayList<>();
 		JdtReconciler jdtReconciler = new JdtReconciler(cuCache, config);
+		javaReconcilers.add(jdtReconciler);
 		
-		RewriteCompilationUnitCache orCompilationUnitCache = appContext.getBean(RewriteCompilationUnitCache.class);
+		Map<String, RewriteCompilationUnitCache> rewriteCuCacheBeans = appContext.getBeansOfType(RewriteCompilationUnitCache.class);
+		RewriteCompilationUnitCache orCompilationUnitCache = rewriteCuCacheBeans.isEmpty() ? null : rewriteCuCacheBeans.values().iterator().next();
+		Map<String, RewriteRecipeRepository> recipeRepoBeans = appContext.getBeansOfType(RewriteRecipeRepository.class);
+		RewriteRecipeRepository recipeRepo = recipeRepoBeans.isEmpty() ? null : recipeRepoBeans.values().iterator().next();
+		if (recipeRepo != null && orCompilationUnitCache != null) {
+			javaReconcilers.add(new RewriteReconciler(
+					recipeRepo,
+					orCompilationUnitCache,
+					server.getQuickfixRegistry(),
+					config
+			));
+		}
 		
-		RewriteRecipeRepository recipeRepo = appContext.getBean(RewriteRecipeRepository.class);
-		
-		RewriteReconciler rewriteJavaReconciler = new RewriteReconciler(
-				recipeRepo,
-				orCompilationUnitCache,
-				server.getQuickfixRegistry(),
-				config
-		);
-		
-		reconcileEngine = new BootJavaReconcileEngine(projectFinder, new JavaReconciler[] {
-				jdtReconciler,
-				rewriteJavaReconciler
-		}, server, config, projectObserver, recipeRepo);
+		reconcileEngine = new BootJavaReconcileEngine(projectFinder, javaReconcilers.toArray(new JavaReconciler[javaReconcilers.size()]), server, config, projectObserver, recipeRepo);
 		
 		codeActionProvider = new BootJavaCodeActionProvider(
 				projectFinder,
