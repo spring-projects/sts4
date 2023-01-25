@@ -24,29 +24,31 @@ import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFin
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixRegistry;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 
-@ConditionalOnBean(RewriteRecipeRepository.class)
 @Configuration
 public class RewriteConfig implements InitializingBean {
 
 	@Autowired
 	private SimpleLanguageServer server;
 
-	@Autowired
+	@Autowired(required = false)
 	private RewriteRefactorings rewriteRefactorings;
 	
-	@Bean
-	RewriteCodeActionHandler rewriteCodeActionHandler(RewriteCompilationUnitCache cuCache, RewriteRecipeRepository recipeRepo, BootJavaConfig config) {
+	@ConditionalOnBean(RewriteRecipeRepository.class)
+	@Bean RewriteCodeActionHandler rewriteCodeActionHandler(RewriteCompilationUnitCache cuCache, RewriteRecipeRepository recipeRepo, BootJavaConfig config) {
 		return new RewriteCodeActionHandler(cuCache, recipeRepo, config);
 	}
 	
+	@ConditionalOnBean(RewriteRecipeRepository.class)
 	@Bean SpringBootUpgrade springBootUpgrade(SimpleLanguageServer server, RewriteRecipeRepository recipeRepo, JavaProjectFinder projectFinder) {
 		return new SpringBootUpgrade(server, recipeRepo, projectFinder);
 	}
 	
 	@Override
 	public void afterPropertiesSet() throws Exception {
-		QuickfixRegistry registry = server.getQuickfixRegistry();
-		registry.register(RewriteRefactorings.REWRITE_RECIPE_QUICKFIX, rewriteRefactorings);
+		if (rewriteRefactorings != null) {
+			QuickfixRegistry registry = server.getQuickfixRegistry();
+			registry.register(RewriteRefactorings.REWRITE_RECIPE_QUICKFIX, rewriteRefactorings);
+		}
 	}
 
 }

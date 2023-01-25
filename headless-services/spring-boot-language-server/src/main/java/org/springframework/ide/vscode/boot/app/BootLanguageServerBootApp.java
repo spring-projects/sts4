@@ -222,11 +222,6 @@ public class BootLanguageServerBootApp {
 		return SourceLinkFactory.createSourceLinks(server, cuCache, params.projectFinder);
 	}
 
-	@ConditionalOnBean(RewriteRecipeRepository.class)
-	@Bean RewriteCompilationUnitCache orcuCache(SimpleLanguageServer server, BootLanguageServerParams params) {
-		return new RewriteCompilationUnitCache(params.projectFinder, server, params.projectObserver);
-	}
-	
 	@Bean CompilationUnitCache cuCache(SimpleLanguageServer server, BootLanguageServerParams params) {
 		return new CompilationUnitCache(params.projectFinder, server, params.projectObserver);
 	}
@@ -299,6 +294,16 @@ public class BootLanguageServerBootApp {
 		return new FutureProjectFinder(projectFinder, projectObserver);
 	}
 	
+	@ConditionalOnMissingClass("org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness")
+	@Bean RewriteRecipeRepository rewriteRecipesRepository(SimpleLanguageServer server, JavaProjectFinder projectFinder, BootJavaConfig config) {
+		return new RewriteRecipeRepository(server, projectFinder, config);
+	}
+	
+	@ConditionalOnBean(RewriteRecipeRepository.class)
+	@Bean RewriteCompilationUnitCache orcuCache(SimpleLanguageServer server, BootLanguageServerParams params) {
+		return new RewriteCompilationUnitCache(params.projectFinder, server, params.projectObserver);
+	}
+	
 	@ConditionalOnBean(RewriteRecipeRepository.class)
 	@Bean RewriteRefactorings rewriteRefactorings(SimpleLanguageServer server, JavaProjectFinder projectFinder, RewriteRecipeRepository recipeRepo, RewriteCompilationUnitCache cuCache) {
 		return new RewriteRefactorings(server.getTextDocumentService(), projectFinder, recipeRepo, cuCache);
@@ -313,11 +318,6 @@ public class BootLanguageServerBootApp {
 			codeActionOptions.setWorkDoneProgress(true);
 			cap.setCodeActionProvider(codeActionOptions);
 		};
-	}
-	
-	@ConditionalOnMissingClass("org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness")
-	@Bean RewriteRecipeRepository rewriteRecipesRepository(SimpleLanguageServer server, JavaProjectFinder projectFinder, BootJavaConfig config) {
-		return new RewriteRecipeRepository(server, projectFinder, config);
 	}
 	
 	@Bean
