@@ -235,14 +235,13 @@ public class BootLanguageServerInitializer implements InitializingBean {
 		
 		URI uri = project.getLocationUri();
 		
-		doNotValidateProject(project, true);
-		
 		Disposable previousRequest = projectReconcileRequests.put(uri, Mono.delay(Duration.ofMillis(DEBOUNCE_PERIOD_PROJECT_RECONCILE))
 				.publishOn(projectReconcileScheduler)
 				.doOnSuccess(l -> {
 					if (projectReconcileRequests.remove(uri) != null) {
 						projectFinder.find(new TextDocumentIdentifier(uri.toASCIIString())).ifPresent(p -> {
 							for (IJavaProjectReconcileEngine projectReconciler : projectReconcilers) {
+								projectReconciler.clear(project);
 								projectReconciler.reconcile(p, doc -> server.createProblemCollector(doc));
 							}
 						});
