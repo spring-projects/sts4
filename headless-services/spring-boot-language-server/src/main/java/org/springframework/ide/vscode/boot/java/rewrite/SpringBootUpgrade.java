@@ -99,8 +99,8 @@ public class SpringBootUpgrade {
 		
 		if (version.getMajor() == targetVersion.getMajor() && version.getMinor() == targetVersion.getMinor()) {
 			// patch version upgrade - treat as pom versions only upgrade
-			recipe.doNext(new UpgradeDependencyVersion("org.springframework.boot", "*", version.getMajor() + "." + version.getMinor() + ".x", null, null));
-			recipe.doNext(new UpgradeParentVersion("org.springframework.boot", "spring-boot-starter-parent", version.getMajor() + "." + version.getMinor() + ".x", null));
+			recipe.doNext(new UpgradeDependencyVersion("org.springframework.boot", "*", version.getMajor() + "." + version.getMinor() + ".x", null, null, null));
+			recipe.doNext(new UpgradeParentVersion("org.springframework.boot", "spring-boot-starter-parent", version.getMajor() + "." + version.getMinor() + ".x", null, null));
 		} else {
 			createRecipeIdsChain(version.getMajor(), version.getMinor(), targetVersion.getMajor(), targetVersion.getMinor()).stream()
 				.map(recipeRepo::getRecipe)

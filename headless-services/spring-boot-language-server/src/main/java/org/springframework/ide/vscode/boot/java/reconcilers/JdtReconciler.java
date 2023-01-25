@@ -15,7 +15,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Function;
 
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.Annotation;
@@ -160,8 +159,7 @@ public class JdtReconciler implements JavaReconciler {
 	}
 
 	@Override
-	public Map<IDocument, Collection<ReconcileProblem>> reconcile(IJavaProject project, List<TextDocument> docs,
-			Function<TextDocument, IProblemCollector> problemCollectorFactory) {
+	public Map<IDocument, Collection<ReconcileProblem>> reconcile(IJavaProject project, List<TextDocument> docs) {
 		
 		if (config.isRewriteReconcileEnabled()) {
 //			long start = System.currentTimeMillis();

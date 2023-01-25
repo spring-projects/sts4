@@ -22,7 +22,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.function.Consumer;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import org.openrewrite.ExecutionContext;
@@ -139,8 +138,7 @@ public class RewriteReconciler implements JavaReconciler {
 	}
 
 	@Override
-	public Map<IDocument, Collection<ReconcileProblem>> reconcile(IJavaProject project, List<TextDocument> docs,
-			Function<TextDocument, IProblemCollector> problemCollectorFactory) {
+	public Map<IDocument, Collection<ReconcileProblem>> reconcile(IJavaProject project, List<TextDocument> docs) {
 		
 		if (!config.isRewriteReconcileEnabled()) {
 			return Collections.emptyMap();
@@ -162,9 +160,9 @@ public class RewriteReconciler implements JavaReconciler {
 		}
 		JavaParser javaParser = ORAstUtils.createJavaParser(project);
 		javaParser.setSourceSet(MavenProjectParser.MAIN);
-		allProblems.putAll(doReconcile(project, mainSources, problemCollectorFactory, javaParser));
+		allProblems.putAll(doReconcile(project, mainSources, javaParser));
 		javaParser.setSourceSet(MavenProjectParser.TEST);
-		allProblems.putAll(doReconcile(project, testSources, problemCollectorFactory, javaParser));
+		allProblems.putAll(doReconcile(project, testSources, javaParser));
 		
 		long end = System.currentTimeMillis();
 		log.info("reconciling project (OpenRewrite): " + project.getElementName() + " - " + docs.size() + " done in " + (end - start) + "ms");
@@ -244,8 +242,7 @@ public class RewriteReconciler implements JavaReconciler {
 	private static final int BATCH = 50;
 
 	// Parse in batches and share the parser
-	private Map<IDocument, Collection<ReconcileProblem>> doReconcile(IJavaProject project, List<TextDocument> docs,
-			Function<TextDocument, IProblemCollector> problemCollectorFactory, JavaParser javaParser) {
+	private Map<IDocument, Collection<ReconcileProblem>> doReconcile(IJavaProject project, List<TextDocument> docs, JavaParser javaParser) {
 		Map<IDocument, Collection<ReconcileProblem>> allProblems = new HashMap<>();
 		if (javaParser != null && config.isRewriteReconcileEnabled()) {
 			try {

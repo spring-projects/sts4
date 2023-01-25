@@ -10,16 +10,14 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.common;
 
-import java.util.function.Function;
-
 import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
-import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 public interface IJavaProjectReconcileEngine {
 
-	void reconcile(IJavaProject project, Function<TextDocument, IProblemCollector> problemCollectorFactory);
+	void reconcile(IJavaProject project);
 	
 	void clear(IJavaProject project);
-
+	
+	ProjectReconcileScheduler getScheduler();
+	
 }

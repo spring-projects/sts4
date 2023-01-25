@@ -18,22 +18,26 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.boot.app.BootJavaConfig;
 import org.springframework.ide.vscode.boot.common.IJavaProjectReconcileEngine;
+import org.springframework.ide.vscode.boot.common.ProjectReconcileScheduler;
 import org.springframework.ide.vscode.boot.java.reconcilers.JavaReconciler;
+import org.springframework.ide.vscode.boot.java.rewrite.RewriteRecipeRepository;
 import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblem;
-import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
+import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
+import org.springframework.ide.vscode.commons.util.UriUtil;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.LazyTextDocument;
@@ -46,14 +50,26 @@ public class BootJavaReconcileEngine implements IReconcileEngine, IJavaProjectRe
 		
 	private static final Logger log = LoggerFactory.getLogger(BootJavaReconcileEngine.class);
 
-	private final SimpleTextDocumentService documents;
 	private final JavaProjectFinder projectFinder; 
-	private JavaReconciler[] javaReconcilers;
+	private final JavaReconciler[] javaReconcilers;
+	private final BootJavaProjectReconcilerScheduler projectReconeilerScheduler;
+	private final SimpleLanguageServer server;
 
-	public BootJavaReconcileEngine(JavaProjectFinder projectFinder, JavaReconciler[] javaReconcilers, SimpleTextDocumentService documents) {
-		this.documents = documents;
+	public BootJavaReconcileEngine(JavaProjectFinder projectFinder, JavaReconciler[] javaReconcilers,
+			SimpleLanguageServer server, BootJavaConfig config, ProjectObserver projectObserver,
+			RewriteRecipeRepository recipeRepo) {
 		this.projectFinder = projectFinder;
 		this.javaReconcilers = javaReconcilers;
+		this.server = server;
+		this.projectReconeilerScheduler = new BootJavaProjectReconcilerScheduler(
+				this,
+				server.getWorkspaceService().getFileObserver(),
+				projectObserver,
+				config,
+				recipeRepo,
+				server.getTextDocumentService(),
+				projectFinder
+		);
 	}
 
 	@Override
@@ -113,7 +129,7 @@ public class BootJavaReconcileEngine implements IReconcileEngine, IJavaProjectRe
 	}
 
 	@Override
-	public void reconcile(IJavaProject project, Function<TextDocument, IProblemCollector> problemCollectorFactory) {
+	public void reconcile(IJavaProject project) {
 		Stream<Path> files = IClasspathUtil.getProjectJavaSourceFolders(project.getClasspath()).flatMap(folder -> {
 			try {
 				return Files.walk(folder.toPath()).filter(Files::isRegularFile);
@@ -126,18 +142,17 @@ public class BootJavaReconcileEngine implements IReconcileEngine, IJavaProjectRe
 				.filter(f -> f.getFileName().toString().endsWith(".java"))
 				.map(f -> new TextDocumentIdentifier(f.toUri().toASCIIString()));
 
-		List<TextDocument> docs = docIds.filter(docId -> documents.getLatestSnapshot(docId.getUri()) == null)
+		List<TextDocument> docs = docIds.filter(docId -> server.getTextDocumentService().getLatestSnapshot(docId.getUri()) == null)
 				.map(docId -> new LazyTextDocument(docId.getUri(), LanguageId.JAVA)).collect(Collectors.toList());
 
 		Map<IDocument, IProblemCollector> problemCollectors = docs.stream()
-				.collect(Collectors.toMap(d -> d, d -> problemCollectorFactory.apply(d)));
+				.collect(Collectors.toMap(d -> d, d -> server.createProblemCollector(d)));
 
 		problemCollectors.values().forEach(c -> c.beginCollecting());
 
 		for (JavaReconciler jr : javaReconcilers) {
 			try {
-				Map<IDocument, Collection<ReconcileProblem>> problems = jr.reconcile(project, docs,
-						problemCollectorFactory);
+				Map<IDocument, Collection<ReconcileProblem>> problems = jr.reconcile(project, docs);
 				problems.entrySet().forEach(e -> {
 					IProblemCollector collector = problemCollectors.get(e.getKey());
 					e.getValue().forEach(p -> collector.accept(p));
@@ -161,8 +176,14 @@ public class BootJavaReconcileEngine implements IReconcileEngine, IJavaProjectRe
 			}
 		})
 		.filter(f -> f.getFileName().toString().endsWith(".java"))
-		.forEach(p -> documents.publishDiagnostics(new TextDocumentIdentifier(p.toUri().toASCIIString()), Collections.emptyList()));
+		.filter(f -> server.getTextDocumentService().getLatestSnapshot(UriUtil.toUri(f.toFile()).toASCIIString()) == null)
+		.forEach(p -> server.getTextDocumentService().publishDiagnostics(new TextDocumentIdentifier(p.toUri().toASCIIString()), Collections.emptyList()));
 		
+	}
+
+	@Override
+	public ProjectReconcileScheduler getScheduler() {
+		return projectReconeilerScheduler;
 	}
 
 }

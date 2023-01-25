@@ -11,13 +11,13 @@
 package org.springframework.ide.vscode.boot.validation;
 
 import java.util.Collections;
-import java.util.function.Function;
 
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.app.BootJavaConfig;
 import org.springframework.ide.vscode.boot.common.IJavaProjectReconcileEngine;
+import org.springframework.ide.vscode.boot.common.ProjectReconcileScheduler;
 import org.springframework.ide.vscode.boot.validation.generations.ProjectVersionDiagnosticProvider;
 import org.springframework.ide.vscode.boot.validation.generations.ProjectVersionDiagnosticProvider.DiagnosticResult;
 import org.springframework.ide.vscode.boot.validation.generations.SpringIoProjectsProvider;
@@ -26,9 +26,9 @@ import org.springframework.ide.vscode.boot.validation.generations.SpringProjects
 import org.springframework.ide.vscode.boot.validation.generations.VersionValidators;
 import org.springframework.ide.vscode.boot.validation.generations.preferences.VersionValidationPreferences;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
+import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
-import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 public class BootVersionValidationEngine implements IJavaProjectReconcileEngine {
 
@@ -36,13 +36,41 @@ public class BootVersionValidationEngine implements IJavaProjectReconcileEngine 
 
 	private SimpleLanguageServer server;
 	private BootJavaConfig config;
+	private ProjectReconcileScheduler projectReconcileScheduler;
 	
-	public BootVersionValidationEngine(SimpleLanguageServer server, BootJavaConfig config) {
+	public BootVersionValidationEngine(SimpleLanguageServer server, BootJavaConfig config, ProjectObserver projectObserver, JavaProjectFinder projectFinder) {
 		this.server = server;
 		this.config = config;
+		this.projectReconcileScheduler = new ProjectReconcileScheduler(this, projectFinder) {
+
+			@Override
+			protected void init() {
+				super.init();
+				config.addListener(evt -> scheduleValidationForAllProjects());
+				projectObserver.addListener(new ProjectObserver.Listener() {
+					
+					@Override
+					public void deleted(IJavaProject project) {
+						unscheduleValidation(project);
+						clear(project, true);
+					}
+					
+					@Override
+					public void created(IJavaProject project) {
+						scheduleValidation(project);
+					}
+					
+					@Override
+					public void changed(IJavaProject project) {
+						scheduleValidation(project);
+					}
+				});
+			}
+			
+		};
 	}
 	
-	public void reconcile(IJavaProject project, Function<TextDocument, IProblemCollector> problemCollectorFactory) {
+	public void reconcile(IJavaProject project) {
 		if (config.isBootVersionValidationEnabled()) {
 			log.debug("validating Spring Boot version on project: " + project.getElementName());
 			long start = System.currentTimeMillis();
@@ -85,5 +113,10 @@ public class BootVersionValidationEngine implements IJavaProjectReconcileEngine 
 					new TextDocumentIdentifier(project.getProjectBuild().getBuildFile().toASCIIString()),
 					Collections.emptyList());
 		}
+	}
+
+	@Override
+	public ProjectReconcileScheduler getScheduler() {
+		return projectReconcileScheduler;
 	}
 }

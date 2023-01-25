@@ -191,8 +191,10 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		
 		RewriteCompilationUnitCache orCompilationUnitCache = appContext.getBean(RewriteCompilationUnitCache.class);
 		
+		RewriteRecipeRepository recipeRepo = appContext.getBean(RewriteRecipeRepository.class);
+		
 		RewriteReconciler rewriteJavaReconciler = new RewriteReconciler(
-				appContext.getBean(RewriteRecipeRepository.class),
+				recipeRepo,
 				orCompilationUnitCache,
 				server.getQuickfixRegistry(),
 				config
@@ -201,7 +203,7 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		reconcileEngine = new BootJavaReconcileEngine(projectFinder, new JavaReconciler[] {
 				jdtReconciler,
 				rewriteJavaReconciler
-		}, documents);
+		}, server, config, projectObserver, recipeRepo);
 		
 		codeActionProvider = new BootJavaCodeActionProvider(
 				projectFinder,

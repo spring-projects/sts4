@@ -10,16 +10,9 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.app;
 
-import java.net.URI;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ConcurrentHashMap;
 
-import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -27,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.ide.vscode.boot.common.IJavaProjectReconcileEngine;
+import org.springframework.ide.vscode.boot.common.ProjectReconcileScheduler;
 import org.springframework.ide.vscode.boot.factories.SpringFactoriesLanguageServerComponents;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
 import org.springframework.ide.vscode.boot.java.links.JavaElementLocationProvider;
@@ -39,16 +33,15 @@ import org.springframework.ide.vscode.boot.metadata.ProjectBasedPropertyIndexPro
 import org.springframework.ide.vscode.boot.properties.BootPropertiesLanguageServerComponents;
 import org.springframework.ide.vscode.boot.validation.BootVersionValidationEngine;
 import org.springframework.ide.vscode.boot.xml.SpringXMLLanguageServerComponents;
-import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.completion.CompositeCompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.composable.CompositeLanguageServerComponents;
+import org.springframework.ide.vscode.commons.languageserver.composable.LanguageServerComponents;
 import org.springframework.ide.vscode.commons.languageserver.config.LanguageServerProperties;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
-import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
 import org.springframework.ide.vscode.commons.languageserver.util.HoverHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
@@ -59,18 +52,9 @@ import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureProvid
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
 
-import reactor.core.Disposable;
-import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Scheduler;
-import reactor.core.scheduler.Schedulers;
-
 @Component
 public class BootLanguageServerInitializer implements InitializingBean {
 	
-	private static final long DEBOUNCE_PERIOD_PROJECT_RECONCILE = 500;
-
-	private static final List<String> FILES_TO_WATCH_GLOB = List.of("**/*.java");
-
 	@Autowired SimpleLanguageServer server;
 	@Autowired BootLanguageServerParams params;
 	@Autowired SourceLinks sourceLinks;
@@ -93,9 +77,6 @@ public class BootLanguageServerInitializer implements InitializingBean {
 
 	private CompositeLanguageServerComponents components;
 	private VscodeCompletionEngineAdapter completionEngineAdapter;
-	private List<IJavaProjectReconcileEngine> projectReconcilers;
-	private Scheduler projectReconcileScheduler = Schedulers.newBoundedElastic(1, Integer.MAX_VALUE, "Project-Reconciler", 10);
-	private Map<URI, Disposable> projectReconcileRequests = new ConcurrentHashMap<>();
 	
 	private static final Logger log = LoggerFactory.getLogger(BootLanguageServerInitializer.class);
 
@@ -104,7 +85,6 @@ public class BootLanguageServerInitializer implements InitializingBean {
 			
 			@Override
 			public void deleted(IJavaProject project) {
-				doNotValidateProject(project, true);
 			}
 			
 			@Override
@@ -126,8 +106,6 @@ public class BootLanguageServerInitializer implements InitializingBean {
 							s.validateWith(doc.getId(), reconciler);
 						}
 					}
-					validateProject(project, reconciler);
-
 				});
 			}
 		};
@@ -138,26 +116,39 @@ public class BootLanguageServerInitializer implements InitializingBean {
 		//TODO: CompositeLanguageServerComponents object instance serves no purpose anymore. The constructor really just contains
 		// some server intialization code. Migrate that code and get rid of the ComposableLanguageServer class
 		CompositeLanguageServerComponents.Builder builder = new CompositeLanguageServerComponents.Builder();
-		builder.add(new BootPropertiesLanguageServerComponents(server, params, javaElementLocationProvider, parser, yamlStructureProvider, yamlAssistContextProvider, sourceLinks));
-		BootJavaLanguageServerComponents bootJavaLanguageServerComponent = new BootJavaLanguageServerComponents(appContext);
-		builder.add(bootJavaLanguageServerComponent);
-		builder.add(new SpringXMLLanguageServerComponents(server, springIndexer, params, config));
-		builder.add(new SpringFactoriesLanguageServerComponents(projectFinder, springIndexer, config));
-		components = builder.build(server);
-		
-		projectReconcilers = List.of(
-				(IJavaProjectReconcileEngine) bootJavaLanguageServerComponent.getReconcileEngine().get(),
-				new BootVersionValidationEngine(server, config)
+		List<LanguageServerComponents> componentsList = List.of(
+			new BootPropertiesLanguageServerComponents(server, params, javaElementLocationProvider, parser, yamlStructureProvider, yamlAssistContextProvider, sourceLinks),
+			new BootJavaLanguageServerComponents(appContext),
+			new SpringXMLLanguageServerComponents(server, springIndexer, params, config),
+			new SpringFactoriesLanguageServerComponents(projectFinder, springIndexer, config)
 		);
 		
-		SimpleTextDocumentService documents = server.getTextDocumentService();
+		List<ProjectReconcileScheduler> reconcileSchedulers = new ArrayList<>(componentsList.size() + 1);
+		for (LanguageServerComponents c : componentsList) {
+			builder.add(c);
+			
+			if (!configProps.isReconcileOnlyOpenedDocs()) {
+				c.getReconcileEngine()
+				.filter(IJavaProjectReconcileEngine.class::isInstance)
+				.map(IJavaProjectReconcileEngine.class::cast)
+				.map(r -> r.getScheduler())
+				.ifPresent(reconcileSchedulers::add);
+			}
+		}
+		
+		// Version reconciler is for Maven/Gradle build files which are not part of
+		// server components because they come from docs we don't support at the moment
+		reconcileSchedulers.add(new BootVersionValidationEngine(server, config, params.projectObserver, projectFinder).getScheduler());
 
-		components.getReconcileEngine().ifPresent(reconcileEngine -> {
-			documents.onDidChangeContent(params -> {
-				TextDocument doc = params.getDocument();
-				server.validateWith(doc.getId(), reconcileEngine);
-			});
-		});
+		// Kick off project reconcile schedulers
+		for (ProjectReconcileScheduler scheduler : reconcileSchedulers) {
+			scheduler.start();
+			server.onShutdown(() -> scheduler.stop());
+		}
+		
+		components = builder.build(server);
+		
+		SimpleTextDocumentService documents = server.getTextDocumentService();
 
 		if (!completionEngines.isEmpty()) {
 			CompositeCompletionEngine compositeCompletionEngine = new CompositeCompletionEngine();
@@ -175,6 +166,7 @@ public class BootLanguageServerInitializer implements InitializingBean {
 		
 		components.getDocumentSymbolProvider().ifPresent(documents::onDocumentSymbol);
 		
+		
 		if (recipesRepo != null) {
 			recipesRepo.onRecipesLoaded(v -> {
 				// Recipes will start loading only after config has been received. Therefore safe to start listening to config changes now
@@ -183,37 +175,34 @@ public class BootLanguageServerInitializer implements InitializingBean {
 				reconcile();
 			});
 		} else {
+			// Reconcile would occur as listeners will be receiving events
 			startListeningToPerformReconcile();			
-			reconcile();
 		}
-		
-		server.onShutdown(() -> {
-			for (IJavaProject p : projectFinder.all()) {
-				doNotValidateProject(p, false);
-			}
-		});
+
+
 	}
 	
 	private void startListeningToPerformReconcile() {
+		components.getReconcileEngine().ifPresent(reconcileEngine -> {
+			server.getTextDocumentService().onDidChangeContent(params -> {
+				TextDocument doc = params.getDocument();
+				server.validateWith(doc.getId(), reconcileEngine);
+			});
+		});
 		config.addListener(evt -> reconcile());
-		
 		params.projectObserver.addListener(reconcileDocumentsForProjectChange(server, components, params.projectFinder));
 		
-		server.getWorkspaceService().getFileObserver().onFilesChanged(FILES_TO_WATCH_GLOB, this::handleFiles);
-		server.getWorkspaceService().getFileObserver().onFilesCreated(FILES_TO_WATCH_GLOB, this::handleFiles);
-		
-		// TODO: index update even happens on every file save. Very expensive to blindly reconcile all projects.
-		// Need to figure out a check if spring index has any changes 
-//		springIndexer.onUpdate(v -> reconcile());
+//		// TODO: index update even happens on every file save. Very expensive to blindly reconcile all projects.
+//		// Need to figure out a check if spring index has any changes 
+////		springIndexer.onUpdate(v -> reconcile());
 	}
 	
 	private void reconcile() {
 		components.getReconcileEngine().ifPresent(reconciler -> {
-			log.info("A configuration changed, triggering reconcile on all open documents");
+			log.info("Triggering reconcile on all open documents");
 			for (TextDocument doc : server.getTextDocumentService().getAll()) {
 				server.validateWith(doc.getId(), reconciler);
 			}
-			params.projectFinder.all().forEach(p -> validateProject(p, reconciler));
 		});
 	}
 
@@ -226,81 +215,6 @@ public class BootLanguageServerInitializer implements InitializingBean {
 		if (completionEngineAdapter!=null) {
 			completionEngineAdapter.setMaxCompletions(number);
 		}
-	}
-	
-	private void validateProject(IJavaProject project, IReconcileEngine reconcileEngine) {
-		if (configProps.isReconcileOnlyOpenedDocs()) {
-			return;
-		}
-		
-		URI uri = project.getLocationUri();
-		
-		Disposable previousRequest = projectReconcileRequests.put(uri, Mono.delay(Duration.ofMillis(DEBOUNCE_PERIOD_PROJECT_RECONCILE))
-				.publishOn(projectReconcileScheduler)
-				.doOnSuccess(l -> {
-					if (projectReconcileRequests.remove(uri) != null) {
-						projectFinder.find(new TextDocumentIdentifier(uri.toASCIIString())).ifPresent(p -> {
-							for (IJavaProjectReconcileEngine projectReconciler : projectReconcilers) {
-								projectReconciler.clear(project);
-								projectReconciler.reconcile(p, doc -> server.createProblemCollector(doc));
-							}
-						});
-					}
-				})
-				.subscribe());
-		// Dispose previous request to debounce project reconcile requests.
-		if (previousRequest != null) {
-			previousRequest.dispose();
-		}
-	}
-	
-	private void doNotValidateProject(IJavaProject project, boolean asyncClear) {
-		if (configProps.isReconcileOnlyOpenedDocs()) {
-			return;
-		}
-		
-		URI uri = project.getLocationUri();
-		Disposable request = projectReconcileRequests.remove(uri);
-		if (request != null) {
-			request.dispose();
-		}
-		
-		/*
-		 * TODO: Look at LanguageServerHarness to fix the deadlock that occurs every 2 second time maven build is ran
-		 * If #clear(IJavaProject) is synchronous then the locked LanguageServerHarness instance is attempted to call publishDiagnostic()
-		 * which is caused by the #clear(...) call. In the LS reality this will never happen as #publishDiagnsotics() is always a future
-		 */
-		if (asyncClear) {
-			Mono.fromFuture(CompletableFuture.runAsync(() -> projectReconcilers.forEach(projectReconciler -> projectReconciler.clear(project))))
-					.publishOn(projectReconcileScheduler);
-		} else {
-			for (IJavaProjectReconcileEngine projectReconciler : projectReconcilers) {
-				projectReconciler.clear(project);
-			}
-		}
-	}
-	
-	private void handleFiles(String[] files) {
-		if (configProps.isReconcileOnlyOpenedDocs()) {
-			return;
-		}
-		
-		components.getReconcileEngine().ifPresent(reconcileEngine -> {
-			for (String f : files) {
-				URI uri = URI.create(f);
-				TextDocumentIdentifier docId = new TextDocumentIdentifier(uri.toASCIIString());
-				TextDocument doc = server.getTextDocumentService().getLatestSnapshot(docId.getUri());
-				if (doc == null) {
-					projectFinder.find(docId).ifPresent(project -> {
-						Path p = Paths.get(uri);
-						if (IClasspathUtil.getSourceFolders(project.getClasspath()).filter(folder -> p.startsWith(folder.toPath())).findFirst().isPresent()) {
-							validateProject(project, reconcileEngine);
-						}
-					});
-				}
-			}
-		});
-		
 	}
 	
 }
