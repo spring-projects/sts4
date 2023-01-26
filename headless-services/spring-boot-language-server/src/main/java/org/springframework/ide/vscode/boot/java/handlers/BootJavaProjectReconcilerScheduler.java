@@ -16,6 +16,8 @@ import java.nio.file.Paths;
 import java.util.List;
 
 import org.eclipse.lsp4j.TextDocumentIdentifier;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.app.BootJavaConfig;
 import org.springframework.ide.vscode.boot.common.IJavaProjectReconcileEngine;
 import org.springframework.ide.vscode.boot.common.ProjectReconcileScheduler;
@@ -28,6 +30,8 @@ import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguage
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 public class BootJavaProjectReconcilerScheduler extends ProjectReconcileScheduler {
+	
+	private static final Logger log = LoggerFactory.getLogger(BootJavaProjectReconcilerScheduler.class);
 
 	private static final List<String> FILES_TO_WATCH_GLOB = List.of("**/*.java");
 
@@ -45,6 +49,7 @@ public class BootJavaProjectReconcilerScheduler extends ProjectReconcileSchedule
 
 	@Override
 	protected void init() {
+		log.info("Starting project reconciler for Java sources");
 		super.init();
 		if (recipesRepo != null) {
 			recipesRepo.onRecipesLoaded(v -> {
@@ -52,10 +57,12 @@ public class BootJavaProjectReconcilerScheduler extends ProjectReconcileSchedule
 				// and launch initial project reconcile since both config and recipes are present
 				startListeningToPerformReconcile();			
 				scheduleValidationForAllProjects();
+				log.info("Started project reconciler for Java sources");
 			});
 		} else {
 			startListeningToPerformReconcile();			
 			scheduleValidationForAllProjects();
+			log.info("Started project reconciler for Java sources");
 		}
 	}
 

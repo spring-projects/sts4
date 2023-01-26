@@ -142,7 +142,8 @@ public class BootLanguageServerInitializer implements InitializingBean {
 		
 		components.getDocumentSymbolProvider().ifPresent(documents::onDocumentSymbol);
 		
-		server.doOnInitialized(() -> {
+		// TODO: seems to hang tests if done on server initialize. Test Harness Server is likely to be initialized already by this point
+//		server.doOnInitialized(() -> {
 			if (recipesRepo != null) {
 				recipesRepo.onRecipesLoaded(v -> {
 					// Recipes will start loading only after config has been received. Therefore safe to start listening to config changes now
@@ -155,7 +156,7 @@ public class BootLanguageServerInitializer implements InitializingBean {
 				startListeningToPerformReconcile();	
 				reconcile();
 			}
-		});
+//		});
 		
 		server.onShutdown(() -> {
 			for (TextDocument d : documents.getAll()) {

@@ -26,6 +26,8 @@ import org.eclipse.lsp4j.CodeActionKind;
 import org.eclipse.lsp4j.CodeActionOptions;
 import org.eclipse.lsp4j.InitializeParams;
 import org.eclipse.lsp4j.ServerCapabilities;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.SpringApplication;
@@ -126,6 +128,8 @@ import reactor.core.publisher.Hooks;
 public class BootLanguageServerBootApp {
 	
 	private static final String SERVER_NAME = "boot-language-server";
+	
+	private static final Logger log = LoggerFactory.getLogger(BootLanguageServerBootApp.class);
 
 	public static void main(String[] args) throws Exception {
 		Hooks.onOperatorDebug();
@@ -392,6 +396,7 @@ public class BootLanguageServerBootApp {
 						scheduleValidation(project);
 					}
 				});
+				log.info("Started Boot Version reconciler");
 			}
 			
 		};
