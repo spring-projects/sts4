@@ -18,6 +18,4 @@ public interface IJavaProjectReconcileEngine {
 	
 	void clear(IJavaProject project);
 	
-	ProjectReconcileScheduler getScheduler();
-	
 }

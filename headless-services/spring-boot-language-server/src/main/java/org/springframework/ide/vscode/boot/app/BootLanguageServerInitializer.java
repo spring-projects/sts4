@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.app;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -19,7 +18,6 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
-import org.springframework.ide.vscode.boot.common.IJavaProjectReconcileEngine;
 import org.springframework.ide.vscode.boot.common.ProjectReconcileScheduler;
 import org.springframework.ide.vscode.boot.factories.SpringFactoriesLanguageServerComponents;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
@@ -31,7 +29,6 @@ import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.boot.java.utils.SymbolCache;
 import org.springframework.ide.vscode.boot.metadata.ProjectBasedPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.properties.BootPropertiesLanguageServerComponents;
-import org.springframework.ide.vscode.boot.validation.BootVersionValidationEngine;
 import org.springframework.ide.vscode.boot.xml.SpringXMLLanguageServerComponents;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.completion.CompositeCompletionEngine;
@@ -72,6 +69,7 @@ public class BootLanguageServerInitializer implements InitializingBean {
 	@Autowired private JavaProjectFinder projectFinder;
 	@Autowired private LanguageServerProperties configProps;
 	@Autowired(required = false) private RewriteRecipeRepository recipesRepo;
+	@Autowired(required = false) private ProjectReconcileScheduler[] reconcileSchedulers;
 
 	@Qualifier("adHocProperties") @Autowired ProjectBasedPropertyIndexProvider adHocProperties;
 
@@ -123,27 +121,16 @@ public class BootLanguageServerInitializer implements InitializingBean {
 			new SpringFactoriesLanguageServerComponents(projectFinder, springIndexer, config)
 		);
 		
-		List<ProjectReconcileScheduler> reconcileSchedulers = new ArrayList<>(componentsList.size() + 1);
 		for (LanguageServerComponents c : componentsList) {
-			builder.add(c);
-			
-			if (!configProps.isReconcileOnlyOpenedDocs()) {
-				c.getReconcileEngine()
-				.filter(IJavaProjectReconcileEngine.class::isInstance)
-				.map(IJavaProjectReconcileEngine.class::cast)
-				.map(r -> r.getScheduler())
-				.ifPresent(reconcileSchedulers::add);
-			}
+			builder.add(c);	
 		}
 		
-		// Version reconciler is for Maven/Gradle build files which are not part of
-		// server components because they come from docs we don't support at the moment
-		reconcileSchedulers.add(new BootVersionValidationEngine(server, config, params.projectObserver, projectFinder).getScheduler());
-
-		// Kick off project reconcile schedulers
-		for (ProjectReconcileScheduler scheduler : reconcileSchedulers) {
-			scheduler.start();
-			server.onShutdown(() -> scheduler.stop());
+		if (reconcileSchedulers != null && !configProps.isReconcileOnlyOpenedDocs()) {
+			// Kick off project reconcile schedulers
+			for (ProjectReconcileScheduler scheduler : reconcileSchedulers) {
+				scheduler.start();
+				server.onShutdown(() -> scheduler.stop());
+			}
 		}
 		
 		components = builder.build(server);

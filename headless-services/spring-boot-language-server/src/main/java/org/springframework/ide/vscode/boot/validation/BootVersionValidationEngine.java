@@ -17,7 +17,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.app.BootJavaConfig;
 import org.springframework.ide.vscode.boot.common.IJavaProjectReconcileEngine;
-import org.springframework.ide.vscode.boot.common.ProjectReconcileScheduler;
 import org.springframework.ide.vscode.boot.validation.generations.ProjectVersionDiagnosticProvider;
 import org.springframework.ide.vscode.boot.validation.generations.ProjectVersionDiagnosticProvider.DiagnosticResult;
 import org.springframework.ide.vscode.boot.validation.generations.SpringIoProjectsProvider;
@@ -36,38 +35,10 @@ public class BootVersionValidationEngine implements IJavaProjectReconcileEngine 
 
 	private SimpleLanguageServer server;
 	private BootJavaConfig config;
-	private ProjectReconcileScheduler projectReconcileScheduler;
 	
 	public BootVersionValidationEngine(SimpleLanguageServer server, BootJavaConfig config, ProjectObserver projectObserver, JavaProjectFinder projectFinder) {
 		this.server = server;
 		this.config = config;
-		this.projectReconcileScheduler = new ProjectReconcileScheduler(this, projectFinder) {
-
-			@Override
-			protected void init() {
-				super.init();
-				config.addListener(evt -> scheduleValidationForAllProjects());
-				projectObserver.addListener(new ProjectObserver.Listener() {
-					
-					@Override
-					public void deleted(IJavaProject project) {
-						unscheduleValidation(project);
-						clear(project, true);
-					}
-					
-					@Override
-					public void created(IJavaProject project) {
-						scheduleValidation(project);
-					}
-					
-					@Override
-					public void changed(IJavaProject project) {
-						scheduleValidation(project);
-					}
-				});
-			}
-			
-		};
 	}
 	
 	public void reconcile(IJavaProject project) {
@@ -115,8 +86,4 @@ public class BootVersionValidationEngine implements IJavaProjectReconcileEngine 
 		}
 	}
 
-	@Override
-	public ProjectReconcileScheduler getScheduler() {
-		return projectReconcileScheduler;
-	}
 }

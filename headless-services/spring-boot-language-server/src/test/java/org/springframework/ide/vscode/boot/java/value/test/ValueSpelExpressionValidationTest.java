@@ -77,7 +77,6 @@ public class ValueSpelExpressionValidationTest {
 	@Autowired private CompilationUnitCache compilationUnitCache;
 	@Autowired private SimpleLanguageServer server;
 	@Autowired private BootJavaConfig config;
-	@Autowired private ProjectObserver projectObserver; 
 
 	private File directory;
 	private String docUri;
@@ -150,7 +149,7 @@ public class ValueSpelExpressionValidationTest {
 		problemCollector = new TestProblemCollector();
 		reconcileEngine = new BootJavaReconcileEngine(projectFinder, new JavaReconciler[] {
 				new JdtReconciler(compilationUnitCache, config)
-		}, server, config, projectObserver, null);
+		}, server);
 	}
 	
 	@AfterEach

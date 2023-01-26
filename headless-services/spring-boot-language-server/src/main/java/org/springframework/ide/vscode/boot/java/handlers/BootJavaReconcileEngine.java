@@ -24,15 +24,11 @@ import java.util.stream.Stream;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ide.vscode.boot.app.BootJavaConfig;
 import org.springframework.ide.vscode.boot.common.IJavaProjectReconcileEngine;
-import org.springframework.ide.vscode.boot.common.ProjectReconcileScheduler;
 import org.springframework.ide.vscode.boot.java.reconcilers.JavaReconciler;
-import org.springframework.ide.vscode.boot.java.rewrite.RewriteRecipeRepository;
 import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
-import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblem;
@@ -52,24 +48,13 @@ public class BootJavaReconcileEngine implements IReconcileEngine, IJavaProjectRe
 
 	private final JavaProjectFinder projectFinder; 
 	private final JavaReconciler[] javaReconcilers;
-	private final BootJavaProjectReconcilerScheduler projectReconeilerScheduler;
 	private final SimpleLanguageServer server;
 
 	public BootJavaReconcileEngine(JavaProjectFinder projectFinder, JavaReconciler[] javaReconcilers,
-			SimpleLanguageServer server, BootJavaConfig config, ProjectObserver projectObserver,
-			RewriteRecipeRepository recipeRepo) {
+			SimpleLanguageServer server) {
 		this.projectFinder = projectFinder;
 		this.javaReconcilers = javaReconcilers;
 		this.server = server;
-		this.projectReconeilerScheduler = new BootJavaProjectReconcilerScheduler(
-				this,
-				server.getWorkspaceService().getFileObserver(),
-				projectObserver,
-				config,
-				recipeRepo,
-				server.getTextDocumentService(),
-				projectFinder
-		);
 	}
 
 	@Override
@@ -179,11 +164,6 @@ public class BootJavaReconcileEngine implements IReconcileEngine, IJavaProjectRe
 		.filter(f -> server.getTextDocumentService().getLatestSnapshot(UriUtil.toUri(f.toFile()).toASCIIString()) == null)
 		.forEach(p -> server.getTextDocumentService().publishDiagnostics(new TextDocumentIdentifier(p.toUri().toASCIIString()), Collections.emptyList()));
 		
-	}
-
-	@Override
-	public ProjectReconcileScheduler getScheduler() {
-		return projectReconeilerScheduler;
 	}
 
 }

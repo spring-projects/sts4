@@ -37,9 +37,11 @@ import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoCon
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.ide.vscode.boot.common.ProjectReconcileScheduler;
 import org.springframework.ide.vscode.boot.common.PropertyCompletionFactory;
 import org.springframework.ide.vscode.boot.common.RelaxedNameConfig;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaCodeActionProvider;
+import org.springframework.ide.vscode.boot.java.handlers.BootJavaProjectReconcilerScheduler;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaReconcileEngine;
 import org.springframework.ide.vscode.boot.java.handlers.JavaCodeActionHandler;
 import org.springframework.ide.vscode.boot.java.links.DefaultJavaElementLocationProvider;
@@ -70,9 +72,11 @@ import org.springframework.ide.vscode.boot.metadata.ProjectBasedPropertyIndexPro
 import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndex;
 import org.springframework.ide.vscode.boot.metadata.ValueProviderRegistry;
 import org.springframework.ide.vscode.boot.properties.completions.SpringPropertiesCompletionEngine;
+import org.springframework.ide.vscode.boot.validation.BootVersionValidationEngine;
 import org.springframework.ide.vscode.boot.xml.SpringXMLCompletionEngine;
 import org.springframework.ide.vscode.boot.yaml.completions.ApplicationYamlAssistContext;
 import org.springframework.ide.vscode.boot.yaml.completions.SpringYamlCompletionEngine;
+import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.LanguageServerRunner;
 import org.springframework.ide.vscode.commons.languageserver.java.FutureProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
@@ -339,13 +343,54 @@ public class BootLanguageServerBootApp {
 	}
 	
 	@Bean
-	BootJavaReconcileEngine getBootJavaReconcileEngine(JavaProjectFinder projectFinder, JavaReconciler[] javaReconcilers, SimpleLanguageServer server,
-			BootJavaConfig config, ProjectObserver projectObserver, Optional<RewriteRecipeRepository> recipeRepoOpt) {
-		return new BootJavaReconcileEngine(projectFinder, javaReconcilers, server, config, projectObserver, recipeRepoOpt.orElse(null));
+	BootJavaReconcileEngine getBootJavaReconcileEngine(JavaProjectFinder projectFinder, JavaReconciler[] javaReconcilers, SimpleLanguageServer server) {
+		return new BootJavaReconcileEngine(projectFinder, javaReconcilers, server);
 	}
 	
 	@Bean
 	BootJavaCodeActionProvider getBootJavaCodeActionProvider(JavaProjectFinder projectFinder, Collection<JavaCodeActionHandler> codeActionHandlers) {
 		return new BootJavaCodeActionProvider(projectFinder, codeActionHandlers);
+	}
+	
+	@ConditionalOnMissingClass("org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness")
+	@Bean
+	BootJavaProjectReconcilerScheduler bootJavaProjectReconcilerScheduler(SimpleLanguageServer server,
+			BootJavaReconcileEngine bootJavaReconciler, ProjectObserver projectObserver, BootJavaConfig config,
+			Optional<RewriteRecipeRepository> recipeRepoOpt, JavaProjectFinder projectFinder) {
+		return new BootJavaProjectReconcilerScheduler(bootJavaReconciler,
+				server.getWorkspaceService().getFileObserver(), projectObserver, config, recipeRepoOpt.orElse(null),
+				server.getTextDocumentService(), projectFinder);
+	}
+	
+	@ConditionalOnMissingClass("org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness")
+	@Bean
+	ProjectReconcileScheduler bootVersionValidationScheduler(SimpleLanguageServer server, JavaProjectFinder projectFinder, BootJavaConfig config, ProjectObserver projectObserver) {
+		return new ProjectReconcileScheduler(new BootVersionValidationEngine(server, config, projectObserver, projectFinder), projectFinder) {
+
+			@Override
+			protected void init() {
+				super.init();
+				config.addListener(evt -> scheduleValidationForAllProjects());
+				projectObserver.addListener(new ProjectObserver.Listener() {
+					
+					@Override
+					public void deleted(IJavaProject project) {
+						unscheduleValidation(project);
+						clear(project, true);
+					}
+					
+					@Override
+					public void created(IJavaProject project) {
+						scheduleValidation(project);
+					}
+					
+					@Override
+					public void changed(IJavaProject project) {
+						scheduleValidation(project);
+					}
+				});
+			}
+			
+		};
 	}
 }
