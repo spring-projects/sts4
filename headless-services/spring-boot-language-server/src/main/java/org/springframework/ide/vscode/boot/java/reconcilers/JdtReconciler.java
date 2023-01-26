@@ -60,7 +60,8 @@ public class JdtReconciler implements JavaReconciler {
 	
 	public JdtReconciler(CompilationUnitCache compilationUnitCache, BootJavaConfig config) {
 		this.compilationUnitCache = compilationUnitCache;
-		this.config = config;		
+		this.config = config;
+		config.addListener(evt -> setSpelExpressionSyntaxValidationEnabled(config.isSpelExpressionValidationEnabled()));
 		this.spelExpressionReconciler = new SpelExpressionReconciler();
 		
 		this.reconcilers = new AnnotationReconciler[] {

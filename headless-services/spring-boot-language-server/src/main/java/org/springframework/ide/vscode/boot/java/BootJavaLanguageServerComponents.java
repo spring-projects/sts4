@@ -188,24 +188,12 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		highlightsEngine = createDocumentHighlightEngine(indexer);
 		documents.onDocumentHighlight(highlightsEngine);
 		
-		List<JavaReconciler> javaReconcilers = new ArrayList<>();
-		JdtReconciler jdtReconciler = new JdtReconciler(cuCache, config);
-		javaReconcilers.add(jdtReconciler);
-		
-		Map<String, RewriteCompilationUnitCache> rewriteCuCacheBeans = appContext.getBeansOfType(RewriteCompilationUnitCache.class);
-		RewriteCompilationUnitCache orCompilationUnitCache = rewriteCuCacheBeans.isEmpty() ? null : rewriteCuCacheBeans.values().iterator().next();
 		Map<String, RewriteRecipeRepository> recipeRepoBeans = appContext.getBeansOfType(RewriteRecipeRepository.class);
 		RewriteRecipeRepository recipeRepo = recipeRepoBeans.isEmpty() ? null : recipeRepoBeans.values().iterator().next();
-		if (recipeRepo != null && orCompilationUnitCache != null) {
-			javaReconcilers.add(new RewriteReconciler(
-					recipeRepo,
-					orCompilationUnitCache,
-					server.getQuickfixRegistry(),
-					config
-			));
-		}
 		
-		reconcileEngine = new BootJavaReconcileEngine(projectFinder, javaReconcilers.toArray(new JavaReconciler[javaReconcilers.size()]), server, config, projectObserver, recipeRepo);
+		reconcileEngine = new BootJavaReconcileEngine(projectFinder,
+				appContext.getBeansOfType(JavaReconciler.class).values().toArray(new JavaReconciler[0]),
+				server, config, projectObserver, recipeRepo);
 		
 		codeActionProvider = new BootJavaCodeActionProvider(
 				projectFinder,
@@ -229,8 +217,6 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 			else {
 				liveChangeDetectionWatchdog.disableHighlights();
 			}
-			
-			jdtReconciler.setSpelExpressionSyntaxValidationEnabled(config.isSpelExpressionValidationEnabled());
 			
 			log.info("update live process tracker settings - done");
 		});
