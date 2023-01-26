@@ -30,7 +30,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
 import org.springframework.boot.autoconfigure.context.ConfigurationPropertiesAutoConfiguration;
 import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration;
@@ -51,9 +50,6 @@ import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessConnec
 import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessConnectorRemote.RemoteBootAppData;
 import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessConnectorService;
 import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveDataProvider;
-import org.springframework.ide.vscode.boot.java.rewrite.RewriteCompilationUnitCache;
-import org.springframework.ide.vscode.boot.java.rewrite.RewriteRecipeRepository;
-import org.springframework.ide.vscode.boot.java.rewrite.RewriteRefactorings;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.boot.java.utils.SymbolCache;
 import org.springframework.ide.vscode.boot.java.utils.SymbolCacheOnDisc;
@@ -292,21 +288,6 @@ public class BootLanguageServerBootApp {
 	
 	@Bean FutureProjectFinder futureProjectFinder(JavaProjectFinder projectFinder, Optional<ProjectObserver> projectObserver) {
 		return new FutureProjectFinder(projectFinder, projectObserver);
-	}
-	
-	@ConditionalOnMissingClass("org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness")
-	@Bean RewriteRecipeRepository rewriteRecipesRepository(SimpleLanguageServer server, JavaProjectFinder projectFinder, BootJavaConfig config) {
-		return new RewriteRecipeRepository(server, projectFinder, config);
-	}
-	
-	@ConditionalOnBean(RewriteRecipeRepository.class)
-	@Bean RewriteCompilationUnitCache orcuCache(SimpleLanguageServer server, BootLanguageServerParams params) {
-		return new RewriteCompilationUnitCache(params.projectFinder, server, params.projectObserver);
-	}
-	
-	@ConditionalOnBean(RewriteRecipeRepository.class)
-	@Bean RewriteRefactorings rewriteRefactorings(SimpleLanguageServer server, JavaProjectFinder projectFinder, RewriteRecipeRepository recipeRepo, RewriteCompilationUnitCache cuCache) {
-		return new RewriteRefactorings(server.getTextDocumentService(), projectFinder, recipeRepo, cuCache);
 	}
 	
 	@Bean

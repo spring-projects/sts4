@@ -10,9 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.app;
 
-import org.springframework.beans.factory.InitializingBean;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.ide.vscode.boot.java.rewrite.RewriteCodeActionHandler;
@@ -21,17 +20,25 @@ import org.springframework.ide.vscode.boot.java.rewrite.RewriteRecipeRepository;
 import org.springframework.ide.vscode.boot.java.rewrite.RewriteRefactorings;
 import org.springframework.ide.vscode.boot.java.rewrite.SpringBootUpgrade;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
-import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixRegistry;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 
-@Configuration
-public class RewriteConfig implements InitializingBean {
+@Configuration(proxyBeanMethods = false)
+public class RewriteConfig {
 
-	@Autowired
-	private SimpleLanguageServer server;
-
-	@Autowired(required = false)
-	private RewriteRefactorings rewriteRefactorings;
+	@ConditionalOnMissingClass("org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness")
+	@Bean RewriteRecipeRepository rewriteRecipesRepository(SimpleLanguageServer server, JavaProjectFinder projectFinder, BootJavaConfig config) {
+		return new RewriteRecipeRepository(server, projectFinder, config);
+	}
+	
+	@ConditionalOnBean(RewriteRecipeRepository.class)
+	@Bean RewriteCompilationUnitCache orcuCache(SimpleLanguageServer server, BootLanguageServerParams params) {
+		return new RewriteCompilationUnitCache(params.projectFinder, server, params.projectObserver);
+	}
+	
+	@ConditionalOnBean(RewriteRecipeRepository.class)
+	@Bean RewriteRefactorings rewriteRefactorings(SimpleLanguageServer server, JavaProjectFinder projectFinder, RewriteRecipeRepository recipeRepo, RewriteCompilationUnitCache cuCache) {
+		return new RewriteRefactorings(server.getTextDocumentService(), projectFinder, recipeRepo, cuCache);
+	}
 	
 	@ConditionalOnBean(RewriteRecipeRepository.class)
 	@Bean RewriteCodeActionHandler rewriteCodeActionHandler(RewriteCompilationUnitCache cuCache, RewriteRecipeRepository recipeRepo, BootJavaConfig config) {
@@ -43,12 +50,4 @@ public class RewriteConfig implements InitializingBean {
 		return new SpringBootUpgrade(server, recipeRepo, projectFinder);
 	}
 	
-	@Override
-	public void afterPropertiesSet() throws Exception {
-		if (rewriteRefactorings != null) {
-			QuickfixRegistry registry = server.getQuickfixRegistry();
-			registry.register(RewriteRefactorings.REWRITE_RECIPE_QUICKFIX, rewriteRefactorings);
-		}
-	}
-
 }
