@@ -153,8 +153,9 @@ public class BootLanguageServerInitializer implements InitializingBean {
 				});
 			} else {
 				// Reconcile would occur as listeners will be receiving events
-				startListeningToPerformReconcile();	
-				reconcile();
+				startListeningToPerformReconcile();
+				//Uncomment reconcile() call if done within server.doOnInitialized()
+//				reconcile();
 			}
 //		});
 		
