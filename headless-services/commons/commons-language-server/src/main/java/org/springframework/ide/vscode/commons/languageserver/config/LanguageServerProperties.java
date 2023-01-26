@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2022 Pivotal, Inc.
+ * Copyright (c) 2018, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -57,12 +57,6 @@ public class LanguageServerProperties {
 	 */
 	private ReconcileStrategy reconcileStrategy = ReconcileStrategy.THROTTLE;
 	
-	/**
-	 * Reconcile sources regardless whether source is opened in an editor or not.
-	 * If on only opened documents will be reconciled
-	 */
-	private boolean reconcileOnlyOpenedDocs = false;
-	
 	public boolean isStandalone() {
 		return standalone;
 	}
@@ -109,14 +103,6 @@ public class LanguageServerProperties {
 
 	public void setReconcileDelay(long reconcileDelay) {
 		this.reconcileDelay = reconcileDelay;
-	}
-
-	public boolean isReconcileOnlyOpenedDocs() {
-		return reconcileOnlyOpenedDocs;
-	}
-
-	public void setReconcileOnlyOpenedDocs(boolean reconcileOnlyOpenedDocs) {
-		this.reconcileOnlyOpenedDocs = reconcileOnlyOpenedDocs;
 	}
 
 	public ReconcileStrategy getReconcileStrategy() {
