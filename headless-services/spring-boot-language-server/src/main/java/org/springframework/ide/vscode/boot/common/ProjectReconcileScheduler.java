@@ -18,6 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 
 import reactor.core.Disposable;
 import reactor.core.publisher.Mono;
@@ -26,40 +27,30 @@ import reactor.core.scheduler.Schedulers;
 
 public abstract class ProjectReconcileScheduler {
 	
-	private IJavaProjectReconcileEngine reconciler;
-	private JavaProjectFinder projectFinder; 
-	private long debounce;
+	private final SimpleLanguageServer server;
+	private final IJavaProjectReconcileEngine reconciler;
+	private final JavaProjectFinder projectFinder; 
+	private final long debounce;
 	
-	private Scheduler projectReconcileScheduler;
-	private Map<URI, Disposable> projectReconcileRequests = new ConcurrentHashMap<>();
-	private boolean started;
+	private final Scheduler projectReconcileScheduler;
+	private final Map<URI, Disposable> projectReconcileRequests = new ConcurrentHashMap<>();
 
-	public ProjectReconcileScheduler(IJavaProjectReconcileEngine reconciler, JavaProjectFinder projectFinder, long debounce, int numberOFthreads) {
+	public ProjectReconcileScheduler(SimpleLanguageServer server, IJavaProjectReconcileEngine reconciler, JavaProjectFinder projectFinder, long debounce, int numberOFthreads) {
+		this.server = server;
 		this.reconciler = reconciler;
 		this.debounce = debounce;
 		this.projectFinder = projectFinder;
 		
 		projectReconcileScheduler = Schedulers.newBoundedElastic(numberOFthreads, Integer.MAX_VALUE, "Project-Reconciler", 10);
+		
+		server.doOnInitialized(this::init);
+		server.onShutdown(this::dispose);
 	}
 	
-	public ProjectReconcileScheduler(IJavaProjectReconcileEngine reconciler, JavaProjectFinder projectFinder) {
-		this(reconciler, projectFinder, 500, 1);
+	public ProjectReconcileScheduler(SimpleLanguageServer server, IJavaProjectReconcileEngine reconciler, JavaProjectFinder projectFinder) {
+		this(server, reconciler, projectFinder, 500, 1);
 	}
 
-	public final synchronized void start() {
-		if (!started) {
-			init();
-			started = true;
-		}
-	}
-	
-	public final synchronized void stop() {
-		if (started) {
-			dispose();
-			started = false;
-		}
-	}
-	
 	protected void init() {
 		
 	}
@@ -124,4 +115,8 @@ public abstract class ProjectReconcileScheduler {
 		return projectFinder;
 	}
 
+	public SimpleLanguageServer getServer() {
+		return server;
+	}
+	
 }

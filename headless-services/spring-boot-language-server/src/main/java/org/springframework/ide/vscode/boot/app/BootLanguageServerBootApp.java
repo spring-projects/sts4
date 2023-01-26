@@ -360,16 +360,15 @@ public class BootLanguageServerBootApp {
 	BootJavaProjectReconcilerScheduler bootJavaProjectReconcilerScheduler(SimpleLanguageServer server,
 			BootJavaReconcileEngine bootJavaReconciler, ProjectObserver projectObserver, BootJavaConfig config,
 			Optional<RewriteRecipeRepository> recipeRepoOpt, JavaProjectFinder projectFinder) {
-		return new BootJavaProjectReconcilerScheduler(bootJavaReconciler,
-				server.getWorkspaceService().getFileObserver(), projectObserver, config, recipeRepoOpt.orElse(null),
-				server.getTextDocumentService(), projectFinder);
+		return new BootJavaProjectReconcilerScheduler(bootJavaReconciler, projectObserver, config,
+				recipeRepoOpt.orElse(null), projectFinder, server);
 	}
 	
 	@ConditionalOnMissingClass("org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness")
 	@ConditionalOnProperty(prefix = "languageserver", name = "reconcile-only-opened-docs", havingValue = "false", matchIfMissing = true)
 	@Bean
 	ProjectReconcileScheduler bootVersionValidationScheduler(SimpleLanguageServer server, JavaProjectFinder projectFinder, BootJavaConfig config, ProjectObserver projectObserver) {
-		return new ProjectReconcileScheduler(new BootVersionValidationEngine(server, config, projectObserver, projectFinder), projectFinder) {
+		return new ProjectReconcileScheduler(server, new BootVersionValidationEngine(server, config, projectObserver, projectFinder), projectFinder) {
 
 			@Override
 			protected void init() {

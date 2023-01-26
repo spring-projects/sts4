@@ -24,28 +24,23 @@ import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
-import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
-import org.springframework.ide.vscode.commons.util.FileObserver;
+import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 public class BootJavaProjectReconcilerScheduler extends ProjectReconcileScheduler {
-	
+
 	private static final List<String> FILES_TO_WATCH_GLOB = List.of("**/*.java");
 
 	private ProjectObserver projectObserver;
 	private BootJavaConfig config;
 	private RewriteRecipeRepository recipesRepo;
-	private FileObserver fileObserver;
-	private SimpleTextDocumentService documents;
 
-	public BootJavaProjectReconcilerScheduler(IJavaProjectReconcileEngine reconciler, FileObserver fileObserver, ProjectObserver projectObserver,
-			BootJavaConfig config, RewriteRecipeRepository recipesRepo, SimpleTextDocumentService documents, JavaProjectFinder projectFinder) {
-		super(reconciler, projectFinder);
-		this.fileObserver = fileObserver;
+	public BootJavaProjectReconcilerScheduler(IJavaProjectReconcileEngine reconciler, ProjectObserver projectObserver,
+			BootJavaConfig config, RewriteRecipeRepository recipesRepo, JavaProjectFinder projectFinder, SimpleLanguageServer server) {
+		super(server, reconciler, projectFinder);
 		this.projectObserver = projectObserver;
 		this.config = config;
 		this.recipesRepo = recipesRepo;
-		this.documents = documents;
 	}
 
 	@Override
@@ -86,8 +81,8 @@ public class BootJavaProjectReconcilerScheduler extends ProjectReconcileSchedule
 			}
 		});
 		
-		fileObserver.onFilesChanged(FILES_TO_WATCH_GLOB, this::handleFiles);
-		fileObserver.onFilesCreated(FILES_TO_WATCH_GLOB, this::handleFiles);
+		getServer().getWorkspaceService().getFileObserver().onFilesChanged(FILES_TO_WATCH_GLOB, this::handleFiles);
+		getServer().getWorkspaceService().getFileObserver().onFilesCreated(FILES_TO_WATCH_GLOB, this::handleFiles);
 		
 		// TODO: index update even happens on every file save. Very expensive to blindly reconcile all projects.
 		// Need to figure out a check if spring index has any changes 
@@ -98,7 +93,7 @@ public class BootJavaProjectReconcilerScheduler extends ProjectReconcileSchedule
 		for (String f : files) {
 			URI uri = URI.create(f);
 			TextDocumentIdentifier docId = new TextDocumentIdentifier(uri.toASCIIString());
-			TextDocument doc = documents.getLatestSnapshot(docId.getUri());
+			TextDocument doc = getServer().getTextDocumentService().getLatestSnapshot(docId.getUri());
 			if (doc == null) {
 				getProjectFinder().find(docId).ifPresent(project -> {
 					Path p = Paths.get(uri);

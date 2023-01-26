@@ -19,7 +19,6 @@ import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
-import org.springframework.ide.vscode.boot.common.ProjectReconcileScheduler;
 import org.springframework.ide.vscode.boot.factories.SpringFactoriesLanguageServerComponents;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
 import org.springframework.ide.vscode.boot.java.links.JavaElementLocationProvider;
@@ -68,7 +67,6 @@ public class BootLanguageServerInitializer implements InitializingBean {
 	@Autowired(required = false) List<ICompletionEngine> completionEngines;
 	@Autowired private JavaProjectFinder projectFinder;
 	@Autowired(required = false) private RewriteRecipeRepository recipesRepo;
-	@Autowired(required = false) private ProjectReconcileScheduler[] reconcileSchedulers;
 
 	@Qualifier("adHocProperties") @Autowired ProjectBasedPropertyIndexProvider adHocProperties;
 
@@ -124,14 +122,6 @@ public class BootLanguageServerInitializer implements InitializingBean {
 			builder.add(c);	
 		}
 		
-		if (reconcileSchedulers != null) {
-			// Kick off project reconcile schedulers
-			for (ProjectReconcileScheduler scheduler : reconcileSchedulers) {
-				scheduler.start();
-				server.onShutdown(() -> scheduler.stop());
-			}
-		}
-		
 		components = builder.build(server);
 		
 		final SimpleTextDocumentService documents = server.getTextDocumentService();
@@ -152,18 +142,20 @@ public class BootLanguageServerInitializer implements InitializingBean {
 		
 		components.getDocumentSymbolProvider().ifPresent(documents::onDocumentSymbol);
 		
-		
-		if (recipesRepo != null) {
-			recipesRepo.onRecipesLoaded(v -> {
-				// Recipes will start loading only after config has been received. Therefore safe to start listening to config changes now
-				// and launch initial project reconcile since both config and recipes are present
-				startListeningToPerformReconcile();			
+		server.doOnInitialized(() -> {
+			if (recipesRepo != null) {
+				recipesRepo.onRecipesLoaded(v -> {
+					// Recipes will start loading only after config has been received. Therefore safe to start listening to config changes now
+					// and launch initial project reconcile since both config and recipes are present
+					startListeningToPerformReconcile();			
+					reconcile();
+				});
+			} else {
+				// Reconcile would occur as listeners will be receiving events
+				startListeningToPerformReconcile();	
 				reconcile();
-			});
-		} else {
-			// Reconcile would occur as listeners will be receiving events
-			startListeningToPerformReconcile();			
-		}
+			}
+		});
 		
 		server.onShutdown(() -> {
 			for (TextDocument d : documents.getAll()) {
