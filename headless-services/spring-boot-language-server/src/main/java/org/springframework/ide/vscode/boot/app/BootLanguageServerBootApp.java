@@ -32,6 +32,7 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.context.ConfigurationPropertiesAutoConfiguration;
 import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -100,6 +101,7 @@ import org.springframework.ide.vscode.commons.yaml.structure.YamlDocument;
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureProvider;
 import org.springframework.ide.vscode.languageserver.starter.LanguageServerAutoConf;
 import org.springframework.ide.vscode.languageserver.starter.LanguageServerRunnerAutoConf;
+import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
 
@@ -279,7 +281,7 @@ public class BootLanguageServerBootApp {
 
 	@Bean Yaml yaml() {
 		//TODO: Yaml is not re-entrant. So its a bit fishy to create a 're-usable' bean for this!
-		return new Yaml(new SafeConstructor());
+		return new Yaml(new SafeConstructor(new LoaderOptions()));
 	}
 
 	@Bean YamlASTProvider yamlAstProvider() {
@@ -353,6 +355,7 @@ public class BootLanguageServerBootApp {
 	}
 	
 	@ConditionalOnMissingClass("org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness")
+	@ConditionalOnProperty(prefix = "languageserver", name = "reconcile-only-opened-docs", havingValue = "false", matchIfMissing = true)
 	@Bean
 	BootJavaProjectReconcilerScheduler bootJavaProjectReconcilerScheduler(SimpleLanguageServer server,
 			BootJavaReconcileEngine bootJavaReconciler, ProjectObserver projectObserver, BootJavaConfig config,
@@ -363,6 +366,7 @@ public class BootLanguageServerBootApp {
 	}
 	
 	@ConditionalOnMissingClass("org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness")
+	@ConditionalOnProperty(prefix = "languageserver", name = "reconcile-only-opened-docs", havingValue = "false", matchIfMissing = true)
 	@Bean
 	ProjectReconcileScheduler bootVersionValidationScheduler(SimpleLanguageServer server, JavaProjectFinder projectFinder, BootJavaConfig config, ProjectObserver projectObserver) {
 		return new ProjectReconcileScheduler(new BootVersionValidationEngine(server, config, projectObserver, projectFinder), projectFinder) {

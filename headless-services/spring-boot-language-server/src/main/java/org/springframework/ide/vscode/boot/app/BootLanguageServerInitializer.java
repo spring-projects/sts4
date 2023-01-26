@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.app;
 
+import java.util.Collections;
 import java.util.List;
 
 import org.slf4j.Logger;
@@ -36,7 +37,6 @@ import org.springframework.ide.vscode.commons.languageserver.completion.IComplet
 import org.springframework.ide.vscode.commons.languageserver.completion.VscodeCompletionEngineAdapter;
 import org.springframework.ide.vscode.commons.languageserver.composable.CompositeLanguageServerComponents;
 import org.springframework.ide.vscode.commons.languageserver.composable.LanguageServerComponents;
-import org.springframework.ide.vscode.commons.languageserver.config.LanguageServerProperties;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 import org.springframework.ide.vscode.commons.languageserver.util.HoverHandler;
@@ -67,7 +67,6 @@ public class BootLanguageServerInitializer implements InitializingBean {
 	@Autowired SpringSymbolIndex springIndexer;
 	@Autowired(required = false) List<ICompletionEngine> completionEngines;
 	@Autowired private JavaProjectFinder projectFinder;
-	@Autowired private LanguageServerProperties configProps;
 	@Autowired(required = false) private RewriteRecipeRepository recipesRepo;
 	@Autowired(required = false) private ProjectReconcileScheduler[] reconcileSchedulers;
 
@@ -125,7 +124,7 @@ public class BootLanguageServerInitializer implements InitializingBean {
 			builder.add(c);	
 		}
 		
-		if (reconcileSchedulers != null && !configProps.isReconcileOnlyOpenedDocs()) {
+		if (reconcileSchedulers != null) {
 			// Kick off project reconcile schedulers
 			for (ProjectReconcileScheduler scheduler : reconcileSchedulers) {
 				scheduler.start();
@@ -135,7 +134,7 @@ public class BootLanguageServerInitializer implements InitializingBean {
 		
 		components = builder.build(server);
 		
-		SimpleTextDocumentService documents = server.getTextDocumentService();
+		final SimpleTextDocumentService documents = server.getTextDocumentService();
 
 		if (!completionEngines.isEmpty()) {
 			CompositeCompletionEngine compositeCompletionEngine = new CompositeCompletionEngine();
@@ -165,6 +164,12 @@ public class BootLanguageServerInitializer implements InitializingBean {
 			// Reconcile would occur as listeners will be receiving events
 			startListeningToPerformReconcile();			
 		}
+		
+		server.onShutdown(() -> {
+			for (TextDocument d : documents.getAll()) {
+				documents.publishDiagnostics(d.getId(), Collections.emptyList());
+			}
+		});
 
 
 	}
