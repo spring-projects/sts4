@@ -15,6 +15,7 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -38,6 +39,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.ide.vscode.boot.common.PropertyCompletionFactory;
 import org.springframework.ide.vscode.boot.common.RelaxedNameConfig;
+import org.springframework.ide.vscode.boot.java.handlers.BootJavaCodeActionProvider;
+import org.springframework.ide.vscode.boot.java.handlers.BootJavaReconcileEngine;
+import org.springframework.ide.vscode.boot.java.handlers.JavaCodeActionHandler;
 import org.springframework.ide.vscode.boot.java.links.DefaultJavaElementLocationProvider;
 import org.springframework.ide.vscode.boot.java.links.EclipseJavaDocumentUriProvider;
 import org.springframework.ide.vscode.boot.java.links.JavaDocumentUriProvider;
@@ -48,9 +52,11 @@ import org.springframework.ide.vscode.boot.java.links.SourceLinkFactory;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessConnectorRemote;
 import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessConnectorRemote.RemoteBootAppData;
-import org.springframework.ide.vscode.boot.java.reconcilers.JdtReconciler;
 import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessConnectorService;
 import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveDataProvider;
+import org.springframework.ide.vscode.boot.java.reconcilers.JavaReconciler;
+import org.springframework.ide.vscode.boot.java.reconcilers.JdtReconciler;
+import org.springframework.ide.vscode.boot.java.rewrite.RewriteRecipeRepository;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.boot.java.utils.SymbolCache;
 import org.springframework.ide.vscode.boot.java.utils.SymbolCacheOnDisc;
@@ -330,5 +336,16 @@ public class BootLanguageServerBootApp {
 				}
 			}
 		};
+	}
+	
+	@Bean
+	BootJavaReconcileEngine getBootJavaReconcileEngine(JavaProjectFinder projectFinder, JavaReconciler[] javaReconcilers, SimpleLanguageServer server,
+			BootJavaConfig config, ProjectObserver projectObserver, Optional<RewriteRecipeRepository> recipeRepoOpt) {
+		return new BootJavaReconcileEngine(projectFinder, javaReconcilers, server, config, projectObserver, recipeRepoOpt.orElse(null));
+	}
+	
+	@Bean
+	BootJavaCodeActionProvider getBootJavaCodeActionProvider(JavaProjectFinder projectFinder, Collection<JavaCodeActionHandler> codeActionHandlers) {
+		return new BootJavaCodeActionProvider(projectFinder, codeActionHandlers);
 	}
 }
