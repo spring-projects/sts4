@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2022 VMware, Inc.
+ * Copyright (c) 2022, 2023 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -23,7 +23,8 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.Diagnosti
 
 abstract public class AbstractDiagnosticValidator implements VersionValidator {
 	
-	
+	private static final String BOOT_VERSION_VALIDATION_CODE = "BOOT_VERSION_VALIDATION_CODE";
+
 	private final DiagnosticSeverityProvider diagnosticSeverityProvider;
 	
 	public AbstractDiagnosticValidator(DiagnosticSeverityProvider diagnosticSeverityProvider) {
@@ -39,7 +40,7 @@ abstract public class AbstractDiagnosticValidator implements VersionValidator {
 		}
 		
 		Diagnostic diagnostic = new Diagnostic();
-		diagnostic.setCode(VersionValidators.BOOT_VERSION_VALIDATION_CODE);
+		diagnostic.setCode(BOOT_VERSION_VALIDATION_CODE);
 		diagnostic.setMessage(diagnosticMessage.toString());
 
 		Range range = new Range();

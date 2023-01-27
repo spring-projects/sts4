@@ -28,9 +28,9 @@ public class ProjectVersionDiagnosticProvider {
 	
 	private static final Logger log = LoggerFactory.getLogger(ProjectVersionDiagnosticProvider.class);
 
-	private final VersionValidators validators;
+	private final List<VersionValidator> validators;
 
-	public ProjectVersionDiagnosticProvider(VersionValidators validators) {
+	public ProjectVersionDiagnosticProvider(List<VersionValidator> validators) {
 		this.validators = validators;
 	}
 
@@ -51,7 +51,7 @@ public class ProjectVersionDiagnosticProvider {
 
 		List<Diagnostic> diagnostics = new ArrayList<Diagnostic>();
 
-		for (VersionValidator validator : validators.getValidators()) {
+		for (VersionValidator validator : validators) {
 			try {
 				Collection<Diagnostic> batch = validator.validate(javaProject, javaProjectVersion);
 				if (batch != null) {

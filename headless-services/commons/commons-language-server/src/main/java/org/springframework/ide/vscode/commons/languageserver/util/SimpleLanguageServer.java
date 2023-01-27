@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2022 VMware Inc.
+ * Copyright (c) 2016, 2023 VMware Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -652,8 +652,6 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 		return workspace;
 	}
 
-	private DiagnosticSeverityProvider severityProvider = DiagnosticSeverityProvider.DEFAULT;
-	
 	/**
 	 * Keeps track of reconcile requests that have been requested but not yet started.
 	 * This is used to more efficiently deal with situation where many requests are fired
@@ -783,6 +781,7 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 
 			@Override
 			public void accept(ReconcileProblem problem) {
+				DiagnosticSeverityProvider severityProvider = getDiagnosticSeverityProvider();
 				try {
 					DiagnosticSeverity severity = severityProvider.getDiagnosticSeverity(problem);
 					
@@ -855,7 +854,7 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 	}
 	
 	public DiagnosticSeverityProvider getDiagnosticSeverityProvider() {
-		return severityProvider;
+		return appContext.getBean(DiagnosticSeverityProvider.class);
 	}
 
 	@Override
@@ -903,10 +902,6 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 			classpathListenerManager = new ClasspathListenerManager(this);
 		}
 		return classpathListenerManager.addClasspathListener(classpathListener);
-	}
-
-	public void setDiagnosticSeverityProvider(DiagnosticSeverityProvider severities) {
-		this.severityProvider = severities;
 	}
 
 	public void setCompletionFilter(Optional<CompletionFilter> completionFilter) {
