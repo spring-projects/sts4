@@ -11,25 +11,16 @@
 package org.springframework.ide.vscode.boot.validation.generations;
 
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.List;
-import java.util.Optional;
 
-import org.eclipse.lsp4j.CodeAction;
-import org.eclipse.lsp4j.CodeActionKind;
-import org.eclipse.lsp4j.Command;
-import org.eclipse.lsp4j.Diagnostic;
-import org.springframework.ide.vscode.boot.java.rewrite.SpringBootUpgrade;
-import org.springframework.ide.vscode.boot.validation.generations.preferences.VersionValidationProblemType;
-import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.java.Version;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.DiagnosticSeverityProvider;
 
-import com.google.common.collect.ImmutableList;
-
+/* 
+ * TODO: Once uncommented to bring in Spring.io generations API support:
+ * 1. Remaining validators must become beans.
+ * 2. I'd merge all 4 into one single validator
+ */
 public class VersionValidators {
-
-	public static final String BOOT_VERSION_VALIDATION_CODE = "BOOT_VERSION_VALIDATION_CODE";
 
 	private final VersionValidator[] validators;
 
@@ -39,7 +30,6 @@ public class VersionValidators {
 //				new UnsupportedCommercialValidator(diagnosticSeverityProvider, provider),
 //				new UnsupportedOssValidator(diagnosticSeverityProvider, provider),
 //				new SupportedCommercialValidator(diagnosticSeverityProvider, provider),
-				new UpdateBootVersion(diagnosticSeverityProvider)
 		};
 	}
 
@@ -177,91 +167,5 @@ public class VersionValidators {
 //		}
 //	}
 
-	
-	private static class UpdateBootVersion extends AbstractDiagnosticValidator {
-
-		public UpdateBootVersion(DiagnosticSeverityProvider diagnosticSeverityProvider) {
-			super(diagnosticSeverityProvider);
-		}
-
-		@Override
-		public Collection<Diagnostic> validate(IJavaProject javaProject, Version javaProjectVersion) throws Exception {
-			List<Version> versions = CachedBootVersionsFromMavenCentral.getBootVersions();
-			ImmutableList.Builder<Diagnostic> builder = ImmutableList.builder();
-			validateMajorVersion(javaProject, javaProjectVersion, versions).ifPresent(builder::add);
-			validateMinorVersion(javaProject, javaProjectVersion, versions).ifPresent(builder::add);
-			validatePatchVersion(javaProject, javaProjectVersion, versions).ifPresent(builder::add);
-			return builder.build();
-		}
-		
-		private Optional<Diagnostic> validateMajorVersion(IJavaProject javaProject, Version javaProjectVersion, List<Version> sortedBootVersions) {
-			Version latest = VersionValidationUtils.getNewerLatestMajorRelease(sortedBootVersions, javaProjectVersion);
-
-			if (latest != null) {
-				VersionValidationProblemType problemType = VersionValidationProblemType.UPDATE_LATEST_MAJOR_VERSION;
-
-				StringBuffer message = new StringBuffer();
-				message.append("Newer major version of Spring Boot available: ");
-				message.append(latest.toString());
-
-				CodeAction ca = new CodeAction();
-				ca.setKind(CodeActionKind.QuickFix);
-				ca.setTitle("Upgrade to Spring Boot " + latest.toString() + " (executes the full project conversion recipe from OpenRewrite)");
-				String commandId = SpringBootUpgrade.CMD_UPGRADE_SPRING_BOOT;
-				ca.setCommand(new Command("Upgrade to Version " + latest.toString(), commandId,
-						ImmutableList.of(javaProject.getLocationUri().toASCIIString(), latest.toString())));
-
-				
-				return Optional.of(createDiagnostic(ca, problemType, message.toString()));
-			}
-			return Optional.empty();
-		}
-
-		private Optional<Diagnostic> validateMinorVersion(IJavaProject javaProject, Version javaProjectVersion, List<Version> sortedBootVersions) {
-			Version latest = VersionValidationUtils.getNewerLatestMinorRelease(sortedBootVersions, javaProjectVersion);
-
-			if (latest != null) {
-				VersionValidationProblemType problemType = VersionValidationProblemType.UPDATE_LATEST_MINOR_VERSION;
-
-				StringBuffer message = new StringBuffer();
-				message.append("Newer minor version of Spring Boot available: ");
-				message.append(latest.toString());
-
-				CodeAction ca = new CodeAction();
-				ca.setKind(CodeActionKind.QuickFix);
-				ca.setTitle("Upgrade to Spring Boot " + latest.toString() + " (executes the full project conversion recipe from OpenRewrite)");
-				String commandId = SpringBootUpgrade.CMD_UPGRADE_SPRING_BOOT;
-				ca.setCommand(new Command("Upgrade to Version " + latest.toString(), commandId,
-						ImmutableList.of(javaProject.getLocationUri().toASCIIString(), latest.toString())));
-
-				
-				return Optional.of(createDiagnostic(ca, problemType, message.toString()));
-			}
-			return Optional.empty();
-		}
-
-		private Optional<Diagnostic> validatePatchVersion(IJavaProject javaProject, Version javaProjectVersion, List<Version> sortedBootVersions) {
-			Version latest = VersionValidationUtils.getNewerLatestPatchRelease(sortedBootVersions, javaProjectVersion);
-
-			if (latest != null) {
-				VersionValidationProblemType problemType = VersionValidationProblemType.UPDATE_LATEST_PATCH_VERSION;
-
-				StringBuffer message = new StringBuffer();
-				message.append("Newer patch version of Spring Boot available: ");
-				message.append(latest.toString());
-
-				CodeAction ca = new CodeAction();
-				ca.setKind(CodeActionKind.QuickFix);
-				ca.setTitle("Upgrade to Spring Boot " + latest.toString() + " (Maven dependency version changes only)");
-				String commandId = SpringBootUpgrade.CMD_UPGRADE_SPRING_BOOT;
-				ca.setCommand(new Command("Upgrade to Version " + latest.toString(), commandId,
-						ImmutableList.of(javaProject.getLocationUri().toASCIIString(), latest.toString())));
-
-				
-				return Optional.of(createDiagnostic(ca, problemType, message.toString()));
-			}
-			return Optional.empty();
-		}
-	}
 }
 

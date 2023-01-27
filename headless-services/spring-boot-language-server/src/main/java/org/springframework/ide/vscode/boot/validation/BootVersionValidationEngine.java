@@ -19,11 +19,6 @@ import org.springframework.ide.vscode.boot.app.BootJavaConfig;
 import org.springframework.ide.vscode.boot.common.IJavaProjectReconcileEngine;
 import org.springframework.ide.vscode.boot.validation.generations.ProjectVersionDiagnosticProvider;
 import org.springframework.ide.vscode.boot.validation.generations.ProjectVersionDiagnosticProvider.DiagnosticResult;
-import org.springframework.ide.vscode.boot.validation.generations.SpringIoProjectsProvider;
-import org.springframework.ide.vscode.boot.validation.generations.SpringProjectsClient;
-import org.springframework.ide.vscode.boot.validation.generations.SpringProjectsProvider;
-import org.springframework.ide.vscode.boot.validation.generations.VersionValidators;
-import org.springframework.ide.vscode.boot.validation.generations.preferences.VersionValidationPreferences;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
@@ -33,12 +28,15 @@ public class BootVersionValidationEngine implements IJavaProjectReconcileEngine 
 
 	private static final Logger log = LoggerFactory.getLogger(BootVersionValidationEngine.class);
 
-	private SimpleLanguageServer server;
-	private BootJavaConfig config;
+	private final SimpleLanguageServer server;
+	private final BootJavaConfig config;
+	private final ProjectVersionDiagnosticProvider diagnosticProvider;
 	
-	public BootVersionValidationEngine(SimpleLanguageServer server, BootJavaConfig config, ProjectObserver projectObserver, JavaProjectFinder projectFinder) {
+	public BootVersionValidationEngine(SimpleLanguageServer server, BootJavaConfig config, ProjectObserver projectObserver, JavaProjectFinder projectFinder, 
+			ProjectVersionDiagnosticProvider diagnosticProvider) {
 		this.server = server;
 		this.config = config;
+		this.diagnosticProvider = diagnosticProvider;
 	}
 	
 	public void reconcile(IJavaProject project) {
@@ -46,15 +44,6 @@ public class BootVersionValidationEngine implements IJavaProjectReconcileEngine 
 			log.debug("validating Spring Boot version on project: " + project.getElementName());
 			long start = System.currentTimeMillis();
 			
-			VersionValidationPreferences preferences = new VersionValidationPreferences();
-
-			String url = getSpringProjectsUrl(preferences);
-			SpringProjectsClient client = new SpringProjectsClient(url);
-			SpringProjectsProvider provider = new SpringIoProjectsProvider(client);
-			VersionValidators validators = new VersionValidators(server.getDiagnosticSeverityProvider(), provider);
-
-			ProjectVersionDiagnosticProvider diagnosticProvider = new ProjectVersionDiagnosticProvider(validators);
-
 			try {
 				DiagnosticResult result = diagnosticProvider.getDiagnostics(project);
 				if (result != null && !result.getDiagnostics().isEmpty()) {
@@ -70,10 +59,6 @@ public class BootVersionValidationEngine implements IJavaProjectReconcileEngine 
 			long end = System.currentTimeMillis();
 			log.info("validating Spring Boot version on project: " + project.getElementName() + " done in " + (end - start) + "ms");
 		}
-	}
-
-	private String getSpringProjectsUrl(VersionValidationPreferences preferences) {
-		return preferences.getSpringProjectsUrl();
 	}
 
 	@Override

@@ -26,8 +26,6 @@ import org.eclipse.lsp4j.CodeActionKind;
 import org.eclipse.lsp4j.CodeActionOptions;
 import org.eclipse.lsp4j.InitializeParams;
 import org.eclipse.lsp4j.ServerCapabilities;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.SpringApplication;
@@ -40,7 +38,6 @@ import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoCon
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
-import org.springframework.ide.vscode.boot.common.ProjectReconcileScheduler;
 import org.springframework.ide.vscode.boot.common.PropertyCompletionFactory;
 import org.springframework.ide.vscode.boot.common.RelaxedNameConfig;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaCodeActionProvider;
@@ -75,11 +72,9 @@ import org.springframework.ide.vscode.boot.metadata.ProjectBasedPropertyIndexPro
 import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndex;
 import org.springframework.ide.vscode.boot.metadata.ValueProviderRegistry;
 import org.springframework.ide.vscode.boot.properties.completions.SpringPropertiesCompletionEngine;
-import org.springframework.ide.vscode.boot.validation.BootVersionValidationEngine;
 import org.springframework.ide.vscode.boot.xml.SpringXMLCompletionEngine;
 import org.springframework.ide.vscode.boot.yaml.completions.ApplicationYamlAssistContext;
 import org.springframework.ide.vscode.boot.yaml.completions.SpringYamlCompletionEngine;
-import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.LanguageServerRunner;
 import org.springframework.ide.vscode.commons.languageserver.java.FutureProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
@@ -129,8 +124,6 @@ public class BootLanguageServerBootApp {
 	
 	private static final String SERVER_NAME = "boot-language-server";
 	
-	private static final Logger log = LoggerFactory.getLogger(BootLanguageServerBootApp.class);
-
 	public static void main(String[] args) throws Exception {
 		Hooks.onOperatorDebug();
 		System.setProperty(LanguageServerRunner.SYSPROP_LANGUAGESERVER_NAME, SERVER_NAME); //makes it easy to recognize language server processes - and set this as early as possible
@@ -368,37 +361,4 @@ public class BootLanguageServerBootApp {
 				recipeRepoOpt.orElse(null), projectFinder, server);
 	}
 	
-	@ConditionalOnMissingClass("org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness")
-	@ConditionalOnProperty(prefix = "languageserver", name = "reconcile-only-opened-docs", havingValue = "false", matchIfMissing = true)
-	@Bean
-	ProjectReconcileScheduler bootVersionValidationScheduler(SimpleLanguageServer server, JavaProjectFinder projectFinder, BootJavaConfig config, ProjectObserver projectObserver) {
-		return new ProjectReconcileScheduler(server, new BootVersionValidationEngine(server, config, projectObserver, projectFinder), projectFinder) {
-
-			@Override
-			protected void init() {
-				super.init();
-				config.addListener(evt -> scheduleValidationForAllProjects());
-				projectObserver.addListener(new ProjectObserver.Listener() {
-					
-					@Override
-					public void deleted(IJavaProject project) {
-						unscheduleValidation(project);
-						clear(project, true);
-					}
-					
-					@Override
-					public void created(IJavaProject project) {
-						scheduleValidation(project);
-					}
-					
-					@Override
-					public void changed(IJavaProject project) {
-						scheduleValidation(project);
-					}
-				});
-				log.info("Started Boot Version reconciler");
-			}
-			
-		};
-	}
 }

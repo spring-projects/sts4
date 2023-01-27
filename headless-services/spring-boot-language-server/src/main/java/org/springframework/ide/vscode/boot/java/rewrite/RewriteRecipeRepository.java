@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2022 VMware, Inc.
+ * Copyright (c) 2022, 2023 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -309,7 +309,7 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 		for (RecipeCodeActionDescriptor d : descriptors) {
 			TreeVisitor<?, ExecutionContext> markVisitor = d.getMarkerVisitor(applicationContext);
 			if (markVisitor != null) {
-				cu = (CompilationUnit) markVisitor.visit(cu, new InMemoryExecutionContext(e -> log.error("", e)));
+				cu = (CompilationUnit) markVisitor.visit(cu, new InMemoryExecutionContext(e -> log.error("Marker visitor failed!", e)));
 			}
 		}
 		return cu;
@@ -424,7 +424,7 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 				});
 		List<SourceFile> sources = projectParser.parse(absoluteProjectDir, getClasspathEntries(project));
 		server.getProgressService().progressEvent(progressToken, "Computing changes...");
-		RecipeRun reciperun = r.run(sources, new InMemoryExecutionContext(e -> log.error("", e)));
+		RecipeRun reciperun = r.run(sources, new InMemoryExecutionContext(e -> log.error("Recipe execution failed", e)));
 		List<Result> results = reciperun.getResults();
 		return ORDocUtils.createWorkspaceEdit(absoluteProjectDir, server.getTextDocumentService(), results);
 	}

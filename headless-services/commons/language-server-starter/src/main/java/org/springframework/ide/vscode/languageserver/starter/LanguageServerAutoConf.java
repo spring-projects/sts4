@@ -46,13 +46,11 @@ public class LanguageServerAutoConf {
 	@Bean(destroyMethod = "")
 	public SimpleLanguageServer languageServer(
 			LanguageServerProperties props, 
-			Optional<DiagnosticSeverityProvider> severities,
 			Optional<CompletionFilter> completionFilter,
 			ApplicationContext appContext
 	) throws Exception {
 		SimpleLanguageServer server = new SimpleLanguageServer(props.getExtensionId(), appContext, props);
 		server.setCompletionFilter(completionFilter);
-		severities.ifPresent(server::setDiagnosticSeverityProvider);
 		return server;
 	}
 	
@@ -110,6 +108,12 @@ public class LanguageServerAutoConf {
 		return () -> {
 			documents.onDocumentSymbol(handler);
 		};
+	}
+	
+	@ConditionalOnMissingBean(DiagnosticSeverityProvider.class)
+	@Bean
+	DiagnosticSeverityProvider defaultDiagnosticSeverityProvider() {
+		return DiagnosticSeverityProvider.DEFAULT;
 	}
 	
 }
