@@ -48,7 +48,6 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.e4.ui.css.swt.theme,
  org.eclipse.lsp4e,
  org.eclipse.lsp4j,
- com.google.gson,
  org.eclipse.jdt.debug,
  org.springsource.ide.eclipse.commons.boot.ls
 Bundle-RequiredExecutionEnvironment: JavaSE-11
@@ -84,5 +83,9 @@ Import-Package: org.eclipse.core.runtime,
  org.eclipse.core.runtime.preferences,
  org.osgi.framework,
  org.osgi.service.prefs,
- org.yaml.snakeyaml
+ org.yaml.snakeyaml,
+ com.google.gson;version="[2.9.1,2.10)",
+ com.google.gson.annotations;version="[2.9.1,2.10)",
+ com.google.gson.reflect;version="[2.9.1,2.10)",
+ com.google.gson.stream;version="[2.9.1,2.10)"
 Automatic-Module-Name: org.springframework.ide.eclipse.boot.dash

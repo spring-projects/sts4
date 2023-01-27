@@ -38,7 +38,6 @@ Require-Bundle: org.junit,
  org.eclipse.ui.ide,
  org.springsource.ide.eclipse.commons.core,
  org.yaml.snakeyaml,
- com.google.gson,
  org.springsource.ide.eclipse.commons.cloudfoundry.client.v2,
  org.springframework.tooling.cloudfoundry.manifest.ls,
  org.springframework.tooling.ls.eclipse.commons,
@@ -54,5 +53,9 @@ Import-Package: org.eclipse.core.runtime,
  org.eclipse.core.runtime.jobs,
  org.eclipse.core.runtime.preferences,
  org.osgi.framework,
- org.osgi.service.prefs;version="1.1.1"
+ org.osgi.service.prefs;version="1.1.1",
+ com.google.gson;version="[2.9.1,2.10)",
+ com.google.gson.annotations;version="[2.9.1,2.10)",
+ com.google.gson.reflect;version="[2.9.1,2.10)",
+ com.google.gson.stream;version="[2.9.1,2.10)"
 Automatic-Module-Name: org.springframework.ide.eclipse.boot.dash.test
