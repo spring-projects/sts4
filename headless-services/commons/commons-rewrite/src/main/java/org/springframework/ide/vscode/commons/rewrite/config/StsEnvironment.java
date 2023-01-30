@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2022 VMware, Inc.
+ * Copyright (c) 2022, 2023 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -45,32 +45,32 @@ public class StsEnvironment extends Environment {
 		}
 
 		@Override
-		public org.openrewrite.config.Environment.Builder scanRuntimeClasspath(String... acceptPackages) {
-			return load(new StsClasspathScanningLoader(props, acceptPackages));
+		public Builder scanRuntimeClasspath(String... acceptPackages) {
+			return (Builder) load(new StsClasspathScanningLoader(props, acceptPackages));
 		}
 
 		@Override
-		public org.openrewrite.config.Environment.Builder scanClassLoader(ClassLoader classLoader) {
-			return load(new StsClasspathScanningLoader(props, classLoader));
+		public Builder scanClassLoader(ClassLoader classLoader) {
+			return (Builder) load(new StsClasspathScanningLoader(props, classLoader));
 		}
 
 		@Override
-		public Environment.Builder scanJar(Path jar, Collection<Path> dependencies, ClassLoader classLoader) {
+		public Builder scanJar(Path jar, Collection<Path> dependencies, ClassLoader classLoader) {
 			List<ClasspathScanningLoader> list = new ArrayList<>();
 			for (Path dep : dependencies) {
 				ClasspathScanningLoader classpathScanningLoader = new ClasspathScanningLoader(dep, props, emptyList(), classLoader);
 				list.add(classpathScanningLoader);
 			}
-			return load(new StsClasspathScanningLoader(jar, props, list, classLoader), list);
+			return (Builder) load(new StsClasspathScanningLoader(jar, props, list, classLoader), list);
 		}
 
-		public org.openrewrite.config.Environment.Builder scanPath(Path dir, Collection<Path> dependencies, ClassLoader classLoader) {
+		public Builder scanPath(Path dir, Collection<Path> dependencies, ClassLoader classLoader) {
 			List<ClasspathScanningLoader> list = new ArrayList<>();
 			for (Path dep : dependencies) {
 				ClasspathScanningLoader classpathScanningLoader = new ClasspathScanningLoader(dep, props, emptyList(), classLoader);
 				list.add(classpathScanningLoader);
 			}
-			return load(new StsClasspathScanningLoader(dir, props, list, classLoader));
+			return (Builder) load(new StsClasspathScanningLoader(dir, props, list, classLoader));
 		}
 		
         @SuppressWarnings("unchecked")

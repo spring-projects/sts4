@@ -241,7 +241,7 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 	}
 	
 	private StsEnvironment createRewriteEnvironment() {
-		StsEnvironment.Builder builder = (StsEnvironment.Builder) StsEnvironment.builder().scanRuntimeClasspath();
+		StsEnvironment.Builder builder = StsEnvironment.builder().scanRuntimeClasspath();
 		for (String p : scanFiles) {
 			try {
 				Path f = Path.of(p);
@@ -268,7 +268,7 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 				log.error("Skipping folder " + p, e);
 			}
 		}
-		return (StsEnvironment) builder.build();
+		return builder.build();
 	}
 	
 	public Optional<Recipe> getRecipe(String name) {
