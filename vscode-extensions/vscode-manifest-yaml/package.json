@@ -4,7 +4,7 @@
   "description": "Adds linting, content assist and hoverinfo's for Cloudfoundry Deployment Manifests (a.k.a. `manifest.yml`) files.",
   "icon": "icon.png",
   "version": "1.44.0",
-  "publisher": "Pivotal",
+  "publisher": "vmware",
   "repository": {
     "type": "git",
     "url": "https://github.com/spring-projects/sts4.git"

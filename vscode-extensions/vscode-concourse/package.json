@@ -4,7 +4,7 @@
   "description": "Provides validation and content assist for Concourse CI pipeline and task configuration yml files",
   "icon": "icon.png",
   "version": "1.44.0",
-  "publisher": "Pivotal",
+  "publisher": "vmware",
   "repository": {
     "type": "git",
     "url": "https://github.com/spring-projects/sts4.git"

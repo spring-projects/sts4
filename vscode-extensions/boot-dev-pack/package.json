@@ -1,7 +1,7 @@
 {
   "name": "vscode-boot-dev-pack",
   "version": "0.2.0",
-  "publisher": "Pivotal",
+  "publisher": "vmware",
   "displayName": "Spring Boot Extension Pack",
   "description": "A collection of extensions for developing Spring Boot applications",
   "license": "EPL-1.0",
@@ -32,7 +32,7 @@
     "vscode": "^1.26.0"
   },
   "extensionPack": [
-    "Pivotal.vscode-spring-boot",
+    "vmware.vscode-spring-boot",
     "vscjava.vscode-spring-initializr",
     "vscjava.vscode-spring-boot-dashboard"
   ],
