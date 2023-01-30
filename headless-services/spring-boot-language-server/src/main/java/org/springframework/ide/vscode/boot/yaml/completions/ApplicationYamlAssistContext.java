@@ -466,7 +466,7 @@ public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistCon
 			Collection<Match<PropertyInfo>> matchingProps = indexNav.findMatching(query);
 			if (!matchingProps.isEmpty()) {
 				ArrayList<ICompletionProposal> completions = new ArrayList<ICompletionProposal>();
-				matchingProps.parallelStream().forEach(match -> {
+				matchingProps.stream().forEach(match -> {
 					try {
 						DocumentEdits edits = createEdits(doc, node, offset, query, match);
 						ScoreableProposal completion = completionFactory.property(

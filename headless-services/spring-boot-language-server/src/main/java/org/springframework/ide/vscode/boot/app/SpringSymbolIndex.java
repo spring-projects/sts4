@@ -547,7 +547,7 @@ public class SpringSymbolIndex implements InitializingBean {
 	}
 	
 	public Stream<WorkspaceSymbol> getSymbols(Predicate<EnhancedSymbolInformation> filter) {
-		return symbols.parallelStream()
+		return symbols.stream()
 			.filter(filter)
 			.map(enhanced -> enhanced.getSymbol());
 	}

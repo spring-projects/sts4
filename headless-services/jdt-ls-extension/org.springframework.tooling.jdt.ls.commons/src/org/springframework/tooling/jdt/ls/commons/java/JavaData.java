@@ -69,6 +69,7 @@ public class JavaData {
 				return createTypeData((IType) element);
 			}
 		} catch (Exception e) {
+			logger.log("Failed to fetch type data for element witn key: " + bindingKey);
 			logger.log(e);
 		}
 		return null;

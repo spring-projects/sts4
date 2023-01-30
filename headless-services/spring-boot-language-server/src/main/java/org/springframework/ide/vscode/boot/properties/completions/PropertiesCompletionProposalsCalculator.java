@@ -339,7 +339,7 @@ public class PropertiesCompletionProposalsCalculator {
 			Collection<Match<PropertyInfo>> matches = findMatches(prefix);
 			if (matches!=null && !matches.isEmpty()) {
 				ArrayList<ICompletionProposal> proposals = new ArrayList<ICompletionProposal>(matches.size());
-				matches.parallelStream().forEach(match -> {
+				matches.stream().forEach(match -> {
 					DocumentEdits docEdits;
 					try {
 						docEdits = LazyProposalApplier.from(() -> {
