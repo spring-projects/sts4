@@ -105,7 +105,7 @@ public class SpringBootUpgrade {
 			recipe.doNext(new UpgradeDependencyVersion("org.springframework.boot", "*", version.getMajor() + "." + version.getMinor() + ".x", null, null, null));
 			recipe.doNext(new UpgradeParentVersion("org.springframework.boot", "spring-boot-starter-parent", version.getMajor() + "." + version.getMinor() + ".x", null, null));
 		} else /*if (version.getMajor() == targetVersion.getMajor())*/ {
-			List<String> recipedIds = createRecipeIdsChain(version.getMajor(), version.getMinor(), targetVersion.getMajor(), targetVersion.getMinor(), versionsToRecipeId);
+			List<String> recipedIds = createRecipeIdsChain(version.getMajor(), version.getMinor() + 1, targetVersion.getMajor(), targetVersion.getMinor(), versionsToRecipeId);
 			if (!recipedIds.isEmpty()) {
 				String recipeId = recipedIds.get(recipedIds.size() - 1);
 				// TODO: Review after new rewrite adoption
