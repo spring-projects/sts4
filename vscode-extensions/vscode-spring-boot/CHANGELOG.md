@@ -1,3 +1,18 @@
+## 2023-02-01 (4.17.2 RELEASE, incl. language servers version 1.44.0)
+
+* _(Spring Boot)_ fixed: [symbols] do not auto-limit the result of the workspace symbol request ([#915](https://github.com/spring-projects/sts4/issues/915))
+* _(Spring Boot)_ fixed: Unit test MavenProjectParser ([#918](https://github.com/spring-projects/sts4/issues/918))
+* _(Spring Boot)_ fixed: Give user more information about what is "java sources reconciling" ([#920](https://github.com/spring-projects/sts4/issues/920))
+* _(Spring Boot)_ fixed: [Java-17] Enable jdt.ls.commons.test tests to execute in the maven build ([#928](https://github.com/spring-projects/sts4/issues/928))
+* _(Spring Boot)_ fixed: update generated parser for Java properties with latest ANTLR runtime version ([#946](https://github.com/spring-projects/sts4/issues/946))
+* _(Spring Boot)_ fixed: Bad Escape exception showing up in log ([#950](https://github.com/spring-projects/sts4/issues/950))
+* _(Spring Boot)_ fixed: various exceptions while reconciling ([#951](https://github.com/spring-projects/sts4/issues/951))
+* _(Spring Boot)_ fixed: NPE from OpenRewrite Java Parser - Cannot read field "info" because "env" is null ([#952](https://github.com/spring-projects/sts4/issues/952))
+* _(Spring Boot)_ fixed: Unknown property error shown in application.yml when using java records ([#955](https://github.com/spring-projects/sts4/issues/955))
+* _(Spring Boot)_ fixed: [upgrading] running upgrade recipe for Spring Boot 3 causes exception ([#958](https://github.com/spring-projects/sts4/issues/958))
+* _(VSCode)_ fixed: Is it feasible to drop the activation event onLanguage:xml? ([#926](https://github.com/spring-projects/sts4/issues/926))
+* _(VSCode)_ fixed: Error: command 'sts.vscode-spring-boot.enableClasspathListening' not found ([#939](https://github.com/spring-projects/
+
 ## 2023-01-03 (4.17.1 RELEASE, incl. language servers version 1.43.0)
 
 * _(Spring Boot)_ fixed: Eclipse STS 4.17 takes 96 % processor time on Intel i9 ([#934](https://github.com/spring-projects/sts4/issues/934))

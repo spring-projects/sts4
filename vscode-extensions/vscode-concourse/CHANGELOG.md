@@ -1,3 +1,8 @@
+## 2023-02-01 (4.17.2 RELEASE, incl. language servers version 1.44.0)
+
+* _(Concourse)_ fixed: Add instance_vars to Concourse schema ([#942](https://github.com/spring-projects/sts4/issues/942))
+* _(Concourse)_ fixed: Add var_sources to Concourse schema ([#944](https://github.com/spring-projects/sts4/issues/944))
+
 ## 2023-01-03 (4.17.1 RELEASE, incl. language servers version 1.43.0)
 
 * no major changes

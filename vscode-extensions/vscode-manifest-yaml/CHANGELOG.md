@@ -1,3 +1,7 @@
+## 2023-02-01 (4.17.2 RELEASE, incl. language servers version 1.44.0)
+
+* no major changes
+
 ## 2023-01-03 (4.17.1 RELEASE, incl. language servers version 1.43.0)
 
 * no major changes
