@@ -10,8 +10,8 @@ dist_type=snapshot
 #cp -r ${sources}/*.js "$target"
 #cp s3-manifest-yaml-vsix/*.vsix "$target"
 
-export vscode_manifest_yaml=$(basename s3-manifest-yaml-vsix-${dist_type}/*.vsix)
-echo "vscode_manifest_yaml=$vscode_manifest_yaml"
+# export vscode_manifest_yaml=$(basename s3-manifest-yaml-vsix-${dist_type}/*.vsix)
+# echo "vscode_manifest_yaml=$vscode_manifest_yaml"
 export vscode_spring_boot=$(basename s3-spring-boot-vsix-${dist_type}/*.vsix)
 echo "vscode_spring_boot=$vscode_spring_boot"
 export vscode_concourse=$(basename s3-concourse-vsix-${dist_type}/*.vsix)
@@ -23,9 +23,6 @@ envsubst > "$target/vscode-extensions-snippet.html" << XXXXXX
 <ul>
    <li>Spring Boot Language Server: 
        <a href="https://s3-us-west-1.amazonaws.com/s3-test.spring.io/sts4/vscode-extensions/${dist_type}s/${vscode_spring_boot}">${vscode_spring_boot}</a> 
-   </li>
-   <li>Cloud Foundry Manifest Language Server: 
-       <a href="https://s3-us-west-1.amazonaws.com/s3-test.spring.io/sts4/vscode-extensions/${dist_type}s/${vscode_manifest_yaml}">${vscode_manifest_yaml}</a> 
    </li>
    <li>Concourse CI Language Server: 
        <a href="https://s3-us-west-1.amazonaws.com/s3-test.spring.io/sts4/vscode-extensions/${dist_type}s/${vscode_concourse}">${vscode_concourse}</a> 

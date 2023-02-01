@@ -512,9 +512,10 @@ jobs:
       trigger: true
     - get: maven-cache
   - task: build-manifest-yaml-vsix-snapshot
-    file: sts4/concourse/tasks/build-vsix-pre-release.yml
+    file: sts4/concourse/tasks/build-vsix.yml
     params:
       extension_id: vscode-manifest-yaml
+      dist_type: pre
     on_failure:
       put: slack-notification
       params:
@@ -915,10 +916,10 @@ jobs:
       trigger: true
       passed:
       - build-bosh-vsix-snapshot
-    - get: s3-manifest-yaml-vsix-snapshot
-      trigger: true
-      passed:
-      - build-manifest-yaml-vsix-snapshot
+    # - get: s3-manifest-yaml-vsix-snapshot
+    #   trigger: true
+    #   passed:
+    #   - build-manifest-yaml-vsix-snapshot
     - get: s3-spring-boot-vsix-snapshot
       trigger: true
       passed:
