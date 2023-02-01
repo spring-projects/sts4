@@ -36,7 +36,7 @@ echo -e "\n\n*Version: ${version}*" >> README.md
 cd "$sources"
 ./scripts/preinstall.sh
 npm install
-npm run vsce-package
+npm run vsce-release-package
 
 #Because the RC was with a unqualified version...
 #The RC version qualifier isn't automaticlaly present in the file name.
