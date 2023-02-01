@@ -507,6 +507,7 @@ jobs:
 - name: build-manifest-yaml-vsix-snapshot
   plan:
   - in_parallel:
+    - get: tasks
     - get: sts4
       trigger: true
     - get: maven-cache

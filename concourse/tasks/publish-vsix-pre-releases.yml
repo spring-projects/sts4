@@ -3,7 +3,7 @@ inputs:
 - name: sts4
 - name: vsix_folder
 run:
-  path: sts4/concourse/tasks/publish-pre-release.yml
+  path: sts4/concourse/tasks/publish-vsix-pre-releases.sh
 image_resource:
   type: registry-image
   source:
