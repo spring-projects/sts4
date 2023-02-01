@@ -34,7 +34,7 @@ fi
 ./scripts/preinstall.sh
 npm install
 #npm audit
-npm run vsce-pre-release-package
+npm run vsce-release-package
 
 # for release build we don't don't add version-qualifier to package.json
 # So we must instead rename the file ourself to add a qualifier

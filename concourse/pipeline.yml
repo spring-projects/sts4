@@ -512,7 +512,7 @@ jobs:
       trigger: true
     - get: maven-cache
   - task: build-manifest-yaml-vsix-snapshot
-    file: sts4/concourse/tasks/build-vsix.yml
+    file: sts4/concourse/tasks/build-vsix-pre-release.yml
     params:
       extension_id: vscode-manifest-yaml
     on_failure:
@@ -532,11 +532,6 @@ jobs:
       params:
         text: |
            Pre-Release Publishing for ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!      
-  - in_parallel:
-    - put: s3-manifest-yaml-vsix-snapshot
-      params: 
-        file: out/vscode-manifest-yaml-*.vsix
-        acl: public-read
 - name: build-spring-boot-vsix-snapshot
   plan:
   - in_parallel:
