@@ -7,7 +7,7 @@
   "author": "Kris De Volder <kdevolder@pivotal.io>",
   "engines": {
     "npm": ">=3.0.0",
-    "vscode": ">=1.70.0"
+    "vscode": "^1.67.0"
   },
   "keywords": [],
   "files": [
@@ -30,7 +30,7 @@
   },
   "devDependencies": {
     "@types/node": "^18.8.0",
-    "@types/vscode": "^1.70.0",
+    "@types/vscode": "1.67.0",
     "typescript": "^4.8.0",
     "vscode-languageclient": "^8.0.2"
   }
