@@ -53,7 +53,12 @@ import org.openrewrite.config.RecipeDescriptor;
 import org.openrewrite.config.YamlResourceLoader;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.tree.J.CompilationUnit;
+import org.openrewrite.maven.MavenExecutionContextView;
 import org.openrewrite.maven.MavenParser;
+import org.openrewrite.maven.cache.CompositeMavenPomCache;
+import org.openrewrite.maven.cache.InMemoryMavenPomCache;
+import org.openrewrite.maven.cache.MavenPomCache;
+import org.openrewrite.maven.cache.RocksdbMavenPomCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.BeansException;
@@ -122,6 +127,8 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 	
 	CompletableFuture<Void> loaded;
 	
+	private MavenPomCache mavenPomCache;
+	
 	private Set<String> scanFiles;
 	private Set<String> scanDirs;
 	private Set<String> recipeFilters;
@@ -139,6 +146,7 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 		this.scanDirs = UNINITIALIZED_SET;
 		this.scanFiles = UNINITIALIZED_SET;
 		this.recipeFilters = UNINITIALIZED_SET;
+		this.mavenPomCache = new CompositeMavenPomCache(new InMemoryMavenPomCache(), new RocksdbMavenPomCache(Paths.get(System.getProperty("user.home"))));
 		CompletableFuture<Void> firstConfigLoaded = new CompletableFuture<>();
 		
 		config.addListener(l -> {
@@ -309,7 +317,7 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 		for (RecipeCodeActionDescriptor d : descriptors) {
 			TreeVisitor<?, ExecutionContext> markVisitor = d.getMarkerVisitor(applicationContext);
 			if (markVisitor != null) {
-				cu = (CompilationUnit) markVisitor.visit(cu, new InMemoryExecutionContext(e -> log.error("Marker visitor failed!", e)));
+				cu = (CompilationUnit) markVisitor.visit(cu, createExecutionContext(e -> log.error("Marker visitor failed!", e)));
 			}
 		}
 		return cu;
@@ -414,8 +422,10 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 	private Optional<WorkspaceEdit> computeWorkspaceEdit(Recipe r, IJavaProject project, String progressToken) {
 		Path absoluteProjectDir = Paths.get(project.getLocationUri());
 		server.getProgressService().progressEvent(progressToken, "Parsing files...");
+		log.info("Start Applying Recipe: " + r.getName());
+		long start = System.currentTimeMillis();
 		MavenProjectParser projectParser = createRewriteMavenParser(absoluteProjectDir,
-				new InMemoryExecutionContext(), p -> {
+				createExecutionContext(t -> {}), p -> {
 					TextDocument doc = server.getTextDocumentService().getLatestSnapshot(p.toUri().toASCIIString());
 					if (doc != null) {
 						return new Parser.Input(p, () -> new ByteArrayInputStream(doc.get().getBytes()));
@@ -424,9 +434,19 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 				});
 		List<SourceFile> sources = projectParser.parse(absoluteProjectDir, getClasspathEntries(project));
 		server.getProgressService().progressEvent(progressToken, "Computing changes...");
-		RecipeRun reciperun = r.run(sources, new InMemoryExecutionContext(e -> log.error("Recipe execution failed", e)));
+		RecipeRun reciperun = r.run(sources, createExecutionContext(e -> log.error("Recipe execution failed", e)));
+		log.info(("Done applying recipe in " + String.valueOf(System.currentTimeMillis() - start)));
 		List<Result> results = reciperun.getResults();
 		return ORDocUtils.createWorkspaceEdit(absoluteProjectDir, server.getTextDocumentService(), results);
+	}
+	
+	private ExecutionContext createExecutionContext(Consumer<Throwable> c) {
+		InMemoryExecutionContext ctx = new InMemoryExecutionContext(c);
+		MavenExecutionContextView mvnContext = MavenExecutionContextView.view(ctx);
+		if (mavenPomCache != null) {
+			mvnContext.setPomCache(mavenPomCache);
+		}
+		return mvnContext;
 	}
 	
 	private List<Recipe> listProjectRefactoringRecipes(String uri) {

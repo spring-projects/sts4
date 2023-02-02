@@ -153,6 +153,13 @@
 			</exclusions>
 		</dependency>
 		
+		<dependency>
+		<groupId>org.rocksdb</groupId>
+			<artifactId>rocksdbjni</artifactId>
+			<version>7.9.2</version>
+			<scope>runtime</scope>
+		</dependency>
+
 	
 		<!-- Test harness -->
 		<dependency>
