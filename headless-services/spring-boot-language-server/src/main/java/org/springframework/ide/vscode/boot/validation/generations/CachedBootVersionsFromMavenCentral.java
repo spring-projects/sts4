@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2022 VMware, Inc.
+ * Copyright (c) 2022, 2023 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,8 +10,14 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.validation.generations;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,31 +34,45 @@ public class CachedBootVersionsFromMavenCentral {
 	
 	private static final String KEY = "cacheKey";
 	private static final Duration EXPIRES_AFTER = Duration.ofMinutes(60);
+	private static final int ATTEMPTS_NUMBER = 5;
+	private static final long RESPONSE_WAIT_TIME_MS = 1000;
 	
 	private static final LoadingCache<String, List<Version>> cache = CacheBuilder.newBuilder()
 			.expireAfterWrite(EXPIRES_AFTER)
 			.build(new CacheLoader<String, List<Version>>() {
 
 		@Override
-		public List<Version> load(String key) {
-			try {
-				return BootVersionsFromMavenCentral.getBootVersions();
+		public List<Version> load(String key) throws Exception {
+			for (int i = 0; i < ATTEMPTS_NUMBER; i++) {
+				try {
+					return getFuture().get(RESPONSE_WAIT_TIME_MS, TimeUnit.MILLISECONDS);
+				} catch (ExecutionException | TimeoutException e) {
+					// ignore exception - ask maven central again
+				}
 			}
-			catch (Exception e) {
-				return ImmutableList.of();
-			}
+			throw new Exception("Failed to fetch versions from Maven Central after " + ATTEMPTS_NUMBER + " tries.");
 		}
 		
 	});
 	
-	public static List<Version> getBootVersions() {
+	public static synchronized List<Version> getBootVersions() {
 		try {
 			return cache.get(KEY);
 		}
-		catch (Exception e) {
-			log.error("failed to load Spring Boot release information from maven central", e);
+		catch (ExecutionException e) {
+			log.error("Failed to load Spring Boot release information from maven central", e);
 			return ImmutableList.of();
 		}
+	}
+	
+	private static CompletableFuture<List<Version>> getFuture() {
+		return CompletableFuture.supplyAsync(() -> {
+			try {
+				return BootVersionsFromMavenCentral.getBootVersions();
+			} catch (IOException e) {
+				throw new CompletionException(e);
+			}
+		});
 	}
 
 }
