@@ -7,6 +7,7 @@ RUN apt-get update && apt-get install -y \
   gettext-base \
   git \
   jq \
+  sed \
   ca-certificates-java  \
   ca-certificates \
   openjdk-17-jdk \

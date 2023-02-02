@@ -27,7 +27,7 @@ if [ "$dist_type" = release ]; then
 else
     if [ "$dist_type" = pre ]; then
         # for pre-release build, work the timestamp into package.json patch version (
-        qualified_version = `echo $base_version | sed "s/\([0-9]\{1,\}.[0-9]\{1,\}.\)[0-9]\{1,\}/\1$timestamp/"`
+        qualified_version=`echo $base_version | sed "s/\([0-9]\{1,\}.[0-9]\{1,\}.\)[0-9]\{1,\}/\1$timestamp/"`
         npm version ${qualified_version}
         echo -e "\n\n*Version: ${base_version}-PRE-RELEASE*" >> README.md
     else
