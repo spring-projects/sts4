@@ -28,11 +28,11 @@ cd $workdir
 ./scripts/preinstall.sh
 npm install
 rm -fr *.vsix
-if [ "$1" = "release" ]
+if [ "$1" = "pre-release" ]
 then
-  npm run vsce-release-package
-else
   npm run vsce-pre-release-package
+else
+  npm run vsce-package
 fi
 rm -fr ${home}/.vscode/extensions/*vscode-spring-boot-*
 code --install-extension *.vsix

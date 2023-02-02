@@ -893,7 +893,7 @@
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "test": "npm run compile && node ./node_modules/vscode/bin/test",
-    "vsce-release-package": "vsce package",
+    "vsce-package": "vsce package",
     "vsce-pre-release-package": "vsce package --pre-release"
   },
   "dependencies": {

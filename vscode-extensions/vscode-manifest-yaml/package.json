@@ -86,7 +86,7 @@
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "clean": "rm -fr node_modules out *.vsix package-lock.json",
-    "vsce-release-package": "vsce package",
+    "vsce-package": "vsce package",
     "vsce-pre-release-package": "vsce package --pre-release"
   },
   "dependencies": {
