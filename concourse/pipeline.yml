@@ -269,6 +269,14 @@ resources:
     secret_access_key: ((s3_secretkey))
     region_name: ((s3_region))
     initial_version: 0.0.5-RC.6
+- name: nightly
+  type: time
+  icon: clock-outline
+  source:
+    start: 0:00
+    stop: 1:00
+    location: US/Eastern
+    days: [Tuesday, Thursday, Saturday]
 # - name: artifactory
 #   type: artifactory-resource
 #   source:
@@ -523,7 +531,37 @@ jobs:
     - put: s3-manifest-yaml-vsix-snapshot
       params: 
         file: out/vscode-manifest-yaml-*.vsix
-        acl: public-read      
+        acl: public-read
+- name: publish-manifest-yaml-pre-release
+  plan:
+  - in_parallel:
+    - get: nightly
+      trigger: true
+    - get: sts4
+    - get: maven-cache
+      passed:
+      - build-manifest-yaml-vsix-snapshot
+  - task: build-manifest-yaml-vsix-snapshot
+    file: sts4/concourse/tasks/build-vsix.yml
+    params:
+      extension_id: vscode-manifest-yaml
+      dist_type: pre
+    on_failure:
+      put: slack-notification
+      params:
+        text: |
+           Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
+  - task: publish-pre-release
+    file: sts4/concourse/tasks/publish-vsix-pre-releases.yml
+    input_mapping:
+      vsix_folder: out 
+    params:
+      vsce_token: ((vsce_token))
+    on_failure:
+      put: slack-notification
+      params:
+        text: |
+           Pre-Release Publishing for ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
 - name: build-spring-boot-vsix-snapshot
   plan:
   - in_parallel:
@@ -1013,6 +1051,7 @@ groups:
   - build-spring-boot-vsix-snapshot
   - build-bosh-vsix-snapshot
   - build-manifest-yaml-vsix-snapshot
+  - publish-manifest-yaml-pre-release
 - name: vscode-release
   jobs:
   - verify-vsce-token
