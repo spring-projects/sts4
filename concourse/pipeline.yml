@@ -22,6 +22,7 @@ resource_types:
 resources:
 - name: monthly
   type: time
+  icon: clock-outline
   check_every: 24h
   source:
     interval: 720h
@@ -32,6 +33,7 @@ resources:
 #     interval: 1mcd
 - name: docker-git
   type: git
+  icon: github
   source:
     uri: git@github.com:spring-projects/sts4.git
     branch: ((branch))
@@ -48,18 +50,21 @@ resources:
 #     - vscode-extensions/boot-dev-pack
 - name: sts4
   type: git
+  icon: github
   source:
     uri: git@github.com:spring-projects/sts4.git
     branch: ((branch))
     private_key: ((rsa_id))
 - name: sts4-out
   type: git
+  icon: github
   source:
     uri: git@github.com:spring-projects/sts4.git
     branch: ((branch))
     private_key: ((rsa_id))
 - name: sts4-wiki
   type: git
+  icon: wikipedia
   source:
     uri: git@github.com:spring-projects/sts4.wiki.git
     branch: master
@@ -84,6 +89,7 @@ resources:
 #     uri: git@github.com:pivotal/sts4-vscode-bosh-mirror.git
 - name: jvm-launch-utils-git
   type: git
+  icon: github
   source:
     uri: git@github.com:spring-projects/sts4.git
     private_key: ((rsa_id))
@@ -92,6 +98,7 @@ resources:
     - nodejs-packages/jvm-launch-utils
 - name: tasks
   type: git
+  icon: github
   source:
     uri: git@github.com:spring-projects/sts4.git
     branch: ((branch))
@@ -108,6 +115,7 @@ resources:
 #     regexp: sts4/snapshots/headless-maven-out-(.*).tar.gz
 - name: s3-concourse-vsix-snapshot
   type: s3
+  icon: content-save-outline
   source:
     bucket: ((s3_bucket))
     access_key_id: ((s3_accesskey))
@@ -116,6 +124,7 @@ resources:
     regexp: sts4/vscode-extensions/snapshots/vscode-concourse-(.*).vsix
 - name: s3-bosh-vsix-snapshot
   type: s3
+  icon: content-save-outline
   source:
     bucket: ((s3_bucket))
     access_key_id: ((s3_accesskey))
@@ -124,6 +133,7 @@ resources:
     regexp: sts4/vscode-extensions/snapshots/vscode-bosh-(.*).vsix
 - name: s3-manifest-yaml-vsix-snapshot
   type: s3
+  icon: content-save-outline
   source:
     bucket: ((s3_bucket))
     access_key_id: ((s3_accesskey))
@@ -132,6 +142,7 @@ resources:
     regexp: sts4/vscode-extensions/snapshots/vscode-manifest-yaml-(.*).vsix
 - name: s3-spring-boot-vsix-snapshot
   type: s3
+  icon: content-save-outline
   source:
     bucket: ((s3_bucket))
     access_key_id: ((s3_accesskey))
@@ -140,6 +151,7 @@ resources:
     regexp: sts4/vscode-extensions/snapshots/vscode-spring-boot-(.*).vsix
 - name: s3-concourse-vsix-release
   type: s3
+  icon: content-save-outline
   source:
     bucket: dist.springsource.com
     access_key_id: ((s3_accesskey))
@@ -147,6 +159,7 @@ resources:
     regexp: release/STS4/vscode/vscode-concourse-(.*).vsix
 - name: s3-bosh-vsix-release
   type: s3
+  icon: content-save-outline
   source:
     bucket: dist.springsource.com
     access_key_id: ((s3_accesskey))
@@ -154,6 +167,7 @@ resources:
     regexp: release/STS4/vscode/vscode-bosh-(.*).vsix
 - name: s3-manifest-yaml-vsix-release
   type: s3
+  icon: content-save-outline
   source:
     bucket: dist.springsource.com
     access_key_id: ((s3_accesskey))
@@ -161,6 +175,7 @@ resources:
     regexp: release/STS4/vscode/vscode-manifest-yaml-(.*).vsix
 - name: s3-spring-boot-vsix-release
   type: s3
+  icon: content-save-outline
   source:
     bucket: dist.springsource.com
     access_key_id: ((s3_accesskey))
@@ -233,6 +248,7 @@ resources:
 #     regexp: release/STS4/fatjars/spring-boot-language-server-(.*).jar
 - name: vscode-snapshot-website
   type: s3-multi
+  icon: content-save-outline
   source:
     bucket: ((s3_prod_bucket))
     access_key_id: ((s3_prod_accesskey))
@@ -243,16 +259,19 @@ resources:
     - "--acl public-read"
 - name: slack-notification
   type: slack-notification
+  icon: slack
   source:
     url: ((slack_webhook))
 - name: docker-image
   type: registry-image
+  icon: docker
   source:
     username: ((docker_hub_username))
     password: ((docker_hub_password))
     repository: springci/sts4-build-env
 - name: maven-cache
   type: s3
+  icon: cached
   source:
     bucket: ((s3_bucket))
     access_key_id: ((s3_accesskey))
@@ -261,6 +280,7 @@ resources:
     regexp: mvn-caches/sts4-(.*).tar.gz
 - name: version
   type: semver
+  icon: counter
   source:
     driver: s3
     bucket: ((s3_bucket))
