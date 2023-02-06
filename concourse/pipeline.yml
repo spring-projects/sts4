@@ -1071,6 +1071,8 @@ groups:
   - build-spring-boot-vsix-snapshot
   - build-bosh-vsix-snapshot
   - build-manifest-yaml-vsix-snapshot
+- name: vscode-pre-release
+  jobs:
   - publish-manifest-yaml-pre-release
 - name: vscode-release
   jobs:
