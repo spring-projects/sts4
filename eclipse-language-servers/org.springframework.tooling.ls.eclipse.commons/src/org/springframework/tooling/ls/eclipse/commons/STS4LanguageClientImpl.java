@@ -27,9 +27,11 @@ import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.ILocalVariable;
+import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.internal.ui.javaeditor.JavaSourceViewer;
 import org.eclipse.jdt.internal.ui.viewsupport.JavaElementLinks;
 import org.eclipse.jdt.ui.JavaElementLabelProvider;
@@ -421,9 +423,19 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 								if (editor.getEditorInput() instanceof IFileEditorInput) {
 									IFile file = ((IFileEditorInput)editor.getEditorInput()).getFile();
 									if (file != null && projects.contains(file.getProject())) {
-										ITextViewer viewer = editor.getAdapter(ITextViewer.class);
-										if (viewer instanceof ISourceViewerExtension5) {
-											((ISourceViewerExtension5)viewer).updateCodeMinings();
+										IJavaProject javaProject = JavaCore.create(file.getProject());
+										if (javaProject != null) {
+											for (IClasspathEntry entry : javaProject.getRawClasspath()) {
+												if (entry.getEntryKind() == IClasspathEntry.CPE_SOURCE) {
+													if (entry.getPath().isPrefixOf(file.getFullPath())) {
+														ITextViewer viewer = editor.getAdapter(ITextViewer.class);
+														if (viewer instanceof ISourceViewerExtension5) {
+															((ISourceViewerExtension5)viewer).updateCodeMinings();
+															break;
+														}
+													}
+												}
+											}
 										}
 									}
 								}
