@@ -49,14 +49,6 @@ import reactor.core.publisher.Flux;
  */
 public abstract class CachingValueProvider<T> {
 
-//	protected static final boolean DEBUG = (""+Platform.getLocation()).contains("kdvolder");
-//
-//	protected static void debug(String string) {
-//		if (DEBUG) {
-//			System.out.println(string);
-//		}
-//	}
-
 	private static final Duration DEFAULT_TIMEOUT = Duration.ofMillis(1000);
 
 	/**
@@ -128,7 +120,6 @@ public abstract class CachingValueProvider<T> {
 //		debug("trying to solve "+query+" incrementally");
 		CacheEntry cached = cache.get(key(expectedType));
 		if (cached!=null) {
-			System.out.println("cached "+expectedType+": "+cached);
 			if (cached.isComplete) {
 //				debug("filtering "+subquery+" -> "+query);
 				return cached.values

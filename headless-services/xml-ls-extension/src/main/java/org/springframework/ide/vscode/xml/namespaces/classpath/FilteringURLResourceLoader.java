@@ -88,20 +88,6 @@ public class FilteringURLResourceLoader extends ResourceLoader {
 				return r != null ? r : ImmutableList.of(); 
 			} catch (Exception e) {
 				LOGGER.log(Level.SEVERE, e, null);
-//			} finally {
-//				long duration = System.currentTimeMillis() - start;
-//				long total = timeUsed.addAndGet(duration);
-//				long requestCount = request.incrementAndGet();
-//				System.out.println("Time spent finding resources:");
-//				System.out.println("  requests = " + requestCount);
-//				System.out.println("  avg      = " + total / requestCount);
-//				System.out.println("  total    = " + total);
-//				System.out.println("  index built/reused    = " + indexBuilt.get() +" / "+indexReused.get());
-
-//				System.out.println("Jar scan counts:");
-//				for (Entry<String, AtomicLong> e : jarScanned.entrySet()) {
-//					System.out.println("   "+e.getValue().get() +": "+e.getKey());
-//				}
 			}
 		}
 		return ImmutableSet.of();
@@ -217,10 +203,7 @@ public class FilteringURLResourceLoader extends ResourceLoader {
 					String resourceName = ze.getName();
 					if (interestingResourceNames.test(resourceName)) {
 						//Example url: jar:file:/home/kdvolder/.m2/repository/org/springframework/boot/spring-boot/2.1.4.RELEASE/spring-boot-2.1.4.RELEASE.jar!/META-INF/spring.factories
-//						System.out.println("FOUND "+resourceName+" in "+url);
 						requestor.put(resourceName, "jar:"+url+"!/"+ze);
-//					} else {
-//						System.out.println("mismatch: "+ze.getName());
 					}
 					ze = zip.getNextEntry();
 				}

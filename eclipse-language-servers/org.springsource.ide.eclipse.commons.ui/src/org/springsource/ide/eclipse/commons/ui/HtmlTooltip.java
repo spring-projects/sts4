@@ -130,7 +130,6 @@ public class HtmlTooltip extends ToolTip {
 				@Override
 				public void changing(LocationEvent event) {
 					super.changing(event);
-					System.out.println("location = " + event.location);
 					try {
 						if (event.location!=null) {
 							if (event.location.startsWith("about:")) { //about:blank url

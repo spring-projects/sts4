@@ -15,7 +15,6 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
-import java.util.stream.Collectors;
 
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.lsp4e.LSPEclipseUtils;
@@ -80,12 +79,6 @@ public class GotoSymbolDialogModel {
 	};
 
 	private static final String SEARCH_BOX_HINT_MESSAGE = "@/ -> request mappings, @+ -> beans, @> -> functions, @ -> all spring elements";
-	private static final boolean DEBUG = false;//(""+Platform.getLocation()).contains("kdvolder");
-	private static void debug(String string) {
-		if (DEBUG) {
-			System.out.println(string);
-		}
-	}
 
 	@FunctionalInterface
 	public interface OKHandler {
@@ -148,9 +141,7 @@ public class GotoSymbolDialogModel {
 				SymbolsProvider sp = currentSymbolsProvider.getValue();
 				if (sp!=null) {
 					String currentProviderName = sp.getName();
-					debug("Fetching "+currentProviderName);
 					String query = searchBox.getValue();
-					debug("Fetching symbols... from symbol provider, for '"+query+"'");
 					Collection<SymbolContainer> fetched = sp.fetchFor(query);
 					if (keyBindings==null) {
 						status.setValue(HighlightedText.plain(currentProviderName));
@@ -223,13 +214,6 @@ public class GotoSymbolDialogModel {
 		this.symbolsProviders = symbolsProviders;
 		this.currentSymbolsProviderIndex = 0;
 		this.currentSymbolsProvider.setValue(symbolsProviders[0]);
-		if (DEBUG) {
-			searchBox.addListener((e, v) -> {
-				debug("searchBox = "+v);
-			});
-			unfilteredSymbols.addListener((e, v) -> debug("raw = "+summary(filteredSymbols.getValue())));
-			filteredSymbols.addListener((e, v) -> debug("filtered = "+summary(filteredSymbols.getValue())));
-		}
 	}
 	
 	public GotoSymbolDialogModel setFavourites(FavouritesPreference favourites) {
@@ -239,10 +223,6 @@ public class GotoSymbolDialogModel {
 	
 	public FavouritesPreference getFavourites() {
 		return favourites;
-	}
-
-	private List<String> summary(Collection<Match<SymbolContainer>> collection) {
-		return collection.stream().map(match -> match.value.getName()).collect(Collectors.toList());
 	}
 
 	public LiveExpression<Collection<Match<SymbolContainer>>> getSymbols() {

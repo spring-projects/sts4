@@ -20,7 +20,6 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.OperationCanceledException;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.IJavaElement;
@@ -59,14 +58,6 @@ import reactor.util.concurrent.Queues;
  * @author Kris De Volder
  */
 public class FluxJdtSearch {
-
-	private static final boolean DEBUG = (""+Platform.getLocation()).contains("kdvolder");
-
-	private static void debug(String string) {
-		if (DEBUG) {
-			System.out.println(string);
-		}
-	}
 
 	private SearchEngine engine = new SearchEngine();
 	private IJavaSearchScope scope = SearchEngine.createWorkspaceScope();
@@ -136,7 +127,6 @@ public class FluxJdtSearch {
 		@Override
 		public void acceptSearchMatch(SearchMatch match) throws CoreException {
 			if (isCanceled) {
-				debug("!!!! canceling search !!!!");
 				//Stop searching
 				throw new OperationCanceledException();
 			}
@@ -169,16 +159,10 @@ public class FluxJdtSearch {
 		Job job = new Job("Search for "+pattern) {
 			@Override
 			protected IStatus run(IProgressMonitor monitor) {
-				long start = System.currentTimeMillis();
-				debug("Starting search for '"+pattern+"'");
 				try {
 					searchEngine().search(pattern, participants, scope, requestor, monitor);
 					requestor.done();
 				} catch (Exception e) {
-					debug("Canceled search for: "+pattern);
-					debug("          exception: "+e.getMessage());
-					long duration = System.currentTimeMillis() - start;
-					debug("          duration: "+duration+" ms");
 					requestor.cancel();
 				}
 				return Status.OK_STATUS;
