@@ -28,7 +28,11 @@ import org.eclipse.core.resources.IResourceDeltaVisitor;
 import org.eclipse.core.resources.IWorkspace;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.CoreException;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
+import org.eclipse.core.runtime.Status;
+import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.IJavaProject;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleEvent;
@@ -111,7 +115,7 @@ public class LocalBootDashModel extends AbstractBootDashModel implements Deletio
 		super(RunTargets.LOCAL, parent);
 		this.workspace = context.getWorkspace();
 		this.localServices = new LocalServicesModel(getViewModel(), this, context.getBootInstallManager().getDefaultInstallExp());
-		this.refreshState = new LiveExpression<RefreshState>() {
+		this.refreshState = new LiveExpression<>() {
 			{
 				dependsOn(bootAppsRefreshState);
 				dependsOn(localServices.getRefreshState());
@@ -173,7 +177,7 @@ public class LocalBootDashModel extends AbstractBootDashModel implements Deletio
 			WorkspaceListener workspaceListener = new WorkspaceListener();
 			this.openCloseListenerManager = new ProjectChangeListenerManager(workspace, workspaceListener);
 			this.classpathListenerManager = new ClasspathListenerManager(workspaceListener);
-			projectExclusion.addListener(projectExclusionListener = new ValueListener<Pattern>() {
+			projectExclusion.addListener(projectExclusionListener = new ValueListener<>() {
 				public void gotValue(LiveExpression<Pattern> exp, Pattern value) {
 					updateElementsFromWorkspace();
 				}
@@ -287,6 +291,17 @@ public class LocalBootDashModel extends AbstractBootDashModel implements Deletio
 	}
 
 	void updateElementsFromWorkspace() {
+		new Job("Updating Local Contents for Boot Dashboard") {
+			@Override
+			protected IStatus run(IProgressMonitor monitor) {
+				doUpdateElementsFromWorkspace();
+				return Status.OK_STATUS;
+			}
+			
+		}.schedule();
+	}
+	
+	private void doUpdateElementsFromWorkspace() {
 		LiveSetVariable<BootProjectDashElement> apps = this.applications;
 		if (apps!=null) {
 			Set<BootProjectDashElement> newElements = Arrays.stream(this.workspace.getRoot().getProjects())
