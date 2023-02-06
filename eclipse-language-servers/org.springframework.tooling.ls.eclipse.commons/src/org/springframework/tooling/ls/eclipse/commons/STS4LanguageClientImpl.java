@@ -415,17 +415,22 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 			for (IWorkbenchWindow ww : PlatformUI.getWorkbench().getWorkbenchWindows()) {
 				for (IWorkbenchPage page : ww.getPages()) {
 					for (IEditorReference editorRef : page.getEditorReferences()) {
-						IEditorPart editor = editorRef.getEditor(false);
-						if (editor != null) {
-							if (editor.getEditorInput() instanceof IFileEditorInput) {
-								IFile file = ((IFileEditorInput)editor.getEditorInput()).getFile();
-								if (file != null && projects.contains(file.getProject())) {
-									ITextViewer viewer = editor.getAdapter(ITextViewer.class);
-									if (viewer instanceof ISourceViewerExtension5) {
-										((ISourceViewerExtension5)viewer).updateCodeMinings();
+						try {
+							IEditorPart editor = editorRef.getEditor(false);
+							if (editor != null) {
+								if (editor.getEditorInput() instanceof IFileEditorInput) {
+									IFile file = ((IFileEditorInput)editor.getEditorInput()).getFile();
+									if (file != null && projects.contains(file.getProject())) {
+										ITextViewer viewer = editor.getAdapter(ITextViewer.class);
+										if (viewer instanceof ISourceViewerExtension5) {
+											((ISourceViewerExtension5)viewer).updateCodeMinings();
+										}
 									}
 								}
 							}
+						} catch (Exception e) {
+							// ignore, e.g. MavenPomEditor can throw NPE on getAdapter(...) call. Just log it and continue
+							LanguageServerCommonsActivator.logError(e, "Failed to refresh Code Minings for editor.");
 						}
 					}
 				}
