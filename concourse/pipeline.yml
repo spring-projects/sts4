@@ -509,6 +509,36 @@ jobs:
     # - put: mirror-vscode-concourse
     #   params:
     #     repository: sts4
+- name: publish-concourse-pre-release
+  plan:
+  - in_parallel:
+    - get: nightly
+      trigger: true
+    - get: sts4
+    - get: maven-cache
+      passed:
+      - build-consourse-vsix-snapshot
+  - task: build-concourse-vsix-pre-release
+    file: sts4/concourse/tasks/build-vsix.yml
+    params:
+      extension_id: vscode-concourse
+      dist_type: pre
+    on_failure:
+      put: slack-notification
+      params:
+        text: |
+           Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
+  - task: publish-pre-release
+    file: sts4/concourse/tasks/publish-vsix-pre-releases.yml
+    input_mapping:
+      vsix_folder: out 
+    params:
+      vsce_token: ((vsce_token))
+    on_failure:
+      put: slack-notification
+      params:
+        text: |
+           Pre-Release Publishing for ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
 - name: build-bosh-vsix-snapshot
   plan:
   - in_parallel:
@@ -532,6 +562,36 @@ jobs:
     # - put: mirror-vscode-bosh
     #   params:
     #     repository: sts4
+- name: publish-bosh-pre-release
+  plan:
+  - in_parallel:
+    - get: nightly
+      trigger: true
+    - get: sts4
+    - get: maven-cache
+      passed:
+      - build-bosh-vsix-snapshot
+  - task: build-bosh-vsix-pre-relase
+    file: sts4/concourse/tasks/build-vsix.yml
+    params:
+      extension_id: vscode-bosh
+      dist_type: pre
+    on_failure:
+      put: slack-notification
+      params:
+        text: |
+           Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
+  - task: publish-pre-release
+    file: sts4/concourse/tasks/publish-vsix-pre-releases.yml
+    input_mapping:
+      vsix_folder: out 
+    params:
+      vsce_token: ((vsce_token))
+    on_failure:
+      put: slack-notification
+      params:
+        text: |
+           Pre-Release Publishing for ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
 - name: build-manifest-yaml-vsix-snapshot
   plan:
   - in_parallel:
@@ -561,7 +621,7 @@ jobs:
     - get: maven-cache
       passed:
       - build-manifest-yaml-vsix-snapshot
-  - task: build-manifest-yaml-vsix-snapshot
+  - task: build-manifest-yaml-vsix-pre-release
     file: sts4/concourse/tasks/build-vsix.yml
     params:
       extension_id: vscode-manifest-yaml
@@ -605,6 +665,36 @@ jobs:
     # - put: mirror-vscode-spring-boot
     #   params:
     #     repository: sts4
+- name: publish-spring-boot-pre-release
+  plan:
+  - in_parallel:
+    - get: nightly
+      trigger: true
+    - get: sts4
+    - get: maven-cache
+      passed:
+      - build-spring-boot-vsix-snapshot
+  - task: build-spring-boot-vsix-pre-release
+    file: sts4/concourse/tasks/build-vsix.yml
+    params:
+      extension_id: vscode-spring-boot
+      dist_type: pre
+    on_failure:
+      put: slack-notification
+      params:
+        text: |
+           Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
+  - task: publish-pre-release
+    file: sts4/concourse/tasks/publish-vsix-pre-releases.yml
+    input_mapping:
+      vsix_folder: out 
+    params:
+      vsce_token: ((vsce_token))
+    on_failure:
+      put: slack-notification
+      params:
+        text: |
+           Pre-Release Publishing for ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
 - name: trigger-rc-build
   serial: true
   plan: 
@@ -1073,6 +1163,9 @@ groups:
   - build-manifest-yaml-vsix-snapshot
 - name: vscode-pre-release
   jobs:
+  - publish-spring-boot-pre-release
+  - publish-concourse-pre-release
+  - publish-bosh-pre-release
   - publish-manifest-yaml-pre-release
 - name: vscode-release
   jobs:
