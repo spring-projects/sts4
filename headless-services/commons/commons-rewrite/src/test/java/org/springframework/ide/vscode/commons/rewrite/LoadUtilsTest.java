@@ -64,9 +64,9 @@ public class LoadUtilsTest {
 						+ "",
 				r.getDescription());
 		assertEquals("Migrate to Spring Boot 3.0", r.getDisplayName());
-		assertEquals(9, r.getRecipeList().size());
+		assertEquals(12, r.getRecipeList().size());
 		
-		Recipe pomRecipe = r.getRecipeList().get(0);
+		Recipe pomRecipe = r.getRecipeList().get(2);
 		assertTrue(pomRecipe instanceof DeclarativeRecipe);
 		assertEquals("org.openrewrite.java.spring.boot3.MavenPomUpgrade", pomRecipe.getName());
 		assertEquals("Upgrade Maven Pom to Spring Boot 3.0 from prior 2.x version.", pomRecipe.getDescription());

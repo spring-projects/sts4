@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2022 VMware, Inc.
+ * Copyright (c) 2022, 2023 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -33,12 +33,16 @@ import org.openrewrite.config.ResourceLoader;
 import org.openrewrite.config.YamlResourceLoader;
 import org.openrewrite.internal.RecipeIntrospectionUtils;
 import org.openrewrite.style.NamedStyles;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ClassInfo;
 import io.github.classgraph.ScanResult;
 
 public class StsClasspathScanningLoader implements ResourceLoader, StsResourceLoader {
+	
+	final static Logger log = LoggerFactory.getLogger(StsClasspathScanningLoader.class);
 	
     private final List<Recipe> recipes = new ArrayList<>();
     private final List<NamedStyles> styles = new ArrayList<>();
@@ -143,8 +147,8 @@ public class StsClasspathScanningLoader implements ResourceLoader, StsResourceLo
                     Recipe recipe = constructRecipe(recipeClass);
                     recipeDescriptors.add(recipeDescriptorFromRecipe(recipe));
                     recipes.add(recipe);
-                } catch (Exception e) {
-//                    logger.warn("Unable to configure {}", recipeClass.getName(), e);
+                } catch (Throwable t) {
+                    log.warn("Unable to configure " + recipeClass.getName(), t);
                 }
             }
             for (ClassInfo classInfo : result.getSubclasses(NamedStyles.class.getName())) {
@@ -155,8 +159,8 @@ public class StsClasspathScanningLoader implements ResourceLoader, StsResourceLo
                         constructor.setAccessible(true);
                         styles.add((NamedStyles) constructor.newInstance());
                     }
-                } catch (Exception e) {
-//                    logger.warn("Unable to configure {}", styleClass.getName(), e);
+                } catch (Throwable t) {
+                    log.warn("Unable to configure " + styleClass.getName(), t);
                 }
             }
             
@@ -169,8 +173,8 @@ public class StsClasspathScanningLoader implements ResourceLoader, StsResourceLo
                 	try {
 						CodeActionRepository repo = (CodeActionRepository) primaryConstructor.newInstance();
 						codeActionRepos.add(repo);
-					} catch (Exception e) {
-						e.printStackTrace();
+					} catch (Throwable t) {
+	                    log.warn("Unable to configure " + codeActionRepoClass.getName(), t);
 					}
                 }
 

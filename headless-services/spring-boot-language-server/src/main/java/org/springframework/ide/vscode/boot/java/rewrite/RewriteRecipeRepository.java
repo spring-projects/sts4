@@ -309,7 +309,11 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 		for (RecipeCodeActionDescriptor d : descriptors) {
 			TreeVisitor<?, ExecutionContext> markVisitor = d.getMarkerVisitor(applicationContext);
 			if (markVisitor != null) {
-				cu = (CompilationUnit) markVisitor.visit(cu, new InMemoryExecutionContext(e -> log.error("Marker visitor failed!", e)));
+				try {
+					cu = (CompilationUnit) markVisitor.visit(cu, new InMemoryExecutionContext(e -> log.error("Marker visitor failed!", e)));
+				} catch (Exception e) {
+					// ignore - would happen in sources with compiler errors
+				}
 			}
 		}
 		return cu;

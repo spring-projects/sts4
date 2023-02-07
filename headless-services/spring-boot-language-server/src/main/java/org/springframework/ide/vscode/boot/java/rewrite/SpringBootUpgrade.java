@@ -110,13 +110,13 @@ public class SpringBootUpgrade {
 				String recipeId = recipedIds.get(recipedIds.size() - 1);
 				// TODO: Review after new rewrite adoption
 				// Special case is UpgradeSpringBoot_3_0 which doesn't upgrade project to the latest 2.x if necessary. Therefore add 2.(latest) recipe (it chains all previous 2.x)
-				if (targetVersion.getMajor() == 3) {
-					int i = recipedIds.size() - 1;
-					for (; i>=0 && !getVersionFromRecipeId(recipedIds.get(i)).startsWith("2."); i--) {}
-					if (i >= 0) {
-						getRecipeFromId(recipedIds.get(i)).ifPresent(recipe::doNext);
-					}
-				}
+//				if (targetVersion.getMajor() == 3) {
+//					int i = recipedIds.size() - 1;
+//					for (; i>=0 && !getVersionFromRecipeId(recipedIds.get(i)).startsWith("2."); i--) {}
+//					if (i >= 0) {
+//						getRecipeFromId(recipedIds.get(i)).ifPresent(recipe::doNext);
+//					}
+//				}
 				getRecipeFromId(recipeId).ifPresent(recipe::doNext);
 			}
 		}

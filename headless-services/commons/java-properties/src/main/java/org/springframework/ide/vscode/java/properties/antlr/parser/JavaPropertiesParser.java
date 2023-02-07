@@ -1,4 +1,4 @@
-// Generated from JavaProperties.g4 by ANTLR 4.9.3
+// Generated from java-escape by ANTLR 4.11.1
 package org.springframework.ide.vscode.java.properties.antlr.parser;
 import org.antlr.v4.runtime.atn.*;
 import org.antlr.v4.runtime.dfa.DFA;
@@ -9,9 +9,9 @@ import java.util.List;
 import java.util.Iterator;
 import java.util.ArrayList;
 
-@SuppressWarnings({"all", "warnings", "unchecked", "unused", "cast"})
+@SuppressWarnings({"all", "warnings", "unchecked", "unused", "cast", "CheckReturnValue"})
 public class JavaPropertiesParser extends Parser {
-	static { RuntimeMetaData.checkVersion("4.9.3", RuntimeMetaData.VERSION); }
+	static { RuntimeMetaData.checkVersion("4.11.1", RuntimeMetaData.VERSION); }
 
 	protected static final DFA[] _decisionToDFA;
 	protected static final PredictionContextCache _sharedContextCache =
@@ -78,7 +78,7 @@ public class JavaPropertiesParser extends Parser {
 	}
 
 	@Override
-	public String getGrammarFileName() { return "JavaProperties.g4"; }
+	public String getGrammarFileName() { return "java-escape"; }
 
 	@Override
 	public String[] getRuleNames() { return ruleNames; }
@@ -94,6 +94,7 @@ public class JavaPropertiesParser extends Parser {
 		_interp = new ParserATNSimulator(this,_ATN,_decisionToDFA,_sharedContextCache);
 	}
 
+	@SuppressWarnings("CheckReturnValue")
 	public static class ParseContext extends ParserRuleContext {
 		public TerminalNode EOF() { return getToken(JavaPropertiesParser.EOF, 0); }
 		public List<LineContext> line() {
@@ -126,7 +127,7 @@ public class JavaPropertiesParser extends Parser {
 			setState(25);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << Backslash) | (1L << Exclamation) | (1L << Number) | (1L << LineBreak) | (1L << Space) | (1L << IdentifierChar))) != 0)) {
+			while (((_la) & ~0x3f) == 0 && ((1L << _la) & 498L) != 0) {
 				{
 				{
 				setState(22);
@@ -152,6 +153,7 @@ public class JavaPropertiesParser extends Parser {
 		return _localctx;
 	}
 
+	@SuppressWarnings("CheckReturnValue")
 	public static class LineContext extends ParserRuleContext {
 		public PropertyLineContext propertyLine() {
 			return getRuleContext(PropertyLineContext.class,0);
@@ -217,6 +219,7 @@ public class JavaPropertiesParser extends Parser {
 		return _localctx;
 	}
 
+	@SuppressWarnings("CheckReturnValue")
 	public static class PropertyLineContext extends ParserRuleContext {
 		public KeyValuePairContext keyValuePair() {
 			return getRuleContext(KeyValuePairContext.class,0);
@@ -275,6 +278,7 @@ public class JavaPropertiesParser extends Parser {
 		return _localctx;
 	}
 
+	@SuppressWarnings("CheckReturnValue")
 	public static class CommentLineContext extends ParserRuleContext {
 		public TerminalNode Exclamation() { return getToken(JavaPropertiesParser.Exclamation, 0); }
 		public TerminalNode Number() { return getToken(JavaPropertiesParser.Number, 0); }
@@ -335,7 +339,7 @@ public class JavaPropertiesParser extends Parser {
 			setState(53);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << Backslash) | (1L << Colon) | (1L << Equals) | (1L << Exclamation) | (1L << Number) | (1L << Space) | (1L << IdentifierChar))) != 0)) {
+			while (((_la) & ~0x3f) == 0 && ((1L << _la) & 446L) != 0) {
 				{
 				{
 				setState(50);
@@ -377,6 +381,7 @@ public class JavaPropertiesParser extends Parser {
 		return _localctx;
 	}
 
+	@SuppressWarnings("CheckReturnValue")
 	public static class EmptyLineContext extends ParserRuleContext {
 		public TerminalNode LineBreak() { return getToken(JavaPropertiesParser.LineBreak, 0); }
 		public List<TerminalNode> Space() { return getTokens(JavaPropertiesParser.Space); }
@@ -433,6 +438,7 @@ public class JavaPropertiesParser extends Parser {
 		return _localctx;
 	}
 
+	@SuppressWarnings("CheckReturnValue")
 	public static class KeyValuePairContext extends ParserRuleContext {
 		public KeyContext key() {
 			return getRuleContext(KeyContext.class,0);
@@ -490,6 +496,7 @@ public class JavaPropertiesParser extends Parser {
 		return _localctx;
 	}
 
+	@SuppressWarnings("CheckReturnValue")
 	public static class KeyContext extends ParserRuleContext {
 		public List<KeyCharContext> keyChar() {
 			return getRuleContexts(KeyCharContext.class);
@@ -545,6 +552,7 @@ public class JavaPropertiesParser extends Parser {
 		return _localctx;
 	}
 
+	@SuppressWarnings("CheckReturnValue")
 	public static class KeyCharContext extends ParserRuleContext {
 		public TerminalNode IdentifierChar() { return getToken(JavaPropertiesParser.IdentifierChar, 0); }
 		public TerminalNode Backslash() { return getToken(JavaPropertiesParser.Backslash, 0); }
@@ -611,6 +619,7 @@ public class JavaPropertiesParser extends Parser {
 		return _localctx;
 	}
 
+	@SuppressWarnings("CheckReturnValue")
 	public static class SeparatorAndValueContext extends ParserRuleContext {
 		public TerminalNode Space() { return getToken(JavaPropertiesParser.Space, 0); }
 		public TerminalNode Colon() { return getToken(JavaPropertiesParser.Colon, 0); }
@@ -644,7 +653,7 @@ public class JavaPropertiesParser extends Parser {
 			{
 			setState(80);
 			_la = _input.LA(1);
-			if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << Colon) | (1L << Equals) | (1L << Space))) != 0)) ) {
+			if ( !(((_la) & ~0x3f) == 0 && ((1L << _la) & 140L) != 0) ) {
 			_errHandler.recoverInline(this);
 			}
 			else {
@@ -655,7 +664,7 @@ public class JavaPropertiesParser extends Parser {
 			setState(84);
 			_errHandler.sync(this);
 			_la = _input.LA(1);
-			while ((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << Backslash) | (1L << Colon) | (1L << Equals) | (1L << Exclamation) | (1L << Number) | (1L << Space) | (1L << IdentifierChar))) != 0)) {
+			while (((_la) & ~0x3f) == 0 && ((1L << _la) & 446L) != 0) {
 				{
 				{
 				setState(81);
@@ -679,6 +688,7 @@ public class JavaPropertiesParser extends Parser {
 		return _localctx;
 	}
 
+	@SuppressWarnings("CheckReturnValue")
 	public static class ValueCharContext extends ParserRuleContext {
 		public TerminalNode IdentifierChar() { return getToken(JavaPropertiesParser.IdentifierChar, 0); }
 		public TerminalNode Exclamation() { return getToken(JavaPropertiesParser.Exclamation, 0); }
@@ -777,6 +787,7 @@ public class JavaPropertiesParser extends Parser {
 		return _localctx;
 	}
 
+	@SuppressWarnings("CheckReturnValue")
 	public static class AnyCharContext extends ParserRuleContext {
 		public TerminalNode LineBreak() { return getToken(JavaPropertiesParser.LineBreak, 0); }
 		public TerminalNode IdentifierChar() { return getToken(JavaPropertiesParser.IdentifierChar, 0); }
@@ -809,7 +820,7 @@ public class JavaPropertiesParser extends Parser {
 			{
 			setState(97);
 			_la = _input.LA(1);
-			if ( !((((_la) & ~0x3f) == 0 && ((1L << _la) & ((1L << Backslash) | (1L << Colon) | (1L << Equals) | (1L << Exclamation) | (1L << Number) | (1L << LineBreak) | (1L << Space) | (1L << IdentifierChar))) != 0)) ) {
+			if ( !(((_la) & ~0x3f) == 0 && ((1L << _la) & 510L) != 0) ) {
 			_errHandler.recoverInline(this);
 			}
 			else {
@@ -831,32 +842,64 @@ public class JavaPropertiesParser extends Parser {
 	}
 
 	public static final String _serializedATN =
-		"\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3\nf\4\2\t\2\4\3\t"+
-		"\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7\4\b\t\b\4\t\t\t\4\n\t\n\4\13\t\13\4"+
-		"\f\t\f\3\2\7\2\32\n\2\f\2\16\2\35\13\2\3\2\3\2\3\3\3\3\3\3\5\3$\n\3\3"+
-		"\4\7\4\'\n\4\f\4\16\4*\13\4\3\4\3\4\3\5\7\5/\n\5\f\5\16\5\62\13\5\3\5"+
-		"\3\5\7\5\66\n\5\f\5\16\59\13\5\3\5\3\5\3\6\7\6>\n\6\f\6\16\6A\13\6\3\6"+
-		"\3\6\3\7\3\7\3\7\3\7\3\b\6\bJ\n\b\r\b\16\bK\3\t\3\t\3\t\5\tQ\n\t\3\n\3"+
-		"\n\7\nU\n\n\f\n\16\nX\13\n\3\13\3\13\3\13\3\13\3\13\3\13\3\13\3\13\5\13"+
-		"b\n\13\3\f\3\f\3\f\2\2\r\2\4\6\b\n\f\16\20\22\24\26\2\b\3\2\6\7\3\2\b"+
-		"\b\3\3\b\b\3\2\4\5\4\2\4\5\t\t\3\2\3\n\2j\2\33\3\2\2\2\4#\3\2\2\2\6(\3"+
-		"\2\2\2\b\60\3\2\2\2\n?\3\2\2\2\fD\3\2\2\2\16I\3\2\2\2\20P\3\2\2\2\22R"+
-		"\3\2\2\2\24a\3\2\2\2\26c\3\2\2\2\30\32\5\4\3\2\31\30\3\2\2\2\32\35\3\2"+
-		"\2\2\33\31\3\2\2\2\33\34\3\2\2\2\34\36\3\2\2\2\35\33\3\2\2\2\36\37\7\2"+
-		"\2\3\37\3\3\2\2\2 $\5\6\4\2!$\5\b\5\2\"$\5\n\6\2# \3\2\2\2#!\3\2\2\2#"+
-		"\"\3\2\2\2$\5\3\2\2\2%\'\7\t\2\2&%\3\2\2\2\'*\3\2\2\2(&\3\2\2\2()\3\2"+
-		"\2\2)+\3\2\2\2*(\3\2\2\2+,\5\f\7\2,\7\3\2\2\2-/\7\t\2\2.-\3\2\2\2/\62"+
-		"\3\2\2\2\60.\3\2\2\2\60\61\3\2\2\2\61\63\3\2\2\2\62\60\3\2\2\2\63\67\t"+
-		"\2\2\2\64\66\n\3\2\2\65\64\3\2\2\2\669\3\2\2\2\67\65\3\2\2\2\678\3\2\2"+
-		"\28:\3\2\2\29\67\3\2\2\2:;\t\4\2\2;\t\3\2\2\2<>\7\t\2\2=<\3\2\2\2>A\3"+
-		"\2\2\2?=\3\2\2\2?@\3\2\2\2@B\3\2\2\2A?\3\2\2\2BC\7\b\2\2C\13\3\2\2\2D"+
-		"E\5\16\b\2EF\5\22\n\2FG\t\4\2\2G\r\3\2\2\2HJ\5\20\t\2IH\3\2\2\2JK\3\2"+
-		"\2\2KI\3\2\2\2KL\3\2\2\2L\17\3\2\2\2MQ\7\n\2\2NO\7\3\2\2OQ\t\5\2\2PM\3"+
-		"\2\2\2PN\3\2\2\2Q\21\3\2\2\2RV\t\6\2\2SU\5\24\13\2TS\3\2\2\2UX\3\2\2\2"+
-		"VT\3\2\2\2VW\3\2\2\2W\23\3\2\2\2XV\3\2\2\2Yb\7\n\2\2Zb\7\6\2\2[b\7\7\2"+
-		"\2\\b\7\t\2\2]^\7\3\2\2^b\5\26\f\2_b\7\5\2\2`b\7\4\2\2aY\3\2\2\2aZ\3\2"+
-		"\2\2a[\3\2\2\2a\\\3\2\2\2a]\3\2\2\2a_\3\2\2\2a`\3\2\2\2b\25\3\2\2\2cd"+
-		"\t\7\2\2d\27\3\2\2\2\f\33#(\60\67?KPVa";
+		"\u0004\u0001\bd\u0002\u0000\u0007\u0000\u0002\u0001\u0007\u0001\u0002"+
+		"\u0002\u0007\u0002\u0002\u0003\u0007\u0003\u0002\u0004\u0007\u0004\u0002"+
+		"\u0005\u0007\u0005\u0002\u0006\u0007\u0006\u0002\u0007\u0007\u0007\u0002"+
+		"\b\u0007\b\u0002\t\u0007\t\u0002\n\u0007\n\u0001\u0000\u0005\u0000\u0018"+
+		"\b\u0000\n\u0000\f\u0000\u001b\t\u0000\u0001\u0000\u0001\u0000\u0001\u0001"+
+		"\u0001\u0001\u0001\u0001\u0003\u0001\"\b\u0001\u0001\u0002\u0005\u0002"+
+		"%\b\u0002\n\u0002\f\u0002(\t\u0002\u0001\u0002\u0001\u0002\u0001\u0003"+
+		"\u0005\u0003-\b\u0003\n\u0003\f\u00030\t\u0003\u0001\u0003\u0001\u0003"+
+		"\u0005\u00034\b\u0003\n\u0003\f\u00037\t\u0003\u0001\u0003\u0001\u0003"+
+		"\u0001\u0004\u0005\u0004<\b\u0004\n\u0004\f\u0004?\t\u0004\u0001\u0004"+
+		"\u0001\u0004\u0001\u0005\u0001\u0005\u0001\u0005\u0001\u0005\u0001\u0006"+
+		"\u0004\u0006H\b\u0006\u000b\u0006\f\u0006I\u0001\u0007\u0001\u0007\u0001"+
+		"\u0007\u0003\u0007O\b\u0007\u0001\b\u0001\b\u0005\bS\b\b\n\b\f\bV\t\b"+
+		"\u0001\t\u0001\t\u0001\t\u0001\t\u0001\t\u0001\t\u0001\t\u0001\t\u0003"+
+		"\t`\b\t\u0001\n\u0001\n\u0001\n\u0000\u0000\u000b\u0000\u0002\u0004\u0006"+
+		"\b\n\f\u000e\u0010\u0012\u0014\u0000\u0006\u0001\u0000\u0004\u0005\u0001"+
+		"\u0000\u0006\u0006\u0001\u0001\u0006\u0006\u0001\u0000\u0002\u0003\u0002"+
+		"\u0000\u0002\u0003\u0007\u0007\u0001\u0000\u0001\bh\u0000\u0019\u0001"+
+		"\u0000\u0000\u0000\u0002!\u0001\u0000\u0000\u0000\u0004&\u0001\u0000\u0000"+
+		"\u0000\u0006.\u0001\u0000\u0000\u0000\b=\u0001\u0000\u0000\u0000\nB\u0001"+
+		"\u0000\u0000\u0000\fG\u0001\u0000\u0000\u0000\u000eN\u0001\u0000\u0000"+
+		"\u0000\u0010P\u0001\u0000\u0000\u0000\u0012_\u0001\u0000\u0000\u0000\u0014"+
+		"a\u0001\u0000\u0000\u0000\u0016\u0018\u0003\u0002\u0001\u0000\u0017\u0016"+
+		"\u0001\u0000\u0000\u0000\u0018\u001b\u0001\u0000\u0000\u0000\u0019\u0017"+
+		"\u0001\u0000\u0000\u0000\u0019\u001a\u0001\u0000\u0000\u0000\u001a\u001c"+
+		"\u0001\u0000\u0000\u0000\u001b\u0019\u0001\u0000\u0000\u0000\u001c\u001d"+
+		"\u0005\u0000\u0000\u0001\u001d\u0001\u0001\u0000\u0000\u0000\u001e\"\u0003"+
+		"\u0004\u0002\u0000\u001f\"\u0003\u0006\u0003\u0000 \"\u0003\b\u0004\u0000"+
+		"!\u001e\u0001\u0000\u0000\u0000!\u001f\u0001\u0000\u0000\u0000! \u0001"+
+		"\u0000\u0000\u0000\"\u0003\u0001\u0000\u0000\u0000#%\u0005\u0007\u0000"+
+		"\u0000$#\u0001\u0000\u0000\u0000%(\u0001\u0000\u0000\u0000&$\u0001\u0000"+
+		"\u0000\u0000&\'\u0001\u0000\u0000\u0000\')\u0001\u0000\u0000\u0000(&\u0001"+
+		"\u0000\u0000\u0000)*\u0003\n\u0005\u0000*\u0005\u0001\u0000\u0000\u0000"+
+		"+-\u0005\u0007\u0000\u0000,+\u0001\u0000\u0000\u0000-0\u0001\u0000\u0000"+
+		"\u0000.,\u0001\u0000\u0000\u0000./\u0001\u0000\u0000\u0000/1\u0001\u0000"+
+		"\u0000\u00000.\u0001\u0000\u0000\u000015\u0007\u0000\u0000\u000024\b\u0001"+
+		"\u0000\u000032\u0001\u0000\u0000\u000047\u0001\u0000\u0000\u000053\u0001"+
+		"\u0000\u0000\u000056\u0001\u0000\u0000\u000068\u0001\u0000\u0000\u0000"+
+		"75\u0001\u0000\u0000\u000089\u0007\u0002\u0000\u00009\u0007\u0001\u0000"+
+		"\u0000\u0000:<\u0005\u0007\u0000\u0000;:\u0001\u0000\u0000\u0000<?\u0001"+
+		"\u0000\u0000\u0000=;\u0001\u0000\u0000\u0000=>\u0001\u0000\u0000\u0000"+
+		">@\u0001\u0000\u0000\u0000?=\u0001\u0000\u0000\u0000@A\u0005\u0006\u0000"+
+		"\u0000A\t\u0001\u0000\u0000\u0000BC\u0003\f\u0006\u0000CD\u0003\u0010"+
+		"\b\u0000DE\u0007\u0002\u0000\u0000E\u000b\u0001\u0000\u0000\u0000FH\u0003"+
+		"\u000e\u0007\u0000GF\u0001\u0000\u0000\u0000HI\u0001\u0000\u0000\u0000"+
+		"IG\u0001\u0000\u0000\u0000IJ\u0001\u0000\u0000\u0000J\r\u0001\u0000\u0000"+
+		"\u0000KO\u0005\b\u0000\u0000LM\u0005\u0001\u0000\u0000MO\u0007\u0003\u0000"+
+		"\u0000NK\u0001\u0000\u0000\u0000NL\u0001\u0000\u0000\u0000O\u000f\u0001"+
+		"\u0000\u0000\u0000PT\u0007\u0004\u0000\u0000QS\u0003\u0012\t\u0000RQ\u0001"+
+		"\u0000\u0000\u0000SV\u0001\u0000\u0000\u0000TR\u0001\u0000\u0000\u0000"+
+		"TU\u0001\u0000\u0000\u0000U\u0011\u0001\u0000\u0000\u0000VT\u0001\u0000"+
+		"\u0000\u0000W`\u0005\b\u0000\u0000X`\u0005\u0004\u0000\u0000Y`\u0005\u0005"+
+		"\u0000\u0000Z`\u0005\u0007\u0000\u0000[\\\u0005\u0001\u0000\u0000\\`\u0003"+
+		"\u0014\n\u0000]`\u0005\u0003\u0000\u0000^`\u0005\u0002\u0000\u0000_W\u0001"+
+		"\u0000\u0000\u0000_X\u0001\u0000\u0000\u0000_Y\u0001\u0000\u0000\u0000"+
+		"_Z\u0001\u0000\u0000\u0000_[\u0001\u0000\u0000\u0000_]\u0001\u0000\u0000"+
+		"\u0000_^\u0001\u0000\u0000\u0000`\u0013\u0001\u0000\u0000\u0000ab\u0007"+
+		"\u0005\u0000\u0000b\u0015\u0001\u0000\u0000\u0000\n\u0019!&.5=INT_";
 	public static final ATN _ATN =
 		new ATNDeserializer().deserialize(_serializedATN.toCharArray());
 	static {

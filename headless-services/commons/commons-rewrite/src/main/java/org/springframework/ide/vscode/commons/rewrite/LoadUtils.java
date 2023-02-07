@@ -123,22 +123,24 @@ public class LoadUtils {
     }
     
     private static Object getOptionValue(Class<?> type, Object v) {
-    	if (type.equals(int.class) || type.equals(Integer.class)) {
-    		return ((Number) v).intValue();
-    	} else if (type.equals(long.class) || type.equals(Long.class)) {
-    		return ((Number) v).longValue();
-    	} else if (type.equals(short.class) || type.equals(Short.class)) {
-    		return ((Number) v).shortValue();
-    	} else if (type.equals(float.class) || type.equals(Float.class)) {
-    		return ((Number) v).floatValue();
-    	} else if (type.equals(double.class) || type.equals(Double.class)) {
-    		return ((Number) v).shortValue();
-    	} else if (Enum.class.isAssignableFrom(type) && v instanceof String) {
-            try {
-                return type.getMethod("valueOf").invoke(v);
-            } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
-                throw new RuntimeException(e);
-            }
+    	if (v != null) {
+        	if (type.equals(int.class) || type.equals(Integer.class)) {
+        		return ((Number) v).intValue();
+        	} else if (type.equals(long.class) || type.equals(Long.class)) {
+        		return ((Number) v).longValue();
+        	} else if (type.equals(short.class) || type.equals(Short.class)) {
+        		return ((Number) v).shortValue();
+        	} else if (type.equals(float.class) || type.equals(Float.class)) {
+        		return ((Number) v).floatValue();
+        	} else if (type.equals(double.class) || type.equals(Double.class)) {
+        		return ((Number) v).shortValue();
+        	} else if (Enum.class.isAssignableFrom(type) && v instanceof String) {
+                try {
+                    return type.getMethod("valueOf").invoke(v);
+                } catch (NoSuchMethodException | InvocationTargetException | IllegalAccessException e) {
+                    throw new RuntimeException(e);
+                }
+        	}
     	}
     	return v;
     }

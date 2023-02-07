@@ -1,4 +1,4 @@
-// Generated from JavaProperties.g4 by ANTLR 4.9.3
+// Generated from java-escape by ANTLR 4.11.1
 package org.springframework.ide.vscode.java.properties.antlr.parser;
 import org.antlr.v4.runtime.tree.ParseTreeListener;
 
