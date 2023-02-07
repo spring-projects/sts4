@@ -16,7 +16,6 @@ import java.util.List;
 
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Tree;
-import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.J.MethodInvocation;
@@ -31,6 +30,7 @@ import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeCodeActionDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.java.FixAssistMarker;
+import org.springframework.ide.vscode.commons.rewrite.java.JavaMarkerVisitor;
 
 public class Boot3NotSupportedTypeProblem implements RecipeCodeActionDescriptor {
 	
@@ -42,7 +42,7 @@ public class Boot3NotSupportedTypeProblem implements RecipeCodeActionDescriptor 
 
 	@Override
 	public JavaVisitor<ExecutionContext> getMarkerVisitor(ApplicationContext applicationContext) {
-		return new JavaIsoVisitor<>() {
+		return new JavaMarkerVisitor<>() {
             @Override
             public J.Identifier visitIdentifier(J.Identifier ident, ExecutionContext executionContext) {
                 if (ident.getType() != null &&

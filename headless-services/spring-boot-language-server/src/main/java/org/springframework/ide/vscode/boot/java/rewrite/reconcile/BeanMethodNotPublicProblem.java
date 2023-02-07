@@ -17,7 +17,6 @@ import org.openrewrite.SourceFile;
 import org.openrewrite.Tree;
 import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.AnnotationMatcher;
-import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.TypeUtils;
@@ -30,6 +29,7 @@ import org.springframework.ide.vscode.commons.rewrite.config.RecipeCodeActionDes
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
 import org.springframework.ide.vscode.commons.rewrite.java.FixAssistMarker;
 import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
+import org.springframework.ide.vscode.commons.rewrite.java.JavaMarkerVisitor;
 
 public class BeanMethodNotPublicProblem implements RecipeCodeActionDescriptor {
 	
@@ -41,7 +41,7 @@ public class BeanMethodNotPublicProblem implements RecipeCodeActionDescriptor {
     
 	@Override
 	public JavaVisitor<ExecutionContext> getMarkerVisitor(ApplicationContext applicationContext) {
-		return new JavaIsoVisitor<ExecutionContext>() {
+		return new JavaMarkerVisitor<ExecutionContext>() {
 
 	        @Override
 	        public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext executionContext) {

@@ -21,7 +21,6 @@ import org.openrewrite.Cursor;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.SourceFile;
 import org.openrewrite.Tree;
-import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.marker.JavaSourceSet;
 import org.openrewrite.java.spring.AutowiredFieldIntoConstructorParameterVisitor;
@@ -42,6 +41,7 @@ import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
 import org.springframework.ide.vscode.commons.rewrite.java.AnnotationHierarchies;
 import org.springframework.ide.vscode.commons.rewrite.java.FixAssistMarker;
 import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
+import org.springframework.ide.vscode.commons.rewrite.java.JavaMarkerVisitor;
 import org.springframework.ide.vscode.commons.rewrite.java.ORAstUtils;
 import org.springframework.ide.vscode.commons.rewrite.maven.MavenProjectParser;
 
@@ -53,7 +53,7 @@ public class AutowiredFieldIntoConstructorParameterCodeAction implements RecipeC
 
 	@Override
 	public JavaVisitor<ExecutionContext> getMarkerVisitor(ApplicationContext applicationContext) {
-		return new JavaIsoVisitor<>() {
+		return new JavaMarkerVisitor<>() {
 
 			@Override
 			public CompilationUnit visitCompilationUnit(CompilationUnit cu, ExecutionContext p) {

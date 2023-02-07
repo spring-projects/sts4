@@ -89,6 +89,7 @@ public class RewriteCompilationUnitCache implements DocumentContentProvider, Dis
 
 								JavaParser parser = javaParsers.getIfPresent(project.get().getLocationUri());
 								if (parser != null) {
+//									parser.reset(List.of(uri));
 									parser.reset();
 								}
 							}

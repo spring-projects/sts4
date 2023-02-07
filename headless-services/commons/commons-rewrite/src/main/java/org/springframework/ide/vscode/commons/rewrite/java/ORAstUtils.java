@@ -29,8 +29,6 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.Parser;
 import org.openrewrite.Recipe;
-import org.openrewrite.RecipeRun;
-import org.openrewrite.Result;
 import org.openrewrite.Tree;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.internal.RecipeIntrospectionUtils;
@@ -281,9 +279,16 @@ public class ORAstUtils {
 		synchronized(parser) {
 			cus = parser.parse(sourceFiles, null, ctx);
 		}
-		RecipeRun reciperun = new UpdateSourcePositions()/*.doNext(new MarkParentRecipe())*/.run(cus);
-		List<Result> results = reciperun.getResults();
-		return results.stream().map(r -> r.getAfter() == null ? r.getBefore() : r.getAfter()).map(CompilationUnit.class::cast).collect(Collectors.toList());	
+		List<J.CompilationUnit> finalCus = new ArrayList<>(cus.size());
+		for (CompilationUnit cu : cus) {
+			J.CompilationUnit newCu = (J.CompilationUnit) new UpdateSourcePositions().getVisitor().visit(cu, ctx);
+			if (newCu == null) {
+				finalCus.add(cu);
+			} else {
+				finalCus.add(newCu);
+			}
+		}
+		return finalCus;
 	}
 	
 	public static List<CompilationUnit> parseInputs(JavaParser parser, Iterable<Parser.Input> inputs) {
@@ -293,9 +298,16 @@ public class ORAstUtils {
 		synchronized (parser) {
 			cus = parser.parseInputs(inputs, null, ctx);
 		}
-		RecipeRun reciperun = new UpdateSourcePositions()/*.doNext(new MarkParentRecipe())*/.run(cus);
-		List<Result> results = reciperun.getResults();
-		return results.stream().map(r -> r.getAfter() == null ? r.getBefore() : r.getAfter()).map(CompilationUnit.class::cast).collect(Collectors.toList());
+		List<J.CompilationUnit> finalCus = new ArrayList<>(cus.size());
+		for (CompilationUnit cu : cus) {
+			J.CompilationUnit newCu = (J.CompilationUnit) new UpdateSourcePositions().getVisitor().visit(cu, ctx);
+			if (newCu == null) {
+				finalCus.add(cu);
+			} else {
+				finalCus.add(newCu);
+			}
+		}
+		return finalCus;
 	}
 	
 	private static void logExceptionWhileParsing(Throwable t) {

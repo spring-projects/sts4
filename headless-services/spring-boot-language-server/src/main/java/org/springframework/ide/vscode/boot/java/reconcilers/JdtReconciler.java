@@ -98,19 +98,15 @@ public class JdtReconciler implements JavaReconciler {
 
 	@Override
 	public void reconcile(IJavaProject project, final IDocument doc, final IProblemCollector problemCollector) {
-
-		long start = System.currentTimeMillis();
-		
+		final long s = System.currentTimeMillis();
 		URI uri = URI.create(doc.getUri());
 		compilationUnitCache.withCompilationUnit(project, uri, cu -> {
 			if (cu != null) {
 				reconcileAST(project, doc, cu, problemCollector);
 			}
+			log.info("reconciling (JDT): " + doc.getUri() + " done in " + (System.currentTimeMillis() - s) + "ms");
 			return null;
 		});
-		
-		long end = System.currentTimeMillis();
-		log.info("reconciling (JDT): " + doc.getUri() + " done in " + (end - start) + "ms");
 	}
 	
 	private void reconcileAST(IJavaProject project, IDocument doc, CompilationUnit cu, IProblemCollector problemCollector) {
@@ -163,12 +159,6 @@ public class JdtReconciler implements JavaReconciler {
 	public Map<IDocument, Collection<ReconcileProblem>> reconcile(IJavaProject project, List<TextDocument> docs) {
 		
 		if (config.isRewriteReconcileEnabled()) {
-//			long start = System.currentTimeMillis();
-//
-//			
-//				
-//			long end = System.currentTimeMillis();
-//			log.info("reconciling project (JDT): " + project.getElementName() + " - " + docs.size() + " done in " + (end - start) + "ms");			
 		}
 		
 		return Collections.emptyMap();

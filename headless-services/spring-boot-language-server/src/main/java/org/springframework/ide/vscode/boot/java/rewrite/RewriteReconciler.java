@@ -28,10 +28,10 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.Parser;
 import org.openrewrite.Tree;
-import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.J.CompilationUnit;
+import org.openrewrite.marker.Marker;
 import org.openrewrite.marker.Range;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,6 +50,7 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.Reconcile
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeCodeActionDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.java.FixAssistMarker;
 import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
+import org.springframework.ide.vscode.commons.rewrite.java.JavaMarkerVisitor;
 import org.springframework.ide.vscode.commons.rewrite.java.ORAstUtils;
 import org.springframework.ide.vscode.commons.rewrite.maven.MavenProjectParser;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
@@ -73,7 +74,6 @@ public class RewriteReconciler implements JavaReconciler {
 
 	@Override
 	public void reconcile(IJavaProject project, IDocument doc, IProblemCollector problemCollector) {
-
 		if (!config.isRewriteReconcileEnabled()) {
 			return;
 		}
@@ -99,10 +99,8 @@ public class RewriteReconciler implements JavaReconciler {
 			}
 		} finally {
 			problemCollector.endCollecting();
-		}	
-		
-		long end = System.currentTimeMillis();
-		log.info("reconciling (OpenRewrite): " + doc.getUri() + " done in " + (end - start) + "ms");
+			log.info("reconciling (OpenRewrite): " + doc.getUri() + " done in " + (System.currentTimeMillis() - start) + "ms");
+		}			
 	}
 	
 	private List<ReconcileProblem> createProblems(IDocument doc, FixAssistMarker m, J astNode) {
@@ -308,25 +306,26 @@ public class RewriteReconciler implements JavaReconciler {
 	
 	private void collectProblems(List<RecipeCodeActionDescriptor> descriptors, IDocument doc, CompilationUnit compilationUnit, Consumer<ReconcileProblem> problemHandler) {
 		CompilationUnit cu = recipeRepo.mark(descriptors, compilationUnit);
-		
-		new JavaIsoVisitor<ExecutionContext>() {
-			
-            @Override
-            public J visit(Tree tree, ExecutionContext context) {
-				J t = super.visit(tree, context);
-            	if (t instanceof J) {
-            		List<FixAssistMarker> markers = t.getMarkers().findAll(FixAssistMarker.class);
-            		for (FixAssistMarker m : markers) {
-						for (ReconcileProblem problem : createProblems(doc, m, t)) {
-							problemHandler.accept(problem);
-						}
-            		}
-            	}
-            	return t;
-            }
-
-		}.visit(cu, new InMemoryExecutionContext(e -> log.error("", e)));
-
+		if (compilationUnit != cu) {
+			new JavaMarkerVisitor<ExecutionContext>() {
+				
+	            @Override
+	            public J visit(Tree tree, ExecutionContext context) {
+					J t = super.visit(tree, context);
+	            	if (t instanceof J) {
+	            		for (Marker m : t.getMarkers().entries()) {
+	            			if (m instanceof FixAssistMarker) {
+	    						for (ReconcileProblem problem : createProblems(doc, (FixAssistMarker) m, t)) {
+	    							problemHandler.accept(problem);
+	    						}
+	            			}
+	            		}
+	            	}
+	            	return t;
+	            }
+	            
+			}.visit(cu, new InMemoryExecutionContext(e -> log.error("", e)));
+		}
 	}
 		
 }

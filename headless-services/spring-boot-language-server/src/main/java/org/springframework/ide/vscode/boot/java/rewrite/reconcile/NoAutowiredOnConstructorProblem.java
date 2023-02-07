@@ -18,7 +18,6 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.SourceFile;
 import org.openrewrite.Tree;
 import org.openrewrite.internal.ListUtils;
-import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.J.ClassDeclaration;
@@ -36,6 +35,7 @@ import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
 import org.springframework.ide.vscode.commons.rewrite.java.AnnotationHierarchies;
 import org.springframework.ide.vscode.commons.rewrite.java.FixAssistMarker;
 import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
+import org.springframework.ide.vscode.commons.rewrite.java.JavaMarkerVisitor;
 
 public class NoAutowiredOnConstructorProblem implements RecipeCodeActionDescriptor {
 
@@ -44,7 +44,7 @@ public class NoAutowiredOnConstructorProblem implements RecipeCodeActionDescript
 
 	@Override
 	public JavaVisitor<ExecutionContext> getMarkerVisitor(ApplicationContext applicationContext) {
-		return new JavaIsoVisitor<ExecutionContext>() {
+		return new JavaMarkerVisitor<ExecutionContext>() {
             public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext context) {
                 J.ClassDeclaration cd =  super.visitClassDeclaration(classDecl, context);
 
