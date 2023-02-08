@@ -113,7 +113,7 @@ public class ProjectsHarness {
 		switch (type) {
 		case MAVEN:
 			if (build) {
-				MavenBuilder.newBuilder(testProjectPath).clean().pack().javadoc().skipTests().execute();
+				MavenBuilder.newBuilder(testProjectPath).clean().pack()/*.javadoc()*/.skipTests().execute();
 			}
 			return MavenJavaProject.create(fileObserver, MavenCore.getDefault(),
 					testProjectPath.resolve(MavenCore.POM_XML).toFile(), (uri, cpe) -> JavaDocProviders.createFor(cpe));
