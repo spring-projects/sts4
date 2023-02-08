@@ -175,25 +175,24 @@
    <extension
          point="org.eclipse.ui.preferencePages">
       <page
-            category="org.springframework.tooling.boot.ls.preferences"
+            category="org.springsource.ide.eclipse.commons.preferencePage"
             class="org.springframework.tooling.boot.ls.prefs.RemoteAppsPrefsPage"
             id="org.springframework.tooling.boot.ls.prefs.RemoteAppsPrefsPage"
             name="Remote Boot Apps">
       </page>
       <page
-            category="org.springframework.tooling.boot.ls.preferences"
+            category="org.springsource.ide.eclipse.commons.preferencePage"
             class="org.springframework.tooling.boot.ls.XmlConfigPreferencePage"
             id="org.springframework.tooling.boot.xml.ls.preferences"
             name="Spring XML Config">
       </page>
       <page
-            category="org.springframework.tooling.ls.eclipse.commons.console.preferences"
             class="org.springframework.tooling.boot.ls.BootJavaPreferencesPage"
-            id="org.springframework.tooling.boot.ls.preferences"
-            name="Spring Boot Language Server">
+            id="org.springsource.ide.eclipse.commons.preferencePage"
+            name="Spring">
       </page>
       <page
-            category="org.springframework.tooling.boot.ls.preferences"
+            category="org.springsource.ide.eclipse.commons.preferencePage"
             class="org.springframework.tooling.boot.ls.RewritePreferencePage"
             id="org.springframework.tooling.boot.ls.rewrite"
             name="OpenRewrite">

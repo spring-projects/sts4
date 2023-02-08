@@ -7,11 +7,6 @@
    <extension
          point="org.eclipse.ui.preferencePages">
       <page
-            class="org.springsource.ide.eclipse.commons.ui.CommonsPreferencePage"
-            id="org.springsource.ide.eclipse.commons.preferencePage"
-            name="Spring">
-      </page>
-      <page
             category="org.springsource.ide.eclipse.commons.preferencePage"
             class="org.springsource.ide.eclipse.commons.ui.PreferencesCurator"
             id="org.springsource.ide.eclipse.commons.curatorPreferencesPage"

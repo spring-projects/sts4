@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2022 VMware, Inc.
+ * Copyright (c) 2022, 2023 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -108,7 +108,7 @@ public class CategoryProblemsSeverityPrefsPage extends ProblemSeverityPreferityP
 			//use workbenches's preference manager
 			PreferenceManager pm= PlatformUI.getWorkbench().getPreferenceManager();
 
-			pm.addTo("org.eclipse.lsp4e.preferences/org.springframework.tooling.ls.eclipse.commons.console.preferences/org.springframework.tooling.boot.ls.preferences", node); //add the node in the PreferenceManager
+			pm.addTo("org.springsource.ide.eclipse.commons.preferencePage", node); //add the node in the PreferenceManager
 		}
 		
 		ALL_PROBLEM_CATEGORIES = ImmutableList.copyOf(categories);
