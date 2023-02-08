@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2022 Pivotal, Inc.
+ * Copyright (c) 2017, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -36,6 +36,8 @@ import org.springframework.stereotype.Component;
 @Component
 public class BootJavaConfig implements InitializingBean {
 	
+	private static final String SPRING_IO_API_URL = "https://api.spring.io/projects";
+
 	private static final Logger log = LoggerFactory.getLogger(BootJavaConfig.class);
 	
 	public static final boolean LIVE_INFORMATION_AUTOMATIC_TRACKING_ENABLED_DEFAULT = false;
@@ -151,6 +153,11 @@ public class BootJavaConfig implements InitializingBean {
 	public boolean isRewriteReconcileEnabled() {
 		Boolean enabled = getRawSettings().getBoolean("boot-java", "rewrite", "reconcile");
 		return enabled == null ? false : enabled.booleanValue();
+	}
+	
+	public String getSpringIOApiUrl() {
+		String url = getRawSettings().getString("spring-boot", "io", "api");
+		return url == null ? SPRING_IO_API_URL : url;
 	}
 
 	

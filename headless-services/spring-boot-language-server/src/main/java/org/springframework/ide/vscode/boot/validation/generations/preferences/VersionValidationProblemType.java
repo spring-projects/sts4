@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2022 VMware, Inc.
+ * Copyright (c) 2022, 2023 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -23,13 +23,13 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemTy
 
 public enum VersionValidationProblemType implements ProblemType {
 
-//	SUPPORTED_OSS_VERSION(HINT, "Supported OSS Boot Version", "Supported OSS Boot Version"),
-//
-//	UNSUPPORTED_OSS_VERSION(ERROR, "Unsupported OSS Version", "Unsupported OSS Version"),
-//	
-//	UNSUPPORTED_COMMERCIAL_VERSION(ERROR, "Unsupported Commercial Version", "Unsupported Commercial Version"),
-//	
-//	SUPPORTED_COMMERCIAL_VERSION(HINT, "Supported Commercial Version", "Supported Commercial Version"),
+	SUPPORTED_OSS_VERSION(HINT, "Supported OSS Boot Version", "Supported OSS Boot Version"),
+
+	UNSUPPORTED_OSS_VERSION(ERROR, "Unsupported OSS Version", "Unsupported OSS Version"),
+	
+	UNSUPPORTED_COMMERCIAL_VERSION(ERROR, "Unsupported Commercial Version", "Unsupported Commercial Version"),
+	
+	SUPPORTED_COMMERCIAL_VERSION(HINT, "Supported Commercial Version", "Supported Commercial Version"),
 		
 	UPDATE_LATEST_MAJOR_VERSION(IGNORE, "Update to Latest Major Version", "Update to Latest Major Version"),
 	

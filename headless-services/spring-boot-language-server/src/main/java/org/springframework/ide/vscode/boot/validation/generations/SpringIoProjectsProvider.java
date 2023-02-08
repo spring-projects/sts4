@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2020 Pivotal, Inc.
+ * Copyright (c) 2020, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -30,11 +30,17 @@ import com.google.common.collect.ImmutableMap.Builder;
  */
 public class SpringIoProjectsProvider implements SpringProjectsProvider {
 
-	private final SpringProjectsClient client;
+	private SpringProjectsClient client;
 	private Map<String, ResolvedSpringProject> cache;
 
-	public SpringIoProjectsProvider(SpringProjectsClient client) {
-		this.client = client;
+	public SpringIoProjectsProvider(String uri) {
+		updateIoApiUri(uri);
+	}
+	
+	public synchronized void updateIoApiUri(String uri) {
+		if (client == null || !uri.equals(client.getUrl())) {
+			this.client = new SpringProjectsClient(uri);
+		}
 	}
 
 	/**
@@ -44,7 +50,7 @@ public class SpringIoProjectsProvider implements SpringProjectsProvider {
 	 * @throws Exception
 	 */
 	@Override
-	public ResolvedSpringProject getProject(String projectSlug) throws Exception {
+	public synchronized ResolvedSpringProject getProject(String projectSlug) throws Exception {
 		ResolvedSpringProject prj = cache().get(projectSlug);
 		return prj;
 	}

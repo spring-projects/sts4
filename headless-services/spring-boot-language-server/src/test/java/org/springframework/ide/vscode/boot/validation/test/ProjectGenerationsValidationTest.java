@@ -18,7 +18,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.List;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -26,7 +25,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
 import org.springframework.ide.vscode.boot.bootiful.HoverTestConf;
 import org.springframework.ide.vscode.boot.validation.generations.SpringIoProjectsProvider;
-import org.springframework.ide.vscode.boot.validation.generations.SpringProjectsClient;
 import org.springframework.ide.vscode.boot.validation.generations.SpringProjectsProvider;
 import org.springframework.ide.vscode.boot.validation.generations.json.Generation;
 import org.springframework.ide.vscode.boot.validation.generations.json.Link;
@@ -41,7 +39,6 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @ExtendWith(SpringExtension.class)
 @BootLanguageServerTest
 @Import(HoverTestConf.class)
-@Disabled
 public class ProjectGenerationsValidationTest {
 	
 	@Autowired private BootLanguageServerHarness harness;
@@ -58,9 +55,7 @@ public class ProjectGenerationsValidationTest {
 
     @Test
     void testProjectsInfoFromSpringIo() throws Exception {
-        String url = "https://spring.io/api/projects";
-        SpringProjectsClient client = new SpringProjectsClient(url);
-        SpringProjectsProvider cache = new SpringIoProjectsProvider(client);
+        SpringProjectsProvider cache = new SpringIoProjectsProvider("https://api.spring.io/projects");
 
         SpringProject project = cache.getProject("spring-boot");
         assertNotNull(project);
@@ -68,7 +63,7 @@ public class ProjectGenerationsValidationTest {
         assertEquals("spring-boot", project.getSlug());
         Link generationsUrl = project.get_links().getGenerations();
         assertNotNull(generationsUrl);
-        assertEquals("https://spring.io/api/projects/spring-boot/generations", generationsUrl.getHref());
+        assertEquals("https://api.spring.io/projects/spring-boot/generations", generationsUrl.getHref());
 
         project = cache.getProject("spring-integration");
         assertNotNull(project);
@@ -76,11 +71,14 @@ public class ProjectGenerationsValidationTest {
         assertEquals("spring-integration", project.getSlug());
         generationsUrl = project.get_links().getGenerations();
         assertNotNull(generationsUrl);
-        assertEquals("https://spring.io/api/projects/spring-integration/generations", generationsUrl.getHref());
+        assertEquals("https://api.spring.io/projects/spring-integration/generations", generationsUrl.getHref());
 
         // Enable when generations is  actually available  from  spring.io
-//		Generations generations = cache.getGenerations("spring-boot");
-//		assertNotNull(generations);
+        ResolvedSpringProject resolvedProject = cache.getProject("spring-boot");
+        assertNotNull(resolvedProject);
+		List<Generation> generations = resolvedProject.getGenerations();
+		assertNotNull(generations);
+		assertTrue(generations.size() > 5);
     }
 
     @Test

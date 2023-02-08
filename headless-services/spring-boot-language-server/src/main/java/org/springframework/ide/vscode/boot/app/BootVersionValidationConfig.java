@@ -22,6 +22,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.ide.vscode.boot.common.ProjectReconcileScheduler;
 import org.springframework.ide.vscode.boot.java.rewrite.SpringBootUpgrade;
 import org.springframework.ide.vscode.boot.validation.BootVersionValidationEngine;
+import org.springframework.ide.vscode.boot.validation.generations.GenerationsValidator;
 import org.springframework.ide.vscode.boot.validation.generations.ProjectVersionDiagnosticProvider;
 import org.springframework.ide.vscode.boot.validation.generations.UpdateBootVersion;
 import org.springframework.ide.vscode.boot.validation.generations.VersionValidator;
@@ -37,6 +38,10 @@ public class BootVersionValidationConfig {
 	
 	@Bean UpdateBootVersion updateBootVersion(SimpleLanguageServer server, Optional<SpringBootUpgrade> bootUpgradeOpt) {
 		return new UpdateBootVersion(server.getDiagnosticSeverityProvider(), bootUpgradeOpt);
+	}
+	
+	@Bean GenerationsValidator generationsValidator(SimpleLanguageServer server, BootJavaConfig config) {
+		return new GenerationsValidator(server.getDiagnosticSeverityProvider(), config);
 	}
 	
 	@Bean ProjectVersionDiagnosticProvider projectVersionDiagnosticProvider(List<VersionValidator> validators) {
