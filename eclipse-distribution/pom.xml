@@ -93,7 +93,7 @@
 
 		<sts4-language-servers-p2-repo>https://dist.springsource.com/${dist.type}/TOOLS/sts4-language-server-integrations/${sts4-language-servers-version}</sts4-language-servers-p2-repo>
 		
-		<tycho-version>3.0.1</tycho-version>
+		<tycho-version>3.0.2</tycho-version>
 		<encoding>UTF-8</encoding>
 
 		<misc.p2.repo.version>3.9.4.202211021051</misc.p2.repo.version>
