@@ -360,11 +360,11 @@
 			<name>Spring Repository</name>
 			<url>https://repo.spring.io/release/</url>
 		</pluginRepository>
-<!--		<pluginRepository>
+		<pluginRepository>
 			<id>spring-maven-plugin-release</id>
 			<name>Spring Repository</name>
 			<url>https://repo.spring.io/plugins-release/</url>
-		</pluginRepository> -->
+		</pluginRepository>
 
 <!--		<pluginRepository>
 			<id>springsource-maven-release</id>
