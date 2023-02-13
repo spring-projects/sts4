@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2020 Pivotal, Inc.
+ * Copyright (c) 2017, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -23,7 +23,6 @@ import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFin
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.Assert;
-import org.springframework.ide.vscode.commons.util.FileObserver;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 
 /**
@@ -63,10 +62,9 @@ public class BootLanguageServerParams {
 		this.typeUtilProvider = typeUtilProvider;
 	}
 
-	public static BootLanguageServerParams createDefault(SimpleLanguageServer server, ValueProviderRegistry valueProviders, JavaProjectsService javaProjectService) {
+	public static BootLanguageServerParams createDefault(SimpleLanguageServer server, ValueProviderRegistry valueProviders, JavaProjectsService javaProjectService, BootJavaConfig config) {
 		// Initialize project finders, project caches and project observers
-		FileObserver fileObserver = server.getWorkspaceService().getFileObserver();
-		DefaultSpringPropertyIndexProvider indexProvider = new DefaultSpringPropertyIndexProvider(javaProjectService, javaProjectService, fileObserver, valueProviders);
+		DefaultSpringPropertyIndexProvider indexProvider = new DefaultSpringPropertyIndexProvider(javaProjectService, javaProjectService, server, valueProviders, config);
 		indexProvider.setProgressService(server.getProgressService());
 
 		return new BootLanguageServerParams(

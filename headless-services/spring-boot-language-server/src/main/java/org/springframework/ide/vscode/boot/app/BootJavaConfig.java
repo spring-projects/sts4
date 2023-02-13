@@ -11,6 +11,8 @@
 package org.springframework.ide.vscode.boot.app;
 
 import java.io.File;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
@@ -156,7 +158,7 @@ public class BootJavaConfig implements InitializingBean {
 	}
 	
 	public String getSpringIOApiUrl() {
-		String url = getRawSettings().getString("spring-boot", "io", "api");
+		String url = getRawSettings().getString("boot-java", "io", "api");
 		return url == null ? SPRING_IO_API_URL : url;
 	}
 
@@ -190,6 +192,11 @@ public class BootJavaConfig implements InitializingBean {
 
 	public Set<String> getRecipeFiles() {
 		return settings.getStringSet("boot-java", "rewrite", "scan-files");
+	}
+	
+	public Path getCommonPropertiesFile() {
+		String str = settings.getString("boot-java", "common", "properties-metadata");
+		return str == null || str.isBlank() ? null : Paths.get(str);
 	}
 	
 	public Settings getRawSettings() {

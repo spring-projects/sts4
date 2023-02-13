@@ -472,8 +472,9 @@
             name="Spring - Live Process Information"
             requiresUIAccess="false"/>
       <computer
-            class="org.springframework.tooling.boot.ls.commands.RewriteCommandsQuickAccessProvider"
-            name="Spring - OpenRewrite Recipes">
+            class="org.springframework.tooling.boot.ls.commands.SpringQuickAccessProvider"
+            name="Spring"
+            requiresUIAccess="false">
       </computer>
    </extension>
    <extension

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014, 2022 Pivotal, Inc.
+ * Copyright (c) 2014, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,10 +10,13 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.metadata;
 
+import java.nio.file.Path;
 import java.util.concurrent.ExecutionException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.boot.configurationmetadata.ConfigurationMetadataRepository;
+import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndex.Builder;
 import org.springframework.ide.vscode.boot.metadata.util.Listener;
 import org.springframework.ide.vscode.boot.metadata.util.ListenerManager;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
@@ -21,6 +24,9 @@ import org.springframework.ide.vscode.commons.languageserver.ProgressService;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 import org.springframework.ide.vscode.commons.util.FileObserver;
 
+import com.google.common.base.Objects;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 import com.google.common.cache.Cache;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableList;
@@ -40,6 +46,9 @@ public class SpringPropertiesIndexManager extends ListenerManager<Listener<Sprin
 	private Cache<IJavaProject, SpringPropertyIndex> indexes;
 	private final ValueProviderRegistry valueProviders;
 	private static int progressIdCt = 0;
+	
+	private Path commonPropertiesFile;
+	private Supplier<ConfigurationMetadataRepository> commonPropertiesMetadata;
 
 	public SpringPropertiesIndexManager(ValueProviderRegistry valueProviders, ProjectObserver projectObserver, FileObserver fileObserver) {
 		this.valueProviders = valueProviders;
@@ -72,7 +81,11 @@ public class SpringPropertiesIndexManager extends ListenerManager<Listener<Sprin
 			progressService.progressBegin(progressId, "Indexing Spring Boot Properties", null);
 		}
 
-		SpringPropertyIndex index = new SpringPropertyIndex(valueProviders, project.getClasspath());
+		Builder builder = SpringPropertyIndex.builder(valueProviders).withClasspath(project.getClasspath());
+		if (commonPropertiesMetadata != null) {
+			builder.withMetadata(commonPropertiesMetadata.get());
+		}
+		SpringPropertyIndex index = builder.build();
 
 		if (progressService != null) {
 			progressService.progressDone(progressId);
@@ -95,6 +108,23 @@ public class SpringPropertiesIndexManager extends ListenerManager<Listener<Sprin
 
 	private static synchronized String getProgressId() {
 		return DefaultSpringPropertyIndexProvider.class.getName()+ (progressIdCt++);
+	}
+
+	public synchronized void setCommonPropertiesFile(Path commonPropertiesFile) {
+		if (!Objects.equal(commonPropertiesFile, this.commonPropertiesFile)) {
+			this.commonPropertiesFile = commonPropertiesFile;
+			commonPropertiesMetadata = commonPropertiesFile == null ? null : Suppliers.memoize(() -> new PropertiesLoader().loadJson(commonPropertiesFile));
+			clear();
+		}
+	}
+
+	public synchronized boolean reloadCommonProperties() {
+		if (commonPropertiesFile != null) {
+			commonPropertiesMetadata = Suppliers.memoize(() -> new PropertiesLoader().loadJson(commonPropertiesFile));
+			clear();
+			return true;
+		}
+		return false;
 	}
 
 }

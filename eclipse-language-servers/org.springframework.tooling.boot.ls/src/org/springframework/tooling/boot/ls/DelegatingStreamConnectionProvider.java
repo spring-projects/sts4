@@ -240,6 +240,11 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 				"scan-directories", FileListEditor.getValuesFromPreference(preferenceStore.getString(Constants.PREF_REWRITE_RECIPES_SCAN_DIRS)),
 				"scan-files", FileListEditor.getValuesFromPreference(preferenceStore.getString(Constants.PREF_REWRITE_RECIPES_SCAN_FILES))
 		));
+		
+		bootJavaObj.put("common", Map.of(
+				"properties-metadata", preferenceStore.getString(Constants.PREF_COMMON_PROPS_METADATA)
+		));
+		
 		settings.put("boot-java", bootJavaObj);
 		
 		putValidationPreferences(settings);

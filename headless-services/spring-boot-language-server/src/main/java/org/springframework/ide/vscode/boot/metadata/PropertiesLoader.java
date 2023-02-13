@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2018 Pivotal, Inc.
+ * Copyright (c) 2016, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -25,7 +25,6 @@ import org.springframework.ide.vscode.boot.configurationmetadata.ConfigurationMe
 import org.springframework.ide.vscode.boot.configurationmetadata.ConfigurationMetadataRepositoryJsonBuilder;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IClasspathUtil;
-import org.springframework.ide.vscode.commons.util.Log;
 
 public class PropertiesLoader {
 
@@ -69,6 +68,11 @@ public class PropertiesLoader {
 		}
 		ConfigurationMetadataRepository repository = builder.build();
 		return repository;
+	}
+	
+	public ConfigurationMetadataRepository loadJson(Path path) {
+		loadFromJsonFile(path);
+		return builder.build();
 	}
 
 	private void loadFromOutputFolder(Path outputFolderPath) {

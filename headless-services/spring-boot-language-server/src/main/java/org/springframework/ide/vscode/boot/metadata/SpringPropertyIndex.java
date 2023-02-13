@@ -10,8 +10,10 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.metadata;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.ide.vscode.boot.configurationmetadata.ConfigurationMetadataGroup;
@@ -27,7 +29,7 @@ import com.google.common.collect.ImmutableSet;
 
 public class SpringPropertyIndex {
 	
-	public static final SpringPropertyIndex EMPTY_INDEX = new SpringPropertyIndex(null, null);
+	public static final SpringPropertyIndex EMPTY_INDEX = new SpringPropertyIndex(null);
 
 	private final ValueProviderRegistry valueProviders;
 	
@@ -40,30 +42,31 @@ public class SpringPropertyIndex {
 		}
 	};
 
-	public SpringPropertyIndex(ValueProviderRegistry valueProviders, IClasspath projectPath) {
+	private SpringPropertyIndex(ValueProviderRegistry valueProviders) {
 		this.valueProviders = valueProviders;
-		if (projectPath!=null) {
-//			try {
-				PropertiesLoader loader = new PropertiesLoader();
-				ConfigurationMetadataRepository metadata = loader.load(projectPath);
-				//^^^ Should be done in bg? It seems fast enough for now.
+	}
+	
+	private void loadFromClasspath(IClasspath projectPath) {
+		PropertiesLoader loader = new PropertiesLoader();
+		addMetadata(loader.load(projectPath));
+		//^^^ Should be done in bg? It seems fast enough for now.
+	}
+	
+	private void addMetadata(ConfigurationMetadataRepository metadata) {
+		Collection<ConfigurationMetadataProperty> allEntries = metadata.getAllProperties().values();
+		for (ConfigurationMetadataProperty item : allEntries) {
+			properties.add(new PropertyInfo(valueProviders, item));
+		}
 
-				Collection<ConfigurationMetadataProperty> allEntries = metadata.getAllProperties().values();
-				for (ConfigurationMetadataProperty item : allEntries) {
-					properties.add(new PropertyInfo(valueProviders, item));
+		for (ConfigurationMetadataGroup group : metadata.getAllGroups().values()) {
+			for (ConfigurationMetadataSource source : group.getSources().values()) {
+				ImmutableSet.Builder<PropertySource> sources = ImmutableSet.builder();
+				for (ConfigurationMetadataProperty prop : source.getProperties().values()) {
+					PropertyInfo info = properties.get(prop.getId());
+					sources.add(info.addSource(source));
 				}
-
-				for (ConfigurationMetadataGroup group : metadata.getAllGroups().values()) {
-					for (ConfigurationMetadataSource source : group.getSources().values()) {
-						ImmutableSet.Builder<PropertySource> sources = ImmutableSet.builder();
-						for (ConfigurationMetadataProperty prop : source.getProperties().values()) {
-							PropertyInfo info = properties.get(prop.getId());
-							sources.add(info.addSource(source));
-						}
-						groups.put(group.getId(), sources.build());
-					}
-				}
-
+				groups.put(group.getId(), sources.build());
+			}
 		}
 	}
 
@@ -144,5 +147,40 @@ public class SpringPropertyIndex {
 	public Collection<PropertySource> getGroupSources(String prefix) {
 		return groups.get(prefix);
 	}
+	
+	public static final Builder builder(ValueProviderRegistry valueProviders) {
+		return new Builder(valueProviders);
+	}
 
+	public static class Builder {
+		
+		private final ValueProviderRegistry valueProviders;
+		private IClasspath projectClasspath;
+		private List<ConfigurationMetadataRepository> metadataList;
+		
+		private Builder(ValueProviderRegistry valueProviders) {
+			this.valueProviders = valueProviders;
+			this.metadataList = new ArrayList<>(); 
+		}
+		
+		public Builder withClasspath(IClasspath projectClasspath) {
+			this.projectClasspath = projectClasspath;
+			return this;
+		}
+		
+		public Builder withMetadata(ConfigurationMetadataRepository metadata) {
+			metadataList.add(metadata);
+			return this;
+		}
+		
+		public SpringPropertyIndex build() {
+			SpringPropertyIndex index = new SpringPropertyIndex(valueProviders);
+			for (ConfigurationMetadataRepository m : metadataList) {
+				index.addMetadata(m);
+			}
+			index.loadFromClasspath(projectClasspath);
+			return index;
+		}
+		
+	}
 }

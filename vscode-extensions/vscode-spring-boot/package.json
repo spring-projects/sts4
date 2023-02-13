@@ -121,6 +121,11 @@
         "command": "vscode-spring-boot.rewrite.reload",
         "title": "Reload OpenRewrite Recipes, Code Actions, Problem and Quick Fix Descriptors",
         "category": "Spring Boot"
+      },
+      {
+        "command": "sts/common-properties/reload",
+        "title": "Reload Shared Properties Metadata",
+        "category": "Spring Boot"
       }
     ],
     "configuration": [
@@ -173,6 +178,13 @@
             "type": "boolean",
             "default": true,
             "description": "Enable/Disable Spring running Boot application Code Lenses"
+          },
+          "boot-java.common.properties-metadata": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "The path to a shared properties metadata JSON file."
           },
           "boot-java.change-detection.on": {
             "type": "boolean",

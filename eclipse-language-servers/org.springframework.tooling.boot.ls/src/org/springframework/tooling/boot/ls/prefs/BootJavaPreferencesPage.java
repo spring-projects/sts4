@@ -10,8 +10,11 @@
  *******************************************************************************/
 package org.springframework.tooling.boot.ls.prefs;
 
+import org.eclipse.jface.layout.GridDataFactory;
 import org.eclipse.jface.preference.BooleanFieldEditor;
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
+import org.eclipse.jface.preference.FileFieldEditor;
+import org.eclipse.swt.SWT;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
@@ -39,6 +42,12 @@ public class BootJavaPreferencesPage extends FieldEditorPreferencePage implement
 		addField(new BooleanFieldEditor(Constants.PREF_SCAN_JAVA_TEST_SOURCES, "Scan Java test sources", fieldEditorParent));
 		
 		addField(new BooleanFieldEditor(Constants.PREF_CHANGE_DETECTION, "Live Boot Change Detection", fieldEditorParent));
+		
+		Composite c = new Composite(fieldEditorParent, SWT.NONE);
+		GridDataFactory.fillDefaults().grab(true, false).applyTo(c);
+		FileFieldEditor propMetadataFileEditor = new FileFieldEditor(Constants.PREF_COMMON_PROPS_METADATA, "Shared Properties", true, c);
+		propMetadataFileEditor.setFileExtensions(new String[] {"json"});
+		addField(propMetadataFileEditor);
 		
 	}
 

@@ -219,8 +219,8 @@ public class BootLanguageServerBootApp {
 	}
 
 	@ConditionalOnMissingClass("org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness")
-	@Bean BootLanguageServerParams serverParams(SimpleLanguageServer server, ValueProviderRegistry valueProviders, JavaProjectsService projectsService) {
-		return BootLanguageServerParams.createDefault(server, valueProviders, projectsService);
+	@Bean BootLanguageServerParams serverParams(SimpleLanguageServer server, ValueProviderRegistry valueProviders, JavaProjectsService projectsService, BootJavaConfig config) {
+		return BootLanguageServerParams.createDefault(server, valueProviders, projectsService, config);
 	}
 
 	@ConditionalOnMissingClass("org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness")
