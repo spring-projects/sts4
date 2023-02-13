@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2022 Pivotal, Inc.
+ * Copyright (c) 2017, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -8,11 +8,12 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.tooling.boot.ls;
+package org.springframework.tooling.boot.ls.prefs;
 
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.springframework.tooling.boot.ls.prefs.StringListEditor;
+import org.springframework.tooling.boot.ls.BootLanguageServerPlugin;
+import org.springframework.tooling.boot.ls.Constants;
 
 /**
  * Preferences initializer for Boot-Java LS extension

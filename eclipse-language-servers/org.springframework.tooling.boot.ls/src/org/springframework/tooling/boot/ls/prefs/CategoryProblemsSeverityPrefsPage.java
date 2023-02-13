@@ -108,7 +108,7 @@ public class CategoryProblemsSeverityPrefsPage extends ProblemSeverityPreferityP
 			//use workbenches's preference manager
 			PreferenceManager pm= PlatformUI.getWorkbench().getPreferenceManager();
 
-			pm.addTo("org.springsource.ide.eclipse.commons.preferencePage", node); //add the node in the PreferenceManager
+			pm.addTo("org.springsource.ide.eclipse.commons.preferencePage/org.springframework.tooling.boot.validation", node); //add the node in the PreferenceManager
 		}
 		
 		ALL_PROBLEM_CATEGORIES = ImmutableList.copyOf(categories);

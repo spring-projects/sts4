@@ -175,7 +175,7 @@
    <extension
          point="org.eclipse.ui.preferencePages">
       <page
-            category="org.springsource.ide.eclipse.commons.preferencePage"
+            category="org.springframework.tooling.boot.ls.liveInfo"
             class="org.springframework.tooling.boot.ls.prefs.RemoteAppsPrefsPage"
             id="org.springframework.tooling.boot.ls.prefs.RemoteAppsPrefsPage"
             name="Remote Boot Apps">
@@ -184,10 +184,10 @@
             category="org.springsource.ide.eclipse.commons.preferencePage"
             class="org.springframework.tooling.boot.ls.XmlConfigPreferencePage"
             id="org.springframework.tooling.boot.xml.ls.preferences"
-            name="Spring XML Config">
+            name="XML Config Files">
       </page>
       <page
-            class="org.springframework.tooling.boot.ls.BootJavaPreferencesPage"
+            class="org.springframework.tooling.boot.ls.prefs.BootJavaPreferencesPage"
             id="org.springsource.ide.eclipse.commons.preferencePage"
             name="Spring">
       </page>
@@ -209,6 +209,18 @@
             id="org.springframework.tooling.boot.ls.rewrite.load"
             name="Plug Recipes">
       </page>
+      <page
+            category="org.springsource.ide.eclipse.commons.preferencePage"
+            class="org.springframework.tooling.boot.ls.prefs.ValidationPreferencePage"
+            id="org.springframework.tooling.boot.validation"
+            name="Validation">
+      </page>
+      <page
+            category="org.springsource.ide.eclipse.commons.preferencePage"
+            class="org.springframework.tooling.boot.ls.prefs.LiveInformationPreferencePage"
+            id="org.springframework.tooling.boot.ls.liveInfo"
+            name="Live Information">
+      </page>
       
    </extension>
    
@@ -216,7 +228,7 @@
    <extension
          point="org.eclipse.core.runtime.preferences">
       <initializer
-            class="org.springframework.tooling.boot.ls.PrefsInitializer">
+            class="org.springframework.tooling.boot.ls.prefs.PrefsInitializer">
       </initializer>
    </extension>
    

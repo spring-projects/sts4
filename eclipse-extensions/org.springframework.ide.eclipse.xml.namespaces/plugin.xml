@@ -40,9 +40,9 @@
    
     <extension point="org.eclipse.ui.preferencePages">
 	 	<page id="org.springframework.ide.eclipse.beans.ui.namespaces.preferencePage"
- 			name="Namespaces"
+ 			name="Namespace Support"
     		class="org.springframework.ide.eclipse.xml.namespaces.ui.preferences.NamespaceVersionPreferencePage"
-    		category="org.springsource.ide.eclipse.commons.preferencePage">
+    		category="org.springframework.tooling.boot.xml.ls.preferences">
    		</page>
    	</extension>
 

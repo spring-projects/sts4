@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2022 VMware, Inc.
+ * Copyright (c) 2022, 2023 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -19,23 +19,23 @@ import static org.springframework.ide.vscode.commons.languageserver.reconcile.Pr
 
 public class SpringProblemCategories {
 	
-	public static final ProblemCategory BOOT_2 = new ProblemCategory("boot2", "Boot 2.x Validation",
+	public static final ProblemCategory BOOT_2 = new ProblemCategory("boot2", "Boot 2.x Best Practices & Optimizations",
 			new Toggle("Enablement", EnumSet.allOf(Toggle.Option.class), AUTO, "boot-java.validation.java.boot2"));
 	
-	public static final ProblemCategory BOOT_3 = new ProblemCategory("boot3", "Boot 3.x Validation", 
+	public static final ProblemCategory BOOT_3 = new ProblemCategory("boot3", "Boot 3.x Best Practices & Optimizations", 
 			new Toggle("Enablement", EnumSet.allOf(Toggle.Option.class), AUTO, "boot-java.validation.java.boot3"));
 	
-	public static final ProblemCategory SPRING_AOT = new ProblemCategory("spring-aot", "Spring AOT Validation", 
+	public static final ProblemCategory SPRING_AOT = new ProblemCategory("spring-aot", "AOT Optimizations", 
 			new Toggle("Enablement", EnumSet.of(OFF, ON), OFF, "boot-java.validation.java.spring-aot"));
 	
-	public static final ProblemCategory PROPERTIES = new ProblemCategory("application-properties", "Properties Validation", null);
+	public static final ProblemCategory PROPERTIES = new ProblemCategory("application-properties", "Property Config Files", null);
 	
-	public static final ProblemCategory YAML = new ProblemCategory("application-yaml", "YAML Properties Validation", null);
+	public static final ProblemCategory YAML = new ProblemCategory("application-yaml", "YAML Config Files", null);
 	
-	public static final ProblemCategory SPEL = new ProblemCategory("spel", "SPEL Validation",
+	public static final ProblemCategory SPEL = new ProblemCategory("spel", "SpEL Expressions",
 			new Toggle("Enablement", EnumSet.of(OFF, ON), ON, "boot-java.validation.spel.on"));
 	
-	public static final ProblemCategory VERSION_VALIDATION = new ProblemCategory("version-validation", "Spring Boot Version Validation",
+	public static final ProblemCategory VERSION_VALIDATION = new ProblemCategory("version-validation", "Versions and Support Ranges",
 			new Toggle("Enablement", EnumSet.of(OFF, ON), ON, "boot-java.validation.java.version-validation"));
 	
 }

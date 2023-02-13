@@ -1,5 +1,5 @@
 /*******************************************************************************
- *  Copyright (c) 2015, 2017 Pivotal, Inc.
+ *  Copyright (c) 2015, 2023 Pivotal, Inc.
  *  All rights reserved. This program and the accompanying materials
  *  are made available under the terms of the Eclipse Public License v1.0
  *  which accompanies this distribution, and is available at
@@ -10,10 +10,10 @@
  *******************************************************************************/
 package org.springframework.ide.eclipse.boot.ui.preferences;
 
-import static org.springframework.ide.eclipse.boot.core.BootPreferences.*;
+import static org.springframework.ide.eclipse.boot.core.BootPreferences.PREF_BOOT_FAST_STARTUP_DEFAULT;
 import static org.springframework.ide.eclipse.boot.core.BootPreferences.PREF_BOOT_FAST_STARTUP_JVM_ARGS;
 import static org.springframework.ide.eclipse.boot.core.BootPreferences.PREF_BOOT_FAST_STARTUP_REMIND_MESSAGE;
-import static org.springframework.ide.eclipse.boot.core.BootPreferences.PREF_BOOT_PROJECT_EXCLUDE;
+import static org.springframework.ide.eclipse.boot.core.BootPreferences.PREF_BOOT_THIN_WRAPPER;
 import static org.springframework.ide.eclipse.boot.core.BootPreferences.PREF_IGNORE_SILENT_EXIT;
 
 import org.eclipse.debug.internal.ui.preferences.BooleanFieldEditor2;
@@ -48,17 +48,8 @@ public class BootPreferencePage extends FieldEditorPreferencePage implements IWo
 	protected void createFieldEditors() {
 		Composite parent = getFieldEditorParent();
 
-		Group generalGroup = new Group(parent, SWT.NONE);
-		generalGroup.setText("General");
-		generalGroup.setLayoutData(GridDataFactory.fillDefaults().grab(true, false).create());
-		generalGroup.setLayout(GridLayoutFactory.fillDefaults().create());
-
-		StringFieldEditor projectExclude = new RegExpFieldEditor(PREF_BOOT_PROJECT_EXCLUDE, "Exclude Projects", generalGroup);
-		setTooltip(generalGroup, projectExclude, "Any project who's name matches this regexp will NOT be treated as a Spring Boot App");
-		addField(projectExclude);
-
-		BooleanFieldEditor2 ignoreSilentExit = new BooleanFieldEditor2(PREF_IGNORE_SILENT_EXIT, "Ignore Silent Exit", SWT.CHECK, generalGroup);
-		setTooltip(generalGroup, ignoreSilentExit, "When debugging a Boot App, do not suspend when 'SilentExitException' is raised. "
+		BooleanFieldEditor2 ignoreSilentExit = new BooleanFieldEditor2(PREF_IGNORE_SILENT_EXIT, "Ignore Silent Exit", SWT.CHECK, parent);
+		setTooltip(parent, ignoreSilentExit, "When debugging a Boot App, do not suspend when 'SilentExitException' is raised. "
 				+ "(This exception is raised by spring-boot-devtools as part of its normal operation)");
 		addField(ignoreSilentExit);
 

@@ -306,7 +306,7 @@
       },
       {
         "id": "boot2",
-        "title": "Boot 2.x Validation",
+        "title": "Boot 2.x Best Practices & Optimizations",
         "order": 401,
         "properties": {
           "boot-java.validation.java.boot2": {
@@ -395,7 +395,7 @@
       },
       {
         "id": "boot3",
-        "title": "Boot 3.x Validation",
+        "title": "Boot 3.x Best Practices & Optimizations",
         "order": 402,
         "properties": {
           "boot-java.validation.java.boot3": {
@@ -436,7 +436,7 @@
       },
       {
         "id": "spring-aot",
-        "title": "Spring AOT Validation",
+        "title": "AOT Optimizations",
         "order": 403,
         "properties": {
           "boot-java.validation.java.spring-aot": {
@@ -488,7 +488,7 @@
       },
       {
         "id": "application-properties",
-        "title": "Properties Validation",
+        "title": "Property Config Files",
         "order": 404,
         "properties": {
           "spring-boot.ls.problem.application-properties.PROP_INVALID_BEAN_NAVIGATION": {
@@ -627,7 +627,7 @@
       },
       {
         "id": "application-yaml",
-        "title": "YAML Properties Validation",
+        "title": "YAML Config Files",
         "order": 405,
         "properties": {
           "spring-boot.ls.problem.application-yaml.YAML_SYNTAX_ERROR": {
@@ -790,7 +790,7 @@
       },
       {
         "id": "spel",
-        "title": "SPEL Validation",
+        "title": "SpEL Expressions",
         "order": 406,
         "properties": {
           "boot-java.validation.spel.on": {
@@ -818,7 +818,7 @@
       },
       {
         "id": "version-validation",
-        "title": "Spring Boot Version Validation",
+        "title": "Versions and Support Ranges",
         "order": 407,
         "properties": {
           "boot-java.validation.java.version-validation": {

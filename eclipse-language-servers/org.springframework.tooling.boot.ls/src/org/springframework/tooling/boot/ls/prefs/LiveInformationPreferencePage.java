@@ -1,14 +1,14 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2022 Pivotal, Inc.
+ * Copyright (c) 2023 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * https://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     Pivotal, Inc. - initial API and implementation
+ *     VMware, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.tooling.boot.ls;
+package org.springframework.tooling.boot.ls.prefs;
 
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.InstanceScope;
@@ -21,17 +21,13 @@ import org.eclipse.jface.util.PropertyChangeEvent;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
+import org.springframework.tooling.boot.ls.BootLanguageServerPlugin;
+import org.springframework.tooling.boot.ls.Constants;
 import org.springframework.tooling.ls.eclipse.commons.LanguageServerCommonsActivator;
 import org.springframework.tooling.ls.eclipse.commons.preferences.PreferenceConstants;
 
-/**
- * Preference page for Boot-Java LS extension
- * 
- * @author Alex Boyko
- *
- */
-public class BootJavaPreferencesPage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
-
+public class LiveInformationPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
+	
 	/**
 	 * Starts a preference change listener that keeps code mining preferences in sync with
 	 * whether or not STS4 codelenses are enabled.
@@ -70,6 +66,10 @@ public class BootJavaPreferencesPage extends FieldEditorPreferencePage implement
 		}
 	}
 
+
+	public LiveInformationPreferencePage() {
+	}
+
 	@Override
 	public void init(IWorkbench workbench) {
 		setPreferenceStore(BootLanguageServerPlugin.getDefault().getPreferenceStore());
@@ -80,10 +80,7 @@ public class BootJavaPreferencesPage extends FieldEditorPreferencePage implement
 		final IPreferenceStore commonsLsPrefs = LanguageServerCommonsActivator.getInstance().getPreferenceStore();
 		
 		Composite fieldEditorParent = getFieldEditorParent();
-		
-		addField(new BooleanFieldEditor(Constants.PREF_START_LS_EARLY, "Start Language Server at startup if Spring Boot is a dependency", fieldEditorParent));
-		addField(new BooleanFieldEditor(Constants.PREF_SCAN_JAVA_TEST_SOURCES, "Scan Java test sources", fieldEditorParent));
-		
+				
 		addField(new StringFieldEditor(Constants.PREF_LIVE_INFORMATION_FETCH_DATA_RETRY_MAX_NO, "Live Information - Max number of retries (before giving up)", fieldEditorParent));
 		addField(new StringFieldEditor(Constants.PREF_LIVE_INFORMATION_FETCH_DATA_RETRY_DELAY_IN_SECONDS, "Live Information - Delay between retries in seconds", fieldEditorParent));
 
@@ -93,9 +90,6 @@ public class BootJavaPreferencesPage extends FieldEditorPreferencePage implement
 				return commonsLsPrefs;
 			}
 		});
-		addField(new BooleanFieldEditor(Constants.PREF_CHANGE_DETECTION, "Live Boot Change Detection", fieldEditorParent));
-		
-		addField(new BooleanFieldEditor(Constants.PREF_VALIDATION_SPEL_EXPRESSIONS, "SpEL Expression Syntax Validation", fieldEditorParent));
 		
 	}
 

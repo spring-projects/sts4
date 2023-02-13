@@ -47,6 +47,7 @@ Export-Package: org.springframework.ide.eclipse.boot.core,
  org.springframework.ide.eclipse.boot.core.initializr,
  org.springframework.ide.eclipse.boot.core.internal,
  org.springframework.ide.eclipse.boot.ui,
+ org.springframework.ide.eclipse.boot.ui.preferences,
  org.springframework.ide.eclipse.boot.util,
  org.springframework.ide.eclipse.boot.util.version
 Import-Package: org.apache.commons.lang;version="2.6.0",

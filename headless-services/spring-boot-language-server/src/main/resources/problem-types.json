@@ -1,7 +1,7 @@
 [
   {
     "id": "boot2",
-    "label": "Boot 2.x Validation",
+    "label": "Boot 2.x Best Practices & Optimizations",
     "toggle": {
       "label": "Enablement",
       "values": [
@@ -54,7 +54,7 @@
   },
   {
     "id": "boot3",
-    "label": "Boot 3.x Validation",
+    "label": "Boot 3.x Best Practices & Optimizations",
     "toggle": {
       "label": "Enablement",
       "values": [
@@ -83,7 +83,7 @@
   },
   {
     "id": "spring-aot",
-    "label": "Spring AOT Validation",
+    "label": "AOT Optimizations",
     "toggle": {
       "label": "Enablement",
       "values": [
@@ -117,7 +117,7 @@
   },
   {
     "id": "application-properties",
-    "label": "Properties Validation",
+    "label": "Property Config Files",
     "order": 4,
     "problemTypes": [
       {
@@ -190,7 +190,7 @@
   },
   {
     "id": "application-yaml",
-    "label": "YAML Properties Validation",
+    "label": "YAML Config Files",
     "order": 5,
     "problemTypes": [
       {
@@ -275,7 +275,7 @@
   },
   {
     "id": "spel",
-    "label": "SPEL Validation",
+    "label": "SpEL Expressions",
     "toggle": {
       "label": "Enablement",
       "values": [
@@ -297,7 +297,7 @@
   },
   {
     "id": "version-validation",
-    "label": "Spring Boot Version Validation",
+    "label": "Versions and Support Ranges",
     "toggle": {
       "label": "Enablement",
       "values": [

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Spring IDE Developers
+ * Copyright (c) 2017, 2023 Spring IDE Developers
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -12,7 +12,6 @@ package org.springframework.ide.eclipse.boot.validation.preferences;
 
 import java.util.List;
 
-import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.springframework.ide.eclipse.boot.validation.BootValidationActivator;
 import org.springframework.ide.eclipse.boot.validation.rules.BootValidationProblemType;
 import org.springframework.ide.eclipse.editor.support.preferences.AbstractProblemSeverityPreferencesPage;
@@ -23,11 +22,11 @@ import org.springframework.ide.eclipse.editor.support.reconcile.ProblemType;
 /**
  * @author Kris De Volder
  */
-public class BootValidationPreferencesPage extends AbstractProblemSeverityPreferencesPage {
+public class ConfigProcessingPreferencesPage extends AbstractProblemSeverityPreferencesPage {
 
 	public static final ProblemSeverityPreferencesUtil util = new ProblemSeverityPreferencesUtil("boot.project.validation.builder.");
 
-	public BootValidationPreferencesPage() {
+	public ConfigProcessingPreferencesPage() {
 		super(util);
 	}
 

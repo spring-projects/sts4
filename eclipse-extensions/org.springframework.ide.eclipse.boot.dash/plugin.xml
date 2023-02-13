@@ -234,18 +234,12 @@
    </extension>
    
     <extension point="org.eclipse.ui.preferencePages">
-	 	<page
-         category="org.springsource.ide.eclipse.commons.preferencePage"
-         class="org.springframework.ide.eclipse.boot.dash.ngrok.NGROKInstallPreferencePage"
-         id="org.springframework.ide.eclipse.boot.dash.ngrok.NGROKInstallPreferencePage"
-         name="ngrok">
-   		</page>
    		
 	 	<page
-         category="org.springframework.ide.eclipse.boot.ui.preferences.BootPreferencePage"
+         category="org.springsource.ide.eclipse.commons.preferencePage"
          class="org.springframework.ide.eclipse.boot.dash.prefs.BootDashPrefsPage"
          id="org.springframework.ide.eclipse.boot.dash.prefs.BootDashPrefsPage"
-         name="Boot Dash">
+         name="Boot Dashboard">
    		</page>
    	</extension>
 

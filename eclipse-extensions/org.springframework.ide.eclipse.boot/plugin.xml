@@ -30,24 +30,22 @@
          category="org.springsource.ide.eclipse.commons.preferencePage"
          class="org.springframework.ide.eclipse.boot.ui.preferences.BootPreferencePage"
          id="org.springframework.ide.eclipse.boot.ui.preferences.BootPreferencePage"
-         name="Boot">
-   		</page>
-   	</extension>
-   	
-    <extension point="org.eclipse.ui.preferencePages">
-	 	<page
-         category="org.springframework.ide.eclipse.boot.ui.preferences.BootPreferencePage"
-         class="org.springframework.ide.eclipse.boot.ui.preferences.BootInstallPreferencePage"
-         id="org.springframework.ide.eclipse.boot.ui.preferences.BootInstallPreferencePage"
-         name="CLI">
+         name="Boot Launch Support">
    		</page>
    <page
-         category="org.springframework.ide.eclipse.boot.ui.preferences.BootPreferencePage"
+         category="org.springsource.ide.eclipse.commons.preferencePage"
          class="org.springframework.ide.eclipse.boot.ui.preferences.InitializrPreferencePage"
          id="org.springframework.ide.eclipse.boot.ui.preferences.InitializrPreferencePage"
-         name="Initializr">
+         name="Initializr Integration - start.spring.io">
+   </page>
+   <page
+         category="org.springframework.ide.eclipse.boot.dash.prefs.BootDashPrefsPage"
+         class="org.springframework.ide.eclipse.boot.ui.preferences.BootInstallPreferencePage"
+         id="org.springframework.ide.eclipse.boot.ui.preferences.BootInstallPreferencePage"
+         name="Boot CLI Integration">
    </page>
    	</extension>
+   	
    	
 <extension point="org.eclipse.ui.decorators">
 <decorator

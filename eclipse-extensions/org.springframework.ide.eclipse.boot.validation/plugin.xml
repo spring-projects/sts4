@@ -40,10 +40,10 @@
 <extension
 	      point="org.eclipse.ui.preferencePages">
 	   <page
-	         name="Java Editor"
-	         category="org.springframework.ide.eclipse.boot.ui.preferences.BootPreferencePage"
-	         class="org.springframework.ide.eclipse.boot.validation.preferences.BootValidationPreferencesPage"
-	            id="org.springframework.ide.eclipse.boot.validation.preferences.BootValidationPreferencesPage">
+	         name="Configuration Processing"
+	         category="org.springframework.tooling.boot.validation"
+	         class="org.springframework.ide.eclipse.boot.validation.preferences.ConfigProcessingPreferencesPage"
+	            id="org.springframework.ide.eclipse.boot.validation.preferences.ConfigurationProcessingPreferencesPage">
 	   </page>
 </extension>  
 
