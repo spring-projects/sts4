@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2019 Pivotal, Inc.
+ * Copyright (c) 2015, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -42,8 +42,8 @@ import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.TreeViewer;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.jface.viewers.ViewerCell;
+import org.eclipse.jface.viewers.ViewerComparator;
 import org.eclipse.jface.viewers.ViewerFilter;
-import org.eclipse.jface.viewers.ViewerSorter;
 import org.eclipse.swt.SWT;
 import org.eclipse.swt.dnd.DND;
 import org.eclipse.swt.dnd.DragSourceAdapter;
@@ -154,7 +154,7 @@ public class BootDashUnifiedTreeSection extends PageSection implements MultiSele
 		}
 	};
 
-	public static class BootModelViewerSorter extends ViewerSorter {
+	public static class BootModelViewerSorter extends ViewerComparator {
 
 		private final BootDashViewModel viewModel;
 
@@ -186,7 +186,7 @@ public class BootDashUnifiedTreeSection extends PageSection implements MultiSele
 		}
 	}
 
-	final private ValueListener<Filter<BootDashElement>> FILTER_LISTENER = new UIValueListener<Filter<BootDashElement>>() {
+	final private ValueListener<Filter<BootDashElement>> FILTER_LISTENER = new UIValueListener<>() {
 		public void uiGotValue(LiveExpression<Filter<BootDashElement>> exp, Filter<BootDashElement> value) {
 			tv.refresh();
 			final Tree t = tv.getTree();
@@ -234,7 +234,7 @@ public class BootDashUnifiedTreeSection extends PageSection implements MultiSele
 		}
 	};
 
-	final private ValueListener<ImmutableSet<RunTarget>> RUN_TARGET_LISTENER = new UIValueListener<ImmutableSet<RunTarget>>() {
+	final private ValueListener<ImmutableSet<RunTarget>> RUN_TARGET_LISTENER = new UIValueListener<>() {
 		protected void uiGotValue(LiveExpression<ImmutableSet<RunTarget>> exp, ImmutableSet<RunTarget> value) {
 			if (tv != null && !tv.getControl().isDisposed()) {
 				tv.refresh();
@@ -264,7 +264,7 @@ public class BootDashUnifiedTreeSection extends PageSection implements MultiSele
 	 * Listener which adds element set listener to each section model.
 	 */
 	@SuppressWarnings("unchecked")
-	final private ValueListener<ImmutableSet<BootDashModel>> ELEMENTS_SET_LISTENER_ADAPTER = new ElementwiseListener<BootDashModel>() {
+	final private ValueListener<ImmutableSet<BootDashModel>> ELEMENTS_SET_LISTENER_ADAPTER = new ElementwiseListener<>() {
 		protected void added(LiveExpression<ImmutableSet<BootDashModel>> exp, BootDashModel e) {
 			e.getElements().addListener((ValueListener<ImmutableSet<BootDashElement>>) ELEMENTS_SET_LISTENER);
 			e.getButtons().addListener((ValueListener<ImmutableSet<ButtonModel>>) ELEMENTS_SET_LISTENER);
@@ -326,7 +326,7 @@ public class BootDashUnifiedTreeSection extends PageSection implements MultiSele
 		tv = new CustomTreeViewer(page, SWT.V_SCROLL | SWT.H_SCROLL | SWT.MULTI);
 		tv.setExpandPreCheckFilters(true);
 		tv.setContentProvider(new BootDashTreeContentProvider());
-		tv.setSorter(new BootModelViewerSorter(this.model));
+		tv.setComparator(new BootModelViewerSorter(this.model));
 		tv.setInput(model);
 		tv.getTree().setLinesVisible(false);
 
@@ -465,7 +465,7 @@ public class BootDashUnifiedTreeSection extends PageSection implements MultiSele
 
 	private synchronized MultiSelection<Object> getMixedSelection() {
 		if (mixedSelection==null) {
-			mixedSelection = MultiSelection.from(Object.class, new ObservableSet<Object>() {
+			mixedSelection = MultiSelection.from(Object.class, new ObservableSet<>() {
 				@Override
 				protected ImmutableSet<Object> compute() {
 					if (tv!=null) {
@@ -527,7 +527,6 @@ public class BootDashUnifiedTreeSection extends PageSection implements MultiSele
 			addVisible(manager, a);
 		}
 		addVisible(manager, actions.getOpenBrowserAction());
-		addVisible(manager, actions.getOpenNgrokAdminUi());
 		addVisible(manager, actions.getOpenConsoleAction());
 		addVisible(manager, actions.getOpenInPackageExplorerAction());
 		addVisible(manager, actions.getShowPropertiesViewAction());
@@ -541,8 +540,6 @@ public class BootDashUnifiedTreeSection extends PageSection implements MultiSele
 
 		manager.add(new Separator());
 
-		addVisible(manager, actions.getExposeRunAppAction());
-		addVisible(manager, actions.getExposeDebugAppAction());
 		addSubmenu(manager, "Deploy and Run On...", BootDashActivator.getImageDescriptor("icons/run-on-cloud.png"), actions.getRunOnTargetActions());
 		addSubmenu(manager, "Deploy and Debug On...", BootDashActivator.getImageDescriptor("icons/debug-on-cloud.png"), actions.getDebugOnTargetActions());
 		manager.add(new Separator());

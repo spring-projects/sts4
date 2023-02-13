@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2020 Pivotal, Inc.
+ * Copyright (c) 2015, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -49,7 +49,6 @@ import org.springframework.ide.eclipse.boot.dash.model.remote.GenericRemoteAppEl
 import org.springframework.ide.eclipse.boot.dash.model.runtargettypes.LocalRunTargetType;
 import org.springframework.ide.eclipse.boot.dash.model.runtargettypes.RemoteRunTarget;
 import org.springframework.ide.eclipse.boot.dash.model.runtargettypes.RemoteRunTargetType;
-import org.springframework.ide.eclipse.boot.dash.ngrok.NGROKInstallManager;
 import org.springframework.ide.eclipse.boot.dash.prefs.BootDashPrefsPage;
 import org.springframework.ide.eclipse.boot.dash.views.AbstractBootDashAction.Location;
 import org.springframework.ide.eclipse.boot.dash.views.AbstractBootDashElementsAction.Params;
@@ -76,14 +75,11 @@ public class BootDashActions {
 	private LinkWithConsoleAction linkWithConsoleAction;
 	private OpenLaunchConfigAction openConfigAction;
 	private OpenInBrowserAction openBrowserAction;
-	private OpenNgrokAdminUi openNgrokAdminUi;
 	private OpenInPackageExplorer openInPackageExplorerAction;
 	private AddRunTargetAction[] addTargetActions;
 	private RefreshRunTargetAction refreshAction;
 	private RemoveRunTargetAction removeTargetAction;
 	private ShowViewAction showPropertiesViewAction;
-	private ExposeAppAction exposeRunAppAction;
-	private ExposeAppAction exposeDebugAppAction;
 
 	private OpenPreferencesAction openBootDashPreferencesAction;
 
@@ -278,7 +274,6 @@ public class BootDashActions {
 		openConsoleAction = new OpenConsoleAction(defaultActionParams());
 		linkWithConsoleAction = new LinkWithConsoleAction(defaultActionParams().setStyle(IAction.AS_CHECK_BOX));
 		openBrowserAction = new OpenInBrowserAction(defaultActionParams());
-		openNgrokAdminUi = new OpenNgrokAdminUi(defaultActionParams());
 		openInPackageExplorerAction = new OpenInPackageExplorer(defaultActionParams());
 		addTargetActions = createAddTargetActions();
 
@@ -299,18 +294,6 @@ public class BootDashActions {
 		showPropertiesViewAction = new ShowViewAction(PROPERTIES_VIEW_ID);
 
 		toggleFiltersDialogAction = new OpenToggleFiltersDialogAction(model.getToggleFilters(), elementsSelection, context);
-
-		exposeRunAppAction = new ExposeAppAction(defaultActionParams(), RunState.RUNNING, NGROKInstallManager.getInstance());
-		exposeRunAppAction.setText("(Re)start and Expose via ngrok");
-		exposeRunAppAction.setToolTipText("Start or restart the process associated with the selected elements and expose it to the outside world via an ngrok tunnel");
-		exposeRunAppAction.setImageDescriptor(BootDashActivator.getImageDescriptor("icons/restart.png"));
-		exposeRunAppAction.setDisabledImageDescriptor(BootDashActivator.getImageDescriptor("icons/restart_disabled.png"));
-
-		exposeDebugAppAction = new ExposeAppAction(defaultActionParams(), RunState.DEBUGGING, NGROKInstallManager.getInstance());
-		exposeDebugAppAction.setText("(Re)debug and Expose via ngrok");
-		exposeDebugAppAction.setToolTipText("Start or restart the process associated with the selected elements in debug mode and expose it to the outside world via an ngrok tunnel");
-		exposeDebugAppAction.setImageDescriptor(BootDashActivator.getImageDescriptor("icons/rebug.png"));
-		exposeDebugAppAction.setDisabledImageDescriptor(BootDashActivator.getImageDescriptor("icons/rebug_disabled.png"));
 
 		duplicateConfigAction = new DuplicateConfigAction(defaultActionParams());
 
@@ -458,10 +441,6 @@ public class BootDashActions {
 		return openBrowserAction;
 	}
 
-	public AbstractBootDashElementsAction getOpenNgrokAdminUi() {
-		return openNgrokAdminUi;
-	}
-
 	public AbstractBootDashElementsAction getOpenConsoleAction() {
 		return openConsoleAction;
 	}
@@ -512,14 +491,6 @@ public class BootDashActions {
 		return showPropertiesViewAction;
 	}
 
-	public IAction getExposeRunAppAction() {
-		return exposeRunAppAction;
-	}
-
-	public IAction getExposeDebugAppAction() {
-		return exposeDebugAppAction;
-	}
-
 	public EnableRemoteDevtoolsAction getEnableDevtoolsAction() {
 		return enableRemoteDevtoolsAction;
 	}
@@ -558,15 +529,6 @@ public class BootDashActions {
 			toggleFiltersDialogAction = null;
 		}
 
-		if (exposeRunAppAction != null) {
-			exposeRunAppAction.dispose();
-			exposeRunAppAction = null;
-		}
-
-		if (exposeDebugAppAction != null) {
-			exposeDebugAppAction.dispose();
-			exposeDebugAppAction = null;
-		}
 		if (duplicateConfigAction != null) {
 			duplicateConfigAction.dispose();
 			duplicateConfigAction = null;
@@ -618,7 +580,7 @@ public class BootDashActions {
 
 	private DisposingFactory<RunTarget, AbstractBootDashAction> createDeployOnTargetActions(final RunState runningOrDebugging) {
 		ObservableSet<RunTarget> runtargets = model.getRunTargets();
-		return new DisposingFactory<RunTarget, AbstractBootDashAction>(runtargets) {
+		return new DisposingFactory<>(runtargets) {
 			@SuppressWarnings({ "rawtypes", "unchecked" })
 			@Override
 			protected AbstractBootDashAction create(RunTarget target) {

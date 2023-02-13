@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2020 Pivotal, Inc.
+ * Copyright (c) 2015, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,13 +10,19 @@
  *******************************************************************************/
 package org.springframework.ide.eclipse.boot.dash.labels;
 
-import static org.springframework.ide.eclipse.boot.dash.views.sections.BootDashColumn.*;
-
-import java.util.ArrayList;
-import java.util.List;
+import static org.springframework.ide.eclipse.boot.dash.views.sections.BootDashColumn.DEFAULT_PATH;
+import static org.springframework.ide.eclipse.boot.dash.views.sections.BootDashColumn.DEVTOOLS;
+import static org.springframework.ide.eclipse.boot.dash.views.sections.BootDashColumn.HOST;
+import static org.springframework.ide.eclipse.boot.dash.views.sections.BootDashColumn.INSTANCES;
+import static org.springframework.ide.eclipse.boot.dash.views.sections.BootDashColumn.LIVE_PORT;
+import static org.springframework.ide.eclipse.boot.dash.views.sections.BootDashColumn.NAME;
+import static org.springframework.ide.eclipse.boot.dash.views.sections.BootDashColumn.PROGRESS;
+import static org.springframework.ide.eclipse.boot.dash.views.sections.BootDashColumn.PROJECT;
+import static org.springframework.ide.eclipse.boot.dash.views.sections.BootDashColumn.RUN_STATE_ICN;
+import static org.springframework.ide.eclipse.boot.dash.views.sections.BootDashColumn.TAGS;
+import static org.springframework.ide.eclipse.boot.dash.views.sections.BootDashColumn.TREE_VIEWER_MAIN;
 
 import org.eclipse.core.resources.IProject;
-import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.internal.ui.viewsupport.AppearanceAwareLabelProvider;
 import org.eclipse.jface.resource.ImageDescriptor;
@@ -27,12 +33,9 @@ import org.eclipse.swt.graphics.Image;
 import org.eclipse.ui.PlatformUI;
 import org.springframework.ide.eclipse.boot.core.BootPropertyTester;
 import org.springframework.ide.eclipse.boot.dash.BootDashActivator;
-import org.springframework.ide.eclipse.boot.dash.api.App;
-import org.springframework.ide.eclipse.boot.dash.api.DevtoolsConnectable;
 import org.springframework.ide.eclipse.boot.dash.api.Styleable;
 //import org.springframework.ide.eclipse.boot.dash.cloudfoundry.CloudServiceInstanceDashElement;
 import org.springframework.ide.eclipse.boot.dash.di.SimpleDIContext;
-import org.springframework.ide.eclipse.boot.dash.model.AbstractLaunchConfigurationsDashElement;
 import org.springframework.ide.eclipse.boot.dash.model.BootDashElement;
 import org.springframework.ide.eclipse.boot.dash.model.BootDashModel;
 import org.springframework.ide.eclipse.boot.dash.model.ButtonModel;
@@ -40,9 +43,6 @@ import org.springframework.ide.eclipse.boot.dash.model.ClasspathPropertyTester;
 import org.springframework.ide.eclipse.boot.dash.model.RefreshState;
 import org.springframework.ide.eclipse.boot.dash.model.RunState;
 import org.springframework.ide.eclipse.boot.dash.model.TagUtils;
-import org.springframework.ide.eclipse.boot.dash.model.remote.GenericRemoteAppElement;
-import org.springframework.ide.eclipse.boot.dash.ngrok.NGROKClient;
-import org.springframework.ide.eclipse.boot.dash.ngrok.NGROKLaunchTracker;
 import org.springframework.ide.eclipse.boot.dash.views.ImageDecorator;
 import org.springframework.ide.eclipse.boot.dash.views.sections.BootDashColumn;
 import org.springsource.ide.eclipse.commons.frameworks.core.util.StringUtils;
@@ -462,31 +462,6 @@ public class BootDashLabels implements Disposable {
 						Color instancesColor = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry().get(ALT_TEXT_DECORATION_COLOR_THEME);
 						styledLabel = new StyledString(label, stylers.color(instancesColor));
 					}
-				}
-			} else if (column==EXPOSED_URL) {
-				RunState runState = element.getRunState();
-				if (runState == RunState.RUNNING || runState == RunState.DEBUGGING) {
-					List<String> tunnelNames = new ArrayList<>();
-					if (element instanceof AbstractLaunchConfigurationsDashElement<?>) {
-						ImmutableSet<ILaunchConfiguration> launches = ((AbstractLaunchConfigurationsDashElement<?>) element).getLaunchConfigs();
-						for (ILaunchConfiguration launchConfig : launches) {
-							tunnelNames.add(launchConfig.getName());
-						}
-					}
-
-					for (String tunnelName : tunnelNames) {
-						NGROKClient ngrokClient = NGROKLaunchTracker.get(tunnelName);
-						if (ngrokClient != null) {
-							Color color = PlatformUI.getWorkbench().getThemeManager().getCurrentTheme().getColorRegistry().get(ALT_TEXT_DECORATION_COLOR_THEME);
-							if (styledLabel == null) {
-								styledLabel = new StyledString("\u27A4 " + ngrokClient.getTunnel().getPublic_url(),stylers.color(color));
-							}
-							else {
-								styledLabel.append(new StyledString(" / \u27A4 " + ngrokClient.getTunnel().getPublic_url(),stylers.color(color)));
-							}
-						}
-					}
-
 				}
 			} else {
 				label = UNKNOWN_LABEL;

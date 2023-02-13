@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2016 GoPivotal, Inc.
+ * Copyright (c) 2015, 2023 GoPivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -45,9 +45,6 @@ import org.springframework.ide.eclipse.boot.dash.model.LocalBootDashModel;
 import org.springframework.ide.eclipse.boot.dash.model.LocalRunTarget;
 import org.springframework.ide.eclipse.boot.dash.model.RunState;
 import org.springframework.ide.eclipse.boot.dash.model.UserInteractions;
-import org.springframework.ide.eclipse.boot.dash.ngrok.NGROKClient;
-import org.springframework.ide.eclipse.boot.dash.ngrok.NGROKLaunchTracker;
-import org.springframework.ide.eclipse.boot.dash.ngrok.NGROKTunnel;
 import org.springframework.ide.eclipse.boot.dash.test.mocks.Mocks;
 import org.springframework.ide.eclipse.boot.dash.util.LaunchConfRunStateTracker;
 import org.springsource.ide.eclipse.commons.core.pstore.IPropertyStore;
@@ -203,45 +200,6 @@ public class AbstractLaunchConfigurationsDashElementTest extends Mocks {
 		verify(element).stopSync();
 		verify(element).launch(ILaunchManager.RUN_MODE, conf);
 		verifyZeroInteractions(ui);
-	}
-
-	@Test
-	public void restartAndExpose() throws Exception {
-		String projectName = "fooProject";
-		IProject project = mockProject(projectName, true);
-		IJavaProject javaProject = mockJavaProject(project);
-		LocalRunTarget runTarget = mock(LocalRunTarget.class);
-		TestElement element = createElement(projectName, project, javaProject, runTarget);
-		UserInteractions ui = mock(UserInteractions.class);
-		ILaunchConfiguration conf = mock(ILaunchConfiguration.class);
-		ILaunchConfigurationWorkingCopy copyOfConf = mock(ILaunchConfigurationWorkingCopy.class);
-		IType type = mockType(javaProject, "demo", "FooApplication");
-		NGROKClient ngrokClient = mock(NGROKClient.class);
-		NGROKTunnel tunnel = new NGROKTunnel("foo-launch", "http", "publicURLTest", "8888");
-
-		when(element.guessMainTypes()).thenReturn(new IType[] {type});
-		when(runTarget.createLaunchConfig(javaProject, type)).thenReturn(conf);
-		when(conf.getWorkingCopy()).thenReturn(copyOfConf);
-		when(element.getLivePort()).thenReturn(8888);
-		when(ngrokClient.startTunnel("http", "8888")).thenReturn(tunnel);
-		when(conf.getName()).thenReturn("foo-launch");
-		when(copyOfConf.getName()).thenReturn("foo-launch");
-		String eurekaInstance = "eureka instance somewhere";
-
-		element.restartAndExpose(RunState.RUNNING, ngrokClient, eurekaInstance, ui);
-
-		verify(element).stopSync();
-		verify(element).launch(ILaunchManager.RUN_MODE, copyOfConf);
-		verifyZeroInteractions(ui);
-
-		verify(copyOfConf).setAttribute("spring.boot.prop.server.port", "18888");
-		verify(copyOfConf).setAttribute("spring.boot.prop.eureka.instance.hostname", "1publicURLTest");
-		verify(copyOfConf).setAttribute("spring.boot.prop.eureka.instance.nonSecurePort", "180");
-		verify(copyOfConf).setAttribute("spring.boot.prop.eureka.client.service-url.defaultZone", "1" + eurekaInstance);
-
-		NGROKClient storedNgrokClient = NGROKLaunchTracker.get("foo-launch");
-		assertEquals(storedNgrokClient, ngrokClient);
-		NGROKLaunchTracker.remove("foo-launch");
 	}
 
 	@Test

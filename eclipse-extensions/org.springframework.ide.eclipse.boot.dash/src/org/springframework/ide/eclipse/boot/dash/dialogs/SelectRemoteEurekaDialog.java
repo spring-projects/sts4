@@ -74,7 +74,7 @@ public class SelectRemoteEurekaDialog extends SelectionStatusDialog {
         selectRemoteButton.setSelection(true);
 
     		tv = new TreeViewer(composite, SWT.V_SCROLL | SWT.H_SCROLL | SWT.MULTI);
-    		tv.setSorter(new BootModelViewerSorter(this.model));
+    		tv.setComparator(new BootModelViewerSorter(this.model));
     		tv.getTree().setLinesVisible(true);
     		stylers = new Stylers(tv.getTree().getFont());
     		tv.setLabelProvider(new BootDashTreeLabelProvider(stylers, tv));

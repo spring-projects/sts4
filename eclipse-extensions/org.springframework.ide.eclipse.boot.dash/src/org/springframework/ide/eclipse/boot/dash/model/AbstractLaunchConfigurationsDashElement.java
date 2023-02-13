@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2020 Pivotal, Inc.
+ * Copyright (c) 2015, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,11 +13,7 @@ package org.springframework.ide.eclipse.boot.dash.model;
 import java.time.Duration;
 import java.util.Collection;
 import java.util.EnumSet;
-import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -27,12 +23,10 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.debug.core.ILaunch;
 import org.eclipse.debug.core.ILaunchConfiguration;
-import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.debug.ui.IDebugUIConstants;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IType;
-import org.eclipse.jdt.launching.SocketUtil;
 import org.eclipse.swt.widgets.Display;
 import org.springframework.ide.eclipse.beans.ui.live.model.LiveBeansModel;
 import org.springframework.ide.eclipse.boot.dash.livexp.PollingLiveExp;
@@ -40,9 +34,6 @@ import org.springframework.ide.eclipse.boot.dash.model.actuator.ActuatorClient;
 import org.springframework.ide.eclipse.boot.dash.model.actuator.JMXActuatorClient;
 import org.springframework.ide.eclipse.boot.dash.model.actuator.RequestMapping;
 import org.springframework.ide.eclipse.boot.dash.model.actuator.env.LiveEnvModel;
-import org.springframework.ide.eclipse.boot.dash.ngrok.NGROKClient;
-import org.springframework.ide.eclipse.boot.dash.ngrok.NGROKLaunchTracker;
-import org.springframework.ide.eclipse.boot.dash.ngrok.NGROKTunnel;
 import org.springframework.ide.eclipse.boot.dash.util.CollectionUtils;
 import org.springframework.ide.eclipse.boot.dash.util.LaunchConfRunStateTracker;
 import org.springframework.ide.eclipse.boot.dash.util.RunStateTracker.RunStateListener;
@@ -175,7 +166,6 @@ public abstract class AbstractLaunchConfigurationsDashElement<T> extends Wrappin
 			}
 			try {
 				BootLaunchUtils.terminate(launches);
-				shutdownExpose();
 			} catch (Exception e) {
 				//why does terminating process with Eclipse debug UI fail so #$%# often?
 				Log.log(new Error("Termination of "+this+" failed", e));
@@ -417,7 +407,7 @@ public abstract class AbstractLaunchConfigurationsDashElement<T> extends Wrappin
 
 	protected LiveExpression<RunState> createRunStateExp() {
 		final LaunchConfRunStateTracker tracker = runStateTracker();
-		final LiveExpression<RunState> exp = new LiveExpression<RunState>() {
+		final LiveExpression<RunState> exp = new LiveExpression<>() {
 			protected RunState compute() {
 				AbstractLaunchConfigurationsDashElement<T> it = AbstractLaunchConfigurationsDashElement.this;
 				debug("Computing runstate for "+it);
@@ -440,7 +430,7 @@ public abstract class AbstractLaunchConfigurationsDashElement<T> extends Wrappin
 				super.dispose();
 			}
 		};
-		final RunStateListener<ILaunchConfiguration> runStateListener = new RunStateListener<ILaunchConfiguration>() {
+		final RunStateListener<ILaunchConfiguration> runStateListener = new RunStateListener<>() {
 			@Override
 			public void stateChanged(ILaunchConfiguration changedConf) {
 				if (getLaunchConfigs().contains(changedConf)) {
@@ -461,7 +451,7 @@ public abstract class AbstractLaunchConfigurationsDashElement<T> extends Wrappin
 
 	protected LiveExpression<Integer> createActualInstancesExp() {
 		final LaunchConfRunStateTracker tracker = runStateTracker();
-		final LiveExpression<Integer> exp = new LiveExpression<Integer>(0) {
+		final LiveExpression<Integer> exp = new LiveExpression<>(0) {
 			@Override
 			public String toString() {
 				return "LiveExp(actualInstances)";
@@ -476,7 +466,7 @@ public abstract class AbstractLaunchConfigurationsDashElement<T> extends Wrappin
 				return activeCount;
 			}
 		};
-		final RunStateListener<ILaunchConfiguration> runStateListener = new RunStateListener<ILaunchConfiguration>() {
+		final RunStateListener<ILaunchConfiguration> runStateListener = new RunStateListener<>() {
 			@Override
 			public void stateChanged(ILaunchConfiguration changedConf) {
 				if (getLaunchConfigs().contains(changedConf)) {
@@ -504,7 +494,7 @@ public abstract class AbstractLaunchConfigurationsDashElement<T> extends Wrappin
 	}
 
 	private LiveExpression<Integer> createLivePortExp(final LiveExpression<RunState> runState, final String propName) {
-		AsyncLiveExpression<Integer> exp = new AsyncLiveExpression<Integer>(-1, "Refreshing port info ("+propName+") for "+getName()) {
+		AsyncLiveExpression<Integer> exp = new AsyncLiveExpression<>(-1, "Refreshing port info ("+propName+") for "+getName()) {
 			{
 				//Doesn't really depend on runState, but should be recomputed when runState changes.
 				dependsOn(runState);
@@ -665,122 +655,6 @@ public abstract class AbstractLaunchConfigurationsDashElement<T> extends Wrappin
 		}
 		debug("["+this.getName()+"] getLivePort("+propName+") => -1");
 		return -1;
-	}
-
-	public void restartAndExpose(RunState runMode, NGROKClient ngrokClient, String eurekaInstance, UserInteractions ui) throws Exception {
-		String launchMode = null;
-		if (RunState.RUNNING.equals(runMode)) {
-			launchMode = ILaunchManager.RUN_MODE;
-		}
-		else if (RunState.DEBUGGING.equals(runMode)) {
-			launchMode = ILaunchManager.DEBUG_MODE;
-		}
-		else {
-			throw new IllegalArgumentException("Restart and expose expects RUNNING or DEBUGGING as 'goal' state");
-		}
-
-		int port = getLivePort();
-		stopSync();
-
-		if (port <= 0) {
-			port = SocketUtil.findFreePort();
-		}
-
-		ILaunchConfiguration launchConfig = getOrCreateLaunchConfig(ui);
-		if (launchConfig != null) {
-			String tunnelName = launchConfig.getName();
-
-			NGROKTunnel tunnel = ngrokClient.startTunnel("http", Integer.toString(port));
-			NGROKLaunchTracker.add(tunnelName, ngrokClient, tunnel);
-
-			if (tunnel == null) {
-				ui.errorPopup("ngrok tunnel not started", "there was a problem starting the ngrok tunnel, try again or start a tunnel manually.");
-				return;
-			}
-
-			String tunnelURL = tunnel.getPublic_url();
-
-			if (tunnelURL.startsWith("http://")) {
-				tunnelURL = tunnelURL.substring(7);
-			}
-
-			Map<String, String> extraAttributes = new HashMap<>();
-			extraAttributes.put("spring.boot.prop.server.port", "1" + Integer.toString(port));
-			extraAttributes.put("spring.boot.prop.eureka.instance.hostname", "1" + tunnelURL);
-			extraAttributes.put("spring.boot.prop.eureka.instance.nonSecurePort", "1" + "80");
-			extraAttributes.put("spring.boot.prop.eureka.client.service-url.defaultZone", "1" + eurekaInstance);
-
-			start(launchMode, launchConfig, extraAttributes);
-		}
-	}
-
-	private void start(final String runMode, ILaunchConfiguration launchConfig, Map<String, String> extraAttributes) {
-		try {
-			if (launchConfig != null) {
-				ILaunchConfigurationWorkingCopy workingCopy = launchConfig.getWorkingCopy();
-
-				removeOverriddenAttributes(workingCopy, extraAttributes);
-				addAdditionalAttributes(workingCopy, extraAttributes);
-
-				launch(runMode, workingCopy);
-			}
-		} catch (Exception e) {
-			Log.log(e);
-		}
-	}
-
-	private void addAdditionalAttributes(ILaunchConfigurationWorkingCopy workingCopy, Map<String, String> extraAttributes) {
-		if (extraAttributes != null && extraAttributes.size() > 0) {
-			Iterator<String> iterator = extraAttributes.keySet().iterator();
-			while (iterator.hasNext()) {
-				String key = iterator.next();
-				String value = extraAttributes.get(key);
-
-				workingCopy.setAttribute(key, value);
-			}
-		}
-	}
-
-	private void removeOverriddenAttributes(ILaunchConfigurationWorkingCopy workingCopy, Map<String, String> attributesToOverride) {
-		try {
-			Map<String, Object> attributes = workingCopy.getAttributes();
-			Set<String> keys = attributes.keySet();
-
-			Iterator<String> iter = keys.iterator();
-			while (iter.hasNext()) {
-				String existingKey = iter.next();
-				if (containsSimilarKey(attributesToOverride, existingKey)) {
-					workingCopy.removeAttribute(existingKey);
-				}
-			}
-		} catch (CoreException e) {
-			e.printStackTrace();
-		}
-	}
-
-	private boolean containsSimilarKey(Map<String, String> attributesToOverride, String existingKey) {
-		Iterator<String> iter = attributesToOverride.keySet().iterator();
-		while (iter.hasNext()) {
-			String overridingKey = iter.next();
-			if (existingKey.startsWith(overridingKey)) {
-				return true;
-			}
-		}
-		return false;
-	}
-
-	public void shutdownExpose() {
-		ImmutableSet<ILaunchConfiguration> launchConfigs = getLaunchConfigs();
-
-		for (ILaunchConfiguration launchConfig : launchConfigs) {
-			String tunnelName = launchConfig.getName();
-			NGROKClient client = NGROKLaunchTracker.get(tunnelName);
-
-			if (client != null) {
-				client.shutdown();
-				NGROKLaunchTracker.remove(tunnelName);
-			}
-		}
 	}
 
 	public void refreshLivePorts() {

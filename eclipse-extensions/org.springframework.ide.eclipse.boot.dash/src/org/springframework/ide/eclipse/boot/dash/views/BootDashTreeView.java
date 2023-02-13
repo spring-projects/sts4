@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2021 VMware, Inc.
+ * Copyright (c) 2015, 2023 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -182,7 +182,6 @@ public class BootDashTreeView extends ViewPartWithSections implements ITabbedPro
 			//			BootDashUnifiedTreeSection.addVisible(manager, a);
 		}
 		manager.add(actions.getOpenBrowserAction());
-		manager.add(actions.getOpenNgrokAdminUi());
 		manager.add(actions.getOpenConsoleAction());
 		manager.add(actions.getLinkWithConsoleAction());
 		manager.add(actions.getOpenInPackageExplorerAction());
@@ -191,10 +190,6 @@ public class BootDashTreeView extends ViewPartWithSections implements ITabbedPro
 
 		MenuUtil.addDynamicSubmenu(manager, actions.getLiveDataConnectionManagement());
 
-
-		manager.add(new Separator());
-		manager.add(actions.getExposeRunAppAction());
-		manager.add(actions.getExposeDebugAppAction());
 
 		manager.add(new Separator());
 		addAddRunTargetMenuActions(manager);
