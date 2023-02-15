@@ -14,6 +14,7 @@ import java.io.ByteArrayInputStream;
 import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
@@ -89,8 +90,8 @@ public class RewriteCompilationUnitCache implements DocumentContentProvider, Dis
 
 								JavaParser parser = javaParsers.getIfPresent(project.get().getLocationUri());
 								if (parser != null) {
-//									parser.reset(List.of(uri));
-									parser.reset();
+									parser.reset(List.of(uri));
+//									parser.reset();
 								}
 							}
 						}
@@ -222,9 +223,10 @@ public class RewriteCompilationUnitCache implements DocumentContentProvider, Dis
 	
 	private CompilationUnit doParse(IJavaProject project, URI uri) throws Exception {
 		boolean newParser = javaParsers.getIfPresent(project) == null;
+		JavaParser javaParser = null;;
 		try {
 			logger.debug("Parsing CU {}", uri);
-			JavaParser javaParser = loadJavaParser(project);
+			javaParser = loadJavaParser(project);
 			
 			Path sourcePath = Paths.get(uri);
 			javaParser.setSourceSet(ORAstUtils.getSourceSetName(project, sourcePath));
@@ -250,7 +252,11 @@ public class RewriteCompilationUnitCache implements DocumentContentProvider, Dis
 				javaParsers.invalidate(project);
 			}
 			throw e;
-		}								
+		} finally {
+			if (javaParser != null) {
+				javaParser.reset(Collections.emptyList());
+			}
+		}
 	}
 	
 	/**

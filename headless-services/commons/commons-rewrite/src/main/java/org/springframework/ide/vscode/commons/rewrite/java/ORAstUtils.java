@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2022 VMware, Inc.
+ * Copyright (c) 2022, 2023 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -295,10 +295,13 @@ public class ORAstUtils {
 		InMemoryExecutionContext ctx = new InMemoryExecutionContext(ORAstUtils::logExceptionWhileParsing);
 		ctx.putMessage(JavaParser.SKIP_SOURCE_SET_TYPE_GENERATION, true);
 		List<CompilationUnit> cus = Collections.emptyList();
+		long start = System.currentTimeMillis();
 		synchronized (parser) {
 			cus = parser.parseInputs(inputs, null, ctx);
 		}
+		log.info("Rewrite parser: " + (System.currentTimeMillis() - start));
 		List<J.CompilationUnit> finalCus = new ArrayList<>(cus.size());
+		start = System.currentTimeMillis();
 		for (CompilationUnit cu : cus) {
 			J.CompilationUnit newCu = (J.CompilationUnit) new UpdateSourcePositions().getVisitor().visit(cu, ctx);
 			if (newCu == null) {
@@ -307,6 +310,7 @@ public class ORAstUtils {
 				finalCus.add(newCu);
 			}
 		}
+		log.info("Positions Update: " + (System.currentTimeMillis() - start));
 		return finalCus;
 	}
 	
