@@ -49,7 +49,7 @@ public class PreciseBeanTypeProblem implements RecipeCodeActionDescriptor {
                 J.MethodDeclaration m = super.visitMethodDeclaration(method, executionContext);
                 if (m.getLeadingAnnotations().stream().anyMatch(a -> TypeUtils.isOfClassType(a.getType(), "org.springframework.context.annotation.Bean"))) {
                     Object o = getCursor().pollMessage(MSG_KEY);
-                    if (o != null && !o.equals(m.getReturnTypeExpression().getType())) {
+                    if (o != null && !areTypesEqual((JavaType) o, m.getReturnTypeExpression().getType())) {
                     	if ((o instanceof JavaType.FullyQualified && m.getReturnTypeExpression().getType() instanceof JavaType.FullyQualified)
                     			|| (o instanceof JavaType.Array && m.getReturnTypeExpression().getType() instanceof JavaType.Array)) {
                     		
@@ -87,6 +87,39 @@ public class PreciseBeanTypeProblem implements RecipeCodeActionDescriptor {
 			}
 			
 		};
+	}
+	
+	private static boolean areTypesEqual(JavaType a, JavaType b) {
+		if (a instanceof JavaType.Parameterized && b instanceof JavaType.Parameterized) {
+			JavaType.Parameterized ap = (JavaType.Parameterized) a;
+			JavaType.Parameterized bp = (JavaType.Parameterized) b;
+			if (ap.getTypeParameters().size() != bp.getTypeParameters().size()) {
+				return false;
+			}
+			if (areTypesEqual(ap.getType(), bp.getType())) {
+				for (int i = 0; i < ap.getTypeParameters().size(); i++) {
+					if (!areTypesEqual(ap.getTypeParameters().get(i), bp.getTypeParameters().get(i))) {
+						return false;
+					}
+				}
+			}
+		} else if (a instanceof JavaType.Parameterized && b instanceof JavaType.FullyQualified) {
+			return areTypesEqual(((JavaType.Parameterized) a).getType(), b);
+		} else if (a instanceof JavaType.FullyQualified && b instanceof JavaType.Parameterized) {
+			return areTypesEqual(a, ((JavaType.Parameterized) b).getType());
+		} else if (a instanceof JavaType.Array && b instanceof JavaType.Array) {
+			return areTypesEqual(((JavaType.Array) a).getElemType(), ((JavaType.Array) b).getElemType());
+		}
+		if (a instanceof JavaType.GenericTypeVariable || b instanceof JavaType.GenericTypeVariable) {
+			return true;
+		}
+		if (a == JavaType.Primitive.String && b instanceof JavaType.FullyQualified) {
+			return JavaType.Primitive.String.getClassName().equals(((JavaType.FullyQualified) b).getFullyQualifiedName());
+		}
+		if (b == JavaType.Primitive.String && b instanceof JavaType.FullyQualified) {
+			return JavaType.Primitive.String.getClassName().equals(((JavaType.FullyQualified) a).getFullyQualifiedName());
+		}
+		return a.equals(b);
 	}
 
 	@Override
