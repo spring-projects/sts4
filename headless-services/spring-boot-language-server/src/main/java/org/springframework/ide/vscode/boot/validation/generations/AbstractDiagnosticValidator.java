@@ -31,7 +31,7 @@ abstract public class AbstractDiagnosticValidator implements VersionValidator {
 		this.diagnosticSeverityProvider = diagnosticSeverityProvider;
 	}
 
-	protected Diagnostic createDiagnostic(CodeAction action, VersionValidationProblemType problemType, String diagnosticMessage) {
+	protected Diagnostic createDiagnostic(List<CodeAction> actions, VersionValidationProblemType problemType, String diagnosticMessage) {
 		DiagnosticSeverity severity = diagnosticSeverityProvider.getDiagnosticSeverity(problemType);
 
 		// No severity means that this validator is set to "IGNORE" in the preferences
@@ -55,11 +55,13 @@ abstract public class AbstractDiagnosticValidator implements VersionValidator {
 		diagnostic.setRange(range);
 		diagnostic.setSeverity(severity);
 		
-		if (action != null) {
-			Diagnostic refDiagnostic = new Diagnostic(diagnostic.getRange(), diagnostic.getMessage(),
-					diagnostic.getSeverity(), diagnostic.getSource());
-			action.setDiagnostics(List.of(refDiagnostic));
-			diagnostic.setData(List.of(action));
+		if (actions != null) {
+			for (CodeAction action : actions) {
+				Diagnostic refDiagnostic = new Diagnostic(diagnostic.getRange(), diagnostic.getMessage(),
+						diagnostic.getSeverity(), diagnostic.getSource());
+				action.setDiagnostics(List.of(refDiagnostic));
+			}
+			diagnostic.setData(actions);
 		}
 		return diagnostic;
 	}

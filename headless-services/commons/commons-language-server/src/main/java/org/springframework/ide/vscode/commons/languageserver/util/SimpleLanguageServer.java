@@ -59,6 +59,7 @@ import org.eclipse.lsp4j.Registration;
 import org.eclipse.lsp4j.RegistrationParams;
 import org.eclipse.lsp4j.ServerCapabilities;
 import org.eclipse.lsp4j.SetTraceParams;
+import org.eclipse.lsp4j.ShowDocumentParams;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.eclipse.lsp4j.WorkDoneProgressBegin;
@@ -104,6 +105,7 @@ import org.springframework.ide.vscode.commons.util.CollectionUtil;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.common.collect.ImmutableList;
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -350,6 +352,17 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 		if (hasExecuteCommandSupport) {
 			getWorkspaceService().onExecuteCommand(this::executeCommand);
 		}
+
+		onCommand("sts/show/document", p -> {
+			ShowDocumentParams showDocParams = new Gson().fromJson((JsonElement)p.getArguments().get(0), ShowDocumentParams.class);
+			return getClient().showDocument(showDocParams).thenApply(r -> {
+				if (!r.isSuccess()) {
+					MessageParams messageParams = new MessageParams(MessageType.Error, "Failed to open: " + showDocParams.getUri());
+					getClient().showMessage(messageParams);
+				}
+				return null;
+			});
+		});
 		ServerCapabilities cap = getServerCapabilities();
 		if (appContext!=null) {
 			Map<String, ServerCapabilityInitializer> extraCaps = appContext.getBeansOfType(ServerCapabilityInitializer.class);
