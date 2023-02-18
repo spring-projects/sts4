@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2022 VMware, Inc.
+ * Copyright (c) 2022, 2023 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.boot.java;
 
 import static org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity.IGNORE;
+import static org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity.INFO;
 import static org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity.HINT;
 import static org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity.WARNING;
 
@@ -31,7 +32,9 @@ public enum Boot2JavaProblemType implements ProblemType {
 	
 	JAVA_PRECISE_REQUEST_MAPPING(HINT, "Use precise mapping annotation, i.e. '@GetMapping', '@PostMapping', etc.", "Use precise mapping annotation, i.e. '@GetMapping', '@PostMapping', etc."),
 	
-	JAVA_REPOSITORY(WARNING, "Unnecessary `@Repository`", "Unnecessary `@Repository`");
+	JAVA_REPOSITORY(WARNING, "Unnecessary `@Repository`", "Unnecessary `@Repository`"),
+	
+	JAVA_LAMBDA_DSL(INFO, "Consider switching to Lambda DSL syntax", "Switch to Lambda DSL syntax");
 	
 	private final ProblemSeverity defaultSeverity;
 	private String description;

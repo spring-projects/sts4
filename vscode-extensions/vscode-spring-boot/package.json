@@ -402,6 +402,18 @@
               "HINT",
               "ERROR"
             ]
+          },
+          "spring-boot.ls.problem.boot2.JAVA_LAMBDA_DSL": {
+            "type": "string",
+            "default": "INFO",
+            "description": "Consider switching to Lambda DSL syntax",
+            "enum": [
+              "IGNORE",
+              "INFO",
+              "WARNING",
+              "HINT",
+              "ERROR"
+            ]
           }
         }
       },

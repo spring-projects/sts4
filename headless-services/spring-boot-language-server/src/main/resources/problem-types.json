@@ -49,6 +49,12 @@
         "label": "Unnecessary `@Repository`",
         "description": "Unnecessary `@Repository`",
         "defaultSeverity": "WARNING"
+      },
+      {
+        "code": "JAVA_LAMBDA_DSL",
+        "label": "Switch to Lambda DSL syntax",
+        "description": "Consider switching to Lambda DSL syntax",
+        "defaultSeverity": "INFO"
       }
     ]
   },
