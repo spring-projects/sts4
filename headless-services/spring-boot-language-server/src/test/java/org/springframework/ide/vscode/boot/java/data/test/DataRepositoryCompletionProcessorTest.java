@@ -121,6 +121,15 @@ public class DataRepositoryCompletionProcessorTest {
     	checkCompletions("findByThisCustomerIsSpecial", "List<Customer> findByThisCustomerIsSpecial(boolean thisCustomerIsSpecial);");
     }
 
+    @Test
+    void testPropertyProposals() throws Exception {
+    	checkCompletions("findByFirst", "findByFirstName");
+    	checkCompletions("findByFirstNameAndL", "findByFirstNameAndLastName");
+    	checkCompletions("findBy",
+    			"findByFirstName",
+    			"findByLastName");
+    }
+
 	private void checkCompletions(String alredyPresent, String... expectedCompletions) throws Exception {
 		prepareCase("{\n}", "{\n\t" + alredyPresent + "<*>");
     	assertContainsAnnotationCompletions(Arrays.stream(expectedCompletions).map(expected -> expected + "<*>").toArray(String[]::new));

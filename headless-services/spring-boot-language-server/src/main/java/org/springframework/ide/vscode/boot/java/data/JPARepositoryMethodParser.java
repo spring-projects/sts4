@@ -41,6 +41,16 @@ class JPARepositoryMethodParser {
 		propertiesGroupedByFirstWord = groupPropertiesByFirstWord(repoDef);
 	}
 
+	private Map<String, List<DomainProperty>> groupPropertiesByFirstWord(DataRepositoryDefinition repoDef) {
+		Map<String, List<DomainProperty>> grouped = new HashMap<>();
+		for(DomainProperty property : repoDef.getDomainType().getProperties()){
+			String firstWord = findFirstWord(property.getName());
+			grouped.putIfAbsent(firstWord, new ArrayList<>());
+			grouped.get(firstWord).add(property);
+		}
+		return grouped;
+	}
+
 	DataRepositoryMethodNameParseResult parseLocalPrefixForCompletion() {
 		int subjectPredicateSplitIndex = prefix.indexOf("By");
 		if (subjectPredicateSplitIndex == -1) {
@@ -175,16 +185,6 @@ class JPARepositoryMethodParser {
 			}
 		}
 		return ret;
-	}
-
-	private Map<String, List<DomainProperty>> groupPropertiesByFirstWord(DataRepositoryDefinition repoDef) {
-		Map<String, List<DomainProperty>> propertiesGroupedByFirstWord = new HashMap<>();
-		for(DomainProperty property : repoDef.getDomainType().getProperties()){
-			String firstWord = findFirstWord(property.getName());
-			propertiesGroupedByFirstWord.putIfAbsent(firstWord, new ArrayList<>());
-			propertiesGroupedByFirstWord.get(firstWord).add(property);
-		}
-		return propertiesGroupedByFirstWord;
 	}
 
 	private static String findFirstWord(String expression) {

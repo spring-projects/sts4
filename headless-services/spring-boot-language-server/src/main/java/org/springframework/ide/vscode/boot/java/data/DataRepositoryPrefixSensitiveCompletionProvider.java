@@ -10,15 +10,11 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.data;
 
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import org.eclipse.lsp4j.CompletionItemKind;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
@@ -43,43 +39,69 @@ class DataRepositoryPrefixSensitiveCompletionProvider {
 		}
 		DataRepositoryMethodNameParseResult parseResult = new JPARepositoryMethodParser(localPrefix, repoDef).parseLocalPrefixForCompletion();
 		if(parseResult != null && parseResult.performFullCompletion()){
-			String methodName=localPrefix;
-			DocumentEdits edits = new DocumentEdits(null, false);
-			String signature = buildSignature(methodName, repoDef, parseResult);
-			StringBuilder newText = new StringBuilder();
-			newText.append(parseResult.subjectType().returnType());
-			if (parseResult.subjectType().isTyped()) {
-				newText.append("<");
-				newText.append(repoDef.getDomainType().getSimpleName());
-				newText.append(">");
+			Map<String, DomainProperty> propertiesByName = getPropertiesByName(repoDef.getDomainType().getProperties());
+			addMethodCompletionProposal(completions, offset, repoDef, localPrefix, parseResult, propertiesByName);
+
+			if (parseResult.lastWord() == null || !propertiesByName.containsKey(parseResult.lastWord())) {
+				addPropertyProposals(completions, offset, repoDef, parseResult);
 			}
-			newText.append(" ");
-			newText.append(signature);
-			newText.append(";");
-			edits.replace(offset - localPrefix.length(), offset, newText.toString());
-			DocumentEdits additionalEdits = new DocumentEdits(null, false);
-			ICompletionProposal proposal = new FindByCompletionProposal(methodName, CompletionItemKind.Method, edits, null, null, Optional.of(additionalEdits), signature);
-			completions.add(proposal);
 		}
 	}
 
-	private static String buildSignature(String methodName, DataRepositoryDefinition repoDef, DataRepositoryMethodNameParseResult parseResult) {
+	private static void addPropertyProposals(Collection<ICompletionProposal> completions, int offset, DataRepositoryDefinition repoDef, DataRepositoryMethodNameParseResult parseResult) {
+		for(DomainProperty property : repoDef.getDomainType().getProperties()){
+			String lastWord = parseResult.lastWord();
+			if (lastWord == null) {
+				lastWord = "";
+			}
+			if (property.getName().startsWith(lastWord)) {
+				DocumentEdits edits = new DocumentEdits(null, false);
+				edits.replace(offset - lastWord.length(), offset, property.getName());
+				DocumentEdits additionalEdits = new DocumentEdits(null, false);
+				ICompletionProposal proposal = new FindByCompletionProposal(property.getName(), CompletionItemKind.Text, edits, "property " + property.getName(), null, Optional.of(additionalEdits), lastWord);
+				completions.add(proposal);
+			}
+		}
+	}
+
+	private static void addMethodCompletionProposal(Collection<ICompletionProposal> completions, int offset, DataRepositoryDefinition repoDef, String localPrefix, DataRepositoryMethodNameParseResult parseResult, Map<String, DomainProperty> propertiesByName) {
+		String methodName = localPrefix;
+		DocumentEdits edits = new DocumentEdits(null, false);
+		String signature = buildSignature(methodName, propertiesByName, parseResult);
+		StringBuilder newText = new StringBuilder();
+		newText.append(parseResult.subjectType().returnType());
+		if (parseResult.subjectType().isTyped()) {
+			newText.append("<");
+			newText.append(repoDef.getDomainType().getSimpleName());
+			newText.append(">");
+		}
+		newText.append(" ");
+		newText.append(signature);
+		newText.append(";");
+		edits.replace(offset - localPrefix.length(), offset, newText.toString());
+		DocumentEdits additionalEdits = new DocumentEdits(null, false);
+		ICompletionProposal proposal = new FindByCompletionProposal(methodName, CompletionItemKind.Method, edits, null, null, Optional.of(additionalEdits), signature);
+		completions.add(proposal);
+	}
+
+	private static Map<String, DomainProperty> getPropertiesByName(DomainProperty[] properties) {
+		Map<String, DomainProperty> propertiesByName = new HashMap<>();
+		for(DomainProperty prop : properties){
+			propertiesByName.put(prop.getName(), prop);
+		}
+		return propertiesByName;
+	}
+
+	private static String buildSignature(String methodName, Map<String, DomainProperty> properties, DataRepositoryMethodNameParseResult parseResult) {
 		StringBuilder signatureBuilder = new StringBuilder();
 		signatureBuilder.append(methodName);
 		signatureBuilder.append("(");
 		List<String> parameters = parseResult.parameters();
 		for(int i = 0; i < parameters.size(); i++){
 			String param = parameters.get(i);
-			DomainProperty[] properties = repoDef.getDomainType().getProperties();
-			boolean found = false;
-			for(int j = 0; j < properties.length; j++){
-				DomainProperty prop = properties[j];
-				if(prop.getName().equalsIgnoreCase(param)) {
-					signatureBuilder.append(prop.getType().getSimpleName());
-					found = true;
-				}
-			}
-			if (!found) {
+			if (properties.containsKey(param)) {
+				signatureBuilder.append(properties.get(param).getType().getSimpleName());
+			} else {
 				signatureBuilder.append("Object");
 			}
 			signatureBuilder.append(" ");

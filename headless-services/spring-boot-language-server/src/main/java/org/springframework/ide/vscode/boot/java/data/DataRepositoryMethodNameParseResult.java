@@ -31,7 +31,9 @@ record DataRepositoryMethodNameParseResult(
 		 */
 		boolean performFullCompletion,
 		/**
-		 * the last entered word, which completion options should be shown for
+		 * the last entered word, which completion options should be used for completing the expression.
+		 *
+		 * e.g. {@code First} in {@code findByFirst} which could be completed to {@code findByFirstName}
 		 */
 		String lastWord,
 		/**
