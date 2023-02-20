@@ -36,7 +36,11 @@ public class DomainType {
 	}
 
 	public DomainType(ITypeBinding typeBinding) {
-		this.packageName = typeBinding.getPackage().getName();
+		if (typeBinding.getPackage() == null) {
+			this.packageName = "";
+		} else {
+			this.packageName = typeBinding.getPackage().getName();
+		}
 		this.fullName = typeBinding.getQualifiedName();
 		this.simpleName = typeBinding.getName();
 
@@ -48,9 +52,17 @@ public class DomainType {
 
 					for (IMethodBinding method : methods) {
 						String methodName = method.getName();
-						if (methodName != null && methodName.startsWith("get")) {
-							String propertyName = methodName.substring(3);
-							properties.add(new DomainProperty(propertyName, new DomainType(method.getReturnType())));
+						if (methodName != null) {
+							String propertyName = null;
+							if (methodName.startsWith("get")) {
+								propertyName = methodName.substring(3);
+							}
+							else if (methodName.startsWith("is")) {
+								propertyName = methodName.substring(2);
+							}
+							if (propertyName != null) {
+								properties.add(new DomainProperty(propertyName, new DomainType(method.getReturnType())));
+							}
 						}
 					}
 					return (DomainProperty[]) properties.toArray(new DomainProperty[properties.size()]);

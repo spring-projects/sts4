@@ -5,29 +5,34 @@ import javax.persistence.Entity;
 import javax.persistence.GeneratedValue;
 import javax.persistence.GenerationType;
 import javax.persistence.Id;
+import javax.persistence.ManyToOne;
 
 @Entity
 public class Customer {
 
-    @Id
-    @GeneratedValue(strategy=GenerationType.AUTO)
-    private Long id;
-    private String firstName;
-    private String lastName;
+	@Id
+	@GeneratedValue(strategy = GenerationType.AUTO)
+	private Long id;
+	private String firstName;
+	private String lastName;
+	private boolean thisCustomerIsSpecial;//contains keyword in name
 
-    protected Customer() {}
+	@ManyToOne
+	private Employee responsibleEmployee;
 
-    public Customer(String firstName, String lastName) {
-        this.firstName = firstName;
-        this.lastName = lastName;
-    }
+	protected Customer() {}
 
-    @Override
-    public String toString() {
-        return String.format(
-                "Customer[id=%d, firstName='%s', lastName='%s']",
-                id, firstName, lastName);
-    }
+	public Customer(String firstName, String lastName, Employee responsibleEmployee) {
+		this.firstName = firstName;
+		this.lastName = lastName;
+		this.responsibleEmployee = responsibleEmployee;
+	}
+
+	@Override
+	public String toString() {
+		return "Customer [id=" + id + ", firstName=" + firstName + ", lastName=" + lastName + ", responsibleEmployee="
+				+ responsibleEmployee + "]";
+	}
 
 // end::sample[]
 
@@ -42,5 +47,12 @@ public class Customer {
 	public String getLastName() {
 		return lastName;
 	}
-}
 
+	public boolean isThisCustomerIsSpecial() {
+		return thisCustomerIsSpecial;
+	}
+
+	public Employee getResponsibleEmployee() {
+		return responsibleEmployee;
+	}
+}
