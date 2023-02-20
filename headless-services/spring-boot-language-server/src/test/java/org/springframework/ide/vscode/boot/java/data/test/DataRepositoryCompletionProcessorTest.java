@@ -95,6 +95,7 @@ public class DataRepositoryCompletionProcessorTest {
     @Test
     void testAttributeComparison() throws Exception {
     	checkCompletions("findByFirstNameIsGreaterThanLastName", "List<Customer> findByFirstNameIsGreaterThanLastName();");
+    	checkCompletions("findByFirstNameIsLastName", "List<Customer> findByFirstNameIsLastName();");
     }
 
     @Test

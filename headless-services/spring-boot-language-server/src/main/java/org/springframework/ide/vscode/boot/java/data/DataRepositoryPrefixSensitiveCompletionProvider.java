@@ -37,7 +37,7 @@ class DataRepositoryPrefixSensitiveCompletionProvider {
 		if (localPrefix == null) {
 			return;
 		}
-		DataRepositoryMethodNameParseResult parseResult = new JPARepositoryMethodParser(localPrefix, repoDef).parseLocalPrefixForCompletion();
+		DataRepositoryMethodNameParseResult parseResult = new DataRepositoryMethodParser(localPrefix, repoDef).parseLocalPrefixForCompletion();
 		if(parseResult != null && parseResult.performFullCompletion()){
 			Map<String, DomainProperty> propertiesByName = getPropertiesByName(repoDef.getDomainType().getProperties());
 			addMethodCompletionProposal(completions, offset, repoDef, localPrefix, prefix, parseResult, propertiesByName);

@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
  * Class responsible for parsing Spring JPA Repository query methods.
  * @author danthe1st
  */
-class JPARepositoryMethodParser {
+class DataRepositoryMethodParser {
 
 	private static final Map<String, List<QueryPredicateKeywordInfo>> PREDICATE_KEYWORDS_GROUPED_BY_FIRST_WORD = QueryPredicateKeywordInfo.PREDICATE_KEYWORDS
 			.stream()
@@ -36,7 +36,7 @@ class JPARepositoryMethodParser {
 	private boolean performFullCompletion = true;//if some invalid text is detected, do not complete the whole method
 	private String previousExpression = null;
 
-	public JPARepositoryMethodParser(String localPrefix, DataRepositoryDefinition repoDef) {
+	public DataRepositoryMethodParser(String localPrefix, DataRepositoryDefinition repoDef) {
 		prefix = localPrefix;
 		propertiesGroupedByFirstWord = groupPropertiesByFirstWord(repoDef);
 	}
@@ -79,7 +79,7 @@ class JPARepositoryMethodParser {
 				if (keyword == null){
 					DomainProperty preferredWord = findByLargestFirstWord(propertiesGroupedByFirstWord, DomainProperty::getName, predicate, lastWordEnd, word);
 					if (preferredWord != null) {
-						i += preferredWord.getName().length()-word.length();
+						i += preferredWord.getName().length() - word.length();
 						word=preferredWord.getName();
 					}
 					parseNonKeyword(word);
@@ -96,7 +96,7 @@ class JPARepositoryMethodParser {
 	}
 
 	private QueryMethodSubject parseSubject(int subjectPredicateSplitIndex) {
-		String subject = prefix.substring(0,subjectPredicateSplitIndex);
+		String subject = prefix.substring(0, subjectPredicateSplitIndex);
 		QueryMethodSubject subjectType = null;
 		for(QueryMethodSubject queryMethodSubject : QueryMethodSubject.QUERY_METHOD_SUBJECTS){
 			if(subject.startsWith(queryMethodSubject.key())) {
