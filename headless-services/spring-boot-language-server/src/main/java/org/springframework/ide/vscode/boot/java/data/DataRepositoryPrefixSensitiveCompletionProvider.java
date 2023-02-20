@@ -111,10 +111,11 @@ class DataRepositoryPrefixSensitiveCompletionProvider {
 		List<String> parameters = parseResult.parameters();
 		for(int i = 0; i < parameters.size(); i++){
 			String param = parameters.get(i);
-			if (properties.containsKey(param)) {
-				signatureBuilder.append(properties.get(param).getType().getSimpleName());
-			} else {
+			DomainType type = findExpressionType(properties, param);
+			if (type == null) {
 				signatureBuilder.append("Object");
+			}else {
+				signatureBuilder.append(type.getSimpleName());
 			}
 			signatureBuilder.append(" ");
 			signatureBuilder.append(StringUtils.uncapitalize(param));
@@ -124,6 +125,27 @@ class DataRepositoryPrefixSensitiveCompletionProvider {
 		}
 		signatureBuilder.append(")");
 		return signatureBuilder.toString();
+	}
+
+	private static DomainType findExpressionType(Map<String, DomainProperty> properties, String param) {
+		String[] splitByUnderscore = param.split("_");
+		if(properties.containsKey(splitByUnderscore[0])) {
+			DomainType type = properties.get(splitByUnderscore[0]).getType();
+			for (int j = 1; j < splitByUnderscore.length && type != null; j++) {
+				type = findMatchingParameter(splitByUnderscore[j], type);
+			}
+			return type;
+		}
+		return null;
+	}
+
+	private static DomainType findMatchingParameter(String name, DomainType type) {
+		for(DomainProperty prop : type.getProperties()){
+			if (prop.getName().equals(name)) {
+				return prop.getType();
+			}
+		}
+		return null;
 	}
 
 	private static void addQueryStartProposals(Collection<ICompletionProposal> completions, String prefix, int offset) {

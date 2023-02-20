@@ -89,6 +89,7 @@ public class DataRepositoryCompletionProcessorTest {
     @Test
     void testPrefixSensitiveCompletionsCompleteMethodReturnTypePresent() throws Exception {
     	checkCompletions("List<Customer> findByFirstNameAndLastName", "List<Customer> findByFirstNameAndLastName(String firstName, String lastName);");
+    	checkCompletions("boolean existsByFirstNameAndLastName", "boolean existsByFirstNameAndLastName(String firstName, String lastName);");
     }
 
     @Test
@@ -133,6 +134,12 @@ public class DataRepositoryCompletionProcessorTest {
     	checkCompletions("findBy",
     			"findByFirstName",
     			"findByLastName");
+    }
+
+    @Test
+    void findByComplexExpression() throws Exception {
+    	checkCompletions("findByResponsibleEmployee", "List<Customer> findByResponsibleEmployee(Employee responsibleEmployee);");
+    	checkCompletions("findByResponsibleEmployee_SocialSecurityNumber", "List<Customer> findByResponsibleEmployee_SocialSecurityNumber(Long responsibleEmployee_SocialSecurityNumber);");
     }
 
 	private void checkCompletions(String alredyPresent, String... expectedCompletions) throws Exception {
