@@ -17,7 +17,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
-import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -27,91 +26,20 @@ import org.springframework.ide.vscode.commons.languageserver.completion.IComplet
 import org.springframework.util.StringUtils;
 
 /**
+ * This utility class provides content assist proposals for Spring JPA query methods.
  * @author danthe1st
  */
 class DataRepositoryPrefixSensitiveCompletionProvider {
-	private static final List<QueryMethodSubject> QUERY_METHOD_SUBJECTS = List.of(
-			QueryMethodSubject.createCollectionSubject("find", "List"),
-			QueryMethodSubject.createCollectionSubject("read", "List"),
-			QueryMethodSubject.createCollectionSubject("get", "List"),
-			QueryMethodSubject.createCollectionSubject("query", "List"),
-			QueryMethodSubject.createCollectionSubject("search", "List"),
-			QueryMethodSubject.createCollectionSubject("stream", "Streamable"),
-			QueryMethodSubject.createPrimitiveSubject("exists", "boolean"),
-			QueryMethodSubject.createPrimitiveSubject("count", "long"),
-			QueryMethodSubject.createPrimitiveSubject("delete", "void"),
-			QueryMethodSubject.createPrimitiveSubject("remove", "void")
-			);
 
-	private static final List<KeywordInfo> PREDICATE_KEYWORDS = List.of(
-			new KeywordInfo("And", DataRepositoryMethodKeywordType.COMBINE_CONDITIONS),
-			new KeywordInfo("Or", DataRepositoryMethodKeywordType.COMBINE_CONDITIONS),
-			new KeywordInfo("After", DataRepositoryMethodKeywordType.COMPARE),
-			new KeywordInfo("IsAfter", DataRepositoryMethodKeywordType.COMPARE),
-			new KeywordInfo("Before", DataRepositoryMethodKeywordType.COMPARE),
-			new KeywordInfo("IsBefore", DataRepositoryMethodKeywordType.COMPARE),
-			new KeywordInfo("Containing", DataRepositoryMethodKeywordType.COMPARE),
-			new KeywordInfo("IsContaining", DataRepositoryMethodKeywordType.COMPARE),
-			new KeywordInfo("Contains", DataRepositoryMethodKeywordType.COMPARE),
-			new KeywordInfo("Between", DataRepositoryMethodKeywordType.COMPARE),
-			new KeywordInfo("IsBetween", DataRepositoryMethodKeywordType.COMPARE),
-			new KeywordInfo("EndingWith", DataRepositoryMethodKeywordType.COMPARE),
-			new KeywordInfo("IsEndingWith", DataRepositoryMethodKeywordType.COMPARE),
-			new KeywordInfo("EndsWith", DataRepositoryMethodKeywordType.COMPARE),
-			new KeywordInfo("Exists", DataRepositoryMethodKeywordType.TERMINATE_EXPRESSION),
-			new KeywordInfo("False", DataRepositoryMethodKeywordType.TERMINATE_EXPRESSION),
-			new KeywordInfo("IsFalse", DataRepositoryMethodKeywordType.TERMINATE_EXPRESSION),
-			new KeywordInfo("GreaterThan", DataRepositoryMethodKeywordType.COMPARE),
-			new KeywordInfo("IsGreaterThan", DataRepositoryMethodKeywordType.COMPARE),
-			new KeywordInfo("GreaterThanEqual", DataRepositoryMethodKeywordType.COMPARE),
-			new KeywordInfo("IsGreaterThanEqual", DataRepositoryMethodKeywordType.COMPARE),
-			new KeywordInfo("In", DataRepositoryMethodKeywordType.COMPARE),
-			new KeywordInfo("IsIn", DataRepositoryMethodKeywordType.COMPARE),
-			new KeywordInfo("Is", DataRepositoryMethodKeywordType.COMPARE),
-			new KeywordInfo("Equals", DataRepositoryMethodKeywordType.COMPARE),
-			new KeywordInfo("Empty", DataRepositoryMethodKeywordType.TERMINATE_EXPRESSION),
-			new KeywordInfo("IsEmpty", DataRepositoryMethodKeywordType.TERMINATE_EXPRESSION),
-			new KeywordInfo("NotEmpty", DataRepositoryMethodKeywordType.TERMINATE_EXPRESSION),
-			new KeywordInfo("IsNotEmpty", DataRepositoryMethodKeywordType.TERMINATE_EXPRESSION),
-			new KeywordInfo("NotNull", DataRepositoryMethodKeywordType.TERMINATE_EXPRESSION),
-			new KeywordInfo("IsNotNull", DataRepositoryMethodKeywordType.TERMINATE_EXPRESSION),
-			new KeywordInfo("Null", DataRepositoryMethodKeywordType.TERMINATE_EXPRESSION),
-			new KeywordInfo("IsNull", DataRepositoryMethodKeywordType.TERMINATE_EXPRESSION),
-			new KeywordInfo("LessThan", DataRepositoryMethodKeywordType.COMPARE),
-			new KeywordInfo("IsLessThan", DataRepositoryMethodKeywordType.COMPARE),
-			new KeywordInfo("LessThanEqual", DataRepositoryMethodKeywordType.COMPARE),
-			new KeywordInfo("IsLessThanEqual", DataRepositoryMethodKeywordType.COMPARE),
-			new KeywordInfo("Like", DataRepositoryMethodKeywordType.COMPARE),
-			new KeywordInfo("IsLike", DataRepositoryMethodKeywordType.COMPARE),
-			new KeywordInfo("Near", DataRepositoryMethodKeywordType.COMPARE),
-			new KeywordInfo("IsNear", DataRepositoryMethodKeywordType.COMPARE),
-			new KeywordInfo("Not", DataRepositoryMethodKeywordType.IGNORE),
-			new KeywordInfo("IsNot", DataRepositoryMethodKeywordType.IGNORE),
-			new KeywordInfo("NotIn", DataRepositoryMethodKeywordType.COMPARE),
-			new KeywordInfo("IsNotIn", DataRepositoryMethodKeywordType.COMPARE),
-			new KeywordInfo("NotLike", DataRepositoryMethodKeywordType.COMPARE),
-			new KeywordInfo("IsNotLike", DataRepositoryMethodKeywordType.COMPARE),
-			new KeywordInfo("Regex", DataRepositoryMethodKeywordType.COMPARE),
-			new KeywordInfo("MatchesRegex", DataRepositoryMethodKeywordType.COMPARE),
-			new KeywordInfo("Matches", DataRepositoryMethodKeywordType.COMPARE),
-			new KeywordInfo("StartingWith", DataRepositoryMethodKeywordType.COMPARE),
-			new KeywordInfo("IsStartingWith", DataRepositoryMethodKeywordType.COMPARE),
-			new KeywordInfo("StartsWith", DataRepositoryMethodKeywordType.COMPARE),
-			new KeywordInfo("True", DataRepositoryMethodKeywordType.TERMINATE_EXPRESSION),
-			new KeywordInfo("IsTrue", DataRepositoryMethodKeywordType.TERMINATE_EXPRESSION),
-			new KeywordInfo("Within", DataRepositoryMethodKeywordType.COMPARE),
-			new KeywordInfo("IsWithin", DataRepositoryMethodKeywordType.COMPARE),
-			new KeywordInfo("IgnoreCase", DataRepositoryMethodKeywordType.IGNORE),
-			new KeywordInfo("IgnoringCase", DataRepositoryMethodKeywordType.IGNORE),
-			new KeywordInfo("AllIgnoreCase", DataRepositoryMethodKeywordType.IGNORE),
-			new KeywordInfo("AllIgnoringCase", DataRepositoryMethodKeywordType.IGNORE),
-			new KeywordInfo("OrderBy", DataRepositoryMethodKeywordType.COMBINE_CONDITIONS)
-			);
-	private static final Map<String, List<KeywordInfo>> PREDICATE_KEYWORDS_GROUPED_BY_FIRST_WORD = PREDICATE_KEYWORDS
+	private static final Map<String, List<QueryPredicateKeywordInfo>> PREDICATE_KEYWORDS_GROUPED_BY_FIRST_WORD = QueryPredicateKeywordInfo.PREDICATE_KEYWORDS
 			.stream()
 			.collect(Collectors.groupingBy(info->{
 				return findFirstWord(info.keyword());
 			}));
+
+	private DataRepositoryPrefixSensitiveCompletionProvider() {
+		//prevent instantiation
+	}
 
 	private static String findFirstWord(String expression) {
 		int firstWordEnd;
@@ -167,7 +95,7 @@ class DataRepositoryPrefixSensitiveCompletionProvider {
 	}
 
 	private static void addQueryStartProposals(Collection<ICompletionProposal> completions, String prefix, int offset) {
-		for(QueryMethodSubject queryMethodSubject : QUERY_METHOD_SUBJECTS){
+		for(QueryMethodSubject queryMethodSubject : QueryMethodSubject.QUERY_METHOD_SUBJECTS){
 			String toInsert = queryMethodSubject.key() + "By";
 			completions.add(DataRepositoryCompletionProcessor.createProposal(offset, CompletionItemKind.Text, prefix, toInsert, toInsert));
 		}
@@ -194,7 +122,7 @@ class DataRepositoryPrefixSensitiveCompletionProvider {
 		}
 		String subject=localPrefix.substring(0,subjectPredicateSplitIndex);
 		QueryMethodSubject subjectType = null;
-		for(QueryMethodSubject queryMethodSubject : QUERY_METHOD_SUBJECTS){
+		for(QueryMethodSubject queryMethodSubject : QueryMethodSubject.QUERY_METHOD_SUBJECTS){
 			if(subject.startsWith(queryMethodSubject.key())) {
 				subjectType = queryMethodSubject;
 			}
@@ -212,7 +140,7 @@ class DataRepositoryPrefixSensitiveCompletionProvider {
 		for (int i = 1; i <= predicate.length(); i++) {
 			if(i == predicate.length() || Character.isUpperCase(predicate.charAt(i))) {//word ends on uppercase letter or end of string
 				String word = predicate.substring(lastWordEnd, i);
-				KeywordInfo keyword = findByLargestFirstWord(PREDICATE_KEYWORDS_GROUPED_BY_FIRST_WORD, KeywordInfo::keyword, predicate, lastWordEnd, word);
+				QueryPredicateKeywordInfo keyword = findByLargestFirstWord(PREDICATE_KEYWORDS_GROUPED_BY_FIRST_WORD, QueryPredicateKeywordInfo::keyword, predicate, lastWordEnd, word);
 				if (keyword != null) {//word is keyword
 					i += keyword.keyword().length()-word.length();
 					switch(keyword.type()) {
@@ -313,45 +241,3 @@ class DataRepositoryPrefixSensitiveCompletionProvider {
 		return propertiesGroupedByFirstWord;
 	}
 }
-record QueryMethodSubject(String key, String returnType, boolean isTyped) {
-	static QueryMethodSubject createPrimitiveSubject(String key, String primitive) {
-		return new QueryMethodSubject(key, primitive, false);
-	}
-	static QueryMethodSubject createCollectionSubject(String key, String collectionType) {
-		return new QueryMethodSubject(key, collectionType, true);
-	}
-
-}
-
-record DataRepositoryMethodNameParseResult(
-		/**
-		 * Information about the subject of the method
-		 */
-		QueryMethodSubject subjectType,
-		/**
-		 * parameters required for calling the method
-		 */
-		List<String> parameters,
-		/**
-		 * {@code true} if the whole method shall be replaced including parameters, else false
-		 */
-		boolean performFullCompletion,
-		/**
-		 * the last entered word, which completion options should be shown for
-		 */
-		String lastWord,
-		/**
-		 * types of keywords that can be completed with
-		 */
-		Set<DataRepositoryMethodKeywordType> allowedKeywordTypes) {
-
-}
-
-enum DataRepositoryMethodKeywordType {
-	TERMINATE_EXPRESSION,//e.g. IsTrue
-	COMBINE_CONDITIONS,//e.g. AND
-	COMPARE,//needs expression left and right OR expression left and parameter, e.g. Equals or NOT
-	IGNORE;//NOT
-	//TODO In/IsIn keyword etc
-}
-record KeywordInfo(String keyword, DataRepositoryMethodKeywordType type) {}
