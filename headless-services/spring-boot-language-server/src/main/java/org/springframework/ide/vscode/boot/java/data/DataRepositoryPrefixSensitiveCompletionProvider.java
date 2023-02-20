@@ -40,7 +40,7 @@ class DataRepositoryPrefixSensitiveCompletionProvider {
 		DataRepositoryMethodNameParseResult parseResult = new JPARepositoryMethodParser(localPrefix, repoDef).parseLocalPrefixForCompletion();
 		if(parseResult != null && parseResult.performFullCompletion()){
 			Map<String, DomainProperty> propertiesByName = getPropertiesByName(repoDef.getDomainType().getProperties());
-			addMethodCompletionProposal(completions, offset, repoDef, localPrefix, parseResult, propertiesByName);
+			addMethodCompletionProposal(completions, offset, repoDef, localPrefix, prefix, parseResult, propertiesByName);
 
 			if (parseResult.lastWord() == null || !propertiesByName.containsKey(parseResult.lastWord())) {
 				addPropertyProposals(completions, offset, repoDef, parseResult);
@@ -64,7 +64,7 @@ class DataRepositoryPrefixSensitiveCompletionProvider {
 		}
 	}
 
-	private static void addMethodCompletionProposal(Collection<ICompletionProposal> completions, int offset, DataRepositoryDefinition repoDef, String localPrefix, DataRepositoryMethodNameParseResult parseResult, Map<String, DomainProperty> propertiesByName) {
+	private static void addMethodCompletionProposal(Collection<ICompletionProposal> completions, int offset, DataRepositoryDefinition repoDef, String localPrefix, String fullPrefix, DataRepositoryMethodNameParseResult parseResult, Map<String, DomainProperty> propertiesByName) {
 		String methodName = localPrefix;
 		DocumentEdits edits = new DocumentEdits(null, false);
 		String signature = buildSignature(methodName, propertiesByName, parseResult);
@@ -75,13 +75,25 @@ class DataRepositoryPrefixSensitiveCompletionProvider {
 			newText.append(repoDef.getDomainType().getSimpleName());
 			newText.append(">");
 		}
+		String returnType = newText.toString();
 		newText.append(" ");
 		newText.append(signature);
 		newText.append(";");
-		edits.replace(offset - localPrefix.length(), offset, newText.toString());
+		int replaceStart = calculateReplaceOffset(offset, localPrefix, fullPrefix, returnType);
+		edits.replace(replaceStart, offset, newText.toString());
 		DocumentEdits additionalEdits = new DocumentEdits(null, false);
 		ICompletionProposal proposal = new FindByCompletionProposal(methodName, CompletionItemKind.Method, edits, null, null, Optional.of(additionalEdits), signature);
 		completions.add(proposal);
+	}
+
+	private static int calculateReplaceOffset(int offset, String localPrefix, String fullPrefix, String returnType) {
+		int replaceStart = offset - localPrefix.length();
+		String beforeLocalPrefix = fullPrefix.substring(0, fullPrefix.length()-localPrefix.length());
+		String trimmed = beforeLocalPrefix.trim();
+		if(trimmed.endsWith(returnType)) {
+			replaceStart -= (beforeLocalPrefix.length() - trimmed.length()) + returnType.length();
+		}
+		return replaceStart;
 	}
 
 	private static Map<String, DomainProperty> getPropertiesByName(DomainProperty[] properties) {

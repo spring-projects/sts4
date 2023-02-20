@@ -87,6 +87,11 @@ public class DataRepositoryCompletionProcessorTest {
     }
 
     @Test
+    void testPrefixSensitiveCompletionsCompleteMethodReturnTypePresent() throws Exception {
+    	checkCompletions("List<Customer> findByFirstNameAndLastName", "List<Customer> findByFirstNameAndLastName(String firstName, String lastName);");
+    }
+
+    @Test
     void testAttributeComparison() throws Exception {
     	checkCompletions("findByFirstNameIsGreaterThanLastName", "List<Customer> findByFirstNameIsGreaterThanLastName();");
     }
@@ -132,7 +137,7 @@ public class DataRepositoryCompletionProcessorTest {
 
 	private void checkCompletions(String alredyPresent, String... expectedCompletions) throws Exception {
 		prepareCase("{\n}", "{\n\t" + alredyPresent + "<*>");
-    	assertContainsAnnotationCompletions(Arrays.stream(expectedCompletions).map(expected -> expected + "<*>").toArray(String[]::new));
+    	assertContainsAnnotationCompletions(Arrays.stream(expectedCompletions).map(expected -> "\t" + expected + "<*>").toArray(String[]::new));
 	}
 
 	private void prepareCase(String selectedAnnotation, String annotationStatementBeforeTest) throws Exception {
