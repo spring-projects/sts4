@@ -17,7 +17,7 @@ Require-Bundle: org.junit,
  org.eclipse.m2e.maven.runtime,
  org.eclipse.m2e.core.ui,
  org.eclipse.lsp4j.jsonrpc
-Import-Package: com.google.gson;version="[2.9.1,2.10)",
- com.google.gson.annotations;version="[2.9.1,2.10)",
- com.google.gson.reflect;version="[2.9.1,2.10)",
- com.google.gson.stream;version="[2.9.1,2.10)"
+Import-Package: com.google.gson,
+ com.google.gson.annotations,
+ com.google.gson.reflect,
+ com.google.gson.stream
