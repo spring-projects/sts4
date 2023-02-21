@@ -57,10 +57,12 @@ public class DataRepositoryCompletionProcessor implements CompletionProvider {
 				for (DomainProperty property : properties) {
 					completions.add(generateCompletionProposal(offset, prefix, repo, property));
 				}
-				DataRepositoryPrefixSensitiveCompletionProvider.addPrefixSensitiveProposals(completions, offset, prefix, repo);
+				DataRepositoryPrefixSensitiveCompletionProvider.addPrefixSensitiveProposals(completions, doc, offset, prefix, repo);
 			}
 		}
 	}
+
+
 
 	protected ICompletionProposal generateCompletionProposal(int offset, String prefix, DataRepositoryDefinition repoDef, DomainProperty domainProperty) {
 		StringBuilder label = new StringBuilder();

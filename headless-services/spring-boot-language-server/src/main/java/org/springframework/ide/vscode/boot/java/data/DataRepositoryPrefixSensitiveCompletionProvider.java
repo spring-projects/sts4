@@ -19,6 +19,8 @@ import java.util.Optional;
 import org.eclipse.lsp4j.CompletionItemKind;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
+import org.springframework.ide.vscode.commons.util.BadLocationException;
+import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.util.StringUtils;
 
 /**
@@ -31,9 +33,8 @@ class DataRepositoryPrefixSensitiveCompletionProvider {
 		//prevent instantiation
 	}
 
-	static void addPrefixSensitiveProposals(Collection<ICompletionProposal> completions, int offset, String prefix, DataRepositoryDefinition repoDef){
-		String localPrefix = findJavaIdentifierPart(prefix);
-		addQueryStartProposals(completions, localPrefix, offset);
+	static void addPrefixSensitiveProposals(Collection<ICompletionProposal> completions, IDocument doc, int offset, String prefix, DataRepositoryDefinition repoDef) {
+		String localPrefix = findLastJavaIdentifierPart(prefix);
 		if (localPrefix == null) {
 			return;
 		}
@@ -45,6 +46,24 @@ class DataRepositoryPrefixSensitiveCompletionProvider {
 			if (parseResult.lastWord() == null || !propertiesByName.containsKey(parseResult.lastWord())) {
 				addPropertyProposals(completions, offset, repoDef, parseResult);
 			}
+		}
+		addQueryStartProposals(completions, localPrefix, doc, offset);
+	}
+
+	private static void addQueryStartProposals(Collection<ICompletionProposal> completions, String prefix, IDocument doc, int offset) {
+		for(QueryMethodSubject queryMethodSubject : QueryMethodSubject.QUERY_METHOD_SUBJECTS){
+			String toInsert = queryMethodSubject.key() + "By";
+			if(toInsert.startsWith(prefix)||isOffsetAfterWhitespace(doc, offset)) {
+				completions.add(DataRepositoryCompletionProcessor.createProposal(offset, CompletionItemKind.Text, prefix, toInsert, toInsert));
+			}
+		}
+	}
+
+	private static boolean isOffsetAfterWhitespace(IDocument doc, int offset) {
+		try {
+			return offset > 0 && Character.isWhitespace(doc.getChar(offset-1));
+		}catch (BadLocationException e) {
+			return false;
 		}
 	}
 
@@ -148,14 +167,7 @@ class DataRepositoryPrefixSensitiveCompletionProvider {
 		return null;
 	}
 
-	private static void addQueryStartProposals(Collection<ICompletionProposal> completions, String prefix, int offset) {
-		for(QueryMethodSubject queryMethodSubject : QueryMethodSubject.QUERY_METHOD_SUBJECTS){
-			String toInsert = queryMethodSubject.key() + "By";
-			completions.add(DataRepositoryCompletionProcessor.createProposal(offset, CompletionItemKind.Text, prefix, toInsert, toInsert));
-		}
-	}
-
-	private static String findJavaIdentifierPart(String prefix) {
+	private static String findLastJavaIdentifierPart(String prefix) {
 		if (prefix == null) {
 			return null;
 		}
