@@ -439,14 +439,14 @@
 			</properties>
 			<repositories>
 				<repository>
-					<id>2022-12</id>
+					<id>2023-03</id>
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/staging/2023-03/</url>
 				</repository>
 				<repository>
 					<id>orbit</id>
 					<layout>p2</layout>
-					<url>https://download.eclipse.org/tools/orbit/downloads/drops/S20230124200742/repository</url>
+					<url>https://download.eclipse.org/tools/orbit/downloads/drops/S20230214193619/repository</url>
 				</repository>
 				<repository>
 					<id>m2e</id>
