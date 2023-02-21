@@ -69,8 +69,8 @@ public class LoadUtilsTest {
 		Recipe pomRecipe = r.getRecipeList().get(2);
 		assertTrue(pomRecipe instanceof DeclarativeRecipe);
 		assertEquals("org.openrewrite.java.spring.boot3.MavenPomUpgrade", pomRecipe.getName());
-		assertEquals("Upgrade Maven Pom to Spring Boot 3.0 from prior 2.x version.", pomRecipe.getDescription());
-		assertEquals("Upgrade Maven Pom to Spring Boot 3.0 from 2.x", pomRecipe.getDisplayName());
+		assertEquals("Upgrade Maven POM to Spring Boot 3.0 from prior 2.x version.", pomRecipe.getDescription());
+		assertEquals("Upgrade Maven POM to Spring Boot 3.0 from 2.x", pomRecipe.getDisplayName());
 		assertTrue(pomRecipe.getRecipeList().size() >= 3);
 		
 		UpgradeDependencyVersion upgradeDependencyRecipe = pomRecipe.getRecipeList().stream().filter(UpgradeDependencyVersion.class::isInstance).map(UpgradeDependencyVersion.class::cast).findFirst().get();
@@ -113,8 +113,8 @@ public class LoadUtilsTest {
 		Recipe pomRecipe = r.getRecipeList().get(0);
 		assertTrue(pomRecipe instanceof DeclarativeRecipe);
 		assertEquals("org.openrewrite.java.spring.boot3.MavenPomUpgrade", pomRecipe.getName());
-		assertEquals("Upgrade Maven Pom to Spring Boot 3.0 from prior 2.x version.", pomRecipe.getDescription());
-		assertEquals("Upgrade Maven Pom to Spring Boot 3.0 from 2.x", pomRecipe.getDisplayName());
+		assertEquals("Upgrade Maven POM to Spring Boot 3.0 from prior 2.x version.", pomRecipe.getDescription());
+		assertEquals("Upgrade Maven POM to Spring Boot 3.0 from 2.x", pomRecipe.getDisplayName());
 		assertTrue(pomRecipe.getRecipeList().size() >= 3);
 		
 		UpgradeDependencyVersion upgradeDependencyRecipe = pomRecipe.getRecipeList().stream().filter(UpgradeDependencyVersion.class::isInstance).map(UpgradeDependencyVersion.class::cast).findFirst().get();
