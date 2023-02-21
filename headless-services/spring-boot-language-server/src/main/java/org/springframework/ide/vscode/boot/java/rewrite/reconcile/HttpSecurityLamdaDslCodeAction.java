@@ -10,15 +10,15 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.rewrite.reconcile;
 
-import java.util.Set;
+import java.util.List;
 
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.SourceFile;
 import org.openrewrite.Tree;
 import org.openrewrite.java.JavaVisitor;
-import org.openrewrite.java.tree.J;
+import org.openrewrite.java.spring.boot2.HttpSecurityLambdaDsl;
 import org.openrewrite.java.tree.J.MethodInvocation;
-import org.openrewrite.java.tree.JavaType.FullyQualified;
-import org.openrewrite.java.tree.JavaType.Method;
+import org.openrewrite.marker.Range;
 import org.springframework.context.ApplicationContext;
 import org.springframework.ide.vscode.boot.java.Boot2JavaProblemType;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
@@ -26,21 +26,20 @@ import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
 import org.springframework.ide.vscode.commons.java.Version;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeCodeActionDescriptor;
+import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
 import org.springframework.ide.vscode.commons.rewrite.java.FixAssistMarker;
+import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.java.JavaMarkerVisitor;
 
 public class HttpSecurityLamdaDslCodeAction implements RecipeCodeActionDescriptor {
-	
+
 	private static final Version SECURITY_VERSION = new Version(5, 2, 0, null);
-	
-	private static final String FQN_HTTP_SECURITY = "org.springframework.security.config.annotation.web.builders.HttpSecurity";
-	
-	private static final Set<String> APPLICABLE_METHOD_NAMES = Set.of(
-			"anonymous", "authorizeRequests", "cors", "csrf", "exceptionHandling", "formLogin",
-			"headers", "httpBasic", "jee", "logout", "oauth2Client", "oauth2Login", "oauth2ResourceServer",
-			"openidLogin", "portMapper", "rememberMe", "requestCache", "requestMatchers", "requiresChannel",
-			"saml2Login", "securityContext", "servletApi", "sessionManagement", "x509"
-	);
+
+	private static final String PROBLEM_LABEL = "Consider switching to 'HttpSecurity' Lambda DSL syntax";
+
+	private static final String FIX_LABEL = "SWitch to 'HttpSecurity` Lambda DSL syntax";
+
+	private HttpSecurityLambdaDsl recipe = new HttpSecurityLambdaDsl();
 
 	@Override
 	public JavaVisitor<ExecutionContext> getMarkerVisitor(ApplicationContext applicationContext) {
@@ -48,24 +47,27 @@ public class HttpSecurityLamdaDslCodeAction implements RecipeCodeActionDescripto
 
 			@Override
 			public MethodInvocation visitMethodInvocation(MethodInvocation method, ExecutionContext p) {
-				MethodInvocation m = super.visitMethodInvocation(method, p);
-				Method type = method.getMethodType();
-				if (type != null) {
-					FullyQualified declaringType = type.getDeclaringType();
-					if (declaringType != null && FQN_HTTP_SECURITY.equals(declaringType.getFullyQualifiedName()) 
-							&& type.getParameterTypes().isEmpty() && APPLICABLE_METHOD_NAMES.contains(m.getSimpleName())
-							&& getCursor().getParent(2) != null && getCursor().getParent(2).getValue() instanceof J.MethodInvocation) {
-						
-							J.MethodInvocation parentInvocation = getCursor().getParent(2).getValue();
-							if (!declaringType.equals(parentInvocation.getType())) {
-								FixAssistMarker marker = new FixAssistMarker(Tree.randomId(), getId()).withLabel("Consider switching to Lambda DSL syntax");
-								m = m.withName(m.getName().withMarkers(m.getName().getMarkers().add(marker)));
-							}						
-					}
+				if (recipe.getVisitor().isApplicableTopLevelMethodInvocation(method)) {
+					// Don't step into the method any further
+					String uri = getCursor().firstEnclosing(SourceFile.class).getSourcePath().toUri().toASCIIString();
+					FixAssistMarker marker = new FixAssistMarker(Tree.randomId(), getId()).withLabel(PROBLEM_LABEL)
+							.withFixes(
+									new FixDescriptor(recipe.getName(), List.of(uri),
+											RecipeCodeActionDescriptor.buildLabel(FIX_LABEL, RecipeScope.NODE))
+											.withRangeScope(method.getMarkers().findFirst(Range.class).get())
+											.withRecipeScope(RecipeScope.NODE),
+									new FixDescriptor(recipe.getName(), List.of(uri),
+											RecipeCodeActionDescriptor.buildLabel(FIX_LABEL, RecipeScope.FILE))
+											.withRecipeScope(RecipeScope.FILE),
+									new FixDescriptor(recipe.getName(), List.of(uri),
+											RecipeCodeActionDescriptor.buildLabel(FIX_LABEL, RecipeScope.PROJECT))
+											.withRecipeScope(RecipeScope.PROJECT));
+
+					return method.withMarkers(method.getMarkers().add(marker));
 				}
-				return m;
+				return super.visitMethodInvocation(method, p);
 			}
-			
+
 		};
 	}
 
