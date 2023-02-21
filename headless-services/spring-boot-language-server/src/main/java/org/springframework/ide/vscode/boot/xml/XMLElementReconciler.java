@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2020 Pivotal, Inc.
+ * Copyright (c) 2020, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -14,6 +14,7 @@ import java.util.List;
 
 import org.eclipse.lemminx.dom.DOMAttr;
 import org.eclipse.lemminx.dom.DOMNode;
+import org.eclipse.lemminx.dom.DOMRange;
 import org.springframework.ide.vscode.boot.java.handlers.Reconciler;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 
@@ -60,7 +61,7 @@ public class XMLElementReconciler {
 	}
 
 	private void visitAttributeNode(DOMAttr attributeNode, IProblemCollector problemCollector) {
-		DOMNode valueNode = attributeNode.getNodeAttrValue();
+		DOMRange valueNode = attributeNode.getNodeAttrValue();
 		int start = valueNode.getStart();
 		
 		String value = attributeNode.getNodeValue();
