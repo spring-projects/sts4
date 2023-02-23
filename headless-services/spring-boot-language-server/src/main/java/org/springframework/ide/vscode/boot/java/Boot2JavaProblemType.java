@@ -34,7 +34,9 @@ public enum Boot2JavaProblemType implements ProblemType {
 	
 	JAVA_REPOSITORY(WARNING, "Unnecessary `@Repository`", "Unnecessary `@Repository`"),
 	
-	JAVA_LAMBDA_DSL(INFO, "Consider switching to Lambda DSL syntax", "Switch to Lambda DSL syntax");
+	JAVA_LAMBDA_DSL(INFO, "Consider switching to Lambda DSL syntax", "Switch to Lambda DSL syntax"), 
+	
+	MISSING_CONFIGURATION_ANNOTATION(WARNING, "Class likely missing '@Configuration' annotation, i.e. has Bean methods but no '@Configuration' annotation", "Missing '@Configuration'");
 	
 	private final ProblemSeverity defaultSeverity;
 	private String description;

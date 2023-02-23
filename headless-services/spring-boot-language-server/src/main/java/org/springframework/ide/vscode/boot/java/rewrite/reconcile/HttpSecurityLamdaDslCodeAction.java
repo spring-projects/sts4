@@ -33,11 +33,9 @@ import org.springframework.ide.vscode.commons.rewrite.java.JavaMarkerVisitor;
 
 public class HttpSecurityLamdaDslCodeAction implements RecipeCodeActionDescriptor {
 
-	private static final Version SECURITY_VERSION = new Version(5, 2, 0, null);
-
 	private static final String PROBLEM_LABEL = "Consider switching to 'HttpSecurity' Lambda DSL syntax";
 
-	private static final String FIX_LABEL = "SWitch to 'HttpSecurity` Lambda DSL syntax";
+	private static final String FIX_LABEL = "Switch to 'HttpSecurity` Lambda DSL syntax";
 
 	private HttpSecurityLambdaDsl recipe = new HttpSecurityLambdaDsl();
 
@@ -74,7 +72,7 @@ public class HttpSecurityLamdaDslCodeAction implements RecipeCodeActionDescripto
 	@Override
 	public boolean isApplicable(IJavaProject project) {
 		Version version = SpringProjectUtil.getDependencyVersion(project, "spring-security-config");
-		return version != null && version.compareTo(SECURITY_VERSION) >= 0;
+		return version != null && version.compareTo(new Version(5, 2, 0, null)) >= 0;
 	}
 
 	@Override

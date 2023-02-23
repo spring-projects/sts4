@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.boot.java.rewrite;
 
 import java.util.List;
 
+import org.springframework.ide.vscode.boot.java.rewrite.reconcile.AddConfigurationIfBeansPresentCodeAction;
 import org.springframework.ide.vscode.boot.java.rewrite.reconcile.AutowiredFieldIntoConstructorParameterCodeAction;
 import org.springframework.ide.vscode.boot.java.rewrite.reconcile.BeanMethodNotPublicProblem;
 import org.springframework.ide.vscode.boot.java.rewrite.reconcile.BeanPostProcessingIgnoreInAotProblem;
@@ -43,7 +44,8 @@ public class BootCodeActionRepository extends CodeActionRepository {
 				new AutowiredFieldIntoConstructorParameterCodeAction(),
 				new NoRepoAnnotationProblem(),
 				new HttpSecurityLamdaDslCodeAction(),
-				new ServerHttpSecurityLambdaDslCodeAction()
+				new ServerHttpSecurityLambdaDslCodeAction(),
+				new AddConfigurationIfBeansPresentCodeAction()
 		);
 	}
 

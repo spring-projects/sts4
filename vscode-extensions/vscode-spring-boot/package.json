@@ -414,6 +414,18 @@
               "HINT",
               "ERROR"
             ]
+          },
+          "spring-boot.ls.problem.boot2.MISSING_CONFIGURATION_ANNOTATION": {
+            "type": "string",
+            "default": "WARNING",
+            "description": "Class likely missing '@Configuration' annotation, i.e. has Bean methods but no '@Configuration' annotation",
+            "enum": [
+              "IGNORE",
+              "INFO",
+              "WARNING",
+              "HINT",
+              "ERROR"
+            ]
           }
         }
       },
