@@ -26,6 +26,7 @@ import org.springframework.ide.vscode.boot.java.rewrite.reconcile.NotRegisteredB
 import org.springframework.ide.vscode.boot.java.rewrite.reconcile.PreciseBeanTypeProblem;
 import org.springframework.ide.vscode.boot.java.rewrite.reconcile.ServerHttpSecurityLambdaDslCodeAction;
 import org.springframework.ide.vscode.boot.java.rewrite.reconcile.UnnecessarySpringExtensionProblem;
+import org.springframework.ide.vscode.boot.java.rewrite.reconcile.WebSecurityConfigurerAdapterCodeAction;
 import org.springframework.ide.vscode.commons.rewrite.config.CodeActionRepository;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeCodeActionDescriptor;
 
@@ -47,7 +48,8 @@ public class BootCodeActionRepository extends CodeActionRepository {
 				new HttpSecurityLamdaDslCodeAction(),
 				new ServerHttpSecurityLambdaDslCodeAction(),
 				new AddConfigurationIfBeansPresentCodeAction(),
-				new AuthorizeHttpRequestsCodeAction()
+				new AuthorizeHttpRequestsCodeAction(),
+				new WebSecurityConfigurerAdapterCodeAction()
 		);
 	}
 

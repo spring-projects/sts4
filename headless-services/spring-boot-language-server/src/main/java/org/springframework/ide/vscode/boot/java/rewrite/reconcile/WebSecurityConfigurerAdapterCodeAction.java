@@ -16,10 +16,10 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.SourceFile;
 import org.openrewrite.Tree;
 import org.openrewrite.java.JavaVisitor;
-import org.openrewrite.java.spring.boot2.AddConfigurationAnnotationIfBeansPresent;
+import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.J.ClassDeclaration;
-import org.openrewrite.java.tree.J.MethodDeclaration;
-import org.openrewrite.java.tree.J.VariableDeclarations;
+import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.java.tree.TypeTree;
 import org.springframework.context.ApplicationContext;
 import org.springframework.ide.vscode.boot.java.Boot2JavaProblemType;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
@@ -32,33 +32,34 @@ import org.springframework.ide.vscode.commons.rewrite.java.FixAssistMarker;
 import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.java.JavaMarkerVisitor;
 
-public class AddConfigurationIfBeansPresentCodeAction implements RecipeCodeActionDescriptor {
+public class WebSecurityConfigurerAdapterCodeAction implements RecipeCodeActionDescriptor {
 	
-	private static final String ID = "org.openrewrite.java.spring.boot2.AddConfigurationAnnotationIfBeansPresent";
+	private static final String ID = "org.openrewrite.java.spring.boot2.WebSecurityConfigurerAdapter";
 	
-	private static final String PROBLEM_LABEL = "'@Configuration' is missing on a class defining Spring Beans";
-	
-	private static final String FIX_LABEL = "Add missing '@Configuration' annotations over classes";
-	
+    private static final String FQN_WEB_SECURITY_CONFIGURER_ADAPTER = "org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter";
+
+	private static final String PROBLEM_LABEL = "Class extends 'WebSecurityConfigurerAdapter' which is removed in Spring-Security 6.x";
+
+	protected static final String FIX_LABEL = "Refactor class into a Configuration bean not extending 'WebSecurityConfigurerAdapter'";
+
+	@Override
+	public String getId() {
+		return ID;
+	}
+
+	@Override
+	public ProblemType getProblemType() {
+		return Boot2JavaProblemType.WEB_SECURITY_CONFIGURER_ADAPTER;
+	}
+
 	@Override
 	public JavaVisitor<ExecutionContext> getMarkerVisitor(ApplicationContext applicationContext) {
-		return new JavaMarkerVisitor<ExecutionContext>() {
-			
-			@Override
-			public MethodDeclaration visitMethodDeclaration(MethodDeclaration method, ExecutionContext p) {
-				return method;
-			}
-			
-			@Override
-			public VariableDeclarations visitVariableDeclarations(VariableDeclarations multiVariable,
-					ExecutionContext p) {
-				return multiVariable;
-			}
+		return new JavaMarkerVisitor<>() {
 
 			@Override
 			public ClassDeclaration visitClassDeclaration(ClassDeclaration classDecl, ExecutionContext p) {
 				ClassDeclaration c = super.visitClassDeclaration(classDecl, p);
-				if (AddConfigurationAnnotationIfBeansPresent.isApplicableClass(classDecl, getCursor())) {
+				if (isExtendingWebSecurityConfigurerAdapter(c)) {
 					String uri = getCursor().firstEnclosing(SourceFile.class).getSourcePath().toUri().toASCIIString();
 					FixAssistMarker marker = new FixAssistMarker(Tree.randomId(), ID).withLabel(PROBLEM_LABEL)
 							.withFixes(
@@ -73,23 +74,26 @@ public class AddConfigurationIfBeansPresentCodeAction implements RecipeCodeActio
 				return c;
 			}
 			
+			private boolean isExtendingWebSecurityConfigurerAdapter(J.ClassDeclaration c) {
+				TypeTree superClass = c.getExtends();
+				if (superClass != null) {
+					if (superClass.getType() instanceof JavaType.FullyQualified) {
+						return FQN_WEB_SECURITY_CONFIGURER_ADAPTER.equals( ((JavaType.FullyQualified)superClass.getType()).getFullyQualifiedName());
+					} else if (superClass.getType() instanceof JavaType.Unknown) {
+						String strType = superClass.printTrimmed(getCursor());
+						return "WebSecurityConfigurerAdapter".equals(strType) || FQN_WEB_SECURITY_CONFIGURER_ADAPTER.equals(strType);
+					}
+				}
+				return false;
+			}
+			
 		};
 	}
 
 	@Override
-	public String getId() {
-		return ID;
-	}
-
-	@Override
-	public ProblemType getProblemType() {
-		return Boot2JavaProblemType.MISSING_CONFIGURATION_ANNOTATION;
-	}
-
-	@Override
 	public boolean isApplicable(IJavaProject project) {
-		Version version = SpringProjectUtil.getDependencyVersion(project, "spring-context");
-		return version != null && version.compareTo(new Version(3, 0, 0, null)) >= 0;
+		Version version = SpringProjectUtil.getDependencyVersion(project, "spring-security-config");
+		return version != null && version.compareTo(new Version(5, 7, 0, null)) >= 0 && version.compareTo(new Version(6, 0, 0, null)) < 0;
 	}
 
 }

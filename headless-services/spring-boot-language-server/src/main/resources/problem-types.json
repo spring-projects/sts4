@@ -61,6 +61,18 @@
         "label": "Missing '@Configuration'",
         "description": "Class likely missing '@Configuration' annotation, i.e. has Bean methods but no '@Configuration' annotation",
         "defaultSeverity": "WARNING"
+      },
+      {
+        "code": "HTTP_SECIRITY_AUTHORIZE_HTTP_REQUESTS",
+        "label": "Usage of old 'HttpSecurity.authroizeRequests(...)' API",
+        "description": "'HttpSecurity.authroizeRequests(...)' API and related classes are to be deprecated use new `authorizeHttpRequests(...) and related classes",
+        "defaultSeverity": "WARNING"
+      },
+      {
+        "code": "WEB_SECURITY_CONFIGURER_ADAPTER",
+        "label": "Replace usage of 'WebSecurityConfigurerAdapter' as this class to be removed in Security 6.x",
+        "description": "'WebSecurityConfigurerAdapter' is removed in Spring-Security 6.x. Refactor classes extending the 'WebSecurityConfigurerAdapter' into 'Configuration' beans and methods into 'Bean' definitions ",
+        "defaultSeverity": "WARNING"
       }
     ]
   },
