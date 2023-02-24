@@ -8,13 +8,15 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.java.data;
+package org.springframework.ide.vscode.boot.java.data.providers.prefixsensitive;
 
 import java.util.List;
 import java.util.Set;
 
+import org.springframework.ide.vscode.boot.java.data.providers.QueryMethodSubject;
+
 /**
- * Represents the result of parsing a Spring JPA repository query method
+ * Represents the result of parsing a Spring Data repository query method
  * @author danthe1st
  */
 record DataRepositoryMethodNameParseResult(

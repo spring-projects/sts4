@@ -11,26 +11,37 @@
 package org.springframework.ide.vscode.boot.java.data;
 
 import java.util.Collection;
-import java.util.Optional;
+import java.util.List;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
-import org.eclipse.lsp4j.CompletionItemKind;
+import org.springframework.ide.vscode.boot.java.data.providers.DataRepositoryCompletionProvider;
+import org.springframework.ide.vscode.boot.java.data.providers.DataRepositoryQueryStartCompletionProvider;
+import org.springframework.ide.vscode.boot.java.data.providers.DataRepositoryStandardCompletionProvider;
+import org.springframework.ide.vscode.boot.java.data.providers.prefixsensitive.DataRepositoryPrefixSensitiveCompletionProvider;
 import org.springframework.ide.vscode.boot.java.handlers.CompletionProvider;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
-import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.util.text.IRegion;
-import org.springframework.util.StringUtils;
 
 /**
  * @author Martin Lippert
  */
 public class DataRepositoryCompletionProcessor implements CompletionProvider {
+
+	private List<DataRepositoryCompletionProvider> completionProviders;
+
+	public DataRepositoryCompletionProcessor() {
+		this.completionProviders = List.of(
+				new DataRepositoryStandardCompletionProvider(),
+				new DataRepositoryQueryStartCompletionProvider(),
+				new DataRepositoryPrefixSensitiveCompletionProvider()
+		);
+	}
 
 	@Override
 	public void provideCompletions(ASTNode node, Annotation annotation, ITypeBinding type,
@@ -41,70 +52,18 @@ public class DataRepositoryCompletionProcessor implements CompletionProvider {
 	public void provideCompletions(ASTNode node, int offset, IDocument doc, Collection<ICompletionProposal> completions) {
 		TypeDeclaration type = ASTUtils.findDeclaringType(node);
 		DataRepositoryDefinition repo = getDataRepositoryDefinition(type);
-		if (repo != null) {
-			DomainType domainType = repo.getDomainType();
-			if (domainType != null) {
-
-				String prefix = "";
-				try {
-					IRegion line = doc.getLineInformationOfOffset(offset);
-					prefix = doc.get(line.getOffset(), offset - line.getOffset()).trim();
-				} catch (BadLocationException e) {
-					// ignore if there is a problem computing the prefix, continue without prefix
-				}
-
-				DomainProperty[] properties = domainType.getProperties();
-				for (DomainProperty property : properties) {
-					completions.add(generateCompletionProposal(offset, prefix, repo, property));
-				}
-				DataRepositoryPrefixSensitiveCompletionProvider.addPrefixSensitiveProposals(completions, doc, offset, prefix, repo);
+		if(repo != null && repo.getDomainType() != null){
+			String prefix = "";
+			try {
+				IRegion line = doc.getLineInformationOfOffset(offset);
+				prefix = doc.get(line.getOffset(), offset - line.getOffset()).trim();
+			} catch (BadLocationException e) {
+				// ignore if there is a problem computing the prefix, continue without prefix
+			}
+			for(DataRepositoryCompletionProvider provider : completionProviders){
+				provider.addProposals(completions, doc, offset, prefix, repo);
 			}
 		}
-	}
-
-
-
-	protected ICompletionProposal generateCompletionProposal(int offset, String prefix, DataRepositoryDefinition repoDef, DomainProperty domainProperty) {
-		StringBuilder label = new StringBuilder();
-		label.append("findBy");
-		label.append(StringUtils.capitalize(domainProperty.getName()));
-		label.append("(");
-		label.append(domainProperty.getType().getSimpleName());
-		label.append(" ");
-		label.append(StringUtils.uncapitalize(domainProperty.getName()));
-		label.append(");");
-
-
-		StringBuilder completion = new StringBuilder();
-		completion.append("List<");
-		completion.append(repoDef.getDomainType().getSimpleName());
-		completion.append("> findBy");
-		completion.append(StringUtils.capitalize(domainProperty.getName()));
-		completion.append("(");
-		completion.append(domainProperty.getType().getSimpleName());
-		completion.append(" ");
-		completion.append(StringUtils.uncapitalize(domainProperty.getName()));
-		completion.append(");");
-
-		return createProposal(offset, CompletionItemKind.Method, prefix, label.toString(), completion.toString());
-	}
-
-	static ICompletionProposal createProposal(int offset, CompletionItemKind completionItemKind, String prefix, String label, String completion) {
-		DocumentEdits edits = new DocumentEdits(null, false);
-		String filter = label;
-		if (prefix != null && label.startsWith(prefix)) {
-			edits.replace(offset - prefix.length(), offset, completion);
-		}
-		else if (prefix != null && completion.startsWith(prefix)) {
-			edits.replace(offset - prefix.length(), offset, completion);
-			filter = completion;
-		}
-		else {
-			edits.insert(offset, completion);
-		}
-
-		DocumentEdits additionalEdits = new DocumentEdits(null, false);
-		return new FindByCompletionProposal(label, completionItemKind, edits, null, null, Optional.of(additionalEdits), filter);
 	}
 
 	private DataRepositoryDefinition getDataRepositoryDefinition(TypeDeclaration type) {

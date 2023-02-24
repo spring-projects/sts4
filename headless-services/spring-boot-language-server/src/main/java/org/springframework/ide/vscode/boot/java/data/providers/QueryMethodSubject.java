@@ -8,7 +8,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.java.data;
+package org.springframework.ide.vscode.boot.java.data.providers;
 
 import java.util.List;
 
@@ -18,10 +18,10 @@ import java.util.List;
  * See https://docs.spring.io/spring-data/jpa/docs/current/reference/html/#appendix.query.method.subject
  * @author danthe1st
  */
-record QueryMethodSubject(
+public record QueryMethodSubject(
 		String key, String returnType, boolean isTyped) {
 
-	static final List<QueryMethodSubject> QUERY_METHOD_SUBJECTS = List.of(
+	public static final List<QueryMethodSubject> QUERY_METHOD_SUBJECTS = List.of(
 			QueryMethodSubject.createCollectionSubject("find", "List"),
 			QueryMethodSubject.createCollectionSubject("read", "List"),
 			QueryMethodSubject.createCollectionSubject("get", "List"),
