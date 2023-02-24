@@ -36,7 +36,9 @@ public enum Boot2JavaProblemType implements ProblemType {
 	
 	JAVA_LAMBDA_DSL(INFO, "Consider switching to Lambda DSL syntax", "Switch to Lambda DSL syntax"), 
 	
-	MISSING_CONFIGURATION_ANNOTATION(WARNING, "Class likely missing '@Configuration' annotation, i.e. has Bean methods but no '@Configuration' annotation", "Missing '@Configuration'");
+	MISSING_CONFIGURATION_ANNOTATION(WARNING, "Class likely missing '@Configuration' annotation, i.e. has Bean methods but no '@Configuration' annotation", "Missing '@Configuration'"),
+	
+	HTTP_SECIRITY_AUTHORIZE_HTTP_REQUESTS(WARNING, "'HttpSecurity.authroizeRequests(...)' API and related classes are to be deprecated use new `authorizeHttpRequests(...) and related classes", "Usage of old 'HttpSecurity.authroizeRequests(...)' API");
 	
 	private final ProblemSeverity defaultSeverity;
 	private String description;
