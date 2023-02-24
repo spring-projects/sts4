@@ -16,7 +16,6 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.SourceFile;
 import org.openrewrite.Tree;
 import org.openrewrite.java.JavaVisitor;
-import org.openrewrite.java.spring.boot2.AddConfigurationAnnotationIfBeansPresent;
 import org.openrewrite.java.tree.J.ClassDeclaration;
 import org.openrewrite.java.tree.J.MethodDeclaration;
 import org.openrewrite.java.tree.J.VariableDeclarations;
@@ -28,13 +27,14 @@ import org.springframework.ide.vscode.commons.java.Version;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeCodeActionDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
+import org.springframework.ide.vscode.commons.rewrite.java.AddConfigurationAnnotationIfBeansPresent;
 import org.springframework.ide.vscode.commons.rewrite.java.FixAssistMarker;
 import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.java.JavaMarkerVisitor;
 
 public class AddConfigurationIfBeansPresentCodeAction implements RecipeCodeActionDescriptor {
 	
-	private static final String ID = "org.openrewrite.java.spring.boot2.AddConfigurationAnnotationIfBeansPresent";
+	private static final String ID = "org.springframework.ide.vscode.commons.rewrite.java.AddConfigurationAnnotationIfBeansPresent";
 	
 	private static final String PROBLEM_LABEL = "'@Configuration' is missing on a class defining Spring Beans";
 	
