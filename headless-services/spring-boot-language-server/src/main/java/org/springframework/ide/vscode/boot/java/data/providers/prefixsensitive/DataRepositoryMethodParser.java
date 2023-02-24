@@ -8,7 +8,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.java.data;
+package org.springframework.ide.vscode.boot.java.data.providers.prefixsensitive;
 
 import java.util.ArrayList;
 import java.util.EnumSet;
@@ -17,6 +17,10 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+
+import org.springframework.ide.vscode.boot.java.data.DataRepositoryDefinition;
+import org.springframework.ide.vscode.boot.java.data.DomainProperty;
+import org.springframework.ide.vscode.boot.java.data.providers.QueryMethodSubject;
 
 /**
  * Class responsible for parsing Spring JPA Repository query methods.

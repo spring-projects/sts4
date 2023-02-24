@@ -39,6 +39,24 @@ public class FindByCompletionProposal implements ICompletionProposal {
 		this.filter = filter;
 	}
 
+	public static ICompletionProposal createProposal(int offset, CompletionItemKind completionItemKind, String prefix, String label, String completion) {
+		DocumentEdits edits = new DocumentEdits(null, false);
+		String filter = label;
+		if (prefix != null && label.startsWith(prefix)) {
+			edits.replace(offset - prefix.length(), offset, completion);
+		}
+		else if (prefix != null && completion.startsWith(prefix)) {
+			edits.replace(offset - prefix.length(), offset, completion);
+			filter = completion;
+		}
+		else {
+			edits.insert(offset, completion);
+		}
+
+		DocumentEdits additionalEdits = new DocumentEdits(null, false);
+		return new FindByCompletionProposal(label, completionItemKind, edits, null, null, Optional.of(additionalEdits), filter);
+	}
+
 	@Override
 	public String getLabel() {
 		return label;

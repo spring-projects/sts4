@@ -8,7 +8,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.java.data;
+package org.springframework.ide.vscode.boot.java.data.providers.prefixsensitive;
 
 /**
  * Types of predicate keywords Spring JPA repository method names

@@ -8,7 +8,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.java.data;
+package org.springframework.ide.vscode.boot.java.data.providers.prefixsensitive;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -17,23 +17,24 @@ import java.util.Map;
 import java.util.Optional;
 
 import org.eclipse.lsp4j.CompletionItemKind;
+import org.springframework.ide.vscode.boot.java.data.DataRepositoryDefinition;
+import org.springframework.ide.vscode.boot.java.data.DomainProperty;
+import org.springframework.ide.vscode.boot.java.data.DomainType;
+import org.springframework.ide.vscode.boot.java.data.FindByCompletionProposal;
+import org.springframework.ide.vscode.boot.java.data.providers.DataRepositoryCompletionProvider;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
-import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.util.StringUtils;
 
 /**
- * This utility class provides content assist proposals for Spring JPA query methods.
+ * This class provides content assist proposals for Spring Data repository query methods.
  * @author danthe1st
  */
-class DataRepositoryPrefixSensitiveCompletionProvider {
+public class DataRepositoryPrefixSensitiveCompletionProvider implements DataRepositoryCompletionProvider {
 
-	private DataRepositoryPrefixSensitiveCompletionProvider() {
-		//prevent instantiation
-	}
-
-	static void addPrefixSensitiveProposals(Collection<ICompletionProposal> completions, IDocument doc, int offset, String prefix, DataRepositoryDefinition repoDef) {
+	@Override
+	public void addProposals(Collection<ICompletionProposal> completions, IDocument doc, int offset, String prefix, DataRepositoryDefinition repoDef) {
 		String localPrefix = findLastJavaIdentifierPart(prefix);
 		if (localPrefix == null) {
 			return;
@@ -47,27 +48,9 @@ class DataRepositoryPrefixSensitiveCompletionProvider {
 				addPropertyProposals(completions, offset, repoDef, parseResult);
 			}
 		}
-		addQueryStartProposals(completions, localPrefix, doc, offset);
 	}
 
-	private static void addQueryStartProposals(Collection<ICompletionProposal> completions, String prefix, IDocument doc, int offset) {
-		for(QueryMethodSubject queryMethodSubject : QueryMethodSubject.QUERY_METHOD_SUBJECTS){
-			String toInsert = queryMethodSubject.key() + "By";
-			if(toInsert.startsWith(prefix)||isOffsetAfterWhitespace(doc, offset)) {
-				completions.add(DataRepositoryCompletionProcessor.createProposal(offset, CompletionItemKind.Text, prefix, toInsert, toInsert));
-			}
-		}
-	}
-
-	private static boolean isOffsetAfterWhitespace(IDocument doc, int offset) {
-		try {
-			return offset > 0 && Character.isWhitespace(doc.getChar(offset-1));
-		}catch (BadLocationException e) {
-			return false;
-		}
-	}
-
-	private static void addPropertyProposals(Collection<ICompletionProposal> completions, int offset, DataRepositoryDefinition repoDef, DataRepositoryMethodNameParseResult parseResult) {
+	private void addPropertyProposals(Collection<ICompletionProposal> completions, int offset, DataRepositoryDefinition repoDef, DataRepositoryMethodNameParseResult parseResult) {
 		for(DomainProperty property : repoDef.getDomainType().getProperties()){
 			String lastWord = parseResult.lastWord();
 			if (lastWord == null) {
@@ -83,7 +66,7 @@ class DataRepositoryPrefixSensitiveCompletionProvider {
 		}
 	}
 
-	private static void addMethodCompletionProposal(Collection<ICompletionProposal> completions, int offset, DataRepositoryDefinition repoDef, String localPrefix, String fullPrefix, DataRepositoryMethodNameParseResult parseResult, Map<String, DomainProperty> propertiesByName) {
+	private void addMethodCompletionProposal(Collection<ICompletionProposal> completions, int offset, DataRepositoryDefinition repoDef, String localPrefix, String fullPrefix, DataRepositoryMethodNameParseResult parseResult, Map<String, DomainProperty> propertiesByName) {
 		String methodName = localPrefix;
 		DocumentEdits edits = new DocumentEdits(null, false);
 		String signature = buildSignature(methodName, propertiesByName, parseResult);
@@ -105,7 +88,7 @@ class DataRepositoryPrefixSensitiveCompletionProvider {
 		completions.add(proposal);
 	}
 
-	private static int calculateReplaceOffset(int offset, String localPrefix, String fullPrefix, String returnType) {
+	private int calculateReplaceOffset(int offset, String localPrefix, String fullPrefix, String returnType) {
 		int replaceStart = offset - localPrefix.length();
 		String beforeLocalPrefix = fullPrefix.substring(0, fullPrefix.length()-localPrefix.length());
 		String trimmed = beforeLocalPrefix.trim();
@@ -115,7 +98,7 @@ class DataRepositoryPrefixSensitiveCompletionProvider {
 		return replaceStart;
 	}
 
-	private static Map<String, DomainProperty> getPropertiesByName(DomainProperty[] properties) {
+	private Map<String, DomainProperty> getPropertiesByName(DomainProperty[] properties) {
 		Map<String, DomainProperty> propertiesByName = new HashMap<>();
 		for(DomainProperty prop : properties){
 			propertiesByName.put(prop.getName(), prop);
@@ -123,7 +106,7 @@ class DataRepositoryPrefixSensitiveCompletionProvider {
 		return propertiesByName;
 	}
 
-	private static String buildSignature(String methodName, Map<String, DomainProperty> properties, DataRepositoryMethodNameParseResult parseResult) {
+	private String buildSignature(String methodName, Map<String, DomainProperty> properties, DataRepositoryMethodNameParseResult parseResult) {
 		StringBuilder signatureBuilder = new StringBuilder();
 		signatureBuilder.append(methodName);
 		signatureBuilder.append("(");
@@ -146,7 +129,7 @@ class DataRepositoryPrefixSensitiveCompletionProvider {
 		return signatureBuilder.toString();
 	}
 
-	private static DomainType findExpressionType(Map<String, DomainProperty> properties, String param) {
+	private DomainType findExpressionType(Map<String, DomainProperty> properties, String param) {
 		String[] splitByUnderscore = param.split("_");
 		if(properties.containsKey(splitByUnderscore[0])) {
 			DomainType type = properties.get(splitByUnderscore[0]).getType();
@@ -158,7 +141,7 @@ class DataRepositoryPrefixSensitiveCompletionProvider {
 		return null;
 	}
 
-	private static DomainType findMatchingParameter(String name, DomainType type) {
+	private DomainType findMatchingParameter(String name, DomainType type) {
 		for(DomainProperty prop : type.getProperties()){
 			if (prop.getName().equals(name)) {
 				return prop.getType();
@@ -167,7 +150,7 @@ class DataRepositoryPrefixSensitiveCompletionProvider {
 		return null;
 	}
 
-	private static String findLastJavaIdentifierPart(String prefix) {
+	public static String findLastJavaIdentifierPart(String prefix) {
 		if (prefix == null) {
 			return null;
 		}
