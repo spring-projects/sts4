@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.rewrite.reconcile;
 
+import java.util.Collection;
 import java.util.List;
 
 import org.openrewrite.ExecutionContext;
@@ -20,7 +21,9 @@ import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.J.ClassDeclaration;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeTree;
+import org.openrewrite.java.tree.TypeUtils;
 import org.springframework.context.ApplicationContext;
+import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.Boot2JavaProblemType;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
@@ -59,17 +62,19 @@ public class WebSecurityConfigurerAdapterCodeAction implements RecipeCodeActionD
 			@Override
 			public ClassDeclaration visitClassDeclaration(ClassDeclaration classDecl, ExecutionContext p) {
 				ClassDeclaration c = super.visitClassDeclaration(classDecl, p);
-				if (isExtendingWebSecurityConfigurerAdapter(c)) {
-					String uri = getCursor().firstEnclosing(SourceFile.class).getSourcePath().toUri().toASCIIString();
-					FixAssistMarker marker = new FixAssistMarker(Tree.randomId(), ID).withLabel(PROBLEM_LABEL)
-							.withFixes(
-									new FixDescriptor(ID, List.of(uri),
-											RecipeCodeActionDescriptor.buildLabel(FIX_LABEL, RecipeScope.FILE))
-											.withRecipeScope(RecipeScope.FILE),
-									new FixDescriptor(ID, List.of(uri),
-											RecipeCodeActionDescriptor.buildLabel(FIX_LABEL, RecipeScope.PROJECT))
-											.withRecipeScope(RecipeScope.PROJECT));
-					c = c.withName(c.getName().withMarkers(c.getName().getMarkers().add(marker)));
+				if (isExtendingWebSecurityConfigurerAdapter(c)) {					
+					if (isAnnotatedWith(c.getLeadingAnnotations(), Annotations.CONFIGURATION)) {
+						String uri = getCursor().firstEnclosing(SourceFile.class).getSourcePath().toUri().toASCIIString();
+						FixAssistMarker marker = new FixAssistMarker(Tree.randomId(), ID).withLabel(PROBLEM_LABEL)
+								.withFixes(
+										new FixDescriptor(ID, List.of(uri),
+												RecipeCodeActionDescriptor.buildLabel(FIX_LABEL, RecipeScope.FILE))
+												.withRecipeScope(RecipeScope.FILE),
+										new FixDescriptor(ID, List.of(uri),
+												RecipeCodeActionDescriptor.buildLabel(FIX_LABEL, RecipeScope.PROJECT))
+												.withRecipeScope(RecipeScope.PROJECT));
+						c = c.withName(c.getName().withMarkers(c.getName().getMarkers().add(marker)));
+					}
 				}
 				return c;
 			}
@@ -95,5 +100,10 @@ public class WebSecurityConfigurerAdapterCodeAction implements RecipeCodeActionD
 		Version version = SpringProjectUtil.getDependencyVersion(project, "spring-security-config");
 		return version != null && version.compareTo(new Version(5, 7, 0, null)) >= 0 && version.compareTo(new Version(6, 0, 0, null)) < 0;
 	}
+	
+    private static boolean isAnnotatedWith(Collection<J.Annotation> annotations, String annotationType) {
+        return annotations.stream().anyMatch(a -> TypeUtils.isOfClassType(a.getType(), annotationType));
+    }
+
 
 }
