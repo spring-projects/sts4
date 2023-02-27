@@ -136,7 +136,7 @@ public class RewriteReconciler implements JavaReconciler {
 	}
 
 	@Override
-	public Map<IDocument, Collection<ReconcileProblem>> reconcile(IJavaProject project, List<TextDocument> docs) {
+	public Map<IDocument, Collection<ReconcileProblem>> reconcile(IJavaProject project, List<TextDocument> docs, Runnable incrementProgress) {
 		
 		if (!config.isRewriteReconcileEnabled()) {
 			return Collections.emptyMap();
@@ -156,17 +156,19 @@ public class RewriteReconciler implements JavaReconciler {
 				mainSources.add(d);
 			}
 		}
+		
 		JavaParser javaParser = ORAstUtils.createJavaParser(project);
 		javaParser.setSourceSet(MavenProjectParser.MAIN);
-		allProblems.putAll(doReconcile(project, mainSources, javaParser));
+		allProblems.putAll(doReconcile(project, mainSources, javaParser, incrementProgress));
 		javaParser.setSourceSet(MavenProjectParser.TEST);
-		allProblems.putAll(doReconcile(project, testSources, javaParser));
+		allProblems.putAll(doReconcile(project, testSources, javaParser, incrementProgress));
 		
 		long end = System.currentTimeMillis();
 		log.info("reconciling project (OpenRewrite): " + project.getElementName() + " - " + docs.size() + " done in " + (end - start) + "ms");
 		
 		return allProblems;
 	}
+	
 	
 	// Parse all at once	
 //	private Map<IDocument, Collection<ReconcileProblem>> doReconcile(IJavaProject project, List<TextDocument> docs,
@@ -240,7 +242,7 @@ public class RewriteReconciler implements JavaReconciler {
 	private static final int BATCH = 50;
 
 	// Parse in batches and share the parser
-	private Map<IDocument, Collection<ReconcileProblem>> doReconcile(IJavaProject project, List<TextDocument> docs, JavaParser javaParser) {
+	private Map<IDocument, Collection<ReconcileProblem>> doReconcile(IJavaProject project, List<TextDocument> docs, JavaParser javaParser, Runnable incrementProgress) {
 		Map<IDocument, Collection<ReconcileProblem>> allProblems = new HashMap<>();
 		if (javaParser != null && config.isRewriteReconcileEnabled()) {
 			try {
@@ -255,7 +257,7 @@ public class RewriteReconciler implements JavaReconciler {
 						List<CompilationUnit> cus = ORAstUtils.parseInputs(javaParser,
 								batchList.stream().map(d -> new Parser.Input(Paths.get(URI.create(d.getUri())), () -> {
 									return new ByteArrayInputStream(d.get().getBytes());
-								})).collect(Collectors.toList()));
+								})).collect(Collectors.toList()), source -> incrementProgress.run());
 						
 						/*
 						 * If exception occurs during parsing inputs the list of inputs would become shorter than the list of corresponding documents
@@ -275,6 +277,7 @@ public class RewriteReconciler implements JavaReconciler {
 							} else {
 								log.warn("(OpenRewrite) Failed to parse source for " + sourcePath);
 							}
+							incrementProgress.run();
 						}
 
 					}
@@ -327,5 +330,9 @@ public class RewriteReconciler implements JavaReconciler {
 			}.visit(cu, new InMemoryExecutionContext(e -> log.error("", e)));
 		}
 	}
-		
+	
+	public int getTotalWorkUnits(List<TextDocument> docs) {
+		return docs.size() * 2;
+	}
+	
 }

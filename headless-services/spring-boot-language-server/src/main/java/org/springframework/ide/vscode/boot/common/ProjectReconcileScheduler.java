@@ -77,7 +77,7 @@ public abstract class ProjectReconcileScheduler {
 					if (projectReconcileRequests.remove(uri) != null) {
 						projectFinder.find(new TextDocumentIdentifier(uri.toASCIIString())).ifPresent(p -> {
 							reconciler.clear(project);
-							reconciler.reconcile(p);
+							reconciler.reconcile(p, getServer().getProgressService());
 						});
 					}
 				})

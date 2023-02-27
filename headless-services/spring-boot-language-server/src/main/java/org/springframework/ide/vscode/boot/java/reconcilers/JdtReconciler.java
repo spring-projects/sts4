@@ -156,7 +156,7 @@ public class JdtReconciler implements JavaReconciler {
 	}
 
 	@Override
-	public Map<IDocument, Collection<ReconcileProblem>> reconcile(IJavaProject project, List<TextDocument> docs) {
+	public Map<IDocument, Collection<ReconcileProblem>> reconcile(IJavaProject project, List<TextDocument> docs, Runnable incrementProgress) {
 		
 		if (config.isRewriteReconcileEnabled()) {
 		}

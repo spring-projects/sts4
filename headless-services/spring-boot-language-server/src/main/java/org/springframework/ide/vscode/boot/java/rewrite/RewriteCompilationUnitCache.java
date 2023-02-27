@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2022 VMware, Inc.
+ * Copyright (c) 2022, 2023 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -238,7 +238,7 @@ public class RewriteCompilationUnitCache implements DocumentContentProvider, Dis
 					throw new IllegalStateException("Unexpected error fetching document content");
 				}
 			});
-			List<CompilationUnit> cus = ORAstUtils.parseInputs(javaParser, List.of(input));
+			List<CompilationUnit> cus = ORAstUtils.parseInputs(javaParser, List.of(input), null);
 			CompilationUnit cu = cus.get(0);
 			
 			if (cu != null) {

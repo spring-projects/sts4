@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2022 Pivotal, Inc.
+ * Copyright (c) 2019, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -19,8 +19,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.app.BootJavaConfig;
 import org.springframework.ide.vscode.commons.languageserver.DiagnosticService;
+import org.springframework.ide.vscode.commons.languageserver.IndefiniteProgressTask;
 import org.springframework.ide.vscode.commons.languageserver.ProgressService;
-import org.springframework.ide.vscode.commons.languageserver.ProgressTask;
 import org.springframework.ide.vscode.commons.languageserver.util.ShowMessageException;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 
@@ -93,11 +93,8 @@ public class SpringProcessConnectorService {
 		connector.addConnectorChangeListener(connectorListener);
 
 		try {
-			final ProgressTask progressTask = getProgressTask(
-					"spring-process-connector-service-connect-" + processKey);
-			
-			progressTask.progressBegin("Connect", null);
-			
+			final IndefiniteProgressTask progressTask = getProgressTask(
+					"spring-process-connector-service-connect-" + processKey, "Connect", null);			
 			scheduleConnect(progressTask, processKey, connector, 0, TimeUnit.SECONDS, 0);
 		}
 		catch (Exception e) {
@@ -110,10 +107,8 @@ public class SpringProcessConnectorService {
 		
 		SpringProcessConnector connector = this.connectors.get(springProcessParams.getProcessKey());
 		if (connector != null) {
-			final ProgressTask progressTask = getProgressTask(
-					"spring-process-connector-service-refresh-data-" + springProcessParams.getProcessKey());
-
-			progressTask.progressBegin("Refresh", null);
+			final IndefiniteProgressTask progressTask = getProgressTask(
+					"spring-process-connector-service-refresh-data-" + springProcessParams.getProcessKey(), "Refresh", null);
 
 			scheduleRefresh(progressTask, springProcessParams, connector, 0, TimeUnit.SECONDS, 0);
 		}
@@ -140,11 +135,9 @@ public class SpringProcessConnectorService {
 		this.connectedSuccess.put(processKey, false);
 		
 		if (connector != null) {
-			final ProgressTask progressTask = getProgressTask(
-					"spring-process-connector-service-disconnect-" + processKey);
+			final IndefiniteProgressTask progressTask = getProgressTask(
+					"spring-process-connector-service-disconnect-" + processKey, "Disconnect", null);
 			
-			progressTask.progressBegin("Disconnect", null);
-
 			scheduleDisconnect(progressTask, processKey, connector, 0, TimeUnit.SECONDS, 0);
 		}
 	}
@@ -165,7 +158,7 @@ public class SpringProcessConnectorService {
 		return processID;
 	}
 	
-	private void scheduleConnect(ProgressTask progressTask, String processKey, SpringProcessConnector connector, long delay, TimeUnit unit, int retryNo) {
+	private void scheduleConnect(IndefiniteProgressTask progressTask, String processKey, SpringProcessConnector connector, long delay, TimeUnit unit, int retryNo) {
 		String progressMessage = "Connecting to process: " + processKey + " - retry no: " + retryNo;
 		log.info(progressMessage);
 		
@@ -174,7 +167,7 @@ public class SpringProcessConnectorService {
 			try {
 				progressTask.progressEvent(progressMessage);
 				connector.connect();
-				progressTask.progressDone();
+				progressTask.done();
 				
 				refreshProcess(new SpringProcessParams(processKey, "", "", ""));
 				refreshProcess(new SpringProcessParams(processKey, METRICS, MEMORY, ""));
@@ -186,7 +179,7 @@ public class SpringProcessConnectorService {
 				if (retryNo < maxRetryCount && isKnownProcessKey(processKey)) {
 					scheduleConnect(progressTask, processKey, connector, retryDelayInSeconds, TimeUnit.SECONDS, retryNo + 1);
 				} else {
-					progressTask.progressDone();
+					progressTask.done();
 					
 					// Send message to client if maximum retries reached on error
 					if (isKnownProcessKey(processKey)) {
@@ -198,7 +191,7 @@ public class SpringProcessConnectorService {
 		}, delay, unit);
 	}
 
-	private void scheduleDisconnect(ProgressTask progressTask, String processKey, SpringProcessConnector connector, long delay, TimeUnit unit, int retryNo) {
+	private void scheduleDisconnect(IndefiniteProgressTask progressTask, String processKey, SpringProcessConnector connector, long delay, TimeUnit unit, int retryNo) {
 		String message = "Disconnect from process: " + processKey + " - retry no: " + retryNo;
 		log.info(message);
 	
@@ -207,7 +200,7 @@ public class SpringProcessConnectorService {
 			try {
 				progressTask.progressEvent(message);
 				connector.disconnect();
-				progressTask.progressDone();
+				progressTask.done();
 			}
 			catch (Exception e) {
 				log.info("problem occured during process disconnect", e);
@@ -215,7 +208,7 @@ public class SpringProcessConnectorService {
 				if (retryNo < maxRetryCount) {
 					scheduleDisconnect(progressTask, processKey, connector, retryDelayInSeconds, TimeUnit.SECONDS, retryNo + 1);
 				} else {
-					progressTask.progressDone();
+					progressTask.done();
 					
 					// Send message to client if maximum retries reached on error
 					diagnosticService.diagnosticEvent(ShowMessageException
@@ -226,7 +219,7 @@ public class SpringProcessConnectorService {
 		}, delay, unit);
 	}
 
-	private void scheduleRefresh(ProgressTask progressTask, SpringProcessParams springProcessParams, SpringProcessConnector connector, long delay, TimeUnit unit, int retryNo) {
+	private void scheduleRefresh(IndefiniteProgressTask progressTask, SpringProcessParams springProcessParams, SpringProcessConnector connector, long delay, TimeUnit unit, int retryNo) {
 		String processKey = springProcessParams.getProcessKey();
 		String endpoint = springProcessParams.getEndpoint();
 		String metricName = springProcessParams.getMetricName();
@@ -271,7 +264,7 @@ public class SpringProcessConnectorService {
 						this.connectedSuccess.put(processKey, true);
 					}
 				}
-				progressTask.progressDone();
+				progressTask.done();
 			}
 			catch (Exception e) {
 
@@ -282,7 +275,7 @@ public class SpringProcessConnectorService {
 							retryNo + 1);
 				}
 				else {
-					progressTask.progressDone();
+					progressTask.done();
 					
 					// Send message to client if maximum retries reached on error
 					if (isKnownProcessKey(processKey)) {
@@ -298,7 +291,7 @@ public class SpringProcessConnectorService {
 		}, delay, unit);
 	}
 	
-	private ProgressTask getProgressTask(String prefixId) {
-		return this.progressService.createProgressTask(prefixId + progressIdKey++);
+	private IndefiniteProgressTask getProgressTask(String prefixId, String title, String message) {
+		return this.progressService.createIndefiniteProgressTask(prefixId + progressIdKey++, title, message);
 	}
 }

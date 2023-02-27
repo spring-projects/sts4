@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2022 Pivotal, Inc.
+ * Copyright (c) 2019, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -16,26 +16,18 @@ package org.springframework.ide.vscode.commons.languageserver;
  * This handler can be used for long-running progress that requires message updates to the same task.
  *
  */
-public class ProgressTask {
+public abstract class AbstractProgressTask {
 	
-	private final String taskId;
-	private final ProgressService service;
+	protected final String taskId;
+	protected final ProgressService service;
 	
 	
-	public ProgressTask(String taskId, ProgressService service) {
+	public AbstractProgressTask(String taskId, ProgressService service) {
 		this.taskId = taskId;
 		this.service = service;
 	}
 	
-	public void progressBegin(String title, String statusMsg) {
-		this.service.progressBegin(taskId, title, statusMsg);
-	}
-
-	public void progressEvent(String statusMsg) {
-		this.service.progressEvent(taskId, statusMsg);
-	}
-	
-	public void progressDone() {
+	public void done() {
 		this.service.progressDone(taskId);
 	}
 

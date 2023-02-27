@@ -24,6 +24,10 @@ public interface JavaReconciler {
 	
 	void reconcile(IJavaProject project, IDocument doc, IProblemCollector problemCollector);
 
-	Map<IDocument, Collection<ReconcileProblem>> reconcile(IJavaProject project, List<TextDocument> docs);
+	Map<IDocument, Collection<ReconcileProblem>> reconcile(IJavaProject project, List<TextDocument> docs, Runnable incrementProgress);
+	
+	default int getTotalWorkUnits(List<TextDocument> docs) {
+		return 0;
+	}
 
 }

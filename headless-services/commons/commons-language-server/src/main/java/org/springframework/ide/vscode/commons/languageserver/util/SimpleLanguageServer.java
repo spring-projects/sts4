@@ -149,8 +149,7 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 		
 		private ConcurrentHashMap<String, Boolean> activeTaskIDs = new ConcurrentHashMap<>();
 		
-		@Override
-		public void progressBegin(String taskId, String title, String message) {
+		public void progressBegin(String taskId, WorkDoneProgressBegin report) {
 			STS4LanguageClient client = SimpleLanguageServer.this.client;
 			if (client != null) {
 				boolean isNew = activeTaskIDs.put(taskId, true) == null;
@@ -162,18 +161,13 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 				client.createProgress(params).thenAccept((p) -> {
 					ProgressParams progressParams = new ProgressParams();
 					progressParams.setToken(taskId);
-					WorkDoneProgressBegin report = new WorkDoneProgressBegin();
-					report.setCancellable(false);
 					progressParams.setValue(Either.forLeft(report));
-					report.setMessage(message);
-					report.setTitle(title);
 					client.notifyProgress(progressParams);
 				});
 			}
 		}
-
-		@Override
-		public void progressEvent(String taskId, String statusMsg) {
+		
+		public void progressEvent(String taskId, WorkDoneProgressReport report) {
 			STS4LanguageClient client = SimpleLanguageServer.this.client;
 			if (client != null) {
 				if (!activeTaskIDs.containsKey(taskId)) {
@@ -182,9 +176,7 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 				}
 				ProgressParams progressParams = new ProgressParams();
 				progressParams.setToken(taskId);
-				WorkDoneProgressReport report = new WorkDoneProgressReport();
 				progressParams.setValue(Either.forLeft(report));
-				report.setMessage(statusMsg);
 				client.notifyProgress(progressParams);
 			}
 		}

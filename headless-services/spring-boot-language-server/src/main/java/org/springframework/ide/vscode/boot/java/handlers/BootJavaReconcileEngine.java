@@ -28,6 +28,8 @@ import org.springframework.ide.vscode.boot.common.IJavaProjectReconcileEngine;
 import org.springframework.ide.vscode.boot.java.reconcilers.JavaReconciler;
 import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.languageserver.PercentageProgressTask;
+import org.springframework.ide.vscode.commons.languageserver.ProgressService;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
@@ -114,7 +116,7 @@ public class BootJavaReconcileEngine implements IReconcileEngine, IJavaProjectRe
 	}
 
 	@Override
-	public void reconcile(IJavaProject project) {
+	public void reconcile(IJavaProject project, ProgressService progressService) {		
 		Stream<Path> files = IClasspathUtil.getProjectJavaSourceFolders(project.getClasspath()).flatMap(folder -> {
 			try {
 				return Files.walk(folder.toPath()).filter(Files::isRegularFile);
@@ -134,10 +136,21 @@ public class BootJavaReconcileEngine implements IReconcileEngine, IJavaProjectRe
 				.collect(Collectors.toMap(d -> d, d -> server.createProblemCollector(d)));
 
 		problemCollectors.values().forEach(c -> c.beginCollecting());
-
+		
+		int totalWork = 0;
+		for (JavaReconciler jr : javaReconcilers) {
+			totalWork += jr.getTotalWorkUnits(docs);
+		}
+		
+		PercentageProgressTask progressTask = progressService.createPercentageProgressTask(
+				"reconcile-java-" + project.getElementName(),
+				totalWork,
+				"Reconciling Spring Java for '" + project.getElementName() + "'"
+		);
+		
 		for (JavaReconciler jr : javaReconcilers) {
 			try {
-				Map<IDocument, Collection<ReconcileProblem>> problems = jr.reconcile(project, docs);
+				Map<IDocument, Collection<ReconcileProblem>> problems = jr.reconcile(project, docs, () -> progressTask.increment());
 				problems.entrySet().forEach(e -> {
 					IProblemCollector collector = problemCollectors.get(e.getKey());
 					e.getValue().forEach(p -> collector.accept(p));
@@ -147,6 +160,7 @@ public class BootJavaReconcileEngine implements IReconcileEngine, IJavaProjectRe
 			}
 		}
 
+		progressTask.done();
 		problemCollectors.values().forEach(c -> c.endCollecting());
 
 	}

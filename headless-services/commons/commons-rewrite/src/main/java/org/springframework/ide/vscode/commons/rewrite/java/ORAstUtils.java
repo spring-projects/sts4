@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -29,6 +30,7 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.Parser;
 import org.openrewrite.Recipe;
+import org.openrewrite.SourceFile;
 import org.openrewrite.Tree;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.internal.RecipeIntrospectionUtils;
@@ -40,6 +42,7 @@ import org.openrewrite.java.UpdateSourcePositions;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.J.CompilationUnit;
 import org.openrewrite.marker.Range;
+import org.openrewrite.tree.ParsingExecutionContextView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.java.IClasspathUtil;
@@ -245,7 +248,7 @@ public class ORAstUtils {
 		}
 	}
 
-	public static List<CompilationUnit> parse(SimpleTextDocumentService documents, IJavaProject project) {
+	public static List<CompilationUnit> parse(SimpleTextDocumentService documents, IJavaProject project, Consumer<SourceFile> parseCallback) {
 		List<Parser.Input> inputs = IClasspathUtil.getProjectJavaSourceFolders(project.getClasspath()).flatMap(folder -> {
 			try {
 				return Files.walk(folder.toPath());
@@ -269,7 +272,7 @@ public class ORAstUtils {
 			}
 		}).collect(Collectors.toList());
 		JavaParser javaParser = createJavaParser(project);
-		return ORAstUtils.parseInputs(javaParser, inputs);
+		return ORAstUtils.parseInputs(javaParser, inputs, parseCallback);
 	}
 
 	public static List<CompilationUnit> parse(JavaParser parser, Iterable<Path> sourceFiles) {
@@ -291,9 +294,14 @@ public class ORAstUtils {
 		return finalCus;
 	}
 	
-	public static List<CompilationUnit> parseInputs(JavaParser parser, Iterable<Parser.Input> inputs) {
-		InMemoryExecutionContext ctx = new InMemoryExecutionContext(ORAstUtils::logExceptionWhileParsing);
+	public static List<CompilationUnit> parseInputs(JavaParser parser, Iterable<Parser.Input> inputs, Consumer<SourceFile> parseCallback) {
+		ExecutionContext ctx = new InMemoryExecutionContext(ORAstUtils::logExceptionWhileParsing);
 		ctx.putMessage(JavaParser.SKIP_SOURCE_SET_TYPE_GENERATION, true);
+		if (parseCallback != null) {
+			ParsingExecutionContextView parseContext = ParsingExecutionContextView.view(ctx);
+			parseContext.setParsingListener((input, source) -> parseCallback.accept(source));
+			ctx = parseContext;
+		}
 		List<CompilationUnit> cus = Collections.emptyList();
 		long start = System.currentTimeMillis();
 		synchronized (parser) {

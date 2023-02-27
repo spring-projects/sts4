@@ -140,7 +140,8 @@ public class RewriteRefactorings implements CodeActionResolver, QuickfixHandler 
 			boolean projectWide = data.getRecipeScope() == RecipeScope.PROJECT;
 			Recipe r = createRecipe(data); 
 			if (projectWide) {
-				return applyRecipe(r, project.get(), ORAstUtils.parse(documents, project.get()));
+				//TODO: progress here as well.
+				return applyRecipe(r, project.get(), ORAstUtils.parse(documents, project.get(), null));
 			} else {
 				List<CompilationUnit> cus = data.getDocUris().stream().map(docUri -> cuCache.getCU(project.get(), URI.create(docUri))).filter(Objects::nonNull).collect(Collectors.toList());
 				return applyRecipe(r, project.get(), cus);
