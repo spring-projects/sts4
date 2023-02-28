@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2022 VMware, Inc.
+ * Copyright (c) 2022, 2023 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -28,9 +28,12 @@ import org.springframework.tooling.jdt.ls.commons.Logger;
 public class JdtLsExtensionPlugin extends Plugin {
 
 	private boolean bootProjectPresent = false;
+	
+	private static JdtLsExtensionPlugin instance = null;
 
 	@Override
 	public void start(BundleContext context) throws Exception {
+		instance = this;
 		super.start(context);
 		Logger logger = Logger.forEclipsePlugin(() -> this);
 		initializationFuture().thenAccept(v -> {
@@ -59,6 +62,7 @@ public class JdtLsExtensionPlugin extends Plugin {
 	@Override
 	public void stop(BundleContext context) throws Exception {
 		super.stop(context);
+		instance = null;
 	}
 
 	private CompletableFuture<Void> initializationFuture() {
@@ -96,6 +100,10 @@ public class JdtLsExtensionPlugin extends Plugin {
 
 		});
 		return initFuture;
+	}
+	
+	static JdtLsExtensionPlugin getInstance() {
+		return instance;
 	}
 
 }

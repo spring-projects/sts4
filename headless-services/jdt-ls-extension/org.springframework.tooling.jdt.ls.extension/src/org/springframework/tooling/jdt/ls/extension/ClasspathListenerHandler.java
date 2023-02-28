@@ -23,7 +23,7 @@ import org.springframework.tooling.jdt.ls.commons.classpath.ReusableClasspathLis
 @SuppressWarnings("restriction")
 public class ClasspathListenerHandler implements IDelegateCommandHandler {
 	
-	private static final Logger logger = Logger.DEFAULT;
+	private static final Logger logger = Logger.forEclipsePlugin(() -> JdtLsExtensionPlugin.getInstance());
 	private static ReusableClasspathListenerHandler handlerImpl = checkSupported();
 	private static ReusableClasspathListenerHandler checkSupported() {
 		try {
