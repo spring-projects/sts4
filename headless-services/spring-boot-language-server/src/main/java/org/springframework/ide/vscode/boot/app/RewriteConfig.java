@@ -38,7 +38,7 @@ public class RewriteConfig {
 	
 	@ConditionalOnBean(RewriteRecipeRepository.class)
 	@Bean RewriteRefactorings rewriteRefactorings(SimpleLanguageServer server, JavaProjectFinder projectFinder, RewriteRecipeRepository recipeRepo, RewriteCompilationUnitCache cuCache) {
-		return new RewriteRefactorings(server.getTextDocumentService(), projectFinder, recipeRepo, cuCache);
+		return new RewriteRefactorings(server, projectFinder, recipeRepo, cuCache);
 	}
 	
 	@ConditionalOnBean(RewriteRecipeRepository.class)

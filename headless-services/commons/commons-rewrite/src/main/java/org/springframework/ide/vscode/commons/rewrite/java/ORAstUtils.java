@@ -36,6 +36,7 @@ import org.openrewrite.TreeVisitor;
 import org.openrewrite.internal.RecipeIntrospectionUtils;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaParser;
+import org.openrewrite.java.JavaParser.Builder;
 import org.openrewrite.java.JavaParsingException;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.UpdateSourcePositions;
@@ -234,10 +235,7 @@ public class ORAstUtils {
 	
 	public static JavaParser createJavaParser(IJavaProject project) {
 		try {
-			List<Path> classpath = IClasspathUtil.getAllBinaryRoots(project.getClasspath()).stream().map(f -> f.toPath()).collect(Collectors.toList());
-			JavaParser jp = JavaParser.fromJavaVersion().build();
-			jp.setClasspath(classpath);
-			return jp;
+			return createJavaParserBuilder(project).build();
 		} catch (Exception e) {
 			if (isExceptionFromInterrupedThread(e)) {
 				log.debug("", e);
@@ -247,34 +245,44 @@ public class ORAstUtils {
 			return null;
 		}
 	}
-
-	public static List<CompilationUnit> parse(SimpleTextDocumentService documents, IJavaProject project, Consumer<SourceFile> parseCallback) {
-		List<Parser.Input> inputs = IClasspathUtil.getProjectJavaSourceFolders(project.getClasspath()).flatMap(folder -> {
-			try {
-				return Files.walk(folder.toPath());
-			} catch (IOException e) {
-				log.error("", e);
-			}
-			return Stream.empty();
-		}).filter(Files::isRegularFile).filter(p -> p.getFileName().toString().endsWith(".java")).map(p -> {
-			TextDocument doc = documents.getLatestSnapshot(p.toUri().toASCIIString());
-			if (doc == null) {
-				return new Parser.Input(p, () -> {
+	
+	public static Builder<? extends JavaParser, ?> createJavaParserBuilder(IJavaProject project) {
+		List<Path> classpath = IClasspathUtil.getAllBinaryRoots(project.getClasspath()).stream().map(f -> f.toPath()).collect(Collectors.toList());
+		return JavaParser.fromJavaVersion().classpath(classpath);
+	}
+	
+	public static List<Parser.Input> getParserInputs(SimpleTextDocumentService documents, IJavaProject project) {
+		return IClasspathUtil.getProjectJavaSourceFolders(project.getClasspath())
+				.flatMap(folder -> {
 					try {
-						return Files.newInputStream(p);
+						return Files.walk(folder.toPath());
 					} catch (IOException e) {
 						log.error("", e);
-						return new ByteArrayInputStream(new byte[0]);
 					}
-				});
-			} else {
-				return new Parser.Input(p, () -> new ByteArrayInputStream(doc.get().getBytes()));
-			}
-		}).collect(Collectors.toList());
-		JavaParser javaParser = createJavaParser(project);
-		return ORAstUtils.parseInputs(javaParser, inputs, parseCallback);
+					return Stream.empty();
+				})
+				.filter(Files::isRegularFile)
+				.filter(p -> p.getFileName().toString().endsWith(".java"))
+				.map(p -> getParserInput(documents, p))
+				.collect(Collectors.toList());
 	}
-
+	
+	public static Parser.Input getParserInput(SimpleTextDocumentService documents, Path p) {
+		TextDocument doc = documents.getLatestSnapshot(p.toUri().toASCIIString());
+		if (doc == null) {
+			return new Parser.Input(p, () -> {
+				try {
+					return Files.newInputStream(p);
+				} catch (IOException e) {
+					log.error("", e);
+					return new ByteArrayInputStream(new byte[0]);
+				}
+			});
+		} else {
+			return new Parser.Input(p, () -> new ByteArrayInputStream(doc.get().getBytes()));
+		}
+	}
+	
 	public static List<CompilationUnit> parse(JavaParser parser, Iterable<Path> sourceFiles) {
 		InMemoryExecutionContext ctx = new InMemoryExecutionContext(ORAstUtils::logExceptionWhileParsing);
 		ctx.putMessage(JavaParser.SKIP_SOURCE_SET_TYPE_GENERATION, true);

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2022 VMware, Inc.
+ * Copyright (c) 2022, 2023 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -30,10 +30,13 @@ final public class FixDescriptor {
 	
 	private String label;
 	
+	private String[] typeStubs;
+	
 	public FixDescriptor(String recipeId, List<String> docUris, String label) {
 		this.recipeId = recipeId;
 		this.docUris = docUris;
 		this.label = label;
+		this.typeStubs = new String[0];
 	}
 	
 	public FixDescriptor withRecipeScope(RecipeScope recipeScope) {
@@ -50,7 +53,12 @@ final public class FixDescriptor {
 		this.parameters = parameters;
 		return this;
 	}
-
+	
+	public FixDescriptor withTypeStubs(String... typeStubs) {
+		this.typeStubs = typeStubs;
+		return this;
+	}
+	
 	public String getRecipeId() {
 		return recipeId;
 	}
@@ -74,5 +82,9 @@ final public class FixDescriptor {
 	public String getLabel() {
 		return label;
 	}
-	
+
+	public String[] getTypeStubs() {
+		return typeStubs;
+	}
+
 }

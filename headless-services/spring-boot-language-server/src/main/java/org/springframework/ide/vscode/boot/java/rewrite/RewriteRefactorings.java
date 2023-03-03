@@ -12,10 +12,13 @@ package org.springframework.ide.vscode.boot.java.rewrite;
 
 import java.lang.reflect.Field;
 import java.net.URI;
+import java.nio.file.Paths;
+import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import org.eclipse.lsp4j.CodeAction;
@@ -24,22 +27,25 @@ import org.eclipse.lsp4j.TextDocumentEdit;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.WorkspaceEdit;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
+import org.openrewrite.Parser.Input;
 import org.openrewrite.Recipe;
 import org.openrewrite.RecipeRun;
 import org.openrewrite.Result;
 import org.openrewrite.config.DeclarativeRecipe;
 import org.openrewrite.internal.RecipeIntrospectionUtils;
+import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.J.CompilationUnit;
 import org.openrewrite.marker.Range;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.languageserver.PercentageProgressTask;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixEdit;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.CodeActionResolver;
-import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
+import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.rewrite.ORDocUtils;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
 import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
@@ -60,7 +66,7 @@ public class RewriteRefactorings implements CodeActionResolver, QuickfixHandler 
 	
 	private RewriteRecipeRepository recipeRepo;
 	
-	private SimpleTextDocumentService documents;
+	private SimpleLanguageServer server;
 
 	private RewriteCompilationUnitCache cuCache;
 
@@ -68,8 +74,8 @@ public class RewriteRefactorings implements CodeActionResolver, QuickfixHandler 
 
 	private Gson gson;
 		
-	public RewriteRefactorings(SimpleTextDocumentService documents, JavaProjectFinder projectFinder, RewriteRecipeRepository recipeRepo, RewriteCompilationUnitCache cuCache) {
-		this.documents = documents;
+	public RewriteRefactorings(SimpleLanguageServer server, JavaProjectFinder projectFinder, RewriteRecipeRepository recipeRepo, RewriteCompilationUnitCache cuCache) {
+		this.server = server;
 		this.projectFinder = projectFinder;
 		this.recipeRepo = recipeRepo;
 		this.cuCache = cuCache;
@@ -120,7 +126,7 @@ public class RewriteRefactorings implements CodeActionResolver, QuickfixHandler 
 		List<Result> results = reciperun.getResults();
 		List<Either<TextDocumentEdit, ResourceOperation>> edits = results.stream().filter(res -> res.getAfter() != null).map(res -> {
 			URI docUri = res.getAfter().getSourcePath().isAbsolute() ? res.getAfter().getSourcePath().toUri() : project.getLocationUri().resolve(res.getAfter().getSourcePath().toString());
-			TextDocument doc = documents.getLatestSnapshot(docUri.toASCIIString());
+			TextDocument doc = server.getTextDocumentService().getLatestSnapshot(docUri.toASCIIString());
 			if (doc == null) {
 				doc = new TextDocument(docUri.toASCIIString(), LanguageId.JAVA, 0, res.getBefore() == null ? "" : res.getBefore().printAll());
 			}
@@ -138,12 +144,27 @@ public class RewriteRefactorings implements CodeActionResolver, QuickfixHandler 
 		Optional<IJavaProject> project = projectFinder.find(new TextDocumentIdentifier(data.getDocUris().get(0)));
 		if (project.isPresent()) {
 			boolean projectWide = data.getRecipeScope() == RecipeScope.PROJECT;
-			Recipe r = createRecipe(data); 
+			Recipe r = createRecipe(data);
+			List<CompilationUnit> cus = Collections.emptyList();
 			if (projectWide) {
-				//TODO: progress here as well.
-				return applyRecipe(r, project.get(), ORAstUtils.parse(documents, project.get(), null));
+				JavaParser jp = ORAstUtils.createJavaParserBuilder(project.get()).dependsOn(data.getTypeStubs()).build();
+				List<Input> inputs = ORAstUtils.getParserInputs(server.getTextDocumentService(), project.get());
+				PercentageProgressTask progress = server.getProgressService().createPercentageProgressTask(UUID.randomUUID().toString(), inputs.size() + 1, data.getLabel());
+				try {
+					cus = ORAstUtils.parseInputs(jp, inputs, s -> progress.increment());
+					return applyRecipe(r, project.get(), cus);
+				} finally {
+					progress.setCurrent(progress.getTotal());
+					progress.done();
+				}
 			} else {
-				List<CompilationUnit> cus = data.getDocUris().stream().map(docUri -> cuCache.getCU(project.get(), URI.create(docUri))).filter(Objects::nonNull).collect(Collectors.toList());
+				if (data.getTypeStubs().length == 0) {
+					cus = data.getDocUris().stream().map(docUri -> cuCache.getCU(project.get(), URI.create(docUri))).filter(Objects::nonNull).collect(Collectors.toList());
+				} else {
+					JavaParser jp = ORAstUtils.createJavaParserBuilder(project.get()).dependsOn(data.getTypeStubs()).build();
+					List<Input> inputs = data.getDocUris().stream().map(URI::create).map(Paths::get).map(p -> ORAstUtils.getParserInput(server.getTextDocumentService(), p)).collect(Collectors.toList());
+					cus = ORAstUtils.parseInputs(jp, inputs, null);
+				}
 				return applyRecipe(r, project.get(), cus);
 			}
 		}

@@ -12,7 +12,6 @@ package org.springframework.ide.vscode.commons.languageserver;
 
 import org.eclipse.lsp4j.WorkDoneProgressBegin;
 import org.eclipse.lsp4j.WorkDoneProgressReport;
-import org.springframework.ide.vscode.commons.languageserver.util.LspClient;
 
 /**
  * Eclipse progress requires sending total work units number with the begin progress message. The number is any intger.
@@ -38,7 +37,7 @@ public class PercentageProgressTask extends AbstractProgressTask {
 	
 	private void begin(String title) {
 		WorkDoneProgressBegin progressBegin = new WorkDoneProgressBegin();
-		progressBegin.setPercentage(LspClient.currentClient() == LspClient.Client.ECLIPSE ? 100 : 0);
+		progressBegin.setPercentage(0);
 		progressBegin.setCancellable(false);
 		progressBegin.setTitle(title);
 		service.progressBegin(taskId, progressBegin);
