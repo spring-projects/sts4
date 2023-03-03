@@ -30,9 +30,7 @@ class DataRepositoryMethodParser {
 
 	private static final Map<String, List<QueryPredicateKeywordInfo>> PREDICATE_KEYWORDS_GROUPED_BY_FIRST_WORD = QueryPredicateKeywordInfo.PREDICATE_KEYWORDS
 			.stream()
-			.collect(Collectors.groupingBy(info->{
-				return findFirstWord(info.keyword());
-			}));
+			.collect(Collectors.groupingBy(info -> findFirstWord(info.keyword())));
 
 	private final String prefix;
 	private final Map<String, List<DomainProperty>> propertiesGroupedByFirstWord;

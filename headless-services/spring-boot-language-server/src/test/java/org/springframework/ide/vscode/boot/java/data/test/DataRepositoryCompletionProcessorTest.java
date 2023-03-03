@@ -138,9 +138,33 @@ public class DataRepositoryCompletionProcessorTest {
     }
 
     @Test
-    void findByComplexExpression() throws Exception {
+    void testFindByComplexExpression() throws Exception {
     	checkCompletions("findByResponsibleEmployee", "List<Customer> findByResponsibleEmployee(Employee responsibleEmployee);");
     	checkCompletions("findByResponsibleEmployee_SocialSecurityNumber", "List<Customer> findByResponsibleEmployee_SocialSecurityNumber(Long responsibleEmployee_SocialSecurityNumber);");
+    }
+
+    @Test
+    void testAppendKeywords() throws Exception {
+    	checkCompletions("findByFirstName",
+    			"findByFirstNameAnd",
+    			"findByFirstNameExists",
+    			"findByFirstNameIgnoreCase",
+    			"findByFirstNameIsLessThanEqual",
+    			"findByFirstNameOr",
+    			"findByFirstNameOrderBy");
+    }
+
+    @Test
+    void testAppendKeywordsWithPreviousKeyword() throws Exception {
+    	checkCompletions("findByFirstNameAnd",
+    			"findByFirstNameAndNot");
+    }
+
+    @Test
+    void testAppendKeywordsStartAlreadyPresent() throws Exception {
+    	checkCompletions("findByFirstNameA",
+    			"findByFirstNameAfter",
+    			"findByFirstNameAnd");
     }
 
 	private void checkCompletions(String alredyPresent, String... expectedCompletions) throws Exception {

@@ -47,22 +47,55 @@ public class DataRepositoryPrefixSensitiveCompletionProvider implements DataRepo
 			if (parseResult.lastWord() == null || !propertiesByName.containsKey(parseResult.lastWord())) {
 				addPropertyProposals(completions, offset, repoDef, parseResult);
 			}
+			addPredicateKeywordProposals(completions, offset, prefix, parseResult, propertiesByName);
 		}
+	}
+
+	private void addPredicateKeywordProposals(Collection<ICompletionProposal> completions, int offset, String prefix, DataRepositoryMethodNameParseResult parseResult, Map<String, DomainProperty> propertiesByName) {
+		String lastWord = findLastWordWithoutPrefixingProperty(parseResult, propertiesByName);
+		for (QueryPredicateKeywordInfo predicate : QueryPredicateKeywordInfo.PREDICATE_KEYWORDS){
+			if (parseResult.allowedKeywordTypes().contains(predicate.type())) {
+				createLastWordReplacementCompletion(completions, offset, parseResult, lastWord, predicate.keyword());
+			}
+		}
+	}
+
+	private String findLastWordWithoutPrefixingProperty(DataRepositoryMethodNameParseResult parseResult, Map<String, DomainProperty> propertiesByName) {
+		String lastWord = parseResult.lastWord();
+		if (lastWord == null) {
+			return "";
+		}
+		if (propertiesByName.containsKey(lastWord)) {
+			return "";
+		}
+		for (int i = lastWord.length() - 1; i >= 0; i--) {
+			if (Character.isUpperCase(lastWord.charAt(i))) {
+				String substring = lastWord.substring(0,i);
+				if (propertiesByName.containsKey(substring)) {
+					return lastWord.substring(i);
+				}
+			}
+		}
+		return lastWord;
 	}
 
 	private void addPropertyProposals(Collection<ICompletionProposal> completions, int offset, DataRepositoryDefinition repoDef, DataRepositoryMethodNameParseResult parseResult) {
 		for(DomainProperty property : repoDef.getDomainType().getProperties()){
-			String lastWord = parseResult.lastWord();
-			if (lastWord == null) {
-				lastWord = "";
-			}
-			if (property.getName().startsWith(lastWord)) {
-				DocumentEdits edits = new DocumentEdits(null, false);
-				edits.replace(offset - lastWord.length(), offset, property.getName());
-				DocumentEdits additionalEdits = new DocumentEdits(null, false);
-				ICompletionProposal proposal = new FindByCompletionProposal(property.getName(), CompletionItemKind.Text, edits, "property " + property.getName(), null, Optional.of(additionalEdits), lastWord);
-				completions.add(proposal);
-			}
+			String toReplace = property.getName();
+			createLastWordReplacementCompletion(completions, offset, parseResult,  parseResult.lastWord(), toReplace);
+		}
+	}
+
+	private void createLastWordReplacementCompletion(Collection<ICompletionProposal> completions, int offset, DataRepositoryMethodNameParseResult parseResult, String lastWord, String toReplace) {
+		if (lastWord == null) {
+			lastWord = "";
+		}
+		if (toReplace.startsWith(lastWord)) {
+			DocumentEdits edits = new DocumentEdits(null, false);
+			edits.replace(offset - lastWord.length(), offset, toReplace);
+			DocumentEdits additionalEdits = new DocumentEdits(null, false);
+			ICompletionProposal proposal = new FindByCompletionProposal(toReplace, CompletionItemKind.Text, edits, "property " + toReplace, null, Optional.of(additionalEdits), lastWord);
+			completions.add(proposal);
 		}
 	}
 
