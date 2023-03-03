@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2022 VMware, Inc.
+ * Copyright (c) 2022, 2023 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -18,6 +18,7 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.SourceFile;
 import org.openrewrite.Tree;
 import org.openrewrite.internal.ListUtils;
+import org.openrewrite.java.AnnotationMatcher;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.J.ClassDeclaration;
@@ -32,64 +33,67 @@ import org.springframework.ide.vscode.boot.java.Boot2JavaProblemType;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeCodeActionDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
-import org.springframework.ide.vscode.commons.rewrite.java.AnnotationHierarchies;
 import org.springframework.ide.vscode.commons.rewrite.java.FixAssistMarker;
 import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.java.JavaMarkerVisitor;
 
 public class NoAutowiredOnConstructorProblem implements RecipeCodeActionDescriptor {
 
+	private static final AnnotationMatcher BOOT_TEST_ANNOTATION_MATCHER = new AnnotationMatcher(
+			"@org.springframework.boot.test.context.SpringBootTest", true);
 	private static final String ID = "org.openrewrite.java.spring.NoAutowiredOnConstructor";
 	private static final String LABEL = "Remove Unnecessary @Autowired";
 
 	@Override
 	public JavaVisitor<ExecutionContext> getMarkerVisitor(ApplicationContext applicationContext) {
 		return new JavaMarkerVisitor<ExecutionContext>() {
-            public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext context) {
-                J.ClassDeclaration cd =  super.visitClassDeclaration(classDecl, context);
+			public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext context) {
+				J.ClassDeclaration cd = super.visitClassDeclaration(classDecl, context);
 
-                int constructorCount = 0;
-                for(Statement s : cd.getBody().getStatements()) {
-                    if(isConstructor(s)) {
-                        constructorCount++;
-                        if(constructorCount > 1) {
-                            return cd;
-                        }
-                    }
-                }
-                
-                FullyQualified type = TypeUtils.asFullyQualified(classDecl.getType());
-                if (type != null && isApplicableType(type)) {
-                    return cd.withBody(cd.getBody().withStatements(
-                            ListUtils.map(cd.getBody().getStatements(), s -> {
-                                if(!isConstructor(s)) {
-                                    return s;
-                                }
-                                MethodDeclaration constructor = (MethodDeclaration) s;
-            					String uri = getCursor().firstEnclosing(SourceFile.class).getSourcePath().toUri().toASCIIString();
-                        		FixAssistMarker fixAssistMarker = new FixAssistMarker(Tree.randomId(), getId())
-                        			.withFix(
-                        					new FixDescriptor(ID, List.of(uri), LABEL)
-                        						.withRecipeScope(RecipeScope.NODE)
-                        						.withRangeScope(getCursor().firstEnclosing(ClassDeclaration.class).getMarkers().findFirst(Range.class).get())
-                        			);
-                                constructor = constructor.withLeadingAnnotations(ListUtils.map(constructor.getLeadingAnnotations(), a -> {
-                                	if (TypeUtils.isOfClassType(a.getType(), Annotations.AUTOWIRED)) {
-    									a = a.withMarkers(a.getMarkers().add(fixAssistMarker)); 
-                                	}
-                                	return a;
-                                }));
-                                return constructor;
-                            })
-                    ));
-                }
-                return cd;
-            }
-            
+				int constructorCount = 0;
+				for (Statement s : cd.getBody().getStatements()) {
+					if (isConstructor(s)) {
+						constructorCount++;
+						if (constructorCount > 1) {
+							return cd;
+						}
+					}
+				}
+
+				FullyQualified type = TypeUtils.asFullyQualified(classDecl.getType());
+				if (type != null && isApplicableType(type)) {
+					return cd.withBody(cd.getBody().withStatements(ListUtils.map(cd.getBody().getStatements(), s -> {
+						if (!isConstructor(s)) {
+							return s;
+						}
+						MethodDeclaration constructor = (MethodDeclaration) s;
+						String uri = getCursor().firstEnclosing(SourceFile.class).getSourcePath().toUri()
+								.toASCIIString();
+						FixAssistMarker fixAssistMarker = new FixAssistMarker(Tree.randomId(), getId())
+								.withFix(new FixDescriptor(ID, List.of(uri), LABEL).withRecipeScope(RecipeScope.NODE)
+										.withRangeScope(getCursor().firstEnclosing(ClassDeclaration.class).getMarkers()
+												.findFirst(Range.class).get()));
+						constructor = constructor
+								.withLeadingAnnotations(ListUtils.map(constructor.getLeadingAnnotations(), a -> {
+									if (TypeUtils.isOfClassType(a.getType(), Annotations.AUTOWIRED)) {
+										a = a.withMarkers(a.getMarkers().add(fixAssistMarker));
+									}
+									return a;
+								}));
+						return constructor;
+					})));
+				}
+				return cd;
+			}
+
 			private boolean isApplicableType(FullyQualified type) {
-				return !AnnotationHierarchies
-						.getTransitiveSuperAnnotations(type, fq -> fq.getFullyQualifiedName().startsWith("java."))
-						.contains("org.springframework.boot.test.context.SpringBootTest");
+				for (FullyQualified annotationType : type.getAnnotations()) {
+					if (BOOT_TEST_ANNOTATION_MATCHER.matchesAnnotationOrMetaAnnotation(annotationType)) {
+						return false;
+					}
+				}
+				FullyQualified superType = type.getSupertype();
+				return superType == null ? true : isApplicableType(superType);
 			}
 
 		};
@@ -104,10 +108,9 @@ public class NoAutowiredOnConstructorProblem implements RecipeCodeActionDescript
 	public Boot2JavaProblemType getProblemType() {
 		return Boot2JavaProblemType.JAVA_AUTOWIRED_CONSTRUCTOR;
 	}
-	
-    private static boolean isConstructor(Statement s) {
-        return s instanceof J.MethodDeclaration && ((J.MethodDeclaration)s).isConstructor();
-    }
 
+	private static boolean isConstructor(Statement s) {
+		return s instanceof J.MethodDeclaration && ((J.MethodDeclaration) s).isConstructor();
+	}
 
 }
