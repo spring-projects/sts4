@@ -140,9 +140,12 @@
 	<bundle id="org.apache.log4j"/>
 	<bundle id="org.yaml.snakeyaml"/>
 	<bundle id="org.eclipse.lsp4e"/>
+	<bundle id="org.eclipse.lsp4e.debug"/>
 	<bundle id="org.eclipse.lsp4e.jdt"/>
 	<bundle id="org.eclipse.lsp4j"/>
+	<bundle id="org.eclipse.lsp4j.debug"/>
 	<bundle id="org.eclipse.lsp4j.jsonrpc"/>
+	<bundle id="org.eclipse.lsp4j.jsonrpc.debug"/>
 	<bundle id="org.eclipse.xtext.xbase.lib"/>
 	<bundle id="org.eclipse.zest.core"/>
 	<bundle id="org.eclipse.zest.layouts"/>
