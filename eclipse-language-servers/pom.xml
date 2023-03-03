@@ -287,7 +287,7 @@
 				<repository>
 					<id>orbit</id>
 					<layout>p2</layout>
-					<url>https://download.eclipse.org/tools/orbit/downloads/drops/S20230214193619/repository</url>
+					<url>https://download.eclipse.org/tools/orbit/downloads/drops/R20230302014618/repository</url>
 				</repository>
 <!--				<repository>
 					<id>m2e</id>
