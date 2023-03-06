@@ -59,6 +59,7 @@
       <feature id="org.eclipse.help" installMode="root"/>
 
       <feature id="org.eclipse.jdt" installMode="root"/>
+      <feature id="org.eclipse.jdt.bcoview.feature" installMode="root"/>
       <feature id="org.eclipse.jgit" installMode="root"/>
       <feature id="org.eclipse.jgit.lfs" installMode="root"/>
 
