@@ -94,7 +94,7 @@ public class DataRepositoryPrefixSensitiveCompletionProvider implements DataRepo
 			DocumentEdits edits = new DocumentEdits(null, false);
 			edits.replace(offset - lastWord.length(), offset, toReplace);
 			DocumentEdits additionalEdits = new DocumentEdits(null, false);
-			ICompletionProposal proposal = new FindByCompletionProposal(toReplace, CompletionItemKind.Text, edits, "property " + toReplace, null, Optional.of(additionalEdits), lastWord);
+			ICompletionProposal proposal = new FindByCompletionProposal(toReplace, CompletionItemKind.Text, edits, "property " + toReplace, null, Optional.of(additionalEdits), lastWord, true);
 			completions.add(proposal);
 		}
 	}
@@ -117,7 +117,7 @@ public class DataRepositoryPrefixSensitiveCompletionProvider implements DataRepo
 		int replaceStart = calculateReplaceOffset(offset, localPrefix, fullPrefix, returnType);
 		edits.replace(replaceStart, offset, newText.toString());
 		DocumentEdits additionalEdits = new DocumentEdits(null, false);
-		ICompletionProposal proposal = new FindByCompletionProposal(methodName, CompletionItemKind.Method, edits, null, null, Optional.of(additionalEdits), signature);
+		ICompletionProposal proposal = new FindByCompletionProposal(methodName, CompletionItemKind.Method, edits, null, null, Optional.of(additionalEdits), signature, false);
 		completions.add(proposal);
 	}
 

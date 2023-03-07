@@ -32,7 +32,7 @@ public class DataRepositoryQueryStartCompletionProvider implements DataRepositor
 		for(QueryMethodSubject queryMethodSubject : QueryMethodSubject.QUERY_METHOD_SUBJECTS){
 			String toInsert = queryMethodSubject.key() + "By";
 			if(prefix == null || toInsert.startsWith(localPrefix)||isOffsetAfterWhitespace(doc, offset)) {
-				completions.add(FindByCompletionProposal.createProposal(offset, CompletionItemKind.Text, prefix, toInsert, toInsert));
+				completions.add(FindByCompletionProposal.createProposal(offset, CompletionItemKind.Text, prefix, toInsert, toInsert, true));
 			}
 		}
 	}

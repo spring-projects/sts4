@@ -26,9 +26,10 @@ public class FindByCompletionProposal implements ICompletionProposal {
 	private Renderable doc;
 	private Optional<DocumentEdits> additionalEdits;
 	private String filter;
+	private boolean triggerNextCompletion;
 
 	public FindByCompletionProposal(String label, CompletionItemKind kind, DocumentEdits edits, String details,
-			Renderable doc, Optional<DocumentEdits> additionalEdits, String filter) {
+			Renderable doc, Optional<DocumentEdits> additionalEdits, String filter, boolean triggerNextCompletion) {
 		super();
 		this.label = label;
 		this.kind = kind;
@@ -37,9 +38,10 @@ public class FindByCompletionProposal implements ICompletionProposal {
 		this.doc = doc;
 		this.additionalEdits = additionalEdits;
 		this.filter = filter;
+		this.triggerNextCompletion = triggerNextCompletion;
 	}
 
-	public static ICompletionProposal createProposal(int offset, CompletionItemKind completionItemKind, String prefix, String label, String completion) {
+	public static ICompletionProposal createProposal(int offset, CompletionItemKind completionItemKind, String prefix, String label, String completion, boolean triggerNextCompletion) {
 		DocumentEdits edits = new DocumentEdits(null, false);
 		String filter = label;
 		if (prefix != null && label.startsWith(prefix)) {
@@ -54,7 +56,7 @@ public class FindByCompletionProposal implements ICompletionProposal {
 		}
 
 		DocumentEdits additionalEdits = new DocumentEdits(null, false);
-		return new FindByCompletionProposal(label, completionItemKind, edits, null, null, Optional.of(additionalEdits), filter);
+		return new FindByCompletionProposal(label, completionItemKind, edits, null, null, Optional.of(additionalEdits), filter, triggerNextCompletion);
 	}
 
 	@Override
@@ -90,6 +92,11 @@ public class FindByCompletionProposal implements ICompletionProposal {
 	@Override
 	public String getFilterText() {
 		return filter;
+	}
+
+	@Override
+	public boolean isTriggeringNextCompletionRequest() {
+		return triggerNextCompletion;
 	}
 
 }

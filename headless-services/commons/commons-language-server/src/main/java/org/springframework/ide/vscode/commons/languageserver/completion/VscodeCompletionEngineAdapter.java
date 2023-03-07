@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2022 VMware Inc.
+ * Copyright (c) 2016, 2023 VMware Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -21,6 +21,7 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
+import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.CompletionList;
 import org.eclipse.lsp4j.InsertTextFormat;
@@ -227,6 +228,10 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 			} else {
 				resolveItem(doc, completion, item);
 			}
+		}
+		
+		if (completion.isTriggeringNextCompletionRequest()) {
+			item.setCommand(new Command("Completion Proposal Request", "editor.action.triggerSuggest"));
 		}
 		return item;
 	}

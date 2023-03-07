@@ -95,6 +95,10 @@
             class="org.springframework.tooling.ls.eclipse.commons.commands.JavaWorkspaceCommandHanlder"
             commandId="java.execute.workspaceCommand">
       </handler>
+      <handler
+            class="org.springframework.tooling.ls.eclipse.commons.commands.InvokeContentAssistCommandHandler"
+            commandId="editor.action.triggerSuggest">
+      </handler>
    </extension>
    <extension
          point="org.eclipse.ui.commands">
@@ -119,6 +123,22 @@
                id="path"
                name="path"
                optional="false">
+         </commandParameter>
+      </command>
+      <command
+            id="editor.action.triggerSuggest"
+            name="Invoke Content Assist">
+         <commandParameter
+               id="org.eclipse.lsp4e.path.param"
+               name="Resource Path (unnecessary, only to make lsp4e happy)"
+               optional="true"
+               typeId="org.eclipse.lsp4e.pathParameterType">
+         </commandParameter>
+         <commandParameter
+               id="org.eclipse.lsp4e.command.param"
+               name="Command id (unnecessary, only to make lsp4e happy)"
+               optional="true"
+               typeId="org.eclipse.lsp4e.commandParameterType">
          </commandParameter>
       </command>
    </extension>

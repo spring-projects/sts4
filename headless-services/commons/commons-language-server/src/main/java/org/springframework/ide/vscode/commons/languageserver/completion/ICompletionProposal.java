@@ -26,6 +26,7 @@ public interface ICompletionProposal {
 	CompletionItemKind getKind();
 	DocumentEdits getTextEdit();
 	default Optional<DocumentEdits> getAdditionalEdit() { return Optional.empty(); }
+	default boolean isTriggeringNextCompletionRequest() { return false; }
 
 	String getDetail();
 	Renderable getDocumentation();
