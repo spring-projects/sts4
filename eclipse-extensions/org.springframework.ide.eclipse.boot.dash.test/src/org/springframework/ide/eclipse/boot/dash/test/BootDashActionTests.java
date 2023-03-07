@@ -16,7 +16,6 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.spy;
 import static org.mockito.Mockito.when;
 
 import java.util.ArrayList;
@@ -24,7 +23,6 @@ import java.util.EnumSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import java.util.UUID;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -41,10 +39,6 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Rule;
 import org.junit.Test;
-import org.springframework.ide.eclipse.boot.dash.cf.model.CloudAppDashElement;
-import org.springframework.ide.eclipse.boot.dash.cf.model.CloudFoundryBootDashModel;
-import org.springframework.ide.eclipse.boot.dash.cf.runtarget.CloudFoundryRunTarget;
-import org.springframework.ide.eclipse.boot.dash.cf.runtarget.CloudFoundryRunTargetType;
 import org.springframework.ide.eclipse.boot.dash.di.SimpleDIContext;
 import org.springframework.ide.eclipse.boot.dash.liveprocess.LiveDataConnectionManagementActions;
 import org.springframework.ide.eclipse.boot.dash.model.AbstractLaunchConfigurationsDashElement;
@@ -71,7 +65,6 @@ import org.springframework.ide.eclipse.boot.test.AutobuildingEnablement;
 import org.springframework.ide.eclipse.boot.test.BootProjectTestHarness;
 import org.springframework.ide.eclipse.boot.test.BootProjectTestHarness.WizardConfigurer;
 import org.springframework.ide.eclipse.boot.test.util.TestBracketter;
-import org.springsource.ide.eclipse.commons.core.pstore.InMemoryPropertyStore;
 import org.springsource.ide.eclipse.commons.frameworks.test.util.ACondition;
 import org.springsource.ide.eclipse.commons.livexp.core.LiveExpression;
 import org.springsource.ide.eclipse.commons.livexp.core.LiveVariable;
@@ -387,16 +380,6 @@ public class BootDashActionTests {
 			}
 		}
 
-		{
-			CloudAppDashElement cfElement = mockCfElement(appGuid, "demo-app");
-			selection.setElements(cfElement);
-			List<IAction> actions = liveActionsMenu.getActions();
-			Set<String> actualLabels = actions.stream().map(IAction::getText).collect(Collectors.toSet());
-			assertEquals(ImmutableSet.of("Connect remote process 1 (lbl)"), actualLabels);
-			for (IAction ac : actions) {
-				assertTrue(ac.isEnabled());
-			}
-		}
 	}
 
 	private IAction assertActionWithLabel(List<IAction> actions, String expectedLabel) {
@@ -1007,21 +990,5 @@ public class BootDashActionTests {
 		when(element.supportedGoalStates()).thenReturn(RunTargets.LOCAL_RUN_GOAL_STATES);
 		return element;
 	}
-
-	private CloudAppDashElement mockCfElement(String appGuid, String appName) {
-		CloudFoundryRunTarget cfTarget = mock(CloudFoundryRunTarget.class);
-		CloudFoundryRunTargetType cfType = mock(CloudFoundryRunTargetType.class);
-		when(cfTarget.getType()).thenReturn(cfType);
-
-		CloudFoundryBootDashModel model = mock(CloudFoundryBootDashModel.class);
-		when(model.getRunTarget()).thenReturn(cfTarget);
-		CloudAppDashElement element = spy(new CloudAppDashElement(model, appName, new InMemoryPropertyStore()));
-		when(element.getAppGuid()).thenReturn(UUID.fromString(appGuid));
-		when(element.getName()).thenReturn(appName);
-		when(element.supportedGoalStates()).thenReturn(CloudFoundryRunTarget.RUN_GOAL_STATES);
-		when(element.getTarget()).thenReturn(cfTarget);
-		return element;
-	}
-
 
 }

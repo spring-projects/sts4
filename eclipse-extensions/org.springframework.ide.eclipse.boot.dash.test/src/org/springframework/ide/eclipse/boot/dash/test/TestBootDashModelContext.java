@@ -25,12 +25,6 @@ import org.eclipse.debug.core.ILaunchManager;
 import org.springframework.ide.eclipse.boot.core.BootPreferences;
 import org.springframework.ide.eclipse.boot.core.cli.BootInstallManager;
 import org.springframework.ide.eclipse.boot.dash.api.RunTargetType;
-import org.springframework.ide.eclipse.boot.dash.cf.actions.CfBootDashActions;
-import org.springframework.ide.eclipse.boot.dash.cf.client.CloudFoundryClientFactory;
-import org.springframework.ide.eclipse.boot.dash.cf.debug.DebugSupport;
-import org.springframework.ide.eclipse.boot.dash.cf.debug.SshDebugSupport;
-import org.springframework.ide.eclipse.boot.dash.cf.debug.SshTunnelFactory;
-import org.springframework.ide.eclipse.boot.dash.cf.jmxtunnel.JmxSshTunnelManager;
 import org.springframework.ide.eclipse.boot.dash.console.CloudAppLogManager;
 import org.springframework.ide.eclipse.boot.dash.di.SimpleDIContext;
 import org.springframework.ide.eclipse.boot.dash.model.BootDashModelContext;
@@ -39,9 +33,6 @@ import org.springframework.ide.eclipse.boot.dash.model.SecuredCredentialsStore;
 import org.springframework.ide.eclipse.boot.dash.model.remote.GenericRemoteAppElementDataContributor;
 import org.springframework.ide.eclipse.boot.dash.test.mocks.MockScopedPropertyStore;
 import org.springframework.ide.eclipse.boot.dash.test.mocks.MockSecuredCredentialStore;
-import org.springframework.ide.eclipse.boot.dash.test.mocks.MockSshTunnel;
-import org.springframework.ide.eclipse.boot.dash.views.BootDashActions;
-import org.springsource.ide.eclipse.commons.boot.ls.remoteapps.RemoteBootAppsDataHolder.Contributor;
 import org.springsource.ide.eclipse.commons.core.pstore.IPropertyStore;
 import org.springsource.ide.eclipse.commons.core.pstore.IScopedPropertyStore;
 import org.springsource.ide.eclipse.commons.core.pstore.InMemoryPropertyStore;
@@ -83,11 +74,7 @@ public class TestBootDashModelContext extends BootDashModelContext {
 	private static SimpleDIContext createInjections() {
 		SimpleDIContext injections = new SimpleDIContext();
 		injections.defInstance(AllUserInteractions.class, mock(AllUserInteractions.class));
-		injections.defInstance(BootDashActions.Factory.class, CfBootDashActions.factory);
-		injections.defInstance(DebugSupport.class, SshDebugSupport.INSTANCE);
 		injections.def(BootDashViewModel.class, BootDashViewModel::new);
-		injections.defInstance(SshTunnelFactory.class, MockSshTunnel::new);
-		injections.defInstance(JmxSshTunnelManager.class, new JmxSshTunnelManager());
 		injections.def(CloudAppLogManager.class, CloudAppLogManager::new); //TODO: replace with a mock?
 		injections.def(GenericRemoteAppElementDataContributor.class, GenericRemoteAppElementDataContributor::new);
 		return injections;
@@ -164,11 +151,6 @@ public class TestBootDashModelContext extends BootDashModelContext {
 		for (RunTargetType t : types) {
 			injections.defInstance(RunTargetType.class, t);
 		}
-		return this;
-	}
-
-	public TestBootDashModelContext withCfClient(CloudFoundryClientFactory client) {
-		injections.defInstance(CloudFoundryClientFactory.class, client);
 		return this;
 	}
 

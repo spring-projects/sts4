@@ -62,16 +62,6 @@
 								<id>org.eclipse.m2e.feature</id>
 								<versionRange>0.0.0</versionRange>
 							</requirement>
-							<requirement>
-								<type>eclipse-feature</type>
-								<id>org.springframework.tooling.cloudfoundry.manifest.ls.feature</id>
-								<versionRange>0.0.0</versionRange>
-							</requirement>
-							<requirement>
-								<type>eclipse-plugin</type>
-								<id>org.springframework.ide.eclipse.boot.dash.cf</id>
-								<versionRange>0.0.0</versionRange>
-							</requirement>
 						</extraRequirements>
 					</dependency-resolution>
 				</configuration>

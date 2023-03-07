@@ -38,13 +38,6 @@
          unpack="false"/>
 
    <plugin
-         id="org.springframework.ide.eclipse.boot.dash.cf"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
          id="org.springframework.ide.eclipse.boot.dash.docker"
          download-size="0"
          install-size="0"
@@ -57,7 +50,7 @@
          install-size="0"
          version="0.0.0"
          unpack="false"/>
-         
+
    <plugin
          id="org.springframework.ide.eclipse.editor.support"
          download-size="0"
@@ -67,13 +60,6 @@
 
    <plugin
          id="org.springframework.ide.eclipse.beans.ui.live"
-         download-size="0"
-         install-size="0"
-         version="0.0.0"
-         unpack="false"/>
-
-   <plugin
-         id="org.springsource.ide.eclipse.commons.cloudfoundry.client.v2"
          download-size="0"
          install-size="0"
          version="0.0.0"

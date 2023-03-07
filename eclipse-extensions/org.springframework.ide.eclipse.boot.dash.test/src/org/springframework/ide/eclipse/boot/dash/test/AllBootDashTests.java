@@ -13,13 +13,7 @@ package org.springframework.ide.eclipse.boot.dash.test;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
-import org.springframework.ide.eclipse.boot.dash.docker.ui.SelectDockerDaemonDialog;
 import org.springframework.ide.eclipse.boot.dash.test.actuator.ActuatorDataTest;
-import org.springframework.ide.eclipse.boot.dash.test.yaml.AppNameReconcilerTest;
-import org.springframework.ide.eclipse.boot.dash.test.yaml.CFRouteTests;
-import org.springframework.ide.eclipse.boot.dash.test.yaml.DeploymentProperties2YamlTest;
-import org.springframework.ide.eclipse.boot.dash.test.yaml.ManifestCompareMergeTests;
-import org.springframework.ide.eclipse.boot.dash.test.yaml.Yaml2DeploymentPropertiesTest;
 
 @RunWith(Suite.class)
 @SuiteClasses({
@@ -28,42 +22,27 @@ import org.springframework.ide.eclipse.boot.dash.test.yaml.Yaml2DeploymentProper
 
 
 	// Raised up temporarily to be run first.
-	BootDashDockerTests.class, //50 seconds
-	SelectDockerDaemonDialogTest.class,
+//	BootDashDockerTests.class, //50 seconds
+//	SelectDockerDaemonDialogTest.class,
 
 	//New: (move down the chain later based on runtime)
-	JmxSupportTest.class,
 	PropertyFileStoreTest.class,
-
-	// Manifest YAML/Deployment Properties tests (less than 2 seconds per suite)
-	DeploymentProperties2YamlTest.class,
-	Yaml2DeploymentPropertiesTest.class,
-	AppNameReconcilerTest.class,
-	RouteBuilderTest.class,
-	CFRouteTests.class,
 
 	//Really short (less than 2 seconds per suite):
 	JLRMethodParserTest.class,
 	OrderBasedComparatorTest.class,
-	ManifestCompareMergeTests.class,
 	AbstractLaunchConfigurationsDashElementTest.class,
 	BootDashElementTagsTests.class,
 	ActuatorDataTest.class,
 	ToggleFiltersModelTest.class,
 
 	//Medium length (less than 30 seconds):
-	JarNameGeneratorTest.class,
 	BootDashViewModelTest.class,
-	BootJarPackagingTest.class,
 	BeanResourceDefinitionParsingTests.class,
 
 	//Long tests (more than 30 seconds):
-	CloudFoundryBootDashModelMockingTest.class,
-	DeploymentPropertiesDialogModelTests.class,
 	BootDashActionTests.class,
 	BootDashModelTest.class,
-	CloudFoundryClientTest.class,
-	CloudFoundryBootDashModelIntegrationTest.class,
 })
 public class AllBootDashTests {
 

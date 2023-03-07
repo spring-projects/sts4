@@ -16,9 +16,9 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Matchers.contains;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.contains;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.reset;
 import static org.mockito.Mockito.verify;
@@ -38,28 +38,19 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
-import org.springframework.ide.eclipse.boot.dash.cf.client.CFCredentials;
-import org.springframework.ide.eclipse.boot.dash.cf.client.CFCredentials.CFCredentialType;
-import org.springframework.ide.eclipse.boot.dash.cf.dialogs.StoreCredentialsMode;
-import org.springframework.ide.eclipse.boot.dash.cf.runtarget.CloudFoundryTargetProperties;
-import org.springframework.ide.eclipse.boot.dash.di.SimpleDIContext;
+import org.springframework.ide.eclipse.boot.dash.api.RunTargetType;
 import org.springframework.ide.eclipse.boot.dash.model.BootDashElement;
 import org.springframework.ide.eclipse.boot.dash.model.BootDashModel;
 import org.springframework.ide.eclipse.boot.dash.model.BootDashModel.ElementStateListener;
-import org.springframework.ide.eclipse.boot.dash.model.BootDashModelContext;
 import org.springframework.ide.eclipse.boot.dash.model.BootDashViewModel;
 import org.springframework.ide.eclipse.boot.dash.model.BootProjectDashElement;
 import org.springframework.ide.eclipse.boot.dash.model.RunTarget;
 import org.springframework.ide.eclipse.boot.dash.model.RunTargets;
-import org.springframework.ide.eclipse.boot.dash.model.SecuredCredentialsStore;
 import org.springframework.ide.eclipse.boot.dash.model.ToggleFiltersModel.FilterChoice;
 import org.springframework.ide.eclipse.boot.dash.model.UserInteractions;
-import org.springframework.ide.eclipse.boot.dash.api.RunTargetType;
 import org.springframework.ide.eclipse.boot.dash.model.runtargettypes.RunTargetTypes;
 import org.springframework.ide.eclipse.boot.dash.model.runtargettypes.TargetProperties;
 import org.springframework.ide.eclipse.boot.dash.test.mocks.MockBootDashModel;
-import org.springframework.ide.eclipse.boot.dash.test.mocks.MockRunTarget;
-import org.springframework.ide.eclipse.boot.dash.test.mocks.MockRunTargetType;
 import org.springframework.ide.eclipse.boot.launch.BootLaunchConfigurationDelegate;
 import org.springframework.ide.eclipse.boot.test.BootProjectTestHarness;
 import org.springsource.ide.eclipse.commons.livexp.core.LiveExpression;
@@ -530,46 +521,12 @@ public class BootDashViewModelTest {
 
 
 	@Test
-	public void testRestoreSingleRunTarget() throws Exception {
-		context.injections.def(MockRunTargetType.class, injections -> {
-			MockRunTargetType targetType = new MockRunTargetType(injections, "MOCK");
-			return targetType;
-		});
-
-		String targetId = "foo";
-
-		harness = new BootDashViewModelHarness(context);
-		MockRunTargetType targetType = context.injections.getBean(MockRunTargetType.class);
-
-		CloudFoundryTargetProperties props = new CloudFoundryTargetProperties(null, targetType, context.injections);
-		props.put(TargetProperties.RUN_TARGET_ID, targetId);
-		props.put("describe", "This is foo");
-		RunTarget<CloudFoundryTargetProperties> savedTarget = targetType.createRunTarget(props);
-		harness.model.getRunTargets().add(savedTarget);
-		BootDashModelContext oldContext = harness.context;
-
-		harness.reload();
-
-		MockRunTarget restoredTarget = (MockRunTarget)harness.getRunTarget(targetType);
-
-		//Not a stric requirement, but it would be a little strange of the restored
-		// target was the exact same object as the saved target (the test may be broken
-		// or some state in the model is not cleaned up when it is disposed)
-		assertTrue(restoredTarget !=  savedTarget);
-
-		assertEquals(savedTarget, restoredTarget);
-		assertEquals("This is foo", restoredTarget.get("describe"));
-	}
-
-	@Test
 	public void testModelComparator() throws Exception {
 		//View model is expected to provide a comparator that is based on
 		// the list of target-types it is initialized with. It should sort
 		//models based on type first then runtarget id second.
 
 		context.withTargetTypes(RunTargetTypes.LOCAL);
-		context.injections.def(RunTargetType.class, injections -> new MockRunTargetType(context.injections, "foo-type"));
-		context.injections.def(RunTargetType.class, injections -> new MockRunTargetType(context.injections, "bar-type"));
 		harness = new BootDashViewModelHarness(context);
 
 		Comparator<BootDashModel> comparator = harness.model.getModelComparator();
@@ -620,129 +577,6 @@ public class BootDashViewModelTest {
 		when(target.getDisplayName()).thenReturn(displayName);
 
 		return model;
-	}
-
-	@Test
-	public void testUpdatePropertiesInStore() throws Exception {
-		context.injections.def(MockRunTargetType.class, injections -> {
-			MockRunTargetType targetType = new MockRunTargetType(injections, "mock-type");
-			targetType.setRequiresCredentials(true);
-			return targetType;
-		});
-		harness = new BootDashViewModelHarness(context);
-
-		MockRunTargetType targetType = context.injections.getBean(MockRunTargetType.class);
-		CloudFoundryTargetProperties properties = new CloudFoundryTargetProperties(null, targetType, context.injections);
-		properties.setCredentials(CFCredentials.fromPassword("secret"));
-
-		MockRunTarget target = (MockRunTarget) targetType.createRunTarget(properties);
-		harness.model.getRunTargets().add(target);
-
-		harness.model.updateTargetPropertiesInStore();
-
-		assertEquals("secret", ((CloudFoundryTargetProperties)target.getTargetProperties()).getCredentials().getSecret());
-
-		harness.reload();
-
-		MockRunTarget restoredTarget = (MockRunTarget) harness.getRunTarget(targetType);
-		assertTrue(restoredTarget != target); //Not a strict requirement, but it is more or less
-												// expected the restored target is a brand new object
-
-		//TODO: Strange test. Shouldn't there be something to check here?
-	}
-
-	@Test
-	public void testRememberPassword() throws Exception {
-		context.injections.def(MockRunTargetType.class, injections -> {
-			MockRunTargetType targetType = new MockRunTargetType(injections, "mock-type");
-			targetType.setRequiresCredentials(true);
-			return targetType;
-		});
-		harness = new BootDashViewModelHarness(context);
-		MockRunTargetType targetType = context.injections.getBean(MockRunTargetType.class);
-		CloudFoundryTargetProperties properties = new CloudFoundryTargetProperties(null, targetType, context.injections);
-		properties.put(TargetProperties.RUN_TARGET_ID, "target-id");
-		properties.setStoreCredentials(StoreCredentialsMode.STORE_PASSWORD);
-		properties.setCredentials(CFCredentials.fromPassword("secret"));
-
-		MockRunTarget target = (MockRunTarget) targetType.createRunTarget(properties);
-		harness.model.getRunTargets().add(target);
-
-		harness.model.updateTargetPropertiesInStore();
-
-		SecuredCredentialsStore secureStore = harness.context.getSecuredCredentialsStore();
-
-		//This test needs to have knowledge what keys the passwords are store under.
-		// That seems undesirable.
-		String key = "mock-type:target-id";
-		{
-			CloudFoundryTargetProperties targetProperties = (CloudFoundryTargetProperties) target.getTargetProperties();
-			assertEquals(StoreCredentialsMode.STORE_PASSWORD, targetProperties.getStoreCredentials());
-			assertEquals(CFCredentialType.PASSWORD, targetProperties.getCredentials().getType());
-			assertEquals("secret", targetProperties.getCredentials().getSecret());
-			assertEquals("secret", secureStore.getCredentials(key));
-		}
-
-		/////////////////////////////////////////
-		// check that when runtargets are restored from the store the password prop is properly
-		// restored
-
-		harness.reload();
-
-		MockRunTarget restoredTarget = (MockRunTarget) harness.getRunTarget(targetType);
-		assertTrue(restoredTarget != target); //Not a strict requirement, but it is more or less
-												// expected the restored target is a brand new object
-		{
-			CloudFoundryTargetProperties restoredTargetProperties = (CloudFoundryTargetProperties) restoredTarget.getTargetProperties();
-			assertEquals(StoreCredentialsMode.STORE_PASSWORD, restoredTargetProperties.getStoreCredentials());
-			assertEquals("secret", restoredTargetProperties.getCredentials().getSecret());
-		}
-	}
-
-	@Test
-	public void testDontRememberPassword() throws Exception {
-		context.injections.def(MockRunTargetType.class, injections -> {
-			MockRunTargetType targetType = new MockRunTargetType(injections, "mock-type");
-			targetType.setRequiresCredentials(true);
-			return targetType;
-		});
-		harness = new BootDashViewModelHarness(context);
-
-		MockRunTargetType targetType = context.injections.getBean(MockRunTargetType.class);
-		CloudFoundryTargetProperties properties = new CloudFoundryTargetProperties(null, targetType, context.injections);
-		properties.setStoreCredentials(StoreCredentialsMode.STORE_NOTHING);
-		properties.setCredentials(CFCredentials.fromPassword("secret"));
-
-		MockRunTarget target = (MockRunTarget) targetType.createRunTarget(properties);
-		harness.model.getRunTargets().add(target);
-
-		harness.model.updateTargetPropertiesInStore();
-
-		SecuredCredentialsStore secureStore = harness.context.getSecuredCredentialsStore();
-
-		//This test needs to have knowledge what keys the passwords are store under.
-		// That seems undesirable.
-		String key = "mock-type:target-id";
-		{
-			CloudFoundryTargetProperties targetProperties = (CloudFoundryTargetProperties) target.getTargetProperties();
-			assertEquals(StoreCredentialsMode.STORE_NOTHING, targetProperties.getStoreCredentials());
-			assertEquals("secret", targetProperties.getCredentials().getSecret());
-			assertNull(secureStore.getCredentials(key));
-		}
-
-		/////////////////////////////////////////
-		// check that when runtargets are restored from the store the password is not remebered
-
-		harness.reload();
-
-		MockRunTarget restoredTarget = (MockRunTarget) harness.getRunTarget(targetType);
-		assertTrue(restoredTarget != target); //Not a strict requirement, but it is more or less
-												// expected the restored target is a brand new object
-		{
-			CloudFoundryTargetProperties restoredTargetProperties = (CloudFoundryTargetProperties) restoredTarget.getTargetProperties();
-			assertEquals(StoreCredentialsMode.STORE_NOTHING,restoredTargetProperties.getStoreCredentials());
-			assertNull(restoredTargetProperties.getCredentials());
-		}
 	}
 
 }

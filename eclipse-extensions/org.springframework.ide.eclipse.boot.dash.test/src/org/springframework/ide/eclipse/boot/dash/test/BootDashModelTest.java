@@ -82,7 +82,6 @@ import org.springframework.ide.eclipse.boot.core.cli.BootCliCommand;
 import org.springframework.ide.eclipse.boot.core.cli.BootInstallManager;
 import org.springframework.ide.eclipse.boot.core.cli.install.CloudCliInstall;
 import org.springframework.ide.eclipse.boot.core.cli.install.IBootInstall;
-import org.springframework.ide.eclipse.boot.dash.cf.model.CloudServiceInstanceDashElement;
 import org.springframework.ide.eclipse.boot.dash.model.BootDashElement;
 import org.springframework.ide.eclipse.boot.dash.model.BootDashElementsFilterBoxModel;
 import org.springframework.ide.eclipse.boot.dash.model.BootDashModel;
@@ -1534,8 +1533,7 @@ public class BootDashModelTest {
 	}
 
 	private boolean isService(BootDashElement e) {
-		return e instanceof LocalCloudServiceDashElement
-			|| e instanceof CloudServiceInstanceDashElement;
+		return e instanceof LocalCloudServiceDashElement;
 	}
 
 	public void waitNonServiceElements(final String... expectedElementNames) throws Exception {
