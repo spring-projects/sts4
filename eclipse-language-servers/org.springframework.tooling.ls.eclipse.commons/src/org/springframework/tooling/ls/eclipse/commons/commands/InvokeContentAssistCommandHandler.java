@@ -17,8 +17,8 @@ import org.eclipse.core.commands.NotEnabledException;
 import org.eclipse.core.commands.NotHandledException;
 import org.eclipse.core.commands.common.NotDefinedException;
 import org.eclipse.core.runtime.Assert;
-import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.ICoreRunnable;
+import org.eclipse.core.runtime.IProgressMonitor;
+import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchCommandConstants;
@@ -33,16 +33,21 @@ public class InvokeContentAssistCommandHandler extends AbstractHandler {
 	public Object execute(ExecutionEvent event) throws ExecutionException {
 		IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
 		final IHandlerService service = workbenchWindow.getService(IHandlerService.class);
-		UIJob job = UIJob.create("Invoke Content Assist", (ICoreRunnable) m -> {
-			try {
-				service.executeCommand(IWorkbenchCommandConstants.EDIT_CONTENT_ASSIST, null);
-			} catch (ExecutionException | NotDefinedException | NotEnabledException | NotHandledException e) {
-				throw new CoreException(Status.error("", e));
-			}
-		});
 		Display display = workbenchWindow.getWorkbench().getDisplay();
 		Assert.isLegal(display != null && !display.isDisposed());
-		job.setDisplay(display);
+		UIJob job = new UIJob(display, "Invoke Content Assist") {
+
+			@Override
+			public IStatus runInUIThread(IProgressMonitor arg0) {
+				try {
+					service.executeCommand(IWorkbenchCommandConstants.EDIT_CONTENT_ASSIST, null);
+					return Status.OK_STATUS;
+				} catch (ExecutionException | NotDefinedException | NotEnabledException | NotHandledException e) {
+					return Status.error("Failed to invoke content assist", e);
+				}
+			}
+
+		};
 		job.schedule();
 		return null;
 	}
