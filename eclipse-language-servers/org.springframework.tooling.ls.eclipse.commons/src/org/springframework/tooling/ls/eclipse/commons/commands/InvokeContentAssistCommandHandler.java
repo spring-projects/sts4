@@ -16,10 +16,13 @@ import org.eclipse.core.commands.ExecutionException;
 import org.eclipse.core.commands.NotEnabledException;
 import org.eclipse.core.commands.NotHandledException;
 import org.eclipse.core.commands.common.NotDefinedException;
+import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.ICoreRunnable;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.IWorkbenchCommandConstants;
+import org.eclipse.ui.IWorkbenchWindow;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.eclipse.ui.handlers.IHandlerService;
 import org.eclipse.ui.progress.UIJob;
@@ -28,14 +31,19 @@ public class InvokeContentAssistCommandHandler extends AbstractHandler {
 
 	@Override
 	public Object execute(ExecutionEvent event) throws ExecutionException {
-		UIJob.create("Invoke Content Assist", (ICoreRunnable) m -> {
+		IWorkbenchWindow workbenchWindow = HandlerUtil.getActiveWorkbenchWindow(event);
+		final IHandlerService service = workbenchWindow.getService(IHandlerService.class);
+		UIJob job = UIJob.create("Invoke Content Assist", (ICoreRunnable) m -> {
 			try {
-				IHandlerService service = HandlerUtil.getActiveWorkbenchWindow(event).getService(IHandlerService.class);
 				service.executeCommand(IWorkbenchCommandConstants.EDIT_CONTENT_ASSIST, null);
 			} catch (ExecutionException | NotDefinedException | NotEnabledException | NotHandledException e) {
 				throw new CoreException(Status.error("", e));
 			}
-		}).schedule();
+		});
+		Display display = workbenchWindow.getWorkbench().getDisplay();
+		Assert.isLegal(display != null && !display.isDisposed());
+		job.setDisplay(display);
+		job.schedule();
 		return null;
 	}
 
