@@ -311,13 +311,13 @@ public class ORAstUtils {
 			ctx = parseContext;
 		}
 		List<CompilationUnit> cus = Collections.emptyList();
-		long start = System.currentTimeMillis();
+//		long start = System.currentTimeMillis();
 		synchronized (parser) {
 			cus = parser.parseInputs(inputs, null, ctx);
 		}
-		log.info("Rewrite parser: " + (System.currentTimeMillis() - start));
+//		log.info("Rewrite parser: " + (System.currentTimeMillis() - start));
 		List<J.CompilationUnit> finalCus = new ArrayList<>(cus.size());
-		start = System.currentTimeMillis();
+//		start = System.currentTimeMillis();
 		for (CompilationUnit cu : cus) {
 			J.CompilationUnit newCu = (J.CompilationUnit) new UpdateSourcePositions().getVisitor().visit(cu, ctx);
 			if (newCu == null) {
@@ -326,7 +326,7 @@ public class ORAstUtils {
 				finalCus.add(newCu);
 			}
 		}
-		log.info("Positions Update: " + (System.currentTimeMillis() - start));
+//		log.info("Positions Update: " + (System.currentTimeMillis() - start));
 		return finalCus;
 	}
 	

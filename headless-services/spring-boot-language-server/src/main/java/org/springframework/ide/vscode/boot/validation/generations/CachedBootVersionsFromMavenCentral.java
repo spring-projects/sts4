@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.boot.validation.generations;
 
 import java.io.IOException;
 import java.time.Duration;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.CompletionException;
@@ -44,13 +45,19 @@ public class CachedBootVersionsFromMavenCentral {
 		@Override
 		public List<Version> load(String key) throws Exception {
 			for (int i = 0; i < ATTEMPTS_NUMBER; i++) {
+				CompletableFuture<List<Version>> future = null;
 				try {
-					return getFuture().get(RESPONSE_WAIT_TIME_MS, TimeUnit.MILLISECONDS);
+					future = getFuture();
+					return future.get(RESPONSE_WAIT_TIME_MS, TimeUnit.MILLISECONDS);
 				} catch (ExecutionException | TimeoutException e) {
 					// ignore exception - ask maven central again
+					if (future != null) {
+						future.cancel(true);
+					}
 				}
 			}
-			throw new Exception("Failed to fetch versions from Maven Central after " + ATTEMPTS_NUMBER + " tries.");
+			log.error("Failed to fetch versions from Maven Central after " + ATTEMPTS_NUMBER + " tries.");
+			return Collections.emptyList();
 		}
 		
 	});
