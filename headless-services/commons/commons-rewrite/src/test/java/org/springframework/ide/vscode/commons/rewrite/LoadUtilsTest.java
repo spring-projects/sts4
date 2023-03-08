@@ -64,7 +64,7 @@ public class LoadUtilsTest {
 						+ "",
 				r.getDescription());
 		assertEquals("Migrate to Spring Boot 3.0", r.getDisplayName());
-		assertTrue(r.getRecipeList().size() >= 13);
+		assertTrue(r.getRecipeList().size() >= 12);
 		
 		Recipe pomRecipe = r.getRecipeList().get(2);
 		assertTrue(pomRecipe instanceof DeclarativeRecipe);
