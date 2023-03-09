@@ -113,9 +113,9 @@
       <feature id="org.springframework.ide.eclipse.xml.namespaces.feature" installMode="root"/>
 
       <feature id="org.springframework.tooling.boot.ls.feature" installMode="root"/>
-      <feature id="org.springframework.tooling.cloudfoundry.manifest.ls.feature" installMode="root"/>
-      <feature id="org.springframework.tooling.bosh.ls.feature" installMode="root"/>
-      <feature id="org.springframework.tooling.concourse.ls.feature" installMode="root"/>
+<!--      <feature id="org.springframework.tooling.cloudfoundry.manifest.ls.feature" installMode="root"/> -->
+<!--      <feature id="org.springframework.tooling.bosh.ls.feature" installMode="root"/> -->
+<!--      <feature id="org.springframework.tooling.concourse.ls.feature" installMode="root"/> -->
 
 <!--      <feature id="org.eclipse.justj.openjdk.hotspot.jre.full" installMode="root"/> -->
       
