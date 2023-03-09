@@ -20,6 +20,7 @@ import org.springframework.ide.vscode.boot.common.IJavaProjectReconcileEngine;
 import org.springframework.ide.vscode.boot.validation.generations.ProjectVersionDiagnosticProvider;
 import org.springframework.ide.vscode.boot.validation.generations.ProjectVersionDiagnosticProvider.DiagnosticResult;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
 import org.springframework.ide.vscode.commons.languageserver.ProgressService;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
@@ -41,7 +42,7 @@ public class BootVersionValidationEngine implements IJavaProjectReconcileEngine 
 	}
 	
 	public void reconcile(IJavaProject project, ProgressService progressService) {
-		if (config.isBootVersionValidationEnabled()) {
+		if (config.isBootVersionValidationEnabled() && SpringProjectUtil.isBootProject(project)) {
 			log.debug("validating Spring Boot version on project: " + project.getElementName());
 			long start = System.currentTimeMillis();
 			

@@ -17,6 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 
@@ -69,6 +70,10 @@ public abstract class ProjectReconcileScheduler {
 	}
 	
 	protected final void scheduleValidation(IJavaProject project) {
+		if (!SpringProjectUtil.isSpringProject(project)) {
+			// Bail out if not a spring project
+			return;
+		}
 		URI uri = project.getLocationUri();
 		
 		Disposable previousRequest = projectReconcileRequests.put(uri, Mono.delay(Duration.ofMillis(debounce))
