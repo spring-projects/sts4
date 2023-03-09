@@ -19,7 +19,7 @@
          point="org.eclipse.ui.propertyPages">
       <page
             id="org.springframework.ide.eclipse.beans.ui.namespaces.projectPropertyPage"
-            name="Namespaces"
+            name="Namespace Support"
             class="org.springframework.ide.eclipse.xml.namespaces.ui.preferences.NamespaceVersionPreferencePage"
             adaptable="true"
             objectClass="org.eclipse.core.resources.IProject"
