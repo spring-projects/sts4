@@ -23,7 +23,7 @@
             class="org.springframework.ide.eclipse.xml.namespaces.ui.preferences.NamespaceVersionPreferencePage"
             adaptable="true"
             objectClass="org.eclipse.core.resources.IProject"
-            category="org.springframework.ide.eclipse.beans.ui.properties.ProjectPropertyPage">
+            category="org.springsource.ide.eclipse.commons.projectPropertyPage">
  <!--    <filter
                name="nature"
                value="org.springframework.ide.eclipse.core.springnature">
