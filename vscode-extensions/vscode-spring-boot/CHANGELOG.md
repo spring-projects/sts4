@@ -1,3 +1,36 @@
+## 2023-03-15 (4.18.0 RELEASE, incl. language servers version 1.45.0)
+
+#### important highlights
+
+* _(Spring Boot):_ new and vastly improved content-assist for Spring Data repository query methods (thanks to contributions from @danthe1st)
+* _(Spring Boot):_ the additional reconciling of Spring Boot projects to show Spring specific validations, outdated versions and more, now reports progress, runs faster, and uses less memory - please consider using this and tell us about your experiences and if you hit issues while having this feature enabled
+* _(VSCode):_ fixed an extremely annoying issue that caused regular Java content-assist in VSCode to stop working after a short while
+
+#### all fixes and improvements in detail
+
+* _(Spring Boot)_ fixed: update default settings for generations validation ([#999](https://github.com/spring-projects/sts4/issues/999))
+* _(Spring Boot)_ fixed: Switch to rewrite release versions for 4.18 ([#995](https://github.com/spring-projects/sts4/issues/995))
+* _(Spring Boot)_ fixed: completions for predicate keywords in Spring Data repositories ([#988](https://github.com/spring-projects/sts4/issues/988)) - contributed by @danthe1st
+* _(Spring Boot)_ fixed: False positive "Unnecessary @Autowired" warning when using abstract classes ([#985](https://github.com/spring-projects/sts4/issues/985))
+* _(Spring Boot)_ fixed: [validation] report progress when reconciling projects ([#984](https://github.com/spring-projects/sts4/issues/984))
+* _(Spring Boot)_ fixed: Factor out static methods for Spring Data repository completions ([#983](https://github.com/spring-projects/sts4/issues/983)) - contributed by @danthe1st
+* _(Spring Boot)_ fixed: Spring Data JPA Content Assist ([#981](https://github.com/spring-projects/sts4/issues/981)) - contributed by @danthe1st
+* _(Spring Boot)_ fixed: [boot-upgrade] [Spring-Security] Removed WebSecurityConfigurerAdapter ([#979](https://github.com/spring-projects/sts4/issues/979))
+* _(Spring Boot)_ fixed: [validation] [Spring-Security] Authorize HttpServletRequests with AuthorizationFilter ([#978](https://github.com/spring-projects/sts4/issues/978))
+* _(Spring Boot)_ fixed: [validation] [Spring Security] Lambda DSL ([#977](https://github.com/spring-projects/sts4/issues/977))
+* _(Spring Boot)_ fixed: [validation] Parse sources with Rewrite slower than JDT ([#971](https://github.com/spring-projects/sts4/issues/971))
+* _(Spring Boot)_ fixed: [validation] Version validation based on spring.io generations REST API ([#969](https://github.com/spring-projects/sts4/issues/969))
+* _(Spring Boot)_ fixed: [refactoring] running Spring Boot 3 open-rewrite migration recipes takes very long ([#863](https://github.com/spring-projects/sts4/issues/863))
+* _(Spring Boot)_ fixed: [validation] add navigation to release notes from version validation messages ([#923](https://github.com/spring-projects/sts4/issues/923))
+* _(Spring Boot)_ fixed: [validation] investigate highly increased memory consumption with new Java source reconciling ([#922](https://github.com/spring-projects/sts4/issues/922))
+* _(Spring Boot)_ fixed: VSCode cross project additional-spring-configuration-metadata.json ([#894](https://github.com/spring-projects/sts4/issues/894))
+* _(Spring Boot)_ fixed: [refactoring] investigate memory usage when converting projects ([#877](https://github.com/spring-projects/sts4/issues/877))
+* _(Spring Boot)_ fixed: add Spring Data JPA Content Assist to STS 4 ([#107](https://github.com/spring-projects/sts4/issues/107))
+* _(VSCode)_ fixed: Some error on WSL and Spring Extension ([#982](https://github.com/spring-projects/sts4/issues/982))
+* _(VSCode)_ fixed: vscode ext causes "Header must provide a Content-Length property" continuously ([#968](https://github.com/spring-projects/sts4/issues/968))
+* _(VSCode)_ fixed: Unable to install extension 'pivotal.vscode-spring-boot' as it is not compatible with VS Code '1.68.1' ([#967](https://github.com/spring-projects/sts4/issues/967))
+* _(VSCode)_ fixed: Expose command to establish live connection to remote apps in vscode ([#947](https://github.com/spring-projects/sts4/issues/947))
+
 ## 2023-02-01 (4.17.2 RELEASE, incl. language servers version 1.44.0)
 
 * _(Spring Boot)_ fixed: [symbols] do not auto-limit the result of the workspace symbol request ([#915](https://github.com/spring-projects/sts4/issues/915))
