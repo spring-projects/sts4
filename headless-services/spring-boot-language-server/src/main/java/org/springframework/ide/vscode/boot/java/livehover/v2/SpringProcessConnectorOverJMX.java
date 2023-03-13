@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019 Pivotal, Inc.
+ * Copyright (c) 2019, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -183,7 +183,7 @@ public class SpringProcessConnectorOverJMX implements SpringProcessConnector {
 				log.info("retrieve live data from: " + jmxURL);
 				SpringProcessGcPausesMetricsLiveData liveData = springJMXConnector.retrieveLiveGcPausesMetricsData(getProcessType(), jmxConnection, processID, processName, currentData, metricName, tags);
 				
-				if (liveData != null && liveData.getGcPausesMetrics() != null && liveData.getGcPausesMetrics().length > 0) {
+				if (liveData != null /* && liveData.getGcPausesMetrics() != null && liveData.getGcPausesMetrics().length > 0*/ ) {
 					return liveData;
 				}
 			}
