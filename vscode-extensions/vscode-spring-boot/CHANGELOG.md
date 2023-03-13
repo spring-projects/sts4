@@ -8,6 +8,7 @@
 
 #### all fixes and improvements in detail
 
+* _(Spring Boot)_ fixed: language server seems to have issues refreshing live data ([#1002](https://github.com/spring-projects/sts4/issues/1002))
 * _(Spring Boot)_ fixed: update default settings for generations validation ([#999](https://github.com/spring-projects/sts4/issues/999))
 * _(Spring Boot)_ fixed: Switch to rewrite release versions for 4.18 ([#995](https://github.com/spring-projects/sts4/issues/995))
 * _(Spring Boot)_ fixed: completions for predicate keywords in Spring Data repositories ([#988](https://github.com/spring-projects/sts4/issues/988)) - contributed by @danthe1st
