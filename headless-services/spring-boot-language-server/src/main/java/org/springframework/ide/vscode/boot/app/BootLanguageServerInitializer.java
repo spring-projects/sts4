@@ -13,6 +13,9 @@ package org.springframework.ide.vscode.boot.app;
 import java.util.Collections;
 import java.util.List;
 
+import org.eclipse.lsp4j.MessageParams;
+import org.eclipse.lsp4j.MessageType;
+import org.eclipse.lsp4j.ShowDocumentParams;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
@@ -47,6 +50,9 @@ import org.springframework.ide.vscode.commons.yaml.completion.YamlAssistContextP
 import org.springframework.ide.vscode.commons.yaml.structure.YamlStructureProvider;
 import org.springframework.stereotype.Component;
 import org.springframework.util.Assert;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 
 @Component
 public class BootLanguageServerInitializer implements InitializingBean {
@@ -158,7 +164,18 @@ public class BootLanguageServerInitializer implements InitializingBean {
 //				reconcile();
 			}
 //		});
-		
+			
+		server.onCommand("sts/show/document", p -> {
+			ShowDocumentParams showDocParams = new Gson().fromJson((JsonElement)p.getArguments().get(0), ShowDocumentParams.class);
+			return server.getClient().showDocument(showDocParams).thenApply(r -> {
+				if (!r.isSuccess()) {
+					MessageParams messageParams = new MessageParams(MessageType.Error, "Failed to open: " + showDocParams.getUri());
+					server.getClient().showMessage(messageParams);
+				}
+				return null;
+			});
+		});
+
 		server.onShutdown(() -> {
 			for (TextDocument d : documents.getAll()) {
 				documents.publishDiagnostics(d.getId(), Collections.emptyList());

@@ -345,16 +345,6 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, LanguageC
 			getWorkspaceService().onExecuteCommand(this::executeCommand);
 		}
 
-		onCommand("sts/show/document", p -> {
-			ShowDocumentParams showDocParams = new Gson().fromJson((JsonElement)p.getArguments().get(0), ShowDocumentParams.class);
-			return getClient().showDocument(showDocParams).thenApply(r -> {
-				if (!r.isSuccess()) {
-					MessageParams messageParams = new MessageParams(MessageType.Error, "Failed to open: " + showDocParams.getUri());
-					getClient().showMessage(messageParams);
-				}
-				return null;
-			});
-		});
 		ServerCapabilities cap = getServerCapabilities();
 		if (appContext!=null) {
 			Map<String, ServerCapabilityInitializer> extraCaps = appContext.getBeansOfType(ServerCapabilityInitializer.class);
