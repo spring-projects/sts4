@@ -8,8 +8,11 @@ workdir=`pwd`
 #Uncomment the below to publish only concourse vxix
 #vsix_files=`ls ${workdir}/s3-*/vscode-concourse-*.vsix`
 
+#Uncomment the below to publish only spring-boot vxix
+vsix_files=`ls ${workdir}/s3-*/vscode-spring-boot-*.vsix`
+
 #Uncomment the below to publish all vsix files
-vsix_files=`ls ${workdir}/s3-*/vscode-*.vsix`
+#vsix_files=`ls ${workdir}/s3-*/vscode-*.vsix`
 
 for vsix_file in $vsix_files
 do
