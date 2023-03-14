@@ -9,7 +9,10 @@ workdir=`pwd`
 #vsix_files=`ls ${workdir}/s3-*/vscode-concourse-*.vsix`
 
 #Uncomment the below to publish only spring-boot vxix
-vsix_files=`ls ${workdir}/s3-*/vscode-spring-boot-*.vsix`
+#vsix_files=`ls ${workdir}/s3-*/vscode-spring-boot-*.vsix`
+
+#Uncomment the below to publish only cf-manifest-yaml vxix
+vsix_files=`ls ${workdir}/s3-*/vscode-manifest-yaml-*.vsix`
 
 #Uncomment the below to publish all vsix files
 #vsix_files=`ls ${workdir}/s3-*/vscode-*.vsix`
