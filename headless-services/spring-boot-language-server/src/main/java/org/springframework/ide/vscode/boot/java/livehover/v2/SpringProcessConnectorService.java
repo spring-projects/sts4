@@ -170,8 +170,6 @@ public class SpringProcessConnectorService {
 				progressTask.done();
 				
 				refreshProcess(new SpringProcessParams(processKey, "", "", ""));
-				refreshProcess(new SpringProcessParams(processKey, METRICS, MEMORY, ""));
-				refreshProcess(new SpringProcessParams(processKey, METRICS, GC_PAUSES, ""));
 			}
 			catch (Exception e) {
 				log.info("problem occured during process connect", e);
