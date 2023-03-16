@@ -63,6 +63,9 @@ export function activate(context: VSCode.ExtensionContext): Thenable<ExtensionAP
         },
         workspaceOptions: VSCode.workspace.getConfiguration("spring-boot.ls"),
         clientOptions: {
+            markdown: {
+                isTrusted: true
+            },
             uriConverters: {
                 code2Protocol: (uri) => {
            		        			/*

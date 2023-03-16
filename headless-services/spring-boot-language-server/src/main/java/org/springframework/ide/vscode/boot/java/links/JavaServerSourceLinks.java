@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2019 Pivotal, Inc.
+ * Copyright (c) 2018, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.links;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
@@ -42,7 +44,12 @@ public class JavaServerSourceLinks implements SourceLinks {
 		CompletableFuture<Optional<String>> link = server.getClient().javadocHoverLink(new JavaDataParams(projectUri, bindingKey.toString(), true))
 				.thenApply(l -> Optional.ofNullable(l));
 		try {
-			return link.get(10, TimeUnit.SECONDS);
+			return link.get(10, TimeUnit.SECONDS).map(s -> {
+				if (s.startsWith("jdt:/")) {
+					return "command:java.open.file?" + URLEncoder.encode("[\"" + URLEncoder.encode(s, StandardCharsets.UTF_8) + "\"]", StandardCharsets.UTF_8);
+				}
+				return s;
+			});
 		} catch (InterruptedException | ExecutionException | TimeoutException e) {
 			log.error("", e);
 		}
