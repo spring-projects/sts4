@@ -2228,7 +2228,46 @@ public class ConcourseEditorTest {
                         "  - put: my-git\n" +
                         "    inputs: not-a-list\n"
         );
-        editor.assertProblems("not-a-list|Expecting a 'Sequence'");
+        editor.assertProblems("not-a-list|Valid values are: [all, detect]");
+    }
+
+    @Test
+    void putStepInputsReconcileAll() throws Exception {
+        //See: https://github.com/spring-projects/sts4/issues/341
+        Editor editor = harness.newEditor(
+                "resources:\n" +
+                        "- name: my-git\n" +
+                        "  type: git\n" +
+                        "  source:\n" +
+                        "    uri: https://example.com/my-name/my-repo.git\n" +
+                        "    branch: master\n" +
+                        "jobs:\n" +
+                        "- name: do-stuff\n" +
+                        "  plan:\n" +
+                        "  - put: my-git\n" +
+                        "    inputs: all\n"
+        );
+        editor.assertProblems();
+    }
+    
+    void putStepInputsReconcileNoProblems() throws Exception {
+        //See: https://github.com/spring-projects/sts4/issues/341
+        Editor editor = harness.newEditor(
+                "resources:\n" +
+                        "- name: my-git\n" +
+                        "  type: git\n" +
+                        "  source:\n" +
+                        "    uri: https://example.com/my-name/my-repo.git\n" +
+                        "    branch: master\n" +
+                        "jobs:\n" +
+                        "- name: do-stuff\n" +
+                        "  plan:\n" +
+                        "  - put: my-git\n" +
+                        "    inputs:\n" +
+                        "    - build\n" + 
+                        "    - test\n"
+        );
+        editor.assertProblems();
     }
 
     @Test

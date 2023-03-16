@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016 Pivotal, Inc.
+ * Copyright (c) 2016, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -189,6 +189,8 @@ public class YTypeFactory {
 			return new YAtomAndMapUnion(name, atoms.get(0), maps.get(0));
 		} else if (atoms.size()==0 && maps.size()==0 && arrays.size()==1 && beans.size()==1) {
 			return new YBeanAndSequenceUnion(name, beans.get(0), arrays.get(0));
+		} else if (atoms.size()==1 && arrays.size()==1 && maps.size()==0 && beans.size()==0) {
+			return new YAtomAndSequenceUnion(name, atoms.get(0), arrays.get(0));
 		}
 		throw new IllegalArgumentException("Union of this kind of types is not (yet) supported: "+types);
 	}
@@ -901,6 +903,36 @@ public class YTypeFactory {
 
 		@Override
 		public boolean isBean() {
+			return true;
+		}
+		
+		@Override
+		public boolean isSequenceable() {
+			return true;
+		}
+	}
+	
+	public class YAtomAndSequenceUnion extends AbstractUnionType {
+		private final YAtomicType atomic;
+		private final YSeqType seq;
+		
+		public YAtomAndSequenceUnion(String name, YAtomicType atomic, YSeqType seq) {
+			super(name, atomic, seq);
+			this.atomic = atomic;
+			this.seq = seq;
+		}
+		@Override
+		public YType inferMoreSpecificType(DynamicSchemaContext dc) {
+			if (dc.isAtomic()) {
+				return atomic;
+			} else if (dc.isSequence()) {
+				return seq;
+			}
+			return super.inferMoreSpecificType(dc);
+		}
+
+		@Override
+		public boolean isAtomic() {
 			return true;
 		}
 		
