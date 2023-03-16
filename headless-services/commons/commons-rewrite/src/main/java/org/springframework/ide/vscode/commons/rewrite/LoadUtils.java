@@ -55,7 +55,7 @@ public class LoadUtils {
 		Class<? extends Recipe> recipeClazz = getRecipeClass.apply(d.getName());
 		if (recipeClazz == null || DeclarativeRecipe.class.getName().equals(recipeClazz.getName())) {
 			DeclarativeRecipe recipe = new DeclarativeRecipe(d.getName(), d.getDisplayName(), d.getDescription(),
-					d.getTags(), d.getEstimatedEffortPerOccurrence(), d.getSource(), false);
+					d.getTags(), d.getEstimatedEffortPerOccurrence(), d.getSource(), false, d.getMaintainers());
 			for (RecipeDescriptor subDescriptor : d.getRecipeList()) {
 				recipe.doNext(createRecipe(subDescriptor, getRecipeClass));
 			}

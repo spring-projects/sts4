@@ -98,7 +98,7 @@ public class SpringBootUpgrade {
 	
 	private Recipe createUpgradeRecipe(Version version, Version targetVersion) {
 		Recipe recipe = new DeclarativeRecipe("upgrade-spring-boot", "Upgrade Spring Boot from " + version + " to " + targetVersion,
-				"", Collections.emptySet(), null, null, false);
+				"", Collections.emptySet(), null, null, false, Collections.emptyList());
 		
 		if (version.getMajor() == targetVersion.getMajor() && version.getMinor() == targetVersion.getMinor()) {
 			// patch version upgrade - treat as pom versions only upgrade
