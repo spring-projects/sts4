@@ -39,7 +39,3 @@ https://github.com/spring-projects/sts4/blob/master/CONTRIBUTING.adoc
 ### Code of Conduct
 
 Please see our https://github.com/spring-projects/.github/blob/master/CODE_OF_CONDUCT.md
-
-### Reporting Security Vulnerabilities
-
-Please see our https://github.com/spring-projects/.github/blob/master/SECURITY.adoc.
