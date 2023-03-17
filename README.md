@@ -42,4 +42,4 @@ Please see our https://github.com/spring-projects/.github/blob/master/CODE_OF_CO
 
 ### Reporting Security Vulnerabilities
 
-Please see our https://github.com/spring-projects/.github/blob/master/SECURITY.adoc.
+Please see our https://github.com/spring-projects/.github/blob/master/SECURITY.md
