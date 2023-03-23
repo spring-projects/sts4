@@ -19,6 +19,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Properties;
 
@@ -127,7 +128,7 @@ public class StsClasspathScanningLoader implements ResourceLoader, StsResourceLo
                 recipeExamples.addAll(resourceLoader.listRecipeExamples());
             }
             for(YamlResourceLoader resourceLoader : yamlResourceLoaders) {
-                recipeDescriptors.addAll(resourceLoader.listRecipeDescriptors(recipes));
+                recipeDescriptors.addAll(resourceLoader.listRecipeDescriptors(recipes, new HashMap<>()));
             }
         }
     }
