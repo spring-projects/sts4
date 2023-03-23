@@ -42,10 +42,12 @@ public class DataRepositoryPrefixSensitiveCompletionProvider implements DataRepo
 		DataRepositoryMethodNameParseResult parseResult = new DataRepositoryMethodParser(localPrefix, repoDef).parseLocalPrefixForCompletion();
 		if(parseResult != null && parseResult.performFullCompletion()){
 			Map<String, DomainProperty> propertiesByName = getPropertiesByName(repoDef.getDomainType().getProperties());
-			addMethodCompletionProposal(completions, offset, repoDef, localPrefix, prefix, parseResult, propertiesByName);
+			if (parseResult.lastWord() != null || !localPrefix.endsWith("By")) {
+				addMethodCompletionProposal(completions, offset, repoDef, localPrefix, prefix, parseResult, propertiesByName);
+			}
 
 			if (parseResult.lastWord() == null || !propertiesByName.containsKey(parseResult.lastWord())) {
-				addPropertyProposals(completions, offset, repoDef, parseResult);
+				addPropertyProposals(completions, offset, propertiesByName, parseResult);
 			}
 			addPredicateKeywordProposals(completions, offset, prefix, parseResult, propertiesByName);
 		}
@@ -79,9 +81,9 @@ public class DataRepositoryPrefixSensitiveCompletionProvider implements DataRepo
 		return lastWord;
 	}
 
-	private void addPropertyProposals(Collection<ICompletionProposal> completions, int offset, DataRepositoryDefinition repoDef, DataRepositoryMethodNameParseResult parseResult) {
-		for(DomainProperty property : repoDef.getDomainType().getProperties()){
-			String toReplace = property.getName();
+	private void addPropertyProposals(Collection<ICompletionProposal> completions, int offset, Map<String, DomainProperty> propertiesByName, DataRepositoryMethodNameParseResult parseResult) {
+		for (Map.Entry<String, DomainProperty> e : propertiesByName.entrySet()) {
+			String toReplace = e.getKey();
 			createLastWordReplacementCompletion(completions, offset, parseResult,  parseResult.lastWord(), toReplace);
 		}
 	}
