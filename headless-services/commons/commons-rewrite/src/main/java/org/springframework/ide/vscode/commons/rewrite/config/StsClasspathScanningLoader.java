@@ -12,7 +12,6 @@ package org.springframework.ide.vscode.commons.rewrite.config;
 
 import static java.util.Collections.emptyList;
 import static org.openrewrite.internal.RecipeIntrospectionUtils.constructRecipe;
-import static org.openrewrite.internal.RecipeIntrospectionUtils.recipeDescriptorFromRecipe;
 
 import java.lang.reflect.Constructor;
 import java.nio.file.Files;
@@ -146,7 +145,7 @@ public class StsClasspathScanningLoader implements ResourceLoader, StsResourceLo
                 }
                 try {
                     Recipe recipe = constructRecipe(recipeClass);
-                    recipeDescriptors.add(recipeDescriptorFromRecipe(recipe));
+                    recipeDescriptors.add(recipe.getDescriptor());
                     recipes.add(recipe);
                 } catch (Throwable t) {
                     log.warn("Unable to configure " + recipeClass.getName(), t);
