@@ -8,23 +8,22 @@ import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 
 @Entity
-public class Customer {
+public class Customer extends Person {
 
 	@Id
 	@GeneratedValue(strategy = GenerationType.AUTO)
 	private Long id;
-	private String firstName;
-	private String lastName;
 	private boolean thisCustomerIsSpecial;//contains keyword in name
 
 	@ManyToOne
 	private Employee responsibleEmployee;
 
-	protected Customer() {}
+	protected Customer() {
+		super();
+	}
 
 	public Customer(String firstName, String lastName, Employee responsibleEmployee) {
-		this.firstName = firstName;
-		this.lastName = lastName;
+		super(firstName, lastName);
 		this.responsibleEmployee = responsibleEmployee;
 	}
 
@@ -38,14 +37,6 @@ public class Customer {
 
 	public Long getId() {
 		return id;
-	}
-
-	public String getFirstName() {
-		return firstName;
-	}
-
-	public String getLastName() {
-		return lastName;
 	}
 
 	public boolean isThisCustomerIsSpecial() {

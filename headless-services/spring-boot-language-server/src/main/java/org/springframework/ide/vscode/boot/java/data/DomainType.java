@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Pivotal, Inc.
+ * Copyright (c) 2018, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,7 +11,10 @@
 package org.springframework.ide.vscode.boot.java.data;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
@@ -45,31 +48,47 @@ public class DomainType {
 		this.simpleName = typeBinding.getName();
 
 		this.properties = Suppliers.memoize(() -> {
-			if (!this.packageName.startsWith("java")) {
-				IMethodBinding[] methods = typeBinding.getDeclaredMethods();
-				if (methods != null && methods.length > 0) {
-					List<DomainProperty> properties = new ArrayList<>();
+			List<DomainProperty> domainProps = calculateDomainProperties(typeBinding);
+			return domainProps.toArray(new DomainProperty[domainProps.size()]);
+		});
+	}
+	
+	private List<DomainProperty> calculateDomainProperties(ITypeBinding typeBinding) {
+		if (!this.packageName.startsWith("java")) {
+			IMethodBinding[] methods = typeBinding.getDeclaredMethods();
+			if (methods != null && methods.length > 0) {
+				List<DomainProperty> properties = new ArrayList<>();
 
-					for (IMethodBinding method : methods) {
-						String methodName = method.getName();
-						if (methodName != null) {
-							String propertyName = null;
-							if (methodName.startsWith("get")) {
-								propertyName = methodName.substring(3);
-							}
-							else if (methodName.startsWith("is")) {
-								propertyName = methodName.substring(2);
-							}
-							if (propertyName != null) {
-								properties.add(new DomainProperty(propertyName, new DomainType(method.getReturnType())));
-							}
+				for (IMethodBinding method : methods) {
+					String methodName = method.getName();
+					if (methodName != null) {
+						String propertyName = null;
+						if (methodName.startsWith("get")) {
+							propertyName = methodName.substring(3);
+						}
+						else if (methodName.startsWith("is")) {
+							propertyName = methodName.substring(2);
+						}
+						if (propertyName != null) {
+							properties.add(new DomainProperty(propertyName, new DomainType(method.getReturnType())));
 						}
 					}
-					return (DomainProperty[]) properties.toArray(new DomainProperty[properties.size()]);
 				}
+				
+				if (typeBinding.getSuperclass() != null) {
+					properties.addAll(calculateDomainProperties(typeBinding.getSuperclass()));
+				}
+				
+				if (typeBinding.getInterfaces() != null) {
+					for (ITypeBinding si : typeBinding.getInterfaces()) {
+						properties.addAll(calculateDomainProperties(si));
+					}
+				}
+				
+				return properties;
 			}
-			return new DomainProperty[0];
-		});
+		}
+		return Collections.emptyList();
 	}
 
 	public String getPackageName() {
@@ -86,6 +105,14 @@ public class DomainType {
 
 	public DomainProperty[] getProperties() {
 		return properties.get();
+	}
+	
+	public Map<String, DomainProperty> getPropertiesByName() {
+		Map<String, DomainProperty> propertiesByName = new LinkedHashMap<>();
+		for(DomainProperty prop : properties.get()){
+			propertiesByName.put(prop.getName(), prop);
+		}
+		return propertiesByName;
 	}
 
 }

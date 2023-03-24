@@ -11,7 +11,6 @@
 package org.springframework.ide.vscode.boot.java.data.providers.prefixsensitive;
 
 import java.util.Collection;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -41,7 +40,7 @@ public class DataRepositoryPrefixSensitiveCompletionProvider implements DataRepo
 		}
 		DataRepositoryMethodNameParseResult parseResult = new DataRepositoryMethodParser(localPrefix, repoDef).parseLocalPrefixForCompletion();
 		if(parseResult != null && parseResult.performFullCompletion()){
-			Map<String, DomainProperty> propertiesByName = getPropertiesByName(repoDef.getDomainType().getProperties());
+			Map<String, DomainProperty> propertiesByName = repoDef.getDomainType().getPropertiesByName();
 			if (parseResult.lastWord() != null || !localPrefix.endsWith("By")) {
 				addMethodCompletionProposal(completions, offset, repoDef, localPrefix, prefix, parseResult, propertiesByName);
 			}
@@ -131,14 +130,6 @@ public class DataRepositoryPrefixSensitiveCompletionProvider implements DataRepo
 			replaceStart -= (beforeLocalPrefix.length() - trimmed.length()) + returnType.length();
 		}
 		return replaceStart;
-	}
-
-	private Map<String, DomainProperty> getPropertiesByName(DomainProperty[] properties) {
-		Map<String, DomainProperty> propertiesByName = new HashMap<>();
-		for(DomainProperty prop : properties){
-			propertiesByName.put(prop.getName(), prop);
-		}
-		return propertiesByName;
 	}
 
 	private String buildSignature(String methodName, Map<String, DomainProperty> properties, DataRepositoryMethodNameParseResult parseResult) {

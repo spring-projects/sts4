@@ -2,25 +2,20 @@
 package org.test;
 
 import javax.persistence.Entity;
-import javax.persistence.GeneratedValue;
-import javax.persistence.GenerationType;
 import javax.persistence.Id;
 
 @Entity
-public class Employee {
+public class Employee extends Person {
 
 	@Id
 	private Long socialSecurityNumber;
-	private String firstName;
-	private String lastName;
 
 	protected Employee() {
 	}
 
 	public Employee(long socialSecurityNumber, String firstName, String lastName) {
+		super(firstName, lastName);
 		this.socialSecurityNumber = socialSecurityNumber;
-		this.firstName = firstName;
-		this.lastName = lastName;
 	}
 
 	@Override
@@ -37,11 +32,4 @@ public class Employee {
 		return socialSecurityNumber;
 	}
 
-	public String getFirstName() {
-		return firstName;
-	}
-
-	public String getLastName() {
-		return lastName;
-	}
 }

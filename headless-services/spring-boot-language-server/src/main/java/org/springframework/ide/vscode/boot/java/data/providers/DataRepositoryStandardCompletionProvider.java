@@ -29,8 +29,7 @@ public class DataRepositoryStandardCompletionProvider implements DataRepositoryC
 
 	public void addProposals(Collection<ICompletionProposal> completions, IDocument doc, int offset, String prefix, DataRepositoryDefinition repo) {
 		DomainType domainType = repo.getDomainType();
-		DomainProperty[] properties = domainType.getProperties();
-		for (DomainProperty property : properties) {
+		for (DomainProperty property : domainType.getPropertiesByName().values()) {
 			completions.add(generateCompletionProposal(offset, prefix, repo, property));
 		}
 	}
