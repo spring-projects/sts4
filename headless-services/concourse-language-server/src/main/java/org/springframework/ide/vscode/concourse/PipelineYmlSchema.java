@@ -368,6 +368,7 @@ public class PipelineYmlSchema implements YamlSchema {
 		addProp(putStep, "get_params", f.contextAware("GetParams", (dc) ->
 			resourceTypes.getInParamsType(getResourceType("put", models, dc))
 		));
+		addProp(putStep, "no_get", t_boolean);
 		putStep.require((DynamicSchemaContext dc, Node parent, Node _map, YType type, IProblemCollector problems) -> {
 			if (_map instanceof MappingNode) {
 				MappingNode map = (MappingNode) _map;
