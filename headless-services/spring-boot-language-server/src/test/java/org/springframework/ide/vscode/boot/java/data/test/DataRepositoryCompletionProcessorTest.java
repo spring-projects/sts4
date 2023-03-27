@@ -120,7 +120,7 @@ public class DataRepositoryCompletionProcessorTest {
 
     @Test
     void testUnknownAttribute() throws Exception {
-    	checkCompletions("findByUnknownObject", "List<Customer> findByUnknownObject(Object unknownObject);");
+    	checkCompletions("findByUnknownObject");
     }
 
     @Test

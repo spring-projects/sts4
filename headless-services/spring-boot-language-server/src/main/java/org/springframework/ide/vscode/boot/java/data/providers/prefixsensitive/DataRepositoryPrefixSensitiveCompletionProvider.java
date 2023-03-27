@@ -41,7 +41,7 @@ public class DataRepositoryPrefixSensitiveCompletionProvider implements DataRepo
 		DataRepositoryMethodNameParseResult parseResult = new DataRepositoryMethodParser(localPrefix, repoDef).parseLocalPrefixForCompletion();
 		if(parseResult != null && parseResult.performFullCompletion()){
 			Map<String, DomainProperty> propertiesByName = repoDef.getDomainType().getPropertiesByName();
-			if (parseResult.lastWord() != null || !localPrefix.endsWith("By")) {
+			if (isEndingWithProperty(parseResult, propertiesByName) || isEndingWithPredicateKeyWord(localPrefix, propertiesByName)) {
 				addMethodCompletionProposal(completions, offset, repoDef, localPrefix, prefix, parseResult, propertiesByName);
 			}
 
@@ -50,6 +50,21 @@ public class DataRepositoryPrefixSensitiveCompletionProvider implements DataRepo
 			}
 			addPredicateKeywordProposals(completions, offset, prefix, parseResult, propertiesByName);
 		}
+	}
+	
+	private boolean isEndingWithPredicateKeyWord(String localPrefix, Map<String, DomainProperty> propertiesByName) {
+		for (QueryPredicateKeywordInfo predicate : QueryPredicateKeywordInfo.PREDICATE_KEYWORDS) {
+			if (predicate.type() == DataRepositoryMethodKeywordType.TERMINATE_EXPRESSION
+					&& localPrefix.endsWith(predicate.keyword())) {
+				return true;
+			}
+		}
+		return false;
+	}
+	
+	private boolean isEndingWithProperty(DataRepositoryMethodNameParseResult parseResult, Map<String, DomainProperty> propertiesByName) {
+		return parseResult.lastWord() != null 
+				&& (propertiesByName.containsKey(parseResult.lastWord()) || findExpressionType(propertiesByName, parseResult.lastWord()) != null);
 	}
 
 	private void addPredicateKeywordProposals(Collection<ICompletionProposal> completions, int offset, String prefix, DataRepositoryMethodNameParseResult parseResult, Map<String, DomainProperty> propertiesByName) {
@@ -118,7 +133,7 @@ public class DataRepositoryPrefixSensitiveCompletionProvider implements DataRepo
 		int replaceStart = calculateReplaceOffset(offset, localPrefix, fullPrefix, returnType);
 		edits.replace(replaceStart, offset, newText.toString());
 		DocumentEdits additionalEdits = new DocumentEdits(null, false);
-		ICompletionProposal proposal = new FindByCompletionProposal(methodName, CompletionItemKind.Method, edits, null, null, Optional.of(additionalEdits), signature, false);
+		ICompletionProposal proposal = new FindByCompletionProposal(signature, CompletionItemKind.Method, edits, null, null, Optional.of(additionalEdits), signature, false);
 		completions.add(proposal);
 	}
 

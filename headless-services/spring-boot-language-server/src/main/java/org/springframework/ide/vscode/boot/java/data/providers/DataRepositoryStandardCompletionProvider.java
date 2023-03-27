@@ -17,6 +17,7 @@ import org.springframework.ide.vscode.boot.java.data.DataRepositoryDefinition;
 import org.springframework.ide.vscode.boot.java.data.DomainProperty;
 import org.springframework.ide.vscode.boot.java.data.DomainType;
 import org.springframework.ide.vscode.boot.java.data.FindByCompletionProposal;
+import org.springframework.ide.vscode.boot.java.data.providers.prefixsensitive.DataRepositoryPrefixSensitiveCompletionProvider;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.util.StringUtils;
@@ -26,11 +27,15 @@ import org.springframework.util.StringUtils;
  * @author Martin Lippert
  */
 public class DataRepositoryStandardCompletionProvider implements DataRepositoryCompletionProvider {
+	
+	private static final String FIND_BY = "findBy";
 
 	public void addProposals(Collection<ICompletionProposal> completions, IDocument doc, int offset, String prefix, DataRepositoryDefinition repo) {
-		DomainType domainType = repo.getDomainType();
-		for (DomainProperty property : domainType.getPropertiesByName().values()) {
-			completions.add(generateCompletionProposal(offset, prefix, repo, property));
+		if (FIND_BY.startsWith(DataRepositoryPrefixSensitiveCompletionProvider.findLastJavaIdentifierPart(prefix))) {
+			DomainType domainType = repo.getDomainType();
+			for (DomainProperty property : domainType.getPropertiesByName().values()) {
+				completions.add(generateCompletionProposal(offset, prefix, repo, property));
+			}
 		}
 	}
 
