@@ -254,7 +254,7 @@ public class JdtLsProjectCache implements InitializableJavaProjectsService, Serv
 	@Override
 	public Mono<Disposable> initialize() {
 		return Mono.defer(() -> {
-			log.debug("ADD CLASSPATH LISTENER enableClasspath=" + initialClasspathLisetnerEnable);
+			log.info("INIT ADD CLASSPATH LISTENER enableClasspath=" + initialClasspathLisetnerEnable);
 			enableClasspathListener(initialClasspathLisetnerEnable);
 			return Mono.just(DISPOSABLE);
 		});
@@ -263,7 +263,7 @@ public class JdtLsProjectCache implements InitializableJavaProjectsService, Serv
 	private synchronized void enableClasspathListener(boolean enabled) {
 		if (classpathListenerEnabled != enabled) {
 			if (enabled) {
-				log.debug("Adding classpath listener enabled=" + enabled);
+				log.info("Adding classpath listener enabled=" + enabled);
 				classpathListenerEnabled = true;
 				notifyProjectObserverSupported();
 				classpathListenerRequest = server.addClasspathListener(CLASSPATH_LISTENER).timeout(INITIALIZE_TIMEOUT)
@@ -282,7 +282,7 @@ public class JdtLsProjectCache implements InitializableJavaProjectsService, Serv
 					}
 				});
 			} else {
-				log.debug("Removing classpath listener enabled=" + enabled);
+				log.info("Removing classpath listener enabled=" + enabled);
 				DISPOSABLE.update(Disposables.single());
 				classpathListenerRequest = null;
 				classpathListenerEnabled = false;
@@ -303,15 +303,16 @@ public class JdtLsProjectCache implements InitializableJavaProjectsService, Serv
 	
 	@Override
 	public void initialize(InitializeParams p, ServerCapabilities cap) {
-		server.onCommand(CMD_SPRING_BOOT_ENABLE_CLASSPATH_LISTENING, params -> {
-			log.debug("CLASSPATH ENABLED CMD EXEC");
-			if (params.getArguments().get(0) instanceof JsonPrimitive) {
-				boolean classpathListeningEnabled = ((JsonPrimitive)params.getArguments().get(0)).getAsBoolean();
-				log.debug("Enable classpath listening: " + classpathListeningEnabled);
-				enableClasspathListener(classpathListeningEnabled);
-			}
-			return CompletableFuture.completedFuture(null);
-		});
+		server.onCommand(CMD_SPRING_BOOT_ENABLE_CLASSPATH_LISTENING, params -> 
+			server.onInitialized(Mono.fromRunnable(() -> {
+				log.info("CLASSPATH ENABLED CMD EXEC");
+				if (params.getArguments().get(0) instanceof JsonPrimitive) {
+					boolean classpathListeningEnabled = ((JsonPrimitive)params.getArguments().get(0)).getAsBoolean();
+					log.info("CMD - Enable classpath listening: " + classpathListeningEnabled);
+					enableClasspathListener(classpathListeningEnabled);
+				}
+			})).toFuture()
+		);
 
 		log.debug("REGISTER ENABLE CLASSPATH CMD");
 		JsonObject o = (JsonObject) p.getInitializationOptions();
