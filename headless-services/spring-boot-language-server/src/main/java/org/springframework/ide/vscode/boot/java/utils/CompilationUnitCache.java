@@ -278,6 +278,45 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 		return cu;
 	}
 	
+	public static CompilationUnitDeclaration parse3(char[] source, String docURI, String unitName, IJavaProject project) throws Exception {
+		List<Classpath> classpaths = createClasspath(getClasspathEntries(project));
+		return parse3(source, docURI, unitName, classpaths, null);
+	}
+	
+	public static CompilationUnitDeclaration parse3(char[] source, String docURI, String unitName, List<Classpath> classpaths, INameEnvironmentWithProgress environment) {
+		Map<String, String> options = JavaCore.getOptions();
+		String apiLevel = JavaCore.VERSION_19;
+		JavaCore.setComplianceOptions(apiLevel, options);
+		if (environment == null) {
+			environment = CUResolver.createLookupEnvironment(classpaths.toArray(new Classpath[classpaths.size()]));
+		}
+		
+		BasicCompilationUnit sourceUnit = new BasicCompilationUnit(source, null, unitName, (IJavaElement) null);
+		
+		int flags = 0;
+		flags |= ICompilationUnit.ENABLE_STATEMENTS_RECOVERY;
+		flags |= ICompilationUnit.ENABLE_BINDINGS_RECOVERY;
+		CompilationUnitDeclaration unit = null;
+		try {
+			unit = CUResolver.resolve(sourceUnit, classpaths, options, flags, environment);
+		} catch (Exception e) {
+			flags &= ~ICompilationUnit.ENABLE_BINDINGS_RECOVERY;
+			unit = CUResolver.parse(sourceUnit, options, flags);
+		}
+		return unit;
+	}
+	
+	public static Map<String, String> createCompilerOptions() {
+		Map<String, String> options = JavaCore.getOptions();
+		String apiLevel = JavaCore.VERSION_19;
+		JavaCore.setComplianceOptions(apiLevel, options);
+		return options;
+	}
+	
+	public static List<Classpath> createClasspath(IJavaProject jp) throws Exception {
+		return createClasspath(getClasspathEntries(jp));
+	}
+	
 	private static List<Classpath> createClasspath(String[] classpathEntries) {
 		ASTParser parser = ASTParser.newParser(AST.JLS19);
 		String[] sourceEntries = new String[] {};
@@ -296,6 +335,12 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 			logger.error("{}", e);
 			return null;
 		}
+	}
+	
+	public static Tuple2<List<Classpath>, INameEnvironmentWithProgress> createLookupEnvTuple(IJavaProject jp) throws Exception {
+		List<Classpath> classpaths = createClasspath(getClasspathEntries(jp));
+		INameEnvironmentWithProgress environment = CUResolver.createLookupEnvironment(classpaths.toArray(new Classpath[classpaths.size()]));
+		return Tuples.of(classpaths, environment);
 	}
 	
 	private static String[] getClasspathEntries(IJavaProject project) throws Exception {

@@ -16,6 +16,7 @@
 	<properties>
 		<dependencies.version>${project.version}</dependencies.version>
 		<jdt.core.version>3.33.0</jdt.core.version>
+		<jdt.core.compiler.batch.version>3.7.0</jdt.core.compiler.batch.version>
 		<lsp4xml.version>0.24.0</lsp4xml.version>
 	</properties>
 
@@ -48,6 +49,11 @@
 			<releases>
 				<enabled>false</enabled>
 			</releases>
+		</repository>
+		
+		<repository>
+			<id>jabylon</id>
+			<url>https://www.jabylon.org/maven/</url>
 		</repository>
 	</repositories>
 
@@ -115,6 +121,13 @@
 		        </exclusion>
 		    </exclusions>
     	</dependency>
+
+    	<dependency>
+		    <groupId>org.eclipse.jdt.core.compiler</groupId>
+    		<artifactId>batch</artifactId>
+			<version>${jdt.core.compiler.batch.version}</version>
+		</dependency>
+		
 		<!-- the 3.10.1 org.eclipse.platform fixed the pb -->
 		<dependency>
 		    <groupId>org.eclipse.platform</groupId>

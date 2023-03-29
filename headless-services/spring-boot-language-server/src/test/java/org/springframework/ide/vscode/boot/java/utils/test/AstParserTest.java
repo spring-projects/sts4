@@ -15,6 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.net.URI;
 import java.net.URL;
+import java.util.List;
 
 import org.apache.commons.io.IOUtils;
 import org.eclipse.jdt.core.dom.ASTVisitor;
@@ -28,12 +29,21 @@ import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.NormalAnnotation;
 import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
+import org.eclipse.jdt.internal.compiler.batch.FileSystem.Classpath;
+import org.eclipse.jdt.internal.compiler.impl.CompilerOptions;
+import org.eclipse.jdt.internal.compiler.lookup.CompilationUnitScope;
+import org.eclipse.jdt.internal.compiler.lookup.LookupEnvironment;
+import org.eclipse.jdt.internal.compiler.lookup.MethodScope;
+import org.eclipse.jdt.internal.core.INameEnvironmentWithProgress;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
+
+import reactor.util.function.Tuple2;
 
 
 public class AstParserTest {
@@ -119,5 +129,34 @@ public class AstParserTest {
         });
 
     }
-	
+    
+    @Test
+    void testCuDeclaration() throws Exception {
+        URL sourceUrl = SourceLinks.source(jp, "org.springframework.boot.SpringApplication").get();
+
+        URI uri = sourceUrl.toURI();
+
+        String unitName = "SpringApplication";
+
+        char[] content = IOUtils.toString(uri).toCharArray();
+        
+		Tuple2<List<Classpath>, INameEnvironmentWithProgress> envTuple = CompilationUnitCache.createLookupEnvTuple(jp);
+		
+
+        CompilationUnitDeclaration cu = CompilationUnitCache.parse3(content, uri.toASCIIString(), unitName, envTuple.getT1(), envTuple.getT2());
+
+        assertNotNull(cu);
+        
+        cu.traverse(new org.eclipse.jdt.internal.compiler.ASTVisitor() {
+
+			@Override
+			public boolean visit(org.eclipse.jdt.internal.compiler.ast.FieldDeclaration fieldDeclaration,
+					MethodScope scope) {
+				// TODO Auto-generated method stub
+				return super.visit(fieldDeclaration, scope);
+			}
+        	
+        }, new CompilationUnitScope(cu, new CompilerOptions(CompilationUnitCache.createCompilerOptions())/*new LookupEnvironment(null, new CompilerOptions(CompilationUnitCache.createCompilerOptions()), null, envTuple.getT2())*/));
+    }
+    
 }
