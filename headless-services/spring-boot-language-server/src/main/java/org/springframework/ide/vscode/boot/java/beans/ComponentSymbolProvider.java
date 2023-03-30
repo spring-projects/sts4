@@ -10,27 +10,37 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.beans;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.stream.Collectors;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.AnnotationTypeDeclaration;
+import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.ITypeBinding;
+import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
+import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 import org.eclipse.lsp4j.Location;
+import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.SymbolKind;
 import org.eclipse.lsp4j.WorkspaceSymbol;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.boot.index.InjectionPoint;
+import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.handlers.AbstractSymbolProvider;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
+import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.boot.java.utils.CachedSymbol;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJavaContext;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
+import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 /**
@@ -40,6 +50,12 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
 public class ComponentSymbolProvider extends AbstractSymbolProvider {
 	
 	private static final Logger log = LoggerFactory.getLogger(ComponentSymbolProvider.class);
+
+	private final SpringMetamodelIndex springIndex;
+
+	public ComponentSymbolProvider(SpringMetamodelIndex springIndex) {
+		this.springIndex = springIndex;
+	}
 
 	@Override
 	protected void addSymbolsPass1(Annotation node, ITypeBinding annotationType, Collection<ITypeBinding> metaAnnotations, SpringIndexerJavaContext context, TextDocument doc) {
@@ -62,9 +78,11 @@ public class ComponentSymbolProvider extends AbstractSymbolProvider {
 		String beanName = getBeanName(node);
 		ITypeBinding beanType = getBeanType(node);
 
+		Location location = new Location(doc.getUri(), doc.toRange(node.getStartPosition(), node.getLength()));
+		
 		WorkspaceSymbol symbol = new WorkspaceSymbol(
 				beanLabel("+", annotationTypeName, metaAnnotationNames, beanName, beanType.getName()), SymbolKind.Interface,
-				Either.forLeft(new Location(doc.getUri(), doc.toRange(node.getStartPosition(), node.getLength()))));
+				Either.forLeft(location));
 		
 		SymbolAddOnInformation[] addon = new SymbolAddOnInformation[0];
 		if (Annotations.CONFIGURATION.equals(annotationType.getQualifiedName())
@@ -73,8 +91,66 @@ public class ComponentSymbolProvider extends AbstractSymbolProvider {
 		} else {
 			addon = new SymbolAddOnInformation[] {new BeansSymbolAddOnInformation(beanName, beanType.getQualifiedName())};
 		}
+		
+		InjectionPoint[] injectionPoints = findInjectionPoints(node, doc);
+		springIndex.registerBean(beanName, beanType.getQualifiedName(), location, injectionPoints);
 
 		return new EnhancedSymbolInformation(symbol, addon);
+	}
+
+	private InjectionPoint[] findInjectionPoints(Annotation node, TextDocument doc) throws BadLocationException {
+		List<InjectionPoint> result = new ArrayList<>();
+
+		ASTNode parent = node.getParent();
+		if (parent instanceof TypeDeclaration) {
+			TypeDeclaration type = (TypeDeclaration) parent;
+			
+			MethodDeclaration[] methods = type.getMethods();
+			for (MethodDeclaration method : methods) {
+				if (method.isConstructor()) {
+					result.addAll(ASTUtils.getInjectionPointsFromMethodParams(method, doc));
+				}
+			}
+			
+			FieldDeclaration[] fields = type.getFields();
+			for (FieldDeclaration field : fields) {
+				
+				boolean autowiredField = false;
+				
+				List<?> modifiers = field.modifiers();
+				for (Object modifier : modifiers) {
+					if (modifier instanceof Annotation) {
+						Annotation annotation = (Annotation) modifier;
+						
+						String qualifiedName = annotation.resolveTypeBinding().getQualifiedName();
+						if (Annotations.AUTOWIRED.equals(qualifiedName)) {
+							autowiredField = true;
+						}
+					}
+				}
+				
+
+				if (autowiredField) {
+					List<?> fragments = field.fragments();
+					for (Object fragment : fragments) {
+						if (fragment instanceof VariableDeclarationFragment) {
+							VariableDeclarationFragment varFragment = (VariableDeclarationFragment) fragment;
+							String fieldName = varFragment.getName().toString();
+							
+							DocumentRegion region = ASTUtils.nodeRegion(doc, varFragment.getName());
+							Range range = doc.toRange(region);
+							Location fieldLocation = new Location(doc.getUri(), range);
+	
+							String fieldType = field.getType().resolveBinding().getQualifiedName();
+							
+							result.add(new InjectionPoint(fieldName, fieldType, fieldLocation));
+						}
+					}
+				}
+			}
+		}
+		
+		return (InjectionPoint[]) result.toArray(new InjectionPoint[result.size()]);
 	}
 
 	protected String beanLabel(String searchPrefix, String annotationTypeName, Collection<String> metaAnnotationNames, String beanName, String beanType) {

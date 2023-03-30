@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.boot.app;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchyAwareLookup;
 import org.springframework.ide.vscode.boot.java.beans.BeansSymbolProvider;
@@ -27,11 +28,11 @@ import org.springframework.ide.vscode.boot.java.utils.SymbolCache;
 public class SpringSymbolIndexerConfig {
 
 	@Bean
-	AnnotationHierarchyAwareLookup<SymbolProvider> symbolProviders(SymbolCache cache) {
+	AnnotationHierarchyAwareLookup<SymbolProvider> symbolProviders(SymbolCache cache, SpringMetamodelIndex springIndex) {
 		AnnotationHierarchyAwareLookup<SymbolProvider> providers = new AnnotationHierarchyAwareLookup<>();
 		RequestMappingSymbolProvider requestMappingSymbolProvider = new RequestMappingSymbolProvider();
-		BeansSymbolProvider beansSymbolProvider = new BeansSymbolProvider();
-		ComponentSymbolProvider componentSymbolProvider = new ComponentSymbolProvider();
+		BeansSymbolProvider beansSymbolProvider = new BeansSymbolProvider(springIndex);
+		ComponentSymbolProvider componentSymbolProvider = new ComponentSymbolProvider(springIndex);
 		RestrictedDefaultSymbolProvider restrictedDefaultSymbolProvider = new RestrictedDefaultSymbolProvider();
 		DataRepositorySymbolProvider dataRepositorySymbolProvider = new DataRepositorySymbolProvider();
 		WebfluxRouterSymbolProvider webfluxRouterSymbolProvider = new WebfluxRouterSymbolProvider();
