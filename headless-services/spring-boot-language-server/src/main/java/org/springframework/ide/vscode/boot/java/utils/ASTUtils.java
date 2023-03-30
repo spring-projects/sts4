@@ -15,6 +15,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.Set;
 import java.util.function.Consumer;
 import java.util.stream.Stream;
 
@@ -342,6 +343,43 @@ public class ASTUtils {
 			}
 		}
 		return result;
+	}
+
+	public static void findSupertypes(ITypeBinding binding, Set<String> supertypesCollector) {
+		
+		// interfaces
+		ITypeBinding[] interfaces = binding.getInterfaces();
+		for (ITypeBinding resolvedInterface : interfaces) {
+			String simplifiedType = null;
+			if (resolvedInterface.isParameterizedType()) {
+				simplifiedType = resolvedInterface.getBinaryName();
+			}
+			else {
+				simplifiedType = resolvedInterface.getQualifiedName();
+			}
+			
+			if (simplifiedType != null) {
+				supertypesCollector.add(simplifiedType);
+				findSupertypes(resolvedInterface, supertypesCollector);
+			}
+		}
+		
+		// superclasses
+		ITypeBinding superclass = binding.getSuperclass();
+		if (superclass != null) {
+			String simplifiedType = null;
+			if (superclass.isParameterizedType()) {
+				simplifiedType = superclass.getBinaryName();
+			}
+			else {
+				simplifiedType = superclass.getQualifiedName();
+			}
+			
+			if (simplifiedType != null) {
+				supertypesCollector.add(simplifiedType);
+				findSupertypes(superclass, supertypesCollector);
+			}
+		}
 	}
 
 }

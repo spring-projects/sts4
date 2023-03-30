@@ -12,7 +12,9 @@ package org.springframework.ide.vscode.boot.java.beans;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.eclipse.jdt.core.dom.ASTNode;
@@ -93,7 +95,11 @@ public class ComponentSymbolProvider extends AbstractSymbolProvider {
 		}
 		
 		InjectionPoint[] injectionPoints = findInjectionPoints(node, doc);
-		springIndex.registerBean(beanName, beanType.getQualifiedName(), location, injectionPoints);
+		
+		Set<String> supertypes = new HashSet<>();
+		ASTUtils.findSupertypes(beanType, supertypes);
+
+		springIndex.registerBean(beanName, beanType.getQualifiedName(), location, injectionPoints, (String[]) supertypes.toArray(new String[supertypes.size()]));
 
 		return new EnhancedSymbolInformation(symbol, addon);
 	}

@@ -11,7 +11,9 @@
 package org.springframework.ide.vscode.boot.metamodel.test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.util.concurrent.CompletableFuture;
@@ -200,6 +202,23 @@ public class SpringMetamodelIndexerBeansTest {
 		assertEquals("org.test.BeanClass2", injectionPoints[1].getType());
 		Location ip2Location = new Location(docUri, new Range(new Position(11, 31), new Position(11, 36)));
 		assertEquals(ip2Location, injectionPoints[1].getLocation());
+	}
+
+	@Test
+	void testBeansWithSupertypes() {
+		Bean[] beans = springIndex.getBeans("beanWithSupertypes");
+		assertEquals(1, beans.length);
+		
+		assertTrue(beans[0].isTypeCompatibleWith("java.lang.Object"));
+		assertTrue(beans[0].isTypeCompatibleWith("org.test.supertypes.AbstractBeanWithSupertypes"));
+		assertTrue(beans[0].isTypeCompatibleWith("org.test.supertypes.Interface1OfBeanWithSupertypes"));
+		assertTrue(beans[0].isTypeCompatibleWith("org.test.supertypes.Interface2OfBeanWithSupertypes"));
+		assertTrue(beans[0].isTypeCompatibleWith("org.test.supertypes.InterfaceOfAbstractBean"));
+		assertTrue(beans[0].isTypeCompatibleWith("org.test.supertypes.BaseClassOfAbstractBeanWithSupertypes"));
+		
+		assertFalse(beans[0].isTypeCompatibleWith("java.lang.String"));
+		assertFalse(beans[0].isTypeCompatibleWith("java.util.Comparator"));
+
 	}
 
 }
