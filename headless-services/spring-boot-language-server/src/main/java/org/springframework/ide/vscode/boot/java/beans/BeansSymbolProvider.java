@@ -12,7 +12,9 @@ package org.springframework.ide.vscode.boot.java.beans;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
@@ -91,7 +93,11 @@ public class BeansSymbolProvider extends AbstractSymbolProvider {
 				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), enhancedSymbol));
 				
 				InjectionPoint[] injectionPoints = findInjectionPoints(node, doc);
-				springIndex.registerBean(nameAndRegion.getT1(), beanType.getQualifiedName(), location, injectionPoints);
+				
+				Set<String> supertypes = new HashSet<>();
+				ASTUtils.findSupertypes(beanType, supertypes);
+
+				springIndex.registerBean(nameAndRegion.getT1(), beanType.getQualifiedName(), location, injectionPoints, (String[]) supertypes.toArray(new String[supertypes.size()]));
 
 			} catch (BadLocationException e) {
 				log.error("", e);

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2032 VMware, Inc.
+ * Copyright (c) 2023 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -28,8 +28,8 @@ public class SpringMetamodelIndex {
 		return this.beans.stream().filter(bean -> bean.getName().equals(name)).collect(Collectors.toList()).toArray(new Bean[0]);
 	}
 
-	public void registerBean(String name, String type, Location location, InjectionPoint[] injectionPoints) {
-		Bean bean = new Bean(name, type, location, injectionPoints);
+	public void registerBean(String name, String type, Location location, InjectionPoint[] injectionPoints, String[] supertypes) {
+		Bean bean = new Bean(name, type, location, injectionPoints, supertypes);
 		this.beans.add(bean);
 	}
 

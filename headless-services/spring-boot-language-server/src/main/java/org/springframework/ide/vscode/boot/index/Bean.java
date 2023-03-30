@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2032 VMware, Inc.
+ * Copyright (c) 2023 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,6 +10,10 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.index;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 import org.eclipse.lsp4j.Location;
 
 public class Bean {
@@ -18,13 +22,15 @@ public class Bean {
 	private final String type;
 	private final Location location;
 	private final InjectionPoint[] injectionPoints;
+	private final Set<String> supertypes;
 
-	public Bean(String name, String type, Location location, InjectionPoint[] injectionPoints) {
+	public Bean(String name, String type, Location location, InjectionPoint[] injectionPoints, String[] supertypes) {
 		this.name = name;
 		this.type = type;
 		this.location = location;
 
 		this.injectionPoints = injectionPoints;
+		this.supertypes = new HashSet<>(Arrays.asList(supertypes));
 	}
 	
 	public String getName() {
@@ -41,6 +47,10 @@ public class Bean {
 	
 	public InjectionPoint[] getInjectionPoints() {
 		return injectionPoints;
+	}
+
+	public boolean isTypeCompatibleWith(String type) {
+		return supertypes.contains(type);
 	}
 	
 }
