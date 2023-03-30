@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2022 Pivotal, Inc.
+ * Copyright (c) 2017, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.beans;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
@@ -23,12 +24,16 @@ import org.eclipse.jdt.core.dom.ParameterizedType;
 import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
+import org.eclipse.jdt.core.dom.VariableDeclaration;
 import org.eclipse.lsp4j.Location;
+import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.SymbolKind;
 import org.eclipse.lsp4j.WorkspaceSymbol;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.boot.index.InjectionPoint;
+import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.handlers.AbstractSymbolProvider;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
@@ -58,6 +63,12 @@ public class BeansSymbolProvider extends AbstractSymbolProvider {
 
 	private static final String[] NAME_ATTRIBUTES = {"value", "name"};
 
+	private final SpringMetamodelIndex springIndex;
+
+	public BeansSymbolProvider(SpringMetamodelIndex springIndex) {
+		this.springIndex = springIndex;
+	}
+
 	@Override
 	protected void addSymbolsPass1(Annotation node, ITypeBinding annotationType, Collection<ITypeBinding> metaAnnotations, SpringIndexerJavaContext context, TextDocument doc) {
 		if (isMethodAbstract(node)) return;
@@ -67,20 +78,37 @@ public class BeansSymbolProvider extends AbstractSymbolProvider {
 		String markerString = getAnnotations(node);
 		for (Tuple2<String, DocumentRegion> nameAndRegion : getBeanNames(node, doc)) {
 			try {
+				Location location = new Location(doc.getUri(), doc.toRange(nameAndRegion.getT2()));
+
 				EnhancedSymbolInformation enhancedSymbol = new EnhancedSymbolInformation(
 						new WorkspaceSymbol(
 								beanLabel(isFunction, nameAndRegion.getT1(), beanType.getName(), "@Bean" + markerString),
 								SymbolKind.Interface,
-								Either.forLeft(new Location(doc.getUri(), doc.toRange(nameAndRegion.getT2())))),
+								Either.forLeft(location)),
 						new SymbolAddOnInformation[] {new BeansSymbolAddOnInformation(nameAndRegion.getT1(), beanType.getQualifiedName())}
 				);
 
 				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), enhancedSymbol));
+				
+				InjectionPoint[] injectionPoints = findInjectionPoints(node, doc);
+				springIndex.registerBean(nameAndRegion.getT1(), beanType.getQualifiedName(), location, injectionPoints);
 
 			} catch (BadLocationException e) {
 				log.error("", e);
 			}
 		}
+	}
+
+	private InjectionPoint[] findInjectionPoints(Annotation node, TextDocument doc) throws BadLocationException {
+		List<InjectionPoint> result = new ArrayList<>();
+		
+		ASTNode parent = node.getParent();
+		if (parent instanceof MethodDeclaration) {
+			MethodDeclaration method = (MethodDeclaration) parent;
+			result.addAll(ASTUtils.getInjectionPointsFromMethodParams(method, doc));
+		}
+
+		return (InjectionPoint[]) result.toArray(new InjectionPoint[result.size()]);
 	}
 
 	@Override

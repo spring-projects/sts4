@@ -41,6 +41,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.ide.vscode.boot.common.PropertyCompletionFactory;
 import org.springframework.ide.vscode.boot.common.RelaxedNameConfig;
 import org.springframework.ide.vscode.boot.java.JavaDefinitionHandler;
+import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaCodeActionProvider;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaProjectReconcilerScheduler;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaReconcileEngine;
@@ -142,6 +143,11 @@ public class BootLanguageServerBootApp {
 		} else {
 			return new SymbolCacheVoid();
 		}
+	}
+	
+	@Bean
+	SpringMetamodelIndex springMetamodelIndex() {
+		return new SpringMetamodelIndex();
 	}
 
 	@Bean

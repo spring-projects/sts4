@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.utils;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -34,12 +35,16 @@ import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
 import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
+import org.eclipse.jdt.core.dom.VariableDeclaration;
+import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.Range;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.boot.index.InjectionPoint;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.jdt.imports.ImportRewrite;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
+import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.CollectorUtil;
 import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
@@ -317,6 +322,26 @@ public class ASTUtils {
 		DocumentEdits edit = rewrite.createEdit(doc);
 
 		return edit != null ?  Optional.of(edit) : Optional.empty();
+	}
+
+	public static Collection<InjectionPoint> getInjectionPointsFromMethodParams(MethodDeclaration method, TextDocument doc) throws BadLocationException {
+		List<InjectionPoint> result = new ArrayList<>();
+		
+		List<?> parameters = method.parameters();
+		for (Object object : parameters) {
+			if (object instanceof VariableDeclaration) {
+				VariableDeclaration variable = (VariableDeclaration) object;
+				String name = variable.getName().toString();
+				String type = variable.resolveBinding().getType().getQualifiedName();
+				
+				DocumentRegion region = ASTUtils.nodeRegion(doc, variable.getName());
+				Range range = doc.toRange(region);
+				
+				Location location = new Location(doc.getUri(), range);
+				result.add(new InjectionPoint(name, type, location));
+			}
+		}
+		return result;
 	}
 
 }
