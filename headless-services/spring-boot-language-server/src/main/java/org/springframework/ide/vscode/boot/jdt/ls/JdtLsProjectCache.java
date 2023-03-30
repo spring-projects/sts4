@@ -79,6 +79,8 @@ public class JdtLsProjectCache implements InitializableJavaProjectsService, Serv
 	
 	private boolean initialClasspathLisetnerEnable;
 	
+	private CompletableFuture<Boolean> classpathListeningSupport = new CompletableFuture<>();
+	
 	public JdtLsProjectCache(SimpleLanguageServer server, boolean isJandexIndex) {
 		this.server = server;
 		this.IS_JANDEX_INDEX = isJandexIndex;
@@ -89,10 +91,12 @@ public class JdtLsProjectCache implements InitializableJavaProjectsService, Serv
 				server.onShutdown(() -> {
 					disposable.dispose();
 				});
+				classpathListeningSupport.complete(true);
 			})
 			.doOnError(error -> {
 				log.error("JDT-based JavaProject service not available!", error);
 				enableClasspathListener(false);
+				classpathListeningSupport.complete(false);
 			})
 			.toFuture();
 	}
@@ -261,6 +265,7 @@ public class JdtLsProjectCache implements InitializableJavaProjectsService, Serv
 	}
 	
 	private synchronized void enableClasspathListener(boolean enabled) {
+		log.info("enableClasspathListener(" + enabled + ") called. Current enablement = " + classpathListenerEnabled);
 		if (classpathListenerEnabled != enabled) {
 			if (enabled) {
 				log.info("Adding classpath listener enabled=" + enabled);
@@ -304,14 +309,19 @@ public class JdtLsProjectCache implements InitializableJavaProjectsService, Serv
 	@Override
 	public void initialize(InitializeParams p, ServerCapabilities cap) {
 		server.onCommand(CMD_SPRING_BOOT_ENABLE_CLASSPATH_LISTENING, params -> 
-			server.onInitialized(Mono.fromRunnable(() -> {
-				log.info("CLASSPATH ENABLED CMD EXEC");
-				if (params.getArguments().get(0) instanceof JsonPrimitive) {
-					boolean classpathListeningEnabled = ((JsonPrimitive)params.getArguments().get(0)).getAsBoolean();
-					log.info("CMD - Enable classpath listening: " + classpathListeningEnabled);
-					enableClasspathListener(classpathListeningEnabled);
+			classpathListeningSupport.thenApply(supported -> {
+				if (!supported) {
+					throw new IllegalStateException("Classpath listening not supported.");
+				} else {
+					log.info("CLASSPATH ENABLED CMD EXEC");
+					if (params.getArguments().get(0) instanceof JsonPrimitive) {
+						boolean classpathListeningEnabled = ((JsonPrimitive)params.getArguments().get(0)).getAsBoolean();
+						log.info("CMD - Enable classpath listening: " + classpathListeningEnabled);
+						enableClasspathListener(classpathListeningEnabled);
+					}
 				}
-			})).toFuture()
+				return supported;
+			})
 		);
 
 		log.debug("REGISTER ENABLE CLASSPATH CMD");
