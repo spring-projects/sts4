@@ -390,7 +390,7 @@ public class JavaData {
 	
 	private JavaTypeData createFromSignature(IType type, String signature) {
 		JavaTypeData data = new JavaTypeData();
-		data.setName(signature.replace('.', '/'));
+		String nameToSet = signature;
 
 		char[] typeSignature = signature.toCharArray();
 
@@ -400,7 +400,7 @@ public class JavaData {
 			for (int i = 0; i < typeArguments.length; i++) {
 				javaTypeArguments[i] = createFromSignature(type, typeArguments[i]);
 				// In case binding key is unresolved replace each argument with resolved one.
-				data.setName(data.getName().replace(typeArguments[i], javaTypeArguments[i].getName()));
+				nameToSet = nameToSet.replace(typeArguments[i], javaTypeArguments[i].getName());
 			}
 			data.setKind(JavaTypeKind.PARAMETERIZED);
 			LinkedHashMap<String, Object> extras = new LinkedHashMap<>();
@@ -410,7 +410,7 @@ public class JavaData {
 			extras.put("arguments", javaTypeArguments);
 			data.setExtras(extras);
 			// In case binding key is unresolved replace owner. Trim trailing ; from type erasure string and from the replacement
-			data.setName(data.getName().replace(typeErasure.substring(0, typeErasure.length() - 1), owner.getName().substring(0, owner.getName().length() - 1)));
+			nameToSet = nameToSet.replace(typeErasure.substring(0, typeErasure.length() - 1), owner.getName().substring(0, owner.getName().length() - 1));
 			
 		} else {
 			// need a minimum 1 char
@@ -486,13 +486,21 @@ public class JavaData {
 					if (type != null) {
 						// Attempt to resolve type. For some reason JDT has them unresolved for type members
 						try {
-							String signatureSimpleName = Signature.getSignatureSimpleName(signature);
-							String resolvedType = resolveFQName(type, signatureSimpleName);
-							if (resolvedType != null) {
+							String[][] resolved = type.resolveType(signature.substring(1, signature.length() - 1));
+							if (resolved == null) {
+								String signatureSimpleName = Signature.getSignatureSimpleName(signature);
+								String resolvedType = resolveFQName(type, signatureSimpleName);
+								if (resolvedType != null) {
+									data.setKind(JavaTypeKind.CLASS);
+									nameToSet = "L" + resolvedType + ";";
+									break;
+								}
+							} else {
 								data.setKind(JavaTypeKind.CLASS);
-								data.setName("L" + resolvedType.replace('.', '/') + ";");
+								nameToSet = "L" + resolved[0][0] + '.' + resolved[0][1] + ";";
 								break;
 							}
+							
 						} catch (JavaModelException e) {
 							data.setKind(JavaTypeKind.UNRESOLVED);
 						}
@@ -505,7 +513,7 @@ public class JavaData {
 					break;
 			}
 		}
-
+		data.setName(nameToSet.replace('.', '/'));
 		return data;
 	}
 	
