@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.boot.java.utils;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Objects;
@@ -24,6 +25,7 @@ import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.ArrayInitializer;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.Expression;
+import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.IBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.IVariableBinding;
@@ -37,6 +39,7 @@ import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
 import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.jdt.core.dom.VariableDeclaration;
+import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.Range;
 import org.slf4j.Logger;
@@ -381,5 +384,77 @@ public class ASTUtils {
 			}
 		}
 	}
+	
+	public static InjectionPoint[] findInjectionPoints(MethodDeclaration method, TextDocument doc) throws BadLocationException {
+		List<InjectionPoint> result = new ArrayList<>();
+		
+		List<?> parameters = method.parameters();
+		for (Object object : parameters) {
+			if (object instanceof VariableDeclaration) {
+				VariableDeclaration variable = (VariableDeclaration) object;
+				String name = variable.getName().toString();
+				String type = variable.resolveBinding().getType().getQualifiedName();
+				
+				DocumentRegion region = ASTUtils.nodeRegion(doc, variable.getName());
+				Range range = doc.toRange(region);
+				
+				Location location = new Location(doc.getUri(), range);
+				result.add(new InjectionPoint(name, type, location));
+			}
+		}
+		return (InjectionPoint[]) result.toArray(new InjectionPoint[result.size()]);
+	}
+	
+	public static InjectionPoint[] findInjectionPoints(TypeDeclaration type, TextDocument doc) throws BadLocationException {
+		List<InjectionPoint> result = new ArrayList<>();
+
+		MethodDeclaration[] methods = type.getMethods();
+		for (MethodDeclaration method : methods) {
+			if (method.isConstructor()) {
+				result.addAll(Arrays.asList(ASTUtils.findInjectionPoints(method, doc)));
+			}
+		}
+
+		FieldDeclaration[] fields = type.getFields();
+		for (FieldDeclaration field : fields) {
+
+			boolean autowiredField = false;
+
+			List<?> modifiers = field.modifiers();
+			for (Object modifier : modifiers) {
+				if (modifier instanceof Annotation) {
+					Annotation annotation = (Annotation) modifier;
+
+					String qualifiedName = annotation.resolveTypeBinding().getQualifiedName();
+					if (Annotations.AUTOWIRED.equals(qualifiedName)) {
+						autowiredField = true;
+					}
+				}
+			}
+
+
+			if (autowiredField) {
+				List<?> fragments = field.fragments();
+				for (Object fragment : fragments) {
+					if (fragment instanceof VariableDeclarationFragment) {
+						VariableDeclarationFragment varFragment = (VariableDeclarationFragment) fragment;
+						String fieldName = varFragment.getName().toString();
+
+						DocumentRegion region = ASTUtils.nodeRegion(doc, varFragment.getName());
+						Range range = doc.toRange(region);
+						Location fieldLocation = new Location(doc.getUri(), range);
+
+						String fieldType = field.getType().resolveBinding().getQualifiedName();
+
+						result.add(new InjectionPoint(fieldName, fieldType, fieldLocation));
+					}
+				}
+			}
+		}
+		
+		return (InjectionPoint[]) result.toArray(new InjectionPoint[result.size()]);
+	}
+
+
 
 }

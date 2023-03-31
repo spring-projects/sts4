@@ -88,24 +88,6 @@ public class SpringMetamodelIndexerBeansTest {
 	}
 
 	@Test
-	void testBeansNameAndTypeFromComponentAnnotatedClassExists() {
-		Bean[] beans = springIndex.getBeans("constructorInjectionService");
-
-		assertEquals(1, beans.length);
-		assertEquals("constructorInjectionService", beans[0].getName());
-		assertEquals("org.test.injections.ConstructorInjectionService", beans[0].getType());
-	}
-
-	@Test
-	void testBeansNameAndTypeFromConfigurationAnnotatedClassExists() {
-		Bean[] beans = springIndex.getBeans("configurationWithoutInjection");
-
-		assertEquals(1, beans.length);
-		assertEquals("configurationWithoutInjection", beans[0].getName());
-		assertEquals("org.test.injections.ConfigurationWithoutInjection", beans[0].getType());
-	}
-
-	@Test
 	void testBeansDefintionLocationFromBeanAnnotatedMethod() {
 		Bean[] beans = springIndex.getBeans("bean1");
 
@@ -115,12 +97,30 @@ public class SpringMetamodelIndexerBeansTest {
 	}
 
 	@Test
+	void testBeansNameAndTypeFromComponentAnnotatedClassExists() {
+		Bean[] beans = springIndex.getBeans("constructorInjectionService");
+
+		assertEquals(1, beans.length);
+		assertEquals("constructorInjectionService", beans[0].getName());
+		assertEquals("org.test.injections.ConstructorInjectionService", beans[0].getType());
+	}
+
+	@Test
 	void testBeansDefintionLocationFromComponentAnnotatedClass() {
 		Bean[] beans = springIndex.getBeans("constructorInjectionService");
 
 		String docUri = directory.toPath().resolve("src/main/java/org/test/injections/ConstructorInjectionService.java").toUri().toString();
 		Location location = new Location(docUri, new Range(new Position(6, 0), new Position(6, 8)));
 		assertEquals(location, beans[0].getLocation());
+	}
+
+	@Test
+	void testBeansNameAndTypeFromConfigurationAnnotatedClassExists() {
+		Bean[] beans = springIndex.getBeans("configurationWithoutInjection");
+
+		assertEquals(1, beans.length);
+		assertEquals("configurationWithoutInjection", beans[0].getName());
+		assertEquals("org.test.injections.ConfigurationWithoutInjection", beans[0].getType());
 	}
 
 	@Test
@@ -203,6 +203,18 @@ public class SpringMetamodelIndexerBeansTest {
 		Location ip2Location = new Location(docUri, new Range(new Position(11, 31), new Position(11, 36)));
 		assertEquals(ip2Location, injectionPoints[1].getLocation());
 	}
+	
+	@Test
+	void testBeanFromSpringDataRepository() {
+		Bean[] beans = springIndex.getBeans("customerRepository");
+
+		assertEquals(1, beans.length);
+		assertEquals("customerRepository", beans[0].getName());
+		assertEquals("org.test.springdata.CustomerRepository", beans[0].getType());
+
+		InjectionPoint[] injectionPoints = beans[0].getInjectionPoints();
+		assertEquals(0, injectionPoints.length);
+	}
 
 	@Test
 	void testBeansWithSupertypes() {
@@ -218,7 +230,8 @@ public class SpringMetamodelIndexerBeansTest {
 		
 		assertFalse(beans[0].isTypeCompatibleWith("java.lang.String"));
 		assertFalse(beans[0].isTypeCompatibleWith("java.util.Comparator"));
-
 	}
+	
+	
 
 }
