@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2019 Pivotal, Inc.
+ * Copyright (c) 2017, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -327,6 +327,61 @@ public class ComponentInjectionsHoverProviderTest {
                         "Process [PID=111, name=`the-app`]\n"
         );
     }
+    
+    @Test
+    void componentWithOneBoot3CGILibInjection() throws Exception {
+        LiveBeansModel beans = LiveBeansModel.builder()
+                .add(LiveBean.builder()
+                        .id("fooImplementation")
+                        .type("com.example.FooImplementation$$SpringCGLIB$$Blah")
+                        .build()
+                )
+                .add(LiveBean.builder()
+                        .id("myController")
+                        .type("com.example.MyController$$SpringCGLIB$$Blah")
+                        .dependencies("fooImplementation")
+                        .build()
+                )
+                .add(LiveBean.builder()
+                        .id("irrelevantBean")
+                        .type("com.example.IrrelevantBean$$SpringCGLIB$$Blah")
+                        .dependencies("myController")
+                        .build()
+                )
+                .build();
+
+        SpringProcessLiveData liveData = new SpringProcessLiveDataBuilder()
+                .processID("111")
+                .processName("the-app")
+                .beans(beans)
+                .build();
+        liveDataProvider.add("processkey", liveData);
+
+        Editor editor = harness.newEditor(LanguageId.JAVA,
+                "package com.example;\n" +
+                        "\n" +
+                        "import org.springframework.stereotype.Component;\n" +
+                        "\n" +
+                        "@Component\n" +
+                        "public class FooImplementation implements Foo {\n" +
+                        "\n" +
+                        "	@Override\n" +
+                        "	public void doSomeFoo() {\n" +
+                        "		System.out.println(\"Foo do do do!\");\n" +
+                        "	}\n" +
+                        "}\n"
+        );
+        editor.assertHighlights("@Component");
+        editor.assertTrimmedHover("@Component",
+                "**&#8594; `MyController`**\n" +
+                        "- Bean: `myController`  \n" +
+                        "  Type: `com.example.MyController`\n" +
+                        "  \n" +
+                        "Bean id: `fooImplementation`  \n" +
+                        "Process [PID=111, name=`the-app`]\n"
+        );
+    }
+
 
     @Test
     void componentWithMultipleInjections() throws Exception {

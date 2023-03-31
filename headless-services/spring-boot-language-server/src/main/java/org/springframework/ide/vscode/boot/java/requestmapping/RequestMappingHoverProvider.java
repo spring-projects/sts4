@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2020 Pivotal, Inc.
+ * Copyright (c) 2017, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -32,6 +32,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.handlers.HoverProvider;
 import org.springframework.ide.vscode.boot.java.livehover.LiveHoverUtils;
+import org.springframework.ide.vscode.boot.java.livehover.v2.LiveBean;
 import org.springframework.ide.vscode.boot.java.livehover.v2.LiveRequestMapping;
 import org.springframework.ide.vscode.boot.java.livehover.v2.RequestMappingMetrics;
 import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveData;
@@ -213,12 +214,7 @@ public class RequestMappingHoverProvider implements HoverProvider {
 		String rqClassName = rm.getFullyQualifiedClassName();
 
 		if (rqClassName != null) {
-			int chop = rqClassName.indexOf("$$EnhancerBySpringCGLIB$$");
-			if (chop >= 0) {
-				rqClassName = rqClassName.substring(0, chop);
-			}
-
-			rqClassName = rqClassName.replace('$', '.');
+			rqClassName = LiveBean.getTypeWithoutCGLib(rqClassName).replace('$', '.');
 
 			ASTNode parent = annotation.getParent();
 			if (parent instanceof MethodDeclaration) {

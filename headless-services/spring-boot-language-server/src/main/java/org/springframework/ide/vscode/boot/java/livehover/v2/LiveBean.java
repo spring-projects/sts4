@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2018 Pivotal, Inc.
+ * Copyright (c) 2017, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -98,15 +98,7 @@ public class LiveBean {
 
 		if (type != null) {
 			if (stripCGLib) {
-				int chop = type.indexOf("$$EnhancerBySpringCGLIB$$");
-				if (chop >= 0) {
-					type = type.substring(0, chop);
-				}
-
-				chop = type.indexOf("$$Lambda$");
-				if (chop >= 0) {
-					type = type.substring(0, chop);
-				}
+				type = getTypeWithoutCGLib(type);
 			}
 		}
 
@@ -130,4 +122,19 @@ public class LiveBean {
 		return new Builder();
 	}
 
+	public static String getTypeWithoutCGLib(String type) {
+		int chop = type.indexOf("$$EnhancerBySpringCGLIB$$");
+		if (chop < 0) {
+			chop = type.indexOf("$$SpringCGLIB$$");
+		}
+		if (chop >= 0) {
+			type = type.substring(0, chop);
+		}
+
+		chop = type.indexOf("$$Lambda$");
+		if (chop >= 0) {
+			type = type.substring(0, chop);
+		}
+		return type;
+	}
 }
