@@ -486,21 +486,12 @@ public class JavaData {
 					if (type != null) {
 						// Attempt to resolve type. For some reason JDT has them unresolved for type members
 						try {
-							String[][] resolved = type.resolveType(signature.substring(1, signature.length() - 1));
-							if (resolved == null) {
-								String signatureSimpleName = Signature.getSignatureSimpleName(signature);
-								String resolvedType = resolveFQName(type, signatureSimpleName);
-								if (resolvedType != null) {
-									data.setKind(JavaTypeKind.CLASS);
-									nameToSet = "L" + resolvedType + ";";
-									break;
-								}
-							} else {
+							String resolvedType = resolveFQName(type, signature.substring(1, signature.length() - 1));
+							if (resolvedType != null) {
 								data.setKind(JavaTypeKind.CLASS);
-								nameToSet = "L" + resolved[0][0] + '.' + resolved[0][1] + ";";
+								nameToSet = "L" + resolvedType + ";";
 								break;
 							}
-							
 						} catch (JavaModelException e) {
 							data.setKind(JavaTypeKind.UNRESOLVED);
 						}
