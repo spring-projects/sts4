@@ -10,6 +10,9 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.data;
 
+import java.util.HashSet;
+import java.util.Set;
+
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.Location;
@@ -18,6 +21,8 @@ import org.eclipse.lsp4j.WorkspaceSymbol;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.boot.index.InjectionPoint;
+import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
 import org.springframework.ide.vscode.boot.java.beans.BeanUtils;
 import org.springframework.ide.vscode.boot.java.beans.BeansSymbolAddOnInformation;
 import org.springframework.ide.vscode.boot.java.handlers.AbstractSymbolProvider;
@@ -39,22 +44,41 @@ import reactor.util.function.Tuples;
 public class DataRepositorySymbolProvider extends AbstractSymbolProvider {
 
 	private static final Logger log = LoggerFactory.getLogger(DataRepositorySymbolProvider.class);
+	private final SpringMetamodelIndex springIndex;
+	
+	public DataRepositorySymbolProvider(SpringMetamodelIndex springIndex) {
+		this.springIndex = springIndex;
+	}
 
 	@Override
 	protected void addSymbolsPass1(TypeDeclaration typeDeclaration, SpringIndexerJavaContext context, TextDocument doc) {
 		// this checks spring data repository beans that are defined as extensions of the repository interface
 		Tuple4<String, ITypeBinding, String, DocumentRegion> repositoryBean = getRepositoryBean(typeDeclaration, doc);
+
 		if (repositoryBean != null) {
 			try {
+				String beanName = repositoryBean.getT1();
+				ITypeBinding beanType = repositoryBean.getT2();
+				Location location = new Location(doc.getUri(), doc.toRange(repositoryBean.getT4()));
+				
 				WorkspaceSymbol symbol = new WorkspaceSymbol(
-						beanLabel(true, repositoryBean.getT1(), repositoryBean.getT2().getName(), repositoryBean.getT3()),
+						beanLabel(true, beanName, beanType.getName(), repositoryBean.getT3()),
 						SymbolKind.Interface,
-						Either.forLeft(new Location(doc.getUri(), doc.toRange(repositoryBean.getT4()))));
+						Either.forLeft(location));
 
 				SymbolAddOnInformation[] addon = new SymbolAddOnInformation[] {new BeansSymbolAddOnInformation(repositoryBean.getT1(), repositoryBean.getT2().getQualifiedName())};
 				EnhancedSymbolInformation enhancedSymbol = new EnhancedSymbolInformation(symbol, addon);
 
 				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), enhancedSymbol));
+				
+				InjectionPoint[] injectionPoints = ASTUtils.findInjectionPoints(typeDeclaration, doc);
+				
+				Set<String> supertypes = new HashSet<>();
+				ASTUtils.findSupertypes(beanType, supertypes);
+
+				String concreteRepoType = typeDeclaration.resolveBinding().getQualifiedName();
+				springIndex.registerBean(beanName, concreteRepoType, location, injectionPoints, (String[]) supertypes.toArray(new String[supertypes.size()]));
+
 			} catch (BadLocationException e) {
 				log.error("error creating data repository symbol for a specific range", e);
 			}

@@ -30,11 +30,12 @@ public class SpringSymbolIndexerConfig {
 	@Bean
 	AnnotationHierarchyAwareLookup<SymbolProvider> symbolProviders(SymbolCache cache, SpringMetamodelIndex springIndex) {
 		AnnotationHierarchyAwareLookup<SymbolProvider> providers = new AnnotationHierarchyAwareLookup<>();
+
 		RequestMappingSymbolProvider requestMappingSymbolProvider = new RequestMappingSymbolProvider();
 		BeansSymbolProvider beansSymbolProvider = new BeansSymbolProvider(springIndex);
 		ComponentSymbolProvider componentSymbolProvider = new ComponentSymbolProvider(springIndex);
 		RestrictedDefaultSymbolProvider restrictedDefaultSymbolProvider = new RestrictedDefaultSymbolProvider();
-		DataRepositorySymbolProvider dataRepositorySymbolProvider = new DataRepositorySymbolProvider();
+		DataRepositorySymbolProvider dataRepositorySymbolProvider = new DataRepositorySymbolProvider(springIndex);
 		WebfluxRouterSymbolProvider webfluxRouterSymbolProvider = new WebfluxRouterSymbolProvider();
 
 		providers.put(Annotations.SPRING_REQUEST_MAPPING, requestMappingSymbolProvider);

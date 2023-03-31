@@ -10,23 +10,15 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.beans;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
-import org.eclipse.jdt.core.dom.AnnotationTypeDeclaration;
-import org.eclipse.jdt.core.dom.FieldDeclaration;
 import org.eclipse.jdt.core.dom.ITypeBinding;
-import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
-import org.eclipse.jdt.core.dom.VariableDeclarationFragment;
 import org.eclipse.lsp4j.Location;
-import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.SymbolKind;
 import org.eclipse.lsp4j.WorkspaceSymbol;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
@@ -42,7 +34,6 @@ import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.boot.java.utils.CachedSymbol;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJavaContext;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
-import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 /**
@@ -62,7 +53,7 @@ public class ComponentSymbolProvider extends AbstractSymbolProvider {
 	@Override
 	protected void addSymbolsPass1(Annotation node, ITypeBinding annotationType, Collection<ITypeBinding> metaAnnotations, SpringIndexerJavaContext context, TextDocument doc) {
 		try {
-			if (!isOnAnnotationDeclaration(node)) {
+			if (node != null && node.getParent() != null && node.getParent() instanceof TypeDeclaration) {
 				EnhancedSymbolInformation enhancedSymbol = createSymbol(node, annotationType, metaAnnotations, doc);
 				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), enhancedSymbol));
 			}
@@ -77,8 +68,11 @@ public class ComponentSymbolProvider extends AbstractSymbolProvider {
 		Collection<String> metaAnnotationNames = metaAnnotations.stream()
 				.map(ITypeBinding::getName)
 				.collect(Collectors.toList());
-		String beanName = getBeanName(node);
-		ITypeBinding beanType = getBeanType(node);
+		
+		TypeDeclaration type = (TypeDeclaration) node.getParent();
+
+		String beanName = getBeanName(type);
+		ITypeBinding beanType = getBeanType(type);
 
 		Location location = new Location(doc.getUri(), doc.toRange(node.getStartPosition(), node.getLength()));
 		
@@ -94,7 +88,7 @@ public class ComponentSymbolProvider extends AbstractSymbolProvider {
 			addon = new SymbolAddOnInformation[] {new BeansSymbolAddOnInformation(beanName, beanType.getQualifiedName())};
 		}
 		
-		InjectionPoint[] injectionPoints = findInjectionPoints(node, doc);
+		InjectionPoint[] injectionPoints = ASTUtils.findInjectionPoints(type, doc);
 		
 		Set<String> supertypes = new HashSet<>();
 		ASTUtils.findSupertypes(beanType, supertypes);
@@ -102,61 +96,6 @@ public class ComponentSymbolProvider extends AbstractSymbolProvider {
 		springIndex.registerBean(beanName, beanType.getQualifiedName(), location, injectionPoints, (String[]) supertypes.toArray(new String[supertypes.size()]));
 
 		return new EnhancedSymbolInformation(symbol, addon);
-	}
-
-	private InjectionPoint[] findInjectionPoints(Annotation node, TextDocument doc) throws BadLocationException {
-		List<InjectionPoint> result = new ArrayList<>();
-
-		ASTNode parent = node.getParent();
-		if (parent instanceof TypeDeclaration) {
-			TypeDeclaration type = (TypeDeclaration) parent;
-			
-			MethodDeclaration[] methods = type.getMethods();
-			for (MethodDeclaration method : methods) {
-				if (method.isConstructor()) {
-					result.addAll(ASTUtils.getInjectionPointsFromMethodParams(method, doc));
-				}
-			}
-			
-			FieldDeclaration[] fields = type.getFields();
-			for (FieldDeclaration field : fields) {
-				
-				boolean autowiredField = false;
-				
-				List<?> modifiers = field.modifiers();
-				for (Object modifier : modifiers) {
-					if (modifier instanceof Annotation) {
-						Annotation annotation = (Annotation) modifier;
-						
-						String qualifiedName = annotation.resolveTypeBinding().getQualifiedName();
-						if (Annotations.AUTOWIRED.equals(qualifiedName)) {
-							autowiredField = true;
-						}
-					}
-				}
-				
-
-				if (autowiredField) {
-					List<?> fragments = field.fragments();
-					for (Object fragment : fragments) {
-						if (fragment instanceof VariableDeclarationFragment) {
-							VariableDeclarationFragment varFragment = (VariableDeclarationFragment) fragment;
-							String fieldName = varFragment.getName().toString();
-							
-							DocumentRegion region = ASTUtils.nodeRegion(doc, varFragment.getName());
-							Range range = doc.toRange(region);
-							Location fieldLocation = new Location(doc.getUri(), range);
-	
-							String fieldType = field.getType().resolveBinding().getQualifiedName();
-							
-							result.add(new InjectionPoint(fieldName, fieldType, fieldLocation));
-						}
-					}
-				}
-			}
-		}
-		
-		return (InjectionPoint[]) result.toArray(new InjectionPoint[result.size()]);
 	}
 
 	protected String beanLabel(String searchPrefix, String annotationTypeName, Collection<String> metaAnnotationNames, String beanName, String beanType) {
@@ -186,34 +125,13 @@ public class ComponentSymbolProvider extends AbstractSymbolProvider {
 		return symbolLabel.toString();
 	}
 
-	private String getBeanName(Annotation node) {
-		ASTNode parent = node.getParent();
-		if (parent instanceof TypeDeclaration) {
-			TypeDeclaration type = (TypeDeclaration) parent;
-
-			String beanName = type.getName().toString();
-			return BeanUtils.getBeanNameFromType(beanName);
-		}
-		return null;
+	private String getBeanName(TypeDeclaration type) {
+		String beanName = type.getName().toString();
+		return BeanUtils.getBeanNameFromType(beanName);
 	}
 
-	private ITypeBinding getBeanType(Annotation node) {
-		ASTNode parent = node.getParent();
-		if (parent instanceof TypeDeclaration) {
-			TypeDeclaration type = (TypeDeclaration) parent;
-			return type.resolveBinding();
-		}
-		return null;
+	private ITypeBinding getBeanType(TypeDeclaration type) {
+		return type.resolveBinding();
 	}
 	
-	private boolean isOnAnnotationDeclaration(Annotation node) {
-		ASTNode parent = node.getParent();
-		if (parent != null && parent instanceof AnnotationTypeDeclaration) {
-			return true;
-		}
-		return false;
-	}
-
-
-
 }

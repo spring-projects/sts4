@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.beans;
 
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -26,9 +25,7 @@ import org.eclipse.jdt.core.dom.ParameterizedType;
 import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.jdt.core.dom.Type;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
-import org.eclipse.jdt.core.dom.VariableDeclaration;
 import org.eclipse.lsp4j.Location;
-import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.SymbolKind;
 import org.eclipse.lsp4j.WorkspaceSymbol;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
@@ -73,11 +70,19 @@ public class BeansSymbolProvider extends AbstractSymbolProvider {
 
 	@Override
 	protected void addSymbolsPass1(Annotation node, ITypeBinding annotationType, Collection<ITypeBinding> metaAnnotations, SpringIndexerJavaContext context, TextDocument doc) {
-		if (isMethodAbstract(node)) return;
+		if (node == null) return;
+		
+		ASTNode parent = node.getParent();
+		if (parent == null || !(parent instanceof MethodDeclaration)) return;
+		
+		MethodDeclaration method = (MethodDeclaration) parent;
 
-		boolean isFunction = isFunctionBean(node);
-		ITypeBinding beanType = getBeanType(node);
-		String markerString = getAnnotations(node);
+		if (isMethodAbstract(method)) return;
+
+		boolean isFunction = isFunctionBean(method);
+		ITypeBinding beanType = getBeanType(method);
+		String markerString = getAnnotations(method);
+
 		for (Tuple2<String, DocumentRegion> nameAndRegion : getBeanNames(node, doc)) {
 			try {
 				Location location = new Location(doc.getUri(), doc.toRange(nameAndRegion.getT2()));
@@ -92,7 +97,7 @@ public class BeansSymbolProvider extends AbstractSymbolProvider {
 
 				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), enhancedSymbol));
 				
-				InjectionPoint[] injectionPoints = findInjectionPoints(node, doc);
+				InjectionPoint[] injectionPoints = ASTUtils.findInjectionPoints(method, doc);
 				
 				Set<String> supertypes = new HashSet<>();
 				ASTUtils.findSupertypes(beanType, supertypes);
@@ -103,18 +108,6 @@ public class BeansSymbolProvider extends AbstractSymbolProvider {
 				log.error("", e);
 			}
 		}
-	}
-
-	private InjectionPoint[] findInjectionPoints(Annotation node, TextDocument doc) throws BadLocationException {
-		List<InjectionPoint> result = new ArrayList<>();
-		
-		ASTNode parent = node.getParent();
-		if (parent instanceof MethodDeclaration) {
-			MethodDeclaration method = (MethodDeclaration) parent;
-			result.addAll(ASTUtils.getInjectionPointsFromMethodParams(method, doc));
-		}
-
-		return (InjectionPoint[]) result.toArray(new InjectionPoint[result.size()]);
 	}
 
 	@Override
@@ -187,70 +180,51 @@ public class BeansSymbolProvider extends AbstractSymbolProvider {
 		return literals.build();
 	}
 
-	protected ITypeBinding getBeanType(Annotation node) {
-		ASTNode parent = node.getParent();
-		if (parent instanceof MethodDeclaration) {
-			MethodDeclaration method = (MethodDeclaration) parent;
-			return method.getReturnType2().resolveBinding();
-		}
-		return null;
+	protected ITypeBinding getBeanType(MethodDeclaration method) {
+		return method.getReturnType2().resolveBinding();
 	}
 
-	private boolean isFunctionBean(Annotation node) {
-		ASTNode parent = node.getParent();
-		if (parent instanceof MethodDeclaration) {
-			MethodDeclaration method = (MethodDeclaration) parent;
-			String returnType = null;
+	private boolean isFunctionBean(MethodDeclaration method) {
+		String returnType = null;
 
-			if (method.getReturnType2().isParameterizedType()) {
-				ParameterizedType paramType = (ParameterizedType) method.getReturnType2();
-				Type type = paramType.getType();
-				ITypeBinding typeBinding = type.resolveBinding();
-				returnType = typeBinding.getBinaryName();
-			}
-			else {
-				returnType = method.getReturnType2().resolveBinding().getQualifiedName();
-			}
-
-			return FunctionUtils.FUNCTION_FUNCTION_TYPE.equals(returnType) || FunctionUtils.FUNCTION_CONSUMER_TYPE.equals(returnType)
-					|| FunctionUtils.FUNCTION_SUPPLIER_TYPE.equals(returnType);
+		if (method.getReturnType2().isParameterizedType()) {
+			ParameterizedType paramType = (ParameterizedType) method.getReturnType2();
+			Type type = paramType.getType();
+			ITypeBinding typeBinding = type.resolveBinding();
+			returnType = typeBinding.getBinaryName();
 		}
-		return false;
+		else {
+			returnType = method.getReturnType2().resolveBinding().getQualifiedName();
+		}
+
+		return FunctionUtils.FUNCTION_FUNCTION_TYPE.equals(returnType) || FunctionUtils.FUNCTION_CONSUMER_TYPE.equals(returnType)
+				|| FunctionUtils.FUNCTION_SUPPLIER_TYPE.equals(returnType);
 	}
 
-	private String getAnnotations(Annotation node) {
+	private String getAnnotations(MethodDeclaration method) {
 		StringBuilder result = new StringBuilder();
 
-		ASTNode parent = node.getParent();
-		if (parent instanceof MethodDeclaration) {
-			MethodDeclaration method = (MethodDeclaration) parent;
+		List<?> modifiers = method.modifiers();
+		for (Object modifier : modifiers) {
+			if (modifier instanceof Annotation) {
+				Annotation annotation = (Annotation) modifier;
+				IAnnotationBinding annotationBinding = annotation.resolveAnnotationBinding();
+				String type = annotationBinding.getAnnotationType().getBinaryName();
 
-			List<?> modifiers = method.modifiers();
-			for (Object modifier : modifiers) {
-				if (modifier instanceof Annotation) {
-					Annotation annotation = (Annotation) modifier;
-					IAnnotationBinding annotationBinding = annotation.resolveAnnotationBinding();
-					String type = annotationBinding.getAnnotationType().getBinaryName();
-
-					if (type != null && !Annotations.BEAN.equals(type)) {
-						result.append(' ');
-						result.append(annotation.toString());
-					}
+				if (type != null && !Annotations.BEAN.equals(type)) {
+					result.append(' ');
+					result.append(annotation.toString());
 				}
 			}
 		}
-
 		return result.toString();
 	}
 
-	private boolean isMethodAbstract(Annotation node) {
-		if (node != null && node.getParent() != null && node.getParent() instanceof MethodDeclaration) {
-			MethodDeclaration method = (MethodDeclaration) node.getParent();
-			List<?> modifiers = method.modifiers();
-			for (Object modifier : modifiers) {
-				if (modifier instanceof Modifier && ((Modifier) modifier).isAbstract()) {
-					return true;
-				}
+	private boolean isMethodAbstract(MethodDeclaration method) {
+		List<?> modifiers = method.modifiers();
+		for (Object modifier : modifiers) {
+			if (modifier instanceof Modifier && ((Modifier) modifier).isAbstract()) {
+				return true;
 			}
 		}
 		return false;
