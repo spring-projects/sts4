@@ -2390,6 +2390,21 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
                 "red", "green", "blue"
         );
     }
+    
+    @Test
+    void testNestedEnumValueCompletion() throws Exception {
+        useProject(createPredefinedMavenProject("enums-boot-1.3.2-app"));
+
+        assertCompletion("nested-enum:\n  list-properties:\n    - e<*>", "nested-enum:\n  list-properties:\n    - enum-value: <*>");
+        assertCompletion("nested-enum:\n  list-properties:\n    - li<*>", "nested-enum:\n  list-properties:\n    - list-of-enums:\n      - <*>");
+
+        assertCompletion("nested-enum:\n  list-properties:\n    - enum-value: y<*>", "nested-enum:\n  list-properties:\n    - enum-value: yes<*>");
+        assertCompletion("nested-enum:\n  list-properties:\n    - list-of-enums:\n      - n<*>", "nested-enum:\n  list-properties:\n    - list-of-enums:\n      - no<*>");
+
+        assertCompletionsDisplayString("nested-enum:\n  list-properties:\n    - list-of-enums:\n      - <*>",
+                "no", "yes"
+        );
+    }
 
     @Test
     void testEnumMapValueCompletion() throws Exception {

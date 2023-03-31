@@ -883,6 +883,31 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
                 "Bogus|Color"
         );
     }
+    
+    @Test
+    void testNestedEnumPropertyListCompletion() throws Exception {
+        IJavaProject p = createPredefinedMavenProject("enums-boot-1.3.2-app");
+
+        useProject(p);
+        assertNotNull(p.getIndex().findType("demo.C"));
+        assertNotNull(p.getIndex().findType("demo.C$E"));
+
+        assertCompletionsVariations("nested-enum.list-properties[0].<*>",
+        		"nested-enum.list-properties[0].enum-value=<*>",
+                "nested-enum.list-properties[0].list-of-enums=<*>"
+        );
+
+        assertCompletionsDisplayString("nested-enum.list-properties[0].list-of-enums=<*>",
+                "no", "yes"
+        );
+        assertCompletionsDisplayString("nested-enum.list-properties[0].list-of-enums=yes,<*>",
+                "no", "yes"
+        );
+        assertCompletionsDisplayString("nested-enum.list-properties[0].enum-value=<*>",
+                "no", "yes"
+        );
+        assertCompletionsVariations("nested-enum.list-properties[0].list-of-enums=yes,n<*>", "nested-enum.list-properties[0].list-of-enums=yes,no<*>");
+    }
 
     @Test
     void testEnumMapValueCompletion() throws Exception {
