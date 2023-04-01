@@ -35,7 +35,7 @@ public class ConvertAutowiredFieldIntoConstructorParameter extends Recipe {
 	
 	@Override
 	protected TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
-		return new UsesType<ExecutionContext>(AUTOWIRED, Boolean.TRUE);
+		return new UsesType<ExecutionContext>(AUTOWIRED, false);
 	}
 
 	@Override
