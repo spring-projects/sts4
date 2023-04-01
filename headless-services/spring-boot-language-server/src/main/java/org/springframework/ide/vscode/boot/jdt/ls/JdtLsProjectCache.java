@@ -258,17 +258,16 @@ public class JdtLsProjectCache implements InitializableJavaProjectsService, Serv
 	@Override
 	public Mono<Disposable> initialize() {
 		return Mono.defer(() -> {
-			log.info("INIT ADD CLASSPATH LISTENER enableClasspath=" + initialClasspathLisetnerEnable);
+			log.debug("ADD CLASSPATH LISTENER enableClasspath=" + initialClasspathLisetnerEnable);
 			enableClasspathListener(initialClasspathLisetnerEnable);
 			return Mono.just(DISPOSABLE);
 		});
 	}
 	
 	private synchronized void enableClasspathListener(boolean enabled) {
-		log.info("enableClasspathListener(" + enabled + ") called. Current enablement = " + classpathListenerEnabled);
 		if (classpathListenerEnabled != enabled) {
 			if (enabled) {
-				log.info("Adding classpath listener enabled=" + enabled);
+				log.debug("Adding classpath listener enabled=" + enabled);
 				classpathListenerEnabled = true;
 				notifyProjectObserverSupported();
 				classpathListenerRequest = server.addClasspathListener(CLASSPATH_LISTENER).timeout(INITIALIZE_TIMEOUT)
@@ -287,7 +286,7 @@ public class JdtLsProjectCache implements InitializableJavaProjectsService, Serv
 					}
 				});
 			} else {
-				log.info("Removing classpath listener enabled=" + enabled);
+				log.debug("Removing classpath listener enabled=" + enabled);
 				DISPOSABLE.update(Disposables.single());
 				classpathListenerRequest = null;
 				classpathListenerEnabled = false;
@@ -313,10 +312,10 @@ public class JdtLsProjectCache implements InitializableJavaProjectsService, Serv
 				if (!supported) {
 					throw new IllegalStateException("Classpath listening not supported.");
 				} else {
-					log.info("CLASSPATH ENABLED CMD EXEC");
+					log.debug("CLASSPATH ENABLED CMD EXEC");
 					if (params.getArguments().get(0) instanceof JsonPrimitive) {
 						boolean classpathListeningEnabled = ((JsonPrimitive)params.getArguments().get(0)).getAsBoolean();
-						log.info("CMD - Enable classpath listening: " + classpathListeningEnabled);
+						log.debug("CMD - Enable classpath listening: " + classpathListeningEnabled);
 						enableClasspathListener(classpathListeningEnabled);
 					}
 				}

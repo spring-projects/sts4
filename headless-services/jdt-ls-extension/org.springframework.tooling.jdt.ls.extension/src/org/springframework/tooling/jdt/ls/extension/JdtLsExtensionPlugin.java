@@ -43,15 +43,11 @@ public class JdtLsExtensionPlugin extends Plugin {
 					bootProjectPresent = currentBootProjectsPresent;
 					try {
 						if (bootProjectPresent) {
-							logger.log("About to START Boot LS since Boot project has been detected in the workspace");
 							JavaLanguageServerPlugin.getInstance().getClientConnection()
 									.executeClientCommand("vscode-spring-boot.ls.start");
-							logger.log("Boot LS START command executed successfully");
 						} else {
-							logger.log("About to STOP Boot LS since no Boot projects have been detected in the workspace");
 							JavaLanguageServerPlugin.getInstance().getClientConnection()
 									.executeClientCommand("vscode-spring-boot.ls.stop");
-							logger.log("Boot LS STOP command executed successfully");
 						}
 					} catch (Exception e) {
 						logger.log(e);
