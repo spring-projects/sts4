@@ -87,7 +87,7 @@
 		<!-- OSX app signing -->
 		<skip.osx.signing>true</skip.osx.signing>
 
-		<tycho-version>3.0.2</tycho-version>
+		<tycho-version>3.0.4</tycho-version>
 		<encoding>UTF-8</encoding>
 
 		<dist.accessKey>${env.bamboo_vault_tools_s3_accesskey_password}</dist.accessKey>
