@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2022 VMware, Inc.
+ * Copyright (c) 2022, 2023 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,7 +13,6 @@ package org.springframework.tooling.boot.ls;
 import java.util.List;
 
 import org.eclipse.jface.preference.FieldEditorPreferencePage;
-import org.eclipse.jface.preference.PathEditor;
 import org.eclipse.swt.widgets.Composite;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
@@ -33,8 +32,8 @@ public class PlugRecipesPreferencePage extends FieldEditorPreferencePage impleme
 		addField(new FileListEditor(Constants.PREF_REWRITE_RECIPES_SCAN_FILES, "JAR and YAML files to scan for Recipes",
 				"Select JARs and YAML files:", fieldEditorParent, List.of("jar", "yml", "yaml")));
 
-		addField(new PathEditor(Constants.PREF_REWRITE_RECIPES_SCAN_DIRS, "Directories to scan for Recipes",
-				"Select directory to scan for Recipes", fieldEditorParent));
+//		addField(new PathEditor(Constants.PREF_REWRITE_RECIPES_SCAN_DIRS, "Directories to scan for Recipes",
+//				"Select directory to scan for Recipes", fieldEditorParent));
 
 
 	}

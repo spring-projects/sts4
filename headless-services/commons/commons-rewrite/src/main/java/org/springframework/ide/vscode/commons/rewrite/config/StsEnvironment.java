@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2022, 2023 VMware, Inc.
+ * Copyright (c) 2023 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,89 +10,72 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.rewrite.config;
 
-import java.lang.reflect.Field;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import org.openrewrite.config.ClasspathScanningLoader;
+import org.openrewrite.Recipe;
 import org.openrewrite.config.Environment;
+import org.openrewrite.config.RecipeDescriptor;
 import org.openrewrite.config.ResourceLoader;
 
-import static java.util.Collections.emptyList;
+public class StsEnvironment {
 
-public class StsEnvironment extends Environment {
-	
-	final private Supplier<Stream<CodeActionRepository>> codeActionRepos; 
+	final private Supplier<Stream<CodeActionRepository>> codeActionRepos;
+	final private Environment env;
 
-	public StsEnvironment(Collection<? extends ResourceLoader> resourceLoaders) {
-		super(resourceLoaders);
-		codeActionRepos = () -> resourceLoaders.stream().filter(StsResourceLoader.class::isInstance).map(StsResourceLoader.class::cast).flatMap(l -> l.listCodeActionDescriptorsRepositories().stream());
+	private StsEnvironment(Environment env, List<CodeActionRepoLoader> loaders) {
+		this.env = env;
+		codeActionRepos = () -> loaders.stream().flatMap(l -> l.listCodeActionDescriptorsRepositories().stream());
 	}
-	
-	public static class Builder extends Environment.Builder {
-		
-		final private Properties props; 
 
-		public Builder(Properties properties) {
-			super(properties);
-			this.props = properties;
-		}
+	public static class Builder {
 
-		@Override
+		private List<CodeActionRepoLoader> loaders = new ArrayList<>();
+		private Environment.Builder envBuilder = new Environment.Builder(new Properties());;
+
 		public Builder scanRuntimeClasspath(String... acceptPackages) {
-			return (Builder) load(new StsClasspathScanningLoader(props, acceptPackages));
+			loaders.add(new CodeActionRepoLoader(acceptPackages));
+			envBuilder.scanRuntimeClasspath(acceptPackages);
+			return this;
 		}
 
-		@Override
-		public Builder scanClassLoader(ClassLoader classLoader) {
-			return (Builder) load(new StsClasspathScanningLoader(props, classLoader));
+		public Builder scanJar(Path jar, ClassLoader classLoader) {
+			loaders.add(new CodeActionRepoLoader(jar, classLoader));
+			envBuilder.scanJar(jar, Collections.emptyList(), classLoader);
+			return this;
 		}
 
-		@Override
-		public Builder scanJar(Path jar, Collection<Path> dependencies, ClassLoader classLoader) {
-			List<ClasspathScanningLoader> list = new ArrayList<>();
-			for (Path dep : dependencies) {
-				ClasspathScanningLoader classpathScanningLoader = new ClasspathScanningLoader(dep, props, emptyList(), classLoader);
-				list.add(classpathScanningLoader);
-			}
-			return (Builder) load(new StsClasspathScanningLoader(jar, props, list, classLoader), list);
-		}
-
-		public Builder scanPath(Path dir, Collection<Path> dependencies, ClassLoader classLoader) {
-			List<ClasspathScanningLoader> list = new ArrayList<>();
-			for (Path dep : dependencies) {
-				ClasspathScanningLoader classpathScanningLoader = new ClasspathScanningLoader(dep, props, emptyList(), classLoader);
-				list.add(classpathScanningLoader);
-			}
-			return (Builder) load(new StsClasspathScanningLoader(dir, props, list, classLoader));
-		}
-		
-        @SuppressWarnings("unchecked")
 		public StsEnvironment build() {
-        	try {
-	        	Field f = Environment.Builder.class.getDeclaredField("resourceLoaders");
-	        	f.setAccessible(true);
-	            return new StsEnvironment((Collection<ResourceLoader>) f.get(this));
-        	} catch (Exception e) {
-        		throw new IllegalStateException(e);
-        	}
-        }
+			return new StsEnvironment(envBuilder.build(), loaders);
+		}
 
-		
+		public void load(ResourceLoader loader) {
+			envBuilder.load(loader, Collections.emptyList());
+		}
+
 	}
-	
+
 	public List<RecipeCodeActionDescriptor> listCodeActionDescriptors() {
 		return codeActionRepos.get().flatMap(r -> r.getCodeActionDescriptors().stream()).collect(Collectors.toList());
 	}
 	
-    public static Builder builder() {
-        return new Builder(new Properties());
-    }
+	public Collection<Recipe> listRecipes() {
+		return env.listRecipes();
+	}
+	
+	public Collection<RecipeDescriptor> listRecipeDescriptors() {
+		return env.listRecipeDescriptors();
+	}
+
+	public static Builder builder() {
+		return new Builder();
+	}
 
 }

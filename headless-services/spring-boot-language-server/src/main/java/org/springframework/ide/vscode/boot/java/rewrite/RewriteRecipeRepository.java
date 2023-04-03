@@ -15,7 +15,6 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
@@ -249,7 +248,7 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 				if (pathStr.endsWith(".jar")) {
 					URLClassLoader classLoader = new URLClassLoader(new URL[] { f.toUri().toURL() },
 							getClass().getClassLoader());
-					builder.scanJar(f, Collections.emptyList(), classLoader);
+					builder.scanJar(f, classLoader);
 				} else if (pathStr.endsWith(".yml") || pathStr.endsWith(".yaml")) {
 					builder.load(new YamlResourceLoader(new FileInputStream(f.toFile()), f.toUri(), new Properties()));
 				}
@@ -257,17 +256,17 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 				log.error("Skipping folder " + p, e);
 			}
 		}
-		for (String p : scanDirs) {
-			try {
-				Path d = Path.of(p);
-				if (Files.isDirectory(d)) {
-					URLClassLoader classLoader = new URLClassLoader(new URL[] { d.toUri().toURL()}, getClass().getClassLoader());
-					builder.scanPath(d, Collections.emptyList(), classLoader);
-				}
-			} catch (Exception e) {
-				log.error("Skipping folder " + p, e);
-			}
-		}
+//		for (String p : scanDirs) {
+//			try {
+//				Path d = Path.of(p);
+//				if (Files.isDirectory(d)) {
+//					URLClassLoader classLoader = new URLClassLoader(new URL[] { d.toUri().toURL()}, getClass().getClassLoader());
+//					builder.scanPath(d, Collections.emptyList(), classLoader);
+//				}
+//			} catch (Exception e) {
+//				log.error("Skipping folder " + p, e);
+//			}
+//		}
 		return builder.build();
 	}
 	
