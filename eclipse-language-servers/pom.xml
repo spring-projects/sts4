@@ -41,7 +41,7 @@
 		<module>../headless-services/jdt-ls-extension</module>
 		
 		<module>org.springframework.tooling.ls.eclipse.commons</module>
-		<module>org.springframework.tooling.ls.eclipse.commons.test</module>
+<!--		<module>org.springframework.tooling.ls.eclipse.commons.test</module> -->
         
         <module>org.springframework.ide.eclipse.editor.support</module>
 		<module>org.springsource.ide.eclipse.commons.boot.ls</module>
