@@ -39,7 +39,11 @@ public class MavenProjectParserTest {
         MavenParser.Builder mavenParserBuilder = MavenParser.builder()
                 .mavenConfig(testProjectPath.resolve(".mvn/maven.config"));
 
-		MavenProjectParser parser = new MavenProjectParser(mavenParserBuilder, JavaParser.fromJavaVersion(), new InMemoryExecutionContext(), null);
+		MavenProjectParser parser = new MavenProjectParser(mavenParserBuilder, JavaParser.fromJavaVersion(), new InMemoryExecutionContext(t -> {
+			if (t instanceof Error) {
+				throw new RuntimeException(t);
+			};
+		}), null);
 		
 		List<SourceFile> sources = parser.parse(testProjectPath, Collections.emptyList());
 		

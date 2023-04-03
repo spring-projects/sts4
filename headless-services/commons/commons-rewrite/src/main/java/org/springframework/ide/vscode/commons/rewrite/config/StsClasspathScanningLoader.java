@@ -20,10 +20,12 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 
 import javax.annotation.Nullable;
 
+import org.openrewrite.Contributor;
 import org.openrewrite.Recipe;
 import org.openrewrite.config.CategoryDescriptor;
 import org.openrewrite.config.DeclarativeRecipe;
@@ -49,7 +51,8 @@ public class StsClasspathScanningLoader implements ResourceLoader, StsResourceLo
 
     private final List<RecipeDescriptor> recipeDescriptors = new ArrayList<>();
     private final List<CategoryDescriptor> categoryDescriptors = new ArrayList<>();
-    private final List<RecipeExample> recipeExamples = new ArrayList<>();
+    private final Map<String, List<Contributor>> recipeAttributions = new HashMap<>();
+    private final Map<String, List<RecipeExample>> recipeExamples = new HashMap<>();
     
     private final List<CodeActionRepository> codeActionRepos = new ArrayList<>(); 
 
@@ -124,10 +127,11 @@ public class StsClasspathScanningLoader implements ResourceLoader, StsResourceLo
                 recipes.addAll(resourceLoader.listRecipes());
                 categoryDescriptors.addAll(resourceLoader.listCategoryDescriptors());
                 styles.addAll(resourceLoader.listStyles());
-                recipeExamples.addAll(resourceLoader.listRecipeExamples());
+                recipeAttributions.putAll(resourceLoader.listContributors());
+                recipeExamples.putAll(resourceLoader.listRecipeExamples());
             }
             for(YamlResourceLoader resourceLoader : yamlResourceLoaders) {
-                recipeDescriptors.addAll(resourceLoader.listRecipeDescriptors(recipes, new HashMap<>()));
+                recipeDescriptors.addAll(resourceLoader.listRecipeDescriptors(recipes, recipeAttributions, recipeExamples));
             }
         }
     }
@@ -202,8 +206,7 @@ public class StsClasspathScanningLoader implements ResourceLoader, StsResourceLo
         return styles;
     }
 
-    @Override
-    public Collection<RecipeExample> listRecipeExamples() {
+    public Map<String, List<RecipeExample>> listRecipeExamples() {
         return recipeExamples;
     }
 
