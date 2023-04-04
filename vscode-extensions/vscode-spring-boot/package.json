@@ -265,14 +265,6 @@
               "type": "string"
             },
             "description": "JAR and YAML files to scan for recipes, code actions, problem and quick fix descriptors"
-          },
-          "boot-java.rewrite.scan-dirs": {
-            "type": "array",
-            "default": [],
-            "items": {
-              "type": "string"
-            },
-            "description": "Java project output folders to scan for recipes"
           }
         }
       },
