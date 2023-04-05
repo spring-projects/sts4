@@ -16,7 +16,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.ide.vscode.boot.app.BootLanguageServerParams;
 import org.springframework.ide.vscode.boot.editor.harness.PropertyIndexHarness;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
-import org.springframework.ide.vscode.boot.java.links.VSCodeSourceLinks;
+import org.springframework.ide.vscode.boot.java.links.VSCodeSourceLinks2;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.boot.java.utils.SymbolCache;
 import org.springframework.ide.vscode.boot.java.utils.SymbolCacheVoid;
@@ -66,7 +66,7 @@ public class SourceLinksTestConf {
 	}
 
 	@Bean SourceLinks sourceLinks(CompilationUnitCache cuCache, JavaProjectFinder projectFinder) {
-		return new VSCodeSourceLinks(cuCache, projectFinder);
+		return new VSCodeSourceLinks2(cuCache, projectFinder);
 	}
 
 	@Bean MockProjectObserver mockProjectObserver(BootLanguageServerParams params) {
