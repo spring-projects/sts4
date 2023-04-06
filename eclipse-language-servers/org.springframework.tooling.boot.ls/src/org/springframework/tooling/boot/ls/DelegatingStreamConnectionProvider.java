@@ -21,6 +21,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Assert;
@@ -132,6 +133,8 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 
 	@Override
 	public void stop() {
+		BootLanguageServerPlugin.getDefault().getLog().info("DelegatingStreamConnectionProvider - Stopping Boot LS");
+		BootLanguageServerPlugin.getDefault().getLog().info("DelegatingStreamConnectionProvider: \n" + Arrays.stream(Thread.currentThread().getStackTrace()).map(se -> se.toString()).collect(Collectors.joining("\n")));
 		this.provider.stop();
 		if (fResourceListener != null) {
 			ResourcesPlugin.getWorkspace().removeResourceChangeListener(fResourceListener);

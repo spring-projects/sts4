@@ -33,12 +33,13 @@ public class Startup implements IStartup {
 			new BootProjectTracker(Logger.forEclipsePlugin(() -> BootLanguageServerPlugin.getDefault()),
 					List.of(springProjects -> {
 						if (!started && !springProjects.isEmpty()) {
-
+							BootLanguageServerPlugin.getDefault().getLog().info("Starting Boot LS...");
 							LanguageServerDefinition serverDefinition = LanguageServersRegistry.getInstance()
 									.getDefinition(BOOT_LS_DEFINITION_ID);
 
 							try {
 								LanguageServiceAccessor.startLanguageServer(serverDefinition);
+								BootLanguageServerPlugin.getDefault().getLog().info("Started Boot LS process");
 								started = true;
 							} catch (IOException e1) {
 								BootLanguageServerPlugin.getDefault().getLog().error("Failed to launch Boot Language Server", e1);
