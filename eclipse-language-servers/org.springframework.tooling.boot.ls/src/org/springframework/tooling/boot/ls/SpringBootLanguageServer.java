@@ -52,11 +52,11 @@ public class SpringBootLanguageServer extends STS4LanguageServerProcessStreamCon
 		args.add("-XX:TieredStopAtLevel=1");
 		
 		if (!LanguageServerCommonsActivator.getInstance().getPreferenceStore().getBoolean(LanguageServerConsolePreferenceConstants.PREF_BOOT_JAVA_CONSOLE_ENABLED)) {
-			IPath logFile = BootLanguageServerPlugin.getDefault().getStateLocation().addTrailingSeparator().append("boot-ls-" + System.currentTimeMillis() + ".log");
+			IPath logFile = BootLanguageServerPlugin.getDefault().getStateLocation().addTrailingSeparator().append("boot-ls.log");
 			args.add("-Dsts.log.file=" + logFile.toFile().getPath());
 		}
 		
-		IPath fatalErrorFile = BootLanguageServerPlugin.getDefault().getStateLocation().addTrailingSeparator().append("fatal-eror-boot-ls-" + System.currentTimeMillis() + ".log");
+		IPath fatalErrorFile = BootLanguageServerPlugin.getDefault().getStateLocation().addTrailingSeparator().append("fatal-eror-boot-ls.log");
 		args.add("-XX:ErrorFile=" + fatalErrorFile.toFile().getPath());
 		
 		addCustomJVMArgs(args);

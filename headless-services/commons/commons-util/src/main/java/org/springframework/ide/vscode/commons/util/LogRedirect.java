@@ -37,7 +37,7 @@ public class LogRedirect {
 		} else {
 			System.err.println("Redirecting log output to: "+logfilePath);
 			File logfile = new File(logfilePath);
-			PrintStream logFile = new PrintStream(new FileOutputStream(logfile, false));
+			PrintStream logFile = new PrintStream(new FileOutputStream(logfile, true));
 			return logFile;
 		}
 	}
