@@ -109,7 +109,7 @@ public class JdtLsProjectCache implements InitializableJavaProjectsService, Serv
 	public void addListener(Listener listener) {
 		synchronized (listeners) {
 			listeners.add(listener);
-			log.info("added listener - now listeners registered: " + listeners.size());
+			log.debug("added listener - now listeners registered: " + listeners.size());
 		}
 	}
 
@@ -117,7 +117,7 @@ public class JdtLsProjectCache implements InitializableJavaProjectsService, Serv
 	public void removeListener(Listener listener) {
 		synchronized (listeners) {
 			listeners.remove(listener);
-			log.info("removed listener - now listeners registered: " + listeners.size());
+			log.debug("removed listener - now listeners registered: " + listeners.size());
 		}
 	}
 
@@ -125,14 +125,14 @@ public class JdtLsProjectCache implements InitializableJavaProjectsService, Serv
 		logEvent("Created", newProject);
 
 		synchronized (listeners) {
-			log.info("listeners registered: " + listeners.size());
+			log.debug("listeners registered: " + listeners.size());
 
 			for (Listener listener : listeners) {
 				try {
 					listener.created(newProject);
 				}
 				catch (Exception e) {
-					log.info("listener caused exception: " + e);
+					log.debug("listener caused exception: " + e);
 				}
 			}
 		}
@@ -170,8 +170,8 @@ public class JdtLsProjectCache implements InitializableJavaProjectsService, Serv
 
 	private void logEvent(String type, IJavaProject project) {
 		try {
-			log.info("Project {}: {}", type, project.getLocationUri());
-			log.info("Classpath has {} entries", project.getClasspath().getClasspathEntries().size());
+			log.debug("Project {}: {}", type, project.getLocationUri());
+			log.debug("Classpath has {} entries", project.getClasspath().getClasspathEntries().size());
 			if (log.isDebugEnabled()) {
 				//Avoid expensive call to countSourceAttachements if possible.
 				log.debug("Classpath has {} source attachements",  countSourceAttachments(project.getClasspath().getClasspathEntries()));
@@ -258,21 +258,22 @@ public class JdtLsProjectCache implements InitializableJavaProjectsService, Serv
 	@Override
 	public Mono<Disposable> initialize() {
 		return Mono.defer(() -> {
-			log.debug("ADD CLASSPATH LISTENER enableClasspath=" + initialClasspathLisetnerEnable);
+			log.info("INIT CLASSPATH LISTENER enableClasspath=" + initialClasspathLisetnerEnable);
 			enableClasspathListener(initialClasspathLisetnerEnable);
 			return Mono.just(DISPOSABLE);
 		});
 	}
 	
 	private synchronized void enableClasspathListener(boolean enabled) {
+		log.info("Enable classpath listener enabled = " + enabled + " current enablement = " + classpathListenerEnabled);
 		if (classpathListenerEnabled != enabled) {
 			if (enabled) {
-				log.debug("Adding classpath listener enabled=" + enabled);
+				log.info("Adding classpath listener enabled=" + enabled);
 				classpathListenerEnabled = true;
 				notifyProjectObserverSupported();
 				classpathListenerRequest = server.addClasspathListener(CLASSPATH_LISTENER).timeout(INITIALIZE_TIMEOUT)
-						.doOnSubscribe(x -> log.info("addClasspathListener ..."))
-						.doOnSuccess(x -> log.info("addClasspathListener DONE"))
+						.doOnSubscribe(x -> log.debug("addClasspathListener ..."))
+						.doOnSuccess(x -> log.debug("addClasspathListener DONE"))
 						.doOnError(t -> {
 							log.error("Unexpected error registering classpath listener with JDT.", t);
 							enableClasspathListener(false);
@@ -286,7 +287,7 @@ public class JdtLsProjectCache implements InitializableJavaProjectsService, Serv
 					}
 				});
 			} else {
-				log.debug("Removing classpath listener enabled=" + enabled);
+				log.info("Removing classpath listener enabled=" + enabled);
 				DISPOSABLE.update(Disposables.single());
 				classpathListenerRequest = null;
 				classpathListenerEnabled = false;
@@ -312,10 +313,9 @@ public class JdtLsProjectCache implements InitializableJavaProjectsService, Serv
 				if (!supported) {
 					throw new IllegalStateException("Classpath listening not supported.");
 				} else {
-					log.debug("CLASSPATH ENABLED CMD EXEC");
 					if (params.getArguments().get(0) instanceof JsonPrimitive) {
 						boolean classpathListeningEnabled = ((JsonPrimitive)params.getArguments().get(0)).getAsBoolean();
-						log.debug("CMD - Enable classpath listening: " + classpathListeningEnabled);
+						log.info("CMD - Enable classpath listening: " + classpathListeningEnabled);
 						enableClasspathListener(classpathListeningEnabled);
 					}
 				}
@@ -342,7 +342,6 @@ public class JdtLsProjectCache implements InitializableJavaProjectsService, Serv
 		public void changed(Event event) {
 			log.debug("claspath event received {}", event);
 			server.doOnInitialized(() -> {
-				//log.info("initialized.thenRun block entered");
 				try {
 					synchronized (table) {
 						String uri = UriUtil.normalize(event.projectUri);
