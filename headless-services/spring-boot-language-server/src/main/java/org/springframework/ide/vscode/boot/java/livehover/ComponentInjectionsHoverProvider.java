@@ -22,6 +22,7 @@ import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
+import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
 import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.Range;
@@ -38,6 +39,7 @@ import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.StringUtil;
+import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.common.collect.ImmutableList;
@@ -97,8 +99,26 @@ public class ComponentInjectionsHoverProvider extends AbstractInjectedIntoHoverP
 		});
 	}
 
+	private static String getBeanId2(Annotation annotation, TypeBinding beanType, boolean isStatic) {
+		return ASTUtils.getAttribute(annotation, "value").flatMap(ASTUtils::getFirstString).orElseGet(() -> {
+			if (beanType.enclosingType() == null) {
+				return BeanUtils.getBeanNameFromType(new String(beanType.shortReadableName()));
+			} else {
+				if (isStatic) {
+					return BeanUtils.getBeanNameFromType(new String(beanType.qualifiedSourceName()));
+				} else {
+					return getBeanType2(beanType).toString();
+				}
+			}
+		});
+	}
+
 	private static String getBeanType(ITypeBinding beanType) {
 		return beanType.getBinaryName();
+	}
+
+	private static String getBeanType2(TypeBinding beanType) {
+		return new String(beanType.qualifiedSourceName()).replace('.', '$');
 	}
 
 	@Override
@@ -165,6 +185,33 @@ public class ComponentInjectionsHoverProvider extends AbstractInjectedIntoHoverP
 		}
 		return null;
 	}
+	
+	
+
+	@Override
+	public Collection<CodeLens> getLiveHintCodeLenses2(IJavaProject project,
+			org.eclipse.jdt.internal.compiler.ast.TypeDeclaration typeDeclaration, TextDocument doc,
+			SpringProcessLiveData[] processLiveData) {
+		if (processLiveData.length > 0 && !isComponentAnnotatedType2(typeDeclaration)) {
+			try {
+				TypeBinding beanType = typeDeclaration.binding;
+				if (beanType != null) {
+					String id = getBeanId2(null, beanType, Flags.isStatic(typeDeclaration.modifiers));
+					Optional<Range> nameRange = Optional.of(new DocumentRegion(doc, typeDeclaration.sourceStart, typeDeclaration.sourceEnd).asRange());
+					if (nameRange.isPresent()) {
+						List<CodeLens> codeLenses = assembleCodeLenses2(project, processLiveData, liveData -> definedBean(liveData, getBeanType2(beanType), id), doc,
+								nameRange.get(), typeDeclaration);
+						if (codeLenses != null) {
+							return codeLenses.isEmpty() ? ImmutableList.of(new CodeLens(nameRange.get())) : codeLenses;
+						}
+					}
+				}
+			} catch (Exception e) {
+				LOG.error("", e);
+			}
+		}
+		return ImmutableList.of();
+	}
 
 	@Override
 	protected List<LiveBean> findWiredBeans(IJavaProject project, SpringProcessLiveData liveData, List<LiveBean> relevantBeans,
@@ -176,6 +223,15 @@ public class ComponentInjectionsHoverProvider extends AbstractInjectedIntoHoverP
 			typeDeclaration = ASTUtils.getAnnotatedType((Annotation) astNode);
 		}
 		return typeDeclaration == null ? Collections.emptyList() : LiveHoverUtils.findAllDependencyBeans(liveData, relevantBeans);
+	}
+
+	private boolean isComponentAnnotatedType2(org.eclipse.jdt.internal.compiler.ast.TypeDeclaration typeDeclaration) {
+		for (org.eclipse.jdt.internal.compiler.ast.Annotation a : typeDeclaration.annotations) {
+			if (a.type != null && a.type.resolvedType != null && isComponentAnnotation2(a.type.resolvedType)) {
+				return true;
+			}
+		}
+		return false;
 	}
 
 	private boolean isComponentAnnotatedType(TypeDeclaration typeDeclaration) {
@@ -201,5 +257,17 @@ public class ComponentInjectionsHoverProvider extends AbstractInjectedIntoHoverP
 
 		return false;
 	}
+	
+	private boolean isComponentAnnotation2(TypeBinding type) {
+		Set<String> transitiveSuperAnnotations = AnnotationHierarchies.getTransitiveSuperAnnotations2(type);
+		for (String annotationType : transitiveSuperAnnotations) {
+			if (Annotations.COMPONENT.equals(annotationType)) {
+				return true;
+			}
+		}
+
+		return false;
+	}
+
 
 }

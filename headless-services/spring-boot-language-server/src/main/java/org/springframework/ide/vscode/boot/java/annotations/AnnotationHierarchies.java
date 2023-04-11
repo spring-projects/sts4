@@ -20,9 +20,12 @@ import java.util.stream.Stream;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.IAnnotationBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
+import org.eclipse.jdt.internal.compiler.lookup.AnnotationBinding;
+import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
 import org.eclipse.jdt.internal.compiler.problem.AbortCompilation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.boot.java.utils.CuDeclarationUtils;
 import org.springframework.ide.vscode.commons.util.CollectorUtil;
 
 import com.google.common.collect.ImmutableList;
@@ -74,6 +77,32 @@ public abstract class AnnotationHierarchies {
 		}
 	}
 
+	public static Collection<TypeBinding> getDirectSuperAnnotations2(TypeBinding typeBinding) {
+		synchronized(lock) {
+			try {
+				AnnotationBinding[] annotations = typeBinding.getAnnotations();
+				if (annotations != null && annotations.length != 0) {
+					ImmutableList.Builder<TypeBinding> superAnnotations = ImmutableList.builder();
+					for (AnnotationBinding ab : annotations) {
+						TypeBinding sa = ab.getAnnotationType();
+						if (sa != null) {
+							if (!ignoreAnnotation(CuDeclarationUtils.getQualifiedName(sa))) {
+								superAnnotations.add(sa);
+							}
+						}
+					}
+					return superAnnotations.build();
+				}
+			}
+			catch (AbortCompilation e) {
+				log.debug("compilation aborted ", e);
+				// ignore this, it is most likely caused by broken source code, a broken classpath, or some optional dependencies not being on the classpath
+			}
+	
+			return ImmutableList.of();
+		}
+	}
+	
 	public static Set<String> getTransitiveSuperAnnotations(ITypeBinding typeBinding) {
 		synchronized(lock) {
 			Set<String> seen = new HashSet<>();
@@ -81,6 +110,15 @@ public abstract class AnnotationHierarchies {
 			return seen;
 		}
 	}
+	
+	public static Set<String> getTransitiveSuperAnnotations2(TypeBinding typeBinding) {
+		synchronized(lock) {
+			Set<String> seen = new HashSet<>();
+			findTransitiveSupers2(typeBinding, seen).collect(Collectors.toList());
+			return seen;
+		}
+	}
+
 
 	public static Stream<ITypeBinding> findTransitiveSupers(ITypeBinding typeBinding, Set<String> seen) {
 		synchronized(lock) {
@@ -97,6 +135,21 @@ public abstract class AnnotationHierarchies {
 		}
 	}
 
+	public static Stream<TypeBinding> findTransitiveSupers2(TypeBinding typeBinding, Set<String> seen) {
+		synchronized(lock) {
+			String qname = CuDeclarationUtils.getQualifiedName(typeBinding);
+			if (seen.add(qname)) {
+				return Stream.concat(
+						Stream.of(typeBinding),
+						getDirectSuperAnnotations2(typeBinding).stream().flatMap(superBinding ->
+						findTransitiveSupers2(superBinding, seen)
+								)
+						);
+			}
+			return Stream.empty();
+		}
+	}
+	
 	public static boolean isSubtypeOf(Annotation annotation, String fqAnnotationTypeName) {
 		synchronized(lock) {
 			ITypeBinding annotationType = annotation.resolveTypeBinding();

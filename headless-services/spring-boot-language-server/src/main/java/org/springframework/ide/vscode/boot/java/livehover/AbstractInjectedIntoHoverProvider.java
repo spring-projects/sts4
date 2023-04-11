@@ -103,6 +103,59 @@ public abstract class AbstractInjectedIntoHoverProvider implements HoverProvider
 		return null;
 	}
 
+	protected List<CodeLens> assembleCodeLenses2(IJavaProject project, SpringProcessLiveData[] processLiveData, DefinedBeanProvider definedBeanProvider,
+			TextDocument doc, Range range, org.eclipse.jdt.internal.compiler.ast.ASTNode node) {
+		List<CodeLens> codeLenses = null;
+		boolean beanFound = false;
+		for (SpringProcessLiveData liveData : processLiveData) {
+			
+			LiveBean definedBean = definedBeanProvider.definedBean(liveData);
+			if (definedBean == null) {
+				continue;
+			}
+			
+			beanFound = true;
+
+			List<LiveBean> relevantBeans = LiveHoverUtils.findRelevantBeans(liveData, definedBean);
+
+			if (!relevantBeans.isEmpty()) {
+				List<LiveBean> injectedBeans = getRelevantInjectedIntoBeans(project, liveData, definedBean, relevantBeans);
+				ImmutableList.Builder<CodeLens> builder = ImmutableList.builder();
+				if (!injectedBeans.isEmpty()) {
+					// Break out of the loop. Just look for the first app with injected into beans
+					List<CodeLens> injectedCodeLenses = LiveHoverUtils.createCodeLensesForBeans(range, injectedBeans,
+							BEANS_PREFIX_PLAIN_TEXT, MAX_INLINE_BEANS_STRING_LENGTH, INLINE_BEANS_STRING_SEPARATOR);
+					builder.addAll(
+							injectedCodeLenses.isEmpty() ? ImmutableList.of(new CodeLens(range)) : injectedCodeLenses);
+				}
+
+				// Wired beans code lenses
+				List<LiveBean> wiredBeans = findWiredBeans2(project, liveData, relevantBeans, node);
+				builder.addAll(assembleCodeLenseForAutowired2(wiredBeans, project, liveData, doc, range, node));
+				
+				// Startup metrics CodeLens
+				if (liveData.getStartupMetrics() != null) {
+					Duration startupTime = liveData.getStartupMetrics().getBeanInstanciationTime(definedBean.getId());
+					if (startupTime != null) {
+						builder.add(LiveHoverUtils.createCodeLenseForBeanStartupMetric(range, startupTime));
+					}
+				}
+
+				// If Injected into and Wired beans are found for an app just return ocde lenses for the bean from the app 
+				codeLenses = builder.build();
+				break;
+			} else if (liveData.getStartupMetrics() != null && liveData.getStartupMetrics().getBeanInstanciationTime(definedBean.getId()) != null) {
+				Duration startupTime = liveData.getStartupMetrics().getBeanInstanciationTime(definedBean.getId());
+				codeLenses = ImmutableList.of(LiveHoverUtils.createCodeLenseForBeanStartupMetric(range, startupTime));
+			}
+			
+		}
+		if (beanFound) {
+			return codeLenses == null || codeLenses.isEmpty() ? ImmutableList.of(new CodeLens(range)) : codeLenses; 
+		}
+		return null;
+	}
+
 	protected List<CodeLens> assembleCodeLenses(IJavaProject project, SpringProcessLiveData[] processLiveData, DefinedBeanProvider definedBeanProvider,
 			TextDocument doc, Range range, ASTNode node) {
 		List<CodeLens> codeLenses = null;
@@ -162,10 +215,20 @@ public abstract class AbstractInjectedIntoHoverProvider implements HoverProvider
 				INLINE_BEANS_STRING_SEPARATOR);
 	}
 
+	protected List<CodeLens> assembleCodeLenseForAutowired2(List<LiveBean> wiredBeans, IJavaProject project, SpringProcessLiveData processLiveData, TextDocument doc, Range nameRange, org.eclipse.jdt.internal.compiler.ast.ASTNode astNode) {
+		return LiveHoverUtils.createCodeLensesForBeans(nameRange, wiredBeans,
+				AutowiredHoverProvider.BEANS_PREFIX_PLAIN_TEXT, MAX_INLINE_BEANS_STRING_LENGTH,
+				INLINE_BEANS_STRING_SEPARATOR);
+	}
+	
 	protected List<LiveBean> findWiredBeans(IJavaProject project, SpringProcessLiveData liveData, List<LiveBean> relevantBeans, ASTNode astNode) {
 		return Collections.emptyList();
 	}
 
+	protected List<LiveBean> findWiredBeans2(IJavaProject project, SpringProcessLiveData liveData, List<LiveBean> relevantBeans, org.eclipse.jdt.internal.compiler.ast.ASTNode astNode) {
+		return Collections.emptyList();
+	}
+	
 	protected Hover assembleHover(IJavaProject project, SpringProcessLiveData[] processLiveData, DefinedBeanProvider definedBeanProvider, ASTNode astNode, boolean injected, boolean wired) {
 		StringBuilder hover = new StringBuilder();
 

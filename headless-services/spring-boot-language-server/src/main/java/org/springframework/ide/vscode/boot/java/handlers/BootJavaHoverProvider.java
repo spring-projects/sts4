@@ -27,6 +27,9 @@ import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
 import org.eclipse.jdt.core.dom.SingleVariableDeclaration;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
+import org.eclipse.jdt.internal.compiler.lookup.BlockScope;
+import org.eclipse.jdt.internal.compiler.lookup.ClassScope;
+import org.eclipse.jdt.internal.compiler.lookup.CompilationUnitScope;
 import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.HoverParams;
@@ -99,6 +102,35 @@ public class BootJavaHoverProvider implements HoverHandler {
 		
 		if (processLiveData.length == 0) return new CodeLens[0];
 		if (project == null) return new CodeLens[0];
+		
+		server.getCompilationUnitCache().withCompilationUnitDeclaration(project, URI.create(document.getUri()), cu -> {
+			Collection<CodeLens> result = new LinkedHashSet<>();
+			cu.traverse(new org.eclipse.jdt.internal.compiler.ASTVisitor() {
+
+				@Override
+				public boolean visit(org.eclipse.jdt.internal.compiler.ast.TypeDeclaration localTypeDeclaration,
+						BlockScope scope) {
+					extractLiveHintsForType2(localTypeDeclaration, document, project, processLiveData, result);
+					return super.visit(localTypeDeclaration, scope);
+				}
+
+				@Override
+				public boolean visit(org.eclipse.jdt.internal.compiler.ast.TypeDeclaration memberTypeDeclaration,
+						ClassScope scope) {
+					extractLiveHintsForType2(memberTypeDeclaration, document, project, processLiveData, result);
+					return super.visit(memberTypeDeclaration, scope);
+				}
+
+				@Override
+				public boolean visit(org.eclipse.jdt.internal.compiler.ast.TypeDeclaration typeDeclaration,
+						CompilationUnitScope scope) {
+					extractLiveHintsForType2(typeDeclaration, document, project, processLiveData, result);
+					return super.visit(typeDeclaration, scope);
+				}
+				
+			}, (BlockScope) null);
+			return result;
+		});
 
 		return server.getCompilationUnitCache().withCompilationUnit(project, URI.create(document.getUri()), cu -> {
 			Collection<CodeLens> result = new LinkedHashSet<>();
@@ -187,6 +219,17 @@ public class BootJavaHoverProvider implements HoverHandler {
 		Collection<HoverProvider> providers = this.hoverProviders.getAll();
 		for (HoverProvider provider : providers) {
 			Collection<CodeLens> hints = provider.getLiveHintCodeLenses(project, typeDeclaration, doc, processLiveData);
+			if (hints!=null) {
+				result.addAll(hints);
+			}
+		}
+	}
+
+	protected void extractLiveHintsForType2(org.eclipse.jdt.internal.compiler.ast.TypeDeclaration typeDeclaration, TextDocument doc, IJavaProject project,
+			SpringProcessLiveData[] processLiveData, Collection<CodeLens> result) {
+		Collection<HoverProvider> providers = this.hoverProviders.getAll();
+		for (HoverProvider provider : providers) {
+			Collection<CodeLens> hints = provider.getLiveHintCodeLenses2(project, typeDeclaration, doc, processLiveData);
 			if (hints!=null) {
 				result.addAll(hints);
 			}

@@ -98,6 +98,22 @@ public class BeanInjectedIntoHoverProvider extends AbstractInjectedIntoHoverProv
 		return Collections.emptyList();
 	}
 
+	//TODO: implement me
+	@Override
+	protected List<LiveBean> findWiredBeans2(IJavaProject project, SpringProcessLiveData liveData, List<LiveBean> relevantBeans, org.eclipse.jdt.internal.compiler.ast.ASTNode astNode) {
+//		if (astNode instanceof org.eclipse.jdt.internal.compiler.ast.Annotation) {
+//			// @Bean annotation case
+//			MethodDeclaration beanMethod = ASTUtils.getAnnotatedMethod((org.eclipse.jdt.internal.compiler.ast.Annotation) astNode);
+//			if (beanMethod != null) {
+//				return AutowiredHoverProvider.getRelevantAutowiredBeans(project, beanMethod, liveData, relevantBeans);
+//			}
+//		} else if (astNode instanceof SingleVariableDeclaration) {
+//			// Bean method parameter case
+//			return AutowiredHoverProvider.getRelevantAutowiredBeans(project, astNode, liveData, relevantBeans);
+//		}
+		return Collections.emptyList();
+	}
+	
 	@Override
 	protected List<CodeLens> assembleCodeLenseForAutowired(List<LiveBean> wiredBeans, IJavaProject project,
 			SpringProcessLiveData liveData, TextDocument doc, Range nameRange, ASTNode astNode) {

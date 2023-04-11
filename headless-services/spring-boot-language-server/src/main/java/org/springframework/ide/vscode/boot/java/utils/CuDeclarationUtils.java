@@ -2,7 +2,11 @@ package org.springframework.ide.vscode.boot.java.utils;
 
 import java.util.Arrays;
 
+import org.eclipse.jdt.internal.compiler.ast.ASTNode;
+import org.eclipse.jdt.internal.compiler.ast.Annotation;
 import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
+import org.eclipse.jdt.internal.compiler.ast.MethodDeclaration;
+import org.eclipse.jdt.internal.compiler.lookup.TypeBinding;
 
 public class CuDeclarationUtils {
 	
@@ -20,5 +24,23 @@ public class CuDeclarationUtils {
 		// line start from 1 hence -1 and -1 for getting end of previous line
 		return line == 0 ? offset : offset - cu.compilationResult.lineSeparatorPositions[line - 2] - 1; // -1 at end because offset is for the line separator on the previous line
 	}
+	
+	public static String getQualifiedName(TypeBinding type) {
+		StringBuilder sb = new StringBuilder();
+		sb.append(type.qualifiedPackageName());
+		sb.append('.');
+		sb.append(type.qualifiedSourceName());
+		return sb.toString();
+	}
+	
+	
+	public static MethodDeclaration getAnnotatedMethod(Annotation annotation) {
+//		ASTNode parent = annotation.recipient.;
+//		if (parent instanceof MethodDeclaration) {
+//			return (MethodDeclaration)parent;
+//		}
+		return null;
+	}
+
 
 }

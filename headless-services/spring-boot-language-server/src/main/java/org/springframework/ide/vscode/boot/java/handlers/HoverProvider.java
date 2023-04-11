@@ -56,5 +56,9 @@ public interface HoverProvider {
 	default Collection<CodeLens> getLiveHintCodeLenses(IJavaProject project, MethodDeclaration methodDeclaration, TextDocument doc, SpringProcessLiveData[] processLiveData) {
 		return null;
 	}
+	
+	default Collection<CodeLens> getLiveHintCodeLenses2(IJavaProject project, org.eclipse.jdt.internal.compiler.ast.TypeDeclaration typeDeclaration, TextDocument doc, SpringProcessLiveData[] processLiveData) {
+		return null;
+	}
 
  }
