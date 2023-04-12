@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2022 Pivotal, Inc.
+ * Copyright (c) 2017, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -25,11 +25,13 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
+import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.lsp4e.server.ProcessStreamConnectionProvider;
 import org.osgi.framework.Bundle;
 import org.springframework.tooling.ls.eclipse.commons.console.ConsoleUtil.Console;
 import org.springframework.tooling.ls.eclipse.commons.console.LanguageServerConsoles;
 import org.springframework.tooling.ls.eclipse.commons.preferences.LanguageServerConsolePreferenceConstants.ServerInfo;
+import org.springframework.tooling.ls.eclipse.commons.preferences.LsPreferencesUtil;
 import org.springsource.ide.eclipse.commons.core.util.IOUtil;
 
 import com.google.common.base.Charsets;
@@ -90,7 +92,7 @@ public abstract class STS4LanguageServerProcessStreamConnector extends ProcessSt
 			command.add(runtime.getJavaExecutable());
 			command.add("-cp");
 
-			File bundleFile = FileLocator.getBundleFile(bundle);
+			File bundleFile = FileLocator.getBundleFileLocation(bundle).orElse(null);
 
 			File bundleRoot = bundleFile.getAbsoluteFile();
 			Path languageServerRoot = bundleRoot.toPath().resolve(lsFolder);
@@ -121,6 +123,17 @@ public abstract class STS4LanguageServerProcessStreamConnector extends ProcessSt
 			if (configFileName != null) {
 				command.add("-Dspring.config.location=file:" + languageServerRoot.resolve("BOOT-INF/classes").resolve(configFileName).toFile());
 			}
+
+			LsPreferencesUtil.getServerInfo(getPluginId()).ifPresent(info -> {
+				IPreferenceStore preferenceStore = LanguageServerCommonsActivator.getInstance().getPreferenceStore();
+				if (!preferenceStore.getBoolean(info.preferenceKeyConsoleLog)) {
+					String pathStr = preferenceStore.getString(info.preferenceKeyFileLog);
+					if (pathStr != null && !pathStr.isBlank()) {
+						command.add("-Dsts.log.file=" + pathStr);
+					}
+				}
+				command.add("-XX:ErrorFile=" + Platform.getStateLocation(bundle).append("fatal-error-" + info.label.replaceAll("\\s+", "-").toLowerCase() + "_" + System.currentTimeMillis()));
+			});
 
 			command.add(mainClass);
 

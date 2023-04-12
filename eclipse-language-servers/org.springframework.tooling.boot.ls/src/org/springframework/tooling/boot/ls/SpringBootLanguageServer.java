@@ -16,12 +16,9 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.eclipse.core.runtime.IPath;
 import org.springframework.tooling.ls.eclipse.commons.JRE;
 import org.springframework.tooling.ls.eclipse.commons.JRE.MissingJDKException;
-import org.springframework.tooling.ls.eclipse.commons.LanguageServerCommonsActivator;
 import org.springframework.tooling.ls.eclipse.commons.STS4LanguageServerProcessStreamConnector;
-import org.springframework.tooling.ls.eclipse.commons.preferences.LanguageServerConsolePreferenceConstants;
 
 /**
  * @author Martin Lippert
@@ -50,14 +47,6 @@ public class SpringBootLanguageServer extends STS4LanguageServerProcessStreamCon
 		args.add("-Xmx1024m");
 		args.add("-XX:+HeapDumpOnOutOfMemoryError");
 		args.add("-XX:TieredStopAtLevel=1");
-		
-		if (!LanguageServerCommonsActivator.getInstance().getPreferenceStore().getBoolean(LanguageServerConsolePreferenceConstants.PREF_BOOT_JAVA_CONSOLE_ENABLED)) {
-			IPath logFile = BootLanguageServerPlugin.getDefault().getStateLocation().addTrailingSeparator().append("boot-ls.log");
-			args.add("-Dsts.log.file=" + logFile.toFile().getPath());
-		}
-		
-		IPath fatalErrorFile = BootLanguageServerPlugin.getDefault().getStateLocation().addTrailingSeparator().append("fatal-eror-boot-ls.log");
-		args.add("-XX:ErrorFile=" + fatalErrorFile.toFile().getPath());
 		
 		addCustomJVMArgs(args);
 		
