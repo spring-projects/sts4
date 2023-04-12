@@ -621,4 +621,8 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 	public void liveProcessMemoryMetricsDataUpdated(LiveProcessSummary arg0) {
 	}
 
+	@Override
+	public void modelUpdated() {
+	}
+
 }

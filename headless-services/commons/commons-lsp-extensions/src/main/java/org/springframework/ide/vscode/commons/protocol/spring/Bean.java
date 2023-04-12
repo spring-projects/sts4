@@ -8,7 +8,7 @@
  * Contributors:
  *     VMware, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.index;
+package org.springframework.ide.vscode.commons.protocol.spring;
 
 import java.util.Arrays;
 import java.util.HashSet;

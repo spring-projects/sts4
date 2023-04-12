@@ -12,16 +12,25 @@ package org.springframework.ide.vscode.boot.index;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import org.eclipse.lsp4j.Location;
+import org.springframework.ide.vscode.commons.protocol.spring.Bean;
+import org.springframework.ide.vscode.commons.protocol.spring.InjectionPoint;
+import org.springframework.ide.vscode.commons.protocol.spring.SpringModelService;
 
-public class SpringMetamodelIndex {
+public class SpringMetamodelIndex implements SpringModelService {
 
 	private List<Bean> beans;
 	
 	public SpringMetamodelIndex() {
 		this.beans = new ArrayList<>();
+	}
+	
+	@Override
+	public CompletableFuture<List<Bean>> beans(String project) {
+		return CompletableFuture.completedFuture(beans);
 	}
 
 	public Bean[] getBeans(String name) {

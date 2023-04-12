@@ -281,19 +281,15 @@ public class LanguageServerHarness {
 			((LanguageClientAware) getServer()).connect(new STS4LanguageClient() {
 				@Override
 				public void telemetryEvent(Object object) {
-					// TODO Auto-generated method stub
-
 				}
 
 				@Override
 				public CompletableFuture<MessageActionItem> showMessageRequest(ShowMessageRequestParams requestParams) {
-					// TODO Auto-generated method stub
 					return CompletableFuture.completedFuture(new MessageActionItem("Some Message Request Answer"));
 				}
 
 				@Override
 				public void showMessage(MessageParams messageParams) {
-					// TODO Auto-generated method stub
 				}
 
 				@Override
@@ -308,8 +304,6 @@ public class LanguageServerHarness {
 
 				@Override
 				public void logMessage(MessageParams message) {
-					// TODO Auto-generated method stub
-
 				}
 
 				@Override
@@ -421,6 +415,10 @@ public class LanguageServerHarness {
 
 				@Override
 				public void liveProcessGcPausesMetricsDataUpdated(LiveProcessSummary processKey) {
+				}
+
+				@Override
+				public void modelUpdated() {
 				}
 
 			});
