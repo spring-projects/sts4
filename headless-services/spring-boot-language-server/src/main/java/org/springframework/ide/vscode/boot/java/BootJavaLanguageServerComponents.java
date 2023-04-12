@@ -114,9 +114,7 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 
 	private SpringProcessTracker liveProcessTracker;
 
-	public BootJavaLanguageServerComponents(
-			ApplicationContext appContext
-	) {
+	public BootJavaLanguageServerComponents(ApplicationContext appContext) {
 		this.server = appContext.getBean(SimpleLanguageServer.class);
 		this.serverParams = appContext.getBean(BootLanguageServerParams.class);
 

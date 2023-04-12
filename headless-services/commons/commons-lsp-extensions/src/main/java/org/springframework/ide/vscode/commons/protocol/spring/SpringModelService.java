@@ -8,33 +8,18 @@
  * Contributors:
  *     VMware, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.index;
+package org.springframework.ide.vscode.commons.protocol.spring;
 
-import org.eclipse.lsp4j.Location;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
-public class InjectionPoint {
-	
-	private final String name;
-	private final String type;
-	private final Location location;
-	
-	public InjectionPoint(String name, String type, Location location) {
-		super();
-		this.name = name;
-		this.type = type;
-		this.location = location;
-	}
-	
-	public String getName() {
-		return name;
-	}
-	
-	public String getType() {
-		return type;
-	}
-	
-	public Location getLocation() {
-		return location;
+import org.eclipse.lsp4j.jsonrpc.services.JsonRequest;
+
+public interface SpringModelService {
+
+	@JsonRequest
+	default CompletableFuture<List<Bean>> beans(String project) {
+		throw new UnsupportedOperationException();
 	}
 
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2022 Pivotal, Inc.
+ * Copyright (c) 2019, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -28,14 +28,14 @@ import org.springframework.ide.vscode.commons.protocol.java.JavaSearchParams;
 import org.springframework.ide.vscode.commons.protocol.java.JavaTypeHierarchyParams;
 import org.springframework.ide.vscode.commons.protocol.java.TypeData;
 import org.springframework.ide.vscode.commons.protocol.java.TypeDescriptorData;
+import org.springframework.ide.vscode.commons.protocol.spring.SpringModelLanguageClient;
 
 /**
  * Some 'custom' extensions to standard LSP {@link LanguageClient}.
  *
  * @author Kris De Volder
  */
-public interface STS4LanguageClient extends LanguageClient {
-
+public interface STS4LanguageClient extends LanguageClient, SpringModelLanguageClient {
 	
 	@JsonNotification("sts/liveprocess/connected")
 	void liveProcessConnected(LiveProcessSummary processKey);
@@ -92,6 +92,5 @@ public interface STS4LanguageClient extends LanguageClient {
 
 	@JsonRequest("sts/javaCodeComplete")
 	CompletableFuture<List<JavaCodeCompleteData>> javaCodeComplete(JavaCodeCompleteParams params);
-
 	
 }
