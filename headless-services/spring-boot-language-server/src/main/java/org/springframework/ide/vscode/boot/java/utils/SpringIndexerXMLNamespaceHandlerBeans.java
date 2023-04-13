@@ -94,7 +94,7 @@ public class SpringIndexerXMLNamespaceHandlerBeans implements SpringIndexerXMLNa
 
 			EnhancedSymbolInformation fullSymbol = new EnhancedSymbolInformation(symbol, addon);
 
-			CachedSymbol cachedSymbol = new CachedSymbol(docURI, lastModified, fullSymbol);
+			CachedSymbol cachedSymbol = new CachedSymbol(docURI, lastModified, fullSymbol, null);
 			generatedSymbols.add(cachedSymbol);
 		}
 	}

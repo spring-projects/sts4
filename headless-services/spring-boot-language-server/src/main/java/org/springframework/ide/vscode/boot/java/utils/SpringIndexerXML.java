@@ -124,7 +124,7 @@ public class SpringIndexerXML implements SpringIndexer {
 		if (symbols != null) {
 			for (int i = 0; i < symbols.length; i++) {
 				CachedSymbol symbol = symbols[i];
-				symbolHandler.addSymbol(project, symbol.getDocURI(), symbol.getEnhancedSymbol());
+				symbolHandler.addSymbol(project, symbol.getDocURI(), symbol.getEnhancedSymbol(), symbol.getBean());
 			}
 		}
 
@@ -154,7 +154,7 @@ public class SpringIndexerXML implements SpringIndexer {
 		this.cache.update(cacheKey, file, updatedDoc.getLastModified(), generatedSymbols, null);
 
 		for (CachedSymbol symbol : generatedSymbols) {
-			symbolHandler.addSymbol(project, symbol.getDocURI(), symbol.getEnhancedSymbol());
+			symbolHandler.addSymbol(project, symbol.getDocURI(), symbol.getEnhancedSymbol(), symbol.getBean());
 		}
 	}
 
@@ -178,7 +178,7 @@ public class SpringIndexerXML implements SpringIndexer {
 		}
 
 		for (CachedSymbol symbol : generatedSymbols) {
-			symbolHandler.addSymbol(project, symbol.getDocURI(), symbol.getEnhancedSymbol());
+			symbolHandler.addSymbol(project, symbol.getDocURI(), symbol.getEnhancedSymbol(), symbol.getBean());
 		}
 	}
 

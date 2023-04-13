@@ -43,6 +43,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchyAwareLookup;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
@@ -68,6 +69,7 @@ import org.springframework.ide.vscode.commons.languageserver.util.ListenerList;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleWorkspaceService;
+import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.commons.util.Futures;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.UriUtil;
@@ -88,6 +90,7 @@ public class SpringSymbolIndex implements InitializingBean {
 	@Autowired AnnotationHierarchyAwareLookup<SymbolProvider> specificProviders;
 	@Autowired SymbolCache cache;
 	@Autowired FutureProjectFinder futureProjectFinder;
+	@Autowired SpringMetamodelIndex springIndex;
 
 	private static final String QUERY_PARAM_LOCATION_PREFIX = "locationPrefix:";
 
@@ -149,13 +152,18 @@ public class SpringSymbolIndex implements InitializingBean {
 
 		SymbolHandler handler = new SymbolHandler() {
 			@Override
-			public void addSymbol(IJavaProject project, String docURI, EnhancedSymbolInformation enhancedSymbol) {
+			public void addSymbol(IJavaProject project, String docURI, EnhancedSymbolInformation enhancedSymbol, Bean beanDefinition) {
 				SpringSymbolIndex.this.addSymbol(project, docURI, enhancedSymbol);
+
+				if (beanDefinition != null) {
+					springIndex.registerBean(beanDefinition);
+				}
 			}
 
 			@Override
 			public void removeSymbols(IJavaProject project, String docURI) {
 				SpringSymbolIndex.this.removeSymbolsByDoc(project, docURI);
+				springIndex.removeBeans(project, docURI);
 			}
 			
 		};
