@@ -22,9 +22,10 @@ import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.SymbolKind;
 import org.eclipse.lsp4j.WorkspaceSymbol;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
+import org.eclipse.lsp4j.jsonrpc.messages.Tuple;
+import org.eclipse.lsp4j.jsonrpc.messages.Tuple.Two;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.handlers.AbstractSymbolProvider;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
@@ -32,6 +33,7 @@ import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.boot.java.utils.CachedSymbol;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJavaContext;
+import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.commons.protocol.spring.InjectionPoint;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -44,18 +46,15 @@ public class ComponentSymbolProvider extends AbstractSymbolProvider {
 	
 	private static final Logger log = LoggerFactory.getLogger(ComponentSymbolProvider.class);
 
-	private final SpringMetamodelIndex springIndex;
-
-	public ComponentSymbolProvider(SpringMetamodelIndex springIndex) {
-		this.springIndex = springIndex;
-	}
-
 	@Override
 	protected void addSymbolsPass1(Annotation node, ITypeBinding annotationType, Collection<ITypeBinding> metaAnnotations, SpringIndexerJavaContext context, TextDocument doc) {
 		try {
 			if (node != null && node.getParent() != null && node.getParent() instanceof TypeDeclaration) {
-				EnhancedSymbolInformation enhancedSymbol = createSymbol(node, annotationType, metaAnnotations, doc);
-				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), enhancedSymbol));
+				Two<EnhancedSymbolInformation, Bean> result = createSymbol(node, annotationType, metaAnnotations, doc);
+
+				EnhancedSymbolInformation enhancedSymbol = result.getFirst();
+				Bean beanDefinition = result.getSecond();
+				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), enhancedSymbol, beanDefinition));
 			}
 		}
 		catch (Exception e) {
@@ -63,7 +62,7 @@ public class ComponentSymbolProvider extends AbstractSymbolProvider {
 		}
 	}
 
-	protected EnhancedSymbolInformation createSymbol(Annotation node, ITypeBinding annotationType, Collection<ITypeBinding> metaAnnotations, TextDocument doc) throws BadLocationException {
+	protected Tuple.Two<EnhancedSymbolInformation, Bean> createSymbol(Annotation node, ITypeBinding annotationType, Collection<ITypeBinding> metaAnnotations, TextDocument doc) throws BadLocationException {
 		String annotationTypeName = annotationType.getName();
 		Collection<String> metaAnnotationNames = metaAnnotations.stream()
 				.map(ITypeBinding::getName)
@@ -93,9 +92,9 @@ public class ComponentSymbolProvider extends AbstractSymbolProvider {
 		Set<String> supertypes = new HashSet<>();
 		ASTUtils.findSupertypes(beanType, supertypes);
 
-		springIndex.registerBean(beanName, beanType.getQualifiedName(), location, injectionPoints, (String[]) supertypes.toArray(new String[supertypes.size()]));
+		Bean beanDefinition = new Bean(beanName, beanType.getQualifiedName(), location, injectionPoints, (String[]) supertypes.toArray(new String[supertypes.size()]));
 
-		return new EnhancedSymbolInformation(symbol, addon);
+		return Tuple.two(new EnhancedSymbolInformation(symbol, addon), beanDefinition);
 	}
 
 	protected String beanLabel(String searchPrefix, String annotationTypeName, Collection<String> metaAnnotationNames, String beanName, String beanType) {

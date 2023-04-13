@@ -31,7 +31,6 @@ import org.eclipse.lsp4j.WorkspaceSymbol;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.handlers.AbstractSymbolProvider;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
@@ -40,6 +39,7 @@ import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.boot.java.utils.CachedSymbol;
 import org.springframework.ide.vscode.boot.java.utils.FunctionUtils;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJavaContext;
+import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.commons.protocol.spring.InjectionPoint;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
@@ -61,12 +61,6 @@ public class BeansSymbolProvider extends AbstractSymbolProvider {
 	private static final Logger log = LoggerFactory.getLogger(BeansSymbolProvider.class);
 
 	private static final String[] NAME_ATTRIBUTES = {"value", "name"};
-
-	private final SpringMetamodelIndex springIndex;
-
-	public BeansSymbolProvider(SpringMetamodelIndex springIndex) {
-		this.springIndex = springIndex;
-	}
 
 	@Override
 	protected void addSymbolsPass1(Annotation node, ITypeBinding annotationType, Collection<ITypeBinding> metaAnnotations, SpringIndexerJavaContext context, TextDocument doc) {
@@ -95,14 +89,14 @@ public class BeansSymbolProvider extends AbstractSymbolProvider {
 						new SymbolAddOnInformation[] {new BeansSymbolAddOnInformation(nameAndRegion.getT1(), beanType.getQualifiedName())}
 				);
 
-				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), enhancedSymbol));
-				
 				InjectionPoint[] injectionPoints = ASTUtils.findInjectionPoints(method, doc);
 				
 				Set<String> supertypes = new HashSet<>();
 				ASTUtils.findSupertypes(beanType, supertypes);
 
-				springIndex.registerBean(nameAndRegion.getT1(), beanType.getQualifiedName(), location, injectionPoints, (String[]) supertypes.toArray(new String[supertypes.size()]));
+				Bean beanDefinition = new Bean(nameAndRegion.getT1(), beanType.getQualifiedName(), location, injectionPoints, (String[]) supertypes.toArray(new String[supertypes.size()]));
+
+				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), enhancedSymbol, beanDefinition));
 
 			} catch (BadLocationException e) {
 				log.error("", e);
@@ -122,7 +116,7 @@ public class BeansSymbolProvider extends AbstractSymbolProvider {
 						Either.forLeft(new Location(doc.getUri(), doc.toRange(functionBean.getT3()))));
 
 				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(),
-						new EnhancedSymbolInformation(symbol, new SymbolAddOnInformation[] {new BeansSymbolAddOnInformation(functionBean.getT1(), functionBean.getT2().getQualifiedName())})));
+						new EnhancedSymbolInformation(symbol, new SymbolAddOnInformation[] {new BeansSymbolAddOnInformation(functionBean.getT1(), functionBean.getT2().getQualifiedName())}), null));
 
 			} catch (BadLocationException e) {
 				log.error("", e);

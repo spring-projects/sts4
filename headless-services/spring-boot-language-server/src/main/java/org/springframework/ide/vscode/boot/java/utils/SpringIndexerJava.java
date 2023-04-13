@@ -223,7 +223,7 @@ public class SpringIndexerJava implements SpringIndexer {
 //			dependencyTracker.dump();
 
 			for (CachedSymbol symbol : generatedSymbols) {
-				symbolHandler.addSymbol(project, symbol.getDocURI(), symbol.getEnhancedSymbol());
+				symbolHandler.addSymbol(project, symbol.getDocURI(), symbol.getEnhancedSymbol(), symbol.getBean());
 			}
 			Set<String> scannedFiles = new HashSet<>();
 			scannedFiles.add(file);
@@ -309,7 +309,7 @@ public class SpringIndexerJava implements SpringIndexer {
 		parser.createASTs(javaFiles, null, new String[0], requestor, null);
 		
 		for (CachedSymbol symbol : generatedSymbols) {
-			symbolHandler.addSymbol(project, symbol.getDocURI(), symbol.getEnhancedSymbol());
+			symbolHandler.addSymbol(project, symbol.getDocURI(), symbol.getEnhancedSymbol(), symbol.getBean());
 		}
 		
 		SymbolCacheKey cacheKey = getCacheKey(project);
@@ -384,7 +384,7 @@ public class SpringIndexerJava implements SpringIndexer {
 		if (symbols != null) {
 			for (int i = 0; i < symbols.length; i++) {
 				CachedSymbol symbol = symbols[i];
-				symbolHandler.addSymbol(project, symbol.getDocURI(), symbol.getEnhancedSymbol());
+				symbolHandler.addSymbol(project, symbol.getDocURI(), symbol.getEnhancedSymbol(), symbol.getBean());
 			}
 		}
 	}
@@ -516,7 +516,7 @@ public class SpringIndexerJava implements SpringIndexer {
 				WorkspaceSymbol symbol = provideDefaultSymbol(node, context);
 				if (symbol != null) {
 					EnhancedSymbolInformation enhancedSymbol = new EnhancedSymbolInformation(symbol, null);
-					context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), enhancedSymbol));
+					context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), enhancedSymbol, null));
 				}
 			}
 		}

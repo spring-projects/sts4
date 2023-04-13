@@ -16,6 +16,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 import org.eclipse.lsp4j.Location;
+import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.commons.protocol.spring.InjectionPoint;
 import org.springframework.ide.vscode.commons.protocol.spring.SpringModelService;
@@ -37,9 +38,15 @@ public class SpringMetamodelIndex implements SpringModelService {
 		return this.beans.stream().filter(bean -> bean.getName().equals(name)).collect(Collectors.toList()).toArray(new Bean[0]);
 	}
 
+	public void registerBean(Bean beanDefinition) {
+		this.beans.add(beanDefinition);
+	}
+
 	public void registerBean(String name, String type, Location location, InjectionPoint[] injectionPoints, String[] supertypes) {
-		Bean bean = new Bean(name, type, location, injectionPoints, supertypes);
-		this.beans.add(bean);
+		registerBean(new Bean(name, type, location, injectionPoints, supertypes));
+	}
+
+	public void removeBeans(IJavaProject project, String docURI) {
 	}
 
 }

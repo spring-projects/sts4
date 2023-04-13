@@ -185,7 +185,7 @@ public class SpringFactoriesIndexer implements SpringIndexer {
 		if (symbols != null) {
 			for (int i = 0; i < symbols.length; i++) {
 				CachedSymbol symbol = symbols[i];
-				symbolHandler.addSymbol(project, symbol.getDocURI(), symbol.getEnhancedSymbol());
+				symbolHandler.addSymbol(project, symbol.getDocURI(), symbol.getEnhancedSymbol(), symbol.getBean());
 			}
 		}
 
@@ -202,7 +202,7 @@ public class SpringFactoriesIndexer implements SpringIndexer {
 			long lastModified = Files.getLastModifiedTime(file).toMillis();
 			String docUri = file.toUri().toASCIIString();
 			for (EnhancedSymbolInformation s : computeSymbols(docUri, content)) {
-				builder.add(new CachedSymbol(docUri, lastModified, s));
+				builder.add(new CachedSymbol(docUri, lastModified, s, null));
 			}
 			return builder.build();
 		} catch (IOException e) {
@@ -256,7 +256,7 @@ public class SpringFactoriesIndexer implements SpringIndexer {
 			this.cache.update(cacheKey, file, updatedDoc.getLastModified(), generatedSymbols, null);
 
 			for (CachedSymbol symbol : generatedSymbols) {
-				symbolHandler.addSymbol(project, symbol.getDocURI(), symbol.getEnhancedSymbol());
+				symbolHandler.addSymbol(project, symbol.getDocURI(), symbol.getEnhancedSymbol(), symbol.getBean());
 			}
 		}
 	}
