@@ -55,6 +55,7 @@ public abstract class STS4LanguageServerProcessStreamConnector extends ProcessSt
 	public void start() throws IOException {
 		super.start();
 		Process process = LanguageServerProcessReaper.getProcess(this);
+		LanguageServerCommonsActivator.getInstance().getLog().info("Started " + connectorId + " LS process " + process.pid());
 		processReaper.addProcess(connectorId, process);
 		if (consoles!=null) {
 			Console console = consoles.get();
@@ -211,7 +212,9 @@ public abstract class STS4LanguageServerProcessStreamConnector extends ProcessSt
 	@Override
 	public void stop() {
 		super.stop();
-		processReaper.removeProcess(LanguageServerProcessReaper.getProcess(this));
+		Process process = LanguageServerProcessReaper.getProcess(this);
+		LanguageServerCommonsActivator.getInstance().getLog().info("Stopped " + connectorId + " LS process " + process.pid());
+		processReaper.removeProcess(process);
 	}
 
 	protected String getWorkingDirLocation() {

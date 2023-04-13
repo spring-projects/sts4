@@ -113,6 +113,7 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 	@Override
 	public void start() throws IOException {
 		this.timestampBeforeStart = System.currentTimeMillis();
+		BootLanguageServerPlugin.getDefault().getLog().info("DelegatingStreamConnectionProvider - Starting Boot LS");
 		this.provider.start();
 	}
 
@@ -134,7 +135,6 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 	@Override
 	public void stop() {
 		BootLanguageServerPlugin.getDefault().getLog().info("DelegatingStreamConnectionProvider - Stopping Boot LS");
-		BootLanguageServerPlugin.getDefault().getLog().info("DelegatingStreamConnectionProvider: \n" + Arrays.stream(Thread.currentThread().getStackTrace()).map(se -> se.toString()).collect(Collectors.joining("\n")));
 		this.provider.stop();
 		if (fResourceListener != null) {
 			ResourcesPlugin.getWorkspace().removeResourceChangeListener(fResourceListener);
