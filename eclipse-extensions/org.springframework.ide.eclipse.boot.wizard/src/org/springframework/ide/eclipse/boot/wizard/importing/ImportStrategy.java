@@ -1,5 +1,5 @@
 /*******************************************************************************
- *  Copyright (c) 2013 GoPivotal, Inc.
+ *  Copyright (c) 2013, 2023 GoPivotal, Inc.
  *  All rights reserved. This program and the accompanying materials
  *  are made available under the terms of the Eclipse Public License v1.0
  *  which accompanies this distribution, and is available at
@@ -10,9 +10,10 @@
  *******************************************************************************/
 package org.springframework.ide.eclipse.boot.wizard.importing;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IPath;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.springframework.ide.eclipse.boot.wizard.content.BuildType;
+import org.springsource.ide.eclipse.commons.core.IRunnableWithProgressAndResult;
 
 /**
  * Strategy for importing a certain type of getting started content
@@ -31,7 +32,7 @@ public abstract class ImportStrategy {
 		this.notInstalledMessage = notInstalledMessage;
 	}
 
-	public abstract IRunnableWithProgress createOperation(ImportConfiguration conf);
+	public abstract IRunnableWithProgressAndResult<IProject> createOperation(ImportConfiguration conf);
 
 	public boolean isSupported() {
 		return true;

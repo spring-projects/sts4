@@ -1,5 +1,5 @@
 /*******************************************************************************
- *  Copyright (c) 2015, 2020 Pivotal, Inc.
+ *  Copyright (c) 2015, 2023 Pivotal, Inc.
  *  All rights reserved. This program and the accompanying materials
  *  are made available under the terms of the Eclipse Public License v1.0
  *  which accompanies this distribution, and is available at
@@ -29,11 +29,11 @@ import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.eclipse.core.runtime.SubMonitor;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.springframework.ide.eclipse.boot.wizard.content.BuildType;
 import org.springframework.ide.eclipse.boot.wizard.importing.ImportConfiguration;
 import org.springframework.ide.eclipse.boot.wizard.importing.ImportStrategy;
 import org.springframework.ide.eclipse.boot.wizard.importing.ImportStrategyFactory;
+import org.springsource.ide.eclipse.commons.core.IRunnableWithProgressAndResult;
 import org.springsource.ide.eclipse.commons.core.SpringCoreUtils;
 import org.springsource.ide.eclipse.commons.core.util.NatureUtils;
 import org.springsource.ide.eclipse.commons.livexp.util.ExceptionUtil;
@@ -62,10 +62,10 @@ public class Buildship30ImportStrategy extends ImportStrategy {
 	}
 
 	@Override
-	public IRunnableWithProgress createOperation(final ImportConfiguration conf) {
-		return new IRunnableWithProgress() {
+	public IRunnableWithProgressAndResult<IProject> createOperation(final ImportConfiguration conf) {
+		return new IRunnableWithProgressAndResult<IProject>() {
 			@Override
-			public void run(IProgressMonitor mon) throws InvocationTargetException, InterruptedException {
+			public IProject run(IProgressMonitor mon) throws InvocationTargetException, InterruptedException {
 				mon.beginTask("Import Gradle Buildship project", 10);
 				try {
 					File loc = new File(conf.getLocation());
@@ -95,6 +95,7 @@ public class Buildship30ImportStrategy extends ImportStrategy {
 									} catch (CoreException e) {
 										//Ignore: happens in STS 4 which no longer has spring nature.
 									}
+									return p;
 								}
 							}
 						}
@@ -102,6 +103,7 @@ public class Buildship30ImportStrategy extends ImportStrategy {
 						//Try not to loose the error completely.
 						throw ExceptionUtil.coreException(buildResult.getStatus());
 					}
+					return null;
 				} catch (Exception e) {
 					if (e instanceof InterruptedException) {
 						throw (InterruptedException)e;

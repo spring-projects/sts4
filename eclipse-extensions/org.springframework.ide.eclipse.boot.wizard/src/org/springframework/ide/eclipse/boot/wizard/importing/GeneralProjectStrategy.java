@@ -1,5 +1,5 @@
 /*******************************************************************************
- *  Copyright (c) 2013, 2016 GoPivotal, Inc.
+ *  Copyright (c) 2013, 2023 GoPivotal, Inc.
  *  All rights reserved. This program and the accompanying materials
  *  are made available under the terms of the Eclipse Public License v1.0
  *  which accompanies this distribution, and is available at
@@ -26,6 +26,7 @@ import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.springframework.ide.eclipse.boot.wizard.content.BuildType;
 import org.springframework.ide.eclipse.boot.wizard.content.CodeSet;
+import org.springsource.ide.eclipse.commons.core.IRunnableWithProgressAndResult;
 import org.springsource.ide.eclipse.commons.livexp.util.ExceptionUtil;
 
 /**
@@ -42,7 +43,7 @@ public class GeneralProjectStrategy extends ImportStrategy {
 		super(buildType, name, notInstalledMessage);
 	}
 
-	public static class GeneralProjectImport implements IRunnableWithProgress {
+	public static class GeneralProjectImport implements IRunnableWithProgressAndResult<IProject> {
 
 		private final String projectName;
 		private final File location;
@@ -54,7 +55,7 @@ public class GeneralProjectStrategy extends ImportStrategy {
 			this.codeset = conf.getCodeSet();
 		}
 
-		public void run(IProgressMonitor mon) throws InvocationTargetException, InterruptedException {
+		public IProject run(IProgressMonitor mon) throws InvocationTargetException, InterruptedException {
 			mon.beginTask("Create General Project '"+projectName+"'", 2);
 			try {
 				//1: copy/isntantiate codeset data
@@ -62,7 +63,7 @@ public class GeneralProjectStrategy extends ImportStrategy {
 				mon.worked(1);
 
 				//2: create project in workspace
-				GeneralProjectImport.createGeneralProject(projectName, location, new SubProgressMonitor(mon, 1));
+				return GeneralProjectImport.createGeneralProject(projectName, location, new SubProgressMonitor(mon, 1));
 
 			} catch (InterruptedException e) {
 				throw e;
@@ -127,7 +128,7 @@ public class GeneralProjectStrategy extends ImportStrategy {
 	}
 
 	@Override
-	public IRunnableWithProgress createOperation(ImportConfiguration conf) {
+	public IRunnableWithProgressAndResult<IProject> createOperation(ImportConfiguration conf) {
 		return new GeneralProjectImport(conf);
 	}
 

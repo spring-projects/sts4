@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2015 Pivotal, Inc.
+ * Copyright (c) 2013, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,8 +10,9 @@
  *******************************************************************************/
 package org.springframework.ide.eclipse.boot.wizard.importing;
 
-import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.core.resources.IProject;
 import org.springframework.ide.eclipse.boot.wizard.content.BuildType;
+import org.springsource.ide.eclipse.commons.core.IRunnableWithProgressAndResult;
 
 /**
  * Import stratgety used in place of a Strategy that could not be instantiated, presumably because
@@ -26,7 +27,7 @@ public class NullImportStrategy extends ImportStrategy {
 	}
 
 	@Override
-	public IRunnableWithProgress createOperation(ImportConfiguration conf) {
+	public IRunnableWithProgressAndResult<IProject> createOperation(ImportConfiguration conf) {
 		throw new IllegalStateException(getNotInstalledMessage());
 	}
 

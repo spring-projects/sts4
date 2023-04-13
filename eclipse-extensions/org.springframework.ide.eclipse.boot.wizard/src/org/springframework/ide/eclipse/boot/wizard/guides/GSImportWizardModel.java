@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2016 Pivotal Software, Inc.
+ * Copyright (c) 2013, 2023 Pivotal Software, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -18,12 +18,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.springframework.ide.eclipse.boot.wizard.BootWizardActivator;
 import org.springframework.ide.eclipse.boot.wizard.content.BuildType;
 import org.springframework.ide.eclipse.boot.wizard.content.CodeSet;
@@ -37,6 +37,7 @@ import org.springframework.ide.eclipse.boot.wizard.importing.ImportConfiguration
 import org.springframework.ide.eclipse.boot.wizard.importing.ImportStrategies;
 import org.springframework.ide.eclipse.boot.wizard.importing.ImportStrategy;
 import org.springframework.ide.eclipse.boot.wizard.importing.ImportUtils;
+import org.springsource.ide.eclipse.commons.core.IRunnableWithProgressAndResult;
 import org.springsource.ide.eclipse.commons.frameworks.core.downloadmanager.UIThreadDownloadDisallowed;
 import org.springsource.ide.eclipse.commons.livexp.core.LiveExpression;
 import org.springsource.ide.eclipse.commons.livexp.core.LiveSet;
@@ -437,7 +438,7 @@ public class GSImportWizardModel {
 					//  a guide).
 					mon.worked(1);
 				} else {
-					IRunnableWithProgress oper = is.createOperation(ImportUtils.importConfig(
+					IRunnableWithProgressAndResult<IProject> oper = is.createOperation(ImportUtils.importConfig(
 							g,
 							cs
 					));

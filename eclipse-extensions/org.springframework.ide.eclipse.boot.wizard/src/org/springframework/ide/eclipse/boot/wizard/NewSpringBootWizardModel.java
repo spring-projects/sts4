@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2013, 2017 Pivotal, Inc.
+ * Copyright (c) 2013, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -26,12 +26,11 @@ import java.util.Set;
 
 import org.apache.commons.lang3.StringUtils;
 import org.eclipse.core.resources.IProject;
-import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Path;
 import org.eclipse.core.runtime.SubMonitor;
-import org.eclipse.jface.operation.IRunnableWithProgress;
+import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.IWorkingSet;
 import org.eclipse.ui.IWorkingSetManager;
@@ -48,6 +47,7 @@ import org.springframework.ide.eclipse.boot.wizard.content.BuildType;
 import org.springframework.ide.eclipse.boot.wizard.content.CodeSet;
 import org.springframework.ide.eclipse.boot.wizard.importing.ImportStrategy;
 import org.springframework.ide.eclipse.boot.wizard.importing.ImportUtils;
+import org.springsource.ide.eclipse.commons.core.IRunnableWithProgressAndResult;
 import org.springsource.ide.eclipse.commons.core.util.NameGenerator;
 import org.springsource.ide.eclipse.commons.frameworks.core.downloadmanager.DownloadManager;
 import org.springsource.ide.eclipse.commons.frameworks.core.downloadmanager.DownloadableItem;
@@ -335,15 +335,21 @@ public class NewSpringBootWizardModel {
 			if (strat==null) {
 				strat = BuildType.GENERAL.getDefaultStrategy();
 			}
-			IRunnableWithProgress oper = strat.createOperation(ImportUtils.importConfig(
+			IRunnableWithProgressAndResult<IProject> oper = strat.createOperation(ImportUtils.importConfig(
 					new Path(location.getValue()),
 					projectNameValue,
 					cs
 			));
-			oper.run(SubMonitor.convert(mon, 3));
-
-			IProject project = ResourcesPlugin.getWorkspace().getRoot().getProject(projectNameValue);
-			addToWorkingSets(project, SubMonitor.convert(mon, 1));
+			IProject project = oper.run(SubMonitor.convert(mon, 3));
+			if (project != null) {
+				addToWorkingSets(project, SubMonitor.convert(mon, 1));
+			} else {
+				MessageDialog.openWarning(PlatformUI.getWorkbench().getDisplay().getActiveShell(),
+						"Failed to Create Project",
+						"Failed to create project `" + projectNameValue
+								+ "' for the imported code set. Import code set manually into STS from folder "
+								+ location.getValue());
+			}
 
 		} catch (IOException e) {
 			throw new InvocationTargetException(e);

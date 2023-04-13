@@ -1,5 +1,5 @@
 /*******************************************************************************
- *  Copyright (c) 2013, 2016 GoPivotal, Inc.
+ *  Copyright (c) 2013, 2023 GoPivotal, Inc.
  *  All rights reserved. This program and the accompanying materials
  *  are made available under the terms of the Eclipse Public License v1.0
  *  which accompanies this distribution, and is available at
@@ -16,17 +16,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.apache.maven.model.Model;
+import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.Status;
-import org.eclipse.core.runtime.SubMonitor;
 import org.eclipse.core.runtime.SubProgressMonitor;
 import org.eclipse.core.runtime.jobs.ISchedulingRule;
 import org.eclipse.core.runtime.jobs.Job;
-import org.eclipse.jface.operation.IRunnableWithProgress;
 import org.eclipse.m2e.core.MavenPlugin;
 import org.eclipse.m2e.core.project.IMavenProjectImportResult;
 import org.eclipse.m2e.core.project.MavenProjectInfo;
@@ -36,6 +35,7 @@ import org.eclipse.osgi.util.NLS;
 import org.springframework.ide.eclipse.boot.wizard.BootWizardActivator;
 import org.springframework.ide.eclipse.boot.wizard.content.BuildType;
 import org.springframework.ide.eclipse.boot.wizard.content.CodeSet;
+import org.springsource.ide.eclipse.commons.core.IRunnableWithProgressAndResult;
 
 /**
  * Importer strategy implementation for importing CodeSets into the workspace and set them
@@ -53,7 +53,7 @@ public class MavenStrategy extends ImportStrategy {
 	/**
 	 * Implements the import by means of 'NewGradleProjectOperation'
 	 */
-	private static class MavenCodeSetImport implements IRunnableWithProgress {
+	private static class MavenCodeSetImport implements IRunnableWithProgressAndResult<IProject> {
 
 		//TODO: This import startegy doesn't even read projectName. The name actually comes from the
 		//   maven pom file. Actually makes sense for inport to determine projectName from project
@@ -70,7 +70,7 @@ public class MavenStrategy extends ImportStrategy {
 		}
 
 		@Override
-		public void run(IProgressMonitor mon) throws InvocationTargetException, InterruptedException {
+		public IProject run(IProgressMonitor mon) throws InvocationTargetException, InterruptedException {
 			mon.beginTask("Create maven project "+projectName, 5);
 			Job.getJobManager().beginRule(getRule(), new SubProgressMonitor(mon, 1));
 			try {
@@ -82,7 +82,7 @@ public class MavenStrategy extends ImportStrategy {
 				File pomFile = new File(location, "pom.xml");
 				Assert.isTrue(pomFile.isFile(), "No pom file found: "+pomFile);
 				Assert.isTrue(pomFile.length()>0, "Pom file contains no data: "+pomFile);
-				createEclipseProjectFromExistingMavenProject(pomFile, new SubProgressMonitor(mon, 3));
+				return createEclipseProjectFromExistingMavenProject(pomFile, new SubProgressMonitor(mon, 3));
 			} catch (InterruptedException e) {
 				throw e;
 			} catch (InvocationTargetException e) {
@@ -102,11 +102,11 @@ public class MavenStrategy extends ImportStrategy {
 	}
 
 	@Override
-	public IRunnableWithProgress createOperation(ImportConfiguration conf) {
+	public MavenCodeSetImport createOperation(ImportConfiguration conf) {
 		return new MavenCodeSetImport(conf);
 	}
 
-	protected static void createEclipseProjectFromExistingMavenProject(File pomFile, IProgressMonitor monitor) throws CoreException {
+	protected static IProject createEclipseProjectFromExistingMavenProject(File pomFile, IProgressMonitor monitor) throws CoreException {
 		Model model = MavenPlugin.getMavenModelManager().readMavenModel(pomFile);
 		String derivedProjectName = model.getName();
 		if (derivedProjectName == null) {
@@ -138,6 +138,8 @@ public class MavenStrategy extends ImportStrategy {
 			if (importResult.getProject() != null)
 				MavenPlugin.getProjectConfigurationManager().updateProjectConfiguration(importResult.getProject(), monitor);
 		}
+
+		return importResults != null && importResults.size() > 0 ? importResults.get(0).getProject() : null;
 	}
 
 
