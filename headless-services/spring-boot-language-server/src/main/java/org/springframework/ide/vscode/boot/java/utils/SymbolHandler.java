@@ -19,7 +19,9 @@ import org.springframework.ide.vscode.commons.protocol.spring.Bean;
  */
 public interface SymbolHandler {
 
-	void addSymbol(IJavaProject project, String docURI, EnhancedSymbolInformation enhancedSymbol, Bean beanDefinition);
+	void addSymbols(IJavaProject project, String docURI, EnhancedSymbolInformation[] enhancedSymbols, Bean[] beanDefinitions);
+	void addSymbols(IJavaProject project, EnhancedSymbolInformation[] enhancedSymbols, Bean[] beanDefinitions);
+
 	void removeSymbols(IJavaProject project, String docURI);
 
 }

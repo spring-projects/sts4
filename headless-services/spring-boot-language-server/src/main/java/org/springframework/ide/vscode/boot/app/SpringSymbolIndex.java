@@ -152,20 +152,60 @@ public class SpringSymbolIndex implements InitializingBean {
 
 		SymbolHandler handler = new SymbolHandler() {
 			@Override
-			public void addSymbol(IJavaProject project, String docURI, EnhancedSymbolInformation enhancedSymbol, Bean beanDefinition) {
-				SpringSymbolIndex.this.addSymbol(project, docURI, enhancedSymbol);
+			public void addSymbols(IJavaProject project, String docURI, EnhancedSymbolInformation[] enhancedSymbols, Bean[] beanDefinitions) {
+				if (enhancedSymbols != null) {
+					SpringSymbolIndex.this.addSymbolsByDoc(project, docURI, enhancedSymbols);
+				}
 
-				if (beanDefinition != null) {
-					springIndex.registerBean(beanDefinition);
+				if (beanDefinitions != null) {
+					springIndex.updateBeans(project.getElementName(), docURI, beanDefinitions);
 				}
 			}
 
 			@Override
-			public void removeSymbols(IJavaProject project, String docURI) {
-				SpringSymbolIndex.this.removeSymbolsByDoc(project, docURI);
-				springIndex.removeBeans(project, docURI);
+			public void addSymbols(IJavaProject project, EnhancedSymbolInformation[] enhancedSymbols,
+					Bean[] beanDefinitions) {
+
+				// organize symbols by doc URI
+				Map<String, List<EnhancedSymbolInformation>> symbolsPerDoc = new HashMap<>();
+				for (EnhancedSymbolInformation symbol : enhancedSymbols) {
+					Either<Location, WorkspaceSymbolLocation> location = symbol.getSymbol().getLocation();
+					String docURI = location.isLeft() ? location.getLeft().getUri() : location.getRight().getUri();
+					
+					symbolsPerDoc.computeIfAbsent(docURI, k -> new ArrayList<>()).add(symbol);
+				}
+
+				// add symbols per doc
+				for (Map.Entry<String, List<EnhancedSymbolInformation>> entry : symbolsPerDoc.entrySet()) {
+					String docURI = entry.getKey();
+					List<EnhancedSymbolInformation> symbols = entry.getValue();
+					
+					SpringSymbolIndex.this.addSymbolsByDoc(project, docURI, (EnhancedSymbolInformation[]) symbols.toArray(new EnhancedSymbolInformation[symbols.size()]));
+				}
+				
+				// organize beans per doc URI
+				Map<String, List<Bean>> beansPerDoc = new HashMap<>();
+				for (Bean bean : beanDefinitions) {
+					String docURI = bean.getLocation().getUri();
+					beansPerDoc.computeIfAbsent(docURI, k -> new ArrayList<>()).add(bean);
+				}
+				
+				// add beans per doc URI
+				for (Map.Entry<String, List<Bean>> entry : beansPerDoc.entrySet()) {
+					String docURI = entry.getKey();
+					List<Bean> beans = entry.getValue();
+					
+					springIndex.updateBeans(project.getElementName(), docURI, (Bean[]) beans.toArray(new Bean[beans.size()]));
+				}
+				
 			}
 			
+			@Override
+			public void removeSymbols(IJavaProject project, String docURI) {
+				SpringSymbolIndex.this.removeSymbolsByDoc(project, docURI);
+				springIndex.removeBeans(project.getElementName(), docURI);
+			}
+
 		};
 
 		Map<String, SpringIndexerXMLNamespaceHandler> namespaceHandler = new HashMap<>();
@@ -821,20 +861,27 @@ public class SpringSymbolIndex implements InitializingBean {
 
 	}
 
-	private void addSymbol(IJavaProject project, String docURI, EnhancedSymbolInformation enhancedSymbol) {
-		synchronized(this.symbols) {
-			symbols.add(enhancedSymbol);
-		}
+	private void addSymbolsByDoc(IJavaProject project, String docURI, EnhancedSymbolInformation[] enhancedSymbols) {
 
 		List<EnhancedSymbolInformation> docSymbols = symbolsByDoc.computeIfAbsent(docURI, s -> new ArrayList<EnhancedSymbolInformation>());
-		synchronized(docSymbols) {
-			docSymbols.add(enhancedSymbol);
-		}
-
 		List<EnhancedSymbolInformation> projectSymbols = symbolsByProject.computeIfAbsent(project.getElementName(), s -> new ArrayList<EnhancedSymbolInformation>());
-		synchronized(projectSymbols) {
-			projectSymbols.add(enhancedSymbol);
+
+		for (EnhancedSymbolInformation enhancedSymbol : enhancedSymbols) {
+
+			synchronized(this.symbols) {
+				symbols.add(enhancedSymbol);
+			}
+
+			synchronized(docSymbols) {
+				docSymbols.add(enhancedSymbol);
+			}
+
+			synchronized(projectSymbols) {
+				projectSymbols.add(enhancedSymbol);
+			}
+
 		}
+	
 	}
 
 	private void removeSymbolsByDoc(IJavaProject project, String docURI) {

@@ -19,6 +19,7 @@ import java.nio.file.Path;
 import java.nio.file.PathMatcher;
 import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -42,6 +43,7 @@ import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
 import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.protocol.java.Classpath;
+import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.Region;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -183,10 +185,9 @@ public class SpringFactoriesIndexer implements SpringIndexer {
 		}
 
 		if (symbols != null) {
-			for (int i = 0; i < symbols.length; i++) {
-				CachedSymbol symbol = symbols[i];
-				symbolHandler.addSymbol(project, symbol.getDocURI(), symbol.getEnhancedSymbol(), symbol.getBean());
-			}
+			EnhancedSymbolInformation[] enhancedSymbols = Arrays.stream(symbols).map(cachedSymbol -> cachedSymbol.getEnhancedSymbol()).toArray(EnhancedSymbolInformation[]::new);
+			Bean[] beans = Arrays.stream(symbols).filter(cachedSymbol -> cachedSymbol.getBean() != null).map(cachedSymbol -> cachedSymbol.getBean()).toArray(Bean[]::new);
+			symbolHandler.addSymbols(project, enhancedSymbols, beans);
 		}
 
 		long endTime = System.currentTimeMillis();
@@ -255,9 +256,9 @@ public class SpringFactoriesIndexer implements SpringIndexer {
 			String file = new File(new URI(docURI)).getAbsolutePath();
 			this.cache.update(cacheKey, file, updatedDoc.getLastModified(), generatedSymbols, null);
 
-			for (CachedSymbol symbol : generatedSymbols) {
-				symbolHandler.addSymbol(project, symbol.getDocURI(), symbol.getEnhancedSymbol(), symbol.getBean());
-			}
+			EnhancedSymbolInformation[] symbols = generatedSymbols.stream().map(cachedSymbol -> cachedSymbol.getEnhancedSymbol()).toArray(EnhancedSymbolInformation[]::new);
+			Bean[] beans = generatedSymbols.stream().filter(cachedSymbol -> cachedSymbol.getBean() != null).map(cachedSymbol -> cachedSymbol.getBean()).toArray(Bean[]::new);
+			symbolHandler.addSymbols(project, docURI, symbols, beans);
 		}
 	}
 
