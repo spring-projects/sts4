@@ -56,6 +56,7 @@ import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.commons.util.UriUtil;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
@@ -72,6 +73,10 @@ public class SpringIndexerJava implements SpringIndexer {
 	}
 
 	private static final Logger log = LoggerFactory.getLogger(SpringIndexerJava.class);
+
+	// whenever the implementation of the indexer changes in a way that the stored data in the cache is no longer valid,
+	// we need to change the generation - this will result in a re-indexing due to no up-to-date cache data being found
+	private static final String GENERATION = "GEN-2";
 
 	private final SymbolHandler symbolHandler;
 	private final AnnotationHierarchyAwareLookup<SymbolProvider> symbolProviders;
@@ -222,9 +227,10 @@ public class SpringIndexerJava implements SpringIndexer {
 			this.cache.update(cacheKey, file, lastModified, generatedSymbols, context.getDependencies());
 //			dependencyTracker.dump();
 
-			for (CachedSymbol symbol : generatedSymbols) {
-				symbolHandler.addSymbol(project, symbol.getDocURI(), symbol.getEnhancedSymbol(), symbol.getBean());
-			}
+			EnhancedSymbolInformation[] symbols = generatedSymbols.stream().map(cachedSymbol -> cachedSymbol.getEnhancedSymbol()).toArray(EnhancedSymbolInformation[]::new);
+			Bean[] beans = generatedSymbols.stream().filter(cachedSymbol -> cachedSymbol.getBean() != null).map(cachedSymbol -> cachedSymbol.getBean()).toArray(Bean[]::new);
+			symbolHandler.addSymbols(project, docURI, symbols, beans);
+			
 			Set<String> scannedFiles = new HashSet<>();
 			scannedFiles.add(file);
 			fileScannedEvent(file);
@@ -308,12 +314,12 @@ public class SpringIndexerJava implements SpringIndexer {
 
 		parser.createASTs(javaFiles, null, new String[0], requestor, null);
 		
-		for (CachedSymbol symbol : generatedSymbols) {
-			symbolHandler.addSymbol(project, symbol.getDocURI(), symbol.getEnhancedSymbol(), symbol.getBean());
-		}
-		
+		EnhancedSymbolInformation[] symbols = generatedSymbols.stream().map(cachedSymbol -> cachedSymbol.getEnhancedSymbol()).toArray(EnhancedSymbolInformation[]::new);
+		Bean[] beans = generatedSymbols.stream().filter(cachedSymbol -> cachedSymbol.getBean() != null).map(cachedSymbol -> cachedSymbol.getBean()).toArray(Bean[]::new);
+		symbolHandler.addSymbols(project, symbols, beans);
+
 		SymbolCacheKey cacheKey = getCacheKey(project);
-		SpringIndexerJava.this.cache.update(cacheKey, javaFiles, lastModified, generatedSymbols, dependencies);
+		this.cache.update(cacheKey, javaFiles, lastModified, generatedSymbols, dependencies);
 		
 		return scannedTypes;
 	}
@@ -382,10 +388,9 @@ public class SpringIndexerJava implements SpringIndexer {
 		}
 
 		if (symbols != null) {
-			for (int i = 0; i < symbols.length; i++) {
-				CachedSymbol symbol = symbols[i];
-				symbolHandler.addSymbol(project, symbol.getDocURI(), symbol.getEnhancedSymbol(), symbol.getBean());
-			}
+			EnhancedSymbolInformation[] enhancedSymbols = Arrays.stream(symbols).map(cachedSymbol -> cachedSymbol.getEnhancedSymbol()).toArray(EnhancedSymbolInformation[]::new);
+			Bean[] beans = Arrays.stream(symbols).filter(cachedSymbol -> cachedSymbol.getBean() != null).map(cachedSymbol -> cachedSymbol.getBean()).toArray(Bean[]::new);
+			symbolHandler.addSymbols(project, enhancedSymbols, beans);
 		}
 	}
 
@@ -610,7 +615,7 @@ public class SpringIndexerJava implements SpringIndexer {
 				.map(file -> file.getAbsolutePath() + "#" + file.lastModified())
 				.collect(Collectors.joining(","));
 
-		return new SymbolCacheKey(project.getElementName() + "-java-", DigestUtils.md5Hex(classpathIdentifier).toUpperCase());
+		return new SymbolCacheKey(project.getElementName() + "-java-", DigestUtils.md5Hex(GENERATION + "-" + classpathIdentifier).toUpperCase());
 	}
 
 	public void setScanTestJavaSources(boolean scanTestJavaSources) {

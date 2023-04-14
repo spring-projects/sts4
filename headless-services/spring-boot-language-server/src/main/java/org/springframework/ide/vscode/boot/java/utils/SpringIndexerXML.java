@@ -36,6 +36,7 @@ import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.commons.util.UriUtil;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
@@ -122,10 +123,9 @@ public class SpringIndexerXML implements SpringIndexer {
 		}
 
 		if (symbols != null) {
-			for (int i = 0; i < symbols.length; i++) {
-				CachedSymbol symbol = symbols[i];
-				symbolHandler.addSymbol(project, symbol.getDocURI(), symbol.getEnhancedSymbol(), symbol.getBean());
-			}
+			EnhancedSymbolInformation[] enhancedSymbols = Arrays.stream(symbols).map(cachedSymbol -> cachedSymbol.getEnhancedSymbol()).toArray(EnhancedSymbolInformation[]::new);
+			Bean[] beans = Arrays.stream(symbols).filter(cachedSymbol -> cachedSymbol.getBean() != null).map(cachedSymbol -> cachedSymbol.getBean()).toArray(Bean[]::new);
+			symbolHandler.addSymbols(project, enhancedSymbols, beans);
 		}
 
 		long endTime = System.currentTimeMillis();
@@ -153,16 +153,14 @@ public class SpringIndexerXML implements SpringIndexer {
 		String file = new File(new URI(docURI)).getAbsolutePath();
 		this.cache.update(cacheKey, file, updatedDoc.getLastModified(), generatedSymbols, null);
 
-		for (CachedSymbol symbol : generatedSymbols) {
-			symbolHandler.addSymbol(project, symbol.getDocURI(), symbol.getEnhancedSymbol(), symbol.getBean());
-		}
+		EnhancedSymbolInformation[] symbols = generatedSymbols.stream().map(cachedSymbol -> cachedSymbol.getEnhancedSymbol()).toArray(EnhancedSymbolInformation[]::new);
+		Bean[] beans = generatedSymbols.stream().filter(cachedSymbol -> cachedSymbol.getBean() != null).map(cachedSymbol -> cachedSymbol.getBean()).toArray(Bean[]::new);
+		symbolHandler.addSymbols(project, docURI, symbols, beans);
 	}
 
 	@Override
 	public void updateFiles(IJavaProject project, DocumentDescriptor[] updatedDocs) throws Exception {
 
-		List<CachedSymbol> generatedSymbols = new ArrayList<CachedSymbol>();
-		
 		for (DocumentDescriptor updatedDoc : updatedDocs) {
 			String docURI = updatedDoc.getDocURI();
 			
@@ -170,15 +168,17 @@ public class SpringIndexerXML implements SpringIndexer {
 
 			Path path = new File(new URI(docURI)).toPath();
 			String content = new String(Files.readAllBytes(path));
+
+			List<CachedSymbol> generatedSymbols = new ArrayList<CachedSymbol>();
 			scanFile(project, content, docURI, updatedDoc.getLastModified(), generatedSymbols);
 	
 			SymbolCacheKey cacheKey = getCacheKey(project);
 			String file = new File(new URI(docURI)).getAbsolutePath();
 			this.cache.update(cacheKey, file, updatedDoc.getLastModified(), generatedSymbols, null);
-		}
-
-		for (CachedSymbol symbol : generatedSymbols) {
-			symbolHandler.addSymbol(project, symbol.getDocURI(), symbol.getEnhancedSymbol(), symbol.getBean());
+			
+			EnhancedSymbolInformation[] symbols = generatedSymbols.stream().map(cachedSymbol -> cachedSymbol.getEnhancedSymbol()).toArray(EnhancedSymbolInformation[]::new);
+			Bean[] beans = generatedSymbols.stream().filter(cachedSymbol -> cachedSymbol.getBean() != null).map(cachedSymbol -> cachedSymbol.getBean()).toArray(Bean[]::new);
+			symbolHandler.addSymbols(project, docURI, symbols, beans);
 		}
 	}
 
