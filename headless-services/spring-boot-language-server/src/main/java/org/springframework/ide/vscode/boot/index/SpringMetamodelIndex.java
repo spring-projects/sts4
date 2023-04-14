@@ -13,15 +13,13 @@ package org.springframework.ide.vscode.boot.index;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.stream.Collectors;
 
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
-import org.springframework.ide.vscode.commons.protocol.spring.SpringModelService;
 
-public class SpringMetamodelIndex implements SpringModelService {
+public class SpringMetamodelIndex {
 	
 	private final ConcurrentMap<String, Bean[]> beansPerProject;
 
@@ -29,11 +27,6 @@ public class SpringMetamodelIndex implements SpringModelService {
 		beansPerProject = new ConcurrentHashMap<>();
 	}
 	
-	@Override
-	public CompletableFuture<List<Bean>> beans(String project) {
-		return CompletableFuture.completedFuture(null);
-	}
-
 	public void updateBeans(String projectName, Bean[] beanDefinitions) {
 		beansPerProject.put(projectName, beanDefinitions);
 	}

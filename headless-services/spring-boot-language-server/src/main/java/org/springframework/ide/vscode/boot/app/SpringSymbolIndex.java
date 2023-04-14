@@ -70,6 +70,7 @@ import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguage
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleWorkspaceService;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
+import org.springframework.ide.vscode.commons.protocol.spring.SpringModelService;
 import org.springframework.ide.vscode.commons.util.Futures;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.UriUtil;
@@ -82,7 +83,7 @@ import com.google.common.collect.ImmutableList;
  * @author Martin Lippert
  */
 @Component
-public class SpringSymbolIndex implements InitializingBean {
+public class SpringSymbolIndex implements InitializingBean, SpringModelService {
 
 	@Autowired SimpleLanguageServer server;
 	@Autowired BootJavaConfig config;
@@ -687,6 +688,11 @@ public class SpringSymbolIndex implements InitializingBean {
 		else {
 			return Collections.emptyList();
 		}
+	}
+	
+	@Override
+	public CompletableFuture<List<Bean>> beans(String project) {
+		return CompletableFuture.completedFuture(Arrays.asList(springIndex.getBeansOfProject(project)));
 	}
 
 	/**
