@@ -97,7 +97,13 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 				.build();
 		
 		this.projectToDocs = CacheBuilder.newBuilder().build();
-		this.lookupEnvCache = CacheBuilder.newBuilder().build();
+		this.lookupEnvCache = CacheBuilder.newBuilder().removalListener(new RemovalListener<URI, Tuple2<List<Classpath>, INameEnvironmentWithProgress>>() {
+			@Override
+			public void onRemoval(RemovalNotification<URI, Tuple2<List<Classpath>, INameEnvironmentWithProgress>> notification) {
+				notification.getValue().getT2().cleanup();
+			}
+			
+		}).build();
 
 		this.documentService = server == null ? null : server.getTextDocumentService();
 
