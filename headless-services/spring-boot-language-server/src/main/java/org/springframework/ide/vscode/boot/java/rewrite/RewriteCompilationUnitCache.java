@@ -24,15 +24,21 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
+import org.openrewrite.Tree;
 import org.openrewrite.Parser.Input;
 import org.openrewrite.java.JavaParser;
+import org.openrewrite.java.marker.JavaSourceSet;
 import org.openrewrite.java.tree.J.CompilationUnit;
+import org.openrewrite.java.tree.JavaType;
+import org.openrewrite.java.tree.JavaType.FullyQualified;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.utils.DocumentContentProvider;
+import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
@@ -64,6 +70,8 @@ public class RewriteCompilationUnitCache implements DocumentContentProvider, Dis
 	private final Cache<URI, CompletableFuture<CompilationUnit>> uriToCu;
 	private final Cache<URI, Set<URI>> projectToDocs;
 	private final Cache<URI, JavaParser> javaParsers;
+	
+	private final Cache<URI, List<JavaType.FullyQualified>> sourceSetClasspath;
 	
 	public RewriteCompilationUnitCache(JavaProjectFinder projectFinder, SimpleLanguageServer server, ProjectObserver projectObserver) {
 //		this.projectFinder = projectFinder;
@@ -100,7 +108,17 @@ public class RewriteCompilationUnitCache implements DocumentContentProvider, Dis
 				.build();
 		
 		this.projectToDocs = CacheBuilder.newBuilder().build();
-		this.javaParsers = CacheBuilder.newBuilder().build();
+		this.javaParsers = CacheBuilder.newBuilder()
+				.removalListener(new RemovalListener<URI, JavaParser>() {
+
+					@Override
+					public void onRemoval(RemovalNotification<URI, JavaParser> notification) {
+						sourceSetClasspath.invalidate(notification.getKey());
+					}
+				})
+				.build();
+		
+		this.sourceSetClasspath = CacheBuilder.newBuilder().build();
 
 		this.documentService = server == null ? null : server.getTextDocumentService();
 
@@ -222,14 +240,13 @@ public class RewriteCompilationUnitCache implements DocumentContentProvider, Dis
 	}
 	
 	private CompilationUnit doParse(IJavaProject project, URI uri) throws Exception {
-		boolean newParser = javaParsers.getIfPresent(project) == null;
-		JavaParser javaParser = null;;
+		boolean newParser = javaParsers.getIfPresent(project.getLocationUri()) == null;
+		JavaParser javaParser = null;
 		try {
 			logger.debug("Parsing CU {}", uri);
 			javaParser = loadJavaParser(project);
 			
 			Path sourcePath = Paths.get(uri);
-			javaParser.setSourceSet(ORAstUtils.getSourceSetName(project, sourcePath));
 			
 			Input input = new Input(sourcePath, () -> {
 				try {
@@ -240,6 +257,10 @@ public class RewriteCompilationUnitCache implements DocumentContentProvider, Dis
 			});
 			List<CompilationUnit> cus = ORAstUtils.parseInputs(javaParser, List.of(input), null);
 			CompilationUnit cu = cus.get(0);
+			
+			// Manually add source set
+			JavaSourceSet sourceSet = createSourceSet(project, ORAstUtils.getSourceSetName(project, sourcePath));
+			cu = cu.withMarkers(cu.getMarkers().computeByType(sourceSet, (original, updated) -> updated));
 			
 			if (cu != null) {
 				projectToDocs.get(project.getLocationUri(), () -> new HashSet<>()).add(uri);
@@ -257,6 +278,20 @@ public class RewriteCompilationUnitCache implements DocumentContentProvider, Dis
 				javaParser.reset(Collections.emptyList());
 			}
 		}
+	}
+	
+	private JavaSourceSet createSourceSet(IJavaProject project, String name) {
+		List<FullyQualified> fqNames;
+		try {
+			fqNames = sourceSetClasspath.get(project.getLocationUri(), () -> {
+				List<Path> classpath = IClasspathUtil.getAllBinaryRoots(project.getClasspath()).stream().map(f -> f.toPath()).collect(Collectors.toList());
+				return JavaSourceSet.build("", classpath, null, false).getClasspath();
+			});
+		} catch (ExecutionException e) {
+			logger.error("", e);
+			fqNames = Collections.emptyList();
+		}
+		return new JavaSourceSet(Tree.randomId(), name, fqNames);
 	}
 	
 	/**

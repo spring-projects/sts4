@@ -40,8 +40,11 @@ import org.openrewrite.java.JavaParser.Builder;
 import org.openrewrite.java.JavaParsingException;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.UpdateSourcePositions;
+import org.openrewrite.java.marker.JavaSourceSet;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.J.CompilationUnit;
+import org.openrewrite.java.tree.JavaSourceFile;
+import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.marker.Range;
 import org.openrewrite.tree.ParsingExecutionContextView;
 import org.slf4j.Logger;
@@ -52,6 +55,8 @@ import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocu
 import org.springframework.ide.vscode.commons.rewrite.maven.MavenProjectParser;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
+
+import javolution.util.function.Supplier;
 
 public class ORAstUtils {
 		
@@ -234,8 +239,12 @@ public class ORAstUtils {
 //	}
 	
 	public static JavaParser createJavaParser(IJavaProject project) {
+		return createJavaParser(() -> createJavaParserBuilder(project));
+	}
+	
+	public static JavaParser createJavaParser(Supplier<Builder<? extends JavaParser, ?>> f) {
 		try {
-			return createJavaParserBuilder(project).build();
+			return f.get().build();
 		} catch (Exception e) {
 			if (isExceptionFromInterrupedThread(e)) {
 				log.debug("", e);
@@ -457,5 +466,29 @@ public class ORAstUtils {
 		} else {
 			return MavenProjectParser.MAIN;
 		}
+	}
+	
+	public static JavaSourceSet addJavaSourceSet(List<? extends SourceFile> sourceFiles, String sourceSetName, List<Path> classpath) {
+		JavaSourceSet sourceSet = JavaSourceSet.build(sourceSetName, classpath, null, false);
+		List<JavaType.FullyQualified> types = sourceSet.getClasspath();
+		for (SourceFile sourceFile : sourceFiles) {
+			if (!(sourceFile instanceof JavaSourceFile)) {
+				continue;
+			}
+
+			for (JavaType type : ((JavaSourceFile) sourceFile).getTypesInUse().getTypesInUse()) {
+				if (type instanceof JavaType.FullyQualified) {
+					types.add((JavaType.FullyQualified) type);
+				}
+			}
+		}
+		sourceSet = sourceSet.withClasspath(types);
+
+		for (int i = 0; i < sourceFiles.size(); i++) {
+			SourceFile sourceFile = sourceFiles.get(i);
+			sourceFiles.set(i, sourceFile
+					.withMarkers(sourceFile.getMarkers().computeByType(sourceSet, (original, updated) -> updated)));
+		}
+		return sourceSet;
 	}
 }

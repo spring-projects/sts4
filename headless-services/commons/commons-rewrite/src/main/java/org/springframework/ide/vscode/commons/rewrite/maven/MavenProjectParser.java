@@ -41,6 +41,7 @@ import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.marker.JavaProject;
 import org.openrewrite.java.marker.JavaSourceSet;
 import org.openrewrite.java.marker.JavaVersion;
+import org.openrewrite.java.tree.J.CompilationUnit;
 import org.openrewrite.marker.BuildTool;
 import org.openrewrite.marker.Marker;
 import org.openrewrite.maven.MavenParser;
@@ -56,6 +57,7 @@ import org.openrewrite.xml.tree.Xml.Document;
 import org.openrewrite.yaml.YamlParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.commons.rewrite.java.ORAstUtils;
 
 /**
  * Parse a Maven project on disk into a list of {@link org.openrewrite.SourceFile} including
@@ -126,20 +128,22 @@ public class MavenProjectParser {
             sourceFiles.add(addProjectProvenance(maven, projectProvenance));
 
 //            List<Path> dependencies = downloadArtifacts(getResolvedPom(maven).getDependencies().get(Scope.Compile));
-            javaParser.setSourceSet(MAIN);
             javaParser.setClasspath(dependencies);
-            sourceFiles.addAll(ListUtils.map(javaParser.parseInputs(
-            		getJavaSources(getModel(maven).getRequested(), projectDirectory, ctx, parserInputProvider), projectDirectory, ctx), addProvenance(projectProvenance)));
+            List<CompilationUnit> mainJavaSources = ListUtils.map(javaParser.parseInputs(
+            		getJavaSources(getModel(maven).getRequested(), projectDirectory, ctx, parserInputProvider), projectDirectory, ctx), addProvenance(projectProvenance));
+            JavaSourceSet mainSourceSet = ORAstUtils.addJavaSourceSet(mainJavaSources, MAIN, dependencies);
+			sourceFiles.addAll(mainJavaSources);
             //Resources in the src/main should also have the main source set attached to them.
-            parseResources(getResources(getModel(maven).getRequested(), projectDirectory, ctx, parserInputProvider), projectDirectory, sourceFiles, projectProvenance, javaParser.getSourceSet(ctx));
+            parseResources(getResources(getModel(maven).getRequested(), projectDirectory, ctx, parserInputProvider), projectDirectory, sourceFiles, projectProvenance, mainSourceSet);
 
 //            List<Path> testDependencies = downloadArtifacts(maven.getModel().getDependencies(Scope.Test));
-            javaParser.setSourceSet(TEST);
 //            javaParser.setClasspath(testDependencies);
-            sourceFiles.addAll(ListUtils.map(javaParser.parseInputs(
-                    getTestJavaSources(getModel(maven).getRequested(), projectDirectory, ctx, parserInputProvider), projectDirectory, ctx), addProvenance(projectProvenance)));
+            List<CompilationUnit> testJavaSources = ListUtils.map(javaParser.parseInputs(
+                    getTestJavaSources(getModel(maven).getRequested(), projectDirectory, ctx, parserInputProvider), projectDirectory, ctx), addProvenance(projectProvenance));
+            JavaSourceSet testSourceSet = ORAstUtils.addJavaSourceSet(testJavaSources, TEST, dependencies);
+			sourceFiles.addAll(testJavaSources);
             //Resources in the src/test should also have the test source set attached to them.
-            parseResources(getTestResources(getModel(maven).getRequested(), projectDirectory, ctx, parserInputProvider), projectDirectory, sourceFiles, projectProvenance, javaParser.getSourceSet(ctx));
+            parseResources(getTestResources(getModel(maven).getRequested(), projectDirectory, ctx, parserInputProvider), projectDirectory, sourceFiles, projectProvenance, testSourceSet);
         }
 
         return sourceFiles;

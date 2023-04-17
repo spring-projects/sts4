@@ -28,7 +28,9 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.Parser;
 import org.openrewrite.Tree;
+import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaParser;
+import org.openrewrite.java.marker.JavaSourceSet;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.J.CompilationUnit;
 import org.openrewrite.marker.Marker;
@@ -157,11 +159,16 @@ public class RewriteReconciler implements JavaReconciler {
 			}
 		}
 		
-		JavaParser javaParser = ORAstUtils.createJavaParser(project);
-		javaParser.setSourceSet(MavenProjectParser.MAIN);
-		allProblems.putAll(doReconcile(project, mainSources, javaParser, incrementProgress));
-		javaParser.setSourceSet(MavenProjectParser.TEST);
-		allProblems.putAll(doReconcile(project, testSources, javaParser, incrementProgress));
+		List<Path> classpath = IClasspathUtil.getAllBinaryRoots(project.getClasspath()).stream().map(f -> f.toPath()).collect(Collectors.toList());
+		JavaParser javaParser = ORAstUtils.createJavaParser(() -> JavaParser.fromJavaVersion().classpath(classpath));
+		
+		// Pass in source sets created from classpath. (Perhaps it is a good idea to have separate classpath and parsers for test and main, TBD)
+		// Perhaps it is even better to create empty classpath java source sets as reconcile step seem to only need name of the java source set
+		// Usually java source set classpath is required to figure out how to organize imports for sources
+		JavaSourceSet mainJavaSourceSet = JavaSourceSet.build(MavenProjectParser.MAIN, classpath, null, false);
+		JavaSourceSet testJavaSourceSet = new JavaSourceSet(Tree.randomId(), MavenProjectParser.TEST, mainJavaSourceSet.getClasspath());
+		allProblems.putAll(doReconcile(project, mainSources, javaParser, mainJavaSourceSet, incrementProgress));
+		allProblems.putAll(doReconcile(project, testSources, javaParser, testJavaSourceSet, incrementProgress));
 		
 		long end = System.currentTimeMillis();
 		log.info("reconciling project (OpenRewrite): " + project.getElementName() + " - " + docs.size() + " done in " + (end - start) + "ms");
@@ -242,7 +249,7 @@ public class RewriteReconciler implements JavaReconciler {
 	private static final int BATCH = 50;
 
 	// Parse in batches and share the parser
-	private Map<IDocument, Collection<ReconcileProblem>> doReconcile(IJavaProject project, List<TextDocument> docs, JavaParser javaParser, Runnable incrementProgress) {
+	private Map<IDocument, Collection<ReconcileProblem>> doReconcile(IJavaProject project, List<TextDocument> docs, JavaParser javaParser, JavaSourceSet javaSourceSet, Runnable incrementProgress) {
 		Map<IDocument, Collection<ReconcileProblem>> allProblems = new HashMap<>();
 		if (javaParser != null && config.isRewriteReconcileEnabled()) {
 			try {
@@ -258,6 +265,8 @@ public class RewriteReconciler implements JavaReconciler {
 								batchList.stream().map(d -> new Parser.Input(Paths.get(URI.create(d.getUri())), () -> {
 									return new ByteArrayInputStream(d.get().getBytes());
 								})).collect(Collectors.toList()), source -> incrementProgress.run());
+						
+						cus = ListUtils.map(cus, cu -> cu.withMarkers(cu.getMarkers().computeByType(javaSourceSet, (original, updated) -> updated)));
 						
 						/*
 						 * If exception occurs during parsing inputs the list of inputs would become shorter than the list of corresponding documents
