@@ -98,10 +98,11 @@ public class SpringSymbolIndex implements InitializingBean, SpringModelService {
 	private final List<EnhancedSymbolInformation> symbols = new ArrayList<>();
 
 	private final ConcurrentMap<String, List<EnhancedSymbolInformation>> symbolsByDoc = new ConcurrentHashMap<>();
-
 	private final ConcurrentMap<String, List<EnhancedSymbolInformation>> symbolsByProject = new ConcurrentHashMap<>();
 
 	private final ExecutorService updateQueue = Executors.newSingleThreadExecutor();
+	private final Map<String, CompletableFuture<Void>> latestScheduledTaskByProject = new ConcurrentHashMap<String, CompletableFuture<Void>>();
+	
 	private SpringIndexer[] indexers;
 	private ListenerList<Void> listeners = new ListenerList<Void>();
 	
@@ -343,6 +344,7 @@ public class SpringSymbolIndex implements InitializingBean, SpringModelService {
 		cf.thenAccept( f -> {
 			projectInitializedFuture(project).complete(null);
 		});
+		
 		return cf;
 	}
 	
@@ -365,7 +367,10 @@ public class SpringSymbolIndex implements InitializingBean, SpringModelService {
 					}
 					
 					CompletableFuture<Void> future = CompletableFuture.allOf(futures);
+					
 					future.thenAccept(v -> listeners.fire(v));
+
+					this.latestScheduledTaskByProject.put(project.getElementName(), future);
 					return future;
 				}
 			} else {
@@ -389,7 +394,10 @@ public class SpringSymbolIndex implements InitializingBean, SpringModelService {
 				return CompletableFuture.completedFuture(null);
 			} else {
 				DeleteProject initializeItem = new DeleteProject(project, this.indexers);
-				return CompletableFuture.runAsync(initializeItem, this.updateQueue);
+				CompletableFuture<Void> future = CompletableFuture.runAsync(initializeItem, this.updateQueue);
+				this.latestScheduledTaskByProject.put(project.getElementName(), future);
+
+				return future;
 			}
 		} catch (Throwable  e) {
 			log.error("", e);
@@ -545,7 +553,10 @@ public class SpringSymbolIndex implements InitializingBean, SpringModelService {
 				Optional<IJavaProject> maybeProject = projectFinder().find(new TextDocumentIdentifier(deletedDocURI));
 				if (maybeProject.isPresent()) {
 					DeleteItems deleteItem = new DeleteItems(maybeProject.get(), new String[] {deletedDocURI}, this.indexers);
-					return CompletableFuture.runAsync(deleteItem, this.updateQueue);
+					CompletableFuture<Void> future = CompletableFuture.runAsync(deleteItem, this.updateQueue);
+
+					this.latestScheduledTaskByProject.put(maybeProject.get().getElementName(), future);
+					return future;
 				}
 			}
 			catch (Exception e) {
@@ -569,7 +580,10 @@ public class SpringSymbolIndex implements InitializingBean, SpringModelService {
 					List<String> docURIs = projectMapping.get(project);
 
 					DeleteItems deleteItems = new DeleteItems(project, (String[]) docURIs.toArray(new String[docURIs.size()]), this.indexers);
-					futures.add(CompletableFuture.runAsync(deleteItems, this.updateQueue));
+					CompletableFuture<Void> future = CompletableFuture.runAsync(deleteItems, this.updateQueue);
+
+					this.latestScheduledTaskByProject.put(project.getElementName(), future);
+					futures.add(future);
 				}
 
 				CompletableFuture<Void> future = CompletableFuture.allOf((CompletableFuture[]) futures.toArray(new CompletableFuture[futures.size()]));
@@ -691,8 +705,16 @@ public class SpringSymbolIndex implements InitializingBean, SpringModelService {
 	}
 	
 	@Override
-	public CompletableFuture<List<Bean>> beans(String project) {
-		return CompletableFuture.completedFuture(Arrays.asList(springIndex.getBeansOfProject(project)));
+	public CompletableFuture<List<Bean>> beans(String projectName) {
+		CompletableFuture<Void> latestTask = this.latestScheduledTaskByProject.get(projectName);
+
+		if (latestTask != null) {
+			return latestTask.thenApply((e) -> Arrays.asList(springIndex.getBeansOfProject(projectName)));
+		}
+		else {
+			return CompletableFuture.completedFuture(null);
+		}
+		
 	}
 
 	/**
@@ -782,8 +804,7 @@ public class SpringSymbolIndex implements InitializingBean, SpringModelService {
 	CompletableFuture<Void> updateItem(IJavaProject project, DocumentDescriptor updatedDoc, String content, SpringIndexer indexer) {
 		log.debug("scheduling updateItem {}. {},  {}, {}", project.getElementName(), updatedDoc.getDocURI(), updatedDoc.getLastModified(), indexer);
 
-		return CompletableFuture.runAsync(() -> {
-			
+		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
 			try {
 				log.debug("updateItem {}. {},  {}, {}", project.getElementName(), updatedDoc.getDocURI(), updatedDoc.getLastModified(), indexer);
 				indexer.updateFile(project, updatedDoc, content);
@@ -791,6 +812,9 @@ public class SpringSymbolIndex implements InitializingBean, SpringModelService {
 				log.error("{}", e);
 			}
 		}, this.updateQueue);
+		
+		this.latestScheduledTaskByProject.put(project.getElementName(), future);
+		return future;
 	}
 
 	CompletableFuture<Void> updateItems(IJavaProject project, DocumentDescriptor[] updatedDoc, SpringIndexer indexer) {
@@ -798,7 +822,7 @@ public class SpringSymbolIndex implements InitializingBean, SpringModelService {
 			log.debug("scheduling updateItem {}. {},  {}, {}", project.getElementName(), doc.getDocURI(), doc.getLastModified(), indexer);
 		}
 
-		return CompletableFuture.runAsync(() -> {
+		CompletableFuture<Void> future = CompletableFuture.runAsync(() -> {
 			
 			try {
 				for (DocumentDescriptor doc : updatedDoc) {
@@ -810,6 +834,9 @@ public class SpringSymbolIndex implements InitializingBean, SpringModelService {
 				log.error("{}", e);
 			}
 		}, this.updateQueue);
+		
+		this.latestScheduledTaskByProject.put(project.getElementName(), future);
+		return future;
 	}
 
 	private class DeleteItems implements Runnable {
