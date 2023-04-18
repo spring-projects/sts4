@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2022 VMware, Inc.
+ * Copyright (c) 2022, 2023 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,14 +13,14 @@ package org.springframework.ide.vscode.boot.java.livehover.v2;
 public class Measurements {
 	
 	private String statistic;
-	private Double value;
+	private Number value;
 	
 	public String getStatistic() {
 		return statistic;
 	}
 
 
-	public Double getValue() {
+	public Number getValue() {
 		return value;
 	}
 
