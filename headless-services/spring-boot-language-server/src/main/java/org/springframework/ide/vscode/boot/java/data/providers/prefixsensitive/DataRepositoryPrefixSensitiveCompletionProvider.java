@@ -141,7 +141,7 @@ public class DataRepositoryPrefixSensitiveCompletionProvider implements DataRepo
 		newText.append(";");
 		int replaceStart = calculateReplaceOffset(offset, localPrefix, fullPrefix, returnType);
 		edits.replace(replaceStart, offset, newText.toString());
-		Optional<DocumentEdits> additionalEdits = ASTUtils.getAdditionalEdit((CompilationUnit) node.getRoot(), imports, doc);
+		Optional<DocumentEdits> additionalEdits = ASTUtils.getImportsEdit((CompilationUnit) node.getRoot(), imports, doc);
 		ICompletionProposal proposal = new FindByCompletionProposal(signature, CompletionItemKind.Method, edits, null, null, additionalEdits, signature, false);
 		completions.add(proposal);
 	}

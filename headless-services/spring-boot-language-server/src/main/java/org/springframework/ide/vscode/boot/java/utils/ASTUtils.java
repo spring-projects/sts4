@@ -307,7 +307,7 @@ public class ASTUtils {
 		return null;
 	}
 	
-	public static Optional<DocumentEdits> getAdditionalEdit(CompilationUnit cu, Collection<String> imprts, IDocument doc) {
+	public static Optional<DocumentEdits> getImportsEdit(CompilationUnit cu, Collection<String> imprts, IDocument doc) {
 		ImportRewrite rewrite =  ImportRewrite.create(cu, true);
 
 		for (String imprt : imprts) {

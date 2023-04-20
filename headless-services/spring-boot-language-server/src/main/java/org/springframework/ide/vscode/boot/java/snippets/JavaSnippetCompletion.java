@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -14,7 +14,7 @@ import java.util.Optional;
 
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.lsp4j.CompletionItemKind;
-import org.springframework.ide.vscode.boot.java.jdt.imports.ImportRewrite;
+import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.languageserver.util.SnippetBuilder;
@@ -65,17 +65,6 @@ public class JavaSnippetCompletion implements ICompletionProposal{
 
 	@Override
 	public Optional<DocumentEdits> getAdditionalEdit() {
-		ImportRewrite rewrite =  ImportRewrite.create(cu, true);
-
-		javaSnippet.getImports().ifPresent((imprts ->
-		{
-			for (String imprt : imprts) {
-				rewrite.addImport(imprt);
-			}
-		}));
-
-		DocumentEdits edit = rewrite.createEdit(query.getDocument());
-
-		return edit != null ?  Optional.of(edit) : Optional.empty();
+		return javaSnippet.getImports().flatMap(imports -> ASTUtils.getImportsEdit(cu, imports, query.getDocument()));
 	}
 }
