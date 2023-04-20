@@ -22,9 +22,7 @@ import org.eclipse.jface.bindings.TriggerSequence;
 import org.eclipse.lsp4e.LSPEclipseUtils;
 import org.eclipse.lsp4e.LanguageServiceAccessor;
 import org.eclipse.lsp4e.LanguageServiceAccessor.LSPDocumentInfo;
-import org.eclipse.lsp4j.Location;
 import org.eclipse.swt.widgets.Shell;
-import org.eclipse.ui.IWorkbenchPage;
 import org.eclipse.ui.IWorkbenchPart;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
@@ -78,6 +76,7 @@ public class GotoSymbolHandler extends AbstractHandler {
 			}
 			debug("<<<GotoSymbolHandler.execute");
 		}
+		
 		return null;
 	}
 

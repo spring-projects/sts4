@@ -12,6 +12,7 @@ package org.springframework.tooling.ls.eclipse.gotosymbol.dialogs;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
@@ -24,6 +25,9 @@ import org.eclipse.lsp4j.WorkspaceSymbol;
 import org.eclipse.lsp4j.WorkspaceSymbolParams;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.LanguageServer;
+import org.springframework.ide.vscode.commons.protocol.spring.Bean;
+import org.springframework.ide.vscode.commons.protocol.spring.SpringModelLanguageServer;
+import org.springframework.ide.vscode.commons.protocol.spring.SpringModelService;
 import org.springframework.tooling.ls.eclipse.gotosymbol.GotoSymbolPlugin;
 import org.springsource.ide.eclipse.commons.livexp.core.LiveExpression;
 import org.springsource.ide.eclipse.commons.livexp.util.ExceptionUtil;
@@ -88,6 +92,8 @@ public class InProjectSymbolsProvider implements SymbolsProvider {
 		IProject project = this.project.get();
 		
 		if (project != null) {
+			dumpBeansModel(project.getName());
+			
 			String projectLocationPrefix = LSPEclipseUtils.toUri(project).toASCIIString();
 			query = "locationPrefix:" + projectLocationPrefix + "?" + query;
 			
@@ -120,6 +126,33 @@ public class InProjectSymbolsProvider implements SymbolsProvider {
 	
 	private static void log(Throwable e) {
 		GotoSymbolPlugin.getInstance().getLog().log(ExceptionUtil.status(e));
+	}
+	
+	@SuppressWarnings("removal")
+	private void dumpBeansModel(String projectName) {
+		List<LanguageServer> activeLanguageServers = LanguageServiceAccessor.getActiveLanguageServers(null);
+		
+		for (LanguageServer languageServer : activeLanguageServers) {
+			if (languageServer instanceof SpringModelLanguageServer) {
+				SpringModelLanguageServer springServer = (SpringModelLanguageServer) languageServer;
+				SpringModelService service = springServer.getSpringModelService();
+				CompletableFuture<List<Bean>> beansFuture = service.beans(projectName);
+				
+				try {
+					List<Bean> beans = beansFuture.get();
+					
+					for (Bean bean : beans) {
+						System.out.println(bean);
+					}
+					
+				} catch (InterruptedException e) {
+					e.printStackTrace();
+				} catch (java.util.concurrent.ExecutionException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+		
 	}
 	
 }
