@@ -54,6 +54,7 @@ import org.springframework.ide.eclipse.boot.wizard.importing.ImportConfiguration
 import org.springframework.ide.eclipse.boot.wizard.importing.ImportStrategies;
 import org.springframework.ide.eclipse.boot.wizard.importing.ImportStrategy;
 import org.springframework.ide.eclipse.boot.wizard.starters.AddStartersInitializrService;
+import org.springsource.ide.eclipse.commons.core.IRunnableWithProgressAndResult;
 import org.springsource.ide.eclipse.commons.frameworks.test.util.ACondition;
 import org.springsource.ide.eclipse.commons.livexp.util.ExceptionUtil;
 import org.springsource.ide.eclipse.commons.tests.util.StsTestUtil;
@@ -427,7 +428,7 @@ public class BootProjectTestHarness {
 					return new CopyFromFolder(projectName, sourceProject);
 				}
 			};
-			final IRunnableWithProgress importOp = BuildType.MAVEN.getDefaultStrategy().createOperation(importConf);
+			final IRunnableWithProgressAndResult<IProject> importOp = BuildType.MAVEN.getDefaultStrategy().createOperation(importConf);
 			Job runner = new Job("Import "+projectName) {
 				@Override
 				protected IStatus run(IProgressMonitor monitor) {
