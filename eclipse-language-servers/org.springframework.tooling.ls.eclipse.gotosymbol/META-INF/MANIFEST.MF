@@ -23,7 +23,8 @@ Require-Bundle: org.eclipse.ui,
  org.springsource.ide.eclipse.commons.frameworks.core,
  org.eclipse.ui.workbench,
  org.eclipse.ui.ide,
- org.eclipse.ui.editors
+ org.eclipse.ui.editors,
+ org.springframework.tooling.jdt.ls.commons;bundle-version="4.18.1"
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Bundle-Activator: org.springframework.tooling.ls.eclipse.gotosymbol.GotoSymbolPlugin
 Bundle-ActivationPolicy: lazy
