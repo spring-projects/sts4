@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2020 Pivotal, Inc.
+ * Copyright (c) 2016, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -493,6 +493,18 @@ public class Editor {
 			selectionStart+= insertText.length();
 			selectionEnd += insertText.length();
 			setRawText(newText);
+		}
+		
+		// Experimental additional edit support. Only makes good sense when it is above the text being edited
+		if (completion.getAdditionalTextEdits() != null) {
+			for (TextEdit te : completion.getAdditionalTextEdits()) {
+				String replaceWith = te.getNewText();
+				Range rng = te.getRange();
+				int start = doc.toOffset(rng.getStart());
+				int end = doc.toOffset(rng.getEnd());
+				replaceText(start, end, replaceWith);
+				selectionStart = selectionEnd = selectionStart - (end - start) + replaceWith.length();
+			}
 		}
 	}
 

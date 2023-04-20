@@ -11,7 +11,9 @@
 package org.springframework.ide.vscode.boot.java.data.providers;
 
 import java.util.Collection;
+import java.util.Optional;
 
+import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.lsp4j.CompletionItemKind;
 import org.springframework.ide.vscode.boot.java.data.DataRepositoryDefinition;
 import org.springframework.ide.vscode.boot.java.data.FindByCompletionProposal;
@@ -27,12 +29,12 @@ import org.springframework.ide.vscode.commons.util.text.IDocument;
 public class DataRepositoryQueryStartCompletionProvider implements DataRepositoryCompletionProvider{
 
 	@Override
-	public void addProposals(Collection<ICompletionProposal> completions, IDocument doc, int offset, String prefix, DataRepositoryDefinition repo) {
+	public void addProposals(Collection<ICompletionProposal> completions, IDocument doc, int offset, String prefix, DataRepositoryDefinition repo, ASTNode node) {
 		String localPrefix = DataRepositoryPrefixSensitiveCompletionProvider.findLastJavaIdentifierPart(prefix);
 		for(QueryMethodSubject queryMethodSubject : QueryMethodSubject.QUERY_METHOD_SUBJECTS){
 			String toInsert = queryMethodSubject.key() + "By";
 			if(prefix == null || (toInsert.length() > localPrefix.length() && toInsert.startsWith(localPrefix)) || isOffsetAfterWhitespace(doc, offset)) {
-				completions.add(FindByCompletionProposal.createProposal(offset, CompletionItemKind.Text, prefix, toInsert, toInsert, true));
+				completions.add(FindByCompletionProposal.createProposal(offset, CompletionItemKind.Text, prefix, toInsert, toInsert, true, Optional.empty()));
 			}
 		}
 	}

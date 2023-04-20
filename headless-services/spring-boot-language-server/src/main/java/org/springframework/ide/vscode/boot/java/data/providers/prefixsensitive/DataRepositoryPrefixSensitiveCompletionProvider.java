@@ -11,16 +11,21 @@
 package org.springframework.ide.vscode.boot.java.data.providers.prefixsensitive;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
+import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.lsp4j.CompletionItemKind;
 import org.springframework.ide.vscode.boot.java.data.DataRepositoryDefinition;
 import org.springframework.ide.vscode.boot.java.data.DomainProperty;
 import org.springframework.ide.vscode.boot.java.data.DomainType;
 import org.springframework.ide.vscode.boot.java.data.FindByCompletionProposal;
 import org.springframework.ide.vscode.boot.java.data.providers.DataRepositoryCompletionProvider;
+import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
@@ -33,7 +38,7 @@ import org.springframework.util.StringUtils;
 public class DataRepositoryPrefixSensitiveCompletionProvider implements DataRepositoryCompletionProvider {
 
 	@Override
-	public void addProposals(Collection<ICompletionProposal> completions, IDocument doc, int offset, String prefix, DataRepositoryDefinition repoDef) {
+	public void addProposals(Collection<ICompletionProposal> completions, IDocument doc, int offset, String prefix, DataRepositoryDefinition repoDef, ASTNode node) {
 		String localPrefix = findLastJavaIdentifierPart(prefix);
 		if (localPrefix == null) {
 			return;
@@ -42,7 +47,7 @@ public class DataRepositoryPrefixSensitiveCompletionProvider implements DataRepo
 		if(parseResult != null && parseResult.performFullCompletion()){
 			Map<String, DomainProperty> propertiesByName = repoDef.getDomainType().getPropertiesByName();
 			if (isEndingWithProperty(parseResult, propertiesByName) || isEndingWithPredicateKeyWord(localPrefix, propertiesByName)) {
-				addMethodCompletionProposal(completions, offset, repoDef, localPrefix, prefix, parseResult, propertiesByName);
+				addMethodCompletionProposal(completions, offset, repoDef, localPrefix, prefix, parseResult, propertiesByName, node, doc);
 			}
 
 			if (parseResult.lastWord() == null || !propertiesByName.containsKey(parseResult.lastWord())) {
@@ -115,13 +120,17 @@ public class DataRepositoryPrefixSensitiveCompletionProvider implements DataRepo
 		}
 	}
 
-	private void addMethodCompletionProposal(Collection<ICompletionProposal> completions, int offset, DataRepositoryDefinition repoDef, String localPrefix, String fullPrefix, DataRepositoryMethodNameParseResult parseResult, Map<String, DomainProperty> propertiesByName) {
+	private void addMethodCompletionProposal(Collection<ICompletionProposal> completions, int offset, DataRepositoryDefinition repoDef, String localPrefix, String fullPrefix, DataRepositoryMethodNameParseResult parseResult, Map<String, DomainProperty> propertiesByName, ASTNode node, IDocument doc) {
 		String methodName = localPrefix;
 		DocumentEdits edits = new DocumentEdits(null, false);
-		String signature = buildSignature(methodName, propertiesByName, parseResult);
+		Set<String> imports = new HashSet<>();
+		String signature = buildSignature(methodName, propertiesByName, parseResult, imports, repoDef);
 		StringBuilder newText = new StringBuilder();
 		newText.append(parseResult.subjectType().returnType());
-		if (parseResult.subjectType().isTyped()) {
+		if (parseResult.subjectType().fqName() != null && repoDef.getType().shouldImportType(parseResult.subjectType().fqName())) {
+			imports.add(parseResult.subjectType().fqName());
+		}
+		if (parseResult.subjectType().fqName() != null) {
 			newText.append("<");
 			newText.append(repoDef.getDomainType().getSimpleName());
 			newText.append(">");
@@ -132,8 +141,8 @@ public class DataRepositoryPrefixSensitiveCompletionProvider implements DataRepo
 		newText.append(";");
 		int replaceStart = calculateReplaceOffset(offset, localPrefix, fullPrefix, returnType);
 		edits.replace(replaceStart, offset, newText.toString());
-		DocumentEdits additionalEdits = new DocumentEdits(null, false);
-		ICompletionProposal proposal = new FindByCompletionProposal(signature, CompletionItemKind.Method, edits, null, null, Optional.of(additionalEdits), signature, false);
+		Optional<DocumentEdits> additionalEdits = ASTUtils.getAdditionalEdit((CompilationUnit) node.getRoot(), imports, doc);
+		ICompletionProposal proposal = new FindByCompletionProposal(signature, CompletionItemKind.Method, edits, null, null, additionalEdits, signature, false);
 		completions.add(proposal);
 	}
 
@@ -147,7 +156,7 @@ public class DataRepositoryPrefixSensitiveCompletionProvider implements DataRepo
 		return replaceStart;
 	}
 
-	private String buildSignature(String methodName, Map<String, DomainProperty> properties, DataRepositoryMethodNameParseResult parseResult) {
+	private String buildSignature(String methodName, Map<String, DomainProperty> properties, DataRepositoryMethodNameParseResult parseResult, Set<String> imports, DataRepositoryDefinition repoDef) {
 		StringBuilder signatureBuilder = new StringBuilder();
 		signatureBuilder.append(methodName);
 		signatureBuilder.append("(");
@@ -157,8 +166,13 @@ public class DataRepositoryPrefixSensitiveCompletionProvider implements DataRepo
 			DomainType type = findExpressionType(properties, param);
 			if (type == null) {
 				signatureBuilder.append("Object");
-			}else {
+			} else {
 				signatureBuilder.append(type.getSimpleName());
+				for (String im : type.getUsedTypes()) {
+					if (repoDef.getType().shouldImportType(im)) {
+						imports.add(im);
+					}
+				}
 			}
 			signatureBuilder.append(" ");
 			signatureBuilder.append(StringUtils.uncapitalize(param));

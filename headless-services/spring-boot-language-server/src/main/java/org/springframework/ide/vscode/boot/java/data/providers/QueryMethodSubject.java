@@ -19,15 +19,18 @@ import java.util.List;
  * @author danthe1st
  */
 public record QueryMethodSubject(
-		String key, String returnType, boolean isTyped) {
-
+		String key, String returnType, String fqName) {
+	
+	private static final String LIST = "List";
+	private static final String LIST_FQ = "java.util.List";
+	
 	public static final List<QueryMethodSubject> QUERY_METHOD_SUBJECTS = List.of(
-			QueryMethodSubject.createCollectionSubject("find", "List"),
-			QueryMethodSubject.createCollectionSubject("read", "List"),
-			QueryMethodSubject.createCollectionSubject("get", "List"),
-			QueryMethodSubject.createCollectionSubject("query", "List"),
-			QueryMethodSubject.createCollectionSubject("search", "List"),
-			QueryMethodSubject.createCollectionSubject("stream", "Streamable"),
+			QueryMethodSubject.createCollectionSubject("find", LIST, LIST_FQ),
+			QueryMethodSubject.createCollectionSubject("read", LIST, LIST_FQ),
+			QueryMethodSubject.createCollectionSubject("get", LIST, LIST_FQ),
+			QueryMethodSubject.createCollectionSubject("query", LIST, LIST_FQ),
+			QueryMethodSubject.createCollectionSubject("search", LIST, LIST_FQ),
+			QueryMethodSubject.createCollectionSubject("stream", "Streamable", "org.springframework.data.util.Streamable"),
 			QueryMethodSubject.createPrimitiveSubject("exists", "boolean"),
 			QueryMethodSubject.createPrimitiveSubject("count", "long"),
 			QueryMethodSubject.createPrimitiveSubject("delete", "void"),
@@ -35,10 +38,10 @@ public record QueryMethodSubject(
 			);
 
 	private static QueryMethodSubject createPrimitiveSubject(String key, String primitive) {
-		return new QueryMethodSubject(key, primitive, false);
+		return new QueryMethodSubject(key, primitive, null);
 	}
-	private static QueryMethodSubject createCollectionSubject(String key, String collectionType) {
-		return new QueryMethodSubject(key, collectionType, true);
+	private static QueryMethodSubject createCollectionSubject(String key, String collectionTypeSimpleName, String collectionTypeFqName) {
+		return new QueryMethodSubject(key, collectionTypeSimpleName, collectionTypeFqName);
 	}
 
 }

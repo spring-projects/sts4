@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.boot.java.data.providers;
 
 import java.util.Collection;
 
+import org.eclipse.jdt.core.dom.ASTNode;
 import org.springframework.ide.vscode.boot.java.data.DataRepositoryDefinition;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
@@ -22,6 +23,6 @@ import org.springframework.ide.vscode.commons.util.text.IDocument;
  */
 public interface DataRepositoryCompletionProvider {
 
-	void addProposals(Collection<ICompletionProposal> completions, IDocument doc, int offset, String prefix, DataRepositoryDefinition repo);
+	void addProposals(Collection<ICompletionProposal> completions, IDocument doc, int offset, String prefix, DataRepositoryDefinition repo, ASTNode node);
 
 }

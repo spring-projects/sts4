@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2019 Pivotal, Inc.
+ * Copyright (c) 2018, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -41,7 +41,7 @@ public class FindByCompletionProposal implements ICompletionProposal {
 		this.triggerNextCompletion = triggerNextCompletion;
 	}
 
-	public static ICompletionProposal createProposal(int offset, CompletionItemKind completionItemKind, String prefix, String label, String completion, boolean triggerNextCompletion) {
+	public static ICompletionProposal createProposal(int offset, CompletionItemKind completionItemKind, String prefix, String label, String completion, boolean triggerNextCompletion, Optional<DocumentEdits> additionalEdits) {
 		DocumentEdits edits = new DocumentEdits(null, false);
 		String filter = label;
 		if (prefix != null && label.startsWith(prefix)) {
@@ -55,8 +55,7 @@ public class FindByCompletionProposal implements ICompletionProposal {
 			edits.insert(offset, completion);
 		}
 
-		DocumentEdits additionalEdits = new DocumentEdits(null, false);
-		return new FindByCompletionProposal(label, completionItemKind, edits, null, null, Optional.of(additionalEdits), filter, triggerNextCompletion);
+		return new FindByCompletionProposal(label, completionItemKind, edits, null, null, additionalEdits, filter, triggerNextCompletion);
 	}
 
 	@Override

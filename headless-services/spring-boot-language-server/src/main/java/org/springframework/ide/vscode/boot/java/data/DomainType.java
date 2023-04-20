@@ -12,9 +12,11 @@ package org.springframework.ide.vscode.boot.java.data;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
@@ -25,36 +27,37 @@ import com.google.common.base.Suppliers;
 /**
  * @author Martin Lippert
  */
-public class DomainType {
+public class DomainType extends SimpleType {
 
-	private final String packageName;
-	private final String fullName;
-	private final String simpleName;
 	private Supplier<DomainProperty[]> properties;
-
-	public DomainType(String packageName, String fullName, String simpleName) {
-		this.packageName = packageName;
-		this.fullName = fullName;
-		this.simpleName = simpleName;
-	}
+	private Set<String> usedTypes;
 
 	public DomainType(ITypeBinding typeBinding) {
-		if (typeBinding.getPackage() == null) {
-			this.packageName = "";
-		} else {
-			this.packageName = typeBinding.getPackage().getName();
-		}
-		this.fullName = typeBinding.getQualifiedName();
-		this.simpleName = typeBinding.getName();
+		super(typeBinding);
 
 		this.properties = Suppliers.memoize(() -> {
 			List<DomainProperty> domainProps = calculateDomainProperties(typeBinding);
 			return domainProps.toArray(new DomainProperty[domainProps.size()]);
 		});
+
+		this.usedTypes = new HashSet<>();
+		fillImports(typeBinding);
+	}
+	
+	private void fillImports(ITypeBinding binding) {
+		if (binding != binding.getErasure()) {
+			fillImports(binding.getErasure());
+			for (ITypeBinding ta : binding.getTypeArguments()) {
+				fillImports(ta);
+			}
+		} else if (binding.isClass() || binding.isInterface() || binding.isEnum() || binding.isRecord()) {
+			String fqName = binding.getQualifiedName();
+			usedTypes.add(fqName);
+		}
 	}
 	
 	private List<DomainProperty> calculateDomainProperties(ITypeBinding typeBinding) {
-		if (!this.packageName.startsWith("java")) {
+		if (!getPackageName().startsWith("java")) {
 			IMethodBinding[] methods = typeBinding.getDeclaredMethods();
 			if (methods != null && methods.length > 0) {
 				List<DomainProperty> properties = new ArrayList<>();
@@ -91,18 +94,6 @@ public class DomainType {
 		return Collections.emptyList();
 	}
 
-	public String getPackageName() {
-		return packageName;
-	}
-
-	public String getFullName() {
-		return fullName;
-	}
-
-	public String getSimpleName() {
-		return simpleName;
-	}
-
 	public DomainProperty[] getProperties() {
 		return properties.get();
 	}
@@ -113,6 +104,10 @@ public class DomainType {
 			propertiesByName.put(prop.getName(), prop);
 		}
 		return propertiesByName;
+	}
+	
+	public Set<String> getUsedTypes() {
+		return usedTypes;
 	}
 
 }

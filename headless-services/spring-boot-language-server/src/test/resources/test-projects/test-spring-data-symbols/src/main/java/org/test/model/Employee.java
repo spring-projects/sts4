@@ -1,5 +1,5 @@
 // tag::sample[]
-package org.test;
+package org.test.model;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;

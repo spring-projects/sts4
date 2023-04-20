@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018 Pivotal, Inc.
+ * Copyright (c) 2018, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -61,7 +61,7 @@ public class DataRepositoryCompletionProcessor implements CompletionProvider {
 				// ignore if there is a problem computing the prefix, continue without prefix
 			}
 			for(DataRepositoryCompletionProvider provider : completionProviders){
-				provider.addProposals(completions, doc, offset, prefix, repo);
+				provider.addProposals(completions, doc, offset, prefix, repo, node);
 			}
 		}
 	}
@@ -90,14 +90,7 @@ public class DataRepositoryCompletionProcessor implements CompletionProvider {
 				}
 
 				if (Constants.REPOSITORY_TYPE.equals(simplifiedType)) {
-					DomainType domainType = null;
-					if (resolvedInterface.isParameterizedType()) {
-						ITypeBinding[] typeParameters = resolvedInterface.getTypeArguments();
-						if (typeParameters != null && typeParameters.length > 0) {
-							domainType = new DomainType(typeParameters[0]);
-						}
-					}
-					return createDataRepositoryDefinitionFromType(domainType);
+					return createDataRepositoryDefinitionFromType(resolvedInterface);
 				}
 				else {
 					DataRepositoryDefinition repo = getDataRepositoryDefinition(type, resolvedInterface);
@@ -116,7 +109,14 @@ public class DataRepositoryCompletionProcessor implements CompletionProvider {
 		return null;
 	}
 
-	private DataRepositoryDefinition createDataRepositoryDefinitionFromType(DomainType domainType) {
-		return new DataRepositoryDefinition(domainType);
+	private DataRepositoryDefinition createDataRepositoryDefinitionFromType(ITypeBinding resolvedInterface) {
+		DomainType domainType = null;
+		if (resolvedInterface.isParameterizedType()) {
+			ITypeBinding[] typeParameters = resolvedInterface.getTypeArguments();
+			if (typeParameters != null && typeParameters.length > 0) {
+				domainType = new DomainType(typeParameters[0]);
+			}
+		}
+		return new DataRepositoryDefinition(new SimpleType(resolvedInterface),domainType);
 	}
 }

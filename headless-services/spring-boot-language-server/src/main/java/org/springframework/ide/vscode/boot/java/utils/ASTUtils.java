@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2019 Pivotal, Inc.
+ * Copyright (c) 2017, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -20,6 +20,7 @@ import java.util.stream.Stream;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.ArrayInitializer;
+import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.IBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
@@ -37,8 +38,11 @@ import org.eclipse.lsp4j.Range;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.Annotations;
+import org.springframework.ide.vscode.boot.java.jdt.imports.ImportRewrite;
+import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.util.CollectorUtil;
 import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
+import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.common.collect.ImmutableList;
@@ -301,6 +305,18 @@ public class ASTUtils {
 			}
 		}
 		return null;
+	}
+	
+	public static Optional<DocumentEdits> getAdditionalEdit(CompilationUnit cu, Collection<String> imprts, IDocument doc) {
+		ImportRewrite rewrite =  ImportRewrite.create(cu, true);
+
+		for (String imprt : imprts) {
+			rewrite.addImport(imprt);
+		}
+
+		DocumentEdits edit = rewrite.createEdit(doc);
+
+		return edit != null ?  Optional.of(edit) : Optional.empty();
 	}
 
 }

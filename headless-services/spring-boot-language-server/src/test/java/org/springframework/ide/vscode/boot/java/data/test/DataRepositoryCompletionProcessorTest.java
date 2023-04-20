@@ -17,6 +17,8 @@ import java.util.List;
 import org.apache.commons.io.IOUtils;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.fail;
+
 import org.eclipse.lsp4j.CompletionItem;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -40,7 +42,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @BootLanguageServerTest
 @Import(HoverTestConf.class)
 public class DataRepositoryCompletionProcessorTest {
-
+	
 	@Autowired private BootLanguageServerHarness harness;
 	private Editor editor;
 
@@ -80,7 +82,85 @@ public class DataRepositoryCompletionProcessorTest {
                 "searchBy",
                 "streamBy");
 	}
+	
+	@Test
+	void assertCompletionWithImportDifferentAndSamePackage() throws Exception {
+		checkCompletionResult("", "findByResponsibleEmployee", """
+				package org.test;
 
+				import org.springframework.data.repository.CrudRepository;
+				import java.util.List;
+				import org.test.model.Employee;
+
+
+				public interface TestCustomerRepositoryForCompletions extends CrudRepository<Customer, Long> {
+					List<Customer> findByResponsibleEmployee(Employee responsibleEmployee);<*>
+				}
+				""");
+	}
+
+	@Test
+	void assertCompletionWithImportFromJavaLang() throws Exception {
+		checkCompletionResult("", "findById", """
+				package org.test;
+
+				import org.springframework.data.repository.CrudRepository;
+				import java.util.List;
+
+
+				public interface TestCustomerRepositoryForCompletions extends CrudRepository<Customer, Long> {
+					List<Customer> findById(Long id);<*>
+				}
+				""");
+	}
+	
+	@Test
+	void prefixSensitiveMethodCompletionWithImports_1() throws Exception {
+		checkCompletionResult("findByResponsibleEmployeeAndLastName", "findByResponsibleEmployeeAndLastName", """
+				package org.test;
+
+				import org.springframework.data.repository.CrudRepository;
+				import org.test.model.Employee;
+				import java.util.List;
+
+
+				public interface TestCustomerRepositoryForCompletions extends CrudRepository<Customer, Long> {
+					List<Customer> findByResponsibleEmployeeAndLastName(Employee responsibleEmployee, String lastName);<*>
+				}
+				""");
+	}
+	
+	@Test
+	void prefixSensitiveMethodCompletionWithImports_2() throws Exception {
+		checkCompletionResult("streamByResponsibleEmployeeAndLastName", "streamByResponsibleEmployeeAndLastName", """
+				package org.test;
+
+				import org.springframework.data.repository.CrudRepository;
+				import org.test.model.Employee;
+				import org.springframework.data.util.Streamable;
+
+
+				public interface TestCustomerRepositoryForCompletions extends CrudRepository<Customer, Long> {
+					Streamable<Customer> streamByResponsibleEmployeeAndLastName(Employee responsibleEmployee, String lastName);<*>
+				}
+				""");
+	}
+	
+	@Test
+	void prefixSensitiveMethodCompletionWithImports_3() throws Exception {
+		checkCompletionResult("countByResponsibleEmployee", "countByResponsibleEmployee", """
+				package org.test;
+
+				import org.springframework.data.repository.CrudRepository;
+				import org.test.model.Employee;
+
+
+				public interface TestCustomerRepositoryForCompletions extends CrudRepository<Customer, Long> {
+					long countByResponsibleEmployee(Employee responsibleEmployee);<*>
+				}
+				""");
+	}
+	
     @Test
     void testPrefixSensitiveCompletionsCompleteMethod() throws Exception {
     	checkCompletions("findByFirstNameAndLastName", "List<Customer> findByFirstNameAndLastName(String firstName, String lastName);");
@@ -165,6 +245,22 @@ public class DataRepositoryCompletionProcessorTest {
     	checkCompletions("findByFirstNameA",
     			"findByFirstNameAfter",
     			"findByFirstNameAnd");
+    }
+    
+    private void checkCompletionResult(String prefix, String completionLabel, String result) throws Exception {
+		prepareCase("{\n}", "{\n\t" + prefix + "<*>\n}");
+		List<CompletionItem> completions = editor.getCompletions();
+
+		int i = 0;
+		for (CompletionItem foundCompletion : completions) {
+			if (foundCompletion.getLabel().contains(completionLabel)) {
+				Editor clonedEditor = editor.clone();
+				clonedEditor.apply(foundCompletion);
+				assertEquals(result, clonedEditor.getText());
+				return;
+			}
+		}
+		fail("Didn't find the proposal with label: " + completionLabel);
     }
 
 	private void checkCompletions(String alredyPresent, String... expectedCompletions) throws Exception {

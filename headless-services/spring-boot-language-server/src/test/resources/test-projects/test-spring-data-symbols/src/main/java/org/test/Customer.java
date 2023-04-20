@@ -7,6 +7,9 @@ import javax.persistence.GenerationType;
 import javax.persistence.Id;
 import javax.persistence.ManyToOne;
 
+import org.test.model.Employee;
+import org.test.model.Person;
+
 @Entity
 public class Customer extends Person {
 
