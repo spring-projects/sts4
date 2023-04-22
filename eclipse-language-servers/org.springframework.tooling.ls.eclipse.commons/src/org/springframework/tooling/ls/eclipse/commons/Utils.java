@@ -67,13 +67,6 @@ public class Utils {
 				.map(viewer -> (ISourceViewer) viewer);
 	}
 
-	public static URI findDocUri(IDocument doc) {
-		for (LSPDocumentInfo info : LanguageServiceAccessor.getLSPDocumentInfosFor(doc, (x) -> true)) {
-			return info.getFileUri();
-		}
-		return null;
-	}
-
 	public static boolean isProperDocumentIdFor(IDocument doc, VersionedTextDocumentIdentifier id) {
 		for (LSPDocumentInfo info : LanguageServiceAccessor.getLSPDocumentInfosFor(doc, (x) -> true)) {
 			if (info.getVersion() == id.getVersion()) {
