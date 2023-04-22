@@ -213,7 +213,7 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 								updateHighlightAnnotations(editor, sourceViewer, annotationModel, target, updateCodeMinings);
 							}
 						} else {
-							URI uri = Utils.findDocUri(doc);
+							URI uri = LSPEclipseUtils.toUri(doc);
 							if (uri != null) {
 								updateHighlightAnnotations(editor, sourceViewer, annotationModel, uri.toASCIIString(), updateCodeMinings);
 							}
@@ -488,7 +488,7 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 					AbstractTextEditor editor = (AbstractTextEditor) _editor;
 					IDocument doc = editor.getDocumentProvider().getDocument(editor.getEditorInput());
 					if (doc!=null) {
-						URI uri = Utils.findDocUri(doc);
+						URI uri = LSPEclipseUtils.toUri(doc);
 						if (cursorMovement.getUri().equals(uri.toASCIIString())) {
 							org.eclipse.lsp4j.Position pos = cursorMovement.getPosition();
 							int offset = LSPEclipseUtils.toOffset(pos, doc);
