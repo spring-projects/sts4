@@ -62,6 +62,7 @@ import org.springframework.ide.vscode.boot.app.BootJavaConfig;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.languageserver.IndefiniteProgressTask;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.util.ListenerList;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
@@ -183,9 +184,8 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 	}
 	
 	private synchronized void loadRecipes() {
-		String taskId = UUID.randomUUID().toString();
+		IndefiniteProgressTask progressTask = server.getProgressService().createIndefiniteProgressTask(UUID.randomUUID().toString(), "Loading Rewrite Recipes", null);
 		try {
-			server.getProgressService().progressBegin(taskId, "Loading Rewrite Recipes", null);
 			log.info("Loading Rewrite Recipes...");
 			StsEnvironment env = createRewriteEnvironment();
 			for (Recipe r : env.listRecipes()) {
@@ -201,7 +201,7 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 		} catch (Throwable t) {
 			log.error("", t);
 		} finally {
-			server.getProgressService().progressDone(taskId);
+			progressTask.done();
 		}
 	}
 	
@@ -380,32 +380,32 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 	}
 	
 	CompletableFuture<Object> apply(Recipe r, String uri, String progressToken) {
+		final IndefiniteProgressTask progressTask = server.getProgressService().createIndefiniteProgressTask(progressToken, r.getDisplayName(), "Initiated...");
 		return CompletableFuture.supplyAsync(() -> {
-			server.getProgressService().progressBegin(progressToken, r.getDisplayName(), "Initiated...");
 			return projectFinder.find(new TextDocumentIdentifier(uri));
 		}).thenCompose(p -> {
 			if (p.isPresent()) {
 				try {
-					Optional<WorkspaceEdit> edit = computeWorkspaceEdit(r, p.get(), progressToken);
+					Optional<WorkspaceEdit> edit = computeWorkspaceEdit(r, p.get(), progressTask);
 					return CompletableFuture.completedFuture(edit).thenCompose(we -> {
 						if (we.isPresent()) {
-							server.getProgressService().progressEvent(progressToken, "Applying document changes...");
+							progressTask.progressEvent("Applying document changes...");
 							return server.getClient().applyEdit(new ApplyWorkspaceEditParams(we.get(), r.getDisplayName())).thenCompose(res -> {
 								if (res.isApplied()) {
-									server.getProgressService().progressDone(progressToken);
+									progressTask.done();
 									return CompletableFuture.completedFuture("success");
 								} else {
-									server.getProgressService().progressDone(progressToken);
+									progressTask.done();
 									return CompletableFuture.completedFuture(null);
 								}
 							});
 						} else {
-							server.getProgressService().progressDone(progressToken);
+							progressTask.done();
 							return CompletableFuture.completedFuture(null);
 						}
 					});
 				} catch (Throwable t) {
-					server.getProgressService().progressDone(progressToken);
+					progressTask.done();
 					throw t;
 				}
 			} else {
@@ -414,9 +414,9 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 		});
 	}
 	
-	private Optional<WorkspaceEdit> computeWorkspaceEdit(Recipe r, IJavaProject project, String progressToken) {
+	private Optional<WorkspaceEdit> computeWorkspaceEdit(Recipe r, IJavaProject project, IndefiniteProgressTask progressTask) {
 		Path absoluteProjectDir = Paths.get(project.getLocationUri());
-		server.getProgressService().progressEvent(progressToken, "Parsing files...");
+		progressTask.progressEvent("Parsing files...");
 		MavenProjectParser projectParser = createRewriteMavenParser(absoluteProjectDir,
 				new InMemoryExecutionContext(), p -> {
 					TextDocument doc = server.getTextDocumentService().getLatestSnapshot(p.toUri().toASCIIString());
@@ -426,7 +426,7 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 					return null;
 				});
 		List<SourceFile> sources = projectParser.parse(absoluteProjectDir, getClasspathEntries(project));
-		server.getProgressService().progressEvent(progressToken, "Computing changes...");
+		progressTask.progressEvent("Computing changes...");
 		RecipeRun reciperun = r.run(sources, new InMemoryExecutionContext(e -> log.error("Recipe execution failed", e)));
 		List<Result> results = reciperun.getResults();
 		return ORDocUtils.createWorkspaceEdit(absoluteProjectDir, server.getTextDocumentService(), results);
