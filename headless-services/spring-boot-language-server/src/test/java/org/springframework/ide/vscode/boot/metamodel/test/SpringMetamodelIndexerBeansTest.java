@@ -234,7 +234,5 @@ public class SpringMetamodelIndexerBeansTest {
 		assertFalse(beans[0].isTypeCompatibleWith("java.lang.String"));
 		assertFalse(beans[0].isTypeCompatibleWith("java.util.Comparator"));
 	}
-	
-	
 
 }
