@@ -16,6 +16,8 @@ import java.util.Set;
 
 import org.eclipse.lsp4j.Location;
 
+import com.google.gson.Gson;
+
 public class Bean {
 	
 	private final String name;
@@ -51,6 +53,12 @@ public class Bean {
 
 	public boolean isTypeCompatibleWith(String type) {
 		return supertypes.contains(type);
+	}
+	
+	@Override
+	public String toString() {
+		Gson gson = new Gson();
+		return gson.toJson(this);
 	}
 	
 }
