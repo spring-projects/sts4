@@ -262,7 +262,7 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		BeanInjectedIntoHoverProvider beanInjectedIntoHoverProvider = new BeanInjectedIntoHoverProvider(sourceLinks);
 		ConditionalsLiveHoverProvider conditionalsLiveHoverProvider = new ConditionalsLiveHoverProvider();
 
-		providers.put(org.springframework.ide.vscode.boot.java.value.Constants.SPRING_VALUE, valueHoverProvider);
+		providers.put(Annotations.VALUE, valueHoverProvider);
 
 		providers.put(Annotations.SPRING_REQUEST_MAPPING, requestMappingHoverProvider);
 		providers.put(Annotations.SPRING_GET_MAPPING, requestMappingHoverProvider);
@@ -301,7 +301,7 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 
 	protected ReferencesHandler createReferenceHandler(SimpleLanguageServer server, JavaProjectFinder projectFinder) {
 		Map<String, ReferenceProvider> providers = new HashMap<>();
-		providers.put(org.springframework.ide.vscode.boot.java.value.Constants.SPRING_VALUE,
+		providers.put(Annotations.VALUE,
 				new ValuePropertyReferencesProvider(server));
 
 		return new BootJavaReferencesHandler(this, projectFinder, providers);

@@ -40,6 +40,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.ide.vscode.boot.common.PropertyCompletionFactory;
 import org.springframework.ide.vscode.boot.common.RelaxedNameConfig;
+import org.springframework.ide.vscode.boot.java.JavaDefinitionHandler;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaCodeActionProvider;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaProjectReconcilerScheduler;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaReconcileEngine;
@@ -63,6 +64,7 @@ import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.boot.java.utils.SymbolCache;
 import org.springframework.ide.vscode.boot.java.utils.SymbolCacheOnDisc;
 import org.springframework.ide.vscode.boot.java.utils.SymbolCacheVoid;
+import org.springframework.ide.vscode.boot.java.value.PropertyValueAnnotationDefProvider;
 import org.springframework.ide.vscode.boot.jdt.ls.JavaProjectsService;
 import org.springframework.ide.vscode.boot.jdt.ls.JdtLsProjectCache;
 import org.springframework.ide.vscode.boot.metadata.AdHocSpringPropertyIndexProvider;
@@ -359,6 +361,11 @@ public class BootLanguageServerBootApp {
 			Optional<RewriteRecipeRepository> recipeRepoOpt, JavaProjectFinder projectFinder) {
 		return new BootJavaProjectReconcilerScheduler(bootJavaReconciler, projectObserver, config,
 				recipeRepoOpt.orElse(null), projectFinder, server);
+	}
+	
+	@Bean
+	JavaDefinitionHandler javaDefinitionHandler(CompilationUnitCache cuCache, JavaProjectFinder projectFinder) {
+		return new JavaDefinitionHandler(cuCache, projectFinder, List.of(new PropertyValueAnnotationDefProvider()));
 	}
 	
 }

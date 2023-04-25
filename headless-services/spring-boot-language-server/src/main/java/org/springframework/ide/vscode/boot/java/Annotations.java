@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2022 Pivotal, Inc.
+ * Copyright (c) 2017, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -53,5 +53,7 @@ public class Annotations {
 	public static final String CONDITIONAL_ON_JAVA = "org.springframework.boot.autoconfigure.condition.ConditionalOnJava";
 	public static final String CONDITIONAL_ON_JNDI = "org.springframework.boot.autoconfigure.condition.ConditionalOnJndi";
 	public static final String CONDITIONAL_ON_SINGLE_CANDIDATE = "org.springframework.boot.autoconfigure.condition.ConditionalOnSingleCandidate";
+	
+	public static final String VALUE = "org.springframework.beans.factory.annotation.Value";
 
 }

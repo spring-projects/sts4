@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2021 Pivotal, Inc.
+ * Copyright (c) 2017, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.boot.java.value;
 import static org.springframework.ide.vscode.commons.yaml.ast.NodeUtil.asScalar;
 
 import java.io.File;
+import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -20,6 +21,9 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
+import java.util.function.BiFunction;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -34,10 +38,11 @@ import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.WorkspaceFolder;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.handlers.ReferenceProvider;
 import org.springframework.ide.vscode.boot.properties.BootPropertiesLanguageServerComponents;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
-import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlASTProvider;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST;
@@ -55,6 +60,8 @@ import org.yaml.snakeyaml.nodes.NodeTuple;
  * @author Martin Lippert
  */
 public class ValuePropertyReferencesProvider implements ReferenceProvider {
+	
+	private static final Logger log = LoggerFactory.getLogger(ValuePropertyReferencesProvider.class);
 
 	private SimpleLanguageServer languageServer;
 
@@ -133,7 +140,7 @@ public class ValuePropertyReferencesProvider implements ReferenceProvider {
 		return null;
 	}
 
-	private boolean isPropertiesFile(Path path) {
+	static boolean isPropertiesFile(Path path) {
 		String fileName = path.getFileName().toString();
 
 		if (fileName.endsWith(BootPropertiesLanguageServerComponents.PROPERTIES)) {
@@ -151,26 +158,46 @@ public class ValuePropertyReferencesProvider implements ReferenceProvider {
 	private List<Location> findReferences(Path path, String propertyKey) {
 		String filePath = path.toString();
 		if (filePath.endsWith(BootPropertiesLanguageServerComponents.PROPERTIES)) {
-			return findReferencesInPropertiesFile(filePath, propertyKey);
+			return findReferencesInPropertiesFile(path.toFile(), propertyKey);
 		} else {
 			for (String yml : BootPropertiesLanguageServerComponents.YML) {
 				if (filePath.endsWith(yml)) {
-					return findReferencesInYMLFile(filePath, propertyKey);
+					return findReferencesInYMLFile(path.toFile(), propertyKey);
 				}
 			}
 		}
 		return new ArrayList<Location>();
 	}
 
-	private List<Location> findReferencesInYMLFile(String filePath, String propertyKey) {
+	private List<Location> findReferencesInYMLFile(File file, String propertyKey) {
+		
+		return findReferencesInYMLFile(file, propertyKey, foundNodeTuple -> {
+			Position start = new Position();
+			Node foundNode = foundNodeTuple.getKeyNode();
+			start.setLine(foundNode.getStartMark().getLine());
+			start.setCharacter(foundNode.getStartMark().getColumn());
+
+			Position end = new Position();
+			end.setLine(foundNode.getEndMark().getLine());
+			end.setCharacter(foundNode.getEndMark().getColumn());
+
+			Range range = new Range();
+			range.setStart(start);
+			range.setEnd(end);
+
+			return Optional.of(new Location(file.toPath().toUri().toASCIIString(), range));
+		});
+	}
+
+	static List<Location> findReferencesInYMLFile(File file, String propertyKey, Function<NodeTuple, Optional<Location>> processor) {
 		List<Location> foundLocations = new ArrayList<>();
 
 		try {
-			String fileContent = FileUtils.readFileToString(new File(filePath));
+			String fileContent = FileUtils.readFileToString(file);
 
 			YamlASTProvider parser = new YamlParser();
 
-			URI docURI = Paths.get(filePath).toUri();
+			URI docURI = file.toURI();
 			TextDocument doc = new TextDocument(docURI.toASCIIString(), null);
 			doc.setText(fileContent);
 			YamlFileAST ast = parser.getAST(doc);
@@ -178,23 +205,13 @@ public class ValuePropertyReferencesProvider implements ReferenceProvider {
 			List<Node> nodes = ast.getNodes();
 			if (nodes != null && !nodes.isEmpty()) {
 				for (Node node : nodes) {
-					Node foundNode = findNode(node, "", propertyKey);
-					if (foundNode != null) {
-
-						Position start = new Position();
-						start.setLine(foundNode.getStartMark().getLine());
-						start.setCharacter(foundNode.getStartMark().getColumn());
-
-						Position end = new Position();
-						end.setLine(foundNode.getEndMark().getLine());
-						end.setCharacter(foundNode.getEndMark().getColumn());
-
-						Range range = new Range();
-						range.setStart(start);
-						range.setEnd(end);
-
-						Location location = new Location(docURI.toASCIIString(), range);
-						foundLocations.add(location);
+					try {
+						NodeTuple foundNodeTuple = findNode(node, "", propertyKey);
+						if (foundNodeTuple != null) {
+							processor.apply(foundNodeTuple).ifPresent(foundLocations::add);
+						}
+					} catch (Exception e) {
+						log.error("", e);
 					}
 				}
 			}
@@ -206,8 +223,8 @@ public class ValuePropertyReferencesProvider implements ReferenceProvider {
 
 		return foundLocations;
 	}
-
-	protected Node findNode(Node node, String prefix, String propertyKey) {
+	
+	protected static NodeTuple findNode(Node node, String prefix, String propertyKey) {
 		if (node.getNodeId().equals(NodeId.mapping)) {
 			for (NodeTuple entry : ((MappingNode)node).getValue()) {
 				Node keyNode = entry.getKeyNode();
@@ -216,10 +233,10 @@ public class ValuePropertyReferencesProvider implements ReferenceProvider {
 				String combinedKey = prefix.length() > 0 ? prefix + "." + key : key;
 
 				if (combinedKey != null && combinedKey.equals(propertyKey)) {
-					return keyNode;
+					return entry;
 				}
 				else {
-					Node recursive = findNode(entry.getValueNode(), combinedKey, propertyKey);
+					NodeTuple recursive = findNode(entry.getValueNode(), combinedKey, propertyKey);
 					if (recursive != null) {
 						return recursive;
 					}
@@ -230,52 +247,59 @@ public class ValuePropertyReferencesProvider implements ReferenceProvider {
 		return null;
 	}
 
-	private List<Location> findReferencesInPropertiesFile(String filePath, String propertyKey) {
+	private List<Location> findReferencesInPropertiesFile(File file, String propertyKey) {
+		
+		return findReferencesInPropertiesFile(file, propertyKey, (pair, doc) -> {
+			try {
+				int line = doc.getLineOfOffset(pair.getKey().getOffset());
+				int startInLine = pair.getKey().getOffset() - doc.getLineOffset(line);
+				int endInLine = startInLine + (pair.getKey().getLength());
+	
+				Position start = new Position();
+				start.setLine(line);
+				start.setCharacter(startInLine);
+	
+				Position end = new Position();
+				end.setLine(line);
+				end.setCharacter(endInLine);
+	
+				Range range = new Range();
+				range.setStart(start);
+				range.setEnd(end);
+	
+				return Optional.of(new Location(file.toPath().toUri().toASCIIString(), range));
+			} catch (Exception e) {
+				log.error("", e);
+				return Optional.empty();
+			}
+		});
+	}
+	
+	static List<Location> findReferencesInPropertiesFile(File file, String propertyKey, BiFunction<KeyValuePair, TextDocument, Optional<Location>> processor) {
 		List<Location> foundLocations = new ArrayList<>();
-
 		try {
-			String fileContent = FileUtils.readFileToString(new File(filePath));
-
+			String fileContent = FileUtils.readFileToString(file);
+	
 			Parser parser = new AntlrParser();
 			ParseResults parseResults = parser.parse(fileContent);
-
+	
 			if (parseResults != null && parseResults.ast != null) {
 				parseResults.ast.getNodes(KeyValuePair.class).forEach(pair -> {
 					if (pair.getKey() != null && pair.getKey().decode().equals(propertyKey)) {
-						URI docURI = Paths.get(filePath).toUri();
-						TextDocument doc = new TextDocument(docURI.toASCIIString(), null);
+						TextDocument doc = new TextDocument(file.toURI().toASCIIString(), null);
 						doc.setText(fileContent);
-
 						try {
-							int line = doc.getLineOfOffset(pair.getKey().getOffset());
-							int startInLine = pair.getKey().getOffset() - doc.getLineOffset(line);
-							int endInLine = startInLine + (pair.getKey().getLength());
-
-							Position start = new Position();
-							start.setLine(line);
-							start.setCharacter(startInLine);
-
-							Position end = new Position();
-							end.setLine(line);
-							end.setCharacter(endInLine);
-
-							Range range = new Range();
-							range.setStart(start);
-							range.setEnd(end);
-
-							Location location = new Location(docURI.toASCIIString(), range);
-							foundLocations.add(location);
-
-						} catch (BadLocationException e) {
-							e.printStackTrace();
+							processor.apply(pair, doc).ifPresent(foundLocations::add);
+						} catch (Exception e) {
+							log.error("", e);
 						}
 					}
 				});
 			}
-
-		} catch (Exception e) {
-			e.printStackTrace();
+		} catch (IOException e) {
+			log.error("", e);
 		}
+		
 		return foundLocations;
 	}
 

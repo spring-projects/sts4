@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2020 Pivotal, Inc.
+ * Copyright (c) 2020, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -92,7 +92,7 @@ public class BootJavaCompletionEngineConfigurer {
 		Map<String, CompletionProvider> providers = new HashMap<>();
 		
 		providers.put(org.springframework.ide.vscode.boot.java.scope.Constants.SPRING_SCOPE, new ScopeCompletionProcessor());
-		providers.put(org.springframework.ide.vscode.boot.java.value.Constants.SPRING_VALUE, new ValueCompletionProcessor(javaProjectFinder, indexProvider, adHocProperties));
+		providers.put(Annotations.VALUE, new ValueCompletionProcessor(javaProjectFinder, indexProvider, adHocProperties));
 		providers.put(Annotations.REPOSITORY, new DataRepositoryCompletionProcessor());
 
 		return new BootJavaCompletionEngine(cuCache, providers, snippetManager);

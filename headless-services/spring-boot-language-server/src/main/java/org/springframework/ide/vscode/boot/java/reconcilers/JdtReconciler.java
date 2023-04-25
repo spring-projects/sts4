@@ -26,9 +26,9 @@ import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.app.BootJavaConfig;
+import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.handlers.SpelExpressionReconciler;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
-import org.springframework.ide.vscode.boot.java.value.Constants;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblem;
@@ -66,8 +66,8 @@ public class JdtReconciler implements JavaReconciler {
 		
 		this.reconcilers = new AnnotationReconciler[] {
 
-				new AnnotationParamReconciler(Constants.SPRING_VALUE, null, "#{", "}", spelExpressionReconciler),
-				new AnnotationParamReconciler(Constants.SPRING_VALUE, "value", "#{", "}", spelExpressionReconciler),
+				new AnnotationParamReconciler(Annotations.VALUE, null, "#{", "}", spelExpressionReconciler),
+				new AnnotationParamReconciler(Annotations.VALUE, "value", "#{", "}", spelExpressionReconciler),
 
 				new AnnotationParamReconciler(SPRING_CACHEABLE, "key", "", "", spelExpressionReconciler),
 				new AnnotationParamReconciler(SPRING_CACHEABLE, "condition", "", "", spelExpressionReconciler),

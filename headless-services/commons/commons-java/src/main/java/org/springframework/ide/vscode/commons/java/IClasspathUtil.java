@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2022 Pivotal, Inc.
+ * Copyright (c) 2018, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.IOException;
 import java.net.URL;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
@@ -164,6 +165,22 @@ public class IClasspathUtil {
 			}
 		})
 		.collect(CollectorUtil.toImmutableList());
+	}
+	
+	public static Stream<Path> getClasspathResourcesFullPaths(IClasspath classpath) {
+		return IClasspathUtil.getSourceFolders(classpath)
+		.flatMap(folder -> {
+			try {
+				return Files.walk(folder.toPath())
+						.filter(path -> Files.isRegularFile(path))
+						.filter(path -> {
+							String fileName = path.getFileName().toString();
+							return !fileName.endsWith(".java") && !fileName.endsWith(".class");
+						});
+			} catch (IOException e) {
+				return Stream.empty();
+			}
+		});
 	}
 
 }
