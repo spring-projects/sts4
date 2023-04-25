@@ -113,8 +113,8 @@
 		<commons-codec-version>1.13</commons-codec-version>
 
 		<!-- Rewrite specific properties -->
-		<rewrite-version>7.40.0-SNAPSHOT</rewrite-version>
-		<rewrite-spring-version>4.36.0-SNAPSHOT</rewrite-spring-version>
+		<rewrite-version>7.40.0</rewrite-version>
+		<rewrite-spring-version>4.36.0</rewrite-spring-version>
 
 		<signing.skip>true</signing.skip>
 		<signing.alias>vmware</signing.alias>
