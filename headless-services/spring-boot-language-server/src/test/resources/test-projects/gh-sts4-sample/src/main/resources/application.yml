@@ -1,0 +1,33 @@
+---
+# only app1.service1.service works
+app1:
+  service1:
+    service:
+      host: 1.2.3.4
+      port: 5000
+      
+# everything works
+app2:
+  value: true
+  service1:
+    value: true
+    service:
+      host: 1.2.3.4
+      port: 5000
+
+      
+# app3.service2 does not work
+app3:
+  value: true
+  service1:
+    host: 1.2.3.4
+    port: 5000
+  service2:
+    host: 1.2.3.4
+    port: 5000
+    
+app:
+  service1:
+    service:
+      host: fvdfv
+      port: 76 

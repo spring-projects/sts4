@@ -23,7 +23,7 @@ package org.springframework.ide.vscode.boot.configurationmetadata;
  * @author Stephane Nicoll
  * @since 1.3.0
  */
-class ConfigurationMetadataItem extends ConfigurationMetadataProperty {
+public class ConfigurationMetadataItem extends ConfigurationMetadataProperty {
 
 	private String sourceType;
 

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2014-2016 Pivotal, Inc.
+ * Copyright (c) 2014, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -14,13 +14,13 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+import org.springframework.ide.vscode.boot.configurationmetadata.ConfigurationMetadataItem;
 import org.springframework.ide.vscode.boot.configurationmetadata.ConfigurationMetadataProperty;
 import org.springframework.ide.vscode.boot.configurationmetadata.ConfigurationMetadataSource;
 import org.springframework.ide.vscode.boot.configurationmetadata.Deprecation;
 import org.springframework.ide.vscode.boot.configurationmetadata.Deprecation.Level;
 import org.springframework.ide.vscode.boot.configurationmetadata.ValueHint;
 import org.springframework.ide.vscode.boot.configurationmetadata.ValueProvider;
-import org.springframework.ide.vscode.boot.java.links.JavaElementLocationProvider;
 import org.springframework.ide.vscode.boot.metadata.ValueProviderRegistry.ValueProviderStrategy;
 import org.springframework.ide.vscode.boot.metadata.hints.HintProvider;
 import org.springframework.ide.vscode.boot.metadata.hints.HintProviders;
@@ -53,6 +53,11 @@ public class PropertyInfo {
 			String st = source.getSourceType();
 			this.sourceType = st!=null?st:source.getType();
 			this.sourceMethod = source.getSourceMethod();
+		}
+		
+		public PropertySource(String sourceType, String sourceMethod) {
+			this.sourceType = sourceType;
+			this.sourceMethod = sourceMethod;
 		}
 		@Override
 		public String toString() {
@@ -154,6 +159,10 @@ public class PropertyInfo {
 				handleKeyAs(h.getParameters().get("target"));
 			}
 		}
+		if (prop instanceof ConfigurationMetadataItem) {
+			ConfigurationMetadataItem item = (ConfigurationMetadataItem) prop;
+			addSource(new PropertySource(item.getSourceType(), item.getSourceMethod()));
+		}
 	}
 	public PropertyInfo(String p) {
 		this(p, null, null, null, null, null, null, null, null, null, null);
@@ -177,6 +186,17 @@ public class PropertyInfo {
 		return type;
 	}
 	public String getName() {
+		return name;
+	}
+	/**
+	 * Gets the name of the property without the x.y.z prefix, i.e. if property is x.y.z.a then its simple name is a
+	 * @return simple name
+	 */
+	public String getSimpleName() {
+		int idx = name.lastIndexOf('.');
+		if (idx >= 0 && idx < name.length() - 1) {
+			return name.substring(idx + 1);
+		}
 		return name;
 	}
 	public Object getDefaultValue() {
@@ -217,14 +237,18 @@ public class PropertyInfo {
 		return "PropertyInfo("+getId()+")";
 	}
 	public PropertySource addSource(ConfigurationMetadataSource source) {
-		if (sources==null) {
-			sources = new ArrayList<PropertySource>();
-		}
 		PropertySource s = new PropertySource(source);
-		sources.add(s);
+		addSource(s);
 		return s;
 	}
 
+	public void addSource(PropertySource source) {
+		if (sources==null) {
+			sources = new ArrayList<PropertySource>();
+		}
+		sources.add(source);
+	}
+	
 	public PropertyInfo withId(String alias) {
 		if (alias.equals(id)) {
 			return this;

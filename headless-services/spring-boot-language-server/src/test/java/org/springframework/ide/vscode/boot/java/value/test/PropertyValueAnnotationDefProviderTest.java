@@ -17,6 +17,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardOpenOption;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.eclipse.lsp4j.LocationLink;
@@ -88,7 +89,7 @@ public class PropertyValueAnnotationDefProviderTest {
 				new Range(new Position(0, 0), new Position(0, 11)), new Range(new Position(0, 10), new Position(0, 11)),
 				new Range(new Position(6, 8), new Position(6, 22)));
 
-		editor.assertLinkTargets("some.prop", Set.of(expectedLocation));
+		editor.assertLinkTargets("some.prop", List.of(expectedLocation));
 	}
 
 	@Test
@@ -112,7 +113,7 @@ public class PropertyValueAnnotationDefProviderTest {
 				new Range(new Position(1, 2), new Position(1, 9)), new Range(new Position(1, 8), new Position(1, 9)),
 				new Range(new Position(6, 8), new Position(6, 22)));
 
-		editor.assertLinkTargets("some.prop", Set.of(expectedLocation));
+		editor.assertLinkTargets("some.prop", List.of(expectedLocation));
 	}
 	
 	@Test 
@@ -140,7 +141,7 @@ public class PropertyValueAnnotationDefProviderTest {
 				new Range(new Position(1, 2), new Position(1, 9)), new Range(new Position(1, 8), new Position(1, 9)),
 				new Range(new Position(6, 8), new Position(6, 22)));
 		
-		editor.assertLinkTargets("some.prop", Set.of(expectedPropsLocation, expectedYamlLocation));
+		editor.assertLinkTargets("some.prop", List.of(expectedYamlLocation, expectedPropsLocation));
 
 	}
 }

@@ -101,10 +101,24 @@ public class PropertiesDefinitionCalculator {
 				elements.add(type);
 				String methodSig = source.getSourceMethod();
 				if (methodSig!=null) {
-					// the property source is a method, so actually we look for accessor in the return type.
-					IMethod method = getMethod(type, methodSig);
-					if (method!=null) {
-						elements.add(method);
+					if (type.isRecord()) {
+						IField field = type.getField(getMethodName(methodSig));
+						if (field != null) {
+							// Prefer field over method for records if names are the same
+							elements.add(field);
+						} else {
+							// No field? Add a method if found then.
+							IMethod method = getMethod(type, methodSig);
+							if (method!=null) {
+								elements.add(method);
+							}
+						}
+					} else {
+						// the property source is a method, so actually we look for accessor in the return type.
+						IMethod method = getMethod(type, methodSig);
+						if (method!=null) {
+							elements.add(method);
+						}
 					}
 				} 
 			}
@@ -140,12 +154,12 @@ public class PropertiesDefinitionCalculator {
 					}
 				}
 				if (type != null && type.isRecord()) {
-					IField field = getPropertyField(type, property.getName());
+					IField field = getPropertyField(type, property.getSimpleName());
 					if (field != null) {
 						elements.add(field);
 					}
 				} else {
-					IMethod method = getPropertyMethod(typeUtil, type, property.getName());
+					IMethod method = getPropertyMethod(typeUtil, type, property.getSimpleName());
 					if (method!=null) {
 						elements.add(method);
 					}

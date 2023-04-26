@@ -488,18 +488,11 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
 
         Editor editor = newEditor(
                 "server.port=888\n" +
-                        "spring.datasource.login-timeout=1000\n" +
                         "flyway.init-sqls=a,b,c\n"
         );
 
         definitionLinkAsserts.assertLinkTargets(editor, "server", p, editor.rangeOf("server.port", "server.port"),
                 method("org.springframework.boot.autoconfigure.web.ServerProperties", "setPort", "java.lang.Integer"));
-
-        definitionLinkAsserts.assertLinkTargets(editor, "data", p, editor.rangeOf("spring.datasource.login-timeout", "spring.datasource.login-timeout"),
-                method("org.springframework.boot.autoconfigure.jdbc.DataSourceConfigMetadata", "hikariDataSource"),
-                method("org.springframework.boot.autoconfigure.jdbc.DataSourceConfigMetadata", "tomcatDataSource"),
-                method("org.springframework.boot.autoconfigure.jdbc.DataSourceConfigMetadata", "dbcpDataSource")
-        );
 
         definitionLinkAsserts.assertLinkTargets(editor, "flyway", p, editor.rangeOf("flyway.init-sqls", "flyway.init-sqls"),
                 method("org.springframework.boot.autoconfigure.flyway.FlywayProperties", "setInitSqls", "java.util.List"));

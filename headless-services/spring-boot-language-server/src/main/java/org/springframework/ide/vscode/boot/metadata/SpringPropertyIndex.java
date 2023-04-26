@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 Pivotal, Inc.
+ * Copyright (c) 2015, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -59,14 +59,18 @@ public class SpringPropertyIndex {
 		}
 
 		for (ConfigurationMetadataGroup group : metadata.getAllGroups().values()) {
+			ImmutableSet.Builder<PropertySource> sources = ImmutableSet.builder();
 			for (ConfigurationMetadataSource source : group.getSources().values()) {
-				ImmutableSet.Builder<PropertySource> sources = ImmutableSet.builder();
+				PropertySource propertySource = new PropertySource(source);
+				sources.add(propertySource);
 				for (ConfigurationMetadataProperty prop : source.getProperties().values()) {
 					PropertyInfo info = properties.get(prop.getId());
-					sources.add(info.addSource(source));
+					if (info.getSources().isEmpty()) {
+						info.addSource(propertySource);
+					}
 				}
-				groups.put(group.getId(), sources.build());
 			}
+			groups.put(group.getId(), sources.build());
 		}
 	}
 

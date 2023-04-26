@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.boot.test;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.springframework.ide.vscode.boot.test.DefinitionLinkAsserts.field;
 import static org.springframework.ide.vscode.boot.test.DefinitionLinkAsserts.method;
+import static org.springframework.ide.vscode.boot.test.DefinitionLinkAsserts.type;
 import static org.springframework.ide.vscode.languageserver.testharness.Editor.INDENTED_COMPLETION;
 
 import java.io.File;
@@ -1008,9 +1009,11 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
                 editor.rangeOf("port", "port"),
                 method("org.springframework.boot.autoconfigure.web.ServerProperties", "setPort", "java.lang.Integer")
         );
-        definitionLinkAsserts.assertLinkTargets(editor, "login-", p,
-                editor.rangeOf("login-timeout"),
+        definitionLinkAsserts.assertLinkTargets(editor, "datasource", p,
+                editor.rangeOf("datasource"),
                 method("org.springframework.boot.autoconfigure.jdbc.DataSourceConfigMetadata", "hikariDataSource"),
+                method("org.springframework.boot.autoconfigure.jdbc.XADataSourceAutoConfiguration", "dataSource"),
+                type("org.springframework.boot.autoconfigure.jdbc.DataSourceProperties"),
                 method("org.springframework.boot.autoconfigure.jdbc.DataSourceConfigMetadata", "tomcatDataSource"),
                 method("org.springframework.boot.autoconfigure.jdbc.DataSourceConfigMetadata", "dbcpDataSource")
         );
@@ -1018,7 +1021,101 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
                 editor.rangeOf("init-sqls", "init-sqls"),
                 method("org.springframework.boot.autoconfigure.flyway.FlywayProperties", "setInitSqls", "java.util.List"));
     }
+    
+    @Test
+    void hyperLinksForGroupsWithPrimitiveTypes() throws Exception {
+        IJavaProject p = createPredefinedMavenProject("gh-sts4-sample");
+        useProject(p);
+        
+        Editor editor = newEditor("""
+				app2:
+				  value: true
+				  service1:
+				    value: false
+				    service:
+				      host: 1.2.3.4
+				      port: 5000
+        		"""
+        );
+        
+        definitionLinkAsserts.assertLinkTargets(editor, "app2", p, editor.rangeOf("app2"), type("com.example.demo.Settings2"));
+        definitionLinkAsserts.assertLinkTargets(editor, "value", p, editor.rangeOf("value: true", "value"), method("com.example.demo.Settings2", "setValue", "boolean"));
+        definitionLinkAsserts.assertLinkTargets(editor, "service1", p, editor.rangeOf("service1"), method("com.example.demo.Settings2", "getService1"));
+        definitionLinkAsserts.assertLinkTargets(editor, editor.rangeOf("value: false", "value").getStart(), p, editor.rangeOf("value: false", "value"), method("com.example.demo.Settings2$Service", "setValue", "boolean"));
+        definitionLinkAsserts.assertLinkTargets(editor, "service:", p, editor.rangeOf("service:", "service"), method("com.example.demo.Settings2$Service", "getService"));
+        definitionLinkAsserts.assertLinkTargets(editor, "host", p, editor.rangeOf("host"), method("com.example.demo.Settings2$Endpoint", "setHost", "java.lang.String"));
+        definitionLinkAsserts.assertLinkTargets(editor, "port", p, editor.rangeOf("port"), method("com.example.demo.Settings2$Endpoint", "setPort", "int"));
+    }
+    
+    @Test
+    void hyperLinksForGroupsWithoutPrimitiveTypes_1() throws Exception {
+        IJavaProject p = createPredefinedMavenProject("gh-sts4-sample");
+        useProject(p);
+        
+        Editor editor = newEditor("""
+				app1:
+				  service1:
+				    service:
+				      host: 1.2.3.4
+				      port: 5000
+        		"""
+        );
+        
+        definitionLinkAsserts.assertLinkTargets(editor, "app1", p, editor.rangeOf("app1"), type("com.example.demo.Settings1"));
+        definitionLinkAsserts.assertLinkTargets(editor, "service1", p, editor.rangeOf("service1"), method("com.example.demo.Settings1", "getService1"));
+        definitionLinkAsserts.assertLinkTargets(editor, "service:", p, editor.rangeOf("service:", "service"), method("com.example.demo.Settings1$Service", "getService"));
+        definitionLinkAsserts.assertLinkTargets(editor, "host", p, editor.rangeOf("host"), method("com.example.demo.Settings1$Endpoint", "setHost", "java.lang.String"));
+        definitionLinkAsserts.assertLinkTargets(editor, "port", p, editor.rangeOf("port"), method("com.example.demo.Settings1$Endpoint", "setPort", "int"));
+    }
 
+    @Test
+    void hyperLinksForGroupsWithoutPrimitiveTypes_2() throws Exception {
+        IJavaProject p = createPredefinedMavenProject("gh-sts4-sample");
+        useProject(p);
+        
+        Editor editor = newEditor("""
+				app3:
+				  value: true
+				  service1:
+				    host: 1.2.3.4
+				    port: 5000
+				  service2:
+				    host: 5.6.7.8
+				    port: 6000
+        		"""
+        );
+        
+        definitionLinkAsserts.assertLinkTargets(editor, "app3", p, editor.rangeOf("app3"), type("com.example.demo.Settings3"));
+        definitionLinkAsserts.assertLinkTargets(editor, "value", p, editor.rangeOf("value"), method("com.example.demo.Settings3", "setValue", "boolean"));
+        definitionLinkAsserts.assertLinkTargets(editor, "service1", p, editor.rangeOf("service1"), method("com.example.demo.Settings3", "getService1"));
+        definitionLinkAsserts.assertLinkTargets(editor, editor.rangeOf("host: 1.2.3.4", "host").getStart(), p, editor.rangeOf("host: 1.2.3.4", "host"), method("com.example.demo.Settings3$Endpoint", "setHost", "java.lang.String"));
+        definitionLinkAsserts.assertLinkTargets(editor, editor.rangeOf("port: 5000", "port").getStart(), p, editor.rangeOf("port: 5000", "port"), method("com.example.demo.Settings3$Endpoint", "setPort", "int"));
+        definitionLinkAsserts.assertLinkTargets(editor, "service2", p, editor.rangeOf("service2"), method("com.example.demo.Settings3", "getService2"));
+        definitionLinkAsserts.assertLinkTargets(editor, editor.rangeOf("host: 5.6.7.8", "host").getStart(), p, editor.rangeOf("host: 5.6.7.8", "host"), method("com.example.demo.Settings3$Endpoint", "setHost", "java.lang.String"));
+        definitionLinkAsserts.assertLinkTargets(editor, editor.rangeOf("port: 6000", "port").getStart(), p, editor.rangeOf("port: 6000", "port"), method("com.example.demo.Settings3$Endpoint", "setPort", "int"));
+    }
+
+    @Test
+    void hyperLinksForGroupsWithRecords() throws Exception {
+        IJavaProject p = createPredefinedMavenProject("gh-sts4-sample");
+        useProject(p);
+        
+        Editor editor = newEditor("""
+				app:
+				  service1:
+				    service:
+				      host: fvdfv
+				      port: 76 
+        		"""
+        );
+        
+        definitionLinkAsserts.assertLinkTargets(editor, "app", p, editor.rangeOf("app"), type("com.example.demo.Settings"));
+        definitionLinkAsserts.assertLinkTargets(editor, "service1", p, editor.rangeOf("service1"), method("com.example.demo.Settings", "getService1"));
+        definitionLinkAsserts.assertLinkTargets(editor, "service:", p, editor.rangeOf("service:", "service"), field("com.example.demo.Settings$Service", "service"));
+        definitionLinkAsserts.assertLinkTargets(editor, "host", p, editor.rangeOf("host"), field("com.example.demo.Settings$Endpoint", "host"));
+        definitionLinkAsserts.assertLinkTargets(editor, "port", p, editor.rangeOf("port"), field("com.example.demo.Settings$Endpoint", "port"));
+    }
+    
     @Test
     void testReconcile() throws Exception {
         defaultTestData();
