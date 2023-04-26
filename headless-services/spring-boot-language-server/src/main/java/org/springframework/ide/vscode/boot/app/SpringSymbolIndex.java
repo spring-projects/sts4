@@ -358,6 +358,7 @@ public class SpringSymbolIndex implements InitializingBean, SpringModelService {
 				} else {
 
 					removeSymbolsByProject(project);
+					springIndex.removeBeans(project.getElementName());
 
 					@SuppressWarnings("unchecked")
 					CompletableFuture<Void>[] futures = new CompletableFuture[this.indexers.length];
@@ -856,6 +857,7 @@ public class SpringSymbolIndex implements InitializingBean, SpringModelService {
 			try {
 				for (String doc : this.docURIs) {
 					removeSymbolsByDoc(project, doc);
+					springIndex.removeBeans(project.getElementName(), doc);
 				}
 				
 				for (SpringIndexer index : this.indexer) {
@@ -886,6 +888,8 @@ public class SpringSymbolIndex implements InitializingBean, SpringModelService {
 				for (SpringIndexer index : this.indexer) {
 					index.removeProject(project);
 				}
+				springIndex.removeBeans(project.getElementName());
+				
 				log.debug("{} completed", this);
 			} catch (Throwable e) {
 				log.error("{} threw exception", this, e);

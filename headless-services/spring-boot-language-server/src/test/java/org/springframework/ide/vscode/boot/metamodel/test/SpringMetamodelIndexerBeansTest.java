@@ -47,19 +47,12 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @Import(SymbolProviderTestConf.class)
 public class SpringMetamodelIndexerBeansTest {
 
-	@Autowired
-	private BootLanguageServerHarness harness;
-
-	@Autowired
-	private JavaProjectFinder projectFinder;
+	@Autowired private BootLanguageServerHarness harness;
+	@Autowired private JavaProjectFinder projectFinder;
+	@Autowired private SpringMetamodelIndex springIndex;
+	@Autowired private SpringSymbolIndex indexer;
 
 	private File directory;
-
-	@Autowired
-	private SpringMetamodelIndex springIndex;
-
-	@Autowired
-	private SpringSymbolIndex indexer;
 
 	@BeforeEach
 	public void setup() throws Exception {
