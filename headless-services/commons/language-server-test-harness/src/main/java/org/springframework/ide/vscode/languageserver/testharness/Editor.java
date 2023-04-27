@@ -20,6 +20,7 @@ import static org.springframework.ide.vscode.languageserver.testharness.TestAsse
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -785,7 +786,7 @@ public class Editor {
 		return "Editor(\n"+getText()+"\n)";
 	}
 
-	public void assertLinkTargets(String hoverOver, List<LocationLink> expectedLocations) throws Exception {
+	public void assertLinkTargets(String hoverOver, Collection<LocationLink> expectedLocations) throws Exception {
 		int pos = getRawText().indexOf(hoverOver);
 		if (pos>=0) {
 			pos += hoverOver.length() / 2;
@@ -795,10 +796,10 @@ public class Editor {
 		assertLinkTargets(doc.toPosition(pos), expectedLocations);
 	}
 	
-	public void assertLinkTargets(Position pos, List<LocationLink> expectedLocations) throws Exception {
+	public void assertLinkTargets(Position pos, Collection<LocationLink> expectedLocations) throws Exception {
 		DefinitionParams params = new DefinitionParams(new TextDocumentIdentifier(getUri()), pos);
 		List<? extends LocationLink> definitions = harness.getDefinitions(params);
-		assertEquals(ImmutableList.copyOf(expectedLocations), ImmutableList.copyOf(definitions));
+		assertEquals(ImmutableSet.copyOf(expectedLocations), ImmutableSet.copyOf(definitions));
 	}
 
 	
