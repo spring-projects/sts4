@@ -12,11 +12,8 @@ package org.springframework.tooling.ls.eclipse.commons.preferences;
 
 import static org.springframework.tooling.ls.eclipse.commons.preferences.LanguageServerConsolePreferenceConstants.ENABLE_BY_DEFAULT;
 
-import org.eclipse.core.runtime.IPath;
-import org.eclipse.core.runtime.Platform;
 import org.eclipse.core.runtime.preferences.AbstractPreferenceInitializer;
 import org.eclipse.jface.preference.IPreferenceStore;
-import org.osgi.framework.Bundle;
 import org.springframework.tooling.ls.eclipse.commons.preferences.LanguageServerConsolePreferenceConstants.ServerInfo;
 
 public class PrefsInitializer extends AbstractPreferenceInitializer {
@@ -26,13 +23,13 @@ public class PrefsInitializer extends AbstractPreferenceInitializer {
 		ServerInfo[] installedServers = LsPreferencesUtil.getInstalledLs();
 		for (ServerInfo s : installedServers) {
 			store.setDefault(s.preferenceKeyConsoleLog, ENABLE_BY_DEFAULT);
-			Bundle bundle = Platform.getBundle(s.bundleId);
-			if (bundle != null) {
-				IPath stateLocation = Platform.getStateLocation(bundle);
-				if (stateLocation != null) {
-					store.setDefault(s.preferenceKeyFileLog, stateLocation.append(s.label.toLowerCase().replaceAll("\\s+", "-") + ".log").toFile().getAbsoluteFile().getPath());
-				}
-			}
+//			Bundle bundle = Platform.getBundle(s.bundleId);
+//			if (bundle != null) {
+//				IPath stateLocation = Platform.getStateLocation(bundle);
+//				if (stateLocation != null) {
+//					store.setDefault(s.preferenceKeyFileLog, stateLocation.append(s.label.toLowerCase().replaceAll("\\s+", "-") + ".log").toFile().getAbsoluteFile().getPath());
+//				}
+//			}
 		}
 		store.setDefault(PreferenceConstants.HIGHLIGHT_CODELENS_PREFS, false);
 	}
