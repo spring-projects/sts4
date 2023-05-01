@@ -72,7 +72,7 @@ public class PropertyValueAnnotationDefProviderTest {
 	}
 
 	@Test
-	void propertiesCase() throws Exception {
+	void propertiesCase_ValueAnnotation() throws Exception {
 		Path propertiesFilePath = projectFile("src/main/resources/application.properties", "some.prop=5");
 		Editor editor = harness.newEditor(LanguageId.JAVA, """
 				package org.test;
@@ -93,7 +93,7 @@ public class PropertyValueAnnotationDefProviderTest {
 	}
 
 	@Test
-	void yamlCase() throws Exception {
+	void yamlCase_ValueAnnotation() throws Exception {
 		Path yamlFilePath = projectFile("src/main/resources/application.yml", """
 				some:
 				  prop: 5
@@ -117,7 +117,7 @@ public class PropertyValueAnnotationDefProviderTest {
 	}
 	
 	@Test 
-	void combinedCase() throws Exception {
+	void combinedCase_ValueAnnotation() throws Exception {
 		Path propertiesFilePath = projectFile("src/main/resources/application.properties", "some.prop=5");
 		Path yamlFilePath = projectFile("src/main/resources/application.yml", """
 				some:
@@ -143,5 +143,68 @@ public class PropertyValueAnnotationDefProviderTest {
 		
 		editor.assertLinkTargets("some.prop", List.of(expectedYamlLocation, expectedPropsLocation));
 
+	}
+	
+	@Test
+	void noValueCase_ConditionOnPropertyAnnotation() throws Exception {
+		Path propertiesFilePath = projectFile("src/main/resources/application.properties", "some.prop=5");
+		Editor editor = harness.newEditor(LanguageId.JAVA, """
+				package org.test;
+
+				import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+
+				@ConditionalOnProperty("some.prop")
+				public class TestValueCompletion {
+
+					private String value1;
+				}""");
+
+		LocationLink expectedLocation = new LocationLink(propertiesFilePath.toUri().toASCIIString(),
+				new Range(new Position(0, 0), new Position(0, 11)), new Range(new Position(0, 10), new Position(0, 11)),
+				new Range(new Position(4, 23), new Position(4, 34)));
+
+		editor.assertLinkTargets("some.prop", List.of(expectedLocation));
+	}
+
+	@Test
+	void valueCase_ConditionOnPropertyAnnotation() throws Exception {
+		Path propertiesFilePath = projectFile("src/main/resources/application.properties", "some.prop=5");
+		Editor editor = harness.newEditor(LanguageId.JAVA, """
+				package org.test;
+
+				import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+
+				@ConditionalOnProperty(value = "some.prop")
+				public class TestValueCompletion {
+
+					private String value1;
+				}""");
+
+		LocationLink expectedLocation = new LocationLink(propertiesFilePath.toUri().toASCIIString(),
+				new Range(new Position(0, 0), new Position(0, 11)), new Range(new Position(0, 10), new Position(0, 11)),
+				new Range(new Position(4, 31), new Position(4, 42)));
+
+		editor.assertLinkTargets("some.prop", List.of(expectedLocation));
+	}
+
+	@Test
+	void nameAndPrefixCase_ConditionOnPropertyAnnotation() throws Exception {
+		Path propertiesFilePath = projectFile("src/main/resources/application.properties", "some.prop=5");
+		Editor editor = harness.newEditor(LanguageId.JAVA, """
+				package org.test;
+
+				import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
+
+				@ConditionalOnProperty(prefix = "some", name = "prop")
+				public class TestValueCompletion {
+
+					private String value1;
+				}""");
+
+		LocationLink expectedLocation = new LocationLink(propertiesFilePath.toUri().toASCIIString(),
+				new Range(new Position(0, 0), new Position(0, 11)), new Range(new Position(0, 10), new Position(0, 11)),
+				new Range(new Position(4, 47), new Position(4, 53)));
+
+		editor.assertLinkTargets("prop", List.of(expectedLocation));
 	}
 }

@@ -19,9 +19,11 @@ import java.util.Optional;
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.CompilationUnit;
-import org.eclipse.jdt.core.dom.FieldDeclaration;
+import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.IAnnotationBinding;
 import org.eclipse.jdt.core.dom.MemberValuePair;
+import org.eclipse.jdt.core.dom.NormalAnnotation;
+import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
 import org.eclipse.jdt.core.dom.StringLiteral;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.LocationLink;
@@ -43,6 +45,36 @@ import com.google.common.collect.ImmutableList.Builder;
 public class PropertyValueAnnotationDefProvider implements IJavaDefinitionProvider {
 	
 	private static final Logger log = LoggerFactory.getLogger(PropertyValueAnnotationDefProvider.class);
+	
+	private static final String PARAM_VALUE = "value";
+	private static final String PARAM_NAME = "name";
+	private static final String PARAM_PREFIX = "prefix";
+	
+	private Map<String, PropertyKeyExtractor> annotationToPropertyKeyExtractor = Map.of(
+			Annotations.VALUE, (a, p, v) -> {
+				if (a.isSingleMemberAnnotation()) {
+					return extractPropertyKey(v.getLiteralValue());
+				} else if (a.isNormalAnnotation() && PARAM_VALUE.equals(p.getName().getIdentifier())) {
+					return extractPropertyKey(v.getLiteralValue());
+				}
+				return null;
+			},
+			Annotations.CONDITIONAL_ON_PROPERTY, (a, p, v) -> {
+				if (a.isSingleMemberAnnotation()) {
+					return v.getLiteralValue();
+				} else if (a.isNormalAnnotation()) {
+					switch (p.getName().getIdentifier()) {
+					case PARAM_VALUE:
+						return v.getLiteralValue();
+					case PARAM_NAME:
+						String prefix = extractAnnotationParameter(a, PARAM_PREFIX);
+						String name = v.getLiteralValue();
+						return prefix != null && !prefix.isBlank() ? prefix + "." + name : name;
+					}
+				}
+				return null;
+			}
+	);
 
 	@Override
 	public List<LocationLink> getDefinitions(CancelChecker cancelToken, IJavaProject project, CompilationUnit cu,
@@ -52,13 +84,26 @@ public class PropertyValueAnnotationDefProvider implements IJavaDefinitionProvid
 			String propertyKey = null;
 			
 			ASTNode parent = valueNode.getParent();
-			if (parent instanceof Annotation && isApplicableValueAnnotation((Annotation) parent)) {
-				propertyKey = extractPropertyKey(valueNode.getLiteralValue());
+			if (parent instanceof Annotation) {
+				Annotation a = (Annotation) parent;
+				IAnnotationBinding binding = a.resolveAnnotationBinding();
+				if (binding != null && binding.getAnnotationType() != null) {
+					PropertyKeyExtractor propertyExtractor = annotationToPropertyKeyExtractor.get(binding.getAnnotationType().getQualifiedName());
+					if (propertyExtractor != null) {
+						propertyKey = propertyExtractor.extract(a, null, valueNode);
+					}
+				}
 			} else if (parent instanceof MemberValuePair
-					&& "value".equals(((MemberValuePair) parent).getName().getIdentifier())
-					&& parent.getParent() instanceof Annotation
-					&& isApplicableValueAnnotation((Annotation) parent.getParent())) {
-				propertyKey = extractPropertyKey(valueNode.getLiteralValue());
+					&& parent.getParent() instanceof Annotation) {
+				MemberValuePair pair = (MemberValuePair) parent;
+				Annotation a = (Annotation) parent.getParent();
+				IAnnotationBinding binding = a.resolveAnnotationBinding();
+				if (binding != null && binding.getAnnotationType() != null) {
+					PropertyKeyExtractor propertyExtractor = annotationToPropertyKeyExtractor.get(binding.getAnnotationType().getQualifiedName());
+					if (propertyExtractor != null) {
+						propertyKey = propertyExtractor.extract(a, pair, valueNode);
+					}
+				}
 			}
 			
 			if (propertyKey != null) {
@@ -85,12 +130,6 @@ public class PropertyValueAnnotationDefProvider implements IJavaDefinitionProvid
 			}
 		}
 		return Collections.emptyList();
-	}
-	
-	private static boolean isApplicableValueAnnotation(Annotation a) {
-		IAnnotationBinding binding = a.resolveAnnotationBinding();
-		return binding != null && Annotations.VALUE.equals(binding.getAnnotationType().getQualifiedName())
-				&& a.getParent() instanceof FieldDeclaration;
 	}
 	
 	private List<Location> findValueReferences(IJavaProject project, String propertyKey, Map<Location, Range> targetRanges) {
@@ -159,12 +198,35 @@ public class PropertyValueAnnotationDefProvider implements IJavaDefinitionProvid
 		});
 		return links.build();
 	}
+	
+	@SuppressWarnings("unchecked")
+	private static String extractAnnotationParameter(Annotation a, String param) {
+		Expression value = null;
+		if (a.isSingleMemberAnnotation() && PARAM_VALUE.equals(param)) {
+			value = ((SingleMemberAnnotation) a).getValue();
+		} else if (a.isNormalAnnotation()) {
+			for (MemberValuePair pair : (List<MemberValuePair>) ((NormalAnnotation) a).values()) {
+				if (param.equals(pair.getName().getIdentifier())) {
+					value = pair.getValue();
+					break;
+				}
+			}
+		}
+		if (value instanceof StringLiteral) {
+			return ((StringLiteral) value).getLiteralValue();
+		}
+		return null;
+	}
 
 	private static String extractPropertyKey(String s) {
 		if (s.length() > 3 && (s.startsWith("${") || s.startsWith("#{")) && s.endsWith("}")) {
 			return s.substring(2, s.length() - 1);
 		}
 		return null;
+	}
+	
+	private interface PropertyKeyExtractor {
+		String extract(Annotation a, MemberValuePair pair, StringLiteral v);
 	}
 
 }
