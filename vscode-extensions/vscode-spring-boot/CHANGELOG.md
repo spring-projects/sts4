@@ -1,3 +1,20 @@
+## 2023-05-05 (4.18.1 RELEASE, incl. language servers version 1.46.0)
+
+* _(Spring Boot)_ fixed: [vscode-spring-boot] Support navigating to a Spring property file when inspecting on @Value annotations ([#761](https://github.com/spring-projects/sts4/issues/761))
+* _(Spring Boot)_ fixed: automatically add import for types when applying content-assist proposals for query methods ([#991](https://github.com/spring-projects/sts4/issues/991))
+* _(Spring Boot)_ fixed: do not fetch metrics data right after connecting live data to an app ([#1003](https://github.com/spring-projects/sts4/issues/1003))
+* _(Spring Boot)_ fixed: No hyperlink on a hover to a type from JAR ([#1004](https://github.com/spring-projects/sts4/issues/1004))
+* _(Spring Boot)_ fixed: [spring-data-support] take type hierarchy of domain types into account ([#1013](https://github.com/spring-projects/sts4/issues/1013))
+* _(Spring Boot)_ fixed: [spring-data-support] remove pure findBy method completion from proposal list ([#1014](https://github.com/spring-projects/sts4/issues/1014))
+* _(Spring Boot)_ fixed: several live hovers are missing when running Spring Boot 3 applications ([#1019](https://github.com/spring-projects/sts4/issues/1019))
+* _(Spring Boot)_ fixed: application.properties/yaml autocomplete for nested enums regression ([#1021](https://github.com/spring-projects/sts4/issues/1021))
+* _(Spring Boot)_ fixed: [boot-upgrade] Upgrade petclinic to boot 3 results in compiler errors ([#1022](https://github.com/spring-projects/sts4/issues/1022))
+* _(Spring Boot)_ fixed: Bump json from 20160810 to 20230227 in /headless-services/spring-boot-language-server ([#1027](https://github.com/spring-projects/sts4/issues/1027))
+* _(Spring Boot)_ fixed: spring-configuration-metadata : must have primitive type property before F3 navigation works ([#1030](https://github.com/spring-projects/sts4/issues/1030))
+* _(Spring Boot)_ fixed: spring-configuration-metadata : when two properties have the same Object type F3 fails on the later ones ([#1031](https://github.com/spring-projects/sts4/issues/1031))
+* _(Spring Boot)_ fixed: support @ConditionalOnProperty in property navigation feature ([#1033](https://github.com/spring-projects/sts4/issues/1033))
+* _(VSCode)_ fixed: In Codespaces, workspace symbols sometimes are empty. ([#1012](https://github.com/spring-projects/sts4/issues/1012))
+
 ## 2023-03-15 (4.18.0 RELEASE, incl. language servers version 1.45.0)
 
 #### important highlights
