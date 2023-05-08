@@ -37,3 +37,7 @@ export namespace LiveProcessGcPausesMetricsUpdatedNotification {
 export namespace LiveProcessMemoryMetricsUpdatedNotification {
 	export const type = new NotificationType<LiveProcess>('sts/liveprocess/memory/metrics/updated');
 }
+
+export namespace SpringModelUpdatedNotification {
+	export const type = new NotificationType<void>('spring/model/updated');
+}

@@ -30,6 +30,7 @@ import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
 import org.springframework.ide.vscode.boot.bootiful.SymbolProviderTestConf;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
+import org.springframework.ide.vscode.commons.protocol.spring.BeansParams;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -65,7 +66,9 @@ public class SpringModelServiceTest {
 
 	@Test
 	void testSpringModelServiceBeansForNonExistingProject() throws Exception {
-		CompletableFuture<List<Bean>> result = indexer.beans("random-project");
+		BeansParams params = new BeansParams();
+		params.setProjectName("random-project");
+		CompletableFuture<List<Bean>> result = indexer.beans(params);
 
 		List<Bean> list = result.get();
 		assertNull(list);
@@ -73,7 +76,9 @@ public class SpringModelServiceTest {
 
 	@Test
 	void testBeansNameAndTypeFromBeanAnnotatedMethod() throws Exception {
-		CompletableFuture<List<Bean>> result = indexer.beans("test-spring-indexing");
+		BeansParams params = new BeansParams();
+		params.setProjectName("test-spring-indexing");
+		CompletableFuture<List<Bean>> result = indexer.beans(params);
 
 		List<Bean> beans = result.get(5, TimeUnit.SECONDS);
 

@@ -1,6 +1,7 @@
 import { Event } from "vscode";
 import { LanguageClient } from "vscode-languageclient/node";
 import { LiveProcess } from "./notification";
+import {Location} from "vscode-languageclient";
 
 export interface ExtensionAPI {
     readonly client: LanguageClient;
@@ -55,7 +56,16 @@ export interface ExtensionAPI {
      * 
      * Returns a list of processKeys.
      */
-    readonly listConnectedProcesses: () => Promise<LiveProcess[]>
+    readonly listConnectedProcesses: () => Promise<LiveProcess[]>;
+
+    /**
+     * Spring Model capable of computing beans and other static spring related information
+     *
+     * Returns Spring Model object.
+     */
+    readonly getSpringModel: () => SpringModel;
+
+    readonly onSpringModelUpdated: Event<void>;
 }
 
 interface LiveProcessDataQuery {
@@ -82,4 +92,26 @@ interface MetricsQuery extends LiveProcessDataQuery {
     endpoint: "metrics";
     metricName: string;
     tags?: string;
+}
+
+interface Bean {
+    readonly name: string;
+    readonly type: string;
+    readonly location: Location;
+    readonly injectionPoints: InjectionPoint[];
+    readonly supertypes: string[];
+}
+
+interface InjectionPoint {
+    readonly name: string;
+    readonly type: string;
+    readonly location: Location;
+}
+
+interface SpringModel {
+   readonly beans: (params: BeansParams) =>  Promise<Bean[]>;
+}
+
+interface BeansParams {
+    projectName: string;
 }

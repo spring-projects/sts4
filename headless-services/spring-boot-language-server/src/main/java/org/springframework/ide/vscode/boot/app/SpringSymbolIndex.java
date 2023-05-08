@@ -70,6 +70,7 @@ import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguage
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleWorkspaceService;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
+import org.springframework.ide.vscode.commons.protocol.spring.BeansParams;
 import org.springframework.ide.vscode.commons.protocol.spring.SpringModelService;
 import org.springframework.ide.vscode.commons.util.Futures;
 import org.springframework.ide.vscode.commons.util.StringUtil;
@@ -706,7 +707,8 @@ public class SpringSymbolIndex implements InitializingBean, SpringModelService {
 	}
 	
 	@Override
-	public CompletableFuture<List<Bean>> beans(String projectName) {
+	public CompletableFuture<List<Bean>> beans(BeansParams params) {
+		String projectName = params.getProjectName();
 		CompletableFuture<Void> latestTask = this.latestScheduledTaskByProject.get(projectName);
 
 		if (latestTask != null) {

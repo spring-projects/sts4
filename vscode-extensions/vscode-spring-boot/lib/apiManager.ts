@@ -1,7 +1,17 @@
 import { commands, Uri } from "vscode";
 import { Emitter, LanguageClient } from "vscode-languageclient/node";
-import { ExtensionAPI } from "./api";
-import { LiveProcess, LiveProcessConnectedNotification, LiveProcessDisconnectedNotification, LiveProcessUpdatedNotification, LiveProcessGcPausesMetricsUpdatedNotification, LiveProcessMemoryMetricsUpdatedNotification } from "./notification";
+import {Bean, BeansParams, ExtensionAPI, SpringModel} from "./api";
+import {
+    LiveProcess,
+    LiveProcessConnectedNotification,
+    LiveProcessDisconnectedNotification,
+    LiveProcessUpdatedNotification,
+    LiveProcessGcPausesMetricsUpdatedNotification,
+    LiveProcessMemoryMetricsUpdatedNotification,
+    SpringModelUpdatedNotification
+} from "./notification";
+import VSCode from "vscode";
+import {RequestType} from "vscode-languageclient";
 
 export class ApiManager {
     public api: ExtensionAPI;
@@ -10,6 +20,7 @@ export class ApiManager {
     private onDidLiveProcessUpdateEmitter: Emitter<LiveProcess> = new Emitter<LiveProcess>();
     private onDidLiveProcessGcPausesMetricsUpdateEmitter: Emitter<LiveProcess> = new Emitter<LiveProcess>();
     private onDidLiveProcessMemoryMetricsUpdateEmitter: Emitter<LiveProcess> = new Emitter<LiveProcess>();
+    private onSpringModelUpdateEmitter: Emitter<void> = new Emitter<void>();
 
     public constructor(client: LanguageClient) {
         const onDidLiveProcessConnect = this.onDidLiveProcessConnectEmitter.event;
@@ -17,6 +28,7 @@ export class ApiManager {
         const onDidLiveProcessUpdate = this.onDidLiveProcessUpdateEmitter.event;
         const onDidLiveProcessGcPausesMetricsUpdate = this.onDidLiveProcessGcPausesMetricsUpdateEmitter.event;
         const onDidLiveProcessMemoryMetricsUpdate = this.onDidLiveProcessMemoryMetricsUpdateEmitter.event;
+        const onSpringModelUpdated = this.onSpringModelUpdateEmitter.event;
 
         const COMMAND_LIVEDATA_GET = "sts/livedata/get";
         const getLiveProcessData = async (query) => {
@@ -49,6 +61,17 @@ export class ApiManager {
         client.onNotification(LiveProcessGcPausesMetricsUpdatedNotification.type, (process: LiveProcess) => this.onDidLiveProcessGcPausesMetricsUpdateEmitter.fire(process));
         client.onNotification(LiveProcessMemoryMetricsUpdatedNotification.type, (process: LiveProcess) => this.onDidLiveProcessMemoryMetricsUpdateEmitter.fire(process));
 
+        client.onNotification(SpringModelUpdatedNotification.type, () => this.onSpringModelUpdateEmitter.fire());
+
+        const beansRequestType = new RequestType<BeansParams, Bean[], void>('spring/beans');
+        const beans = (params: BeansParams) => {
+            return client.sendRequest(beansRequestType, params);
+        }
+
+        const getSpringModel = () => ({
+            beans
+        })
+
         this.api = {
             client,
             onDidLiveProcessConnect,
@@ -56,11 +79,13 @@ export class ApiManager {
             onDidLiveProcessUpdate,
             onDidLiveProcessMemoryMetricsUpdate,
             onDidLiveProcessGcPausesMetricsUpdate,
+            onSpringModelUpdated,
             getLiveProcessData,
             refreshLiveProcessData,
             getLiveProcessMetricsData,
             refreshLiveProcessMetricsData,
             listConnectedProcesses,
+            getSpringModel
         };
     }
 }

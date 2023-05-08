@@ -10,18 +10,16 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.protocol.spring;
 
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
+public class BeansParams {
+	
+	private String projectName;
 
-import org.eclipse.lsp4j.jsonrpc.services.JsonRequest;
-import org.eclipse.lsp4j.jsonrpc.services.JsonSegment;
+	public String getProjectName() {
+		return projectName;
+	}
 
-@JsonSegment("spring")
-public interface SpringModelService {
-
-	@JsonRequest
-	default CompletableFuture<List<Bean>> beans(BeansParams params) {
-		throw new UnsupportedOperationException();
+	public void setProjectName(String projectName) {
+		this.projectName = projectName;
 	}
 
 }
