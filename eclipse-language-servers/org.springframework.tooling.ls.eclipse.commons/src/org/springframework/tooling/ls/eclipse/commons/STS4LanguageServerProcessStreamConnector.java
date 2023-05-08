@@ -141,6 +141,8 @@ public abstract class STS4LanguageServerProcessStreamConnector extends ProcessSt
 			command.add("--languageserver.hover-timeout=225");
 
 			setCommands(command);
+
+			LanguageServerCommonsActivator.getInstance().getLog().info("Command list starting LS: " + connectorId + "\nSTART:\n" + String.join("\n", command) + "\nEND");
 		}
 		catch (Exception e) {
 			LanguageServerCommonsActivator.logError(e, "Failed to assemble exploded LS JAR launch command");
