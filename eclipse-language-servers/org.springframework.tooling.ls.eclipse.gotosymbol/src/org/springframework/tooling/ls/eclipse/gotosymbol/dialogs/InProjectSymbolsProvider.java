@@ -26,6 +26,7 @@ import org.eclipse.lsp4j.WorkspaceSymbolParams;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.LanguageServer;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
+import org.springframework.ide.vscode.commons.protocol.spring.BeansParams;
 import org.springframework.ide.vscode.commons.protocol.spring.SpringModelLanguageServer;
 import org.springframework.ide.vscode.commons.protocol.spring.SpringModelService;
 import org.springframework.tooling.ls.eclipse.gotosymbol.GotoSymbolPlugin;
@@ -136,7 +137,11 @@ public class InProjectSymbolsProvider implements SymbolsProvider {
 			if (languageServer instanceof SpringModelLanguageServer) {
 				SpringModelLanguageServer springServer = (SpringModelLanguageServer) languageServer;
 				SpringModelService service = springServer.getSpringModelService();
-				CompletableFuture<List<Bean>> beansFuture = service.beans(projectName);
+
+				BeansParams beansParams = new BeansParams();
+				beansParams.setProjectName(projectName);
+
+				CompletableFuture<List<Bean>> beansFuture = service.beans(beansParams);
 				
 				try {
 					List<Bean> beans = beansFuture.get();
