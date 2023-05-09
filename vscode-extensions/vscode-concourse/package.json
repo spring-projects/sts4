@@ -107,13 +107,13 @@
     "grammars": [
       {
         "language": "concourse-pipeline-yaml",
-        "scopeName": "source.yaml",
-        "path": "./yaml-support/yaml.tmLanguage"
+        "scopeName": "source.concourse-yaml",
+        "path": "./yaml-support/concourse-yaml.tmLanguage.json"
       },
       {
         "language": "concourse-task-yaml",
-        "scopeName": "source.yaml",
-        "path": "./yaml-support/yaml.tmLanguage"
+        "scopeName": "source.concourse-yaml",
+        "path": "./yaml-support/concourse-yaml.tmLanguage.json"
       }
     ]
   },

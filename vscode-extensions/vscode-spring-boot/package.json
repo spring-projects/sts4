@@ -972,18 +972,18 @@
     "grammars": [
       {
         "language": "spring-boot-properties-yaml",
-        "scopeName": "source.yaml",
-        "path": "./yaml-support/yaml.tmLanguage"
+        "scopeName": "source.spring-boot-properties-yaml",
+        "path": "./yaml-support/spring-boot-properties-yaml.tmLanguage.json"
       },
       {
         "language": "spring-boot-properties",
-        "scopeName": "source.java-properties",
-        "path": "./properties-support/java-properties.tmLanguage"
+        "scopeName": "source.spring-boot-properties",
+        "path": "./properties-support/spring-boot-properties.tmLanguage.json"
       },
       {
         "language": "spring-factories",
-        "scopeName": "source.java-properties",
-        "path": "./properties-support/java-properties.tmLanguage"
+        "scopeName": "source.spring-factories",
+        "path": "./properties-support/spring-boot-properties.tmLanguage.json"
       }
     ]
   },

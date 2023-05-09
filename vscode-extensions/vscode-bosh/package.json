@@ -35,7 +35,8 @@
         ],
         "filenamePatterns": [
           "*cloud-config*.yml"
-        ]
+        ],
+        "configuration": "./yaml-support/language-configuration.json"
       },
       {
         "id": "bosh-deployment-manifest",
@@ -51,13 +52,13 @@
     "grammars": [
       {
         "language": "bosh-deployment-manifest",
-        "scopeName": "source.yaml",
-        "path": "./yaml-support/yaml.tmLanguage"
+        "scopeName": "source.bosh-yaml",
+        "path": "./yaml-support/bosh-yaml.tmLanguage.json"
       },
       {
         "language": "bosh-cloud-config",
-        "scopeName": "source.yaml",
-        "path": "./yaml-support/yaml.tmLanguage"
+        "scopeName": "source.bosh-yaml",
+        "path": "./yaml-support/bosh-yaml.tmLanguage.json"
       }
     ],
     "configuration": {

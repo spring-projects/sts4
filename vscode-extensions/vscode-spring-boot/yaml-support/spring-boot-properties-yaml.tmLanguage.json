@@ -1,0 +1,10 @@
+{
+  "name": "Spring Boot Properties YAML",
+  "scopeName": "source.spring-boot-properties-yaml",
+  "patterns": [
+    {
+      "comment": "source.yaml is defined in vscode core",
+      "include": "source.yaml"
+    }
+  ]
+}

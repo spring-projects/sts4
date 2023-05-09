@@ -1,0 +1,10 @@
+{
+  "name": "Spring Boot Properties",
+  "scopeName": "source.spring-boot-properties",
+  "patterns": [
+    {
+      "comment": "source.java-properties is defined in vscode-java",
+      "include": "source.java-properties"
+    }
+  ]
+}

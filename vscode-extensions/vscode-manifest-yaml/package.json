@@ -42,8 +42,8 @@
     "grammars": [
       {
         "language": "manifest-yaml",
-        "scopeName": "source.yaml",
-        "path": "./yaml-support/yaml.tmLanguage"
+        "scopeName": "source.manifest-yaml",
+        "path": "./yaml-support/manifest-yaml.tmLanguage.json"
       }
     ],
     "configuration": {

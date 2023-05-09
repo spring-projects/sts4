@@ -925,7 +925,11 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, SpringMod
 
 	@Override
 	public SpringModelService getSpringModelService() {
-		return (SpringModelService) appContext.getBean(SpringModelService.class);
+		try {
+			return (SpringModelService) appContext.getBean(SpringModelService.class);
+		} catch (Throwable e) {
+			return null;
+		}
 	}
 
 }
