@@ -10,12 +10,11 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.protocol.spring;
 
-import org.eclipse.lsp4j.jsonrpc.services.JsonNotification;
-import org.eclipse.lsp4j.services.LanguageClient;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
-public interface SpringModelLanguageClient extends LanguageClient {
-	
-	@JsonNotification("spring/index/updated")
-	void indexUpdated();
+public interface SpringIndex {
+
+	CompletableFuture<List<Bean>> beans(BeansParams params);
 
 }

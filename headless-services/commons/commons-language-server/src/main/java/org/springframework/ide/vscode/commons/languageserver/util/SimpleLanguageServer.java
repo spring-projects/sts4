@@ -97,8 +97,10 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemC
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblem;
 import org.springframework.ide.vscode.commons.protocol.STS4LanguageClient;
-import org.springframework.ide.vscode.commons.protocol.spring.SpringModelLanguageServer;
-import org.springframework.ide.vscode.commons.protocol.spring.SpringModelService;
+import org.springframework.ide.vscode.commons.protocol.spring.Bean;
+import org.springframework.ide.vscode.commons.protocol.spring.BeansParams;
+import org.springframework.ide.vscode.commons.protocol.spring.SpringIndex;
+import org.springframework.ide.vscode.commons.protocol.spring.SpringIndexLanguageServer;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.AsyncRunner;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
@@ -121,7 +123,7 @@ import reactor.core.scheduler.Schedulers;
  * with apis to register various callbacks so that language server implementor
  * can attach their own 'handlers' for whatever the functionality they want to implement.
  */
-public final class SimpleLanguageServer implements Sts4LanguageServer, SpringModelLanguageServer, LanguageClientAware, ServiceNotificationsClient, SimpleLanguageServerWrapper {
+public final class SimpleLanguageServer implements Sts4LanguageServer, SpringIndexLanguageServer, LanguageClientAware, ServiceNotificationsClient, SimpleLanguageServerWrapper {
 
 	private static Logger log = LoggerFactory.getLogger(SimpleLanguageServer.class);
 
@@ -924,12 +926,14 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, SpringMod
 	}
 
 	@Override
-	public SpringModelService getSpringModelService() {
-		try {
-			return (SpringModelService) appContext.getBean(SpringModelService.class);
-		} catch (Throwable e) {
-			return null;
+	public CompletableFuture<List<Bean>> beans(BeansParams params) {
+		Map<String, SpringIndex> allSpringIndex = appContext.getBeansOfType(SpringIndex.class, false, false);
+		Assert.isLegal(allSpringIndex.size() <= 1, "One at most SpringModel bean is expected");
+		if (!allSpringIndex.isEmpty()) {
+			SpringIndex springIndex = allSpringIndex.values().iterator().next();
+			return springIndex.beans(params);
 		}
+		return CompletableFuture.completedFuture(Collections.emptyList());
 	}
 
 }

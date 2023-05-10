@@ -10,15 +10,12 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.protocol.spring;
 
-import org.eclipse.lsp4j.jsonrpc.services.JsonDelegate;
-import org.eclipse.lsp4j.services.LanguageServer;
+import org.eclipse.lsp4j.jsonrpc.services.JsonNotification;
+import org.eclipse.lsp4j.services.LanguageClient;
 
-public interface SpringModelLanguageServer extends LanguageServer {
+public interface SpringIndexLanguageClient extends LanguageClient {
 	
-	/**
-	 * Provides access to the spring model services.
-	 */
-	@JsonDelegate
-	SpringModelService getSpringModelService();
+	@JsonNotification("spring/index/updated")
+	void indexUpdated();
 
 }

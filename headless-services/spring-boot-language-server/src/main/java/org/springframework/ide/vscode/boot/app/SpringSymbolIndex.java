@@ -71,7 +71,7 @@ import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocu
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleWorkspaceService;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.commons.protocol.spring.BeansParams;
-import org.springframework.ide.vscode.commons.protocol.spring.SpringModelService;
+import org.springframework.ide.vscode.commons.protocol.spring.SpringIndex;
 import org.springframework.ide.vscode.commons.util.Futures;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.UriUtil;
@@ -84,7 +84,7 @@ import com.google.common.collect.ImmutableList;
  * @author Martin Lippert
  */
 @Component
-public class SpringSymbolIndex implements InitializingBean, SpringModelService {
+public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 
 	@Autowired SimpleLanguageServer server;
 	@Autowired BootJavaConfig config;

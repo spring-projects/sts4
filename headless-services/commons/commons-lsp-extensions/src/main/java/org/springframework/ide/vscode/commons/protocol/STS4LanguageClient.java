@@ -28,14 +28,14 @@ import org.springframework.ide.vscode.commons.protocol.java.JavaSearchParams;
 import org.springframework.ide.vscode.commons.protocol.java.JavaTypeHierarchyParams;
 import org.springframework.ide.vscode.commons.protocol.java.TypeData;
 import org.springframework.ide.vscode.commons.protocol.java.TypeDescriptorData;
-import org.springframework.ide.vscode.commons.protocol.spring.SpringModelLanguageClient;
+import org.springframework.ide.vscode.commons.protocol.spring.SpringIndexLanguageClient;
 
 /**
  * Some 'custom' extensions to standard LSP {@link LanguageClient}.
  *
  * @author Kris De Volder
  */
-public interface STS4LanguageClient extends LanguageClient, SpringModelLanguageClient {
+public interface STS4LanguageClient extends LanguageClient, SpringIndexLanguageClient {
 	
 	@JsonNotification("sts/liveprocess/connected")
 	void liveProcessConnected(LiveProcessSummary processKey);

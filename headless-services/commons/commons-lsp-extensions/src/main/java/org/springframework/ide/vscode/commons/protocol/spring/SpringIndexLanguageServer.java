@@ -14,12 +14,11 @@ import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.lsp4j.jsonrpc.services.JsonRequest;
-import org.eclipse.lsp4j.jsonrpc.services.JsonSegment;
+import org.eclipse.lsp4j.services.LanguageServer;
 
-@JsonSegment("spring/index")
-public interface SpringModelService {
-
-	@JsonRequest
+public interface SpringIndexLanguageServer extends LanguageServer {
+	
+	@JsonRequest("spring/index/beans")
 	default CompletableFuture<List<Bean>> beans(BeansParams params) {
 		throw new UnsupportedOperationException();
 	}

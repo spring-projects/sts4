@@ -63,9 +63,8 @@ export interface ExtensionAPI {
      *
      * Returns Spring Model object.
      */
-    readonly getSpringModel: () => SpringModel;
+    readonly getSpringIndex: () => SpringIndex;
 
-    readonly onSpringModelUpdated: Event<void>;
 }
 
 interface LiveProcessDataQuery {
@@ -108,8 +107,9 @@ interface InjectionPoint {
     readonly location: Location;
 }
 
-interface SpringModel {
+interface SpringIndex {
    readonly beans: (params: BeansParams) =>  Promise<Bean[]>;
+   readonly onSpringIndexUpdated: Event<void>;
 }
 
 interface BeansParams {
