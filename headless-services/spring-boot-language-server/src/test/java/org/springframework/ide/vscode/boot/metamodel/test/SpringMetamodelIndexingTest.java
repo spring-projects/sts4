@@ -66,6 +66,11 @@ public class SpringMetamodelIndexingTest {
 		initProject.get(5, TimeUnit.SECONDS);
 	}
 	
+	@Test
+	void testUpdateNotificationAfterProjectCreation() {
+		assertEquals(1, harness.getIndexUpdatedCount());
+	}
+	
     @Test
     void testDeleteProject() throws Exception {
     	Bean[] beans = springIndex.getBeansOfProject("test-spring-indexing");
@@ -76,6 +81,8 @@ public class SpringMetamodelIndexingTest {
         
         Bean[] noBeansAnymore = springIndex.getBeansOfProject("test-spring-indexing");
         assertNull(noBeansAnymore);
+        
+		assertEquals(2, harness.getIndexUpdatedCount()); // 1x project created, 1x project deleted
     }
     
     @Test
@@ -99,6 +106,8 @@ public class SpringMetamodelIndexingTest {
         // check for updated index in all symbols
         Bean[] lessBeansOfProject = springIndex.getBeansOfProject("test-spring-indexing");
         assertEquals(10, lessBeansOfProject.length);
+        
+		assertEquals(2, harness.getIndexUpdatedCount()); // 1x project created, 1x document deleted
     }
     
     @Test
@@ -126,6 +135,8 @@ public class SpringMetamodelIndexingTest {
         assertEquals(1, updatedInjectionPoints.length);
         assertEquals("org.test.BeanClass1", updatedInjectionPoints[0].getType());
         assertEquals("bean1", updatedInjectionPoints[0].getName());
+
+		assertEquals(2, harness.getIndexUpdatedCount()); // 1x project created, 1x document updated
     }
 
     @Test
@@ -167,6 +178,8 @@ public class SpringMetamodelIndexingTest {
 
             assertEquals("createdClassBean", newBeans[1].getName());
             assertEquals("org.test.BeanClass1", newBeans[1].getType());
+            
+    		assertEquals(2, harness.getIndexUpdatedCount()); // 1x project created, 1x new document created
         }
         finally {
             FileUtils.deleteQuietly(new File(new URI(createdDocURI)));

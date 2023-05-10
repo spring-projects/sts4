@@ -200,7 +200,6 @@ public class SpringSymbolIndex implements InitializingBean, SpringModelService {
 					
 					springIndex.updateBeans(project.getElementName(), docURI, (Bean[]) beans.toArray(new Bean[beans.size()]));
 				}
-				
 			}
 			
 			@Override
@@ -370,7 +369,7 @@ public class SpringSymbolIndex implements InitializingBean, SpringModelService {
 					
 					CompletableFuture<Void> future = CompletableFuture.allOf(futures);
 					
-					future.thenAccept(v -> listeners.fire(v));
+					future = future.thenAccept(v -> server.getClient().indexUpdated()).thenAccept(v -> listeners.fire(v));
 
 					this.latestScheduledTaskByProject.put(project.getElementName(), future);
 					return future;
@@ -428,7 +427,9 @@ public class SpringSymbolIndex implements InitializingBean, SpringModelService {
 				}
 			}
 
-			return CompletableFuture.allOf((CompletableFuture[]) futures.toArray(new CompletableFuture[futures.size()]));
+			CompletableFuture<Void> future = CompletableFuture.allOf((CompletableFuture[]) futures.toArray(new CompletableFuture[futures.size()]));
+			future = future.thenAccept(v -> server.getClient().indexUpdated()).thenAccept(v -> listeners.fire(v));
+			return future; 
 		}
 	}
 
@@ -455,7 +456,7 @@ public class SpringSymbolIndex implements InitializingBean, SpringModelService {
 			}
 
 			CompletableFuture<Void> future = CompletableFuture.allOf((CompletableFuture[]) futures.toArray(new CompletableFuture[futures.size()]));
-			future.thenAccept(v -> listeners.fire(v));
+			future = future.thenAccept(v -> server.getClient().indexUpdated()).thenAccept(v -> listeners.fire(v));
 			return future;
 		}
 	}
@@ -484,7 +485,9 @@ public class SpringSymbolIndex implements InitializingBean, SpringModelService {
 					}
 				}
 			}
-			return CompletableFuture.allOf((CompletableFuture[]) futures.toArray(new CompletableFuture[futures.size()]));
+			CompletableFuture<Void> future = CompletableFuture.allOf((CompletableFuture[]) futures.toArray(new CompletableFuture[futures.size()]));
+			future = future.thenAccept(v -> server.getClient().indexUpdated()).thenAccept(v -> listeners.fire(v));
+			return future;
 		}
 	}
 
@@ -514,7 +517,7 @@ public class SpringSymbolIndex implements InitializingBean, SpringModelService {
 				}
 			}
 			CompletableFuture<Void> future = CompletableFuture.allOf((CompletableFuture[]) futures.toArray(new CompletableFuture[futures.size()]));
-			future.thenAccept(v -> listeners.fire(v));
+			future = future.thenAccept(v -> server.getClient().indexUpdated()).thenAccept(v -> listeners.fire(v));
 			return future;
 		}
 	}
@@ -589,7 +592,7 @@ public class SpringSymbolIndex implements InitializingBean, SpringModelService {
 				}
 
 				CompletableFuture<Void> future = CompletableFuture.allOf((CompletableFuture[]) futures.toArray(new CompletableFuture[futures.size()]));
-				future.thenAccept(v -> listeners.fire(v));
+				future = future.thenAccept(v -> server.getClient().indexUpdated()).thenAccept(v -> listeners.fire(v));
 				return future;
 			}
 			catch (Exception e) {
@@ -865,6 +868,9 @@ public class SpringSymbolIndex implements InitializingBean, SpringModelService {
 				for (SpringIndexer index : this.indexer) {
 					index.removeFiles(project, docURIs);
 				}
+				
+				server.getClient().indexUpdated();
+
 			} catch (Exception e) {
 				log.error("{}", e);
 			}
@@ -891,6 +897,7 @@ public class SpringSymbolIndex implements InitializingBean, SpringModelService {
 					index.removeProject(project);
 				}
 				springIndex.removeBeans(project.getElementName());
+				server.getClient().indexUpdated();
 				
 				log.debug("{} completed", this);
 			} catch (Throwable e) {

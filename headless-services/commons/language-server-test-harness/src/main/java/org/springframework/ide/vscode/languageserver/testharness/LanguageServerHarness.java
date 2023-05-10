@@ -159,6 +159,8 @@ public class LanguageServerHarness {
 
 	private boolean enableHierarchicalDocumentSymbols = false;
 
+	private int indexUpdated;
+
 
 	public LanguageServerHarness(SimpleLanguageServer server, LanguageId defaultLanguageId) {
 		this.defaultLanguageId = defaultLanguageId;
@@ -241,6 +243,14 @@ public class LanguageServerHarness {
 		for (CompletableFuture<HighlightParams> future : requestors) {
 			future.complete(highlights);
 		}
+	}
+	
+	private void receiveIndexUpdated() {
+		this.indexUpdated++;
+	}
+	
+	public int getIndexUpdatedCount() {
+		return this.indexUpdated;
 	}
 
 	public void ensureInitialized() throws Exception {
@@ -418,7 +428,8 @@ public class LanguageServerHarness {
 				}
 
 				@Override
-				public void modelUpdated() {
+				public void indexUpdated() {
+					receiveIndexUpdated();
 				}
 
 			});
