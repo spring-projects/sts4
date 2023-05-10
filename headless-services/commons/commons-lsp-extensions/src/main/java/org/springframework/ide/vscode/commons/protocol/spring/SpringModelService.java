@@ -16,7 +16,7 @@ import java.util.concurrent.CompletableFuture;
 import org.eclipse.lsp4j.jsonrpc.services.JsonRequest;
 import org.eclipse.lsp4j.jsonrpc.services.JsonSegment;
 
-@JsonSegment("spring")
+@JsonSegment("spring/index")
 public interface SpringModelService {
 
 	@JsonRequest

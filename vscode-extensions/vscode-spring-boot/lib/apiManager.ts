@@ -63,7 +63,7 @@ export class ApiManager {
 
         client.onNotification(SpringModelUpdatedNotification.type, () => this.onSpringModelUpdateEmitter.fire());
 
-        const beansRequestType = new RequestType<BeansParams, Bean[], void>('spring/beans');
+        const beansRequestType = new RequestType<BeansParams, Bean[], void>('spring/index/beans');
         const beans = (params: BeansParams) => {
             return client.sendRequest(beansRequestType, params);
         }

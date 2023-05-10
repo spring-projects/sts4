@@ -15,7 +15,7 @@ import org.eclipse.lsp4j.services.LanguageClient;
 
 public interface SpringModelLanguageClient extends LanguageClient {
 	
-	@JsonNotification("spring/model/updated")
-	void modelUpdated();
+	@JsonNotification("spring/index/updated")
+	void indexUpdated();
 
 }

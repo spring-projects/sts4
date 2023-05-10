@@ -39,5 +39,5 @@ export namespace LiveProcessMemoryMetricsUpdatedNotification {
 }
 
 export namespace SpringModelUpdatedNotification {
-	export const type = new NotificationType<void>('spring/model/updated');
+	export const type = new NotificationType<void>('spring/index/updated');
 }
