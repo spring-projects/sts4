@@ -622,7 +622,7 @@ public class STS4LanguageClientImpl extends LanguageClientImpl implements STS4La
 	}
 
 	@Override
-	public void modelUpdated() {
+	public void indexUpdated() {
 	}
 
 }

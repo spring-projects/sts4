@@ -27,8 +27,7 @@ import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.eclipse.lsp4j.services.LanguageServer;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.commons.protocol.spring.BeansParams;
-import org.springframework.ide.vscode.commons.protocol.spring.SpringModelLanguageServer;
-import org.springframework.ide.vscode.commons.protocol.spring.SpringModelService;
+import org.springframework.ide.vscode.commons.protocol.spring.SpringIndexLanguageServer;
 import org.springframework.tooling.ls.eclipse.gotosymbol.GotoSymbolPlugin;
 import org.springsource.ide.eclipse.commons.livexp.core.LiveExpression;
 import org.springsource.ide.eclipse.commons.livexp.util.ExceptionUtil;
@@ -134,14 +133,13 @@ public class InProjectSymbolsProvider implements SymbolsProvider {
 		List<LanguageServer> activeLanguageServers = LanguageServiceAccessor.getActiveLanguageServers(null);
 		
 		for (LanguageServer languageServer : activeLanguageServers) {
-			if (languageServer instanceof SpringModelLanguageServer) {
-				SpringModelLanguageServer springServer = (SpringModelLanguageServer) languageServer;
-				SpringModelService service = springServer.getSpringModelService();
+			if (languageServer instanceof SpringIndexLanguageServer) {
+				SpringIndexLanguageServer springServer = (SpringIndexLanguageServer) languageServer;
 
 				BeansParams beansParams = new BeansParams();
 				beansParams.setProjectName(projectName);
 
-				CompletableFuture<List<Bean>> beansFuture = service.beans(beansParams);
+				CompletableFuture<List<Bean>> beansFuture = springServer.beans(beansParams);
 				
 				try {
 					List<Bean> beans = beansFuture.get();
