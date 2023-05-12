@@ -59,6 +59,8 @@ import com.google.common.collect.ImmutableList;
 public class ASTUtils {
 
 	private static final Logger log = LoggerFactory.getLogger(ASTUtils.class);
+	
+	private static InjectionPoint[] EMPTY_INJECTION_POINTS = new InjectionPoint[0];
 
 	public static DocumentRegion nameRegion(TextDocument doc, Annotation annotation) {
 		int start = annotation.getTypeName().getStartPosition();
@@ -402,7 +404,8 @@ public class ASTUtils {
 				result.add(new InjectionPoint(name, type, location));
 			}
 		}
-		return (InjectionPoint[]) result.toArray(new InjectionPoint[result.size()]);
+
+		return result.size() > 0 ? result.toArray(new InjectionPoint[result.size()]) : EMPTY_INJECTION_POINTS;
 	}
 	
 	public static InjectionPoint[] findInjectionPoints(TypeDeclaration type, TextDocument doc) throws BadLocationException {
@@ -432,7 +435,6 @@ public class ASTUtils {
 				}
 			}
 
-
 			if (autowiredField) {
 				List<?> fragments = field.fragments();
 				for (Object fragment : fragments) {
@@ -452,7 +454,7 @@ public class ASTUtils {
 			}
 		}
 		
-		return (InjectionPoint[]) result.toArray(new InjectionPoint[result.size()]);
+		return result.size() > 0 ? result.toArray(new InjectionPoint[result.size()]) : EMPTY_INJECTION_POINTS;
 	}
 
 
