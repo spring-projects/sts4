@@ -60,7 +60,7 @@ public class ASTUtils {
 
 	private static final Logger log = LoggerFactory.getLogger(ASTUtils.class);
 	
-	private static InjectionPoint[] EMPTY_INJECTION_POINTS = new InjectionPoint[0];
+	public static InjectionPoint[] EMPTY_INJECTION_POINTS = new InjectionPoint[0];
 
 	public static DocumentRegion nameRegion(TextDocument doc, Annotation annotation) {
 		int start = annotation.getTypeName().getStartPosition();
