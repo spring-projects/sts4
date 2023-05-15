@@ -19,7 +19,7 @@ const TEST_RUNNER_MAIN_CLASSES = [
 class SpringBootDebugConfigProvider implements DebugConfigurationProvider {
 
     resolveDebugConfigurationWithSubstitutedVariables(folder: WorkspaceFolder | undefined, debugConfiguration: DebugConfiguration, token?: CancellationToken): ProviderResult<DebugConfiguration> {
-        if (isActuatorOnClasspath(debugConfiguration)) {
+        if (!TEST_RUNNER_MAIN_CLASSES.includes(debugConfiguration.mainClass) && isActuatorOnClasspath(debugConfiguration)) {
             if (debugConfiguration.vmArgs) {
                 if (debugConfiguration.vmArgs.indexOf(JMX_VM_ARG) < 0) {
                     debugConfiguration.vmArgs += ` ${JMX_VM_ARG}true`;
