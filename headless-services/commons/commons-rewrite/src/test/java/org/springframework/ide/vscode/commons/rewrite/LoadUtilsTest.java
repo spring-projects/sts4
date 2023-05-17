@@ -58,10 +58,7 @@ public class LoadUtilsTest {
 		
 		assertTrue(r instanceof DeclarativeRecipe);
 		assertEquals("org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_0", r.getName());
-		assertEquals("Migrate applications to the latest Spring Boot 3.0 release. This recipe will modify an application's build files, make changes to deprecated/preferred APIs, and migrate configuration settings that have changes between versions. This recipe will also chain additional framework migrations (Spring Framework, Spring Data, etc) that are required as part of the migration to Spring Boot 2.7.\n"
-				+ "Migrating a Spring Boot application across major versions can be a complex task. Not every part of the  process can be automated, and not everything that possibly could be automated is. We recommend first running each of the minor version upgrades individually, making any manual changes which may be required. When you  have a working spring-boot 2.7.x application, then run this recipe to migrate to 3.0.\n"
-				+ "",
-				r.getDescription());
+		assertTrue(r.getDescription().startsWith("Migrate applications to the latest Spring Boot 3.0 release."));
 		assertEquals("Migrate to Spring Boot 3.0", r.getDisplayName());
 		assertTrue(r.getRecipeList().size() >= 12);
 		

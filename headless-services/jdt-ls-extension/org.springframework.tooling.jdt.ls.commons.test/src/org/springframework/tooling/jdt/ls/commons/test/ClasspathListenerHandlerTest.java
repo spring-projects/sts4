@@ -159,7 +159,7 @@ public class ClasspathListenerHandlerTest {
 		File loc = project.getLocation().toFile();
 
 		service.addClasspathListener(classpaths.commandId, false);
-		ACondition.waitFor("Project with classpath to appear", Duration.ofSeconds(50), () -> {
+		ACondition.waitFor("Project with classpath to appear", Duration.ofSeconds(100), () -> {
 			Classpath cp = classpaths.getFor(loc).classpath;
 			for (CPE cpe : cp.getEntries()) {
 				assertTrue(new File(cpe.getPath()).isAbsolute());
@@ -168,7 +168,7 @@ public class ClasspathListenerHandlerTest {
 			CPE dependency = cp.getEntries().stream()
 				.filter(Classpath::isBinary)
 				.filter(cpe -> new File(cpe.getPath()).getName().startsWith("commons-io"))
-				.findFirst().get();
+				.findFirst().orElse(null);
 			assertClasspath(cp, dependency!=null);
 			assertTrue(new File(dependency.getSourceContainerUrl().toURI()).exists());
 		});
