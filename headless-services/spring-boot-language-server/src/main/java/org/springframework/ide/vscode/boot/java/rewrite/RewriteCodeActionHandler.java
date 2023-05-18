@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2022 VMware, Inc.
+ * Copyright (c) 2022, 2023 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -108,7 +108,7 @@ public class RewriteCodeActionHandler implements JavaCodeActionHandler {
 				CompilationUnit cu = cuCache.getCU(project, URI.create(doc.getUri()));
 				if (cu != null) {
 	
-					cu = recipeRepo.mark(descriptors, cu);
+					cu = recipeRepo.mark(project, descriptors, cu);
 	
 					List<CodeAction> codeActions = new ArrayList<>();
 					new JavaIsoVisitor<ExecutionContext>() {

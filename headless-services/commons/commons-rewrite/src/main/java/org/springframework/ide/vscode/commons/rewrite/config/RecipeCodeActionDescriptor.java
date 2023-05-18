@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2022 VMware, Inc.
+ * Copyright (c) 2022, 2023 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -12,7 +12,6 @@ package org.springframework.ide.vscode.commons.rewrite.config;
 
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.java.JavaVisitor;
-import org.springframework.context.ApplicationContext;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
 
@@ -22,7 +21,7 @@ public interface RecipeCodeActionDescriptor {
 		return getClass().getName();
 	}
 	
-	JavaVisitor<ExecutionContext> getMarkerVisitor(ApplicationContext applicationContext);
+	JavaVisitor<ExecutionContext> getMarkerVisitor(MarkerVisitorContext context);
 	
 	boolean isApplicable(IJavaProject project);
 	

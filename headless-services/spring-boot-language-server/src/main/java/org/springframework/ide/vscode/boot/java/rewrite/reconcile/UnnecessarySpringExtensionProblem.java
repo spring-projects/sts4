@@ -24,9 +24,9 @@ import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.tree.J.ClassDeclaration;
 import org.openrewrite.java.tree.JavaType.FullyQualified;
 import org.openrewrite.java.tree.TypeUtils;
-import org.springframework.context.ApplicationContext;
 import org.springframework.ide.vscode.boot.java.Boot2JavaProblemType;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.rewrite.config.MarkerVisitorContext;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeCodeActionDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
 import org.springframework.ide.vscode.commons.rewrite.java.FixAssistMarker;
@@ -58,7 +58,7 @@ public class UnnecessarySpringExtensionProblem implements RecipeCodeActionDescri
     private static final AnnotationMatcher SPRING_EXTENSION_ANNOTATIN_MATCHER = new AnnotationMatcher("@org.junit.jupiter.api.extension.ExtendWith(org.springframework.test.context.junit.jupiter.SpringExtension.class)");
 
 	@Override
-	public JavaVisitor<ExecutionContext> getMarkerVisitor(ApplicationContext applicationContext) {
+	public JavaVisitor<ExecutionContext> getMarkerVisitor(MarkerVisitorContext context) {
 		return new JavaMarkerVisitor<>() {
 
 			@Override

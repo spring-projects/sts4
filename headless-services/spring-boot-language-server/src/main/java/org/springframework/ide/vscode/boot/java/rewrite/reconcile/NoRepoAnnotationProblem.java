@@ -24,10 +24,10 @@ import org.openrewrite.java.tree.J.ClassDeclaration;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.marker.Range;
-import org.springframework.context.ApplicationContext;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.Boot2JavaProblemType;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.rewrite.config.MarkerVisitorContext;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeCodeActionDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
 import org.springframework.ide.vscode.commons.rewrite.java.FixAssistMarker;
@@ -42,7 +42,7 @@ public class NoRepoAnnotationProblem implements RecipeCodeActionDescriptor {
 	private static final String ANNOTATION_REPOSITORY = Annotations.REPOSITORY;
 
 	@Override
-	public JavaVisitor<ExecutionContext> getMarkerVisitor(ApplicationContext applicationContext) {
+	public JavaVisitor<ExecutionContext> getMarkerVisitor(MarkerVisitorContext context) {
 		return new JavaMarkerVisitor<ExecutionContext>() {
 
 			@Override

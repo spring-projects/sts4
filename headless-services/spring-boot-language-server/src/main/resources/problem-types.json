@@ -73,6 +73,12 @@
         "label": "Replace usage of 'WebSecurityConfigurerAdapter' as this class to be removed in Security 6.x",
         "description": "'WebSecurityConfigurerAdapter' is removed in Spring-Security 6.x. Refactor classes extending the 'WebSecurityConfigurerAdapter' into 'Configuration' beans and methods into 'Bean' definitions ",
         "defaultSeverity": "WARNING"
+      },
+      {
+        "code": "DOMAIN_ID_FOR_REPOSITORY",
+        "label": "Invalid Domain ID Type for Spring Data Repository",
+        "description": "Invalid Domain ID type for Spring Data Repository",
+        "defaultSeverity": "ERROR"
       }
     ]
   },

@@ -20,12 +20,12 @@ import org.openrewrite.java.spring.boot2.AddConfigurationAnnotationIfBeansPresen
 import org.openrewrite.java.tree.J.ClassDeclaration;
 import org.openrewrite.java.tree.J.MethodDeclaration;
 import org.openrewrite.java.tree.J.VariableDeclarations;
-import org.springframework.context.ApplicationContext;
 import org.springframework.ide.vscode.boot.java.Boot2JavaProblemType;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
 import org.springframework.ide.vscode.commons.java.Version;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
+import org.springframework.ide.vscode.commons.rewrite.config.MarkerVisitorContext;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeCodeActionDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
 import org.springframework.ide.vscode.commons.rewrite.java.FixAssistMarker;
@@ -41,7 +41,7 @@ public class AddConfigurationIfBeansPresentCodeAction implements RecipeCodeActio
 	private static final String FIX_LABEL = "Add missing '@Configuration' annotations over classes";
 	
 	@Override
-	public JavaVisitor<ExecutionContext> getMarkerVisitor(ApplicationContext applicationContext) {
+	public JavaVisitor<ExecutionContext> getMarkerVisitor(MarkerVisitorContext context) {
 		return new JavaMarkerVisitor<ExecutionContext>() {
 			
 			@Override

@@ -22,10 +22,10 @@ import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.tree.J.ClassDeclaration;
 import org.openrewrite.java.tree.J.MethodDeclaration;
 import org.openrewrite.marker.Range;
-import org.springframework.context.ApplicationContext;
 import org.springframework.ide.vscode.boot.java.SpringAotJavaProblemType;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
+import org.springframework.ide.vscode.commons.rewrite.config.MarkerVisitorContext;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeCodeActionDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
 import org.springframework.ide.vscode.commons.rewrite.java.BeanPostProcessingIgnoreInAot;
@@ -39,7 +39,7 @@ public class BeanPostProcessingIgnoreInAotProblem implements RecipeCodeActionDes
 	private static final String LABEL = "Add method 'isBeanExcludedFromAotProcessing' that returns 'false'";
 
 	@Override
-	public JavaVisitor<ExecutionContext> getMarkerVisitor(ApplicationContext applicationContext) {
+	public JavaVisitor<ExecutionContext> getMarkerVisitor(MarkerVisitorContext context) {
 		return new JavaMarkerVisitor<ExecutionContext>() {
 
 			@Override

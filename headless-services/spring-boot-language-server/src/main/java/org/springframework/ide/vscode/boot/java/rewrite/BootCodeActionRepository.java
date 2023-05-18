@@ -18,6 +18,7 @@ import org.springframework.ide.vscode.boot.java.rewrite.reconcile.AutowiredField
 import org.springframework.ide.vscode.boot.java.rewrite.reconcile.BeanMethodNotPublicProblem;
 import org.springframework.ide.vscode.boot.java.rewrite.reconcile.BeanPostProcessingIgnoreInAotProblem;
 import org.springframework.ide.vscode.boot.java.rewrite.reconcile.Boot3NotSupportedTypeProblem;
+import org.springframework.ide.vscode.boot.java.rewrite.reconcile.EntityIdForRepoProblem;
 import org.springframework.ide.vscode.boot.java.rewrite.reconcile.HttpSecurityLamdaDslCodeAction;
 import org.springframework.ide.vscode.boot.java.rewrite.reconcile.NoAutowiredOnConstructorProblem;
 import org.springframework.ide.vscode.boot.java.rewrite.reconcile.NoRepoAnnotationProblem;
@@ -49,7 +50,8 @@ public class BootCodeActionRepository extends CodeActionRepository {
 				new ServerHttpSecurityLambdaDslCodeAction(),
 				new AddConfigurationIfBeansPresentCodeAction(),
 				new AuthorizeHttpRequestsCodeAction(),
-				new WebSecurityConfigurerAdapterCodeAction()
+				new WebSecurityConfigurerAdapterCodeAction(),
+				new EntityIdForRepoProblem()
 		);
 	}
 

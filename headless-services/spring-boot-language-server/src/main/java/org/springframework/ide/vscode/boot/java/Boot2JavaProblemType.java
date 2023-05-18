@@ -10,10 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java;
 
-import static org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity.IGNORE;
-import static org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity.INFO;
-import static org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity.HINT;
-import static org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity.WARNING;
+import static org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity.*;
 
 import org.springframework.ide.vscode.boot.common.SpringProblemCategories;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemCategory;
@@ -40,7 +37,9 @@ public enum Boot2JavaProblemType implements ProblemType {
 	
 	HTTP_SECIRITY_AUTHORIZE_HTTP_REQUESTS(WARNING, "'HttpSecurity.authroizeRequests(...)' API and related classes are to be deprecated use new `authorizeHttpRequests(...) and related classes", "Usage of old 'HttpSecurity.authroizeRequests(...)' API"),
 	
-	WEB_SECURITY_CONFIGURER_ADAPTER(WARNING, "'WebSecurityConfigurerAdapter' is removed in Spring-Security 6.x. Refactor classes extending the 'WebSecurityConfigurerAdapter' into 'Configuration' beans and methods into 'Bean' definitions ", "Replace usage of 'WebSecurityConfigurerAdapter' as this class to be removed in Security 6.x");
+	WEB_SECURITY_CONFIGURER_ADAPTER(WARNING, "'WebSecurityConfigurerAdapter' is removed in Spring-Security 6.x. Refactor classes extending the 'WebSecurityConfigurerAdapter' into 'Configuration' beans and methods into 'Bean' definitions ", "Replace usage of 'WebSecurityConfigurerAdapter' as this class to be removed in Security 6.x"),
+	
+	DOMAIN_ID_FOR_REPOSITORY(ERROR, "Invalid Domain ID type for Spring Data Repository", "Invalid Domain ID Type for Spring Data Repository");
 	
 	private final ProblemSeverity defaultSeverity;
 	private String description;

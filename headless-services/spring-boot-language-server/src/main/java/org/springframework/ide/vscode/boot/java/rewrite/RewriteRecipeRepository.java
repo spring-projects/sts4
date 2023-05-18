@@ -66,6 +66,7 @@ import org.springframework.ide.vscode.commons.protocol.java.ProjectBuild;
 import org.springframework.ide.vscode.commons.rewrite.LoadUtils;
 import org.springframework.ide.vscode.commons.rewrite.LoadUtils.DurationTypeConverter;
 import org.springframework.ide.vscode.commons.rewrite.ORDocUtils;
+import org.springframework.ide.vscode.commons.rewrite.config.DefaultMarkerVisitorContext;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeCodeActionDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.config.StsEnvironment;
 import org.springframework.ide.vscode.commons.rewrite.gradle.GradleIJavaProjectParser;
@@ -302,10 +303,10 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 		return l;
 	}
 	
-	public CompilationUnit mark(List<? extends RecipeCodeActionDescriptor> descriptors, CompilationUnit compilationUnit) {
+	public CompilationUnit mark(IJavaProject project, List<? extends RecipeCodeActionDescriptor> descriptors, CompilationUnit compilationUnit) {
 		CompilationUnit cu = compilationUnit;
 		for (RecipeCodeActionDescriptor d : descriptors) {
-			TreeVisitor<?, ExecutionContext> markVisitor = d.getMarkerVisitor(applicationContext);
+			TreeVisitor<?, ExecutionContext> markVisitor = d.getMarkerVisitor(new DefaultMarkerVisitorContext(applicationContext, project));
 			if (markVisitor != null) {
 				try {
 					cu = (CompilationUnit) markVisitor.visit(cu, new InMemoryExecutionContext(e -> log.error("Marker visitor failed!", e)));

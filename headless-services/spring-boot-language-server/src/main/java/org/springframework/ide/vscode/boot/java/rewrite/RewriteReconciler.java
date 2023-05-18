@@ -90,7 +90,7 @@ public class RewriteReconciler implements JavaReconciler {
 			if (!descriptors.isEmpty()) {
 				CompilationUnit cu = cuCache.getCU(project, URI.create(doc.getUri()));
 				if (cu != null) {
-					collectProblems(descriptors, doc, cu, problemCollector::accept);
+					collectProblems(project, descriptors, doc, cu, problemCollector::accept);
 				}
 			}			
 		} catch (Exception e) {
@@ -279,7 +279,7 @@ public class RewriteReconciler implements JavaReconciler {
 							Path sourcePath = Paths.get(URI.create(doc.getUri()));
 							if (cu.getSourcePath().equals(sourcePath)) {
 								k++;
-								collectProblems(descriptors, doc, cu, problems::add);
+								collectProblems(project, descriptors, doc, cu, problems::add);
 								if (!problems.isEmpty()) {
 									allProblems.put(doc, problems);
 								}
@@ -316,8 +316,8 @@ public class RewriteReconciler implements JavaReconciler {
 		}).collect(Collectors.toList());
 	}
 	
-	private void collectProblems(List<RecipeCodeActionDescriptor> descriptors, IDocument doc, CompilationUnit compilationUnit, Consumer<ReconcileProblem> problemHandler) {
-		CompilationUnit cu = recipeRepo.mark(descriptors, compilationUnit);
+	private void collectProblems(IJavaProject project, List<RecipeCodeActionDescriptor> descriptors, IDocument doc, CompilationUnit compilationUnit, Consumer<ReconcileProblem> problemHandler) {
+		CompilationUnit cu = recipeRepo.mark(project, descriptors, compilationUnit);
 		if (compilationUnit != cu) {
 			new JavaMarkerVisitor<ExecutionContext>() {
 				

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2022 VMware, Inc.
+ * Copyright (c) 2022, 2023 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -18,7 +18,6 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
-import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.WorkspaceSymbol;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.SourceFile;
@@ -28,7 +27,6 @@ import org.openrewrite.java.tree.J.ClassDeclaration;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.JavaType.FullyQualified;
 import org.openrewrite.java.tree.TypeUtils;
-import org.springframework.context.ApplicationContext;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.boot.java.SpringAotJavaProblemType;
 import org.springframework.ide.vscode.boot.java.beans.BeansSymbolAddOnInformation;
@@ -37,8 +35,8 @@ import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformati
 import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
 import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
+import org.springframework.ide.vscode.commons.rewrite.config.MarkerVisitorContext;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeCodeActionDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
 import org.springframework.ide.vscode.commons.rewrite.java.FixAssistMarker;
@@ -59,7 +57,7 @@ public class NotRegisteredBeansProblem implements RecipeCodeActionDescriptor {
 	);
 
 	@Override
-	public JavaVisitor<ExecutionContext> getMarkerVisitor(ApplicationContext applicationContext) {
+	public JavaVisitor<ExecutionContext> getMarkerVisitor(MarkerVisitorContext context) {
 		return new JavaMarkerVisitor<ExecutionContext>() {
 			
 			@Override
@@ -70,7 +68,7 @@ public class NotRegisteredBeansProblem implements RecipeCodeActionDescriptor {
 					String beanClassName = type.getFullyQualifiedName();
 					boolean applicable = AOT_BEANS.stream().filter(fqName -> TypeUtils.isAssignableTo(fqName, type)).findFirst().isPresent();
 					if (applicable) {
-						SpringSymbolIndex index = applicationContext.getBean(SpringSymbolIndex.class);
+						SpringSymbolIndex index = context.appContext().getBean(SpringSymbolIndex.class);
 						List<WorkspaceSymbol> beanSymbols = index.getSymbols(data -> {
 							SymbolAddOnInformation[] additionalInformation = data.getAdditionalInformation();
 							if (additionalInformation != null) {
@@ -87,48 +85,44 @@ public class NotRegisteredBeansProblem implements RecipeCodeActionDescriptor {
 						List<JavaType.Method> constructors = c.getType().getMethods().stream().filter(m -> m.isConstructor()).collect(Collectors.toList());
 						if (beanSymbols.isEmpty()) {
 							SourceFile source = getCursor().firstEnclosing(SourceFile.class);
-        					String uri = source.getSourcePath().toUri().toASCIIString();
         					FixAssistMarker marker = new FixAssistMarker(Tree.randomId(), getId());
-        					JavaProjectFinder projectFinder = applicationContext.getBean(JavaProjectFinder.class);
-        					if (projectFinder != null) {
-        						IJavaProject project = projectFinder.find(new TextDocumentIdentifier(uri)).orElse(null);
-        						if (project != null) {
-        						
-        							for (EnhancedSymbolInformation s : index.getEnhancedSymbols(project)) {
-        								if (s.getAdditionalInformation() != null) {
-        									ConfigBeanSymbolAddOnInformation configInfo = Arrays.stream(s.getAdditionalInformation()).filter(ConfigBeanSymbolAddOnInformation.class::isInstance).map(ConfigBeanSymbolAddOnInformation.class::cast).findFirst().orElse(null);
-        									if (configInfo != null) {
-            									for (JavaType.Method constructor : constructors) {
-													String constructorParamsSignature = "(" + constructor.getParameterTypes().stream().map(pt -> typePattern(pt)).collect(Collectors.joining(",")) + ")";
-													String beanMethodName = "get" + type.getClassName();
-													String pattern = beanMethodName + constructorParamsSignature;
-													String contructorParamsLabel = "(" + constructor.getParameterTypes().stream().map(NotRegisteredBeansProblem::typeStr).collect(Collectors.joining(", ")) + ")";
-														
-													Builder<String> paramBuilder = ImmutableList.builder();
-													for (int i = 0; i < constructor.getParameterNames().size() && i < constructor.getParameterTypes().size(); i++) {
-														JavaType paramType = constructor.getParameterTypes().get(i);
-														String paramName = constructor.getParameterNames().get(i); 
-														paramBuilder.add(typeStr(paramType) + ' ' + paramName);
-													}
-													String paramsStr = String.join(", ", paramBuilder.build().toArray(String[]::new));
-	            										
-            										fixListBuilder.add(new FixDescriptor(DEFINE_METHOD_RECIPE, List.of(s.getSymbol().getLocation().getLeft().getUri()), "Define bean in config '" + configInfo.getBeanID() + "' with constructor " + contructorParamsLabel)
-            												.withRecipeScope(RecipeScope.FILE)
-            												.withParameters(Map.of(
-            														"targetFqName", configInfo.getBeanType(),
-            														"signature", pattern,
-            														"template", "@Bean\n"
-            															+ type.getClassName() + " " + beanMethodName + "(" + paramsStr + ") {\n"
-            															+ "return new " +  type.getClassName() + "(" + constructor.getParameterNames().stream().collect(Collectors.joining(", ")) + ");\n"
-            															+ "}\n",
-            														"imports", allFQTypes(constructor).toArray(String[]::new),
-            														"typeStubs", new String[] { source.printAll() },
-            														"classpath", IClasspathUtil.getAllBinaryRoots(project.getClasspath()).stream().map(f -> f.toPath().toString()).toArray(String[]::new)
-	            														
-            												))
-            										);
-            									}
-        									}
+        					IJavaProject project = context.project();
+        					if (project != null) {
+        					
+        						for (EnhancedSymbolInformation s : index.getEnhancedSymbols(project)) {
+        							if (s.getAdditionalInformation() != null) {
+        								ConfigBeanSymbolAddOnInformation configInfo = Arrays.stream(s.getAdditionalInformation()).filter(ConfigBeanSymbolAddOnInformation.class::isInstance).map(ConfigBeanSymbolAddOnInformation.class::cast).findFirst().orElse(null);
+        								if (configInfo != null) {
+            								for (JavaType.Method constructor : constructors) {
+												String constructorParamsSignature = "(" + constructor.getParameterTypes().stream().map(pt -> typePattern(pt)).collect(Collectors.joining(",")) + ")";
+												String beanMethodName = "get" + type.getClassName();
+												String pattern = beanMethodName + constructorParamsSignature;
+												String contructorParamsLabel = "(" + constructor.getParameterTypes().stream().map(NotRegisteredBeansProblem::typeStr).collect(Collectors.joining(", ")) + ")";
+													
+												Builder<String> paramBuilder = ImmutableList.builder();
+												for (int i = 0; i < constructor.getParameterNames().size() && i < constructor.getParameterTypes().size(); i++) {
+													JavaType paramType = constructor.getParameterTypes().get(i);
+													String paramName = constructor.getParameterNames().get(i); 
+													paramBuilder.add(typeStr(paramType) + ' ' + paramName);
+												}
+												String paramsStr = String.join(", ", paramBuilder.build().toArray(String[]::new));
+	            									
+            									fixListBuilder.add(new FixDescriptor(DEFINE_METHOD_RECIPE, List.of(s.getSymbol().getLocation().getLeft().getUri()), "Define bean in config '" + configInfo.getBeanID() + "' with constructor " + contructorParamsLabel)
+            											.withRecipeScope(RecipeScope.FILE)
+            											.withParameters(Map.of(
+            													"targetFqName", configInfo.getBeanType(),
+            													"signature", pattern,
+            													"template", "@Bean\n"
+            														+ type.getClassName() + " " + beanMethodName + "(" + paramsStr + ") {\n"
+            														+ "return new " +  type.getClassName() + "(" + constructor.getParameterNames().stream().collect(Collectors.joining(", ")) + ");\n"
+            														+ "}\n",
+            													"imports", allFQTypes(constructor).toArray(String[]::new),
+            													"typeStubs", new String[] { source.printAll() },
+            													"classpath", IClasspathUtil.getAllBinaryRoots(project.getClasspath()).stream().map(f -> f.toPath().toString()).toArray(String[]::new)
+	            													
+            											))
+            									);
+            								}
         								}
         							}
         						}

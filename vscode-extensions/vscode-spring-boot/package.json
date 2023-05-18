@@ -442,6 +442,18 @@
               "HINT",
               "ERROR"
             ]
+          },
+          "spring-boot.ls.problem.boot2.DOMAIN_ID_FOR_REPOSITORY": {
+            "type": "string",
+            "default": "ERROR",
+            "description": "Invalid Domain ID type for Spring Data Repository",
+            "enum": [
+              "IGNORE",
+              "INFO",
+              "WARNING",
+              "HINT",
+              "ERROR"
+            ]
           }
         }
       },
