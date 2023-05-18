@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2020 Pivotal, Inc.
+ * Copyright (c) 2019, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,22 +10,29 @@
  *******************************************************************************/
 package org.springframework.tooling.jdt.ls.commons.classpath;
 
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.Queue;
+import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResourceDelta;
+import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.ElementChangedEvent;
+import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IElementChangedListener;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaElementDelta;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.core.JavaModelException;
 import org.springframework.tooling.jdt.ls.commons.Logger;
 
 /**
@@ -79,7 +86,8 @@ public class ClasspathListenerManager {
 						// Classpath unchanged but maven/gradle repo cache has JAR's removed or downloaded
 						// See individual method comments for more details
 						|| isClasspathManifestFileChanged(jp, delta)
-						|| areClasspathJarsChanged(delta)) {
+						|| areClasspathJarsChanged(delta)
+						|| areOutputFoldersContentChanged(jp, delta)) {
 					listener.classpathChanged(jp);
 				}
 				break;
@@ -105,6 +113,38 @@ public class ClasspathListenerManager {
 				}
 			}
 			return false;
+		}
+		
+		private boolean areOutputFoldersContentChanged(IJavaProject jp, IJavaElementDelta delta) {
+			Collection<IPath> outputFolders = getOutputFolders(jp);
+			if (delta.getResourceDeltas() != null && (delta.getFlags() & (IJavaElementDelta.F_CONTENT | IJavaElementDelta.F_CHILDREN)) != 0) {
+				for (IResourceDelta resourceDelta : delta.getResourceDeltas()) {
+					if (outputFolders.contains(resourceDelta.getResource().getFullPath())) {
+						return true;
+					} else if (outputFolders.stream().anyMatch(of -> resourceDelta.getFullPath().isPrefixOf(of))) {
+						for (IResourceDelta rd : resourceDelta.getAffectedChildren()) {
+							if (outputFolders.contains(rd.getResource().getFullPath())) {
+								return true;
+							}
+						}
+					}
+				}
+			}
+			return false;
+		}
+		
+		private Collection<IPath> getOutputFolders(IJavaProject jp) {
+			try {
+				Set<IPath> outputFolders = new HashSet<>();;
+				for (IClasspathEntry cpe : jp.getRawClasspath()) {
+					if (cpe.getEntryKind() == IClasspathEntry.CPE_SOURCE && cpe.getOutputLocation() != null) {
+						outputFolders.add(cpe.getOutputLocation());
+					}
+				}
+				return outputFolders;
+			} catch (JavaModelException e) {
+				return Collections.emptyList();
+			}
 		}
 
 		/**
