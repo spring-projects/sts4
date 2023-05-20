@@ -14,6 +14,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNull;
+import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
@@ -24,8 +25,12 @@ import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.junit.jupiter.api.Test;
 import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
+import org.springframework.ide.vscode.boot.java.utils.SymbolCacheOnDisc;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
+import org.springframework.ide.vscode.commons.protocol.spring.DefaultValues;
 import org.springframework.ide.vscode.commons.protocol.spring.InjectionPoint;
+
+import com.google.gson.Gson;
 
 public class SpringMetamodelIndexTest {
 
@@ -208,6 +213,58 @@ public class SpringMetamodelIndexTest {
 		assertFalse(beansList.contains(bean1));
 		assertFalse(beansList.contains(bean2));
 		assertTrue(beansList.contains(bean3));
+	}
+	
+	@Test
+	void testOverallSerializeDeserializeBeans() {
+		InjectionPoint point1 = new InjectionPoint("point1", "point1-type", locationForDoc2);
+		InjectionPoint point2 = new InjectionPoint("point2", "point2-type", locationForDoc1);
+
+		Bean bean1 = new Bean("beanName1", "beanType", locationForDoc1, new InjectionPoint[] {point1, point2}, new String[] {"supertype1", "supertype2"});
+		String serialized = bean1.toString();
+		
+		Gson gson = SymbolCacheOnDisc.createGson();
+		Bean deserializedBean = gson.fromJson(serialized, Bean.class);
+		
+		assertEquals("beanName1", deserializedBean.getName());
+		assertEquals("beanType", deserializedBean.getType());
+		assertEquals(locationForDoc1, deserializedBean.getLocation());
+		
+		InjectionPoint[] points = deserializedBean.getInjectionPoints();
+		assertEquals(2, points.length);
+
+		assertEquals("point1", points[0].getName());
+		assertEquals("point1-type", points[0].getType());
+		assertEquals(locationForDoc2, points[0].getLocation());
+		
+		assertEquals("point2", points[1].getName());
+		assertEquals("point2-type", points[1].getType());
+		assertEquals(locationForDoc1, points[1].getLocation());
+		
+		assertTrue(deserializedBean.isTypeCompatibleWith("supertype1"));
+		assertTrue(deserializedBean.isTypeCompatibleWith("supertype2"));
+		assertFalse(deserializedBean.isTypeCompatibleWith("java.lang.String"));
+	}
+	
+	@Test
+	void testEmptyInjectionPointsOptimizationWithSerializeDeserializeBeans() {
+		Bean bean1 = new Bean("beanName1", "beanType", locationForDoc1, emptyInjectionPoints, emptySupertypes);
+		String serialized = bean1.toString();
+		
+		Gson gson = SymbolCacheOnDisc.createGson();
+		Bean deserializedBean = gson.fromJson(serialized, Bean.class);
+		
+		assertEquals("beanName1", deserializedBean.getName());
+		assertEquals("beanType", deserializedBean.getType());
+		assertEquals(locationForDoc1, deserializedBean.getLocation());
+		
+		assertSame(DefaultValues.EMPTY_INJECTION_POINTS, deserializedBean.getInjectionPoints());
+	}
+		
+	@Test
+	void testEmptyInjectionPointsOptimization() {
+		Bean bean1 = new Bean("beanName1", "beanType", locationForDoc1, emptyInjectionPoints, emptySupertypes);
+		assertSame(DefaultValues.EMPTY_INJECTION_POINTS, bean1.getInjectionPoints());
 	}
 		
 }

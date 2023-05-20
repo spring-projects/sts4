@@ -47,6 +47,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.jdt.imports.ImportRewrite;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
+import org.springframework.ide.vscode.commons.protocol.spring.DefaultValues;
 import org.springframework.ide.vscode.commons.protocol.spring.InjectionPoint;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.CollectorUtil;
@@ -60,8 +61,6 @@ public class ASTUtils {
 
 	private static final Logger log = LoggerFactory.getLogger(ASTUtils.class);
 	
-	public static InjectionPoint[] EMPTY_INJECTION_POINTS = new InjectionPoint[0];
-
 	public static DocumentRegion nameRegion(TextDocument doc, Annotation annotation) {
 		int start = annotation.getTypeName().getStartPosition();
 		int end = start + annotation.getTypeName().getLength();
@@ -405,7 +404,7 @@ public class ASTUtils {
 			}
 		}
 
-		return result.size() > 0 ? result.toArray(new InjectionPoint[result.size()]) : EMPTY_INJECTION_POINTS;
+		return result.size() > 0 ? result.toArray(new InjectionPoint[result.size()]) : DefaultValues.EMPTY_INJECTION_POINTS;
 	}
 	
 	public static InjectionPoint[] findInjectionPoints(TypeDeclaration type, TextDocument doc) throws BadLocationException {
@@ -454,7 +453,7 @@ public class ASTUtils {
 			}
 		}
 		
-		return result.size() > 0 ? result.toArray(new InjectionPoint[result.size()]) : EMPTY_INJECTION_POINTS;
+		return result.size() > 0 ? result.toArray(new InjectionPoint[result.size()]) : DefaultValues.EMPTY_INJECTION_POINTS;
 	}
 
 

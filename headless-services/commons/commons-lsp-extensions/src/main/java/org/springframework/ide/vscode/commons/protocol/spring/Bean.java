@@ -31,7 +31,13 @@ public class Bean {
 		this.type = type;
 		this.location = location;
 
-		this.injectionPoints = injectionPoints;
+		if (injectionPoints != null && injectionPoints.length == 0) {
+			this.injectionPoints = DefaultValues.EMPTY_INJECTION_POINTS;
+		}
+		else {
+			this.injectionPoints = injectionPoints;
+		}
+
 		this.supertypes = new HashSet<>(Arrays.asList(supertypes));
 	}
 	

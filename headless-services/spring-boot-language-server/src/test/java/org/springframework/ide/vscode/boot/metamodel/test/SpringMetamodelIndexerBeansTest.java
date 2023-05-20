@@ -33,9 +33,9 @@ import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
 import org.springframework.ide.vscode.boot.bootiful.SymbolProviderTestConf;
 import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
-import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
+import org.springframework.ide.vscode.commons.protocol.spring.DefaultValues;
 import org.springframework.ide.vscode.commons.protocol.spring.InjectionPoint;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
@@ -137,7 +137,7 @@ public class SpringMetamodelIndexerBeansTest {
 
 		InjectionPoint[] injectionPoints = beans[0].getInjectionPoints();
 		assertEquals(0, injectionPoints.length);
-		assertSame(ASTUtils.EMPTY_INJECTION_POINTS, injectionPoints);
+		assertSame(DefaultValues.EMPTY_INJECTION_POINTS, injectionPoints);
 	}
 	
 	@Test
@@ -213,7 +213,7 @@ public class SpringMetamodelIndexerBeansTest {
 
 		InjectionPoint[] injectionPoints = beans[0].getInjectionPoints();
 		assertEquals(0, injectionPoints.length);
-		assertSame(ASTUtils.EMPTY_INJECTION_POINTS, injectionPoints);
+		assertSame(DefaultValues.EMPTY_INJECTION_POINTS, injectionPoints);
 	}
 
 	@Test

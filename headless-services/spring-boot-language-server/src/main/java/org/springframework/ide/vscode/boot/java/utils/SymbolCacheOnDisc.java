@@ -30,9 +30,12 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.eclipse.lsp4j.Location;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
+import org.springframework.ide.vscode.commons.protocol.spring.Bean;
+import org.springframework.ide.vscode.commons.protocol.spring.InjectionPoint;
 import org.springframework.ide.vscode.commons.util.UriUtil;
 
 import com.google.common.collect.ImmutableMultimap;
@@ -293,8 +296,11 @@ public class SymbolCacheOnDisc implements SymbolCache {
 		}
 	}
 
-	private Gson createGson() {
-		return new GsonBuilder().registerTypeAdapter(SymbolAddOnInformation.class, new SymbolAddOnInformationAdapter()).create();
+	public static Gson createGson() {
+		return new GsonBuilder()
+				.registerTypeAdapter(SymbolAddOnInformation.class, new SymbolAddOnInformationAdapter())
+				.registerTypeAdapter(Bean.class, new BeanJsonAdapter())
+				.create();
 	}
 
 
@@ -355,4 +361,29 @@ public class SymbolCacheOnDisc implements SymbolCache {
 	    }
 	}
 
+	/**
+	 * gson adapter to store subtype information for symbol addon informations
+	 */
+	private static class BeanJsonAdapter implements JsonDeserializer<Bean> {
+
+	    @Override
+	    public Bean deserialize(JsonElement json, Type type, JsonDeserializationContext context) throws JsonParseException {
+	        JsonObject parsedObject = json.getAsJsonObject();
+	        
+	        String beanName = parsedObject.get("name").getAsString();
+	        String beanType = parsedObject.get("type").getAsString();
+
+	        JsonElement locationObject = parsedObject.get("location");
+	        Location location = context.deserialize(locationObject, Location.class);
+
+	        JsonElement injectionPointObject = parsedObject.get("injectionPoints");
+	        InjectionPoint[] injectionPoints = context.deserialize(injectionPointObject, InjectionPoint[].class);
+	        	        
+	        JsonElement supertypesObject = parsedObject.get("supertypes");
+	        String[] supertypes = context.deserialize(supertypesObject, String[].class);
+
+	        return new Bean(beanName, beanType, location, injectionPoints, supertypes);
+	    }
+	}
+	
 }
