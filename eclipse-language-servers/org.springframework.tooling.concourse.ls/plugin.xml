@@ -86,9 +86,10 @@
          point="org.eclipse.lsp4e.languageServer">
       <server
             class="org.springframework.tooling.concourse.ls.ConcourseLanguageServer"
-            id="org.eclipse.languageserver.languages.concourse"
             clientImpl="org.springframework.tooling.ls.eclipse.commons.STS4LanguageClientImpl"
-            label="Concourse Language Server">
+            id="org.eclipse.languageserver.languages.concourse"
+            label="Concourse Language Server"
+            singleton="true">
       </server>
       <contentTypeMapping
             contentType="org.springframework.tooling.concourse.pipeline"
