@@ -71,6 +71,7 @@ import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocu
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleWorkspaceService;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.commons.protocol.spring.BeansParams;
+import org.springframework.ide.vscode.commons.protocol.spring.MatchingBeansParams;
 import org.springframework.ide.vscode.commons.protocol.spring.SpringIndex;
 import org.springframework.ide.vscode.commons.util.Futures;
 import org.springframework.ide.vscode.commons.util.StringUtil;
@@ -720,7 +721,21 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 		else {
 			return CompletableFuture.completedFuture(null);
 		}
-		
+	}
+
+	@Override
+	public CompletableFuture<List<Bean>> matchingBeans(MatchingBeansParams params) {
+		String projectName = params.getProjectName();
+		String matchType = params.getBeanTypeToMatch();
+
+		CompletableFuture<Void> latestTask = this.latestScheduledTaskByProject.get(projectName);
+
+		if (latestTask != null) {
+			return latestTask.thenApply((e) -> Arrays.asList(springIndex.getMatchingBeans(projectName, matchType)));
+		}
+		else {
+			return CompletableFuture.completedFuture(null);
+		}
 	}
 
 	/**
@@ -989,4 +1004,5 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 	public void onUpdate(Consumer<Void> listener) {
 		listeners.add(listener);
 	}
+
 }

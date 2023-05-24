@@ -99,6 +99,7 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.Reconcile
 import org.springframework.ide.vscode.commons.protocol.STS4LanguageClient;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.commons.protocol.spring.BeansParams;
+import org.springframework.ide.vscode.commons.protocol.spring.MatchingBeansParams;
 import org.springframework.ide.vscode.commons.protocol.spring.SpringIndex;
 import org.springframework.ide.vscode.commons.protocol.spring.SpringIndexLanguageServer;
 import org.springframework.ide.vscode.commons.util.Assert;
@@ -927,13 +928,14 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, SpringInd
 
 	@Override
 	public CompletableFuture<List<Bean>> beans(BeansParams params) {
-		Map<String, SpringIndex> allSpringIndex = appContext.getBeansOfType(SpringIndex.class, false, false);
-		Assert.isLegal(allSpringIndex.size() <= 1, "One at most SpringModel bean is expected");
-		if (!allSpringIndex.isEmpty()) {
-			SpringIndex springIndex = allSpringIndex.values().iterator().next();
-			return springIndex.beans(params);
-		}
-		return CompletableFuture.completedFuture(Collections.emptyList());
+		SpringIndex springIndex = appContext.getBean(SpringIndex.class);
+		return springIndex.beans(params);
+	}
+
+	@Override
+	public CompletableFuture<List<Bean>> matchingBeans(MatchingBeansParams params) {
+		SpringIndex springIndex = appContext.getBean(SpringIndex.class);
+		return springIndex.matchingBeans(params);
 	}
 
 }

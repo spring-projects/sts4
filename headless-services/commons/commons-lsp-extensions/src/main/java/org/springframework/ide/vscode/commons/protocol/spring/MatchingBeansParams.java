@@ -10,22 +10,16 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.protocol.spring;
 
-import java.util.List;
-import java.util.concurrent.CompletableFuture;
-
-import org.eclipse.lsp4j.jsonrpc.services.JsonRequest;
-import org.eclipse.lsp4j.services.LanguageServer;
-
-public interface SpringIndexLanguageServer extends LanguageServer {
+public class MatchingBeansParams extends BeansParams {
 	
-	@JsonRequest("spring/index/beans")
-	default CompletableFuture<List<Bean>> beans(BeansParams params) {
-		throw new UnsupportedOperationException();
+	private String beanType;
+
+	public String getBeanTypeToMatch() {
+		return beanType;
 	}
-	
-	@JsonRequest("spring/index/beans/matches")
-	default CompletableFuture<List<Bean>> matchingBeans(MatchingBeansParams params) {
-		throw new UnsupportedOperationException();
+
+	public void setBeanTypeToMatch(String beanType) {
+		this.beanType = beanType;
 	}
 
 }

@@ -16,5 +16,6 @@ import java.util.concurrent.CompletableFuture;
 public interface SpringIndex {
 
 	CompletableFuture<List<Bean>> beans(BeansParams params);
+	CompletableFuture<List<Bean>> matchingBeans(MatchingBeansParams params);
 
 }

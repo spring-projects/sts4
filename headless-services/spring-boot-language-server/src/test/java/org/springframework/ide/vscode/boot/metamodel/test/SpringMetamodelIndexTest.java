@@ -266,5 +266,78 @@ public class SpringMetamodelIndexTest {
 		Bean bean1 = new Bean("beanName1", "beanType", locationForDoc1, emptyInjectionPoints, emptySupertypes);
 		assertSame(DefaultValues.EMPTY_INJECTION_POINTS, bean1.getInjectionPoints());
 	}
+	
+	@Test
+	void testFindNoMatchingBeansWithEmptySupertypes() {
+		SpringMetamodelIndex index = new SpringMetamodelIndex();
+		Bean bean1 = new Bean("beanName1", "beanType", locationForDoc1, emptyInjectionPoints, emptySupertypes);
+		Bean bean2 = new Bean("beanName2", "beanType", locationForDoc1, emptyInjectionPoints, emptySupertypes);
+		
+		index.updateBeans("someProject", new Bean[] {bean1, bean2});
+		
+		Bean[] matchingBeans = index.getMatchingBeans("someProject", "");
+		assertEquals(0, matchingBeans.length);
+		
+		matchingBeans = index.getMatchingBeans("someProject", "sometype");
+		assertEquals(0, matchingBeans.length);
+	}
+
+	@Test
+	void testFindMatchingBeansWithOneProject() {
+		SpringMetamodelIndex index = new SpringMetamodelIndex();
+		Bean bean1 = new Bean("beanName1", "beanType1", locationForDoc1, emptyInjectionPoints, new String[] {"supertype1", "supertype2"});
+		Bean bean2 = new Bean("beanName2", "beanType2", locationForDoc1, emptyInjectionPoints, new String[] {"supertype3", "supertype4", "supertype5"});
+		
+		index.updateBeans("someProject", new Bean[] {bean1, bean2});
+		
+		Bean[] matchingBeans = index.getMatchingBeans("someProject", "supertype2");
+		assertEquals(1, matchingBeans.length);
+		assertSame(bean1, matchingBeans[0]);
+		
+		matchingBeans = index.getMatchingBeans("someProject", "beanType1");
+		assertEquals(1, matchingBeans.length);
+		assertSame(bean1, matchingBeans[0]);
+
+		matchingBeans = index.getMatchingBeans("someProject", "supertype5");
+		assertEquals(1, matchingBeans.length);
+		assertSame(bean2, matchingBeans[0]);
+
+		matchingBeans = index.getMatchingBeans("someProject", "sometype");
+		assertEquals(0, matchingBeans.length);
+
+		matchingBeans = index.getMatchingBeans("otherProject", "supertype1");
+		assertNull(matchingBeans);
+	}
+		
+	@Test
+	void testFindMatchingBeansWithMultipleProjects() {
+		SpringMetamodelIndex index = new SpringMetamodelIndex();
+		Bean bean1 = new Bean("beanName1", "beanType1", locationForDoc1, emptyInjectionPoints, new String[] {"supertype1", "supertype2"});
+		Bean bean2 = new Bean("beanName2", "beanType2", locationForDoc1, emptyInjectionPoints, new String[] {"supertype3", "supertype4, supertype5"});
+		
+		Bean bean3 = new Bean("beanName3", "beanType1", locationForDoc1, emptyInjectionPoints, new String[] {"supertype1", "supertype2"});
+		Bean bean4 = new Bean("beanName4", "beanType2", locationForDoc1, emptyInjectionPoints, new String[] {"supertype3", "supertype4, supertype5"});
+
+		index.updateBeans("projectA", new Bean[] {bean1, bean2});
+		index.updateBeans("projectB", new Bean[] {bean3, bean4});
+		
+		Bean[] matchingBeans = index.getMatchingBeans("projectA", "supertype2");
+		assertEquals(1, matchingBeans.length);
+		assertSame(bean1, matchingBeans[0]);
+		
+		matchingBeans = index.getMatchingBeans("projectA", "beanType2");
+		assertEquals(1, matchingBeans.length);
+		assertSame(bean2, matchingBeans[0]);
+		
+		matchingBeans = index.getMatchingBeans("projectB", "supertype2");
+		assertEquals(1, matchingBeans.length);
+		assertSame(bean3, matchingBeans[0]);
+		
+		matchingBeans = index.getMatchingBeans("projectB", "beanType2");
+		assertEquals(1, matchingBeans.length);
+		assertSame(bean4, matchingBeans[0]);
+		
+		matchingBeans = index.getMatchingBeans("otherProject", "supertype1");
+	}
 		
 }

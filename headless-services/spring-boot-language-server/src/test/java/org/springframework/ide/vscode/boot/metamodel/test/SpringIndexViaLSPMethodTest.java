@@ -31,6 +31,7 @@ import org.springframework.ide.vscode.boot.bootiful.SymbolProviderTestConf;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.commons.protocol.spring.BeansParams;
+import org.springframework.ide.vscode.commons.protocol.spring.MatchingBeansParams;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -84,6 +85,37 @@ public class SpringIndexViaLSPMethodTest {
 
 		assertNotNull(beans);
 		assertEquals(11, beans.size());
+	}
+
+	@Test
+	void testMatchingBeansForObject() throws Exception {
+		MatchingBeansParams params = new MatchingBeansParams();
+		params.setProjectName("test-spring-indexing");
+		params.setBeanTypeToMatch("java.lang.Object");
+
+		CompletableFuture<List<Bean>> result = indexer.matchingBeans(params);
+
+		List<Bean> beans = result.get(5, TimeUnit.SECONDS);
+
+		assertNotNull(beans);
+		assertEquals(10, beans.size());
+	}
+
+	@Test
+	void testMatchingBeansForSpecificSupertype() throws Exception {
+		MatchingBeansParams params = new MatchingBeansParams();
+		params.setProjectName("test-spring-indexing");
+		params.setBeanTypeToMatch("org.test.springdata.CustomerRepository");
+
+		CompletableFuture<List<Bean>> result = indexer.matchingBeans(params);
+
+		List<Bean> beans = result.get(5, TimeUnit.SECONDS);
+
+		assertNotNull(beans);
+		assertEquals(1, beans.size());
+		
+		assertEquals("customerRepository", beans.get(0).getName());
+		assertEquals("org.test.springdata.CustomerRepository", beans.get(0).getType());
 	}
 
 }

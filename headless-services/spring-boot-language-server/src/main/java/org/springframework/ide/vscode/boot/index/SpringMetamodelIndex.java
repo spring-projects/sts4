@@ -97,4 +97,15 @@ public class SpringMetamodelIndex {
 		}
 	}
 
+	public Bean[] getMatchingBeans(String projectName, String matchType) {
+		Bean[] allBeans = this.beansPerProject.get(projectName);
+		
+		if (allBeans != null) {
+			return Arrays.stream(allBeans).filter(bean -> bean.isTypeCompatibleWith(matchType)).collect(Collectors.toList()).toArray(new Bean[0]);
+		}
+		else {
+			return null;
+		}
+	}
+
 }
