@@ -210,6 +210,9 @@ public class SpringMetamodelIndexerBeansTest {
 		assertEquals(1, beans.length);
 		assertEquals("customerRepository", beans[0].getName());
 		assertEquals("org.test.springdata.CustomerRepository", beans[0].getType());
+		
+		assertTrue(beans[0].isTypeCompatibleWith("org.test.springdata.CustomerRepository"));
+		assertTrue(beans[0].isTypeCompatibleWith("org.springframework.data.repository.CrudRepository"));
 
 		InjectionPoint[] injectionPoints = beans[0].getInjectionPoints();
 		assertEquals(0, injectionPoints.length);

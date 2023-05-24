@@ -66,10 +66,12 @@ public class DataRepositorySymbolProvider extends AbstractSymbolProvider {
 
 				InjectionPoint[] injectionPoints = ASTUtils.findInjectionPoints(typeDeclaration, doc);
 				
-				Set<String> supertypes = new HashSet<>();
-				ASTUtils.findSupertypes(beanType, supertypes);
+				ITypeBinding concreteBeanTypeBindung = typeDeclaration.resolveBinding();
 
-				String concreteRepoType = typeDeclaration.resolveBinding().getQualifiedName();
+				Set<String> supertypes = new HashSet<>();
+				ASTUtils.findSupertypes(concreteBeanTypeBindung, supertypes);
+
+				String concreteRepoType = concreteBeanTypeBindung.getQualifiedName();
 				Bean beanDefinition = new Bean(beanName, concreteRepoType, location, injectionPoints, (String[]) supertypes.toArray(new String[supertypes.size()]));
 				
 				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), enhancedSymbol, beanDefinition));
