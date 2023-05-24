@@ -22,7 +22,7 @@ import org.openrewrite.Recipe;
 import org.openrewrite.config.DeclarativeRecipe;
 import org.openrewrite.config.Environment;
 import org.openrewrite.config.RecipeDescriptor;
-import org.openrewrite.maven.UpgradeDependencyVersion;
+import org.openrewrite.java.dependencies.UpgradeDependencyVersion;
 import org.springframework.ide.vscode.commons.rewrite.LoadUtils.DurationTypeConverter;
 
 import com.google.gson.Gson;
@@ -70,9 +70,8 @@ public class LoadUtilsTest {
 		assertTrue(pomRecipe.getRecipeList().size() >= 3);
 		
 		UpgradeDependencyVersion upgradeDependencyRecipe = pomRecipe.getRecipeList().stream().filter(UpgradeDependencyVersion.class::isInstance).map(UpgradeDependencyVersion.class::cast).findFirst().get();
-		assertEquals("org.openrewrite.maven.UpgradeDependencyVersion", upgradeDependencyRecipe.getName());
-		assertEquals("Upgrade Maven dependency version", upgradeDependencyRecipe.getDisplayName());
-		assertEquals(0, upgradeDependencyRecipe.getRecipeList().size());
+		assertEquals("org.openrewrite.java.dependencies.UpgradeDependencyVersion", upgradeDependencyRecipe.getName());
+		assertEquals("Upgrade Gradle or Maven dependency versions", upgradeDependencyRecipe.getDisplayName());
 		assertTrue(upgradeDependencyRecipe.getNewVersion().startsWith("3.0."));
 		assertEquals("org.springframework.boot", upgradeDependencyRecipe.getGroupId());
 		assertEquals("*", upgradeDependencyRecipe.getArtifactId());
@@ -108,7 +107,7 @@ public class LoadUtilsTest {
 		
 		Recipe pomRecipe = r.getRecipeList().get(0);
 		assertTrue(pomRecipe instanceof DeclarativeRecipe);
-		assertEquals("org.openrewrite.java.spring.boot3.MavenPomUpgrade", pomRecipe.getName());
+		assertEquals("org.openrewrite.java.dependencies.UpgradeDependencyVersion", pomRecipe.getName());
 		assertEquals("Upgrade Maven POM to Spring Boot 3.0 from prior 2.x version.", pomRecipe.getDescription());
 		assertEquals("Upgrade Maven POM to Spring Boot 3.0 from 2.x", pomRecipe.getDisplayName());
 		assertTrue(pomRecipe.getRecipeList().size() >= 3);
