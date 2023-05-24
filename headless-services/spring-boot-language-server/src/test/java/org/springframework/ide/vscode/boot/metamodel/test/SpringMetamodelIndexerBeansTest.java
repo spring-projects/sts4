@@ -230,6 +230,7 @@ public class SpringMetamodelIndexerBeansTest {
 		assertTrue(beans[0].isTypeCompatibleWith("org.test.supertypes.Interface2OfBeanWithSupertypes"));
 		assertTrue(beans[0].isTypeCompatibleWith("org.test.supertypes.InterfaceOfAbstractBean"));
 		assertTrue(beans[0].isTypeCompatibleWith("org.test.supertypes.BaseClassOfAbstractBeanWithSupertypes"));
+		assertTrue(beans[0].isTypeCompatibleWith("org.test.BeanWithSupertypes"));
 		
 		assertFalse(beans[0].isTypeCompatibleWith("java.lang.String"));
 		assertFalse(beans[0].isTypeCompatibleWith("java.util.Comparator"));

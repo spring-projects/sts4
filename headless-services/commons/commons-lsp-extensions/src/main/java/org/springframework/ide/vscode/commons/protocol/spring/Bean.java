@@ -58,7 +58,7 @@ public class Bean {
 	}
 
 	public boolean isTypeCompatibleWith(String type) {
-		return supertypes.contains(type);
+		return type != null && ((this.type != null && this.type.equals(type)) || (supertypes.contains(type)));
 	}
 	
 	@Override
