@@ -11,7 +11,6 @@
 package org.springframework.ide.vscode.boot.java.rewrite;
 
 import java.io.ByteArrayInputStream;
-import java.io.File;
 import java.io.FileInputStream;
 import java.net.URL;
 import java.net.URLClassLoader;
@@ -33,7 +32,6 @@ import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import org.eclipse.lsp4j.ApplyWorkspaceEditParams;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
@@ -59,19 +57,20 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.ide.vscode.boot.app.BootJavaConfig;
-import org.springframework.ide.vscode.commons.java.IClasspath;
-import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.IndefiniteProgressTask;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.util.ListenerList;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
+import org.springframework.ide.vscode.commons.protocol.java.ProjectBuild;
 import org.springframework.ide.vscode.commons.rewrite.LoadUtils;
 import org.springframework.ide.vscode.commons.rewrite.LoadUtils.DurationTypeConverter;
 import org.springframework.ide.vscode.commons.rewrite.ORDocUtils;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeCodeActionDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.config.StsEnvironment;
-import org.springframework.ide.vscode.commons.rewrite.maven.MavenProjectParser;
+import org.springframework.ide.vscode.commons.rewrite.gradle.GradleIJavaProjectParser;
+import org.springframework.ide.vscode.commons.rewrite.java.ProjectParser;
+import org.springframework.ide.vscode.commons.rewrite.maven.MavenIJavaProjectParser;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.gson.Gson;
@@ -417,15 +416,15 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 	private Optional<WorkspaceEdit> computeWorkspaceEdit(Recipe r, IJavaProject project, IndefiniteProgressTask progressTask) {
 		Path absoluteProjectDir = Paths.get(project.getLocationUri());
 		progressTask.progressEvent("Parsing files...");
-		MavenProjectParser projectParser = createRewriteMavenParser(absoluteProjectDir,
-				new InMemoryExecutionContext(), p -> {
+		ProjectParser projectParser = createRewriteProjectParser(project,
+				p -> {
 					TextDocument doc = server.getTextDocumentService().getLatestSnapshot(p.toUri().toASCIIString());
 					if (doc != null) {
 						return new Parser.Input(p, () -> new ByteArrayInputStream(doc.get().getBytes()));
 					}
 					return null;
 				});
-		List<SourceFile> sources = projectParser.parse(absoluteProjectDir, getClasspathEntries(project));
+		List<SourceFile> sources = projectParser.parse(absoluteProjectDir, new InMemoryExecutionContext());
 		progressTask.progressEvent("Computing changes...");
 		RecipeRun reciperun = r.run(sources, new InMemoryExecutionContext(e -> log.error("Recipe execution failed", e)));
 		List<Result> results = reciperun.getResults();
@@ -447,32 +446,20 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 		return Collections.emptyList();
 	}
 	
-    private static MavenProjectParser createRewriteMavenParser(Path absoluteProjectDir, ExecutionContext context, Function<Path, Parser.Input> inputProvider) {
-        MavenParser.Builder mavenParserBuilder = MavenParser.builder()
-                .mavenConfig(absoluteProjectDir.resolve(".mvn/maven.config"));
-
-        MavenProjectParser mavenProjectParser = new MavenProjectParser(
-                mavenParserBuilder,
-                JavaParser.fromJavaVersion(),
-                context,
-                inputProvider
-        );
-        return mavenProjectParser;
+    private static ProjectParser createRewriteProjectParser(IJavaProject jp, Function<Path, Parser.Input> inputProvider) {
+		switch (jp.getProjectBuild().getType()) {
+    	case ProjectBuild.MAVEN_PROJECT_TYPE:
+    		Path absoluteProjectDir = Paths.get(jp.getLocationUri()).toAbsolutePath();
+            MavenParser.Builder mavenParserBuilder = MavenParser.builder()
+            	.mavenConfig(absoluteProjectDir.resolve(".mvn/maven.config"));
+    		return new MavenIJavaProjectParser(jp, JavaParser.fromJavaVersion(), inputProvider, mavenParserBuilder);
+    	case ProjectBuild.GRADLE_PROJECT_TYPE:
+    		return new GradleIJavaProjectParser(jp, JavaParser.fromJavaVersion(), inputProvider);
+    	default:
+    		throw new IllegalStateException("The project is neither Maven nor Gradle!");
+    	}
     }
     
-	private static List<Path> getClasspathEntries(IJavaProject project) {
-		if (project == null) {
-			return List.of();
-		} else {
-			IClasspath classpath = project.getClasspath();
-			Stream<File> classpathEntries = IClasspathUtil.getAllBinaryRoots(classpath).stream();
-			return classpathEntries
-					.filter(file -> file.exists())
-					.filter(file -> file.getName().endsWith(".jar"))
-					.map(file -> file.getAbsoluteFile().toPath()).collect(Collectors.toList());
-		}
-	}
-	
 	public void onRecipesLoaded(Consumer<Void> l) {
 		loadListeners.add(l);
 	}

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2022 VMware, Inc.
+ * Copyright (c) 2022, 2023 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -43,7 +43,7 @@ import org.springframework.ide.vscode.commons.rewrite.java.FixAssistMarker;
 import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.java.JavaMarkerVisitor;
 import org.springframework.ide.vscode.commons.rewrite.java.ORAstUtils;
-import org.springframework.ide.vscode.commons.rewrite.maven.MavenProjectParser;
+import org.springframework.ide.vscode.commons.rewrite.java.ProjectParser;
 
 public class AutowiredFieldIntoConstructorParameterCodeAction implements RecipeCodeActionDescriptor {
 	
@@ -58,7 +58,7 @@ public class AutowiredFieldIntoConstructorParameterCodeAction implements RecipeC
 			@Override
 			public CompilationUnit visitCompilationUnit(CompilationUnit cu, ExecutionContext p) {
 				JavaSourceSet sourceSet = cu.getMarkers().findFirst(JavaSourceSet.class).orElse(null);
-				if (sourceSet != null && MavenProjectParser.TEST.equals(sourceSet.getName())) {
+				if (sourceSet != null && ProjectParser.TEST.equals(sourceSet.getName())) {
 					return cu;
 				}
 				return super.visitCompilationUnit(cu, p);

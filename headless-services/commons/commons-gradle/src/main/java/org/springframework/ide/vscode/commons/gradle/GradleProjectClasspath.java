@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2019 Pivotal, Inc.
+ * Copyright (c) 2017, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,13 +13,13 @@ package org.springframework.ide.vscode.commons.gradle;
 import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.stream.Stream;
 
 import org.gradle.tooling.model.build.BuildEnvironment;
 import org.gradle.tooling.model.eclipse.EclipseExternalDependency;
 import org.gradle.tooling.model.eclipse.EclipseProject;
-import org.gradle.tooling.model.eclipse.EclipseProjectDependency;
 import org.gradle.tooling.model.eclipse.EclipseSourceDirectory;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.JavaUtils;
@@ -98,8 +98,7 @@ public class GradleProjectClasspath implements IClasspath {
 			for (EclipseSourceDirectory sf : project.getSourceDirectories()) {
 				CPE cpe = createSourceCPE(project, sf);
 				cpe.setOwn(true);
-				// TODO: figure out how to differentiate source java folder from resources
-				cpe.setJavaContent(true);
+				cpe.setJavaContent(!Files.walk(sf.getDirectory().toPath()).filter(Files::isRegularFile).anyMatch(p -> !p.startsWith(".") && !p.getFileName().toString().endsWith(".java")));
 				boolean isTest = false;
 				try {
 					isTest = sf.getClasspathAttributes().stream().filter(attr -> "gradle_used_by_scope".equals(attr.getName()) && "test".equals(attr.getValue())).findFirst().isPresent();

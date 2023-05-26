@@ -18,6 +18,7 @@ import java.nio.channels.ClosedByInterruptException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
@@ -52,7 +53,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
-import org.springframework.ide.vscode.commons.rewrite.maven.MavenProjectParser;
 import org.springframework.ide.vscode.commons.util.ExceptionUtil;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
@@ -462,13 +462,13 @@ public class ORAstUtils {
 	
 	public static String getSourceSetName(IJavaProject project, Path sourcePath) {
 		if (IClasspathUtil.getProjectTestJavaSources(project.getClasspath()).anyMatch(f -> sourcePath.startsWith(f.toPath()))) {
-			return MavenProjectParser.TEST;
+			return ProjectParser.TEST;
 		} else {
-			return MavenProjectParser.MAIN;
+			return ProjectParser.MAIN;
 		}
 	}
 	
-	public static JavaSourceSet addJavaSourceSet(List<? extends SourceFile> sourceFiles, String sourceSetName, List<Path> classpath) {
+	public static JavaSourceSet addJavaSourceSet(List<? extends SourceFile> sourceFiles, String sourceSetName, Collection<Path> classpath) {
 		JavaSourceSet sourceSet = JavaSourceSet.build(sourceSetName, classpath, null, false);
 		List<JavaType.FullyQualified> types = sourceSet.getClasspath();
 		for (SourceFile sourceFile : sourceFiles) {

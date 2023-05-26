@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -77,7 +77,7 @@ public class GradleCore {
 			((DefaultGradleConnector) gradleConnector).daemonMaxIdleTime(1, TimeUnit.SECONDS);
 			configuration.configure(gradleConnector);
 			// Use patched Gradle 4.4 distribution or higher as a workaround for https://github.com/gradle/gradle/issues/2483
-			gradleConnector.useGradleVersion("7.3");
+			gradleConnector.useGradleVersion("7.6");
 			connection = gradleConnector.connect();
 			return connection.getModel(modelType);
 		} catch (GradleConnectionException e) {

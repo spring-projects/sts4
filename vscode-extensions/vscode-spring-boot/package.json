@@ -76,24 +76,24 @@
     "menus": {
       "editor/context": [
         {
-          "when": "resourceFilename == pom.xml",
+          "when": "resourceFilename == pom.xml || resourceFilename == build.gradle",
           "command": "vscode-spring-boot.rewrite.list.refactorings",
           "group": "SpringBoot"
         },
         {
-          "when": "resourceFilename == pom.xml",
+          "when": "resourceFilename == pom.xml || resourceFilename == build.gradle",
           "command": "vscode-spring-boot.rewrite.list.boot-upgrades",
           "group": "SpringBoot"
         }
       ],
       "explorer/context": [
         {
-          "when": "resourceFilename == pom.xml && config.boot-java.rewrite.refactorings.on == true",
+          "when": "(resourceFilename == pom.xml  || resourceFilename == build.gradle) && config.boot-java.rewrite.refactorings.on == true",
           "command": "vscode-spring-boot.rewrite.list.refactorings",
           "group": "SpringBoot"
         },
         {
-          "when": "resourceFilename == pom.xml && config.boot-java.rewrite.refactorings.on == true",
+          "when": "(resourceFilename == pom.xml  || resourceFilename == build.gradle) && config.boot-java.rewrite.refactorings.on == true",
           "command": "vscode-spring-boot.rewrite.list.boot-upgrades",
           "group": "SpringBoot"
         }

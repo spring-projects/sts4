@@ -54,7 +54,7 @@ import org.springframework.ide.vscode.commons.rewrite.java.FixAssistMarker;
 import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.java.JavaMarkerVisitor;
 import org.springframework.ide.vscode.commons.rewrite.java.ORAstUtils;
-import org.springframework.ide.vscode.commons.rewrite.maven.MavenProjectParser;
+import org.springframework.ide.vscode.commons.rewrite.java.ProjectParser;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
@@ -165,8 +165,8 @@ public class RewriteReconciler implements JavaReconciler {
 		// Pass in source sets created from classpath. (Perhaps it is a good idea to have separate classpath and parsers for test and main, TBD)
 		// Perhaps it is even better to create empty classpath java source sets as reconcile step seem to only need name of the java source set
 		// Usually java source set classpath is required to figure out how to organize imports for sources
-		JavaSourceSet mainJavaSourceSet = JavaSourceSet.build(MavenProjectParser.MAIN, classpath, null, false);
-		JavaSourceSet testJavaSourceSet = new JavaSourceSet(Tree.randomId(), MavenProjectParser.TEST, mainJavaSourceSet.getClasspath());
+		JavaSourceSet mainJavaSourceSet = JavaSourceSet.build(ProjectParser.MAIN, classpath, null, false);
+		JavaSourceSet testJavaSourceSet = new JavaSourceSet(Tree.randomId(), ProjectParser.TEST, mainJavaSourceSet.getClasspath());
 		allProblems.putAll(doReconcile(project, mainSources, javaParser, mainJavaSourceSet, incrementProgress));
 		allProblems.putAll(doReconcile(project, testSources, javaParser, testJavaSourceSet, incrementProgress));
 		
