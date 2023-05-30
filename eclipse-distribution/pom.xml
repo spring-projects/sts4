@@ -381,19 +381,19 @@
 				<repository>
 					<id>wildwebdeveloper</id>
 					<layout>p2</layout>
-					<url>https://download.eclipse.org/wildwebdeveloper/releases/latest/</url>
+					<url>https://download.eclipse.org/wildwebdeveloper/releases/1.0.5/</url>
 				</repository>
 				<repository>
 					<id>lsp4e</id>
 					<layout>p2</layout>
-<!--					<url>https://download.eclipse.org/lsp4e/releases/0.21.0/</url> -->
-					<url>https://download.eclipse.org/lsp4e/snapshots/</url>
+					<url>https://download.eclipse.org/lsp4e/releases/0.22.0/</url>
+<!--					<url>https://download.eclipse.org/lsp4e/snapshots/</url> -->
 				</repository>
 				<repository>
 					<id>tm4e-snapshots</id>
 					<layout>p2</layout>
-<!--					<url>https://download.eclipse.org/tm4e/releases/0.6.2/</url> -->
-					<url>https://download.eclipse.org/tm4e/snapshots/</url>
+					<url>https://download.eclipse.org/tm4e/releases/0.6.3/</url>
+<!--					<url>https://download.eclipse.org/tm4e/snapshots/</url> -->
 				</repository>
 <!--				<repository>
 					<id>chromium-binaries</id>
@@ -479,14 +479,14 @@
 				<repository>
 					<id>lsp4e</id>
 					<layout>p2</layout>
-<!--					<url>https://download.eclipse.org/lsp4e/releases/0.21.0/</url> -->
-					<url>https://download.eclipse.org/lsp4e/snapshots/</url>
+					<url>https://download.eclipse.org/lsp4e/releases/0.23.0/</url>
+<!--					<url>https://download.eclipse.org/lsp4e/snapshots/</url> -->
 				</repository>
 				<repository>
 					<id>tm4e-snapshots</id>
 					<layout>p2</layout>
-<!--					<url>https://download.eclipse.org/tm4e/releases/0.6.2/</url> -->
-					<url>https://download.eclipse.org/tm4e/snapshots/</url>
+					<url>https://download.eclipse.org/tm4e/releases/0.7.1/</url>
+<!--					<url>https://download.eclipse.org/tm4e/snapshots/</url> -->
 				</repository>
 <!--				<repository>
 					<id>chromium-binaries</id>
@@ -578,11 +578,11 @@
 			<url>https://repo.eclipse.org/content/repositories/tycho-snapshots/</url>
 		</pluginRepository>
 		<!-- necessary for Maven and Ant AWS dependency -->
-		<pluginRepository>
+<!--		<pluginRepository>
 			<id>spring-maven-release</id>
 			<name>Spring Repository</name>
 			<url>https://repo.spring.io/release/</url>
-		</pluginRepository>
+		</pluginRepository> -->
 <!--		<pluginRepository>
 			<id>spring-maven-plugin-release</id>
 			<name>Spring Repository</name>
@@ -608,11 +608,11 @@
 
 	<build>
 		<extensions>
-			<extension>
+<!--			<extension>
 				<groupId>org.springframework.build.aws</groupId>
 				<artifactId>org.springframework.build.aws.maven</artifactId>
 				<version>3.1.0.RELEASE</version>
-			</extension>
+			</extension> -->
 		</extensions>
 
 		<plugins>
