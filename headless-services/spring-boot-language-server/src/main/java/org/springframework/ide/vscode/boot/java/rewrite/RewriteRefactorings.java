@@ -27,14 +27,16 @@ import org.eclipse.lsp4j.TextDocumentEdit;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.WorkspaceEdit;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
+import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.Parser.Input;
 import org.openrewrite.Recipe;
 import org.openrewrite.RecipeRun;
 import org.openrewrite.Result;
+import org.openrewrite.SourceFile;
 import org.openrewrite.config.DeclarativeRecipe;
+import org.openrewrite.internal.InMemoryLargeSourceSet;
 import org.openrewrite.internal.RecipeIntrospectionUtils;
 import org.openrewrite.java.JavaParser;
-import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.J.CompilationUnit;
 import org.openrewrite.marker.Range;
 import org.slf4j.Logger;
@@ -121,9 +123,10 @@ public class RewriteRefactorings implements CodeActionResolver, QuickfixHandler 
 		return null;
 	}
 	
-	private WorkspaceEdit applyRecipe(Recipe r, IJavaProject project, List<J.CompilationUnit> cus) {
-		RecipeRun reciperun = r.run(cus);
-		List<Result> results = reciperun.getResults();
+	private WorkspaceEdit applyRecipe(Recipe r, IJavaProject project, List<CompilationUnit> cus) {
+		List<SourceFile> sources = cus.stream().map(cu -> (SourceFile) cu).collect(Collectors.toList());
+		RecipeRun reciperun = r.run(new InMemoryLargeSourceSet(sources), new InMemoryExecutionContext());
+		List<Result> results = reciperun.getChangeset().getAllResults();
 		List<Either<TextDocumentEdit, ResourceOperation>> edits = results.stream().filter(res -> res.getAfter() != null).map(res -> {
 			URI docUri = res.getAfter().getSourcePath().isAbsolute() ? res.getAfter().getSourcePath().toUri() : project.getLocationUri().resolve(res.getAfter().getSourcePath().toString());
 			TextDocument doc = server.getTextDocumentService().getLatestSnapshot(docUri.toASCIIString());

@@ -34,7 +34,6 @@ import org.openrewrite.Recipe;
 import org.openrewrite.SourceFile;
 import org.openrewrite.Tree;
 import org.openrewrite.TreeVisitor;
-import org.openrewrite.internal.RecipeIntrospectionUtils;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaParser.Builder;
@@ -297,7 +296,7 @@ public class ORAstUtils {
 		ctx.putMessage(JavaParser.SKIP_SOURCE_SET_TYPE_GENERATION, true);
 		List<CompilationUnit> cus = Collections.emptyList();
 		synchronized(parser) {
-			cus = parser.parse(sourceFiles, null, ctx);
+			cus = parser.parse(sourceFiles, null, ctx).collect(Collectors.toList());
 		}
 		List<J.CompilationUnit> finalCus = new ArrayList<>(cus.size());
 		for (CompilationUnit cu : cus) {
@@ -322,7 +321,7 @@ public class ORAstUtils {
 		List<CompilationUnit> cus = Collections.emptyList();
 //		long start = System.currentTimeMillis();
 		synchronized (parser) {
-			cus = parser.parseInputs(inputs, null, ctx);
+			cus = parser.parseInputs(inputs, null, ctx).collect(Collectors.toList());
 		}
 //		log.info("Rewrite parser: " + (System.currentTimeMillis() - start));
 		List<J.CompilationUnit> finalCus = new ArrayList<>(cus.size());
@@ -379,17 +378,17 @@ public class ORAstUtils {
     }
     
     @SuppressWarnings("unchecked")
-	private static List<TreeVisitor<J, ExecutionContext>> getAfterVisitors(TreeVisitor<J, ExecutionContext> visitor) {
+	private static List<TreeVisitor<?, ExecutionContext>> getAfterVisitors(TreeVisitor<?, ExecutionContext> visitor) {
     	try {
 	    	Method m = TreeVisitor.class.getDeclaredMethod("getAfterVisit");
 	    	m.setAccessible(true);
-	    	return (List<TreeVisitor<J, ExecutionContext>>) m.invoke(visitor);
+	    	return (List<TreeVisitor<?, ExecutionContext>>) m.invoke(visitor);
     	} catch (Exception e) {
     		return Collections.emptyList();
     	}
     }
     
-	private static void makeVisitorNonTopLevel(JavaVisitor<ExecutionContext> visitor) {
+	private static void makeVisitorNonTopLevel(TreeVisitor<?, ExecutionContext> visitor) {
     	try {
 	    	Field f = TreeVisitor.class.getDeclaredField("afterVisit");
 	    	f.setAccessible(true);
@@ -403,18 +402,17 @@ public class ORAstUtils {
     	return new NodeRecipe((JavaVisitor<ExecutionContext>) v, condition);
     }
 	
-    @SuppressWarnings("unchecked")
 	public static Recipe nodeRecipe(Recipe r, Predicate<J> condition) {
-    	return new NodeRecipe((JavaVisitor<ExecutionContext>) RecipeIntrospectionUtils.recipeVisitor(r), condition);
+    	return new NodeRecipe(r.getVisitor(), condition);
     }
     
     private static class NodeRecipe extends Recipe {
     	
-    	private JavaVisitor<ExecutionContext> visitor;
+    	private TreeVisitor<?, ExecutionContext> visitor;
     	private Predicate<J> condition;
     	
-    	public NodeRecipe(JavaVisitor<ExecutionContext> visitor, Predicate<J> condition) {
-    		this.visitor = visitor;
+    	public NodeRecipe(TreeVisitor<?,ExecutionContext> treeVisitor, Predicate<J> condition) {
+    		this.visitor = treeVisitor;
     		this.condition = condition;
     	}
 
@@ -424,7 +422,7 @@ public class ORAstUtils {
     	}
 
     	@Override
-    	protected TreeVisitor<?, ExecutionContext> getVisitor() {
+    	public TreeVisitor<?, ExecutionContext> getVisitor() {
     		return new JavaVisitor<>() {
     			
     			@Override
@@ -433,8 +431,8 @@ public class ORAstUtils {
     					J t = (J) tree;
         				if (condition.test(t)) {
         					makeVisitorNonTopLevel(visitor);
-        					t = visitor.visit(t, ctx, getCursor());
-        					for (TreeVisitor<J, ExecutionContext> v : getAfterVisitors(visitor)) {
+        					t = (J) visitor.visit(t, ctx, getCursor());
+        					for (TreeVisitor<?, ExecutionContext> v : getAfterVisitors(visitor)) {
         						doAfterVisit(v);
         					}
             				return t;
@@ -444,7 +442,12 @@ public class ORAstUtils {
     			}
 
     		};
-    	}	
+    	}
+
+		@Override
+		public String getDescription() {
+			return "";
+		}	
     }
     
 	public static boolean isExceptionFromInterrupedThread(Throwable t) {

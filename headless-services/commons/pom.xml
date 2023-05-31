@@ -113,9 +113,12 @@
 		<commons-codec-version>1.13</commons-codec-version>
 
 		<!-- Rewrite specific properties -->
-		<rewrite-version>7.41.0-SNAPSHOT</rewrite-version>
-		<rewrite-spring-version>4.37.0-SNAPSHOT</rewrite-spring-version>
-		<rewrite-gradle-tooling-api-version>0.9.0-SNAPSHOT</rewrite-gradle-tooling-api-version>
+		<rewrite-version>8.1.0-SNAPSHOT</rewrite-version>
+		<rewrite-spring-version>5.1.0-SNAPSHOT</rewrite-spring-version>
+		<rewrite-gradle-tooling-api-version>1.1.0-SNAPSHOT</rewrite-gradle-tooling-api-version>
+		
+		<gradle-tooling.version>7.6</gradle-tooling.version>
+		<gradle-core.version>6.1.1</gradle-core.version>
 
 		<signing.skip>true</signing.skip>
 		<signing.alias>vmware</signing.alias>

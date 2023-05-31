@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.commons.rewrite.java;
 
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.search.UsesType;
@@ -34,13 +35,13 @@ public class ConvertAutowiredFieldIntoConstructorParameter extends Recipe {
 	}
 	
 	@Override
-	protected TreeVisitor<?, ExecutionContext> getSingleSourceApplicableTest() {
-		return new UsesType<ExecutionContext>(AUTOWIRED, false);
+	public TreeVisitor<?, ExecutionContext> getVisitor() {
+		return Preconditions.check(new UsesType<ExecutionContext>(AUTOWIRED, false), new AutowiredFieldIntoConstructorParameterVisitor(classFqName, fieldName));
 	}
 
 	@Override
-	protected TreeVisitor<?, ExecutionContext> getVisitor() {
-		return new AutowiredFieldIntoConstructorParameterVisitor(classFqName, fieldName);
+	public String getDescription() {
+		return "Converts autowired fields into constructor parameters";
 	}
 	
 }

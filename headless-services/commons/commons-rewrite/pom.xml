@@ -107,7 +107,73 @@
 		<dependency>
 			<groupId>org.gradle</groupId>
 			<artifactId>gradle-tooling-api</artifactId>
-			<version>7.6</version>
+			<version>${gradle-tooling.version}</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.gradle</groupId>
+			<artifactId>gradle-base-services</artifactId>
+			<version>${gradle-core.version}</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.gradle</groupId>
+			<artifactId>gradle-core-api</artifactId>
+			<version>${gradle-core.version}</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.gradle</groupId>
+			<artifactId>gradle-language-groovy</artifactId>
+			<version>${gradle-core.version}</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.gradle</groupId>
+			<artifactId>gradle-language-java</artifactId>
+			<version>${gradle-core.version}</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.gradle</groupId>
+			<artifactId>gradle-logging</artifactId>
+			<version>${gradle-core.version}</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.gradle</groupId>
+			<artifactId>gradle-messaging</artifactId>
+			<version>${gradle-core.version}</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.gradle</groupId>
+			<artifactId>gradle-native</artifactId>
+			<version>${gradle-core.version}</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.gradle</groupId>
+			<artifactId>gradle-process-services</artifactId>
+			<version>${gradle-core.version}</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.gradle</groupId>
+			<artifactId>gradle-resources</artifactId>
+			<version>${gradle-core.version}</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.gradle</groupId>
+			<artifactId>gradle-testing-base</artifactId>
+			<version>${gradle-core.version}</version>
+			<scope>runtime</scope>
+		</dependency>
+		<dependency>
+			<groupId>org.gradle</groupId>
+			<artifactId>gradle-testing-jvm</artifactId>
+			<version>${gradle-core.version}</version>
 			<scope>runtime</scope>
 		</dependency>
 		

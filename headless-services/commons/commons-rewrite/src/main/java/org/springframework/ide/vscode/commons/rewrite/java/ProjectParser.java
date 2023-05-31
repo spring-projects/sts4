@@ -17,7 +17,7 @@ import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
-import java.util.function.UnaryOperator;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -65,7 +65,7 @@ public abstract class ProjectParser {
 			javaParser.setClasspath(mainClasspath);
 
 			List<CompilationUnit> javaSources = ListUtils.map(javaParser.parseInputs(
-					() -> getInputs(ss.javaSources.stream()).iterator(), projectDir, ctx), addProvenance(projectProvenance));
+					() -> getInputs(ss.javaSources.stream()).iterator(), projectDir, ctx).collect(Collectors.toList()), addProvenance(projectProvenance));
 			JavaSourceSet javaSourceSet = ORAstUtils.addJavaSourceSet(javaSources, ss.name(),
 					mainClasspath);
 			sources.addAll(javaSources);
@@ -92,7 +92,7 @@ public abstract class ProjectParser {
                         .collect(Collectors.toList()),
                 projectDirectory,
                 ctx
-        ), addProvenance(provenance)));
+        ).collect(Collectors.toList()), addProvenance(provenance)));
 
         sourceFiles.addAll(ListUtils.map(new YamlParser().parseInputs(
                 resources.stream()
@@ -100,7 +100,7 @@ public abstract class ProjectParser {
                         .collect(Collectors.toList()),
                 projectDirectory,
                 ctx
-        ), addProvenance(provenance)));
+        ).collect(Collectors.toList()), addProvenance(provenance)));
 
         sourceFiles.addAll(ListUtils.map(new PropertiesParser().parseInputs(
                 resources.stream()
@@ -108,7 +108,7 @@ public abstract class ProjectParser {
                         .collect(Collectors.toList()),
                 projectDirectory,
                 ctx
-        ), addProvenance(provenance)));
+        ).collect(Collectors.toList()), addProvenance(provenance)));
         
         sourceFiles.addAll(ListUtils.map(new PlainTextParser().parseInputs(
                 resources.stream()
@@ -116,7 +116,7 @@ public abstract class ProjectParser {
                         .collect(Collectors.toList()),
                 projectDirectory,
                 ctx
-        ), addProvenance(provenance)));
+        ).collect(Collectors.toList()), addProvenance(provenance)));
     }
 
 
@@ -127,8 +127,8 @@ public abstract class ProjectParser {
 		return s;
 	}
 
-	private <S extends SourceFile> UnaryOperator<S> addProvenance(List<Marker> projectProvenance) {
-		return s -> {
+	private <S extends SourceFile> BiFunction<Integer, S, S> addProvenance(List<Marker> projectProvenance) {
+		return (i, s) -> {
 			if (projectProvenance != null) {
 				s = addProjectProvenance(s, projectProvenance);
 			}

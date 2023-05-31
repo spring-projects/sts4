@@ -10,13 +10,21 @@
  *******************************************************************************/
 package org.springframework.rewrite.test;
 
+import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
+import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.ChangePackage;
 
 public class OssPackageRecipe extends Recipe {
 	
-	public OssPackageRecipe() {
-		doNext(new ChangePackage("com.example", "org.example", true));
+	@Override
+	public String getDescription() {
+		return "Change package 'com.example' to 'org.example'";
+	}
+
+	@Override
+	public TreeVisitor<?, ExecutionContext> getVisitor() {
+		return new ChangePackage("com.example", "org.example", true).getVisitor();
 	}
 
 	@Override

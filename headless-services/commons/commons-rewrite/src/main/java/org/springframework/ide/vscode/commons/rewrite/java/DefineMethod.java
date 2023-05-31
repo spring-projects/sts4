@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2022 VMware, Inc.
+ * Copyright (c) 2022, 2023 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -59,7 +59,7 @@ public class DefineMethod extends Recipe {
     }
 
     @Override
-    protected TreeVisitor<?, ExecutionContext> getVisitor() {
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
         return new JavaIsoVisitor<ExecutionContext>() {
 
             private MethodMatcher matcher = new MethodMatcher(targetFqName + ' ' + signature);
@@ -80,15 +80,14 @@ public class DefineMethod extends Recipe {
                 if (template != null && methodPresent == null) {
                     JavaType.FullyQualified type = c.getType();
                     if (type != null && targetFqName.equals(type.getFullyQualifiedName())) {
-                        JavaTemplate t = JavaTemplate.builder(() -> getCursor(), template)
-                                .javaParser(() -> JavaParser
+                        JavaTemplate t = JavaTemplate.builder(template)
+                                .javaParser(JavaParser
                                         .fromJavaVersion()
                                         .dependsOn(typeStubs.toArray(new String[typeStubs.size()]))
-                                        .classpath(classpath.stream().map(s -> Paths.get(s)).collect(Collectors.toList()))
-                                        .build())
+                                        .classpath(classpath.stream().map(s -> Paths.get(s)).collect(Collectors.toList())))
 
                                 .imports(imports.toArray(new String[imports.size()])).build();
-                        J.Block body = classDecl.getBody().withTemplate(t, classDecl.getBody().getCoordinates().addMethodDeclaration((m, n) -> 1));
+                        J.Block body = t.apply(getCursor(), classDecl.getBody().getCoordinates().addMethodDeclaration((m, n) -> 1));
                         for (String fq : imports) {
                             maybeAddImport(fq);
                         }
@@ -99,5 +98,10 @@ public class DefineMethod extends Recipe {
             }
         };
     }
+
+	@Override
+	public String getDescription() {
+		return "Defines a bean declaration method in a type";
+	}
 
 }

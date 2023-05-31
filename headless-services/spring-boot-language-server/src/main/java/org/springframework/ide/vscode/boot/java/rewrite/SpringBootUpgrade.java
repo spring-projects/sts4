@@ -102,8 +102,8 @@ public class SpringBootUpgrade {
 		
 		if (version.getMajor() == targetVersion.getMajor() && version.getMinor() == targetVersion.getMinor()) {
 			// patch version upgrade - treat as pom versions only upgrade
-			recipe.doNext(new UpgradeDependencyVersion("org.springframework.boot", "*", version.getMajor() + "." + version.getMinor() + ".x", null, null, null));
-			recipe.doNext(new UpgradeParentVersion("org.springframework.boot", "spring-boot-starter-parent", version.getMajor() + "." + version.getMinor() + ".x", null, null));
+			recipe.getRecipeList().add(new UpgradeDependencyVersion("org.springframework.boot", "*", version.getMajor() + "." + version.getMinor() + ".x", null, null, null));
+			recipe.getRecipeList().add(new UpgradeParentVersion("org.springframework.boot", "spring-boot-starter-parent", version.getMajor() + "." + version.getMinor() + ".x", null, null));
 		} else /*if (version.getMajor() == targetVersion.getMajor())*/ {
 			List<String> recipedIds = createRecipeIdsChain(version.getMajor(), version.getMinor() + 1, targetVersion.getMajor(), targetVersion.getMinor(), versionsToRecipeId);
 			if (!recipedIds.isEmpty()) {
@@ -117,7 +117,7 @@ public class SpringBootUpgrade {
 //						getRecipeFromId(recipedIds.get(i)).ifPresent(recipe::doNext);
 //					}
 //				}
-				getRecipeFromId(recipeId).ifPresent(recipe::doNext);
+				getRecipeFromId(recipeId).ifPresent(r -> recipe.getRecipeList().add(r));
 			}
 		}
 

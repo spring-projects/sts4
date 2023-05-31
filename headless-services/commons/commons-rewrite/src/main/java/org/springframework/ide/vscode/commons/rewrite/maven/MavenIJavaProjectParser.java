@@ -23,6 +23,7 @@ import java.util.Properties;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.openrewrite.ExecutionContext;
@@ -103,7 +104,7 @@ public class MavenIJavaProjectParser extends AbstractJavaProjectParser {
 	@Override
 	protected List<? extends SourceFile> parseBuildFiles(Path projectDir, ExecutionContext ctx) {
 		MavenParser mavenParser = mavenParserBuilder.build();
-		return mavenParser.parseInputs(() -> getInputs(Stream.of(Paths.get(jp.getProjectBuild().getBuildFile()))).iterator(), projectDir, ctx);
+		return mavenParser.parseInputs(() -> getInputs(Stream.of(Paths.get(jp.getProjectBuild().getBuildFile()))).iterator(), projectDir, ctx).collect(Collectors.toList());
 	}
 	
     private static ResolvedPom getModel(Xml.Document maven) {

@@ -48,6 +48,7 @@ import org.openrewrite.Validated;
 import org.openrewrite.config.DeclarativeRecipe;
 import org.openrewrite.config.RecipeDescriptor;
 import org.openrewrite.config.YamlResourceLoader;
+import org.openrewrite.internal.InMemoryLargeSourceSet;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.tree.J.CompilationUnit;
 import org.openrewrite.maven.MavenParser;
@@ -427,8 +428,8 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 				});
 		List<SourceFile> sources = projectParser.parse(absoluteProjectDir, new InMemoryExecutionContext());
 		progressTask.progressEvent("Computing changes...");
-		RecipeRun reciperun = r.run(sources, new InMemoryExecutionContext(e -> log.error("Recipe execution failed", e)));
-		List<Result> results = reciperun.getResults();
+		RecipeRun reciperun = r.run(new InMemoryLargeSourceSet(sources), new InMemoryExecutionContext(e -> log.error("Recipe execution failed", e)));
+		List<Result> results = reciperun.getChangeset().getAllResults();
 		return ORDocUtils.createWorkspaceEdit(absoluteProjectDir, server.getTextDocumentService(), results);
 	}
 	

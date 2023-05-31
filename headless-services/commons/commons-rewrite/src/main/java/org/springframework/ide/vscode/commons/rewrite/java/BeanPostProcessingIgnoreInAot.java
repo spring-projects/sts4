@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2022 VMware, Inc.
+ * Copyright (c) 2022, 2023 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.openrewrite.ExecutionContext;
+import org.openrewrite.Preconditions;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
 import org.openrewrite.java.JavaIsoVisitor;
@@ -22,6 +23,7 @@ import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.java.tree.TypeUtils;
+import org.openrewrite.marker.SearchResult;
 
 public class BeanPostProcessingIgnoreInAot extends Recipe {
 
@@ -80,57 +82,56 @@ public class BeanPostProcessingIgnoreInAot extends Recipe {
     }
 
     @Override
-    protected TreeVisitor<?, ExecutionContext> getApplicableTest() {
-        return new JavaIsoVisitor<ExecutionContext>() {
-            @Override
-            public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext executionContext) {
-                if (isApplicableClass(classDecl)) {
-                    return classDecl.withMarkers(classDecl.getMarkers().searchResult());
-                }
-                return super.visitClassDeclaration(classDecl, executionContext);
-            }
-        };
-    }
+    public TreeVisitor<?, ExecutionContext> getVisitor() {
+		return Preconditions.check(
+			new JavaIsoVisitor<ExecutionContext>() {
+				@Override
+				public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl,
+						ExecutionContext executionContext) {
+					if (isApplicableClass(classDecl)) {
+						return SearchResult.found(classDecl);
+					}
+					return super.visitClassDeclaration(classDecl, executionContext);
+				}
+			},
+			new JavaIsoVisitor<ExecutionContext>() {
 
-    @Override
-    protected TreeVisitor<?, ExecutionContext> getVisitor() {
-        return new JavaIsoVisitor<ExecutionContext>() {
+	            private JavaTemplate createTemplate() {
+	                return JavaTemplate.builder("@Override\n"
+	                                + "public boolean isBeanExcludedFromAotProcessing() {\n"
+	                                + " return false;\n"
+	                                + "}\n"
+	                        )
+	                        .javaParser(JavaParser.fromJavaVersion())
+	                        .build();
+	            }
 
-            private JavaTemplate createTemplate() {
-                return JavaTemplate.builder(this::getCursor, "@Override\n"
-                                + "public boolean isBeanExcludedFromAotProcessing() {\n"
-                                + " return false;\n"
-                                + "}\n"
-                        )
-                        .javaParser(() -> JavaParser.fromJavaVersion().build())
-                        .build();
-            }
+	            @Override
+	            public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext executionContext) {
+	                J.ClassDeclaration c = super.visitClassDeclaration(classDecl, executionContext);
+	                if (isApplicableClass(classDecl)) {
+	                    J.MethodDeclaration method = c.getBody().getStatements().stream().filter(J.MethodDeclaration.class::isInstance).map(J.MethodDeclaration.class::cast).filter(BeanPostProcessingIgnoreInAot::isApplicableMethod).findFirst().orElse(null);
+	                    if (method == null) {
+	                        c = c.withBody(createTemplate().apply(getCursor(), classDecl.getBody().getCoordinates().addMethodDeclaration((m1, m2) -> 1)));
+	                    }
+	                }
+	                return c;
+	            }
 
-            @Override
-            public J.ClassDeclaration visitClassDeclaration(J.ClassDeclaration classDecl, ExecutionContext executionContext) {
-                J.ClassDeclaration c = super.visitClassDeclaration(classDecl, executionContext);
-                if (isApplicableClass(classDecl)) {
-                    J.MethodDeclaration method = c.getBody().getStatements().stream().filter(J.MethodDeclaration.class::isInstance).map(J.MethodDeclaration.class::cast).filter(BeanPostProcessingIgnoreInAot::isApplicableMethod).findFirst().orElse(null);
-                    if (method == null) {
-                        J.Block body = c.getBody().withTemplate(createTemplate(), classDecl.getBody().getCoordinates().addMethodDeclaration((m1, m2) -> 1));
-                        c = c.withBody(body);
-                    }
-                }
-                return c;
-            }
-
-            @Override
-            public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext executionContext) {
-                J.MethodDeclaration m = super.visitMethodDeclaration(method, executionContext);
-                if (isApplicableMethod(m)) {
-                    J.ClassDeclaration c = getCursor().firstEnclosing(J.ClassDeclaration.class);
-                    if (c != null && isApplicableClass(c) && isReturnTrue(m)) {
-                        m = m.withTemplate(createTemplate(), m.getCoordinates().replace());
-                    }
-                }
-                return m;
-            }
-        };
+	            @Override
+	            public J.MethodDeclaration visitMethodDeclaration(J.MethodDeclaration method, ExecutionContext executionContext) {
+	                J.MethodDeclaration m = super.visitMethodDeclaration(method, executionContext);
+	                if (isApplicableMethod(m)) {
+	                    J.ClassDeclaration c = getCursor().firstEnclosing(J.ClassDeclaration.class);
+	                    if (c != null && isApplicableClass(c) && isReturnTrue(m)) {
+	                    	m = createTemplate().apply(getCursor(), m.getCoordinates().replace());
+	                    }
+	                }
+	                return m;
+	            }
+	        }
+		);
+    	
     }
 
     private static List<J.Return> findReturnStatementsInMethod(J.MethodDeclaration m) {

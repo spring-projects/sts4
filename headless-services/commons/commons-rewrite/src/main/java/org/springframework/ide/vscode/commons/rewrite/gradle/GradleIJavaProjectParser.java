@@ -18,6 +18,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import org.openrewrite.ExecutionContext;
@@ -28,6 +29,7 @@ import org.openrewrite.gradle.marker.GradleProject;
 import org.openrewrite.gradle.toolingapi.OpenRewriteModel;
 import org.openrewrite.gradle.toolingapi.OpenRewriteModelBuilder;
 import org.openrewrite.groovy.GroovyParser;
+import org.openrewrite.groovy.tree.G;
 import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaParser.Builder;
 import org.openrewrite.java.marker.JavaProject;
@@ -72,9 +74,10 @@ public class GradleIJavaProjectParser extends AbstractJavaProjectParser {
 		
 		Path buildFilePath = Paths.get(jp.getProjectBuild().getBuildFile());
 		
+		List<G.CompilationUnit> gradleFiles = gradleParser.parseInputs(() -> 
+			getInputs(Stream.of(buildFilePath)).iterator(), null, ctx).collect(Collectors.toList());
 		return ListUtils.map(
-			gradleParser.parseInputs(() -> 
-				getInputs(Stream.of(buildFilePath)).iterator(), null, ctx), gb -> gb.withMarkers(gb.getMarkers().addIfAbsent(gradleProject))
+			gradleFiles, (i, gb) -> gb.withMarkers(gb.getMarkers().addIfAbsent(gradleProject))
 		);
 	}
 

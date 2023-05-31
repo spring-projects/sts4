@@ -44,11 +44,10 @@ public class LoadUtilsTest {
 	@SuppressWarnings("unchecked")
 	@Test
 	public void createRecipeTest() throws Exception {
-		Recipe r = env.listRecipes().stream().filter(d -> "org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_0".equals(d.getName())).findFirst().orElse(null);
-		RecipeDescriptor recipeDescriptor = r.getDescriptor();		
+		RecipeDescriptor recipeDescriptor = env.listRecipeDescriptors().stream().filter(d -> "org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_0".equals(d.getName())).findFirst().orElse(null);		
 		assertNotNull(recipeDescriptor);
 		
-		r = LoadUtils.createRecipe(recipeDescriptor, id -> {
+		Recipe r = LoadUtils.createRecipe(recipeDescriptor, id -> {
 			try {
 				return (Class<Recipe>) Class.forName(id);
 			} catch (ClassNotFoundException e) {
