@@ -12,7 +12,6 @@ package org.springframework.ide.eclipse.boot.dash;
 
 import java.time.Duration;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Map;
 
 import org.eclipse.core.net.proxy.IProxyService;
@@ -33,7 +32,6 @@ import org.springframework.ide.eclipse.boot.core.BootPropertyTester;
 import org.springframework.ide.eclipse.boot.dash.di.SimpleDIContext;
 import org.springframework.ide.eclipse.boot.dash.liveprocess.CommandInfo;
 import org.springframework.ide.eclipse.boot.dash.liveprocess.LiveProcessCommandsExecutor;
-import org.springframework.ide.eclipse.boot.dash.liveprocess.LiveProcessCommandsExecutor.Server;
 import org.springframework.ide.eclipse.boot.dash.model.BootDashModelContext;
 import org.springframework.ide.eclipse.boot.dash.model.BootDashViewModel;
 import org.springframework.ide.eclipse.boot.dash.model.DefaultBootDashModelContext;
@@ -45,7 +43,6 @@ import org.springframework.ide.eclipse.boot.dash.util.RunStateTracker.RunStateLi
 import org.springframework.ide.eclipse.boot.launch.BootLaunchConfigurationDelegate;
 import org.springsource.ide.eclipse.commons.livexp.util.Log;
 
-import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 /**
@@ -194,7 +191,7 @@ public class BootDashActivator extends AbstractUIPlugin {
 		return InstanceScope.INSTANCE.getNode(PLUGIN_ID);
 	}
 
-	private final RunStateListener<ILaunchConfiguration> RUN_STATE_LISTENER = new RunStateListener<ILaunchConfiguration>() {
+	private final RunStateListener<ILaunchConfiguration> RUN_STATE_LISTENER = new RunStateListener<>() {
 
 		@Override
 		public void stateChanged(ILaunchConfiguration owner) {
@@ -211,9 +208,6 @@ public class BootDashActivator extends AbstractUIPlugin {
 									for (IProcess p : l.getProcesses()) {
 										String pid = p.getAttribute(IProcess.ATTR_PROCESS_ID);
 										if (pid != null) {
-											List<Server> servers = LiveProcessCommandsExecutor.getDefault()
-													.getLanguageServers();
-
 											CommandInfo cmd = new CommandInfo("sts/livedata/connect",
 													Map.of("processKey", pid));
 
@@ -221,7 +215,8 @@ public class BootDashActivator extends AbstractUIPlugin {
 											// "VirtualMachine.list()" call may not list the newly created process which means the process is gone and triggers disconnect.
 											// If lifecycle management is enabled the ready state seem to be a great indicator of a boot process fully started.
 											// TODO: explore health endpoint perhaps instead of ready state under Admin endpoint.
-											Flux.fromIterable(servers).flatMap(s -> Mono.delay(Duration.ofMillis(500)).then(s.executeCommand(cmd))).subscribe();
+//											Flux.fromIterable(servers).flatMap(s -> Mono.delay(Duration.ofMillis(500)).then(s.executeCommand(cmd))).subscribe();
+											Mono.delay(Duration.ofMillis(500)).then(LiveProcessCommandsExecutor.getDefault().executeCommand(cmd)).subscribe();
 
 										}
 									}

@@ -11,6 +11,7 @@
 package org.springframework.tooling.ls.eclipse.gotosymbol.dialogs;
 
 import java.time.Duration;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Supplier;
@@ -18,13 +19,13 @@ import java.util.stream.Collectors;
 
 import org.eclipse.core.commands.ExecutionEvent;
 import org.eclipse.core.resources.IProject;
+import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.lsp4e.LSPEclipseUtils;
-import org.eclipse.lsp4e.LanguageServiceAccessor;
+import org.eclipse.lsp4e.LanguageServers;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.WorkspaceSymbol;
 import org.eclipse.lsp4j.WorkspaceSymbolParams;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
-import org.eclipse.lsp4j.services.LanguageServer;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.commons.protocol.spring.BeansParams;
 import org.springframework.ide.vscode.commons.protocol.spring.SpringIndexLanguageServer;
@@ -41,16 +42,7 @@ import reactor.core.publisher.Mono;
 public class InProjectSymbolsProvider implements SymbolsProvider {
 
 	public static InProjectSymbolsProvider createFor(LiveExpression<IProject> project) {
-		LiveExpression<List<LanguageServer>> languageServers = project.apply(p -> {
-			return p == null 
-				? ImmutableList.of()
-				: LanguageServiceAccessor.getLanguageServers(
-					project.getValue(),
-					capabilities -> LSPEclipseUtils.hasCapability(capabilities.getWorkspaceSymbolProvider()), 
-					true
-				);
-		});
-		return new InProjectSymbolsProvider(languageServers::getValue, project::getValue);
+		return new InProjectSymbolsProvider(project::getValue);
 	}
 
 	public static InProjectSymbolsProvider createFor(ExecutionEvent event) {
@@ -64,11 +56,9 @@ public class InProjectSymbolsProvider implements SymbolsProvider {
 	private static final Duration TIMEOUT = Duration.ofSeconds(2);
 	private static final int MAX_RESULTS = 200;
 	
-	private Supplier<List<LanguageServer>> languageServers;
 	private Supplier<IProject> project;
 
-	public InProjectSymbolsProvider(Supplier<List<LanguageServer>> languageServers, Supplier<IProject> project) {
-		this.languageServers = languageServers;
+	public InProjectSymbolsProvider(Supplier<IProject> project) {
 		this.project = project;
 	}
 
@@ -99,10 +89,15 @@ public class InProjectSymbolsProvider implements SymbolsProvider {
 			
 			WorkspaceSymbolParams params = new WorkspaceSymbolParams(query);
 			
-			List<LanguageServer> servers = this.languageServers.get();
+			List<CompletableFuture<Either<List<? extends SymbolInformation>, List<? extends WorkspaceSymbol>>>> responses = LanguageServers
+					.forProject(project)
+					.withFilter(capabilities -> LSPEclipseUtils.hasCapability(capabilities.getWorkspaceSymbolProvider()))
+					.excludeInactive()
+					.computeAll(ls -> ls.getWorkspaceService().symbol(params));
+			
 
-			Flux<Either<List<? extends SymbolInformation>, List<? extends WorkspaceSymbol>>> first = Flux.fromIterable(servers)
-					.flatMap(server -> Mono.fromFuture(server.getWorkspaceService().symbol(params)))
+			Flux<Either<List<? extends SymbolInformation>, List<? extends WorkspaceSymbol>>> first = Flux.fromIterable(responses)
+					.flatMap(Mono::fromFuture)
 					.timeout(TIMEOUT);
 			
 			Flux<SymbolContainer> symbols = first
@@ -128,31 +123,34 @@ public class InProjectSymbolsProvider implements SymbolsProvider {
 		GotoSymbolPlugin.getInstance().getLog().log(ExceptionUtil.status(e));
 	}
 	
-	@SuppressWarnings("removal")
 	private void dumpBeansModel(String projectName) {
-		List<LanguageServer> activeLanguageServers = LanguageServiceAccessor.getActiveLanguageServers(null);
+		IProject p = ResourcesPlugin.getWorkspace().getRoot().getProject(projectName);
 		
-		for (LanguageServer languageServer : activeLanguageServers) {
-			if (languageServer instanceof SpringIndexLanguageServer) {
-				SpringIndexLanguageServer springServer = (SpringIndexLanguageServer) languageServer;
+		BeansParams beansParams = new BeansParams();
+		beansParams.setProjectName(projectName);
 
-				BeansParams beansParams = new BeansParams();
-				beansParams.setProjectName(projectName);
-
-				CompletableFuture<List<Bean>> beansFuture = springServer.beans(beansParams);
-				
-				try {
-					List<Bean> beans = beansFuture.get();
-					
-					for (Bean bean : beans) {
-						System.out.println(bean);
+		List<CompletableFuture<List<Bean>>> executors = LanguageServers
+				.forProject(p)
+				.withFilter(capabilities -> LSPEclipseUtils.hasCapability(capabilities.getWorkspaceSymbolProvider()))
+				.excludeInactive()
+				.computeAll(ls -> {
+					if (ls instanceof SpringIndexLanguageServer) {
+						return ((SpringIndexLanguageServer) ls).beans(beansParams);
 					}
+					return CompletableFuture.completedFuture(Collections.emptyList());
+				});
+		
+		for (CompletableFuture<List<Bean>> beansFuture : executors) {
+			try {
+				List<Bean> beans = beansFuture.get();
 					
-				} catch (InterruptedException e) {
-					e.printStackTrace();
-				} catch (java.util.concurrent.ExecutionException e) {
-					e.printStackTrace();
-				}
+				for (Bean bean : beans) {
+					System.out.println(bean);
+				}					
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			} catch (java.util.concurrent.ExecutionException e) {
+				e.printStackTrace();
 			}
 		}
 		

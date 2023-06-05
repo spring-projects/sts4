@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019 Pivotal, Inc.
+ * Copyright (c) 2019, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -18,12 +18,12 @@ import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
-import org.eclipse.jdt.annotation.NonNull;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.lsp4e.LanguageServiceAccessor;
+import org.eclipse.lsp4e.LanguageServers;
+import org.eclipse.lsp4e.LanguageServersRegistry;
 import org.eclipse.lsp4j.ExecuteCommandParams;
-import org.eclipse.lsp4j.services.LanguageServer;
 import org.eclipse.ui.quickaccess.QuickAccessElement;
+import org.springframework.tooling.boot.ls.BootLanguageServerPlugin;
 
 /**
  * @author Martin Lippert
@@ -79,12 +79,6 @@ public class LiveProcessCommandElement extends QuickAccessElement {
 
 	@Override
 	public void execute() {
-		List<@NonNull LanguageServer> usedLanguageServers = LanguageServiceAccessor.getActiveLanguageServers(serverCapabilities -> true);
-
-		if (usedLanguageServers.isEmpty()) {
-			return;
-		}
-		
 		ExecuteCommandParams commandParams = new ExecuteCommandParams();
 		commandParams.setCommand(this.action);
 		
@@ -94,10 +88,15 @@ public class LiveProcessCommandElement extends QuickAccessElement {
 		arguments.add(argumentMap);
 		
 		commandParams.setArguments(arguments);
+		
+		List<CompletableFuture<Object>> futures = LanguageServers
+				.forProject(null)
+				.excludeInactive()
+				.withPreferredServer(LanguageServersRegistry.getInstance().getDefinition(BootLanguageServerPlugin.BOOT_LS_DEFINITION_ID))
+				.computeAll(ls -> ls.getWorkspaceService().executeCommand(commandParams));
 
 		try {
-			CompletableFuture.allOf(usedLanguageServers.stream().map(ls ->
-				ls.getWorkspaceService().executeCommand(commandParams)).toArray(CompletableFuture[]::new)).get(2, TimeUnit.SECONDS);
+			CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new)).get(2, TimeUnit.SECONDS);
 		}
 		catch (Exception e) {
 			// TODO: better exception handling

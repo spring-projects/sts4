@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019 Pivotal, Inc.
+ * Copyright (c) 2019, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -19,12 +19,15 @@ import java.util.concurrent.TimeUnit;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jdt.annotation.NonNull;
-import org.eclipse.lsp4e.LanguageServiceAccessor;
+import org.eclipse.jdt.annotation.Nullable;
+import org.eclipse.lsp4e.LanguageServers;
+import org.eclipse.lsp4e.LanguageServersRegistry;
 import org.eclipse.lsp4j.ExecuteCommandParams;
 import org.eclipse.lsp4j.services.LanguageServer;
 import org.eclipse.ui.quickaccess.IQuickAccessComputer;
 import org.eclipse.ui.quickaccess.IQuickAccessComputerExtension;
 import org.eclipse.ui.quickaccess.QuickAccessElement;
+import org.springframework.tooling.boot.ls.BootLanguageServerPlugin;
 
 /**
  * @author Martin Lippert
@@ -50,23 +53,24 @@ public class LiveProcessCommandsQuickAccessProvider implements IQuickAccessCompu
 
 	@Override
 	public QuickAccessElement[] computeElements(String query, IProgressMonitor monitor) {
-		this.usedLanguageServers = LanguageServiceAccessor.getActiveLanguageServers(serverCapabilities -> true);
-
-		if (usedLanguageServers.isEmpty()) {
-			return new QuickAccessElement[0];
-		}
-		
 		ExecuteCommandParams commandParams = new ExecuteCommandParams();
 		commandParams.setCommand(LiveProcessCommandElement.COMMAND_LIST_PROCESSES);
-
 		List<QuickAccessElement> res = Collections.synchronizedList(new ArrayList<>());
 		
+		usedLanguageServers = new ArrayList<>();
+		@NonNull
+		List<@NonNull CompletableFuture<@Nullable Void>> futures = LanguageServers
+			.forProject(null)
+			.excludeInactive()
+			.withPreferredServer(LanguageServersRegistry.getInstance().getDefinition(BootLanguageServerPlugin.BOOT_LS_DEFINITION_ID))
+			.computeAll(ls -> {
+				usedLanguageServers.add(ls);
+				return ls.getWorkspaceService().executeCommand(commandParams).thenAcceptAsync(commandResult ->
+					createCommandItems(res, commandResult));
+		});
 		try {
-			CompletableFuture.allOf(usedLanguageServers.stream().map(ls ->
-			ls.getWorkspaceService().executeCommand(commandParams).thenAcceptAsync(commandResult ->
-				createCommandItems(res, commandResult))).toArray(CompletableFuture[]::new)).get(2000, TimeUnit.MILLISECONDS);
-		}
-		catch (Exception e) {
+			CompletableFuture.allOf(futures.toArray(new CompletableFuture[futures.size()])).get(2000, TimeUnit.MILLISECONDS);
+		} catch (Exception e) {
 			// TODO: better error handling
 			e.printStackTrace();
 		}

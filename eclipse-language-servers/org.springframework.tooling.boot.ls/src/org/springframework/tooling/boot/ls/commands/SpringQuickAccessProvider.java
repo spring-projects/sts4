@@ -17,9 +17,9 @@ import java.util.concurrent.TimeUnit;
 
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.lsp4e.LanguageServiceAccessor;
+import org.eclipse.lsp4e.LanguageServers;
+import org.eclipse.lsp4e.LanguageServersRegistry;
 import org.eclipse.lsp4j.ExecuteCommandParams;
-import org.eclipse.lsp4j.services.LanguageServer;
 import org.eclipse.ui.quickaccess.IQuickAccessComputer;
 import org.eclipse.ui.quickaccess.IQuickAccessComputerExtension;
 import org.eclipse.ui.quickaccess.QuickAccessElement;
@@ -60,20 +60,19 @@ public class SpringQuickAccessProvider implements IQuickAccessComputer, IQuickAc
 			
 			@Override
 			public void execute() {
-				List<LanguageServer> usedLanguageServers = LanguageServiceAccessor.getActiveLanguageServers(serverCapabilities -> true);
-
-				if (usedLanguageServers.isEmpty()) {
-					return;
-				}
-				
 				ExecuteCommandParams commandParams = new ExecuteCommandParams();
 				commandParams.setCommand(commandId);
 				
 				commandParams.setArguments(Collections.emptyList());
+				
+				List<CompletableFuture<Object>> futures = LanguageServers
+						.forProject(null)
+						.excludeInactive()
+						.withPreferredServer(LanguageServersRegistry.getInstance().getDefinition(BootLanguageServerPlugin.BOOT_LS_DEFINITION_ID))
+						.computeAll(ls -> ls.getWorkspaceService().executeCommand(commandParams));
 
 				try {
-					CompletableFuture.allOf(usedLanguageServers.stream().map(ls ->
-						ls.getWorkspaceService().executeCommand(commandParams)).toArray(CompletableFuture[]::new)).get(2, TimeUnit.SECONDS);
+					CompletableFuture.allOf(futures.toArray(CompletableFuture[]::new)).get(2, TimeUnit.SECONDS);
 				}
 				catch (Exception e) {
 					BootLanguageServerPlugin.getDefault().getLog().error(errorMsg, e);

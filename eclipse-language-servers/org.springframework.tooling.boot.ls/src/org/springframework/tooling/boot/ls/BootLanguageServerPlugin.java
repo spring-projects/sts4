@@ -32,14 +32,14 @@ import org.springframework.tooling.boot.ls.prefs.LiveInformationPreferencePage;
  */
 public class BootLanguageServerPlugin extends AbstractUIPlugin {
 	
-	public static String BOOT_LS_DEFINITION_ID = "org.eclipse.languageserver.languages.springboot";
-	
 	public static String PLUGIN_ID = "org.springframework.tooling.boot.ls";
 
 	private static final Object LSP4E_COMMAND_SYMBOL_IN_WORKSPACE = "org.eclipse.lsp4e.symbolinworkspace";
 	
 	// The shared instance
 	private static BootLanguageServerPlugin plugin;
+
+	public static final String BOOT_LS_DEFINITION_ID = "org.eclipse.languageserver.languages.springboot";
 
 	public BootLanguageServerPlugin() {
 		// Empty

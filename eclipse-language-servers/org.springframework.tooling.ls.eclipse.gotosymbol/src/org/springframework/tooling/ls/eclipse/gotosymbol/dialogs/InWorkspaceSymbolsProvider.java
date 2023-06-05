@@ -12,6 +12,7 @@ package org.springframework.tooling.ls.eclipse.gotosymbol.dialogs;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
@@ -22,13 +23,13 @@ import org.eclipse.core.resources.IResource;
 import org.eclipse.core.runtime.IAdaptable;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.lsp4e.LSPEclipseUtils;
-import org.eclipse.lsp4e.LanguageServiceAccessor;
+import org.eclipse.lsp4e.LanguageServers;
+import org.eclipse.lsp4e.LanguageServers.LanguageServerProjectExecutor;
 import org.eclipse.lsp4j.ServerCapabilities;
 import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.WorkspaceSymbol;
 import org.eclipse.lsp4j.WorkspaceSymbolParams;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
-import org.eclipse.lsp4j.services.LanguageServer;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.springframework.tooling.ls.eclipse.gotosymbol.GotoSymbolPlugin;
@@ -45,32 +46,21 @@ public class InWorkspaceSymbolsProvider implements SymbolsProvider {
 	private static final Predicate<ServerCapabilities> WS_SYMBOL_CAP = capabilities -> LSPEclipseUtils.hasCapability(capabilities.getWorkspaceSymbolProvider());
 	
 	public static InWorkspaceSymbolsProvider createFor(Supplier<IProject> _project) {
-		return new InWorkspaceSymbolsProvider(() -> {
-			IProject project = _project.get();
-			if (project!=null) {
-				return LanguageServiceAccessor.getLanguageServers(project,
-						WS_SYMBOL_CAP, true);
-			} else {
-				return LanguageServiceAccessor.getActiveLanguageServers(WS_SYMBOL_CAP);
-			}
-		});
+		LanguageServerProjectExecutor lss = LanguageServers.forProject(_project.get()).withFilter(WS_SYMBOL_CAP).excludeInactive();
+		return new InWorkspaceSymbolsProvider(lss);
 	}
 	
 	public static InWorkspaceSymbolsProvider createFor(IProject project) {
-		List<LanguageServer> languageServers = LanguageServiceAccessor.getLanguageServers(project,
-				capabilities -> LSPEclipseUtils.hasCapability(capabilities.getWorkspaceSymbolProvider()), true);
-		if (!languageServers.isEmpty()) {
-			return new InWorkspaceSymbolsProvider(() -> languageServers);
-		}
-		return null;
+		LanguageServerProjectExecutor lss = LanguageServers.forProject(project).withFilter(capabilities -> LSPEclipseUtils.hasCapability(capabilities.getWorkspaceSymbolProvider())).excludeInactive();
+		return new InWorkspaceSymbolsProvider(lss);
 	}
 
 
 	private static final Duration TIMEOUT = Duration.ofSeconds(2);
 	private static final int MAX_RESULTS = 200;
-	private Supplier<List<LanguageServer>> languageServers;
+	private LanguageServers<?> languageServers;
 	
-	public InWorkspaceSymbolsProvider(Supplier<List<LanguageServer>> languageServers) {
+	public InWorkspaceSymbolsProvider(LanguageServers<?> languageServers) {
 		this.languageServers = languageServers;
 	}
 
@@ -91,12 +81,10 @@ public class InWorkspaceSymbolsProvider implements SymbolsProvider {
 		//However it will also add complexity to the code that consumes this and at this time we only
 		// really use this with a single language server anyways.
 		WorkspaceSymbolParams params = new WorkspaceSymbolParams(query);
-		
-		List<LanguageServer> servers = this.languageServers.get();
 
-		Flux<Either<List<? extends SymbolInformation>, List<? extends WorkspaceSymbol>>> first = Flux.fromIterable(servers)
-				.flatMap(server -> Mono.fromFuture(server.getWorkspaceService().symbol(params)))
-				.timeout(TIMEOUT);
+		List<CompletableFuture<Either<List<? extends SymbolInformation>, List<? extends WorkspaceSymbol>>>> responses = languageServers.computeAll(ls -> ls.getWorkspaceService().symbol(params));
+		
+		Flux<Either<List<? extends SymbolInformation>, List<? extends WorkspaceSymbol>>> first = Flux.fromIterable(responses).flatMap(Mono::fromFuture).timeout(TIMEOUT);
 		
 		Flux<SymbolContainer> symbols = first
 				.doOnError(e -> log(e))

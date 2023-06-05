@@ -25,7 +25,6 @@ import org.springframework.tooling.jdt.ls.commons.Logger;
 @SuppressWarnings("restriction")
 public class Startup implements IStartup {
 
-	private static final String BOOT_LS_DEFINITION_ID = "org.eclipse.languageserver.languages.springboot";
 	private boolean started;
 
 	@Override
@@ -41,7 +40,7 @@ public class Startup implements IStartup {
 		if (!started && !springProjects.isEmpty()) {
 			BootLanguageServerPlugin.getDefault().getLog().info("Starting Boot LS...");
 			LanguageServerDefinition serverDefinition = LanguageServersRegistry.getInstance()
-					.getDefinition(BOOT_LS_DEFINITION_ID);
+					.getDefinition(BootLanguageServerPlugin.BOOT_LS_DEFINITION_ID);
 
 			try {
 				LanguageServiceAccessor.startLanguageServer(serverDefinition);

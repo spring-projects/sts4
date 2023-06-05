@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019 Pivotal Software, Inc.
+ * Copyright (c) 2019, 2023 Pivotal Software, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -20,7 +20,6 @@ import org.eclipse.jface.action.Action;
 import org.eclipse.jface.action.IAction;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.springframework.ide.eclipse.boot.dash.BootDashActivator;
-import org.springframework.ide.eclipse.boot.dash.liveprocess.LiveProcessCommandsExecutor.Server;
 import org.springframework.ide.eclipse.boot.dash.model.BootDashElement;
 import org.springframework.ide.eclipse.boot.dash.model.BootDashModel.ElementStateListener;
 import org.springframework.ide.eclipse.boot.dash.model.RunState;
@@ -34,8 +33,6 @@ import org.springsource.ide.eclipse.commons.livexp.util.Log;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
-import reactor.core.publisher.Flux;
 
 public class LiveDataConnectionManagementActions extends AbstractDisposable implements DynamicSubMenuSupplier {
 
@@ -75,12 +72,10 @@ public class LiveDataConnectionManagementActions extends AbstractDisposable impl
 	public class ExecuteCommandAction extends AbstractBootDashElementsAction {
 		private String projectName;
 		private String label;
-		private Server server;
 		private CommandInfo commandInfo;
 
-		public ExecuteCommandAction(Server server, CommandInfo commandInfo) {
+		public ExecuteCommandAction(CommandInfo commandInfo) {
 			super(params);
-			this.server = server;
 			this.commandInfo = commandInfo;
 			String command = commandInfo.command;
 			int lastSlash = command.lastIndexOf("/");
@@ -113,7 +108,7 @@ public class LiveDataConnectionManagementActions extends AbstractDisposable impl
 		@Override
 		public void run() {
 			try {
-				server.executeCommand(commandInfo).block(Duration.ofSeconds(2));
+				liveProcessCmds.executeCommand(commandInfo).block(Duration.ofSeconds(2));
 			} catch (Exception e) {
 				Log.log(e);
 			}
@@ -128,7 +123,7 @@ public class LiveDataConnectionManagementActions extends AbstractDisposable impl
 		this.params = params;
 		this.liveProcessCmds = params.getLiveProcessCmds();
 		ObservableSet<BootDashElement> selection = params.getSelection().getElements();
-		this.isEnabled = addDisposableChild(new LiveExpression<Boolean>(false) {
+		this.isEnabled = addDisposableChild(new LiveExpression<>(false) {
 
 			ElementStateListener elementStateListener = (BootDashElement e) -> {
 				refresh();
@@ -178,12 +173,7 @@ public class LiveDataConnectionManagementActions extends AbstractDisposable impl
 			};
 		}
 		try {
-			List<LiveProcessCommandsExecutor.Server> servers = liveProcessCmds.getLanguageServers();
-			return Flux.fromIterable(servers)
-			.flatMap((Server server) ->
-				server.listCommands()
-				.map(cmdInfo -> new ExecuteCommandAction(server, cmdInfo))
-			)
+			return liveProcessCmds.listCommands().map(cmdInfo -> new ExecuteCommandAction(cmdInfo))
 			.filter(filter)
 			.cast(IAction.class)
 			.collect(Collectors.toList())
