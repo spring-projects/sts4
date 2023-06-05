@@ -24,6 +24,7 @@ import org.eclipse.lsp4j.ShowDocumentParams;
 import org.springframework.ide.vscode.boot.java.rewrite.SpringBootUpgrade;
 import org.springframework.ide.vscode.boot.validation.generations.preferences.VersionValidationProblemType;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
 import org.springframework.ide.vscode.commons.java.Version;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.DiagnosticSeverityProvider;
 
@@ -92,6 +93,10 @@ public class UpdateBootVersion extends AbstractDiagnosticValidator {
 			List<CodeAction> actions = new ArrayList<>(2);
 
 			bootUpgradeOpt.flatMap(bu -> bu.getNearestAvailableMinorVersion(latest)).map(targetVersion -> {
+				Version upgradeVersion = SpringProjectUtil.getVersion(targetVersion);
+				if (javaProjectVersion.compareTo(upgradeVersion) >= 0) {
+					return null;
+				}
 				CodeAction c = new CodeAction();
 				c.setKind(CodeActionKind.QuickFix);
 				c.setTitle("Upgrade to Spring Boot " + targetVersion + " (executes the full project conversion recipe from OpenRewrite)");

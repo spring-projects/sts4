@@ -46,7 +46,8 @@ public class SpringBootUpgrade {
 			"2.5", "org.openrewrite.java.spring.boot2.UpgradeSpringBoot_2_5",
 			"2.6", "org.openrewrite.java.spring.boot2.UpgradeSpringBoot_2_6",
 			"2.7", "org.openrewrite.java.spring.boot2.UpgradeSpringBoot_2_7",
-			"3.0", "org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_0"
+			"3.0", "org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_0"/*,
+			"3.1", "org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_1"*/
 	);
 	
 	private RewriteRecipeRepository recipeRepo;
