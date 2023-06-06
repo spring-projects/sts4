@@ -482,6 +482,7 @@ jobs:
   - get: sts4
     trigger: true
   - task: build-mvn-cache
+    timeout: 3h30m
     file: sts4/concourse/tasks/build-mvn-cache.yml
   - put: maven-cache
     params:
