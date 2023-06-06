@@ -458,6 +458,7 @@ jobs:
     trigger: true
   - task: build-docker-image
     privileged: true
+    timeout: 3h30m
     config:
       platform: linux
       image_resource:
