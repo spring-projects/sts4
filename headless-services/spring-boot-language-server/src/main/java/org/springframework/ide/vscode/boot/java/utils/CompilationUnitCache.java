@@ -100,6 +100,7 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 		this.lookupEnvCache = CacheBuilder.newBuilder().removalListener(new RemovalListener<URI, Tuple2<List<Classpath>, INameEnvironmentWithProgress>>() {
 			@Override
 			public void onRemoval(RemovalNotification<URI, Tuple2<List<Classpath>, INameEnvironmentWithProgress>> notification) {
+				logger.info("Removing and cleaning up name env for project {}", notification.getKey());
 				notification.getValue().getT2().cleanup();
 			}
 			
@@ -133,15 +134,12 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 			public void created(IJavaProject project) {
 				logger.debug("CU Cache: created project {}", project.getElementName());
 				invalidateProject(project);
-				loadLookupEnvTuple(project);
 			}
 			
 			@Override
 			public void changed(IJavaProject project) {
 				logger.debug("CU Cache: changed project {}", project.getElementName());
 				invalidateProject(project);
-				// Load the new cache the value right away
-				loadLookupEnvTuple(project);
 			}
 		};
 
@@ -197,26 +195,7 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 			CompilationUnit cu = null;
 
 			try {
-				cu = uriToCu.get(uri, () -> {
-					CompletableFuture<CompilationUnit> future = CompletableFuture.supplyAsync(() -> {
-						
-						try {
-							Tuple2<List<Classpath>, INameEnvironmentWithProgress> lookupEnvTuple = loadLookupEnvTuple(project);
-							String utiStr = uri.toASCIIString();
-							String unitName = utiStr.substring(utiStr.lastIndexOf("/"));
-							CompilationUnit cUnit = parse2(fetchContent(uri).toCharArray(), utiStr, unitName, lookupEnvTuple.getT1(), lookupEnvTuple.getT2());
-		
-							logger.debug("CU Cache: created new AST for {}", uri.toASCIIString());
-		
-							return cUnit;
-						} catch (Exception e) {
-							logger.info("exception happened during parsing: " + e);
-							return null;
-						}
-					});
-					return future;
-	
-				}).get();
+				cu = requestCU(project, uri).get();
 			} catch (UncheckedExecutionException e1) {
 				// ignore errors from rewrite parser. There could be many parser exceptions due to
 				// user incrementally typing code's text
@@ -248,6 +227,31 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 		}
 
 		return requestor.apply(null);
+	}
+	
+	private synchronized CompletableFuture<CompilationUnit> requestCU(IJavaProject project, URI uri) throws ExecutionException {
+		return uriToCu.get(uri, () -> {
+			CompletableFuture<CompilationUnit> future = CompletableFuture.supplyAsync(() -> {
+				
+				try {
+					logger.info("Started parsing CU for " + uri);
+					Tuple2<List<Classpath>, INameEnvironmentWithProgress> lookupEnvTuple = loadLookupEnvTuple(project);
+					String utiStr = uri.toASCIIString();
+					String unitName = utiStr.substring(utiStr.lastIndexOf("/"));
+					CompilationUnit cUnit = parse2(fetchContent(uri).toCharArray(), utiStr, unitName, lookupEnvTuple.getT1(), lookupEnvTuple.getT2());
+
+					logger.debug("CU Cache: created new AST for {}", uri.toASCIIString());
+
+					logger.info("Parsed successfully CU for " + uri);
+					return cUnit;
+				} catch (Exception e) {
+					logger.warn("exception happened during parsing CU for " + uri + ": " + e);
+					return null;
+				}
+			});
+			return future;
+
+		});
 	}
 
 
@@ -294,6 +298,7 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 	private Tuple2<List<Classpath>, INameEnvironmentWithProgress> loadLookupEnvTuple(IJavaProject project) {
 		try {
 			return lookupEnvCache.get(project.getLocationUri(), () -> {
+				logger.info("Creating name env for project '{}'", project.getElementName());
 				List<Classpath> classpaths = createClasspath(getClasspathEntries(project));
 				INameEnvironmentWithProgress environment = CUResolver.createLookupEnvironment(classpaths.toArray(new Classpath[classpaths.size()]));
 				return Tuples.of(classpaths, environment);
@@ -316,15 +321,15 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 		}
 	}
 
-	private void invalidateCuForJavaFile(String uriStr) {
-		logger.info("CU Cache: invalidate AST for {}", uriStr);
+	private synchronized void invalidateCuForJavaFile(String uriStr) {
+		logger.info("Invalidate AST for {}", uriStr);
 
 		URI uri = URI.create(uriStr);
 		uriToCu.invalidate(uri);
 	}
 
-	private void invalidateProject(IJavaProject project) {
-		logger.debug("CU Cache: invalidate project <{}>", project.getElementName());
+	private synchronized void invalidateProject(IJavaProject project) {
+		logger.info("Invalidate project <{}>", project.getElementName());
 
 		Set<URI> docUris = projectToDocs.getIfPresent(project.getLocationUri());
 		if (docUris != null) {
