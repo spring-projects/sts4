@@ -506,7 +506,8 @@
 					<version>${tycho-version}</version>
 					<configuration>
 						<skipIfJarsigned>true</skipIfJarsigned>
-						<passphrase>${vault.tools.signing.gpg.secret.passphrase}</passphrase>
+						<passphrase>${bamboo.vault.tools.signing.gpg.secret.passphrase}</passphrase>
+						<keyname>${gpg.keyname}</keyname>
 						<homedir>${gpg.homedir}</homedir>
 					</configuration>
 				</plugin>
