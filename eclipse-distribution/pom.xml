@@ -136,7 +136,7 @@
 		</profile>
 		
 		<profile>
-			<id>git-actions</id>
+			<id>gitactions</id>
 			<properties>
 				<dist.accessKey>${secrets.TOOLS_S3_ACCESS_KEY}</dist.accessKey>
 				<dist.secretKey>${secrets.TOOLS_S3_SECRET_KEY}</dist.secretKey>

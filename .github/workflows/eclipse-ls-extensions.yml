@@ -29,4 +29,4 @@ jobs:
       - name: Build Eclipse LS extensions
         run: |
           cd eclipse-language-servers
-          xvfb-run mvn --batch-mode clean deploy -Pe427 -Psnapshot -Pgit-actions -Dsigning.skip=true -Dhttpclient.retry-max=20 -Declipse.p2.mirrors=false -Ds3service.https-only=true -Dmaven.test.skip=true -Dtycho.localArtifacts=ignore
+          xvfb-run mvn --batch-mode clean deploy -Pe427 -Psnapshot -Pgitactions -Dsigning.skip=true -Dhttpclient.retry-max=20 -Declipse.p2.mirrors=false -Ds3service.https-only=true -Dmaven.test.skip=true -Dtycho.localArtifacts=ignore
