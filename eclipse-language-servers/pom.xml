@@ -490,6 +490,17 @@
 	
 				<plugin>
 					<groupId>org.eclipse.tycho</groupId>
+					<artifactId>tycho-gpg-plugin</artifactId>
+					<version>${tycho-version}</version>
+					<configuration>
+						<skipIfJarsigned>true</skipIfJarsigned>
+						<passphrase>${vault.tools.signing.gpg.secret.passphrase}</passphrase>
+						<keyname>${vault.tools.signing.gpg.secret.key}</keyname>
+					</configuration>
+				</plugin>
+
+				<plugin>
+					<groupId>org.eclipse.tycho</groupId>
 					<artifactId>tycho-compiler-plugin</artifactId>
 					<version>${tycho-version}</version>
 					<configuration>
