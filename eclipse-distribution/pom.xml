@@ -134,6 +134,18 @@
 				<sts4-language-servers-version>today</sts4-language-servers-version> <!-- this should be overridden in the build with the concrete ls version to include-->
 			</properties>
 		</profile>
+		
+		<profile>
+			<id>git-actions</id>
+			<properties>
+				<dist.accessKey>${secrets.TOOLS_S3_ACCESS_KEY}</dist.accessKey>
+				<dist.secretKey>${secrets.TOOLS_S3_SECRET_KEY}</dist.secretKey>
+				
+				<dist.pathpostfix>trials</dist.pathpostfix>
+				<dist.path>${dist.type}/${dist.key}/${dist.project}/${dist.pathpostfix}</dist.path>
+				<sts4-language-servers-p2-repo>https://dist.springsource.com/${dist.type}/TOOLS/trials/sts4-language-server-integrations/${sts4-language-servers-version}</sts4-language-servers-p2-repo>
+			</properties>
+		</profile>
 
 		<profile>
 			<id>e425</id>

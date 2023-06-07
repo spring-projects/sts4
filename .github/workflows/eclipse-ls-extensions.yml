@@ -1,0 +1,29 @@
+name: Eclipse LS Extensions Snapshot
+
+#on:
+#  push:
+#    branches:
+#      - 'main'
+
+jobs:
+
+  eclipse-distro-build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      - name: Enforce https instead of http
+        run: ./nohttp.sh
+      - name: Build Language Servers JARs
+        run: |
+          cd headless-services
+          xvfb-run mvn --batch-mode clean install -DskipTests
+      - name: Build Eclipse LS extensions
+        run: |
+          cd eclipse-language-servers
+          xvfb-run mvn --batch-mode clean deploy -Pe427 -Psnapshot -Pgit-actions -Dsigning.skip=true -Dhttpclient.retry-max=20 -Declipse.p2.mirrors=false -Ds3service.https-only=true -Dmaven.test.skip=true -Dtycho.localArtifacts=ignore
