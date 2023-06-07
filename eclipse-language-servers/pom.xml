@@ -495,7 +495,7 @@
 					<configuration>
 						<skipIfJarsigned>true</skipIfJarsigned>
 						<passphrase>${vault.tools.signing.gpg.secret.passphrase}</passphrase>
-						<keyname>${vault.tools.signing.gpg.secret.key}</keyname>
+						<homedir>${gpg.homedir}</homedir>
 					</configuration>
 				</plugin>
 
