@@ -1,5 +1,8 @@
 name: Eclipse LS Extensions Snapshot
 
+# configure manual trigger
+on:
+  workflow_dispatch:
 #on:
 #  push:
 #    branches:
