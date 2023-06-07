@@ -139,6 +139,20 @@
 		</profile>
 
 		<profile>
+			<id>gitactions.buildNumber</id>
+			<activation>
+				<property>
+					<name>buildNumber</name>
+				</property>
+			</activation>
+			<properties>
+				<p2.qualifier>CI-B${buildNumber}</p2.qualifier>
+				<p2.replaceQualifier>true</p2.replaceQualifier>
+			</properties>
+		</profile>
+
+
+		<profile>
 			<id>e425</id>
 			<properties>
 				<dist.target>e4.25.0</dist.target>
