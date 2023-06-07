@@ -129,8 +129,8 @@
 		<profile>
 			<id>gitactions</id>
 			<properties>
-				<dist.accessKey>${env.secrets.TOOLS_S3_ACCESS_KEY}</dist.accessKey>
-				<dist.secretKey>${env.secrets.TOOLS_S3_SECRET_KEY}</dist.secretKey>
+				<dist.accessKey>${env.tools_s3_access_key}</dist.accessKey>
+				<dist.secretKey>${env.tools_s3_secret_key}</dist.secretKey>
 
 				<dist.pathpostfix>trials</dist.pathpostfix>
 				<dist.path>${dist.type}/${dist.key}/${dist.project}/${dist.pathpostfix}</dist.path>
