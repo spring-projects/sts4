@@ -28,7 +28,6 @@ import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
 import org.springframework.ide.vscode.commons.java.Version;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
-import org.springframework.ide.vscode.commons.rewrite.LoadUtils;
 import org.springframework.ide.vscode.commons.util.Assert;
 
 import com.google.gson.JsonElement;
@@ -109,15 +108,6 @@ public class SpringBootUpgrade {
 			List<String> recipedIds = createRecipeIdsChain(version.getMajor(), version.getMinor() + 1, targetVersion.getMajor(), targetVersion.getMinor(), versionsToRecipeId);
 			if (!recipedIds.isEmpty()) {
 				String recipeId = recipedIds.get(recipedIds.size() - 1);
-				// TODO: Review after new rewrite adoption
-				// Special case is UpgradeSpringBoot_3_0 which doesn't upgrade project to the latest 2.x if necessary. Therefore add 2.(latest) recipe (it chains all previous 2.x)
-//				if (targetVersion.getMajor() == 3) {
-//					int i = recipedIds.size() - 1;
-//					for (; i>=0 && !getVersionFromRecipeId(recipedIds.get(i)).startsWith("2."); i--) {}
-//					if (i >= 0) {
-//						getRecipeFromId(recipedIds.get(i)).ifPresent(recipe::doNext);
-//					}
-//				}
 				getRecipeFromId(recipeId).ifPresent(r -> recipe.getRecipeList().add(r));
 			}
 		}
@@ -131,22 +121,8 @@ public class SpringBootUpgrade {
 		}
 	}
 	
-	private String getVersionFromRecipeId(String recipeId) {
-		for (Map.Entry<String, String> e : versionsToRecipeId.entrySet()) {
-			if (recipeId.equals(e.getValue())) {
-				return e.getKey();
-			}
-		}
-		return null;
-	}
-	
 	private Optional<Recipe> getRecipeFromId(String recipeId) {
-		// TODO: not sure what's wrong with Recipes coming from environment but FindDependency (maven) recipe sometimes throws NPEs on cursor
-//		return recipeRepo.getRecipe(recipeId);
-		// Instead convert recipe to descriptor and then create new one from descriptor - this seems to work better.
-		return recipeRepo.getRecipe(recipeId)
-				.map(r -> r.getDescriptor())
-				.map(d -> LoadUtils.createRecipe(d, id -> recipeRepo.getRecipe(id).map(r -> r.getClass()).orElse(null)));
+		return recipeRepo.getRecipe(recipeId);
 	}
 	
 	private static String createVersionString(int major, int minor) {
