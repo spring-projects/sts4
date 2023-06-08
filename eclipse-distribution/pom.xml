@@ -746,6 +746,22 @@
 
 				<plugin>
 					<groupId>org.eclipse.tycho</groupId>
+					<artifactId>tycho-gpg-plugin</artifactId>
+					<version>${tycho-version}</version>
+					<configuration>
+						<skipIfJarsigned>true</skipIfJarsigned>
+						<passphrase>${env.bamboo_vault_tools_signing_gpg_secret_passphrase}</passphrase>
+						<keyname>${gpg.keyname}</keyname>
+						<homedir>${gpg.homedir}</homedir>
+						<executable>gpg2</executable>
+						<gpgArguments>
+							<arg>--pinentry-mode=loopback</arg>
+						</gpgArguments>
+					</configuration>
+				</plugin>
+
+				<plugin>
+					<groupId>org.eclipse.tycho</groupId>
 					<artifactId>tycho-compiler-plugin</artifactId>
 					<version>${tycho-version}</version>
 					<configuration>

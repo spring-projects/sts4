@@ -99,6 +99,18 @@
 			</plugin>
 
 			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-gpg-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>sign-p2-artifacts</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+
+			<plugin>
 				<groupId>org.eclipse.tycho.extras</groupId>
 				<artifactId>tycho-eclipserun-plugin</artifactId>
 				<version>${tycho-version}</version>

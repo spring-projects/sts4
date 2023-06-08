@@ -521,7 +521,6 @@
 					<configuration>
 						<skipIfJarsigned>true</skipIfJarsigned>
 						<passphrase>${env.bamboo_vault_tools_signing_gpg_secret_passphrase}</passphrase>
-<!--						<passphrase>${bamboo.vault.tools.signing.gpg.secret.passphrase}</passphrase> -->
 						<keyname>${gpg.keyname}</keyname>
 						<homedir>${gpg.homedir}</homedir>
 						<executable>gpg2</executable>
