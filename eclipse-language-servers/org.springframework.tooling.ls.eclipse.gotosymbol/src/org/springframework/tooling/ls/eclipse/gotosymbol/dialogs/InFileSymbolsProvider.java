@@ -10,16 +10,14 @@
  *******************************************************************************/
 package org.springframework.tooling.ls.eclipse.gotosymbol.dialogs;
 
-import java.util.Collection;
+import java.net.URI;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
-import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import org.eclipse.jface.text.IDocument;
 import org.eclipse.lsp4e.LSPEclipseUtils;
-import org.eclipse.lsp4e.LanguageServiceAccessor;
-import org.eclipse.lsp4e.LanguageServiceAccessor.LSPDocumentInfo;
+import org.eclipse.lsp4e.LanguageServers;
 import org.eclipse.lsp4j.DocumentSymbol;
 import org.eclipse.lsp4j.DocumentSymbolParams;
 import org.eclipse.lsp4j.Location;
@@ -27,7 +25,6 @@ import org.eclipse.lsp4j.SymbolInformation;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.WorkspaceSymbolLocation;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
-import org.eclipse.lsp4j.services.LanguageServer;
 import org.eclipse.ui.texteditor.ITextEditor;
 import org.springframework.tooling.ls.eclipse.gotosymbol.dialogs.SelectionTracker.DocumentData;
 import org.springsource.ide.eclipse.commons.livexp.core.LiveExpression;
@@ -42,26 +39,25 @@ import com.google.common.collect.ImmutableList;
 @SuppressWarnings("restriction")
 public class InFileSymbolsProvider implements SymbolsProvider {
 	
-	private Supplier<LSPDocumentInfo> info;
+	private IDocument doc;
 
-	public InFileSymbolsProvider(Supplier<LSPDocumentInfo> info) {
+	public InFileSymbolsProvider(IDocument doc) {
 		super();
-		this.info = info;
+		this.doc = doc;
 	}
 
 	@Override
 	public List<SymbolContainer> fetchFor(String query) throws Exception {
-		CompletableFuture<LanguageServer> server = getServer();
-		String uri = getUri();
-		
-		if (server != null && uri != null) {
-			DocumentSymbolParams params = new DocumentSymbolParams(new TextDocumentIdentifier(uri));
+		if (doc != null) {
+			DocumentSymbolParams params = new DocumentSymbolParams(new TextDocumentIdentifier(LSPEclipseUtils.toUri(doc).toASCIIString()));
 
-			CompletableFuture<List<Either<SymbolInformation, DocumentSymbol>>> symbolsFuture = server
-					.get()
-					.getTextDocumentService().documentSymbol(params);
-			
+			CompletableFuture<List<List<Either<SymbolInformation, DocumentSymbol>>>> symbolsFuture = LanguageServers
+					.forDocument(doc)
+					.withFilter(capabilities -> LSPEclipseUtils.hasCapability(capabilities.getDocumentSymbolProvider()))
+					.collectAll(ls -> ls.getTextDocumentService().documentSymbol(params));
+				
 			List<SymbolContainer> symbols = symbolsFuture.get().stream()
+					.flatMap(s -> s.stream())
 					.map(either -> either.isLeft() ? SymbolContainer.fromSymbolInformation(either.getLeft()) : SymbolContainer.fromDocumentSymbol(either.getRight()))
 					.collect(Collectors.toList());
 
@@ -70,55 +66,14 @@ public class InFileSymbolsProvider implements SymbolsProvider {
 		return ImmutableList.of();
 	}
 
-	private String getUri() {
-		if (this.info != null) {
-			LSPDocumentInfo info = this.info.get();
-			if (info != null) {
-				return info.getFileUri().toASCIIString();
-			}
-		}
-		return null;
-	}
-	
-	private CompletableFuture<LanguageServer> getServer() throws Exception {
-		if (this.info != null && this.info.get() != null) {
-			return this.info.get().getInitializedLanguageClient();
-		}
-		return null;
-	}
-	
 	public static SymbolsProvider createFor(LiveExpression<DocumentData> documentData) {
-		Supplier<LSPDocumentInfo> inf = () -> {
-			DocumentData data = documentData.getValue();
-			if (data != null) {
-				IDocument document = data.getDocument();
-				return getLSPDocumentInfo(document);
-			}
-			return null;
-		};
-		return new InFileSymbolsProvider(inf);
+		DocumentData data = documentData.getValue();
+		return new InFileSymbolsProvider(data == null ? null : data.getDocument());
 	}
 
 	public static SymbolsProvider createFor(ITextEditor textEditor) {
 		IDocument document = LSPEclipseUtils.getDocument(textEditor);
-		LSPDocumentInfo info = getLSPDocumentInfo(document);
-		if (info != null) {
-			return new InFileSymbolsProvider(() -> info);
-		}
-		return null;
-	}
-
-	private static LSPDocumentInfo getLSPDocumentInfo(IDocument document) {
-		if (document!=null) {
-			Collection<LSPDocumentInfo> infos = LanguageServiceAccessor.getLSPDocumentInfosFor(
-					document, capabilities -> LSPEclipseUtils.hasCapability(capabilities.getDocumentSymbolProvider()));
-			if (infos.isEmpty()) {
-				return null;
-			}
-			// TODO maybe consider better strategy such as iterating on all LS until we have a good result
-			return infos.iterator().next();
-		}
-		return null;
+		return new InFileSymbolsProvider(document);
 	}
 
 	@Override
@@ -129,26 +84,24 @@ public class InFileSymbolsProvider implements SymbolsProvider {
 	@Override
 	public boolean fromFile(SymbolContainer symbol) {
 		if (symbol != null) {
+			URI uri = LSPEclipseUtils.toUri(doc);
 			if (symbol.isSymbolInformation() && symbol.getSymbolInformation().getLocation() != null) {
 				String symbolUri = symbol.getSymbolInformation().getLocation().getUri();
 
-				String uri = getUri();
 				if (uri != null) {
-					return uri.toString().equals(symbolUri);
+					return uri.toASCIIString().equals(symbolUri);
 				}
 			}
 			else if (symbol.isWorkspaceSymbol()) {
 				Either<Location, WorkspaceSymbolLocation> location = symbol.getWorkspaceSymbol().getLocation();
 				if (location.isLeft()) {
-					String uri = getUri();
 					if (uri != null) {
-						return uri.toString().equals(location.getLeft().getUri());
+						return uri.toASCIIString().equals(location.getLeft().getUri());
 					}
 				}
 				else {
-					String uri = getUri();
 					if (uri != null) {
-						return uri.toString().equals(location.getRight().getUri());
+						return uri.toASCIIString().equals(location.getRight().getUri());
 					}
 				}
 			}

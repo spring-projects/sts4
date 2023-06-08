@@ -22,7 +22,7 @@ import org.eclipse.jface.text.ITextSelection;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
 import org.eclipse.lsp4e.LSPEclipseUtils;
-import org.eclipse.lsp4e.LanguageServiceAccessor;
+import org.eclipse.lsp4e.LanguageServers;
 import org.eclipse.ui.IEditorInput;
 import org.eclipse.ui.IEditorPart;
 import org.eclipse.ui.IFileEditorInput;
@@ -90,7 +90,8 @@ public class SelectionTracker extends AbstractDisposable {
 					IDocument document = this.documentProvider.getDocument(input);
 					// This step appears to be necessary to avoid having the current language server shutdown when disconnecting 
 					// a document (see dispose()) and a new one start up again every time a user changes selection and no editor is open
-					LanguageServiceAccessor.getLanguageServers(document, capabilities -> LSPEclipseUtils.hasCapability(capabilities.getDocumentSymbolProvider())).get();
+					LanguageServers.forDocument(document).withFilter(capabilities -> LSPEclipseUtils.hasCapability(capabilities.getDocumentSymbolProvider())).anyMatching();
+//					LanguageServiceAccessor.getLanguageServers(document, capabilities -> LSPEclipseUtils.hasCapability(capabilities.getDocumentSymbolProvider())).get();
 				} catch (Exception e) {
 					Log.log(e);
 				}
