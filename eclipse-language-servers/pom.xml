@@ -523,6 +523,10 @@
 						<passphrase>${bamboo.vault.tools.signing.gpg.secret.passphrase}</passphrase>
 						<keyname>${gpg.keyname}</keyname>
 						<homedir>${gpg.homedir}</homedir>
+						<gpgArguments>
+  							<arg>--batch</arg>
+  							<arg>--no-tty</arg>
+						</gpgArguments>
 					</configuration>
 				</plugin>
 
