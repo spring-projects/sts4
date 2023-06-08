@@ -98,6 +98,8 @@
 		<dist.path>${dist.type}/${dist.key}/${dist.project}/${dist.version}</dist.path>
 
 		<misc.p2.repo.version>3.9.4.202211021051</misc.p2.repo.version>
+		
+		<gpg.passphrase>${env.bamboo_vault_tools_signing_gpg_secret_passphrase}</gpg.passphrase>
 	</properties>
 
 	<profiles>
@@ -520,7 +522,7 @@
 					<version>${tycho-version}</version>
 					<configuration>
 						<skipIfJarsigned>true</skipIfJarsigned>
-						<passphrase>${env.bamboo_vault_tools_signing_gpg_secret_passphrase}</passphrase>
+						<passphrase>${gpg.passphrase}</passphrase>
 						<keyname>${gpg.keyname}</keyname>
 						<homedir>${gpg.homedir}</homedir>
 						<executable>gpg2</executable>

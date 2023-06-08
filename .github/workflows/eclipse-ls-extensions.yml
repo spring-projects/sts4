@@ -33,6 +33,9 @@ jobs:
         env:
           tools_s3_access_key: ${{ secrets.TOOLS_S3_ACCESS_KEY }}
           tools_s3_secret_key: ${{ secrets.TOOLS_S3_SECRET_KEY  }}
+          gpg.passphrase: ${{ secrets.GPG_PASSPHRASE }}
+          gpg.keyname: ${{ secrets.GPG_KEYID }}
+          gpg.homedir: '~/gpg-keyring'
         run: |
           cd eclipse-language-servers
           xvfb-run mvn --batch-mode clean deploy -Pe427 -Psnapshot -Pgitactions -DbuildNumber=${{ steps.timestamp.outputs.timestamp }} -Dsigning.skip=true -Dhttpclient.retry-max=20 -Declipse.p2.mirrors=false -Ds3service.https-only=true -Dmaven.test.skip=true -Dtycho.localArtifacts=ignore
