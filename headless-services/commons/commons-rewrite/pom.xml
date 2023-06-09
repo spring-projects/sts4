@@ -96,6 +96,12 @@
 			<groupId>org.openrewrite.recipe</groupId>
 			<artifactId>rewrite-spring</artifactId>
 			<version>${rewrite-spring-version}</version>
+			<exclusions>
+				<exclusion>
+					<groupId>org.openrewrite</groupId>
+					<artifactId>rewrite-kotlin</artifactId>
+				</exclusion>
+			</exclusions>
 		</dependency>
 
 		<dependency>
@@ -195,8 +201,7 @@
 			<version>${project.version}</version>
 			<scope>test</scope>
 		</dependency>
-
-		
+		 
 	</dependencies>
 	
 	<repositories>
