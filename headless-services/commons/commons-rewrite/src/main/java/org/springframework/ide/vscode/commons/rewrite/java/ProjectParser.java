@@ -65,7 +65,7 @@ public abstract class ProjectParser {
 			javaParser.setClasspath(mainClasspath);
 
 			List<CompilationUnit> javaSources = ListUtils.map(javaParser.parseInputs(
-					() -> getInputs(ss.javaSources.stream()).iterator(), projectDir, ctx).collect(Collectors.toList()), addProvenance(projectProvenance));
+					() -> getInputs(ss.javaSources.stream()).iterator(), projectDir, ctx).map(CompilationUnit.class::cast).collect(Collectors.toList()), addProvenance(projectProvenance));
 			JavaSourceSet javaSourceSet = ORAstUtils.addJavaSourceSet(javaSources, ss.name(),
 					mainClasspath);
 			sources.addAll(javaSources);

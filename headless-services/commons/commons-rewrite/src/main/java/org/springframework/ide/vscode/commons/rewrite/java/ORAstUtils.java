@@ -296,7 +296,7 @@ public class ORAstUtils {
 		ctx.putMessage(JavaParser.SKIP_SOURCE_SET_TYPE_GENERATION, true);
 		List<CompilationUnit> cus = Collections.emptyList();
 		synchronized(parser) {
-			cus = parser.parse(sourceFiles, null, ctx).collect(Collectors.toList());
+			cus = parser.parse(sourceFiles, null, ctx).map(CompilationUnit.class::cast).collect(Collectors.toList());
 		}
 		List<J.CompilationUnit> finalCus = new ArrayList<>(cus.size());
 		for (CompilationUnit cu : cus) {
@@ -321,7 +321,7 @@ public class ORAstUtils {
 		List<CompilationUnit> cus = Collections.emptyList();
 //		long start = System.currentTimeMillis();
 		synchronized (parser) {
-			cus = parser.parseInputs(inputs, null, ctx).collect(Collectors.toList());
+			cus = parser.parseInputs(inputs, null, ctx).map(CompilationUnit.class::cast).collect(Collectors.toList());
 		}
 //		log.info("Rewrite parser: " + (System.currentTimeMillis() - start));
 		List<J.CompilationUnit> finalCus = new ArrayList<>(cus.size());

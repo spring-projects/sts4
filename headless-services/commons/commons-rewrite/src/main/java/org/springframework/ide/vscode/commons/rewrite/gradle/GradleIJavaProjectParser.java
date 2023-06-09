@@ -75,7 +75,7 @@ public class GradleIJavaProjectParser extends AbstractJavaProjectParser {
 		Path buildFilePath = Paths.get(jp.getProjectBuild().getBuildFile());
 		
 		List<G.CompilationUnit> gradleFiles = gradleParser.parseInputs(() -> 
-			getInputs(Stream.of(buildFilePath)).iterator(), null, ctx).collect(Collectors.toList());
+			getInputs(Stream.of(buildFilePath)).iterator(), null, ctx).map(G.CompilationUnit.class::cast).collect(Collectors.toList());
 		return ListUtils.map(
 			gradleFiles, (i, gb) -> gb.withMarkers(gb.getMarkers().addIfAbsent(gradleProject))
 		);
