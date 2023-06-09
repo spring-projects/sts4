@@ -1,3 +1,12 @@
+## 2023-06-14 (4.19.0 RELEASE, incl. language servers version 1.47.0)
+
+* _(Spring Boot)_ fixed: Spring Data Repositories: Validate ID type ([#457](https://github.com/spring-projects/sts4/issues/457))
+* _(Spring Boot)_ fixed: Add support for spring potential injection points discovery while indexing ([#994](https://github.com/spring-projects/sts4/issues/994))
+* _(Spring Boot)_ fixed: replace internals of symbols machinery with more comprehensive model of spring components ([#1006](https://github.com/spring-projects/sts4/issues/1006))
+* _(Spring Boot)_ fixed: [spring index] optimize empty array objects in internal index storage structure ([#1040](https://github.com/spring-projects/sts4/issues/1040))
+* _(Spring Boot)_ fixed: [spring index] add request method to lsp extension to identify matching beans ([#1049](https://github.com/spring-projects/sts4/issues/1049))
+* _(Spring Boot)_ fixed: upgrading from Spring Boot 3.0.x to 3.1.0 doesn't work ([#1051](https://github.com/spring-projects/sts4/issues/1051))
+
 ## 2023-05-05 (4.18.1 RELEASE, incl. language servers version 1.46.0)
 
 * _(Spring Boot)_ fixed: [vscode-spring-boot] Support navigating to a Spring property file when inspecting on @Value annotations ([#761](https://github.com/spring-projects/sts4/issues/761))
