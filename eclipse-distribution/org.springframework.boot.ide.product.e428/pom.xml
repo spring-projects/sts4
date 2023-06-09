@@ -401,6 +401,7 @@
 									<arg value="--verbose"/>
 									<arg value="--deep"/>
 									<arg value="--force"/>
+									<arg value="--timestamp"/>
 									<arg value="--entitlements"/>
 									<arg value="${project.build.directory}/../entitlements.plist"/>
 									<arg value="--options=runtime"/>
@@ -415,6 +416,7 @@
 									<arg value="--verbose"/>
 									<arg value="--deep"/>
 									<arg value="--force"/>
+									<arg value="--timestamp"/>
 									<arg value="--entitlements"/>
 									<arg value="${project.build.directory}/../entitlements.plist"/>
 									<arg value="--options=runtime"/>
@@ -473,6 +475,9 @@
 
 								<exec executable="codesign" failonerror="true">
 									<arg value="--verbose"/>
+									<arg value="--deep"/>
+									<arg value="--force"/>
+									<arg value="--timestamp"/>
 								    <arg value="--keychain"/>
 								    <arg value="${env.KEYCHAIN}"/>
 								    <arg value="-s"/>
@@ -484,6 +489,9 @@
 
 								<exec executable="codesign" failonerror="true">
 									<arg value="--verbose"/>
+									<arg value="--deep"/>
+									<arg value="--force"/>
+									<arg value="--timestamp"/>
 								    <arg value="--keychain"/>
 								    <arg value="${env.KEYCHAIN}"/>
 								    <arg value="-s"/>
