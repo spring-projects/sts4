@@ -31,8 +31,6 @@ jobs:
           xvfb-run mvn --batch-mode clean install -DskipTests
       - name: Install GPG key
         run: |
-          mkdir ~/gpg-keyring
-          cd gpg-keyring
           echo "${{ secrets.GPG_PRIVATE_KEY }}" > gpg.asc
           echo "${{ secrets.GPG_PASSPHRASE }}" | gpg --batch --yes --passphrase-fd 0 --import gpg.asc
       - name: Build Eclipse LS extensions
@@ -41,7 +39,7 @@ jobs:
           tools_s3_secret_key: ${{ secrets.TOOLS_S3_SECRET_KEY  }}
           gpg_passphrase: ${{ secrets.GPG_PASSPHRASE }}
           gpg_keyname: ${{ secrets.GPG_KEYID }}
-          gpg_homedir: '~/gpg-keyring'
+          gpg_homedir: ${{ github.workspace }}
         run: |
           cd eclipse-language-servers
           xvfb-run mvn --batch-mode clean deploy -Pe427 -Psnapshot -Pgitactions -DbuildNumber=${{ steps.timestamp.outputs.timestamp }} -Dsigning.skip=true -Dhttpclient.retry-max=20 -Declipse.p2.mirrors=false -Ds3service.https-only=true -Dmaven.test.skip=true -Dtycho.localArtifacts=ignore
