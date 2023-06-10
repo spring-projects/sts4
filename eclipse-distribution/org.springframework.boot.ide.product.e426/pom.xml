@@ -98,7 +98,7 @@
 				</configuration>
 			</plugin>
 
-			<plugin>
+<!--			<plugin>
 				<groupId>org.eclipse.tycho</groupId>
 				<artifactId>tycho-gpg-plugin</artifactId>
 				<executions>
@@ -108,7 +108,7 @@
 						</goals>
 					</execution>
 				</executions>
-			</plugin>
+			</plugin> -->
 
 			<plugin>
 				<groupId>org.eclipse.tycho.extras</groupId>
