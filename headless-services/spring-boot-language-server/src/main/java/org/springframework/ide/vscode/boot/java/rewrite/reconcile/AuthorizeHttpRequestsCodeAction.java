@@ -52,7 +52,7 @@ public class AuthorizeHttpRequestsCodeAction implements RecipeCodeActionDescript
 
 	@Override
 	public ProblemType getProblemType() {
-		return Boot2JavaProblemType.HTTP_SECIRITY_AUTHORIZE_HTTP_REQUESTS;
+		return Boot2JavaProblemType.HTTP_SECURITY_AUTHORIZE_HTTP_REQUESTS;
 	}
 
 	@Override

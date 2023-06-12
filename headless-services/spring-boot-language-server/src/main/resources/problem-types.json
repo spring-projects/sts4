@@ -63,7 +63,7 @@
         "defaultSeverity": "WARNING"
       },
       {
-        "code": "HTTP_SECIRITY_AUTHORIZE_HTTP_REQUESTS",
+        "code": "HTTP_SECURITY_AUTHORIZE_HTTP_REQUESTS",
         "label": "Usage of old 'HttpSecurity.authroizeRequests(...)' API",
         "description": "'HttpSecurity.authroizeRequests(...)' API and related classes are to be deprecated use new `authorizeHttpRequests(...) and related classes",
         "defaultSeverity": "WARNING"

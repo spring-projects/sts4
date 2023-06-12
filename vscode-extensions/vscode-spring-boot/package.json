@@ -420,7 +420,7 @@
               "ERROR"
             ]
           },
-          "spring-boot.ls.problem.boot2.HTTP_SECIRITY_AUTHORIZE_HTTP_REQUESTS": {
+          "spring-boot.ls.problem.boot2.HTTP_SECURITY_AUTHORIZE_HTTP_REQUESTS": {
             "type": "string",
             "default": "WARNING",
             "description": "'HttpSecurity.authroizeRequests(...)' API and related classes are to be deprecated use new `authorizeHttpRequests(...) and related classes",
