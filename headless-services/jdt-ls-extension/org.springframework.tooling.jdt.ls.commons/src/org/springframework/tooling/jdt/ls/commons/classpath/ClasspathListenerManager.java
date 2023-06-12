@@ -17,6 +17,7 @@ import java.util.Queue;
 import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResourceDelta;
 import org.eclipse.core.runtime.IPath;
@@ -119,18 +120,33 @@ public class ClasspathListenerManager {
 			Collection<IPath> outputFolders = getOutputFolders(jp);
 			if (delta.getResourceDeltas() != null && (delta.getFlags() & (IJavaElementDelta.F_CONTENT | IJavaElementDelta.F_CHILDREN)) != 0) {
 				for (IResourceDelta resourceDelta : delta.getResourceDeltas()) {
-					if (outputFolders.contains(resourceDelta.getResource().getFullPath())) {
-						return true;
-					} else if (outputFolders.stream().anyMatch(of -> resourceDelta.getFullPath().isPrefixOf(of))) {
-						for (IResourceDelta rd : resourceDelta.getAffectedChildren()) {
-							if (outputFolders.contains(rd.getResource().getFullPath())) {
-								return true;
-							}
-						}
+					if (outputFolders.stream().anyMatch(of -> resourceDelta.getFullPath().isPrefixOf(of))) {
+						return areClassFilesChangedOrAdded(resourceDelta);
 					}
 				}
 			}
 			return false;
+		}
+		
+		private boolean areClassFilesChangedOrAdded(IResourceDelta resourceDelta) {
+			if (resourceDelta.getResource() instanceof IContainer) {
+				for (IResourceDelta rd : resourceDelta.getAffectedChildren()) {
+					if(areClassFilesChangedOrAdded(rd)) {
+						return true;
+					}
+				}
+				return false;
+			} else {
+				if ("class".equals(resourceDelta.getResource().getFileExtension())) {
+					switch (resourceDelta.getKind()) {
+					case IResourceDelta.ADDED:
+						return true;
+					case IResourceDelta.CHANGED:
+						return (resourceDelta.getFlags() & IResourceDelta.CONTENT) != 0;
+					}
+				}
+				return false;
+			}
 		}
 		
 		private Collection<IPath> getOutputFolders(IJavaProject jp) {
@@ -171,7 +187,12 @@ public class ClasspathListenerManager {
 				IFile classpathFile = jp.getProject().getFile(IJavaProject.CLASSPATH_FILE_NAME);
 				for (IResourceDelta resourceDelta : delta.getResourceDeltas()) {
 					if (classpathFile.equals(resourceDelta.getResource())) {
-						return true;
+						switch (resourceDelta.getKind()) {
+						case IResourceDelta.ADDED:
+							return true;
+						case IResourceDelta.CHANGED:
+							return (resourceDelta.getFlags() & IResourceDelta.CONTENT) != 0;
+						}
 					}
 				}
 			}
