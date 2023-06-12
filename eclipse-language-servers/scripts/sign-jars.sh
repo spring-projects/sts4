@@ -5,7 +5,7 @@ then
   files=`ls $1`
   for file in $files
   do
-    if ! [ -d $file ] && [[ $file == *.jar ]]
+    if ! [ -d $file ] && [ "${file: -4}" == ".jar" ]
     then
       echo "Copying $file to remote machine..."
       scp -i $SSH_KEY $1/$file $SSH_USER@vm-tools.spring.vmware.com:/opt/bamboo
