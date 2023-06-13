@@ -18,7 +18,7 @@ then
         echo "Signing $file..."
         ssh -i $SSH_KEY $SSH_USER@vm-tools.spring.vmware.com -- /build/apps/signing/signserver/signc -v --input=/opt/bamboo/$file --keyid=jarsign_vmware --signmethod="jdk-1.8.0_121" --output=/opt/bamboo/$file
         echo "Copying **signed** $file back... (into $1/$file)"
-        scp -i $SSH_KEY $SSH_USER@vm-tools.spring.vmware.com:/opt/bamboo/signed-$file $1/$file
+        scp -i $SSH_KEY $SSH_USER@vm-tools.spring.vmware.com:/opt/bamboo/$file $1/$file
         echo "Cleaning up remote machine..."
         ssh -i $SSH_KEY $SSH_USER@vm-tools.spring.vmware.com -- rm /opt/bamboo/$file
         echo "Successfully signed $file"
