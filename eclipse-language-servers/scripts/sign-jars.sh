@@ -11,7 +11,7 @@ then
       echo "Looking at: $1/$file"
       extension="${file##*.}"
       echo "Detected extension = $extension"
-Mo      if [ "$extension" = "jar" ]
+      if [ "$extension" = "jar" ]
       then
         echo "Copying $file to remote machine..."
         scp -i $SSH_KEY $1/$file $SSH_USER@vm-tools.spring.vmware.com:/opt/bamboo
