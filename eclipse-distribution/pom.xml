@@ -95,6 +95,9 @@
 		<encoding>UTF-8</encoding>
 
 		<misc.p2.repo.version>3.9.4.202211021051</misc.p2.repo.version>
+
+		<vm-signing.ssh.user>signer</vm-signing.ssh.user>
+		<vm-signing.ssh.key>/home/bamboo/.ssh/id_rsa</vm-signing.ssh.key>
 	</properties>
 
 	<profiles>
@@ -145,6 +148,32 @@
 				<dist.path>${dist.type}/${dist.key}/${dist.project}/${dist.pathpostfix}</dist.path>
 				<sts4-language-servers-p2-repo>https://dist.springsource.com/${dist.type}/TOOLS/trials/sts4-language-server-integrations/${sts4-language-servers-version}</sts4-language-servers-p2-repo>
 			</properties>
+		</profile>
+
+		<profile>
+			<id>vm-signing</id>
+			<build>
+				<plugins>
+					<plugin>
+						<artifactId>exec-maven-plugin</artifactId>
+						<groupId>org.codehaus.mojo</groupId>
+						<executions>
+							<execution>
+								<id>VM JAR Sign</id>
+								<phase>package</phase>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+							</execution>
+						</executions>
+						<configuration>
+							<arguments>
+								<argument>${project.build.directory}</argument>
+							</arguments>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
 		</profile>
 
 		<profile>
@@ -864,6 +893,18 @@
 							<version>0.8.1</version>
 						</dependency>
 					</dependencies>
+				</plugin>
+
+				<plugin>
+					<artifactId>exec-maven-plugin</artifactId>
+					<groupId>org.codehaus.mojo</groupId>
+					<configuration>
+						<executable>scripts/sign-jars.sh</executable>
+						<environmentVariables>
+							<SSH_USER>${vm-signing.ssh.user}</SSH_USER>
+							<SSH_KEY>${vm-signing.ssh.key}</SSH_KEY>
+						</environmentVariables>
+					</configuration>
 				</plugin>
 
 			</plugins>

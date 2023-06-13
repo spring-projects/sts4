@@ -160,6 +160,31 @@
 			</properties>
 		</profile>
 
+		<profile>
+			<id>vm-signing</id>
+			<build>
+				<plugins>
+					<plugin>
+						<artifactId>exec-maven-plugin</artifactId>
+						<groupId>org.codehaus.mojo</groupId>
+						<executions>
+							<execution>
+								<id>VM JAR Sign</id>
+								<phase>package</phase>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+							</execution>
+						</executions>
+						<configuration>
+							<arguments>
+								<argument>${project.build.directory}</argument>
+							</arguments>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
 
 		<profile>
 			<id>e425</id>
@@ -392,32 +417,6 @@
 				<vm-signing.ssh.user>aboyko</vm-signing.ssh.user>
 				<vm-signing.ssh.key>~/.ssh/id_rsa</vm-signing.ssh.key>
 			</properties>
-		</profile>
-
-		<profile>
-			<id>vm-signing</id>
-			<build>
-				<plugins>
-					<plugin>
-						<artifactId>exec-maven-plugin</artifactId>
-						<groupId>org.codehaus.mojo</groupId>
-						<executions>
-							<execution><!-- Run our version calculation script -->
-								<id>VM JAR Sign</id>
-								<phase>package</phase>
-								<goals>
-									<goal>exec</goal>
-								</goals>
-							</execution>
-						</executions>
-						<configuration>
-							<arguments>
-								<argument>${project.build.directory}</argument>
-							</arguments>
-						</configuration>
-					</plugin>
-				</plugins>
-			</build>
 		</profile>
 
 	</profiles>
@@ -671,13 +670,13 @@
 				<plugin>
 					<artifactId>exec-maven-plugin</artifactId>
 					<groupId>org.codehaus.mojo</groupId>
-						<configuration>
-							<executable>scripts/sign-jars.sh</executable>
-							<environmentVariables>
-								<SSH_USER>${vm-signing.ssh.user}</SSH_USER>
-								<SSH_KEY>${vm-signing.ssh.key}</SSH_KEY>
-							</environmentVariables>
-						</configuration>
+					<configuration>
+						<executable>scripts/sign-jars.sh</executable>
+						<environmentVariables>
+							<SSH_USER>${vm-signing.ssh.user}</SSH_USER>
+							<SSH_KEY>${vm-signing.ssh.key}</SSH_KEY>
+						</environmentVariables>
+					</configuration>
 				</plugin>
 
 			</plugins>
