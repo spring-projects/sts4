@@ -2,8 +2,8 @@ set -e
 in_file=$1
 out_file=$2
 
-in_filename="$(basename -- $in_file)"
-
+in_filename=`basename $in_file`
+echo "Input file: $in_file"
 echo "Copying $in_filename to remote machine..."
 scp -i $SSH_KEY $in_file $SSH_USER@vm-tools.spring.vmware.com:/opt/bamboo
 echo "Signing $in_filename..."
