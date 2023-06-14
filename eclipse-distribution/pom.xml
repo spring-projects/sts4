@@ -97,7 +97,7 @@
 		<misc.p2.repo.version>3.9.4.202211021051</misc.p2.repo.version>
 
 		<vm-signing.ssh.user>signer</vm-signing.ssh.user>
-		<vm-signing.ssh.key>/home/bamboo/.ssh/id_rsa</vm-signing.ssh.key>
+		<vm-signing.ssh.key>~bamboo/.ssh/id_rsa</vm-signing.ssh.key>
 	</properties>
 
 	<profiles>
