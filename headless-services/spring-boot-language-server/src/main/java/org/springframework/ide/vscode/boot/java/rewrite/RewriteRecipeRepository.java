@@ -188,13 +188,27 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 		IndefiniteProgressTask progressTask = server.getProgressService().createIndefiniteProgressTask(UUID.randomUUID().toString(), "Loading Rewrite Recipes", null);
 		try {
 			log.info("Loading Rewrite Recipes...");
+			Recipe xmlbindRecipe = null;
 			StsEnvironment env = createRewriteEnvironment();
 			for (Recipe r : env.listRecipes()) {
 				if (r.getName() != null) {
+					if ("org.openrewrite.java.migrate.jakarta.JavaxXmlBindMigrationToJakartaXmlBind".equals(r.getName())) {
+						xmlbindRecipe = r;
+					}
 					if (recipes.containsKey(r.getName())) {
 						log.error("Duplicate ids: '" + r.getName() + "'");
 					}
 					recipes.put(r.getName(), r);					
+				}
+			}
+			// HACK: add Jakarta XML Bind migration recipe again as there are cases when maven dependency isn't added
+			if (xmlbindRecipe != null) {
+				for (String id : recipes.keySet()) {
+					if (id.startsWith("org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_")) {
+						Recipe recipe = recipes.get(id);
+						recipe.getDescriptor().getRecipeList().add(xmlbindRecipe.getDescriptor());
+						recipe.getRecipeList().add(xmlbindRecipe);
+					}
 				}
 			}
 			codeActionDescriptors.addAll(env.listCodeActionDescriptors());
