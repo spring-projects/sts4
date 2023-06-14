@@ -51,6 +51,9 @@
 		<signing.skip>true</signing.skip>
 		<signing.alias>vmware</signing.alias>
 		<misc.p2.repo.version>3.9.4.202211021051</misc.p2.repo.version>
+
+		<vm-signing.ssh.user>signer</vm-signing.ssh.user>
+		<vm-signing.ssh.key>/home/bamboo/.ssh/id_rsa</vm-signing.ssh.key>
 	</properties>
 
 	<profiles>
@@ -60,6 +63,32 @@
 				<signing.store.password>${env.bamboo_vault_signing_passphrase}</signing.store.password>
 				<signing.key.password>${env.bamboo_vault_signing_passphrase}</signing.key.password>
 			</properties>
+		</profile>
+
+		<profile>
+			<id>vm-signing</id>
+			<build>
+				<plugins>
+					<plugin>
+						<artifactId>exec-maven-plugin</artifactId>
+						<groupId>org.codehaus.mojo</groupId>
+						<executions>
+							<execution>
+								<id>VM JAR Sign</id>
+								<phase>package</phase>
+								<goals>
+									<goal>exec</goal>
+								</goals>
+							</execution>
+						</executions>
+						<configuration>
+							<arguments>
+								<argument>${project.build.directory}</argument>
+							</arguments>
+						</configuration>
+					</plugin>
+				</plugins>
+			</build>
 		</profile>
 	</profiles>
 
@@ -98,6 +127,7 @@
 			<url>https://dist.springsource.com/release/TOOLS/third-party/misc-p2-repo/${misc.p2.repo.version}</url>
 		</repository>
 	</repositories>
+
 	<build>
 		<plugins>
 
@@ -176,5 +206,22 @@
 			</plugin>
 
 		</plugins>
+
+		<pluginManagement>
+			<plugins>
+				<plugin>
+					<artifactId>exec-maven-plugin</artifactId>
+					<groupId>org.codehaus.mojo</groupId>
+					<configuration>
+						<executable>scripts/sign-jars.sh</executable>
+						<environmentVariables>
+							<SSH_USER>${vm-signing.ssh.user}</SSH_USER>
+							<SSH_KEY>${vm-signing.ssh.key}</SSH_KEY>
+						</environmentVariables>
+					</configuration>
+				</plugin>
+			</plugins>
+		</pluginManagement>
+
 	</build>
 </project>
