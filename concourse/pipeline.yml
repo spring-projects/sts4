@@ -651,6 +651,7 @@ jobs:
       trigger: true
     - get: maven-cache
   - task: build-spring-boot-vsix-snapshot
+    timeout: 40m
     file: sts4/concourse/tasks/build-vsix.yml
     params:
       extension_id: vscode-spring-boot
@@ -677,6 +678,7 @@ jobs:
       passed:
       - build-spring-boot-vsix-snapshot
   - task: build-spring-boot-vsix-pre-release
+    timeout: 40m
     file: sts4/concourse/tasks/build-vsix.yml
     params:
       extension_id: vscode-spring-boot
@@ -839,6 +841,7 @@ jobs:
       passed: 
       - trigger-rc-build
   - task: build-spring-boot-rc
+    timeout: 40m
     attempts: 4
     file: sts4/concourse/tasks/rc-build.yml
     params:
