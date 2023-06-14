@@ -102,7 +102,7 @@
 		<gpg.passphrase>${env.bamboo_vault_tools_signing_gpg_secret_passphrase}</gpg.passphrase>
 
 		<vm-signing.ssh.user>signer</vm-signing.ssh.user>
-		<vm-signing.ssh.key>/home/bamboo/.ssh/id_rsa</vm-signing.ssh.key>
+		<vm-signing.ssh.key>~bamboo/.ssh/id_rsa</vm-signing.ssh.key>
 	</properties>
 
 	<profiles>
