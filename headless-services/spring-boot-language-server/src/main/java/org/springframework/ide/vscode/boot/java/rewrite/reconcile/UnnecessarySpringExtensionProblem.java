@@ -21,6 +21,7 @@ import org.openrewrite.Tree;
 import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.AnnotationMatcher;
 import org.openrewrite.java.JavaVisitor;
+import org.openrewrite.java.spring.boot2.UnnecessarySpringExtension;
 import org.openrewrite.java.tree.J.ClassDeclaration;
 import org.openrewrite.java.tree.JavaType.FullyQualified;
 import org.openrewrite.java.tree.TypeUtils;
@@ -36,7 +37,7 @@ import org.springframework.ide.vscode.commons.rewrite.java.JavaMarkerVisitor;
 public class UnnecessarySpringExtensionProblem implements RecipeCodeActionDescriptor {
 
 	private static final String LABEL = "Remove unnecessary @SpringExtension";
-	private static final String ID = "org.openrewrite.java.spring.boot2.UnnecessarySpringExtension";
+	private static final String ID = UnnecessarySpringExtension.class.getName();
     private static final List<String> SPRING_BOOT_TEST_ANNOTATIONS = Arrays.asList(
             "org.springframework.boot.test.context.SpringBootTest",
             "org.springframework.boot.test.autoconfigure.jdbc.JdbcTest",

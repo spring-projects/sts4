@@ -148,6 +148,9 @@ public class RewriteRefactorings implements CodeActionResolver, QuickfixHandler 
 		if (project.isPresent()) {
 			boolean projectWide = data.getRecipeScope() == RecipeScope.PROJECT;
 			Recipe r = createRecipe(data);
+			if (r == null) {
+				log.warn("Code Action failed to resolve. Could not create recipe created with id '" + data.getRecipeId() + "'.");
+			}
 			List<CompilationUnit> cus = Collections.emptyList();
 			if (projectWide) {
 				JavaParser jp = ORAstUtils.createJavaParserBuilder(project.get()).dependsOn(data.getTypeStubs()).build();

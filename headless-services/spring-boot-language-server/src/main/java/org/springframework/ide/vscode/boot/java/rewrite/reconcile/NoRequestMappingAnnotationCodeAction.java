@@ -19,6 +19,7 @@ import org.openrewrite.SourceFile;
 import org.openrewrite.Tree;
 import org.openrewrite.java.AnnotationMatcher;
 import org.openrewrite.java.JavaVisitor;
+import org.openrewrite.java.spring.NoRequestMappingAnnotation;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.marker.Range;
 import org.springframework.ide.vscode.boot.java.Boot2JavaProblemType;
@@ -34,7 +35,7 @@ import org.springframework.ide.vscode.commons.rewrite.java.JavaMarkerVisitor;
 public class NoRequestMappingAnnotationCodeAction implements RecipeCodeActionDescriptor {
 	
     private static final String LABEL = "Replace @RequestMapping with specific @GetMapping, @PostMapping etc.";
-	private static final String ID = "org.openrewrite.java.spring.NoRequestMappingAnnotation";
+	private static final String ID = NoRequestMappingAnnotation.class.getName();
 	private static final AnnotationMatcher REQUEST_MAPPING_ANNOTATION_MATCHER = new AnnotationMatcher("@org.springframework.web.bind.annotation.RequestMapping");
 
 	@Override

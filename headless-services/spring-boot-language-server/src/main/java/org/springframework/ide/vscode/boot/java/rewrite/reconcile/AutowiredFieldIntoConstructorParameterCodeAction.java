@@ -39,6 +39,7 @@ import org.springframework.ide.vscode.commons.rewrite.config.MarkerVisitorContex
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeCodeActionDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
 import org.springframework.ide.vscode.commons.rewrite.java.AnnotationHierarchies;
+import org.springframework.ide.vscode.commons.rewrite.java.ConvertAutowiredFieldIntoConstructorParameter;
 import org.springframework.ide.vscode.commons.rewrite.java.FixAssistMarker;
 import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.java.JavaMarkerVisitor;
@@ -48,7 +49,7 @@ import org.springframework.ide.vscode.commons.rewrite.java.ProjectParser;
 public class AutowiredFieldIntoConstructorParameterCodeAction implements RecipeCodeActionDescriptor {
 	
 	private static final String LABEL = "Convert @Autowired field into Constructor Parameter";
-	private static final String ID = "org.springframework.ide.vscode.commons.rewrite.java.ConvertAutowiredFieldIntoConstructorParameter";
+	private static final String ID = ConvertAutowiredFieldIntoConstructorParameter.class.getName();
 	private static final String AUTOWIRED = "org.springframework.beans.factory.annotation.Autowired";
 
 	@Override

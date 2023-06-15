@@ -19,6 +19,7 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.SourceFile;
 import org.openrewrite.Tree;
 import org.openrewrite.java.JavaVisitor;
+import org.openrewrite.java.spring.boot3.PreciseBeanType;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.J.Return;
 import org.openrewrite.java.tree.JavaType;
@@ -35,7 +36,7 @@ import org.springframework.ide.vscode.commons.rewrite.java.JavaMarkerVisitor;
 
 public class PreciseBeanTypeProblem implements RecipeCodeActionDescriptor {
 
-	private static final String RECIPE_ID = "org.openrewrite.java.spring.boot3.PreciseBeanType";
+	private static final String RECIPE_ID = PreciseBeanType.class.getName();
 
 	private static final String LABEL = "Ensure concrete bean type";
 	

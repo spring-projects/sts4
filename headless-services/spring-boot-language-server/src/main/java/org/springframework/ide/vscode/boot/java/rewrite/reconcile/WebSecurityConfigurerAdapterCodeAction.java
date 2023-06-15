@@ -17,6 +17,7 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.SourceFile;
 import org.openrewrite.Tree;
 import org.openrewrite.java.JavaVisitor;
+import org.openrewrite.java.spring.security5.WebSecurityConfigurerAdapter;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.J.ClassDeclaration;
 import org.openrewrite.java.tree.JavaType;
@@ -37,7 +38,7 @@ import org.springframework.ide.vscode.commons.rewrite.java.JavaMarkerVisitor;
 
 public class WebSecurityConfigurerAdapterCodeAction implements RecipeCodeActionDescriptor {
 	
-	private static final String ID = "org.openrewrite.java.spring.boot2.WebSecurityConfigurerAdapter";
+	private static final String ID = WebSecurityConfigurerAdapter.class.getName();
 	
     private static final String FQN_WEB_SECURITY_CONFIGURER_ADAPTER = "org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter";
 

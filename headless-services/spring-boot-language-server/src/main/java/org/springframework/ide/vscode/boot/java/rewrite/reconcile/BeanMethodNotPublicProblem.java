@@ -18,6 +18,7 @@ import org.openrewrite.Tree;
 import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.AnnotationMatcher;
 import org.openrewrite.java.JavaVisitor;
+import org.openrewrite.java.spring.BeanMethodsNotPublic;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.TypeUtils;
 import org.openrewrite.marker.Range;
@@ -33,7 +34,7 @@ import org.springframework.ide.vscode.commons.rewrite.java.JavaMarkerVisitor;
 
 public class BeanMethodNotPublicProblem implements RecipeCodeActionDescriptor {
 	
-    private static final String ID = "org.openrewrite.java.spring.BeanMethodsNotPublic";
+    private static final String ID = BeanMethodsNotPublic.class.getName();
     
     private static final String LABEL = "Remove 'public' from @Bean method";
 

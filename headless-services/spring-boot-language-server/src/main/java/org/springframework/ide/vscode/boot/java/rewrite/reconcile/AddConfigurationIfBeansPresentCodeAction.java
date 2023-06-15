@@ -34,7 +34,7 @@ import org.springframework.ide.vscode.commons.rewrite.java.JavaMarkerVisitor;
 
 public class AddConfigurationIfBeansPresentCodeAction implements RecipeCodeActionDescriptor {
 	
-	private static final String ID = "org.openrewrite.java.spring.boot2.AddConfigurationAnnotationIfBeansPresent";
+	private static final String ID = AddConfigurationAnnotationIfBeansPresent.class.getName();
 	
 	private static final String PROBLEM_LABEL = "'@Configuration' is missing on a class defining Spring Beans";
 	

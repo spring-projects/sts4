@@ -39,6 +39,7 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemTy
 import org.springframework.ide.vscode.commons.rewrite.config.MarkerVisitorContext;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeCodeActionDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
+import org.springframework.ide.vscode.commons.rewrite.java.DefineMethod;
 import org.springframework.ide.vscode.commons.rewrite.java.FixAssistMarker;
 import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.java.JavaMarkerVisitor;
@@ -49,7 +50,7 @@ import com.google.common.collect.ImmutableSet;
 
 public class NotRegisteredBeansProblem implements RecipeCodeActionDescriptor {
 		
-	private static final String DEFINE_METHOD_RECIPE = "org.springframework.ide.vscode.commons.rewrite.java.DefineMethod";
+	private static final String DEFINE_METHOD_RECIPE = DefineMethod.class.getName();
 		
 	private static final List<String> AOT_BEANS = List.of(
 			"org.springframework.beans.factory.aot.BeanFactoryInitializationAotProcessor",

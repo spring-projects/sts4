@@ -20,6 +20,7 @@ import org.openrewrite.Tree;
 import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.AnnotationMatcher;
 import org.openrewrite.java.JavaVisitor;
+import org.openrewrite.java.spring.NoAutowiredOnConstructor;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.J.ClassDeclaration;
 import org.openrewrite.java.tree.J.MethodDeclaration;
@@ -41,7 +42,7 @@ public class NoAutowiredOnConstructorProblem implements RecipeCodeActionDescript
 
 	private static final AnnotationMatcher BOOT_TEST_ANNOTATION_MATCHER = new AnnotationMatcher(
 			"@org.springframework.boot.test.context.SpringBootTest", true);
-	private static final String ID = "org.openrewrite.java.spring.NoAutowiredOnConstructor";
+	private static final String ID = NoAutowiredOnConstructor.class.getName();
 	private static final String LABEL = "Remove Unnecessary @Autowired";
 
 	@Override

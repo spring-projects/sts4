@@ -19,6 +19,7 @@ import org.openrewrite.SourceFile;
 import org.openrewrite.Tree;
 import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaVisitor;
+import org.openrewrite.java.spring.NoRepoAnnotationOnRepoInterface;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.J.ClassDeclaration;
 import org.openrewrite.java.tree.JavaType;
@@ -36,7 +37,7 @@ import org.springframework.ide.vscode.commons.rewrite.java.JavaMarkerVisitor;
 
 public class NoRepoAnnotationProblem implements RecipeCodeActionDescriptor {
 
-	private static final String ID = "org.openrewrite.java.spring.NoRepoAnnotationOnRepoInterface";
+	private static final String ID = NoRepoAnnotationOnRepoInterface.class.getName();
 	private static final String LABEL = "Remove Unnecessary @Repository";
 	private static final String INTERFACE_REPOSITORY = "org.springframework.data.repository.Repository";
 	private static final String ANNOTATION_REPOSITORY = Annotations.REPOSITORY;

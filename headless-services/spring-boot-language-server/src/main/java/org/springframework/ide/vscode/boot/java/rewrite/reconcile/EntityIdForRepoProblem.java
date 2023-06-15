@@ -28,7 +28,7 @@ import org.springframework.ide.vscode.commons.rewrite.java.FixAssistMarker;
 
 public class EntityIdForRepoProblem implements RecipeCodeActionDescriptor {
 	
-	private static final String ID = "org.openrewrite.java.spring.boot2.search.EntityIdForRepositoryVisitor";
+	private static final String ID = EntityIdForRepositoryVisitor.class.getName();
 
 	@Override
 	public JavaVisitor<ExecutionContext> getMarkerVisitor(MarkerVisitorContext context) {

@@ -35,7 +35,7 @@ import org.springframework.ide.vscode.commons.rewrite.java.JavaMarkerVisitor;
 
 public class BeanPostProcessingIgnoreInAotProblem implements RecipeCodeActionDescriptor {
 	
-	private static final String RECIPE_ID = "org.springframework.ide.vscode.commons.rewrite.java.BeanPostProcessingIgnoreInAot";
+	private static final String RECIPE_ID = BeanPostProcessingIgnoreInAot.class.getName();
 	private static final String LABEL = "Add method 'isBeanExcludedFromAotProcessing' that returns 'false'";
 
 	@Override

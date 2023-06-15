@@ -17,6 +17,7 @@ import org.openrewrite.SourceFile;
 import org.openrewrite.Tree;
 import org.openrewrite.java.JavaVisitor;
 import org.openrewrite.java.MethodMatcher;
+import org.openrewrite.java.spring.boot2.AuthorizeHttpRequests;
 import org.openrewrite.java.tree.J.MethodInvocation;
 import org.openrewrite.java.tree.J.VariableDeclarations;
 import org.openrewrite.java.tree.JavaType.FullyQualified;
@@ -34,7 +35,7 @@ import org.springframework.ide.vscode.commons.rewrite.java.JavaMarkerVisitor;
 
 public class AuthorizeHttpRequestsCodeAction implements RecipeCodeActionDescriptor {
 
-	private static final String ID = "org.openrewrite.java.spring.boot2.AuthorizeHttpRequests";
+	private static final String ID = AuthorizeHttpRequests.class.getName();
 
 	private static final MethodMatcher MATCH_AUTHORIZE_REQUESTS = new MethodMatcher(
 			"org.springframework.security.config.annotation.web.builders.HttpSecurity authorizeRequests(..)");
