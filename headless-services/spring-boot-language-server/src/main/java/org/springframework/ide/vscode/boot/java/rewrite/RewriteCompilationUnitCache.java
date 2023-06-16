@@ -28,8 +28,8 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.io.IOUtils;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
-import org.openrewrite.Tree;
 import org.openrewrite.Parser.Input;
+import org.openrewrite.Tree;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.marker.JavaSourceSet;
 import org.openrewrite.java.tree.J.CompilationUnit;
@@ -38,6 +38,7 @@ import org.openrewrite.java.tree.JavaType.FullyQualified;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.utils.DocumentContentProvider;
+import org.springframework.ide.vscode.boot.java.utils.ServerUtils;
 import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
@@ -90,7 +91,7 @@ public class RewriteCompilationUnitCache implements DocumentContentProvider, Dis
 						CompletableFuture<CompilationUnit> future = notification.getValue();
 						
 						if (future != null) {
-							if (!future.isCancelled()) {
+							if (!future.isDone() && !future.isCancelled()) {
 								future.cancel(true);
 							}
 							Optional<IJavaProject> project = projectFinder.find(new TextDocumentIdentifier(uri.toASCIIString()));
@@ -98,8 +99,19 @@ public class RewriteCompilationUnitCache implements DocumentContentProvider, Dis
 
 								JavaParser parser = javaParsers.getIfPresent(project.get().getLocationUri());
 								if (parser != null) {
-									parser.reset(List.of(uri));
-//									parser.reset();
+//									if (future.isDone()) {
+//										try {
+//											CompilationUnit cu = future.get();
+//											if (cu != null) {
+//												parser.resetCUs(List.of(cu));
+//												return;
+//											}
+//										} catch (Throwable t) {
+//											logger.error("", t);
+//										}
+//									}
+//									parser.reset(List.of(uri));
+									parser.reset();
 								}
 							}
 						}
@@ -113,6 +125,7 @@ public class RewriteCompilationUnitCache implements DocumentContentProvider, Dis
 
 					@Override
 					public void onRemoval(RemovalNotification<URI, JavaParser> notification) {
+						logger.info("CU Cache: invalidate project {}", notification.getKey());
 						sourceSetClasspath.invalidate(notification.getKey());
 					}
 				})
@@ -164,6 +177,10 @@ public class RewriteCompilationUnitCache implements DocumentContentProvider, Dis
 			this.projectObserver.addListener(this.projectListener);
 		}
 		
+		if (server != null) {
+			ServerUtils.listenToClassFileChanges(server.getWorkspaceService().getFileObserver(), projectFinder, this::invalidateProject);
+		}
+		
 	}
 
 	public void dispose() {
@@ -187,8 +204,6 @@ public class RewriteCompilationUnitCache implements DocumentContentProvider, Dis
 	}
 	
 	private void invalidateProject(IJavaProject project) {
-		logger.info("CU Cache: invalidate project <{}>", project.getElementName());
-
 		Set<URI> docUris = projectToDocs.getIfPresent(project.getLocationUri());
 		if (docUris != null) {
 			uriToCu.invalidateAll(docUris);

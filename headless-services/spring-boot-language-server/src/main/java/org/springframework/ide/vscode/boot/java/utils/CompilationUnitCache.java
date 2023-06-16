@@ -147,6 +147,10 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 			this.projectObserver.addListener(this.projectListener);
 		}
 		
+		if (server != null) {
+			ServerUtils.listenToClassFileChanges(server.getWorkspaceService().getFileObserver(), projectFinder, this::invalidateProject);
+		}
+		
 	}
 
 	public void dispose() {
@@ -329,8 +333,6 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 	}
 
 	private synchronized void invalidateProject(IJavaProject project) {
-		logger.info("Invalidate project <{}>", project.getElementName());
-
 		Set<URI> docUris = projectToDocs.getIfPresent(project.getLocationUri());
 		if (docUris != null) {
 			uriToCu.invalidateAll(docUris);

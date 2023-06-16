@@ -29,6 +29,7 @@ import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveDataProvider;
 import org.springframework.ide.vscode.boot.java.rewrite.RewriteRecipeRepository;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
+import org.springframework.ide.vscode.boot.java.utils.ServerUtils;
 import org.springframework.ide.vscode.boot.java.utils.SymbolCache;
 import org.springframework.ide.vscode.boot.metadata.ProjectBasedPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.properties.BootPropertiesLanguageServerComponents;
@@ -80,7 +81,7 @@ public class BootLanguageServerInitializer implements InitializingBean {
 	private VscodeCompletionEngineAdapter completionEngineAdapter;
 	
 	private static final Logger log = LoggerFactory.getLogger(BootLanguageServerInitializer.class);
-
+	
 	private ProjectObserver.Listener reconcileDocumentsForProjectChange(SimpleLanguageServer s, CompositeLanguageServerComponents c, JavaProjectFinder projectFinder) {
 		return new ProjectObserver.Listener() {
 			
@@ -90,28 +91,28 @@ public class BootLanguageServerInitializer implements InitializingBean {
 			
 			@Override
 			public void created(IJavaProject project) {
-				validateAll(project);
+				validateAll(c, s, project);
 			}
 			
 			@Override
 			public void changed(IJavaProject project) {
-				validateAll(project);
+				validateAll(c, s, project);
 			}
 			
-			private void validateAll(IJavaProject project) {
-				c.getReconcileEngine().ifPresent(reconciler -> {
-					log.debug("A project changed {}, triggering reconcile on all project's open documents",
-							project.getElementName());
-					for (TextDocument doc : s.getTextDocumentService().getAll()) {
-						if (projectFinder.find(doc.getId()).orElse(null) == project) {
-							s.validateWith(doc.getId(), reconciler);
-						}
-					}
-				});
-			}
 		};
 	}
 	
+	private void validateAll(CompositeLanguageServerComponents c, SimpleLanguageServer s, IJavaProject project) {
+		c.getReconcileEngine().ifPresent(reconciler -> {
+			log.debug("A project changed {}, triggering reconcile on all project's open documents",
+					project.getElementName());
+			for (TextDocument doc : s.getTextDocumentService().getAll()) {
+				if (projectFinder.find(doc.getId()).orElse(null) == project) {
+					s.validateWith(doc.getId(), reconciler);
+				}
+			}
+		});
+	}
 	@Override
 	public void afterPropertiesSet() throws Exception {
 		//TODO: CompositeLanguageServerComponents object instance serves no purpose anymore. The constructor really just contains
@@ -191,6 +192,8 @@ public class BootLanguageServerInitializer implements InitializingBean {
 				TextDocument doc = params.getDocument();
 				server.validateWith(doc.getId(), reconcileEngine);
 			});
+
+			ServerUtils.listenToClassFileChanges(server.getWorkspaceService().getFileObserver(), projectFinder, project -> validateAll(components, server, project));
 		});
 		config.addListener(evt -> reconcile());
 		params.projectObserver.addListener(reconcileDocumentsForProjectChange(server, components, params.projectFinder));

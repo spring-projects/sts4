@@ -170,6 +170,7 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 						FileSystems.getDefault().getPathMatcher("glob:**/*.json"),
 						FileSystems.getDefault().getPathMatcher("glob:**/*.yml"),
 						FileSystems.getDefault().getPathMatcher("glob:**/*.properties"),
+						FileSystems.getDefault().getPathMatcher("glob:**/*.class"),
 						FileSystems.getDefault().getPathMatcher("glob:**/META-INF/spring/*.factories")
 				)));
 				

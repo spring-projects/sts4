@@ -10,30 +10,22 @@
  *******************************************************************************/
 package org.springframework.tooling.jdt.ls.commons.classpath;
 
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashSet;
 import java.util.Queue;
-import java.util.Set;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
-import org.eclipse.core.resources.IContainer;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IResourceDelta;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.IStatus;
 import org.eclipse.core.runtime.Status;
 import org.eclipse.core.runtime.jobs.Job;
 import org.eclipse.jdt.core.ElementChangedEvent;
-import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IElementChangedListener;
 import org.eclipse.jdt.core.IJavaElement;
 import org.eclipse.jdt.core.IJavaElementDelta;
 import org.eclipse.jdt.core.IJavaProject;
 import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaCore;
-import org.eclipse.jdt.core.JavaModelException;
 import org.springframework.tooling.jdt.ls.commons.Logger;
 
 /**
@@ -87,8 +79,7 @@ public class ClasspathListenerManager {
 						// Classpath unchanged but maven/gradle repo cache has JAR's removed or downloaded
 						// See individual method comments for more details
 						|| isClasspathManifestFileChanged(jp, delta)
-						|| areClasspathJarsChanged(delta)
-						|| areOutputFoldersContentChanged(jp, delta)) {
+						|| areClasspathJarsChanged(delta)) {
 					listener.classpathChanged(jp);
 				}
 				break;
@@ -116,53 +107,6 @@ public class ClasspathListenerManager {
 			return false;
 		}
 		
-		private boolean areOutputFoldersContentChanged(IJavaProject jp, IJavaElementDelta delta) {
-			Collection<IPath> outputFolders = getOutputFolders(jp);
-			if (delta.getResourceDeltas() != null && (delta.getFlags() & (IJavaElementDelta.F_CONTENT | IJavaElementDelta.F_CHILDREN)) != 0) {
-				for (IResourceDelta resourceDelta : delta.getResourceDeltas()) {
-					if (outputFolders.stream().anyMatch(of -> resourceDelta.getFullPath().isPrefixOf(of))) {
-						return areClassFilesChangedOrAdded(resourceDelta);
-					}
-				}
-			}
-			return false;
-		}
-		
-		private boolean areClassFilesChangedOrAdded(IResourceDelta resourceDelta) {
-			if (resourceDelta.getResource() instanceof IContainer) {
-				for (IResourceDelta rd : resourceDelta.getAffectedChildren()) {
-					if(areClassFilesChangedOrAdded(rd)) {
-						return true;
-					}
-				}
-				return false;
-			} else {
-				if ("class".equals(resourceDelta.getResource().getFileExtension())) {
-					switch (resourceDelta.getKind()) {
-					case IResourceDelta.ADDED:
-						return true;
-					case IResourceDelta.CHANGED:
-						return (resourceDelta.getFlags() & IResourceDelta.CONTENT) != 0;
-					}
-				}
-				return false;
-			}
-		}
-		
-		private Collection<IPath> getOutputFolders(IJavaProject jp) {
-			try {
-				Set<IPath> outputFolders = new HashSet<>();;
-				for (IClasspathEntry cpe : jp.getRawClasspath()) {
-					if (cpe.getEntryKind() == IClasspathEntry.CPE_SOURCE && cpe.getOutputLocation() != null) {
-						outputFolders.add(cpe.getOutputLocation());
-					}
-				}
-				return outputFolders;
-			} catch (JavaModelException e) {
-				return Collections.emptyList();
-			}
-		}
-
 		/**
 		 * When Maven project update is completed .classpath file content changed is one
 		 * of the resource delta's expected.
