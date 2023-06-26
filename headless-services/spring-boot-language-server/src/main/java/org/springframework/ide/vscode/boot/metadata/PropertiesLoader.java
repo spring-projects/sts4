@@ -53,18 +53,20 @@ public class PropertiesLoader {
 	private ConfigurationMetadataRepositoryJsonBuilder builder = ConfigurationMetadataRepositoryJsonBuilder.create();
 
 	public ConfigurationMetadataRepository load(IClasspath classPath) {
-		try {
-			IClasspathUtil.getBinaryRoots(classPath, (cpe) -> !cpe.isSystem()).forEach(fileEntry -> {
-				if (fileEntry.exists()) {
-					if (fileEntry.isDirectory()) {
-						loadFromOutputFolder(fileEntry.toPath());
-					} else {
-						loadFromJar(fileEntry.toPath());
+		if (classPath != null) {
+			try {
+				IClasspathUtil.getBinaryRoots(classPath, (cpe) -> !cpe.isSystem()).forEach(fileEntry -> {
+					if (fileEntry.exists()) {
+						if (fileEntry.isDirectory()) {
+							loadFromOutputFolder(fileEntry.toPath());
+						} else {
+							loadFromJar(fileEntry.toPath());
+						}
 					}
-				}
-			});
-		} catch (Exception e) {
-    		LOG.log(Level.SEVERE, "Failed to retrieve classpath", e);
+				});
+			} catch (Exception e) {
+	    		LOG.log(Level.SEVERE, "Failed to retrieve classpath", e);
+			}
 		}
 		ConfigurationMetadataRepository repository = builder.build();
 		return repository;

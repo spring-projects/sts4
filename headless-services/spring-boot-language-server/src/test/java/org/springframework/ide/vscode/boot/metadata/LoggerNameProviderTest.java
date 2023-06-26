@@ -57,9 +57,9 @@ public class LoggerNameProviderTest {
 	@BeforeEach
 	public void setup() throws Exception {
 		CachingValueProvider.TIMEOUT = Duration.ofSeconds(20);
-		System.out.println("Setting test up.");
+//		System.out.println("Setting test up.");
 		project = projects.mavenProject("tricky-getters-boot-1.3.1-app");
-		System.out.println("Done setting test up: ");
+//		System.out.println("Done setting test up: ");
 	}
 
 	@AfterEach
@@ -69,7 +69,7 @@ public class LoggerNameProviderTest {
 
     @Test
     void directResults() throws Exception {
-		System.out.println("directResults() - start");
+//		System.out.println("directResults() - start");
         LoggerNameProvider p = create();
         String query = "jboss";
         List<String> directQueryResults = getResults(p, query);
@@ -81,12 +81,12 @@ public class LoggerNameProviderTest {
          */
         //		assertElements(directQueryResults, JBOSS_RESULTS);
         assertElementsAtLeast(directQueryResults, JBOSS_RESULTS);
-		System.out.println("directResults() - end");
+//		System.out.println("directResults() - end");
     }
 
     @Test
     void cachedResults() throws Exception {
-		System.out.println("cachedResults() - start");
+//		System.out.println("cachedResults() - start");
         LoggerNameProvider p = create();
         for (int i = 0; i < 10; i++) {
             long startTime = System.currentTimeMillis();
@@ -100,14 +100,14 @@ public class LoggerNameProviderTest {
             assertElementsAtLeast(directQueryResults, JBOSS_RESULTS);
 
             long duration = System.currentTimeMillis() - startTime;
-            System.out.println(i + ": " + duration + " ms");
+//            System.out.println(i + ": " + duration + " ms");
         }
-		System.out.println("cachedResults() - end");
+//		System.out.println("cachedResults() - end");
     }
 
     @Test
     void incrementalResults() throws Exception {
-		System.out.println("incrementalResults() - start");
+//		System.out.println("incrementalResults() - start");
         String fullQuery = "jboss";
 
         LoggerNameProvider p = create();
@@ -116,14 +116,14 @@ public class LoggerNameProviderTest {
             List<String> results = getResults(p, query);
 //			dumpResults(query, results);
             if (i == fullQuery.length()) {
-                System.out.println("Verifying final result!");
+//                System.out.println("Verifying final result!");
                 //Not checking for exact equals because... quircks of JDT search engine means it
                 // will actually finds less results than if we derive them by filtering incrementally.
                 //If all works well, we should never find fewer results than Eclipse does.
                 assertElementsAtLeast(results, JBOSS_RESULTS);
             }
         }
-		System.out.println("incrementalResults() - end");
+//		System.out.println("incrementalResults() - end");
     }
 
 	private LoggerNameProvider create() {

@@ -1,18 +1,18 @@
-<configuration>
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration>
 
-  <appender name="STDOUT" class="ch.qos.logback.core.ConsoleAppender">
-    <!-- encoders are assigned the type
-         ch.qos.logback.classic.encoder.PatternLayoutEncoder by default -->
+<configuration>
+  <import class="ch.qos.logback.classic.encoder.PatternLayoutEncoder"/>
+  <import class="ch.qos.logback.core.ConsoleAppender"/>
+
+  <appender name="STDOUT" class="ConsoleAppender">
     <target>System.err</target>
-    <encoder>
+    <encoder class="PatternLayoutEncoder">
       <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
     </encoder>
   </appender>
 
-<!--
-  <root level="info">
-    <appender-ref ref="STDOUT" />
+  <root level="OFF">
+    <appender-ref ref="STDOUT"/>
   </root>
--->
-
 </configuration>
