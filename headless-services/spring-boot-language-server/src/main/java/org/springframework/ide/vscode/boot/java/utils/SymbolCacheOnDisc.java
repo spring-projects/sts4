@@ -381,8 +381,11 @@ public class SymbolCacheOnDisc implements SymbolCache {
 	        	        
 	        JsonElement supertypesObject = parsedObject.get("supertypes");
 	        String[] supertypes = context.deserialize(supertypesObject, String[].class);
+	        
+	        JsonElement annotationsObject = parsedObject.get("annotations");
+	        String[] annotations = annotationsObject == null? new String[0] : context.deserialize(annotationsObject, String[].class);
 
-	        return new Bean(beanName, beanType, location, injectionPoints, supertypes);
+	        return new Bean(beanName, beanType, location, injectionPoints, supertypes, annotations);
 	    }
 	}
 	

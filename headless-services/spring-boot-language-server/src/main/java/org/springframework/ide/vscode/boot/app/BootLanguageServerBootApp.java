@@ -40,8 +40,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.ide.vscode.boot.common.PropertyCompletionFactory;
 import org.springframework.ide.vscode.boot.common.RelaxedNameConfig;
-import org.springframework.ide.vscode.boot.java.JavaDefinitionHandler;
 import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
+import org.springframework.ide.vscode.boot.java.JavaDefinitionHandler;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaCodeActionProvider;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaProjectReconcilerScheduler;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaReconcileEngine;
@@ -74,6 +74,7 @@ import org.springframework.ide.vscode.boot.metadata.LoggerNameProvider;
 import org.springframework.ide.vscode.boot.metadata.ProjectBasedPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndex;
 import org.springframework.ide.vscode.boot.metadata.ValueProviderRegistry;
+import org.springframework.ide.vscode.boot.modulith.ModulithService;
 import org.springframework.ide.vscode.boot.properties.completions.SpringPropertiesCompletionEngine;
 import org.springframework.ide.vscode.boot.xml.SpringXMLCompletionEngine;
 import org.springframework.ide.vscode.boot.yaml.completions.ApplicationYamlAssistContext;
@@ -372,6 +373,11 @@ public class BootLanguageServerBootApp {
 	@Bean
 	JavaDefinitionHandler javaDefinitionHandler(CompilationUnitCache cuCache, JavaProjectFinder projectFinder) {
 		return new JavaDefinitionHandler(cuCache, projectFinder, List.of(new PropertyValueAnnotationDefProvider()));
+	}
+	
+	@Bean
+	ModulithService modulithService(SimpleLanguageServer server, ProjectObserver projectObserver, SpringMetamodelIndex springIndex, JavaProjectFinder projectFinder) {
+		return new ModulithService(projectObserver, server.getWorkspaceService().getFileObserver(), projectFinder, springIndex);
 	}
 	
 }

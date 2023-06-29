@@ -108,6 +108,12 @@
         "label": "Spring factories key not supported",
         "description": "Spring factories key not supported",
         "defaultSeverity": "ERROR"
+      },
+      {
+        "code": "MODULITH_TYPE_REF_VIOLATION",
+        "label": "Import from restricted module",
+        "description": "Restricted dependency",
+        "defaultSeverity": "ERROR"
       }
     ]
   },

@@ -25,7 +25,9 @@ public enum Boot3JavaProblemType implements ProblemType {
 	
 	JAVA_TYPE_NOT_SUPPORTED(ERROR, "Type no supported as of Spring Boot 3", "Type not supported as of Spring Boot 3"),
 	
-	FACTORIES_KEY_NOT_SUPPORTED(ERROR, "Spring factories key not supported", "Spring factories key not supported");
+	FACTORIES_KEY_NOT_SUPPORTED(ERROR, "Spring factories key not supported", "Spring factories key not supported"),
+	
+	MODULITH_TYPE_REF_VIOLATION(ERROR, "Restricted dependency", "Import from restricted module");
 	
 	private final ProblemSeverity defaultSeverity;
 	private String description;

@@ -20,6 +20,7 @@ import org.springframework.ide.vscode.boot.java.rewrite.reconcile.BeanPostProces
 import org.springframework.ide.vscode.boot.java.rewrite.reconcile.Boot3NotSupportedTypeProblem;
 import org.springframework.ide.vscode.boot.java.rewrite.reconcile.EntityIdForRepoProblem;
 import org.springframework.ide.vscode.boot.java.rewrite.reconcile.HttpSecurityLamdaDslCodeAction;
+import org.springframework.ide.vscode.boot.java.rewrite.reconcile.ModulithTypeReferenceViolation;
 import org.springframework.ide.vscode.boot.java.rewrite.reconcile.NoAutowiredOnConstructorProblem;
 import org.springframework.ide.vscode.boot.java.rewrite.reconcile.NoRepoAnnotationProblem;
 import org.springframework.ide.vscode.boot.java.rewrite.reconcile.NoRequestMappingAnnotationCodeAction;
@@ -51,7 +52,8 @@ public class BootCodeActionRepository extends CodeActionRepository {
 				new AddConfigurationIfBeansPresentCodeAction(),
 				new AuthorizeHttpRequestsCodeAction(),
 				new WebSecurityConfigurerAdapterCodeAction(),
-				new EntityIdForRepoProblem()
+				new EntityIdForRepoProblem(),
+				new ModulithTypeReferenceViolation()
 		);
 	}
 

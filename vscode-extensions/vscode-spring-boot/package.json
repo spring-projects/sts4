@@ -494,6 +494,18 @@
               "HINT",
               "ERROR"
             ]
+          },
+          "spring-boot.ls.problem.boot3.MODULITH_TYPE_REF_VIOLATION": {
+            "type": "string",
+            "default": "ERROR",
+            "description": "Restricted dependency",
+            "enum": [
+              "IGNORE",
+              "INFO",
+              "WARNING",
+              "HINT",
+              "ERROR"
+            ]
           }
         }
       },

@@ -25,8 +25,9 @@ public class Bean {
 	private final Location location;
 	private final InjectionPoint[] injectionPoints;
 	private final Set<String> supertypes;
+	private final String[] annotations;
 
-	public Bean(String name, String type, Location location, InjectionPoint[] injectionPoints, String[] supertypes) {
+	public Bean(String name, String type, Location location, InjectionPoint[] injectionPoints, String[] supertypes, String[] annotations) {
 		this.name = name;
 		this.type = type;
 		this.location = location;
@@ -39,6 +40,7 @@ public class Bean {
 		}
 
 		this.supertypes = new HashSet<>(Arrays.asList(supertypes));
+		this.annotations = annotations;
 	}
 	
 	public String getName() {
@@ -59,6 +61,10 @@ public class Bean {
 
 	public boolean isTypeCompatibleWith(String type) {
 		return type != null && ((this.type != null && this.type.equals(type)) || (supertypes.contains(type)));
+	}
+	
+	public String[] getAnnotations() {
+		return annotations;
 	}
 	
 	@Override

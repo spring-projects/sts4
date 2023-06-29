@@ -32,6 +32,7 @@ import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.Annotations;
+import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
 import org.springframework.ide.vscode.boot.java.handlers.AbstractSymbolProvider;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
@@ -93,8 +94,12 @@ public class BeansSymbolProvider extends AbstractSymbolProvider {
 				
 				Set<String> supertypes = new HashSet<>();
 				ASTUtils.findSupertypes(beanType, supertypes);
+				
+				String[] annotations = AnnotationHierarchies
+						.findTransitiveSuperAnnotationBindings(node.resolveAnnotationBinding())
+						.map(t -> t.getAnnotationType().getQualifiedName()).toArray(String[]::new);
 
-				Bean beanDefinition = new Bean(nameAndRegion.getT1(), beanType.getQualifiedName(), location, injectionPoints, (String[]) supertypes.toArray(new String[supertypes.size()]));
+				Bean beanDefinition = new Bean(nameAndRegion.getT1(), beanType.getQualifiedName(), location, injectionPoints, (String[]) supertypes.toArray(new String[supertypes.size()]), annotations);
 
 				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), enhancedSymbol, beanDefinition));
 
@@ -213,7 +218,7 @@ public class BeansSymbolProvider extends AbstractSymbolProvider {
 		}
 		return result.toString();
 	}
-
+	
 	private boolean isMethodAbstract(MethodDeclaration method) {
 		List<?> modifiers = method.modifiers();
 		for (Object modifier : modifiers) {

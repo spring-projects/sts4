@@ -14,6 +14,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.ITypeBinding;
@@ -27,6 +28,7 @@ import org.eclipse.lsp4j.jsonrpc.messages.Tuple.Two;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.Annotations;
+import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
 import org.springframework.ide.vscode.boot.java.handlers.AbstractSymbolProvider;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
@@ -91,8 +93,10 @@ public class ComponentSymbolProvider extends AbstractSymbolProvider {
 		
 		Set<String> supertypes = new HashSet<>();
 		ASTUtils.findSupertypes(beanType, supertypes);
+		
+		String[] annotations = Stream.concat(Stream.of(annotationType), metaAnnotations.stream()).map(t -> t.getQualifiedName()).toArray(String[]::new);
 
-		Bean beanDefinition = new Bean(beanName, beanType.getQualifiedName(), location, injectionPoints, (String[]) supertypes.toArray(new String[supertypes.size()]));
+		Bean beanDefinition = new Bean(beanName, beanType.getQualifiedName(), location, injectionPoints, (String[]) supertypes.toArray(new String[supertypes.size()]), annotations);
 
 		return Tuple.two(new EnhancedSymbolInformation(symbol, addon), beanDefinition);
 	}

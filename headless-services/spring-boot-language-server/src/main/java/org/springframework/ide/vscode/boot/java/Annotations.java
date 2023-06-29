@@ -19,6 +19,7 @@ public class Annotations {
 	public static final String BEAN = "org.springframework.context.annotation.Bean";
 	public static final String PROFILE = "org.springframework.context.annotation.Profile";
 	public static final String CONDITIONAL = "org.springframework.context.annotation.Conditional";
+	public static final String BOOT_APP = "org.springframework.boot.autoconfigure.SpringBootApplication";
 
 	public static final String COMPONENT = "org.springframework.stereotype.Component";
 	public static final String CONFIGURATION = "org.springframework.context.annotation.Configuration";

@@ -72,7 +72,7 @@ public class DataRepositorySymbolProvider extends AbstractSymbolProvider {
 				ASTUtils.findSupertypes(concreteBeanTypeBindung, supertypes);
 
 				String concreteRepoType = concreteBeanTypeBindung.getQualifiedName();
-				Bean beanDefinition = new Bean(beanName, concreteRepoType, location, injectionPoints, (String[]) supertypes.toArray(new String[supertypes.size()]));
+				Bean beanDefinition = new Bean(beanName, concreteRepoType, location, injectionPoints, (String[]) supertypes.toArray(new String[supertypes.size()]), new String[0]);
 				
 				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), enhancedSymbol, beanDefinition));
 
