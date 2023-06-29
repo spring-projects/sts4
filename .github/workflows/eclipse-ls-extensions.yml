@@ -11,8 +11,9 @@ on:
 jobs:
 
   eclipse-distro-build:
-    runs-on: ubuntu-latest
-
+    runs-on: self-hosted
+    labels:
+      sts4-gha-01
     steps:
       - uses: actions/checkout@v3
       - name: Set up JDK 17
