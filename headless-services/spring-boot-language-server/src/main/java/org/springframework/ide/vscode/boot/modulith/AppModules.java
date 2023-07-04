@@ -10,7 +10,9 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.modulith;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 public final class AppModules {
 	
@@ -20,14 +22,42 @@ public final class AppModules {
 		this.modules = modules;
 	}
 	
-	public boolean isReferenceAllowed(String targetPackage, String referenceFqName) {
-		String referencePackage = ModulithService.getPackageNameFromTypeFQName(referenceFqName);
-		return modules
-				.stream()
-				.filter(m -> m.basePackage().equals(referencePackage))
-				.findFirst()
-				.map(m -> m.namedInterfaces().contains(referenceFqName))
-				.orElse(true);
+	public Optional<AppModule> getModuleNotExposingType(String targetPackage, String referenceFqName) {
+		return getModuleForType(referenceFqName).flatMap(refModule -> {
+			if (refModule.namedInterfaces().contains(referenceFqName)) {
+				return Optional.empty();
+			} else {
+				if (getModuleForPackage(targetPackage).map(targetModule -> targetModule == refModule).orElse(false)) {
+					// same module for target package and reference type
+					return Optional.empty();
+				}
+				return Optional.of(refModule);
+			}
+		});
+	}
+	
+	private Optional<AppModule> getModuleForPackage(String pkgName) {
+		return generatePackageHierarchy(pkgName)
+			.stream()
+			.map(p -> modules.stream().filter(m -> m.basePackage().equals(p)).findFirst())
+			.filter(o -> o.isPresent())
+			.map(o -> o.get())
+			.findFirst();
+	}
+	
+	private Optional<AppModule> getModuleForType(String typeFqName) {
+		return getModuleForPackage(ModulithService.getPackageNameFromTypeFQName(typeFqName));
+	}
+	
+	private List<String> generatePackageHierarchy(String pkgName) {
+		List<String> packageHierarchy = new ArrayList<>();
+		packageHierarchy.add(pkgName);
+		for (int i = pkgName.length() - 1; i >= 0; i--) {
+			if (pkgName.charAt(i) == '.') {
+				packageHierarchy.add(pkgName.substring(0, i));
+			}
+		}
+		return packageHierarchy;
 	}
 
 }

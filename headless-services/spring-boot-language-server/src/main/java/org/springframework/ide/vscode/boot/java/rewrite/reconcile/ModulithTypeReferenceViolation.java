@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.rewrite.reconcile;
 
+import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 
@@ -17,6 +18,7 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.Tree;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaVisitor;
+import org.openrewrite.java.marker.JavaSourceSet;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.J.CompilationUnit;
 import org.openrewrite.java.tree.J.FieldAccess;
@@ -33,6 +35,7 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemTy
 import org.springframework.ide.vscode.commons.rewrite.config.MarkerVisitorContext;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeCodeActionDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.java.FixAssistMarker;
+import org.springframework.ide.vscode.commons.rewrite.java.ProjectParser;
 
 public class ModulithTypeReferenceViolation implements RecipeCodeActionDescriptor {
 	
@@ -59,6 +62,10 @@ public class ModulithTypeReferenceViolation implements RecipeCodeActionDescripto
 				if (appModules == null) {
 					return cu;
 				} else {
+					JavaSourceSet sourceSet = cu.getMarkers().findFirst(JavaSourceSet.class).orElse(null);
+					if (sourceSet != null && ProjectParser.TEST.equals(sourceSet.getName())) {
+						return cu;
+					}
 					String pkgName = cu.getPackageDeclaration() == null ? "" : cu.getPackageDeclaration().getPackageName();
 					p.putMessage(MSG_PKG_NAME, pkgName);
 					return super.visitCompilationUnit(cu, p);
@@ -76,19 +83,26 @@ public class ModulithTypeReferenceViolation implements RecipeCodeActionDescripto
 			@Override
 			public Identifier visitIdentifier(Identifier identifier, ExecutionContext p) {
 				Identifier i = super.visitIdentifier(identifier, p);
-				if (!(getCursor().getParent().firstEnclosingOrThrow(J.class) instanceof J.FieldAccess)) {
-					return process(i, p.getMessage(MSG_PKG_NAME), TypeUtils.asFullyQualified(identifier.getType()));
+				if (getCursor().getParent().firstEnclosingOrThrow(J.class) instanceof J.FieldAccess) {
+					return i;
 				}
+				// check if identifier is a simple name of the type
+				FullyQualified type = TypeUtils.asFullyQualified(identifier.getType());
+				if (type != null && identifier.getSimpleName().equals(type.getClassName())) {
+					return process(i, p.getMessage(MSG_PKG_NAME), type);
+				}
+				
 				return i;
 			}
 
 			private <T extends J> T process(T node, String packageName, FullyQualified type) {
 				if (type != null) {
-					if (!appModules.isReferenceAllowed(packageName, type.getFullyQualifiedName())) {
+					Optional<T> opt = appModules.getModuleNotExposingType(packageName, type.getFullyQualifiedName()).map(module -> {
 						FixAssistMarker fixMarker = new FixAssistMarker(Tree.randomId(), getId())
-								.withLabel("Type is not allowed to be used in this package. Consider changing you 'Modulith' structure." );
-						node = node.withMarkers(node.getMarkers().add(fixMarker));
-					}
+								.withLabel("Cannot use type in this package. Type is not exposed in module '" + module.name() + "'." );
+						return node.withMarkers(node.getMarkers().add(fixMarker));
+					});
+					return opt.orElse(node);
 				}
 				return node;
 			}

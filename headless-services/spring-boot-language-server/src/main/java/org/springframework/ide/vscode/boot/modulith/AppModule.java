@@ -12,7 +12,7 @@ package org.springframework.ide.vscode.boot.modulith;
 
 import java.util.Collection;
 
-record AppModule(
+public record AppModule(
 		String name,
 		String basePackage,
 		Collection<String> namedInterfaces

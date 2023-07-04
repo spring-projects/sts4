@@ -13,6 +13,8 @@ package org.springframework.ide.vscode.boot.modulith;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URI;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
@@ -29,6 +31,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
 import org.springframework.ide.vscode.boot.java.Annotations;
+import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
 import org.springframework.ide.vscode.commons.java.Version;
@@ -85,7 +88,16 @@ public class ModulithService {
 		for (String f : files) {
 			URI uri = URI.create(f);
 			TextDocumentIdentifier docId = new TextDocumentIdentifier(uri.toASCIIString());
-			projectFinder.find(docId).ifPresent(this::invalidate);
+			projectFinder.find(docId).ifPresent(project -> {
+				synchronized (project) {
+					if (cache.containsKey(project)) {
+						Path filePath = Paths.get(uri);
+						if (IClasspathUtil.getProjectJavaSourceFoldersWithoutTests(project.getClasspath()).map(folder -> folder.toPath()).anyMatch(folderPath -> filePath.startsWith(folderPath))) {
+							cache.remove(project);
+						}
+					}
+				}
+			});
 		}
 	}
 	

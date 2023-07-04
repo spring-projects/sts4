@@ -31,8 +31,7 @@ public class ServerUtils {
 	private static final List<String> CLASS_FILES_TO_WATCH_GLOB = List.of("**/*.class");
 		
 	public static void listenToClassFileChanges(FileObserver fileObserver, JavaProjectFinder projectFinder, Consumer<IJavaProject> callback) {
-		fileObserver.onFilesChanged(CLASS_FILES_TO_WATCH_GLOB, files -> handleFiles(projectFinder, files, callback));
-		fileObserver.onFilesCreated(CLASS_FILES_TO_WATCH_GLOB, files -> handleFiles(projectFinder, files, callback));
+		fileObserver.onAnyChange(CLASS_FILES_TO_WATCH_GLOB, files -> handleFiles(projectFinder, files, callback));
 	}
 	
 	private static void handleFiles(JavaProjectFinder projectFinder, String[] files, Consumer<IJavaProject> callback) {
