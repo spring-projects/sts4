@@ -144,7 +144,7 @@
 				<gpg.passphrase>${env.gpg_passphrase}</gpg.passphrase>
 				<gpg.keyname>${env.gpg_keyname}</gpg.keyname>
 				<gpg.homedir>${env.gpg_homedir}</gpg.homedir>
-				<gpg.executable>gpg2</gpg.executable>
+				<!--<gpg.executable>gpg2</gpg.executable>-->
 			</properties>
 		</profile>
 
@@ -526,7 +526,7 @@
 						<passphrase>${gpg.passphrase}</passphrase>
 						<keyname>${gpg.keyname}</keyname>
 						<!--<homedir>${gpg.homedir}</homedir>-->
-						<executable>${gpg.executable}</executable>
+						<!--<executable>${gpg.executable}</executable>-->
 						<gpgArguments>
 							<arg>--pinentry-mode=loopback</arg>
 						</gpgArguments>
