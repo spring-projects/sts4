@@ -16,7 +16,7 @@ import java.util.Optional;
 
 public final class AppModules {
 	
-	private List<AppModule> modules;
+	List<AppModule> modules;
 	
 	public AppModules(List<AppModule> modules) {
 		this.modules = modules;
