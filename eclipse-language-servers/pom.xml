@@ -87,7 +87,7 @@
 		<!-- OSX app signing -->
 		<skip.osx.signing>true</skip.osx.signing>
 
-		<tycho-version>3.0.4</tycho-version>
+		<tycho-version>4.0.0</tycho-version>
 		<encoding>UTF-8</encoding>
 
 		<dist.accessKey>${env.bamboo_vault_tools_s3_accesskey_password}</dist.accessKey>
@@ -145,6 +145,21 @@
 				<gpg.keyname>${env.gpg_keyname}</gpg.keyname>
 				<gpg.homedir>${env.gpg_homedir}</gpg.homedir>
 			</properties>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.eclipse.tycho</groupId>
+						<artifactId>tycho-gpg-plugin</artifactId>
+						<executions>
+							<execution>
+								<goals>
+									<goal>sign-p2-artifacts</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
 		</profile>
 
 		<profile>
@@ -524,8 +539,8 @@
 						<skipIfJarsigned>true</skipIfJarsigned>
 						<passphrase>${gpg.passphrase}</passphrase>
 						<keyname>${gpg.keyname}</keyname>
-						<homedir>${gpg.homedir}</homedir>
-						<executable>gpg2</executable>
+						<!--<homedir>${gpg.homedir}</homedir>-->
+						<!--<executable>gpg2</executable>-->
 						<gpgArguments>
 							<arg>--pinentry-mode=loopback</arg>
 						</gpgArguments>

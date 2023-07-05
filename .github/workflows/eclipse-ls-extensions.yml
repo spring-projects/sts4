@@ -11,14 +11,14 @@ on:
 jobs:
 
   eclipse-distro-build:
-    runs-on: [self-hosted, sts4-gha-01]
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
-#      - name: Set up JDK 17
-#        uses: actions/setup-java@v3
-#        with:
-#          java-version: '17'
-#          distribution: 'temurin'
+      - name: Set up JDK 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
       - name: Enforce https instead of http
         run: ./nohttp.sh
       - name: Timestamp
@@ -28,17 +28,17 @@ jobs:
         run: |
           cd headless-services
           xvfb-run mvn --batch-mode clean install -DskipTests
-      - name: Install GPG key
-        run: |
-          echo "${{ secrets.GPG_PRIVATE_KEY }}" > gpg.asc
-          echo "${{ secrets.GPG_PASSPHRASE }}" | gpg --batch --yes --passphrase-fd 0 --import gpg.asc
+#      - name: Install GPG key
+#        run: |
+#          echo "${{ secrets.GPG_PRIVATE_KEY }}" > gpg.asc
+#          echo "${{ secrets.GPG_PASSPHRASE }}" | gpg --batch --yes --passphrase-fd 0 --import gpg.asc
       - name: Build Eclipse LS extensions
         env:
           tools_s3_access_key: ${{ secrets.TOOLS_S3_ACCESS_KEY }}
           tools_s3_secret_key: ${{ secrets.TOOLS_S3_SECRET_KEY  }}
           gpg_passphrase: ${{ secrets.GPG_PASSPHRASE }}
           gpg_keyname: ${{ secrets.GPG_KEYID }}
-          gpg_homedir: ${{ github.workspace }}
+#          gpg_homedir: ${{ github.workspace }}
         run: |
           cd eclipse-language-servers
-          xvfb-run mvn --batch-mode clean deploy -Pe427 -Psnapshot -Pgitactions -DbuildNumber=${{ steps.timestamp.outputs.timestamp }} -Dsigning.skip=true -Dhttpclient.retry-max=20 -Declipse.p2.mirrors=false -Ds3service.https-only=true -Dmaven.test.skip=true -Dtycho.localArtifacts=ignore
+          xvfb-run mvn --batch-mode clean deploy -Pe428 -Psnapshot -Pgitactions -DbuildNumber=${{ steps.timestamp.outputs.timestamp }} -Dsigning.skip=true -Dhttpclient.retry-max=20 -Declipse.p2.mirrors=false -Ds3service.https-only=true -Dmaven.test.skip=true -Dtycho.localArtifacts=ignore
