@@ -125,7 +125,7 @@ public class ModulithService {
 						List<AppModule> allAppModules = new ArrayList<>();
 						CompletableFuture<?>[] aggregateFuture = packages
 								.stream()
-								.map(pkg -> computeAppModules(javaCmd, classpathStr, pkg).thenAccept(oa -> oa.ifPresent(allAppModules::addAll)))
+								.map(pkg -> CompletableFuture.supplyAsync(() -> computeAppModules(javaCmd, classpathStr, pkg)).thenAccept(oa -> oa.ifPresent(allAppModules::addAll)))
 								.toArray(CompletableFuture[]::new);
 						return CompletableFuture.allOf(aggregateFuture).thenApply(r -> new AppModules(allAppModules));
 					} catch (Exception e) {
@@ -171,7 +171,7 @@ public class ModulithService {
 		return fqn;
 	}
 	
-	private CompletableFuture<Optional<List<AppModule>>> computeAppModules(String javaCmd, String cp, String pkg) {
+	private Optional<List<AppModule>> computeAppModules(String javaCmd, String cp, String pkg) {
 		try {
 			Process process = Runtime.getRuntime().exec(new String[] { 
 					javaCmd, 
@@ -194,15 +194,13 @@ public class ModulithService {
 				}
 			}
 
-			return process.onExit().thenApply(p -> {
-				String result = builder.toString();
-				log.info(result);
-				return Optional.ofNullable(loadAppModules(JsonParser.parseString(result).getAsJsonObject()));
-			});
+			String result = builder.toString();
+			log.info(result);
+			return Optional.ofNullable(loadAppModules(JsonParser.parseString(result).getAsJsonObject()));
 		} catch (Exception e) {
 			log.error("", e);
 		}
-		return null;
+		return Optional.empty();
 	}
 	
 	private static List<AppModule> loadAppModules(JsonObject json) {
