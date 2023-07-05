@@ -1,0 +1,10 @@
+{
+  "title": "Spring Tool Suite 4",
+  "icon": "../org.springframework.boot.ide.branding/sts4.icns",
+  "contents": [
+    { "x": 192, "y": 100, "type": "file", "path": "target/products/org.springframework.boot.ide.branding.sts4/macosx/cocoa/x86_64/SpringToolSuite4.app" },
+    { "x": 448, "y": 100, "type": "link", "path": "/Applications" },
+    { "x": 1000, "y": 2000, "type": "file", "path": "../org.springframework.boot.ide.branding/sts4.icns", "name": ".VolumeIcon.icns" }
+  ],
+  "format": "UDZO"
+}
