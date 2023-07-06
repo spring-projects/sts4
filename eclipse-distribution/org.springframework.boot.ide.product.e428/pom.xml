@@ -752,17 +752,21 @@
 	<profiles>
 		<profile>
 			<id>gpg.sign</id>
-			<plugin>
-				<groupId>org.eclipse.tycho</groupId>
-				<artifactId>tycho-gpg-plugin</artifactId>
-				<executions>
-					<execution>
-						<goals>
-							<goal>sign-p2-artifacts</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.eclipse.tycho</groupId>
+						<artifactId>tycho-gpg-plugin</artifactId>
+						<executions>
+							<execution>
+								<goals>
+									<goal>sign-p2-artifacts</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
 		</profile>
 	</profiles>
 </project>
