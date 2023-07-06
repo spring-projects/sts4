@@ -84,7 +84,7 @@
 
 	<profiles>
 		<profile>
-			<id>gitactions</id>
+			<id>gpg.sign</id>
 			<build>
 				<plugins>
 					<plugin>

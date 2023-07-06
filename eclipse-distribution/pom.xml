@@ -686,9 +686,8 @@
 					<version>${tycho-version}</version>
 					<configuration>
 						<skipIfJarsigned>true</skipIfJarsigned>
-						<passphrase>DyNaMo1927</passphrase>
-						<keyname>B19B2D81</keyname>
-						<!--<executable>${gpg.executable}</executable>-->
+						<passphrase>${gpg.passphrase}</passphrase>
+						<keyname>${gpg.keyname}</keyname>
 						<gpgArguments>
 							<arg>--pinentry-mode=loopback</arg>
 						</gpgArguments>
