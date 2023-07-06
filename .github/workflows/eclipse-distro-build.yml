@@ -22,21 +22,26 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-      - name: Enforce https instead of http
-        run: ./nohttp.sh
-      - name: Timestamp
-        id: timestamp
-        run: echo "name=date::$(date +'%Y%m%dT%H%M%S')" >> $GITHUB_OUTPUT
-      - name: Install GPG key
-        run: |
-          echo "${{ secrets.GPG_PRIVATE_KEY }}" > gpg.asc
-          echo "${{ secrets.GPG_PASSPHRASE }}" | gpg --batch --yes --passphrase-fd 0 --import gpg.asc
-      - name: Build Eclipse Distro
-        env:
-          tools_s3_access_key: ${{ secrets.TOOLS_S3_ACCESS_KEY }}
-          tools_s3_secret_key: ${{ secrets.TOOLS_S3_SECRET_KEY  }}
-          gpg_passphrase: ${{ secrets.GPG_PASSPHRASE }}
-          gpg_keyname: ${{ secrets.GPG_KEYID }}
-        run: |
-          cd eclipse-distribution
-          mvn --batch-mode -U clean deploy -P${{ inputs.eclipse_profile }} -P${{ inputs.build_type }} -Pgitactions -Pgpg.sign -DbuildQualifier=${{ steps.timestamp.outputs.date }} -Dsigning.skip=true -Dmaven.repo.local=~/.m2/repository-signed -Dhttpclient.retry-max=20 -Dmaven.test.skip=true -Declipse.p2.mirrors=false -Dtycho.localArtifacts=ignore -Ds3service.https-only=true -Dp2.replaceQualifier=true -Dorg.eclipse.ecf.provider.filetransfer.httpclient.retrieve.readTimeout=1200000 -Dorg.eclipse.equinox.p2.transport.ecf.retry=5 -Dskip.eclipserun.proxies=false -Dskip.osx.signing=false  -Dskip.win.signing=false -Dskip.osx.notarizing=false -Dtycho.equinox.resolver.uses=true
+      - name: Distro Build
+        uses: ./.github/actions/eclipse-distro-build
+        with:
+          - eclipse_profile: ${{ inputs.eclipse_profile }}
+          - build_type: ${{ inputs.build_type }}
+#      - name: Enforce https instead of http
+#        run: ./nohttp.sh
+#      - name: Timestamp
+#        id: timestamp
+#        run: echo "name=date::$(date +'%Y%m%dT%H%M%S')" >> $GITHUB_OUTPUT
+#      - name: Install GPG key
+#        run: |
+#          echo "${{ secrets.GPG_PRIVATE_KEY }}" > gpg.asc
+#          echo "${{ secrets.GPG_PASSPHRASE }}" | gpg --batch --yes --passphrase-fd 0 --import gpg.asc
+#      - name: Build Eclipse Distro
+#        env:
+#          tools_s3_access_key: ${{ secrets.TOOLS_S3_ACCESS_KEY }}
+#          tools_s3_secret_key: ${{ secrets.TOOLS_S3_SECRET_KEY  }}
+#          gpg_passphrase: ${{ secrets.GPG_PASSPHRASE }}
+#          gpg_keyname: ${{ secrets.GPG_KEYID }}
+#        run: |
+#          cd eclipse-distribution
+#          mvn --batch-mode -U clean deploy -P${{ inputs.eclipse_profile }} -P${{ inputs.build_type }} -Pgitactions -Pgpg.sign -DbuildQualifier=${{ steps.timestamp.outputs.date }} -Dsigning.skip=true -Dmaven.repo.local=~/.m2/repository-signed -Dhttpclient.retry-max=20 -Dmaven.test.skip=true -Declipse.p2.mirrors=false -Dtycho.localArtifacts=ignore -Ds3service.https-only=true -Dp2.replaceQualifier=true -Dorg.eclipse.ecf.provider.filetransfer.httpclient.retrieve.readTimeout=1200000 -Dorg.eclipse.equinox.p2.transport.ecf.retry=5 -Dskip.eclipserun.proxies=false -Dskip.osx.signing=false  -Dskip.win.signing=false -Dskip.osx.notarizing=false -Dtycho.equinox.resolver.uses=true
