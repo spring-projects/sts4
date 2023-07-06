@@ -25,8 +25,8 @@ jobs:
       - name: Distro Build
         uses: ./.github/actions/eclipse-distro-build
         with:
-          - eclipse_profile: ${{ inputs.eclipse_profile }}
-          - build_type: ${{ inputs.build_type }}
+          eclipse_profile: ${{ inputs.eclipse_profile }}
+          build_type: ${{ inputs.build_type }}
 #      - name: Enforce https instead of http
 #        run: ./nohttp.sh
 #      - name: Timestamp
