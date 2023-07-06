@@ -141,6 +141,8 @@
 		<profile>
 			<id>gitactions</id>
 			<properties>
+				<vm-signing.ssh.key>~/.ssh/id_rsa</vm-signing.ssh.key>
+
 				<dist.accessKey>${env.tools_s3_access_key}</dist.accessKey>
 				<dist.secretKey>${env.tools_s3_secret_key}</dist.secretKey>
 
