@@ -98,18 +98,6 @@
 				</configuration>
 			</plugin>
 
-<!--			<plugin>
-				<groupId>org.eclipse.tycho</groupId>
-				<artifactId>tycho-gpg-plugin</artifactId>
-				<executions>
-					<execution>
-						<goals>
-							<goal>sign-p2-artifacts</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin> -->
-
 			<plugin>
 				<groupId>org.eclipse.tycho.extras</groupId>
 				<artifactId>tycho-eclipserun-plugin</artifactId>
@@ -760,4 +748,21 @@
 			</plugins>
 		</pluginManagement> -->
 	</build>
+
+	<profiles>
+		<profile>
+			<id>gpg.sign</id>
+			<plugin>
+				<groupId>org.eclipse.tycho</groupId>
+				<artifactId>tycho-gpg-plugin</artifactId>
+				<executions>
+					<execution>
+						<goals>
+							<goal>sign-p2-artifacts</goal>
+						</goals>
+					</execution>
+				</executions>
+			</plugin>
+		</profile>
+	</profiles>
 </project>
