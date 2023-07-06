@@ -35,7 +35,6 @@ jobs:
       - name: Unlock login keychain for OSX signing
         run: |
           security unlock-keychain -p ${{ secrets.KEYCHAIN_PASSWORD }} /Users/runner/Library/Keychains/login.keychain-db
-#          security set-keychain-settings -t 3600 /Users/runner/Library/Keychains/login.keychain-db
       - name: Build Eclipse Distro
         env:
           tools_s3_access_key: ${{ secrets.TOOLS_S3_ACCESS_KEY }}
@@ -48,5 +47,4 @@ jobs:
           MACOS_NOTARIZATION_SERVICE_URL: http://localhost:8080
         run: |
           cd eclipse-distribution
-#          security unlock-keychain -p ${{ secrets.KEYCHAIN_PASSWORD }} /Users/runner/Library/Keychains/login.keychain-db
           ./mvnw --batch-mode -U clean deploy -P${{ inputs.eclipse_profile }} -P${{ inputs.build_type }} -Pgitactions -Pgpg.sign -DbuildQualifier=${{ steps.timestamp.outputs.date }} -Dsigning.skip=true -Dmaven.repo.local=~/.m2/repository-signed -Dhttpclient.retry-max=20 -Dmaven.test.skip=true -Declipse.p2.mirrors=false -Dtycho.localArtifacts=ignore -Ds3service.https-only=true -Dp2.replaceQualifier=true -Dorg.eclipse.ecf.provider.filetransfer.httpclient.retrieve.readTimeout=1200000 -Dorg.eclipse.equinox.p2.transport.ecf.retry=5 -Dskip.eclipserun.proxies=false -Dskip.osx.signing=false  -Dskip.win.signing=false -Dskip.osx.notarizing=false -Dtycho.equinox.resolver.uses=true
