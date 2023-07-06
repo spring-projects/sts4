@@ -43,4 +43,5 @@ jobs:
           xvfb-run ./mvnw --batch-mode clean deploy -Pe428 -Psnapshot -Pgitactions -DbuildNumber=${{ steps.timestamp.outputs.timestamp }} -Dsigning.skip=true -Dhttpclient.retry-max=20 -Declipse.p2.mirrors=false -Ds3service.https-only=true -Dmaven.test.skip=true -Dtycho.localArtifacts=ignore
       - name: Verify Eclipse LS Extensions on e429
         run: |
+          cd eclipse-language-servers
           xvfb-run ./mvnw --batch-mode clean package -Pe429 -Psnapshot -DbuildNumber=${{ steps.timestamp.outputs.timestamp }} -Dsigning.skip=true -Dhttpclient.retry-max=20 -Declipse.p2.mirrors=false -Ds3service.https-only=true -Dmaven.test.skip=true -Dtycho.localArtifacts=ignore
