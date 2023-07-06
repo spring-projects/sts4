@@ -31,10 +31,11 @@ jobs:
         run: |
           echo "${{ secrets.GPG_PRIVATE_KEY }}" > gpg.asc
           echo "${{ secrets.GPG_PASSPHRASE }}" | gpg --batch --yes --passphrase-fd 0 --import gpg.asc
-      - name: Unlock login keychain for OSX signing
-        run: |
-          security unlock-keychain -p ${{ secrets.KEYCHAIN_PASSWORD }} ~/Library/Keychains/login.keychain-db
-          security set-keychain-settings -t 3600 ~/Library/Keychains/login.keychain-db
+#      - name: Unlock login keychain for OSX signing
+#        run: |
+#          security unlock-keychain -p ${{ secrets.KEYCHAIN_PASSWORD }} /Users/runner/Library/Keychains/login.keychain-db
+#          security set-keychain-settings -t 3600 /Users/runner/Library/Keychains/login.keychain-db
+#          security list-keychains
       - name: Build Eclipse Distro
         env:
           tools_s3_access_key: ${{ secrets.TOOLS_S3_ACCESS_KEY }}
@@ -42,7 +43,7 @@ jobs:
           gpg_passphrase: ${{ secrets.GPG_PASSPHRASE }}
           gpg_keyname: ${{ secrets.GPG_KEYID }}
           MACOS_CERTIFICATE_ID: ${{ secrets.MACOS_CERTIFICATE_ID }}
-          KEYCHAIN: "~/Library/Keychains/login.keychain-db"
+          KEYCHAIN: "/Users/runner/Library/Keychains/login.keychain-db"
           MACOS_NOTARIZATION_SERVICE_URL: "http://localhost:8080"
         run: |
           cd eclipse-distribution
