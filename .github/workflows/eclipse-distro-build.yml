@@ -6,6 +6,7 @@ on:
       eclipse_profile:
         description: Eclipse profile 'e428' etc
         required: true
+        default: 'e428'
       build_type:
         description: Build type such as 'snapshot', 'milestone' or 'release'
         required: true
