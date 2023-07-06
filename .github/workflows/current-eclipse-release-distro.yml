@@ -35,5 +35,5 @@ jobs:
           gpg_passphrase: ${{ secrets.GPG_PASSPHRASE }}
           gpg_keyname: ${{ secrets.GPG_KEYID }}
         run: |
-          cd eclipse-language-servers
-          xvfb-run ./mvnw --batch-mode -U clean deploy -Pe428 -Psnapshot -Pgitactions -Pgpg.sign -DbuildQualifier=${{ steps.timestamp.outputs.date }} -Dsigning.skip=true -Dmaven.repo.local=~/.m2/repository-signed -Dhttpclient.retry-max=20 -Dmaven.test.skip=true -Declipse.p2.mirrors=false -Dtycho.localArtifacts=ignore -Ds3service.https-only=true -Dp2.replaceQualifier=true -Dorg.eclipse.ecf.provider.filetransfer.httpclient.retrieve.readTimeout=1200000 -Dorg.eclipse.equinox.p2.transport.ecf.retry=5 -Dskip.eclipserun.proxies=false -Dskip.osx.signing=false  -Dskip.win.signing=false -Dskip.osx.notarizing=false -Dtycho.equinox.resolver.uses=true
+          cd eclipse-distribution
+          ./mvnw --batch-mode -U clean deploy -Pe428 -Psnapshot -Pgitactions -Pgpg.sign -DbuildQualifier=${{ steps.timestamp.outputs.date }} -Dsigning.skip=true -Dmaven.repo.local=~/.m2/repository-signed -Dhttpclient.retry-max=20 -Dmaven.test.skip=true -Declipse.p2.mirrors=false -Dtycho.localArtifacts=ignore -Ds3service.https-only=true -Dp2.replaceQualifier=true -Dorg.eclipse.ecf.provider.filetransfer.httpclient.retrieve.readTimeout=1200000 -Dorg.eclipse.equinox.p2.transport.ecf.retry=5 -Dskip.eclipserun.proxies=false -Dskip.osx.signing=false  -Dskip.win.signing=false -Dskip.osx.notarizing=false -Dtycho.equinox.resolver.uses=true
