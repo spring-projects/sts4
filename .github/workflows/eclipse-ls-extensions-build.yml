@@ -1,4 +1,4 @@
-name: Eclipse LS Extensions Snapshot
+name: Eclipse LS Extensions Snapshot Build
 
 # configure manual trigger
 on:

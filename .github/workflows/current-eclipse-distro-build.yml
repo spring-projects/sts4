@@ -1,4 +1,4 @@
-name: Current Eclipse STS4 Distribution
+name: Current Eclipse STS Distribution Build
 
 # configure manual trigger
 on:
@@ -14,7 +14,7 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Eclipse 4.28 Distro Build
-        uses: ./eclipse-distro-build.yml
+        uses: ./.github/workflows/eclipse-distro-build.yml
         with:
           eclipse_profile: 'e428'
           build_type: 'snapshot'
