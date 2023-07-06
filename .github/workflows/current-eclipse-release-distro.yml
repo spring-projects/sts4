@@ -14,11 +14,16 @@ jobs:
     runs-on: [self-hosted, macOS]
     steps:
       - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
+      - name: Set up JDK 17
+        uses: actions/setup-java@5ffc13f4174014e2d4d4572b3d74c3fa61aeb2c2
+        with:
+          java-version: '17'
+          distribution: 'temurin'
       - name: Enforce https instead of http
         run: ./nohttp.sh
       - name: Timestamp
         id: timestamp
-        run: echo "::set-output name=date::$(date +'%Y-%m-%dT%H:%M:%S')"
+        run: echo "name=date::$(date +'%Y%m%dT%H%M%S')" >> $GITHUB_OUTPUT
       - name: Install GPG key
         run: |
           echo "${{ secrets.GPG_PRIVATE_KEY }}" > gpg.asc
@@ -31,4 +36,4 @@ jobs:
           gpg_keyname: ${{ secrets.GPG_KEYID }}
         run: |
           cd eclipse-language-servers
-          xvfb-run ./mvnw --batch-mode -U clean deploy -Pe428 -Psnapshot -Pgitactions -Pgpg.sign -DbuildQualifier=${{ steps.timestamp.outputs.timestamp }} -Dsigning.skip=true -Dmaven.repo.local=~/.m2/repository-signed -Dhttpclient.retry-max=20 -Dmaven.test.skip=true -Declipse.p2.mirrors=false -Dtycho.localArtifacts=ignore -Ds3service.https-only=true -Dp2.replaceQualifier=true -Dorg.eclipse.ecf.provider.filetransfer.httpclient.retrieve.readTimeout=1200000 -Dorg.eclipse.equinox.p2.transport.ecf.retry=5 -Dskip.eclipserun.proxies=false -Dskip.osx.signing=false  -Dskip.win.signing=false -Dskip.osx.notarizing=false -Dtycho.equinox.resolver.uses=true
+          xvfb-run ./mvnw --batch-mode -U clean deploy -Pe428 -Psnapshot -Pgitactions -Pgpg.sign -DbuildQualifier=${{ steps.timestamp.outputs.date }} -Dsigning.skip=true -Dmaven.repo.local=~/.m2/repository-signed -Dhttpclient.retry-max=20 -Dmaven.test.skip=true -Declipse.p2.mirrors=false -Dtycho.localArtifacts=ignore -Ds3service.https-only=true -Dp2.replaceQualifier=true -Dorg.eclipse.ecf.provider.filetransfer.httpclient.retrieve.readTimeout=1200000 -Dorg.eclipse.equinox.p2.transport.ecf.retry=5 -Dskip.eclipserun.proxies=false -Dskip.osx.signing=false  -Dskip.win.signing=false -Dskip.osx.notarizing=false -Dtycho.equinox.resolver.uses=true
