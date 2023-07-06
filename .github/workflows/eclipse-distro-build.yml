@@ -27,6 +27,11 @@ jobs:
         with:
           eclipse_profile: ${{ inputs.eclipse_profile }}
           build_type: ${{ inputs.build_type }}
+        env:
+          tools_s3_access_key: ${{ secrets.TOOLS_S3_ACCESS_KEY }}
+          tools_s3_secret_key: ${{ secrets.TOOLS_S3_SECRET_KEY  }}
+          gpg_passphrase: ${{ secrets.GPG_PASSPHRASE }}
+          gpg_keyname: ${{ secrets.GPG_KEYID }}
 #      - name: Enforce https instead of http
 #        run: ./nohttp.sh
 #      - name: Timestamp
