@@ -146,7 +146,7 @@
 
 				<dist.pathpostfix>trials</dist.pathpostfix>
 				<dist.path>${dist.type}/${dist.key}/${dist.project}/${dist.pathpostfix}</dist.path>
-				<sts4-language-servers-p2-repo>https://dist.springsource.com/${dist.type}/TOOLS/trials/sts4-language-server-integrations/trials/${sts4-language-servers-version}</sts4-language-servers-p2-repo>
+				<sts4-language-servers-p2-repo>https://dist.springsource.com/${dist.type}/TOOLS/sts4-language-server-integrations/trials</sts4-language-servers-p2-repo>
 
 				<gpg.passphrase>${env.gpg_passphrase}</gpg.passphrase>
 				<gpg.keyname>${env.gpg_keyname}</gpg.keyname>
