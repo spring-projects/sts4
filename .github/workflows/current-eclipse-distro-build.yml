@@ -1,0 +1,20 @@
+name: Current Eclipse STS4 Distribution
+
+# configure manual trigger
+on:
+  workflow_dispatch:
+#on:
+#  push:
+#    branches:
+#      - 'main'
+
+jobs:
+
+  eclipse-language-servers-build:
+    runs-on: macos-latest
+    steps:
+      - name: Eclipse 4.28 Distro Build
+        uses: ./eclipse-distro-build.yml
+        with:
+          eclipse_profile: 'e428'
+          build_type: 'snapshot'
