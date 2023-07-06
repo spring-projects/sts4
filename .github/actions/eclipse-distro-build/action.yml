@@ -11,17 +11,22 @@ inputs:
     default: 'snapshot'
 
 runs:
+  using: "composite"
   steps:
     - name: Enforce https instead of http
+      shell: bash
       run: ./nohttp.sh
     - name: Timestamp
       id: timestamp
+      shell: bash
       run: echo "name=date::$(date +'%Y%m%dT%H%M%S')" >> $GITHUB_OUTPUT
     - name: Install GPG key
+      shell: bash
       run: |
         echo "${{ secrets.GPG_PRIVATE_KEY }}" > gpg.asc
         echo "${{ secrets.GPG_PASSPHRASE }}" | gpg --batch --yes --passphrase-fd 0 --import gpg.asc
     - name: Build Eclipse Distro
+      shell: bash
       env:
         tools_s3_access_key: ${{ secrets.TOOLS_S3_ACCESS_KEY }}
         tools_s3_secret_key: ${{ secrets.TOOLS_S3_SECRET_KEY  }}
