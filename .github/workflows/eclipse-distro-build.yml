@@ -43,7 +43,6 @@ jobs:
           gpg_keyname: ${{ secrets.GPG_KEYID }}
           MACOS_CERTIFICATE_ID: ${{ secrets.MACOS_CERTIFICATE_ID }}
           KEYCHAIN: /Users/runner/Library/Keychains/login.keychain-db
-          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
           MACOS_NOTARIZATION_SERVICE_URL: http://localhost:8080
         run: |
           cd eclipse-distribution
