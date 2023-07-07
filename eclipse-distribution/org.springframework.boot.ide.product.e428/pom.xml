@@ -514,14 +514,12 @@
 
 								<parallel failonany="true">
 
-									<exec executable="/bin/bash" failonerror="true">
-										<arg value="${project.build.directory}/../macos-notarize.sh" />
+									<exec executable="${project.build.directory}/../macos-notarize.sh" failonerror="true">
 										<arg value="${dmgName}" />
 										<arg value="${env.MACOS_NOTARIZATION_SERVICE_URL}" />
 									</exec>
 
-									<exec executable="/bin/bash" failonerror="true">
-										<arg value="${project.build.directory}/../macos-notarize.sh" />
+									<exec executable="${project.build.directory}/../macos-notarize.sh" failonerror="true">
 										<arg value="${dmgName-aarch64}" />
 										<arg value="${env.MACOS_NOTARIZATION_SERVICE_URL}" />
 									</exec>
