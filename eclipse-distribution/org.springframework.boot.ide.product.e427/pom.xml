@@ -518,14 +518,12 @@
 
 								<parallel failonany="true">
 
-									<exec executable="/bin/bash" failonerror="true">
-										<arg value="${project.build.directory}/../macos-notarize.sh" />
+									<exec executable="${project.build.directory}/../macos-notarize.sh" failonerror="true">
 										<arg value="${dmgName}" />
 										<arg value="${env.MACOS_NOTARIZATION_SERVICE_URL}" />
 									</exec>
 
-									<exec executable="/bin/bash" failonerror="true">
-										<arg value="${project.build.directory}/../macos-notarize.sh" />
+									<exec executable="${project.build.directory}/../macos-notarize.sh" failonerror="true">
 										<arg value="${dmgName-aarch64}" />
 										<arg value="${env.MACOS_NOTARIZATION_SERVICE_URL}" />
 									</exec>
@@ -752,4 +750,26 @@
 			</plugins>
 		</pluginManagement> -->
 	</build>
+
+	<profiles>
+		<profile>
+			<id>gpg.sign</id>
+			<build>
+				<plugins>
+					<plugin>
+						<groupId>org.eclipse.tycho</groupId>
+						<artifactId>tycho-gpg-plugin</artifactId>
+						<executions>
+							<execution>
+								<goals>
+									<goal>sign-p2-artifacts</goal>
+								</goals>
+							</execution>
+						</executions>
+					</plugin>
+				</plugins>
+			</build>
+		</profile>
+	</profiles>
+
 </project>

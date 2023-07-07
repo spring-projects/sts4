@@ -38,6 +38,10 @@ jobs:
       - name: Unlock login keychain for OSX signing
         run: |
           security unlock-keychain -p ${{ secrets.KEYCHAIN_PASSWORD }} /Users/runner/Library/Keychains/login.keychain-db
+      - name: Create Temp Directory Structure for Notarization Service
+        run: |
+          cd /tmp
+          mkdir -p macos-notarization-service/pending-files
       - name: Build Eclipse Distro
         env:
           tools_s3_access_key: ${{ secrets.TOOLS_S3_ACCESS_KEY }}

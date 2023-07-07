@@ -1,0 +1,12 @@
+name: Snapshot - Previous Eclipse STS Distribution Build
+
+on:
+  workflow_dispatch:
+
+jobs:
+  e427-distro:
+    uses: ./.github/workflows/eclipse-distro-build.yml
+    with:
+      eclipse_profile: 'e427'
+      build_type: 'snapshot'
+    secrets: inherit
