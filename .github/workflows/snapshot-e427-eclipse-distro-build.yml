@@ -1,7 +1,13 @@
 name: Snapshot - 4.27 Eclipse STS Distribution Build
 
+#on:
+#  workflow_dispatch:
 on:
-  workflow_dispatch:
+  workflow_run:
+    workflows: ["Eclipse LS Extensions Snapshot Build"]
+    types: [completed]
+    branches:
+      - "main"
 
 jobs:
   e427-distro:
