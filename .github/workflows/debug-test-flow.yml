@@ -4,7 +4,7 @@ on:
 jobs:
 
   eclipse-distro-build:
-    runs-on: [self-hosted, macOS]
+    runs-on: ubuntu-latest
     steps:
       - name: Timestamp
         id: timestamp
