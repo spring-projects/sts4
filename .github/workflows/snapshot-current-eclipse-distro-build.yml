@@ -19,6 +19,6 @@ jobs:
 #            .github
 #      - name: Eclipse 4.28 Distro Build
     uses: ./.github/workflows/eclipse-distro-build.yml
-      with:
-        eclipse_profile: 'e428'
-        build_type: 'snapshot'
+    with:
+      eclipse_profile: 'e428'
+      build_type: 'snapshot'
