@@ -1,12 +1,12 @@
-name: Snapshot - Current Eclipse STS Distribution Build
+name: Snapshot - Next Eclipse STS Distribution Build
 
 on:
   workflow_dispatch:
 
 jobs:
-  e428-distro:
+  e429-distro:
     uses: ./.github/workflows/eclipse-distro-build.yml
     with:
-      eclipse_profile: 'e428'
+      eclipse_profile: 'e429'
       build_type: 'snapshot'
     secrets: inherit
