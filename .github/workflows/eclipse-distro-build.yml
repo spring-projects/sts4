@@ -13,11 +13,7 @@ on:
         description: Build type such as 'snapshot', 'milestone' or 'release'
         required: true
         default: 'snapshot'
-        type: choice
-        options:
-          - snapshot
-          - milestone
-          - release
+        type: string
 
 jobs:
 
