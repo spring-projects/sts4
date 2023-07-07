@@ -1,8 +1,8 @@
 name: Eclipse Distro STS Build
 
 on:
-  workflow_dispatch:
   workflow_call:
+  workflow_dispatch:
     inputs:
       eclipse_profile:
         description: Eclipse profile 'e428' etc

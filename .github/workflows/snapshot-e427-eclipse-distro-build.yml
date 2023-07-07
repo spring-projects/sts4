@@ -1,4 +1,4 @@
-name: Snapshot - Previous Eclipse STS Distribution Build
+name: Snapshot - 4.27 Eclipse STS Distribution Build
 
 on:
   workflow_dispatch:
