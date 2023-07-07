@@ -22,3 +22,4 @@ jobs:
     with:
       eclipse_profile: 'e428'
       build_type: 'snapshot'
+    secrets: inherit
