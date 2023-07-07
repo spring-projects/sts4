@@ -1,4 +1,4 @@
-name: Current Eclipse STS Distribution Snapshot Build
+name: Snapshot - Current Eclipse STS Distribution Build
 
 # configure manual trigger
 on:
@@ -11,14 +11,15 @@ on:
 jobs:
 
   eclipse-language-servers-build:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
-        with:
-          sparse-checkout: |
-            .github
-      - name: Eclipse 4.28 Distro Build
-        uses: ./.github/workflows/eclipse-distro-build.yml
+#    runs-on: ubuntu-latest
+#    steps:
+#      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
+#        with:
+#          sparse-checkout: |
+#            .github
+#      - name: Eclipse 4.28 Distro Build
+    e428-distro:
+      uses: ./.github/workflows/eclipse-distro-build.yml
         with:
           eclipse_profile: 'e428'
           build_type: 'snapshot'
