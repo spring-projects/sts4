@@ -10,8 +10,9 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.modulith;
 
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -125,7 +126,7 @@ public class ModulithService {
 						List<AppModule> allAppModules = new ArrayList<>();
 						CompletableFuture<?>[] aggregateFuture = packages
 								.stream()
-								.map(pkg -> CompletableFuture.supplyAsync(() -> computeAppModules(javaCmd, classpathStr, pkg)).thenAccept(oa -> oa.ifPresent(allAppModules::addAll)))
+								.map(pkg -> computeAppModules(project.getElementName(), javaCmd, classpathStr, pkg).thenAccept(oa -> oa.ifPresent(allAppModules::addAll)))
 								.toArray(CompletableFuture[]::new);
 						return CompletableFuture.allOf(aggregateFuture).thenApply(r -> new AppModules(allAppModules));
 					} catch (Exception e) {
@@ -171,36 +172,38 @@ public class ModulithService {
 		return fqn;
 	}
 	
-	private Optional<List<AppModule>> computeAppModules(String javaCmd, String cp, String pkg) {
+	private CompletableFuture<Optional<List<AppModule>>> computeAppModules(String projectName, String javaCmd,
+			String cp, String pkg) {
 		try {
-			Process process = Runtime.getRuntime().exec(new String[] { 
-					javaCmd, 
-					"-cp",
-					cp,
-					"org.springframework.modulith.core.util.ApplicationModulesExporter",
-					pkg
-			});
-			BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
-			StringBuilder builder = new StringBuilder();
-			String line = null;
-			// skip first line
-			boolean skipFirstLine = true;
-			while ((line = reader.readLine()) != null) {
-				if (skipFirstLine) {
-					skipFirstLine = false;
-				} else {
-					builder.append(line);
-					builder.append(System.getProperty("line.separator"));
-				}
-			}
-
-			String result = builder.toString();
-			log.info(result);
-			return Optional.ofNullable(loadAppModules(JsonParser.parseString(result).getAsJsonObject()));
-		} catch (Exception e) {
+			File outputFile = File.createTempFile(projectName + "-" + pkg, "json");
+			return Runtime.getRuntime()
+					.exec(new String[] { 
+							javaCmd,
+							"-cp",
+							cp,
+							"org.springframework.modulith.core.util.ApplicationModulesExporter",
+							pkg,
+							outputFile.toString()
+					})
+					.onExit().thenApply(process -> {
+						if (process.exitValue() == 0) {
+							try {
+								log.info("Updating Modulith metadata for project '" + projectName + "'");
+								JsonObject json = JsonParser.parseReader(new FileReader(outputFile)).getAsJsonObject();
+								log.info("Modulith metadata: " + json);
+								return Optional.ofNullable(loadAppModules(json));
+							} catch (Exception e) {
+								log.error("", e);
+							}
+						} else {
+							log.error("Failed to generate modulith metadata for project '" + projectName + "'. Modulith Exporter process exited with code " + process.exitValue());
+						}
+						return Optional.empty();
+					});
+		} catch (IOException e) {
 			log.error("", e);
 		}
-		return Optional.empty();
+		return CompletableFuture.completedFuture(Optional.empty());
 	}
 	
 	private static List<AppModule> loadAppModules(JsonObject json) {
