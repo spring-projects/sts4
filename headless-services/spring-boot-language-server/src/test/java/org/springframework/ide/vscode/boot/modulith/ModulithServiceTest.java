@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.boot.modulith;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
@@ -48,6 +49,7 @@ public class ModulithServiceTest {
 	
 	@BeforeEach
 	public void setup() throws Exception {
+		harness.intialize(null);
 		// Use project harness with a customizer to land the project in the 'temp' folder rather than 'target/test-classes' because Modulith will filter everything with 'target/test-classes' out :-\ 
 		jp =  projects.mavenProject("spring-modulith-example-full", p -> {});
 		harness.useProject(jp);
@@ -68,7 +70,8 @@ public class ModulithServiceTest {
 	
     @Test
     void sanityTest() throws Exception {
-    	List<AppModule> modules = modulithService.getModulesData(jp).get().modules;
+    	assertTrue(modulithService.requestMetadata(jp).get());
+    	List<AppModule> modules = modulithService.getModulesData(jp).modules;
     	assertEquals(2, modules.size());
     	AppModule orderModule = modules.get(0);
     	assertEquals("order", orderModule.name());

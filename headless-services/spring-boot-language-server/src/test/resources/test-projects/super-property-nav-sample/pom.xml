@@ -47,7 +47,7 @@
 		<dependency>
 			<groupId>io.spring.initializr</groupId>
 			<artifactId>initializr-generator-spring</artifactId>
-			<version>0.8.0.BUILD-SNAPSHOT</version>
+			<version>0.8.0.RELEASE</version>
 		</dependency>
 
 		<dependency>

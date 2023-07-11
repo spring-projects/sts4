@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2020, 2022 Pivotal, Inc.
+ * Copyright (c) 2020, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -27,7 +27,7 @@ public enum Boot3JavaProblemType implements ProblemType {
 	
 	FACTORIES_KEY_NOT_SUPPORTED(ERROR, "Spring factories key not supported", "Spring factories key not supported"),
 	
-	MODULITH_TYPE_REF_VIOLATION(ERROR, "Restricted dependency", "Import from restricted module");
+	MODULITH_TYPE_REF_VIOLATION(ERROR, "Modulith restricted type reference", "Modulith restricted type reference");
 	
 	private final ProblemSeverity defaultSeverity;
 	private String description;

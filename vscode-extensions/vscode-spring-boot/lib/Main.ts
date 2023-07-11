@@ -164,6 +164,21 @@ export function activate(context: VSCode.ExtensionContext): Thenable<ExtensionAP
         VSCode.commands.registerCommand('vscode-spring-boot.ls.stop', () => client.stop());
         liveHoverUi.activate(client, options, context);
         rewrite.activate(client, options, context);
+
+        VSCode.commands.registerCommand('vscode-spring-boot.spring.modulith.metadata.refresh', async () => {
+            const modulithProjects = await VSCode.commands.executeCommand('sts/modulith/projects');
+            const projectNames = Object.keys(modulithProjects);
+            if (projectNames.length === 0) {
+                VSCode.window.showErrorMessage('No Spring Modulith projects found');
+            } else {
+                const projectName = projectNames.length === 1 ? projectNames[0] : await VSCode.window.showQuickPick(
+                    projectNames,
+                    { placeHolder: "Select the target project." },
+                );
+                VSCode.commands.executeCommand('sts/modulith/metadata/refresh', modulithProjects[projectName]);
+            }
+        });
+
         return new ApiManager(client).api;
     });
 }

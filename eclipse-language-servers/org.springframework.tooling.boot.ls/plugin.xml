@@ -256,6 +256,10 @@
             class="org.springframework.tooling.boot.ls.commands.RewriteRefactoringsHandler$UpgradeBootVersion"
             commandId="org.springframework.tooling.boot.ls.rewrite.boot-upgrade">
       </handler>
+      <handler
+            class="org.springframework.tooling.boot.ls.commands.RefreshModulithMetadata"
+            commandId="org.springframework.tooling.boot.ls.modulith.metadata.refresh">
+      </handler>
    </extension>
    <extension
          point="org.eclipse.ui.commands">
@@ -281,6 +285,11 @@
             description="Upgrade Spring Boot Version for a Spring Boot project"
             id="org.springframework.tooling.boot.ls.rewrite.boot-upgrade"
             name="Upgrade Spring Boot Version...">
+      </command>
+      <command
+            description="Refresh project&apos;s Modulith metadata and re-validate the project"
+            id="org.springframework.tooling.boot.ls.modulith.metadata.refresh"
+            name="Refresh Modulith Metadata">
       </command>
    </extension>
 
@@ -644,6 +653,80 @@
                name="org.springframework.tooling.boot.ls.rewrite"
                visible="true">
          </separator>
+         <command
+               commandId="org.springframework.tooling.boot.ls.modulith.metadata.refresh"
+               id="org.springframework.tooling.boot.ls.modulith.metadata.refresh"
+               label="Refresh Modulith Metadata"
+               style="push">
+            <visibleWhen
+                  checkEnabled="false">
+               <and>
+                  <count
+                        value="1">
+                  </count>
+                  <iterate>
+                     <or>
+                        <adapt
+                              type="org.eclipse.core.resources.IFile">
+                           <and>
+                              <test
+                                    args="spring-modulith-core"
+                                    forcePluginActivation="true"
+                                    property="org.springframework.tooling.boot.isProjectWithDependencyResource">
+                              </test>
+                              <or>
+                                 <and>
+                                    <test
+                                          property="org.eclipse.core.resources.path"
+                                          value="/*/pom.xml">
+                                    </test>
+                                    <test
+                                          property="org.eclipse.core.resources.projectNature"
+                                          value="org.eclipse.m2e.core.maven2Nature">
+                                    </test>
+                                 </and>
+                                 <and>
+                                    <test
+                                          property="org.eclipse.core.resources.path"
+                                          value="/*/build.gradle">
+                                    </test>
+                                    <test
+                                          property="org.eclipse.core.resources.projectNature"
+                                          value="org.eclipse.buildship.core.gradleprojectnature">
+                                    </test>
+                                 </and>
+                              </or>
+                           </and>
+                        </adapt>
+                        <adapt
+                              type="org.eclipse.core.resources.IProject">
+                           <and>
+                              <test
+                                    args="spring-modulith-core"
+                                    forcePluginActivation="true"
+                                    property="org.springframework.tooling.boot.isProjectWithDependencyResource">
+                              </test>
+                              <test
+                                    property="org.eclipse.core.resources.projectNature"
+                                    value="org.eclipse.jdt.core.javanature">
+                              </test>
+                              <or>
+                                 <test
+                                       property="org.eclipse.core.resources.projectNature"
+                                       value="org.eclipse.m2e.core.maven2Nature">
+                                 </test>
+                                 <test
+                                       property="org.eclipse.core.resources.projectNature"
+                                       value="org.eclipse.buildship.core.gradleprojectnature">
+                                 </test>
+                              </or>
+                           </and>
+                        </adapt>
+                     </or>
+                  </iterate>
+               </and>
+            </visibleWhen>
+         </command>
       </menuContribution>
    </extension>
    <extension
@@ -659,7 +742,7 @@
             class="org.springframework.tooling.boot.ls.BootProjectTester"
             id="org.springframework.tooling.boot"
             namespace="org.springframework.tooling.boot"
-            properties="isBootResource"
+            properties="isBootResource,isProjectWithDependencyResource"
             type="java.lang.Object">
       </propertyTester>
    </extension>

@@ -111,8 +111,8 @@
       },
       {
         "code": "MODULITH_TYPE_REF_VIOLATION",
-        "label": "Import from restricted module",
-        "description": "Restricted dependency",
+        "label": "Modulith restricted type reference",
+        "description": "Modulith restricted type reference",
         "defaultSeverity": "ERROR"
       }
     ]

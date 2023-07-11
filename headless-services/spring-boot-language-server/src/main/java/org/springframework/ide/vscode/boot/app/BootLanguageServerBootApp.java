@@ -376,8 +376,11 @@ public class BootLanguageServerBootApp {
 	}
 	
 	@Bean
-	ModulithService modulithService(SimpleLanguageServer server, ProjectObserver projectObserver, SpringMetamodelIndex springIndex, JavaProjectFinder projectFinder) {
-		return new ModulithService(projectObserver, server.getWorkspaceService().getFileObserver(), projectFinder, springIndex);
+	ModulithService modulithService(SimpleLanguageServer server, JavaProjectFinder projectFinder,
+			ProjectObserver projectObserver, SpringSymbolIndex springIndex,
+			Optional<BootJavaProjectReconcilerScheduler> projectReconcileScheduler, BootJavaReconcileEngine reconciler,
+			BootJavaConfig config) {
+		return new ModulithService(server, projectFinder, projectObserver, springIndex, reconciler, projectReconcileScheduler, config);
 	}
 	
 }

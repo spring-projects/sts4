@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.boot.modulith;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 public final class AppModules {
@@ -58,6 +59,23 @@ public final class AppModules {
 			}
 		}
 		return packageHierarchy;
+	}
+
+	@Override
+	public int hashCode() {
+		return Objects.hash(modules);
+	}
+
+	@Override
+	public boolean equals(Object obj) {
+		if (this == obj)
+			return true;
+		if (obj == null)
+			return false;
+		if (getClass() != obj.getClass())
+			return false;
+		AppModules other = (AppModules) obj;
+		return Objects.equals(modules, other.modules);
 	}
 
 }

@@ -69,7 +69,7 @@ public abstract class ProjectReconcileScheduler {
 		}
 	}
 	
-	protected final void scheduleValidation(IJavaProject project) {
+	public final void scheduleValidation(IJavaProject project) {
 		if (!SpringProjectUtil.isSpringProject(project)) {
 			// Bail out if not a spring project
 			return;

@@ -11,8 +11,6 @@
 package org.springframework.ide.vscode.boot.java.rewrite.reconcile;
 
 import java.util.Optional;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Tree;
@@ -44,16 +42,7 @@ public class ModulithTypeReferenceViolation implements RecipeCodeActionDescripto
 	@Override
 	public JavaVisitor<ExecutionContext> getMarkerVisitor(MarkerVisitorContext context) {
 		ModulithService modulithService = context.appContext().getBean(ModulithService.class);
-		CompletableFuture<AppModules> future = modulithService.getModulesData(context.project());
-		
-		AppModules modules = null;
-		try {
-			modules = future == null ? null : future.get();
-		} catch (InterruptedException | ExecutionException e) {
-			// ignore
-		}
-		
-		final AppModules appModules = modules;
+		AppModules appModules = modulithService.getModulesData(context.project());
 		
 		return new JavaIsoVisitor<ExecutionContext>() {
 

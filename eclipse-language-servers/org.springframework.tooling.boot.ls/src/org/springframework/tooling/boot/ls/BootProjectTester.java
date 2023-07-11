@@ -39,7 +39,23 @@ public class BootProjectTester extends PropertyTester {
 				if (project != null) {
 					IJavaProject jp = JavaCore.create(project);
 					if (jp != null) {
-						return isBootProject(project);
+						return isProjectWithDependency(jp, "spring-boot");
+					}
+				}
+			}
+		} else if ("isProjectWithDependencyResource".equals(property)) {
+			IResource resource = null;
+			if (receiver instanceof IAdaptable) {
+				resource = ((IAdaptable) receiver).getAdapter(IResource.class);
+			} else if (receiver instanceof IDocument) {
+				resource = LSPEclipseUtils.getFile((IDocument) receiver);
+			}
+			if (resource != null) {
+				IProject project = resource.getProject();
+				if (project != null) {
+					IJavaProject jp = JavaCore.create(project);
+					if (jp != null) {
+						return isProjectWithDependency(jp, (String) args[0]);
 					}
 				}
 			}
@@ -47,42 +63,38 @@ public class BootProjectTester extends PropertyTester {
 		return false;
 	}
 	
-	private static boolean isBootProject(IProject project) {
-		if (project==null || ! project.isAccessible()) {
+	private static boolean isProjectWithDependency(IJavaProject jp, String dep) {
+		if (jp == null || ! jp.getProject().isAccessible()) {
 			return false;
 		}
 		try {
-			if (project.hasNature(JavaCore.NATURE_ID)) {
-					IJavaProject jp = JavaCore.create(project);
-					IClasspathEntry[] classpath = jp.getResolvedClasspath(true);
-					//Look for a 'spring-boot' jar or project entry
+			IClasspathEntry[] classpath = jp.getResolvedClasspath(true);
 
-					for (IClasspathEntry e : classpath) {
-						if (isBootJar(e) || isBootProject(e)) {
-							return true;
-						}
-					}
+			for (IClasspathEntry e : classpath) {
+				if (isDependencyJar(dep, e) || isDependencyProject(dep, e)) {
+					return true;
+				}
 			}
 		} catch (Exception e) {
 			CorePlugin.log(e);
 		}
 		return false;
 	}
-
-	private static boolean isBootJar(IClasspathEntry e) {
+	
+	private static boolean isDependencyJar(String dep, IClasspathEntry e) {
 		if (e.getEntryKind()==IClasspathEntry.CPE_LIBRARY) {
 			IPath path = e.getPath();
 			String name = path.lastSegment();
-			return name.endsWith(".jar") && name.startsWith("spring-boot");
+			return name.endsWith(".jar") && name.startsWith(dep);
 		}
 		return false;
 	}
 	
-	private static boolean isBootProject(IClasspathEntry e) {
+	private static boolean isDependencyProject(String dep, IClasspathEntry e) {
 		if (e.getEntryKind()==IClasspathEntry.CPE_PROJECT) {
 			IPath path = e.getPath();
 			String name = path.lastSegment();
-			return name.startsWith("spring-boot");
+			return name.startsWith(dep);
 		}
 		return false;
 	}

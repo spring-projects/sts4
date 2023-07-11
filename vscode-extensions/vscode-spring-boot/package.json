@@ -126,6 +126,11 @@
         "command": "sts/common-properties/reload",
         "title": "Reload Shared Properties Metadata",
         "category": "Spring Boot"
+      },
+      {
+        "command": "vscode-spring-boot.spring.modulith.metadata.refresh",
+        "title": "Refresh Modulith Metadata",
+        "category": "Spring Boot"
       }
     ],
     "configuration": [
@@ -498,7 +503,7 @@
           "spring-boot.ls.problem.boot3.MODULITH_TYPE_REF_VIOLATION": {
             "type": "string",
             "default": "ERROR",
-            "description": "Restricted dependency",
+            "description": "Modulith restricted type reference",
             "enum": [
               "IGNORE",
               "INFO",
