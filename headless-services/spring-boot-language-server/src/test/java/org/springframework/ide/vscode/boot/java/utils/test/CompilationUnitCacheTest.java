@@ -32,12 +32,12 @@ import org.springframework.ide.vscode.boot.app.BootLanguageServerParams;
 import org.springframework.ide.vscode.boot.bootiful.AdHocPropertyHarnessTestConf;
 import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
 import org.springframework.ide.vscode.boot.editor.harness.PropertyIndexHarness;
+import org.springframework.ide.vscode.boot.index.cache.IndexCache;
+import org.springframework.ide.vscode.boot.index.cache.IndexCacheVoid;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
 import org.springframework.ide.vscode.boot.java.links.SourceLinkFactory;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
-import org.springframework.ide.vscode.boot.java.utils.SymbolCache;
-import org.springframework.ide.vscode.boot.java.utils.SymbolCacheVoid;
 import org.springframework.ide.vscode.boot.metadata.ValueProviderRegistry;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
@@ -73,8 +73,8 @@ public class CompilationUnitCacheTest {
 
 	@Configuration static class TestConf {
 
-		@Bean SymbolCache symbolCache() {
-			return new SymbolCacheVoid();
+		@Bean IndexCache symbolCache() {
+			return new IndexCacheVoid();
 		}
 
 		@Bean PropertyIndexHarness indexHarness(ValueProviderRegistry valueProviders) {

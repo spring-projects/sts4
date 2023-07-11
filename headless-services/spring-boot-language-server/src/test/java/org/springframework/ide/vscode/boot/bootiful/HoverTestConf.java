@@ -15,10 +15,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.ide.vscode.boot.app.BootLanguageServerParams;
 import org.springframework.ide.vscode.boot.editor.harness.PropertyIndexHarness;
+import org.springframework.ide.vscode.boot.index.cache.IndexCache;
+import org.springframework.ide.vscode.boot.index.cache.IndexCacheVoid;
 import org.springframework.ide.vscode.boot.java.links.SourceLinkFactory;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
-import org.springframework.ide.vscode.boot.java.utils.SymbolCache;
-import org.springframework.ide.vscode.boot.java.utils.SymbolCacheVoid;
 import org.springframework.ide.vscode.boot.metadata.ValueProviderRegistry;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
@@ -29,8 +29,8 @@ import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 @Import(AdHocPropertyHarnessTestConf.class)
 public class HoverTestConf {
 
-	@Bean SymbolCache symbolCache() {
-		return new SymbolCacheVoid();
+	@Bean IndexCache symbolCache() {
+		return new IndexCacheVoid();
 	}
 
 	@Bean PropertyIndexHarness indexHarness(ValueProviderRegistry valueProviders) {

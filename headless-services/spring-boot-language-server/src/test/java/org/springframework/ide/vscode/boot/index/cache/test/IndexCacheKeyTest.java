@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019 Pivotal, Inc.
+ * Copyright (c) 2019, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -8,22 +8,22 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.java.utils.test;
+package org.springframework.ide.vscode.boot.index.cache.test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.ide.vscode.boot.java.utils.SymbolCacheKey;
+import org.springframework.ide.vscode.boot.index.cache.IndexCacheKey;
 
 /**
  * @author Martin Lippert
  */
-public class SymbolCacheKeyTest {
+public class IndexCacheKeyTest {
 
     @Test
     void testCacheKey() {
-        SymbolCacheKey key = new SymbolCacheKey("primary", "version");
+        IndexCacheKey key = new IndexCacheKey("primary", "version");
 
         assertEquals("primary", key.getPrimaryIdentifier());
         assertEquals("version", key.getVersion());
@@ -32,33 +32,33 @@ public class SymbolCacheKeyTest {
 
     @Test
     void testCacheKeyParsingFromFileName() {
-        SymbolCacheKey key = SymbolCacheKey.parse("primary-version.json");
+        IndexCacheKey key = IndexCacheKey.parse("primary-version.json");
         assertEquals("primary", key.getPrimaryIdentifier());
         assertEquals("version", key.getVersion());
 
-        key = SymbolCacheKey.parse("primary-name-with-separator-123ABC.json");
+        key = IndexCacheKey.parse("primary-name-with-separator-123ABC.json");
         assertEquals("primary-name-with-separator", key.getPrimaryIdentifier());
         assertEquals("123ABC", key.getVersion());
     }
 
     @Test
     void testCacheKeyParsingWithoutFileExtension() {
-        SymbolCacheKey key = SymbolCacheKey.parse("primary-version");
+        IndexCacheKey key = IndexCacheKey.parse("primary-version");
         assertEquals("primary", key.getPrimaryIdentifier());
         assertEquals("version", key.getVersion());
 
-        key = SymbolCacheKey.parse("primary-name-with-separator-123ABC");
+        key = IndexCacheKey.parse("primary-name-with-separator-123ABC");
         assertEquals("primary-name-with-separator", key.getPrimaryIdentifier());
         assertEquals("123ABC", key.getVersion());
     }
 
     @Test
     void testCacheKeyEquals() {
-        SymbolCacheKey key1 = new SymbolCacheKey("primary", "1");
-        SymbolCacheKey key2 = new SymbolCacheKey("primary", "1");
+        IndexCacheKey key1 = new IndexCacheKey("primary", "1");
+        IndexCacheKey key2 = new IndexCacheKey("primary", "1");
 
-        SymbolCacheKey key3 = new SymbolCacheKey("primary", "2");
-        SymbolCacheKey key4 = new SymbolCacheKey("secondary", "1");
+        IndexCacheKey key3 = new IndexCacheKey("primary", "2");
+        IndexCacheKey key4 = new IndexCacheKey("secondary", "1");
 
         assertEquals(key1, key1);
         assertEquals(key2, key2);

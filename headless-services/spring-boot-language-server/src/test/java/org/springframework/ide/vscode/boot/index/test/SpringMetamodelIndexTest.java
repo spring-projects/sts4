@@ -8,7 +8,7 @@
  * Contributors:
  *     VMware, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.metamodel.test;
+package org.springframework.ide.vscode.boot.index.test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -25,7 +25,7 @@ import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.junit.jupiter.api.Test;
 import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
-import org.springframework.ide.vscode.boot.java.utils.SymbolCacheOnDisc;
+import org.springframework.ide.vscode.boot.index.cache.IndexCacheOnDisc;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.commons.protocol.spring.DefaultValues;
 import org.springframework.ide.vscode.commons.protocol.spring.InjectionPoint;
@@ -224,7 +224,7 @@ public class SpringMetamodelIndexTest {
 		Bean bean1 = new Bean("beanName1", "beanType", locationForDoc1, new InjectionPoint[] {point1, point2}, new String[] {"supertype1", "supertype2"}, emptyAnnotations);
 		String serialized = bean1.toString();
 		
-		Gson gson = SymbolCacheOnDisc.createGson();
+		Gson gson = IndexCacheOnDisc.createGson();
 		Bean deserializedBean = gson.fromJson(serialized, Bean.class);
 		
 		assertEquals("beanName1", deserializedBean.getName());
@@ -252,7 +252,7 @@ public class SpringMetamodelIndexTest {
 		Bean bean1 = new Bean("beanName1", "beanType", locationForDoc1, emptyInjectionPoints, emptySupertypes, emptyAnnotations);
 		String serialized = bean1.toString();
 		
-		Gson gson = SymbolCacheOnDisc.createGson();
+		Gson gson = IndexCacheOnDisc.createGson();
 		Bean deserializedBean = gson.fromJson(serialized, Bean.class);
 		
 		assertEquals("beanName1", deserializedBean.getName());

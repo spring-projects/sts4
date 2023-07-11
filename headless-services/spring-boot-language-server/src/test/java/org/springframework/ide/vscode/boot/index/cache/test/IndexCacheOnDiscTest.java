@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2020 Pivotal, Inc.
+ * Copyright (c) 2019, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -8,7 +8,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.java.utils.test;
+package org.springframework.ide.vscode.boot.index.cache.test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -36,12 +36,12 @@ import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.springframework.ide.vscode.boot.index.cache.IndexCacheKey;
+import org.springframework.ide.vscode.boot.index.cache.IndexCacheOnDisc;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
 import org.springframework.ide.vscode.boot.java.requestmapping.WebfluxElementsInformation;
 import org.springframework.ide.vscode.boot.java.utils.CachedSymbol;
-import org.springframework.ide.vscode.boot.java.utils.SymbolCacheKey;
-import org.springframework.ide.vscode.boot.java.utils.SymbolCacheOnDisc;
 import org.springframework.ide.vscode.commons.util.UriUtil;
 
 import com.google.common.collect.ImmutableList;
@@ -49,15 +49,15 @@ import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 
-public class SymbolCacheOnDiscTest {
+public class IndexCacheOnDiscTest {
 
 	private Path tempDir;
-	private SymbolCacheOnDisc cache;
+	private IndexCacheOnDisc cache;
 
 	@BeforeEach
 	public void setup() throws Exception {
 		tempDir = Files.createTempDirectory("cachetest");
-		cache = new SymbolCacheOnDisc(tempDir.toFile());
+		cache = new IndexCacheOnDisc(tempDir.toFile());
 	}
 
 	@AfterEach
@@ -67,7 +67,7 @@ public class SymbolCacheOnDiscTest {
 
     @Test
     void testEmptyCache() throws Exception {
-        Pair<CachedSymbol[], Multimap<String, String>> result = cache.retrieve(new SymbolCacheKey("something", "0"), new String[0]);
+        Pair<CachedSymbol[], Multimap<String, String>> result = cache.retrieve(new IndexCacheKey("something", "0"), new String[0]);
         assertNull(result);
     }
 
@@ -89,13 +89,13 @@ public class SymbolCacheOnDiscTest {
         EnhancedSymbolInformation enhancedSymbol = new EnhancedSymbolInformation(symbol, null);
         generatedSymbols.add(new CachedSymbol("", timeFile1.toMillis(), enhancedSymbol, null));
 
-        cache.store(new SymbolCacheKey("somekey", "1"), files, generatedSymbols, ImmutableMultimap.of(
+        cache.store(new IndexCacheKey("somekey", "1"), files, generatedSymbols, ImmutableMultimap.of(
                 file1.toString(), "file1dep1",
                 file2.toString(), "file2dep1",
                 file2.toString(), "file2dep2"
         ));
 
-        Pair<CachedSymbol[], Multimap<String, String>> result = cache.retrieve(new SymbolCacheKey("somekey", "1"), files);
+        Pair<CachedSymbol[], Multimap<String, String>> result = cache.retrieve(new IndexCacheKey("somekey", "1"), files);
 
         CachedSymbol[] cachedSymbols = result.getLeft();
         assertNotNull(cachedSymbols);
@@ -111,8 +111,8 @@ public class SymbolCacheOnDiscTest {
         assertEquals(dependencies.get(file1.toString()), ImmutableSet.of("file1dep1"));
         assertEquals(dependencies.get(file2.toString()), ImmutableSet.of("file2dep1", "file2dep2"));
 
-        assertEquals(timeFile1.toMillis(), cache.getModificationTimestamp(new SymbolCacheKey("somekey", "1"), file1.toString()));
-        assertEquals(0, cache.getModificationTimestamp(new SymbolCacheKey("somekey", "1"), "random-non-existing-file"));
+        assertEquals(timeFile1.toMillis(), cache.getModificationTimestamp(new IndexCacheKey("somekey", "1"), file1.toString()));
+        assertEquals(0, cache.getModificationTimestamp(new IndexCacheKey("somekey", "1"), "random-non-existing-file"));
         
         assertNull(cachedSymbols[0].getBean());
     }
@@ -135,9 +135,9 @@ public class SymbolCacheOnDiscTest {
         EnhancedSymbolInformation enhancedSymbol = new EnhancedSymbolInformation(symbol, null);
         generatedSymbols.add(new CachedSymbol("", timeFile1.toMillis(), enhancedSymbol, null));
 
-        cache.store(new SymbolCacheKey("somekey", "1"), files, generatedSymbols, null);
+        cache.store(new IndexCacheKey("somekey", "1"), files, generatedSymbols, null);
 
-        Pair<CachedSymbol[], Multimap<String, String>> result = cache.retrieve(new SymbolCacheKey("otherkey", "1"), files);
+        Pair<CachedSymbol[], Multimap<String, String>> result = cache.retrieve(new IndexCacheKey("otherkey", "1"), files);
         assertNull(result);
     }
 
@@ -159,14 +159,14 @@ public class SymbolCacheOnDiscTest {
         EnhancedSymbolInformation enhancedSymbol = new EnhancedSymbolInformation(symbol, null);
         generatedSymbols.add(new CachedSymbol("", timeFile1.toMillis(), enhancedSymbol, null));
 
-        cache.store(new SymbolCacheKey("somekey", "1"), files, generatedSymbols, ImmutableMultimap.of(
+        cache.store(new IndexCacheKey("somekey", "1"), files, generatedSymbols, ImmutableMultimap.of(
                 file1.toString(), "file1dep",
                 file2.toString(), "file2dep"
         ));
 
         assertTrue(file1.toFile().setLastModified(timeFile1.toMillis() + 1000));
 
-        Pair<CachedSymbol[], Multimap<String, String>> result = cache.retrieve(new SymbolCacheKey("somekey", "1"), files);
+        Pair<CachedSymbol[], Multimap<String, String>> result = cache.retrieve(new IndexCacheKey("somekey", "1"), files);
         assertNull(result);
     }
 
@@ -181,10 +181,10 @@ public class SymbolCacheOnDiscTest {
         Files.createFile(file3);
 
         String[] files = {file1.toString(), file2.toString()};
-        cache.store(new SymbolCacheKey("somekey", "1"), files, new ArrayList<>(), null);
+        cache.store(new IndexCacheKey("somekey", "1"), files, new ArrayList<>(), null);
 
         String[] moreFiles = {file1.toString(), file2.toString(), file3.toString()};
-        assertNull(cache.retrieve(new SymbolCacheKey("somekey", "1"), moreFiles));
+        assertNull(cache.retrieve(new IndexCacheKey("somekey", "1"), moreFiles));
     }
 
     @Test
@@ -198,19 +198,19 @@ public class SymbolCacheOnDiscTest {
         Files.createFile(file3);
 
         String[] files = {file1.toString(), file2.toString(), file3.toString()};
-        cache.store(new SymbolCacheKey("somekey", "1"), files, new ArrayList<>(), null);
+        cache.store(new IndexCacheKey("somekey", "1"), files, new ArrayList<>(), null);
 
         String[] fewerFiles = {file1.toString(), file2.toString()};
-        assertNull(cache.retrieve(new SymbolCacheKey("somekey", "1"), fewerFiles));
+        assertNull(cache.retrieve(new IndexCacheKey("somekey", "1"), fewerFiles));
     }
 
     @Test
     void testDeleteOldCacheFileIfNewOneIsStored() throws Exception {
-        SymbolCacheKey key1 = new SymbolCacheKey("somekey", "1");
+        IndexCacheKey key1 = new IndexCacheKey("somekey", "1");
         cache.store(key1, new String[0], new ArrayList<>(), null);
         assertTrue(Files.exists(tempDir.resolve(Paths.get(key1.toString() + ".json"))));
 
-        SymbolCacheKey key2 = new SymbolCacheKey("somekey", "2");
+        IndexCacheKey key2 = new IndexCacheKey("somekey", "2");
         cache.store(key2, new String[0], new ArrayList<>(), null);
         assertTrue(Files.exists(tempDir.resolve(Paths.get(key2.toString() + ".json"))));
         assertFalse(Files.exists(tempDir.resolve(Paths.get(key1.toString() + ".json"))));
@@ -233,9 +233,9 @@ public class SymbolCacheOnDiscTest {
 
         generatedSymbols.add(new CachedSymbol(doc1URI, timeFile1.toMillis(), enhancedSymbol, null));
 
-        cache.store(new SymbolCacheKey("somekey", "1"), files, generatedSymbols, null);
+        cache.store(new IndexCacheKey("somekey", "1"), files, generatedSymbols, null);
 
-        CachedSymbol[] cachedSymbols = cache.retrieveSymbols(new SymbolCacheKey("somekey", "1"), files);
+        CachedSymbol[] cachedSymbols = cache.retrieveSymbols(new IndexCacheKey("somekey", "1"), files);
         assertNotNull(cachedSymbols);
         assertEquals(1, cachedSymbols.length);
 
@@ -270,7 +270,7 @@ public class SymbolCacheOnDiscTest {
         EnhancedSymbolInformation enhancedSymbol1 = new EnhancedSymbolInformation(symbol1, null);
         generatedSymbols1.add(new CachedSymbol(doc1URI, timeFile1.toMillis(), enhancedSymbol1, null));
 
-        cache.store(new SymbolCacheKey("somekey", "1"), files, generatedSymbols1, null);
+        cache.store(new IndexCacheKey("somekey", "1"), files, generatedSymbols1, null);
 
         List<CachedSymbol> generatedSymbols2 = new ArrayList<>();
         symbol1 = new WorkspaceSymbol("symbol1", SymbolKind.Field, Either.forLeft(new Location(doc1URI, new Range(new Position(3, 10), new Position(3, 20)))));
@@ -283,13 +283,13 @@ public class SymbolCacheOnDiscTest {
         generatedSymbols2.add(new CachedSymbol(doc1URI, timeFile1.toMillis() + 2000, enhancedSymbol2, null));
 
         assertTrue(file1.toFile().setLastModified(timeFile1.toMillis() + 2000));
-        cache.update(new SymbolCacheKey("somekey", "1"), file1.toAbsolutePath().toString(), timeFile1.toMillis() + 2000, generatedSymbols2, null);
+        cache.update(new IndexCacheKey("somekey", "1"), file1.toAbsolutePath().toString(), timeFile1.toMillis() + 2000, generatedSymbols2, null);
 
-        CachedSymbol[] cachedSymbols = cache.retrieveSymbols(new SymbolCacheKey("somekey", "1"), files);
+        CachedSymbol[] cachedSymbols = cache.retrieveSymbols(new IndexCacheKey("somekey", "1"), files);
         assertNotNull(cachedSymbols);
         assertEquals(2, cachedSymbols.length);
 
-        assertEquals(timeFile1.toMillis() + 2000, cache.getModificationTimestamp(new SymbolCacheKey("somekey", "1"), file1.toString()));
+        assertEquals(timeFile1.toMillis() + 2000, cache.getModificationTimestamp(new IndexCacheKey("somekey", "1"), file1.toString()));
     }
 
     @Test
@@ -328,7 +328,7 @@ public class SymbolCacheOnDiscTest {
         generatedSymbols.add(new CachedSymbol(doc3URI, timeFile3.toMillis(), enhancedSymbol3, null));
 
         // store original version of the symbols to the cache 
-        cache.store(new SymbolCacheKey("somekey", "1"), files, generatedSymbols, null);
+        cache.store(new IndexCacheKey("somekey", "1"), files, generatedSymbols, null);
 
 
         // create updated and new symbols
@@ -353,10 +353,10 @@ public class SymbolCacheOnDiscTest {
         long[] updatedModificationTimestamps = new long[]{timeFile1.toMillis() + 2000, timeFile2.toMillis() + 3000};
 
         // update multiple files in the cache
-        cache.update(new SymbolCacheKey("somekey", "1"), updatedFiles, updatedModificationTimestamps, updatedSymbols, null);
+        cache.update(new IndexCacheKey("somekey", "1"), updatedFiles, updatedModificationTimestamps, updatedSymbols, null);
 
         // double check whether all changes got stored and retrieved correctly
-        CachedSymbol[] cachedSymbols = cache.retrieveSymbols(new SymbolCacheKey("somekey", "1"), files);
+        CachedSymbol[] cachedSymbols = cache.retrieveSymbols(new IndexCacheKey("somekey", "1"), files);
         assertNotNull(cachedSymbols);
         assertEquals(4, cachedSymbols.length);
 
@@ -365,9 +365,9 @@ public class SymbolCacheOnDiscTest {
         assertSymbol(updatedEnhancedSymbol2, cachedSymbols);
         assertSymbol(enhancedSymbol3, cachedSymbols);
 
-        assertEquals(timeFile1.toMillis() + 2000, cache.getModificationTimestamp(new SymbolCacheKey("somekey", "1"), file1.toString()));
-        assertEquals(timeFile2.toMillis() + 3000, cache.getModificationTimestamp(new SymbolCacheKey("somekey", "1"), file2.toString()));
-        assertEquals(timeFile3.toMillis(), cache.getModificationTimestamp(new SymbolCacheKey("somekey", "1"), file3.toString()));
+        assertEquals(timeFile1.toMillis() + 2000, cache.getModificationTimestamp(new IndexCacheKey("somekey", "1"), file1.toString()));
+        assertEquals(timeFile2.toMillis() + 3000, cache.getModificationTimestamp(new IndexCacheKey("somekey", "1"), file2.toString()));
+        assertEquals(timeFile3.toMillis(), cache.getModificationTimestamp(new IndexCacheKey("somekey", "1"), file3.toString()));
     }
 
 	private void assertSymbol(EnhancedSymbolInformation enhancedSymbol, CachedSymbol[] cachedSymbols) {
@@ -395,13 +395,13 @@ public class SymbolCacheOnDiscTest {
         List<CachedSymbol> generatedSymbols = ImmutableList.of();
 
         Multimap<String, String> dependencies = ImmutableMultimap.of(file1.toString(), "dep1");
-        cache.store(new SymbolCacheKey("somekey", "1"), files, generatedSymbols, dependencies);
+        cache.store(new IndexCacheKey("somekey", "1"), files, generatedSymbols, dependencies);
 
         assertTrue(file1.toFile().setLastModified(timeFile1.toMillis() + 2000));
         Set<String> dependencies2 = ImmutableSet.of("dep1", "dep2");
-        cache.update(new SymbolCacheKey("somekey", "1"), file1.toAbsolutePath().toString(), timeFile1.toMillis() + 2000, generatedSymbols, dependencies2);
+        cache.update(new IndexCacheKey("somekey", "1"), file1.toAbsolutePath().toString(), timeFile1.toMillis() + 2000, generatedSymbols, dependencies2);
 
-        Pair<CachedSymbol[], Multimap<String, String>> result = cache.retrieve(new SymbolCacheKey("somekey", "1"), files);
+        Pair<CachedSymbol[], Multimap<String, String>> result = cache.retrieve(new IndexCacheKey("somekey", "1"), files);
         assertNotNull(result);
         assertEquals(ImmutableSet.of("dep1", "dep2"), result.getRight().get(file1.toString()));
     }
@@ -422,14 +422,14 @@ public class SymbolCacheOnDiscTest {
         EnhancedSymbolInformation enhancedSymbol1 = new EnhancedSymbolInformation(symbol1, null);
         generatedSymbols1.add(new CachedSymbol(doc1URI, timeFile1.toMillis(), enhancedSymbol1, null));
 
-        cache.store(new SymbolCacheKey("somekey", "1"), files, generatedSymbols1, null);
+        cache.store(new IndexCacheKey("somekey", "1"), files, generatedSymbols1, null);
 
         List<CachedSymbol> generatedSymbols2 = new ArrayList<>();
         assertTrue(file1.toFile().setLastModified(timeFile1.toMillis() + 2000));
 
-        cache.update(new SymbolCacheKey("somekey", "1"), file1.toAbsolutePath().toString(), timeFile1.toMillis() + 2000, generatedSymbols2, null);
+        cache.update(new IndexCacheKey("somekey", "1"), file1.toAbsolutePath().toString(), timeFile1.toMillis() + 2000, generatedSymbols2, null);
 
-        CachedSymbol[] cachedSymbols = cache.retrieveSymbols(new SymbolCacheKey("somekey", "1"), files);
+        CachedSymbol[] cachedSymbols = cache.retrieveSymbols(new IndexCacheKey("somekey", "1"), files);
         assertNotNull(cachedSymbols);
         assertEquals(0, cachedSymbols.length);
     }
@@ -450,15 +450,15 @@ public class SymbolCacheOnDiscTest {
                 file1.toString(), "dep2"
         );
 
-        cache.store(new SymbolCacheKey("somekey", "1"), files, generatedSymbols1, dependencies1);
+        cache.store(new IndexCacheKey("somekey", "1"), files, generatedSymbols1, dependencies1);
 
         List<CachedSymbol> generatedSymbols2 = new ArrayList<>();
         assertTrue(file1.toFile().setLastModified(timeFile1.toMillis() + 2000));
 
         Set<String> dependencies2 = ImmutableSet.of("dep2");
-        cache.update(new SymbolCacheKey("somekey", "1"), file1.toAbsolutePath().toString(), timeFile1.toMillis() + 2000, generatedSymbols2, dependencies2);
+        cache.update(new IndexCacheKey("somekey", "1"), file1.toAbsolutePath().toString(), timeFile1.toMillis() + 2000, generatedSymbols2, dependencies2);
 
-        Pair<CachedSymbol[], Multimap<String, String>> result = cache.retrieve(new SymbolCacheKey("somekey", "1"), files);
+        Pair<CachedSymbol[], Multimap<String, String>> result = cache.retrieve(new IndexCacheKey("somekey", "1"), files);
         assertNotNull(result);
         assertEquals(ImmutableSet.of("dep2"), result.getRight().get(file1.toString()));
     }
@@ -483,7 +483,7 @@ public class SymbolCacheOnDiscTest {
         EnhancedSymbolInformation enhancedSymbol1 = new EnhancedSymbolInformation(symbol1, null);
         generatedSymbols1.add(new CachedSymbol(doc1URI, timeFile1.toMillis(), enhancedSymbol1, null));
 
-        cache.store(new SymbolCacheKey("somekey", "1"), files, generatedSymbols1, null);
+        cache.store(new IndexCacheKey("somekey", "1"), files, generatedSymbols1, null);
 
         List<CachedSymbol> generatedSymbols2 = new ArrayList<>();
         WorkspaceSymbol symbol2 = new WorkspaceSymbol("symbol2", SymbolKind.Interface, Either.forLeft(new Location(doc2URI, new Range(new Position(5, 5), new Position(5, 10)))));
@@ -491,9 +491,9 @@ public class SymbolCacheOnDiscTest {
 
         generatedSymbols2.add(new CachedSymbol(doc2URI, timeFile2.toMillis(), enhancedSymbol2, null));
 
-        cache.update(new SymbolCacheKey("somekey", "1"), file2.toString(), timeFile2.toMillis(), generatedSymbols2, null);
+        cache.update(new IndexCacheKey("somekey", "1"), file2.toString(), timeFile2.toMillis(), generatedSymbols2, null);
 
-        CachedSymbol[] cachedSymbols = cache.retrieveSymbols(new SymbolCacheKey("somekey", "1"), new String[]{file1.toString(), file2.toString()});
+        CachedSymbol[] cachedSymbols = cache.retrieveSymbols(new IndexCacheKey("somekey", "1"), new String[]{file1.toString(), file2.toString()});
         assertNotNull(cachedSymbols);
         assertEquals(2, cachedSymbols.length);
     }
@@ -513,12 +513,12 @@ public class SymbolCacheOnDiscTest {
         Multimap<String, String> dependencies1 = ImmutableMultimap.of(
                 file1.toString(), "dep1"
         );
-        cache.store(new SymbolCacheKey("somekey", "1"), files, generatedSymbols1, dependencies1);
+        cache.store(new IndexCacheKey("somekey", "1"), files, generatedSymbols1, dependencies1);
 
         Set<String> dependencies2 = ImmutableSet.of("dep2");
-        cache.update(new SymbolCacheKey("somekey", "1"), file2.toString(), timeFile2.toMillis(), generatedSymbols1, dependencies2);
+        cache.update(new IndexCacheKey("somekey", "1"), file2.toString(), timeFile2.toMillis(), generatedSymbols1, dependencies2);
 
-        Pair<CachedSymbol[], Multimap<String, String>> result = cache.retrieve(new SymbolCacheKey("somekey", "1"), new String[]{file1.toString(), file2.toString()});
+        Pair<CachedSymbol[], Multimap<String, String>> result = cache.retrieve(new IndexCacheKey("somekey", "1"), new String[]{file1.toString(), file2.toString()});
         assertNotNull(result);
         assertEquals(ImmutableSet.of("dep2"), result.getRight().get(file2.toString()));
         assertEquals(ImmutableSet.of("dep1"), result.getRight().get(file1.toString()));
@@ -526,7 +526,7 @@ public class SymbolCacheOnDiscTest {
 
     @Test
     void testProjectDeleted() throws Exception {
-        SymbolCacheKey key1 = new SymbolCacheKey("somekey", "1");
+        IndexCacheKey key1 = new IndexCacheKey("somekey", "1");
         cache.store(key1, new String[0], new ArrayList<>(), null);
         assertTrue(Files.exists(tempDir.resolve(Paths.get(key1.toString() + ".json"))));
 
@@ -564,11 +564,11 @@ public class SymbolCacheOnDiscTest {
                 file1.toString(), "dep1",
                 file2.toString(), "dep2"
         );
-        cache.store(new SymbolCacheKey("somekey", "1"), files, generatedSymbols, dependencies);
-        cache.removeFile(new SymbolCacheKey("somekey", "1"), file1.toAbsolutePath().toString());
+        cache.store(new IndexCacheKey("somekey", "1"), files, generatedSymbols, dependencies);
+        cache.removeFile(new IndexCacheKey("somekey", "1"), file1.toAbsolutePath().toString());
 
         files = new String[]{file2.toAbsolutePath().toString()};
-        Pair<CachedSymbol[], Multimap<String, String>> result = cache.retrieve(new SymbolCacheKey("somekey", "1"), files);
+        Pair<CachedSymbol[], Multimap<String, String>> result = cache.retrieve(new IndexCacheKey("somekey", "1"), files);
         CachedSymbol[] cachedSymbols = result.getLeft();
         assertNotNull(result);
         assertEquals(1, cachedSymbols.length);

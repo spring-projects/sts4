@@ -8,19 +8,19 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.java.utils;
+package org.springframework.ide.vscode.boot.index.cache;
 
 /**
  * @author Martin Lippert
  */
-public class SymbolCacheKey {
+public class IndexCacheKey {
 
 	private static final String SEPARATOR = "-";
 
 	private final String primaryIdentifier;
 	private final String version;
 
-	public SymbolCacheKey(String primaryIdentifier, String version) {
+	public IndexCacheKey(String primaryIdentifier, String version) {
 		this.primaryIdentifier = primaryIdentifier;
 		this.version = version;
 	}
@@ -56,11 +56,11 @@ public class SymbolCacheKey {
 		if (getClass() != obj.getClass())
 			return false;
 
-		SymbolCacheKey other = (SymbolCacheKey) obj;
+		IndexCacheKey other = (IndexCacheKey) obj;
 		return this.toString().equals(other.toString());
 	}
 
-	public static SymbolCacheKey parse(String fileName) {
+	public static IndexCacheKey parse(String fileName) {
 		if (fileName != null && fileName.length() > 0) {
 			int separatorIndex = fileName.lastIndexOf(SEPARATOR);
 			if (separatorIndex > 0) {
@@ -72,7 +72,7 @@ public class SymbolCacheKey {
 					version = version.substring(0, fileextensionIndex);
 				}
 
-				return new SymbolCacheKey(primary, version);
+				return new IndexCacheKey(primary, version);
 			}
 		}
 		return null;

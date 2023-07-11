@@ -8,7 +8,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.java.utils;
+package org.springframework.ide.vscode.boot.index.cache;
 
 import java.io.File;
 import java.io.FileReader;
@@ -34,6 +34,7 @@ import org.eclipse.lsp4j.Location;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
+import org.springframework.ide.vscode.boot.java.utils.CachedSymbol;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.commons.protocol.spring.InjectionPoint;
 import org.springframework.ide.vscode.commons.util.UriUtil;
@@ -57,14 +58,14 @@ import com.google.gson.stream.JsonReader;
 /**
  * @author Martin Lippert
  */
-public class SymbolCacheOnDisc implements SymbolCache {
+public class IndexCacheOnDisc implements IndexCache {
 
 	private final File cacheDirectory;
-	private final Map<SymbolCacheKey, CacheStore> stores;
+	private final Map<IndexCacheKey, CacheStore> stores;
 
-	private static final Logger log = LoggerFactory.getLogger(SymbolCacheOnDisc.class);
+	private static final Logger log = LoggerFactory.getLogger(IndexCacheOnDisc.class);
 
-	public SymbolCacheOnDisc(File cacheDirectory) {
+	public IndexCacheOnDisc(File cacheDirectory) {
 		this.cacheDirectory = cacheDirectory;
 		this.stores = new ConcurrentHashMap<>();
 
@@ -78,7 +79,7 @@ public class SymbolCacheOnDisc implements SymbolCache {
 	}
 
 	@Override
-	public void store(SymbolCacheKey cacheKey, String[] files, List<CachedSymbol> generatedSymbols, Multimap<String, String> dependencies) {
+	public void store(IndexCacheKey cacheKey, String[] files, List<CachedSymbol> generatedSymbols, Multimap<String, String> dependencies) {
 		if (dependencies==null) {
 			dependencies = ImmutableMultimap.of();
 		}
@@ -98,7 +99,7 @@ public class SymbolCacheOnDisc implements SymbolCache {
 	}
 
 	@Override
-	public Pair<CachedSymbol[], Multimap<String, String>> retrieve(SymbolCacheKey cacheKey, String[] files) {
+	public Pair<CachedSymbol[], Multimap<String, String>> retrieve(IndexCacheKey cacheKey, String[] files) {
 		File cacheStore = new File(cacheDirectory, cacheKey.toString() + ".json");
 		if (cacheStore.exists()) {
 
@@ -142,7 +143,7 @@ public class SymbolCacheOnDisc implements SymbolCache {
 	}
 
 	@Override
-	public void removeFile(SymbolCacheKey cacheKey, String file) {
+	public void removeFile(IndexCacheKey cacheKey, String file) {
 		CacheStore cacheStore = this.stores.get(cacheKey);
 		if (cacheStore != null) {
 			String docURI = UriUtil.toUri(new File(file)).toASCIIString();
@@ -160,7 +161,7 @@ public class SymbolCacheOnDisc implements SymbolCache {
 	}
 
 	@Override
-	public void remove(SymbolCacheKey cacheKey) {
+	public void remove(IndexCacheKey cacheKey) {
 		File cacheStore = new File(cacheDirectory, cacheKey.toString() + ".json");
 		if (cacheStore.exists()) {
 			cacheStore.delete();
@@ -169,7 +170,7 @@ public class SymbolCacheOnDisc implements SymbolCache {
 	}
 
 	@Override
-	public void update(SymbolCacheKey cacheKey, String file, long lastModified, List<CachedSymbol> generatedSymbols, Set<String> dependencies) {
+	public void update(IndexCacheKey cacheKey, String file, long lastModified, List<CachedSymbol> generatedSymbols, Set<String> dependencies) {
 		if (dependencies == null) {
 			dependencies = ImmutableSet.of();
 		}
@@ -199,7 +200,7 @@ public class SymbolCacheOnDisc implements SymbolCache {
 	}
 
 	@Override
-	public void update(SymbolCacheKey cacheKey, String[] files, long[] lastModified, List<CachedSymbol> generatedSymbols, Multimap<String, String> dependencies) {
+	public void update(IndexCacheKey cacheKey, String[] files, long[] lastModified, List<CachedSymbol> generatedSymbols, Multimap<String, String> dependencies) {
 		if (dependencies == null) {
 			dependencies = ImmutableMultimap.of();
 		}
@@ -241,7 +242,7 @@ public class SymbolCacheOnDisc implements SymbolCache {
 	}
 
 	@Override
-	public long getModificationTimestamp(SymbolCacheKey cacheKey, String file) {
+	public long getModificationTimestamp(IndexCacheKey cacheKey, String file) {
 		CacheStore cacheStore = this.stores.get(cacheKey);
 		
 		if (cacheStore != null) {
@@ -254,7 +255,7 @@ public class SymbolCacheOnDisc implements SymbolCache {
 		return 0;
 	}
 
-	private void save(SymbolCacheKey cacheKey, List<CachedSymbol> generatedSymbols,
+	private void save(IndexCacheKey cacheKey, List<CachedSymbol> generatedSymbols,
 			SortedMap<String, Long> timestampedFiles, Map<String, Collection<String>> dependencies) {
 		CacheStore store = new CacheStore(timestampedFiles, generatedSymbols, dependencies);
 		this.stores.put(cacheKey, store);
@@ -282,12 +283,12 @@ public class SymbolCacheOnDisc implements SymbolCache {
 		return true;
 	}
 
-	private void cleanupCacheFiles(SymbolCacheKey cacheKey) {
+	private void cleanupCacheFiles(IndexCacheKey cacheKey) {
 		File[] cacheFiles = this.cacheDirectory.listFiles();
 
 		for (int i = 0; i < cacheFiles.length; i++) {
 			String fileName = cacheFiles[i].getName();
-			SymbolCacheKey key = SymbolCacheKey.parse(fileName);
+			IndexCacheKey key = IndexCacheKey.parse(fileName);
 
 			if (key != null && !key.equals(cacheKey)
 					&& key.getPrimaryIdentifier().equals(cacheKey.getPrimaryIdentifier())) {

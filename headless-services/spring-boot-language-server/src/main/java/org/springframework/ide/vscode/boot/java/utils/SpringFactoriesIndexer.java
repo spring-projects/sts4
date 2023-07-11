@@ -34,6 +34,8 @@ import org.eclipse.lsp4j.WorkspaceSymbol;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.boot.index.cache.IndexCache;
+import org.springframework.ide.vscode.boot.index.cache.IndexCacheKey;
 import org.springframework.ide.vscode.boot.java.beans.BeanUtils;
 import org.springframework.ide.vscode.boot.java.beans.BeansSymbolAddOnInformation;
 import org.springframework.ide.vscode.boot.java.beans.BeansSymbolProvider;
@@ -69,9 +71,9 @@ public class SpringFactoriesIndexer implements SpringIndexer {
 	); 
 	
 	private final SymbolHandler symbolHandler;
-	private final SymbolCache cache;
+	private final IndexCache cache;
 	
-	public SpringFactoriesIndexer(SymbolHandler symbolHandler, SymbolCache cache) {
+	public SpringFactoriesIndexer(SymbolHandler symbolHandler, IndexCache cache) {
 		super();
 		this.symbolHandler = symbolHandler;
 		this.cache = cache;
@@ -142,7 +144,7 @@ public class SpringFactoriesIndexer implements SpringIndexer {
 		return fqName;
 	}
 	
-	private SymbolCacheKey getCacheKey(IJavaProject project) {
+	private IndexCacheKey getCacheKey(IJavaProject project) {
 		String filesIndentifier = getFiles(project).stream()
 				.filter(f -> Files.isRegularFile(f))
 				.map(f -> {
@@ -154,7 +156,7 @@ public class SpringFactoriesIndexer implements SpringIndexer {
 					}
 				})
 				.collect(Collectors.joining(","));
-		return new SymbolCacheKey(project.getElementName() + "-factories-", DigestUtils.md5Hex(filesIndentifier).toUpperCase());
+		return new IndexCacheKey(project.getElementName() + "-factories-", DigestUtils.md5Hex(filesIndentifier).toUpperCase());
 	}
 
 
@@ -166,7 +168,7 @@ public class SpringFactoriesIndexer implements SpringIndexer {
 
 		log.info("scan factories files for symbols for project: " + project.getElementName() + " - no. of files: " + files.size());
 
-		SymbolCacheKey cacheKey = getCacheKey(project);
+		IndexCacheKey cacheKey = getCacheKey(project);
 
 		CachedSymbol[] symbols = this.cache.retrieveSymbols(cacheKey, filesStr);
 		if (symbols == null) {
@@ -238,7 +240,7 @@ public class SpringFactoriesIndexer implements SpringIndexer {
 
 	@Override
 	public void removeProject(IJavaProject project) throws Exception {
-		SymbolCacheKey cacheKey = getCacheKey(project);
+		IndexCacheKey cacheKey = getCacheKey(project);
 		this.cache.remove(cacheKey);
 	}
 
@@ -252,7 +254,7 @@ public class SpringFactoriesIndexer implements SpringIndexer {
 		if (!outputFolders.stream().anyMatch(out -> path.startsWith(out))) {
 			List<CachedSymbol> generatedSymbols = scanFile(path);
 
-			SymbolCacheKey cacheKey = getCacheKey(project);
+			IndexCacheKey cacheKey = getCacheKey(project);
 			String file = new File(new URI(docURI)).getAbsolutePath();
 			this.cache.update(cacheKey, file, updatedDoc.getLastModified(), generatedSymbols, null);
 
@@ -264,7 +266,7 @@ public class SpringFactoriesIndexer implements SpringIndexer {
 
 	@Override
 	public void updateFiles(IJavaProject project, DocumentDescriptor[] updatedDocs) throws Exception {
-		SymbolCacheKey key = getCacheKey(project);
+		IndexCacheKey key = getCacheKey(project);
 		List<Path> outputFolders = IClasspathUtil.getOutputFolders(project.getClasspath()).map(f -> f.toPath()).collect(Collectors.toList());
 		for (DocumentDescriptor d : updatedDocs) {
 			Path path = Paths.get(URI.create(d.getDocURI()));
@@ -281,7 +283,7 @@ public class SpringFactoriesIndexer implements SpringIndexer {
 
 	@Override
 	public void removeFiles(IJavaProject project, String[] docURIs) throws Exception {
-		SymbolCacheKey key = getCacheKey(project);
+		IndexCacheKey key = getCacheKey(project);
 		for (String docUri : docURIs) {
 			String file = new File(new URI(docUri)).getAbsolutePath();
 			cache.removeFile(key, file);

@@ -23,6 +23,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.ApplicationContext;
 import org.springframework.ide.vscode.boot.factories.SpringFactoriesLanguageServerComponents;
+import org.springframework.ide.vscode.boot.index.cache.IndexCache;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
 import org.springframework.ide.vscode.boot.java.links.JavaElementLocationProvider;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
@@ -30,7 +31,6 @@ import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveDa
 import org.springframework.ide.vscode.boot.java.rewrite.RewriteRecipeRepository;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.boot.java.utils.ServerUtils;
-import org.springframework.ide.vscode.boot.java.utils.SymbolCache;
 import org.springframework.ide.vscode.boot.metadata.ProjectBasedPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.properties.BootPropertiesLanguageServerComponents;
 import org.springframework.ide.vscode.boot.xml.SpringXMLLanguageServerComponents;
@@ -66,7 +66,7 @@ public class BootLanguageServerInitializer implements InitializingBean {
 	@Autowired YamlASTProvider parser;
 	@Autowired YamlStructureProvider yamlStructureProvider;
 	@Autowired YamlAssistContextProvider yamlAssistContextProvider;
-	@Autowired SymbolCache symbolCache;
+	@Autowired IndexCache symbolCache;
 	@Autowired SpringProcessLiveDataProvider liveDataProvider;
 	@Autowired ApplicationContext appContext;
 	@Autowired BootJavaConfig config;

@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.boot.app;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
+import org.springframework.ide.vscode.boot.index.cache.IndexCache;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchyAwareLookup;
 import org.springframework.ide.vscode.boot.java.beans.BeansSymbolProvider;
@@ -22,13 +23,12 @@ import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.boot.java.requestmapping.RequestMappingSymbolProvider;
 import org.springframework.ide.vscode.boot.java.requestmapping.WebfluxRouterSymbolProvider;
 import org.springframework.ide.vscode.boot.java.utils.RestrictedDefaultSymbolProvider;
-import org.springframework.ide.vscode.boot.java.utils.SymbolCache;
 
 @Configuration(proxyBeanMethods = false)
 public class SpringSymbolIndexerConfig {
 
 	@Bean
-	AnnotationHierarchyAwareLookup<SymbolProvider> symbolProviders(SymbolCache cache) {
+	AnnotationHierarchyAwareLookup<SymbolProvider> symbolProviders(IndexCache cache) {
 		AnnotationHierarchyAwareLookup<SymbolProvider> providers = new AnnotationHierarchyAwareLookup<>();
 
 		RequestMappingSymbolProvider requestMappingSymbolProvider = new RequestMappingSymbolProvider();

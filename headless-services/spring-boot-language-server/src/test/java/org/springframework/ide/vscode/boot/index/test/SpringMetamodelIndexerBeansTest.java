@@ -8,7 +8,7 @@
  * Contributors:
  *     VMware, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.metamodel.test;
+package org.springframework.ide.vscode.boot.index.test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;

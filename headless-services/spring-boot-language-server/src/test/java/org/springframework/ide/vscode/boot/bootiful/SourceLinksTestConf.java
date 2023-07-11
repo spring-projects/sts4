@@ -15,11 +15,11 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.ide.vscode.boot.app.BootLanguageServerParams;
 import org.springframework.ide.vscode.boot.editor.harness.PropertyIndexHarness;
+import org.springframework.ide.vscode.boot.index.cache.IndexCache;
+import org.springframework.ide.vscode.boot.index.cache.IndexCacheVoid;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.java.links.VSCodeSourceLinks;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
-import org.springframework.ide.vscode.boot.java.utils.SymbolCache;
-import org.springframework.ide.vscode.boot.java.utils.SymbolCacheVoid;
 import org.springframework.ide.vscode.boot.java.utils.test.MockProjectObserver;
 import org.springframework.ide.vscode.boot.metadata.DefaultSpringPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.ValueProviderRegistry;
@@ -35,8 +35,8 @@ import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 @Import(AdHocPropertyHarnessTestConf.class)
 public class SourceLinksTestConf {
 	
-	@Bean public SymbolCache symbolCache() {
-		return new SymbolCacheVoid();
+	@Bean public IndexCache symbolCache() {
+		return new IndexCacheVoid();
 	}
 
 	@Bean PropertyIndexHarness indexHarness(ValueProviderRegistry valueProviders) {

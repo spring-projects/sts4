@@ -31,6 +31,8 @@ import org.eclipse.lemminx.dom.DOMNode;
 import org.eclipse.lemminx.dom.DOMParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.boot.index.cache.IndexCache;
+import org.springframework.ide.vscode.boot.index.cache.IndexCacheKey;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IClasspathUtil;
@@ -49,13 +51,13 @@ public class SpringIndexerXML implements SpringIndexer {
 
 	private final SymbolHandler symbolHandler;
 	private final Map<String, SpringIndexerXMLNamespaceHandler> namespaceHandler;
-	private final SymbolCache cache;
+	private final IndexCache cache;
 	private final JavaProjectFinder projectFinder;
 	
 	private String[] scanFolders = new String[0];
 
 	public SpringIndexerXML(SymbolHandler handler, Map<String, SpringIndexerXMLNamespaceHandler> namespaceHandler,
-			SymbolCache cache, JavaProjectFinder projectFinder) {
+			IndexCache cache, JavaProjectFinder projectFinder) {
 		this.symbolHandler = handler;
 		this.namespaceHandler = namespaceHandler;
 		this.cache = cache;
@@ -104,7 +106,7 @@ public class SpringIndexerXML implements SpringIndexer {
 
 		log.info("scan xml files for symbols for project: " + project.getElementName() + " - no. of files: " + files.length);
 
-		SymbolCacheKey cacheKey = getCacheKey(project);
+		IndexCacheKey cacheKey = getCacheKey(project);
 
 		CachedSymbol[] symbols = this.cache.retrieveSymbols(cacheKey, files);
 		if (symbols == null) {
@@ -135,7 +137,7 @@ public class SpringIndexerXML implements SpringIndexer {
 
 	@Override
 	public void removeProject(IJavaProject project) throws Exception {
-		SymbolCacheKey cacheKey = getCacheKey(project);
+		IndexCacheKey cacheKey = getCacheKey(project);
 		this.cache.remove(cacheKey);
 	}
 
@@ -149,7 +151,7 @@ public class SpringIndexerXML implements SpringIndexer {
 
 		scanFile(project, content, docURI, updatedDoc.getLastModified(), generatedSymbols);
 
-		SymbolCacheKey cacheKey = getCacheKey(project);
+		IndexCacheKey cacheKey = getCacheKey(project);
 		String file = new File(new URI(docURI)).getAbsolutePath();
 		this.cache.update(cacheKey, file, updatedDoc.getLastModified(), generatedSymbols, null);
 
@@ -172,7 +174,7 @@ public class SpringIndexerXML implements SpringIndexer {
 			List<CachedSymbol> generatedSymbols = new ArrayList<CachedSymbol>();
 			scanFile(project, content, docURI, updatedDoc.getLastModified(), generatedSymbols);
 	
-			SymbolCacheKey cacheKey = getCacheKey(project);
+			IndexCacheKey cacheKey = getCacheKey(project);
 			String file = new File(new URI(docURI)).getAbsolutePath();
 			this.cache.update(cacheKey, file, updatedDoc.getLastModified(), generatedSymbols, null);
 			
@@ -184,7 +186,7 @@ public class SpringIndexerXML implements SpringIndexer {
 
 	@Override
 	public void removeFiles(IJavaProject project, String[] docURIs) throws Exception {
-		SymbolCacheKey cacheKey = getCacheKey(project);
+		IndexCacheKey cacheKey = getCacheKey(project);
 		
 		for (String docURI : docURIs) {
 			String file = new File(new URI(docURI)).getAbsolutePath();
@@ -267,7 +269,7 @@ public class SpringIndexerXML implements SpringIndexer {
 		return xmlFiles;
 	}
 
-	private SymbolCacheKey getCacheKey(IJavaProject project) {
+	private IndexCacheKey getCacheKey(IJavaProject project) {
 		IClasspath classpath = project.getClasspath();
 		Stream<File> classpathEntries = IClasspathUtil.getAllBinaryRoots(classpath).stream();
 
@@ -276,7 +278,7 @@ public class SpringIndexerXML implements SpringIndexer {
 				.map(file -> file.getAbsolutePath() + "#" + file.lastModified())
 				.collect(Collectors.joining(","));
 
-		return new SymbolCacheKey(project.getElementName() + "-xml-", DigestUtils.md5Hex(classpathIdentifier).toUpperCase());
+		return new IndexCacheKey(project.getElementName() + "-xml-", DigestUtils.md5Hex(classpathIdentifier).toUpperCase());
 	}
 	
 	private void clearIndex() {

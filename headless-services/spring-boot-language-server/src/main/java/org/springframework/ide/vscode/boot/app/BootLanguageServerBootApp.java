@@ -41,6 +41,9 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.ide.vscode.boot.common.PropertyCompletionFactory;
 import org.springframework.ide.vscode.boot.common.RelaxedNameConfig;
 import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
+import org.springframework.ide.vscode.boot.index.cache.IndexCache;
+import org.springframework.ide.vscode.boot.index.cache.IndexCacheOnDisc;
+import org.springframework.ide.vscode.boot.index.cache.IndexCacheVoid;
 import org.springframework.ide.vscode.boot.java.JavaDefinitionHandler;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaCodeActionProvider;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaProjectReconcilerScheduler;
@@ -62,9 +65,6 @@ import org.springframework.ide.vscode.boot.java.reconcilers.JavaReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.JdtReconciler;
 import org.springframework.ide.vscode.boot.java.rewrite.RewriteRecipeRepository;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
-import org.springframework.ide.vscode.boot.java.utils.SymbolCache;
-import org.springframework.ide.vscode.boot.java.utils.SymbolCacheOnDisc;
-import org.springframework.ide.vscode.boot.java.utils.SymbolCacheVoid;
 import org.springframework.ide.vscode.boot.java.value.PropertyValueAnnotationDefProvider;
 import org.springframework.ide.vscode.boot.jdt.ls.JavaProjectsService;
 import org.springframework.ide.vscode.boot.jdt.ls.JdtLsProjectCache;
@@ -138,11 +138,11 @@ public class BootLanguageServerBootApp {
 
 	@ConditionalOnMissingClass("org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness")
 	@Bean
-	SymbolCache symbolCache(BootLsConfigProperties props) {
+	IndexCache symbolCache(BootLsConfigProperties props) {
 		if (props.isSymbolCacheEnabled()) {
-			return new SymbolCacheOnDisc(new File(props.getSymbolCacheDir()));
+			return new IndexCacheOnDisc(new File(props.getSymbolCacheDir()));
 		} else {
-			return new SymbolCacheVoid();
+			return new IndexCacheVoid();
 		}
 	}
 	

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2020 Pivotal, Inc.
+ * Copyright (c) 2020, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -8,7 +8,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.java.utils.test;
+package org.springframework.ide.vscode.boot.index.cache.test;
 
 import java.io.File;
 import java.io.IOException;
@@ -23,25 +23,25 @@ import java.util.TreeMap;
 import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.tuple.Pair;
+import org.springframework.ide.vscode.boot.index.cache.IndexCache;
+import org.springframework.ide.vscode.boot.index.cache.IndexCacheKey;
 import org.springframework.ide.vscode.boot.java.utils.CachedSymbol;
-import org.springframework.ide.vscode.boot.java.utils.SymbolCache;
-import org.springframework.ide.vscode.boot.java.utils.SymbolCacheKey;
 
 import com.google.common.collect.Multimap;
 
 /**
  * @author Martin Lippert
  */
-public class SymbolCacheTimestampsOnly implements SymbolCache {
+public class IndexCacheTimestampsOnly implements IndexCache {
 	
-	private Map<SymbolCacheKey, Map<String, Long>> timestampCache; 
+	private Map<IndexCacheKey, Map<String, Long>> timestampCache; 
 	
-	public SymbolCacheTimestampsOnly() {
+	public IndexCacheTimestampsOnly() {
 		this.timestampCache = new HashMap<>();
 	}
 
 	@Override
-	public void store(SymbolCacheKey cacheKey, String[] files, List<CachedSymbol> generatedSymbols, Multimap<String,String> dependencies) {
+	public void store(IndexCacheKey cacheKey, String[] files, List<CachedSymbol> generatedSymbols, Multimap<String,String> dependencies) {
 		SortedMap<String, Long> timestampedFiles = new TreeMap<>();
 
 		timestampedFiles = Arrays.stream(files)
@@ -58,18 +58,18 @@ public class SymbolCacheTimestampsOnly implements SymbolCache {
 	}
 
 	@Override
-	public Pair<CachedSymbol[], Multimap<String, String>> retrieve(SymbolCacheKey cacheKey, String[] files) {
+	public Pair<CachedSymbol[], Multimap<String, String>> retrieve(IndexCacheKey cacheKey, String[] files) {
 		return null;
 	}
 
 	@Override
-	public void update(SymbolCacheKey cacheKey, String file, long lastModified, List<CachedSymbol> generatedSymbols, Set<String> dependencies) {
+	public void update(IndexCacheKey cacheKey, String file, long lastModified, List<CachedSymbol> generatedSymbols, Set<String> dependencies) {
 		Map<String, Long> timestampMap = timestampCache.get(cacheKey);
 		timestampMap.put(file, lastModified);
 	}
 
 	@Override
-	public void update(SymbolCacheKey cacheKey, String[] files, long[] lastModified, List<CachedSymbol> generatedSymbols, Multimap<String, String> dependencies) {
+	public void update(IndexCacheKey cacheKey, String[] files, long[] lastModified, List<CachedSymbol> generatedSymbols, Multimap<String, String> dependencies) {
 		Map<String, Long> timestampMap = timestampCache.get(cacheKey);
 
 		for (int i = 0; i < files.length; i++) {
@@ -78,15 +78,15 @@ public class SymbolCacheTimestampsOnly implements SymbolCache {
 	}
 
 	@Override
-	public void remove(SymbolCacheKey cacheKey) {
+	public void remove(IndexCacheKey cacheKey) {
 	}
 
 	@Override
-	public void removeFile(SymbolCacheKey symbolCacheKey, String file) {
+	public void removeFile(IndexCacheKey symbolCacheKey, String file) {
 	}
 
 	@Override
-	public long getModificationTimestamp(SymbolCacheKey cacheKey, String file) {
+	public long getModificationTimestamp(IndexCacheKey cacheKey, String file) {
 		Map<String, Long> timestampMap = timestampCache.get(cacheKey);
 		if (timestampMap != null) {
 			Long timestamp = timestampMap.get(file);

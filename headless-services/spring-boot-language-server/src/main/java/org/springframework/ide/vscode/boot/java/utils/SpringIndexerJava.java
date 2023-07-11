@@ -48,6 +48,8 @@ import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.eclipse.lsp4j.WorkspaceSymbol;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.boot.index.cache.IndexCache;
+import org.springframework.ide.vscode.boot.index.cache.IndexCacheKey;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchyAwareLookup;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
@@ -80,14 +82,14 @@ public class SpringIndexerJava implements SpringIndexer {
 
 	private final SymbolHandler symbolHandler;
 	private final AnnotationHierarchyAwareLookup<SymbolProvider> symbolProviders;
-	private final SymbolCache cache;
+	private final IndexCache cache;
 	private final JavaProjectFinder projectFinder;
 	private boolean scanTestJavaSources = false;
 	private FileScanListener fileScanListener = null; //used by test code only
 
 	private final SpringIndexerJavaDependencyTracker dependencyTracker = new SpringIndexerJavaDependencyTracker();
 
-	public SpringIndexerJava(SymbolHandler symbolHandler, AnnotationHierarchyAwareLookup<SymbolProvider> symbolProviders, SymbolCache cache,
+	public SpringIndexerJava(SymbolHandler symbolHandler, AnnotationHierarchyAwareLookup<SymbolProvider> symbolProviders, IndexCache cache,
 			JavaProjectFinder projectFimder) {
 		this.symbolHandler = symbolHandler;
 		this.symbolProviders = symbolProviders;
@@ -124,13 +126,13 @@ public class SpringIndexerJava implements SpringIndexer {
 
 	@Override
 	public void removeProject(IJavaProject project) throws Exception {
-		SymbolCacheKey cacheKey = getCacheKey(project);
+		IndexCacheKey cacheKey = getCacheKey(project);
 		this.cache.remove(cacheKey);
 	}
 
 	@Override
 	public void updateFile(IJavaProject project, DocumentDescriptor updatedDoc, String content) throws Exception {
-		SymbolCacheKey cacheKey = getCacheKey(project);
+		IndexCacheKey cacheKey = getCacheKey(project);
 		if (updatedDoc != null && shouldProcessDocument(project, updatedDoc.getDocURI())
 				&& isCacheOutdated(cacheKey, updatedDoc.getDocURI(), updatedDoc.getLastModified())) {
 			this.symbolHandler.removeSymbols(project, updatedDoc.getDocURI());
@@ -153,7 +155,7 @@ public class SpringIndexerJava implements SpringIndexer {
 	
 	@Override
 	public void removeFiles(IJavaProject project, String[] docURIs) throws Exception {
-		SymbolCacheKey cacheKey = getCacheKey(project);
+		IndexCacheKey cacheKey = getCacheKey(project);
 		
 		for (String docURI : docURIs) {
 			String file = new File(new URI(docURI)).getAbsolutePath();
@@ -162,7 +164,7 @@ public class SpringIndexerJava implements SpringIndexer {
 	}
 
 	private DocumentDescriptor[] filterDocuments(IJavaProject project, DocumentDescriptor[] updatedDocs) {
-		SymbolCacheKey cacheKey = getCacheKey(project);
+		IndexCacheKey cacheKey = getCacheKey(project);
 		return Arrays.stream(updatedDocs).filter(doc -> shouldProcessDocument(project, doc.getDocURI()))
 				.filter(doc -> isCacheOutdated(cacheKey, doc.getDocURI(), doc.getLastModified())).toArray(DocumentDescriptor[]::new);
 	}
@@ -180,7 +182,7 @@ public class SpringIndexerJava implements SpringIndexer {
 		}
 	}
 	
-	private boolean isCacheOutdated(SymbolCacheKey cacheKey, String docURI, long modifiedTimestamp) {
+	private boolean isCacheOutdated(IndexCacheKey cacheKey, String docURI, long modifiedTimestamp) {
 		long cachedModificationTImestamp = this.cache.getModificationTimestamp(cacheKey, UriUtil.toFileString(docURI));
 		return modifiedTimestamp > cachedModificationTImestamp;
 	}
@@ -223,7 +225,7 @@ public class SpringIndexerJava implements SpringIndexer {
 
 			scanAST(context);
 
-			SymbolCacheKey cacheKey = getCacheKey(project);
+			IndexCacheKey cacheKey = getCacheKey(project);
 			this.cache.update(cacheKey, file, lastModified, generatedSymbols, context.getDependencies());
 //			dependencyTracker.dump();
 
@@ -318,7 +320,7 @@ public class SpringIndexerJava implements SpringIndexer {
 		Bean[] beans = generatedSymbols.stream().filter(cachedSymbol -> cachedSymbol.getBean() != null).map(cachedSymbol -> cachedSymbol.getBean()).toArray(Bean[]::new);
 		symbolHandler.addSymbols(project, symbols, beans);
 
-		SymbolCacheKey cacheKey = getCacheKey(project);
+		IndexCacheKey cacheKey = getCacheKey(project);
 		this.cache.update(cacheKey, javaFiles, lastModified, generatedSymbols, dependencies);
 		
 		return scannedTypes;
@@ -356,7 +358,7 @@ public class SpringIndexerJava implements SpringIndexer {
 	}
 
 	private void scanFiles(IJavaProject project, String[] javaFiles) throws Exception {
-		SymbolCacheKey cacheKey = getCacheKey(project);
+		IndexCacheKey cacheKey = getCacheKey(project);
 		Pair<CachedSymbol[], Multimap<String, String>> cached = this.cache.retrieve(cacheKey, javaFiles);
 
 		CachedSymbol[] symbols;
@@ -606,7 +608,7 @@ public class SpringIndexerJava implements SpringIndexer {
 			.toArray(String[]::new);
 	}
 
-	private SymbolCacheKey getCacheKey(IJavaProject project) {
+	private IndexCacheKey getCacheKey(IJavaProject project) {
 		IClasspath classpath = project.getClasspath();
 		Stream<File> classpathEntries = IClasspathUtil.getAllBinaryRoots(classpath).stream();
 
@@ -615,7 +617,7 @@ public class SpringIndexerJava implements SpringIndexer {
 				.map(file -> file.getAbsolutePath() + "#" + file.lastModified())
 				.collect(Collectors.joining(","));
 
-		return new SymbolCacheKey(project.getElementName() + "-java-", DigestUtils.md5Hex(GENERATION + "-" + classpathIdentifier).toUpperCase());
+		return new IndexCacheKey(project.getElementName() + "-java-", DigestUtils.md5Hex(GENERATION + "-" + classpathIdentifier).toUpperCase());
 	}
 
 	public void setScanTestJavaSources(boolean scanTestJavaSources) {

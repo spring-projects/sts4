@@ -35,11 +35,11 @@ import org.springframework.ide.vscode.boot.bootiful.AdHocPropertyHarnessTestConf
 import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
 import org.springframework.ide.vscode.boot.editor.harness.AdHocPropertyHarness;
 import org.springframework.ide.vscode.boot.editor.harness.PropertyIndexHarness;
+import org.springframework.ide.vscode.boot.index.cache.IndexCache;
+import org.springframework.ide.vscode.boot.index.cache.IndexCacheVoid;
 import org.springframework.ide.vscode.boot.java.links.SourceLinkFactory;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
-import org.springframework.ide.vscode.boot.java.utils.SymbolCache;
-import org.springframework.ide.vscode.boot.java.utils.SymbolCacheVoid;
 import org.springframework.ide.vscode.boot.java.value.ValueCompletionProcessor;
 import org.springframework.ide.vscode.boot.metadata.ValueProviderRegistry;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
@@ -117,8 +117,8 @@ public class ValueCompletionTest {
 			);
 		}
 
-		@Bean SymbolCache symbolCache() {
-			return new SymbolCacheVoid();
+		@Bean IndexCache symbolCache() {
+			return new IndexCacheVoid();
 		}
 
 		@Bean SourceLinks sourceLinks(SimpleTextDocumentService documents, CompilationUnitCache cuCache) {

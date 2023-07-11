@@ -44,6 +44,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
+import org.springframework.ide.vscode.boot.index.cache.IndexCache;
 import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchyAwareLookup;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
@@ -56,7 +57,6 @@ import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJava;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexerXML;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexerXMLNamespaceHandler;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexerXMLNamespaceHandlerBeans;
-import org.springframework.ide.vscode.boot.java.utils.SymbolCache;
 import org.springframework.ide.vscode.boot.java.utils.SymbolHandler;
 import org.springframework.ide.vscode.boot.java.utils.SymbolIndexConfig;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
@@ -91,7 +91,7 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 	@Autowired BootJavaConfig config;
 	@Autowired BootLanguageServerParams params;
 	@Autowired AnnotationHierarchyAwareLookup<SymbolProvider> specificProviders;
-	@Autowired SymbolCache cache;
+	@Autowired IndexCache cache;
 	@Autowired FutureProjectFinder futureProjectFinder;
 	@Autowired SpringMetamodelIndex springIndex;
 
