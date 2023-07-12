@@ -1,4 +1,4 @@
-name: Experimental Eclipse Distro STS Build
+name: Eclipse Distro STS Build (GitHub Hosted)
 
 on:
   workflow_dispatch:
@@ -38,7 +38,7 @@ jobs:
         run: |
           echo "${{ secrets.GPG_PRIVATE_KEY }}" > gpg.asc
           echo "${{ secrets.GPG_PASSPHRASE }}" | gpg --batch --yes --passphrase-fd 0 --import gpg.asc
-      - name: Create Keychain
+      - name: Create Keychain. Add Mac App Dev Certificate to Keychain
         env:
           BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
           P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
@@ -58,9 +58,9 @@ jobs:
       - name: Unlock Keychain for OSX signing
         run: |
           security unlock-keychain -p ${{ secrets.KEYCHAIN_PASSWORD }} $RUNNER_TEMP/app-signing.keychain-db
-#      - name: Install appdmg
-#        run: |
-#          npm install -g appdmg
+      - name: Install appdmg
+        run: |
+          npm install -g appdmg
       - name: Create Temp Directory Structure for Notarization Service
         run: |
           cd /tmp
