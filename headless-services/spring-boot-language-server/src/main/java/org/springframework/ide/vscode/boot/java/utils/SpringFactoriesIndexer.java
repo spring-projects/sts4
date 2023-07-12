@@ -170,7 +170,7 @@ public class SpringFactoriesIndexer implements SpringIndexer {
 
 		IndexCacheKey cacheKey = getCacheKey(project);
 
-		CachedSymbol[] symbols = this.cache.retrieveSymbols(cacheKey, filesStr);
+		CachedSymbol[] symbols = this.cache.retrieveSymbols(cacheKey, filesStr, CachedSymbol.class);
 		if (symbols == null) {
 			List<CachedSymbol> generatedSymbols = new ArrayList<CachedSymbol>();
 
@@ -178,7 +178,7 @@ public class SpringFactoriesIndexer implements SpringIndexer {
 				generatedSymbols.addAll(scanFile(file));
 			}
 
-			this.cache.store(cacheKey, filesStr, generatedSymbols, null);
+			this.cache.store(cacheKey, filesStr, generatedSymbols, null, CachedSymbol.class);
 
 			symbols = (CachedSymbol[]) generatedSymbols.toArray(new CachedSymbol[generatedSymbols.size()]);
 		}
@@ -188,8 +188,7 @@ public class SpringFactoriesIndexer implements SpringIndexer {
 
 		if (symbols != null) {
 			EnhancedSymbolInformation[] enhancedSymbols = Arrays.stream(symbols).map(cachedSymbol -> cachedSymbol.getEnhancedSymbol()).toArray(EnhancedSymbolInformation[]::new);
-			Bean[] beans = Arrays.stream(symbols).filter(cachedSymbol -> cachedSymbol.getBean() != null).map(cachedSymbol -> cachedSymbol.getBean()).toArray(Bean[]::new);
-			symbolHandler.addSymbols(project, enhancedSymbols, beans);
+			symbolHandler.addSymbols(project, enhancedSymbols, null);
 		}
 
 		long endTime = System.currentTimeMillis();
@@ -205,7 +204,7 @@ public class SpringFactoriesIndexer implements SpringIndexer {
 			long lastModified = Files.getLastModifiedTime(file).toMillis();
 			String docUri = file.toUri().toASCIIString();
 			for (EnhancedSymbolInformation s : computeSymbols(docUri, content)) {
-				builder.add(new CachedSymbol(docUri, lastModified, s, null));
+				builder.add(new CachedSymbol(docUri, lastModified, s));
 			}
 			return builder.build();
 		} catch (IOException e) {
@@ -256,11 +255,10 @@ public class SpringFactoriesIndexer implements SpringIndexer {
 
 			IndexCacheKey cacheKey = getCacheKey(project);
 			String file = new File(new URI(docURI)).getAbsolutePath();
-			this.cache.update(cacheKey, file, updatedDoc.getLastModified(), generatedSymbols, null);
+			this.cache.update(cacheKey, file, updatedDoc.getLastModified(), generatedSymbols, null, CachedSymbol.class);
 
 			EnhancedSymbolInformation[] symbols = generatedSymbols.stream().map(cachedSymbol -> cachedSymbol.getEnhancedSymbol()).toArray(EnhancedSymbolInformation[]::new);
-			Bean[] beans = generatedSymbols.stream().filter(cachedSymbol -> cachedSymbol.getBean() != null).map(cachedSymbol -> cachedSymbol.getBean()).toArray(Bean[]::new);
-			symbolHandler.addSymbols(project, docURI, symbols, beans);
+			symbolHandler.addSymbols(project, docURI, symbols, null);
 		}
 	}
 
@@ -275,7 +273,7 @@ public class SpringFactoriesIndexer implements SpringIndexer {
 					updateFile(project, d, Files.readString(path));
 				} else {
 					String file = new File(new URI(d.getDocURI())).getAbsolutePath();
-					cache.removeFile(key, file);
+					cache.removeFile(key, file, CachedSymbol.class);
 				}
 			}
 		}
@@ -286,7 +284,7 @@ public class SpringFactoriesIndexer implements SpringIndexer {
 		IndexCacheKey key = getCacheKey(project);
 		for (String docUri : docURIs) {
 			String file = new File(new URI(docUri)).getAbsolutePath();
-			cache.removeFile(key, file);
+			cache.removeFile(key, file, CachedSymbol.class);
 		}
 	}
 	

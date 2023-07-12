@@ -63,7 +63,7 @@ public class RequestMappingSymbolProvider extends AbstractSymbolProvider {
 									return resultPath.startsWith("/") ? resultPath : "/" + resultPath;
 								}))
 						.map(p -> RouteUtils.createRouteSymbol(location, p, methods, contentTypes, acceptTypes, null))
-						.forEach((enhancedSymbol) -> context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), enhancedSymbol, null)));
+						.forEach((enhancedSymbol) -> context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), enhancedSymbol)));
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

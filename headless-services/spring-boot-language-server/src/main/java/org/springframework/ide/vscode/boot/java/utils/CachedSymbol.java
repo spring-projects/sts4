@@ -10,43 +10,31 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.utils;
 
+import org.springframework.ide.vscode.boot.index.cache.AbstractIndexCacheable;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
-import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 
-public class CachedSymbol {
+public class CachedSymbol extends AbstractIndexCacheable {
 
-	private final String docURI;
 	private final long lastModified;
 	private final EnhancedSymbolInformation enhancedSymbol;
-	private final Bean bean;
 
-	public CachedSymbol(String docURI, long lastModified, EnhancedSymbolInformation enhancedSymbol, Bean bean) {
-		this.docURI = docURI;
+	public CachedSymbol(String docURI, long lastModified, EnhancedSymbolInformation enhancedSymbol) {
+		super(docURI);
 		this.lastModified = lastModified;
 		this.enhancedSymbol = enhancedSymbol;
-		this.bean = bean;
 	}
 
 	public EnhancedSymbolInformation getEnhancedSymbol() {
 		return enhancedSymbol;
 	}
 	
-	public Bean getBean() {
-		return bean;
-	}
-
-	public String getDocURI() {
-		return docURI;
-	}
-
 	public long getLastModified() {
 		return lastModified;
 	}
 
 	@Override
 	public String toString() {
-		return "CachedSymbol [docURI=" + docURI + ", enhancedSymbol=" + enhancedSymbol + "]";
+		return "CachedSymbol [docURI=" + getDocURI() + ", enhancedSymbol=" + enhancedSymbol + "]";
 	}
-
 	
 }

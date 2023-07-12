@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2020 Pivotal, Inc.
+ * Copyright (c) 2017, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -17,8 +17,10 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.ITypeBinding;
+import org.springframework.ide.vscode.boot.java.beans.CachedBean;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJava.SCAN_PASS;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 /**
@@ -34,6 +36,7 @@ public class SpringIndexerJavaContext {
 	private final AtomicReference<TextDocument> docRef;
 	private final String content;
 	private final List<CachedSymbol> generatedSymbols;
+	private final List<CachedBean> beans;
 	private final SCAN_PASS pass;
 	private final List<String> nextPassFiles;
 	
@@ -48,7 +51,8 @@ public class SpringIndexerJavaContext {
 			long lastModified,
 			AtomicReference<TextDocument> docRef, 
 			String content, 
-			List<CachedSymbol> generatedSymbols, 
+			List<CachedSymbol> generatedSymbols,
+			List<CachedBean> beans,
 			SCAN_PASS pass,
 			List<String> nextPassFiles
 	) {
@@ -61,6 +65,7 @@ public class SpringIndexerJavaContext {
 		this.docRef = docRef;
 		this.content = content;
 		this.generatedSymbols = generatedSymbols;
+		this.beans = beans;
 		this.pass = pass;
 		this.nextPassFiles = nextPassFiles;
 	}
@@ -95,6 +100,10 @@ public class SpringIndexerJavaContext {
 
 	public List<CachedSymbol> getGeneratedSymbols() {
 		return generatedSymbols;
+	}
+	
+	public List<CachedBean> getBeans() {
+		return beans;
 	}
 
 	public SCAN_PASS getPass() {

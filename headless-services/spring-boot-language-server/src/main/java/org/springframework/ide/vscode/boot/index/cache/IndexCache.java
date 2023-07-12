@@ -14,7 +14,6 @@ import java.util.List;
 import java.util.Set;
 
 import org.apache.commons.lang3.tuple.Pair;
-import org.springframework.ide.vscode.boot.java.utils.CachedSymbol;
 
 import com.google.common.collect.Multimap;
 
@@ -23,17 +22,17 @@ import com.google.common.collect.Multimap;
  */
 public interface IndexCache {
 
-	void store(IndexCacheKey cacheKey, String[] files, List<CachedSymbol> generatedSymbols, Multimap<String, String> dependencies);
-	Pair<CachedSymbol[], Multimap<String, String>> retrieve(IndexCacheKey cacheKey, String[] files);
+	<T extends IndexCacheable> void store(IndexCacheKey cacheKey, String[] files, List<T> generatedSymbols, Multimap<String, String> dependencies, Class<T> type);
+	<T extends IndexCacheable> Pair<T[], Multimap<String, String>> retrieve(IndexCacheKey cacheKey, String[] files, Class<T> type);
 
-	void update(IndexCacheKey cacheKey, String file, long lastModified, List<CachedSymbol> generatedSymbols, Set<String> dependencies);
-	void update(IndexCacheKey cacheKey, String[] files, long[] lastModified, List<CachedSymbol> generatedSymbols, Multimap<String, String> dependencies);
+	<T extends IndexCacheable> void update(IndexCacheKey cacheKey, String file, long lastModified, List<T> generatedSymbols, Set<String> dependencies, Class<T> type);
+	<T extends IndexCacheable> void update(IndexCacheKey cacheKey, String[] files, long[] lastModified, List<T> generatedSymbols, Multimap<String, String> dependencies, Class<T> type);
 
 	void remove(IndexCacheKey cacheKey);
-	void removeFile(IndexCacheKey symbolCacheKey, String file);
+	<T extends IndexCacheable> void removeFile(IndexCacheKey symbolCacheKey, String file, Class<T> type);
 	
-	default CachedSymbol[] retrieveSymbols(IndexCacheKey cacheKey, String[] files) {
-		Pair<CachedSymbol[], Multimap<String, String>> r = retrieve(cacheKey, files);
+	default <T extends IndexCacheable> T[] retrieveSymbols(IndexCacheKey cacheKey, String[] files, Class<T> type) {
+		Pair<T[], Multimap<String, String>> r = retrieve(cacheKey, files, type);
 		return r!=null ? r.getLeft() : null;
 	}
 	

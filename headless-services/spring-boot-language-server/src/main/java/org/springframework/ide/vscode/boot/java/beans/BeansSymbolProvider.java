@@ -101,7 +101,8 @@ public class BeansSymbolProvider extends AbstractSymbolProvider {
 
 				Bean beanDefinition = new Bean(nameAndRegion.getT1(), beanType.getQualifiedName(), location, injectionPoints, (String[]) supertypes.toArray(new String[supertypes.size()]), annotations);
 
-				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), enhancedSymbol, beanDefinition));
+				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), enhancedSymbol));
+				context.getBeans().add(new CachedBean(context.getDocURI(), beanDefinition));
 
 			} catch (BadLocationException e) {
 				log.error("", e);
@@ -121,7 +122,7 @@ public class BeansSymbolProvider extends AbstractSymbolProvider {
 						Either.forLeft(new Location(doc.getUri(), doc.toRange(functionBean.getT3()))));
 
 				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(),
-						new EnhancedSymbolInformation(symbol, new SymbolAddOnInformation[] {new BeansSymbolAddOnInformation(functionBean.getT1(), functionBean.getT2().getQualifiedName())}), null));
+						new EnhancedSymbolInformation(symbol, new SymbolAddOnInformation[] {new BeansSymbolAddOnInformation(functionBean.getT1(), functionBean.getT2().getQualifiedName())})));
 
 			} catch (BadLocationException e) {
 				log.error("", e);

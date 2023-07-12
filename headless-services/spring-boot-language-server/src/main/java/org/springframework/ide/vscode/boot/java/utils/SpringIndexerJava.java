@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2022 Pivotal, Inc.
+ * Copyright (c) 2017, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -52,6 +52,7 @@ import org.springframework.ide.vscode.boot.index.cache.IndexCache;
 import org.springframework.ide.vscode.boot.index.cache.IndexCacheKey;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchyAwareLookup;
+import org.springframework.ide.vscode.boot.java.beans.CachedBean;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.commons.java.IClasspath;
@@ -79,6 +80,9 @@ public class SpringIndexerJava implements SpringIndexer {
 	// whenever the implementation of the indexer changes in a way that the stored data in the cache is no longer valid,
 	// we need to change the generation - this will result in a re-indexing due to no up-to-date cache data being found
 	private static final String GENERATION = "GEN-3";
+
+	private static final String SYMBOL_KEY = "symbols";
+	private static final String BEANS_KEY = "beans";
 
 	private final SymbolHandler symbolHandler;
 	private final AnnotationHierarchyAwareLookup<SymbolProvider> symbolProviders;
@@ -126,17 +130,24 @@ public class SpringIndexerJava implements SpringIndexer {
 
 	@Override
 	public void removeProject(IJavaProject project) throws Exception {
-		IndexCacheKey cacheKey = getCacheKey(project);
-		this.cache.remove(cacheKey);
+		IndexCacheKey symbolsCacheKey = getCacheKey(project, SYMBOL_KEY);
+		IndexCacheKey beansCacheKey = getCacheKey(project, BEANS_KEY);
+
+		this.cache.remove(symbolsCacheKey);
+		this.cache.remove(beansCacheKey);
 	}
 
 	@Override
 	public void updateFile(IJavaProject project, DocumentDescriptor updatedDoc, String content) throws Exception {
-		IndexCacheKey cacheKey = getCacheKey(project);
-		if (updatedDoc != null && shouldProcessDocument(project, updatedDoc.getDocURI())
-				&& isCacheOutdated(cacheKey, updatedDoc.getDocURI(), updatedDoc.getLastModified())) {
-			this.symbolHandler.removeSymbols(project, updatedDoc.getDocURI());
-			scanFile(project, updatedDoc, content);
+		IndexCacheKey symbolCacheKey = getCacheKey(project, SYMBOL_KEY);
+		IndexCacheKey beansCacheKey = getCacheKey(project, BEANS_KEY);
+
+		if (updatedDoc != null && shouldProcessDocument(project, updatedDoc.getDocURI())) {
+			if (isCacheOutdated(symbolCacheKey, updatedDoc.getDocURI(), updatedDoc.getLastModified())
+					|| isCacheOutdated(beansCacheKey, updatedDoc.getDocURI(), updatedDoc.getLastModified())) {
+				this.symbolHandler.removeSymbols(project, updatedDoc.getDocURI());
+				scanFile(project, updatedDoc, content);
+			}
 		}
 	}
 	
@@ -155,18 +166,23 @@ public class SpringIndexerJava implements SpringIndexer {
 	
 	@Override
 	public void removeFiles(IJavaProject project, String[] docURIs) throws Exception {
-		IndexCacheKey cacheKey = getCacheKey(project);
+		IndexCacheKey symbolsCacheKey = getCacheKey(project, SYMBOL_KEY);
+		IndexCacheKey beansCacheKey = getCacheKey(project, BEANS_KEY);
 		
 		for (String docURI : docURIs) {
 			String file = new File(new URI(docURI)).getAbsolutePath();
-			this.cache.removeFile(cacheKey, file);
+			this.cache.removeFile(symbolsCacheKey, file, CachedSymbol.class);
+			this.cache.removeFile(beansCacheKey, file, CachedSymbol.class);
 		}
 	}
 
 	private DocumentDescriptor[] filterDocuments(IJavaProject project, DocumentDescriptor[] updatedDocs) {
-		IndexCacheKey cacheKey = getCacheKey(project);
+		IndexCacheKey symbolsCacheKey = getCacheKey(project, SYMBOL_KEY);
+		IndexCacheKey beansCacheKey = getCacheKey(project, BEANS_KEY);
+
 		return Arrays.stream(updatedDocs).filter(doc -> shouldProcessDocument(project, doc.getDocURI()))
-				.filter(doc -> isCacheOutdated(cacheKey, doc.getDocURI(), doc.getLastModified())).toArray(DocumentDescriptor[]::new);
+				.filter(doc -> isCacheOutdated(symbolsCacheKey, doc.getDocURI(), doc.getLastModified())
+						|| isCacheOutdated(beansCacheKey, doc.getDocURI(), doc.getLastModified())).toArray(DocumentDescriptor[]::new);
 	}
 
 	private boolean shouldProcessDocument(IJavaProject project, String docURI) {
@@ -218,19 +234,25 @@ public class SpringIndexerJava implements SpringIndexer {
 
 		if (cu != null) {
 			List<CachedSymbol> generatedSymbols = new ArrayList<CachedSymbol>();
+			List<CachedBean> generatedBeans = new ArrayList<CachedBean>();
+			
 			AtomicReference<TextDocument> docRef = new AtomicReference<>();
 			String file = UriUtil.toFileString(docURI);
 			SpringIndexerJavaContext context = new SpringIndexerJavaContext(project, cu, docURI, file,
-					lastModified, docRef, content, generatedSymbols, SCAN_PASS.ONE, new ArrayList<>());
+					lastModified, docRef, content, generatedSymbols, generatedBeans, SCAN_PASS.ONE, new ArrayList<>());
 
 			scanAST(context);
 
-			IndexCacheKey cacheKey = getCacheKey(project);
-			this.cache.update(cacheKey, file, lastModified, generatedSymbols, context.getDependencies());
+			IndexCacheKey symbolCacheKey = getCacheKey(project, SYMBOL_KEY);
+			IndexCacheKey beansCacheKey = getCacheKey(project, BEANS_KEY);
+			
+			this.cache.update(symbolCacheKey, file, lastModified, generatedSymbols, context.getDependencies(), CachedSymbol.class);
+			this.cache.update(beansCacheKey, file, lastModified, generatedBeans, context.getDependencies(), CachedBean.class);
 //			dependencyTracker.dump();
 
 			EnhancedSymbolInformation[] symbols = generatedSymbols.stream().map(cachedSymbol -> cachedSymbol.getEnhancedSymbol()).toArray(EnhancedSymbolInformation[]::new);
-			Bean[] beans = generatedSymbols.stream().filter(cachedSymbol -> cachedSymbol.getBean() != null).map(cachedSymbol -> cachedSymbol.getBean()).toArray(Bean[]::new);
+			Bean[] beans = generatedBeans.stream().filter(cachedBean -> cachedBean.getBean() != null).map(cachedBean -> cachedBean.getBean()).toArray(Bean[]::new);
+
 			symbolHandler.addSymbols(project, docURI, symbols, beans);
 			
 			Set<String> scannedFiles = new HashSet<>();
@@ -253,10 +275,12 @@ public class SpringIndexerJava implements SpringIndexer {
 
 			if (cu != null) {
 				List<CachedSymbol> generatedSymbols = new ArrayList<CachedSymbol>();
+				List<CachedBean> generatedBeans = new ArrayList<CachedBean>();
+				
 				AtomicReference<TextDocument> docRef = new AtomicReference<>();
 				String file = UriUtil.toFileString(docURI);
 				SpringIndexerJavaContext context = new SpringIndexerJavaContext(project, cu, docURI, file,
-						0, docRef, content, generatedSymbols, SCAN_PASS.ONE, new ArrayList<>());
+						0, docRef, content, generatedSymbols, generatedBeans, SCAN_PASS.ONE, new ArrayList<>());
 
 				scanAST(context);
 				
@@ -289,6 +313,8 @@ public class SpringIndexerJava implements SpringIndexer {
 		}
 		
 		List<CachedSymbol> generatedSymbols = new ArrayList<CachedSymbol>();
+		List<CachedBean> generatedBeans = new ArrayList<CachedBean>();
+
 		Multimap<String, String> dependencies = MultimapBuilder.hashKeys().hashSetValues().build();
 
 		FileASTRequestor requestor = new FileASTRequestor() {
@@ -303,7 +329,7 @@ public class SpringIndexerJava implements SpringIndexer {
 				AtomicReference<TextDocument> docRef = new AtomicReference<>();
 
 				SpringIndexerJavaContext context = new SpringIndexerJavaContext(project, cu, docURI, sourceFilePath,
-						lastModified, docRef, null, generatedSymbols, SCAN_PASS.ONE, new ArrayList<>());
+						lastModified, docRef, null, generatedSymbols, generatedBeans, SCAN_PASS.ONE, new ArrayList<>());
 				
 				scanAST(context);
 				
@@ -317,11 +343,14 @@ public class SpringIndexerJava implements SpringIndexer {
 		parser.createASTs(javaFiles, null, new String[0], requestor, null);
 		
 		EnhancedSymbolInformation[] symbols = generatedSymbols.stream().map(cachedSymbol -> cachedSymbol.getEnhancedSymbol()).toArray(EnhancedSymbolInformation[]::new);
-		Bean[] beans = generatedSymbols.stream().filter(cachedSymbol -> cachedSymbol.getBean() != null).map(cachedSymbol -> cachedSymbol.getBean()).toArray(Bean[]::new);
+		Bean[] beans = generatedBeans.stream().filter(cachedBean -> cachedBean.getBean() != null).map(cachedBean -> cachedBean.getBean()).toArray(Bean[]::new);
 		symbolHandler.addSymbols(project, symbols, beans);
 
-		IndexCacheKey cacheKey = getCacheKey(project);
-		this.cache.update(cacheKey, javaFiles, lastModified, generatedSymbols, dependencies);
+		IndexCacheKey symbolsCacheKey = getCacheKey(project, SYMBOL_KEY);
+		IndexCacheKey beansCacheKey = getCacheKey(project, BEANS_KEY);
+
+		this.cache.update(symbolsCacheKey, javaFiles, lastModified, generatedSymbols, dependencies, CachedSymbol.class);
+		this.cache.update(beansCacheKey, javaFiles, lastModified, generatedBeans, dependencies, CachedBean.class);
 		
 		return scannedTypes;
 	}
@@ -358,45 +387,55 @@ public class SpringIndexerJava implements SpringIndexer {
 	}
 
 	private void scanFiles(IJavaProject project, String[] javaFiles) throws Exception {
-		IndexCacheKey cacheKey = getCacheKey(project);
-		Pair<CachedSymbol[], Multimap<String, String>> cached = this.cache.retrieve(cacheKey, javaFiles);
+		IndexCacheKey symbolsCacheKey = getCacheKey(project, SYMBOL_KEY);
+		IndexCacheKey beansCacheKey = getCacheKey(project, BEANS_KEY);
+
+		Pair<CachedSymbol[], Multimap<String, String>> cachedSymbols = this.cache.retrieve(symbolsCacheKey, javaFiles, CachedSymbol.class);
+		Pair<CachedBean[], Multimap<String, String>> cachedBeans = this.cache.retrieve(beansCacheKey, javaFiles, CachedBean.class);
 
 		CachedSymbol[] symbols;
-		if (cached == null) {
+		CachedBean[] beans;
+
+		if (cachedSymbols == null || cachedBeans == null) {
 			List<CachedSymbol> generatedSymbols = new ArrayList<CachedSymbol>();
+			List<CachedBean> generatedBeans = new ArrayList<CachedBean>();
 
 			log.info("scan java files, AST parse, pass 1 for files: {}", javaFiles.length);
 
-			String[] pass2Files = scanFiles(project, javaFiles, generatedSymbols, SCAN_PASS.ONE);
+			String[] pass2Files = scanFiles(project, javaFiles, generatedSymbols, generatedBeans, SCAN_PASS.ONE);
 			if (pass2Files.length > 0) {
 
 				log.info("scan java files, AST parse, pass 2 for files: {}", javaFiles.length);
 
-				scanFiles(project, pass2Files, generatedSymbols, SCAN_PASS.TWO);
+				scanFiles(project, pass2Files, generatedSymbols, generatedBeans, SCAN_PASS.TWO);
 			}
 
 			log.info("scan java files done, number of symbols created: " + generatedSymbols.size());
 
-			this.cache.store(cacheKey, javaFiles, generatedSymbols, dependencyTracker.getAllDependencies());
+			this.cache.store(symbolsCacheKey, javaFiles, generatedSymbols, dependencyTracker.getAllDependencies(), CachedSymbol.class);
+			this.cache.store(beansCacheKey, javaFiles, generatedBeans, dependencyTracker.getAllDependencies(), CachedBean.class);
 //			dependencyTracker.dump();
 
 			symbols = (CachedSymbol[]) generatedSymbols.toArray(new CachedSymbol[generatedSymbols.size()]);
+			beans = (CachedBean[]) generatedBeans.toArray(new CachedBean[generatedBeans.size()]);
 		}
 		else {
-			symbols = cached.getLeft();
+			symbols = cachedSymbols.getLeft();
+			beans = cachedBeans.getLeft();
+
 			log.info("scan java files used cached data: {} - no. of cached symbols retrieved: {}", project.getElementName(), symbols.length);
-			this.dependencyTracker.restore(cached.getRight());
-			log.info("scan java files restored cached dependency data: {} - no. of cached dependencies: {}", cached.getRight().size());
+			this.dependencyTracker.restore(cachedSymbols.getRight());
+			log.info("scan java files restored cached dependency data: {} - no. of cached dependencies: {}", cachedSymbols.getRight().size());
 		}
 
-		if (symbols != null) {
+		if (symbols != null && beans != null) {
 			EnhancedSymbolInformation[] enhancedSymbols = Arrays.stream(symbols).map(cachedSymbol -> cachedSymbol.getEnhancedSymbol()).toArray(EnhancedSymbolInformation[]::new);
-			Bean[] beans = Arrays.stream(symbols).filter(cachedSymbol -> cachedSymbol.getBean() != null).map(cachedSymbol -> cachedSymbol.getBean()).toArray(Bean[]::new);
-			symbolHandler.addSymbols(project, enhancedSymbols, beans);
+			Bean[] allBeans = Arrays.stream(beans).filter(cachedBean -> cachedBean.getBean() != null).map(cachedBean -> cachedBean.getBean()).toArray(Bean[]::new);
+			symbolHandler.addSymbols(project, enhancedSymbols, allBeans);
 		}
 	}
 
-	private String[] scanFiles(IJavaProject project, String[] javaFiles, List<CachedSymbol> generatedSymbols, SCAN_PASS pass)
+	private String[] scanFiles(IJavaProject project, String[] javaFiles, List<CachedSymbol> generatedSymbols, List<CachedBean> generatedBeans, SCAN_PASS pass)
 			throws Exception {
 		ASTParser parser = createParser(project, SCAN_PASS.ONE.equals(pass));
 		List<String> nextPassFiles = new ArrayList<>();
@@ -410,7 +449,7 @@ public class SpringIndexerJava implements SpringIndexer {
 				AtomicReference<TextDocument> docRef = new AtomicReference<>();
 
 				SpringIndexerJavaContext context = new SpringIndexerJavaContext(project, cu, docURI, sourceFilePath,
-						lastModified, docRef, null, generatedSymbols, pass, nextPassFiles);
+						lastModified, docRef, null, generatedSymbols, generatedBeans, pass, nextPassFiles);
 
 				scanAST(context);
 			}
@@ -523,7 +562,7 @@ public class SpringIndexerJava implements SpringIndexer {
 				WorkspaceSymbol symbol = provideDefaultSymbol(node, context);
 				if (symbol != null) {
 					EnhancedSymbolInformation enhancedSymbol = new EnhancedSymbolInformation(symbol, null);
-					context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), enhancedSymbol, null));
+					context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), enhancedSymbol));
 				}
 			}
 		}
@@ -608,7 +647,7 @@ public class SpringIndexerJava implements SpringIndexer {
 			.toArray(String[]::new);
 	}
 
-	private IndexCacheKey getCacheKey(IJavaProject project) {
+	private IndexCacheKey getCacheKey(IJavaProject project, String elementType) {
 		IClasspath classpath = project.getClasspath();
 		Stream<File> classpathEntries = IClasspathUtil.getAllBinaryRoots(classpath).stream();
 
@@ -617,7 +656,7 @@ public class SpringIndexerJava implements SpringIndexer {
 				.map(file -> file.getAbsolutePath() + "#" + file.lastModified())
 				.collect(Collectors.joining(","));
 
-		return new IndexCacheKey(project.getElementName() + "-java-", DigestUtils.md5Hex(GENERATION + "-" + classpathIdentifier).toUpperCase());
+		return new IndexCacheKey(project.getElementName() + "-java-" + elementType + "-", DigestUtils.md5Hex(GENERATION + "-" + classpathIdentifier).toUpperCase());
 	}
 
 	public void setScanTestJavaSources(boolean scanTestJavaSources) {

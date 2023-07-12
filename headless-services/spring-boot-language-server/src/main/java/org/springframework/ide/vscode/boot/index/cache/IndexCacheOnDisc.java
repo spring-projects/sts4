@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019 2021 Pivotal, Inc.
+ * Copyright (c) 2019, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.lang.reflect.Type;
 import java.nio.file.Files;
 import java.util.Arrays;
@@ -34,7 +35,6 @@ import org.eclipse.lsp4j.Location;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
-import org.springframework.ide.vscode.boot.java.utils.CachedSymbol;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.commons.protocol.spring.InjectionPoint;
 import org.springframework.ide.vscode.commons.util.UriUtil;
@@ -53,6 +53,7 @@ import com.google.gson.JsonParseException;
 import com.google.gson.JsonPrimitive;
 import com.google.gson.JsonSerializationContext;
 import com.google.gson.JsonSerializer;
+import com.google.gson.reflect.TypeToken;
 import com.google.gson.stream.JsonReader;
 
 /**
@@ -61,7 +62,7 @@ import com.google.gson.stream.JsonReader;
 public class IndexCacheOnDisc implements IndexCache {
 
 	private final File cacheDirectory;
-	private final Map<IndexCacheKey, CacheStore> stores;
+	private final Map<IndexCacheKey, IndexCacheStore<? extends IndexCacheable>> stores;
 
 	private static final Logger log = LoggerFactory.getLogger(IndexCacheOnDisc.class);
 
@@ -79,10 +80,11 @@ public class IndexCacheOnDisc implements IndexCache {
 	}
 
 	@Override
-	public void store(IndexCacheKey cacheKey, String[] files, List<CachedSymbol> generatedSymbols, Multimap<String, String> dependencies) {
-		if (dependencies==null) {
+	public <T extends IndexCacheable> void store(IndexCacheKey cacheKey, String[] files, List<T> elements, Multimap<String, String> dependencies, Class<T> type) {
+		if (dependencies == null) {
 			dependencies = ImmutableMultimap.of();
 		}
+
 		SortedMap<String, Long> timestampedFiles = new TreeMap<>();
 
 		timestampedFiles = Arrays.stream(files)
@@ -95,18 +97,19 @@ public class IndexCacheOnDisc implements IndexCache {
 					}
 				}, (v1,v2) -> { throw new RuntimeException(String.format("Duplicate key for values %s and %s", v1, v2));}, TreeMap::new));
 
-		save(cacheKey, generatedSymbols, timestampedFiles, dependencies.asMap());
+		save(cacheKey, elements, timestampedFiles, dependencies.asMap(), type);
 	}
 
+	@SuppressWarnings("unchecked")
 	@Override
-	public Pair<CachedSymbol[], Multimap<String, String>> retrieve(IndexCacheKey cacheKey, String[] files) {
+	public <T extends IndexCacheable> Pair<T[], Multimap<String, String>> retrieve(IndexCacheKey cacheKey, String[] files, Class<T> type) {
 		File cacheStore = new File(cacheDirectory, cacheKey.toString() + ".json");
 		if (cacheStore.exists()) {
 
 			Gson gson = createGson();
 
 			try (JsonReader reader = new JsonReader(new FileReader(cacheStore))) {
-				CacheStore store = gson.fromJson(reader, CacheStore.class);
+				IndexCacheStore<T> store = gson.fromJson(reader, IndexCacheStore.class);
 
 				SortedMap<String, Long> timestampedFiles = Arrays.stream(files)
 						.filter(file -> new File(file).exists())
@@ -121,16 +124,19 @@ public class IndexCacheOnDisc implements IndexCache {
 				if (isFileMatch(timestampedFiles, store.getTimestampedFiles())) {
 					this.stores.put(cacheKey, store);
 
-					List<CachedSymbol> symbols = store.getSymbols();
+					List<T> symbols = store.getSymbols();
+
 					Map<String, Collection<String>> storedDependencies = store.getDependencies();
 					Multimap<String, String> dependencies = MultimapBuilder.hashKeys().hashSetValues().build();
+
 					if (storedDependencies!=null && !storedDependencies.isEmpty()) {
 						for (Entry<String, Collection<String>> entry : storedDependencies.entrySet()) {
 							dependencies.replaceValues(entry.getKey(), entry.getValue());
 						}
 					}
+
 					return Pair.of(
-							(CachedSymbol[]) symbols.toArray(new CachedSymbol[symbols.size()]),
+							(T[]) symbols.toArray((T[]) Array.newInstance(type, symbols.size())),
 							MultimapBuilder.hashKeys().hashSetValues().build(dependencies)
 					);
 				}
@@ -143,20 +149,22 @@ public class IndexCacheOnDisc implements IndexCache {
 	}
 
 	@Override
-	public void removeFile(IndexCacheKey cacheKey, String file) {
-		CacheStore cacheStore = this.stores.get(cacheKey);
+	public <T extends IndexCacheable> void removeFile(IndexCacheKey cacheKey, String file, Class<T> type) {
+		@SuppressWarnings("unchecked")
+		IndexCacheStore<T> cacheStore = (IndexCacheStore<T>) this.stores.get(cacheKey);
+
 		if (cacheStore != null) {
 			String docURI = UriUtil.toUri(new File(file)).toASCIIString();
 
 			SortedMap<String, Long> timestampedFiles = new TreeMap<>(cacheStore.getTimestampedFiles());
 			timestampedFiles.remove(file);
 
-			List<CachedSymbol> cachedSymbols = cacheStore.getSymbols().stream()
+			List<T> cachedSymbols = cacheStore.getSymbols().stream()
 					.filter(cachedSymbol -> !cachedSymbol.getDocURI().equals(docURI))
 					.collect(Collectors.toList());
 			Map<String, Collection<String>> changedDeps = new HashMap<>(cacheStore.getDependencies());
 			changedDeps.remove(file);
-			save(cacheKey, cachedSymbols, timestampedFiles, changedDeps);
+			save(cacheKey, cachedSymbols, timestampedFiles, changedDeps, type);
 		}
 	}
 
@@ -170,12 +178,14 @@ public class IndexCacheOnDisc implements IndexCache {
 	}
 
 	@Override
-	public void update(IndexCacheKey cacheKey, String file, long lastModified, List<CachedSymbol> generatedSymbols, Set<String> dependencies) {
+	public <T extends IndexCacheable> void update(IndexCacheKey cacheKey, String file, long lastModified,
+			List<T> generatedSymbols, Set<String> dependencies, Class<T> type) {
 		if (dependencies == null) {
 			dependencies = ImmutableSet.of();
 		}
 
-		CacheStore cacheStore = this.stores.get(cacheKey);
+		@SuppressWarnings("unchecked")
+		IndexCacheStore<T> cacheStore = (IndexCacheStore<T>) this.stores.get(cacheKey);
 
 		if (cacheStore != null) {
 			String docURI = UriUtil.toUri(new File(file)).toASCIIString();
@@ -183,7 +193,7 @@ public class IndexCacheOnDisc implements IndexCache {
 			SortedMap<String, Long> timestampedFiles = new TreeMap<>(cacheStore.getTimestampedFiles());
 			timestampedFiles.put(file, lastModified);
 
-			List<CachedSymbol> cachedSymbols = cacheStore.getSymbols().stream()
+			List<T> cachedSymbols = cacheStore.getSymbols().stream()
 					.filter(cachedSymbol -> !cachedSymbol.getDocURI().equals(docURI))
 					.collect(Collectors.toList());
 
@@ -195,17 +205,20 @@ public class IndexCacheOnDisc implements IndexCache {
 			} else {
 				changedDependencies.put(file, ImmutableSet.copyOf(dependencies));
 			}
-			save(cacheKey, cachedSymbols, timestampedFiles, changedDependencies);
+
+			save(cacheKey, cachedSymbols, timestampedFiles, changedDependencies, type);
 		}
 	}
 
 	@Override
-	public void update(IndexCacheKey cacheKey, String[] files, long[] lastModified, List<CachedSymbol> generatedSymbols, Multimap<String, String> dependencies) {
+	public <T extends IndexCacheable> void update(IndexCacheKey cacheKey, String[] files, long[] lastModified,
+			List<T> generatedSymbols, Multimap<String, String> dependencies, Class<T> type) {
 		if (dependencies == null) {
 			dependencies = ImmutableMultimap.of();
 		}
 
-		CacheStore cacheStore = this.stores.get(cacheKey);
+		@SuppressWarnings("unchecked")
+		IndexCacheStore<T> cacheStore = (IndexCacheStore<T>) this.stores.get(cacheKey);
 
 		if (cacheStore != null) {
 			SortedMap<String, Long> timestampedFiles = new TreeMap<>(cacheStore.getTimestampedFiles());
@@ -231,19 +244,19 @@ public class IndexCacheOnDisc implements IndexCache {
 			}
 
 			// update cache internal list of cached symbols (by removing old ones and adding all new ones)
-			List<CachedSymbol> cachedSymbols = cacheStore.getSymbols().stream()
+			List<T> cachedSymbols = cacheStore.getSymbols().stream()
 					.filter(cachedSymbol -> !allDocURIs.contains(cachedSymbol.getDocURI()))
 					.collect(Collectors.toList());
 			cachedSymbols.addAll(generatedSymbols);
 
 			// store the complete cache content of this project to disc
-			save(cacheKey, cachedSymbols, timestampedFiles, changedDependencies);
+			save(cacheKey, cachedSymbols, timestampedFiles, changedDependencies, type);
 		}
 	}
 
 	@Override
 	public long getModificationTimestamp(IndexCacheKey cacheKey, String file) {
-		CacheStore cacheStore = this.stores.get(cacheKey);
+		IndexCacheStore<? extends IndexCacheable> cacheStore = this.stores.get(cacheKey);
 		
 		if (cacheStore != null) {
 			Long result = cacheStore.getTimestampedFiles().get(file);
@@ -255,9 +268,9 @@ public class IndexCacheOnDisc implements IndexCache {
 		return 0;
 	}
 
-	private void save(IndexCacheKey cacheKey, List<CachedSymbol> generatedSymbols,
-			SortedMap<String, Long> timestampedFiles, Map<String, Collection<String>> dependencies) {
-		CacheStore store = new CacheStore(timestampedFiles, generatedSymbols, dependencies);
+	private <T extends IndexCacheable> void save(IndexCacheKey cacheKey, List<T> elements, SortedMap<String, Long> timestampedFiles,
+			Map<String, Collection<String>> dependencies, Class<T> type) {
+		IndexCacheStore<T> store = new IndexCacheStore<T>(timestampedFiles, elements, dependencies, type);
 		this.stores.put(cacheKey, store);
 
 		try (FileWriter writer = new FileWriter(new File(cacheDirectory, cacheKey.toString() + ".json")))
@@ -301,6 +314,7 @@ public class IndexCacheOnDisc implements IndexCache {
 		return new GsonBuilder()
 				.registerTypeAdapter(SymbolAddOnInformation.class, new SymbolAddOnInformationAdapter())
 				.registerTypeAdapter(Bean.class, new BeanJsonAdapter())
+				.registerTypeAdapter(IndexCacheStore.class, new IndexCacheStoreAdapter())
 				.create();
 	}
 
@@ -308,31 +322,68 @@ public class IndexCacheOnDisc implements IndexCache {
 	/**
 	 * internal storage structure
 	 */
-	private static class CacheStore {
+	private static class IndexCacheStore<T extends IndexCacheable> {
+
+		@SuppressWarnings("unused")
+		private final String elementType;
 
 		private final SortedMap<String, Long> timestampedFiles;
-		private final List<CachedSymbol> symbols;
+		private final List<T> elements;
 		private final Map<String, Collection<String>> dependencies;
 
-		public CacheStore(SortedMap<String, Long> timestampedFiles, List<CachedSymbol> symbols, Map<String, Collection<String>> dependencies) {
-			super();
+		public IndexCacheStore(SortedMap<String, Long> timestampedFiles, List<T> elements, Map<String, Collection<String>> dependencies, Class<T> elementType) {
 			this.timestampedFiles = timestampedFiles;
-			this.symbols = symbols;
+			this.elements = elements;
 			this.dependencies = dependencies;
+			this.elementType = elementType.getName();
 		}
 
 		public Map<String, Collection<String>> getDependencies() {
 			return dependencies;
 		}
 
-		public List<CachedSymbol> getSymbols() {
-			return symbols;
+		public List<T> getSymbols() {
+			return elements;
 		}
 
 		public SortedMap<String, Long> getTimestampedFiles() {
 			return timestampedFiles;
 		}
+		
+	}
+	
+	private static class IndexCacheStoreAdapter implements JsonDeserializer<IndexCacheStore<?>> {
 
+		@SuppressWarnings({ "rawtypes", "unchecked" })
+		@Override
+		public IndexCacheStore<?> deserialize(JsonElement json, Type typeOfT, JsonDeserializationContext context)
+				throws JsonParseException {
+	        JsonObject parsedObject = json.getAsJsonObject();
+
+			String className = parsedObject.get("elementType").getAsString();
+
+			try {
+				Class<?> elementType = Class.forName(className);
+
+				JsonElement elementsObject = parsedObject.get("elements");
+				Type elementListType = TypeToken.getParameterized(List.class, elementType).getType();
+				List elements = context.deserialize(elementsObject, elementListType);
+
+				JsonElement timestampedFilesObject = parsedObject.get("timestampedFiles");
+				Type timestampsMapType = TypeToken.getParameterized(SortedMap.class, String.class, Long.class).getType();
+				SortedMap timestampedFiles = context.deserialize(timestampedFilesObject, timestampsMapType);
+
+				JsonElement dependenciesObject = parsedObject.get("dependencies");
+				Map dependencies = context.deserialize(dependenciesObject, HashMap.class);
+
+				return new IndexCacheStore(timestampedFiles, elements, dependencies, elementType);
+
+			} catch (ClassNotFoundException e) {
+	            throw new JsonParseException("cannot parse data from index cache with element type: " + className, e);
+			}
+
+		}
+		
 	}
 
 	/**

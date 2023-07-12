@@ -112,7 +112,7 @@ public class WebfluxRouterSymbolProvider extends AbstractSymbolProvider {
 				EnhancedSymbolInformation enhancedSymbol = RouteUtils.createRouteSymbol(location, path, getElementStrings(httpMethods),
 						getElementStrings(contentTypes), getElementStrings(acceptTypes), addon);
 
-				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), enhancedSymbol, null));
+				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), enhancedSymbol));
 
 			} catch (BadLocationException e) {
 				e.printStackTrace();

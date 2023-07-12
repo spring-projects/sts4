@@ -40,7 +40,7 @@ public class RestrictedDefaultSymbolProvider extends AbstractSymbolProvider {
 		if (!isCombinedWithAnnotation(node, Annotations.BEAN)) {
 			try {
 				EnhancedSymbolInformation enhancedSymbol = new EnhancedSymbolInformation(DefaultSymbolProvider.provideDefaultSymbol(node, doc), null);
-				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), enhancedSymbol, null));
+				context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), enhancedSymbol));
 			} catch (Exception e) {
 				log.warn(e.getMessage());
 			}

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2020 Pivotal, Inc.
+ * Copyright (c) 2019, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -22,6 +22,7 @@ import org.eclipse.lsp4j.WorkspaceSymbol;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.springframework.ide.vscode.boot.java.beans.BeanUtils;
 import org.springframework.ide.vscode.boot.java.beans.BeansSymbolAddOnInformation;
+import org.springframework.ide.vscode.boot.java.beans.CachedBean;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
@@ -34,14 +35,16 @@ import org.springframework.lang.NonNull;
 public class SpringIndexerXMLNamespaceHandlerBeans implements SpringIndexerXMLNamespaceHandler {
 
 	@Override
-	public void processNode(DOMNode node, IJavaProject project, String docURI, long lastModified, TextDocument document, List<CachedSymbol> generatedSymbols) throws Exception {
+	public void processNode(DOMNode node, IJavaProject project, String docURI, long lastModified, TextDocument document,
+			List<CachedSymbol> generatedSymbols, List<CachedBean> generatedBeans) throws Exception {
 		String localName = node.getLocalName();
 		if (localName != null && "bean".equals(localName)) {
-			createBeanSymbol(node, project, docURI, lastModified, document, generatedSymbols);
+			createBeanSymbol(node, project, docURI, lastModified, document, generatedSymbols, generatedBeans);
 		}
 	}
 
-	private void createBeanSymbol(DOMNode node, IJavaProject project, String docURI, long lastModified, TextDocument document, List<CachedSymbol> generatedSymbols) throws Exception {
+	private void createBeanSymbol(DOMNode node, IJavaProject project, String docURI, long lastModified, TextDocument document,
+			List<CachedSymbol> generatedSymbols, List<CachedBean> generatedBeans) throws Exception {
 		String beanID = null;
 		int symbolStart = 0;
 		int symbolEnd = 0;
@@ -94,8 +97,10 @@ public class SpringIndexerXMLNamespaceHandlerBeans implements SpringIndexerXMLNa
 
 			EnhancedSymbolInformation fullSymbol = new EnhancedSymbolInformation(symbol, addon);
 
-			CachedSymbol cachedSymbol = new CachedSymbol(docURI, lastModified, fullSymbol, null);
+			CachedSymbol cachedSymbol = new CachedSymbol(docURI, lastModified, fullSymbol);
 			generatedSymbols.add(cachedSymbol);
+			
+			// TODO: bean index
 		}
 	}
 

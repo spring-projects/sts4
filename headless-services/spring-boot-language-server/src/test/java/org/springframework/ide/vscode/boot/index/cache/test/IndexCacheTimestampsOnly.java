@@ -25,7 +25,7 @@ import java.util.stream.Collectors;
 import org.apache.commons.lang3.tuple.Pair;
 import org.springframework.ide.vscode.boot.index.cache.IndexCache;
 import org.springframework.ide.vscode.boot.index.cache.IndexCacheKey;
-import org.springframework.ide.vscode.boot.java.utils.CachedSymbol;
+import org.springframework.ide.vscode.boot.index.cache.IndexCacheable;
 
 import com.google.common.collect.Multimap;
 
@@ -41,7 +41,7 @@ public class IndexCacheTimestampsOnly implements IndexCache {
 	}
 
 	@Override
-	public void store(IndexCacheKey cacheKey, String[] files, List<CachedSymbol> generatedSymbols, Multimap<String,String> dependencies) {
+	public <T extends IndexCacheable> void store(IndexCacheKey cacheKey, String[] files, List<T> generatedSymbols, Multimap<String, String> dependencies, Class<T> type) {
 		SortedMap<String, Long> timestampedFiles = new TreeMap<>();
 
 		timestampedFiles = Arrays.stream(files)
@@ -58,18 +58,18 @@ public class IndexCacheTimestampsOnly implements IndexCache {
 	}
 
 	@Override
-	public Pair<CachedSymbol[], Multimap<String, String>> retrieve(IndexCacheKey cacheKey, String[] files) {
+	public <T extends IndexCacheable> Pair<T[], Multimap<String, String>> retrieve(IndexCacheKey cacheKey, String[] files, Class<T> type) {
 		return null;
 	}
 
 	@Override
-	public void update(IndexCacheKey cacheKey, String file, long lastModified, List<CachedSymbol> generatedSymbols, Set<String> dependencies) {
+	public <T extends IndexCacheable> void update(IndexCacheKey cacheKey, String file, long lastModified, List<T> generatedSymbols, Set<String> dependencies, Class<T> type) {
 		Map<String, Long> timestampMap = timestampCache.get(cacheKey);
 		timestampMap.put(file, lastModified);
 	}
 
 	@Override
-	public void update(IndexCacheKey cacheKey, String[] files, long[] lastModified, List<CachedSymbol> generatedSymbols, Multimap<String, String> dependencies) {
+	public <T extends IndexCacheable> void update(IndexCacheKey cacheKey, String[] files, long[] lastModified, List<T> generatedSymbols, Multimap<String, String> dependencies, Class<T> type) {
 		Map<String, Long> timestampMap = timestampCache.get(cacheKey);
 
 		for (int i = 0; i < files.length; i++) {
@@ -82,7 +82,7 @@ public class IndexCacheTimestampsOnly implements IndexCache {
 	}
 
 	@Override
-	public void removeFile(IndexCacheKey symbolCacheKey, String file) {
+	public <T extends IndexCacheable> void removeFile(IndexCacheKey symbolCacheKey, String file, Class<T> type) {
 	}
 
 	@Override

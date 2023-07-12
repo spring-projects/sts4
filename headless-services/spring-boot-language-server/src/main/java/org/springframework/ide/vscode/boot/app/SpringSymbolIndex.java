@@ -170,37 +170,44 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 			public void addSymbols(IJavaProject project, EnhancedSymbolInformation[] enhancedSymbols,
 					Bean[] beanDefinitions) {
 
-				// organize symbols by doc URI
-				Map<String, List<EnhancedSymbolInformation>> symbolsPerDoc = new HashMap<>();
-				for (EnhancedSymbolInformation symbol : enhancedSymbols) {
-					Either<Location, WorkspaceSymbolLocation> location = symbol.getSymbol().getLocation();
-					String docURI = location.isLeft() ? location.getLeft().getUri() : location.getRight().getUri();
-					
-					symbolsPerDoc.computeIfAbsent(docURI, k -> new ArrayList<>()).add(symbol);
-				}
+				if (enhancedSymbols != null) {
 
-				// add symbols per doc
-				for (Map.Entry<String, List<EnhancedSymbolInformation>> entry : symbolsPerDoc.entrySet()) {
-					String docURI = entry.getKey();
-					List<EnhancedSymbolInformation> symbols = entry.getValue();
-					
-					SpringSymbolIndex.this.addSymbolsByDoc(project, docURI, (EnhancedSymbolInformation[]) symbols.toArray(new EnhancedSymbolInformation[symbols.size()]));
+					// organize symbols by doc URI
+					Map<String, List<EnhancedSymbolInformation>> symbolsPerDoc = new HashMap<>();
+					for (EnhancedSymbolInformation symbol : enhancedSymbols) {
+						Either<Location, WorkspaceSymbolLocation> location = symbol.getSymbol().getLocation();
+						String docURI = location.isLeft() ? location.getLeft().getUri() : location.getRight().getUri();
+						
+						symbolsPerDoc.computeIfAbsent(docURI, k -> new ArrayList<>()).add(symbol);
+					}
+	
+					// add symbols per doc
+					for (Map.Entry<String, List<EnhancedSymbolInformation>> entry : symbolsPerDoc.entrySet()) {
+						String docURI = entry.getKey();
+						List<EnhancedSymbolInformation> symbols = entry.getValue();
+						
+						SpringSymbolIndex.this.addSymbolsByDoc(project, docURI, (EnhancedSymbolInformation[]) symbols.toArray(new EnhancedSymbolInformation[symbols.size()]));
+					}
 				}
 				
-				// organize beans per doc URI
-				Map<String, List<Bean>> beansPerDoc = new HashMap<>();
-				for (Bean bean : beanDefinitions) {
-					String docURI = bean.getLocation().getUri();
-					beansPerDoc.computeIfAbsent(docURI, k -> new ArrayList<>()).add(bean);
+				if (beanDefinitions != null) {
+
+					// organize beans per doc URI
+					Map<String, List<Bean>> beansPerDoc = new HashMap<>();
+					for (Bean bean : beanDefinitions) {
+						String docURI = bean.getLocation().getUri();
+						beansPerDoc.computeIfAbsent(docURI, k -> new ArrayList<>()).add(bean);
+					}
+					
+					// add beans per doc URI
+					for (Map.Entry<String, List<Bean>> entry : beansPerDoc.entrySet()) {
+						String docURI = entry.getKey();
+						List<Bean> beans = entry.getValue();
+						
+						springIndex.updateBeans(project.getElementName(), docURI, (Bean[]) beans.toArray(new Bean[beans.size()]));
+					}
 				}
 				
-				// add beans per doc URI
-				for (Map.Entry<String, List<Bean>> entry : beansPerDoc.entrySet()) {
-					String docURI = entry.getKey();
-					List<Bean> beans = entry.getValue();
-					
-					springIndex.updateBeans(project.getElementName(), docURI, (Bean[]) beans.toArray(new Bean[beans.size()]));
-				}
 			}
 			
 			@Override
