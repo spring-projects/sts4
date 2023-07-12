@@ -1,5 +1,6 @@
 name: Eclipse LS Extensions Snapshot Build
 
+concurrency: eclipse-ls-extensions
 # configure manual trigger
 #on:
 #  workflow_dispatch:

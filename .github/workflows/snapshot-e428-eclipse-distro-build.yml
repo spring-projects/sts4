@@ -1,5 +1,7 @@
 name: Snapshot - 4.28 Eclipse STS Distribution Build
 
+concurrency: e428
+
 #on:
 #  workflow_dispatch:
 on:
