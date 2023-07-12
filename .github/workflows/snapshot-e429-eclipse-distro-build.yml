@@ -1,6 +1,8 @@
 name: Snapshot - 4.29 Eclipse STS Distribution Build
 
-concurrency: e429
+concurrency:
+  group: e429
+  cancel-in-progress: true
 
 on:
   workflow_dispatch:
