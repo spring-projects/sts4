@@ -32,6 +32,7 @@ import org.springframework.ide.vscode.commons.yaml.path.YamlPathSegment;
 import org.springframework.ide.vscode.commons.yaml.schema.DynamicSchemaContext;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 import org.springframework.ide.vscode.commons.yaml.schema.YTypedProperty;
+import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.error.Mark;
 import org.yaml.snakeyaml.nodes.MappingNode;
 import org.yaml.snakeyaml.nodes.Node;
@@ -113,8 +114,8 @@ public class YamlSchemaProblems {
 				}
 			}
 		} else if (parent instanceof SequenceNode) {
-			Boolean flowStyle = ((SequenceNode) parent).getFlowStyle().getStyleBoolean();
-			if (flowStyle!=null && !flowStyle) {
+			boolean flowStyle = ((SequenceNode) parent).getFlowStyle() == DumperOptions.FlowStyle.FLOW;
+			if (!flowStyle) {
 				Mark nodeStart = map.getStartMark();
 				underline = new DocumentRegion(doc, 0, nodeStart.getIndex());
 				underline = underline.trimEnd();

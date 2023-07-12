@@ -108,7 +108,7 @@ public class YamlSchemaProblems {
 			}
 			else if (flowStyle instanceof DumperOptions.FlowStyle) {
 				DumperOptions.FlowStyle style = (DumperOptions.FlowStyle) flowStyle;
-				flow = style.getStyleBoolean();
+				flow = style == DumperOptions.FlowStyle.FLOW;
 			}
 
 			if (!flow) {
