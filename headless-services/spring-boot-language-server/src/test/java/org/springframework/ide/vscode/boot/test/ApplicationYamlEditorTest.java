@@ -4357,7 +4357,8 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
                 "classpath*:",
                 "file:",
                 "http://",
-                "https://"
+                "https://",
+                "optional:"
         );
 
         assertCompletionsDisplayString(
@@ -4370,7 +4371,8 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
                 "classpath*:",
                 "file:",
                 "http://",
-                "https://"
+                "https://",
+                "optional:"
         );
 
     }
@@ -4760,7 +4762,8 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
                 "classpath*:",
                 "file:",
                 "http://",
-                "https://"
+                "https://",
+                "optional:"
         );
     }
 
@@ -4782,7 +4785,8 @@ public class ApplicationYamlEditorTest extends AbstractPropsEditorTest {
                 "classpath*:",
                 "file:",
                 "http://",
-                "https://"
+                "https://",
+                "optional:"
         );
     }
 

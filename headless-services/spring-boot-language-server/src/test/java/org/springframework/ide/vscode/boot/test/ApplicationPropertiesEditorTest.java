@@ -1655,7 +1655,8 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
                 "classpath*:",
                 "file:",
                 "http://",
-                "https://"
+                "https://",
+                "optional:"
         );
     }
 
@@ -1740,7 +1741,8 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
                 "classpath*:",
                 "file:",
                 "http://",
-                "https://"
+                "https://",
+                "optional:"
         );
     }
 
@@ -1769,7 +1771,8 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
                 "classpath*:",
                 "file:",
                 "http://",
-                "https://"
+                "https://",
+                "optional:"
         );
 
         assertCompletionsDisplayString(
@@ -1839,7 +1842,8 @@ public class ApplicationPropertiesEditorTest extends AbstractPropsEditorTest {
                     "classpath*:",
                     "file:",
                     "http://",
-                    "https://"
+                    "https://",
+                    "optional:"
             );
 
             assertCompletionWithLabel(

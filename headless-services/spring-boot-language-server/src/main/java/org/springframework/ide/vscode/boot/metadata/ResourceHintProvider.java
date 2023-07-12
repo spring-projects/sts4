@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2019 Pivotal, Inc.
+ * Copyright (c) 2016, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -38,7 +38,8 @@ public class ResourceHintProvider implements ValueProviderStrategy {
 			"classpath*:",
 			"file:",
 			"http://",
-			"https://"
+			"https://",
+			"optional:"
 	};
 
 	@Override
