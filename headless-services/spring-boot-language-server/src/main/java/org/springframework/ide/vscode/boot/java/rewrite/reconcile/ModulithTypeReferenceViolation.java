@@ -27,8 +27,6 @@ import org.springframework.ide.vscode.boot.java.Boot3JavaProblemType;
 import org.springframework.ide.vscode.boot.modulith.AppModules;
 import org.springframework.ide.vscode.boot.modulith.ModulithService;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
-import org.springframework.ide.vscode.commons.java.Version;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
 import org.springframework.ide.vscode.commons.rewrite.config.MarkerVisitorContext;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeCodeActionDescriptor;
@@ -101,8 +99,7 @@ public class ModulithTypeReferenceViolation implements RecipeCodeActionDescripto
 
 	@Override
 	public boolean isApplicable(IJavaProject project) {
-		Version v = SpringProjectUtil.getDependencyVersion(project, "spring-modulith-core");
-		return v != null;
+		return ModulithService.isModulithDependentProject(project);
 	}
 
 	@Override

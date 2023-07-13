@@ -14,6 +14,8 @@ import java.io.File;
 import java.net.URL;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 public class Classpath {
 
@@ -60,14 +62,8 @@ public class Classpath {
 		private boolean isOwn = false;
 		private boolean isTest = false;
 		private boolean isJavaContent = false;
-
-		public String getOutputFolder() {
-			return outputFolder;
-		}
-
-		public void setOutputFolder(String outputFolder) {
-			this.outputFolder = outputFolder;
-		}
+		
+		private Map<String, String> extra;
 
 		public CPE() {}
 
@@ -75,6 +71,29 @@ public class Classpath {
 			super();
 			this.kind = kind;
 			setPath(path);
+		}
+
+		public CPE(String kind, String path, Map<String, String> extra) {
+			super();
+			this.kind = kind;
+			this.extra = extra;
+			setPath(path);
+		}
+		
+		public Map<String, String> getExtra() {
+			return extra;
+		}
+
+		public void setExtra(Map<String, String> extra) {
+			this.extra = extra;
+		}
+
+		public String getOutputFolder() {
+			return outputFolder;
+		}
+
+		public void setOutputFolder(String outputFolder) {
+			this.outputFolder = outputFolder;
 		}
 
 		public String getKind() {
@@ -119,6 +138,12 @@ public class Classpath {
 			return cpe;
 		}
 
+		public static CPE source(File sourceFolder, File outputFolder, Map<String, String> extra) {
+			CPE cpe = new CPE(ENTRY_KIND_SOURCE, sourceFolder.getAbsolutePath(), extra);
+			cpe.setOutputFolder(outputFolder.getAbsolutePath());
+			return cpe;
+		}
+		
 		public boolean isSystem() {
 			return isSystem;
 		}
@@ -155,23 +180,14 @@ public class Classpath {
 		public String toString() {
 			return "CPE [kind=" + kind + ", path=" + path + ", outputFolder=" + outputFolder + ", sourceContainerUrl="
 					+ sourceContainerUrl + ", javadocContainerUrl=" + javadocContainerUrl + ", isSystem=" + isSystem
-					+ ", isOwn=" + isOwn + ", isTest=" + isTest + ", isJavaContent=" + isJavaContent + "]";
+					+ ", isOwn=" + isOwn + ", isTest=" + isTest + ", isJavaContent=" + isJavaContent + ", extra="
+					+ extra + "]";
 		}
 
 		@Override
 		public int hashCode() {
-			final int prime = 31;
-			int result = 1;
-			result = prime * result + (isJavaContent ? 1231 : 1237);
-			result = prime * result + (isOwn ? 1231 : 1237);
-			result = prime * result + (isSystem ? 1231 : 1237);
-			result = prime * result + (isTest ? 1231 : 1237);
-			result = prime * result + ((javadocContainerUrl == null) ? 0 : javadocContainerUrl.hashCode());
-			result = prime * result + ((kind == null) ? 0 : kind.hashCode());
-			result = prime * result + ((outputFolder == null) ? 0 : outputFolder.hashCode());
-			result = prime * result + ((path == null) ? 0 : path.hashCode());
-			result = prime * result + ((sourceContainerUrl == null) ? 0 : sourceContainerUrl.hashCode());
-			return result;
+			return Objects.hash(extra, isJavaContent, isOwn, isSystem, isTest, javadocContainerUrl, kind, outputFolder,
+					path, sourceContainerUrl);
 		}
 
 		@Override
@@ -183,40 +199,11 @@ public class Classpath {
 			if (getClass() != obj.getClass())
 				return false;
 			CPE other = (CPE) obj;
-			if (isJavaContent != other.isJavaContent)
-				return false;
-			if (isOwn != other.isOwn)
-				return false;
-			if (isSystem != other.isSystem)
-				return false;
-			if (isTest != other.isTest)
-				return false;
-			if (javadocContainerUrl == null) {
-				if (other.javadocContainerUrl != null)
-					return false;
-			} else if (!javadocContainerUrl.equals(other.javadocContainerUrl))
-				return false;
-			if (kind == null) {
-				if (other.kind != null)
-					return false;
-			} else if (!kind.equals(other.kind))
-				return false;
-			if (outputFolder == null) {
-				if (other.outputFolder != null)
-					return false;
-			} else if (!outputFolder.equals(other.outputFolder))
-				return false;
-			if (path == null) {
-				if (other.path != null)
-					return false;
-			} else if (!path.equals(other.path))
-				return false;
-			if (sourceContainerUrl == null) {
-				if (other.sourceContainerUrl != null)
-					return false;
-			} else if (!sourceContainerUrl.equals(other.sourceContainerUrl))
-				return false;
-			return true;
+			return Objects.equals(extra, other.extra) && isJavaContent == other.isJavaContent && isOwn == other.isOwn
+					&& isSystem == other.isSystem && isTest == other.isTest
+					&& Objects.equals(javadocContainerUrl, other.javadocContainerUrl)
+					&& Objects.equals(kind, other.kind) && Objects.equals(outputFolder, other.outputFolder)
+					&& Objects.equals(path, other.path) && Objects.equals(sourceContainerUrl, other.sourceContainerUrl);
 		}
 
 	}

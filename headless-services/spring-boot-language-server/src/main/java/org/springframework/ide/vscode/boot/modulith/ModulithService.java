@@ -44,7 +44,6 @@ import org.springframework.ide.vscode.boot.java.handlers.BootJavaProjectReconcil
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaReconcileEngine;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
-import org.springframework.ide.vscode.commons.java.Version;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemCategory.Toggle.Option;
@@ -103,8 +102,7 @@ public class ModulithService {
 			
 			@Override
 			public void created(IJavaProject project) {
-				Version v = SpringProjectUtil.getDependencyVersion(project, "spring-modulith-core");
-				if (v != null) {
+				if (isModulithDependentProject(project)) {
 					if (anyClassFilesPresent(project)) {
 						requestMetadata(project);
 					} else {
@@ -115,8 +113,7 @@ public class ModulithService {
 			
 			@Override
 			public void changed(IJavaProject project) {
-				Version v = SpringProjectUtil.getDependencyVersion(project, "spring-modulith-core");
-				if (v == null) {
+				if (!isModulithDependentProject(project)) {
 					removeFromCache(project);
 				} else if (anyClassFilesPresent(project)) {
 					requestMetadata(project);
@@ -134,7 +131,7 @@ public class ModulithService {
 		server.onCommand(CMD_LIST_MODULITH_PROJECTS, params -> {
 			return CompletableFuture.completedFuture(projectFinder.all()
 					.stream()
-					.filter(p -> SpringProjectUtil.getDependencyVersion(p, "spring-modulith-core") != null)
+					.filter(ModulithService::isModulithDependentProject)
 					.collect(Collectors.toMap(p -> p.getElementName(), p -> p.getLocationUri().toASCIIString()))
 			);
 		});
@@ -155,8 +152,7 @@ public class ModulithService {
 	}
 	
 	private CompletableFuture<Boolean> refreshMetadata(IJavaProject project) {
-		Version v = SpringProjectUtil.getDependencyVersion(project, "spring-modulith-core");
-		if (v == null) {
+		if (!isModulithDependentProject(project)) {
 			server.getClient().showMessage(new MessageParams(MessageType.Error, "Project '" + project.getElementName() + "' does not depend on spring-modulith."));
 			return CompletableFuture.completedFuture(false);
 		}
@@ -223,41 +219,37 @@ public class ModulithService {
 	}
 
 	private CompletableFuture<AppModules> loadModulesMetadata(IJavaProject project) {
-		Version v = SpringProjectUtil.getDependencyVersion(project, "spring-modulith-core");
-		if (v != null) {
-			log.info("Loading Modulith metadata for project '" + project.getElementName() + "'...");
-				return findRootPackages(project).thenComposeAsync(packages -> {
-					if (!packages.isEmpty()) {
-						try {
-							String javaCmd = ProcessHandle.current().info().command().orElseThrow();
-							String classpathStr = project.getClasspath().getClasspathEntries().stream().map(cpe -> {
-								if (Classpath.ENTRY_KIND_SOURCE.equals(cpe.getKind())) {
-									return cpe.getOutputFolder();
-								} else {
-									return cpe.getPath();
-								}
-							}).collect(Collectors.joining(System.getProperty("path.separator")));
-							List<AppModule> allAppModules = new ArrayList<>();
-							CompletableFuture<?>[] aggregateFuture = packages
-									.stream()
-									.map(pkg -> computeAppModules(project.getElementName(), javaCmd, classpathStr, pkg).thenAccept(allAppModules::addAll))
-									.toArray(CompletableFuture[]::new);
-							return CompletableFuture.allOf(aggregateFuture).thenApply(r -> new AppModules(allAppModules));
-						} catch (Exception e) {
-							log.error("", e);
+		log.info("Loading Modulith metadata for project '" + project.getElementName() + "'...");
+		return findRootPackages(project).thenComposeAsync(packages -> {
+			if (!packages.isEmpty()) {
+				try {
+					String javaCmd = ProcessHandle.current().info().command().orElseThrow();
+					String classpathStr = project.getClasspath().getClasspathEntries().stream().map(cpe -> {
+						if (Classpath.ENTRY_KIND_SOURCE.equals(cpe.getKind())) {
+							return cpe.getOutputFolder();
+						} else {
+							return cpe.getPath();
 						}
-					}
-					return CompletableFuture.completedFuture(null);
-				});
-		}
-		return CompletableFuture.completedFuture(null);
+					}).collect(Collectors.joining(System.getProperty("path.separator")));
+					List<AppModule> allAppModules = new ArrayList<>();
+					CompletableFuture<?>[] aggregateFuture = packages.stream()
+							.map(pkg -> computeAppModules(project.getElementName(), javaCmd, classpathStr, pkg)
+									.thenAccept(allAppModules::addAll))
+							.toArray(CompletableFuture[]::new);
+					return CompletableFuture.allOf(aggregateFuture).thenApply(r -> new AppModules(allAppModules));
+				} catch (Exception e) {
+					log.error("", e);
+				}
+			}
+			return CompletableFuture.completedFuture(null);
+		});
 	}
 	
 	private CompletableFuture<List<AppModule>> computeAppModules(String projectName, String javaCmd,
 			String cp, String pkg) {
 		try {
 			File outputFile = File.createTempFile(projectName + "-" + pkg, "json");
-			return Runtime.getRuntime()
+			Process process = Runtime.getRuntime()
 					.exec(new String[] { 
 							javaCmd,
 							"-cp",
@@ -265,22 +257,28 @@ public class ModulithService {
 							"org.springframework.modulith.core.util.ApplicationModulesExporter",
 							pkg,
 							outputFile.toString()
-					})
-					.onExit().thenApply(process -> {
-						if (process.exitValue() == 0) {
-							try {
-								log.info("Updating Modulith metadata for project '" + projectName + "'");
-								JsonObject json = JsonParser.parseReader(new FileReader(outputFile)).getAsJsonObject();
-								log.info("Modulith metadata: " + json);
-								return loadAppModules(json);
-							} catch (Exception e) {
-								log.error("", e);
-							}
-						} else {
-							log.error("Failed to generate modulith metadata for project '" + projectName + "'. Modulith Exporter process exited with code " + process.exitValue());
-						}
-						return Collections.emptyList();
 					});
+			StringBuilder builder = new StringBuilder();
+			String line = null;
+			while ((line = process.errorReader().readLine()) != null) {
+				builder.append(line);
+				builder.append(System.getProperty("line.separator"));
+			}
+			return process.onExit().thenApply(p -> {
+					if (p.exitValue() == 0) {
+						try {
+							log.info("Updating Modulith metadata for project '" + projectName + "'");
+							JsonObject json = JsonParser.parseReader(new FileReader(outputFile)).getAsJsonObject();
+							log.info("Modulith metadata: " + json);
+							return loadAppModules(json);
+						} catch (Exception e) {
+							log.error("", e);
+						}
+					} else {
+						log.error("Failed to generate modulith metadata for project '" + projectName + "'. Modulith Exporter process exited with code " + process.exitValue() + "\n" + builder.toString());
+					}
+					return Collections.emptyList();
+				});
 		} catch (IOException e) {
 			log.error("", e);
 		}
@@ -355,5 +353,9 @@ public class ModulithService {
 			log.error("", e);
 			return Stream.empty();
 		}
+	}
+	
+	public static boolean isModulithDependentProject(IJavaProject project) {
+		return SpringProjectUtil.hasDependencyStartingWith(project, "spring-modulith-core", cpe -> !cpe.isSystem() && !cpe.isTest() && !cpe.isOwn());
 	}
 }

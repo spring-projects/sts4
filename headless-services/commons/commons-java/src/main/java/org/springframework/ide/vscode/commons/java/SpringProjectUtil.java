@@ -19,6 +19,8 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.commons.protocol.java.Classpath;
+import org.springframework.ide.vscode.commons.protocol.java.Classpath.CPE;
 
 public class SpringProjectUtil {
 
@@ -122,6 +124,34 @@ public class SpringProjectUtil {
 			log.error("", e);
 		}
 		return null;
+	}
+	
+	public static boolean hasDependencyStartingWith(IJavaProject jp, String dependency, Predicate<CPE> filter) {
+		try {
+			for (CPE cpe : jp.getClasspath().getClasspathEntries()) {
+				if (filter == null || filter.test(cpe)) {
+					if (Classpath.ENTRY_KIND_BINARY.equals(cpe.getKind())) {
+						String name = new File(cpe.getPath()).getName();
+						if (name.endsWith(".jar") && name.startsWith(dependency)) {
+							return true;
+						}
+					} else if (Classpath.ENTRY_KIND_SOURCE.equals(cpe.getKind()) && !cpe.isOwn()) {
+						if (cpe.getExtra() != null && cpe.getExtra().containsKey("project")) {
+							if (new File(cpe.getExtra().get("project")).getName().startsWith(dependency)) {
+								return true;
+							}
+						} else {
+							if (new File(cpe.getPath()).getName().startsWith(dependency)) {
+								return true;
+							}
+						}
+					}
+				}
+			}
+		} catch (Exception e) {
+			log.error("", e);
+		}
+		return false;
 	}
 	
 	public static Version getSpringBootVersion(IJavaProject jp) {		
