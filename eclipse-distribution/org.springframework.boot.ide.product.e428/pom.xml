@@ -519,13 +519,12 @@
 										<arg value="store-credentials" />
 										<arg value="notarize-app-dmg-profile" />
 										<arg value="--apple-id" />
-										<arg value="-${env.AC_USERNAME}}" />
+										<arg value="${env.AC_USERNAME}}" />
 										<arg value="--team-id" />
-										<arg value="-${env.APPLE_TEAM_ID}}" />
+										<arg value="${env.APPLE_TEAM_ID}}" />
 										<arg value="--password" />
-										<arg value="-${env.AC_PASSWORD}}" />
+										<arg value="${env.AC_PASSWORD}}" />
 										<arg value="${dmgName}" />
-										<arg value="${env.MACOS_NOTARIZATION_SERVICE_URL}" />
 									</exec>
 
 								<parallel failonany="true">
