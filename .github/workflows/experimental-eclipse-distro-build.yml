@@ -106,7 +106,7 @@ jobs:
           SSH_KEY: ~bamboo/.ssh/id_rsa
           SSH_USER: signer
         run: |
-          workdir=`pwd`
+          ls -la
           files=`ls *.zip`
           for file in $files
           do

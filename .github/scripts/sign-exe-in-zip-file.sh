@@ -1,5 +1,5 @@
-file=$0
-sign_script=$1
+file=$1
+sign_script=$2
 filename="$(basename -- $file)"
 
 echo "****************************************************************"
