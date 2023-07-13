@@ -524,7 +524,6 @@
 										<arg value="${env.APPLE_TEAM_ID}" />
 										<arg value="--password" />
 										<arg value="${env.AC_PASSWORD}" />
-										<arg value="${dmgName}" />
 									</exec>
 
 								<parallel failonany="true">
