@@ -512,19 +512,17 @@
 								<property name="dmgName" value="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-macosx.cocoa.x86_64.dmg" />
 								<property name="dmgName-aarch64" value="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-macosx.cocoa.aarch64.dmg" />
 
-<!--								<parallel failonany="true">-->
-
-									<exec executable="xcrun" failonerror="true">
-										<arg value="notarytool" />
-										<arg value="store-credentials" />
-										<arg value="notarize-app-dmg-profile" />
-										<arg value="--apple-id" />
-										<arg value="${env.AC_USERNAME}" />
-										<arg value="--team-id" />
-										<arg value="${env.APPLE_TEAM_ID}" />
-										<arg value="--password" />
-										<arg value="${env.AC_PASSWORD}" />
-									</exec>
+								<exec executable="xcrun" failonerror="true">
+									<arg value="notarytool" />
+									<arg value="store-credentials" />
+									<arg value="notarize-app-dmg-profile" />
+									<arg value="--apple-id" />
+									<arg value="${env.AC_USERNAME}" />
+									<arg value="--team-id" />
+									<arg value="${env.APPLE_TEAM_ID}" />
+									<arg value="--password" />
+									<arg value="${env.AC_PASSWORD}" />
+								</exec>
 
 								<parallel failonany="true">
 									<exec executable="xcrun" failonerror="true">
@@ -545,7 +543,20 @@
 									</exec>
 								</parallel>
 
+								<parallel failonany="true">
+									<exec executable="xcrun" failonerror="true">
+										<arg value="stapler" />
+										<arg value="staple" />
+										<arg value="${dmgName}" />
+									</exec>
+									<exec executable="xcrun" failonerror="true">
+										<arg value="stapler" />
+										<arg value="staple" />
+										<arg value="${dmgName-aarch64}" />
+									</exec>
+								</parallel>
 
+<!--								<parallel failonany="true">-->
 
 <!--									<exec executable="${project.build.directory}/../macos-notarize.sh" failonerror="true">-->
 <!--										<arg value="${dmgName}" />-->
