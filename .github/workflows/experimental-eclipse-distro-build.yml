@@ -82,25 +82,33 @@ jobs:
           ./mvnw --batch-mode -U clean install -P${{ inputs.eclipse_profile }} -P${{ inputs.build_type }} -Pgitactions -Pgpg.sign -Dsigning.skip=true -Dmaven.repo.local=~/.m2/repository-signed -Dhttpclient.retry-max=20 -Dmaven.test.skip=true -Declipse.p2.mirrors=false -Dtycho.localArtifacts=ignore -Ds3service.https-only=true -Dp2.replaceQualifier=true -Dorg.eclipse.ecf.provider.filetransfer.httpclient.retrieve.readTimeout=1200000 -Dorg.eclipse.equinox.p2.transport.ecf.retry=5 -Dskip.eclipserun.proxies=false -Dskip.osx.signing=true  -Dskip.win.signing=true -Dskip.osx.notarizing=true -Dtycho.equinox.resolver.uses=true
       - uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce
         with:
-          name: win-zips
+          name: win-zips-${{ github.run_id }}.${{ github.run_attempt }}
           path: ${{ github.workspace }}/eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target/products/*.win32.*.zip
+          retention-days: 1
 
 
   sign-win-executable:
     needs: eclipse-distro-build
     runs-on: self-hosted
     steps:
+      - uses: actions/checkout@v3
+          with:
+            sparse-checkout: |
+              .github
       - uses: actions/download-artifact@cbed621e49e4c01b044d60f6c80ea4ed6328b281
         with:
-          name: win-zips
+          name: win-zips-${{ github.run_id }}.${{ github.run_attempt }}
       - name: Sign EXE within zip files
         id: sign
+        env:
+          tools_s3_access_key: ${{ secrets.TOOLS_S3_ACCESS_KEY }}
+          tools_s3_secret_key: ${{ secrets.TOOLS_S3_SECRET_KEY  }}
+          SSH_KEY: ~bamboo/.ssh/id_rsa
+          SSH_USER: signer
         run: |
+          workdir=`pwd`
           files=`ls *.zip`
-
           for file in $files
           do
-              echo "****************************************************************"
-              echo "*** Processing : ${file}"
-              echo "****************************************************************"
+            ./.github/scripts/sign-exe-in-zip-file.sh $file ./github/scripts/sign-exe.sh
           done
