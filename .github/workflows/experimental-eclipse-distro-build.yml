@@ -83,7 +83,7 @@ jobs:
       - uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce
         with:
           name: win-zips
-          path: ${{ github.workspace }}/eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }/target/products/*.win32.*.zip
+          path: ${{ github.workspace }}/eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target/products/*.win32.*.zip
 
 
   sign-win-executable:
