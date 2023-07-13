@@ -512,19 +512,54 @@
 								<property name="dmgName" value="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-macosx.cocoa.x86_64.dmg" />
 								<property name="dmgName-aarch64" value="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-macosx.cocoa.aarch64.dmg" />
 
-								<parallel failonany="true">
+<!--								<parallel failonany="true">-->
 
-									<exec executable="${project.build.directory}/../macos-notarize.sh" failonerror="true">
+									<exec executable="xcrun" failonerror="true">
+										<arg value="notarytool" />
+										<arg value="store-credentials" />
+										<arg value="notarize-app-dmg-profile" />
+										<arg value="--apple-id" />
+										<arg value="-${env.AC_USERNAME}}" />
+										<arg value="--team-id" />
+										<arg value="-${env.APPLE_TEAM_ID}}" />
+										<arg value="--password" />
+										<arg value="-${env.AC_PASSWORD}}" />
 										<arg value="${dmgName}" />
 										<arg value="${env.MACOS_NOTARIZATION_SERVICE_URL}" />
 									</exec>
 
-									<exec executable="${project.build.directory}/../macos-notarize.sh" failonerror="true">
-										<arg value="${dmgName-aarch64}" />
-										<arg value="${env.MACOS_NOTARIZATION_SERVICE_URL}" />
+								<parallel failonany="true">
+									<exec executable="xcrun" failonerror="true">
+										<arg value="notarytool" />
+										<arg value="submit" />
+										<arg value="${dmgName}" />
+										<arg value="--keychain-profile" />
+										<arg value="notarize-app-dmg-profile" />
+										<arg value="--wait" />
 									</exec>
-
+									<exec executable="xcrun" failonerror="true">
+										<arg value="notarytool" />
+										<arg value="submit" />
+										<arg value="${dmgName-aarch64}" />
+										<arg value="--keychain-profile" />
+										<arg value="notarize-app-dmg-profile" />
+										<arg value="--wait" />
+									</exec>
 								</parallel>
+
+
+
+<!--									<exec executable="${project.build.directory}/../macos-notarize.sh" failonerror="true">-->
+<!--										<arg value="${dmgName}" />-->
+<!--										<arg value="${env.MACOS_NOTARIZATION_SERVICE_URL}" />-->
+<!--									</exec>-->
+
+<!--									<exec executable="${project.build.directory}/../macos-notarize.sh" failonerror="true">-->
+<!--										<arg value="${dmgName-aarch64}" />-->
+<!--										<arg value="${env.MACOS_NOTARIZATION_SERVICE_URL}" />-->
+<!--									</exec>-->
+
+<!--								</parallel>-->
 
 							</target>
 						</configuration>
