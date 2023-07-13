@@ -652,7 +652,7 @@
 
 					<execution>
 						<id>update-nightly-downloads</id>
-						<phase>deploy</phase>
+						<phase>verify</phase>
 						<configuration>
 							<skip>${skip.update-nightly-download-page}</skip>
 							<target>
@@ -665,11 +665,27 @@
 								<replace file="${project.build.directory}/../../common/html/sts4-nightly-${dist.target.major}.html" token="@TARGET@" value="${dist.target}" summary="yes" />
 								<replace file="${project.build.directory}/../../common/html/sts4-nightly-${dist.target.major}.html" token="@MAJOR-TARGET@" value="${dist.target.major}" summary="yes" />
 
-								<s3 accessKey="${dist.accessKey}" secretKey="${dist.secretKey}">
-									<upload bucketName="${dist.bucket}" file="${project.build.directory}/../../common/html/sts4-nightly-${dist.target.major}.html"
-										toFile="snapshot/STS4/sts4-nightly-${dist.target.major}.html" publicRead="true">
-									</upload>
-								</s3>
+							</target>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+
+					<execution>
+						<id>upload-nightly-downloads</id>
+						<phase>deploy</phase>
+						<configuration>
+							<skip>${skip.update-nightly-download-page}</skip>
+							<target>
+								<taskdef resource="net/sf/antcontrib/antcontrib.properties" />
+								<taskdef resource="org/springframework/build/aws/ant/antlib.xml" />
+
+                                <s3 accessKey="${dist.accessKey}" secretKey="${dist.secretKey}">
+                                    <upload bucketName="${dist.bucket}" file="${project.build.directory}/../../common/html/sts4-nightly-${dist.target.major}.html"
+    	                                toFile="snapshot/STS4/sts4-nightly-${dist.target.major}.html" publicRead="true">
+	                                </upload>
+                                </s3>
 							</target>
 						</configuration>
 						<goals>

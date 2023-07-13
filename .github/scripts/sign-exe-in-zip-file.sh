@@ -6,7 +6,8 @@ echo "****************************************************************"
 echo "*** Processing : ${file}"
 echo "****************************************************************"
 destination_folder_name=extracted_${filename}
-unzip $file -d ./${destination_folder_name}
-sts_folder=find ./${destination_folder_name} -maxdepth 1 -type d -name 'sts-*' -print -quit
-$sign_script ${sts_folder}/SpringToolSuite4.exe ${sts_folder}/SpringToolSuite4.exe
-zip -r $file ./${destination_folder_name}
+unzip -q $file -d ./${destination_folder_name}
+sts_folder=`find ./${destination_folder_name} -maxdepth 1 -type d -name 'sts-*' -print -quit`
+echo "Found folder: ${sts_folder}"
+$sign_script ./${sts_folder}/SpringToolSuite4.exe ${sts_folder}/SpringToolSuite4.exe
+zip -r -q $file ./${destination_folder_name}

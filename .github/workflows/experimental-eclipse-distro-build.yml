@@ -106,9 +106,9 @@ jobs:
           SSH_KEY: ~bamboo/.ssh/id_rsa
           SSH_USER: signer
         run: |
-          ls -la
+          workdir=`pwd`
           files=`ls *.zip`
           for file in $files
           do
-            ./.github/scripts/sign-exe-in-zip-file.sh $file ./github/scripts/sign-exe.sh
+            ./.github/scripts/sign-exe-in-zip-file.sh $file ${workdir}/.github/scripts/sign-exe.sh
           done
