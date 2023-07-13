@@ -434,6 +434,7 @@
 						<id>osx-dmg-creation</id>
 						<phase>verify</phase>
 						<configuration>
+							<skip>${skip.osx.notarizing}</skip>
 							<target>
 
 								<exec executable="/usr/local/bin/appdmg" failonerror="true">
