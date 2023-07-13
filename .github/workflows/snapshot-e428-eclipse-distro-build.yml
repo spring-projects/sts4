@@ -7,12 +7,12 @@ concurrency:
 #on:
 #  workflow_dispatch:
 on:
-  workflow_dispatch:
   workflow_run:
     workflows: ["Eclipse LS Extensions Snapshot Build"]
     types: [completed]
     branches:
       - "main"
+  workflow_dispatch
 
 jobs:
   e428-distro:
