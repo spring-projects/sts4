@@ -419,7 +419,7 @@ public class SpringIndexerJava implements SpringIndexer {
 		CachedBean[] beans;
 		CachedDiagnostics[] diagnostics;
 
-		if (cachedSymbols == null || cachedBeans == null) {
+		if (cachedSymbols == null || cachedBeans == null || cachedDiagnostics == null ) {
 			List<CachedSymbol> generatedSymbols = new ArrayList<CachedSymbol>();
 			List<CachedBean> generatedBeans = new ArrayList<CachedBean>();
 			List<CachedDiagnostics> generatedDiagnostics = new ArrayList<CachedDiagnostics>();
