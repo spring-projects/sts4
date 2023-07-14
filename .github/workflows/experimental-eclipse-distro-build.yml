@@ -85,13 +85,18 @@ jobs:
           name: win-zips-${{ github.run_id }}.${{ github.run_attempt }}
           path: ${{ github.workspace }}/eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target/products/*.win32.*.zip
           retention-days: 1
+      - uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce
+        with:
+          name: s3-dist-path-${{ github.run_id }}.${{ github.run_attempt }}
+          path: ${{ github.workspace }}/eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target/s3-dist-path.txt
+          retention-days: 1
 
 
   sign-win-executable:
     needs: eclipse-distro-build
     runs-on: self-hosted
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
         with:
           sparse-checkout: |
             .github
@@ -110,17 +115,19 @@ jobs:
           do
             ./.github/scripts/sign-exe-in-zip-file.sh $file
           done
+      - uses: actions/download-artifact@cbed621e49e4c01b044d60f6c80ea4ed6328b281
+        with:
+          name: s3-dist-path-${{ github.run_id }}.${{ github.run_attempt }}
       - name: Update S3
         id: update-s3
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.TOOLS_S3_ACCESS_KEY }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.TOOLS_S3_SECRET_KEY  }}
         run: |
-          distro_target=${{ inputs.eclipse_profile }}
-          distro_target="${distro_target:0:2}.${distro_target:2}
-          ls spring-tool-suite-4*.zip*
-          echo "aws s3 sync rm spring-tool-suite-4*.zip* s3://dist.springsource.com/snapshot/STS4/nightly/dist/${distro_target}"
-          echo "aws s3 sync cp spring-tool-suite-4*.zip* s3://dist.springsource.com/snapshot/STS4/nightly/dist/${distro_target}"
+          dist_path=`cat s3-dist-path.txt`
+          ls spring-tool-suite-4*.zip*  
+          echo "aws s3 sync rm spring-tool-suite-4*.zip* s3://dist.springsource.com/${dist_path}"
+          echo "aws s3 sync cp spring-tool-suite-4*.zip* s3://dist.springsource.com/${dist_path}"
           ls spring-tool-suite-4*.jar*
-          echo "aws s3 sync rm spring-tool-suite-4*.jar* s3://dist.springsource.com/snapshot/STS4/nightly/dist/${distro_target}"
-          echo "aws s3 sync cp spring-tool-suite-4*.jar* s3://dist.springsource.com/snapshot/STS4/nightly/dist/${distro_target}"
+          echo "aws s3 sync rm spring-tool-suite-4*.jar* s3://dist.springsource.com/${dist_path}"
+          echo "aws s3 sync cp spring-tool-suite-4*.jar* s3://dist.springsource.com/${dist_path}"
