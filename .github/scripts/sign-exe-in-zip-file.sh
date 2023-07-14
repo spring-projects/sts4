@@ -1,6 +1,8 @@
 set -e
 
 file=$1
+sign_script=$2
+self_extr_jar=$3
 filename="$(basename -- $file)"
 
 workdir=`pwd`
@@ -15,13 +17,13 @@ echo "Successfully extracted ${filename}"
 sts_folder=`find ./${destination_folder_name} -maxdepth 1 -type d -name 'sts-*' -print -quit`
 echo "Found STS distro folder: ${sts_folder}"
 echo "About to sign win exe file: ${sts_folder}/SpringToolSuite4.exe"
-${workdir}/.github/scripts/sign-exe.sh ${sts_folder}/SpringToolSuite4.exe ${sts_folder}/SpringToolSuite4.exe
+$sign_script ${sts_folder}/SpringToolSuite4.exe ${sts_folder}/SpringToolSuite4.exe
 echo "Adding to zip contents of a folder ${destination_folder_name}"
 cd ${destination_folder_name}
 zip -r -q ../$file .
 cd ..
 echo "Successfully zipped ${destination_folder_name} into ${file}"
-java -jar ${workdir}/.github/scripts/self-extracting-jar-creator.jar $file
+java -jar $self_extr_jar $file
 echo "Remove temporary ${destination_folder_name}"
 rm -rf ./${destination_folder_name}
 

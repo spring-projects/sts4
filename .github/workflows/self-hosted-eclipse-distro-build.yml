@@ -28,6 +28,7 @@ jobs:
         with:
           ref: ${{ inputs.ref }}
           sparse-checkout: |
+            .github
             eclipse-distribution
             eclipse-extensions
       - name: Set up JDK 17
@@ -61,6 +62,32 @@ jobs:
           AC_PASSWORD: ${{ secrets.AC_PASSWORD }}
           APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
-          ls
           cd eclipse-distribution
           ./mvnw --batch-mode -U clean deploy -P${{ inputs.eclipse_profile }} -P${{ inputs.build_type }} -Pgitactions -Pgpg.sign -Dsigning.skip=true -Dmaven.repo.local=~/.m2/repository-signed -Dhttpclient.retry-max=20 -Dmaven.test.skip=true -Declipse.p2.mirrors=false -Dtycho.localArtifacts=ignore -Ds3service.https-only=true -Dp2.replaceQualifier=true -Dorg.eclipse.ecf.provider.filetransfer.httpclient.retrieve.readTimeout=1200000 -Dorg.eclipse.equinox.p2.transport.ecf.retry=5 -Dskip.eclipserun.proxies=false -Dskip.osx.signing=false  -Dskip.win.signing=false -Dskip.osx.notarizing=false -Dtycho.equinox.resolver.uses=true
+      - name: Sign EXE within zip files
+        id: sign
+        env:
+          SSH_KEY: ~/.ssh/id_rsa
+          SSH_USER: signer
+        run: |
+          cd eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target/products
+          files=`ls spring-tool-suite-4*win*.zip`
+          for file in $files
+          do
+            ${{ github.workspace }}/.github/scripts/sign-exe-in-zip-file.sh $file ${{ github.workspace }}/.github/scripts/sign-exe.sh ${{ github.workspace }}/.github/scripts/self-extracting-jar-creator.jar
+          done
+      - name: Update S3
+        id: update-s3
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.TOOLS_S3_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.TOOLS_S3_SECRET_KEY  }}
+        run: |
+          dist_path=`cat ./eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target/s3-dist-path.txt`
+          cd eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target/products
+          echo "Processing S3 update..."
+          ls spring-tool-suite-4*win*.zip*
+          ls spring-tool-suite-4*win*.self-extracting.jar*
+          echo "Removing old win zip and self extracting jar files from s3..."
+          aws s3 rm s3://dist.springsource.com/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --include "spring-tool-suite-4*win*.self-extracting.jar* --exclude "*/*""
+          echo "Uploading new win zip and self extracting jar files to s3..."
+          aws s3 cp . s3://dist.springsource.com/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --include "spring-tool-suite-4*win*.self-extracting.jar*" --exclude "*/*" --acl public-read --no-progress        

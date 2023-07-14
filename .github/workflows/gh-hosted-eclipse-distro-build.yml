@@ -112,11 +112,10 @@ jobs:
           SSH_KEY: ~/.ssh/id_rsa
           SSH_USER: signer
         run: |
-          workdir=`pwd`
-          files=`ls *.zip`
+          files=`ls spring-tool-suite-4*win*.zip`
           for file in $files
           do
-            ./.github/scripts/sign-exe-in-zip-file.sh $file
+            ${{ github.workspace }}/.github/scripts/sign-exe-in-zip-file.sh $file ${{ github.workspace }}/.github/scripts/sign-exe.sh ${{ github.workspace }}/.github/scripts/self-extracting-jar-creator.jar
           done
       - uses: actions/download-artifact@cbed621e49e4c01b044d60f6c80ea4ed6328b281
         with:
