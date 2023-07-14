@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2020 Pivotal, Inc.
+ * Copyright (c) 2020, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.eclipse.boot.dash.docker.runtarget;
 
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -21,6 +22,7 @@ import org.springsource.ide.eclipse.commons.livexp.core.AbstractDisposable;
 import org.springsource.ide.eclipse.commons.livexp.core.LiveCounter;
 import org.springsource.ide.eclipse.commons.livexp.core.OnDispose;
 import org.springsource.ide.eclipse.commons.livexp.util.Log;
+import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.CustomClassLoaderConstructor;
 
@@ -73,7 +75,18 @@ public class DockerDeployments extends AbstractDisposable {
 	}
 
 	private Yaml yaml() {
-		return new Yaml(new CustomClassLoaderConstructor(DockerDeploymentList.class, DockerDeployments.class.getClassLoader()));
+		// e429 is based on snakeyaml 2.0 which has a non-backward compatible change in CustomClassLoaderConstructor cosntrcutors
+		try {
+			CustomClassLoaderConstructor cclc = CustomClassLoaderConstructor.class.getConstructor(Class.class, ClassLoader.class).newInstance(DockerDeploymentList.class, DockerDeployments.class.getClassLoader());
+			return new Yaml(cclc);
+		} catch (Exception e) {
+			try {
+				CustomClassLoaderConstructor cclc = CustomClassLoaderConstructor.class.getConstructor(Class.class, ClassLoader.class, LoaderOptions.class).newInstance(DockerDeploymentList.class, DockerDeployments.class.getClassLoader(), new LoaderOptions());
+				return new Yaml(cclc);
+			} catch (Exception e1) {
+				throw new IllegalStateException(e1);
+			}
+		}
 	}
 	
 	public void createOrUpdate(DockerDeployment deployment) {

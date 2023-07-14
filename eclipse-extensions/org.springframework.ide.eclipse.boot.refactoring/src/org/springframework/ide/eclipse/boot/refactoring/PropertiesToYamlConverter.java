@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Spring IDE Developers
+ * Copyright (c) 2017, 2023 Spring IDE Developers
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -24,6 +24,7 @@ import org.springframework.ide.eclipse.editor.support.yaml.path.YamlPath;
 import org.springframework.ide.eclipse.editor.support.yaml.path.YamlPathSegment;
 import org.springframework.ide.eclipse.editor.support.yaml.path.YamlPathSegment.AtIndex;
 import org.yaml.snakeyaml.DumperOptions;
+import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
 import org.yaml.snakeyaml.representer.Representer;
@@ -161,7 +162,7 @@ public class PropertiesToYamlConverter {
 		options.setDefaultFlowStyle(DumperOptions.FlowStyle.BLOCK);
 		options.setPrettyFlow(true);
 
-		Yaml yaml = new Yaml(new SafeConstructor(), new Representer(options), options);
+		Yaml yaml = new Yaml(new SafeConstructor(new LoaderOptions()), new Representer(options), options);
 		this.output = yaml.dump(object);
 	}
 

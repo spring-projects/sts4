@@ -21,9 +21,11 @@
  *******************************************************************************/
 package org.springframework.ide.eclipse.boot.wizard.starters.eclipse;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -466,7 +468,29 @@ public class ResourceCompareInput extends CompareEditorInput {
 		}
 
 		byte[] initialContent() throws CoreException {
-			return Utilities.readBytes(createStream());
+			InputStream in = createStream();
+			ByteArrayOutputStream bos= new ByteArrayOutputStream();
+			try {
+				while (true) {
+					int c= in.read();
+					if (c == -1)
+						break;
+					bos.write(c);
+				}
+
+			} catch (IOException ex) {
+				return null;
+
+			} finally {
+				Utilities.close(in);
+				try {
+					bos.close();
+				} catch (IOException x) {
+					// silently ignored
+				}
+			}
+
+			return bos.toByteArray();
 		}
 
 		@Override

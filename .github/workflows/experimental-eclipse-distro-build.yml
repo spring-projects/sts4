@@ -125,9 +125,11 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.TOOLS_S3_SECRET_KEY  }}
         run: |
           dist_path=`cat s3-dist-path.txt`
-          ls spring-tool-suite-4*.zip*  
-          aws s3 sync rm spring-tool-suite-4*.zip* s3://dist.springsource.com/${dist_path}
-          aws s3 sync cp spring-tool-suite-4*.zip* s3://dist.springsource.com/${dist_path}
-          ls spring-tool-suite-4*.jar*
-          aws s3 sync rm spring-tool-suite-4*.jar* s3://dist.springsource.com/${dist_path}
-          aws s3 sync cp spring-tool-suite-4*.jar* s3://dist.springsource.com/${dist_path}
+          
+          ls spring-tool-suite-4*win*.zip*
+          aws s3 sync rm s3://dist.springsource.com/${dist_path} --exclude "*" --include "spring-tool-suite-4*win*.zip*"
+          aws s3 sync cp s3://dist.springsource.com/${dist_path} . --exclude "*" --include "spring-tool-suite-4*win*.zip*"
+          
+          ls spring-tool-suite-4*win*.jar*
+          aws s3 sync rm s3://dist.springsource.com/${dist_path} --exclude "*" --include "spring-tool-suite-4*win*.jar*" 
+          aws s3 sync cp s3://dist.springsource.com/${dist_path} . --exclude "*" --include "spring-tool-suite-4*win*.jar*"
