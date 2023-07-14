@@ -128,21 +128,10 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.TOOLS_S3_SECRET_KEY  }}
         run: |
           dist_path=`cat s3-dist-path.txt`
-          
-          echo "S3 contents:"
-          aws s3 ls s3://dist.springsource.com/${dist_path}
-          
           echo "Processing S3 update..."
-          
           ls spring-tool-suite-4*win*.zip*
           ls spring-tool-suite-4*win*.self-extracting.jar*
           echo "Removing old win zip and self extracting jar files from s3..."
-          aws s3 rm s3://dist.springsource.com/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --include "spring-tool-suite-4*win*.self-extracting.jar*"
+          aws s3 rm s3://dist.springsource.com/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --include "spring-tool-suite-4*win*.self-extracting.jar* --exclude "*/*""
           echo "Uploading new win zip and self extracting jar files to s3..."
-          aws s3 cp . s3://dist.springsource.com/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --include "spring-tool-suite-4*win*.self-extracting.jar*" --acl public-read
-          
-#          ls spring-tool-suite-4*win*.jar*
-#          echo "Removing old self extractable win jar files from s3..."
-#          aws s3 rm s3://dist.springsource.com/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*win*.jar*"
-#          echo "Uploading new self extractable win jar files to s3..."
-#          aws s3 cp s3://dist.springsource.com/${dist_path} . --recursive --exclude "*" --include "spring-tool-suite-4*win*.jar*" --acl public-read
+          aws s3 cp . s3://dist.springsource.com/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --include "spring-tool-suite-4*win*.self-extracting.jar*" --exclude "*/*" --acl public-read --no-progress true        
