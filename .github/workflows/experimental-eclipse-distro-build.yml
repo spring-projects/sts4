@@ -127,9 +127,9 @@ jobs:
           dist_path=`cat s3-dist-path.txt`
           
           ls spring-tool-suite-4*win*.zip*
-          aws s3 sync rm s3://dist.springsource.com/${dist_path} --exclude "*" --include "spring-tool-suite-4*win*.zip*"
-          aws s3 sync cp s3://dist.springsource.com/${dist_path} . --exclude "*" --include "spring-tool-suite-4*win*.zip*"
+          aws s3 rm s3://dist.springsource.com/${dist_path} --exclude "*" --include "spring-tool-suite-4*win*.zip*"
+          aws s3 cp s3://dist.springsource.com/${dist_path} . --exclude "*" --include "spring-tool-suite-4*win*.zip*"
           
           ls spring-tool-suite-4*win*.jar*
-          aws s3 sync rm s3://dist.springsource.com/${dist_path} --exclude "*" --include "spring-tool-suite-4*win*.jar*" 
-          aws s3 sync cp s3://dist.springsource.com/${dist_path} . --exclude "*" --include "spring-tool-suite-4*win*.jar*"
+          aws s3 rm s3://dist.springsource.com/${dist_path} --exclude "*" --include "spring-tool-suite-4*win*.jar*" 
+          aws s3 cp s3://dist.springsource.com/${dist_path} . --exclude "*" --include "spring-tool-suite-4*win*.jar*"
