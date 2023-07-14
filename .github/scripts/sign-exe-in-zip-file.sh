@@ -22,4 +22,7 @@ filename_no_ext="${filename%.*}"
 echo "Creating checksums sha-256 and md5"
 shasum -a 256 $file > ${file}.sha256
 md5 $file > ${file}.md5
+self_jar_file=${file::-4}.self-extracting.jar
+shasum -a 256 $self_jar_file > ${self_jar_file}.sha256
+md5 $self_jar_file > ${self_jar_file}.md5
 
