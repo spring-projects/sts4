@@ -673,21 +673,6 @@
 					</execution>
 
 					<execution>
-						<id>generate-s3-upload-info</id>
-						<phase>verify</phase>
-						<configuration>
-							<target>
-								<echo file="${project.build.directory}/s3-dist-path.txt">
-									${dist.path.product}
-								</echo>
-							</target>
-						</configuration>
-						<goals>
-							<goal>run</goal>
-						</goals>
-					</execution>
-
-					<execution>
 						<id>upload-nightly-downloads</id>
 						<phase>deploy</phase>
 						<configuration>
@@ -696,11 +681,26 @@
 								<taskdef resource="net/sf/antcontrib/antcontrib.properties" />
 								<taskdef resource="org/springframework/build/aws/ant/antlib.xml" />
 
-                                <s3 accessKey="${dist.accessKey}" secretKey="${dist.secretKey}">
-                                    <upload bucketName="${dist.bucket}" file="${project.build.directory}/../../common/html/sts4-nightly-${dist.target.major}.html"
-    	                                toFile="snapshot/STS4/sts4-nightly-${dist.target.major}.html" publicRead="true">
-	                                </upload>
-                                </s3>
+								<s3 accessKey="${dist.accessKey}" secretKey="${dist.secretKey}">
+									<upload bucketName="${dist.bucket}" file="${project.build.directory}/../../common/html/sts4-nightly-${dist.target.major}.html"
+											toFile="snapshot/STS4/sts4-nightly-${dist.target.major}.html" publicRead="true">
+									</upload>
+								</s3>
+							</target>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+
+					<execution>
+						<id>generate-s3-upload-info</id>
+						<phase>verify</phase>
+						<configuration>
+							<target>
+								<echo file="${project.build.directory}/s3-dist-path.txt">
+									${dist.path.product}
+								</echo>
 							</target>
 						</configuration>
 						<goals>
