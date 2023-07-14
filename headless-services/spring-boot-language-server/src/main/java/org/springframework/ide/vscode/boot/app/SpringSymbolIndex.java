@@ -723,7 +723,10 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 		CompletableFuture<Void> latestTask = this.latestScheduledTaskByProject.get(projectName);
 
 		if (latestTask != null) {
-			return latestTask.thenApply((e) -> Arrays.asList(springIndex.getBeansOfProject(projectName)));
+			return latestTask.thenApply((e) -> {
+				Bean[] beansOfProject = springIndex.getBeansOfProject(projectName);
+				return beansOfProject != null ? Arrays.asList(beansOfProject) : Collections.emptyList();
+			});
 		}
 		else {
 			return CompletableFuture.completedFuture(null);
@@ -738,7 +741,10 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 		CompletableFuture<Void> latestTask = this.latestScheduledTaskByProject.get(projectName);
 
 		if (latestTask != null) {
-			return latestTask.thenApply((e) -> Arrays.asList(springIndex.getMatchingBeans(projectName, matchType)));
+			return latestTask.thenApply((e) -> {
+				Bean[] matchingBeans = springIndex.getMatchingBeans(projectName, matchType);
+				return matchingBeans != null ? Arrays.asList(matchingBeans) : Collections.emptyList();
+			});
 		}
 		else {
 			return CompletableFuture.completedFuture(null);
