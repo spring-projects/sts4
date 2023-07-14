@@ -14,5 +14,4 @@ jobs:
     with:
       eclipse_profile: 'e429'
       build_type: 'snapshot'
-      ref: 'main'
     secrets: inherit

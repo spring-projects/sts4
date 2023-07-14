@@ -126,8 +126,8 @@ jobs:
         run: |
           dist_path=`cat s3-dist-path.txt`
           ls spring-tool-suite-4*.zip*  
-          echo "aws s3 sync rm spring-tool-suite-4*.zip* s3://dist.springsource.com/${dist_path}"
-          echo "aws s3 sync cp spring-tool-suite-4*.zip* s3://dist.springsource.com/${dist_path}"
+          aws s3 sync rm spring-tool-suite-4*.zip* s3://dist.springsource.com/${dist_path}
+          aws s3 sync cp spring-tool-suite-4*.zip* s3://dist.springsource.com/${dist_path}
           ls spring-tool-suite-4*.jar*
-          echo "aws s3 sync rm spring-tool-suite-4*.jar* s3://dist.springsource.com/${dist_path}"
-          echo "aws s3 sync cp spring-tool-suite-4*.jar* s3://dist.springsource.com/${dist_path}"
+          aws s3 sync rm spring-tool-suite-4*.jar* s3://dist.springsource.com/${dist_path}
+          aws s3 sync cp spring-tool-suite-4*.jar* s3://dist.springsource.com/${dist_path}
