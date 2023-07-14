@@ -20,6 +20,6 @@ java -jar ${workdir}/.github/scripts/self-extracting-jar-creator.jar $file
 
 filename_no_ext="${filename%.*}"
 echo "Creating checksums sha-256 and md5"
-sha256sum $file > ${file}.sha256
-md5sum $file > ${file}.md5
+shasum -a 256 $file > ${file}.sha256
+md5 $file > ${file}.md5
 
