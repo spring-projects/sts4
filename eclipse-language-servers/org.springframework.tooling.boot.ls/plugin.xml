@@ -10,7 +10,7 @@
             id="org.eclipse.languageserver.languages.springboot"
             label="Spring Boot Language Server"
             lastDocumentDisconnectedTimeout="2147483647"
-            serverInterface="org.springframework.ide.vscode.commons.protocol.spring.SpringModelLanguageServer"
+            serverInterface="org.springframework.ide.vscode.commons.protocol.spring.SpringIndexLanguageServer"
             singleton="true">
       </server>
 
