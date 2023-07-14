@@ -101,8 +101,6 @@ jobs:
       - name: Sign EXE within zip files
         id: sign
         env:
-          tools_s3_access_key: ${{ secrets.TOOLS_S3_ACCESS_KEY }}
-          tools_s3_secret_key: ${{ secrets.TOOLS_S3_SECRET_KEY  }}
           SSH_KEY: ~/.ssh/id_rsa
           SSH_USER: signer
         run: |
@@ -112,3 +110,17 @@ jobs:
           do
             ./.github/scripts/sign-exe-in-zip-file.sh $file
           done
+      - name: Update S3
+        id: update-s3
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.TOOLS_S3_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.TOOLS_S3_SECRET_KEY  }}
+        run: |
+          distro_target=${{ inputs.eclipse_profile }}
+          distro_target="${distro_target:0:2}.${distro_target:2}
+          ls spring-tool-suite-4*.zip*
+          echo "aws s3 sync rm spring-tool-suite-4*.zip* s3://dist.springsource.com/snapshot/STS4/nightly/dist/${distro_target}"
+          echo "aws s3 sync cp spring-tool-suite-4*.zip* s3://dist.springsource.com/snapshot/STS4/nightly/dist/${distro_target}"
+          ls spring-tool-suite-4*.jar*
+          echo "aws s3 sync rm spring-tool-suite-4*.jar* s3://dist.springsource.com/snapshot/STS4/nightly/dist/${distro_target}"
+          echo "aws s3 sync cp spring-tool-suite-4*.jar* s3://dist.springsource.com/snapshot/STS4/nightly/dist/${distro_target}"
