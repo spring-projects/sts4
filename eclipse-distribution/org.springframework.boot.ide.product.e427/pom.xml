@@ -516,19 +516,63 @@
 								<property name="dmgName" value="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-macosx.cocoa.x86_64.dmg" />
 								<property name="dmgName-aarch64" value="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-macosx.cocoa.aarch64.dmg" />
 
+								<exec executable="xcrun" failonerror="true">
+									<arg value="notarytool" />
+									<arg value="store-credentials" />
+									<arg value="notarize-app-dmg-profile" />
+									<arg value="--apple-id" />
+									<arg value="${env.AC_USERNAME}" />
+									<arg value="--team-id" />
+									<arg value="${env.APPLE_TEAM_ID}" />
+									<arg value="--password" />
+									<arg value="${env.AC_PASSWORD}" />
+								</exec>
+
 								<parallel failonany="true">
-
-									<exec executable="${project.build.directory}/../macos-notarize.sh" failonerror="true">
+									<exec executable="xcrun" failonerror="true">
+										<arg value="notarytool" />
+										<arg value="submit" />
 										<arg value="${dmgName}" />
-										<arg value="${env.MACOS_NOTARIZATION_SERVICE_URL}" />
+										<arg value="--keychain-profile" />
+										<arg value="notarize-app-dmg-profile" />
+										<arg value="--wait" />
 									</exec>
-
-									<exec executable="${project.build.directory}/../macos-notarize.sh" failonerror="true">
+									<exec executable="xcrun" failonerror="true">
+										<arg value="notarytool" />
+										<arg value="submit" />
 										<arg value="${dmgName-aarch64}" />
-										<arg value="${env.MACOS_NOTARIZATION_SERVICE_URL}" />
+										<arg value="--keychain-profile" />
+										<arg value="notarize-app-dmg-profile" />
+										<arg value="--wait" />
 									</exec>
-
 								</parallel>
+
+								<parallel failonany="true">
+									<exec executable="xcrun" failonerror="true">
+										<arg value="stapler" />
+										<arg value="staple" />
+										<arg value="${dmgName}" />
+									</exec>
+									<exec executable="xcrun" failonerror="true">
+										<arg value="stapler" />
+										<arg value="staple" />
+										<arg value="${dmgName-aarch64}" />
+									</exec>
+								</parallel>
+
+<!--								<parallel failonany="true">-->
+
+<!--									<exec executable="${project.build.directory}/../macos-notarize.sh" failonerror="true">-->
+<!--										<arg value="${dmgName}" />-->
+<!--										<arg value="${env.MACOS_NOTARIZATION_SERVICE_URL}" />-->
+<!--									</exec>-->
+
+<!--									<exec executable="${project.build.directory}/../macos-notarize.sh" failonerror="true">-->
+<!--										<arg value="${dmgName-aarch64}" />-->
+<!--										<arg value="${env.MACOS_NOTARIZATION_SERVICE_URL}" />-->
+<!--									</exec>-->
+
+<!--								</parallel>-->
 
 							</target>
 						</configuration>
@@ -611,7 +655,7 @@
 
 					<execution>
 						<id>update-nightly-downloads</id>
-						<phase>deploy</phase>
+						<phase>verify</phase>
 						<configuration>
 							<skip>${skip.update-nightly-download-page}</skip>
 							<target>
@@ -619,16 +663,47 @@
 								<taskdef resource="org/springframework/build/aws/ant/antlib.xml" />
 
 								<copy file="${project.build.directory}/../../common/html/nightly-generic-snippet-incl-apple-m1.html" tofile="${project.build.directory}/../../common/html/sts4-nightly-${dist.target.major}.html" overwrite="true"/>
-		
+
 								<replace file="${project.build.directory}/../../common/html/sts4-nightly-${dist.target.major}.html" token="@QUALIFIER@" value="${unqualifiedVersion}.${p2.qualifier}" summary="yes" />
 								<replace file="${project.build.directory}/../../common/html/sts4-nightly-${dist.target.major}.html" token="@TARGET@" value="${dist.target}" summary="yes" />
 								<replace file="${project.build.directory}/../../common/html/sts4-nightly-${dist.target.major}.html" token="@MAJOR-TARGET@" value="${dist.target.major}" summary="yes" />
 
+							</target>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+
+					<execution>
+						<id>upload-nightly-downloads</id>
+						<phase>deploy</phase>
+						<configuration>
+							<skip>${skip.update-nightly-download-page}</skip>
+							<target>
+								<taskdef resource="net/sf/antcontrib/antcontrib.properties" />
+								<taskdef resource="org/springframework/build/aws/ant/antlib.xml" />
+
 								<s3 accessKey="${dist.accessKey}" secretKey="${dist.secretKey}">
 									<upload bucketName="${dist.bucket}" file="${project.build.directory}/../../common/html/sts4-nightly-${dist.target.major}.html"
-										toFile="snapshot/STS4/sts4-nightly-${dist.target.major}.html" publicRead="true">
+											toFile="snapshot/STS4/sts4-nightly-${dist.target.major}.html" publicRead="true">
 									</upload>
 								</s3>
+							</target>
+						</configuration>
+						<goals>
+							<goal>run</goal>
+						</goals>
+					</execution>
+
+					<execution>
+						<id>generate-s3-upload-info</id>
+						<phase>verify</phase>
+						<configuration>
+							<target>
+								<echo file="${project.build.directory}/s3-dist-path.txt">
+									${dist.path.product}
+								</echo>
 							</target>
 						</configuration>
 						<goals>

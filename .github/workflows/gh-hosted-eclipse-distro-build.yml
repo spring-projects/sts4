@@ -27,6 +27,9 @@ jobs:
       - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
         with:
           ref: ${{ inputs.ref }}
+          sparse-checkout: |
+            eclipse-distribution
+            eclipse-extensions
       - name: Set up JDK 17
         uses: actions/setup-java@5ffc13f4174014e2d4d4572b3d74c3fa61aeb2c2
         with:
@@ -127,9 +130,9 @@ jobs:
           dist_path=`cat s3-dist-path.txt`
           
           ls spring-tool-suite-4*win*.zip*
-          aws s3 rm s3://dist.springsource.com/${dist_path} --exclude "*" --include "spring-tool-suite-4*win*.zip*"
-          aws s3 cp s3://dist.springsource.com/${dist_path} . --exclude "*" --include "spring-tool-suite-4*win*.zip*"
+          aws s3 rm s3://dist.springsource.com/${dist_path}/ --exclude "*" --include "spring-tool-suite-4*win*.zip*"
+          aws s3 cp s3://dist.springsource.com/${dist_path}/ . --exclude "*" --include "spring-tool-suite-4*win*.zip*" --acl public-read
           
           ls spring-tool-suite-4*win*.jar*
-          aws s3 rm s3://dist.springsource.com/${dist_path} --exclude "*" --include "spring-tool-suite-4*win*.jar*" 
-          aws s3 cp s3://dist.springsource.com/${dist_path} . --exclude "*" --include "spring-tool-suite-4*win*.jar*"
+          aws s3 rm s3://dist.springsource.com/${dist_path}/ --exclude "*" --include "spring-tool-suite-4*win*.jar*"
+          aws s3 cp s3://dist.springsource.com/${dist_path}/ . --exclude "*" --include "spring-tool-suite-4*win*.jar*" --acl public-read

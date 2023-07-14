@@ -5,12 +5,17 @@ concurrency:
   cancel-in-progress: true
 
 on:
+  workflow_run:
+    workflows: ["Eclipse LS Extensions Snapshot Build"]
+    types: [completed]
+    branches:
+      - "main"
   workflow_dispatch:
 
 jobs:
   e429-distro:
 #    if: ${{ github.event.workflow_run.conclusion == 'success' }}
-    uses: ./.github/workflows/eclipse-distro-build.yml
+    uses: ./.github/workflows/self-hosted-eclipse-distro-build.yml
     with:
       eclipse_profile: 'e429'
       build_type: 'snapshot'
