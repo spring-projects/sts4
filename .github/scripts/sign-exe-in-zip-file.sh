@@ -17,6 +17,8 @@ echo "Adding to zip contents of a folder ${destination_folder_name}"
 zip -r -q $file ./${destination_folder_name}
 echo "Successfully zipped ${destination_folder_name} into ${file}"
 java -jar ${workdir}/.github/scripts/self-extracting-jar-creator.jar $file
+echo "Remove temporary ${destination_folder_name}"
+rm -rf ./${destination_folder_name}
 
 echo "Creating checksums sha-256 and md5 for ${file}"
 shasum -a 256 $file > ${file}.sha256
