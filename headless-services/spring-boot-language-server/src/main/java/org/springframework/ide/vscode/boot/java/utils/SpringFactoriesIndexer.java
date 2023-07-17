@@ -155,7 +155,7 @@ public class SpringFactoriesIndexer implements SpringIndexer {
 					}
 				})
 				.collect(Collectors.joining(","));
-		return new IndexCacheKey(project.getElementName() + "-factories-", DigestUtils.md5Hex(filesIndentifier).toUpperCase());
+		return new IndexCacheKey(project.getElementName(), "factories", "", DigestUtils.md5Hex(filesIndentifier).toUpperCase());
 	}
 
 

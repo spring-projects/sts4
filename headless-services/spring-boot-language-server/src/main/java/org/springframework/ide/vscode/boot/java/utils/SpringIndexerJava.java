@@ -656,7 +656,7 @@ public class SpringIndexerJava implements SpringIndexer {
 				.map(file -> file.getAbsolutePath() + "#" + file.lastModified())
 				.collect(Collectors.joining(","));
 
-		return new IndexCacheKey(project.getElementName() + "-java-" + elementType + "-", DigestUtils.md5Hex(GENERATION + "-" + classpathIdentifier).toUpperCase());
+		return new IndexCacheKey(project.getElementName(), "java", elementType, DigestUtils.md5Hex(GENERATION + "-" + classpathIdentifier).toUpperCase());
 	}
 
 	public void setScanTestJavaSources(boolean scanTestJavaSources) {

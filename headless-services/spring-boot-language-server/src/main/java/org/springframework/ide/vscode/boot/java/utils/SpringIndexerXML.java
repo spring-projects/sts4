@@ -306,7 +306,7 @@ public class SpringIndexerXML implements SpringIndexer {
 				.map(file -> file.getAbsolutePath() + "#" + file.lastModified())
 				.collect(Collectors.joining(","));
 
-		return new IndexCacheKey(project.getElementName() + "-xml-" + elementType + "-", DigestUtils.md5Hex(classpathIdentifier).toUpperCase());
+		return new IndexCacheKey(project.getElementName(), "xml", elementType, DigestUtils.md5Hex(classpathIdentifier).toUpperCase());
 	}
 	
 	private void clearIndex() {

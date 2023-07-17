@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.boot.index.cache.test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.ide.vscode.boot.index.cache.IndexCacheKey;
@@ -23,56 +24,90 @@ public class IndexCacheKeyTest {
 
     @Test
     void testCacheKey() {
-        IndexCacheKey key = new IndexCacheKey("primary", "version");
+        IndexCacheKey key = new IndexCacheKey("project", "indexer", "category", "version");
+        IndexCacheKey keyEquals = new IndexCacheKey("project", "indexer", "category", "version");
+        IndexCacheKey keyNotEquals = new IndexCacheKey("project", "indexer2", "category2", "version");
 
-        assertEquals("primary", key.getPrimaryIdentifier());
+        assertEquals("project", key.getProject());
+        assertEquals("indexer", key.getIndexer());
+        assertEquals("category", key.getCategory());
         assertEquals("version", key.getVersion());
-        assertEquals("primary-version", key.toString());
+        assertEquals("project-indexer-category-version", key.toString());
+        
+        assertEquals(key, keyEquals);
+        assertEquals(key.hashCode(), keyEquals.hashCode());
+        
+        assertNotEquals(key, keyNotEquals);
+        assertNotEquals(key.hashCode(), keyNotEquals.hashCode());
     }
 
     @Test
     void testCacheKeyParsingFromFileName() {
-        IndexCacheKey key = IndexCacheKey.parse("primary-version.json");
-        assertEquals("primary", key.getPrimaryIdentifier());
+        IndexCacheKey key = IndexCacheKey.parse("project-indexer-category-version.json");
+        assertEquals("project", key.getProject());
+        assertEquals("indexer", key.getIndexer());
+        assertEquals("category", key.getCategory());
         assertEquals("version", key.getVersion());
 
-        key = IndexCacheKey.parse("primary-name-with-separator-123ABC.json");
-        assertEquals("primary-name-with-separator", key.getPrimaryIdentifier());
+        key = IndexCacheKey.parse("project-name-with-separator-indexer-category-123ABC.json");
+        assertEquals("project-name-with-separator", key.getProject());
+        assertEquals("indexer", key.getIndexer());
+        assertEquals("category", key.getCategory());
         assertEquals("123ABC", key.getVersion());
     }
 
     @Test
     void testCacheKeyParsingWithoutFileExtension() {
-        IndexCacheKey key = IndexCacheKey.parse("primary-version");
-        assertEquals("primary", key.getPrimaryIdentifier());
+        IndexCacheKey key = IndexCacheKey.parse("primary-indexer-category-version");
+        assertEquals("primary", key.getProject());
+        assertEquals("indexer", key.getIndexer());
+        assertEquals("category", key.getCategory());
         assertEquals("version", key.getVersion());
 
-        key = IndexCacheKey.parse("primary-name-with-separator-123ABC");
-        assertEquals("primary-name-with-separator", key.getPrimaryIdentifier());
+        key = IndexCacheKey.parse("project-name-with-separator-indexer-category-123ABC");
+        assertEquals("project-name-with-separator", key.getProject());
+        assertEquals("indexer", key.getIndexer());
+        assertEquals("category", key.getCategory());
         assertEquals("123ABC", key.getVersion());
     }
 
     @Test
-    void testCacheKeyEquals() {
-        IndexCacheKey key1 = new IndexCacheKey("primary", "1");
-        IndexCacheKey key2 = new IndexCacheKey("primary", "1");
+    void testCacheKeyParsingFromOldReleases() {
+        IndexCacheKey key = IndexCacheKey.parse("project-with-separator-indexer--version");
+        assertEquals("project-with-separator", key.getProject());
+        assertEquals("indexer", key.getIndexer());
+        assertEquals("", key.getCategory());
+        assertEquals("version", key.getVersion());
 
-        IndexCacheKey key3 = new IndexCacheKey("primary", "2");
-        IndexCacheKey key4 = new IndexCacheKey("secondary", "1");
+        key = IndexCacheKey.parse("project-with-separator-indexer--version.json");
+        assertEquals("project-with-separator", key.getProject());
+        assertEquals("indexer", key.getIndexer());
+        assertEquals("", key.getCategory());
+        assertEquals("version", key.getVersion());
+    }
+    
+    @Test
+    void testBrokenCacheFileNames() {
+        IndexCacheKey key = IndexCacheKey.parse("version.json");
+        assertEquals("", key.getProject());
+        assertEquals("", key.getIndexer());
+        assertEquals("", key.getCategory());
+        assertEquals("version", key.getVersion());
 
-        assertEquals(key1, key1);
-        assertEquals(key2, key2);
-        assertEquals(key3, key3);
-        assertEquals(key4, key4);
+        key = IndexCacheKey.parse("category-123ABC.json");
+        assertEquals("", key.getProject());
+        assertEquals("", key.getIndexer());
+        assertEquals("category", key.getCategory());
+        assertEquals("123ABC", key.getVersion());
+    	
+        key = IndexCacheKey.parse("indexer-category-123ABC.json");
+        assertEquals("", key.getProject());
+        assertEquals("indexer", key.getIndexer());
+        assertEquals("category", key.getCategory());
+        assertEquals("123ABC", key.getVersion());
 
-        assertEquals(key1, key2);
-
-        assertNotEquals(key1, key3);
-        assertNotEquals(key2, key3);
-        assertNotEquals(key3, key4);
-        assertNotEquals(key1, key4);
-        assertNotEquals(key4, key1);
-        assertNotEquals(key4, key2);
+        key = IndexCacheKey.parse(".json");
+        assertNull(key);
     }
 
 }

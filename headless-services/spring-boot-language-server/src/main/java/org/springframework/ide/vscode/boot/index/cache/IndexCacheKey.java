@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.index.cache;
 
+import java.util.Objects;
+
 /**
  * @author Martin Lippert
  */
@@ -17,16 +19,28 @@ public class IndexCacheKey {
 
 	private static final String SEPARATOR = "-";
 
-	private final String primaryIdentifier;
+	private final String project;
+	private final String indexer;
+	private final String category;
 	private final String version;
 
-	public IndexCacheKey(String primaryIdentifier, String version) {
-		this.primaryIdentifier = primaryIdentifier;
+	public IndexCacheKey(String project, String indexer, String category, String version) {
+		this.project = project;
+		this.indexer = indexer;
+		this.category = category;
 		this.version = version;
 	}
 
-	public String getPrimaryIdentifier() {
-		return primaryIdentifier;
+	public String getProject() {
+		return project;
+	}
+	
+	public String getIndexer() {
+		return indexer;
+	}
+	
+	public String getCategory() {
+		return category;
 	}
 
 	public String getVersion() {
@@ -35,16 +49,12 @@ public class IndexCacheKey {
 
 	@Override
 	public String toString() {
-		return primaryIdentifier + SEPARATOR + version;
+		return project + SEPARATOR + indexer + SEPARATOR + category + SEPARATOR + version;
 	}
 
 	@Override
 	public int hashCode() {
-		final int prime = 31;
-		int result = 1;
-		result = prime * result + ((primaryIdentifier == null) ? 0 : primaryIdentifier.hashCode());
-		result = prime * result + ((version == null) ? 0 : version.hashCode());
-		return result;
+		return Objects.hash(category, indexer, project, version);
 	}
 
 	@Override
@@ -55,27 +65,54 @@ public class IndexCacheKey {
 			return false;
 		if (getClass() != obj.getClass())
 			return false;
-
 		IndexCacheKey other = (IndexCacheKey) obj;
-		return this.toString().equals(other.toString());
+		return Objects.equals(category, other.category) && Objects.equals(indexer, other.indexer)
+				&& Objects.equals(project, other.project) && Objects.equals(version, other.version);
 	}
 
 	public static IndexCacheKey parse(String fileName) {
-		if (fileName != null && fileName.length() > 0) {
-			int separatorIndex = fileName.lastIndexOf(SEPARATOR);
-			if (separatorIndex > 0) {
-				String primary = fileName.substring(0, separatorIndex);
-				String version = fileName.substring(separatorIndex + 1);
+		if (fileName != null) {
 
-				int fileextensionIndex = version.lastIndexOf(".");
-				if (fileextensionIndex > 0) {
-					version = version.substring(0, fileextensionIndex);
-				}
-
-				return new IndexCacheKey(primary, version);
+			String name = removeFileExtension(fileName);
+			
+			if (name != null && name.length() > 0) {
+				String version = lastSegment(name);
+	
+				int endIndex = Math.max(name.length() - version.length() - 1, 0);
+				String remainingName = name.substring(0, endIndex);
+				String category = lastSegment(remainingName);
+				
+				endIndex = Math.max(remainingName.length() - category.length() - 1, 0);
+				remainingName = remainingName.substring(0, endIndex);
+				String indexer = lastSegment(remainingName);
+				
+				endIndex = Math.max(remainingName.length() - indexer.length() - 1, 0);
+				String project = remainingName.substring(0, endIndex);
+	
+				return new IndexCacheKey(project, indexer, category, version);
 			}
 		}
 		return null;
 	}
-
+	
+	private static String lastSegment(String name) {
+		int separatorIndex = name.lastIndexOf(SEPARATOR);
+		if (separatorIndex > 0) {
+			return name.substring(separatorIndex + 1);
+		}
+		else {
+			return name;
+		}
+	}
+	
+	private static String removeFileExtension(String name) {
+		int fileextensionIndex = name.lastIndexOf(".");
+		if (fileextensionIndex >= 0) {
+			return name.substring(0, fileextensionIndex);
+		}
+		else {
+			return name;
+		}
+	}
+	
 }

@@ -304,7 +304,16 @@ public class IndexCacheOnDisc implements IndexCache {
 			IndexCacheKey key = IndexCacheKey.parse(fileName);
 
 			if (key != null && !key.equals(cacheKey)
-					&& key.getPrimaryIdentifier().equals(cacheKey.getPrimaryIdentifier())) {
+					&& key.getProject().equals(cacheKey.getProject())
+					&& key.getIndexer().equals(cacheKey.getIndexer())
+					&& key.getCategory().equals(cacheKey.getCategory())) {
+				cacheFiles[i].delete();
+			}
+			// cleanup old cache files without category information (pre 4.19.1 release)
+			else if (key != null && !key.equals(cacheKey)
+					&& key.getProject().equals(cacheKey.getProject())
+					&& key.getIndexer().equals(cacheKey.getIndexer())
+					&& key.getCategory().equals("")) {
 				cacheFiles[i].delete();
 			}
 		}
