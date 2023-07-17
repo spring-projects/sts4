@@ -120,7 +120,7 @@ jobs:
       - uses: actions/download-artifact@cbed621e49e4c01b044d60f6c80ea4ed6328b281
         with:
           name: s3-dist-path-${{ github.run_id }}.${{ github.run_attempt }}
-      - name: Update S3
+      - name: Update Win zip/jar on S3
         id: update-s3
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.TOOLS_S3_ACCESS_KEY }}
