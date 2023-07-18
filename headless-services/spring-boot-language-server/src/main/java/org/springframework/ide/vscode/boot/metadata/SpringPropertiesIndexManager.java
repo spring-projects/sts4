@@ -20,6 +20,7 @@ import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndex.Builder;
 import org.springframework.ide.vscode.boot.metadata.util.Listener;
 import org.springframework.ide.vscode.boot.metadata.util.ListenerManager;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.languageserver.IndefiniteProgressTask;
 import org.springframework.ide.vscode.commons.languageserver.ProgressService;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 import org.springframework.ide.vscode.commons.util.FileObserver;
@@ -76,10 +77,9 @@ public class SpringPropertiesIndexManager extends ListenerManager<Listener<Sprin
 	private SpringPropertyIndex initIndex(IJavaProject project, ProgressService progressService) {
 		log.info("Indexing Spring Boot Properties for {}", project.getElementName());
 
-		String progressId = getProgressId();
-		if (progressService != null) {
-			progressService.progressBegin(progressId, "Indexing Spring Boot Properties", null);
-		}
+		IndefiniteProgressTask progress = progressService == null ? null
+				: progressService.createIndefiniteProgressTask(getProgressId(), "Indexing Spring Boot Properties",
+						null);
 
 		Builder builder = SpringPropertyIndex.builder(valueProviders).withClasspath(project.getClasspath());
 		if (commonPropertiesMetadata != null) {
@@ -87,8 +87,8 @@ public class SpringPropertiesIndexManager extends ListenerManager<Listener<Sprin
 		}
 		SpringPropertyIndex index = builder.build();
 
-		if (progressService != null) {
-			progressService.progressDone(progressId);
+		if (progress != null) {
+			progress.done();
 		}
 
 		log.info("Indexing Spring Boot Properties for {} DONE", project.getElementName());

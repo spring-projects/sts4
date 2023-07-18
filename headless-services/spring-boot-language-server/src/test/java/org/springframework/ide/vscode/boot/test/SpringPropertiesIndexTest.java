@@ -64,13 +64,13 @@ public class SpringPropertiesIndexTest {
         ProgressService progressService = mock(ProgressService.class);
         propertyIndexProvider.setProgressService(progressService);
         propertyIndexProvider.getIndex(doc);
-        verify(progressService, atLeastOnce()).progressBegin(any(), any(), any());
+        verify(progressService, atLeastOnce()).createIndefiniteProgressTask(any(), any(), any());
 
         // Should be cached now, so progress service should not be touched
         progressService = mock(ProgressService.class);
         propertyIndexProvider.setProgressService(progressService);
         propertyIndexProvider.getIndex(doc);
-        verify(progressService, never()).progressBegin(any(), any(), any());
+        verify(progressService, never()).createIndefiniteProgressTask(any(), any(), any());
 
         // Change POM file for the project
         harness.changeFile(new File(directory, MavenCore.POM_XML).toURI().toASCIIString());
@@ -79,7 +79,7 @@ public class SpringPropertiesIndexTest {
         progressService = mock(ProgressService.class);
         propertyIndexProvider.setProgressService(progressService);
         propertyIndexProvider.getIndex(doc);
-        verify(progressService, atLeastOnce()).progressBegin(any(), any(), any());
+        verify(progressService, atLeastOnce()).createIndefiniteProgressTask(any(), any(), any());
     }
 
 }

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2022 Pivotal, Inc.
+ * Copyright (c) 2017, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -19,6 +19,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.languageserver.IndefiniteProgressTask;
 import org.springframework.ide.vscode.commons.languageserver.ProgressService;
 import org.springframework.ide.vscode.commons.languageserver.Sts4LanguageServer;
 
@@ -68,23 +69,21 @@ public abstract class AbstractFileToProjectCache<P extends IJavaProject> extends
 	}
 	
 	final protected void performUpdate(P project, boolean async, boolean notify) {
-		final String taskId = getProgressId();
 		final ProgressService progressService = server.getProgressService();
-		if (progressService != null) {
-			progressService.progressBegin(taskId, "Updating data for project", "'" + project.getElementName() + "'");
-		}
+		final IndefiniteProgressTask progress = progressService == null ? null
+				: progressService.createIndefiniteProgressTask(getProgressId(),
+						"Updating data for project '" + project.getElementName() + "'", null);
 		if (async) {
-			CompletableFuture.supplyAsync(() -> update(project)).thenAccept((changed) -> afterUpdate(project, changed, notify, taskId));
+			CompletableFuture.supplyAsync(() -> update(project)).thenAccept((changed) -> afterUpdate(project, changed, notify, progress));
 		} else {
 			boolean changed = update(project);
-			afterUpdate(project, changed, notify, taskId);
+			afterUpdate(project, changed, notify, progress);
 		}
 	}
 	
-	private void afterUpdate(P project, boolean changed, boolean notify, String taskId) {
-		final ProgressService progressService = server.getProgressService();
-		if (progressService != null) {
-			progressService.progressDone(taskId);
+	private void afterUpdate(P project, boolean changed, boolean notify, IndefiniteProgressTask progress) {
+		if (progress != null) {
+			progress.done();
 		}
 		if (changed || alwaysFireEventOnUpdate) {
 			if (notify) {
