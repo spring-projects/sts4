@@ -59,6 +59,8 @@ import org.springframework.ide.vscode.boot.java.reconcilers.CachedDiagnostics;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.languageserver.PercentageProgressTask;
+import org.springframework.ide.vscode.commons.languageserver.ProgressService;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.commons.util.UriUtil;
@@ -81,26 +83,31 @@ public class SpringIndexerJava implements SpringIndexer {
 	// whenever the implementation of the indexer changes in a way that the stored data in the cache is no longer valid,
 	// we need to change the generation - this will result in a re-indexing due to no up-to-date cache data being found
 	private static final String GENERATION = "GEN-3";
+	private static final String INDEX_FILES_TASK_ID = "index-java-source-files-task-";
 
 	private static final String SYMBOL_KEY = "symbols";
 	private static final String BEANS_KEY = "beans";
 	private static final String DIAGNOSTICS_KEY = "diagnostics";
 
+
 	private final SymbolHandler symbolHandler;
 	private final AnnotationHierarchyAwareLookup<SymbolProvider> symbolProviders;
 	private final IndexCache cache;
 	private final JavaProjectFinder projectFinder;
+	private final ProgressService progressService;
+
 	private boolean scanTestJavaSources = false;
 	private FileScanListener fileScanListener = null; //used by test code only
 
 	private final SpringIndexerJavaDependencyTracker dependencyTracker = new SpringIndexerJavaDependencyTracker();
 
 	public SpringIndexerJava(SymbolHandler symbolHandler, AnnotationHierarchyAwareLookup<SymbolProvider> symbolProviders, IndexCache cache,
-			JavaProjectFinder projectFimder) {
+			JavaProjectFinder projectFimder, ProgressService progressService) {
 		this.symbolHandler = symbolHandler;
 		this.symbolProviders = symbolProviders;
 		this.cache = cache;
 		this.projectFinder = projectFimder;
+		this.progressService = progressService;
 	}
 
 	public SpringIndexerJavaDependencyTracker getDependencyTracker() {
@@ -464,28 +471,37 @@ public class SpringIndexerJava implements SpringIndexer {
 
 	private String[] scanFiles(IJavaProject project, String[] javaFiles, List<CachedSymbol> generatedSymbols, List<CachedBean> generatedBeans,
 			List<CachedDiagnostics> generatedDiagnostics, SCAN_PASS pass) throws Exception {
+		
+		PercentageProgressTask progressTask = this.progressService.createPercentageProgressTask(INDEX_FILES_TASK_ID + project.getElementName(),
+				javaFiles.length, "Spring Tools: Indexing Java Sources for '" + project.getElementName() + "'");
 
-		ASTParser parser = createParser(project, SCAN_PASS.ONE.equals(pass));
-		List<String> nextPassFiles = new ArrayList<>();
+		try {
+			ASTParser parser = createParser(project, SCAN_PASS.ONE.equals(pass));
+			List<String> nextPassFiles = new ArrayList<>();
+	
+			FileASTRequestor requestor = new FileASTRequestor() {
+				@Override
+				public void acceptAST(String sourceFilePath, CompilationUnit cu) {
+					File file = new File(sourceFilePath);
+					String docURI = UriUtil.toUri(file).toASCIIString();
+					long lastModified = file.lastModified();
+					AtomicReference<TextDocument> docRef = new AtomicReference<>();
+	
+					SpringIndexerJavaContext context = new SpringIndexerJavaContext(project, cu, docURI, sourceFilePath,
+							lastModified, docRef, null, generatedSymbols, generatedBeans, generatedDiagnostics, pass, nextPassFiles);
+	
+					scanAST(context);
+					progressTask.increment();
+				}
+			};
+	
+			parser.createASTs(javaFiles, null, new String[0], requestor, null);
 
-		FileASTRequestor requestor = new FileASTRequestor() {
-			@Override
-			public void acceptAST(String sourceFilePath, CompilationUnit cu) {
-				File file = new File(sourceFilePath);
-				String docURI = UriUtil.toUri(file).toASCIIString();
-				long lastModified = file.lastModified();
-				AtomicReference<TextDocument> docRef = new AtomicReference<>();
-
-				SpringIndexerJavaContext context = new SpringIndexerJavaContext(project, cu, docURI, sourceFilePath,
-						lastModified, docRef, null, generatedSymbols, generatedBeans, generatedDiagnostics, pass, nextPassFiles);
-
-				scanAST(context);
-			}
-		};
-
-		parser.createASTs(javaFiles, null, new String[0], requestor, null);
-
-		return (String[]) nextPassFiles.toArray(new String[nextPassFiles.size()]);
+			return (String[]) nextPassFiles.toArray(new String[nextPassFiles.size()]);
+		}
+		finally {
+			progressTask.done();
+		}
 	}
 
 	private void scanAST(final SpringIndexerJavaContext context) {

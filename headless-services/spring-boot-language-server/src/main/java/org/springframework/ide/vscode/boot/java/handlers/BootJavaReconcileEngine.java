@@ -145,7 +145,7 @@ public class BootJavaReconcileEngine implements IReconcileEngine, IJavaProjectRe
 		PercentageProgressTask progressTask = progressService.createPercentageProgressTask(
 				"reconcile-java-" + project.getElementName(),
 				totalWork,
-				"Reconciling Spring Java for '" + project.getElementName() + "'"
+				"Spring Tools: Reconciling Java Sources for '" + project.getElementName() + "'"
 		);
 		
 		for (JavaReconciler jr : javaReconcilers) {

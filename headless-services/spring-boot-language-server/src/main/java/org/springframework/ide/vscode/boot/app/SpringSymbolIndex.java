@@ -221,11 +221,10 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 		Map<String, SpringIndexerXMLNamespaceHandler> namespaceHandler = new HashMap<>();
 		namespaceHandler.put("http://www.springframework.org/schema/beans", new SpringIndexerXMLNamespaceHandlerBeans());
 		springIndexerXML = new SpringIndexerXML(handler, namespaceHandler, this.cache, projectFinder());
-		springIndexerJava = new SpringIndexerJava(handler, specificProviders, this.cache, projectFinder());
+		springIndexerJava = new SpringIndexerJava(handler, specificProviders, this.cache, projectFinder(), server.getProgressService());
 		factoriesIndexer = new SpringFactoriesIndexer(handler, cache);
 
 		this.indexers = new SpringIndexer[] {springIndexerJava, factoriesIndexer};
-
 
 		getWorkspaceService().onDidChangeWorkspaceFolders(evt -> {
 			log.debug("workspace roots have changed event arrived - added: " + evt.getEvent().getAdded() + " - removed: " + evt.getEvent().getRemoved());
