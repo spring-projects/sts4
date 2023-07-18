@@ -74,15 +74,16 @@ export function activate(context: VSCode.ExtensionContext): Thenable<ExtensionAP
                     * It comes in as "file:///c%3A/Users/ab/spring-petclinic/src/main/java/org/springframework/samples/petclinic/owner/PetRepository.java"
                     * 
                     * While symbols index would have this uri instead:
-                    * - "file:///C:/Users/ab/spring-petclinic/src/main/java/org/springframework/samples/petclinic/owner/PetRepository.java"
+                    * - "file:///C%3A/Users/ab/spring-petclinic/src/main/java/org/springframework/samples/petclinic/owner/PetRepository.java"
                     * 
-                    * i.e. lower vs upper case drive letter and escaped drive colon  
+                    * i.e. lower vs upper case drive letter  
                     */
                     if (OS.platform() === "win32" && uri.scheme === 'file') {
-                        let uriStr = uri.toString(true);
-                        const idx = uriStr.indexOf(':', 5);
-                        if (idx > 5 && idx < 10) {
-                            uriStr = `${uriStr.substring(0, idx - 1)}${uriStr.charAt(idx - 1).toUpperCase()}${uriStr.substring(idx)}`
+                        let uriStr = uri.toString();
+                        let idx = 5; // skip through `file:
+                        for (; idx < uriStr.length - 1 && uriStr.charAt(idx) === '/'; idx++) {}
+                        if (idx < uriStr.length - 1) {
+                            uriStr = `${uriStr.substring(0, idx)}${uriStr.charAt(idx).toUpperCase()}${uriStr.substring(idx + 1)}`
                         }
                         return uriStr;
                     }
