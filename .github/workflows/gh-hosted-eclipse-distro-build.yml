@@ -108,7 +108,7 @@ jobs:
         run: |
           rm spring-tool-suite-4*win*.zip*
           rm spring-tool-suite-4*win*.self-extracting.jar*
-          ls *win*
+          ls
           aws s3 mv s3://dist.springsource.com/sts4-distro-ci-temp/${{ github.run_id }} . --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --exclude "*/*" --no-progress
       - name: Sign EXE within zip files
         id: sign
@@ -142,12 +142,13 @@ jobs:
   cleanup:
     needs: [ sign-win-executable ]
     if: ${{ always() }}
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
       - name: Remove Temp Build Artifacts from S3
         id: cleanup-s3-temp-storage
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.TOOLS_S3_ACCESS_KEY }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.TOOLS_S3_SECRET_KEY  }}
+          AWS_DEFAULT_REGION: us-east-1
         run: |
-          aws s3 rm s3://dist.springsource.com/sts4-distro-ci-temp --recursive --exclude "*" --include "${{ github.run_id }}/*.zip"
+          aws s3 rm s3://dist.springsource.com/sts4-distro-ci-temp --recursive --exclude "*" --include "${{ github.run_id }}/*"
