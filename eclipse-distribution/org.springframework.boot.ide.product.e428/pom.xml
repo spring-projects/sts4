@@ -529,10 +529,10 @@
 								<taskdef resource="net/sf/antcontrib/antcontrib.properties" />
 								<taskdef resource="org/springframework/build/aws/ant/antlib.xml" />
 
-								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-macosx.cocoa.x86_64.dmg" algorithm="SHA-256" fileext=".sha256" />
-								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-macosx.cocoa.x86_64.dmg" algorithm="MD5" fileext=".md5" />
-								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-macosx.cocoa.aarch64.dmg" algorithm="SHA-256" fileext=".sha256" />
-								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-macosx.cocoa.aarch64.dmg" algorithm="MD5" fileext=".md5" />
+<!--								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-macosx.cocoa.x86_64.dmg" algorithm="SHA-256" fileext=".sha256" />-->
+<!--								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-macosx.cocoa.x86_64.dmg" algorithm="MD5" fileext=".md5" />-->
+<!--								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-macosx.cocoa.aarch64.dmg" algorithm="SHA-256" fileext=".sha256" />-->
+<!--								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-macosx.cocoa.aarch64.dmg" algorithm="MD5" fileext=".md5" />-->
 								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-linux.gtk.x86_64.tar.gz" algorithm="SHA-256" fileext=".sha256" />
 								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-linux.gtk.x86_64.tar.gz" algorithm="MD5" fileext=".md5" />
 								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-linux.gtk.aarch64.tar.gz" algorithm="SHA-256" fileext=".sha256" />
@@ -542,26 +542,21 @@
 
 									<delete bucketName="${dist.bucket}">
 										<fileset dir="${dist.path.product}">
-											<include name="spring-tool-suite-4*.tar.gz" />
-											<include name="spring-tool-suite-4*.tar.gz.md5" />
-											<include name="spring-tool-suite-4*.tar.gz.sha1" />
-											<include name="spring-tool-suite-4*.tar.gz.sha256" />
-											<include name="spring-tool-suite-4*.dmg" />
-											<include name="spring-tool-suite-4*.dmg.md5" />
-											<include name="spring-tool-suite-4*.dmg.sha1" />
-											<include name="spring-tool-suite-4*.dmg.sha256" />
+											<include name="spring-tool-suite-4*linux*.tar.gz*" />
+<!--											<include name="spring-tool-suite-4*.dmg" />-->
+<!--											<include name="spring-tool-suite-4*.dmg.md5" />-->
+<!--											<include name="spring-tool-suite-4*.dmg.sha1" />-->
+<!--											<include name="spring-tool-suite-4*.dmg.sha256" />-->
 										</fileset>
 									</delete>
 
 									<upload bucketName="${dist.bucket}" toDir="${dist.path.product}"
 										publicRead="true">
 										<fileset dir="${project.build.directory}/products">
-											<include name="spring-tool-suite-4*linux*.tar.gz" />
-											<include name="spring-tool-suite-4*linux*.tar.gz.md5" />
-											<include name="spring-tool-suite-4*linux*.tar.gz.sha256" />
-											<include name="spring-tool-suite-4*.dmg" />
-											<include name="spring-tool-suite-4*.dmg.md5" />
-											<include name="spring-tool-suite-4*.dmg.sha256" />
+											<include name="spring-tool-suite-4*linux*.tar.gz*" />
+<!--											<include name="spring-tool-suite-4*.dmg" />-->
+<!--											<include name="spring-tool-suite-4*.dmg.md5" />-->
+<!--											<include name="spring-tool-suite-4*.dmg.sha256" />-->
 										</fileset>
 									</upload>
 
