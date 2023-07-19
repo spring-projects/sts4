@@ -542,10 +542,10 @@
 
 									<delete bucketName="${dist.bucket}">
 										<fileset dir="${dist.path.product}">
-											<include name="spring-tool-suite-4*linux*.tar.gz" />
-											<include name="spring-tool-suite-4*linux*.tar.gz.md5" />
-											<include name="spring-tool-suite-4*linux*.tar.gz.sha1" />
-											<include name="spring-tool-suite-4*linux*.tar.gz.sha256" />
+											<include name="spring-tool-suite-4*.tar.gz" />
+											<include name="spring-tool-suite-4*.tar.gz.md5" />
+											<include name="spring-tool-suite-4*.tar.gz.sha1" />
+											<include name="spring-tool-suite-4*.tar.gz.sha256" />
 											<include name="spring-tool-suite-4*.dmg" />
 											<include name="spring-tool-suite-4*.dmg.md5" />
 											<include name="spring-tool-suite-4*.dmg.sha1" />
@@ -556,9 +556,9 @@
 									<upload bucketName="${dist.bucket}" toDir="${dist.path.product}"
 										publicRead="true">
 										<fileset dir="${project.build.directory}/products">
-											<include name="spring-tool-suite-4*.tar.gz" />
-											<include name="spring-tool-suite-4*.tar.gz.md5" />
-											<include name="spring-tool-suite-4*.tar.gz.sha256" />
+											<include name="spring-tool-suite-4*linux*.tar.gz" />
+											<include name="spring-tool-suite-4*linux*.tar.gz.md5" />
+											<include name="spring-tool-suite-4*linux*.tar.gz.sha256" />
 											<include name="spring-tool-suite-4*.dmg" />
 											<include name="spring-tool-suite-4*.dmg.md5" />
 											<include name="spring-tool-suite-4*.dmg.sha256" />
