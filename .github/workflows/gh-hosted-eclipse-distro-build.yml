@@ -88,7 +88,7 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.TOOLS_S3_ACCESS_KEY }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.TOOLS_S3_SECRET_KEY  }}
         run: |
-          echo "Uploading Win Zips to S3 for signing..."
+          echo "Uploading Win Zips and OSX tar.gz to S3 for signing..."
           aws s3 cp ${{ github.workspace }}/eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target/products s3://dist.springsource.com/sts4-distro-ci-temp/${{ github.run_id }} --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip" --include "spring-tool-suite-4*macosx*.tar.gz" --exclude "*/*" --no-progress
       - uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce
         with:
@@ -192,7 +192,23 @@ jobs:
             ${{ github.workspace }}/.github/scripts/sign-notarize-osx-distro-file.sh $file ${{ github.workspace }}/.github/assets/entitlements.plist ${{ github.workspace }}/.github/assets/sts4.icns
           done
           wait
-          echo "Done sign and notarization"
+          echo "Done signing and notarization of DMG files"
+      - uses: actions/download-artifact@cbed621e49e4c01b044d60f6c80ea4ed6328b281
+        with:
+          name: s3-dist-path-${{ github.run_id }}.${{ github.run_attempt }}
+      - name: Update Win zip/jar on S3
+        id: update-s3
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.TOOLS_S3_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.TOOLS_S3_SECRET_KEY  }}
+        run: |
+          dist_path=`cat s3-dist-path.txt`
+          echo "Processing S3 update..."
+          ls spring-tool-suite-4*macosx*.dmg*
+          echo "Removing old dmg files from s3..."
+          aws s3 rm s3://dist.springsource.com/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*macosx*.dmg*" --exclude "*/*"
+          echo "Uploading new dmg files to s3..."
+          aws s3 mv . s3://dist.springsource.com/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*macosx*.dmg*" --exclude "*/*" --acl public-read --no-progress
 
   cleanup:
     needs: [ sign-win-distros, sign-osx-distros ]

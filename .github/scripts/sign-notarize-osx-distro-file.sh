@@ -41,8 +41,8 @@ echo "Sign $dmg_filename"
 codesign --verbose --deep --force --timestamp --keychain $KEYCHAIN -s $MACOS_CERTIFICATE_ID $dmg_filename
 
 echo "Notarizing $dmg_filename"
-xcrun notarytool submit ${dmg_filename} --keychain-profile notarize-app-dmg-profile --wait &
-
-#echo "Creating checksums sha-256 and md5 for ${file}"
-#shasum -a 256 $filename > ${filename}.sha256
-#md5 $filename > ${filename}.md5
+(xcrun notarytool submit ${dmg_filename} --keychain-profile notarize-app-dmg-profile --wait \
+&& echo "Staple and generate checksums" \
+&& xcrun stapler staple $dmg_filename \
+&& shasum -a 256 $dmg_filename > ${dmg_filename}.sha256 \
+&& md5 $dmg_filename > ${dmg_filename}.md5) &

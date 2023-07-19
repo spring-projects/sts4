@@ -384,14 +384,14 @@
 									<arg value="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-macosx.cocoa.x86_64.dmg"/>
 								</exec>
 
-								<delete file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-macosx.cocoa.x86_64.tar.gz"/>
+								<!--<delete file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-macosx.cocoa.x86_64.tar.gz"/>-->
 								
 								<exec executable="/usr/local/bin/appdmg" failonerror="true">
 									<arg value="${project.build.directory}/../spring-tool-suite-4-dmg-config-${dist.target.major}-aarch64.json"/>
 									<arg value="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-macosx.cocoa.aarch64.dmg"/>
 								</exec>
 
-								<delete file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-macosx.cocoa.aarch64.tar.gz"/>
+								<!--<delete file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-macosx.cocoa.aarch64.tar.gz"/>-->
 								
 							</target>
 						</configuration>
@@ -542,10 +542,10 @@
 
 									<delete bucketName="${dist.bucket}">
 										<fileset dir="${dist.path.product}">
-											<include name="spring-tool-suite-4*.tar.gz" />
-											<include name="spring-tool-suite-4*.tar.gz.md5" />
-											<include name="spring-tool-suite-4*.tar.gz.sha1" />
-											<include name="spring-tool-suite-4*.tar.gz.sha256" />
+											<include name="spring-tool-suite-4*linux*.tar.gz" />
+											<include name="spring-tool-suite-4*linux*.tar.gz.md5" />
+											<include name="spring-tool-suite-4*linux*.tar.gz.sha1" />
+											<include name="spring-tool-suite-4*linux*.tar.gz.sha256" />
 											<include name="spring-tool-suite-4*.dmg" />
 											<include name="spring-tool-suite-4*.dmg.md5" />
 											<include name="spring-tool-suite-4*.dmg.sha1" />
