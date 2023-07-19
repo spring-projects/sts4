@@ -41,7 +41,7 @@ rm -rf ./${destination_folder_name}
 rm -f $filename
 
 echo "Sign $dmg_filename"
-codesign --verbose --deep --force --timestamp --keychain $KEYCHAIN -s $MACOS_CERTIFICATE_ID $dmg_filename
+codesign --verbose --deep --force --timestamp --keychain $KEYCHAIN -s "${MACOS_CERTIFICATE_ID}" $dmg_filename
 
 echo "Notarizing $dmg_filename"
 (xcrun notarytool submit ${dmg_filename} --keychain-profile notarize-app-dmg-profile --wait \
