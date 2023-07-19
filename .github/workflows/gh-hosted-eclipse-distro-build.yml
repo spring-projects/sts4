@@ -89,7 +89,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.TOOLS_S3_SECRET_KEY  }}
         run: |
           echo "Uploading Win Zips to S3 for signing..."
-          aws s3 cp ${{ github.workspace }}/eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target/products s3://dist.springsource.com/sts4-distro-ci-temp/${{ github.run_id }} --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --exclude "*/*" --no-progress
+          aws s3 cp ${{ github.workspace }}/eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target/products s3://dist.springsource.com/sts4-distro-ci-temp/${{ github.run_id }} --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip" --include "spring-tool-suite-4*macosx*.tar.gz" --exclude "*/*" --no-progress
       - uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce
         with:
           name: s3-dist-path-${{ github.run_id }}.${{ github.run_attempt }}
@@ -97,7 +97,7 @@ jobs:
           retention-days: 1
 
 
-  sign-win-executable:
+  sign-win-distros:
     needs: eclipse-distro-build
     runs-on: self-hosted
     steps:
@@ -137,10 +137,65 @@ jobs:
           echo "Removing old win zip and self extracting jar files from s3..."
           aws s3 rm s3://dist.springsource.com/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --include "spring-tool-suite-4*win*.self-extracting.jar*" --exclude "*/*"
           echo "Uploading new win zip and self extracting jar files to s3..."
-          aws s3 mv . s3://dist.springsource.com/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --include "spring-tool-suite-4*win*.self-extracting.jar*" --exclude "*/*" --acl public-read --no-progress        
+          aws s3 mv . s3://dist.springsource.com/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --include "spring-tool-suite-4*win*.self-extracting.jar*" --exclude "*/*" --acl public-read --no-progress
+
+  sign-osx-distros:
+    needs: eclipse-distro-build
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
+        with:
+          sparse-checkout: |
+            .github
+      - name: Create Keychain. Add Mac App Dev Certificate to Keychain
+        env:
+          BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
+          P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
+          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
+        run: |
+          CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
+          KEYCHAIN=$RUNNER_TEMP/app-signing.keychain-db
+
+          echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode -o $CERTIFICATE_PATH
+
+          security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN
+          security set-keychain-settings -lut 21600 $KEYCHAIN
+          security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN
+
+          security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN
+          security list-keychain -d user -s $KEYCHAIN
+      - name: Unlock Keychain for OSX signing
+        run: |
+          security unlock-keychain -p ${{ secrets.KEYCHAIN_PASSWORD }} $RUNNER_TEMP/app-signing.keychain-db
+      - name: Install appdmg
+        run: |
+          npm install -g appdmg
+      - name: Setup Notarization Credentials
+        run: |
+          xcrun notarytool store-credentials notarize-app-dmg-profile --apple-id ${{ secrets.AC_USERNAME }} --team-id ${{ secrets.APPLE_TEAM_ID }} --password ${{ secrets.AC_PASSWORD }}
+      - name: Download OSX tarr.gz files from S3 for Signing/Notarization
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.TOOLS_S3_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.TOOLS_S3_SECRET_KEY  }}
+        run: |
+          rm -rf *macosx*
+          ls
+          aws s3 mv s3://dist.springsource.com/sts4-distro-ci-temp/${{ github.run_id }} . --recursive --exclude "*" --include "spring-tool-suite-4*macosx*.tar.gz" --exclude "*/*" --no-progress
+      - name: Sign .app, Create DMG, Sign and Notarize DMG
+        env:
+          MACOS_CERTIFICATE_ID: ${{ secrets.MACOS_CERTIFICATE_ID }}
+        run: |
+          KEYCHAIN=$RUNNER_TEMP/app-signing.keychain-db
+          files=`ls spring-tool-suite-4*macosx*.tar.gz`
+          for file in $files
+          do
+            ${{ github.workspace }}/.github/scripts/sign-notarize-osx-distro-file.sh $file ${{ github.workspace }}/.github/assets/entitlements.plist ${{ github.workspace }}/.github/assets/sts4.icns
+          done
+          wait
+          echo "Done sign and notarization"
 
   cleanup:
-    needs: [ sign-win-executable ]
+    needs: [ sign-win-distros, sign-osx-distros ]
     if: ${{ always() }}
     runs-on: ubuntu-latest
     steps:
