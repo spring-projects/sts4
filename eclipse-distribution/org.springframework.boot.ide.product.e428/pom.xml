@@ -583,11 +583,11 @@
 								<taskdef resource="net/sf/antcontrib/antcontrib.properties" />
 								<taskdef resource="org/springframework/build/aws/ant/antlib.xml" />
 
-								<copy file="${project.build.directory}/../../common/html/nightly-generic-snippet-incl-apple-m1.html" tofile="${project.build.directory}/../../common/html/sts4-nightly-${dist.target.major}.html" overwrite="true"/>
+								<copy file="${project.build.directory}/../../common/html/nightly-generic-snippet-incl-apple-m1.html" tofile="${project.build.directory}/sts4-nightly-${dist.target.major}.html" overwrite="true"/>
 		
-								<replace file="${project.build.directory}/../../common/html/sts4-nightly-${dist.target.major}.html" token="@QUALIFIER@" value="${unqualifiedVersion}.${p2.qualifier}" summary="yes" />
-								<replace file="${project.build.directory}/../../common/html/sts4-nightly-${dist.target.major}.html" token="@TARGET@" value="${dist.target}" summary="yes" />
-								<replace file="${project.build.directory}/../../common/html/sts4-nightly-${dist.target.major}.html" token="@MAJOR-TARGET@" value="${dist.target.major}" summary="yes" />
+								<replace file="${project.build.directory}/sts4-nightly-${dist.target.major}.html" token="@QUALIFIER@" value="${unqualifiedVersion}.${p2.qualifier}" summary="yes" />
+								<replace file="${project.build.directory}/sts4-nightly-${dist.target.major}.html" token="@TARGET@" value="${dist.target}" summary="yes" />
+								<replace file="${project.build.directory}/sts4-nightly-${dist.target.major}.html" token="@MAJOR-TARGET@" value="${dist.target.major}" summary="yes" />
 
 							</target>
 						</configuration>
@@ -606,7 +606,7 @@
 								<taskdef resource="org/springframework/build/aws/ant/antlib.xml" />
 
 								<s3 accessKey="${dist.accessKey}" secretKey="${dist.secretKey}">
-									<upload bucketName="${dist.bucket}" file="${project.build.directory}/../../common/html/sts4-nightly-${dist.target.major}.html"
+									<upload bucketName="${dist.bucket}" file="${project.build.directory}/sts4-nightly-${dist.target.major}.html"
 											toFile="snapshot/STS4/sts4-nightly-${dist.target.major}.html" publicRead="true">
 									</upload>
 								</s3>

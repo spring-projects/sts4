@@ -186,6 +186,7 @@ jobs:
           MACOS_CERTIFICATE_ID: ${{ secrets.MACOS_CERTIFICATE_ID }}
         run: |
           KEYCHAIN=$RUNNER_TEMP/app-signing.keychain-db
+          ls ${{ github.workspace }}/.github/assets
           files=`ls spring-tool-suite-4*macosx*.tar.gz`
           for file in $files
           do
