@@ -19,6 +19,6 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.TOOLS_S3_SECRET_KEY  }}
         run: |
           echo $AWS_DEFAULT_REGION
-          aws configure get region
+          aws s3api get-bucket-location --bucket dist.springsource.com
 #          aws s3 rm s3://dist.springsource.com/sts4-distro-ci-temp --recursive --exclude "*" --include "*.zip"
 
