@@ -83,11 +83,13 @@ jobs:
           cd eclipse-distribution
           KEYCHAIN=$RUNNER_TEMP/app-signing.keychain-db
           ./mvnw --batch-mode -U clean deploy -P${{ inputs.eclipse_profile }} -P${{ inputs.build_type }} -Pgitactions -Pgpg.sign -Dsigning.skip=true -Dmaven.repo.local=~/.m2/repository-signed -Dhttpclient.retry-max=20 -Dmaven.test.skip=true -Declipse.p2.mirrors=false -Dtycho.localArtifacts=ignore -Ds3service.https-only=true -Dp2.replaceQualifier=true -Dorg.eclipse.ecf.provider.filetransfer.httpclient.retrieve.readTimeout=1200000 -Dorg.eclipse.equinox.p2.transport.ecf.retry=5 -Dskip.eclipserun.proxies=false -Dskip.osx.signing=false  -Dskip.win.signing=true -Dskip.osx.notarizing=false -Dtycho.equinox.resolver.uses=true
-      - uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce
-        with:
-          name: win-zips-${{ github.run_id }}.${{ github.run_attempt }}
-          path: ${{ github.workspace }}/eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target/products/*.win32.*.zip
-          retention-days: 1
+      - name: Upload Build Artifacts for Signing
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.TOOLS_S3_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.TOOLS_S3_SECRET_KEY  }}
+        run: |
+          echo "Uploading Win Zips to S3 for signing..."
+          aws s3 cp ${{ github.workspace }}/eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target/products s3://dist.springsource.com/sts4-distro-ci-temp/${{ github.run_id }} --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --exclude "*/*" --no-progress
       - uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce
         with:
           name: s3-dist-path-${{ github.run_id }}.${{ github.run_attempt }}
@@ -99,13 +101,12 @@ jobs:
     needs: eclipse-distro-build
     runs-on: self-hosted
     steps:
-      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
-        with:
-          sparse-checkout: |
-            .github
-      - uses: actions/download-artifact@cbed621e49e4c01b044d60f6c80ea4ed6328b281
-        with:
-          name: win-zips-${{ github.run_id }}.${{ github.run_attempt }}
+      - name: Download Win Zips from S3 for Signing
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.TOOLS_S3_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.TOOLS_S3_SECRET_KEY  }}
+        run: |
+          aws s3 cp s3://dist.springsource.com/sts4-distro-ci-temp/${{ github.run_id }} . --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --exclude "*/*"
       - name: Sign EXE within zip files
         id: sign
         env:
@@ -134,3 +135,16 @@ jobs:
           aws s3 rm s3://dist.springsource.com/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --include "spring-tool-suite-4*win*.self-extracting.jar* --exclude "*/*""
           echo "Uploading new win zip and self extracting jar files to s3..."
           aws s3 cp . s3://dist.springsource.com/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --include "spring-tool-suite-4*win*.self-extracting.jar*" --exclude "*/*" --acl public-read --no-progress        
+
+ cleanup:
+   needs: [ sign-win-executable ]
+   if: ${{ always() }}
+   runs-on: ubuntu-latest
+   steps:
+     - name: Remove Temp Build Artifacts from S3
+       id: update-s3
+       env:
+         AWS_ACCESS_KEY_ID: ${{ secrets.TOOLS_S3_ACCESS_KEY }}
+         AWS_SECRET_ACCESS_KEY: ${{ secrets.TOOLS_S3_SECRET_KEY  }}
+       run: |
+         aws s3 rm s3://dist.springsource.com/sts4-distro-ci-temp/${{ github.run_id }} --recursive --include "*"
