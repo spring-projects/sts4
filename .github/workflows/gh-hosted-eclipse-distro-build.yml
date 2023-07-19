@@ -106,8 +106,8 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.TOOLS_S3_ACCESS_KEY }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.TOOLS_S3_SECRET_KEY  }}
         run: |
-          rm spring-tool-suite-4*win*.zip*
-          rm spring-tool-suite-4*win*.self-extracting.jar*
+          rm -f spring-tool-suite-4*win*.zip*
+          rm -f spring-tool-suite-4*win*.self-extracting.jar*
           ls
           aws s3 mv s3://dist.springsource.com/sts4-distro-ci-temp/${{ github.run_id }} . --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --exclude "*/*" --no-progress
       - name: Sign EXE within zip files
