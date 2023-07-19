@@ -106,7 +106,7 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.TOOLS_S3_ACCESS_KEY }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.TOOLS_S3_SECRET_KEY  }}
         run: |
-          aws s3 cp s3://dist.springsource.com/sts4-distro-ci-temp/${{ github.run_id }} . --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --exclude "*/*"
+          aws s3 cp s3://dist.springsource.com/sts4-distro-ci-temp/${{ github.run_id }} . --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --exclude "*/*" --no-progress
       - name: Sign EXE within zip files
         id: sign
         env:
@@ -132,7 +132,7 @@ jobs:
           ls spring-tool-suite-4*win*.zip*
           ls spring-tool-suite-4*win*.self-extracting.jar*
           echo "Removing old win zip and self extracting jar files from s3..."
-          aws s3 rm s3://dist.springsource.com/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --include "spring-tool-suite-4*win*.self-extracting.jar* --exclude "*/*""
+          aws s3 rm s3://dist.springsource.com/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --include "spring-tool-suite-4*win*.self-extracting.jar* --exclude "*/*"
           echo "Uploading new win zip and self extracting jar files to s3..."
           aws s3 cp . s3://dist.springsource.com/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --include "spring-tool-suite-4*win*.self-extracting.jar*" --exclude "*/*" --acl public-read --no-progress        
 
@@ -142,9 +142,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Remove Temp Build Artifacts from S3
-        id: update-s3
+        id: cleanup-s3-temp-storage
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.TOOLS_S3_ACCESS_KEY }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.TOOLS_S3_SECRET_KEY  }}
         run: |
-          aws s3 rm s3://dist.springsource.com/sts4-distro-ci-temp/${{ github.run_id }} --recursive --include "*"
+          aws s3 rm s3://dist.springsource.com/sts4-distro-ci-temp/${{ github.run_id }} --recursive --exclude "*" --include "*.zip"
