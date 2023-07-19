@@ -173,7 +173,7 @@ jobs:
       - name: Setup Notarization Credentials
         run: |
           xcrun notarytool store-credentials notarize-app-dmg-profile --apple-id ${{ secrets.AC_USERNAME }} --team-id ${{ secrets.APPLE_TEAM_ID }} --password ${{ secrets.AC_PASSWORD }}
-      - name: Download OSX tarr.gz files from S3 for Signing/Notarization
+      - name: Download OSX tar.gz files from S3 for Signing/Notarization
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.TOOLS_S3_ACCESS_KEY }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.TOOLS_S3_SECRET_KEY  }}
