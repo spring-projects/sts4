@@ -10,15 +10,15 @@ on:
 
 jobs:
   cleanup:
-    runs-on: self-hosted
+    runs-on: ubuntu-latest
     steps:
       - name: Remove Temp Build Artifacts from S3
         id: cleanup-s3-temp-storage
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.TOOLS_S3_ACCESS_KEY }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.TOOLS_S3_SECRET_KEY  }}
+          AWS_DEFAULT_REGION: us-east-1
         run: |
           echo $AWS_DEFAULT_REGION
-          aws s3api get-bucket-location --bucket dist.springsource.com
-#          aws s3 rm s3://dist.springsource.com/sts4-distro-ci-temp --recursive --exclude "*" --include "*.zip"
+          aws s3 rm s3://dist.springsource.com/sts4-distro-ci-temp --recursive --exclude "*" --include "*.zip"
 

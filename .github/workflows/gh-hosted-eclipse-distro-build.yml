@@ -106,9 +106,10 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.TOOLS_S3_ACCESS_KEY }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.TOOLS_S3_SECRET_KEY  }}
         run: |
-          ls spring-tool-suite-4*win*.zip*
           rm spring-tool-suite-4*win*.zip*
-          aws s3 cp s3://dist.springsource.com/sts4-distro-ci-temp/${{ github.run_id }} . --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --exclude "*/*" --no-progress
+          rm spring-tool-suite-4*win*.self-extracting.jar*
+          ls *win*
+          aws s3 mv s3://dist.springsource.com/sts4-distro-ci-temp/${{ github.run_id }} . --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --exclude "*/*" --no-progress
       - name: Sign EXE within zip files
         id: sign
         env:
@@ -136,7 +137,7 @@ jobs:
           echo "Removing old win zip and self extracting jar files from s3..."
           aws s3 rm s3://dist.springsource.com/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --include "spring-tool-suite-4*win*.self-extracting.jar*" --exclude "*/*"
           echo "Uploading new win zip and self extracting jar files to s3..."
-          aws s3 cp . s3://dist.springsource.com/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --include "spring-tool-suite-4*win*.self-extracting.jar*" --exclude "*/*" --acl public-read --no-progress        
+          aws s3 mv . s3://dist.springsource.com/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --include "spring-tool-suite-4*win*.self-extracting.jar*" --exclude "*/*" --acl public-read --no-progress        
 
   cleanup:
     needs: [ sign-win-executable ]
