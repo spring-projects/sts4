@@ -8,7 +8,7 @@ filename="$(basename -- $file)"
 dir="$(dirname "$file")"
 
 echo "****************************************************************"
-echo "*** Processing : ${file}"
+echo "*** Signing and creating DMG for: ${file}"
 echo "****************************************************************"
 destination_folder_name=extracted_${filename}
 echo "Extracting archive ${filename} to ${dir}/${destination_folder_name}"
@@ -45,10 +45,3 @@ rm -f $filename
 echo "Sign ${dmg_filename}"
 echo 'codesign --verbose --deep --force --timestamp --keychain "'${KEYCHAIN}'" -s "'${MACOS_CERTIFICATE_ID}'" ./$dmg_filename'
 codesign --verbose --deep --force --timestamp --keychain "${KEYCHAIN}" -s "${MACOS_CERTIFICATE_ID}" ./$dmg_filename
-
-echo "Notarizing $dmg_filename"
-(xcrun notarytool submit ./${dmg_filename} --keychain-profile notarize-app-dmg-profile --wait \
-&& echo "Staple and generate checksums for ${dmg_filename}" \
-&& xcrun stapler staple $dmg_filename \
-&& shasum -a 256 $dmg_filename > ${dmg_filename}.sha256 \
-&& md5 $dmg_filename > ${dmg_filename}.md5) &
