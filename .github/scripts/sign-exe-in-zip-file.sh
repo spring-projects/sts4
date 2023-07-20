@@ -3,6 +3,7 @@ set -e
 file=$1
 sign_script=$2
 self_extr_jar=$3
+id=$4
 filename="$(basename -- $file)"
 
 workdir=`pwd`
@@ -17,7 +18,7 @@ echo "Successfully extracted ${filename}"
 sts_folder=`find ./${destination_folder_name} -maxdepth 1 -type d -name 'sts-*' -print -quit`
 echo "Found STS distro folder: ${sts_folder}"
 echo "About to sign win exe file: ${sts_folder}/SpringToolSuite4.exe"
-$sign_script ${sts_folder}/SpringToolSuite4.exe ${sts_folder}/SpringToolSuite4.exe
+$sign_script ${sts_folder}/SpringToolSuite4.exe ${sts_folder}/SpringToolSuite4.exe $id
 echo "Adding to zip contents of a folder ${destination_folder_name}"
 cd ${destination_folder_name}
 zip -r -q ../$file .
