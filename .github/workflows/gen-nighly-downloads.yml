@@ -16,7 +16,7 @@ jobs:
         run: |
           dist_path="snapshot/STS4/nightly/dist/e4.28"
           downloads_html="sts4-nightly-e4.28.html"
-          files=`aws s3 cp s3://dist.springsource.com/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*.zip" --include "spring-tool-suite-4*.dmg" --include "spring-tool-suite-4*.self-extracting.jar" --include "spring-tool-suite-4*.tar.gz" --exclude "*/*" --dryrun`
+          files=`aws s3 cp s3://dist.springsource.com/${dist_path} . --recursive --exclude "*" --include "spring-tool-suite-4*.zip" --include "spring-tool-suite-4*.dmg" --include "spring-tool-suite-4*.self-extracting.jar" --include "spring-tool-suite-4*.tar.gz" --exclude "*/*" --dryrun`
           echo '<ul>' >> $downloads_html
           for file in $files
           do
