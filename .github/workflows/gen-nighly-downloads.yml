@@ -1,11 +1,11 @@
-name: Wipe out temp build artifacts
+name: Generate Nightly Downloads HTML
 
 # configure manual trigger
 on:
   workflow_dispatch:
 
 jobs:
-  cleanup:
+  gen_html:
     runs-on: ubuntu-latest
     steps:
       - name: Update Nightly Distro Downloads page
