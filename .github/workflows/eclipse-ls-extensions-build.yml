@@ -11,7 +11,7 @@ on:
 jobs:
 
   eclipse-language-servers-build:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest-xl
     steps:
       - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
         with:
@@ -31,7 +31,11 @@ jobs:
       - name: Build Language Servers JARs
         run: |
           cd headless-services
-          xvfb-run ./mvnw --batch-mode clean install
+          if command -v xvfb-run ; then
+            xvfb-run ./mvnw --batch-mode clean install
+          else
+            ./mvnw --batch-mode clean install
+          fi
       - name: Install GPG key
         run: |
           echo "${{ secrets.GPG_PRIVATE_KEY }}" > gpg.asc
@@ -44,8 +48,16 @@ jobs:
           gpg_keyname: ${{ secrets.GPG_KEYID }}
         run: |
           cd eclipse-language-servers
-          xvfb-run ./mvnw --batch-mode clean deploy -Pe428 -Psnapshot -Pgitactions -Pgpg.sign -DbuildNumber=${{ steps.timestamp.outputs.date }} -Dsigning.skip=true -Dhttpclient.retry-max=20 -Declipse.p2.mirrors=false -Ds3service.https-only=true -Dmaven.test.skip=true -Dtycho.localArtifacts=ignore
+          if command -v xvfb-run ; then
+            xvfb-run ./mvnw --batch-mode clean deploy -Pe428 -Psnapshot -Pgitactions -Pgpg.sign -DbuildNumber=${{ steps.timestamp.outputs.date }} -Dsigning.skip=true -Dhttpclient.retry-max=20 -Declipse.p2.mirrors=false -Ds3service.https-only=true -Dmaven.test.skip=true -Dtycho.localArtifacts=ignore
+          else
+            ./mvnw --batch-mode clean deploy -Pe428 -Psnapshot -Pgitactions -Pgpg.sign -DbuildNumber=${{ steps.timestamp.outputs.date }} -Dsigning.skip=true -Dhttpclient.retry-max=20 -Declipse.p2.mirrors=false -Ds3service.https-only=true -Dmaven.test.skip=true -Dtycho.localArtifacts=ignore
+          fi
       - name: Verify Eclipse LS Extensions on e429
         run: |
           cd eclipse-language-servers
-          xvfb-run ./mvnw --batch-mode clean package -Pe429 -Psnapshot -DbuildNumber=${{ steps.timestamp.outputs.timestamp }} -Dsigning.skip=true -Dhttpclient.retry-max=20 -Declipse.p2.mirrors=false -Ds3service.https-only=true -Dmaven.test.skip=true -Dtycho.localArtifacts=ignore
+          if command -v xvfb-run ; then
+            xvfb-run ./mvnw --batch-mode clean package -Pe429 -Psnapshot -DbuildNumber=${{ steps.timestamp.outputs.timestamp }} -Dsigning.skip=true -Dhttpclient.retry-max=20 -Declipse.p2.mirrors=false -Ds3service.https-only=true -Dmaven.test.skip=true -Dtycho.localArtifacts=ignore
+          else
+            ./mvnw --batch-mode clean package -Pe429 -Psnapshot -DbuildNumber=${{ steps.timestamp.outputs.timestamp }} -Dsigning.skip=true -Dhttpclient.retry-max=20 -Declipse.p2.mirrors=false -Ds3service.https-only=true -Dmaven.test.skip=true -Dtycho.localArtifacts=ignore
+          fi

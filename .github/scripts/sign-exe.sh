@@ -10,6 +10,6 @@ ssh -i $SSH_KEY $SSH_USER@vm-tools.spring.vmware.com -- /build/apps/signing/sign
 echo "Copying **signed** $in_filename back... (into $out_file)"
 scp -i $SSH_KEY $SSH_USER@vm-tools.spring.vmware.com:/opt/bamboo/$in_filename $out_file
 echo "Cleaning up remote machine..."
-ssh -i $SSH_KEY $SSH_USER@vm-tools.spring.vmware.com -- rm /opt/bamboo/$in_filename
+ssh -i $SSH_KEY $SSH_USER@vm-tools.spring.vmware.com -- rm -f /opt/bamboo/$in_filename
 echo "Successfully signed $in_filename"
 
