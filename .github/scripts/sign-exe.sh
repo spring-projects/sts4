@@ -4,8 +4,9 @@ out_file=$2
 id=$3
 
 in_filename="$(basename -- $in_file)"
+echo "Setting up folder ${id} on the remote machine"
 ssh -i $SSH_KEY $SSH_USER@vm-tools.spring.vmware.com -- mkdir /opt/bamboo/$id
-echo "Copying $in_filename to remote machine..."
+echo "Copying $in_filename to remote machine into /opt/bamboo/${id}..."
 scp -i $SSH_KEY $in_file $SSH_USER@vm-tools.spring.vmware.com:/opt/bamboo/$id
 echo "Signing $in_filename..."
 ssh -i $SSH_KEY $SSH_USER@vm-tools.spring.vmware.com -- /build/apps/signing/signserver/signc -v --input=/opt/bamboo/$id/$in_filename --keyid=authenticode_SHA2 --signmethod="winddk-8.1" --output=/opt/bamboo/$id/$in_filename --hash sha256
