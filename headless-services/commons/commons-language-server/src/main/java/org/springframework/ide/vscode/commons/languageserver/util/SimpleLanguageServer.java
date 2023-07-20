@@ -30,6 +30,8 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
@@ -137,7 +139,8 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, SpringInd
 	private static final int FORCED_EXIT_DELAY_IN_SECONDS = 3;
 
 	public final String EXTENSION_ID;
-	private final String CODE_ACTION_COMMAND_ID;
+	public final String CODE_ACTION_COMMAND_ID;
+
 	public final LazyCompletionResolver completionResolver = createCompletionResolver();
 
 	private SimpleTextDocumentService tds;
@@ -706,7 +709,7 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, SpringInd
 				testListener.reconcileStarted(docId.getUri(), doc.getVersion());
 			}
 
-			IProblemCollector problems = createProblemCollector(doc);
+			IProblemCollector problems = createProblemCollector(new AtomicReference<TextDocument>(doc), null);
 
 			engine.reconcile(doc, problems);
 		})
@@ -749,9 +752,10 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, SpringInd
 		}
 	}
 	
-	public IProblemCollector createProblemCollector(TextDocument doc) {
-		SimpleTextDocumentService documents = getTextDocumentService();
-		TextDocumentIdentifier docId = doc.getId();
+	public IProblemCollector createProblemCollector(AtomicReference<TextDocument> docRef, BiConsumer<String, Diagnostic> diagnosticsCollector) {
+
+		SimpleTextDocumentService documentsService = getTextDocumentService();
+		
 		return new IProblemCollector() {
 
 			private LinkedHashSet<Diagnostic> diagnostics = new LinkedHashSet<>();
@@ -759,8 +763,8 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, SpringInd
 
 			@Override
 			public void endCollecting() {
-				documents.setQuickfixes(docId, quickfixes);
-				documents.publishDiagnostics(docId, diagnostics);
+				documentsService.setQuickfixes(docRef.get().getId(), quickfixes);
+				documentsService.publishDiagnostics(docRef.get().getId(), diagnostics);
 				log.debug("Reconcile done sent {} diagnostics", diagnostics.size());
 			}
 
@@ -772,8 +776,8 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, SpringInd
 			@Override
 			public void checkPointCollecting() {
 				// publish what has been collected so far
-				documents.setQuickfixes(docId, quickfixes);
-				documents.publishDiagnostics(docId, diagnostics);
+				documentsService.setQuickfixes(docRef.get().getId(), quickfixes);
+				documentsService.publishDiagnostics(docRef.get().getId(), diagnostics);
 				log.debug("Reconcile checkpoint sent {} diagnostics", diagnostics.size());
 			}
 
@@ -787,7 +791,7 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, SpringInd
 						Diagnostic d = new Diagnostic();
 						d.setCode(problem.getCode());
 						d.setMessage(problem.getMessage());
-						Range rng = doc.toRange(problem.getOffset(), problem.getLength());
+						Range rng = docRef.get().toRange(problem.getOffset(), problem.getLength());
 						d.setRange(rng);
 						d.setSeverity(severity);
 						d.setSource(getServer().EXTENSION_ID);
@@ -810,9 +814,14 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, SpringInd
 							}).collect(Collectors.toList()));
 						}
 						diagnostics.add(d);
+						
+						if (diagnosticsCollector != null) {
+							diagnosticsCollector.accept(docRef.get().getId().getUri(), d);
+						}
+						
 					}
 				} catch (BadLocationException e) {
-					log.warn("Invalid reconcile problem ignored: " + doc.getUri() + " - problem position: " + problem.getOffset() + "/" + problem.getLength(), e);
+					log.warn("Invalid reconcile problem ignored: " + docRef.get().getId().getUri() + " - problem position: " + problem.getOffset() + "/" + problem.getLength(), e);
 				}
 			}
 		};

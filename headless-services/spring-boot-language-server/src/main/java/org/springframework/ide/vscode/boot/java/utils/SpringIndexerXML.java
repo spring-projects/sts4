@@ -137,7 +137,7 @@ public class SpringIndexerXML implements SpringIndexer {
 		if (symbols != null && beans != null) {
 			EnhancedSymbolInformation[] enhancedSymbols = Arrays.stream(symbols).map(cachedSymbol -> cachedSymbol.getEnhancedSymbol()).toArray(EnhancedSymbolInformation[]::new);
 			Bean[] allBeans = Arrays.stream(beans).filter(cachedBean -> cachedBean.getBean() != null).map(cachedBean -> cachedBean.getBean()).toArray(Bean[]::new);
-			symbolHandler.addSymbols(project, enhancedSymbols, allBeans);
+			symbolHandler.addSymbols(project, enhancedSymbols, allBeans, null);
 		}
 
 		long endTime = System.currentTimeMillis();
@@ -175,7 +175,7 @@ public class SpringIndexerXML implements SpringIndexer {
 
 		EnhancedSymbolInformation[] symbols = generatedSymbols.stream().map(cachedSymbol -> cachedSymbol.getEnhancedSymbol()).toArray(EnhancedSymbolInformation[]::new);
 		Bean[] beans = generatedBeans.stream().filter(cachedBean -> cachedBean.getBean() != null).map(cachedBean -> cachedBean.getBean()).toArray(Bean[]::new);
-		symbolHandler.addSymbols(project, docURI, symbols, beans);
+		symbolHandler.addSymbols(project, docURI, symbols, beans, null);
 	}
 
 	@Override
@@ -202,7 +202,7 @@ public class SpringIndexerXML implements SpringIndexer {
 			
 			EnhancedSymbolInformation[] symbols = generatedSymbols.stream().map(cachedSymbol -> cachedSymbol.getEnhancedSymbol()).toArray(EnhancedSymbolInformation[]::new);
 			Bean[] beans = generatedBeans.stream().filter(cachedBean -> cachedBean.getBean() != null).map(cachedBean -> cachedBean.getBean()).toArray(Bean[]::new);
-			symbolHandler.addSymbols(project, docURI, symbols, beans);
+			symbolHandler.addSymbols(project, docURI, symbols, beans, null);
 		}
 	}
 

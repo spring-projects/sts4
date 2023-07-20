@@ -26,6 +26,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -45,6 +47,7 @@ import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.NormalAnnotation;
 import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
+import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.WorkspaceSymbol;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -55,6 +58,7 @@ import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchyA
 import org.springframework.ide.vscode.boot.java.beans.CachedBean;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
+import org.springframework.ide.vscode.boot.java.reconcilers.AnnotationReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.CachedDiagnostics;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IClasspathUtil;
@@ -62,6 +66,8 @@ import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.PercentageProgressTask;
 import org.springframework.ide.vscode.commons.languageserver.ProgressService;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
+import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblem;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.commons.util.UriUtil;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -89,9 +95,9 @@ public class SpringIndexerJava implements SpringIndexer {
 	private static final String BEANS_KEY = "beans";
 	private static final String DIAGNOSTICS_KEY = "diagnostics";
 
-
 	private final SymbolHandler symbolHandler;
 	private final AnnotationHierarchyAwareLookup<SymbolProvider> symbolProviders;
+	private final List<AnnotationReconciler> reconcilers;
 	private final IndexCache cache;
 	private final JavaProjectFinder projectFinder;
 	private final ProgressService progressService;
@@ -100,14 +106,19 @@ public class SpringIndexerJava implements SpringIndexer {
 	private FileScanListener fileScanListener = null; //used by test code only
 
 	private final SpringIndexerJavaDependencyTracker dependencyTracker = new SpringIndexerJavaDependencyTracker();
+	private final BiFunction<AtomicReference<TextDocument>, BiConsumer<String, Diagnostic>, IProblemCollector> problemCollectorCreator;
 
 	public SpringIndexerJava(SymbolHandler symbolHandler, AnnotationHierarchyAwareLookup<SymbolProvider> symbolProviders, IndexCache cache,
-			JavaProjectFinder projectFimder, ProgressService progressService) {
+			JavaProjectFinder projectFimder, ProgressService progressService, List<AnnotationReconciler> reconcilers,
+			BiFunction<AtomicReference<TextDocument>, BiConsumer<String, Diagnostic>, IProblemCollector> problemCollectorCreator) {
 		this.symbolHandler = symbolHandler;
 		this.symbolProviders = symbolProviders;
+		this.reconcilers = reconcilers;
 		this.cache = cache;
 		this.projectFinder = projectFimder;
 		this.progressService = progressService;
+		
+		this.problemCollectorCreator = problemCollectorCreator;
 	}
 
 	public SpringIndexerJavaDependencyTracker getDependencyTracker() {
@@ -259,8 +270,18 @@ public class SpringIndexerJava implements SpringIndexer {
 			
 			AtomicReference<TextDocument> docRef = new AtomicReference<>();
 			String file = UriUtil.toFileString(docURI);
+			
+			BiConsumer<String, Diagnostic> diagnosticsAggregator = new BiConsumer<>() {
+				@Override
+				public void accept(String docURI, Diagnostic diagnostic) {
+					generatedDiagnostics.add(new CachedDiagnostics(docURI, diagnostic));
+				}
+			};
+			
+			IProblemCollector problemCollector = problemCollectorCreator.apply(docRef, diagnosticsAggregator);
+
 			SpringIndexerJavaContext context = new SpringIndexerJavaContext(project, cu, docURI, file,
-					lastModified, docRef, content, generatedSymbols, generatedBeans, generatedDiagnostics, SCAN_PASS.ONE, new ArrayList<>());
+					lastModified, docRef, content, generatedSymbols, generatedBeans, problemCollector, SCAN_PASS.ONE, new ArrayList<>());
 
 			scanAST(context);
 
@@ -275,8 +296,9 @@ public class SpringIndexerJava implements SpringIndexer {
 
 			EnhancedSymbolInformation[] symbols = generatedSymbols.stream().map(cachedSymbol -> cachedSymbol.getEnhancedSymbol()).toArray(EnhancedSymbolInformation[]::new);
 			Bean[] beans = generatedBeans.stream().filter(cachedBean -> cachedBean.getBean() != null).map(cachedBean -> cachedBean.getBean()).toArray(Bean[]::new);
+			List<Diagnostic> diagnostics = generatedDiagnostics.stream().filter(cachedDiagnostics -> cachedDiagnostics.getDiagnostic() != null).map(cachedDiagnostic -> cachedDiagnostic.getDiagnostic()).collect(Collectors.toList());
 
-			symbolHandler.addSymbols(project, docURI, symbols, beans);
+			symbolHandler.addSymbols(project, docURI, symbols, beans, diagnostics);
 			
 			Set<String> scannedFiles = new HashSet<>();
 			scannedFiles.add(file);
@@ -299,22 +321,33 @@ public class SpringIndexerJava implements SpringIndexer {
 			if (cu != null) {
 				List<CachedSymbol> generatedSymbols = new ArrayList<CachedSymbol>();
 				List<CachedBean> generatedBeans = new ArrayList<CachedBean>();
-				List<CachedDiagnostics> generatedDiagnostics = new ArrayList<CachedDiagnostics>();
+				
+				IProblemCollector voidProblemCollector = new IProblemCollector() {
+					@Override
+					public void endCollecting() {
+					}
+					
+					@Override
+					public void beginCollecting() {
+					}
+					
+					@Override
+					public void accept(ReconcileProblem problem) {
+					}
+				};
 				
 				AtomicReference<TextDocument> docRef = new AtomicReference<>();
 				String file = UriUtil.toFileString(docURI);
 				SpringIndexerJavaContext context = new SpringIndexerJavaContext(project, cu, docURI, file,
-						0, docRef, content, generatedSymbols, generatedBeans, generatedDiagnostics, SCAN_PASS.ONE, new ArrayList<>());
+						0, docRef, content, generatedSymbols, generatedBeans, voidProblemCollector, SCAN_PASS.ONE, new ArrayList<>());
 
 				scanAST(context);
 				
 				return generatedSymbols.stream().map(s -> s.getEnhancedSymbol()).collect(Collectors.toList());
 			}
-			
 		}
 		
 		return Collections.emptyList();
-		
 	}
 
 	private Set<String> scanFilesInternally(IJavaProject project, DocumentDescriptor[] docs) throws Exception {
@@ -341,6 +374,13 @@ public class SpringIndexerJava implements SpringIndexer {
 		List<CachedDiagnostics> generatedDiagnostics = new ArrayList<CachedDiagnostics>();
 
 		Multimap<String, String> dependencies = MultimapBuilder.hashKeys().hashSetValues().build();
+		
+		BiConsumer<String, Diagnostic> diagnosticsAggregator = new BiConsumer<>() {
+			@Override
+			public void accept(String docURI, Diagnostic diagnostic) {
+				generatedDiagnostics.add(new CachedDiagnostics(docURI, diagnostic));
+			}
+		};
 
 		FileASTRequestor requestor = new FileASTRequestor() {
 			@Override
@@ -353,8 +393,10 @@ public class SpringIndexerJava implements SpringIndexer {
 				
 				AtomicReference<TextDocument> docRef = new AtomicReference<>();
 
+				IProblemCollector problemCollector = problemCollectorCreator.apply(docRef, diagnosticsAggregator);
+
 				SpringIndexerJavaContext context = new SpringIndexerJavaContext(project, cu, docURI, sourceFilePath,
-						lastModified, docRef, null, generatedSymbols, generatedBeans, generatedDiagnostics, SCAN_PASS.ONE, new ArrayList<>());
+						lastModified, docRef, null, generatedSymbols, generatedBeans, problemCollector, SCAN_PASS.ONE, new ArrayList<>());
 				
 				scanAST(context);
 				
@@ -369,7 +411,8 @@ public class SpringIndexerJava implements SpringIndexer {
 		
 		EnhancedSymbolInformation[] symbols = generatedSymbols.stream().map(cachedSymbol -> cachedSymbol.getEnhancedSymbol()).toArray(EnhancedSymbolInformation[]::new);
 		Bean[] beans = generatedBeans.stream().filter(cachedBean -> cachedBean.getBean() != null).map(cachedBean -> cachedBean.getBean()).toArray(Bean[]::new);
-		symbolHandler.addSymbols(project, symbols, beans);
+		Map<String, List<Diagnostic>> diagnosticsByDoc = generatedDiagnostics.stream().filter(cachedDiagnostic -> cachedDiagnostic.getDiagnostic() != null).collect(Collectors.groupingBy(CachedDiagnostics::getDocURI, Collectors.mapping(CachedDiagnostics::getDiagnostic, Collectors.toList())));
+		symbolHandler.addSymbols(project, symbols, beans, diagnosticsByDoc);
 
 		IndexCacheKey symbolsCacheKey = getCacheKey(project, SYMBOL_KEY);
 		IndexCacheKey beansCacheKey = getCacheKey(project, BEANS_KEY);
@@ -433,12 +476,19 @@ public class SpringIndexerJava implements SpringIndexer {
 
 			log.info("scan java files, AST parse, pass 1 for files: {}", javaFiles.length);
 
-			String[] pass2Files = scanFiles(project, javaFiles, generatedSymbols, generatedBeans, generatedDiagnostics, SCAN_PASS.ONE);
+			BiConsumer<String, Diagnostic> diagnosticsAggregator = new BiConsumer<>() {
+				@Override
+				public void accept(String docURI, Diagnostic diagnostic) {
+					generatedDiagnostics.add(new CachedDiagnostics(docURI, diagnostic));
+				}
+			};
+			
+			String[] pass2Files = scanFiles(project, javaFiles, generatedSymbols, generatedBeans, diagnosticsAggregator, SCAN_PASS.ONE);
 			if (pass2Files.length > 0) {
 
 				log.info("scan java files, AST parse, pass 2 for files: {}", javaFiles.length);
 
-				scanFiles(project, pass2Files, generatedSymbols, generatedBeans, generatedDiagnostics, SCAN_PASS.TWO);
+				scanFiles(project, pass2Files, generatedSymbols, generatedBeans, diagnosticsAggregator, SCAN_PASS.TWO);
 			}
 
 			log.info("scan java files done, number of symbols created: " + generatedSymbols.size());
@@ -465,12 +515,13 @@ public class SpringIndexerJava implements SpringIndexer {
 		if (symbols != null && beans != null) {
 			EnhancedSymbolInformation[] enhancedSymbols = Arrays.stream(symbols).map(cachedSymbol -> cachedSymbol.getEnhancedSymbol()).toArray(EnhancedSymbolInformation[]::new);
 			Bean[] allBeans = Arrays.stream(beans).filter(cachedBean -> cachedBean.getBean() != null).map(cachedBean -> cachedBean.getBean()).toArray(Bean[]::new);
-			symbolHandler.addSymbols(project, enhancedSymbols, allBeans);
+			Map<String, List<Diagnostic>> diagnosticsByDoc = Arrays.stream(diagnostics).filter(cachedDiagnostic -> cachedDiagnostic.getDiagnostic() != null).collect(Collectors.groupingBy(CachedDiagnostics::getDocURI, Collectors.mapping(CachedDiagnostics::getDiagnostic, Collectors.toList())));
+			symbolHandler.addSymbols(project, enhancedSymbols, allBeans, diagnosticsByDoc);
 		}
 	}
 
 	private String[] scanFiles(IJavaProject project, String[] javaFiles, List<CachedSymbol> generatedSymbols, List<CachedBean> generatedBeans,
-			List<CachedDiagnostics> generatedDiagnostics, SCAN_PASS pass) throws Exception {
+			BiConsumer<String, Diagnostic> diagnosticsAggregator, SCAN_PASS pass) throws Exception {
 		
 		PercentageProgressTask progressTask = this.progressService.createPercentageProgressTask(INDEX_FILES_TASK_ID + project.getElementName(),
 				javaFiles.length, "Spring Tools: Indexing Java Sources for '" + project.getElementName() + "'");
@@ -480,6 +531,7 @@ public class SpringIndexerJava implements SpringIndexer {
 			List<String> nextPassFiles = new ArrayList<>();
 	
 			FileASTRequestor requestor = new FileASTRequestor() {
+
 				@Override
 				public void acceptAST(String sourceFilePath, CompilationUnit cu) {
 					File file = new File(sourceFilePath);
@@ -487,8 +539,10 @@ public class SpringIndexerJava implements SpringIndexer {
 					long lastModified = file.lastModified();
 					AtomicReference<TextDocument> docRef = new AtomicReference<>();
 	
+					IProblemCollector problemCollector = problemCollectorCreator.apply(docRef, diagnosticsAggregator);
+
 					SpringIndexerJavaContext context = new SpringIndexerJavaContext(project, cu, docURI, sourceFilePath,
-							lastModified, docRef, null, generatedSymbols, generatedBeans, generatedDiagnostics, pass, nextPassFiles);
+							lastModified, docRef, null, generatedSymbols, generatedBeans, problemCollector, pass, nextPassFiles);
 	
 					scanAST(context);
 					progressTask.increment();
@@ -594,6 +648,8 @@ public class SpringIndexerJava implements SpringIndexer {
 		ITypeBinding typeBinding = node.resolveTypeBinding();
 
 		if (typeBinding != null) {
+			
+			// symbol and index scanning
 			Collection<SymbolProvider> providers = symbolProviders.get(typeBinding);
 			Collection<ITypeBinding> metaAnnotations = AnnotationHierarchies.getMetaAnnotations(typeBinding, symbolProviders::containsKey);
 			
@@ -609,6 +665,12 @@ public class SpringIndexerJava implements SpringIndexer {
 					context.getGeneratedSymbols().add(new CachedSymbol(context.getDocURI(), context.getLastModified(), enhancedSymbol));
 				}
 			}
+			
+			// reconciling
+			for (AnnotationReconciler reconciler : this.reconcilers) {
+				reconciler.visit(context.getProject(), context.getDocRef().get(), node, typeBinding, context.getProblemCollector());
+			}
+			
 		}
 		else {
 			log.debug("type binding not around: " + context.getDocURI() + " - " + node.toString());

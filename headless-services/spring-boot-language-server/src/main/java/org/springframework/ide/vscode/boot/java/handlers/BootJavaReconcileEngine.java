@@ -18,6 +18,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -133,7 +134,7 @@ public class BootJavaReconcileEngine implements IReconcileEngine, IJavaProjectRe
 				.map(docId -> new LazyTextDocument(docId.getUri(), LanguageId.JAVA)).collect(Collectors.toList());
 
 		Map<IDocument, IProblemCollector> problemCollectors = docs.stream()
-				.collect(Collectors.toMap(d -> d, d -> server.createProblemCollector(d)));
+				.collect(Collectors.toMap(doc -> doc, doc -> server.createProblemCollector(new AtomicReference<>(doc), null)));
 
 		problemCollectors.values().forEach(c -> c.beginCollecting());
 		

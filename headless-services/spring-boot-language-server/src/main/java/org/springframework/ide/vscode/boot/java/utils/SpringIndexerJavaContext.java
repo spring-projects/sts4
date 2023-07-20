@@ -18,9 +18,9 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.springframework.ide.vscode.boot.java.beans.CachedBean;
-import org.springframework.ide.vscode.boot.java.reconcilers.CachedDiagnostics;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexerJava.SCAN_PASS;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 /**
@@ -37,12 +37,13 @@ public class SpringIndexerJavaContext {
 	private final String content;
 	private final List<CachedSymbol> generatedSymbols;
 	private final List<CachedBean> beans;
-	private final List<CachedDiagnostics> diagnostics;
+	private final IProblemCollector getProblemCollector;
 	private final SCAN_PASS pass;
 	private final List<String> nextPassFiles;
 	
 	private final Set<String> dependencies = new HashSet<>();
 	private final Set<String> scannedTypes = new HashSet<>();
+
 
 	public SpringIndexerJavaContext(
 			IJavaProject project, 
@@ -54,7 +55,7 @@ public class SpringIndexerJavaContext {
 			String content, 
 			List<CachedSymbol> generatedSymbols,
 			List<CachedBean> beans,
-			List<CachedDiagnostics> diagnostics,
+			IProblemCollector problemCollector,
 			SCAN_PASS pass,
 			List<String> nextPassFiles
 	) {
@@ -67,8 +68,8 @@ public class SpringIndexerJavaContext {
 		this.docRef = docRef;
 		this.content = content;
 		this.generatedSymbols = generatedSymbols;
+		this.getProblemCollector = problemCollector;
 		this.beans = beans;
-		this.diagnostics = diagnostics;
 		this.pass = pass;
 		this.nextPassFiles = nextPassFiles;
 	}
@@ -109,10 +110,6 @@ public class SpringIndexerJavaContext {
 		return beans;
 	}
 	
-	public List<CachedDiagnostics> getDiagnostics() {
-		return diagnostics;
-	}
-
 	public SCAN_PASS getPass() {
 		return pass;
 	}
@@ -146,4 +143,9 @@ public class SpringIndexerJavaContext {
 			dependencies.remove(type);
 		}
 	}
+
+	public IProblemCollector getProblemCollector() {
+		return this.getProblemCollector;
+	}
+	
 }

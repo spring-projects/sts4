@@ -29,11 +29,15 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicReference;
+import java.util.function.BiConsumer;
+import java.util.function.BiFunction;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.eclipse.lsp4j.Diagnostic;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.WorkspaceSymbol;
@@ -50,6 +54,8 @@ import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchyA
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
+import org.springframework.ide.vscode.boot.java.reconcilers.AnnotationReconciler;
+import org.springframework.ide.vscode.boot.java.reconcilers.BeanMethodNotPublicReconciler;
 import org.springframework.ide.vscode.boot.java.utils.DocumentDescriptor;
 import org.springframework.ide.vscode.boot.java.utils.SpringFactoriesIndexer;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexer;
@@ -65,6 +71,7 @@ import org.springframework.ide.vscode.commons.languageserver.java.FutureProjectF
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver.Listener;
+import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.util.ListenerList;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
@@ -156,7 +163,9 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 
 		SymbolHandler handler = new SymbolHandler() {
 			@Override
-			public void addSymbols(IJavaProject project, String docURI, EnhancedSymbolInformation[] enhancedSymbols, Bean[] beanDefinitions) {
+			public void addSymbols(IJavaProject project, String docURI, EnhancedSymbolInformation[] enhancedSymbols, Bean[] beanDefinitions,
+					List<Diagnostic> diagnostics) {
+
 				if (enhancedSymbols != null) {
 					SpringSymbolIndex.this.addSymbolsByDoc(project, docURI, enhancedSymbols);
 				}
@@ -164,11 +173,16 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 				if (beanDefinitions != null) {
 					springIndex.updateBeans(project.getElementName(), docURI, beanDefinitions);
 				}
+				
+				if (diagnostics != null) {
+					server.getTextDocumentService().publishDiagnostics(new TextDocumentIdentifier(docURI), diagnostics);
+					// TODO: need to use real TextDocumentIdentifier because of the document version
+				}
 			}
 
 			@Override
 			public void addSymbols(IJavaProject project, EnhancedSymbolInformation[] enhancedSymbols,
-					Bean[] beanDefinitions) {
+					Bean[] beanDefinitions, Map<String, List<Diagnostic>> diagnosticsPerDoc) {
 
 				if (enhancedSymbols != null) {
 
@@ -208,12 +222,21 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 					}
 				}
 				
+				if (diagnosticsPerDoc != null) {
+					for (String docURI : diagnosticsPerDoc.keySet()) {
+						server.getTextDocumentService().publishDiagnostics(new TextDocumentIdentifier(docURI), diagnosticsPerDoc.get(docURI));
+						// TODO: need to use real TextDocumentIdentifier because of the document version
+					}
+				}
 			}
 			
 			@Override
 			public void removeSymbols(IJavaProject project, String docURI) {
 				SpringSymbolIndex.this.removeSymbolsByDoc(project, docURI);
 				springIndex.removeBeans(project.getElementName(), docURI);
+				
+				// TODO remove diagnostics ?!? maybe, maybe not
+				
 			}
 
 		};
@@ -221,7 +244,13 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 		Map<String, SpringIndexerXMLNamespaceHandler> namespaceHandler = new HashMap<>();
 		namespaceHandler.put("http://www.springframework.org/schema/beans", new SpringIndexerXMLNamespaceHandlerBeans());
 		springIndexerXML = new SpringIndexerXML(handler, namespaceHandler, this.cache, projectFinder());
-		springIndexerJava = new SpringIndexerJava(handler, specificProviders, this.cache, projectFinder(), server.getProgressService());
+		
+		List<AnnotationReconciler> reconcilers = new ArrayList<>();
+		reconcilers.add(new BeanMethodNotPublicReconciler());
+		
+		BiFunction<AtomicReference<TextDocument>, BiConsumer<String, Diagnostic>, IProblemCollector> problemCollectorFactory = (docRef, aggregator) -> server.createProblemCollector(docRef, aggregator);
+		springIndexerJava = new SpringIndexerJava(handler, specificProviders, this.cache, projectFinder(), server.getProgressService(), reconcilers, problemCollectorFactory);
+
 		factoriesIndexer = new SpringFactoriesIndexer(handler, cache);
 
 		this.indexers = new SpringIndexer[] {springIndexerJava, factoriesIndexer};

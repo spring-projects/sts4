@@ -10,12 +10,20 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.reconcilers;
 
+import org.eclipse.lsp4j.Diagnostic;
 import org.springframework.ide.vscode.boot.index.cache.AbstractIndexCacheable;
 
 public class CachedDiagnostics extends AbstractIndexCacheable {
 
-	public CachedDiagnostics(String docURI) {
+	private final Diagnostic diagnostic;
+
+	public CachedDiagnostics(String docURI, Diagnostic diagnostic) {
 		super(docURI);
+		this.diagnostic= diagnostic;
+	}
+	
+	public Diagnostic getDiagnostic() {
+		return this.diagnostic;
 	}
 
 }

@@ -10,6 +10,10 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.utils;
 
+import java.util.List;
+import java.util.Map;
+
+import org.eclipse.lsp4j.Diagnostic;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
@@ -19,8 +23,8 @@ import org.springframework.ide.vscode.commons.protocol.spring.Bean;
  */
 public interface SymbolHandler {
 
-	void addSymbols(IJavaProject project, String docURI, EnhancedSymbolInformation[] enhancedSymbols, Bean[] beanDefinitions);
-	void addSymbols(IJavaProject project, EnhancedSymbolInformation[] enhancedSymbols, Bean[] beanDefinitions);
+	void addSymbols(IJavaProject project, String docURI, EnhancedSymbolInformation[] enhancedSymbols, Bean[] beanDefinitions, List<Diagnostic> diagnostics);
+	void addSymbols(IJavaProject project, EnhancedSymbolInformation[] enhancedSymbols, Bean[] beanDefinitions, Map<String, List<Diagnostic>> diagnosticsByDoc);
 
 	void removeSymbols(IJavaProject project, String docURI);
 

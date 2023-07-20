@@ -187,7 +187,7 @@ public class SpringFactoriesIndexer implements SpringIndexer {
 
 		if (symbols != null) {
 			EnhancedSymbolInformation[] enhancedSymbols = Arrays.stream(symbols).map(cachedSymbol -> cachedSymbol.getEnhancedSymbol()).toArray(EnhancedSymbolInformation[]::new);
-			symbolHandler.addSymbols(project, enhancedSymbols, null);
+			symbolHandler.addSymbols(project, enhancedSymbols, null, null);
 		}
 
 		long endTime = System.currentTimeMillis();
@@ -257,7 +257,7 @@ public class SpringFactoriesIndexer implements SpringIndexer {
 			this.cache.update(cacheKey, file, updatedDoc.getLastModified(), generatedSymbols, null, CachedSymbol.class);
 
 			EnhancedSymbolInformation[] symbols = generatedSymbols.stream().map(cachedSymbol -> cachedSymbol.getEnhancedSymbol()).toArray(EnhancedSymbolInformation[]::new);
-			symbolHandler.addSymbols(project, docURI, symbols, null);
+			symbolHandler.addSymbols(project, docURI, symbols, null, null);
 		}
 	}
 
