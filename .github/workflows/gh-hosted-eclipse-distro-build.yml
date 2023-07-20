@@ -41,48 +41,35 @@ jobs:
         run: |
           echo "${{ secrets.GPG_PRIVATE_KEY }}" > gpg.asc
           echo "${{ secrets.GPG_PASSPHRASE }}" | gpg --batch --yes --passphrase-fd 0 --import gpg.asc
-      - name: Create Keychain. Add Mac App Dev Certificate to Keychain
-        env:
-          BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
-          P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
-          KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
-        run: |
-          CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
-          KEYCHAIN=$RUNNER_TEMP/app-signing.keychain-db
-
-          echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode -o $CERTIFICATE_PATH
-
-          security create-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN
-          security set-keychain-settings -lut 21600 $KEYCHAIN
-          security unlock-keychain -p "$KEYCHAIN_PASSWORD" $KEYCHAIN
-
-          security import $CERTIFICATE_PATH -P "$P12_PASSWORD" -A -t cert -f pkcs12 -k $KEYCHAIN
-          security list-keychain -d user -s $KEYCHAIN
-      - name: Unlock Keychain for OSX signing
-        run: |
-          security unlock-keychain -p ${{ secrets.KEYCHAIN_PASSWORD }} $RUNNER_TEMP/app-signing.keychain-db
-      - name: Install appdmg
-        run: |
-          npm install -g appdmg
-      - name: Create Temp Directory Structure for Notarization Service
-        run: |
-          cd /tmp
-          mkdir -p macos-notarization-service/pending-files
       - name: Build Eclipse Distro
         env:
           tools_s3_access_key: ${{ secrets.TOOLS_S3_ACCESS_KEY }}
           tools_s3_secret_key: ${{ secrets.TOOLS_S3_SECRET_KEY  }}
           gpg_passphrase: ${{ secrets.GPG_PASSPHRASE }}
           gpg_keyname: ${{ secrets.GPG_KEYID }}
-          MACOS_CERTIFICATE_ID: ${{ secrets.MACOS_CERTIFICATE_ID }}
-          MACOS_NOTARIZATION_SERVICE_URL: http://localhost:8080
-          AC_USERNAME: ${{ secrets.AC_USERNAME }}
-          AC_PASSWORD: ${{ secrets.AC_PASSWORD }}
-          APPLE_TEAM_ID: ${{ secrets.APPLE_TEAM_ID }}
         run: |
           cd eclipse-distribution
-          KEYCHAIN=$RUNNER_TEMP/app-signing.keychain-db
           ./mvnw --batch-mode -U clean deploy -P${{ inputs.eclipse_profile }} -P${{ inputs.build_type }} -Pgitactions -Pgpg.sign -Dsigning.skip=true -Dmaven.repo.local=~/.m2/repository-signed -Dhttpclient.retry-max=20 -Dmaven.test.skip=true -Declipse.p2.mirrors=false -Dtycho.localArtifacts=ignore -Ds3service.https-only=true -Dp2.replaceQualifier=true -Dorg.eclipse.ecf.provider.filetransfer.httpclient.retrieve.readTimeout=1200000 -Dorg.eclipse.equinox.p2.transport.ecf.retry=5 -Dskip.eclipserun.proxies=false -Dskip.osx.signing=true  -Dskip.win.signing=true -Dskip.osx.notarizing=true -Dtycho.equinox.resolver.uses=true
+      - name: Upload Linux Distro Build Artifacts
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.TOOLS_S3_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.TOOLS_S3_SECRET_KEY  }}
+          AWS_DEFAULT_REGION: us-east-1
+        run: |
+          files=`ls spring-tool-suite-4*linux*.tar.gz`
+          for file in $files
+          do
+            echo "Generate checksums for ${file}"
+            shasum -a 256 $file > ${file}.sha256
+            md5 $file > ${file}.md5
+          done
+          echo "Processing S3 update..."
+          ls spring-tool-suite-4*linux*.tar.gz*
+          dist_path=`cat ${{ github.workspace }}/eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target/s3-dist-path.txt`
+          echo "Removing old Linux .tar.gz files from s3..."
+          aws s3 rm s3://dist.springsource.com/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*linux*.tar.gz*" --exclude "*/*"
+          echo "Uploading new Linux .ta.gz files to s3..."
+          aws s3 mv . s3://dist.springsource.com/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*linux*.ta.gz*" --exclude "*/*" --acl public-read --no-progress
       - name: Upload Build Artifacts for Signing
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.TOOLS_S3_ACCESS_KEY }}
@@ -178,7 +165,7 @@ jobs:
           rm -rf *macosx*
           ls
           aws s3 mv s3://dist.springsource.com/sts4-distro-ci-temp/${{ github.run_id }} . --recursive --exclude "*" --include "spring-tool-suite-4*macosx*.tar.gz" --exclude "*/*" --no-progress
-      - name: Sign .app, Create DMG, Sign and Notarize DMG
+      - name: Sign .app, Create and Sign DMG
         env:
           MACOS_CERTIFICATE_ID: ${{ secrets.MACOS_CERTIFICATE_ID }}
           NOTARIZE_PROFILE: notarize-app-dmg-profile
@@ -190,6 +177,10 @@ jobs:
           do
             ${{ github.workspace }}/.github/scripts/sign-osx-distro-file.sh $file ${{ github.workspace }}/.github/assets/entitlements.plist ${{ github.workspace }}/.github/assets/sts4.icns
           done
+      - name: Notarize DMG files
+        env:
+          NOTARIZE_PROFILE: notarize-app-dmg-profile
+        run: |
           xcrun notarytool store-credentials $NOTARIZE_PROFILE --apple-id ${{ secrets.AC_USERNAME }} --team-id ${{ secrets.APPLE_TEAM_ID }} --password ${{ secrets.AC_PASSWORD }}
           dmg_files=`ls spring-tool-suite-4*macosx*.dmg`
           for dmg_file in $dmg_files

@@ -533,34 +533,34 @@
 <!--								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-macosx.cocoa.x86_64.dmg" algorithm="MD5" fileext=".md5" />-->
 <!--								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-macosx.cocoa.aarch64.dmg" algorithm="SHA-256" fileext=".sha256" />-->
 <!--								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-macosx.cocoa.aarch64.dmg" algorithm="MD5" fileext=".md5" />-->
-								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-linux.gtk.x86_64.tar.gz" algorithm="SHA-256" fileext=".sha256" />
-								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-linux.gtk.x86_64.tar.gz" algorithm="MD5" fileext=".md5" />
-								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-linux.gtk.aarch64.tar.gz" algorithm="SHA-256" fileext=".sha256" />
-								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-linux.gtk.aarch64.tar.gz" algorithm="MD5" fileext=".md5" />
+<!--								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-linux.gtk.x86_64.tar.gz" algorithm="SHA-256" fileext=".sha256" />-->
+<!--								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-linux.gtk.x86_64.tar.gz" algorithm="MD5" fileext=".md5" />-->
+<!--								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-linux.gtk.aarch64.tar.gz" algorithm="SHA-256" fileext=".sha256" />-->
+<!--								<checksum file="${project.build.directory}/products/spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}-${dist.target}-linux.gtk.aarch64.tar.gz" algorithm="MD5" fileext=".md5" />-->
 
-								<s3 accessKey="${dist.accessKey}" secretKey="${dist.secretKey}">
+<!--								<s3 accessKey="${dist.accessKey}" secretKey="${dist.secretKey}">-->
 
-									<delete bucketName="${dist.bucket}">
-										<fileset dir="${dist.path.product}">
-											<include name="spring-tool-suite-4*linux*.tar.gz*" />
+<!--									<delete bucketName="${dist.bucket}">-->
+<!--										<fileset dir="${dist.path.product}">-->
+<!--											<include name="spring-tool-suite-4*linux*.tar.gz*" />-->
 <!--											<include name="spring-tool-suite-4*.dmg" />-->
 <!--											<include name="spring-tool-suite-4*.dmg.md5" />-->
 <!--											<include name="spring-tool-suite-4*.dmg.sha1" />-->
 <!--											<include name="spring-tool-suite-4*.dmg.sha256" />-->
-										</fileset>
-									</delete>
+<!--										</fileset>-->
+<!--									</delete>-->
 
-									<upload bucketName="${dist.bucket}" toDir="${dist.path.product}"
-										publicRead="true">
-										<fileset dir="${project.build.directory}/products">
-											<include name="spring-tool-suite-4*linux*.tar.gz*" />
-<!--											<include name="spring-tool-suite-4*.dmg" />-->
-<!--											<include name="spring-tool-suite-4*.dmg.md5" />-->
-<!--											<include name="spring-tool-suite-4*.dmg.sha256" />-->
-										</fileset>
-									</upload>
+<!--									<upload bucketName="${dist.bucket}" toDir="${dist.path.product}"-->
+<!--										publicRead="true">-->
+<!--										<fileset dir="${project.build.directory}/products">-->
+<!--											<include name="spring-tool-suite-4*linux*.tar.gz*" />-->
+<!--&lt;!&ndash;											<include name="spring-tool-suite-4*.dmg" />&ndash;&gt;-->
+<!--&lt;!&ndash;											<include name="spring-tool-suite-4*.dmg.md5" />&ndash;&gt;-->
+<!--&lt;!&ndash;											<include name="spring-tool-suite-4*.dmg.sha256" />&ndash;&gt;-->
+<!--										</fileset>-->
+<!--									</upload>-->
 
-								</s3>
+<!--								</s3>-->
 
 							</target>
 						</configuration>
