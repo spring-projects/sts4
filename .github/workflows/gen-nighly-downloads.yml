@@ -15,12 +15,17 @@ jobs:
           AWS_DEFAULT_REGION: us-east-1
         run: |
           dist_path="snapshot/STS4/nightly/dist/e4.28"
+          s3_url=s3://dist.springsource.com/${dist_path}
           downloads_html="sts4-nightly-e4.28.html"
-          files=`aws s3 cp s3://dist.springsource.com/${dist_path} . --recursive --exclude "*" --include "spring-tool-suite-4*.zip" --include "spring-tool-suite-4*.dmg" --include "spring-tool-suite-4*.self-extracting.jar" --include "spring-tool-suite-4*.tar.gz" --exclude "*/*" --dryrun`
+          files=`aws s3 cp ${s3_url} . --recursive --exclude "*" --include "spring-tool-suite-4*.zip" --include "spring-tool-suite-4*.dmg" --include "spring-tool-suite-4*.self-extracting.jar" --include "spring-tool-suite-4*.tar.gz" --exclude "*/*" --dryrun`
           echo '<ul>' >> $downloads_html
           for file in $files
           do
-            echo '  <li><a href="https://download.springsource.com/snapshot/STS4/nightly/dist/e4.28/'${file}'">${file}</li>' >> $downloads_html  
+            if [[ "$file" =~ ^"s3://dist." ]]; then
+              download_url=https://download${file:9}
+              filename=${file:${#s3_url}}
+              echo '  <li><a href="'${download_url}'">${filename}</li>' >> $downloads_html  
+            fi
           done
           echo '</ul>' >> $downloads_html
           cat ./$downloads_html
