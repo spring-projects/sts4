@@ -12,11 +12,11 @@ on:
     types: [completed]
     branches:
       - "main"
-  workflow_dispatch:
+#  workflow_dispatch:
 
 jobs:
   e427-distro:
-#    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
     uses: ./.github/workflows/gh-hosted-eclipse-distro-build.yml
     with:
       eclipse_profile: 'e427'
