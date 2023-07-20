@@ -16,9 +16,7 @@ mkdir ${dir}/${destination_folder_name}
 tar -zxf $file --directory ${dir}/${destination_folder_name}
 echo "Successfully extracted ${filename}"
 echo "About to sign OSX .app file: ${dir}/${destination_folder_name}/SpringToolSuite4.app"
-ls ${dir}/${destination_folder_name}
 echo "keychain ${KEYCHAIN}"
-echo "entitlements ${entitlements}"
 codesign --verbose --deep --force --timestamp --entitlements "${entitlements}" --options=runtime --keychain "${KEYCHAIN}" -s "${MACOS_CERTIFICATE_ID}" ${dir}/${destination_folder_name}/SpringToolSuite4.app
 
 cd ${dir}/${destination_folder_name}
@@ -37,11 +35,8 @@ cat ./dmg-config.json
 dmg_filename=${filename%.*.*}.dmg
 appdmg ./dmg-config.json ../${dmg_filename}
 cd ..
-pwd
-ls
 rm -rf ./${destination_folder_name}
 rm -f $filename
 
 echo "Sign ${dmg_filename}"
-echo 'codesign --verbose --deep --force --timestamp --keychain "'${KEYCHAIN}'" -s "'${MACOS_CERTIFICATE_ID}'" ./$dmg_filename'
 codesign --verbose --deep --force --timestamp --keychain "${KEYCHAIN}" -s "${MACOS_CERTIFICATE_ID}" ./$dmg_filename

@@ -152,11 +152,9 @@ jobs:
           BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
           P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
           KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
-          KEYCHAIN: ${{ github.env.RUNNER_TEMP }}/app-signing.keychain-db
         run: |
-          CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
-          
-          echo $KEYCHAIN
+          CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12          
+          KEYCHAIN=$RUNNER_TEMP/app-signing.keychain-db
 
           echo -n "$BUILD_CERTIFICATE_BASE64" | base64 --decode -o $CERTIFICATE_PATH
 
@@ -172,9 +170,6 @@ jobs:
       - name: Install appdmg
         run: |
           npm install -g appdmg
-      - name: Setup Notarization Credentials
-        run: |
-          xcrun notarytool store-credentials notarize-app-dmg-profile --apple-id ${{ secrets.AC_USERNAME }} --team-id ${{ secrets.APPLE_TEAM_ID }} --password ${{ secrets.AC_PASSWORD }}
       - name: Download OSX tar.gz files from S3 for Signing/Notarization
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.TOOLS_S3_ACCESS_KEY }}
@@ -186,18 +181,20 @@ jobs:
       - name: Sign .app, Create DMG, Sign and Notarize DMG
         env:
           MACOS_CERTIFICATE_ID: ${{ secrets.MACOS_CERTIFICATE_ID }}
-          KEYCHAIN: ${{ github.env.RUNNER_TEMP }}/app-signing.keychain-db
+          NOTARIZE_PROFILE: notarize-app-dmg-profile
         run: |
+          export KEYCHAIN=$RUNNER_TEMP/app-signing.keychain-db
           ls ${{ github.workspace }}/.github/assets
           files=`ls spring-tool-suite-4*macosx*.tar.gz`
           for file in $files
           do
             ${{ github.workspace }}/.github/scripts/sign-osx-distro-file.sh $file ${{ github.workspace }}/.github/assets/entitlements.plist ${{ github.workspace }}/.github/assets/sts4.icns
           done
+          xcrun notarytool store-credentials $NOTARIZE_PROFILE --apple-id ${{ secrets.AC_USERNAME }} --team-id ${{ secrets.APPLE_TEAM_ID }} --password ${{ secrets.AC_PASSWORD }}
           dmg_files=`ls spring-tool-suite-4*macosx*.dmg`
           for dmg_file in $dmg_files
           do
-            ${{ github.workspace }}/.github/scripts/notarize-osx-distro-file.sh $dmg_file &
+            ${{ github.workspace }}/.github/scripts/notarize-osx-distro-file.sh $dmg_file $NOTARIZE_PROFILE &
           done
           wait
           echo "Done signing and notarization of DMG files"
