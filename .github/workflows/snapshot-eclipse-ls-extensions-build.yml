@@ -1,0 +1,19 @@
+name: Snapshot - Eclipse LS Extensions
+
+concurrency:
+  group: eclipse-ls-extension-snapshot
+  cancel-in-progress: true
+
+#on:
+#  workflow_dispatch:
+on:
+  push:
+    branches:
+      - 'main'
+
+jobs:
+  eclipse-ls-extensions:
+    uses: ./.github/workflows/eclipse-ls-extensions-build.yml
+    with:
+      build_type: 'snapshot'
+    secrets: inherit

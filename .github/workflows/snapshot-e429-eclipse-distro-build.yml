@@ -1,12 +1,12 @@
 name: Snapshot - 4.29 Eclipse STS Distribution Build
 
 concurrency:
-  group: e429
+  group: e429-snapshot
   cancel-in-progress: true
 
 on:
   workflow_run:
-    workflows: ["Eclipse LS Extensions Snapshot Build"]
+    workflows: ["Snapshot - Eclipse LS Extensions"]
     types: [completed]
     branches:
       - "main"
