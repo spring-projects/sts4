@@ -152,7 +152,7 @@ jobs:
           BUILD_CERTIFICATE_BASE64: ${{ secrets.BUILD_CERTIFICATE_BASE64 }}
           P12_PASSWORD: ${{ secrets.P12_PASSWORD }}
           KEYCHAIN_PASSWORD: ${{ secrets.KEYCHAIN_PASSWORD }}
-          KEYCHAIN: ${{ github.env.$RUNNER_TEMP }}/app-signing.keychain-db
+          KEYCHAIN: ${{ github.env.RUNNER_TEMP }}/app-signing.keychain-db
         run: |
           CERTIFICATE_PATH=$RUNNER_TEMP/build_certificate.p12
           
@@ -186,7 +186,7 @@ jobs:
       - name: Sign .app, Create DMG, Sign and Notarize DMG
         env:
           MACOS_CERTIFICATE_ID: ${{ secrets.MACOS_CERTIFICATE_ID }}
-          KEYCHAIN: ${{ github.env.$RUNNER_TEMP }}/app-signing.keychain-db
+          KEYCHAIN: ${{ github.env.RUNNER_TEMP }}/app-signing.keychain-db
         run: |
           ls ${{ github.workspace }}/.github/assets
           files=`ls spring-tool-suite-4*macosx*.tar.gz`
