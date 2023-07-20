@@ -24,9 +24,9 @@ jobs:
             if [[ "$file" =~ ^"s3://dist." ]]; then
               download_url=https://download${file:9}
               echo "s3 url length: ${#s3_url}"
-              filename=${file:${#s3_url}}
+              filename=${file:${#s3_url}+1}
               echo "file name: ${filename}"
-              echo '  <li><a href="'${download_url}'">${filename}</li>' >> $downloads_html  
+              echo '  <li><a href="'${download_url}'">'${filename}'</li>' >> $downloads_html  
             fi
           done
           echo '</ul>' >> $downloads_html
