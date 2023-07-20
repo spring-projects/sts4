@@ -56,6 +56,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.TOOLS_S3_SECRET_KEY  }}
           AWS_DEFAULT_REGION: us-east-1
         run: |
+          cd eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target/products
           files=`ls spring-tool-suite-4*linux*.tar.gz`
           for file in $files
           do
