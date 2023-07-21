@@ -30,6 +30,7 @@ jobs:
           echo '</ul>' >> $downloads_html
           cat ./$downloads_html
           aws s3 mv ./$downloads_html s3://dist.springsource.com/snapshot/STS4 --acl public-read
+          aws s3 ls s3://dist.springsource.com/snapshot/STS4
 
 
 
