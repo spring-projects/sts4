@@ -130,6 +130,14 @@ jobs:
           aws s3 rm s3://dist.springsource.com/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --include "spring-tool-suite-4*win*.self-extracting.jar*" --exclude "*/*"
           echo "Uploading new win zip and self extracting jar files to s3..."
           aws s3 mv . s3://dist.springsource.com/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --include "spring-tool-suite-4*win*.self-extracting.jar*" --exclude "*/*" --acl public-read --no-progress
+      - name: cleanup
+        if: ${{ always() }}
+        env:
+          SSH_KEY: ~/.ssh/id_rsa
+          SSH_USER: signer
+        run: |
+          ssh -i $SSH_KEY $SSH_USER@vm-tools.spring.vmware.com -- rm -rf /opt/bamboo/$id
+          rm -rf *spring-tool-suite-4*win*
 
   sign-osx-distros:
     needs: eclipse-distro-build
@@ -210,6 +218,10 @@ jobs:
           aws s3 rm s3://dist.springsource.com/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*macosx*.dmg*" --exclude "*/*"
           echo "Uploading new dmg files to s3..."
           aws s3 mv . s3://dist.springsource.com/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*macosx*.dmg*" --exclude "*/*" --acl public-read --no-progress
+      - name: cleanup
+        if: ${{ always() }}
+        run: |
+          rm -rf *spring-tool-suite-4*macosx*
 
   cleanup:
     needs: [ sign-win-distros, sign-osx-distros ]
@@ -251,4 +263,4 @@ jobs:
           done
           echo '</ul>' >> $downloads_html
           cat ./$downloads_html
-          aws s3 mv ./$downloads_html s3://dist.springsource.com/${{ input.build_type }}/STS4 --acl public-read --no-progress
+          aws s3 mv ./$downloads_html s3://dist.springsource.com/${{ inputs.build_type }}/STS4 --acl public-read --no-progress
