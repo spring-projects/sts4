@@ -236,6 +236,10 @@ jobs:
           AWS_DEFAULT_REGION: us-east-1
         run: |
           aws s3 rm s3://dist.springsource.com/sts4-distro-ci-temp --recursive --exclude "*" --include "${{ github.run_id }}/*"
+      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
+        with:
+          sparse-checkout: |
+            .github
       - uses: actions/download-artifact@cbed621e49e4c01b044d60f6c80ea4ed6328b281
         with:
           name: s3-dist-path-${{ github.run_id }}.${{ github.run_attempt }}
@@ -247,20 +251,23 @@ jobs:
           AWS_DEFAULT_REGION: us-east-1
         run: |
           dist_path=`cat s3-dist-path.txt`
-          s3_url=s3://dist.springsource.com/${dist_path}
           eclipse_profile=${{ inputs.eclipse_profile }}
           eclipse_version=${eclipse_profile:0:2}.${eclipse_profile:2}
-          downloads_html="sts4-nightly-${eclipse_version}.html"
-          files=`aws s3 cp ${s3_url} . --recursive --exclude "*" --include "spring-tool-suite-4*.zip" --include "spring-tool-suite-4*.dmg" --include "spring-tool-suite-4*.self-extracting.jar" --include "spring-tool-suite-4*.tar.gz" --exclude "*/*" --dryrun`
-          echo '<ul>' >> $downloads_html
-          for file in $files
-          do
-            if [[ "$file" =~ ^"s3://dist." ]]; then
-              download_url=https://download${file:9}
-              filename=${file:${#s3_url}+1}
-              echo '  <li><a href="'${download_url}'">'${filename}'</li>' >> $downloads_html  
-            fi
-          done
-          echo '</ul>' >> $downloads_html
-          cat ./$downloads_html
-          aws s3 mv ./$downloads_html s3://dist.springsource.com/${{ inputs.build_type }}/STS4/ --acl public-read --no-progress
+          ${{ github.workspace }}/.github/scripts/update-distro-download-page.sh $dist_path $eclipse_version ${{ inputs.build_type }}
+#          s3_url=s3://dist.springsource.com/${dist_path}
+#          eclipse_profile=${{ inputs.eclipse_profile }}
+#          eclipse_version=${eclipse_profile:0:2}.${eclipse_profile:2}
+#          downloads_html="sts4-nightly-${eclipse_version}.html"
+#          files=`aws s3 cp ${s3_url} . --recursive --exclude "*" --include "spring-tool-suite-4*.zip" --include "spring-tool-suite-4*.dmg" --include "spring-tool-suite-4*.self-extracting.jar" --include "spring-tool-suite-4*.tar.gz" --exclude "*/*" --dryrun`
+#          echo '<ul>' >> $downloads_html
+#          for file in $files
+#          do
+#            if [[ "$file" =~ ^"s3://dist." ]]; then
+#              download_url=https://download${file:9}
+#              filename=${file:${#s3_url}+1}
+#              echo '  <li><a href="'${download_url}'">'${filename}'</li>' >> $downloads_html
+#            fi
+#          done
+#          echo '</ul>' >> $downloads_html
+#          cat ./$downloads_html
+#          aws s3 mv ./$downloads_html s3://dist.springsource.com/${{ inputs.build_type }}/STS4/ --acl public-read --no-progress
