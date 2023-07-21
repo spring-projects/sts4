@@ -130,13 +130,13 @@ jobs:
           aws s3 rm s3://dist.springsource.com/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --include "spring-tool-suite-4*win*.self-extracting.jar*" --exclude "*/*"
           echo "Uploading new win zip and self extracting jar files to s3..."
           aws s3 mv . s3://dist.springsource.com/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --include "spring-tool-suite-4*win*.self-extracting.jar*" --exclude "*/*" --acl public-read --no-progress
-      - name: cleanup
+      - name: Cleanup
         if: ${{ always() }}
         env:
           SSH_KEY: ~/.ssh/id_rsa
           SSH_USER: signer
         run: |
-          ssh -i $SSH_KEY $SSH_USER@vm-tools.spring.vmware.com -- rm -rf /opt/bamboo/$id
+          ssh -i $SSH_KEY $SSH_USER@vm-tools.spring.vmware.com -- rm -rf /opt/bamboo/${{ github.run_id }}
           rm -rf *spring-tool-suite-4*win*
 
   sign-osx-distros:
@@ -218,7 +218,7 @@ jobs:
           aws s3 rm s3://dist.springsource.com/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*macosx*.dmg*" --exclude "*/*"
           echo "Uploading new dmg files to s3..."
           aws s3 mv . s3://dist.springsource.com/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*macosx*.dmg*" --exclude "*/*" --acl public-read --no-progress
-      - name: cleanup
+      - name: Cleanup
         if: ${{ always() }}
         run: |
           rm -rf *spring-tool-suite-4*macosx*
