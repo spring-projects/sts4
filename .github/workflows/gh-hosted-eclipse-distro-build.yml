@@ -263,4 +263,4 @@ jobs:
           done
           echo '</ul>' >> $downloads_html
           cat ./$downloads_html
-          aws s3 mv ./$downloads_html s3://dist.springsource.com/${{ inputs.build_type }}/STS4 --acl public-read --no-progress
+          aws s3 mv ./$downloads_html s3://dist.springsource.com/${{ inputs.build_type }}/STS4/ --acl public-read --no-progress
