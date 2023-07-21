@@ -28,6 +28,7 @@ jobs:
         with:
           ref: ${{ inputs.ref }}
           sparse-checkout: |
+            .github
             eclipse-distribution
             eclipse-extensions
       - name: Set up JDK 17
@@ -71,6 +72,17 @@ jobs:
           aws s3 rm s3://dist.springsource.com/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*linux*.tar.gz*" --exclude "*/*"
           echo "Uploading new Linux .ta.gz files to s3..."
           aws s3 cp . s3://dist.springsource.com/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*linux*.tar.gz*" --exclude "*/*" --acl public-read --no-progress
+      - name: Update Nightly Distro Downloads page
+        if: ${{ inputs.build_type == 'snapshot' && always() }}
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.TOOLS_S3_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.TOOLS_S3_SECRET_KEY  }}
+          AWS_DEFAULT_REGION: us-east-1
+        run: |
+          dist_path=`cat ${{ github.workspace }}/eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target/s3-dist-path.txt`
+          eclipse_profile=${{ inputs.eclipse_profile }}
+          eclipse_version=${eclipse_profile:0:2}.${eclipse_profile:2}
+          ${{ github.workspace }}/.github/scripts/update-distro-download-page.sh $dist_path $eclipse_version ${{ inputs.build_type }}
       - name: Upload Build Artifacts for Signing
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.TOOLS_S3_ACCESS_KEY }}
@@ -130,6 +142,17 @@ jobs:
           aws s3 rm s3://dist.springsource.com/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --include "spring-tool-suite-4*win*.self-extracting.jar*" --exclude "*/*"
           echo "Uploading new win zip and self extracting jar files to s3..."
           aws s3 mv . s3://dist.springsource.com/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --include "spring-tool-suite-4*win*.self-extracting.jar*" --exclude "*/*" --acl public-read --no-progress
+      - name: Update Nightly Distro Downloads page
+        if: ${{ inputs.build_type == 'snapshot' && always() }}
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.TOOLS_S3_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.TOOLS_S3_SECRET_KEY  }}
+          AWS_DEFAULT_REGION: us-east-1
+        run: |
+          dist_path=`cat s3-dist-path.txt`
+          eclipse_profile=${{ inputs.eclipse_profile }}
+          eclipse_version=${eclipse_profile:0:2}.${eclipse_profile:2}
+          ${{ github.workspace }}/.github/scripts/update-distro-download-page.sh $dist_path $eclipse_version ${{ inputs.build_type }}
       - name: Cleanup
         if: ${{ always() }}
         env:
@@ -218,6 +241,17 @@ jobs:
           aws s3 rm s3://dist.springsource.com/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*macosx*.dmg*" --exclude "*/*"
           echo "Uploading new dmg files to s3..."
           aws s3 mv . s3://dist.springsource.com/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*macosx*.dmg*" --exclude "*/*" --acl public-read --no-progress
+      - name: Update Nightly Distro Downloads page
+        if: ${{ inputs.build_type == 'snapshot' && always() }}
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.TOOLS_S3_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.TOOLS_S3_SECRET_KEY  }}
+          AWS_DEFAULT_REGION: us-east-1
+        run: |
+          dist_path=`cat s3-dist-path.txt`
+          eclipse_profile=${{ inputs.eclipse_profile }}
+          eclipse_version=${eclipse_profile:0:2}.${eclipse_profile:2}
+          ${{ github.workspace }}/.github/scripts/update-distro-download-page.sh $dist_path $eclipse_version ${{ inputs.build_type }}
       - name: Cleanup
         if: ${{ always() }}
         run: |
@@ -236,38 +270,3 @@ jobs:
           AWS_DEFAULT_REGION: us-east-1
         run: |
           aws s3 rm s3://dist.springsource.com/sts4-distro-ci-temp --recursive --exclude "*" --include "${{ github.run_id }}/*"
-      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
-        with:
-          sparse-checkout: |
-            .github
-      - uses: actions/download-artifact@cbed621e49e4c01b044d60f6c80ea4ed6328b281
-        with:
-          name: s3-dist-path-${{ github.run_id }}.${{ github.run_attempt }}
-      - name: Update Nightly Distro Downloads page
-        if: ${{ inputs.build_type == 'snapshot' }}
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.TOOLS_S3_ACCESS_KEY }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.TOOLS_S3_SECRET_KEY  }}
-          AWS_DEFAULT_REGION: us-east-1
-        run: |
-          dist_path=`cat s3-dist-path.txt`
-          eclipse_profile=${{ inputs.eclipse_profile }}
-          eclipse_version=${eclipse_profile:0:2}.${eclipse_profile:2}
-          ${{ github.workspace }}/.github/scripts/update-distro-download-page.sh $dist_path $eclipse_version ${{ inputs.build_type }}
-#          s3_url=s3://dist.springsource.com/${dist_path}
-#          eclipse_profile=${{ inputs.eclipse_profile }}
-#          eclipse_version=${eclipse_profile:0:2}.${eclipse_profile:2}
-#          downloads_html="sts4-nightly-${eclipse_version}.html"
-#          files=`aws s3 cp ${s3_url} . --recursive --exclude "*" --include "spring-tool-suite-4*.zip" --include "spring-tool-suite-4*.dmg" --include "spring-tool-suite-4*.self-extracting.jar" --include "spring-tool-suite-4*.tar.gz" --exclude "*/*" --dryrun`
-#          echo '<ul>' >> $downloads_html
-#          for file in $files
-#          do
-#            if [[ "$file" =~ ^"s3://dist." ]]; then
-#              download_url=https://download${file:9}
-#              filename=${file:${#s3_url}+1}
-#              echo '  <li><a href="'${download_url}'">'${filename}'</li>' >> $downloads_html
-#            fi
-#          done
-#          echo '</ul>' >> $downloads_html
-#          cat ./$downloads_html
-#          aws s3 mv ./$downloads_html s3://dist.springsource.com/${{ inputs.build_type }}/STS4/ --acl public-read --no-progress

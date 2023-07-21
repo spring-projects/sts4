@@ -5,6 +5,7 @@ build_type=$3
 s3_url=s3://dist.springsource.com/${dist_path}
 downloads_html="sts4-nightly-${eclipse_version}.html"
 files=`aws s3 cp ${s3_url} . --recursive --exclude "*" --include "spring-tool-suite-4*.zip" --include "spring-tool-suite-4*.dmg" --include "spring-tool-suite-4*.self-extracting.jar" --include "spring-tool-suite-4*.tar.gz" --exclude "*/*" --dryrun`
+rm -f ./${downloads_html}
 echo '<ul>' >> $downloads_html
 for file in $files
 do
