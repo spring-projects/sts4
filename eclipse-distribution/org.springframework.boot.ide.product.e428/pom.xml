@@ -324,7 +324,6 @@
 				<version>1.7</version>
 				<executions>
 
-<!--
 					<execution>
 						<id>update-nightly-downloads</id>
 						<phase>verify</phase>
@@ -367,7 +366,6 @@
 							<goal>run</goal>
 						</goals>
 					</execution>
--->
 
 					<execution>
 						<id>generate-s3-upload-info</id>
