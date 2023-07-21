@@ -240,7 +240,7 @@ jobs:
         with:
           name: s3-dist-path-${{ github.run_id }}.${{ github.run_attempt }}
       - name: Update Nightly Distro Downloads page
-        if: ${{ input.build_type == 'snapshot' }}
+        if: ${{ inputs.build_type == 'snapshot' }}
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.TOOLS_S3_ACCESS_KEY }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.TOOLS_S3_SECRET_KEY  }}
