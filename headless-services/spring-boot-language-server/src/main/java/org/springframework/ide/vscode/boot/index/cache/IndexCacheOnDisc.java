@@ -308,6 +308,7 @@ public class IndexCacheOnDisc implements IndexCache {
 					&& key.getIndexer().equals(cacheKey.getIndexer())
 					&& key.getCategory().equals(cacheKey.getCategory())) {
 				cacheFiles[i].delete();
+				this.stores.remove(key);
 			}
 			// cleanup old cache files without category information (pre 4.19.1 release)
 			else if (key != null && !key.equals(cacheKey)
