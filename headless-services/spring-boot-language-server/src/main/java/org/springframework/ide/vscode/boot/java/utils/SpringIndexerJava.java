@@ -59,6 +59,7 @@ import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.commons.protocol.java.Classpath;
 import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.commons.util.UriUtil;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -649,7 +650,7 @@ public class SpringIndexerJava implements SpringIndexer {
 
 	private IndexCacheKey getCacheKey(IJavaProject project, String elementType) {
 		IClasspath classpath = project.getClasspath();
-		Stream<File> classpathEntries = IClasspathUtil.getAllBinaryRoots(classpath).stream();
+		Stream<File> classpathEntries = IClasspathUtil.getBinaryRoots(classpath, cpe -> !Classpath.ENTRY_KIND_SOURCE.equals(cpe.getKind())).stream();
 
 		String classpathIdentifier = classpathEntries
 				.filter(file -> file.exists())
