@@ -218,6 +218,20 @@ public class IndexCacheOnDiscTest {
     }
 
     @Test
+    void testDoNotRetrieveOldCacheDataIfNewerVersionIsStored() throws Exception {
+        IndexCacheKey key1 = CACHE_KEY_VERSION_1;
+        IndexCacheKey key2 = new IndexCacheKey("someProject", "someIndexer", "someCategory", "2");
+
+        cache.store(key1, new String[0], new ArrayList<>(), null, CachedSymbol.class);
+        assertNotNull(cache.retrieve(key1, new String[0], CachedSymbol.class));
+        assertNull(cache.retrieve(key2, new String[0], CachedSymbol.class));
+
+        cache.store(key2, new String[0], new ArrayList<>(), null, CachedSymbol.class);
+        assertNull(cache.retrieve(key1, new String[0], CachedSymbol.class));
+        assertNotNull(cache.retrieve(key2, new String[0], CachedSymbol.class));
+    }
+
+    @Test
     void testDeleteOldCacheFileFromPreviousReleasesIfNewOneIsStored() throws Exception {
         IndexCacheKey key1 = new IndexCacheKey("someProject", "someIndexer", "", "2");
         cache.store(key1, new String[0], new ArrayList<>(), null, CachedSymbol.class);
