@@ -146,6 +146,7 @@
 				<dist.secretKey>${env.tools_s3_secret_key}</dist.secretKey>
 				<gpg.passphrase>${env.gpg_passphrase}</gpg.passphrase>
 				<gpg.keyname>${env.gpg_keyname}</gpg.keyname>
+				<skip.update-nightly-download-page>true</skip.update-nightly-download-page>
 			</properties>
 		</profile>
 

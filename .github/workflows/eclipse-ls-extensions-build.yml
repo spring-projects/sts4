@@ -41,9 +41,9 @@ jobs:
         run: |
           cd headless-services
           if command -v xvfb-run ; then
-            xvfb-run ./mvnw --batch-mode clean install -DskipTests
+            xvfb-run ./mvnw --batch-mode clean install
           else
-            ./mvnw --batch-mode clean install -DskipTests
+            ./mvnw --batch-mode clean install
           fi
       - name: Install GPG key
         run: |

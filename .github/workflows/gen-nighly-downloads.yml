@@ -1,0 +1,36 @@
+name: Generate Nightly Downloads HTML
+
+# configure manual trigger
+on:
+  workflow_dispatch:
+
+jobs:
+  gen_html:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Update Nightly Distro Downloads page
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.TOOLS_S3_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.TOOLS_S3_SECRET_KEY  }}
+          AWS_DEFAULT_REGION: us-east-1
+        run: |
+          dist_path="snapshot/STS4/nightly/dist/e4.28"
+          s3_url=s3://dist.springsource.com/${dist_path}
+          downloads_html="sts4-nightly-e4.28.html"
+          files=`aws s3 cp ${s3_url} . --recursive --exclude "*" --include "spring-tool-suite-4*.zip" --include "spring-tool-suite-4*.dmg" --include "spring-tool-suite-4*.self-extracting.jar" --include "spring-tool-suite-4*.tar.gz" --exclude "*/*" --dryrun`
+          echo '<ul>' >> $downloads_html
+          for file in $files
+          do
+            if [[ "$file" =~ ^"s3://dist." ]]; then
+              download_url=https://download${file:9}
+              filename=${file:${#s3_url}+1}
+              echo '  <li><a href="'${download_url}'">'${filename}'</li>' >> $downloads_html  
+            fi
+          done
+          echo '</ul>' >> $downloads_html
+          cat ./$downloads_html
+          aws s3 mv ./$downloads_html s3://dist.springsource.com/snapshot/STS4/ --acl public-read
+          aws s3 ls s3://dist.springsource.com/snapshot/STS4/
+
+
+
