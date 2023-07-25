@@ -118,66 +118,66 @@ public class BootJavaReconcileEngine implements IReconcileEngine, IJavaProjectRe
 
 	@Override
 	public void reconcile(IJavaProject project, ProgressService progressService) {		
-		Stream<Path> files = IClasspathUtil.getProjectJavaSourceFolders(project.getClasspath()).flatMap(folder -> {
-			try {
-				return Files.walk(folder.toPath()).filter(Files::isRegularFile);
-			} catch (IOException e) {
-				return Stream.empty();
-			}
-		});
-
-		Stream<TextDocumentIdentifier> docIds = files
-				.filter(f -> f.getFileName().toString().endsWith(".java"))
-				.map(f -> new TextDocumentIdentifier(f.toUri().toASCIIString()));
-
-		List<TextDocument> docs = docIds.filter(docId -> server.getTextDocumentService().getLatestSnapshot(docId.getUri()) == null)
-				.map(docId -> new LazyTextDocument(docId.getUri(), LanguageId.JAVA)).collect(Collectors.toList());
-
-		Map<IDocument, IProblemCollector> problemCollectors = docs.stream()
-				.collect(Collectors.toMap(doc -> doc, doc -> server.createProblemCollector(new AtomicReference<>(doc), null)));
-
-		problemCollectors.values().forEach(c -> c.beginCollecting());
-		
-		int totalWork = 0;
-		for (JavaReconciler jr : javaReconcilers) {
-			totalWork += jr.getTotalWorkUnits(docs);
-		}
-		
-		PercentageProgressTask progressTask = progressService.createPercentageProgressTask(
-				"reconcile-java-" + project.getElementName(),
-				totalWork,
-				"Spring Tools: Reconciling Java Sources for '" + project.getElementName() + "'"
-		);
-		
-		for (JavaReconciler jr : javaReconcilers) {
-			try {
-				Map<IDocument, Collection<ReconcileProblem>> problems = jr.reconcile(project, docs, () -> progressTask.increment());
-				problems.entrySet().forEach(e -> {
-					IProblemCollector collector = problemCollectors.get(e.getKey());
-					e.getValue().forEach(p -> collector.accept(p));
-				});
-			} catch (Exception e) {
-				log.error("", e);
-			}
-		}
-
-		progressTask.done();
-		problemCollectors.values().forEach(c -> c.endCollecting());
+//		Stream<Path> files = IClasspathUtil.getProjectJavaSourceFolders(project.getClasspath()).flatMap(folder -> {
+//			try {
+//				return Files.walk(folder.toPath()).filter(Files::isRegularFile);
+//			} catch (IOException e) {
+//				return Stream.empty();
+//			}
+//		});
+//
+//		Stream<TextDocumentIdentifier> docIds = files
+//				.filter(f -> f.getFileName().toString().endsWith(".java"))
+//				.map(f -> new TextDocumentIdentifier(f.toUri().toASCIIString()));
+//
+//		List<TextDocument> docs = docIds.filter(docId -> server.getTextDocumentService().getLatestSnapshot(docId.getUri()) == null)
+//				.map(docId -> new LazyTextDocument(docId.getUri(), LanguageId.JAVA)).collect(Collectors.toList());
+//
+//		Map<IDocument, IProblemCollector> problemCollectors = docs.stream()
+//				.collect(Collectors.toMap(doc -> doc, doc -> server.createProblemCollector(new AtomicReference<>(doc), null)));
+//
+//		problemCollectors.values().forEach(c -> c.beginCollecting());
+//		
+//		int totalWork = 0;
+//		for (JavaReconciler jr : javaReconcilers) {
+//			totalWork += jr.getTotalWorkUnits(docs);
+//		}
+//		
+//		PercentageProgressTask progressTask = progressService.createPercentageProgressTask(
+//				"reconcile-java-" + project.getElementName(),
+//				totalWork,
+//				"Spring Tools: Reconciling Java Sources for '" + project.getElementName() + "'"
+//		);
+//		
+//		for (JavaReconciler jr : javaReconcilers) {
+//			try {
+//				Map<IDocument, Collection<ReconcileProblem>> problems = jr.reconcile(project, docs, () -> progressTask.increment());
+//				problems.entrySet().forEach(e -> {
+//					IProblemCollector collector = problemCollectors.get(e.getKey());
+//					e.getValue().forEach(p -> collector.accept(p));
+//				});
+//			} catch (Exception e) {
+//				log.error("", e);
+//			}
+//		}
+//
+//		progressTask.done();
+//		problemCollectors.values().forEach(c -> c.endCollecting());
 
 	}
 
 	@Override
 	public void clear(IJavaProject project) {
-		IClasspathUtil.getProjectJavaSourceFolders(project.getClasspath()).flatMap(folder -> {
-			try {
-				return Files.walk(folder.toPath()).filter(Files::isRegularFile);
-			} catch (IOException e) {
-				return Stream.empty();
-			}
-		})
-		.filter(f -> f.getFileName().toString().endsWith(".java"))
-		.filter(f -> server.getTextDocumentService().getLatestSnapshot(UriUtil.toUri(f.toFile()).toASCIIString()) == null)
-		.forEach(p -> server.getTextDocumentService().publishDiagnostics(new TextDocumentIdentifier(p.toUri().toASCIIString()), Collections.emptyList()));
+//		IClasspathUtil.getProjectJavaSourceFolders(project.getClasspath()).flatMap(folder -> {
+//			try {
+//				return Files.walk(folder.toPath()).filter(Files::isRegularFile);
+//			} catch (IOException e) {
+//				return Stream.empty();
+//			}
+//		})
+//		.filter(f -> f.getFileName().toString().endsWith(".java"))
+//		.filter(f -> server.getTextDocumentService().getLatestSnapshot(UriUtil.toUri(f.toFile()).toASCIIString()) == null)
+//		.forEach(p -> server.getTextDocumentService().publishDiagnostics(new TextDocumentIdentifier(p.toUri().toASCIIString()), Collections.emptyList()));
 		
 	}
 
