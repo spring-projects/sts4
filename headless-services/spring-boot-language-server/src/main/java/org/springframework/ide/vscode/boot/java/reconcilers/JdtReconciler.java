@@ -28,8 +28,10 @@ import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.app.BootJavaConfig;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.handlers.SpelExpressionReconciler;
+import org.springframework.ide.vscode.boot.java.rewrite.RewriteRecipeRepository;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixRegistry;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblem;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
@@ -58,7 +60,7 @@ public class JdtReconciler implements JavaReconciler {
 
 	private BootJavaConfig config;
 	
-	public JdtReconciler(CompilationUnitCache compilationUnitCache, BootJavaConfig config) {
+	public JdtReconciler(CompilationUnitCache compilationUnitCache, RewriteRecipeRepository recipeRepo, QuickfixRegistry quickfixRegistry, BootJavaConfig config) {
 		this.compilationUnitCache = compilationUnitCache;
 		this.config = config;
 		config.addListener(evt -> setSpelExpressionSyntaxValidationEnabled(config.isSpelExpressionValidationEnabled()));
@@ -90,7 +92,7 @@ public class JdtReconciler implements JavaReconciler {
 				new AnnotationParamReconciler(SPRING_CONDITIONAL_ON_EXPRESSION, null, "", "", spelExpressionReconciler),
 				new AnnotationParamReconciler(SPRING_CONDITIONAL_ON_EXPRESSION, "value", "", "", spelExpressionReconciler),
 				
-				new BeanMethodNotPublicReconciler()
+				new BeanMethodNotPublicReconciler(recipeRepo, quickfixRegistry)
 		};
 	}
 

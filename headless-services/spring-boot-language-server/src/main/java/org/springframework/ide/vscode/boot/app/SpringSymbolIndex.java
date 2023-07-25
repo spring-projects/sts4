@@ -56,6 +56,7 @@ import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.boot.java.reconcilers.AnnotationReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.BeanMethodNotPublicReconciler;
+import org.springframework.ide.vscode.boot.java.rewrite.RewriteRecipeRepository;
 import org.springframework.ide.vscode.boot.java.utils.DocumentDescriptor;
 import org.springframework.ide.vscode.boot.java.utils.SpringFactoriesIndexer;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexer;
@@ -71,6 +72,7 @@ import org.springframework.ide.vscode.commons.languageserver.java.FutureProjectF
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver.Listener;
+import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixRegistry;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.util.ListenerList;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
@@ -101,6 +103,7 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 	@Autowired IndexCache cache;
 	@Autowired FutureProjectFinder futureProjectFinder;
 	@Autowired SpringMetamodelIndex springIndex;
+	@Autowired RewriteRecipeRepository recipeRepo;
 
 	private static final String QUERY_PARAM_LOCATION_PREFIX = "locationPrefix:";
 
@@ -246,7 +249,7 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 		springIndexerXML = new SpringIndexerXML(handler, namespaceHandler, this.cache, projectFinder());
 		
 		List<AnnotationReconciler> reconcilers = new ArrayList<>();
-		reconcilers.add(new BeanMethodNotPublicReconciler());
+		reconcilers.add(new BeanMethodNotPublicReconciler(recipeRepo, server.getQuickfixRegistry()));
 		
 		BiFunction<AtomicReference<TextDocument>, BiConsumer<String, Diagnostic>, IProblemCollector> problemCollectorFactory = (docRef, aggregator) -> server.createProblemCollector(docRef, aggregator);
 		springIndexerJava = new SpringIndexerJava(handler, specificProviders, this.cache, projectFinder(), server.getProgressService(), reconcilers, problemCollectorFactory);
