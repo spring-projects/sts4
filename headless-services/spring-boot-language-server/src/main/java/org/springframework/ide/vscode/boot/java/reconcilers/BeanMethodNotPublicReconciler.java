@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.boot.java.reconcilers;
 
 import java.lang.reflect.Field;
 import java.util.List;
+import java.util.UUID;
 
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.IMethodBinding;
@@ -19,6 +20,7 @@ import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.Modifier;
 import org.openrewrite.java.spring.BeanMethodsNotPublic;
+import org.openrewrite.marker.Range;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.Annotations;
@@ -36,6 +38,7 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.Reconcile
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeCodeActionDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
 import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
+import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 
 public class BeanMethodNotPublicReconciler implements AnnotationReconciler {
@@ -58,14 +61,14 @@ public class BeanMethodNotPublicReconciler implements AnnotationReconciler {
 			IProblemCollector problemCollector) {
 		
 		if (Annotations.BEAN.equals(typeBinding.getQualifiedName()) && node.getParent() instanceof MethodDeclaration) {
-			MethodDeclaration m = (MethodDeclaration) node.getParent();
+			MethodDeclaration method = (MethodDeclaration) node.getParent();
 			Version version = SpringProjectUtil.getDependencyVersion(project, SpringProjectUtil.SPRING_BOOT);
 			
 			if (version.getMajor() >= 2) {
-				IMethodBinding methodBinding = m.resolveBinding();
+				IMethodBinding methodBinding = method.resolveBinding();
 				if (isNotOverridingPublicMethod(methodBinding)) {
 					
-					ReconcileProblemImpl problem = ((List<?>)m.modifiers()).stream()
+					ReconcileProblemImpl problem = ((List<?>)method.modifiers()).stream()
 							.filter(Modifier.class::isInstance)
 							.map(Modifier.class::cast)
 							.filter(modifier -> modifier.isPublic())
@@ -75,9 +78,9 @@ public class BeanMethodNotPublicReconciler implements AnnotationReconciler {
 									modifier.getStartPosition(), modifier.getLength()))
 							.orElse(new ReconcileProblemImpl(
 									Boot2JavaProblemType.JAVA_PUBLIC_BEAN_METHOD, "super special DIAGNOSTICS with public @Bean method",
-									m.getName().getStartPosition(), m.getName().getLength()));
+									method.getName().getStartPosition(), method.getName().getLength()));
 
-					addQuickFixes(doc.getUri(), problem);
+					addQuickFixes(doc, problem, method);
 					
 					problemCollector.accept(problem);
 				}
@@ -101,28 +104,56 @@ public class BeanMethodNotPublicReconciler implements AnnotationReconciler {
 		return !isOverriding(methodBinding) && (methodBinding.getModifiers() & Modifier.PUBLIC) != 0;
 	}
 	
-	private void addQuickFixes(String uri, ReconcileProblemImpl problem) {
+	private void addQuickFixes(IDocument doc, ReconcileProblemImpl problem, MethodDeclaration method) {
 		
 		if (recipeRepo != null && quickfixRegistry != null) {
 		
-			FixDescriptor fix1 = new FixDescriptor(ID, List.of(uri), LABEL)
-	//				.withRangeScope(m.getMarkers().findFirst(Range.class).get()) // TODO create OpenRewrite range
+			FixDescriptor fix1 = new FixDescriptor(ID, List.of(doc.getUri()), LABEL)
 					.withRecipeScope(RecipeScope.NODE);
+
+			try {
+				Range methodRange = createOpenRewriteRange(doc, method);
+				fix1 = fix1.withRangeScope(methodRange);
+			}
+			catch (BadLocationException e) {
+				log.warn("bad location happened while calculating method range for " + method.toString(), e);
+			}
 			
-			FixDescriptor fix2 = new FixDescriptor(ID, List.of(uri), RecipeCodeActionDescriptor.buildLabel(LABEL, RecipeScope.FILE))
+
+			FixDescriptor fix2 = new FixDescriptor(ID, List.of(doc.getUri()), RecipeCodeActionDescriptor.buildLabel(LABEL, RecipeScope.FILE))
 					.withRecipeScope(RecipeScope.FILE);
 	
-			FixDescriptor fix3 = new FixDescriptor(ID, List.of(uri), RecipeCodeActionDescriptor.buildLabel(LABEL, RecipeScope.PROJECT))
+			FixDescriptor fix3 = new FixDescriptor(ID, List.of(doc.getUri()), RecipeCodeActionDescriptor.buildLabel(LABEL, RecipeScope.PROJECT))
 					.withRecipeScope(RecipeScope.PROJECT);
+			
 			
 			QuickfixType quickfixType = quickfixRegistry.getQuickfixType(RewriteRefactorings.REWRITE_RECIPE_QUICKFIX);
 	
-			if (quickfixType != null && recipeRepo.getRecipe(ID).isPresent()) {
+			if (quickfixType != null /* && recipeRepo.getRecipe(ID).isPresent()*/ ) { // recipes load async, so they might not be around when this validation runs
+				// in addition to that we assume and ship those recipes with the language server anyway, so we can assume they are around
+
 				problem.addQuickfix(new QuickfixData<>(quickfixType, fix1, fix1.getLabel()));
 				problem.addQuickfix(new QuickfixData<>(quickfixType, fix2, fix2.getLabel()));
 				problem.addQuickfix(new QuickfixData<>(quickfixType, fix3, fix3.getLabel()));
 			}
 		}
+	}
+
+	private Range createOpenRewriteRange(IDocument doc, MethodDeclaration method) throws BadLocationException {
+		
+		int startOffset = method.getStartPosition();
+		int endOffset = method.getStartPosition() + method.getLength();
+
+		int startLine = doc.getLineOfOffset(startOffset);
+		int endLine = doc.getLineOfOffset(endOffset);
+		
+		int startColumn = startOffset - doc.getLineOffset(startLine);
+		int endColumn = endOffset - doc.getLineOffset(endLine);
+		
+		Range.Position startPosition = new Range.Position(startOffset, startLine, startColumn);
+		Range.Position endPosition = new Range.Position(endOffset, endLine, endColumn);
+		
+		return new Range(UUID.randomUUID(), startPosition, endPosition);
 	}
 	
 }
