@@ -278,7 +278,7 @@ public class IndexCacheOnDisc implements IndexCache {
 			Gson gson = createGson();
 			gson.toJson(store, writer);
 
-			cleanupCacheFiles(cacheKey);
+			cleanupCache(cacheKey);
 		}
 		catch (Exception e) {
 			log.error("cannot write symbol cache", e);
@@ -296,7 +296,7 @@ public class IndexCacheOnDisc implements IndexCache {
 		return true;
 	}
 
-	private void cleanupCacheFiles(IndexCacheKey cacheKey) {
+	private void cleanupCache(IndexCacheKey cacheKey) {
 		File[] cacheFiles = this.cacheDirectory.listFiles();
 
 		for (int i = 0; i < cacheFiles.length; i++) {
