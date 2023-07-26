@@ -26,9 +26,11 @@ import com.google.common.collect.ImmutableList;
 public class Quickfix<T> {
 
 	public static class QuickfixData<T> {
+		
 		public final QuickfixType type;
 		public final T params;
 		public final String title;
+
 		public QuickfixData(QuickfixType type, T params, String title) {
 			super();
 			this.type = type;
@@ -42,7 +44,6 @@ public class Quickfix<T> {
 	private final Range range;
 	private final String diagMsg;
 	private final QuickfixData<T> data;
-
 
 	public Quickfix(String CODE_ACTION_CMD_ID, Diagnostic diag, QuickfixData<T> data) {
 		super();
