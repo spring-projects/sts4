@@ -552,6 +552,11 @@ public class LanguageServerHarness {
 		return diagnostics.get(doc.getUri());
 	}
 
+	public PublishDiagnosticsParams getDiagnostics(String docURI) throws Exception {
+		waitForReconcile();
+		return diagnostics.get(docURI);
+	}
+
 	public synchronized Future<HighlightParams> getHighlightsFuture(TextDocumentInfo doc) {
 		log.info("highlights requested");
 		CompletableFuture<HighlightParams> future = new CompletableFuture<HighlightParams>();
