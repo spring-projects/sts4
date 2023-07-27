@@ -25,7 +25,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.Boot2JavaProblemType;
-import org.springframework.ide.vscode.boot.java.rewrite.RewriteRecipeRepository;
 import org.springframework.ide.vscode.boot.java.rewrite.RewriteRefactorings;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
@@ -48,11 +47,9 @@ public class BeanMethodNotPublicReconciler implements AnnotationReconciler {
     private static final String ID = BeanMethodsNotPublic.class.getName();
     private static final String LABEL = "Remove 'public' from @Bean method";
 
-	private final RewriteRecipeRepository recipeRepo;
 	private final QuickfixRegistry quickfixRegistry;
     
-    public BeanMethodNotPublicReconciler(RewriteRecipeRepository recipeRepo, QuickfixRegistry quickfixRegistry) {
-		this.recipeRepo = recipeRepo;
+    public BeanMethodNotPublicReconciler(QuickfixRegistry quickfixRegistry) {
 		this.quickfixRegistry = quickfixRegistry;
     }
 	
@@ -106,7 +103,7 @@ public class BeanMethodNotPublicReconciler implements AnnotationReconciler {
 	
 	private void addQuickFixes(IDocument doc, ReconcileProblemImpl problem, MethodDeclaration method) {
 		
-		if (recipeRepo != null && quickfixRegistry != null) {
+		if (quickfixRegistry != null) {
 		
 			FixDescriptor fix1 = new FixDescriptor(ID, List.of(doc.getUri()), LABEL)
 					.withRecipeScope(RecipeScope.NODE);

@@ -83,7 +83,6 @@ import org.springframework.ide.vscode.commons.languageserver.LanguageServerRunne
 import org.springframework.ide.vscode.commons.languageserver.java.FutureProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.java.ProjectObserver;
-import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixRegistry;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentEventListenerManager;
 import org.springframework.ide.vscode.commons.languageserver.util.LanguageComputer;
 import org.springframework.ide.vscode.commons.languageserver.util.LspClient;
@@ -242,8 +241,8 @@ public class BootLanguageServerBootApp {
 		return new CompilationUnitCache(params.projectFinder, server, params.projectObserver);
 	}
 
-	@Bean JdtReconciler jdtReconciler(CompilationUnitCache cuCache, RewriteRecipeRepository recipeRepo, BootJavaConfig config, SimpleLanguageServer server) {
-		return new JdtReconciler(cuCache, recipeRepo, server.getQuickfixRegistry(), config);
+	@Bean JdtReconciler jdtReconciler(CompilationUnitCache cuCache, BootJavaConfig config, SimpleLanguageServer server) {
+		return new JdtReconciler(cuCache, server.getQuickfixRegistry(), config);
 	}
 	
 	@Bean SpringXMLCompletionEngine xmlCompletionEngine(SimpleLanguageServer server, JavaProjectFinder projectFinder, SpringSymbolIndex symbolIndex, BootJavaConfig config) {
