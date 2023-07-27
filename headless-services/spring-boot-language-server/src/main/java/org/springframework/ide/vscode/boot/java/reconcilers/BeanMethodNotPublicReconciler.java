@@ -74,10 +74,10 @@ public class BeanMethodNotPublicReconciler implements AnnotationReconciler {
 							.filter(modifier -> modifier.isPublic())
 							.findFirst()
 							.map(modifier -> new ReconcileProblemImpl(
-									Boot2JavaProblemType.JAVA_PUBLIC_BEAN_METHOD, "super special DIAGNOSTICS with public @Bean method",
+									Boot2JavaProblemType.JAVA_PUBLIC_BEAN_METHOD, Boot2JavaProblemType.JAVA_PUBLIC_BEAN_METHOD.getLabel(),
 									modifier.getStartPosition(), modifier.getLength()))
 							.orElse(new ReconcileProblemImpl(
-									Boot2JavaProblemType.JAVA_PUBLIC_BEAN_METHOD, "super special DIAGNOSTICS with public @Bean method",
+									Boot2JavaProblemType.JAVA_PUBLIC_BEAN_METHOD, Boot2JavaProblemType.JAVA_PUBLIC_BEAN_METHOD.getLabel(),
 									method.getName().getStartPosition(), method.getName().getLength()));
 
 					addQuickFixes(doc, problem, method);
