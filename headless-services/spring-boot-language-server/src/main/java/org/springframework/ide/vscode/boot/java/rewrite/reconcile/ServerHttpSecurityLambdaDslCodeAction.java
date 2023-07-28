@@ -16,6 +16,7 @@ import org.openrewrite.ExecutionContext;
 import org.openrewrite.SourceFile;
 import org.openrewrite.Tree;
 import org.openrewrite.java.JavaVisitor;
+import org.openrewrite.java.spring.boot2.ConvertToSecurityDslVisitor;
 import org.openrewrite.java.spring.boot2.ServerHttpSecurityLambdaDsl;
 import org.openrewrite.java.tree.J.MethodInvocation;
 import org.openrewrite.marker.Range;
@@ -45,7 +46,7 @@ public class ServerHttpSecurityLambdaDslCodeAction implements RecipeCodeActionDe
 
 			@Override
 			public MethodInvocation visitMethodInvocation(MethodInvocation method, ExecutionContext p) {
-				if (recipe.getVisitor().isApplicableTopLevelMethodInvocation(method)) {
+				if (((ConvertToSecurityDslVisitor<?>)recipe.getVisitor()).isApplicableTopLevelMethodInvocation(method)) {
 					// Don't step into the method any further
 					String uri = getCursor().firstEnclosing(SourceFile.class).getSourcePath().toUri().toASCIIString();
 					FixAssistMarker marker = new FixAssistMarker(Tree.randomId(), getId()).withLabel(PROBLEM_LABEL)
