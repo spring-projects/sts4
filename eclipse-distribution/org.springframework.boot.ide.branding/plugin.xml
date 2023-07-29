@@ -38,5 +38,11 @@
 		  </property>
       </product> 
    </extension>
+   <extension
+         point="org.eclipse.equinox.p2.engine.pgp">
+      <trustedKeys
+            path="trusted-keys/48B086A7D843CFA258E83286928FBF39003C0425.asc">
+      </trustedKeys>
+   </extension>
 
 </plugin>
