@@ -22,6 +22,8 @@ jobs:
           skip_tests: true
           sts4-language-servers-version: ${{ steps.timestamp.outputs.date }}
         secrets: inherit
+    outputs:
+      sts4-language-servers-version: ${{ steps.timestamp.outputs.date }}
 
   e427-distro:
     runs-on: ubuntu-latest
@@ -32,7 +34,7 @@ jobs:
           eclipse_profile: 'e427'
           build_type: 'release'
           p2-qualifier: 'RELEASE'
-          sts4-language-servers-version: ${{ jobs.eclipse-ls-extension.steps.timestamp.outputs.date }}
+          sts4-language-servers-version: ${{ needs.eclipse-ls-extension.outputs.sts4-language-servers-version }}
 
   e428-distro:
     runs-on: ubuntu-latest
@@ -43,7 +45,7 @@ jobs:
           eclipse_profile: 'e428'
           build_type: 'release'
           p2-qualifier: 'RELEASE'
-          sts4-language-servers-version: ${{ jobs.eclipse-ls-extension.steps.timestamp.outputs.date }}
+          sts4-language-servers-version: ${{ needs.eclipse-ls-extension.outputs.sts4-language-servers-version }}
 
   e429-distro:
     runs-on: ubuntu-latest
@@ -54,4 +56,4 @@ jobs:
           eclipse_profile: 'e429'
           build_type: 'release'
           p2-qualifier: 'RELEASE'
-          sts4-language-servers-version: ${{ jobs.eclipse-ls-extension.steps.timestamp.outputs.date }}
+          sts4-language-servers-version: ${{ needs.eclipse-ls-extension.outputs.sts4-language-servers-version }}
