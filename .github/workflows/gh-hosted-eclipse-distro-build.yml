@@ -13,6 +13,14 @@ on:
         required: true
         default: 'snapshot'
         type: string
+      sts4-language-servers-version:
+        description: version of sts4 ls extensions
+        required: false
+        type: string
+      p2-qualifier:
+        description: p2 qualifier to override
+        required: false
+        type: string
       ref:
         description: Git branch, tag, commit hash
         required: false
@@ -49,8 +57,18 @@ jobs:
           gpg_passphrase: ${{ secrets.GPG_PASSPHRASE }}
           gpg_keyname: ${{ secrets.GPG_KEYID }}
         run: |
+          sts4_ls_version=${{ inputs.sts4-language-servers-version }}
+          sts4_ls_version_param=""
+          if ! [[ -z ${sts4_ls_version} ]]; then
+            sts4_ls_version_param="-Dsts4-language-servers-version=${sts4_ls_version}"
+          fi
+          p2_qualifier=${{ inputs.p2-qualifier }}
+          p2_qualifier_param=""
+          if ! [[ -z ${p2_qualifier} ]]; then
+            p2_qualifier_param="-Dp2.qualifier=${p2_qualifier}"
+          fi
           cd eclipse-distribution
-          ./mvnw --batch-mode -U clean deploy -P${{ inputs.eclipse_profile }} -P${{ inputs.build_type }} -Pgitactions -Pgpg.sign -Dsigning.skip=true -Dmaven.repo.local=~/.m2/repository-signed -Dhttpclient.retry-max=20 -Dmaven.test.skip=true -Declipse.p2.mirrors=false -Dtycho.localArtifacts=ignore -Ds3service.https-only=true -Dp2.replaceQualifier=true -Dorg.eclipse.ecf.provider.filetransfer.httpclient.retrieve.readTimeout=1200000 -Dorg.eclipse.equinox.p2.transport.ecf.retry=5 -Dskip.eclipserun.proxies=false -Dskip.osx.signing=true  -Dskip.win.signing=true -Dskip.osx.notarizing=true -Dtycho.equinox.resolver.uses=true
+          ./mvnw --batch-mode -U clean deploy -P${{ inputs.eclipse_profile }} -P${{ inputs.build_type }} ${sts4_ls_version_param} ${p2_qualifier_param} -Pgitactions -Pgpg.sign -Dsigning.skip=true -Dmaven.repo.local=~/.m2/repository-signed -Dhttpclient.retry-max=20 -Dmaven.test.skip=true -Declipse.p2.mirrors=false -Dtycho.localArtifacts=ignore -Ds3service.https-only=true -Dp2.replaceQualifier=true -Dorg.eclipse.ecf.provider.filetransfer.httpclient.retrieve.readTimeout=1200000 -Dorg.eclipse.equinox.p2.transport.ecf.retry=5 -Dskip.eclipserun.proxies=false -Dskip.osx.signing=true  -Dskip.win.signing=true -Dskip.osx.notarizing=true -Dtycho.equinox.resolver.uses=true
       - name: Upload Linux Distro Build Artifacts
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.TOOLS_S3_ACCESS_KEY }}
