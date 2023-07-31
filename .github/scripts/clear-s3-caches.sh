@@ -14,6 +14,7 @@ s3_path=$1
 #done
 #echo "Final invalidation status: ${invalidation_status}"
 
+# Flush CloudFlare cache
 s3_url=s3://dist.springsource.com/${s3_path}
 files=`aws s3 cp ${s3_url} . --recursive --include "*" --dryrun`
 counter=0
@@ -33,15 +34,26 @@ do
   if [[ "$counter" -eq 10 ]]; then
     json="${json::-2}${NL}]}"
     echo $json
+
+    curl -X DELETE "https://api.cloudflare.com/client/v4/zones/${CLOUDFLARE_ZONE_ID}/purge_cache" \
+      -H "X-Auth-Email: spring-sysadmin@pivotal.io" \
+      -H "Authorization: Bearer ${CLOUDFLARE_CACHE_TOKEN}" \
+      -H "Content-Type: application/json" \
+      --data "${json}"
+
     json=""
     counter=0
-    # flush with request
   fi
 done
 if ! [[ "$counter" -eq 0 ]]; then
   json="${json::-2}${NL}]}"
   echo $json
-  # flush with request
+
+  curl -X DELETE "https://api.cloudflare.com/client/v4/zones/${CLOUDFLARE_ZONE_ID}/purge_cache" \
+    -H "X-Auth-Email: spring-sysadmin@pivotal.io" \
+    -H "Authorization: Bearer ${CLOUDFLARE_CACHE_TOKEN}" \
+    -H "Content-Type: application/json" \
+    --data "${json}"
 fi
 
 
