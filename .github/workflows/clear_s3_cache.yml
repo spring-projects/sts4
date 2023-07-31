@@ -26,4 +26,5 @@ jobs:
           CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
           CLOUDFLARE_CACHE_TOKEN: ${{ secrets.CLOUDFLARE_CACHE_TOKEN }}
         run: |
+          aws cloudfront create-invalidation --distribution-id ECAO9Q8651L8M --paths '/release/TOOLS/sts4-language-server-integrations/2023-07-31/*'
           ${{ github.workspace }}/.github/scripts/clear-s3-caches.sh ${{ inputs.path }}
