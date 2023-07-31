@@ -31,7 +31,7 @@ do
     json="${json}\"http://dist.springsource.com${path}\",${NL}\"https://dist.springsource.com${path}\",${NL}\"http://download.springsource.com${path}\",${NL}\"https://download.springsource.com${path}\",${NL}"
   fi
   if [[ "$counter" -eq 10 ]]; then
-    json="${json:-2}${NL}]}"
+    json="${json::-2}${NL}]}"
     echo $json
     json=""
     counter=0
@@ -39,7 +39,7 @@ do
   fi
 done
 if ! [[ "$counter" -eq 0 ]]; then
-  json="${json:-2}${NL}]}"
+  json="${json::-2}${NL}]}"
   echo $json
   # flush with request
 fi
