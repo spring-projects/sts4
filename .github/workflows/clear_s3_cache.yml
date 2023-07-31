@@ -23,6 +23,8 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.TOOLS_S3_ACCESS_KEY }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.TOOLS_S3_SECRET_KEY  }}
         run: |
-          aws cloudfront create-invalidation --distribution-id ECAO9Q8651L8M --paths /release/TOOLS/sts4-language-server-integrations/2023-07-31/*
+          echo "Firing off invalidation request"
+          aws cloudfront create-invalidation --distribution-id ECAO9Q8651L8M --paths "/release/TOOLS/sts4-language-server-integrations/2023-07-31/*"
+          echo "List invalidations"
           aws cloudfront list-invalidations --distribution-id ECAO9Q8651L8M
-          ${{ github.workspace }}/.github/scripts/clear-s3-caches.sh ${{ inputs.path }}
+#          ${{ github.workspace }}/.github/scripts/clear-s3-caches.sh ${{ inputs.path }}
