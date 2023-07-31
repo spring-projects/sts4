@@ -36,11 +36,11 @@ do
     json="${json::-2}${NL}]}"
     echo $json
 
-#    curl -X DELETE "https://api.cloudflare.com/client/v4/zones/${CLOUDFLARE_ZONE_ID}/purge_cache" \
-#      -H "X-Auth-Email: spring-sysadmin@pivotal.io" \
-#      -H "Authorization: Bearer ${CLOUDFLARE_CACHE_TOKEN}" \
-#      -H "Content-Type: application/json" \
-#      --data "${json}"
+    curl -X DELETE "https://api.cloudflare.com/client/v4/zones/${CLOUDFLARE_ZONE_ID}/purge_cache" \
+      -H "X-Auth-Email: spring-sysadmin@pivotal.io" \
+      -H "Authorization: Bearer ${CLOUDFLARE_CACHE_TOKEN}" \
+      -H "Content-Type: application/json" \
+      --data "${json}"
 
     json=""
     counter=0
@@ -50,11 +50,11 @@ if ! [[ "$counter" -eq 0 ]]; then
   json="${json::-2}${NL}]}"
   echo $json
 
-#  curl -X DELETE "https://api.cloudflare.com/client/v4/zones/${CLOUDFLARE_ZONE_ID}/purge_cache" \
-#    -H "X-Auth-Email: spring-sysadmin@pivotal.io" \
-#    -H "Authorization: Bearer ${CLOUDFLARE_CACHE_TOKEN}" \
-#    -H "Content-Type: application/json" \
-#    --data "${json}"
+  curl -X DELETE "https://api.cloudflare.com/client/v4/zones/${CLOUDFLARE_ZONE_ID}/purge_cache" \
+    -H "X-Auth-Email: spring-sysadmin@pivotal.io" \
+    -H "Authorization: Bearer ${CLOUDFLARE_CACHE_TOKEN}" \
+    -H "Content-Type: application/json" \
+    --data "${json}"
 fi
 
 
