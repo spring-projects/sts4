@@ -20,8 +20,7 @@ jobs:
 
   eclipse-ls-extension:
     needs: [ generate-sts4-ls-extensions-version ]
-    runs-on: ubuntu-latest
-    - uses: ./.github/workflows/eclipse-ls-extensions-build.yml
+    uses: ./.github/workflows/eclipse-ls-extensions-build.yml
     with:
       eclipse_profile: 'e427'
       build_type: 'release'
