@@ -25,20 +25,16 @@ do
   if [[ "$counter" -eq 0 ]]; then
     json="{\"files\": [${NL}"
   fi
-  echo "Current json: ${json}"
   if [[ "$file" =~ ^"s3://dist.springsource.com" ]]; then
-    echo "Is a file in s3 ${file}"
     counter=$((counter+1))
-    echo "Counter ${counter}"
     path=${file:26}
-    echo "Path ${path}"
     json="${json}\"http://dist.springsource.com${path}\",${NL}\"http://dist.springsource.com${path}\",${NL}\"http://download.springsource.com${path}\",${NL}\"https://download.springsource.com${path}\",${NL}"
   fi
   if [[ "$counter" -eq 10 ]]; then
-    echo "Batch completed"
     json="${json:-2}${NL}]}"
     echo $json
     json=""
+    counter=0
   fi
 done
 
