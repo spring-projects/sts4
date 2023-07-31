@@ -79,7 +79,7 @@ jobs:
             ./mvnw --batch-mode clean deploy -P${{ inputs.eclipse_profile }} -P${{ inputs.build_type }} $sts4_ls_version_param -Pgitactions -Pgpg.sign -Dmaven.test.skip=true -Dsigning.skip=true -Dhttpclient.retry-max=20 -Declipse.p2.mirrors=false -Ds3service.https-only=true -Dtycho.localArtifacts=ignore
           fi
       - name:
-        if: ${{ inputs.build_type !== 'snapshot' }}
+        if: ${{ inputs.build_type != 'snapshot' }}
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.TOOLS_S3_ACCESS_KEY }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.TOOLS_S3_SECRET_KEY  }}
