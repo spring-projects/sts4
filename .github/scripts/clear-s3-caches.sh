@@ -22,20 +22,20 @@ for file in $files
 do
   echo "Processing ${file}"
   if [[ "$counter" -eq 0 ]]; then
-    json="\"{ \"files\": [\n"
+    json="{\"files\": [$'\n'"
   fi
   echo "Current json: ${json}"
   if [[ "$file" =~ ^"s3://dist.springsource.com" ]]; then
     echo "Is a file in s3 ${file}"
-    ((counter++))
+    let "counter++"
     echo "Counter ${counter}"
     path=${file:26}
     echo "Path ${path}"
-    json="${json}\"http://dist.springsource.com${path}\",\n\"http://dist.springsource.com${path}\",\n\"http://download.springsource.com${path}\",\n\"https://download.springsource.com${path}\",\n"
+    json="${json}\"http://dist.springsource.com${path}\",$'\n'\"http://dist.springsource.com${path}\",$'\n'\"http://download.springsource.com${path}\",$'\n'\"https://download.springsource.com${path}\",$'\n'"
   fi
   if [[ "$counter" -eq 10 ]]; then
     echo "Batch completed"
-    json="${json:-2}\n]}"
+    json="${json:-2}$'\n']}"
     echo $json
     json=""
   fi
