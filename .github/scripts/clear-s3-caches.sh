@@ -1,6 +1,8 @@
 set -e
 
 s3_path=$1
+
+#Flush AWS Cloudfront Cache
 #invalidation_json=`aws cloudfront create-invalidation --distribution-id ECAO9Q8651L8M --output json --paths "/${s3_path}/*"`
 #echo "Invalidation response: ${invalidation_json}"
 #invalidation_id=`echo $invalidation_json | jq -r '.Invalidation.Id'`
@@ -14,7 +16,7 @@ s3_path=$1
 #done
 #echo "Final invalidation status: ${invalidation_status}"
 
-# Flush CloudFlare cache
+# Flush CloudFlare Cache
 s3_url=s3://dist.springsource.com/${s3_path}
 files=`aws s3 cp ${s3_url} . --recursive --include "*" --dryrun`
 counter=0

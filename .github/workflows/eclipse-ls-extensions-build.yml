@@ -39,6 +39,7 @@ jobs:
       - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
         with:
           sparse-checkout: |
+            .github
             headless-services
             eclipse-language-servers
       - name: Set up JDK 17
@@ -78,7 +79,7 @@ jobs:
           else
             ./mvnw --batch-mode clean deploy -P${{ inputs.eclipse_profile }} -P${{ inputs.build_type }} $sts4_ls_version_param -Pgitactions -Pgpg.sign -Dmaven.test.skip=true -Dsigning.skip=true -Dhttpclient.retry-max=20 -Declipse.p2.mirrors=false -Ds3service.https-only=true -Dtycho.localArtifacts=ignore
           fi
-      - name:
+      - name: Clear S3 Caches
         if: ${{ inputs.build_type != 'snapshot' }}
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.TOOLS_S3_ACCESS_KEY }}
@@ -90,6 +91,7 @@ jobs:
           dist_path=`cat ${{ github.workspace }}/eclipse-language-servers/org.springframework.tooling.ls.integration.repository/target/s3-p2-repo-dist-path.txt`
           echo $dist_path
       - name: Verify Eclipse LS Extensions on e429
+        if: ${{ inputs.build_type == 'snapshot' }}
         run: |
           cd eclipse-language-servers
           if command -v xvfb-run ; then
