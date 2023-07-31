@@ -25,7 +25,7 @@ public interface SpringIndexer {
 	
 	List<EnhancedSymbolInformation> computeSymbols(IJavaProject project, String docURI, String content) throws Exception;
 
-	void initializeProject(IJavaProject project) throws Exception;
+	void initializeProject(IJavaProject project, boolean clean) throws Exception;
 	void removeProject(IJavaProject project) throws Exception;
 
 	void updateFile(IJavaProject project, DocumentDescriptor updatedDoc, String content) throws Exception;

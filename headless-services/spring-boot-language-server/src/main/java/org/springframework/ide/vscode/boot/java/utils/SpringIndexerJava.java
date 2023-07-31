@@ -137,13 +137,13 @@ public class SpringIndexerJava implements SpringIndexer {
 	}
 
 	@Override
-	public void initializeProject(IJavaProject project) throws Exception {
+	public void initializeProject(IJavaProject project, boolean clean) throws Exception {
 		String[] files = this.getFiles(project);
 
 		log.info("scan java files for symbols for project: {} - no. of files: {}", project.getElementName(), files.length);
 
 		long startTime = System.currentTimeMillis();
-		scanFiles(project, files);
+		scanFiles(project, files, clean);
 		long endTime = System.currentTimeMillis();
 
 		log.info("scan java files for symbols for project: {} took ms: {}", project.getElementName(), endTime - startTime);
@@ -413,6 +413,7 @@ public class SpringIndexerJava implements SpringIndexer {
 		EnhancedSymbolInformation[] symbols = generatedSymbols.stream().map(cachedSymbol -> cachedSymbol.getEnhancedSymbol()).toArray(EnhancedSymbolInformation[]::new);
 		Bean[] beans = generatedBeans.stream().filter(cachedBean -> cachedBean.getBean() != null).map(cachedBean -> cachedBean.getBean()).toArray(Bean[]::new);
 		Map<String, List<Diagnostic>> diagnosticsByDoc = generatedDiagnostics.stream().filter(cachedDiagnostic -> cachedDiagnostic.getDiagnostic() != null).collect(Collectors.groupingBy(CachedDiagnostics::getDocURI, Collectors.mapping(CachedDiagnostics::getDiagnostic, Collectors.toList())));
+		addEmptyDiagnostics(diagnosticsByDoc, javaFiles);
 		symbolHandler.addSymbols(project, symbols, beans, diagnosticsByDoc);
 
 		IndexCacheKey symbolsCacheKey = getCacheKey(project, SYMBOL_KEY);
@@ -457,7 +458,7 @@ public class SpringIndexerJava implements SpringIndexer {
 		log.info("Finished scanning affected files {}", alreadyScannedFiles);
 	}
 
-	private void scanFiles(IJavaProject project, String[] javaFiles) throws Exception {
+	private void scanFiles(IJavaProject project, String[] javaFiles, boolean clean) throws Exception {
 		IndexCacheKey symbolsCacheKey = getCacheKey(project, SYMBOL_KEY);
 		IndexCacheKey beansCacheKey = getCacheKey(project, BEANS_KEY);
 		IndexCacheKey diagnosticsCacheKey = getCacheKey(project, DIAGNOSTICS_KEY);
@@ -470,7 +471,7 @@ public class SpringIndexerJava implements SpringIndexer {
 		CachedBean[] beans;
 		CachedDiagnostics[] diagnostics;
 
-		if (cachedSymbols == null || cachedBeans == null || cachedDiagnostics == null ) {
+		if (clean || cachedSymbols == null || cachedBeans == null || cachedDiagnostics == null) {
 			List<CachedSymbol> generatedSymbols = new ArrayList<CachedSymbol>();
 			List<CachedBean> generatedBeans = new ArrayList<CachedBean>();
 			List<CachedDiagnostics> generatedDiagnostics = new ArrayList<CachedDiagnostics>();
@@ -517,6 +518,7 @@ public class SpringIndexerJava implements SpringIndexer {
 			EnhancedSymbolInformation[] enhancedSymbols = Arrays.stream(symbols).map(cachedSymbol -> cachedSymbol.getEnhancedSymbol()).toArray(EnhancedSymbolInformation[]::new);
 			Bean[] allBeans = Arrays.stream(beans).filter(cachedBean -> cachedBean.getBean() != null).map(cachedBean -> cachedBean.getBean()).toArray(Bean[]::new);
 			Map<String, List<Diagnostic>> diagnosticsByDoc = Arrays.stream(diagnostics).filter(cachedDiagnostic -> cachedDiagnostic.getDiagnostic() != null).collect(Collectors.groupingBy(CachedDiagnostics::getDocURI, Collectors.mapping(CachedDiagnostics::getDiagnostic, Collectors.toList())));
+			addEmptyDiagnostics(diagnosticsByDoc, javaFiles);
 			symbolHandler.addSymbols(project, enhancedSymbols, allBeans, diagnosticsByDoc);
 		}
 	}
@@ -556,6 +558,17 @@ public class SpringIndexerJava implements SpringIndexer {
 		}
 		finally {
 			progressTask.done();
+		}
+	}
+
+	private void addEmptyDiagnostics(Map<String, List<Diagnostic>> diagnosticsByDoc, String[] javaFiles) {
+		for (int i = 0; i < javaFiles.length; i++) {
+			File file = new File(javaFiles[i]);
+			String docURI = UriUtil.toUri(file).toASCIIString();
+
+			if (!diagnosticsByDoc.containsKey(docURI)) {
+				diagnosticsByDoc.put(docURI, Collections.emptyList());
+			}
 		}
 	}
 

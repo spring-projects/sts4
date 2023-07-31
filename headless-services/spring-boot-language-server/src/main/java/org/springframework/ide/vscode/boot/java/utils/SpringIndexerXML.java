@@ -104,7 +104,7 @@ public class SpringIndexerXML implements SpringIndexer {
 	}
 
 	@Override
-	public void initializeProject(IJavaProject project) throws Exception {
+	public void initializeProject(IJavaProject project, boolean clean) throws Exception {
 		long startTime = System.currentTimeMillis();
 		String[] files = this.getFiles(project);
 
@@ -116,7 +116,7 @@ public class SpringIndexerXML implements SpringIndexer {
 		CachedSymbol[] symbols = this.cache.retrieveSymbols(symbolsCacheKey, files, CachedSymbol.class);
 		CachedBean[] beans = this.cache.retrieveSymbols(beansCacheKey, files, CachedBean.class);
 
-		if (symbols == null || beans == null) {
+		if (symbols == null || beans == null || clean) {
 			List<CachedSymbol> generatedSymbols = new ArrayList<CachedSymbol>();
 			List<CachedBean> generatedBeans = new ArrayList<CachedBean>();
 
@@ -334,7 +334,7 @@ public class SpringIndexerXML implements SpringIndexer {
 	private void populateIndex() {
 		for (IJavaProject project : projectFinder.all()) {
 			try {
-				initializeProject(project);
+				initializeProject(project, true);
 			} catch (Exception e) {
 				log.error("{}", e);
 			}

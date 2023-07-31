@@ -160,7 +160,7 @@ public class SpringFactoriesIndexer implements SpringIndexer {
 
 
 	@Override
-	public void initializeProject(IJavaProject project) throws Exception {
+	public void initializeProject(IJavaProject project, boolean clean) throws Exception {
 		long startTime = System.currentTimeMillis();
 		List<Path> files = getFiles(project);
 		String[] filesStr = files.stream().map(f -> f.toAbsolutePath().toString()).toArray(String[]::new);
@@ -170,7 +170,7 @@ public class SpringFactoriesIndexer implements SpringIndexer {
 		IndexCacheKey cacheKey = getCacheKey(project);
 
 		CachedSymbol[] symbols = this.cache.retrieveSymbols(cacheKey, filesStr, CachedSymbol.class);
-		if (symbols == null) {
+		if (symbols == null || clean) {
 			List<CachedSymbol> generatedSymbols = new ArrayList<CachedSymbol>();
 
 			for (Path file : files) {

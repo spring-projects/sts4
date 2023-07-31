@@ -15,6 +15,7 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Iterator;
@@ -121,13 +122,13 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 		@Override
 		public void created(IJavaProject project) {
 			log.info("project created event: {}", project.getElementName());
-			initializeProject(project);
+			initializeProject(project, false);
 		}
 
 		@Override
 		public void changed(IJavaProject project) {
 			log.info("project changed event: {}", project.getElementName());
-			initializeProject(project);
+			initializeProject(project, false);
 		}
 
 		@Override
@@ -277,14 +278,14 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 
 		config.addListener(evt -> {
 			log.info("update settings of spring indexer - start");
-			
-			server.getAsync().execute(() -> 
-			configureIndexer(SymbolIndexConfig.builder()
-					.scanXml(config.isSpringXMLSupportEnabled())
-					.xmlScanFolders(config.xmlBeansFoldersToScan())
-					.scanTestJavaSources(config.isScanJavaTestSourcesEnabled())
-					.build()
-			));
+
+			CompletableFuture.runAsync(() -> 
+				configureIndexer(SymbolIndexConfig.builder()
+						.scanXml(config.isSpringXMLSupportEnabled())
+						.xmlScanFolders(config.xmlBeansFoldersToScan())
+						.scanTestJavaSources(config.isScanJavaTestSourcesEnabled())
+						.build()
+			), this.updateQueue);
 			
 			log.info("update settings of spring indexer - done");
 		});
@@ -325,6 +326,11 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 				}
 			}
 			springIndexerJava.setScanTestJavaSources(config.isScanTestJavaSources());
+		}
+			
+		Collection<? extends IJavaProject> projects = projectFinder().all();
+		for (IJavaProject project : projects) {
+			initializeProject(project, true);
 		}
 	}
 	
@@ -375,8 +381,8 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 		}
 	}
 	
-	public CompletableFuture<Void> initializeProject(IJavaProject project) {
-		CompletableFuture<Void> cf = _initializeProject(project);
+	public CompletableFuture<Void> initializeProject(IJavaProject project, boolean clean) {
+		CompletableFuture<Void> cf = _initializeProject(project, clean);
 		cf.thenAccept( f -> {
 			projectInitializedFuture(project).complete(null);
 		});
@@ -384,7 +390,7 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 		return cf;
 	}
 	
-	private CompletableFuture<Void> _initializeProject(IJavaProject project) {
+	private CompletableFuture<Void> _initializeProject(IJavaProject project, boolean clean) {
 		try {
 			if (SpringProjectUtil.isBootProject(project) || SpringProjectUtil.isSpringProject(project)) {
 				if (project.getElementName() == null) {
@@ -399,7 +405,7 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 					@SuppressWarnings("unchecked")
 					CompletableFuture<Void>[] futures = new CompletableFuture[this.indexers.length];
 					for (int i = 0; i < this.indexers.length; i++) {
-						InitializeProject initializeItem = new InitializeProject(project, this.indexers[i]);
+						InitializeProject initializeItem = new InitializeProject(project, this.indexers[i], clean);
 						futures[i] = CompletableFuture.runAsync(initializeItem, this.updateQueue);
 					}
 					
@@ -843,10 +849,12 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 
 		private final IJavaProject project;
 		private final SpringIndexer indexer;
+		private final boolean clean;
 
-		public InitializeProject(IJavaProject project, SpringIndexer indexer) {
+		public InitializeProject(IJavaProject project, SpringIndexer indexer, boolean clean) {
 			this.project = project;
 			this.indexer = indexer;
+			this.clean = clean;
 			log.debug("{} created ", this);
 		}
 
@@ -854,7 +862,7 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 		public void run() {
 			log.debug("{} starting...", this);
 			try {
-				indexer.initializeProject(project);
+				indexer.initializeProject(project, this.clean);
 
 				log.debug("{} completed", this);
 			} catch (Throwable e) {

@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.boot.java.reconcilers.test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
@@ -67,9 +68,8 @@ public class SpringValidationBeanMethodNotPublicTest {
 	}
 
     @Test
-    void testScanSimpleConfigurationClass() throws Exception {
+    void testFindPublicBeanMethodInConfigClass() throws Exception {
         String docUri = directory.toPath().resolve("src/main/java/org/test/BeanMethodNotPublic.java").toUri().toString();
-        assertTrue(true);
         
         PublishDiagnosticsParams diagnosticsMessage = harness.getDiagnostics(docUri);
         List<Diagnostic> diagnostics = diagnosticsMessage.getDiagnostics();
@@ -85,5 +85,16 @@ public class SpringValidationBeanMethodNotPublicTest {
         assertEquals(7, diagnostic.getRange().getEnd().getCharacter());
         
         assertEquals(1, diagnostics.size());
+    }
+
+    @Test
+    void testPublishEmptyDiagnosticsWhenNoProblemsAreFound() throws Exception {
+        String docUri = directory.toPath().resolve("src/main/java/org/test/BeanClass1.java").toUri().toString();
+        
+        PublishDiagnosticsParams diagnosticsMessage = harness.getDiagnostics(docUri);
+        assertNotNull(diagnosticsMessage);
+        
+        List<Diagnostic> diagnostics = diagnosticsMessage.getDiagnostics();
+        assertEquals(0, diagnostics.size());
     }
 }
