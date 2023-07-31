@@ -89,7 +89,7 @@ jobs:
           CLOUDFLARE_CACHE_TOKEN: ${{ secrets.CLOUDFLARE_CACHE_TOKEN }}
         run: |
           dist_path=`cat ${{ github.workspace }}/eclipse-language-servers/org.springframework.tooling.ls.integration.repository/target/s3-p2-repo-dist-path.txt`
-          echo $dist_path
+          ${{ github.workspace }}/.github/scripts/clear-s3-caches.sh $dist_path
       - name: Verify Eclipse LS Extensions on e429
         if: ${{ inputs.build_type == 'snapshot' }}
         run: |

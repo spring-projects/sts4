@@ -100,7 +100,7 @@ jobs:
           CLOUDFLARE_CACHE_TOKEN: ${{ secrets.CLOUDFLARE_CACHE_TOKEN }}
         run: |
           dist_path=`cat ${{ github.workspace }}/eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target/s3-p2-repo-dist-path.txt`
-          echo $dist_path
+          ${{ github.workspace }}/.github/scripts/clear-s3-caches.sh $dist_path
       - name: Update Nightly Distro Downloads page
         if: ${{ inputs.build_type == 'snapshot' && always() }}
         env:
@@ -308,7 +308,7 @@ jobs:
           CLOUDFLARE_CACHE_TOKEN: ${{ secrets.CLOUDFLARE_CACHE_TOKEN }}
         run: |
           dist_path=`cat s3-dist-path.txt`
-          echo $dist_path
+          ${{ github.workspace }}/.github/scripts/clear-s3-caches.sh $dist_path
       - name: Remove Temp Build Artifacts from S3
         id: cleanup-s3-temp-storage
         env:
