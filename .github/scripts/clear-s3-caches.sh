@@ -25,6 +25,7 @@ do
     json="{\"files\": [${NL}"
   fi
   if [[ "$file" =~ ^"s3://dist.springsource.com" ]]; then
+    echo "Processing ${file}"
     counter=$((counter+1))
     path=${file:26}
     json="${json}\"http://dist.springsource.com${path}\",${NL}\"https://dist.springsource.com${path}\",${NL}\"http://download.springsource.com${path}\",${NL}\"https://download.springsource.com${path}\",${NL}"
