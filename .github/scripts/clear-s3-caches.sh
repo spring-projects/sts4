@@ -21,21 +21,26 @@ json=""
 NL=$'\n'
 for file in $files
 do
-  echo "Processing ${file}"
   if [[ "$counter" -eq 0 ]]; then
     json="{\"files\": [${NL}"
   fi
   if [[ "$file" =~ ^"s3://dist.springsource.com" ]]; then
     counter=$((counter+1))
     path=${file:26}
-    json="${json}\"http://dist.springsource.com${path}\",${NL}\"http://dist.springsource.com${path}\",${NL}\"http://download.springsource.com${path}\",${NL}\"https://download.springsource.com${path}\",${NL}"
+    json="${json}\"http://dist.springsource.com${path}\",${NL}\"https://dist.springsource.com${path}\",${NL}\"http://download.springsource.com${path}\",${NL}\"https://download.springsource.com${path}\",${NL}"
   fi
   if [[ "$counter" -eq 10 ]]; then
     json="${json:-2}${NL}]}"
     echo $json
     json=""
     counter=0
+    # flush with request
   fi
 done
+if ! [[ "$counter" -eq 0 ]]; then
+  json="${json:-2}${NL}]}"
+  echo $json
+  # flush with request
+fi
 
 
