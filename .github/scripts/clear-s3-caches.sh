@@ -3,7 +3,7 @@ invalidation_json=`aws cloudfront create-invalidation --distribution-id ECAO9Q86
 invalidation_id=`echo $invalidation_json | jq -r '.Invalidation.Id'`
 invalidation_status=`echo $invalidation_json | jq -r '.Invalidation.Status'`
 echo "ID=${invalidation_id} Status=${invalidation_status}"
-while [ $invalidation_status = "InProgress" ]
+while [ "${invalidation_status}" == "InProgress" ]
 do
    echo "Invalidation status: ${invalidation_status}"
    sleep 3
