@@ -20,15 +20,15 @@ counter=0
 json=""
 for file in $files
 do
-  if [ $counter == 0]; then
+  if [[ "$counter" eq 0 ]]; then
     json="\"{ \"files\": [\n"
   fi
   if [[ "$file" =~ ^"s3://dist.springsource.com" ]]; then
-    let "counter++"
+    ((counter++))
     path=${file:26}
     json="${json}\"http://dist.springsource.com${path}\",\n\"http://dist.springsource.com${path}\",\n\"http://download.springsource.com${path}\",\n\"https://download.springsource.com${path}\",\n"
   fi
-  if [ $counter == 10]; then
+  if [[ "$counter" eq 10 ]]; then
     json="${json:-2}\n]}"
     echo $json
     json=""
