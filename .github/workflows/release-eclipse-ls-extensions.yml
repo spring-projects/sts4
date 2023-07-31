@@ -9,18 +9,22 @@ on:
 
 jobs:
 
-  eclipse-ls-extension:
+  generate-sts4-ls-extensions-version:
     runs-on: ubuntu-latest
     steps:
       - name: Timestamp
         id: timestamp
         run: echo "date=$(date +'%Y-%m-%d')" >> $GITHUB_OUTPUT
-      - uses: ./.github/workflows/eclipse-ls-extensions-build.yml
-        with:
-          eclipse_profile: 'e427'
-          build_type: 'release'
-          skip_tests: true
-          sts4-language-servers-version: ${{ steps.timestamp.outputs.date }}
-        secrets: inherit
     outputs:
       sts4-language-servers-version: ${{ steps.timestamp.outputs.date }}
+
+  eclipse-ls-extension:
+    needs: [ generate-sts4-ls-extensions-version ]
+    runs-on: ubuntu-latest
+    - uses: ./.github/workflows/eclipse-ls-extensions-build.yml
+    with:
+      eclipse_profile: 'e427'
+      build_type: 'release'
+      skip_tests: true
+      sts4-language-servers-version: ${{ needs.generate-sts4-ls-extensions-version.outputs.sts4-language-servers-version }}
+    secrets: inherit
