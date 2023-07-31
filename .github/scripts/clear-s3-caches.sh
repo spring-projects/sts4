@@ -20,6 +20,7 @@ files=`aws s3 cp ${s3_url} . --recursive --include "*" --dryrun`
 counter=0
 json=""
 NL=$'\n'
+FILES_BATCH=7
 for file in $files
 do
   if [[ "$counter" -eq 0 ]]; then
@@ -31,15 +32,15 @@ do
     path=${file:26}
     json="${json}\"http://dist.springsource.com${path}\",${NL}\"https://dist.springsource.com${path}\",${NL}\"http://download.springsource.com${path}\",${NL}\"https://download.springsource.com${path}\",${NL}"
   fi
-  if [[ "$counter" -eq 10 ]]; then
+  if [[ "$counter" -eq "$FILES_BATCH" ]]; then
     json="${json::-2}${NL}]}"
     echo $json
 
-    curl -X DELETE "https://api.cloudflare.com/client/v4/zones/${CLOUDFLARE_ZONE_ID}/purge_cache" \
-      -H "X-Auth-Email: spring-sysadmin@pivotal.io" \
-      -H "Authorization: Bearer ${CLOUDFLARE_CACHE_TOKEN}" \
-      -H "Content-Type: application/json" \
-      --data "${json}"
+#    curl -X DELETE "https://api.cloudflare.com/client/v4/zones/${CLOUDFLARE_ZONE_ID}/purge_cache" \
+#      -H "X-Auth-Email: spring-sysadmin@pivotal.io" \
+#      -H "Authorization: Bearer ${CLOUDFLARE_CACHE_TOKEN}" \
+#      -H "Content-Type: application/json" \
+#      --data "${json}"
 
     json=""
     counter=0
@@ -49,11 +50,11 @@ if ! [[ "$counter" -eq 0 ]]; then
   json="${json::-2}${NL}]}"
   echo $json
 
-  curl -X DELETE "https://api.cloudflare.com/client/v4/zones/${CLOUDFLARE_ZONE_ID}/purge_cache" \
-    -H "X-Auth-Email: spring-sysadmin@pivotal.io" \
-    -H "Authorization: Bearer ${CLOUDFLARE_CACHE_TOKEN}" \
-    -H "Content-Type: application/json" \
-    --data "${json}"
+#  curl -X DELETE "https://api.cloudflare.com/client/v4/zones/${CLOUDFLARE_ZONE_ID}/purge_cache" \
+#    -H "X-Auth-Email: spring-sysadmin@pivotal.io" \
+#    -H "Authorization: Bearer ${CLOUDFLARE_CACHE_TOKEN}" \
+#    -H "Content-Type: application/json" \
+#    --data "${json}"
 fi
 
 
