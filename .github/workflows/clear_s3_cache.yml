@@ -1,0 +1,26 @@
+name: Clear S3 Cache for path
+
+on:
+  workflow_dispatch:
+    inputs:
+      path:
+        description: Path in the S3 bucket dist.springsource.com without leading slash
+        required: true
+        type: string
+
+jobs:
+
+  clear-s3-cache:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
+        with:
+          ref: ${{ inputs.ref }}
+          sparse-checkout: |
+            .github
+      - name: Invalidate S3 Cloudfront Cache
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.TOOLS_S3_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.TOOLS_S3_SECRET_KEY  }}
+        run: |
+          ${{ github.workspace }}/.github/scripts/clear-s3-caches.sh ${{ inputs.path }}
