@@ -1,4 +1,4 @@
-name: Release - Eclipse Build
+name: Release - Eclipse Distros Build
 
 concurrency:
   group: release-eclipse
