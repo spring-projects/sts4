@@ -26,10 +26,4 @@ jobs:
           CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
           CLOUDFLARE_CACHE_TOKEN: ${{ secrets.CLOUDFLARE_CACHE_TOKEN }}
         run: |
-#          aws s3 cp s3://dist.springsource.com/snapshot/STS4/nightly/dist/e4.28 . --recursive --include "*" --dryrun
-#          aws s3 cp s3://dist.springsource.com/release/TOOLS/sts4-language-server-integrations/2023-07-31 . --recursive --include "*" --dryrun
-#          echo "Firing off invalidation request"
-#          aws cloudfront create-invalidation --distribution-id ECAO9Q8651L8M --paths "/release/TOOLS/sts4-language-server-integrations/2023-07-31/*"
-#          echo "List invalidations"
-#          aws cloudfront list-invalidations --distribution-id ECAO9Q8651L8M
           ${{ github.workspace }}/.github/scripts/clear-s3-caches.sh ${{ inputs.path }}
