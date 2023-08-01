@@ -4,12 +4,12 @@ concurrency:
   group: eclipse-ls-extension-snapshot
   cancel-in-progress: true
 
-on:
-  workflow_dispatch:
 #on:
-#  push:
-#    branches:
-#      - 'main'
+#  workflow_dispatch:
+on:
+  push:
+    branches:
+      - 'main'
 
 jobs:
   eclipse-ls-extensions:
