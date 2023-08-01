@@ -1,4 +1,4 @@
-name: Update Scheduled Release Version
+name: Test Slack Message
 
 on:
   workflow_dispatch:
@@ -13,10 +13,12 @@ jobs:
     steps:
       - id: slack
         uses: slackapi/slack-github-action@e28cf165c92ffef168d23c5c9000cffc8a25e117
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
         with:
           # The following message update step does not accept a channel name.
           # Setting a channel ID here for consistency is highly recommended.
-          channel-id: "spring-tools-team"
+          channel-id: 'spring-tools-team'
           payload: |
             {
               "text": "Hello from STS4 Github Repo",
@@ -34,5 +36,3 @@ jobs:
                 }
               ]
             }
-        env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
