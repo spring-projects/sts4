@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2022 VMware, Inc.
+ * Copyright (c) 2023 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -58,6 +58,10 @@ import com.google.common.collect.ImmutableList;
 public class SpringFactoriesIndexer implements SpringIndexer {
 	
 	private static final Logger log = LoggerFactory.getLogger(SpringFactoriesIndexer.class);
+	
+	// whenever the implementation of the indexer changes in a way that the stored data in the cache is no longer valid,
+	// we need to change the generation - this will result in a re-indexing due to no up-to-date cache data being found
+	private static final String GENERATION = "GEN-4";
 	
 	private static final String FILE_PATTERN = "**/META-INF/spring/*.factories";
 	
@@ -155,7 +159,7 @@ public class SpringFactoriesIndexer implements SpringIndexer {
 					}
 				})
 				.collect(Collectors.joining(","));
-		return new IndexCacheKey(project.getElementName(), "factories", "", DigestUtils.md5Hex(filesIndentifier).toUpperCase());
+		return new IndexCacheKey(project.getElementName(), "factories", "", DigestUtils.md5Hex(GENERATION + "-" + filesIndentifier).toUpperCase());
 	}
 
 

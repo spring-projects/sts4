@@ -50,6 +50,10 @@ public class SpringIndexerXML implements SpringIndexer {
 
 	private static final Logger log = LoggerFactory.getLogger(SpringIndexerJava.class);
 	
+	// whenever the implementation of the indexer changes in a way that the stored data in the cache is no longer valid,
+	// we need to change the generation - this will result in a re-indexing due to no up-to-date cache data being found
+	private static final String GENERATION = "GEN-4";
+
 	private static final String SYMBOL_KEY = "symbols";
 	private static final String BEANS_KEY = "beans";
 
@@ -306,7 +310,7 @@ public class SpringIndexerXML implements SpringIndexer {
 				.map(file -> file.getAbsolutePath() + "#" + file.lastModified())
 				.collect(Collectors.joining(","));
 
-		return new IndexCacheKey(project.getElementName(), "xml", elementType, DigestUtils.md5Hex(classpathIdentifier).toUpperCase());
+		return new IndexCacheKey(project.getElementName(), "xml", elementType, DigestUtils.md5Hex(GENERATION + "-" + classpathIdentifier).toUpperCase());
 	}
 	
 	private void clearIndex() {
