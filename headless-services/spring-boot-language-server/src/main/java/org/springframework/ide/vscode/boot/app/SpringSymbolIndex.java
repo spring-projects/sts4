@@ -365,14 +365,19 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 					return CompletableFuture.completedFuture(null);
 				} else {
 
-					removeSymbolsByProject(project);
-					springIndex.removeBeans(project.getElementName());
-
 					@SuppressWarnings("unchecked")
-					CompletableFuture<Void>[] futures = new CompletableFuture[this.indexers.length];
+					CompletableFuture<Void>[] futures = new CompletableFuture[this.indexers.length + 1];
+
+					// clean future
+					futures[0] = CompletableFuture.runAsync(() -> {
+						removeSymbolsByProject(project);
+						springIndex.removeBeans(project.getElementName());
+					}, this.updateQueue);
+					
+					// index futures
 					for (int i = 0; i < this.indexers.length; i++) {
 						InitializeProject initializeItem = new InitializeProject(project, this.indexers[i]);
-						futures[i] = CompletableFuture.runAsync(initializeItem, this.updateQueue);
+						futures[i + 1] = CompletableFuture.runAsync(initializeItem, this.updateQueue);
 					}
 					
 					CompletableFuture<Void> future = CompletableFuture.allOf(futures);
