@@ -37,7 +37,7 @@ do
     json="${json}\"http://dist.springsource.com${path}\",${NL}\"https://dist.springsource.com${path}\",${NL}\"http://download.springsource.com${path}\",${NL}\"https://download.springsource.com${path}\",${NL}"
   fi
   if [[ "$counter" -eq "$FILES_BATCH" ]]; then
-    json="${json::-2}${NL}]}"
+    json="${json:0:-2}${NL}]}"
     echo $json
 
     curl -X DELETE "https://api.cloudflare.com/client/v4/zones/${CLOUDFLARE_ZONE_ID}/purge_cache" \
@@ -51,7 +51,7 @@ do
   fi
 done
 if ! [[ "$counter" -eq 0 ]]; then
-  json="${json::-2}${NL}]}"
+  json="${json:0:-2}${NL}]}"
   echo $json
 
   curl -X DELETE "https://api.cloudflare.com/client/v4/zones/${CLOUDFLARE_ZONE_ID}/purge_cache" \
