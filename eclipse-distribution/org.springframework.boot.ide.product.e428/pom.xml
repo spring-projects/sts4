@@ -375,6 +375,9 @@
 								<echo file="${project.build.directory}/s3-dist-path.txt">
 									${dist.path.product}
 								</echo>
+								<echo file="${project.build.directory}/s3-p2-repo-dist-path.txt">
+									${dist.path.repo}
+								</echo>
 							</target>
 						</configuration>
 						<goals>

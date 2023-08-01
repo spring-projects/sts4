@@ -11,6 +11,20 @@ on:
         required: true
         default: 'snapshot'
         type: string
+      eclipse_profile:
+        description: Eclipse profile 'e427' etc
+        required: false
+        default: 'e427'
+        type: string
+      skip_tests:
+        description: skip ls tests execution
+        required: false
+        default: false
+        type: boolean
+      sts4-language-servers-version:
+        description: version of sts4 ls extensions
+        required: false
+        type: string
       ref:
         description: Git branch, tag, commit hash
         required: false
@@ -25,6 +39,7 @@ jobs:
       - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
         with:
           sparse-checkout: |
+            .github
             headless-services
             eclipse-language-servers
       - name: Set up JDK 17
@@ -34,16 +49,13 @@ jobs:
           distribution: 'temurin'
       - name: Enforce https instead of http
         run: ./nohttp.sh
-      - name: Timestamp
-        id: timestamp
-        run: echo "name=date::$(date +'%Y%m%dT%H%M%S')" >> $GITHUB_OUTPUT
       - name: Build Language Servers JARs
         run: |
           cd headless-services
           if command -v xvfb-run ; then
-            xvfb-run ./mvnw --batch-mode clean install
+            xvfb-run ./mvnw --batch-mode clean install -DskipTests=${{ inputs.skip_tests }}
           else
-            ./mvnw --batch-mode clean install
+            ./mvnw --batch-mode clean install -DskipTests=${{ inputs.skip_tests }}
           fi
       - name: Install GPG key
         run: |
@@ -56,17 +68,34 @@ jobs:
           gpg_passphrase: ${{ secrets.GPG_PASSPHRASE }}
           gpg_keyname: ${{ secrets.GPG_KEYID }}
         run: |
+          sts4_ls_version=${{ inputs.sts4-language-servers-version }}
+          sts4_ls_version_param=""
+          if ! [[ -z ${sts4_ls_version} ]]; then
+            sts4_ls_version_param="-Ddist.version=${sts4_ls_version}"
+          fi  
           cd eclipse-language-servers
           if command -v xvfb-run ; then
-            xvfb-run ./mvnw --batch-mode clean deploy -Pe428 -P${{ inputs.build_type }} -Pgitactions -Pgpg.sign -DbuildNumber=${{ steps.timestamp.outputs.date }} -Dsigning.skip=true -Dhttpclient.retry-max=20 -Declipse.p2.mirrors=false -Ds3service.https-only=true -Dmaven.test.skip=true -Dtycho.localArtifacts=ignore
+            xvfb-run ./mvnw --batch-mode clean deploy -P${{ inputs.eclipse_profile }} -P${{ inputs.build_type }} $sts4_ls_version_param -Pgitactions -Pgpg.sign -Dmaven.test.skip=true -Dsigning.skip=true -Dhttpclient.retry-max=20 -Declipse.p2.mirrors=false -Ds3service.https-only=true -Dtycho.localArtifacts=ignore
           else
-            ./mvnw --batch-mode clean deploy -Pe428 -P${{ inputs.build_type }} -Pgitactions -Pgpg.sign -DbuildNumber=${{ steps.timestamp.outputs.date }} -Dsigning.skip=true -Dhttpclient.retry-max=20 -Declipse.p2.mirrors=false -Ds3service.https-only=true -Dmaven.test.skip=true -Dtycho.localArtifacts=ignore
+            ./mvnw --batch-mode clean deploy -P${{ inputs.eclipse_profile }} -P${{ inputs.build_type }} $sts4_ls_version_param -Pgitactions -Pgpg.sign -Dmaven.test.skip=true -Dsigning.skip=true -Dhttpclient.retry-max=20 -Declipse.p2.mirrors=false -Ds3service.https-only=true -Dtycho.localArtifacts=ignore
           fi
+      - name: Clear S3 Caches
+        if: ${{ inputs.build_type != 'snapshot' }}
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.TOOLS_S3_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.TOOLS_S3_SECRET_KEY  }}
+          AWS_DEFAULT_REGION: us-east-1
+          CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+          CLOUDFLARE_CACHE_TOKEN: ${{ secrets.CLOUDFLARE_CACHE_TOKEN }}
+        run: |
+          dist_path=`cat ${{ github.workspace }}/eclipse-language-servers/org.springframework.tooling.ls.integration.repository/target/s3-p2-repo-dist-path.txt`
+          ${{ github.workspace }}/.github/scripts/clear-s3-caches.sh $dist_path
       - name: Verify Eclipse LS Extensions on e429
+        if: ${{ inputs.build_type == 'snapshot' }}
         run: |
           cd eclipse-language-servers
           if command -v xvfb-run ; then
-            xvfb-run ./mvnw --batch-mode clean package -Pe429 -P${{ inputs.build_type }} -DbuildNumber=${{ steps.timestamp.outputs.timestamp }} -Dsigning.skip=true -Dhttpclient.retry-max=20 -Declipse.p2.mirrors=false -Ds3service.https-only=true -Dmaven.test.skip=true -Dtycho.localArtifacts=ignore
+            xvfb-run ./mvnw --batch-mode clean package -Pe429 -P${{ inputs.build_type }} -Dsigning.skip=true -Dhttpclient.retry-max=20 -Declipse.p2.mirrors=false -Ds3service.https-only=true -Dmaven.test.skip=true -Dtycho.localArtifacts=ignore
           else
-            ./mvnw --batch-mode clean package -Pe429 -P${{ inputs.build_type }} -DbuildNumber=${{ steps.timestamp.outputs.timestamp }} -Dsigning.skip=true -Dhttpclient.retry-max=20 -Declipse.p2.mirrors=false -Ds3service.https-only=true -Dmaven.test.skip=true -Dtycho.localArtifacts=ignore
+            ./mvnw --batch-mode clean package -Pe429 -P${{ inputs.build_type }} -Dsigning.skip=true -Dhttpclient.retry-max=20 -Declipse.p2.mirrors=false -Ds3service.https-only=true -Dmaven.test.skip=true -Dtycho.localArtifacts=ignore
           fi

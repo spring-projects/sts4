@@ -13,6 +13,14 @@ on:
         required: true
         default: 'snapshot'
         type: string
+      sts4-language-servers-version:
+        description: version of sts4 ls extensions
+        required: false
+        type: string
+      p2-qualifier:
+        description: p2 qualifier to override
+        required: false
+        type: string
       ref:
         description: Git branch, tag, commit hash
         required: false
@@ -49,8 +57,18 @@ jobs:
           gpg_passphrase: ${{ secrets.GPG_PASSPHRASE }}
           gpg_keyname: ${{ secrets.GPG_KEYID }}
         run: |
+          sts4_ls_version=${{ inputs.sts4-language-servers-version }}
+          sts4_ls_version_param=""
+          if ! [[ -z ${sts4_ls_version} ]]; then
+            sts4_ls_version_param="-Dsts4-language-servers-version=${sts4_ls_version}"
+          fi
+          p2_qualifier=${{ inputs.p2-qualifier }}
+          p2_qualifier_param=""
+          if ! [[ -z ${p2_qualifier} ]]; then
+            p2_qualifier_param="-Dp2.qualifier=${p2_qualifier}"
+          fi
           cd eclipse-distribution
-          ./mvnw --batch-mode -U clean deploy -P${{ inputs.eclipse_profile }} -P${{ inputs.build_type }} -Pgitactions -Pgpg.sign -Dsigning.skip=true -Dmaven.repo.local=~/.m2/repository-signed -Dhttpclient.retry-max=20 -Dmaven.test.skip=true -Declipse.p2.mirrors=false -Dtycho.localArtifacts=ignore -Ds3service.https-only=true -Dp2.replaceQualifier=true -Dorg.eclipse.ecf.provider.filetransfer.httpclient.retrieve.readTimeout=1200000 -Dorg.eclipse.equinox.p2.transport.ecf.retry=5 -Dskip.eclipserun.proxies=false -Dskip.osx.signing=true  -Dskip.win.signing=true -Dskip.osx.notarizing=true -Dtycho.equinox.resolver.uses=true
+          ./mvnw --batch-mode -U clean deploy -P${{ inputs.eclipse_profile }} -P${{ inputs.build_type }} $sts4_ls_version_param $p2_qualifier_param -Pgitactions -Pgpg.sign -Dsigning.skip=true -Dmaven.repo.local=~/.m2/repository-signed -Dhttpclient.retry-max=20 -Dmaven.test.skip=true -Declipse.p2.mirrors=false -Dtycho.localArtifacts=ignore -Ds3service.https-only=true -Dp2.replaceQualifier=true -Dorg.eclipse.ecf.provider.filetransfer.httpclient.retrieve.readTimeout=1200000 -Dorg.eclipse.equinox.p2.transport.ecf.retry=5 -Dskip.eclipserun.proxies=false -Dskip.osx.signing=true  -Dskip.win.signing=true -Dskip.osx.notarizing=true -Dtycho.equinox.resolver.uses=true
       - name: Upload Linux Distro Build Artifacts
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.TOOLS_S3_ACCESS_KEY }}
@@ -72,6 +90,17 @@ jobs:
           aws s3 rm s3://dist.springsource.com/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*linux*.tar.gz*" --exclude "*/*"
           echo "Uploading new Linux .ta.gz files to s3..."
           aws s3 cp . s3://dist.springsource.com/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*linux*.tar.gz*" --exclude "*/*" --acl public-read --no-progress
+      - name: Clear S3 Caches for P2 Repo
+        if: ${{ inputs.build_type != 'snapshot' }}
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.TOOLS_S3_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.TOOLS_S3_SECRET_KEY  }}
+          AWS_DEFAULT_REGION: us-east-1
+          CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+          CLOUDFLARE_CACHE_TOKEN: ${{ secrets.CLOUDFLARE_CACHE_TOKEN }}
+        run: |
+          dist_path=`cat ${{ github.workspace }}/eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target/s3-p2-repo-dist-path.txt`
+          ${{ github.workspace }}/.github/scripts/clear-s3-caches.sh $dist_path
       - name: Update Nightly Distro Downloads page
         if: ${{ inputs.build_type == 'snapshot' && always() }}
         env:
@@ -89,16 +118,19 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.TOOLS_S3_SECRET_KEY  }}
         run: |
           echo "Uploading Win Zips and OSX tar.gz to S3 for signing..."
-          aws s3 cp ${{ github.workspace }}/eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target/products s3://dist.springsource.com/sts4-distro-ci-temp/${{ github.run_id }} --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip" --include "spring-tool-suite-4*macosx*.tar.gz" --exclude "*/*" --no-progress
+          id=${{ inputs.eclipse_profile }}-${{ inputs.build_type }}-${{ github.run_id }}
+          aws s3 cp ${{ github.workspace }}/eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target/products s3://dist.springsource.com/sts4-distro-ci-temp/$id --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip" --include "spring-tool-suite-4*macosx*.tar.gz" --exclude "*/*" --no-progress
       - uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce
         with:
-          name: s3-dist-path-${{ github.run_id }}.${{ github.run_attempt }}
+          name: s3-dist-path-${{ inputs.eclipse_profile }}-${{ inputs.build_type }}-${{ github.run_id }}
           path: ${{ github.workspace }}/eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target/s3-dist-path.txt
           retention-days: 1
+    outputs:
+      id: ${{ inputs.eclipse_profile }}-${{ inputs.build_type }}-${{ github.run_id }}
 
 
   sign-win-distros:
-    needs: eclipse-distro-build
+    needs: [ eclipse-distro-build ]
     runs-on: self-hosted
     steps:
       - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
@@ -113,7 +145,7 @@ jobs:
           rm -f spring-tool-suite-4*win*.zip*
           rm -f spring-tool-suite-4*win*.self-extracting.jar*
           ls
-          aws s3 mv s3://dist.springsource.com/sts4-distro-ci-temp/${{ github.run_id }} . --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --exclude "*/*" --no-progress
+          aws s3 mv s3://dist.springsource.com/sts4-distro-ci-temp/${{ needs.eclipse-distro-build.outputs.id }} . --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --exclude "*/*" --no-progress
       - name: Sign EXE within zip files
         id: sign
         env:
@@ -123,11 +155,11 @@ jobs:
           files=`ls spring-tool-suite-4*win*.zip`
           for file in $files
           do
-            ${{ github.workspace }}/.github/scripts/sign-exe-in-zip-file.sh $file ${{ github.workspace }}/.github/scripts/sign-exe.sh ${{ github.workspace }}/.github/scripts/self-extracting-jar-creator.jar ${{ github.run_id }}
+            ${{ github.workspace }}/.github/scripts/sign-exe-in-zip-file.sh $file ${{ github.workspace }}/.github/scripts/sign-exe.sh ${{ github.workspace }}/.github/scripts/self-extracting-jar-creator.jar ${{ needs.eclipse-distro-build.outputs.id }}
           done
       - uses: actions/download-artifact@cbed621e49e4c01b044d60f6c80ea4ed6328b281
         with:
-          name: s3-dist-path-${{ github.run_id }}.${{ github.run_attempt }}
+          name: s3-dist-path-${{ needs.eclipse-distro-build.outputs.id }}
       - name: Update Win zip/jar on S3
         id: update-s3
         env:
@@ -159,11 +191,11 @@ jobs:
           SSH_KEY: ~/.ssh/id_rsa
           SSH_USER: signer
         run: |
-          ssh -i $SSH_KEY $SSH_USER@vm-tools.spring.vmware.com -- rm -rf /opt/bamboo/${{ github.run_id }}
+          ssh -i $SSH_KEY $SSH_USER@vm-tools.spring.vmware.com -- rm -rf /opt/bamboo/${{ needs.eclipse-distro-build.outputs.id }}
           rm -rf *spring-tool-suite-4*win*
 
   sign-osx-distros:
-    needs: eclipse-distro-build
+    needs: [ eclipse-distro-build ]
     runs-on: macos-latest-xl
     steps:
       - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
@@ -200,7 +232,7 @@ jobs:
         run: |
           rm -rf *macosx*
           ls
-          aws s3 mv s3://dist.springsource.com/sts4-distro-ci-temp/${{ github.run_id }} . --recursive --exclude "*" --include "spring-tool-suite-4*macosx*.tar.gz" --exclude "*/*" --no-progress
+          aws s3 mv s3://dist.springsource.com/sts4-distro-ci-temp/${{ needs.eclipse-distro-build.outputs.id }} . --recursive --exclude "*" --include "spring-tool-suite-4*macosx*.tar.gz" --exclude "*/*" --no-progress
       - name: Sign .app, Create and Sign DMG
         env:
           MACOS_CERTIFICATE_ID: ${{ secrets.MACOS_CERTIFICATE_ID }}
@@ -227,8 +259,8 @@ jobs:
           echo "Done signing and notarization of DMG files"
       - uses: actions/download-artifact@cbed621e49e4c01b044d60f6c80ea4ed6328b281
         with:
-          name: s3-dist-path-${{ github.run_id }}.${{ github.run_attempt }}
-      - name: Update Win zip/jar on S3
+          name: s3-dist-path-${{ needs.eclipse-distro-build.outputs.id }}
+      - name: Update GMG files on S3
         id: update-s3
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.TOOLS_S3_ACCESS_KEY }}
@@ -258,10 +290,28 @@ jobs:
           rm -rf *spring-tool-suite-4*macosx*
 
   cleanup:
-    needs: [ sign-win-distros, sign-osx-distros ]
+    needs: [ eclipse-distro-build, sign-win-distros, sign-osx-distros ]
     if: ${{ always() }}
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
+        with:
+          sparse-checkout: |
+            .github
+      - uses: actions/download-artifact@cbed621e49e4c01b044d60f6c80ea4ed6328b281
+        with:
+          name: s3-dist-path-${{ needs.eclipse-distro-build.outputs.id }}
+      - name: Clear S3 Caches for Distros
+        if: ${{ inputs.build_type != 'snapshot' }}
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.TOOLS_S3_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.TOOLS_S3_SECRET_KEY  }}
+          AWS_DEFAULT_REGION: us-east-1
+          CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
+          CLOUDFLARE_CACHE_TOKEN: ${{ secrets.CLOUDFLARE_CACHE_TOKEN }}
+        run: |
+          dist_path=`cat s3-dist-path.txt`
+          ${{ github.workspace }}/.github/scripts/clear-s3-caches.sh $dist_path
       - name: Remove Temp Build Artifacts from S3
         id: cleanup-s3-temp-storage
         env:
@@ -269,4 +319,4 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.TOOLS_S3_SECRET_KEY  }}
           AWS_DEFAULT_REGION: us-east-1
         run: |
-          aws s3 rm s3://dist.springsource.com/sts4-distro-ci-temp --recursive --exclude "*" --include "${{ github.run_id }}/*"
+          aws s3 rm s3://dist.springsource.com/sts4-distro-ci-temp --recursive --exclude "*" --include "${{ needs.eclipse-distro-build.outputs.id }}/*"

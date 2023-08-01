@@ -1,0 +1,24 @@
+name: Release - Eclipse LS Extensions Build
+
+concurrency:
+  group: release-eclipse-ls-extensions
+  cancel-in-progress: true
+
+on:
+  workflow_dispatch:
+    inputs:
+      sts4-language-servers-version:
+        description: Last segments of an s3 path for p2 Repo for eclipse ls extensions
+        required: true
+        type: string
+
+jobs:
+
+  eclipse-ls-extension:
+    uses: ./.github/workflows/eclipse-ls-extensions-build.yml
+    with:
+      eclipse_profile: 'e427'
+      build_type: 'release'
+      skip_tests: true
+      sts4-language-servers-version: ${{ inputs.sts4-language-servers-version }}
+    secrets: inherit

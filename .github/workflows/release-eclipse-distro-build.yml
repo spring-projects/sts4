@@ -1,0 +1,42 @@
+name: Release - Eclipse Distros Build
+
+concurrency:
+  group: release-eclipse
+  cancel-in-progress: true
+
+on:
+  workflow_dispatch:
+    inputs:
+      sts4-language-servers-version:
+        description: Last segments of an s3 path for p2 Repo for eclipse ls extensions
+        required: true
+        type: string
+
+jobs:
+
+  e427-distro:
+    uses: ./.github/workflows/gh-hosted-eclipse-distro-build.yml
+    with:
+      eclipse_profile: 'e427'
+      build_type: 'release'
+      p2-qualifier: 'RELEASE'
+      sts4-language-servers-version: ${{ inputs.sts4-language-servers-version }}
+    secrets: inherit
+
+  e428-distro:
+    uses: ./.github/workflows/gh-hosted-eclipse-distro-build.yml
+    with:
+      eclipse_profile: 'e428'
+      build_type: 'release'
+      p2-qualifier: 'RELEASE'
+      sts4-language-servers-version: ${{ inputs.sts4-language-servers-version }}
+    secrets: inherit
+
+  e429-distro:
+    uses: ./.github/workflows/gh-hosted-eclipse-distro-build.yml
+    with:
+      eclipse_profile: 'e429'
+      build_type: 'release'
+      p2-qualifier: 'RELEASE'
+      sts4-language-servers-version: ${{ inputs.sts4-language-servers-version }}
+    secrets: inherit
