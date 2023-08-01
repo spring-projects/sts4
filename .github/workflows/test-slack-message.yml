@@ -18,7 +18,7 @@ jobs:
         with:
           # The following message update step does not accept a channel name.
           # Setting a channel ID here for consistency is highly recommended.
-          channel-id: 'spring-tools-team'
+          channel-id: 'C0188MENU2J'
           payload: |
             {
               "text": "Hello from STS4 Github Repo",
