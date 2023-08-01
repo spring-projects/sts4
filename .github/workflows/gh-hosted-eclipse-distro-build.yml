@@ -118,16 +118,19 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.TOOLS_S3_SECRET_KEY  }}
         run: |
           echo "Uploading Win Zips and OSX tar.gz to S3 for signing..."
-          aws s3 cp ${{ github.workspace }}/eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target/products s3://dist.springsource.com/sts4-distro-ci-temp/${{ github.run_id }} --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip" --include "spring-tool-suite-4*macosx*.tar.gz" --exclude "*/*" --no-progress
+          id=${{ inputs.eclipse_profile }}-${{ inputs.build_type }}-${{ github.run_id }}
+          aws s3 cp ${{ github.workspace }}/eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target/products s3://dist.springsource.com/sts4-distro-ci-temp/$id --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip" --include "spring-tool-suite-4*macosx*.tar.gz" --exclude "*/*" --no-progress
       - uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce
         with:
-          name: s3-dist-path-${{ github.run_id }}.${{ github.run_attempt }}
+          name: s3-dist-path-${{ inputs.eclipse_profile }}-${{ inputs.build_type }}-${{ github.run_id }}
           path: ${{ github.workspace }}/eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target/s3-dist-path.txt
           retention-days: 1
+    outputs:
+      id: ${{ inputs.eclipse_profile }}-${{ inputs.build_type }}-${{ github.run_id }}
 
 
   sign-win-distros:
-    needs: eclipse-distro-build
+    needs: [ eclipse-distro-build ]
     runs-on: self-hosted
     steps:
       - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
@@ -142,7 +145,7 @@ jobs:
           rm -f spring-tool-suite-4*win*.zip*
           rm -f spring-tool-suite-4*win*.self-extracting.jar*
           ls
-          aws s3 mv s3://dist.springsource.com/sts4-distro-ci-temp/${{ github.run_id }} . --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --exclude "*/*" --no-progress
+          aws s3 mv s3://dist.springsource.com/sts4-distro-ci-temp/${{ needs.eclipse-distro-build.outputs.id }} . --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --exclude "*/*" --no-progress
       - name: Sign EXE within zip files
         id: sign
         env:
@@ -152,11 +155,11 @@ jobs:
           files=`ls spring-tool-suite-4*win*.zip`
           for file in $files
           do
-            ${{ github.workspace }}/.github/scripts/sign-exe-in-zip-file.sh $file ${{ github.workspace }}/.github/scripts/sign-exe.sh ${{ github.workspace }}/.github/scripts/self-extracting-jar-creator.jar ${{ github.run_id }}
+            ${{ github.workspace }}/.github/scripts/sign-exe-in-zip-file.sh $file ${{ github.workspace }}/.github/scripts/sign-exe.sh ${{ github.workspace }}/.github/scripts/self-extracting-jar-creator.jar ${{ needs.eclipse-distro-build.outputs.id }}
           done
       - uses: actions/download-artifact@cbed621e49e4c01b044d60f6c80ea4ed6328b281
         with:
-          name: s3-dist-path-${{ github.run_id }}.${{ github.run_attempt }}
+          name: s3-dist-path-${{ needs.eclipse-distro-build.outputs.id }}
       - name: Update Win zip/jar on S3
         id: update-s3
         env:
@@ -188,11 +191,11 @@ jobs:
           SSH_KEY: ~/.ssh/id_rsa
           SSH_USER: signer
         run: |
-          ssh -i $SSH_KEY $SSH_USER@vm-tools.spring.vmware.com -- rm -rf /opt/bamboo/${{ github.run_id }}
+          ssh -i $SSH_KEY $SSH_USER@vm-tools.spring.vmware.com -- rm -rf /opt/bamboo/${{ needs.eclipse-distro-build.outputs.id }}
           rm -rf *spring-tool-suite-4*win*
 
   sign-osx-distros:
-    needs: eclipse-distro-build
+    needs: [ eclipse-distro-build ]
     runs-on: macos-latest-xl
     steps:
       - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
@@ -229,7 +232,7 @@ jobs:
         run: |
           rm -rf *macosx*
           ls
-          aws s3 mv s3://dist.springsource.com/sts4-distro-ci-temp/${{ github.run_id }} . --recursive --exclude "*" --include "spring-tool-suite-4*macosx*.tar.gz" --exclude "*/*" --no-progress
+          aws s3 mv s3://dist.springsource.com/sts4-distro-ci-temp/${{ needs.eclipse-distro-build.outputs.id }} . --recursive --exclude "*" --include "spring-tool-suite-4*macosx*.tar.gz" --exclude "*/*" --no-progress
       - name: Sign .app, Create and Sign DMG
         env:
           MACOS_CERTIFICATE_ID: ${{ secrets.MACOS_CERTIFICATE_ID }}
@@ -256,7 +259,7 @@ jobs:
           echo "Done signing and notarization of DMG files"
       - uses: actions/download-artifact@cbed621e49e4c01b044d60f6c80ea4ed6328b281
         with:
-          name: s3-dist-path-${{ github.run_id }}.${{ github.run_attempt }}
+          name: s3-dist-path-${{ needs.eclipse-distro-build.outputs.id }}
       - name: Update Win zip/jar on S3
         id: update-s3
         env:
@@ -287,7 +290,7 @@ jobs:
           rm -rf *spring-tool-suite-4*macosx*
 
   cleanup:
-    needs: [ sign-win-distros, sign-osx-distros ]
+    needs: [ eclipse-distro-build, sign-win-distros, sign-osx-distros ]
     if: ${{ always() }}
     runs-on: ubuntu-latest
     steps:
@@ -297,7 +300,7 @@ jobs:
             .github
       - uses: actions/download-artifact@cbed621e49e4c01b044d60f6c80ea4ed6328b281
         with:
-          name: s3-dist-path-${{ github.run_id }}.${{ github.run_attempt }}
+          name: s3-dist-path-${{ needs.eclipse-distro-build.outputs.id }}
       - name: Clear S3 Caches for Distros
         if: ${{ inputs.build_type != 'snapshot' }}
         env:
@@ -316,4 +319,4 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.TOOLS_S3_SECRET_KEY  }}
           AWS_DEFAULT_REGION: us-east-1
         run: |
-          aws s3 rm s3://dist.springsource.com/sts4-distro-ci-temp --recursive --exclude "*" --include "${{ github.run_id }}/*"
+          aws s3 rm s3://dist.springsource.com/sts4-distro-ci-temp --recursive --exclude "*" --include "${{ needs.eclipse-distro-build.outputs.id }}/*"
