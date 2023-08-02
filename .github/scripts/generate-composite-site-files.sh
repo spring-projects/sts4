@@ -9,13 +9,13 @@ echo "<?xml version='1.0' encoding='UTF-8'?>" >> compositeArtifacts.xml
 echo "<?compositeArtifactRepository version='1.0.0'?>" >> compositeArtifacts.xml
 echo "<repository name='Spring Tool Suite 4" >> compositeArtifacts.xml
 echo "    type='org.eclipse.equinox.internal.p2.artifact.repository.CompositeArtifactRepository' version='1.0.0'>" >> compositeArtifacts.xml
-ehco "  <properties size='1'>" >> compositeArtifacts.xml
+echo "  <properties size='1'>" >> compositeArtifacts.xml
 echo "    <property name='p2.timestamp' value='${val}'/>" >> compositeArtifacts.xml
 echo "  </properties>" >> compositeArtifacts.xml
 echo "  <children size='1'>" >> compositeArtifacts.xml
 echo "    <child location='${url}'/>" >> compositeArtifacts.xml
 echo "  </children>" >> compositeArtifacts.xml
-ehco "</repository>" >> compositeArtifacts.xml
+echo "</repository>" >> compositeArtifacts.xml
 
 echo "<?xml version='1.0' encoding='UTF-8'?>" >> compositeContent.xml
 echo "<?compositeMetadataRepository version='1.0.0'?>" >> compositeContent.xml
