@@ -1,3 +1,13 @@
+## 2023-06-14 (4.19.1 RELEASE, incl. language servers version 1.48.0)
+
+* _(Spring Boot)_ fixed: Evaluate Spring Modulith actuators ([#953](https://github.com/spring-projects/sts4/issues/953))
+* _(Spring Boot)_ fixed: No classpath update after source is saved ([#987](https://github.com/spring-projects/sts4/issues/987))
+* _(Spring Boot)_ fixed: duplicates of symbols showing up ([#10056](https://github.com/spring-projects/sts4/issues/1056))
+* _(Spring Boot)_ fixed: WebSecurityConfigurerAdapter quick fix not showing ([#1062](https://github.com/spring-projects/sts4/issues/1062))
+* _(Spring Boot)_ fixed: Let show optional: prefix for spring.sql.init.schema-locations and spring.sql.init.data-locations ([#1067](https://github.com/spring-projects/sts4/issues/1067))
+* _(Spring Boot)_ fixed: index cache not working after project update ([#1079](https://github.com/spring-projects/sts4/issues/1079))
+* _(VSCode)_ fixed: Spring Boot Tools vscode extension error popup: Request textDocument/definition failed ([#1076](https://github.com/spring-projects/sts4/issues/1076))
+
 ## 2023-06-14 (4.19.0 RELEASE, incl. language servers version 1.47.0)
 
 * _(Spring Boot)_ fixed: Spring Data Repositories: Validate ID type ([#457](https://github.com/spring-projects/sts4/issues/457))
