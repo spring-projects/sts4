@@ -22,7 +22,7 @@ echo "<?compositeMetadataRepository version='1.0.0'?>" >> compositeContent.xml
 echo "<repository name='Spring Tool Suite 4'" >> compositeContent.xml
 echo "    type='org.eclipse.equinox.internal.p2.metadata.repository.CompositeMetadataRepository' version='1.0.0'>" >> compositeContent.xml
 echo "  <properties size='1'>" >> compositeContent.xml
-echo "    <property name='p2.timestamp' value='1${val}'/>" >> compositeContent.xml
+echo "    <property name='p2.timestamp' value='${val}'/>" >> compositeContent.xml
 echo "  </properties>" >> compositeContent.xml
 echo "  <children size='1'>" >> compositeContent.xml
 echo "    <child location='${url}'/>" >> compositeContent.xml
