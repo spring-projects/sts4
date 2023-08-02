@@ -25,7 +25,7 @@ jobs:
           CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
           CLOUDFLARE_CACHE_TOKEN: ${{ secrets.CLOUDFLARE_CACHE_TOKEN }}
         run: |
-          dirs=`aws s3 cp s3://dist.springsource.com/release/TOOLS/sts4/update/${{ inputs.version }} . --recursive --include "*" --exclude "*/*" --dryrun`
+          dirs=`aws s3 ls s3://dist.springsource.com/release/TOOLS/sts4/update/${{ inputs.version }}`
           for dir in $dirs
           do
             echo $dir
