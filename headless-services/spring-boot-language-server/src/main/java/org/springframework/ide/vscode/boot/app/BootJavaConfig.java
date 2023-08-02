@@ -30,6 +30,8 @@ import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguage
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleWorkspaceService;
 import org.springframework.stereotype.Component;
 
+import com.google.gson.JsonObject;
+
 /**
  * Boot-Java LS settings
  *
@@ -214,6 +216,20 @@ public class BootJavaConfig implements InitializingBean {
 			log.error("", e);
 		}
 		return Toggle.Option.AUTO;
+	}
+	
+	public JsonObject getJavaValidationSettingsJson() {
+		JsonObject javaValidationsJson = new JsonObject();
+		List<String> javaValidationTypes = List.of(
+				SpringProblemCategories.BOOT_2.getId(),
+				SpringProblemCategories.BOOT_3.getId(),
+				SpringProblemCategories.SPEL.getId(),
+				SpringProblemCategories.SPRING_AOT.getId()
+		);
+		for (String type : javaValidationTypes) {
+			javaValidationsJson.add(type, getRawSettings().getRawProperty("spring-boot", "ls", "problem", type));
+		}
+		return javaValidationsJson;
 	}
 
 }
