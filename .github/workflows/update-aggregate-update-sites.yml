@@ -29,4 +29,9 @@ jobs:
           for dir in $dirs
           do
             echo $dir
+            pattern='^e[0-9]\+.[0-9]\+/$'
+            if [[ "$dir" =~ $pattern ]]; then
+              echo "eDir ${dir}"  
+            fi
+
           done
