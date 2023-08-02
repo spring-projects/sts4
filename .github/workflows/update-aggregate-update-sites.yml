@@ -17,6 +17,9 @@ jobs:
         with:
           sparse-checkout: |
             .github
+      - name: Timestamp
+        id: timestamp
+        run: echo "date=$(date +'%Y%m%d%H%M%S')" >> $GITHUB_OUTPUT
       - name: Generate and Upload Aggregate Update Sites Data
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.TOOLS_S3_ACCESS_KEY }}
@@ -26,12 +29,14 @@ jobs:
           CLOUDFLARE_CACHE_TOKEN: ${{ secrets.CLOUDFLARE_CACHE_TOKEN }}
         run: |
           dirs=`aws s3 ls s3://dist.springsource.com/release/TOOLS/sts4/update/${{ inputs.version }}/`
+          pattern='^e[0-9]+.[0-9]+/$'
           for dir in $dirs
           do
-            echo $dir
-            pattern='^e[0-9]+.[0-9]+/$'
             if [[ "$dir" =~ $pattern ]]; then
-              echo "eDir ${dir}"  
+              echo "Found ${dir}"
+              site_url="https://download.springsource.com/release/TOOLS/sts4/update/${dir}"
+              ${{ github.workspace }}/.github/scripts/generate-composite-site-files.sh ${{ steps.timestamp.outputs.date }} $site_url
+              cat ./compositeArtifacts.xml
+              cat ./compositeContent.xml
             fi
-
           done
