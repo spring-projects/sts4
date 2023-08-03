@@ -23,7 +23,7 @@ jobs:
             .github
       - name: Timestamp
         id: timestamp
-        run: echo "date=$(date +'%Y%m%d%H%M%S')" >> $GITHUB_OUTPUT
+        run: echo "date=`echo $(($(date +%s%N) / 1000000))`" >> $GITHUB_OUTPUT
       - name: Generate and Upload Aggregate Update Sites Data
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.TOOLS_S3_ACCESS_KEY }}

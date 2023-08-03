@@ -7,7 +7,7 @@ rm -f ./p2.index
 
 echo "<?xml version='1.0' encoding='UTF-8'?>" >> compositeArtifacts.xml
 echo "<?compositeArtifactRepository version='1.0.0'?>" >> compositeArtifacts.xml
-echo "<repository name='Spring Tool Suite 4" >> compositeArtifacts.xml
+echo "<repository name='Spring Tool Suite 4'" >> compositeArtifacts.xml
 echo "    type='org.eclipse.equinox.internal.p2.artifact.repository.CompositeArtifactRepository' version='1.0.0'>" >> compositeArtifacts.xml
 echo "  <properties size='1'>" >> compositeArtifacts.xml
 echo "    <property name='p2.timestamp' value='${val}'/>" >> compositeArtifacts.xml
