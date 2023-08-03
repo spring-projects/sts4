@@ -23,7 +23,7 @@ jobs:
             .github
       - name: Timestamp
         id: timestamp
-        run: echo "date=$(date +'%Y%m%d%H%M%S')" >> $GITHUB_OUTPUT
+        run: echo "date=`echo $(($(date +%s%N) / 1000000))`" >> $GITHUB_OUTPUT
       - name: Generate and Upload Aggregate Update Sites Data
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.TOOLS_S3_ACCESS_KEY }}
@@ -36,7 +36,7 @@ jobs:
           ${{ github.workspace }}/.github/scripts/generate-composite-site-files.sh ${{ steps.timestamp.outputs.date }} $site_url
           cat ./compositeArtifacts.xml
           cat ./compositeContent.xml
-          echo "aws s3 cp ./compositeArtifacts.xml s3://dist.springsource.com/release/TOOLS/sts4-language-server-integrations --dryrun --acl public-read"
-          echo "aws s3 cp ./compositeContent.xml s3://dist.springsource.com/release/TOOLS/sts4-language-server-integrations --dryrun --acl public-read"
-          echo "aws s3 cp ./p2.index s3://dist.springsource.com/release/TOOLS/sts4/update/sts4-language-server-integrations --dryrun --acl public-read"
+          echo "aws s3 cp ./compositeArtifacts.xml s3://dist.springsource.com/release/TOOLS/sts4-language-server-integrations/ --dryrun --acl public-read"
+          echo "aws s3 cp ./compositeContent.xml s3://dist.springsource.com/release/TOOLS/sts4-language-server-integrations/ --dryrun --acl public-read"
+          echo "aws s3 cp ./p2.index s3://dist.springsource.com/release/TOOLS/sts4/update/sts4-language-server-integrations/ --dryrun --acl public-read"
           echo "Clear caches for path release/TOOLS/sts4/update/sts4-language-server-integrations"
