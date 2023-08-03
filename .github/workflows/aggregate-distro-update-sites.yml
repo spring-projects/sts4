@@ -1,4 +1,4 @@
-name: Update Aggregate Update Sites
+name: Aggregate Distro Update Sites
 
 on:
   workflow_dispatch:
@@ -39,7 +39,7 @@ jobs:
             if [[ "$dir" =~ $pattern ]]; then
               echo "Found ${dir}"
               dir_name=${dir:0:-1}
-              site_url="https://download.springsource.com/release/TOOLS/sts4/update/${dir_name}"
+              site_url="https://download.springsource.com/release/TOOLS/sts4/update/${{ inputs.version }}/${dir_name}"
               ${{ github.workspace }}/.github/scripts/generate-composite-site-files.sh ${{ steps.timestamp.outputs.date }} $site_url
               cat ./compositeArtifacts.xml
               cat ./compositeContent.xml
