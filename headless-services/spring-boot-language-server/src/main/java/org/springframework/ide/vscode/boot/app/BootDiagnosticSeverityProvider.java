@@ -10,15 +10,10 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.app;
 
-import java.util.HashMap;
-import java.util.Map;
-
 import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.DiagnosticSeverityProvider;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
-import org.springframework.ide.vscode.commons.languageserver.util.Settings;
-import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.stereotype.Component;
 
 @Component
@@ -26,32 +21,17 @@ public class BootDiagnosticSeverityProvider implements DiagnosticSeverityProvide
 
 	private BootJavaConfig config;
 	
-	private Map<String, ProblemSeverity> severityOverrides;
-	
 	public BootDiagnosticSeverityProvider(BootJavaConfig config) {
 		this.config = config;
-		config.addListener((x) -> configChanged());
-		configChanged();
 	}
 	
-	private synchronized void configChanged() {
-		Settings settings = config.getRawSettings();
-		settings = settings.navigate("spring-boot", "ls", "problem");
-		
-		severityOverrides = new HashMap<>();
-		for (String editorType : settings.keys()) {
-			Settings problemConf = settings.navigate(editorType);
-			for (String code : problemConf.keys()) {
-				String severity = problemConf.getString(code);
-				Assert.isLegal(!severityOverrides.containsKey(code), "Multpile entries for problem type "+code);
-				severityOverrides.put(code, ProblemSeverity.valueOf(severity));
-			}
-		}
-	}
-
 	@Override
 	public synchronized DiagnosticSeverity getDiagnosticSeverity(ProblemType problem) {
-		ProblemSeverity severity = severityOverrides.get(problem.getCode());
+		String severityOverride = config.getRawSettings().getString("spring-boot", "ls", "problem", problem.getCategory().getId(), problem.getCode());
+		ProblemSeverity severity = null;
+		if (severityOverride != null && !severityOverride.isBlank()) {
+			severity = ProblemSeverity.valueOf(severityOverride);
+		}
 		if (severity==null) {
 			severity = problem.getDefaultSeverity();
 		}
