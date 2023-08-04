@@ -74,16 +74,18 @@ export function activate(context: VSCode.ExtensionContext): Thenable<ExtensionAP
                     * It comes in as "file:///c%3A/Users/ab/spring-petclinic/src/main/java/org/springframework/samples/petclinic/owner/PetRepository.java"
                     * 
                     * While symbols index would have this uri instead:
-                    * - "file:///C%3A/Users/ab/spring-petclinic/src/main/java/org/springframework/samples/petclinic/owner/PetRepository.java"
+                    * - "file:///C:/Users/ab/spring-petclinic/src/main/java/org/springframework/samples/petclinic/owner/PetRepository.java"
                     * 
-                    * i.e. lower vs upper case drive letter  
+                    * i.e. lower vs upper case drive letter and escaped drive colon
                     */
                     if (OS.platform() === "win32" && uri.scheme === 'file') {
                         let uriStr = uri.toString();
                         let idx = 5; // skip through `file:
                         for (; idx < uriStr.length - 1 && uriStr.charAt(idx) === '/'; idx++) {}
                         if (idx < uriStr.length - 1) {
-                            uriStr = `${uriStr.substring(0, idx)}${uriStr.charAt(idx).toUpperCase()}${uriStr.substring(idx + 1)}`
+                            // replace c%3A with C: or c: with C:
+                            const replaceEscapedColon = idx < uriStr.length - 4 && uriStr.substring(idx + 1, idx + 4) === '%3A';
+                            uriStr = `${uriStr.substring(0, idx)}${uriStr.charAt(idx).toUpperCase()}${replaceEscapedColon ? ':' : ''}${uriStr.substring(idx + (replaceEscapedColon ? 4 : 1))}`
                         }
                         return uriStr;
                     }
