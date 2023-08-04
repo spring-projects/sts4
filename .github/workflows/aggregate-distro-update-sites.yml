@@ -44,9 +44,9 @@ jobs:
               cat ./compositeArtifacts.xml
               cat ./compositeContent.xml
               if [[ ${dir_name} == ${{ inputs.latest }} ]]; then
-                aws s3 cp ./compositeArtifacts.xml s3://dist.springsource.com/release/TOOLS/sts4/update/latest --acl public-read --overwrite
-                aws s3 cp ./compositeContent.xml s3://dist.springsource.com/release/TOOLS/sts4/update/latest --acl public-read --overwrite
-                aws s3 cp ./p2.index s3://dist.springsource.com/release/TOOLS/sts4/update/latest --acl public-read --overwrite
+                aws s3 cp ./compositeArtifacts.xml s3://dist.springsource.com/release/TOOLS/sts4/update/latest --acl public-read
+                aws s3 cp ./compositeContent.xml s3://dist.springsource.com/release/TOOLS/sts4/update/latest --acl public-read
+                aws s3 cp ./p2.index s3://dist.springsource.com/release/TOOLS/sts4/update/latest --acl public-read
                 ${{ github.workspace }}/.github/scripts/clear-s3-caches.sh release/TOOLS/sts4/update/latest
               fi
               aws s3 mv ./compositeArtifacts.xml s3://dist.springsource.com/release/TOOLS/sts4/update/${dir} --acl public-read
