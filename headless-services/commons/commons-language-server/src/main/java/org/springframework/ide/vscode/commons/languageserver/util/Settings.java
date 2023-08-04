@@ -41,14 +41,14 @@ public class Settings {
 
 	public <T> T getAs(Class<T> type, String... names) {
 		JsonElement json = getRawProperty(names);
-		if (json!=null) {
+		if (json != null) {
 			return gson().fromJson(json, type);
 		}
 		return null;
 	}
 
 	private Gson gson() {
-		if (gson==null) {
+		if (gson == null) {
 			gson = new Gson();
 		}
 		return gson;
@@ -123,7 +123,7 @@ public class Settings {
 			return settings;
 		} else if (settings instanceof JsonObject) {
 			JsonElement sub = ((JsonObject)settings).get(names[i]);
-			return getRawProperty(sub, names, i+1);
+			return getRawProperty(sub, names, i + 1);
 		} else {
 			return null;
 		}
@@ -131,12 +131,12 @@ public class Settings {
 
 	@Override
 	public String toString() {
-		return ""+settings;
+		return "" + settings;
 	}
 
 	public Settings navigate(String... names) {
-		if (this.settings!=null && !this.settings.isJsonNull()) {
-			if (names.length==0) {
+		if (this.settings != null && !this.settings.isJsonNull()) {
+			if (names.length == 0) {
 				return this;
 			} else if (this.settings.isJsonObject()) {
 				JsonObject obj = (JsonObject) this.settings;
@@ -150,15 +150,15 @@ public class Settings {
 	}
 
 	private String[] cdr(String[] names) {
-		String[] rest = new String[names.length-1];
+		String[] rest = new String[names.length - 1];
 		for (int i = 0; i < rest.length; i++) {
-			rest[i] = names[i+1];
+			rest[i] = names[i + 1];
 		}
 		return rest;
 	}
 
 	public Iterable<String> keys() {
-		if (settings!=null && settings.isJsonObject()) {
+		if (settings != null && settings.isJsonObject()) {
 			JsonObject obj = (JsonObject) settings;
 			return obj.keySet();
 		}

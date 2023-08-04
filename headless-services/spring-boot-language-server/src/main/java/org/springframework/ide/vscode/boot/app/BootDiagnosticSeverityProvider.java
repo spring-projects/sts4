@@ -28,13 +28,16 @@ public class BootDiagnosticSeverityProvider implements DiagnosticSeverityProvide
 	@Override
 	public synchronized DiagnosticSeverity getDiagnosticSeverity(ProblemType problem) {
 		String severityOverride = config.getRawSettings().getString("spring-boot", "ls", "problem", problem.getCategory().getId(), problem.getCode());
+
 		ProblemSeverity severity = null;
 		if (severityOverride != null && !severityOverride.isBlank()) {
 			severity = ProblemSeverity.valueOf(severityOverride);
 		}
-		if (severity==null) {
+
+		if (severity == null) {
 			severity = problem.getDefaultSeverity();
 		}
+
 		return DiagnosticSeverityProvider.diagnosticSeverity(severity);
 	}
 }
