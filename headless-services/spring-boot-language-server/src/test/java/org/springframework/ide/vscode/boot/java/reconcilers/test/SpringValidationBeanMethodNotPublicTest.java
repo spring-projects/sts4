@@ -12,7 +12,6 @@ package org.springframework.ide.vscode.boot.java.reconcilers.test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.File;
 import java.util.List;
@@ -20,6 +19,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
 import org.eclipse.lsp4j.Diagnostic;
+import org.eclipse.lsp4j.DiagnosticSeverity;
 import org.eclipse.lsp4j.PublishDiagnosticsParams;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.junit.jupiter.api.BeforeEach;
@@ -27,15 +27,20 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
+import org.springframework.ide.vscode.boot.app.BootJavaConfig;
 import org.springframework.ide.vscode.boot.app.BootLanguageServerInitializer;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
 import org.springframework.ide.vscode.boot.bootiful.SymbolProviderTestConf;
 import org.springframework.ide.vscode.boot.java.Boot2JavaProblemType;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
+import org.springframework.ide.vscode.commons.languageserver.util.Settings;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 
 /**
  * @author Martin Lippert
@@ -46,6 +51,7 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 public class SpringValidationBeanMethodNotPublicTest {
 
 	@Autowired private BootLanguageServerHarness harness;
+	@Autowired private BootJavaConfig config;
 	@Autowired private BootLanguageServerInitializer serverInit;
 	@Autowired private JavaProjectFinder projectFinder;
 
@@ -85,6 +91,36 @@ public class SpringValidationBeanMethodNotPublicTest {
         assertEquals(7, diagnostic.getRange().getEnd().getCharacter());
         
         assertEquals(1, diagnostics.size());
+    }
+
+    @Test
+    void testChangingSeverityOfFindPublicBeanMethodInConfigClass() throws Exception {
+        String docUri = directory.toPath().resolve("src/main/java/org/test/BeanMethodNotPublic.java").toUri().toString();
+        
+        PublishDiagnosticsParams diagnosticsMessage = harness.getDiagnostics(docUri);
+        List<Diagnostic> diagnostics = diagnosticsMessage.getDiagnostics();
+        
+        Diagnostic diagnostic = diagnostics.get(0);
+        assertEquals(Boot2JavaProblemType.JAVA_PUBLIC_BEAN_METHOD.getCode(), diagnostic.getCode().getLeft());
+        assertEquals(1, diagnostics.size());
+        assertEquals(DiagnosticSeverity.Hint, diagnostic.getSeverity());
+        
+        String changedSettings = "{\"spring-boot\": {\"ls\": {\"problem\": {\"boot2\": {\"JAVA_PUBLIC_BEAN_METHOD\": \"ERROR\"}}}}}";
+        JsonElement settingsAsJson = new Gson().fromJson(changedSettings, JsonElement.class);
+        Settings settings = new Settings(settingsAsJson);
+        
+        harness.changeConfiguration(settings);
+
+        CompletableFuture<Void> initProject = indexer.waitOperation();
+		initProject.get(5, TimeUnit.SECONDS);
+		
+        diagnosticsMessage = harness.getDiagnostics(docUri);
+        diagnostics = diagnosticsMessage.getDiagnostics();
+        
+        diagnostic = diagnostics.get(0);
+        assertEquals(Boot2JavaProblemType.JAVA_PUBLIC_BEAN_METHOD.getCode(), diagnostic.getCode().getLeft());
+        assertEquals(1, diagnostics.size());
+        assertEquals(DiagnosticSeverity.Error, diagnostic.getSeverity());
     }
 
     @Test

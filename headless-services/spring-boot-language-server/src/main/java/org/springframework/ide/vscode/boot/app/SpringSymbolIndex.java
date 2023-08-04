@@ -250,7 +250,7 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 		reconcilers.add(new BeanMethodNotPublicReconciler(server.getQuickfixRegistry()));
 		
 		BiFunction<AtomicReference<TextDocument>, BiConsumer<String, Diagnostic>, IProblemCollector> problemCollectorFactory = (docRef, aggregator) -> server.createProblemCollector(docRef, aggregator);
-		springIndexerJava = new SpringIndexerJava(handler, specificProviders, this.cache, projectFinder(), server.getProgressService(), reconcilers, problemCollectorFactory);
+		springIndexerJava = new SpringIndexerJava(handler, specificProviders, this.cache, projectFinder(), server.getProgressService(), reconcilers, problemCollectorFactory, config.getJavaValidationSettingsJson());
 
 		factoriesIndexer = new SpringFactoriesIndexer(handler, cache);
 
@@ -278,14 +278,12 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 
 		config.addListener(evt -> {
 			log.info("update settings of spring indexer - start");
-
-			CompletableFuture.runAsync(() -> 
-				configureIndexer(SymbolIndexConfig.builder()
-						.scanXml(config.isSpringXMLSupportEnabled())
-						.xmlScanFolders(config.xmlBeansFoldersToScan())
-						.scanTestJavaSources(config.isScanJavaTestSourcesEnabled())
-						.build()
-			), this.updateQueue);
+			
+			configurationChanged(SymbolIndexConfig.builder()
+					.scanXml(config.isSpringXMLSupportEnabled())
+					.xmlScanFolders(config.xmlBeansFoldersToScan())
+					.scanTestJavaSources(config.isScanJavaTestSourcesEnabled())
+					.build());
 			
 			log.info("update settings of spring indexer - done");
 		});
@@ -309,6 +307,15 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 		});
 	}
 
+	public void configurationChanged(SymbolIndexConfig config) {
+		CompletableFuture.runAsync(() -> configureIndexer(config), this.updateQueue);
+
+		Collection<? extends IJavaProject> projects = projectFinder().all();
+		for (IJavaProject project : projects) {
+			initializeProject(project, true);
+		}
+	}
+	
 	public void configureIndexer(SymbolIndexConfig config) {
 		synchronized (this) {
 			if (config.isScanXml() && !(Arrays.asList(this.indexers).contains(springIndexerXML))) {
@@ -326,11 +333,7 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 				}
 			}
 			springIndexerJava.setScanTestJavaSources(config.isScanTestJavaSources());
-		}
-			
-		Collection<? extends IJavaProject> projects = projectFinder().all();
-		for (IJavaProject project : projects) {
-			initializeProject(project, true);
+			springIndexerJava.setValidationSeveritySettings(this.config.getJavaValidationSettingsJson());
 		}
 	}
 	

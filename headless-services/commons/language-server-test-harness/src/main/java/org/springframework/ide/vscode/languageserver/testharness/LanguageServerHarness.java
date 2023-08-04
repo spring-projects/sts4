@@ -958,7 +958,7 @@ public class LanguageServerHarness {
 	}
 
 	public void changeConfiguration(Settings settings) {
-		getServer().getWorkspaceService().didChangeConfiguration(new DidChangeConfigurationParams(settings));
+		getServer().getWorkspaceService().didChangeConfiguration(new DidChangeConfigurationParams(settings.getRawSettings()));
 	}
 
 	public SimpleLanguageServer getServer() {

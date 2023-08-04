@@ -75,6 +75,7 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
+import com.google.gson.JsonObject;
 
 /**
  * @author Martin Lippert
@@ -104,14 +105,18 @@ public class SpringIndexerJava implements SpringIndexer {
 	private final ProgressService progressService;
 
 	private boolean scanTestJavaSources = false;
+	private JsonObject validationSeveritySettings;
+
 	private FileScanListener fileScanListener = null; //used by test code only
 
 	private final SpringIndexerJavaDependencyTracker dependencyTracker = new SpringIndexerJavaDependencyTracker();
 	private final BiFunction<AtomicReference<TextDocument>, BiConsumer<String, Diagnostic>, IProblemCollector> problemCollectorCreator;
 
+
 	public SpringIndexerJava(SymbolHandler symbolHandler, AnnotationHierarchyAwareLookup<SymbolProvider> symbolProviders, IndexCache cache,
 			JavaProjectFinder projectFimder, ProgressService progressService, List<AnnotationReconciler> reconcilers,
-			BiFunction<AtomicReference<TextDocument>, BiConsumer<String, Diagnostic>, IProblemCollector> problemCollectorCreator) {
+			BiFunction<AtomicReference<TextDocument>, BiConsumer<String, Diagnostic>, IProblemCollector> problemCollectorCreator,
+			JsonObject validationSeveritySettings) {
 		this.symbolHandler = symbolHandler;
 		this.symbolProviders = symbolProviders;
 		this.reconcilers = reconcilers;
@@ -120,6 +125,7 @@ public class SpringIndexerJava implements SpringIndexer {
 		this.progressService = progressService;
 		
 		this.problemCollectorCreator = problemCollectorCreator;
+		this.validationSeveritySettings = validationSeveritySettings;
 	}
 
 	public SpringIndexerJavaDependencyTracker getDependencyTracker() {
@@ -776,7 +782,8 @@ public class SpringIndexerJava implements SpringIndexer {
 				.map(file -> file.getAbsolutePath() + "#" + file.lastModified())
 				.collect(Collectors.joining(","));
 
-		return new IndexCacheKey(project.getElementName(), "java", elementType, DigestUtils.md5Hex(GENERATION + "-" + classpathIdentifier).toUpperCase());
+//		return new IndexCacheKey(project.getElementName(), "java", elementType, DigestUtils.md5Hex(GENERATION + "-" + classpathIdentifier).toUpperCase());
+		return new IndexCacheKey(project.getElementName(), "java", elementType, DigestUtils.md5Hex(GENERATION + "-" + validationSeveritySettings.toString() + "-" + classpathIdentifier).toUpperCase());
 	}
 
 	public void setScanTestJavaSources(boolean scanTestJavaSources) {
@@ -838,6 +845,10 @@ public class SpringIndexerJava implements SpringIndexer {
 				log.error("{}", e);
 			}
 		}
+	}
+
+	public void setValidationSeveritySettings(JsonObject javaValidationSettingsJson) {
+		this.validationSeveritySettings = javaValidationSettingsJson;
 	}
 
 	public void setFileScanListener(FileScanListener fileScanListener) {
