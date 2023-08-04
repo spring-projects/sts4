@@ -4,10 +4,6 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: Version suffix in S3 (i.e. 4.19.1.RELEASE)
-        required: true
-        type: string
-      ls-extensions-update-site-suffix:
         description: The suffix of the p2 repo URL in S3 (i.e. 2023-08-01)
         required: true
         type: string
@@ -32,7 +28,7 @@ jobs:
           CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
           CLOUDFLARE_CACHE_TOKEN: ${{ secrets.CLOUDFLARE_CACHE_TOKEN }}
         run: |
-          site_url="https://download.springsource.com/release/TOOLS/sts4/update/${{ inputs.version }}/${{ inputs.ls-extensions-update-site-suffix }}"
+          site_url="https://download.springsource.com/release/TOOLS/sts4-language-server-integrations/${{ inputs.version }}"
           ${{ github.workspace }}/.github/scripts/generate-composite-site-files.sh ${{ steps.timestamp.outputs.date }} $site_url
           cat ./compositeArtifacts.xml
           cat ./compositeContent.xml
