@@ -58,8 +58,9 @@ import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchyA
 import org.springframework.ide.vscode.boot.java.beans.CachedBean;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
-import org.springframework.ide.vscode.boot.java.reconcilers.AnnotationReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.CachedDiagnostics;
+import org.springframework.ide.vscode.boot.java.reconcilers.RequiredCompleteAstException;
+import org.springframework.ide.vscode.boot.java.reconcilers.JdtReconciler;
 import org.springframework.ide.vscode.commons.java.IClasspath;
 import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
@@ -99,7 +100,7 @@ public class SpringIndexerJava implements SpringIndexer {
 
 	private final SymbolHandler symbolHandler;
 	private final AnnotationHierarchyAwareLookup<SymbolProvider> symbolProviders;
-	private final List<AnnotationReconciler> reconcilers;
+	private final JdtReconciler reconciler;
 	private final IndexCache cache;
 	private final JavaProjectFinder projectFinder;
 	private final ProgressService progressService;
@@ -114,12 +115,12 @@ public class SpringIndexerJava implements SpringIndexer {
 
 
 	public SpringIndexerJava(SymbolHandler symbolHandler, AnnotationHierarchyAwareLookup<SymbolProvider> symbolProviders, IndexCache cache,
-			JavaProjectFinder projectFimder, ProgressService progressService, List<AnnotationReconciler> reconcilers,
+			JavaProjectFinder projectFimder, ProgressService progressService, JdtReconciler jdtReconciler,
 			BiFunction<AtomicReference<TextDocument>, BiConsumer<String, Diagnostic>, IProblemCollector> problemCollectorCreator,
 			JsonObject validationSeveritySettings) {
 		this.symbolHandler = symbolHandler;
 		this.symbolProviders = symbolProviders;
-		this.reconcilers = reconcilers;
+		this.reconciler = jdtReconciler;
 		this.cache = cache;
 		this.projectFinder = projectFimder;
 		this.progressService = progressService;
@@ -641,6 +642,13 @@ public class SpringIndexerJava implements SpringIndexer {
 			}
 		});
 		
+		// reconciling
+		try {
+			reconciler.reconcile(context.getProject(), URI.create(context.getDocURI()), context.getCu(), context.getProblemCollector(), context.getPass() == SCAN_PASS.TWO);
+		} catch (RequiredCompleteAstException e) {
+			context.getNextPassFiles().add(context.getFile());
+		}
+		
 		dependencyTracker.update(context.getFile(), context.getDependencies());;
 	}
 
@@ -686,11 +694,6 @@ public class SpringIndexerJava implements SpringIndexer {
 				}
 			}
 			
-			// reconciling
-			for (AnnotationReconciler reconciler : this.reconcilers) {
-				reconciler.visit(context.getProject(), context.getDocRef().get(), node, typeBinding, context.getProblemCollector());
-			}
-			
 		}
 		else {
 			log.debug("type binding not around: " + context.getDocURI() + " - " + node.toString());
@@ -715,7 +718,7 @@ public class SpringIndexerJava implements SpringIndexer {
 		return null;
 	}
 
-	private ASTParser createParser(IJavaProject project, boolean ignoreMethodBodies) throws Exception {
+	public static ASTParser createParser(IJavaProject project, boolean ignoreMethodBodies) throws Exception {
 		String[] classpathEntries = getClasspathEntries(project);
 		String[] sourceEntries = getSourceEntries(project);
 		
@@ -733,7 +736,7 @@ public class SpringIndexerJava implements SpringIndexer {
 		return parser;
 	}
 
-	private String[] getClasspathEntries(IJavaProject project) throws Exception {
+	private static String[] getClasspathEntries(IJavaProject project) throws Exception {
 		IClasspath classpath = project.getClasspath();
 		Stream<File> classpathEntries = IClasspathUtil.getAllBinaryRoots(classpath).stream();
 		return classpathEntries
@@ -742,7 +745,7 @@ public class SpringIndexerJava implements SpringIndexer {
 				.toArray(String[]::new);
 	}
 
-	private String[] getSourceEntries(IJavaProject project) throws Exception {
+	private static String[] getSourceEntries(IJavaProject project) throws Exception {
 		IClasspath classpath = project.getClasspath();
 		Stream<File> sourceEntries = IClasspathUtil.getSourceFolders(classpath);
 		return sourceEntries

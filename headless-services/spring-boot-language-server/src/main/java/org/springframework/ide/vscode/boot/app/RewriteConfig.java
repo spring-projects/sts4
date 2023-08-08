@@ -51,14 +51,14 @@ public class RewriteConfig {
 		return new SpringBootUpgrade(server, recipeRepo, projectFinder);
 	}
 	
-	@ConditionalOnBean(RewriteRecipeRepository.class)
-	@Bean RewriteReconciler rewriteJavaReconciler(RewriteRecipeRepository recipeRepo, RewriteCompilationUnitCache cuCache, SimpleLanguageServer server, BootJavaConfig config) {
-		return new RewriteReconciler(
-				recipeRepo,
-				cuCache,
-				server.getQuickfixRegistry(),
-				config
-		);
-	}
+//	@ConditionalOnBean(RewriteRecipeRepository.class)
+//	@Bean RewriteReconciler rewriteJavaReconciler(RewriteRecipeRepository recipeRepo, RewriteCompilationUnitCache cuCache, SimpleLanguageServer server, BootJavaConfig config) {
+//		return new RewriteReconciler(
+//				recipeRepo,
+//				cuCache,
+//				server.getQuickfixRegistry(),
+//				config
+//		);
+//	}
 	
 }

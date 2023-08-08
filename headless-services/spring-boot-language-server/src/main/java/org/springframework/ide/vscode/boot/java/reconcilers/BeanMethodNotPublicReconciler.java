@@ -11,14 +11,19 @@
 package org.springframework.ide.vscode.boot.java.reconcilers;
 
 import java.lang.reflect.Field;
+import java.net.URI;
 import java.util.List;
-import java.util.UUID;
 
+import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.Annotation;
+import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
+import org.eclipse.jdt.core.dom.MarkerAnnotation;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.Modifier;
+import org.eclipse.jdt.core.dom.NormalAnnotation;
+import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
 import org.openrewrite.java.spring.BeanMethodsNotPublic;
 import org.openrewrite.marker.Range;
 import org.slf4j.Logger;
@@ -33,14 +38,13 @@ import org.springframework.ide.vscode.commons.languageserver.quickfix.Quickfix.Q
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixRegistry;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixType;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
+import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblemImpl;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeCodeActionDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
 import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
-import org.springframework.ide.vscode.commons.util.BadLocationException;
-import org.springframework.ide.vscode.commons.util.text.IDocument;
 
-public class BeanMethodNotPublicReconciler implements AnnotationReconciler {
+public class BeanMethodNotPublicReconciler implements JdtAstReconciler {
 		
 	private static final Logger log = LoggerFactory.getLogger(BeanMethodNotPublicReconciler.class);
 	
@@ -53,34 +57,28 @@ public class BeanMethodNotPublicReconciler implements AnnotationReconciler {
 		this.quickfixRegistry = quickfixRegistry;
     }
 	
-	@Override
-	public void visit(IJavaProject project, IDocument doc, Annotation node, ITypeBinding typeBinding,
-			IProblemCollector problemCollector) {
-		
-		if (Annotations.BEAN.equals(typeBinding.getQualifiedName()) && node.getParent() instanceof MethodDeclaration) {
+	private void visitAnnotation(IJavaProject project, CompilationUnit cu, URI docUri, Annotation node,	IProblemCollector problemCollector) {
+		ITypeBinding typeBinding = node.resolveTypeBinding();
+		if (typeBinding != null && Annotations.BEAN.equals(typeBinding.getQualifiedName()) && node.getParent() instanceof MethodDeclaration) {
 			MethodDeclaration method = (MethodDeclaration) node.getParent();
-			Version version = SpringProjectUtil.getDependencyVersion(project, SpringProjectUtil.SPRING_BOOT);
-			
-			if (version.getMajor() >= 2) {
-				IMethodBinding methodBinding = method.resolveBinding();
-				if (isNotOverridingPublicMethod(methodBinding)) {
-					
-					ReconcileProblemImpl problem = ((List<?>)method.modifiers()).stream()
-							.filter(Modifier.class::isInstance)
-							.map(Modifier.class::cast)
-							.filter(modifier -> modifier.isPublic())
-							.findFirst()
-							.map(modifier -> new ReconcileProblemImpl(
-									Boot2JavaProblemType.JAVA_PUBLIC_BEAN_METHOD, Boot2JavaProblemType.JAVA_PUBLIC_BEAN_METHOD.getLabel(),
-									modifier.getStartPosition(), modifier.getLength()))
-							.orElse(new ReconcileProblemImpl(
-									Boot2JavaProblemType.JAVA_PUBLIC_BEAN_METHOD, Boot2JavaProblemType.JAVA_PUBLIC_BEAN_METHOD.getLabel(),
-									method.getName().getStartPosition(), method.getName().getLength()));
+			IMethodBinding methodBinding = method.resolveBinding();
+			if (isNotOverridingPublicMethod(methodBinding)) {
+				
+				ReconcileProblemImpl problem = ((List<?>)method.modifiers()).stream()
+						.filter(Modifier.class::isInstance)
+						.map(Modifier.class::cast)
+						.filter(modifier -> modifier.isPublic())
+						.findFirst()
+						.map(modifier -> new ReconcileProblemImpl(
+								getProblemType(), Boot2JavaProblemType.JAVA_PUBLIC_BEAN_METHOD.getLabel(),
+								modifier.getStartPosition(), modifier.getLength()))
+						.orElse(new ReconcileProblemImpl(
+								getProblemType(), Boot2JavaProblemType.JAVA_PUBLIC_BEAN_METHOD.getLabel(),
+								method.getName().getStartPosition(), method.getName().getLength()));
 
-					addQuickFixes(doc, problem, method);
-					
-					problemCollector.accept(problem);
-				}
+				addQuickFixes(cu, docUri, problem, method);
+				
+				problemCollector.accept(problem);
 			}
 		}
 	}
@@ -101,26 +99,20 @@ public class BeanMethodNotPublicReconciler implements AnnotationReconciler {
 		return !isOverriding(methodBinding) && (methodBinding.getModifiers() & Modifier.PUBLIC) != 0;
 	}
 	
-	private void addQuickFixes(IDocument doc, ReconcileProblemImpl problem, MethodDeclaration method) {
-		
+	private void addQuickFixes(CompilationUnit cu, URI docUri, ReconcileProblemImpl problem, MethodDeclaration method) {
 		if (quickfixRegistry != null) {
 		
-			FixDescriptor fix1 = new FixDescriptor(ID, List.of(doc.getUri()), LABEL)
-					.withRecipeScope(RecipeScope.NODE);
+			FixDescriptor fix1 = new FixDescriptor(ID, List.of(docUri.toASCIIString()), LABEL)
+					.withRecipeScope(RecipeScope.NODE)
+					.withRangeScope(RewriteQuickFixUtils.createOpenRewriteRange(cu, method));
 
-			try {
-				Range methodRange = createOpenRewriteRange(doc, method);
-				fix1 = fix1.withRangeScope(methodRange);
-			}
-			catch (BadLocationException e) {
-				log.warn("bad location happened while calculating method range for " + method.toString(), e);
-			}
-			
+			Range methodRange = RewriteQuickFixUtils.createOpenRewriteRange(cu, method);
+			fix1 = fix1.withRangeScope(methodRange);
 
-			FixDescriptor fix2 = new FixDescriptor(ID, List.of(doc.getUri()), RecipeCodeActionDescriptor.buildLabel(LABEL, RecipeScope.FILE))
+			FixDescriptor fix2 = new FixDescriptor(ID, List.of(docUri.toASCIIString()), RecipeCodeActionDescriptor.buildLabel(LABEL, RecipeScope.FILE))
 					.withRecipeScope(RecipeScope.FILE);
 	
-			FixDescriptor fix3 = new FixDescriptor(ID, List.of(doc.getUri()), RecipeCodeActionDescriptor.buildLabel(LABEL, RecipeScope.PROJECT))
+			FixDescriptor fix3 = new FixDescriptor(ID, List.of(docUri.toASCIIString()), RecipeCodeActionDescriptor.buildLabel(LABEL, RecipeScope.PROJECT))
 					.withRecipeScope(RecipeScope.PROJECT);
 			
 			
@@ -136,21 +128,49 @@ public class BeanMethodNotPublicReconciler implements AnnotationReconciler {
 		}
 	}
 
-	private Range createOpenRewriteRange(IDocument doc, MethodDeclaration method) throws BadLocationException {
-		
-		int startOffset = method.getStartPosition();
-		int endOffset = method.getStartPosition() + method.getLength();
+	@Override
+	public void reconcile(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst) {
+		cu.accept(new ASTVisitor() {
 
-		int startLine = doc.getLineOfOffset(startOffset);
-		int endLine = doc.getLineOfOffset(endOffset);
-		
-		int startColumn = startOffset - doc.getLineOffset(startLine);
-		int endColumn = endOffset - doc.getLineOffset(endLine);
-		
-		Range.Position startPosition = new Range.Position(startOffset, startLine, startColumn);
-		Range.Position endPosition = new Range.Position(endOffset, endLine, endColumn);
-		
-		return new Range(UUID.randomUUID(), startPosition, endPosition);
+			@Override
+			public boolean visit(SingleMemberAnnotation node) {
+				try {
+					visitAnnotation(project, cu, docUri, node, problemCollector);
+				} catch (Exception e) {
+				}
+				return super.visit(node);
+			}
+
+			@Override
+			public boolean visit(NormalAnnotation node) {
+				try {
+					visitAnnotation(project, cu, docUri, node, problemCollector);
+				} catch (Exception e) {
+				}
+				return super.visit(node);
+			}
+
+			@Override
+			public boolean visit(MarkerAnnotation node) {
+				try {
+					visitAnnotation(project, cu, docUri, node, problemCollector);
+				} catch (Exception e) {
+				}
+				return super.visit(node);
+			}
+
+		});
+	}
+
+	@Override
+	public boolean isApplicable(IJavaProject project) {
+		Version version = SpringProjectUtil.getDependencyVersion(project, SpringProjectUtil.SPRING_BOOT);		
+		return version != null && version.getMajor() >= 2;
+	}
+
+	@Override
+	public ProblemType getProblemType() {
+		return Boot2JavaProblemType.JAVA_PUBLIC_BEAN_METHOD;
 	}
 	
 }

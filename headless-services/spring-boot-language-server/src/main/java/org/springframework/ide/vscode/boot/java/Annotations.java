@@ -36,6 +36,7 @@ public class Annotations {
 	public static final String SPRING_PUT_MAPPING = "org.springframework.web.bind.annotation.PutMapping";
 	public static final String SPRING_DELETE_MAPPING = "org.springframework.web.bind.annotation.DeleteMapping";
 	public static final String SPRING_PATCH_MAPPING = "org.springframework.web.bind.annotation.PatchMapping";
+	public static final String SPRING_BOOT_TEST = "org.springframework.boot.test.context.SpringBootTest";
 
 	public static final String CONDITIONAL_ON_BEAN = "org.springframework.boot.autoconfigure.condition.ConditionalOnBean";
 	public static final String CONDITIONAL_ON_MISSING_BEAN = "org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean";

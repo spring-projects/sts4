@@ -12,8 +12,6 @@ package org.springframework.ide.vscode.commons.rewrite.java;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import java.nio.channels.ClosedByInterruptException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -39,6 +37,7 @@ import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaParser.Builder;
 import org.openrewrite.java.JavaParsingException;
 import org.openrewrite.java.JavaVisitor;
+import org.openrewrite.java.RemoveUnusedImports;
 import org.openrewrite.java.UpdateSourcePositions;
 import org.openrewrite.java.marker.JavaSourceSet;
 import org.openrewrite.java.tree.J;
@@ -377,27 +376,6 @@ public class ORAstUtils {
         return fqName;
     }
     
-    @SuppressWarnings("unchecked")
-	private static List<TreeVisitor<?, ExecutionContext>> getAfterVisitors(TreeVisitor<?, ExecutionContext> visitor) {
-    	try {
-	    	Method m = TreeVisitor.class.getDeclaredMethod("getAfterVisit");
-	    	m.setAccessible(true);
-	    	return (List<TreeVisitor<?, ExecutionContext>>) m.invoke(visitor);
-    	} catch (Exception e) {
-    		return Collections.emptyList();
-    	}
-    }
-    
-	private static void makeVisitorNonTopLevel(TreeVisitor<?, ExecutionContext> visitor) {
-    	try {
-	    	Field f = TreeVisitor.class.getDeclaredField("afterVisit");
-	    	f.setAccessible(true);
-	    	f.set(visitor, new ArrayList<>());
-    	} catch (Exception e) {
-    		// ignore
-    	}
-	}
-	
 	public static Recipe nodeRecipe(JavaVisitor<ExecutionContext> v, Predicate<J> condition) {
     	return new NodeRecipe((JavaVisitor<ExecutionContext>) v, condition);
     }
@@ -415,8 +393,13 @@ public class ORAstUtils {
     		this.visitor = treeVisitor;
     		this.condition = condition;
     	}
-
+    	
     	@Override
+		public List<Recipe> getRecipeList() {
+			return List.of(new RemoveUnusedImports());
+		}
+
+		@Override
     	public String getDisplayName() {
     		return "";
     	}
@@ -430,12 +413,7 @@ public class ORAstUtils {
     				if (tree instanceof J) {
     					J t = (J) tree;
         				if (condition.test(t)) {
-        					makeVisitorNonTopLevel(visitor);
-        					t = (J) visitor.visit(t, ctx, getCursor());
-        					for (TreeVisitor<?, ExecutionContext> v : getAfterVisitors(visitor)) {
-        						doAfterVisit(v);
-        					}
-            				return t;
+        					return (J) visitor.visit(t, ctx, getCursor());
         				}
     				}
     				return super.visit(tree, ctx);

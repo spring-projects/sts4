@@ -55,8 +55,7 @@ import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchyA
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
-import org.springframework.ide.vscode.boot.java.reconcilers.AnnotationReconciler;
-import org.springframework.ide.vscode.boot.java.reconcilers.BeanMethodNotPublicReconciler;
+import org.springframework.ide.vscode.boot.java.reconcilers.JdtReconciler;
 import org.springframework.ide.vscode.boot.java.utils.DocumentDescriptor;
 import org.springframework.ide.vscode.boot.java.utils.SpringFactoriesIndexer;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexer;
@@ -102,6 +101,7 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 	@Autowired IndexCache cache;
 	@Autowired FutureProjectFinder futureProjectFinder;
 	@Autowired SpringMetamodelIndex springIndex;
+	@Autowired JdtReconciler jdtReconciler;
 
 	private static final String QUERY_PARAM_LOCATION_PREFIX = "locationPrefix:";
 
@@ -246,11 +246,9 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 		namespaceHandler.put("http://www.springframework.org/schema/beans", new SpringIndexerXMLNamespaceHandlerBeans());
 		springIndexerXML = new SpringIndexerXML(handler, namespaceHandler, this.cache, projectFinder());
 		
-		List<AnnotationReconciler> reconcilers = new ArrayList<>();
-		reconcilers.add(new BeanMethodNotPublicReconciler(server.getQuickfixRegistry()));
 		
 		BiFunction<AtomicReference<TextDocument>, BiConsumer<String, Diagnostic>, IProblemCollector> problemCollectorFactory = (docRef, aggregator) -> server.createProblemCollector(docRef, aggregator);
-		springIndexerJava = new SpringIndexerJava(handler, specificProviders, this.cache, projectFinder(), server.getProgressService(), reconcilers, problemCollectorFactory, config.getJavaValidationSettingsJson());
+		springIndexerJava = new SpringIndexerJava(handler, specificProviders, this.cache, projectFinder(), server.getProgressService(), jdtReconciler, problemCollectorFactory, config.getJavaValidationSettingsJson());
 
 		factoriesIndexer = new SpringFactoriesIndexer(handler, cache);
 

@@ -11,25 +11,20 @@
 package org.springframework.ide.vscode.boot.java.reconcilers;
 
 import java.net.URI;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
-import org.eclipse.jdt.core.dom.ASTVisitor;
-import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.CompilationUnit;
-import org.eclipse.jdt.core.dom.ITypeBinding;
-import org.eclipse.jdt.core.dom.MarkerAnnotation;
-import org.eclipse.jdt.core.dom.NormalAnnotation;
-import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.app.BootJavaConfig;
-import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.handlers.SpelExpressionReconciler;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
+import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixRegistry;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblem;
@@ -54,44 +49,24 @@ public class JdtReconciler implements JavaReconciler {
 	public static final String SPRING_CONDITIONAL_ON_EXPRESSION = "org.springframework.boot.autoconfigure.condition.ConditionalOnExpression";
 	
 	private final CompilationUnitCache compilationUnitCache;
-	private final AnnotationReconciler[] reconcilers;
+	private final JdtAstReconciler[] reconcilers;
 	private final SpelExpressionReconciler spelExpressionReconciler;
-
 	private BootJavaConfig config;
-	
+
 	public JdtReconciler(CompilationUnitCache compilationUnitCache, QuickfixRegistry quickfixRegistry, BootJavaConfig config) {
 		this.compilationUnitCache = compilationUnitCache;
 		this.config = config;
 		config.addListener(evt -> setSpelExpressionSyntaxValidationEnabled(config.isSpelExpressionValidationEnabled()));
 		this.spelExpressionReconciler = new SpelExpressionReconciler();
 		
-		this.reconcilers = new AnnotationReconciler[] {
-
-				new AnnotationParamReconciler(Annotations.VALUE, null, "#{", "}", spelExpressionReconciler),
-				new AnnotationParamReconciler(Annotations.VALUE, "value", "#{", "}", spelExpressionReconciler),
-
-				new AnnotationParamReconciler(SPRING_CACHEABLE, "key", "", "", spelExpressionReconciler),
-				new AnnotationParamReconciler(SPRING_CACHEABLE, "condition", "", "", spelExpressionReconciler),
-				new AnnotationParamReconciler(SPRING_CACHEABLE, "unless", "", "", spelExpressionReconciler),
-
-				new AnnotationParamReconciler(SPRING_CACHE_EVICT, "key", "", "", spelExpressionReconciler),
-				new AnnotationParamReconciler(SPRING_CACHE_EVICT, "condition", "", "", spelExpressionReconciler),
-
-				new AnnotationParamReconciler(SPRING_EVENT_LISTENER, "condition", "", "", spelExpressionReconciler),
-				
-				new AnnotationParamReconciler(SPRING_PRE_AUTHORIZE, null, "", "", spelExpressionReconciler),
-				new AnnotationParamReconciler(SPRING_PRE_AUTHORIZE, "value", "", "", spelExpressionReconciler),
-				new AnnotationParamReconciler(SPRING_PRE_FILTER, null, "", "", spelExpressionReconciler),
-				new AnnotationParamReconciler(SPRING_PRE_FILTER, "value", "", "", spelExpressionReconciler),
-				new AnnotationParamReconciler(SPRING_POST_AUTHORIZE, null, "", "", spelExpressionReconciler),
-				new AnnotationParamReconciler(SPRING_POST_AUTHORIZE, "value", "", "", spelExpressionReconciler),
-				new AnnotationParamReconciler(SPRING_POST_FILTER, null, "", "", spelExpressionReconciler),
-				new AnnotationParamReconciler(SPRING_POST_FILTER, "value", "", "", spelExpressionReconciler),
-
-				new AnnotationParamReconciler(SPRING_CONDITIONAL_ON_EXPRESSION, null, "", "", spelExpressionReconciler),
-				new AnnotationParamReconciler(SPRING_CONDITIONAL_ON_EXPRESSION, "value", "", "", spelExpressionReconciler),
-				
-				new BeanMethodNotPublicReconciler(quickfixRegistry)
+		this.reconcilers = new JdtAstReconciler[] {
+				new AnnotationNodeReconciler(config),
+				new BeanMethodNotPublicReconciler(quickfixRegistry),
+				new AddConfigurationIfBeansPresentReconciler(quickfixRegistry),
+				new AutowiredFieldIntoConstructorParameterReconciler(quickfixRegistry),
+				new Boot3NotSupportedTypeReconciler(),
+				new NoAutowiredOnConstructorReconciler(quickfixRegistry),
+				new WebSecurityConfigurerAdapterReconciler(quickfixRegistry)
 		};
 	}
 
@@ -105,65 +80,54 @@ public class JdtReconciler implements JavaReconciler {
 		URI uri = URI.create(doc.getUri());
 		compilationUnitCache.withCompilationUnit(project, uri, cu -> {
 			if (cu != null) {
-				reconcileAST(project, doc, cu, problemCollector);
+				try {
+					reconcile(project, URI.create(doc.getUri()), cu, problemCollector, true);
+				} catch (RequiredCompleteAstException e) {
+					log.error("Unexpected incomplete AST", e);
+				}
 			}
 			log.info("reconciling (JDT): " + doc.getUri() + " done in " + (System.currentTimeMillis() - s) + "ms");
 			return null;
 		});
 	}
 	
-	private void reconcileAST(IJavaProject project, IDocument doc, CompilationUnit cu, IProblemCollector problemCollector) {
-		cu.accept(new ASTVisitor() {
-			
-			@Override
-			public boolean visit(SingleMemberAnnotation node) {
-				try {
-					visitAnnotation(project, doc, node, problemCollector);
-				}
-				catch (Exception e) {
-				}
-				return super.visit(node);
-			}
-			
-			@Override
-			public boolean visit(NormalAnnotation node) {
-				try {
-					visitAnnotation(project, doc, node, problemCollector);
-				}
-				catch (Exception e) {
-				}
-				return super.visit(node);
-			}
 
-			@Override
-			public boolean visit(MarkerAnnotation node) {
-				try {
-					visitAnnotation(project, doc, node, problemCollector);
-				}
-				catch (Exception e) {
-				}
-				return super.visit(node);
-			}			
-			
-		});
-	}
-
-	protected void visitAnnotation(IJavaProject project, IDocument doc, Annotation node, IProblemCollector problemCollector) {
-		ITypeBinding typeBinding = node.resolveTypeBinding();
-
-		if (typeBinding != null) {
-			for (int i = 0; i < reconcilers.length; i++) {
-				reconcilers[i].visit(project, doc, node, typeBinding, problemCollector);
+	public void reconcile(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst) throws RequiredCompleteAstException {
+		for (JdtAstReconciler reconciler : getApplicableReconcilers(project)) {
+			try {
+				reconciler.reconcile(project, docUri, cu, problemCollector, isCompleteAst);
+			} catch (RequiredCompleteAstException e) {
+				throw e;
+			} catch (Exception e) {
+				log.error("", e);
 			}
 		}
 	}
+	
+	private List<JdtAstReconciler> getApplicableReconcilers(IJavaProject project) {
+		List<JdtAstReconciler> applicableReconcilers = new ArrayList<>(reconcilers.length);
+		for (JdtAstReconciler r : reconcilers) {
+			switch (config.getProblemApplicability(r.getProblemType())) {
+			case ON:
+				if (SpringProjectUtil.isBootProject(project)) {
+					applicableReconcilers.add(r);
+				}
+				break;
+			case OFF:
+				break;
+			default: // AUTO
+				if (r.isApplicable(project)) {
+					applicableReconcilers.add(r);
+				}
+			}
+		}
+		return applicableReconcilers;
+	}
+
 
 	@Override
-	public Map<IDocument, Collection<ReconcileProblem>> reconcile(IJavaProject project, List<TextDocument> docs, Runnable incrementProgress) {
-		
-		if (config.isRewriteReconcileEnabled()) {
-		}
-		
+	public Map<IDocument, Collection<ReconcileProblem>> reconcile(IJavaProject project, List<TextDocument> docs,
+			Runnable incrementProgress) {
 		return Collections.emptyMap();
 	}
 	

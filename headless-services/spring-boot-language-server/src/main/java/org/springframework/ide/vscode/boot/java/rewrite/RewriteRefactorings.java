@@ -202,7 +202,8 @@ public class RewriteRefactorings implements CodeActionResolver, QuickfixHandler 
 					if (j != null) {
 						 Range range = j.getMarkers().findFirst(Range.class).orElse(null);
 						 if (range != null) {
-							 return d.getRangeScope().getStart().getOffset() <= range.getStart().getOffset() && range.getEnd().getOffset() <= d.getRangeScope().getEnd().getOffset();  
+							 // Rewrite range end offset is up to not including hence -1
+							 return d.getRangeScope().getStart().getOffset() <= range.getStart().getOffset() && range.getEnd().getOffset() - 1 <= d.getRangeScope().getEnd().getOffset();  
 						 }
 					}
 					return false;

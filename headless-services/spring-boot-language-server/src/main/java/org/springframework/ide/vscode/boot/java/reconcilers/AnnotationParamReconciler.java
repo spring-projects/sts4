@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.reconcilers;
 
+import java.net.URI;
 import java.util.List;
 import java.util.Set;
 
@@ -24,7 +25,6 @@ import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchie
 import org.springframework.ide.vscode.boot.java.handlers.Reconciler;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
-import org.springframework.ide.vscode.commons.util.text.IDocument;
 
 /**
  * @author Martin Lippert
@@ -46,7 +46,7 @@ public class AnnotationParamReconciler implements AnnotationReconciler {
 		this.reconciler = reconciler;
 	}
 	
-	public void visit(IJavaProject project, IDocument doc, Annotation node, ITypeBinding typeBinding, IProblemCollector problemCollector) {
+	public void visit(IJavaProject project, URI docUri, Annotation node, ITypeBinding typeBinding, IProblemCollector problemCollector) {
 		if (node instanceof SingleMemberAnnotation) {
 			visitSingleMemberAnnotation((SingleMemberAnnotation) node, typeBinding, problemCollector);
 		} else if (node instanceof NormalAnnotation) {

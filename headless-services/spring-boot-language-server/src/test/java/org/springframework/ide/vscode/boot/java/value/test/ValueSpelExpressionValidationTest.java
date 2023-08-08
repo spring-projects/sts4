@@ -347,7 +347,7 @@ public class ValueSpelExpressionValidationTest {
 			problems.add(problem);
 		}
 		
-		protected List<ReconcileProblem> getCollectedProblems() {
+		public List<ReconcileProblem> getCollectedProblems() {
 			return problems;
 		}
 		

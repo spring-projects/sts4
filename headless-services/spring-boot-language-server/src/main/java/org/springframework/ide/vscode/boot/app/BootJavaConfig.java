@@ -210,7 +210,17 @@ public class BootJavaConfig implements InitializingBean {
 			if (problem != null && problem.getCategory() != null && problem.getCategory().getToggle() != null) {
 				Toggle toggle = problem.getCategory().getToggle();
 				String s = settings.getString((toggle.getPreferenceKey()).split("\\."));
-				return s == null || s.isEmpty() ? toggle.getDefaultValue() : Toggle.Option.valueOf(s);
+				try {
+					return s == null || s.isEmpty() ? toggle.getDefaultValue() : Toggle.Option.valueOf(s);
+				} catch (IllegalArgumentException e) {
+					// handle backward compatibility case of 'true'/'false'
+					Boolean b = Boolean.valueOf(s);
+					if (b == null) {
+						throw e;
+					} else {
+						return b.booleanValue() ? Toggle.Option.ON : Toggle.Option.OFF;
+					}
+				}
 			}
 		} catch (Exception e) {
 			log.error("", e);
