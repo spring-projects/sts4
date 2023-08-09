@@ -21,6 +21,7 @@ import java.nio.file.Paths;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.function.Supplier;
 
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.FileASTRequestor;
@@ -42,7 +43,7 @@ public abstract class BaseReconcilerTest {
 	
 	abstract protected JdtAstReconciler getReconciler();
 	
-	private Path createFile(String name, String content) throws IOException {
+	protected Path createFile(String name, String content) throws IOException {
 		Path filePath = Paths.get(project.getLocationUri()).resolve("src/main/java").resolve(getFolder()).resolve(name);
 		Files.createDirectories(filePath.getParent());
 		Files.createFile(filePath);
@@ -75,6 +76,10 @@ public abstract class BaseReconcilerTest {
 	}
 
 	List<ReconcileProblem> reconcile(String fileName, String source, boolean isCompleteAst) throws Exception {
+		return reconcile(this::getReconciler, fileName, source, isCompleteAst);
+	}
+
+	List<ReconcileProblem> reconcile(Supplier<JdtAstReconciler> reconcilerFactory, String fileName, String source, boolean isCompleteAst) throws Exception {
 		Path path = createFile(fileName, source);
 		TestProblemCollector problemCollector = new TestProblemCollector();
 		AtomicBoolean requiredCompleteAst = new AtomicBoolean(false);
@@ -83,7 +88,7 @@ public abstract class BaseReconcilerTest {
 			@Override
 			public void acceptAST(String sourceFilePath, CompilationUnit cu) {
 				try {
-					getReconciler().reconcile(project, path.toUri(), cu, problemCollector, isCompleteAst);
+					reconcilerFactory.get().reconcile(project, path.toUri(), cu, problemCollector, isCompleteAst);
 				} catch (RequiredCompleteAstException e) {
 					requiredCompleteAst.set(true);
 				}				
@@ -96,6 +101,5 @@ public abstract class BaseReconcilerTest {
 		
 		return problemCollector.getCollectedProblems();
 	}
-
 
 }

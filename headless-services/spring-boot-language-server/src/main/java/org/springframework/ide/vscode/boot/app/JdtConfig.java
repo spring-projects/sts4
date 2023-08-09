@@ -14,14 +14,19 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.ide.vscode.boot.java.reconcilers.AddConfigurationIfBeansPresentReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.AnnotationNodeReconciler;
+import org.springframework.ide.vscode.boot.java.reconcilers.AuthorizeHttpRequestsReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.AutowiredFieldIntoConstructorParameterReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.BeanMethodNotPublicReconciler;
+import org.springframework.ide.vscode.boot.java.reconcilers.BeanPostProcessingIgnoreInAotReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.Boot3NotSupportedTypeReconciler;
+import org.springframework.ide.vscode.boot.java.reconcilers.HttpSecurityLambdaDslReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.ModulithTypeReferenceViolationReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.NoAutowiredOnConstructorReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.NoRepoAnnotationReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.NoRequestMappingAnnotationReconciler;
+import org.springframework.ide.vscode.boot.java.reconcilers.NotRegisteredBeansReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.PreciseBeanTypeReconciler;
+import org.springframework.ide.vscode.boot.java.reconcilers.ServerHttpSecurityLambdaDslReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.UnnecessarySpringExtensionReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.WebSecurityConfigurerAdapterReconciler;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
@@ -75,6 +80,26 @@ public class JdtConfig {
 	
 	@Bean UnnecessarySpringExtensionReconciler unnecessarySpringExtensionReconciler(SimpleLanguageServer server) {
 		return new UnnecessarySpringExtensionReconciler(server.getQuickfixRegistry());
+	}
+	
+	@Bean HttpSecurityLambdaDslReconciler httpSecurityLamdaDslReconciler(SimpleLanguageServer server) {
+		return new HttpSecurityLambdaDslReconciler(server.getQuickfixRegistry());
+	}
+	
+	@Bean ServerHttpSecurityLambdaDslReconciler serverHttpSecurityLambdaDslReconciler(SimpleLanguageServer server) {
+		return new ServerHttpSecurityLambdaDslReconciler(server.getQuickfixRegistry());
+	}
+	
+	@Bean AuthorizeHttpRequestsReconciler authorizeHttpRequestsReconciler(SimpleLanguageServer server) {
+		return new AuthorizeHttpRequestsReconciler(server.getQuickfixRegistry());
+	}
+	
+	@Bean BeanPostProcessingIgnoreInAotReconciler beanPostProcessingIgnoreInAotReconciler(SimpleLanguageServer server) {
+		return new BeanPostProcessingIgnoreInAotReconciler(server.getQuickfixRegistry());
+	}
+	
+	@Bean NotRegisteredBeansReconciler notRegisteredBeansReconciler(SimpleLanguageServer server) {
+		return new NotRegisteredBeansReconciler(server.getQuickfixRegistry());
 	}
 
 }

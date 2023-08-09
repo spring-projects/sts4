@@ -12,12 +12,17 @@ package org.springframework.ide.vscode.boot.java.reconcilers;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.BodyDeclaration;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.ITypeBinding;
+import org.eclipse.jdt.core.dom.ImportDeclaration;
+import org.eclipse.jdt.core.dom.Name;
+import org.eclipse.jdt.core.dom.SimpleType;
 import org.openrewrite.Tree;
 import org.openrewrite.marker.Range;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
@@ -89,6 +94,87 @@ public class RewriteQuickFixUtils {
 		for (; type != type.getErasure(); type = type.getErasure()) {}
 		return type;
 	}
+	
+	public static boolean isApplicableTypeWithoutResolving(CompilationUnit cu, Collection<String> types, Name typeNameNode) {
+		String typeName = typeNameNode.getFullyQualifiedName();
+		if (cu.getPackage().getName() != null && types.contains(cu.getPackage().getName().getFullyQualifiedName() + "." + typeName)) {
+			return true;
+		}
+		if (types.contains(typeName)) {
+			return true;
+		} else if (types.stream().anyMatch(t -> t.endsWith(typeName))) {
+			for (Object im : cu.imports()) {
+				ImportDeclaration importDecl = (ImportDeclaration) im;
+				String importFqName = importDecl.getName().getFullyQualifiedName();
+				if (importDecl.isOnDemand()) {
+					if (types.contains(importFqName + "." + typeName)) {
+						return true;
+					}
+				} else {
+					String importSimpleName = getSimpleName(importFqName);
+					String firstTokenOfTypeName = getFirstTokenBeforeDot(typeName);
+					if (importSimpleName.equals(firstTokenOfTypeName)) {
+						if (types.contains(importFqName + typeName.substring(firstTokenOfTypeName.length()))) {
+							return true;
+						}
+					}
+				}
+			}
+		}
+		return false;
+	}
+	
+	public static boolean isAnyTypeUsed(CompilationUnit cu, Collection<String> types) {
+		AtomicBoolean typeUsed = new AtomicBoolean(false);
+		cu.accept(new ASTVisitor() {
+			
+			@Override
+			public boolean visit(ImportDeclaration node) {
+				String fqName = node.getName().getFullyQualifiedName();
+				if (types.contains(fqName)) {
+					typeUsed.set(true);
+				}
+				return !typeUsed.get();
+			}
+
+			@Override
+			public boolean visit(SimpleType node) {
+				if (RewriteQuickFixUtils.isApplicableTypeWithoutResolving(cu, types, node.getName())) {
+					typeUsed.set(true);
+				}
+				return !typeUsed.get();
+			}
+		});
+		return typeUsed.get();
+	}
+	
+	public static boolean implementsType(String fqName, ITypeBinding type) {
+		if (fqName.equals(type.getQualifiedName())) {
+			return true;
+		} else {
+			for (ITypeBinding t : type.getInterfaces()) {
+				if (implementsType(fqName, t)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+	public static boolean implementsAnyType(Collection<String> fqNames, ITypeBinding type) {
+		if (fqNames.contains(type.getQualifiedName())) {
+			return true;
+		} else {
+			for (ITypeBinding t : type.getInterfaces()) {
+				if (implementsAnyType(fqNames, t)) {
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+
+
 	
 	public static String getSimpleName(String fqName) {
 		int idx = fqName.lastIndexOf('.');

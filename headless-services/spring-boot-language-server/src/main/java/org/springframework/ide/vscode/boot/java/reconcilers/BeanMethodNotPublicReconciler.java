@@ -85,10 +85,12 @@ public class BeanMethodNotPublicReconciler implements JdtAstReconciler {
 	
 	private static final boolean isOverriding(IMethodBinding binding) {
 		try {
-			Field f = binding.getClass().getDeclaredField("binding");
-			f.setAccessible(true);
-			org.eclipse.jdt.internal.compiler.lookup.MethodBinding  value = (org.eclipse.jdt.internal.compiler.lookup.MethodBinding) f.get(binding);
-			return value.isOverriding();
+			if (binding != null) {
+				Field f = binding.getClass().getDeclaredField("binding");
+				f.setAccessible(true);
+				org.eclipse.jdt.internal.compiler.lookup.MethodBinding  value = (org.eclipse.jdt.internal.compiler.lookup.MethodBinding) f.get(binding);
+				return value.isOverriding();
+			}
 		} catch (Exception e) {
 			log.error("", e);
 		}
