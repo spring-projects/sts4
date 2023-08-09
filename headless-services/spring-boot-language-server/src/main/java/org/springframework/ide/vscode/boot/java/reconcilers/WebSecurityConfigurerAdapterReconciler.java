@@ -114,7 +114,7 @@ public class WebSecurityConfigurerAdapterReconciler implements JdtAstReconciler 
 	}
 	
 	private static boolean isWebSecurityConfigurerAdapter(CompilationUnit cu, Type type) {
-		if (type.isSimpleType()) {
+		if (type != null && type.isSimpleType()) {
 			String simpleName = ((SimpleType) type).getName().getFullyQualifiedName();
 			if (FQN_WEB_SECURITY_CONFIGURER_ADAPTER.equals(simpleName)) {
 				return true;
