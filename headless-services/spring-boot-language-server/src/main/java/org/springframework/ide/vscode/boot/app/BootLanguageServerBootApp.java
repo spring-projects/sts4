@@ -62,6 +62,7 @@ import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessConnec
 import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessConnectorService;
 import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveDataProvider;
 import org.springframework.ide.vscode.boot.java.reconcilers.JavaReconciler;
+import org.springframework.ide.vscode.boot.java.reconcilers.JdtAstReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.JdtReconciler;
 import org.springframework.ide.vscode.boot.java.rewrite.RewriteRecipeRepository;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
@@ -241,8 +242,8 @@ public class BootLanguageServerBootApp {
 		return new CompilationUnitCache(params.projectFinder, server, params.projectObserver);
 	}
 
-	@Bean JdtReconciler jdtReconciler(CompilationUnitCache cuCache, BootJavaConfig config, SimpleLanguageServer server) {
-		return new JdtReconciler(cuCache, server.getQuickfixRegistry(), config);
+	@Bean JdtReconciler jdtReconciler(CompilationUnitCache cuCache, BootJavaConfig config, SimpleLanguageServer server, JdtAstReconciler[] reconcilers) {
+		return new JdtReconciler(cuCache, config, reconcilers);
 	}
 	
 	@Bean SpringXMLCompletionEngine xmlCompletionEngine(SimpleLanguageServer server, JavaProjectFinder projectFinder, SpringSymbolIndex symbolIndex, BootJavaConfig config) {
@@ -378,9 +379,9 @@ public class BootLanguageServerBootApp {
 	@Bean
 	ModulithService modulithService(SimpleLanguageServer server, JavaProjectFinder projectFinder,
 			ProjectObserver projectObserver, SpringSymbolIndex springIndex,
-			Optional<BootJavaProjectReconcilerScheduler> projectReconcileScheduler, BootJavaReconcileEngine reconciler,
+			BootJavaReconcileEngine reconciler,
 			BootJavaConfig config) {
-		return new ModulithService(server, projectFinder, projectObserver, springIndex, reconciler, projectReconcileScheduler, config);
+		return new ModulithService(server, projectFinder, projectObserver, springIndex, reconciler, config);
 	}
 	
 }

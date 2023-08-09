@@ -59,7 +59,6 @@ public class AddConfigurationIfBeansPresentReconciler implements JdtAstReconcile
 			@Override
 			public boolean visit(TypeDeclaration classDecl) {
 				if (isApplicableClass(cu, classDecl)) {
-
 					SimpleName nameAst = classDecl.getName();
 					ReconcileProblemImpl problem = new ReconcileProblemImpl(getProblemType(), PROBLEM_LABEL,
 							nameAst.getStartPosition(), nameAst.getLength());

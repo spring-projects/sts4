@@ -89,5 +89,22 @@ public class RewriteQuickFixUtils {
 		for (; type != type.getErasure(); type = type.getErasure()) {}
 		return type;
 	}
+	
+	public static String getSimpleName(String fqName) {
+		int idx = fqName.lastIndexOf('.');
+		if (idx >= 0 && idx < fqName.length() - 1) {
+			return fqName.substring(idx + 1);
+		}
+		return fqName;
+	}
+	
+	public static String getFirstTokenBeforeDot(String fqName) {
+		int idx = fqName.indexOf('.');
+		if (idx > 0) {
+			return fqName.substring(0, idx);
+		}
+		return fqName;
+	}
+
 
 }

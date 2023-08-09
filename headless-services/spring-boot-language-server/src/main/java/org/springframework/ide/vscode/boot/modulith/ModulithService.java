@@ -23,7 +23,6 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -40,8 +39,8 @@ import org.springframework.ide.vscode.boot.app.BootJavaConfig;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.Boot3JavaProblemType;
-import org.springframework.ide.vscode.boot.java.handlers.BootJavaProjectReconcilerScheduler;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaReconcileEngine;
+import org.springframework.ide.vscode.commons.java.IClasspathUtil;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
@@ -66,10 +65,8 @@ public class ModulithService {
 	private static final String CMD_LIST_MODULITH_PROJECTS = "sts/modulith/projects";
 	
 	private SimpleLanguageServer server;
-	private Optional<BootJavaProjectReconcilerScheduler> projectReconcileScheduler;
 	private SpringSymbolIndex springIndex;
 	private BootJavaReconcileEngine reconciler;
-	private JavaProjectFinder projectFinder;
 	private BootJavaConfig config;
 	
 	private Map<URI, AppModules> cache;
@@ -81,15 +78,12 @@ public class ModulithService {
 			ProjectObserver projectObserver,
 			SpringSymbolIndex springIndex,
 			BootJavaReconcileEngine reconciler,
-			Optional<BootJavaProjectReconcilerScheduler> projectReconcileScheduler,
 			BootJavaConfig config
 	) {
-		this.projectFinder = projectFinder;
 		this.config = config;
 		this.cache = new ConcurrentHashMap<>();
 		this.metadataRequested = new ConcurrentHashMap<>();
 		this.server = server;
-		this.projectReconcileScheduler = projectReconcileScheduler;
 		this.springIndex = springIndex;
 		this.reconciler = reconciler;
 		
@@ -209,12 +203,28 @@ public class ModulithService {
 	private void validate(IJavaProject project) {
 		if (server.getDiagnosticSeverityProvider().getDiagnosticSeverity(Boot3JavaProblemType.MODULITH_TYPE_REF_VIOLATION) != null
 				&& config.getProblemApplicability(Boot3JavaProblemType.MODULITH_TYPE_REF_VIOLATION) != Option.OFF) {
-			for (TextDocument doc : server.getTextDocumentService().getAll()) {
-				if (projectFinder.find(doc.getId()).orElse(null) == project) {
+			
+			List<Path> javaSources = IClasspathUtil.getProjectJavaSourceFoldersWithoutTests(project.getClasspath())
+				.flatMap(sourceFolder -> {
+					try {
+						return Files.walk(sourceFolder.toPath()).filter(p -> Files.isRegularFile(p) && p.toString().endsWith(".java"));
+					} catch (IOException e) {
+						log.error("", e);
+						return Stream.empty();
+					}
+				}).collect(Collectors.toList());
+			List<String> fileUriToUpdate = new ArrayList<>(javaSources.size());
+			for (Path javaSource : javaSources) {
+				String docUri = javaSource.toUri().toASCIIString();
+				TextDocument doc = server.getTextDocumentService().getLatestSnapshot(docUri);
+				if (doc == null) {
+					fileUriToUpdate.add(docUri);
+				} else {
 					server.validateWith(doc.getId(), reconciler);
 				}
 			}
-			projectReconcileScheduler.ifPresent(r -> r.scheduleValidation(project));
+			String[] uris = fileUriToUpdate.toArray(new String[fileUriToUpdate.size()]);
+			springIndex.deleteDocuments(uris).thenAccept(v -> springIndex.updateDocuments(uris, "Modulith Metadata Changed"));
 		}
 	}
 
@@ -304,7 +314,7 @@ public class ModulithService {
 		});
 	}
 	
-	static String getPackageNameFromTypeFQName(String fqn) {
+	public static String getPackageNameFromTypeFQName(String fqn) {
 		int idx = 0;
 		for (; idx < fqn.length() - 1; idx++) {
 			char c = fqn.charAt(idx);

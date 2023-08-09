@@ -643,10 +643,40 @@ public class SpringIndexerJava implements SpringIndexer {
 		});
 		
 		// reconciling
+		IProblemCollector problemCollector = new IProblemCollector() {
+			
+			List<ReconcileProblem> problems = new ArrayList<>();
+			
+			@Override
+			public void endCollecting() {
+				for (ReconcileProblem p : problems) {
+					context.getProblemCollector().accept(p);
+				}
+			}
+			
+			@Override
+			public void beginCollecting() {
+				problems.clear();
+			}
+			
+			@Override
+			public void accept(ReconcileProblem problem) {
+				problems.add(problem);
+			}
+		};
+
 		try {
-			reconciler.reconcile(context.getProject(), URI.create(context.getDocURI()), context.getCu(), context.getProblemCollector(), context.getPass() == SCAN_PASS.TWO);
+			problemCollector.beginCollecting();
+			reconciler.reconcile(context.getProject(), URI.create(context.getDocURI()), context.getCu(), problemCollector, context.getPass() == SCAN_PASS.TWO);
+			problemCollector.endCollecting();
 		} catch (RequiredCompleteAstException e) {
-			context.getNextPassFiles().add(context.getFile());
+			if (context.getPass() == SCAN_PASS.TWO) {
+				problemCollector.endCollecting();
+				log.error("Complete AST required but it is complete already. Parsing ", context.getDocURI());
+			} else {
+				// Let problems be found in the next pass, don't add the problems to the aggregate problems collector to not duplicate them with the next pass
+				context.getNextPassFiles().add(context.getFile());
+			}
 		}
 		
 		dependencyTracker.update(context.getFile(), context.getDependencies());;

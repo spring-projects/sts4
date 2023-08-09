@@ -45,7 +45,9 @@ import org.springframework.ide.vscode.boot.index.cache.IndexCacheVoid;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaReconcileEngine;
 import org.springframework.ide.vscode.boot.java.links.SourceLinkFactory;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
+import org.springframework.ide.vscode.boot.java.reconcilers.AnnotationNodeReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.JavaReconciler;
+import org.springframework.ide.vscode.boot.java.reconcilers.JdtAstReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.JdtReconciler;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.boot.metadata.ValueProviderRegistry;
@@ -148,7 +150,9 @@ public class ValueSpelExpressionValidationTest {
 
 		problemCollector = new TestProblemCollector();
 		reconcileEngine = new BootJavaReconcileEngine(projectFinder, new JavaReconciler[] {
-				new JdtReconciler(compilationUnitCache, null, config)
+				new JdtReconciler(compilationUnitCache, config, new JdtAstReconciler[] {
+						new AnnotationNodeReconciler(config)
+				})
 		}, server);
 	}
 	

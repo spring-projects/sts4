@@ -21,11 +21,9 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.app.BootJavaConfig;
-import org.springframework.ide.vscode.boot.java.handlers.SpelExpressionReconciler;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
-import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixRegistry;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblem;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
@@ -50,28 +48,12 @@ public class JdtReconciler implements JavaReconciler {
 	
 	private final CompilationUnitCache compilationUnitCache;
 	private final JdtAstReconciler[] reconcilers;
-	private final SpelExpressionReconciler spelExpressionReconciler;
 	private BootJavaConfig config;
 
-	public JdtReconciler(CompilationUnitCache compilationUnitCache, QuickfixRegistry quickfixRegistry, BootJavaConfig config) {
+	public JdtReconciler(CompilationUnitCache compilationUnitCache, BootJavaConfig config, JdtAstReconciler[] reconcilers) {
 		this.compilationUnitCache = compilationUnitCache;
 		this.config = config;
-		config.addListener(evt -> setSpelExpressionSyntaxValidationEnabled(config.isSpelExpressionValidationEnabled()));
-		this.spelExpressionReconciler = new SpelExpressionReconciler();
-		
-		this.reconcilers = new JdtAstReconciler[] {
-				new AnnotationNodeReconciler(config),
-				new BeanMethodNotPublicReconciler(quickfixRegistry),
-				new AddConfigurationIfBeansPresentReconciler(quickfixRegistry),
-				new AutowiredFieldIntoConstructorParameterReconciler(quickfixRegistry),
-				new Boot3NotSupportedTypeReconciler(),
-				new NoAutowiredOnConstructorReconciler(quickfixRegistry),
-				new WebSecurityConfigurerAdapterReconciler(quickfixRegistry)
-		};
-	}
-
-	public void setSpelExpressionSyntaxValidationEnabled(boolean spelExpressionValidationEnabled) {
-		this.spelExpressionReconciler.setEnabled(spelExpressionValidationEnabled);
+		this.reconcilers = reconcilers;
 	}
 
 	@Override
