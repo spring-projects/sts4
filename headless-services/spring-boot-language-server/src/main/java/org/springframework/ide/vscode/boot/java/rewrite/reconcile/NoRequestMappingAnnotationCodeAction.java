@@ -48,9 +48,9 @@ public class NoRequestMappingAnnotationCodeAction implements RecipeCodeActionDes
 					String uri = getCursor().firstEnclosing(SourceFile.class).getSourcePath().toUri().toASCIIString();
             		FixAssistMarker fixAssistMarker = new FixAssistMarker(Tree.randomId(), getId())
             				.withFixes(
-            					new FixDescriptor(ID, List.of(uri), RecipeCodeActionDescriptor.buildLabel(LABEL, RecipeScope.NODE))
-            						.withRangeScope(a.getMarkers().findFirst(Range.class).get())
-            						.withRecipeScope(RecipeScope.NODE),
+//            					new FixDescriptor(ID, List.of(uri), RecipeCodeActionDescriptor.buildLabel(LABEL, RecipeScope.NODE))
+//            						.withRangeScope(a.getMarkers().findFirst(Range.class).get())
+//            						.withRecipeScope(RecipeScope.NODE),
                 				new FixDescriptor(ID, List.of(uri), RecipeCodeActionDescriptor.buildLabel(LABEL, RecipeScope.FILE))
             						.withRecipeScope(RecipeScope.FILE),
                     				new FixDescriptor(ID, List.of(uri), RecipeCodeActionDescriptor.buildLabel(LABEL, RecipeScope.PROJECT))
