@@ -37,9 +37,12 @@ import org.eclipse.debug.core.ILaunchConfiguration;
 import org.eclipse.debug.core.ILaunchConfigurationType;
 import org.eclipse.debug.core.ILaunchConfigurationWorkingCopy;
 import org.eclipse.debug.core.ILaunchManager;
+import org.eclipse.jdt.core.IClasspathEntry;
 import org.eclipse.jdt.core.IJavaProject;
+import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.IType;
 import org.eclipse.jdt.core.JavaCore;
+import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.launching.IJavaLaunchConfigurationConstants;
 import org.eclipse.jdt.launching.IRuntimeClasspathEntry;
 import org.eclipse.jdt.launching.JavaRuntime;
@@ -518,7 +521,20 @@ public class BootLaunchConfigurationDelegate extends AbstractBootLaunchConfigura
 				projectName+" - "+shortTypeName));
 		BootLaunchConfigurationDelegate.setDefaults(wc, project, typeName);
 		wc.setMappedResources(new IResource[] {type.getUnderlyingResource()});
+		wc.setAttribute(IJavaLaunchConfigurationConstants.ATTR_EXCLUDE_TEST_CODE, !isTestCode(type));
 		return wc;
+	}
+
+	private static boolean isTestCode(IType type) throws JavaModelException {
+		IPackageFragmentRoot packageFragmentRoot = (IPackageFragmentRoot) type.getPackageFragment().getParent();
+		IJavaProject javaProject = packageFragmentRoot.getJavaProject();
+		if (javaProject != null) {
+			IClasspathEntry entry = javaProject.getClasspathEntryFor(packageFragmentRoot.getPath());
+			if (entry != null && !entry.isTest()) {
+				return false;
+			}
+		}
+		return true;
 	}
 
 	public static ILaunchConfiguration createConf(IProject project) throws CoreException {
