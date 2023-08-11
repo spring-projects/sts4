@@ -18,10 +18,12 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Supplier;
+import java.util.stream.Stream;
 
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.FileASTRequestor;
@@ -75,15 +77,16 @@ public abstract class BaseReconcilerTest {
 		clearTestFiles();
 	}
 
-	List<ReconcileProblem> reconcile(String fileName, String source, boolean isCompleteAst) throws Exception {
-		return reconcile(this::getReconciler, fileName, source, isCompleteAst);
+	List<ReconcileProblem> reconcile(String fileName, String source, boolean isCompleteAst, Path... additionalSources) throws Exception {
+		return reconcile(this::getReconciler, fileName, source, isCompleteAst, additionalSources);
 	}
 
-	List<ReconcileProblem> reconcile(Supplier<JdtAstReconciler> reconcilerFactory, String fileName, String source, boolean isCompleteAst) throws Exception {
+	List<ReconcileProblem> reconcile(Supplier<JdtAstReconciler> reconcilerFactory, String fileName, String source, boolean isCompleteAst, Path... additionalSources) throws Exception {
 		Path path = createFile(fileName, source);
 		TestProblemCollector problemCollector = new TestProblemCollector();
 		AtomicBoolean requiredCompleteAst = new AtomicBoolean(false);
-		SpringIndexerJava.createParser(project, !isCompleteAst).createASTs(new String[] { path.toFile().toString() }, null, new String[0], new FileASTRequestor() {
+		String[] sources = Stream.concat(Arrays.stream(additionalSources), Stream.of(path)).map(p -> p.toFile().toString()).toArray(String[]::new);
+		SpringIndexerJava.createParser(project, !isCompleteAst).createASTs(sources, null, new String[0], new FileASTRequestor() {
 
 			@Override
 			public void acceptAST(String sourceFilePath, CompilationUnit cu) {

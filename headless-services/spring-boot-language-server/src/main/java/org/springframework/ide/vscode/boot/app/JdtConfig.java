@@ -19,6 +19,7 @@ import org.springframework.ide.vscode.boot.java.reconcilers.AutowiredFieldIntoCo
 import org.springframework.ide.vscode.boot.java.reconcilers.BeanMethodNotPublicReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.BeanPostProcessingIgnoreInAotReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.Boot3NotSupportedTypeReconciler;
+import org.springframework.ide.vscode.boot.java.reconcilers.EntityIdForRepoReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.HttpSecurityLambdaDslReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.ModulithTypeReferenceViolationReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.NoAutowiredOnConstructorReconciler;
@@ -100,6 +101,10 @@ public class JdtConfig {
 	
 	@Bean NotRegisteredBeansReconciler notRegisteredBeansReconciler(SimpleLanguageServer server) {
 		return new NotRegisteredBeansReconciler(server.getQuickfixRegistry());
+	}
+	
+	@Bean EntityIdForRepoReconciler entityIdForRepoReconciler(SimpleLanguageServer server) {
+		return new EntityIdForRepoReconciler();
 	}
 
 }

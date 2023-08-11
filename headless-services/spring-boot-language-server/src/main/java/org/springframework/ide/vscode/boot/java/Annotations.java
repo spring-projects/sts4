@@ -24,6 +24,9 @@ public class Annotations {
 	public static final String COMPONENT = "org.springframework.stereotype.Component";
 	public static final String CONFIGURATION = "org.springframework.context.annotation.Configuration";
 	public static final String REPOSITORY = "org.springframework.stereotype.Repository";
+	public static final String REPOSITORY_DEFINITION = "org.springframework.data.repository.RepositoryDefinition";
+	public static final String NO_REPO_BEAN = "org.springframework.data.repository.NoRepositoryBean";
+	public static final String ENTITY_ID = "org.springframework.data.annotation.Id"; 
 
 	public static final String AUTOWIRED = "org.springframework.beans.factory.annotation.Autowired";
 	public static final String INJECT = "javax.inject.Inject";
