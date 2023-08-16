@@ -14,12 +14,13 @@ import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.ide.vscode.boot.java.reconcilers.JdtReconciler;
 import org.springframework.ide.vscode.boot.java.rewrite.RewriteCodeActionHandler;
 import org.springframework.ide.vscode.boot.java.rewrite.RewriteCompilationUnitCache;
 import org.springframework.ide.vscode.boot.java.rewrite.RewriteRecipeRepository;
-import org.springframework.ide.vscode.boot.java.rewrite.RewriteReconciler;
 import org.springframework.ide.vscode.boot.java.rewrite.RewriteRefactorings;
 import org.springframework.ide.vscode.boot.java.rewrite.SpringBootUpgrade;
+import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 
@@ -42,8 +43,8 @@ public class RewriteConfig {
 	}
 	
 	@ConditionalOnBean(RewriteRecipeRepository.class)
-	@Bean RewriteCodeActionHandler rewriteCodeActionHandler(RewriteCompilationUnitCache cuCache, RewriteRecipeRepository recipeRepo, BootJavaConfig config) {
-		return new RewriteCodeActionHandler(cuCache, recipeRepo, config);
+	@Bean RewriteCodeActionHandler rewriteCodeActionHandler(CompilationUnitCache cuCache, BootJavaConfig config, JdtReconciler jdtReconciler, SimpleLanguageServer server) {
+		return new RewriteCodeActionHandler(cuCache, config, jdtReconciler, server.getQuickfixRegistry());
 	}
 	
 	@ConditionalOnBean(RewriteRecipeRepository.class)
