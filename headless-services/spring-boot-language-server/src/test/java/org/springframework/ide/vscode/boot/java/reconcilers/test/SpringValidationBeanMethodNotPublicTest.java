@@ -61,6 +61,10 @@ public class SpringValidationBeanMethodNotPublicTest {
 	@BeforeEach
 	public void setup() throws Exception {
 		harness.intialize(null);
+		
+		String changedSettings = "{\"boot-java\": {\"validation\": {\"java\": { \"reconcilers\": true}}}}";
+		JsonElement settingsAsJson = new Gson().fromJson(changedSettings, JsonElement.class);
+		harness.changeConfiguration(new Settings(settingsAsJson));
 
 		directory = new File(ProjectsHarness.class.getResource("/test-projects/test-spring-validations/").toURI());
 
@@ -105,7 +109,7 @@ public class SpringValidationBeanMethodNotPublicTest {
         assertEquals(1, diagnostics.size());
         assertEquals(DiagnosticSeverity.Hint, diagnostic.getSeverity());
         
-        String changedSettings = "{\"spring-boot\": {\"ls\": {\"problem\": {\"boot2\": {\"JAVA_PUBLIC_BEAN_METHOD\": \"ERROR\"}}}}}";
+        String changedSettings = "{\"spring-boot\": {\"ls\": {\"problem\": {\"boot2\": {\"JAVA_PUBLIC_BEAN_METHOD\": \"ERROR\"}}}}, \"boot-java\": {\"validation\": {\"java\": { \"reconcilers\": true}}}}";
         JsonElement settingsAsJson = new Gson().fromJson(changedSettings, JsonElement.class);
         Settings settings = new Settings(settingsAsJson);
         

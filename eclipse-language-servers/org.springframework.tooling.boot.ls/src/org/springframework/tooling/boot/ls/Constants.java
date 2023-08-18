@@ -31,9 +31,9 @@ public class Constants {
 
 	public static final String PREF_CHANGE_DETECTION = "boot-java.change-detection.on";
 	
-	public static final String PREF_REWRITE_RECONCILE = "boot-java.rewrite.reconcile";
+	public static final String PREF_JAVA_RECONCILE = "boot-java.java.reconcile";
 
-	public static final String PREF_REWRITE_RECONCILE_PROMPT = "rewrite.reconcile-prompt";
+	public static final String PREF_JAVA_RECONCILE_PROMPT = "java.reconcile-prompt";
 	
 	public static final String PREF_REWRITE_RECIPE_FILTERS = "boot-java.rewrite.recipe-filters";
 	

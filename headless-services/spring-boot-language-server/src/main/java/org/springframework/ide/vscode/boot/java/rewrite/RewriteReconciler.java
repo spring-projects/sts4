@@ -76,33 +76,33 @@ public class RewriteReconciler implements JavaReconciler {
 
 	@Override
 	public void reconcile(IJavaProject project, IDocument doc, IProblemCollector problemCollector) {
-		if (!config.isRewriteReconcileEnabled()) {
-			return;
-		}
-
-		long start = System.currentTimeMillis();
-
-		try {
-			problemCollector.beginCollecting();
-			
-			List<RecipeCodeActionDescriptor> descriptors = getProblemRecipeDescriptors(project);
-			
-			if (!descriptors.isEmpty()) {
-				CompilationUnit cu = cuCache.getCU(project, URI.create(doc.getUri()));
-				if (cu != null) {
-					collectProblems(project, descriptors, doc, cu, problemCollector::accept);
-				}
-			}			
-		} catch (Exception e) {
-			if (ORAstUtils.isExceptionFromInterrupedThread(e)) {
-				log.debug("", e);
-			} else {
-				log.error("", e);
-			}
-		} finally {
-			problemCollector.endCollecting();
-			log.info("reconciling (OpenRewrite): " + doc.getUri() + " done in " + (System.currentTimeMillis() - start) + "ms");
-		}			
+//		if (!config.isRewriteReconcileEnabled()) {
+//			return;
+//		}
+//
+//		long start = System.currentTimeMillis();
+//
+//		try {
+//			problemCollector.beginCollecting();
+//			
+//			List<RecipeCodeActionDescriptor> descriptors = getProblemRecipeDescriptors(project);
+//			
+//			if (!descriptors.isEmpty()) {
+//				CompilationUnit cu = cuCache.getCU(project, URI.create(doc.getUri()));
+//				if (cu != null) {
+//					collectProblems(project, descriptors, doc, cu, problemCollector::accept);
+//				}
+//			}			
+//		} catch (Exception e) {
+//			if (ORAstUtils.isExceptionFromInterrupedThread(e)) {
+//				log.debug("", e);
+//			} else {
+//				log.error("", e);
+//			}
+//		} finally {
+//			problemCollector.endCollecting();
+//			log.info("reconciling (OpenRewrite): " + doc.getUri() + " done in " + (System.currentTimeMillis() - start) + "ms");
+//		}			
 	}
 	
 	private List<ReconcileProblem> createProblems(IDocument doc, FixAssistMarker m, J astNode) {
@@ -140,7 +140,7 @@ public class RewriteReconciler implements JavaReconciler {
 	@Override
 	public Map<IDocument, Collection<ReconcileProblem>> reconcile(IJavaProject project, List<TextDocument> docs, Runnable incrementProgress) {
 		
-		if (!config.isRewriteReconcileEnabled()) {
+		if (!config.isJavaSourceReconcileEnabled()) {
 			return Collections.emptyMap();
 		}
 		
@@ -251,7 +251,7 @@ public class RewriteReconciler implements JavaReconciler {
 	// Parse in batches and share the parser
 	private Map<IDocument, Collection<ReconcileProblem>> doReconcile(IJavaProject project, List<TextDocument> docs, JavaParser javaParser, JavaSourceSet javaSourceSet, Runnable incrementProgress) {
 		Map<IDocument, Collection<ReconcileProblem>> allProblems = new HashMap<>();
-		if (javaParser != null && config.isRewriteReconcileEnabled()) {
+		if (javaParser != null && config.isJavaSourceReconcileEnabled()) {
 			try {
 				List<RecipeCodeActionDescriptor> descriptors = getProblemRecipeDescriptors(project);
 

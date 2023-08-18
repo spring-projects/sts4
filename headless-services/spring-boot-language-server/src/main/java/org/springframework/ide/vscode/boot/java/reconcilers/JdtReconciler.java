@@ -58,6 +58,10 @@ public class JdtReconciler implements JavaReconciler {
 
 	@Override
 	public void reconcile(IJavaProject project, final IDocument doc, final IProblemCollector problemCollector) {
+		if (!config.isJavaSourceReconcileEnabled()) {
+			return;
+		}
+
 		final long s = System.currentTimeMillis();
 		URI uri = URI.create(doc.getUri());
 		compilationUnitCache.withCompilationUnit(project, uri, cu -> {
@@ -75,6 +79,9 @@ public class JdtReconciler implements JavaReconciler {
 	
 
 	public void reconcile(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector, boolean isCompleteAst) throws RequiredCompleteAstException {
+		if (!config.isJavaSourceReconcileEnabled()) {
+			return;
+		}
 		for (JdtAstReconciler reconciler : getApplicableReconcilers(project)) {
 			try {
 				reconciler.reconcile(project, docUri, cu, problemCollector, isCompleteAst);

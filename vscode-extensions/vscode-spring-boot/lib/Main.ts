@@ -23,8 +23,8 @@ const FACTORIES_LANGUAGE_ID = "spring-factories";
 const YES = 'Yes';
 const NO = 'No';
 const STOP_ASKING = "Stop Asking";
-const RECONCILING_PREF_KEY = 'boot-java.rewrite.reconcile';
-const RECONCILING_PROMPT_PREF_KEY = 'vscode-spring-boot.rewrite.reconcile-prompt';
+const RECONCILING_PREF_KEY = 'boot-java.validation.java.reconcilers';
+const RECONCILING_PROMPT_PREF_KEY = 'vscode-spring-boot.java.reconcile-prompt';
 
 /** Called when extension is activated */
 export function activate(context: VSCode.ExtensionContext): Thenable<ExtensionAPI> {

@@ -30,11 +30,6 @@ public class RewritePreferencePage extends FieldEditorPreferencePage implements 
 		addField(new BooleanFieldEditor(Constants.PREF_REWRITE_PROJECT_REFACTORINGS,
 				"Project refactoring actions", fieldEditorParent));
 		
-		addField(new BooleanFieldEditor(Constants.PREF_REWRITE_RECONCILE,
-				"Reconciling of Java Sources", fieldEditorParent));
-				
-		addField(new BooleanFieldEditor(Constants.PREF_REWRITE_RECONCILE_PROMPT,
-				"Prompt for Reconciling of Java Sources", fieldEditorParent));
 	}
 
 

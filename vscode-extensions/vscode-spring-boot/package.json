@@ -139,6 +139,16 @@
         "title": "Features",
         "order": 100,
         "properties": {
+          "boot-java.validation.java.reconcilers": {
+            "type": "boolean",
+            "default": false,
+            "description": "Reconciling Java Sources"
+          },
+          "vscode-spring-boot.java.reconcile-prompt": {
+            "type": "boolean",
+            "default": true,
+            "description": "Reconciling Java Sources Prompt enabled"
+          },
           "boot-java.live-information.automatic-connection.on": {
             "type": "boolean",
             "default": true,
@@ -232,16 +242,6 @@
             "type": "boolean",
             "default": true,
             "description": "Recipes refactoring entire Maven project via commands"
-          },
-          "boot-java.rewrite.reconcile": {
-            "type": "boolean",
-            "default": false,
-            "description": "Reconciling Java Sources"
-          },
-          "vscode-spring-boot.rewrite.reconcile-prompt": {
-            "type": "boolean",
-            "default": true,
-            "description": "Reconciling Java Sources Prompt enabled"
           },
           "boot-java.rewrite.recipe-filters": {
             "type": "array",

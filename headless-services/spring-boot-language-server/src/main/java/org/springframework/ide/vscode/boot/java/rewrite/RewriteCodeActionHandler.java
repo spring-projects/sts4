@@ -92,7 +92,8 @@ public class RewriteCodeActionHandler implements JavaCodeActionHandler {
 	@Override
 	public List<Either<Command, CodeAction>> handle(IJavaProject project, CancelChecker cancelToken,
 			CodeActionCapabilities capabilities, CodeActionContext context, TextDocument doc, IRegion region) {
-		if (!config.isRewriteReconcileEnabled()) {
+		// Short circuit here to avoid parsing the java source for nothing.
+		if (!config.isJavaSourceReconcileEnabled()) {
 			return Collections.emptyList();
 		}
 		

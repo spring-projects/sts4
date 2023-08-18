@@ -10,40 +10,30 @@
  *******************************************************************************/
 package org.springframework.tooling.boot.ls.prefs;
 
-import org.eclipse.jface.preference.PreferencePage;
-import org.eclipse.jface.resource.ImageDescriptor;
-import org.eclipse.swt.SWT;
+import org.eclipse.jface.preference.BooleanFieldEditor;
+import org.eclipse.jface.preference.FieldEditorPreferencePage;
 import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Control;
 import org.eclipse.ui.IWorkbench;
 import org.eclipse.ui.IWorkbenchPreferencePage;
+import org.springframework.tooling.boot.ls.BootLanguageServerPlugin;
+import org.springframework.tooling.boot.ls.Constants;
 
-public class ValidationPreferencePage extends PreferencePage implements IWorkbenchPreferencePage {
-
-	public ValidationPreferencePage() {
-	}
-
-	public ValidationPreferencePage(String title) {
-		super(title);
-	}
-
-	public ValidationPreferencePage(String title, ImageDescriptor image) {
-		super(title, image);
-	}
+public class ValidationPreferencePage extends FieldEditorPreferencePage implements IWorkbenchPreferencePage {
 
 	@Override
 	public void init(IWorkbench workbench) {
+		setPreferenceStore(BootLanguageServerPlugin.getDefault().getPreferenceStore());
 	}
 
 	@Override
-	protected Control createContents(Composite parent) {
-		return null;
-	}
-
-	@Override
-	public void createControl(Composite parent) {
-		Composite content = new Composite(parent, SWT.NONE);
-		setControl(content);
+	protected void createFieldEditors() {
+		Composite fieldEditorParent = getFieldEditorParent();
+		
+		addField(new BooleanFieldEditor(Constants.PREF_JAVA_RECONCILE,
+				"Reconciling of Java Sources", fieldEditorParent));
+				
+		addField(new BooleanFieldEditor(Constants.PREF_JAVA_RECONCILE_PROMPT,
+				"Prompt for Reconciling of Java Sources", fieldEditorParent));
 	}
 
 }

@@ -38,8 +38,8 @@ public class RewriteConfig {
 	}
 	
 	@ConditionalOnBean(RewriteRecipeRepository.class)
-	@Bean RewriteRefactorings rewriteRefactorings(SimpleLanguageServer server, JavaProjectFinder projectFinder, RewriteRecipeRepository recipeRepo, RewriteCompilationUnitCache cuCache) {
-		return new RewriteRefactorings(server, projectFinder, recipeRepo, cuCache);
+	@Bean RewriteRefactorings rewriteRefactorings(SimpleLanguageServer server, JavaProjectFinder projectFinder, RewriteRecipeRepository recipeRepo) {
+		return new RewriteRefactorings(server, projectFinder, recipeRepo);
 	}
 	
 	@ConditionalOnBean(RewriteRecipeRepository.class)

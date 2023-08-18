@@ -16,7 +16,6 @@ import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
@@ -70,17 +69,14 @@ public class RewriteRefactorings implements CodeActionResolver, QuickfixHandler 
 	
 	private SimpleLanguageServer server;
 
-	private RewriteCompilationUnitCache cuCache;
-
 	private JavaProjectFinder projectFinder;
 
 	private Gson gson;
 		
-	public RewriteRefactorings(SimpleLanguageServer server, JavaProjectFinder projectFinder, RewriteRecipeRepository recipeRepo, RewriteCompilationUnitCache cuCache) {
+	public RewriteRefactorings(SimpleLanguageServer server, JavaProjectFinder projectFinder, RewriteRecipeRepository recipeRepo) {
 		this.server = server;
 		this.projectFinder = projectFinder;
 		this.recipeRepo = recipeRepo;
-		this.cuCache = cuCache;
 		this.gson = new GsonBuilder()
 				.registerTypeAdapter(RecipeScope.class, (JsonDeserializer<RecipeScope>) (json, type, context) -> {
 					try {
@@ -164,13 +160,9 @@ public class RewriteRefactorings implements CodeActionResolver, QuickfixHandler 
 					progress.done();
 				}
 			} else {
-				if (data.getTypeStubs().length == 0) {
-					cus = data.getDocUris().stream().map(docUri -> cuCache.getCU(project.get(), URI.create(docUri))).filter(Objects::nonNull).collect(Collectors.toList());
-				} else {
-					JavaParser jp = ORAstUtils.createJavaParserBuilder(project.get()).dependsOn(data.getTypeStubs()).build();
-					List<Input> inputs = data.getDocUris().stream().map(URI::create).map(Paths::get).map(p -> ORAstUtils.getParserInput(server.getTextDocumentService(), p)).collect(Collectors.toList());
-					cus = ORAstUtils.parseInputs(jp, inputs, null);
-				}
+				JavaParser jp = ORAstUtils.createJavaParserBuilder(project.get()).dependsOn(data.getTypeStubs()).build();
+				List<Input> inputs = data.getDocUris().stream().map(URI::create).map(Paths::get).map(p -> ORAstUtils.getParserInput(server.getTextDocumentService(), p)).collect(Collectors.toList());
+				cus = ORAstUtils.parseInputs(jp, inputs, null);
 				return applyRecipe(r, project.get(), cus);
 			}
 		}

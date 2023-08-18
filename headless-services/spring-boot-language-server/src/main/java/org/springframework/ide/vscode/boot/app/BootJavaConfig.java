@@ -154,8 +154,8 @@ public class BootJavaConfig implements InitializingBean {
 		return enabled != null && enabled.booleanValue();
 	}
 	
-	public boolean isRewriteReconcileEnabled() {
-		Boolean enabled = getRawSettings().getBoolean("boot-java", "rewrite", "reconcile");
+	public boolean isJavaSourceReconcileEnabled() {
+		Boolean enabled = getRawSettings().getBoolean("boot-java", "validation", "java", "reconcilers");
 		return enabled == null ? false : enabled.booleanValue();
 	}
 	

@@ -179,7 +179,7 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 				
 				IPreferenceStore preferenceStore = BootLanguageServerPlugin.getDefault().getPreferenceStore();
 				
-				if (preferenceStore.getBoolean(Constants.PREF_REWRITE_RECONCILE_PROMPT) && !preferenceStore.getBoolean(Constants.PREF_REWRITE_RECONCILE)) {
+				if (preferenceStore.getBoolean(Constants.PREF_JAVA_RECONCILE_PROMPT) && !preferenceStore.getBoolean(Constants.PREF_JAVA_RECONCILE)) {
 					PlatformUI.getWorkbench().getDisplay().asyncExec(() -> {
 						try {
 							NotificationQuestionWithLink question = new NotificationQuestionWithLink(
@@ -187,9 +187,9 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 									"Do you wish to enable additional Java sources reconciling to get Spring specific validations and suggestions?\n\n" +
 									"See <a>Validations And Quick Fixes</a> for more details.",
 									new URL("https://github.com/spring-projects/sts4/wiki/Validations-And-Quick-Fixes"),
-									() -> preferenceStore.setValue(Constants.PREF_REWRITE_RECONCILE, true),
+									() -> preferenceStore.setValue(Constants.PREF_JAVA_RECONCILE, true),
 									() -> {},
-									() -> preferenceStore.setValue(Constants.PREF_REWRITE_RECONCILE_PROMPT, false));
+									() -> preferenceStore.setValue(Constants.PREF_JAVA_RECONCILE_PROMPT, false));
 							question.setDelayClose(-1);
 							question.open();							
 						} catch (Exception e) {
@@ -212,6 +212,7 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 		Map<String, Object> scanTestJavaSources = new HashMap<>();
 		Map<String, Object> validation = new HashMap<>();
 		Map<String, Object> validationSpelExpressions = new HashMap<>();
+		Map<String, Object> javaValidation = new HashMap<>();
 
 		IPreferenceStore preferenceStore = BootLanguageServerPlugin.getDefault().getPreferenceStore();
 
@@ -227,8 +228,10 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 		bootChangeDetection.put("on", preferenceStore.getBoolean(Constants.PREF_CHANGE_DETECTION));
 		scanTestJavaSources.put("on", preferenceStore.getBoolean(Constants.PREF_SCAN_JAVA_TEST_SOURCES));
 
+		javaValidation.put("reconcilers", preferenceStore.getBoolean(Constants.PREF_JAVA_RECONCILE));
 		validationSpelExpressions.put("on", preferenceStore.getBoolean(Constants.PREF_VALIDATION_SPEL_EXPRESSIONS));
 		validation.put("spel", validationSpelExpressions);
+		validation.put("java", javaValidation);
 
 		bootJavaObj.put("live-information", liveInformation);
 		bootJavaObj.put("support-spring-xml-config", supportXML);
@@ -239,7 +242,6 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 		bootJavaObj.put("remote-apps", getAllRemoteApps());
 		
 		bootJavaObj.put("rewrite", Map.of(
-				"reconcile", preferenceStore.getBoolean(Constants.PREF_REWRITE_RECONCILE),
 				"recipe-filters", StringListEditor.decode(preferenceStore.getString(Constants.PREF_REWRITE_RECIPE_FILTERS)),
 				"scan-directories", FileListEditor.getValuesFromPreference(preferenceStore.getString(Constants.PREF_REWRITE_RECIPES_SCAN_DIRS)),
 				"scan-files", FileListEditor.getValuesFromPreference(preferenceStore.getString(Constants.PREF_REWRITE_RECIPES_SCAN_FILES))
@@ -342,7 +344,7 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 			this.noHandler = noHandler;
 			this.stopAskingHandler = stopAskingHandler;
 			
-			setParentShell(PlatformUI.getWorkbench().getDisplay().getActiveShell());
+			setParentShell(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
 			setBlockOnOpen(true);
 		}
 
