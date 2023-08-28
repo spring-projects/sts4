@@ -642,6 +642,13 @@ public class SpringIndexerJava implements SpringIndexer {
 			}
 		});
 		
+		
+		reconcile(context);
+		
+		dependencyTracker.update(context.getFile(), context.getDependencies());;
+	}
+	
+	private void reconcile(SpringIndexerJavaContext context) {
 		// reconciling
 		IProblemCollector problemCollector = new IProblemCollector() {
 			
@@ -678,8 +685,6 @@ public class SpringIndexerJava implements SpringIndexer {
 				context.getNextPassFiles().add(context.getFile());
 			}
 		}
-		
-		dependencyTracker.update(context.getFile(), context.getDependencies());;
 	}
 
 	private void extractSymbolInformation(TypeDeclaration typeDeclaration, final SpringIndexerJavaContext context) throws Exception {
