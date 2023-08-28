@@ -14,20 +14,16 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.net.URI;
-import java.net.URL;
 import java.nio.file.FileSystems;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
 
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
-import org.eclipse.jface.layout.GridDataFactory;
-import org.eclipse.jface.notifications.AbstractNotificationPopup;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.jface.util.IPropertyChangeListener;
 import org.eclipse.lsp4e.server.StreamConnectionProvider;
@@ -36,20 +32,6 @@ import org.eclipse.lsp4j.InitializeResult;
 import org.eclipse.lsp4j.jsonrpc.messages.Message;
 import org.eclipse.lsp4j.jsonrpc.messages.ResponseMessage;
 import org.eclipse.lsp4j.services.LanguageServer;
-import org.eclipse.swt.SWT;
-import org.eclipse.swt.events.SelectionAdapter;
-import org.eclipse.swt.events.SelectionEvent;
-import org.eclipse.swt.events.SelectionListener;
-import org.eclipse.swt.graphics.Image;
-import org.eclipse.swt.layout.GridData;
-import org.eclipse.swt.layout.GridLayout;
-import org.eclipse.swt.widgets.Button;
-import org.eclipse.swt.widgets.Composite;
-import org.eclipse.swt.widgets.Display;
-import org.eclipse.swt.widgets.Link;
-import org.eclipse.ui.ISharedImages;
-import org.eclipse.ui.PartInitException;
-import org.eclipse.ui.PlatformUI;
 import org.springframework.tooling.boot.ls.prefs.CategoryProblemsSeverityPrefsPage;
 import org.springframework.tooling.boot.ls.prefs.FileListEditor;
 import org.springframework.tooling.boot.ls.prefs.ProblemCategoryData;
@@ -175,28 +157,7 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 				)));
 				
 				//Add remote boot apps listener
-				RemoteBootAppsDataHolder.getDefault().getRemoteApps().addListener(remoteAppsListener);
-				
-				IPreferenceStore preferenceStore = BootLanguageServerPlugin.getDefault().getPreferenceStore();
-				
-				if (preferenceStore.getBoolean(Constants.PREF_JAVA_RECONCILE_PROMPT) && !preferenceStore.getBoolean(Constants.PREF_JAVA_RECONCILE)) {
-					PlatformUI.getWorkbench().getDisplay().asyncExec(() -> {
-						try {
-							NotificationQuestionWithLink question = new NotificationQuestionWithLink(
-									"Spring Java Reconcile",
-									"Do you wish to enable additional Java sources reconciling to get Spring specific validations and suggestions?\n\n" +
-									"See <a>Validations And Quick Fixes</a> for more details.",
-									new URL("https://github.com/spring-projects/sts4/wiki/Validations-And-Quick-Fixes"),
-									() -> preferenceStore.setValue(Constants.PREF_JAVA_RECONCILE, true),
-									() -> {},
-									() -> preferenceStore.setValue(Constants.PREF_JAVA_RECONCILE_PROMPT, false));
-							question.setDelayClose(-1);
-							question.open();							
-						} catch (Exception e) {
-							BootLanguageServerPlugin.getDefault().getLog().error("Failed to Spring Java Reconcile popup", e);
-						}
-					});
-				}
+				RemoteBootAppsDataHolder.getDefault().getRemoteApps().addListener(remoteAppsListener);				
 			}
 		}
 	}
@@ -318,117 +279,4 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 		return RemoteBootAppsDataHolder.getDefault().getRemoteApps().getValues();
 	}
 	
-	private static class NotificationQuestionWithLink extends AbstractNotificationPopup {
-
-		private final String title;
-		private final String textWithLinkTag;
-		private final URL linkUrl;
-		
-		/*
-		 * Notification open does not block on open and ignores setBlockOnOpen(true)
-		 * Therefore handlers are passed directly in until this changes
-		 */
-		private Runnable yesHandler;
-		private Runnable noHandler;
-		private Runnable stopAskingHandler;
-		
-
-		public NotificationQuestionWithLink(String title, String textWithLinkTag, URL linkUrl,
-				Runnable yesHandler, Runnable noHandler, Runnable stopAskingHandler) {
-			super(Display.getCurrent());
-			
-			this.title = title;
-			this.textWithLinkTag = textWithLinkTag;
-			this.linkUrl = linkUrl;
-			this.yesHandler = yesHandler;
-			this.noHandler = noHandler;
-			this.stopAskingHandler = stopAskingHandler;
-			
-			setParentShell(PlatformUI.getWorkbench().getActiveWorkbenchWindow().getShell());
-			setBlockOnOpen(true);
-		}
-
-		@Override
-		public String getPopupShellTitle() {
-			return title;
-		}
-
-		@Override
-		protected void createContentArea(Composite parent) {
-			Link link = new Link(parent, SWT.WRAP);
-			link.setLayoutData(new GridData(SWT.FILL, SWT.CENTER, true, false));
-			link.setText(textWithLinkTag);	
-			if (linkUrl != null) {
-				link.addSelectionListener(new SelectionListener() {
-					
-					@Override
-					public void widgetSelected(SelectionEvent e) {
-						try {
-							PlatformUI.getWorkbench().getBrowserSupport().getExternalBrowser().openURL(linkUrl);
-						} catch (PartInitException ex) {
-							BootLanguageServerPlugin.getDefault().getLog().error("Failed to open browser", ex);
-						}
-					}
-					
-					@Override
-					public void widgetDefaultSelected(SelectionEvent e) {
-					}
-				});
-			}
-			
-			Composite buttonsComposite = new Composite(parent, SWT.None);
-			buttonsComposite.setLayoutData(GridDataFactory.swtDefaults().grab(true, false).align(SWT.RIGHT, SWT.CENTER).create());
-			GridLayout buttonsLayout = new GridLayout(3, false);
-			buttonsLayout.horizontalSpacing = 0;
-			buttonsComposite.setLayout(buttonsLayout);
-			
-			Button yesButton = new Button(buttonsComposite, SWT.None);
-			yesButton.setText("Yes");
-			yesButton.setLayoutData(GridDataFactory.swtDefaults().create());
-			yesButton.addSelectionListener(new SelectionAdapter() {
-				@Override
-				public void widgetSelected(SelectionEvent e) {
-					super.widgetSelected(e);
-					setReturnCode(SWT.YES);
-					close();
-					yesHandler.run();
-				}
-			});
-			
-			Button noButton = new Button(buttonsComposite, SWT.None);
-			noButton.setText("No");
-			noButton.setLayoutData(GridDataFactory.swtDefaults().create());
-			noButton.addSelectionListener(new SelectionAdapter() {
-				@Override
-				public void widgetSelected(SelectionEvent e) {
-					super.widgetSelected(e);
-					setReturnCode(SWT.NO);
-					close();
-					noHandler.run();
-				}
-			});
-			
-			Button stopAskingButton = new Button(buttonsComposite, SWT.None);
-			stopAskingButton.setText("Stop Asking");
-			stopAskingButton.setLayoutData(GridDataFactory.swtDefaults().create());
-			stopAskingButton.addSelectionListener(new SelectionAdapter() {
-				@Override
-				public void widgetSelected(SelectionEvent e) {
-					super.widgetSelected(e);
-					setReturnCode(SWT.SAVE);
-					close();
-					stopAskingHandler.run();
-				}
-			});
-			
-			parent.setBackground(link.getBackground());
-		}
-
-		@Override
-		public Image getPopupShellImage(int maximumHeight) {
-			return PlatformUI.getWorkbench().getSharedImages().getImage(ISharedImages.IMG_OBJS_INFO_TSK);
-		}
-
-	}
-
 }

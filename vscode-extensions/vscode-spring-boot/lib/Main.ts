@@ -20,11 +20,7 @@ const JAVA_LANGUAGE_ID = "java";
 const XML_LANGUAGE_ID = "xml";
 const FACTORIES_LANGUAGE_ID = "spring-factories";
 
-const YES = 'Yes';
-const NO = 'No';
 const STOP_ASKING = "Stop Asking";
-const RECONCILING_PREF_KEY = 'boot-java.validation.java.reconcilers';
-const RECONCILING_PROMPT_PREF_KEY = 'vscode-spring-boot.java.reconcile-prompt';
 
 /** Called when extension is activated */
 export function activate(context: VSCode.ExtensionContext): Thenable<ExtensionAPI> {
@@ -146,23 +142,6 @@ export function activate(context: VSCode.ExtensionContext): Thenable<ExtensionAP
 
             // Force classpath listener to be enabled. Boot LS can only be launched iff classpath is available and there Spring-Boot on the classpath somewhere.
             VSCode.commands.executeCommand('sts.vscode-spring-boot.enableClasspathListening', true);
-
-            // Ask user to enable Boot java source reconciling feature if disabled
-            if (VSCode.workspace.getConfiguration().get(RECONCILING_PROMPT_PREF_KEY) && !VSCode.workspace.getConfiguration().get(RECONCILING_PREF_KEY)) {
-                VSCode.window.showInformationMessage('Do you wish to enable additional Java sources reconciling to get Spring specific validations and suggestions?\n\n' +
-                    'For more details see [Validations And Quick Fixes](https://github.com/spring-projects/sts4/wiki/Validations-And-Quick-Fixes)', YES, NO, STOP_ASKING).then(answer => {
-                    switch (answer) {
-                        case YES:
-                            VSCode.workspace.getConfiguration().update(RECONCILING_PREF_KEY, true, true);
-                            break;
-                        case STOP_ASKING:
-                            VSCode.workspace.getConfiguration().update(RECONCILING_PROMPT_PREF_KEY, false, true);
-                            break;
-                        default:
-                            break;   
-                    }
-                });
-            }
         }));
         VSCode.commands.registerCommand('vscode-spring-boot.ls.stop', () => client.stop());
         liveHoverUi.activate(client, options, context);

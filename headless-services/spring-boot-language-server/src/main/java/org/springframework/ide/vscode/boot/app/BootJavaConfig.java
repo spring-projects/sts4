@@ -156,7 +156,7 @@ public class BootJavaConfig implements InitializingBean {
 	
 	public boolean isJavaSourceReconcileEnabled() {
 		Boolean enabled = getRawSettings().getBoolean("boot-java", "validation", "java", "reconcilers");
-		return enabled == null ? false : enabled.booleanValue();
+		return enabled == null ? true : enabled.booleanValue();
 	}
 	
 	public String getSpringIOApiUrl() {

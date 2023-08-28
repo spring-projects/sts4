@@ -33,8 +33,6 @@ public class Constants {
 	
 	public static final String PREF_JAVA_RECONCILE = "boot-java.java.reconcile";
 
-	public static final String PREF_JAVA_RECONCILE_PROMPT = "java.reconcile-prompt";
-	
 	public static final String PREF_REWRITE_RECIPE_FILTERS = "boot-java.rewrite.recipe-filters";
 	
 	public static final String PREF_REWRITE_RECIPES_SCAN_FILES = "boot-java.rewrite.scan-files";

@@ -141,13 +141,8 @@
         "properties": {
           "boot-java.validation.java.reconcilers": {
             "type": "boolean",
-            "default": false,
-            "description": "Reconciling Java Sources"
-          },
-          "vscode-spring-boot.java.reconcile-prompt": {
-            "type": "boolean",
             "default": true,
-            "description": "Reconciling Java Sources Prompt enabled"
+            "description": "Reconciling Java Sources"
           },
           "boot-java.live-information.automatic-connection.on": {
             "type": "boolean",

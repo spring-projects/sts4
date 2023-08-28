@@ -31,9 +31,6 @@ public class ValidationPreferencePage extends FieldEditorPreferencePage implemen
 		
 		addField(new BooleanFieldEditor(Constants.PREF_JAVA_RECONCILE,
 				"Reconciling of Java Sources", fieldEditorParent));
-				
-		addField(new BooleanFieldEditor(Constants.PREF_JAVA_RECONCILE_PROMPT,
-				"Prompt for Reconciling of Java Sources", fieldEditorParent));
 	}
 
 }
