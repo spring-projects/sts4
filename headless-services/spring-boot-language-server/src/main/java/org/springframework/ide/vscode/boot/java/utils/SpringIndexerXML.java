@@ -146,7 +146,7 @@ public class SpringIndexerXML implements SpringIndexer {
 
 		long endTime = System.currentTimeMillis();
 
-		log.info("scan xml files for symbols for project: " + project.getElementName() + " took ms: " + (endTime - startTime));
+		log.info("scan xml files for symbols for project: " + project.getElementName() + " took ms: " + (endTime - startTime) + " Symbols Found: " + symbols.length);
 	}
 
 	@Override

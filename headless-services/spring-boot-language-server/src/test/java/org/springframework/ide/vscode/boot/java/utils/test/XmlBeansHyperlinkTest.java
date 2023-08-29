@@ -23,8 +23,12 @@ import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.LocationLink;
 import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.LoggerFactory;
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.OverrideAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -56,6 +60,9 @@ import com.google.gson.Gson;
 @DirtiesContext(classMode=ClassMode.AFTER_EACH_TEST_METHOD)
 public class XmlBeansHyperlinkTest {
 	
+	
+	private static final org.slf4j.Logger log = LoggerFactory.getLogger(XmlBeansHyperlinkTest.class);
+	
 	private static final int DEFAULT_INDEX_WAIT_TIME = 5;
 	@Autowired private BootLanguageServerHarness harness;
 	@Autowired private SpringSymbolIndex indexer;
@@ -64,9 +71,16 @@ public class XmlBeansHyperlinkTest {
 	
 	private ProjectsHarness projects = ProjectsHarness.INSTANCE;
 	private MavenJavaProject project;
+	
+	private Level originalLevel;
 
 	@BeforeEach
 	public void setup() throws Exception {
+	    final Logger logger = (Logger)LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+	    originalLevel = logger.getLevel();
+	    logger.setLevel(Level.DEBUG);
+	    
+		log.debug("-------------------------------------------------");
 		harness.intialize(null);
 		
 		Map<String, Object> supportXML = new HashMap<>();
@@ -87,7 +101,14 @@ public class XmlBeansHyperlinkTest {
 		projectObserver.doWithListeners(l -> l.created(project));
 
 		CompletableFuture<Void> initProject = indexer.waitOperation();
-		initProject.get(DEFAULT_INDEX_WAIT_TIME, TimeUnit.SECONDS);
+		initProject.get(1500, TimeUnit.SECONDS);
+	}
+	
+	@AfterEach
+	public void tearDown() {
+		log.debug("-------------------------------------------------");
+	    final Logger logger = (Logger)LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+	    logger.setLevel(originalLevel);
 	}
 
     @Test
@@ -149,6 +170,7 @@ public class XmlBeansHyperlinkTest {
 
     @Test
     void testBeanRefHyperlink() throws Exception {
+    	log.debug("------------------ testBeanRefHyperlink ----------------------");
         Path xmlFilePath = Paths.get(project.getLocationUri()).resolve("beans.xml");
         Editor editor = harness.newEditor(LanguageId.XML,
                 "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" +

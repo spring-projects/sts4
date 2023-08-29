@@ -861,18 +861,18 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 			this.project = project;
 			this.indexer = indexer;
 			this.clean = clean;
-			log.debug("{} created ", this);
+			log.debug("{} created ", indexer.getClass().getSimpleName());
 		}
 
 		@Override
 		public void run() {
-			log.debug("{} starting...", this);
+			log.debug("{} starting...", indexer.getClass().getSimpleName());
 			try {
 				indexer.initializeProject(project, this.clean);
 
-				log.debug("{} completed", this);
+				log.debug("{} completed", indexer.getClass().getSimpleName());
 			} catch (Throwable e) {
-				log.error("{} threw exception", this, e);
+				log.error("{} threw exception", indexer.getClass().getSimpleName(), e);
 			}
 		}
 	}
