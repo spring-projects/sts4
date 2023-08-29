@@ -105,75 +105,77 @@ public class RewriteReconciler implements JavaReconciler {
 //		}			
 	}
 	
-	private List<ReconcileProblem> createProblems(IDocument doc, FixAssistMarker m, J astNode) {
-		if (astNode != null) {
-			Range range = astNode.getMarkers().findFirst(Range.class).orElse(null);
-			if (range != null) {
-				RecipeCodeActionDescriptor recipeFixDescriptor = recipeRepo.getCodeActionRecipeDescriptor(m.getDescriptorId());
-				if (recipeFixDescriptor != null) {
-					return List.of(createProblem(doc, recipeFixDescriptor, m, range));
-				}
-			}
-		}
-		return Collections.emptyList();
-	}
-	
-	private ReconcileProblemImpl createProblem(IDocument doc, RecipeCodeActionDescriptor recipeFixDescriptor,
-			FixAssistMarker m, Range range) {
-		ProblemType problemType = recipeFixDescriptor.getProblemType();
-		ReconcileProblemImpl problem = new ReconcileProblemImpl(problemType, m.getLabel() == null ? problemType.getLabel() : m.getLabel(), range.getStart().getOffset(), range.getEnd().getOffset() - range.getStart().getOffset());
-		QuickfixType quickfixType = quickfixRegistry.getQuickfixType(RewriteRefactorings.REWRITE_RECIPE_QUICKFIX);
-		if (quickfixType != null) {
-			for (FixDescriptor f : m.getFixes()) {
-				if (recipeRepo.getRecipe(f.getRecipeId()).isPresent()) {
-					problem.addQuickfix(new QuickfixData<>(
-							quickfixType,
-							f,
-							f.getLabel()
-					));
-				}
-			}
-		}
-		return problem;
-	}
+//	private List<ReconcileProblem> createProblems(IDocument doc, FixAssistMarker m, J astNode) {
+//		if (astNode != null) {
+//			Range range = astNode.getMarkers().findFirst(Range.class).orElse(null);
+//			if (range != null) {
+//				RecipeCodeActionDescriptor recipeFixDescriptor = recipeRepo.getCodeActionRecipeDescriptor(m.getDescriptorId());
+//				if (recipeFixDescriptor != null) {
+//					return List.of(createProblem(doc, recipeFixDescriptor, m, range));
+//				}
+//			}
+//		}
+//		return Collections.emptyList();
+//	}
+//	
+//	private ReconcileProblemImpl createProblem(IDocument doc, RecipeCodeActionDescriptor recipeFixDescriptor,
+//			FixAssistMarker m, Range range) {
+//		ProblemType problemType = recipeFixDescriptor.getProblemType();
+//		ReconcileProblemImpl problem = new ReconcileProblemImpl(problemType, m.getLabel() == null ? problemType.getLabel() : m.getLabel(), range.getStart().getOffset(), range.getEnd().getOffset() - range.getStart().getOffset());
+//		QuickfixType quickfixType = quickfixRegistry.getQuickfixType(RewriteRefactorings.REWRITE_RECIPE_QUICKFIX);
+//		if (quickfixType != null) {
+//			for (FixDescriptor f : m.getFixes()) {
+//				if (recipeRepo.getRecipe(f.getRecipeId()).isPresent()) {
+//					problem.addQuickfix(new QuickfixData<>(
+//							quickfixType,
+//							f,
+//							f.getLabel()
+//					));
+//				}
+//			}
+//		}
+//		return problem;
+//	}
 
 	@Override
 	public Map<IDocument, Collection<ReconcileProblem>> reconcile(IJavaProject project, List<TextDocument> docs, Runnable incrementProgress) {
 		
-		if (!config.isJavaSourceReconcileEnabled()) {
-			return Collections.emptyMap();
-		}
+//		if (!config.isJavaSourceReconcileEnabled()) {
+//			return Collections.emptyMap();
+//		}
+//		
+//		long start = System.currentTimeMillis();
+//
+//		Map<IDocument, Collection<ReconcileProblem>> allProblems = new HashMap<>();
+//		List<Path> testSourceFolders = IClasspathUtil.getProjectTestJavaSources(project.getClasspath()).map(f -> f.toPath()).collect(Collectors.toList());
+//		List<TextDocument> testSources = new ArrayList<>(docs.size());
+//		List<TextDocument> mainSources = new ArrayList<>(docs.size());
+//		for (TextDocument d : docs) {
+//			Path p = Paths.get(URI.create(d.getUri()));
+//			if (testSourceFolders.stream().anyMatch(t -> p.startsWith(t))) {
+//				testSources.add(d);
+//			} else {
+//				mainSources.add(d);
+//			}
+//		}
+//		
+//		List<Path> classpath = IClasspathUtil.getAllBinaryRoots(project.getClasspath()).stream().map(f -> f.toPath()).collect(Collectors.toList());
+//		JavaParser javaParser = ORAstUtils.createJavaParser(() -> JavaParser.fromJavaVersion().classpath(classpath));
+//		
+//		// Pass in source sets created from classpath. (Perhaps it is a good idea to have separate classpath and parsers for test and main, TBD)
+//		// Perhaps it is even better to create empty classpath java source sets as reconcile step seem to only need name of the java source set
+//		// Usually java source set classpath is required to figure out how to organize imports for sources
+//		JavaSourceSet mainJavaSourceSet = JavaSourceSet.build(ProjectParser.MAIN, classpath, null, false);
+//		JavaSourceSet testJavaSourceSet = new JavaSourceSet(Tree.randomId(), ProjectParser.TEST, mainJavaSourceSet.getClasspath());
+//		allProblems.putAll(doReconcile(project, mainSources, javaParser, mainJavaSourceSet, incrementProgress));
+//		allProblems.putAll(doReconcile(project, testSources, javaParser, testJavaSourceSet, incrementProgress));
+//		
+//		long end = System.currentTimeMillis();
+//		log.info("reconciling project (OpenRewrite): " + project.getElementName() + " - " + docs.size() + " done in " + (end - start) + "ms");
+//		
+//		return allProblems;
 		
-		long start = System.currentTimeMillis();
-
-		Map<IDocument, Collection<ReconcileProblem>> allProblems = new HashMap<>();
-		List<Path> testSourceFolders = IClasspathUtil.getProjectTestJavaSources(project.getClasspath()).map(f -> f.toPath()).collect(Collectors.toList());
-		List<TextDocument> testSources = new ArrayList<>(docs.size());
-		List<TextDocument> mainSources = new ArrayList<>(docs.size());
-		for (TextDocument d : docs) {
-			Path p = Paths.get(URI.create(d.getUri()));
-			if (testSourceFolders.stream().anyMatch(t -> p.startsWith(t))) {
-				testSources.add(d);
-			} else {
-				mainSources.add(d);
-			}
-		}
-		
-		List<Path> classpath = IClasspathUtil.getAllBinaryRoots(project.getClasspath()).stream().map(f -> f.toPath()).collect(Collectors.toList());
-		JavaParser javaParser = ORAstUtils.createJavaParser(() -> JavaParser.fromJavaVersion().classpath(classpath));
-		
-		// Pass in source sets created from classpath. (Perhaps it is a good idea to have separate classpath and parsers for test and main, TBD)
-		// Perhaps it is even better to create empty classpath java source sets as reconcile step seem to only need name of the java source set
-		// Usually java source set classpath is required to figure out how to organize imports for sources
-		JavaSourceSet mainJavaSourceSet = JavaSourceSet.build(ProjectParser.MAIN, classpath, null, false);
-		JavaSourceSet testJavaSourceSet = new JavaSourceSet(Tree.randomId(), ProjectParser.TEST, mainJavaSourceSet.getClasspath());
-		allProblems.putAll(doReconcile(project, mainSources, javaParser, mainJavaSourceSet, incrementProgress));
-		allProblems.putAll(doReconcile(project, testSources, javaParser, testJavaSourceSet, incrementProgress));
-		
-		long end = System.currentTimeMillis();
-		log.info("reconciling project (OpenRewrite): " + project.getElementName() + " - " + docs.size() + " done in " + (end - start) + "ms");
-		
-		return allProblems;
+		return Collections.emptyMap();
 	}
 	
 	
@@ -249,99 +251,99 @@ public class RewriteReconciler implements JavaReconciler {
 	private static final int BATCH = 50;
 
 	// Parse in batches and share the parser
-	private Map<IDocument, Collection<ReconcileProblem>> doReconcile(IJavaProject project, List<TextDocument> docs, JavaParser javaParser, JavaSourceSet javaSourceSet, Runnable incrementProgress) {
-		Map<IDocument, Collection<ReconcileProblem>> allProblems = new HashMap<>();
-		if (javaParser != null && config.isJavaSourceReconcileEnabled()) {
-			try {
-				List<RecipeCodeActionDescriptor> descriptors = getProblemRecipeDescriptors(project);
-
-
-				if (!descriptors.isEmpty()) {
-
-					for (int i = 0; i < docs.size(); i += BATCH) {
-						List<TextDocument> batchList = docs.subList(i, Math.min(i + BATCH, docs.size()));
-						
-						List<CompilationUnit> cus = ORAstUtils.parseInputs(javaParser,
-								batchList.stream().map(d -> new Parser.Input(Paths.get(URI.create(d.getUri())), () -> {
-									return new ByteArrayInputStream(d.get().getBytes());
-								})).collect(Collectors.toList()), source -> incrementProgress.run());
-						
-						cus = ListUtils.map(cus, cu -> cu.withMarkers(cu.getMarkers().computeByType(javaSourceSet, (original, updated) -> updated)));
-						
-						/*
-						 * If exception occurs during parsing inputs the list of inputs would become shorter than the list of corresponding documents
-						 */
-						
-						for (int j = 0, k = 0; j < batchList.size() && k < cus.size(); j++) {
-							final IDocument doc = batchList.get(j);
-							List<ReconcileProblem> problems = new ArrayList<>();
-							CompilationUnit cu = cus.get(k);
-							Path sourcePath = Paths.get(URI.create(doc.getUri()));
-							if (cu.getSourcePath().equals(sourcePath)) {
-								k++;
-								collectProblems(project, descriptors, doc, cu, problems::add);
-								if (!problems.isEmpty()) {
-									allProblems.put(doc, problems);
-								}
-							} else {
-								log.warn("(OpenRewrite) Failed to parse source for " + sourcePath);
-							}
-							incrementProgress.run();
-						}
-
-					}
-				}
-			} catch (Exception e) {
-				if (ORAstUtils.isExceptionFromInterrupedThread(e)) {
-					log.debug("", e);
-				} else {
-					log.error("", e);
-				}
-			}
-		}
-		return allProblems;
-	}
-
-	private List<RecipeCodeActionDescriptor> getProblemRecipeDescriptors(IJavaProject project)
-			throws InterruptedException, ExecutionException {
-		return recipeRepo.getProblemRecipeDescriptors().stream().filter(d -> d.getProblemType() != null).filter(d -> {
-			switch (config.getProblemApplicability(d.getProblemType())) {
-			case ON:
-				return SpringProjectUtil.isBootProject(project);
-			case OFF:
-				return false;
-			default: // AUTO
-				return d.isApplicable(project);
-			}
-		}).collect(Collectors.toList());
-	}
-	
-	private void collectProblems(IJavaProject project, List<RecipeCodeActionDescriptor> descriptors, IDocument doc, CompilationUnit compilationUnit, Consumer<ReconcileProblem> problemHandler) {
-		CompilationUnit cu = recipeRepo.mark(project, descriptors, compilationUnit);
-		if (compilationUnit != cu) {
-			new JavaMarkerVisitor<ExecutionContext>() {
-				
-	            @Override
-	            public J visit(Tree tree, ExecutionContext context) {
-					J t = super.visit(tree, context);
-	            	if (t instanceof J) {
-	            		for (Marker m : t.getMarkers().entries()) {
-	            			if (m instanceof FixAssistMarker) {
-	    						for (ReconcileProblem problem : createProblems(doc, (FixAssistMarker) m, t)) {
-	    							problemHandler.accept(problem);
-	    						}
-	            			}
-	            		}
-	            	}
-	            	return t;
-	            }
-	            
-			}.visit(cu, new InMemoryExecutionContext(e -> log.error("", e)));
-		}
-	}
-	
-	public int getTotalWorkUnits(List<TextDocument> docs) {
-		return docs.size() * 2;
-	}
+//	private Map<IDocument, Collection<ReconcileProblem>> doReconcile(IJavaProject project, List<TextDocument> docs, JavaParser javaParser, JavaSourceSet javaSourceSet, Runnable incrementProgress) {
+//		Map<IDocument, Collection<ReconcileProblem>> allProblems = new HashMap<>();
+//		if (javaParser != null && config.isJavaSourceReconcileEnabled()) {
+//			try {
+//				List<RecipeCodeActionDescriptor> descriptors = getProblemRecipeDescriptors(project);
+//
+//
+//				if (!descriptors.isEmpty()) {
+//
+//					for (int i = 0; i < docs.size(); i += BATCH) {
+//						List<TextDocument> batchList = docs.subList(i, Math.min(i + BATCH, docs.size()));
+//						
+//						List<CompilationUnit> cus = ORAstUtils.parseInputs(javaParser,
+//								batchList.stream().map(d -> new Parser.Input(Paths.get(URI.create(d.getUri())), () -> {
+//									return new ByteArrayInputStream(d.get().getBytes());
+//								})).collect(Collectors.toList()), source -> incrementProgress.run());
+//						
+//						cus = ListUtils.map(cus, cu -> cu.withMarkers(cu.getMarkers().computeByType(javaSourceSet, (original, updated) -> updated)));
+//						
+//						/*
+//						 * If exception occurs during parsing inputs the list of inputs would become shorter than the list of corresponding documents
+//						 */
+//						
+//						for (int j = 0, k = 0; j < batchList.size() && k < cus.size(); j++) {
+//							final IDocument doc = batchList.get(j);
+//							List<ReconcileProblem> problems = new ArrayList<>();
+//							CompilationUnit cu = cus.get(k);
+//							Path sourcePath = Paths.get(URI.create(doc.getUri()));
+//							if (cu.getSourcePath().equals(sourcePath)) {
+//								k++;
+//								collectProblems(project, descriptors, doc, cu, problems::add);
+//								if (!problems.isEmpty()) {
+//									allProblems.put(doc, problems);
+//								}
+//							} else {
+//								log.warn("(OpenRewrite) Failed to parse source for " + sourcePath);
+//							}
+//							incrementProgress.run();
+//						}
+//
+//					}
+//				}
+//			} catch (Exception e) {
+//				if (ORAstUtils.isExceptionFromInterrupedThread(e)) {
+//					log.debug("", e);
+//				} else {
+//					log.error("", e);
+//				}
+//			}
+//		}
+//		return allProblems;
+//	}
+//
+//	private List<RecipeCodeActionDescriptor> getProblemRecipeDescriptors(IJavaProject project)
+//			throws InterruptedException, ExecutionException {
+//		return recipeRepo.getProblemRecipeDescriptors().stream().filter(d -> d.getProblemType() != null).filter(d -> {
+//			switch (config.getProblemApplicability(d.getProblemType())) {
+//			case ON:
+//				return SpringProjectUtil.isBootProject(project);
+//			case OFF:
+//				return false;
+//			default: // AUTO
+//				return d.isApplicable(project);
+//			}
+//		}).collect(Collectors.toList());
+//	}
+//	
+//	private void collectProblems(IJavaProject project, List<RecipeCodeActionDescriptor> descriptors, IDocument doc, CompilationUnit compilationUnit, Consumer<ReconcileProblem> problemHandler) {
+//		CompilationUnit cu = recipeRepo.mark(project, descriptors, compilationUnit);
+//		if (compilationUnit != cu) {
+//			new JavaMarkerVisitor<ExecutionContext>() {
+//				
+//	            @Override
+//	            public J visit(Tree tree, ExecutionContext context) {
+//					J t = super.visit(tree, context);
+//	            	if (t instanceof J) {
+//	            		for (Marker m : t.getMarkers().entries()) {
+//	            			if (m instanceof FixAssistMarker) {
+//	    						for (ReconcileProblem problem : createProblems(doc, (FixAssistMarker) m, t)) {
+//	    							problemHandler.accept(problem);
+//	    						}
+//	            			}
+//	            		}
+//	            	}
+//	            	return t;
+//	            }
+//	            
+//			}.visit(cu, new InMemoryExecutionContext(e -> log.error("", e)));
+//		}
+//	}
+//	
+//	public int getTotalWorkUnits(List<TextDocument> docs) {
+//		return docs.size() * 2;
+//	}
 	
 }

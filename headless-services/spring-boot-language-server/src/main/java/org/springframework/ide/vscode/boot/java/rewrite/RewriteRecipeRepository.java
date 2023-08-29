@@ -17,7 +17,6 @@ import java.net.URLClassLoader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -36,27 +35,21 @@ import java.util.stream.Collectors;
 import org.eclipse.lsp4j.ApplyWorkspaceEditParams;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.WorkspaceEdit;
-import org.openrewrite.ExecutionContext;
 import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.Parser;
 import org.openrewrite.Recipe;
 import org.openrewrite.RecipeRun;
 import org.openrewrite.Result;
 import org.openrewrite.SourceFile;
-import org.openrewrite.TreeVisitor;
 import org.openrewrite.Validated;
 import org.openrewrite.config.DeclarativeRecipe;
 import org.openrewrite.config.RecipeDescriptor;
 import org.openrewrite.config.YamlResourceLoader;
 import org.openrewrite.internal.InMemoryLargeSourceSet;
 import org.openrewrite.java.JavaParser;
-import org.openrewrite.java.tree.J.CompilationUnit;
 import org.openrewrite.maven.MavenParser;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.BeansException;
-import org.springframework.context.ApplicationContext;
-import org.springframework.context.ApplicationContextAware;
 import org.springframework.ide.vscode.boot.app.BootJavaConfig;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.IndefiniteProgressTask;
@@ -67,8 +60,6 @@ import org.springframework.ide.vscode.commons.protocol.java.ProjectBuild;
 import org.springframework.ide.vscode.commons.rewrite.LoadUtils;
 import org.springframework.ide.vscode.commons.rewrite.LoadUtils.DurationTypeConverter;
 import org.springframework.ide.vscode.commons.rewrite.ORDocUtils;
-import org.springframework.ide.vscode.commons.rewrite.config.DefaultMarkerVisitorContext;
-import org.springframework.ide.vscode.commons.rewrite.config.RecipeCodeActionDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.config.StsEnvironment;
 import org.springframework.ide.vscode.commons.rewrite.gradle.GradleIJavaProjectParser;
 import org.springframework.ide.vscode.commons.rewrite.java.ProjectParser;
@@ -79,7 +70,7 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 
-public class RewriteRecipeRepository implements ApplicationContextAware {
+public class RewriteRecipeRepository {
 	
 	enum RecipeFilter {
 		ALL,
@@ -111,17 +102,11 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 	
 	final private SimpleLanguageServer server;
 	
-	final private Map<String, Recipe> recipes;
-	
 	final private JavaProjectFinder projectFinder;
-	
-	final private List<RecipeCodeActionDescriptor> codeActionDescriptors;
 	
 	final private ListenerList<Void> loadListeners;
 	
-	private ApplicationContext applicationContext;
-	
-	CompletableFuture<Void> loaded;
+	private CompletableFuture<Map<String, Recipe>> recipesFuture = null;
 	
 	private Set<String> scanFiles;
 	private Set<String> scanDirs;
@@ -134,17 +119,13 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 	public RewriteRecipeRepository(SimpleLanguageServer server, JavaProjectFinder projectFinder, BootJavaConfig config) {
 		this.server = server;
 		this.projectFinder = projectFinder;
-		this.recipes = new HashMap<>();
-		this.codeActionDescriptors = new ArrayList<>();
 		this.loadListeners = new ListenerList<>();
 		this.scanDirs = UNINITIALIZED_SET;
 		this.scanFiles = UNINITIALIZED_SET;
 		this.recipeFilters = UNINITIALIZED_SET;
-		CompletableFuture<Void> firstConfigLoaded = new CompletableFuture<>();
 		
 		config.addListener(l -> {
 			Set<String> recipeFilterFromConfig = config.getRecipesFilters();
-			boolean firstTimeConfig = recipeFilters == UNINITIALIZED_SET && scanDirs == UNINITIALIZED_SET && scanFiles == UNINITIALIZED_SET;
 			if (recipeFilters == UNINITIALIZED_SET || !recipeFilters.equals(recipeFilterFromConfig)) {
 				recipeFilters = recipeFilterFromConfig;
 			}
@@ -154,38 +135,20 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 				// Therefore it is best to store the scanDirs here right after it is received, not during scan process or anything else done async
 				scanDirs = config.getRecipeDirectories();
 				scanFiles = config.getRecipeFiles();
-				if (!firstTimeConfig) {
-					load();
-				}
-			}
-			// First time config loaded. Received when server fully initialized. Start load after the firstConfigLoaded then and assign it to loaded field such that it is never null
-			if (firstTimeConfig) {
-				firstConfigLoaded.complete(null);
+				clearRecipes();
 			}
 		});
-		
-		// Initial configuration is followed by load() as a special case to have 'loaded' future value to never be null
-		this.loaded = firstConfigLoaded.thenCompose(v -> load());
 		
 		registerCommands();
 	}
-	
-	
-	public CompletableFuture<Void> load() {
-		return this.loaded = CompletableFuture.runAsync(() -> {
-			clearRecipes();
-			loadRecipes();
-			loadListeners.fire(null);
-		});
-	}
-	
+		
 	private synchronized void clearRecipes() {
-		recipes.clear();
-		codeActionDescriptors.clear();
+		recipesFuture = null;
 	}
 	
-	private synchronized void loadRecipes() {
+	private synchronized Map<String, Recipe> loadRecipes() {
 		IndefiniteProgressTask progressTask = server.getProgressService().createIndefiniteProgressTask(UUID.randomUUID().toString(), "Loading Rewrite Recipes", null);
+		Map<String, Recipe> recipes = new HashMap<>();
 		try {
 			log.info("Loading Rewrite Recipes...");
 			Recipe xmlbindRecipe = null;
@@ -211,13 +174,14 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 					}
 				}
 			}
-			codeActionDescriptors.addAll(env.listCodeActionDescriptors());
+//			codeActionDescriptors.addAll(env.listCodeActionDescriptors());
 			log.info("Done loading Rewrite Recipes");
 		} catch (Throwable t) {
 			log.error("", t);
 		} finally {
 			progressTask.done();
 		}
+		return recipes;
 	}
 	
 	private boolean isAcceptableGlobalCommandRecipe(Recipe r) {
@@ -285,52 +249,15 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 		return builder.build();
 	}
 	
-	public Optional<Recipe> getRecipe(String name) {
-		return Optional.ofNullable(recipes.get(name));
+	public CompletableFuture<Map<String, Recipe>> recipes() {
+		if (recipesFuture == null) {
+			recipesFuture = CompletableFuture.supplyAsync(this::loadRecipes);
+		}
+		return recipesFuture;
 	}
 	
-	public RecipeCodeActionDescriptor getCodeActionRecipeDescriptor(String id) {
-		for (RecipeCodeActionDescriptor d : codeActionDescriptors) {
-			if (id.equals(d.getId())) {
-				return d;
-			}
-		}
-		return null;
-	}
-	
-	public List<RecipeCodeActionDescriptor> getProblemRecipeDescriptors() {
-		List<RecipeCodeActionDescriptor> l = new ArrayList<>(codeActionDescriptors.size());
-		for (RecipeCodeActionDescriptor d : codeActionDescriptors) {
-			if (d.getProblemType() != null && server.getDiagnosticSeverityProvider().getDiagnosticSeverity(d.getProblemType()) != null) {
-				l.add(d);
-			}
-		}
-		return l;
-	}
-	
-	public List<RecipeCodeActionDescriptor> getCodeActionRecipeDescriptors() {
-		List<RecipeCodeActionDescriptor> l = new ArrayList<>(codeActionDescriptors.size());
-		for (RecipeCodeActionDescriptor d : codeActionDescriptors) {
-			if (d.getProblemType() == null || server.getDiagnosticSeverityProvider().getDiagnosticSeverity(d.getProblemType()) == null) {
-				l.add(d);
-			}
-		}
-		return l;
-	}
-	
-	public CompilationUnit mark(IJavaProject project, List<? extends RecipeCodeActionDescriptor> descriptors, CompilationUnit compilationUnit) {
-		CompilationUnit cu = compilationUnit;
-		for (RecipeCodeActionDescriptor d : descriptors) {
-			TreeVisitor<?, ExecutionContext> markVisitor = d.getMarkerVisitor(new DefaultMarkerVisitorContext(applicationContext, project));
-			if (markVisitor != null) {
-				try {
-					cu = (CompilationUnit) markVisitor.visit(cu, new InMemoryExecutionContext(e -> log.error("Marker visitor failed!", e)));
-				} catch (Exception e) {
-					// ignore - would happen in sources with compiler errors
-				}
-			}
-		}
-		return cu;
+	public CompletableFuture<Optional<Recipe>> getRecipe(String name) {
+		return recipes().thenApply(recipes -> Optional.ofNullable(recipes.get(name)));
 	}
 	
 	private static JsonElement recipeToJson(Recipe r) {
@@ -342,26 +269,20 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 		server.onCommand(CMD_REWRITE_LIST, params -> {
 			JsonElement uri = (JsonElement) params.getArguments().get(0);
 			RecipeFilter f = params.getArguments().size() > 1 ? RecipeFilter.valueOf(((JsonElement) params.getArguments().get(1)).getAsString()) : RecipeFilter.ALL;
-			return loaded.thenApply(v -> {
-				if (uri == null) {
-					return Collections.emptyList();
-				} else {
-					return listProjectRefactoringRecipes(uri.getAsString()).stream()
+					return listProjectRefactoringRecipes(uri.getAsString()).thenApply(recipes -> recipes.stream()
 							.filter(RECIPE_LIST_FILTERS.get(f))
 							.map(RewriteRecipeRepository::recipeToJson)
-							.collect(Collectors.toList());
-				}
-			});
+							.collect(Collectors.toList()));
 		});
 		
 		server.onCommand(CMD_REWRITE_EXECUTE, params -> {
-			return loaded.thenCompose(v -> {
+			return recipes().thenCompose(recipes -> {
 				String uri = ((JsonElement) params.getArguments().get(0)).getAsString();
 				JsonElement recipesJson = ((JsonElement) params.getArguments().get(1));
 				
 				RecipeDescriptor d = serializationGson.fromJson(recipesJson, RecipeDescriptor.class);
 				
-				Recipe aggregateRecipe = LoadUtils.createRecipe(d, id -> getRecipe(id).map(r -> r.getClass()).orElse(null));
+				Recipe aggregateRecipe = LoadUtils.createRecipe(d, id -> Optional.ofNullable(recipes.get(id)).map(r -> r.getClass()).orElse(null));
 				
 				if (aggregateRecipe instanceof DeclarativeRecipe && aggregateRecipe.getRecipeList().isEmpty()) {
 					throw new RuntimeException("No recipes found to perform!");
@@ -383,14 +304,19 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 			});
 		});
 		
-		server.onCommand(CMD_REWRITE_RELOAD, params -> load().thenApply((v) -> "executed"));
+		server.onCommand(CMD_REWRITE_RELOAD, params -> {
+			clearRecipes();
+			return CompletableFuture.completedFuture("executed");
+		});
 		
 		server.onCommand(CMD_REWRITE_RECIPE_EXECUTE, params -> {
 			String recipeId = ((JsonElement) params.getArguments().get(0)).getAsString();
-			Recipe r = getRecipe(recipeId).orElseThrow(() -> new IllegalArgumentException("No such recipe exists with name " + recipeId));
-			final String progressToken = params.getWorkDoneToken() == null || params.getWorkDoneToken().getLeft() == null ? r.getName() : params.getWorkDoneToken().getLeft();
-			String uri = ((JsonElement) params.getArguments().get(1)).getAsString();
-			return apply(r, uri, progressToken);	
+			return getRecipe(recipeId).thenCompose(optRecipe -> {
+				Recipe r = optRecipe.orElseThrow(() -> new IllegalArgumentException("No such recipe exists with name " + recipeId));
+				final String progressToken = params.getWorkDoneToken() == null || params.getWorkDoneToken().getLeft() == null ? r.getName() : params.getWorkDoneToken().getLeft();
+				String uri = ((JsonElement) params.getArguments().get(1)).getAsString();
+				return apply(r, uri, progressToken);	
+			});
 		});	
 	}
 	
@@ -447,7 +373,7 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 		return ORDocUtils.createWorkspaceEdit(absoluteProjectDir, server.getTextDocumentService(), results);
 	}
 	
-	private List<Recipe> listProjectRefactoringRecipes(String uri) {
+	private CompletableFuture<List<Recipe>> listProjectRefactoringRecipes(String uri) {
 		if (uri != null) {
 			/*
 			 * When LS started on listing rewrite recipes project lookup may not find any projects as classpath might still be resolving.
@@ -456,10 +382,10 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 			 */
 //			Optional<IJavaProject> projectOpt = projectFinder.find(new TextDocumentIdentifier(uri));
 //			if (projectOpt.isPresent()) {
-				return recipes.values().stream().filter(this::isAcceptableGlobalCommandRecipe).collect(Collectors.toList());
+				return recipes().thenApply(recipes -> recipes.values().stream().filter(this::isAcceptableGlobalCommandRecipe).collect(Collectors.toList()));
 //			}
 		}
-		return Collections.emptyList();
+		return CompletableFuture.completedFuture(Collections.emptyList());
 	}
 	
     private static ProjectParser createRewriteProjectParser(IJavaProject jp, Function<Path, Parser.Input> inputProvider) {
@@ -480,11 +406,6 @@ public class RewriteRecipeRepository implements ApplicationContextAware {
 		loadListeners.add(l);
 	}
 
-	@Override
-	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
-		this.applicationContext = applicationContext;
-	}
-	
 	private static String lastTokenAfterDot(String s) {
 		int idx = s.lastIndexOf('.');
 		if (idx >= 0 && idx < s.length() - 1) {

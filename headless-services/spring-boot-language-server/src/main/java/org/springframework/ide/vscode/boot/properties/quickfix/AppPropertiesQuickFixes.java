@@ -25,6 +25,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 
+import reactor.core.publisher.Mono;
+
 /**
  * Boot app Properties file quick fix handlers
  *
@@ -47,7 +49,7 @@ public class AppPropertiesQuickFixes {
 
 	public AppPropertiesQuickFixes(QuickfixRegistry r, CommonQuickfixes commonFixes) {
 		MISSING_PROPERTY = commonFixes.MISSING_PROPERTY;
-		DEPRECATED_PROPERTY = r.register("DEPRECATED_PROPERTY", (Object _params) -> {
+		DEPRECATED_PROPERTY = r.register("DEPRECATED_PROPERTY", (Object _params) -> Mono.fromSupplier(() -> {
 			DeprecatedPropertyData params = gson.fromJson((JsonElement)_params, DeprecatedPropertyData.class);
 			try {
 				if (params.getRange() != null && params.getReplacement() != null) {
@@ -64,7 +66,7 @@ public class AppPropertiesQuickFixes {
 				log.error("", e);
 			}
 			return NULL_FIX;
-		});
+		}));
 	}
 
 }

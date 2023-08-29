@@ -49,11 +49,7 @@ public class SpringBootUpgrade {
 			"3.1", "org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_1"
 	);
 	
-	private RewriteRecipeRepository recipeRepo;
-
 	public SpringBootUpgrade(SimpleLanguageServer server, RewriteRecipeRepository recipeRepo, JavaProjectFinder projectFinder) {
-		this.recipeRepo = recipeRepo;
-		
 		server.onCommand(CMD_UPGRADE_SPRING_BOOT, params -> {
 			String uri = ((JsonElement) params.getArguments().get(0)).getAsString();
 			Assert.isLegal(uri != null, "Project URI parameter must not be 'null'");
@@ -73,8 +69,8 @@ public class SpringBootUpgrade {
 							+ version.toMajorMinorVersionStr() + "' is newer or same as the target version '"
 							+ targetVersion.toMajorMinorVersionStr() + "'");
 			
-			return recipeRepo.loaded.thenComposeAsync(load -> recipeRepo.apply(
-					createUpgradeRecipe(version, targetVersion),
+			return recipeRepo.recipes().thenComposeAsync(recipes -> recipeRepo.apply(
+					createUpgradeRecipe(recipes, version, targetVersion),
 					uri,
 					UUID.randomUUID().toString()
 			));
@@ -96,7 +92,7 @@ public class SpringBootUpgrade {
 		return ids;
 	}
 	
-	private Recipe createUpgradeRecipe(Version version, Version targetVersion) {
+	private Recipe createUpgradeRecipe(Map<String, Recipe> recipes, Version version, Version targetVersion) {
 		Recipe recipe = new DeclarativeRecipe("upgrade-spring-boot", "Upgrade Spring Boot from " + version + " to " + targetVersion,
 				"", Collections.emptySet(), null, null, false, Collections.emptyList());
 		
@@ -108,7 +104,7 @@ public class SpringBootUpgrade {
 			List<String> recipedIds = createRecipeIdsChain(version.getMajor(), version.getMinor() + 1, targetVersion.getMajor(), targetVersion.getMinor(), versionsToRecipeId);
 			if (!recipedIds.isEmpty()) {
 				String recipeId = recipedIds.get(recipedIds.size() - 1);
-				getRecipeFromId(recipeId).ifPresent(r -> recipe.getRecipeList().add(r));
+				Optional.ofNullable(recipes.get(recipeId)).ifPresent(r -> recipe.getRecipeList().add(r));
 			}
 		}
 
@@ -119,10 +115,6 @@ public class SpringBootUpgrade {
 		} else {
 			return recipe;
 		}
-	}
-	
-	private Optional<Recipe> getRecipeFromId(String recipeId) {
-		return recipeRepo.getRecipe(recipeId);
 	}
 	
 	private static String createVersionString(int major, int minor) {

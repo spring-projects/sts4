@@ -38,6 +38,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 
+import reactor.core.publisher.Mono;
+
 /**
  * Boot YAML file properties quick fix code action handlers
  *
@@ -60,7 +62,7 @@ public class AppYamlQuickfixes {
 
 	public AppYamlQuickfixes(QuickfixRegistry r, SimpleTextDocumentService textDocumentService, YamlStructureProvider structureProvider, CommonQuickfixes commonQuickfixes) {
 		MISSING_PROPERTY = commonQuickfixes.MISSING_PROPERTY;
-		DEPRECATED_PROPERTY = r.register("DEPRECATED_YAML_PROPERTY", (Object _params) -> {
+		DEPRECATED_PROPERTY = r.register("DEPRECATED_YAML_PROPERTY", (Object _params) -> Mono.fromSupplier(() -> {
 			DeprecatedPropertyData params = gson.fromJson((JsonElement)_params, DeprecatedPropertyData.class);
 			try {
 				TextDocument _doc = textDocumentService.getLatestSnapshot(params.getUri());
@@ -112,7 +114,7 @@ public class AppYamlQuickfixes {
 				log.error("", e);
 			}
 			return NULL_FIX;
-		});
+		}));
 	}
 
 }

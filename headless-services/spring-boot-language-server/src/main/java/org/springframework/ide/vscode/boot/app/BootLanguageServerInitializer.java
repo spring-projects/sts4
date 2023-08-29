@@ -28,9 +28,7 @@ import org.springframework.ide.vscode.boot.java.BootJavaLanguageServerComponents
 import org.springframework.ide.vscode.boot.java.links.JavaElementLocationProvider;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveDataProvider;
-import org.springframework.ide.vscode.boot.java.rewrite.RewriteRecipeRepository;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
-import org.springframework.ide.vscode.boot.java.utils.ServerUtils;
 import org.springframework.ide.vscode.boot.metadata.ProjectBasedPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.properties.BootPropertiesLanguageServerComponents;
 import org.springframework.ide.vscode.boot.xml.SpringXMLLanguageServerComponents;
@@ -73,7 +71,6 @@ public class BootLanguageServerInitializer implements InitializingBean {
 	@Autowired SpringSymbolIndex springIndexer;
 	@Autowired(required = false) List<ICompletionEngine> completionEngines;
 	@Autowired private JavaProjectFinder projectFinder;
-	@Autowired(required = false) private RewriteRecipeRepository recipesRepo;
 
 	@Qualifier("adHocProperties") @Autowired ProjectBasedPropertyIndexProvider adHocProperties;
 
@@ -148,24 +145,9 @@ public class BootLanguageServerInitializer implements InitializingBean {
 		components.getCodeActionProvider().ifPresent(documents::onCodeAction);
 		
 		components.getDocumentSymbolProvider().ifPresent(documents::onDocumentSymbol);
-		
-		// TODO: seems to hang tests if done on server initialize. Test Harness Server is likely to be initialized already by this point
-//		server.doOnInitialized(() -> {
-			if (recipesRepo != null) {
-				recipesRepo.onRecipesLoaded(v -> {
-					// Recipes will start loading only after config has been received. Therefore safe to start listening to config changes now
-					// and launch initial project reconcile since both config and recipes are present
-					startListeningToPerformReconcile();			
-					reconcile();
-				});
-			} else {
-				// Reconcile would occur as listeners will be receiving events
-				startListeningToPerformReconcile();
-				//Uncomment reconcile() call if done within server.doOnInitialized()
-//				reconcile();
-			}
-//		});
-			
+
+		startListeningToPerformReconcile();
+
 		server.onCommand("sts/show/document", p -> {
 			ShowDocumentParams showDocParams = new Gson().fromJson((JsonElement)p.getArguments().get(0), ShowDocumentParams.class);
 			return server.getClient().showDocument(showDocParams).thenApply(r -> {
@@ -193,7 +175,7 @@ public class BootLanguageServerInitializer implements InitializingBean {
 				server.validateWith(doc.getId(), reconcileEngine);
 			});
 
-			ServerUtils.listenToClassFileChanges(server.getWorkspaceService().getFileObserver(), projectFinder, project -> validateAll(components, server, project));
+//			ServerUtils.listenToClassFileChanges(server.getWorkspaceService().getFileObserver(), projectFinder, project -> validateAll(components, server, project));
 		});
 		config.addListener(evt -> reconcile());
 		params.projectObserver.addListener(reconcileDocumentsForProjectChange(server, components, params.projectFinder));

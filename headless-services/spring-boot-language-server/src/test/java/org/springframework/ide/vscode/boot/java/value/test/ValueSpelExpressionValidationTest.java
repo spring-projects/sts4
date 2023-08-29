@@ -161,7 +161,7 @@ public class ValueSpelExpressionValidationTest {
 				new JdtReconciler(compilationUnitCache, config, new JdtAstReconciler[] {
 						new AnnotationNodeReconciler(config)
 				})
-		}, server);
+		});
 	}
 	
 	@AfterEach

@@ -32,7 +32,6 @@ import org.springframework.boot.SpringApplication;
 import org.springframework.boot.SpringBootConfiguration;
 import org.springframework.boot.autoconfigure.ImportAutoConfiguration;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.boot.autoconfigure.context.ConfigurationPropertiesAutoConfiguration;
 import org.springframework.boot.autoconfigure.context.PropertyPlaceholderAutoConfiguration;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
@@ -46,7 +45,6 @@ import org.springframework.ide.vscode.boot.index.cache.IndexCacheOnDisc;
 import org.springframework.ide.vscode.boot.index.cache.IndexCacheVoid;
 import org.springframework.ide.vscode.boot.java.JavaDefinitionHandler;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaCodeActionProvider;
-import org.springframework.ide.vscode.boot.java.handlers.BootJavaProjectReconcilerScheduler;
 import org.springframework.ide.vscode.boot.java.handlers.BootJavaReconcileEngine;
 import org.springframework.ide.vscode.boot.java.handlers.JavaCodeActionHandler;
 import org.springframework.ide.vscode.boot.java.links.DefaultJavaElementLocationProvider;
@@ -64,7 +62,6 @@ import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveDa
 import org.springframework.ide.vscode.boot.java.reconcilers.JavaReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.JdtAstReconciler;
 import org.springframework.ide.vscode.boot.java.reconcilers.JdtReconciler;
-import org.springframework.ide.vscode.boot.java.rewrite.RewriteRecipeRepository;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.boot.java.value.PropertyValueAnnotationDefProvider;
 import org.springframework.ide.vscode.boot.jdt.ls.JavaProjectsService;
@@ -352,23 +349,13 @@ public class BootLanguageServerBootApp {
 	}
 	
 	@Bean
-	BootJavaReconcileEngine getBootJavaReconcileEngine(JavaProjectFinder projectFinder, JavaReconciler[] javaReconcilers, SimpleLanguageServer server) {
-		return new BootJavaReconcileEngine(projectFinder, javaReconcilers, server);
+	BootJavaReconcileEngine getBootJavaReconcileEngine(JavaProjectFinder projectFinder, JavaReconciler[] javaReconcilers) {
+		return new BootJavaReconcileEngine(projectFinder, javaReconcilers);
 	}
 	
 	@Bean
 	BootJavaCodeActionProvider getBootJavaCodeActionProvider(JavaProjectFinder projectFinder, Collection<JavaCodeActionHandler> codeActionHandlers) {
 		return new BootJavaCodeActionProvider(projectFinder, codeActionHandlers);
-	}
-	
-	@ConditionalOnMissingClass("org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness")
-	@ConditionalOnProperty(prefix = "languageserver", name = "reconcile-only-opened-docs", havingValue = "false", matchIfMissing = true)
-	@Bean
-	BootJavaProjectReconcilerScheduler bootJavaProjectReconcilerScheduler(SimpleLanguageServer server,
-			BootJavaReconcileEngine bootJavaReconciler, ProjectObserver projectObserver, BootJavaConfig config,
-			Optional<RewriteRecipeRepository> recipeRepoOpt, JavaProjectFinder projectFinder) {
-		return new BootJavaProjectReconcilerScheduler(bootJavaReconciler, projectObserver, config,
-				recipeRepoOpt.orElse(null), projectFinder, server);
 	}
 	
 	@Bean

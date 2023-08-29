@@ -40,6 +40,7 @@ public class SpringIndexerJavaContext {
 	private final IProblemCollector getProblemCollector;
 	private final SCAN_PASS pass;
 	private final List<String> nextPassFiles;
+	private final boolean fullAst;
 	
 	private final Set<String> dependencies = new HashSet<>();
 	private final Set<String> scannedTypes = new HashSet<>();
@@ -57,7 +58,8 @@ public class SpringIndexerJavaContext {
 			List<CachedBean> beans,
 			IProblemCollector problemCollector,
 			SCAN_PASS pass,
-			List<String> nextPassFiles
+			List<String> nextPassFiles,
+			boolean fullAst
 	) {
 		super();
 		this.project = project;
@@ -72,6 +74,7 @@ public class SpringIndexerJavaContext {
 		this.beans = beans;
 		this.pass = pass;
 		this.nextPassFiles = nextPassFiles;
+		this.fullAst = fullAst;
 	}
 
 	public IJavaProject getProject() {
@@ -148,4 +151,7 @@ public class SpringIndexerJavaContext {
 		return this.getProblemCollector;
 	}
 	
+	public boolean isFullAst() {
+		return fullAst;
+	}
 }

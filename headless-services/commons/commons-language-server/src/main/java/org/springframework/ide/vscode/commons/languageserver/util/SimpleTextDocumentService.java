@@ -15,7 +15,6 @@ import java.net.URI;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -550,18 +549,17 @@ public class SimpleTextDocumentService implements TextDocumentService, DocumentE
 
 	@Override
 	public CompletableFuture<CodeAction> resolveCodeAction(CodeAction ca) {
-		return CompletableFutures.computeAsync(messageWorkerThreadPool, cancelToken -> {
-			if (appContext!=null) {
-				Map<String, CodeActionResolver> resolvers = appContext.getBeansOfType(CodeActionResolver.class);
-				for (CodeActionResolver r : resolvers.values()) {
-					r.resolve(ca);
-					if (ca.getEdit() != null) {
-						return ca;
-					}
-				}
-			}
-			return ca;
-		});
+		return CompletableFutures.computeAsync(messageWorkerThreadPool, cancelToken -> appContext == null ? Collections.<String, CodeActionResolver>emptyMap() : appContext.getBeansOfType(CodeActionResolver.class))
+				.thenCompose(resolvers -> {
+					List<CompletableFuture<Void>> resolutions = resolvers.values().stream().map(r -> r.resolve(ca).thenAccept(we -> {
+						if (ca.getEdit() != null) {
+							throw new IllegalStateException("More than one CodeActionResolver resolves the code action");
+						} else {
+							ca.setEdit(we);
+						}
+					})).collect(Collectors.toList());
+					return CompletableFuture.allOf(resolutions.toArray(new CompletableFuture[resolutions.size()])).thenApply(v -> ca);
+				});
 	}
 
 	@Override

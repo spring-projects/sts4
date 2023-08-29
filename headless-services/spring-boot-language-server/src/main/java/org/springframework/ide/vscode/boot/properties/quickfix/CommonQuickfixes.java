@@ -47,6 +47,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 
+import reactor.core.publisher.Mono;
+
 /**
  * Common quick fixes for YAML and properties
  *
@@ -96,7 +98,7 @@ public class CommonQuickfixes {
 		}
 		if (clientCapabilities.getWorkspace().getWorkspaceEdit() != null && clientCapabilities.getWorkspace().getWorkspaceEdit().getResourceOperations() != null && clientCapabilities.getWorkspace().getWorkspaceEdit().getResourceOperations().contains(ResourceOperationKind.Create)
 				&& Boolean.TRUE.equals(clientCapabilities.getWorkspace().getWorkspaceEdit().getDocumentChanges())) {
-			MISSING_PROPERTY = r.register(MISSING_PROPERTY_APP_QF_ID, (Object _params) -> {
+			MISSING_PROPERTY = r.register(MISSING_PROPERTY_APP_QF_ID, (Object _params) -> Mono.fromSupplier(() -> {
 				MissingPropertyData params = gson.fromJson((JsonElement)_params, MissingPropertyData.class);
 				try {
 					Optional<IJavaProject> p = projectFinder.find(params.getDoc());
@@ -138,7 +140,7 @@ public class CommonQuickfixes {
 					log.error("", e);
 				}
 				return NULL_FIX;
-			});
+			}));
 		} else {
 			MISSING_PROPERTY = null;
 		}

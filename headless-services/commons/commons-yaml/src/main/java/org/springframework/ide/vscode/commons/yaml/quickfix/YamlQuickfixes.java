@@ -39,6 +39,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 
+import reactor.core.publisher.Mono;
+
 public class YamlQuickfixes {
 
 	private static final Logger LOG = LoggerFactory.getLogger(YamlQuickfixes.class);
@@ -53,7 +55,7 @@ public class YamlQuickfixes {
 	private final Gson gson = new Gson();
 
 	public YamlQuickfixes(QuickfixRegistry r, SimpleTextDocumentService textDocumentService, YamlStructureProvider structureProvider) {
-		MISSING_PROP_FIX = r.register("MISSING_PROP_FIX", (Object _params) -> {
+		MISSING_PROP_FIX = r.register("MISSING_PROP_FIX", (Object _params) -> Mono.fromSupplier(() -> {
 			MissingPropertiesData params = gson.fromJson((JsonElement)_params, MissingPropertiesData.class);
 			try {
 				TextDocument _doc = textDocumentService.getLatestSnapshot(params.getUri());
@@ -91,9 +93,9 @@ public class YamlQuickfixes {
 			}
 			//Something went wrong. Return empty edit object.
 			return NULL_FIX;
-		});
+		}));
 
-		SIMPLE_TEXT_EDIT = r.register("SIMPLE_TEXT_EDIT", (_params) -> {
+		SIMPLE_TEXT_EDIT = r.register("SIMPLE_TEXT_EDIT", (_params) -> Mono.fromSupplier(() -> {
 			try {
 				ReplaceStringData params = gson.fromJson((JsonElement)_params, ReplaceStringData.class);
 				TextDocument _doc = textDocumentService.getLatestSnapshot(params.getUri());
@@ -111,7 +113,7 @@ public class YamlQuickfixes {
 			}
 			//Something went wrong. Return empty edit object.
 			return NULL_FIX;
-		});
+		}));
 	}
 
 	public static QuickfixEdit createReplacementQuickfic(TextDocument doc, YamlPathEdits edits) throws BadLocationException {

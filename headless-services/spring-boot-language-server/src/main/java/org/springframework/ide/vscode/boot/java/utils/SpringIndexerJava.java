@@ -254,7 +254,8 @@ public class SpringIndexerJava implements SpringIndexer {
 	}
 
 	private void scanFile(IJavaProject project, DocumentDescriptor updatedDoc, String content) throws Exception {
-		ASTParser parser = createParser(project, false);
+		final boolean ignoreMethodBodies = false;
+		ASTParser parser = createParser(project, ignoreMethodBodies);
 		
 		String docURI = updatedDoc.getDocURI();
 		long lastModified = updatedDoc.getLastModified();
@@ -289,7 +290,7 @@ public class SpringIndexerJava implements SpringIndexer {
 			IProblemCollector problemCollector = problemCollectorCreator.apply(docRef, diagnosticsAggregator);
 
 			SpringIndexerJavaContext context = new SpringIndexerJavaContext(project, cu, docURI, file,
-					lastModified, docRef, content, generatedSymbols, generatedBeans, problemCollector, SCAN_PASS.ONE, new ArrayList<>());
+					lastModified, docRef, content, generatedSymbols, generatedBeans, problemCollector, SCAN_PASS.ONE, new ArrayList<>(), !ignoreMethodBodies);
 
 			scanAST(context);
 
@@ -316,7 +317,8 @@ public class SpringIndexerJava implements SpringIndexer {
 	}
 	
 	public List<EnhancedSymbolInformation> computeSymbols(IJavaProject project, String docURI, String content) throws Exception {
-		ASTParser parser = createParser(project, false);
+		final boolean ignoreMethodBodies = false;
+		ASTParser parser = createParser(project, ignoreMethodBodies);
 		
 		if (content != null) {
 			String unitName = docURI.substring(docURI.lastIndexOf("/"));
@@ -347,7 +349,7 @@ public class SpringIndexerJava implements SpringIndexer {
 				AtomicReference<TextDocument> docRef = new AtomicReference<>();
 				String file = UriUtil.toFileString(docURI);
 				SpringIndexerJavaContext context = new SpringIndexerJavaContext(project, cu, docURI, file,
-						0, docRef, content, generatedSymbols, generatedBeans, voidProblemCollector, SCAN_PASS.ONE, new ArrayList<>());
+						0, docRef, content, generatedSymbols, generatedBeans, voidProblemCollector, SCAN_PASS.ONE, new ArrayList<>(), !ignoreMethodBodies);
 
 				scanAST(context);
 				
@@ -359,7 +361,8 @@ public class SpringIndexerJava implements SpringIndexer {
 	}
 
 	private Set<String> scanFilesInternally(IJavaProject project, DocumentDescriptor[] docs) throws Exception {
-		ASTParser parser = createParser(project, false);
+		final boolean ignoreMethodBodies = false;
+		ASTParser parser = createParser(project, ignoreMethodBodies);
 		
 		// this is to keep track of already scanned files to avoid endless loops due to circular dependencies
 		Set<String> scannedTypes = new HashSet<>();
@@ -404,7 +407,7 @@ public class SpringIndexerJava implements SpringIndexer {
 				IProblemCollector problemCollector = problemCollectorCreator.apply(docRef, diagnosticsAggregator);
 
 				SpringIndexerJavaContext context = new SpringIndexerJavaContext(project, cu, docURI, sourceFilePath,
-						lastModified, docRef, null, generatedSymbols, generatedBeans, problemCollector, SCAN_PASS.ONE, new ArrayList<>());
+						lastModified, docRef, null, generatedSymbols, generatedBeans, problemCollector, SCAN_PASS.ONE, new ArrayList<>(), !ignoreMethodBodies);
 				
 				scanAST(context);
 				
@@ -537,7 +540,8 @@ public class SpringIndexerJava implements SpringIndexer {
 				javaFiles.length, "Spring Tools: Indexing Java Sources for '" + project.getElementName() + "'");
 
 		try {
-			ASTParser parser = createParser(project, SCAN_PASS.ONE.equals(pass));
+			final boolean ignoreMethodBodies = SCAN_PASS.ONE.equals(pass);
+			ASTParser parser = createParser(project, ignoreMethodBodies);
 			List<String> nextPassFiles = new ArrayList<>();
 	
 			FileASTRequestor requestor = new FileASTRequestor() {
@@ -552,7 +556,7 @@ public class SpringIndexerJava implements SpringIndexer {
 					IProblemCollector problemCollector = problemCollectorCreator.apply(docRef, diagnosticsAggregator);
 
 					SpringIndexerJavaContext context = new SpringIndexerJavaContext(project, cu, docURI, sourceFilePath,
-							lastModified, docRef, null, generatedSymbols, generatedBeans, problemCollector, pass, nextPassFiles);
+							lastModified, docRef, null, generatedSymbols, generatedBeans, problemCollector, pass, nextPassFiles, !ignoreMethodBodies);
 	
 					scanAST(context);
 					progressTask.increment();
@@ -674,7 +678,7 @@ public class SpringIndexerJava implements SpringIndexer {
 
 		try {
 			problemCollector.beginCollecting();
-			reconciler.reconcile(context.getProject(), URI.create(context.getDocURI()), context.getCu(), problemCollector, context.getPass() == SCAN_PASS.TWO);
+			reconciler.reconcile(context.getProject(), URI.create(context.getDocURI()), context.getCu(), problemCollector, context.isFullAst());
 			problemCollector.endCollecting();
 		} catch (RequiredCompleteAstException e) {
 			if (context.getPass() == SCAN_PASS.TWO) {
