@@ -56,6 +56,7 @@ import com.google.gson.Gson;
 @DirtiesContext(classMode=ClassMode.AFTER_EACH_TEST_METHOD)
 public class XmlBeansHyperlinkTest {
 	
+	private static final int DEFAULT_INDEX_WAIT_TIME = 5;
 	@Autowired private BootLanguageServerHarness harness;
 	@Autowired private SpringSymbolIndex indexer;
 	@Autowired private DefinitionLinkAsserts definitionLinkAsserts;
@@ -86,7 +87,7 @@ public class XmlBeansHyperlinkTest {
 		projectObserver.doWithListeners(l -> l.created(project));
 
 		CompletableFuture<Void> initProject = indexer.waitOperation();
-		initProject.get(5, TimeUnit.SECONDS);
+		initProject.get(DEFAULT_INDEX_WAIT_TIME, TimeUnit.SECONDS);
 	}
 
     @Test
@@ -140,6 +141,7 @@ public class XmlBeansHyperlinkTest {
                         "</beans>\n",
                 UriUtil.toUri(xmlFilePath.toFile()).toString()
         );
+        
         definitionLinkAsserts.assertLinkTargets(editor, "message", project,
                 editor.rangeOf("<property name=\"message\" value=\"Hello\" />", "message"),
                 DefinitionLinkAsserts.method("u.t.r.SuperTestBean", "setMessage", "java.lang.String"));
@@ -183,6 +185,8 @@ public class XmlBeansHyperlinkTest {
         settings.put("boot-java", bootJavaObj);
 
         harness.getServer().getWorkspaceService().didChangeConfiguration(new DidChangeConfigurationParams(new Gson().toJsonTree(settings)));
+		CompletableFuture<Void> initProject = indexer.waitOperation();
+		initProject.get(DEFAULT_INDEX_WAIT_TIME, TimeUnit.SECONDS);
 
         Path xmlFilePath = Paths.get(project.getLocationUri()).resolve("beans.xml");
         Editor editor = harness.newEditor(LanguageId.XML,
@@ -216,6 +220,8 @@ public class XmlBeansHyperlinkTest {
         settings.put("boot-java", bootJavaObj);
 
         harness.getServer().getWorkspaceService().didChangeConfiguration(new DidChangeConfigurationParams(new Gson().toJsonTree(settings)));
+		CompletableFuture<Void> initProject = indexer.waitOperation();
+		initProject.get(DEFAULT_INDEX_WAIT_TIME, TimeUnit.SECONDS);
 
         Path xmlFilePath = Paths.get(project.getLocationUri()).resolve("beans.xml");
         Editor editor = harness.newEditor(LanguageId.XML,
@@ -253,6 +259,8 @@ public class XmlBeansHyperlinkTest {
         settings.put("boot-java", bootJavaObj);
 
         harness.getServer().getWorkspaceService().didChangeConfiguration(new DidChangeConfigurationParams(new Gson().toJsonTree(settings)));
+		CompletableFuture<Void> initProject = indexer.waitOperation();
+		initProject.get(DEFAULT_INDEX_WAIT_TIME, TimeUnit.SECONDS);
 
         Path xmlFilePath = Paths.get(project.getLocationUri()).resolve("beans.xml");
         Editor editor = harness.newEditor(LanguageId.XML,
@@ -280,6 +288,8 @@ public class XmlBeansHyperlinkTest {
         settings.put("boot-java", bootJavaObj);
 
         harness.getServer().getWorkspaceService().didChangeConfiguration(new DidChangeConfigurationParams(new Gson().toJsonTree(settings)));
+		CompletableFuture<Void> initProject = indexer.waitOperation();
+		initProject.get(DEFAULT_INDEX_WAIT_TIME, TimeUnit.SECONDS);
 
         Path xmlFilePath = Paths.get(project.getLocationUri()).resolve("beans.xml");
         Editor editor = harness.newEditor(LanguageId.XML,
