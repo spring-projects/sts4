@@ -18,6 +18,8 @@ import org.eclipse.lemminx.dom.DOMAttr;
 import org.eclipse.lemminx.dom.DOMNode;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.WorkspaceSymbol;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.boot.java.beans.BeansSymbolAddOnInformation;
 import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
@@ -30,6 +32,8 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
  * @author Alex Boyko
  */
 public class BeanRefHyperlinkProvider implements XMLHyperlinkProvider {
+	
+	private static final Logger log = LoggerFactory.getLogger(BeanRefHyperlinkProvider.class);
 	
 	private final JavaProjectFinder projectFinder;
 	private final SpringSymbolIndex symbolIndex;
@@ -75,6 +79,8 @@ public class BeanRefHyperlinkProvider implements XMLHyperlinkProvider {
 						return symbol.getLocation().getLeft();
 					}
 				}
+			} else {
+				log.debug("No Symbols!!!");
 			}
 		}
 		return null;
@@ -85,7 +91,9 @@ public class BeanRefHyperlinkProvider implements XMLHyperlinkProvider {
 		if (beanId != null && additionalInformation != null) {
 			for (SymbolAddOnInformation info : additionalInformation) {
 				if (info instanceof BeansSymbolAddOnInformation) {
-					return beanId.equals(((BeansSymbolAddOnInformation)info).getBeanID());
+					String id = ((BeansSymbolAddOnInformation)info).getBeanID();
+					log.debug("Bean symbol id = " + id);
+					return beanId.equals(id);
 				}
 			}
 		}
