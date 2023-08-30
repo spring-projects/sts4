@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2020, 2021 Pivotal, Inc.
+ * Copyright (c) 2020, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -21,7 +21,6 @@ import java.util.List;
 import java.util.Map;
 
 import org.apache.commons.io.IOUtils;
-import org.eclipse.lsp4j.DidChangeConfigurationParams;
 import org.eclipse.lsp4j.DidCloseTextDocumentParams;
 import org.eclipse.lsp4j.DidOpenTextDocumentParams;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
@@ -40,6 +39,7 @@ import org.springframework.ide.vscode.boot.xml.SpringXMLReconcileEngine;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblem;
+import org.springframework.ide.vscode.commons.languageserver.util.Settings;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
@@ -88,7 +88,7 @@ public class XMLSpelExpressionValidationTest {
 		Map<String, Object> settings = new HashMap<>();
 		settings.put("boot-java", bootJavaObj);
 		
-		harness.getServer().getWorkspaceService().didChangeConfiguration(new DidChangeConfigurationParams(new Gson().toJsonTree(settings)));
+		harness.changeConfiguration(new Settings(new Gson().toJsonTree(settings)));
 
 		project = projects.mavenProject("test-xml-validations");
 		harness.useProject(project);

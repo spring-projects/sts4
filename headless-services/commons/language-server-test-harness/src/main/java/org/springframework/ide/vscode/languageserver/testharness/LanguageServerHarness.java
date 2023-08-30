@@ -498,6 +498,7 @@ public class LanguageServerHarness {
 	public synchronized void changeFile(String uri) {
 		FileEvent fileEvent = new FileEvent(uri, FileChangeType.Changed);
 		getServer().getWorkspaceService().didChangeWatchedFiles(new DidChangeWatchedFilesParams(Arrays.asList(fileEvent)));
+		getServer().getAsync().waitForAll();
 	}
 
 	public synchronized void createFile(String uri) {
@@ -959,6 +960,7 @@ public class LanguageServerHarness {
 
 	public void changeConfiguration(Settings settings) {
 		getServer().getWorkspaceService().didChangeConfiguration(new DidChangeConfigurationParams(settings.getRawSettings()));
+		getServer().getAsync().waitForAll();
 	}
 
 	public SimpleLanguageServer getServer() {

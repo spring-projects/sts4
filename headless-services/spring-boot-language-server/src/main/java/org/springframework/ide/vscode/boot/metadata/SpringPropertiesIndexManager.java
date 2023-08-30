@@ -80,21 +80,22 @@ public class SpringPropertiesIndexManager extends ListenerManager<Listener<Sprin
 		IndefiniteProgressTask progress = progressService == null ? null
 				: progressService.createIndefiniteProgressTask(getProgressId(), "Indexing Spring Boot Properties",
 						null);
+		try {
+			Builder builder = SpringPropertyIndex.builder(valueProviders).withClasspath(project.getClasspath());
+			if (commonPropertiesMetadata != null) {
+				builder.withMetadata(commonPropertiesMetadata.get());
+			}
+			SpringPropertyIndex index = builder.build();
 
-		Builder builder = SpringPropertyIndex.builder(valueProviders).withClasspath(project.getClasspath());
-		if (commonPropertiesMetadata != null) {
-			builder.withMetadata(commonPropertiesMetadata.get());
+			log.info("Indexing Spring Boot Properties for {} DONE", project.getElementName());
+			log.info("Indexed {} properties.", index.size());
+
+			return index;
+		} finally {
+			if (progress != null) {
+				progress.done();
+			}
 		}
-		SpringPropertyIndex index = builder.build();
-
-		if (progress != null) {
-			progress.done();
-		}
-
-		log.info("Indexing Spring Boot Properties for {} DONE", project.getElementName());
-		log.info("Indexed {} properties.", index.size());
-
-		return index;
 	}
 
 	public synchronized void clear() {

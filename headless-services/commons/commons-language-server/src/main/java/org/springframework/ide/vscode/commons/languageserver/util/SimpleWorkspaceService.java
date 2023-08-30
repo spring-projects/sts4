@@ -38,6 +38,7 @@ import org.eclipse.lsp4j.services.WorkspaceService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.util.Assert;
+import org.springframework.ide.vscode.commons.util.AsyncRunner;
 import org.springframework.ide.vscode.commons.util.FileObserver;
 
 import com.google.common.collect.ImmutableList;
@@ -55,6 +56,7 @@ public class SimpleWorkspaceService implements WorkspaceService {
 	private ExecuteCommandHandler executeCommandHandler;
 	private WorkspaceSymbolHandler workspaceSymbolHandler;
 	private SimpleServerFileObserver fileObserver;
+	private AsyncRunner asyncRunner;
 	
 	private ListenerList<DidChangeWorkspaceFoldersParams> workspaceFolderListeners = new ListenerList<>();
 
@@ -62,12 +64,13 @@ public class SimpleWorkspaceService implements WorkspaceService {
 	public SimpleWorkspaceService(SimpleLanguageServer server) {
 		this.fileObserver = new SimpleServerFileObserver(server);
 		this.messageWorkerThreadPool = Executors.newCachedThreadPool();
+		this.asyncRunner = server.getAsync();
 	}
 
 	@Override
 	public CompletableFuture<Either<List<? extends SymbolInformation>, List<? extends WorkspaceSymbol>>> symbol(WorkspaceSymbolParams params) {
 		log.info("request for workspace symbols arrived: " + params.getQuery());
-
+		
 		return CompletableFutures.computeAsync(messageWorkerThreadPool, cancelToken -> {
 			WorkspaceSymbolHandler workspaceSymbolHandler = this.workspaceSymbolHandler;
 
@@ -86,36 +89,38 @@ public class SimpleWorkspaceService implements WorkspaceService {
 
 	@Override
 	public void didChangeConfiguration(DidChangeConfigurationParams params) {
-		configurationListeners.fire(new Settings((JsonElement) params.getSettings()));
+		asyncRunner.execute(() -> configurationListeners.fire(new Settings((JsonElement) params.getSettings())));
 	}
 
 	@Override
 	public void didChangeWatchedFiles(DidChangeWatchedFilesParams params) {
-		try {
-			Map<FileChangeType, List<FileEvent>> collect =
-					params.getChanges().stream().filter(event -> event.getUri() != null).collect(Collectors.groupingBy(FileEvent::getType));
-			
-			for (FileChangeType type : collect.keySet()) {
-				String[] docURIs = collect.get(type).stream().map(event -> event.getUri()).toArray(String[]::new);
-	
-				switch (type) {
-				case Created:
-					fileObserver.notifyFilesCreated(docURIs);
-					break;
-				case Changed:
-					fileObserver.notifyFilesChanged(docURIs);
-					break;
-				case Deleted:
-					fileObserver.notifyFilesDeleted(docURIs);
-					break;
-				default:
-					log.warn("Uknown file change type '" + type + "' for files: " + docURIs);
-					break;
+		asyncRunner.execute(() -> {
+			try {
+				Map<FileChangeType, List<FileEvent>> collect =
+						params.getChanges().stream().filter(event -> event.getUri() != null).collect(Collectors.groupingBy(FileEvent::getType));
+				
+				for (FileChangeType type : collect.keySet()) {
+					String[] docURIs = collect.get(type).stream().map(event -> event.getUri()).toArray(String[]::new);
+		
+					switch (type) {
+					case Created:
+						fileObserver.notifyFilesCreated(docURIs);
+						break;
+					case Changed:
+						fileObserver.notifyFilesChanged(docURIs);
+						break;
+					case Deleted:
+						fileObserver.notifyFilesDeleted(docURIs);
+						break;
+					default:
+						log.warn("Uknown file change type '" + type + "' for files: " + docURIs);
+						break;
+					}
 				}
+			} catch (Throwable t) {
+				log.warn("problem occurred while dispatching file event", t);
 			}
-		} catch (Throwable t) {
-			log.warn("problem occurred while dispatching file event", t);
-		}
+		});
 	}
 
 	@Override
@@ -131,7 +136,7 @@ public class SimpleWorkspaceService implements WorkspaceService {
 			changed = true;
 		}
 		if (changed) {
-			workspaceFolderListeners.fire(params);
+			asyncRunner.execute(() -> workspaceFolderListeners.fire(params));
 		}
 	}
 

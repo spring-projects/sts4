@@ -18,12 +18,14 @@ package org.springframework.ide.vscode.commons.languageserver;
  */
 public abstract class AbstractProgressTask {
 	
+	private static long progress_counter = 0; 
+	
 	protected final String taskId;
 	protected final ProgressService service;
 	
 	
 	public AbstractProgressTask(String taskId, ProgressService service) {
-		this.taskId = taskId;
+		this.taskId = taskId + "-" + (progress_counter++);
 		this.service = service;
 	}
 	

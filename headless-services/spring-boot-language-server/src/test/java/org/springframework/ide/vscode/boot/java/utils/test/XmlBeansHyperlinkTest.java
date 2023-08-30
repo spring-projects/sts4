@@ -18,7 +18,6 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 
-import org.eclipse.lsp4j.DidChangeConfigurationParams;
 import org.eclipse.lsp4j.Location;
 import org.eclipse.lsp4j.LocationLink;
 import org.eclipse.lsp4j.Position;
@@ -27,8 +26,6 @@ import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.LoggerFactory;
-import ch.qos.logback.classic.Level;
-import ch.qos.logback.classic.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.OverrideAutoConfiguration;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -37,6 +34,7 @@ import org.springframework.ide.vscode.boot.app.BootLanguageServerBootApp;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.boot.bootiful.XmlBeansTestConf;
 import org.springframework.ide.vscode.boot.test.DefinitionLinkAsserts;
+import org.springframework.ide.vscode.commons.languageserver.util.Settings;
 import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
 import org.springframework.ide.vscode.commons.util.UriUtil;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
@@ -48,6 +46,9 @@ import org.springframework.test.annotation.DirtiesContext;
 import org.springframework.test.annotation.DirtiesContext.ClassMode;
 
 import com.google.gson.Gson;
+
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
 
 /**
  * @author Alex Boyko
@@ -92,7 +93,7 @@ public class XmlBeansHyperlinkTest {
 		Map<String, Object> settings = new HashMap<>();
 		settings.put("boot-java", bootJavaObj);
 		
-		harness.getServer().getWorkspaceService().didChangeConfiguration(new DidChangeConfigurationParams(new Gson().toJsonTree(settings)));
+		harness.changeConfiguration(new Settings(new Gson().toJsonTree(settings)));
 
 		project = projects.mavenProject("test-xml-hyperlinks");
 		
@@ -206,7 +207,7 @@ public class XmlBeansHyperlinkTest {
         Map<String, Object> settings = new HashMap<>();
         settings.put("boot-java", bootJavaObj);
 
-        harness.getServer().getWorkspaceService().didChangeConfiguration(new DidChangeConfigurationParams(new Gson().toJsonTree(settings)));
+		harness.changeConfiguration(new Settings(new Gson().toJsonTree(settings)));
 		CompletableFuture<Void> initProject = indexer.waitOperation();
 		initProject.get(DEFAULT_INDEX_WAIT_TIME, TimeUnit.SECONDS);
 
@@ -241,7 +242,8 @@ public class XmlBeansHyperlinkTest {
         Map<String, Object> settings = new HashMap<>();
         settings.put("boot-java", bootJavaObj);
 
-        harness.getServer().getWorkspaceService().didChangeConfiguration(new DidChangeConfigurationParams(new Gson().toJsonTree(settings)));
+		harness.changeConfiguration(new Settings(new Gson().toJsonTree(settings)));
+
 		CompletableFuture<Void> initProject = indexer.waitOperation();
 		initProject.get(DEFAULT_INDEX_WAIT_TIME, TimeUnit.SECONDS);
 
@@ -280,7 +282,7 @@ public class XmlBeansHyperlinkTest {
         Map<String, Object> settings = new HashMap<>();
         settings.put("boot-java", bootJavaObj);
 
-        harness.getServer().getWorkspaceService().didChangeConfiguration(new DidChangeConfigurationParams(new Gson().toJsonTree(settings)));
+		harness.changeConfiguration(new Settings(new Gson().toJsonTree(settings)));
 		CompletableFuture<Void> initProject = indexer.waitOperation();
 		initProject.get(DEFAULT_INDEX_WAIT_TIME, TimeUnit.SECONDS);
 
@@ -309,7 +311,7 @@ public class XmlBeansHyperlinkTest {
         Map<String, Object> settings = new HashMap<>();
         settings.put("boot-java", bootJavaObj);
 
-        harness.getServer().getWorkspaceService().didChangeConfiguration(new DidChangeConfigurationParams(new Gson().toJsonTree(settings)));
+		harness.changeConfiguration(new Settings(new Gson().toJsonTree(settings)));
 		CompletableFuture<Void> initProject = indexer.waitOperation();
 		initProject.get(DEFAULT_INDEX_WAIT_TIME, TimeUnit.SECONDS);
 

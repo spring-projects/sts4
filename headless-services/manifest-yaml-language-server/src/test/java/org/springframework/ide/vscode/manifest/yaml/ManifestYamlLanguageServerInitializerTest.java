@@ -23,7 +23,6 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 
-import org.eclipse.lsp4j.DidChangeConfigurationParams;
 import org.eclipse.lsp4j.InitializeResult;
 import org.eclipse.lsp4j.TextDocumentSyncKind;
 import org.junit.jupiter.api.Test;
@@ -31,6 +30,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.CFClientParams;
 import org.springframework.ide.vscode.commons.cloudfoundry.client.cftarget.ClientParamsProvider;
+import org.springframework.ide.vscode.commons.languageserver.util.Settings;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness;
 import org.springframework.ide.vscode.manifest.yaml.bootiful.ManifestLanguageServerTest;
@@ -108,12 +108,7 @@ public class ManifestYamlLanguageServerInitializerTest {
 		assertEquals(Arrays.asList("test.io"), serverInitializer.getCfTargets());
 
 		// This tests a change in workspace (e.g. boot dash) that results in two more targets created.
-		DidChangeConfigurationParams params = new DidChangeConfigurationParams();
-
-		JsonParser parser = new JsonParser();
-		params.setSettings(parser.parse(new InputStreamReader(getClass().getResourceAsStream("/cf-targets1.json"))));
-
-		server.getWorkspaceService().didChangeConfiguration(params);
+		harness.changeConfiguration(new Settings(JsonParser.parseReader(new InputStreamReader(getClass().getResourceAsStream("/cf-targets1.json")))));
 		assertEquals(3, getAllParams(serverInitializer.getParamsProvider()).size());
 
 		// End result should have the initial target as well as the two additional targets obtained on workspace change
