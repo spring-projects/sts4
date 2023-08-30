@@ -162,7 +162,7 @@ public class ModulithService {
 				if (refreshed) {
 					server.getClient().showMessage(new MessageParams(MessageType.Info, "Project '" + project.getElementName() + "' Modulith metadata has been changed."));
 				} else {
-					server.getClient().showMessage(new MessageParams(MessageType.Info, "Project '" + project.getElementName() + "' Modulith metadata has been refreshed but it has not unchanged."));
+					server.getClient().showMessage(new MessageParams(MessageType.Info, "Project '" + project.getElementName() + "' Modulith metadata has been refreshed but it has not changed."));
 				}
 			}
 		});

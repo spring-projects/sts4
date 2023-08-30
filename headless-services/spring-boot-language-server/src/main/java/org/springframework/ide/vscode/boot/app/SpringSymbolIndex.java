@@ -504,7 +504,7 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 			}
 
 			CompletableFuture<Void> future = CompletableFuture.allOf((CompletableFuture[]) futures.toArray(new CompletableFuture[futures.size()]));
-			future = future.thenAccept(v -> server.getClient().indexUpdated()).thenAccept(v -> listeners.fire(v));
+			future = future.thenAcceptAsync(v -> server.getClient().indexUpdated()).thenAccept(v -> listeners.fire(v));
 			return future;
 		}
 	}
@@ -565,7 +565,7 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 				}
 			}
 			CompletableFuture<Void> future = CompletableFuture.allOf((CompletableFuture[]) futures.toArray(new CompletableFuture[futures.size()]));
-			future = future.thenAccept(v -> server.getClient().indexUpdated()).thenAccept(v -> listeners.fire(v));
+			future = future.thenAcceptAsync(v -> server.getClient().indexUpdated()).thenAccept(v -> listeners.fire(v));
 			return future;
 		}
 	}
@@ -640,7 +640,7 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 				}
 
 				CompletableFuture<Void> future = CompletableFuture.allOf((CompletableFuture[]) futures.toArray(new CompletableFuture[futures.size()]));
-				future = future.thenAccept(v -> server.getClient().indexUpdated()).thenAccept(v -> listeners.fire(v));
+				future = future.thenAcceptAsync(v -> server.getClient().indexUpdated()).thenAccept(v -> listeners.fire(v));
 				return future;
 			}
 			catch (Exception e) {

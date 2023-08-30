@@ -164,7 +164,7 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, SpringInd
 				}
 				WorkDoneProgressCreateParams params = new WorkDoneProgressCreateParams();
 				params.setToken(taskId);
-				client.createProgress(params).thenAccept((p) -> {
+				client.createProgress(params).thenAcceptAsync((p) -> {
 					ProgressParams progressParams = new ProgressParams();
 					progressParams.setToken(taskId);
 					progressParams.setValue(Either.forLeft(report));
