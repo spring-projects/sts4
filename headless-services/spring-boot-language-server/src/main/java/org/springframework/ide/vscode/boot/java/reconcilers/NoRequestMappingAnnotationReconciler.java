@@ -17,9 +17,11 @@ import java.util.List;
 
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.Annotation;
+import org.eclipse.jdt.core.dom.ArrayInitializer;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MarkerAnnotation;
+import org.eclipse.jdt.core.dom.MemberValuePair;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.NormalAnnotation;
 import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
@@ -90,13 +92,33 @@ public class NoRequestMappingAnnotationReconciler implements JdtAstReconciler {
 	}
 	
 	private static boolean isRequestMappingAnnotation(CompilationUnit cu, Annotation a) {
-		String typeName = a.getTypeName().getFullyQualifiedName();
-		if (Annotations.SPRING_REQUEST_MAPPING.equals(typeName)) {
-			return true;
-		} else if (typeName.endsWith("RequestMapping")) {
-			ITypeBinding type = a.resolveTypeBinding();
-			if (type != null && Annotations.SPRING_REQUEST_MAPPING.equals(type.getQualifiedName())) {
-				return true;
+		// Consider only NormalAnnotation as we need to flag @RequestMapping with single method parameter value
+		if (a.isNormalAnnotation()) {
+			String typeName = a.getTypeName().getFullyQualifiedName();
+			if (Annotations.SPRING_REQUEST_MAPPING.equals(typeName)) {
+				return hasApplicableMethodParameter(a);
+			} else if (typeName.endsWith("RequestMapping")) {
+				ITypeBinding type = a.resolveTypeBinding();
+				if (type != null && Annotations.SPRING_REQUEST_MAPPING.equals(type.getQualifiedName())) {
+					return hasApplicableMethodParameter(a);
+				}
+			}
+		}
+		return false;
+	}
+	
+	private static boolean hasApplicableMethodParameter(Annotation a) {
+		if (a.isNormalAnnotation()) {
+			for (Object o : ((NormalAnnotation) a).values()) {
+				if (o instanceof MemberValuePair) {
+					MemberValuePair pair = (MemberValuePair) o;
+					if ("method".equals(pair.getName().getIdentifier())) {
+						if (pair.getValue() instanceof ArrayInitializer) {
+							return ((ArrayInitializer) pair.getValue()).expressions().size() == 1;
+						}
+						return true;
+					}
+				}
 			}
 		}
 		return false;

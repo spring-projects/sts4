@@ -56,12 +56,13 @@ public class NoRequestMappingAnnotationReconcilerTest extends BaseReconcilerTest
 				package example.demo;
 				
 				import org.springframework.web.bind.annotation.RequestMapping;
+				import org.springframework.web.bind.annotation.RequestMethod;
 				
 				
 				@RequestMapping("/hello")
 				class A {
 				
-					@RequestMapping("/1")
+					@RequestMapping(value = "/1", method = RequestMethod.GET)
 					String hello1() {
 						return "1";
 					};
@@ -77,12 +78,93 @@ public class NoRequestMappingAnnotationReconcilerTest extends BaseReconcilerTest
 		assertEquals(Boot2JavaProblemType.JAVA_PRECISE_REQUEST_MAPPING, problem.getType());
 		
 		String markedStr = source.substring(problem.getOffset(), problem.getOffset() + problem.getLength());
-		assertEquals("@RequestMapping(\"/1\")", markedStr);
+		assertEquals("@RequestMapping(value = \"/1\", method = RequestMethod.GET)", markedStr);
 
 		assertEquals(2, problem.getQuickfixes().size());
 		
 	}
 
+	@Test
+	void arrayMethodTest() throws Exception {
+		String source = """
+				package example.demo;
+				
+				import org.springframework.web.bind.annotation.RequestMapping;
+				import org.springframework.web.bind.annotation.RequestMethod;
+				
+				
+				@RequestMapping("/hello")
+				class A {
+				
+					@RequestMapping(value = "/1", method = { RequestMethod.GET })
+					String hello1() {
+						return "1";
+					};
+					
+				}
+				""";
+		List<ReconcileProblem> problems = reconcile("A.java", source, false);
+		
+		assertEquals(1, problems.size());
+		
+		ReconcileProblem problem = problems.get(0);
+		
+		assertEquals(Boot2JavaProblemType.JAVA_PRECISE_REQUEST_MAPPING, problem.getType());
+		
+		String markedStr = source.substring(problem.getOffset(), problem.getOffset() + problem.getLength());
+		assertEquals("@RequestMapping(value = \"/1\", method = { RequestMethod.GET })", markedStr);
+
+		assertEquals(2, problem.getQuickfixes().size());
+		
+	}
+	
+	@Test
+	void multiMethodTest() throws Exception {
+		String source = """
+				package example.demo;
+				
+				import org.springframework.web.bind.annotation.RequestMapping;
+				import org.springframework.web.bind.annotation.RequestMethod;
+				
+				
+				@RequestMapping("/hello")
+				class A {
+				
+					@RequestMapping(value = "/1", method = { RequestMethod.GET, RequestMethod.HEAD })
+					String hello1() {
+						return "1";
+					};
+					
+				}
+				""";
+		List<ReconcileProblem> problems = reconcile("A.java", source, false);
+		
+		assertEquals(0, problems.size());		
+	}
+	
+	@Test
+	void noMethodsNoProblems() throws Exception {
+		String source = """
+				package example.demo;
+				
+				import org.springframework.web.bind.annotation.RequestMapping;
+				
+				
+				@RequestMapping("/hello")
+				class A {
+				
+					@RequestMapping("/1")
+					String hello1() {
+						return "1";
+					};
+					
+				}
+				""";
+		List<ReconcileProblem> problems = reconcile("A.java", source, false);
+		
+		assertEquals(0, problems.size());		
+	}
+	
 	@Test
 	void noProblems() throws Exception {
 		String source = """
