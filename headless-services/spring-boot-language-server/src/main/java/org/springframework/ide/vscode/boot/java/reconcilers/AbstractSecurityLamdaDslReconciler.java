@@ -47,16 +47,16 @@ public abstract class AbstractSecurityLamdaDslReconciler implements JdtAstReconc
 							MethodInvocation topMethodInvocation = findTopLevelMethodInvocation(node);
 							ReconcileProblemImpl problem = new ReconcileProblemImpl(getProblemType(), getProblemLabel(), topMethodInvocation.getStartPosition(), topMethodInvocation.getLength());
 							String uri = docUri.toASCIIString();
-							RewriteQuickFixUtils.setRewriteFixes(registry, problem, List.of(
+							ReconcileUtils.setRewriteFixes(registry, problem, List.of(
 									new FixDescriptor(getRecipeId(), List.of(uri),
-											RewriteQuickFixUtils.buildLabel(getFixLabel(), RecipeScope.NODE))
-											.withRangeScope(RewriteQuickFixUtils.createOpenRewriteRange(cu, topMethodInvocation))
+											ReconcileUtils.buildLabel(getFixLabel(), RecipeScope.NODE))
+											.withRangeScope(ReconcileUtils.createOpenRewriteRange(cu, topMethodInvocation))
 											.withRecipeScope(RecipeScope.NODE),
 									new FixDescriptor(getRecipeId(), List.of(uri),
-											RewriteQuickFixUtils.buildLabel(getFixLabel(), RecipeScope.FILE))
+											ReconcileUtils.buildLabel(getFixLabel(), RecipeScope.FILE))
 											.withRecipeScope(RecipeScope.FILE),
 									new FixDescriptor(getRecipeId(), List.of(uri),
-											RewriteQuickFixUtils.buildLabel(getFixLabel(), RecipeScope.PROJECT))
+											ReconcileUtils.buildLabel(getFixLabel(), RecipeScope.PROJECT))
 											.withRecipeScope(RecipeScope.PROJECT)
 							));
 							problemCollector.accept(problem);
@@ -69,7 +69,7 @@ public abstract class AbstractSecurityLamdaDslReconciler implements JdtAstReconc
 			});
 			
 		} else {
-			if (RewriteQuickFixUtils.isAnyTypeUsed(cu, List.of(getTargetTypeFqName()))) {
+			if (ReconcileUtils.isAnyTypeUsed(cu, List.of(getTargetTypeFqName()))) {
 				throw new RequiredCompleteAstException();
 			}
 		}

@@ -70,7 +70,7 @@ public class AutowiredFieldIntoConstructorParameterReconciler implements JdtAstR
 				@Override
 				public boolean visit(FieldDeclaration field) {
 					if (field.fragments().size() == 1) {
-						Annotation annotation = RewriteQuickFixUtils.findAnnotation(field, Annotations.AUTOWIRED,
+						Annotation annotation = ReconcileUtils.findAnnotation(field, Annotations.AUTOWIRED,
 								false);
 						if (annotation != null && field.getParent() instanceof TypeDeclaration) {
 							TypeDeclaration typeDecl = (TypeDeclaration) field.getParent();
@@ -94,7 +94,7 @@ public class AutowiredFieldIntoConstructorParameterReconciler implements JdtAstR
 								}
 							} else {
 								List<MethodDeclaration> autowiredConstructors = constructors.stream()
-										.filter(constr -> RewriteQuickFixUtils.findAnnotation(constr,
+										.filter(constr -> ReconcileUtils.findAnnotation(constr,
 												Annotations.AUTOWIRED, true) != null)
 										.limit(2).collect(Collectors.toList());
 								if (autowiredConstructors.size() == 1) {
@@ -129,9 +129,9 @@ public class AutowiredFieldIntoConstructorParameterReconciler implements JdtAstR
 		String typeFqName = (cu.getPackage() != null && cu.getPackage().getName() != null
 				? cu.getPackage().getName().getFullyQualifiedName() + "."
 				: "") + typeDecl.getName().getFullyQualifiedName();
-		RewriteQuickFixUtils.setRewriteFixes(registry, problem,
+		ReconcileUtils.setRewriteFixes(registry, problem,
 				List.of(new FixDescriptor(ID, List.of(docUri.toASCIIString()), LABEL)
-						.withRangeScope(RewriteQuickFixUtils.createOpenRewriteRange(cu, typeDecl))
+						.withRangeScope(ReconcileUtils.createOpenRewriteRange(cu, typeDecl))
 						.withParameters(Map.of("classFqName", typeFqName, "fieldName", fieldName))
 						.withRecipeScope(RecipeScope.NODE)));
 		return problem;

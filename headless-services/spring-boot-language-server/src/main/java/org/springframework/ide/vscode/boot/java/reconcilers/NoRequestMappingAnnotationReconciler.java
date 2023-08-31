@@ -33,7 +33,6 @@ import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixRe
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblemImpl;
-import org.springframework.ide.vscode.commons.rewrite.config.RecipeCodeActionDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
 import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
 
@@ -75,13 +74,13 @@ public class NoRequestMappingAnnotationReconciler implements JdtAstReconciler {
 				if (a.getParent() instanceof MethodDeclaration && isRequestMappingAnnotation(cu, a)) {
 					String uri = docUri.toASCIIString();
 					ReconcileProblemImpl problem = new ReconcileProblemImpl(getProblemType(), LABEL, a.getStartPosition(), a.getLength());
-					RewriteQuickFixUtils.setRewriteFixes(registry, problem, List.of(
+					ReconcileUtils.setRewriteFixes(registry, problem, List.of(
 //						new FixDescriptor(ID, List.of(uri), RecipeCodeActionDescriptor.buildLabel(LABEL, RecipeScope.NODE))
 //    						.withRangeScope(RewriteQuickFixUtils.createOpenRewriteRange(cu, a))
 //    						.withRecipeScope(RecipeScope.NODE),
-        				new FixDescriptor(ID, List.of(uri), RecipeCodeActionDescriptor.buildLabel(LABEL, RecipeScope.FILE))
+        				new FixDescriptor(ID, List.of(uri), ReconcileUtils.buildLabel(LABEL, RecipeScope.FILE))
     						.withRecipeScope(RecipeScope.FILE),
-            				new FixDescriptor(ID, List.of(uri), RecipeCodeActionDescriptor.buildLabel(LABEL, RecipeScope.PROJECT))
+            				new FixDescriptor(ID, List.of(uri), ReconcileUtils.buildLabel(LABEL, RecipeScope.PROJECT))
         						.withRecipeScope(RecipeScope.PROJECT)
         			));
 					problemCollector.accept(problem);

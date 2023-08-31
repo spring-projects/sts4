@@ -17,6 +17,7 @@ import java.net.URLClassLoader;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -43,6 +44,7 @@ import org.openrewrite.Result;
 import org.openrewrite.SourceFile;
 import org.openrewrite.Validated;
 import org.openrewrite.config.DeclarativeRecipe;
+import org.openrewrite.config.Environment;
 import org.openrewrite.config.RecipeDescriptor;
 import org.openrewrite.config.YamlResourceLoader;
 import org.openrewrite.internal.InMemoryLargeSourceSet;
@@ -60,7 +62,6 @@ import org.springframework.ide.vscode.commons.protocol.java.ProjectBuild;
 import org.springframework.ide.vscode.commons.rewrite.LoadUtils;
 import org.springframework.ide.vscode.commons.rewrite.LoadUtils.DurationTypeConverter;
 import org.springframework.ide.vscode.commons.rewrite.ORDocUtils;
-import org.springframework.ide.vscode.commons.rewrite.config.StsEnvironment;
 import org.springframework.ide.vscode.commons.rewrite.gradle.GradleIJavaProjectParser;
 import org.springframework.ide.vscode.commons.rewrite.java.ProjectParser;
 import org.springframework.ide.vscode.commons.rewrite.maven.MavenIJavaProjectParser;
@@ -152,7 +153,7 @@ public class RewriteRecipeRepository {
 		try {
 			log.info("Loading Rewrite Recipes...");
 			Recipe xmlbindRecipe = null;
-			StsEnvironment env = createRewriteEnvironment();
+			Environment env = createRewriteEnvironment();
 			for (Recipe r : env.listRecipes()) {
 				if (r.getName() != null) {
 					if ("org.openrewrite.java.migrate.jakarta.JavaxXmlBindMigrationToJakartaXmlBind".equals(r.getName())) {
@@ -209,7 +210,7 @@ public class RewriteRecipeRepository {
 	}
 	
 	private static boolean isRecipeValid(Recipe r) {
-		Validated validation = Validated.invalid(null, null, null);
+		Validated<?> validation = Validated.invalid(null, null, null);
 		try {
 			validation = r.validate();
 		} catch (Exception e) {
@@ -218,8 +219,8 @@ public class RewriteRecipeRepository {
 		return validation.isValid();
 	}
 	
-	private StsEnvironment createRewriteEnvironment() {
-		StsEnvironment.Builder builder = StsEnvironment.builder().scanRuntimeClasspath();
+	private Environment createRewriteEnvironment() {
+		Environment.Builder builder = Environment.builder().scanRuntimeClasspath();
 		for (String p : scanFiles) {
 			try {
 				Path f = Path.of(p);
@@ -227,7 +228,7 @@ public class RewriteRecipeRepository {
 				if (pathStr.endsWith(".jar")) {
 					URLClassLoader classLoader = new URLClassLoader(new URL[] { f.toUri().toURL() },
 							getClass().getClassLoader());
-					builder.scanJar(f, classLoader);
+					builder.scanJar(f, new ArrayList<>(), classLoader);
 				} else if (pathStr.endsWith(".yml") || pathStr.endsWith(".yaml")) {
 					builder.load(new YamlResourceLoader(new FileInputStream(f.toFile()), f.toUri(), new Properties()));
 				}

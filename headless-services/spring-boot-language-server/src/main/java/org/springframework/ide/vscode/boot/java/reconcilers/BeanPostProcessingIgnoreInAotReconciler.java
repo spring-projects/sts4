@@ -86,9 +86,9 @@ public class BeanPostProcessingIgnoreInAotReconciler implements JdtAstReconciler
 					
 					if (markProblem) {
 						ReconcileProblemImpl problem = new ReconcileProblemImpl(getProblemType(), LABEL, typeDecl.getName().getStartPosition(), typeDecl.getName().getLength());
-						RewriteQuickFixUtils.setRewriteFixes(registry, problem, List.of(
-								new FixDescriptor(RECIPE_ID, List.of(docUri.toASCIIString()), RewriteQuickFixUtils.buildLabel(LABEL, RecipeScope.NODE))
-										.withRangeScope(RewriteQuickFixUtils.createOpenRewriteRange(cu, typeDecl))
+						ReconcileUtils.setRewriteFixes(registry, problem, List.of(
+								new FixDescriptor(RECIPE_ID, List.of(docUri.toASCIIString()), ReconcileUtils.buildLabel(LABEL, RecipeScope.NODE))
+										.withRangeScope(ReconcileUtils.createOpenRewriteRange(cu, typeDecl))
 										.withRecipeScope(RecipeScope.NODE)
 						));
 						problemCollector.accept(problem);
@@ -98,7 +98,7 @@ public class BeanPostProcessingIgnoreInAotReconciler implements JdtAstReconciler
 			}
 			
 			private boolean isApplicable(ITypeBinding type) {
-				return RewriteQuickFixUtils.implementsType(RUNTIME_BEAN_POST_PROCESSOR, type) && RewriteQuickFixUtils.implementsType(COMPILE_BEAN_POST_PROCESSOR, type);
+				return ReconcileUtils.implementsType(RUNTIME_BEAN_POST_PROCESSOR, type) && ReconcileUtils.implementsType(COMPILE_BEAN_POST_PROCESSOR, type);
 			}
 			
 		});

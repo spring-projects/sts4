@@ -34,7 +34,7 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.Reconcile
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
 import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
 
-public class RewriteQuickFixUtils {
+public class ReconcileUtils {
 	
 	public static Range createOpenRewriteRange(CompilationUnit cu, ASTNode node) {
 		
@@ -139,7 +139,7 @@ public class RewriteQuickFixUtils {
 
 			@Override
 			public boolean visit(SimpleType node) {
-				if (RewriteQuickFixUtils.isApplicableTypeWithoutResolving(cu, types, node.getName())) {
+				if (ReconcileUtils.isApplicableTypeWithoutResolving(cu, types, node.getName())) {
 					typeUsed.set(true);
 				}
 				return !typeUsed.get();

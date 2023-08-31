@@ -73,12 +73,12 @@ public class AddConfigurationIfBeansPresentReconciler implements JdtAstReconcile
 					ReconcileProblemImpl problem = new ReconcileProblemImpl(getProblemType(), PROBLEM_LABEL,
 							nameAst.getStartPosition(), nameAst.getLength());
 
-					RewriteQuickFixUtils.setRewriteFixes(quickfixRegistry, problem,
+					ReconcileUtils.setRewriteFixes(quickfixRegistry, problem,
 							List.of(new FixDescriptor(ID, List.of(docUri.toASCIIString()),
-									RewriteQuickFixUtils.buildLabel(FIX_LABEL, RecipeScope.FILE))
+									ReconcileUtils.buildLabel(FIX_LABEL, RecipeScope.FILE))
 									.withRecipeScope(RecipeScope.FILE),
 									new FixDescriptor(ID, List.of(docUri.toASCIIString()),
-											RewriteQuickFixUtils.buildLabel(FIX_LABEL, RecipeScope.PROJECT))
+											ReconcileUtils.buildLabel(FIX_LABEL, RecipeScope.PROJECT))
 											.withRecipeScope(RecipeScope.PROJECT)));
 
 					problemCollector.accept(problem);
@@ -137,7 +137,7 @@ public class AddConfigurationIfBeansPresentReconciler implements JdtAstReconcile
 		if (applicationContext != null) {
 			SpringSymbolIndex index = applicationContext.getBean(SpringSymbolIndex.class);
 			if (index != null) {
-				final String beanClassName = RewriteQuickFixUtils.getDeepErasureType(classDecl.resolveBinding()).getQualifiedName();
+				final String beanClassName = ReconcileUtils.getDeepErasureType(classDecl.resolveBinding()).getQualifiedName();
 				for (EnhancedSymbolInformation s : index.getEnhancedSymbols(project)) {
 					SymbolAddOnInformation[] additionalInformation = s.getAdditionalInformation();
 					if (additionalInformation != null) {

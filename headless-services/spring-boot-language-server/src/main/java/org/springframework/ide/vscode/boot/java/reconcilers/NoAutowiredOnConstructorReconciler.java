@@ -70,15 +70,15 @@ public class NoAutowiredOnConstructorReconciler implements JdtAstReconciler {
 					}
 					
 					if (constructor != null) {
-						Annotation autowiredAnnotation = RewriteQuickFixUtils.findAnnotation(constructor,
+						Annotation autowiredAnnotation = ReconcileUtils.findAnnotation(constructor,
 								Annotations.AUTOWIRED, false);
 						if (autowiredAnnotation != null) {
 							ReconcileProblemImpl problem = new ReconcileProblemImpl(getProblemType(), LABEL,
 									autowiredAnnotation.getStartPosition(), autowiredAnnotation.getLength());
-							RewriteQuickFixUtils.setRewriteFixes(registry, problem,
+							ReconcileUtils.setRewriteFixes(registry, problem,
 									List.of(new FixDescriptor(ID, List.of(docUri.toASCIIString()), LABEL)
 											.withRecipeScope(RecipeScope.NODE)
-											.withRangeScope(RewriteQuickFixUtils.createOpenRewriteRange(cu, typeDecl))));
+											.withRangeScope(ReconcileUtils.createOpenRewriteRange(cu, typeDecl))));
 							problemCollector.accept(problem);
 						}
 					}

@@ -77,7 +77,7 @@ public class NotRegisteredBeansReconciler implements JdtAstReconciler, Applicati
 			public boolean visit(TypeDeclaration node) {
 				if (!node.isInterface() && !Modifier.isAbstract(node.getModifiers())) {
 					ITypeBinding type = node.resolveBinding();
-					if (type != null && RewriteQuickFixUtils.implementsAnyType(AOT_BEANS, type)) {
+					if (type != null && ReconcileUtils.implementsAnyType(AOT_BEANS, type)) {
 						String beanClassName =type.getQualifiedName();
 						SpringSymbolIndex index = applicationContext.getBean(SpringSymbolIndex.class);
 						List<WorkspaceSymbol> beanSymbols = index.getSymbols(data -> {
@@ -135,7 +135,7 @@ public class NotRegisteredBeansReconciler implements JdtAstReconciler, Applicati
     							}
     						}
     						ReconcileProblemImpl problem = new ReconcileProblemImpl(getProblemType(), getProblemType().getLabel(), node.getName().getStartPosition(), node.getName().getLength());
-    						RewriteQuickFixUtils.setRewriteFixes(registry, problem, fixListBuilder.build());
+    						ReconcileUtils.setRewriteFixes(registry, problem, fixListBuilder.build());
     						problemCollector.accept(problem);
 						}
 					}
@@ -196,7 +196,7 @@ public class NotRegisteredBeansReconciler implements JdtAstReconciler, Applicati
     	if (type.isArray()) {
     		return typePattern(type.getErasure()) + "[]";
     	} else {
-    		return RewriteQuickFixUtils.getDeepErasureType(type).getQualifiedName();
+    		return ReconcileUtils.getDeepErasureType(type).getQualifiedName();
     	}
     }
     

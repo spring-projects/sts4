@@ -40,7 +40,6 @@ import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixTy
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblemImpl;
-import org.springframework.ide.vscode.commons.rewrite.config.RecipeCodeActionDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
 import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
 
@@ -106,15 +105,15 @@ public class BeanMethodNotPublicReconciler implements JdtAstReconciler {
 		
 			FixDescriptor fix1 = new FixDescriptor(ID, List.of(docUri.toASCIIString()), LABEL)
 					.withRecipeScope(RecipeScope.NODE)
-					.withRangeScope(RewriteQuickFixUtils.createOpenRewriteRange(cu, method));
+					.withRangeScope(ReconcileUtils.createOpenRewriteRange(cu, method));
 
-			Range methodRange = RewriteQuickFixUtils.createOpenRewriteRange(cu, method);
+			Range methodRange = ReconcileUtils.createOpenRewriteRange(cu, method);
 			fix1 = fix1.withRangeScope(methodRange);
 
-			FixDescriptor fix2 = new FixDescriptor(ID, List.of(docUri.toASCIIString()), RecipeCodeActionDescriptor.buildLabel(LABEL, RecipeScope.FILE))
+			FixDescriptor fix2 = new FixDescriptor(ID, List.of(docUri.toASCIIString()), ReconcileUtils.buildLabel(LABEL, RecipeScope.FILE))
 					.withRecipeScope(RecipeScope.FILE);
 	
-			FixDescriptor fix3 = new FixDescriptor(ID, List.of(docUri.toASCIIString()), RecipeCodeActionDescriptor.buildLabel(LABEL, RecipeScope.PROJECT))
+			FixDescriptor fix3 = new FixDescriptor(ID, List.of(docUri.toASCIIString()), ReconcileUtils.buildLabel(LABEL, RecipeScope.PROJECT))
 					.withRecipeScope(RecipeScope.PROJECT);
 			
 			

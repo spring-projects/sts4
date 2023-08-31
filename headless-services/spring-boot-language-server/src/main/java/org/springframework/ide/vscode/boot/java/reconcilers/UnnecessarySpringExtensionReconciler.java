@@ -85,8 +85,8 @@ public class UnnecessarySpringExtensionReconciler implements JdtAstReconciler {
 						}
 						if (testAnnotation != null && extendWithAnnotation != null) {
 							ReconcileProblemImpl problem = new ReconcileProblemImpl(getProblemType(), LABEL, extendWithAnnotation.getStartPosition(), extendWithAnnotation.getLength());
-							RewriteQuickFixUtils.setRewriteFixes(registry, problem, List.of(
-									new FixDescriptor(ID, List.of(docUri.toASCIIString()), RewriteQuickFixUtils.buildLabel(LABEL, RecipeScope.PROJECT))
+							ReconcileUtils.setRewriteFixes(registry, problem, List.of(
+									new FixDescriptor(ID, List.of(docUri.toASCIIString()), ReconcileUtils.buildLabel(LABEL, RecipeScope.PROJECT))
 							));
 							problemCollector.accept(problem);
 							break;

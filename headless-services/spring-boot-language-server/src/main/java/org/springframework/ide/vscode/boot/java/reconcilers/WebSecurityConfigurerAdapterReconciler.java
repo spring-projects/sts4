@@ -30,7 +30,6 @@ import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixRe
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblemImpl;
-import org.springframework.ide.vscode.commons.rewrite.config.RecipeCodeActionDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
 import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
 
@@ -89,17 +88,17 @@ public class WebSecurityConfigurerAdapterReconciler implements JdtAstReconciler 
 				Type type = typeDecl.getSuperclassType();
 				if (isWebSecurityConfigurerAdapter(cu, type)) {
 					ReconcileProblemImpl problem = new ReconcileProblemImpl(getProblemType(), PROBLEM_LABEL, type.getStartPosition(), type.getLength());
-					if (RewriteQuickFixUtils.findAnnotation(typeDecl, Annotations.CONFIGURATION, true) != null) {
+					if (ReconcileUtils.findAnnotation(typeDecl, Annotations.CONFIGURATION, true) != null) {
 						ITypeBinding resolveBinding = type.resolveBinding();
 						String[] typeStubs = resolveBinding == null || resolveBinding.isRecovered() ? new String[] { STUB_WEB_SECURITY_CONFIG_ADAPTER } : new String[0];
 						String uri = docUri.toASCIIString();
-						RewriteQuickFixUtils.setRewriteFixes(registry, problem, List.of(
+						ReconcileUtils.setRewriteFixes(registry, problem, List.of(
 								new FixDescriptor(ID, List.of(uri),
-										RecipeCodeActionDescriptor.buildLabel(FIX_LABEL, RecipeScope.FILE))
+										ReconcileUtils.buildLabel(FIX_LABEL, RecipeScope.FILE))
 										.withRecipeScope(RecipeScope.FILE)
 										.withTypeStubs(typeStubs),
 								new FixDescriptor(ID, List.of(uri),
-										RecipeCodeActionDescriptor.buildLabel(FIX_LABEL, RecipeScope.PROJECT))
+										ReconcileUtils.buildLabel(FIX_LABEL, RecipeScope.PROJECT))
 										.withRecipeScope(RecipeScope.PROJECT)
 										.withTypeStubs(typeStubs))
 

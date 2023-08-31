@@ -34,7 +34,6 @@ import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixRe
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblemImpl;
-import org.springframework.ide.vscode.commons.rewrite.config.RecipeCodeActionDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
 import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
 
@@ -91,13 +90,13 @@ public class PreciseBeanTypeReconciler implements JdtAstReconciler {
 					} else if (currentReturnTypes.size() == 1 && !method.resolveBinding().getReturnType().isAssignmentCompatible(currentReturnTypes.get(0))) {
 						String uri = docUri.toASCIIString();
 						String replacementType = currentReturnTypes.get(0).getName();
-						RewriteQuickFixUtils.setRewriteFixes(registry, problem, List.of(
-							new FixDescriptor(RECIPE_ID, List.of(uri), RecipeCodeActionDescriptor.buildLabel("Replace return type with '" + replacementType + "'", RecipeScope.NODE))
+						ReconcileUtils.setRewriteFixes(registry, problem, List.of(
+							new FixDescriptor(RECIPE_ID, List.of(uri), ReconcileUtils.buildLabel("Replace return type with '" + replacementType + "'", RecipeScope.NODE))
 								.withRecipeScope(RecipeScope.NODE)
-								.withRangeScope(RewriteQuickFixUtils.createOpenRewriteRange(cu, method)),
-							new FixDescriptor(RECIPE_ID, List.of(uri), RecipeCodeActionDescriptor.buildLabel(LABEL, RecipeScope.FILE))
+								.withRangeScope(ReconcileUtils.createOpenRewriteRange(cu, method)),
+							new FixDescriptor(RECIPE_ID, List.of(uri), ReconcileUtils.buildLabel(LABEL, RecipeScope.FILE))
 								.withRecipeScope(RecipeScope.FILE),
-							new FixDescriptor(RECIPE_ID, List.of(uri), RecipeCodeActionDescriptor.buildLabel(LABEL, RecipeScope.PROJECT))
+							new FixDescriptor(RECIPE_ID, List.of(uri), ReconcileUtils.buildLabel(LABEL, RecipeScope.PROJECT))
 								.withRecipeScope(RecipeScope.PROJECT)
 						));
 						problemCollector.accept(problem);

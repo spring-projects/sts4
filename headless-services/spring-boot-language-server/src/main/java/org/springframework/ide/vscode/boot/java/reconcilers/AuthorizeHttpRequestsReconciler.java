@@ -71,14 +71,14 @@ public class AuthorizeHttpRequestsReconciler implements JdtAstReconciler {
 									AUTHORIZE_REQUESTS_PROBLEM_LABEL, node.getName().getStartPosition(),
 									node.getName().getLength());
 							String uri = docUri.toASCIIString();
-							RewriteQuickFixUtils
+							ReconcileUtils
 									.setRewriteFixes(registry, problem, List.of(
 											new FixDescriptor(ID, List.of(uri),
-													RewriteQuickFixUtils.buildLabel(AUTHORIZE_REQUESTS_FIX_LABEL,
+													ReconcileUtils.buildLabel(AUTHORIZE_REQUESTS_FIX_LABEL,
 															RecipeScope.FILE))
 													.withRecipeScope(RecipeScope.FILE),
 											new FixDescriptor(ID, List.of(uri),
-													RewriteQuickFixUtils.buildLabel(AUTHORIZE_REQUESTS_FIX_LABEL,
+													ReconcileUtils.buildLabel(AUTHORIZE_REQUESTS_FIX_LABEL,
 															RecipeScope.PROJECT))
 													.withRecipeScope(RecipeScope.PROJECT)));
 							problemCollector.accept(problem);
@@ -91,10 +91,10 @@ public class AuthorizeHttpRequestsReconciler implements JdtAstReconciler {
 				@Override
 				public boolean visit(SimpleType node) {
 					String replacementClass = null;
-					if (RewriteQuickFixUtils.isApplicableTypeWithoutResolving(cu,
+					if (ReconcileUtils.isApplicableTypeWithoutResolving(cu,
 							List.of(FQN_AUTH_REQ_CONFIG, FQN_EXPR_AUTH_CONFIG), node.getName())) {
 						replacementClass = "AuthorizeHttpRequestsConfigurer";
-					} else if (RewriteQuickFixUtils.isApplicableTypeWithoutResolving(cu, List.of(FQN_EXPR_INTERCEPT_REG),
+					} else if (ReconcileUtils.isApplicableTypeWithoutResolving(cu, List.of(FQN_EXPR_INTERCEPT_REG),
 							node.getName())) {
 						replacementClass = "AuthorizationManagerRequestMatcherRegistry";
 					}
@@ -103,14 +103,14 @@ public class AuthorizeHttpRequestsReconciler implements JdtAstReconciler {
 								"Use of type '" + node.getName().getFullyQualifiedName() + "' is outdated",
 								node.getName().getStartPosition(), node.getName().getLength());
 						String uri = docUri.toASCIIString();
-						RewriteQuickFixUtils
+						ReconcileUtils
 								.setRewriteFixes(registry, problem, List.of(
 										new FixDescriptor(ID, List.of(uri),
-												RewriteQuickFixUtils.buildLabel(String.format(CLASS_FIX_LABEL_TEMPLATE,
+												ReconcileUtils.buildLabel(String.format(CLASS_FIX_LABEL_TEMPLATE,
 														replacementClass), RecipeScope.FILE))
 												.withRecipeScope(RecipeScope.FILE),
 										new FixDescriptor(ID, List.of(uri),
-												RewriteQuickFixUtils.buildLabel(
+												ReconcileUtils.buildLabel(
 														String.format(CLASS_FIX_LABEL_TEMPLATE, replacementClass),
 														RecipeScope.PROJECT))
 												.withRecipeScope(RecipeScope.PROJECT)));
@@ -122,7 +122,7 @@ public class AuthorizeHttpRequestsReconciler implements JdtAstReconciler {
 
 			});
 		} else {
-			boolean needsFullAst = RewriteQuickFixUtils.isAnyTypeUsed(cu, List.of(
+			boolean needsFullAst = ReconcileUtils.isAnyTypeUsed(cu, List.of(
 					FQN_HTTP_SECURITY,
 					FQN_AUTH_REQ_CONFIG,
 					FQN_EXPR_AUTH_CONFIG,

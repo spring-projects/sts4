@@ -16,7 +16,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.ide.vscode.boot.java.reconcilers.JdtReconciler;
 import org.springframework.ide.vscode.boot.java.rewrite.RewriteCodeActionHandler;
-import org.springframework.ide.vscode.boot.java.rewrite.RewriteCompilationUnitCache;
 import org.springframework.ide.vscode.boot.java.rewrite.RewriteRecipeRepository;
 import org.springframework.ide.vscode.boot.java.rewrite.RewriteRefactorings;
 import org.springframework.ide.vscode.boot.java.rewrite.SpringBootUpgrade;
@@ -33,11 +32,6 @@ public class RewriteConfig {
 	}
 	
 	@ConditionalOnBean(RewriteRecipeRepository.class)
-	@Bean RewriteCompilationUnitCache orcuCache(SimpleLanguageServer server, BootLanguageServerParams params) {
-		return new RewriteCompilationUnitCache(params.projectFinder, server, params.projectObserver);
-	}
-	
-	@ConditionalOnBean(RewriteRecipeRepository.class)
 	@Bean RewriteRefactorings rewriteRefactorings(SimpleLanguageServer server, JavaProjectFinder projectFinder, RewriteRecipeRepository recipeRepo) {
 		return new RewriteRefactorings(server, projectFinder, recipeRepo);
 	}
@@ -51,15 +45,5 @@ public class RewriteConfig {
 	@Bean SpringBootUpgrade springBootUpgrade(SimpleLanguageServer server, RewriteRecipeRepository recipeRepo, JavaProjectFinder projectFinder) {
 		return new SpringBootUpgrade(server, recipeRepo, projectFinder);
 	}
-	
-//	@ConditionalOnBean(RewriteRecipeRepository.class)
-//	@Bean RewriteReconciler rewriteJavaReconciler(RewriteRecipeRepository recipeRepo, RewriteCompilationUnitCache cuCache, SimpleLanguageServer server, BootJavaConfig config) {
-//		return new RewriteReconciler(
-//				recipeRepo,
-//				cuCache,
-//				server.getQuickfixRegistry(),
-//				config
-//		);
-//	}
-	
+
 }
