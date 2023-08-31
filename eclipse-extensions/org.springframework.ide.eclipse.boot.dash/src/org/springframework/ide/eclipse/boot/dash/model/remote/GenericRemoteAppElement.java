@@ -102,7 +102,7 @@ public class GenericRemoteAppElement extends WrappingBootDashElement<String> imp
 
 	final private List<LiveExpression<?>> summaries = new ArrayList<>();
 
-	DisposingFactory<String, GenericRemoteAppElement> childFactory = new DisposingFactory<String, GenericRemoteAppElement>(existingChildIds) {
+	DisposingFactory<String, GenericRemoteAppElement> childFactory = new DisposingFactory<>(existingChildIds) {
 		@Override
 		protected GenericRemoteAppElement create(String appId) {
 			GenericRemoteAppElement parent = GenericRemoteAppElement.this;
@@ -182,7 +182,7 @@ public class GenericRemoteAppElement extends WrappingBootDashElement<String> imp
 		}
 	}
 
-	LiveExpression<RunState> baseRunState = new AsyncLiveExpression<RunState>(RunState.UNKNOWN) {
+	LiveExpression<RunState> baseRunState = new AsyncLiveExpression<>(RunState.UNKNOWN) {
 		{
 			dependsOn(app);
 			dependsOn(children);
@@ -253,7 +253,7 @@ public class GenericRemoteAppElement extends WrappingBootDashElement<String> imp
 		livePorts.dependsOn(getRunStateExp());
 	}
 
-	private LiveExpression<Integer> debugPort = new AsyncLiveExpression<Integer>(0) {
+	private LiveExpression<Integer> debugPort = new AsyncLiveExpression<>(0) {
 
 		//it is important that events for this exp are fired asynchronously to avoid starving ui thread
 		// causing deadlock. (I.e. the important thing is to have the event listeners not be doing things
@@ -270,7 +270,7 @@ public class GenericRemoteAppElement extends WrappingBootDashElement<String> imp
 		};
 	};
 
-	private LiveExpression<String> remoteDevtoolsUrl = new AsyncLiveExpression<String>(null) {
+	private LiveExpression<String> remoteDevtoolsUrl = new AsyncLiveExpression<>(null) {
 
 		//it is important that events for this exp are fired asynchronously to avoid starving ui thread
 		// causing deadlock. (I.e. the important thing is to have the event listeners not be doing things
@@ -314,7 +314,7 @@ public class GenericRemoteAppElement extends WrappingBootDashElement<String> imp
 	private OldValueDisposer<LogConnection> logConnection = new OldValueDisposer<>(this);
 
 	private <T> LiveExpression<T> sumarizeFromChildren(AppDataSummarizer<T> sumarizer) {
-		AsyncLiveExpression<T> sumary = new AsyncLiveExpression<T>(sumarizer.zero()) {
+		AsyncLiveExpression<T> sumary = new AsyncLiveExpression<>(sumarizer.zero()) {
 			@Override
 			protected T compute() {
 				T sum = sumarizer.getHere(GenericRemoteAppElement.this);
@@ -687,7 +687,7 @@ public class GenericRemoteAppElement extends WrappingBootDashElement<String> imp
 		synchronized (this) {
 			if (liveRequestMappings==null) {
 				final LiveExpression<Set<String>> actuatorUrls = getActuatorUrls();
-				liveRequestMappings = new AsyncLiveExpression<Failable<ImmutableList<RequestMapping>>>(Failable.error(MissingLiveInfoMessages.NOT_YET_COMPUTED), "Fetch request mappings for '"+getStyledName(null).getString()+"'") {
+				liveRequestMappings = new AsyncLiveExpression<>(Failable.error(MissingLiveInfoMessages.NOT_YET_COMPUTED), "Fetch request mappings for '"+getStyledName(null).getString()+"'") {
 					@Override
 					protected Failable<ImmutableList<RequestMapping>> compute() {
 						Set<String> targets = actuatorUrls.getValue();
@@ -720,7 +720,7 @@ public class GenericRemoteAppElement extends WrappingBootDashElement<String> imp
 		synchronized (this) {
 			if (liveEnv == null) {
 				final LiveExpression<Set<String>> actuatorUrls = getActuatorUrls();
-				liveEnv = new AsyncLiveExpression<Failable<LiveEnvModel>>(Failable.error(MissingLiveInfoMessages.NOT_YET_COMPUTED), "Fetch env for '"+getStyledName(null).getString()+"'") {
+				liveEnv = new AsyncLiveExpression<>(Failable.error(MissingLiveInfoMessages.NOT_YET_COMPUTED), "Fetch env for '"+getStyledName(null).getString()+"'") {
 					@Override
 					protected Failable<LiveEnvModel> compute() {
 						Set<String> targets = actuatorUrls.getValue();
@@ -757,7 +757,7 @@ public class GenericRemoteAppElement extends WrappingBootDashElement<String> imp
 		synchronized (this) {
 			if (liveBeans == null) {
 				LiveExpression<Set<String>> actuatorUrls = getActuatorUrls();
-				liveBeans = new AsyncLiveExpression<Failable<LiveBeansModel>>(Failable.error(MissingLiveInfoMessages.NOT_YET_COMPUTED), "Fetch beans for '"+getStyledName(null).getString()+"'") {
+				liveBeans = new AsyncLiveExpression<>(Failable.error(MissingLiveInfoMessages.NOT_YET_COMPUTED), "Fetch beans for '"+getStyledName(null).getString()+"'") {
 					@Override
 					protected Failable<LiveBeansModel> compute() {
 						Set<String> targets = actuatorUrls.getValue();
@@ -787,7 +787,7 @@ public class GenericRemoteAppElement extends WrappingBootDashElement<String> imp
 
 	public CompletableFuture<Void> enableDevtools(boolean enable) {
 		if (enable) {
-			return refreshTracker.runAsync("Enable Devtools Support for application '" + getStyledName(null).getString() + "'", () -> {
+			return refreshTracker.runAsync("Enable DevTools Support for application '" + getStyledName(null).getString() + "'", () -> {
 				App app = getAppData();
 				if (app instanceof SystemPropertySupport) {
 					SystemPropertySupport sysprops = (SystemPropertySupport) app;
@@ -798,7 +798,7 @@ public class GenericRemoteAppElement extends WrappingBootDashElement<String> imp
 				}
 			});
 		} else {
-			return refreshTracker.runAsync("Disable Devtools Support for application '" + getStyledName(null).getString() + "'", () -> {
+			return refreshTracker.runAsync("Disable DevTools Support for application '" + getStyledName(null).getString() + "'", () -> {
 				App app = getAppData();
 				if (app instanceof SystemPropertySupport) {
 					SystemPropertySupport sysprops = (SystemPropertySupport) app;

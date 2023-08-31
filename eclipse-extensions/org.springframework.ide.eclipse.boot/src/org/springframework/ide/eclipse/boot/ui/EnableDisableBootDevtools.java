@@ -65,10 +65,10 @@ public class EnableDisableBootDevtools extends AbstractHandler {
 			return "Project '"+project.getProject().getName()+"' does not seem to be a Spring Boot project";
 		} else if (!project.hasNature(SpringBootCore.M2E_NATURE)) {
 			return "Project '"+project.getProject().getName()+"' is not an Maven/m2e enabled project. This action's implementation requires m2e to add/remove "
-					+ "the Devtools as a dependency to your project.";
+					+ "the DevTools as a dependency to your project.";
 		} else {
 			String version = bootProject.getBootVersion();
-			return "Boot Devtools are provided by Spring Boot version 1.3.0 or later. "
+			return "Boot DevTools are provided by Spring Boot version 1.3.0 or later. "
 					+ "Project '"+project.getProject().getName()+"' uses Boot Version "+version;
 		}
 	}
@@ -132,7 +132,7 @@ public class EnableDisableBootDevtools extends AbstractHandler {
 							bootProject.addMavenDependency(devtools.getDependency(), /*preferManaged*/true);
 						} else {
 							if (shell != null) {
-								MessageDialog.openError(shell, "Boot Devtools Dependency could not be added", explainFailure(bootProject));
+								MessageDialog.openError(shell, "Boot DevTools Dependency could not be added", explainFailure(bootProject));
 							}
 						}
 					}

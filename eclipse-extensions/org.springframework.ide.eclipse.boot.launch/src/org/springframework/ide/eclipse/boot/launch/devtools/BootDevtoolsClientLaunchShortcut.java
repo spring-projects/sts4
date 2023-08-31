@@ -127,7 +127,7 @@ public class BootDevtoolsClientLaunchShortcut implements ILaunchShortcut {
 		IDebugModelPresentation labelProvider = DebugUITools.newDebugModelPresentation();
 		ElementListSelectionDialog dialog= new ElementListSelectionDialog(getShell(), labelProvider);
 		dialog.setElements(configList.toArray());
-		dialog.setTitle("Several Devtools Client Configs found for "+project.getName());
+		dialog.setTitle("Several DevTools Client Configs found for "+project.getName());
 		dialog.setMessage("Select an existing configuration");
 		dialog.setMultipleSelection(false);
 		int result = dialog.open();

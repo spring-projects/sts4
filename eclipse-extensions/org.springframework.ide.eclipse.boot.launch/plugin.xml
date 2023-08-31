@@ -45,10 +45,10 @@
     
     <shortcut
           class="org.springframework.ide.eclipse.boot.launch.devtools.BootDevtoolsClientLaunchShortcut"
-          description="Connect Spring Devtools Client to a Remote Spring Boot Application"
+          description="Connect Spring DevTools Client to a Remote Spring Boot Application"
           id="org.springframework.ide.eclipse.boot.launch.devtools.BootDevtoolsClientLaunchShortcut"
           icon="platform:/plugin/org.springframework.ide.eclipse.boot/resources/icons/boot-devtools-icon.png"
-          label="Spring Devtools Client"
+          label="Spring DevTools Client"
           modes="run, debug">
         <contextualLaunch>
            <enablement>
@@ -64,11 +64,11 @@
                id="org.springframework.ide.eclipse.boot.devtools.client.launch">
          </configurationType>
         <description
-               description="Run as Spring Devtools Client"
+               description="Run as Spring DevTools Client"
                mode="run">
          </description>
          <description
-               description="Debug as Spring Devtools Client"
+               description="Debug as Spring DevTools Client"
                mode="debug">
          </description>
     </shortcut>
@@ -93,7 +93,7 @@
     </launchConfigurationType>
     <launchConfigurationType
           id="org.springframework.ide.eclipse.boot.devtools.client.launch"
-          name="Spring Boot Devtools Client"
+          name="Spring Boot DevTools Client"
           delegate="org.springframework.ide.eclipse.boot.launch.devtools.BootDevtoolsClientLaunchConfigurationDelegate"
           modes="run,debug"
           sourceLocatorId="org.eclipse.jdt.launching.sourceLocator.JavaSourceLookupDirector"

@@ -29,7 +29,7 @@ public class BootDevtoolsClientMainTab extends LaunchConfigurationTabWithSection
 
 	@Override
 	public String getName() {
-		return "Devtools Client";
+		return "DevTools Client";
 	}
 
 	@Override

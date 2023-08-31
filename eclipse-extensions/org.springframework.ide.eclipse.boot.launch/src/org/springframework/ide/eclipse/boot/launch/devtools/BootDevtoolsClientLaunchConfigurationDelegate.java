@@ -96,7 +96,7 @@ public class BootDevtoolsClientLaunchConfigurationDelegate extends AbstractBootL
 			throws CoreException {
 		boolean isDebug = ILaunchManager.DEBUG_MODE.equals(mode);
 		int work =  isDebug ? 2 : 1;
-		mon.beginTask("Launching Devtools Client for"+getProjectName(conf), work);
+		mon.beginTask("Launching DevTools Client for"+getProjectName(conf), work);
 		if (isDebug) {
 			localDebugPort.set(findFreePort());
 		}
