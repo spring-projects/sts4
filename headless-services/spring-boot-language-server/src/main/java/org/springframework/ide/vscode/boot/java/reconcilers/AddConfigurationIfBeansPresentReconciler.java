@@ -24,9 +24,17 @@ import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.openrewrite.java.spring.boot2.AddConfigurationAnnotationIfBeansPresent;
+import org.springframework.beans.BeansException;
+import org.springframework.context.ApplicationContext;
+import org.springframework.context.ApplicationContextAware;
+import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.Boot2JavaProblemType;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
+import org.springframework.ide.vscode.boot.java.beans.BeansSymbolAddOnInformation;
+import org.springframework.ide.vscode.boot.java.beans.FeignClientBeanSymbolAddOnInformation;
+import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformation;
+import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
 import org.springframework.ide.vscode.commons.java.Version;
@@ -37,7 +45,7 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.Reconcile
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
 import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
 
-public class AddConfigurationIfBeansPresentReconciler implements JdtAstReconciler {
+public class AddConfigurationIfBeansPresentReconciler implements JdtAstReconciler, ApplicationContextAware {
 
 	private static final String ID = AddConfigurationAnnotationIfBeansPresent.class.getName();
 
@@ -46,6 +54,8 @@ public class AddConfigurationIfBeansPresentReconciler implements JdtAstReconcile
 	private static final String FIX_LABEL = "Add missing '@Configuration' annotations over classes";
 
 	private QuickfixRegistry quickfixRegistry;
+
+	private ApplicationContext applicationContext;
 
 	public AddConfigurationIfBeansPresentReconciler(QuickfixRegistry quickfixRegistry) {
 		this.quickfixRegistry = quickfixRegistry;
@@ -58,7 +68,7 @@ public class AddConfigurationIfBeansPresentReconciler implements JdtAstReconcile
 
 			@Override
 			public boolean visit(TypeDeclaration classDecl) {
-				if (isApplicableClass(cu, classDecl)) {
+				if (isApplicableClass(project, cu, classDecl)) {
 					SimpleName nameAst = classDecl.getName();
 					ReconcileProblemImpl problem = new ReconcileProblemImpl(getProblemType(), PROBLEM_LABEL,
 							nameAst.getStartPosition(), nameAst.getLength());
@@ -79,7 +89,7 @@ public class AddConfigurationIfBeansPresentReconciler implements JdtAstReconcile
 		});
 	}
 
-	private static boolean isApplicableClass(CompilationUnit cu, TypeDeclaration classDecl) {
+	private boolean isApplicableClass(IJavaProject project, CompilationUnit cu, TypeDeclaration classDecl) {
 		if (classDecl.isInterface()) {
 			return false;
 		}
@@ -112,14 +122,45 @@ public class AddConfigurationIfBeansPresentReconciler implements JdtAstReconcile
 				}
 			}
 		}
-
+		
 		// No '@Configuration' present. Check if any methods have '@Bean' annotation
 		for (MethodDeclaration m : classDecl.getMethods()) {
-			if (isBeanMethod(m)) {
+			if (isBeanMethod(m) && !isException(project, classDecl)) {
 				return true;
 			}
 		}
 
+		return false;
+	}
+	
+	private boolean isException(IJavaProject project, TypeDeclaration classDecl) {
+		if (applicationContext != null) {
+			SpringSymbolIndex index = applicationContext.getBean(SpringSymbolIndex.class);
+			if (index != null) {
+				final String beanClassName = RewriteQuickFixUtils.getDeepErasureType(classDecl.resolveBinding()).getQualifiedName();
+				for (EnhancedSymbolInformation s : index.getEnhancedSymbols(project)) {
+					SymbolAddOnInformation[] additionalInformation = s.getAdditionalInformation();
+					if (additionalInformation != null) {
+						for (SymbolAddOnInformation info : additionalInformation) {
+							if (info instanceof BeansSymbolAddOnInformation) {
+								BeansSymbolAddOnInformation info2 = (BeansSymbolAddOnInformation) info;
+								if (beanClassName.equals(info2.getBeanType())) {
+									return true;
+								}
+								if (info instanceof FeignClientBeanSymbolAddOnInformation) {
+									FeignClientBeanSymbolAddOnInformation feign = (FeignClientBeanSymbolAddOnInformation) info;
+									for (String configBean : feign.configClasses) {
+										if (beanClassName.equals(configBean)) {
+											return true;
+										}
+									}
+								}
+							}
+						}
+					}
+				}
+			}
+		}
 		return false;
 	}
 
@@ -147,6 +188,11 @@ public class AddConfigurationIfBeansPresentReconciler implements JdtAstReconcile
 	@Override
 	public ProblemType getProblemType() {
 		return Boot2JavaProblemType.MISSING_CONFIGURATION_ANNOTATION;
+	}
+
+	@Override
+	public void setApplicationContext(ApplicationContext applicationContext) throws BeansException {
+		this.applicationContext = applicationContext;
 	}
 
 }

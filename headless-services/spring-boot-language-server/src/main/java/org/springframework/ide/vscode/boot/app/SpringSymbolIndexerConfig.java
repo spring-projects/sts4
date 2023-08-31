@@ -12,12 +12,12 @@ package org.springframework.ide.vscode.boot.app;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.ide.vscode.boot.index.SpringMetamodelIndex;
 import org.springframework.ide.vscode.boot.index.cache.IndexCache;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchyAwareLookup;
 import org.springframework.ide.vscode.boot.java.beans.BeansSymbolProvider;
 import org.springframework.ide.vscode.boot.java.beans.ComponentSymbolProvider;
+import org.springframework.ide.vscode.boot.java.beans.FeignClientSymbolProvider;
 import org.springframework.ide.vscode.boot.java.data.DataRepositorySymbolProvider;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.boot.java.requestmapping.RequestMappingSymbolProvider;
@@ -71,6 +71,8 @@ public class SpringSymbolIndexerConfig {
 
 		providers.put(Annotations.REPOSITORY, dataRepositorySymbolProvider);
 		providers.put("", webfluxRouterSymbolProvider);
+		
+		providers.put(Annotations.FEIGN_CLIENT, new FeignClientSymbolProvider());
 
 		return providers;
 	}

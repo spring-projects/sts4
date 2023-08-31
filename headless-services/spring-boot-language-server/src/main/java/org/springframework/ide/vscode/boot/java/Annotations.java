@@ -59,6 +59,8 @@ public class Annotations {
 	public static final String CONDITIONAL_ON_JNDI = "org.springframework.boot.autoconfigure.condition.ConditionalOnJndi";
 	public static final String CONDITIONAL_ON_SINGLE_CANDIDATE = "org.springframework.boot.autoconfigure.condition.ConditionalOnSingleCandidate";
 	
+	public static final String FEIGN_CLIENT = "org.springframework.cloud.openfeign.FeignClient";
+	
 	public static final String VALUE = "org.springframework.beans.factory.annotation.Value";
 
 }
