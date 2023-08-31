@@ -284,7 +284,8 @@
               "string",
               "null"
             ],
-            "description": "Override JAVA_HOME used for launching the spring-boot-language-server JVM process."
+            "description": "Override JAVA_HOME used for launching the spring-boot-language-server JVM process.",
+            "scope": "machine-overridable"
           },
           "spring-boot.ls.java.heap": {
             "type": [
@@ -298,7 +299,8 @@
             "items": {
               "type": "string"
             },
-            "description": "Additional 'user defined' VM args to pass to the language server process."
+            "description": "Additional 'user defined' VM args to pass to the language server process.",
+            "scope": "machine-overridable"
           },
           "spring-boot.ls.checkJVM": {
             "type": "boolean",
