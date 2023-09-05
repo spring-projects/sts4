@@ -38,7 +38,7 @@ public class RewriteConfig {
 	
 	@ConditionalOnBean(RewriteRecipeRepository.class)
 	@Bean RewriteCodeActionHandler rewriteCodeActionHandler(CompilationUnitCache cuCache, BootJavaConfig config, JdtReconciler jdtReconciler, SimpleLanguageServer server) {
-		return new RewriteCodeActionHandler(cuCache, config, jdtReconciler, server.getQuickfixRegistry());
+		return new RewriteCodeActionHandler(cuCache, config, jdtReconciler, server.getQuickfixRegistry(), server.getDiagnosticSeverityProvider());
 	}
 	
 	@ConditionalOnBean(RewriteRecipeRepository.class)

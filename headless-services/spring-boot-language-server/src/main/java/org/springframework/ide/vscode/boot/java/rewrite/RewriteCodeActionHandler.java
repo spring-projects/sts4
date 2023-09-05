@@ -35,6 +35,7 @@ import org.springframework.ide.vscode.commons.languageserver.quickfix.Quickfix.Q
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixRegistry;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixType;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.BasicProblemCollector;
+import org.springframework.ide.vscode.commons.languageserver.reconcile.DiagnosticSeverityProvider;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblem;
 import org.springframework.ide.vscode.commons.languageserver.util.LspClient;
 import org.springframework.ide.vscode.commons.languageserver.util.LspClient.Client;
@@ -53,11 +54,14 @@ public class RewriteCodeActionHandler implements JavaCodeActionHandler {
 
 	private QuickfixRegistry quickfixRegistry;
 
-	public RewriteCodeActionHandler(CompilationUnitCache cuCache, BootJavaConfig config, JdtReconciler jdtReconciler, QuickfixRegistry quickfixRegistry) {
+	private DiagnosticSeverityProvider severityProvider;
+
+	public RewriteCodeActionHandler(CompilationUnitCache cuCache, BootJavaConfig config, JdtReconciler jdtReconciler, QuickfixRegistry quickfixRegistry, DiagnosticSeverityProvider severityProvider) {
 		this.cuCache = cuCache;
 		this.config = config;
 		this.jdtReconciler = jdtReconciler;
 		this.quickfixRegistry = quickfixRegistry;
+		this.severityProvider = severityProvider;
 	}
 
 	protected static boolean isResolve(CodeActionCapabilities capabilities, String property) {
@@ -109,7 +113,7 @@ public class RewriteCodeActionHandler implements JavaCodeActionHandler {
 						BasicProblemCollector problemsCollector = new BasicProblemCollector(problems);
 						jdtReconciler.reconcile(project, uri, cu, problemsCollector, true);
 						for (ReconcileProblem p : problems) {
-							if (p.getOffset() <= region.getOffset() && p.getOffset() + p.getLength() >= region.getOffset() + region.getLength()) {
+							if (p.getOffset() <= region.getOffset() && p.getOffset() + p.getLength() >= region.getOffset() + region.getLength() && severityProvider.getDiagnosticSeverity(p) == null) {
 								for (QuickfixData<?> qf :  p.getQuickfixes()) {
 									if (qf.params instanceof FixDescriptor) {
 										cas.add(createCodeActionFromScope((FixDescriptor) qf.params));
