@@ -11,7 +11,6 @@
 package org.springframework.ide.vscode.boot.app;
 
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingClass;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.ide.vscode.boot.java.reconcilers.JdtReconciler;
@@ -26,7 +25,6 @@ import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguage
 @Configuration(proxyBeanMethods = false)
 public class RewriteConfig {
 
-	@ConditionalOnMissingClass("org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness")
 	@Bean RewriteRecipeRepository rewriteRecipesRepository(SimpleLanguageServer server, JavaProjectFinder projectFinder, BootJavaConfig config) {
 		return new RewriteRecipeRepository(server, projectFinder, config);
 	}

@@ -42,8 +42,10 @@ import org.assertj.core.api.Condition;
 import org.eclipse.lsp4j.ApplyWorkspaceEditParams;
 import org.eclipse.lsp4j.ApplyWorkspaceEditResponse;
 import org.eclipse.lsp4j.ClientCapabilities;
+import org.eclipse.lsp4j.CodeActionCapabilities;
 import org.eclipse.lsp4j.CodeActionContext;
 import org.eclipse.lsp4j.CodeActionParams;
+import org.eclipse.lsp4j.CodeActionResolveSupportCapabilities;
 import org.eclipse.lsp4j.CodeLens;
 import org.eclipse.lsp4j.CodeLensParams;
 import org.eclipse.lsp4j.Command;
@@ -274,6 +276,9 @@ public class LanguageServerHarness {
 		textCap.setDocumentSymbol(documentSymbolCap);
 		CompletionCapabilities completionCap = new CompletionCapabilities(new CompletionItemCapabilities(true));
 		textCap.setCompletion(completionCap);
+		CodeActionCapabilities codeActionCapabilities = new CodeActionCapabilities(true);
+		codeActionCapabilities.setResolveSupport(new CodeActionResolveSupportCapabilities(List.of("edit")));
+		textCap.setCodeAction(codeActionCapabilities);
 		clientCap.setTextDocument(textCap);
 		WorkspaceClientCapabilities workspaceCap = new WorkspaceClientCapabilities();
 		workspaceCap.setApplyEdit(true);
@@ -773,7 +778,16 @@ public class LanguageServerHarness {
 				.map(e -> new CodeAction(this, e))
 				.collect(Collectors.toList());
 	}
-
+	
+	public List<CodeAction> getCodeActions(TextDocumentInfo doc, Range range, Diagnostic... problems) throws Exception {
+		CodeActionContext context = new CodeActionContext(Arrays.asList(problems));
+		List<Either<Command, org.eclipse.lsp4j.CodeAction>> actions =
+				getServer().getTextDocumentService().codeAction(new CodeActionParams(doc.getId(), range, context)).get();
+		return actions.stream()
+				.map(e -> new CodeAction(this, e))
+				.collect(Collectors.toList());
+	}
+	
 	@SuppressWarnings({ "unchecked", "rawtypes" })
 	public void perform(Command command) throws Exception {
 		List<Object> args = command.getArguments();

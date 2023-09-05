@@ -935,6 +935,16 @@ public class Editor {
 	public List<CodeAction> getCodeActions(Diagnostic problem) throws Exception {
 		return harness.getCodeActions(doc, problem);
 	}
+	
+	public List<CodeAction> getCodeActions(String overStr, int occurrence) throws Exception {
+		assertTrue(occurrence>0);
+		int offset = occurrences(getRawText(), overStr)
+				.elementAt(occurrence-1)
+				.map(o -> o + overStr.length()/2)
+				.block();
+		Position position = doc.toPosition(offset);
+		return harness.getCodeActions(doc, new Range(position, position));
+	}
 
 	public CodeAction assertCodeAction(Diagnostic problem) throws Exception {
 		List<CodeAction> actions = getCodeActions(problem);
