@@ -21,6 +21,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.eclipse.core.internal.net.ProxyManager;
+import org.eclipse.core.net.proxy.IProxyChangeListener;
+import org.eclipse.core.net.proxy.IProxyData;
+import org.eclipse.core.net.proxy.IProxyService;
 import org.eclipse.core.resources.ResourcesPlugin;
 import org.eclipse.core.runtime.Assert;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
@@ -32,6 +36,7 @@ import org.eclipse.lsp4j.InitializeResult;
 import org.eclipse.lsp4j.jsonrpc.messages.Message;
 import org.eclipse.lsp4j.jsonrpc.messages.ResponseMessage;
 import org.eclipse.lsp4j.services.LanguageServer;
+import org.eclipse.ui.PlatformUI;
 import org.springframework.tooling.boot.ls.prefs.CategoryProblemsSeverityPrefsPage;
 import org.springframework.tooling.boot.ls.prefs.FileListEditor;
 import org.springframework.tooling.boot.ls.prefs.ProblemCategoryData;
@@ -55,6 +60,7 @@ import com.google.common.collect.ImmutableSet;
  * 
  * @author Martin Lippert
  */
+@SuppressWarnings("restriction")
 public class DelegatingStreamConnectionProvider implements StreamConnectionProvider {
 	
 	private StreamConnectionProvider provider;
@@ -70,8 +76,7 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 	
 	private final ValueListener<ImmutableSet<RemoteAppData>> remoteAppsListener = (e, v) -> sendConfiguration();
 	
-	private long timestampBeforeStart;
-	private long timestampWhenInitialized;
+	private final IProxyChangeListener proxySettingsListener = e -> sendConfiguration();
 	
 	public DelegatingStreamConnectionProvider() {
 //		LanguageServerCommonsActivator.logInfo("Entering DelegatingStreamConnectionProvider()");
@@ -94,9 +99,13 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 
 	@Override
 	public void start() throws IOException {
-		this.timestampBeforeStart = System.currentTimeMillis();
 		BootLanguageServerPlugin.getDefault().getLog().info("DelegatingStreamConnectionProvider - Starting Boot LS");
 		this.provider.start();
+		IProxyService proxyService = PlatformUI.getWorkbench().getService(IProxyService.class);
+		if (proxyService != null) {
+			proxyService.addProxyChangeListener(proxySettingsListener);
+		}
+
 	}
 
 	@Override
@@ -116,6 +125,10 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 
 	@Override
 	public void stop() {
+		IProxyService proxyService = PlatformUI.getWorkbench().getService(IProxyService.class);
+		if (proxyService != null) {
+			proxyService.removeProxyChangeListener(proxySettingsListener);
+		}
 		BootLanguageServerPlugin.getDefault().getLog().info("DelegatingStreamConnectionProvider - Stopping Boot LS");
 		this.provider.stop();
 		if (fResourceListener != null) {
@@ -134,8 +147,6 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 			if (responseMessage.getResult() instanceof InitializeResult) {
 				this.languageServer = languageServer;
 				
-				this.timestampWhenInitialized = System.currentTimeMillis();
-//				LanguageServerCommonsActivator.logInfo("Boot LS startup time from start to initialized: " + (timestampWhenInitialized - timestampBeforeStart) + "ms");
 
 				sendConfiguration();
 				
@@ -214,10 +225,45 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 		
 		settings.put("boot-java", bootJavaObj);
 		
+		settings.put("http", createHttpProxySettings());
+		
 		putValidationPreferences(settings);
 		putValidationCategoryToggles(settings);
 
 		this.languageServer.getWorkspaceService().didChangeConfiguration(new DidChangeConfigurationParams(settings));
+	}
+	
+	private Map<String, Object> createHttpProxySettings() {
+		Map<String, Object> proxy = new HashMap<>();
+		IProxyService proxyService = PlatformUI.getWorkbench().getService(IProxyService.class);
+		if ((proxyService.isProxiesEnabled() || proxyService.isSystemProxiesEnabled()) &&  proxyService instanceof ProxyManager) {
+			ProxyManager proxyManager = (ProxyManager) proxyService;
+			if (proxyService.isSystemProxiesEnabled() && proxyManager.hasSystemProxies()) {
+				for (IProxyData data : proxyManager.getNativeProxyData()) {
+					if (data.getHost() != null) {
+						fillProxyData(proxy, data, proxyManager.getNativeNonProxiedHosts());
+						break;
+					}
+				}
+			} else if (proxyService.isProxiesEnabled()) {
+				for (IProxyData data : proxyService.getProxyData()) {
+					if (data.getHost() != null) {
+						fillProxyData(proxy, data, proxyService.getNonProxiedHosts());
+						break;
+					}
+				}
+			}
+		}
+		return proxy;
+	}
+	
+	private static void fillProxyData(Map<String, Object> proxy, IProxyData data, String[] exclusions) {
+		proxy.put("proxy", data.getType().toLowerCase() + "://" + data.getHost() + (data.getPort() >= 0 ? ":" + data.getPort() : ""));
+		if (data.isRequiresAuthentication()) {
+			proxy.put("proxy-user", data.getUserId());
+			proxy.put("proxy-password", data.getPassword());
+		}
+		proxy.put("proxy-exclusions", exclusions);
 	}
 	
 	private void putValidationPreferences(Map<String, Object> settings) {
@@ -253,6 +299,7 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 		}
 	}
 
+	@SuppressWarnings("unchecked")
 	private void dotPut(Object _settings, String dottedProperty, Object value) {
 		if (_settings instanceof Map) {
 			Map<String, Object> settings = (Map<String, Object>) _settings;

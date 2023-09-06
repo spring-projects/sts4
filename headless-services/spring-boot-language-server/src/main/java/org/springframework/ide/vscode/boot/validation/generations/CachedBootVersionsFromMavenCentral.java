@@ -37,8 +37,14 @@ public class CachedBootVersionsFromMavenCentral {
 	private static final Duration EXPIRES_AFTER = Duration.ofMinutes(60);
 	private static final int ATTEMPTS_NUMBER = 5;
 	private static final long RESPONSE_WAIT_TIME_MS = 1000;
+
+	private BootVersionsFromMavenCentral bootVersionsFromMaven;
 	
-	private static final LoadingCache<String, List<Version>> cache = CacheBuilder.newBuilder()
+	public CachedBootVersionsFromMavenCentral(BootVersionsFromMavenCentral bootVersionsFromMaven) {
+		this.bootVersionsFromMaven = bootVersionsFromMaven;
+	}
+
+	private final LoadingCache<String, List<Version>> cache = CacheBuilder.newBuilder()
 			.expireAfterWrite(EXPIRES_AFTER)
 			.build(new CacheLoader<String, List<Version>>() {
 
@@ -62,7 +68,7 @@ public class CachedBootVersionsFromMavenCentral {
 		
 	});
 	
-	public static synchronized List<Version> getBootVersions() {
+	public synchronized List<Version> getBootVersions() {
 		try {
 			return cache.get(KEY);
 		}
@@ -72,10 +78,10 @@ public class CachedBootVersionsFromMavenCentral {
 		}
 	}
 	
-	private static CompletableFuture<List<Version>> getFuture() {
+	private CompletableFuture<List<Version>> getFuture() {
 		return CompletableFuture.supplyAsync(() -> {
 			try {
-				return BootVersionsFromMavenCentral.getBootVersions();
+				return bootVersionsFromMaven.getBootVersions();
 			} catch (IOException e) {
 				throw new CompletionException(e);
 			}

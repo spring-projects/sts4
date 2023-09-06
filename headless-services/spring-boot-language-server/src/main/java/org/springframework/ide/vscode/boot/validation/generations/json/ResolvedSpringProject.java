@@ -22,8 +22,9 @@ public class ResolvedSpringProject extends SpringProject {
 
 	private final SpringProjectsClient client;
 	private Generations generations;
+	private CachedBootVersionsFromMavenCentral cachedVersionsFromMaven;
 
-	public ResolvedSpringProject(SpringProject project, SpringProjectsClient client) {
+	public ResolvedSpringProject(SpringProject project, SpringProjectsClient client, CachedBootVersionsFromMavenCentral cachedVersionsFromMaven) {
 		this.client = client;
 		setName(project.getName());
 		setRepositoryUrl(project.getRepositoryUrl());
@@ -52,7 +53,7 @@ public class ResolvedSpringProject extends SpringProject {
 	 * @throws Exception
 	 */
 	public List<Version> getReleases() throws Exception {
-		return CachedBootVersionsFromMavenCentral.getBootVersions();
+		return cachedVersionsFromMaven.getBootVersions();
 	}
 
 }

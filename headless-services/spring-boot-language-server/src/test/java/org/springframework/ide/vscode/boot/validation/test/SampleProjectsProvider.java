@@ -34,7 +34,7 @@ public class SampleProjectsProvider implements SpringProjectsProvider {
 
 	@Override
 	public ResolvedSpringProject getProject(String projectSlug) throws Exception {
-		ResolvedSpringProject project = new ResolvedSpringProject(getSpringProject(projectSlug), null) {
+		ResolvedSpringProject project = new ResolvedSpringProject(getSpringProject(projectSlug), null, null) {
 
 			@Override
 			public List<Generation> getGenerations() throws Exception {

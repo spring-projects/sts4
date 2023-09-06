@@ -15,6 +15,7 @@ import java.util.List;
 
 import org.eclipse.lsp4j.Diagnostic;
 import org.springframework.ide.vscode.boot.app.BootJavaConfig;
+import org.springframework.ide.vscode.boot.app.RestTemplateFactory;
 import org.springframework.ide.vscode.boot.validation.generations.json.Generation;
 import org.springframework.ide.vscode.boot.validation.generations.json.ResolvedSpringProject;
 import org.springframework.ide.vscode.boot.validation.generations.preferences.VersionValidationProblemType;
@@ -30,9 +31,9 @@ public class GenerationsValidator extends AbstractDiagnosticValidator {
 	
 	private SpringIoProjectsProvider provider;
 
-	public GenerationsValidator(DiagnosticSeverityProvider diagnosticSeverityProvider, BootJavaConfig config) {
+	public GenerationsValidator(DiagnosticSeverityProvider diagnosticSeverityProvider, BootJavaConfig config, RestTemplateFactory restTemplateFactory, CachedBootVersionsFromMavenCentral cachedVersionsFromMaven) {
 		super(diagnosticSeverityProvider);
-		provider = new SpringIoProjectsProvider(config.getSpringIOApiUrl());
+		provider = new SpringIoProjectsProvider(config.getSpringIOApiUrl(), restTemplateFactory, cachedVersionsFromMaven);
 		config.addListener(v -> provider.updateIoApiUri(config.getSpringIOApiUrl()));
 	}
 	

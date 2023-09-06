@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.boot.validation.generations;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.ide.vscode.boot.app.RestTemplateFactory;
 import org.springframework.ide.vscode.boot.validation.generations.json.ResolvedSpringProject;
 import org.springframework.ide.vscode.boot.validation.generations.json.SpringProject;
 import org.springframework.ide.vscode.boot.validation.generations.json.SpringProjects;
@@ -32,14 +33,18 @@ public class SpringIoProjectsProvider implements SpringProjectsProvider {
 
 	private SpringProjectsClient client;
 	private Map<String, ResolvedSpringProject> cache;
+	private RestTemplateFactory restTemplateFactory;
+	private CachedBootVersionsFromMavenCentral cachedVersionsFromMaven;
 
-	public SpringIoProjectsProvider(String uri) {
+	public SpringIoProjectsProvider(String uri, RestTemplateFactory restTemplateFactory, CachedBootVersionsFromMavenCentral cachedVersionsFromMaven) {
+		this.restTemplateFactory = restTemplateFactory;
 		updateIoApiUri(uri);
 	}
 	
 	public synchronized void updateIoApiUri(String uri) {
 		if (client == null || !uri.equals(client.getUrl())) {
-			this.client = new SpringProjectsClient(uri);
+			this.client = new SpringProjectsClient(uri, restTemplateFactory);
+			cache = null;
 		}
 	}
 
@@ -70,7 +75,7 @@ public class SpringIoProjectsProvider implements SpringProjectsProvider {
 			List<SpringProject> projects = springProjects.getProjects();
 			if (projects != null) {
 				for (SpringProject project : projects) {
-					builder.put(project.getSlug(), new ResolvedSpringProject(project, client));
+					builder.put(project.getSlug(), new ResolvedSpringProject(project, client, cachedVersionsFromMaven));
 				}
 			}
 		}

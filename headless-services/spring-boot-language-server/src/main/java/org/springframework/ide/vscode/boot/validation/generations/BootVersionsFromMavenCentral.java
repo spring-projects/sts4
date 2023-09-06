@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.boot.validation.generations;
 
 import java.io.IOException;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -24,6 +25,7 @@ import org.springframework.http.HttpMethod;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.ide.vscode.boot.app.RestTemplateFactory;
 import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
 import org.springframework.ide.vscode.commons.java.Version;
 import org.springframework.web.client.RestTemplate;
@@ -31,15 +33,20 @@ import org.springframework.web.client.RestTemplate;
 public class BootVersionsFromMavenCentral {
 	
 	private static final Logger log = LoggerFactory.getLogger(BootVersionsFromMavenCentral.class);
-	private static final String URL = "https://search.maven.org/solrsearch/select?q=g:org.springframework.boot+AND+a:spring-boot-starter-parent&core=gav&rows=200&wt=json";
+	private static final URI URL = URI.create("https://search.maven.org/solrsearch/select?q=g:org.springframework.boot+AND+a:spring-boot-starter-parent&core=gav&rows=200&wt=json");
+	private RestTemplateFactory restTemplateFactory;
 	
+	public BootVersionsFromMavenCentral(RestTemplateFactory restTemplateFactory) {
+		this.restTemplateFactory = restTemplateFactory;
+	}
+
 	@SuppressWarnings({ "rawtypes", "unchecked" })
-	public static List<Version> getBootVersions() throws IOException {
+	public List<Version> getBootVersions() throws IOException {
 		HttpHeaders headers = new HttpHeaders();
 		headers.setAccept(MediaType.parseMediaTypes("application/json"));
 
 		HttpEntity<?> entity = new HttpEntity<>(headers);
-		RestTemplate restTemplate = new RestTemplate();
+		RestTemplate restTemplate = restTemplateFactory.createRestTemplate(URL.getHost());
 		
 		log.info("search maven central for Spring Boot release information via: " + URL);
 

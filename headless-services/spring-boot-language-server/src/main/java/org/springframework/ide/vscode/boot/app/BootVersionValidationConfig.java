@@ -22,6 +22,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.ide.vscode.boot.common.ProjectReconcileScheduler;
 import org.springframework.ide.vscode.boot.java.rewrite.SpringBootUpgrade;
 import org.springframework.ide.vscode.boot.validation.BootVersionValidationEngine;
+import org.springframework.ide.vscode.boot.validation.generations.BootVersionsFromMavenCentral;
+import org.springframework.ide.vscode.boot.validation.generations.CachedBootVersionsFromMavenCentral;
 import org.springframework.ide.vscode.boot.validation.generations.GenerationsValidator;
 import org.springframework.ide.vscode.boot.validation.generations.ProjectVersionDiagnosticProvider;
 import org.springframework.ide.vscode.boot.validation.generations.UpdateBootVersion;
@@ -36,16 +38,24 @@ public class BootVersionValidationConfig {
 	
 	private static final Logger log = LoggerFactory.getLogger(BootVersionValidationConfig.class);
 	
-	@Bean UpdateBootVersion updateBootVersion(SimpleLanguageServer server, Optional<SpringBootUpgrade> bootUpgradeOpt) {
-		return new UpdateBootVersion(server.getDiagnosticSeverityProvider(), bootUpgradeOpt);
+	@Bean UpdateBootVersion updateBootVersion(SimpleLanguageServer server, Optional<SpringBootUpgrade> bootUpgradeOpt, CachedBootVersionsFromMavenCentral cachedVersionsFromMaven) {
+		return new UpdateBootVersion(server.getDiagnosticSeverityProvider(), bootUpgradeOpt, cachedVersionsFromMaven);
 	}
 	
-	@Bean GenerationsValidator generationsValidator(SimpleLanguageServer server, BootJavaConfig config) {
-		return new GenerationsValidator(server.getDiagnosticSeverityProvider(), config);
+	@Bean GenerationsValidator generationsValidator(SimpleLanguageServer server, BootJavaConfig config, RestTemplateFactory restTemplateFactory, CachedBootVersionsFromMavenCentral cachedVersionsFromMaven) {
+		return new GenerationsValidator(server.getDiagnosticSeverityProvider(), config, restTemplateFactory, cachedVersionsFromMaven);
 	}
 	
 	@Bean ProjectVersionDiagnosticProvider projectVersionDiagnosticProvider(List<VersionValidator> validators) {
 		return new ProjectVersionDiagnosticProvider(validators);
+	}
+	
+	@Bean BootVersionsFromMavenCentral booVersionsFromMavenCentral(RestTemplateFactory restTemplateFactory) {
+		return new BootVersionsFromMavenCentral(restTemplateFactory);
+	}
+	
+	@Bean CachedBootVersionsFromMavenCentral cachedBootVersionsFromMavenCentral(BootVersionsFromMavenCentral bootVersionsFromMaven) {
+		return new CachedBootVersionsFromMavenCentral(bootVersionsFromMaven);
 	}
 	
 	@ConditionalOnMissingClass("org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness")
