@@ -28,6 +28,7 @@ import java.util.stream.Stream;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.Parser;
+import org.openrewrite.Parser.Input;
 import org.openrewrite.Recipe;
 import org.openrewrite.SourceFile;
 import org.openrewrite.Tree;
@@ -45,6 +46,7 @@ import org.openrewrite.java.tree.J.CompilationUnit;
 import org.openrewrite.java.tree.JavaSourceFile;
 import org.openrewrite.java.tree.JavaType;
 import org.openrewrite.marker.Range;
+import org.openrewrite.tree.ParsingEventListener;
 import org.openrewrite.tree.ParsingExecutionContextView;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -314,7 +316,14 @@ public class ORAstUtils {
 		ctx.putMessage(JavaParser.SKIP_SOURCE_SET_TYPE_GENERATION, true);
 		if (parseCallback != null) {
 			ParsingExecutionContextView parseContext = ParsingExecutionContextView.view(ctx);
-			parseContext.setParsingListener((input, source) -> parseCallback.accept(source));
+			parseContext.setParsingListener(new ParsingEventListener() {
+
+				@Override
+				public void parsed(Input input, SourceFile source) {
+					parseCallback.accept(source);
+				}
+				
+			});
 			ctx = parseContext;
 		}
 		List<CompilationUnit> cus = Collections.emptyList();
