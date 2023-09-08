@@ -83,7 +83,7 @@ public class InProjectSymbolsProvider implements SymbolsProvider {
 		
 		if (project != null) {
 
-			dumpBeansModel(project.getName()); // for debug purposes
+//			dumpBeansModel(project.getName()); // for debug purposes
 			
 			String projectLocationPrefix = LSPEclipseUtils.toUri(project).toASCIIString();
 			query = "locationPrefix:" + projectLocationPrefix + "?" + query;
