@@ -1,3 +1,22 @@
+## 2023-09-13 (4.20.0 RELEASE, incl. language servers version 1.49.0)
+
+#### important highlights
+
+* _(Spring Boot):_ 5x-10x faster Java Reconciling support to show Spring specific validations re-built from the ground up tuned for high performance to work seamlessly in large code bases
+
+#### all fixes and improvements in detail
+
+* _(Spring Boot)_ fixed: Performance of Reconciling Spring Java ([#1068](https://github.com/spring-projects/sts4/issues/1068))
+* _(Spring Boot)_ fixed: Spring Language Server hangs forever ([#1075](https://github.com/spring-projects/sts4/issues/1075))
+* _(Spring Boot)_ fixed: Spring Boot Validations Builder hung seemingly forever ([#1103](https://github.com/spring-projects/sts4/issues/1103))
+* _(Spring Boot)_ fixed: [new validation engine] remove old open-rewrite based validation code ([#1084](https://github.com/spring-projects/sts4/issues/1084))
+* _(Spring Boot)_ fixed: [new validation engine] convert reconcilers to new validation engine ([#1085](https://github.com/spring-projects/sts4/issues/1085))
+* _(Spring Boot)_ fixed: [new validation engine] take preference changes into account beyond open files ([#1083](https://github.com/spring-projects/sts4/issues/1083))
+* _(Spring Boot)_ fixed: Incorrect MISSING_CONFIGURATION_ANNOTATION warning in vscode ([#1100](https://github.com/spring-projects/sts4/issues/1100))
+* _(Spring Boot)_ fixed: quick fix to remove unnecessary `@Autowired` appears twice ([#1106](https://github.com/spring-projects/sts4/issues/1106))
+* _(Spring Boot)_ fixed: quick fix to convert '@RequestMapping' to '@GetMapping' fails in VSCode ([#1105](https://github.com/spring-projects/sts4/issues/1105))
+* _(VSCode)_ fixed: Change the scope of `spring-boot.ls.java.home` to `machine-overridable` ([#1094](https://github.com/spring-projects/sts4/issues/1094))
+
 ## 2023-06-14 (4.19.1 RELEASE, incl. language servers version 1.48.0)
 
 * _(Spring Boot)_ fixed: Evaluate Spring Modulith actuators ([#953](https://github.com/spring-projects/sts4/issues/953))
