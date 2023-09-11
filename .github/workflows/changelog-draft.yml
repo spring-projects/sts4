@@ -31,13 +31,5 @@ jobs:
           cat $changelog_filename | cat - Changelog.md > new_Changelog.md
           mv new_Changelog.md Changelog.md
           cat Changelog.md
-      - name: Test Changelog Extraction
-        id: changelog
-        run: |
-          changelog=`sed '/4.20.0/,/^## .*/!d' Changelog.md | sed '$d' | sed 's/^* /- /'`
-          echo "content=`echo $changelog`" >> $GITHUB_OUTPUT
-      - name: Verify Changelog
-        run: |
-          echo '${{ steps.changelog.outputs.content }}'
           
           

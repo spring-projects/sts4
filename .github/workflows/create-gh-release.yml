@@ -1,0 +1,56 @@
+name: Create Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Github release marker, i.e. 4.20.1
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+jobs:
+  changelog:
+    runs-on: ubuntu-latest
+    name: Changelog for the release
+    outputs:
+      content: ${{ steps.changelog.outputs.content }}
+    steps:
+      - name: Checkout wiki code
+        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
+        with:
+          repository: ${{github.repository}}.wiki
+      - name: Extract Changelog
+        id: changelog
+        run: |
+          changelog=`sed '/${{ inputs.version }}/,/^## .*/!d' Changelog.md | sed '$d' | sed 's/^* /- /'`
+          echo "content=`echo $changelog`" >> $GITHUB_OUTPUT          
+
+  release:
+    needs: [ changelog ]
+    name: Create Release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Verify Changelog
+        run: |
+          echo '${{needs.changelog.outputs.content }}'
+#      - name: Checkout code
+#        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
+#      - name: Push Tag
+#        id: ${{ inputs.release }}
+#        uses: mathieudutour/github-tag-action@fcfbdceb3093f6d85a3b194740f8c6cec632f4e2
+#        with:
+#          github_token: ${{ secrets.GITHUB_TOKEN }}
+#      - name: Create Release
+#        id: ${{ inputs.release }}
+#        uses: actions/create-release@0cb9c9b65d5d1901c1f53e5e66eaf4afd303e70e
+#        env:
+#          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#        with:
+#          tag_name: ${{ inputs.release }}.RELEASE
+#          release_name: Release ${{ inputs.release }}.RELEASE
+#          body: ${{needs.changelog.outputs.content }}
+#          draft: true
+#          prerelease: false
