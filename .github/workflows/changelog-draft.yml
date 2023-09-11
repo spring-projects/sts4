@@ -28,8 +28,5 @@ jobs:
         run: |
           changelog_filename=generated-changelog.md
           java -jar github-changelog-generator.jar --changelog.repository=spring-projects/sts4 ${{ inputs.release }} ./${changelog_filename}
-          echo 'Printing ${changelog_filename}'
-          cat $changelog_filename
-          echo '------------------------------'
-          cat $changelog_filename | cat - Changelog.md > new_Changelog.md
-          cat new_Changelog.md
+          cat $changelog_filename | cat - Changelog.md > Changelog.md
+          cat Changelog.md
