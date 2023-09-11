@@ -31,7 +31,7 @@ jobs:
           cat $changelog_filename | cat - Changelog.md > Changelog.md
           cat Changelog.md
       - name: Test Changelog Extraction
-          run: |
-            my_var=cat Changelog.md | sed -e 's/## \(.*\)## /\1/'
-            echo $my_var
+        run: |
+          my_var=cat Changelog.md | sed -e 's/## \(.*\)## /\1/'
+          echo $my_var
           
