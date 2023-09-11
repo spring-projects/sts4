@@ -32,7 +32,12 @@ jobs:
           mv new_Changelog.md Changelog.md
           cat Changelog.md
       - name: Test Changelog Extraction
+        id: changelog
         run: |
-          my_var=cat Changelog.md | sed -e 's/## \(.*\)## /\1/'
-          echo $my_var
+          changelog=`sed '/4.20.0/,/^## .*/!d' Changelog.md | sed '$d'`
+          echo "content=`echo $changelog`" >> $GITHUB_OUTPUT
+      - name: Verify Changelog
+        run: |
+          echo '${{ steps.changelog.outputs.content }}'
+          
           
