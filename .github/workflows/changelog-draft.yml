@@ -30,3 +30,8 @@ jobs:
           java -jar github-changelog-generator.jar --changelog.repository=spring-projects/sts4 ${{ inputs.release }} ./${changelog_filename}
           cat $changelog_filename | cat - Changelog.md > Changelog.md
           cat Changelog.md
+      - name: Test Changelog Extraction
+          run: |
+            my_var=cat Changelog.md | sed -e 's/## \(.*\)## /\1/'
+            echo $my_var
+          
