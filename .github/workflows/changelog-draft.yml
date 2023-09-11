@@ -1,0 +1,33 @@
+name: Changelog Draft
+
+on:
+  workflow_dispatch:
+    inputs:
+      release:
+        description: Github release marker, i.e. 4.20.1.RELEASE
+        required: true
+        type: string
+
+jobs:
+  changelog:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout wiki code
+        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
+        with:
+          repository: ${{github.repository}}.wiki
+      - name: Set up JDK 17
+        uses: actions/setup-java@5ffc13f4174014e2d4d4572b3d74c3fa61aeb2c2
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      - name: Download Changelog Generator
+        run: |
+          wget https://github.com/spring-io/github-changelog-generator/releases/download/v0.0.8/github-changelog-generator.jar
+      - name: Push to wiki
+        run: |
+          changelog_filename=generated-changelog.md
+          java -jar github-changelog-generator.jar ${{ inputs.release }} --changelog.repository=spring-projects/sts4 ./${changelog_filename}
+          cat Changelog.md
+          cat $changelog_filename | cat - Changelog.md > new_Changelog.md
+          cat new_Changelog.md
