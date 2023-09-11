@@ -34,7 +34,7 @@ jobs:
       - name: Test Changelog Extraction
         id: changelog
         run: |
-          changelog=`sed '/4.20.0/,/^## .*/!d' Changelog.md | sed '$d'`
+          changelog=`sed '/4.20.0/,/^## .*/!d' Changelog.md | sed '$d' | sed 's/^* /- /'`
           echo "content=`echo $changelog`" >> $GITHUB_OUTPUT
       - name: Verify Changelog
         run: |
