@@ -40,6 +40,7 @@ jobs:
         uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
       - name: Push Tag
         run: |
+          git config --global user.name "@spring-projects/spring-ide-admin"
           git tag -a ${{ inputs.version }}.RELEASE -m "${{ inputs.version }}.RELEASE"
           git push --tags
       - name: Create Release
