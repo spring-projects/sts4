@@ -39,10 +39,13 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
       - name: Push Tag
-        id: ${{ inputs.release }}.RELEASE
-        uses: mathieudutour/github-tag-action@fcfbdceb3093f6d85a3b194740f8c6cec632f4e2
-        with:
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git tag -a ${{ inputs.release }}.RELEASE -m "${{ inputs.release }}.RELEASE"
+          git push --tags
+#        id: ${{ inputs.release }}.RELEASE
+#        uses: mathieudutour/github-tag-action@fcfbdceb3093f6d85a3b194740f8c6cec632f4e2
+#        with:
+#          github_token: ${{ secrets.GITHUB_TOKEN }}
       - name: Create Release
         id: ${{ inputs.release }}.RELEASE
         uses: actions/create-release@0cb9c9b65d5d1901c1f53e5e66eaf4afd303e70e
