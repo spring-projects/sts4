@@ -42,16 +42,12 @@ jobs:
         run: |
           git tag -a ${{ inputs.version }}.RELEASE -m "${{ inputs.version }}.RELEASE"
           git push --tags
-#        id: ${{ inputs.release }}.RELEASE
-#        uses: mathieudutour/github-tag-action@fcfbdceb3093f6d85a3b194740f8c6cec632f4e2
-#        with:
-#          github_token: ${{ secrets.GITHUB_TOKEN }}
       - name: Create Release
-        id: ${{ inputs.version }}.RELEASE
         uses: actions/create-release@0cb9c9b65d5d1901c1f53e5e66eaf4afd303e70e
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
+          id: ${{ inputs.version }}.RELEASE
           tag_name: ${{ inputs.version }}.RELEASE
           release_name: Release ${{ inputs.version }}.RELEASE
           body: ${{needs.changelog.outputs.content }}
