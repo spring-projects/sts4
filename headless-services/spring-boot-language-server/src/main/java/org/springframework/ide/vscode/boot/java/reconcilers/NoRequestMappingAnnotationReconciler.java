@@ -13,19 +13,25 @@ package org.springframework.ide.vscode.boot.java.reconcilers;
 import static org.springframework.ide.vscode.commons.java.SpringProjectUtil.springBootVersionGreaterOrEqual;
 
 import java.net.URI;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.ArrayInitializer;
 import org.eclipse.jdt.core.dom.CompilationUnit;
+import org.eclipse.jdt.core.dom.Expression;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MarkerAnnotation;
 import org.eclipse.jdt.core.dom.MemberValuePair;
 import org.eclipse.jdt.core.dom.MethodDeclaration;
 import org.eclipse.jdt.core.dom.NormalAnnotation;
+import org.eclipse.jdt.core.dom.QualifiedName;
+import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.SingleMemberAnnotation;
-import org.openrewrite.java.spring.NoRequestMappingAnnotation;
+import org.openrewrite.marker.Range;
 import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.Boot2JavaProblemType;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
@@ -35,11 +41,15 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemTy
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblemImpl;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
 import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
+import org.springframework.ide.vscode.commons.rewrite.java.NoRequestMappingAnnotation;
 
 public class NoRequestMappingAnnotationReconciler implements JdtAstReconciler {
 	
+	private static final String UNSUPPORTED_REQUEST_METHOD = "UNSUPPORTED";
+	
+    private static final List<String> SUPPORTED_REQUEST_METHODS = List.of("GET", "POST", "PUT", "DELETE", "PATCH");
+	
     private static final String LABEL = "Replace @RequestMapping with specific @GetMapping, @PostMapping etc.";
-	private static final String ID = NoRequestMappingAnnotation.class.getName();
 	
 	private QuickfixRegistry registry;
 
@@ -71,58 +81,83 @@ public class NoRequestMappingAnnotationReconciler implements JdtAstReconciler {
 			}
 			
 			private void processAnnotation(Annotation a) {
-				if (a.getParent() instanceof MethodDeclaration && isRequestMappingAnnotation(cu, a)) {
-					String uri = docUri.toASCIIString();
-					ReconcileProblemImpl problem = new ReconcileProblemImpl(getProblemType(), LABEL, a.getStartPosition(), a.getLength());
-					ReconcileUtils.setRewriteFixes(registry, problem, List.of(
-//						new FixDescriptor(ID, List.of(uri), RecipeCodeActionDescriptor.buildLabel(LABEL, RecipeScope.NODE))
-//    						.withRangeScope(RewriteQuickFixUtils.createOpenRewriteRange(cu, a))
-//    						.withRecipeScope(RecipeScope.NODE),
-        				new FixDescriptor(ID, List.of(uri), ReconcileUtils.buildLabel(LABEL, RecipeScope.FILE))
-    						.withRecipeScope(RecipeScope.FILE),
-            				new FixDescriptor(ID, List.of(uri), ReconcileUtils.buildLabel(LABEL, RecipeScope.PROJECT))
-        						.withRecipeScope(RecipeScope.PROJECT)
-        			));
-					problemCollector.accept(problem);
+				if (a.getParent() instanceof MethodDeclaration) {
+					List<String> requestMethods = getRequestMethods(cu, a);
+					if (!requestMethods.isEmpty() && !requestMethods.contains(UNSUPPORTED_REQUEST_METHOD)) {
+						String uri = docUri.toASCIIString();
+						Range range = ReconcileUtils.createOpenRewriteRange(cu, a);
+						if (requestMethods.size() == 1 && SUPPORTED_REQUEST_METHODS.contains(requestMethods.get(0))) {
+							ReconcileProblemImpl problem = new ReconcileProblemImpl(getProblemType(), LABEL, a.getStartPosition(), a.getLength());
+							ReconcileUtils.setRewriteFixes(registry, problem, List.of(
+									createFixDescriptor(uri, range, requestMethods.get(0)),
+									new FixDescriptor(org.openrewrite.java.spring.NoRequestMappingAnnotation.class.getName(), List.of(uri), ReconcileUtils.buildLabel(LABEL, RecipeScope.FILE))
+										.withRecipeScope(RecipeScope.FILE),
+									new FixDescriptor(org.openrewrite.java.spring.NoRequestMappingAnnotation.class.getName(), List.of(uri), ReconcileUtils.buildLabel(LABEL, RecipeScope.PROJECT))
+										.withRecipeScope(RecipeScope.PROJECT)
+							));
+							problemCollector.accept(problem);
+						} else if (SUPPORTED_REQUEST_METHODS == requestMethods) { // the case of no request methods specified
+							ReconcileProblemImpl problem = new ReconcileProblemImpl(getProblemType(), "Consider replacing with precise mapping annotation", a.getStartPosition(), a.getLength());
+							ReconcileUtils.setRewriteFixes(registry, problem, 
+									requestMethods.stream().map(m -> createFixDescriptor(uri, range, m)).collect(Collectors.toList()));
+							problemCollector.accept(problem);
+						}
+					}
 				}
 			}
 			
 		});
 	}
 	
-	private static boolean isRequestMappingAnnotation(CompilationUnit cu, Annotation a) {
-		// Consider only NormalAnnotation as we need to flag @RequestMapping with single method parameter value
-		if (a.isNormalAnnotation()) {
-			String typeName = a.getTypeName().getFullyQualifiedName();
-			if (Annotations.SPRING_REQUEST_MAPPING.equals(typeName)) {
-				return hasApplicableMethodParameter(a);
-			} else if (typeName.endsWith("RequestMapping")) {
-				ITypeBinding type = a.resolveTypeBinding();
-				if (type != null && Annotations.SPRING_REQUEST_MAPPING.equals(type.getQualifiedName())) {
-					return hasApplicableMethodParameter(a);
-				}
-			}
-		}
-		return false;
+	private static FixDescriptor createFixDescriptor(String uri, Range range, String requestMethod) {
+		return new FixDescriptor(NoRequestMappingAnnotation.class.getName(), List.of(uri), "Replace with '@%s'".formatted(NoRequestMappingAnnotation.associatedRequestMapping(requestMethod)))
+				.withRangeScope(range)
+				.withParameters(Map.of("preferredMapping", requestMethod))
+				.withRecipeScope(RecipeScope.NODE);
 	}
 	
-	private static boolean hasApplicableMethodParameter(Annotation a) {
+	private static List<String> getRequestMethods(CompilationUnit cu, Annotation a) {
+		String typeName = a.getTypeName().getFullyQualifiedName();
+		if (Annotations.SPRING_REQUEST_MAPPING.equals(typeName)) {
+			return getRequestMethods(a);
+		} else if (typeName.endsWith("RequestMapping")) {
+			ITypeBinding type = a.resolveTypeBinding();
+			if (type != null && Annotations.SPRING_REQUEST_MAPPING.equals(type.getQualifiedName())) {
+				return getRequestMethods(a);
+			}
+		}
+		return Collections.emptyList();
+	}
+	
+	@SuppressWarnings("unchecked")
+	private static List<String> getRequestMethods(Annotation a) {
 		if (a.isNormalAnnotation()) {
 			for (Object o : ((NormalAnnotation) a).values()) {
 				if (o instanceof MemberValuePair) {
 					MemberValuePair pair = (MemberValuePair) o;
 					if ("method".equals(pair.getName().getIdentifier())) {
 						if (pair.getValue() instanceof ArrayInitializer) {
-							return ((ArrayInitializer) pair.getValue()).expressions().size() == 1;
+							List<Expression> expressions = ((ArrayInitializer) pair.getValue()).expressions();
+							return expressions.stream().map(NoRequestMappingAnnotationReconciler::convertRequestMethodToString).collect(Collectors.toList());
+						} else {
+							return List.of(convertRequestMethodToString(pair.getValue()));
 						}
-						return true;
 					}
 				}
 			}
 		}
-		return false;
+		return SUPPORTED_REQUEST_METHODS;
 	}
-
+	
+	private static String convertRequestMethodToString(Expression e) {
+		String requestMethod = UNSUPPORTED_REQUEST_METHOD;
+		if (e instanceof QualifiedName) {
+			requestMethod = ((QualifiedName) e).getName().getIdentifier();
+		} else if (e instanceof SimpleName) {
+			requestMethod = ((SimpleName) e).getIdentifier();
+		}
+		return SUPPORTED_REQUEST_METHODS.contains(requestMethod) ? requestMethod : UNSUPPORTED_REQUEST_METHOD;
+	}
 
 	@Override
 	public boolean isApplicable(IJavaProject project) {

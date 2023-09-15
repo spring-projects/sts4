@@ -51,6 +51,7 @@ import org.springframework.ide.vscode.commons.rewrite.ORDocUtils;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
 import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.java.ORAstUtils;
+import org.springframework.ide.vscode.commons.rewrite.java.RangeScopedRecipe;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
@@ -204,16 +205,20 @@ public class RewriteRefactorings implements CodeActionResolver, QuickfixHandler 
 				if (d.getRangeScope() == null) {
 					throw new IllegalArgumentException("Missing scope AST node!");
 				} else {
-					r = ORAstUtils.nodeRecipe(r, j -> {
-						if (j != null) {
-							 Range range = j.getMarkers().findFirst(Range.class).orElse(null);
-							 if (range != null) {
-								 // Rewrite range end offset is up to not including hence -1
-								 return d.getRangeScope().getStart().getOffset() <= range.getStart().getOffset() && range.getEnd().getOffset() - 1 <= d.getRangeScope().getEnd().getOffset();  
-							 }
-						}
-						return false;
-					});
+					if (r instanceof RangeScopedRecipe) {
+						((RangeScopedRecipe) r).setRange(d.getRangeScope());
+					} else {
+						r = ORAstUtils.nodeRecipe(r, j -> {
+							if (j != null) {
+								 Range range = j.getMarkers().findFirst(Range.class).orElse(null);
+								 if (range != null) {
+									 // Rewrite range end offset is up to not including hence -1
+									 return d.getRangeScope().getStart().getOffset() <= range.getStart().getOffset() && range.getEnd().getOffset() - 1 <= d.getRangeScope().getEnd().getOffset();  
+								 }
+							}
+							return false;
+						});
+					}
 				}
 			}
 			return r;

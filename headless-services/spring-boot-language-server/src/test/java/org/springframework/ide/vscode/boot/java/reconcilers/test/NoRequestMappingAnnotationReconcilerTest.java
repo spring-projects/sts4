@@ -80,10 +80,46 @@ public class NoRequestMappingAnnotationReconcilerTest extends BaseReconcilerTest
 		String markedStr = source.substring(problem.getOffset(), problem.getOffset() + problem.getLength());
 		assertEquals("@RequestMapping(value = \"/1\", method = RequestMethod.GET)", markedStr);
 
-		assertEquals(2, problem.getQuickfixes().size());
+		assertEquals(3, problem.getQuickfixes().size());
+		assertEquals("Replace with '@GetMapping'", problems.get(0).getQuickfixes().get(0).title);
 		
 	}
 
+	@Test
+	void staticImport() throws Exception {
+		String source = """
+				package example.demo;
+				
+				import org.springframework.web.bind.annotation.RequestMapping;
+				import static org.springframework.web.bind.annotation.RequestMethod.*;
+				
+				
+				@RequestMapping("/hello")
+				class A {
+				
+					@RequestMapping(value = "/1", method = GET)
+					String hello1() {
+						return "1";
+					};
+					
+				}
+				""";
+		List<ReconcileProblem> problems = reconcile("A.java", source, false);
+		
+		assertEquals(1, problems.size());
+		
+		ReconcileProblem problem = problems.get(0);
+		
+		assertEquals(Boot2JavaProblemType.JAVA_PRECISE_REQUEST_MAPPING, problem.getType());
+		
+		String markedStr = source.substring(problem.getOffset(), problem.getOffset() + problem.getLength());
+		assertEquals("@RequestMapping(value = \"/1\", method = GET)", markedStr);
+
+		assertEquals(3, problem.getQuickfixes().size());
+		assertEquals("Replace with '@GetMapping'", problems.get(0).getQuickfixes().get(0).title);
+		
+	}
+	
 	@Test
 	void arrayMethodTest() throws Exception {
 		String source = """
@@ -114,7 +150,8 @@ public class NoRequestMappingAnnotationReconcilerTest extends BaseReconcilerTest
 		String markedStr = source.substring(problem.getOffset(), problem.getOffset() + problem.getLength());
 		assertEquals("@RequestMapping(value = \"/1\", method = { RequestMethod.GET })", markedStr);
 
-		assertEquals(2, problem.getQuickfixes().size());
+		assertEquals(3, problem.getQuickfixes().size());
+		assertEquals("Replace with '@GetMapping'", problems.get(0).getQuickfixes().get(0).title);
 		
 	}
 	
@@ -143,7 +180,36 @@ public class NoRequestMappingAnnotationReconcilerTest extends BaseReconcilerTest
 	}
 	
 	@Test
-	void noMethodsNoProblems() throws Exception {
+	void multiMethodTest_2() throws Exception {
+		String source = """
+				package example.demo;
+				
+				import org.springframework.web.bind.annotation.RequestMapping;
+				import org.springframework.web.bind.annotation.RequestMethod;
+				
+				
+				@RequestMapping("/hello")
+				class A {
+				
+					@RequestMapping(value = "/1", method = { RequestMethod.GET, RequestMethod.PUT })
+					String hello1() {
+						return "1";
+					};
+					
+				}
+				""";
+		List<ReconcileProblem> problems = reconcile("A.java", source, false);
+		assertEquals(0, problems.size());
+		
+//		assertEquals(1, problems.size());
+//		
+//		assertEquals(2, problems.get(0).getQuickfixes().size());
+//		assertEquals("Replace with '@GetMapping'", problems.get(0).getQuickfixes().get(0).title);
+//		assertEquals("Replace with '@PutMapping'", problems.get(0).getQuickfixes().get(1).title);
+	}
+	
+	@Test
+	void noMethods() throws Exception {
 		String source = """
 				package example.demo;
 				
@@ -162,7 +228,14 @@ public class NoRequestMappingAnnotationReconcilerTest extends BaseReconcilerTest
 				""";
 		List<ReconcileProblem> problems = reconcile("A.java", source, false);
 		
-		assertEquals(0, problems.size());		
+		assertEquals(1, problems.size());		
+		assertEquals(5, problems.get(0).getQuickfixes().size());
+		
+		assertEquals("Replace with '@GetMapping'", problems.get(0).getQuickfixes().get(0).title);
+		assertEquals("Replace with '@PostMapping'", problems.get(0).getQuickfixes().get(1).title);
+		assertEquals("Replace with '@PutMapping'", problems.get(0).getQuickfixes().get(2).title);
+		assertEquals("Replace with '@DeleteMapping'", problems.get(0).getQuickfixes().get(3).title);
+		assertEquals("Replace with '@PatchMapping'", problems.get(0).getQuickfixes().get(4).title);
 	}
 	
 	@Test
