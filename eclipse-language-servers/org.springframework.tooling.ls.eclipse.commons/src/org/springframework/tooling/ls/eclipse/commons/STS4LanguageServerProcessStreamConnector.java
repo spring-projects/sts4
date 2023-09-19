@@ -113,6 +113,9 @@ public abstract class STS4LanguageServerProcessStreamConnector extends ProcessSt
 
 			command.add(classpath.toString());
 
+
+			command.add("-agentlib:native-image-agent=config-output-dir=/Users/aboyko/" + getPluginId() + "/,config-write-period-secs=30,config-write-initial-delay-secs=5");
+
 			command.add("-Dsts.lsp.client=eclipse");
 
 			command.addAll(extraVmArgs);

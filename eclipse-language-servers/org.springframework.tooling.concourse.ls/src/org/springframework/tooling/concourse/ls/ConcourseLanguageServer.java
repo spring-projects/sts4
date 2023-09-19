@@ -36,6 +36,17 @@ public class ConcourseLanguageServer extends STS4LanguageServerProcessStreamConn
 				)
 		);
 		
+//		Bundle bundle = Platform.getBundle(getPluginId());
+//		File bundleFile = FileLocator.getBundleFileLocation(bundle).orElse(null);
+//
+//		File bundleRoot = bundleFile.getAbsoluteFile();
+//		Path languageServerRoot = bundleRoot.toPath().resolve(Paths.get("servers", "concourse-language-server"));
+//
+//		setCommands(List.of(
+//				languageServerRoot.toFile().toString(),
+//				"-Dsts.lsp.client=eclipse"
+//		));
+		
 		setWorkingDirectory(getWorkingDirLocation());
 	}
 	

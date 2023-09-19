@@ -1,0 +1,11 @@
+[
+  {
+    "interfaces":["java.lang.reflect.ParameterizedType","org.springframework.core.SerializableTypeWrapper$SerializableTypeProxy","java.io.Serializable"]
+  },
+  {
+    "interfaces":["org.springframework.boot.context.properties.ConfigurationProperties"]
+  },
+  {
+    "interfaces":["org.springframework.ide.vscode.commons.protocol.STS4LanguageClient","org.eclipse.lsp4j.jsonrpc.Endpoint"]
+  }
+]

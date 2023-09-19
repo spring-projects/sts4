@@ -6,6 +6,7 @@ if command -v xvfb-run ; then
     echo "Using xvfb to run in headless environment..."
     xvfb-run ../mvnw \
         -DtrimStackTrace=false \
+        -Pnative
         -f ../pom.xml \
         -pl $modules \
         -am \
@@ -13,6 +14,7 @@ if command -v xvfb-run ; then
 else
     ../mvnw \
         -DtrimStackTrace=false \
+        -Pnative
         -f ../pom.xml \
         -pl $modules \
         -am \
@@ -21,6 +23,7 @@ fi
 cd ../xml-ls-extension
     ../mvnw \
         -DtrimStackTrace=false \
+        -Pnative
         -f ../pom.xml \
         -pl xml-ls-extension \
         -am \
