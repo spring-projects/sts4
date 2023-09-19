@@ -331,6 +331,42 @@ public class EntityIdForRepoReconcilerTest extends BaseReconcilerTest {
 	}
 
 	@Test
+	void inheritance_invalidDomainId_string_number_jakarta_id() throws Exception {
+		
+		Path employeeSource = createFile("Customer.java", """
+			package demo;
+
+			import jakarta.persistence.Id;
+
+			public class Customer {
+				@Id String customerNumber;
+			}
+		""");
+		
+		String source = """
+			package demo;
+
+			import org.springframework.data.repository.Repository;
+
+			interface CustomerRepository extends Repository<Customer, Long> {}
+		""";
+		List<ReconcileProblem> problems = reconcile("CustomerRepository.java", source, false, employeeSource);
+		
+		assertEquals(1, problems.size());
+		
+		ReconcileProblem problem = problems.get(0);
+		
+		assertEquals(Boot2JavaProblemType.DOMAIN_ID_FOR_REPOSITORY, problem.getType());
+		
+		String markedStr = source.substring(problem.getOffset(), problem.getOffset() + problem.getLength());
+		assertEquals("Long", markedStr);
+		assertEquals("Expected Domain ID type is 'java.lang.String'", problem.getMessage());
+
+		assertEquals(0, problem.getQuickfixes().size());
+		
+	}
+
+	@Test
 	void inheritance_invalidDomainId_string_number_2() throws Exception {
 		
 		Path employeeSource = createFile("Customer.java", """
@@ -765,7 +801,7 @@ public class EntityIdForRepoReconcilerTest extends BaseReconcilerTest {
 
 			import org.springframework.data.annotation.Id;
 
-			public record Employee(@Id String id) {};
+			public record Employee(@Id String employeeId) {};
 		""");
 		
 		String source = """
@@ -792,6 +828,40 @@ public class EntityIdForRepoReconcilerTest extends BaseReconcilerTest {
 		
 	}
 
+	@Test
+	void invalid_DomainId_record_1() throws Exception {
+		
+		Path employeeSource = createFile("Employee.java", """
+			package demo;
+
+			import org.springframework.data.annotation.Id;
+
+			public record Employee(@Id String employeeId) {};
+		""");
+		
+		String source = """
+			package demo;
+
+			import org.springframework.data.repository.Repository;
+
+			interface EmployeeRepository extends Repository<Employee, Number>{}
+		""";
+		List<ReconcileProblem> problems = reconcile("EmployeeRepository.java", source, false, employeeSource);
+		
+		assertEquals(1, problems.size());
+		
+		ReconcileProblem problem = problems.get(0);
+		
+		assertEquals(Boot2JavaProblemType.DOMAIN_ID_FOR_REPOSITORY, problem.getType());
+		
+		String markedStr = source.substring(problem.getOffset(), problem.getOffset() + problem.getLength());
+		assertEquals("Number", markedStr);
+		assertEquals("Expected Domain ID type is 'java.lang.String'", problem.getMessage());
+
+		assertEquals(0, problem.getQuickfixes().size());
+		
+	}
+	
 	@Test
 	void valid_DomainId_record() throws Exception {
 		

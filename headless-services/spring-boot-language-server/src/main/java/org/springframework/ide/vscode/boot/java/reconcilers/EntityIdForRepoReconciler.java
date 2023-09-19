@@ -15,6 +15,7 @@ import static org.springframework.ide.vscode.commons.java.SpringProjectUtil.spri
 import java.net.URI;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -325,16 +326,17 @@ public class EntityIdForRepoReconciler implements JdtAstReconciler {
 	}
 
 	private static ITypeBinding findAnnotatedIdType(ITypeBinding type, Set<String> visited) {
+		List<String> idAnnotations = List.of(Annotations.SPRING_ENTITY_ID, Annotations.JPA_JAKARTA_ENTITY_ID, Annotations.JPA_JAVAX_ENTITY_ID);
 		for (IVariableBinding m : type.getDeclaredFields()) {
 			String s = fieldSignature(m);
-			if (!visited.contains(s) && isAnnotationCompatible(m.getAnnotations(), Annotations.ENTITY_ID)) {
+			if (!visited.contains(s) && isAnnotationCompatible(m.getAnnotations(), idAnnotations)) {
 				return m.getType();
 			}
 			visited.add(s);
 		}
 		for (IMethodBinding m : type.getDeclaredMethods()) {
 			String s = methodSignature(m);
-			if (!visited.contains(s) && isAnnotationCompatible(m.getAnnotations(), Annotations.ENTITY_ID)) {
+			if (!visited.contains(s) && isAnnotationCompatible(m.getAnnotations(), idAnnotations)) {
 				return m.getReturnType();
 			}
 			visited.add(s);
@@ -349,10 +351,10 @@ public class EntityIdForRepoReconciler implements JdtAstReconciler {
 		return f.getName();
 	}
 
-	private static boolean isAnnotationCompatible(IAnnotationBinding[] annotations, String fqName) {
+	private static boolean isAnnotationCompatible(IAnnotationBinding[] annotations, Collection<String> fqNames) {
 		for (IAnnotationBinding a : annotations) {
 			if (AnnotationHierarchies.findTransitiveSuperAnnotationBindings(a)
-					.anyMatch(at -> fqName.equals(at.getAnnotationType().getQualifiedName()))) {
+					.anyMatch(at -> fqNames.contains(at.getAnnotationType().getQualifiedName()))) {
 				return true;
 			}
 		}
