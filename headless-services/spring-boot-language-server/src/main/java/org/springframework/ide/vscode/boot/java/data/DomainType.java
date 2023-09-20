@@ -20,6 +20,8 @@ import java.util.Set;
 
 import org.eclipse.jdt.core.dom.IMethodBinding;
 import org.eclipse.jdt.core.dom.ITypeBinding;
+import org.eclipse.jdt.core.dom.IVariableBinding;
+import org.springframework.ide.vscode.commons.util.StringUtil;
 
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
@@ -58,38 +60,44 @@ public class DomainType extends SimpleType {
 	
 	private List<DomainProperty> calculateDomainProperties(ITypeBinding typeBinding) {
 		if (!getPackageName().startsWith("java")) {
-			IMethodBinding[] methods = typeBinding.getDeclaredMethods();
-			if (methods != null && methods.length > 0) {
-				List<DomainProperty> properties = new ArrayList<>();
+			List<DomainProperty> properties = new ArrayList<>();
+			if (typeBinding.isRecord()) {
+				for (IVariableBinding f : typeBinding.getDeclaredFields()) {
+					properties.add(new DomainProperty(StringUtil.upCaseFirstChar(f.getName()), new DomainType(f.getType())));
+				}
+			} else {
+				IMethodBinding[] methods = typeBinding.getDeclaredMethods();
+				if (methods != null && methods.length > 0) {
 
-				for (IMethodBinding method : methods) {
-					String methodName = method.getName();
-					if (methodName != null) {
-						String propertyName = null;
-						if (methodName.startsWith("get")) {
-							propertyName = methodName.substring(3);
-						}
-						else if (methodName.startsWith("is")) {
-							propertyName = methodName.substring(2);
-						}
-						if (propertyName != null) {
-							properties.add(new DomainProperty(propertyName, new DomainType(method.getReturnType())));
+					for (IMethodBinding method : methods) {
+						String methodName = method.getName();
+						if (methodName != null) {
+							String propertyName = null;
+							if (methodName.startsWith("get")) {
+								propertyName = methodName.substring(3);
+							}
+							else if (methodName.startsWith("is")) {
+								propertyName = methodName.substring(2);
+							}
+							if (propertyName != null) {
+								properties.add(new DomainProperty(propertyName, new DomainType(method.getReturnType())));
+							}
 						}
 					}
-				}
-				
-				if (typeBinding.getSuperclass() != null) {
-					properties.addAll(calculateDomainProperties(typeBinding.getSuperclass()));
-				}
-				
-				if (typeBinding.getInterfaces() != null) {
-					for (ITypeBinding si : typeBinding.getInterfaces()) {
-						properties.addAll(calculateDomainProperties(si));
+					
+					if (typeBinding.getSuperclass() != null) {
+						properties.addAll(calculateDomainProperties(typeBinding.getSuperclass()));
 					}
+					
+					if (typeBinding.getInterfaces() != null) {
+						for (ITypeBinding si : typeBinding.getInterfaces()) {
+							properties.addAll(calculateDomainProperties(si));
+						}
+					}
+					
 				}
-				
-				return properties;
 			}
+			return properties;
 		}
 		return Collections.emptyList();
 	}

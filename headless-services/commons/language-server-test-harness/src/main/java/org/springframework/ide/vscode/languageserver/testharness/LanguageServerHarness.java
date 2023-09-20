@@ -742,6 +742,23 @@ public class LanguageServerHarness {
 		assertEquals(expect.toString(), actual.toString());
 	}
 
+	public void assertOneOfCompletions(String textBefore, String expectTextAfter) throws Exception {
+		Editor editor = newEditor(textBefore);
+		StringBuilder actualCompletions = new StringBuilder();
+
+		List<? extends CompletionItem> completions = editor.getCompletions();
+		for (CompletionItem ci : completions) {
+			editor = newEditor(textBefore);
+			editor.apply(ci);
+			if (editor.getText().equals(expectTextAfter)) {
+				return;
+			}
+			actualCompletions.append(editor.getText());
+			actualCompletions.append("\n-------------------\n");
+		}
+		fail("Not found expected proposal completion in:\n" + actualCompletions);
+	}
+	
 	public void assertCompletionDisplayString(String editorContents, String expected) throws Exception {
 		Editor editor = newEditor(editorContents);
 		CompletionItem completion = editor.getFirstCompletion();

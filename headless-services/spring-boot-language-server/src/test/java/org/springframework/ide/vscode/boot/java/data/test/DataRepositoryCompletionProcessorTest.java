@@ -115,6 +115,76 @@ public class DataRepositoryCompletionProcessorTest {
 	}
 	
 	@Test
+	void recordEntity() throws Exception {
+		
+		harness.assertOneOfCompletions("""
+				package org.test;
+
+				import org.springframework.data.repository.CrudRepository;
+				import javax.persistence.Id;
+				
+				public class Pets {
+				 
+					public record Pet(@Id Long id, String name) {}
+	
+	
+					public interface PetsRepositoryForCompletions extends CrudRepository<Pet, Long> {
+						findBy<*>
+					}
+				}
+				""", """
+				package org.test;
+
+				import org.springframework.data.repository.CrudRepository;
+				import javax.persistence.Id;
+				
+				public class Pets {
+				 
+					public record Pet(@Id Long id, String name) {}
+	
+	
+					public interface PetsRepositoryForCompletions extends CrudRepository<Pet, Long> {
+						findByName<*>
+					}
+				}
+				""");
+		
+		harness.assertOneOfCompletions("""
+				package org.test;
+
+				import org.springframework.data.repository.CrudRepository;
+				import javax.persistence.Id;
+				
+				public class Pets {
+				 
+					public record Pet(@Id Long id, String name) {}
+	
+	
+					public interface PetsRepositoryForCompletions extends CrudRepository<Pet, Long> {
+						findBy<*>
+					}
+				}
+				""", """
+				package org.test;
+
+				import org.springframework.data.repository.CrudRepository;
+				import javax.persistence.Id;
+				import java.util.List;
+				
+				
+				public class Pets {
+				 
+					public record Pet(@Id Long id, String name) {}
+	
+	
+					public interface PetsRepositoryForCompletions extends CrudRepository<Pet, Long> {
+						List<Pet> findByName(String name);<*>
+					}
+				}
+				""");
+	}
+	
+	@Test
 	void prefixSensitiveMethodCompletionWithImports_1() throws Exception {
 		checkCompletionResult("findByResponsibleEmployeeAndLastName", "findByResponsibleEmployeeAndLastName", """
 				package org.test;
@@ -251,7 +321,6 @@ public class DataRepositoryCompletionProcessorTest {
 		prepareCase("{\n}", "{\n\t" + prefix + "<*>\n}");
 		List<CompletionItem> completions = editor.getCompletions();
 
-		int i = 0;
 		for (CompletionItem foundCompletion : completions) {
 			if (foundCompletion.getLabel().contains(completionLabel)) {
 				Editor clonedEditor = editor.clone();
