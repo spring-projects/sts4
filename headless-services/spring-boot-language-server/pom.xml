@@ -382,6 +382,9 @@
 			<plugin>
 				<groupId>org.graalvm.buildtools</groupId>
 				<artifactId>native-maven-plugin</artifactId>
+				<configuration>
+					<buildArg>--add-exports=jdk.compiler/com.sun.tools.javac.file=ALL-UNNAMED</buildArg>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>
