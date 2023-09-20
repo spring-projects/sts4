@@ -464,9 +464,6 @@
   "name":"java.sql.Date"
 },
 {
-  "name":"java.sql.Timestamp"
-},
-{
   "name":"java.util.Date"
 },
 {
@@ -724,17 +721,7 @@
   "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
-  "name":"org.eclipse.lsp4j.Diagnostic",
-  "allDeclaredFields":true,
-  "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
   "name":"org.eclipse.lsp4j.DiagnosticCapabilities",
-  "allDeclaredFields":true,
-  "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
-  "name":"org.eclipse.lsp4j.DiagnosticCodeDescription",
   "allDeclaredFields":true,
   "methods":[{"name":"<init>","parameterTypes":[] }]
 },
@@ -742,15 +729,6 @@
   "name":"org.eclipse.lsp4j.DiagnosticRegistrationOptions",
   "allDeclaredFields":true,
   "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
-  "name":"org.eclipse.lsp4j.DiagnosticRelatedInformation",
-  "allDeclaredFields":true,
-  "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
-  "name":"org.eclipse.lsp4j.DiagnosticSeverity",
-  "fields":[{"name":"value"}]
 },
 {
   "name":"org.eclipse.lsp4j.DiagnosticTag",
@@ -773,16 +751,6 @@
 },
 {
   "name":"org.eclipse.lsp4j.DidChangeWatchedFilesCapabilities",
-  "allDeclaredFields":true,
-  "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
-  "name":"org.eclipse.lsp4j.DidChangeWorkspaceFoldersParams",
-  "allDeclaredFields":true,
-  "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
-  "name":"org.eclipse.lsp4j.DidOpenTextDocumentParams",
   "allDeclaredFields":true,
   "methods":[{"name":"<init>","parameterTypes":[] }]
 },
@@ -936,11 +904,6 @@
   "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
-  "name":"org.eclipse.lsp4j.InitializedParams",
-  "allDeclaredFields":true,
-  "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
   "name":"org.eclipse.lsp4j.InlayHintCapabilities",
   "allDeclaredFields":true,
   "methods":[{"name":"<init>","parameterTypes":[] }]
@@ -986,11 +949,6 @@
 },
 {
   "name":"org.eclipse.lsp4j.LinkedEditingRangeRegistrationOptions",
-  "allDeclaredFields":true,
-  "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
-  "name":"org.eclipse.lsp4j.Location",
   "allDeclaredFields":true,
   "methods":[{"name":"<init>","parameterTypes":[] }]
 },
@@ -1050,26 +1008,11 @@
   "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
-  "name":"org.eclipse.lsp4j.Position",
-  "allDeclaredFields":true,
-  "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
   "name":"org.eclipse.lsp4j.PrepareSupportDefaultBehavior",
   "fields":[{"name":"value"}]
 },
 {
   "name":"org.eclipse.lsp4j.PublishDiagnosticsCapabilities",
-  "allDeclaredFields":true,
-  "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
-  "name":"org.eclipse.lsp4j.PublishDiagnosticsParams",
-  "allDeclaredFields":true,
-  "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
-  "name":"org.eclipse.lsp4j.Range",
   "allDeclaredFields":true,
   "methods":[{"name":"<init>","parameterTypes":[] }]
 },
@@ -1085,16 +1028,6 @@
 },
 {
   "name":"org.eclipse.lsp4j.ReferencesCapabilities",
-  "allDeclaredFields":true,
-  "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
-  "name":"org.eclipse.lsp4j.Registration",
-  "allDeclaredFields":true,
-  "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
-  "name":"org.eclipse.lsp4j.RegistrationParams",
   "allDeclaredFields":true,
   "methods":[{"name":"<init>","parameterTypes":[] }]
 },
@@ -1232,11 +1165,6 @@
   "methods":[{"name":"<init>","parameterTypes":[] }]
 },
 {
-  "name":"org.eclipse.lsp4j.TextDocumentItem",
-  "allDeclaredFields":true,
-  "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
   "name":"org.eclipse.lsp4j.TextDocumentRegistrationOptions",
   "allDeclaredFields":true
 },
@@ -1297,11 +1225,6 @@
 },
 {
   "name":"org.eclipse.lsp4j.WorkspaceFolder",
-  "allDeclaredFields":true,
-  "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
-  "name":"org.eclipse.lsp4j.WorkspaceFoldersChangeEvent",
   "allDeclaredFields":true,
   "methods":[{"name":"<init>","parameterTypes":[] }]
 },
@@ -1414,14 +1337,23 @@
     {"name":"callHierarchyIncomingCalls","parameterTypes":["org.eclipse.lsp4j.CallHierarchyIncomingCallsParams"] }, 
     {"name":"callHierarchyOutgoingCalls","parameterTypes":["org.eclipse.lsp4j.CallHierarchyOutgoingCallsParams"] }, 
     {"name":"codeAction","parameterTypes":["org.eclipse.lsp4j.CodeActionParams"] }, 
+    {"name":"codeLens","parameterTypes":["org.eclipse.lsp4j.CodeLensParams"] }, 
     {"name":"colorPresentation","parameterTypes":["org.eclipse.lsp4j.ColorPresentationParams"] }, 
     {"name":"declaration","parameterTypes":["org.eclipse.lsp4j.DeclarationParams"] }, 
+    {"name":"definition","parameterTypes":["org.eclipse.lsp4j.DefinitionParams"] }, 
     {"name":"diagnostic","parameterTypes":["org.eclipse.lsp4j.DocumentDiagnosticParams"] }, 
+    {"name":"didChange","parameterTypes":["org.eclipse.lsp4j.DidChangeTextDocumentParams"] }, 
     {"name":"didOpen","parameterTypes":["org.eclipse.lsp4j.DidOpenTextDocumentParams"] }, 
+    {"name":"didClose","parameterTypes":["org.eclipse.lsp4j.DidCloseTextDocumentParams"] }, 
+    {"name":"didSave","parameterTypes":["org.eclipse.lsp4j.DidSaveTextDocumentParams"] }, 
     {"name":"documentColor","parameterTypes":["org.eclipse.lsp4j.DocumentColorParams"] }, 
+    {"name":"documentHighlight","parameterTypes":["org.eclipse.lsp4j.DocumentHighlightParams"] }, 
     {"name":"documentLink","parameterTypes":["org.eclipse.lsp4j.DocumentLinkParams"] }, 
     {"name":"documentLinkResolve","parameterTypes":["org.eclipse.lsp4j.DocumentLink"] }, 
+    {"name":"documentSymbol","parameterTypes":["org.eclipse.lsp4j.DocumentSymbolParams"] }, 
     {"name":"foldingRange","parameterTypes":["org.eclipse.lsp4j.FoldingRangeRequestParams"] }, 
+    {"name":"formatting","parameterTypes":["org.eclipse.lsp4j.DocumentFormattingParams"] }, 
+    {"name":"hover","parameterTypes":["org.eclipse.lsp4j.HoverParams"] }, 
     {"name":"implementation","parameterTypes":["org.eclipse.lsp4j.ImplementationParams"] }, 
     {"name":"inlayHint","parameterTypes":["org.eclipse.lsp4j.InlayHintParams"] }, 
     {"name":"inlineValue","parameterTypes":["org.eclipse.lsp4j.InlineValueParams"] }, 
@@ -1430,11 +1362,18 @@
     {"name":"prepareCallHierarchy","parameterTypes":["org.eclipse.lsp4j.CallHierarchyPrepareParams"] }, 
     {"name":"prepareRename","parameterTypes":["org.eclipse.lsp4j.PrepareRenameParams"] }, 
     {"name":"prepareTypeHierarchy","parameterTypes":["org.eclipse.lsp4j.TypeHierarchyPrepareParams"] }, 
+    {"name":"rangeFormatting","parameterTypes":["org.eclipse.lsp4j.DocumentRangeFormattingParams"] }, 
+    {"name":"references","parameterTypes":["org.eclipse.lsp4j.ReferenceParams"] }, 
+    {"name":"rename","parameterTypes":["org.eclipse.lsp4j.RenameParams"] }, 
+    {"name":"resolveCodeAction","parameterTypes":["org.eclipse.lsp4j.CodeAction"] }, 
+    {"name":"resolveCodeLens","parameterTypes":["org.eclipse.lsp4j.CodeLens"] }, 
+    {"name":"resolveCompletionItem","parameterTypes":["org.eclipse.lsp4j.CompletionItem"] }, 
     {"name":"resolveInlayHint","parameterTypes":["org.eclipse.lsp4j.InlayHint"] }, 
     {"name":"selectionRange","parameterTypes":["org.eclipse.lsp4j.SelectionRangeParams"] }, 
     {"name":"semanticTokensFull","parameterTypes":["org.eclipse.lsp4j.SemanticTokensParams"] }, 
     {"name":"semanticTokensFullDelta","parameterTypes":["org.eclipse.lsp4j.SemanticTokensDeltaParams"] }, 
     {"name":"semanticTokensRange","parameterTypes":["org.eclipse.lsp4j.SemanticTokensRangeParams"] }, 
+    {"name":"signatureHelp","parameterTypes":["org.eclipse.lsp4j.SignatureHelpParams"] }, 
     {"name":"typeDefinition","parameterTypes":["org.eclipse.lsp4j.TypeDefinitionParams"] }, 
     {"name":"typeHierarchySubtypes","parameterTypes":["org.eclipse.lsp4j.TypeHierarchySubtypesParams"] }, 
     {"name":"typeHierarchySupertypes","parameterTypes":["org.eclipse.lsp4j.TypeHierarchySupertypesParams"] }, 
@@ -1444,8 +1383,7 @@
 },
 {
   "name":"org.eclipse.lsp4j.services.WorkspaceService",
-  "queryAllDeclaredMethods":true,
-  "methods":[{"name":"didChangeWorkspaceFolders","parameterTypes":["org.eclipse.lsp4j.DidChangeWorkspaceFoldersParams"] }]
+  "queryAllDeclaredMethods":true
 },
 {
   "name":"org.elasticsearch.client.RestClientBuilder"
@@ -2908,10 +2846,6 @@
   "name":"reactor.tools.agent.ReactorDebugAgent"
 },
 {
-  "name":"sun.misc.Unsafe",
-  "allDeclaredFields":true
-},
-{
   "name":"sun.security.provider.NativePRNG",
   "methods":[{"name":"<init>","parameterTypes":[] }]
 },
@@ -2984,18 +2918,5 @@
 {
   "name":"sun.security.x509.SubjectKeyIdentifierExtension",
   "methods":[{"name":"<init>","parameterTypes":["java.lang.Boolean","java.lang.Object"] }]
-},
-{
-  "name":"org.eclipse.lsp4j.CodeActionParams",
-  "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
-  "name":"org.eclipse.lsp4j.DocumentSymbolParams",
-  "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
-  "name": "org.eclipse.lsp4j.TextDocumentIdentifier",
-  "methods":[{"name":"<init>","parameterTypes":[] }]
 }
-
 ]
