@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -30,13 +30,20 @@ public class Quickfix<T> {
 		public final QuickfixType type;
 		public final T params;
 		public final String title;
+		public final boolean preferred;
 
-		public QuickfixData(QuickfixType type, T params, String title) {
+		public QuickfixData(QuickfixType type, T params, String title, boolean preferred) {
 			super();
 			this.type = type;
 			this.params = params;
 			this.title = title;
+			this.preferred = preferred;
 		}
+		
+		public QuickfixData(QuickfixType type, T params, String title) {
+			this(type, params, title, false);
+		}
+
 	}
 
 	private final String CODE_ACTION_CMD_ID;

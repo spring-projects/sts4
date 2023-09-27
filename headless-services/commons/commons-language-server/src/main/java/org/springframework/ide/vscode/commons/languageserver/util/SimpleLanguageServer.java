@@ -804,6 +804,7 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, SpringInd
 								CodeAction ca = new CodeAction();
 								ca.setKind(CodeActionKind.QuickFix);
 								ca.setTitle(fix.title);
+								ca.setIsPreferred(fix.preferred);
 								ca.setDiagnostics(List.of(refDiagnostic));
 								ca.setCommand(new Command(
 										fix.title,

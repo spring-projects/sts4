@@ -81,7 +81,7 @@ public class NoRequestMappingAnnotationReconcilerTest extends BaseReconcilerTest
 		assertEquals("@RequestMapping(value = \"/1\", method = RequestMethod.GET)", markedStr);
 
 		assertEquals(3, problem.getQuickfixes().size());
-		assertEquals("Replace with '@GetMapping'", problems.get(0).getQuickfixes().get(0).title);
+		assertEquals("Replace with `@GetMapping`", problems.get(0).getQuickfixes().get(0).title);
 		
 	}
 
@@ -116,7 +116,7 @@ public class NoRequestMappingAnnotationReconcilerTest extends BaseReconcilerTest
 		assertEquals("@RequestMapping(value = \"/1\", method = GET)", markedStr);
 
 		assertEquals(3, problem.getQuickfixes().size());
-		assertEquals("Replace with '@GetMapping'", problems.get(0).getQuickfixes().get(0).title);
+		assertEquals("Replace with `@GetMapping`", problems.get(0).getQuickfixes().get(0).title);
 		
 	}
 	
@@ -151,7 +151,7 @@ public class NoRequestMappingAnnotationReconcilerTest extends BaseReconcilerTest
 		assertEquals("@RequestMapping(value = \"/1\", method = { RequestMethod.GET })", markedStr);
 
 		assertEquals(3, problem.getQuickfixes().size());
-		assertEquals("Replace with '@GetMapping'", problems.get(0).getQuickfixes().get(0).title);
+		assertEquals("Replace with `@GetMapping`", problems.get(0).getQuickfixes().get(0).title);
 		
 	}
 	
@@ -231,11 +231,11 @@ public class NoRequestMappingAnnotationReconcilerTest extends BaseReconcilerTest
 		assertEquals(1, problems.size());		
 		assertEquals(5, problems.get(0).getQuickfixes().size());
 		
-		assertEquals("Replace with '@GetMapping'", problems.get(0).getQuickfixes().get(0).title);
-		assertEquals("Replace with '@PostMapping'", problems.get(0).getQuickfixes().get(1).title);
-		assertEquals("Replace with '@PutMapping'", problems.get(0).getQuickfixes().get(2).title);
-		assertEquals("Replace with '@DeleteMapping'", problems.get(0).getQuickfixes().get(3).title);
-		assertEquals("Replace with '@PatchMapping'", problems.get(0).getQuickfixes().get(4).title);
+		assertEquals("Replace with `@GetMapping`", problems.get(0).getQuickfixes().get(0).title);
+		assertEquals("Replace with `@PostMapping`", problems.get(0).getQuickfixes().get(1).title);
+		assertEquals("Replace with `@PutMapping`", problems.get(0).getQuickfixes().get(2).title);
+		assertEquals("Replace with `@DeleteMapping`", problems.get(0).getQuickfixes().get(3).title);
+		assertEquals("Replace with `@PatchMapping`", problems.get(0).getQuickfixes().get(4).title);
 	}
 	
 	@Test

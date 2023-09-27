@@ -17,6 +17,7 @@ import java.util.List;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.jface.bindings.Binding;
+import org.eclipse.jface.resource.ImageRegistry;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.keys.IBindingService;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
@@ -32,6 +33,8 @@ import org.springframework.tooling.boot.ls.prefs.LiveInformationPreferencePage;
  */
 public class BootLanguageServerPlugin extends AbstractUIPlugin {
 	
+	public static final String SPRING_ICON = "SPRING_ICON";
+
 	public static String PLUGIN_ID = "org.springframework.tooling.boot.ls";
 
 	private static final Object LSP4E_COMMAND_SYMBOL_IN_WORKSPACE = "org.eclipse.lsp4e.symbolinworkspace";
@@ -108,4 +111,12 @@ public class BootLanguageServerPlugin extends AbstractUIPlugin {
 			});
 		}
 	}
+
+	@Override
+	protected void initializeImageRegistry(ImageRegistry reg) {
+		super.initializeImageRegistry(reg);
+		reg.put(SPRING_ICON, imageDescriptorFromPlugin(PLUGIN_ID, "icons/spring_obj.gif"));
+	}
+
+	
 }

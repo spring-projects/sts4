@@ -10,6 +10,7 @@
             id="org.eclipse.languageserver.languages.springboot"
             label="Spring Boot Language Server"
             lastDocumentDisconnectedTimeout="2147483647"
+            markerType="org.springframework.tooling.boot.ls.diagnostic"
             serverInterface="org.springframework.ide.vscode.commons.protocol.spring.SpringIndexLanguageServer"
             singleton="true">
       </server>
@@ -751,6 +752,21 @@
       <startup
             class="org.springframework.tooling.boot.ls.Startup">
       </startup>
+   </extension>
+   <extension
+         point="org.eclipse.ui.ide.markerResolution">
+      <markerResolutionGenerator
+            class="org.springframework.tooling.boot.ls.markers.LSPBootCodeActionMarkerResolution"
+            markerType="org.springframework.tooling.boot.ls.diagnostic">
+      </markerResolutionGenerator>
+   </extension>
+   <extension
+         id="diagnostic"
+         name="Spring Boot"
+         point="org.eclipse.core.resources.markers">
+      <super
+            type="org.eclipse.core.resources.problemmarker">
+      </super>
    </extension>
 <!--
    <extension

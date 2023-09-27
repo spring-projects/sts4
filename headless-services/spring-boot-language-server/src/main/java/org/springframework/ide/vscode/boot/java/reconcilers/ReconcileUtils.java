@@ -59,7 +59,7 @@ public class ReconcileUtils {
 	public static void setRewriteFixes(QuickfixRegistry registry, ReconcileProblemImpl problem, Collection<FixDescriptor> fixDescritptors) {
 		QuickfixType quickFixType = getRewriteQuickFixType(registry);
 		for (FixDescriptor f : fixDescritptors) {
-			problem.addQuickfix(new QuickfixData<>(quickFixType, f, f.getLabel()));
+			problem.addQuickfix(new QuickfixData<>(quickFixType, f, f.getLabel(), f.isPreferred()));
 		}
 	}
 	

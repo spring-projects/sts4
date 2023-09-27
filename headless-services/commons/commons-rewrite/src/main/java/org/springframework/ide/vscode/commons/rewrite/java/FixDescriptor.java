@@ -32,6 +32,8 @@ final public class FixDescriptor {
 	
 	private String[] typeStubs;
 	
+	private boolean preferred;
+	
 	public FixDescriptor(String recipeId, List<String> docUris, String label) {
 		this.recipeId = recipeId;
 		this.docUris = docUris;
@@ -56,6 +58,11 @@ final public class FixDescriptor {
 	
 	public FixDescriptor withTypeStubs(String... typeStubs) {
 		this.typeStubs = typeStubs;
+		return this;
+	}
+	
+	public FixDescriptor withPreferred(boolean preferred) {
+		this.preferred = preferred;
 		return this;
 	}
 	
@@ -85,6 +92,10 @@ final public class FixDescriptor {
 
 	public String[] getTypeStubs() {
 		return typeStubs;
+	}
+	
+	public boolean isPreferred() {
+		return preferred;
 	}
 
 }

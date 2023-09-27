@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.boot.java.reconcilers;
 import static org.springframework.ide.vscode.commons.java.SpringProjectUtil.springBootVersionGreaterOrEqual;
 
 import java.net.URI;
+import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -45,11 +46,11 @@ import org.springframework.ide.vscode.commons.rewrite.java.NoRequestMappingAnnot
 
 public class NoRequestMappingAnnotationReconciler implements JdtAstReconciler {
 	
+	private static final String PROBLEM_LABEL = "Replace with precise mapping annotation";
+	
 	private static final String UNSUPPORTED_REQUEST_METHOD = "UNSUPPORTED";
 	
-    private static final List<String> SUPPORTED_REQUEST_METHODS = List.of("GET", "POST", "PUT", "DELETE", "PATCH");
-	
-    private static final String LABEL = "Replace @RequestMapping with specific @GetMapping, @PostMapping etc.";
+	private static final List<String> SUPPORTED_REQUEST_METHODS = List.of("GET", "POST", "PUT", "DELETE", "PATCH");
 	
 	private QuickfixRegistry registry;
 
@@ -87,17 +88,19 @@ public class NoRequestMappingAnnotationReconciler implements JdtAstReconciler {
 						String uri = docUri.toASCIIString();
 						Range range = ReconcileUtils.createOpenRewriteRange(cu, a);
 						if (requestMethods.size() == 1 && SUPPORTED_REQUEST_METHODS.contains(requestMethods.get(0))) {
-							ReconcileProblemImpl problem = new ReconcileProblemImpl(getProblemType(), LABEL, a.getStartPosition(), a.getLength());
+							ReconcileProblemImpl problem = new ReconcileProblemImpl(getProblemType(), PROBLEM_LABEL, a.getStartPosition(), a.getLength());
 							ReconcileUtils.setRewriteFixes(registry, problem, List.of(
-									createFixDescriptor(uri, range, requestMethods.get(0)),
-									new FixDescriptor(org.openrewrite.java.spring.NoRequestMappingAnnotation.class.getName(), List.of(uri), ReconcileUtils.buildLabel(LABEL, RecipeScope.FILE))
+									createFixDescriptor(uri, range, requestMethods.get(0)).withPreferred(true),
+									new FixDescriptor(org.openrewrite.java.spring.NoRequestMappingAnnotation.class.getName(), List.of(uri),
+											"Replace all `@RequestMapping` in file '%s' with `@GetMapping`, `@PostMapping`, etc.".formatted(Paths.get(docUri).getFileName().toString()))
 										.withRecipeScope(RecipeScope.FILE),
-									new FixDescriptor(org.openrewrite.java.spring.NoRequestMappingAnnotation.class.getName(), List.of(uri), ReconcileUtils.buildLabel(LABEL, RecipeScope.PROJECT))
+									new FixDescriptor(org.openrewrite.java.spring.NoRequestMappingAnnotation.class.getName(), List.of(uri),
+											"Replace all `@RequestMapping` in project '%s' with `@GetMapping`, `@PostMapping`, etc.".formatted(project.getElementName()))
 										.withRecipeScope(RecipeScope.PROJECT)
 							));
 							problemCollector.accept(problem);
 						} else if (SUPPORTED_REQUEST_METHODS == requestMethods) { // the case of no request methods specified
-							ReconcileProblemImpl problem = new ReconcileProblemImpl(getProblemType(), "Consider replacing with precise mapping annotation", a.getStartPosition(), a.getLength());
+							ReconcileProblemImpl problem = new ReconcileProblemImpl(getProblemType(), PROBLEM_LABEL, a.getStartPosition(), a.getLength());
 							ReconcileUtils.setRewriteFixes(registry, problem, 
 									requestMethods.stream().map(m -> createFixDescriptor(uri, range, m)).collect(Collectors.toList()));
 							problemCollector.accept(problem);
@@ -110,7 +113,7 @@ public class NoRequestMappingAnnotationReconciler implements JdtAstReconciler {
 	}
 	
 	private static FixDescriptor createFixDescriptor(String uri, Range range, String requestMethod) {
-		return new FixDescriptor(NoRequestMappingAnnotation.class.getName(), List.of(uri), "Replace with '@%s'".formatted(NoRequestMappingAnnotation.associatedRequestMapping(requestMethod)))
+		return new FixDescriptor(NoRequestMappingAnnotation.class.getName(), List.of(uri), "Replace with `@%s`".formatted(NoRequestMappingAnnotation.associatedRequestMapping(requestMethod)))
 				.withRangeScope(range)
 				.withParameters(Map.of("preferredMapping", requestMethod))
 				.withRecipeScope(RecipeScope.NODE);
