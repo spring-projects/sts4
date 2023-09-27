@@ -47,8 +47,6 @@ import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
 
 public class AddConfigurationIfBeansPresentReconciler implements JdtAstReconciler, ApplicationContextAware {
 
-	private static final String ID = AddConfigurationAnnotationIfBeansPresent.class.getName();
-
 	private static final String PROBLEM_LABEL = "'@Configuration' is missing on a class defining Spring Beans";
 
 	private static final String FIX_LABEL = "Add missing '@Configuration' annotations over classes";
@@ -72,12 +70,14 @@ public class AddConfigurationIfBeansPresentReconciler implements JdtAstReconcile
 					SimpleName nameAst = classDecl.getName();
 					ReconcileProblemImpl problem = new ReconcileProblemImpl(getProblemType(), PROBLEM_LABEL,
 							nameAst.getStartPosition(), nameAst.getLength());
+					
+					String id = AddConfigurationAnnotationIfBeansPresent.class.getName();
 
 					ReconcileUtils.setRewriteFixes(quickfixRegistry, problem,
-							List.of(new FixDescriptor(ID, List.of(docUri.toASCIIString()),
+							List.of(new FixDescriptor(id, List.of(docUri.toASCIIString()),
 									ReconcileUtils.buildLabel(FIX_LABEL, RecipeScope.FILE))
 									.withRecipeScope(RecipeScope.FILE),
-									new FixDescriptor(ID, List.of(docUri.toASCIIString()),
+									new FixDescriptor(id, List.of(docUri.toASCIIString()),
 											ReconcileUtils.buildLabel(FIX_LABEL, RecipeScope.PROJECT))
 											.withRecipeScope(RecipeScope.PROJECT)));
 

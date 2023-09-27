@@ -47,7 +47,6 @@ public class BeanMethodNotPublicReconciler implements JdtAstReconciler {
 		
 	private static final Logger log = LoggerFactory.getLogger(BeanMethodNotPublicReconciler.class);
 	
-    private static final String ID = BeanMethodsNotPublic.class.getName();
     private static final String LABEL = "Remove 'public' from @Bean method";
 
 	private final QuickfixRegistry quickfixRegistry;
@@ -102,18 +101,20 @@ public class BeanMethodNotPublicReconciler implements JdtAstReconciler {
 	
 	private void addQuickFixes(CompilationUnit cu, URI docUri, ReconcileProblemImpl problem, MethodDeclaration method) {
 		if (quickfixRegistry != null) {
+			
+			String id = BeanMethodsNotPublic.class.getName();
 		
-			FixDescriptor fix1 = new FixDescriptor(ID, List.of(docUri.toASCIIString()), LABEL)
+			FixDescriptor fix1 = new FixDescriptor(id, List.of(docUri.toASCIIString()), LABEL)
 					.withRecipeScope(RecipeScope.NODE)
 					.withRangeScope(ReconcileUtils.createOpenRewriteRange(cu, method));
 
 			Range methodRange = ReconcileUtils.createOpenRewriteRange(cu, method);
 			fix1 = fix1.withRangeScope(methodRange);
 
-			FixDescriptor fix2 = new FixDescriptor(ID, List.of(docUri.toASCIIString()), ReconcileUtils.buildLabel(LABEL, RecipeScope.FILE))
+			FixDescriptor fix2 = new FixDescriptor(id, List.of(docUri.toASCIIString()), ReconcileUtils.buildLabel(LABEL, RecipeScope.FILE))
 					.withRecipeScope(RecipeScope.FILE);
 	
-			FixDescriptor fix3 = new FixDescriptor(ID, List.of(docUri.toASCIIString()), ReconcileUtils.buildLabel(LABEL, RecipeScope.PROJECT))
+			FixDescriptor fix3 = new FixDescriptor(id, List.of(docUri.toASCIIString()), ReconcileUtils.buildLabel(LABEL, RecipeScope.PROJECT))
 					.withRecipeScope(RecipeScope.PROJECT);
 			
 			

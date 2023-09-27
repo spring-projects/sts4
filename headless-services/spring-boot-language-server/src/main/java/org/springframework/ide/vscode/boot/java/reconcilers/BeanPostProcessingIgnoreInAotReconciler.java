@@ -34,7 +34,6 @@ import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
 
 public class BeanPostProcessingIgnoreInAotReconciler implements JdtAstReconciler {
 	
-	private static final String RECIPE_ID = BeanPostProcessingIgnoreInAot.class.getName();
 	private static final String LABEL = "Add method 'isBeanExcludedFromAotProcessing' that returns 'false'";
     private static final String RUNTIME_BEAN_POST_PROCESSOR = "org.springframework.beans.factory.config.BeanPostProcessor";
     private static final String COMPILE_BEAN_POST_PROCESSOR = "org.springframework.beans.factory.aot.BeanRegistrationAotProcessor";
@@ -87,7 +86,7 @@ public class BeanPostProcessingIgnoreInAotReconciler implements JdtAstReconciler
 					if (markProblem) {
 						ReconcileProblemImpl problem = new ReconcileProblemImpl(getProblemType(), LABEL, typeDecl.getName().getStartPosition(), typeDecl.getName().getLength());
 						ReconcileUtils.setRewriteFixes(registry, problem, List.of(
-								new FixDescriptor(RECIPE_ID, List.of(docUri.toASCIIString()), ReconcileUtils.buildLabel(LABEL, RecipeScope.NODE))
+								new FixDescriptor(BeanPostProcessingIgnoreInAot.class.getName(), List.of(docUri.toASCIIString()), ReconcileUtils.buildLabel(LABEL, RecipeScope.NODE))
 										.withRangeScope(ReconcileUtils.createOpenRewriteRange(cu, typeDecl))
 										.withRecipeScope(RecipeScope.NODE)
 						));

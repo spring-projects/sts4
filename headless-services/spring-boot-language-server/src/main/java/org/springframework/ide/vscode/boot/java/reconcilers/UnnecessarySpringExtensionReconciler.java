@@ -35,7 +35,6 @@ import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
 public class UnnecessarySpringExtensionReconciler implements JdtAstReconciler {
 
 	private static final String LABEL = "Remove unnecessary @SpringExtension";
-	private static final String ID = UnnecessarySpringExtension.class.getName();
     private static final List<String> SPRING_BOOT_TEST_ANNOTATIONS = Arrays.asList(
             "org.springframework.boot.test.context.SpringBootTest",
             "org.springframework.boot.test.autoconfigure.jdbc.JdbcTest",
@@ -86,7 +85,7 @@ public class UnnecessarySpringExtensionReconciler implements JdtAstReconciler {
 						if (testAnnotation != null && extendWithAnnotation != null) {
 							ReconcileProblemImpl problem = new ReconcileProblemImpl(getProblemType(), LABEL, extendWithAnnotation.getStartPosition(), extendWithAnnotation.getLength());
 							ReconcileUtils.setRewriteFixes(registry, problem, List.of(
-									new FixDescriptor(ID, List.of(docUri.toASCIIString()), ReconcileUtils.buildLabel(LABEL, RecipeScope.PROJECT))
+									new FixDescriptor(UnnecessarySpringExtension.class.getName(), List.of(docUri.toASCIIString()), ReconcileUtils.buildLabel(LABEL, RecipeScope.PROJECT))
 							));
 							problemCollector.accept(problem);
 							break;

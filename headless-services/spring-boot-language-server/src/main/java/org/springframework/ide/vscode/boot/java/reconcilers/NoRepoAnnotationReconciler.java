@@ -34,7 +34,6 @@ import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
 
 public class NoRepoAnnotationReconciler implements JdtAstReconciler {
 	
-	private static final String ID = NoRepoAnnotationOnRepoInterface.class.getName();
 	private static final String LABEL = "Remove Unnecessary @Repository";
 	private static final String INTERFACE_REPOSITORY = "org.springframework.data.repository.Repository";
 	
@@ -61,14 +60,15 @@ public class NoRepoAnnotationReconciler implements JdtAstReconciler {
 								if (type != null && isRepo(type)) {
 									ReconcileProblemImpl problem = new ReconcileProblemImpl(getProblemType(), LABEL, a.getStartPosition(), a.getLength());
 									String uri = docUri.toASCIIString();
+									String id = NoRepoAnnotationOnRepoInterface.class.getName();
 									ReconcileUtils.setRewriteFixes(registry, problem, List.of(
 //										new FixDescriptor(ID, List.of(uri), LABEL)
 //											.withRangeScope(RewriteQuickFixUtils.createOpenRewriteRange(cu, typeDecl))
 //											.withRecipeScope(RecipeScope.NODE),
-										new FixDescriptor(ID, List.of(uri),
+										new FixDescriptor(id, List.of(uri),
 												ReconcileUtils.buildLabel(LABEL, RecipeScope.FILE))
 												.withRecipeScope(RecipeScope.FILE),
-										new FixDescriptor(ID, List.of(uri),
+										new FixDescriptor(id, List.of(uri),
 												ReconcileUtils.buildLabel(LABEL, RecipeScope.PROJECT))
 												.withRecipeScope(RecipeScope.PROJECT)
 									));

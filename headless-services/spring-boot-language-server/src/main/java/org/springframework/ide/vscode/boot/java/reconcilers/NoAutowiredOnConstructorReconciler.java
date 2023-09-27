@@ -36,7 +36,6 @@ import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
 
 public class NoAutowiredOnConstructorReconciler implements JdtAstReconciler {
 
-	private static final String ID = NoAutowiredOnConstructor.class.getName();
 	private static final String LABEL = "Remove Unnecessary @Autowired";
 
 	private QuickfixRegistry registry;
@@ -76,7 +75,7 @@ public class NoAutowiredOnConstructorReconciler implements JdtAstReconciler {
 							ReconcileProblemImpl problem = new ReconcileProblemImpl(getProblemType(), LABEL,
 									autowiredAnnotation.getStartPosition(), autowiredAnnotation.getLength());
 							ReconcileUtils.setRewriteFixes(registry, problem,
-									List.of(new FixDescriptor(ID, List.of(docUri.toASCIIString()), LABEL)
+									List.of(new FixDescriptor(NoAutowiredOnConstructor.class.getName(), List.of(docUri.toASCIIString()), LABEL)
 											.withRecipeScope(RecipeScope.NODE)
 											.withRangeScope(ReconcileUtils.createOpenRewriteRange(cu, typeDecl))));
 							problemCollector.accept(problem);

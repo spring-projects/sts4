@@ -52,8 +52,6 @@ import com.google.common.collect.ImmutableSet;
 
 public class NotRegisteredBeansReconciler implements JdtAstReconciler, ApplicationContextAware {
 
-	private static final String DEFINE_METHOD_RECIPE = DefineMethod.class.getName();
-	
 	private static final List<String> AOT_BEANS = List.of(
 			"org.springframework.beans.factory.aot.BeanFactoryInitializationAotProcessor",
 			"org.springframework.beans.factory.aot.BeanRegistrationAotProcessor"
@@ -114,7 +112,7 @@ public class NotRegisteredBeansReconciler implements JdtAstReconciler, Applicati
     											}
     											String paramsStr = String.join(", ", paramBuilder.build().toArray(String[]::new));
                 									
-            									fixListBuilder.add(new FixDescriptor(DEFINE_METHOD_RECIPE, List.of(s.getSymbol().getLocation().getLeft().getUri()), "Define bean in config '" + configInfo.getBeanID() + "' with constructor " + contructorParamsLabel)
+            									fixListBuilder.add(new FixDescriptor(DefineMethod.class.getName(), List.of(s.getSymbol().getLocation().getLeft().getUri()), "Define bean in config '" + configInfo.getBeanID() + "' with constructor " + contructorParamsLabel)
             											.withRecipeScope(RecipeScope.FILE)
             											.withParameters(Map.of(
             													"targetFqName", configInfo.getBeanType(),

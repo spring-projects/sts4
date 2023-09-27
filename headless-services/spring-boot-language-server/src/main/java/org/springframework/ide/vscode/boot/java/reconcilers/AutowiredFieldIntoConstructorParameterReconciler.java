@@ -49,7 +49,6 @@ import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
 public class AutowiredFieldIntoConstructorParameterReconciler implements JdtAstReconciler {
 	
 	private static final String LABEL = "Convert @Autowired field into Constructor Parameter";
-	private static final String ID = ConvertAutowiredFieldIntoConstructorParameter.class.getName();
 	
 	private QuickfixRegistry registry;
 
@@ -130,7 +129,7 @@ public class AutowiredFieldIntoConstructorParameterReconciler implements JdtAstR
 				? cu.getPackage().getName().getFullyQualifiedName() + "."
 				: "") + typeDecl.getName().getFullyQualifiedName();
 		ReconcileUtils.setRewriteFixes(registry, problem,
-				List.of(new FixDescriptor(ID, List.of(docUri.toASCIIString()), LABEL)
+				List.of(new FixDescriptor(ConvertAutowiredFieldIntoConstructorParameter.class.getName(), List.of(docUri.toASCIIString()), LABEL)
 						.withRangeScope(ReconcileUtils.createOpenRewriteRange(cu, typeDecl))
 						.withParameters(Map.of("classFqName", typeFqName, "fieldName", fieldName))
 						.withRecipeScope(RecipeScope.NODE)));

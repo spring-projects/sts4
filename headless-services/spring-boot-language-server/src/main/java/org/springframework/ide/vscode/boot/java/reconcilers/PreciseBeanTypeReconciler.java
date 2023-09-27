@@ -39,8 +39,6 @@ import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
 
 public class PreciseBeanTypeReconciler implements JdtAstReconciler {
 	
-	private static final String RECIPE_ID = PreciseBeanType.class.getName();
-
 	private static final String LABEL = "Ensure concrete bean type";
 
 	private QuickfixRegistry registry;
@@ -90,13 +88,14 @@ public class PreciseBeanTypeReconciler implements JdtAstReconciler {
 					} else if (currentReturnTypes.size() == 1 && !method.resolveBinding().getReturnType().isAssignmentCompatible(currentReturnTypes.get(0))) {
 						String uri = docUri.toASCIIString();
 						String replacementType = currentReturnTypes.get(0).getName();
+						String recipeId = PreciseBeanType.class.getName();
 						ReconcileUtils.setRewriteFixes(registry, problem, List.of(
-							new FixDescriptor(RECIPE_ID, List.of(uri), ReconcileUtils.buildLabel("Replace return type with '" + replacementType + "'", RecipeScope.NODE))
+							new FixDescriptor(recipeId, List.of(uri), ReconcileUtils.buildLabel("Replace return type with '" + replacementType + "'", RecipeScope.NODE))
 								.withRecipeScope(RecipeScope.NODE)
 								.withRangeScope(ReconcileUtils.createOpenRewriteRange(cu, method)),
-							new FixDescriptor(RECIPE_ID, List.of(uri), ReconcileUtils.buildLabel(LABEL, RecipeScope.FILE))
+							new FixDescriptor(recipeId, List.of(uri), ReconcileUtils.buildLabel(LABEL, RecipeScope.FILE))
 								.withRecipeScope(RecipeScope.FILE),
-							new FixDescriptor(RECIPE_ID, List.of(uri), ReconcileUtils.buildLabel(LABEL, RecipeScope.PROJECT))
+							new FixDescriptor(recipeId, List.of(uri), ReconcileUtils.buildLabel(LABEL, RecipeScope.PROJECT))
 								.withRecipeScope(RecipeScope.PROJECT)
 						));
 						problemCollector.accept(problem);

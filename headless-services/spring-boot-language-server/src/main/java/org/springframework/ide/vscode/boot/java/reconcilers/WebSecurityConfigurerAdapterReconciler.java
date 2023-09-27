@@ -35,8 +35,6 @@ import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
 
 public class WebSecurityConfigurerAdapterReconciler implements JdtAstReconciler {
 	
-	private static final String ID = WebSecurityConfigurerAdapter.class.getName();
-	
     private static final String WEB_SECURITY_CONFIGURER_ADAPTER = "WebSecurityConfigurerAdapter";
 
 	private static final String FQN_WEB_SECURITY_CONFIGURER_ADAPTER = "org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter";
@@ -92,12 +90,13 @@ public class WebSecurityConfigurerAdapterReconciler implements JdtAstReconciler 
 						ITypeBinding resolveBinding = type.resolveBinding();
 						String[] typeStubs = resolveBinding == null || resolveBinding.isRecovered() ? new String[] { STUB_WEB_SECURITY_CONFIG_ADAPTER } : new String[0];
 						String uri = docUri.toASCIIString();
+						String recipeId = WebSecurityConfigurerAdapter.class.getName();
 						ReconcileUtils.setRewriteFixes(registry, problem, List.of(
-								new FixDescriptor(ID, List.of(uri),
+								new FixDescriptor(recipeId, List.of(uri),
 										ReconcileUtils.buildLabel(FIX_LABEL, RecipeScope.FILE))
 										.withRecipeScope(RecipeScope.FILE)
 										.withTypeStubs(typeStubs),
-								new FixDescriptor(ID, List.of(uri),
+								new FixDescriptor(recipeId, List.of(uri),
 										ReconcileUtils.buildLabel(FIX_LABEL, RecipeScope.PROJECT))
 										.withRecipeScope(RecipeScope.PROJECT)
 										.withTypeStubs(typeStubs))

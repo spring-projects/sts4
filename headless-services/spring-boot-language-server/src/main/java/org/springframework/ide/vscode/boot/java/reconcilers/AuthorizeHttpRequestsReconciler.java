@@ -32,8 +32,6 @@ import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
 
 public class AuthorizeHttpRequestsReconciler implements JdtAstReconciler {
 
-	private static final String ID = AuthorizeHttpRequests.class.getName();
-
 	private static final String FQN_HTTP_SECURITY = "org.springframework.security.config.annotation.web.builders.HttpSecurity";
 
 	private static final String AUTHORIZE_REQUESTS = "authorizeRequests";
@@ -71,13 +69,14 @@ public class AuthorizeHttpRequestsReconciler implements JdtAstReconciler {
 									AUTHORIZE_REQUESTS_PROBLEM_LABEL, node.getName().getStartPosition(),
 									node.getName().getLength());
 							String uri = docUri.toASCIIString();
+							String id = AuthorizeHttpRequests.class.getName();
 							ReconcileUtils
 									.setRewriteFixes(registry, problem, List.of(
-											new FixDescriptor(ID, List.of(uri),
+											new FixDescriptor(id, List.of(uri),
 													ReconcileUtils.buildLabel(AUTHORIZE_REQUESTS_FIX_LABEL,
 															RecipeScope.FILE))
 													.withRecipeScope(RecipeScope.FILE),
-											new FixDescriptor(ID, List.of(uri),
+											new FixDescriptor(id, List.of(uri),
 													ReconcileUtils.buildLabel(AUTHORIZE_REQUESTS_FIX_LABEL,
 															RecipeScope.PROJECT))
 													.withRecipeScope(RecipeScope.PROJECT)));
@@ -103,13 +102,14 @@ public class AuthorizeHttpRequestsReconciler implements JdtAstReconciler {
 								"Use of type '" + node.getName().getFullyQualifiedName() + "' is outdated",
 								node.getName().getStartPosition(), node.getName().getLength());
 						String uri = docUri.toASCIIString();
+						String id = AuthorizeHttpRequests.class.getName();
 						ReconcileUtils
 								.setRewriteFixes(registry, problem, List.of(
-										new FixDescriptor(ID, List.of(uri),
+										new FixDescriptor(id, List.of(uri),
 												ReconcileUtils.buildLabel(String.format(CLASS_FIX_LABEL_TEMPLATE,
 														replacementClass), RecipeScope.FILE))
 												.withRecipeScope(RecipeScope.FILE),
-										new FixDescriptor(ID, List.of(uri),
+										new FixDescriptor(id, List.of(uri),
 												ReconcileUtils.buildLabel(
 														String.format(CLASS_FIX_LABEL_TEMPLATE, replacementClass),
 														RecipeScope.PROJECT))
