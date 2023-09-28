@@ -22,10 +22,10 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Import;
+import org.springframework.ide.vscode.boot.app.BootJavaConfig;
 import org.springframework.ide.vscode.boot.app.RestTemplateFactory;
 import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
 import org.springframework.ide.vscode.boot.bootiful.HoverTestConf;
-import org.springframework.ide.vscode.boot.validation.generations.CachedBootVersionsFromMavenCentral;
 import org.springframework.ide.vscode.boot.validation.generations.SpringIoProjectsProvider;
 import org.springframework.ide.vscode.boot.validation.generations.SpringProjectsProvider;
 import org.springframework.ide.vscode.boot.validation.generations.json.Generation;
@@ -45,7 +45,7 @@ public class ProjectGenerationsValidationTest {
 	
 	@Autowired private BootLanguageServerHarness harness;
 	@Autowired private RestTemplateFactory restTemplateFactory;
-	@Autowired private CachedBootVersionsFromMavenCentral cachedVersions;
+	@Autowired private BootJavaConfig config;
 
 	private ProjectsHarness projects = ProjectsHarness.INSTANCE;
 
@@ -59,7 +59,7 @@ public class ProjectGenerationsValidationTest {
 
     @Test
     void testProjectsInfoFromSpringIo() throws Exception {
-        SpringProjectsProvider cache = new SpringIoProjectsProvider("https://api.spring.io/projects", restTemplateFactory, cachedVersions);
+        SpringProjectsProvider cache = new SpringIoProjectsProvider(config, restTemplateFactory);
 
         SpringProject project = cache.getProject("spring-boot");
         assertNotNull(project);

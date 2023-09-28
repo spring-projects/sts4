@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2022 VMware, Inc.
+ * Copyright (c) 2022, 2023 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -15,8 +15,14 @@ import org.springframework.ide.vscode.commons.java.Version;
 
 public class Release extends JsonHalLinks {
 	
+	public enum Status {
+		SNAPSHOT,
+		PRERELEASE,
+		GENERAL_AVAILABILITY
+	}
+	
 	private String version;
-	private String status;
+	private Status status;
 	private boolean current;
 	private String referenceDocUrl;
 	private String apiDocUrl;
@@ -26,7 +32,7 @@ public class Release extends JsonHalLinks {
 		return SpringProjectUtil.getVersion(version);
 	}
 	
-	public String getStatus() {
+	public Status getStatus() {
 		return status;
 	}
 	
@@ -41,5 +47,5 @@ public class Release extends JsonHalLinks {
 	public String getApiDocUrl() {
 		return apiDocUrl;
 	}
-		
+	
 }

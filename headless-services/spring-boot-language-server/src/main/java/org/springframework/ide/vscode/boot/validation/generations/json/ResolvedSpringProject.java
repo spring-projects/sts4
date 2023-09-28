@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2022 VMware, Inc.
+ * Copyright (c) 2022,2023 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,8 +11,8 @@
 package org.springframework.ide.vscode.boot.validation.generations.json;
 
 import java.util.List;
+import java.util.stream.Collectors;
 
-import org.springframework.ide.vscode.boot.validation.generations.CachedBootVersionsFromMavenCentral;
 import org.springframework.ide.vscode.boot.validation.generations.SpringProjectsClient;
 import org.springframework.ide.vscode.commons.java.Version;
 
@@ -22,9 +22,9 @@ public class ResolvedSpringProject extends SpringProject {
 
 	private final SpringProjectsClient client;
 	private Generations generations;
-	private CachedBootVersionsFromMavenCentral cachedVersionsFromMaven;
+	private List<Version> releases;
 
-	public ResolvedSpringProject(SpringProject project, SpringProjectsClient client, CachedBootVersionsFromMavenCentral cachedVersionsFromMaven) {
+	public ResolvedSpringProject(SpringProject project, SpringProjectsClient client) {
 		this.client = client;
 		setName(project.getName());
 		setRepositoryUrl(project.getRepositoryUrl());
@@ -53,7 +53,21 @@ public class ResolvedSpringProject extends SpringProject {
 	 * @throws Exception
 	 */
 	public List<Version> getReleases() throws Exception {
-		return cachedVersionsFromMaven.getBootVersions();
+		// cache the releases to prevent frequent calls to the client
+		if (this.releases == null) {
+			Links _links = get_links();
+			if (_links != null) {
+				Link genLink = _links.getReleases();
+				if (genLink != null) {
+					Releases rs = client.getReleases(genLink.getHref());
+					releases = rs == null ? null
+							: rs.getReleases().stream()
+									.filter(r -> r.getStatus() == Release.Status.GENERAL_AVAILABILITY)
+									.map(r -> r.getVersion()).collect(Collectors.toList());
+				}
+			}
+		}
+		return this.releases != null ? releases : ImmutableList.of();
 	}
 
 }

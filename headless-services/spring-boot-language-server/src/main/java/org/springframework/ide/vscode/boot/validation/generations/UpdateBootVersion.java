@@ -36,17 +36,17 @@ public class UpdateBootVersion extends AbstractDiagnosticValidator {
 
 	private Optional<SpringBootUpgrade> bootUpgradeOpt;
 
-	private CachedBootVersionsFromMavenCentral cachedVersionsFromMaven;
+	private SpringProjectsProvider springProjectsProvider;
 
-	public UpdateBootVersion(DiagnosticSeverityProvider diagnosticSeverityProvider, Optional<SpringBootUpgrade> bootUpgradeOpt, CachedBootVersionsFromMavenCentral cachedVersionsFromMaven) {
+	public UpdateBootVersion(DiagnosticSeverityProvider diagnosticSeverityProvider, Optional<SpringBootUpgrade> bootUpgradeOpt, SpringProjectsProvider springProjectsProvider) {
 		super(diagnosticSeverityProvider);
 		this.bootUpgradeOpt = bootUpgradeOpt;
-		this.cachedVersionsFromMaven = cachedVersionsFromMaven;
+		this.springProjectsProvider = springProjectsProvider;
 	}
 
 	@Override
 	public Collection<Diagnostic> validate(IJavaProject javaProject, Version javaProjectVersion) throws Exception {
-		List<Version> versions = cachedVersionsFromMaven.getBootVersions();
+		List<Version> versions = springProjectsProvider.getProject(SpringProjectUtil.SPRING_BOOT).getReleases();
 		ImmutableList.Builder<Diagnostic> builder = ImmutableList.builder();
 		validateMajorVersion(javaProject, javaProjectVersion, versions).ifPresent(builder::add);
 		validateMinorVersion(javaProject, javaProjectVersion, versions).ifPresent(builder::add);
