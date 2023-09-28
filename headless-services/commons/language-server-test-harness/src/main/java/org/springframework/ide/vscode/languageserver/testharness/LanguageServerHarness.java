@@ -719,7 +719,7 @@ public class LanguageServerHarness {
 		assertNotNull(completions);
 		assertFalse(completions.isEmpty());
 		CompletionItem completion = editor.getFirstCompletion();
-		editor.apply(completion);
+		editor.apply(resolveCompletionItem(completion));
 		assertEquals(expectTextAfter, editor.getText());
 	}
 
@@ -735,7 +735,7 @@ public class LanguageServerHarness {
 		List<? extends CompletionItem> completions = editor.getCompletions();
 		for (CompletionItem ci : completions) {
 			editor = newEditor(textBefore);
-			editor.apply(ci);
+			editor.apply(resolveCompletionItem(ci));
 			actual.append(editor.getText());
 			actual.append("\n-------------------\n");
 		}
@@ -749,7 +749,7 @@ public class LanguageServerHarness {
 		List<? extends CompletionItem> completions = editor.getCompletions();
 		for (CompletionItem ci : completions) {
 			editor = newEditor(textBefore);
-			editor.apply(ci);
+			editor.apply(resolveCompletionItem(ci));
 			if (editor.getText().equals(expectTextAfter)) {
 				return;
 			}
@@ -1006,6 +1006,10 @@ public class LanguageServerHarness {
 		WorkspaceSymbolParams params = new WorkspaceSymbolParams(query);
 		List<? extends WorkspaceSymbol> r = server.getWorkspaceService().symbol(params).get().getRight();
 		return ImmutableList.copyOf(r);
+	}
+	
+	public Object executeCommand(Command command) throws Exception {
+		return server.getWorkspaceService().executeCommand(new ExecuteCommandParams(command.getCommand(), command.getArguments())).get();
 	}
 
 	public void assertWorkspaceSymbols(String query, String... expectedSymbols) throws Exception {

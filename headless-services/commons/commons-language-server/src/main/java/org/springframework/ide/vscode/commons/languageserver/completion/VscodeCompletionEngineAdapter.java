@@ -15,12 +15,16 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.ListIterator;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 import java.util.concurrent.CancellationException;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.function.Consumer;
 
+import org.eclipse.lsp4j.ApplyWorkspaceEditParams;
 import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.CompletionItem;
 import org.eclipse.lsp4j.CompletionList;
@@ -28,16 +32,21 @@ import org.eclipse.lsp4j.InsertTextFormat;
 import org.eclipse.lsp4j.MarkupContent;
 import org.eclipse.lsp4j.MarkupKind;
 import org.eclipse.lsp4j.Position;
+import org.eclipse.lsp4j.Range;
 import org.eclipse.lsp4j.TextDocumentPositionParams;
 import org.eclipse.lsp4j.TextEdit;
+import org.eclipse.lsp4j.WorkspaceEdit;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits.TextReplace;
+import org.springframework.ide.vscode.commons.languageserver.util.Lsp4jUtils;
+import org.springframework.ide.vscode.commons.languageserver.util.LspClient;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
 import org.springframework.ide.vscode.commons.languageserver.util.SortKeys;
+import org.springframework.ide.vscode.commons.protocol.CursorMovement;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.StringUtil;
@@ -45,6 +54,8 @@ import org.springframework.ide.vscode.commons.util.text.IRegion;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.common.collect.ImmutableList;
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonPrimitive;
 
 /**
@@ -53,6 +64,9 @@ import com.google.gson.JsonPrimitive;
 public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 
 	private static final Logger log = LoggerFactory.getLogger(VscodeCompletionEngineAdapter.class);
+	
+	private static final Gson GSON = new Gson();
+
 
 	public static class LazyCompletionResolver {
 		private int nextId = 0; //Used to assign unique id to completion items.
@@ -78,6 +92,12 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 			return id;
 		}
 
+		public synchronized String resolveLater(Consumer<CompletionItem> resolver) {
+			String id = nextId();
+			resolvers.put(id, resolver);
+			return id;
+		}
+		
 		public synchronized void resolveNow(CancelChecker cancelToken, CompletionItem unresolved) {
 			Object id = unresolved.getData();
 			if (id!=null) {
@@ -98,6 +118,8 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 
 	private final static int DEFAULT_MAX_COMPLETIONS = 50;
 	private int maxCompletions = DEFAULT_MAX_COMPLETIONS; //TODO: move this to CompletionEngineOptions.
+	
+	private final String RESOLVE_EDIT_COMMAND;
 
 	private SimpleLanguageServer server;
 	private ICompletionEngine engine;
@@ -116,6 +138,44 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 		this.engine = engine;
 		this.resolver = resolver;
 		this.filter = filter;
+		
+		// Command must be unique for each instance due to completion engine since it can be for different schemas under the same LS umbrella
+		this.RESOLVE_EDIT_COMMAND = "sts." + server.EXTENSION_ID + ".resolve.completion.edit." + UUID.randomUUID();
+		
+		server.onCommand(RESOLVE_EDIT_COMMAND, params -> {
+			String uri = params.getArguments().get(0) instanceof String ? (String) params.getArguments().get(0) : ((JsonElement) params.getArguments().get(0)).getAsString();
+			String resolveId = params.getArguments().get(1) instanceof String ? (String) params.getArguments().get(1) : ((JsonElement) params.getArguments().get(1)).getAsString();
+			JsonElement editJson = params.getArguments().get(2) instanceof JsonElement ? (JsonElement) params.getArguments().get(2) : GSON.toJsonTree(params.getArguments().get(2));
+			TextEdit mainEdit = GSON.fromJson(editJson, TextEdit.class);
+			if (isMagicIndentingClient()) {
+				// Reverse sync edit magic client indentation. This indentation only works during completion application not command execution
+				// The reversed edit text is needed to properly determine text to replace
+				mainEdit.setNewText(revertVscodeIndentFix(server.getTextDocumentService().getLatestSnapshot(uri), mainEdit.getRange().getStart(), mainEdit.getNewText()));
+			}
+			
+			return CompletableFuture.supplyAsync(() -> {
+				CompletionItem unresolved = new CompletionItem(RESOLVE_EDIT_COMMAND); 
+				unresolved.setTextEdit(Either.forLeft(mainEdit));
+				unresolved.setData(resolveId);
+				resolver.resolveNow(null, unresolved);
+				return unresolved.getTextEdit().getLeft();
+			}).thenCompose(newEdit -> {
+				Position pos = Lsp4jUtils.getPositionAtEndOfEdit(mainEdit);
+				Position cursorPos = Lsp4jUtils.getPositionAtEndOfEdit(newEdit);
+				String newText = newEdit.getNewText();
+				return server.getClient().applyEdit(new ApplyWorkspaceEditParams(new WorkspaceEdit(Map.of(
+						uri, List.of(
+								new TextEdit(new Range(mainEdit.getRange().getStart(), pos), newText)
+						)
+				)))).thenCompose(res -> {
+					if (res.isApplied()) {
+						return server.getClient().moveCursor(new CursorMovement(uri, cursorPos));
+					} else {
+						return CompletableFuture.failedStage(new IllegalStateException("Failed to apply edit previously, aborting moving the cursor"));
+					}
+				});
+			});
+		});
 	}
 
 	public void setMaxCompletions(int maxCompletions) {
@@ -216,24 +276,100 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 		item.setKind(completion.getKind());
 		item.setSortText(sortkeys.next());
 		item.setFilterText(completion.getFilterText());
-		item.setDetail(completion.getDetail());
 		if (completion.isDeprecated()) {
 			item.setDeprecated(completion.isDeprecated());
 		}
-		resolveEdits(doc, completion, item); //Warning. Its not allowed by LSP spec to resolveEdits
-											//lazy as we used to do in the past.
-		if (completion.getDocumentation() != null) {
-			if (resolver!=null) {
-				item.setData(resolver.resolveLater(completion, doc));
-			} else {
-				resolveItem(doc, completion, item);
-			}
+		
+		resolveMainEdit(doc, completion, item);
+		
+		if (resolver != null) {
+			item.setData(resolver.resolveLater(completionItem -> {
+				try {
+					resolveCompletionItem(completionItem, completion, doc);
+				} catch (Exception e) {
+					log.error("Error resolving completion", e);
+				}
+			}));
+		} else {
+			resolveCompletionItem(item, completion, doc);
 		}
 		
+		List<Object> commands = new ArrayList<>(2);
+		if (LspClient.currentClient() != LspClient.Client.ECLIPSE) {
+			/*
+			 *  Eclipse client always send completionItem resolve request before applying completion. 
+			 *  However, LSP doesn't guarantee this in general and addtionalEdits must be on lines different from the main edit.
+			 *  Due to LSP limitation it is best to execute extra edits modifying main edit via the command
+			 */
+			if (!completion.getTextEdit().isResolved() && item.getTextEdit().isLeft()) {
+				commands.add(new Command("Resolve edit", RESOLVE_EDIT_COMMAND, List.of(doc.getUri(), item.getData(), item.getTextEdit().getLeft())));
+			}
+		}
 		if (completion.isTriggeringNextCompletionRequest()) {
-			item.setCommand(new Command("Completion Proposal Request", "editor.action.triggerSuggest"));
+			commands.add(new Command("Completion Proposal Request", "editor.action.triggerSuggest"));
+		}
+		if (!commands.isEmpty()) {
+			Command command = (Command)commands.get(0);
+			if (commands.size() == 1 && command.getCommand().equals("editor.action.triggerSuggest")) {
+				item.setCommand(command);
+			} else {
+				item.setCommand(new Command("Commands", server.COMMAND_LIST_COMMAND_ID, commands));
+			}
 		}
 		return item;
+	}
+	
+	private void resolveCompletionItem(CompletionItem item, ICompletionProposal completion, TextDocument doc) throws Exception {		
+		item.setDetail(completion.getDetail());
+		if (completion.getDocumentation() != null) {
+			resolveItem(doc, completion, item);
+		}
+		
+		if (!completion.getTextEdit().isResolved()) {
+			completion.getTextEdit().resolve();
+		}
+		// Keep main edit resolution outside of the if block above. If resolve completion item and command are executed in parallel command would need to generate the new edit
+		resolveMainEdit(doc, completion, item);
+		
+		resolveAdditionalEdits(doc, completion, item);
+		
+		// Remove the Resolve Edit Command if present since everything is resolved already (Not expected to be around for Eclipse client)
+		if (item.getCommand() != null) {
+			if (server.COMMAND_LIST_COMMAND_ID.equals(item.getCommand().getCommand())) {
+				List<Object> subCommands = item.getCommand().getArguments();
+				for (ListIterator<Object> itr = subCommands.listIterator(); itr.hasNext();) {
+					Object o = itr.next();
+					Command subCommand = o instanceof Command ? (Command) o : GSON.fromJson(o instanceof JsonElement ? (JsonElement) o : GSON.toJsonTree(o), Command.class);
+					if (RESOLVE_EDIT_COMMAND.equals(subCommand.getCommand())) {
+						itr.remove();
+						// Only one such command expected
+						break;
+					}
+				}
+				if (subCommands.size() == 1) {
+					item.setCommand((Command)subCommands.get(0));
+				} else if (subCommands.isEmpty()) {
+					item.setCommand(null);
+				}
+			} else if (RESOLVE_EDIT_COMMAND.equals(item.getCommand().getCommand())) {
+				item.setCommand(null);
+			}
+		}
+		if (item.getCommand() != null && server.COMMAND_LIST_COMMAND_ID.equals(item.getCommand().getCommand())) {
+			List<Object> subCommands = item.getCommand().getArguments();
+			for (ListIterator<Object> itr = subCommands.listIterator(); itr.hasNext();) {
+				Object o = itr.next();
+				Command subCommand = o instanceof Command ? (Command) o : GSON.fromJson(o instanceof JsonElement ? (JsonElement) o : GSON.toJsonTree(o), Command.class);
+				if (RESOLVE_EDIT_COMMAND.equals(subCommand.getCommand())) {
+					itr.remove();
+					// Only one such command expected
+					break;
+				}
+			}
+			if (subCommands.isEmpty()) {
+				item.setCommand(null);
+			}
+		}
 	}
 
 	private List<ICompletionProposal> filter(Collection<ICompletionProposal> completions) {
@@ -259,9 +395,9 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 		item.setDocumentation(content);
 	}
 
-	private void resolveEdits(TextDocument doc, ICompletionProposal completion, CompletionItem item) {
+	private void resolveMainEdit(TextDocument doc, ICompletionProposal completion, CompletionItem item) {
 		AtomicBoolean usedSnippets = new AtomicBoolean();
-		Optional<TextEdit> mainEdit = adaptEdits(doc, completion.getTextEdit(), usedSnippets);
+		Optional<TextEdit> mainEdit = adaptEdits(doc, completion.getTextEdit(), usedSnippets, isCommandExecution(item));
 		if (mainEdit.isPresent()) {
 			item.setTextEdit(Either.forLeft(mainEdit.get()));
 			if (server.hasCompletionSnippetSupport()) {
@@ -272,11 +408,21 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 		} else {
 			item.setInsertText("");
 		}
-
-		completion.getAdditionalEdit().ifPresent(edit -> {
-			adaptEdits(doc, edit, null).ifPresent(extraEdit -> {
-				item.setAdditionalTextEdits(ImmutableList.of(extraEdit));
-			});
+	}
+	
+	private void resolveAdditionalEdits(TextDocument doc, ICompletionProposal completion, CompletionItem item) {
+		completion.getAdditionalEdit().ifPresent(editSupplier -> {
+			DocumentEdits edit = editSupplier.get();
+			if (edit != null) {
+				if (!edit.isResolved()) {
+					edit.resolve();
+				}
+				adaptEdits(doc, edit, null, isCommandExecution(item)).ifPresent(extraEdit -> {
+					item.setAdditionalTextEdits(ImmutableList.of(extraEdit));
+				});
+			} else {
+				item.setAdditionalTextEdits(null);
+			}
 		});
 	}
 
@@ -287,10 +433,10 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 		return null;
 	}
 
-	private Optional<TextEdit> adaptEdits(TextDocument doc, DocumentEdits edits, AtomicBoolean usedSnippets) {
+	private Optional<TextEdit> adaptEdits(TextDocument doc, DocumentEdits edits, AtomicBoolean usedSnippets, boolean ignoreClientIndent) {
 		try {
-			TextReplace replaceEdit = edits.asReplacement(doc);
-			if (usedSnippets != null) {
+			TextReplace replaceEdit = edits == null ? null : edits.asReplacement(doc);
+			if (usedSnippets != null && edits != null) {
 				usedSnippets.set(edits.hasSnippets());
 			}
 			if (replaceEdit==null) {
@@ -317,7 +463,7 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 						usedSnippets.set(true);
 					}
 				}
-				if (isMagicIndentingClient()) {
+				if (isMagicIndentingClient() && !ignoreClientIndent) {
 					newText = vscodeIndentFix(doc, vscodeEdit.getRange().getStart(), replaceEdit.newText);
 				}
 				vscodeEdit.setNewText(newText);
@@ -351,6 +497,19 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 		}
 		return newText;
 	}
+	
+	private static String revertVscodeIndentFix(TextDocument doc, Position start, String newText) {
+		IndentUtil indenter = new IndentUtil(doc);
+		try {
+			String refIndent = indenter.getReferenceIndent(doc.toOffset(start), doc);
+			if (!refIndent.isEmpty()) {
+				return  StringUtil.reverseStripIndentation(refIndent, newText);
+			}
+		} catch (BadLocationException e) {
+			log.error("{}", e);
+		}
+		return newText;
+	}
 
 	@Override
 	public CompletionItem resolveCompletion(CancelChecker cancelToken, CompletionItem unresolved) {
@@ -369,5 +528,9 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 		 */
 		boolean include(ICompletionProposal proposal);
 
+	}
+	
+	private boolean isCommandExecution(CompletionItem item) {
+		return RESOLVE_EDIT_COMMAND == item.getLabel();
 	}
 }

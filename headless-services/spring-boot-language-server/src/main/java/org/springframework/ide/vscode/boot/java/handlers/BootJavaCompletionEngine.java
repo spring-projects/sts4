@@ -64,7 +64,7 @@ public class BootJavaCompletionEngine implements ICompletionEngine, LanguageSpec
 		});
 	}
 
-	private void collectCompletionsForAnnotations(ASTNode node, int offset, IDocument doc, Collection<ICompletionProposal> completions) {
+	private void collectCompletionsForAnnotations(ASTNode node, int offset, TextDocument doc, Collection<ICompletionProposal> completions) {
 		Annotation annotation = null;
 		ASTNode exactNode = node;
 

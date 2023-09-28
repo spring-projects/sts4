@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.boot.java.data;
 
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import org.eclipse.lsp4j.CompletionItemKind;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
@@ -24,12 +25,12 @@ public class FindByCompletionProposal implements ICompletionProposal {
 	private DocumentEdits edits;
 	private String details;
 	private Renderable doc;
-	private Optional<DocumentEdits> additionalEdits;
+	private Supplier<DocumentEdits> additionalEdits;
 	private String filter;
 	private boolean triggerNextCompletion;
 
 	public FindByCompletionProposal(String label, CompletionItemKind kind, DocumentEdits edits, String details,
-			Renderable doc, Optional<DocumentEdits> additionalEdits, String filter, boolean triggerNextCompletion) {
+			Renderable doc, Supplier<DocumentEdits> additionalEdits, String filter, boolean triggerNextCompletion) {
 		super();
 		this.label = label;
 		this.kind = kind;
@@ -41,7 +42,7 @@ public class FindByCompletionProposal implements ICompletionProposal {
 		this.triggerNextCompletion = triggerNextCompletion;
 	}
 
-	public static ICompletionProposal createProposal(int offset, CompletionItemKind completionItemKind, String prefix, String label, String completion, boolean triggerNextCompletion, Optional<DocumentEdits> additionalEdits) {
+	public static ICompletionProposal createProposal(int offset, CompletionItemKind completionItemKind, String prefix, String label, String completion, boolean triggerNextCompletion, Supplier<DocumentEdits> additionalEdits) {
 		DocumentEdits edits = new DocumentEdits(null, false);
 		String filter = label;
 		if (prefix != null && label.startsWith(prefix)) {
@@ -84,8 +85,8 @@ public class FindByCompletionProposal implements ICompletionProposal {
 	}
 
 	@Override
-	public Optional<DocumentEdits> getAdditionalEdit() {
-		return additionalEdits;
+	public Optional<Supplier<DocumentEdits>> getAdditionalEdit() {
+		return Optional.ofNullable(additionalEdits);
 	}
 
 	@Override

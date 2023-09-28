@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2019 Pivotal, Inc.
+ * Copyright (c) 2015, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -17,7 +17,7 @@ import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.yaml.schema.YType;
 
 public abstract class AbstractPropertyProposal extends ScoreableProposal {
-
+		
 	@Override
 	public String getDetail() {
 		return niceTypeName(getType());
@@ -101,7 +101,7 @@ public abstract class AbstractPropertyProposal extends ScoreableProposal {
 	public final DocumentEdits getTextEdit() {
 		return this.proposalApplier;
 	}
-
+	
 //	@Override
 //	public void apply(IDocument document) {
 //		try {

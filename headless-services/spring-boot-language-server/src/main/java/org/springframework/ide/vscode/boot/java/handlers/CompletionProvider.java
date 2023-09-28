@@ -16,14 +16,14 @@ import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
-import org.springframework.ide.vscode.commons.util.text.IDocument;
+import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 /**
  * @author Martin Lippert
  */
 public interface CompletionProvider {
 
-	void provideCompletions(ASTNode node, Annotation annotation, ITypeBinding type, int offset, IDocument doc, Collection<ICompletionProposal> completions);
-	void provideCompletions(ASTNode node, int offset, IDocument doc, Collection<ICompletionProposal> completions);
+	default void provideCompletions(ASTNode node, Annotation annotation, ITypeBinding type, int offset, TextDocument doc, Collection<ICompletionProposal> completions) {};
+	default void provideCompletions(ASTNode node, int offset, TextDocument doc, Collection<ICompletionProposal> completions) {};
 
 }

@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.commons.languageserver.completion;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.BiFunction;
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -138,13 +139,22 @@ public class DocumentEdits implements ProposalApplier {
 	private class Insertion extends Edit {
 		private int offset;
 		private String text;
+		private Supplier<String> resolveInsert;
+		private boolean resolved;
+		
 
 		public Insertion(boolean grabCursor, int offset, String insert) {
+			this(grabCursor, offset, insert, null);
+		}
+
+		public Insertion(boolean grabCursor, int offset, String insert, Supplier<String> resolveInsert) {
 			super(grabCursor);
 			this.offset = offset;
 			this.text = insert;
+			this.resolveInsert = resolveInsert;
+			this.resolved = resolveInsert == null;
 		}
-
+		
 		@Override
 		void apply(DocumentState doc) throws BadLocationException {
 			doc.insert(grabCursor, offset, text);
@@ -164,6 +174,15 @@ public class DocumentEdits implements ProposalApplier {
 		public int getEnd() {
 			return offset;
 		}
+		
+		public void resolve() {
+			text = resolveInsert.get();
+			resolved = true;
+		}
+		
+		public boolean isResolved() {
+			return resolved;
+		}
 	}
 
 	private abstract class Edit {
@@ -176,6 +195,10 @@ public class DocumentEdits implements ProposalApplier {
 		abstract void apply(DocumentState doc) throws BadLocationException;
 		@Override
 		public abstract String toString();
+		public boolean isResolved() {
+			return true;
+		}
+		public void resolve() {}
 	}
 
 	private class Deletion extends Edit {
@@ -365,7 +388,11 @@ public class DocumentEdits implements ProposalApplier {
 	public void insert(int offset, String insert) {
 		edits.add(new Insertion(grabCursor, offset, insert));
 	}
-
+	
+	public void lazyInsert(int offset, String insert, Supplier<String> resolveText) {
+		edits.add(new Insertion(grabCursor, offset, insert, resolveText));
+	}
+	
 	@Override
 	public IRegion getSelection() throws Exception {
 		DocumentState selectionState = new DocumentState(null);
@@ -487,6 +514,12 @@ public class DocumentEdits implements ProposalApplier {
 				Matcher matcher = NON_WS_CHAR.matcher(insert.text);
 				if (matcher.find()) {
 					insert.text = transformFun.apply(matcher.start(), insert.text);
+					if (!insert.isResolved()) {
+						Supplier<String> originalSupl = insert.resolveInsert;
+						insert.resolveInsert = () -> {
+							return transformFun.apply(matcher.start(), originalSupl.get());
+						};
+					}
 				}
 			}
 		}
@@ -524,10 +557,34 @@ public class DocumentEdits implements ProposalApplier {
 				if (ins.offset>=del.start && ins.offset <=del.end && replacedText.startsWith(prefix)) {
 					del.start+=prefix.length();
 					ins.text = ins.text.substring(prefix.length());
+					if (!ins.isResolved()) {
+						Supplier<String> originalSupl = ins.resolveInsert;
+						ins.resolveInsert = () -> {
+							return originalSupl.get().substring(prefix.length());
+						};
+					}
 				}
 			}
 		} catch (BadLocationException e) {
 			log.error("", e);
 		}
 	}
+	
+	public boolean isResolved() {
+		for (Edit e : edits) {
+			if (!e.isResolved()) {
+				return false;
+			}
+		}
+		return true;
+	}
+	
+	public void resolve() {
+		for (Edit edit : edits) {
+			if (!edit.isResolved()) {
+				edit.resolve();
+			}
+		}
+	}
+	
 }

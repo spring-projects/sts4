@@ -14,8 +14,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
+import java.util.function.Supplier;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.CompilationUnit;
@@ -114,8 +114,7 @@ public class DataRepositoryPrefixSensitiveCompletionProvider implements DataRepo
 		if (toReplace.startsWith(lastWord)) {
 			DocumentEdits edits = new DocumentEdits(null, false);
 			edits.replace(offset - lastWord.length(), offset, toReplace);
-			DocumentEdits additionalEdits = new DocumentEdits(null, false);
-			ICompletionProposal proposal = new FindByCompletionProposal(toReplace, CompletionItemKind.Text, edits, "property " + toReplace, null, Optional.of(additionalEdits), lastWord, true);
+			ICompletionProposal proposal = new FindByCompletionProposal(toReplace, CompletionItemKind.Text, edits, "property " + toReplace, null, null, lastWord, true);
 			completions.add(proposal);
 		}
 	}
@@ -141,7 +140,7 @@ public class DataRepositoryPrefixSensitiveCompletionProvider implements DataRepo
 		newText.append(";");
 		int replaceStart = calculateReplaceOffset(offset, localPrefix, fullPrefix, returnType);
 		edits.replace(replaceStart, offset, newText.toString());
-		Optional<DocumentEdits> additionalEdits = ASTUtils.getImportsEdit((CompilationUnit) node.getRoot(), imports, doc);
+		Supplier<DocumentEdits> additionalEdits = () -> ASTUtils.getImportsEdit((CompilationUnit) node.getRoot(), imports, doc).orElse(null);
 		ICompletionProposal proposal = new FindByCompletionProposal(signature, CompletionItemKind.Method, edits, null, null, additionalEdits, signature, false);
 		completions.add(proposal);
 	}

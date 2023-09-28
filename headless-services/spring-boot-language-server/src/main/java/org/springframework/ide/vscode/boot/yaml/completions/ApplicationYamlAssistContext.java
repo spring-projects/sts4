@@ -26,13 +26,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.common.InformationTemplates;
 import org.springframework.ide.vscode.boot.common.PropertyCompletionFactory;
 import org.springframework.ide.vscode.boot.common.RelaxedNameConfig;
-import org.springframework.ide.vscode.boot.configurationmetadata.ConfigurationMetadataGroup;
 import org.springframework.ide.vscode.boot.configurationmetadata.Deprecation;
 import org.springframework.ide.vscode.boot.java.links.JavaElementLocationProvider;
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.metadata.IndexNavigator;
 import org.springframework.ide.vscode.boot.metadata.PropertyInfo;
-import org.springframework.ide.vscode.boot.metadata.PropertyInfo.PropertySource;
 import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndex;
 import org.springframework.ide.vscode.boot.metadata.hints.HintProvider;
 import org.springframework.ide.vscode.boot.metadata.hints.StsValueHint;
@@ -46,7 +44,6 @@ import org.springframework.ide.vscode.boot.metadata.types.TypedProperty;
 import org.springframework.ide.vscode.boot.metadata.util.PropertyDocUtils;
 import org.springframework.ide.vscode.boot.properties.hover.PropertiesDefinitionCalculator;
 import org.springframework.ide.vscode.boot.yaml.reconcile.ApplicationYamlASTReconciler;
-import org.springframework.ide.vscode.boot.yaml.reconcile.ApplicationYamlReconcileEngine;
 import org.springframework.ide.vscode.commons.java.IField;
 import org.springframework.ide.vscode.commons.java.IJavaElement;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
@@ -208,7 +205,7 @@ public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistCon
 							//property not yet defined
 							Type type = p.getType();
 							edits.delete(queryOffset, query);
-							edits.createPathInPlace(contextNode, relativePath, queryOffset, appendTextFor(type));
+							edits.createPathInPlace(contextNode, relativePath, queryOffset, () -> appendTextFor(type));
 							proposals.add(completionFactory.beanProperty(doc.getDocument(),
 									contextPath.toPropString(), getType(),
 									query, p, score, edits, typeUtil)
@@ -511,15 +508,14 @@ public abstract class ApplicationYamlAssistContext extends AbstractYamlAssistCon
 				// context. If it doesn't we can create it as any child of the context
 				// so that includes, right at place the user is typing now.
 				SNode existingNode = contextNode.traverse(nextSegment);
-				String appendText = appendTextFor(TypeParser.parse(match.data.getType()));
 				if (existingNode==null) {
-					edits.createPathInPlace(contextNode, relativePath, queryOffset, appendText);
+					edits.createPathInPlace(contextNode, relativePath, queryOffset, () -> appendTextFor(TypeParser.parse(match.data.getType())));
 				} else {
 					String wholeLine = file.getLineTextAtOffset(queryOffset);
 					if (wholeLine.trim().equals(query.trim())) {
 						edits.deleteLineBackwardAtOffset(queryOffset);
 					}
-					edits.createPath(getContextRoot(file), YamlPath.fromProperty(match.data.getId()), appendText);
+					edits.createPath(getContextRoot(file), YamlPath.fromProperty(match.data.getId()), () -> appendTextFor(TypeParser.parse(match.data.getType())));
 				}
 				return edits;
 			});

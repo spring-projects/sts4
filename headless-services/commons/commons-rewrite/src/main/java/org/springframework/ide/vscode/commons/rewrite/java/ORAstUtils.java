@@ -314,6 +314,7 @@ public class ORAstUtils {
 	public static List<CompilationUnit> parseInputs(JavaParser parser, Iterable<Parser.Input> inputs, Consumer<SourceFile> parseCallback) {
 		ExecutionContext ctx = new InMemoryExecutionContext(ORAstUtils::logExceptionWhileParsing);
 		ctx.putMessage(JavaParser.SKIP_SOURCE_SET_TYPE_GENERATION, true);
+		ctx.putMessage(ExecutionContext.REQUIRE_PRINT_EQUALS_INPUT, false);
 		if (parseCallback != null) {
 			ParsingExecutionContextView parseContext = ParsingExecutionContextView.view(ctx);
 			parseContext.setParsingListener(new ParsingEventListener() {

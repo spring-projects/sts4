@@ -76,7 +76,7 @@ public class DataRepositoryStandardCompletionProvider implements DataRepositoryC
 		completion.append(StringUtils.uncapitalize(domainProperty.getName()));
 		completion.append(");");
 		
-		return FindByCompletionProposal.createProposal(offset, CompletionItemKind.Method, prefix, label.toString(), completion.toString(), false, ASTUtils.getImportsEdit((CompilationUnit)node.getRoot(), imprts, doc));
+		return FindByCompletionProposal.createProposal(offset, CompletionItemKind.Method, prefix, label.toString(), completion.toString(), false, () -> ASTUtils.getImportsEdit((CompilationUnit)node.getRoot(), imprts, doc).orElse(null));
 	}
 		
 }

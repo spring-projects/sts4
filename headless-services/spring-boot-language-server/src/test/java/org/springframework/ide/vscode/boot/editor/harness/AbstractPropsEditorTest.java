@@ -204,6 +204,7 @@ public abstract class AbstractPropsEditorTest {
 		for (int i = 0; i < actualLabels.length; i++) {
 			actualLabels[i] = completions.get(i).getLabel();
 			if (includeDetail) {
+				completions.set(i, harness.resolveCompletionItem(completions.get(i)));
 				String detail = completions.get(i).getDetail();
 				if (detail != null && !detail.isEmpty()) {
 					actualLabels[i] += " : " + detail;
@@ -221,7 +222,10 @@ public abstract class AbstractPropsEditorTest {
 			completionDetails[i] = expectCompletions[i][1];
 		}
 		Editor editor = newEditor(editorText);
-		List<CompletionItem> completions = editor.getCompletions();
+		List<CompletionItem> completions = editor.getCompletions()
+				.stream()
+				.map(ci -> harness.resolveCompletionItem(ci))
+				.collect(Collectors.toList());
 		String[] actualLabels = new String[completions.size()];
 		String[] actualDetails = new String[completions.size()];
 		for (int i = 0; i < completions.size(); i++) {

@@ -106,7 +106,7 @@ public class SpringProjectUtil {
 				log.error("", e);
 			}
 			return Optional.empty();
-		}).isEmpty();
+		}).isPresent();
 	}
 
 	

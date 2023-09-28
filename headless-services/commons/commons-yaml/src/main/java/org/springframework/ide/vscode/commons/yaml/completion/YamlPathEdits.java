@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.yaml.completion;
 
+import java.util.function.Supplier;
+
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.text.IRegion;
@@ -57,6 +59,41 @@ public class YamlPathEdits extends DocumentEdits {
 	 * the 'missing' portion of the path is found and the edits
 	 * are created there.
 	 */
+	public void createPath(SChildBearingNode node, YamlPath path, Supplier<String> appendText) throws Exception {
+		//This code doesn't handle selection of subddocuments
+		// or creation of new subdocuments so must not call it on
+		//ROOT node but start at an appropriate SDocNode (or below)
+		Assert.isLegal(node.getNodeType()!=SNodeType.ROOT);
+		if (!path.isEmpty()) {
+			YamlPathSegment s = path.getSegment(0);
+			if (s.getType()==YamlPathSegmentType.VAL_AT_KEY) {
+				String key = s.toPropString();
+				SKeyNode existing = node.getChildWithKey(key);
+				if (existing==null) {
+					createNewPath(node, path, appendText);
+				} else {
+					createPath(existing, path.tail(), appendText);
+				}
+			}
+		} else {
+			//whole path already exists. Just try to move cursor somewhere
+			// sensible in the existing tail-end-node of the path.
+			SNode child = node.getFirstRealChild();
+			if (child!=null) {
+				moveCursorTo(child.getStart());
+			} else if (node.getNodeType()==SNodeType.KEY) {
+				SKeyNode keyNode = (SKeyNode) node;
+				int colonOffset = keyNode.getColonOffset();
+				char c = doc.getChar(colonOffset+1);
+				if (c==' ') {
+					moveCursorTo(colonOffset+2); //cursor after the ": "
+				} else {
+					moveCursorTo(colonOffset+1); //cursor after the ":"
+				}
+			}
+		}
+	}
+	
 	public void createPath(SChildBearingNode node, YamlPath path, String appendText) throws Exception {
 		//This code doesn't handle selection of subddocuments
 		// or creation of new subdocuments so must not call it on
@@ -92,13 +129,25 @@ public class YamlPathEdits extends DocumentEdits {
 		}
 	}
 
+
+	private void createNewPath(SChildBearingNode parent, YamlPath path, Supplier<String> appendText) throws Exception {
+		int indent = YamlIndentUtil.getNewChildKeyIndent(parent);
+		int insertionPoint = getNewPathInsertionOffset(parent);
+		boolean startOnNewLine = true;
+		if (appendText == null) {
+			insert(insertionPoint, createPathInsertionText(path, indent, startOnNewLine, ""));
+		} else {
+			lazyInsert(insertionPoint, createPathInsertionText(path, indent, startOnNewLine, ""), () -> createPathInsertionText(path, indent, startOnNewLine, appendText.get()));
+		}
+	}
+
 	private void createNewPath(SChildBearingNode parent, YamlPath path, String appendText) throws Exception {
 		int indent = YamlIndentUtil.getNewChildKeyIndent(parent);
 		int insertionPoint = getNewPathInsertionOffset(parent);
 		boolean startOnNewLine = true;
 		insert(insertionPoint, createPathInsertionText(path, indent, startOnNewLine, appendText));
 	}
-
+	
 	protected String createPathInsertionText(YamlPath path, int indent, boolean startOnNewLine, String appendText) {
 		StringBuilder buf = new StringBuilder();
 		for (int i = 0; i < path.size(); i++) {
@@ -138,9 +187,10 @@ public class YamlPathEdits extends DocumentEdits {
 		}
 	}
 
-	public void createPathInPlace(SNode contextNode, YamlPath relativePath, int insertionPoint, String appendText) throws Exception {
+	public void createPathInPlace(SNode contextNode, YamlPath relativePath, int insertionPoint, Supplier<String> appendText) throws Exception {
 		int indent = YamlIndentUtil.getNewChildKeyIndent(contextNode);
-		insert(insertionPoint, createPathInsertionText(relativePath, indent, needNewline(contextNode, insertionPoint), appendText));
+		boolean needNewline = needNewline(contextNode, insertionPoint);
+		lazyInsert(insertionPoint, createPathInsertionText(relativePath, indent, needNewline, ""), () -> createPathInsertionText(relativePath, indent, needNewline, appendText.get()));
 	}
 
 	private boolean needNewline(SNode contextNode, int insertionPoint) throws Exception {

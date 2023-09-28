@@ -11,7 +11,6 @@
 package org.springframework.ide.vscode.boot.java.data.providers;
 
 import java.util.Collection;
-import java.util.Optional;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.lsp4j.CompletionItemKind;
@@ -34,7 +33,7 @@ public class DataRepositoryQueryStartCompletionProvider implements DataRepositor
 		for(QueryMethodSubject queryMethodSubject : QueryMethodSubject.QUERY_METHOD_SUBJECTS){
 			String toInsert = queryMethodSubject.key() + "By";
 			if(prefix == null || (toInsert.length() > localPrefix.length() && toInsert.startsWith(localPrefix)) || isOffsetAfterWhitespace(doc, offset)) {
-				completions.add(FindByCompletionProposal.createProposal(offset, CompletionItemKind.Text, prefix, toInsert, toInsert, true, Optional.empty()));
+				completions.add(FindByCompletionProposal.createProposal(offset, CompletionItemKind.Text, prefix, toInsert, toInsert, true, null));
 			}
 		}
 	}

@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.boot.java.snippets;
 
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.lsp4j.CompletionItemKind;
@@ -21,8 +22,6 @@ import org.springframework.ide.vscode.commons.languageserver.util.SnippetBuilder
 import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
-
-import com.google.common.base.Supplier;
 
 public class JavaSnippetCompletion implements ICompletionProposal{
 
@@ -64,7 +63,7 @@ public class JavaSnippetCompletion implements ICompletionProposal{
 	}
 
 	@Override
-	public Optional<DocumentEdits> getAdditionalEdit() {
-		return javaSnippet.getImports().flatMap(imports -> ASTUtils.getImportsEdit(cu, imports, query.getDocument()));
+	public Optional<java.util.function.Supplier<DocumentEdits>> getAdditionalEdit() {
+		return javaSnippet.getImports().map(imports -> () -> ASTUtils.getImportsEdit(cu, imports, query.getDocument()).orElse(null));
 	}
 }

@@ -20,7 +20,7 @@ import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.StringLiteral;
 import org.springframework.ide.vscode.boot.java.handlers.CompletionProvider;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
-import org.springframework.ide.vscode.commons.util.text.IDocument;
+import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 /**
  * @author Martin Lippert
@@ -29,7 +29,7 @@ public class ScopeCompletionProcessor implements CompletionProvider {
 
 	@Override
 	public void provideCompletions(ASTNode node, Annotation annotation, ITypeBinding type,
-			int offset, IDocument doc, Collection<ICompletionProposal> completions) {
+			int offset, TextDocument doc, Collection<ICompletionProposal> completions) {
 
 		try {
 			if (node instanceof SimpleName && node.getParent() instanceof MemberValuePair) {
@@ -80,10 +80,6 @@ public class ScopeCompletionProcessor implements CompletionProvider {
 		catch (Exception e) {
 			e.printStackTrace();
 		}
-	}
-
-	@Override
-	public void provideCompletions(ASTNode node, int offset, IDocument doc, Collection<ICompletionProposal> completions) {
 	}
 
 }

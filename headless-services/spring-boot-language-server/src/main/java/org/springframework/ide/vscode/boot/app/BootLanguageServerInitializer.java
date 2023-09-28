@@ -134,7 +134,7 @@ public class BootLanguageServerInitializer implements InitializingBean {
 			CompositeCompletionEngine compositeCompletionEngine = new CompositeCompletionEngine();
 			completionEngines.forEach(compositeCompletionEngine::add);
 			completionEngineAdapter = server.createCompletionEngineAdapter(compositeCompletionEngine);
-			completionEngineAdapter.setMaxCompletions(100);
+			completionEngineAdapter.setMaxCompletions(-1);
 			documents.onCompletion(completionEngineAdapter::getCompletions);
 			documents.onCompletionResolve(completionEngineAdapter::resolveCompletion);
 		}

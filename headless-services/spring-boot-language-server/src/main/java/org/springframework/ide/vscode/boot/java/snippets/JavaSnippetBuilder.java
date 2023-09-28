@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.snippets;
 
+import java.util.function.Supplier;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -19,8 +20,6 @@ import org.springframework.ide.vscode.commons.languageserver.util.SnippetBuilder
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
-
-import com.google.common.base.Supplier;
 
 /**
  * Respobsible for converting eclipse-like template string into lsp snippet text.

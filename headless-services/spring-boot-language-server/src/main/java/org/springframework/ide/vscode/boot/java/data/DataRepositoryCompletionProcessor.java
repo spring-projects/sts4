@@ -14,7 +14,6 @@ import java.util.Collection;
 import java.util.List;
 
 import org.eclipse.jdt.core.dom.ASTNode;
-import org.eclipse.jdt.core.dom.Annotation;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 import org.springframework.ide.vscode.boot.java.data.providers.DataRepositoryCompletionProvider;
@@ -25,8 +24,8 @@ import org.springframework.ide.vscode.boot.java.handlers.CompletionProvider;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.util.BadLocationException;
-import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.util.text.IRegion;
+import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 /**
  * @author Martin Lippert
@@ -44,12 +43,7 @@ public class DataRepositoryCompletionProcessor implements CompletionProvider {
 	}
 
 	@Override
-	public void provideCompletions(ASTNode node, Annotation annotation, ITypeBinding type,
-			int offset, IDocument doc, Collection<ICompletionProposal> completions) {
-	}
-
-	@Override
-	public void provideCompletions(ASTNode node, int offset, IDocument doc, Collection<ICompletionProposal> completions) {
+	public void provideCompletions(ASTNode node, int offset, TextDocument doc, Collection<ICompletionProposal> completions) {
 		TypeDeclaration type = ASTUtils.findDeclaringType(node);
 		DataRepositoryDefinition repo = getDataRepositoryDefinition(type);
 		if(repo != null && repo.getDomainType() != null){

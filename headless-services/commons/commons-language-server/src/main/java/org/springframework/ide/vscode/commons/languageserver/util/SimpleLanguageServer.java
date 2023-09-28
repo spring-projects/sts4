@@ -111,6 +111,7 @@ import org.springframework.ide.vscode.commons.util.CollectionUtil;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.common.collect.ImmutableList;
+import com.google.gson.Gson;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
@@ -140,6 +141,7 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, SpringInd
 
 	public final String EXTENSION_ID;
 	public final String CODE_ACTION_COMMAND_ID;
+	public final String COMMAND_LIST_COMMAND_ID;
 
 	public final LazyCompletionResolver completionResolver = createCompletionResolver();
 
@@ -271,6 +273,7 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, SpringInd
 		Assert.isNotNull(extensionId);
 		this.EXTENSION_ID = extensionId;
 		this.CODE_ACTION_COMMAND_ID = "sts."+EXTENSION_ID+".codeAction";
+		this.COMMAND_LIST_COMMAND_ID = "sts." + EXTENSION_ID + ".commandList";
 	}
 
 	protected CompletableFuture<Object> executeCommand(ExecuteCommandParams params) {
@@ -296,6 +299,14 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, SpringInd
 				});
 			})
 			.toFuture();
+		} else if (COMMAND_LIST_COMMAND_ID.equals(params.getCommand())) {
+			Gson gson = new Gson();
+			CompletableFuture<Object> execution = CompletableFuture.completedFuture(null);
+			for (Object json : params.getArguments()) {
+				Command cmd = json instanceof Command ? (Command) json : gson.fromJson(json instanceof JsonElement ? (JsonElement) json : gson.toJsonTree(json), Command.class);
+				execution = execution.thenCompose(r -> getWorkspaceService().executeCommand(new ExecuteCommandParams(cmd.getCommand(), cmd.getArguments())));
+			}
+			return execution;
 		}
 		log.warn("Unknown command ignored: "+params.getCommand());
 		return CompletableFuture.completedFuture(false);
@@ -426,7 +437,7 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, SpringInd
 
 	public Disposable onCommand(String id, ExecuteCommandHandler commandHandler) {
 		synchronized (commands) {
-			Assert.isLegal(!commands.containsKey(id));
+			Assert.isLegal(!commands.containsKey(id), "Command '" + id + "' is already registered");
 			commands.put(id, commandHandler);
 		}
 		return () -> {
@@ -489,6 +500,7 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, SpringInd
 			List<String> supportedCommands = new ArrayList<>();
 			if (hasQuickFixes()) {
 				supportedCommands.add(CODE_ACTION_COMMAND_ID);
+				supportedCommands.add(COMMAND_LIST_COMMAND_ID);
 			}
 			supportedCommands.addAll(commands.keySet());
 			ExecuteCommandOptions executeCommandOptions = new ExecuteCommandOptions(supportedCommands);

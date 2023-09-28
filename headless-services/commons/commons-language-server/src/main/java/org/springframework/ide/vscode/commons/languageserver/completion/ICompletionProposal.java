@@ -12,6 +12,7 @@
 package org.springframework.ide.vscode.commons.languageserver.completion;
 
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import org.eclipse.lsp4j.CompletionItemKind;
 import org.springframework.ide.vscode.commons.util.Renderable;
@@ -25,13 +26,13 @@ public interface ICompletionProposal {
 	String getLabel();
 	CompletionItemKind getKind();
 	DocumentEdits getTextEdit();
-	default Optional<DocumentEdits> getAdditionalEdit() { return Optional.empty(); }
+	default Optional<Supplier<DocumentEdits>> getAdditionalEdit() { return Optional.empty(); }
 	default boolean isTriggeringNextCompletionRequest() { return false; }
 
 	String getDetail();
 	Renderable getDocumentation();
 	default String getFilterText() { return getLabel(); }
-
+	
 	/**
 	 * Transforms a proposal to make it standout less somehow.
 	 * @param howmuch A 'weight' for the deemphasis. Allowing to deempasize some proposals more than others.

@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.boot.java.snippets;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.function.Supplier;
 
 import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.CompilationUnit;
@@ -22,8 +23,6 @@ import org.springframework.ide.vscode.commons.languageserver.util.SnippetBuilder
 import org.springframework.ide.vscode.commons.util.FuzzyMatcher;
 import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
-
-import com.google.common.base.Supplier;
 
 public class JavaSnippetManager {
 

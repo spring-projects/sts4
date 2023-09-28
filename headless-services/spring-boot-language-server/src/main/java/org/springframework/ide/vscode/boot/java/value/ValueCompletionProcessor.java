@@ -37,6 +37,7 @@ import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.FuzzyMap;
 import org.springframework.ide.vscode.commons.util.FuzzyMap.Match;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
+import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 /**
  * @author Martin Lippert
@@ -55,7 +56,7 @@ public class ValueCompletionProcessor implements CompletionProvider {
 
 	@Override
 	public void provideCompletions(ASTNode node, Annotation annotation, ITypeBinding type,
-			int offset, IDocument doc, Collection<ICompletionProposal> completions) {
+			int offset, TextDocument doc, Collection<ICompletionProposal> completions) {
 
 		try {
 			// case: @Value(<*>)
@@ -101,10 +102,6 @@ public class ValueCompletionProcessor implements CompletionProvider {
 		catch (Exception e) {
 			e.printStackTrace();
 		}
-	}
-
-	@Override
-	public void provideCompletions(ASTNode node, int offset, IDocument doc, Collection<ICompletionProposal> completions) {
 	}
 
 	private void computeProposalsForSimpleName(ASTNode node, Collection<ICompletionProposal> completions, int offset,

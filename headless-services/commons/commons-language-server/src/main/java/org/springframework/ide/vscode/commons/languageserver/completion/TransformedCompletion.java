@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -9,6 +9,9 @@
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.languageserver.completion;
+
+import java.util.Optional;
+import java.util.function.Supplier;
 
 import org.eclipse.lsp4j.CompletionItemKind;
 import org.springframework.ide.vscode.commons.util.Renderable;
@@ -78,4 +81,10 @@ public abstract class TransformedCompletion extends ScoreableProposal {
 	public String getFilterText() {
 		return original.getFilterText();
 	}
+
+	@Override
+	public Optional<Supplier<DocumentEdits>> getAdditionalEdit() {
+		return original.getAdditionalEdit();
+	}
+
 }

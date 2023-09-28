@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016-2017 Pivotal, Inc.
+ * Copyright (c) 2016, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -210,6 +210,32 @@ public class StringUtil {
 		return out.toString();
 	}
 
+	public static String reverseStripIndentation(String indent, String indentedText) {
+		StringBuilder out = new StringBuilder();
+		boolean first = true;
+		Matcher matcher = NEWLINE.matcher(indentedText);
+		int pos = 0;
+		while (matcher.find()) {
+			int newline = matcher.start();
+			int newline_end = matcher.end();
+			String line = indentedText.substring(pos, newline);
+			if (first) {
+				first = false;
+			} else {
+				line = reverseStripIndentationFromLine(indent, line);
+			}
+			out.append(line);
+			out.append(indentedText.substring(newline, newline_end));
+			pos = newline_end;
+		}
+		String line = indentedText.substring(pos);
+		if (!first) {
+			line = reverseStripIndentationFromLine(indent, line);
+		}
+		out.append(line);
+		return out.toString();
+	}
+	
 	public static String stripIndentation(int indent, String indentedText) {
 		return stripIndentation(Strings.repeat(" ", indent), indentedText);
 	}
@@ -222,6 +248,10 @@ public class StringUtil {
 		return line.substring(start);
 	}
 
+	public static String reverseStripIndentationFromLine(String indent, String line) {
+		return indent + line;
+	}
+	
 	public static String[] split(String string, char c) {
 		//Why not use String.split? Because when the string being split ends with separator, it drops the final
 		// empty string. But... we need that empty string! I.e. we want the number of pieces to allways be equal

@@ -507,6 +507,11 @@ public class Editor {
 				selectionStart = selectionEnd = selectionStart - (end - start) + replaceWith.length();
 			}
 		}
+		
+		// Apply command
+		if (completion.getCommand() != null) {
+			harness.executeCommand(completion.getCommand());
+		}
 	}
 
 	private String getInsertText(CompletionItem completion) {
