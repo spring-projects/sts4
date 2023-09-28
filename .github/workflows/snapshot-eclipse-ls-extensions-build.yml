@@ -14,5 +14,6 @@ jobs:
   eclipse-ls-extensions:
     uses: ./.github/workflows/eclipse-ls-extensions-build.yml
     with:
+      eclipse_profile: 'e428'
       build_type: 'snapshot'
     secrets: inherit

@@ -14,7 +14,7 @@ on:
       eclipse_profile:
         description: Eclipse profile 'e427' etc
         required: false
-        default: 'e427'
+        default: 'e428'
         type: string
       skip_tests:
         description: skip ls tests execution
@@ -90,12 +90,12 @@ jobs:
         run: |
           dist_path=`cat ${{ github.workspace }}/eclipse-language-servers/org.springframework.tooling.ls.integration.repository/target/s3-p2-repo-dist-path.txt`
           ${{ github.workspace }}/.github/scripts/clear-s3-caches.sh $dist_path
-      - name: Verify Eclipse LS Extensions on e429
+      - name: Verify Eclipse LS Extensions on e430
         if: ${{ inputs.build_type == 'snapshot' }}
         run: |
           cd eclipse-language-servers
           if command -v xvfb-run ; then
-            xvfb-run ./mvnw --batch-mode clean package -Pe429 -P${{ inputs.build_type }} -Dsigning.skip=true -Dhttpclient.retry-max=20 -Declipse.p2.mirrors=false -Ds3service.https-only=true -Dmaven.test.skip=true -Dtycho.localArtifacts=ignore
+            xvfb-run ./mvnw --batch-mode clean package -Pe430 -P${{ inputs.build_type }} -Dsigning.skip=true -Dhttpclient.retry-max=20 -Declipse.p2.mirrors=false -Ds3service.https-only=true -Dmaven.test.skip=true -Dtycho.localArtifacts=ignore
           else
-            ./mvnw --batch-mode clean package -Pe429 -P${{ inputs.build_type }} -Dsigning.skip=true -Dhttpclient.retry-max=20 -Declipse.p2.mirrors=false -Ds3service.https-only=true -Dmaven.test.skip=true -Dtycho.localArtifacts=ignore
+            ./mvnw --batch-mode clean package -Pe430 -P${{ inputs.build_type }} -Dsigning.skip=true -Dhttpclient.retry-max=20 -Declipse.p2.mirrors=false -Ds3service.https-only=true -Dmaven.test.skip=true -Dtycho.localArtifacts=ignore
           fi
