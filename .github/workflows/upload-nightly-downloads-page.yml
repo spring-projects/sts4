@@ -2,6 +2,11 @@ name: Upload nightly-distributions.html form the Repo to S3
 
 on:
   workflow_dispatch:
+  push:
+    branches:
+      - 'main'
+    paths:
+      - 'eclipse-distribution/common/html/nightly-distributions.html'
 
 jobs:
 
