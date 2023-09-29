@@ -1,13 +1,21 @@
 set -e
 
 pattern=$1
-
-echo "Clearing S3 caches for path: ${pattern}"
+if [ -z "$2" ];
+then
+  echo "undefined"
+  path_with_pattern=$pattern
+else
+  echo "defined"
+  dir=$2
+  path_with_pattern="${dir}/${pattern}"
+fi
+echo "Clearing S3 caches for path: ${path_with_pattern}"
 
 #Flush AWS Cloudfront Cache
-echo "aws cloudfront create-invalidation --distribution-id ECAO9Q8651L8M --output json --paths '/${pattern}'"
+echo "aws cloudfront create-invalidation --distribution-id ECAO9Q8651L8M --output json --paths '${path_with_pattern}'"
 
-#invalidation_json=`aws cloudfront create-invalidation --distribution-id ECAO9Q8651L8M --output json --paths "/${pattern}"`
+#invalidation_json=`aws cloudfront create-invalidation --distribution-id ECAO9Q8651L8M --output json --paths "${path_with_pattern}"`
 #echo "Invalidation response: ${invalidation_json}"
 #invalidation_id=`echo $invalidation_json | jq -r '.Invalidation.Id'`
 #invalidation_status=`echo $invalidation_json | jq -r '.Invalidation.Status'`
@@ -21,7 +29,12 @@ echo "aws cloudfront create-invalidation --distribution-id ECAO9Q8651L8M --outpu
 #echo "Final invalidation status: ${invalidation_status}"
 
 # Flush CloudFlare Cache
-s3_url=s3://dist.springsource.com/
+if [ -z "$dir" ];
+then
+  s3_url="s3://dist.springsource.com/"
+else
+  s3_url="s3://dist.springsource.com/${dir}/"
+fi
 echo "aws s3 cp ${s3_url} . --recursive --include '${pattern}' --dryrun"
 files=`aws s3 cp ${s3_url} . --recursive --include "${pattern}" --dryrun`
 counter=0
