@@ -32,4 +32,4 @@ jobs:
           CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
           CLOUDFLARE_CACHE_TOKEN: ${{ secrets.CLOUDFLARE_CACHE_TOKEN }}
         run: |
-          ${{ github.workspace }}/.github/scripts/clear-s3-caches-pattern.sh nightly-distributions.html snapshot/STS4
+          ${{ github.workspace }}/.github/scripts/clear-s3-caches-file.sh snapshot/STS4/nightly-distributions.html
