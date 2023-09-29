@@ -22,6 +22,6 @@ curl -X DELETE "https://api.cloudflare.com/client/v4/zones/${CLOUDFLARE_ZONE_ID}
   -H "X-Auth-Email: spring-sysadmin@pivotal.io" \
   -H "Authorization: Bearer ${CLOUDFLARE_CACHE_TOKEN}" \
   -H "Content-Type: application/json" \
-  --data "{\"files\": [ \"s3://dist.springsource.com/${file}\" ] }"
+  --data "{\"files\": [ \"http://dist.springsource.com/${file}\" ] }"
 
 
