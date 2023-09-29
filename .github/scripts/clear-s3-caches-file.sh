@@ -4,7 +4,7 @@ file=$1
 echo "Clearing S3 caches for file: ${file}"
 
 #Flush AWS Cloudfront Cache
-invalidation_json=`aws cloudfront create-invalidation --distribution-id ECAO9Q8651L8M --output json --paths "${file}"`
+invalidation_json=`aws cloudfront create-invalidation --distribution-id ECAO9Q8651L8M --output json --paths "/${file}"`
 echo "Invalidation response: ${invalidation_json}"
 invalidation_id=`echo $invalidation_json | jq -r '.Invalidation.Id'`
 invalidation_status=`echo $invalidation_json | jq -r '.Invalidation.Status'`
