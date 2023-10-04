@@ -12,7 +12,6 @@ package org.springframework.ide.vscode.boot.validation.test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.List;
@@ -32,8 +31,6 @@ import org.springframework.ide.vscode.boot.validation.generations.json.Generatio
 import org.springframework.ide.vscode.boot.validation.generations.json.Link;
 import org.springframework.ide.vscode.boot.validation.generations.json.ResolvedSpringProject;
 import org.springframework.ide.vscode.boot.validation.generations.json.SpringProject;
-import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
-import org.springframework.ide.vscode.commons.java.Version;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
@@ -104,71 +101,5 @@ public class ProjectGenerationsValidationTest {
         assertEquals("2020-01-01", generation.getOssSupportEndDate());
         assertEquals("2021-01-01", generation.getCommercialSupportEndDate());
     }
-
-    @Test
-    void testDependencyVersionCalculation() throws Exception {
-        Version version = SpringProjectUtil.getDependencyVersion("spring-boot-1.2.3.jar", "spring-boot");
-        assertEquals(1, version.getMajor(), 1);
-        assertEquals(2, version.getMinor(), 2);
-        assertEquals(3, version.getPatch());
-        assertNull(version.getQualifier());
-
-        version = SpringProjectUtil.getDependencyVersion("spring-boot-1.2.3-RELEASE.jar", "spring-boot");
-        assertEquals(version.getMajor(), 1);
-        assertEquals(version.getMinor(), 2);
-        assertEquals(version.getPatch(), 3);
-        assertEquals(version.getQualifier(), "RELEASE");
-
-        version = SpringProjectUtil.getDependencyVersion("spring-boot-1.2.3.RELEASE.jar", "spring-boot");
-        assertEquals(1, version.getMajor(), 1);
-        assertEquals(2, version.getMinor(), 2);
-        assertEquals(3, version.getPatch());
-        assertEquals("RELEASE", version.getQualifier());
-
-        version = SpringProjectUtil.getDependencyVersion("spring-boot-1.2.3.BUILD-SNAPSHOT.jar", "spring-boot");
-        assertEquals(1, version.getMajor(), 1);
-        assertEquals(2, version.getMinor(), 2);
-        assertEquals(3, version.getPatch());
-        assertEquals("BUILD-SNAPSHOT", version.getQualifier());
-
-        version = SpringProjectUtil.getDependencyVersion("spring-boot-actuator-1.2.3.BUILD-SNAPSHOT.jar", "spring-boot");
-        assertNull(version);
-    }
-
-    @Test
-    void testVersionCalculation1() throws Exception {
-        Version version = SpringProjectUtil.getVersion("2.7.5");
-        assertEquals(2, version.getMajor());
-        assertEquals(7, version.getMinor());
-        assertEquals(5, version.getPatch());
-        assertNull(version.getQualifier());
-
-        version = SpringProjectUtil.getVersion("3.0.0-SNAPSHOT");
-        assertEquals(3, version.getMajor());
-        assertEquals(0, version.getMinor());
-        assertEquals(0, version.getPatch());
-        assertEquals(version.getQualifier(), "SNAPSHOT");
-
-
-        version = SpringProjectUtil.getVersion("2.6.14-RC2");
-        assertEquals(2, version.getMajor());
-        assertEquals(6, version.getMinor());
-        assertEquals(14, version.getPatch());
-        assertEquals(version.getQualifier(), "RC2");
-    }
-
-    @Test
-    void testVersionCalculation2() throws Exception {
-        Version version = SpringProjectUtil.getVersion("2.7");
-        assertEquals(2, version.getMajor());
-        assertEquals(7, version.getMinor());
-        assertEquals(0, version.getPatch());
-        assertNull(version.getQualifier());
-
-        version = SpringProjectUtil.getVersion("2");
-        assertEquals(2, version.getMajor());
-        assertEquals(0, version.getMinor());
-        assertEquals(0, version.getPatch());
-        assertNull(version.getQualifier());
-    }
+    
 }

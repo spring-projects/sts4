@@ -15,7 +15,7 @@ import java.util.List;
 
 import org.springframework.ide.vscode.boot.validation.generations.json.Generation;
 import org.springframework.ide.vscode.boot.validation.generations.json.ResolvedSpringProject;
-import org.springframework.ide.vscode.commons.java.Version;
+import org.springframework.ide.vscode.commons.Version;
 
 public class VersionValidationUtils {
 	

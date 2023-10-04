@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.springframework.ide.vscode.boot.validation.generations.SpringProjectsClient;
-import org.springframework.ide.vscode.commons.java.Version;
+import org.springframework.ide.vscode.commons.Version;
 
 import com.google.common.collect.ImmutableList;
 

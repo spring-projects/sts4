@@ -19,6 +19,7 @@ import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.commons.Version;
 import org.springframework.ide.vscode.commons.protocol.java.Classpath;
 import org.springframework.ide.vscode.commons.protocol.java.Classpath.CPE;
 
@@ -26,8 +27,6 @@ public class SpringProjectUtil {
 
 	public static final String SPRING_BOOT = "spring-boot";
 	
-	// Pattern copied from https://semver.org/
-	private static final String VERSION_PATTERN_STR = "(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:(-|\\.)((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?";
 	private static final String GENERATION_VERSION_STR = "([0-9]+)";
 
 	public static final Logger log = LoggerFactory.getLogger(SpringProjectUtil.class);
@@ -114,10 +113,9 @@ public class SpringProjectUtil {
 	
 	public static Version getDependencyVersion(IJavaProject jp, String dependency) {		
 		try {
-			for (File f : IClasspathUtil.getBinaryRoots(jp.getClasspath(), (cpe) -> !cpe.isSystem())) {
-				Version version = getDependencyVersion(f.getName(), dependency);
-				if (version != null) {
-					return version;
+			for (CPE cpe : jp.getClasspath().getClasspathEntries()) {
+				if (Classpath.isBinary(cpe) && !cpe.isSystem() && new File(cpe.getPath()).getName().startsWith(dependency)) {
+					return cpe.getVersion();
 				}
 			}
 		} catch (Exception e) {
@@ -156,41 +154,13 @@ public class SpringProjectUtil {
 	
 	public static Version getSpringBootVersion(IJavaProject jp) {		
 		try {
-			for (File f : IClasspathUtil.getBinaryRoots(jp.getClasspath(), (cpe) -> !cpe.isSystem())) {
-				Version version = getDependencyVersion(f.getName(), SPRING_BOOT);
-				if (version != null) {
-					return version;
+			for (CPE cpe : jp.getClasspath().getClasspathEntries()) {
+				if (Classpath.isBinary(cpe) && !cpe.isSystem() && new File(cpe.getPath()).getName().startsWith(SPRING_BOOT)) {
+					return cpe.getVersion();
 				}
 			}
 		} catch (Exception e) {
 			log.error("", e);
-		}
-		return null;
-	}
-	
-	public static Version getDependencyVersion(String fileName, String dependency) {
-		if (fileName.startsWith(dependency)) {
-			StringBuilder sb = new StringBuilder();
-			sb.append('^');
-			sb.append(dependency);
-			sb.append('-');
-			sb.append(VERSION_PATTERN_STR);
-			sb.append("\\.jar$");
-			Pattern pattern = Pattern.compile(sb.toString());
-
-			Matcher matcher = pattern.matcher(fileName);
-			if (matcher.find() && matcher.groupCount() > 5) {
-				String major = matcher.group(1);
-				String minor = matcher.group(2);
-				String patch = matcher.group(3);
-				String qualifier = matcher.group(5);
-				return new Version(
-						Integer.parseInt(major),
-						Integer.parseInt(minor),
-						Integer.parseInt(patch),
-						qualifier
-				);
-			}
 		}
 		return null;
 	}
@@ -216,39 +186,4 @@ public class SpringProjectUtil {
 		};
 	}
 
-	public static Version getVersion(String version) {
-		Pattern pattern = Pattern.compile(VERSION_PATTERN_STR);
-		Matcher matcher = pattern.matcher(version);
-		if (matcher.find() && matcher.groupCount() > 4) {
-			String major = matcher.group(1);
-			String minor = matcher.group(2);
-			String patch = matcher.group(3);
-			String qualifier = matcher.group(5);
-			return new Version(
-					Integer.parseInt(major),
-					Integer.parseInt(minor),
-					Integer.parseInt(patch),
-					qualifier
-			);
-		} else {
-			String[] tokens = version.split("\\.");
-			if (tokens.length <= 3) {
-				if (tokens.length >= 1) {
-					int major = Integer.parseInt(tokens[0]);
-					if (tokens.length >= 2) {
-						int minor = Integer.parseInt(tokens[1]);
-						if (tokens.length == 3) {
-							int patch = Integer.parseInt(tokens[2]);
-							return new Version(major, minor, patch, null);
-						} else {
-							return new Version(major, minor, 0, null);
-						}
-					} else {
-						return new Version(major, 0, 0, null);
-					}
-				}
-			}
-		}
-		return null;
-	}
 }

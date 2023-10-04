@@ -18,7 +18,7 @@ import java.util.List;
 
 import org.junit.jupiter.api.Test;
 import org.springframework.ide.vscode.boot.validation.generations.VersionValidationUtils;
-import org.springframework.ide.vscode.commons.java.Version;
+import org.springframework.ide.vscode.commons.Version;
 
 public class VersionValidationUtilsTest {
 	

@@ -10,8 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.validation.generations.json;
 
-import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
-import org.springframework.ide.vscode.commons.java.Version;
+import org.springframework.ide.vscode.commons.Version;
 
 public class Release extends JsonHalLinks {
 	
@@ -29,7 +28,7 @@ public class Release extends JsonHalLinks {
 
 	
 	public Version getVersion() {
-		return SpringProjectUtil.getVersion(version);
+		return Version.parse(version);
 	}
 	
 	public Status getStatus() {

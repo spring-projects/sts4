@@ -13,8 +13,8 @@ package org.springframework.ide.vscode.boot.validation.generations;
 import java.util.Collection;
 
 import org.eclipse.lsp4j.Diagnostic;
+import org.springframework.ide.vscode.commons.Version;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.java.Version;
 
 public interface VersionValidator {
 

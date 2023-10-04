@@ -18,7 +18,7 @@ import java.util.List;
 import java.util.Map;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.ide.vscode.commons.java.Version;
+import org.springframework.ide.vscode.commons.Version;
 
 public class SpringBootUpgradeTest {
 

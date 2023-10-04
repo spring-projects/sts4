@@ -15,9 +15,9 @@ import java.util.Collection;
 
 import org.openrewrite.java.spring.boot2.ServerHttpSecurityLambdaDsl;
 import org.springframework.ide.vscode.boot.java.Boot2JavaProblemType;
+import org.springframework.ide.vscode.commons.Version;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
-import org.springframework.ide.vscode.commons.java.Version;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixRegistry;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
 

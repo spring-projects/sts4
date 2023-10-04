@@ -19,7 +19,7 @@ import org.springframework.ide.vscode.boot.validation.generations.json.Generatio
 import org.springframework.ide.vscode.boot.validation.generations.json.ResolvedSpringProject;
 import org.springframework.ide.vscode.boot.validation.generations.json.SpringProject;
 import org.springframework.ide.vscode.boot.validation.generations.json.SpringProjects;
-import org.springframework.ide.vscode.commons.java.Version;
+import org.springframework.ide.vscode.commons.Version;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 

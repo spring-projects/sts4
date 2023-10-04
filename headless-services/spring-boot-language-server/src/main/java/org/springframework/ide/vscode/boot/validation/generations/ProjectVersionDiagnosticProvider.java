@@ -20,9 +20,9 @@ import java.util.List;
 import org.eclipse.lsp4j.Diagnostic;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.ide.vscode.commons.Version;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
-import org.springframework.ide.vscode.commons.java.Version;
 
 public class ProjectVersionDiagnosticProvider {
 	

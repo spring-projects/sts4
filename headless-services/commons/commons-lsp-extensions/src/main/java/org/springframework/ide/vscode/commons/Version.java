@@ -8,11 +8,15 @@
  * Contributors:
  *     VMware, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.commons.java;
+package org.springframework.ide.vscode.commons;
 
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public final class Version implements Comparable<Version> {
+	
+	private static final Pattern VERSION_PATTERN = Pattern.compile("(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:(-|\\.)((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?");
 	
 	private int major;
 	private int minor;
@@ -95,5 +99,41 @@ public final class Version implements Comparable<Version> {
 		return major == other.major && minor == other.minor && patch == other.patch
 				&& Objects.equals(qualifier, other.qualifier);
 	}
+	
+	public static Version parse(String version) {
+		Matcher matcher = VERSION_PATTERN.matcher(version);
+		if (matcher.find() && matcher.groupCount() > 4) {
+			String major = matcher.group(1);
+			String minor = matcher.group(2);
+			String patch = matcher.group(3);
+			String qualifier = matcher.group(5);
+			return new Version(
+					Integer.parseInt(major),
+					Integer.parseInt(minor),
+					Integer.parseInt(patch),
+					qualifier
+			);
+		} else {
+			String[] tokens = version.split("\\.");
+			if (tokens.length <= 3) {
+				if (tokens.length >= 1) {
+					int major = Integer.parseInt(tokens[0]);
+					if (tokens.length >= 2) {
+						int minor = Integer.parseInt(tokens[1]);
+						if (tokens.length == 3) {
+							int patch = Integer.parseInt(tokens[2]);
+							return new Version(major, minor, patch, null);
+						} else {
+							return new Version(major, minor, 0, null);
+						}
+					} else {
+						return new Version(major, 0, 0, null);
+					}
+				}
+			}
+		}
+		return null;
+	}
+
 
 }

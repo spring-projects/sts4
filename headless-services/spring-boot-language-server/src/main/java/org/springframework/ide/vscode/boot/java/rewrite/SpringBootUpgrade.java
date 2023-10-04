@@ -23,9 +23,9 @@ import org.openrewrite.Recipe;
 import org.openrewrite.config.DeclarativeRecipe;
 import org.openrewrite.maven.UpgradeDependencyVersion;
 import org.openrewrite.maven.UpgradeParentVersion;
+import org.springframework.ide.vscode.commons.Version;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
-import org.springframework.ide.vscode.commons.java.Version;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.util.Assert;
@@ -53,7 +53,7 @@ public class SpringBootUpgrade {
 		server.onCommand(CMD_UPGRADE_SPRING_BOOT, params -> {
 			String uri = ((JsonElement) params.getArguments().get(0)).getAsString();
 			Assert.isLegal(uri != null, "Project URI parameter must not be 'null'");
-			Version targetVersion = SpringProjectUtil.getVersion(((JsonElement) params.getArguments().get(1)).getAsString());
+			Version targetVersion = Version.parse(((JsonElement) params.getArguments().get(1)).getAsString());
 			Assert.isLegal(targetVersion != null, "Target Spring Boot version must not be 'null'");
 			
 			IJavaProject project = projectFinder.find(new TextDocumentIdentifier(uri)).orElse(null);
