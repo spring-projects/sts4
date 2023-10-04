@@ -18,14 +18,12 @@ import java.util.stream.Collectors;
 import org.openrewrite.ExecutionContext;
 import org.openrewrite.Recipe;
 import org.openrewrite.TreeVisitor;
-import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaIsoVisitor;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.JavaTemplate;
 import org.openrewrite.java.MethodMatcher;
 import org.openrewrite.java.tree.J;
 import org.openrewrite.java.tree.JavaType;
-import org.openrewrite.java.tree.JavaType.FullyQualified;
 
 public class DefineMethod extends Recipe {
 
@@ -83,25 +81,14 @@ public class DefineMethod extends Recipe {
                     JavaType.FullyQualified type = c.getType();
                     if (type != null && targetFqName.equals(type.getFullyQualifiedName())) {
                         JavaTemplate t = JavaTemplate.builder(template)
+                        		.contextSensitive()
                                 .javaParser(JavaParser
                                         .fromJavaVersion()
                                         .dependsOn(typeStubs.toArray(new String[typeStubs.size()]))
                                         .classpath(classpath.stream().map(s -> Paths.get(s)).collect(Collectors.toList())))
 
                                 .imports(imports.toArray(new String[imports.size()])).build();
-                        // TODO: why did this return ClassDEclaration rather than Block??? Figure this out!!!
-                        J.ClassDeclaration templateClass = t.apply(getCursor(), classDecl.getBody().getCoordinates().addMethodDeclaration((m, n) -> 1));
-						FullyQualified classType = c.getType();
-						if (classType != null) {
-	                        J.Block body = templateClass.getBody().withStatements(ListUtils.map(templateClass.getBody().getStatements(), s -> {
-	                        	if (s instanceof J.MethodDeclaration) {
-	                        		J.MethodDeclaration m = (J.MethodDeclaration) s;
-	                        		return m.withMethodType(m.getMethodType().withDeclaringType(classType));
-	                        	}
-	                        	return s;
-	                        }));
-	                        c = c.withBody(body);
-						}
+                        c = t.apply(getCursor(), classDecl.getBody().getCoordinates().addMethodDeclaration((m, n) -> 1));
                         for (String fq : imports) {
                             maybeAddImport(fq);
                         }

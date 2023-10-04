@@ -14,6 +14,7 @@ import static org.springframework.ide.vscode.commons.java.SpringProjectUtil.spri
 
 import java.net.URI;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -31,6 +32,7 @@ import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
+import org.springframework.ide.vscode.boot.java.Annotations;
 import org.springframework.ide.vscode.boot.java.SpringAotJavaProblemType;
 import org.springframework.ide.vscode.boot.java.beans.BeansSymbolAddOnInformation;
 import org.springframework.ide.vscode.boot.java.beans.ConfigBeanSymbolAddOnInformation;
@@ -111,8 +113,11 @@ public class NotRegisteredBeansReconciler implements JdtAstReconciler, Applicati
     												paramBuilder.add(typeStr(paramType) + ' ' + paramName);
     											}
     											String paramsStr = String.join(", ", paramBuilder.build().toArray(String[]::new));
-                									
-            									fixListBuilder.add(new FixDescriptor(DefineMethod.class.getName(), List.of(s.getSymbol().getLocation().getLeft().getUri()), "Define bean in config '" + configInfo.getBeanID() + "' with constructor " + contructorParamsLabel)
+                								
+    											final Set<String> allFqTypes = new HashSet<>();
+    											allFqTypes.add(Annotations.BEAN);
+    											allFqTypes.addAll(allFQTypes(constructor));
+												fixListBuilder.add(new FixDescriptor(DefineMethod.class.getName(), List.of(s.getSymbol().getLocation().getLeft().getUri()), "Define bean in config '" + configInfo.getBeanID() + "' with constructor " + contructorParamsLabel)
             											.withRecipeScope(RecipeScope.FILE)
             											.withParameters(Map.of(
             													"targetFqName", configInfo.getBeanType(),
@@ -121,7 +126,7 @@ public class NotRegisteredBeansReconciler implements JdtAstReconciler, Applicati
             														+ type.getName() + " " + beanMethodName + "(" + paramsStr + ") {\n"
             														+ "return new " +  type.getName() + "(" + Arrays.stream(constructor.getParameterNames()).collect(Collectors.joining(", ")) + ");\n"
             														+ "}\n",
-            													"imports", allFQTypes(constructor).toArray(String[]::new),
+            													"imports", allFqTypes.toArray(String[]::new),
             													"typeStubs", new String[0]/*new String[] { source.printAll() }*/,
             													"classpath", IClasspathUtil.getAllBinaryRoots(project.getClasspath()).stream().map(f -> f.toPath().toString()).toArray(String[]::new)
                 													
