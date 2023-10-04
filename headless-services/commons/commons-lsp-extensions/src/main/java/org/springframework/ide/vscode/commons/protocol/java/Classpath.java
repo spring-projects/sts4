@@ -217,7 +217,7 @@ public class Classpath {
 		
 		public Version getVersion() {
 			if (version == null) {
-				if (getKind() == ENTRY_KIND_BINARY) {
+				if (isBinary(this) && !isSystem) {
 					version = getDependencyVersion(new File(getPath()).getName());
 				}
 			}

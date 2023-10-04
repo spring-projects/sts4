@@ -40,7 +40,6 @@ import org.springframework.ide.vscode.boot.java.Boot2JavaProblemType;
 import org.springframework.ide.vscode.boot.java.annotations.AnnotationHierarchies;
 import org.springframework.ide.vscode.boot.java.utils.ASTUtils;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblemImpl;
@@ -50,8 +49,7 @@ public class EntityIdForRepoReconciler implements JdtAstReconciler {
 	@Override
 	public void reconcile(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector,
 			boolean isCompleteAst) throws RequiredCompleteAstException {
-		final boolean considerIdField = SpringProjectUtil.hasSpecificLibraryOnClasspath(project, "spring-data-mongodb-",
-				true);
+		final boolean considerIdField = project.getClasspath().findBinaryLibrary("spring-data-mongodb-").isPresent();
 		cu.accept(new ASTVisitor() {
 
 			@Override

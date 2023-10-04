@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2019 Pivotal, Inc.
+ * Copyright (c) 2018, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -12,12 +12,16 @@ package org.springframework.ide.vscode.commons.java;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Optional;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.protocol.java.Classpath.CPE;
 
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableSet;
 
 public class ClasspathData implements IClasspath {
@@ -31,12 +35,15 @@ public class ClasspathData implements IClasspath {
 
 	private String name;
 	private Set<CPE> classpathEntries;
+	
+	private Cache<String, Optional<CPE>> binaryLibLookupCache;
 
 	public ClasspathData() {}
 
 	public ClasspathData(String name, Collection<CPE> classpathEntries) {
 		this.name = name;
 		this.classpathEntries = ImmutableSet.copyOf(classpathEntries);
+		this.binaryLibLookupCache = CacheBuilder.newBuilder().build();
 	}
 
 
@@ -69,6 +76,16 @@ public class ClasspathData implements IClasspath {
 
 	public void setClasspathEntries(Set<CPE> classpathEntries) {
 		this.classpathEntries = classpathEntries;
+	}
+
+	@Override
+	public Optional<CPE> findBinaryLibrary(String prefix) {
+		try {
+			return binaryLibLookupCache.get(prefix, () -> IClasspath.super.findBinaryLibrary(prefix));
+		} catch (ExecutionException e) {
+			log.error("", e);
+			return Optional.empty();
+		}
 	}
 
 	public static ClasspathData getEmptyClasspathData() {

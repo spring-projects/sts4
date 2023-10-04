@@ -66,8 +66,7 @@ public class ProjectVersionDiagnosticProvider {
 	}
 
 	protected File getSpringBootDependency(IJavaProject project) {
-		List<File> libs = SpringProjectUtil.getLibrariesOnClasspath(project, "spring-boot");
-		return libs != null && libs.size() > 0 ? libs.get(0) : null;
+		return project.getClasspath().findBinaryLibrary(SpringProjectUtil.SPRING_BOOT).map(cpe -> new File(cpe.getPath())).orElse(null);
 	}
 
 	public static class DiagnosticResult {

@@ -11,11 +11,10 @@
 package org.springframework.ide.vscode.commons.java;
 
 import java.io.File;
-import java.util.List;
+import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,15 +33,15 @@ public class SpringProjectUtil {
 	private static final Pattern GENERATION_VERSION = Pattern.compile(GENERATION_VERSION_STR);
 	
 	public static boolean isSpringProject(IJavaProject jp) {
-		return hasSpecificLibraryOnClasspath(jp, "spring-core", true);
+		return jp.getClasspath().findBinaryLibrary("spring-core").isPresent();
 	}
 
 	public static boolean isBootProject(IJavaProject jp) {
-		return hasSpecificLibraryOnClasspath(jp, SPRING_BOOT, true);
+		return jp.getClasspath().findBinaryLibrary(SPRING_BOOT).isPresent();
 	}
 
 	public static boolean hasBootActuators(IJavaProject jp) {
-		return hasSpecificLibraryOnClasspath(jp, "spring-boot-actuator-", true);
+		return jp.getClasspath().findBinaryLibrary("spring-boot-actuator-").isPresent();
 	}
 	
 	/**
@@ -80,94 +79,44 @@ public class SpringProjectUtil {
 		throw new IllegalArgumentException("Invalid semver. Unable to parse major and minor version from: " + name);
 	}
 
-	public static List<File> getLibrariesOnClasspath(IJavaProject jp, String libraryNamePrefix) {
-		try {
-			IClasspath cp = jp.getClasspath();
-			if (cp!=null) {
-				boolean onlyLibs = true;
-				List<File> libs = IClasspathUtil.getBinaryRoots(cp, (cpe) -> !cpe.isSystem()).stream().filter(cpe -> isEntry(cpe, libraryNamePrefix, onlyLibs)).collect(Collectors.toList());
-				return libs;
-			}
-		} catch (Exception e) {
-			log.error("Failed to get list of libraries for project '" + jp.getElementName() + "' that start with prefix: " + libraryNamePrefix, e);
-		}
-		return null;
-	}
-	
-	public static boolean hasSpecificLibraryOnClasspath(IJavaProject jp, String libraryNamePrefix, boolean onlyLibs) {
-		try {
-			IClasspath cp = jp.getClasspath();
-			if (cp!=null) {
-				return IClasspathUtil.getBinaryRoots(cp, (cpe) -> !cpe.isSystem()).stream().anyMatch(cpe -> isEntry(cpe, libraryNamePrefix, onlyLibs));
-			}
-		} catch (Exception e) {
-			log.error("Failed to determine whether '" + jp.getElementName() + "' is Spring Boot project", e);
-		}
-		return false;
-	}
-
-	private static boolean isEntry(File cpe, String libNamePrefix, boolean onlyLibs) {
-		String name = cpe.getName();
-		return name.startsWith(libNamePrefix) && (!onlyLibs || name.endsWith(".jar"));
-	}
-	
 	public static Version getDependencyVersion(IJavaProject jp, String dependency) {		
-		try {
-			for (CPE cpe : jp.getClasspath().getClasspathEntries()) {
-				if (Classpath.isBinary(cpe) && !cpe.isSystem() && new File(cpe.getPath()).getName().startsWith(dependency)) {
-					return cpe.getVersion();
-				}
-			}
-		} catch (Exception e) {
-			log.error("", e);
-		}
-		return null;
+		return jp.getClasspath().findBinaryLibrary(dependency).map(cpe -> cpe.getVersion()).orElse(null);
 	}
 	
 	public static boolean hasDependencyStartingWith(IJavaProject jp, String dependency, Predicate<CPE> filter) {
-		try {
-			for (CPE cpe : jp.getClasspath().getClasspathEntries()) {
-				if (filter == null || filter.test(cpe)) {
-					if (Classpath.ENTRY_KIND_BINARY.equals(cpe.getKind())) {
-						String name = new File(cpe.getPath()).getName();
-						if (name.endsWith(".jar") && name.startsWith(dependency)) {
-							return true;
-						}
-					} else if (Classpath.ENTRY_KIND_SOURCE.equals(cpe.getKind()) && !cpe.isOwn()) {
-						if (cpe.getExtra() != null && cpe.getExtra().containsKey("project")) {
-							if (new File(cpe.getExtra().get("project")).getName().startsWith(dependency)) {
-								return true;
-							}
-						} else {
-							if (new File(cpe.getPath()).getName().startsWith(dependency)) {
-								return true;
+		IClasspath classpath = jp.getClasspath();
+		return classpath.findBinaryLibrary(dependency).or(() -> {
+			try {
+				for (CPE cpe : classpath.getClasspathEntries()) {
+					if (filter == null || filter.test(cpe)) {
+						if (Classpath.ENTRY_KIND_SOURCE.equals(cpe.getKind()) && !cpe.isOwn()) {
+							if (cpe.getExtra() != null && cpe.getExtra().containsKey("project")) {
+								if (new File(cpe.getExtra().get("project")).getName().startsWith(dependency)) {
+									return Optional.of(cpe);
+								}
+							} else {
+								if (new File(cpe.getPath()).getName().startsWith(dependency)) {
+									return Optional.of(cpe);
+								}
 							}
 						}
 					}
 				}
+			} catch (Exception e) {
+				log.error("", e);
 			}
-		} catch (Exception e) {
-			log.error("", e);
-		}
-		return false;
+			return Optional.empty();
+		}).isEmpty();
 	}
+
 	
-	public static Version getSpringBootVersion(IJavaProject jp) {		
-		try {
-			for (CPE cpe : jp.getClasspath().getClasspathEntries()) {
-				if (Classpath.isBinary(cpe) && !cpe.isSystem() && new File(cpe.getPath()).getName().startsWith(SPRING_BOOT)) {
-					return cpe.getVersion();
-				}
-			}
-		} catch (Exception e) {
-			log.error("", e);
-		}
-		return null;
+	public static Version getSpringBootVersion(IJavaProject jp) {
+		return getDependencyVersion(jp, SPRING_BOOT);
 	}
 	
 	public static Predicate<IJavaProject> springBootVersionGreaterOrEqual(int major, int minor, int patch) {
 		return project -> {
-			Version version = getDependencyVersion(project, SPRING_BOOT);
+			Version version = project.getClasspath().findBinaryLibrary(SPRING_BOOT).map(cpe -> cpe.getVersion()).orElse(null);
 			if (version == null) {
 				return false;
 			}
