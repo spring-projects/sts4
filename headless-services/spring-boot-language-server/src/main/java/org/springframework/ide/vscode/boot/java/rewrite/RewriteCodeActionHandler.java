@@ -107,23 +107,25 @@ public class RewriteCodeActionHandler implements JavaCodeActionHandler {
 			final QuickfixType rewriteFixType = quickfixRegistry.getQuickfixType(RewriteRefactorings.REWRITE_RECIPE_QUICKFIX);
 			if (isSupported(capabilities, context) && rewriteFixType != null) {
 				List<CodeAction> codeActions = cuCache.withCompilationUnit(project, uri, cu -> {
-					try {
-						List<CodeAction> cas = new ArrayList<>();
-						List<ReconcileProblem> problems = new ArrayList<>();
-						BasicProblemCollector problemsCollector = new BasicProblemCollector(problems);
-						jdtReconciler.reconcile(project, uri, cu, problemsCollector, true);
-						for (ReconcileProblem p : problems) {
-							if (p.getOffset() <= region.getOffset() && p.getOffset() + p.getLength() >= region.getOffset() + region.getLength() && severityProvider.getDiagnosticSeverity(p) == null) {
-								for (QuickfixData<?> qf :  p.getQuickfixes()) {
-									if (qf.params instanceof FixDescriptor) {
-										cas.add(createCodeActionFromScope((FixDescriptor) qf.params));
+					if (cu != null) {
+						try {
+							List<CodeAction> cas = new ArrayList<>();
+							List<ReconcileProblem> problems = new ArrayList<>();
+							BasicProblemCollector problemsCollector = new BasicProblemCollector(problems);
+							jdtReconciler.reconcile(project, uri, cu, problemsCollector, true);
+							for (ReconcileProblem p : problems) {
+								if (p.getOffset() <= region.getOffset() && p.getOffset() + p.getLength() >= region.getOffset() + region.getLength() && severityProvider.getDiagnosticSeverity(p) == null) {
+									for (QuickfixData<?> qf :  p.getQuickfixes()) {
+										if (qf.params instanceof FixDescriptor) {
+											cas.add(createCodeActionFromScope((FixDescriptor) qf.params));
+										}
 									}
 								}
 							}
+							return cas;
+						} catch (Exception e) {
+							log.error("", e);
 						}
-						return cas;
-					} catch (Exception e) {
-						log.error("", e);
 					}
 					return Collections.emptyList();
 				});
