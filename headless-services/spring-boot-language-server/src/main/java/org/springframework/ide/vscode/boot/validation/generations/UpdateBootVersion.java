@@ -161,4 +161,14 @@ public class UpdateBootVersion extends AbstractDiagnosticValidator {
 				ImmutableList.of(showDocumentParams)));
 		return releaseNoteLink;
 	}
+
+	@Override
+	public boolean isEnabled() {
+		return isEnabled(
+				VersionValidationProblemType.UPDATE_LATEST_PATCH_VERSION,
+				VersionValidationProblemType.UPDATE_LATEST_MINOR_VERSION,
+				VersionValidationProblemType.UPDATE_LATEST_MAJOR_VERSION
+		);
+	}
+
 }

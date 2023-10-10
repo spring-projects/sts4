@@ -79,6 +79,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.context.ApplicationContext;
 import org.springframework.ide.vscode.commons.languageserver.DiagnosticService;
+import org.springframework.ide.vscode.commons.languageserver.MessageService;
 import org.springframework.ide.vscode.commons.languageserver.ProgressService;
 import org.springframework.ide.vscode.commons.languageserver.Sts4LanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
@@ -199,6 +200,33 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, SpringInd
 				progressParams.setValue(Either.forLeft(report));
 				client.notifyProgress(progressParams);
 			}
+		}
+	};
+	
+	private MessageService messageService = new MessageService() {
+		
+		@Override
+		public void warning(String message) {
+			message(MessageType.Warning, message);
+		}
+		
+		@Override
+		public void log(String message) {
+			message(MessageType.Log, message);
+		}
+		
+		@Override
+		public void info(String message) {
+			message(MessageType.Info, message);
+		}
+		
+		@Override
+		public void error(String message) {
+			message(MessageType.Error, message);
+		}
+		
+		private void message(MessageType messageType, String message) {
+			getClient().showMessage(new MessageParams(messageType, message));
 		}
 	};
 
@@ -857,6 +885,11 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, SpringInd
 	@Override
 	public ProgressService getProgressService() {
 		return progressService;
+	}
+	
+	@Override
+	public MessageService getMessageService() {
+		return messageService;
 	}
 
 	public void setTestListener(LanguageServerTestListener languageServerTestListener) {

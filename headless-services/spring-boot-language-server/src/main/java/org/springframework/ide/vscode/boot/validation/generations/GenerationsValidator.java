@@ -21,7 +21,6 @@ import org.springframework.ide.vscode.commons.Version;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.java.SpringProjectUtil;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.DiagnosticSeverityProvider;
-import org.springframework.ide.vscode.commons.util.Assert;
 
 import com.google.common.collect.ImmutableList;
 
@@ -54,7 +53,6 @@ public class GenerationsValidator extends AbstractDiagnosticValidator {
 	public Collection<Diagnostic> validate(IJavaProject javaProject, Version javaProjectVersion) throws Exception {
 		ResolvedSpringProject springProject = provider.getProject(SpringProjectUtil.SPRING_BOOT);
 		Generation javaProjectGen = getGenerationForJavaProject(javaProject, springProject);
-		Assert.isLegal(javaProjectGen != null, "Unable to find Spring Project Generation for project: " + javaProjectVersion.toString());
 		ImmutableList.Builder<Diagnostic> b = ImmutableList.builder();
 		
 		if (VersionValidationUtils.isOssValid(javaProjectGen)) {
@@ -70,9 +68,14 @@ public class GenerationsValidator extends AbstractDiagnosticValidator {
 		} else {
 			StringBuilder message = new StringBuilder();
 			message.append("OSS support for Spring Boot ");
-			message.append(javaProjectGen.getName());
-			message.append(" no longer available, ended on: ");
-			message.append(javaProjectGen.getOssSupportEndDate());
+			if (javaProjectGen == null) {
+				message.append(javaProjectVersion);
+				message.append(" not available!");
+			} else {
+				message.append(javaProjectGen.getName());
+				message.append(" no longer available, ended on: ");
+				message.append(javaProjectGen.getOssSupportEndDate());
+			}
 			Diagnostic d = createDiagnostic(VersionValidationProblemType.UNSUPPORTED_OSS_VERSION, message.toString());
 			if (d != null) {
 				b.add(d);
@@ -92,9 +95,14 @@ public class GenerationsValidator extends AbstractDiagnosticValidator {
 		} else {
 			StringBuilder message = new StringBuilder();
 			message.append("Commercial support for Spring Boot ");
-			message.append(javaProjectGen.getName());
-			message.append(" no longer available, ended on: ");
-			message.append(javaProjectGen.getCommercialSupportEndDate());
+			if (javaProjectGen == null) {
+				message.append(javaProjectVersion);
+				message.append(" not available!");
+			} else {
+				message.append(javaProjectGen.getName());
+				message.append(" no longer available, ended on: ");
+				message.append(javaProjectGen.getCommercialSupportEndDate());
+			}
 			Diagnostic d = createDiagnostic(VersionValidationProblemType.UNSUPPORTED_COMMERCIAL_VERSION, message.toString());
 			if (d != null) {
 				b.add(d);
@@ -102,6 +110,16 @@ public class GenerationsValidator extends AbstractDiagnosticValidator {
 		}
 
 		return b.build();
+	}
+
+	@Override
+	public boolean isEnabled() {
+		return isEnabled(
+				VersionValidationProblemType.SUPPORTED_OSS_VERSION,
+				VersionValidationProblemType.UNSUPPORTED_OSS_VERSION,
+				VersionValidationProblemType.SUPPORTED_COMMERCIAL_VERSION,
+				VersionValidationProblemType.UNSUPPORTED_COMMERCIAL_VERSION
+		);
 	}
 
 }

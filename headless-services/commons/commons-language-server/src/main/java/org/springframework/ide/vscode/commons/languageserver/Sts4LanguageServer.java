@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -39,5 +39,11 @@ public interface Sts4LanguageServer extends LanguageServer {
 	 * @return
 	 */
 	DiagnosticService getDiagnosticService();
+	
+	/**
+	 * Message Service to show various string messages in the IDE client UI
+	 * @return message service instance
+	 */
+	MessageService getMessageService();
 
 }

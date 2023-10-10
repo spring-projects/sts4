@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2022, 2023 VMware, Inc.
+ * Copyright (c) 2023 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -8,18 +8,16 @@
  * Contributors:
  *     VMware, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.validation.generations;
+package org.springframework.ide.vscode.commons.languageserver;
 
-import java.util.Collection;
-
-import org.eclipse.lsp4j.Diagnostic;
-import org.springframework.ide.vscode.commons.Version;
-import org.springframework.ide.vscode.commons.java.IJavaProject;
-
-public interface VersionValidator {
-
-	Collection<Diagnostic> validate(IJavaProject javaProject, Version javaProjectVersion) throws Exception;
+public interface MessageService {
 	
-	boolean isEnabled();
+	void error(String message);
 	
+	void warning(String message);
+	
+	void info(String message);
+	
+	void log(String message);
+
 }

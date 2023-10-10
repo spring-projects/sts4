@@ -50,8 +50,8 @@ public class BootVersionValidationConfig {
 		return new GenerationsValidator(server.getDiagnosticSeverityProvider(), projectsProvider);
 	}
 	
-	@Bean ProjectVersionDiagnosticProvider projectVersionDiagnosticProvider(List<VersionValidator> validators) {
-		return new ProjectVersionDiagnosticProvider(validators);
+	@Bean ProjectVersionDiagnosticProvider projectVersionDiagnosticProvider(SimpleLanguageServer server, List<VersionValidator> validators) {
+		return new ProjectVersionDiagnosticProvider(server.getProgressService(), server.getMessageService(), validators);
 	}
 	
 	@ConditionalOnMissingClass("org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness")

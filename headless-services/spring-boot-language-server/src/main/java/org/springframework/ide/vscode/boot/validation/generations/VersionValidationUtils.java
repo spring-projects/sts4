@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2022 VMware, Inc.
+ * Copyright (c) 2022, 2023 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -20,15 +20,21 @@ import org.springframework.ide.vscode.commons.Version;
 public class VersionValidationUtils {
 	
 	public static boolean isOssValid(Generation gen) {
-		Date currentDate = new Date(System.currentTimeMillis());
-		Date ossEndDate = Date.valueOf(gen.getOssSupportEndDate());
-		return currentDate.before(ossEndDate);
+		if (gen != null) {
+			Date currentDate = new Date(System.currentTimeMillis());
+			Date ossEndDate = Date.valueOf(gen.getOssSupportEndDate());
+			return currentDate.before(ossEndDate);
+		}
+		return false;
 	}
 
 	public static boolean isCommercialValid(Generation gen) {
-		Date currentDate = new Date(System.currentTimeMillis());
-		Date commercialEndDate = Date.valueOf(gen.getCommercialSupportEndDate());
-		return currentDate.before(commercialEndDate);
+		if (gen != null) {
+			Date currentDate = new Date(System.currentTimeMillis());
+			Date commercialEndDate = Date.valueOf(gen.getCommercialSupportEndDate());
+			return currentDate.before(commercialEndDate);
+		}
+		return false;
 	}
 
 	public static Version getLatestSupportedRelease(ResolvedSpringProject springProject)

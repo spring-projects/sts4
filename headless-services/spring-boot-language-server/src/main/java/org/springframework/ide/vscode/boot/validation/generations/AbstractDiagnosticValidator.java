@@ -19,6 +19,7 @@ import org.eclipse.lsp4j.Position;
 import org.eclipse.lsp4j.Range;
 import org.springframework.ide.vscode.boot.validation.generations.preferences.VersionValidationProblemType;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.DiagnosticSeverityProvider;
+import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemType;
 
 
 abstract public class AbstractDiagnosticValidator implements VersionValidator {
@@ -68,5 +69,15 @@ abstract public class AbstractDiagnosticValidator implements VersionValidator {
 	
 	protected Diagnostic createDiagnostic(VersionValidationProblemType problemType, String diagnosticMessage) {
 		return createDiagnostic(null, problemType, diagnosticMessage);
+	}
+	
+	protected boolean isEnabled(ProblemType... problemTypes) {
+		for (ProblemType problemType : problemTypes) {
+			DiagnosticSeverity severity = diagnosticSeverityProvider.getDiagnosticSeverity(problemType);
+			if (severity != null) {
+				return true;
+			}
+		}
+		return false;
 	}
 }
