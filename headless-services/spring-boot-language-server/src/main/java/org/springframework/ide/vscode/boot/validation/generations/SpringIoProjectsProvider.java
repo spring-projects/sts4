@@ -12,12 +12,16 @@ package org.springframework.ide.vscode.boot.validation.generations;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 import org.springframework.ide.vscode.boot.app.BootJavaConfig;
 import org.springframework.ide.vscode.boot.app.RestTemplateFactory;
 import org.springframework.ide.vscode.boot.validation.generations.json.ResolvedSpringProject;
 import org.springframework.ide.vscode.boot.validation.generations.json.SpringProject;
 import org.springframework.ide.vscode.boot.validation.generations.json.SpringProjects;
+import org.springframework.ide.vscode.commons.languageserver.IndefiniteProgressTask;
+import org.springframework.ide.vscode.commons.languageserver.MessageService;
+import org.springframework.ide.vscode.commons.languageserver.ProgressService;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
@@ -31,13 +35,23 @@ import com.google.common.collect.ImmutableMap.Builder;
  *
  */
 public class SpringIoProjectsProvider implements SpringProjectsProvider {
-
+	
 	private SpringProjectsClient client;
 	private Map<String, ResolvedSpringProject> cache;
 	private RestTemplateFactory restTemplateFactory;
+	final private ProgressService progressService;
+	final private MessageService messageService;
+	final private long errorStateCachingTime;
+	
+	private long lastErrorTime;
+	private Optional<Throwable> errorState;
 
-	public SpringIoProjectsProvider(BootJavaConfig config, RestTemplateFactory restTemplateFactory) {
+	public SpringIoProjectsProvider(BootJavaConfig config, RestTemplateFactory restTemplateFactory, ProgressService progressService, MessageService messageService, long errorStateCachingTime) {
 		this.restTemplateFactory = restTemplateFactory;
+		this.progressService = progressService;
+		this.messageService = messageService;
+		this.errorStateCachingTime = errorStateCachingTime;
+		clearErrorState();
 		updateIoApiUri(config.getSpringIOApiUrl());
 		config.addListener(v -> updateIoApiUri(config.getSpringIOApiUrl()));
 	}
@@ -46,6 +60,7 @@ public class SpringIoProjectsProvider implements SpringProjectsProvider {
 		if (client == null || !uri.equals(client.getUrl())) {
 			this.client = new SpringProjectsClient(uri, restTemplateFactory);
 			cache = null;
+			clearErrorState();
 		}
 	}
 
@@ -63,12 +78,40 @@ public class SpringIoProjectsProvider implements SpringProjectsProvider {
 
 	private Map<String, ResolvedSpringProject> cache() throws Exception {
 		if (cache == null) {
-			SpringProjects springProjects = client.getSpringProjects();
-			cache = asMap(springProjects);
+			if (lastErrorTime + errorStateCachingTime < System.currentTimeMillis()) {
+				IndefiniteProgressTask progress = progressService.createIndefiniteProgressTask("fetching-from-spring-io", "Fetching Generations from Spring IO", null);
+				try {
+					SpringProjects springProjects = client.getSpringProjects();
+					cache = asMap(springProjects);
+					// Wipe out error state
+					clearErrorState();
+				} catch (Exception e) {
+					messageService.error("Failed to fetch Generation from Spring IO: %s".formatted(e.getMessage()));
+					setErrorState(e);
+					throw e;
+				} finally {
+					progress.done();
+				}
+			} else {
+				// The error state hasn't expired - throw a cached error state exception
+				if (errorState.isPresent()) {
+					throw new CachedErrorStateException(errorState.get());
+				}
+			}
 		}
 		return cache != null ? cache : ImmutableMap.of();
 	}
-
+	
+	private void clearErrorState() {
+		errorState = Optional.empty();
+		lastErrorTime = 0;
+	}
+	
+	private void setErrorState(Throwable t) {
+		errorState = Optional.of(t);
+		lastErrorTime = System.currentTimeMillis();
+	}
+	
 	private Map<String, ResolvedSpringProject> asMap(SpringProjects springProjects) {
 		Builder<String, ResolvedSpringProject> builder = ImmutableMap.builder();
 

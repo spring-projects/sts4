@@ -42,16 +42,16 @@ public class BootVersionValidationConfig {
 		return new UpdateBootVersion(server.getDiagnosticSeverityProvider(), bootUpgradeOpt, projectsProvider);
 	}
 	
-	@Bean SpringIoProjectsProvider springProjectsProvider(BootJavaConfig config, RestTemplateFactory restTemplateFactory) {
-		return new SpringIoProjectsProvider(config, restTemplateFactory);
+	@Bean SpringIoProjectsProvider springProjectsProvider(SimpleLanguageServer server, BootJavaConfig config, RestTemplateFactory restTemplateFactory) {
+		return new SpringIoProjectsProvider(config, restTemplateFactory, server.getProgressService(), server.getMessageService(), 30_000);
 	}
 	
 	@Bean GenerationsValidator generationsValidator(SimpleLanguageServer server, SpringProjectsProvider projectsProvider) {
 		return new GenerationsValidator(server.getDiagnosticSeverityProvider(), projectsProvider);
 	}
 	
-	@Bean ProjectVersionDiagnosticProvider projectVersionDiagnosticProvider(SimpleLanguageServer server, List<VersionValidator> validators) {
-		return new ProjectVersionDiagnosticProvider(server.getProgressService(), server.getMessageService(), validators);
+	@Bean ProjectVersionDiagnosticProvider projectVersionDiagnosticProvider(List<VersionValidator> validators) {
+		return new ProjectVersionDiagnosticProvider(validators);
 	}
 	
 	@ConditionalOnMissingClass("org.springframework.ide.vscode.languageserver.testharness.LanguageServerHarness")

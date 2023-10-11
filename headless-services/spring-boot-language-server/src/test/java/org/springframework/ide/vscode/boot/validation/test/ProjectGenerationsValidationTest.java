@@ -56,7 +56,7 @@ public class ProjectGenerationsValidationTest {
 
     @Test
     void testProjectsInfoFromSpringIo() throws Exception {
-        SpringProjectsProvider cache = new SpringIoProjectsProvider(config, restTemplateFactory);
+        SpringProjectsProvider cache = new SpringIoProjectsProvider(config, restTemplateFactory, harness.getServer().getProgressService(), harness.getServer().getMessageService(), -1);
 
         SpringProject project = cache.getProject("spring-boot");
         assertNotNull(project);
