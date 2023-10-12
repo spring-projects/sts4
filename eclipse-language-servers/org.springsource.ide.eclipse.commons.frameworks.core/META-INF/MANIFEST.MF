@@ -25,7 +25,6 @@ Export-Package: org.springsource.ide.eclipse.commons.frameworks.core,
  org.springsource.ide.eclipse.commons.frameworks.core.internal.commands,
  org.springsource.ide.eclipse.commons.frameworks.core.internal.java,
  org.springsource.ide.eclipse.commons.frameworks.core.internal.plugins,
- org.springsource.ide.eclipse.commons.frameworks.core.legacyconversion,
  org.springsource.ide.eclipse.commons.frameworks.core.maintype,
  org.springsource.ide.eclipse.commons.frameworks.core.util,
  org.springsource.ide.eclipse.commons.frameworks.core.workspace

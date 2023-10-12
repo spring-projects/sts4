@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2012 Pivotal Software, Inc.
+ * Copyright (c) 2012, 2023 Pivotal Software, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -14,7 +14,6 @@ import org.eclipse.core.runtime.IStatus;
 import org.eclipse.jface.resource.ImageDescriptor;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.BundleContext;
-import org.springsource.ide.eclipse.commons.frameworks.ui.internal.legacyconversion.LegacyProjectListener;
 
 /**
  * @author Nieraj Singh
@@ -50,7 +49,6 @@ public class FrameworkUIActivator extends AbstractUIPlugin {
 	 */
 	public void stop(BundleContext context) throws Exception {
 		plugin = null;
-		LegacyProjectListener.LISTENER.dispose();
 		super.stop(context);
 	}
 
