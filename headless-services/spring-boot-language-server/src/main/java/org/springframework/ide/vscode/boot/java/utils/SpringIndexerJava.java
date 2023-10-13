@@ -199,17 +199,22 @@ public class SpringIndexerJava implements SpringIndexer {
 	
 	@Override
 	public void removeFiles(IJavaProject project, String[] docURIs) throws Exception {
+		
+		String[] files = Arrays.stream(docURIs).map(docURI -> {
+			try {
+				return new File(new URI(docURI)).getAbsolutePath();
+			} catch (URISyntaxException e) {
+				throw new RuntimeException(e);
+			}
+		}).toArray(String[]::new);
+		
 		IndexCacheKey symbolsCacheKey = getCacheKey(project, SYMBOL_KEY);
 		IndexCacheKey beansCacheKey = getCacheKey(project, BEANS_KEY);
 		IndexCacheKey diagnosticsCacheKey = getCacheKey(project, DIAGNOSTICS_KEY);
-		
-		for (String docURI : docURIs) {
-			String file = new File(new URI(docURI)).getAbsolutePath();
 
-			this.cache.removeFile(symbolsCacheKey, file, CachedSymbol.class);
-			this.cache.removeFile(beansCacheKey, file, CachedBean.class);
-			this.cache.removeFile(diagnosticsCacheKey, file, CachedDiagnostics.class);
-		}
+		this.cache.removeFiles(symbolsCacheKey, files, CachedSymbol.class);
+		this.cache.removeFiles(beansCacheKey, files, CachedBean.class);
+		this.cache.removeFiles(diagnosticsCacheKey, files, CachedDiagnostics.class);
 	}
 
 	private DocumentDescriptor[] filterDocuments(IJavaProject project, DocumentDescriptor[] updatedDocs) {

@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.boot.java.utils;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
@@ -212,15 +213,19 @@ public class SpringIndexerXML implements SpringIndexer {
 
 	@Override
 	public void removeFiles(IJavaProject project, String[] docURIs) throws Exception {
+		String[] files = Arrays.stream(docURIs).map(docURI -> {
+			try {
+				return new File(new URI(docURI)).getAbsolutePath();
+			} catch (URISyntaxException e) {
+				throw new RuntimeException(e);
+			}
+		}).toArray(String[]::new);
+
 		IndexCacheKey symbolsCacheKey = getCacheKey(project, SYMBOL_KEY);
 		IndexCacheKey beansCacheKey = getCacheKey(project, BEANS_KEY);
 		
-		for (String docURI : docURIs) {
-			String file = new File(new URI(docURI)).getAbsolutePath();
-
-			this.cache.removeFile(symbolsCacheKey, file, CachedSymbol.class);
-			this.cache.removeFile(beansCacheKey, file, CachedBean.class);
-		}
+		this.cache.removeFiles(symbolsCacheKey, files, CachedSymbol.class);
+		this.cache.removeFiles(beansCacheKey, files, CachedBean.class);
 	}
 
 	private void scanFile(IJavaProject project, String fileName, List<CachedSymbol> generatedSymbols, List<CachedBean> generatedBeans) {

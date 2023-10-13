@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2020 Pivotal, Inc.
+ * Copyright (c) 2019, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -30,6 +30,7 @@ public interface IndexCache {
 
 	void remove(IndexCacheKey cacheKey);
 	<T extends IndexCacheable> void removeFile(IndexCacheKey symbolCacheKey, String file, Class<T> type);
+	<T extends IndexCacheable> void removeFiles(IndexCacheKey symbolCacheKey, String[] files, Class<T> type);
 	
 	default <T extends IndexCacheable> T[] retrieveSymbols(IndexCacheKey cacheKey, String[] files, Class<T> type) {
 		Pair<T[], Multimap<String, String>> r = retrieve(cacheKey, files, type);

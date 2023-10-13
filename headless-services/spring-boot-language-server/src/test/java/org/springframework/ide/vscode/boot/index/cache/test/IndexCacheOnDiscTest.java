@@ -621,4 +621,82 @@ public class IndexCacheOnDiscTest {
         assertEquals(ImmutableSet.of(), cachedDependencies.get(file1.toString()));
         assertEquals(ImmutableSet.of("dep2"), cachedDependencies.get(file2.toString()));
     }
+
+    @Test
+    void testMultipleFilesDeleted() throws Exception {
+        Path file1 = Paths.get(tempDir.toAbsolutePath().toString(), "tempFile1");
+        Path file2 = Paths.get(tempDir.toAbsolutePath().toString(), "tempFile2");
+        Path file3 = Paths.get(tempDir.toAbsolutePath().toString(), "tempFile3");
+        Path file4 = Paths.get(tempDir.toAbsolutePath().toString(), "tempFile4");
+
+        Files.createFile(file1);
+        Files.createFile(file2);
+        Files.createFile(file3);
+        Files.createFile(file4);
+
+        FileTime timeFile1 = Files.getLastModifiedTime(file1);
+        FileTime timeFile2 = Files.getLastModifiedTime(file2);
+        FileTime timeFile3 = Files.getLastModifiedTime(file3);
+        FileTime timeFile4 = Files.getLastModifiedTime(file4);
+        String[] files = {
+        		file1.toAbsolutePath().toString(),
+        		file2.toAbsolutePath().toString(),
+        		file3.toAbsolutePath().toString(),
+        		file4.toAbsolutePath().toString()
+        };
+
+        String doc1URI = UriUtil.toUri(file1.toFile()).toASCIIString();
+        String doc2URI = UriUtil.toUri(file2.toFile()).toASCIIString();
+        String doc3URI = UriUtil.toUri(file3.toFile()).toASCIIString();
+        String doc4URI = UriUtil.toUri(file4.toFile()).toASCIIString();
+
+        List<CachedSymbol> generatedSymbols = new ArrayList<>();
+
+        WorkspaceSymbol symbol1 = new WorkspaceSymbol("symbol1", SymbolKind.Field, Either.forLeft(new Location(doc1URI, new Range(new Position(3, 10), new Position(3, 20)))));
+        EnhancedSymbolInformation enhancedSymbol1 = new EnhancedSymbolInformation(symbol1, null);
+
+        WorkspaceSymbol symbol2 = new WorkspaceSymbol("symbol2", SymbolKind.Field, Either.forLeft(new Location(doc2URI, new Range(new Position(5, 10), new Position(5, 20)))));
+        EnhancedSymbolInformation enhancedSymbol2 = new EnhancedSymbolInformation(symbol2, null);
+
+        WorkspaceSymbol symbol3 = new WorkspaceSymbol("symbol3", SymbolKind.Field, Either.forLeft(new Location(doc3URI, new Range(new Position(20, 11), new Position(20, 30)))));
+        EnhancedSymbolInformation enhancedSymbol3 = new EnhancedSymbolInformation(symbol3, null);
+
+        WorkspaceSymbol symbol4 = new WorkspaceSymbol("symbol4", SymbolKind.Field, Either.forLeft(new Location(doc4URI, new Range(new Position(4, 4), new Position(5, 5)))));
+        EnhancedSymbolInformation enhancedSymbol4 = new EnhancedSymbolInformation(symbol4, null);
+
+        generatedSymbols.add(new CachedSymbol(doc1URI, timeFile1.toMillis(), enhancedSymbol1));
+        generatedSymbols.add(new CachedSymbol(doc2URI, timeFile2.toMillis(), enhancedSymbol2));
+        generatedSymbols.add(new CachedSymbol(doc3URI, timeFile3.toMillis(), enhancedSymbol3));
+        generatedSymbols.add(new CachedSymbol(doc4URI, timeFile4.toMillis(), enhancedSymbol4));
+
+        Multimap<String, String> dependencies = ImmutableMultimap.of(
+                file1.toString(), "dep1",
+                file2.toString(), "dep2"
+        );
+        cache.store(CACHE_KEY_VERSION_1, files, generatedSymbols, dependencies, CachedSymbol.class);
+//        cache.removeFile(CACHE_KEY_VERSION_1, file1.toAbsolutePath().toString(), CachedSymbol.class);
+//        cache.removeFile(CACHE_KEY_VERSION_1, file3.toAbsolutePath().toString(), CachedSymbol.class);
+        cache.removeFiles(CACHE_KEY_VERSION_1, new String[] {file1.toAbsolutePath().toString(), file3.toAbsolutePath().toString()}, CachedSymbol.class);
+
+        files = new String[]{file2.toAbsolutePath().toString(), file4.toAbsolutePath().toString()};
+        Pair<CachedSymbol[], Multimap<String, String>> result = cache.retrieve(CACHE_KEY_VERSION_1, files, CachedSymbol.class);
+        CachedSymbol[] cachedSymbols = result.getLeft();
+        assertNotNull(result);
+        assertEquals(2, cachedSymbols.length);
+
+        assertEquals("symbol2", cachedSymbols[0].getEnhancedSymbol().getSymbol().getName());
+        assertEquals(SymbolKind.Field, cachedSymbols[0].getEnhancedSymbol().getSymbol().getKind());
+        assertEquals(new Location(doc2URI, new Range(new Position(5, 10), new Position(5, 20))), cachedSymbols[0].getEnhancedSymbol().getSymbol().getLocation().getLeft());
+        assertNull(cachedSymbols[0].getEnhancedSymbol().getAdditionalInformation());
+
+        assertEquals("symbol4", cachedSymbols[1].getEnhancedSymbol().getSymbol().getName());
+        assertEquals(SymbolKind.Field, cachedSymbols[1].getEnhancedSymbol().getSymbol().getKind());
+        assertEquals(new Location(doc4URI, new Range(new Position(4, 4), new Position(5, 5))), cachedSymbols[1].getEnhancedSymbol().getSymbol().getLocation().getLeft());
+        assertNull(cachedSymbols[1].getEnhancedSymbol().getAdditionalInformation());
+
+        Multimap<String, String> cachedDependencies = result.getRight();
+        assertEquals(ImmutableSet.of(), cachedDependencies.get(file1.toString()));
+        assertEquals(ImmutableSet.of("dep2"), cachedDependencies.get(file2.toString()));
+    }
+
 }

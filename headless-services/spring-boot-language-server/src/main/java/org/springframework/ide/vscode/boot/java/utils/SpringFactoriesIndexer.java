@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.boot.java.utils;
 import java.io.File;
 import java.io.IOException;
 import java.net.URI;
+import java.net.URISyntaxException;
 import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -284,11 +285,16 @@ public class SpringFactoriesIndexer implements SpringIndexer {
 
 	@Override
 	public void removeFiles(IJavaProject project, String[] docURIs) throws Exception {
+		String[] files = Arrays.stream(docURIs).map(docURI -> {
+			try {
+				return new File(new URI(docURI)).getAbsolutePath();
+			} catch (URISyntaxException e) {
+				throw new RuntimeException(e);
+			}
+		}).toArray(String[]::new);
+		
 		IndexCacheKey key = getCacheKey(project);
-		for (String docUri : docURIs) {
-			String file = new File(new URI(docUri)).getAbsolutePath();
-			cache.removeFile(key, file, CachedSymbol.class);
-		}
+		cache.removeFiles(key, files, CachedSymbol.class);
 	}
 	
 }

@@ -48,6 +48,10 @@ public class IndexCacheVoid implements IndexCache {
 	}
 
 	@Override
+	public <T extends IndexCacheable> void removeFiles(IndexCacheKey symbolCacheKey, String[] files, Class<T> type) {
+	}
+
+	@Override
 	public long getModificationTimestamp(IndexCacheKey cacheKey, String docURI) {
 		return 0;
 	}

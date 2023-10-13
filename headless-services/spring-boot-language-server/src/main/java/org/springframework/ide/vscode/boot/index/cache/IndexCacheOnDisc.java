@@ -169,6 +169,33 @@ public class IndexCacheOnDisc implements IndexCache {
 	}
 
 	@Override
+	public <T extends IndexCacheable> void removeFiles(IndexCacheKey cacheKey, String[] files, Class<T> type) {
+		@SuppressWarnings("unchecked")
+		IndexCacheStore<T> cacheStore = (IndexCacheStore<T>) this.stores.get(cacheKey);
+
+		if (cacheStore != null) {
+			
+			SortedMap<String, Long> timestampedFiles = new TreeMap<>(cacheStore.getTimestampedFiles());
+			Map<String, Collection<String>> changedDeps = new HashMap<>(cacheStore.getDependencies());
+			Set<String> docURIs = new HashSet<>();
+			
+			for (String file : files) {
+				String docURI = UriUtil.toUri(new File(file)).toASCIIString();
+				docURIs.add(docURI);
+
+				timestampedFiles.remove(file);
+				changedDeps.remove(file);
+			}
+
+			List<T> cachedSymbols = cacheStore.getSymbols().stream()
+					.filter(cachedSymbol -> !docURIs.contains(cachedSymbol.getDocURI()))
+					.collect(Collectors.toList());
+
+			save(cacheKey, cachedSymbols, timestampedFiles, changedDeps, type);
+		}
+	}
+
+	@Override
 	public void remove(IndexCacheKey cacheKey) {
 		File cacheStore = new File(cacheDirectory, cacheKey.toString() + ".json");
 		if (cacheStore.exists()) {
