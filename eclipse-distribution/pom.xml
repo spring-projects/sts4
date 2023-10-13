@@ -366,7 +366,7 @@
 		<profile>
 			<id>e430</id>
 			<properties>
-				<dist.target>e4.20.0</dist.target>
+				<dist.target>e4.30.0</dist.target>
 				<dist.target.major>e4.30</dist.target.major>
 				<dist.platform.name>2023-12</dist.platform.name>
 				<dist.platform.name.long>2023-12 (4.30)</dist.platform.name.long>
