@@ -16,7 +16,7 @@
 	<properties>
 		<dependencies.version>${project.version}</dependencies.version>
 		<jdt.core.version>3.35.0</jdt.core.version>
-		<lsp4xml.version>0.24.0</lsp4xml.version>
+		<lsp4xml.version>0.27.0</lsp4xml.version>
 	</properties>
 
 	<repositories>
@@ -243,6 +243,11 @@
 					<layout>ZIP</layout>
 					<classifier>exec</classifier>
 					<mainClass>org.springframework.ide.vscode.boot.app.BootLanguageServerBootApp</mainClass>
+					<image>
+						<env>
+							<BP_NATIVE_IMAGE_BUILD_ARGUMENTS>-Djava.security.properties=/workspace/BOOT-INF/classes/custom.security</BP_NATIVE_IMAGE_BUILD_ARGUMENTS>
+						</env>
+					</image>
 				</configuration>
 				<executions>
 					<execution>
@@ -386,6 +391,11 @@
 			<plugin>
 				<groupId>org.graalvm.buildtools</groupId>
 				<artifactId>native-maven-plugin</artifactId>
+				<configuration>
+					<buildArgs>
+						<arg>-Djava.security.properties=src/main/resources/custom.security</arg>
+					</buildArgs>
+				</configuration>
 			</plugin>
 		</plugins>
 	</build>
