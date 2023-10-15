@@ -457,18 +457,20 @@ public class SpringIndexerJava implements SpringIndexer {
 			}
 		}
 		
-		DocumentDescriptor[] docsToScan = filesToScan.stream().map(file -> {
-			File realFile = new File(file);
-			String docURI = UriUtil.toUri(realFile).toASCIIString();
-			long lastModified = realFile.lastModified();
-			return new DocumentDescriptor(docURI, lastModified);
-		}).toArray(DocumentDescriptor[]::new);
-		
-		for (DocumentDescriptor docToScan : docsToScan) {
-			this.symbolHandler.removeSymbols(project, docToScan.getDocURI());
+		if (!filesToScan.isEmpty()) {
+			DocumentDescriptor[] docsToScan = filesToScan.stream().map(file -> {
+				File realFile = new File(file);
+				String docURI = UriUtil.toUri(realFile).toASCIIString();
+				long lastModified = realFile.lastModified();
+				return new DocumentDescriptor(docURI, lastModified);
+			}).toArray(DocumentDescriptor[]::new);
+			
+			for (DocumentDescriptor docToScan : docsToScan) {
+				this.symbolHandler.removeSymbols(project, docToScan.getDocURI());
+			}
+			
+			scanFilesInternally(project, docsToScan);
 		}
-		
-		scanFilesInternally(project, docsToScan);
 
 		log.info("Finished scanning affected files {}", alreadyScannedFiles);
 	}
