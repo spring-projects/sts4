@@ -2649,27 +2649,6 @@
   "queryAllDeclaredMethods":true
 },
 {
-  "name":"org.openrewrite.java.Java17Parser",
-  "methods":[{"name":"builder","parameterTypes":[] }]
-},
-{
-  "name":"org.openrewrite.java.isolated.ReloadableJava17Parser",
-  "methods":[{"name":"<init>","parameterTypes":["boolean","java.util.Collection","java.util.Collection","java.util.Collection","java.nio.charset.Charset","java.util.Collection","org.openrewrite.java.internal.JavaTypeCache"] }]
-},
-{
-  "name":"org.openrewrite.java.spring.boot2.AddConfigurationAnnotationIfBeansPresent",
-  "queryAllPublicConstructors":true,
-  "methods":[{"name":"<init>","parameterTypes":[] }]
-},
-{
-  "name":"org.openrewrite.marker.Range",
-  "allDeclaredFields":true
-},
-{
-  "name":"org.openrewrite.marker.Range$Position",
-  "allDeclaredFields":true
-},
-{
   "name":"org.openrewrite.table.RecipeRunStats$Row",
   "allDeclaredFields":true
 },

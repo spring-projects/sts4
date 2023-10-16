@@ -197,7 +197,7 @@ public class RewriteRefactorings implements CodeActionResolver, QuickfixHandler 
 						f.setAccessible(true);
 						f.set(r, entry.getValue());
 					} catch (Exception e) {
-						log.error("", e);;
+						log.error("", e);
 					}
 				}
 			}

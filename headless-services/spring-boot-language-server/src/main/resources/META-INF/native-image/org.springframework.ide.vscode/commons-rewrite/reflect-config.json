@@ -1,0 +1,6775 @@
+[
+  {
+    "name": "org.openrewrite.DeleteSourceFiles",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.FindCollidingSourceFiles",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.FindGitProvenance",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.FindLstProvenance",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.FindParseFailures",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.FindQuarks",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.FindSourceFiles",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.ListRuntimeClasspath",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.Recipe$Noop",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.RenameFile",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.ScanningRecipe",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.SetFilePermissions",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.analysis.controlflow.ControlFlowVisualization",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.analysis.search.FindFlowBetweenMethods",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.analysis.search.FindMethods",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.analysis.search.UriCreatedWithHttpScheme",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.config.CompositeRecipe",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.config.DeclarativeRecipe",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.config.DeclarativeRecipe$LazyLoadedRecipe",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.github.AddCronTrigger",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.github.AutoCancelInProgressWorkflow",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.github.ChangeDependabotScheduleInterval",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.github.PreferTemurinDistributions",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.github.RemoveAllCronTriggers",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.github.ReplaceRunners",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.github.SetupJavaAdoptOpenJDKToTemurin",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.github.SetupJavaAdoptOpenj9ToSemeru",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.github.SetupJavaCaching",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.github.SetupJavaUpgradeJavaVersion",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.gradle.AddDependency",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.gradle.AddProperty",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.gradle.ChangeDependency",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.gradle.ChangeDependencyArtifactId",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.gradle.ChangeDependencyClassifier",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.gradle.ChangeDependencyConfiguration",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.gradle.ChangeDependencyExtension",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.gradle.ChangeDependencyGroupId",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.gradle.ChangeExtraProperty",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.gradle.DependencyUseMapNotation",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.gradle.DependencyUseStringNotation",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.gradle.RemoveDependency",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.gradle.RemoveRepository",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.gradle.UpdateGradleWrapper",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.gradle.UpdateJavaCompatibility",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.gradle.UpgradeDependencyVersion",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.gradle.plugins.AddBuildPlugin",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.gradle.plugins.AddGradleEnterpriseGradlePlugin",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.gradle.plugins.AddSettingsPlugin",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.gradle.plugins.AddSettingsPluginRepository",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.gradle.plugins.ChangePlugin",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.gradle.plugins.RemoveBuildPlugin",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.gradle.plugins.RemoveSettingsPlugin",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.gradle.plugins.UpgradePluginVersion",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.gradle.search.DependencyInsight",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.gradle.search.FindDependency",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.gradle.search.FindGradleProject",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.gradle.search.FindGradleWrapper",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.gradle.search.FindPlugins",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.gradle.search.FindRepository",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.gradle.security.UseHttpsForRepositories",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.gradle.spring.AddSpringDependencyManagementPlugin",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.groovy.format.OmitParenthesesForLastArgumentLambda",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.groovy.format.OmitParenthesesFormat",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.hibernate.TypeAnnotationParameter",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.AddLicenseHeader",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.AddOrUpdateAnnotationAttribute",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.ChangeMethodAccessLevel",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.ChangeMethodName",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.ChangeMethodTargetToStatic",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.ChangeMethodTargetToVariable",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.ChangePackage",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.ChangeStaticFieldToMethod",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.ChangeType",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.DeleteMethodArgument",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.NoStaticImport",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.OrderImports",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.RandomizeId",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.RecipeMarkupDemonstration",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.RemoveAnnotation",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.RemoveImplements",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.RemoveObjectsIsNull",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.RemoveUnusedImports",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.ReorderMethodArguments",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.ReplaceConstant",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.ReplaceConstantWithAnotherConstant",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.ReplaceStringLiteralWithConstant",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.ShortenFullyQualifiedTypeReferences",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.SimplifyMethodChain",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.UpdateSourcePositions",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.UseStaticImport",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.apache.httpclient4.MigrateDefaultHttpClient",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.apache.httpclient5.AddTimeUnitArgument",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.apache.httpclient5.NewStatusLine",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.dependencies.AddDependency",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.dependencies.ChangeDependency",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.dependencies.DependencyLicenseCheck",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.dependencies.DependencyList",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.dependencies.DependencyVulnerabilityCheck",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.dependencies.RemoveDependency",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.dependencies.UpgradeDependencyVersion",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.format.AutoFormat",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.format.BlankLines",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.format.EmptyNewlineAtEndOfFile",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.format.MethodParamPad",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.format.NoWhitespaceAfter",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.format.NoWhitespaceBefore",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.format.NormalizeFormat",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.format.NormalizeLineBreaks",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.format.NormalizeTabsOrSpaces",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.format.OperatorWrap",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.format.PadEmptyForLoopComponents",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.format.RemoveTrailingWhitespace",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.format.SingleLineComments",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.format.Spaces",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.format.TabsAndIndents",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.format.TypecastParenPad",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.format.WrappingAndBraces",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.AddJDeprScanPlugin",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.AddSuppressionForIllegalReflectionWarningsPlugin",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.UpgradeJavaVersion",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.UseJavaUtilBase64",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.apache.commons.codec.ApacheBase64ToJavaBase64",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.apache.commons.io.ApacheCommonsFileUtilsRecipes",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.apache.commons.io.ApacheCommonsFileUtilsRecipes$GetFileRecipe",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.apache.commons.io.ApacheFileUtilsToJavaFiles",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.apache.commons.io.ApacheIOUtilsUseExplicitCharset",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.apache.commons.lang.ApacheCommonsStringUtilsRecipes",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.apache.commons.lang.ApacheCommonsStringUtilsRecipes$AbbreviateRecipe",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.apache.commons.lang.ApacheCommonsStringUtilsRecipes$CapitalizeRecipe",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.apache.commons.lang.ApacheCommonsStringUtilsRecipes$DefaultStringFallbackRecipe",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.apache.commons.lang.ApacheCommonsStringUtilsRecipes$DefaultStringRecipe",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.apache.commons.lang.ApacheCommonsStringUtilsRecipes$DeleteWhitespaceRecipe",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.apache.commons.lang.ApacheCommonsStringUtilsRecipes$EqualsIgnoreCaseRecipe",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.apache.commons.lang.ApacheCommonsStringUtilsRecipes$EqualsRecipe",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.apache.commons.lang.ApacheCommonsStringUtilsRecipes$LowercaseRecipe",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.apache.commons.lang.ApacheCommonsStringUtilsRecipes$RemoveEndRecipe",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.apache.commons.lang.ApacheCommonsStringUtilsRecipes$ReplaceRecipe",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.apache.commons.lang.ApacheCommonsStringUtilsRecipes$ReverseRecipe",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.apache.commons.lang.ApacheCommonsStringUtilsRecipes$SplitRecipe",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.apache.commons.lang.ApacheCommonsStringUtilsRecipes$StripRecipe",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.apache.commons.lang.ApacheCommonsStringUtilsRecipes$TrimRecipe",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.apache.commons.lang.ApacheCommonsStringUtilsRecipes$TrimToEmptyRecipe",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.apache.commons.lang.ApacheCommonsStringUtilsRecipes$TrimToNullRecipe",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.apache.commons.lang.ApacheCommonsStringUtilsRecipes$UppercaseRecipe",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.apache.commons.lang.IsNotEmptyToJdk",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.guava.AbstractNoGuavaImmutableOf",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.guava.NoGuavaAtomicsNewReference",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.guava.NoGuavaCreateTempDir",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.guava.NoGuavaDirectExecutor",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.guava.NoGuavaImmutableListOf",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.guava.NoGuavaImmutableMapOf",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.guava.NoGuavaImmutableSetOf",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.guava.NoGuavaListsNewArrayList",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.guava.NoGuavaListsNewCopyOnWriteArrayList",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.guava.NoGuavaListsNewLinkedList",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.guava.NoGuavaMapsNewLinkedHashMap",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.guava.NoGuavaOptionalFromJavaUtil",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.guava.NoGuavaOptionalToJavaUtil",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.guava.NoGuavaSetsNewConcurrentHashSet",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.guava.NoGuavaSetsNewHashSet",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.guava.NoGuavaSetsNewLinkedHashSet",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.guava.PreferJavaUtilOptionalOrElseNull",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.guava.PreferJavaUtilOptionalOrSupplier",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.io.ReplaceFileInOrOutputStreamFinalizeWithClose",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.jakarta.MaybeAddJakartaServletApi",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.javax.AddJaxbRuntime",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.javax.AddJaxbRuntime$AddJaxbRuntimeGradle",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.javax.AddJaxbRuntime$AddJaxbRuntimeMaven",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.javax.AddJaxwsRuntime",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.javax.AddJaxwsRuntime$AddJaxwsRuntimeGradle",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.javax.AddJaxwsRuntime$AddJaxwsRuntimeMaven",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.javax.AddScopeToInjectedClass",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.lang.MigrateClassLoaderDefineClass",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.lang.MigrateClassNewInstanceToGetDeclaredConstructorNewInstance",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.lang.MigrateSecurityManagerMulticast",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.lang.RemoveThreadDestroyMethod",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.lang.StringFormatted",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.lang.StringRulesRecipes",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.lang.StringRulesRecipes$IndexOfCharRecipe",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.lang.StringRulesRecipes$IndexOfStringRecipe",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.lang.StringRulesRecipes$RedundantCallRecipe",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.lang.StringRulesRecipes$UseEqualsIgnoreCaseRecipe",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.lang.UseStringIsEmptyRecipe",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.lang.UseTextBlocks",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.lang.var.UseVarForGenericMethodInvocations",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.lang.var.UseVarForGenericsConstructors",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.lang.var.UseVarForObject",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.lang.var.UseVarForPrimitive",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.logging.MigrateGetLoggingMXBeanToGetPlatformMXBean",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.logging.MigrateLogRecordSetMillisToSetInstant",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.logging.MigrateLoggerGlobalToGetGlobal",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.logging.MigrateLoggerLogrbToUseResourceBundle",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.lombok.LombokValToFinalVar",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.maven.UseMavenCompilerPluginReleaseConfiguration",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.maven.shared.MavenSharedStringUtilsRecipes",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.maven.shared.MavenSharedStringUtilsRecipes$AbbreviateRecipe",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.maven.shared.MavenSharedStringUtilsRecipes$CapitalizeRecipe",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.maven.shared.MavenSharedStringUtilsRecipes$DefaultStringFallbackRecipe",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.maven.shared.MavenSharedStringUtilsRecipes$DefaultStringRecipe",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.maven.shared.MavenSharedStringUtilsRecipes$DeleteWhitespaceRecipe",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.maven.shared.MavenSharedStringUtilsRecipes$EqualsIgnoreCaseRecipe",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.maven.shared.MavenSharedStringUtilsRecipes$EqualsRecipe",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.maven.shared.MavenSharedStringUtilsRecipes$LowercaseRecipe",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.maven.shared.MavenSharedStringUtilsRecipes$ReplaceRecipe",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.maven.shared.MavenSharedStringUtilsRecipes$ReverseRecipe",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.maven.shared.MavenSharedStringUtilsRecipes$SplitRecipe",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.maven.shared.MavenSharedStringUtilsRecipes$StripRecipe",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.maven.shared.MavenSharedStringUtilsRecipes$TrimRecipe",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.maven.shared.MavenSharedStringUtilsRecipes$UppercaseRecipe",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.metrics.SimplifyMicrometerMeterTags",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.net.MigrateHttpURLConnectionHttpServerErrorToHttpInternalError",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.net.MigrateMulticastSocketSetTTLToSetTimeToLive",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.net.MigrateURLDecoderDecode",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.net.MigrateURLEncoderEncode",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.plexus.PlexusFileUtilsRecipes",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.plexus.PlexusFileUtilsRecipes$DeleteDirectoryFileRecipe",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.plexus.PlexusFileUtilsRecipes$DeleteDirectoryStringRecipe",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.plexus.PlexusFileUtilsRecipes$FileExistsStringRecipe",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.plexus.PlexusFileUtilsRecipes$GetFileRecipe",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.plexus.PlexusStringUtilsRecipes",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.plexus.PlexusStringUtilsRecipes$AbbreviateRecipe",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.plexus.PlexusStringUtilsRecipes$CapitalizeRecipe",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.plexus.PlexusStringUtilsRecipes$DefaultStringFallbackRecipe",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.plexus.PlexusStringUtilsRecipes$DefaultStringRecipe",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.plexus.PlexusStringUtilsRecipes$DeleteWhitespaceRecipe",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.plexus.PlexusStringUtilsRecipes$EqualsIgnoreCaseRecipe",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.plexus.PlexusStringUtilsRecipes$EqualsRecipe",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.plexus.PlexusStringUtilsRecipes$LowercaseRecipe",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.plexus.PlexusStringUtilsRecipes$ReplaceRecipe",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.plexus.PlexusStringUtilsRecipes$ReverseRecipe",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.plexus.PlexusStringUtilsRecipes$SplitRecipe",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.plexus.PlexusStringUtilsRecipes$StripRecipe",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.plexus.PlexusStringUtilsRecipes$TrimRecipe",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.plexus.PlexusStringUtilsRecipes$UppercaseRecipe",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.search.AboutJavaVersion",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.sql.MigrateDriverManagerSetLogStream",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.util.MigrateCollectionsSingletonList",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.util.MigrateCollectionsSingletonMap",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.util.MigrateCollectionsSingletonSet",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.util.MigrateCollectionsUnmodifiableList",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.util.MigrateCollectionsUnmodifiableSet",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.util.OptionalNotEmptyToIsPresent",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.util.OptionalNotPresentToIsEmpty",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.util.RemoveFinalizerFromZip",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.util.UseEnumSetOf",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.util.UseLocaleOf",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.migrate.util.UseMapOf",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.recipes.ExecutionContextParameterName",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.recipes.FindRecipes",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.recipes.MigrateJavaTemplateToRewrite8",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.recipes.MigrateMarkersSearchResult",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.recipes.MigrateRecipeToRewrite8",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.recipes.MigrateTestToRewrite8",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.recipes.RemoveApplicabilityTestFromYamlRecipe",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.recipes.SelectRecipeExamples",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.recipes.SetDefaultEstimatedEffortPerOccurrence",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.recipes.SourceSpecTextBlockIndentation",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.recipes.UpdateMovedPackageClassName",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.recipes.UpdateMovedRecipe",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.recipes.UpdateMovedRecipeXml",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.recipes.UpdateMovedRecipeYaml",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.recipes.UseJavaParserBuilderInJavaTemplate",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.search.FindAnnotations",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.search.FindComments",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.search.FindDeprecatedClasses",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.search.FindDeprecatedFields",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.search.FindDeprecatedMethods",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.search.FindDeprecatedUses",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.search.FindEmptyClasses",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.search.FindEmptyMethods",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.search.FindFields",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.search.FindFieldsOfType",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.search.FindImplementations",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.search.FindImports",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.search.FindLiterals",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.search.FindMethodDeclaration",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.search.FindMethods",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.search.FindMissingTypes",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.search.FindRepeatableAnnotations",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.search.FindTypes",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.search.HasJavaVersion",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.search.HasSourceSet",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.search.IsLikelyNotTest",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.search.IsLikelyTest",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.search.ResultOfMethodCallIgnored",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.AddSpringProperty",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.BeanMethodsNotPublic",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.ChangeSpringPropertyKey",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.ChangeSpringPropertyValue",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.DeleteSpringProperty",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.ExpandProperties",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.ImplicitWebAnnotationNames",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.NoAutowiredOnConstructor",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.NoRepoAnnotationOnRepoInterface",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.NoRequestMappingAnnotation",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.PropertiesToKebabCase",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.PropertiesToKebabCase$PropertiesToKebabCaseProperties",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.PropertiesToKebabCase$PropertiesToKebabCaseYaml",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.RenameBean",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.SeparateApplicationYamlByProfile",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.UpdateApiManifest",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.amqp.UseTlsAmqpConnectionString",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.amqp.UseTlsAmqpConnectionString$UseTlsAmqpConnectionStringProperties",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.amqp.UseTlsAmqpConnectionString$UseTlsAmqpConnectionStringYaml",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.batch.MigrateItemWriterWrite",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.batch.MigrateJobBuilderFactory",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.batch.RemoveDefaultBatchConfigurer",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.batch.ReplaceSupportClassWithItsInterface",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.boot2.AddConfigurationAnnotationIfBeansPresent",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.boot2.ChangeEmbeddedServletContainerCustomizer",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.boot2.ConditionalOnBeanAnyNestedCondition",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.boot2.DatabaseComponentAndBeanInitializationOrdering",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.boot2.GetErrorAttributes",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.boot2.HeadersConfigurerLambdaDsl",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.boot2.HttpSecurityLambdaDsl",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.boot2.MergeBootstrapYamlWithApplicationYaml",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.boot2.MigrateActuatorMediaTypeToApiVersion",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.boot2.MigrateConfigurationPropertiesBindingPostProcessorValidatorBeanName",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.boot2.MigrateDatabaseCredentials",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.boot2.MigrateDatabaseCredentials$MigrateDatabaseCredentialsForToolProperties",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.boot2.MigrateDatabaseCredentials$MigrateDatabaseCredentialsForToolYaml",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.boot2.MigrateDiskSpaceHealthIndicatorConstructor",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.boot2.MigrateErrorPropertiesIncludeStackTraceConstants",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.boot2.MigrateHsqlEmbeddedDatabaseConnection",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.boot2.MigrateLocalServerPortAnnotation",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.boot2.MigrateLoggingSystemPropertyConstants",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.boot2.MigrateMultipartConfigFactory",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.boot2.MigrateRestTemplateBuilderTimeoutByInt",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.boot2.MoveAutoConfigurationToImportsFile",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.boot2.OutputCaptureExtension",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.boot2.ReplaceDeprecatedEnvironmentTestUtils",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.boot2.ReplaceExtendWithAndContextConfiguration",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.boot2.RestTemplateBuilderRequestFactory",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.boot2.SamlRelyingPartyPropertyApplicationPropertiesMove",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.boot2.ServerHttpSecurityLambdaDsl",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.boot2.SpringBootMavenPluginMigrateAgentToAgents",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.boot2.UnnecessarySpringExtension",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.boot2.search.CustomizingJooqDefaultConfiguration",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.boot2.search.IntegrationSchedulerPoolRecipe",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.boot2.search.LoggingShutdownHooks",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.boot3.AddRouteTrailingSlash",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.boot3.AddSetUseTrailingSlashMatch",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.boot3.ConfigurationOverEnableSecurity",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.boot3.DowngradeServletApiWhenUsingJetty",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.boot3.MaintainTrailingSlashURLMappings",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.boot3.PreciseBeanType",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.boot3.RemoveConstructorBindingAnnotation",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.boot3.RemoveEnableBatchProcessing",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.cloud2022.AddLoggingPatternLevelForSleuth",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.data.MigrateJpaSort",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.data.MigrateQuerydslJpaRepository",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.data.UseTlsJdbcConnectionString",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.data.UseTlsJdbcConnectionString$UseTlsJdbcConnectionStringProperties",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.data.UseTlsJdbcConnectionString$UseTlsJdbcConnectionStringYaml",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.framework.EnvironmentAcceptsProfiles",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.framework.JdbcTemplateObjectArrayArgToVarArgs",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.framework.MigrateHandlerInterceptor",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.framework.MigrateInstantiationAwareBeanPostProcessorAdapter",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.framework.MigrateUtf8MediaTypes",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.framework.MigrateWebMvcConfigurerAdapter",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.framework.UpgradeSpringFrameworkDependencies",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.http.ReplaceStringLiteralsWithHttpHeadersConstants",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.http.ReplaceStringLiteralsWithMediaTypeConstants",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.http.SimplifyMediaTypeParseCalls",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.search.FindApiCalls",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.search.FindApiEndpoints",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.search.FindSpringComponents",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.security5.AuthorizeHttpRequests",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.security5.ReplaceGlobalMethodSecurityWithMethodSecurity",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.security5.UpdateArgon2PasswordEncoder",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.security5.UpdatePbkdf2PasswordEncoder",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.security5.UpdateSCryptPasswordEncoder",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.security5.UseNewRequestMatchers",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.security5.UseNewSecurityMatchers",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.security5.WebSecurityConfigurerAdapter",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.security6.PropagateAuthenticationServiceExceptions",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.security6.RemoveFilterSecurityInterceptorOncePerRequest",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.security6.RemoveOauth2LoginConfig",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.security6.RequireExplicitSavingOfSecurityContextRepository",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.security6.UpdateEnableReactiveMethodSecurity",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.security6.UpdateRequestCache",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.security6.UseSha256InRememberMe",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.security6.oauth2.client.OAuth2ClientLambdaDsl",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.security6.oauth2.client.OAuth2LoginLambdaDsl",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.spring.security6.oauth2.server.resource.OAuth2ResourceServerLambdaDsl",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.testing.assertj.JUnitAssertArrayEqualsToAssertThat",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.testing.assertj.JUnitAssertEqualsToAssertThat",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.testing.assertj.JUnitAssertFalseToAssertThat",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.testing.assertj.JUnitAssertNotEqualsToAssertThat",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.testing.assertj.JUnitAssertNotNullToAssertThat",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.testing.assertj.JUnitAssertNullToAssertThat",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.testing.assertj.JUnitAssertSameToAssertThat",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.testing.assertj.JUnitAssertThrowsToAssertExceptionType",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.testing.assertj.JUnitAssertTrueToAssertThat",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.testing.assertj.JUnitFailToAssertJFail",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.testing.assertj.SimplifyChainedAssertJAssertion",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.testing.cleanup.AssertEqualsNullToAssertNull",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.testing.cleanup.AssertFalseEqualsToAssertNotEquals",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.testing.cleanup.AssertFalseNegationToAssertTrue",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.testing.cleanup.AssertFalseNullToAssertNotNull",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.testing.cleanup.AssertTrueComparisonToAssertEquals",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.testing.cleanup.AssertTrueEqualsToAssertEquals",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.testing.cleanup.AssertTrueNegationToAssertFalse",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.testing.cleanup.AssertTrueNullToAssertNull",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.testing.cleanup.AssertionsArgumentOrder",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.testing.cleanup.RemoveEmptyTests",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.testing.cleanup.RemoveTestPrefix",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.testing.cleanup.TestsShouldIncludeAssertions",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.testing.cleanup.TestsShouldNotBePublic",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.testing.hamcrest.AssertThatBooleanToAssertJ",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.testing.hamcrest.HamcrestIsMatcherToAssertJ",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.testing.hamcrest.HamcrestMatcherToAssertJ",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.testing.hamcrest.HamcrestNotMatcherToAssertJ",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.testing.hamcrest.HamcrestOfMatchersToAssertJ",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.testing.hamcrest.RemoveIsMatcher",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.testing.junit5.AddMissingNested",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.testing.junit5.AddParameterizedTestAnnotation",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.testing.junit5.AssertToAssertions",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.testing.junit5.AssertTrueInstanceofToAssertInstanceOf",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.testing.junit5.CategoryToTag",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.testing.junit5.CleanupJUnitImports",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.testing.junit5.EnclosedToNested",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.testing.junit5.ExpectedExceptionToAssertThrows",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.testing.junit5.JUnitParamsRunnerToParameterized",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.testing.junit5.LifecycleNonPrivate",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.testing.junit5.MigrateJUnitTestCase",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.testing.junit5.MockitoJUnitToMockitoExtension",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.testing.junit5.ParameterizedRunnerToParameterized",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.testing.junit5.RemoveDuplicateTestTemplates",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.testing.junit5.RemoveObsoleteRunners",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.testing.junit5.RemoveTryCatchFailBlocks",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.testing.junit5.RunnerToExtension",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.testing.junit5.TempDirNonFinal",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.testing.junit5.TemporaryFolderToTempDir",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.testing.junit5.TestRuleToTestInfo",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.testing.junit5.UpdateBeforeAfterAnnotations",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.testing.junit5.UpdateMockWebServer",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.testing.junit5.UpdateTestAnnotation",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.testing.junit5.UseTestMethodOrder",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.testing.junit5.UseWiremockExtension",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.testing.mockito.AnyStringToNullable",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.testing.mockito.AnyToNullable",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.testing.mockito.CleanupMockitoImports",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.testing.mockito.MockUtilsToStatic",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.testing.mockito.MockitoJUnitRunnerSilentToExtension",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.java.testing.mockito.PowerMockitoMockStaticToMockito",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.maven.AddCommentToMavenDependency",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.maven.AddDependency",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.maven.AddGradleEnterpriseMavenExtension",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.maven.AddManagedDependency",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.maven.AddPlugin",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.maven.AddPluginDependency",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.maven.AddProfile",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.maven.AddProperty",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.maven.AddRepository",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.maven.ChangeDependencyClassifier",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.maven.ChangeDependencyGroupIdAndArtifactId",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.maven.ChangeDependencyScope",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.maven.ChangeManagedDependencyGroupIdAndArtifactId",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.maven.ChangePackaging",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.maven.ChangeParentPom",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.maven.ChangePluginConfiguration",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.maven.ChangePluginDependencies",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.maven.ChangePluginExecutions",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.maven.ChangePluginGroupIdAndArtifactId",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.maven.ChangeProjectVersion",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.maven.ChangePropertyValue",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.maven.ExcludeDependency",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.maven.IncrementProjectVersion",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.maven.ManageDependencies",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.maven.NormalizeMavenVariables",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.maven.OrderPomElements",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.maven.RemoveDependency",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.maven.RemoveDuplicateDependencies",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.maven.RemoveExclusion",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.maven.RemoveManagedDependency",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.maven.RemovePlugin",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.maven.RemovePluginDependency",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.maven.RemoveProperty",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.maven.RemoveRedundantDependencyVersions",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.maven.RemoveRepository",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.maven.RenamePropertyKey",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.maven.UpdateMavenWrapper",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.maven.UpgradeDependencyVersion",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.maven.UpgradeParentVersion",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.maven.UpgradePluginVersion",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.maven.cleanup.DependencyManagementDependencyRequiresVersion",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.maven.search.DependencyInsight",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.maven.search.DoesNotIncludeDependency",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.maven.search.EffectiveDependencies",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.maven.search.EffectiveManagedDependencies",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.maven.search.EffectiveMavenRepositories",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.maven.search.FindDependency",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.maven.search.FindMavenSettings",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.maven.search.FindPlugin",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.maven.search.FindProperties",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.maven.search.FindRepositoryOrder",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.maven.security.UseHttpsForRepositories",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.maven.spring.UpgradeExplicitSpringBootDependencies",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.maven.utilities.PrintMavenAsDot",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.properties.AddProperty",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.properties.ChangePropertyKey",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.properties.ChangePropertyValue",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.properties.DeleteProperty",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.properties.search.FindProperties",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.search.FindBuildMetadata",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.search.FindParseToPrintInequality",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.AddSerialVersionUidToSerializable",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.AtomicPrimitiveEqualsUsesGet",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.AvoidBoxedBooleanExpressions",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.BigDecimalRoundingConstantsToEnums",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.BooleanChecksNotInverted",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.CaseInsensitiveComparisonsDoNotChangeCase",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.CatchClauseOnlyRethrows",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.ChainStringBuilderAppendCalls",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.CombineSemanticallyEqualCatchBlocks",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.CompareEnumsWithEqualityOperator",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.ControlFlowIndentation",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.CovariantEquals",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.DeclarationSiteTypeVariance",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.DefaultComesLast",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.EmptyBlock",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.EqualsAvoidsNull",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.EqualsToContentEquals",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.ExplicitCharsetOnStringGetBytes",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.ExplicitInitialization",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.ExplicitLambdaArgumentTypes",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.ExternalizableHasNoArgsConstructor",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.FallThrough",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.FinalClass",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.FinalizeLocalVariables",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.FinalizeMethodArguments",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.FinalizePrivateFields",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.FixStringFormatExpressions",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.ForLoopControlVariablePostfixOperators",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.ForLoopIncrementInUpdate",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.HiddenField",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.HideUtilityClassConstructor",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.IndexOfChecksShouldUseAStartPosition",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.IndexOfReplaceableByContains",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.IndexOfShouldNotCompareGreaterThanZero",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.InlineVariable",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.InstanceOfPatternMatch",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.IsEmptyCallOnCollections",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.LambdaBlockToExpression",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.LowercasePackage",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.MethodNameCasing",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.MinimumSwitchCases",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.MissingOverrideAnnotation",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.ModifierOrder",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.MultipleVariableDeclarations",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.NeedBraces",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.NestedEnumsAreNotStatic",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.NewStringBuilderBufferWithCharArgument",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.NoDoubleBraceInitialization",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.NoEmptyCollectionWithRawType",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.NoEqualityInForCondition",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.NoFinalizedLocalVariables",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.NoFinalizer",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.NoPrimitiveWrappersForToStringOrCompareTo",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.NoRedundantJumpStatements",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.NoToStringOnStringType",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.NoValueOfOnStringType",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.ObjectFinalizeCallsSuper",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.OperatorWrap",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.PrimitiveWrapperClassConstructorToValueOf",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.RedundantFileCreation",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.ReferentialEqualityToObjectEquals",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.RemoveCallsToObjectFinalize",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.RemoveCallsToSystemGc",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.RemoveEmptyJavaDocParameters",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.RemoveExtraSemicolons",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.RemoveHashCodeCallsFromArrayInstances",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.RemoveInstanceOfPatternMatch",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.RemoveJavaDocAuthorTag",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.RemoveRedundantTypeCast",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.RemoveSystemOutPrintln",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.RemoveToStringCallsFromArrayInstances",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.RemoveUnneededAssertion",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.RemoveUnneededBlock",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.RemoveUnusedLocalVariables",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.RemoveUnusedPrivateFields",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.RemoveUnusedPrivateMethods",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.RenameExceptionInEmptyCatch",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.RenameLocalVariablesToCamelCase",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.RenameMethodsNamedHashcodeEqualOrTostring",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.RenamePrivateFieldsToCamelCase",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.ReplaceDeprecatedRuntimeExecMethods",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.ReplaceDuplicateStringLiterals",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.ReplaceLambdaWithMethodReference",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.ReplaceOptionalIsPresentWithIfPresent",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.ReplaceRedundantFormatWithPrintf",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.ReplaceStackWithDeque",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.ReplaceStreamToListWithCollect",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.ReplaceStringBuilderWithString",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.ReplaceTextBlockWithString",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.ReplaceValidateNotNullHavingVarargsWithObjectsRequireNonNull",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.ReplaceWeekYearWithYear",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.SimplifyBooleanExpression",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.SimplifyBooleanReturn",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.SimplifyCompoundStatement",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.SimplifyConsecutiveAssignments",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.SimplifyConstantIfBranchExecution",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.SimplifyDurationCreationUnits",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.SortedSetStreamToLinkedHashSet",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.StaticMethodNotFinal",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.StringLiteralEquality",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.TernaryOperatorsShouldNotBeNested",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.TypecastParenPad",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.UnnecessaryCatch",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.UnnecessaryCloseInTryWithResources",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.UnnecessaryExplicitTypeArguments",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.UnnecessaryParentheses",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.UnnecessaryPrimitiveAnnotations",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.UnnecessaryThrows",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.UnwrapRepeatableAnnotations",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.UpperCaseLiteralSuffixes",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.UseAsBuilder",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.UseCollectionInterfaces",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.UseDiamondOperator",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.UseForEachRemoveInsteadOfSetRemoveAll",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.UseJavaStyleArrayDeclarations",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.UseLambdaForFunctionalInterface",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.UseListSort",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.UseObjectNotifyAll",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.UseStandardCharset",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.UseStringReplace",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.UseSystemLineSeparator",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.WhileInsteadOfFor",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.staticanalysis.WriteOctalValuesAsDecimal",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.text.AppendToTextFile",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.text.ChangeText",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.text.CreateTextFile",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.text.EndOfLineAtEndOfFile",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.text.Find",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.text.FindAndReplace",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.text.FindMultiselect",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.xml.AddCommentToXmlTag",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.xml.ChangeNamespaceValue",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.xml.ChangeTagAttribute",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.xml.ChangeTagName",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.xml.ChangeTagValue",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.xml.RemoveTrailingWhitespace",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.xml.RemoveXmlTag",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.xml.format.AutoFormat",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.xml.format.LineBreaks",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.xml.format.NormalizeFormat",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.xml.format.NormalizeLineBreaks",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.xml.format.NormalizeTabsOrSpaces",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.xml.format.TabsAndIndents",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.xml.search.FindTags",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.xml.security.AddOwaspDateBoundSuppressions",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.xml.security.IsOwaspSuppressionsFile",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.xml.security.RemoveOwaspSuppressions",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.xml.security.UpdateOwaspSuppressionDate",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.yaml.AppendToSequence",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.yaml.ChangeKey",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.yaml.ChangePropertyKey",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.yaml.ChangePropertyValue",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.yaml.ChangeValue",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.yaml.CoalesceProperties",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.yaml.CommentOutProperty",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.yaml.CopyValue",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.yaml.DeleteKey",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.yaml.DeleteProperty",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.yaml.MergeYaml",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.yaml.cleanup.RemoveUnused",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.yaml.format.Indents",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.yaml.search.FindKey",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.openrewrite.yaml.search.FindProperty",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.springframework.ide.vscode.commons.rewrite.java.BeanPostProcessingIgnoreInAot",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.springframework.ide.vscode.commons.rewrite.java.ConvertAutowiredFieldIntoConstructorParameter",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.springframework.ide.vscode.commons.rewrite.java.DefineMethod",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.springframework.ide.vscode.commons.rewrite.java.NoRequestMappingAnnotation",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "org.springframework.ide.vscode.commons.rewrite.java.ORAstUtils$NodeRecipe",
+    "allDeclaredFields": true,
+    "methods": [
+      {
+        "name": "\u003cinit\u003e",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name":"nonapi.io.github.classgraph.classloaderhandler.AntClassLoaderHandler",
+    "methods":[
+      {"name":"canHandle","parameterTypes":["java.lang.Class", "nonapi.io.github.classgraph.utils.LogNode"] },
+      {"name": "findClassLoaderOrder","parameterTypes":["java.lang.ClassLoader", "nonapi.io.github.classgraph.classpath.ClassLoaderOrder", "nonapi.io.github.classgraph.utils.LogNode"]}
+    ]
+  },
+  {
+    "name":"org.openrewrite.java.Java17Parser",
+    "methods":[{"name":"builder","parameterTypes":[] }]
+  },
+  {
+    "name":"org.openrewrite.java.isolated.ReloadableJava17Parser",
+    "methods":[{"name":"<init>","parameterTypes":["boolean","java.util.Collection","java.util.Collection","java.util.Collection","java.nio.charset.Charset","java.util.Collection","org.openrewrite.java.internal.JavaTypeCache"] }]
+  },
+  {
+    "name":"org.openrewrite.marker.Range",
+    "allDeclaredFields":true
+  },
+  {
+    "name":"org.openrewrite.marker.Range$Position",
+    "allDeclaredFields":true
+  }
+]
