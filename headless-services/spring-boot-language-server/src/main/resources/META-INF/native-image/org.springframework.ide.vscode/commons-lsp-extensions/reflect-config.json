@@ -1,0 +1,173 @@
+[
+  {
+    "name": "org.springframework.ide.vscode.commons.protocol.STS4LanguageClient",
+    "queryAllDeclaredMethods": true
+  },
+  {
+    "name": "org.springframework.ide.vscode.commons.protocol.spring.SpringIndex",
+    "queryAllDeclaredMethods": true
+  },
+  {
+    "name": "org.springframework.ide.vscode.commons.protocol.spring.SpringIndexLanguageClient",
+    "queryAllDeclaredMethods": true
+  },
+  {
+    "name": "org.springframework.ide.vscode.commons.protocol.spring.SpringIndexLanguageServer",
+    "queryAllDeclaredMethods": true
+  },
+  {
+    "name": "org.springframework.ide.vscode.commons.protocol.CursorMovement",
+    "allDeclaredFields": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name": "org.springframework.ide.vscode.commons.protocol.HighlightParams",
+    "allDeclaredFields": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name": "org.springframework.ide.vscode.commons.protocol.LiveProcessSummary",
+    "allDeclaredFields": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name": "org.springframework.ide.vscode.commons.protocol.ProgressParams",
+    "allDeclaredFields": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name": "org.springframework.ide.vscode.commons.protocol.TypeHierarchyResponseAdapter",
+    "allDeclaredFields": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name": "org.springframework.ide.vscode.commons.protocol.java.Classpath",
+    "allDeclaredFields": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name": "org.springframework.ide.vscode.commons.protocol.java.Classpath$CPE",
+    "allDeclaredFields": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name": "org.springframework.ide.vscode.commons.protocol.java.ClasspathListenerParams",
+    "allDeclaredFields": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name": "org.springframework.ide.vscode.commons.protocol.java.JavaCodeCompleteData",
+    "allDeclaredFields": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name": "org.springframework.ide.vscode.commons.protocol.java.JavaCodeCompleteParams",
+    "allDeclaredFields": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name": "org.springframework.ide.vscode.commons.protocol.java.JavaDataParams",
+    "allDeclaredFields": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name": "org.springframework.ide.vscode.commons.protocol.java.JavaElementData",
+    "allDeclaredFields": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name": "org.springframework.ide.vscode.commons.protocol.java.JavaSearchParams",
+    "allDeclaredFields": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name": "org.springframework.ide.vscode.commons.protocol.java.JavaSearchParams$SearchType",
+    "allDeclaredFields": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name": "org.springframework.ide.vscode.commons.protocol.java.JavaTypeData",
+    "allDeclaredFields": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name": "org.springframework.ide.vscode.commons.protocol.java.JavaTypeData$JavaTypeKind",
+    "allDeclaredFields": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name": "org.springframework.ide.vscode.commons.protocol.java.JavaTypeHierarchyParams",
+    "allDeclaredFields": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name": "org.springframework.ide.vscode.commons.protocol.java.MemberData",
+    "allDeclaredFields": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name": "org.springframework.ide.vscode.commons.protocol.java.ProjectBuild",
+    "allDeclaredFields": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name": "org.springframework.ide.vscode.commons.protocol.java.SearchMatch",
+    "allDeclaredFields": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name": "org.springframework.ide.vscode.commons.protocol.java.TypeData",
+    "allDeclaredFields": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name": "org.springframework.ide.vscode.commons.protocol.java.TypeData$AnnotationData",
+    "allDeclaredFields": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name": "org.springframework.ide.vscode.commons.protocol.java.TypeData$ClasspathEntryData",
+    "allDeclaredFields": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name": "org.springframework.ide.vscode.commons.protocol.java.TypeData$FieldData",
+    "allDeclaredFields": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name": "org.springframework.ide.vscode.commons.protocol.java.TypeData$MethodData",
+    "allDeclaredFields": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name": "org.springframework.ide.vscode.commons.protocol.java.TypeDescriptorData",
+    "allDeclaredFields": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name": "org.springframework.ide.vscode.commons.protocol.spring.Bean",
+    "allDeclaredFields": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name": "org.springframework.ide.vscode.commons.protocol.spring.BeansParams",
+    "allDeclaredFields": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name": "org.springframework.ide.vscode.commons.protocol.spring.DefaultValues",
+    "allDeclaredFields": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name": "org.springframework.ide.vscode.commons.protocol.spring.InjectionPoint",
+    "allDeclaredFields": true,
+    "allPublicConstructors": true
+  },
+  {
+    "name": "org.springframework.ide.vscode.commons.protocol.spring.MatchingBeansParams",
+    "allDeclaredFields": true,
+    "allPublicConstructors": true
+  }
+]

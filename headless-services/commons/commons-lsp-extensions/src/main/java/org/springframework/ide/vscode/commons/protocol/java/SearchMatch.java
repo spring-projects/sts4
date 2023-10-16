@@ -16,7 +16,6 @@ public class SearchMatch<T> {
 	private double score;
 	
 	public SearchMatch(T element, double score) {
-		super();
 		this.element = element;
 		this.score = score;
 	}

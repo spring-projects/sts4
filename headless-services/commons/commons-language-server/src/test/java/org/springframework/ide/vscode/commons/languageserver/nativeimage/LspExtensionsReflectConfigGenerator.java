@@ -23,17 +23,16 @@ import com.google.gson.JsonObject;
 import io.github.classgraph.ClassGraph;
 import io.github.classgraph.ScanResult;
 
-public class Lsp4jReflectConfigGenerator {
-
+public class LspExtensionsReflectConfigGenerator {
+	
 	public static final void main(String[] args) throws JsonIOException, IOException {
 		
 		Gson gson = new GsonBuilder().setPrettyPrinting().create();
 		
 		JsonArray array = new JsonArray();
 
-		generatePojoJson().forEach(array::add);
-		generateServicesJson().forEach(array::add);
-		generateTypeAdaptersJson().forEach(array::add);
+		generateLspExtensionsInterfacesJson().forEach(array::add);
+		generateLspExtensionsPojoJson().forEach(array::add);
 		
 		if (args.length > 0) {
 			System.out.println("ARG: " + args[0] + " array size = " + array.size());
@@ -45,45 +44,27 @@ public class Lsp4jReflectConfigGenerator {
 			System.out.println(gson.toJson(array));
 		}
 	}
-	
-	private static Stream<JsonObject> generatePojoJson() {
-		ScanResult res = new ClassGraph().ignoreParentClassLoaders().enableMethodInfo().acceptPackagesNonRecursive("org.eclipse.lsp4j").scan();
-		return res.getAllStandardClasses().stream().filter(ci -> ci.getDeclaredConstructorInfo().stream().anyMatch(m -> m.getParameterInfo().length == 0)).map(ci -> {
+
+	private static Stream<JsonObject> generateLspExtensionsPojoJson() {
+		ScanResult res = new ClassGraph().ignoreParentClassLoaders().enableMethodInfo().acceptPackages("org.springframework.ide.vscode.commons.protocol").scan();
+		return res.getAllStandardClasses().stream().map(ci -> {
 			JsonObject obj = new JsonObject();
 			obj.addProperty("name", ci.getName());
 			obj.addProperty("allDeclaredFields", true);
-			obj.add("methods", Lsp4jReflectConfigGenerator.noArgsConstructorOnly());
+			obj.addProperty("allPublicConstructors", true);
 			return obj;
 		});
 	}
 	
-	private static Stream<JsonObject> generateServicesJson() {
-		ScanResult res = new ClassGraph().ignoreParentClassLoaders().acceptPackagesNonRecursive("org.eclipse.lsp4j.services").scan();
+	private static Stream<JsonObject> generateLspExtensionsInterfacesJson() {
+		ScanResult res = new ClassGraph().ignoreParentClassLoaders().enableMethodInfo().acceptPackages("org.springframework.ide.vscode.commons.protocol").scan();
 		return res.getAllInterfaces().stream().map(ci -> {
 			JsonObject obj = new JsonObject();
 			obj.addProperty("name", ci.getName());
-			obj.addProperty("allDeclaredMethods", true);
+			obj.addProperty("queryAllDeclaredMethods", true);
+			obj.addProperty("queryAllPublicMethods", true);
 			return obj;
 		});
-	}
-	
-	private static Stream<JsonObject> generateTypeAdaptersJson() {
-		ScanResult res = new ClassGraph().ignoreParentClassLoaders().enableMethodInfo().acceptPackagesNonRecursive("org.eclipse.lsp4j.adapters").scan();
-		return res.getAllStandardClasses().stream().filter(ci -> ci.getDeclaredConstructorInfo().stream().anyMatch(m -> m.getParameterInfo().length == 0)).map(ci -> {
-			JsonObject obj = new JsonObject();
-			obj.addProperty("name", ci.getName());
-			obj.add("methods", Lsp4jReflectConfigGenerator.noArgsConstructorOnly());
-			return obj;
-		});
-	}
-	
-	static JsonArray noArgsConstructorOnly() {
-		JsonObject constr = new JsonObject();
-		constr.addProperty("name", "<init>");
-		constr.add("parameterTypes", new JsonArray());
-		JsonArray methods = new JsonArray(1);
-		methods.add(constr);
-		return methods;
 	}
 
 }
