@@ -52,6 +52,7 @@ import org.springframework.ide.vscode.commons.protocol.spring.Bean;
 import org.springframework.ide.vscode.commons.protocol.spring.BeansParams;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
+import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
@@ -279,7 +280,7 @@ public class ModulithService {
 						try {
 							log.info("Updating Modulith metadata for project '" + projectName + "'");
 							JsonObject json = JsonParser.parseReader(new FileReader(outputFile)).getAsJsonObject();
-							log.info("Modulith metadata: " + json);
+							log.info("Modulith metadata: " + new GsonBuilder().setPrettyPrinting().create().toJson(json));
 							return loadAppModules(json);
 						} catch (Exception e) {
 							log.error("", e);

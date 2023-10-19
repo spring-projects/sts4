@@ -14,9 +14,11 @@ import java.net.URI;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
+import org.eclipse.jdt.core.dom.ASTNode;
 import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
-import org.eclipse.jdt.core.dom.ImportDeclaration;
+import org.eclipse.jdt.core.dom.ITypeBinding;
+import org.eclipse.jdt.core.dom.QualifiedName;
 import org.eclipse.jdt.core.dom.SimpleType;
 import org.springframework.beans.BeansException;
 import org.springframework.context.ApplicationContext;
@@ -46,64 +48,36 @@ public class ModulithTypeReferenceViolationReconciler implements JdtAstReconcile
 			if (appModules != null) {
 				final String packageName = cu.getPackage().getName().getFullyQualifiedName();
 				cu.accept(new ASTVisitor() {
+
 					@Override
-					public boolean visit(ImportDeclaration node) {
-						if (!node.isOnDemand()) {
-							String typeFqName = node.getName().getFullyQualifiedName();
-							appModules.getModuleNotExposingType(packageName, getBinaryName(typeFqName)).ifPresent(module -> {
-								problemCollector.accept(new ReconcileProblemImpl(getProblemType(),
-										"Cannot use type in this package. Type is not exposed in module '"
-												+ module.name() + "'.",
-										node.getName().getStartPosition(), node.getName().getLength()));
-							});
-						}
-						return false;
+					public boolean visit(QualifiedName node) {
+						validate(node, node.resolveTypeBinding());
+						return super.visit(node);
 					}
 
 					@Override
 					public boolean visit(SimpleType node) {
-						if (node.getName().isQualifiedName()) {
-							appModules.getModuleNotExposingType(packageName, getBinaryName(node.getName().getFullyQualifiedName())).ifPresent(module -> {
+						validate(node.getName(), node.resolveBinding());
+						return super.visit(node);
+					}
+					
+					private void validate(ASTNode node, ITypeBinding type) {
+						if (type != null) {
+							appModules.getModuleNotExposingType(packageName, type.getBinaryName()).ifPresent(module -> {
 								problemCollector.accept(new ReconcileProblemImpl(getProblemType(),
 										"Cannot use type in this package. Type is not exposed in module '"
 												+ module.name() + "'.",
-										node.getName().getStartPosition(), node.getName().getLength()));
+										node.getStartPosition(), node.getLength()));
 							});
-						} else if (node.getName().isSimpleName()) {
-							String typeName = node.getName().getFullyQualifiedName();
-							for (Object i : cu.imports()) {
-								ImportDeclaration importDecl = (ImportDeclaration) i;
-								if (importDecl.isOnDemand()) {
-									appModules.getModuleNotExposingType(packageName, getBinaryName(importDecl.getName().getFullyQualifiedName() + "." + typeName)).ifPresent(module -> {
-										problemCollector.accept(new ReconcileProblemImpl(getProblemType(),
-												"Cannot use type in this package. Type is not exposed in module '"
-														+ module.name() + "'.",
-												node.getName().getStartPosition(), node.getName().getLength()));
-									});
-								}
-							}
 						}
-						return super.visit(node);
 					}
+
 				});
 				
 			}
 		}
 	}
 	
-	private static String getBinaryName(String fqName) {
-		String pkgName = ModulithService.getPackageNameFromTypeFQName(fqName);
-		if (pkgName.length() < fqName.length() - 1) {
-			String typeName = fqName.substring(pkgName.length() + 1);
-			StringBuilder sb = new StringBuilder();
-			sb.append(pkgName);
-			sb.append('.');
-			sb.append(typeName.replace('.', '$'));
-			return sb.toString();
-		}
-		return fqName;
-	}
-
 	@Override
 	public boolean isApplicable(IJavaProject project) {
 		return ModulithService.isModulithDependentProject(project);
