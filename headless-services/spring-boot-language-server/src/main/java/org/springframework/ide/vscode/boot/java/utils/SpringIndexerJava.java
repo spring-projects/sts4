@@ -299,7 +299,7 @@ public class SpringIndexerJava implements SpringIndexer {
 			SpringIndexerJavaContext context = new SpringIndexerJavaContext(project, cu, docURI, file,
 					lastModified, docRef, content, generatedSymbols, generatedBeans, problemCollector, SCAN_PASS.ONE, new ArrayList<>(), !ignoreMethodBodies);
 
-			scanAST(context);
+			scanAST(context, true);
 
 			IndexCacheKey symbolCacheKey = getCacheKey(project, SYMBOL_KEY);
 			IndexCacheKey beansCacheKey = getCacheKey(project, BEANS_KEY);
@@ -350,7 +350,7 @@ public class SpringIndexerJava implements SpringIndexer {
 				SpringIndexerJavaContext context = new SpringIndexerJavaContext(project, cu, docURI, file,
 						0, docRef, content, generatedSymbols, generatedBeans, voidProblemCollector, SCAN_PASS.ONE, new ArrayList<>(), true);
 
-				scanAST(context);
+				scanAST(context, false);
 
 				return generatedSymbols.stream().map(s -> s.getEnhancedSymbol()).collect(Collectors.toList());
 			});
@@ -408,7 +408,7 @@ public class SpringIndexerJava implements SpringIndexer {
 				SpringIndexerJavaContext context = new SpringIndexerJavaContext(project, cu, docURI, sourceFilePath,
 						lastModified, docRef, null, generatedSymbols, generatedBeans, problemCollector, SCAN_PASS.ONE, new ArrayList<>(), !ignoreMethodBodies);
 				
-				scanAST(context);
+				scanAST(context, true);
 				
 				dependencies.putAll(sourceFilePath, context.getDependencies());
 				scannedTypes.addAll(context.getScannedTypes());
@@ -559,7 +559,7 @@ public class SpringIndexerJava implements SpringIndexer {
 					SpringIndexerJavaContext context = new SpringIndexerJavaContext(project, cu, docURI, sourceFilePath,
 							lastModified, docRef, null, generatedSymbols, generatedBeans, problemCollector, pass, nextPassFiles, !ignoreMethodBodies);
 	
-					scanAST(context);
+					scanAST(context, true);
 					progressTask.increment();
 				}
 			};
@@ -584,7 +584,7 @@ public class SpringIndexerJava implements SpringIndexer {
 		}
 	}
 
-	private void scanAST(final SpringIndexerJavaContext context) {
+	private void scanAST(final SpringIndexerJavaContext context, boolean includeReconcile) {
 		context.getCu().accept(new ASTVisitor() {
 
 			@Override
@@ -647,8 +647,9 @@ public class SpringIndexerJava implements SpringIndexer {
 			}
 		});
 		
-		
-		reconcile(context);
+		if (includeReconcile) {
+			reconcile(context);
+		}
 		
 		dependencyTracker.update(context.getFile(), context.getDependencies());;
 	}
