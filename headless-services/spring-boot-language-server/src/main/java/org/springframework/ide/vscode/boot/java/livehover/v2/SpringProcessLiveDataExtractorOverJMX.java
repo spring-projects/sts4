@@ -299,6 +299,131 @@ public class SpringProcessLiveDataExtractorOverJMX {
 		};
 	}
 	
+	/**
+	 * @param processType 
+	 * @param processID if null, will be determined searching existing mbeans for that information (for remote processes via platform beans runtime name)
+	 * @param processName if null, will be determined searching existing mbeans for that information (for remote processes inferring the java command from the system properties)
+	 * @param currentData currently stored live data
+	 */
+	public SpringProcessLoggersData retrieveLoggersData(ProcessType processType, JMXConnector jmxConnector, String processID, String processName,
+			 SpringProcessLiveData currentData) {
+
+		try {
+			MBeanServerConnection connection = jmxConnector.getMBeanServerConnection();
+			String domain = getDomainForActuator(connection);
+
+			if (processID == null) {
+				processID = getProcessID(connection);
+			}
+
+			if (processName == null) {
+				Properties systemProperties = getSystemProperties(connection);
+				if (systemProperties != null) {
+					String javaCommand = getJavaCommand(systemProperties);
+					processName = getProcessName(javaCommand);
+				}
+			}
+
+			Loggers loggers = getLoggers(connection, domain);
+			System.out.println(loggers);
+
+			return new SpringProcessLoggersData(
+					processType,
+					processName,
+					processID,
+					loggers
+					);
+		}
+		catch (Exception e) {
+			log.error("error reading live metrics data from: " + processID + " - " + processName, e);
+		}
+
+		return null;
+	}
+	
+	public Loggers getLoggers(MBeanServerConnection connection, String domain) {
+
+		Object[] params1 = new Object[] {};
+		String[] signature =  new String[] {String.class.getName(), List.class.getName()};
+
+		try {
+			Object loggersData = getActuatorDataFromOperation(connection,
+					getObjectName(domain, "type=Endpoint,name=Loggers"), 
+					"loggers", 
+					params1, 
+					signature);
+			System.out.println(loggersData);
+			if (loggersData instanceof String) {
+				return gson.fromJson((String)loggersData, Loggers.class);
+			} else if(loggersData != null){
+				ObjectMapper objectMapper = new ObjectMapper();
+				return objectMapper.convertValue(loggersData, Loggers.class);
+			}
+		} catch (Exception e) {
+			log.error("", e);
+		}
+		return null;	
+	}
+	
+	public SpringProcessLoggersData changeLogLevel(ProcessType processType, JMXConnector jmxConnector,
+			String processID, String processName, SpringProcessLiveData currentData, Map<String, String> args) {
+		try {
+			MBeanServerConnection connection = jmxConnector.getMBeanServerConnection();
+			String domain = getDomainForActuator(connection);
+
+			if (processID == null) {
+				processID = getProcessID(connection);
+			}
+
+			if (processName == null) {
+				Properties systemProperties = getSystemProperties(connection);
+				if (systemProperties != null) {
+					String javaCommand = getJavaCommand(systemProperties);
+					processName = getProcessName(javaCommand);
+				}
+			}
+
+			Loggers loggers = changeLogLevel(connection, domain, args);
+			System.out.println(loggers);
+
+			return new SpringProcessLoggersData(
+					processType,
+					processName,
+					processID,
+					loggers
+					);
+		}
+		catch (Exception e) {
+			log.error("error reading live metrics data from: " + processID + " - " + processName, e);
+		}
+
+		return null;
+	}
+	
+	public Loggers changeLogLevel(MBeanServerConnection connection, String domain, Map<String, String> args) {
+		
+		Object[] params = new Object[] {args.get("packageName")};
+		String[] signature =  new String[] {String.class.getName(), List.class.getName()};
+
+		try {
+			Object loggersData = getActuatorDataFromOperation(connection,
+					getObjectName(domain, "type=Endpoint,name=Loggers"), 
+					"loggers"+"/"+args.get("packageName"), 
+					params, 
+					signature);
+			System.out.println(loggersData);
+			if (loggersData instanceof String) {
+				return gson.fromJson((String)loggersData, Loggers.class);
+			} else if(loggersData != null){
+				ObjectMapper objectMapper = new ObjectMapper();
+				return objectMapper.convertValue(loggersData, Loggers.class);
+			}
+		} catch (Exception e) {
+			log.error("", e);
+		}
+		return null;	
+	}
+	
 	private StartupMetricsModel getStartupMetrics(MBeanServerConnection connection, String domain, StartupMetricsModel currentStartup) {
 		if (currentStartup != null) {
 			return currentStartup;
@@ -750,7 +875,5 @@ public class SpringProcessLiveDataExtractorOverJMX {
 		}
 		return null;
 	}
-
-
 
 }

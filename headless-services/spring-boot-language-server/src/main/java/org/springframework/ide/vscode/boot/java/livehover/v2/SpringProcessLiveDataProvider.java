@@ -29,6 +29,7 @@ public class SpringProcessLiveDataProvider {
 	private final ConcurrentMap<String, SpringProcessLiveData> liveData;
 	private final ConcurrentMap<String, SpringProcessMemoryMetricsLiveData> memoryMetricsLiveData;
 	private final ConcurrentMap<String, SpringProcessGcPausesMetricsLiveData> gcPausesMetricsLiveData;
+	private final ConcurrentMap<String, SpringProcessLoggersData> loggersData;
 	private final List<SpringProcessLiveDataChangeListener> listeners;
 	private final SimpleLanguageServer server;
 	
@@ -37,6 +38,7 @@ public class SpringProcessLiveDataProvider {
 		this.liveData = new ConcurrentHashMap<>();
 		this.memoryMetricsLiveData = new ConcurrentHashMap<>();
 		this.gcPausesMetricsLiveData = new ConcurrentHashMap<>();
+		this.loggersData = new ConcurrentHashMap<>();
 		this.listeners = new CopyOnWriteArrayList<>();
 	}
 	
@@ -73,6 +75,14 @@ public class SpringProcessLiveDataProvider {
 		}
 		return oldData == null;
 	}
+	
+	public boolean addLoggers(String processKey, SpringProcessLoggersData loggerData) {
+		SpringProcessLoggersData oldData = this.loggersData.putIfAbsent(processKey, loggerData);
+		if (oldData == null) {
+			getClient().liveProcessLoggersDataUpdated(createLoggersSummary(processKey, loggerData));
+		}
+		return oldData == null;
+	}
 
 	private STS4LanguageClient getClient() {
 		STS4LanguageClient client = server.getClient();
@@ -104,6 +114,17 @@ public class SpringProcessLiveDataProvider {
 		getClient().liveProcessGcPausesMetricsDataUpdated(createGcPausesMetricsSummary(processKey, liveData));
 	}
 	
+	public void updateLoggers(String processKey, SpringProcessLoggersData loggersData) {
+		this.loggersData.put(processKey, loggersData);
+		getClient().liveProcessLoggersDataUpdated(createLoggersSummary(processKey, loggersData));
+	}
+	
+	public void updateLogLevel(String processKey, SpringProcessLoggersData loggersData) {
+		this.loggersData.put(processKey, loggersData);
+		getClient().liveProcessLogLevelUpdated(createLoggersSummary(processKey, loggersData));
+	}
+
+	
 	public void addLiveDataChangeListener(SpringProcessLiveDataChangeListener listener) {
 		this.listeners.add(listener);
 	}
@@ -131,6 +152,10 @@ public class SpringProcessLiveDataProvider {
 	public SpringProcessGcPausesMetricsLiveData getGcPausesMetrics(String processKey) {
 		return this.gcPausesMetricsLiveData.get(processKey);
 	}
+	
+	public SpringProcessLoggersData getLoggersData(String processKey) {
+		return this.loggersData.get(processKey);
+	}
 
 	public static LiveProcessSummary createProcessSummary(String processKey, SpringProcessLiveData liveData) {
 		LiveProcessSummary p = new LiveProcessSummary();
@@ -156,6 +181,15 @@ public class SpringProcessLiveDataProvider {
         p.setProcessKey(processKey);
         p.setProcessName(liveData.getProcessName());
         p.setPid(liveData.getProcessID());
+        return p;
+    }
+	
+	public static LiveProcessSummary createLoggersSummary(String processKey, SpringProcessLoggersData loggersData) {
+        LiveProcessSummary p = new LiveProcessSummary();
+        p.setType(loggersData.getProcessType().jsonName());
+        p.setProcessKey(processKey);
+        p.setProcessName(loggersData.getProcessName());
+        p.setPid(loggersData.getProcessID());
         return p;
     }
 

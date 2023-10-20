@@ -210,6 +210,52 @@ public class SpringProcessConnectorOverJMX implements SpringProcessConnector {
 			log.error("error closing the JMX connection for: " + jmxURL, e);
 		}
 	}
+	
+	@Override
+	public SpringProcessLoggersData getLoggers(SpringProcessLiveData currentData) throws Exception {
+		log.info("try to open JMX connection to: " + jmxURL);
+
+		if (jmxConnection != null) {
+			try {
+				SpringProcessLiveDataExtractorOverJMX springJMXConnector = new SpringProcessLiveDataExtractorOverJMX();
+
+				log.info("retrieve live data from: " + jmxURL);
+				SpringProcessLoggersData loggersData = springJMXConnector.retrieveLoggersData(getProcessType(), jmxConnection, processID, processName, currentData);
+
+				if (loggersData != null) {
+					return loggersData;
+				}
+			}
+			catch (Exception e) {
+				log.error("exception while connecting to jmx: " + jmxURL, e);
+			}
+		}
+
+		throw new Exception("no loggers data received, lets try again");
+	}
+	
+	@Override
+	public void changeLogLevel(SpringProcessLiveData currentData, Map<String, String> args) throws Exception {
+		log.info("try to open JMX connection to: " + jmxURL);
+
+		if (jmxConnection != null) {
+			try {
+				SpringProcessLiveDataExtractorOverJMX springJMXConnector = new SpringProcessLiveDataExtractorOverJMX();
+
+				log.info("retrieve live data from: " + jmxURL);
+				springJMXConnector.changeLogLevel(getProcessType(), jmxConnection, processID, processName, currentData, args);
+
+//				if (loggersData != null) {
+//					return loggersData;
+//				}
+			}
+			catch (Exception e) {
+				log.error("exception while connecting to jmx: " + jmxURL, e);
+			}
+		}
+
+		throw new Exception("no loggers data received, lets try again");
+	}
 
 	@Override
 	public void addConnectorChangeListener(SpringProcessConnectionChangeListener listener) {

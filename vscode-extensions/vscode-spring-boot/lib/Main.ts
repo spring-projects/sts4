@@ -13,6 +13,7 @@ import { ApiManager } from "./apiManager";
 import { ExtensionAPI } from "./api";
 import {registerClasspathService} from "@pivotal-tools/commons-vscode/lib/classpath";
 import {registerJavaDataService} from "@pivotal-tools/commons-vscode/lib/java-data";
+import * as setLogLevelUi from './set-log-levels-ui';
 
 const PROPERTIES_LANGUAGE_ID = "spring-boot-properties";
 const YAML_LANGUAGE_ID = "spring-boot-properties-yaml";
@@ -28,7 +29,7 @@ export function activate(context: VSCode.ExtensionContext): Thenable<ExtensionAP
     // registerPipelineGenerator(context);
     let options : commons.ActivatorOptions = {
         DEBUG: false,
-        CONNECT_TO_LS: false,
+        CONNECT_TO_LS: true,
         extensionId: 'vscode-spring-boot',
         preferJdk: true,
         jvmHeap: '1024m',
@@ -146,6 +147,7 @@ export function activate(context: VSCode.ExtensionContext): Thenable<ExtensionAP
         VSCode.commands.registerCommand('vscode-spring-boot.ls.stop', () => client.stop());
         liveHoverUi.activate(client, options, context);
         rewrite.activate(client, options, context);
+        setLogLevelUi.activate(client, options, context);
 
         VSCode.commands.registerCommand('vscode-spring-boot.spring.modulith.metadata.refresh', async () => {
             const modulithProjects = await VSCode.commands.executeCommand('sts/modulith/projects');

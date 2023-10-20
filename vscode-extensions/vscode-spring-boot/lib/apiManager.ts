@@ -8,8 +8,11 @@ import {
     LiveProcessUpdatedNotification,
     LiveProcessGcPausesMetricsUpdatedNotification,
     LiveProcessMemoryMetricsUpdatedNotification,
-    SpringIndexUpdatedNotification
+    SpringIndexUpdatedNotification,
+    // LiveProcessLoggersUpdatedNotification,
+    // LiveProcessLogLevelUpdatedNotification
 } from "./notification";
+import * as setLogLevelUi from './set-log-levels-ui';
 import VSCode from "vscode";
 import {RequestType} from "vscode-languageclient";
 
@@ -21,6 +24,7 @@ export class ApiManager {
     private onDidLiveProcessGcPausesMetricsUpdateEmitter: Emitter<LiveProcess> = new Emitter<LiveProcess>();
     private onDidLiveProcessMemoryMetricsUpdateEmitter: Emitter<LiveProcess> = new Emitter<LiveProcess>();
     private onSpringIndexUpdateEmitter: Emitter<void> = new Emitter<void>();
+    // private onDidLiveProcessLoggersUpdateEmitter: Emitter<LiveProcess> = new Emitter<LiveProcess>();
 
     public constructor(client: LanguageClient) {
         const onDidLiveProcessConnect = this.onDidLiveProcessConnectEmitter.event;
@@ -29,6 +33,7 @@ export class ApiManager {
         const onDidLiveProcessGcPausesMetricsUpdate = this.onDidLiveProcessGcPausesMetricsUpdateEmitter.event;
         const onDidLiveProcessMemoryMetricsUpdate = this.onDidLiveProcessMemoryMetricsUpdateEmitter.event;
         const onSpringIndexUpdated = this.onSpringIndexUpdateEmitter.event;
+        // const onDidLiveProcessLoggersUpdate = this.onDidLiveProcessLoggersUpdateEmitter.event;
 
         const COMMAND_LIVEDATA_GET = "sts/livedata/get";
         const getLiveProcessData = async (query) => {
@@ -60,6 +65,7 @@ export class ApiManager {
         client.onNotification(LiveProcessUpdatedNotification.type, (process: LiveProcess) => this.onDidLiveProcessUpdateEmitter.fire(process));
         client.onNotification(LiveProcessGcPausesMetricsUpdatedNotification.type, (process: LiveProcess) => this.onDidLiveProcessGcPausesMetricsUpdateEmitter.fire(process));
         client.onNotification(LiveProcessMemoryMetricsUpdatedNotification.type, (process: LiveProcess) => this.onDidLiveProcessMemoryMetricsUpdateEmitter.fire(process));
+        // client.onNotification(LiveProcessLoggersUpdatedNotification.type, setLogLevelUi.getLoggersList() );
 
         client.onNotification(SpringIndexUpdatedNotification.type, () => this.onSpringIndexUpdateEmitter.fire());
 
@@ -85,6 +91,7 @@ export class ApiManager {
             getLiveProcessMetricsData,
             refreshLiveProcessMetricsData,
             listConnectedProcesses,
+            // onDidLiveProcessLoggersUpdate,
             getSpringIndex
         };
     }

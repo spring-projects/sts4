@@ -129,6 +129,11 @@
         "command": "vscode-spring-boot.spring.modulith.metadata.refresh",
         "title": "Refresh Modulith Metadata",
         "category": "Spring Boot"
+      },
+      {
+        "command": "vscode-spring-boot.set.log-levels",
+        "title": "Set Log Levels",
+        "category": "Spring Boot"
       }
     ],
     "configuration": [

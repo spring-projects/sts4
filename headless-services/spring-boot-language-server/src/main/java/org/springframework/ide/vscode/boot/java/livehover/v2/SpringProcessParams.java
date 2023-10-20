@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.livehover.v2;
 
+import java.util.Map;
+
 /**
  * @author V Udayani 
  */
@@ -19,7 +21,7 @@ public class SpringProcessParams {
 	private String endpoint;
 	private String metricName;
 	private String tags;
-	
+	private Map<String, String> args;
 	public SpringProcessParams() {     
     }
 	
@@ -61,5 +63,13 @@ public class SpringProcessParams {
     public void setTags(String tags) {
         this.tags = tags;
     }
+
+	public Map<String, String> getArgs() {
+		return args;
+	}
+
+	public void setArgs(Map<String, String> args) {
+		this.args = args;
+	}
 
 }
