@@ -56,6 +56,7 @@ import org.springframework.ide.vscode.boot.java.handlers.EnhancedSymbolInformati
 import org.springframework.ide.vscode.boot.java.handlers.SymbolAddOnInformation;
 import org.springframework.ide.vscode.boot.java.handlers.SymbolProvider;
 import org.springframework.ide.vscode.boot.java.reconcilers.JdtReconciler;
+import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
 import org.springframework.ide.vscode.boot.java.utils.DocumentDescriptor;
 import org.springframework.ide.vscode.boot.java.utils.SpringFactoriesIndexer;
 import org.springframework.ide.vscode.boot.java.utils.SpringIndexer;
@@ -102,6 +103,7 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 	@Autowired FutureProjectFinder futureProjectFinder;
 	@Autowired SpringMetamodelIndex springIndex;
 	@Autowired JdtReconciler jdtReconciler;
+	@Autowired CompilationUnitCache cuCache;
 
 	private static final String QUERY_PARAM_LOCATION_PREFIX = "locationPrefix:";
 
@@ -246,10 +248,8 @@ public class SpringSymbolIndex implements InitializingBean, SpringIndex {
 		namespaceHandler.put("http://www.springframework.org/schema/beans", new SpringIndexerXMLNamespaceHandlerBeans());
 		springIndexerXML = new SpringIndexerXML(handler, namespaceHandler, this.cache, projectFinder());
 		
-		
 		BiFunction<AtomicReference<TextDocument>, BiConsumer<String, Diagnostic>, IProblemCollector> problemCollectorFactory = (docRef, aggregator) -> server.createProblemCollector(docRef, aggregator);
-		springIndexerJava = new SpringIndexerJava(handler, specificProviders, this.cache, projectFinder(), server.getProgressService(), jdtReconciler, problemCollectorFactory, config.getJavaValidationSettingsJson());
-
+		springIndexerJava = new SpringIndexerJava(handler, specificProviders, this.cache, projectFinder(), server.getProgressService(), jdtReconciler, problemCollectorFactory, config.getJavaValidationSettingsJson(), cuCache);
 		factoriesIndexer = new SpringFactoriesIndexer(handler, cache);
 
 		this.indexers = new SpringIndexer[] {springIndexerJava, factoriesIndexer};

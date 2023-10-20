@@ -104,6 +104,7 @@ public class SpringIndexerJava implements SpringIndexer {
 	private final IndexCache cache;
 	private final JavaProjectFinder projectFinder;
 	private final ProgressService progressService;
+	private final CompilationUnitCache cuCache;
 
 	private boolean scanTestJavaSources = false;
 	private JsonObject validationSeveritySettings;
@@ -113,11 +114,11 @@ public class SpringIndexerJava implements SpringIndexer {
 	private final SpringIndexerJavaDependencyTracker dependencyTracker = new SpringIndexerJavaDependencyTracker();
 	private final BiFunction<AtomicReference<TextDocument>, BiConsumer<String, Diagnostic>, IProblemCollector> problemCollectorCreator;
 
-
+	
 	public SpringIndexerJava(SymbolHandler symbolHandler, AnnotationHierarchyAwareLookup<SymbolProvider> symbolProviders, IndexCache cache,
 			JavaProjectFinder projectFimder, ProgressService progressService, JdtReconciler jdtReconciler,
 			BiFunction<AtomicReference<TextDocument>, BiConsumer<String, Diagnostic>, IProblemCollector> problemCollectorCreator,
-			JsonObject validationSeveritySettings) {
+			JsonObject validationSeveritySettings, CompilationUnitCache cuCache) {
 		this.symbolHandler = symbolHandler;
 		this.symbolProviders = symbolProviders;
 		this.reconciler = jdtReconciler;
@@ -127,6 +128,7 @@ public class SpringIndexerJava implements SpringIndexer {
 		
 		this.problemCollectorCreator = problemCollectorCreator;
 		this.validationSeveritySettings = validationSeveritySettings;
+		this.cuCache = cuCache;
 	}
 
 	public SpringIndexerJavaDependencyTracker getDependencyTracker() {
@@ -322,44 +324,36 @@ public class SpringIndexerJava implements SpringIndexer {
 	}
 	
 	public List<EnhancedSymbolInformation> computeSymbols(IJavaProject project, String docURI, String content) throws Exception {
-		final boolean ignoreMethodBodies = false;
-		ASTParser parser = createParser(project, ignoreMethodBodies);
-		
 		if (content != null) {
-			String unitName = docURI.substring(docURI.lastIndexOf("/"));
-			parser.setUnitName(unitName);
-			log.debug("Scan file: {}", unitName);
-			parser.setSource(content.toCharArray());
-
-			CompilationUnit cu = (CompilationUnit) parser.createAST(null);
-
-			if (cu != null) {
+			URI uri = URI.create(docURI);
+			
+			return cuCache.withCompilationUnit(project, uri, cu -> {
 				List<CachedSymbol> generatedSymbols = new ArrayList<CachedSymbol>();
 				List<CachedBean> generatedBeans = new ArrayList<CachedBean>();
-				
+
 				IProblemCollector voidProblemCollector = new IProblemCollector() {
 					@Override
 					public void endCollecting() {
 					}
-					
+
 					@Override
 					public void beginCollecting() {
 					}
-					
+
 					@Override
 					public void accept(ReconcileProblem problem) {
 					}
 				};
-				
+
 				AtomicReference<TextDocument> docRef = new AtomicReference<>();
 				String file = UriUtil.toFileString(docURI);
 				SpringIndexerJavaContext context = new SpringIndexerJavaContext(project, cu, docURI, file,
-						0, docRef, content, generatedSymbols, generatedBeans, voidProblemCollector, SCAN_PASS.ONE, new ArrayList<>(), !ignoreMethodBodies);
+						0, docRef, content, generatedSymbols, generatedBeans, voidProblemCollector, SCAN_PASS.ONE, new ArrayList<>(), true);
 
 				scanAST(context);
-				
+
 				return generatedSymbols.stream().map(s -> s.getEnhancedSymbol()).collect(Collectors.toList());
-			}
+			});
 		}
 		
 		return Collections.emptyList();
