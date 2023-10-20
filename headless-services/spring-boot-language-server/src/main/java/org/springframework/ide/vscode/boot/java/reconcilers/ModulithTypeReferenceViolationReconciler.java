@@ -65,8 +65,7 @@ public class ModulithTypeReferenceViolationReconciler implements JdtAstReconcile
 						if (type != null) {
 							appModules.getModuleNotExposingType(packageName, type.getBinaryName()).ifPresent(module -> {
 								problemCollector.accept(new ReconcileProblemImpl(getProblemType(),
-										"Cannot use type in this package. Type is not exposed in module '"
-												+ module.name() + "'.",
+										"Invalid reference to non-exposed type of module '%s'!".formatted(module.name()),
 										node.getStartPosition(), node.getLength()));
 							});
 						}
