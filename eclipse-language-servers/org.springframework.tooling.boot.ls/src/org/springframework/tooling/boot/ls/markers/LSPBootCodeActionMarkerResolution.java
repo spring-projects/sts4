@@ -23,7 +23,7 @@ public class LSPBootCodeActionMarkerResolution extends LSPCodeActionMarkerResolu
 	public IMarkerResolution[] getResolutions(IMarker marker) {
 		IMarkerResolution[] res = super.getResolutions(marker);
 		AtomicInteger relevance = new AtomicInteger(res.length);
-		return Arrays.stream(res).map(r -> new DelegateMarkerResolution(r, relevance.getAndDecrement()))
+		return Arrays.stream(res).map(r -> new DelegateMarkerResolution(marker, r, relevance.getAndDecrement()))
 				.toArray(IMarkerResolution[]::new);
 	}
 

@@ -25,8 +25,11 @@ public class DelegateMarkerResolution implements IMarkerResolution, IMarkerResol
 	final private IMarkerResolution delegate;
 	
 	final private int relevance;
+
+	final private IMarker marker;
 	
-	public DelegateMarkerResolution(IMarkerResolution res, int relevance) {
+	public DelegateMarkerResolution(IMarker marker, IMarkerResolution res, int relevance) {
+		this.marker = marker;
 		this.delegate = res;
 		this.relevance = relevance;
 	}
@@ -43,12 +46,12 @@ public class DelegateMarkerResolution implements IMarkerResolution, IMarkerResol
 
 	@Override
 	public void apply(IDocument document) {
-		throw new UnsupportedOperationException();
+		delegate.run(marker);
 	}
 
 	@Override
 	public Point getSelection(IDocument document) {
-		throw new UnsupportedOperationException();
+		return null;
 	}
 
 	@Override
@@ -58,7 +61,7 @@ public class DelegateMarkerResolution implements IMarkerResolution, IMarkerResol
 
 	@Override
 	public String getDisplayString() {
-		return getLabel();
+		return delegate.getLabel();
 	}
 
 	@Override
@@ -68,7 +71,7 @@ public class DelegateMarkerResolution implements IMarkerResolution, IMarkerResol
 
 	@Override
 	public IContextInformation getContextInformation() {
-		throw new UnsupportedOperationException();
+		return null;
 	}
 
 	@Override
