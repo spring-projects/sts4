@@ -17,6 +17,7 @@ import org.eclipse.core.resources.IMarker;
 import org.eclipse.lsp4e.operations.codeactions.LSPCodeActionMarkerResolution;
 import org.eclipse.ui.IMarkerResolution;
 
+@SuppressWarnings("restriction")
 public class LSPBootCodeActionMarkerResolution extends LSPCodeActionMarkerResolution {
 	
 	@Override

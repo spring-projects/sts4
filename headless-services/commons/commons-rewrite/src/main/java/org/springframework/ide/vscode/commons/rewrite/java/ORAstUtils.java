@@ -423,7 +423,7 @@ public class ORAstUtils {
     				if (tree instanceof J) {
     					J t = (J) tree;
         				if (condition.test(t)) {
-        					return (J) visitor.visit(t, ctx, getCursor());
+        					return (J) visitor.visit(t, ctx, getCursor().fork());
         				}
     				}
     				return super.visit(tree, ctx);

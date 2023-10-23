@@ -113,9 +113,9 @@
 		<commons-codec-version>1.13</commons-codec-version>
 
 		<!-- Rewrite specific properties -->
-		<rewrite-version>8.6.1</rewrite-version>
-		<rewrite-spring-version>5.0.10</rewrite-spring-version>
-		<rewrite-gradle-tooling-api-version>1.2.0</rewrite-gradle-tooling-api-version>
+		<rewrite-version>8.5.1</rewrite-version>
+		<rewrite-spring-version>5.0.11</rewrite-spring-version>
+		<rewrite-gradle-tooling-api-version>1.3.2</rewrite-gradle-tooling-api-version>
 		
 		<gradle-tooling.version>8.3</gradle-tooling.version>
 		<gradle-core.version>6.1.1</gradle-core.version>
