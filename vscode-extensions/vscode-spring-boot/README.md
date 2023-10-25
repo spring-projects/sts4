@@ -3,6 +3,8 @@
 VSCode extension and Language Server providing support for working with Spring Boot 
 `application.properties`, `application.yml` and `.java` files.
 
+> Note: this extension has a dependency on VS Code extension of [Language Support for Java&#8482;  by Red Hat](https://marketplace.visualstudio.com/items?itemName=redhat.java).
+
 # Usage:
 
 The extension will automatically activate when you edit files with the following
