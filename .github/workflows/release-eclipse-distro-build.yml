@@ -14,7 +14,7 @@ on:
 
 jobs:
 
-  e427-distro:
+  e428-distro:
     uses: ./.github/workflows/gh-hosted-eclipse-distro-build.yml
     with:
       eclipse_profile: 'e428'
@@ -23,7 +23,7 @@ jobs:
       sts4-language-servers-version: ${{ inputs.sts4-language-servers-version }}
     secrets: inherit
 
-  e428-distro:
+  e429-distro:
     uses: ./.github/workflows/gh-hosted-eclipse-distro-build.yml
     with:
       eclipse_profile: 'e429'
@@ -32,7 +32,7 @@ jobs:
       sts4-language-servers-version: ${{ inputs.sts4-language-servers-version }}
     secrets: inherit
 
-  e429-distro:
+  e430-distro:
     uses: ./.github/workflows/gh-hosted-eclipse-distro-build.yml
     with:
       eclipse_profile: 'e430'
