@@ -46,7 +46,7 @@ public class SpringProcessCommandHandler {
 	private static final String COMMAND_GET_REFRESH_METRICS = "sts/livedata/refresh/metrics";
 	private static final String COMMAND_GET_LOGGERS = "sts/livedata/getLoggers";
 	private static final String COMMAND_FETCH_LOGGERS_DATA = "sts/livedata/fetch/loggersData";
-	private static final String COMMAND_CHANGE_LOGLEVEL = "sts/livedata/change/logLevel";
+	private static final String COMMAND_CONFIGURE_LOGLEVEL = "sts/livedata/configure/logLevel";
 	
 	private final SpringProcessConnectorService connectorService;
 	private final SpringProcessConnectorLocal localProcessConnector;
@@ -103,10 +103,10 @@ public class SpringProcessCommandHandler {
 		});
 		log.info("Registered command handler: {}",COMMAND_FETCH_LOGGERS_DATA);
 		
-		server.onCommand(COMMAND_CHANGE_LOGLEVEL, (params) -> {
-			return changeLogLevel(params);
+		server.onCommand(COMMAND_CONFIGURE_LOGLEVEL, (params) -> {
+			return configureLogLevel(params);
 		});
-		log.info("Registered command handler: {}",COMMAND_CHANGE_LOGLEVEL);
+		log.info("Registered command handler: {}",COMMAND_CONFIGURE_LOGLEVEL);
 		
 		server.onCommand(COMMAND_LIST_CONNECTED, (params) -> {
 			List<LiveProcessSummary> result = new ArrayList<>();
@@ -361,17 +361,18 @@ public class SpringProcessCommandHandler {
 		return CompletableFuture.completedFuture(null);
 	}
 	
-	private CompletableFuture<Object> changeLogLevel(ExecuteCommandParams params) {
+	private CompletableFuture<Object> configureLogLevel(ExecuteCommandParams params) {
 		Map<String, String> args = new HashMap<>();
 	    args.put("packageName", getArgumentByKey(params, "packageName"));
 	    args.put("configuredLevel", getArgumentByKey(params, "configuredLevel"));
+	    args.put("effectiveLevel", getArgumentByKey(params, "effectiveLevel"));
 	    SpringProcessParams springProcessParams = new SpringProcessParams();
 	    springProcessParams.setProcessKey(getProcessKey(params));   
-	    springProcessParams.setEndpoint("loggers");
+	    springProcessParams.setEndpoint(getArgumentByKey(params, "endpoint"));
 		springProcessParams.setArgs(args);
 	    
 		if (springProcessParams.getProcessKey() != null) {
-			connectorService.changeLogLevel(springProcessParams);
+			connectorService.configureLogLevel(springProcessParams);
 		}
 
 		return CompletableFuture.completedFuture(null);

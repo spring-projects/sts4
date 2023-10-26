@@ -12,8 +12,6 @@ import {
     // LiveProcessLoggersUpdatedNotification,
     // LiveProcessLogLevelUpdatedNotification
 } from "./notification";
-import * as setLogLevelUi from './set-log-levels-ui';
-import VSCode from "vscode";
 import {RequestType} from "vscode-languageclient";
 
 export class ApiManager {

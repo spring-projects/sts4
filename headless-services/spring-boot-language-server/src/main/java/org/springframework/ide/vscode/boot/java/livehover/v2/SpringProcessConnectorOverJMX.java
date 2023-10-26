@@ -235,7 +235,7 @@ public class SpringProcessConnectorOverJMX implements SpringProcessConnector {
 	}
 	
 	@Override
-	public void changeLogLevel(SpringProcessLiveData currentData, Map<String, String> args) throws Exception {
+	public SpringProcessUpdatedLogLevelData configureLogLevel(SpringProcessLiveData currentData, Map<String, String> args) throws Exception {
 		log.info("try to open JMX connection to: " + jmxURL);
 
 		if (jmxConnection != null) {
@@ -243,18 +243,19 @@ public class SpringProcessConnectorOverJMX implements SpringProcessConnector {
 				SpringProcessLiveDataExtractorOverJMX springJMXConnector = new SpringProcessLiveDataExtractorOverJMX();
 
 				log.info("retrieve live data from: " + jmxURL);
-				springJMXConnector.changeLogLevel(getProcessType(), jmxConnection, processID, processName, currentData, args);
+				SpringProcessUpdatedLogLevelData springProcessUpdatedLoggersData = springJMXConnector.configureLogLevel(getProcessType(), jmxConnection, processID, processName, currentData, args);
 
 //				if (loggersData != null) {
 //					return loggersData;
 //				}
+				return springProcessUpdatedLoggersData;
 			}
 			catch (Exception e) {
 				log.error("exception while connecting to jmx: " + jmxURL, e);
 			}
 		}
 
-		throw new Exception("no loggers data received, lets try again");
+		throw new Exception("configure log level failed, lets try again");
 	}
 
 	@Override

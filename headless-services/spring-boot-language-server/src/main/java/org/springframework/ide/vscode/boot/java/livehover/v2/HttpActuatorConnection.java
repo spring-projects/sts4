@@ -86,16 +86,15 @@ public class HttpActuatorConnection implements ActuatorConnection {
 	}
 	
 	@Override
-	public String changeLogLevel(Map<String, String> args) throws IOException {
+	public String configureLogLevel(Map<String, String> args) throws IOException {
 		UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromPath("/loggers/"+args.get("packageName"));
 		if (args != null) {
 //			for (Entry<String, String> e : args.entrySet()) {
 				uriBuilder.queryParam("configuredLevel", args.get("configuredLevel"));
 //			}
 		}
-		// /{ownerId}/new cases make REST Template URI template handler to think that {ownerId} is a URI parameter which it is not.
 		String url = actuatorUrl + uriBuilder.toUriString();
-		return restTemplate.getForObject(URI.create(url), String.class);
+		return restTemplate.postForObject(URI.create(url), null, String.class);
 	}
 	
 	@Override

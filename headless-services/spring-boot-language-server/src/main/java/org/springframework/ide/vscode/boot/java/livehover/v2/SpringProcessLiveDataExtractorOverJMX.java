@@ -365,7 +365,7 @@ public class SpringProcessLiveDataExtractorOverJMX {
 		return null;	
 	}
 	
-	public SpringProcessLoggersData changeLogLevel(ProcessType processType, JMXConnector jmxConnector,
+	public SpringProcessUpdatedLogLevelData configureLogLevel(ProcessType processType, JMXConnector jmxConnector,
 			String processID, String processName, SpringProcessLiveData currentData, Map<String, String> args) {
 		try {
 			MBeanServerConnection connection = jmxConnector.getMBeanServerConnection();
@@ -383,45 +383,41 @@ public class SpringProcessLiveDataExtractorOverJMX {
 				}
 			}
 
-			Loggers loggers = changeLogLevel(connection, domain, args);
-			System.out.println(loggers);
-
-			return new SpringProcessLoggersData(
+			changeLogLevel(connection, domain, args);
+			return new SpringProcessUpdatedLogLevelData(
 					processType,
 					processName,
 					processID,
-					loggers
+					args.get("packageName"),
+					args.get("effectiveLevel"),
+					args.get("configuredLevel")
 					);
+
 		}
 		catch (Exception e) {
-			log.error("error reading live metrics data from: " + processID + " - " + processName, e);
+			log.error("error changing log level : " + processID + " - " + processName + " : "+args.get("packageName"), e);
 		}
 
 		return null;
 	}
 	
-	public Loggers changeLogLevel(MBeanServerConnection connection, String domain, Map<String, String> args) {
+	public void changeLogLevel(MBeanServerConnection connection, String domain, Map<String, String> args) throws Exception {
 		
-		Object[] params = new Object[] {args.get("packageName")};
+		Object[] params = new Object[] {args.get("packageName"), args.get("configuredLevel")};
 		String[] signature =  new String[] {String.class.getName(), List.class.getName()};
 
 		try {
 			Object loggersData = getActuatorDataFromOperation(connection,
 					getObjectName(domain, "type=Endpoint,name=Loggers"), 
-					"loggers"+"/"+args.get("packageName"), 
+					"configureLogLevel", 
 					params, 
 					signature);
 			System.out.println(loggersData);
-			if (loggersData instanceof String) {
-				return gson.fromJson((String)loggersData, Loggers.class);
-			} else if(loggersData != null){
-				ObjectMapper objectMapper = new ObjectMapper();
-				return objectMapper.convertValue(loggersData, Loggers.class);
-			}
 		} catch (Exception e) {
 			log.error("", e);
+			throw e;
 		}
-		return null;	
+		return;	
 	}
 	
 	private StartupMetricsModel getStartupMetrics(MBeanServerConnection connection, String domain, StartupMetricsModel currentStartup) {

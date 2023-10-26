@@ -17,6 +17,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CopyOnWriteArrayList;
 
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
+import org.springframework.ide.vscode.commons.protocol.LiveProcessLoggersSummary;
 import org.springframework.ide.vscode.commons.protocol.LiveProcessSummary;
 import org.springframework.ide.vscode.commons.protocol.STS4LanguageClient;
 import org.springframework.ide.vscode.commons.util.Assert;
@@ -119,9 +120,8 @@ public class SpringProcessLiveDataProvider {
 		getClient().liveProcessLoggersDataUpdated(createLoggersSummary(processKey, loggersData));
 	}
 	
-	public void updateLogLevel(String processKey, SpringProcessLoggersData loggersData) {
-		this.loggersData.put(processKey, loggersData);
-		getClient().liveProcessLogLevelUpdated(createLoggersSummary(processKey, loggersData));
+	public void updateLogLevel(String processKey, SpringProcessUpdatedLogLevelData updatedLogLevelData) {
+		getClient().liveProcessLogLevelUpdated(createUpdatedLogLevelSummary(processKey, updatedLogLevelData));
 	}
 
 	
@@ -193,4 +193,15 @@ public class SpringProcessLiveDataProvider {
         return p;
     }
 
+	public static LiveProcessLoggersSummary createUpdatedLogLevelSummary(String processKey, SpringProcessUpdatedLogLevelData updatedLogLevelData) {
+		LiveProcessLoggersSummary p = new LiveProcessLoggersSummary();
+        p.setProcessType(updatedLogLevelData.getProcessType().jsonName());
+        p.setProcessKey(processKey);
+        p.setProcessName(updatedLogLevelData.getProcessName());
+        p.setProcessID(updatedLogLevelData.getProcessID());
+        p.setPackageName(updatedLogLevelData.getPackageName());
+        p.setEffectiveLevel(updatedLogLevelData.getEffectiveLevel());
+        p.setConfiguredLevel(updatedLogLevelData.getConfiguredLevel());
+        return p;
+    }
 }

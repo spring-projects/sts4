@@ -114,6 +114,7 @@ import org.springframework.ide.vscode.commons.languageserver.util.Settings;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.protocol.CursorMovement;
 import org.springframework.ide.vscode.commons.protocol.HighlightParams;
+import org.springframework.ide.vscode.commons.protocol.LiveProcessLoggersSummary;
 import org.springframework.ide.vscode.commons.protocol.LiveProcessSummary;
 import org.springframework.ide.vscode.commons.protocol.STS4LanguageClient;
 import org.springframework.ide.vscode.commons.protocol.java.ClasspathListenerParams;
@@ -439,6 +440,10 @@ public class LanguageServerHarness {
 				@Override
 				public void indexUpdated() {
 					receiveIndexUpdated();
+				}
+
+				@Override
+				public void liveProcessLogLevelUpdated(LiveProcessLoggersSummary processKey) {	
 				}
 
 			});

@@ -11,6 +11,18 @@ export interface LiveProcess {
 }
 
 /**
+ * Information returned by notification for updated log level for the live process
+ */
+export interface LiveProcessUpdatedLogLevel {
+	type: string;
+	processKey: string;
+	processName: string;
+    packageName: string;
+    effectiveLevel: string;
+    configuredLevel: string;
+}
+
+/**
  * Specialized interface for type 'local' LiveProcess.
  */
 export interface LocalLiveProcess extends LiveProcess {
@@ -47,5 +59,5 @@ export namespace LiveProcessLoggersUpdatedNotification {
 }
 
 export namespace LiveProcessLogLevelUpdatedNotification {
-	export const type = new NotificationType<LiveProcess>('sts/liveprocess/loglevel/updated');
+	export const type = new NotificationType<LiveProcessUpdatedLogLevel>('sts/liveprocess/loglevel/updated');
 }

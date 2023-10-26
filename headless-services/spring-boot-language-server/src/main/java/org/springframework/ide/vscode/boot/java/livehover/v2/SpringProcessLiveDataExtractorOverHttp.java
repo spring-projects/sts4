@@ -329,7 +329,7 @@ public class SpringProcessLiveDataExtractorOverHttp {
 		return null;
 	}
     
-    public void changeLogLevel(ProcessType processType, ActuatorConnection connection, String processID, String processName,
+    public SpringProcessUpdatedLogLevelData configureLogLevel(ProcessType processType, ActuatorConnection connection, String processID, String processName,
             SpringProcessLiveData currentData, Map<String, String> args) {
 
        try {
@@ -346,31 +346,35 @@ public class SpringProcessLiveDataExtractorOverHttp {
                }
            }
 
-           Loggers loggers = changeLogLevel(connection);
-
+           configureLogLevel(connection, args);
+           return new SpringProcessUpdatedLogLevelData(
+                   processType,
+                   processName,
+                   processID,
+                   args.get("packageName"),
+				   args.get("effectiveLevel"),
+				   args.get("configuredLevel")
+                   );
+           
        }
        catch (Exception e) {
-           log.error("error reading live metrics data from: " + processID + " - " + processName, e);
+           log.error("error reading live metrics data from: " + processID + " - " + processName + " : "+ args.get("packageName"), e);
        }
+	return null;
 
     }
     
-    public Loggers changeLogLevel(ActuatorConnection connection) {
+    public void configureLogLevel(ActuatorConnection connection, Map<String, String> args) {
 		try {
-			String result = connection.getLoggers();
+			connection.configureLogLevel(args);
 
-			if (result instanceof String) {
-                return gson.fromJson((String)result, Loggers.class);
-            } else if(result != null){
-                ObjectMapper mapper = new ObjectMapper();
-                return mapper.convertValue(result, Loggers.class);
-            }
 		} catch (IOException e) {
 			// ignore
 		} catch (Exception e) {
-			log.error("Error parsing loggers", e);
+			log.error("Error parsing response", e);
+			throw e;
 		}
-		return null;
+		return;
 	}
 	
 	private StartupMetricsModel getStartupMetrics(ActuatorConnection connection, StartupMetricsModel currentStartup) {

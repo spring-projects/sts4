@@ -362,24 +362,24 @@ public class SpringProcessConnectorService {
 
 	}
 	
-	public void changeLogLevel(SpringProcessParams springProcessParams) {
+	public void configureLogLevel(SpringProcessParams springProcessParams) {
 		log.info("change log level: " + springProcessParams.getProcessKey());
 
 		SpringProcessConnector connector = this.connectors.get(springProcessParams.getProcessKey());
 		if (connector != null) {
 			final IndefiniteProgressTask progressTask = getProgressTask(
-					"spring-process-connector-service-change-log-level" + springProcessParams.getProcessKey(), "Loggers", null);
+					"spring-process-connector-service-configure-log-level" + springProcessParams.getProcessKey(), "Loggers", null);
 			System.out.println(progressTask);
-			changeLogLevel(progressTask, springProcessParams, connector, 0, TimeUnit.SECONDS, 0);
+			configureLogLevel(progressTask, springProcessParams, connector, 0, TimeUnit.SECONDS, 0);
 		}
 	}
 
-	private void changeLogLevel(IndefiniteProgressTask progressTask, SpringProcessParams springProcessParams,
+	private void configureLogLevel(IndefiniteProgressTask progressTask, SpringProcessParams springProcessParams,
 			SpringProcessConnector connector, long delay, TimeUnit unit, int retryNo) {
 		String processKey = springProcessParams.getProcessKey();
 		String endpoint = springProcessParams.getEndpoint();
 
-	    String progressMessage = "change log level for Spring process: " + processKey + " - retry no: " + retryNo;
+	    String progressMessage = "configure log level for Spring process: " + processKey + " - retry no: " + retryNo;
 		log.info(progressMessage);
 
 		this.scheduler.schedule(() -> {
@@ -387,11 +387,11 @@ public class SpringProcessConnectorService {
 			try {
 				progressTask.progressEvent(progressMessage);
 				if(LOGGERS.equals(endpoint)) {
-					connector.changeLogLevel(this.liveDataProvider.getCurrent(processKey), springProcessParams.getArgs());
+					SpringProcessUpdatedLogLevelData springProcessUpdatedLoggersData = connector.configureLogLevel(this.liveDataProvider.getCurrent(processKey), springProcessParams.getArgs());
 
 //					if (loggersData != null) {
 //						if (!this.liveDataProvider.addLoggers(processKey, loggersData)) {
-							this.liveDataProvider.updateLoggers(processKey, null);
+							this.liveDataProvider.updateLogLevel(processKey, springProcessUpdatedLoggersData);
 //						}
 
 						this.connectedSuccess.put(processKey, true);
@@ -405,7 +405,7 @@ public class SpringProcessConnectorService {
 				log.info("problem occured during process live data refresh", e);
 
 				if (retryNo < maxRetryCount && isKnownProcessKey(processKey)) {
-					getLoggersData(progressTask, springProcessParams, connector, retryDelayInSeconds, TimeUnit.SECONDS,
+					configureLogLevel(progressTask, springProcessParams, connector, retryDelayInSeconds, TimeUnit.SECONDS,
 							retryNo + 1);
 				}
 				else {

@@ -185,21 +185,22 @@ public class SpringProcessConnectorOverHttp implements SpringProcessConnector {
 
 
 	@Override
-	public void changeLogLevel(SpringProcessLiveData currentData, Map<String, String> args) throws Exception {
+	public SpringProcessUpdatedLogLevelData configureLogLevel(SpringProcessLiveData currentData, Map<String, String> args) throws Exception {
 		if (actuatorConnection != null) {
-	    	SpringProcessLoggersData loggersData = new SpringProcessLiveDataExtractorOverHttp().changeLogLevel(getProcessType(), actuatorConnection, processID, processName, currentData, args);
+			SpringProcessUpdatedLogLevelData springProcessUpdatedLoggersData = new SpringProcessLiveDataExtractorOverHttp().configureLogLevel(getProcessType(), actuatorConnection, processID, processName, currentData, args);
 
             if (this.processID == null) {
-                this.processID = loggersData.getProcessID();
+                this.processID = springProcessUpdatedLoggersData.getProcessID();
             }
 
             if (this.processName == null) {
-                this.processName = loggersData.getProcessName();
+                this.processName = springProcessUpdatedLoggersData.getProcessName();
+                return springProcessUpdatedLoggersData;
             }
 
         }
 
-        throw new Exception("no loggers data received, lets try again");		
+        throw new Exception("configure log levels failed, lets try again");		
 	}
 
 	

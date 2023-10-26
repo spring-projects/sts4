@@ -32,5 +32,5 @@ public interface SpringProcessConnector {
 	SpringProcessGcPausesMetricsLiveData refreshGcPausesMetrics(SpringProcessLiveData current, String metricName, String tags) throws Exception;
 	SpringProcessMemoryMetricsLiveData refreshMemoryMetrics(SpringProcessLiveData current, String metricName, String tags) throws Exception;
 	SpringProcessLoggersData getLoggers(SpringProcessLiveData currentData) throws Exception;
-	void changeLogLevel(SpringProcessLiveData currentData, Map<String, String> args) throws Exception;
+	SpringProcessUpdatedLogLevelData configureLogLevel(SpringProcessLiveData currentData, Map<String, String> args) throws Exception;
 }

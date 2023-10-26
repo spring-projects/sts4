@@ -3,7 +3,7 @@
 import * as VSCode from 'vscode';
 import { LanguageClient } from "vscode-languageclient/node";
 import { ActivatorOptions } from '@pivotal-tools/commons-vscode';
-import { LiveProcess, LiveProcessLoggersUpdatedNotification, LiveProcessLogLevelUpdatedNotification } from './notification';
+import { LiveProcess, LiveProcessLoggersUpdatedNotification, LiveProcessLogLevelUpdatedNotification, LiveProcessUpdatedLogLevel } from './notification';
 
 interface ProcessCommandInfo {
     processKey : string;
@@ -65,10 +65,11 @@ async function getLoggersList(process: LiveProcess) {
     if(loggers) {
         items = Object.keys(loggers.loggers).map(packageName => {
             const logger: Logger = loggers.loggers[packageName];
-            const label = packageName + ' (' + logger.effectiveLevel + ')';
+            const effectiveLevel = logger.effectiveLevel;
+            const label = packageName + ' (' + effectiveLevel + ')';
             return {
                 packageName,
-                logger,
+                effectiveLevel,
                 label
             };
         });
@@ -80,15 +81,18 @@ async function getLoggersList(process: LiveProcess) {
         if (chosenPackage) {
             const chosenlogLevel = await VSCode.window.showQuickPick(loggers.levels);
             console.log(chosenlogLevel)
-            const changeLogLevel = await VSCode.commands.executeCommand('sts/livedata/change/logLevel', chosenPackage, {"configuredLevel":chosenlogLevel});
+            const changeLogLevel = await VSCode.commands.executeCommand('sts/livedata/configure/logLevel', {"endpoint": "loggers"}, process, chosenPackage, {"configuredLevel":chosenlogLevel});
             console.log(changeLogLevel)
         }
     }
 
 }
 
-async function logLevelUpdated(process: LiveProcess) {
+async function logLevelUpdated(process: LiveProcessUpdatedLogLevel) {
     console.log("On log level updated notifications")
+    console.log(process)
+    VSCode.window.showInformationMessage("The Log level for " + process.packageName + " has been updated from " + 
+    process.effectiveLevel + " to " + process.configuredLevel);
 }
 
 /** Called when extension is activated */
