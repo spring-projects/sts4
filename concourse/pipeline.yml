@@ -864,24 +864,30 @@ jobs:
         text: |
           Build ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has succeed!
           Release candidate available for testing $TEXT_FILE_CONTENT
-# - name: publish-ovsx-releases
-#   serial: true
-#   plan:
-#   - in_parallel:
-#     - get: tasks
-#     - get: s3-concourse-vsix-snapshot
-#       passed:
-#       - publish-release
-#     - get: s3-manifest-yaml-vsix-snapshot
-#       passed:
-#       - publish-release
-#     - get: s3-bosh-vsix-snapshot
-#       passed:
-#       - publish-release
-#     - get: s3-spring-boot-vsix-snapshot
-#       trigger: true
-#       passed:
-#       - publish-release
+- name: publish-ovsx-releases
+  serial: true
+  plan:
+  - in_parallel:
+    - get: tasks
+    - get: s3-concourse-vsix-snapshot
+      passed:
+      - publish-release
+    - get: s3-manifest-yaml-vsix-snapshot
+      passed:
+      - publish-release
+    - get: s3-bosh-vsix-snapshot
+      passed:
+      - publish-release
+    - get: s3-spring-boot-vsix-snapshot
+      trigger: true
+      passed:
+      - publish-release
+  - task: publish-ovsx-releases
+    file: tasks/concourse/tasks/publish-ovsx-releases.yml
+    input_mapping:
+      sts4: tasks
+    params:
+      ovsx_token: ((ovsx_token))
 - name: verify-vsce-token
   plan: 
   - get: sts4
@@ -1181,6 +1187,7 @@ groups:
   - build-spring-boot-rc
   - trigger-rc-build
   - publish-release
+  - publish-ovsx-releases
   - build-manifest-yaml-vsix-snapshot
   - build-consourse-vsix-snapshot
   - build-bosh-vsix-snapshot
