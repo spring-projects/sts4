@@ -73,15 +73,15 @@ public class XmlBeansHyperlinkTest {
 	private ProjectsHarness projects = ProjectsHarness.INSTANCE;
 	private MavenJavaProject project;
 	
-//	private Level originalLevel;
+	private Level originalLevel;
 
 	@BeforeEach
 	public void setup() throws Exception {
-//	    final Logger logger = (Logger)LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-//	    originalLevel = logger.getLevel();
-//	    logger.setLevel(Level.DEBUG);
-//	    
-//		log.debug("-------------------------------------------------");
+	    final Logger logger = (Logger)LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+	    originalLevel = logger.getLevel();
+	    logger.setLevel(Level.INFO);
+	    
+		log.info("-------------------------------------------------");
 		harness.intialize(null);
 		
 		Map<String, Object> supportXML = new HashMap<>();
@@ -105,12 +105,12 @@ public class XmlBeansHyperlinkTest {
 		initProject.get(1500, TimeUnit.SECONDS);
 	}
 	
-//	@AfterEach
-//	public void tearDown() {
-//		log.debug("-------------------------------------------------");
-//	    final Logger logger = (Logger)LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
-//	    logger.setLevel(originalLevel);
-//	}
+	@AfterEach
+	public void tearDown() {
+		log.debug("-------------------------------------------------");
+	    final Logger logger = (Logger)LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
+	    logger.setLevel(originalLevel);
+	}
 
     @Test
     void testBeanClassHyperlink() throws Exception {
