@@ -21,7 +21,7 @@
 * _(Spring Boot)_ fixed: various OpenRewrite based quick fixes are broken [#1126](https://github.com/spring-projects/sts4/issues/1126)
 * _(Spring Boot)_ fixed: Plugin does not use eclipse proxy settings [#1101](https://github.com/spring-projects/sts4/issues/1101)
 * _(Spring Boot)_ fixed: [validation] reconciler throws NPE [#1117](https://github.com/spring-projects/sts4/issues/1117)
-* _(Spring Boot)_ fixed: VS Code - Document dependency on the Red Hat Language Support for Java [#1131](https://github.com/spring-projects/sts4/issues/1131)
+* _(VSCode)_ fixed: VS Code - Document dependency on the Red Hat Language Support for Java [#1131](https://github.com/spring-projects/sts4/issues/1131)
 
 ## 2023-09-13 (4.20.0 RELEASE, incl. language servers version 1.49.0)
 
