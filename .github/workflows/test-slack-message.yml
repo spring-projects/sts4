@@ -3,37 +3,27 @@ name: Test Slack Message
 on:
   workflow_dispatch:
 
-env:
-  SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-
 jobs:
   slack-message:
     name: Send slack message
     runs-on: ubuntu-latest
     steps:
       - id: slack
-        uses: slackapi/slack-github-action@e28cf165c92ffef168d23c5c9000cffc8a25e117
+        uses: slackapi/slack-github-action@v1.19.0
         env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_URL: ${{ secrets.SPRING_RELEASE_SLACK_WEBHOOK_URL }}
           SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
         with:
-          # The following message update step does not accept a channel name.
-          # Setting a channel ID here for consistency is highly recommended.
-          channel-id: 'C0188MENU2J,C4W4Q9FR9'
           payload: |
             {
-              "text": "Hello from STS4 Github Repo",
-              "attachments": [
+              "text": "Test message title `Version` is available now",
+              "blocks": [
                 {
-                  "pretext": "Deployment started",
-                  "color": "dbab09",
-                  "fields": [
-                    {
-                      "title": "Status",
-                      "short": true,
-                      "value": "In Progress"
-                    }
-                  ]
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "Test Message text `Version` is available now"
+                  }
                 }
               ]
             }
