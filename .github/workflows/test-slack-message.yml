@@ -14,7 +14,7 @@ jobs:
           SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
           SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
         with:
-          channel-id: "#spring-tools-team"
+          channel-id: "C0188MENU2J"
           payload: |
             {
               "text": "Test message title `Version` is available now",
