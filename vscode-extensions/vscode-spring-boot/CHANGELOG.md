@@ -1,3 +1,28 @@
+## 2023-11-01 (4.20.1 RELEASE, incl. language servers version 1.50.0)
+
+#### important highlights
+
+* _(Spring Boot)_ Completions for Spring Properties show up 10 times faster initially (as fast as on the consecutive invocations)
+* _(Spring Boot)_ Various performance optimizations around symbols scanning and Java reconciling
+
+#### all fixes and improvements in detail
+
+* _(Spring Boot)_ fixed: [optimization] avoid running symbol indexing and cache write for empty affected files array [#1124](https://github.com/spring-projects/sts4/issues/1124)
+* _(Spring Boot)_ fixed: [optimization] Boot properties completions slow to show up [#1120](https://github.com/spring-projects/sts4/issues/1120)
+* _(Spring Boot)_ fixed: [optimization] reuse compilation unit cache to compute symbols for document [#1119](https://github.com/spring-projects/sts4/issues/1119)
+* _(Spring Boot)_ fixed: [optimization] avoid writing caches multiple times on file delete events [#1118](https://github.com/spring-projects/sts4/issues/1118)
+* _(Spring Boot)_ fixed: [optimization] Dependency versions re-calculated often [#1116](https://github.com/spring-projects/sts4/issues/1116)
+* _(Spring Boot)_ fixed: [boot version validation] add progress support and error messages [#1115](https://github.com/spring-projects/sts4/issues/1115)
+* _(Spring Boot)_ fixed: Completion Proposal for query methods doesn't work with `record` entities [#1113](https://github.com/spring-projects/sts4/issues/1113)
+* _(Spring Boot)_ fixed: Entity Id type from domain type reconciler should account for JPA `@Id` annotations [#1112](https://github.com/spring-projects/sts4/issues/1112)
+* _(Spring Boot)_ fixed: further refinements for quick fixes around mapping annotations [#1109](https://github.com/spring-projects/sts4/issues/1109)
+* _(Spring Boot)_ fixed: Multiple quick fixes offered for  `@RequestMapping` into `GetMapping` etc [#1107](https://github.com/spring-projects/sts4/issues/1107)
+* _(Spring Boot)_ fixed: Spring Modulith verifications broken [#1127](https://github.com/spring-projects/sts4/issues/1127)
+* _(Spring Boot)_ fixed: various OpenRewrite based quick fixes are broken [#1126](https://github.com/spring-projects/sts4/issues/1126)
+* _(Spring Boot)_ fixed: Plugin does not use eclipse proxy settings [#1101](https://github.com/spring-projects/sts4/issues/1101)
+* _(Spring Boot)_ fixed: [validation] reconciler throws NPE [#1117](https://github.com/spring-projects/sts4/issues/1117)
+* _(Spring Boot)_ fixed: VS Code - Document dependency on the Red Hat Language Support for Java [#1131](https://github.com/spring-projects/sts4/issues/1131)
+
 ## 2023-09-13 (4.20.0 RELEASE, incl. language servers version 1.49.0)
 
 #### important highlights
