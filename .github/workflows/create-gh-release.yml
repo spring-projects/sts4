@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: Github release marker, i.e. 4.20.1
+        description: Github release marker, i.e. 4.20.1.RELEASE
         required: true
         type: string
 
@@ -23,7 +23,13 @@ jobs:
       - name: Extract Changelog
         id: changelog
         run: |
-          sed '/${{ inputs.version }}/,/^## .*/!d;//d;s/^* /- /' Changelog.md > ${{ github.workspace }}/gen-changelog.md
+          release=${{ inputs.version }}
+          version=`echo "${release%.*}"`
+          qualifier=`echo "${release##*.}"`
+          echo $version
+          echo $qualifier
+          echo "## ${release}" > ${{ github.workspace }}/gen-changelog.md
+          sed '/${version} ${qualifier}/,/^## .*/!d;//d;s/^* /- /' Changelog.md >> ${{ github.workspace }}/gen-changelog.md
       - uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce
         with:
           name: changelog-${{ inputs.version }}-${{ github.run_id }}.md
