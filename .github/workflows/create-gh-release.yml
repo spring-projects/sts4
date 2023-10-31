@@ -26,7 +26,8 @@ jobs:
         id: changelog
         run: |
           sed '/${{ inputs.version }}/,/^## .*/!d' Changelog.md | sed '$d' | sed 's/^* /- /' > tmp.md
-          echo "content=`echo '$(<tmp.md)'`" >> $GITHUB_OUTPUT          
+          echo "content=`echo "$(<tmp.md )"`" >> $GITHUB_OUTPUT 
+          rm -f tmp.md
 
   release:
     needs: [ changelog ]
