@@ -40,10 +40,10 @@ jobs:
       - uses: actions/download-artifact@cbed621e49e4c01b044d60f6c80ea4ed6328b281
         with:
           name: changelog-${{ inputs.version }}-${{ github.run_id }}.md
-          path: ${{ github.workspace }}/gen-changelog.md
+          path: ${{ github.workspace }}
       - name: Verify Changelog
         run: |
-          cat gen-changelog.md
+          cat ${{ github.workspace }}/changelog-${{ inputs.version }}-${{ github.run_id }}.md
 #      - name: Push Tag
 #        run: |
 #          git config --global user.name "@spring-projects/spring-ide-admin"
