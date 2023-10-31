@@ -15,8 +15,6 @@ jobs:
   changelog:
     runs-on: ubuntu-latest
     name: Changelog for the release
-    outputs:
-      content: ${{ steps.changelog.outputs.content }}
     steps:
       - name: Checkout wiki code
         uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
@@ -25,20 +23,27 @@ jobs:
       - name: Extract Changelog
         id: changelog
         run: |
-          sed '/${{ inputs.version }}/,/^## .*/!d' Changelog.md | sed '$d' | sed 's/^* /- /' > tmp.md
-          echo "content=`echo "$(<tmp.md )"`" >> $GITHUB_OUTPUT 
-          rm -f tmp.md
+          sed '/${{ inputs.version }}/,/^## .*/!d' Changelog.md | sed '$d' | sed 's/^* /- /' > ${{ github.workspace }}/tmp.md
+      - uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce
+        with:
+          name: changelog-${{ inputs.version }}-${{ github.run_id }}.md
+          path: ${{ github.workspace }}/tmp.md
+          retention-days: 1
 
   release:
     needs: [ changelog ]
     name: Create Release
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
+      - uses: actions/download-artifact@cbed621e49e4c01b044d60f6c80ea4ed6328b281
+        with:
+          name: changelog-${{ inputs.version }}-${{ github.run_id }}.md
+          path: ${{ github.workspace }}/gen-changelog.md
       - name: Verify Changelog
         run: |
-          echo '${{ needs.changelog.outputs.content }}'
-#      - name: Checkout code
-#        uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
+          cat gen-changelog.md
 #      - name: Push Tag
 #        run: |
 #          git config --global user.name "@spring-projects/spring-ide-admin"
@@ -52,6 +57,6 @@ jobs:
 #          id: ${{ inputs.version }}.RELEASE
 #          tag_name: ${{ inputs.version }}.RELEASE
 #          release_name: Release ${{ inputs.version }}.RELEASE
-#          body: ${{ needs.changelog.outputs.content }}
+#          body_path: ${{ github.workspace }}/gen-changelog.md
 #          draft: true
 #          prerelease: false
