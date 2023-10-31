@@ -23,7 +23,7 @@ jobs:
       - name: Extract Changelog
         id: changelog
         run: |
-          sed '/${{ inputs.version }}/,/^## .*/!d' Changelog.md | sed '$d' | sed 's/^* /- /' > ${{ github.workspace }}/tmp.md
+          sed '/${{ inputs.version }}/,/^## .*/!d' Changelog.md | sed '$d' | sed 's/^* /- /' > ${{ github.workspace }}/gen-changelog.md
       - uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce
         with:
           name: changelog-${{ inputs.version }}-${{ github.run_id }}.md
@@ -43,7 +43,7 @@ jobs:
           path: ${{ github.workspace }}
       - name: Verify Changelog
         run: |
-          cat ${{ github.workspace }}/changelog-${{ inputs.version }}-${{ github.run_id }}.md
+          cat ${{ github.workspace }}/gen-changelog.md
 #      - name: Push Tag
 #        run: |
 #          git config --global user.name "@spring-projects/spring-ide-admin"
