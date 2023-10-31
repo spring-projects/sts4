@@ -1,0 +1,87 @@
+name: Publish Release - Eclipse
+
+concurrency:
+  group: release-eclipse
+  cancel-in-progress: true
+
+on:
+  workflow_dispatch:
+    inputs:
+      ls_version:
+        description: The suffix of the p2 repo URL in S3 (i.e. 2023-11-01)
+        required: true
+        type: string
+      release_version:
+        description: Version suffix in S3 (i.e. 4.20.1)
+        required: true
+        type: string
+      eclipse_latest:
+        description: Latest eclipse release version (i.e. e4.30)
+        required: true
+        type: string
+
+jobs:
+
+  aggregate-ls-extension-update-site:
+    uses: ./.github/workflows/aggregate-ls-extensions-update-site.yml
+    with:
+      version: ${{ inputs.ls_version }}
+    secrets: inherit
+
+  aggregate-distro-update-site:
+    uses: ./.github/workflows/aggregate-ls-extensions-update-site.yml
+    with:
+      version: ${{ inputs.release_version }}.RELEASE
+      latest: ${{ inputs.eclipse_latest }}
+    secrets: inherit
+
+  create-github-release:
+    uses: ./.github/workflows/create-gh-release.yml
+    with:
+      version: ${{ inputs.release_version }}.RELEASE
+    secrets: inherit
+
+  notify:
+    needs: [ aggregate-ls-extension-update-site, aggregate-distro-update-site, create-github-release ]
+    runs-on: ubuntu-latest
+    steps:
+      - id: tools-team-slack
+        uses: slackapi/slack-github-action@e28cf165c92ffef168d23c5c9000cffc8a25e117
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.VMWARE_SLACK_BOT_TOKEN }}
+        with:
+          channel-id: "C0188MENU2J"
+          payload: |
+            {
+              "text": "Released `${{ inputs.release_version }}`",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "Published `${{ inputs.release_version }}` successfully"
+                  }
+                }
+              ]
+            }
+      - name: Announce Release on Slack
+        id: spring-tools-announcing
+        uses: slackapi/slack-github-action@e28cf165c92ffef168d23c5c9000cffc8a25e117
+        with:
+          payload: |
+            {
+              "text": "spring-tools-announcing `${{ inputs.release_version }}` is available now",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "spring-tools-announcing `${{ inputs.release_version }}` is available now"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SPRING_RELEASE_SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+
