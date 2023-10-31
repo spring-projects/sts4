@@ -29,7 +29,7 @@ jobs:
           echo $version
           echo $qualifier
           echo "## ${release}" > ${{ github.workspace }}/gen-changelog.md
-          sed '/${version} ${qualifier}/,/^## .*/!d;//d;s/^* /- /' Changelog.md >> ${{ github.workspace }}/gen-changelog.md
+          sed "/${version} ${qualifier}/,/^## .*/!d;//d;s/^* /- /" Changelog.md >> ${{ github.workspace }}/gen-changelog.md
       - uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce
         with:
           name: changelog-${{ inputs.version }}-${{ github.run_id }}.md
@@ -53,16 +53,16 @@ jobs:
 #      - name: Push Tag
 #        run: |
 #          git config --global user.name "@spring-projects/spring-ide-admin"
-#          git tag -a ${{ inputs.version }}.RELEASE -m "${{ inputs.version }}.RELEASE"
+#          git tag -a ${{ inputs.version }} -m "${{ inputs.version }}"
 #          git push --tags
 #      - name: Create Release
 #        uses: actions/create-release@0cb9c9b65d5d1901c1f53e5e66eaf4afd303e70e
 #        env:
 #          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 #        with:
-#          id: ${{ inputs.version }}.RELEASE
-#          tag_name: ${{ inputs.version }}.RELEASE
-#          release_name: Release ${{ inputs.version }}.RELEASE
+#          id: ${{ inputs.version }}
+#          tag_name: ${{ inputs.version }}
+#          release_name: Release ${{ inputs.version }}
 #          body_path: ${{ github.workspace }}/gen-changelog.md
 #          draft: true
 #          prerelease: false
