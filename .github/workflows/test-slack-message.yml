@@ -11,8 +11,7 @@ jobs:
       - id: slack
         uses: slackapi/slack-github-action@v1.19.0
         env:
-          SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK_URL }}
-          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+          SLACK_BOT_TOKEN: ${{ secrets.VMWARE_SLACK_BOT_TOKEN }}
         with:
           channel-id: "C0188MENU2J"
           payload: |
