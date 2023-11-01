@@ -24,12 +24,13 @@ jobs:
           channel-id: "C0188MENU2J"
           payload: |
             {
-              "attachments": [
+              "text": "${{ inputs.label }} ${{ inputs.link }}",
+              "blocks": [
                 {
-                  "color": "f0190a",
+                  "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "${{ inputs.label }} ${{ inputs.link }}"
+                    "text": ":fail: *${{ inputs.label }}* ${{ inputs.link }}"
                   }
                 }
               ]
