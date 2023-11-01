@@ -27,14 +27,10 @@ jobs:
               "attachments": [
                 {
                   "color": "f0190a",
-                  "mrkdwn_in": [ "fields" ],
-                  "fields": [
-                    {
-                      "title": "Build Failed",
-                      "short": true,
-                      "value": "${{ inputs.label }} ${{ inputs.link }}"
-                    }
-                  ]
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "${{ inputs.label }} ${{ inputs.link }}"
+                  }
                 }
               ]
             }
