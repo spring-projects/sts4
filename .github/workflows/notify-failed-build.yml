@@ -26,23 +26,12 @@ jobs:
             {
               "attachments": [
                 {
-                  "text": "${{ inputs.label }} ${{ inputs.link }}",
-                  "blocks": [
-                    {
-                      "type": "section",
-                      "text": {
-                        "type": "mrkdwn",
-                        "text": "${{ inputs.label }} ${{ inputs.link }}"
-                      }
-                    }
-                  ],
-                  "pretext": "Build Failed",
                   "color": "f0190a",
                   "fields": [
                     {
-                      "title": "Status",
+                      "title": "${{ inputs.label }} ${{ inputs.link }}",
                       "short": true,
-                      "value": "Completed"
+                      "value": "Failed"
                     }
                   ]
                 }
