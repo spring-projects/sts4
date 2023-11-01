@@ -24,16 +24,25 @@ jobs:
           channel-id: "C0188MENU2J"
           payload: |
             {
-              "text": "${{ inputs.label }} ${{ inputs.link }}",
               "attachments": [
                 {
+                  "text": "${{ inputs.label }} ${{ inputs.link }}",
+                  "blocks": [
+                    {
+                      "type": "section",
+                      "text": {
+                        "type": "mrkdwn",
+                        "text": "${{ inputs.label }} ${{ inputs.link }}"
+                      }
+                    }
+                  ]
                   "pretext": "Build Failed",
                   "color": "f0190a",
                   "fields": [
                     {
                       "title": "Status",
                       "short": true,
-                      "value": "Failed"
+                      "value": "Completed"
                     }
                   ]
                 }
