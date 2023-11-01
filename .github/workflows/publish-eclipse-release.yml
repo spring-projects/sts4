@@ -29,7 +29,7 @@ jobs:
     secrets: inherit
 
   aggregate-distro-update-site:
-    uses: ./.github/workflows/aggregate-ls-extensions-update-site.yml
+    uses: ./.github/workflows/aggregate-distro-update-sites.yml
     with:
       version: ${{ inputs.release_version }}.RELEASE
       latest: ${{ inputs.eclipse_latest }}
