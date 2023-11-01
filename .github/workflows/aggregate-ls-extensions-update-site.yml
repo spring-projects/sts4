@@ -1,7 +1,7 @@
 name: Aggregate LS Extensions Update Sites
 
 on:
-  workflow_dispatch:
+  workflow_call:
     inputs:
       version:
         description: The suffix of the p2 repo URL in S3 (i.e. 2023-08-01)

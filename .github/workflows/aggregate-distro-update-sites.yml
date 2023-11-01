@@ -1,7 +1,7 @@
 name: Aggregate Distro Update Sites
 
 on:
-  workflow_dispatch:
+  workflow_call:
     inputs:
       version:
         description: Version suffix in S3 (i.e. 4.19.1.RELEASE)
