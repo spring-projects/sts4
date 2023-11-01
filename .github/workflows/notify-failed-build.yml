@@ -30,9 +30,9 @@ jobs:
                   "mrkdwn_in": [ "fields" ],
                   "fields": [
                     {
-                      "title": "${{ inputs.label }} ${{ inputs.link }}",
+                      "title": "Build Failed",
                       "short": true,
-                      "value": "Failed"
+                      "value": "${{ inputs.label }} ${{ inputs.link }}"
                     }
                   ]
                 }
