@@ -322,7 +322,8 @@ jobs:
           aws s3 rm s3://dist.springsource.com/sts4-distro-ci-temp --recursive --exclude "*" --include "${{ needs.eclipse-distro-build.outputs.id }}/*"
 
   notify-failure:
-    if: ${{ failure() }}
+    needs: [ eclipse-distro-build, sign-win-distros, sign-osx-distros, cleanup ]
+    if: ${{ always() && contains(needs.*.result, 'failure') }}
     uses: ./.github/workflows/notify-failed-build.yml
     with:
       link: '[${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})'
