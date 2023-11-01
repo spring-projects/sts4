@@ -1,14 +1,10 @@
-name: Notify Failed Build
+name: Notify Failed
 
 on:
   workflow_call:
     inputs:
-      link:
-        description: Workflow URL link markdown
-        required: true
-        type: string
-      label:
-        description: Build label
+      md_message:
+        description: Markdown message
         required: true
         type: string
 
@@ -24,13 +20,13 @@ jobs:
           channel-id: "C0188MENU2J"
           payload: |
             {
-              "text": "${{ inputs.label }} ${{ inputs.link }}",
+              "text": "${{ inputs.md_message }}",
               "blocks": [
                 {
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": ":fail: *${{ inputs.label }}* ${{ inputs.link }}"
+                    "text": ":fail: ${{ inputs.md_message }}"
                   }
                 }
               ]

@@ -103,8 +103,7 @@ jobs:
   notify-failure:
     needs: [ eclipse-language-servers-build ]
     if: ${{ always() && contains(needs.*.result, 'failure') }}
-    uses: ./.github/workflows/notify-failed-build.yml
+    uses: ./.github/workflows/notify-failed.yml
     with:
-      link: '[${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})'
-      label: 'Failed LS Extensions ${{ inputs.build_type }} build'
+      md_message: "*Failed LS Extensions ${{ inputs.build_type }} Build:* <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|${{ github.run_id }}>"
     secrets: inherit

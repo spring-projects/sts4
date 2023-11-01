@@ -30,8 +30,7 @@ jobs:
 
   notify-failure:
 #    needs: [ slack-message ]
-    uses: ./.github/workflows/notify-failed-build.yml
+    uses: ./.github/workflows/notify-failed.yml
     with:
-      link: '<${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|${{ github.run_id }}>'
-      label: 'Test Build Failed Message'
+      md_message: "*Test Build Failed Message* <${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}|${{ github.run_id }}>"
     secrets: inherit
