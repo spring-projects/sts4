@@ -1,0 +1,55 @@
+name: Announce Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Release version (i.e. 4.20.1)
+        required: true
+        type: string
+
+jobs:
+
+  notify:
+    runs-on: ubuntu-latest
+    steps:
+      - id: tools-team-slack
+        uses: slackapi/slack-github-action@e28cf165c92ffef168d23c5c9000cffc8a25e117
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.VMWARE_SLACK_BOT_TOKEN }}
+        with:
+          channel-id: "C0188MENU2J"
+          payload: |
+            {
+              "text": "Released `${{ inputs.version }}`",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "Published `${{ inputs.version }}` successfully"
+                  }
+                }
+              ]
+            }
+      - name: Announce Release on Slack
+        id: spring-tools-announcing
+        uses: slackapi/slack-github-action@e28cf165c92ffef168d23c5c9000cffc8a25e117
+        with:
+          payload: |
+            {
+              "text": "spring-tools-4-announcing `${{ inputs.version }}`",
+              "blocks": [
+                {
+                  "type": "section",
+                  "text": {
+                    "type": "mrkdwn",
+                    "text": "spring-tools-4-announcing `${{ inputs.version }}`"
+                  }
+                }
+              ]
+            }
+        env:
+          SLACK_WEBHOOK_URL: ${{ secrets.SPRING_RELEASE_SLACK_WEBHOOK_URL }}
+          SLACK_WEBHOOK_TYPE: INCOMING_WEBHOOK
+
