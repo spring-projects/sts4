@@ -13,8 +13,8 @@ on:
         type: string
 
 jobs:
-  runs-on: ubuntu-latest
   notify-failure:
+    runs-on: ubuntu-latest
     steps:
       - id: tools-team-slack
         uses: slackapi/slack-github-action@e28cf165c92ffef168d23c5c9000cffc8a25e117
