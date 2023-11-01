@@ -70,13 +70,13 @@ jobs:
         with:
           payload: |
             {
-              "text": "spring-tools-announcing `${{ inputs.release_version }}` is available now",
+              "text": "spring-tools-4-announcing `${{ inputs.release_version }}`",
               "blocks": [
                 {
                   "type": "section",
                   "text": {
                     "type": "mrkdwn",
-                    "text": "spring-tools-announcing `${{ inputs.release_version }}` is available now"
+                    "text": "spring-tools-4-announcing `${{ inputs.release_version }}`"
                   }
                 }
               ]
