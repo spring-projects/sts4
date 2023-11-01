@@ -99,3 +99,11 @@ jobs:
           else
             ./mvnw --batch-mode clean package -Pe430 -P${{ inputs.build_type }} -Dsigning.skip=true -Dhttpclient.retry-max=20 -Declipse.p2.mirrors=false -Ds3service.https-only=true -Dmaven.test.skip=true -Dtycho.localArtifacts=ignore
           fi
+
+  notify-failure:
+    if: ${{ failure() }}
+    uses: ./.github/workflows/notify-failed-build.yml
+    with:
+      link: '[${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})'
+      label: 'Failed LS Extensions ${{ inputs.build_type }} build'
+    secrets: inherit

@@ -320,3 +320,11 @@ jobs:
           AWS_DEFAULT_REGION: us-east-1
         run: |
           aws s3 rm s3://dist.springsource.com/sts4-distro-ci-temp --recursive --exclude "*" --include "${{ needs.eclipse-distro-build.outputs.id }}/*"
+
+  notify-failure:
+    if: ${{ failure() }}
+    uses: ./.github/workflows/notify-failed-build.yml
+    with:
+      link: '[${{ github.run_id }}](${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }})'
+      label: 'Failed Eclipse ${{ inputs.eclipse_profile }} Distribution ${{ inputs.build_type }} build'
+    secrets: inherit

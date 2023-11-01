@@ -1,0 +1,42 @@
+name: Notify Failed Build
+
+on:
+  workflow_call:
+    inputs:
+      link:
+        description: Workflow URL link markdown
+        required: true
+        type: string
+      label:
+        description: Build label
+        required: true
+        type: string
+
+jobs:
+  notify-failure:
+    steps:
+      - id: tools-team-slack
+        uses: slackapi/slack-github-action@e28cf165c92ffef168d23c5c9000cffc8a25e117
+        env:
+          SLACK_BOT_TOKEN: ${{ secrets.VMWARE_SLACK_BOT_TOKEN }}
+        with:
+          channel-id: "C0188MENU2J"
+          payload: |
+            {
+              "text": "${{ inputs.label }} ${{ inputs.link }}",
+              "attachments": [
+                {
+                  "pretext": "Build Failed",
+                  "color": "f0190a",
+                  "fields": [
+                    {
+                      "title": "Status",
+                      "short": true,
+                      "value": "Failed"
+                    }
+                  ]
+                }
+              ]
+            }
+
+
