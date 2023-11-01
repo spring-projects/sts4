@@ -27,6 +27,7 @@ jobs:
               "attachments": [
                 {
                   "color": "f0190a",
+                  "mrkdwn_in": [ "fields" ],
                   "fields": [
                     {
                       "title": "${{ inputs.label }} ${{ inputs.link }}",
