@@ -23,6 +23,7 @@ import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
@@ -56,7 +57,6 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.tngtech.archunit.thirdparty.com.google.common.base.Objects;
 
 public class ModulithService {
 		
@@ -182,7 +182,7 @@ public class ModulithService {
 	private boolean updateAppModulesCache(IJavaProject project, AppModules modules) {
 		URI uri = project.getLocationUri();
 		AppModules oldModules = modules == null ? cache.remove(uri) : cache.put(uri, modules);
-		if (!Objects.equal(modules, oldModules)) {
+		if (!Objects.equals(modules, oldModules)) {
 			validate(project);
 			return true;
 		}
