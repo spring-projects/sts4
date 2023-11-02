@@ -240,7 +240,7 @@ public class DelegatingStreamConnectionProvider implements StreamConnectionProvi
 			ProxyManager proxyManager = (ProxyManager) proxyService;
 			if (proxyService.isSystemProxiesEnabled() && proxyManager.hasSystemProxies()) {
 				for (IProxyData data : proxyManager.getNativeProxyData()) {
-					if (data.getHost() != null) {
+					if (data.getHost() != null && !data.getHost().isBlank()) {
 						fillProxyData(proxy, data, proxyManager.getNativeNonProxiedHosts());
 						break;
 					}
