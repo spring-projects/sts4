@@ -87,8 +87,10 @@ public class EntityIdForRepoReconciler implements JdtAstReconciler {
 					IAnnotationBinding repoAnnotationType) {
 				ITypeBinding domainClass = getTypeFromAnnotationParameter(repoAnnotationType, "domainClass");
 				if (domainClass != null) {
-					ITypeBinding idType = findIdType(domainClass);
-					if (idType != null) {
+					List <ITypeBinding> idTypes = findIdType(domainClass);
+					// Only support single id type. If more than one is present that is a composite key for which we don't mark anything yet
+					if (idTypes.size() == 1) {
+						ITypeBinding idType = idTypes.get(0);
 						ITypeBinding repoIdType = getTypeFromAnnotationParameter(repoAnnotationType, "idClass");
 						if (repoIdType != null && !isValidRepoIdType(repoIdType, idType)) {
 							ASTUtils.getAttribute(annotationOverClass, "idClass").ifPresentOrElse(
@@ -181,9 +183,10 @@ public class EntityIdForRepoReconciler implements JdtAstReconciler {
 						}
 					}
 					if (domainClassType != null) {
-						ITypeBinding domainIdType = findIdType(domainClassType);
-						if (domainIdType != null && !isValidRepoIdType(idType, domainIdType)) {
-
+						List<ITypeBinding> domainIdTypes = findIdType(domainClassType);
+						// Only support single id type. If more than one is present that is a composite key for which we don't mark anything yet
+						if (domainIdTypes.size() == 1 && !isValidRepoIdType(idType, domainIdTypes.get(0))) {
+							ITypeBinding domainIdType = domainIdTypes.get(0);
 							if (isNoNewTypeParamsAdded(repoTypeChain)) {
 								List<ASTNode> matchedParams = findParamTypes(typeDecl.typeParameters(), idType);
 								if (matchedParams.size() > 1) {
@@ -237,12 +240,15 @@ public class EntityIdForRepoReconciler implements JdtAstReconciler {
 				return null;
 			}
 
-			private ITypeBinding findIdType(ITypeBinding type) {
-				ITypeBinding idType = findAnnotatedIdType(type, new HashSet<>());
-				if (idType == null && considerIdField) {
-					idType = findIdFieldType(type);
+			private List<ITypeBinding> findIdType(ITypeBinding type) {
+				List<ITypeBinding> idTypes = findAnnotatedIdTypes(type, new HashSet<>());
+				if (idTypes.isEmpty() && considerIdField) {
+					ITypeBinding idType = findIdFieldType(type);
+					if (idType != null) {
+						idTypes.add(idType);
+					}
 				}
-				return idType;
+				return idTypes;
 			}
 
 			private boolean isValidRepoIdType(ITypeBinding repoIdType, ITypeBinding idType) {
@@ -323,26 +329,29 @@ public class EntityIdForRepoReconciler implements JdtAstReconciler {
 		return null;
 	}
 
-	private static ITypeBinding findAnnotatedIdType(ITypeBinding type, Set<String> visited) {
+	private static List<ITypeBinding> findAnnotatedIdTypes(ITypeBinding type, Set<String> visited) {
+		List<ITypeBinding> idTypes = new ArrayList<>();
 		List<String> idAnnotations = List.of(Annotations.SPRING_ENTITY_ID, Annotations.JPA_JAKARTA_ENTITY_ID, Annotations.JPA_JAVAX_ENTITY_ID);
 		for (IVariableBinding m : type.getDeclaredFields()) {
 			String s = fieldSignature(m);
 			if (!visited.contains(s) && isAnnotationCompatible(m.getAnnotations(), idAnnotations)) {
-				return m.getType();
+				idTypes.add(m.getType());
 			}
 			visited.add(s);
 		}
-		for (IMethodBinding m : type.getDeclaredMethods()) {
-			String s = methodSignature(m);
-			if (!visited.contains(s) && isAnnotationCompatible(m.getAnnotations(), idAnnotations)) {
-				return m.getReturnType();
+		if (!type.isRecord()) {
+			for (IMethodBinding m : type.getDeclaredMethods()) {
+				String s = methodSignature(m);
+				if (!visited.contains(s) && isAnnotationCompatible(m.getAnnotations(), idAnnotations)) {
+					idTypes.add(m.getReturnType());
+				}
+				visited.add(s);
 			}
-			visited.add(s);
+			if (type.getSuperclass() != null) {
+				idTypes.addAll(findAnnotatedIdTypes(type.getSuperclass(), visited));
+			}
 		}
-		if (type.getSuperclass() != null) {
-			return findAnnotatedIdType(type.getSuperclass(), visited);
-		}
-		return null;
+		return idTypes;
 	}
 
 	private static String fieldSignature(IVariableBinding f) {

@@ -1046,4 +1046,37 @@ public class EntityIdForRepoReconcilerTest extends BaseReconcilerTest {
 		
 	}
 	
+	@Test
+	void compositeId() throws Exception {
+		
+		Path customerSource = createFile("Customer.java", """
+			package demo;
+
+			import org.springframework.data.annotation.Id;
+
+			public class Customer {
+				@Id String id;
+				@Id String id_additional;
+			}
+		""");
+		
+		Path customerId = createFile("CustomerId.java", """
+				package demo;
+
+				public record CustomerId(String id, String id_additional) {}
+			""");
+		
+		String source = """
+			package demo;
+
+			import org.springframework.data.repository.Repository;
+
+			interface CustomerRepository extends Repository<Customer, CustomerId> {}
+		""";
+		List<ReconcileProblem> problems = reconcile("CustomerRepository.java", source, false, customerSource, customerId);
+		
+		assertEquals(0, problems.size());
+		
+	}
+	
 }
