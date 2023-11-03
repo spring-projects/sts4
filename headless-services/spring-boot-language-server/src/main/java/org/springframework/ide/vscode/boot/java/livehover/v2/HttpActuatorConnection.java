@@ -89,9 +89,7 @@ public class HttpActuatorConnection implements ActuatorConnection {
 	public String configureLogLevel(Map<String, String> args) throws IOException {
 		UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromPath("/loggers/"+args.get("packageName"));
 		if (args != null) {
-//			for (Entry<String, String> e : args.entrySet()) {
 				uriBuilder.queryParam("configuredLevel", args.get("configuredLevel"));
-//			}
 		}
 		String url = actuatorUrl + uriBuilder.toUriString();
 		return restTemplate.postForObject(URI.create(url), null, String.class);

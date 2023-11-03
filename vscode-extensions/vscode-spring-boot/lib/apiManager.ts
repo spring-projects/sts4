@@ -9,8 +9,6 @@ import {
     LiveProcessGcPausesMetricsUpdatedNotification,
     LiveProcessMemoryMetricsUpdatedNotification,
     SpringIndexUpdatedNotification,
-    // LiveProcessLoggersUpdatedNotification,
-    // LiveProcessLogLevelUpdatedNotification
 } from "./notification";
 import {RequestType} from "vscode-languageclient";
 
@@ -22,7 +20,6 @@ export class ApiManager {
     private onDidLiveProcessGcPausesMetricsUpdateEmitter: Emitter<LiveProcess> = new Emitter<LiveProcess>();
     private onDidLiveProcessMemoryMetricsUpdateEmitter: Emitter<LiveProcess> = new Emitter<LiveProcess>();
     private onSpringIndexUpdateEmitter: Emitter<void> = new Emitter<void>();
-    // private onDidLiveProcessLoggersUpdateEmitter: Emitter<LiveProcess> = new Emitter<LiveProcess>();
 
     public constructor(client: LanguageClient) {
         const onDidLiveProcessConnect = this.onDidLiveProcessConnectEmitter.event;
@@ -63,7 +60,6 @@ export class ApiManager {
         client.onNotification(LiveProcessUpdatedNotification.type, (process: LiveProcess) => this.onDidLiveProcessUpdateEmitter.fire(process));
         client.onNotification(LiveProcessGcPausesMetricsUpdatedNotification.type, (process: LiveProcess) => this.onDidLiveProcessGcPausesMetricsUpdateEmitter.fire(process));
         client.onNotification(LiveProcessMemoryMetricsUpdatedNotification.type, (process: LiveProcess) => this.onDidLiveProcessMemoryMetricsUpdateEmitter.fire(process));
-        // client.onNotification(LiveProcessLoggersUpdatedNotification.type, setLogLevelUi.getLoggersList() );
 
         client.onNotification(SpringIndexUpdatedNotification.type, () => this.onSpringIndexUpdateEmitter.fire());
 
@@ -89,7 +85,6 @@ export class ApiManager {
             getLiveProcessMetricsData,
             refreshLiveProcessMetricsData,
             listConnectedProcesses,
-            // onDidLiveProcessLoggersUpdate,
             getSpringIndex
         };
     }

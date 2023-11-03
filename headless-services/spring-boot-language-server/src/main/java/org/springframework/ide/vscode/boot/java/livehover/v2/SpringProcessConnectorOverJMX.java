@@ -245,9 +245,6 @@ public class SpringProcessConnectorOverJMX implements SpringProcessConnector {
 				log.info("retrieve live data from: " + jmxURL);
 				SpringProcessUpdatedLogLevelData springProcessUpdatedLoggersData = springJMXConnector.configureLogLevel(getProcessType(), jmxConnection, processID, processName, currentData, args);
 
-//				if (loggersData != null) {
-//					return loggersData;
-//				}
 				return springProcessUpdatedLoggersData;
 			}
 			catch (Exception e) {

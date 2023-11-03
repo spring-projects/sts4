@@ -34,7 +34,6 @@ export interface LoggerItem {
 async function setLogLevelHandler() {
 
     const processData : ProcessCommandInfo[] = await VSCode.commands.executeCommand('sts/livedata/listProcesses');
-    console.log(processData)
     const choiceMap = new Map<string, ProcessCommandInfo>();
     const choices : string[] = [];
     processData.forEach(p => {
@@ -47,20 +46,15 @@ async function setLogLevelHandler() {
     });
     if (choices) {
         const picked = await VSCode.window.showQuickPick(choices);
-        console.log(picked)
         if (picked) {
             const chosen = choiceMap.get(picked);
-            console.log(chosen)
             const loggers = await VSCode.commands.executeCommand('sts/livedata/getLoggers', chosen, {"endpoint": "loggers"});
-            console.log(loggers)
         }
     }
 }
 
 async function getLoggersList(process: LiveProcess) {
-    console.log("On loggers notification")
     const loggers: LoggersData = await VSCode.commands.executeCommand('sts/livedata/fetch/loggersData', process);
-    console.log(loggers);
     let items;
     if(loggers) {
         items = Object.keys(loggers.loggers).map(packageName => {
@@ -74,23 +68,17 @@ async function getLoggersList(process: LiveProcess) {
             };
         });
     }
-    console.log(loggers.levels)
     if(items) {
         const chosenPackage = await VSCode.window.showQuickPick(items);
-        console.log(chosenPackage)
         if (chosenPackage) {
             const chosenlogLevel = await VSCode.window.showQuickPick(loggers.levels);
-            console.log(chosenlogLevel)
             const changeLogLevel = await VSCode.commands.executeCommand('sts/livedata/configure/logLevel', {"endpoint": "loggers"}, process, chosenPackage, {"configuredLevel":chosenlogLevel});
-            console.log(changeLogLevel)
         }
     }
 
 }
 
 async function logLevelUpdated(process: LiveProcessUpdatedLogLevel) {
-    console.log("On log level updated notifications")
-    console.log(process)
     VSCode.window.showInformationMessage("The Log level for " + process.packageName + " has been updated from " + 
     process.effectiveLevel + " to " + process.configuredLevel);
 }

@@ -325,7 +325,6 @@ public class SpringProcessLiveDataExtractorOverJMX {
 			}
 
 			Loggers loggers = getLoggers(connection, domain);
-			System.out.println(loggers);
 
 			return new SpringProcessLoggersData(
 					processType,
@@ -352,7 +351,6 @@ public class SpringProcessLiveDataExtractorOverJMX {
 					"loggers", 
 					params1, 
 					signature);
-			System.out.println(loggersData);
 			if (loggersData instanceof String) {
 				return gson.fromJson((String)loggersData, Loggers.class);
 			} else if(loggersData != null){
@@ -407,12 +405,11 @@ public class SpringProcessLiveDataExtractorOverJMX {
 		String[] signature =  new String[] {String.class.getName(), List.class.getName()};
 
 		try {
-			Object loggersData = getActuatorDataFromOperation(connection,
+			getActuatorDataFromOperation(connection,
 					getObjectName(domain, "type=Endpoint,name=Loggers"), 
 					"configureLogLevel", 
 					params, 
 					signature);
-			System.out.println(loggersData);
 		} catch (Exception e) {
 			log.error("", e);
 			throw e;

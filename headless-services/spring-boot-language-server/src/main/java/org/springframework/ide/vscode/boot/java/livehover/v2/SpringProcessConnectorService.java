@@ -389,15 +389,12 @@ public class SpringProcessConnectorService {
 				if(LOGGERS.equals(endpoint)) {
 					SpringProcessUpdatedLogLevelData springProcessUpdatedLoggersData = connector.configureLogLevel(this.liveDataProvider.getCurrent(processKey), springProcessParams.getArgs());
 
-//					if (loggersData != null) {
-//						if (!this.liveDataProvider.addLoggers(processKey, loggersData)) {
-							this.liveDataProvider.updateLogLevel(processKey, springProcessUpdatedLoggersData);
-//						}
-
+					if(springProcessUpdatedLoggersData != null) {
+						this.liveDataProvider.updateLogLevel(processKey, springProcessUpdatedLoggersData);
 						this.connectedSuccess.put(processKey, true);
-					}
+					}	
+				}
 
-//				}
 				progressTask.done();
 			}
 			catch (Exception e) {
