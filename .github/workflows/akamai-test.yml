@@ -4,16 +4,16 @@ on:
   workflow_dispatch:
 
 jobs:
-    akamai-upload:
-      name: Upload to Akamai
-      runs-on: ubuntu-latest
-      steps:
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.TOOLS_S3_ACCESS_KEY }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.TOOLS_S3_SECRET_KEY  }}
-          AWS_DEFAULT_REGION: us-east-1
-        run: |
-          file="upload-test.txt"
-          echo 'Upload test file' > $file
-          cat $file
-          aws s3 mv ./$file s3://tools-spring-io/test-akamai/$file --acl public-read --no-progress
+  akamai-upload:
+    name: Upload to Akamai
+    runs-on: ubuntu-latest
+    steps:
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.TOOLS_S3_ACCESS_KEY }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.TOOLS_S3_SECRET_KEY  }}
+        AWS_DEFAULT_REGION: us-east-1
+      run: |
+        file="upload-test.txt"
+        echo 'Upload test file' > $file
+        cat $file
+        aws s3 mv ./$file s3://tools-spring-io/test-akamai/$file --acl public-read --no-progress
