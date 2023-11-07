@@ -8,6 +8,8 @@ jobs:
     name: Upload to Akamai
     runs-on: ubuntu-latest
     steps:
+      name: Gene file and upload
+      id: gen-upload
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.TOOLS_S3_ACCESS_KEY }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.TOOLS_S3_SECRET_KEY  }}
