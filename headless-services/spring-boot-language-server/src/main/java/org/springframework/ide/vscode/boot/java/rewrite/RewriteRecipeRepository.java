@@ -37,6 +37,7 @@ import org.eclipse.lsp4j.ApplyWorkspaceEditParams;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.WorkspaceEdit;
 import org.openrewrite.InMemoryExecutionContext;
+import org.openrewrite.ParseExceptionResult;
 import org.openrewrite.Parser;
 import org.openrewrite.Recipe;
 import org.openrewrite.RecipeRun;
@@ -50,6 +51,7 @@ import org.openrewrite.config.YamlResourceLoader;
 import org.openrewrite.internal.InMemoryLargeSourceSet;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.maven.MavenParser;
+import org.openrewrite.tree.ParseError;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.boot.app.BootJavaConfig;
@@ -368,10 +370,26 @@ public class RewriteRecipeRepository {
 					return null;
 				});
 		List<SourceFile> sources = projectParser.parse(absoluteProjectDir, new InMemoryExecutionContext());
+		reportParseErrors(sources.stream().filter(ParseError.class::isInstance).map(ParseError.class::cast).collect(Collectors.toList()));
 		progressTask.progressEvent("Computing changes...");
 		RecipeRun reciperun = r.run(new InMemoryLargeSourceSet(sources), new InMemoryExecutionContext(e -> log.error("Recipe execution failed", e)));
 		List<Result> results = reciperun.getChangeset().getAllResults();
 		return ORDocUtils.createWorkspaceEdit(absoluteProjectDir, server.getTextDocumentService(), results);
+	}
+	
+	private void reportParseErrors(List<ParseError> parseErrors) {
+		if (!parseErrors.isEmpty()) {
+			for (ParseError err : parseErrors) {
+				ParseExceptionResult parseException = err.getMarkers().findFirst(ParseExceptionResult.class).get();
+				if (parseException == null) {
+					log.warn("OpenRewrite failed to parse '{}' with unknown error", err.getSourcePath());
+				} else {
+					log.warn("OpenRewrite parser '{}' failed to parse '{}' with error:\n{}", parseException.getParserType(), err.getSourcePath(), parseException.getMessage());
+				}
+			}
+			server.getMessageService().warning("Failed to parse %d files (See Language Server :\n%s".formatted(parseErrors.size(), parseErrors
+					.stream().map(pe -> pe.getSourcePath().toFile().toString()).collect(Collectors.joining("\n"))));
+		}
 	}
 	
 	private CompletableFuture<List<Recipe>> listProjectRefactoringRecipes(String uri) {

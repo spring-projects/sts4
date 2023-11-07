@@ -28,7 +28,6 @@ import org.openrewrite.SourceFile;
 import org.openrewrite.internal.ListUtils;
 import org.openrewrite.java.JavaParser;
 import org.openrewrite.java.marker.JavaSourceSet;
-import org.openrewrite.java.tree.J.CompilationUnit;
 import org.openrewrite.marker.Marker;
 import org.openrewrite.properties.PropertiesParser;
 import org.openrewrite.text.PlainTextParser;
@@ -64,8 +63,8 @@ public abstract class ProjectParser {
 			Collection<Path> mainClasspath = ss.classpath();
 			javaParser.setClasspath(mainClasspath);
 
-			List<CompilationUnit> javaSources = ListUtils.map(javaParser.parseInputs(
-					() -> getInputs(ss.javaSources.stream()).iterator(), projectDir, ctx).map(CompilationUnit.class::cast).collect(Collectors.toList()), addProvenance(projectProvenance));
+			List<SourceFile> javaSources = ListUtils.map(javaParser.parseInputs(
+					() -> getInputs(ss.javaSources.stream()).iterator(), projectDir, ctx).collect(Collectors.toList()), addProvenance(projectProvenance));
 			JavaSourceSet javaSourceSet = ORAstUtils.addJavaSourceSet(javaSources, ss.name(),
 					mainClasspath);
 			sources.addAll(javaSources);
