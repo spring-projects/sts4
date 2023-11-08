@@ -26,9 +26,6 @@ jobs:
           --role-session-name gha-upload \
           --query "Credentials.[AccessKeyId,SecretAccessKey,SessionToken]" \
           --output text))
-          echo "::add-mask::$AWS_ACCESS_KEY_ID"
-          echo "::add-mask::$AWS_SECRET_ACCESS_KEY"
-          echo "::add-mask::$AWS_SESSION_TOKEN"
           echo "key_id=$AWS_ACCESS_KEY_ID" >> $GITHUB_OUTPUT
           echo "key_secret=$AWS_SECRET_ACCESS_KEY" >> $GITHUB_OUTPUT
           echo "session_token=$AWS_SESSION_TOKEN" >> $GITHUB_OUTPUT
@@ -40,14 +37,11 @@ jobs:
     steps:
       - name: Test Environment
         env:
-          AWS_ACCESS_KEY_ID: ${{ needs.akamai-upload.outputs.key_id }}
-          AWS_SECRET_ACCESS_KEY: ${{ needs.akamai-upload.outputs.key_secret }}
-          AWS_SESSION_TOKEN: ${{ needs.akamai-upload.outputs.session_token }}
+          AWS_ACCESS_KEY_ID: ::add-mask::${{ needs.akamai-upload.outputs.key_id }}
+          AWS_SECRET_ACCESS_KEY: ::add-mask::${{ needs.akamai-upload.outputs.key_secret }}
+          AWS_SESSION_TOKEN: ::add-mask::${{ needs.akamai-upload.outputs.session_token }}
           AWS_DEFAULT_REGION: us-east-1
         run: |
-          echo $AWS_ACCESS_KEY_ID
-          echo $AWS_SECRET_ACCESS_KEY
-          echo $AWS_SESSION_TOKEN
           file="upload-test.txt"
           echo 'Upload test file' > $file
           cat $file
