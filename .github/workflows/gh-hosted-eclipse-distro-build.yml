@@ -224,7 +224,6 @@ jobs:
           security unlock-keychain -p ${{ secrets.KEYCHAIN_PASSWORD }} $RUNNER_TEMP/app-signing.keychain-db
       - name: Install appdmg
         run: |
-          brew install python@3.11
           npm install -g appdmg
       - name: Download OSX tar.gz files from S3 for Signing/Notarization
         env:

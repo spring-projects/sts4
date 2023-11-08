@@ -17,7 +17,7 @@ jobs:
         env:
           SLACK_BOT_TOKEN: ${{ secrets.VMWARE_SLACK_BOT_TOKEN }}
         with:
-          channel-id: "C0188MENU2J"
+          channel-id: "C4W4Q9FR9"
           payload: |
             {
               "text": "${{ inputs.md_message }}",
