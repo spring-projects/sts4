@@ -24,4 +24,4 @@ jobs:
           --role-session-name gha-upload \
           --query "Credentials.[AccessKeyId,SecretAccessKey,SessionToken]" \
           --output text))
-          aws s3 mv ./$file s3://tools-spring-io/test-akamai/$file --acl public-read --no-progress
+          aws s3 mv ./$file s3://tools-spring-io/test-akamai/$file
