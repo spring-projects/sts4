@@ -93,7 +93,7 @@
 		<dist.accessKey>${env.AWS_ACCESS_KEY_ID}</dist.accessKey>
 		<dist.secretKey>${env.AWS_SECRET_ACCESS_KEY}</dist.secretKey>
 
-		<dist.bucket>dist.springsource.com</dist.bucket>
+		<dist.bucket>tools-spring-io</dist.bucket>
 		<dist.key>TOOLS</dist.key>
 		<dist.path>${dist.type}/${dist.key}/${dist.project}/${dist.version}</dist.path>
 
