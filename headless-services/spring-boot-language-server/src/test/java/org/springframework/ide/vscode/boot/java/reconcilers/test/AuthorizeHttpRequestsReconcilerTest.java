@@ -80,7 +80,7 @@ public class AuthorizeHttpRequestsReconcilerTest extends BaseReconcilerTest {
 		String source = """
 				package example.demo;
 				
-				import org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer;
+				import org.springframework.security.config.annotation.web.configurers.AbstractInterceptUrlConfigurer;
 				
 				class A {
 				
@@ -174,22 +174,13 @@ public class AuthorizeHttpRequestsReconcilerTest extends BaseReconcilerTest {
 				""";
 		List<ReconcileProblem> problems = reconcile("A.java", source, true);
 		
-		assertEquals(2, problems.size());
+		assertEquals(1, problems.size());
 		
 		ReconcileProblem problem = problems.get(0);
 		
 		assertEquals(Boot2JavaProblemType.HTTP_SECURITY_AUTHORIZE_HTTP_REQUESTS, problem.getType());
 		
 		String markedStr = source.substring(problem.getOffset(), problem.getOffset() + problem.getLength());
-		assertEquals("ExpressionUrlAuthorizationConfigurer", markedStr);
-
-		assertEquals(2, problem.getQuickfixes().size());
-		
-		problem = problems.get(1);
-		
-		assertEquals(Boot2JavaProblemType.HTTP_SECURITY_AUTHORIZE_HTTP_REQUESTS, problem.getType());
-		
-		markedStr = source.substring(problem.getOffset(), problem.getOffset() + problem.getLength());
 		assertEquals("authorizeRequests", markedStr);
 
 		assertEquals(2, problem.getQuickfixes().size());

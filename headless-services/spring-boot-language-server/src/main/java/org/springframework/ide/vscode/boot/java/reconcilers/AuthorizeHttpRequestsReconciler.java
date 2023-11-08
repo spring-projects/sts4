@@ -17,7 +17,6 @@ import org.eclipse.jdt.core.dom.ASTVisitor;
 import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.eclipse.jdt.core.dom.ITypeBinding;
 import org.eclipse.jdt.core.dom.MethodInvocation;
-import org.eclipse.jdt.core.dom.SimpleType;
 import org.openrewrite.java.spring.security5.AuthorizeHttpRequests;
 import org.springframework.ide.vscode.boot.java.Boot2JavaProblemType;
 import org.springframework.ide.vscode.commons.Version;
@@ -40,9 +39,7 @@ public class AuthorizeHttpRequestsReconciler implements JdtAstReconciler {
 
 	private static final String AUTHORIZE_REQUESTS_FIX_LABEL = "Replace with 'authorizeHttpRequests(...)' and related types";
 
-	private static final String CLASS_FIX_LABEL_TEMPLATE = "Replace with %s and use 'HttpSecurity.authorizeHttpRequests(...) and related types";
-
-	private static final String FQN_AUTH_REQ_CONFIG = "org.springframework.security.config.annotation.web.configurers.AuthorizeHttpRequestsConfigurer";
+	private static final String FQN_INTERCEPTOR_URL_CONFIG = "org.springframework.security.config.annotation.web.configurers.AbstractInterceptUrlConfigurer";
 
 	private static final String FQN_EXPR_AUTH_CONFIG = "org.springframework.security.config.annotation.web.configurers.ExpressionUrlAuthorizationConfigurer";
 
@@ -87,44 +84,11 @@ public class AuthorizeHttpRequestsReconciler implements JdtAstReconciler {
 					return true;
 				}
 
-				@Override
-				public boolean visit(SimpleType node) {
-					String replacementClass = null;
-					if (ReconcileUtils.isApplicableTypeWithoutResolving(cu,
-							List.of(FQN_AUTH_REQ_CONFIG, FQN_EXPR_AUTH_CONFIG), node.getName())) {
-						replacementClass = "AuthorizeHttpRequestsConfigurer";
-					} else if (ReconcileUtils.isApplicableTypeWithoutResolving(cu, List.of(FQN_EXPR_INTERCEPT_REG),
-							node.getName())) {
-						replacementClass = "AuthorizationManagerRequestMatcherRegistry";
-					}
-					if (replacementClass != null) {
-						ReconcileProblemImpl problem = new ReconcileProblemImpl(getProblemType(),
-								"Use of type '" + node.getName().getFullyQualifiedName() + "' is outdated",
-								node.getName().getStartPosition(), node.getName().getLength());
-						String uri = docUri.toASCIIString();
-						String id = AuthorizeHttpRequests.class.getName();
-						ReconcileUtils
-								.setRewriteFixes(registry, problem, List.of(
-										new FixDescriptor(id, List.of(uri),
-												ReconcileUtils.buildLabel(String.format(CLASS_FIX_LABEL_TEMPLATE,
-														replacementClass), RecipeScope.FILE))
-												.withRecipeScope(RecipeScope.FILE),
-										new FixDescriptor(id, List.of(uri),
-												ReconcileUtils.buildLabel(
-														String.format(CLASS_FIX_LABEL_TEMPLATE, replacementClass),
-														RecipeScope.PROJECT))
-												.withRecipeScope(RecipeScope.PROJECT)));
-						problemCollector.accept(problem);
-						return false;
-					}
-					return super.visit(node);
-				}
-
 			});
 		} else {
 			boolean needsFullAst = ReconcileUtils.isAnyTypeUsed(cu, List.of(
 					FQN_HTTP_SECURITY,
-					FQN_AUTH_REQ_CONFIG,
+					FQN_INTERCEPTOR_URL_CONFIG,
 					FQN_EXPR_AUTH_CONFIG,
 					FQN_EXPR_INTERCEPT_REG
 			));
