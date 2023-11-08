@@ -18,5 +18,10 @@ jobs:
           file="upload-test.txt"
           echo 'Upload test file' > $file
           cat $file
-          aws sts assume-role --role-arn arn:aws:iam::${{ secrets.TOOLS_CLOUDGATE_ACCOUNT_ID }}:role/${{ secrets.TOOLS_CLOUDGATE_USER }} --role-session-name gha-upload
+          export $(printf "AWS_ACCESS_KEY_ID=%s AWS_SECRET_ACCESS_KEY=%s AWS_SESSION_TOKEN=%s" \
+          $(aws sts assume-role \
+          --role-arn arn:aws:iam::${{ secrets.TOOLS_CLOUDGATE_ACCOUNT_ID }}:role/${{ secrets.TOOLS_CLOUDGATE_USER }} \
+          --role-session-name gha-upload \
+          --query "Credentials.[AccessKeyId,SecretAccessKey,SessionToken]" \
+          --output text))
           aws s3 mv ./$file s3://tools-spring-io/test-akamai/$file --acl public-read --no-progress
