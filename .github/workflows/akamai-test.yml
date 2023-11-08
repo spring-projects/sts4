@@ -8,10 +8,6 @@ jobs:
   akamai-upload:
     name: Upload to Akamai
     runs-on: ubuntu-latest
-    outputs:
-      key_id: ${{ steps.gen-upload.outputs.key_id }}
-      key_secret: ${{ steps.gen-upload.outputs.key_secret }}
-      session_token: ${{ steps.gen-upload.outputs.session_token }}
     steps:
       - name: Gen file and upload
         id: gen-upload
@@ -26,25 +22,17 @@ jobs:
           --role-session-name gha-upload \
           --query "Credentials.[AccessKeyId,SecretAccessKey,SessionToken]" \
           --output text))
-          echo "key_id=$AWS_ACCESS_KEY_ID" >> $GITHUB_OUTPUT
-          echo "key_secret=$AWS_SECRET_ACCESS_KEY" >> $GITHUB_OUTPUT
-          echo "session_token=$AWS_SESSION_TOKEN" >> $GITHUB_OUTPUT
-
-  akamai-test:
-    name: Test Akamai
-    runs-on: ubuntu-latest
-    needs: [ akamai-upload ]
-    steps:
+          echo "AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID" >> $GITHUB_ENV
+          echo "AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY" >> $GITHUB_ENV
+          echo "AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN" >> $GITHUB_ENV
       - name: Test Environment
         env:
-          AWS_ACCESS_KEY_ID: ::add-mask::${{ needs.akamai-upload.outputs.key_id }}
-          AWS_SECRET_ACCESS_KEY: ::add-mask::${{ needs.akamai-upload.outputs.key_secret }}
-          AWS_SESSION_TOKEN: ::add-mask::${{ needs.akamai-upload.outputs.session_token }}
           AWS_DEFAULT_REGION: us-east-1
         run: |
           file="upload-test.txt"
           echo 'Upload test file' > $file
           cat $file
+          echo $AWS_SESSION_TOKEN
           aws s3 mv ./$file s3://tools-spring-io/test-akamai/$file
           aws s3 rm s3://tools-spring-io/test-akamai/$file
 
