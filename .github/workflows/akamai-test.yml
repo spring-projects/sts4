@@ -11,8 +11,8 @@ jobs:
     - name: Gene file and upload
       id: gen-upload
       env:
-        AWS_ACCESS_KEY_ID: ${{ secrets.TOOLS_S3_ACCESS_KEY }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.TOOLS_S3_SECRET_KEY  }}
+        AWS_ACCESS_KEY_ID: ${{ secrets.TOOLS_CLOUDGATE_ACCESS_KEY }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.TOOLS_CLOUDGATE_SECRET_KEY  }}
         AWS_DEFAULT_REGION: us-east-1
       run: |
         file="upload-test.txt"
