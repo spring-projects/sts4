@@ -191,11 +191,12 @@ public class SpringIndexerJava implements SpringIndexer {
 		if (updatedDocs != null) {
 			DocumentDescriptor[] docs = filterDocuments(project, updatedDocs);
 
-			for (DocumentDescriptor updatedDoc : docs) {
-				this.symbolHandler.removeSymbols(project, updatedDoc.getDocURI());
+			if (docs.length > 0) {
+				for (DocumentDescriptor updatedDoc : docs) {
+					this.symbolHandler.removeSymbols(project, updatedDoc.getDocURI());
+				}
+				scanFiles(project, docs);
 			}
-
-			scanFiles(project, docs);
 		}
 	}
 	
