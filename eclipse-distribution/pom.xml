@@ -65,39 +65,24 @@
 
 	<properties>
 		<p2.qualifier>${buildQualifier}-SNAPSHOT</p2.qualifier>
-		<p2.sign>false</p2.sign>
 		<p2.repository.name>Spring Tool Suite</p2.repository.name>
-
-		<!-- Signing -->
-		<signing.skip>true</signing.skip>
-		<signing.alias>vmware</signing.alias>
-
-		<!-- signing and notarizing (win exe signing + macOS app signing and notarizing-->
-		<skip.win.signing>true</skip.win.signing>
-		<skip.osx.signing>true</skip.osx.signing>
-		<skip.osx.notarizing>true</skip.osx.notarizing>
 
 		<dist.name>Spring Tool Suite 4</dist.name>
 
-		<dist.bucket>dist.springsource.com</dist.bucket>
 		<dist.key>TOOLS</dist.key>
-		<dist.accessKey>${env.bamboo_vault_tools_s3_accesskey_password}</dist.accessKey>
-		<dist.secretKey>${env.bamboo_vault_tools_s3_secretkey_password}</dist.secretKey>
 
 		<dist.project>sts4</dist.project>
 
 		<dist.pathpostfix>nightly</dist.pathpostfix>
 		<dist.path>${dist.type}/${dist.key}/${dist.project}/${dist.pathpostfix}</dist.path>
 
-		<sts4-language-servers-p2-repo>https://cdn.spring.io/spring-tools/${dist.type}/TOOLS/sts4-language-server-integrations/${sts4-language-servers-version}</sts4-language-servers-p2-repo>
+		<sts4-language-servers-p2-repo>https://dist.springsource.com/${dist.type}/TOOLS/sts4-language-server-integrations/${sts4-language-servers-version}</sts4-language-servers-p2-repo>
 		
-		<tycho-version>4.0.0</tycho-version>
+		<tycho-version>4.0.4</tycho-version>
 		<encoding>UTF-8</encoding>
 
 		<misc.p2.repo.version>3.9.4.202211021051</misc.p2.repo.version>
 
-		<vm-signing.ssh.user>signer</vm-signing.ssh.user>
-		<vm-signing.ssh.key>~bamboo/.ssh/id_rsa</vm-signing.ssh.key>
 	</properties>
 
 	<profiles>
@@ -148,33 +133,6 @@
 				<gpg.keyname>${env.gpg_keyname}</gpg.keyname>
 				<skip.update-nightly-download-page>true</skip.update-nightly-download-page>
 			</properties>
-		</profile>
-
-
-		<profile>
-			<id>vm-signing</id>
-			<build>
-				<plugins>
-					<plugin>
-						<artifactId>exec-maven-plugin</artifactId>
-						<groupId>org.codehaus.mojo</groupId>
-						<executions>
-							<execution>
-								<id>VM JAR Sign</id>
-								<phase>package</phase>
-								<goals>
-									<goal>exec</goal>
-								</goals>
-							</execution>
-						</executions>
-						<configuration>
-							<arguments>
-								<argument>${project.build.directory}</argument>
-							</arguments>
-						</configuration>
-					</plugin>
-				</plugins>
-			</build>
 		</profile>
 
 		<profile>
@@ -457,14 +415,6 @@
 		</profile>
 
 		<profile>
-			<id>bamboo-signing</id>
-			<properties>
-				<signing.store.password>${env.bamboo_vault_signing_passphrase}</signing.store.password>
-				<signing.key.password>${env.bamboo_vault_signing_passphrase}</signing.key.password>
-			</properties>
-		</profile>
-
-		<profile>
 			<id>bundle-tests</id>
 			<activation>
 				<property>
@@ -556,14 +506,6 @@
 	</pluginRepositories>
 
 	<build>
-		<extensions>
-<!--			<extension>
-				<groupId>org.springframework.build.aws</groupId>
-				<artifactId>org.springframework.build.aws.maven</artifactId>
-				<version>3.1.0.RELEASE</version>
-			</extension> -->
-		</extensions>
-
 		<plugins>
 
 			<plugin>
@@ -584,14 +526,6 @@
 						</goals>
 					</execution>
 				</executions>
-			</plugin>
-
-			<plugin>
-				<artifactId>maven-deploy-plugin</artifactId>
-				<version>2.5</version>
-				<configuration>
-					<skip>true</skip>
-				</configuration>
 			</plugin>
 
 			<plugin>
@@ -631,30 +565,6 @@
 				<version>${tycho-version}</version>
 				<configuration>
 					<skipArchive>true</skipArchive>
-				</configuration>
-			</plugin>
-
-			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-jarsigner-plugin</artifactId>
-				<version>3.0.0</version>
-				<executions>
-					<execution>
-						<id>sign</id>
-						<goals>
-							<goal>sign</goal>
-						</goals>
-					</execution>
-				</executions>
-				<configuration>
-					<skip>${signing.skip}</skip>
-					<alias>${signing.alias}</alias>
-					<keystore>${signing.keystore}</keystore>
-					<storetype>${signing.storetype}</storetype>
-					<storepass>${signing.store.password}</storepass>
-					<keypass>${signing.key.password}</keypass>
-<!--					<tsa>http://sha256timestamp.ws.symantec.com/sha256/timestamp</tsa> -->
-					<tsa>http://timestamp.digicert.com</tsa>
 				</configuration>
 			</plugin>
 
@@ -784,34 +694,7 @@
 								</exclusion>
 							</exclusions>
 						</dependency>
-						<dependency>
-							<groupId>org.apache.ant</groupId>
-							<artifactId>ant-nodeps</artifactId>
-							<version>1.8.1</version>
-						</dependency>
-						<dependency>
-							<groupId>org.springframework.build</groupId>
-							<artifactId>org.springframework.build.aws.ant</artifactId>
-							<version>3.0.6.RELEASE</version>
-						</dependency>
-						<dependency>
-							<groupId>net.java.dev.jets3t</groupId>
-							<artifactId>jets3t</artifactId>
-							<version>0.8.1</version>
-						</dependency>
 					</dependencies>
-				</plugin>
-
-				<plugin>
-					<artifactId>exec-maven-plugin</artifactId>
-					<groupId>org.codehaus.mojo</groupId>
-					<configuration>
-						<executable>scripts/sign-jars.sh</executable>
-						<environmentVariables>
-							<SSH_USER>${vm-signing.ssh.user}</SSH_USER>
-							<SSH_KEY>${vm-signing.ssh.key}</SSH_KEY>
-						</environmentVariables>
-					</configuration>
 				</plugin>
 
 			</plugins>

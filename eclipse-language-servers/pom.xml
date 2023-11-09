@@ -303,7 +303,7 @@
 		<repository>
 			<id>p2-thirdparty-bundles</id>
 			<layout>p2</layout>
-			<url>https://cdn.spring.io/spring-tools/release/TOOLS/third-party/misc-p2-repo/${misc.p2.repo.version}</url>
+			<url>https://dist.springsource.com/release/TOOLS/third-party/misc-p2-repo/${misc.p2.repo.version}</url>
 		</repository>
 	</repositories>
 

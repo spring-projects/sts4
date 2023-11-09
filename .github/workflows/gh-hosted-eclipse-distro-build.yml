@@ -68,7 +68,18 @@ jobs:
             p2_qualifier_param="-Dp2.qualifier=${p2_qualifier}"
           fi
           cd eclipse-distribution
-          ./mvnw --batch-mode -U clean deploy -P${{ inputs.eclipse_profile }} -P${{ inputs.build_type }} $sts4_ls_version_param $p2_qualifier_param -Pgitactions -Pgpg.sign -Dsigning.skip=true -Dmaven.repo.local=~/.m2/repository-signed -Dhttpclient.retry-max=20 -Dmaven.test.skip=true -Declipse.p2.mirrors=false -Dtycho.localArtifacts=ignore -Ds3service.https-only=true -Dp2.replaceQualifier=true -Dorg.eclipse.ecf.provider.filetransfer.httpclient.retrieve.readTimeout=1200000 -Dorg.eclipse.equinox.p2.transport.ecf.retry=5 -Dskip.eclipserun.proxies=false -Dskip.osx.signing=true  -Dskip.win.signing=true -Dskip.osx.notarizing=true -Dtycho.equinox.resolver.uses=true
+          ./mvnw --batch-mode -U clean install -P${{ inputs.eclipse_profile }} -P${{ inputs.build_type }} $sts4_ls_version_param $p2_qualifier_param -Pgitactions -Pgpg.sign -Dmaven.repo.local=~/.m2/repository-signed -Dhttpclient.retry-max=20 -Dmaven.test.skip=true -Declipse.p2.mirrors=false -Dtycho.localArtifacts=ignore -Dp2.replaceQualifier=true -Dorg.eclipse.ecf.provider.filetransfer.httpclient.retrieve.readTimeout=1200000 -Dorg.eclipse.equinox.p2.transport.ecf.retry=5 -Dskip.eclipserun.proxies=false -Dtycho.equinox.resolver.uses=true
+      - name: Upload P2 Repo Build Artifacts
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.TOOLS_S3_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.TOOLS_S3_SECRET_KEY  }}
+          AWS_DEFAULT_REGION: us-east-1
+        run: |
+          cd eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target
+          dist_path=`cat s3-p2-repo-dist-path.txt`
+          echo "Dist path: ${dist_path}"
+          aws s3 rm s3://dist.springsource.com/${dist_path}/ --recursive --dryrun
+          aws s3 cp ./repository/ s3://dist.springsource.com/${dist_path}/ --recursive --acl public-read --dryrun
       - name: Upload Linux Distro Build Artifacts
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.TOOLS_S3_ACCESS_KEY }}

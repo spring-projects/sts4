@@ -343,9 +343,6 @@
 						<configuration>
 							<skip>${skip.update-nightly-download-page}</skip>
 							<target>
-								<taskdef resource="net/sf/antcontrib/antcontrib.properties" />
-								<taskdef resource="org/springframework/build/aws/ant/antlib.xml" />
-
 								<copy file="${project.build.directory}/../../common/html/nightly-generic-snippet-incl-apple-m1.html" tofile="${project.build.directory}/sts4-nightly-${dist.target.major}.html" overwrite="true"/>
 
 								<replace file="${project.build.directory}/sts4-nightly-${dist.target.major}.html" token="@QUALIFIER@" value="${unqualifiedVersion}.${p2.qualifier}" summary="yes" />
@@ -359,6 +356,7 @@
 						</goals>
 					</execution>
 
+<!--
 					<execution>
 						<id>upload-nightly-downloads</id>
 						<phase>deploy</phase>
@@ -379,6 +377,7 @@
 							<goal>run</goal>
 						</goals>
 					</execution>
+-->
 
 					<execution>
 						<id>generate-s3-upload-info</id>
@@ -404,9 +403,6 @@
 						<configuration>
 							<target>
 
-								<taskdef resource="net/sf/antcontrib/antcontrib.properties" />
-								<taskdef resource="org/springframework/build/aws/ant/antlib.xml" />
-
 								<property name="dist.full.version" value="${unqualifiedVersion}.${p2.qualifier}-${dist.target}" />
 								<property name="dist.file.name" value="${dist.project}-${dist.full.version}-updatesite.zip" />
 
@@ -428,6 +424,7 @@
 						</goals>
 					</execution>
 
+<!--
 					<execution>
 						<id>upload-sts-repository</id>
 						<phase>deploy</phase>
@@ -472,19 +469,10 @@
 							<goal>run</goal>
 						</goals>
 					</execution>
+-->
 
 				</executions>
 				<dependencies>
-					<dependency>
-						<groupId>org.springframework.build</groupId>
-						<artifactId>org.springframework.build.aws.ant</artifactId>
-						<version>3.0.6.RELEASE</version>
-					</dependency>
-					<dependency>
-						<groupId>net.java.dev.jets3t</groupId>
-						<artifactId>jets3t</artifactId>
-						<version>0.8.1</version>
-					</dependency>
 					<dependency>
 						<groupId>ant-contrib</groupId>
 						<artifactId>ant-contrib</artifactId>
