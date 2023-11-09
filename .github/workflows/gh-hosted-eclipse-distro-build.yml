@@ -90,7 +90,7 @@ jobs:
           dist_path=`cat s3-p2-repo-dist-path.txt`
           echo "Dist path: ${dist_path}"
           aws s3 rm s3://tools-spring-io/${dist_path}/ --recursive
-          aws s3 cp ./repository/ s3://tools-spring-io/${dist_path}/ --recursive --acl public-read
+          aws s3 cp ./repository/ s3://tools-spring-io/${dist_path}/ --recursive
       - name: Upload Linux Distro Build Artifacts
         run: |
           cd eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target/products
@@ -108,6 +108,16 @@ jobs:
           aws s3 rm s3://dist.springsource.com/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*linux*.tar.gz*" --exclude "*/*"
           echo "Uploading new Linux .ta.gz files to s3..."
           aws s3 cp . s3://dist.springsource.com/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*linux*.tar.gz*" --exclude "*/*" --acl public-read --no-progress
+      - name: Upload Linux Distro Build Artifacts (Akamai)
+        run: |
+          cd eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target/products
+          echo "Processing Akamai S3 update..."
+          ls spring-tool-suite-4*linux*.tar.gz*
+          dist_path=`cat ${{ github.workspace }}/eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target/s3-dist-path.txt`
+          echo "Removing old Linux .tar.gz files from Akamai s3..."
+          aws s3 rm s3://tools-spring-io/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*linux*.tar.gz*" --exclude "*/*"
+          echo "Uploading new Linux .ta.gz files to Akamai s3..."
+          aws s3 cp . s3://tools-spring-io/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*linux*.tar.gz*" --exclude "*/*" --no-progress
       - name: Clear S3 Caches for P2 Repo
         if: ${{ inputs.build_type != 'snapshot' }}
         env:
