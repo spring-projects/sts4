@@ -80,6 +80,8 @@ jobs:
       - name: Akamai Setup
         id: akamai-setup
         env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.TOOLS_CLOUDGATE_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.TOOLS_CLOUDGATE_SECRET_KEY  }}
           TOOLS_CLOUDGATE_ACCOUNT_ID: ${{ secrets.TOOLS_CLOUDGATE_ACCOUNT_ID }}
           TOOLS_CLOUDGATE_USER: ${{ secrets.TOOLS_CLOUDGATE_USER }}
           AWS_DEFAULT_REGION: us-east-1
@@ -101,10 +103,6 @@ jobs:
           aws s3 rm s3://tools-spring-io/${dist_path}/ --recursive --dryrun
           aws s3 cp ${{ github.workspace }}/eclipse-language-servers/org.springframework.tooling.ls.integration.repository/target/repository/ s3://tools-spring-io/${dist_path}/ --recursive --dryrun
       - name: Upload P2 Repo to legacy S3
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.TOOLS_S3_ACCESS_KEY }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.TOOLS_S3_SECRET_KEY }}
-          AWS_DEFAULT_REGION: us-east-1
         run: |
           dist_path=`cat ${{ github.workspace }}/eclipse-language-servers/org.springframework.tooling.ls.integration.repository/target/s3-p2-repo-dist-path.txt`
           echo "Dist path: ${dist_path}"
