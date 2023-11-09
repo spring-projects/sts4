@@ -49,6 +49,7 @@
 							<goal>run</goal>
 						</goals>
 					</execution>
+<!--
 					<execution>
 						<id>upload-repo</id>
 						<phase>deploy</phase>
@@ -90,6 +91,7 @@
 							<goal>run</goal>
 						</goals>
 					</execution>
+-->
 				</executions>
 				<dependencies>
 					<dependency>

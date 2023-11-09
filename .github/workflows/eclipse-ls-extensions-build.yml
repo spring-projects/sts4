@@ -61,6 +61,22 @@ jobs:
         run: |
           echo "${{ secrets.GPG_PRIVATE_KEY }}" > gpg.asc
           echo "${{ secrets.GPG_PASSPHRASE }}" | gpg --batch --yes --passphrase-fd 0 --import gpg.asc
+      - name: Build Eclipse LS extensions
+        env:
+          gpg_passphrase: ${{ secrets.GPG_PASSPHRASE }}
+          gpg_keyname: ${{ secrets.GPG_KEYID }}
+        run: |
+          sts4_ls_version=${{ inputs.sts4-language-servers-version }}
+          sts4_ls_version_param=""
+          if ! [[ -z ${sts4_ls_version} ]]; then
+            sts4_ls_version_param="-Ddist.version=${sts4_ls_version}"
+          fi  
+          cd eclipse-language-servers
+          if command -v xvfb-run ; then
+            xvfb-run ./mvnw --batch-mode clean deploy -P${{ inputs.eclipse_profile }} -P${{ inputs.build_type }} $sts4_ls_version_param -Pgitactions -Pgpg.sign -Dmaven.test.skip=true -Dsigning.skip=true -Dhttpclient.retry-max=20 -Declipse.p2.mirrors=false -Ds3service.https-only=true -Dtycho.localArtifacts=ignore
+          else
+            ./mvnw --batch-mode clean deploy -P${{ inputs.eclipse_profile }} -P${{ inputs.build_type }} $sts4_ls_version_param -Pgitactions -Pgpg.sign -Dmaven.test.skip=true -Dsigning.skip=true -Dhttpclient.retry-max=20 -Declipse.p2.mirrors=false -Ds3service.https-only=true -Dtycho.localArtifacts=ignore
+          fi
       - name: Akamai Setup
         id: akamai-setup
         env:
@@ -90,22 +106,12 @@ jobs:
           echo $AWS_SESSION_TOKEN
           aws s3 mv ./$file s3://tools-spring-io/test-akamai/$file
           aws s3 rm s3://tools-spring-io/test-akamai/$file
-      - name: Build Eclipse LS extensions
-        env:
-          gpg_passphrase: ${{ secrets.GPG_PASSPHRASE }}
-          gpg_keyname: ${{ secrets.GPG_KEYID }}
+      - name: Upload P2 Repo to Akamai
         run: |
-          sts4_ls_version=${{ inputs.sts4-language-servers-version }}
-          sts4_ls_version_param=""
-          if ! [[ -z ${sts4_ls_version} ]]; then
-            sts4_ls_version_param="-Ddist.version=${sts4_ls_version}"
-          fi  
-          cd eclipse-language-servers
-          if command -v xvfb-run ; then
-            xvfb-run ./mvnw --batch-mode clean deploy -P${{ inputs.eclipse_profile }} -P${{ inputs.build_type }} $sts4_ls_version_param -Pgitactions -Pgpg.sign -Dmaven.test.skip=true -Dsigning.skip=true -Dhttpclient.retry-max=20 -Declipse.p2.mirrors=false -Ds3service.https-only=true -Dtycho.localArtifacts=ignore
-          else
-            ./mvnw --batch-mode clean deploy -P${{ inputs.eclipse_profile }} -P${{ inputs.build_type }} $sts4_ls_version_param -Pgitactions -Pgpg.sign -Dmaven.test.skip=true -Dsigning.skip=true -Dhttpclient.retry-max=20 -Declipse.p2.mirrors=false -Ds3service.https-only=true -Dtycho.localArtifacts=ignore
-          fi
+          dist_path=`cat org.springframework.tooling.ls.integration.repository/target/s3-p2-repo-dist-path.txt`
+          echo "Dist path: ${dist_path}"
+          aws s3 rm s3://tools-spring-io/${dist_path}/ --recursive
+          aws s3 mv ./org.springframework.tooling.ls.integration.repository/target/repository/ s3://dist.springsource.com/${dist_path}/ --recursive
       - name: Clear S3 Caches
         if: ${{ inputs.build_type != 'snapshot' }}
         env:
