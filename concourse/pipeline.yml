@@ -294,9 +294,8 @@ resources:
     driver: s3
     bucket: ((s3_bucket))
     key: versions/vscode-extensions
-    access_key_id: ((s3_svc_accesskey))
-    secret_access_key: ((s3_svc_secretkey))
-    aws_role_arn: arn:aws:iam::((s3_svc_account_id)):role/((s3_svc_user))
+    access_key_id: ((s3_accesskey))
+    secret_access_key: ((s3_secretkey))
     region_name: ((s3_region))
     initial_version: 0.0.5-RC.6
 - name: nightly
