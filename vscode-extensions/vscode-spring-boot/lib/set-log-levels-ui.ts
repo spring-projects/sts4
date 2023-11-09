@@ -89,11 +89,11 @@ export function activate(
         options: ActivatorOptions,
         context: VSCode.ExtensionContext
 ) {
+    client.onNotification(LiveProcessLoggersUpdatedNotification.type, getLoggersList)
+    client.onNotification(LiveProcessLogLevelUpdatedNotification.type, logLevelUpdated)
     context.subscriptions.push(
         VSCode.commands.registerCommand('vscode-spring-boot.set.log-levels', () => {
             if (client.isRunning()) {
-                client.onNotification(LiveProcessLoggersUpdatedNotification.type, getLoggersList)
-                client.onNotification(LiveProcessLogLevelUpdatedNotification.type, logLevelUpdated)
                 return setLogLevelHandler();
             } else {
                 VSCode.window.showErrorMessage("No Spring Boot project found. Action is only available for Spring Boot Projects");

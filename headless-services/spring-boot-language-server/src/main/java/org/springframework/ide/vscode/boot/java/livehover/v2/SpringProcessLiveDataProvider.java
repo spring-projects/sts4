@@ -115,9 +115,9 @@ public class SpringProcessLiveDataProvider {
 		getClient().liveProcessGcPausesMetricsDataUpdated(createGcPausesMetricsSummary(processKey, liveData));
 	}
 	
-	public void updateLoggers(String processKey, SpringProcessLoggersData loggersData) {
-		this.loggersData.put(processKey, loggersData);
-		getClient().liveProcessLoggersDataUpdated(createLoggersSummary(processKey, loggersData));
+	public void updateLoggers(String processKey, SpringProcessLoggersData loggerData) {
+		this.loggersData.put(processKey, loggerData);
+		getClient().liveProcessLoggersDataUpdated(createLoggersSummary(processKey, loggerData));
 	}
 	
 	public void updateLogLevel(String processKey, SpringProcessUpdatedLogLevelData updatedLogLevelData) {
@@ -194,14 +194,10 @@ public class SpringProcessLiveDataProvider {
     }
 
 	public static LiveProcessLoggersSummary createUpdatedLogLevelSummary(String processKey, SpringProcessUpdatedLogLevelData updatedLogLevelData) {
-		LiveProcessLoggersSummary p = new LiveProcessLoggersSummary();
-        p.setProcessType(updatedLogLevelData.getProcessType().jsonName());
-        p.setProcessKey(processKey);
-        p.setProcessName(updatedLogLevelData.getProcessName());
-        p.setProcessID(updatedLogLevelData.getProcessID());
-        p.setPackageName(updatedLogLevelData.getPackageName());
-        p.setEffectiveLevel(updatedLogLevelData.getEffectiveLevel());
-        p.setConfiguredLevel(updatedLogLevelData.getConfiguredLevel());
+		LiveProcessLoggersSummary p = new LiveProcessLoggersSummary(updatedLogLevelData.getProcessType().jsonName(),
+				processKey, updatedLogLevelData.getProcessName(), updatedLogLevelData.getProcessID(),
+				updatedLogLevelData.getPackageName(), updatedLogLevelData.getEffectiveLevel(),
+				updatedLogLevelData.getConfiguredLevel());
         return p;
     }
 }
