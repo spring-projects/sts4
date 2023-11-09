@@ -17,14 +17,6 @@
 		<gradle-tooling.version>7.6</gradle-tooling.version>
 	</properties>
 
-	<repositories>
-		<repository>
-			<id>gradle-repo</id>
-			<name>Gradle Tooling Repo</name>
-			<url>https://repo.gradle.org/gradle/libs-releases</url>
-		</repository>
-	</repositories>
-
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.ide.vscode</groupId>

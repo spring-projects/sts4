@@ -79,10 +79,14 @@
 			</snapshots>
 		</repository>
 		<repository>
-			<id>gradle-tooling-rcs</id>
-			<name>Gradle Tooling</name>
-			<url>https://repo.gradle.org/gradle/libs-releases/</url>
+			<id>gradle-repo</id>
+			<name>Gradle Tooling Repo</name>
+			<url>https://repo.gradle.org/gradle/libs-releases</url>
+			<snapshots>
+				<enabled>false</enabled>
+			</snapshots>
 		</repository>
+
 	</repositories>
 
 	<pluginRepositories>

@@ -208,14 +208,5 @@
 		</dependency>
 		 
 	</dependencies>
-	
-	<repositories>
-		<repository>
-			<id>gradle-repo</id>
-			<name>Gradle Tooling Repo</name>
-			<url>https://repo.gradle.org/gradle/libs-releases</url>
-		</repository>
-	</repositories>
-
 
 </project>
