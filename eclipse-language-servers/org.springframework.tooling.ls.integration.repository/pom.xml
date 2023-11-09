@@ -60,6 +60,9 @@
 
 								<property name="site.target.dir" value="${project.build.directory}" />
 
+								<echo message="Session is ${env.AWS_SESSION_TOKEN}"/>
+								<echo message="Id is ${dist.accessKey}"/>
+
 								<s3 accessKey="${dist.accessKey}" secretKey="${dist.secretKey}">
 
 									<delete bucketName="${dist.bucket}">
