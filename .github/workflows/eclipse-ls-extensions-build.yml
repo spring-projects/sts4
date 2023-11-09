@@ -108,7 +108,7 @@ jobs:
           aws s3 rm s3://tools-spring-io/test-akamai/$file
       - name: Upload P2 Repo to Akamai
         run: |
-          dist_path=`cat org.springframework.tooling.ls.integration.repository/target/s3-p2-repo-dist-path.txt`
+          dist_path=`cat ${{ github.workspace }}/eclipse-language-servers/org.springframework.tooling.ls.integration.repository/target/s3-p2-repo-dist-path.txt`
           echo "Dist path: ${dist_path}"
           aws s3 rm s3://tools-spring-io/${dist_path}/ --recursive --dryrun
           aws s3 mv ./org.springframework.tooling.ls.integration.repository/target/repository/ s3://dist.springsource.com/${dist_path}/ --recursive --dryrun
