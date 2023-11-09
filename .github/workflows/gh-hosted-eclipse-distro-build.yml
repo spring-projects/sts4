@@ -101,11 +101,11 @@ jobs:
           dist_path=`cat ${{ github.workspace }}/eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target/s3-dist-path.txt`
           echo "Removing old Linux .tar.gz files from s3..."
           aws s3 rm s3://dist.springsource.com/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*linux*.tar.gz*" --exclude "*/*"
-          echo "Uploading new Linux .ta.gz files to s3..."
+          echo "Uploading new Linux .tar.gz files to s3..."
           aws s3 cp . s3://dist.springsource.com/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*linux*.tar.gz*" --exclude "*/*" --acl public-read --no-progress
           echo "Removing old Linux .tar.gz files from Akamai s3..."
           aws s3 rm s3://tools-spring-io/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*linux*.tar.gz*" --exclude "*/*"
-          echo "Uploading new Linux .ta.gz files to Akamai s3..."
+          echo "Uploading new Linux .tar.gz files to Akamai s3..."
           aws s3 cp . s3://tools-spring-io/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*linux*.tar.gz*" --exclude "*/*" --no-progress
       - name: Clear S3 Caches for P2 Repo
         if: ${{ inputs.build_type != 'snapshot' }}

@@ -118,8 +118,9 @@ resources:
   icon: content-save-outline
   source:
     bucket: ((s3_bucket))
-    access_key_id: ((s3_accesskey))
-    secret_access_key: ((s3_secretkey))
+    access_key_id: ((s3_svc_accesskey))
+    secret_access_key: ((s3_svc_secretkey))
+    aws_role_arn: arn:aws:iam::((s3_svc_account_id)):role/((s3_svc_user))
     region_name: ((s3_region))
     regexp: sts4/vscode-extensions/snapshots/vscode-concourse-(.*).vsix
 - name: s3-bosh-vsix-snapshot
@@ -127,8 +128,9 @@ resources:
   icon: content-save-outline
   source:
     bucket: ((s3_bucket))
-    access_key_id: ((s3_accesskey))
-    secret_access_key: ((s3_secretkey))
+    access_key_id: ((s3_svc_accesskey))
+    secret_access_key: ((s3_svc_secretkey))
+    aws_role_arn: arn:aws:iam::((s3_svc_account_id)):role/((s3_svc_user))
     region_name: ((s3_region))
     regexp: sts4/vscode-extensions/snapshots/vscode-bosh-(.*).vsix
 - name: s3-manifest-yaml-vsix-snapshot
@@ -136,8 +138,9 @@ resources:
   icon: content-save-outline
   source:
     bucket: ((s3_bucket))
-    access_key_id: ((s3_accesskey))
-    secret_access_key: ((s3_secretkey))
+    access_key_id: ((s3_svc_accesskey))
+    secret_access_key: ((s3_svc_secretkey))
+    aws_role_arn: arn:aws:iam::((s3_svc_account_id)):role/((s3_svc_user))
     region_name: ((s3_region))
     regexp: sts4/vscode-extensions/snapshots/vscode-manifest-yaml-(.*).vsix
 - name: s3-spring-boot-vsix-snapshot
@@ -145,8 +148,9 @@ resources:
   icon: content-save-outline
   source:
     bucket: ((s3_bucket))
-    access_key_id: ((s3_accesskey))
-    secret_access_key: ((s3_secretkey))
+    access_key_id: ((s3_svc_accesskey))
+    secret_access_key: ((s3_svc_secretkey))
+    aws_role_arn: arn:aws:iam::((s3_svc_account_id)):role/((s3_svc_user))
     region_name: ((s3_region))
     regexp: sts4/vscode-extensions/snapshots/vscode-spring-boot-(.*).vsix
 - name: s3-concourse-vsix-release
@@ -154,32 +158,36 @@ resources:
   icon: content-save-outline
   source:
     bucket: dist.springsource.com
-    access_key_id: ((s3_accesskey))
-    secret_access_key: ((s3_secretkey))
+    access_key_id: ((s3_svc_accesskey))
+    secret_access_key: ((s3_svc_secretkey))
+    aws_role_arn: arn:aws:iam::((s3_svc_account_id)):role/((s3_svc_user))
     regexp: release/STS4/vscode/vscode-concourse-(.*).vsix
 - name: s3-bosh-vsix-release
   type: s3
   icon: content-save-outline
   source:
     bucket: dist.springsource.com
-    access_key_id: ((s3_accesskey))
-    secret_access_key: ((s3_secretkey))
+    access_key_id: ((s3_svc_accesskey))
+    secret_access_key: ((s3_svc_secretkey))
+    aws_role_arn: arn:aws:iam::((s3_svc_account_id)):role/((s3_svc_user))
     regexp: release/STS4/vscode/vscode-bosh-(.*).vsix
 - name: s3-manifest-yaml-vsix-release
   type: s3
   icon: content-save-outline
   source:
     bucket: dist.springsource.com
-    access_key_id: ((s3_accesskey))
-    secret_access_key: ((s3_secretkey))
+    access_key_id: ((s3_svc_accesskey))
+    secret_access_key: ((s3_svc_secretkey))
+    aws_role_arn: arn:aws:iam::((s3_svc_account_id)):role/((s3_svc_user))
     regexp: release/STS4/vscode/vscode-manifest-yaml-(.*).vsix
 - name: s3-spring-boot-vsix-release
   type: s3
   icon: content-save-outline
   source:
     bucket: dist.springsource.com
-    access_key_id: ((s3_accesskey))
-    secret_access_key: ((s3_secretkey))
+    access_key_id: ((s3_svc_accesskey))
+    secret_access_key: ((s3_svc_secretkey))
+    aws_role_arn: arn:aws:iam::((s3_svc_account_id)):role/((s3_svc_user))
     #region_name: ((s3_region))
     regexp: release/STS4/vscode/vscode-spring-boot-(.*).vsix
 # - name: s3-manifest-yaml-fatjar-snapshot
@@ -251,8 +259,9 @@ resources:
   icon: content-save-outline
   source:
     bucket: ((s3_prod_bucket))
-    access_key_id: ((s3_prod_accesskey))
-    secret_access_key: ((s3_prod_secretkey))
+    access_key_id: ((s3_svc_accesskey))
+    secret_access_key: ((s3_svc_secretkey))
+    aws_role_arn: arn:aws:iam::((s3_svc_account_id)):role/((s3_svc_user))
     region_name: ((s3_region))
     path: snapshot/STS4/vscode-extensions
     options:
@@ -274,8 +283,9 @@ resources:
   icon: cached
   source:
     bucket: ((s3_bucket))
-    access_key_id: ((s3_accesskey))
-    secret_access_key: ((s3_secretkey))
+    access_key_id: ((s3_svc_accesskey))
+    secret_access_key: ((s3_svc_secretkey))
+    aws_role_arn: arn:aws:iam::((s3_svc_account_id)):role/((s3_svc_user))
     region_name: ((s3_region))
     regexp: mvn-caches/sts4-(.*).tar.gz
 - name: version
@@ -285,8 +295,9 @@ resources:
     driver: s3
     bucket: ((s3_bucket))
     key: versions/vscode-extensions
-    access_key_id: ((s3_accesskey))
-    secret_access_key: ((s3_secretkey))
+    access_key_id: ((s3_svc_accesskey))
+    secret_access_key: ((s3_svc_secretkey))
+    aws_role_arn: arn:aws:iam::((s3_svc_account_id)):role/((s3_svc_user))
     region_name: ((s3_region))
     initial_version: 0.0.5-RC.6
 - name: nightly
