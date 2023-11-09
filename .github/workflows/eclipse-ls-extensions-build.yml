@@ -87,18 +87,14 @@ jobs:
           aws-region: us-east-1
           role-duration-seconds: 900
           role-skip-session-tagging: true
-      - name: Upload P2 Repo to Akamai
+      - name: Upload P2 Repo to S3 and Akamai
         run: |
           dist_path=`cat ${{ github.workspace }}/eclipse-language-servers/org.springframework.tooling.ls.integration.repository/target/s3-p2-repo-dist-path.txt`
           echo "Dist path: ${dist_path}"
           aws s3 rm s3://tools-spring-io/${dist_path}/ --recursive
-          aws s3 cp ${{ github.workspace }}/eclipse-language-servers/org.springframework.tooling.ls.integration.repository/target/repository/ s3://tools-spring-io/${dist_path}/ --recursive
-      - name: Upload P2 Repo to legacy S3
-        run: |
-          dist_path=`cat ${{ github.workspace }}/eclipse-language-servers/org.springframework.tooling.ls.integration.repository/target/s3-p2-repo-dist-path.txt`
-          echo "Dist path: ${dist_path}"
+          aws s3 cp ${{ github.workspace }}/eclipse-language-servers/org.springframework.tooling.ls.integration.repository/target/repository/ s3://tools-spring-io/${dist_path}/ --recursive --no-progress
           aws s3 rm s3://dist.springsource.com/${dist_path}/ --recursive
-          aws s3 cp ${{ github.workspace }}/eclipse-language-servers/org.springframework.tooling.ls.integration.repository/target/repository/ s3://dist.springsource.com/${dist_path}/ --recursive --acl public-read
+          aws s3 cp ${{ github.workspace }}/eclipse-language-servers/org.springframework.tooling.ls.integration.repository/target/repository/ s3://dist.springsource.com/${dist_path}/ --recursive --acl public-read --no-progress
       - name: Clear S3 Caches
         if: ${{ inputs.build_type != 'snapshot' }}
         env:

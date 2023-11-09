@@ -83,14 +83,9 @@ jobs:
           dist_path=`cat s3-p2-repo-dist-path.txt`
           echo "Dist path: ${dist_path}"
           aws s3 rm s3://dist.springsource.com/${dist_path}/ --recursive
-          aws s3 cp ./repository/ s3://dist.springsource.com/${dist_path}/ --recursive --acl public-read
-      - name: Upload P2 Repo Build Artifacts (Akamai)
-        run: |
-          cd eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target
-          dist_path=`cat s3-p2-repo-dist-path.txt`
-          echo "Dist path: ${dist_path}"
+          aws s3 cp ./repository/ s3://dist.springsource.com/${dist_path}/ --recursive --acl public-read --no-progress
           aws s3 rm s3://tools-spring-io/${dist_path}/ --recursive
-          aws s3 cp ./repository/ s3://tools-spring-io/${dist_path}/ --recursive
+          aws s3 cp ./repository/ s3://tools-spring-io/${dist_path}/ --recursive --no-progress
       - name: Upload Linux Distro Build Artifacts
         run: |
           cd eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target/products
@@ -108,12 +103,6 @@ jobs:
           aws s3 rm s3://dist.springsource.com/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*linux*.tar.gz*" --exclude "*/*"
           echo "Uploading new Linux .ta.gz files to s3..."
           aws s3 cp . s3://dist.springsource.com/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*linux*.tar.gz*" --exclude "*/*" --acl public-read --no-progress
-      - name: Upload Linux Distro Build Artifacts (Akamai)
-        run: |
-          cd eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target/products
-          echo "Processing Akamai S3 update..."
-          ls spring-tool-suite-4*linux*.tar.gz*
-          dist_path=`cat ${{ github.workspace }}/eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target/s3-dist-path.txt`
           echo "Removing old Linux .tar.gz files from Akamai s3..."
           aws s3 rm s3://tools-spring-io/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*linux*.tar.gz*" --exclude "*/*"
           echo "Uploading new Linux .ta.gz files to Akamai s3..."
@@ -137,7 +126,7 @@ jobs:
         run: |
           echo "Uploading Win Zips and OSX tar.gz to S3 for signing..."
           id=${{ inputs.eclipse_profile }}-${{ inputs.build_type }}-${{ github.run_id }}
-          aws s3 cp ${{ github.workspace }}/eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target/products s3://dist.springsource.com/sts4-distro-ci-temp/$id --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip" --include "spring-tool-suite-4*macosx*.tar.gz" --exclude "*/*" --no-progress
+          aws s3 cp ${{ github.workspace }}/eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target/products s3://tools-spring-io/sts4-distro-ci-temp/$id --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip" --include "spring-tool-suite-4*macosx*.tar.gz" --exclude "*/*" --no-progress
       - uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce
         with:
           name: s3-dist-path-${{ inputs.eclipse_profile }}-${{ inputs.build_type }}-${{ github.run_id }}
@@ -170,7 +159,7 @@ jobs:
           rm -f spring-tool-suite-4*win*.zip*
           rm -f spring-tool-suite-4*win*.self-extracting.jar*
           ls
-          aws s3 mv s3://dist.springsource.com/sts4-distro-ci-temp/${{ needs.eclipse-distro-build.outputs.id }} . --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --exclude "*/*" --no-progress
+          aws s3 mv s3://tools-spring-io/sts4-distro-ci-temp/${{ needs.eclipse-distro-build.outputs.id }} . --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --exclude "*/*" --no-progress
       - name: Sign EXE within zip files
         id: sign
         env:
@@ -195,7 +184,11 @@ jobs:
           echo "Removing old win zip and self extracting jar files from s3..."
           aws s3 rm s3://dist.springsource.com/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --include "spring-tool-suite-4*win*.self-extracting.jar*" --exclude "*/*"
           echo "Uploading new win zip and self extracting jar files to s3..."
-          aws s3 mv . s3://dist.springsource.com/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --include "spring-tool-suite-4*win*.self-extracting.jar*" --exclude "*/*" --acl public-read --no-progress
+          aws s3 cp . s3://dist.springsource.com/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --include "spring-tool-suite-4*win*.self-extracting.jar*" --exclude "*/*" --acl public-read --no-progress
+          echo "Removing old win zip and self extracting jar files from Akamai..."
+          aws s3 rm s3://tools-spring-io/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --include "spring-tool-suite-4*win*.self-extracting.jar*" --exclude "*/*"
+          echo "Uploading new win zip and self extracting jar files to Akamai..."
+          aws s3 mv . s3://tools-spring-io/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --include "spring-tool-suite-4*win*.self-extracting.jar*" --exclude "*/*" --no-progress
       - name: Update Nightly Distro Downloads page
         if: ${{ inputs.build_type == 'snapshot' && always() }}
         run: |
@@ -252,13 +245,13 @@ jobs:
           role-to-assume: arn:aws:iam::${{ secrets.TOOLS_CLOUDGATE_ACCOUNT_ID }}:role/${{ secrets.TOOLS_CLOUDGATE_USER }}
           role-session-name: ${{ github.run_id }}
           aws-region: us-east-1
-          role-duration-seconds: 900
+          role-duration-seconds: 3600
           role-skip-session-tagging: true
       - name: Download OSX tar.gz files from S3 for Signing/Notarization
         run: |
           rm -rf *macosx*
           ls
-          aws s3 mv s3://dist.springsource.com/sts4-distro-ci-temp/${{ needs.eclipse-distro-build.outputs.id }} . --recursive --exclude "*" --include "spring-tool-suite-4*macosx*.tar.gz" --exclude "*/*" --no-progress
+          aws s3 mv s3://tools-spring-io/sts4-distro-ci-temp/${{ needs.eclipse-distro-build.outputs.id }} . --recursive --exclude "*" --include "spring-tool-suite-4*macosx*.tar.gz" --exclude "*/*" --no-progress
       - name: Sign .app, Create and Sign DMG
         env:
           MACOS_CERTIFICATE_ID: ${{ secrets.MACOS_CERTIFICATE_ID }}
@@ -295,7 +288,11 @@ jobs:
           echo "Removing old dmg files from s3..."
           aws s3 rm s3://dist.springsource.com/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*macosx*.dmg*" --exclude "*/*"
           echo "Uploading new dmg files to s3..."
-          aws s3 mv . s3://dist.springsource.com/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*macosx*.dmg*" --exclude "*/*" --acl public-read --no-progress
+          aws s3 cp . s3://dist.springsource.com/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*macosx*.dmg*" --exclude "*/*" --acl public-read --no-progress
+          echo "Removing old dmg files from Akamai..."
+          aws s3 rm s3://tools-spring-io/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*macosx*.dmg*" --exclude "*/*"
+          echo "Uploading new dmg files to Akamai..."
+          aws s3 mv . s3://dist.springsource.com/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*macosx*.dmg*" --exclude "*/*" --no-progress
       - name: Update Nightly Distro Downloads page
         if: ${{ inputs.build_type == 'snapshot' && always() }}
         run: |
@@ -341,7 +338,7 @@ jobs:
       - name: Remove Temp Build Artifacts from S3
         id: cleanup-s3-temp-storage
         run: |
-          aws s3 rm s3://dist.springsource.com/sts4-distro-ci-temp --recursive --exclude "*" --include "${{ needs.eclipse-distro-build.outputs.id }}/*"
+          aws s3 rm s3://tools-spring-io/sts4-distro-ci-temp --recursive --exclude "*" --include "${{ needs.eclipse-distro-build.outputs.id }}/*"
 
   notify-failure:
     needs: [ eclipse-distro-build, sign-win-distros, sign-osx-distros, cleanup ]
