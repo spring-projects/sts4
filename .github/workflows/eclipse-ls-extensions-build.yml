@@ -66,6 +66,8 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.TOOLS_CLOUDGATE_ACCESS_KEY }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.TOOLS_CLOUDGATE_SECRET_KEY  }}
+          TOOLS_CLOUDGATE_ACCOUNT_ID: ${{ secrets.TOOLS_CLOUDGATE_ACCOUNT_ID }}
+          TOOLS_CLOUDGATE_USER: ${{ secrets.TOOLS_CLOUDGATE_USER }}
           AWS_DEFAULT_REGION: us-east-1
         run: |
           ${{ github.workspace }}/.github/scripts/akamai-aws-cli-env.sh ${{ github.run }} 
