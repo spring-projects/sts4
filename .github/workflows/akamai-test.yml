@@ -25,6 +25,7 @@ jobs:
           echo "AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID" >> $GITHUB_ENV
           echo "AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY" >> $GITHUB_ENV
           echo "AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN" >> $GITHUB_ENV
+          echo "AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION" >> $GITHUB_ENV
       - name: Test Environment
         env:
           AWS_DEFAULT_REGION: us-east-1
@@ -35,6 +36,35 @@ jobs:
           echo $AWS_SESSION_TOKEN
           aws s3 mv ./$file s3://tools-spring-io/test-akamai/$file
           aws s3 rm s3://tools-spring-io/test-akamai/$file
+          
 
+  akamai-upload-via-script:
+    name: Upload to Akamai via Script
+    runs-on: ubuntu-latest
+    steps:
+      - name: Akamai Setup
+        id: akamai-setup
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.TOOLS_CLOUDGATE_ACCESS_KEY }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.TOOLS_CLOUDGATE_SECRET_KEY  }}
+          TOOLS_CLOUDGATE_ACCOUNT_ID: ${{ secrets.TOOLS_CLOUDGATE_ACCOUNT_ID }}
+          TOOLS_CLOUDGATE_USER: ${{ secrets.TOOLS_CLOUDGATE_USER }}
+          AWS_DEFAULT_REGION: us-east-1
+        run: |
+          ${{ github.workspace }}/.github/scripts/akamai-aws-cli-env.sh ${{ github.run }} 
+          echo "AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID" >> $GITHUB_ENV
+          echo "AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY" >> $GITHUB_ENV
+          echo "AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN" >> $GITHUB_ENV
+          echo "AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION" >> $GITHUB_ENV
+      - name: Test Environment
+        env:
+          AWS_DEFAULT_REGION: us-east-1
+        run: |
+          file="upload-test.txt"
+          echo 'Upload test file' > $file
+          cat $file
+          echo $AWS_SESSION_TOKEN
+          aws s3 mv ./$file s3://tools-spring-io/test-akamai/$file
+          aws s3 rm s3://tools-spring-io/test-akamai/$file
 
 
