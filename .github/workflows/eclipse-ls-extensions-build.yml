@@ -96,22 +96,12 @@ jobs:
           echo "AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY" >> $GITHUB_ENV
           echo "AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN" >> $GITHUB_ENV
           echo "AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION" >> $GITHUB_ENV
-      - name: Test Akamai Upload
-        env:
-          AWS_DEFAULT_REGION: us-east-1
-        run: |
-          file="upload-test.txt"
-          echo 'Upload test file' > $file
-          cat $file
-          echo $AWS_SESSION_TOKEN
-          aws s3 mv ./$file s3://tools-spring-io/test-akamai/$file
-          aws s3 rm s3://tools-spring-io/test-akamai/$file
       - name: Upload P2 Repo to Akamai
         run: |
           dist_path=`cat ${{ github.workspace }}/eclipse-language-servers/org.springframework.tooling.ls.integration.repository/target/s3-p2-repo-dist-path.txt`
           echo "Dist path: ${dist_path}"
           aws s3 rm s3://tools-spring-io/${dist_path}/ --recursive --dryrun
-          aws s3 mv ./org.springframework.tooling.ls.integration.repository/target/repository/ s3://dist.springsource.com/${dist_path}/ --recursive --dryrun
+          aws s3 mv ${{ github.workspace }}/eclipse-language-servers/org.springframework.tooling.ls.integration.repository/target/repository/ s3://dist.springsource.com/${dist_path}/ --recursive --dryrun
       - name: Clear S3 Caches
         if: ${{ inputs.build_type != 'snapshot' }}
         env:
