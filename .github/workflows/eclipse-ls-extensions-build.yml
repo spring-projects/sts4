@@ -77,25 +77,16 @@ jobs:
           else
             ./mvnw --batch-mode clean install -P${{ inputs.eclipse_profile }} -P${{ inputs.build_type }} $sts4_ls_version_param -Pgitactions -Pgpg.sign -Dmaven.test.skip=true -Dhttpclient.retry-max=20 -Declipse.p2.mirrors=false -Dtycho.localArtifacts=ignore
           fi
-      - name: Cloudgate S3 Setup
-        id: cloudgate-setup
-        env:
-          AWS_ACCESS_KEY_ID: ${{ secrets.TOOLS_CLOUDGATE_ACCESS_KEY }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.TOOLS_CLOUDGATE_SECRET_KEY  }}
-          TOOLS_CLOUDGATE_ACCOUNT_ID: ${{ secrets.TOOLS_CLOUDGATE_ACCOUNT_ID }}
-          TOOLS_CLOUDGATE_USER: ${{ secrets.TOOLS_CLOUDGATE_USER }}
-          AWS_DEFAULT_REGION: us-east-1
-        run: |
-          export $(printf "AWS_ACCESS_KEY_ID=%s AWS_SECRET_ACCESS_KEY=%s AWS_SESSION_TOKEN=%s" \
-          $(aws sts assume-role \
-          --role-arn arn:aws:iam::${{ secrets.TOOLS_CLOUDGATE_ACCOUNT_ID }}:role/${{ secrets.TOOLS_CLOUDGATE_USER }} \
-          --role-session-name ${{ github.run_id }} \
-          --query "Credentials.[AccessKeyId,SecretAccessKey,SessionToken]" \
-          --output text))
-          echo "AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID" >> $GITHUB_ENV
-          echo "AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY" >> $GITHUB_ENV
-          echo "AWS_SESSION_TOKEN=$AWS_SESSION_TOKEN" >> $GITHUB_ENV
-          echo "AWS_DEFAULT_REGION=$AWS_DEFAULT_REGION" >> $GITHUB_ENV
+      - name: Cloudgate S3 Configuration
+        uses: aws-actions/configure-aws-credentials@010d0da01d0b5a38af31e9c3470dbfdabdecca3a
+        with:
+          aws-access-key-id:  ${{ secrets.TOOLS_CLOUDGATE_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.TOOLS_CLOUDGATE_SECRET_KEY  }}
+          role-to-assume: arn:aws:iam::${{ secrets.TOOLS_CLOUDGATE_ACCOUNT_ID }}:role/${{ secrets.TOOLS_CLOUDGATE_USER }}
+          role-session-name: ${{ github.run_id }}
+          aws-region: us-east-1
+          role-duration-seconds: 900
+          role-skip-session-tagging: true
       - name: Upload P2 Repo to Akamai
         run: |
           dist_path=`cat ${{ github.workspace }}/eclipse-language-servers/org.springframework.tooling.ls.integration.repository/target/s3-p2-repo-dist-path.txt`

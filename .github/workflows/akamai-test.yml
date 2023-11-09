@@ -41,8 +41,6 @@ jobs:
   akamai-upload-via-script:
     name: Upload to Akamai via Script
     runs-on: ubuntu-latest
-    permissions:
-      id-token: write # This is required for requesting the JWT
     steps:
       - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
         with:
