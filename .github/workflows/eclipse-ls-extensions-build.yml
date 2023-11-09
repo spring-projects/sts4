@@ -73,9 +73,9 @@ jobs:
           fi  
           cd eclipse-language-servers
           if command -v xvfb-run ; then
-            xvfb-run ./mvnw --batch-mode clean deploy -P${{ inputs.eclipse_profile }} -P${{ inputs.build_type }} $sts4_ls_version_param -Pgitactions -Pgpg.sign -Dmaven.test.skip=true -Dsigning.skip=true -Dhttpclient.retry-max=20 -Declipse.p2.mirrors=false -Ds3service.https-only=true -Dtycho.localArtifacts=ignore
+            xvfb-run ./mvnw --batch-mode clean install -P${{ inputs.eclipse_profile }} -P${{ inputs.build_type }} $sts4_ls_version_param -Pgitactions -Pgpg.sign -Dmaven.test.skip=true -Dhttpclient.retry-max=20 -Declipse.p2.mirrors=false -Dtycho.localArtifacts=ignore
           else
-            ./mvnw --batch-mode clean deploy -P${{ inputs.eclipse_profile }} -P${{ inputs.build_type }} $sts4_ls_version_param -Pgitactions -Pgpg.sign -Dmaven.test.skip=true -Dsigning.skip=true -Dhttpclient.retry-max=20 -Declipse.p2.mirrors=false -Ds3service.https-only=true -Dtycho.localArtifacts=ignore
+            ./mvnw --batch-mode clean install -P${{ inputs.eclipse_profile }} -P${{ inputs.build_type }} $sts4_ls_version_param -Pgitactions -Pgpg.sign -Dmaven.test.skip=true -Dhttpclient.retry-max=20 -Declipse.p2.mirrors=false -Dtycho.localArtifacts=ignore
           fi
       - name: Akamai Setup
         id: akamai-setup
@@ -121,9 +121,9 @@ jobs:
         run: |
           cd eclipse-language-servers
           if command -v xvfb-run ; then
-            xvfb-run ./mvnw --batch-mode clean package -Pe430 -P${{ inputs.build_type }} -Dsigning.skip=true -Dhttpclient.retry-max=20 -Declipse.p2.mirrors=false -Ds3service.https-only=true -Dmaven.test.skip=true -Dtycho.localArtifacts=ignore
+            xvfb-run ./mvnw --batch-mode clean package -Pe430 -P${{ inputs.build_type }} -Dhttpclient.retry-max=20 -Declipse.p2.mirrors=false -Dmaven.test.skip=true -Dtycho.localArtifacts=ignore
           else
-            ./mvnw --batch-mode clean package -Pe430 -P${{ inputs.build_type }} -Dsigning.skip=true -Dhttpclient.retry-max=20 -Declipse.p2.mirrors=false -Ds3service.https-only=true -Dmaven.test.skip=true -Dtycho.localArtifacts=ignore
+            ./mvnw --batch-mode clean package -Pe430 -P${{ inputs.build_type }} -Dhttpclient.retry-max=20 -Declipse.p2.mirrors=false -Dmaven.test.skip=true -Dtycho.localArtifacts=ignore
           fi
 
   notify-failure:
