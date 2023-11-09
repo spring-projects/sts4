@@ -55,6 +55,7 @@ jobs:
           role-to-assume: arn:aws:iam::${{ secrets.TOOLS_CLOUDGATE_ACCOUNT_ID }}:role/${{ secrets.TOOLS_CLOUDGATE_USER }}
           role-session-name: gha-upload-2
           aws-region: us-east-1
+          role-duration-seconds: 900
       - name: Test Environment
         env:
           AWS_DEFAULT_REGION: us-east-1
