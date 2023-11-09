@@ -56,6 +56,7 @@ jobs:
           role-session-name: gha-upload-2
           aws-region: us-east-1
           role-duration-seconds: 900
+          role-skip-session-tagging: true
       - name: Test Environment
         env:
           AWS_DEFAULT_REGION: us-east-1
