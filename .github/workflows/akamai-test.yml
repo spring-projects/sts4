@@ -16,9 +16,10 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.TOOLS_CLOUDGATE_SECRET_KEY  }}
           AWS_DEFAULT_REGION: us-east-1
         run: |
+          role=arn:aws:iam::${{ secrets.TOOLS_CLOUDGATE_ACCOUNT_ID }}:role/${{ secrets.TOOLS_CLOUDGATE_USER }}
           export $(printf "AWS_ACCESS_KEY_ID=%s AWS_SECRET_ACCESS_KEY=%s AWS_SESSION_TOKEN=%s" \
           $(aws sts assume-role \
-          --role-arn arn:aws:iam::${{ secrets.TOOLS_CLOUDGATE_ACCOUNT_ID }}:role/${{ secrets.TOOLS_CLOUDGATE_USER }} \
+          --role-arn $role \
           --role-session-name gha-upload \
           --query "Credentials.[AccessKeyId,SecretAccessKey,SessionToken]" \
           --output text))
@@ -40,6 +41,8 @@ jobs:
 
   akamai-upload-via-script:
     name: Upload to Akamai via Script
+    needs: [ akamai-upload ]
+    id: gen-upload-2
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
@@ -67,5 +70,3 @@ jobs:
           echo $AWS_SESSION_TOKEN
           aws s3 mv ./$file s3://tools-spring-io/test-akamai/$file
           aws s3 rm s3://tools-spring-io/test-akamai/$file
-
-

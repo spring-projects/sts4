@@ -18,6 +18,11 @@ resource_types:
   source:
     repository: springio/artifactory-resource
     tag: 0.0.10
+- name: semver
+  type: docker-image
+  source:
+    repository: concourse/semver-resource
+    tag: "1.7"
 #########################################################
 resources:
 - name: monthly
@@ -294,8 +299,9 @@ resources:
     driver: s3
     bucket: ((s3_bucket))
     key: versions/vscode-extensions
-    access_key_id: ((s3_accesskey))
-    secret_access_key: ((s3_secretkey))
+    access_key_id: ((s3_svc_accesskey))
+    secret_access_key: ((s3_svc_secretkey))
+    assume_role_arn: arn:aws:iam::((s3_svc_account_id)):role/((s3_svc_user))
     region_name: ((s3_region))
     initial_version: 0.0.5-RC.6
 - name: nightly
