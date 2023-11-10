@@ -292,7 +292,7 @@ jobs:
           echo "Removing old dmg files from Akamai..."
           aws s3 rm s3://tools-spring-io/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*macosx*.dmg*" --exclude "*/*"
           echo "Uploading new dmg files to Akamai..."
-          aws s3 mv . s3://dist.springsource.com/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*macosx*.dmg*" --exclude "*/*" --no-progress
+          aws s3 mv . s3://tools-spring-io/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*macosx*.dmg*" --exclude "*/*" --no-progress
       - name: Update Nightly Distro Downloads page
         if: ${{ inputs.build_type == 'snapshot' && always() }}
         run: |

@@ -30,7 +30,7 @@ rm -f ./${downloads_html}
 echo '<ul>' >> $downloads_html
 for file in $files
 do
-  if [[ "$file" =~ ^"s3://spring-tools-io" ]]; then
+  if [[ "$file" =~ ^"s3://tools-spring-io" ]]; then
     download_url=https://cdn.spring.io/spring-tools${file:20} #
     filename=${file:${#s3_url}+1}
     echo '  <li><a href="'${download_url}'">'${filename}'</li>' >> $downloads_html
