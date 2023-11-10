@@ -30,14 +30,13 @@ jobs:
             echo "entry: ${file}" 
             if [[ "$file" =~ ^"s3://tools-spring-io" ]]; then
               download_url=https://cdn.spring.io/spring-tools${file:20}
-              filename=${file:${#s3_url}+1}
+              filename=${file:${#s3_url}}
               echo '  <li><a href="'${download_url}'">'${filename}'</li>' >> $downloads_html  
             fi
           done
           echo '</ul>' >> $downloads_html
           cat ./$downloads_html
           aws s3 mv ./$downloads_html s3://tools-spring-io/snapshot/STS4/ --dryrun
-          aws s3 ls s3://tools-spring-io/dist_path/
 
 
 
