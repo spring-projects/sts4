@@ -815,6 +815,7 @@ public class PipelineYmlSchema implements YamlSchema {
 			addProp(source, "access_key_id", t_ne_string);
 			addProp(source, "secret_access_key", t_ne_string);
 			addProp(source, "session_token", t_ne_string);
+			addProp(source, "aws_role_arn", t_ne_string);
 			addProp(source, "region_name", t_aws_region);
 			addProp(source, "private", t_boolean);
 			addProp(source, "cloudfront_url", t_ne_string);
@@ -892,6 +893,7 @@ public class PipelineYmlSchema implements YamlSchema {
 			addProp(s3_source, "key", t_ne_string).isRequired(true);
 			addProp(s3_source, "access_key_id", t_ne_string).isRequired(true);
 			addProp(s3_source, "secret_access_key", t_ne_string).isRequired(true);
+			addProp(s3_source, "assume_role_arn", t_ne_string);
 			addProp(s3_source, "region_name", t_aws_region);
 			addProp(s3_source, "endpoint", t_ne_string);
 			addProp(s3_source, "disable_ssl", t_boolean);

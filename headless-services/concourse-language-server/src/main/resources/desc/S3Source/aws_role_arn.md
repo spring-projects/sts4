@@ -1,0 +1,1 @@
+*Optional.* The AWS role ARN to be assumed by the user identified by `access_key_id` and `secret_access_key`.
