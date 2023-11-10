@@ -27,7 +27,6 @@ jobs:
           echo '<ul>' >> $downloads_html
           for file in $files
           do
-            echo "entry: ${file}" 
             if [[ "$file" =~ ^"s3://tools-spring-io" ]]; then
               download_url=https://cdn.spring.io/spring-tools${file:20}
               filename=${file:${#s3_url}}
@@ -37,6 +36,7 @@ jobs:
           echo '</ul>' >> $downloads_html
           cat ./$downloads_html
           aws s3 mv ./$downloads_html s3://tools-spring-io/snapshot/STS4/ --dryrun
+          aws s3 ls ${s3_url}
 
 
 
