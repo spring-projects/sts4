@@ -32,9 +32,9 @@ jobs:
       - name: Upload nightly-distributions.html
         run: |
           echo "Removing old nightly-distributions.html from s3..."
-          aws s3 rm s3://dist.springsource.com/snapshot/STS4/nightly-distributions.html
+          aws s3 rm s3://tools-spring-io/snapshot/STS4/nightly-distributions.html
           echo "Uploading new nightly-distributions.html to s3..."
-          aws s3 cp ./eclipse-distribution/common/html/nightly-distributions.html s3://dist.springsource.com/snapshot/STS4/nightly-distributions.html --acl public-read --no-progress
+          aws s3 cp ./eclipse-distribution/common/html/nightly-distributions.html s3://tools-spring-io/snapshot/STS4/nightly-distributions.html --no-progress
       - name: Invalidate S3 Cloudfront Cache
         env:
           CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
