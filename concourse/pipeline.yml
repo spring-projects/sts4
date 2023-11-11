@@ -3,7 +3,7 @@ resource_types:
 - name: s3-multi
   type: registry-image
   source:
-    repository: springci/s3-resource-simple
+    repository: docker.io/boykoalex/s3-resource-simple
     username: ((docker_hub_username))
     password: ((docker_hub_password))
 - name: slack-notification
@@ -264,10 +264,13 @@ resources:
   icon: content-save-outline
   source:
     bucket: ((s3_prod_bucket))
-    access_key_id: ((s3_prod_accesskey))
-    secret_access_key: ((s3_prod_secretkey))
+    access_key_id: ((s3_svc_accesskey))
+    secret_access_key: ((s3_svc_secretkey))
+    aws_role_arn: arn:aws:iam::((s3_svc_account_id)):role/((s3_svc_user))
+    aws_session_name: upload-website
     region_name: ((s3_region))
     path: snapshot/STS4/vscode-extensions
+    change_dir_to: website
     options:
     - "--acl public-read"
 - name: slack-notification
