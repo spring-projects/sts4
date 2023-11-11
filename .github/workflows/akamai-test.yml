@@ -37,7 +37,7 @@ jobs:
           echo $AWS_SESSION_TOKEN
           aws s3 mv ./$file s3://tools-spring-io/test-akamai/$file
           aws s3 rm s3://tools-spring-io/test-akamai/$file
-          aws s3 rm s3://dist.springsource.com/snapshot/STS4/vscode-extensions/ --recursive --include "*" --exclude "*.html" --dryrun
+          aws s3 rm s3://dist.springsource.com/snapshot/STS4/vscode-extensions/ --recursive --include "*" --exclude "*.html"
           aws s3 ls s3://dist.springsource.com/snapshot/STS4/vscode-extensions --recursive
           
 
