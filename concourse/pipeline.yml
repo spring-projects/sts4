@@ -302,7 +302,6 @@ resources:
     access_key_id: ((s3_svc_accesskey))
     secret_access_key: ((s3_svc_secretkey))
     aws_role_arn: arn:aws:iam::((s3_svc_account_id)):role/((s3_svc_user))
-    aws_session_name: upload-website
     region_name: ((s3_region))
     path: snapshot/STS4/vscode-extensions
     change_dir_to: website
@@ -316,7 +315,6 @@ resources:
     access_key_id: ((s3_svc_accesskey))
     secret_access_key: ((s3_svc_secretkey))
     aws_role_arn: arn:aws:iam::((s3_svc_account_id)):role/((s3_svc_user))
-    aws_session_name: upload-website
     region_name: ((s3_region))
     path: snapshot/STS4/vscode-extensions
     change_dir_to: website
