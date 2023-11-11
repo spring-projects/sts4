@@ -193,7 +193,42 @@ resources:
     access_key_id: ((s3_svc_accesskey))
     secret_access_key: ((s3_svc_secretkey))
     aws_role_arn: arn:aws:iam::((s3_svc_account_id)):role/((s3_svc_user))
-    #region_name: ((s3_region))
+    regexp: release/STS4/vscode/vscode-spring-boot-(.*).vsix
+- name: s3-concourse-vsix-release-akamai
+  type: s3
+  icon: content-save-outline
+  source:
+    bucket: tools-spring-io
+    access_key_id: ((s3_svc_accesskey))
+    secret_access_key: ((s3_svc_secretkey))
+    aws_role_arn: arn:aws:iam::((s3_svc_account_id)):role/((s3_svc_user))
+    regexp: release/STS4/vscode/vscode-concourse-(.*).vsix
+- name: s3-bosh-vsix-release-akamai
+  type: s3
+  icon: content-save-outline
+  source:
+    bucket: tools-spring-io
+    access_key_id: ((s3_svc_accesskey))
+    secret_access_key: ((s3_svc_secretkey))
+    aws_role_arn: arn:aws:iam::((s3_svc_account_id)):role/((s3_svc_user))
+    regexp: release/STS4/vscode/vscode-bosh-(.*).vsix
+- name: s3-manifest-yaml-vsix-release-akamai
+  type: s3
+  icon: content-save-outline
+  source:
+    bucket: tools-spring-io
+    access_key_id: ((s3_svc_accesskey))
+    secret_access_key: ((s3_svc_secretkey))
+    aws_role_arn: arn:aws:iam::((s3_svc_account_id)):role/((s3_svc_user))
+    regexp: release/STS4/vscode/vscode-manifest-yaml-(.*).vsix
+- name: s3-spring-boot-vsix-release-akamai
+  type: s3
+  icon: content-save-outline
+  source:
+    bucket: tools-spring-io
+    access_key_id: ((s3_svc_accesskey))
+    secret_access_key: ((s3_svc_secretkey))
+    aws_role_arn: arn:aws:iam::((s3_svc_account_id)):role/((s3_svc_user))
     regexp: release/STS4/vscode/vscode-spring-boot-(.*).vsix
 # - name: s3-manifest-yaml-fatjar-snapshot
 #   type: s3
@@ -273,6 +308,18 @@ resources:
     change_dir_to: website
     options:
     - "--acl public-read"
+- name: vscode-snapshot-website-akamai
+  type: s3-multi
+  icon: content-save-outline
+  source:
+    bucket: tools-spring-io
+    access_key_id: ((s3_svc_accesskey))
+    secret_access_key: ((s3_svc_secretkey))
+    aws_role_arn: arn:aws:iam::((s3_svc_account_id)):role/((s3_svc_user))
+    aws_session_name: upload-website
+    region_name: ((s3_region))
+    path: snapshot/STS4/vscode-extensions
+    change_dir_to: website
 - name: slack-notification
   type: slack-notification
   icon: slack
@@ -360,18 +407,30 @@ jobs:
       params:
         file: s3-spring-boot-vsix-snapshot/*.vsix
         acl: public-read
+    - put: s3-spring-boot-vsix-release-akamai
+      params:
+        file: s3-spring-boot-vsix-snapshot/*.vsix
     - put: s3-manifest-yaml-vsix-release
       params:
         file: s3-manifest-yaml-vsix-snapshot/*.vsix
         acl: public-read
+    - put: s3-manifest-yaml-vsix-release-akamai
+      params:
+        file: s3-manifest-yaml-vsix-snapshot/*.vsix
     - put: s3-bosh-vsix-release
       params:
         file: s3-bosh-vsix-snapshot/*.vsix
         acl: public-read
+    - put: s3-bosh-vsix-release-akamai
+      params:
+        file: s3-bosh-vsix-snapshot/*.vsix
     - put: s3-concourse-vsix-release
       params:
         file: s3-concourse-vsix-snapshot/*.vsix
         acl: public-read
+    - put: s3-concourse-vsix-release-akamai
+      params:
+        file: s3-concourse-vsix-snapshot/*.vsix
 - name: create-rc-wiki-page
   serial: true
   plan:
@@ -412,23 +471,23 @@ jobs:
   - in_parallel:
     - get: sts4-wiki
     - get: sts4
-    - get: s3-bosh-vsix-release
+    - get: s3-bosh-vsix-release-akamai
       trigger: true
-    - get: s3-manifest-yaml-vsix-release
+    - get: s3-manifest-yaml-vsix-release-akamai
       trigger: true
-    - get: s3-concourse-vsix-release
+    - get: s3-concourse-vsix-release-akamai
       trigger: true
-    - get: s3-spring-boot-vsix-release
+    - get: s3-spring-boot-vsix-release-akamai
       trigger: true
   - task: create-vsix-release-wiki-page
     file: sts4/concourse/tasks/create-release-wiki-page.yml
     params:
       wiki_page_file_name: Current-VSCode-Releases
     input_mapping:
-      concourse-vsix: s3-concourse-vsix-release
-      bosh-vsix: s3-bosh-vsix-release
-      manifest-yaml-vsix: s3-manifest-yaml-vsix-release
-      spring-boot-vsix: s3-spring-boot-vsix-release
+      concourse-vsix: s3-concourse-vsix-release-akamai
+      bosh-vsix: s3-bosh-vsix-release-akamai
+      manifest-yaml-vsix: s3-manifest-yaml-vsix-release-akamai
+      spring-boot-vsix: s3-spring-boot-vsix-release-akamai
   - put: sts4-wiki
     params:
       rebase: true
@@ -1098,9 +1157,9 @@ jobs:
       - build-consourse-vsix-snapshot
   - task: build-website
     file: sts4/concourse/tasks/build-vscode-website.yml
-  - put: vscode-snapshot-website
-    params:
-      path: website
+  - in_parallel:
+    - put: vscode-snapshot-website
+    - put: vscode-snapshot-website-akamai      
 # - name: build-fatjars
 #   plan:
 #   - in_parallel:
