@@ -321,18 +321,13 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-antrun-plugin</artifactId>
-				<version>1.7</version>
 				<executions>
 
 					<execution>
 						<id>update-nightly-downloads</id>
 						<phase>verify</phase>
 						<configuration>
-							<skip>${skip.update-nightly-download-page}</skip>
 							<target>
-								<taskdef resource="net/sf/antcontrib/antcontrib.properties" />
-								<taskdef resource="org/springframework/build/aws/ant/antlib.xml" />
-
 								<copy file="${project.build.directory}/../../common/html/nightly-generic-snippet-incl-apple-m1.html" tofile="${project.build.directory}/sts4-nightly-${dist.target.major}.html" overwrite="true"/>
 		
 								<replace file="${project.build.directory}/sts4-nightly-${dist.target.major}.html" token="@QUALIFIER@" value="${unqualifiedVersion}.${p2.qualifier}" summary="yes" />
@@ -392,13 +387,6 @@
 					</execution>
 
 				</executions>
-				<dependencies>
-					<dependency>
-						<groupId>ant-contrib</groupId>
-						<artifactId>ant-contrib</artifactId>
-						<version>20020829</version>
-					</dependency>
-				</dependencies>
 			</plugin>
 
 		</plugins>
