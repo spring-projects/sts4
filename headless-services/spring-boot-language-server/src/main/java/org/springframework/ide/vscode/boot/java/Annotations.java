@@ -64,5 +64,6 @@ public class Annotations {
 	public static final String FEIGN_CLIENT = "org.springframework.cloud.openfeign.FeignClient";
 	
 	public static final String VALUE = "org.springframework.beans.factory.annotation.Value";
+	public static final String SCOPE = "org.springframework.context.annotation.Scope";
 
 }

@@ -91,7 +91,7 @@ public class BootJavaCompletionEngineConfigurer {
 		JavaProjectFinder javaProjectFinder = params.projectFinder;
 		Map<String, CompletionProvider> providers = new HashMap<>();
 		
-		providers.put(org.springframework.ide.vscode.boot.java.scope.Constants.SPRING_SCOPE, new ScopeCompletionProcessor());
+		providers.put(Annotations.SCOPE, new ScopeCompletionProcessor());
 		providers.put(Annotations.VALUE, new ValueCompletionProcessor(javaProjectFinder, indexProvider, adHocProperties));
 		providers.put(Annotations.REPOSITORY, new DataRepositoryCompletionProcessor());
 
