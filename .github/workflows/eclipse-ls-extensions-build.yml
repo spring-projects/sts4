@@ -19,7 +19,7 @@ on:
       skip_tests:
         description: skip ls tests execution
         required: false
-        default: true
+        default: false
         type: boolean
       sts4-language-servers-version:
         description: version of sts4 ls extensions
