@@ -49,7 +49,7 @@ public class RequestMappingSnippetTests {
     @Test
     void getMapping() throws Exception {
         prepareCase("Get<*>");
-        assertOneSnippet("package example;\n"
+        assertSnippets("package example;\n"
                 + "\n"
                 + "import org.springframework.stereotype.Controller;\n"
                 + "import org.springframework.web.bind.annotation.DeleteMapping;\n"
@@ -110,6 +110,70 @@ public class RequestMappingSnippetTests {
                 + "		return name;\n"
                 + "	}\n"
                 + "}\n"
+                + "",
+                
+                "package example;\n"
+                + "\n"
+                + "import org.springframework.stereotype.Controller;\n"
+                + "import org.springframework.web.bind.annotation.DeleteMapping;\n"
+                + "import org.springframework.web.bind.annotation.GetMapping;\n"
+                + "import org.springframework.web.bind.annotation.PathVariable;\n"
+                + "import org.springframework.web.bind.annotation.PostMapping;\n"
+                + "import org.springframework.web.bind.annotation.PutMapping;\n"
+                + "import org.springframework.web.bind.annotation.RequestBody;\n"
+                + "import org.springframework.web.bind.annotation.RequestMapping;\n"
+                + "import org.springframework.web.bind.annotation.ResponseBody;\n"
+                + "import org.springframework.web.bind.annotation.RequestMethod;\n"
+                + "import org.springframework.web.bind.annotation.RequestParam;\n"
+                + "\n"
+                + "\n"
+                + "/** Boot Java - Test Completion */\n"
+                + "@Controller\n"
+                + "public class RestApi {\n"
+                + "\n"
+                + "@RequestMapping(value=\"${1:path}\", method=RequestMethod.${2:GET})\n"
+                + "public ${3:SomeData} ${4:requestMethodName}(@RequestParam ${5:String} ${6:param}) {\n"
+                + "    return new ${3:SomeData}($0);\n"
+                + "}\n"
+                + "<*>\n"
+                + "\n"
+                + "\n"
+                + "	@RequestMapping(\"/hello\")\n"
+                + "	@ResponseBody\n"
+                + "	public String hello() {\n"
+                + "		return \"Hello there!\";\n"
+                + "	}\n"
+                + "	\n"
+                + "	\n"
+                + "	@RequestMapping(\"/goodbye\")\n"
+                + "	@ResponseBody\n"
+                + "	public String goodbye() {\n"
+                + "		return \"Good bye\";\n"
+                + "	}\n"
+                + "\n"
+                + "	@GetMapping(\"/person/{name}\")\n"
+                + "	public String getMapping(@PathVariable String name) {\n"
+                + "		return \"Hello \" + name;\n"
+                + "	}\n"
+                + "\n"
+                + "	@DeleteMapping(\"/delete/{id}\")\n"
+                + "	public String removeMe(@PathVariable int id) {\n"
+                + "		System.out.println(\"You are removed: \" + id);\n"
+                + "		return \"Done\";\n"
+                + "	}\n"
+                + "\n"
+                + "	@PostMapping(\"/postHello\")\n"
+                + "	public String postMethod(@RequestBody String name) {\n"
+                + "		System.out.println(\"Posted hello: \" + name);\n"
+                + "		return name;\n"
+                + "	}\n"
+                + "\n"
+                + "	@PutMapping(\"/put/{id}\")\n"
+                + "	public String putMethod(@PathVariable int id, @RequestBody String name) {\n"
+                + "		System.out.println(\"Added \" + name + \" with ID: \" + id);\n"
+                + "		return name;\n"
+                + "	}\n"
+                + "}\n"
                 + "");
     }
 
@@ -121,12 +185,14 @@ public class RequestMappingSnippetTests {
 		editor = new Editor(harness, content, LanguageId.JAVA);
 	}
 	
-	private void assertOneSnippet(String expected) throws Exception {
+	private void assertSnippets(String... expected) throws Exception {
 		List<CompletionItem> completions = editor.getCompletions();
-        assertEquals(1, completions.size());
-		Editor clonedEditor = editor.clone();
-		clonedEditor.apply(completions.get(0));
-		assertEquals(expected, clonedEditor.getText());
+        assertEquals(expected.length, completions.size());
+        for (int i = 0; i < expected.length; i++) {
+    		Editor clonedEditor = editor.clone();
+    		clonedEditor.apply(completions.get(i));
+    		assertEquals(expected[i], clonedEditor.getText());
+        }
 	}
 
 }

@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.boot.java.snippets;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.function.Supplier;
@@ -47,6 +48,11 @@ public class JavaSnippetManager {
 	}
 
 	public void getCompletions(IDocument doc, int offset, ASTNode node, CompilationUnit cu, Collection<ICompletionProposal> completions) {
+		// check if current offset is within the range of possible compiler problems
+		if (Arrays.stream(cu.getProblems()).anyMatch(p -> p.getSourceStart() <= offset && offset <= p.getSourceEnd())) {
+			return;
+		}
+		
 		DocumentRegion query = PREFIX_FINDER.getPrefixRegion(doc, offset);
 
 		for (JavaSnippet javaSnippet : snippets) {
