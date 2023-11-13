@@ -50,7 +50,9 @@ public class JavaSnippetManager {
 		DocumentRegion query = PREFIX_FINDER.getPrefixRegion(doc, offset);
 
 		for (JavaSnippet javaSnippet : snippets) {
-			if (FuzzyMatcher.matchScore(query.toString(), javaSnippet.getName()) != 0) {
+			if (FuzzyMatcher.matchScore(query.toString(), javaSnippet.getName()) != 0
+					|| FuzzyMatcher.matchScore(query.toString(), javaSnippet.getTemplate()) != 0) {
+
 				javaSnippet.generateCompletion(snippetBuilderFactory, query, node, cu)
 						.ifPresent((completion) -> completions.add(completion));
 			}
