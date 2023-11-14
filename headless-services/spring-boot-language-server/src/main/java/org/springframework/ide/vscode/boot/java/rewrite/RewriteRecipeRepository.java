@@ -369,7 +369,7 @@ public class RewriteRecipeRepository {
 					}
 					return null;
 				});
-		List<SourceFile> sources = projectParser.parse(absoluteProjectDir, new InMemoryExecutionContext());
+		List<SourceFile> sources = projectParser.parse(absoluteProjectDir, new InMemoryExecutionContext(e -> log.error("Project Parsing error:", e)));
 		reportParseErrors(sources.stream().filter(ParseError.class::isInstance).map(ParseError.class::cast).collect(Collectors.toList()));
 		progressTask.progressEvent("Computing changes...");
 		RecipeRun reciperun = r.run(new InMemoryLargeSourceSet(sources), new InMemoryExecutionContext(e -> log.error("Recipe execution failed", e)));
