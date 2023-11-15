@@ -20,6 +20,8 @@ jobs:
           echo "host = ${{ secrets.AKAM_HOST }}" >> ${HOME}/.edgerc
           echo "access_token = ${{ secrets.AKAM_ACCESS_TOKEN }}" >> ${HOME}/.edgerc
           echo "client_token = ${{ secrets.AKAM_CLIENT_TOKEN }}" >> ${HOME}/.edgerc
+          brew install akamai
+          akamai install purge
       - name: Cloudgate S3 Configuration
         uses: aws-actions/configure-aws-credentials@010d0da01d0b5a38af31e9c3470dbfdabdecca3a
         with:
@@ -37,3 +39,4 @@ jobs:
         if: ${{ always() }}
         run: |
           rm -f ${HOME}/.edgerc
+          brew uninstall akamai
