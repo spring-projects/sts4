@@ -35,7 +35,10 @@ jobs:
           role-skip-session-tagging: true
       - name: Akamai Cache Purge via CLI
         run: |
-          aws s3 ls s3://tools-spring-io/${{ inputs.path }} --recursive | awk '{$1=$2=$3=""; print $0}' | sed -e 's/^[ \t]*/https:\/\/cdn.spring.io\/spring-tools\//' | akamai purge invalidate
+          urls=`aws s3 ls s3://tools-spring-io/${{ inputs.path }} --recursive | awk '{$1=$2=$3=""; print $0}' | sed -e 's/^[ \t]*/https:\/\/cdn.spring.io\/spring-tools\//' | paste -sd' ' -`
+          echo $urls
+          akamai purge invalidate $urls
+#          aws s3 ls s3://tools-spring-io/${{ inputs.path }} --recursive | awk '{$1=$2=$3=""; print $0}' | sed -e 's/^[ \t]*/https:\/\/cdn.spring.io\/spring-tools\//' | akamai purge invalidate
 #          akamai purge invalidate https://cdn.spring.io/spring-tools/snapshot/STS4/nightly-distributions.html
       - name: Remove .edgerc file
         if: ${{ always() }}
