@@ -20,6 +20,7 @@ jobs:
           echo "host = ${{ secrets.AKAM_HOST }}" >> ${HOME}/.edgerc
           echo "access_token = ${{ secrets.AKAM_ACCESS_TOKEN }}" >> ${HOME}/.edgerc
           echo "client_token = ${{ secrets.AKAM_CLIENT_TOKEN }}" >> ${HOME}/.edgerc
+          brew install go
           brew install akamai
           akamai install purge
       - name: Cloudgate S3 Configuration
@@ -40,3 +41,4 @@ jobs:
         run: |
           rm -f ${HOME}/.edgerc
           brew uninstall akamai
+          brew uninstall go
