@@ -50,14 +50,14 @@ jobs:
         run: |
           echo "${{ steps.prepare-urls.outputs.urls }}"
       - name: Clear Cache
-        uses: jdmevo123/akamai-purge-action@962351e8415c03abe809a146403cb813c8dc3be4
+        uses: ducksify/action-akamai-purge@05dae3d7530b0ff183e8eba89a219ea66711696a
         env:
           EDGERC: ${{ secrets.EDGERC }}
         with:
           command: 'invalidate'
           type: 'url'
           ref: ${{ steps.prepare-urls.outputs.urls }}
-          network: 'production'
+#          network: 'production'
 #      - name: Remove .edgerc file
 #        if: ${{ always() }}
 #        run: |
