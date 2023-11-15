@@ -25,4 +25,4 @@ jobs:
           role-skip-session-tagging: true
       - name: Akamai Cache Purge via CLI
         run: |
-          aws s3 ls s3://tools-spring-io/${{ inputs.path }} --recursive | sed -e 's/^/https:\/\/cdn.spring.io\/spring-tools\//'
+          aws s3 ls s3://tools-spring-io/${{ inputs.path }} --recursive | awk '{$1=$2=$3=""; print $0}' | sed -e 's/^[ \t]*/https:\/\/cdn.spring.io\/spring-tools\//'
