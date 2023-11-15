@@ -23,6 +23,17 @@ jobs:
           aws-region: us-east-1
           role-duration-seconds: 900
           role-skip-session-tagging: true
+      - name: Create .edgerc file
+        run: |
+          echo "[ccu]" >> ${HOME}/.edgerc
+          echo "client_secret = ${{ secrets.AKAM_CLIENT_SECRET }}" >> ${HOME}/.edgerc
+          echo "host = ${{ secrets.AKAM_HOST }}" >> ${HOME}/.edgerc
+          echo "access_token = ${{ secrets.AKAM_ACCESS_TOKEN }}" >> ${HOME}/.edgerc
+          echo "client_token = ${{ AKAM_CLIENT_TOKEN }}" >> ${HOME}/.edgerc
       - name: Akamai Cache Purge via CLI
         run: |
-          aws s3 ls s3://tools-spring-io/${{ inputs.path }} --recursive | awk '{$1=$2=$3=""; print $0}' | sed -e 's/^[ \t]*/https:\/\/cdn.spring.io\/spring-tools\//'
+          aws s3 ls s3://tools-spring-io/${{ inputs.path }} --recursive | awk '{$1=$2=$3=""; print $0}' | sed -e 's/^[ \t]*/https:\/\/cdn.spring.io\/spring-tools\//' | akamai purge invalidate
+      - name: Akamai Cache Purge via CLI
+        if: ${{ always() }}
+        run: |
+          rm -f ${HOME}/.edgerc
