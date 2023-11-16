@@ -76,7 +76,7 @@ jobs:
         with:
           sparse-checkout: |
             .github
-      - uses: ./.github/actions/akamai-purge-osx
+      - uses: ${{ github.workspace }}/actions/akamai-purge-osx
         with:
           command: invalidate
           type: url
