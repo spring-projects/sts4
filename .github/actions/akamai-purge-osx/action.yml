@@ -5,17 +5,9 @@ inputs:
     description: The command from akamai purge command
     required: true
     default: invalidate
-  type:
-    description: Type of Ref, i.e. (tags, cpcode, url)
-    required: false
-    default: url
-  ref:
-    description: References tags, urls, etc
+  urls:
+    description: urls
     required: true
-  network:
-    description: Network (production or staging)
-    required: true
-    default: production
 runs:
   using: "composite"
   steps:
@@ -29,7 +21,7 @@ runs:
     - name: Purge
       shell: bash
       run: |
-        akamai purge --edgerc ~/.edgerc --section ccu ${{ inputs.command }} ${{ inputs.network }} ${{ inputs.type }} ${{ inputs.ref }}
+        akamai purge --edgerc ~/.edgerc --section ccu ${{ inputs.command }} ${{ inputs.urls }}
     - name: Cleanup
       if: ${{ always() }}
       shell: bash

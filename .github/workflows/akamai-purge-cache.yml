@@ -81,6 +81,4 @@ jobs:
           EDGERC: ${{ secrets.EDGERC }}
         with:
           command: invalidate
-          type: url
-          network: production
-          ref: ${{ needs.purge1.outputs.urls }}
+          urls: ${{ needs.purge1.outputs.urls }}
