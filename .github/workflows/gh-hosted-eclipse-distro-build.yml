@@ -107,14 +107,6 @@ jobs:
           aws s3 rm s3://tools-spring-io/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*linux*.tar.gz*" --exclude "*/*"
           echo "Uploading new Linux .tar.gz files to Akamai s3..."
           aws s3 cp . s3://tools-spring-io/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*linux*.tar.gz*" --exclude "*/*" --no-progress
-      - name: Clear S3 Caches for P2 Repo
-        if: ${{ inputs.build_type != 'snapshot' }}
-        env:
-          CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
-          CLOUDFLARE_CACHE_TOKEN: ${{ secrets.CLOUDFLARE_CACHE_TOKEN }}
-        run: |
-          dist_path=`cat ${{ github.workspace }}/eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target/s3-p2-repo-dist-path.txt`
-          ${{ github.workspace }}/.github/scripts/clear-s3-caches.sh $dist_path
       - name: Update Nightly Distro Downloads page
         if: ${{ inputs.build_type == 'snapshot' && always() }}
         run: |
@@ -130,7 +122,9 @@ jobs:
       - uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce
         with:
           name: s3-dist-path-${{ inputs.eclipse_profile }}-${{ inputs.build_type }}-${{ github.run_id }}
-          path: ${{ github.workspace }}/eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target/s3-dist-path.txt
+          path: |
+            ${{ github.workspace }}/eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target/s3-dist-path.txt
+            ${{ github.workspace }}/eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target/s3-p2-repo-dist-path.txt
           retention-days: 1
     outputs:
       id: ${{ inputs.eclipse_profile }}-${{ inputs.build_type }}-${{ github.run_id }}
@@ -305,6 +299,45 @@ jobs:
         run: |
           rm -rf *spring-tool-suite-4*macosx*
 
+  purge_cache:
+    needs: [ eclipse-distro-build, sign-win-distros, sign-osx-distros ]
+    if: ${{ inputs.build_type == 'snapshot' && contains(join(needs.*.result, ','), 'success')}}
+    runs-on: [self-hosted, macOS]
+    steps:
+      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
+        with:
+          sparse-checkout: |
+            .github
+      - uses: actions/download-artifact@cbed621e49e4c01b044d60f6c80ea4ed6328b281
+        with:
+          name: s3-dist-path-${{ needs.eclipse-distro-build.outputs.id }}
+      - name: Cloudgate S3 Configuration
+        uses: aws-actions/configure-aws-credentials@010d0da01d0b5a38af31e9c3470dbfdabdecca3a
+        with:
+          aws-access-key-id:  ${{ secrets.TOOLS_CLOUDGATE_ACCESS_KEY }}
+          aws-secret-access-key: ${{ secrets.TOOLS_CLOUDGATE_SECRET_KEY  }}
+          role-to-assume: arn:aws:iam::${{ secrets.TOOLS_CLOUDGATE_ACCOUNT_ID }}:role/${{ secrets.TOOLS_CLOUDGATE_USER }}
+          role-session-name: ${{ github.run_id }}
+          aws-region: us-east-1
+          role-duration-seconds: 900
+          role-skip-session-tagging: true
+      - name: Collect URLs on Akamai to Purge
+        id: collect-urls
+        run: |
+          dist_path=`cat s3-dist-path.txt`
+          p2_path=`cat s3-p2-repo-dist-path.txt`
+          dist_urls=`aws s3 ls s3://tools-spring-io/$dist_path --recursive | awk '{$1=$2=$3=""; print $0}' | sed -e 's/^[ \t]*/https:\/\/cdn.spring.io\/spring-tools\//' | paste -sd' ' -`
+          p2_urls=`aws s3 ls s3://tools-spring-io/$p2_path --recursive | awk '{$1=$2=$3=""; print $0}' | sed -e 's/^[ \t]*/https:\/\/cdn.spring.io\/spring-tools\//' | paste -sd' ' -`
+          url="${dist_urls} ${p2_urls}" 
+          echo "urls=$urls" >> $GITHUB_OUTPUT
+      - uses: ./.github/actions/akamai-purge-osx
+        name: Invalidate URLs
+        env:
+          EDGERC: ${{ secrets.EDGERC }}
+        with:
+          command: invalidate
+          urls: ${{ steps.collect-urls.outputs.urls }}
+
   cleanup:
     needs: [ eclipse-distro-build, sign-win-distros, sign-osx-distros ]
     if: ${{ always() }}
@@ -327,7 +360,7 @@ jobs:
           aws-region: us-east-1
           role-duration-seconds: 900
           role-skip-session-tagging: true
-      - name: Clear S3 Caches for Distros
+      - name: Clear Legacy S3 Caches for Distros
         if: ${{ inputs.build_type != 'snapshot' }}
         env:
           CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
@@ -335,6 +368,8 @@ jobs:
         run: |
           dist_path=`cat s3-dist-path.txt`
           ${{ github.workspace }}/.github/scripts/clear-s3-caches.sh $dist_path
+          p2_path=`cat s3-p2-repo-dist-path.txt`
+          ${{ github.workspace }}/.github/scripts/clear-s3-caches.sh $p2_path
       - name: Remove Temp Build Artifacts from S3
         id: cleanup-s3-temp-storage
         run: |
