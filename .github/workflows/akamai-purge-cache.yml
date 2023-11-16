@@ -77,6 +77,8 @@ jobs:
           sparse-checkout: |
             .github
       - uses: ./.github/actions/akamai-purge-osx
+        env:
+          EDGERC: ${{ secrets.EDGERC }}
         with:
           command: invalidate
           type: url
