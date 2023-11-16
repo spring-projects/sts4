@@ -67,6 +67,13 @@ jobs:
           fi
           cd eclipse-distribution
           ./mvnw --batch-mode -U clean install -P${{ inputs.eclipse_profile }} -P${{ inputs.build_type }} $sts4_ls_version_param $p2_qualifier_param -Pgitactions -Pgpg.sign -Dmaven.repo.local=~/.m2/repository-signed -Dhttpclient.retry-max=20 -Dmaven.test.skip=true -Declipse.p2.mirrors=false -Dtycho.localArtifacts=ignore -Dp2.replaceQualifier=true -Dorg.eclipse.ecf.provider.filetransfer.httpclient.retrieve.readTimeout=1200000 -Dorg.eclipse.equinox.p2.transport.ecf.retry=5 -Dskip.eclipserun.proxies=false -Dtycho.equinox.resolver.uses=true
+      - name: Store S3 Paths
+        id: s3-paths
+        run: |
+          dist_path=`cat ${{ github.workspace }}/eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target/s3-dist-path.txt`
+          p2_path=`cat ${{ github.workspace }}/eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target/s3-p2-repo-dist-path.txt`
+          echo "dist_path=$dist_path" >> $GITHUB_OUTPUT
+          echo "p2_path=$p2_path" >> $GITHUB_OUTPUT
       - name: Cloudgate S3 Configuration
         uses: aws-actions/configure-aws-credentials@010d0da01d0b5a38af31e9c3470dbfdabdecca3a
         with:
@@ -80,12 +87,11 @@ jobs:
       - name: Upload P2 Repo Build Artifacts
         run: |
           cd eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target
-          dist_path=`cat s3-p2-repo-dist-path.txt`
-          echo "Dist path: ${dist_path}"
-          aws s3 rm s3://dist.springsource.com/${dist_path}/ --recursive
-          aws s3 cp ./repository/ s3://dist.springsource.com/${dist_path}/ --recursive --acl public-read --no-progress
-          aws s3 rm s3://tools-spring-io/${dist_path}/ --recursive
-          aws s3 cp ./repository/ s3://tools-spring-io/${dist_path}/ --recursive --no-progress
+          echo "P2 path: ${{ steps.s3-paths.outputs.p2_path }}"
+          aws s3 rm s3://dist.springsource.com/${{ steps.s3-paths.outputs.p2_path }}/ --recursive
+          aws s3 cp ./repository/ s3://dist.springsource.com/${{ steps.s3-paths.outputs.p2_path }}/ --recursive --acl public-read --no-progress
+          aws s3 rm s3://tools-spring-io/${{ steps.s3-paths.outputs.p2_path }}/ --recursive
+          aws s3 cp ./repository/ s3://tools-spring-io/${{ steps.s3-paths.outputs.p2_path }}/ --recursive --no-progress
       - name: Upload Linux Distro Build Artifacts
         run: |
           cd eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target/products
@@ -98,22 +104,20 @@ jobs:
           done
           echo "Processing S3 update..."
           ls spring-tool-suite-4*linux*.tar.gz*
-          dist_path=`cat ${{ github.workspace }}/eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target/s3-dist-path.txt`
           echo "Removing old Linux .tar.gz files from s3..."
-          aws s3 rm s3://dist.springsource.com/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*linux*.tar.gz*" --exclude "*/*"
+          aws s3 rm s3://dist.springsource.com/${{ steps.s3-paths.outputs.dist_path }} --recursive --exclude "*" --include "spring-tool-suite-4*linux*.tar.gz*" --exclude "*/*"
           echo "Uploading new Linux .tar.gz files to s3..."
-          aws s3 cp . s3://dist.springsource.com/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*linux*.tar.gz*" --exclude "*/*" --acl public-read --no-progress
+          aws s3 cp . s3://dist.springsource.com/${{ steps.s3-paths.outputs.dist_path }} --recursive --exclude "*" --include "spring-tool-suite-4*linux*.tar.gz*" --exclude "*/*" --acl public-read --no-progress
           echo "Removing old Linux .tar.gz files from Akamai s3..."
-          aws s3 rm s3://tools-spring-io/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*linux*.tar.gz*" --exclude "*/*"
+          aws s3 rm s3://tools-spring-io/${{ steps.s3-paths.outputs.dist_path }} --recursive --exclude "*" --include "spring-tool-suite-4*linux*.tar.gz*" --exclude "*/*"
           echo "Uploading new Linux .tar.gz files to Akamai s3..."
-          aws s3 cp . s3://tools-spring-io/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*linux*.tar.gz*" --exclude "*/*" --no-progress
+          aws s3 cp . s3://tools-spring-io/${{ steps.s3-paths.outputs.dist_path }} --recursive --exclude "*" --include "spring-tool-suite-4*linux*.tar.gz*" --exclude "*/*" --no-progress
       - name: Update Nightly Distro Downloads page
         if: ${{ inputs.build_type == 'snapshot' && always() }}
         run: |
-          dist_path=`cat ${{ github.workspace }}/eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target/s3-dist-path.txt`
           eclipse_profile=${{ inputs.eclipse_profile }}
           eclipse_version=${eclipse_profile:0:2}.${eclipse_profile:2}
-          ${{ github.workspace }}/.github/scripts/update-distro-download-page.sh $dist_path $eclipse_version ${{ inputs.build_type }}
+          ${{ github.workspace }}/.github/scripts/update-distro-download-page.sh ${{ steps.s3-paths.outputs.dist_path }} $eclipse_version ${{ inputs.build_type }}
       - name: Upload Build Artifacts for Signing
         run: |
           echo "Uploading Win Zips and OSX tar.gz to S3 for signing..."
@@ -128,6 +132,8 @@ jobs:
           retention-days: 1
     outputs:
       id: ${{ inputs.eclipse_profile }}-${{ inputs.build_type }}-${{ github.run_id }}
+      dist_path: ${{ steps.s3-paths.outputs.dist_path }}
+      p2_path: ${{ steps.s3-paths.outputs.p2_path }}
 
 
   sign-win-distros:
@@ -165,13 +171,10 @@ jobs:
           do
             ${{ github.workspace }}/.github/scripts/sign-exe-in-zip-file.sh $file ${{ github.workspace }}/.github/scripts/sign-exe.sh ${{ github.workspace }}/.github/scripts/self-extracting-jar-creator.jar ${{ needs.eclipse-distro-build.outputs.id }}
           done
-      - uses: actions/download-artifact@cbed621e49e4c01b044d60f6c80ea4ed6328b281
-        with:
-          name: s3-dist-path-${{ needs.eclipse-distro-build.outputs.id }}
       - name: Update Win zip/jar on S3
         id: update-s3
         run: |
-          dist_path=`cat s3-dist-path.txt`
+          dist_path=${{ needs.eclipse-distro-build.outputs.dist_path }}
           echo "Processing S3 update..."
           ls spring-tool-suite-4*win*.zip*
           ls spring-tool-suite-4*win*.self-extracting.jar*
@@ -186,7 +189,7 @@ jobs:
       - name: Update Nightly Distro Downloads page
         if: ${{ inputs.build_type == 'snapshot' && always() }}
         run: |
-          dist_path=`cat s3-dist-path.txt`
+          dist_path=${{ needs.eclipse-distro-build.outputs.dist_path }}
           eclipse_profile=${{ inputs.eclipse_profile }}
           eclipse_version=${eclipse_profile:0:2}.${eclipse_profile:2}
           ${{ github.workspace }}/.github/scripts/update-distro-download-page.sh $dist_path $eclipse_version ${{ inputs.build_type }}
@@ -270,13 +273,10 @@ jobs:
           done
           wait
           echo "Done signing and notarization of DMG files"
-      - uses: actions/download-artifact@cbed621e49e4c01b044d60f6c80ea4ed6328b281
-        with:
-          name: s3-dist-path-${{ needs.eclipse-distro-build.outputs.id }}
       - name: Update DMG files on S3
         id: update-s3
         run: |
-          dist_path=`cat s3-dist-path.txt`
+          dist_path=${{ needs.eclipse-distro-build.outputs.dist_path }}
           echo "Processing S3 update..."
           ls spring-tool-suite-4*macosx*.dmg*
           echo "Removing old dmg files from s3..."
@@ -290,7 +290,7 @@ jobs:
       - name: Update Nightly Distro Downloads page
         if: ${{ inputs.build_type == 'snapshot' && always() }}
         run: |
-          dist_path=`cat s3-dist-path.txt`
+          dist_path=${{ needs.eclipse-distro-build.outputs.dist_path }}
           eclipse_profile=${{ inputs.eclipse_profile }}
           eclipse_version=${eclipse_profile:0:2}.${eclipse_profile:2}
           ${{ github.workspace }}/.github/scripts/update-distro-download-page.sh $dist_path $eclipse_version ${{ inputs.build_type }}
@@ -308,9 +308,6 @@ jobs:
         with:
           sparse-checkout: |
             .github
-      - uses: actions/download-artifact@cbed621e49e4c01b044d60f6c80ea4ed6328b281
-        with:
-          name: s3-dist-path-${{ needs.eclipse-distro-build.outputs.id }}
       - name: Cloudgate S3 Configuration
         uses: aws-actions/configure-aws-credentials@010d0da01d0b5a38af31e9c3470dbfdabdecca3a
         with:
@@ -324,11 +321,9 @@ jobs:
       - name: Collect URLs on Akamai to Purge
         id: collect-urls
         run: |
-          dist_path=`cat s3-dist-path.txt`
-          p2_path=`cat s3-p2-repo-dist-path.txt`
-          dist_urls=`aws s3 ls s3://tools-spring-io/$dist_path --recursive | awk '{$1=$2=$3=""; print $0}' | sed -e 's/^[ \t]*/https:\/\/cdn.spring.io\/spring-tools\//' | paste -sd' ' -`
-          p2_urls=`aws s3 ls s3://tools-spring-io/$p2_path --recursive | awk '{$1=$2=$3=""; print $0}' | sed -e 's/^[ \t]*/https:\/\/cdn.spring.io\/spring-tools\//' | paste -sd' ' -`
-          url="${dist_urls} ${p2_urls}" 
+          dist_urls=`aws s3 ls s3://tools-spring-io/${{ needs.eclipse-distro-build.outputs.dist_path }} --recursive | awk '{$1=$2=$3=""; print $0}' | sed -e 's/^[ \t]*/https:\/\/cdn.spring.io\/spring-tools\//' | paste -sd' ' -`
+          p2_urls=`aws s3 ls s3://tools-spring-io/${{ needs.eclipse-distro-build.outputs.p2_path }} --recursive | awk '{$1=$2=$3=""; print $0}' | sed -e 's/^[ \t]*/https:\/\/cdn.spring.io\/spring-tools\//' | paste -sd' ' -`
+          urls="${dist_urls} ${p2_urls}" 
           echo "urls=$urls" >> $GITHUB_OUTPUT
       - uses: ./.github/actions/akamai-purge-osx
         name: Invalidate URLs
@@ -347,9 +342,6 @@ jobs:
         with:
           sparse-checkout: |
             .github
-      - uses: actions/download-artifact@cbed621e49e4c01b044d60f6c80ea4ed6328b281
-        with:
-          name: s3-dist-path-${{ needs.eclipse-distro-build.outputs.id }}
       - name: Cloudgate S3 Configuration
         uses: aws-actions/configure-aws-credentials@010d0da01d0b5a38af31e9c3470dbfdabdecca3a
         with:
@@ -360,20 +352,18 @@ jobs:
           aws-region: us-east-1
           role-duration-seconds: 900
           role-skip-session-tagging: true
+      - name: Remove Temp Build Artifacts from S3
+        id: cleanup-s3-temp-storage
+        run: |
+          aws s3 rm s3://tools-spring-io/sts4-distro-ci-temp --recursive --exclude "*" --include "${{ needs.eclipse-distro-build.outputs.id }}/*"
       - name: Clear Legacy S3 Caches for Distros
         if: ${{ inputs.build_type != 'snapshot' }}
         env:
           CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
           CLOUDFLARE_CACHE_TOKEN: ${{ secrets.CLOUDFLARE_CACHE_TOKEN }}
         run: |
-          dist_path=`cat s3-dist-path.txt`
-          ${{ github.workspace }}/.github/scripts/clear-s3-caches.sh $dist_path
-          p2_path=`cat s3-p2-repo-dist-path.txt`
-          ${{ github.workspace }}/.github/scripts/clear-s3-caches.sh $p2_path
-      - name: Remove Temp Build Artifacts from S3
-        id: cleanup-s3-temp-storage
-        run: |
-          aws s3 rm s3://tools-spring-io/sts4-distro-ci-temp --recursive --exclude "*" --include "${{ needs.eclipse-distro-build.outputs.id }}/*"
+          ${{ github.workspace }}/.github/scripts/clear-s3-caches.sh ${{ needs.eclipse-distro-build.outputs.dist_path }}
+          ${{ github.workspace }}/.github/scripts/clear-s3-caches.sh ${{ needs.eclipse-distro-build.outputs.p2_path }}
 
   notify-failure:
     needs: [ eclipse-distro-build, sign-win-distros, sign-osx-distros, cleanup ]
