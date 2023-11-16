@@ -35,7 +35,7 @@ jobs:
 
   eclipse-language-servers-build:
     runs-on: macos-latest-xl
-    output:
+    outputs:
       invalid_urls: ${{ steps.compute-invalid-urls.outputs.invalid_urls }}
     steps:
       - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
