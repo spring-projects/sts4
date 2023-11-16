@@ -13,7 +13,7 @@ Require-Bundle: org.eclipse.ui,
  io.projectreactor.reactor-core;bundle-version="[3.3.1,3.3.2)",
  org.reactivestreams.reactive-streams,
  org.eclipse.jface.text
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Eclipse-LazyStart: true
 Bundle-ActivationPolicy: lazy
 Export-Package: org.springsource.ide.eclipse.commons.frameworks.core,

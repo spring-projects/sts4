@@ -19,7 +19,7 @@ Require-Bundle: org.eclipse.core.resources,
  org.eclipse.debug.core,
  org.eclipse.jface
 Bundle-ActivationPolicy: lazy
-Bundle-RequiredExecutionEnvironment: JavaSE-11
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Export-Package: org.springsource.ide.eclipse.commons.core,
  org.springsource.ide.eclipse.commons.core.preferences,
  org.springsource.ide.eclipse.commons.core.process,

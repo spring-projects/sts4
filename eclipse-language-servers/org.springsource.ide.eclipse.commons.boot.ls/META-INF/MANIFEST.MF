@@ -6,7 +6,7 @@ Bundle-Version: 4.21.0.qualifier
 Bundle-Vendor: VMware, Inc.
 Require-Bundle: org.eclipse.core.resources,
  org.springsource.ide.eclipse.commons.livexp
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy
 Automatic-Module-Name: org.springsource.ide.eclipse.commons.boot.ls
 Export-Package: org.springsource.ide.eclipse.commons.boot.ls.remoteapps

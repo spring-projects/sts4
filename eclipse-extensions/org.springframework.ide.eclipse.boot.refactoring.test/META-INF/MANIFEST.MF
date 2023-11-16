@@ -29,6 +29,6 @@ Require-Bundle: org.eclipse.core.runtime,
  javax.ws.rs;bundle-version="2.0.1",
  org.eclipse.osgi,
  org.hamcrest.library
-Bundle-RequiredExecutionEnvironment: JavaSE-1.8
+Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy
 
