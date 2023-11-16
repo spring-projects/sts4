@@ -1,0 +1,36 @@
+name: Akamai Purge on OSX
+description: Purge Cache via Akamai Client API CLI on Mac OSX
+inputs:
+  command:
+    description: The command from akamai purge command
+    required: true
+    default: invalidate
+  type:
+    description: Type of Ref, i.e. (tags, cpcode, url)
+    required: false
+    default: url
+  ref:
+    description: References tags, urls, etc
+    required: true
+  network:
+    description: Network (production or staging)
+    required: true
+    default: production
+runs:
+  using: "composite"
+  steps:
+    - name: Setup
+      run: |
+        echo -e "${EDGERC}" > ${HOME}/.edgerc
+        brew install go
+        brew install akamai
+        akamai install purge
+    - name: Purge
+      run: |
+        akamai purge --edgerc ${HOME}/.edgerc --section ccu ${{ inputs.command }} ${{ inputs.network }} ${{ inputs.type }} ${{ inputs.ref }}
+    - name: Cleanup
+      if: ${{ always() }}
+      run: |
+        rm -f ${HOME}/.edgerc
+        brew uninstall akamai
+        brew uninstall go

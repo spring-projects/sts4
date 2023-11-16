@@ -10,8 +10,10 @@ on:
 
 jobs:
 
-  eclipse-distro-build:
+  purge1:
     runs-on: self-hosted
+    outputs:
+      urls: ${{ steps.prepare-urls.outputs.urls }}
     steps:
       - name: Create .edgerc file
         env:
@@ -64,3 +66,19 @@ jobs:
           rm -f ${HOME}/.edgerc
           brew uninstall akamai
           brew uninstall go
+          
+
+  purge2:
+    runs-on: self-hosted
+    needs: [ purge1 ]
+    steps:
+      - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
+        with:
+          sparse-checkout: |
+            .github
+      - uses: ./.github/actions/akamai-purge-osx
+        with:
+          command: invalidate
+          type: url
+          network: production
+          ref: ${{ needs.purge1.outputs.urls }}
