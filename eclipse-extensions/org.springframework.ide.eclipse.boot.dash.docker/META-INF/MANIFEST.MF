@@ -26,6 +26,7 @@ Require-Bundle: org.springframework.ide.eclipse.boot.dash,
  org.eclipse.linuxtools.docker.core;resolution:=optional
 Import-Package: org.eclipse.core.runtime,
  org.eclipse.core.runtime.jobs,
- org.osgi.framework
+ org.osgi.framework,
+ org.apache.commons.io
 Export-Package: org.springframework.ide.eclipse.boot.dash.docker.runtarget,
  org.springframework.ide.eclipse.boot.dash.docker.ui

@@ -19,6 +19,7 @@ Require-Bundle: org.eclipse.core.runtime,
  com.google.guava,
  org.springsource.ide.eclipse.commons.livexp,
  org.springframework.ide.eclipse.boot;bundle-version="3.9.12"
+Import-Package: org.apache.commons.io
 Bundle-ClassPath: gradle-plugin/sts-gradle-model-plugin.jar,
  .
 Bundle-Activator: org.springframework.ide.eclipse.buildship30.Buildship30Plugin

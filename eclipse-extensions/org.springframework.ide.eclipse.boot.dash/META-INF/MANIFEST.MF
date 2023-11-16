@@ -82,5 +82,7 @@ Import-Package: org.eclipse.core.runtime,
  com.google.gson,
  com.google.gson.annotations,
  com.google.gson.reflect,
- com.google.gson.stream
+ com.google.gson.stream,
+ org.apache.commons.lang3,
+ org.apache.commons.lang3.tuple
 Automatic-Module-Name: org.springframework.ide.eclipse.boot.dash
