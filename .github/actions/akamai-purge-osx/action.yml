@@ -29,11 +29,12 @@ runs:
     - name: Purge
       shell: bash
       run: |
-        akamai purge --edgerc ${HOME}/.edgerc --section ccu ${{ inputs.command }} ${{ inputs.network }} ${{ inputs.type }} ${{ inputs.ref }}
+        akamai purge --edgerc ~/.edgerc --section ccu ${{ inputs.command }} ${{ inputs.network }} ${{ inputs.type }} ${{ inputs.ref }}
     - name: Cleanup
       if: ${{ always() }}
       shell: bash
       run: |
         rm -f ~/.edgerc
+        akamai uninstall purge
         brew uninstall akamai
         brew uninstall go
