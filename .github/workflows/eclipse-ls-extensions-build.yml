@@ -35,6 +35,8 @@ jobs:
 
   eclipse-language-servers-build:
     runs-on: macos-latest-xl
+    output:
+      invalid_urls: ${{ steps.compute-invalid-urls.outputs.invalid_urls }}
     steps:
       - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
         with:
@@ -88,21 +90,28 @@ jobs:
           role-duration-seconds: 900
           role-skip-session-tagging: true
       - name: Upload P2 Repo to S3 and Akamai
+        id: upload-p2-to-akamai
         run: |
-          dist_path=`cat ${{ github.workspace }}/eclipse-language-servers/org.springframework.tooling.ls.integration.repository/target/s3-p2-repo-dist-path.txt`
-          echo "Dist path: ${dist_path}"
-          aws s3 rm s3://tools-spring-io/${dist_path}/ --recursive
-          aws s3 cp ${{ github.workspace }}/eclipse-language-servers/org.springframework.tooling.ls.integration.repository/target/repository/ s3://tools-spring-io/${dist_path}/ --recursive --no-progress
-          aws s3 rm s3://dist.springsource.com/${dist_path}/ --recursive
-          aws s3 cp ${{ github.workspace }}/eclipse-language-servers/org.springframework.tooling.ls.integration.repository/target/repository/ s3://dist.springsource.com/${dist_path}/ --recursive --acl public-read --no-progress
+          p2_path=`cat ${{ github.workspace }}/eclipse-language-servers/org.springframework.tooling.ls.integration.repository/target/s3-p2-repo-dist-path.txt`
+          echo "p2_path=$p2_path" >> $GITHUB_OUTPUT
+          echo "P2 path: ${p2_path}"
+          aws s3 rm s3://tools-spring-io/${p2_path}/ --recursive
+          aws s3 cp ${{ github.workspace }}/eclipse-language-servers/org.springframework.tooling.ls.integration.repository/target/repository/ s3://tools-spring-io/${p2_path}/ --recursive --no-progress
+          aws s3 rm s3://dist.springsource.com/${p2_path}/ --recursive
+          aws s3 cp ${{ github.workspace }}/eclipse-language-servers/org.springframework.tooling.ls.integration.repository/target/repository/ s3://dist.springsource.com/${p2_path}/ --recursive --acl public-read --no-progress
+      - name: Compute invalid URLs
+        if: ${{ inputs.build_type == 'snapshot' }}
+        id: compute-invalid-urls
+        run: |
+          invalid_urls=`aws s3 ls s3://tools-spring-io/${{ steps.upload-p2-to-akamai.outputs.p2_path }}/ --recursive | awk '{$1=$2=$3=""; print $0}' | sed -e 's/^[ \t]*/https:\/\/cdn.spring.io\/spring-tools\//' | paste -sd' ' -`
+          echo "invalid_urls=$invalid_urls" >> $GITHUB_OUTPUT
       - name: Clear S3 Caches
         if: ${{ inputs.build_type != 'snapshot' }}
         env:
           CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
           CLOUDFLARE_CACHE_TOKEN: ${{ secrets.CLOUDFLARE_CACHE_TOKEN }}
         run: |
-          dist_path=`cat ${{ github.workspace }}/eclipse-language-servers/org.springframework.tooling.ls.integration.repository/target/s3-p2-repo-dist-path.txt`
-          ${{ github.workspace }}/.github/scripts/clear-s3-caches.sh $dist_path
+          ${{ github.workspace }}/.github/scripts/clear-s3-caches.sh ${{ steps.upload-p2-to-akamai.outputs.p2_path }}
       - name: Verify Eclipse LS Extensions on e430
         if: ${{ inputs.build_type == 'snapshot' }}
         run: |
@@ -112,6 +121,19 @@ jobs:
           else
             ./mvnw --batch-mode clean package -Pe430 -P${{ inputs.build_type }} -Dhttpclient.retry-max=20 -Declipse.p2.mirrors=false -Dmaven.test.skip=true -Dtycho.localArtifacts=ignore
           fi
+
+  purge_cache:
+    needs: [ eclipse-language-servers-build ]
+    if: ${{ inputs.build_type == 'snapshot' }}
+    runs-on: [self-hosted, macOS]
+    steps:
+      - uses: ./.github/actions/akamai-purge-osx
+        name: Invalidate URLs
+        env:
+          EDGERC: ${{ secrets.EDGERC }}
+        with:
+          command: invalidate
+          urls: ${{ needs.eclipse-language-servers-build.outputs.invalid_urls }}
 
   notify-failure:
     needs: [ eclipse-language-servers-build ]

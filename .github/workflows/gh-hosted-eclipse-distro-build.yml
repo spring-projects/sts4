@@ -87,11 +87,12 @@ jobs:
       - name: Upload P2 Repo Build Artifacts
         run: |
           cd eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target
-          echo "P2 path: ${{ steps.s3-paths.outputs.p2_path }}"
-          aws s3 rm s3://dist.springsource.com/${{ steps.s3-paths.outputs.p2_path }}/ --recursive
-          aws s3 cp ./repository/ s3://dist.springsource.com/${{ steps.s3-paths.outputs.p2_path }}/ --recursive --acl public-read --no-progress
-          aws s3 rm s3://tools-spring-io/${{ steps.s3-paths.outputs.p2_path }}/ --recursive
-          aws s3 cp ./repository/ s3://tools-spring-io/${{ steps.s3-paths.outputs.p2_path }}/ --recursive --no-progress
+          p2_path=${{ steps.s3-paths.outputs.p2_path }}
+          echo "P2 path: ${p2_path}"
+          aws s3 rm s3://dist.springsource.com/$p2_path/ --recursive
+          aws s3 cp ./repository/ s3://dist.springsource.com/$p2_path/ --recursive --acl public-read --no-progress
+          aws s3 rm s3://tools-spring-io/$p2_path/ --recursive
+          aws s3 cp ./repository/ s3://tools-spring-io/$p2_path/ --recursive --no-progress
       - name: Upload Linux Distro Build Artifacts
         run: |
           cd eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target/products
@@ -103,17 +104,18 @@ jobs:
             md5 $file > ${file}.md5
           done
           echo "Processing S3 update..."
+          dist_path=${{ steps.s3-paths.outputs.dist_path }}
           ls spring-tool-suite-4*linux*.tar.gz*
           echo "Removing old Linux .tar.gz files from s3..."
-          aws s3 rm s3://dist.springsource.com/${{ steps.s3-paths.outputs.dist_path }} --recursive --exclude "*" --include "spring-tool-suite-4*linux*.tar.gz*" --exclude "*/*"
+          aws s3 rm s3://dist.springsource.com/$dist_path --recursive --exclude "*" --include "spring-tool-suite-4*linux*.tar.gz*" --exclude "*/*"
           echo "Uploading new Linux .tar.gz files to s3..."
-          aws s3 cp . s3://dist.springsource.com/${{ steps.s3-paths.outputs.dist_path }} --recursive --exclude "*" --include "spring-tool-suite-4*linux*.tar.gz*" --exclude "*/*" --acl public-read --no-progress
+          aws s3 cp . s3://dist.springsource.com/$dist_path --recursive --exclude "*" --include "spring-tool-suite-4*linux*.tar.gz*" --exclude "*/*" --acl public-read --no-progress
           echo "Removing old Linux .tar.gz files from Akamai s3..."
-          aws s3 rm s3://tools-spring-io/${{ steps.s3-paths.outputs.dist_path }} --recursive --exclude "*" --include "spring-tool-suite-4*linux*.tar.gz*" --exclude "*/*"
+          aws s3 rm s3://tools-spring-io/$dist_path --recursive --exclude "*" --include "spring-tool-suite-4*linux*.tar.gz*" --exclude "*/*"
           echo "Uploading new Linux .tar.gz files to Akamai s3..."
-          aws s3 cp . s3://tools-spring-io/${{ steps.s3-paths.outputs.dist_path }} --recursive --exclude "*" --include "spring-tool-suite-4*linux*.tar.gz*" --exclude "*/*" --no-progress
+          aws s3 cp . s3://tools-spring-io/$dist_path --recursive --exclude "*" --include "spring-tool-suite-4*linux*.tar.gz*" --exclude "*/*" --no-progress
       - name: Update Nightly Distro Downloads page
-        if: ${{ inputs.build_type == 'snapshot' && always() }}
+        if: ${{ inputs.build_type == 'snapshot' }}
         run: |
           eclipse_profile=${{ inputs.eclipse_profile }}
           eclipse_version=${eclipse_profile:0:2}.${eclipse_profile:2}
@@ -123,13 +125,6 @@ jobs:
           echo "Uploading Win Zips and OSX tar.gz to S3 for signing..."
           id=${{ inputs.eclipse_profile }}-${{ inputs.build_type }}-${{ github.run_id }}
           aws s3 cp ${{ github.workspace }}/eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target/products s3://tools-spring-io/sts4-distro-ci-temp/$id --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip" --include "spring-tool-suite-4*macosx*.tar.gz" --exclude "*/*" --no-progress
-      - uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce
-        with:
-          name: s3-dist-path-${{ inputs.eclipse_profile }}-${{ inputs.build_type }}-${{ github.run_id }}
-          path: |
-            ${{ github.workspace }}/eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target/s3-dist-path.txt
-            ${{ github.workspace }}/eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target/s3-p2-repo-dist-path.txt
-          retention-days: 1
     outputs:
       id: ${{ inputs.eclipse_profile }}-${{ inputs.build_type }}-${{ github.run_id }}
       dist_path: ${{ steps.s3-paths.outputs.dist_path }}
@@ -301,7 +296,7 @@ jobs:
 
   purge_cache:
     needs: [ eclipse-distro-build, sign-win-distros, sign-osx-distros ]
-    if: ${{ inputs.build_type == 'snapshot' && contains(join(needs.*.result, ','), 'success')}}
+    if: ${{ always() && inputs.build_type == 'snapshot' && contains(join(needs.*.result, ','), 'success')}}
     runs-on: [self-hosted, macOS]
     steps:
       - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
