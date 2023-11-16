@@ -13,7 +13,7 @@ package org.springframework.ide.eclipse.beans.ui.live.model;
 import java.util.LinkedHashSet;
 import java.util.Set;
 
-import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.StringUtils;
 
 /**
  * @author Leo Dos Santos

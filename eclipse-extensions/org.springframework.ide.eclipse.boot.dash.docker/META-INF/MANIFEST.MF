@@ -21,7 +21,6 @@ Require-Bundle: org.springframework.ide.eclipse.boot.dash,
  org.springframework.ide.eclipse.editor.support,
  org.eclipse.jdt.launching,
  org.eclipse.jdt.core,
- org.apache.commons.io,
  org.springframework.ide.eclipse.docker.client;bundle-version="3.9.14",
  org.eclipse.linuxtools.docker.ui;resolution:=optional,
  org.eclipse.linuxtools.docker.core;resolution:=optional

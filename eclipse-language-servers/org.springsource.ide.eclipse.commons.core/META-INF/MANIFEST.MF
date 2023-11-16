@@ -11,15 +11,13 @@ Require-Bundle: org.eclipse.core.resources,
  org.eclipse.jdt.core,
  org.eclipse.jdt.launching,
  org.eclipse.wst.common.project.facet.core,
- org.apache.commons.collections,
  org.eclipse.platform,
  org.springsource.ide.eclipse.commons.frameworks.core;bundle-version="3.5.0",
  org.springsource.ide.eclipse.commons.jdk_tools;resolution:=optional,
  org.eclipse.text,
  org.springsource.ide.eclipse.commons.livexp,
  org.eclipse.debug.core,
- org.eclipse.jface,
- org.apache.commons.lang3
+ org.eclipse.jface
 Bundle-ActivationPolicy: lazy
 Bundle-RequiredExecutionEnvironment: JavaSE-11
 Export-Package: org.springsource.ide.eclipse.commons.core,
@@ -35,5 +33,8 @@ Import-Package: org.eclipse.core.runtime,
  org.eclipse.core.runtime.preferences,
  org.eclipse.osgi.util,
  org.osgi.framework,
- org.osgi.service.prefs
+ org.osgi.service.prefs,
+ org.apache.commons.lang3,
+ org.apache.commons.collections,
+ org.apache.commons.collections.iterators
 Automatic-Module-Name: org.springsource.ide.eclipse.commons.core
