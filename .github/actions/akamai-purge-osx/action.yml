@@ -22,7 +22,7 @@ runs:
     - name: Setup
       shell: bash
       run: |
-        echo -e "${EDGERC}" > ${HOME}/.edgerc
+        echo -e "${EDGERC}" > ~/.edgerc
         brew install go
         brew install akamai
         akamai install purge
@@ -34,6 +34,6 @@ runs:
       if: ${{ always() }}
       shell: bash
       run: |
-        rm -f ${HOME}/.edgerc
+        rm -f ~/.edgerc
         brew uninstall akamai
         brew uninstall go
