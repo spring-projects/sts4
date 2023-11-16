@@ -20,16 +20,19 @@ runs:
   using: "composite"
   steps:
     - name: Setup
+      shell: bash
       run: |
         echo -e "${EDGERC}" > ${HOME}/.edgerc
         brew install go
         brew install akamai
         akamai install purge
     - name: Purge
+      shell: bash
       run: |
         akamai purge --edgerc ${HOME}/.edgerc --section ccu ${{ inputs.command }} ${{ inputs.network }} ${{ inputs.type }} ${{ inputs.ref }}
     - name: Cleanup
       if: ${{ always() }}
+      shell: bash
       run: |
         rm -f ${HOME}/.edgerc
         brew uninstall akamai
