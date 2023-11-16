@@ -100,7 +100,7 @@ jobs:
           aws s3 rm s3://dist.springsource.com/${p2_path}/ --recursive
           aws s3 cp ${{ github.workspace }}/eclipse-language-servers/org.springframework.tooling.ls.integration.repository/target/repository/ s3://dist.springsource.com/${p2_path}/ --recursive --acl public-read --no-progress
       - name: Compute invalid URLs
-        if: ${{ inputs.build_type == 'snapshot' }}
+        if: ${{ inputs.build_type != 'snapshot' }}
         id: compute-invalid-urls
         run: |
           invalid_urls=`aws s3 ls s3://tools-spring-io/${{ steps.upload-p2-to-akamai.outputs.p2_path }}/ --recursive | awk '{$1=$2=$3=""; print $0}' | sed -e 's/^[ \t]*/https:\/\/cdn.spring.io\/spring-tools\//' | paste -sd' ' -`
@@ -124,7 +124,7 @@ jobs:
 
   purge_cache:
     needs: [ eclipse-language-servers-build ]
-    if: ${{ inputs.build_type == 'snapshot' }}
+    if: ${{ inputs.build_type != 'snapshot' }}
     runs-on: [self-hosted, macOS]
     steps:
       - uses: ./.github/actions/akamai-purge-osx
