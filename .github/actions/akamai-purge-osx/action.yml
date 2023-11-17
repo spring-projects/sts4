@@ -21,7 +21,30 @@ runs:
     - name: Purge
       shell: bash
       run: |
-        akamai purge --edgerc ~/.edgerc --section ccu ${{ inputs.command }} ${{ inputs.urls }}
+        MAX=50000
+        urls=${{ inputs.urls }}
+        if [ ${#urls} -ge $MAX ]; then
+          echo "Too many URLs. Splitting URLS in batches..."  
+          indices=`echo $urls | grep -o -b " "`
+          offset=0
+          length=0
+          for idx in $indices
+          do
+            end=${idx%:*}
+            new_length=$((end-start))
+            if [ $new_length -ge $MAX ]; then
+              batch=${urls:offset:length}
+              echo $batch
+              start=$((offset + length))
+              length=$((end - start))
+            else
+              length=$new_length
+            fi
+          done
+        else
+          echo "Executing single Purge command..."  
+          akamai purge --edgerc ~/.edgerc --section ccu ${{ inputs.command }} $urls
+        fi
     - name: Cleanup
       if: ${{ always() }}
       shell: bash
