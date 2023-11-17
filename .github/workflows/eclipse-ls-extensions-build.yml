@@ -124,7 +124,7 @@ jobs:
 
   purge_cache:
     needs: [ eclipse-language-servers-build ]
-    if: ${{ inputs.build_type != 'snapshot' }}
+#    if: ${{ inputs.build_type != 'snapshot' }}
     runs-on: [self-hosted, macOS]
     steps:
       - uses: ./.github/actions/akamai-purge-osx

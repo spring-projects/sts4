@@ -266,6 +266,7 @@ jobs:
           do
             ${{ github.workspace }}/.github/scripts/notarize-osx-distro-file.sh $dmg_file $NOTARIZE_PROFILE &
           done
+          FAIL=0
           for job in `jobs -p`
           do
             wait $job || let "FAIL+=1"

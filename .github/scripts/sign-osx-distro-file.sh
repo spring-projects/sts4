@@ -16,6 +16,11 @@ mkdir ${dir}/${destination_folder_name}
 tar -zxf $file --directory ${dir}/${destination_folder_name}
 echo "Successfully extracted ${filename}"
 
+# sign problematic binaries
+find ${dir}/${destination_folder_name}/SpringToolSuite4.app -print | grep ".*/libjansi\.jnilib$" | codesign --verbose --deep --force --timestamp --entitlements "${entitlements}" --options=runtime --keychain "${KEYCHAIN}" -s "${MACOS_CERTIFICATE_ID}"
+find ${dir}/${destination_folder_name}/SpringToolSuite4.app -print | grep ".*/fsevents\.node$" | codesign --verbose --deep --force --timestamp --entitlements "${entitlements}" --options=runtime --keychain "${KEYCHAIN}" -s "${MACOS_CERTIFICATE_ID}"
+
+# Sign the app
 codesign --verbose --deep --force --timestamp --entitlements "${entitlements}" --options=runtime --keychain "${KEYCHAIN}" -s "${MACOS_CERTIFICATE_ID}" ${dir}/${destination_folder_name}/SpringToolSuite4.app
 
 cd ${dir}/${destination_folder_name}
