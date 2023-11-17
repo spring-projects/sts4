@@ -12,6 +12,8 @@ jobs:
 
   update-aggregate-update-sites:
     runs-on: ubuntu-latest
+    outputs:
+      invalid_urls: ${{ steps.gen-aggregate-sites.outputs.invalid_urls }}
     steps:
       - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
         with:
@@ -31,6 +33,7 @@ jobs:
           role-duration-seconds: 900
           role-skip-session-tagging: true
       - name: Generate and Upload Aggregate Update Sites Data
+        id: gen-aggregate-sites
         env:
           CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
           CLOUDFLARE_CACHE_TOKEN: ${{ secrets.CLOUDFLARE_CACHE_TOKEN }}
@@ -45,11 +48,27 @@ jobs:
           aws s3 cp ./p2.index s3://dist.springsource.com/release/TOOLS/sts4-language-server-integrations/ --acl public-read
           ${{ github.workspace }}/.github/scripts/clear-s3-caches.sh release/TOOLS/sts4-language-server-integrations
           echo "Akamai S3 Aggregate Update Sites Creation..."
+          invalid_urls=""
           site_url="https://cdn.spring.io/spring-tools/release/TOOLS/sts4-language-server-integrations/${{ inputs.version }}"
           ${{ github.workspace }}/.github/scripts/generate-composite-site-files.sh ${{ steps.timestamp.outputs.date }} $site_url
           cat ./compositeArtifacts.xml
           cat ./compositeContent.xml
           aws s3 cp ./compositeArtifacts.xml s3://tools-spring-io/release/TOOLS/sts4-language-server-integrations/
+          invalid_urls+="s3://tools-spring-io/release/TOOLS/sts4-language-server-integrations/compositeArtifacts.xml "
           aws s3 cp ./compositeContent.xml s3://tools-spring-io/release/TOOLS/sts4-language-server-integrations/
+          invalid_urls+="s3://tools-spring-io/release/TOOLS/sts4-language-server-integrations/compositeContent.xml "
           aws s3 cp ./p2.index s3://tools-spring-io/release/TOOLS/sts4-language-server-integrations/
-          echo "TODO: purge cache!"
+          invalid_urls+="s3://tools-spring-io/release/TOOLS/sts4-language-server-integrations/p2.index"
+          echo "invalid_urls=$invalid_urls" >> $GITHUB_OUTPUT
+
+  purge_cache:
+    needs: [ update-aggregate-update-sites ]
+    runs-on: [self-hosted, macOS]
+    steps:
+      - uses: ./.github/actions/akamai-purge-osx
+        name: Invalidate URLs
+        env:
+          EDGERC: ${{ secrets.EDGERC }}
+        with:
+          command: invalidate
+          urls: ${{ needs.update-aggregate-update-sites.outputs.invalid_urls }}

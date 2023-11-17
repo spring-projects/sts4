@@ -23,7 +23,7 @@
 		<repository>
 			<id>sts4-language-servers-snapshot</id>
 			<layout>p2</layout>
-			<url>https://dist.springsource.com/snapshot/TOOLS/sts4-language-servers/nightly/</url>
+			<url>https://cdn.spring.io/spring-tools/snapshot/TOOLS/sts4-language-servers/nightly/</url>
 		</repository>
 	</repositories>
 

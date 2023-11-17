@@ -76,7 +76,7 @@
 		<dist.pathpostfix>nightly</dist.pathpostfix>
 		<dist.path>${dist.type}/${dist.key}/${dist.project}/${dist.pathpostfix}</dist.path>
 
-		<sts4-language-servers-p2-repo>https://dist.springsource.com/${dist.type}/TOOLS/sts4-language-server-integrations/${sts4-language-servers-version}</sts4-language-servers-p2-repo>
+		<sts4-language-servers-p2-repo>https://cdn.spring.io/spring-tools/${dist.type}/TOOLS/sts4-language-server-integrations/${sts4-language-servers-version}</sts4-language-servers-p2-repo>
 		
 		<tycho-version>4.0.4</tycho-version>
 		<encoding>UTF-8</encoding>
@@ -436,7 +436,7 @@
 		<repository>
 			<id>p2-thirdparty-bundles</id>
 			<layout>p2</layout>
-			<url>https://dist.springsource.com/release/TOOLS/third-party/misc-p2-repo/${misc.p2.repo.version}</url>
+			<url>https://cdn.spring.io/spring-tools/release/TOOLS/third-party/misc-p2-repo/${misc.p2.repo.version}</url>
 		</repository>
 		<!--		<repository>
 			<id>egit-github</id>

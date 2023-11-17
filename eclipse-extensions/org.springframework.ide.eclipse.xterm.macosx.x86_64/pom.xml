@@ -52,7 +52,7 @@
 						</goals>
 						<configuration>
 							<serverId>s3</serverId>
-							<url>https://dist.springsource.com/release/TOOLS/node-xterm</url>
+							<url>https://cdn.spring.io/spring-tools/release/TOOLS/node-xterm</url>
 							<fromFile>${archive-file}</fromFile>
 							<toFile>${project.basedir}/lib/node-xterm.zip</toFile>
 						</configuration>
