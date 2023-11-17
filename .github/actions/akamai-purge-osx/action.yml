@@ -38,7 +38,7 @@ runs:
               batch=${urls:$offset:$length}
               echo $batch
               offset=$((offset + length))
-              length=$((end - start))
+              length=$(($end - $offset))
             else
               length=$new_length
             fi
