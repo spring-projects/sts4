@@ -11,8 +11,9 @@ on:
     inputs:
       s3-url:
         description: S3 URL
-        required: true
+        required: false
         type: string
+        default: s3://tools-spring-io/snapshot/TOOLS/sts4/nightly/e4.30/
 
 jobs:
 
