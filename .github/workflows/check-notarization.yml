@@ -13,6 +13,6 @@ jobs:
   eclipse-distro-build:
     runs-on: macos-latest
     steps:
-      name: Notarization Logs
+    - name: Notarization Logs
       run: |
         xcrun notarytool log ${{ inputs.id }} --apple-id ${{ secrets.AC_USERNAME }} --team-id ${{ secrets.APPLE_TEAM_ID }} --password ${{ secrets.AC_PASSWORD }}
