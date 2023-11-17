@@ -43,6 +43,12 @@ runs:
               length=$new_length
             fi
           done
+          if [ $length -gt 0 ]; then
+            length=$((${#urls} - offset + 1))
+            echo "Last Batch from ${offset} of length ${length}"
+            batch=${urls:$offset:$length}
+            echo $batch
+          fi
         else
           echo "Executing single Purge command..."  
           akamai purge --edgerc ~/.edgerc --section ccu ${{ inputs.command }} $urls
