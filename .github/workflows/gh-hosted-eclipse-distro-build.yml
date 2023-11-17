@@ -361,7 +361,7 @@ jobs:
           ${{ github.workspace }}/.github/scripts/clear-s3-caches.sh ${{ needs.eclipse-distro-build.outputs.p2_path }}
 
   notify-failure:
-    needs: [ eclipse-distro-build, sign-win-distros, sign-osx-distros, cleanup ]
+    needs: [ eclipse-distro-build, sign-win-distros, sign-osx-distros, cleanup, purge_cache ]
     if: ${{ always() && contains(needs.*.result, 'failure') }}
     uses: ./.github/workflows/notify-failed.yml
     with:

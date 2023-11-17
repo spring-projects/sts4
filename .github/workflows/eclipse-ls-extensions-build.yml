@@ -136,7 +136,7 @@ jobs:
           urls: ${{ needs.eclipse-language-servers-build.outputs.invalid_urls }}
 
   notify-failure:
-    needs: [ eclipse-language-servers-build ]
+    needs: [ eclipse-language-servers-build, purge_cache ]
     if: ${{ always() && contains(needs.*.result, 'failure') }}
     uses: ./.github/workflows/notify-failed.yml
     with:
