@@ -14,6 +14,6 @@ if [ $? -eq 0 ]; then
   shasum -a 256 $dmg_filename > ${dmg_filename}.sha256
   md5 $dmg_filename > ${dmg_filename}.md5
 else
-  echo "Notarization failed"
+  echo "Notarization failed for ${dmg_file}"
   exit 1
 fi
