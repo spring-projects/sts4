@@ -10,5 +10,10 @@ cd $dir
 xcrun notarytool submit ./${dmg_filename} --keychain-profile $notarize_profile --wait
 echo "Staple and generate checksums for ${dmg_filename}"
 xcrun stapler staple $dmg_filename
-shasum -a 256 $dmg_filename > ${dmg_filename}.sha256
-md5 $dmg_filename > ${dmg_filename}.md5
+if [ $? -eq 0 ]; then
+  shasum -a 256 $dmg_filename > ${dmg_filename}.sha256
+  md5 $dmg_filename > ${dmg_filename}.md5
+else
+  echo "Notarization failed"
+  exit 1
+fi
