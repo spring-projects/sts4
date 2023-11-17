@@ -32,13 +32,13 @@ runs:
           do
             end=${idx%:*}
             echo "Index ${end}"
-            new_length=$((end-start))
+            new_length=$((end - offset))
             if [ $new_length -ge $MAX ]; then
               echo "Batch from ${offset} of length ${length}"
               batch=${urls:$offset:$length}
               echo $batch
               offset=$((offset + length))
-              length=$(($end - $offset))
+              length=$((end - offset))
             else
               length=$new_length
             fi
