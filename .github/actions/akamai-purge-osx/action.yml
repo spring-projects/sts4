@@ -22,7 +22,7 @@ runs:
       shell: bash
       run: |
         MAX=50000
-        urls=${{ inputs.urls }}
+        urls="${{ inputs.urls }}"
         if [ ${#urls} -ge $MAX ]; then
           echo "Too many URLs. Splitting URLS in batches..."  
           indices=`echo $urls | grep -o -b " "`
