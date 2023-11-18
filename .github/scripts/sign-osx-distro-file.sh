@@ -27,6 +27,8 @@ done
 for f in `find ${dir}/${destination_folder_name}/SpringToolSuite4.app -type f | grep -E ".*/kotlin-compiler-embeddable.*\.jar$"`
 do
   ./sign-jnilib-files-inside-jar.sh $f $entitlements
+  echo "Signing binary file: ${f}"
+  codesign --verbose --deep --force --timestamp --entitlements "${entitlements}" --options=runtime --keychain "${KEYCHAIN}" -s "${MACOS_CERTIFICATE_ID}" $f
 done
 
 # Sign the app
