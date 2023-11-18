@@ -17,10 +17,16 @@ tar -zxf $file --directory ${dir}/${destination_folder_name}
 echo "Successfully extracted ${filename}"
 
 # sign problematic binaries
-for file in `find ${dir}/${destination_folder_name}/SpringToolSuite4.app -type f | grep -E ".*/(kotlin-compiler-embeddable.*\.jar|fsevents\.node)$"`
+for f in `find ${dir}/${destination_folder_name}/SpringToolSuite4.app -type f | grep -E ".*/fsevents\.node$"`
 do
-  echo "Signing binary file: ${file}"
-  codesign --verbose --deep --force --timestamp --entitlements "${entitlements}" --options=runtime --keychain "${KEYCHAIN}" -s "${MACOS_CERTIFICATE_ID}" $file
+  echo "Signing binary file: ${f}"
+  codesign --verbose --deep --force --timestamp --entitlements "${entitlements}" --options=runtime --keychain "${KEYCHAIN}" -s "${MACOS_CERTIFICATE_ID}" $f
+done
+
+# sign libjansi.jnilib inside kotlin-compiler-embeddable.jar
+for f in `find ${dir}/${destination_folder_name}/SpringToolSuite4.app -type f | grep -E ".*/kotlin-compiler-embeddable.*\.jar$"`
+do
+  ./sign-jnilib-files-inside-jar.sh $f $entitlements
 done
 
 # Sign the app

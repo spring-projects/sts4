@@ -118,7 +118,7 @@
 
 		<!-- Rewrite specific properties -->
 		<rewrite-version>8.9.0-SNAPSHOT</rewrite-version>
-		<rewrite-kotlin-version>1.5.1</rewrite-kotlin-version>
+		<rewrite-kotlin-version>1.7.3</rewrite-kotlin-version>
 		<rewrite-spring-version>5.1.0-SNAPSHOT</rewrite-spring-version>
 		<rewrite-gradle-tooling-api-version>1.3.2</rewrite-gradle-tooling-api-version>
 		
