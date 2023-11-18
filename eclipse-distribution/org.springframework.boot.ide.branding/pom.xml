@@ -28,8 +28,6 @@
 						<phase>validate</phase>
 						<configuration>
 							<target>
-								<taskdef resource="net/sf/antcontrib/antcontrib.properties" />
-
 								<property name="qualifier" value="${unqualifiedVersion}.${p2.qualifier}" />
 								<property name="build.id" value="${buildQualifier}" />
 

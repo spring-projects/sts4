@@ -17,7 +17,7 @@ tar -zxf $file --directory ${dir}/${destination_folder_name}
 echo "Successfully extracted ${filename}"
 
 # sign problematic binaries
-for file in `find ${dir}/${destination_folder_name}/SpringToolSuite4.app -print | grep -E ".*/(libjansi\.jnilib|fsevents\.node)$"`
+for file in `find ${dir}/${destination_folder_name}/SpringToolSuite4.app -type f | grep -E ".*/(kotlin-compiler-embeddable.*\.jar|fsevents\.node)$"`
 do
   echo "Signing binary file: ${file}"
   codesign --verbose --deep --force --timestamp --entitlements "${entitlements}" --options=runtime --keychain "${KEYCHAIN}" -s "${MACOS_CERTIFICATE_ID}" $file
