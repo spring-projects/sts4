@@ -115,10 +115,11 @@
 		<reactor-netty>0.7.15.RELEASE</reactor-netty>
 		<commons-io-version>2.4</commons-io-version>
 		<commons-codec-version>1.13</commons-codec-version>
+		<kotlin.version>1.9.20</kotlin.version>
 
 		<!-- Rewrite specific properties -->
 		<rewrite-version>8.9.0-SNAPSHOT</rewrite-version>
-		<rewrite-kotlin-version>1.7.3</rewrite-kotlin-version>
+		<rewrite-kotlin-version>1.8.0-SNAPSHOT</rewrite-kotlin-version>
 		<rewrite-spring-version>5.1.0-SNAPSHOT</rewrite-spring-version>
 		<rewrite-gradle-tooling-api-version>1.3.2</rewrite-gradle-tooling-api-version>
 		
@@ -209,4 +210,5 @@
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
+
 </project>
