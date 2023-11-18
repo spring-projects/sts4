@@ -40,7 +40,7 @@ do
     codesign --verbose --deep --force --timestamp --entitlements "${entitlements}" --options=runtime --keychain "${KEYCHAIN}" -s "${MACOS_CERTIFICATE_ID}" $jnilib_file
   done
   cd $extracted_jar_dir
-  zip -r -u $f .
+  zip -r -u ../$f .
   cd ..
   rm -rf $extracted_jar_dir
 
