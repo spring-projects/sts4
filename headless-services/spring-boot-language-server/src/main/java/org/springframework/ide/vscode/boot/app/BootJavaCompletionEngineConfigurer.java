@@ -47,35 +47,39 @@ public class BootJavaCompletionEngineConfigurer {
 		// TODO: REMOVE this check once STS3 is no longer supported
 		if (LspClient.currentClient() != LspClient.Client.ECLIPSE) {
 			snippetManager.add(
-					new JavaSnippet("RequestMapping method", JavaSnippetContext.BOOT_MEMBERS, CompletionItemKind.Method,
+					new JavaSnippet("@RequestMapping(..) {..}", JavaSnippetContext.AT_ROOT_LEVEL, CompletionItemKind.Method,
 							ImmutableList.of("org.springframework.web.bind.annotation.RequestMapping",
 									"org.springframework.web.bind.annotation.RequestMethod",
 									"org.springframework.web.bind.annotation.RequestParam"),
-							"@RequestMapping(value=\"${path}\", method=RequestMethod.${GET})\n"
+							"@RequestMapping(\"${path}\", method=RequestMethod.${GET})\n"
 									+ "public ${SomeData} ${requestMethodName}(@RequestParam ${String} ${param}) {\n"
-									+ "	return new ${SomeData}(${cursor});\n" + "}\n"));
-			snippetManager
-					.add(new JavaSnippet("GetMapping method", JavaSnippetContext.BOOT_MEMBERS, CompletionItemKind.Method,
+									+ "	return new ${SomeData}(${cursor});\n" + "}\n",
+							"RequestMapping"));
+			snippetManager.add(
+					new JavaSnippet("@GetMapping(..) {..}", JavaSnippetContext.AT_ROOT_LEVEL, CompletionItemKind.Method,
 							ImmutableList.of("org.springframework.web.bind.annotation.GetMapping",
 									"org.springframework.web.bind.annotation.RequestParam"),
-							"@GetMapping(value=\"${path}\")\n"
+							"@GetMapping(\"${path}\")\n"
 									+ "public ${SomeData} ${getMethodName}(@RequestParam ${String} ${param}) {\n"
-									+ "	return new ${SomeData}(${cursor});\n" + "}\n"));
-			snippetManager.add(new JavaSnippet("PostMapping method", JavaSnippetContext.BOOT_MEMBERS,
-					CompletionItemKind.Method,
-					ImmutableList.of("org.springframework.web.bind.annotation.PostMapping",
-							"org.springframework.web.bind.annotation.RequestBody"),
-					"@PostMapping(value=\"${path}\")\n"
-							+ "public ${SomeEnityData} ${postMethodName}(@RequestBody ${SomeEnityData} ${entity}) {\n"
-							+ "	//TODO: process POST request\n" + "	${cursor}\n" + "	return ${entity};\n" + "}\n"));
-			snippetManager.add(new JavaSnippet("PutMapping method", JavaSnippetContext.BOOT_MEMBERS,
-					CompletionItemKind.Method,
-					ImmutableList.of("org.springframework.web.bind.annotation.PutMapping",
-							"org.springframework.web.bind.annotation.RequestBody",
-							"org.springframework.web.bind.annotation.PathVariable"),
-					"@PutMapping(value=\"${path}/{${id}}\")\n"
-							+ "public ${SomeEnityData} ${putMethodName}(@PathVariable ${pvt:String} ${id}, @RequestBody ${SomeEnityData} ${entity}) {\n"
-							+ "	//TODO: process PUT request\n" + "	${cursor}\n" + "	return ${entity};\n" + "}"));
+									+ "	return new ${SomeData}(${cursor});\n" + "}\n",
+							"GetMapping"));
+			snippetManager.add(
+					new JavaSnippet("@PostMapping(..) {..}", JavaSnippetContext.AT_ROOT_LEVEL, CompletionItemKind.Method,
+							ImmutableList.of("org.springframework.web.bind.annotation.PostMapping",
+									"org.springframework.web.bind.annotation.RequestBody"),
+							"@PostMapping(\"${path}\")\n"
+									+ "public ${SomeEnityData} ${postMethodName}(@RequestBody ${SomeEnityData} ${entity}) {\n"
+									+ "	//TODO: process POST request\n" + "	${cursor}\n" + "	return ${entity};\n" + "}\n",
+							"PostMapping"));
+			snippetManager.add(
+					new JavaSnippet("@PutMapping(..) {..}", JavaSnippetContext.AT_ROOT_LEVEL, CompletionItemKind.Method,
+							ImmutableList.of("org.springframework.web.bind.annotation.PutMapping",
+									"org.springframework.web.bind.annotation.RequestBody",
+									"org.springframework.web.bind.annotation.PathVariable"),
+							"@PutMapping(\"${path}/{${id}}\")\n"
+									+ "public ${SomeEnityData} ${putMethodName}(@PathVariable ${pvt:String} ${id}, @RequestBody ${SomeEnityData} ${entity}) {\n"
+									+ "	//TODO: process PUT request\n" + "	${cursor}\n" + "	return ${entity};\n" + "}",
+							"PutMapping"));
 		}
 
 		return snippetManager;
@@ -97,4 +101,5 @@ public class BootJavaCompletionEngineConfigurer {
 
 		return new BootJavaCompletionEngine(cuCache, providers, snippetManager);
 	}
+	
 }

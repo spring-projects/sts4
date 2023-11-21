@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017 Pivotal, Inc.
+ * Copyright (c) 2017, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -26,32 +26,33 @@ public class JavaSnippet {
 	private JavaSnippetContext context;
 
 	private String name;
-
 	private String template;
-
 	private List<String> imports;
 
 	private CompletionItemKind kind;
+	private String additionalTriggerPrefix;
 
 	public JavaSnippet(String name, JavaSnippetContext context, CompletionItemKind kind, List<String> imports,
-			String template) {
+			String template, String additionalTriggerPrefix) {
 		super();
 		this.context = context;
 		this.name = name;
 		this.template = template;
 		this.imports = imports;
 		this.kind = kind;
+		this.additionalTriggerPrefix = additionalTriggerPrefix;
 	}
 
 	public Optional<ICompletionProposal> generateCompletion(Supplier<SnippetBuilder> snippetBuilderFactory,
-			DocumentRegion query, ASTNode node, CompilationUnit cu) {
+			DocumentRegion query, ASTNode node, CompilationUnit cu, String filterText) {
 
 		if (context.appliesTo(node)) {
 			return Optional.of(
 					new JavaSnippetCompletion(snippetBuilderFactory,
 							query,
 							cu,
-							this
+							this,
+							filterText
 					)
 			);
 		}
@@ -73,6 +74,10 @@ public class JavaSnippet {
 
 	public CompletionItemKind getKind() {
 		return kind;
+	}
+
+	public String getAdditionalTriggerPrefix() {
+		return additionalTriggerPrefix;
 	}
 
 }

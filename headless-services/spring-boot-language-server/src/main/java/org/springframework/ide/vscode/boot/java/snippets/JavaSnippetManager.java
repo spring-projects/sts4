@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2018 Pivotal, Inc.
+ * Copyright (c) 2017, 2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -21,7 +21,6 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.languageserver.util.PrefixFinder;
 import org.springframework.ide.vscode.commons.languageserver.util.SnippetBuilder;
-import org.springframework.ide.vscode.commons.util.FuzzyMatcher;
 import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 
@@ -34,7 +33,7 @@ public class JavaSnippetManager {
 
 		@Override
 		protected boolean isPrefixChar(char c) {
-			return Character.isJavaIdentifierPart(c);
+			return Character.isJavaIdentifierPart(c) || c == '@';
 		}
 	};
 
@@ -47,19 +46,23 @@ public class JavaSnippetManager {
 
 	}
 
-	public void getCompletions(IDocument doc, int offset, ASTNode node, CompilationUnit cu, Collection<ICompletionProposal> completions) {
+	public void getCompletions(IDocument doc, int offset, ASTNode node, CompilationUnit cu,
+			Collection<ICompletionProposal> completions) {
 		// check if current offset is within the range of possible compiler problems
 		if (Arrays.stream(cu.getProblems()).anyMatch(p -> p.getSourceStart() <= offset && offset <= p.getSourceEnd())) {
 			return;
 		}
-		
+
 		DocumentRegion query = PREFIX_FINDER.getPrefixRegion(doc, offset);
 
 		for (JavaSnippet javaSnippet : snippets) {
-			if (FuzzyMatcher.matchScore(query.toString(), javaSnippet.getName()) != 0
-					|| FuzzyMatcher.matchScore(query.toString(), javaSnippet.getTemplate()) != 0) {
 
-				javaSnippet.generateCompletion(snippetBuilderFactory, query, node, cu)
+			if (javaSnippet.getName().toLowerCase().startsWith(query.toString().toLowerCase())) {
+				javaSnippet.generateCompletion(snippetBuilderFactory, query, node, cu, javaSnippet.getName())
+						.ifPresent((completion) -> completions.add(completion));
+
+			} else if (javaSnippet.getAdditionalTriggerPrefix().toLowerCase().startsWith(query.toString().toLowerCase())) {
+				javaSnippet.generateCompletion(snippetBuilderFactory, query, node, cu, javaSnippet.getAdditionalTriggerPrefix())
 						.ifPresent((completion) -> completions.add(completion));
 			}
 		}

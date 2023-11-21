@@ -276,6 +276,7 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 		item.setKind(completion.getKind());
 		item.setSortText(sortkeys.next());
 		item.setFilterText(completion.getFilterText());
+		item.setInsertTextMode(InsertTextMode.AsIs);
 		if (completion.isDeprecated()) {
 			item.setDeprecated(completion.isDeprecated());
 		}

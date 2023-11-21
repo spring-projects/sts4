@@ -23,18 +23,20 @@ import org.springframework.ide.vscode.commons.util.Renderable;
 import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
 
-public class JavaSnippetCompletion implements ICompletionProposal{
+public class JavaSnippetCompletion implements ICompletionProposal {
 
-	private DocumentRegion query;
-	private JavaSnippet javaSnippet;
-	private Supplier<SnippetBuilder> snippetBuilderFactory;
-	private CompilationUnit cu;
+	private final DocumentRegion query;
+	private final JavaSnippet javaSnippet;
+	private final Supplier<SnippetBuilder> snippetBuilderFactory;
+	private final CompilationUnit cu;
+	private final String filterText;
 
-	public JavaSnippetCompletion(Supplier<SnippetBuilder> snippetBuilderFactory, DocumentRegion query, CompilationUnit cu, JavaSnippet javaSnippet) {
+	public JavaSnippetCompletion(Supplier<SnippetBuilder> snippetBuilderFactory, DocumentRegion query, CompilationUnit cu, JavaSnippet javaSnippet, String filterText) {
 		this.snippetBuilderFactory = snippetBuilderFactory;
 		this.query = query;
 		this.cu = cu;
 		this.javaSnippet = javaSnippet;
+		this.filterText = filterText;
 	}
 
 	@Override
@@ -65,5 +67,10 @@ public class JavaSnippetCompletion implements ICompletionProposal{
 	@Override
 	public Optional<java.util.function.Supplier<DocumentEdits>> getAdditionalEdit() {
 		return javaSnippet.getImports().map(imports -> () -> ASTUtils.getImportsEdit(cu, imports, query.getDocument()).orElse(null));
+	}
+	
+	@Override
+	public String getFilterText() {
+		return this.filterText;
 	}
 }

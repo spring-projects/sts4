@@ -17,6 +17,8 @@ import org.apache.commons.io.IOUtils;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.eclipse.lsp4j.CompletionItem;
+import org.eclipse.lsp4j.CompletionList;
+import org.eclipse.lsp4j.InsertTextMode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -41,153 +43,125 @@ public class RequestMappingSnippetTests {
 
 	@BeforeEach
 	public void setup() throws Exception {
-		IJavaProject testProject = ProjectsHarness.INSTANCE.mavenProject("test-request-mapping-live-hover");
+		IJavaProject testProject = ProjectsHarness.INSTANCE.mavenProject("test-request-mapping-completions");
 		harness.useProject(testProject);
 		harness.intialize(null);
 	}
+	
+    @Test
+    void testAnnotationMarkerOnkyPrefix() throws Exception {
+        prepareCase("@<*>");
+        
+		List<CompletionItem> completions = editor.getCompletions();
+        assertEquals(4, completions.size());
+        
+        assertEquals("@GetMapping(..) {..}", completions.get(0).getLabel());
+        assertEquals("@PostMapping(..) {..}", completions.get(1).getLabel());
+        assertEquals("@PutMapping(..) {..}", completions.get(2).getLabel());
+        assertEquals("@RequestMapping(..) {..}", completions.get(3).getLabel());
+        
+        assertEquals(InsertTextMode.AsIs, completions.get(0).getInsertTextMode());
+        assertEquals(InsertTextMode.AsIs, completions.get(1).getInsertTextMode());
+        assertEquals(InsertTextMode.AsIs, completions.get(2).getInsertTextMode());
+        assertEquals(InsertTextMode.AsIs, completions.get(3).getInsertTextMode());
+        
+        assertEquals("@GetMapping(..) {..}", completions.get(0).getFilterText());
+        assertEquals("@PostMapping(..) {..}", completions.get(1).getFilterText());
+        assertEquals("@PutMapping(..) {..}", completions.get(2).getFilterText());
+        assertEquals("@RequestMapping(..) {..}", completions.get(3).getFilterText());
+    }
 
     @Test
-    void getMapping() throws Exception {
+    void testSimpleGetPrefix() throws Exception {
         prepareCase("Get<*>");
-        assertSnippets("package example;\n"
-                + "\n"
-                + "import org.springframework.stereotype.Controller;\n"
-                + "import org.springframework.web.bind.annotation.DeleteMapping;\n"
-                + "import org.springframework.web.bind.annotation.GetMapping;\n"
-                + "import org.springframework.web.bind.annotation.PathVariable;\n"
-                + "import org.springframework.web.bind.annotation.PostMapping;\n"
-                + "import org.springframework.web.bind.annotation.PutMapping;\n"
-                + "import org.springframework.web.bind.annotation.RequestBody;\n"
-                + "import org.springframework.web.bind.annotation.RequestMapping;\n"
-                + "import org.springframework.web.bind.annotation.ResponseBody;\n"
-                + "import org.springframework.web.bind.annotation.RequestParam;\n"
-                + "\n"
-                + "\n"
-                + "/** Boot Java - Test Completion */\n"
-                + "@Controller\n"
-                + "public class RestApi {\n"
-                + "\n"
-                + "@GetMapping(value=\"${1:path}\")\n"
-                + "public ${2:SomeData} ${3:getMethodName}(@RequestParam ${4:String} ${5:param}) {\n"
-                + "    return new ${2:SomeData}($0);\n"
-                + "}\n"
-                + "<*>\n"
-                + "\n"
-                + "\n"
-                + "	@RequestMapping(\"/hello\")\n"
-                + "	@ResponseBody\n"
-                + "	public String hello() {\n"
-                + "		return \"Hello there!\";\n"
-                + "	}\n"
-                + "	\n"
-                + "	\n"
-                + "	@RequestMapping(\"/goodbye\")\n"
-                + "	@ResponseBody\n"
-                + "	public String goodbye() {\n"
-                + "		return \"Good bye\";\n"
-                + "	}\n"
-                + "\n"
-                + "	@GetMapping(\"/person/{name}\")\n"
-                + "	public String getMapping(@PathVariable String name) {\n"
-                + "		return \"Hello \" + name;\n"
-                + "	}\n"
-                + "\n"
-                + "	@DeleteMapping(\"/delete/{id}\")\n"
-                + "	public String removeMe(@PathVariable int id) {\n"
-                + "		System.out.println(\"You are removed: \" + id);\n"
-                + "		return \"Done\";\n"
-                + "	}\n"
-                + "\n"
-                + "	@PostMapping(\"/postHello\")\n"
-                + "	public String postMethod(@RequestBody String name) {\n"
-                + "		System.out.println(\"Posted hello: \" + name);\n"
-                + "		return name;\n"
-                + "	}\n"
-                + "\n"
-                + "	@PutMapping(\"/put/{id}\")\n"
-                + "	public String putMethod(@PathVariable int id, @RequestBody String name) {\n"
-                + "		System.out.println(\"Added \" + name + \" with ID: \" + id);\n"
-                + "		return name;\n"
-                + "	}\n"
-                + "}\n"
-                + "",
-                
-                "package example;\n"
-                + "\n"
-                + "import org.springframework.stereotype.Controller;\n"
-                + "import org.springframework.web.bind.annotation.DeleteMapping;\n"
-                + "import org.springframework.web.bind.annotation.GetMapping;\n"
-                + "import org.springframework.web.bind.annotation.PathVariable;\n"
-                + "import org.springframework.web.bind.annotation.PostMapping;\n"
-                + "import org.springframework.web.bind.annotation.PutMapping;\n"
-                + "import org.springframework.web.bind.annotation.RequestBody;\n"
-                + "import org.springframework.web.bind.annotation.RequestMapping;\n"
-                + "import org.springframework.web.bind.annotation.ResponseBody;\n"
-                + "import org.springframework.web.bind.annotation.RequestMethod;\n"
-                + "import org.springframework.web.bind.annotation.RequestParam;\n"
-                + "\n"
-                + "\n"
-                + "/** Boot Java - Test Completion */\n"
-                + "@Controller\n"
-                + "public class RestApi {\n"
-                + "\n"
-                + "@RequestMapping(value=\"${1:path}\", method=RequestMethod.${2:GET})\n"
-                + "public ${3:SomeData} ${4:requestMethodName}(@RequestParam ${5:String} ${6:param}) {\n"
-                + "    return new ${3:SomeData}($0);\n"
-                + "}\n"
-                + "<*>\n"
-                + "\n"
-                + "\n"
-                + "	@RequestMapping(\"/hello\")\n"
-                + "	@ResponseBody\n"
-                + "	public String hello() {\n"
-                + "		return \"Hello there!\";\n"
-                + "	}\n"
-                + "	\n"
-                + "	\n"
-                + "	@RequestMapping(\"/goodbye\")\n"
-                + "	@ResponseBody\n"
-                + "	public String goodbye() {\n"
-                + "		return \"Good bye\";\n"
-                + "	}\n"
-                + "\n"
-                + "	@GetMapping(\"/person/{name}\")\n"
-                + "	public String getMapping(@PathVariable String name) {\n"
-                + "		return \"Hello \" + name;\n"
-                + "	}\n"
-                + "\n"
-                + "	@DeleteMapping(\"/delete/{id}\")\n"
-                + "	public String removeMe(@PathVariable int id) {\n"
-                + "		System.out.println(\"You are removed: \" + id);\n"
-                + "		return \"Done\";\n"
-                + "	}\n"
-                + "\n"
-                + "	@PostMapping(\"/postHello\")\n"
-                + "	public String postMethod(@RequestBody String name) {\n"
-                + "		System.out.println(\"Posted hello: \" + name);\n"
-                + "		return name;\n"
-                + "	}\n"
-                + "\n"
-                + "	@PutMapping(\"/put/{id}\")\n"
-                + "	public String putMethod(@PathVariable int id, @RequestBody String name) {\n"
-                + "		System.out.println(\"Added \" + name + \" with ID: \" + id);\n"
-                + "		return name;\n"
-                + "	}\n"
-                + "}\n"
-                + "");
+        
+		List<CompletionItem> completions = editor.getCompletions();
+        assertEquals(1, completions.size());
+        
+        assertEquals("@GetMapping(..) {..}", completions.get(0).getLabel());
+        assertEquals("GetMapping", completions.get(0).getFilterText());
+    }
+
+    @Test
+    void testSimplePostPrefix() throws Exception {
+        prepareCase("Post<*>");
+        
+		List<CompletionItem> completions = editor.getCompletions();
+        assertEquals(1, completions.size());
+        
+        assertEquals("@PostMapping(..) {..}", completions.get(0).getLabel());
+        assertEquals("PostMapping", completions.get(0).getFilterText());
+    }
+
+    @Test
+    void testAnnotationAndTextPrefixForGet() throws Exception {
+        prepareCase("@G<*>");
+        
+		List<CompletionItem> completions = editor.getCompletions();
+        assertEquals(1, completions.size());
+        
+        assertEquals("@GetMapping(..) {..}", completions.get(0).getLabel());
+        assertEquals("@GetMapping(..) {..}", completions.get(0).getFilterText());
+    }
+
+    @Test
+    void testAnnotationAndTextPrefixForGet2() throws Exception {
+        prepareCase("@Get<*>");
+        
+		List<CompletionItem> completions = editor.getCompletions();
+        assertEquals(1, completions.size());
+        
+        assertEquals("@GetMapping(..) {..}", completions.get(0).getLabel());
+        assertEquals("@GetMapping(..) {..}", completions.get(0).getFilterText());
+    }
+
+    @Test
+    void testAnnotationAndTextPrefixForGet3() throws Exception {
+        prepareCase("@GetM<*>");
+        
+		List<CompletionItem> completions = editor.getCompletions();
+        assertEquals(1, completions.size());
+        
+        assertEquals("@GetMapping(..) {..}", completions.get(0).getLabel());
+        assertEquals("@GetMapping(..) {..}", completions.get(0).getFilterText());
+    }
+
+    @Test
+    void testSnippetExtractionIntoCode() throws Exception {
+        prepareCase("Get<*>");
+        
+		List<CompletionItem> completions = editor.getCompletions();
+        assertEquals(1, completions.size());
+
+        assertSnippets(completions, "package example;\n"
+        		+ "\n"
+        		+ "import org.springframework.stereotype.Controller;\n"
+        		+ "import org.springframework.web.bind.annotation.GetMapping;\n"
+        		+ "import org.springframework.web.bind.annotation.RequestParam;\n"
+        		+ "\n"
+        		+ "\n"
+        		+ "@Controller\n"
+        		+ "public class SampleController {\n"
+        		+ "\n"
+        		+ "@GetMapping(\"${1:path}\")\n"
+        		+ "public ${2:SomeData} ${3:getMethodName}(@RequestParam ${4:String} ${5:param}) {\n"
+        		+ "    return new ${2:SomeData}($0);\n"
+        		+ "}\n"
+        		+ "<*>\n"
+        		+ "\n"
+        		+ "}\n"
+        		+ "");
     }
 
 	private void prepareCase(String prefix) throws Exception {
-		InputStream resource = this.getClass().getResourceAsStream("/test-projects/test-request-mapping-live-hover/src/main/java/example/RestApi.java");
+		InputStream resource = this.getClass().getResourceAsStream("/test-projects/test-request-mapping-completions/src/main/java/example/SampleController.java");
 		String content = IOUtils.toString(resource);
 
-		content = content.replace("class RestApi {", "class RestApi {\n\n" + prefix);
+		content = content.replace("class SampleController {", "class SampleController {\n\n" + prefix);
 		editor = new Editor(harness, content, LanguageId.JAVA);
 	}
 	
-	private void assertSnippets(String... expected) throws Exception {
-		List<CompletionItem> completions = editor.getCompletions();
-        assertEquals(expected.length, completions.size());
+	private void assertSnippets(List<CompletionItem> completions, String... expected) throws Exception {
         for (int i = 0; i < expected.length; i++) {
     		Editor clonedEditor = editor.clone();
     		clonedEditor.apply(completions.get(i));
