@@ -131,7 +131,7 @@
 <!--	<bundle id="javassist.source"/> -->
 	<bundle id="javax.activation"/>
 <!--	<bundle id="javax.activation.source"/> -->
-	<bundle id="javax.annotation"/>
+<!--	<bundle id="javax.annotation"/> -->
 <!--	<bundle id="javax.annotation.source"/> -->
 <!--	<bundle id="javax.ws.rs"/> -->
 <!--	<bundle id="javax.xml.bind"/> -->
