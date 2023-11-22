@@ -15,12 +15,12 @@ import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 
 public interface JavaSnippetContext {
+	
 	JavaSnippetContext BOOT_MEMBERS = (node) -> node instanceof TypeDeclaration || node instanceof SimpleName;
 	
 	JavaSnippetContext AT_ROOT_LEVEL = (node) -> {
 		return (node instanceof TypeDeclaration) || (node instanceof SimpleName && node.getParent() != null && node.getParent() instanceof TypeDeclaration);
 	};
-	
 
 	boolean appliesTo(ASTNode node);
 }

@@ -10,14 +10,13 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.requestmapping.test;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import java.io.InputStream;
 import java.util.List;
 
 import org.apache.commons.io.IOUtils;
-
-import static org.junit.jupiter.api.Assertions.assertEquals;
 import org.eclipse.lsp4j.CompletionItem;
-import org.eclipse.lsp4j.CompletionList;
 import org.eclipse.lsp4j.InsertTextMode;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -38,6 +37,9 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 @Import(HoverTestConf.class)
 public class RequestMappingSnippetTests {
 	
+	private static final String CONTROLLER_CLASSNAME = "SampleController";
+	private static final String NON_CONTROLLER_CLASSNAME = "SampleNonController";
+	
 	@Autowired private BootLanguageServerHarness harness;
 	private Editor editor;
 
@@ -50,7 +52,7 @@ public class RequestMappingSnippetTests {
 	
     @Test
     void testAnnotationMarkerOnkyPrefix() throws Exception {
-        prepareCase("@<*>");
+        prepareCase(CONTROLLER_CLASSNAME, "@<*>");
         
 		List<CompletionItem> completions = editor.getCompletions();
         assertEquals(4, completions.size());
@@ -73,7 +75,7 @@ public class RequestMappingSnippetTests {
 
     @Test
     void testSimpleGetPrefix() throws Exception {
-        prepareCase("Get<*>");
+        prepareCase(CONTROLLER_CLASSNAME, "Get<*>");
         
 		List<CompletionItem> completions = editor.getCompletions();
         assertEquals(1, completions.size());
@@ -84,7 +86,7 @@ public class RequestMappingSnippetTests {
 
     @Test
     void testSimplePostPrefix() throws Exception {
-        prepareCase("Post<*>");
+        prepareCase(CONTROLLER_CLASSNAME, "Post<*>");
         
 		List<CompletionItem> completions = editor.getCompletions();
         assertEquals(1, completions.size());
@@ -95,7 +97,7 @@ public class RequestMappingSnippetTests {
 
     @Test
     void testAnnotationAndTextPrefixForGet() throws Exception {
-        prepareCase("@G<*>");
+        prepareCase(CONTROLLER_CLASSNAME, "@G<*>");
         
 		List<CompletionItem> completions = editor.getCompletions();
         assertEquals(1, completions.size());
@@ -106,7 +108,7 @@ public class RequestMappingSnippetTests {
 
     @Test
     void testAnnotationAndTextPrefixForGet2() throws Exception {
-        prepareCase("@Get<*>");
+        prepareCase(CONTROLLER_CLASSNAME, "@Get<*>");
         
 		List<CompletionItem> completions = editor.getCompletions();
         assertEquals(1, completions.size());
@@ -117,7 +119,7 @@ public class RequestMappingSnippetTests {
 
     @Test
     void testAnnotationAndTextPrefixForGet3() throws Exception {
-        prepareCase("@GetM<*>");
+        prepareCase(CONTROLLER_CLASSNAME, "@GetM<*>");
         
 		List<CompletionItem> completions = editor.getCompletions();
         assertEquals(1, completions.size());
@@ -128,7 +130,7 @@ public class RequestMappingSnippetTests {
 
     @Test
     void testSnippetExtractionIntoCode() throws Exception {
-        prepareCase("Get<*>");
+        prepareCase(CONTROLLER_CLASSNAME, "Get<*>");
         
 		List<CompletionItem> completions = editor.getCompletions();
         assertEquals(1, completions.size());
@@ -152,12 +154,20 @@ public class RequestMappingSnippetTests {
         		+ "}\n"
         		+ "");
     }
+    
+    @Test
+    void testSnippetsNotShowUpForNonControllerClasses() throws Exception {
+        prepareCase(NON_CONTROLLER_CLASSNAME, "@<*>");
+        
+		List<CompletionItem> completions = editor.getCompletions();
+        assertEquals(0, completions.size());
+    }
 
-	private void prepareCase(String prefix) throws Exception {
-		InputStream resource = this.getClass().getResourceAsStream("/test-projects/test-request-mapping-completions/src/main/java/example/SampleController.java");
+	private void prepareCase(String className, String prefix) throws Exception {
+		InputStream resource = this.getClass().getResourceAsStream("/test-projects/test-request-mapping-completions/src/main/java/example/" + className + ".java");
 		String content = IOUtils.toString(resource);
 
-		content = content.replace("class SampleController {", "class SampleController {\n\n" + prefix);
+		content = content.replace("class " + className + " {", "class " + className + " {\n\n" + prefix);
 		editor = new Editor(harness, content, LanguageId.JAVA);
 	}
 	

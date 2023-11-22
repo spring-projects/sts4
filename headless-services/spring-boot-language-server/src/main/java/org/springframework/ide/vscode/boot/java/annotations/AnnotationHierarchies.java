@@ -118,7 +118,7 @@ public abstract class AnnotationHierarchies {
 		}
 	}
 
-	private static boolean isMetaAnnotation(ITypeBinding candidate, Predicate<String> isKeyAnnotationName) {
+	public static boolean isMetaAnnotation(ITypeBinding candidate, Predicate<String> isKeyAnnotationName) {
 		return findTransitiveSupers(candidate, new HashSet<>())
 				.anyMatch(sa -> isKeyAnnotationName.test(sa.getQualifiedName()));
 	}
