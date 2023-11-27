@@ -55,7 +55,7 @@ public class BootJavaCompletionEngineConfigurer {
 		if (LspClient.currentClient() != LspClient.Client.ECLIPSE) {
 			
 			JavaSnippetContext webControllerContext = new CompositeJavaSnippetContext(
-					JavaSnippetContext.AT_ROOT_LEVEL,
+//					JavaSnippetContext.AT_ROOT_LEVEL,
 					new AnnotatedTypeDeclarationContext(Annotations.CONTROLLER));
 			
 			snippetManager.add(

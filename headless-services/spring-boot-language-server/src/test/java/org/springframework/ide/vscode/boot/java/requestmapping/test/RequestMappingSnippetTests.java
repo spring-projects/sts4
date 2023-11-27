@@ -11,6 +11,7 @@
 package org.springframework.ide.vscode.boot.java.requestmapping.test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
 import java.io.InputStream;
 import java.util.List;
@@ -22,6 +23,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Import;
 import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
 import org.springframework.ide.vscode.boot.bootiful.HoverTestConf;
@@ -38,6 +40,8 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 public class RequestMappingSnippetTests {
 	
 	private static final String CONTROLLER_CLASSNAME = "SampleController";
+	private static final String CONTROLLER_WITH_EXISTING_CODE_CLASSNAME = "SampleControllerWithExistingCode";
+	private static final String CONTROLLER_WITH_RANDOM_CODE_CLASSNAME = "SampleControllerWithRandomCode";
 	private static final String NON_CONTROLLER_CLASSNAME = "SampleNonController";
 	
 	@Autowired private BootLanguageServerHarness harness;
@@ -51,7 +55,7 @@ public class RequestMappingSnippetTests {
 	}
 	
     @Test
-    void testAnnotationMarkerOnkyPrefix() throws Exception {
+    void testAnnotationMarkerOnlyPrefix() throws Exception {
         prepareCase(CONTROLLER_CLASSNAME, "@<*>");
         
 		List<CompletionItem> completions = editor.getCompletions();
@@ -71,6 +75,17 @@ public class RequestMappingSnippetTests {
         assertEquals("@PostMapping(..) {..}", completions.get(1).getFilterText());
         assertEquals("@PutMapping(..) {..}", completions.get(2).getFilterText());
         assertEquals("@RequestMapping(..) {..}", completions.get(3).getFilterText());
+    }
+
+    @Test
+    void testAnnotationMarkerOnlyPrefixWithExistingCode() throws Exception {
+        prepareCase(CONTROLLER_WITH_EXISTING_CODE_CLASSNAME, "// <*>", "@G<*>");
+        
+		List<CompletionItem> completions = editor.getCompletions();
+        assertEquals(1, completions.size());
+        
+        assertEquals("@GetMapping(..) {..}", completions.get(0).getLabel());
+        assertEquals("@GetMapping(..) {..}", completions.get(0).getFilterText());
     }
 
     @Test
@@ -162,12 +177,46 @@ public class RequestMappingSnippetTests {
 		List<CompletionItem> completions = editor.getCompletions();
         assertEquals(0, completions.size());
     }
+    
+    @Test
+    void testSnippetNotShowUpForPrefixInMethodName() throws Exception {
+        prepareCase(CONTROLLER_WITH_RANDOM_CODE_CLASSNAME, "getSomethingMethod", "get<*>SomethingMethod");
+        
+		List<CompletionItem> completions = editor.getCompletions();
+		for (CompletionItem completionItem : completions) {
+	        assertNotEquals("@GetMapping(..) {..}", completionItem.getLabel());
+		}
+    }
+    
+    @Test
+    void testSnippetNotShowUpForPrefixInAnnotationPropertyValue() throws Exception {
+        prepareCase(CONTROLLER_WITH_RANDOM_CODE_CLASSNAME, "@Value(\"${getValueProperty}\")", "@Value(\"${get<*>ValueProperty}\")");
+        
+		List<CompletionItem> completions = editor.getCompletions();
+		for (CompletionItem completionItem : completions) {
+	        assertNotEquals("@GetMapping(..) {..}", completionItem.getLabel());
+		}
+    }
+    
+    @Test
+    void testSnippetNotShowUpForPrefixInMethodReturnType() throws Exception {
+        prepareCase(CONTROLLER_WITH_RANDOM_CODE_CLASSNAME, "public GetSomeService getSomethingMethod", "public Get<*>SomeService getSomethingMethod");
+        
+		List<CompletionItem> completions = editor.getCompletions();
+		for (CompletionItem completionItem : completions) {
+	        assertNotEquals("@GetMapping(..) {..}", completionItem.getLabel());
+		}
+    }
+    
+    private void prepareCase(String className, String prefix) throws Exception {
+    	prepareCase(className, "class " + className + " {", "class " + className + " {\n\n" + prefix);
+    }
 
-	private void prepareCase(String className, String prefix) throws Exception {
+	private void prepareCase(String className, String replace, String replaceWith) throws Exception {
 		InputStream resource = this.getClass().getResourceAsStream("/test-projects/test-request-mapping-completions/src/main/java/example/" + className + ".java");
 		String content = IOUtils.toString(resource);
 
-		content = content.replace("class " + className + " {", "class " + className + " {\n\n" + prefix);
+		content = content.replace(replace, replaceWith);
 		editor = new Editor(harness, content, LanguageId.JAVA);
 	}
 	

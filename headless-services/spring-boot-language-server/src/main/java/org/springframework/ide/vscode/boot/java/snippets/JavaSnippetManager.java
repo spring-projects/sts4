@@ -21,6 +21,7 @@ import org.eclipse.jdt.core.dom.CompilationUnit;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.languageserver.util.PrefixFinder;
 import org.springframework.ide.vscode.commons.languageserver.util.SnippetBuilder;
+import org.springframework.ide.vscode.commons.util.BadLocationException;
 import org.springframework.ide.vscode.commons.util.text.DocumentRegion;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 
@@ -43,7 +44,6 @@ public class JavaSnippetManager {
 
 	public void add(JavaSnippet javaSnippet) {
 		snippets.add(javaSnippet);
-
 	}
 
 	public void getCompletions(IDocument doc, int offset, ASTNode node, CompilationUnit cu,
@@ -54,6 +54,18 @@ public class JavaSnippetManager {
 		}
 
 		DocumentRegion query = PREFIX_FINDER.getPrefixRegion(doc, offset);
+		boolean isEndOfDocument = offset == doc.getLength() - 1;
+		
+		// check if the next character is a space or a new line
+		if (!isEndOfDocument) {
+			try {
+				char nextCharacter = doc.getChar(offset + 1);
+				if (!Character.isWhitespace(nextCharacter) && nextCharacter != '\n' && nextCharacter != '\r') {
+					return;
+				}
+			} catch (BadLocationException e) {
+			}
+		}
 
 		for (JavaSnippet javaSnippet : snippets) {
 
