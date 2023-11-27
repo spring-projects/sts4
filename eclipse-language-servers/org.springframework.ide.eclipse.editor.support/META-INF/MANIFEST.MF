@@ -21,8 +21,7 @@ Require-Bundle: org.eclipse.ui,
  org.springsource.ide.eclipse.commons.core,
  io.projectreactor.reactor-core;bundle-version="[3.3.1,3.3.2)",
  org.reactivestreams.reactive-streams;bundle-version="1.0.0",
- org.springsource.ide.eclipse.commons.ui,
- javax.inject
+ org.springsource.ide.eclipse.commons.ui
 Bundle-ActivationPolicy: lazy
 Export-Package: org.springframework.ide.eclipse.editor.support,
  org.springframework.ide.eclipse.editor.support.completions,
@@ -50,4 +49,5 @@ Import-Package: org.eclipse.core.runtime,
  com.google.gson.annotations,
  com.google.gson.reflect,
  com.google.gson.stream,
- org.apache.commons.lang3
+ org.apache.commons.lang3,
+ javax.inject
