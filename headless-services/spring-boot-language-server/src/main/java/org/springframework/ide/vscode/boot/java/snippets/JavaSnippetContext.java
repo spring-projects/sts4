@@ -11,16 +11,20 @@
 package org.springframework.ide.vscode.boot.java.snippets;
 
 import org.eclipse.jdt.core.dom.ASTNode;
+import org.eclipse.jdt.core.dom.NodeFinder;
 import org.eclipse.jdt.core.dom.SimpleName;
 import org.eclipse.jdt.core.dom.TypeDeclaration;
 
 public interface JavaSnippetContext {
 	
-	JavaSnippetContext BOOT_MEMBERS = (node) -> node instanceof TypeDeclaration || node instanceof SimpleName;
+	JavaSnippetContext BOOT_MEMBERS = (node, offset, prefix) -> node instanceof TypeDeclaration || node instanceof SimpleName;
 	
-	JavaSnippetContext AT_ROOT_LEVEL = (node) -> {
-		return (node instanceof TypeDeclaration) || (node instanceof SimpleName && node.getParent() != null && node.getParent() instanceof TypeDeclaration);
+	JavaSnippetContext AT_ROOT_LEVEL = (node, offset, prefix) -> {
+		if (node instanceof TypeDeclaration) return true;
+		
+		ASTNode nodeBeforePrefix = NodeFinder.perform(node.getRoot(), offset - (prefix.length() + 1), 0);
+		return nodeBeforePrefix != null && nodeBeforePrefix instanceof TypeDeclaration;
 	};
 
-	boolean appliesTo(ASTNode node);
+	boolean appliesTo(ASTNode node, int offset, CharSequence prefix);
 }

@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.app;
 
-import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -37,7 +36,6 @@ import org.springframework.ide.vscode.boot.java.value.ValueCompletionProcessor;
 import org.springframework.ide.vscode.boot.metadata.ProjectBasedPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.metadata.SpringPropertyIndexProvider;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
-import org.springframework.ide.vscode.commons.languageserver.util.LspClient;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 
 import com.google.common.collect.ImmutableList;
@@ -52,10 +50,10 @@ public class BootJavaCompletionEngineConfigurer {
 		// PT 160529904: Eclipse templates are duplicated, due to templates in Eclipse also being contributed by
 		// STS3 bundle. Therefore do not include templates if client is Eclipse
 		// TODO: REMOVE this check once STS3 is no longer supported
-		if (LspClient.currentClient() != LspClient.Client.ECLIPSE) {
+//		if (LspClient.currentClient() != LspClient.Client.ECLIPSE) {
 			
 			JavaSnippetContext webControllerContext = new CompositeJavaSnippetContext(
-//					JavaSnippetContext.AT_ROOT_LEVEL,
+					JavaSnippetContext.AT_ROOT_LEVEL,
 					new AnnotatedTypeDeclarationContext(Annotations.CONTROLLER));
 			
 			snippetManager.add(
@@ -92,7 +90,7 @@ public class BootJavaCompletionEngineConfigurer {
 									+ "public ${SomeEnityData} ${putMethodName}(@PathVariable ${pvt:String} ${id}, @RequestBody ${SomeEnityData} ${entity}) {\n"
 									+ "	//TODO: process PUT request\n" + "	${cursor}\n" + "	return ${entity};\n" + "}",
 							"PutMapping"));
-		}
+//		}
 
 		return snippetManager;
 	}
@@ -126,7 +124,7 @@ public class BootJavaCompletionEngineConfigurer {
 		}
 
 		@Override
-		public boolean appliesTo(ASTNode node) {
+		public boolean appliesTo(ASTNode node, int offset, CharSequence prefix) {
 			TypeDeclaration type = ASTUtils.findDeclaringType(node);
 			if (type != null) {
 				ITypeBinding binding = type.resolveBinding();
@@ -159,9 +157,9 @@ public class BootJavaCompletionEngineConfigurer {
 		}
 
 		@Override
-		public boolean appliesTo(ASTNode node) {
+		public boolean appliesTo(ASTNode node, int offset, CharSequence prefix) {
 			for (JavaSnippetContext context : contexts) {
-				if (!context.appliesTo(node)) {
+				if (!context.appliesTo(node, offset, prefix)) {
 					return false;
 				}
 			}

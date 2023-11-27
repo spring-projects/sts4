@@ -43,21 +43,14 @@ public class JavaSnippet {
 		this.additionalTriggerPrefix = additionalTriggerPrefix;
 	}
 
-	public Optional<ICompletionProposal> generateCompletion(Supplier<SnippetBuilder> snippetBuilderFactory,
+	public ICompletionProposal generateCompletion(Supplier<SnippetBuilder> snippetBuilderFactory,
 			DocumentRegion query, ASTNode node, CompilationUnit cu, String filterText) {
 
-		if (context.appliesTo(node)) {
-			return Optional.of(
-					new JavaSnippetCompletion(snippetBuilderFactory,
-							query,
-							cu,
-							this,
-							filterText
-					)
-			);
-		}
-
-		return Optional.empty();
+		return new JavaSnippetCompletion(snippetBuilderFactory,
+				query,
+				cu,
+				this,
+				filterText);
 	}
 
 	public String getName() {
@@ -78,6 +71,10 @@ public class JavaSnippet {
 
 	public String getAdditionalTriggerPrefix() {
 		return additionalTriggerPrefix;
+	}
+	
+	public JavaSnippetContext getContext() {
+		return context;
 	}
 
 }

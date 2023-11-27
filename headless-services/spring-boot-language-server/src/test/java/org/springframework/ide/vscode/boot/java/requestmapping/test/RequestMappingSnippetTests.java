@@ -33,6 +33,7 @@ import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @ExtendWith(SpringExtension.class)
 @BootLanguageServerTest
@@ -201,6 +202,26 @@ public class RequestMappingSnippetTests {
     @Test
     void testSnippetNotShowUpForPrefixInMethodReturnType() throws Exception {
         prepareCase(CONTROLLER_WITH_RANDOM_CODE_CLASSNAME, "public GetSomeService getSomethingMethod", "public Get<*>SomeService getSomethingMethod");
+        
+		List<CompletionItem> completions = editor.getCompletions();
+		for (CompletionItem completionItem : completions) {
+	        assertNotEquals("@GetMapping(..) {..}", completionItem.getLabel());
+		}
+    }
+    
+    @Test
+    void testSnippetNotShowUpWithinMethodBody() throws Exception {
+        prepareCase(CONTROLLER_WITH_RANDOM_CODE_CLASSNAME, "return new GetSomeService();", "get<*>\n    return new GetSomeService();");
+        
+		List<CompletionItem> completions = editor.getCompletions();
+		for (CompletionItem completionItem : completions) {
+	        assertNotEquals("@GetMapping(..) {..}", completionItem.getLabel());
+		}
+    }
+    
+    @Test
+    void testSnippetNotShowUpWithinMethodParamDeclaration() throws Exception {
+        prepareCase(CONTROLLER_WITH_RANDOM_CODE_CLASSNAME, "@RequestParam(value = \"name\"", "@Get<*> @RequestParam(value = \"name\"");
         
 		List<CompletionItem> completions = editor.getCompletions();
 		for (CompletionItem completionItem : completions) {

@@ -54,29 +54,27 @@ public class JavaSnippetManager {
 		}
 
 		DocumentRegion query = PREFIX_FINDER.getPrefixRegion(doc, offset);
-		boolean isEndOfDocument = offset == doc.getLength() - 1;
-		
-		// check if the next character is a space or a new line
-		if (!isEndOfDocument) {
-			try {
-				char nextCharacter = doc.getChar(offset + 1);
-				if (!Character.isWhitespace(nextCharacter) && nextCharacter != '\n' && nextCharacter != '\r') {
-					return;
-				}
-			} catch (BadLocationException e) {
-			}
-		}
+
 
 		for (JavaSnippet javaSnippet : snippets) {
-
+			
+			String filterText = null;
+			
 			if (javaSnippet.getName().toLowerCase().startsWith(query.toString().toLowerCase())) {
-				javaSnippet.generateCompletion(snippetBuilderFactory, query, node, cu, javaSnippet.getName())
-						.ifPresent((completion) -> completions.add(completion));
-
-			} else if (javaSnippet.getAdditionalTriggerPrefix().toLowerCase().startsWith(query.toString().toLowerCase())) {
-				javaSnippet.generateCompletion(snippetBuilderFactory, query, node, cu, javaSnippet.getAdditionalTriggerPrefix())
-						.ifPresent((completion) -> completions.add(completion));
+				filterText = javaSnippet.getName();
 			}
+			else if (javaSnippet.getAdditionalTriggerPrefix().toLowerCase().startsWith(query.toString().toLowerCase())) {
+				filterText = javaSnippet.getAdditionalTriggerPrefix();
+			}
+			
+			if (filterText != null) {
+				JavaSnippetContext context = javaSnippet.getContext();
+				if (context.appliesTo(node, offset, query)) {
+					ICompletionProposal proposal = javaSnippet.generateCompletion(snippetBuilderFactory, query, node, cu, filterText);
+					completions.add(proposal);
+				}
+			}
+
 		}
 	}
 
