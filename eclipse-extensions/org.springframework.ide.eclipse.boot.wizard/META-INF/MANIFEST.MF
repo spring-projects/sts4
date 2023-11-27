@@ -29,8 +29,7 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.compare,
  org.eclipse.core.contenttype,
  org.springframework.ide.eclipse.maven.pom,
- org.eclipse.core.expressions,
- javax.inject
+ org.eclipse.core.expressions
 Bundle-Activator: org.springframework.ide.eclipse.boot.wizard.BootWizardActivator
 Bundle-ActivationPolicy: lazy
 Export-Package: org.springframework.ide.eclipse.boot.wizard,
@@ -49,5 +48,6 @@ Import-Package: org.eclipse.core.runtime,
  org.apache.commons.codec.binary,
  org.apache.commons.lang3,
  org.eclipse.osgi.util,
- org.osgi.framework
+ org.osgi.framework,
+ javax.inject
 Automatic-Module-Name: org.springframework.ide.eclipse.boot.wizard
