@@ -40,36 +40,37 @@ public class ProjectVersionDiagnosticProvider {
 
 		URI buildFileUri = javaProject.getProjectBuild() == null ? null : javaProject.getProjectBuild().getBuildFile();
 		if (buildFileUri == null) {
-			throw new Exception("Unable to find build file in project while computing version validation for: " + javaProject.getElementName());
-		}
+			log.warn("Unable to find build file in project while computing version validation for: {}", javaProject.getElementName());
+			return null;
+		} else {
+			List<VersionValidator> applicableValidators = validators.stream().filter(v -> v.isEnabled()).collect(Collectors.toList());
+			List<Diagnostic> diagnostics = new ArrayList<Diagnostic>();
 
-		List<VersionValidator> applicableValidators = validators.stream().filter(v -> v.isEnabled()).collect(Collectors.toList());
-		List<Diagnostic> diagnostics = new ArrayList<Diagnostic>();
+			
+			if (!applicableValidators.isEmpty()) {
+				Version javaProjectVersion = SpringProjectUtil.getSpringBootVersion(javaProject);
 
-		
-		if (!applicableValidators.isEmpty()) {
-			Version javaProjectVersion = SpringProjectUtil.getSpringBootVersion(javaProject);
+				if (javaProjectVersion == null) {
+					log.warn("Unable to resolve version for project: " + javaProject.getLocationUri().toASCIIString());
+					return new DiagnosticResult(buildFileUri, Collections.emptyList());
+				}
 
-			if (javaProjectVersion == null) {
-				log.warn("Unable to resolve version for project: " + javaProject.getLocationUri().toASCIIString());
-				return new DiagnosticResult(buildFileUri, Collections.emptyList());
-			}
-
-			for (VersionValidator validator : applicableValidators) {
-				try {
-					Collection<Diagnostic> batch = validator.validate(javaProject, javaProjectVersion);
-					if (batch != null) {
-						diagnostics.addAll(batch);
+				for (VersionValidator validator : applicableValidators) {
+					try {
+						Collection<Diagnostic> batch = validator.validate(javaProject, javaProjectVersion);
+						if (batch != null) {
+							diagnostics.addAll(batch);
+						}
+					} catch (CachedErrorStateException e) {
+						// ignore the cached error state
+					} catch (Exception e) {
+						log.error("", e);
 					}
-				} catch (CachedErrorStateException e) {
-					// ignore the cached error state
-				} catch (Exception e) {
-					log.error("", e);
 				}
 			}
+			
+			return new DiagnosticResult(buildFileUri, diagnostics);
 		}
-		
-		return new DiagnosticResult(buildFileUri, diagnostics);
 	}
 
 	protected File getSpringBootDependency(IJavaProject project) {
