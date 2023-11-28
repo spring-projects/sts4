@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.boot.java.rewrite;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
@@ -36,18 +37,20 @@ public class SpringBootUpgrade {
 	
 	final public static String CMD_UPGRADE_SPRING_BOOT = "sts/upgrade/spring-boot";
 
-	private final Map<String, String> versionsToRecipeId = Map.of(
-			"2.0", "org.openrewrite.java.spring.boot2.UpgradeSpringBoot_2_0",
-			"2.1", "org.openrewrite.java.spring.boot2.UpgradeSpringBoot_2_1",
-			"2.2", "org.openrewrite.java.spring.boot2.UpgradeSpringBoot_2_2",
-			"2.3", "org.openrewrite.java.spring.boot2.UpgradeSpringBoot_2_3",
-			"2.4", "org.openrewrite.java.spring.boot2.UpgradeSpringBoot_2_4",
-			"2.5", "org.openrewrite.java.spring.boot2.UpgradeSpringBoot_2_5",
-			"2.6", "org.openrewrite.java.spring.boot2.UpgradeSpringBoot_2_6",
-			"2.7", "org.openrewrite.java.spring.boot2.UpgradeSpringBoot_2_7",
-			"3.0", "org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_0",
-			"3.1", "org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_1"
-	);
+	private final Map<String, String> versionsToRecipeId = new HashMap<>();
+	{
+		versionsToRecipeId.put("2.0", "org.openrewrite.java.spring.boot2.UpgradeSpringBoot_2_0");
+		versionsToRecipeId.put("2.1", "org.openrewrite.java.spring.boot2.UpgradeSpringBoot_2_1");
+		versionsToRecipeId.put("2.2", "org.openrewrite.java.spring.boot2.UpgradeSpringBoot_2_2");
+		versionsToRecipeId.put("2.3", "org.openrewrite.java.spring.boot2.UpgradeSpringBoot_2_0");
+		versionsToRecipeId.put("2.4", "org.openrewrite.java.spring.boot2.UpgradeSpringBoot_2_0");
+		versionsToRecipeId.put("2.5", "org.openrewrite.java.spring.boot2.UpgradeSpringBoot_2_0");
+		versionsToRecipeId.put("2.6", "org.openrewrite.java.spring.boot2.UpgradeSpringBoot_2_0");
+		versionsToRecipeId.put("2.7", "org.openrewrite.java.spring.boot2.UpgradeSpringBoot_2_0");
+		versionsToRecipeId.put("3.0", "org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_0");
+		versionsToRecipeId.put("3.1", "org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_1");
+		versionsToRecipeId.put("3.2", "org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_2");
+	}
 	
 	public SpringBootUpgrade(SimpleLanguageServer server, RewriteRecipeRepository recipeRepo, JavaProjectFinder projectFinder) {
 		server.onCommand(CMD_UPGRADE_SPRING_BOOT, params -> {
