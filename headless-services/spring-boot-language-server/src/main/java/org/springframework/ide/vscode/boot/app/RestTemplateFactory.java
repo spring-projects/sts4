@@ -43,6 +43,9 @@ public class RestTemplateFactory {
 	
 	public RestTemplate createRestTemplate(String host) {
 		String proxyUrl = config.getRawSettings().getString("http", "proxy");
+		if (proxyUrl == null || proxyUrl.isBlank()) {
+			proxyUrl = getProxyUrlFromEnv();
+		}
 		OkHttpClient.Builder clientBuilder = new OkHttpClient.Builder();
 		if (proxyUrl != null && !proxyUrl.isBlank()) {
 			Set<String> exclusions = config.getRawSettings().getStringSet("http", "proxy-exclusions");
@@ -50,17 +53,29 @@ public class RestTemplateFactory {
 				try {
 					URL url = new URL(proxyUrl);
 					if (url.getProtocol().startsWith("http")) {
-						clientBuilder.proxy(new Proxy(Proxy.Type.HTTP, new InetSocketAddress(url.getHost(), url.getPort())));
+						clientBuilder.proxy(new Proxy(Proxy.Type.HTTP, new InetSocketAddress(url.getHost(), url.getPort() < 0 ? "https".equals(url.getProtocol()) ? 443 : 80 : url.getPort() )));
 					} else if (url.getProtocol().startsWith("sock")) {
 						clientBuilder.proxy(new Proxy(Proxy.Type.SOCKS, new InetSocketAddress(url.getHost(), url.getPort())));
 					}
-					String username = config.getRawSettings().getString("http", "proxy-user");
-					String password = config.getRawSettings().getString("http", "proxy-password");
+					String username = null, password = null;
+					if (url.getUserInfo() == null || url.getUserInfo().isBlank()) {
+						username = config.getRawSettings().getString("http", "proxy-user");
+						password = config.getRawSettings().getString("http", "proxy-password");
+					} else {
+						String userInfo = url.getUserInfo();
+						int idx = userInfo.indexOf(':');
+						if (idx > 0 && idx < userInfo.length()) {
+							username = userInfo.substring(0, idx);
+							password = userInfo.substring(idx + 1);
+						}
+					}
 					if (username != null && password != null && !username.isEmpty()) {
+						final String user = username;
+						final String pass = password;
 						clientBuilder.proxyAuthenticator(new Authenticator() {
 							@Override
 							public Request authenticate(Route route, Response response) throws IOException {
-								String credential = Credentials.basic(username, password);
+								String credential = Credentials.basic(user, pass);
 								return response.request().newBuilder().header("Proxy-Authorization", credential)
 										.build();
 							}
@@ -72,6 +87,24 @@ public class RestTemplateFactory {
 			}
 		}
 		return new RestTemplate(new OkHttp3ClientHttpRequestFactory(clientBuilder.build()));
+	}
+	
+	private static String getProxyUrlFromEnv() {
+		log.info("Environment size: " + System.getenv().size());
+		log.info("Env var https_proxy: " + System.getenv("https_proxy"));
+		String proxyUrl = System.getenv("https_proxy");
+		if (proxyUrl == null || proxyUrl.isBlank()) {
+			proxyUrl = System.getenv("HTTPS_PROXY");
+		}
+		if (proxyUrl == null || proxyUrl.isBlank()) {
+			proxyUrl = System.getenv("http_proxy");
+		}
+		if (proxyUrl == null || proxyUrl.isBlank()) {
+			proxyUrl = System.getenv("HTTP_PROXY");
+		}
+		log.info("Proxy URL from env: " + proxyUrl);
+		return proxyUrl;
+		
 	}
 	
 }
