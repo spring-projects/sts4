@@ -13,7 +13,9 @@ package org.springframework.tooling.jdt.ls.commons.classpath;
 import static org.springframework.ide.vscode.commons.protocol.java.Classpath.ENTRY_KIND_BINARY;
 import static org.springframework.ide.vscode.commons.protocol.java.Classpath.ENTRY_KIND_SOURCE;
 
+import java.io.File;
 import java.net.MalformedURLException;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -221,6 +223,9 @@ public class ClasspathUtil {
 	
 	public static ProjectBuild createProjectBuild(IJavaProject jp) {
 		try {
+			boolean likelyGradle = false;
+			boolean likelyMaven = false;
+			final Path home = System.getProperty("user.home") == null ? null : new File(System.getProperty("user.home")).toPath();
 			for (IClasspathEntry e : jp.getRawClasspath()) {
 				switch (e.getPath().segment(0)) {
 				case MAVEN_CONTAINER_ID:
@@ -232,6 +237,29 @@ public class ClasspathUtil {
 						g = jp.getProject().getFile("build.gradle.kts");
 					}
 					return new ProjectBuild(ProjectBuild.GRADLE_PROJECT_TYPE, g.exists() ? g.getLocationURI().toASCIIString() : null);
+				default:
+					if (home != null && e.getPath() != null && e.getPath().toFile() != null) {
+						Path path = e.getPath().toFile().toPath();
+						if (path.startsWith(home.resolve(".gradle"))) {
+							likelyGradle = true;
+						} else if (path.startsWith(home.resolve(".m2"))) {
+							likelyMaven = true;
+						}
+					}
+				}
+			}
+			if (likelyMaven) {
+				IFile f = jp.getProject().getFile("pom.xml");
+				if (f.exists()) {
+					return new ProjectBuild(ProjectBuild.MAVEN_PROJECT_TYPE, f.getLocationURI().toASCIIString());
+				}
+			} else if (likelyGradle) {
+				IFile g = jp.getProject().getFile("build.gradle");
+				if (!g.exists()) {
+					g = jp.getProject().getFile("build.gradle.kts");
+				}
+				if (g.exists()) {
+					return new ProjectBuild(ProjectBuild.GRADLE_PROJECT_TYPE, g.getLocationURI().toASCIIString());
 				}
 			}
 		} catch (JavaModelException e) {
