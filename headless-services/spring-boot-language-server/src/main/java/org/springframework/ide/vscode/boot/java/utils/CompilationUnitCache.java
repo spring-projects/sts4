@@ -19,6 +19,8 @@ import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executor;
+import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Stream;
@@ -61,8 +63,8 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 	private static final Logger logger = LoggerFactory.getLogger(CompilationUnitCache.class);
 
 	private static final long CU_ACCESS_EXPIRATION = 1;
-	private JavaProjectFinder projectFinder;
-	private ProjectObserver projectObserver;
+	private final JavaProjectFinder projectFinder;
+	private final ProjectObserver projectObserver;
 	
 	private final ProjectObserver.Listener projectListener;
 	private final SimpleTextDocumentService documentService;
@@ -70,6 +72,8 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 	private final Cache<URI, CompletableFuture<CompilationUnit>> uriToCu;
 	private final Cache<URI, Set<URI>> projectToDocs;
 	private final Cache<URI, Tuple2<List<Classpath>, INameEnvironmentWithProgress>> lookupEnvCache;
+	
+	private final Executor createCuExecutorThreadPool = Executors.newCachedThreadPool();
 
 	public CompilationUnitCache(JavaProjectFinder projectFinder, SimpleLanguageServer server, ProjectObserver projectObserver) {
 		this.projectFinder = projectFinder;
@@ -252,7 +256,7 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 					logger.warn("exception happened during parsing CU for " + uri + ": " + e);
 					return null;
 				}
-			});
+			}, createCuExecutorThreadPool);
 			return future;
 
 		});
