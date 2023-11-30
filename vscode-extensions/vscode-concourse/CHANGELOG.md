@@ -1,3 +1,7 @@
+## 2023-12-06 (4.21.0 RELEASE, incl. language servers version 1.51.0)
+
+* _(Concourse)_ [Concourse] Support AWS role ARN for S3 resources [#1145](https://github.com/spring-projects/sts4/issues/1145)
+
 ## 2023-11-01 (4.20.1 RELEASE, incl. language servers version 1.50.0)
 
 * no major changes

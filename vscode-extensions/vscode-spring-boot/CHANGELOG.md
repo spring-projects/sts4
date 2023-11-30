@@ -1,3 +1,21 @@
+## 2023-12-06 (4.21.0 RELEASE, incl. language servers version 1.51.0)
+
+#### important highlights
+
+* _(Spring Boot)_ Completions experience for request mappings on class method level has been improved
+* _(Spring Boot)_ Spring Boot 3.2 upgrade available via OpenRewrite integration
+
+#### all fixes and improvements in detail
+
+* _(Spring Boot)_ [optimization] avoid writing spring index cache twice on didSave event [#1143](https://github.com/spring-projects/sts4/issues/1143)
+* _(Spring Boot)_ Adopt latest OpenRewrite version [#1135](https://github.com/spring-projects/sts4/issues/1135)
+* _(Spring Boot)_ [vscode-spring-boot] Provide better Spring component code completion experience on class and method level [#758](https://github.com/spring-projects/sts4/issues/758)
+* _(Spring Boot)_ VS Code extension does not use proxy settings [#1147](https://github.com/spring-projects/sts4/issues/1147)
+* _(Spring Boot)_ [validation] exception thrown while validating spring boot versions [#1144](https://github.com/spring-projects/sts4/issues/1144)
+* _(Spring Boot)_ `HttpSecurityLambdaDslReconciler` marks more than required [#1141](https://github.com/spring-projects/sts4/issues/1141)
+* _(Spring Boot)_ Cant use compsite keys for domain id when extending JpaRepository [#1139](https://github.com/spring-projects/sts4/issues/1139)
+* _(Spring Boot)_ Strange error port out of range:-1 for language server [#1137](https://github.com/spring-projects/sts4/issues/1137)
+
 ## 2023-11-01 (4.20.1 RELEASE, incl. language servers version 1.50.0)
 
 #### important highlights
