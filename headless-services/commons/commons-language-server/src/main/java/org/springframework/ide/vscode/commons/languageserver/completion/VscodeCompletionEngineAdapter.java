@@ -148,11 +148,11 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 			String resolveId = params.getArguments().get(1) instanceof String ? (String) params.getArguments().get(1) : ((JsonElement) params.getArguments().get(1)).getAsString();
 			JsonElement editJson = params.getArguments().get(2) instanceof JsonElement ? (JsonElement) params.getArguments().get(2) : GSON.toJsonTree(params.getArguments().get(2));
 			TextEdit mainEdit = GSON.fromJson(editJson, TextEdit.class);
-			if (isMagicIndentingClient()) {
-				// Reverse sync edit magic client indentation. This indentation only works during completion application not command execution
-				// The reversed edit text is needed to properly determine text to replace
-				mainEdit.setNewText(revertVscodeIndentFix(server.getTextDocumentService().getLatestSnapshot(uri), mainEdit.getRange().getStart(), mainEdit.getNewText()));
-			}
+//			if (isMagicIndentingClient()) {
+//				// Reverse sync edit magic client indentation. This indentation only works during completion application not command execution
+//				// The reversed edit text is needed to properly determine text to replace
+//				mainEdit.setNewText(revertVscodeIndentFix(server.getTextDocumentService().getLatestSnapshot(uri), mainEdit.getRange().getStart(), mainEdit.getNewText()));
+//			}
 			
 			return CompletableFuture.supplyAsync(() -> {
 				CompletionItem unresolved = new CompletionItem(RESOLVE_EDIT_COMMAND); 
@@ -465,9 +465,9 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 						usedSnippets.set(true);
 					}
 				}
-				if (isMagicIndentingClient() && !ignoreClientIndent) {
-					newText = vscodeIndentFix(doc, vscodeEdit.getRange().getStart(), replaceEdit.newText);
-				}
+//				if (isMagicIndentingClient() && !ignoreClientIndent) {
+//					newText = vscodeIndentFix(doc, vscodeEdit.getRange().getStart(), replaceEdit.newText);
+//				}
 				vscodeEdit.setNewText(newText);
 				return Optional.of(vscodeEdit);
 			}
@@ -480,9 +480,9 @@ public class VscodeCompletionEngineAdapter implements VscodeCompletionEngine {
 	/**
 	 * When this is true, it means the client does 'magic indents' (basically.. that is only on vscode since the magics aren't part of the LSP spec).
 	 */
-	private boolean isMagicIndentingClient() {
-		return !Boolean.getBoolean("lsp.completions.indentation.enable");
-	}
+//	private boolean isMagicIndentingClient() {
+//		return !Boolean.getBoolean("lsp.completions.indentation.enable");
+//	}
 
 	private static String vscodeIndentFix(TextDocument doc, Position start, String newText) {
 		//Vscode applies some magic indent to a multi-line edit text. We do everything ourself so we have adjust for the magic
