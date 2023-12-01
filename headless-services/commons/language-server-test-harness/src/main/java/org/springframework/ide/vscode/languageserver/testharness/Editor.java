@@ -458,17 +458,17 @@ public class Editor {
 				String replaceWith = edit.getLeft().getNewText();
 				int cursorReplaceOffset = 0;
 
-				if (!Boolean.getBoolean("lsp.completions.indentation.enable")) {
-					//Apply indentfix, this is magic vscode seems to apply to edits returned by language server. So our harness has to
-					// mimick that behavior. See https://github.com/Microsoft/language-server-protocol/issues/83
-					int referenceLine = edit.getLeft().getRange().getStart().getLine();
-					int cursorOffset = edit.getLeft().getRange().getStart().getCharacter();
-					String referenceIndent = doc.getLineIndentString(referenceLine);
-					if (cursorOffset<referenceIndent.length()) {
-						referenceIndent = referenceIndent.substring(0, cursorOffset);
-					}
-					replaceWith = replaceWith.replaceAll("\\n", "\n"+referenceIndent);
-				}
+//				if (!Boolean.getBoolean("lsp.completions.indentation.enable")) {
+//					//Apply indentfix, this is magic vscode seems to apply to edits returned by language server. So our harness has to
+//					// mimick that behavior. See https://github.com/Microsoft/language-server-protocol/issues/83
+//					int referenceLine = edit.getLeft().getRange().getStart().getLine();
+//					int cursorOffset = edit.getLeft().getRange().getStart().getCharacter();
+//					String referenceIndent = doc.getLineIndentString(referenceLine);
+//					if (cursorOffset<referenceIndent.length()) {
+//						referenceIndent = referenceIndent.substring(0, cursorOffset);
+//					}
+//					replaceWith = replaceWith.replaceAll("\\n", "\n"+referenceIndent);
+//				}
 
 				// Replace the cursor string
 				cursorReplaceOffset = replaceWith.indexOf(VS_CODE_CURSOR_MARKER);
