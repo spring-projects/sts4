@@ -15,12 +15,14 @@ import java.net.URI;
 import java.nio.file.Paths;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
+import org.eclipse.lsp4j.ChangeAnnotation;
 import org.eclipse.lsp4j.CodeAction;
 import org.eclipse.lsp4j.ResourceOperation;
 import org.eclipse.lsp4j.TextDocumentEdit;
@@ -120,22 +122,26 @@ public class RewriteRefactorings implements CodeActionResolver, QuickfixHandler 
 		return null;
 	}
 	
-	private WorkspaceEdit applyRecipe(Recipe r, IJavaProject project, List<CompilationUnit> cus) {
+	private WorkspaceEdit applyRecipe(Recipe r, IJavaProject project, List<CompilationUnit> cus, boolean needsConfirmation) {
 		List<SourceFile> sources = cus.stream().map(cu -> (SourceFile) cu).collect(Collectors.toList());
 		RecipeRun reciperun = r.run(new InMemoryLargeSourceSet(sources), new InMemoryExecutionContext());
 		List<Result> results = reciperun.getChangeset().getAllResults();
+		final String changeAnnotationId = UUID.randomUUID().toString();
 		List<Either<TextDocumentEdit, ResourceOperation>> edits = results.stream().filter(res -> res.getAfter() != null).map(res -> {
 			URI docUri = res.getAfter().getSourcePath().isAbsolute() ? res.getAfter().getSourcePath().toUri() : project.getLocationUri().resolve(res.getAfter().getSourcePath().toString());
 			TextDocument doc = server.getTextDocumentService().getLatestSnapshot(docUri.toASCIIString());
 			if (doc == null) {
 				doc = new TextDocument(docUri.toASCIIString(), LanguageId.JAVA, 0, res.getBefore() == null ? "" : res.getBefore().printAll());
 			}
-			return ORDocUtils.computeTextDocEdit(doc, res);
+			return ORDocUtils.computeTextDocEdit(doc, res, changeAnnotationId);
 		}).filter(e -> e.isPresent()).map(e -> e.get()).map(e -> Either.<TextDocumentEdit, ResourceOperation>forLeft(e)).collect(Collectors.toList());
 		if (edits.isEmpty()) {
 			return null;
 		}
 		WorkspaceEdit workspaceEdit = new WorkspaceEdit();
+		ChangeAnnotation changeAnnotation = new ChangeAnnotation("Applying Recipe '" + r.getDisplayName() + "'");
+		changeAnnotation.setNeedsConfirmation(needsConfirmation);
+		workspaceEdit.setChangeAnnotations(Map.of(changeAnnotationId, changeAnnotation));
 		workspaceEdit.setDocumentChanges(edits);
 		return workspaceEdit;
 	}
@@ -155,7 +161,7 @@ public class RewriteRefactorings implements CodeActionResolver, QuickfixHandler 
 					PercentageProgressTask progress = server.getProgressService().createPercentageProgressTask(UUID.randomUUID().toString(), inputs.size() + 1, data.getLabel());
 					try {
 						cus = ORAstUtils.parseInputs(jp, inputs, s -> progress.increment());
-						return applyRecipe(r, project.get(), cus);
+						return applyRecipe(r, project.get(), cus, false);
 					} finally {
 						progress.setCurrent(progress.getTotal());
 						progress.done();
@@ -164,7 +170,7 @@ public class RewriteRefactorings implements CodeActionResolver, QuickfixHandler 
 					JavaParser jp = ORAstUtils.createJavaParserBuilder(project.get()).dependsOn(data.getTypeStubs()).build();
 					List<Input> inputs = data.getDocUris().stream().map(URI::create).map(Paths::get).map(p -> ORAstUtils.getParserInput(server.getTextDocumentService(), p)).collect(Collectors.toList());
 					cus = ORAstUtils.parseInputs(jp, inputs, null);
-					return applyRecipe(r, project.get(), cus);
+					return applyRecipe(r, project.get(), cus, false);
 				}
 			});
 		}

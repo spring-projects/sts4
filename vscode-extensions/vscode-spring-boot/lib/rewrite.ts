@@ -97,6 +97,7 @@ async function showRefactorings(uri: VSCode.Uri, filter: string) {
     }
     const choices = await showCurrentPathQuickPick(VSCode.commands.executeCommand('sts/rewrite/list', uri.toString(true), filter).then((cmds: RecipeDescriptor[]) => cmds.map(convertToQuickPickItem)), []);
     const recipeDescriptors = choices.filter(i => i.selected).map(convertToRecipeDescriptor);
+    const needsConfirmation = await shwoNeedsConfirmation();
     if (recipeDescriptors.length) {
         const aggregateRecipeDescriptor = recipeDescriptors.length === 1 ? recipeDescriptors[0] : {
             name: `${recipeDescriptors.length} recipes`,
@@ -111,7 +112,7 @@ async function showRefactorings(uri: VSCode.Uri, filter: string) {
         if (aggregateRecipeDescriptor.estimatedEffortPerOccurrence === 0) {
             delete aggregateRecipeDescriptor.estimatedEffortPerOccurrence;
         }
-        VSCode.commands.executeCommand('sts/rewrite/execute', uri.toString(true), aggregateRecipeDescriptor); 
+        VSCode.commands.executeCommand('sts/rewrite/execute', uri.toString(true), aggregateRecipeDescriptor, needsConfirmation); 
     } else {
         VSCode.window.showErrorMessage('No Recipes were selected!');
     }
@@ -135,6 +136,33 @@ function convertToQuickPickItem(i: RecipeDescriptor): RecipeQuickPickItem {
         buttons: i.recipeList && i.recipeList.length ? [ SUB_RECIPES_BUTTON ] : undefined,
         recipeDescriptor: i
     };
+}
+
+function shwoNeedsConfirmation(): Thenable<boolean> {
+    return new Promise((resolve, reject) => {
+        const previewPick = VSCode.window.createQuickPick<VSCode.QuickPickItem>();
+        previewPick.title = 'Preview Before Applying?';
+        previewPick.canSelectMany = false;
+    
+        const applyItem = {
+            label: "Apply",
+            description: "Apply changes maded by a recipe"
+        }
+        const previewItem = {
+            label: "Preview",
+            description: "Preview and confirm changes made by a recipe before applying"
+        }
+        previewPick.items = [
+            applyItem,
+            previewItem
+        ];
+        previewPick.show();
+    
+        previewPick.onDidAccept(() => {
+            previewPick.hide();
+            resolve(previewPick.selectedItems[0] === previewItem);
+        });
+    });
 }
 
 function showCurrentPathQuickPick(itemsPromise: Thenable<RecipeQuickPickItem[]>, itemsPath: RecipeQuickPickItem[]): Thenable<RecipeQuickPickItem[]> {
@@ -176,13 +204,8 @@ function showCurrentPathQuickPick(itemsPromise: Thenable<RecipeQuickPickItem[]>,
             });
             quickPick.onDidAccept(() => {
                 currentItems.forEach(i => i.selected = quickPick.selectedItems.includes(i));
-                if (itemsPath.length) {
-                    itemsPath.pop();
-                    showCurrentPathQuickPick(Promise.resolve(items), itemsPath).then(resolve, reject);
-                } else {
-                    quickPick.hide();
-                    resolve(items);
-                }
+                quickPick.hide();
+                resolve(items);
             });
             quickPick.onDidChangeSelection(selected => {
                 currentItems.forEach(i => {

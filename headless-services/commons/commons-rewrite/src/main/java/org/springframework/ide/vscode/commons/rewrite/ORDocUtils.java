@@ -13,8 +13,12 @@ package org.springframework.ide.vscode.commons.rewrite;
 import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
+import org.eclipse.lsp4j.AnnotatedTextEdit;
+import org.eclipse.lsp4j.ChangeAnnotation;
 import org.eclipse.lsp4j.CreateFile;
 import org.eclipse.lsp4j.DeleteFile;
 import org.eclipse.lsp4j.Position;
@@ -72,7 +76,7 @@ public class ORDocUtils {
 
 	}
 	
-	public static Optional<TextDocumentEdit> computeTextDocEdit(TextDocument doc, Result result) {
+	public static Optional<TextDocumentEdit> computeTextDocEdit(TextDocument doc, Result result, String changeAnnotationId) {
 		TextDocument newDoc = new TextDocument(null, LanguageId.PLAINTEXT, 0, result.getAfter().printAll());
 
 		EditList diff = JGitUtils.getDiff(result.getBefore().printAll(), newDoc.get());
@@ -85,26 +89,29 @@ public class ORDocUtils {
 				try {
 					switch(e.getType()) {
 					case DELETE:
-						TextEdit textEdit = new TextEdit();
+						AnnotatedTextEdit textEdit = new AnnotatedTextEdit();
 						int start = doc.getLineOffset(e.getBeginA());
 						int end = getStartOfLine(doc, e.getEndA());
 						textEdit.setRange(new Range(doc.toPosition(start), doc.toPosition(end)));
 						textEdit.setNewText("");
+						textEdit.setAnnotationId(changeAnnotationId);
 						textEdits.add(textEdit);
 						break;
 					case INSERT:
-						textEdit = new TextEdit();
+						textEdit = new AnnotatedTextEdit();
 						Position position = doc.toPosition(doc.getLineOffset(e.getBeginA()));
 						textEdit.setRange(new Range(position, position));
 						textEdit.setNewText(newDoc.textBetween(newDoc.getLineOffset(e.getBeginB()), getStartOfLine(newDoc, e.getEndB())));
+						textEdit.setAnnotationId(changeAnnotationId);
 						textEdits.add(textEdit);
 						break;
 					case REPLACE:
-						textEdit = new TextEdit();
+						textEdit = new AnnotatedTextEdit();
 						start = doc.getLineOffset(e.getBeginA());
 						end = getStartOfLine(doc, e.getEndA());
 						textEdit.setRange(new Range(doc.toPosition(start), doc.toPosition(end)));
 						textEdit.setNewText(newDoc.textBetween(newDoc.getLineOffset(e.getBeginB()), getStartOfLine(newDoc, e.getEndB())));
+						textEdit.setAnnotationId(changeAnnotationId);
 						textEdits.add(textEdit);
 						break;
 					case EMPTY:
@@ -151,12 +158,14 @@ public class ORDocUtils {
 		return 0;
 	}
 	
-	public static Optional<WorkspaceEdit> createWorkspaceEdit(Path absoluteProjectDir, SimpleTextDocumentService documents, List<Result> results) {
+	public static Optional<WorkspaceEdit> createWorkspaceEdit(Path absoluteProjectDir, SimpleTextDocumentService documents, List<Result> results, ChangeAnnotation changeAnnotation) {
 		if (results.isEmpty()) {
 			return Optional.empty();
 		}
 		WorkspaceEdit we = new WorkspaceEdit();
 		we.setDocumentChanges(new ArrayList<>());
+		final String changeAnnotationId = UUID.randomUUID().toString();
+		we.setChangeAnnotations(Map.of(changeAnnotationId, changeAnnotation));
 		for (Result result : results) {
 			if (result.getBefore() == null) {
 				String docUri = absoluteProjectDir.resolve(result.getAfter().getSourcePath()).toUri().toASCIIString();
@@ -167,7 +176,7 @@ public class ORDocUtils {
 				TextDocumentEdit te = new TextDocumentEdit();
 				te.setTextDocument(new VersionedTextDocumentIdentifier(docUri, 0));
 				Position cursor = new Position(0,0);
-				te.setEdits(List.of(new TextEdit(new Range(cursor, cursor), result.getAfter().printAll())));
+				te.setEdits(List.of(new AnnotatedTextEdit(new Range(cursor, cursor), result.getAfter().printAll(), changeAnnotationId)));
 				we.getDocumentChanges().add(Either.forLeft(te));
 			} else if (result.getAfter() == null) {
 				String docUri = absoluteProjectDir.resolve(result.getBefore().getSourcePath()).toUri().toASCIIString();
@@ -177,9 +186,9 @@ public class ORDocUtils {
 				TextDocument doc = documents.getLatestSnapshot(docUri);
 				if (doc == null) {
 					doc = new TextDocument(docUri, null, 0, result.getBefore().printAll());
-					ORDocUtils.computeTextDocEdit(doc, result).ifPresent(te -> we.getDocumentChanges().add(Either.forLeft(te)));
+					ORDocUtils.computeTextDocEdit(doc, result, changeAnnotationId).ifPresent(te -> we.getDocumentChanges().add(Either.forLeft(te)));
 				} else {
-					ORDocUtils.computeTextDocEdit(doc, result).ifPresent(te -> we.getDocumentChanges().add(Either.forLeft(te)));
+					ORDocUtils.computeTextDocEdit(doc, result, changeAnnotationId).ifPresent(te -> we.getDocumentChanges().add(Either.forLeft(te)));
 				}
 			}
 			

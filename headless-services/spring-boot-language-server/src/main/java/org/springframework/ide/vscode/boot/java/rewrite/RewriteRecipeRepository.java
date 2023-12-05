@@ -34,6 +34,7 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.eclipse.lsp4j.ApplyWorkspaceEditParams;
+import org.eclipse.lsp4j.ChangeAnnotation;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.WorkspaceEdit;
 import org.openrewrite.InMemoryExecutionContext;
@@ -282,6 +283,7 @@ public class RewriteRecipeRepository {
 			return recipes().thenCompose(recipes -> {
 				String uri = ((JsonElement) params.getArguments().get(0)).getAsString();
 				JsonElement recipesJson = ((JsonElement) params.getArguments().get(1));
+				boolean needsConfirmation = params.getArguments().size() > 2 ? ((JsonElement) params.getArguments().get(2)).getAsBoolean() : false;
 				
 				RecipeDescriptor d = serializationGson.fromJson(recipesJson, RecipeDescriptor.class);
 				
@@ -295,14 +297,14 @@ public class RewriteRecipeRepository {
 							|| params.getWorkDoneToken().getLeft() == null
 									? (r.getName() == null ? UUID.randomUUID().toString() : r.getName())
 									: params.getWorkDoneToken().getLeft();
-					return apply(r, uri, progressToken);
+					return apply(r, uri, progressToken, needsConfirmation);
 				} else {
 					String progressToken = params.getWorkDoneToken() == null
 							|| params.getWorkDoneToken().getLeft() == null
 									? (aggregateRecipe.getName() == null ? UUID.randomUUID().toString()
 											: aggregateRecipe.getName())
 									: params.getWorkDoneToken().getLeft();
-					return apply(aggregateRecipe, uri, progressToken);
+					return apply(aggregateRecipe, uri, progressToken, needsConfirmation);
 				}
 			});
 		});
@@ -314,23 +316,24 @@ public class RewriteRecipeRepository {
 		
 		server.onCommand(CMD_REWRITE_RECIPE_EXECUTE, params -> {
 			String recipeId = ((JsonElement) params.getArguments().get(0)).getAsString();
+			boolean needsConfirmation = params.getArguments().size() > 1 ? ((JsonElement) params.getArguments().get(1)).getAsBoolean() : false;
 			return getRecipe(recipeId).thenCompose(optRecipe -> {
 				Recipe r = optRecipe.orElseThrow(() -> new IllegalArgumentException("No such recipe exists with name " + recipeId));
 				final String progressToken = params.getWorkDoneToken() == null || params.getWorkDoneToken().getLeft() == null ? r.getName() : params.getWorkDoneToken().getLeft();
 				String uri = ((JsonElement) params.getArguments().get(1)).getAsString();
-				return apply(r, uri, progressToken);	
+				return apply(r, uri, progressToken, needsConfirmation);	
 			});
 		});	
 	}
 	
-	CompletableFuture<Object> apply(Recipe r, String uri, String progressToken) {
+	CompletableFuture<Object> apply(Recipe r, String uri, String progressToken, boolean needsConfirmation) {
 		final IndefiniteProgressTask progressTask = server.getProgressService().createIndefiniteProgressTask(progressToken, r.getDisplayName(), "Initiated...");
 		return CompletableFuture.supplyAsync(() -> {
 			return projectFinder.find(new TextDocumentIdentifier(uri));
 		}).thenCompose(p -> {
 			if (p.isPresent()) {
 				try {
-					Optional<WorkspaceEdit> edit = computeWorkspaceEdit(r, p.get(), progressTask);
+					Optional<WorkspaceEdit> edit = computeWorkspaceEdit(r, p.get(), progressTask, needsConfirmation);
 					return CompletableFuture.completedFuture(edit).thenCompose(we -> {
 						if (we.isPresent()) {
 							progressTask.progressEvent("Applying document changes...");
@@ -358,7 +361,7 @@ public class RewriteRecipeRepository {
 		});
 	}
 	
-	private Optional<WorkspaceEdit> computeWorkspaceEdit(Recipe r, IJavaProject project, IndefiniteProgressTask progressTask) {
+	private Optional<WorkspaceEdit> computeWorkspaceEdit(Recipe r, IJavaProject project, IndefiniteProgressTask progressTask, boolean needsConfirmation) {
 		Path absoluteProjectDir = Paths.get(project.getLocationUri());
 		progressTask.progressEvent("Parsing files...");
 		ProjectParser projectParser = createRewriteProjectParser(project,
@@ -374,7 +377,9 @@ public class RewriteRecipeRepository {
 		progressTask.progressEvent("Computing changes...");
 		RecipeRun reciperun = r.run(new InMemoryLargeSourceSet(sources), new InMemoryExecutionContext(e -> log.error("Recipe execution failed", e)));
 		List<Result> results = reciperun.getChangeset().getAllResults();
-		return ORDocUtils.createWorkspaceEdit(absoluteProjectDir, server.getTextDocumentService(), results);
+		ChangeAnnotation changeAnnotation = new ChangeAnnotation("Apply Recipe '" + r.getDisplayName() + "'");
+		changeAnnotation.setNeedsConfirmation(needsConfirmation);
+		return ORDocUtils.createWorkspaceEdit(absoluteProjectDir, server.getTextDocumentService(), results, changeAnnotation);
 	}
 	
 	private void reportParseErrors(List<ParseError> parseErrors) {
