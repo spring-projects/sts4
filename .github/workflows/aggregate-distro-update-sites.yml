@@ -89,11 +89,11 @@ jobs:
                 echo "TODO: Purge Cache"
               fi
               aws s3 mv ./compositeArtifacts.xml s3://tools-spring-io/release/TOOLS/sts4/update/${dir}
-              invalid_urls+="s3://tools-spring-io/release/TOOLS/sts4/update/${dir}/compositeArtifacts.xml "
+              invalid_urls+="s3://tools-spring-io/release/TOOLS/sts4/update/${dir_name}/compositeArtifacts.xml "
               aws s3 mv ./compositeContent.xml s3://tools-spring-io/release/TOOLS/sts4/update/${dir}
-              invalid_urls+="s3://tools-spring-io/release/TOOLS/sts4/update/${dir}/compositeContent.xml "
+              invalid_urls+="s3://tools-spring-io/release/TOOLS/sts4/update/${dir_name}/compositeContent.xml "
               aws s3 mv ./p2.index s3://tools-spring-io/release/TOOLS/sts4/update/${dir}
-              invalid_urls+="s3://tools-spring-io/release/TOOLS/sts4/update/${dir}/p2.index "
+              invalid_urls+="s3://tools-spring-io/release/TOOLS/sts4/update/${dir_name}/p2.index "
             fi
           done
           echo "invalid_urls=$invalid_urls" >> $GITHUB_OUTPUT
