@@ -54,11 +54,11 @@ jobs:
           cat ./compositeArtifacts.xml
           cat ./compositeContent.xml
           aws s3 cp ./compositeArtifacts.xml s3://tools-spring-io/release/TOOLS/sts4-language-server-integrations/
-          invalid_urls+="s3://tools-spring-io/release/TOOLS/sts4-language-server-integrations/compositeArtifacts.xml "
+          invalid_urls+="https://cdn.spring.io/spring-tools/release/TOOLS/sts4-language-server-integrations/compositeArtifacts.xml "
           aws s3 cp ./compositeContent.xml s3://tools-spring-io/release/TOOLS/sts4-language-server-integrations/
-          invalid_urls+="s3://tools-spring-io/release/TOOLS/sts4-language-server-integrations/compositeContent.xml "
+          invalid_urls+="https://cdn.spring.io/spring-tools/release/TOOLS/sts4-language-server-integrations/compositeContent.xml "
           aws s3 cp ./p2.index s3://tools-spring-io/release/TOOLS/sts4-language-server-integrations/
-          invalid_urls+="s3://tools-spring-io/release/TOOLS/sts4-language-server-integrations/p2.index"
+          invalid_urls+="https://cdn.spring.io/spring-tools/release/TOOLS/sts4-language-server-integrations/p2.index"
           echo "invalid_urls=$invalid_urls" >> $GITHUB_OUTPUT
 
   purge_cache:
