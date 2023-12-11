@@ -12,9 +12,9 @@ on:
         default: 'snapshot'
         type: string
       eclipse_profile:
-        description: Eclipse profile 'e427' etc
+        description: Eclipse profile 'e429' etc
         required: false
-        default: 'e428'
+        default: 'e429'
         type: string
       skip_tests:
         description: skip ls tests execution

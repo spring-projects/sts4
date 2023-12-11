@@ -1,7 +1,7 @@
-name: Snapshot - 4.28 Eclipse STS Distribution Build
+name: Snapshot - 4.31 Eclipse STS Distribution Build
 
 concurrency:
-  group: e428-snapshot
+  group: e431-snapshot
   cancel-in-progress: true
 
 #on:
@@ -12,13 +12,12 @@ on:
     types: [completed]
     branches:
       - "main"
-#  workflow_dispatch:
 
 jobs:
-  e428-distro:
+  e430-distro:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     uses: ./.github/workflows/gh-hosted-eclipse-distro-build.yml
     with:
-      eclipse_profile: 'e428'
+      eclipse_profile: 'e431'
       build_type: 'snapshot'
     secrets: inherit

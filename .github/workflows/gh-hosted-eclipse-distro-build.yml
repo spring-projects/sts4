@@ -4,9 +4,9 @@ on:
   workflow_call:
     inputs:
       eclipse_profile:
-        description: Eclipse profile 'e428' etc
+        description: Eclipse profile 'e429' etc
         required: true
-        default: 'e428'
+        default: 'e429'
         type: string
       build_type:
         description: Build type such as 'snapshot', 'milestone' or 'release'

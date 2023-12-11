@@ -14,15 +14,6 @@ on:
 
 jobs:
 
-  e428-distro:
-    uses: ./.github/workflows/gh-hosted-eclipse-distro-build.yml
-    with:
-      eclipse_profile: 'e428'
-      build_type: 'release'
-      p2-qualifier: 'RELEASE'
-      sts4-language-servers-version: ${{ inputs.sts4-language-servers-version }}
-    secrets: inherit
-
   e429-distro:
     uses: ./.github/workflows/gh-hosted-eclipse-distro-build.yml
     with:
@@ -40,3 +31,13 @@ jobs:
       p2-qualifier: 'RELEASE'
       sts4-language-servers-version: ${{ inputs.sts4-language-servers-version }}
     secrets: inherit
+
+  e431-distro:
+    uses: ./.github/workflows/gh-hosted-eclipse-distro-build.yml
+    with:
+      eclipse_profile: 'e431'
+      build_type: 'release'
+      p2-qualifier: 'RELEASE'
+      sts4-language-servers-version: ${{ inputs.sts4-language-servers-version }}
+    secrets: inherit
+
