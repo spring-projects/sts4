@@ -112,14 +112,14 @@ jobs:
           CLOUDFLARE_CACHE_TOKEN: ${{ secrets.CLOUDFLARE_CACHE_TOKEN }}
         run: |
           ${{ github.workspace }}/.github/scripts/clear-s3-caches.sh ${{ steps.upload-p2-to-akamai.outputs.p2_path }}
-      - name: Verify Eclipse LS Extensions on e430
+      - name: Verify Eclipse LS Extensions on e431
         if: ${{ inputs.build_type == 'snapshot' }}
         run: |
           cd eclipse-language-servers
           if command -v xvfb-run ; then
-            xvfb-run ./mvnw --batch-mode clean package -Pe430 -P${{ inputs.build_type }} -Dhttpclient.retry-max=20 -Declipse.p2.mirrors=false -Dmaven.test.skip=true -Dtycho.localArtifacts=ignore
+            xvfb-run ./mvnw --batch-mode clean package -Pe431 -P${{ inputs.build_type }} -Dhttpclient.retry-max=20 -Declipse.p2.mirrors=false -Dmaven.test.skip=true -Dtycho.localArtifacts=ignore
           else
-            ./mvnw --batch-mode clean package -Pe430 -P${{ inputs.build_type }} -Dhttpclient.retry-max=20 -Declipse.p2.mirrors=false -Dmaven.test.skip=true -Dtycho.localArtifacts=ignore
+            ./mvnw --batch-mode clean package -Pe431 -P${{ inputs.build_type }} -Dhttpclient.retry-max=20 -Declipse.p2.mirrors=false -Dmaven.test.skip=true -Dtycho.localArtifacts=ignore
           fi
 
   purge_cache:
