@@ -154,7 +154,8 @@ jobs:
           rm -f spring-tool-suite-4*win*.zip*
           rm -f spring-tool-suite-4*win*.self-extracting.jar*
           ls
-          aws s3 mv s3://tools-spring-io/sts4-distro-ci-temp/${{ needs.eclipse-distro-build.outputs.id }} . --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --exclude "*/*" --no-progress
+          aws s3 ls s3://tools-spring-io/sts4-distro-ci-temp/${{ needs.eclipse-distro-build.outputs.id }}
+          aws s3 mv s3://tools-spring-io/sts4-distro-ci-temp/${{ needs.eclipse-distro-build.outputs.id }} . --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --exclude "*/*"
       - name: Sign EXE within zip files
         id: sign
         env:
