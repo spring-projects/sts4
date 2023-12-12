@@ -147,14 +147,13 @@ jobs:
           role-to-assume: arn:aws:iam::${{ secrets.TOOLS_CLOUDGATE_ACCOUNT_ID }}:role/${{ secrets.TOOLS_CLOUDGATE_USER }}
           role-session-name: ${{ github.run_id }}
           aws-region: us-east-1
-          role-duration-seconds: 900
+          role-duration-seconds: 3600
           role-skip-session-tagging: true
       - name: Download Win Zips from S3 for Signing
         run: |
           rm -f spring-tool-suite-4*win*.zip*
           rm -f spring-tool-suite-4*win*.self-extracting.jar*
           ls
-          aws s3 ls s3://tools-spring-io/sts4-distro-ci-temp/${{ needs.eclipse-distro-build.outputs.id }}
           aws s3 mv s3://tools-spring-io/sts4-distro-ci-temp/${{ needs.eclipse-distro-build.outputs.id }} . --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --exclude "*/*"
       - name: Sign EXE within zip files
         id: sign
