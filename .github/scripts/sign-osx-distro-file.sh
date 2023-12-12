@@ -17,38 +17,39 @@ mkdir ${dir}/${destination_folder_name}
 tar -zxf $file --directory ${dir}/${destination_folder_name}
 echo "Successfully extracted ${filename}"
 
-# sign problematic binaries
-for f in `find ${dir}/${destination_folder_name}/SpringToolSuite4.app -type f | grep -E ".*/fsevents\.node$"`
-do
-  echo "Signing binary file: ${f}"
-  codesign --verbose --deep --force --timestamp --entitlements "${entitlements}" --options=runtime --keychain "${KEYCHAIN}" -s "${MACOS_CERTIFICATE_ID}" $f
-done
-
-# sign libjansi.jnilib inside kotlin-compiler-embeddable.jar
-for f in `find ${dir}/${destination_folder_name}/SpringToolSuite4.app -type f | grep -E ".*/kotlin-compiler-embeddable.*\.jar$"`
-do
-  echo "Looking for 'libjansi.jnilib' files inside ${f} to sign..."
-  f_name="$(basename -- $f)"
-  extracted_jar_dir=extracted_${f_name}
-  rm -rf $extracted_jar_dir
-  mkdir $extracted_jar_dir
-  echo "Extracting archive ${f}"
-  unzip -q $f -d ./${extracted_jar_dir}
-  for jnilib_file in `find $extracted_jar_dir -type f | grep -E ".*/libjansi\.jnilib$"`
-  do
-    echo "Signing binary file: ${jnilib_file}"
-    codesign --verbose --deep --force --timestamp --entitlements "${entitlements}" --options=runtime --keychain "${KEYCHAIN}" -s "${MACOS_CERTIFICATE_ID}" $jnilib_file
-  done
-  cd $extracted_jar_dir
-  zip -r -u ../$f .
-  cd ..
-  rm -rf $extracted_jar_dir
-
-  echo "Signing binary file: ${f}"
-  codesign --verbose --deep --force --timestamp --entitlements "${entitlements}" --options=runtime --keychain "${KEYCHAIN}" -s "${MACOS_CERTIFICATE_ID}" $f
-done
+## sign problematic binaries
+#for f in `find ${dir}/${destination_folder_name}/SpringToolSuite4.app -type f | grep -E ".*/fsevents\.node$"`
+#do
+#  echo "Signing binary file: ${f}"
+#  codesign --verbose --deep --force --timestamp --entitlements "${entitlements}" --options=runtime --keychain "${KEYCHAIN}" -s "${MACOS_CERTIFICATE_ID}" $f
+#done
+#
+## sign libjansi.jnilib inside kotlin-compiler-embeddable.jar
+#for f in `find ${dir}/${destination_folder_name}/SpringToolSuite4.app -type f | grep -E ".*/kotlin-compiler-embeddable.*\.jar$"`
+#do
+#  echo "Looking for 'libjansi.jnilib' files inside ${f} to sign..."
+#  f_name="$(basename -- $f)"
+#  extracted_jar_dir=extracted_${f_name}
+#  rm -rf $extracted_jar_dir
+#  mkdir $extracted_jar_dir
+#  echo "Extracting archive ${f}"
+#  unzip -q $f -d ./${extracted_jar_dir}
+#  for jnilib_file in `find $extracted_jar_dir -type f | grep -E ".*/libjansi\.jnilib$"`
+#  do
+#    echo "Signing binary file: ${jnilib_file}"
+#    codesign --verbose --deep --force --timestamp --entitlements "${entitlements}" --options=runtime --keychain "${KEYCHAIN}" -s "${MACOS_CERTIFICATE_ID}" $jnilib_file
+#  done
+#  cd $extracted_jar_dir
+#  zip -r -u ../$f .
+#  cd ..
+#  rm -rf $extracted_jar_dir
+#
+#  echo "Signing binary file: ${f}"
+#  codesign --verbose --deep --force --timestamp --entitlements "${entitlements}" --options=runtime --keychain "${KEYCHAIN}" -s "${MACOS_CERTIFICATE_ID}" $f
+#done
 
 # Sign the app
+ls ${dir}/${destination_folder_name}/SpringToolSuite4.app
 codesign --verbose --deep --force --timestamp --entitlements "${entitlements}" --options=runtime --keychain "${KEYCHAIN}" -s "${MACOS_CERTIFICATE_ID}" ${dir}/${destination_folder_name}/SpringToolSuite4.app
 
 cd ${dir}/${destination_folder_name}
