@@ -82,7 +82,10 @@ const ROOT_RECIPES_BUTTON: VSCode.QuickInputButton = {
     iconPath: new VSCode.ThemeIcon('home'),
     tooltip: 'Root Recipes'
 }
-
+const PARENT_RECIPE_BUTTON: VSCode.QuickInputButton = {
+    iconPath: new VSCode.ThemeIcon('arrow-up'),
+    tooltip: 'Parent Recipe'
+}
 const SUB_RECIPES_BUTTON: VSCode.QuickInputButton = {
     iconPath: new VSCode.ThemeIcon('type-hierarchy'),
     tooltip: 'Sub-Recipes'
@@ -150,7 +153,7 @@ function showCurrentPathQuickPick(itemsPromise: Thenable<RecipeQuickPickItem[]>,
             });
             quickPick.items = currentItems;
             if (itemsPath.length) {
-                quickPick.buttons = [ ROOT_RECIPES_BUTTON ];
+                quickPick.buttons = [ PARENT_RECIPE_BUTTON, ROOT_RECIPES_BUTTON ];
             }
             quickPick.selectedItems = currentItems.filter(i => i.selected);
             quickPick.onDidTriggerItemButton(e => {
@@ -164,6 +167,10 @@ function showCurrentPathQuickPick(itemsPromise: Thenable<RecipeQuickPickItem[]>,
                 if (b === ROOT_RECIPES_BUTTON) {
                     currentItems.forEach(i => i.selected = quickPick.selectedItems.includes(i));
                     itemsPath.splice(0, itemsPath.length);
+                    showCurrentPathQuickPick(Promise.resolve(items), itemsPath).then(resolve, reject);
+                } else if (b === PARENT_RECIPE_BUTTON) {
+                    currentItems.forEach(i => i.selected = quickPick.selectedItems.includes(i));
+                    itemsPath.pop();
                     showCurrentPathQuickPick(Promise.resolve(items), itemsPath).then(resolve, reject);
                 }
             });

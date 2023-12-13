@@ -36,7 +36,7 @@ public class SpringQuickAccessProvider implements IQuickAccessComputer, IQuickAc
 	
 	final private QuickAccessElement reloadRecipesAction = createForNoArgsLsCommand(
 			"sts/rewrite/reload",
-			"Reload OpenRewrite Recipes, Code Actions, Problem and Quick Fix Descriptors",
+			"Reload OpenRewrite Recipes",
 			"Failed to reload OpenRewrite Recipes!"
 	);
 	

@@ -119,7 +119,7 @@
       },
       {
         "command": "vscode-spring-boot.rewrite.reload",
-        "title": "Reload OpenRewrite Recipes, Code Actions, Problem and Quick Fix Descriptors",
+        "title": "Reload OpenRewrite Recipes",
         "category": "Spring Boot"
       },
       {
@@ -264,7 +264,7 @@
             "items": {
               "type": "string"
             },
-            "description": "JAR and YAML files to scan for recipes, code actions, problem and quick fix descriptors"
+            "description": "JAR and YAML files to scan for recipes"
           }
         }
       },
