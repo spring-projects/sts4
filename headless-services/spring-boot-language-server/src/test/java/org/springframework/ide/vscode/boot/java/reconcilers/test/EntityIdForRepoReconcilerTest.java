@@ -1047,16 +1047,15 @@ public class EntityIdForRepoReconcilerTest extends BaseReconcilerTest {
 	}
 	
 	@Test
-	void compositeId() throws Exception {
+	void compositeId_1() throws Exception {
 		
 		Path customerSource = createFile("Customer.java", """
 			package demo;
 
-			import org.springframework.data.annotation.Id;
+			import jakarta.persistence.IdClass;
 
+			@IdClass(CustomerId.class)
 			public class Customer {
-				@Id String id;
-				@Id String id_additional;
 			}
 		""");
 		
@@ -1078,5 +1077,45 @@ public class EntityIdForRepoReconcilerTest extends BaseReconcilerTest {
 		assertEquals(0, problems.size());
 		
 	}
-	
+
+	@Test
+	void compositeId_2() throws Exception {
+		
+		Path customerSource = createFile("Customer.java", """
+			package demo;
+
+			import jakarta.persistence.IdClass;
+			import org.springframework.data.annotation.Id;
+
+			@IdClass(CustomerId.class)
+			public class Customer {
+				@Id Long id
+			}
+		""");
+		
+		Path customerId = createFile("CustomerId.java", """
+				package demo;
+
+				public record CustomerId(String id) {}
+			""");
+		
+		String source = """
+			package demo;
+
+			import org.springframework.data.repository.Repository;
+
+			interface CustomerRepository extends Repository<Customer, Long> {}
+		""";
+		List<ReconcileProblem> problems = reconcile("CustomerRepository.java", source, false, customerSource, customerId);
+		
+		assertEquals(1, problems.size());
+		ReconcileProblem problem = problems.get(0);
+		
+		assertEquals(Boot2JavaProblemType.DOMAIN_ID_FOR_REPOSITORY, problem.getType());
+		
+		String markedStr = source.substring(problem.getOffset(), problem.getOffset() + problem.getLength());
+		assertEquals("Long", markedStr);
+		assertEquals("Expected Domain ID type is 'demo.CustomerId'", problem.getMessage());
+		
+	}
 }

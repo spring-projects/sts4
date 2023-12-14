@@ -30,7 +30,11 @@ public class Annotations {
 	public static final String NO_REPO_BEAN = "org.springframework.data.repository.NoRepositoryBean";
 	public static final String SPRING_ENTITY_ID = "org.springframework.data.annotation.Id"; 
 	public static final String JPA_JAKARTA_ENTITY_ID = "jakarta.persistence.Id"; 
-	public static final String JPA_JAVAX_ENTITY_ID = "javax.persistence.Id"; 
+	public static final String JPA_JAVAX_ENTITY_ID = "javax.persistence.Id";
+	public static final String JPA_JAKARTA_EMBEDDED_ID = "jakarta.persistence.EmbeddedId"; 
+	public static final String JPA_JAVAX_EMBEDDED_ID = "javax.persistence.EmbeddedId";
+	public static final String JPA_JAKARTA_ID_CLASS = "jakarta.persistence.IdClass"; 
+	public static final String JPA_JAVAX_ID_CLASS = "javax.persistence.IdClass";
 
 	public static final String AUTOWIRED = "org.springframework.beans.factory.annotation.Autowired";
 	public static final String INJECT = "javax.inject.Inject";

@@ -18,6 +18,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -331,7 +332,17 @@ public class EntityIdForRepoReconciler implements JdtAstReconciler {
 
 	private static List<ITypeBinding> findAnnotatedIdTypes(ITypeBinding type, Set<String> visited) {
 		List<ITypeBinding> idTypes = new ArrayList<>();
-		List<String> idAnnotations = List.of(Annotations.SPRING_ENTITY_ID, Annotations.JPA_JAKARTA_ENTITY_ID, Annotations.JPA_JAVAX_ENTITY_ID);
+		for (IAnnotationBinding a : type.getAnnotations()) {
+			switch (a.getAnnotationType().getQualifiedName()) {
+			case Annotations.JPA_JAKARTA_ID_CLASS:
+			case Annotations.JPA_JAVAX_ID_CLASS:
+				Optional<Object> opt = Arrays.stream(a.getAllMemberValuePairs()).filter(p -> "value".equals(p.getName())).map(p -> p.getValue()).findFirst();
+				if (opt.isPresent() && opt.get() instanceof ITypeBinding) {
+					return List.of((ITypeBinding) opt.get());
+				}
+			}
+		}
+		List<String> idAnnotations = List.of(Annotations.SPRING_ENTITY_ID, Annotations.JPA_JAKARTA_ENTITY_ID, Annotations.JPA_JAVAX_ENTITY_ID, Annotations.JPA_JAKARTA_EMBEDDED_ID, Annotations.JPA_JAVAX_EMBEDDED_ID);
 		for (IVariableBinding m : type.getDeclaredFields()) {
 			String s = fieldSignature(m);
 			if (!visited.contains(s) && isAnnotationCompatible(m.getAnnotations(), idAnnotations)) {
