@@ -101,8 +101,8 @@ jobs:
           do
             echo "Re-archive using tar.gz on linux runner to remove LIBARCHIVE headers"
             mkdir extracted
-            tar -xzvf $file --directory ./extracted
-            tar -czvf $file ./extracted 
+            tar -xzf $file --directory ./extracted
+            tar -czf $file ./extracted 
             rm -rf extracted
           
             echo "Generate checksums for ${file}"
