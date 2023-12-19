@@ -10,8 +10,10 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.livehover.v2;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -125,10 +127,6 @@ public class SpringProcessConnectorService {
 	
 	public SpringProcessGcPausesMetricsLiveData getGcPausesMetricsLiveData(String processKey) {
 		return this.liveDataProvider.getGcPausesMetrics(processKey);
-	}
-	
-	public SpringProcessLoggersData getLoggersData(String processKey) {
-		return this.liveDataProvider.getLoggersData(processKey);
 	}
 
 	public void disconnectProcess(String processKey) {
@@ -298,19 +296,24 @@ public class SpringProcessConnectorService {
 		return this.progressService.createIndefiniteProgressTask(prefixId + progressIdKey++, title, message);
 	}
 	
-	public void getLoggers(SpringProcessParams springProcessParams) {
+	public SpringProcessLoggersData getLoggers(SpringProcessParams springProcessParams) {
 		log.info("get loggers data: " + springProcessParams.getProcessKey());
-
+		CompletableFuture<SpringProcessLoggersData> loggerData = new CompletableFuture<>();
 		SpringProcessConnector connector = this.connectors.get(springProcessParams.getProcessKey());
 		if (connector != null) {
 			final IndefiniteProgressTask progressTask = getProgressTask(
 					"spring-process-connector-service-get-loggers-data" + springProcessParams.getProcessKey(), "Loggers", null);
-			System.out.println(progressTask);
-			getLoggersData(progressTask, springProcessParams, connector, 0, TimeUnit.SECONDS, 0);
+			getLoggersData(progressTask, springProcessParams, connector, loggerData, 0, TimeUnit.SECONDS, 0);
+			 try {
+			        return loggerData.get();
+			    } catch (InterruptedException | ExecutionException e) {
+			        log.error("Failed to fetch loggers data for the process "+ springProcessParams.getProcessKey());
+			    }
 		}
+		return null;
 	}
 	
-	public void getLoggersData(IndefiniteProgressTask progressTask, SpringProcessParams springProcessParams, SpringProcessConnector connector, long delay, TimeUnit unit, int retryNo) {
+	public void getLoggersData(IndefiniteProgressTask progressTask, SpringProcessParams springProcessParams, SpringProcessConnector connector, CompletableFuture<SpringProcessLoggersData> loggerData, long delay, TimeUnit unit, int retryNo) {
 		String processKey = springProcessParams.getProcessKey();
 		String endpoint = springProcessParams.getEndpoint();
 
@@ -325,10 +328,7 @@ public class SpringProcessConnectorService {
 					SpringProcessLoggersData loggersData = connector.getLoggers(this.liveDataProvider.getCurrent(processKey));
 
 					if (loggersData != null) {
-						if (!this.liveDataProvider.addLoggers(processKey, loggersData)) {
-							this.liveDataProvider.updateLoggers(processKey, loggersData);
-						}
-
+						loggerData.complete(loggersData);
 						this.connectedSuccess.put(processKey, true);
 					}
 
@@ -340,7 +340,7 @@ public class SpringProcessConnectorService {
 				log.info("problem occured during process live data refresh", e);
 
 				if (retryNo < maxRetryCount && isKnownProcessKey(processKey)) {
-					getLoggersData(progressTask, springProcessParams, connector, retryDelayInSeconds, TimeUnit.SECONDS,
+					getLoggersData(progressTask, springProcessParams, connector, loggerData, retryDelayInSeconds, TimeUnit.SECONDS,
 							retryNo + 1);
 				}
 				else {
@@ -352,6 +352,7 @@ public class SpringProcessConnectorService {
 								.error("Failed to refresh live data from process " + processKey + " after retries: " + retryNo, e));
 
 						if (!connectedSuccess.containsKey(connector.getProcessKey())) {
+							loggerData.complete(null);
 							disconnectProcess(processKey);
 						}
 					}
@@ -369,7 +370,6 @@ public class SpringProcessConnectorService {
 		if (connector != null) {
 			final IndefiniteProgressTask progressTask = getProgressTask(
 					"spring-process-connector-service-configure-log-level" + springProcessParams.getProcessKey(), "Loggers", null);
-			System.out.println(progressTask);
 			configureLogLevel(progressTask, springProcessParams, connector, 0, TimeUnit.SECONDS, 0);
 		}
 	}
@@ -377,7 +377,6 @@ public class SpringProcessConnectorService {
 	private void configureLogLevel(IndefiniteProgressTask progressTask, SpringProcessParams springProcessParams,
 			SpringProcessConnector connector, long delay, TimeUnit unit, int retryNo) {
 		String processKey = springProcessParams.getProcessKey();
-		String endpoint = springProcessParams.getEndpoint();
 
 	    String progressMessage = "configure log level for Spring process: " + processKey + " - retry no: " + retryNo;
 		log.info(progressMessage);
@@ -386,14 +385,12 @@ public class SpringProcessConnectorService {
 
 			try {
 				progressTask.progressEvent(progressMessage);
-				if(LOGGERS.equals(endpoint)) {
-					SpringProcessUpdatedLogLevelData springProcessUpdatedLoggersData = connector.configureLogLevel(this.liveDataProvider.getCurrent(processKey), springProcessParams.getArgs());
+				SpringProcessUpdatedLogLevelData springProcessUpdatedLoggersData = connector.configureLogLevel(this.liveDataProvider.getCurrent(processKey), springProcessParams.getArgs());
 
-					if(springProcessUpdatedLoggersData != null) {
-						this.liveDataProvider.updateLogLevel(processKey, springProcessUpdatedLoggersData);
-						this.connectedSuccess.put(processKey, true);
-					}	
-				}
+				if(springProcessUpdatedLoggersData != null) {
+					this.liveDataProvider.updateLogLevel(processKey, springProcessUpdatedLoggersData);
+					this.connectedSuccess.put(processKey, true);
+				}	
 
 				progressTask.done();
 			}

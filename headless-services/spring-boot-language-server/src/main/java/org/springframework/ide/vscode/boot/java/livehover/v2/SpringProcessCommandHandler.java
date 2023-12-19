@@ -45,7 +45,6 @@ public class SpringProcessCommandHandler {
 	private static final String COMMAND_GET_METRICS = "sts/livedata/get/metrics";
 	private static final String COMMAND_GET_REFRESH_METRICS = "sts/livedata/refresh/metrics";
 	private static final String COMMAND_GET_LOGGERS = "sts/livedata/getLoggers";
-	private static final String COMMAND_FETCH_LOGGERS_DATA = "sts/livedata/fetch/loggersData";
 	private static final String COMMAND_CONFIGURE_LOGLEVEL = "sts/livedata/configure/logLevel";
 	
 	private final SpringProcessConnectorService connectorService;
@@ -98,11 +97,6 @@ public class SpringProcessCommandHandler {
 		});
 		log.info("Registered command handler: {}",COMMAND_GET_LOGGERS);
 
-		server.onCommand(COMMAND_FETCH_LOGGERS_DATA, (params) -> {
-			return handleFetchLoggersDataRequest(params);
-		});
-		log.info("Registered command handler: {}",COMMAND_FETCH_LOGGERS_DATA);
-		
 		server.onCommand(COMMAND_CONFIGURE_LOGLEVEL, (params) -> {
 			return configureLogLevel(params);
 		});
@@ -341,24 +335,16 @@ public class SpringProcessCommandHandler {
 
 
 	private CompletableFuture<Object> getLoggers(ExecuteCommandParams params) {
+		SpringProcessLoggersData loggersData = null;
 		SpringProcessParams springProcessParams = new SpringProcessParams();
 	    springProcessParams.setProcessKey(getProcessKey(params));    
 	    springProcessParams.setEndpoint(getArgumentByKey(params, "endpoint"));
 		if (springProcessParams.getProcessKey() != null) {
-			connectorService.getLoggers(springProcessParams);
+			loggersData = connectorService.getLoggers(springProcessParams);
+			return CompletableFuture.completedFuture(loggersData);
 		}
 
-		return CompletableFuture.completedFuture(null);
-	}
-
-	private CompletableFuture<Object> handleFetchLoggersDataRequest(ExecuteCommandParams params) {
-		String processKey = getProcessKey(params);
-		if (processKey != null) {
-			SpringProcessLoggersData data = connectorService.getLoggersData(processKey);
-			return CompletableFuture.completedFuture(data.getLoggers());
-		}
-
-		return CompletableFuture.completedFuture(null);
+		return CompletableFuture.completedFuture(loggersData);
 	}
 	
 	private CompletableFuture<Object> configureLogLevel(ExecuteCommandParams params) {
@@ -368,7 +354,6 @@ public class SpringProcessCommandHandler {
 	    args.put("effectiveLevel", getArgumentByKey(params, "effectiveLevel"));
 	    SpringProcessParams springProcessParams = new SpringProcessParams();
 	    springProcessParams.setProcessKey(getProcessKey(params));   
-	    springProcessParams.setEndpoint(getArgumentByKey(params, "endpoint"));
 		springProcessParams.setArgs(args);
 	    
 		if (springProcessParams.getProcessKey() != null) {

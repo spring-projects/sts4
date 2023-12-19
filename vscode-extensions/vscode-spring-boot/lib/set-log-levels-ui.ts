@@ -3,7 +3,7 @@
 import * as VSCode from 'vscode';
 import { LanguageClient } from "vscode-languageclient/node";
 import { ActivatorOptions } from '@pivotal-tools/commons-vscode';
-import { LiveProcess, LiveProcessLoggersUpdatedNotification, LiveProcessLogLevelUpdatedNotification, LiveProcessUpdatedLogLevel } from './notification';
+import { LiveProcess, LiveProcessLogLevelUpdatedNotification, LiveProcessUpdatedLogLevel } from './notification';
 
 interface ProcessCommandInfo {
     processKey : string;
@@ -24,6 +24,13 @@ export interface Loggers {
 export interface LoggersData {
     levels: string[];
     loggers: Loggers;
+}
+
+export interface ProcessLoggersData {
+    loggers: LoggersData;
+    processID: string;
+    processName: string;
+    processType: number;
 }
 
 export interface LoggerItem {
@@ -48,17 +55,41 @@ async function setLogLevelHandler() {
         const picked = await VSCode.window.showQuickPick(choices);
         if (picked) {
             const chosen = choiceMap.get(picked);
-            const loggers = await VSCode.commands.executeCommand('sts/livedata/getLoggers', chosen, {"endpoint": "loggers"});
+            try {
+                const loggers: ProcessLoggersData = await getLoggers(chosen);
+                await displayLoggers(loggers, chosen.processKey);
+              } catch (error) {
+                VSCode.window.showErrorMessage("Failed to fetch loggers for the process " + chosen.processKey);
+              }
         }
     }
 }
 
-async function getLoggersList(process: LiveProcess) {
-    const loggers: LoggersData = await VSCode.commands.executeCommand('sts/livedata/fetch/loggersData', process);
+async function getLoggers(processInfo: ProcessCommandInfo): Promise<ProcessLoggersData> {
+
+    return new Promise(async (resolve, reject) => {
+        await VSCode.window.withProgress({
+          location: VSCode.ProgressLocation.Window,
+          title: "Fetching Loggers Data for process "+processInfo.processKey,
+          cancellable: false
+        }, async (progress) => {
+          try {
+            const loggers: ProcessLoggersData = await VSCode.commands.executeCommand('sts/livedata/getLoggers', processInfo, {"endpoint": "loggers"}); 
+            progress.report({});
+            resolve(loggers);
+          } catch (error) {
+            reject(error);
+          }
+        });
+      });
+}
+
+async function displayLoggers(processLoggersData: ProcessLoggersData, processKey: string) {
     let items;
-    if(loggers) {
-        items = Object.keys(loggers.loggers).map(packageName => {
-            const logger: Logger = loggers.loggers[packageName];
+    const loggersData = processLoggersData.loggers;
+    if(loggersData.loggers) {
+        items = Object.keys(loggersData.loggers).map(packageName => {
+            const logger: Logger = loggersData.loggers[packageName];
             const effectiveLevel = logger.effectiveLevel;
             const label = packageName + ' (' + effectiveLevel + ')';
             return {
@@ -71,8 +102,8 @@ async function getLoggersList(process: LiveProcess) {
     if(items) {
         const chosenPackage = await VSCode.window.showQuickPick(items);
         if (chosenPackage) {
-            const chosenlogLevel = await VSCode.window.showQuickPick(loggers.levels);
-            const changeLogLevel = await VSCode.commands.executeCommand('sts/livedata/configure/logLevel', {"endpoint": "loggers"}, process, chosenPackage, {"configuredLevel":chosenlogLevel});
+            const chosenlogLevel = await VSCode.window.showQuickPick(loggersData.levels);
+            await VSCode.commands.executeCommand('sts/livedata/configure/logLevel', {"processKey": processKey}, chosenPackage, {"configuredLevel":chosenlogLevel});
         }
     }
 
@@ -89,7 +120,6 @@ export function activate(
         options: ActivatorOptions,
         context: VSCode.ExtensionContext
 ) {
-    client.onNotification(LiveProcessLoggersUpdatedNotification.type, getLoggersList)
     client.onNotification(LiveProcessLogLevelUpdatedNotification.type, logLevelUpdated)
     context.subscriptions.push(
         VSCode.commands.registerCommand('vscode-spring-boot.set.log-levels', () => {

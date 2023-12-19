@@ -76,14 +76,6 @@ public class SpringProcessLiveDataProvider {
 		}
 		return oldData == null;
 	}
-	
-	public boolean addLoggers(String processKey, SpringProcessLoggersData loggerData) {
-		SpringProcessLoggersData oldData = this.loggersData.putIfAbsent(processKey, loggerData);
-		if (oldData == null) {
-			getClient().liveProcessLoggersDataUpdated(createLoggersSummary(processKey, loggerData));
-		}
-		return oldData == null;
-	}
 
 	private STS4LanguageClient getClient() {
 		STS4LanguageClient client = server.getClient();
@@ -113,11 +105,6 @@ public class SpringProcessLiveDataProvider {
 	public void updateGcPausesMetrics(String processKey, SpringProcessGcPausesMetricsLiveData liveData) {
 		this.gcPausesMetricsLiveData.put(processKey, liveData);
 		getClient().liveProcessGcPausesMetricsDataUpdated(createGcPausesMetricsSummary(processKey, liveData));
-	}
-	
-	public void updateLoggers(String processKey, SpringProcessLoggersData loggerData) {
-		this.loggersData.put(processKey, loggerData);
-		getClient().liveProcessLoggersDataUpdated(createLoggersSummary(processKey, loggerData));
 	}
 	
 	public void updateLogLevel(String processKey, SpringProcessUpdatedLogLevelData updatedLogLevelData) {
@@ -181,15 +168,6 @@ public class SpringProcessLiveDataProvider {
         p.setProcessKey(processKey);
         p.setProcessName(liveData.getProcessName());
         p.setPid(liveData.getProcessID());
-        return p;
-    }
-	
-	public static LiveProcessSummary createLoggersSummary(String processKey, SpringProcessLoggersData loggersData) {
-        LiveProcessSummary p = new LiveProcessSummary();
-        p.setType(loggersData.getProcessType().jsonName());
-        p.setProcessKey(processKey);
-        p.setProcessName(loggersData.getProcessName());
-        p.setPid(loggersData.getProcessID());
         return p;
     }
 

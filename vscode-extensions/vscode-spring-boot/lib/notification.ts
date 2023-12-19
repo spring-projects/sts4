@@ -54,10 +54,6 @@ export namespace SpringIndexUpdatedNotification {
 	export const type = new NotificationType<void>('spring/index/updated');
 }
 
-export namespace LiveProcessLoggersUpdatedNotification {
-	export const type = new NotificationType<LiveProcess>('sts/liveprocess/loggers/updated');
-}
-
 export namespace LiveProcessLogLevelUpdatedNotification {
 	export const type = new NotificationType<LiveProcessUpdatedLogLevel>('sts/liveprocess/loglevel/updated');
 }

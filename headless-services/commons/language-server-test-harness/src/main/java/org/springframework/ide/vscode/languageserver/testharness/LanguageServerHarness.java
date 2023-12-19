@@ -434,10 +434,6 @@ public class LanguageServerHarness {
 				}
 
 				@Override
-				public void liveProcessLoggersDataUpdated(LiveProcessSummary processKey) {
-				}
-
-				@Override
 				public void indexUpdated() {
 					receiveIndexUpdated();
 				}
