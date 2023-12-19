@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2022 VMware, Inc.
+ * Copyright (c) 2022, 2023 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,55 +10,48 @@
  *******************************************************************************/
 package org.springframework.tooling.boot.ls.commands;
 
+import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.IdentityHashMap;
-import java.util.Map;
-import java.util.Objects;
-import java.util.stream.Collectors;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.concurrent.CompletableFuture;
 
 import org.eclipse.core.runtime.CoreException;
 import org.eclipse.core.runtime.Status;
+import org.eclipse.lsp4j.ExecuteCommandParams;
+import org.eclipse.lsp4j.services.WorkspaceService;
+import org.springframework.tooling.boot.ls.commands.RecipeDescriptor.CheckedState;
+import org.springframework.tooling.boot.ls.commands.RecipeDescriptor.RecipeSelection;
 
 
 public class RecipeTreeModel {
 	
-	public enum CheckedState {
-		UNCHECKED,
-		CHECKED,
-		GRAYED
-	}
+	private static final String REWRITE_REFACTORINGS_LIST = "sts/rewrite/list";
+	private static final String REWRITE_REFACTORINGS_SUBLIST = "sts/rewrite/sublist";
 	
 	private RecipeDescriptor[] recipeDescriptors;
-	private Map<RecipeDescriptor, RecipeDescriptor> parentMap = new IdentityHashMap<>();
-	private Map<RecipeDescriptor, CheckedState> checkedMap = new IdentityHashMap<>();
 
-	RecipeTreeModel(RecipeDescriptor[] recipeDescriptors) {
-		this.recipeDescriptors = recipeDescriptors;
-		for (RecipeDescriptor d : recipeDescriptors) {
-			initParentMap(d);
-		}
-	}
-	
-	private void initParentMap(RecipeDescriptor d) {
-		if (d.recipeList != null) {
-			for (RecipeDescriptor dc : d.recipeList) {
-				parentMap.put(dc, d);
-				initParentMap(dc);
-			}
-		}
+	final private WorkspaceService workspaceService;
+	final private String recipeFilter;
+
+	RecipeTreeModel(WorkspaceService workspaceService, String recipeFilter) {
+		this.workspaceService = workspaceService;
+		this.recipeFilter = recipeFilter;
 	}
 	
 	public void check(RecipeDescriptor d) {
 		if (simpleCheck(d)) {
-			inferCheckedStateFromChildren(parentMap.get(d));
+			inferCheckedStateFromChildren(d.parent);
 		}
 	}
 	
 	private boolean simpleCheck(RecipeDescriptor d) {
-		if (checkedMap.get(d) != CheckedState.CHECKED) {
-			checkedMap.put(d, CheckedState.CHECKED);
-			for (RecipeDescriptor dc : d.recipeList) {
-				simpleCheck(dc);
+		if (d.checked != CheckedState.CHECKED) {
+			d.checked = CheckedState.CHECKED;
+			if (d.recipeList != null) {
+				for (RecipeDescriptor dc : d.recipeList) {
+					simpleCheck(dc);
+				}
 			}
 			return true;
 		}
@@ -67,24 +60,21 @@ public class RecipeTreeModel {
 	
 	public void uncheck(RecipeDescriptor d) {
 		if (simpleUncheck(d)) {
-			inferCheckedStateFromChildren(parentMap.get(d));
+			inferCheckedStateFromChildren(d.parent);
 		}
 	}
 	
 	private boolean simpleUncheck(RecipeDescriptor d) {
-		if (checkedMap.get(d) != CheckedState.UNCHECKED) {
-			checkedMap.put(d, CheckedState.UNCHECKED);
-			for (RecipeDescriptor dc : d.recipeList) {
-				simpleUncheck(dc);
+		if (d.checked != CheckedState.UNCHECKED) {
+			d.checked = CheckedState.UNCHECKED;
+			if (d.recipeList != null) {
+				for (RecipeDescriptor dc : d.recipeList) {
+					simpleUncheck(dc);
+				}
 			}
 			return true;
 		}
 		return false;
-	}
-	
-	public CheckedState getCheckedState(RecipeDescriptor d) {
-		CheckedState state = checkedMap.get(d);
-		return state == null ? CheckedState.UNCHECKED : state;
 	}
 	
 	private void inferCheckedStateFromChildren(RecipeDescriptor d) {
@@ -92,7 +82,7 @@ public class RecipeTreeModel {
 			boolean all = true;
 			boolean none = true;
 			for (RecipeDescriptor child : d.recipeList) {
-				CheckedState childState = getCheckedState(child);
+				CheckedState childState = child.checked;
 				if (childState == CheckedState.UNCHECKED) {
 					all = false;
 				} else {
@@ -105,9 +95,9 @@ public class RecipeTreeModel {
 			} else if (none) {
 				inferredState = CheckedState.UNCHECKED;
 			}
-			if (getCheckedState(d) != inferredState) {
-				checkedMap.put(d, inferredState);
-				inferCheckedStateFromChildren(parentMap.get(d));
+			if (d.checked != inferredState) {
+				d.checked = inferredState;
+				inferCheckedStateFromChildren(d.parent);
 			}
 		}
 	}
@@ -116,32 +106,70 @@ public class RecipeTreeModel {
 		return recipeDescriptors;
 	}
 	
-	public RecipeDescriptor getSelectedRecipeDescriptors() throws CoreException {
-		RecipeDescriptor[] recipes = Arrays.stream(recipeDescriptors).map(this::copySelectedDescriptor).filter(Objects::nonNull).toArray(RecipeDescriptor[]::new);
-		if (recipes.length == 0) {
-			throw new CoreException(Status.error("No recipes selected"));
-		} else if (recipes.length == 1) {
-			return recipes[0];
-		} else {
-			RecipeDescriptor aggregate = new RecipeDescriptor();
-			aggregate.name = recipes.length + " recipes";
-			aggregate.displayName = recipes.length + " recipes";
-			aggregate.description = "Multiple recipes to be applied. Number of recipes " + recipes.length;
-			aggregate.tags = Arrays.stream(recipes).flatMap(r -> r.tags.stream()).collect(Collectors.toSet());
-			aggregate.recipeList = Arrays.asList(recipes);
-			return aggregate;
+	public RecipeSelection[] getRecipeSelection() throws CoreException {
+		List<RecipeSelection> rootSelected = new ArrayList<>();
+		for (int i = 0; i < recipeDescriptors.length; i++) {
+			if (recipeDescriptors[i].checked != CheckedState.UNCHECKED) {
+				rootSelected.add(new RecipeSelection(true, recipeDescriptors[i].name, createRecipeSelection(recipeDescriptors[i])));
+			}
 		}
+		if (rootSelected.isEmpty()) {
+			throw new CoreException(Status.error("No recipes selected"));
+		}
+		return rootSelected.toArray(new RecipeSelection[rootSelected.size()]);
 	}
 	
-	private RecipeDescriptor copySelectedDescriptor(RecipeDescriptor d) {
-		if (getCheckedState(d) != CheckedState.UNCHECKED) {
-			RecipeDescriptor copy = d.getCopyWithoutSubRecipes();
-			if (d.recipeList != null) {
-				copy.recipeList = d.recipeList.stream().map(this::copySelectedDescriptor).filter(Objects::nonNull).collect(Collectors.toList());
-			}
-			return copy;
+	private RecipeSelection[] createRecipeSelection(RecipeDescriptor d) {
+		if (d.recipeList != null) {
+			return d.recipeList.stream()
+					.map(s -> new RecipeSelection(s.checked != CheckedState.UNCHECKED, s.name, createRecipeSelection(s)))
+					.toArray(RecipeSelection[]::new);
 		}
 		return null;
 	}
-
+	
+	CompletableFuture<Void> fetchSubrecipes(RecipeDescriptor descriptor) {
+		RecipeDescriptor d = descriptor;
+		LinkedList<Integer> indexPath = new LinkedList<>();
+		for (; d.parent != null; d = d.parent) {
+			indexPath.addFirst(d.parent.recipeList.indexOf(d));
+		}
+		ExecuteCommandParams commandParams = new ExecuteCommandParams();
+		commandParams.setCommand(REWRITE_REFACTORINGS_SUBLIST);
+		commandParams.setArguments(List.of(d.name, indexPath));
+		return workspaceService.executeCommand(commandParams).thenAccept(json -> {
+			RecipeDescriptor[] fetchedDescriptors = RewriteRefactoringsHandler.SERIALIZATION_GSON.fromJson(RewriteRefactoringsHandler.SERIALIZATION_GSON.toJson(json), RecipeDescriptor[].class);
+			for (RecipeDescriptor fd : fetchedDescriptors) {
+				fd.parent = descriptor;
+				fd.checked = descriptor.checked != CheckedState.UNCHECKED ? CheckedState.CHECKED : CheckedState.UNCHECKED;
+			}
+			descriptor.recipeList = Arrays.asList(fetchedDescriptors);
+		});
+	}
+	
+	CompletableFuture<Void> fetchRootRecipes() {
+		ExecuteCommandParams commandParams = new ExecuteCommandParams();
+		commandParams.setCommand(REWRITE_REFACTORINGS_LIST);
+		commandParams.setArguments(List.of(recipeFilter));
+		return workspaceService.executeCommand(commandParams).thenAccept(json -> {
+			recipeDescriptors = RewriteRefactoringsHandler.SERIALIZATION_GSON.fromJson(RewriteRefactoringsHandler.SERIALIZATION_GSON.toJson(json), RecipeDescriptor[].class);
+		});
+	}
+	
+	String getSelectedRecipeDisplayName() {
+		List<RecipeDescriptor> rootSelected = new ArrayList<>();
+		for (int i = 0; i < recipeDescriptors.length; i++) {
+			if (recipeDescriptors[i].checked != CheckedState.UNCHECKED) {
+				rootSelected.add(recipeDescriptors[i]);
+			}
+		}
+		if (rootSelected.isEmpty()) {
+			return "No Recipes Selected";
+		} else if (rootSelected.size() == 1) {
+			return rootSelected.get(0).displayName;
+		} else {
+			return "%s recipes".formatted(rootSelected.size());
+		}
+	}
+	
 }

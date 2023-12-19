@@ -52,12 +52,18 @@ public class LoadUtils {
 	}
 	
 	public static Recipe createRecipe(RecipeDescriptor d, Function<String, Class<? extends Recipe>> getRecipeClass) {
+		return createRecipe(d, getRecipeClass, false);
+	}
+	
+	public static Recipe createRecipe(RecipeDescriptor d, Function<String, Class<? extends Recipe>> getRecipeClass, boolean shallow) {
 		Class<? extends Recipe> recipeClazz = getRecipeClass == null ? null : getRecipeClass.apply(d.getName());
 		if (recipeClazz == null || DeclarativeRecipe.class.getName().equals(recipeClazz.getName())) {
 			DeclarativeRecipe recipe = new DeclarativeRecipe(d.getName(), d.getDisplayName(), d.getDescription(),
 					d.getTags(), d.getEstimatedEffortPerOccurrence(), d.getSource(), false, d.getMaintainers());
-			for (RecipeDescriptor subDescriptor : d.getRecipeList()) {
-				recipe.getRecipeList().add(createRecipe(subDescriptor, getRecipeClass));
+			if (!shallow) {
+				for (RecipeDescriptor subDescriptor : d.getRecipeList()) {
+					recipe.getRecipeList().add(createRecipe(subDescriptor, getRecipeClass));
+				}
 			}
 			return recipe;
 		} else {

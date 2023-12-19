@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2022 VMware, Inc.
+ * Copyright (c) 2022, 2023 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -43,7 +43,7 @@ import org.eclipse.swt.widgets.Shell;
 import org.eclipse.ui.PlatformUI;
 import org.osgi.framework.FrameworkUtil;
 import org.springframework.tooling.boot.ls.commands.RecipeDescriptor.OptionDescriptor;
-import org.springframework.tooling.boot.ls.commands.RecipeTreeModel.CheckedState;
+import org.springframework.tooling.boot.ls.commands.RecipeDescriptor.CheckedState;
 
 @SuppressWarnings("restriction")
 public class SelectRecipesDialog extends StatusDialog {
@@ -51,6 +51,7 @@ public class SelectRecipesDialog extends StatusDialog {
 	private static final int MARGIN = 5;
 	private static final String SELECT_REWRITE_RECIPE_S_FROM_THE_LIST = "Select Rewrite Recipe(s) from the list";
 	private static String fgStyleSheet;
+	private static final Object LOADING = new Object();
 
 	private RecipeTreeModel model;
 
@@ -76,37 +77,55 @@ public class SelectRecipesDialog extends StatusDialog {
 
 			@Override
 			public Object[] getElements(Object inputElement) {
-				if (inputElement instanceof RecipeTreeModel) {
-					return ((RecipeTreeModel) inputElement).getRecipeDescriptors();
+				if (inputElement instanceof RecipeTreeModel model) {
+					if (model.getRecipeDescriptors() == null) {
+						model.fetchRootRecipes().thenAccept(v -> {
+							PlatformUI.getWorkbench().getDisplay().asyncExec(() -> treeViewer.refresh());
+						});
+						return new Object[] { LOADING };
+					} else {
+						return model.getRecipeDescriptors();
+					}
+					
 				}
 				return new Object[0];
 			}
 
 			@Override
 			public Object[] getChildren(Object parentElement) {
-				if (parentElement instanceof RecipeDescriptor) {
-					RecipeDescriptor r = (RecipeDescriptor) parentElement;
-					return r.recipeList.toArray(new RecipeDescriptor[r.recipeList.size()]);
+				if (parentElement instanceof RecipeDescriptor r) {
+					if (r.hasSubRecipes) {
+						if (r.recipeList == null) {
+							model.fetchSubrecipes(r).thenAccept(v -> PlatformUI.getWorkbench().getDisplay().asyncExec(() -> treeViewer.refresh(r)));
+							return new Object[] { LOADING };
+						} else {
+							return r.recipeList.toArray(new RecipeDescriptor[r.recipeList.size()]);
+						}
+					}
 				}
 				return new RecipeDescriptor[0];
 			}
 
 			@Override
 			public Object getParent(Object element) {
+				if (element instanceof RecipeDescriptor r) {
+					return r.parent;
+				}
 				return null;
 			}
 
 			@Override
 			public boolean hasChildren(Object element) {
-				if (element instanceof RecipeDescriptor) {
-					RecipeDescriptor r = (RecipeDescriptor) element;
-					return r.recipeList != null && !r.recipeList.isEmpty();
+				if (element instanceof RecipeDescriptor r) {
+					return r.hasSubRecipes;
 				}
 				return false;
 			}
 		});
 	    treeViewer.setLabelProvider(LabelProvider.createTextProvider(input -> {
-			if (input instanceof RecipeDescriptor) {
+	    	if (input == LOADING) {
+	    		return "Loading...";
+	    	} else if (input instanceof RecipeDescriptor) {
 				return ((RecipeDescriptor)input).displayName;
 			}
 			return "unknown";
@@ -117,7 +136,7 @@ public class SelectRecipesDialog extends StatusDialog {
 			public boolean isGrayed(Object element) {
 				if (element instanceof RecipeDescriptor) {
 					RecipeDescriptor r = (RecipeDescriptor) element;
-					return model.getCheckedState(r) == CheckedState.GRAYED;
+					return r.checked == CheckedState.GRAYED;
 				}
 				return false;
 			}
@@ -126,7 +145,7 @@ public class SelectRecipesDialog extends StatusDialog {
 			public boolean isChecked(Object element) {
 				if (element instanceof RecipeDescriptor) {
 					RecipeDescriptor r = (RecipeDescriptor) element;
-					return model.getCheckedState(r) != CheckedState.UNCHECKED;
+					return r.checked != CheckedState.UNCHECKED;
 				}
 				return false;
 			}
@@ -168,7 +187,7 @@ public class SelectRecipesDialog extends StatusDialog {
 		// Replace browser's built-in context menu with none
 		docViewer.setMenu(new Menu(getShell(), SWT.NONE));
 
-	    docViewer.setText(wrapHtml("Select a Recipe on the left to read description"));	    
+	    docViewer.setText(wrapHtml("Select a Recipe on the left to read description"));	
 	    
 	    
 	    treeViewer.addSelectionChangedListener(new ISelectionChangedListener() {
@@ -200,7 +219,7 @@ public class SelectRecipesDialog extends StatusDialog {
 	}
 	
 	private void updateStatus() {
-		boolean anythingSelected = Arrays.stream(model.getRecipeDescriptors()).anyMatch(d -> model.getCheckedState(d) != CheckedState.UNCHECKED);
+		boolean anythingSelected = model.getRecipeDescriptors() != null && Arrays.stream(model.getRecipeDescriptors()).anyMatch(d -> d.checked != CheckedState.UNCHECKED);
 		updateStatus(anythingSelected ? Status.info(SELECT_REWRITE_RECIPE_S_FROM_THE_LIST) : Status.error(SELECT_REWRITE_RECIPE_S_FROM_THE_LIST));
 	}
 
@@ -211,12 +230,12 @@ public class SelectRecipesDialog extends StatusDialog {
 		sb.append("</p>");
 		sb.append("<ul>");
 		for (OptionDescriptor option : r.options) {
-			if (option.value != null) {
+			if (option.value() != null) {
 				sb.append("<li>");
 				sb.append("<pre>");
-				sb.append(option.value);
+				sb.append(option.value());
 				sb.append("</pre>");
-				sb.append(option.description);
+				sb.append(option.description());
 				sb.append("</li>");
 			}
 		}

@@ -11,10 +11,6 @@
 package org.springframework.tooling.boot.ls.commands;
 
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Type;
-import java.time.Duration;
-import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import org.eclipse.core.commands.AbstractHandler;
@@ -37,17 +33,11 @@ import org.eclipse.swt.widgets.Display;
 import org.eclipse.ui.PlatformUI;
 import org.eclipse.ui.handlers.HandlerUtil;
 import org.springframework.tooling.boot.ls.BootLanguageServerPlugin;
+import org.springframework.tooling.boot.ls.commands.RecipeDescriptor.RecipeSelection;
 import org.springsource.ide.eclipse.commons.core.CoreUtil;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonDeserializationContext;
-import com.google.gson.JsonDeserializer;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonParseException;
-import com.google.gson.JsonPrimitive;
-import com.google.gson.JsonSerializationContext;
-import com.google.gson.JsonSerializer;
 
 @SuppressWarnings("restriction")
 public class RewriteRefactoringsHandler extends AbstractHandler {
@@ -58,25 +48,11 @@ public class RewriteRefactoringsHandler extends AbstractHandler {
 		NON_BOOT_UPGRADE
 	}
 	
-	private static class DurationTypeConverter implements JsonSerializer<Duration>, JsonDeserializer<Duration> {
-		@Override
-		public JsonElement serialize(Duration src, Type srcType, JsonSerializationContext context) {
-			return new JsonPrimitive(src.toNanos());
-		}
-	
-		@Override
-		public Duration deserialize(JsonElement json, Type type, JsonDeserializationContext context)
-				throws JsonParseException {
-			return Duration.ofNanos(json.getAsLong());
-		}
-	}
-	
-	private static Gson serializationGson = new GsonBuilder()
-			.registerTypeAdapter(Duration.class, new DurationTypeConverter())
+	static final Gson SERIALIZATION_GSON = new GsonBuilder()
+			.setPrettyPrinting()
 			.create();
 
 
-	private static final String REWRITE_REFACTORINGS_LIST = "sts/rewrite/list";
 	private static final String REWRITE_REFACTORINGS_EXEC = "sts/rewrite/execute";
 	
 	private RecipeFilter recipeFilter;
@@ -106,41 +82,26 @@ public class RewriteRefactoringsHandler extends AbstractHandler {
 			if (project != null && CoreUtil.promptForProjectSave(project)) {
 				LanguageServerDefinition def = LanguageServersRegistry.getInstance().getDefinition(BootLanguageServerPlugin.BOOT_LS_DEFINITION_ID);
 				Assert.isLegal(def != null, "No definition found for Boot Language Server");
-
 				final String uri = project.getLocationURI().toASCIIString();
-				ExecuteCommandParams commandParams = new ExecuteCommandParams();
-				commandParams.setCommand(REWRITE_REFACTORINGS_LIST);
-				commandParams.setArguments(List.of(uri, recipeFilter.toString()));
-				
 
 				try {
-					List<Object> allRewriteRecipesJson = new ArrayList<>();
-					List<Object> syncRecipesJson = Collections.synchronizedList(allRewriteRecipesJson);
 					
-					LanguageServers.forProject(project).withPreferredServer(def).computeFirst(ls -> 
-					ls.getWorkspaceService().executeCommand(commandParams).thenAccept(or -> {
-						if (or != null) {
-							syncRecipesJson.add(or);
-						}
-					})
-					.thenRun(() -> {
-						allRewriteRecipesJson.stream().filter(List.class::isInstance).map(List.class::cast).findFirst().ifPresent(obj -> {
-							RecipeDescriptor[] descriptors = serializationGson.fromJson(serializationGson.toJson(obj), RecipeDescriptor[].class);
+					LanguageServers.forProject(project).withPreferredServer(def).computeFirst(ls -> {
 							
 							PlatformUI.getWorkbench().getDisplay().asyncExec(() -> {
-								RecipeTreeModel recipesModel = new RecipeTreeModel(descriptors);
+								RecipeTreeModel recipesModel = new RecipeTreeModel(ls.getWorkspaceService(), recipeFilter.toString());
 								int returnCode = new SelectRecipesDialog(Display.getCurrent().getActiveShell(), recipesModel).open();
 								if (returnCode == Window.OK) {
 									try {
-										RecipeDescriptor recipeToApply = recipesModel.getSelectedRecipeDescriptors();
+										final RecipeSelection[] recipeSelection = recipesModel.getRecipeSelection();
 										PlatformUI.getWorkbench().getProgressService().run(true, false, monitor -> {
 											try {
-												monitor.beginTask("Applying recipe '" + recipeToApply.displayName + "'", IProgressMonitor.UNKNOWN);
+												monitor.beginTask("Applying recipe '%s'...".formatted(recipesModel.getSelectedRecipeDisplayName()), IProgressMonitor.UNKNOWN);
 												ExecuteCommandParams cmdParams = new ExecuteCommandParams();
 												cmdParams.setCommand(REWRITE_REFACTORINGS_EXEC);
 												cmdParams.setArguments(List.of(
 													uri,
-													serializationGson.toJsonTree(recipeToApply)
+													SERIALIZATION_GSON.toJsonTree(recipeSelection)
 												));
 												
 												ls.getWorkspaceService().executeCommand(cmdParams).get();
@@ -157,8 +118,9 @@ public class RewriteRefactoringsHandler extends AbstractHandler {
 									}
 								}
 							});
-						});
-					}));
+							return null;
+					});
+					
 				} catch (Exception e) {
 					throw new ExecutionException("Failed to apply Rewrite recipe(s)", e);
 				}

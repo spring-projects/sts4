@@ -12,7 +12,7 @@
   "license": "EPL-1.0",
   "engines": {
     "npm": ">=6.0.0",
-    "vscode": "^1.67.0"
+    "vscode": "^1.75.0"
   },
   "categories": [
     "Programming Languages",
@@ -26,8 +26,6 @@
     "application-yaml"
   ],
   "activationEvents": [
-    "onCommand:vscode-spring-boot.rewrite.list.refactorings",
-    "onCommand:vscode-spring-boot.rewrite.list.boot-upgrades",
     "onCommand:vscode-spring-boot.ls.start"
   ],
   "contributes": {
@@ -1029,9 +1027,9 @@
   },
   "devDependencies": {
     "@types/node": "^18.8.0",
-    "@types/vscode": "1.67.0",
+    "@types/vscode": "1.75.0",
     "typescript": "^4.8.0",
-    "vsce": "^2.11.0"
+    "vsce": "^2.15.0"
   },
   "extensionDependencies": [
     "redhat.java"

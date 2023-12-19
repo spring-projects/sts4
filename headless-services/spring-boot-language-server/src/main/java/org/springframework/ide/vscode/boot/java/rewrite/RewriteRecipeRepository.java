@@ -18,6 +18,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -72,6 +73,7 @@ import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 
 public class RewriteRecipeRepository {
@@ -99,6 +101,7 @@ public class RewriteRecipeRepository {
 	private static final String CMD_REWRITE_RELOAD = "sts/rewrite/reload";
 	private static final String CMD_REWRITE_EXECUTE = "sts/rewrite/execute";
 	private static final String CMD_REWRITE_LIST = "sts/rewrite/list";
+	private static final String CMD_REWRITE_SUBLIST = "sts/rewrite/sublist";
 	private static final String CMD_REWRITE_RECIPE_EXECUTE = "sts/rewrite/recipe/execute";
 	private static final Logger log = LoggerFactory.getLogger(RewriteRecipeRepository.class);
 	
@@ -116,8 +119,9 @@ public class RewriteRecipeRepository {
 	private Set<String> scanDirs;
 	private Set<String> recipeFilters;
 		
-	private static Gson serializationGson = new GsonBuilder()
+	static final Gson serializationGson = new GsonBuilder()
 			.registerTypeAdapter(Duration.class, new DurationTypeConverter())
+			.setPrettyPrinting()
 			.create();
 	
 	public RewriteRecipeRepository(SimpleLanguageServer server, JavaProjectFinder projectFinder, BootJavaConfig config) {
@@ -265,40 +269,117 @@ public class RewriteRecipeRepository {
 	}
 	
 	private static JsonElement recipeToJson(Recipe r) {
-		JsonElement jsonElement = serializationGson.toJsonTree(r.getDescriptor());
+		RecipeDescriptor descriptor = r.getDescriptor();
+		JsonElement jsonElement = serializationGson.toJsonTree(Map.of(
+				"name", descriptor.getName(),
+				"displayName", descriptor.getDisplayName(),
+				"description", descriptor.getDescription(),
+				"options", descriptor.getOptions(),
+				"tags", descriptor.getTags(),
+				"hasSubRecipes", !descriptor.getRecipeList().isEmpty()
+		));
 		return jsonElement;
+	}
+	
+	CompletableFuture<List<Recipe>> getRootRecipes(Predicate<Recipe> rootFilter) {
+		return recipes().thenApply(recipesMap -> recipesMap.values().stream().filter(rootFilter).collect(Collectors.toList()));
+	}
+	
+	CompletableFuture<List<Recipe>> getSubRecipes(String rootRecipeId, List<Integer> path) {
+		return recipes().thenApply(recipesMap -> {
+			Recipe recipe = recipesMap.get(rootRecipeId);
+			for (int i : path) {
+				if (i < recipe.getRecipeList().size()) {
+					recipe = recipe.getRecipeList().get(i);
+				} else {
+					return Collections.emptyList();
+				}
+			}
+			return recipe == null ? Collections.emptyList() : recipe.getRecipeList();
+		});
+	}
+	
+	Recipe createRecipeFromSelection(Recipe original, RecipeSelectionDescriptor[] selection) {
+		if (selection == null) {
+			return original;
+		} else {
+			boolean sameSubrecipes = true;
+			List<Recipe> newSubRecipes = new ArrayList<>(selection.length);
+			for (int i = 0; i < selection.length; i++) {
+				if (selection[i].selected) {
+					Recipe originalSubRecipe = original.getRecipeList().get(i);
+					Recipe newSubRecipe = createRecipeFromSelection(originalSubRecipe, selection[i].subselection());
+					newSubRecipes.add(newSubRecipe);
+					if (sameSubrecipes) {
+						sameSubrecipes = newSubRecipe == originalSubRecipe;
+					}
+				} else {
+					sameSubrecipes = false;
+				}
+			}
+			if (sameSubrecipes) {
+				return original;
+			} else {
+				@SuppressWarnings("unchecked")
+				Recipe newRecipe = LoadUtils.createRecipe(original.getDescriptor(), id -> {
+					try {
+						return (Class<Recipe>) Class.forName(id);
+					} catch (ClassNotFoundException e) {
+						return null;
+					}
+				}, true);
+				newRecipe.getRecipeList().addAll(newSubRecipes);
+				return newRecipe;
+			}
+		}
 	}
 	
 	private void registerCommands() {
 		server.onCommand(CMD_REWRITE_LIST, params -> {
-			JsonElement uri = (JsonElement) params.getArguments().get(0);
-			RecipeFilter f = params.getArguments().size() > 1 ? RecipeFilter.valueOf(((JsonElement) params.getArguments().get(1)).getAsString()) : RecipeFilter.ALL;
-					return listProjectRefactoringRecipes(uri.getAsString()).thenApply(recipes -> recipes.stream()
-							.filter(RECIPE_LIST_FILTERS.get(f))
-							.map(RewriteRecipeRepository::recipeToJson)
-							.collect(Collectors.toList()));
+			RecipeFilter f = params.getArguments().size() > 0 ? RecipeFilter.valueOf(((JsonElement) params.getArguments().get(0)).getAsString()) : RecipeFilter.ALL;
+			
+			return getRootRecipes(r -> isAcceptableGlobalCommandRecipe(r) && RECIPE_LIST_FILTERS.get(f).test(r)).thenApply(recipes -> recipes.stream()
+					.map(RewriteRecipeRepository::recipeToJson)
+					.collect(Collectors.toList()));			
+		});
+		
+		server.onCommand(CMD_REWRITE_SUBLIST, params -> {
+			String rootRecipeId = ((JsonElement) params.getArguments().get(0)).getAsString();
+			JsonArray path = (JsonArray) params.getArguments().get(1);
+			
+			return getSubRecipes(rootRecipeId, path.asList().stream().map(j -> j.getAsInt()).collect(Collectors.toList())).thenApply(recipes -> recipes.stream()
+					.map(RewriteRecipeRepository::recipeToJson)
+					.collect(Collectors.toList()));			
 		});
 		
 		server.onCommand(CMD_REWRITE_EXECUTE, params -> {
-			return recipes().thenCompose(recipes -> {
+			return recipes().thenCompose(recipesMap -> {
 				String uri = ((JsonElement) params.getArguments().get(0)).getAsString();
 				JsonElement recipesJson = ((JsonElement) params.getArguments().get(1));
 				boolean needsConfirmation = params.getArguments().size() > 2 ? ((JsonElement) params.getArguments().get(2)).getAsBoolean() : false;
 				
-				RecipeDescriptor d = serializationGson.fromJson(recipesJson, RecipeDescriptor.class);
-				
-				Recipe aggregateRecipe = LoadUtils.createRecipe(d, id -> Optional.ofNullable(recipes.get(id)).map(r -> r.getClass()).orElse(null));
-				
-				if (aggregateRecipe instanceof DeclarativeRecipe && aggregateRecipe.getRecipeList().isEmpty()) {
-					throw new RuntimeException("No recipes found to perform!");
-				} else if (aggregateRecipe.getRecipeList().size() == 1) {
-					Recipe r = aggregateRecipe.getRecipeList().get(0);
+				RecipeSelectionDescriptor[] descriptors = serializationGson.fromJson(recipesJson, RecipeSelectionDescriptor[].class);
+				List<Recipe> recipes = Arrays.stream(descriptors).map(d -> createRecipeFromSelection(recipesMap.get(d.id()), d.subselection())).collect(Collectors.toList());
+				if (recipes.size() == 1) {
+					Recipe r = recipes.get(0);
 					String progressToken = params.getWorkDoneToken() == null
 							|| params.getWorkDoneToken().getLeft() == null
 									? (r.getName() == null ? UUID.randomUUID().toString() : r.getName())
 									: params.getWorkDoneToken().getLeft();
 					return apply(r, uri, progressToken, needsConfirmation);
 				} else {
+					String name = recipes.size() + " recipes";
+					DeclarativeRecipe aggregateRecipe = new DeclarativeRecipe(
+							name,
+							name,
+							recipes.stream().map(r -> r.getDescription()).collect(Collectors.joining("\n")),
+							recipes.stream().flatMap(r -> r.getTags().stream()).collect(Collectors.toSet()),
+							null,
+							null,
+							false,
+							Collections.emptyList()
+					);
+					aggregateRecipe.getRecipeList().addAll(recipes);
 					String progressToken = params.getWorkDoneToken() == null
 							|| params.getWorkDoneToken().getLeft() == null
 									? (aggregateRecipe.getName() == null ? UUID.randomUUID().toString()
@@ -397,21 +478,6 @@ public class RewriteRecipeRepository {
 		}
 	}
 	
-	private CompletableFuture<List<Recipe>> listProjectRefactoringRecipes(String uri) {
-		if (uri != null) {
-			/*
-			 * When LS started on listing rewrite recipes project lookup may not find any projects as classpath might still be resolving.
-			 * Therefore, it is best probably to list the available recipes and figure out if it is a Spring Boot project recipes is applied to
-			 * and if not throw an exception.
-			 */
-//			Optional<IJavaProject> projectOpt = projectFinder.find(new TextDocumentIdentifier(uri));
-//			if (projectOpt.isPresent()) {
-				return recipes().thenApply(recipes -> recipes.values().stream().filter(this::isAcceptableGlobalCommandRecipe).collect(Collectors.toList()));
-//			}
-		}
-		return CompletableFuture.completedFuture(Collections.emptyList());
-	}
-	
     private static ProjectParser createRewriteProjectParser(IJavaProject jp, Function<Path, Parser.Input> inputProvider) {
 		switch (jp.getProjectBuild().getType()) {
     	case ProjectBuild.MAVEN_PROJECT_TYPE:
@@ -438,47 +504,6 @@ public class RewriteRecipeRepository {
 		return s;
 	}
 	
-//	private static Recipe convert(Recipe r, RecipeDescriptor d) {
-//		try {
-//			if (d.selected) {
-//				if (d.children != null && !d.children.isEmpty()) {
-//					Recipe recipe = r instanceof DeclarativeRecipe ? new DeclarativeRecipe(r.getName(), r.getDisplayName(), r.getDescription(), r.getTags(), r.getEstimatedEffortPerOccurrence(), null)
-//							: r.getClass().getDeclaredConstructor().newInstance();
-//					int i = 0;
-//					for (Recipe sr : r.getRecipeList()) {
-//						Recipe convertedSubRecipe = convert(sr, d.children.get(i++));
-//						if (convertedSubRecipe != null) {
-//							recipe.doNext(convertedSubRecipe);
-//						}
-//					}
-//					return recipe;
-//				} else {
-//					return r;
-//				}
-//			}
-//		} catch (Exception e) {
-//			log.error("", e);
-//		}
-//		return null;
-//	}
-
-//	@SuppressWarnings("unused")
-//	private static class RecipeDescriptor {
-//		String id;
-//		String label;
-//		String detail;
-//		List<RecipeDescriptor> children;
-//		boolean selected;
-//		
-//		RecipeDescriptor(Recipe r) {
-//			this.id = r.getName();
-//			this.label = r.getDisplayName();
-//			this.detail = r.getDescription();
-//			List<Recipe> subRecipes = r.getRecipeList();
-//			if (r instanceof DeclarativeRecipe && !subRecipes.isEmpty() && (subRecipes.size() > 1 || subRecipes.get(0) instanceof DeclarativeRecipe)) {
-//				this.children = r.getRecipeList().stream().map(sr -> new RecipeDescriptor(sr)).collect(Collectors.toList());
-//			}
-//		}
-//	}
-	
+	record RecipeSelectionDescriptor(boolean selected, String id, RecipeSelectionDescriptor[] subselection) {};
+		
 }
