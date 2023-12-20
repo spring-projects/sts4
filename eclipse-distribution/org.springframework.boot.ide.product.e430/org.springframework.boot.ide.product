@@ -11,6 +11,7 @@
 </programArgs>
       <vmArgs>-Dosgi.requiredJavaVersion=17
 -Dosgi.dataAreaRequiresExplicitInit=true
+-Dorg.slf4j.simpleLogger.defaultLogLevel=off
 -Dsun.java.command=SpringToolSuite4
 -Xms256m
 -Xmx2048m
@@ -127,6 +128,7 @@
    	  <property name="osgi.instance.area.default" value="@user.home/Documents/workspace-spring-tool-suite-4-${unqualifiedVersion}.${p2.qualifier}"/>
 
    	  <plugin id="org.eclipse.equinox.simpleconfigurator" autoStart="true" startLevel="1" />
+        <plugin id="org.apache.aries.spifly.dynamic.bundle" autoStart="true" startLevel="2" />
    	  <plugin id="org.eclipse.core.runtime" autoStart="true" startLevel="4" />
    	  <plugin id="org.eclipse.equinox.common" autoStart="true" startLevel="2" />
    	  <plugin id="org.eclipse.equinox.event" autoStart="true" startLevel="2" />
