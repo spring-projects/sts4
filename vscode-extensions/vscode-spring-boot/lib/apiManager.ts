@@ -8,9 +8,8 @@ import {
     LiveProcessUpdatedNotification,
     LiveProcessGcPausesMetricsUpdatedNotification,
     LiveProcessMemoryMetricsUpdatedNotification,
-    SpringIndexUpdatedNotification
+    SpringIndexUpdatedNotification,
 } from "./notification";
-import VSCode from "vscode";
 import {RequestType} from "vscode-languageclient";
 
 export class ApiManager {
@@ -29,6 +28,7 @@ export class ApiManager {
         const onDidLiveProcessGcPausesMetricsUpdate = this.onDidLiveProcessGcPausesMetricsUpdateEmitter.event;
         const onDidLiveProcessMemoryMetricsUpdate = this.onDidLiveProcessMemoryMetricsUpdateEmitter.event;
         const onSpringIndexUpdated = this.onSpringIndexUpdateEmitter.event;
+        // const onDidLiveProcessLoggersUpdate = this.onDidLiveProcessLoggersUpdateEmitter.event;
 
         const COMMAND_LIVEDATA_GET = "sts/livedata/get";
         const getLiveProcessData = async (query) => {

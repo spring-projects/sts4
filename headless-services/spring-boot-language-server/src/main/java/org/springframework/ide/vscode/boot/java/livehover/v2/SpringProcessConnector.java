@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.livehover.v2;
 
+import java.util.Map;
+
 /**
  * @author Martin Lippert
  */
@@ -29,4 +31,6 @@ public interface SpringProcessConnector {
 	String getProcessName();
 	SpringProcessGcPausesMetricsLiveData refreshGcPausesMetrics(SpringProcessLiveData current, String metricName, String tags) throws Exception;
 	SpringProcessMemoryMetricsLiveData refreshMemoryMetrics(SpringProcessLiveData current, String metricName, String tags) throws Exception;
+	SpringProcessLoggersData getLoggers(SpringProcessLiveData currentData) throws Exception;
+	SpringProcessUpdatedLogLevelData configureLogLevel(SpringProcessLiveData currentData, Map<String, String> args) throws Exception;
 }

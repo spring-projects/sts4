@@ -51,6 +51,9 @@ public interface STS4LanguageClient extends LanguageClient, SpringIndexLanguageC
 	
 	@JsonNotification("sts/liveprocess/gcpauses/metrics/updated")
 	void liveProcessGcPausesMetricsDataUpdated(LiveProcessSummary processKey);
+	
+	@JsonNotification("sts/liveprocess/loglevel/updated")
+	void liveProcessLogLevelUpdated(LiveProcessLoggersSummary liveProcessLoggersSummary);
 
 	@JsonNotification("sts/highlight")
 	void highlight(HighlightParams highlights);

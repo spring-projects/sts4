@@ -81,6 +81,21 @@ public class HttpActuatorConnection implements ActuatorConnection {
 	}
 	
 	@Override
+	public String getLoggers() throws IOException {
+		return restTemplate.getForObject("/loggers", String.class);
+	}
+	
+	@Override
+	public String configureLogLevel(Map<String, String> args) throws IOException {
+		UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromPath("/loggers/"+args.get("packageName"));
+		if (args != null) {
+				uriBuilder.queryParam("configuredLevel", args.get("configuredLevel"));
+		}
+		String url = actuatorUrl + uriBuilder.toUriString();
+		return restTemplate.postForObject(URI.create(url), null, String.class);
+	}
+	
+	@Override
 	public String getLiveMetrics(String metricName, String tags) throws IOException {
 		UriComponentsBuilder uriBuilder = UriComponentsBuilder.fromPath("/metrics/"+metricName);
 		if (tags != null && !tags.isBlank()) {

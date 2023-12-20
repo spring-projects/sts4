@@ -12,6 +12,7 @@ package org.springframework.ide.vscode.boot.java.livehover.v2;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -43,6 +44,8 @@ public class SpringProcessCommandHandler {
 	private static final String COMMAND_LIST_CONNECTED = "sts/livedata/listConnected";
 	private static final String COMMAND_GET_METRICS = "sts/livedata/get/metrics";
 	private static final String COMMAND_GET_REFRESH_METRICS = "sts/livedata/refresh/metrics";
+	private static final String COMMAND_GET_LOGGERS = "sts/livedata/getLoggers";
+	private static final String COMMAND_CONFIGURE_LOGLEVEL = "sts/livedata/configure/logLevel";
 	
 	private final SpringProcessConnectorService connectorService;
 	private final SpringProcessConnectorLocal localProcessConnector;
@@ -88,6 +91,16 @@ public class SpringProcessCommandHandler {
 			return refreshMetrics(params);
 		});
 		log.info("Registered command handler: {}",COMMAND_GET_METRICS);
+
+		server.onCommand(COMMAND_GET_LOGGERS, (params) -> {
+			return getLoggers(params);
+		});
+		log.info("Registered command handler: {}",COMMAND_GET_LOGGERS);
+
+		server.onCommand(COMMAND_CONFIGURE_LOGLEVEL, (params) -> {
+			return configureLogLevel(params);
+		});
+		log.info("Registered command handler: {}",COMMAND_CONFIGURE_LOGLEVEL);
 		
 		server.onCommand(COMMAND_LIST_CONNECTED, (params) -> {
 			List<LiveProcessSummary> result = new ArrayList<>();
@@ -317,6 +330,36 @@ public class SpringProcessCommandHandler {
 			}
 		}
 		
+		return CompletableFuture.completedFuture(null);
+	}
+
+
+	private CompletableFuture<Object> getLoggers(ExecuteCommandParams params) {
+		SpringProcessLoggersData loggersData = null;
+		SpringProcessParams springProcessParams = new SpringProcessParams();
+	    springProcessParams.setProcessKey(getProcessKey(params));    
+	    springProcessParams.setEndpoint(getArgumentByKey(params, "endpoint"));
+		if (springProcessParams.getProcessKey() != null) {
+			loggersData = connectorService.getLoggers(springProcessParams);
+			return CompletableFuture.completedFuture(loggersData);
+		}
+
+		return CompletableFuture.completedFuture(loggersData);
+	}
+	
+	private CompletableFuture<Object> configureLogLevel(ExecuteCommandParams params) {
+		Map<String, String> args = new HashMap<>();
+	    args.put("packageName", getArgumentByKey(params, "packageName"));
+	    args.put("configuredLevel", getArgumentByKey(params, "configuredLevel"));
+	    args.put("effectiveLevel", getArgumentByKey(params, "effectiveLevel"));
+	    SpringProcessParams springProcessParams = new SpringProcessParams();
+	    springProcessParams.setProcessKey(getProcessKey(params));   
+		springProcessParams.setArgs(args);
+	    
+		if (springProcessParams.getProcessKey() != null) {
+			connectorService.configureLogLevel(springProcessParams);
+		}
+
 		return CompletableFuture.completedFuture(null);
 	}
 

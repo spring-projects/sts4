@@ -33,4 +33,8 @@ public interface ActuatorConnection {
 	Map<?, ?> getStartup() throws IOException;
 
 	String getLiveMetrics(String metricName, String tags) throws IOException;
+	
+	String getLoggers() throws IOException;
+
+	String configureLogLevel(Map<String, String> args) throws IOException;
 }

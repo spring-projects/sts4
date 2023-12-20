@@ -10,6 +10,8 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.livehover.v2;
 
+import java.util.Map;
+
 public class SpringProcessConnectorOverHttp implements SpringProcessConnector {
 
 	private final ProcessType processType;
@@ -156,6 +158,49 @@ public class SpringProcessConnectorOverHttp implements SpringProcessConnector {
         }
         
         throw new Exception("no live memory metrics data received, lets try again");
+	}
+	
+
+	@Override
+	public SpringProcessLoggersData getLoggers(SpringProcessLiveData currentData)
+			throws Exception {
+	    if (actuatorConnection != null) {
+	    	SpringProcessLoggersData loggersData = new SpringProcessLiveDataExtractorOverHttp().retrieveLoggersData(getProcessType(), actuatorConnection, processID, processName, currentData);
+
+            if (this.processID == null) {
+                this.processID = loggersData.getProcessID();
+            }
+
+            if (this.processName == null) {
+                this.processName = loggersData.getProcessName();
+            }
+
+            if (loggersData != null && loggersData.getLoggers() != null) {
+                return loggersData;
+            }
+        }
+
+        throw new Exception("no loggers data received, lets try again");
+	}
+
+
+	@Override
+	public SpringProcessUpdatedLogLevelData configureLogLevel(SpringProcessLiveData currentData, Map<String, String> args) throws Exception {
+		if (actuatorConnection != null) {
+			SpringProcessUpdatedLogLevelData springProcessUpdatedLoggersData = new SpringProcessLiveDataExtractorOverHttp().configureLogLevel(getProcessType(), actuatorConnection, processID, processName, currentData, args);
+
+            if (this.processID == null) {
+                this.processID = springProcessUpdatedLoggersData.getProcessID();
+            }
+
+            if (this.processName == null) {
+                this.processName = springProcessUpdatedLoggersData.getProcessName();
+                return springProcessUpdatedLoggersData;
+            }
+
+        }
+
+        throw new Exception("configure log levels failed, lets try again");		
 	}
 
 	

@@ -11,6 +11,18 @@ export interface LiveProcess {
 }
 
 /**
+ * Information returned by notification for updated log level for the live process
+ */
+export interface LiveProcessUpdatedLogLevel {
+	type: string;
+	processKey: string;
+	processName: string;
+    packageName: string;
+    effectiveLevel: string;
+    configuredLevel: string;
+}
+
+/**
  * Specialized interface for type 'local' LiveProcess.
  */
 export interface LocalLiveProcess extends LiveProcess {
@@ -40,4 +52,8 @@ export namespace LiveProcessMemoryMetricsUpdatedNotification {
 
 export namespace SpringIndexUpdatedNotification {
 	export const type = new NotificationType<void>('spring/index/updated');
+}
+
+export namespace LiveProcessLogLevelUpdatedNotification {
+	export const type = new NotificationType<LiveProcessUpdatedLogLevel>('sts/liveprocess/loglevel/updated');
 }

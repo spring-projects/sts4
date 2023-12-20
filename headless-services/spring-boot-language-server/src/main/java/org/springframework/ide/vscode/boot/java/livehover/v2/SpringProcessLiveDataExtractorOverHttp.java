@@ -269,6 +269,114 @@ public class SpringProcessLiveDataExtractorOverHttp {
 		};
 	}
 	
+	 /**
+     * @param processType 
+     * @param processID if null, will be determined searching existing mbeans for that information (for remote processes via platform beans runtime name)
+     * @param processName if null, will be determined searching existing mbeans for that information (for remote processes inferring the java command from the system properties)
+     * @param currentData currently stored live data
+     * @param metricName 
+     * @param tags 
+     */
+    public SpringProcessLoggersData retrieveLoggersData(ProcessType processType, ActuatorConnection connection, String processID, String processName,
+             SpringProcessLiveData currentData) {
+
+        try {
+
+            if (processID == null) {
+                processID = connection.getProcessID();
+            }
+
+            if (processName == null) {
+                Properties systemProperties = connection.getSystemProperties();
+                if (systemProperties != null) {
+                    String javaCommand = getJavaCommand(systemProperties);
+                    processName = getProcessName(javaCommand);
+                }
+            }
+
+            Loggers loggers = getLoggers(connection);
+
+            return new SpringProcessLoggersData(
+                    processType,
+                    processName,
+                    processID,
+                    loggers
+                    );
+        }
+        catch (Exception e) {
+            log.error("error reading live metrics data from: " + processID + " - " + processName, e);
+        }
+
+        return null;        
+
+    }
+
+    public Loggers getLoggers(ActuatorConnection connection) {
+		try {
+			String result = connection.getLoggers();
+
+			if (result instanceof String) {
+                return gson.fromJson((String)result, Loggers.class);
+            } else if(result != null){
+                ObjectMapper mapper = new ObjectMapper();
+                return mapper.convertValue(result, Loggers.class);
+            }
+		} catch (IOException e) {
+			// ignore
+		} catch (Exception e) {
+			log.error("Error parsing loggers", e);
+		}
+		return null;
+	}
+    
+    public SpringProcessUpdatedLogLevelData configureLogLevel(ProcessType processType, ActuatorConnection connection, String processID, String processName,
+            SpringProcessLiveData currentData, Map<String, String> args) {
+
+       try {
+
+           if (processID == null) {
+               processID = connection.getProcessID();
+           }
+
+           if (processName == null) {
+               Properties systemProperties = connection.getSystemProperties();
+               if (systemProperties != null) {
+                   String javaCommand = getJavaCommand(systemProperties);
+                   processName = getProcessName(javaCommand);
+               }
+           }
+
+           configureLogLevel(connection, args);
+           return new SpringProcessUpdatedLogLevelData(
+                   processType,
+                   processName,
+                   processID,
+                   args.get("packageName"),
+				   args.get("effectiveLevel"),
+				   args.get("configuredLevel")
+                   );
+           
+       }
+       catch (Exception e) {
+           log.error("error reading live metrics data from: " + processID + " - " + processName + " : "+ args.get("packageName"), e);
+       }
+	return null;
+
+    }
+    
+    public void configureLogLevel(ActuatorConnection connection, Map<String, String> args) {
+		try {
+			connection.configureLogLevel(args);
+
+		} catch (IOException e) {
+			// ignore
+		} catch (Exception e) {
+			log.error("Error parsing response", e);
+			throw e;
+		}
+		return;
+	}
+	
 	private StartupMetricsModel getStartupMetrics(ActuatorConnection connection, StartupMetricsModel currentStartup) {
 		if (currentStartup != null) {
 			return currentStartup;
@@ -415,7 +523,7 @@ public class SpringProcessLiveDataExtractorOverHttp {
         } catch (IOException e) {
             // ignore
         } catch (Exception e) {
-            log.error("Error parsing beans", e);
+        	log.error("Error parsing live metrics", e);
         }
         return null;
     }
