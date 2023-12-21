@@ -64,19 +64,19 @@ public abstract class ProjectParser {
 			javaParser.setClasspath(mainClasspath);
 
 			List<SourceFile> javaSources = ListUtils.map(javaParser.parseInputs(
-					() -> getInputs(ss.javaSources.stream()).iterator(), projectDir, ctx).collect(Collectors.toList()), addProvenance(projectProvenance));
+					() -> getInputs(ss.javaSources.stream()).iterator(), null, ctx).collect(Collectors.toList()), addProvenance(projectProvenance));
 			JavaSourceSet javaSourceSet = ORAstUtils.addJavaSourceSet(javaSources, ss.name(),
 					mainClasspath);
 			sources.addAll(javaSources);
 
 			List<Input> resources = getInputs(ss.resources().stream()).collect(Collectors.toList());
-			parseResources(resources, projectDir, sources, projectProvenance, javaSourceSet, ctx);
+			parseResources(resources, null, sources, projectProvenance, javaSourceSet, ctx);
 		}
 		
 		return sources;
 	}
 	
-    private void parseResources(List<Parser.Input> resources, Path projectDirectory, List<SourceFile> sourceFiles, List<Marker> projectProvenance, JavaSourceSet sourceSet, ExecutionContext ctx) {
+    private void parseResources(List<Parser.Input> resources, Path relativeTo, List<SourceFile> sourceFiles, List<Marker> projectProvenance, JavaSourceSet sourceSet, ExecutionContext ctx) {
         List<Marker> provenance = new ArrayList<>(projectProvenance);
         provenance.add(sourceSet);
 
@@ -89,7 +89,7 @@ public abstract class ProjectParser {
                                 p.getPath().getFileName().toString().endsWith(".xsl") ||
                                 p.getPath().getFileName().toString().endsWith(".xslt"))
                         .collect(Collectors.toList()),
-                projectDirectory,
+                relativeTo,
                 ctx
         ).collect(Collectors.toList()), addProvenance(provenance)));
 
@@ -97,7 +97,7 @@ public abstract class ProjectParser {
                 resources.stream()
                         .filter(p -> p.getPath().getFileName().toString().endsWith(".yml") || p.getPath().getFileName().toString().endsWith(".yaml"))
                         .collect(Collectors.toList()),
-                projectDirectory,
+                relativeTo,
                 ctx
         ).collect(Collectors.toList()), addProvenance(provenance)));
 
@@ -105,7 +105,7 @@ public abstract class ProjectParser {
                 resources.stream()
                         .filter(p -> p.getPath().getFileName().toString().endsWith(".properties"))
                         .collect(Collectors.toList()),
-                projectDirectory,
+                relativeTo,
                 ctx
         ).collect(Collectors.toList()), addProvenance(provenance)));
         
@@ -113,7 +113,7 @@ public abstract class ProjectParser {
                 resources.stream()
                         .filter(p -> p.getPath().getFileName().toString().endsWith(".factories"))
                         .collect(Collectors.toList()),
-                projectDirectory,
+                relativeTo,
                 ctx
         ).collect(Collectors.toList()), addProvenance(provenance)));
     }

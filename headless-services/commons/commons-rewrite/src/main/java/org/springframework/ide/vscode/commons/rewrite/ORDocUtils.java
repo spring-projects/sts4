@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.rewrite;
 
-import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -158,7 +157,7 @@ public class ORDocUtils {
 		return 0;
 	}
 	
-	public static Optional<WorkspaceEdit> createWorkspaceEdit(Path absoluteProjectDir, SimpleTextDocumentService documents, List<Result> results, ChangeAnnotation changeAnnotation) {
+	public static Optional<WorkspaceEdit> createWorkspaceEdit(SimpleTextDocumentService documents, List<Result> results, ChangeAnnotation changeAnnotation) {
 		if (results.isEmpty()) {
 			return Optional.empty();
 		}
@@ -168,7 +167,7 @@ public class ORDocUtils {
 		we.setChangeAnnotations(Map.of(changeAnnotationId, changeAnnotation));
 		for (Result result : results) {
 			if (result.getBefore() == null) {
-				String docUri = absoluteProjectDir.resolve(result.getAfter().getSourcePath()).toUri().toASCIIString();
+				String docUri = result.getAfter().getSourcePath().toUri().toASCIIString();
 				CreateFile ro = new CreateFile();
 				ro.setUri(docUri);
 				we.getDocumentChanges().add(Either.forRight(ro));
@@ -179,10 +178,10 @@ public class ORDocUtils {
 				te.setEdits(List.of(new AnnotatedTextEdit(new Range(cursor, cursor), result.getAfter().printAll(), changeAnnotationId)));
 				we.getDocumentChanges().add(Either.forLeft(te));
 			} else if (result.getAfter() == null) {
-				String docUri = absoluteProjectDir.resolve(result.getBefore().getSourcePath()).toUri().toASCIIString();
+				String docUri = result.getBefore().getSourcePath().toUri().toASCIIString();
 				we.getDocumentChanges().add(Either.forRight(new DeleteFile(docUri)));
 			} else {
-				String docUri = absoluteProjectDir.resolve(result.getBefore().getSourcePath()).toUri().toASCIIString();
+				String docUri = result.getBefore().getSourcePath().toUri().toASCIIString();
 				TextDocument doc = documents.getLatestSnapshot(docUri);
 				if (doc == null) {
 					doc = new TextDocument(docUri, null, 0, result.getBefore().printAll());

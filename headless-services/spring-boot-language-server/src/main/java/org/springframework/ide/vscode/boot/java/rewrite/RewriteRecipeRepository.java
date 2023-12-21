@@ -460,7 +460,7 @@ public class RewriteRecipeRepository {
 		List<Result> results = reciperun.getChangeset().getAllResults();
 		ChangeAnnotation changeAnnotation = new ChangeAnnotation("Apply Recipe '" + r.getDisplayName() + "'");
 		changeAnnotation.setNeedsConfirmation(needsConfirmation);
-		return ORDocUtils.createWorkspaceEdit(absoluteProjectDir, server.getTextDocumentService(), results, changeAnnotation);
+		return ORDocUtils.createWorkspaceEdit(server.getTextDocumentService(), results, changeAnnotation);
 	}
 	
 	private void reportParseErrors(List<ParseError> parseErrors) {

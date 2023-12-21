@@ -104,7 +104,7 @@ public class MavenIJavaProjectParser extends AbstractJavaProjectParser {
 	@Override
 	protected List<? extends SourceFile> parseBuildFiles(Path projectDir, ExecutionContext ctx) {
 		MavenParser mavenParser = mavenParserBuilder.build();
-		return mavenParser.parseInputs(() -> getInputs(Stream.of(Paths.get(jp.getProjectBuild().getBuildFile()))).iterator(), projectDir, ctx).collect(Collectors.toList());
+		return mavenParser.parseInputs(() -> getInputs(Stream.of(Paths.get(jp.getProjectBuild().getBuildFile()))).iterator(), null, ctx).collect(Collectors.toList());
 	}
 	
     private static ResolvedPom getModel(Xml.Document maven) {
