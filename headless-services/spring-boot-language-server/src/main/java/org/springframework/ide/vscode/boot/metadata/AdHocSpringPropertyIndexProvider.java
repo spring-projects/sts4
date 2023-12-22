@@ -32,6 +32,7 @@ import org.springframework.ide.vscode.commons.util.FileObserver;
 import org.springframework.ide.vscode.commons.util.FuzzyMap;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.yaml.ast.NodeUtil;
+import org.yaml.snakeyaml.LoaderOptions;
 import org.yaml.snakeyaml.Yaml;
 import org.yaml.snakeyaml.constructor.SafeConstructor;
 import org.yaml.snakeyaml.nodes.MappingNode;
@@ -140,7 +141,7 @@ public class AdHocSpringPropertyIndexProvider implements ProjectBasedPropertyInd
 
 	private Properties parseYaml(File yamlFile) {
 		if (yamlFile.isFile()) {
-			Yaml yaml = new Yaml(new SafeConstructor());
+			Yaml yaml = new Yaml(new SafeConstructor(new LoaderOptions()));
 			try (Reader reader = new InputStreamReader(new FileInputStream(yamlFile), "UTF8")) {
 				Properties props = new Properties();
 				for (Node node : yaml.composeAll(reader)) {

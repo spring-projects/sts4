@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016-2017 Pivotal, Inc.
+ * Copyright (c) 2016-2023 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -38,7 +38,7 @@ public class YamlParser implements YamlASTProvider {
 		reader.setInput(atTokenTransformHack(doc.get()));
 		LoaderOptions loaderOpts = new LoaderOptions();
 		loaderOpts.setMaxAliasesForCollections(1000);
-		Iterable<Node> nodes = new Yaml(new SafeConstructor(loaderOpts), new Representer(), new DumperOptions(), loaderOpts).composeAll(reader);
+		Iterable<Node> nodes = new Yaml(new SafeConstructor(loaderOpts), new Representer(new DumperOptions()), new DumperOptions(), loaderOpts).composeAll(reader);
 		return new YamlFileAST(doc, ImmutableList.copyOf(nodes));
 	}
 

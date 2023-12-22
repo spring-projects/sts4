@@ -17,13 +17,14 @@ import java.util.Collection;
 import java.util.List;
 import java.util.stream.Stream;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.bosh.BoshCliConfig;
 import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.CollectorUtil;
 import org.springframework.ide.vscode.commons.util.ExternalCommand;
 import org.springframework.ide.vscode.commons.util.ExternalProcess;
 import org.springframework.ide.vscode.commons.util.GsonUtil;
-import org.springframework.ide.vscode.commons.util.Log;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
@@ -31,7 +32,7 @@ import org.springframework.ide.vscode.commons.yaml.ast.YamlFileAST;
 import org.springframework.ide.vscode.commons.yaml.ast.YamlParser;
 import org.springframework.ide.vscode.commons.yaml.path.YamlTraversal;
 import org.springframework.ide.vscode.commons.yaml.util.JSONCursor;
-import org.yaml.snakeyaml.Yaml;
+import org.yaml.snakeyaml.DumperOptions;
 import org.yaml.snakeyaml.representer.Representer;
 
 import com.google.gson.Gson;
@@ -44,6 +45,8 @@ import com.google.gson.annotations.SerializedName;
  * command (with `--json`) swtich and then extracts information from its json output.
  */
 public abstract class BoshCommandBasedModelProvider<T> implements DynamicModelProvider<T> {
+	
+	private static final Logger log = LoggerFactory.getLogger(BoshCommandBasedModelProvider.class);
 
 	private final YamlParser yamlParser;
 
@@ -55,7 +58,7 @@ public abstract class BoshCommandBasedModelProvider<T> implements DynamicModelPr
 
 	protected BoshCommandBasedModelProvider(BoshCliConfig config) {
 		this.config = config;
-		Representer representer = new Representer();
+		Representer representer = new Representer(new DumperOptions());
 		representer.getPropertyUtils().setSkipMissingProperties(true);
 		yamlParser = new YamlParser();
 	}
@@ -115,7 +118,7 @@ public abstract class BoshCommandBasedModelProvider<T> implements DynamicModelPr
 
 	protected String executeCommand(ExternalCommand command) throws Exception {
 		if (command==null) {
-			Log.log("bosh cli based editor features are disabled");
+			log.warn("bosh cli based editor features are disabled");
 			throw new IOException("bosh cli based editor features are disabled. "
 					+ "Consult the atom/vscode extension's readme for detailed "
 					+ "instructions on how to target a director and enable them.");
@@ -124,7 +127,7 @@ public abstract class BoshCommandBasedModelProvider<T> implements DynamicModelPr
 			ExternalProcess process = new ExternalProcess(getWorkingDir(), command, true, config.getTimeout());
 			return process.getOut();
 		} catch (Exception e) {
-			Log.log("executing cmd FAILED", e);
+			log.error("executing cmd FAILED", e);
 			throw e;
 		}
 	}
