@@ -46,6 +46,15 @@ import org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemTy
 import org.springframework.ide.vscode.commons.languageserver.reconcile.ReconcileProblemImpl;
 
 public class EntityIdForRepoReconciler implements JdtAstReconciler {
+	
+	private static final List<String> NUMBER_CLASS_NAMES = List.of(
+			Integer.class.getName(),
+			Long.class.getName(),
+			Short.class.getName(),
+			Float.class.getName(),
+			Double.class.getName(),
+			Byte.class.getName()
+	);
 
 	@Override
 	public void reconcile(IJavaProject project, URI docUri, CompilationUnit cu, IProblemCollector problemCollector,
@@ -253,7 +262,10 @@ public class EntityIdForRepoReconciler implements JdtAstReconciler {
 			}
 
 			private boolean isValidRepoIdType(ITypeBinding repoIdType, ITypeBinding idType) {
-				return repoIdType.isAssignmentCompatible(idType) || idType.isAssignmentCompatible(repoIdType);
+				if (NUMBER_CLASS_NAMES.contains(repoIdType.getQualifiedName()) && NUMBER_CLASS_NAMES.contains(idType.getQualifiedName())) {
+					return true;
+				}
+				return repoIdType.isCastCompatible(idType) || idType.isCastCompatible(repoIdType);
 			}
 
 		});

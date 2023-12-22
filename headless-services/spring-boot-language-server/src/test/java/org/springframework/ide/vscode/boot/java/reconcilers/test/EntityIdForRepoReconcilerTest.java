@@ -199,18 +199,7 @@ public class EntityIdForRepoReconcilerTest extends BaseReconcilerTest {
 		""";
 		List<ReconcileProblem> problems = reconcile("EmployeeRepository.java", source, false, employeeSource);
 		
-		assertEquals(1, problems.size());
-		
-		ReconcileProblem problem = problems.get(0);
-		
-		assertEquals(Boot2JavaProblemType.DOMAIN_ID_FOR_REPOSITORY, problem.getType());
-		
-		String markedStr = source.substring(problem.getOffset(), problem.getOffset() + problem.getLength());
-		assertEquals("Double.class", markedStr);
-		assertEquals("Expected Domain ID type is 'java.lang.Integer'", problem.getMessage());
-
-		assertEquals(0, problem.getQuickfixes().size());
-		
+		assertEquals(0, problems.size());
 	}
 	
 	@Test
@@ -1117,5 +1106,50 @@ public class EntityIdForRepoReconcilerTest extends BaseReconcilerTest {
 		assertEquals("Long", markedStr);
 		assertEquals("Expected Domain ID type is 'demo.CustomerId'", problem.getMessage());
 		
+	}
+	
+	@Test
+	void gh1159() throws Exception {
+		Path roleSource = createFile("Role.java", """
+			package demo;
+			
+			import javax.persistence.Entity;
+			import javax.persistence.Id;
+			import javax.persistence.Table;
+			
+			@Entity
+			@Table(name = "roles")
+			public class Role {
+			
+				@Id
+				private Integer id;
+			
+				public Integer getId() {
+					return id;
+				}
+			
+				public void setId(Integer id) {
+					this.id = id;
+				}
+			
+			}
+			""");
+			
+			String source = """
+			package demo;
+			
+			
+			import org.springframework.data.jpa.repository.JpaRepository;
+			import org.springframework.stereotype.Repository;
+			
+			@Repository
+			public interface RoleRepository extends JpaRepository<Role, Long> {
+				
+			}
+			""";
+			List<ReconcileProblem> problems = reconcile("CustomerRepository.java", source, false, roleSource);
+			
+			assertEquals(0, problems.size());
+			
 	}
 }
