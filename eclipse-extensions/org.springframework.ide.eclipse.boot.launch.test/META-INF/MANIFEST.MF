@@ -21,4 +21,4 @@ Require-Bundle: org.eclipse.ui,
  org.springframework.ide.eclipse.buildship30
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy
-Bundle-Vendor: GoVMware, Inc.
+Bundle-Vendor: Broadcom

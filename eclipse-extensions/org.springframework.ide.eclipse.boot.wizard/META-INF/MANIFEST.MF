@@ -40,7 +40,7 @@ Export-Package: org.springframework.ide.eclipse.boot.wizard,
  org.springframework.ide.eclipse.boot.wizard.importing,
  org.springframework.ide.eclipse.boot.wizard.starters,
  org.springframework.ide.eclipse.boot.wizard.util
-Bundle-Vendor: VMware, Inc.
+Bundle-Vendor: Broadcom
 Import-Package: org.eclipse.core.runtime,
  org.eclipse.core.runtime.jobs,
  org.apache.commons.compress.archivers.zip,

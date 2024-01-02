@@ -3,7 +3,7 @@
 	id="org.springframework.boot.ide.main.feature"
 	label="Spring Tool Suite 4 Main Feature"
 	version="4.21.1.qualifier"
-	provider-name="VMware, Inc.">
+	provider-name="Broadcom">
 
     <description>
        %description

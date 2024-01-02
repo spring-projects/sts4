@@ -33,7 +33,7 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.m2e.core
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy
-Bundle-Vendor: VMware, Inc.
+Bundle-Vendor: Broadcom
 Export-Package: org.springframework.ide.eclipse.boot.test,
  org.springframework.ide.eclipse.boot.test.util
 Import-Package: org.eclipse.core.runtime,

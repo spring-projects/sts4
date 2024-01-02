@@ -3,7 +3,7 @@
 	id="org.springframework.tooling.boot.ls.feature"
 	label="Spring Boot Language Server Feature"
 	version="4.21.1.qualifier"
-	provider-name="VMware, Inc.">
+	provider-name="Broadcom">
 
     <description>
        %description

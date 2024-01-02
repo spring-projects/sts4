@@ -4,7 +4,7 @@ Bundle-Activator: org.springframework.tooling.jdt.ls.extension.JdtLsExtensionPlu
 Bundle-Name: org.springframework.tooling.jdt.ls.extension
 Bundle-SymbolicName: org.springframework.tooling.jdt.ls.extension;singleton:=true
 Bundle-Version: 1.0.0.qualifier
-Bundle-Vendor: VMware, Inc.
+Bundle-Vendor: Broadcom
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Require-Bundle: org.eclipse.jdt.ls.core,
  org.eclipse.core.runtime,

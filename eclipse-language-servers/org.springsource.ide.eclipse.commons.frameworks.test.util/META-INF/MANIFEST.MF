@@ -4,7 +4,7 @@ Bundle-Name: com.springsource.sts.frameworks.test.util
 Bundle-SymbolicName: org.springsource.ide.eclipse.commons.frameworks.test.util;singleton:=true
 Bundle-Version: 4.21.1.qualifier
 Bundle-ActivationPolicy: lazy
-Bundle-Vendor: VMware, Inc.
+Bundle-Vendor: Broadcom
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Require-Bundle: org.springsource.ide.eclipse.commons.tests.util,
  org.eclipse.debug.core,

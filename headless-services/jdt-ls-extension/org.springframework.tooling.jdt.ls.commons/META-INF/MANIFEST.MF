@@ -3,7 +3,7 @@ Bundle-ManifestVersion: 2
 Bundle-Name: Client-side JDT extension for language servers
 Bundle-SymbolicName: org.springframework.tooling.jdt.ls.commons
 Bundle-Version: 4.21.1.qualifier
-Bundle-Vendor: VMware, Inc.
+Bundle-Vendor: Broadcom
 Automatic-Module-Name: org.springframework.tooling.jdt.ls.commons
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Require-Bundle: org.eclipse.core.runtime,

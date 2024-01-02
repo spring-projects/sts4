@@ -4,7 +4,7 @@ Bundle-Name: SpringSource Tool Suite (Core)
 Bundle-SymbolicName: org.springsource.ide.eclipse.commons.core;singleton:=true
 Bundle-Version: 4.21.1.qualifier
 Bundle-Activator: org.springsource.ide.eclipse.commons.internal.core.CorePlugin
-Bundle-Vendor: VMware, Inc.
+Bundle-Vendor: Broadcom
 Require-Bundle: org.eclipse.core.resources,
  org.eclipse.equinox.p2.core;resolution:=optional,
  org.eclipse.equinox.p2.repository;resolution:=optional,

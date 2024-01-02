@@ -1,7 +1,7 @@
 Manifest-Version: 1.0
 Bundle-ManifestVersion: 2
 Bundle-Name: Cloud Foundry Manifest Language Server
-Bundle-Vendor: VMware, Inc.
+Bundle-Vendor: Broadcom
 Bundle-SymbolicName: org.springframework.tooling.cloudfoundry.manifest.ls;singleton:=true
 Bundle-Version: 1.52.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-17

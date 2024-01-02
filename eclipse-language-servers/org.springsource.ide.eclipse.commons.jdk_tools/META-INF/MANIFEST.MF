@@ -6,4 +6,4 @@ Bundle-Version: 4.21.1.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ClassPath: external:$java.home$/../lib/tools.jar
 Export-Package: com.sun.tools.attach
-Bundle-Vendor: VMware, Inc.
+Bundle-Vendor: Broadcom
