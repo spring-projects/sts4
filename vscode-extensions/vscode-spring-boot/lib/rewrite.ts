@@ -100,9 +100,8 @@ async function showRefactorings(uri: VSCode.Uri, filter: string) {
     }
     const choices = await showCurrentPathQuickPick(VSCode.commands.executeCommand('sts/rewrite/list', filter).then((cmds: RecipeDescriptor[]) => cmds.map(d => convertToQuickPickItem(d, false))), []);
     const recipeDescriptors = choices.filter(i => i.selected).map(convertToRecipeSelectionDescriptor);
-    const needsConfirmation = await shwoNeedsConfirmation();
     if (recipeDescriptors.length) {
-        VSCode.commands.executeCommand('sts/rewrite/execute', uri.toString(true), recipeDescriptors, needsConfirmation); 
+        VSCode.commands.executeCommand('sts/rewrite/execute', uri.toString(true), recipeDescriptors, true); 
     } else {
         VSCode.window.showErrorMessage('No Recipes were selected!');
     }
@@ -127,33 +126,6 @@ function convertToQuickPickItem(i: RecipeDescriptor, selected?: boolean): Recipe
         buttons: i.hasSubRecipes ? [ SUB_RECIPES_BUTTON ] : undefined,
         recipeDescriptor: i
     };
-}
-
-function shwoNeedsConfirmation(): Thenable<boolean> {
-    return new Promise((resolve, reject) => {
-        const previewPick = VSCode.window.createQuickPick<VSCode.QuickPickItem>();
-        previewPick.title = 'Preview Before Applying?';
-        previewPick.canSelectMany = false;
-    
-        const applyItem = {
-            label: "Apply",
-            description: "Apply changes maded by a recipe"
-        }
-        const previewItem = {
-            label: "Preview",
-            description: "Preview and confirm changes made by a recipe before applying"
-        }
-        previewPick.items = [
-            applyItem,
-            previewItem
-        ];
-        previewPick.show();
-    
-        previewPick.onDidAccept(() => {
-            previewPick.hide();
-            resolve(previewPick.selectedItems[0] === previewItem);
-        });
-    });
 }
 
 function showCurrentPathQuickPick(itemsPromise: Thenable<RecipeQuickPickItem[]>, itemsPath: RecipeQuickPickItem[]): Thenable<RecipeQuickPickItem[]> {

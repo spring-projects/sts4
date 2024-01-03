@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2022, 2023 VMware, Inc.
+ * Copyright (c) 2022, 2024 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -36,8 +36,12 @@ import java.util.stream.Collectors;
 
 import org.eclipse.lsp4j.ApplyWorkspaceEditParams;
 import org.eclipse.lsp4j.ChangeAnnotation;
+import org.eclipse.lsp4j.MessageActionItem;
+import org.eclipse.lsp4j.MessageType;
+import org.eclipse.lsp4j.ShowMessageRequestParams;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.WorkspaceEdit;
+import org.eclipse.lsp4j.WorkspaceEditChangeAnnotationSupportCapabilities;
 import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.ParseExceptionResult;
 import org.openrewrite.Parser;
@@ -102,7 +106,6 @@ public class RewriteRecipeRepository {
 	private static final String CMD_REWRITE_EXECUTE = "sts/rewrite/execute";
 	private static final String CMD_REWRITE_LIST = "sts/rewrite/list";
 	private static final String CMD_REWRITE_SUBLIST = "sts/rewrite/sublist";
-	private static final String CMD_REWRITE_RECIPE_EXECUTE = "sts/rewrite/recipe/execute";
 	private static final Logger log = LoggerFactory.getLogger(RewriteRecipeRepository.class);
 	
 	private static final Set<String> UNINITIALIZED_SET = Collections.emptySet();
@@ -356,7 +359,7 @@ public class RewriteRecipeRepository {
 			return recipes().thenCompose(recipesMap -> {
 				String uri = ((JsonElement) params.getArguments().get(0)).getAsString();
 				JsonElement recipesJson = ((JsonElement) params.getArguments().get(1));
-				boolean needsConfirmation = params.getArguments().size() > 2 ? ((JsonElement) params.getArguments().get(2)).getAsBoolean() : false;
+				boolean askForPreview = params.getArguments().size() > 2 ? ((JsonElement) params.getArguments().get(2)).getAsBoolean() : false;
 				
 				RecipeSelectionDescriptor[] descriptors = serializationGson.fromJson(recipesJson, RecipeSelectionDescriptor[].class);
 				List<Recipe> recipes = Arrays.stream(descriptors).map(d -> createRecipeFromSelection(recipesMap.get(d.id()), d.subselection())).collect(Collectors.toList());
@@ -366,7 +369,7 @@ public class RewriteRecipeRepository {
 							|| params.getWorkDoneToken().getLeft() == null
 									? (r.getName() == null ? UUID.randomUUID().toString() : r.getName())
 									: params.getWorkDoneToken().getLeft();
-					return apply(r, uri, progressToken, needsConfirmation);
+					return apply(r, uri, progressToken, askForPreview);
 				} else {
 					String name = recipes.size() + " recipes";
 					DeclarativeRecipe aggregateRecipe = new DeclarativeRecipe(
@@ -385,7 +388,7 @@ public class RewriteRecipeRepository {
 									? (aggregateRecipe.getName() == null ? UUID.randomUUID().toString()
 											: aggregateRecipe.getName())
 									: params.getWorkDoneToken().getLeft();
-					return apply(aggregateRecipe, uri, progressToken, needsConfirmation);
+					return apply(aggregateRecipe, uri, progressToken, askForPreview);
 				}
 			});
 		});
@@ -395,72 +398,98 @@ public class RewriteRecipeRepository {
 			return CompletableFuture.completedFuture("executed");
 		});
 		
-		server.onCommand(CMD_REWRITE_RECIPE_EXECUTE, params -> {
-			String recipeId = ((JsonElement) params.getArguments().get(0)).getAsString();
-			boolean needsConfirmation = params.getArguments().size() > 1 ? ((JsonElement) params.getArguments().get(1)).getAsBoolean() : false;
-			return getRecipe(recipeId).thenCompose(optRecipe -> {
-				Recipe r = optRecipe.orElseThrow(() -> new IllegalArgumentException("No such recipe exists with name " + recipeId));
-				final String progressToken = params.getWorkDoneToken() == null || params.getWorkDoneToken().getLeft() == null ? r.getName() : params.getWorkDoneToken().getLeft();
-				String uri = ((JsonElement) params.getArguments().get(1)).getAsString();
-				return apply(r, uri, progressToken, needsConfirmation);	
-			});
-		});	
 	}
 	
-	CompletableFuture<Object> apply(Recipe r, String uri, String progressToken, boolean needsConfirmation) {
+	CompletableFuture<Object> apply(Recipe r, String uri, String progressToken, boolean askForPreview) {
 		final IndefiniteProgressTask progressTask = server.getProgressService().createIndefiniteProgressTask(progressToken, r.getDisplayName(), "Initiated...");
 		return CompletableFuture.supplyAsync(() -> {
 			return projectFinder.find(new TextDocumentIdentifier(uri));
 		}).thenCompose(p -> {
 			if (p.isPresent()) {
-				try {
-					Optional<WorkspaceEdit> edit = computeWorkspaceEdit(r, p.get(), progressTask, needsConfirmation);
-					return CompletableFuture.completedFuture(edit).thenCompose(we -> {
-						if (we.isPresent()) {
-							progressTask.progressEvent("Applying document changes...");
-							return server.getClient().applyEdit(new ApplyWorkspaceEditParams(we.get(), r.getDisplayName())).thenCompose(res -> {
-								if (res.isApplied()) {
-									progressTask.done();
-									return CompletableFuture.completedFuture("success");
-								} else {
-									progressTask.done();
-									return CompletableFuture.completedFuture(null);
-								}
-							});
-						} else {
-							progressTask.done();
-							return CompletableFuture.completedFuture(null);
-						}
-					});
-				} catch (Throwable t) {
-					progressTask.done();
-					throw t;
-				}
+				IJavaProject project = p.get();
+				Path absoluteProjectDir = Paths.get(project.getLocationUri());
+				progressTask.progressEvent("Parsing files...");
+				ProjectParser projectParser = createRewriteProjectParser(project,
+						pr -> {
+							TextDocument doc = server.getTextDocumentService().getLatestSnapshot(pr.toUri().toASCIIString());
+							if (doc != null) {
+								return new Parser.Input(pr, () -> new ByteArrayInputStream(doc.get().getBytes()));
+							}
+							return null;
+						});
+				List<SourceFile> sources = projectParser.parse(absoluteProjectDir, new InMemoryExecutionContext(e -> log.error("Project Parsing error:", e)));
+				
+				return computeWorkspaceEditAwareOfPreview(r, sources, progressTask, askForPreview)
+					.thenCompose(we -> applyEdit(we, progressTask, r.getDisplayName()));
 			} else {
 				return CompletableFuture.failedFuture(new IllegalArgumentException("Cannot find Spring Boot project for uri: " + uri));
 			}
+		}).whenComplete((o,t) -> progressTask.done());
+	}
+	
+	CompletableFuture<Optional<WorkspaceEdit>> computeWorkspaceEditAwareOfPreview(Recipe r, List<SourceFile> sources, IndefiniteProgressTask progressTask, boolean askForPreview) {
+		String changeAnnotationId = UUID.randomUUID().toString();
+		Optional<WorkspaceEdit> we = computeWorkspaceEdit(r, sources, progressTask, changeAnnotationId);
+		if (we.isPresent()) {
+			CompletableFuture<WorkspaceEdit> editFuture = askForPreview ? askForPreview(we.get(), changeAnnotationId) : CompletableFuture.completedFuture(we.get());
+			return editFuture.thenApply(Optional::of);
+		}
+		return CompletableFuture.completedFuture(Optional.empty());
+	}
+	
+	private CompletableFuture<WorkspaceEdit> askForPreview(WorkspaceEdit workspaceEdit, String changeAnnotationId) {
+		return server.getClientCapabilities().thenApply(capabilities -> {
+			WorkspaceEditChangeAnnotationSupportCapabilities changeAnnotationSupport = capabilities.getWorkspace().getWorkspaceEdit().getChangeAnnotationSupport();
+			return changeAnnotationSupport != null && changeAnnotationSupport.getGroupsOnLabel() != null && changeAnnotationSupport.getGroupsOnLabel().booleanValue();
+		}).thenCompose(supportsChangeAnnotation -> {
+			if (supportsChangeAnnotation) {
+				final MessageActionItem previewChanges = new MessageActionItem("Preview");
+				final MessageActionItem applyChanges = new MessageActionItem("Apply");
+				ShowMessageRequestParams messageParams = new ShowMessageRequestParams();
+				messageParams.setType(MessageType.Info);
+				messageParams.setMessage("Do you want to preview chnages before applying or apply right away?");
+				messageParams.setActions(List.of(applyChanges, previewChanges));
+				return server.getClient().showMessageRequest(messageParams).thenApply(previewChanges::equals);
+			} else {
+				return CompletableFuture.completedFuture(false);
+			}
+		}).thenApply(needsConfirmation -> {
+				ChangeAnnotation changeAnnotation = workspaceEdit.getChangeAnnotations().get(changeAnnotationId);
+				changeAnnotation.setNeedsConfirmation(needsConfirmation);
+				return workspaceEdit;
 		});
 	}
 	
-	private Optional<WorkspaceEdit> computeWorkspaceEdit(Recipe r, IJavaProject project, IndefiniteProgressTask progressTask, boolean needsConfirmation) {
-		Path absoluteProjectDir = Paths.get(project.getLocationUri());
-		progressTask.progressEvent("Parsing files...");
-		ProjectParser projectParser = createRewriteProjectParser(project,
-				p -> {
-					TextDocument doc = server.getTextDocumentService().getLatestSnapshot(p.toUri().toASCIIString());
-					if (doc != null) {
-						return new Parser.Input(p, () -> new ByteArrayInputStream(doc.get().getBytes()));
-					}
-					return null;
-				});
-		List<SourceFile> sources = projectParser.parse(absoluteProjectDir, new InMemoryExecutionContext(e -> log.error("Project Parsing error:", e)));
+	private CompletableFuture<Object> applyEdit(Optional<WorkspaceEdit> we, IndefiniteProgressTask progressTask, String title) {
+		if (we.isPresent()) {
+			WorkspaceEdit workspaceEdit = we.get();
+			if (progressTask != null) {
+				progressTask.progressEvent("Applying document changes...");
+			}
+			return server.getClient().applyEdit(new ApplyWorkspaceEditParams(workspaceEdit, title)).thenCompose(res -> {
+				if (res.isApplied()) {
+					return CompletableFuture.completedFuture("success");
+				} else {
+					return CompletableFuture.completedFuture(null);
+				}
+			});
+		} else {
+			return CompletableFuture.completedFuture(null);
+		}
+	}
+	
+	Optional<WorkspaceEdit> computeWorkspaceEdit(Recipe r, List<SourceFile> sources, IndefiniteProgressTask progressTask, String changeAnnotationId) {
 		reportParseErrors(sources.stream().filter(ParseError.class::isInstance).map(ParseError.class::cast).collect(Collectors.toList()));
-		progressTask.progressEvent("Computing changes...");
+		if (progressTask != null) {
+			progressTask.progressEvent("Computing changes...");
+		}
 		RecipeRun reciperun = r.run(new InMemoryLargeSourceSet(sources), new InMemoryExecutionContext(e -> log.error("Recipe execution failed", e)));
 		List<Result> results = reciperun.getChangeset().getAllResults();
-		ChangeAnnotation changeAnnotation = new ChangeAnnotation("Apply Recipe '" + r.getDisplayName() + "'");
-		changeAnnotation.setNeedsConfirmation(needsConfirmation);
-		return ORDocUtils.createWorkspaceEdit(server.getTextDocumentService(), results, changeAnnotation);
+		return ORDocUtils.createWorkspaceEdit(server.getTextDocumentService(), results, changeAnnotationId).map(we -> {
+			ChangeAnnotation changeAnnotation = new ChangeAnnotation(r.getDisplayName());
+			we.setChangeAnnotations(Map.of(changeAnnotationId, changeAnnotation));
+			return we;
+		});
 	}
 	
 	private void reportParseErrors(List<ParseError> parseErrors) {

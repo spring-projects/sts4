@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2022, 2023 VMware, Inc.
+ * Copyright (c) 2022, 2024 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -58,7 +58,7 @@ public class SpringBootUpgrade {
 			Assert.isLegal(uri != null, "Project URI parameter must not be 'null'");
 			Version targetVersion = Version.parse(((JsonElement) params.getArguments().get(1)).getAsString());
 			Assert.isLegal(targetVersion != null, "Target Spring Boot version must not be 'null'");
-			boolean needsConfirmation = params.getArguments().size() > 2 ? ((JsonElement) params.getArguments().get(2)).getAsBoolean() : false;
+			boolean askForPreview = params.getArguments().size() > 2 ? ((JsonElement) params.getArguments().get(2)).getAsBoolean() : false;
 			
 			IJavaProject project = projectFinder.find(new TextDocumentIdentifier(uri)).orElse(null);
 			Assert.isLegal(project != null, "No Spring Boot project found for uri: " + uri);
@@ -77,7 +77,7 @@ public class SpringBootUpgrade {
 					createUpgradeRecipe(recipes, version, targetVersion),
 					uri,
 					UUID.randomUUID().toString(),
-					needsConfirmation
+					askForPreview
 			));
 		});
 	}

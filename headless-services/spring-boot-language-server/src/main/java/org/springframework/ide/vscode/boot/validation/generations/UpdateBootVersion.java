@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2023 VMware, Inc.
+ * Copyright (c) 2023, 2024 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -76,7 +76,7 @@ public class UpdateBootVersion extends AbstractDiagnosticValidator {
 				c.setTitle("Upgrade to Spring Boot " + targetVersion + " (executes the full project conversion recipe from OpenRewrite)");
 				String commandId = SpringBootUpgrade.CMD_UPGRADE_SPRING_BOOT;
 				c.setCommand(new Command("Upgrade to Version " + targetVersion, commandId,
-						ImmutableList.of(javaProject.getLocationUri().toASCIIString(), targetVersion)));
+						ImmutableList.of(javaProject.getLocationUri().toASCIIString(), targetVersion, true)));
 				return c;
 			}).ifPresent(actions::add);
 			
@@ -109,7 +109,7 @@ public class UpdateBootVersion extends AbstractDiagnosticValidator {
 				c.setTitle("Upgrade to Spring Boot " + targetVersion + " (executes the full project conversion recipe from OpenRewrite)");
 				String commandId = SpringBootUpgrade.CMD_UPGRADE_SPRING_BOOT;
 				c.setCommand(new Command("Upgrade to Version " + targetVersion, commandId,
-						ImmutableList.of(javaProject.getLocationUri().toASCIIString(), targetVersion)));
+						ImmutableList.of(javaProject.getLocationUri().toASCIIString(), targetVersion, true)));
 				return c;
 			}).ifPresent(actions::add);
 						
@@ -138,7 +138,7 @@ public class UpdateBootVersion extends AbstractDiagnosticValidator {
 				c.setTitle("Upgrade to Spring Boot " + latest.toString() + " (Maven dependency version changes only)");
 				String commandId = SpringBootUpgrade.CMD_UPGRADE_SPRING_BOOT;
 				c.setCommand(new Command("Upgrade to Version " + latest.toString(), commandId,
-						ImmutableList.of(javaProject.getLocationUri().toASCIIString(), latest.toString())));
+						ImmutableList.of(javaProject.getLocationUri().toASCIIString(), latest.toString(), false)));
 				return c;
 			}).ifPresent(actions::add);
 			

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2022, 2023 VMware, Inc.
+ * Copyright (c) 2022, 2024 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,49 +13,36 @@ package org.springframework.ide.vscode.boot.java.rewrite;
 import java.lang.reflect.Field;
 import java.net.URI;
 import java.nio.file.Paths;
-import java.util.Collections;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
-import org.eclipse.lsp4j.ChangeAnnotation;
 import org.eclipse.lsp4j.CodeAction;
-import org.eclipse.lsp4j.ResourceOperation;
-import org.eclipse.lsp4j.TextDocumentEdit;
 import org.eclipse.lsp4j.TextDocumentIdentifier;
 import org.eclipse.lsp4j.WorkspaceEdit;
-import org.eclipse.lsp4j.jsonrpc.messages.Either;
-import org.openrewrite.InMemoryExecutionContext;
 import org.openrewrite.Parser.Input;
 import org.openrewrite.Recipe;
-import org.openrewrite.RecipeRun;
-import org.openrewrite.Result;
 import org.openrewrite.SourceFile;
-import org.openrewrite.internal.InMemoryLargeSourceSet;
 import org.openrewrite.internal.RecipeIntrospectionUtils;
 import org.openrewrite.java.JavaParser;
-import org.openrewrite.java.tree.J.CompilationUnit;
 import org.openrewrite.marker.Range;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
-import org.springframework.ide.vscode.commons.languageserver.PercentageProgressTask;
+import org.springframework.ide.vscode.commons.languageserver.IndefiniteProgressTask;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixEdit;
 import org.springframework.ide.vscode.commons.languageserver.quickfix.QuickfixHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.CodeActionResolver;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
-import org.springframework.ide.vscode.commons.rewrite.ORDocUtils;
 import org.springframework.ide.vscode.commons.rewrite.config.RecipeScope;
 import org.springframework.ide.vscode.commons.rewrite.java.FixDescriptor;
 import org.springframework.ide.vscode.commons.rewrite.java.ORAstUtils;
 import org.springframework.ide.vscode.commons.rewrite.java.RangeScopedRecipe;
-import org.springframework.ide.vscode.commons.util.text.LanguageId;
-import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
@@ -117,64 +104,34 @@ public class RewriteRefactorings implements CodeActionResolver, QuickfixHandler 
 	public CompletableFuture<WorkspaceEdit> createEdit(JsonElement o) {
 		FixDescriptor data = gson.fromJson(o, FixDescriptor.class);
 		if (data != null && data.getRecipeId() != null) {
-			return perform(data);
+			return perform(data).thenApply(we -> we.orElse(null));
 		}
 		return null;
 	}
 	
-	private WorkspaceEdit applyRecipe(Recipe r, IJavaProject project, List<CompilationUnit> cus, boolean needsConfirmation) {
-		List<SourceFile> sources = cus.stream().map(cu -> (SourceFile) cu).collect(Collectors.toList());
-		RecipeRun reciperun = r.run(new InMemoryLargeSourceSet(sources), new InMemoryExecutionContext());
-		List<Result> results = reciperun.getChangeset().getAllResults();
-		final String changeAnnotationId = UUID.randomUUID().toString();
-		List<Either<TextDocumentEdit, ResourceOperation>> edits = results.stream().filter(res -> res.getAfter() != null).map(res -> {
-			URI docUri = res.getAfter().getSourcePath().isAbsolute() ? res.getAfter().getSourcePath().toUri() : project.getLocationUri().resolve(res.getAfter().getSourcePath().toString());
-			TextDocument doc = server.getTextDocumentService().getLatestSnapshot(docUri.toASCIIString());
-			if (doc == null) {
-				doc = new TextDocument(docUri.toASCIIString(), LanguageId.JAVA, 0, res.getBefore() == null ? "" : res.getBefore().printAll());
-			}
-			return ORDocUtils.computeTextDocEdit(doc, res, changeAnnotationId);
-		}).filter(e -> e.isPresent()).map(e -> e.get()).map(e -> Either.<TextDocumentEdit, ResourceOperation>forLeft(e)).collect(Collectors.toList());
-		if (edits.isEmpty()) {
-			return null;
-		}
-		WorkspaceEdit workspaceEdit = new WorkspaceEdit();
-		ChangeAnnotation changeAnnotation = new ChangeAnnotation("Applying Recipe '" + r.getDisplayName() + "'");
-		changeAnnotation.setNeedsConfirmation(needsConfirmation);
-		workspaceEdit.setChangeAnnotations(Map.of(changeAnnotationId, changeAnnotation));
-		workspaceEdit.setDocumentChanges(edits);
-		return workspaceEdit;
-	}
-	
-	private CompletableFuture<WorkspaceEdit> perform(FixDescriptor data) {
+	private CompletableFuture<Optional<WorkspaceEdit>> perform(FixDescriptor data) {
 		Optional<IJavaProject> project = projectFinder.find(new TextDocumentIdentifier(data.getDocUris().get(0)));
 		if (project.isPresent()) {
 			boolean projectWide = data.getRecipeScope() == RecipeScope.PROJECT;
-			return createRecipe(data).thenApply(r -> {
+			IndefiniteProgressTask progress = server.getProgressService().createIndefiniteProgressTask(UUID.randomUUID().toString(), data.getLabel(), "Parsing files...");
+			return createRecipe(data).thenCompose(r -> {
 				if (r == null) {
 					log.warn("Code Action failed to resolve. Could not create recipe created with id '" + data.getRecipeId() + "'.");
 				}
-				List<CompilationUnit> cus = Collections.emptyList();
+				List<SourceFile> cus = new ArrayList<>();
 				if (projectWide) {
 					JavaParser jp = ORAstUtils.createJavaParserBuilder(project.get()).dependsOn(data.getTypeStubs()).build();
 					List<Input> inputs = ORAstUtils.getParserInputs(server.getTextDocumentService(), project.get());
-					PercentageProgressTask progress = server.getProgressService().createPercentageProgressTask(UUID.randomUUID().toString(), inputs.size() + 1, data.getLabel());
-					try {
-						cus = ORAstUtils.parseInputs(jp, inputs, s -> progress.increment());
-						return applyRecipe(r, project.get(), cus, false);
-					} finally {
-						progress.setCurrent(progress.getTotal());
-						progress.done();
-					}
+					cus.addAll(ORAstUtils.parseInputs(jp, inputs, null));
 				} else {
 					JavaParser jp = ORAstUtils.createJavaParserBuilder(project.get()).dependsOn(data.getTypeStubs()).build();
 					List<Input> inputs = data.getDocUris().stream().map(URI::create).map(Paths::get).map(p -> ORAstUtils.getParserInput(server.getTextDocumentService(), p)).collect(Collectors.toList());
-					cus = ORAstUtils.parseInputs(jp, inputs, null);
-					return applyRecipe(r, project.get(), cus, false);
+					cus.addAll(ORAstUtils.parseInputs(jp, inputs, null));
 				}
+				return recipeRepo.computeWorkspaceEditAwareOfPreview(r, cus, progress, projectWide).whenComplete((o, t) -> progress.done());
 			});
 		}
-		return CompletableFuture.completedFuture(null);
+		return CompletableFuture.completedFuture(Optional.empty());
 	}
 	
 	private CompletableFuture<Optional<Class<?>>> findRecipeClass(String className) {

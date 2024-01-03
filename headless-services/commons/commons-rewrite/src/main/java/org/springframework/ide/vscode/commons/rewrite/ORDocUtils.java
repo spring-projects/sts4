@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2023 VMware, Inc.
+ * Copyright (c) 2023, 2024 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -12,12 +12,9 @@ package org.springframework.ide.vscode.commons.rewrite;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Optional;
-import java.util.UUID;
 
 import org.eclipse.lsp4j.AnnotatedTextEdit;
-import org.eclipse.lsp4j.ChangeAnnotation;
 import org.eclipse.lsp4j.CreateFile;
 import org.eclipse.lsp4j.DeleteFile;
 import org.eclipse.lsp4j.Position;
@@ -157,14 +154,12 @@ public class ORDocUtils {
 		return 0;
 	}
 	
-	public static Optional<WorkspaceEdit> createWorkspaceEdit(SimpleTextDocumentService documents, List<Result> results, ChangeAnnotation changeAnnotation) {
+	public static Optional<WorkspaceEdit> createWorkspaceEdit(SimpleTextDocumentService documents, List<Result> results, String changeAnnotationId) {
 		if (results.isEmpty()) {
 			return Optional.empty();
 		}
 		WorkspaceEdit we = new WorkspaceEdit();
 		we.setDocumentChanges(new ArrayList<>());
-		final String changeAnnotationId = UUID.randomUUID().toString();
-		we.setChangeAnnotations(Map.of(changeAnnotationId, changeAnnotation));
 		for (Result result : results) {
 			if (result.getBefore() == null) {
 				String docUri = result.getAfter().getSourcePath().toUri().toASCIIString();
