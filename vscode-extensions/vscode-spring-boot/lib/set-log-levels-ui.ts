@@ -47,8 +47,10 @@ async function setLogLevelHandler() {
         const slash = p.action.lastIndexOf('/');
         if (slash>=0) {
             const choiceLabel = p.label;
-            choiceMap.set(choiceLabel, p);
-            choices.push(choiceLabel);
+            if (!choiceMap.has(choiceLabel)) {
+                choiceMap.set(choiceLabel, p);
+                choices.push(choiceLabel);
+            }
         }
     });
     if (choices) {
