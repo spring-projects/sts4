@@ -1,0 +1,53 @@
+{
+  "name": "vscode-spring-cli",
+  "displayName": "Spring CLI Support",
+  "description": "Spring CLI integrated into IDE",
+  "icon": "spring-boot-logo.png",
+  "version": "1.52.0",
+  "publisher": "vmware",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/spring-projects/sts4.git"
+  },
+  "license": "EPL-1.0",
+  "engines": {
+    "npm": ">=6.0.0",
+    "vscode": "^1.75.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "keywords": [
+    "spring",
+    "cli"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "contributes": {
+    "commands": [
+      {
+        "command": "vscode-spring-cli.new-project",
+        "title": "New Project",
+        "category": "Spring CLI"
+      }
+    ]
+  },
+  "main": "./out/extension",
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "rm -rf ./out && tsc -p .",
+    "watch": "rm -rf ./out && tsc -watch -p .",
+    "clean": "rm -fr node_modules out *.vsix package-lock.json",
+    "vsce-package": "vsce package",
+    "vsce-pre-release-package": "vsce package --pre-release"
+  },
+  "dependencies": {
+  },
+  "devDependencies": {
+    "@types/node": "^18.8.0",
+    "@types/vscode": "1.75.0",
+    "typescript": "^4.8.0",
+    "vsce": "^2.15.0"
+  }
+}
