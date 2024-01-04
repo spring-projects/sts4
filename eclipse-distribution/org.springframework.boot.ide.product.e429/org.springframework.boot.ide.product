@@ -13,6 +13,7 @@
 -Dosgi.dataAreaRequiresExplicitInit=true
 -Dorg.slf4j.simpleLogger.defaultLogLevel=off
 -Dsun.java.command=SpringToolSuite4
+-Dp2.trustedAuthorities=https://download.eclipse.org,https://archive.eclipse.org,https://cdn.spring.io
 -Xms256m
 -Xmx2048m
 --illegal-access=permit
