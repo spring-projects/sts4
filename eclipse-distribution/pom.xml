@@ -244,7 +244,12 @@
 					<layout>p2</layout>
 					<url>https://download.eclipse.org/tools/orbit/simrel/orbit-aggregation/2023-12</url>
 				</repository>
-				<repository>
+				<repository> <!-- temporary p2 repo to grab early snapshot builds for testing fixes -->
+					<id>buildship-snapshots</id>
+					<layout>p2</layout>
+					<url>https://download.eclipse.org/buildship/updates/latest-snapshot/</url>
+				</repository>
+				<repository> <!-- temporary snapshot builds for testing fixes for resource copy issue -->
 					<id>m2e</id>
 					<layout>p2</layout>
 <!--					<url>https://download.eclipse.org/technology/m2e/releases/latest/</url> -->
