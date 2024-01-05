@@ -158,6 +158,16 @@ resources:
     aws_role_arn: arn:aws:iam::((s3_svc_account_id)):role/((s3_svc_user))
     region_name: ((s3_region))
     regexp: sts4/vscode-extensions/snapshots/vscode-spring-boot-(.*).vsix
+- name: s3-spring-cli-vsix-snapshot
+  type: s3
+  icon: content-save-outline
+  source:
+    bucket: ((s3_bucket))
+    access_key_id: ((s3_svc_accesskey))
+    secret_access_key: ((s3_svc_secretkey))
+    aws_role_arn: arn:aws:iam::((s3_svc_account_id)):role/((s3_svc_user))
+    region_name: ((s3_region))
+    regexp: sts4/vscode-extensions/snapshots/vscode-spring-cli-(.*).vsix
 - name: s3-concourse-vsix-release
   type: s3
   icon: content-save-outline
@@ -194,6 +204,15 @@ resources:
     secret_access_key: ((s3_svc_secretkey))
     aws_role_arn: arn:aws:iam::((s3_svc_account_id)):role/((s3_svc_user))
     regexp: release/STS4/vscode/vscode-spring-boot-(.*).vsix
+- name: s3-spring-cli-vsix-release
+  type: s3
+  icon: content-save-outline
+  source:
+    bucket: dist.springsource.com
+    access_key_id: ((s3_svc_accesskey))
+    secret_access_key: ((s3_svc_secretkey))
+    aws_role_arn: arn:aws:iam::((s3_svc_account_id)):role/((s3_svc_user))
+    regexp: release/STS4/vscode/vscode-spring-cli-(.*).vsix
 - name: s3-concourse-vsix-release-akamai
   type: s3
   icon: content-save-outline
@@ -230,6 +249,15 @@ resources:
     secret_access_key: ((s3_svc_secretkey))
     aws_role_arn: arn:aws:iam::((s3_svc_account_id)):role/((s3_svc_user))
     regexp: release/STS4/vscode/vscode-spring-boot-(.*).vsix
+- name: s3-spring-cli-vsix-release-akamai
+  type: s3
+  icon: content-save-outline
+  source:
+    bucket: tools-spring-io
+    access_key_id: ((s3_svc_accesskey))
+    secret_access_key: ((s3_svc_secretkey))
+    aws_role_arn: arn:aws:iam::((s3_svc_account_id)):role/((s3_svc_user))
+    regexp: release/STS4/vscode/vscode-spring-cli-(.*).vsix
 # - name: s3-manifest-yaml-fatjar-snapshot
 #   type: s3
 #   source:
@@ -391,6 +419,9 @@ jobs:
     - get: s3-spring-boot-vsix-snapshot
       passed:
       - publish-release
+    - get: s3-spring-cli-vsix-snapshot
+      passed:
+      - publish-release
     - get: s3-manifest-yaml-vsix-snapshot
       passed:
       - publish-release
@@ -408,6 +439,13 @@ jobs:
     - put: s3-spring-boot-vsix-release-akamai
       params:
         file: s3-spring-boot-vsix-snapshot/*.vsix
+    - put: s3-spring-cli-vsix-release
+      params:
+        file: s3-spring-cli-vsix-snapshot/*.vsix
+        acl: public-read
+    - put: s3-spring-cli-vsix-release-akamai
+      params:
+        file: s3-spring-cli-vsix-snapshot/*.vsix
     - put: s3-manifest-yaml-vsix-release
       params:
         file: s3-manifest-yaml-vsix-snapshot/*.vsix
@@ -451,6 +489,10 @@ jobs:
       trigger: true
       passed:
       - build-spring-boot-rc
+    - get: s3-spring-cli-vsix-snapshot
+      trigger: true
+      passed:
+      - build-spring-cli-rc
   - task: create-vsix-release-wiki-page
     file: sts4/concourse/tasks/create-release-wiki-page.yml
     params:
@@ -460,6 +502,7 @@ jobs:
       bosh-vsix: s3-bosh-vsix-snapshot
       manifest-yaml-vsix: s3-manifest-yaml-vsix-snapshot
       spring-boot-vsix: s3-spring-boot-vsix-snapshot
+      spring-cli-vsix: s3-spring-cli-vsix-snapshot
   - put: sts4-wiki
     params:
       rebase: true
@@ -477,6 +520,8 @@ jobs:
       trigger: true
     - get: s3-spring-boot-vsix-release-akamai
       trigger: true
+    - get: s3-spring-cli-vsix-release-akamai
+      trigger: true
   - task: create-vsix-release-wiki-page
     file: sts4/concourse/tasks/create-release-wiki-page.yml
     params:
@@ -486,6 +531,7 @@ jobs:
       bosh-vsix: s3-bosh-vsix-release-akamai
       manifest-yaml-vsix: s3-manifest-yaml-vsix-release-akamai
       spring-boot-vsix: s3-spring-boot-vsix-release-akamai
+      spring-cli-vsix: s3-spring-cli-vsix-release-akamai
   - put: sts4-wiki
     params:
       rebase: true
@@ -774,6 +820,58 @@ jobs:
       params:
         text: |
            Pre-Release Publishing for ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
+- name: build-spring-cli-vsix-snapshot
+  plan:
+  - in_parallel:
+    - get: sts4
+      trigger: true
+    - get: maven-cache
+  - task: build-spring-cli-vsix-snapshot
+    timeout: 10m
+    file: sts4/concourse/tasks/build-vsix.yml
+    params:
+      extension_id: vscode-spring-cli
+    on_failure:
+      put: slack-notification
+      params:
+        text: |
+           Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
+  - in_parallel:
+    - put: s3-spring-cli-vsix-snapshot
+      params: 
+        file: out/vscode-spring-cli-*.vsix
+        acl: public-read
+- name: publish-spring-cli-pre-release
+  plan:
+  - in_parallel:
+    - get: nightly
+      trigger: true
+    - get: sts4
+    - get: maven-cache
+      passed:
+      - build-spring-cli-vsix-snapshot
+  - task: build-spring-cli-vsix-pre-release
+    timeout: 10m
+    file: sts4/concourse/tasks/build-vsix.yml
+    params:
+      extension_id: vscode-spring-cli
+      dist_type: pre
+    on_failure:
+      put: slack-notification
+      params:
+        text: |
+           Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
+  - task: publish-pre-release
+    file: sts4/concourse/tasks/publish-vsix-pre-releases.yml
+    input_mapping:
+      vsix_folder: out 
+    params:
+      vsce_token: ((vsce_token))
+    on_failure:
+      put: slack-notification
+      params:
+        text: |
+           Pre-Release Publishing for ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!
 - name: trigger-rc-build
   serial: true
   plan: 
@@ -784,6 +882,7 @@ jobs:
       - build-consourse-vsix-snapshot
       - build-bosh-vsix-snapshot
       - build-spring-boot-vsix-snapshot
+      - build-spring-cli-vsix-snapshot
     - do:
       - get: version
         params:
@@ -939,6 +1038,43 @@ jobs:
         text: |
           Build ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has succeed!
           Release candidate available for testing $TEXT_FILE_CONTENT
+- name: build-spring-cli-rc
+  plan:
+  - in_parallel:
+    - get: maven-cache
+      passed:
+      - build-spring-cli-vsix-snapshot
+    - get: sts4
+      passed: 
+      - trigger-rc-build
+    - get: version
+      trigger: true
+      passed: 
+      - trigger-rc-build
+  - task: build-spring-cli-rc
+    timeout: 10m
+    attempts: 4
+    file: sts4/concourse/tasks/rc-build.yml
+    params:
+      extension_id: vscode-spring-boot
+    on_failure:
+      put: slack-notification
+      params:
+        text: |
+           Concourse ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has failed!      
+  - put: s3-spring-cli-vsix-snapshot
+    params: 
+      file: out/vscode-*.vsix
+      acl: public-read
+    on_success:
+      put: slack-notification
+      params:
+        channel: "#spring-tools-team"
+        text_file: s3-spring-cli-vsix-snapshot/url
+        icon_url: https://raw.githubusercontent.com/spring-projects/sts4/master/vscode-extensions/vscode-spring-cli/spring-boot-logo.png
+        text: |
+          Build ${BUILD_PIPELINE_NAME}/${BUILD_JOB_NAME}/${BUILD_NAME} has succeed!
+          Release candidate available for testing $TEXT_FILE_CONTENT
 - name: publish-ovsx-releases
   serial: true
   plan:
@@ -954,6 +1090,10 @@ jobs:
       passed:
       - publish-release
     - get: s3-spring-boot-vsix-snapshot
+      trigger: true
+      passed:
+      - publish-release
+    - get: s3-spring-cli-vsix-snapshot
       trigger: true
       passed:
       - publish-release
@@ -982,12 +1122,14 @@ jobs:
       - build-concourse-rc
       - build-bosh-rc
       - build-spring-boot-rc
+      - build-spring-cli-rc
     - get: version
       passed:
       - build-concourse-rc
       - build-manifest-yaml-rc
       - build-bosh-rc
       - build-spring-boot-rc
+      - build-spring-cli-rc
       params:
         bump: final
     - get: s3-concourse-vsix-snapshot
@@ -1002,6 +1144,9 @@ jobs:
     - get: s3-spring-boot-vsix-snapshot
       passed:
       - build-spring-boot-rc
+    - get: s3-spring-cli-vsix-snapshot
+      passed:
+      - build-spring-cli-rc
   - task: publish-vsix-releases
     file: tasks/concourse/tasks/publish-vsix-releases.yml
     input_mapping:
@@ -1025,6 +1170,7 @@ jobs:
            • <https://marketplace.visualstudio.com/items?itemName=vmware.vscode-concourse|Concourse CI Pipeline Editor>
            • <https://marketplace.visualstudio.com/items?itemName=vmware.vscode-bosh|Bosh Deployment Manifest Editor>
            • <https://marketplace.visualstudio.com/items?itemName=vmware.vscode-spring-boot|Spring Boot Support>
+           • <https://marketplace.visualstudio.com/items?itemName=vmware.vscode-spring-cli|Spring CLI Support>
   - in_parallel:
     - put: sts4-out
       params:
@@ -1149,6 +1295,10 @@ jobs:
       trigger: true
       passed:
       - build-spring-boot-vsix-snapshot
+    - get: s3-spring-cli-vsix-snapshot
+      trigger: true
+      passed:
+      - build-spring-cli-vsix-snapshot
     - get: s3-concourse-vsix-snapshot
       trigger: true
       passed:
@@ -1245,11 +1395,13 @@ groups:
   - build-vscode-snapshot-website
   - build-consourse-vsix-snapshot
   - build-spring-boot-vsix-snapshot
+  - build-spring-cli-vsix-snapshot
   - build-bosh-vsix-snapshot
   - build-manifest-yaml-vsix-snapshot
 - name: vscode-pre-release
   jobs:
   - publish-spring-boot-pre-release
+  - publish-spring-cli-pre-release
   - publish-concourse-pre-release
   - publish-bosh-pre-release
   - publish-manifest-yaml-pre-release
@@ -1260,6 +1412,7 @@ groups:
   - build-concourse-rc
   - build-manifest-yaml-rc
   - build-spring-boot-rc
+  - build-spring-cli-rc
   - trigger-rc-build
   - publish-release
   - publish-ovsx-releases
@@ -1267,6 +1420,7 @@ groups:
   - build-consourse-vsix-snapshot
   - build-bosh-vsix-snapshot
   - build-spring-boot-vsix-snapshot
+  - build-spring-cli-vsix-snapshot
   - publish-concourse-vsix-release
   - create-rc-wiki-page
   - vsix-s3-publish

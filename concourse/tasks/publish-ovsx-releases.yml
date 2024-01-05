@@ -4,6 +4,7 @@ inputs:
 - name: s3-concourse-vsix-snapshot
 - name: s3-bosh-vsix-snapshot
 - name: s3-spring-boot-vsix-snapshot
+- name: s3-spring-cli-vsix-snapshot
 platform: linux
 run:
   path: sts4/concourse/tasks/publish-ovsx-releases.sh

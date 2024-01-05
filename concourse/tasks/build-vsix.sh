@@ -38,7 +38,10 @@ else
     fi
 fi
 
-./scripts/preinstall.sh
+if [ -f "./scripts/preinstall.sh" ]; then
+   ./scripts/preinstall.sh
+fi
+
 npm install
 #npm audit
 if [ "$dist_type" = pre ]; then

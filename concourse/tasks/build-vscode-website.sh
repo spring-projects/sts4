@@ -18,11 +18,16 @@ export vscode_concourse=$(basename s3-concourse-vsix-${dist_type}/*.vsix)
 echo "vscode_concourse=$vscode_concourse"
 export vscode_bosh=$(basename s3-bosh-vsix-${dist_type}/*.vsix)
 echo "vscode_bosh=$vscode_bosh"
+export vscode_spring_cli=$(basename s3-spring-cli-vsix-${dist_type}/*.vsix)
+echo "vscode_spring_cli=$vscode_spring_cli"
 
 envsubst > "$target/vscode-extensions-snippet.html" << XXXXXX
 <ul>
    <li>Spring Boot Language Server: 
        <a href="https://s3-us-west-1.amazonaws.com/s3-test.spring.io/sts4/vscode-extensions/${dist_type}s/${vscode_spring_boot}">${vscode_spring_boot}</a> 
+   </li>
+   <li>Spring CLI: 
+       <a href="https://s3-us-west-1.amazonaws.com/s3-test.spring.io/sts4/vscode-extensions/${dist_type}s/${vscode_spring_cli}">${vscode_spring_cli}</a> 
    </li>
    <li>Cloud Foundry Manifest Language Server: 
        <a href="https://s3-us-west-1.amazonaws.com/s3-test.spring.io/sts4/vscode-extensions/${dist_type}s/${vscode_manifest_yaml}">${vscode_manifest_yaml}</a> 

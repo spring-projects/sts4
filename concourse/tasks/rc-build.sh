@@ -34,7 +34,9 @@ echo -e "\n\n*Version: ${version}*" >> README.md
 # npm install
 
 cd "$sources"
-./scripts/preinstall.sh
+if [ -f "./scripts/preinstall.sh" ]; then
+   ./scripts/preinstall.sh
+fi
 npm install
 npm run vsce-package
 
