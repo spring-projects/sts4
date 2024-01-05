@@ -3,7 +3,6 @@ inputs:
 - name: concourse-vsix
 - name: manifest-yaml-vsix
 - name: spring-boot-vsix
-- name: spring-cli-vsix
 - name: sts4
 - name: sts4-wiki
 outputs:
