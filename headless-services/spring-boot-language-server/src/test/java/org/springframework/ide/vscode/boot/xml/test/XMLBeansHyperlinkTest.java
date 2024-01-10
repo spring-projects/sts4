@@ -8,7 +8,7 @@
  * Contributors:
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
-package org.springframework.ide.vscode.boot.java.utils.test;
+package org.springframework.ide.vscode.boot.xml.test;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -34,6 +34,7 @@ import org.springframework.context.annotation.Import;
 import org.springframework.ide.vscode.boot.app.BootLanguageServerBootApp;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.boot.bootiful.XmlBeansTestConf;
+import org.springframework.ide.vscode.boot.java.utils.test.MockProjectObserver;
 import org.springframework.ide.vscode.boot.test.DefinitionLinkAsserts;
 import org.springframework.ide.vscode.commons.languageserver.util.Settings;
 import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
@@ -60,10 +61,10 @@ import ch.qos.logback.classic.Logger;
 		BootLanguageServerBootApp.class
 })
 @DirtiesContext(classMode=ClassMode.AFTER_EACH_TEST_METHOD)
-public class XmlBeansHyperlinkTest {
+public class XMLBeansHyperlinkTest {
 	
 	
-	private static final org.slf4j.Logger log = LoggerFactory.getLogger(XmlBeansHyperlinkTest.class);
+	private static final org.slf4j.Logger log = LoggerFactory.getLogger(XMLBeansHyperlinkTest.class);
 	
 	private static final int DEFAULT_INDEX_WAIT_TIME = 5;
 	@Autowired private BootLanguageServerHarness harness;
