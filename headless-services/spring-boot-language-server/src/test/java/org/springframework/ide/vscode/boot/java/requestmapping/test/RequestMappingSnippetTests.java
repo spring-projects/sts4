@@ -23,7 +23,6 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Import;
 import org.springframework.ide.vscode.boot.bootiful.BootLanguageServerTest;
 import org.springframework.ide.vscode.boot.bootiful.HoverTestConf;
@@ -33,7 +32,6 @@ import org.springframework.ide.vscode.languageserver.testharness.Editor;
 import org.springframework.ide.vscode.project.harness.BootLanguageServerHarness;
 import org.springframework.ide.vscode.project.harness.ProjectsHarness;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
-import org.springframework.web.bind.annotation.RequestParam;
 
 @ExtendWith(SpringExtension.class)
 @BootLanguageServerTest
@@ -162,8 +160,8 @@ public class RequestMappingSnippetTests {
         		+ "public class SampleController {\n"
         		+ "\n"
         		+ "@GetMapping(\"${1:path}\")\n"
-        		+ "public ${2:SomeData} ${3:getMethodName}(@RequestParam ${4:String} ${5:param}) {\n"
-        		+ "    return new ${2:SomeData}($0);\n"
+        		+ "public ${2:String} ${3:getMethodName}(@RequestParam ${4:String} ${5:param}) {\n"
+        		+ "    return new ${2:String}($0);\n"
         		+ "}\n"
         		+ "<*>\n"
         		+ "\n"

@@ -61,34 +61,34 @@ public class BootJavaCompletionEngineConfigurer {
 							ImmutableList.of("org.springframework.web.bind.annotation.RequestMapping",
 									"org.springframework.web.bind.annotation.RequestMethod",
 									"org.springframework.web.bind.annotation.RequestParam"),
-							"@RequestMapping(\"${path}\", method=RequestMethod.${GET})\n"
-									+ "public ${SomeData} ${requestMethodName}(@RequestParam ${String} ${param}) {\n"
-									+ "	return new ${SomeData}(${cursor});\n" + "}\n",
+							"@RequestMapping(\"${1:path}\", method=RequestMethod.${GET})\n"
+									+ "public ${2:String} ${3:requestMethodName}(@RequestParam ${4:String} ${5:param}) {\n"
+									+ "	return new ${2:String}($0);\n" + "}\n",
 							"RequestMapping"));
 			snippetManager.add(
 					new JavaSnippet("@GetMapping(..) {..}", webControllerContext, CompletionItemKind.Method,
 							ImmutableList.of("org.springframework.web.bind.annotation.GetMapping",
 									"org.springframework.web.bind.annotation.RequestParam"),
-							"@GetMapping(\"${path}\")\n"
-									+ "public ${SomeData} ${getMethodName}(@RequestParam ${String} ${param}) {\n"
-									+ "	return new ${SomeData}(${cursor});\n" + "}\n",
+							"@GetMapping(\"${1:path}\")\n"
+									+ "public ${2:String} ${3:getMethodName}(@RequestParam ${4:String} ${5:param}) {\n"
+									+ "	return new ${2:String}($0);\n" + "}\n",
 							"GetMapping"));
 			snippetManager.add(
 					new JavaSnippet("@PostMapping(..) {..}", webControllerContext, CompletionItemKind.Method,
 							ImmutableList.of("org.springframework.web.bind.annotation.PostMapping",
 									"org.springframework.web.bind.annotation.RequestBody"),
-							"@PostMapping(\"${path}\")\n"
-									+ "public ${SomeEnityData} ${postMethodName}(@RequestBody ${SomeEnityData} ${entity}) {\n"
-									+ "	//TODO: process POST request\n" + "	${cursor}\n" + "	return ${entity};\n" + "}\n",
+							"@PostMapping(\"${1:path}\")\n"
+									+ "public ${2:String} ${3:postMethodName}(@RequestBody ${4:String} ${5:entity}) {\n"
+									+ "	//TODO: process POST request\n" + "	$0\n" + "	return ${5:entity};\n" + "}\n",
 							"PostMapping"));
 			snippetManager.add(
 					new JavaSnippet("@PutMapping(..) {..}", webControllerContext, CompletionItemKind.Method,
 							ImmutableList.of("org.springframework.web.bind.annotation.PutMapping",
 									"org.springframework.web.bind.annotation.RequestBody",
 									"org.springframework.web.bind.annotation.PathVariable"),
-							"@PutMapping(\"${path}/{${id}}\")\n"
-									+ "public ${SomeEnityData} ${putMethodName}(@PathVariable ${pvt:String} ${id}, @RequestBody ${SomeEnityData} ${entity}) {\n"
-									+ "	//TODO: process PUT request\n" + "	${cursor}\n" + "	return ${entity};\n" + "}",
+							"@PutMapping(\"${1:path}/{${2:id}}\")\n"
+									+ "public ${3:String} ${4:putMethodName}(@PathVariable ${5:String} ${2:id}, @RequestBody ${6:String} ${7:entity}) {\n"
+									+ "	//TODO: process PUT request\n" + "	$0\n" + "	return ${7:entity};\n" + "}",
 							"PutMapping"));
 //		}
 
