@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2020 Pivotal, Inc.
+ * Copyright (c) 2019, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -43,6 +43,7 @@ import static org.springframework.ide.vscode.boot.xml.XmlConfigConstants.VALUE_E
 import static org.springframework.ide.vscode.boot.xml.XmlConfigConstants.VALUE_REF_ATTRIBUTE;
 import static org.springframework.ide.vscode.boot.xml.XmlConfigConstants.VALUE_TYPE_ATTRIBUTE;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
@@ -55,17 +56,22 @@ import org.eclipse.lemminx.dom.DOMParser;
 import org.eclipse.lemminx.dom.parser.Scanner;
 import org.eclipse.lemminx.dom.parser.TokenType;
 import org.eclipse.lemminx.dom.parser.XMLScanner;
+import org.eclipse.lsp4j.CompletionItemKind;
 import org.springframework.ide.vscode.boot.app.BootJavaConfig;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.boot.xml.completions.BeanRefCompletionProposalProvider;
 import org.springframework.ide.vscode.boot.xml.completions.ConstructorArgNameCompletionProposalProvider;
+import org.springframework.ide.vscode.boot.xml.completions.GenericXMLCompletionProposal;
 import org.springframework.ide.vscode.boot.xml.completions.PropertyNameCompletionProposalProvider;
 import org.springframework.ide.vscode.boot.xml.completions.TypeCompletionProposalProvider;
+import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionEngine;
 import org.springframework.ide.vscode.commons.languageserver.completion.ICompletionProposal;
 import org.springframework.ide.vscode.commons.languageserver.java.JavaProjectFinder;
 import org.springframework.ide.vscode.commons.languageserver.util.LanguageSpecific;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
+import org.springframework.ide.vscode.commons.util.Renderable;
+import org.springframework.ide.vscode.commons.util.Renderables;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
@@ -134,7 +140,13 @@ public class SpringXMLCompletionEngine implements ICompletionEngine, LanguageSpe
 		}
 		
 		String content = doc.get();
+		
+		// if doc is empty, create simple skeleton snippet
+		if (content != null && content.length() == 0) {
+			return emptySpringXMLConfigSnippet(doc);
+		}
 
+		// if doc is not empty, dive into the details and provide more sophisticated content assist proposals
 		DOMParser parser = DOMParser.getInstance();
 		DOMDocument dom = parser.parse(content, "", null);
 
@@ -175,6 +187,47 @@ public class SpringXMLCompletionEngine implements ICompletionEngine, LanguageSpe
 			}
 		}
 		return Collections.emptyList();
+	}
+
+	private Collection<ICompletionProposal> emptySpringXMLConfigSnippet(TextDocument doc) {
+
+		CompletionItemKind kind = CompletionItemKind.Snippet;
+		
+		String label = "Spring XML config file skeleton";
+
+		String snippetText = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+				+ "<beans xmlns=\"http://www.springframework.org/schema/beans\"\n"
+				+ "    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
+				+ "    xsi:schemaLocation=\"\n"
+				+ "        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd\">\n"
+				+ "\n"
+				+ "    <!-- bean definitions here -->\n"
+				+ "    $0\n"
+				+ "\n"
+				+ "</beans>";
+		
+		String descriptionDetails = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n"
+				+ "<beans xmlns=\"http://www.springframework.org/schema/beans\"\n"
+				+ "    xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n"
+				+ "    xsi:schemaLocation=\"\n"
+				+ "        http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans.xsd\">\n"
+				+ "\n"
+				+ "    <!-- bean definitions here -->\n"
+				+ "    \n"
+				+ "</beans>";
+		
+		String details = "Insert Spring XML config file skeleton";
+		
+		DocumentEdits edits = new DocumentEdits(doc, true);
+		edits.insertSnippet(0, snippetText);
+		
+		Renderable documentation = Renderables.inlineMultiLineSnippet(Renderables.text(descriptionDetails));
+		
+		ICompletionProposal proposal = new GenericXMLCompletionProposal(label, kind, edits, details, documentation, 1.0d);
+		Collection<ICompletionProposal> completions = new ArrayList<>(1);
+		completions.add(proposal);
+		
+		return completions;
 	}
 
 	@Override

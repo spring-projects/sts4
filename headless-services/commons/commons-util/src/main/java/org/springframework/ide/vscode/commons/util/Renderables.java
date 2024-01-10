@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2018 Pivotal, Inc.
+ * Copyright (c) 2016, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -119,6 +119,25 @@ public class Renderables {
 				buffer.append("`");
 				text.renderAsMarkdown(buffer);
 				buffer.append("`");
+			}
+
+			@Override
+			public void renderAsHtml(HtmlBuffer buffer) {
+				buffer.raw("<pre>");
+				text.renderAsHtml(buffer);
+				buffer.raw("</pre>");
+			}
+		};
+	}
+	
+	public static Renderable inlineMultiLineSnippet(Renderable text) {
+		return new Renderable() {
+
+			@Override
+			public void renderAsMarkdown(StringBuilder buffer) {
+				buffer.append("```\n");
+				text.renderAsMarkdown(buffer);
+				buffer.append("\n```");
 			}
 
 			@Override
