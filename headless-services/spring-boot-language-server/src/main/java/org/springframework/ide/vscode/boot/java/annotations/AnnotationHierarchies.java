@@ -160,11 +160,11 @@ public abstract class AnnotationHierarchies {
 			IAnnotationBinding annotationBinding, Set<String> seen) {
 		synchronized (lock) {
 			if (annotationBinding.getAnnotationType() != null) {
-				seen.add(annotationBinding.getAnnotationType().getQualifiedName());
-				return Stream.concat(Stream.of(annotationBinding), getDirectSuperAnnotationBindings(annotationBinding)
-						.stream()
-						.filter(superBinding -> !seen.contains(superBinding.getAnnotationType().getQualifiedName()))
-						.flatMap(superBinding -> internalFindTransitiveSuperAnnotationBindings(superBinding, seen)));
+				if (seen.add(annotationBinding.getAnnotationType().getQualifiedName())) {
+					return Stream.concat(Stream.of(annotationBinding), getDirectSuperAnnotationBindings(annotationBinding)
+							.stream()
+							.flatMap(superBinding -> internalFindTransitiveSuperAnnotationBindings(superBinding, seen)));
+				}
 			}
 			return Stream.empty();
 		}
