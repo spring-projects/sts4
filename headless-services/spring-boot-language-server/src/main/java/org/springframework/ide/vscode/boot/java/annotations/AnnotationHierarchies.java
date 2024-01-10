@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2022 Pivotal, Inc.
+ * Copyright (c) 2017, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -82,16 +82,16 @@ public abstract class AnnotationHierarchies {
 		}
 	}
 
-	public static Stream<ITypeBinding> findTransitiveSupers(ITypeBinding typeBinding, Set<String> seen) {
+	private static Stream<ITypeBinding> findTransitiveSupers(ITypeBinding typeBinding, Set<String> seen) {
 		synchronized(lock) {
-			String qname = typeBinding.getQualifiedName();
-			if (seen.add(qname)) {
-				return Stream.concat(
-						Stream.of(typeBinding),
-						getDirectSuperAnnotations(typeBinding).stream().flatMap(superBinding ->
-						findTransitiveSupers(superBinding, seen)
-								)
-						);
+			if (typeBinding != null) {
+				String qname = typeBinding.getQualifiedName();
+				if (seen.add(qname)) {
+					return Stream.concat(
+							Stream.of(typeBinding),
+							getDirectSuperAnnotations(typeBinding).stream().flatMap(superBinding -> findTransitiveSupers(superBinding, seen))
+					);
+				}
 			}
 			return Stream.empty();
 		}
@@ -153,9 +153,20 @@ public abstract class AnnotationHierarchies {
 	
 	public static Stream<IAnnotationBinding> findTransitiveSuperAnnotationBindings(
 			IAnnotationBinding annotationBinding) {
+		return internalFindTransitiveSuperAnnotationBindings(annotationBinding, new HashSet<>());
+	}
+	
+	public static Stream<IAnnotationBinding> internalFindTransitiveSuperAnnotationBindings(
+			IAnnotationBinding annotationBinding, Set<String> seen) {
 		synchronized (lock) {
-			return Stream.concat(Stream.of(annotationBinding), getDirectSuperAnnotationBindings(annotationBinding)
-					.stream().flatMap(superBinding -> findTransitiveSuperAnnotationBindings(superBinding)));
+			if (annotationBinding.getAnnotationType() != null) {
+				seen.add(annotationBinding.getAnnotationType().getQualifiedName());
+				return Stream.concat(Stream.of(annotationBinding), getDirectSuperAnnotationBindings(annotationBinding)
+						.stream()
+						.filter(superBinding -> !seen.contains(superBinding.getAnnotationType().getQualifiedName()))
+						.flatMap(superBinding -> internalFindTransitiveSuperAnnotationBindings(superBinding, seen)));
+			}
+			return Stream.empty();
 		}
 	}
 
