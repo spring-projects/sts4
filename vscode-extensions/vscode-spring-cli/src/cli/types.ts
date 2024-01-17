@@ -1,4 +1,4 @@
-export interface CliProjectType {
+export interface ProjectType {
     id: string;
     description?: string;
     url?: string;
@@ -6,8 +6,10 @@ export interface CliProjectType {
     tags?: string[] 
 }
 
-export interface CliNewProjectMetadata {
+export interface BootNewProjectMetadata {
     name?: string;
+    groupId?: string;
+    artifactId?: string;
     catalogType?: string;
     rootPackage?: string;
     targetFolder?: string;
