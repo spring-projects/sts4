@@ -102,6 +102,7 @@ jobs:
       - name: Verify Uploaded P2 Repo
         id: verify-p2-on-akamai
         run: |
+          p2_path=`cat ${{ github.workspace }}/eclipse-language-servers/org.springframework.tooling.ls.integration.repository/target/s3-p2-repo-dist-path.txt`
           echo "Verifying uploaded to Akamai files..."
           cd ${{ github.workspace }}/eclipse-language-servers/org.springframework.tooling.ls.integration.repository/target/repository/plugins
           for f in `ls -p | grep -v '/$'`
