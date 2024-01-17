@@ -103,7 +103,7 @@ jobs:
           cd ${{ github.workspace }}/eclipse-language-servers/org.springframework.tooling.ls.integration.repository/target/repository/plugins
           for f in `ls -p | grep -v '/$'`
           do
-            wget -O /dev/null https://cdn.spring.io/spring-tools/$p2_path/plugins/$f
+            wget --no-verbose -O /dev/null https://cdn.spring.io/spring-tools/$p2_path/plugins/$f
           done
       - name: Compute invalid URLs
         if: ${{ inputs.build_type != 'snapshot' }}
