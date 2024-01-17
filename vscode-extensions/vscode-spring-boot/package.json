@@ -28,6 +28,10 @@
   "activationEvents": [
     "onCommand:vscode-spring-boot.ls.start"
   ],
+  "enabledApiProposals": [
+    "chatAgents2",
+    "chatRequestAccess"
+  ],
   "contributes": {
     "javaExtensions": [
       "./jars/io.projectreactor.reactor-core.jar",
@@ -1188,6 +1192,7 @@
     "typescript": "^4.8.0"
   },
   "extensionDependencies": [
-    "redhat.java"
+    "redhat.java",
+    "github.copilot-chat"
   ]
 }

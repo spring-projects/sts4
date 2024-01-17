@@ -21,6 +21,7 @@ import {registerJavaDataService} from "@pivotal-tools/commons-vscode/lib/java-da
 import * as setLogLevelUi from './set-log-levels-ui';
 import { startTestJarSupport } from "./test-jar-launch";
 import { startPropertiesConversionSupport } from "./convert-props-yaml";
+import * as agent from './agent';
 
 const PROPERTIES_LANGUAGE_ID = "spring-boot-properties";
 const YAML_LANGUAGE_ID = "spring-boot-properties-yaml";
@@ -37,7 +38,7 @@ export function activate(context: ExtensionContext): Thenable<ExtensionAPI> {
     // registerPipelineGenerator(context);
     let options : commons.ActivatorOptions = {
         DEBUG: false,
-        CONNECT_TO_LS: false,
+        CONNECT_TO_LS: true,
         extensionId: 'vscode-spring-boot',
         preferJdk: true,
         jvmHeap: '1024m',
@@ -164,6 +165,7 @@ export function activate(context: ExtensionContext): Thenable<ExtensionAPI> {
         rewrite.activate(client, options, context);
         setLogLevelUi.activate(client, options, context);
         startPropertiesConversionSupport(context);
+        agent.activate(client, options, context);
 
         registerMiscCommands(context);
 
