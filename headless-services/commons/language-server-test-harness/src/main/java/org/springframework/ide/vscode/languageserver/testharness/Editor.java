@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2023 Pivotal, Inc.
+ * Copyright (c) 2016, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -57,6 +57,7 @@ import org.springframework.ide.vscode.commons.protocol.HighlightParams;
 import org.springframework.ide.vscode.commons.util.StringUtil;
 import org.springframework.ide.vscode.commons.util.Unicodes;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
+import org.springframework.ide.vscode.commons.util.text.TextDocument;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -452,7 +453,13 @@ public class Editor {
 	public void apply(CompletionItem completion) throws Exception {
 		completion = harness.resolveCompletionItem(completion);
 		Either<TextEdit,InsertReplaceEdit> edit = completion.getTextEdit();
-		String docText = doc.getText();
+		
+		TextDocument original = new TextDocument(doc.getUri(), doc.getLanguageId());
+		original.setText(doc.getText());
+		
+		int insertPosition = 0;
+		int insertLength = 0;
+		
 		if (edit != null) {
 			if (edit.isLeft()) {
 				String replaceWith = edit.getLeft().getNewText();
@@ -480,16 +487,24 @@ public class Editor {
 				}
 
 				Range rng = edit.getLeft().getRange();
-				int start = doc.toOffset(rng.getStart());
-				int end = doc.toOffset(rng.getEnd());
+				
+				int start = original.toOffset(rng.getStart());
+				int end = original.toOffset(rng.getEnd());
 				replaceText(start, end, replaceWith);
+				
+				insertPosition = start;
+				insertLength = replaceWith.length() - (end - start);
+				
 				selectionStart = selectionEnd = start+cursorReplaceOffset;
 			} else {
 				throw new UnsupportedOperationException("InsertReplaceEdit edits not supported");
 			}
 		} else {
 			String insertText = getInsertText(completion);
-			String newText = docText.substring(0, selectionStart) + insertText + docText.substring(selectionStart);
+			String newText = original.get().substring(0, selectionStart) + insertText + original.get().substring(selectionStart);
+			
+			insertPosition = selectionStart;
+			insertLength = insertText.length();
 
 			selectionStart+= insertText.length();
 			selectionEnd += insertText.length();
@@ -501,10 +516,19 @@ public class Editor {
 			for (TextEdit te : completion.getAdditionalTextEdits()) {
 				String replaceWith = te.getNewText();
 				Range rng = te.getRange();
-				int start = doc.toOffset(rng.getStart());
-				int end = doc.toOffset(rng.getEnd());
+				int start = original.toOffset(rng.getStart());
+				int end = original.toOffset(rng.getEnd());
+				
+				// adjust start/end, if the completion insert text was positioned before the additional text edits
+				if (start > insertPosition) {
+					start += insertLength;
+					end += insertLength;
+				}
+				else {
+					selectionStart = selectionEnd = selectionStart - (end - start) + replaceWith.length();
+				}
+				
 				replaceText(start, end, replaceWith);
-				selectionStart = selectionEnd = selectionStart - (end - start) + replaceWith.length();
 			}
 		}
 		

@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2020 Pivotal, Inc.
+ * Copyright (c) 2019, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -9,6 +9,9 @@
  *     Pivotal, Inc. - initial API and implementation
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.xml.completions;
+
+import java.util.Optional;
+import java.util.function.Supplier;
 
 import org.eclipse.lsp4j.CompletionItemKind;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
@@ -26,8 +29,14 @@ public class GenericXMLCompletionProposal extends ScoreableProposal {
 	private final String detail;
 	private final Renderable documentation;
 	private final double score;
+	private final String filterText;
+	private final DocumentEdits additionalEdits;
 
 	public GenericXMLCompletionProposal(String label, CompletionItemKind kind, DocumentEdits edits, String detail, Renderable documentation, double score) {
+		this(label, kind, edits, detail, documentation, score, label, null);
+	}
+
+	public GenericXMLCompletionProposal(String label, CompletionItemKind kind, DocumentEdits edits, String detail, Renderable documentation, double score, String filterText, DocumentEdits additionalEdits) {
 		super();
 		this.label = label;
 		this.kind = kind;
@@ -35,6 +44,8 @@ public class GenericXMLCompletionProposal extends ScoreableProposal {
 		this.detail = detail;
 		this.documentation = documentation;
 		this.score = score;
+		this.filterText = filterText;
+		this.additionalEdits = additionalEdits;
 	}
 
 	@Override
@@ -65,6 +76,21 @@ public class GenericXMLCompletionProposal extends ScoreableProposal {
 	@Override
 	public double getBaseScore() {
 		return this.score;
+	}
+	
+	@Override
+	public String getFilterText() {
+		return this.filterText;
+	}
+	
+	@Override
+	public Optional<Supplier<DocumentEdits>> getAdditionalEdit() {
+		if (this.additionalEdits != null) {
+			return Optional.of(() -> additionalEdits);
+		}
+		else {
+			return Optional.empty();
+		}
 	}
 
 }

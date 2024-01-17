@@ -1,19 +1,18 @@
 /*******************************************************************************
- * Copyright (c) 2024 Broadcom, Inc.
+ * Copyright (c) 2024 Broadcom
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * https://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     Broadcom, Inc. - initial API and implementation
+ *     Broadcom - initial API and implementation
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.xml.test;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
-import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -33,9 +32,9 @@ import org.springframework.ide.vscode.boot.app.BootLanguageServerBootApp;
 import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.boot.bootiful.XmlBeansTestConf;
 import org.springframework.ide.vscode.boot.java.utils.test.MockProjectObserver;
+import org.springframework.ide.vscode.boot.xml.completions.NamespaceCompletionProvider;
 import org.springframework.ide.vscode.commons.languageserver.util.Settings;
 import org.springframework.ide.vscode.commons.maven.java.MavenJavaProject;
-import org.springframework.ide.vscode.commons.util.UriUtil;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
 import org.springframework.ide.vscode.languageserver.starter.LanguageServerAutoConf;
 import org.springframework.ide.vscode.languageserver.testharness.Editor;
@@ -71,6 +70,7 @@ public class XMLContentAssistTest {
 	private MavenJavaProject project;
 	
 	private Level originalLevel;
+	private int ALL_NAMESPACE_COMPLETIONS = NamespaceCompletionProvider.getNamespaces().length;
 
 	@BeforeEach
 	public void setup() throws Exception {
@@ -112,10 +112,7 @@ public class XMLContentAssistTest {
 
     @Test
     void testEmptyXMLFileCompletions() throws Exception {
-        Path xmlFilePath = Paths.get(project.getLocationUri()).resolve("beans.xml");
-        Editor editor = harness.newEditor(LanguageId.XML, "",
-                UriUtil.toUri(xmlFilePath.toFile()).toString()
-        );
+        Editor editor = new Editor(harness, "<*>", LanguageId.XML);
         
         List<CompletionItem> completions = editor.getCompletions();
         assertEquals(1, completions.size());
@@ -124,13 +121,364 @@ public class XMLContentAssistTest {
 
     @Test
     void testNoSkeletonSnippetForNonEmptyXMLFile() throws Exception {
-        Path xmlFilePath = Paths.get(project.getLocationUri()).resolve("beans.xml");
-        Editor editor = harness.newEditor(LanguageId.XML, "<?xml version=\\\"1.0\\\" encoding=\\\"UTF-8\\\"?>\\n",
-                UriUtil.toUri(xmlFilePath.toFile()).toString()
-        );
+        Editor editor = new Editor(harness, "<*><?xml version=\\\"1.0\\\" encoding=\\\"UTF-8\\\"?>\\n", LanguageId.XML);
+        List<CompletionItem> completions = editor.getCompletions();
+        assertEquals(0, completions.size());
+    }
+
+    @Test
+    void testAddNamespaceCompletion1() throws Exception {
+        Editor editor = new Editor(harness, """
+			<?xml version="1.0" encoding="UTF-8"?>
+			<beans xmlns="http://www.springframework.org/schema/beans"
+				xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+				<*>xsi:schemaLocation="http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd">
+				
+				<!-- Root Context: defines shared resources visible to all other web components -->
+				<bean id="simpleObj" class="u.t.r.SimpleObj"></bean>
+			</beans>
+			""",
+			LanguageId.XML);
+        
+        List<CompletionItem> completions = editor.getCompletions();
+        assertEquals(ALL_NAMESPACE_COMPLETIONS, completions.size());
+        
+        CompletionItem contextItem = getContextCompletionItem(completions);
+        assertNotNull(contextItem);
+        
+        editor.apply(contextItem);
+        String editorContent = editor.getText();
+        
+        assertEquals("""
+			<?xml version="1.0" encoding="UTF-8"?>
+			<beans xmlns="http://www.springframework.org/schema/beans"
+				xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+				xmlns:context="http://www.springframework.org/schema/context"
+				<*>xsi:schemaLocation="http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd
+					http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd">
+				
+				<!-- Root Context: defines shared resources visible to all other web components -->
+				<bean id="simpleObj" class="u.t.r.SimpleObj"></bean>
+			</beans>
+			""",
+        	editorContent);
+    }
+
+    @Test
+    void testAddNamespaceCompletion2() throws Exception {
+        Editor editor = new Editor(harness, """
+			<?xml version="1.0" encoding="UTF-8"?>
+			<beans xmlns="http://www.springframework.org/schema/beans"
+				xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+				<*>
+				xsi:schemaLocation="http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd">
+				
+				<!-- Root Context: defines shared resources visible to all other web components -->
+				<bean id="simpleObj" class="u.t.r.SimpleObj"></bean>
+			</beans>
+			""",
+			LanguageId.XML);
+        
+        List<CompletionItem> completions = editor.getCompletions();
+        assertEquals(ALL_NAMESPACE_COMPLETIONS, completions.size());
+        
+        CompletionItem contextItem = getContextCompletionItem(completions);
+        assertNotNull(contextItem);
+        
+        editor.apply(contextItem);
+        String editorContent = editor.getText();
+        
+        assertEquals("""
+			<?xml version="1.0" encoding="UTF-8"?>
+			<beans xmlns="http://www.springframework.org/schema/beans"
+				xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+				xmlns:context="http://www.springframework.org/schema/context"
+				<*>
+				xsi:schemaLocation="http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd
+					http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd">
+				
+				<!-- Root Context: defines shared resources visible to all other web components -->
+				<bean id="simpleObj" class="u.t.r.SimpleObj"></bean>
+			</beans>
+			""",
+        	editorContent);
+    }
+    
+    @Test
+    void testAddNamespaceCompletion3() throws Exception {
+        Editor editor = new Editor(harness, """
+			<?xml version="1.0" encoding="UTF-8"?>
+			<beans xmlns="http://www.springframework.org/schema/beans"
+				xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+				xmlns:<*>
+				xsi:schemaLocation="http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd">
+				
+				<!-- Root Context: defines shared resources visible to all other web components -->
+				<bean id="simpleObj" class="u.t.r.SimpleObj"></bean>
+			</beans>
+			""",
+			LanguageId.XML);
+        
+        List<CompletionItem> completions = editor.getCompletions();
+        assertEquals(ALL_NAMESPACE_COMPLETIONS, completions.size());
+        
+        CompletionItem contextItem = getContextCompletionItem(completions);
+        assertNotNull(contextItem);
+        
+        editor.apply(contextItem);
+        String editorContent = editor.getText();
+        
+        assertEquals("""
+			<?xml version="1.0" encoding="UTF-8"?>
+			<beans xmlns="http://www.springframework.org/schema/beans"
+				xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+				xmlns:context="http://www.springframework.org/schema/context"
+				<*>
+				xsi:schemaLocation="http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd
+					http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd">
+				
+				<!-- Root Context: defines shared resources visible to all other web components -->
+				<bean id="simpleObj" class="u.t.r.SimpleObj"></bean>
+			</beans>
+			""",
+        	editorContent);
+    }
+
+    @Test
+    void testAddNamespaceCompletion4() throws Exception {
+        Editor editor = new Editor(harness, """
+			<?xml version="1.0" encoding="UTF-8"?>
+			<beans xmlns="http://www.springframework.org/schema/beans"
+				xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+				xmlns<*>
+				xsi:schemaLocation="http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd">
+				
+				<!-- Root Context: defines shared resources visible to all other web components -->
+				<bean id="simpleObj" class="u.t.r.SimpleObj"></bean>
+			</beans>
+			""",
+			LanguageId.XML);
+        
+        List<CompletionItem> completions = editor.getCompletions();
+        assertEquals(ALL_NAMESPACE_COMPLETIONS, completions.size());
+        
+        CompletionItem contextItem = getContextCompletionItem(completions);
+        assertNotNull(contextItem);
+        
+        editor.apply(contextItem);
+        String editorContent = editor.getText();
+        
+        assertEquals("""
+			<?xml version="1.0" encoding="UTF-8"?>
+			<beans xmlns="http://www.springframework.org/schema/beans"
+				xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+				xmlns:context="http://www.springframework.org/schema/context"
+				<*>
+				xsi:schemaLocation="http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd
+					http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd">
+				
+				<!-- Root Context: defines shared resources visible to all other web components -->
+				<bean id="simpleObj" class="u.t.r.SimpleObj"></bean>
+			</beans>
+			""",
+        	editorContent);
+    }
+
+    @Test
+    void testAddNamespaceCompletion5() throws Exception {
+        Editor editor = new Editor(harness, """
+			<?xml version="1.0" encoding="UTF-8"?>
+			<beans xmlns="http://www.springframework.org/schema/beans"
+				xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+				xm<*>
+				xsi:schemaLocation="http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd">
+				
+				<!-- Root Context: defines shared resources visible to all other web components -->
+				<bean id="simpleObj" class="u.t.r.SimpleObj"></bean>
+			</beans>
+			""",
+			LanguageId.XML);
+        
+        List<CompletionItem> completions = editor.getCompletions();
+        assertEquals(ALL_NAMESPACE_COMPLETIONS, completions.size());
+        
+        CompletionItem contextItem = getContextCompletionItem(completions);
+        assertNotNull(contextItem);
+        
+        editor.apply(contextItem);
+        String editorContent = editor.getText();
+        
+        assertEquals("""
+			<?xml version="1.0" encoding="UTF-8"?>
+			<beans xmlns="http://www.springframework.org/schema/beans"
+				xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+				xmlns:context="http://www.springframework.org/schema/context"
+				<*>
+				xsi:schemaLocation="http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd
+					http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd">
+				
+				<!-- Root Context: defines shared resources visible to all other web components -->
+				<bean id="simpleObj" class="u.t.r.SimpleObj"></bean>
+			</beans>
+			""",
+        	editorContent);
+    }
+
+
+
+    @Test
+    void testNoNamespaceCompletionOutsideOfMainElement1() throws Exception {
+        Editor editor = new Editor(harness, """
+			<?xml version="1.0" encoding="UTF-8"?>
+			<beans xmlns="http://www.springframework.org/schema/beans"
+				xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+				xsi:schemaLocation="http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd">
+				
+				<!-- Root Context: defines shared resources visible to all other web components -->
+				<bean id="simpleObj" class="u.t.r.SimpleObj"></bean>
+				<*>
+			</beans>
+			""",
+			LanguageId.XML);
         
         List<CompletionItem> completions = editor.getCompletions();
         assertEquals(0, completions.size());
+    }
+
+    @Test
+    void testNoNamespaceCompletionOutsideOfMainElement2() throws Exception {
+        Editor editor = new Editor(harness, """
+			<?xml version="1.0" encoding="UTF-8"?>
+			<beans xmlns="http://www.springframework.org/schema/beans"
+				xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+				xsi:schemaLocation="http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd">
+				
+				<!-- Root Context: defines shared resources visible to all other web components -->
+				<*><bean id="simpleObj" class="u.t.r.SimpleObj"></bean>
+			</beans>
+			""",
+			LanguageId.XML);
+        
+        List<CompletionItem> completions = editor.getCompletions();
+        assertEquals(0, completions.size());
+    }
+
+    @Test
+    void testNoNamespaceCompletionOutsideOfMainElement3() throws Exception {
+        Editor editor = new Editor(harness, """
+			<?xml version="1.0" encoding="UTF-8"?>
+			<beans xmlns="http://www.springframework.org/schema/beans"
+				xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+				xsi:schemaLocation="http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd">
+				
+				<!-- Root Context: defines shared resources visible to all other web components -->
+				<<*>bean id="simpleObj" class="u.t.r.SimpleObj"></bean>
+			</beans>
+			""",
+			LanguageId.XML);
+        
+        List<CompletionItem> completions = editor.getCompletions();
+        assertEquals(0, completions.size());
+    }
+
+    @Test
+    void testNoNamespaceCompletionOutsideOfMainElement4() throws Exception {
+        Editor editor = new Editor(harness, """
+			<?xml version="1.0" encoding="UTF-8"?>
+			<beans xmlns="http://www.springframework.org/schema/beans"
+				xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+				xsi:schemaLocation="http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd">
+				
+				<!-- Root Context: defines shared resources visible to all other web components -->
+				<bean <*>id="simpleObj" class="u.t.r.SimpleObj"></bean>
+			</beans>
+			""",
+			LanguageId.XML);
+        
+        List<CompletionItem> completions = editor.getCompletions();
+        assertEquals(0, completions.size());
+    }
+
+    @Test
+    void testNoNamespaceCompletionOutsideOfMainElement5() throws Exception {
+        Editor editor = new Editor(harness, """
+			<?xml version="1.0" encoding="UTF-8"?>
+			<beans xmlns="http://www.springframework.org/schema/beans"
+				xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+				xsi:schemaLocation="http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd">
+				
+				<!-- Root Context: defines shared resources visible to all other web components -->
+				<bean id="simpleObj" class="u.t.r.SimpleObj"><<*>/bean>
+			</beans>
+			""",
+			LanguageId.XML);
+        
+        List<CompletionItem> completions = editor.getCompletions();
+        assertEquals(0, completions.size());
+    }
+    
+    @Test
+    void testNoNamespaceCompletionOutsideOfMainElement6() throws Exception {
+        Editor editor = new Editor(harness, """
+			<?xml version="1.0" encoding="UTF-8"?>
+			<beans xmlns="http://www.springframework.org/schema/beans"
+				xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+				xsi:schemaLocation="http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd">
+				
+				<!-- Root Context: defines shared resources visible to all other web components -->
+				<bean id="simpleObj" class="u.t.r.SimpleObj"><<*>/bean>
+			</beans>
+			""",
+			LanguageId.XML);
+        
+        List<CompletionItem> completions = editor.getCompletions();
+        assertEquals(0, completions.size());
+    }
+
+    @Test
+    void testNoNamespaceCompletionOutsideOfMainElement7() throws Exception {
+        Editor editor = new Editor(harness, """
+			<?xml version="1.0" encoding="UTF-8"?>
+			<beans xmlns="http://www.springframework.org/schema/beans"
+				xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+				xsi:schemaLocation="http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd">
+				
+				<!-- Root Context: defines shared resources visible to all other web components -->
+				<bean id="simpleObj" class="u.t.r.SimpleObj"></be<*>an>
+			</beans>
+			""",
+			LanguageId.XML);
+        
+        List<CompletionItem> completions = editor.getCompletions();
+        assertEquals(0, completions.size());
+    }
+
+    @Test
+    void testNoNamespaceCompletionOutsideOfMainElement8() throws Exception {
+        Editor editor = new Editor(harness, """
+			<?xml version="1.0" encoding="UTF-8"?>
+			<beans xmlns="http://www.springframework.org/schema/beans"
+				xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+				xsi:schemaLocation="http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd">
+				
+				<!-- Root Context: defines shared resources visible to all other web components -->
+				<bean id="simpleObj" class="u.t.r.SimpleObj"></bean>
+			</beans<*>>
+			""",
+			LanguageId.XML);
+        
+        List<CompletionItem> completions = editor.getCompletions();
+        assertEquals(0, completions.size());
+    }
+    
+    private CompletionItem getContextCompletionItem(List<CompletionItem> completions) {
+        for (CompletionItem completionItem : completions) {
+			if (completionItem.getLabel().contains("/schema/context")) {
+				return completionItem;
+			}
+		}
+        
+        return null;
     }
 
 }

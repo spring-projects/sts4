@@ -62,6 +62,7 @@ import org.springframework.ide.vscode.boot.app.SpringSymbolIndex;
 import org.springframework.ide.vscode.boot.xml.completions.BeanRefCompletionProposalProvider;
 import org.springframework.ide.vscode.boot.xml.completions.ConstructorArgNameCompletionProposalProvider;
 import org.springframework.ide.vscode.boot.xml.completions.GenericXMLCompletionProposal;
+import org.springframework.ide.vscode.boot.xml.completions.NamespaceCompletionProvider;
 import org.springframework.ide.vscode.boot.xml.completions.PropertyNameCompletionProposalProvider;
 import org.springframework.ide.vscode.boot.xml.completions.TypeCompletionProposalProvider;
 import org.springframework.ide.vscode.commons.languageserver.completion.DocumentEdits;
@@ -85,7 +86,7 @@ public class SpringXMLCompletionEngine implements ICompletionEngine, LanguageSpe
 
 	private final Map<XMLElementKey, XMLCompletionProvider> completionProviders;
 	private final BootJavaConfig config;
-
+	
 	public SpringXMLCompletionEngine(
 			SimpleLanguageServer server, 
 			JavaProjectFinder projectFinder, 
@@ -180,6 +181,22 @@ public class SpringXMLCompletionEngine implements ICompletionEngine, LanguageSpe
 						}
 					}
 					break;
+				case AttributeName:
+					if (scanner.getTokenOffset() <= offset && offset < scanner.getTokenEnd()) {
+						if (node.getParentNode() != null && node.getParentNode() instanceof DOMDocument
+								&& namespace.equals("http://www.springframework.org/schema/beans") && node.getNodeName().equals("beans")) {
+							return NamespaceCompletionProvider.createNamespaceCompletionProposals(doc, offset, token, node);
+						}
+					}
+					break;
+				case Whitespace:
+					if (scanner.getTokenOffset() <= offset && offset < scanner.getTokenEnd()) {
+						if (node.getParentNode() != null && node.getParentNode() instanceof DOMDocument
+								&& namespace.equals("http://www.springframework.org/schema/beans") && node.getNodeName().equals("beans")) {
+							return NamespaceCompletionProvider.createNamespaceCompletionProposals(doc, offset, token, node);
+						}
+					}
+					break;
 				default:
 					break;
 				}
@@ -229,7 +246,7 @@ public class SpringXMLCompletionEngine implements ICompletionEngine, LanguageSpe
 		
 		return completions;
 	}
-
+	
 	@Override
 	public Collection<LanguageId> supportedLanguages() {
 		return ImmutableList.of(LanguageId.XML);
