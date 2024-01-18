@@ -51,6 +51,16 @@
         "command": "vscode-spring-cli.boot.add",
         "title": "Add to Boot Project",
         "category": "Spring CLI"
+      },
+      {
+        "command": "vscode-spring-cli.project-catalog.add",
+        "title": "Add Project Catalog",
+        "category": "Spring CLI"
+      },
+      {
+        "command": "vscode-spring-cli.project-catalog.remove",
+        "title": "Remove Project Catalog",
+        "category": "Spring CLI"
       }
     ]
   },
@@ -58,7 +68,7 @@
   "scripts": {
     "vscode:prepublish": "npm run compile",
     "compile": "rm -rf ./out && tsc -p .",
-    "watch": "rm -rf ./out && tsc -watch -p .",
+    "watch": "npm run compile && tsc -watch -p .",
     "clean": "rm -fr node_modules out *.vsix package-lock.json",
     "vsce-package": "vsce package",
     "vsce-pre-release-package": "vsce package --pre-release"

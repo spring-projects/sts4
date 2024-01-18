@@ -1,8 +1,8 @@
-export interface ProjectType {
+export interface Project {
     id: string;
+    url: string;
     description?: string;
-    url?: string;
-    catalogId: string;
+    catalogId?: string;
     tags?: string[] 
 }
 
@@ -10,7 +10,7 @@ export interface BootNewMetadata {
     name?: string;
     groupId?: string;
     artifactId?: string;
-    catalogType?: string;
+    catalogId?: string;
     rootPackage?: string;
     targetFolder?: string;
 }
@@ -18,4 +18,11 @@ export interface BootNewMetadata {
 export interface BootAddMetadata {
     targetFolder?: string;
     catalogType?: string;
+}
+
+export interface ProjectCatalog {
+    name: string;
+    url: string;
+    description?: string;
+    tags?: string[];
 }

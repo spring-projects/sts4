@@ -1,14 +1,14 @@
 import * as path from "path";
-import { BootAddMetadata, BootNewMetadata, ProjectType } from "../cli/types";
-import { CLI } from "../extension";
-import { enterText, getTargetPomXml, openDialogForFolder } from "../utils";
+import { BootAddMetadata, BootNewMetadata, Project } from "./cli-types";
+import { CLI } from "./extension";
+import { enterText, getTargetPomXml, openDialogForFolder } from "./utils";
 import vscode, { QuickPickItem, QuickPickItemKind } from 'vscode';
 import fs from 'fs'
 
 const OPEN_IN_NEW_WORKSPACE = "Open";
 const OPEN_IN_CURRENT_WORKSPACE = "Add to Workspace";
 
-export async function handleAdd(pom?: vscode.Uri): Promise<void> {
+export async function handleBootAdd(pom?: vscode.Uri): Promise<void> {
     const metadata: BootAddMetadata = {};
     pom = pom || await getTargetPomXml();
     if (pom) {
@@ -19,24 +19,24 @@ export async function handleAdd(pom?: vscode.Uri): Promise<void> {
         return;
     }
     if (!metadata.catalogType) {
-        metadata.catalogType = (await vscode.window.showQuickPick(CLI.getProjectTypes().map(mapProjectTypetoQuickPick), { canPickMany: false }))?.label;
+        metadata.catalogType = (await vscode.window.showQuickPick(CLI.projectList().map(mapProjectTypetoQuickPick), { canPickMany: false }))?.label;
     }
     return CLI.bootAdd(metadata);
 }
 
-export async function handleNew(targetFolder?: string): Promise<void> {
+export async function handleBootNew(targetFolder?: string): Promise<void> {
     const metadata: BootNewMetadata = {};
 
     // Select parent folder
     metadata.targetFolder = targetFolder || (await openDialogForFolder({title: "Select Parent Folder"})).fsPath;
 
     // Select project type from the list of available types
-    metadata.catalogType = (await vscode.window.showQuickPick(CLI.getProjectTypes().map(mapProjectTypetoQuickPick), { canPickMany: false }))?.label;
+    metadata.catalogId = (await vscode.window.showQuickPick(CLI.projectList().map(mapProjectTypetoQuickPick), { canPickMany: false }))?.label;
 
     metadata.name = await enterText({
         title: "Project Name",
         prompt: "Enter Project Name",
-        defaultValue: metadata.name || metadata.catalogType,
+        defaultValue: metadata.name || metadata.catalogId,
         validate: value => {
             if (!/^[a-z_][a-z0-9_]*(-[a-z_][a-z0-9_]*)*$/.test(value)) {
                 return "Invalid Project Name";
@@ -70,7 +70,7 @@ export async function handleNew(targetFolder?: string): Promise<void> {
     });
 
     // Create project and open in the workspace or new window
-    if (metadata.name && metadata.catalogType && metadata.targetFolder) {
+    if (metadata.name && metadata.catalogId && metadata.targetFolder) {
         await CLI.bootNew(metadata);
 
         // Open project either is the same workspace or new workspace
@@ -95,7 +95,7 @@ export async function handleNew(targetFolder?: string): Promise<void> {
 
 }
 
-function mapProjectTypetoQuickPick(metadata: ProjectType): QuickPickItem {
+function mapProjectTypetoQuickPick(metadata: Project): QuickPickItem {
     return {
         label: metadata.id,
         kind: QuickPickItemKind.Default,
