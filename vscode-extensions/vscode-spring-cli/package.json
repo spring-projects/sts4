@@ -25,10 +25,31 @@
     "onStartupFinished"
   ],
   "contributes": {
+    "menus": {
+      "editor/context": [
+        {
+          "when": "resourceFilename == pom.xml",
+          "command": "vscode-spring-cli.boot.add",
+          "group": "Spring-CLI"
+        }
+      ],
+      "explorer/context": [
+        {
+          "when": "resourceFilename == pom.xml",
+          "command": "vscode-spring-cli.boot.add",
+          "group": "Spring-CLI"
+        }
+      ]
+    },
     "commands": [
       {
-        "command": "vscode-spring-cli.new-project",
-        "title": "New Project",
+        "command": "vscode-spring-cli.boot.new",
+        "title": "New Boot Project",
+        "category": "Spring CLI"
+      },
+      {
+        "command": "vscode-spring-cli.boot.add",
+        "title": "Add to Boot Project",
         "category": "Spring CLI"
       }
     ]

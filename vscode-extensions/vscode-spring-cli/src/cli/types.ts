@@ -6,11 +6,16 @@ export interface ProjectType {
     tags?: string[] 
 }
 
-export interface BootNewProjectMetadata {
+export interface BootNewMetadata {
     name?: string;
     groupId?: string;
     artifactId?: string;
     catalogType?: string;
     rootPackage?: string;
     targetFolder?: string;
+}
+
+export interface BootAddMetadata {
+    targetFolder?: string;
+    catalogType?: string;
 }

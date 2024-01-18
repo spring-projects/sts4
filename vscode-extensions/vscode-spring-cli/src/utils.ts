@@ -1,4 +1,5 @@
-import { InputBox, OpenDialogOptions, Uri, window, workspace } from "vscode";
+import { InputBox, OpenDialogOptions, Uri, WorkspaceFolder, window, workspace } from "vscode";
+import path from "path"
 
 export async function openDialogForFolder(customOptions: OpenDialogOptions): Promise<Uri> {
     const options: OpenDialogOptions = {
@@ -42,3 +43,46 @@ export function enterText(opts: {
         inputBox.show();
     });
 }
+
+function getRelativePathToWorkspaceFolder(file: Uri): string {
+    if (file) {
+        const wf: WorkspaceFolder = workspace.getWorkspaceFolder(file);
+        if (wf) {
+            return path.relative(wf.uri.fsPath, file.fsPath);
+        }
+    }
+    return '';
+}
+
+function getWorkspaceFolderName(file: Uri): string {
+    if (file) {
+        const wf: WorkspaceFolder = workspace.getWorkspaceFolder(file);
+        if (wf) {
+            return wf.name;
+        }
+    }
+    return '';
+}
+
+export async function getTargetPomXml(): Promise<Uri> {
+    if (window.activeTextEditor) {
+        const activeUri = window.activeTextEditor.document.uri;
+        if ("pom.xml" === path.basename(activeUri.path).toLowerCase()) {
+            return activeUri;
+        }
+    }
+
+    const candidates: Uri[] = await workspace.findFiles("**/pom.xml");
+    if (candidates.length > 0) {
+        if (candidates.length === 1) {
+            return candidates[0];
+        } else {
+            return await window.showQuickPick(
+                candidates.map((c: Uri) => ({ value: c, label: getRelativePathToWorkspaceFolder(c), description: getWorkspaceFolderName(c) })),
+                { placeHolder: "Select the target project." },
+            ).then(res => res && res.value);
+        }
+    }
+    return undefined;
+}
+

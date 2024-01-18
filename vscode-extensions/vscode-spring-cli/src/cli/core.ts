@@ -1,4 +1,4 @@
-import { BootNewProjectMetadata, ProjectType } from "./types";
+import { BootAddMetadata, BootNewMetadata, ProjectType } from "./types";
 import vscode from "vscode";
 
 const SPRING_CLI_TASK_TYPE = 'spring-cli';
@@ -31,7 +31,7 @@ export class Cli {
         ];
     }
 
-    createBootProject(metadata: BootNewProjectMetadata): Promise<void> {
+    bootNew(metadata: BootNewMetadata): Promise<void> {
         const args = [
             "boot",
             "new",
@@ -52,7 +52,17 @@ export class Cli {
             args.push("--package-name");
             args.push(`"${metadata.rootPackage}"`);
         }
-        return this.exec('Create Spring Boot project', `'${metadata.catalogType}'`, metadata.targetFolder, args);
+        return this.exec("New Boot Project", `'${metadata.catalogType}'`, metadata.targetFolder, args);
+    }
+
+    bootAdd(metadata: BootAddMetadata): Promise<void> {
+        const args = [
+            "boot",
+            "add",
+            "--from",
+            metadata.catalogType
+        ];
+        return this.exec("Add to Boot Project", `'${metadata.catalogType}'`, metadata.targetFolder, args);
     }
 
     private async exec(title: string, message: string, cwd: string, args: string[]): Promise<void> {
