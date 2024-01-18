@@ -1,7 +1,7 @@
 import * as path from "path";
 import { BootAddMetadata, BootNewMetadata, Project } from "./cli-types";
 import { CLI } from "./extension";
-import { enterText, getTargetPomXml, openDialogForFolder } from "./utils";
+import { enterText, getTargetPomXml, mapProjectToQuickPick, openDialogForFolder } from "./utils";
 import vscode, { QuickPickItem, QuickPickItemKind } from 'vscode';
 import fs from 'fs'
 
@@ -19,7 +19,7 @@ export async function handleBootAdd(pom?: vscode.Uri): Promise<void> {
         return;
     }
     if (!metadata.catalogType) {
-        metadata.catalogType = (await vscode.window.showQuickPick(CLI.projectList().map(mapProjectTypetoQuickPick), { canPickMany: false }))?.label;
+        metadata.catalogType = (await vscode.window.showQuickPick(CLI.projectList().then(ps => ps.map(mapProjectToQuickPick)), { canPickMany: false, ignoreFocusOut: true }))?.label;
     }
     return CLI.bootAdd(metadata);
 }
@@ -31,43 +31,54 @@ export async function handleBootNew(targetFolder?: string): Promise<void> {
     metadata.targetFolder = targetFolder || (await openDialogForFolder({title: "Select Parent Folder"})).fsPath;
 
     // Select project type from the list of available types
-    metadata.catalogId = (await vscode.window.showQuickPick(CLI.projectList().map(mapProjectTypetoQuickPick), { canPickMany: false }))?.label;
+    metadata.catalogId = (await vscode.window.showQuickPick(CLI.projectList().then(ps => ps.map(mapProjectToQuickPick)), { canPickMany: false }))?.label;
 
-    metadata.name = await enterText({
-        title: "Project Name",
-        prompt: "Enter Project Name",
-        defaultValue: metadata.name || metadata.catalogId,
-        validate: value => {
-            if (!/^[a-z_][a-z0-9_]*(-[a-z_][a-z0-9_]*)*$/.test(value)) {
-                return "Invalid Project Name";
+    if (!metadata.catalogId) {
+        // Cancelled
+        return;
+    }
+
+    try {
+        metadata.name = await enterText({
+            title: "Project Name",
+            prompt: "Enter Project Name",
+            defaultValue: metadata.name || metadata.catalogId,
+            validate: value => {
+                if (!/^[a-z_][a-z0-9_]*(-[a-z_][a-z0-9_]*)*$/.test(value)) {
+                    return "Invalid Project Name";
+                }
+                if (fs.existsSync(path.resolve(metadata.targetFolder, value))) {
+                    return "Folder or file with such name exists under selected parent folder";
+                }
             }
-            if (fs.existsSync(path.resolve(metadata.targetFolder, value))) {
-                return "Folder or file with such name exists under selected parent folder";
-            }
-        }
-    });
+        });
+        
+        metadata.artifactId = await enterText({
+            title: "Artifact Id",
+            prompt: "Enter Artifact Id",
+            defaultValue: metadata.name,
+            validate: value => (/^[a-z_][a-z0-9_]*(-[a-z_][a-z0-9_]*)*$/.test(value)) ? undefined : "Invalid Artifact Id"
+        });
     
-    metadata.artifactId = await enterText({
-        title: "Artifact Id",
-        prompt: "Enter Artifact Id",
-        defaultValue: metadata.name,
-        validate: value => (/^[a-z_][a-z0-9_]*(-[a-z_][a-z0-9_]*)*$/.test(value)) ? undefined : "Invalid Artifact Id"
-    });
+        metadata.groupId = await enterText({
+            title: "Group Id",
+            prompt: "Enter Group Id",
+            defaultValue: "com.example",
+            validate: value => (/^[a-z_][a-z0-9_]*(\.[a-z0-9_]+)*$/.test(value)) ? undefined : "Invalid Group Id"
+        });
+    
+        // Root package name
+        metadata.rootPackage = await enterText({
+            title: "Root Package Name",
+            prompt: "Enter Root Package Name",
+            defaultValue: `${metadata.groupId}.${metadata.name.replace("-", ".")}`,
+            validate: value => (/^[a-z][a-z0-9_]*(\.[a-z0-9_]+)+[0-9a-z_]$/.test(value)) ? undefined : "Invalid Package Name"
+        });
+    } catch (error) {
+        // Cancelled
+        return;
+    }
 
-    metadata.groupId = await enterText({
-        title: "Group Id",
-        prompt: "Enter Group Id",
-        defaultValue: "com.example",
-        validate: value => (/^[a-z_][a-z0-9_]*(\.[a-z0-9_]+)*$/.test(value)) ? undefined : "Invalid Group Id"
-    });
-
-    // Root package name
-    metadata.rootPackage = await enterText({
-        title: "Root Package Name",
-        prompt: "Enter Root Package Name",
-        defaultValue: `${metadata.groupId}.${metadata.name.replace("-", ".")}`,
-        validate: value => (/^[a-z][a-z0-9_]*(\.[a-z0-9_]+)+[0-9a-z_]$/.test(value)) ? undefined : "Invalid Package Name"
-    });
 
     // Create project and open in the workspace or new window
     if (metadata.name && metadata.catalogId && metadata.targetFolder) {
@@ -95,14 +106,6 @@ export async function handleBootNew(targetFolder?: string): Promise<void> {
 
 }
 
-function mapProjectTypetoQuickPick(metadata: Project): QuickPickItem {
-    return {
-        label: metadata.id,
-        kind: QuickPickItemKind.Default,
-        description: metadata.description,
-        detail: metadata.tags.toString()
-    };
-}
 
 async function specifyOpenMethod(hasOpenFolder: boolean, projectLocation: vscode.Uri): Promise<string> {
     const candidates: string[] = [

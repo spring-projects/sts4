@@ -42,7 +42,13 @@ export async function handleCatalogAdd() {
             title: "URL",
             prompt: "Enter URL:",
             placeholder: "https://github.com/my-org/my-project-catalog",
-            validate: v => /[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()@:%_\+.~#?&//=]*)?/gi.test(v) ? "" : "Invalid URL value"
+            validate: v => {
+                try {
+                    Uri.parse(v, true);
+                } catch (error) {
+                    return "Invalid URL value"
+                }
+            }
         });
         const description = await enterText({
             title: "Description",

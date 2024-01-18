@@ -61,6 +61,16 @@
         "command": "vscode-spring-cli.project-catalog.remove",
         "title": "Remove Project Catalog",
         "category": "Spring CLI"
+      },
+      {
+        "command": "vscode-spring-cli.project.add",
+        "title": "Add Project",
+        "category": "Spring CLI"
+      },
+      {
+        "command": "vscode-spring-cli.project.remove",
+        "title": "Remove Project",
+        "category": "Spring CLI"
       }
     ]
   },

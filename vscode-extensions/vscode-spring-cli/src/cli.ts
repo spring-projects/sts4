@@ -5,30 +5,30 @@ const SPRING_CLI_TASK_TYPE = 'spring-cli';
 
 export class Cli {
 
-    projectList() : Project[] {
-        return [
+    projectList() : Thenable<Project[]> {
+        return Promise.resolve([
             {
-                id: 'web',
+                name: 'web',
                 description: 'Hello, World RESTful web service.',
                 url: 'https://github.com/rd-1-2022/rest-service',
-                catalogId: 'gs',
+                catalog: 'gs',
                 tags: ['java-17', 'boot-3.1.x', 'rest', 'web']
             },
             {
-                id: 'jpa',
+                name: 'jpa',
                 description: 'Learn how to work with JPA data persistence using Spring Data JPA.',
                 url: 'https://github.com/rd-1-2022/rpt-spring-data-jpa',
-                catalogId: 'gs',
+                catalog: 'gs',
                 tags: ['java-17', 'boot-3.1.x', 'jpa', 'h2']
             },
             {
-                id: 'scheduling',
+                name: 'scheduling',
                 description: 'How to schedule tasks',
                 url: 'https://github.com/rd-1-2022/rpt-spring-scheduling-tasks',
-                catalogId: 'gs',
+                catalog: 'gs',
                 tags: ['scheduling']
             }
-        ];
+        ]);
     }
 
     projectCatalogList(): Thenable<ProjectCatalog[]> {
@@ -82,7 +82,7 @@ export class Cli {
             args.push("--tags");
             args.push(catalog.tags.join(","));
         }
-        return this.exec("Add Project Catalog", `"${catalog.name}"`, args);
+        return this.exec("Add Project Catalog", `'${catalog.name}'`, args);
     }
 
     projectCatalogRemove(name: string): Promise<void> {
@@ -92,7 +92,37 @@ export class Cli {
             "--name",
             name,
         ];
-        return this.exec("Remove Project Catalog", `"${name}"`, args);
+        return this.exec("Remove Project Catalog", `'${name}'`, args);
+    }
+
+    projectAdd(project: Project) {
+        const args = [
+            "project",
+            "add",
+            "--name",
+            project.name,
+            "--url",
+            project.url,
+        ];
+        if (project.description) {
+            args.push("--description");
+            args.push(project.description);
+        }
+        if (project.tags) {
+            args.push("--tags");
+            args.push(project.tags.join(","));
+        }
+        return this.exec("Add Project", `'${project.name}'`, args);
+    }
+
+    projectRemove(name: string) {
+        const args = [
+            "project",
+            "remove",
+            "--name",
+            name
+        ];
+        return this.exec("Remove Project", `'${name}'`, args);
     }
 
     bootNew(metadata: BootNewMetadata): Promise<void> {
@@ -100,21 +130,21 @@ export class Cli {
             "boot",
             "new",
             "--name",
-            `"${metadata.name}"`,
+            metadata.name,
             "--from",
-            `"${metadata.catalogId}"`
+            metadata.catalogId
         ];
         if (metadata.groupId) {
             args.push("--group-id")
-            args.push(`"${metadata.groupId}"`);
+            args.push(metadata.groupId);
         }
         if (metadata.artifactId) {
             args.push("--artifact-id")
-            args.push(`"${metadata.artifactId}"`);
+            args.push(metadata.artifactId);
         }
         if (metadata.rootPackage) {
             args.push("--package-name");
-            args.push(`"${metadata.rootPackage}"`);
+            args.push(metadata.rootPackage);
         }
         return this.exec("New Boot Project", `'${metadata.catalogId}'`, args, metadata.targetFolder);
     }

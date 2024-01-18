@@ -1,5 +1,6 @@
-import { InputBox, OpenDialogOptions, Uri, WorkspaceFolder, window, workspace } from "vscode";
+import { InputBox, OpenDialogOptions, QuickPickItem, QuickPickItemKind, Uri, WorkspaceFolder, window, workspace } from "vscode";
 import path from "path"
+import { Project } from "./cli-types";
 
 export async function openDialogForFolder(customOptions: OpenDialogOptions): Promise<Uri> {
     const options: OpenDialogOptions = {
@@ -24,7 +25,7 @@ export function enterText(opts: {
     defaultValue?: string,
     placeholder?: string
 }): Promise<string> {
-    return new Promise<string>((resolve) => {
+    return new Promise<string>((resolve, reject) => {
         const inputBox: InputBox = window.createInputBox();
         inputBox.title = opts.title;
         inputBox.placeholder = opts.placeholder;
@@ -36,10 +37,11 @@ export function enterText(opts: {
         });
         inputBox.onDidAccept(() => {
             if (!inputBox.validationMessage) {
+                resolve(inputBox.value);
                 inputBox.hide();
             }
         });
-        inputBox.onDidHide(() => resolve(inputBox.value));
+        inputBox.onDidHide(() => reject("cancelled"));
         inputBox.show();
     });
 }
@@ -85,4 +87,13 @@ export async function getTargetPomXml(): Promise<Uri> {
     }
     return undefined;
 }
+
+export function mapProjectToQuickPick(project: Project): QuickPickItem {
+    return {
+        label: project.name,
+        kind: QuickPickItemKind.Default,
+        description: project.description
+    };
+}
+
 

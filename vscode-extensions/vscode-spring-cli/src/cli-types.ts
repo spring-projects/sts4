@@ -1,8 +1,8 @@
 export interface Project {
-    id: string;
+    name: string;
     url: string;
     description?: string;
-    catalogId?: string;
+    catalog?: string;
     tags?: string[] 
 }
 
