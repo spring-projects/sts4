@@ -324,7 +324,29 @@ public class XMLContentAssistTest {
         	editorContent);
     }
 
+    @Test
+    void testAddNamespaceCompletionWhenBeansElementFullyQualified() throws Exception {
+        Editor editor = new Editor(harness, """
+			<beans:beans xmlns="http://www.springframework.org/schema/mvc"
+				xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+				xmlns:beans="http://www.springframework.org/schema/beans"
+				xmlns:context="http://www.springframework.org/schema/context"
+				<*>
+				
+				xsi:schemaLocation="http://www.springframework.org/schema/mvc https://www.springframework.org/schema/mvc/spring-mvc.xsd
+					http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd
+					http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd">
 
+				
+				<!-- Root Context: defines shared resources visible to all other web components -->
+				<bean id="simpleObj" class="u.t.r.SimpleObj"></bean>
+			</beans>
+			""",
+			LanguageId.XML);
+        
+        List<CompletionItem> completions = editor.getCompletions();
+        assertEquals(ALL_NAMESPACE_COMPLETIONS, completions.size());
+    }
 
     @Test
     void testNoNamespaceCompletionOutsideOfMainElement1() throws Exception {

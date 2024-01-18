@@ -184,7 +184,7 @@ public class SpringXMLCompletionEngine implements ICompletionEngine, LanguageSpe
 				case AttributeName:
 					if (scanner.getTokenOffset() <= offset && offset < scanner.getTokenEnd()) {
 						if (node.getParentNode() != null && node.getParentNode() instanceof DOMDocument
-								&& namespace.equals("http://www.springframework.org/schema/beans") && node.getNodeName().equals("beans")) {
+								&& namespace.equals("http://www.springframework.org/schema/beans") && node.getLocalName().equals("beans")) {
 							return NamespaceCompletionProvider.createNamespaceCompletionProposals(doc, offset, token, node);
 						}
 					}
@@ -192,7 +192,7 @@ public class SpringXMLCompletionEngine implements ICompletionEngine, LanguageSpe
 				case Whitespace:
 					if (scanner.getTokenOffset() <= offset && offset < scanner.getTokenEnd()) {
 						if (node.getParentNode() != null && node.getParentNode() instanceof DOMDocument
-								&& namespace.equals("http://www.springframework.org/schema/beans") && node.getNodeName().equals("beans")) {
+								&& namespace.equals("http://www.springframework.org/schema/beans") && node.getLocalName().equals("beans")) {
 							return NamespaceCompletionProvider.createNamespaceCompletionProposals(doc, offset, token, node);
 						}
 					}
