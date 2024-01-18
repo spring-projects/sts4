@@ -86,8 +86,13 @@ public class NamespaceCompletionProvider {
 			additionalEdits.insert(range.getEnd() - 1, additionalInsertText);
 		}
 
-		Renderable documentation = Renderables.text(namespace.getDetails());
-		return new GenericXMLCompletionProposal(namespace.getLabel(), CompletionItemKind.Text, edits, namespace.getDetails(), documentation, 1.0d, namespace.getNamespaceURI(), additionalEdits);
+		Renderable documentation = Renderables.inlineMultiLineSnippet(
+				Renderables.concat(
+						Renderables.text(namespace.getNamespaceURI()),
+						Renderables.lineBreak(),
+						Renderables.text("xsi:schemaLocation=\"" + namespace.getNamespaceLocation() + "\"")));
+
+		return new GenericXMLCompletionProposal(namespace.getNamespaceURI(), CompletionItemKind.Text, edits, namespace.getDetails(), documentation, 1.0d, namespace.getNamespaceURI(), additionalEdits);
 	}
 	
 	public static NamespaceInformation[] getNamespaces() {
@@ -132,84 +137,84 @@ public class NamespaceCompletionProvider {
 			// core framework
 			new NamespaceInformation(
 					"http://www.springframework.org/schema/beans",
-					"http://www.springframework.org/schema/beans",
+					"Insert http://www.springframework.org/schema/beans namespace",
 					"xmlns:beans=\"http://www.springframework.org/schema/beans\"",
 					"http://www.springframework.org/schema/beans https://www.springframework.org/schema/beans/spring-beans.xsd"),
 			new NamespaceInformation(
 					"http://www.springframework.org/schema/context",
-					"http://www.springframework.org/schema/context",
+					"Insert http://www.springframework.org/schema/context namespace",
 					"xmlns:context=\"http://www.springframework.org/schema/context\"",
 					"http://www.springframework.org/schema/context https://www.springframework.org/schema/context/spring-context.xsd"),
 			new NamespaceInformation(
 					"http://www.springframework.org/schema/tx",
-					"http://www.springframework.org/schema/tx",
+					"Insert http://www.springframework.org/schema/tx namespace",
 					"xmlns:tx=\"http://www.springframework.org/schema/tx\"",
 					"http://www.springframework.org/schema/tx https://www.springframework.org/schema/tx/spring-tx.xsd"),
 			new NamespaceInformation(
 					"http://www.springframework.org/schema/aop",
-					"http://www.springframework.org/schema/aop",
+					"Insert http://www.springframework.org/schema/aop namespace",
 					"xmlns:aop=\"http://www.springframework.org/schema/aop\"",
 					"http://www.springframework.org/schema/aop https://www.springframework.org/schema/aop/spring-aop.xsd"),
 			new NamespaceInformation(
 					"http://www.springframework.org/schema/oxm",
-					"http://www.springframework.org/schema/oxm",
+					"Insert http://www.springframework.org/schema/oxm namespace",
 					"xmlns:oxm=\"http://www.springframework.org/schema/oxm\"",
 					"http://www.springframework.org/schema/oxm https://www.springframework.org/schema/oxm/spring-oxm.xsd"),
 			new NamespaceInformation(
 					"http://www.springframework.org/schema/jms",
-					"http://www.springframework.org/schema/jms",
+					"Insert http://www.springframework.org/schema/jms namespace",
 					"xmlns:jms=\"http://www.springframework.org/schema/jms\"",
 					"http://www.springframework.org/schema/jms https://www.springframework.org/schema/jms/spring-jms.xsd"),
 			new NamespaceInformation(
 					"http://www.springframework.org/schema/jdbc",
-					"http://www.springframework.org/schema/jdbc",
+					"Insert http://www.springframework.org/schema/jdbc namespace",
 					"xmlns:jdbc=\"http://www.springframework.org/schema/jdbc\"",
 					"http://www.springframework.org/schema/jdbc https://www.springframework.org/schema/jdbc/spring-jdbc.xsd"),
 			new NamespaceInformation(
 					"http://www.springframework.org/schema/tool",
-					"http://www.springframework.org/schema/tool",
+					"Insert http://www.springframework.org/schema/tool namespace",
 					"xmlns:tool=\"http://www.springframework.org/schema/tool\"",
 					"http://www.springframework.org/schema/tool https://www.springframework.org/schema/tool/spring-tool.xsd"),
 			new NamespaceInformation(
 					"http://www.springframework.org/schema/util",
-					"http://www.springframework.org/schema/util",
+					"Insert http://www.springframework.org/schema/util namespace",
 					"xmlns:util=\"http://www.springframework.org/schema/util\"",
 					"http://www.springframework.org/schema/util https://www.springframework.org/schema/util/spring-util.xsd"),
 			new NamespaceInformation(
 					"http://www.springframework.org/schema/mvc",
-					"http://www.springframework.org/schema/mvc",
+					"Insert http://www.springframework.org/schema/mvc namespace",
 					"xmlns:mvc=\"http://www.springframework.org/schema/mvc\"",
 					"http://www.springframework.org/schema/mvc https://www.springframework.org/schema/mvc/spring-mvc.xsd"),
 			new NamespaceInformation(
 					"http://www.springframework.org/schema/jee",
-					"http://www.springframework.org/schema/jee",
+					"Insert http://www.springframework.org/schema/jee namespace",
 					"xmlns:jee=\"http://www.springframework.org/schema/jee\"",
 					"http://www.springframework.org/schema/jee https://www.springframework.org/schema/jee/spring-jee.xsd"),
 			new NamespaceInformation(
 					"http://www.springframework.org/schema/lang",
-					"http://www.springframework.org/schema/lang",
+					"Insert http://www.springframework.org/schema/lang namespace",
 					"xmlns:lang=\"http://www.springframework.org/schema/lang\"",
 					"http://www.springframework.org/schema/lang https://www.springframework.org/schema/lang/spring-lang.xsd"),
 			new NamespaceInformation(
 					"http://www.springframework.org/schema/task",
-					"http://www.springframework.org/schema/task",
+					"Insert http://www.springframework.org/schema/task namespace",
 					"xmlns:task=\"http://www.springframework.org/schema/task\"",
 					"http://www.springframework.org/schema/task https://www.springframework.org/schema/task/spring-task.xsd"),
 			new NamespaceInformation(
 					"http://www.springframework.org/schema/cache",
-					"http://www.springframework.org/schema/cache",
+					"Insert http://www.springframework.org/schema/cache namespace",
 					"xmlns:cache=\"http://www.springframework.org/schema/cache\"",
 					"http://www.springframework.org/schema/cache https://www.springframework.org/schema/cache/spring-cache.xsd"),
 			new NamespaceInformation(
 					"http://www.springframework.org/schema/websocket",
-					"http://www.springframework.org/schema/websocket",
+					"Insert http://www.springframework.org/schema/websocket namespace",
 					"xmlns:websocket=\"http://www.springframework.org/schema/websocket\"",
 					"http://www.springframework.org/schema/websocket https://www.springframework.org/schema/websocket/spring-websocket.xsd"),
 
 			// security
 			new NamespaceInformation(
 					"http://www.springframework.org/schema/security",
-					"http://www.springframework.org/schema/security",
+					"Insert http://www.springframework.org/schema/security namespace",
 					"xmlns:security=\"http://www.springframework.org/schema/security\"",
 					"http://www.springframework.org/schema/security https://www.springframework.org/schema/security/spring-security.xsd"),
 			
