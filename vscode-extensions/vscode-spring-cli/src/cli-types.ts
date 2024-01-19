@@ -20,6 +20,10 @@ export interface BootAddMetadata {
     catalog?: string;
 }
 
+export interface commandAddMetadata {
+    url: string;
+}
+
 export interface ProjectCatalog {
     name: string;
     url: string;

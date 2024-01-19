@@ -71,6 +71,11 @@
         "command": "vscode-spring-cli.project.remove",
         "title": "Remove Project",
         "category": "Spring CLI"
+      },
+      {
+        "command": "vscode-spring-cli.command.add",
+        "title": "Add Command",
+        "category": "Spring CLI"
       }
     ],
     "configuration": {
@@ -82,7 +87,27 @@
           "description": "Spring CLI executable. Either name of the executable if it's on the PATH environment variable or absolute path to the spring CLI executable (or JAR for dev purposes)"
         }
       }
-    }
+    },
+    "taskDefinitions": [
+      {
+        "type": "spring-cli",
+        "required": ["command", "subcommand"],
+        "properties": {
+          "command": {
+            "type": "string",
+            "description": "The command to execute"
+          },
+          "subcommand": {
+            "type": "string",
+            "description": "The sub-command to execute"
+          },
+          "arguments": {
+            "type": "array",
+            "description": "The parameters of the command"
+          }
+        }
+      }
+    ]
   },
   "main": "./out/extension",
   "scripts": {

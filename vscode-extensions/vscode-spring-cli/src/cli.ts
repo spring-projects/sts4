@@ -1,4 +1,4 @@
-import { BootAddMetadata, BootNewMetadata, Project, ProjectCatalog } from "./cli-types";
+import { BootAddMetadata, BootNewMetadata, Project, ProjectCatalog, commandAddMetadata } from "./cli-types";
 import { ProcessExecution, ProgressLocation, Task, TaskScope, Uri, env, tasks, window, workspace } from "vscode";
 import cp from "child_process";
 import { homedir } from "os";
@@ -26,6 +26,16 @@ export class Cli {
 
     projectCatalogListAvailable(): Promise<ProjectCatalog[]> {
         return this.fetchJson("Fetching Available Catalogs...", undefined, ["project-catalog", "list-available"]);
+    }
+
+    commandAdd(metadata: commandAddMetadata) {
+        const args = [
+            "command",
+            "add",
+            "--from",
+            metadata.url
+        ];
+        this.exec("Add Command", metadata.url, args);
     }
 
     projectCatalogAdd(catalog: ProjectCatalog): Promise<void> {
@@ -135,7 +145,7 @@ export class Cli {
             return new Promise<void>(async (resolve, reject) => {
                 const processOpts = { cwd: cwd || getWorkspaceRoot()?.fsPath || homedir() };
                 const process = this.executable.endsWith(".jar") ? new ProcessExecution("java", [ "-jar", this.executable,  ...args], processOpts) : new ProcessExecution(this.executable, args, processOpts);
-                const task = new Task({ type: SPRING_CLI_TASK_TYPE}, cwd ? workspace.getWorkspaceFolder(Uri.file(cwd)) : TaskScope.Global, `${title}: ${message}`, SPRING_CLI_TASK_TYPE, process);
+                const task = new Task({ type: SPRING_CLI_TASK_TYPE }, cwd ? workspace.getWorkspaceFolder(Uri.file(cwd)) : TaskScope.Global, `${title}: ${message}`, SPRING_CLI_TASK_TYPE, process);
                 const taskExecution = await tasks.executeTask(task);
                 if (cancellation.isCancellationRequested) {
                     reject();
