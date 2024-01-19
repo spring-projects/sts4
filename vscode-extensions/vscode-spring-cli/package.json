@@ -104,6 +104,10 @@
           "arguments": {
             "type": "array",
             "description": "The parameters of the command"
+          },
+          "cwd": {
+            "type": "string",
+            "description": "Path for Spring CLI process execution"
           }
         }
       }

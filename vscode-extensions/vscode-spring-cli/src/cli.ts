@@ -1,14 +1,14 @@
 import { BootAddMetadata, BootNewMetadata, Project, ProjectCatalog, commandAddMetadata } from "./cli-types";
-import { ProcessExecution, ProgressLocation, Task, TaskScope, Uri, env, tasks, window, workspace } from "vscode";
+import { CancellationToken, ProcessExecution, ProgressLocation, ProviderResult, Task, TaskProvider, TaskScope, Uri, tasks, window, workspace } from "vscode";
 import cp from "child_process";
 import { homedir } from "os";
 import { getWorkspaceRoot } from "./utils";
 
-const SPRING_CLI_TASK_TYPE = 'spring-cli';
+export const SPRING_CLI_TASK_TYPE = 'spring-cli';
 
 export class Cli {
 
-    private get executable(): string {
+    get executable(): string {
         return workspace.getConfiguration("spring-cli").get("executable") || "spring";
     }
 
@@ -201,5 +201,25 @@ export class Cli {
         });
     }
 
+}
+
+export class CliTaskProvider implements TaskProvider {
+
+    constructor(private cli: Cli) {}
+
+    provideTasks(token: CancellationToken): ProviderResult<Task[]> {
+        return [];
+    }
+
+    resolveTask(task: Task, token: CancellationToken): ProviderResult<Task> {
+        if (task.definition.type === SPRING_CLI_TASK_TYPE) {
+            const processOpts = { cwd: task.definition.cwd || getWorkspaceRoot()?.fsPath || homedir() };
+            task.execution = this.cli.executable.endsWith(".jar") ? 
+                new ProcessExecution("java", [ "-jar", this.cli.executable,  ...(task.definition.args || [])], processOpts)
+                 : new ProcessExecution(this.cli.executable, task.definition.args || [], processOpts);
+        }
+        return task;
+    }
+    
 }
 
