@@ -1,6 +1,7 @@
-import { InputBox, OpenDialogOptions, QuickPickItem, QuickPickItemKind, Uri, WorkspaceFolder, window, workspace } from "vscode";
+import { InputBox, OpenDialogOptions, QuickPickItem, QuickPickItemKind, Uri, WorkspaceFolder, window, workspace} from "vscode";
 import path from "path"
 import { Project } from "./cli-types";
+import debounce from "lodash.debounce";
 
 export async function openDialogForFolder(customOptions: OpenDialogOptions): Promise<Uri> {
     const options: OpenDialogOptions = {
@@ -21,7 +22,7 @@ export async function openDialogForFolder(customOptions: OpenDialogOptions): Pro
 export function enterText(opts: {
     title: string,
     prompt: string,
-    validate?: (v: string) => string | undefined,
+    validate?: (v: string) => Promise<string | undefined>,
     defaultValue?: string,
     placeholder?: string
 }): Promise<string> {
@@ -32,10 +33,9 @@ export function enterText(opts: {
         inputBox.prompt = opts.prompt;
         inputBox.value = opts.defaultValue;
         inputBox.ignoreFocusOut = true;
-        inputBox.onDidChangeValue(() => {
-            inputBox.validationMessage = opts.validate ? opts.validate(inputBox.value) : undefined;
-        });
-        inputBox.onDidAccept(() => {
+        inputBox.onDidChangeValue(debounce(async v => inputBox.validationMessage = opts.validate ? await opts.validate(inputBox.value) : undefined, 300));
+        inputBox.onDidAccept(async () => {
+            inputBox.validationMessage = opts.validate ? await opts.validate(inputBox.value) : undefined;
             if (!inputBox.validationMessage) {
                 resolve(inputBox.value);
                 inputBox.hide();
@@ -94,6 +94,12 @@ export function mapProjectToQuickPick(project: Project): QuickPickItem {
         kind: QuickPickItemKind.Default,
         description: project.description
     };
+}
+
+export function getWorkspaceRoot(): Uri | undefined {
+    if (workspace.workspaceFolders && workspace.workspaceFolders.length) {
+        return workspace.workspaceFolders[0].uri
+    }
 }
 
 

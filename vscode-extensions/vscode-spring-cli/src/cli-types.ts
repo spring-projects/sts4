@@ -17,7 +17,7 @@ export interface BootNewMetadata {
 
 export interface BootAddMetadata {
     targetFolder?: string;
-    catalogType?: string;
+    catalog?: string;
 }
 
 export interface ProjectCatalog {

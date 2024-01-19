@@ -2,26 +2,29 @@ import * as path from "path";
 import { BootAddMetadata, BootNewMetadata, Project } from "./cli-types";
 import { CLI } from "./extension";
 import { enterText, getTargetPomXml, mapProjectToQuickPick, openDialogForFolder } from "./utils";
-import vscode, { QuickPickItem, QuickPickItemKind } from 'vscode';
+import { Uri, commands, window, workspace } from 'vscode';
 import fs from 'fs'
 
 const OPEN_IN_NEW_WORKSPACE = "Open";
 const OPEN_IN_CURRENT_WORKSPACE = "Add to Workspace";
 
-export async function handleBootAdd(pom?: vscode.Uri): Promise<void> {
+export async function handleBootAdd(pom?: Uri): Promise<void> {
     const metadata: BootAddMetadata = {};
     pom = pom || await getTargetPomXml();
     if (pom) {
         metadata.targetFolder = path.dirname(pom.fsPath);
     }
     if (!metadata.targetFolder) {
-        vscode.window.showErrorMessage("Spring-CLI Boot Add command requires a target project");
+        window.showErrorMessage("Spring-CLI Boot Add command requires a target project");
         return;
     }
-    if (!metadata.catalogType) {
-        metadata.catalogType = (await vscode.window.showQuickPick(CLI.projectList().then(ps => ps.map(mapProjectToQuickPick)), { canPickMany: false, ignoreFocusOut: true }))?.label;
+    if (!metadata.catalog) {
+        const fetchProjects = CLI.projectList().then(ps => ps.map(mapProjectToQuickPick));
+        metadata.catalog = (await window.showQuickPick(fetchProjects, { canPickMany: false, ignoreFocusOut: true }))?.label;
     }
-    return CLI.bootAdd(metadata);
+    if (metadata.catalog) {
+        return CLI.bootAdd(metadata);
+    }
 }
 
 export async function handleBootNew(targetFolder?: string): Promise<void> {
@@ -31,7 +34,8 @@ export async function handleBootNew(targetFolder?: string): Promise<void> {
     metadata.targetFolder = targetFolder || (await openDialogForFolder({title: "Select Parent Folder"})).fsPath;
 
     // Select project type from the list of available types
-    metadata.catalogId = (await vscode.window.showQuickPick(CLI.projectList().then(ps => ps.map(mapProjectToQuickPick)), { canPickMany: false }))?.label;
+    const fetchProjects = CLI.projectList().then(ps => ps.map(mapProjectToQuickPick));
+    metadata.catalogId = (await window.showQuickPick(fetchProjects, { canPickMany: false }))?.label;
 
     if (!metadata.catalogId) {
         // Cancelled
@@ -43,7 +47,7 @@ export async function handleBootNew(targetFolder?: string): Promise<void> {
             title: "Project Name",
             prompt: "Enter Project Name",
             defaultValue: metadata.name || metadata.catalogId,
-            validate: value => {
+            validate: async value => {
                 if (!/^[a-z_][a-z0-9_]*(-[a-z_][a-z0-9_]*)*$/.test(value)) {
                     return "Invalid Project Name";
                 }
@@ -57,22 +61,22 @@ export async function handleBootNew(targetFolder?: string): Promise<void> {
             title: "Artifact Id",
             prompt: "Enter Artifact Id",
             defaultValue: metadata.name,
-            validate: value => (/^[a-z_][a-z0-9_]*(-[a-z_][a-z0-9_]*)*$/.test(value)) ? undefined : "Invalid Artifact Id"
+            validate: async value => (/^[a-z_][a-z0-9_]*(-[a-z_][a-z0-9_]*)*$/.test(value)) ? undefined : "Invalid Artifact Id"
         });
     
         metadata.groupId = await enterText({
             title: "Group Id",
             prompt: "Enter Group Id",
             defaultValue: "com.example",
-            validate: value => (/^[a-z_][a-z0-9_]*(\.[a-z0-9_]+)*$/.test(value)) ? undefined : "Invalid Group Id"
+            validate: async value => (/^[a-z_][a-z0-9_]*(\.[a-z0-9_]+)*$/.test(value)) ? undefined : "Invalid Group Id"
         });
     
         // Root package name
         metadata.rootPackage = await enterText({
             title: "Root Package Name",
             prompt: "Enter Root Package Name",
-            defaultValue: `${metadata.groupId}.${metadata.name.replace("-", ".")}`,
-            validate: value => (/^[a-z][a-z0-9_]*(\.[a-z0-9_]+)+[0-9a-z_]$/.test(value)) ? undefined : "Invalid Package Name"
+            defaultValue: `${metadata.groupId}.${metadata.name.toLowerCase().replace(/(-|_)+/g, ".")}`,
+            validate: async value => (/^[a-z][a-z0-9_]*(\.[a-z0-9_]+)+[0-9a-z_]$/.test(value)) ? undefined : "Invalid Package Name"
         });
     } catch (error) {
         // Cancelled
@@ -85,21 +89,21 @@ export async function handleBootNew(targetFolder?: string): Promise<void> {
         await CLI.bootNew(metadata);
 
         // Open project either is the same workspace or new workspace
-        const hasOpenFolder = vscode.workspace.workspaceFolders !== undefined || vscode.workspace.rootPath !== undefined;
+        const hasOpenFolder = workspace.workspaceFolders !== undefined || workspace.rootPath !== undefined;
 
         const pathToOpen = path.resolve(metadata.targetFolder, metadata.name);
 
         // Don't prompt to open projectLocation if it's already a currently opened folder
-        if (hasOpenFolder && (vscode.workspace.workspaceFolders.some(folder => folder.uri.fsPath === pathToOpen) || vscode.workspace.rootPath === pathToOpen)) {
+        if (hasOpenFolder && (workspace.workspaceFolders.some(folder => folder.uri.fsPath === pathToOpen) || workspace.rootPath === pathToOpen)) {
             return;
         }
-        const choice = await specifyOpenMethod(hasOpenFolder, vscode.Uri.file(pathToOpen))
+        const choice = await specifyOpenMethod(hasOpenFolder, Uri.file(pathToOpen))
 
         if (choice === OPEN_IN_NEW_WORKSPACE) {
-            vscode.commands.executeCommand("vscode.openFolder", vscode.Uri.file(pathToOpen), hasOpenFolder);
+            commands.executeCommand("vscode.openFolder", Uri.file(pathToOpen), hasOpenFolder);
         } else if (choice === OPEN_IN_CURRENT_WORKSPACE) {
-            if (!vscode.workspace.workspaceFolders.find((workspaceFolder) => workspaceFolder.uri && pathToOpen.startsWith(workspaceFolder.uri.fsPath))) {
-                vscode.workspace.updateWorkspaceFolders(vscode.workspace.workspaceFolders.length, null, { uri: vscode.Uri.file(pathToOpen) });
+            if (!workspace.workspaceFolders.find((workspaceFolder) => workspaceFolder.uri && pathToOpen.startsWith(workspaceFolder.uri.fsPath))) {
+                workspace.updateWorkspaceFolders(workspace.workspaceFolders.length, null, { uri: Uri.file(pathToOpen) });
             }
         }
     }
@@ -107,10 +111,10 @@ export async function handleBootNew(targetFolder?: string): Promise<void> {
 }
 
 
-async function specifyOpenMethod(hasOpenFolder: boolean, projectLocation: vscode.Uri): Promise<string> {
+async function specifyOpenMethod(hasOpenFolder: boolean, projectLocation: Uri): Promise<string> {
     const candidates: string[] = [
         OPEN_IN_NEW_WORKSPACE,
         hasOpenFolder ? OPEN_IN_CURRENT_WORKSPACE : undefined,
     ].filter(Boolean);
-    return await vscode.window.showInformationMessage(`Successfully generated. Location: ${projectLocation.fsPath}`, ...candidates);
+    return await window.showInformationMessage(`Successfully generated. Location: ${projectLocation.fsPath}`, ...candidates);
 }

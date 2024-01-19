@@ -1,0 +1,11 @@
+# IDE configs
+.vscode/**
+.idea/**
+*.iml
+
+# Logs
+*.log*
+
+# Extensions
+.gitignore
+**/*.map

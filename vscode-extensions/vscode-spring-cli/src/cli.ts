@@ -1,68 +1,31 @@
 import { BootAddMetadata, BootNewMetadata, Project, ProjectCatalog } from "./cli-types";
-import vscode, { TaskScope } from "vscode";
+import { ProcessExecution, ProgressLocation, Task, TaskScope, Uri, env, tasks, window, workspace } from "vscode";
+import cp from "child_process";
+import { homedir } from "os";
+import { getWorkspaceRoot } from "./utils";
 
 const SPRING_CLI_TASK_TYPE = 'spring-cli';
 
 export class Cli {
 
-    projectList() : Thenable<Project[]> {
-        return Promise.resolve([
-            {
-                name: 'web',
-                description: 'Hello, World RESTful web service.',
-                url: 'https://github.com/rd-1-2022/rest-service',
-                catalog: 'gs',
-                tags: ['java-17', 'boot-3.1.x', 'rest', 'web']
-            },
-            {
-                name: 'jpa',
-                description: 'Learn how to work with JPA data persistence using Spring Data JPA.',
-                url: 'https://github.com/rd-1-2022/rpt-spring-data-jpa',
-                catalog: 'gs',
-                tags: ['java-17', 'boot-3.1.x', 'jpa', 'h2']
-            },
-            {
-                name: 'scheduling',
-                description: 'How to schedule tasks',
-                url: 'https://github.com/rd-1-2022/rpt-spring-scheduling-tasks',
-                catalog: 'gs',
-                tags: ['scheduling']
-            }
-        ]);
+    private get executable(): string {
+        return workspace.getConfiguration("spring-cli").get("executable") || "spring";
     }
 
-    projectCatalogList(): Thenable<ProjectCatalog[]> {
-        return Promise.resolve([
-            {
-                name: "gs",
-                url: "https://github.com/rd-1-2022/spring-gs-catalog",
-                description: "Getting Started Catalog",
-                tags: ["java-17", "boot-3.1"]
-            },
-            {
-                name: "ai-azure",
-                url: "https://github.com/rd-1-2022/ai-azure-catalog",
-                description: "Azure OpenAI Catalog",
-                tags: ["java-17", "boot-3.1.x", "ai", "azure"]
-            }
-        ]);
+    isBorderLine(s: string) {
+        return !/(\s|\S)+/.test(s);
     }
 
-    projectCatalogListAvailable(): Thenable<ProjectCatalog[]> {
-        return Promise.resolve([
-            {
-                name: "ai-azure",
-                url: "https://github.com/rd-1-2022/ai-azure-catalog",
-                description: "Azure OpenAI Catalog",
-                tags: ["java-17", "boot-3.1.x", "ai", "azure"]
-            },
-            {
-                name: "dapr",
-                url: "https://github.com/ciberkleid/spring-cli-dapr-catalog",
-                description: "Dapr Catalog",
-                tags: ["java-17", "boot-3.1.x", "dapr"]
-            }
-        ]);
+    projectList() : Promise<Project[]> {
+        return this.fetch("Fetching projects...", undefined, ["project", "list-json"]);
+    }
+
+    projectCatalogList(): Promise<ProjectCatalog[]> {
+        return this.fetch("Fetching Catalogs...", undefined, ["project-catalog", "list-json"]);
+    }
+
+    projectCatalogListAvailable(): Promise<ProjectCatalog[]> {
+        return this.fetch("Fetching Available Catalogs...", undefined, ["project-catalog", "list-available-json"]);
     }
 
     projectCatalogAdd(catalog: ProjectCatalog): Promise<void> {
@@ -154,15 +117,15 @@ export class Cli {
             "boot",
             "add",
             "--from",
-            metadata.catalogType
+            metadata.catalog
         ];
-        return this.exec("Add to Boot Project", `'${metadata.catalogType}'`, args, metadata.targetFolder);
+        return this.exec("Add to Boot Project", `'${metadata.catalog}'`, args, metadata.targetFolder);
     }
 
     private async exec(title: string, message: string, args: string[], cwd?: string): Promise<void> {
 
-        return vscode.window.withProgress({
-            location: vscode.ProgressLocation.Window,
+        return window.withProgress({
+            location: ProgressLocation.Window,
             cancellable: true,
             title
         }, (progress, cancellation) => {
@@ -170,9 +133,10 @@ export class Cli {
             progress.report({message});
         
             return new Promise<void>(async (resolve, reject) => {
-                const process = new vscode.ProcessExecution('spring', args, { cwd });
-                const task = new vscode.Task({ type: SPRING_CLI_TASK_TYPE}, cwd ? vscode.workspace.getWorkspaceFolder(vscode.Uri.file(cwd)) : TaskScope.Global, `${title}: ${message}`, SPRING_CLI_TASK_TYPE, process);
-                const taskExecution = await vscode.tasks.executeTask(task);
+                const processOpts = { cwd: cwd || getWorkspaceRoot()?.fsPath || homedir() };
+                const process = this.executable.endsWith(".jar") ? new ProcessExecution("java", [ "-jar", this.executable,  ...args], processOpts) : new ProcessExecution(this.executable, args, processOpts);
+                const task = new Task({ type: SPRING_CLI_TASK_TYPE}, cwd ? workspace.getWorkspaceFolder(Uri.file(cwd)) : TaskScope.Global, `${title}: ${message}`, SPRING_CLI_TASK_TYPE, process);
+                const taskExecution = await tasks.executeTask(task);
                 if (cancellation.isCancellationRequested) {
                     reject();
                 }
@@ -180,7 +144,7 @@ export class Cli {
                     cancelListener.dispose();
                     reject();
                 })
-                const listener = vscode.tasks.onDidEndTaskProcess(e => {
+                const listener = tasks.onDidEndTaskProcess(e => {
                     if (e.execution === taskExecution) {
                         listener.dispose();
                         resolve();
@@ -188,6 +152,42 @@ export class Cli {
                 });
             });
         
+        });
+    }
+
+    private async fetch<T>(title: string, message: string, args: string[], cwd?: string) : Promise<T> {
+
+        return window.withProgress({
+            location: ProgressLocation.Window,
+            cancellable: true,
+            title
+        }, (progress, cancellation) => {
+            
+            if (message) {
+                progress.report({message});
+            }
+
+            return new Promise<T>(async (resolve, reject) => {
+                if (cancellation.isCancellationRequested) {
+                    reject("Cancelled");
+                }
+                const processOpts = { cwd: cwd || getWorkspaceRoot()?.fsPath || homedir() };
+                const process = this.executable.endsWith(".jar") ? await cp.exec(`java -jar ${this.executable} ${args.join(" ")}`, processOpts) : await cp.exec(`${this.executable} ${args.join(" ")}`, processOpts);
+                cancellation.onCancellationRequested(() => process.kill());
+                const dataChunks: string[] = [];
+                process.stdout.on("data", s => dataChunks.push(s));
+                process.on("exit", (code) => {
+                    if (code) {
+                        reject(`Failed to fetch data: ${dataChunks.join()}`);
+                    } else {
+                        try {
+                            resolve(JSON.parse(dataChunks.join()) as T);
+                        } catch (error) {
+                            reject(error);
+                        }
+                    }
+                });
+            });
         });
     }
 

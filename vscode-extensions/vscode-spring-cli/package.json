@@ -72,7 +72,17 @@
         "title": "Remove Project",
         "category": "Spring CLI"
       }
-    ]
+    ],
+    "configuration": {
+      "title": "Spring CLI",
+      "properties": {
+        "spring-cli.executable": {
+          "type": "string",
+          "default": "spring",
+          "description": "Spring CLI executable. Either name of the executable if it's on the PATH environment variable or absolute path to the spring CLI executable (or JAR for dev purposes)"
+        }
+      }
+    }
   },
   "main": "./out/extension",
   "scripts": {
@@ -84,8 +94,10 @@
     "vsce-pre-release-package": "vsce package --pre-release"
   },
   "dependencies": {
+    "lodash.debounce": "^4.0.8"
   },
   "devDependencies": {
+    "@types/lodash.debounce": "^4.0.9",
     "@types/node": "^18.8.0",
     "@types/vscode": "1.75.0",
     "typescript": "^4.8.0",

@@ -3,7 +3,7 @@ import { CLI } from "./extension";
 import { window, QuickPickItem, Uri } from "vscode";
 import { enterText } from "./utils";
 
-interface ProjectCatalogQuickPick extends QuickPickItem {
+interface ProjectCatalogQuickPickItem extends QuickPickItem {
     projectCatalog: ProjectCatalog;
 }
 
@@ -18,18 +18,18 @@ export async function handleCatalogAdd() {
     let currentCatalogNames = [];
 
     // Select from available project catalog - currentle added project ctalogs
-    let catalog = await pickCatalog(async () => {
-        const [available, current] = await Promise.all([CLI.projectCatalogListAvailable(), CLI.projectCatalogList()]);
+    const itemsPromise = Promise.all([CLI.projectCatalogListAvailable(), CLI.projectCatalogList()]).then(([available, current]) => {
         const currentCatalogNames = current.map(c => c.name);
-        return [CUSTOM_CATALOG, ...available.filter(a => !currentCatalogNames.includes(a.name))];
+        return [CUSTOM_CATALOG, ...available.filter(a => !currentCatalogNames.includes(a.name))].map(mapCatalogToQuickPickItem);
     });
+    let catalog = (await window.showQuickPick(itemsPromise, { ignoreFocusOut: true, canPickMany: false}))?.projectCatalog;
 
     if (catalog === CUSTOM_CATALOG) {
         // No available catalog selected enter the catalog manually
         const name = await enterText({
             title: "Name",
             prompt: "Enter Name:",
-            validate: v => {
+            validate: async v => {
                 if (!/^\S+$/.test(v)) {
                     return "Invalid Project Catalog Name";
                 }
@@ -42,7 +42,7 @@ export async function handleCatalogAdd() {
             title: "URL",
             prompt: "Enter URL:",
             placeholder: "https://github.com/my-org/my-project-catalog",
-            validate: v => {
+            validate: async v => {
                 try {
                     Uri.parse(v, true);
                 } catch (error) {
@@ -68,33 +68,17 @@ export async function handleCatalogAdd() {
 }
 
 export async function handleCatalogRemove() {
-    const catalog = await pickCatalog(CLI.projectCatalogList);
+    const itemsPromise = CLI.projectCatalogList().then(catalogs => catalogs.map(mapCatalogToQuickPickItem));
+    const catalog = (await window.showQuickPick(itemsPromise, { ignoreFocusOut: true, canPickMany: false}))?.projectCatalog;
     if (catalog) {
         return CLI.projectCatalogRemove(catalog.name);
     }
 }
 
-async function pickCatalog(fetch: () => Thenable<ProjectCatalog[]>): Promise<ProjectCatalog | undefined> {
-    return new Promise(async (resolve, reject) => {
-        const quickPick = window.createQuickPick<ProjectCatalogQuickPick>();
-        quickPick.busy = true;
-        quickPick.title = "Loading Project Catalogs...";
-        quickPick.canSelectMany = false;
-        quickPick.show();
-        const catalogs = await fetch();
-    
-        quickPick.items = catalogs.map(c => ({
-            label: c.name,
-            description: c.description,
-            details: c.tags ? c.tags.join(", ") : undefined,
-            projectCatalog: c
-        }));
-        quickPick.title = "Select Project Catalog";
-        quickPick.busy = false;
-
-        quickPick.onDidAccept(() => {
-            resolve(quickPick.selectedItems.length ? quickPick.selectedItems[0].projectCatalog : undefined);
-            quickPick.hide();
-        });
-    });
+function mapCatalogToQuickPickItem(c: ProjectCatalog): ProjectCatalogQuickPickItem {
+    return {
+        label: c.name,
+        description: c.description,
+        projectCatalog: c
+    };
 }
