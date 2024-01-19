@@ -17,15 +17,15 @@ export class Cli {
     }
 
     projectList() : Promise<Project[]> {
-        return this.fetch("Fetching projects...", undefined, ["project", "list-json"]);
+        return this.fetchJson("Fetching projects...", undefined, ["project", "list"]);
     }
 
     projectCatalogList(): Promise<ProjectCatalog[]> {
-        return this.fetch("Fetching Catalogs...", undefined, ["project-catalog", "list-json"]);
+        return this.fetchJson("Fetching Catalogs...", undefined, ["project-catalog", "list"]);
     }
 
     projectCatalogListAvailable(): Promise<ProjectCatalog[]> {
-        return this.fetch("Fetching Available Catalogs...", undefined, ["project-catalog", "list-available-json"]);
+        return this.fetchJson("Fetching Available Catalogs...", undefined, ["project-catalog", "list-available"]);
     }
 
     projectCatalogAdd(catalog: ProjectCatalog): Promise<void> {
@@ -155,7 +155,7 @@ export class Cli {
         });
     }
 
-    private async fetch<T>(title: string, message: string, args: string[], cwd?: string) : Promise<T> {
+    private async fetchJson<T>(title: string, message: string, args: string[], cwd?: string) : Promise<T> {
 
         return window.withProgress({
             location: ProgressLocation.Window,
@@ -172,7 +172,7 @@ export class Cli {
                     reject("Cancelled");
                 }
                 const processOpts = { cwd: cwd || getWorkspaceRoot()?.fsPath || homedir() };
-                const process = this.executable.endsWith(".jar") ? await cp.exec(`java -jar ${this.executable} ${args.join(" ")}`, processOpts) : await cp.exec(`${this.executable} ${args.join(" ")}`, processOpts);
+                const process = this.executable.endsWith(".jar") ? await cp.exec(`java -jar ${this.executable} ${args.join(" ")} --json`, processOpts) : await cp.exec(`${this.executable} ${args.join(" ")}`, processOpts);
                 cancellation.onCancellationRequested(() => process.kill());
                 const dataChunks: string[] = [];
                 process.stdout.on("data", s => dataChunks.push(s));
