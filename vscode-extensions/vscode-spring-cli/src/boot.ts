@@ -1,5 +1,5 @@
 import * as path from "path";
-import { BootAddMetadata, BootNewMetadata, Project } from "./cli-types";
+import { BootAddMetadata, BootNewMetadata } from "./cli-types";
 import { CLI } from "./extension";
 import { enterText, getTargetPomXml, mapProjectToQuickPick, openDialogForFolder } from "./utils";
 import { Uri, commands, window, workspace } from 'vscode';
@@ -23,7 +23,9 @@ export async function handleBootAdd(pom?: Uri): Promise<void> {
         metadata.catalog = (await window.showQuickPick(fetchProjects, { canPickMany: false, ignoreFocusOut: true }))?.label;
     }
     if (metadata.catalog) {
-        return CLI.bootAdd(metadata);
+        await CLI.bootAdd(metadata);
+        const doc = await workspace.openTextDocument(path.join(metadata.targetFolder, `README-${metadata.catalog}.md`));
+        await window.showTextDocument(doc);
     }
 }
 
