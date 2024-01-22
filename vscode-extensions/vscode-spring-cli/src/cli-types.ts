@@ -20,8 +20,14 @@ export interface BootAddMetadata {
     catalog?: string;
 }
 
-export interface commandAddMetadata {
+export interface CommandAddMetadata {
     url: string;
+}
+
+export interface CommandRemoveMetadata {
+    command: string;
+    subcommand: string;
+    cwd: string;
 }
 
 export interface ProjectCatalog {
@@ -29,4 +35,26 @@ export interface ProjectCatalog {
     url: string;
     description?: string;
     tags?: string[];
+}
+
+export interface CommandInfo {
+    description?: string
+    options: CommandOptions[];
+}
+
+export interface CommandOptions {
+    name: string;
+    description?: string;
+    paramLabel?: string;
+    dataType: string;
+    defaultValue: string;
+    inputType: string;
+    required: boolean;
+    choices: {[name: string]: string}
+}
+
+export interface CommandExecuteMetadata {
+    command: string;
+    subcommand: string;
+    params: {[name: string]: string};
 }

@@ -1,8 +1,11 @@
-import { BootAddMetadata, BootNewMetadata, Project, ProjectCatalog, commandAddMetadata } from "./cli-types";
+import { BootAddMetadata, BootNewMetadata, Project, ProjectCatalog, CommandAddMetadata, CommandRemoveMetadata, CommandInfo, CommandExecuteMetadata } from "./cli-types";
 import { CancellationToken, ProcessExecution, ProgressLocation, ProviderResult, Task, TaskProvider, TaskScope, Uri, tasks, window, workspace } from "vscode";
 import cp from "child_process";
 import { homedir } from "os";
 import { getWorkspaceRoot } from "./utils";
+import path from "path";
+import fs from "fs";
+import yaml from "js-yaml";
 
 export const SPRING_CLI_TASK_TYPE = 'spring-cli';
 
@@ -10,10 +13,6 @@ export class Cli {
 
     get executable(): string {
         return workspace.getConfiguration("spring-cli").get("executable") || "spring";
-    }
-
-    isBorderLine(s: string) {
-        return !/(\s|\S)+/.test(s);
     }
 
     projectList() : Promise<Project[]> {
@@ -28,14 +27,87 @@ export class Cli {
         return this.fetchJson("Fetching Available Catalogs...", undefined, ["project-catalog", "list-available"]);
     }
 
-    commandAdd(metadata: commandAddMetadata) {
+    commandAdd(metadata: CommandAddMetadata, cwd?: string) {
         const args = [
             "command",
             "add",
             "--from",
             metadata.url
         ];
-        this.exec("Add Command", metadata.url, args);
+        this.exec("Add Command", metadata.url, args, cwd || homedir());
+    }
+
+    commandRemove(metadata: CommandRemoveMetadata) {
+        const args = [
+            "command",
+            "remove",
+            "--commandName",
+            metadata.command,
+            "--subCommandName",
+            metadata.subcommand
+        ];
+        this.exec("Remove Command", `'${metadata.command} ${metadata.subcommand}'`, args, metadata.cwd);
+    }
+
+    commandList(cwd: string, command?: string): Promise<string[]> {
+        return new Promise(async(resolve, reject) => {
+            let p = path.join(cwd, ".spring", "commands");
+            if (command) {
+                p = path.join(p, command);
+            }
+            fs.readdir(p, { withFileTypes: true }, (error, files) => {
+                if (error) {
+                    reject(error.message);
+                } else {
+                    resolve(files.filter(d => d.isDirectory()).map(d => d.name));
+                }
+            })
+        });
+    }
+
+    commandInfo(cwd: string, command: string, subcommand: string): Promise<CommandInfo> {
+        return new Promise((resolve, reject) => {
+            try {
+                const parentFolder = path.join(cwd, ".spring", "commands", command, subcommand);
+                let file;
+                if (fs.existsSync(path.join(parentFolder, "command.yaml"))) {
+                    file = path.join(parentFolder, "command.yaml");
+                } else if (fs.existsSync(path.join(parentFolder, "command.yml"))) {
+                    file = path.join(parentFolder, "command.yml");
+                }
+                if (file) {
+                    const content = fs.readFileSync(file, "utf-8");
+                    const obj = yaml.load(content, {json: true}) as any;
+                    if (typeof obj === 'object' && obj?.command) {
+                        resolve(obj.command as CommandInfo);
+                    } else {
+                        reject(`Unable to read command '${command} ${subcommand}' info`);
+                    }
+                }
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+
+    commandNew(cwd: string) {
+        const args = [
+            "command",
+            "new",
+        ];
+        return this.exec("Remove Command", undefined, args, cwd);
+    }
+
+    commandExecute(metadata: CommandExecuteMetadata, cwd: string) {
+        const args = [
+            metadata.command,
+            metadata.subcommand,
+        ];
+        Object.keys(metadata.params).forEach(p => {
+            args.push(`--${p}`);
+            args.push(metadata.params[p]);
+        });
+        return this.exec("Executing Command", `'${metadata.command} ${metadata.subcommand}'`, args, cwd);
     }
 
     projectCatalogAdd(catalog: ProjectCatalog): Promise<void> {
