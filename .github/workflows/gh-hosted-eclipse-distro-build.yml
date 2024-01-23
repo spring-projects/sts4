@@ -70,14 +70,14 @@ jobs:
           ./mvnw --batch-mode -U clean install -P${{ inputs.eclipse_profile }} -P${{ inputs.build_type }} $sts4_ls_version_param $p2_qualifier_param -Pgitactions -Pgpg.sign \
           -Dmaven.repo.local=~/.m2/repository-signed -Dmaven.test.skip=true -Declipse.p2.mirrors=false -Dtycho.localArtifacts=ignore -Dp2.replaceQualifier=true \
           -Dskip.eclipserun.proxies=false -Dtycho.equinox.resolver.uses=true \
-          -Dmaven.wagon.httpconnectionManager.ttlSeconds=40 \
-          -Dmaven.wagon.http.retryHandler.count=30 \
-          -Dorg.eclipse.equinox.p2.transport.ecf.retry=30 \
-          -Daether.connector.http.connectionMaxTtl=40 \
+          -Dmaven.wagon.httpconnectionManager.ttlSeconds=120 \
+          -Dmaven.wagon.http.retryHandler.count=60 \
+          -Dorg.eclipse.equinox.p2.transport.ecf.retry=60 \
+          -Daether.connector.http.connectionMaxTtl=60 \
           -Dhttp.keepAlive=false \
-          -Dhttpclient.retry-max=30 \
-          -Dorg.eclipse.ecf.provider.filetransfer.httpclient.retrieve.readTimeout=1800000 -Dorg.eclipse.ecf.provider.filetransfer.httpclient4.retrieve.readTimeout=1800000 -Dorg.eclipse.ecf.provider.filetransfer.retrieve.readTimeout=1800000 \
-          -Dorg.eclipse.ecf.provider.filetransfer.retrieve.retryAttempts=30
+          -Dhttpclient.retry-max=60 \
+          -Dorg.eclipse.ecf.provider.filetransfer.httpclient.retrieve.readTimeout=2400000 -Dorg.eclipse.ecf.provider.filetransfer.httpclient4.retrieve.readTimeout=2400000 -Dorg.eclipse.ecf.provider.filetransfer.retrieve.readTimeout=2400000 \
+          -Dorg.eclipse.ecf.provider.filetransfer.retrieve.retryAttempts=60
       - name: Store S3 Paths
         id: s3-paths
         run: |
