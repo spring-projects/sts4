@@ -52,7 +52,7 @@ jobs:
           echo "${{ secrets.GPG_PASSPHRASE }}" | gpg --batch --yes --passphrase-fd 0 --import gpg.asc
       - name: Build Eclipse Distro
         env:
-          MAVEN_OPTS: -Dmaven.wagon.httpconnectionManager.ttlSeconds=40 -Dmaven.wagon.http.retryHandler.count=10 -Daether.connector.http.connectionMaxTtl=40 -Dhttp.keepAlive=false -Dhttpclient.retry-max=30 -Dorg.eclipse.ecf.provider.filetransfer.httpclient.retrieve.readTimeout=1800000 -Dorg.eclipse.ecf.provider.filetransfer.httpclient4.retrieve.readTimeout=1800000 -Dorg.eclipse.ecf.provider.filetransfer.retrieve.readTimeout=1800000 -Dorg.eclipse.ecf.provider.filetransfer.retrieve.retryAttempts=30 -Dorg.eclipse.equinox.p2.transport.ecf.retry=10
+#          MAVEN_OPTS: -Dmaven.wagon.httpconnectionManager.ttlSeconds=40 -Dmaven.wagon.http.retryHandler.count=10 -Daether.connector.http.connectionMaxTtl=40 -Dhttp.keepAlive=false -Dhttpclient.retry-max=30 -Dorg.eclipse.ecf.provider.filetransfer.httpclient.retrieve.readTimeout=1800000 -Dorg.eclipse.ecf.provider.filetransfer.httpclient4.retrieve.readTimeout=1800000 -Dorg.eclipse.ecf.provider.filetransfer.retrieve.readTimeout=1800000 -Dorg.eclipse.ecf.provider.filetransfer.retrieve.retryAttempts=30 -Dorg.eclipse.equinox.p2.transport.ecf.retry=10
           gpg_passphrase: ${{ secrets.GPG_PASSPHRASE }}
           gpg_keyname: ${{ secrets.GPG_KEYID }}
         run: |
@@ -67,7 +67,17 @@ jobs:
             p2_qualifier_param="-Dp2.qualifier=${p2_qualifier}"
           fi
           cd eclipse-distribution
-          ./mvnw --batch-mode -U clean install -P${{ inputs.eclipse_profile }} -P${{ inputs.build_type }} $sts4_ls_version_param $p2_qualifier_param -Pgitactions -Pgpg.sign -Dmaven.repo.local=~/.m2/repository-signed -Dmaven.test.skip=true -Declipse.p2.mirrors=false -Dtycho.localArtifacts=ignore -Dp2.replaceQualifier=true -Dskip.eclipserun.proxies=false -Dtycho.equinox.resolver.uses=true
+          ./mvnw --batch-mode -U clean install -P${{ inputs.eclipse_profile }} -P${{ inputs.build_type }} $sts4_ls_version_param $p2_qualifier_param -Pgitactions -Pgpg.sign \
+          -Dmaven.repo.local=~/.m2/repository-signed -Dmaven.test.skip=true -Declipse.p2.mirrors=false -Dtycho.localArtifacts=ignore -Dp2.replaceQualifier=true \
+          -Dskip.eclipserun.proxies=false -Dtycho.equinox.resolver.uses=true \
+          -Dmaven.wagon.httpconnectionManager.ttlSeconds=40 \
+          -Dmaven.wagon.http.retryHandler.count=30 \
+          -Dorg.eclipse.equinox.p2.transport.ecf.retry=30 \
+          -Daether.connector.http.connectionMaxTtl=40 \
+          -Dhttp.keepAlive=false \
+          -Dhttpclient.retry-max=30 \
+          -Dorg.eclipse.ecf.provider.filetransfer.httpclient.retrieve.readTimeout=1800000 -Dorg.eclipse.ecf.provider.filetransfer.httpclient4.retrieve.readTimeout=1800000 -Dorg.eclipse.ecf.provider.filetransfer.retrieve.readTimeout=1800000 \
+          -Dorg.eclipse.ecf.provider.filetransfer.retrieve.retryAttempts=30
       - name: Store S3 Paths
         id: s3-paths
         run: |
