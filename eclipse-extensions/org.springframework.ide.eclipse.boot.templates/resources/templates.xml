@@ -264,7 +264,7 @@ public ${SomeData} ${getMethodName}(@RequestParam ${String} ${param}) {
 	description="PostMapping method" 
 	enabled="true" 
 	>${x:import(org.springframework.web.bind.annotation.PostMapping, org.springframework.web.bind.annotation.RequestBody)}@PostMapping(value="${path}")
-public ${SomeEnityData} ${postMethodName}(@RequestBody ${SomeEnityData} ${entity}) {
+public ${SomeEntityData} ${postMethodName}(@RequestBody ${SomeEntityData} ${entity}) {
 	//TODO: process POST request
 	${cursor}
 	return ${entity};
@@ -277,7 +277,7 @@ public ${SomeEnityData} ${postMethodName}(@RequestBody ${SomeEnityData} ${entity
 	description="PutMapping method" 
 	enabled="true" 
 	>${x:import(org.springframework.web.bind.annotation.PutMapping, org.springframework.web.bind.annotation.RequestBody, org.springframework.web.bind.annotation.PathVariable)}@PutMapping(value="${path}/{${id}}")
-public ${SomeEnityData} ${putMethodName}(@PathVariable ${pvt:link(String,int,long)} ${id}, @RequestBody ${SomeEnityData} ${entity}) {
+public ${SomeEntityData} ${putMethodName}(@PathVariable ${pvt:link(String,int,long)} ${id}, @RequestBody ${SomeEntityData} ${entity}) {
 	//TODO: process PUT request
 	${cursor}
 	return ${entity};
