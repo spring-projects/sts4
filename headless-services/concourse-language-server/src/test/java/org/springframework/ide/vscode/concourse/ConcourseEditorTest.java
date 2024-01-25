@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2023 Pivotal, Inc.
+ * Copyright (c) 2016, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -672,6 +672,7 @@ public class ConcourseEditorTest {
                         "    var_files:\n" +
                         "    - my-repo/ci/dev.yml\n" +
                         "    vars:\n" +
+                        "    team: my-team\n" +
                         "    text: \"Hello World!\"\n"
         );
 
@@ -679,6 +680,7 @@ public class ConcourseEditorTest {
         editor.assertHoverContains("instance_vars", "A map of instance vars used to identify");
         editor.assertHoverContains("var_files", "files that will be passed to the pipeline config in the same manner as the --load-vars-from flag");
         editor.assertHoverContains("vars", 2, "A map of template variables to pass to the pipeline config.");
+        editor.assertHoverContains("team", "By default, the `set_pipeline` step sets the pipeline for the same **team** that is running the build");
     }
 
     @Test
