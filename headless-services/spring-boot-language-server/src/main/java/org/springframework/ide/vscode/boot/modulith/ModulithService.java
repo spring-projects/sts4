@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2023 VMware, Inc.
+ * Copyright (c) 2023, 2024 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -17,6 +17,7 @@ import java.net.URI;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.Duration;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -24,10 +25,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.atomic.AtomicReference;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -58,12 +62,20 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 
+import reactor.core.Disposable;
+
 public class ModulithService {
+	
+	private static long regenCount = 0;
 		
+	private static final Duration DEBOUNCE_TIME = Duration.ofMillis(500L);
+
 	private static final Logger log = LoggerFactory.getLogger(ModulithService.class);
 	
 	private static final String CMD_MODULITH_REFRESH = "sts/modulith/metadata/refresh";
 	private static final String CMD_LIST_MODULITH_PROJECTS = "sts/modulith/projects";
+	
+	private final ExecutorService executor;
 	
 	private SimpleLanguageServer server;
 	private SpringSymbolIndex springIndex;
@@ -72,6 +84,7 @@ public class ModulithService {
 	
 	private Map<URI, AppModules> cache;
 	private Map<URI, CompletableFuture<Boolean>> metadataRequested;
+	private Map<URI, Disposable> classFilesListeners;
 
 	public ModulithService(
 			SimpleLanguageServer server,
@@ -84,14 +97,17 @@ public class ModulithService {
 		this.config = config;
 		this.cache = new ConcurrentHashMap<>();
 		this.metadataRequested = new ConcurrentHashMap<>();
+		this.classFilesListeners = new ConcurrentHashMap<>();
 		this.server = server;
 		this.springIndex = springIndex;
 		this.reconciler = reconciler;
+		this.executor = Executors.newCachedThreadPool();
 		
 		projectObserver.addListener(new ProjectObserver.Listener() {
 			
 			@Override
 			public void deleted(IJavaProject project) {
+				stopListening(project);
 				removeFromCache(project);
 			}
 			
@@ -99,9 +115,9 @@ public class ModulithService {
 			public void created(IJavaProject project) {
 				if (isModulithDependentProject(project)) {
 					if (anyClassFilesPresent(project)) {
-						requestMetadata(project);
+						requestMetadata(project, DEBOUNCE_TIME).thenAccept(res -> startListening(project));
 					} else {
-						waitForClassFilesCreatedInTargetFolder(project);
+						startListening(project);
 					}
 				}
 			}
@@ -110,10 +126,13 @@ public class ModulithService {
 			public void changed(IJavaProject project) {
 				if (!isModulithDependentProject(project)) {
 					removeFromCache(project);
+					stopListening(project);
 				} else if (anyClassFilesPresent(project)) {
-					requestMetadata(project);
-				} else {
-					waitForClassFilesCreatedInTargetFolder(project);
+					if (anyClassFilesPresent(project)) {
+						requestMetadata(project, DEBOUNCE_TIME).thenAccept(res -> startListening(project));
+					} else {
+						startListening(project);
+					}
 				}
 			}
 		});
@@ -130,16 +149,62 @@ public class ModulithService {
 					.collect(Collectors.toMap(p -> p.getElementName(), p -> p.getLocationUri().toASCIIString()))
 			);
 		});
+		
 	}
 	
-	private void waitForClassFilesCreatedInTargetFolder(IJavaProject project) {
-		final AtomicReference<String> subscription = new AtomicReference<>();
-		subscription.set(server.getWorkspaceService().getFileObserver().onFilesCreated(getNonTestClassOutputFolders(project).map(p -> p.toString() + "/**/*.class").collect(Collectors.toList()), files -> {
-			if (subscription.get() != null) {
-				server.getWorkspaceService().getFileObserver().unsubscribe(subscription.get());
-				requestMetadata(project);
-			}
-		}));
+	private boolean startListening(IJavaProject project) {
+		URI uri = project.getLocationUri();
+		if (classFilesListeners.containsKey(uri)) {
+			return false;
+		} else {
+			final List<Path> outputFolders = getNonTestClassOutputFolders(project).collect(Collectors.toList());
+			Disposable packagInfoDisposable = server.getWorkspaceService().getFileObserver().onCreatedOrChanged(outputFolders.stream().map(p -> p.toString() + "/**/package-info.class").collect(Collectors.toList()), files -> {
+				log.info("%d MODULITH METADATA REFRESH SCHEDULED due to change/create in: file %s".formatted(++regenCount, files[0]));
+				requestMetadata(project, DEBOUNCE_TIME);
+			});
+			String classFilesSubscription = server.getWorkspaceService().getFileObserver().onFilesCreated(
+				outputFolders.stream().map(p -> p.toString() + "/**/*.class").collect(Collectors.toList()),
+				files -> {
+					AppModules modules = getModulesData(project);
+					if (modules == null) {
+						log.info("%d MODULITH METADATA REFRESH SCHEDULED due to no metadata present".formatted(++regenCount));
+						requestMetadata(project, DEBOUNCE_TIME);
+					} else {
+						for (String f : files) {
+							Path p = Path.of(URI.create(f));
+							// Exclude 'package-info.class' files as they are handled separately
+							if (!"package-info.class".equals(p.getFileName().toString())) {
+								for (Path of : outputFolders) {
+									if (p.startsWith(of) ) {
+										Path parentFolder = of.relativize(p).getParent();
+										String packageName = parentFolder == null ? "" : parentFolder.toString().replace(of.getFileSystem().getSeparator(), ".");
+										Optional<AppModule> moduleOpt = modules.getModuleForPackage(packageName);
+										if (moduleOpt.isPresent()) {
+											log.info("%d MODULITH METADATA REFRESH SCHEDULED due to change/create in: %s for file %s".formatted(++regenCount, packageName, f));
+											requestMetadata(project, DEBOUNCE_TIME);
+											return;
+										}
+										break;
+									}
+								}
+							}
+						}
+					}
+			});
+			classFilesListeners.put(uri, () -> {
+				packagInfoDisposable.dispose();
+				server.getWorkspaceService().getFileObserver().unsubscribe(classFilesSubscription);
+			});
+			return true;
+		}
+	}
+	
+	private boolean stopListening(IJavaProject project) {
+		Disposable subscription = classFilesListeners.remove(project.getLocationUri());
+		if (subscription != null) {
+			subscription.dispose();
+		}
+		return subscription != null;
 	}
 	
 	public AppModules getModulesData(IJavaProject project) {
@@ -156,7 +221,7 @@ public class ModulithService {
 			return CompletableFuture.completedFuture(false);
 		}
 		clearMetadataRequest(project);
-		return requestMetadata(project).whenComplete((refreshed, throwable) -> {
+		return requestMetadata(project, Duration.ZERO).whenComplete((refreshed, throwable) -> {
 			if (throwable != null) {
 				server.getClient().showMessage(new MessageParams(MessageType.Error, "Project '" + project.getElementName() + "' Modulith metadata refresh has failed. " + throwable.getMessage()));
 			} else {
@@ -169,13 +234,10 @@ public class ModulithService {
 		});
 	}
 	
-	CompletableFuture<Boolean> requestMetadata(IJavaProject p) {
-		URI uri = p.getLocationUri();
-		CompletableFuture<Boolean> f = metadataRequested.get(uri);
-		if (f == null) {
-			f = loadModulesMetadata(p).thenApply(appModules -> updateAppModulesCache(p, appModules));
-			metadataRequested.put(uri, f);
-		}
+	CompletableFuture<Boolean> requestMetadata(IJavaProject p, Duration delay) {
+		clearMetadataRequest(p);
+		CompletableFuture<Boolean> f = loadModulesMetadata(p, delay).thenApply(appModules -> updateAppModulesCache(p, appModules));
+		metadataRequested.put(p.getLocationUri(), f);
 		return f;
 	}
 	
@@ -229,9 +291,9 @@ public class ModulithService {
 		}
 	}
 
-	private CompletableFuture<AppModules> loadModulesMetadata(IJavaProject project) {
+	private CompletableFuture<AppModules> loadModulesMetadata(IJavaProject project, Duration delay) {
 		log.info("Loading Modulith metadata for project '" + project.getElementName() + "'...");
-		return findRootPackages(project).thenComposeAsync(packages -> {
+		return findRootPackages(project, delay).thenComposeAsync(packages -> {
 			if (!packages.isEmpty()) {
 				try {
 					String javaCmd = ProcessHandle.current().info().command().orElseThrow();
@@ -244,7 +306,7 @@ public class ModulithService {
 					}).collect(Collectors.joining(System.getProperty("path.separator")));
 					List<AppModule> allAppModules = new ArrayList<>();
 					CompletableFuture<?>[] aggregateFuture = packages.stream()
-							.map(pkg -> computeAppModules(project.getElementName(), javaCmd, classpathStr, pkg)
+							.map(pkg -> CompletableFuture.supplyAsync(() -> computeAppModules(project.getElementName(), javaCmd, classpathStr, pkg), executor)
 									.thenAccept(allAppModules::addAll))
 							.toArray(CompletableFuture[]::new);
 					return CompletableFuture.allOf(aggregateFuture).thenApply(r -> new AppModules(allAppModules));
@@ -253,10 +315,10 @@ public class ModulithService {
 				}
 			}
 			return CompletableFuture.completedFuture(null);
-		});
+		}, executor);
 	}
 	
-	private CompletableFuture<List<AppModule>> computeAppModules(String projectName, String javaCmd,
+	private List<AppModule> computeAppModules(String projectName, String javaCmd,
 			String cp, String pkg) {
 		try {
 			File outputFile = File.createTempFile(projectName + "-" + pkg, "json");
@@ -275,31 +337,29 @@ public class ModulithService {
 				builder.append(line);
 				builder.append(System.getProperty("line.separator"));
 			}
-			return process.onExit().thenApply(p -> {
-					if (p.exitValue() == 0) {
-						try {
-							log.info("Updating Modulith metadata for project '" + projectName + "'");
-							JsonObject json = JsonParser.parseReader(new FileReader(outputFile)).getAsJsonObject();
-							log.info("Modulith metadata: " + new GsonBuilder().setPrettyPrinting().create().toJson(json));
-							return loadAppModules(json);
-						} catch (Exception e) {
-							log.error("", e);
-						}
-					} else {
-						log.error("Failed to generate modulith metadata for project '" + projectName + "'. Modulith Exporter process exited with code " + process.exitValue() + "\n" + builder.toString());
-					}
-					return Collections.emptyList();
-				});
-		} catch (IOException e) {
+			int exitValue = process.waitFor();
+			if (exitValue == 0) {
+				log.info("Updating Modulith metadata for project '" + projectName + "'");
+				JsonObject json = JsonParser.parseReader(new FileReader(outputFile)).getAsJsonObject();
+				log.info("Modulith metadata: " + new GsonBuilder().setPrettyPrinting().create().toJson(json));
+				return loadAppModules(json);
+			} else {
+				log.error("Failed to generate modulith metadata for project '" + projectName + "'. Modulith Exporter process exited with code " + process.exitValue() + "\n" + builder.toString());
+			}
+		} catch (IOException | InterruptedException e) {
 			log.error("", e);
 		}
-		return CompletableFuture.completedFuture(Collections.emptyList());
+		return Collections.emptyList();
 	}
 	
-	private CompletableFuture<Set<String>> findRootPackages(IJavaProject project) {
-		BeansParams params = new BeansParams();
-		params.setProjectName(project.getElementName());
-		return springIndex.beans(params).thenApply(beansOfProject -> {
+	private CompletableFuture<Set<String>> findRootPackages(IJavaProject project, Duration delay) {
+		return CompletableFuture.supplyAsync(() -> {
+			BeansParams params = new BeansParams();
+			params.setProjectName(project.getElementName());
+			return params;
+		}, CompletableFuture.delayedExecutor(delay.toSeconds(), TimeUnit.SECONDS, executor))
+		.thenComposeAsync(params -> springIndex.beans(params), executor)
+		.thenApply(beansOfProject -> {
 			HashSet<String> packages = new HashSet<>();
 			if (beansOfProject != null) {
 				for (Bean bean : beansOfProject) {

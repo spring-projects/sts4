@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2023 VMware, Inc.
+ * Copyright (c) 2023, 2024 VMware, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -13,6 +13,7 @@ package org.springframework.ide.vscode.boot.modulith;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.time.Duration;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
@@ -70,7 +71,7 @@ public class ModulithServiceTest {
 	
     @Test
     void sanityTest() throws Exception {
-    	assertTrue(modulithService.requestMetadata(jp).get());
+    	assertTrue(modulithService.requestMetadata(jp, Duration.ZERO).get());
     	List<AppModule> modules = modulithService.getModulesData(jp).modules;
     	assertEquals(2, modules.size());
     	AppModule orderModule = modules.get(0);

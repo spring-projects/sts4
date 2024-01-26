@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2017, 2020 Pivotal, Inc.
+ * Copyright (c) 2017, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -124,6 +124,8 @@ public class BasicFileObserver implements FileObserver {
 										.findFirst()
 										.isPresent())
 						.toArray(String[]::new)))
+			
+			.filter(superPair -> superPair.right.length > 0)
 			
 			// then call the accept method of each consumer with the generated array of doc URIs
 			.forEach(superPair -> superPair.left.right.accept(superPair.right));
