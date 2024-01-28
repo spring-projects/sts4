@@ -24,8 +24,9 @@ export async function handleBootAdd(pom?: Uri): Promise<void> {
     }
     if (metadata.catalog) {
         await CLI.bootAdd(metadata);
-        const doc = await workspace.openTextDocument(path.join(metadata.targetFolder, `README-${metadata.catalog}.md`));
-        await window.showTextDocument(doc);
+        // const doc = await workspace.openTextDocument(path.join(metadata.targetFolder, `README-${metadata.catalog}.md`));
+        // await window.showTextDocument(doc);
+        await commands.executeCommand("markdown.showPreview", Uri.file(path.join(metadata.targetFolder, `README-${metadata.catalog}.md`)));
     }
 }
 

@@ -67,12 +67,12 @@ function getWorkspaceFolderName(file: Uri): string {
 }
 
 export async function getTargetPomXml(): Promise<Uri> {
-    if (window.activeTextEditor) {
-        const activeUri = window.activeTextEditor.document.uri;
-        if ("pom.xml" === path.basename(activeUri.path).toLowerCase()) {
-            return activeUri;
-        }
-    }
+    // if (window.activeTextEditor) {
+    //     const activeUri = window.activeTextEditor.document.uri;
+    //     if ("pom.xml" === path.basename(activeUri.path).toLowerCase()) {
+    //         return activeUri;
+    //     }
+    // }
 
     const candidates: Uri[] = await workspace.findFiles("**/pom.xml");
     if (candidates.length > 0) {
@@ -88,6 +88,29 @@ export async function getTargetPomXml(): Promise<Uri> {
     return undefined;
 }
 
+export async function getTargetGuideMardown(): Promise<Uri> {
+    if (window.activeTextEditor) {
+        const activeUri = window.activeTextEditor.document.uri;
+        if (/README-\S+.md/.test(path.basename(activeUri.path).toLowerCase())) {
+            return activeUri;
+        }
+    }
+
+    const candidates: Uri[] = await workspace.findFiles("**/README-*.md");
+    if (candidates.length > 0) {
+        if (candidates.length === 1) {
+            return candidates[0];
+        } else {
+            return await window.showQuickPick(
+                candidates.map((c: Uri) => ({ value: c, label: getRelativePathToWorkspaceFolder(c), description: getWorkspaceFolderName(c) })),
+                { placeHolder: "Select the target project." },
+            ).then(res => res && res.value);
+        }
+    }
+    return undefined;
+}
+
+
 export function mapProjectToQuickPick(project: Project): QuickPickItem {
     return {
         label: project.name,
@@ -101,5 +124,7 @@ export function getWorkspaceRoot(): Uri | undefined {
         return workspace.workspaceFolders[0].uri
     }
 }
+
+
 
 

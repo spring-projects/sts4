@@ -31,12 +31,22 @@
           "when": "resourceFilename == pom.xml",
           "command": "vscode-spring-cli.boot.add",
           "group": "Spring-CLI"
+        },
+        {
+          "when": "resourceFilename =~ /README-\\S+.md/",
+          "command": "vscode-spring-cli.guide.apply",
+          "group": "Spring-CLI"
         }
       ],
       "explorer/context": [
         {
           "when": "resourceFilename == pom.xml",
           "command": "vscode-spring-cli.boot.add",
+          "group": "Spring-CLI"
+        },
+        {
+          "when": "resourceFilename =~ /README-\\S+.md/",
+          "command": "vscode-spring-cli.guide.apply",
           "group": "Spring-CLI"
         }
       ]
@@ -90,6 +100,16 @@
       {
         "command": "vscode-spring-cli.command.execute",
         "title": "Execute User Defined Command",
+        "category": "Spring CLI"
+      },
+      {
+        "command": "vscode-spring-cli.ai.add",
+        "title": "Add from AI",
+        "category": "Spring CLI"
+      },
+      {
+        "command": "vscode-spring-cli.guide.apply",
+        "title": "Apply Guide",
         "category": "Spring CLI"
       }
     ],

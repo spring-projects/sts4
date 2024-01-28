@@ -1,5 +1,5 @@
 import { BootAddMetadata, BootNewMetadata, Project, ProjectCatalog, CommandAddMetadata, CommandRemoveMetadata, CommandInfo, CommandExecuteMetadata } from "./cli-types";
-import { CancellationToken, ProcessExecution, ProgressLocation, ProviderResult, Task, TaskProvider, TaskScope, Uri, tasks, window, workspace } from "vscode";
+import { CancellationToken, ProcessExecution, ProgressLocation, ProviderResult, ShellExecution, Task, TaskProvider, TaskScope, Uri, tasks, window, workspace } from "vscode";
 import cp from "child_process";
 import { homedir } from "os";
 import { getWorkspaceRoot } from "./utils";
@@ -25,6 +25,63 @@ export class Cli {
 
     projectCatalogListAvailable(): Promise<ProjectCatalog[]> {
         return this.fetchJson("Fetching Available Catalogs...", undefined, ["project-catalog", "list-available"]);
+    }
+
+    guideApply(uri: Uri, cwd?: string) {
+        const args = [
+            "guide",
+            "apply",
+            "--file",
+            uri.fsPath
+        ];
+        return this.exec("Applying guide", uri.fsPath, args, cwd || path.dirname(uri.fsPath));
+    }
+
+    aiAdd(question: string, cwd: string): Thenable<Uri> {
+
+        const args = [
+            "ai",
+            "add",
+            "--preview",
+            "true",
+            "--description",
+            `"${question}"`
+        ];
+
+        return window.withProgress({
+            location: ProgressLocation.Window,
+            cancellable: true,
+            title: "Add from AI",
+        }, (progress, cancellation) => {
+
+            progress.report({ message: question });
+            
+            return new Promise<Uri>(async (resolve, reject) => {
+                if (cancellation.isCancellationRequested) {
+                    reject("Cancelled");
+                }
+                const processOpts = { cwd: cwd || getWorkspaceRoot()?.fsPath || homedir() };
+                const process = this.executable.endsWith(".jar") ? await cp.exec(`java -jar ${this.executable} ${args.join(" ")}`, processOpts) : await cp.exec(`${this.executable} ${args.join(" ")}`, processOpts);
+                cancellation.onCancellationRequested(() => process.kill());
+                const errorMessageChunks = [];
+                let guideFileName;
+                process.stdout.on("data", s => {
+                    const res = /README-\S+.md/.exec(s);
+                    if (res.length) {
+                        guideFileName = res[0].trim();
+                    }
+                });
+                process.stderr.on("data", s => errorMessageChunks.push(s))
+                process.on("exit", (code) => {
+                    if (code) {
+                        reject(`Failed to get response from LLM. ${errorMessageChunks.join()}`);
+                    } else {
+                        resolve(Uri.file(path.join(cwd, guideFileName)));
+                    }
+                });
+            });
+        });
+
     }
 
     commandAdd(metadata: CommandAddMetadata, cwd?: string) {
@@ -216,6 +273,8 @@ export class Cli {
         
             return new Promise<void>(async (resolve, reject) => {
                 const processOpts = { cwd: cwd || getWorkspaceRoot()?.fsPath || homedir() };
+
+                // const process = this.executable.endsWith(".jar") ? new ShellExecution("java", [ "-jar", this.executable,  ...args], processOpts) : new ShellExecution(this.executable, args, processOpts)
                 const process = this.executable.endsWith(".jar") ? new ProcessExecution("java", [ "-jar", this.executable,  ...args], processOpts) : new ProcessExecution(this.executable, args, processOpts);
                 const task = new Task({ type: SPRING_CLI_TASK_TYPE }, cwd ? workspace.getWorkspaceFolder(Uri.file(cwd)) : TaskScope.Global, `${title}: ${message}`, SPRING_CLI_TASK_TYPE, process);
                 const taskExecution = await tasks.executeTask(task);
@@ -225,7 +284,8 @@ export class Cli {
                 const cancelListener = cancellation.onCancellationRequested(() => {
                     cancelListener.dispose();
                     reject();
-                })
+                });
+
                 const listener = tasks.onDidEndTaskProcess(e => {
                     if (e.execution === taskExecution) {
                         listener.dispose();
@@ -254,7 +314,7 @@ export class Cli {
                     reject("Cancelled");
                 }
                 const processOpts = { cwd: cwd || getWorkspaceRoot()?.fsPath || homedir() };
-                const process = this.executable.endsWith(".jar") ? await cp.exec(`java -jar ${this.executable} ${args.join(" ")} --json`, processOpts) : await cp.exec(`${this.executable} ${args.join(" ")}`, processOpts);
+                const process = this.executable.endsWith(".jar") ? await cp.exec(`java -jar ${this.executable} ${args.join(" ")} --json`, processOpts) : await cp.exec(`${this.executable} ${args.join(" ")} --json`, processOpts);
                 cancellation.onCancellationRequested(() => process.kill());
                 const dataChunks: string[] = [];
                 process.stdout.on("data", s => dataChunks.push(s));
