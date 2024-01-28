@@ -56,6 +56,7 @@ import org.openrewrite.config.RecipeDescriptor;
 import org.openrewrite.config.YamlResourceLoader;
 import org.openrewrite.internal.InMemoryLargeSourceSet;
 import org.openrewrite.java.JavaParser;
+import org.openrewrite.maven.AddDependency;
 import org.openrewrite.maven.MavenParser;
 import org.openrewrite.tree.ParseError;
 import org.slf4j.Logger;
@@ -162,30 +163,21 @@ public class RewriteRecipeRepository {
 		Map<String, Recipe> recipes = new HashMap<>();
 		try {
 			log.info("Loading Rewrite Recipes...");
-			Recipe xmlbindRecipe = null;
 			Environment env = createRewriteEnvironment();
 			for (Recipe r : env.listRecipes()) {
 				if (r.getName() != null) {
-					if ("org.openrewrite.java.migrate.jakarta.JavaxXmlBindMigrationToJakartaXmlBind".equals(r.getName())) {
-						xmlbindRecipe = r;
-					}
 					if (recipes.containsKey(r.getName())) {
 						log.error("Duplicate ids: '" + r.getName() + "'");
 					}
 					recipes.put(r.getName(), r);					
-				}
-			}
-			// HACK: add Jakarta XML Bind migration recipe again as there are cases when maven dependency isn't added
-			if (xmlbindRecipe != null) {
-				for (String id : recipes.keySet()) {
-					if (id.startsWith("org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_")) {
-						Recipe recipe = recipes.get(id);
-						recipe.getDescriptor().getRecipeList().add(xmlbindRecipe.getDescriptor());
-						recipe.getRecipeList().add(xmlbindRecipe);
+					// HACK: add Jakarta XML Bind migration recipe again as there are cases when maven dependency isn't added
+					if (r.getName().startsWith("org.openrewrite.java.spring.boot3.UpgradeSpringBoot_3_")) {
+						AddDependency addDepXmlBindDep = new AddDependency("jakarta.xml.bind", "jakarta.xml.bind-api", "latest.release", null, null, null, "jakarta.xml.bind..*", null, null, null, null, true);
+						r.getDescriptor().getRecipeList().add(addDepXmlBindDep.getDescriptor());
+						r.getRecipeList().add(addDepXmlBindDep);
 					}
 				}
 			}
-//			codeActionDescriptors.addAll(env.listCodeActionDescriptors());
 			log.info("Done loading Rewrite Recipes");
 		} catch (Throwable t) {
 			log.error("", t);
