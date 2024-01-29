@@ -67,7 +67,7 @@ jobs:
             p2_qualifier_param="-Dp2.qualifier=${p2_qualifier}"
           fi
           cd eclipse-distribution
-          apt-get install -y tcpdump
+          sudo apt-get install -y tcpdump
           echo "Installed tcpdump"
           sudo tcpdump -s 0 -i eth0 -w mycap.pcap &
           PID=$!
