@@ -68,7 +68,8 @@ jobs:
           fi
           cd eclipse-distribution
           apt-get install -y tcpdump
-          tcpdump -s 0 -i eth0 -w mycap.pcap &
+          echo "Installed tcpdump"
+          sudo tcpdump -s 0 -i eth0 -w mycap.pcap &
           PID=$!
           ps | grep tcpdump
           echo "pid=${PID}"
@@ -83,7 +84,7 @@ jobs:
           -Dhttpclient.retry-max=60 \
           -Dorg.eclipse.ecf.provider.filetransfer.httpclient.retrieve.readTimeout=2400000 -Dorg.eclipse.ecf.provider.filetransfer.httpclient4.retrieve.readTimeout=2400000 -Dorg.eclipse.ecf.provider.filetransfer.retrieve.readTimeout=2400000 \
           -Dorg.eclipse.ecf.provider.filetransfer.retrieve.retryAttempts=60
-          kill $PID
+          sudo kill $PID
           sleep 10
           ls -la
       - name: Store S3 Paths
