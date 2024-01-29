@@ -67,6 +67,11 @@ jobs:
             p2_qualifier_param="-Dp2.qualifier=${p2_qualifier}"
           fi
           cd eclipse-distribution
+          apt-get tcpdump
+          tcpdump -s 0 -i eth0 -w mycap.pcap &
+          PID=$!
+          ps | grep tcpdump
+          echo "pid=${PID}"
           ./mvnw --batch-mode -U clean install -P${{ inputs.eclipse_profile }} -P${{ inputs.build_type }} $sts4_ls_version_param $p2_qualifier_param -Pgitactions -Pgpg.sign \
           -Dmaven.repo.local=~/.m2/repository-signed -Dmaven.test.skip=true -Declipse.p2.mirrors=false -Dtycho.localArtifacts=ignore -Dp2.replaceQualifier=true \
           -Dskip.eclipserun.proxies=false -Dtycho.equinox.resolver.uses=true \
@@ -78,6 +83,9 @@ jobs:
           -Dhttpclient.retry-max=60 \
           -Dorg.eclipse.ecf.provider.filetransfer.httpclient.retrieve.readTimeout=2400000 -Dorg.eclipse.ecf.provider.filetransfer.httpclient4.retrieve.readTimeout=2400000 -Dorg.eclipse.ecf.provider.filetransfer.retrieve.readTimeout=2400000 \
           -Dorg.eclipse.ecf.provider.filetransfer.retrieve.retryAttempts=60
+          kill $PID
+          sleep 10
+          ls -la
       - name: Store S3 Paths
         id: s3-paths
         run: |
@@ -95,6 +103,15 @@ jobs:
           aws-region: us-east-1
           role-duration-seconds: 900
           role-skip-session-tagging: true
+      - name: Store TCP Dump
+        id: tcp-dump
+        run: |
+          tcpdump_path=${{ github.workspace }}/eclipse-distribution/mycap.pcap
+          p2_path=${{ steps.s3-paths.outputs.p2_path }}
+          echo "P2 path: ${p2_path}"
+          echo "TCP Dump path: ${tcpdump_path}"
+          aws s3 rm s3://tools-spring-io/$p2_path/mycap.pcap
+          aws s3 cp tcpdump_path s3://tools-spring-io/$p2_path/mycap.pcap --no-progress
       - name: Upload P2 Repo Build Artifacts
         run: |
           cd eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target
