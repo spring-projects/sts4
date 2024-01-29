@@ -67,7 +67,7 @@ jobs:
             p2_qualifier_param="-Dp2.qualifier=${p2_qualifier}"
           fi
           cd eclipse-distribution
-          apt-get tcpdump
+          apt-get install -y tcpdump
           tcpdump -s 0 -i eth0 -w mycap.pcap &
           PID=$!
           ps | grep tcpdump
@@ -112,8 +112,7 @@ jobs:
           p2_path=${{ steps.s3-paths.outputs.p2_path }}
           echo "P2 path: ${p2_path}"
           echo "TCP Dump path: ${tcpdump_path}"
-          aws s3 rm s3://tools-spring-io/$p2_path/mycap.pcap
-          aws s3 cp tcpdump_path s3://tools-spring-io/$p2_path/mycap.pcap --no-progress
+          aws s3 mv tcpdump_path s3://tools-spring-io/$p2_path/mycap.pcap --no-progress
       - name: Upload P2 Repo Build Artifacts
         run: |
           cd eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target
