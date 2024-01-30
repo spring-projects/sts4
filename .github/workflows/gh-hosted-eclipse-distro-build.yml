@@ -46,6 +46,14 @@ jobs:
           distribution: 'temurin'
       - name: Enforce https instead of http
         run: ./nohttp.sh
+      - name: Start TCP Dump
+        if: ${{ inputs.build_type == 'snapshot' }}
+        run:
+          cd eclipse-distribution
+          sudo apt-get install -y tcpdump
+          echo "Installed tcpdump"
+          sudo tcpdump -s 0 -i eth0 -w mycap.pcap &
+          echo "Launched tcpdump"
       - name: Install GPG key
         run: |
           echo "${{ secrets.GPG_PRIVATE_KEY }}" > gpg.asc
@@ -67,12 +75,6 @@ jobs:
             p2_qualifier_param="-Dp2.qualifier=${p2_qualifier}"
           fi
           cd eclipse-distribution
-          sudo apt-get install -y tcpdump
-          echo "Installed tcpdump"
-          sudo tcpdump -s 0 -i eth0 -w mycap.pcap &
-          echo "Launched tcpdump"
-          PID=`pgrep tcpdump`
-          echo "PID=${PID}"
           ./mvnw --batch-mode -U clean install -P${{ inputs.eclipse_profile }} -P${{ inputs.build_type }} $sts4_ls_version_param $p2_qualifier_param -Pgitactions -Pgpg.sign \
           -Dmaven.repo.local=~/.m2/repository-signed -Dmaven.test.skip=true -Declipse.p2.mirrors=false -Dtycho.localArtifacts=ignore -Dp2.replaceQualifier=true \
           -Dskip.eclipserun.proxies=false -Dtycho.equinox.resolver.uses=true \
@@ -84,9 +86,14 @@ jobs:
           -Dhttpclient.retry-max=60 \
           -Dorg.eclipse.ecf.provider.filetransfer.httpclient.retrieve.readTimeout=2400000 -Dorg.eclipse.ecf.provider.filetransfer.httpclient4.retrieve.readTimeout=2400000 -Dorg.eclipse.ecf.provider.filetransfer.retrieve.readTimeout=2400000 \
           -Dorg.eclipse.ecf.provider.filetransfer.retrieve.retryAttempts=60
+      - name: Stop TCP Dump
+        if: ${{ inputs.build_type == 'snapshot' }}
+        run:
+          ls -la
+          PID=`sudo pgrep tcpdump`
+          echo "PID=${PID}"
           sudo kill $PID
           sudo sleep 10
-          ls -la
       - name: Store S3 Paths
         id: s3-paths
         run: |
@@ -106,7 +113,7 @@ jobs:
           role-duration-seconds: 900
           role-skip-session-tagging: true
       - name: Store TCP Dump
-        if: always()
+        if: inputs.build_type == 'snapshot' && always()
         id: tcp-dump
         run: |
           tcpdump_path=${{ github.workspace }}/eclipse-distribution/mycap.pcap
