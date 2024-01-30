@@ -54,13 +54,6 @@ jobs:
           echo "Installed tcpdump"
           sudo tcpdump -s 0 -i eth0 -w mycap.pcap &
           echo "Launched tcpdump"
-      - name: Store S3 Paths
-        id: s3-paths
-        run: |
-          dist_path=`cat ${{ github.workspace }}/eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target/s3-dist-path.txt`
-          p2_path=`cat ${{ github.workspace }}/eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target/s3-p2-repo-dist-path.txt`
-          echo "dist_path=$dist_path" >> $GITHUB_OUTPUT
-          echo "p2_path=$p2_path" >> $GITHUB_OUTPUT
       - name: Install GPG key
         run: |
           echo "${{ secrets.GPG_PRIVATE_KEY }}" > gpg.asc
@@ -102,6 +95,13 @@ jobs:
           echo "PID=${PID}"
           sudo kill $PID
           sudo sleep 10
+      - name: Store S3 Paths
+        id: s3-paths
+        run: |
+          dist_path=`cat ${{ github.workspace }}/eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target/s3-dist-path.txt`
+          p2_path=`cat ${{ github.workspace }}/eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target/s3-p2-repo-dist-path.txt`
+          echo "dist_path=$dist_path" >> $GITHUB_OUTPUT
+          echo "p2_path=$p2_path" >> $GITHUB_OUTPUT
       - name: Cloudgate S3 Configuration
         if: always()
         uses: aws-actions/configure-aws-credentials@010d0da01d0b5a38af31e9c3470dbfdabdecca3a
@@ -130,7 +130,7 @@ jobs:
           p2_path=${{ steps.s3-paths.outputs.p2_path }}
           echo "P2 path: ${p2_path}"
           echo "TCP Dump path: ${tcpdump_path}"
-          aws s3 mv $tcpdump_path s3://tools-spring-io/$p2_path/mycap.pcap --no-progress
+          aws s3 mv $tcpdump_path s3://tools-spring-io/tcpdump/cap-${{ inputs.eclipse_profile }}-${{ inputs.build_type }}-${{ github.run_id }}.pcap --no-progress
       - name: Upload Linux Distro Build Artifacts
         run: |
           cd eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target/products
