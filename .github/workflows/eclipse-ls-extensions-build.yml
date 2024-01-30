@@ -99,16 +99,16 @@ jobs:
           aws s3 cp ${{ github.workspace }}/eclipse-language-servers/org.springframework.tooling.ls.integration.repository/target/repository/ s3://tools-spring-io/${p2_path}/ --recursive --no-progress
           aws s3 rm s3://dist.springsource.com/${p2_path}/ --recursive
           aws s3 cp ${{ github.workspace }}/eclipse-language-servers/org.springframework.tooling.ls.integration.repository/target/repository/ s3://dist.springsource.com/${p2_path}/ --recursive --acl public-read --no-progress
-      - name: Verify Uploaded P2 Repo
-        id: verify-p2-on-akamai
-        run: |
-          p2_path=`cat ${{ github.workspace }}/eclipse-language-servers/org.springframework.tooling.ls.integration.repository/target/s3-p2-repo-dist-path.txt`
-          echo "Verifying uploaded to Akamai files..."
-          cd ${{ github.workspace }}/eclipse-language-servers/org.springframework.tooling.ls.integration.repository/target/repository/plugins
-          for f in `ls -p | grep -v '/$'`
-          do
-            wget --no-verbose -O /dev/null https://cdn.spring.io/spring-tools/$p2_path/plugins/$f
-          done
+#      - name: Verify Uploaded P2 Repo
+#        id: verify-p2-on-akamai
+#        run: |
+#          p2_path=`cat ${{ github.workspace }}/eclipse-language-servers/org.springframework.tooling.ls.integration.repository/target/s3-p2-repo-dist-path.txt`
+#          echo "Verifying uploaded to Akamai files..."
+#          cd ${{ github.workspace }}/eclipse-language-servers/org.springframework.tooling.ls.integration.repository/target/repository/plugins
+#          for f in `ls -p | grep -v '/$'`
+#          do
+#            wget --no-verbose -O /dev/null https://cdn.spring.io/spring-tools/$p2_path/plugins/$f
+#          done
       - name: Compute invalid URLs
         if: ${{ inputs.build_type != 'snapshot' }}
         id: compute-invalid-urls

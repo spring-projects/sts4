@@ -123,14 +123,14 @@ jobs:
           aws s3 rm s3://tools-spring-io/$p2_path/ --recursive
           aws s3 cp ./repository/ s3://tools-spring-io/$p2_path/ --recursive --no-progress
       - name: Store TCP Dump
-        if: inputs.build_type == 'snapshot' && always()
-        id: tcp-dump
+        if: inputs.build_type == 'snapshot' && failure()
+        id: tcp-dump-upload
         run: |
           tcpdump_path=${{ github.workspace }}/eclipse-distribution/mycap.pcap
           p2_path=${{ steps.s3-paths.outputs.p2_path }}
           echo "P2 path: ${p2_path}"
           echo "TCP Dump path: ${tcpdump_path}"
-          aws s3 mv $tcpdump_path s3://tools-spring-io/$p2_path/mycap.pcap
+          aws s3 mv $tcpdump_path s3://tools-spring-io/$p2_path/mycap.pcap --no-progress
       - name: Upload Linux Distro Build Artifacts
         run: |
           cd eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target/products
