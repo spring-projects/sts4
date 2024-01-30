@@ -48,7 +48,7 @@ jobs:
         run: ./nohttp.sh
       - name: Start TCP Dump
         if: ${{ inputs.build_type == 'snapshot' }}
-        run:
+        run: |
           cd eclipse-distribution
           sudo apt-get install -y tcpdump
           echo "Installed tcpdump"
@@ -88,7 +88,7 @@ jobs:
           -Dorg.eclipse.ecf.provider.filetransfer.retrieve.retryAttempts=60
       - name: Stop TCP Dump
         if: ${{ inputs.build_type == 'snapshot' }}
-        run:
+        run: |
           ls -la
           PID=`sudo pgrep tcpdump`
           echo "PID=${PID}"
