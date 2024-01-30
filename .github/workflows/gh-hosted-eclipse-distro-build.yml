@@ -71,9 +71,6 @@ jobs:
           echo "Installed tcpdump"
           sudo tcpdump -s 0 -i eth0 -w mycap.pcap &
           echo "Launched tcpdump"
-          PID=$!
-          sudo ps | grep tcpdump
-          echo "pid=${PID}"
           ./mvnw --batch-mode -U clean install -P${{ inputs.eclipse_profile }} -P${{ inputs.build_type }} $sts4_ls_version_param $p2_qualifier_param -Pgitactions -Pgpg.sign \
           -Dmaven.repo.local=~/.m2/repository-signed -Dmaven.test.skip=true -Declipse.p2.mirrors=false -Dtycho.localArtifacts=ignore -Dp2.replaceQualifier=true \
           -Dskip.eclipserun.proxies=false -Dtycho.equinox.resolver.uses=true \
@@ -85,8 +82,6 @@ jobs:
           -Dhttpclient.retry-max=60 \
           -Dorg.eclipse.ecf.provider.filetransfer.httpclient.retrieve.readTimeout=2400000 -Dorg.eclipse.ecf.provider.filetransfer.httpclient4.retrieve.readTimeout=2400000 -Dorg.eclipse.ecf.provider.filetransfer.retrieve.readTimeout=2400000 \
           -Dorg.eclipse.ecf.provider.filetransfer.retrieve.retryAttempts=60
-          sudo kill $PID
-          sudo sleep 10
           ls -la
       - name: Store S3 Paths
         id: s3-paths
