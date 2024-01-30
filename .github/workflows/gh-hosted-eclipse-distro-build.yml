@@ -89,6 +89,7 @@ jobs:
       - name: Stop TCP Dump
         if: ${{ inputs.build_type == 'snapshot' }}
         run: |
+          cd eclipse-distribution
           ls -la
           PID=`sudo pgrep tcpdump`
           echo "PID=${PID}"
@@ -112,15 +113,6 @@ jobs:
           aws-region: us-east-1
           role-duration-seconds: 900
           role-skip-session-tagging: true
-      - name: Store TCP Dump
-        if: inputs.build_type == 'snapshot' && always()
-        id: tcp-dump
-        run: |
-          tcpdump_path=${{ github.workspace }}/eclipse-distribution/mycap.pcap
-          p2_path=${{ steps.s3-paths.outputs.p2_path }}
-          echo "P2 path: ${p2_path}"
-          echo "TCP Dump path: ${tcpdump_path}"
-          aws s3 mv $tcpdump_path s3://tools-spring-io/$p2_path/mycap.pcap --no-progress
       - name: Upload P2 Repo Build Artifacts
         run: |
           cd eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target
@@ -130,6 +122,15 @@ jobs:
           aws s3 cp ./repository/ s3://dist.springsource.com/$p2_path/ --recursive --acl public-read --no-progress
           aws s3 rm s3://tools-spring-io/$p2_path/ --recursive
           aws s3 cp ./repository/ s3://tools-spring-io/$p2_path/ --recursive --no-progress
+      - name: Store TCP Dump
+        if: inputs.build_type == 'snapshot' && always()
+        id: tcp-dump
+        run: |
+          tcpdump_path=${{ github.workspace }}/eclipse-distribution/mycap.pcap
+          p2_path=${{ steps.s3-paths.outputs.p2_path }}
+          echo "P2 path: ${p2_path}"
+          echo "TCP Dump path: ${tcpdump_path}"
+          aws s3 mv $tcpdump_path s3://tools-spring-io/$p2_path/mycap.pcap
       - name: Upload Linux Distro Build Artifacts
         run: |
           cd eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target/products
