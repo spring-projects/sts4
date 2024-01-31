@@ -1,3 +1,24 @@
+## 2024-02-07 (4.21.1 RELEASE, incl. language servers version 1.52.0)
+
+#### important highlights
+
+* _(Spring Boot)_ **Log Levels** viewing and editing is available in VSCode for live running Boot apps if enabled on the the app via Spring Boot Actuators
+* _(Spring Boot)_ Ability to show "Refactor Preview" in VSCode before applying the changes from OpenRewrite recipes
+* _(Spring Boot)_ New content assist proposals available for creating Spring XML config files
+
+#### all fixes and improvements in detail
+
+* _(Spring Boot)_ Log Levels View [#1138](https://github.com/spring-projects/sts4/pull/1138)
+* _(Spring Boot)_ Evaluate `AnnotatedTextEdit` and `ChangeAnnotation#needsConfirmation` [#1155](https://github.com/spring-projects/sts4/issues/1155)
+* _(Spring Boot)_ support for creating Spring XML config files [#1163](https://github.com/spring-projects/sts4/issues/1163)
+* _(Spring Boot)_ [refactoring] reduce size of execute rewrite recipes messages [#897](https://github.com/spring-projects/sts4/issues/897)
+* _(Spring Boot)_ Opening Spring Boot project in VSCode leads to StackOverflowError [#1166](https://github.com/spring-projects/sts4/issues/1166)
+* _(Spring Boot)_ upgrade command shows different recipes than quick fixes [#1165](https://github.com/spring-projects/sts4/issues/1165)
+* _(Spring Boot)_ process shows up twice when changing log levels of running app [#1164](https://github.com/spring-projects/sts4/issues/1164)
+* _(Spring Boot)_ The IDE compiler have a lot of wrong problem report, maven build is okay [#1159](https://github.com/spring-projects/sts4/issues/1159)
+* _(Spring Boot)_ VS Code extension fails Spring Boot update [#1142](https://github.com/spring-projects/sts4/issues/1142)
+* _(Spring Boot)_ Add Trusted Authoritites for STS [#1092](https://github.com/spring-projects/sts4/issues/1092)
+
 ## 2023-12-06 (4.21.0 RELEASE, incl. language servers version 1.51.0)
 
 #### important highlights

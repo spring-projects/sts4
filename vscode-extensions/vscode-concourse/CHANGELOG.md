@@ -1,3 +1,7 @@
+## 2024-02-07 (4.21.1 RELEASE, incl. language servers version 1.52.0)
+
+* _(Concourse)_ [Concourse] `set\_pipeline` step considers `team` attribute invalid [#1174](https://github.com/spring-projects/sts4/issues/1174)
+
 ## 2023-12-06 (4.21.0 RELEASE, incl. language servers version 1.51.0)
 
 * _(Concourse)_ [Concourse] Support AWS role ARN for S3 resources [#1145](https://github.com/spring-projects/sts4/issues/1145)
