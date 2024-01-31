@@ -248,7 +248,7 @@
 					<id>buildship</id>
 					<layout>p2</layout>
 <!--					<url>https://download.eclipse.org/buildship/updates/latest-snapshot/</url>-->
-					<url>http://download.eclipse.org/buildship/updates/latest</url>
+					<url>https://download.eclipse.org/buildship/updates/latest</url>
 				</repository>
 				<repository> <!-- temporary snapshot builds for testing fixes for resource copy issue -->
 					<id>m2e</id>
