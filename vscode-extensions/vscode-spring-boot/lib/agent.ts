@@ -1,12 +1,10 @@
 import { ActivatorOptions } from '@pivotal-tools/commons-vscode';
 import * as vscode from 'vscode';
 import { LanguageClient } from 'vscode-languageclient/node';
-// import * as fs from 'fs';
-// import path from 'path';
-import { releaseNotes } from './spring-boot-release-docs';
+import { releaseNotes } from './utils/spring-boot-release-docs';
+import { projectCreationPrompt } from './utils/create-spring-boot-project-prompt';
+import { extractCodeBlocks } from './utils/response-handler'; // Import the necessary function from the appropriate module
 
-// const fileName = 'spring-boot-release-docs.md';
-// const filePath = path.resolve(__dirname, fileName);
 
 interface SpringBootChatAgentResult extends vscode.ChatAgentResult2 {
 	slashCommand: string;
@@ -164,6 +162,43 @@ async function handleRelease(request: vscode.ChatAgentRequest, context: vscode.C
     }
 }
 
+async function handleCreateProject(request: vscode.ChatAgentRequest, context: vscode.ChatAgentContext, progress: vscode.Progress<vscode.ChatAgentProgress>, token: vscode.CancellationToken): Promise<SpringBootChatAgentResult> {
+        if (request.slashCommand?.name == 'new') {
+            const access = await vscode.chat.requestChatAccess('copilot');
+            
+            const systemPrompt = 'Your task is to create Java source code for a comprehensive Spring Boot application from scratch \n'+
+            `# Instructions:
+            \`\`\`
+            ${projectCreationPrompt}\n
+            \`\`\``;
+
+            const messages = [
+                {
+                    role: vscode.ChatMessageRole.System,
+                    content: systemPrompt
+                },
+                {
+                    role: vscode.ChatMessageRole.User,
+                    content: request.prompt
+                }
+            ];
+            const chatRequest = access.makeRequest(messages, {}, token);
+            let entireResponse = '';
+            for await (const fragment of chatRequest.response) {
+                entireResponse += fragment;            
+            }
+            const modifiedResponse = modifyResponse(entireResponse);
+            console.log(modifiedResponse);
+            progress.report({ content: entireResponse });
+            return { slashCommand: 'new' };
+        }
+}
+
+function modifyResponse(response) {
+    const { javaCodeBlocks, xmlCodeBlocks } = extractCodeBlocks(response);
+    return response;
+}
+
 export function activate(
     client: LanguageClient,
     options: ActivatorOptions,
@@ -177,12 +212,15 @@ export function activate(
 			return handleRewrite(request, context, progress, token);
 		} else if (request.slashCommand?.name === 'validations') {
 			return handleValidations(request, context, progress, token);
+		} else if (request.slashCommand?.name === 'new') {
+			return handleCreateProject(request, context, progress, token);
 		} else {
             const access = await vscode.chat.requestChatAccess('copilot');
+            
             const messages = [
                 {
                     role: vscode.ChatMessageRole.System,
-					content: 'You are a Spring Boot Language server part of Spring tools extension. Answer questions related to Spring boot projects in vscode.'
+                    content: 'You are a Spring Boot Language server part of Spring tools extension. Answer questions related to Spring boot projects in vscode.'
                 },
                 {
                     role: vscode.ChatMessageRole.User,
@@ -203,6 +241,7 @@ export function activate(
                 { name: 'rewrite', description: 'Handle rewrite recipes for spring boot projects' },
                 { name: 'validations', description: 'Handle queries for spring boot validations' },
                 { name: 'release', description: 'Handle Spring boot 3 queries' },
+                { name: 'new', description: 'Create a new spring boot project'}
             ];
         }
     };
