@@ -121,8 +121,6 @@ async function handleRelease(request: vscode.ChatAgentRequest, context: vscode.C
     if (request.slashCommand?.name == 'release') {
         const access = await vscode.chat.requestChatAccess('copilot');
         let fileContent: string;
-        console.log(__dirname);
-        console.log('Current working directory:', process.cwd());
         fileContent = releaseNotes;
         const editor = vscode.window.activeTextEditor;
         if (!editor) {
@@ -216,11 +214,20 @@ export function activate(
 			return handleCreateProject(request, context, progress, token);
 		} else {
             const access = await vscode.chat.requestChatAccess('copilot');
+
+            const info = `
+            Spring Boot 3 introduces a significant update requiring the transition from 'javax.' imports to 'jakarta.' imports. 
+            Ensure that all imports using 'javax.' are now replaced with 'jakarta.' imports. 
+            Focus on updating classes and interfaces under 'javax.' to 'jakarta.' and converting 'javax.persistence'
+            imports to 'jakarta.persistence' for proper Jakarta EE compatibility. Additionally, set the Hibernate version
+            to a minimum of Hibernate ORM 5.6.x, supporting Jakarta Persistence. The default configuration in Spring Boot 3
+            should use Hibernate 6 and Flyway 9. Please generate code accordingly.`;
             
             const messages = [
                 {
                     role: vscode.ChatMessageRole.System,
-                    content: 'You are a Spring Boot Language server part of Spring tools extension. Answer questions related to Spring boot projects in vscode.'
+                    content: `You are a Spring Boot Language server part of Spring tools extension. Answer questions related to Spring boot projects in vscode.\n
+                    Use the information below to help the user with the query. Make sure the correct imports are used.\n`+info
                 },
                 {
                     role: vscode.ChatMessageRole.User,
