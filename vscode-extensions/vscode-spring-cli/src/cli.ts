@@ -6,6 +6,7 @@ import { getWorkspaceRoot } from "./utils";
 import path from "path";
 import fs from "fs";
 import yaml from "js-yaml";
+import { WorkspaceEdit } from "vscode-languageclient";
 
 export const SPRING_CLI_TASK_TYPE = 'spring-cli';
 
@@ -16,15 +17,15 @@ export class Cli {
     }
 
     projectList() : Promise<Project[]> {
-        return this.fetchJson("Fetching projects...", undefined, ["project", "list"]);
+        return this.fetchJson("Fetching projects...", undefined, ["project", "list", "--json"]);
     }
 
     projectCatalogList(): Promise<ProjectCatalog[]> {
-        return this.fetchJson("Fetching Catalogs...", undefined, ["project-catalog", "list"]);
+        return this.fetchJson("Fetching Catalogs...", undefined, ["project-catalog", "list", "--json"]);
     }
 
     projectCatalogListAvailable(): Promise<ProjectCatalog[]> {
-        return this.fetchJson("Fetching Available Catalogs...", undefined, ["project-catalog", "list-available"]);
+        return this.fetchJson("Fetching Available Catalogs...", undefined, ["project-catalog", "list-available", "--json"]);
     }
 
     guideApply(uri: Uri, cwd?: string) {
@@ -35,6 +36,17 @@ export class Cli {
             uri.fsPath
         ];
         return this.exec("Applying guide", uri.fsPath, args, cwd || path.dirname(uri.fsPath));
+    }
+
+    guideLspEdit(uri: Uri, cwd?: string): Promise<WorkspaceEdit> {
+        const args = [
+            "guide",
+            "apply",
+            "--lsp-edit",
+            "--file",
+            uri.fsPath
+        ];
+        return this.fetchJson("Running guide", uri.fsPath, args, cwd || path.dirname(uri.fsPath));
     }
 
     aiAdd(question: string, cwd: string): Thenable<Uri> {
@@ -314,7 +326,7 @@ export class Cli {
                     reject("Cancelled");
                 }
                 const processOpts = { cwd: cwd || getWorkspaceRoot()?.fsPath || homedir() };
-                const process = this.executable.endsWith(".jar") ? await cp.exec(`java -jar ${this.executable} ${args.join(" ")} --json`, processOpts) : await cp.exec(`${this.executable} ${args.join(" ")} --json`, processOpts);
+                const process = this.executable.endsWith(".jar") ? await cp.exec(`java -jar ${this.executable} ${args.join(" ")}`, processOpts) : await cp.exec(`${this.executable} ${args.join(" ")} --json`, processOpts);
                 cancellation.onCancellationRequested(() => process.kill());
                 const dataChunks: string[] = [];
                 process.stdout.on("data", s => dataChunks.push(s));

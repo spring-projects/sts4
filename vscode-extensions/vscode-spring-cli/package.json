@@ -36,6 +36,11 @@
           "when": "resourceFilename =~ /README-\\S+.md/",
           "command": "vscode-spring-cli.guide.apply",
           "group": "Spring-CLI"
+        },
+        {
+          "when": "resourceFilename =~ /README-\\S+.md/",
+          "command": "vscode-spring-cli.guide.run",
+          "group": "Spring-CLI"
         }
       ],
       "explorer/context": [
@@ -47,6 +52,11 @@
         {
           "when": "resourceFilename =~ /README-\\S+.md/",
           "command": "vscode-spring-cli.guide.apply",
+          "group": "Spring-CLI"
+        },
+        {
+          "when": "resourceFilename =~ /README-\\S+.md/",
+          "command": "vscode-spring-cli.guide.run",
           "group": "Spring-CLI"
         }
       ]
@@ -111,6 +121,11 @@
         "command": "vscode-spring-cli.guide.apply",
         "title": "Apply Guide",
         "category": "Spring CLI"
+      },
+      {
+        "command": "vscode-spring-cli.guide.run",
+        "title": "Run Guide",
+        "category": "Spring CLI"
       }
     ],
     "configuration": {
@@ -158,6 +173,7 @@
     "vsce-pre-release-package": "vsce package --pre-release"
   },
   "dependencies": {
+    "vscode-languageclient": "^9.0.1",
     "lodash.debounce": "^4.0.8",
     "js-yaml": "^4.1.0"
   },
