@@ -56,7 +56,7 @@ public class DelegateMarkerResolution implements IMarkerResolution, IMarkerResol
 
 	@Override
 	public String getAdditionalProposalInfo() {
-		throw new UnsupportedOperationException();
+		return null;
 	}
 
 	@Override
