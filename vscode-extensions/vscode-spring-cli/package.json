@@ -3,7 +3,7 @@
   "displayName": "Spring CLI Support",
   "description": "Spring CLI integrated into IDE",
   "icon": "spring-boot-logo.png",
-  "version": "1.52.0",
+  "version": "1.53.0",
   "publisher": "vmware",
   "repository": {
     "type": "git",
@@ -141,7 +141,10 @@
     "taskDefinitions": [
       {
         "type": "spring-cli",
-        "required": ["command", "subcommand"],
+        "required": [
+          "command",
+          "subcommand"
+        ],
         "properties": {
           "command": {
             "type": "string",
