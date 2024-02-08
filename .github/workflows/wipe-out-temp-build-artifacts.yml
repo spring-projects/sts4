@@ -25,5 +25,5 @@ jobs:
       - name: Remove Temp Build Artifacts from S3
         id: cleanup-s3-temp-storage
         run: |
-          aws s3 rm s3://dist.springsource.com/sts4-distro-ci-temp --recursive --exclude "*" --include "*.zip"
+          aws s3 rm s3://tools-spring-io/sts4-distro-ci-temp --recursive --exclude "*" --include "*.zip"
 

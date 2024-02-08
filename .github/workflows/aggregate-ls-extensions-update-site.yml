@@ -38,15 +38,6 @@ jobs:
           CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
           CLOUDFLARE_CACHE_TOKEN: ${{ secrets.CLOUDFLARE_CACHE_TOKEN }}
         run: |
-          echo "Old S3 Aggregate Update Sites Creation..."
-          site_url="https://download.springsource.com/release/TOOLS/sts4-language-server-integrations/${{ inputs.version }}"
-          ${{ github.workspace }}/.github/scripts/generate-composite-site-files.sh ${{ steps.timestamp.outputs.date }} $site_url
-          cat ./compositeArtifacts.xml
-          cat ./compositeContent.xml
-          aws s3 cp ./compositeArtifacts.xml s3://dist.springsource.com/release/TOOLS/sts4-language-server-integrations/ --acl public-read
-          aws s3 cp ./compositeContent.xml s3://dist.springsource.com/release/TOOLS/sts4-language-server-integrations/ --acl public-read
-          aws s3 cp ./p2.index s3://dist.springsource.com/release/TOOLS/sts4-language-server-integrations/ --acl public-read
-          ${{ github.workspace }}/.github/scripts/clear-s3-caches.sh release/TOOLS/sts4-language-server-integrations
           echo "Akamai S3 Aggregate Update Sites Creation..."
           invalid_urls=""
           site_url="https://cdn.spring.io/spring-tools/release/TOOLS/sts4-language-server-integrations/${{ inputs.version }}"

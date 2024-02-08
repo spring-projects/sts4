@@ -164,7 +164,7 @@
 				<repository>
 					<id>maven-extras-mirror</id>
 					<layout>p2</layout>
-					<url>https://download.springsource.com/release/TOOLS/third-party/m2e-sts310-signed/</url>
+					<url>https://cdn.spring.io/spring-tools/release/TOOLS/third-party/m2e-sts310-signed/</url>
 				</repository>
 				<repository>
 					<id>maven-egit</id>
@@ -264,7 +264,7 @@
 				<repository>
 					<id>maven-extras-mirror</id>
 					<layout>p2</layout>
-					<url>https://download.springsource.com/release/TOOLS/third-party/m2e-sts310-signed/</url>
+					<url>https://cdn.spring.io/spring-tools/release/TOOLS/third-party/m2e-sts310-signed/</url>
 				</repository>
 				<repository>
 					<id>maven-egit</id>
@@ -364,7 +364,7 @@
 				<repository>
 					<id>maven-extras-mirror</id>
 					<layout>p2</layout>
-					<url>https://download.springsource.com/release/TOOLS/third-party/m2e-sts310-signed/</url>
+					<url>https://cdn.spring.io/spring-tools/release/TOOLS/third-party/m2e-sts310-signed/</url>
 				</repository>
 				<repository>
 					<id>maven-egit</id>

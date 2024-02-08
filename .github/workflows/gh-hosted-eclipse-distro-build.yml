@@ -118,8 +118,6 @@ jobs:
           cd eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target
           p2_path=${{ steps.s3-paths.outputs.p2_path }}
           echo "P2 path: ${p2_path}"
-          aws s3 rm s3://dist.springsource.com/$p2_path/ --recursive
-          aws s3 cp ./repository/ s3://dist.springsource.com/$p2_path/ --recursive --acl public-read --no-progress
           aws s3 rm s3://tools-spring-io/$p2_path/ --recursive
           aws s3 cp ./repository/ s3://tools-spring-io/$p2_path/ --recursive --no-progress
       - name: Store TCP Dump
@@ -152,10 +150,6 @@ jobs:
           echo "Processing S3 update..."
           dist_path=${{ steps.s3-paths.outputs.dist_path }}
           ls spring-tool-suite-4*linux*.tar.gz*
-          echo "Removing old Linux .tar.gz files from s3..."
-          aws s3 rm s3://dist.springsource.com/$dist_path --recursive --exclude "*" --include "spring-tool-suite-4*linux*.tar.gz*" --exclude "*/*"
-          echo "Uploading new Linux .tar.gz files to s3..."
-          aws s3 cp . s3://dist.springsource.com/$dist_path --recursive --exclude "*" --include "spring-tool-suite-4*linux*.tar.gz*" --exclude "*/*" --acl public-read --no-progress
           echo "Removing old Linux .tar.gz files from Akamai s3..."
           aws s3 rm s3://tools-spring-io/$dist_path --recursive --exclude "*" --include "spring-tool-suite-4*linux*.tar.gz*" --exclude "*/*"
           echo "Uploading new Linux .tar.gz files to Akamai s3..."
@@ -219,10 +213,6 @@ jobs:
           echo "Processing S3 update..."
           ls spring-tool-suite-4*win*.zip*
           ls spring-tool-suite-4*win*.self-extracting.jar*
-          echo "Removing old win zip and self extracting jar files from s3..."
-          aws s3 rm s3://dist.springsource.com/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --include "spring-tool-suite-4*win*.self-extracting.jar*" --exclude "*/*"
-          echo "Uploading new win zip and self extracting jar files to s3..."
-          aws s3 cp . s3://dist.springsource.com/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --include "spring-tool-suite-4*win*.self-extracting.jar*" --exclude "*/*" --acl public-read --no-progress
           echo "Removing old win zip and self extracting jar files from Akamai..."
           aws s3 rm s3://tools-spring-io/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*win*.zip*" --include "spring-tool-suite-4*win*.self-extracting.jar*" --exclude "*/*"
           echo "Uploading new win zip and self extracting jar files to Akamai..."
@@ -330,10 +320,6 @@ jobs:
           dist_path=${{ needs.eclipse-distro-build.outputs.dist_path }}
           echo "Processing S3 update..."
           ls spring-tool-suite-4*macosx*.dmg*
-          echo "Removing old dmg files from s3..."
-          aws s3 rm s3://dist.springsource.com/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*macosx*.dmg*" --exclude "*/*"
-          echo "Uploading new dmg files to s3..."
-          aws s3 cp . s3://dist.springsource.com/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*macosx*.dmg*" --exclude "*/*" --acl public-read --no-progress
           echo "Removing old dmg files from Akamai..."
           aws s3 rm s3://tools-spring-io/${dist_path} --recursive --exclude "*" --include "spring-tool-suite-4*macosx*.dmg*" --exclude "*/*"
           echo "Uploading new dmg files to Akamai..."
@@ -407,14 +393,6 @@ jobs:
         id: cleanup-s3-temp-storage
         run: |
           aws s3 rm s3://tools-spring-io/sts4-distro-ci-temp --recursive --exclude "*" --include "${{ needs.eclipse-distro-build.outputs.id }}/*"
-      - name: Clear Legacy S3 Caches for Distros
-        if: ${{ inputs.build_type != 'snapshot' }}
-        env:
-          CLOUDFLARE_ZONE_ID: ${{ secrets.CLOUDFLARE_ZONE_ID }}
-          CLOUDFLARE_CACHE_TOKEN: ${{ secrets.CLOUDFLARE_CACHE_TOKEN }}
-        run: |
-          ${{ github.workspace }}/.github/scripts/clear-s3-caches.sh ${{ needs.eclipse-distro-build.outputs.dist_path }}
-          ${{ github.workspace }}/.github/scripts/clear-s3-caches.sh ${{ needs.eclipse-distro-build.outputs.p2_path }}
 
   notify-failure:
     needs: [ eclipse-distro-build, sign-win-distros, sign-osx-distros, cleanup, purge_cache ]

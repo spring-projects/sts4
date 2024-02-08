@@ -15,7 +15,7 @@ do
        #  https://s3-us-west-1.amazonaws.com/s3-test.spring.io/sts4/vscode-extensions/snapshots/vscode-spring-boot-1.15.0-RC.1.vsix
        url=https://s3-us-west-1.amazonaws.com/s3-test.spring.io/sts4/vscode-extensions/snapshots/$fname
     else
-       url=https://dist.springsource.com/release/STS4/vscode/$fname
+       url=https://cdn.spring.io/spring-tools/release/STS4/vscode/$fname
     fi
     echo "- [$fname]($url)" >> $page
 done

@@ -129,7 +129,7 @@ Released versions of this extension can be installed directly from the vscode ma
 
 There are also development snapshots available with the latest fixes and improvements as a `.vsix` file 
 that can be donwloaded from 
-[here](https://dist.springsource.com/snapshot/STS4/nightly-distributions.html). To install it
+[here](https://cdn.spring.io/spring-tools/snapshot/STS4/nightly-distributions.html). To install it
 open vscode, press `CTRL-SHIFT-P` and search for VSIX, then select `Extension: Install from VSIX`
 
 [yaml-completion]: https://github.com/spring-projects/sts4/raw/5360ae4fabf9245da58f5897c54e9a14786d0622/vscode-extensions/vscode-boot-properties/readme-imgs/yaml-completion.png
