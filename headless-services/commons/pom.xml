@@ -118,12 +118,12 @@
 		<kotlin.version>1.9.20</kotlin.version>
 
 		<!-- Rewrite specific properties -->
-		<rewrite-version>8.11.5</rewrite-version>
-		<rewrite-kotlin-version>1.8.4</rewrite-kotlin-version>
-		<rewrite-spring-version>5.1.7</rewrite-spring-version>
-		<rewrite-gradle-tooling-api-version>1.5.0</rewrite-gradle-tooling-api-version>
+		<rewrite-version>8.15.2</rewrite-version>
+		<rewrite-kotlin-version>1.11.3</rewrite-kotlin-version>
+		<rewrite-spring-version>5.4.0</rewrite-spring-version>
+		<rewrite-gradle-tooling-api-version>1.5.1</rewrite-gradle-tooling-api-version>
 		
-		<gradle-tooling.version>8.4</gradle-tooling.version>
+		<gradle-tooling.version>8.5</gradle-tooling.version>
 		<gradle-core.version>6.1.1</gradle-core.version>
 
 		<signing.skip>true</signing.skip>
