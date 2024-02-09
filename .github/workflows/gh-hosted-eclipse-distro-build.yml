@@ -86,15 +86,15 @@ jobs:
           -Dhttpclient.retry-max=60 \
           -Dorg.eclipse.ecf.provider.filetransfer.httpclient.retrieve.readTimeout=2400000 -Dorg.eclipse.ecf.provider.filetransfer.httpclient4.retrieve.readTimeout=2400000 -Dorg.eclipse.ecf.provider.filetransfer.retrieve.readTimeout=2400000 \
           -Dorg.eclipse.ecf.provider.filetransfer.retrieve.retryAttempts=60
-      - name: Stop TCP Dump
-        if: ${{ inputs.build_type == 'snapshot' }}
-        run: |
-          cd eclipse-distribution
-          ls -la
-          PID=`sudo pgrep tcpdump`
-          echo "PID=${PID}"
-          sudo kill $PID
-          sudo sleep 10
+#      - name: Stop TCP Dump
+#        if: ${{ inputs.build_type == 'snapshot' }}
+#        run: |
+#          cd eclipse-distribution
+#          ls -la
+#          PID=`sudo pgrep tcpdump`
+#          echo "PID=${PID}"
+#          sudo kill $PID
+#          sudo sleep 10
       - name: Store S3 Paths
         id: s3-paths
         run: |
