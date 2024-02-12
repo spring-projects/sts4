@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2016 Pivotal, Inc.
+ * Copyright (c) 2015, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -17,7 +17,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.function.Supplier;
 
-import org.apache.maven.shared.utils.io.IOUtil;
+import org.apache.commons.io.IOUtils;
 import org.springframework.ide.eclipse.boot.core.BootActivator;
 import org.springframework.ide.eclipse.boot.core.BootPreferences;
 import org.springframework.ide.eclipse.boot.core.SimpleUriBuilder;
@@ -83,7 +83,7 @@ public interface InitializrService {
 				}
 				URLConnection urlConnection = urlConnectionFactory.createConnection(new URL(builder.toString()));
 				urlConnection.connect();
-				return IOUtil.toString(urlConnection.getInputStream(), "UTF8");
+				return IOUtils.toString(urlConnection.getInputStream(), "UTF8");
 			}
 		};
 	}
