@@ -49,9 +49,9 @@ do
 done
 
 # These end being inside osx distro tar.gz file built on Linux
-rm -rf ${dir}/${destination_folder_name}/SpringToolSuite4.app/plugins
-rm -rf ${dir}/${destination_folder_name}/SpringToolSuite4.app/p2
-rm -f ${dir}/${destination_folder_name}/SpringToolSuite4.app/artifacts.xml
+#rm -rf ${dir}/${destination_folder_name}/SpringToolSuite4.app/plugins
+#rm -rf ${dir}/${destination_folder_name}/SpringToolSuite4.app/p2
+#rm -f ${dir}/${destination_folder_name}/SpringToolSuite4.app/artifacts.xml
 
 # Sign the app
 ls -la ${dir}/${destination_folder_name}/SpringToolSuite4.app/
