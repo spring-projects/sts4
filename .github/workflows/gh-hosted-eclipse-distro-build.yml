@@ -141,14 +141,10 @@ jobs:
             cd extracted
             tar -czf ../$file . 
             cd ..
-            rm -rf extracted
-          
+            rm -rf extracted          
             echo "Generate checksums for ${file}"
-#            shasum -a 256 $file > ${file}.sha256
-#            md5sum $file > ${file}.md5
             shasum -a 256 $file > ${file}.sha256
             md5 $file > ${file}.md5
-               
           done
           echo "Processing S3 update..."
           dist_path=${{ steps.s3-paths.outputs.dist_path }}
