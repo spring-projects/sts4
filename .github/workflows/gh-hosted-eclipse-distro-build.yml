@@ -30,7 +30,7 @@ on:
 jobs:
 
   eclipse-distro-build:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9
         with:
@@ -46,14 +46,14 @@ jobs:
           distribution: 'temurin'
       - name: Enforce https instead of http
         run: ./nohttp.sh
-#      - name: Start TCP Dump
-#        if: ${{ inputs.build_type == 'snapshot' }}
-#        run: |
-#          cd eclipse-distribution
-#          sudo apt-get install -y tcpdump
-#          echo "Installed tcpdump"
-#          sudo tcpdump -s 0 -i eth0 -w mycap.pcap &
-#          echo "Launched tcpdump"
+      - name: Start TCP Dump
+        if: ${{ inputs.build_type == 'snapshot' }}
+        run: |
+          cd eclipse-distribution
+          sudo apt-get install -y tcpdump
+          echo "Installed tcpdump"
+          sudo tcpdump -s 0 -i eth0 -w mycap.pcap &
+          echo "Launched tcpdump"
       - name: Install GPG key
         run: |
           echo "${{ secrets.GPG_PRIVATE_KEY }}" > gpg.asc
@@ -120,15 +120,15 @@ jobs:
           echo "P2 path: ${p2_path}"
           aws s3 rm s3://tools-spring-io/$p2_path/ --recursive
           aws s3 cp ./repository/ s3://tools-spring-io/$p2_path/ --recursive --no-progress
-#      - name: Store TCP Dump
-#        if: inputs.build_type == 'snapshot' && failure()
-#        id: tcp-dump-upload
-#        run: |
-#          tcpdump_path=${{ github.workspace }}/eclipse-distribution/mycap.pcap
-#          p2_path=${{ steps.s3-paths.outputs.p2_path }}
-#          echo "P2 path: ${p2_path}"
-#          echo "TCP Dump path: ${tcpdump_path}"
-#          aws s3 mv $tcpdump_path s3://tools-spring-io/tcpdump/cap-${{ inputs.eclipse_profile }}-${{ inputs.build_type }}-${{ github.run_id }}.pcap --no-progress
+      - name: Store TCP Dump
+        if: inputs.build_type == 'snapshot' && failure()
+        id: tcp-dump-upload
+        run: |
+          tcpdump_path=${{ github.workspace }}/eclipse-distribution/mycap.pcap
+          p2_path=${{ steps.s3-paths.outputs.p2_path }}
+          echo "P2 path: ${p2_path}"
+          echo "TCP Dump path: ${tcpdump_path}"
+          aws s3 mv $tcpdump_path s3://tools-spring-io/tcpdump/cap-${{ inputs.eclipse_profile }}-${{ inputs.build_type }}-${{ github.run_id }}.pcap --no-progress
       - name: Upload Linux Distro Build Artifacts
         run: |
           cd eclipse-distribution/org.springframework.boot.ide.product.${{ inputs.eclipse_profile }}/target/products
@@ -141,10 +141,11 @@ jobs:
             cd extracted
             tar -czf ../$file . 
             cd ..
-            rm -rf extracted          
+            rm -rf extracted
+          
             echo "Generate checksums for ${file}"
             shasum -a 256 $file > ${file}.sha256
-            md5 $file > ${file}.md5
+            md5sum $file > ${file}.md5
           done
           echo "Processing S3 update..."
           dist_path=${{ steps.s3-paths.outputs.dist_path }}

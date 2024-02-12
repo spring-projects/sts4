@@ -190,7 +190,7 @@
 								<arg>org.eclipse.equinox.p2.director</arg>
 								<arg>-nosplash</arg>
 								<arg>-destination</arg>
-								<arg>${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/macosx/cocoa/x86_64/SpringToolSuite4.app</arg>
+								<arg>${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/macosx/cocoa/x86_64/SpringToolSuite4.app/Contents/Eclipse</arg>
 								<arg>-repository</arg>
 								<arg>${justj.repository}</arg>
 								<arg>-installIUs</arg>
@@ -211,7 +211,7 @@
 								<arg>org.eclipse.equinox.p2.director</arg>
 								<arg>-nosplash</arg>
 								<arg>-destination</arg>
-								<arg>${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/macosx/cocoa/aarch64/SpringToolSuite4.app</arg>
+								<arg>${project.build.directory}/products/org.springframework.boot.ide.branding.sts4/macosx/cocoa/aarch64/SpringToolSuite4.app/Contents/Eclipse</arg>
 								<arg>-repository</arg>
 								<arg>${justj.repository}</arg>
 								<arg>-installIUs</arg>
