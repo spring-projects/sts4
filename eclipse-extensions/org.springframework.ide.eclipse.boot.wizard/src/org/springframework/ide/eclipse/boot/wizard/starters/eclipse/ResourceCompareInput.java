@@ -45,6 +45,7 @@ import org.eclipse.compare.CompareUI;
 import org.eclipse.compare.CompareViewerSwitchingPane;
 import org.eclipse.compare.IStreamContentAccessor;
 import org.eclipse.compare.ITypedElement;
+import org.eclipse.compare.contentmergeviewer.ContentMergeViewer;
 import org.eclipse.compare.contentmergeviewer.TextMergeViewer;
 import org.eclipse.compare.internal.BufferedResourceNode;
 import org.eclipse.compare.internal.CompareMessages;
@@ -75,7 +76,6 @@ import org.eclipse.jface.dialogs.MessageDialog;
 import org.eclipse.jface.viewers.ICheckStateProvider;
 import org.eclipse.jface.viewers.ISelection;
 import org.eclipse.jface.viewers.IStructuredSelection;
-import org.eclipse.jface.viewers.OpenEvent;
 import org.eclipse.jface.viewers.StructuredSelection;
 import org.eclipse.jface.viewers.Viewer;
 import org.eclipse.osgi.util.NLS;
@@ -665,7 +665,7 @@ public class ResourceCompareInput extends CompareEditorInput {
 			Set<Object> visited = new HashSet<>();
 			Queue<Object> toVisit = new LinkedList<>(getStructuredSelection().toList());
 			// To avoid problems with currently opened TextMergeViewer close whatever was opened
-			fireOpen(new OpenEvent(this, StructuredSelection.EMPTY));
+//			fireOpen(new OpenEvent(this, StructuredSelection.EMPTY));
 			while (!toVisit.isEmpty()) {
 				Object o = toVisit.poll();
 				if (!visited.contains(o)) {
@@ -684,14 +684,19 @@ public class ResourceCompareInput extends CompareEditorInput {
 									Shell shell = new Shell();
 									shell.setVisible(false);
 									// Content difference
-									TextMergeViewer contentViewer = (TextMergeViewer) CompareUI.findContentViewer(new NullViewer(shell),
+									ContentMergeViewer contentViewer = (ContentMergeViewer) CompareUI.findContentViewer(new NullViewer(shell),
 											n, shell, getCompareConfiguration());
 									if (contentViewer != null) {
 										contentViewer.setInput(n);
 										try {
-											Method method = TextMergeViewer.class.getDeclaredMethod("copy", boolean.class);
+											Method method;
+											try {
+												method = contentViewer.getClass().getDeclaredMethod("copy", boolean.class);
+											} catch (Exception e) {
+												method = TextMergeViewer.class.getDeclaredMethod("copy", boolean.class);
+											}
 											method.setAccessible(true);
-											method.invoke(contentViewer, true);
+											method.invoke(contentViewer, false);
 											contentViewer.flush(new NullProgressMonitor());
 											n.setState(DiffNodeState.ALL);
 										} catch (Exception e) {
