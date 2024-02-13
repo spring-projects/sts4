@@ -6,16 +6,36 @@ import { extractCodeBlocks } from './utils/response-handler'; // Import the nece
 import { Uri, window } from 'vscode';
 import cp, { exec } from "child_process";
 import { homedir } from 'os';
+import { WorkspaceEdit } from "vscode-languageclient";
 import path from 'path';
+import fs from "fs";
 import { getTargetGuideMardown, getWorkspaceRoot } from './utils/util';
+import { createConverter } from "vscode-languageclient/lib/common/protocolConverter";
 
-
+const CONVERTER = createConverter(undefined, true, true);
 interface SpringBootChatAgentResult extends vscode.ChatAgentResult2 {
 	slashCommand: string;
 }
 
 function executable(): string {
     return vscode.workspace.getConfiguration("spring-cli").get("executable") || "spring";
+}
+
+async function executeCommand(args: string[], cwd?: string, jsonOutput: boolean = false): Promise<string> {
+    const processOpts = { cwd: cwd || getWorkspaceRoot()?.fsPath || homedir() };
+    const execCmd = executable();
+    const process = execCmd.endsWith(".jar") ? await cp.exec(`java -jar ${execCmd} ${args.join(" ")}`, processOpts) : await cp.exec(`${execCmd} ${args.join(" ")}`, processOpts);
+    const dataChunks: string[] = [];
+    process.stdout.on("data", s => dataChunks.push(s));
+    return new Promise<string>((resolve, reject) => {
+        process.on("exit", (code) => {
+            if (code) {
+                reject(`Failed to execute command: ${dataChunks.join()}`);
+            } else {
+                resolve(dataChunks.join());
+            }
+        });
+    });
 }
 
 function springCli(question: string, cwd: string): Thenable<Uri> {
@@ -41,33 +61,75 @@ function springCli(question: string, cwd: string): Thenable<Uri> {
             if (cancellation.isCancellationRequested) {
                 reject("Cancelled");
             }
-            const processOpts = {cwd: cwd || homedir()};
-            const execCmd = executable();
-            console.log(execCmd);
-            const process = execCmd.endsWith(".jar") ? await cp.exec(`java -jar ${execCmd} ${args.join(" ")}`, processOpts) : await cp.exec(`${execCmd} ${args.join(" ")}`, processOpts);
-            cancellation.onCancellationRequested(() => process.kill());
-            const errorMessageChunks = [];
-            let guideFileName;
-            process.stdout.on("data", s => {
-                const res = /README-\S+.md/.exec(s);
+            try {
+                const output = await executeCommand(args, cwd);
+                const res = /README-\S+.md/.exec(output);
                 if (res.length) {
-                    guideFileName = res[0].trim();
-                }
-            });
-            process.stderr.on("data", s => errorMessageChunks.push(s))
-            process.on("exit", (code) => {
-                if (code) {
-                    reject(`Failed to get response from LLM. ${errorMessageChunks.join()}`);
+                    resolve(Uri.file(path.join(cwd, res[0].trim())));
                 } else {
-                    resolve(Uri.file(path.join(cwd, guideFileName)));
+                    reject("Failed to get response from LLM.");
                 }
-            });
+            } catch (error) {
+                console.error(`Error: ${error}`); // Log error
+                reject(error);
+            }
         });
     });
 
 }
 
+async function fetchJson<T>(title: string, message: string, args: string[], cwd?: string): Promise<T> {
+    return window.withProgress({
+        location: vscode.ProgressLocation.Window,
+        cancellable: true,
+        title
+    }, async (progress, cancellation) => {
+        
+        if (message) {
+            progress.report({message});
+        }
+        return new Promise<T>(async (resolve, reject) => {
+            if (cancellation.isCancellationRequested) {
+                reject("Cancelled");
+            }
+            try {
+                const output = await executeCommand(args, cwd, true);
+                console.log(output);
+                resolve(JSON.parse(output) as T);
+            } catch (error) {
+                reject(error);
+            }
+        });
+    });
+}
 
+
+function fetchLspEdit(uri: Uri, cwd?: string): Promise<WorkspaceEdit> {
+    const args = [
+        "guide",
+        "apply",
+        "--lsp-edit",
+        "--file",
+        uri.fsPath
+    ];
+    return fetchJson("Lsp Edit", uri.fsPath, args, cwd || path.dirname(uri.fsPath));
+}
+
+async function applyLspEdit(uri: Uri) {
+    const lspEdit = await fetchLspEdit(uri);
+    const workspaceEdit = await CONVERTER.asWorkspaceEdit(lspEdit);
+
+    await Promise.all(workspaceEdit.entries().map(async ([uri, edits]) => {
+        if (fs.existsSync(uri.fsPath)) {
+            const doc = await vscode.workspace.openTextDocument(uri.fsPath);
+            await window.showTextDocument(doc);
+        }
+    }));
+    
+    return await vscode.workspace.applyEdit(workspaceEdit, {
+        isRefactoring: true
+    });
+}
 
 async function handleAiPrompts(request: vscode.ChatAgentRequest, context: vscode.ChatAgentContext, progress: vscode.Progress<vscode.ChatAgentProgress>, token: vscode.CancellationToken): Promise<SpringBootChatAgentResult> {
 
@@ -106,8 +168,8 @@ async function handleAiPrompts(request: vscode.ChatAgentRequest, context: vscode
             for await (const fragment of chatRequest.response) {
                 response += fragment;
             }
-            // applyLspEdit();
-            progress.report({ content: response });
+            applyLspEdit(uri);
+           progress.report({ content: response });
 			return { slashCommand: 'ai-prompt' };
         }  
 }
