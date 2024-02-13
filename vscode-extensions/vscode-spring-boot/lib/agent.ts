@@ -9,22 +9,19 @@ import { homedir } from 'os';
 import { WorkspaceEdit } from "vscode-languageclient";
 import path from 'path';
 import fs from "fs";
-import { getTargetGuideMardown, getWorkspaceRoot } from './utils/util';
+import { getTargetGuideMardown, getWorkspaceRoot, getExecutable } from './utils/util';
 import { createConverter } from "vscode-languageclient/lib/common/protocolConverter";
 
 const CONVERTER = createConverter(undefined, true, true);
+
 interface SpringBootChatAgentResult extends vscode.ChatAgentResult2 {
 	slashCommand: string;
 }
 
-function executable(): string {
-    return vscode.workspace.getConfiguration("spring-cli").get("executable") || "spring";
-}
-
-async function executeCommand(args: string[], cwd?: string, jsonOutput: boolean = false): Promise<string> {
+async function executeCommand(args: string[], cwd?: string): Promise<string> {
     const processOpts = { cwd: cwd || getWorkspaceRoot()?.fsPath || homedir() };
-    const execCmd = executable();
-    const process = execCmd.endsWith(".jar") ? await cp.exec(`java -jar ${execCmd} ${args.join(" ")}`, processOpts) : await cp.exec(`${execCmd} ${args.join(" ")}`, processOpts);
+    const executable = getExecutable();
+    const process = executable.endsWith(".jar") ? await cp.exec(`java -jar ${executable} ${args.join(" ")}`, processOpts) : await cp.exec(`${executable} ${args.join(" ")}`, processOpts);
     const dataChunks: string[] = [];
     process.stdout.on("data", s => dataChunks.push(s));
     return new Promise<string>((resolve, reject) => {
@@ -38,7 +35,7 @@ async function executeCommand(args: string[], cwd?: string, jsonOutput: boolean 
     });
 }
 
-function springCli(question: string, cwd: string): Thenable<Uri> {
+function springCliAiAdd(question: string, cwd: string): Thenable<Uri> {
 
     const args = [
         "ai",
@@ -52,7 +49,7 @@ function springCli(question: string, cwd: string): Thenable<Uri> {
     return vscode.window.withProgress({
         location: vscode.ProgressLocation.Window,
         cancellable: true,
-        title: "Spring CLI call",
+        title: "Spring CLI ai add call",
     }, (progress, cancellation) => {
 
         progress.report({ message: question });
@@ -70,7 +67,7 @@ function springCli(question: string, cwd: string): Thenable<Uri> {
                     reject("Failed to get response from LLM.");
                 }
             } catch (error) {
-                console.error(`Error: ${error}`); // Log error
+                console.error(`Error: ${error}`);
                 reject(error);
             }
         });
@@ -93,7 +90,7 @@ async function fetchJson<T>(title: string, message: string, args: string[], cwd?
                 reject("Cancelled");
             }
             try {
-                const output = await executeCommand(args, cwd, true);
+                const output = await executeCommand(args, cwd);
                 console.log(output);
                 resolve(JSON.parse(output) as T);
             } catch (error) {
@@ -112,7 +109,7 @@ function fetchLspEdit(uri: Uri, cwd?: string): Promise<WorkspaceEdit> {
         "--file",
         uri.fsPath
     ];
-    return fetchJson("Lsp Edit", uri.fsPath, args, cwd || path.dirname(uri.fsPath));
+    return fetchJson("Apply lsp edit", uri.fsPath, args, cwd || path.dirname(uri.fsPath));
 }
 
 async function applyLspEdit(uri: Uri) {
@@ -135,7 +132,7 @@ async function handleAiPrompts(request: vscode.ChatAgentRequest, context: vscode
 
         if (request.slashCommand?.name == 'ai-prompts') {
 
-            await springCli(request.prompt, getWorkspaceRoot().fsPath);
+            await springCliAiAdd(request.prompt, getWorkspaceRoot().fsPath);
             const uri = await getTargetGuideMardown();
             const documentContent = await vscode.workspace.fs.readFile(uri);
             const contentString = Buffer.from(documentContent).toString();
