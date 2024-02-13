@@ -421,6 +421,17 @@
         }
       },
       {
+        "id": "spring-cli",
+        "title": "Spring CLI",
+        "properties": {
+          "spring-cli.executable": {
+            "type": "string",
+            "default": "spring",
+            "description": "Spring CLI executable. Either name of the executable if it's on the PATH environment variable or absolute path to the spring CLI executable (or JAR for dev purposes)"
+          }
+        }
+      },
+      {
         "id": "ls",
         "title": "Language Server",
         "order": 1000,
