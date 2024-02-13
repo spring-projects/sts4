@@ -696,7 +696,7 @@ public class ResourceCompareInput extends CompareEditorInput {
 												method = TextMergeViewer.class.getDeclaredMethod("copy", boolean.class);
 											}
 											method.setAccessible(true);
-											method.invoke(contentViewer, false);
+											method.invoke(contentViewer, true);
 											contentViewer.flush(new NullProgressMonitor());
 											n.setState(DiffNodeState.ALL);
 										} catch (Exception e) {
