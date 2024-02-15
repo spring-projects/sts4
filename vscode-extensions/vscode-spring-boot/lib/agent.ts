@@ -106,7 +106,7 @@ function springCliHandleAIPrompt(question: string, cwd: string): Thenable<Prompt
         "--description",
         `"${question}"`
     ];
-    return fetchJson("Spring CLI ai prompt", question, args, cwd);
+    return fetchJson("Spring cli ai prompt", question, args, cwd);
 }
 
 async function enhanceResponse(uri: Uri, projDescription: string, cwd: string) {
@@ -116,7 +116,7 @@ async function enhanceResponse(uri: Uri, projDescription: string, cwd: string) {
         "--file",
         uri.fsPath
     ];
-    const enhancedResponse: string = await exec("Spring CLI ai", "Enhance response", args, cwd);
+    const enhancedResponse: string = await exec("Spring cli ai", "Enhance response", args, cwd);
     writeResponseToFile(enhancedResponse, projDescription, cwd);
 }
 
@@ -129,7 +129,7 @@ function fetchLspEdit(uri: Uri, cwd?: string): Promise<WorkspaceEdit> {
         "--file",
         uri.fsPath
     ];
-    return fetchJson("Spring CLI ai", "Apply lsp edit", args, cwd || path.dirname(uri.fsPath));
+    return fetchJson("Spring cli ai", "Apply lsp edit", args, cwd || path.dirname(uri.fsPath));
 }
 
 async function applyLspEdit(uri: Uri) {
@@ -165,32 +165,64 @@ async function writeResponseToFile(response: string, shortPackageName: string, c
     }
 }
 
+async function chatRequest(enhancedPrompt: PromptResponse, token: vscode.CancellationToken) {
+    const access = await vscode.chat.requestChatAccess('copilot');
+
+    const messages = [
+        {
+            role: vscode.ChatMessageRole.System,
+            content: enhancedPrompt.prompt.systemPrompt
+        },
+        {
+            role: vscode.ChatMessageRole.User,
+            content: enhancedPrompt.prompt.userPrompt
+        },
+    ];
+    let response = '';
+    return vscode.window.withProgress({
+        location: vscode.ProgressLocation.Window,
+        title: "Copilot request",
+        cancellable: true
+    }, async (progress, cancellation) => {
+        progress.report({ message: "processing" });
+        return new Promise<string>(async (resolve, reject) => {
+            if (cancellation.isCancellationRequested) {
+                console.log("Chat request cancelled");
+            }
+            try {
+                const chatRequest = access.makeRequest(messages, {}, token);
+                for await (const fragment of chatRequest.response) {
+                    response += fragment;
+                }
+                resolve(response);
+            } catch (error) {
+                reject(error);
+            }
+        });
+    });
+}
+
 async function handleAiPrompts(request: vscode.ChatAgentRequest, context: vscode.ChatAgentContext, progress: vscode.Progress<vscode.ChatAgentProgress>, token: vscode.CancellationToken): Promise<SpringBootChatAgentResult> {
 
         if (request.slashCommand?.name == 'prompt') {
             const cwd = (await getWorkspaceRoot()).fsPath;
+            // get enhanced prompt by calling spring cli `prompt` command
             const enhancedPrompt = await springCliHandleAIPrompt(request.prompt, cwd);
-            const access = await vscode.chat.requestChatAccess('copilot');
 
-            const messages = [
-                {
-                    role: vscode.ChatMessageRole.System,
-					content: enhancedPrompt.prompt.systemPrompt
-                },
-                {
-                    role: vscode.ChatMessageRole.User,
-                    content: enhancedPrompt.prompt.userPrompt
-                },
-            ];
-            const chatRequest = access.makeRequest(messages, {}, token);
-            let response = '';
-            for await (const fragment of chatRequest.response) {
-                response += fragment;
-            }
+            // chat request to copilot LLM
+            const response = await chatRequest(enhancedPrompt, token);
+
+            // write the response to markdown file
             await writeResponseToFile(response, enhancedPrompt.shortPackageName, cwd);
+
             const uri = await getTargetGuideMardown();
+            // modify the response from copilot LLM i.e. make response Boot 3 compliant if necessary
             await enhanceResponse(uri, enhancedPrompt.shortPackageName, cwd);
+
+            // apply lsp edit by calling spring cli `guide apply` command
             applyLspEdit(uri);
+
+            // return modified response to chat
             const documentContent = await vscode.workspace.fs.readFile(uri);
             const chatResponse = Buffer.from(documentContent).toString();
             progress.report({ content: chatResponse });
@@ -285,7 +317,7 @@ export function activate(
     agent.slashCommandProvider = {
         provideSlashCommands(token) {
             return [
-                { name: 'prompt', description: 'Handle AI Prompts through Spring CLI' },
+                { name: 'prompt', description: 'Handle AI Prompts through Spring cli' },
                 { name: 'new', description: 'Create a new spring boot project'}
             ];
         }
