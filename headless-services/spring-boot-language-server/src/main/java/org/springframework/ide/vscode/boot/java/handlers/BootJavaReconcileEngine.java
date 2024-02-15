@@ -10,6 +10,7 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.java.handlers;
 
+import java.net.URI;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.eclipse.lsp4j.TextDocumentIdentifier;
@@ -41,7 +42,8 @@ public class BootJavaReconcileEngine implements IReconcileEngine {
 	@Override
 	public void reconcile(final IDocument doc, final IProblemCollector problemCollector) {
 		IJavaProject project = projectFinder.find(new TextDocumentIdentifier(doc.getUri())).orElse(null);
-		if (project != null) {
+		URI docUri = URI.create(doc.getUri());
+		if (project != null && "file".equals(docUri.getScheme())) {
 			
 			try {
 				problemCollector.beginCollecting();
