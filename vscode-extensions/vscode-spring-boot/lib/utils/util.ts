@@ -1,9 +1,20 @@
 import path from "path";
 import { Uri, WorkspaceFolder, window, workspace } from "vscode";
 
-export function getWorkspaceRoot(): Uri | undefined {
+export function getExecutable(): string {
+    return workspace.getConfiguration("spring-cli").get("executable") || "spring";
+}
+
+export async function getWorkspaceRoot(): Promise<Uri | undefined> {
     if (workspace.workspaceFolders && workspace.workspaceFolders.length) {
-        return workspace.workspaceFolders[0].uri
+        if (workspace.workspaceFolders.length === 1) {
+            return workspace.workspaceFolders[0].uri;
+        } else {
+            return await window.showQuickPick(
+                workspace.workspaceFolders.map((c: WorkspaceFolder) => ({ value: c.uri, label: getRelativePathToWorkspaceFolder(c.uri), description: getWorkspaceFolderName(c.uri) })),
+                { placeHolder: "Select the target project." },
+            ).then(res => res && res.value);
+        }
     }
 }
 
