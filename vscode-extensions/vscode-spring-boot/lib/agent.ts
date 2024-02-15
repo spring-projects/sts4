@@ -4,13 +4,24 @@ import { LanguageClient } from 'vscode-languageclient/node';
 import { projectCreationPrompt } from './utils/create-spring-boot-project-prompt';
 import { extractCodeBlocks } from './utils/response-handler'; // Import the necessary function from the appropriate module
 import { Uri, window } from 'vscode';
-import cp, { exec } from "child_process";
+import cp from "child_process";
 import { homedir } from 'os';
 import { WorkspaceEdit } from "vscode-languageclient";
 import path from 'path';
 import fs from "fs";
 import { getTargetGuideMardown, getWorkspaceRoot, getExecutable } from './utils/util';
 import { createConverter } from "vscode-languageclient/lib/common/protocolConverter";
+
+interface Prompt {
+    systemPrompt: string;
+    userPrompt: string;
+}
+
+interface PromptResponse {
+    description: string;
+    shortPackageName: string;
+    prompt: Prompt;
+}
 
 const CONVERTER = createConverter(undefined, true, true);
 
@@ -19,7 +30,7 @@ interface SpringBootChatAgentResult extends vscode.ChatAgentResult2 {
 }
 
 async function executeCommand(args: string[], cwd?: string): Promise<string> {
-    const processOpts = { cwd: cwd || getWorkspaceRoot()?.fsPath || homedir() };
+    const processOpts = { cwd: cwd || (await getWorkspaceRoot())?.fsPath || homedir() };
     const executable = getExecutable();
     const process = executable.endsWith(".jar") ? await cp.exec(`java -jar ${executable} ${args.join(" ")}`, processOpts) : await cp.exec(`${executable} ${args.join(" ")}`, processOpts);
     const dataChunks: string[] = [];
@@ -35,44 +46,31 @@ async function executeCommand(args: string[], cwd?: string): Promise<string> {
     });
 }
 
-function springCliAiAdd(question: string, cwd: string): Thenable<Uri> {
-
-    const args = [
-        "ai",
-        "add",
-        "--preview",
-        "true",
-        "--description",
-        `"${question}"`
-    ];
-
+async function exec<T>(title: string, message: string, args: string[], cwd?: string): Promise<T> {
     return vscode.window.withProgress({
         location: vscode.ProgressLocation.Window,
         cancellable: true,
-        title: "Spring CLI ai add call",
-    }, (progress, cancellation) => {
+        title,
+    }, async (progress, cancellation) => {
 
-        progress.report({ message: question });
+        if (message) {
+            progress.report({message});
+        }
         
-        return new Promise<Uri>(async (resolve, reject) => {
+        return new Promise<T>(async (resolve, reject) => {
             if (cancellation.isCancellationRequested) {
                 reject("Cancelled");
             }
             try {
-                const output = await executeCommand(args, cwd);
-                const res = /README-\S+.md/.exec(output);
-                if (res.length) {
-                    resolve(Uri.file(path.join(cwd, res[0].trim())));
-                } else {
-                    reject("Failed to get response from LLM.");
-                }
+                const output: string = await executeCommand(args, cwd);
+                console.log(output);
+                resolve(output as T);
             } catch (error) {
                 console.error(`Error: ${error}`);
                 reject(error);
             }
         });
     });
-
 }
 
 async function fetchJson<T>(title: string, message: string, args: string[], cwd?: string): Promise<T> {
@@ -91,13 +89,35 @@ async function fetchJson<T>(title: string, message: string, args: string[], cwd?
             }
             try {
                 const output = await executeCommand(args, cwd);
-                console.log(output);
-                resolve(JSON.parse(output) as T);
+                const extractJson = output.substring(output.indexOf('{'));
+                resolve(JSON.parse(extractJson) as T);
             } catch (error) {
                 reject(error);
             }
         });
     });
+}
+
+function springCliHandleAIPrompt(question: string, cwd: string): Thenable<PromptResponse> {
+
+    const args = [
+        "ai",
+        "prompt",
+        "--description",
+        `"${question}"`
+    ];
+    return fetchJson("Spring CLI ai prompt", question, args, cwd);
+}
+
+async function enhanceResponse(uri: Uri, projDescription: string, cwd: string) {
+    const args = [
+        "ai",
+        "enhance-response",
+        "--file",
+        uri.fsPath
+    ];
+    const enhancedResponse: string = await exec("Spring CLI ai", "Enhance response", args, cwd);
+    writeResponseToFile(enhancedResponse, projDescription, cwd);
 }
 
 
@@ -109,7 +129,7 @@ function fetchLspEdit(uri: Uri, cwd?: string): Promise<WorkspaceEdit> {
         "--file",
         uri.fsPath
     ];
-    return fetchJson("Apply lsp edit", uri.fsPath, args, cwd || path.dirname(uri.fsPath));
+    return fetchJson("Spring CLI ai", "Apply lsp edit", args, cwd || path.dirname(uri.fsPath));
 }
 
 async function applyLspEdit(uri: Uri) {
@@ -128,36 +148,38 @@ async function applyLspEdit(uri: Uri) {
     });
 }
 
+async function writeResponseToFile(response: string, shortPackageName: string, cwd: string) {
+    const readmeFilePath =  path.resolve(cwd, `README-ai-${shortPackageName}.md`);
+    if (fs.existsSync(readmeFilePath)) {
+        try {
+            fs.unlinkSync(readmeFilePath);
+        } catch (ex) {
+            throw new Error(`Could not delete readme file: ${readmeFilePath}, ${ex}`);
+        }
+    }
+    
+    try {
+        fs.writeFileSync(readmeFilePath, response);
+    } catch (ex) {
+        throw new Error(`Could not write readme file: ${readmeFilePath}, ${ex}`);
+    }
+}
+
 async function handleAiPrompts(request: vscode.ChatAgentRequest, context: vscode.ChatAgentContext, progress: vscode.Progress<vscode.ChatAgentProgress>, token: vscode.CancellationToken): Promise<SpringBootChatAgentResult> {
 
-        if (request.slashCommand?.name == 'ai-prompts') {
-
-            await springCliAiAdd(request.prompt, getWorkspaceRoot().fsPath);
-            const uri = await getTargetGuideMardown();
-            const documentContent = await vscode.workspace.fs.readFile(uri);
-            const contentString = Buffer.from(documentContent).toString();
-            
+        if (request.slashCommand?.name == 'prompt') {
+            const cwd = (await getWorkspaceRoot()).fsPath;
+            const enhancedPrompt = await springCliHandleAIPrompt(request.prompt, cwd);
             const access = await vscode.chat.requestChatAccess('copilot');
-            let detailedPrompt = '';
 
-            detailedPrompt += request.prompt;
-
-            const systemPrompt = 'Your task is to create Java source code for a comprehensive Spring Boot application from scratch using below instructions \n'+
-            `# Instructions:
-            \`\`\`
-            ${contentString}\n
-            \`\`\``;
-        
-            console.log(detailedPrompt);
-            console.log(systemPrompt);
             const messages = [
                 {
                     role: vscode.ChatMessageRole.System,
-					content: systemPrompt
+					content: enhancedPrompt.prompt.systemPrompt
                 },
                 {
                     role: vscode.ChatMessageRole.User,
-                    content: request.prompt
+                    content: enhancedPrompt.prompt.userPrompt
                 },
             ];
             const chatRequest = access.makeRequest(messages, {}, token);
@@ -165,9 +187,14 @@ async function handleAiPrompts(request: vscode.ChatAgentRequest, context: vscode
             for await (const fragment of chatRequest.response) {
                 response += fragment;
             }
+            await writeResponseToFile(response, enhancedPrompt.shortPackageName, cwd);
+            const uri = await getTargetGuideMardown();
+            await enhanceResponse(uri, enhancedPrompt.shortPackageName, cwd);
             applyLspEdit(uri);
-           progress.report({ content: response });
-			return { slashCommand: 'ai-prompt' };
+            const documentContent = await vscode.workspace.fs.readFile(uri);
+            const chatResponse = Buffer.from(documentContent).toString();
+            progress.report({ content: chatResponse });
+			return { slashCommand: 'prompt' };
         }  
 }
 
@@ -244,7 +271,7 @@ export function activate(
 ) {
 
     const agent = vscode.chat.createChatAgent('springboot', async (request, context, progress, token) => {
-		if (request.slashCommand?.name === 'ai-prompts') {
+		if (request.slashCommand?.name === 'prompt') {
 			return handleAiPrompts(request, context, progress, token);
 		} else if (request.slashCommand?.name === 'new') {
 			return handleCreateProject(request, context, progress, token);
@@ -258,7 +285,7 @@ export function activate(
     agent.slashCommandProvider = {
         provideSlashCommands(token) {
             return [
-                { name: 'ai-prompts', description: 'Handle AI Prompts through Spring CLI' },
+                { name: 'prompt', description: 'Handle AI Prompts through Spring CLI' },
                 { name: 'new', description: 'Create a new spring boot project'}
             ];
         }
