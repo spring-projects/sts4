@@ -18,6 +18,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.CompletionException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
@@ -238,8 +239,9 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 	}
 	
 	private synchronized CompletableFuture<CompilationUnit> requestCU(IJavaProject project, URI uri) throws ExecutionException {
-		return uriToCu.get(uri, () -> {
-			CompletableFuture<CompilationUnit> future = CompletableFuture.supplyAsync(() -> {
+		CompletableFuture<CompilationUnit> cuFuture = uriToCu.getIfPresent(uri);
+		if (cuFuture == null) {
+			cuFuture = CompletableFuture.supplyAsync(() -> {
 				
 				try {
 					logger.info("Started parsing CU for " + uri);
@@ -252,16 +254,24 @@ public final class CompilationUnitCache implements DocumentContentProvider {
 
 					logger.info("Parsed successfully CU for " + uri);
 					return cUnit;
-				} catch (Exception e) {
-					logger.warn("exception happened during parsing CU for " + uri + ": " + e);
-					return null;
+				} catch (Throwable t) {
+					// Complete future exceptionally
+					throw new CompletionException(t);
 				}
 			}, createCuExecutorThreadPool);
-			return future;
-
-		});
+			// Cache the future
+			uriToCu.put(uri, cuFuture);
+			// If CU future completed exceptionally invalidate the cache entry
+			cuFuture.exceptionally(t -> {
+				if (!(t instanceof CancellationException)) {
+					logger.error("", t);
+				}
+				uriToCu.invalidate(uri);
+				return null;
+			});
+		}
+		return cuFuture;
 	}
-
 
 	public static CompilationUnit parse2(char[] source, String docURI, String unitName, IJavaProject project) throws Exception {
 		List<Classpath> classpaths = createClasspath(getClasspathEntries(project));
