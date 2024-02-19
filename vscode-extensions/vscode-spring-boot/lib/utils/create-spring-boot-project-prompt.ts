@@ -61,4 +61,10 @@ should use Hibernate 6 and Flyway 9. Please generate code accordingly.
 22. **Spring Security (If Applicable)**: If the application uses Spring Security, include the following dependency artifact IDs: "spring-boot-starter-security" and "spring-security-test."
 23. **Markdown Code Blocks**: When generating markdown for code blocks in the final response, include an appropriate value for the "info" field.
 24. **Tutorial Links**: Provide links to tutorials for learning more about the generated application. Prefer tutorials from the domains [https://spring.io](https://spring.io) and [https://www.baeldung.com/](https://www.baeldung.com/), but include others if they are popular. Provide a maximum of 5 links.
+26. Spring Boot 3 introduces a significant update requiring the transition from 'javax.' imports to 'jakarta.' imports. 
+Ensure that all imports using 'javax.' are now replaced with 'jakarta.' imports. 
+Focus on updating classes and interfaces under 'javax.' to 'jakarta.' and converting 'javax.persistence'
+imports to 'jakarta.persistence' for proper Jakarta EE compatibility. Additionally, set the Hibernate version
+to a minimum of Hibernate ORM 5.6.x, supporting Jakarta Persistence. The default configuration in Spring Boot 3
+should use Hibernate 6 and Flyway 9. Please generate code accordingly.
 `;
