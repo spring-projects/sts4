@@ -30,7 +30,7 @@
   ],
   "enabledApiProposals": [
     "chatAgents2",
-    "chatRequestAccess"
+    "languageModels"
   ],
   "contributes": {
     "javaExtensions": [
@@ -245,6 +245,11 @@
         "enablement": "vscode-spring-boot.active-app-state == 'connected'",
         "icon": "$(refresh)",
         "category": "Spring Boot"
+      },
+      {
+        "command": "vscode-spring-boot.agent.apply",
+        "title": "Apply Changes",
+        "category": "Spring Boot Agent"
       }
     ],
     "configuration": [

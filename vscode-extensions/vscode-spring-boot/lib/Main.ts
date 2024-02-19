@@ -12,6 +12,7 @@ import {
 import * as commons from '@pivotal-tools/commons-vscode';
 import * as liveHoverUi from './live-hover-connect-ui';
 import * as rewrite from './rewrite';
+import { applyLspEdit } from './agent';
 
 import { startDebugSupport } from './debug-config-provider';
 import { ApiManager } from "./apiManager";
@@ -168,6 +169,8 @@ export function activate(context: ExtensionContext): Thenable<ExtensionAPI> {
         agent.activate(client, options, context);
 
         registerMiscCommands(context);
+
+        VSCode.commands.registerCommand('vscode-spring-boot.agent.apply', applyLspEdit);
 
         return new ApiManager(client).api;
     });
