@@ -142,6 +142,10 @@
             </and>
          </enabledWhen>
       </handler>
+      <handler
+            class="org.springframework.ide.eclipse.boot.wizard.AddBootStartersHandler2"
+            commandId="org.springframework.ide.eclipse.boot.commands.editStartersCommand2">
+      </handler>
    </extension>
    
    

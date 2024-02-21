@@ -174,7 +174,6 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 				sourceLinks);
 
 		codeLensHandler = createCodeLensEngine(indexer);
-		documents.onCodeLens(codeLensHandler);
 
 		highlightsEngine = createDocumentHighlightEngine(indexer);
 		documents.onDocumentHighlight(highlightsEngine);
@@ -218,8 +217,8 @@ public class BootJavaLanguageServerComponents implements LanguageServerComponent
 		return hoverProvider;
 	}
 
-	public CodeLensHandler getCodeLensHandler() {
-		return codeLensHandler;
+	public Optional<CodeLensHandler> getCodeLensHandler() {
+		return Optional.of(codeLensHandler);
 	}
 
 	public DocumentHighlightHandler getDocumentHighlightHandler() {

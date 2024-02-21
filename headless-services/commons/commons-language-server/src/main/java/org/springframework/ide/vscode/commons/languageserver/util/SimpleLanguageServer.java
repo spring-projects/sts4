@@ -521,6 +521,9 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, SpringInd
 			codeLensOptions.setResolveProvider(hasCodeLensResolveProvider());
 			c.setCodeLensProvider(codeLensOptions );
 		}
+		if (hasInlayHintHandler()) {
+			c.setInlayHintProvider(true);
+		}
 		if (hasExecuteCommandSupport && (
 				hasQuickFixes() || 
 				!commands.isEmpty()
@@ -565,6 +568,10 @@ public final class SimpleLanguageServer implements Sts4LanguageServer, SpringInd
 
 	private boolean hasCodeLensHandler() {
 		return getTextDocumentService().hasCodeLensHandler();
+	}
+	
+	private boolean hasInlayHintHandler() {
+		return getTextDocumentService().hasInlayHintHandler();
 	}
 
 	private boolean hasCodeLensResolveProvider() {

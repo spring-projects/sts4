@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2022 Pivotal, Inc.
+ * Copyright (c) 2018, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -10,31 +10,38 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.languageserver.composable;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.eclipse.lsp4j.CodeAction;
 import org.eclipse.lsp4j.CodeActionCapabilities;
 import org.eclipse.lsp4j.CodeActionContext;
+import org.eclipse.lsp4j.CodeLens;
+import org.eclipse.lsp4j.CodeLensParams;
 import org.eclipse.lsp4j.Command;
 import org.eclipse.lsp4j.DocumentSymbolParams;
 import org.eclipse.lsp4j.Hover;
 import org.eclipse.lsp4j.HoverParams;
+import org.eclipse.lsp4j.InlayHint;
+import org.eclipse.lsp4j.InlayHintParams;
 import org.eclipse.lsp4j.WorkspaceSymbol;
 import org.eclipse.lsp4j.jsonrpc.CancelChecker;
 import org.eclipse.lsp4j.jsonrpc.messages.Either;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IProblemCollector;
 import org.springframework.ide.vscode.commons.languageserver.reconcile.IReconcileEngine;
 import org.springframework.ide.vscode.commons.languageserver.util.CodeActionHandler;
+import org.springframework.ide.vscode.commons.languageserver.util.CodeLensHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.DocumentSymbolHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.HoverHandler;
+import org.springframework.ide.vscode.commons.languageserver.util.InlayHintHandler;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleLanguageServer;
 import org.springframework.ide.vscode.commons.languageserver.util.SimpleTextDocumentService;
-import org.springframework.ide.vscode.commons.util.Assert;
 import org.springframework.ide.vscode.commons.util.text.IDocument;
 import org.springframework.ide.vscode.commons.util.text.IRegion;
 import org.springframework.ide.vscode.commons.util.text.LanguageId;
@@ -45,13 +52,16 @@ import com.google.common.collect.ImmutableMap;
 public class CompositeLanguageServerComponents implements LanguageServerComponents {
 
 	public static class Builder {
-		private Map<LanguageId, LanguageServerComponents> componentsByLanguageId = new HashMap<>();
+		private Map<LanguageId, List<LanguageServerComponents>> componentsByLanguageId = new HashMap<>();
 
 		public void add(LanguageServerComponents components) {
 			for (LanguageId language : components.getInterestingLanguages()) {
-				//Multiple associations to a single language id not yet supported.
-				Assert.isLegal(!componentsByLanguageId.containsKey(language));
-				componentsByLanguageId.put(language, components);
+				List<LanguageServerComponents> list = componentsByLanguageId.get(language);
+				if (list == null) {
+					list = new ArrayList<>(1);
+					componentsByLanguageId.put(language, list);
+				}
+				list.add(components);
 			}
 		}
 
@@ -60,30 +70,33 @@ public class CompositeLanguageServerComponents implements LanguageServerComponen
 		}
 	}
 
-	private final Map<LanguageId, LanguageServerComponents> componentsByLanguageId;
+	private final Map<LanguageId, List<LanguageServerComponents>> componentsByLanguageId;
 	private final IReconcileEngine reconcileEngine;
 	private final HoverHandler hoverHandler;
 	private final CodeActionHandler codeActionHandler;
+	private final CodeLensHandler codeLensHandler;
 	private final DocumentSymbolHandler docSymbolHandler;
+	private final InlayHintHandler inlayHintHandler;
 
 	public CompositeLanguageServerComponents(SimpleLanguageServer server, Builder builder) {
 		this.componentsByLanguageId = ImmutableMap.copyOf(builder.componentsByLanguageId);
 		//Create composite Reconcile engine
-		if (componentsByLanguageId.values().stream().map(LanguageServerComponents::getReconcileEngine).anyMatch(Optional::isPresent)) {
+		if (componentsByLanguageId.values().stream().flatMap(l -> l.stream()).map(LanguageServerComponents::getReconcileEngine).anyMatch(Optional::isPresent)) {
 			this.reconcileEngine = new IReconcileEngine() {
 				@Override
 				public void reconcile(IDocument document, IProblemCollector problemCollector) {
 					LanguageId language = document.getLanguageId();
-					LanguageServerComponents subComponents = componentsByLanguageId.get(language);
+					List<LanguageServerComponents> subComponents = componentsByLanguageId.get(language);
 					if (subComponents!=null) {
-						Optional<IReconcileEngine> subEngine = subComponents.getReconcileEngine();
-						if (subEngine.isPresent()) {
-							subEngine.get().reconcile(document, problemCollector);
-							return;
+						for (LanguageServerComponents subComponent : subComponents) {
+							Optional<IReconcileEngine> subEngine = subComponent.getReconcileEngine();
+							if (subEngine.isPresent()) {
+								subEngine.get().reconcile(document, problemCollector);
+							}
 						}
 					}
-					//No applicable subEngine... but we still have to obey the IReconcileEngine contract!
-					IReconcileEngine.NULL.reconcile(document, problemCollector);
+//					//No applicable subEngine... but we still have to obey the IReconcileEngine contract!
+//					IReconcileEngine.NULL.reconcile(document, problemCollector);
 				}
 			};
 		} else {
@@ -95,11 +108,13 @@ public class CompositeLanguageServerComponents implements LanguageServerComponen
 			public Hover handle(CancelChecker cancelToken, HoverParams params) {
 				TextDocument doc = server.getTextDocumentService().getLatestSnapshot(params.getTextDocument().getUri());
 				LanguageId language = doc.getLanguageId();
-				LanguageServerComponents subComponents = componentsByLanguageId.get(language);
+				List<LanguageServerComponents> subComponents = componentsByLanguageId.get(language);
 				if (subComponents != null) {
-					HoverHandler subEngine = subComponents.getHoverProvider();
-					if (subEngine != null) {
-						return subEngine.handle(cancelToken, params);
+					for (LanguageServerComponents subComponent : subComponents) {
+						HoverHandler subEngine = subComponent.getHoverProvider();
+						if (subEngine != null) {
+							return subEngine.handle(cancelToken, params);
+						}
 					}
 				}
 				//No applicable subEngine...
@@ -113,11 +128,51 @@ public class CompositeLanguageServerComponents implements LanguageServerComponen
 			public List<Either<Command, CodeAction>> handle(CancelChecker cancelToken,
 					CodeActionCapabilities capabilities, CodeActionContext context, TextDocument doc, IRegion region) {
 				LanguageId language = doc.getLanguageId();
-				LanguageServerComponents subComponents = componentsByLanguageId.get(language);
+				List<LanguageServerComponents> subComponents = componentsByLanguageId.get(language);
 				if (subComponents != null) {
-					return subComponents.getCodeActionProvider()
-							.map(subEngine -> subEngine.handle(cancelToken, capabilities, context, doc, region))
-							.orElse(Collections.emptyList());
+					return subComponents.stream()
+						.map(sc -> sc.getCodeActionProvider())
+						.filter(provider -> provider.isPresent())
+						.flatMap(se -> se.get().handle(cancelToken, capabilities, context, doc, region).stream())
+						.collect(Collectors.toList());
+				}
+				// No applicable subEngine...
+				return Collections.emptyList();
+			}
+		};
+		
+		this.codeLensHandler = new CodeLensHandler() {
+			
+			@Override
+			public List<? extends CodeLens> handle(CancelChecker cancelToken, CodeLensParams params) {
+				TextDocument doc = server.getTextDocumentService().getLatestSnapshot(params.getTextDocument().getUri());
+				LanguageId language = doc.getLanguageId();
+				List<LanguageServerComponents> subComponents = componentsByLanguageId.get(language);
+				if (subComponents != null) {
+					return subComponents.stream()
+							.map(sc -> sc.getCodeLensHandler())
+							.filter(h -> h.isPresent())
+							.flatMap(h -> h.get().handle(cancelToken, params).stream())
+							.collect(Collectors.toList());
+				}
+				// No applicable subEngine...
+				return Collections.emptyList();
+			}
+		};
+		
+		this.inlayHintHandler = new InlayHintHandler() {
+			
+			@Override
+			public List<InlayHint> handle(CancelChecker token, InlayHintParams params) {
+				TextDocument doc = server.getTextDocumentService().getLatestSnapshot(params.getTextDocument().getUri());
+				LanguageId language = doc.getLanguageId();
+				List<LanguageServerComponents> subComponents = componentsByLanguageId.get(language);
+				if (subComponents != null) {
+					return subComponents.stream()
+							.map(sc -> sc.getInlayHintHandler())
+							.filter(h -> h.isPresent())
+							.flatMap(h -> h.get().handle(token, params).stream())
+							.collect(Collectors.toList());
 				}
 				// No applicable subEngine...
 				return Collections.emptyList();
@@ -130,12 +185,13 @@ public class CompositeLanguageServerComponents implements LanguageServerComponen
 			public List<? extends WorkspaceSymbol> handle(DocumentSymbolParams params) {
 				TextDocument doc = server.getTextDocumentService().getLatestSnapshot(params.getTextDocument().getUri());
 				LanguageId language = doc.getLanguageId();
-				LanguageServerComponents subComponents = componentsByLanguageId.get(language);
+				List<LanguageServerComponents> subComponents = componentsByLanguageId.get(language);
 				if (subComponents != null) {
-					DocumentSymbolHandler subHandler = subComponents.getDocumentSymbolProvider().orElse(null);
-					if (subHandler != null) {
-						return subHandler.handle(params);
-					}
+					return subComponents.stream()
+							.map(sc -> sc.getDocumentSymbolProvider())
+							.filter(ds -> ds.isPresent())
+							.flatMap(ds -> ds.get().handle(params).stream())
+							.collect(Collectors.toList());
 				}
 				//No applicable subEngine...
 				return Collections.emptyList();
@@ -163,19 +219,28 @@ public class CompositeLanguageServerComponents implements LanguageServerComponen
 		return Optional.ofNullable(docSymbolHandler);
 	}
 
-	@SuppressWarnings("unchecked")
 	public <C extends LanguageServerComponents> C get(Class<C> subComponentsType) {
-		for (LanguageServerComponents subcomp : this.componentsByLanguageId.values()) {
-			if (subComponentsType.isInstance(subcomp)) {
-				return (C) subcomp;
-			}
-		}
-		return null;
+		return this.componentsByLanguageId.values().stream()
+				.flatMap(l -> l.stream())
+				.filter(subComponentsType::isInstance)
+				.map(subComponentsType::cast)
+				.findFirst()
+				.orElse(null);
 	}
 
 	@Override
 	public Optional<CodeActionHandler> getCodeActionProvider() {
 		return Optional.of(codeActionHandler);
+	}
+
+	@Override
+	public Optional<CodeLensHandler> getCodeLensHandler() {
+		return Optional.of(codeLensHandler);
+	}
+
+	@Override
+	public Optional<InlayHintHandler> getInlayHintHandler() {
+		return Optional.of(inlayHintHandler);
 	}
 
 }

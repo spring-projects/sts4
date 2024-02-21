@@ -82,6 +82,10 @@
          </enabledInputWhen>
 -->
       </contentTypeMapping>
+      <contentTypeMapping
+            contentType="org.springframework.boot.ide.pom.xml"
+            id="org.eclipse.languageserver.languages.springboot">
+      </contentTypeMapping>
       
    </extension>
 
@@ -173,6 +177,17 @@
             file-names="spring.factories,aot.factories"
             file-patterns="*.factories">
       </file-association>
+      <content-type
+            base-type="org.eclipse.core.runtime.xml"
+            default-charset="UTF-8"
+            id="org.springframework.boot.ide.pom.xml"
+            name="Pom Xml"
+            priority="normal">
+      </content-type>
+      <file-association
+            content-type="org.springframework.boot.ide.pom.xml"
+            file-names="pom.xml">
+      </file-association>
    </extension>
    
    <extension
@@ -261,6 +276,10 @@
             class="org.springframework.tooling.boot.ls.commands.RefreshModulithMetadata"
             commandId="org.springframework.tooling.boot.ls.modulith.metadata.refresh">
       </handler>
+      <handler
+            class="org.springframework.tooling.boot.ls.commands.AddStartersHandler"
+            commandId="spring.initializr.addStarters">
+      </handler>
    </extension>
    <extension
          point="org.eclipse.ui.commands">
@@ -291,6 +310,24 @@
             description="Refresh project&apos;s Modulith metadata and re-validate the project"
             id="org.springframework.tooling.boot.ls.modulith.metadata.refresh"
             name="Refresh Modulith Metadata">
+      </command>
+      <command
+            categoryId="org.eclipse.lsp4e.commandCategory"
+            description="Adds Spring Boot Starters dependencies"
+            id="spring.initializr.addStarters"
+            name="Add Spring Boot Starters">
+         <commandParameter
+               id="org.eclipse.lsp4e.command.param"
+               name="command"
+               optional="true"
+               typeId="org.eclipse.lsp4e.commandParameterType">
+         </commandParameter>
+         <commandParameter
+               id="org.eclipse.lsp4e.path.param"
+               name="path"
+               optional="true"
+               typeId="org.eclipse.lsp4e.pathParameterType">
+         </commandParameter>
       </command>
    </extension>
 

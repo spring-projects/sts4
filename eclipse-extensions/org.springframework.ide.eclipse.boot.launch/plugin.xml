@@ -221,6 +221,11 @@
             id="org.springframework.ide.eclipse.boot.commands.editStartersCommand"
             name="Edit Starters">
       </command>
+      <command
+            categoryId="org.springframework.ide.eclipse.boot.commands.category"
+            id="org.springframework.ide.eclipse.boot.commands.editStartersCommand2"
+            name="Edit Starters 2">
+      </command>
    </extension>
    <extension point="org.eclipse.ui.bindings">
        <key

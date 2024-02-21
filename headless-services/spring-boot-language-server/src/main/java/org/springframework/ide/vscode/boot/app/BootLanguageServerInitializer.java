@@ -29,8 +29,10 @@ import org.springframework.ide.vscode.boot.java.links.JavaElementLocationProvide
 import org.springframework.ide.vscode.boot.java.links.SourceLinks;
 import org.springframework.ide.vscode.boot.java.livehover.v2.SpringProcessLiveDataProvider;
 import org.springframework.ide.vscode.boot.java.utils.CompilationUnitCache;
+import org.springframework.ide.vscode.boot.maven.PomLanguageServerComponents;
 import org.springframework.ide.vscode.boot.metadata.ProjectBasedPropertyIndexProvider;
 import org.springframework.ide.vscode.boot.properties.BootPropertiesLanguageServerComponents;
+import org.springframework.ide.vscode.boot.validation.generations.SpringProjectsProvider;
 import org.springframework.ide.vscode.boot.xml.SpringXMLLanguageServerComponents;
 import org.springframework.ide.vscode.commons.java.IJavaProject;
 import org.springframework.ide.vscode.commons.languageserver.completion.CompositeCompletionEngine;
@@ -119,7 +121,8 @@ public class BootLanguageServerInitializer implements InitializingBean {
 			new BootPropertiesLanguageServerComponents(server, params, javaElementLocationProvider, parser, yamlStructureProvider, yamlAssistContextProvider, sourceLinks),
 			new BootJavaLanguageServerComponents(appContext),
 			new SpringXMLLanguageServerComponents(server, springIndexer, params, config),
-			new SpringFactoriesLanguageServerComponents(projectFinder, springIndexer, config)
+			new SpringFactoriesLanguageServerComponents(projectFinder, springIndexer, config),
+			new PomLanguageServerComponents(server, projectFinder, params.projectObserver, appContext.getBean(SpringProjectsProvider.class))
 		);
 		
 		for (LanguageServerComponents c : componentsList) {
@@ -144,7 +147,11 @@ public class BootLanguageServerInitializer implements InitializingBean {
 		
 		components.getCodeActionProvider().ifPresent(documents::onCodeAction);
 		
+		components.getCodeLensHandler().ifPresent(documents::onCodeLens);
+		
 		components.getDocumentSymbolProvider().ifPresent(documents::onDocumentSymbol);
+		
+		components.getInlayHintHandler().ifPresent(documents::onInlayHint);
 
 		startListeningToPerformReconcile();
 
@@ -164,8 +171,7 @@ public class BootLanguageServerInitializer implements InitializingBean {
 				documents.publishDiagnostics(d.getId(), Collections.emptyList());
 			}
 		});
-
-
+		
 	}
 	
 	private void startListeningToPerformReconcile() {
