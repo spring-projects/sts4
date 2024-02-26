@@ -29,7 +29,11 @@ Require-Bundle: org.eclipse.ui,
  org.eclipse.jface.text,
  org.eclipse.jdt.ui,
  org.eclipse.ui.genericeditor,
- org.eclipse.ui.ide
+ org.eclipse.ui.ide,
+ org.eclipse.lsp4e,
+ org.eclipse.lsp4j,
+ com.google.gson,
+ org.eclipse.jdt.junit.core
 Bundle-RequiredExecutionEnvironment: JavaSE-17
 Bundle-ActivationPolicy: lazy
 Export-Package: org.springframework.ide.eclipse.boot.launch,

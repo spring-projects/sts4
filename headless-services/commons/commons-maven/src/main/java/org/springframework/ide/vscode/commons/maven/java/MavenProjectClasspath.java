@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2016, 2019 Pivotal, Inc.
+ * Copyright (c) 2016, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -156,23 +156,24 @@ public class MavenProjectClasspath implements IClasspath {
 			});
 			entries.add(cpe);
 		}
-		{	//test/java
-			File sourceFolder = new File(project.getBuild().getTestSourceDirectory());
-			if (sourceFolder.exists()) {
-				File outputFolder = new File(project.getBuild().getTestOutputDirectory());
-				CPE cpe = CPE.source(sourceFolder, outputFolder);
-				cpe.setOwn(true);
-				cpe.setTest(true);
-				cpe.setJavaContent(true);
-				safe(() -> {
-					String reportingDir = project.getModel().getReporting().getOutputDirectory();
-					if (reportingDir!=null) {
-						File apidocs = new File(new File(reportingDir), "apidocs");
-						cpe.setJavadocContainerUrl(apidocs.toURI().toURL());
-					}
-				});
-				entries.add(cpe);
-			}
+		{	//test/java - duplicated down below without checking if folder exists
+			
+//			File sourceFolder = new File(project.getBuild().getTestSourceDirectory());
+//			if (sourceFolder.exists()) {
+//				File outputFolder = new File(project.getBuild().getTestOutputDirectory());
+//				CPE cpe = CPE.source(sourceFolder, outputFolder);
+//				cpe.setOwn(true);
+//				cpe.setTest(true);
+//				cpe.setJavaContent(true);
+//				safe(() -> {
+//					String reportingDir = project.getModel().getReporting().getOutputDirectory();
+//					if (reportingDir!=null) {
+//						File apidocs = new File(new File(reportingDir), "apidocs");
+//						cpe.setJavadocContainerUrl(apidocs.toURI().toURL());
+//					}
+//				});
+//				entries.add(cpe);
+//			}
 		}
 		{	//main/resources
 			for (Resource resource : project.getBuild().getResources()) {
@@ -207,6 +208,8 @@ public class MavenProjectClasspath implements IClasspath {
 			File outputFolder = new File(project.getBuild().getTestOutputDirectory());
 			CPE cpe = CPE.source(sourceFolder, outputFolder);
 			cpe.setOwn(true);
+			cpe.setTest(true);
+			cpe.setJavaContent(true);
 			safe(() -> {
 				String reportingDir = project.getModel().getReporting().getOutputDirectory();
 				if (reportingDir!=null) {

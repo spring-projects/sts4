@@ -1,44 +1,42 @@
 /*******************************************************************************
- * Copyright (c) 2022, 2024 VMware, Inc.
+ * Copyright (c) 2024 Broadcom, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
  * https://www.eclipse.org/legal/epl-v10.html
  *
  * Contributors:
- *     VMware, Inc. - initial API and implementation
+ *     Broadcom, Inc. - initial API and implementation
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.java;
 
-import java.net.URI;
-
 import org.springframework.ide.vscode.commons.protocol.java.Gav;
 
-public interface IProjectBuild {
+public interface IGav {
 	
-	String getType();
+	String getGroupId();
 	
-	URI getBuildFile();
+	String getArtifactId();
 	
-	IGav getGav();
-		
-	static IProjectBuild create(String type, URI buildFile, Gav gav) {
-		return new IProjectBuild() {
+	String getVersion();
+	
+	static IGav create(Gav gav) {
+		return new IGav() {
 			
 			@Override
-			public String getType() {
-				return type;
+			public String getVersion() {
+				return gav.version();
 			}
 			
 			@Override
-			public URI getBuildFile() {
-				return buildFile;
+			public String getGroupId() {
+				return gav.groupId();
 			}
 			
-			public IGav getGav() {
-				return IGav.create(gav);
+			@Override
+			public String getArtifactId() {
+				return gav.artifactId();
 			}
 		};
 	}
-
 }

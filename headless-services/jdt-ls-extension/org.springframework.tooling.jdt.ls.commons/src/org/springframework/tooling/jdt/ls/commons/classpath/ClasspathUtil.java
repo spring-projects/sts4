@@ -24,6 +24,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.eclipse.buildship.core.internal.configuration.GradleProjectNature;
 import org.eclipse.core.resources.IFile;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.resources.ResourcesPlugin;
@@ -36,16 +37,19 @@ import org.eclipse.jdt.core.IPackageFragmentRoot;
 import org.eclipse.jdt.core.JavaCore;
 import org.eclipse.jdt.core.JavaModelException;
 import org.eclipse.jdt.internal.core.JavaProject;
+import org.eclipse.m2e.core.MavenPlugin;
+import org.eclipse.m2e.core.embedder.ArtifactKey;
+import org.eclipse.m2e.core.project.IMavenProjectFacade;
 import org.springframework.ide.vscode.commons.protocol.java.Classpath;
 import org.springframework.ide.vscode.commons.protocol.java.Classpath.CPE;
+import org.springframework.ide.vscode.commons.protocol.java.Gav;
 import org.springframework.ide.vscode.commons.protocol.java.ProjectBuild;
 import org.springframework.tooling.jdt.ls.commons.Logger;
 
+@SuppressWarnings("restriction")
 public class ClasspathUtil {
 
 	private static final Object JRE_CONTAINER_ID = "org.eclipse.jdt.launching.JRE_CONTAINER";
-	private static final String GRADLE_CONTAINER_ID = "org.eclipse.buildship.core.gradleclasspathcontainer";
-	private static final String MAVEN_CONTAINER_ID = "org.eclipse.m2e.MAVEN2_CLASSPATH_CONTAINER";
 	
 	private static Set<String> getSystemLibraryPaths(IJavaProject javaProject) {
 		try {
@@ -222,36 +226,40 @@ public class ClasspathUtil {
 	}
 	
 	public static ProjectBuild createProjectBuild(IJavaProject jp) {
-		try {
+//		try {
 			boolean likelyGradle = false;
 			boolean likelyMaven = false;
 			final Path home = System.getProperty("user.home") == null ? null : new File(System.getProperty("user.home")).toPath();
-			for (IClasspathEntry e : jp.getRawClasspath()) {
-				switch (e.getPath().segment(0)) {
-				case MAVEN_CONTAINER_ID:
-					IFile f = jp.getProject().getFile("pom.xml");
-					return new ProjectBuild(ProjectBuild.MAVEN_PROJECT_TYPE, f.exists() ? f.getLocationURI().toASCIIString() : null);
-				case GRADLE_CONTAINER_ID:
-					IFile g = jp.getProject().getFile("build.gradle");
-					if (!g.exists()) {
-						g = jp.getProject().getFile("build.gradle.kts");
-					}
-					return new ProjectBuild(ProjectBuild.GRADLE_PROJECT_TYPE, g.exists() ? g.getLocationURI().toASCIIString() : null);
-				default:
-					if (home != null && e.getPath() != null && e.getPath().toFile() != null) {
-						Path path = e.getPath().toFile().toPath();
-						if (path.startsWith(home.resolve(".gradle"))) {
-							likelyGradle = true;
-						} else if (path.startsWith(home.resolve(".m2"))) {
-							likelyMaven = true;
+			if (MavenPlugin.isMavenProject(jp.getProject())) {
+				IMavenProjectFacade facade = MavenPlugin.getMavenProjectRegistry().getProject(jp.getProject());
+				ArtifactKey artifact = facade.getArtifactKey();
+				return ProjectBuild.createMavenBuild(facade.getPom().getLocationURI().toASCIIString(), new Gav(artifact.groupId(), artifact.artifactId(), artifact.version()));
+			} else if (GradleProjectNature.isPresentOn(jp.getProject())) {
+				IFile g = jp.getProject().getFile("build.gradle");
+				if (!g.exists()) {
+					g = jp.getProject().getFile("build.gradle.kts");
+				}
+				return new ProjectBuild(ProjectBuild.GRADLE_PROJECT_TYPE, g.exists() ? g.getLocationURI().toASCIIString() : null, null);
+			} else {
+				try {
+					for (IClasspathEntry e : jp.getRawClasspath()) {
+						if (home != null && e.getPath() != null && e.getPath().toFile() != null) {
+							Path path = e.getPath().toFile().toPath();
+							if (path.startsWith(home.resolve(".gradle"))) {
+								likelyGradle = true;
+							} else if (path.startsWith(home.resolve(".m2"))) {
+								likelyMaven = true;
+							}
 						}
 					}
+				} catch (Exception e) {
+					// ignore
 				}
 			}
 			if (likelyMaven) {
 				IFile f = jp.getProject().getFile("pom.xml");
 				if (f.exists()) {
-					return new ProjectBuild(ProjectBuild.MAVEN_PROJECT_TYPE, f.getLocationURI().toASCIIString());
+					return ProjectBuild.createMavenBuild(f.getLocationURI().toASCIIString(), null);
 				}
 			} else if (likelyGradle) {
 				IFile g = jp.getProject().getFile("build.gradle");
@@ -259,12 +267,12 @@ public class ClasspathUtil {
 					g = jp.getProject().getFile("build.gradle.kts");
 				}
 				if (g.exists()) {
-					return new ProjectBuild(ProjectBuild.GRADLE_PROJECT_TYPE, g.getLocationURI().toASCIIString());
+					return ProjectBuild.createGradleBuild(g.getLocationURI().toASCIIString(), null);
 				}
 			}
-		} catch (JavaModelException e) {
-			// ignore
-		}
-		return new ProjectBuild(null, null);
+//		} catch (JavaModelException e) {
+//			// ignore
+//		}
+		return new ProjectBuild(null, null, null);
 	}
 }

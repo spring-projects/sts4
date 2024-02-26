@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2019, 2023 Pivotal Software, Inc.
+ * Copyright (c) 2019, 2024 Pivotal Software, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -16,11 +16,8 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
-import org.eclipse.lsp4e.LanguageServers;
-import org.eclipse.lsp4e.LanguageServers.LanguageServerProjectExecutor;
-import org.eclipse.lsp4e.LanguageServersRegistry;
-import org.eclipse.lsp4j.ExecuteCommandOptions;
 import org.eclipse.lsp4j.ExecuteCommandParams;
+import org.springframework.ide.eclipse.boot.launch.BootLsCommandUtils;
 
 import com.google.common.collect.ImmutableList;
 
@@ -35,7 +32,7 @@ public final class DefaultLiveProcessCommandExecutor implements LiveProcessComma
 	@SuppressWarnings("unchecked")
 	@Override
 	public Flux<CommandInfo> listCommands() {
-		List<CompletableFuture<List<CommandInfo>>> futures = getLanguageServers().computeAll(ls -> ls.getWorkspaceService().executeCommand(new ExecuteCommandParams(
+		List<CompletableFuture<List<CommandInfo>>> futures = BootLsCommandUtils.getLanguageServers(CMD_LIST_PROCESSES).computeAll(ls -> ls.getWorkspaceService().executeCommand(new ExecuteCommandParams(
 				CMD_LIST_PROCESSES,
 				ImmutableList.of()
 		)).thenApply(o -> {
@@ -54,21 +51,10 @@ public final class DefaultLiveProcessCommandExecutor implements LiveProcessComma
 
 	@Override
 	public Mono<Void> executeCommand(CommandInfo cmd) {
-		return Mono.fromFuture(getLanguageServers().collectAll(ls -> ls.getWorkspaceService().executeCommand(new ExecuteCommandParams(
+		return Mono.fromFuture(BootLsCommandUtils.getLanguageServers(cmd.command).collectAll(ls -> ls.getWorkspaceService().executeCommand(new ExecuteCommandParams(
 				cmd.command,
 				ImmutableList.of(cmd.info)
-		))).thenAccept(null));
+		))).thenAccept(l -> {}));
 	}
 
-	private LanguageServerProjectExecutor getLanguageServers() {
-		return LanguageServers.forProject(null).withFilter(cap -> {
-			ExecuteCommandOptions commandCap = cap.getExecuteCommandProvider();
-			if (commandCap!=null) {
-				List<String> supportedCommands = commandCap.getCommands();
-				return supportedCommands!=null && supportedCommands.contains(CMD_LIST_PROCESSES);
-			}
-			return false;
-		}).withPreferredServer(LanguageServersRegistry.getInstance()
-					.getDefinition("org.eclipse.languageserver.languages.springboot"));
-	}
 }

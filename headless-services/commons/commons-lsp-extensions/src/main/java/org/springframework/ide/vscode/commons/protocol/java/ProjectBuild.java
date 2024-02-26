@@ -10,39 +10,24 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.commons.protocol.java;
 
-public class ProjectBuild {
+public record ProjectBuild(String type, String buildFile, Gav gav)  {
 	
 	public static final String MAVEN_PROJECT_TYPE = "maven";
 	public static final String GRADLE_PROJECT_TYPE = "gradle";
 	
-	private String type;
+	public static ProjectBuild createMavenBuild(String buildFile, Gav gav) {
+		return new ProjectBuild(MAVEN_PROJECT_TYPE, buildFile, gav);
+	}
 	
-	private String buildFile;
+	public static ProjectBuild createGradleBuild(String buildFile, Gav gav) {
+		return new ProjectBuild(GRADLE_PROJECT_TYPE, buildFile, gav);
+	}
 	
-	public ProjectBuild(String type, String buildFile) {
-		this.type = type;
-		this.buildFile = buildFile;
-	}
-
-	public String getType() {
-		return type;
-	}
-
-	public void setType(String type) {
-		this.type = type;
-	}
-
-	public String getBuildFile() {
-		return buildFile;
-	}
-
-	public void setBuildFile(String buildFile) {
-		this.buildFile = buildFile;
-	}
-
 	@Override
 	public String toString() {
-		return "ProjectBuild [type=" + type + ", buildFile=" + buildFile + "]";
+		return "ProjectBuild [type=" + type + ", buildFile=" + buildFile + "gav=" + gav + "]";
 	}
+	
+	
 
 }

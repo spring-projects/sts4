@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015 Pivotal, Inc.
+ * Copyright (c) 2015, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -15,6 +15,7 @@ import org.eclipse.core.runtime.preferences.DefaultScope;
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.eclipse.debug.core.DebugPlugin;
+import org.eclipse.debug.core.ILaunchManager;
 import org.eclipse.jface.preference.IPreferenceStore;
 import org.eclipse.ui.plugin.AbstractUIPlugin;
 import org.osgi.framework.Bundle;
@@ -37,7 +38,8 @@ public class BootLaunchActivator extends AbstractUIPlugin {
 	@Override
 	public void start(BundleContext context) throws Exception {
 		super.start(context);
-		workspaceListener = new BootLaunchConfDeleter(ResourcesPlugin.getWorkspace(), DebugPlugin.getDefault().getLaunchManager());
+		ILaunchManager launchManager = DebugPlugin.getDefault().getLaunchManager();
+		workspaceListener = new BootLaunchConfDeleter(ResourcesPlugin.getWorkspace(), launchManager);
 		instance = this;
 
 		IPreferenceStore myStore = instance.getPreferenceStore();
@@ -45,6 +47,8 @@ public class BootLaunchActivator extends AbstractUIPlugin {
 			setPreference("org.eclipse.jdt.debug.ui", "org.eclipse.jdt.debug.ui.prompt_unable_to_install_breakpoint", false);
 			myStore.setValue("cglib.breakpoint.warning.disabled", true);
 		}
+
+		launchManager.addLaunchListener(TestJarLaunchListener.getSingletonInstance());
 	}
 
 	private void setPreference(String plugin, String key, boolean value) {
@@ -70,6 +74,8 @@ public class BootLaunchActivator extends AbstractUIPlugin {
 		if (workspaceListener!=null) {
 			workspaceListener.dispose();
 		}
+		ILaunchManager launchManager = DebugPlugin.getDefault().getLaunchManager();
+		launchManager.removeLaunchListener(TestJarLaunchListener.getSingletonInstance());
 		super.stop(context);
 	}
 
