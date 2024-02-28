@@ -29,7 +29,7 @@
     "onCommand:vscode-spring-boot.ls.start"
   ],
   "enabledApiProposals": [
-    "chatAgents2",
+    "chatParticipant",
     "languageModels"
   ],
   "contributes": {
