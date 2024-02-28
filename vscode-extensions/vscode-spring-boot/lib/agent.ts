@@ -25,8 +25,9 @@ interface PromptResponse {
 
 const CONVERTER = createConverter(undefined, true, true);
 const LANGUAGE_MODEL_ID = 'copilot-gpt-4';
+const AGENT_NAME = 'springboot';
 
-interface SpringBootChatAgentResult extends vscode.ChatAgentResult2 {
+interface SpringBootChatAgentResult extends vscode.ChatResult {
 	metadata: {
         command: string;
     }
@@ -173,7 +174,7 @@ async function writeResponseToFile(response: string, shortPackageName: string, c
 
 async function chatRequest(enhancedPrompt: PromptResponse, token: vscode.CancellationToken) {
     const access = await vscode.lm.requestLanguageModelAccess(LANGUAGE_MODEL_ID);
-
+    
     const messages = [
             new  vscode.LanguageModelSystemMessage(enhancedPrompt.prompt.systemPrompt),
             new vscode.LanguageModelUserMessage(enhancedPrompt.prompt.userPrompt)
@@ -202,7 +203,7 @@ async function chatRequest(enhancedPrompt: PromptResponse, token: vscode.Cancell
     });
 }
 
-async function handleAiPrompts(request: vscode.ChatAgentRequest, context: vscode.ChatAgentContext, stream: vscode.ChatAgentResponseStream, token: vscode.CancellationToken): Promise<SpringBootChatAgentResult> {
+async function handleAiPrompts(request: vscode.ChatRequest, context: vscode.ChatContext, stream: vscode.ChatResponseStream, token: vscode.CancellationToken): Promise<SpringBootChatAgentResult> {
 
         if (request.command == 'prompt') {
             const cwd = (await getWorkspaceRoot()).fsPath;
@@ -231,7 +232,7 @@ async function handleAiPrompts(request: vscode.ChatAgentRequest, context: vscode
         }  
 }
 
-async function handleCreateProject(request: vscode.ChatAgentRequest, context: vscode.ChatAgentContext, stream: vscode.ChatAgentResponseStream, token: vscode.CancellationToken): Promise<SpringBootChatAgentResult> {
+async function handleCreateProject(request: vscode.ChatRequest, context: vscode.ChatContext, stream: vscode.ChatResponseStream, token: vscode.CancellationToken): Promise<SpringBootChatAgentResult> {
     if (request.command == 'new') {
         const access = await vscode.lm.requestLanguageModelAccess(LANGUAGE_MODEL_ID);
         
@@ -268,16 +269,16 @@ export function activate(
     context: vscode.ExtensionContext
 ) {
 
-    const agent = vscode.chat.createChatAgent('springboot', async (request, context, progress, token) => {
+    const agent = vscode.chat.createChatParticipant(AGENT_NAME, async (request, context, progress, token) => {
 		if (request.command === 'prompt') {
 			return handleAiPrompts(request, context, progress, token);
 		} else if (request.command === 'new') {
 			return handleCreateProject(request, context, progress, token);
 		}
     });
-
+    agent.isSticky = true; 
+    // agent.iconPath = vscode.Uri.joinPath(context.extensionUri, 'spring-boot.jpeg');
     agent.description = vscode.l10n.t('Hi! How can I help you with your spring boot project?');
-	agent.fullName = vscode.l10n.t('Spring Boot');
     agent.commandProvider = {
         provideCommands(token) {
             return [
