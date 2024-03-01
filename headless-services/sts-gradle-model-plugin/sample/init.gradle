@@ -1,0 +1,9 @@
+initscript {
+    dependencies {
+       classpath files('../sts-gradle-model-plugin/build/libs/sts-gradle-model-plugin-1.0.0-SNAPSHOT.jar')
+    }
+}
+
+allprojects {
+    apply plugin: sts.model.plugin.StsModelPlugin
+}

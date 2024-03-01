@@ -2,90 +2,92 @@
 <site>
 	<category-def name="Spring Tools 4 Language Server Integrations for Eclipse" label="Spring Tools 4 Language Server Integrations for Eclipse"/>
 
-	<feature id="org.springframework.tooling.boot.ls.feature">
-		<category name="Spring Tools 4 Language Server Integrations for Eclipse"/>
-	</feature>
+   <feature id="org.springframework.tooling.boot.ls.feature">
+      <category name="Spring Tools 4 Language Server Integrations for Eclipse"/>
+   </feature>
 
-	<feature id="org.springframework.tooling.boot.ls.feature.source">
-		<category name="Spring Tools 4 Language Server Integrations for Eclipse"/>
-	</feature>
+   <feature id="org.springframework.tooling.boot.ls.feature.source">
+      <category name="Spring Tools 4 Language Server Integrations for Eclipse"/>
+   </feature>
 
-	<feature id="org.springframework.tooling.cloudfoundry.manifest.ls.integration.feature">
-		<category name="Spring Tools 4 Language Server Integrations for Eclipse"/>
-	</feature>
+   <feature id="org.springframework.tooling.cloudfoundry.manifest.ls.integration.feature">
+      <category name="Spring Tools 4 Language Server Integrations for Eclipse"/>
+   </feature>
 
-	<feature id="org.springframework.tooling.cloudfoundry.manifest.ls.integration.feature.source">
-		<category name="Spring Tools 4 Language Server Integrations for Eclipse"/>
-	</feature>
+   <feature id="org.springframework.tooling.cloudfoundry.manifest.ls.integration.feature.source">
+      <category name="Spring Tools 4 Language Server Integrations for Eclipse"/>
+   </feature>
 
-	<feature id="org.springframework.tooling.cloudfoundry.manifest.ls.feature">
-		<category name="Spring Tools 4 Language Server Integrations for Eclipse"/>
-	</feature>
+   <feature id="org.springframework.tooling.cloudfoundry.manifest.ls.feature">
+      <category name="Spring Tools 4 Language Server Integrations for Eclipse"/>
+   </feature>
 
-	<feature id="org.springframework.tooling.cloudfoundry.manifest.ls.feature.source">
-		<category name="Spring Tools 4 Language Server Integrations for Eclipse"/>
-	</feature>
+   <feature id="org.springframework.tooling.cloudfoundry.manifest.ls.feature.source">
+      <category name="Spring Tools 4 Language Server Integrations for Eclipse"/>
+   </feature>
 
-	<feature id="org.springframework.tooling.bosh.ls.feature">
-		<category name="Spring Tools 4 Language Server Integrations for Eclipse"/>
-	</feature>
+   <feature id="org.springframework.tooling.bosh.ls.feature">
+      <category name="Spring Tools 4 Language Server Integrations for Eclipse"/>
+   </feature>
 
-	<feature id="org.springframework.tooling.bosh.ls.feature.source">
-		<category name="Spring Tools 4 Language Server Integrations for Eclipse"/>
-	</feature>
+   <feature id="org.springframework.tooling.bosh.ls.feature.source">
+      <category name="Spring Tools 4 Language Server Integrations for Eclipse"/>
+   </feature>
 
-	<feature id="org.springframework.tooling.concourse.ls.feature">
-		<category name="Spring Tools 4 Language Server Integrations for Eclipse"/>
-	</feature>
+   <feature id="org.springframework.tooling.concourse.ls.feature">
+      <category name="Spring Tools 4 Language Server Integrations for Eclipse"/>
+   </feature>
 
-	<feature id="org.springframework.tooling.concourse.ls.feature.source">
-		<category name="Spring Tools 4 Language Server Integrations for Eclipse"/>
-	</feature>
+   <feature id="org.springframework.tooling.concourse.ls.feature.source">
+      <category name="Spring Tools 4 Language Server Integrations for Eclipse"/>
+   </feature>
 
-	<feature id="org.eclipse.mylyn.wikitext_feature"/>
-	<feature id="org.eclipse.tm4e.feature"/>
+   <feature id="org.eclipse.mylyn.wikitext_feature"/>
+   <feature id="org.eclipse.tm4e.feature"/>
 
-	<bundle id="org.springframework.tooling.ls.eclipse.commons"/>
-	<bundle id="org.springframework.tooling.ls.eclipse.commons.source"/>
-	<bundle id="org.springframework.tooling.jdt.ls.commons"/>
-	<bundle id="org.springframework.tooling.jdt.ls.commons.source"/>
-	<bundle id="org.springframework.tooling.ls.eclipse.gotosymbol"/>
-	<bundle id="org.springframework.tooling.ls.eclipse.gotosymbol.source"/>
-	
-    <bundle id="org.springframework.ide.eclipse.editor.support"/>
-    <bundle id="org.springframework.ide.eclipse.editor.support.source"/>
-	
-	<bundle id="org.springsource.ide.eclipse.commons.boot.ls"/>
-	<bundle id="org.springsource.ide.eclipse.commons.boot.ls.source"/>
-	<bundle id="org.springsource.ide.eclipse.commons.core"/>
-	<bundle id="org.springsource.ide.eclipse.commons.core.source"/>
-	<bundle id="org.springsource.ide.eclipse.commons.frameworks.core"/>
-	<bundle id="org.springsource.ide.eclipse.commons.frameworks.core.source"/>
-	<bundle id="org.springsource.ide.eclipse.commons.frameworks.test.util"/>
-	<bundle id="org.springsource.ide.eclipse.commons.frameworks.test.util.source"/>
-	<bundle id="org.springsource.ide.eclipse.commons.frameworks.ui"/>
-	<bundle id="org.springsource.ide.eclipse.commons.frameworks.ui.source"/>
-	<bundle id="org.springsource.ide.eclipse.commons.jdk_tools"/>
-	<bundle id="org.springsource.ide.eclipse.commons.jdk_tools.source"/>
-	<bundle id="org.springsource.ide.eclipse.commons.livexp"/>
-	<bundle id="org.springsource.ide.eclipse.commons.livexp.source"/>
-	<bundle id="org.springsource.ide.eclipse.commons.tests.util"/>
-	<bundle id="org.springsource.ide.eclipse.commons.tests.util.source"/>
-	<bundle id="org.springsource.ide.eclipse.commons.ui"/>
-	<bundle id="org.springsource.ide.eclipse.commons.ui.source"/>
+   <bundle id="org.springframework.tooling.ls.eclipse.commons"/>
+   <bundle id="org.springframework.tooling.ls.eclipse.commons.source"/>
+   <bundle id="org.springframework.tooling.jdt.ls.commons"/>
+   <bundle id="org.springframework.tooling.jdt.ls.commons.source"/>
+   <bundle id="org.springframework.tooling.gradle"/>
+   <bundle id="org.springframework.tooling.gradle.source"/>
+   <bundle id="org.springframework.tooling.ls.eclipse.gotosymbol"/>
+   <bundle id="org.springframework.tooling.ls.eclipse.gotosymbol.source"/>
 
-	<bundle id="io.projectreactor.reactor-core"/>
-	<bundle id="io.projectreactor.reactor-core.source"/>
-	<bundle id="org.reactivestreams.reactive-streams"/>
-	<bundle id="org.reactivestreams.reactive-streams.source"/>
+   <bundle id="org.springframework.ide.eclipse.editor.support"/>
+   <bundle id="org.springframework.ide.eclipse.editor.support.source"/>
 
-	<bundle id="org.eclipse.lsp4e"/>
-	<bundle id="org.eclipse.lsp4e.jdt"/>
-	<bundle id="org.eclipse.lsp4j"/>
-	<bundle id="org.eclipse.lsp4j.jsonrpc"/>
-	<bundle id="org.eclipse.xtext.xbase.lib"/>
-	<bundle id="org.jcodings"/>
-	<bundle id="org.joni"/>
-	<bundle id="org.apache.commons.lang3"/>
+   <bundle id="org.springsource.ide.eclipse.commons.boot.ls"/>
+   <bundle id="org.springsource.ide.eclipse.commons.boot.ls.source"/>
+   <bundle id="org.springsource.ide.eclipse.commons.core"/>
+   <bundle id="org.springsource.ide.eclipse.commons.core.source"/>
+   <bundle id="org.springsource.ide.eclipse.commons.frameworks.core"/>
+   <bundle id="org.springsource.ide.eclipse.commons.frameworks.core.source"/>
+   <bundle id="org.springsource.ide.eclipse.commons.frameworks.test.util"/>
+   <bundle id="org.springsource.ide.eclipse.commons.frameworks.test.util.source"/>
+   <bundle id="org.springsource.ide.eclipse.commons.frameworks.ui"/>
+   <bundle id="org.springsource.ide.eclipse.commons.frameworks.ui.source"/>
+   <bundle id="org.springsource.ide.eclipse.commons.jdk_tools"/>
+   <bundle id="org.springsource.ide.eclipse.commons.jdk_tools.source"/>
+   <bundle id="org.springsource.ide.eclipse.commons.livexp"/>
+   <bundle id="org.springsource.ide.eclipse.commons.livexp.source"/>
+   <bundle id="org.springsource.ide.eclipse.commons.tests.util"/>
+   <bundle id="org.springsource.ide.eclipse.commons.tests.util.source"/>
+   <bundle id="org.springsource.ide.eclipse.commons.ui"/>
+   <bundle id="org.springsource.ide.eclipse.commons.ui.source"/>
+
+   <bundle id="io.projectreactor.reactor-core"/>
+   <bundle id="io.projectreactor.reactor-core.source"/>
+   <bundle id="org.reactivestreams.reactive-streams"/>
+   <bundle id="org.reactivestreams.reactive-streams.source"/>
+
+   <bundle id="org.eclipse.lsp4e"/>
+   <bundle id="org.eclipse.lsp4e.jdt"/>
+   <bundle id="org.eclipse.lsp4j"/>
+   <bundle id="org.eclipse.lsp4j.jsonrpc"/>
+   <bundle id="org.eclipse.xtext.xbase.lib"/>
+   <bundle id="org.jcodings"/>
+   <bundle id="org.joni"/>
+   <bundle id="org.apache.commons.lang3"/>
 
 </site>

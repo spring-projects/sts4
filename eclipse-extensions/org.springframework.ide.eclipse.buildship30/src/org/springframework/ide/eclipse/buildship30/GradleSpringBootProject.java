@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2020 Pivotal, Inc.
+ * Copyright (c) 2020, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -11,9 +11,6 @@
 package org.springframework.ide.eclipse.buildship30;
 
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
@@ -25,7 +22,6 @@ import org.eclipse.buildship.core.internal.workspace.NewProjectHandler;
 import org.eclipse.buildship.core.internal.workspace.SynchronizationJob;
 import org.eclipse.core.resources.IProject;
 import org.eclipse.core.runtime.CoreException;
-import org.eclipse.core.runtime.IPath;
 import org.eclipse.core.runtime.IProgressMonitor;
 import org.eclipse.core.runtime.NullProgressMonitor;
 import org.gradle.tooling.ModelBuilder;
@@ -39,6 +35,7 @@ import org.springframework.ide.eclipse.boot.core.initializr.InitializrService;
 import org.springframework.ide.eclipse.boot.core.initializr.InitializrUrl;
 import org.springframework.ide.eclipse.boot.core.internal.SpringBootProject;
 import org.springframework.ide.eclipse.boot.util.DependencyDelta;
+import org.springframework.tooling.gradle.StsGradleToolingModelBuilder;
 import org.springsource.ide.eclipse.commons.livexp.util.Log;
 
 import com.google.common.base.Supplier;
@@ -53,11 +50,6 @@ public class GradleSpringBootProject extends SpringBootProject {
 	private static final String SPRING_BOOT_NAME = "spring-boot";
 
 	private static final String WAR_PKG_NATURE = "org.eclipse.wst.common.project.facet.core.nature";
-
-	private static final Supplier<Path> cacheFolderSupplier = Suppliers.memoize(() -> {
-		IPath iPath = Buildship30Plugin.getDefault().getStateLocation().makeAbsolute();
-		return iPath.toFile().toPath().resolve("gradle-plugin");
-	});
 
 	private static class GradleModels {
 		EclipseProject eclipseProject;
@@ -117,13 +109,12 @@ public class GradleSpringBootProject extends SpringBootProject {
 				if (build.isPresent()) {
 					try {
 						return build.get().withConnection(connection -> {
-							ModelBuilder<StsToolingModel> stsModelBuilder = connection.model(StsToolingModel.class)
-									.withArguments("--init-script", getInitScript().toString());
+							ModelBuilder<StsToolingModel> stsModelBuilder = StsGradleToolingModelBuilder.getModelBuilder(connection, project.getLocation().toFile(), null);
 							return new GradleModels(connection.model(EclipseProject.class).get(),
 									stsModelBuilder.get());
 						}, new NullProgressMonitor());
-					} catch (Exception e) {
-						Log.log(e);
+					} catch (Throwable t) {
+						Log.log(t);
 						return null;
 					}
 				}
@@ -250,31 +241,6 @@ public class GradleSpringBootProject extends SpringBootProject {
 	@Override
 	public File executePackagingScript(IProgressMonitor monitor) throws CoreException {
 		throw new UnsupportedOperationException("Not implemented!");
-	}
-
-	private Path getInitScript() {
-		Path cacheFolder = cacheFolderSupplier.get();
-		Path initScript = cacheFolder.resolve("init.gradle");
-		Path jarPath = cacheFolder.resolve("sts-gradle-model-plugin.jar");
-		if (!Files.isDirectory(cacheFolder)) {
-			cacheFolder.toFile().mkdirs();
-		}
-		if (!Files.exists(initScript)) {
-			try {
-				Files.copy(getClass().getResourceAsStream("/gradle-plugin/init.gradle"), initScript);
-			} catch (IOException e) {
-				Log.log(e);
-			}
-		}
-		if (!Files.exists(jarPath)) {
-			try {
-				Files.copy(getClass().getResourceAsStream("/gradle-plugin/sts-gradle-model-plugin.jar"),
-						jarPath);
-			} catch (IOException e) {
-				Log.log(e);
-			}
-		}
-		return initScript;
 	}
 
 }

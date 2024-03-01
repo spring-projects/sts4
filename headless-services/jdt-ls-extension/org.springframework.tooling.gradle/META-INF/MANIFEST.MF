@@ -1,0 +1,15 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: STS Gradle Model
+Bundle-SymbolicName: org.springframework.tooling.gradle;singleton:=true
+Bundle-Version: 4.22.0.qualifier
+Export-Package: org.springframework.tooling.gradle,
+ sts.model.plugin
+Require-Bundle: org.eclipse.core.runtime,
+ org.eclipse.buildship.core;bundle-version="3.0.0"
+Automatic-Module-Name: org.springframework.tooling.gradle
+Bundle-ActivationPolicy: lazy
+Bundle-Activator: org.springframework.tooling.gradle.StsGradlePlugin
+Bundle-ClassPath: .,
+ gradle-plugin/sts-gradle-model-plugin.jar
+Bundle-RequiredExecutionEnvironment: JavaSE-17

@@ -143,7 +143,7 @@ public class SendClasspathNotificationsJob extends Job {
 								logger.log(e);
 							}
 						}
-						bufferMessage(projectLoc, deleted, projectName, classpath, ClasspathUtil.createProjectBuild(jp));
+						bufferMessage(projectLoc, deleted, projectName, classpath, ClasspathUtil.createProjectBuild(jp, logger));
 					}
 				}
 				flush();

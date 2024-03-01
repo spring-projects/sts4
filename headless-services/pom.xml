@@ -10,6 +10,7 @@
 	<name>aggregator</name>
 
     <modules>
+		<module>sts-gradle-model-plugin</module>
 		<module>commons</module>
 		<module>manifest-yaml-language-server</module>
 		<module>concourse-language-server</module>

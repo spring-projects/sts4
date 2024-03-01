@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2018, 2023 Pivotal, Inc.
+ * Copyright (c) 2018, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -225,7 +225,7 @@ public class ClasspathUtil {
 		}
 	}
 	
-	public static ProjectBuild createProjectBuild(IJavaProject jp) {
+	public static ProjectBuild createProjectBuild(IJavaProject jp, Logger logger) {
 //		try {
 			boolean likelyGradle = false;
 			boolean likelyMaven = false;
@@ -239,7 +239,16 @@ public class ClasspathUtil {
 				if (!g.exists()) {
 					g = jp.getProject().getFile("build.gradle.kts");
 				}
-				return new ProjectBuild(ProjectBuild.GRADLE_PROJECT_TYPE, g.exists() ? g.getLocationURI().toASCIIString() : null, null);
+				// TODO: TestJars support requires GAV of a project. To be added properly later as it needs optimizations 
+//				Optional<Gav> optGav = GradleCore.getWorkspace().getBuild(jp.getProject()).flatMap(build -> {
+//					try {
+//						return Optional.of(build.withConnection(conn -> StsGradleToolingModelBuilder.getModelBuilder(conn, jp.getProject().getLocation().toFile(), null).get(), new NullProgressMonitor()));
+//					} catch (Exception e) {
+//						logger.log(e);
+//						return Optional.empty();
+//					}
+//				}).map(m -> new Gav(m.group(), m.artifact(), m.version()));
+				return ProjectBuild.createGradleBuild(g.exists() ? g.getLocationURI().toASCIIString() : null, /*optGav.orElse(null)*/null);
 			} else {
 				try {
 					for (IClasspathEntry e : jp.getRawClasspath()) {

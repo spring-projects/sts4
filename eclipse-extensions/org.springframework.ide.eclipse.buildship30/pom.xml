@@ -66,69 +66,6 @@
 		<plugins>
 
 			<plugin>
-				<groupId>org.apache.maven.plugins</groupId>
-				<artifactId>maven-clean-plugin</artifactId>
-				<configuration>
-					<filesets>
-						<fileset>
-							<directory>${project.basedir}/gradle-plugin</directory>
-							<includes>
-								<include>*.jar</include>
-							</includes>
-						</fileset>
-					</filesets>
-				</configuration>
-			</plugin>
-
-			<plugin>
-				<groupId>org.codehaus.mojo</groupId>
-				<artifactId>exec-maven-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>sts-gradle-model-build</id>
-						<phase>generate-resources</phase>
-						<configuration>
-							<workingDirectory>${project.basedir}/../sts-gradle-model-plugin/sts-gradle-model-plugin</workingDirectory>
-							<executable>${gradle.executable}</executable>
-							<arguments>
-								<argument>clean</argument>
-								<argument>build</argument>
-								<argument>-S</argument>
-							</arguments>
-						</configuration>
-						<goals>
-							<goal>exec</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin>
-
-			<plugin>
-				<artifactId>maven-resources-plugin</artifactId>
-				<executions>
-					<execution>
-						<id>copy-sts-gradle-model-jars</id>
-						<phase>process-resources</phase>
-						<goals>
-							<goal>copy-resources</goal>
-						</goals>
-
-						<configuration>
-							<outputDirectory>${project.basedir}/gradle-plugin</outputDirectory>
-							<resources>
-								<resource>
-									<directory>${project.basedir}/../sts-gradle-model-plugin/sts-gradle-model-plugin/build/libs/</directory>
-									<includes>
-										<include>${gradle.model-plugin.artifactId}.jar</include>
-									</includes>
-								</resource>
-							</resources>
-						</configuration>
-					</execution>
-				</executions>
-			</plugin>
-
-			<plugin>
 				<groupId>org.eclipse.tycho</groupId>
 				<artifactId>target-platform-configuration</artifactId>
 				<version>${tycho-version}</version>

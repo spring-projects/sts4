@@ -1,0 +1,24 @@
+plugins {
+    id 'java-library'
+    id 'maven-publish'
+}
+
+dependencies {
+	implementation gradleApi()
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            from components.java
+        }
+    }
+}
+
+compileJava   {
+    sourceCompatibility = '17'
+    targetCompatibility = '17'
+}
+
+group = "org.springframework.ide"
+version = "1.0.0"
