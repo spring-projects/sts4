@@ -97,7 +97,16 @@ public class WorkspaceBootExecutableProjectsTest {
 		assertNotNull(res);
 		assertEquals(2,  res.size());
 		
-		ExecutableProject execProject2 = res.get(0);
+		ExecutableProject execProject1 = res.stream().filter(p -> "test-spring-indexing".equals(p.name())).findFirst().orElseThrow();
+		assertEquals("test-spring-indexing", execProject1.name());
+		assertEquals("org.test.MainClass", execProject1.mainClass());
+		assertEquals(project1.getLocationUri().toASCIIString(), execProject1.uri());
+		assertEquals("com.example:test-spring-indexing:0.0.1-SNAPSHOT", execProject1.gav());
+		assertEquals(99, execProject1.classpath().size());
+		assertTrue(execProject1.classpath().stream().map(path -> Path.of(path)).anyMatch(p -> p.endsWith("target/classes")));
+		assertFalse(execProject1.classpath().stream().map(path -> Path.of(path)).anyMatch(p -> p.endsWith("target/test-classes")));
+		
+		ExecutableProject execProject2 = res.stream().filter(p -> "test-spring-data-symbols".equals(p.name())).findFirst().orElseThrow();
 		assertEquals("test-spring-data-symbols", execProject2.name());
 		assertEquals("org.test.Application", execProject2.mainClass());
 		assertEquals(project2.getLocationUri().toASCIIString(), execProject2.uri());
@@ -106,14 +115,6 @@ public class WorkspaceBootExecutableProjectsTest {
 		assertTrue(execProject2.classpath().stream().map(path -> Path.of(path)).anyMatch(p -> p.endsWith("target/classes")));
 		assertFalse(execProject2.classpath().stream().map(path -> Path.of(path)).anyMatch(p -> p.endsWith("target/test-classes")));
 		
-		ExecutableProject execProject1 = res.get(1);
-		assertEquals("test-spring-indexing", execProject1.name());
-		assertEquals("org.test.MainClass", execProject1.mainClass());
-		assertEquals(project1.getLocationUri().toASCIIString(), execProject1.uri());
-		assertEquals("com.example:test-spring-indexing:0.0.1-SNAPSHOT", execProject1.gav());
-		assertEquals(99, execProject1.classpath().size());
-		assertTrue(execProject1.classpath().stream().map(path -> Path.of(path)).anyMatch(p -> p.endsWith("target/classes")));
-		assertFalse(execProject1.classpath().stream().map(path -> Path.of(path)).anyMatch(p -> p.endsWith("target/test-classes")));
 	}
 
 }
