@@ -33,6 +33,22 @@
     "languageModels"
   ],
   "contributes": {
+    "chatParticipants": [
+      {
+        "name": "springboot",
+        "description": "Spring boot chat agent",
+        "commands": [
+          {
+            "name": "prompt",
+            "description": "Handle AI Prompts through Spring cli"
+          },
+          {
+            "name": "new",
+            "description": "create new springboot project"
+          }
+        ]
+      }
+    ],
     "javaExtensions": [
       "./jars/io.projectreactor.reactor-core.jar",
       "./jars/org.reactivestreams.reactive-streams.jar",
