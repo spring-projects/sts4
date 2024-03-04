@@ -83,7 +83,7 @@ public class GenerationsValidator extends AbstractDiagnosticValidator {
 				message.append(" not available!");
 			} else {
 				message.append(javaProjectGen.getName());
-				message.append(" no longer available, ended on: ");
+				message.append(" ended on ");
 				message.append(javaProjectGen.getOssSupportEndDate());
 				if (validCommercialSupport) {
 					message.append(", get commercial support until ");
@@ -118,7 +118,7 @@ public class GenerationsValidator extends AbstractDiagnosticValidator {
 				message.append(" not available!");
 			} else {
 				message.append(javaProjectGen.getName());
-				message.append(" no longer available, ended on: ");
+				message.append(" ended on ");
 				message.append(javaProjectGen.getCommercialSupportEndDate());
 			}
 			Diagnostic d = createDiagnostic(VersionValidationProblemType.UNSUPPORTED_COMMERCIAL_VERSION, message.toString());
