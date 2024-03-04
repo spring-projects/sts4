@@ -355,13 +355,13 @@
         "code": "UNSUPPORTED_OSS_VERSION",
         "label": "Unsupported OSS Version",
         "description": "Unsupported OSS Version",
-        "defaultSeverity": "HINT"
+        "defaultSeverity": "WARNING"
       },
       {
         "code": "UNSUPPORTED_COMMERCIAL_VERSION",
         "label": "Unsupported Commercial Version",
         "description": "Unsupported Commercial Version",
-        "defaultSeverity": "HINT"
+        "defaultSeverity": "WARNING"
       },
       {
         "code": "SUPPORTED_COMMERCIAL_VERSION",

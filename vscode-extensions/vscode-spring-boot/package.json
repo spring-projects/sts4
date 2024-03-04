@@ -924,7 +924,7 @@
           },
           "spring-boot.ls.problem.version-validation.UNSUPPORTED_OSS_VERSION": {
             "type": "string",
-            "default": "HINT",
+            "default": "WARNING",
             "description": "Unsupported OSS Version",
             "enum": [
               "IGNORE",
@@ -936,7 +936,7 @@
           },
           "spring-boot.ls.problem.version-validation.UNSUPPORTED_COMMERCIAL_VERSION": {
             "type": "string",
-            "default": "HINT",
+            "default": "WARNING",
             "description": "Unsupported Commercial Version",
             "enum": [
               "IGNORE",

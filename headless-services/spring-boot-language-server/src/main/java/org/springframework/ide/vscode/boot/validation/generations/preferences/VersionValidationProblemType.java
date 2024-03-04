@@ -10,7 +10,6 @@
  *******************************************************************************/
 package org.springframework.ide.vscode.boot.validation.generations.preferences;
 
-import static org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity.HINT;
 import static org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity.IGNORE;
 import static org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity.INFO;
 import static org.springframework.ide.vscode.commons.languageserver.reconcile.ProblemSeverity.WARNING;
@@ -24,9 +23,9 @@ public enum VersionValidationProblemType implements ProblemType {
 
 	SUPPORTED_OSS_VERSION(IGNORE, "Supported OSS Boot Version", "Supported OSS Boot Version"),
 
-	UNSUPPORTED_OSS_VERSION(HINT, "Unsupported OSS Version", "Unsupported OSS Version"),
+	UNSUPPORTED_OSS_VERSION(WARNING, "Unsupported OSS Version", "Unsupported OSS Version"),
 	
-	UNSUPPORTED_COMMERCIAL_VERSION(HINT, "Unsupported Commercial Version", "Unsupported Commercial Version"),
+	UNSUPPORTED_COMMERCIAL_VERSION(WARNING, "Unsupported Commercial Version", "Unsupported Commercial Version"),
 	
 	SUPPORTED_COMMERCIAL_VERSION(IGNORE, "Supported Commercial Version", "Supported Commercial Version"),
 		
