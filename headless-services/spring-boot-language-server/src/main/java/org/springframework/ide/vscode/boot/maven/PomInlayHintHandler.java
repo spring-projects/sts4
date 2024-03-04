@@ -66,7 +66,6 @@ public class PomInlayHintHandler implements InlayHintHandler {
 							.map(doc -> URI.create(doc.getId().getUri()))
 							.filter(projectBuildFileUri::equals)
 							.findFirst().ifPresent(docPath -> {
-								log.info("Refresh inlays for: " + docPath);
 								server.getClient().refreshInlayHints();
 							});
 					}
@@ -95,8 +94,6 @@ public class PomInlayHintHandler implements InlayHintHandler {
 	public List<InlayHint> handle(CancelChecker token, InlayHintParams params) {
 		URI uri = URI.create(params.getTextDocument().getUri());
 		if ("file".equals(uri.getScheme()) && POM_XML.equals(Paths.get(uri).getFileName().toString())) {
-			
-			log.info("INLAY for " + uri);
 			
 			Optional<IJavaProject> projectOpt = projectFinder.find(params.getTextDocument());
 			if (projectOpt.isPresent()) {
@@ -140,7 +137,6 @@ public class PomInlayHintHandler implements InlayHintHandler {
 															hint.setPaddingLeft(true);
 															hint.setLabel(List.of(label));
 															
-															log.info("Sending inlay for " + uri);
 															return List.of(hint);
 														} catch (Exception e) {
 															log.error("", e);
