@@ -19,6 +19,7 @@ import { ExtensionAPI } from "./api";
 import {registerClasspathService} from "@pivotal-tools/commons-vscode/lib/classpath";
 import {registerJavaDataService} from "@pivotal-tools/commons-vscode/lib/java-data";
 import * as setLogLevelUi from './set-log-levels-ui';
+import { startTestJarSupport } from "./test-jar-launch";
 
 const PROPERTIES_LANGUAGE_ID = "spring-boot-properties";
 const YAML_LANGUAGE_ID = "spring-boot-properties-yaml";
@@ -137,6 +138,9 @@ export function activate(context: ExtensionContext): Thenable<ExtensionAPI> {
         highlightCodeLensSettingKey: 'boot-java.highlight-codelens.on'
     };
 
+    // Register launch config contributior to java debug launch to be able to connect to JMX
+    context.subscriptions.push(startDebugSupport());
+
     return commons.activate(options, context).then(client => {
         commands.registerCommand('vscode-spring-boot.ls.start', () => client.start().then(() => {
             // Boot LS is fully started
@@ -146,8 +150,9 @@ export function activate(context: ExtensionContext): Thenable<ExtensionAPI> {
             // Force classpath listener to be enabled. Boot LS can only be launched iff classpath is available and there Spring-Boot on the classpath somewhere.
             commands.executeCommand('sts.vscode-spring-boot.enableClasspathListening', true);
 
-                // Register launch config contributior to java debug launch to be able to connect to JMX
-            context.subscriptions.push(startDebugSupport());
+            // Register TestJars launch support
+            context.subscriptions.push(startTestJarSupport());
+
         }));
         commands.registerCommand('vscode-spring-boot.ls.stop', () => client.stop());
         liveHoverUi.activate(client, options, context);

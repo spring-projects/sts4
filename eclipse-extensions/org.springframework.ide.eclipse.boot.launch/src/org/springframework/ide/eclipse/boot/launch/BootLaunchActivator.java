@@ -48,7 +48,7 @@ public class BootLaunchActivator extends AbstractUIPlugin {
 			myStore.setValue("cglib.breakpoint.warning.disabled", true);
 		}
 
-		launchManager.addLaunchListener(TestJarLaunchListener.getSingletonInstance());
+		TestJarSupport.start();
 	}
 
 	private void setPreference(String plugin, String key, boolean value) {
@@ -74,8 +74,7 @@ public class BootLaunchActivator extends AbstractUIPlugin {
 		if (workspaceListener!=null) {
 			workspaceListener.dispose();
 		}
-		ILaunchManager launchManager = DebugPlugin.getDefault().getLaunchManager();
-		launchManager.removeLaunchListener(TestJarLaunchListener.getSingletonInstance());
+		TestJarSupport.stop();
 		super.stop(context);
 	}
 

@@ -44,22 +44,13 @@ import org.springsource.ide.eclipse.commons.livexp.util.Log;
 import com.google.gson.reflect.TypeToken;
 
 @SuppressWarnings("restriction")
-public class TestJarLaunchListener implements ILaunchesListener2 {
-
-	private static TestJarLaunchListener instance;
+class TestJarLaunchListener implements ILaunchesListener2 {
 
 	private static final Pattern TESTJAR_PATTERN = Pattern.compile("^spring-boot-testjars-\\d+\\.\\d+\\.\\d+(.*)?.jar$");
 
 	private static final String TESTJAR_ARTIFACTS = "spring.boot.test-jar-artifacts";
 
 	public record ExecutableProject(String name, String uri, String gav, String mainClass, Collection<String> classpath) {}
-
-	public static TestJarLaunchListener getSingletonInstance() {
-		if (instance == null) {
-			instance = new TestJarLaunchListener();
-		}
-		return instance;
-	}
 
 	public void launchRemoved(ILaunch launch) {
 		clearTestJarWorkspaceProjectFiles(launch.getLaunchConfiguration());
@@ -204,6 +195,14 @@ public class TestJarLaunchListener implements ILaunchesListener2 {
 	public void launchesTerminated(ILaunch[] launches) {
 		for (ILaunch l : launches) {
 			clearTestJarWorkspaceProjectFiles(l.getLaunchConfiguration());
+		}
+	}
+
+	void clearTestJarArtifactEnvKeyFromLaunches(ILaunchManager launchManager) {
+		for (ILaunch l : launchManager.getLaunches()) {
+			if (!l.isTerminated() && l.getLaunchConfiguration() != null) {
+				clearTestJarWorkspaceProjectFiles(l.getLaunchConfiguration());
+			}
 		}
 	}
 

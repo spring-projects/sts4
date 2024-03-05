@@ -1,5 +1,5 @@
 /*******************************************************************************
- * Copyright (c) 2015, 2017 Pivotal, Inc.
+ * Copyright (c) 2015, 2024 Pivotal, Inc.
  * All rights reserved. This program and the accompanying materials
  * are made available under the terms of the Eclipse Public License v1.0
  * which accompanies this distribution, and is available at
@@ -43,6 +43,9 @@ public class BootPreferences implements IPreferenceChangeListener {
 	public static final String PREF_BOOT_FAST_STARTUP_REMIND_MESSAGE = "org.springframework.ide.eclipse.boot.FastStartupRemindMessage";
 	public static final String PREF_BOOT_FAST_STARTUP_JVM_ARGS = "org.springframework.ide.eclipse.boot.FastStartupJvmArgs";
 	public static final String BOOT_FAST_STARTUP_DEFAULT_JVM_ARGS = "-XX:TieredStopAtLevel=1";
+
+	public static final String PREF_BOOT_TESTJARS_LAUNCH_SUPPORT = "org.springframework.ide.eclipse.boot.TestJarsLaunch";
+
 
 	// Boot Preference Page ID
 	public static final String BOOT_PREFERENCE_PAGE_ID = "org.springframework.ide.eclipse.boot.ui.preferences.BootPreferencePage";

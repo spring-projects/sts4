@@ -1,5 +1,5 @@
 /*******************************************************************************
- *  Copyright (c) 2015, 2023 Pivotal, Inc.
+ *  Copyright (c) 2015, 2024 Pivotal, Inc.
  *  All rights reserved. This program and the accompanying materials
  *  are made available under the terms of the Eclipse Public License v1.0
  *  which accompanies this distribution, and is available at
@@ -15,6 +15,7 @@ import static org.springframework.ide.eclipse.boot.core.BootPreferences.PREF_BOO
 import static org.springframework.ide.eclipse.boot.core.BootPreferences.PREF_BOOT_FAST_STARTUP_REMIND_MESSAGE;
 import static org.springframework.ide.eclipse.boot.core.BootPreferences.PREF_BOOT_THIN_WRAPPER;
 import static org.springframework.ide.eclipse.boot.core.BootPreferences.PREF_IGNORE_SILENT_EXIT;
+import static org.springframework.ide.eclipse.boot.core.BootPreferences.PREF_BOOT_TESTJARS_LAUNCH_SUPPORT;
 
 import org.eclipse.debug.internal.ui.preferences.BooleanFieldEditor2;
 import org.eclipse.jface.layout.GridDataFactory;
@@ -71,6 +72,8 @@ public class BootPreferencePage extends FieldEditorPreferencePage implements IWo
 		thinLauncher.setErrorMessage("Thin launcher must be an existing file");
 		setTooltip(thinLauncherComposite, thinLauncher, "Thin boot launcher jar to use in Spring Boot Launch configuration (when that option is enabled in the launch config)");
 		addField(thinLauncher);
+
+		addField(new BooleanFieldEditor2(PREF_BOOT_TESTJARS_LAUNCH_SUPPORT, "TestJars Support", SWT.CHECK, launchGroup));
 	}
 
 

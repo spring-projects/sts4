@@ -1,21 +1,17 @@
 import { debug,
-    window,
     commands,
-    workspace,
     CancellationToken,
     DebugConfiguration,
     DebugConfigurationProvider,
     WorkspaceFolder,
     DebugConfigurationProviderTriggerKind,
-    DebugSession,
     DebugSessionCustomEvent,
-    Disposable
+    Disposable,
+    ProviderResult
 } from "vscode";
 import * as path from "path";
 import psList from 'ps-list';
-import * as fs from "fs";
-import { tmpdir } from "os";
-import { randomUUID } from "crypto";
+import { ListenablePreferenceSetting } from "@pivotal-tools/commons-vscode/lib/launch-util";
 
 const JMX_VM_ARG = '-Dspring.jmx.enabled='
 const ACTUATOR_JMX_EXPOSURE_ARG = '-Dmanagement.endpoints.jmx.exposure.include='
@@ -23,20 +19,10 @@ const ADMIN_VM_ARG = '-Dspring.application.admin.enabled='
 const BOOT_PROJECT_ARG = '-Dspring.boot.project.name=';
 const RMI_HOSTNAME = '-Djava.rmi.server.hostname=localhost';
 
-const ENV_TESTJAR_ARTIFACT_PREFIX = "TESTJARS_ARTIFACT_";
-
-const TEST_RUNNER_MAIN_CLASSES = [
+export const TEST_RUNNER_MAIN_CLASSES = [
     'org.eclipse.jdt.internal.junit.runner.RemoteTestRunner',
     'com.microsoft.java.test.runner.Launcher'
 ];
-
-interface ExecutableBootProject {
-    name: string;
-    uri: string;
-    mainClass: string;
-    classpath: string[];
-    gav: string;
-}
 
 interface ProcessEvent {
     type: string;
@@ -46,34 +32,9 @@ interface ProcessEvent {
 
 class SpringBootDebugConfigProvider implements DebugConfigurationProvider {
 
-    async resolveDebugConfigurationWithSubstitutedVariables(folder: WorkspaceFolder | undefined, debugConfiguration: DebugConfiguration, token?: CancellationToken): Promise<DebugConfiguration> {
-        // TestJar launch support
-        if (TEST_RUNNER_MAIN_CLASSES.includes(debugConfiguration.mainClass) && isTestJarsOnClasspath(debugConfiguration)) {
-            const projects = await commands.executeCommand("sts/spring-boot/executableBootProjects") as ExecutableBootProject[];
-            let env = debugConfiguration.env;
-            if (!env) {
-                env = {};
-                debugConfiguration.env = env;
-            }
-            const projectsWithErrors: ExecutableBootProject[] = [];
-            // Create all project classparth data files and add env vars for workspace projects
-            await Promise.all(projects.map(async p => {
-                const envName = this.createEnvVarName(p);
-                if (!env[envName]) {
-                    try {
-                        env[envName] = await this.createFile(p);
-                    } catch (error) {
-                        projectsWithErrors.push(p);
-                    }
-                }
-            }));
-            if (projectsWithErrors.length > 0) {
-                const projectStr = projectsWithErrors.map(p => `'${p.name}'`);
-                window.showWarningMessage(`TestJar Support: Could not provide data for workspace projects: ${projectStr}`);
-            }
-        }
+    resolveDebugConfigurationWithSubstitutedVariables(folder: WorkspaceFolder | undefined, debugConfiguration: DebugConfiguration, token?: CancellationToken): ProviderResult<DebugConfiguration> {
         // Running app live hovers support
-        if (isAutoConnectOn() && !TEST_RUNNER_MAIN_CLASSES.includes(debugConfiguration.mainClass) && isActuatorOnClasspath(debugConfiguration)) {
+        if (!TEST_RUNNER_MAIN_CLASSES.includes(debugConfiguration.mainClass) && isActuatorOnClasspath(debugConfiguration)) {
             if (debugConfiguration.vmArgs) {
                 if (debugConfiguration.vmArgs.indexOf(JMX_VM_ARG) < 0) {
                     debugConfiguration.vmArgs += ` ${JMX_VM_ARG}true`;
@@ -97,40 +58,46 @@ class SpringBootDebugConfigProvider implements DebugConfigurationProvider {
         return debugConfiguration;
     }
 
-    private createEnvVarName(project: ExecutableBootProject) {
-        return `${ENV_TESTJAR_ARTIFACT_PREFIX}${project.gav.replace(/:/g, "_")}`;
-    }
+}
 
-    private async createFile(project: ExecutableBootProject) {
-        const filePath = path.join(tmpdir(), `${project.gav.replace(/:/g, "_")}-${randomUUID()}`);
-        await fs.writeFile(filePath, `# the main class to invoke\nmain=${project.mainClass}\n# the classpath to use delimited by the OS specific delimiters\nclasspath=${project.classpath.join(path.delimiter)}`, function(err) {
-            if(err) {
-                throw Error();
+export function hookListenerToBooleanPreference(setting: string, listenerCreator: () => Disposable): Disposable {
+    const listenableSetting =  new ListenablePreferenceSetting<boolean>(setting);
+    let listener: Disposable | undefined = listenableSetting.value ? listenerCreator() : undefined;
+    listenableSetting.onDidChangeValue(() => {
+        if (listenableSetting.value) {
+            if (!listener) {
+                listener = listenerCreator();
             }
-        }); 
-        return filePath;
-    }
+        } else {
+            if (listener) {
+                listener.dispose();
+                listener = undefined;
+            }
+        }
+    });
 
+    return {
+        dispose: () => {
+            if (listener) {
+                listener.dispose();
+            }
+            listenableSetting.dispose();
+        }
+    };
 }
 
 export function startDebugSupport(): Disposable {
-    return Disposable.from(
-        debug.onDidReceiveDebugSessionCustomEvent(handleCustomDebugEvent),
-        debug.onDidTerminateDebugSession(cleanupDebugSession),
-        debug.registerDebugConfigurationProvider('java', new SpringBootDebugConfigProvider(), DebugConfigurationProviderTriggerKind.Initial),
-        new Disposable(() => cleanupDebugSession(debug.activeDebugSession)) // If VSCode is shutdown then clean active debug session if it satidfies conditions
+    return hookListenerToBooleanPreference(
+        'boot-java.live-information.automatic-connection.on',
+         () => Disposable.from(
+             debug.onDidReceiveDebugSessionCustomEvent(handleCustomDebugEvent),
+             debug.registerDebugConfigurationProvider('java', new SpringBootDebugConfigProvider(), DebugConfigurationProviderTriggerKind.Initial)
+         )
     );
 }
 
-async function cleanupDebugSession(session: DebugSession) {
-    // Handle termination of a Boot app with TestJars on the classpath
-    if (session.type === 'java' && TEST_RUNNER_MAIN_CLASSES.includes(session.configuration.mainClass) && isTestJarsOnClasspath(session.configuration) && session.configuration.env) {
-        await Promise.all(Object.keys(session.configuration.env).filter(k => k.startsWith(ENV_TESTJAR_ARTIFACT_PREFIX)).map(k => fs.rm(session.configuration.env[k], () => {})));
-    }
-}
-
 async function handleCustomDebugEvent(e: DebugSessionCustomEvent): Promise<void> {
-    if (isAutoConnectOn() && e.session?.type === 'java' && e?.body?.type === 'processid') {
+    if (e.session?.type === 'java' && e?.body?.type === 'processid') {
         const debugConfiguration: DebugConfiguration = e.session.configuration;
         if (canConnect(debugConfiguration)) {
             setTimeout(async () => {
@@ -170,26 +137,6 @@ function isActuatorJarFile(f: string): boolean {
         return true;
     }
     return false;
-}
-
-function isTestJarsOnClasspath(debugConfiguration: DebugConfiguration): boolean {
-    if (Array.isArray(debugConfiguration.classPaths)) {
-        return !!debugConfiguration.classPaths.find(isTestJarFile);
-    }
-    return false;
-
-}
-
-function isTestJarFile(f: string): boolean {
-    const fileName = path.basename(f || "");
-    if (/^spring-boot-testjars-\d+\.\d+\.\d+(.*)?.jar$/.test(fileName)) {
-        return true;
-    }
-    return false;
-}
-
-function isAutoConnectOn(): boolean {
-    return workspace.getConfiguration().get("boot-java.live-information.automatic-connection.on", true);
 }
 
 function canConnect(debugConfiguration: DebugConfiguration): boolean {
